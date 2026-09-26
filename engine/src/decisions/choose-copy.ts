@@ -1,14 +1,15 @@
 /**
- * What a Clone-style permanent copies as it enters (rule 707).
+ * What a Clone-style permanent enters as a copy of (rule 707.9) — asked
+ * before it moves, however it's entering (`Game.askEnterChoice`, rule 614.12).
  *
  * `null` is a real answer — "copy nothing" — and leaves the permanent as its
  * own printed self, which for a vanilla Clone means a 0/0 that dies to a
  * state-based action immediately.
  *
  * Worth knowing about the raise, which stays on `Game`: this is the one kind
- * that can *begin without pausing*. `beginCopyChoice` returns early when
- * there is nothing on the battlefield to copy, leaving `awaiting` untouched
- * rather than raising a decision with an empty option list — pinned by
+ * that can *begin without pausing*. `askEnterChoice` records "copy nothing"
+ * and carries on when there is nothing on the battlefield to copy, rather
+ * than raising a decision with an empty option list — pinned by
  * `clone.test.ts`'s "with no creatures to copy, it never pauses and just
  * dies".
  */

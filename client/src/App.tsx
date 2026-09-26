@@ -197,6 +197,7 @@ type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 type ShockChoiceAction = Extract<LegalAction, { kind: 'pay-life-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
+type LegendRuleAction = Extract<LegalAction, { kind: 'legend-rule' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
@@ -317,6 +318,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'commander-replacement': 'decide where their commander goes',
   'pay-life-for-untapped': 'decide on a shock land',
   'choose-copy': 'choose what to copy',
+  'legend-rule': 'choose which legend to keep',
   'choose-text': 'choose a text change',
   'choose-creature-type': 'choose a creature type',
   'choose-modes': 'choose a mode',
@@ -890,6 +892,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const copyChoiceAction = actions.find(
     (a): a is CopyChoiceAction => a.kind === 'choose-copy',
   )
+  const legendAction = actions.find((a): a is LegendRuleAction => a.kind === 'legend-rule')
   const textChoiceAction = actions.find(
     (a): a is TextChoiceAction => a.kind === 'choose-text',
   )
@@ -979,6 +982,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'commander-replacement'
     | 'pay-life-for-untapped'
     | 'choose-copy'
+    | 'legend-rule'
     | 'choose-text'
     | 'choose-creature-type'
     | 'choose-modes'
@@ -1001,6 +1005,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       ? 'pay-life-for-untapped'
       : copyChoiceAction
         ? 'choose-copy'
+        : legendAction
+          ? 'legend-rule'
         : textChoiceAction
           ? 'choose-text'
         : creatureTypeChoiceAction
@@ -1517,6 +1523,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
+      if (mode === 'legend-rule' && legendAction) {
+        if (legendAction.options.includes(id)) {
+          game.dispatch({ type: 'legend-rule', player: seat, keep: id })
+        }
+        return
+      }
       if (mode === 'sacrifice' && sacrificeAction) {
         if (!sacrificeAction.eligible.includes(id)) return
         // A compacted token stack is one tile standing for several tokens, so
@@ -1817,6 +1829,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       highlight = of > taken && picks.length < offer.maxCreatures
       selected = taken > 0
       if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
+    } else if (mode === 'legend-rule' && legendAction) {
+      highlight = legendAction.options.includes(id)
     } else if (mode === 'sacrifice' && sacrificeAction) {
       const taken = sacrificePicks.filter((x) => x === id).length
       const of = sacrificeAction.copies?.[id] ?? 1
@@ -2202,6 +2216,25 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
+      </div>
+    )
+  } else if (mode === 'legend-rule' && legendAction) {
+    // Copies of one legend share a name, so buttons couldn't tell them apart:
+    // the choice is made on the board, where each shows its own state.
+    controls = (
+      <div className="controls">
+        <span>
+          You control more than one {legendAction.name} — click the one to keep. The rest go to
+          the graveyard.
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            game.dispatch({ type: 'legend-rule', player: seat, keep: legendAction.options[0] })
+          }
+        >
+          Keep the oldest
+        </button>
       </div>
     )
   } else if (mode === 'choose-copy' && copyChoiceAction) {

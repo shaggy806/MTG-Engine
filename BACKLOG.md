@@ -97,7 +97,6 @@ that one card is the reason the deck exists.
   redirection to a third object.
 - **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
   timestamp order only.
-- **Legend rule.** The oldest permanent survives. The player gets no choice.
 - **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`). Not yet:
   a decision a departed player would have made (800.4g–h: another player makes it), an
   effect ending that hands a permanent back to a departed default controller (800.4c: it's

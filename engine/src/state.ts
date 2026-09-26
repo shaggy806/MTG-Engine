@@ -1187,11 +1187,24 @@ export type AwaitingDecision =
       readonly life: number;
     }
   | {
-      /** A Clone-style permanent just entered; its controller chooses what
-       * (if anything) it copies (rule 707). */
+      /** A Clone-style permanent is about to enter; its controller chooses
+       * what (if anything) it enters as a copy of (rule 707.9) — asked before
+       * it moves, see `Game.askEnterChoice`. */
       readonly kind: "choose-copy";
       readonly player: PlayerId;
       readonly source: ObjectId;
+      readonly options: readonly ObjectId[];
+    }
+  | {
+      /** The legend rule (704.5j): `player` controls two or more legendary
+       * permanents named `name` — `options`, the one they've controlled
+       * longest first — and chooses the one to keep; the rest are put into
+       * their owners' graveyards. Asked by the state-based check before
+       * anything moves, which performs every move it finds once each such
+       * choice is made (704.3). */
+      readonly kind: "legend-rule";
+      readonly player: PlayerId;
+      readonly name: string;
       readonly options: readonly ObjectId[];
     }
   | {
@@ -2021,6 +2034,10 @@ export interface GameState {
    * priority) and no triggered ability is put on the stack (rule 603.3).
    */
   suspendedResolutions: SuspendedResolution[];
+  /** The permanents players have chosen to keep under the legend rule in the
+   * state-based check under way (the `legend-rule` decision); spent once that
+   * check performs its moves. */
+  legendRuleKeeps?: ObjectId[];
   /**
    * The `eventSeq` the spell or ability now resolving began at — what "this
    * way" reads (the `thisWay` amount and the `this-way` condition): every

@@ -292,6 +292,13 @@ export type Action =
       readonly copy: ObjectId | null;
     }
   | {
+      /** Answers a pending legend-rule decision (rule 704.5j): the one of the
+       * offered legendary permanents to keep. */
+      readonly type: "legend-rule";
+      readonly player: PlayerId;
+      readonly keep: ObjectId;
+    }
+  | {
       /** Answers a pending text-change decision (Artificial Evolution — layer
        * 3): replace the creature-type word `from` with `to`. */
       readonly type: "choose-text";
@@ -749,6 +756,13 @@ export type LegalAction =
       readonly kind: "choose-copy";
       readonly source: ObjectId;
       /** Permanents this Clone may copy; `null` (copy nothing) is also legal. */
+      readonly options: readonly ObjectId[];
+    }
+  | {
+      /** The legend rule: keep one of `options` — legendary permanents you
+       * control named `name`, the one you've controlled longest first. */
+      readonly kind: "legend-rule";
+      readonly name: string;
       readonly options: readonly ObjectId[];
     }
   | {

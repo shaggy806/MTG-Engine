@@ -94,6 +94,7 @@ import { attackers } from "./decisions/attackers.js";
 import { chooseTargets } from "./decisions/choose-targets.js";
 import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { legendRule } from "./decisions/legend-rule.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
@@ -646,6 +647,7 @@ export class Game {
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
+      applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
@@ -2644,6 +2646,17 @@ export class Game {
     };
     // A copy is announced as it enters; declining, now.
     if (copy === null) this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: null });
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  /** Answers a pending legend-rule decision (rule 704.5j): `keep` stays,
+   * and the state-based check, resumed now, puts the rest of its group into
+   * their owners' graveyards along with every other move it finds. */
+  private applyLegendRuleChoice(player: PlayerId, keep: ObjectId): void {
+    const why = legendRule.whyCannot(this.decisionCtx, { type: "legend-rule", player, keep }, player);
+    if (why !== null) throw new Error(why);
+    this.state.legendRuleKeeps = [...(this.state.legendRuleKeeps ?? []), keep];
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
@@ -16240,7 +16253,14 @@ export class Game {
       // (rule 603.10a), and a creature that only dies *because* another one
       // did (its lord) waits for the next check, as it should. A commander
       // among them goes too, and is offered the command zone by the next.
-      const sweep = this.stateBasedGraveyardMoves();
+      const { moves: sweep, legend } = this.stateBasedGraveyardMoves();
+      // The legend rule is a choice (704.5j): asked before anything moves, so
+      // that when every choice is made the check still performs all it found
+      // at once (704.3). Resumed by the answer.
+      if (legend !== null) {
+        this.state.awaiting = { kind: "legend-rule", ...legend };
+        return;
+      }
       // Rule 704.5q, performed with those moves: only on what stays, so a
       // creature dying in this same check leaves with both kinds of counter
       // still on it (a persist creature with a +1/+1 counter doesn't return).
@@ -16261,8 +16281,10 @@ export class Game {
             changed = true;
           }
         });
+        delete this.state.legendRuleKeeps;
         if (this.state.awaiting !== null) return;
       }
+      delete this.state.legendRuleKeeps;
 
       // Not a rule — the other half of token stacking's safety contract: a
       // stack stands in for tokens only while none of them can be activated,
@@ -16474,7 +16496,12 @@ export class Game {
    * completed Sagas. A permanent two of them apply to is moved once, for the
    * first.
    */
-  private stateBasedGraveyardMoves(): { readonly id: ObjectId; readonly event: GameEventInput }[] {
+  private stateBasedGraveyardMoves(): {
+    readonly moves: readonly { readonly id: ObjectId; readonly event: GameEventInput }[];
+    /** The next legend-rule group whose controller hasn't yet chosen which to
+     * keep, or `null` — asked before any of `moves` are made. */
+    readonly legend: { readonly player: PlayerId; readonly name: string; readonly options: ObjectId[] } | null;
+  } {
     const moves: { id: ObjectId; event: GameEventInput }[] = [];
     const moving = new Set<ObjectId>();
     const add = (id: ObjectId, event: GameEventInput): void => {
@@ -16542,8 +16569,8 @@ export class Game {
     }
 
     // The legend rule (704.5j): a player controlling 2+ legendary permanents
-    // with the same name keeps only one. No player choice is modeled — the
-    // copy they've controlled longest (lowest timestamp) survives and the
+    // with the same name keeps the one of their choice — asked for before
+    // anything moves (`legend`), one group at a time in APNAP order — and the
     // rest go to the graveyard. A copy another check is already putting into
     // the graveyard isn't one of the candidates to keep: a player would keep
     // one that's staying. The name is the one the permanent has now: a Clone
@@ -16561,15 +16588,27 @@ export class Game {
       if (group) group.push(id);
       else legendaryGroups.set(key, [id]);
     }
+    const keeps = new Set(this.state.legendRuleKeeps ?? []);
+    const order = this.apnapOrder();
+    let legend: { player: PlayerId; name: string; options: ObjectId[] } | null = null;
     for (const group of legendaryGroups.values()) {
       if (group.length <= 1) continue;
-      const survivor = group.reduce((oldest, id) =>
-        this.state.objects[id].timestamp < this.state.objects[oldest].timestamp ? id : oldest,
-      );
-      for (const id of group) {
-        if (id !== survivor) {
-          add(id, { type: "permanent-destroyed", object: id, reason: "legend rule" });
+      const kept = group.find((id) => keeps.has(id));
+      if (kept === undefined) {
+        const player = this.state.objects[group[0]].controller;
+        if (legend === null || order.indexOf(player) < order.indexOf(legend.player)) {
+          legend = {
+            player,
+            name: printedCardName(this.state.objects[group[0]]),
+            // The one they've controlled longest first — what a player who
+            // doesn't care keeps.
+            options: [...group].sort((a, b) => this.state.objects[a].timestamp - this.state.objects[b].timestamp),
+          };
         }
+        continue;
+      }
+      for (const id of group) {
+        if (id !== kept) add(id, { type: "permanent-destroyed", object: id, reason: "legend rule" });
       }
     }
 
@@ -16589,7 +16628,7 @@ export class Game {
       add(id, { type: "saga-completed", object: id });
     }
 
-    return moves;
+    return { moves, legend };
   }
 
   // --- zones -------------------------------------------------

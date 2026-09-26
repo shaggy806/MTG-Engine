@@ -113,6 +113,12 @@ const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
     source: asObjectId("obj-1"),
     options: [asObjectId("obj-2")],
   },
+  "legend-rule": {
+    kind: "legend-rule",
+    player: ALICE,
+    name: "Krenko, Mob Boss",
+    options: [asObjectId("obj-1"), asObjectId("obj-2")],
+  },
   "pay-life-for-untapped": {
     kind: "pay-life-for-untapped",
     player: ALICE,
@@ -165,10 +171,10 @@ describe("decision registry", () => {
     expect(decisionForOffer({ kind: "pass-priority" })).toBeUndefined();
   });
 
-  it("covers all sixteen kinds, with a fixture for each", () => {
+  it("covers all seventeen kinds, with a fixture for each", () => {
     // The table is total now, so a missing module fails the build. This is
     // the check that the fixtures below don't fall behind it.
-    expect(Object.keys(DECISIONS)).toHaveLength(16);
+    expect(Object.keys(DECISIONS)).toHaveLength(17);
     for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
       expect(FIXTURES[kind], `no FIXTURES entry for "${kind}"`).toBeDefined();
     }

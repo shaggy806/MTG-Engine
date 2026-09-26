@@ -90,6 +90,7 @@ export const DECISION_ACTIONS = {
   "commander-replacement": ["commander-replacement"],
   "pay-life-for-untapped": ["pay-life-for-untapped"],
   "choose-copy": ["choose-copy"],
+  "legend-rule": ["legend-rule"],
   "choose-text": ["choose-text"],
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
@@ -119,6 +120,7 @@ export const DECISION_OFFERS = {
   "commander-replacement": ["commander-replacement"],
   "pay-life-for-untapped": ["pay-life-for-untapped"],
   "choose-copy": ["choose-copy"],
+  "legend-rule": ["legend-rule"],
   "choose-text": ["choose-text"],
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
@@ -192,6 +194,7 @@ export interface DecisionReadCtx {
 export interface DecisionHost {
   readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
+  readonly applyLegendRuleChoice: (player: PlayerId, keep: ObjectId) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;

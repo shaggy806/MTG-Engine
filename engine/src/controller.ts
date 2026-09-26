@@ -146,14 +146,20 @@ export interface PlayerController {
    */
   payLifeForUntapped(view: ControllerView, source: ObjectId, life: number): boolean;
   /**
-   * A Clone-style permanent just entered — return which of `options` it copies,
-   * or `null` to copy nothing (rule 707).
+   * A Clone-style permanent is about to enter — return which of `options` it
+   * enters as a copy of, or `null` to copy nothing (rule 707.9).
    */
   chooseCopy(
     view: ControllerView,
     source: ObjectId,
     options: readonly ObjectId[],
   ): ObjectId | null;
+  /**
+   * The legend rule (704.5j): you control two or more legendary permanents
+   * named `name` — return which of `options` (the one you've controlled
+   * longest first) to keep; the rest go to the graveyard.
+   */
+  chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId;
   /**
    * A text-changing spell is resolving (Artificial Evolution — layer 3):
    * return `[from, to]` — the creature-type word to replace and its
@@ -377,6 +383,12 @@ export class AutomaticController implements PlayerController {
     return options[0] ?? null;
   }
 
+  /** Keeps the one controlled longest — what the engine did before the
+   * choice was a player's. */
+  chooseLegendToKeep(_view: ControllerView, _name: string, options: readonly ObjectId[]): ObjectId {
+    return options[0];
+  }
+
   chooseText(
     _view: ControllerView,
     fromOptions: readonly string[],
@@ -564,6 +576,11 @@ export class ScriptedController implements PlayerController {
   payLifeForUntappedFn: (view: ControllerView, source: ObjectId, life: number) => boolean =
     () => false;
   chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
+  chooseLegendToKeepFn: (view: ControllerView, name: string, options: readonly ObjectId[]) => ObjectId = (
+    _view,
+    _name,
+    options,
+  ) => options[0];
   chooseTextFn: TextChooser = (_view, fromOptions, toOptions) => [
     fromOptions[0],
     toOptions[0],
@@ -682,6 +699,10 @@ export class ScriptedController implements PlayerController {
     options: readonly ObjectId[],
   ): ObjectId | null {
     return this.chooseCopyFn(view, source, options);
+  }
+
+  chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId {
+    return this.chooseLegendToKeepFn(view, name, options);
   }
 
   chooseText(

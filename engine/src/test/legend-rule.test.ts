@@ -83,7 +83,7 @@ describe("the legend rule (704.5j)", () => {
     ).toHaveLength(1);
   });
 
-  it("destroys the newer of two same-named legendaries the same player controls", () => {
+  it("keeps the older of two same-named legendaries by default, and destroys the newer", () => {
     const game = mkGame();
     game.advanceUntil(atFirstMain);
 
@@ -114,7 +114,7 @@ describe("the legend rule (704.5j)", () => {
       card: named(game, game.handOf(A), "Test Legend"),
       targets: [],
     });
-    game.advanceUntil(stackEmpty);
+    game.advanceUntil((s) => stackEmpty(s) && s.awaiting === null);
 
     const onBattlefield = game.state.zones.shared.battlefield.filter(
       (id) => game.state.objects[id].cardName === "Test Legend",
@@ -236,5 +236,66 @@ describe("the legend rule (704.5j)", () => {
       expect(legendsOf(game, "Test Legend")).toEqual([first]);
       expect(legendsOf(game, "Other Legend")).toEqual([second]);
     });
+  });
+});
+
+describe("the legend rule is its controller's choice (704.5j)", () => {
+  const check = (game: Game): void =>
+    (game as unknown as { prepareForPriority(player: typeof A): void }).prepareForPriority(A);
+  const twoOf = (game: Game, name: string): [ObjectId, ObjectId] => [
+    game.debugSpawn(name, A, "battlefield", { summoningSick: false }),
+    game.debugSpawn(name, A, "battlefield", { summoningSick: false }),
+  ];
+
+  it("asks which to keep, oldest first, and the newer one can stay", () => {
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    const [older, newer] = twoOf(game, "Test Legend");
+    check(game);
+
+    expect(game.state.awaiting).toMatchObject({
+      kind: "legend-rule",
+      player: A,
+      name: "Test Legend",
+      options: [older, newer],
+    });
+    // Nothing has moved while it's asked.
+    expect(game.state.objects[older].zone).toBe("battlefield");
+
+    game.dispatch({ type: "legend-rule", player: A, keep: newer });
+
+    expect(game.state.objects[newer].zone).toBe("battlefield");
+    expect(game.state.objects[older].zone).toBe("graveyard");
+    expect(game.state.legendRuleKeeps).toBeUndefined();
+  });
+
+  it("asks one group at a time, then puts them all into the graveyard at once", () => {
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    const [t1, t2] = twoOf(game, "Test Legend");
+    const [o1, o2] = twoOf(game, "Other Legend");
+    check(game);
+
+    const first = game.state.awaiting;
+    expect(first?.kind).toBe("legend-rule");
+    const firstKeep = first?.kind === "legend-rule" && first.name === "Test Legend" ? t2 : o2;
+    game.dispatch({ type: "legend-rule", player: A, keep: firstKeep });
+    // The other group is asked before anything moves.
+    expect(game.state.awaiting?.kind).toBe("legend-rule");
+    expect([t1, t2, o1, o2].every((id) => game.state.objects[id].zone === "battlefield")).toBe(true);
+
+    game.dispatch({ type: "legend-rule", player: A, keep: firstKeep === t2 ? o2 : t2 });
+    expect([t1, o1].map((id) => game.state.objects[id].zone)).toEqual(["graveyard", "graveyard"]);
+    expect([t2, o2].map((id) => game.state.objects[id].zone)).toEqual(["battlefield", "battlefield"]);
+  });
+
+  it("won't keep something that isn't one of them", () => {
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    twoOf(game, "Test Legend");
+    const other = game.debugSpawn("Other Legend", A, "battlefield");
+    check(game);
+    expect(game.canDispatch({ type: "legend-rule", player: A, keep: other })).toMatch(/not one of/);
+    expect(game.canDispatch({ type: "legend-rule", player: B, keep: other })).toMatch(/not being asked/);
   });
 });
