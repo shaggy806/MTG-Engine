@@ -1335,6 +1335,7 @@ import _poolDuneDiviner from "./pool/dune-diviner.js";
 import _poolDungeonShade from "./pool/dungeon-shade.js";
 import _poolDurkwoodBoars from "./pool/durkwood-boars.js";
 import _poolDuskImp from "./pool/dusk-imp.js";
+import _poolDuskanaTheRageMother from "./pool/duskana-the-rage-mother.js";
 import _poolDuskdaleWurm from "./pool/duskdale-wurm.js";
 import _poolDuskmantleHouseOfShadow from "./pool/duskmantle-house-of-shadow.js";
 import _poolDutifulServants from "./pool/dutiful-servants.js";
@@ -3532,6 +3533,7 @@ import _poolRaffinesTower from "./pool/raffines-tower.js";
 import _poolRageReflection from "./pool/rage-reflection.js";
 import _poolRageThrower from "./pool/rage-thrower.js";
 import _poolRagefire from "./pool/ragefire.js";
+import _poolRaggadraggaGoregutsBoss from "./pool/raggadragga-goreguts-boss.js";
 import _poolRagingBull from "./pool/raging-bull.js";
 import _poolRagingCougar from "./pool/raging-cougar.js";
 import _poolRagingGoblin from "./pool/raging-goblin.js";
@@ -6911,6 +6913,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDungeonShade,
   _poolDurkwoodBoars,
   _poolDuskImp,
+  _poolDuskanaTheRageMother,
   _poolDuskdaleWurm,
   _poolDuskmantleHouseOfShadow,
   _poolDutifulServants,
@@ -9108,6 +9111,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRageReflection,
   _poolRageThrower,
   _poolRagefire,
+  _poolRaggadraggaGoregutsBoss,
   _poolRagingBull,
   _poolRagingCougar,
   _poolRagingGoblin,

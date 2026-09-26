@@ -19,13 +19,15 @@ import {
   effectiveColors,
   effectiveSubtypes,
   effectiveTypes,
+  hasAnyAbility,
   hasLostAbilities,
+  hasManaAbility,
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount, ThisWayKind } from "./effects.js";
 import { isGoaded } from "./goad.js";
-import type { Color, ManaFromSpec } from "./mana.js";
-import { manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
+import type { Color, ManaCost, ManaFromSpec } from "./mana.js";
+import { COLORS, manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
@@ -84,6 +86,11 @@ export function filterReadsX(filter: CardFilter): boolean {
     readsX(filter.counters?.compare) ||
     readsX(filter.power) ||
     readsX(filter.toughness) ||
+    readsX(filter.basePower) ||
+    readsX(filter.baseToughness) ||
+    readsX(filter.coloredManaSymbols) ||
+    readsX(filter.cardTypeCount) ||
+    (filter.nameDiffersFromEach !== undefined && filterReadsX(filter.nameDiffersFromEach)) ||
     (filter.anyOf ?? []).some(filterReadsX)
   );
 }
@@ -198,6 +205,65 @@ export interface CardFilter {
   readonly suspected?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
+  /**
+   * Base power / base toughness (rule 613.4b) — Duskana, the Rage Mother's
+   * "each creature you control with base power and toughness 2/2" is both,
+   * `{ op: "eq", n: 2 }`. The printed values, or what a characteristic-
+   * defining ability or an effect that sets them made them ("becomes a 4/4",
+   * "has base power and toughness 2/2"), before counters and every "+N/+N" —
+   * see `Characteristics.basePower`. Like `power`, can't be answered from
+   * inside the layer fold (a static's scope) and fails closed there.
+   */
+  readonly basePower?: NumCompare;
+  readonly baseToughness?: NumCompare;
+  /**
+   * Has (or hasn't) a mana ability (rule 605.1) — activated or triggered, its
+   * own or granted: Raggadragga, Goreguts Boss's "each creature you control
+   * **with a mana ability** gets +2/+2". See `characteristics.ts`'s
+   * `hasManaAbility`. Answered inside the layer fold too, so a static may be
+   * scoped by it.
+   */
+  readonly hasManaAbility?: boolean;
+  /**
+   * Has any ability at all (rule 113) — `false` is "with **no abilities**"
+   * (Jasmine Boreal of the Seven): no keyword, ability or spell instructions
+   * of its own (unless it lost them) and none granted to it. See
+   * `characteristics.ts`'s `hasAnyAbility`. A granted keyword can come from
+   * any static, so this can't be answered from inside the layer fold and
+   * fails closed there.
+   */
+  readonly hasAbilities?: boolean;
+  /**
+   * Has (or hasn't) `{X}` in its mana cost — Zaxara, the Exemplary's "a spell
+   * **with {X} in its mana cost**". The mana cost of what it is now: a copy's
+   * is the copied card's, and the back face of a transformed permanent has
+   * none (rule 712.8e — only its mana *value* comes from the front).
+   */
+  readonly xInManaCost?: boolean;
+  /**
+   * How many coloured mana symbols are in its mana cost — Omnath, Locus of
+   * All's "three or more colored mana symbols in its mana cost" is `{ op:
+   * "gte", n: 3 }`. A hybrid or Phyrexian symbol is one coloured symbol
+   * (rules 107.4e–f), `{2/W}` included; `{C}`, `{X}`, generic and snow
+   * symbols aren't coloured. Read from the same mana cost as `xInManaCost`.
+   */
+  readonly coloredManaSymbols?: NumCompare;
+  /**
+   * How many card types it has — Rendmaw, Creaking Nest's "a card with **two
+   * or more card types**" is `{ op: "gte", n: 2 }`: an artifact creature, an
+   * enchantment creature, a land creature. Its current types, like `type`.
+   */
+  readonly cardTypeCount?: NumCompare;
+  /**
+   * Its name is different from the name of every battlefield permanent
+   * matching this filter (rule 201.2c) — Light-Paws, Emperor's Voice's "an
+   * Aura card … **with a different name than each Aura you control**" is `{
+   * subtype: "Aura", controlledBy: "you" }`, matched from the same "you".
+   * True when nothing matches. A permanent that matches it itself shares its
+   * own name, so never qualifies. Can't be answered from inside the layer fold
+   * and fails closed there.
+   */
+  readonly nameDiffersFromEach?: CardFilter;
   /**
    * Is of the creature type chosen for the permanent applying the filter (its
    * `chosenCreatureType`, via `FilterContext.source`) — Morophon, the
@@ -400,6 +466,24 @@ export function printedManaCost(registry: CardRegistry, object: GameObject): str
   return def.manaCost;
 }
 
+/** The mana cost the face named `name` prints — what "{X} in its mana cost"
+ * and "colored mana symbols in its mana cost" read. Unlike
+ * {@link printedManaCost}, which is for mana value, a transformed back face's
+ * own: it has none (rule 712.8e). */
+function ownManaCost(registry: CardRegistry, name: string): ManaCost {
+  return parseManaCost(registry.has(name) ? registry.get(name).manaCost : null);
+}
+
+/** How many coloured mana symbols a cost has (rule 107.4): each coloured pip,
+ * and each hybrid or Phyrexian symbol once (107.4e–f — every one has a
+ * colour, `{2/W}` included). */
+export function coloredManaSymbolsIn(cost: ManaCost): number {
+  return (
+    COLORS.reduce((n, color) => n + cost.colored[color], 0) +
+    cost.hybrid.filter((pip) => pip.some((option) => option.kind === "color")).length
+  );
+}
+
 /** An object's mana value. On the stack, {X} counts as the value chosen for
  * it (rule 202.3e) — a Fireball cast for 5 is a mana value 6 spell.
  * Everywhere else it's 0. */
@@ -594,6 +678,22 @@ export function matchesFilter(
   if (filter.manaValue !== undefined) {
     if (!compareNum(manaValueNow(), filter.manaValue, ctx.x, dynamic)) return false;
   }
+  if (filter.xInManaCost !== undefined || filter.coloredManaSymbols !== undefined) {
+    const cost = ownManaCost(registry, live !== undefined ? printedCardName(live) : lki!.name);
+    if (filter.xInManaCost !== undefined && cost.x > 0 !== filter.xInManaCost) return false;
+    if (
+      filter.coloredManaSymbols !== undefined &&
+      !compareNum(coloredManaSymbolsIn(cost), filter.coloredManaSymbols, ctx.x, dynamic)
+    ) {
+      return false;
+    }
+  }
+  if (
+    filter.cardTypeCount !== undefined &&
+    !compareNum(types.length, filter.cardTypeCount, ctx.x, dynamic)
+  ) {
+    return false;
+  }
   if (filter.manaSpent !== undefined) {
     const spent = live !== undefined ? live.manaSpent : lki!.manaSpent;
     if (!compareNum(spent ?? 0, filter.manaSpent, ctx.x, dynamic)) return false;
@@ -689,17 +789,71 @@ export function matchesFilter(
   ) {
     return false;
   }
+  if (filter.hasManaAbility !== undefined) {
+    const has =
+      live !== undefined
+        ? hasManaAbility(
+            state,
+            registry,
+            live,
+            layered !== undefined
+              ? { inFold: true, types: layered.types, subtypes: layered.subtypes, keywords: layered.keywords }
+              : {},
+          )
+        : lki!.hasManaAbility;
+    if (has !== filter.hasManaAbility) return false;
+  }
+  // These can't be answered from inside the layer fold (see each clause).
+  if (
+    layered !== undefined &&
+    (filter.hasAbilities !== undefined || filter.nameDiffersFromEach !== undefined)
+  ) {
+    return false;
+  }
+  if (filter.hasAbilities !== undefined) {
+    const has = live !== undefined ? hasAnyAbility(state, registry, live) : lki!.hasAbilities;
+    if (has !== filter.hasAbilities) return false;
+  }
+  if (filter.nameDiffersFromEach !== undefined) {
+    // Rule 201.2c, against every battlefield permanent the inner filter
+    // finds — from the same side, but as each permanent is now.
+    const inner = filter.nameDiffersFromEach;
+    const innerCtx: FilterContext = {
+      you: ctx.you,
+      ...(ctx.x !== undefined ? { x: ctx.x } : {}),
+      ...(ctx.amount !== undefined ? { amount: ctx.amount } : {}),
+      ...(ctx.source !== undefined ? { source: ctx.source } : {}),
+    };
+    const shared = state.zones.shared.battlefield.some((other) => {
+      const object = state.objects[other];
+      return (
+        object !== undefined &&
+        printedCardName(object) === name &&
+        matchesFilter(state, registry, other, inner, innerCtx)
+      );
+    });
+    if (shared) return false;
+  }
 
-  // Only these four need the layer fold (external anthems / keyword grants).
+  // Only these need the layer fold (external anthems / keyword grants).
   if (
     filter.power !== undefined ||
     filter.toughness !== undefined ||
+    filter.basePower !== undefined ||
+    filter.baseToughness !== undefined ||
     filter.keyword !== undefined ||
     filter.notKeyword !== undefined
   ) {
     if (layered !== undefined) {
       // Inside the fold: keywords as far as it has got, P/T not at all.
-      if (filter.power !== undefined || filter.toughness !== undefined) return false;
+      if (
+        filter.power !== undefined ||
+        filter.toughness !== undefined ||
+        filter.basePower !== undefined ||
+        filter.baseToughness !== undefined
+      ) {
+        return false;
+      }
       const keywords =
         layered.keywords?.() ??
         new Set(hasLostAbilities(live!) ? [] : registry.get(name).keywords);
@@ -707,15 +861,36 @@ export function matchesFilter(
       if (filter.notKeyword !== undefined && keywords.has(filter.notKeyword)) return false;
       return true;
     }
-    const c: { readonly power: number; readonly toughness: number; readonly keywords: ReadonlySet<Keyword> } =
+    const c: {
+      readonly power: number;
+      readonly toughness: number;
+      readonly basePower: number;
+      readonly baseToughness: number;
+      readonly keywords: ReadonlySet<Keyword>;
+    } =
       lki !== undefined
-        ? { power: lki.power, toughness: lki.toughness, keywords: new Set(lki.keywords) }
+        ? {
+            power: lki.power,
+            toughness: lki.toughness,
+            basePower: lki.basePower,
+            baseToughness: lki.baseToughness,
+            keywords: new Set(lki.keywords),
+          }
         : computeCharacteristics(state, registry, id);
     own = c;
     if (filter.power !== undefined && !compareNum(c.power, filter.power, ctx.x, dynamic)) {
       return false;
     }
     if (filter.toughness !== undefined && !compareNum(c.toughness, filter.toughness, ctx.x, dynamic)) {
+      return false;
+    }
+    if (filter.basePower !== undefined && !compareNum(c.basePower, filter.basePower, ctx.x, dynamic)) {
+      return false;
+    }
+    if (
+      filter.baseToughness !== undefined &&
+      !compareNum(c.baseToughness, filter.baseToughness, ctx.x, dynamic)
+    ) {
       return false;
     }
     if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;

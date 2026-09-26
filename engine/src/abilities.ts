@@ -958,9 +958,49 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     ability.effect !== null &&
     // One `add-mana`, or several in a row — Ramos, Dragon Engine's "Add
     // {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}" is five of them.
-    (ability.effect.kind === "add-mana" ||
-      (ability.effect.kind === "sequence" &&
-        ability.effect.effects.length > 0 &&
-        ability.effect.effects.every((step) => step.kind === "add-mana")))
+    addsManaOnly(ability.effect)
+  );
+}
+
+/** An effect that is nothing but adding mana: one `add-mana`, or several in
+ * a row. */
+function addsManaOnly(effect: EffectSpec): boolean {
+  return (
+    effect.kind === "add-mana" ||
+    (effect.kind === "sequence" &&
+      effect.effects.length > 0 &&
+      effect.effects.every((step) => step.kind === "add-mana"))
+  );
+}
+
+/**
+ * Rule 605.1a's own test for an activated mana ability — no target, could add
+ * mana, not a loyalty ability — wherever the ability functions from. The
+ * difference from {@link isManaAbility} is only that: the engine runs an
+ * ability that works from a hand, a graveyard or the command zone on the
+ * stack, but a card still *has* such a mana ability (an Elvish Spirit Guide
+ * on the battlefield has "Exile this card from your hand: Add {G}"), which is
+ * what "a creature with a mana ability" asks.
+ */
+export function isManaAbilityByRule(ability: ActivatedAbility): boolean {
+  return isManaAbility(ability.zone === undefined ? ability : { ...ability, zone: undefined });
+}
+
+/**
+ * A triggered mana ability (rule 605.1b): one that triggers from a mana
+ * ability resolving or mana being added, adds mana, and doesn't target — in
+ * the engine, a `tapped-for-mana` trigger (Crypt Ghast's "whenever you tap a
+ * Swamp for mana, add an additional {B}"). Raggadragga, Goreguts Boss's
+ * ruling counts these as mana abilities. A trigger that merely adds mana on
+ * some other event (Lotus Cobra's landfall, Priest of Urabrask entering) uses
+ * the stack and isn't one.
+ */
+export function isTriggeredManaAbility(ability: TriggeredAbility): boolean {
+  return (
+    ability.trigger.on === "tapped-for-mana" &&
+    ability.targets.length === 0 &&
+    ability.resolve === null &&
+    ability.effect !== null &&
+    addsManaOnly(ability.effect)
   );
 }

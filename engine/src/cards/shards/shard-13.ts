@@ -42,6 +42,7 @@ import _poolDesertOfTheMindful from "../pool/desert-of-the-mindful.js";
 import _poolDiabolicEdict from "../pool/diabolic-edict.js";
 import _poolDriftingMeadow from "../pool/drifting-meadow.js";
 import _poolDualSunAdepts from "../pool/dual-sun-adepts.js";
+import _poolDuskanaTheRageMother from "../pool/duskana-the-rage-mother.js";
 import _poolElsha from "../pool/elsha.js";
 import _poolEmryLurkerOfTheLoch from "../pool/emry-lurker-of-the-loch.js";
 import _poolEnslavedScout from "../pool/enslaved-scout.js";
@@ -220,6 +221,7 @@ const shard: CardShard = {
     _poolDiabolicEdict,
     _poolDriftingMeadow,
     _poolDualSunAdepts,
+    _poolDuskanaTheRageMother,
     _poolElsha,
     _poolEmryLurkerOfTheLoch,
     _poolEnslavedScout,

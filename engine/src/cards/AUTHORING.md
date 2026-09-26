@@ -999,11 +999,13 @@ source, so it isn't a `CardFilter` clause.
 `CardFilter` (used by the mass / tutor effects) is a predicate over an object's
 *computed* characteristics — `{ type, types, notTypes, typesAnyOf, subtype,
 subtypes, supertype, notSupertype, name, notName, colors, notColors, colorless,
-manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
-notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
-manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
-attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
-sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, ofChosenType }`,
+manaValue, power, toughness, basePower, baseToughness, counters, controlledBy,
+ownedBy, keyword, notKeyword, tapped, token, isCommander, equipped, enchanted,
+modified, anyOf, manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn,
+enteredThisTurn, attackedThisTurn, cast, castBy, castFrom, enteredFrom,
+putThereBySource, sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, hasManaAbility, hasAbilities,
+xInManaCost, coloredManaSymbols, cardTypeCount, nameDiffersFromEach,
+ofChosenType }`,
 every present clause ANDed. `goaded` is goaded by anyone, however (a one-shot
 goad, one for the rest of the game, a static one), and `suspected` rule
 701.60's designation; one that has left the battlefield is asked as it last
@@ -1068,6 +1070,39 @@ creatures you control of the chosen type". It's answered where the filter
 knows its source, a static's `filter` scope and a trigger's filter; with
 nothing chosen, nothing matches. Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
+
+Clauses about the card's own properties:
+
+- `basePower` / `baseToughness` — base P/T (rule 613.4b): printed, or set by a
+  CDA or a "becomes an N/N" / "has base power and toughness N/N", before
+  counters and "+N/+N" (Duskana, the Rage Mother's "base power and toughness
+  2/2" is both `{ op: "eq", n: 2 }`).
+- `hasManaAbility` — an activated or triggered mana ability (rule 605.1), its
+  own or granted (Raggadragga, Goreguts Boss's "each creature you control
+  with a mana ability"); gone when it loses its abilities.
+- `hasAbilities` — any ability at all (rule 113); `false` is "with no
+  abilities". Its own (every `CardDefinition` field is classified, in
+  `define.ts`'s `PRINTED_ABILITY`) unless lost, plus anything granted: a
+  keyword or protection, an activated or triggered ability, split second or a
+  trigger on a spell, flashback or escape on a graveyard card. Not seen: a
+  grant to spells whose filter reads a live amount (Abaddon the Despoiler's
+  "mana value X or less" cascade), which only `Game` can evaluate.
+- `xInManaCost` — `{X}` in its mana cost (Zaxara's "a spell with {X} in its
+  mana cost"). `coloredManaSymbols` — how many coloured symbols the mana
+  cost has, a hybrid or Phyrexian one counting once (Omnath, Locus of All's
+  "three or more"). Both read the face that's up: a transformed back face has
+  no mana cost (rule 712.8e), though its mana value is its front's.
+- `cardTypeCount` — how many card types it has now (Rendmaw's "a card with two
+  or more card types" is `{ op: "gte", n: 2 }`).
+- `nameDiffersFromEach: CardFilter` — a different name from every battlefield
+  permanent the inner filter finds (rule 201.2c — Light-Paws' "with a different
+  name than each Aura you control" is `{ subtype: "Aura", controlledBy: "you"
+  }`); true when it finds none.
+
+A static *scoped* by `basePower` / `baseToughness`, `hasAbilities` or
+`nameDiffersFromEach` can't be answered from inside the layer fold and fails
+closed, like `power`; `hasManaAbility` can, and waits for the keyword pass
+like `keyword` does.
 
 #### A number read off the game (`DynamicOperand`)
 
@@ -1628,11 +1663,14 @@ static: [
   "opponent"`), "non-Equipment artifact and non-Aura enchantment" (`anyOf`),
   "creatures you don't control", counters on any permanent. Type and subtype
   clauses read current (layer-4) types; a `keyword` clause waits for layer 6
-  like `withKeyword`; `ofChosenType` reads this permanent's own chosen
-  creature type (Morophon's "other creatures you control of the chosen
-  type"). A `power` / `toughness` clause can't be answered from inside the
-  layer fold that computes it and **fails closed** — don't author a scope that
-  needs one. Prefer this over adding another flag to the fixed scopes.
+  like `withKeyword`, and so does `hasManaAbility` (Raggadragga, Goreguts
+  Boss's "each creature you control with a mana ability gets +2/+2");
+  `ofChosenType` reads this permanent's own chosen creature type (Morophon's
+  "other creatures you control of the chosen type"). A `power` / `toughness`
+  clause — or `basePower`, `baseToughness`, `hasAbilities`,
+  `nameDiffersFromEach` — can't be answered from inside the layer fold that
+  computes it and **fails closed** — don't author a scope that needs one.
+  Prefer this over adding another flag to the fixed scopes.
 
 `withKeyword` (either creature scope) and `withoutKeyword` read the target's
 **current** keywords (rule 613.8a — the anthem depends on whatever grants or

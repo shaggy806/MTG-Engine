@@ -310,7 +310,13 @@ has ever run them.
   (**untested**).
 - **Static conditions:** `source-greatest`, `player-counters`.
 - **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`.
-- **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`.
+- **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`, and five
+  of the card-property clauses built beside Raggadragga's and Duskana's:
+  `hasAbilities` (Jasmine Boreal of the Seven), `xInManaCost` (Zaxara,
+  Zimone, Helga, Magus Lucea Kane), `coloredManaSymbols` (Omnath, Locus of
+  All), `cardTypeCount` (Rendmaw, Creaking Nest) and `nameDiffersFromEach`
+  (Light-Paws, Emperor's Voice) — each unit-tested in
+  `card-property-clauses.test.ts`, none yet in a card.
 - **Subtype marker:** `EVERY_LAND_TYPE` (Omo, Queen of Vesuva's "every land
   type"), tested in `changeling.test.ts`. A land that has it is a Forest to
   every filter, but taps only for what its own abilities say
@@ -387,6 +393,10 @@ in `git log`.
   Boundless, with the `ofChosenType` filter clause for its anthem;
   `changeling.test.ts`). Realmwalker and Mirror Entity, the other Tier 2
   names, each still need pieces of their own.
+- **Card-property filter clauses** (`condition:filter-card-property-clauses`)
+  — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
+  mana cost, card-type count, a name different from a group (Raggadragga,
+  Duskana; `card-property-clauses.test.ts`).
 
 
 ## Completed: `neededCards.txt` passes (P0-P20)

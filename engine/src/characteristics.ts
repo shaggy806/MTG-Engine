@@ -20,6 +20,7 @@
  * `GameObject.controller`, not here.
  */
 
+import { isManaAbilityByRule, isTriggeredManaAbility } from "./abilities.js";
 import type {
   AffectSpec,
   CardDefinition,
@@ -32,6 +33,7 @@ import type {
   StaticCondition,
   TurnStat,
 } from "./cards.js";
+import { printedHasAbility } from "./cards/define.js";
 import {
   aggregateOver,
   aggregateValueOf,
@@ -101,6 +103,16 @@ const ownStackInProgress = new Set<ObjectId>();
  */
 const layer4InProgress = new Set<ObjectId>();
 
+/**
+ * Ids whose granted abilities ({@link hasManaAbility}, {@link hasAnyAbility})
+ * are being looked up. Whether a granting static reaches a permanent can mean
+ * matching its scope's filter against that permanent — and a filter can ask
+ * this same question about it. Re-entry for an id on this stack answers with
+ * the permanent's printed abilities alone: conservative, like the guards
+ * above, and likewise never cached. Transient scaffolding.
+ */
+const grantedAbilitiesInProgress = new Set<ObjectId>();
+
 /** Whether a value computed now may be the re-entrancy guards' conservative
  * answer rather than the true one — and so must neither be served from nor
  * stored in the computed cache. */
@@ -109,7 +121,8 @@ function guardActive(): boolean {
     conditionInProgress.size > 0 ||
     cdaInProgress.size > 0 ||
     layer4InProgress.size > 0 ||
-    ownStackInProgress.size > 0
+    ownStackInProgress.size > 0 ||
+    grantedAbilitiesInProgress.size > 0
   );
 }
 
@@ -165,6 +178,7 @@ interface ComputedCache {
   layer4: Map<ObjectId, LayerFour>;
   staticSources: readonly ContributingStatic[] | null;
   typeSources: readonly ContributingStatic[] | null;
+  abilityGrantSources: readonly ContributingStatic[] | null;
   misc: Map<string, unknown>;
 }
 
@@ -176,6 +190,7 @@ const pooledCache: ComputedCache = {
   layer4: new Map(),
   staticSources: null,
   typeSources: null,
+  abilityGrantSources: null,
   misc: new Map(),
 };
 let cacheCheck = false;
@@ -194,6 +209,7 @@ export function withComputedCache<T>(fn: () => T): T {
   pooledCache.layer4.clear();
   pooledCache.staticSources = null;
   pooledCache.typeSources = null;
+  pooledCache.abilityGrantSources = null;
   pooledCache.misc.clear();
   activeCache = pooledCache;
   try {
@@ -211,6 +227,7 @@ export function invalidateComputedCache(): void {
   activeCache.layer4.clear();
   activeCache.staticSources = null;
   activeCache.typeSources = null;
+  activeCache.abilityGrantSources = null;
   activeCache.misc.clear();
 }
 
@@ -624,6 +641,16 @@ function evalStaticCondition(
 export interface Characteristics {
   readonly power: number;
   readonly toughness: number;
+  /**
+   * Base power and toughness (rule 613.4b): the printed values, or what a
+   * characteristic-defining ability (layer 7a) or an effect that *sets* them
+   * (layer 7b — "becomes a 4/4", "has base power and toughness 2/2") made
+   * them, before counters and every "gets +N/+N" (layer 7c). Duskana, the
+   * Rage Mother's rulings: a 0/0 that "gets +1/+1 for each …" still has base
+   * 0/0, and one whose CDA counts to 2 has base 2.
+   */
+  readonly basePower: number;
+  readonly baseToughness: number;
   readonly keywords: ReadonlySet<Keyword>;
   readonly types: readonly CardType[];
   readonly subtypes: readonly string[];
@@ -1269,11 +1296,15 @@ function counterPtBonus(counter: string): { power: number; toughness: number } {
 }
 
 /** Whether a filter reads keywords anywhere in it — a scope that has to
- * wait for layer 6 (rule 613.8a). */
+ * wait for layer 6 (rule 613.8a). "With a mana ability" counts: whether a
+ * granted mana ability reaches a creature can turn on its keywords (a grant
+ * to "creatures with flying"), so it's asked with the keywords pass one
+ * produced. */
 function filterReadsKeywords(filter: CardFilter): boolean {
   return (
     filter.keyword !== undefined ||
     filter.notKeyword !== undefined ||
+    filter.hasManaAbility !== undefined ||
     (filter.anyOf?.some(filterReadsKeywords) ?? false)
   );
 }
@@ -1427,6 +1458,218 @@ export function staticReaches(
     );
   }
   return staticAffects(state, registry, ability.affects, source, target, view);
+}
+
+/**
+ * Every battlefield static that grants other objects an activated or
+ * triggered ability (`grantsActivated` — Cryptolith Rite, Paradise Mantle;
+ * `grantsTriggered`), in battlefield order: what {@link hasManaAbility} and
+ * {@link hasAnyAbility} scan for grants. Granted keywords and protection are
+ * read off the computed characteristics instead. Usually none. A permanent
+ * that has lost its abilities grants nothing, and neither does one whose
+ * controller has left the game. Memoized in the active cache region like
+ * {@link typeGrantSources}.
+ */
+function abilityGrantSources(
+  state: GameState,
+  registry: CardRegistry,
+): readonly ContributingStatic[] {
+  if (activeCache !== null && activeCache.abilityGrantSources !== null) {
+    return activeCache.abilityGrantSources;
+  }
+  let out: ContributingStatic[] | null = null;
+  for (const sourceId of state.zones.shared.battlefield) {
+    const source = state.objects[sourceId];
+    if (source === undefined || hasLostAbilities(source)) continue;
+    if (state.players[source.controller]?.hasLost === true) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (ability.grantsActivated === undefined && ability.grantsTriggered === undefined) continue;
+      (out ??= []).push({ source, ability });
+    }
+  }
+  const result = out ?? NO_STATICS;
+  if (activeCache !== null) activeCache.abilityGrantSources = result;
+  return result;
+}
+
+/**
+ * Whether a battlefield static that `grants` picks out gives `object` an
+ * activated or triggered ability right now: its scope reaches it (see
+ * {@link staticReaches}) and its condition holds.
+ *
+ * `view` is what the layer fold knows, when it's the one asking — a static
+ * scoped by a question like this one, matched from inside the fold computing
+ * `object` (`FilterContext.layered`): a grant's scope is then matched against
+ * the types and keywords folded so far, never by folding `object` again.
+ * Otherwise a keyword-scoped grant sees the permanent's computed keywords,
+ * as `Game`'s own grant lookups do. Guarded by `grantedAbilitiesInProgress`.
+ */
+function hasGrantedAbility(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  view: TargetView,
+  grants: (ability: StaticAbility) => boolean,
+): boolean {
+  const sources = abilityGrantSources(state, registry);
+  if (sources.length === 0 || grantedAbilitiesInProgress.has(object.id)) return false;
+  const reach: TargetView =
+    view.inFold === true
+      ? view
+      : { keywords: () => computeCharacteristics(state, registry, object.id).keywords };
+  grantedAbilitiesInProgress.add(object.id);
+  try {
+    return sources.some(
+      ({ source, ability }) =>
+        grants(ability) &&
+        staticReaches(state, registry, source, ability, object, reach) &&
+        (ability.condition === undefined ||
+          staticConditionMet(state, registry, source, ability.condition)),
+    );
+  } finally {
+    grantedAbilitiesInProgress.delete(object.id);
+  }
+}
+
+/**
+ * Whether `object` has a **mana ability** (rule 605.1) — Raggadragga, Goreguts
+ * Boss's "each creature you control with a mana ability". An activated one
+ * (605.1a — `isManaAbilityByRule`, so one that works from another zone counts
+ * too) or a triggered one (605.1b — `isTriggeredManaAbility`, which
+ * Raggadragga's ruling includes): printed, granted by a static that reaches it
+ * (Cryptolith Rite, an Aura or Equipment), or granted by a one-shot modifier.
+ * A permanent that has lost its abilities has none at all, as everywhere else
+ * the engine asks (`Game.manaSources`).
+ *
+ * See {@link hasGrantedAbility} for `view`.
+ */
+export function hasManaAbility(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  view: TargetView = {},
+): boolean {
+  const onBattlefield = object.zone === "battlefield";
+  if (onBattlefield && hasLostAbilities(object)) return false;
+  const def = registry.get(printedCardName(object));
+  if (def.activated.some(isManaAbilityByRule) || def.triggered.some(isTriggeredManaAbility)) {
+    return true;
+  }
+  if (object.modifiers.some((m) => m.grantsTriggered?.some(isTriggeredManaAbility) === true)) {
+    return true;
+  }
+  if (!onBattlefield) return false;
+  return hasGrantedAbility(
+    state,
+    registry,
+    object,
+    view,
+    (ability) =>
+      ability.grantsActivated?.some(isManaAbilityByRule) === true ||
+      ability.grantsTriggered?.some(isTriggeredManaAbility) === true,
+  );
+}
+
+/**
+ * Whether `object` has **any ability** at all (rule 113) — the other side of
+ * "a creature with no abilities" (Jasmine Boreal of the Seven). Its own, as
+ * printed (`printedHasAbility` — a keyword, an activated, triggered or static
+ * ability, a spell's instructions, flashback, a partner ability, …), unless it
+ * has lost them; or anything granted to it:
+ *
+ * - a keyword or protection — its computed characteristics, which fold in
+ *   anthems, Auras and Equipment, emblems, keyword counters, `grant-keyword`,
+ *   and on the stack what grants keywords to spells;
+ * - an activated or triggered ability a static grants it, or a one-shot
+ *   modifier's triggered ability (none once it has lost its abilities, as
+ *   `Game` has it);
+ * - on the stack, a triggered ability or split second a `grantsToSpells`
+ *   static gives it;
+ * - in a graveyard, flashback or escape a `grantsToGraveyard` static gives it
+ *   (Iroh, Grand Lotus), or flashback a one-shot effect gave it;
+ * - suspend's haste (rule 702.62).
+ *
+ * Only asked outside the layer fold: a granted keyword can come from any
+ * static, so a scope asking this from inside the fold can't be answered
+ * (`matchesFilter` fails such a clause closed).
+ */
+export function hasAnyAbility(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+): boolean {
+  const onBattlefield = object.zone === "battlefield";
+  const lost = onBattlefield && hasLostAbilities(object);
+  const def = registry.get(printedCardName(object));
+  if (!lost && printedHasAbility(def)) return true;
+  if (object.hastyUntilItLeaves === true) return true;
+  const c = computeCharacteristics(state, registry, object.id);
+  if (c.keywords.size > 0) return true;
+  const protection = c.protectionFrom;
+  if (protection.colors.size > 0 || protection.types.size > 0 || protection.filters.length > 0) {
+    return true;
+  }
+  if (!lost && object.modifiers.some((m) => (m.grantsTriggered?.length ?? 0) > 0)) return true;
+  if (onBattlefield) {
+    return (
+      !lost &&
+      hasGrantedAbility(
+        state,
+        registry,
+        object,
+        {},
+        (ability) =>
+          (ability.grantsActivated?.length ?? 0) > 0 || (ability.grantsTriggered?.length ?? 0) > 0,
+      )
+    );
+  }
+  if (object.zone === "stack" && object.kind === "card") {
+    for (const id of state.zones.shared.battlefield) {
+      const source = state.objects[id];
+      if (source === undefined) continue;
+      for (const ability of registry.get(printedCardName(source)).static) {
+        const grant = ability.grantsToSpells;
+        if (grant === undefined) continue;
+        if ((grant.triggered?.length ?? 0) === 0 && grant.splitSecond !== true) continue;
+        if (spellGrantReaches(state, registry, source, ability, object)) return true;
+      }
+    }
+    return false;
+  }
+  if (object.zone === "graveyard") {
+    if (object.grantedFlashback != null) return true;
+    return graveyardGrantReaches(state, registry, object, def);
+  }
+  return false;
+}
+
+/** Whether a `grantsToGraveyard` static of a permanent `card`'s owner
+ * controls gives it flashback or escape (see `Game.graveyardGrantOf` /
+ * `escapesOf`): active, matching, and with a cost — a "mana cost" grant gives
+ * a card with no mana cost nothing. */
+function graveyardGrantReaches(
+  state: GameState,
+  registry: CardRegistry,
+  card: GameObject,
+  def: CardDefinition,
+): boolean {
+  const owner = card.owner;
+  if (state.players[owner]?.hasLost !== false) return false;
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined || source.controller !== owner || hasLostAbilities(source)) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      const grant = ability.grantsToGraveyard;
+      if (grant === undefined) continue;
+      const costs = [grant.flashback?.cost, grant.escape?.cost].filter((c) => c !== undefined);
+      if (!costs.some((cost) => cost !== "mana-cost" || def.manaCost !== null)) continue;
+      if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
+        continue;
+      }
+      if (matchesFilter(state, registry, card.id, grant.filter, { you: owner })) return true;
+    }
+  }
+  return false;
 }
 
 interface AppliedEffect {
@@ -1712,6 +1955,8 @@ function assertSameCharacteristics(
     JSON.stringify({
       power: c.power,
       toughness: c.toughness,
+      basePower: c.basePower,
+      baseToughness: c.baseToughness,
       keywords: [...c.keywords].sort(),
       types: [...c.types].sort(),
       subtypes: [...c.subtypes].sort(),
@@ -1862,6 +2107,10 @@ function computeCharacteristicsUncached(
       if (set.toughness !== undefined) toughness = set.toughness;
     }
   }
+  // Base power and toughness: everything up to here (rule 613.4b), nothing
+  // after.
+  const basePower = power;
+  const baseToughness = toughness;
 
   // Layer 7c — P/T counters.
   for (const [counter, count] of Object.entries(object.counters)) {
@@ -1889,6 +2138,8 @@ function computeCharacteristicsUncached(
   return {
     power,
     toughness,
+    basePower,
+    baseToughness,
     keywords,
     types,
     subtypes,

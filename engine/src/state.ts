@@ -696,6 +696,9 @@ export interface LastKnownInfo {
   readonly controller: PlayerId;
   readonly power: number;
   readonly toughness: number;
+  /** Its base power and toughness (`Characteristics.basePower`). */
+  readonly basePower: number;
+  readonly baseToughness: number;
   readonly types: readonly CardType[];
   /** Computed subtypes — a changeling's with its every-creature-type marker
    * (`subtypes.ts`), so ask through `hasSubtype`. */
@@ -703,6 +706,10 @@ export interface LastKnownInfo {
   readonly supertypes: readonly Supertype[];
   readonly colors: readonly Color[];
   readonly keywords: readonly Keyword[];
+  /** Whether it had a mana ability (`characteristics.ts`'s `hasManaAbility`)
+   * and any ability at all (`hasAnyAbility`), its granted ones included. */
+  readonly hasManaAbility: boolean;
+  readonly hasAbilities: boolean;
   readonly counters: Readonly<Record<string, number>>;
   /** Printed mana value of what it was (a copy effect's, a transformed card's
    * front face's); `{X}` is 0 off the stack (rule 202.3e). */

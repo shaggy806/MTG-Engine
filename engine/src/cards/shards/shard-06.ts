@@ -109,6 +109,7 @@ import _poolPrismaticVista from "../pool/prismatic-vista.js";
 import _poolProsperTomeBound from "../pool/prosper-tome-bound.js";
 import _poolQuezaAugurOfAgonies from "../pool/queza-augur-of-agonies.js";
 import _poolQuicksilverFisher from "../pool/quicksilver-fisher.js";
+import _poolRaggadraggaGoregutsBoss from "../pool/raggadragga-goreguts-boss.js";
 import _poolRagingGoblin from "../pool/raging-goblin.js";
 import _poolRainOfThorns from "../pool/rain-of-thorns.js";
 import _poolRamunapRuins from "../pool/ramunap-ruins.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolProsperTomeBound,
     _poolQuezaAugurOfAgonies,
     _poolQuicksilverFisher,
+    _poolRaggadraggaGoregutsBoss,
     _poolRagingGoblin,
     _poolRainOfThorns,
     _poolRamunapRuins,

@@ -1495,6 +1495,93 @@ export interface CardDefinition {
 }
 
 /**
+ * Which parts of a card are abilities (rule 113) — what "a creature with **no
+ * abilities**" (Jasmine Boreal of the Seven) asks about the card itself. A
+ * mapped type over every `CardDefinition` field, so one added there fails the
+ * build until it's classified here.
+ *
+ * `false`: a characteristic or bookkeeping — name, cost, colours, types, P/T,
+ * starting loyalty, `text` (what the client prints; the structured fields are
+ * what the card does), and the layout flags. A double-faced card's other face
+ * and an adventurer card's Adventure aren't this face's abilities (rules
+ * 712.8a, 715.4).
+ *
+ * A function: that part is an ability whenever it's set — a keyword (rule
+ * 702), an activated, triggered or static ability (113.3), a spell's own
+ * instructions (a spell ability, 113.3a), an Aura's targets (its enchant
+ * ability, 702.5), a Saga's chapter abilities (714.2b), something printed that
+ * works on the stack or from another zone ("As an additional cost …", "you may
+ * pay … rather than …", "can't be countered" — rule 604.5, and flashback,
+ * cycling and their kin), an "as this enters, choose …" replacement (614.12),
+ * or a partner-family ability (702.124).
+ */
+const PRINTED_ABILITY: {
+  readonly [K in keyof CardDefinition]-?: false | ((def: CardDefinition) => boolean);
+} = {
+  name: false,
+  art: false,
+  manaCost: false,
+  colors: false,
+  supertypes: false,
+  types: false,
+  subtypes: false,
+  power: false,
+  toughness: false,
+  keywords: (def) => def.keywords.length > 0,
+  text: false,
+  targets: (def) => def.targets.length > 0,
+  castModal: (def) => def.castModal !== null,
+  additionalCost: (def) => def.additionalCost !== null,
+  kicker: (def) => def.kicker !== null,
+  overload: (def) => def.overload !== null,
+  freeCastIf: (def) => def.freeCastIf !== null,
+  alternativeCost: (def) => def.alternativeCost !== null,
+  convoke: (def) => def.convoke,
+  selfCostReduction: (def) => def.selfCostReduction !== null,
+  effect: (def) => def.effect !== null,
+  resolve: (def) => def.resolve !== null,
+  activated: (def) => def.activated.length > 0,
+  triggered: (def) => def.triggered.length > 0,
+  static: (def) => def.static.length > 0,
+  revealsOwnLibraryTop: (def) => def.revealsOwnLibraryTop,
+  controlEnchanted: (def) => def.controlEnchanted,
+  castOnlyIf: (def) => def.castOnlyIf !== null,
+  splitSecond: (def) => def.splitSecond,
+  copyOnEnter: (def) => def.copyOnEnter !== null,
+  chooseCreatureTypeOnEnter: (def) => def.chooseCreatureTypeOnEnter,
+  chooseOnEnter: (def) => def.chooseOnEnter !== null,
+  loyalty: false,
+  flashback: (def) => def.flashback !== null,
+  foretell: (def) => def.foretell !== null,
+  escape: (def) => def.escape !== null,
+  suspend: (def) => def.suspend !== null,
+  cycling: (def) => def.cycling !== null,
+  chapters: (def) => def.chapters !== null && def.chapters.length > 0,
+  faces: false,
+  cantBeCountered: (def) => def.cantBeCountered,
+  commanderTaxAsLife: (def) => def.commanderTaxAsLife,
+  exileOnResolve: (def) => def.exileOnResolve,
+  shuffleIntoLibraryOnResolve: (def) => def.shuffleIntoLibraryOnResolve,
+  countersPersistAcrossZones: (def) => def.countersPersistAcrossZones,
+  transform: false,
+  disturb: (def) => def.disturb !== null,
+  adventure: false,
+  pairing: (def) => def.pairing !== null,
+  canBeCommander: (def) => def.canBeCommander,
+};
+
+const PRINTED_ABILITY_TESTS: readonly ((def: CardDefinition) => boolean)[] = Object.values(
+  PRINTED_ABILITY,
+).filter((test): test is (def: CardDefinition) => boolean => test !== false);
+
+/** Whether a card has any ability of its own, as printed — see
+ * {@link PRINTED_ABILITY}. What it has been granted, or lost, is
+ * `characteristics.ts`'s `hasAnyAbility`. */
+export function printedHasAbility(def: CardDefinition): boolean {
+  return PRINTED_ABILITY_TESTS.some((test) => test(def));
+}
+
+/**
  * A partner-family ability (rule 702.124). Each kind pairs only with its own
  * kind — "different partner abilities are distinct from one another" — so a
  * plain Partner commander can't team up with a "Partner with" one, nor a
