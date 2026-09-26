@@ -17372,9 +17372,14 @@ export class Game {
       if (r.mayPayLife !== undefined) mayPayLife = r.mayPayLife;
       if (r.transformed) transformed = true;
       if (r.counters) {
+        // "x" is the X it was cast with (rule 107.3m). A live amount is read
+        // as it enters, never counting itself or what enters with it (Aeve,
+        // Progenitor Ooze's "for each other Ooze you control").
         addCounters(
           r.counters.kind,
-          r.counters.amount === "x" ? (object.xValue ?? 0) : r.counters.amount,
+          r.counters.amount === "x"
+            ? (object.xValue ?? 0)
+            : this.enteringCounterAmount(id, object.controller, id, r.counters.amount),
         );
       }
     }

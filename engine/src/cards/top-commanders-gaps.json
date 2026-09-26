@@ -125,7 +125,8 @@
   "effect:target-spec-additions",
   "effect:create-token-with-counters",
   "effect:mana-ability-dynamic-amount",
-  "stat:spells-cast-this-turn-record"
+  "stat:spells-cast-this-turn-record",
+  "effect:amount-fields-dynamic"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

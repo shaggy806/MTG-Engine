@@ -1871,7 +1871,10 @@ export type EffectSpec =
        * A `sequence` step after it waits for the choice. */
       readonly kind: "modal";
       readonly minModes: number;
-      readonly maxModes: number;
+      /** At most this many; a live amount is read as the modes are chosen
+       * (Riku of Many Paths' "choose up to X, where X is the number of times
+       * you chose a mode for that spell" — its trigger value). */
+      readonly maxModes: EffectAmount;
       readonly modes: readonly ModeOption[];
       /** "Choose one **that hasn't been chosen this turn**" (Galadriel,
        * Light of Valinor): only the modes this ability of this object hasn't
@@ -2171,7 +2174,9 @@ export type EffectSpec =
        * the bottom, keep the rest on top. `then` (Preordain: draw a card) is
        * applied after. */
       readonly kind: "scry";
-      readonly amount: number;
+      /** How many; a live amount is read as the effect applies (The Scarab
+       * God's "you scry X, where X is the number of Zombies you control"). */
+      readonly amount: EffectAmount;
       readonly then?: EffectSpec;
     }
   | {
@@ -2196,7 +2201,8 @@ export type EffectSpec =
       /** Surveil `amount` (rule 701.43) — look at the top N, put any number
        * into the graveyard, keep the rest on top. `then` applied after. */
       readonly kind: "surveil";
-      readonly amount: number;
+      /** How many; a live amount is read as the effect applies. */
+      readonly amount: EffectAmount;
       readonly then?: EffectSpec;
     }
   | {
@@ -2257,7 +2263,8 @@ export type EffectSpec =
        * cards". */
       readonly reveal?: boolean;
       readonly min: number;
-      readonly max: number;
+      /** At most this many; a live amount is read as the effect applies. */
+      readonly max: EffectAmount;
       /** `"library-top"` with `zone: "hand"` is Brainstorm's "put two cards
        * from your hand on top of your library" — the chosen cards go back on
        * the deck rather than anywhere visible. */
@@ -4321,7 +4328,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "modal":
       ctx.chooseModes(
         spec.minModes,
-        spec.maxModes,
+        amountValue(spec.maxModes, ctx),
         spec.modes,
         undefined,
         undefined,
@@ -4417,13 +4424,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.ward(spec.cost);
       return;
     case "scry":
-      ctx.scry(spec.amount, false, spec.then);
+      ctx.scry(amountValue(spec.amount, ctx), false, spec.then);
       return;
     case "reveal-top":
       ctx.revealTop(spec.then);
       return;
     case "surveil":
-      ctx.scry(spec.amount, true, spec.then);
+      ctx.scry(amountValue(spec.amount, ctx), true, spec.then);
       return;
     case "search-library": {
       let searcher: PlayerId | null = null;
@@ -4452,7 +4459,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.zone,
         spec.count === undefined ? undefined : amountValue(spec.count, ctx),
         spec.min,
-        spec.max,
+        amountValue(spec.max, ctx),
         spec.destination,
         spec.leftover,
         spec.filter,
