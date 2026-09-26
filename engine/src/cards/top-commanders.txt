@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-285 already implemented / 215 missing
+287 already implemented / 213 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -235,7 +235,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  229  Sliver Overlord                                11004 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver Mutant
 [ ]  230  Silverquill, the Disputant                     10944 decks  {2}{W}{B}        Legendary Creature — Elder Dragon
 [x]  231  Tana, the Bloodsower                           10938 decks  {2}{R}{G}        Legendary Creature — Elf Druid
-[ ]  232  Zimone, Infinite Analyst                       10882 decks  {1}{G}{U}        Legendary Creature — Human Wizard
+[x]  232  Zimone, Infinite Analyst                       10882 decks  {1}{G}{U}        Legendary Creature — Human Wizard
 [ ]  233  Ziatora, the Incinerator                       10831 decks  {3}{B}{R}{G}     Legendary Creature — Demon Dragon
 [x]  234  Killian, Decisive Mentor                       10738 decks  {1}{W}{B}        Legendary Creature — Human Warlock
 [ ]  235  Ob Nixilis, Captive Kingpin                    10730 decks  {2}{B}{R}        Legendary Creature — Demon
@@ -454,7 +454,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  448  Thorin, King of Durin's Folk                    6732 decks  {3}{R}{W}        Legendary Creature — Dwarf Noble
 [x]  449  Narci, Fable Singer                             6727 decks  {1}{W}{B}{G}     Legendary Creature — Human Bard
 [x]  450  Karador, Ghost Chieftain                        6722 decks  {5}{W}{B}{G}     Legendary Creature — Centaur Spirit
-[ ]  451  Eshki Dragonclaw                                6717 decks  {1}{G}{U}{R}     Legendary Creature — Human Warrior
+[x]  451  Eshki Dragonclaw                                6717 decks  {1}{G}{U}{R}     Legendary Creature — Human Warrior
 [ ]  452  Zur, Eternal Schemer                            6717 decks  {W}{U}{B}        Legendary Creature — Human Wizard
 [x]  453  Abaddon the Despoiler                           6708 decks  {2}{U}{B}{R}     Legendary Creature — Astartes Warrior
 [ ]  454  Imodane, the Pyrohammer                         6698 decks  {2}{R}{R}        Legendary Creature — Human Knight

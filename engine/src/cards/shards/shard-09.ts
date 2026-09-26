@@ -41,6 +41,7 @@ import _poolDefiantKhenra from "../pool/defiant-khenra.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
 import _poolEmmaraSoulOfTheAccord from "../pool/emmara-soul-of-the-accord.js";
+import _poolEshkiDragonclaw from "../pool/eshki-dragonclaw.js";
 import _poolEvolutionCharm from "../pool/evolution-charm.js";
 import _poolExclude from "../pool/exclude.js";
 import _poolFaerieInvaders from "../pool/faerie-invaders.js";
@@ -215,6 +216,7 @@ const shard: CardShard = {
     _poolDoomWhisperer,
     _poolDragonRoost,
     _poolEmmaraSoulOfTheAccord,
+    _poolEshkiDragonclaw,
     _poolEvolutionCharm,
     _poolExclude,
     _poolFaerieInvaders,

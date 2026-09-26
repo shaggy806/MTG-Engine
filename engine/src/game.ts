@@ -210,6 +210,7 @@ import type {
   GameRules,
   GameState,
   GrantedAbilityRef,
+  CastSpellRecord,
   LastKnownInfo,
   LastKnownRefs,
   LeaveDestination,
@@ -3337,7 +3338,7 @@ export class Game {
       this.state.players[player].lifeGainedThisTurn = 0;
       this.state.players[player].cardsDrawnThisTurn = 0;
       this.state.players[player].drewInDrawStepThisTurn = false;
-      this.state.players[player].spellsCastThisTurnIds = [];
+      this.state.players[player].spellsCastThisTurnAs = [];
       this.state.players[player].creaturesDiedThisTurn = 0;
       this.state.players[player].createdTokenThisTurn = false;
       this.state.players[player].usedGraveyardThisTurn = false;
@@ -5309,7 +5310,7 @@ export class Game {
     object.manaSpent = manaValue(payment.resolved);
     if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
-    (this.state.players[owner].spellsCastThisTurnIds ??= []).push(cardId);
+    (this.state.players[owner].spellsCastThisTurnAs ??= []).push(this.castRecordOf(cardId));
     this.state.spellsCastThisTurn += 1;
     object.castFrom = castFrom;
     this.emit({
@@ -5681,10 +5682,8 @@ export class Game {
         // player has already cast this turn has had it.
         if (
           mod.firstEachTurn === true &&
-          (this.state.players[player].spellsCastThisTurnIds ?? []).some(
-            (id) =>
-              this.state.objects[id] !== undefined &&
-              matchesFilter(this.state, this.registry, id, applies, { you: source.controller }),
+          (this.state.players[player].spellsCastThisTurnAs ?? []).some(({ id, spell }) =>
+            matchesFilter(this.state, this.registry, id, applies, { you: source.controller, snapshot: spell }),
           )
         ) {
           continue;
@@ -6737,7 +6736,7 @@ export class Game {
       counts[name] = (counts[name] ?? 0) + 1;
     }
     this.state.players[player].spellsCastThisTurn += 1;
-    (this.state.players[player].spellsCastThisTurnIds ??= []).push(cardId);
+    (this.state.players[player].spellsCastThisTurnAs ??= []).push(this.castRecordOf(cardId));
     this.state.spellsCastThisTurn += 1;
     object.castFrom = castFrom;
 
@@ -10450,8 +10449,8 @@ export class Game {
           const count =
             filter === undefined
               ? event.spellsThisTurn
-              : (this.state.players[event.player]?.spellsCastThisTurnIds ?? []).filter((id) =>
-                  matchesFilter(this.state, this.registry, id, filter, { you: self.controller }),
+              : (this.state.players[event.player]?.spellsCastThisTurnAs ?? []).filter(({ id, spell }) =>
+                  matchesFilter(this.state, this.registry, id, filter, { you: self.controller, snapshot: spell }),
                 ).length;
           if (count !== nth) return false;
         }
@@ -16170,6 +16169,13 @@ export class Game {
     }
     if (!this.registry.has(printedCardName(object))) return 0;
     return manaValue(parseManaCost(printedManaCost(this.registry, object)));
+  }
+
+  /** The spell `id` as it was cast, for `PlayerState.spellsCastThisTurnAs`:
+   * a snapshot of it on the stack, its mana value counting its {X}. */
+  private castRecordOf(id: ObjectId): CastSpellRecord {
+    const spell = this.takeLastKnown(id);
+    return { id, spell: { ...spell, manaValue: this.manaValueOnStack(this.state.objects[id]) } };
   }
 
   /** A spell's mana value while it's on the stack: printed, plus each {X}

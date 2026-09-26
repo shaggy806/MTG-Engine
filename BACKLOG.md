@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**285 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**287 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,11 +17,11 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `stat:spells-cast-this-turn-record` (+2), `effect:amount-fields-dynamic` (+2),
-  `effect:look-and-choose-second-pick` (+1), `trigger:cast-spell-clauses` (+1),
-  `effect:copy-exceptions` (+4), `effect:token-copy-last-known-info` (+1),
-  `effect:exile-with-counters` (+2), `effect:impulse-exile-other-libraries` (+2),
-  `stat:object-damage-history` (+2), `zone:cast-cards-you-dont-own` (+1).
+  `effect:amount-fields-dynamic` (+2), `effect:look-and-choose-second-pick` (+1),
+  `trigger:cast-spell-clauses` (+1), `effect:copy-exceptions` (+4),
+  `effect:token-copy-last-known-info` (+1), `effect:exile-with-counters` (+2),
+  `effect:impulse-exile-other-libraries` (+2), `stat:object-damage-history` (+2),
+  `zone:cast-cards-you-dont-own` (+1), `zone:visibility-extensions` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.

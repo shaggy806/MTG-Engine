@@ -2122,6 +2122,17 @@ clause (section 9):
   `{ colors: ["R"], combat: false, atLeast: 4 }`. Each damage event is
   recorded against its source's controller with the source's colours as it
   dealt it — a departed source's as it last existed.
+- `{ kind: "cast-this-turn", who?, filter?, atLeast?, atMost? }` — how many of
+  the spells `who` (`"you"` by default, `"opponent"`, `"any"`) cast this turn
+  match `filter`, each read **as it was cast** (`PlayerState.spellsCastThisTurnAs`,
+  a snapshot taken as it reached the stack, its mana value counting its {X}):
+  at least `atLeast` (default 1), at most `atMost`. Eshki Dragonclaw's "if
+  you've cast both a creature spell and a noncreature spell this turn" is two
+  of these under `all`, `{ filter: { type: "creature" } }` and `{ filter: {
+  notTypes: ["creature"] } }` — an Adventure cast as its instant or sorcery
+  half was a noncreature spell, though a creature card sits in exile after.
+  The cast trigger's `firstEachTurn`/`nthEachTurn` with a filter, and a
+  `costModification`'s `firstEachTurn`, count the same records.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.

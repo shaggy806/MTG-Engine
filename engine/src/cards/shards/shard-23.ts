@@ -174,6 +174,7 @@ import _poolWindriderEel from "../pool/windrider-eel.js";
 import _poolWindurstFederationCenter from "../pool/windurst-federation-center.js";
 import _poolWinterflame from "../pool/winterflame.js";
 import _poolWirewoodHivemaster from "../pool/wirewood-hivemaster.js";
+import _poolZimoneInfiniteAnalyst from "../pool/zimone-infinite-analyst.js";
 import _poolZofConsumption from "../pool/zof-consumption.js";
 import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolWindurstFederationCenter,
     _poolWinterflame,
     _poolWirewoodHivemaster,
+    _poolZimoneInfiniteAnalyst,
     _poolZofConsumption,
   ],
   tokens: [

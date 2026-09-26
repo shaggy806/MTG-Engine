@@ -357,6 +357,18 @@ function evalStaticCondition(
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
+    case "cast-this-turn": {
+      const who = condition.who ?? "you";
+      let n = 0;
+      for (const p of state.turnOrder) {
+        if (who === "you" ? p !== you : who === "opponent" ? p === you : false) continue;
+        for (const { id, spell } of state.players[p]?.spellsCastThisTurnAs ?? []) {
+          const filter = condition.filter;
+          if (filter === undefined || matchesFilter(state, registry, id, filter, { you, snapshot: spell })) n += 1;
+        }
+      }
+      return n >= (condition.atLeast ?? 1) && (condition.atMost === undefined || n <= condition.atMost);
+    }
     case "monarch":
       return condition.who === "you"
         ? state.monarch === you

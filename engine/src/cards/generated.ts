@@ -1463,6 +1463,7 @@ import _poolErinisGloomStalker from "./pool/erinis-gloom-stalker.js";
 import _poolErraticVisionary from "./pool/erratic-visionary.js";
 import _poolErtaiTheCorrupted from "./pool/ertai-the-corrupted.js";
 import _poolErtaiWizardAdept from "./pool/ertai-wizard-adept.js";
+import _poolEshkiDragonclaw from "./pool/eshki-dragonclaw.js";
 import _poolEshkiTemursRoar from "./pool/eshki-temurs-roar.js";
 import _poolEsikaGodOfTheTree from "./pool/esika-god-of-the-tree.js";
 import _poolEsperCharm from "./pool/esper-charm.js";
@@ -5466,6 +5467,7 @@ import _poolZhalfirinVoid from "./pool/zhalfirin-void.js";
 import _poolZhaoTheSeethingFlame from "./pool/zhao-the-seething-flame.js";
 import _poolZiatorasProvingGround from "./pool/ziatoras-proving-ground.js";
 import _poolZimoneAndDina from "./pool/zimone-and-dina.js";
+import _poolZimoneInfiniteAnalyst from "./pool/zimone-infinite-analyst.js";
 import _poolZndrspltEyeOfWisdom from "./pool/zndrsplt-eye-of-wisdom.js";
 import _poolZodiacDog from "./pool/zodiac-dog.js";
 import _poolZodiacGoat from "./pool/zodiac-goat.js";
@@ -7056,6 +7058,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolErraticVisionary,
   _poolErtaiTheCorrupted,
   _poolErtaiWizardAdept,
+  _poolEshkiDragonclaw,
   _poolEshkiTemursRoar,
   _poolEsikaGodOfTheTree,
   _poolEsperCharm,
@@ -11059,6 +11062,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZhaoTheSeethingFlame,
   _poolZiatorasProvingGround,
   _poolZimoneAndDina,
+  _poolZimoneInfiniteAnalyst,
   _poolZndrspltEyeOfWisdom,
   _poolZodiacDog,
   _poolZodiacGoat,

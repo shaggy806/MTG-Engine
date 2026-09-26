@@ -124,7 +124,8 @@
   "static:cant-be-sacrificed",
   "effect:target-spec-additions",
   "effect:create-token-with-counters",
-  "effect:mana-ability-dynamic-amount"
+  "effect:mana-ability-dynamic-amount",
+  "stat:spells-cast-this-turn-record"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

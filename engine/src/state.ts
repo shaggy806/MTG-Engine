@@ -771,6 +771,18 @@ export interface LastKnownInfo {
 }
 
 /**
+ * A spell as it was cast (rule 601.2i): its last-known snapshot as it
+ * reached the stack — characteristics as cast, mana value counting its {X}
+ * (rule 202.3e). What it has become since doesn't change what was cast: an
+ * Adventure cast as its instant half is a creature card in exile a moment
+ * later, and a creature spell's permanent can change type.
+ */
+export interface CastSpellRecord {
+  readonly id: ObjectId;
+  readonly spell: LastKnownInfo;
+}
+
+/**
  * Which battlefield stint of the objects a spell or ability refers to it
  * means, for last-known information (rule 608.2h). Each is the referred
  * object's `zoneChangeCount` while it was on the battlefield: recorded when
@@ -1004,10 +1016,15 @@ export interface PlayerState {
    * draw steps" (Xyris, the Writhing Storm; Orcish Bowmasters). Reset in
    * `beginTurn`. Optional so an older snapshot still loads. */
   drewInDrawStepThisTurn?: boolean;
-  /** The spells this player has cast this turn, in order, for "your first
-   * enchantment spell each turn" (Tuvasa): a cast trigger with a `filter`
-   * counts first/Nth among the ones that match. Reset in `beginTurn`. */
-  spellsCastThisTurnIds?: ObjectId[];
+  /** The spells this player has cast this turn, in order, each as it was
+   * cast — see {@link CastSpellRecord}. What "your first enchantment spell
+   * each turn" counts (Tuvasa: a cast trigger with a `filter` counts
+   * first/Nth among the ones that match), "the first spell you cast with {X}
+   * each turn" (Zimone's `costModification.firstEachTurn`) and "if you've
+   * cast a creature spell and a noncreature spell this turn" (Eshki
+   * Dragonclaw, the `cast-this-turn` condition) read. Reset in
+   * `beginTurn`. */
+  spellsCastThisTurnAs?: CastSpellRecord[];
   /** How many creatures died **under this player's control** this turn —
    * Liliana's Standard Bearer's "draw X cards, where X is the number of
    * creatures that died under your control this turn". The per-player

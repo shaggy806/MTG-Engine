@@ -512,6 +512,21 @@ export type StaticCondition =
    * if you attacked this turn" (Michelangelo, the Heart) is a `turn-structure`
    * and a `turn-stat` together. */
   | { readonly kind: "all"; readonly of: readonly StaticCondition[] }
+  /**
+   * "If you've cast a creature spell this turn": how many of the spells a
+   * player — `"you"` by default, or each opponent's, or anyone's — has cast
+   * this turn match `filter`, each read as it was cast
+   * (`PlayerState.spellsCastThisTurnAs`). At least `atLeast` (default 1),
+   * at most `atMost` if given. Eshki Dragonclaw's "both a creature spell and
+   * a noncreature spell" is two of these under `all`.
+   */
+  | {
+      readonly kind: "cast-this-turn";
+      readonly who?: "you" | "opponent" | "any";
+      readonly filter?: CardFilter;
+      readonly atLeast?: number;
+      readonly atMost?: number;
+    }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }
