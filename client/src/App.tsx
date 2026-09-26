@@ -3056,7 +3056,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             disabled={!canPass}
             title="Keep passing until the stack has resolved — stops if anything needs you"
           >
-            Resolve stack ({view.zones.stack.length})
+            Resolve stack (
+            {/* An entry standing for several identical triggers is that many. */}
+            {view.zones.stack.reduce((n, id) => n + (view.objects[id]?.stackCount ?? 1), 0)})
           </button>
         ) : null}
         <button type="button" onClick={game.passTurn} disabled={!canPassTurn}>

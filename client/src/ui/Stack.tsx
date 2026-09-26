@@ -100,7 +100,11 @@ export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: Stack
           const label = isGhost
             ? 'prompted by'
             : obj.kind === 'ability'
-              ? `${obj.sourceObjectId ? nameOf(obj.sourceObjectId) : obj.cardName}'s ability`
+              ? `${obj.sourceObjectId ? nameOf(obj.sourceObjectId) : obj.cardName}'s ability${
+                  // Several identical triggers as one entry (a watcher seeing a
+                  // token stack enter): each resolves on its own.
+                  (obj.stackCount ?? 1) > 1 ? ` ×${obj.stackCount}` : ''
+                }`
               : obj.isCopy
                 ? `copy of ${obj.cardName}`
                 : null

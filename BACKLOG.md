@@ -120,16 +120,6 @@ that one card is the reason the deck exists.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
 
-- **Engine bugs card sweep 2 found** (repros in `engine/data/sweep-2/*.json`, `bugs`):
-  - Performance: a per-creature enters trigger watching an opponent's token stack
-    (Authority of the Consuls against Scute Swarm) puts hundreds of triggers on the stack. They
-    are right by the rules: a stack of N tokens entering is N creatures entering, and "gain 1
-    life" can't be scaled to one "gain N" (a "whenever you gain life" trigger would fire once,
-    not N times), so `isCountScalableEffect` rightly refuses it and `queueTrigger` makes one
-    trigger per token, up to 1,000. A faithful fix needs a stack object that stands for N
-    identical triggers and resolves one at a time, with priority between each, which a Stifle
-    splits one off of, as a token stack does. Otherwise it's only slow.
-
 ## Bots
 
 - **v3 is built but not seated.** Its evaluation hasn't been re-fitted for a search that

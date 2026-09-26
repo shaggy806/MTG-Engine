@@ -1971,6 +1971,15 @@ export class Game {
     if (stack.controlEffects !== undefined) {
       this.state.objects[newId].controlEffects = stack.controlEffects.map((e) => ({ ...e }));
     }
+    // One of several identical abilities on the stack (`PendingTrigger.copies`)
+    // singled out — a Stifle's target: it's put directly above the rest,
+    // which, identical as they are, is as good as anywhere among them.
+    if (stack.zone === "stack") {
+      const zone = this.state.zones.shared.stack;
+      zone.splice(zone.indexOf(id) + 1, 0, newId);
+      invalidateComputedCache();
+      return newId;
+    }
     this.state.zones.shared.battlefield.push(newId);
     // A new permanent on the battlefield: anything memoized about the board
     // (a count, a static's reach) is stale.
@@ -8953,7 +8962,7 @@ export class Game {
         !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown) ||
         !this.attackConditionsStillHold(ability, object)
       ) {
-        this.removeAbilityFromStack(id);
+        this.removeOneAbilityCopy(id);
         this.emit({
           type: "spell-fizzled",
           object: id,
@@ -9049,7 +9058,7 @@ export class Game {
       this.emit({ type: "chapter-resolved", saga: source, final });
     }
     this.emit({ type: "ability-resolved", source });
-    this.removeAbilityFromStack(id);
+    this.removeOneAbilityCopy(id);
   }
 
   /**
@@ -9083,6 +9092,22 @@ export class Game {
         ? `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`
         : `${object.abilityKind}:${object.abilityIndex ?? 0}`;
     return `${object.sourceObjectId ?? object.id}@${object.sourceTimestamp ?? 0}#${which}`;
+  }
+
+  /** Take one copy of the ability `id` off the stack, having resolved,
+   * fizzled or been countered: the whole object, unless it stands for
+   * several identical ones (`GameObject.stackCount`), when the rest stay
+   * where they are, the next to resolve. */
+  private removeOneAbilityCopy(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object !== undefined && (object.stackCount ?? 1) > 1) {
+      const remaining = (object.stackCount ?? 1) - 1;
+      if (remaining <= 1) delete object.stackCount;
+      else object.stackCount = remaining;
+      invalidateComputedCache();
+      return;
+    }
+    this.removeAbilityFromStack(id);
   }
 
   private removeAbilityFromStack(id: ObjectId): void {
@@ -9607,6 +9632,10 @@ export class Game {
       isCountScalableEffect(ability.effect)
     ) {
       this.state.pendingTriggers.push({ ...trigger, multiplier });
+    } else if (ability.targets.length === 0) {
+      // Copies that choose nothing are identical, so they go on the stack as
+      // one object standing for them all, each still its own resolution.
+      this.state.pendingTriggers.push({ ...trigger, copies: Math.min(multiplier, Game.MAX_EFFECT_INSTANCES) });
     } else {
       const copies = Math.min(multiplier, Game.MAX_EFFECT_INSTANCES);
       for (let i = 0; i < copies; i += 1) this.state.pendingTriggers.push(trigger);
@@ -10440,6 +10469,8 @@ export class Game {
     readonly triggerValue?: number;
     readonly triggerObject?: ObjectId;
     readonly multiplier?: number;
+    /** See `PendingTrigger.copies`. */
+    readonly copies?: number;
     readonly chapter?: boolean;
     readonly grantedAbility?: GrantedAbilityRef;
     readonly x?: number;
@@ -10541,7 +10572,7 @@ export class Game {
       chooserSlots.every((s) => s.options.length === 1 && !isOptionalSpec(s.spec));
     if (chooserSlots.length === 0 || forced) {
       const targets = slots.map((s) => ("auto" in s ? s.auto : s.options[0]));
-      this.mintTriggerAbility(
+      const abilityId = this.mintTriggerAbility(
         trigger.sourceObjectId,
         trigger.cardName,
         trigger.controller,
@@ -10558,6 +10589,7 @@ export class Game {
         trigger.targetedBy,
         reflexive,
       );
+      if ((trigger.copies ?? 1) > 1) this.state.objects[abilityId].stackCount = trigger.copies;
       return "done";
     }
 
@@ -10654,7 +10686,7 @@ export class Game {
     targetedBy?: TargetedBy,
     /** The record of a reflexive ability — see `ReflexiveTrigger`. */
     reflexive?: ReflexiveTrigger,
-  ): void {
+  ): ObjectId {
     const abilityId = this.mintAbilityObject(
       sourceId,
       cardName,
@@ -10686,6 +10718,7 @@ export class Game {
       abilityId,
       autoTargetSlots,
     );
+    return abilityId;
   }
 
   /** `autoSlots` are slots the triggering event filled rather than a player
@@ -15349,9 +15382,10 @@ export class Game {
       return false;
     }
     object.targets = null;
-    // An ability on the stack (ward counters those too) just ceases to exist.
+    // An ability on the stack (ward counters those too) just ceases to exist
+    // — one of them, where the object stands for several identical ones.
     if (object.kind === "ability") {
-      this.removeAbilityFromStack(id);
+      this.removeOneAbilityCopy(id);
       this.emit({ type: "spell-countered", object: id });
       return true;
     }

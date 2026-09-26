@@ -538,6 +538,12 @@ export interface GameObject {
    * rule 707/111 apply the same to every member) mutates or removes the
    * whole object directly, no split needed. Absent/`1` = an ordinary single
    * permanent — the overwhelmingly common case, entirely unaffected.
+   *
+   * On an ability on the stack it means the same thing: `stackCount`
+   * identical copies of a triggered ability that chooses no targets, put on
+   * the stack together (`PendingTrigger.copies`). Each resolves on its own,
+   * one at a time with priority between, taking one off the count; a spell
+   * or ability that targets one of them (Stifle) splits it off first.
    */
   stackCount?: number;
   /** True for a copy of a spell on the stack (rule 707.10 — storm, Twincast).
@@ -804,6 +810,13 @@ export interface PendingTrigger {
   /** See {@link GameObject.stackMultiplier} — how many real firings this one
    * queued trigger represents. `undefined`/`1` outside a scaled resolution. */
   readonly multiplier?: number;
+  /** How many identical copies of this trigger — one that chooses no targets,
+   * fired once per token of a token stack (Authority of the Consuls seeing
+   * an opponent's Scute Swarms enter) — go on the stack as one object
+   * standing for them all (`GameObject.stackCount`). Unlike `multiplier`,
+   * each copy is its own resolution, one at a time, with priority between;
+   * this only spares minting hundreds of identical objects. */
+  readonly copies?: number;
   /** True for a Saga chapter ability (rule 714) — `abilityIndex` indexes
    * `def.chapters` rather than `def.triggered`. ROADMAP Phase 10. */
   readonly chapter?: boolean;

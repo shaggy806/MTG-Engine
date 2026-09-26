@@ -315,7 +315,12 @@ describe("deals-damage — Ghyrson Starn's exactly-1 trigger", () => {
       [],
       { source: bears },
     );
-    expect(game.state.pendingTriggers.filter((t) => t.sourceObjectId === ghyrson)).toHaveLength(10);
+    // Ten triggers — one queued entry standing for all ten identical ones.
+    expect(
+      game.state.pendingTriggers
+        .filter((t) => t.sourceObjectId === ghyrson)
+        .reduce((n, t) => n + (t.copies ?? 1), 0),
+    ).toBe(10);
     settle(game);
     expect(game.battlefield.filter((id) => game.state.objects[id].cardName === "3/3 Beast Token")).toHaveLength(0);
   });
