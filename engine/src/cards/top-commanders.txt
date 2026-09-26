@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-278 already implemented / 222 missing
+279 already implemented / 221 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -186,7 +186,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  180  Ramos, Dragon Engine                           13002 decks  {6}              Legendary Artifact Creature — Dragon
 [ ]  181  Tivit, Seller of Secrets                       12979 decks  {3}{W}{U}{B}     Legendary Creature — Sphinx Rogue
 [x]  182  Shroofus Sproutsire                            12929 decks  {2}{G}           Legendary Creature — Saproling
-[ ]  183  Jon Irenicus, Shattered One                    12889 decks  {2}{U}{B}        Legendary Creature — Elf Wizard
+[x]  183  Jon Irenicus, Shattered One                    12889 decks  {2}{U}{B}        Legendary Creature — Elf Wizard
 [ ]  184  Wolverine, Best There Is                       12856 decks  {1}{R}{G}        Legendary Creature — Mutant Berserker Hero
 [x]  185  Vren, the Relentless                           12840 decks  {2}{U}{B}        Legendary Creature — Rat Rogue
 [x]  186  Blech, Loafing Pest                            12836 decks  {1}{B}{G}        Legendary Creature — Pest

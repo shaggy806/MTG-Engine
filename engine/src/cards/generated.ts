@@ -2429,6 +2429,7 @@ import _poolJhovallRider from "./pool/jhovall-rider.js";
 import _poolJibbirikOmnivore from "./pool/jibbirik-omnivore.js";
 import _poolJodahArchmageEternal from "./pool/jodah-archmage-eternal.js";
 import _poolJoinTheDance from "./pool/join-the-dance.js";
+import _poolJonIrenicusShatteredOne from "./pool/jon-irenicus-shattered-one.js";
 import _poolJoragaVisionary from "./pool/joraga-visionary.js";
 import _poolJosuVessLichKnight from "./pool/josu-vess-lich-knight.js";
 import _poolJourneyersKite from "./pool/journeyers-kite.js";
@@ -8010,6 +8011,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJibbirikOmnivore,
   _poolJodahArchmageEternal,
   _poolJoinTheDance,
+  _poolJonIrenicusShatteredOne,
   _poolJoragaVisionary,
   _poolJosuVessLichKnight,
   _poolJourneyersKite,
