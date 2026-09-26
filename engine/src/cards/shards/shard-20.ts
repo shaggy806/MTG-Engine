@@ -26,6 +26,7 @@ import _poolBlurredMongoose from "../pool/blurred-mongoose.js";
 import _poolBoggartTrawler from "../pool/boggart-trawler.js";
 import _poolBoltOfKeranos from "../pool/bolt-of-keranos.js";
 import _poolBorosLocket from "../pool/boros-locket.js";
+import _poolBragoKingEternal from "../pool/brago-king-eternal.js";
 import _poolBrassSecretary from "../pool/brass-secretary.js";
 import _poolBreakDown from "../pool/break-down.js";
 import _poolBriaRiptideRogue from "../pool/bria-riptide-rogue.js";
@@ -198,6 +199,7 @@ const shard: CardShard = {
     _poolBoggartTrawler,
     _poolBoltOfKeranos,
     _poolBorosLocket,
+    _poolBragoKingEternal,
     _poolBrassSecretary,
     _poolBreakDown,
     _poolBriaRiptideRogue,

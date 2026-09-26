@@ -16,6 +16,7 @@ import type {
   VisibleObject,
 } from 'engine/client'
 import {
+  anyNumberSlot,
   attackingViolations,
   blockingViolations,
   damageAssignmentViolations,
@@ -286,6 +287,19 @@ function currentSlotOptions(t: Targeting): readonly TargetRef[] {
     const n = distinctTargetCount([...t.picked, ref], range.copies)
     return n <= range.max && n + later >= range.min
   })
+}
+
+/** Whether the next pick is another member of an "any number of target …"
+ * group — always the last slot, and every pick past its start. */
+function inTargetGroup(t: Pick<Targeting, 'specs' | 'picked'>): boolean {
+  const group = anyNumberSlot(t.specs)
+  return group >= 0 && t.picked.length >= group
+}
+
+/** The spec the next pick fills: the group's, once inside it. */
+function currentSpec(t: Pick<Targeting, 'specs' | 'picked'>): TargetSpec | undefined {
+  const group = anyNumberSlot(t.specs)
+  return group >= 0 && t.picked.length >= group ? t.specs[group] : t.specs[t.picked.length]
 }
 
 /** Whether an optional slot may be skipped: not when the slots after it
@@ -1156,7 +1170,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
   const beginTargeting = useCallback(
     (t: Omit<Targeting, 'picked'>) => {
-      if (t.specs.length === 0) {
+      // Nothing to choose — no slots, or only an "any number of" group with
+      // no candidates, whose empty choice is the only one.
+      if (t.specs.length === 0 || (anyNumberSlot(t.specs) === 0 && (t.options[0] ?? []).length === 0)) {
         finishTargets(t, [])
         return
       }
@@ -1371,20 +1387,77 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (ref: TargetRef | null) => {
       const t = activeTargeting
       if (!t) return
-      const picked = [...t.picked, ref]
       const derived = t.kind === 'choose-targets'
-      if (picked.length < t.specs.length) {
+      const commit = (picked: readonly (TargetRef | null)[]): void => {
         if (derived) setCtPicks(picked)
         else setTargeting({ ...t, picked })
+      }
+      // Dispatch outside any state updater (updaters must be pure; React
+      // double-invokes them in dev).
+      const finish = (picked: readonly (TargetRef | null)[]): void => {
+        if (derived) setCtPicks([])
+        else setTargeting(null)
+        finishTargets(t, picked)
+      }
+      const group = anyNumberSlot(t.specs)
+      if (inTargetGroup(t)) {
+        // Another member of an "any number of" group — or `null`, Done.
+        if (ref === null) {
+          finish(t.picked)
+          return
+        }
+        const picked = [...t.picked, ref]
+        // Every candidate taken leaves nothing to add.
+        if (slotOptions(t.specs, t.options, picked.length, picked).length === 0) finish(picked)
+        else commit(picked)
         return
       }
-      // All slots filled — dispatch outside any state updater (updaters must
-      // be pure; React double-invokes them in dev).
-      if (derived) setCtPicks([])
-      else setTargeting(null)
-      finishTargets(t, picked)
+      const picked = [...t.picked, ref]
+      // The fixed slots are done and the group has no candidates: none it is.
+      if (group >= 0 && picked.length === group && (t.options[group] ?? []).length === 0) {
+        finish(picked)
+        return
+      }
+      if (picked.length < t.specs.length) {
+        commit(picked)
+        return
+      }
+      finish(picked)
     },
     [activeTargeting, finishTargets],
+  )
+
+  /** An "any number of" group's members picked from a popup at once, which
+   * ends the group. */
+  const pickTargetGroup = useCallback(
+    (refs: readonly TargetRef[]) => {
+      const t = activeTargeting
+      if (!t) return
+      if (t.kind === 'choose-targets') setCtPicks([])
+      else setTargeting(null)
+      finishTargets(t, [...t.picked, ...refs])
+    },
+    [activeTargeting, finishTargets],
+  )
+
+  /** Take a member already picked back out of an "any number of" group. */
+  const unpickTarget = useCallback(
+    (ref: TargetRef): boolean => {
+      const t = activeTargeting
+      if (!t || !inTargetGroup(t)) return false
+      const group = anyNumberSlot(t.specs)
+      const same = (r: TargetRef | null): boolean =>
+        r !== null &&
+        (r.kind === 'player'
+          ? ref.kind === 'player' && r.player === ref.player
+          : ref.kind === 'object' && r.object === ref.object)
+      if (!t.picked.slice(group).some(same)) return false
+      const picked = [...t.picked.slice(0, group), ...t.picked.slice(group).filter((r) => !same(r))]
+      if (t.kind === 'choose-targets') setCtPicks(picked)
+      else setTargeting({ ...t, picked })
+      return true
+    },
+    [activeTargeting],
   )
 
   const clickHandCard = useCallback(
@@ -1447,6 +1520,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         const slot = currentSlotOptions(activeTargeting)
         if (slot.some((o) => o.kind === 'object' && o.object === id)) {
           pickTarget({ kind: 'object', object: id })
+        } else {
+          unpickTarget({ kind: 'object', object: id })
         }
         return
       }
@@ -1617,6 +1692,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       mode,
       pickIdForClick,
       pickTarget,
+      unpickTarget,
       sacrificeAction,
       pendingTap,
       pendingConvoke,
@@ -1640,9 +1716,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       const slot = currentSlotOptions(activeTargeting)
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
         pickTarget({ kind: 'player', player: pid })
+      } else {
+        unpickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, mode, pickTarget, activeTargeting, sendPicksAt],
+    [attackAction, mode, pickTarget, unpickTarget, activeTargeting, sendPicksAt],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -2705,19 +2783,29 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     const allStackTargets =
       targetSlot.length > 0 &&
       targetSlot.every((o) => o.kind === 'object' && view.zones.stack.includes(o.object))
-    controls = allStackTargets ? null : (
+    // An "any number of" group keeps its prompt even over stack targets:
+    // Done is how it ends.
+    const grouped = inTargetGroup(activeTargeting)
+    const groupPicked = grouped ? activeTargeting.picked.length - anyNumberSlot(activeTargeting.specs) : 0
+    const slotSpec = currentSpec(activeTargeting)
+    controls = allStackTargets && !grouped ? null : (
       <div className="controls">
         <span>
-          {activeTargeting.label}: choose{' '}
-          {describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])} (
-          {activeTargeting.picked.length + 1}/{activeTargeting.specs.length})
+          {activeTargeting.label}: choose {slotSpec === undefined ? 'a target' : describeTargetSpec(slotSpec)}{' '}
+          {grouped
+            ? `— ${groupPicked} chosen`
+            : `(${activeTargeting.picked.length + 1}/${activeTargeting.specs.length})`}
         </span>
         {zoneTargetIds.length > 0 && zoneTargetCollapsed ? (
           <button type="button" onClick={() => setZoneTargetHidden(null)}>
             Show choices
           </button>
         ) : null}
-        {isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) ? (
+        {grouped ? (
+          <button type="button" onClick={() => pickTarget(null)}>
+            Done
+          </button>
+        ) : slotSpec !== undefined && isOptionalSpec(slotSpec) ? (
           <button
             type="button"
             disabled={!maySkipSlot(activeTargeting)}
@@ -3693,12 +3781,26 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           // One popup per slot, so a pick made for the last one doesn't
           // carry over.
           key={zoneTargetKey ?? ''}
-          title={`${game.nameOf(activeTargeting.source)} — target ${describeTargetSpec(activeTargeting.specs[activeTargeting.picked.length])}`}
+          title={`${game.nameOf(activeTargeting.source)} — target ${describeTargetSpec(currentSpec(activeTargeting) ?? 'card')}`}
           ids={zoneTargetIds}
           resolve={(id) => view.objects[id]}
-          selection={{
+          selection={
+            inTargetGroup(activeTargeting)
+              ? {
+                  // An "any number of" group: every member at once.
+                  min: 0,
+                  max: zoneTargetIds.length,
+                  eligible: zoneTargetIds,
+                  noneLabel: 'Choose none',
+                  onConfirm: (chosen) =>
+                    pickTargetGroup(chosen.map((object) => ({ kind: 'object', object }))),
+                  ...(activeTargeting.kind === 'choose-targets'
+                    ? {}
+                    : { onCancel: () => setTargeting(null) }),
+                }
+              : {
             min:
-              isOptionalSpec(activeTargeting.specs[activeTargeting.picked.length]) &&
+              isOptionalSpec(currentSpec(activeTargeting) ?? 'creature') &&
               maySkipSlot(activeTargeting)
                 ? 0
                 : 1,

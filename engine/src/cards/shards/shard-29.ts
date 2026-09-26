@@ -121,6 +121,7 @@ import _poolShadowcloakVampire from "../pool/shadowcloak-vampire.js";
 import _poolShockingSharpshooter from "../pool/shocking-sharpshooter.js";
 import _poolSimicGrowthChamber from "../pool/simic-growth-chamber.js";
 import _poolSimicSkySwallower from "../pool/simic-sky-swallower.js";
+import _poolSingularityRupture from "../pool/singularity-rupture.js";
 import _poolSkaabWrangler from "../pool/skaab-wrangler.js";
 import _poolSlagwoodsBridge from "../pool/slagwoods-bridge.js";
 import _poolSneakAttack from "../pool/sneak-attack.js";
@@ -282,6 +283,7 @@ const shard: CardShard = {
     _poolShockingSharpshooter,
     _poolSimicGrowthChamber,
     _poolSimicSkySwallower,
+    _poolSingularityRupture,
     _poolSkaabWrangler,
     _poolSlagwoodsBridge,
     _poolSneakAttack,

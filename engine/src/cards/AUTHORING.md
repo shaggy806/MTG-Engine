@@ -399,6 +399,11 @@ applied to**, read once per player ("each opponent loses half **their**
 life" is a `lose-life` with `who: "each-opponent"` and this inside `half`;
 works for scoped `damage` / `draw` / `mill` / `discard` / `gain-life` /
 `lose-life`; outside a scope it reads the controller's);
+`{ librarySize: "you" | "each" }` / `{ graveyardSize: "you" | "each" }` —
+how many cards are in a library or graveyard, yours or (with `"each"`) the
+player the effect is acting on, the same way: Singularity Rupture's "each
+mill half **their** library, rounded down" is `{ half: { librarySize:
+"each" }, round: "down" }`;
 `{ half: EffectAmount, round: "up" | "down" }` — half of an amount, rounded
 the way the card says (rule 107.1a);
 `{ manaSpentOf: ref }` — how much mana was actually spent to cast the source
@@ -591,11 +596,11 @@ them.
 | `destroy` | `target` | Doom Blade |
 | `put-on-bottom-of-library` | `target` | Condemn — buries a permanent under its **owner's** library. Not a shuffle and not a bounce, which is why it isn't a `return-to-hand` variant. |
 | `destroy-all` | `filter` | Wrath of God |
-| `exile` | `target`, `untilSourceLeaves?`, `withCounters?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. `target` may be `"trigger-object"`: a dies trigger's "you may exile it" (Brenard, Ginger Sculptor; Myrkul, Lord of Bones), which acts only while it's still the card that died (rule 400.7 — reanimated in response, it's a new object and stays put); follow it with a `this-way` `"exiled"` `conditional` for "if you do". `withCounters: { kind, amount }` is "exile it **with a croak counter on it**": counters the card gets in exile, only if this effect put it there (whatever it had on the battlefield is gone, rule 400.7). |
+| `exile` | `target`, `untilSourceLeaves?`, `withCounters?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch), and on a **spell**: it leaves the stack without being countered, so one that can't be countered goes too (Mindbreak Trap), and a copy ceases to exist (rule 707.10c). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. `target` may be `"trigger-object"`: a dies trigger's "you may exile it" (Brenard, Ginger Sculptor; Myrkul, Lord of Bones), which acts only while it's still the card that died (rule 400.7 — reanimated in response, it's a new object and stays put); follow it with a `this-way` `"exiled"` `conditional` for "if you do". `withCounters: { kind, amount }` is "exile it **with a croak counter on it**": counters the card gets in exile, only if this effect put it there (whatever it had on the battlefield is gone, rule 400.7). |
 | `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
 | `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `under?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?`, `transformed?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. `under` (an `EffectPlayerRef`) is someone else's control instead — The Beamtown Bullies' "target opponent … puts target … card from your graveyard onto the battlefield under their control" (`under: { target: 0 }`); an illegal target, either one, moves nothing (rule 608.2b). `transformed` is "…onto the battlefield transformed" (Ojer Axonil's "return it to the battlefield tapped and transformed"): a transforming double-faced card enters back face up; anything else just enters. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
-| `flicker` | `target`, `thenCounters?`, `underYourControl?`, `transformed?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others. `underYourControl` returns them under the effect's controller. `transformed` is "…return it to the battlefield **transformed**" (Clive, Ifrit's Dominant), now or at a delayed return. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
+| `flicker` | `target`, `thenCounters?`, `underYourControl?`, `transformed?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others — or `{ from: n }`, every slot from `n` on, an "any number of target …" group (Eerie Interlude). `underYourControl` returns them under the effect's controller. `transformed` is "…return it to the battlefield **transformed**" (Clive, Ifrit's Dominant), now or at a delayed return. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
 | `return-to-hand` | `target: EffectTargetRef`, `from?: "battlefield" \| "graveyard" \| "exile" \| "stack"` | Unsummon (a bounce — `from` omitted). With `from`, it takes a card out of that zone instead, to its **owner's** hand: `"graveyard"` + a `card-in-graveyard` target is "return target creature card from your graveyard to your hand" (Golbez, Crystal Collector); `"source"` / `"trigger-object"` with `"graveyard"` or `"exile"` is "return it to its owner's hand" off a dies / leaves trigger, and works inside a `delayed-trigger` too. `"stack"` + a `"spell"` target is Unsubstantiate or Venser, Shaper Savant — **not a counter**: a spell that can't be countered still goes back, a copy of a spell ceases to exist (rule 707.10c), and an ability or the resolving spell itself is left alone. The object has to be in the `from` zone when the effect applies, or nothing happens. A commander returned this way offers the command zone (rule 903.9b), like a bounced one. |
 | `return-to-hand-all` | `filter` | Cyclonic Rift, overloaded — mirrors `destroy-all` |
 | `exile-all` | `filter` | Farewell's "Exile all artifacts" — the mass `exile`, one event (each one's leaves trigger sees the rest go), a token stack exiled whole |
@@ -729,6 +734,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
 | `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. A changeling is an Army creature too. Picks the first Army rather than asking — see §15 "Partial". |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
+| `double-counters` | `target` | Deepglow Skate's "double the number of each kind of counter on" one permanent: another of each kind for each one there, put as `add-counter` puts them (Doubling Season applies). |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
 | `double-pt-all` | `filter`, `duration` | Unnatural Growth — doubles each matching permanent's own *current computed* power/toughness individually (a 2/2 and a 5/5 both matching become a 4/4 and a 10/10), unlike `modify-pt-all`'s single shared amount |
 | `proliferate` | — | proliferates *everything* eligible (no "choose any number") |
@@ -1335,6 +1341,36 @@ targets" is `["any-target", ...distinctTargets(2, "any-target", { optional:
 true, from: 1, otherThan: [0] })]`. Separate instances of the word ("target
 creature … target creature" in two sentences) are separate slots with no
 relation, and may point at the same thing.
+
+**"Any number of target …"** is a *group*: `{ kind: "any-number", of:
+TargetSpec }` — Eerie Interlude's "exile any number of target creatures you
+control" is `targets: [{ kind: "any-number", of: "creature-you-control" }]`.
+It is always the **last** slot of its list (one per list, never in a
+`castModal` mode; `any-number-targets.test.ts` walks the pool for this),
+and the player fills it with none, one or as many distinct targets as there
+are (rule 601.2c): the chosen targets are one flat list, the slots before the
+group keeping their indexes and every member taking the next one on. The
+offer lists the group as a single slot with its `of` options; every check of
+a choice — the cast, an activation, a trigger's answer, and the resolution —
+judges it against `concreteTargetSpecs(specs, chosen.length)`, one slot per
+member, each distinct from the ones before it, so a spell goes on the stack
+with its shape fixed and never re-derives it from the board. With none
+chosen it has no targets at all and resolves; with some chosen and every one
+illegal it fizzles (608.2b — Singularity Rupture's ruling). Effects reach the
+members two ways:
+
+- `{ kind: "for-each-target", from: n, effect, simultaneous? }` — `effect`
+  once per member, each bound in turn to slot `n`, where `effect` is written
+  for a single target: Mindbreak Trap's "exile any number of target spells"
+  is `{ kind: "for-each-target", from: 0, effect: { kind: "exile", target: 0 },
+  simultaneous: true }`. A member found illegal is skipped. `simultaneous`
+  makes them one instruction ("any number of target players **each** mill two
+  cards" mills them at once — Riverchurn Monument).
+- a `flicker`'s `target: { from: n }` — every member exiled together and
+  returned together (Eerie Interlude, Brago, King Eternal).
+
+A group isn't the same as "up to N": "up to two target creatures" still has a
+count printed on it and is two optional slots (`distinctTargets`).
 
 Two specs are **structured** rather than strings, for the shapes the literals
 stopped covering:
@@ -2599,10 +2635,12 @@ Delete an entry in the same commit as the feature that retires it.
   expressible, via `search-library.restDestination`.)
 - `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
-- **Unbounded targeting** — "any number of target …", and "divide N damage
-  among any number of targets". The slot *count* is still fixed by the
-  declared `TargetSpec[]`. ("Up to N" *is* expressible — N slots marked
-  `{ kind: "optional", of: spec }`, see §7.)
+- **Divided damage and distributed counters** — "N damage divided as you
+  choose among any number of targets" (Fury, Magma Opus), "distribute N
+  counters among" (Lathiel), and Fireball's "divided evenly" with its cost
+  for each target beyond the first. "Any number of target …" itself is
+  built (§7, the `any-number` group); dividing an amount among the members
+  as the spell is cast is not. Nor is **Strive** (a cost per extra target).
 - ~~**Mana provenance / restricted spend.**~~ **Built.** The mana pool is a
   list of tagged `ManaUnit`s, so a unit remembers where it came from. An
   `add-mana` effect stamps three optional things on what it produces:

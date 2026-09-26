@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1316 already implemented / 3684 missing (marks refreshed 2026-09-26)
+1325 already implemented / 3675 missing (marks refreshed 2026-09-26)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -540,7 +540,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   541  Temple of Abandon                        {0}              Land
 [x]   542  Vineglimmer Snarl                        {0}              Land
 [ ]   543  Sword of Feast and Famine                {3}              Artifact — Equipment
-[ ]   544  Mindbreak Trap                           {2}{U}{U}        Instant — Trap
+[x]   544  Mindbreak Trap                           {2}{U}{U}        Instant — Trap
 [x]   545  Hedron Archive                           {4}              Artifact
 [x]   546  Unwinding Clock                          {4}              Artifact
 [x]   547  Mossfire Valley                          {0}              Land
@@ -967,7 +967,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   971  Cabaretti Courtyard                      {0}              Land
 [x]   972  Loxodon Warhammer                        {3}              Artifact — Equipment
 [ ]   973  Cabal Stronghold                         {0}              Land
-[ ]   974  Eerie Interlude                          {2}{W}           Instant
+[x]   974  Eerie Interlude                          {2}{W}           Instant
 [ ]   975  Narset, Parter of Veils                  {1}{U}{U}        Legendary Planeswalker — Narset
 [ ]   976  Razorkin Needlehead                      {R}{R}           Creature — Human Assassin
 [ ]   977  Karmic Guide                             {3}{W}{W}        Creature — Angel Spirit
@@ -1803,7 +1803,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1810  Leaden Myr                               {2}              Artifact Creature — Myr
 [ ]  1811  Silver Shroud Costume                    {2}              Artifact — Equipment
 [ ]  1812  Hit the Mother Lode                      {4}{R}{R}{R}     Sorcery
-[ ]  1813  Deepglow Skate                           {4}{U}           Creature — Fish
+[x]  1813  Deepglow Skate                           {4}{U}           Creature — Fish
 [ ]  1814  Power Fist                               {1}{G}           Artifact — Equipment
 [ ]  1815  Honest Rutstein                          {1}{B}{G}        Legendary Creature — Human Warlock
 [ ]  1816  Get Lost                                 {1}{W}           Instant
@@ -2291,7 +2291,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2298  Rest in Peace                            {1}{W}           Enchantment
 [ ]  2299  Grafted Exoskeleton                      {4}              Artifact — Equipment
 [x]  2300  Elvish Visionary                         {1}{G}           Creature — Elf Shaman
-[ ]  2301  Brago, King Eternal                      {2}{W}{U}        Legendary Creature — Spirit Noble
+[x]  2301  Brago, King Eternal                      {2}{W}{U}        Legendary Creature — Spirit Noble
 [ ]  2302  Sheltering Landscape                     {0}              Land
 [x]  2303  Lys Alana Huntmaster                     {2}{G}{G}        Creature — Elf Warrior
 [ ]  2304  Shorikai, Genesis Engine                 {2}{W}{U}        Legendary Artifact — Vehicle
@@ -2312,7 +2312,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2319  Tarnished Citadel                        {0}              Land
 [ ]  2320  Spiteful Visions                         {2}{B/R}{B/R}    Enchantment
 [ ]  2321  Grave Researcher // Reanimate            {2}{B} // {B}    Creature — Troll Warlock // Sorcery
-[ ]  2322  Singularity Rupture                      {3}{U}{B}{B}     Sorcery
+[x]  2322  Singularity Rupture                      {3}{U}{B}{B}     Sorcery
 [ ]  2323  It That Heralds the End                  {1}{C}           Creature — Eldrazi Drone
 [ ]  2324  Prized Statue                            {2}              Artifact
 [ ]  2325  Oblivion Sower                           {6}              Creature — Eldrazi
@@ -2715,7 +2715,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2722  Ygra, Eater of All                       {3}{B}{G}        Legendary Creature — Elemental Cat
 [ ]  2723  Domri, Anarch of Bolas                   {1}{R}{G}        Legendary Planeswalker — Domri
 [ ]  2724  Cosmos Elixir                            {4}              Artifact
-[ ]  2725  Court of Cunning                         {1}{U}{U}        Enchantment
+[x]  2725  Court of Cunning                         {1}{U}{U}        Enchantment
 [ ]  2726  River of Tears                           {0}              Land
 [ ]  2727  Deadpool, Trading Card                   {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
 [ ]  2728  Rakdos, Patron of Chaos                  {4}{B}{R}        Legendary Creature — Demon
@@ -3124,7 +3124,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3131  Starnheim Aspirant                       {2}{W}           Creature — Human Cleric
 [ ]  3132  Witch's Oven                             {1}              Artifact
 [ ]  3133  Thraben Charm                            {1}{W}           Instant
-[ ]  3134  Stonespeaker Crystal                     {4}              Artifact
+[x]  3134  Stonespeaker Crystal                     {4}              Artifact
 [ ]  3135  Welding Jar                              {0}              Artifact
 [ ]  3136  Tolarian Winds                           {1}{U}           Instant
 [ ]  3137  Hazel of the Rootbloom                   {2}{B}{G}        Legendary Creature — Squirrel Druid
@@ -3563,7 +3563,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3570  Redress Fate                             {6}{W}{W}        Sorcery
 [ ]  3571  Hoarding Ogre                            {3}{R}           Creature — Ogre
 [ ]  3572  Incarnation Technique                    {4}{B}           Sorcery
-[ ]  3573  Riverchurn Monument                      {1}{U}           Artifact
+[x]  3573  Riverchurn Monument                      {1}{U}           Artifact
 [ ]  3574  Lord of the Undead                       {1}{B}{B}        Creature — Zombie
 [ ]  3575  Ride the Shoopuf                         {1}{G}           Enchantment
 [ ]  3576  Study Hall                               {0}              Land
@@ -4669,7 +4669,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4676  Snapping Voidcraw                        {1}{G}{U}        Creature — Eldrazi Turtle
 [ ]  4677  Blatant Thievery                         {4}{U}{U}{U}     Sorcery
 [x]  4678  Maraleaf Pixie                           {G}{U}           Creature — Faerie
-[ ]  4679  Divine Resilience                        {W}              Instant
+[x]  4679  Divine Resilience                        {W}              Instant
 [ ]  4680  Breeches, Brazen Plunderer               {3}{R}           Legendary Creature — Goblin Pirate
 [ ]  4681  Indomitable Might                        {3}{G}           Enchantment — Aura
 [ ]  4682  Spawning Bed                             {0}              Land

@@ -34,6 +34,7 @@ import _poolChulane from "../pool/chulane.js";
 import _poolCitanulDruid from "../pool/citanul-druid.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
+import _poolCourtOfCunning from "../pool/court-of-cunning.js";
 import _poolCovertOperative from "../pool/covert-operative.js";
 import _poolCrystalVein from "../pool/crystal-vein.js";
 import _poolDauntlessCathar from "../pool/dauntless-cathar.js";
@@ -214,6 +215,7 @@ const shard: CardShard = {
     _poolCitanulDruid,
     _poolClingingDarkness,
     _poolCorruptedConviction,
+    _poolCourtOfCunning,
     _poolCovertOperative,
     _poolCrystalVein,
     _poolDauntlessCathar,

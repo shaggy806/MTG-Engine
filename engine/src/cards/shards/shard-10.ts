@@ -136,6 +136,7 @@ import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
 import _poolRiotSpikes from "../pool/riot-spikes.js";
 import _poolRipjawRaptor from "../pool/ripjaw-raptor.js";
+import _poolRiverchurnMonument from "../pool/riverchurn-monument.js";
 import _poolRottenheartGhoul from "../pool/rottenheart-ghoul.js";
 import _poolRumblingSentry from "../pool/rumbling-sentry.js";
 import _poolRushwoodDryad from "../pool/rushwood-dryad.js";
@@ -329,6 +330,7 @@ const shard: CardShard = {
     _poolRenegadesGetaway,
     _poolRiotSpikes,
     _poolRipjawRaptor,
+    _poolRiverchurnMonument,
     _poolRottenheartGhoul,
     _poolRumblingSentry,
     _poolRushwoodDryad,

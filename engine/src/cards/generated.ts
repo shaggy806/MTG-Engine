@@ -609,6 +609,7 @@ import _poolBoundingWolf from "./pool/bounding-wolf.js";
 import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBountifulPromenade from "./pool/bountiful-promenade.js";
 import _poolBountyOfMight from "./pool/bounty-of-might.js";
+import _poolBragoKingEternal from "./pool/brago-king-eternal.js";
 import _poolBraidwoodCup from "./pool/braidwood-cup.js";
 import _poolBrainWeevil from "./pool/brain-weevil.js";
 import _poolBraingeyser from "./pool/braingeyser.js";
@@ -968,6 +969,7 @@ import _poolCounterspell from "./pool/counterspell.js";
 import _poolCourierGriffin from "./pool/courier-griffin.js";
 import _poolCourierHawk from "./pool/courier-hawk.js";
 import _poolCouriersCapsule from "./pool/couriers-capsule.js";
+import _poolCourtOfCunning from "./pool/court-of-cunning.js";
 import _poolCovertOperative from "./pool/covert-operative.js";
 import _poolCowlProwler from "./pool/cowl-prowler.js";
 import _poolCrackOpen from "./pool/crack-open.js";
@@ -1138,6 +1140,7 @@ import _poolDecoyPloy from "./pool/decoy-ploy.js";
 import _poolDedicatedMartyr from "./pool/dedicated-martyr.js";
 import _poolDeduce from "./pool/deduce.js";
 import _poolDeepAnalysis from "./pool/deep-analysis.js";
+import _poolDeepglowSkate from "./pool/deepglow-skate.js";
 import _poolDeeprootChampion from "./pool/deeproot-champion.js";
 import _poolDeeptreadMerrow from "./pool/deeptread-merrow.js";
 import _poolDeepwoodTantiv from "./pool/deepwood-tantiv.js";
@@ -1249,6 +1252,7 @@ import _poolDiversionaryTactics from "./pool/diversionary-tactics.js";
 import _poolDivination from "./pool/divination.js";
 import _poolDivineArrow from "./pool/divine-arrow.js";
 import _poolDivineFavor from "./pool/divine-favor.js";
+import _poolDivineResilience from "./pool/divine-resilience.js";
 import _poolDivineTransformation from "./pool/divine-transformation.js";
 import _poolDivineVerdict from "./pool/divine-verdict.js";
 import _poolDivingGriffin from "./pool/diving-griffin.js";
@@ -1379,6 +1383,7 @@ import _poolEbonyRhino from "./pool/ebony-rhino.js";
 import _poolEbonyTreefolk from "./pool/ebony-treefolk.js";
 import _poolEcologistsTerrarium from "./pool/ecologists-terrarium.js";
 import _poolEdgarMarkov from "./pool/edgar-markov.js";
+import _poolEerieInterlude from "./pool/eerie-interlude.js";
 import _poolEfficientConstruction from "./pool/efficient-construction.js";
 import _poolEidolonOfBlossoms from "./pool/eidolon-of-blossoms.js";
 import _poolEidolonOfInspiration from "./pool/eidolon-of-inspiration.js";
@@ -2976,6 +2981,7 @@ import _poolMindRot from "./pool/mind-rot.js";
 import _poolMindSculpt from "./pool/mind-sculpt.js";
 import _poolMindSpring from "./pool/mind-spring.js";
 import _poolMindStone from "./pool/mind-stone.js";
+import _poolMindbreakTrap from "./pool/mindbreak-trap.js";
 import _poolMindeyeDrake from "./pool/mindeye-drake.js";
 import _poolMindfulBiomancer from "./pool/mindful-biomancer.js";
 import _poolMindscourDragon from "./pool/mindscour-dragon.js";
@@ -3794,6 +3800,7 @@ import _poolRiverBear from "./pool/river-bear.js";
 import _poolRiverKaijin from "./pool/river-kaijin.js";
 import _poolRiverMerfolk from "./pool/river-merfolk.js";
 import _poolRiverSneak from "./pool/river-sneak.js";
+import _poolRiverchurnMonument from "./pool/riverchurn-monument.js";
 import _poolRiverglidePathway from "./pool/riverglide-pathway.js";
 import _poolRiverpyreVerge from "./pool/riverpyre-verge.js";
 import _poolRiveteersInitiate from "./pool/riveteers-initiate.js";
@@ -4219,6 +4226,7 @@ import _poolSimicRagworm from "./pool/simic-ragworm.js";
 import _poolSimicSignet from "./pool/simic-signet.js";
 import _poolSimicSkySwallower from "./pool/simic-sky-swallower.js";
 import _poolSimplify from "./pool/simplify.js";
+import _poolSingularityRupture from "./pool/singularity-rupture.js";
 import _poolSinisterHideout from "./pool/sinister-hideout.js";
 import _poolSinisterMonolith from "./pool/sinister-monolith.js";
 import _poolSinisterSabotage from "./pool/sinister-sabotage.js";
@@ -4505,6 +4513,7 @@ import _poolStonecoilSerpent from "./pool/stonecoil-serpent.js";
 import _poolStonefareCrocodile from "./pool/stonefare-crocodile.js";
 import _poolStonehornChanter from "./pool/stonehorn-chanter.js";
 import _poolStoneskin from "./pool/stoneskin.js";
+import _poolStonespeakerCrystal from "./pool/stonespeaker-crystal.js";
 import _poolStonewoodInvoker from "./pool/stonewood-invoker.js";
 import _poolStoneworkPuma from "./pool/stonework-puma.js";
 import _poolStonyVoicedGoblins from "./pool/stony-voiced-goblins.js";
@@ -6286,6 +6295,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBountifulLandscape,
   _poolBountifulPromenade,
   _poolBountyOfMight,
+  _poolBragoKingEternal,
   _poolBraidwoodCup,
   _poolBrainWeevil,
   _poolBraingeyser,
@@ -6645,6 +6655,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCourierGriffin,
   _poolCourierHawk,
   _poolCouriersCapsule,
+  _poolCourtOfCunning,
   _poolCovertOperative,
   _poolCowlProwler,
   _poolCrackOpen,
@@ -6815,6 +6826,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDedicatedMartyr,
   _poolDeduce,
   _poolDeepAnalysis,
+  _poolDeepglowSkate,
   _poolDeeprootChampion,
   _poolDeeptreadMerrow,
   _poolDeepwoodTantiv,
@@ -6926,6 +6938,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDivination,
   _poolDivineArrow,
   _poolDivineFavor,
+  _poolDivineResilience,
   _poolDivineTransformation,
   _poolDivineVerdict,
   _poolDivingGriffin,
@@ -7056,6 +7069,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEbonyTreefolk,
   _poolEcologistsTerrarium,
   _poolEdgarMarkov,
+  _poolEerieInterlude,
   _poolEfficientConstruction,
   _poolEidolonOfBlossoms,
   _poolEidolonOfInspiration,
@@ -8653,6 +8667,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMindSculpt,
   _poolMindSpring,
   _poolMindStone,
+  _poolMindbreakTrap,
   _poolMindeyeDrake,
   _poolMindfulBiomancer,
   _poolMindscourDragon,
@@ -9471,6 +9486,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRiverKaijin,
   _poolRiverMerfolk,
   _poolRiverSneak,
+  _poolRiverchurnMonument,
   _poolRiverglidePathway,
   _poolRiverpyreVerge,
   _poolRiveteersInitiate,
@@ -9896,6 +9912,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSimicSignet,
   _poolSimicSkySwallower,
   _poolSimplify,
+  _poolSingularityRupture,
   _poolSinisterHideout,
   _poolSinisterMonolith,
   _poolSinisterSabotage,
@@ -10182,6 +10199,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStonefareCrocodile,
   _poolStonehornChanter,
   _poolStoneskin,
+  _poolStonespeakerCrystal,
   _poolStonewoodInvoker,
   _poolStoneworkPuma,
   _poolStonyVoicedGoblins,

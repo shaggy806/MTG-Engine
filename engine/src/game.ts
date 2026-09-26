@@ -233,7 +233,15 @@ import type {
   ZoneType,
 } from "./state.js";
 import { EVERY_CREATURE_TYPE, hasSubtype, isCreatureType } from "./subtypes.js";
-import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan, targetsFillable } from "./target.js";
+import {
+  anyNumberSlot,
+  concreteTargetSpecs,
+  describeTargetSpec,
+  isOptionalSpec,
+  normalizeTargets,
+  otherThan,
+  targetsFillable,
+} from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
 import { eventsSince as eventLogSince, lifeLostSince, thisWayEntries } from "./this-way.js";
 import type { ThisWayEntry } from "./this-way.js";
@@ -3115,9 +3123,16 @@ export class Game {
     if (trig !== null) {
       this.state.pendingTargetedTrigger = null;
       const queue = [...chosen];
-      const targets = trig.slots.map((s) =>
-        "auto" in s ? s.auto : (queue.shift() as TargetRef),
-      );
+      const last = trig.slots[trig.slots.length - 1];
+      const grouped = last !== undefined && "spec" in last && anyNumberSlot([last.spec]) === 0;
+      // An "any number of" group is always the last slot: it takes every
+      // answer left, however many — or none, and then no slot at all.
+      const targets = [
+        ...(grouped ? trig.slots.slice(0, -1) : trig.slots).map((s) =>
+          "auto" in s ? s.auto : "skip" in s ? undefined : (queue.shift() as TargetRef),
+        ),
+        ...(grouped ? queue : []),
+      ];
       const abilityId = this.mintTriggerAbility(
         trig.sourceObjectId,
         trig.cardName,
@@ -5377,7 +5392,9 @@ export class Game {
     const optionsPerSlot: TargetRef[][] = [];
     for (const spec of def.targets) {
       const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def, cardId));
-      if (options.length === 0) return false;
+      // "Up to one" or "any number of" with nothing to point at is a legal
+      // choice of none (rule 601.2c); only a required slot can't be filled.
+      if (options.length === 0 && !isOptionalSpec(spec)) return false;
       optionsPerSlot.push([...options]);
     }
 
@@ -5385,8 +5402,17 @@ export class Game {
     const forced = optionsPerSlot.every(
       (o, i) => o.length === 1 && !isOptionalSpec(def.targets[i]),
     );
-    if (def.targets.length === 0 || forced || opts.via === "cascade") {
-      return this.commitFreeCast(cardId, opts.via, grantHaste, optionsPerSlot.map((o) => o[0]));
+    const nothingToChoose = optionsPerSlot.every((o) => o.length === 0);
+    if (def.targets.length === 0 || forced || nothingToChoose || opts.via === "cascade") {
+      // A group left empty contributes no slots at all.
+      const picks = optionsPerSlot.map((o) => o[0]);
+      const group = anyNumberSlot(def.targets);
+      return this.commitFreeCast(
+        cardId,
+        opts.via,
+        grantHaste,
+        group >= 0 && picks[group] === undefined ? picks.slice(0, group) : picks,
+      );
     }
 
     // A suspend cast with a real choice — park a `choose-targets` decision.
@@ -5635,8 +5661,22 @@ export class Game {
     const source = this.cardSource(def, card);
     const copies: Record<string, number> = {};
     const boundsOf = (modes: readonly number[] | undefined) => {
-      const specs = this.effectiveTargetSpecs(def, modes, kicked, overload);
-      const options = this.targetOptionsFor(specs, player, source);
+      const declared = this.effectiveTargetSpecs(def, modes, kicked, overload);
+      const offered = this.targetOptionsFor(declared, player, source);
+      // An "any number of" group spans as many optional slots as it has
+      // candidates: none of them, or up to every one, may be chosen.
+      const group = anyNumberSlot(declared);
+      const members = group >= 0 ? (offered[group]?.length ?? 0) : 0;
+      const specs =
+        group < 0
+          ? declared
+          : concreteTargetSpecs(declared, group + members).map((spec, i) =>
+              i >= group ? ({ kind: "optional", of: spec } as const) : spec,
+            );
+      const options =
+        group < 0
+          ? offered
+          : [...offered.slice(0, group), ...Array.from({ length: members }, () => offered[group] ?? [])];
       const here = this.targetCopies(options.flat());
       Object.assign(copies, here);
       return targetCountBounds(options, specs, here);
@@ -11037,7 +11077,11 @@ export class Game {
     // Resolve each slot: an event-determined `auto` target (a saboteur's
     // victim), or a `spec` the controller must pick from.
     const auto = trigger.autoTargets ?? [];
-    const slots: ({ auto: TargetRef } | { spec: TargetSpec; options: readonly TargetRef[] })[] = [];
+    const slots: (
+      | { auto: TargetRef }
+      | { spec: TargetSpec; options: readonly TargetRef[] }
+      | { skip: true }
+    )[] = [];
     for (let i = 0; i < ability.targets.length; i += 1) {
       const spec = ability.targets[i];
       if (auto[i] !== undefined) {
@@ -11054,6 +11098,13 @@ export class Game {
       }
       const options = legalTargets(this.state, this.registry, spec, trigger.controller, triggerSource);
       if (options.length === 0) {
+        // "Up to one" or "any number of" with nothing to point at: none is
+        // a legal choice, so the ability still goes on the stack (rule
+        // 603.3d removes it only when no legal choice can be made).
+        if (isOptionalSpec(spec)) {
+          slots.push({ skip: true });
+          continue;
+        }
         this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no legal targets" });
         return "done";
       }
@@ -11071,7 +11122,11 @@ export class Game {
       chooserSlots.length > 0 &&
       chooserSlots.every((s) => s.options.length === 1 && !isOptionalSpec(s.spec));
     if (chooserSlots.length === 0 || forced) {
-      const targets = slots.map((s) => ("auto" in s ? s.auto : s.options[0]));
+      // A skipped slot is a hole — or, for an "any number of" group, which
+      // is always last, no slot at all.
+      const filled = slots.map((s) => ("auto" in s ? s.auto : "skip" in s ? undefined : s.options[0]));
+      const group = anyNumberSlot(ability.targets);
+      const targets = group >= 0 && filled[group] === undefined ? filled.slice(0, group) : filled;
       const abilityId = this.mintTriggerAbility(
         trigger.sourceObjectId,
         trigger.cardName,
@@ -11100,7 +11155,7 @@ export class Game {
       abilityKind,
       abilityIndex: trigger.abilityIndex,
       controller: trigger.controller,
-      slots: slots.map((s) => ("auto" in s ? { auto: s.auto } : { spec: s.spec })),
+      slots: slots.map((s) => ("auto" in s ? { auto: s.auto } : "skip" in s ? { skip: true } : { spec: s.spec })),
       ...(trigger.triggerValue !== undefined
         ? { triggerValue: trigger.triggerValue }
         : {}),
@@ -11242,6 +11297,9 @@ export class Game {
     source?: TargetSource,
     autoSlots: readonly number[] = [],
   ): { readonly fizzles: boolean; readonly illegal: readonly number[]; readonly targets: ResolvedTargets } {
+    // An "any number of target …" group has as many slots as it went on the
+    // stack with — never as many as the board would allow now.
+    specs = concreteTargetSpecs(specs, chosen.length);
     const targets = [...now];
     const illegal: number[] = [];
     let anyChosen = false;
@@ -11558,6 +11616,16 @@ export class Game {
       },
       handSizeOf: (player) => this.state.zones.perPlayer[player]?.hand.length ?? 0,
       librarySizeOf: (player) => this.state.zones.perPlayer[player]?.library.length ?? 0,
+      graveyardSizeOf: (player) => this.state.zones.perPlayer[player]?.graveyard.length ?? 0,
+      doubleCounters: (target) => {
+        if (target.kind !== "object") return;
+        const object = this.state.objects[target.object];
+        if (object === undefined || object.zone !== "battlefield") return;
+        // Each kind as it is now, read before any is added.
+        for (const [kind, current] of Object.entries({ ...object.counters })) {
+          if ((current ?? 0) > 0) this.addCounter(target, kind, current ?? 0, false, controller);
+        }
+      },
       colorsOf: (target) => {
         if (target.kind !== "object") return [];
         const lki = lastKnownOf(target);
@@ -11662,6 +11730,34 @@ export class Game {
           { ...refs, player },
           opts,
         ),
+      withTargetAt: (from, index) => {
+        const bind = <T,>(list: readonly T[]): T[] => [...list.slice(0, from), list[index] as T];
+        const illegal = opts.illegalTargets;
+        return this.makeResolutionContext(
+          source,
+          controller,
+          bind(targets),
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          bind(targetZones),
+          refs,
+          {
+            ...opts,
+            ...(opts.readTargets !== undefined ? { readTargets: bind(opts.readTargets) } : {}),
+            ...(illegal !== undefined
+              ? {
+                  illegalTargets: [
+                    ...illegal.filter((slot) => slot < from),
+                    ...(illegal.includes(index) ? [from] : []),
+                  ],
+                }
+              : {}),
+          },
+        );
+      },
       withSacrificed: (object) => {
         // It was just sacrificed, so its latest snapshot is that departure.
         const lki = this.state.objects[object]?.lastKnown ?? this.state.ceasedTokens?.[object];
@@ -15232,8 +15328,12 @@ export class Game {
     const object = this.state.objects[id];
     // Graveyard as well as battlefield: "Exile target card from a graveyard"
     // (Withered Wretch, Scavenging Ooze) targets a card, not a permanent.
-    // Anything already in exile, or on the stack, is left alone.
+    // Anything already in exile is left alone.
     if (object === undefined) return;
+    if (object.zone === "stack") {
+      this.exileSpell(id);
+      return;
+    }
     if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
     const wasPermanent = object.zone === "battlefield";
     if (!this.moveObject(id, "exile")) return;
@@ -15245,6 +15345,29 @@ export class Game {
     // The event is about a permanent leaving the battlefield; a graveyard
     // card being exiled isn't one, and the log formatters read it that way.
     if (wasPermanent) this.emit({ type: "permanent-exiled", object: id });
+  }
+
+  /**
+   * "Exile target spell" (Mindbreak Trap): the spell leaves the stack and
+   * won't resolve, but it isn't countered — so a spell that can't be
+   * countered goes too, and nothing watching for a counter sees it (the
+   * ruling). A copy of a spell ceases to exist instead (rule 707.10c). An
+   * ability on the stack isn't a spell and is left alone.
+   */
+  private exileSpell(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "stack" || object.kind !== "card") return;
+    this.emit({ type: "spell-exiled", object: id });
+    if (object.isCopy) {
+      const stack = this.state.zones.shared.stack;
+      const index = stack.indexOf(id);
+      if (index >= 0) stack.splice(index, 1);
+      delete this.state.objects[id];
+      return;
+    }
+    // It will never resolve now, so it has nothing left to aim at.
+    object.targets = null;
+    this.moveObject(id, "exile");
   }
 
   /** "Blink": exile permanents, then return them to the battlefield (rule

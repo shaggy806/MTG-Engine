@@ -168,7 +168,60 @@ export type TargetSpec =
    * of: "creature-you-control" }`. Nests either way round with `optional`
    * ("up to one other target creature").
    */
-  | { readonly kind: "other"; readonly of: TargetSpec; readonly than?: OtherThan };
+  | { readonly kind: "other"; readonly of: TargetSpec; readonly than?: OtherThan }
+  /**
+   * "Any number of target …" (rule 601.2c: none, one, or as many distinct
+   * ones as there are) — Eerie Interlude's "exile any number of target
+   * creatures you control". A *group*: always the last slot of its list, and
+   * at most one per list. An offer lists it as one slot with `of`'s
+   * options; a choice fills it with as many distinct targets as the player
+   * picks, each one slot of the flat target list from the group's index on,
+   * so the slots before it keep their positions. The count chosen is fixed
+   * as the spell or ability goes on the stack — see
+   * {@link concreteTargetSpecs}, which every check of a choice goes through.
+   * An effect reaches the members with `for-each-target` (one at a time,
+   * each bound to the group's slot) or a `{ from }` slot list.
+   */
+  | { readonly kind: "any-number"; readonly of: TargetSpec };
+
+/** Where a list's "any number of target …" group is (see the `any-number`
+ * {@link TargetSpec}), or -1 for a list without one. */
+export function anyNumberSlot(specs: readonly TargetSpec[]): number {
+  return specs.findIndex((spec) => typeof spec === "object" && spec.kind === "any-number");
+}
+
+/**
+ * A spec list as `count` chosen targets fill it: the slots before an
+ * "any number of target …" group as declared, then one slot per member of
+ * the group — each of its `of` spec, and each after the first "other than"
+ * the members before it, since one instance of the word "target" names an
+ * object once (rule 601.2c). A list without a group comes back as it is.
+ *
+ * The count is the length of the chosen target list — at a cast, an
+ * activation or a trigger's choice, and again as it resolves, from the
+ * targets it went on the stack with — so every check of a choice judges it
+ * against specs of its own shape, and a resolution never re-derives its
+ * shape from the board.
+ */
+export function concreteTargetSpecs(specs: readonly TargetSpec[], count: number): readonly TargetSpec[] {
+  const group = anyNumberSlot(specs);
+  if (group < 0) return specs;
+  const spec = specs[group];
+  if (typeof spec !== "object" || spec.kind !== "any-number") return specs;
+  const out: TargetSpec[] = specs.slice(0, group);
+  for (let member = 0; member < Math.max(0, count - group); member += 1) {
+    out.push(
+      member === 0
+        ? spec.of
+        : {
+            kind: "other",
+            of: spec.of,
+            than: { slots: Array.from({ length: member }, (_unused, i) => group + i) },
+          },
+    );
+  }
+  return out;
+}
 
 /**
  * What an `other` slot must differ from:
@@ -220,18 +273,20 @@ export function normalizeTargets(
   return (chosen ?? []).map((ref) => ref ?? undefined);
 }
 
-/** The underlying spec a (possibly optional) slot accepts. */
+/** The underlying spec a (possibly optional) slot accepts — for an "any
+ * number of target …" group, what each of its members accepts. */
 export function requiredSpec(spec: TargetSpec): TargetSpec {
   if (typeof spec !== "object") return spec;
-  if (spec.kind === "optional") return spec.of;
+  if (spec.kind === "optional" || spec.kind === "any-number") return requiredSpec(spec.of);
   if (spec.kind === "other") return { ...spec, of: requiredSpec(spec.of) };
   return spec;
 }
 
-/** May this slot be left empty? */
+/** May this slot be left empty? An "any number of target …" group may:
+ * none is a number. */
 export function isOptionalSpec(spec: TargetSpec): boolean {
   if (typeof spec !== "object") return false;
-  if (spec.kind === "optional") return true;
+  if (spec.kind === "optional" || spec.kind === "any-number") return true;
   return spec.kind === "other" && isOptionalSpec(spec.of);
 }
 
@@ -261,6 +316,15 @@ export function slotOptions(
   i: number,
   picked: readonly (TargetRef | null | undefined)[],
 ): readonly TargetRef[] {
+  // Past an "any number of target …" group's start, every pick is another
+  // member of that one group: its options, less what it has already named.
+  const group = anyNumberSlot(specs);
+  if (group >= 0 && i >= group) {
+    const taken = picked
+      .slice(group)
+      .filter((ref): ref is TargetRef => ref !== null && ref !== undefined);
+    return (options[group] ?? []).filter((ref) => !taken.some((t) => sameTarget(ref, t)));
+  }
   const all = options[i] ?? [];
   const than = specs[i] === undefined ? undefined : otherThan(specs[i]);
   if (than === undefined) return all;
@@ -328,6 +392,7 @@ export function otherSlotConflict(
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
+  if (spec.kind === "any-number") return `any number of ${describeTargetSpec(spec.of)}`;
   if (spec.kind === "other") {
     const than = spec.than ?? "source";
     const inner = describeTargetSpec(spec.of);

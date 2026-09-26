@@ -38,6 +38,7 @@ import _poolDakmorBat from "../pool/dakmor-bat.js";
 import _poolDarksteelCitadel from "../pool/darksteel-citadel.js";
 import _poolDarksteelSentinel from "../pool/darksteel-sentinel.js";
 import _poolDawningAngel from "../pool/dawning-angel.js";
+import _poolDeepglowSkate from "../pool/deepglow-skate.js";
 import _poolDiregrafGhoul from "../pool/diregraf-ghoul.js";
 import _poolDispersalTechnician from "../pool/dispersal-technician.js";
 import _poolDreamPillager from "../pool/dream-pillager.js";
@@ -217,6 +218,7 @@ const shard: CardShard = {
     _poolDarksteelCitadel,
     _poolDarksteelSentinel,
     _poolDawningAngel,
+    _poolDeepglowSkate,
     _poolDiregrafGhoul,
     _poolDispersalTechnician,
     _poolDreamPillager,

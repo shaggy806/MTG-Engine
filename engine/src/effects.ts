@@ -319,6 +319,14 @@ export type EffectAmount =
    * "the number of cards in **defending player's** hand" is `{ cardsInHand:
    * "trigger-player" }` in an attack trigger. */
   | { readonly cardsInHand: PlayerScope }
+  /** How many cards are in a library or graveyard — yours, or with
+   * `"each"` the player a per-player effect is acting on: "any number of
+   * target players each mill half **their** library" (Singularity Rupture)
+   * is a `mill` of `{ half: { librarySize: "each" }, round: "down" }`,
+   * "…cards equal to the number of cards in **their** graveyard" (Riverchurn
+   * Monument) `{ graveyardSize: "each" }`. */
+  | { readonly librarySize: "you" | "each" }
+  | { readonly graveyardSize: "you" | "each" }
   /** How many colours what an {@link AmountRef} points at has — Ramos,
    * Dragon Engine's "a +1/+1 counter on Ramos for each of **that spell's
    * colors**" (`"trigger-object"` in a cast trigger). A permanent that has
@@ -593,6 +601,33 @@ export type EffectSpec =
        * your hand."), which really are separate events.
        */
       readonly simultaneous?: boolean;
+    }
+  | {
+      /**
+       * `effect` once for each member of an "any number of target …" group
+       * (the `any-number` `TargetSpec`) — the targets in slot `from` on,
+       * in the order they were chosen, each bound in turn to slot `from` of
+       * `effect`, which is written as for one target there. Mindbreak
+       * Trap's "exile any number of target spells" is `{ kind:
+       * "for-each-target", from: 0, effect: { kind: "exile", target: 0 } }`.
+       * A member found illegal as it resolved is left out (rule 608.2b).
+       * `simultaneous` makes the members one instruction, as a `sequence`'s
+       * does: "any number of target players each mill two cards" mills them
+       * at once.
+       */
+      readonly kind: "for-each-target";
+      readonly from: number;
+      readonly effect: EffectSpec;
+      readonly simultaneous?: boolean;
+    }
+  | {
+      /** One member's turn of a `for-each-target`: target `index` bound to
+       * slot `from`. Built by the engine as it applies one — never
+       * authored. */
+      readonly kind: "for-target";
+      readonly from: number;
+      readonly index: number;
+      readonly effect: EffectSpec;
     }
   | {
       readonly kind: "damage";
@@ -1020,13 +1055,15 @@ export type EffectSpec =
        * permanent — Norin the Wary's "exile Norin"), `"trigger-object"`, or
        * several target slots at once (Ghostly Flicker's "two target …"),
        * which are exiled together and return together — every one is on the
-       * battlefield before any of their enters triggers is looked at.
+       * battlefield before any of their enters triggers is looked at. `{
+       * from }` is every slot from that one on: an "any number of target …"
+       * group's members, all at once (Eerie Interlude).
        *
        * `"source"` names the permanent the ability came from *as it was when
        * the ability was put on the stack*: one that has since left and come
        * back is a new object (rule 400.7), and is left alone.
        */
-      readonly target: EffectTargetRef | readonly number[];
+      readonly target: EffectTargetRef | readonly number[] | { readonly from: number };
       /** See {@link FlickerCounters} — Essence Flux's Spirit clause. */
       readonly thenCounters?: FlickerCounters;
       /** Return under the effect's controller's control rather than the
@@ -1351,6 +1388,14 @@ export type EffectSpec =
       readonly kind: "double-counters-all";
       readonly filter: CardFilter;
       readonly counterKind: string;
+    }
+  | {
+      /** "Double the number of each kind of counter on" one permanent
+       * (Deepglow Skate): another counter of each kind for each one already
+       * there, put on the way a targeted `add-counter` puts them, so a
+       * Doubling Season applies. A permanent with no counters is untouched. */
+      readonly kind: "double-counters";
+      readonly target: EffectTargetRef;
     }
   | {
       /** Every battlefield permanent matching `filter` gains `keyword` (Overrun:
@@ -2523,6 +2568,10 @@ export interface EffectApi {
   handSizeOf(player: PlayerId): number;
   /** How many cards are in `player`'s library. */
   librarySizeOf(player: PlayerId): number;
+  /** How many cards are in `player`'s graveyard — see `{ graveyardSize }`. */
+  graveyardSizeOf(player: PlayerId): number;
+  /** See the `"double-counters"` {@link EffectSpec}. */
+  doubleCounters(target: TargetRef): void;
   /** The colours of what `target` points at, as it last existed on the
    * battlefield if it has left — see `{ colorsOf }`. */
   colorsOf(target: TargetRef): readonly Color[];
@@ -2635,6 +2684,12 @@ export interface EffectApi {
    * sacrificed — as its `"sacrificed"` ({@link AmountRef}), read as it last
    * existed on the battlefield. */
   withSacrificed(object: ObjectId): ResolutionContext;
+  /** This context with target `index` in slot `from` and nothing after it
+   * — one member of an "any number of target …" group, bound where its
+   * effect expects it (see `for-each-target`). What was known about it —
+   * where it was when targeted, whether it was found illegal — moves with
+   * it. */
+  withTargetAt(from: number, index: number): ResolutionContext;
   /** This context, about `player`: the `"that-player"` scope names them —
    * an `"each-player-may"`'s follow-ups. */
   aboutPlayer(player: PlayerId): ResolutionContext;
@@ -3422,6 +3477,12 @@ function signedAmountValue(
     const b = signedAmountValue(amount.difference[1], ctx, each);
     return amount.absolute === true ? Math.abs(a - b) : Math.max(0, a - b);
   }
+  if ("librarySize" in amount) {
+    return ctx.librarySizeOf(amount.librarySize === "each" ? (each ?? ctx.controller) : ctx.controller);
+  }
+  if ("graveyardSize" in amount) {
+    return ctx.graveyardSizeOf(amount.graveyardSize === "each" ? (each ?? ctx.controller) : ctx.controller);
+  }
   if ("cardsInHand" in amount) {
     return ctx.playersInScope(amount.cardsInHand).reduce((n, p) => n + ctx.handSizeOf(p), 0);
   }
@@ -3672,6 +3733,8 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
 function readsEachPlayer(amount: EffectAmount): boolean {
   if (typeof amount !== "object") return false;
   if ("lifeTotal" in amount) return amount.lifeTotal === "each";
+  if ("librarySize" in amount) return amount.librarySize === "each";
+  if ("graveyardSize" in amount) return amount.graveyardSize === "each";
   if ("thisWay" in amount) return amount.who === "each";
   if ("half" in amount) return readsEachPlayer(amount.half);
   if ("product" in amount) return amount.product.some(readsEachPlayer);
@@ -3749,6 +3812,26 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           return;
         }
       }
+      return;
+    }
+    case "for-each-target": {
+      // One step per member still there, each binding it to slot `from` —
+      // as steps of a `sequence`, so a member's effect that stops to ask
+      // something holds the rest until it's answered.
+      const steps: EffectSpec[] = [];
+      for (let index = spec.from; index < ctx.targets.length; index += 1) {
+        if (ctx.targets[index] === undefined) continue;
+        steps.push({ kind: "for-target", from: spec.from, index, effect: spec.effect });
+      }
+      if (steps.length === 0) return;
+      applyEffectSpec(
+        { kind: "sequence", effects: steps, ...(spec.simultaneous === true ? { simultaneous: true } : {}) },
+        ctx,
+      );
+      return;
+    }
+    case "for-target": {
+      applyEffectSpec(spec.effect, ctx.withTargetAt(spec.from, spec.index));
       return;
     }
     case "damage": {
@@ -4019,8 +4102,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "flicker": {
+      const target = spec.target;
       const refs: EffectTargetRef[] =
-        typeof spec.target === "object" ? [...spec.target] : [spec.target];
+        typeof target !== "object"
+          ? [target]
+          : "from" in target
+            ? Array.from({ length: Math.max(0, ctx.targets.length - target.from) }, (_unused, i) => target.from + i)
+            : [...target];
       const targets: TargetRef[] = [];
       for (const ref of refs) {
         const target = resolveEffectTarget(ref, ctx);
@@ -4243,6 +4331,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "double-counters-all":
       ctx.doubleCountersAll(spec.filter, spec.counterKind);
       return;
+    case "double-counters": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.doubleCounters(target);
+      return;
+    }
     case "grant-keyword-all":
       ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration, spec.exceptSource === true);
       return;

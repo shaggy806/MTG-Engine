@@ -38,6 +38,7 @@ import _poolDevilsPlay from "../pool/devils-play.js";
 import _poolDictateOfHeliod from "../pool/dictate-of-heliod.js";
 import _poolDisfigure from "../pool/disfigure.js";
 import _poolDisplacerKitten from "../pool/displacer-kitten.js";
+import _poolDivineResilience from "../pool/divine-resilience.js";
 import _poolDosansOldestChant from "../pool/dosans-oldest-chant.js";
 import _poolDreadmalkin from "../pool/dreadmalkin.js";
 import _poolDruidOfTheAnima from "../pool/druid-of-the-anima.js";
@@ -229,6 +230,7 @@ const shard: CardShard = {
     _poolDictateOfHeliod,
     _poolDisfigure,
     _poolDisplacerKitten,
+    _poolDivineResilience,
     _poolDosansOldestChant,
     _poolDreadmalkin,
     _poolDruidOfTheAnima,

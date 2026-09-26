@@ -8,7 +8,7 @@
  * untouched.
  */
 
-import { isOptionalSpec, otherSlotConflict } from "../../target.js";
+import { anyNumberSlot, isOptionalSpec, otherSlotConflict } from "../../target.js";
 import type { TargetRef, TargetSpec } from "../../target.js";
 
 /**
@@ -28,7 +28,24 @@ export function targetCombos(
     return [];
   }
   let combos: (TargetRef | null)[][] = [[]];
+  const group = anyNumberSlot(specs);
   optionLists.forEach((options, i) => {
+    // An "any number of" group (always last) ends each combination with a
+    // few of its answers rather than every subset: none, each candidate
+    // alone, and all of them.
+    if (i === group) {
+      const tails: TargetRef[][] = [[], ...options.map((ref) => [ref]), ...(options.length > 1 ? [[...options]] : [])];
+      const next: (TargetRef | null)[][] = [];
+      for (const combo of combos) {
+        for (const tail of tails) {
+          if (next.length >= limit) break;
+          next.push([...combo, ...tail]);
+        }
+        if (next.length >= limit) break;
+      }
+      combos = next;
+      return;
+    }
     // Skipping is a real choice for an optional slot, so offer it alongside
     // the targets rather than only when there's nothing to point at.
     const choices: (TargetRef | null)[] = isOptionalSpec(specs[i])

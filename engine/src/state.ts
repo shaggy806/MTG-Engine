@@ -2080,6 +2080,9 @@ export interface GameState {
     readonly slots: readonly (
       | { readonly auto: TargetRef }
       | { readonly spec: TargetSpec }
+      /** An "up to one" or "any number of" slot with nothing to point at:
+       * left empty — a hole, or for a group no slot at all. */
+      | { readonly skip: true }
     )[];
     /** See {@link PendingTrigger.triggerValue}. */
     readonly triggerValue?: number;

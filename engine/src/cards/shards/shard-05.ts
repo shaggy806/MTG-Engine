@@ -144,6 +144,7 @@ import _poolSpectatorSeating from "../pool/spectator-seating.js";
 import _poolSpiritSummoning from "../pool/spirit-summoning.js";
 import _poolSpitefulBully from "../pool/spiteful-bully.js";
 import _poolStealerOfSecrets from "../pool/stealer-of-secrets.js";
+import _poolStonespeakerCrystal from "../pool/stonespeaker-crystal.js";
 import _poolStorytellerPixie from "../pool/storyteller-pixie.js";
 import _poolSuburbanSanctuary from "../pool/suburban-sanctuary.js";
 import _poolSugarRush from "../pool/sugar-rush.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolSpiritSummoning,
     _poolSpitefulBully,
     _poolStealerOfSecrets,
+    _poolStonespeakerCrystal,
     _poolStorytellerPixie,
     _poolSuburbanSanctuary,
     _poolSugarRush,

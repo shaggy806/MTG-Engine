@@ -195,6 +195,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} fizzles — ${event.reason}`
     case 'spell-countered':
       return `${name(event.object)} is countered`
+    case 'spell-exiled':
+      return `${name(event.object)} is exiled from the stack`
     case 'ward-paid':
       return `${event.player} pays ward for ${name(event.object)}`
     case 'ward-unpaid':

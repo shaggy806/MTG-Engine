@@ -495,6 +495,12 @@ export type GameEvent =
       readonly object: ObjectId;
     })
   | (Base & {
+      /** A spell was exiled from the stack — not countered (Mindbreak
+       * Trap). */
+      readonly type: "spell-exiled";
+      readonly object: ObjectId;
+    })
+  | (Base & {
       /** A player paid a permanent's ward cost (rule 702.21) to keep their
        * spell/ability from being countered. */
       readonly type: "ward-paid";

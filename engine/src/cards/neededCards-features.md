@@ -234,7 +234,25 @@ Garenbrig (717)
   dies"), Chaos Warp (shuffle a permanent into a library), The One Ring
   (protection for a player), Urza's Saga.
 
-### Unbounded targeting — scoped, and deliberately not built
+### Unbounded targeting — built 2026-09-26
+
+**Built** as the `any-number` target spec, a group that is the last slot of
+its list (see AUTHORING §7). Re-measured against the top 5000 before it was
+built: 36 cards say "any number of target", four times the 9 below, which is
+what the revisit line asked for. The desynchronisation described below is
+avoided by never re-deriving the group's shape from the board: every check
+of a choice expands the group from the number of targets actually chosen
+(`concreteTargetSpecs`), and a spell or ability keeps that number with the
+targets it went on the stack with. It shipped with Eerie Interlude, Brago,
+Divine Resilience, Mindbreak Trap, Court of Cunning, Riverchurn Monument,
+Singularity Rupture, Deepglow Skate and Stonespeaker Crystal. Still blocked
+among the 36: divided damage or counters (Fury, Fire Covenant, Dragonlord
+Atarka, Magma Opus, Lathiel, Vorinclex's saga, Fireball), Strive (Twinflame,
+Call the Coppercoats), phasing (Clever Concealment, Guardian of Faith), a
+constraint relating the chosen cards (Ancient Brass Dragon, Rampaging Yao
+Guai, V.A.T.S.), and one-offs each needing something of their own.
+
+The original scoping, kept for the reasoning:
 
 The headline count is misleading. Of the 11 cards, only four are unblocked by
 variable-arity targeting *alone* — Mindbreak Trap (#544), Eerie Interlude
@@ -272,7 +290,7 @@ nothing in the repo distinguished them.
 | --- | ---: | ---: | ---: | ---: |
 | **mana provenance** (all three shapes) | 21 | **14** | 1 | 7 |
 | **protection from [filter]** | 19 | **92** | 1 | 4 |
-| unbounded targeting *(scoped out on purpose — see above)* | 9 | 544 | 0 | 0 |
+| ~~unbounded targeting~~ *(built 2026-09-26 — see above)* | 9 | 544 | 0 | 0 |
 | regeneration | 7 | 705 | 0 | 0 |
 | Station | 7 | 951 | 0 | 0 |
 | "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |

@@ -8,7 +8,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import { isOptionalSpec, otherSlotConflict } from "./target.js";
+import { concreteTargetSpecs, isOptionalSpec, otherSlotConflict } from "./target.js";
 import type { OtherThan } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
@@ -55,7 +55,9 @@ function targetFilterContext(forPlayer: PlayerId, source: TargetSource | undefin
  * see `Game.legalActions`. */
 export function targetSpecReadsX(spec: TargetSpec): boolean {
   if (typeof spec !== "object") return false;
-  if (spec.kind === "optional" || spec.kind === "other") return targetSpecReadsX(spec.of);
+  if (spec.kind === "optional" || spec.kind === "other" || spec.kind === "any-number") {
+    return targetSpecReadsX(spec.of);
+  }
   return spec.filter !== undefined && filterReadsX(spec.filter);
 }
 
@@ -186,7 +188,8 @@ export function isLegalTarget(
   }
   // An optional slot accepts exactly what its inner spec accepts; whether it
   // may be left *empty* is a question for the caller, not for a given ref.
-  if (typeof spec === "object" && spec.kind === "optional") {
+  // So does each member of an "any number of target …" group.
+  if (typeof spec === "object" && (spec.kind === "optional" || spec.kind === "any-number")) {
     return isLegalTarget(state, registry, spec.of, ref, forPlayer, source, opts);
   }
   // "Another target …": the inner spec, less what it has to differ from.
@@ -496,8 +499,9 @@ export function legalTargets(
   source?: TargetSource,
 ): TargetRef[] {
   // An optional slot offers the same candidates; skipping it isn't a
-  // `TargetRef`, so it can't be one of them (see `isOptionalSpec`).
-  if (typeof spec === "object" && spec.kind === "optional") {
+  // `TargetRef`, so it can't be one of them (see `isOptionalSpec`). An
+  // "any number of target …" group offers what each member may be.
+  if (typeof spec === "object" && (spec.kind === "optional" || spec.kind === "any-number")) {
     return legalTargets(state, registry, spec.of, forPlayer, source);
   }
   if (typeof spec === "object" && spec.kind === "other") {
@@ -592,7 +596,10 @@ export function cardSource(def: CardDefinition, object?: ObjectId): TargetSource
  * every other slot must be filled with a currently-legal target, and the
  * arity must match either way — "up to two" is two optional slots, not a
  * variable count, so the shape of `targets` always mirrors the spec list
- * and each effect's `target:` index stays a fixed position.
+ * and each effect's `target:` index stays a fixed position. The one
+ * variable count, an "any number of target …" group, is judged against the
+ * specs its own choice gives it (`concreteTargetSpecs`): one slot per
+ * member, each a distinct legal target.
  */
 export function invalidTargetReason(
   state: GameState,
@@ -603,6 +610,7 @@ export function invalidTargetReason(
   name: string,
   source?: TargetSource,
 ): string | null {
+  specs = concreteTargetSpecs(specs, chosen.length);
   if (chosen.length !== specs.length) {
     return `${name} takes ${specs.length} target(s), got ${chosen.length}`;
   }

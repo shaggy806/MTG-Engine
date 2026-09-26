@@ -30,7 +30,7 @@ import type { EffectSpec } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
-import { isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
+import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
 
@@ -265,8 +265,16 @@ const firstOfEach = (
   // Slot by slot, so an "another target" slot skips what an earlier one took
   // — and never takes what a later one is left needing.
   const picked: (TargetRef | null)[] = [];
+  const group = anyNumberSlot(specs);
   for (let i = 0; i < legalOptions.length; i += 1) {
-    picked.push(fillableOptions(specs, legalOptions, i, picked)[0] ?? null);
+    const first = fillableOptions(specs, legalOptions, i, picked)[0];
+    // An "any number of" group (always last) takes one member, or none —
+    // never a hole, which would be a member with no target.
+    if (i === group) {
+      if (first !== undefined) picked.push(first);
+      break;
+    }
+    picked.push(first ?? null);
   }
   return picked;
 };
@@ -907,9 +915,16 @@ export class RandomController extends AutomaticController {
     specs: readonly TargetSpec[] = [],
   ): ChosenTargets {
     const picked: (TargetRef | null)[] = [];
+    const group = anyNumberSlot(specs);
     for (let i = 0; i < options.length; i += 1) {
       // Narrowed by an "another target" relation to an earlier slot's pick.
       const choices = fillableOptions(specs, options, i, picked);
+      // An "any number of" group (always last): a random subset of its
+      // candidates, none included.
+      if (i === group) {
+        for (const ref of choices) if (this.random() < 0.5) picked.push(ref);
+        break;
+      }
       if (choices.length === 0) picked.push(null);
       else if (isOptionalSpec(specs[i] ?? "creature") && this.random() < 0.25) picked.push(null);
       else picked.push(choices[this.pickIndex(choices.length)]);
