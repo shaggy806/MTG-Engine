@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-279 already implemented / 221 missing
+280 already implemented / 220 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -176,7 +176,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  170  Sakashima of a Thousand Faces                  13361 decks  {3}{U}           Legendary Creature — Human Rogue
 [ ]  171  Anikthea, Hand of Erebos                       13355 decks  {2}{W}{B}{G}     Legendary Enchantment Creature — Demigod
 [x]  172  Fire Lord Zuko                                 13329 decks  {R}{W}{B}        Legendary Creature — Human Noble Ally
-[ ]  173  Rendmaw, Creaking Nest                         13317 decks  {3}{B}{G}        Legendary Artifact Creature — Scarecrow
+[x]  173  Rendmaw, Creaking Nest                         13317 decks  {3}{B}{G}        Legendary Artifact Creature — Scarecrow
 [ ]  174  Omo, Queen of Vesuva                           13314 decks  {2}{G/U}         Legendary Creature — Shapeshifter Noble
 [ ]  175  Yarok, the Desecrated                          13233 decks  {2}{B}{G}{U}     Legendary Creature — Elemental Horror
 [ ]  176  Edward Kenway                                  13083 decks  {2}{U}{B}{R}     Legendary Creature — Human Assassin Pirate

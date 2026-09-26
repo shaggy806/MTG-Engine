@@ -3659,6 +3659,7 @@ import _poolRemnantElemental from "./pool/remnant-elemental.js";
 import _poolRemorsefulCleric from "./pool/remorseful-cleric.js";
 import _poolRemoteIsle from "./pool/remote-isle.js";
 import _poolRemoveSoul from "./pool/remove-soul.js";
+import _poolRendmawCreakingNest from "./pool/rendmaw-creaking-nest.js";
 import _poolRenegadeDemon from "./pool/renegade-demon.js";
 import _poolRenegadeMap from "./pool/renegade-map.js";
 import _poolRenegadeTroops from "./pool/renegade-troops.js";
@@ -5486,6 +5487,7 @@ import _poolZurTheEnchanter from "./pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "./pool/zuran-enchanter.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
 import _poolZuranSpellcaster from "./pool/zuran-spellcaster.js";
+import _tokens22BlackBirdToken from "./tokens/2-2-black-bird-token.js";
 import _tokensAllyToken from "./tokens/ally-token.js";
 import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensArmyToken from "./tokens/army-token.js";
@@ -9241,6 +9243,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRemorsefulCleric,
   _poolRemoteIsle,
   _poolRemoveSoul,
+  _poolRendmawCreakingNest,
   _poolRenegadeDemon,
   _poolRenegadeMap,
   _poolRenegadeTroops,
@@ -11074,6 +11077,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
  * other card (a `create-token` effect names one), but not a card: never
  * deck-legal, and hidden from the card library by default. */
 export const TOKEN_CARDS: readonly CardDefinition[] = [
+  _tokens22BlackBirdToken,
   _tokensAllyToken,
   _tokensApeToken,
   _tokensArmyToken,

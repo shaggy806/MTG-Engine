@@ -317,6 +317,10 @@ export type TriggerSpec =
       readonly on: "plays-card";
       readonly who: TriggerWho;
       readonly from?: ZoneType;
+      /** A filter on the card played — the land on the battlefield, the
+       * spell on the stack: Rendmaw, Creaking Nest's "a card with two or
+       * more card types". */
+      readonly filter?: CardFilter;
     }
   | {
       /**

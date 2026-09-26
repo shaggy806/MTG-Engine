@@ -107,6 +107,7 @@ import _poolRakshasaDebaser from "../pool/rakshasa-debaser.js";
 import _poolRathiTrapper from "../pool/rathi-trapper.js";
 import _poolRazortoothRats from "../pool/razortooth-rats.js";
 import _poolRedHerring from "../pool/red-herring.js";
+import _poolRendmawCreakingNest from "../pool/rendmaw-creaking-nest.js";
 import _poolRipchainRazorkin from "../pool/ripchain-razorkin.js";
 import _poolRustwingFalcon from "../pool/rustwing-falcon.js";
 import _poolSceneOfTheCrime from "../pool/scene-of-the-crime.js";
@@ -262,6 +263,7 @@ const shard: CardShard = {
     _poolRathiTrapper,
     _poolRazortoothRats,
     _poolRedHerring,
+    _poolRendmawCreakingNest,
     _poolRipchainRazorkin,
     _poolRustwingFalcon,
     _poolSceneOfTheCrime,

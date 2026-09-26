@@ -10180,7 +10180,9 @@ export class Game {
         // 305.1) — both events, each carrying the zone it came from.
         if (event.type !== "land-played" && event.type !== "spell-cast") return false;
         if (!this.matchesWhoPlayer(spec.who, event.player, self)) return false;
-        return spec.from === undefined || event.from === spec.from;
+        if (spec.from !== undefined && event.from !== spec.from) return false;
+        // The card played: the land on the battlefield, the spell on the stack.
+        return this.triggerFilterOk(spec.filter, event.object, self);
       }
       case "leaves-battlefield":
         // Read as it last existed on the battlefield, like `dies`.

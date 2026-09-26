@@ -8,6 +8,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "1/1 Green Cat Token",
   "1/1 Vampire Token",
   "1/1 White Dog Token",
+  "2/2 Black Bird Token",
   "2/2 Blue Bird Token",
   "2/2 Red Spirit Token",
   "3/3 Beast Token",
