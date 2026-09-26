@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-269 already implemented / 231 missing
+272 already implemented / 228 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -237,7 +237,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  231  Tana, the Bloodsower                           10938 decks  {2}{R}{G}        Legendary Creature — Elf Druid
 [ ]  232  Zimone, Infinite Analyst                       10882 decks  {1}{G}{U}        Legendary Creature — Human Wizard
 [ ]  233  Ziatora, the Incinerator                       10831 decks  {3}{B}{R}{G}     Legendary Creature — Demon Dragon
-[ ]  234  Killian, Decisive Mentor                       10738 decks  {1}{W}{B}        Legendary Creature — Human Warlock
+[x]  234  Killian, Decisive Mentor                       10738 decks  {1}{W}{B}        Legendary Creature — Human Warlock
 [ ]  235  Ob Nixilis, Captive Kingpin                    10730 decks  {2}{B}{R}        Legendary Creature — Demon
 [ ]  236  Lorehold, the Historian                        10712 decks  {3}{R}{W}        Legendary Creature — Elder Dragon
 [x]  237  Clavileño, First of the Blessed                10668 decks  {1}{W}{B}        Legendary Creature — Vampire Cleric
@@ -441,7 +441,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  435  Aminatou, the Fateshifter                       6822 decks  {W}{U}{B}        Legendary Planeswalker — Aminatou
 [x]  436  The Locust God                                  6821 decks  {4}{U}{R}        Legendary Creature — God
 [x]  437  Ruric Thar, the Unbowed                         6811 decks  {4}{R}{G}        Legendary Creature — Ogre Warrior
-[ ]  438  Baeloth Barrityl, Entertainer                   6809 decks  {4}{R}           Legendary Creature — Elf Shaman
+[x]  438  Baeloth Barrityl, Entertainer                   6809 decks  {4}{R}           Legendary Creature — Elf Shaman
 [ ]  439  Rootha, Mastering the Moment                    6807 decks  {2}{U}{R}        Legendary Creature — Orc Sorcerer
 [ ]  440  Ivy, Gleeful Spellthief                         6799 decks  {G}{U}           Legendary Creature — Faerie Rogue
 [x]  441  Don Andres, the Renegade                        6779 decks  {1}{U}{B}{R}     Legendary Creature — Vampire Pirate
@@ -481,7 +481,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  475  The Emperor of Palamecia                        6412 decks  {U}{R}           Legendary Creature — Human Noble Wizard // Legendary Creature — Demon Noble Wizard
 [ ]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
-[ ]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
+[x]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
 [x]  479  Minn, Wily Illusionist                          6397 decks  {1}{U}{U}        Legendary Creature — Gnome Wizard
 [ ]  480  Teval, Arbiter of Virtue                        6377 decks  {2}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]  481  Anhelo, the Painter                             6362 decks  {U}{B}{R}        Legendary Creature — Vampire Assassin

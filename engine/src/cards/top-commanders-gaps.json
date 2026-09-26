@@ -115,7 +115,9 @@
   "bug:player-leaves-game-cleanup",
   "bug:as-enters-choices-any-entry",
   "effect:aura-enters-choice",
-  "mechanic:station"
+  "mechanic:station",
+  "mechanic:goad-extensions",
+  "mechanic:suspect"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
