@@ -35,7 +35,7 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-2000 staples and the precons)
 
-- **EDH-popularity feature tiers.** Tier 2 is Spree, Class and Changeling. Tier 3 is Station,
+- **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Station,
   Discover, Evoke and Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
   items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
@@ -110,6 +110,9 @@ that one card is the reason the deck exists.
   and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
+- **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
+  is an Army too (Morophon beside Orcish Bowmasters' Army). Needs `decision:choose-permanent`,
+  which is UI-bound. See AUTHORING §15, "Partial".
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.

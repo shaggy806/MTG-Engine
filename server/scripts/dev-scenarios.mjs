@@ -211,7 +211,7 @@ export default {
         "Serra Angel", "Ambush Viper", "Boggart Brute", "Bloodbraid Elf", "Giant Spider",
         "Dragonkin Berserker", "Combat Thresher", "Brash Taunter", "Carnage Tyrant",
         "Hornet Nest", "Invisible Stalker", "Vela the Night-Clad", "Harvesttide Infiltrator",
-        "Atraxa, Praetors' Voice",
+        "Atraxa, Praetors' Voice", "Morophon, the Boundless",
       ],
       bob: [
         "Garruk Wildspeaker", "Chandra, Acolyte of Flame", "Ajani, Caller of the Pride",

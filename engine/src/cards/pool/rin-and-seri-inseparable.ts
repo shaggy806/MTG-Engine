@@ -2,10 +2,10 @@ import { defineCard } from "../define.js";
 
 // #42 in top-commanders.txt.
 //
-// "Dog" and "Cat" are matched as plain subtypes everywhere below. That is
-// exact only because nothing in the pool or tokens has changeling (rule
-// 702.73a) or is otherwise every creature type; a card that does would need
-// to count as both a Dog and a Cat for all four clauses.
+// "Dog" and "Cat" are matched as subtypes everywhere below, through
+// `hasSubtype`, so a changeling (rule 702.73a — Morophon, the Boundless)
+// counts as both a Dog and a Cat for all four clauses: casting one triggers
+// both abilities.
 const DOG_TEXT = "Whenever you cast a Dog spell, create a 1/1 green Cat creature token.";
 const CAT_TEXT = "Whenever you cast a Cat spell, create a 1/1 white Dog creature token.";
 const PING_TEXT =

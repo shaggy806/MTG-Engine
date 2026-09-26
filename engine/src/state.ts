@@ -697,6 +697,8 @@ export interface LastKnownInfo {
   readonly power: number;
   readonly toughness: number;
   readonly types: readonly CardType[];
+  /** Computed subtypes — a changeling's with its every-creature-type marker
+   * (`subtypes.ts`), so ask through `hasSubtype`. */
   readonly subtypes: readonly string[];
   readonly supertypes: readonly Supertype[];
   readonly colors: readonly Color[];

@@ -86,6 +86,7 @@ export const KEYWORDS = {
   hexproof: "hexproof", shroud: "shroud", flash: "flash", fear: "fear", intimidate: "intimidate",
   plainswalk: "plainswalk", islandwalk: "islandwalk", swampwalk: "swampwalk",
   mountainwalk: "mountainwalk", forestwalk: "forestwalk", desertwalk: "desertwalk",
+  changeling: "changeling",
 };
 const KW = `(${Object.keys(KEYWORDS).join("|")})`;
 

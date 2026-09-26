@@ -124,7 +124,6 @@ checked-in snapshot.
 
 - **Spree** (7 cards: Return the Favor, Three Steps Ahead, Great Train Heist) — a modal spell where each chosen mode carries its own *additional* cost, unlike `castModal`'s single shared cost. Extend `CardDefinition.castModal` with a per-mode `additionalCost?`.
 - **Class enchantments** (6 cards, `layout:class`: Wizard Class, Cleric Class, Druid Class) — a leveling permanent with rank-gated ability tiers, paid up incrementally. New card shape, closer to a Saga than anything else, but with a pay-to-advance cost per rank instead of a free per-turn chapter.
-- **Changeling** ("this card is every creature type," 6 cards: Realmwalker, Morophon, Mirror Entity) — a continuous "has all creature types" characteristic, checked by every `subtype`/`subtypes` `CardFilter` clause. Layer 4/6 addition to `characteristics.ts`.
 
 ### Tier 3 — real but niche, or a big lift for a small current payoff
 
@@ -312,6 +311,10 @@ has ever run them.
 - **Static conditions:** `source-greatest`, `player-counters`.
 - **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`.
 - **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`.
+- **Subtype marker:** `EVERY_LAND_TYPE` (Omo, Queen of Vesuva's "every land
+  type"), tested in `changeling.test.ts`. A land that has it is a Forest to
+  every filter, but taps only for what its own abilities say
+  (`static:basic-land-type-mana` is still open).
 - **Amounts:** `{ sum }`, `{ damageDealtThisTurn }`.
 - **Combat restriction:** `cant-attack-owner`.
 - **Target spec:** `creature-or-player` (**untested**). One real card still
@@ -379,6 +382,11 @@ in `git log`.
 - **E3** — five more cycles and the text-structure audit (`card:verify --text`).
 - **Mana provenance** — the mana pool as tagged `ManaUnit`s (Path of
   Ancestry, Cavern of Souls, …; `mana-provenance.test.ts`, AUTHORING §15).
+- **Changeling** (`keyword:changeling`) — every creature type, and every land
+  type, as one marker in a subtype list (`subtypes.ts`; Morophon, the
+  Boundless, with the `ofChosenType` filter clause for its anthem;
+  `changeling.test.ts`). Realmwalker and Mirror Entity, the other Tier 2
+  names, each still need pieces of their own.
 
 
 ## Completed: `neededCards.txt` passes (P0-P20)

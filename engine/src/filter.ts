@@ -29,6 +29,7 @@ import { manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
+import { hasSubtype } from "./subtypes.js";
 import { thisWayEntries } from "./this-way.js";
 
 /**
@@ -197,6 +198,14 @@ export interface CardFilter {
   readonly suspected?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
+  /**
+   * Is of the creature type chosen for the permanent applying the filter (its
+   * `chosenCreatureType`, via `FilterContext.source`) — Morophon, the
+   * Boundless's "other creatures you control **of the chosen type** get
+   * +1/+1". A changeling is of whatever type was chosen. With no source, or
+   * nothing chosen for it yet, nothing matches.
+   */
+  readonly ofChosenType?: true;
   /** Controlled by the filtering player (`"you"`), anyone else
    * (`"opponent"`), or whoever's turn it is (`"active-player"` — "creatures
    * **the active player** controls", "each creature attacking player
@@ -474,24 +483,31 @@ export function matchesFilter(
   if (
     filter.subtype !== undefined ||
     filter.subtypes !== undefined ||
-    filter.notSubtypes !== undefined
+    filter.notSubtypes !== undefined ||
+    filter.ofChosenType !== undefined
   ) {
+    // Through `hasSubtype`, never `includes`: a changeling's list carries one
+    // marker for every creature type (see `subtypes.ts`).
     const subtypes =
       live !== undefined
         ? (layered?.subtypes ?? effectiveSubtypes(state, registry, live))
         : lki!.subtypes;
-    if (filter.subtype !== undefined && !subtypes.includes(filter.subtype)) return false;
+    if (filter.subtype !== undefined && !hasSubtype(subtypes, filter.subtype)) return false;
     if (
       filter.subtypes !== undefined &&
-      !filter.subtypes.some((s) => subtypes.includes(s))
+      !filter.subtypes.some((s) => hasSubtype(subtypes, s))
     ) {
       return false;
     }
     if (
       filter.notSubtypes !== undefined &&
-      filter.notSubtypes.some((s) => subtypes.includes(s))
+      filter.notSubtypes.some((s) => hasSubtype(subtypes, s))
     ) {
       return false;
+    }
+    if (filter.ofChosenType === true) {
+      const chosen = ctx.source === undefined ? null : state.objects[ctx.source]?.chosenCreatureType;
+      if (chosen == null || !hasSubtype(subtypes, chosen)) return false;
     }
   }
   const name = live !== undefined ? printedCardName(live) : lki!.name;

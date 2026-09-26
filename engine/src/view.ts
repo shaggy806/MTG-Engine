@@ -28,6 +28,7 @@ import type {
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
 import { activePlayerOf, faceName, printedCardName } from "./state.js";
+import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 
 export interface PublicPlayerInfo {
@@ -303,7 +304,10 @@ function visible(
     manaCost: def.manaCost,
     text,
     types: computed.types,
-    subtypes: computed.subtypes,
+    // The subtypes a type line shows: a changeling's "every creature type"
+    // is an engine marker (`subtypes.ts`), not a word on the card — its
+    // changeling keyword says so instead.
+    subtypes: withoutTypeMarkers(computed.subtypes),
     power: isCreature ? computed.power : null,
     toughness: isCreature ? computed.toughness : null,
     loyalty: computed.types.includes("planeswalker")

@@ -364,6 +364,18 @@ One keyword per land type a card prints; a new type is a new keyword, added to
 **Day/Night:** `daybound` / `nightbound` — the two faces of a modern werewolf;
 `Game.setDayNight` transforms them with the cycle.
 
+**Changeling** (rule 702.73a): `changeling` — "this object is every creature
+type", in every zone. Put it in `keywords` and keep the printed subtypes
+(`["Shapeshifter"]`); layer 4 adds the `EVERY_CREATURE_TYPE` marker
+(`subtypes.ts`) itself, so the card is a Goblin to a Goblin lord, a Dog *and* a
+Cat spell to Rin and Seri, and an Army to amass (Morophon, the Boundless). It
+survives losing its abilities and is replaced by a later "becomes a Frog", as
+the rulings have it. Only a printed or copied changeling works — no effect
+grants the keyword. "Is every creature type" / "every land type" granted by an
+effect (Mutavault's animation, Omo's everything counters) is
+`EVERY_CREATURE_TYPE` / `EVERY_LAND_TYPE` in an `addSubtypes`. **Never read a
+subtype list with `includes`** in engine code — ask `hasSubtype`.
+
 Anything not in that list (protection wording, ward, prowess, …) is **not** a
 keyword string — it's a static or triggered ability. See §9–10.
 
@@ -705,7 +717,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
 | `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). |
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
-| `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. Picks the first Army rather than asking; no precon makes two. |
+| `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. A changeling is an Army creature too. Picks the first Army rather than asking — see §15 "Partial". |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
 | `double-pt-all` | `filter`, `duration` | Unnatural Growth — doubles each matching permanent's own *current computed* power/toughness individually (a 2/2 and a 5/5 both matching become a 4/4 and a 10/10), unlike `modify-pt-all`'s single shared amount |
@@ -991,7 +1003,7 @@ manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
 manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
 attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
-sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected }`,
+sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, ofChosenType }`,
 every present clause ANDed. `goaded` is goaded by anyone, however (a one-shot
 goad, one for the rest of the game, a static one), and `suspected` rule
 701.60's designation; one that has left the battlefield is asked as it last
@@ -1048,7 +1060,13 @@ filter: { type: "creature", thisWay: "milled" }, destination: "hand", count: 1
 matches nothing. `attacking` asks whether the permanent is currently attacking
 (Kangee's Lieutenant). `subtypes`/`typesAnyOf` are an OR
 within themselves (Farseek: "a Plains, Island, Swamp, or Mountain card";
-Takenuma's Channel: "a creature or planeswalker card"). Numeric fields take
+Takenuma's Channel: "a creature or planeswalker card"). A changeling matches
+every creature-type clause, `notSubtypes` included (it *is* a Zombie).
+`ofChosenType: true` is "of the chosen type": the creature type chosen for the
+permanent applying the filter (`chooseCreatureTypeOnEnter`) — Morophon's "other
+creatures you control of the chosen type". It's answered where the filter
+knows its source, a static's `filter` scope and a trigger's filter; with
+nothing chosen, nothing matches. Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
 
 #### A number read off the game (`DynamicOperand`)
@@ -1610,10 +1628,11 @@ static: [
   "opponent"`), "non-Equipment artifact and non-Aura enchantment" (`anyOf`),
   "creatures you don't control", counters on any permanent. Type and subtype
   clauses read current (layer-4) types; a `keyword` clause waits for layer 6
-  like `withKeyword`. A `power` / `toughness` clause can't be answered from
-  inside the layer fold that computes it and **fails closed** — don't author
-  a scope that needs one. Prefer this over adding another flag to the fixed
-  scopes.
+  like `withKeyword`; `ofChosenType` reads this permanent's own chosen
+  creature type (Morophon's "other creatures you control of the chosen
+  type"). A `power` / `toughness` clause can't be answered from inside the
+  layer fold that computes it and **fails closed** — don't author a scope that
+  needs one. Prefer this over adding another flag to the fixed scopes.
 
 `withKeyword` (either creature scope) and `withoutKeyword` read the target's
 **current** keywords (rule 613.8a — the anthem depends on whatever grants or
@@ -2523,8 +2542,10 @@ Delete an entry in the same commit as the feature that retires it.
   (never the case for a copy of a Clone that copied something, which copies
   what it copied), and `debugSpawn`.
   Metallic Mimic ("each other creature you control **of the chosen type**
-  enters with an additional +1/+1 counter") still needs a filter for the
-  chosen type.
+  enters with an additional +1/+1 counter") has its filter now (`ofChosenType`),
+  but an `others-enter-battlefield` replacement doesn't hand its filter a
+  source to read the choice off, and "is the chosen type in addition to its
+  other types" isn't modeled.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
   702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**
   (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort
@@ -2580,6 +2601,11 @@ Delete an entry in the same commit as the feature that retires it.
   `alternativeCost`**, which tapped the first eligible permanents: which
   creatures a cost taps decides which can attack or block this turn. The
   player picks them now (`tap-cost-choices.test.ts`).
+- **`amass`** puts its counters on the first Army creature you control rather
+  than letting you choose (rule 701.47a). Amass never makes a second Army
+  itself, but a changeling is an Army creature (Morophon beside an Orcish
+  Bowmasters' Army token), and which one grows is a real choice — this needs
+  the "choose a permanent" decision (`decision:choose-permanent`).
 - **A keyword-scoped static sees only one level of keyword grants.**
   `withKeyword`/`withoutKeyword` match the target's *current* keywords, but
   those are folded from every static *not* itself scoped by keyword (plus

@@ -8,11 +8,11 @@ import { defineCard } from "../define.js";
 // `Game.withDamageBatch` is what makes lifelink count that way; it was the
 // reason this card was once dropped.
 //
-// The five types are matched as plain subtypes, with no creature-type
+// The five types are matched as subtypes, with no creature-type
 // restriction, because that's the wording: "each Pest, Bat, …" is any
-// permanent with the subtype. It's exact because nothing in the pool or
-// tokens has changeling (rule 702.73a). A creature with two of the types
-// matches once, so it gets one counter (the 2026-03-20 ruling).
+// permanent with the subtype. A creature with two of the types matches
+// once, so it gets one counter (the 2026-03-20 ruling) — and so does a
+// changeling (rule 702.73a), which is all five (`hasSubtype`).
 const TEXT =
   "Whenever you gain life, put a +1/+1 counter on each Pest, Bat, Insect, Snake, and " +
   "Spider you control.";

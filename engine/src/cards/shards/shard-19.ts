@@ -97,6 +97,7 @@ import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
 import _poolMineshaftSpider from "../pool/mineshaft-spider.js";
 import _poolMiresGrasp from "../pool/mires-grasp.js";
+import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
 import _poolMuckRats from "../pool/muck-rats.js";
 import _poolNekusarTheMindrazer from "../pool/nekusar-the-mindrazer.js";
 import _poolNephaliaSeakite from "../pool/nephalia-seakite.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolMeticulousArchive,
     _poolMineshaftSpider,
     _poolMiresGrasp,
+    _poolMorophonTheBoundless,
     _poolMuckRats,
     _poolNekusarTheMindrazer,
     _poolNephaliaSeakite,

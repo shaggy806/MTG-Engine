@@ -3014,6 +3014,7 @@ import _poolMorgueThrull from "./pool/morgue-thrull.js";
 import _poolMorgueToad from "./pool/morgue-toad.js";
 import _poolMoriokReaver from "./pool/moriok-reaver.js";
 import _poolMoriokScavenger from "./pool/moriok-scavenger.js";
+import _poolMorophonTheBoundless from "./pool/morophon-the-boundless.js";
 import _poolMorphicPool from "./pool/morphic-pool.js";
 import _poolMorphling from "./pool/morphling.js";
 import _poolMorskaUnderseaSleuth from "./pool/morska-undersea-sleuth.js";
@@ -8589,6 +8590,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMorgueToad,
   _poolMoriokReaver,
   _poolMoriokScavenger,
+  _poolMorophonTheBoundless,
   _poolMorphicPool,
   _poolMorphling,
   _poolMorskaUnderseaSleuth,

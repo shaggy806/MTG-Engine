@@ -217,6 +217,7 @@ import type {
   TargetedBy,
   ZoneType,
 } from "./state.js";
+import { EVERY_CREATURE_TYPE, hasSubtype, isCreatureType } from "./subtypes.js";
 import { describeTargetSpec, isOptionalSpec, normalizeTargets, otherThan, targetsFillable } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
 import { eventsSince as eventLogSince, lifeLostSince, thisWayEntries } from "./this-way.js";
@@ -8516,14 +8517,18 @@ export class Game {
   }
 
   /** Every creature type across `player`'s commanders, wherever they are —
-   * Path of Ancestry's "shares a creature type with your commander". */
+   * Path of Ancestry's "shares a creature type with your commander". As they
+   * are now, in whatever zone: a changeling commander (rule 702.73a, which
+   * works in every zone) contributes `EVERY_CREATURE_TYPE`, which a filter's
+   * `subtypes` reads as "any creature type" (`hasSubtype`) — it shares one
+   * with every creature spell that has one. */
   private commanderCreatureTypes(player: PlayerId): string[] {
     const types = new Set<string>();
     for (const id of Object.keys(this.state.objects) as ObjectId[]) {
       const object = this.state.objects[id];
       if (!object.isCommander || object.owner !== player) continue;
-      for (const subtype of this.registry.get(printedCardName(object)).subtypes) {
-        types.add(subtype);
+      for (const subtype of effectiveSubtypes(this.state, this.registry, object)) {
+        if (subtype === EVERY_CREATURE_TYPE || isCreatureType(subtype)) types.add(subtype);
       }
     }
     // An empty list would match nothing, which is right: no commander, no
@@ -12046,17 +12051,21 @@ export class Game {
    * same object each time.
    *
    * Picks the first Army on the battlefield rather than asking. The rules let
-   * the controller choose which Army when they control several; nothing in
-   * the precons makes more than one, so the choice would never come up.
+   * the controller choose which Army when they control several (rule
+   * 701.47a). Amass itself never makes a second one, but a changeling is an
+   * Army creature too (rule 702.73a), so a changeling beside an Army token is
+   * a real choice this doesn't ask yet — see BACKLOG's engine rules gaps.
    */
   private amass(controller: PlayerId, amount: number, creatureType: string): void {
     if (amount <= 0) return;
+    // "An Army creature you control": a changeling is one (rule 702.73a).
     let army = this.state.zones.shared.battlefield.find((id) => {
       const object = this.state.objects[id];
       return (
         object !== undefined &&
         object.controller === controller &&
-        effectiveSubtypes(this.state, this.registry, object).includes("Army")
+        effectiveTypes(this.state, this.registry, object).includes("creature") &&
+        hasSubtype(effectiveSubtypes(this.state, this.registry, object), "Army")
       );
     });
     if (army === undefined) {
@@ -12071,7 +12080,7 @@ export class Game {
     // 701.44b — "It's also a [type]". A permanent subtype grant, so it sticks
     // across turns the way the printed type would.
     const object = this.state.objects[army];
-    if (object !== undefined && !effectiveSubtypes(this.state, this.registry, object).includes(creatureType)) {
+    if (object !== undefined && !hasSubtype(effectiveSubtypes(this.state, this.registry, object), creatureType)) {
       object.modifiers.push({
         timestamp: this.state.timestampSeq,
         power: 0,

@@ -4,10 +4,9 @@ import { defineCard } from "../define.js";
 // activated ability puts all five colours in its identity (rule 903.4), which
 // `identity.ts` reads straight off `text`.
 //
-// "Myr" is matched as a plain subtype everywhere below. That is exact only
-// because nothing in the pool or tokens has changeling (rule 702.73a) or is
-// otherwise every creature type; a card that does would need to count as a
-// Myr for all three clauses.
+// "Myr" is matched as a subtype everywhere below, through `hasSubtype`, so a
+// changeling (rule 702.73a — Morophon, the Boundless) is a Myr for all three
+// clauses.
 const CAST_TEXT =
   "Whenever you cast a Myr spell, create a 1/1 colorless Myr artifact creature token.";
 const COMBAT_TEXT = "At the beginning of combat on your turn, untap each Myr you control.";

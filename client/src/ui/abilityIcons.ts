@@ -65,6 +65,10 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   // two faces apart; Arena's single daybound/nightbound icon doesn't.
   daybound: '', // ms-dfc-day
   nightbound: '', // ms-dfc-night
+  // Arena's own changeling icon. Changeling is every creature type, which
+  // the engine keeps out of a permanent's type line, so this icon is where
+  // a player sees it.
+  changeling: '', // ms-ability-changeling
 }
 
 /** The shapes a planeswalker's loyalty is printed in: a cost that adds

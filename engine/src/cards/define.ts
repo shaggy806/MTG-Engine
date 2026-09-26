@@ -99,7 +99,20 @@ export type Keyword =
   | "daybound"
   /** Nightbound (rule 702.146): the back face — it transforms back as it
    * becomes day. */
-  | "nightbound";
+  | "nightbound"
+  /**
+   * Changeling (rule 702.73a): a characteristic-defining ability, "this object
+   * is every creature type", in every zone (rule 604.3). Layer 4 reads it off
+   * the card's copiable values (a copy of a changeling is one too) and adds
+   * `EVERY_CREATURE_TYPE` to its subtypes before any other type-changing
+   * effect (rule 613.3), which every subtype question then honours
+   * (`subtypes.ts`'s `hasSubtype`). A creature that loses all its abilities
+   * stays every creature type — layer 4 comes before the layer-6 loss (the
+   * changeling rulings) — while one an effect later makes "a Frog" is just a
+   * Frog. Only a printed (or copied) changeling is modeled: granting the
+   * keyword to something else wouldn't change its types.
+   */
+  | "changeling";
 
 /** Which objects a static ability applies its continuous effect to. */
 export type AffectSpec =

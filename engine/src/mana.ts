@@ -6,6 +6,7 @@ import type { CardType, Supertype } from "./cards/define.js";
 import type { EffectSpec } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { ObjectId } from "./primitives.js";
+import { hasSubtype } from "./subtypes.js";
 
 export type Color = "W" | "U" | "B" | "R" | "G";
 
@@ -105,10 +106,11 @@ export interface ManaFromSpec {
   readonly supertype?: Supertype;
 }
 
-/** Whether mana made by `origin` is mana from what `spec` names. */
+/** Whether mana made by `origin` is mana from what `spec` names. A source
+ * that was every creature type (changeling) made mana from each of them. */
 export const manaOriginMatches = (origin: ManaOrigin, spec: ManaFromSpec): boolean =>
   (spec.type === undefined || origin.types.includes(spec.type)) &&
-  (spec.subtype === undefined || origin.subtypes.includes(spec.subtype)) &&
+  (spec.subtype === undefined || hasSubtype(origin.subtypes, spec.subtype)) &&
   (spec.supertype === undefined || origin.supertypes.includes(spec.supertype));
 
 /** A triggered ability that fires when one unit of mana is spent on a

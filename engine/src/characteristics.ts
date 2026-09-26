@@ -22,6 +22,7 @@
 
 import type {
   AffectSpec,
+  CardDefinition,
   CardRegistry,
   CardType,
   CombatRestriction,
@@ -44,6 +45,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
+import { EVERY_CREATURE_TYPE, hasSubtype } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 import { isMainPhase } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -865,16 +867,34 @@ function substituteWord(object: GameObject, word: string): string {
   return w;
 }
 
-/** Printed subtypes after this object's own layer-3 text substitution. */
+/** Printed subtypes after this object's own layer-3 text substitution, then
+ * its changeling (see {@link withChangeling}) — the subtypes layer 4 starts
+ * from. */
 function textChangedSubtypes(registry: CardRegistry, object: GameObject): readonly string[] {
-  let subtypes: readonly string[] = registry.get(printedCardName(object)).subtypes;
+  const def = registry.get(printedCardName(object));
+  let subtypes: readonly string[] = def.subtypes;
   for (const m of object.modifiers) {
     if (m.textSubstitution) {
       const { from, to } = m.textSubstitution;
       subtypes = subtypes.map((s) => (s === from ? to : s));
     }
   }
-  return subtypes;
+  return withChangeling(def, subtypes);
+}
+
+/**
+ * `subtypes` plus {@link EVERY_CREATURE_TYPE} when `def` has changeling (rule
+ * 702.73a): a characteristic-defining ability, so it applies first in layer 4
+ * (rule 613.3), in every zone (rule 604.3), and is read off the copiable
+ * values — a copy of a changeling is every creature type too. Losing its
+ * abilities doesn't undo it: that happens in layer 6, after layer 4 (the
+ * changeling rulings). Only a creature takes it: a noncreature object can't
+ * have creature types (rule 205.3d; the engine has no kindred type).
+ */
+export function withChangeling(def: CardDefinition, subtypes: readonly string[]): readonly string[] {
+  return def.keywords.includes("changeling") && def.types.includes("creature")
+    ? union(subtypes, [EVERY_CREATURE_TYPE])
+    : subtypes;
 }
 
 /**
@@ -1330,6 +1350,8 @@ export function staticAffects(
     if (affects.excludeSelf === true && source.id === target.id) return false;
     return matchesFilter(state, registry, target.id, affects.filter, {
       you: source.controller,
+      // What `ofChosenType` ("of the chosen type") reads the choice off.
+      source: source.id,
       ...(view.inFold === true
         ? { layered: { types: view.types, subtypes: view.subtypes, keywords: view.keywords } }
         : {}),
@@ -1346,7 +1368,7 @@ export function staticAffects(
     // Every creature on the battlefield, whoever controls it.
     if (affects.excludeSelf === true && source.id === target.id) return false;
     if (!isCreatureNow()) return false;
-    if (affects.subtype !== undefined && !subtypesNow().includes(affects.subtype)) {
+    if (affects.subtype !== undefined && !hasSubtype(subtypesNow(), affects.subtype)) {
       return false;
     }
     if (affects.withKeyword !== undefined && !hasKeyword(affects.withKeyword)) return false;
@@ -1375,9 +1397,9 @@ export function staticAffects(
   if (affects.subtype !== undefined) {
     // The source's own text-change (Artificial Evolution on Goblin Chieftain)
     // rewrites the word in its lord clause too; the target is matched on its
-    // *current* subtypes (layer 3 + 4).
+    // *current* subtypes (layer 3 + 4) — a changeling is every one of them.
     const wanted = substituteWord(source, affects.subtype);
-    if (!subtypesNow().includes(wanted)) return false;
+    if (!hasSubtype(subtypesNow(), wanted)) return false;
   }
   return true;
 }
@@ -1608,7 +1630,7 @@ function collectStaticEffects(
     }
     if (
       ability.affects.subtype !== undefined &&
-      !effectiveSubtypes(state, registry, target).includes(ability.affects.subtype)
+      !hasSubtype(effectiveSubtypes(state, registry, target), ability.affects.subtype)
     ) {
       continue;
     }
@@ -1738,7 +1760,9 @@ function computeCharacteristicsUncached(
   // `creature`) and type-granting statics.
   const layer4 = onBattlefield ? layerFour(state, registry, object) : null;
   const types: readonly CardType[] = layer4?.types ?? def.types;
-  const subtypes: readonly string[] = layer4?.subtypes ?? def.subtypes;
+  // Off the battlefield, changeling still applies (rule 604.3): a changeling
+  // card in a library is a Goblin card to a tutor.
+  const subtypes: readonly string[] = layer4?.subtypes ?? withChangeling(def, def.subtypes);
   // Layer 5 — colour-changing effects.
   const colors: ReadonlySet<Color> = onBattlefield
     ? effectiveColors(registry, object)
