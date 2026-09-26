@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1260 already implemented / 3740 missing (marks refreshed 2026-09-26)
+1272 already implemented / 3728 missing (marks refreshed 2026-09-26)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -71,10 +71,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    72  Brainstorm                               {U}              Instant
 [x]    73  Sacred Foundry                           {0}              Land — Mountain Plains
 [ ]    74  Deflecting Swat                          {2}{R}           Instant
-[ ]    75  Urborg, Tomb of Yawgmoth                 {0}              Legendary Land
+[x]    75  Urborg, Tomb of Yawgmoth                 {0}              Legendary Land
 [x]    76  Boseiju, Who Endures                     {0}              Legendary Land
-[ ]    77  Yavimaya, Cradle of Growth               {0}              Legendary Land
-[ ]    78  Esper Sentinel                           {W}              Artifact Creature — Human Soldier
+[x]    77  Yavimaya, Cradle of Growth               {0}              Legendary Land
+[x]    78  Esper Sentinel                           {W}              Artifact Creature — Human Soldier
 [x]    79  Sulfur Falls                             {0}              Land
 [x]    80  Clifftop Retreat                         {0}              Land
 [x]    81  Temple Garden                            {0}              Land — Forest Plains
@@ -113,7 +113,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   114  Vampiric Tutor                           {B}              Instant
 [x]   115  Shivan Reef                              {0}              Land
 [x]   116  Mana Confluence                          {0}              Land
-[ ]   117  Urza's Saga                              {0}              Enchantment Land — Urza's Saga
+[x]   117  Urza's Saga                              {0}              Enchantment Land — Urza's Saga
 [x]   118  Mana Drain                               {U}{U}           Instant
 [x]   119  Eternal Witness                          {1}{G}{G}        Creature — Human Shaman
 [x]   120  Lotus Petal                              {0}              Artifact
@@ -126,7 +126,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   127  Rootbound Crag                           {0}              Land
 [x]   128  Victimize                                {2}{B}           Sorcery
 [x]   129  Talisman of Indulgence                   {2}              Artifact
-[ ]   130  Black Market Connections                 {2}{B}           Enchantment
+[x]   130  Black Market Connections                 {2}{B}           Enchantment
 [x]   131  Deadly Dispute                           {1}{B}           Instant
 [x]   132  Sunpetal Grove                           {0}              Land
 [ ]   133  Roaming Throne                           {4}              Artifact Creature — Golem
@@ -304,7 +304,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   305  Finale of Devastation                    {X}{G}{G}        Sorcery
 [x]   306  Seething Song                            {2}{R}           Instant
 [ ]   307  Flusterstorm                             {U}              Instant
-[ ]   308  Dryad of the Ilysian Grove               {2}{G}           Enchantment Creature — Nymph Dryad
+[x]   308  Dryad of the Ilysian Grove               {2}{G}           Enchantment Creature — Nymph Dryad
 [ ]   309  Shadowspear                              {1}              Legendary Artifact — Equipment
 [x]   310  Phyrexian Altar                          {3}              Artifact
 [x]   311  Sun Titan                                {4}{W}{W}        Creature — Giant
@@ -317,7 +317,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   318  Bala Ged Recovery // Bala Ged Sanctuary  {3}              Sorcery // Land
 [x]   319  Decanter of Endless Water                {3}              Artifact
 [x]   320  Jungle Shrine                            {0}              Land
-[ ]   321  Guardian Project                         {3}{G}           Enchantment
+[x]   321  Guardian Project                         {3}{G}           Enchantment
 [x]   322  Temple of Enlightenment                  {0}              Land
 [x]   323  Entomb                                   {B}              Instant
 [x]   324  Rakdos Charm                             {B}{R}           Instant
@@ -365,7 +365,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   366  Anointed Procession                      {3}{W}           Enchantment
 [x]   367  Temple of Malady                         {0}              Land
 [x]   368  Shamanic Revelation                      {3}{G}{G}        Sorcery
-[ ]   369  Goldspan Dragon                          {3}{R}{R}        Creature — Dragon
+[x]   369  Goldspan Dragon                          {3}{R}{R}        Creature — Dragon
 [x]   370  Aetherflux Reservoir                     {4}              Artifact
 [x]   371  Consider                                 {U}              Instant
 [ ]   372  Arena of Glory                           {0}              Land
@@ -391,7 +391,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   392  Dauthi Voidwalker                        {B}{B}           Creature — Dauthi Rogue
 [ ]   393  Helm of the Host                         {4}              Legendary Artifact — Equipment
 [x]   394  Spire of Industry                        {0}              Land
-[ ]   395  Kutzil, Malamet Exemplar                 {1}{G}{W}        Legendary Creature — Cat Warrior
+[x]   395  Kutzil, Malamet Exemplar                 {1}{G}{W}        Legendary Creature — Cat Warrior
 [x]   396  Game Trail                               {0}              Land
 [x]   397  Demolition Field                         {0}              Land
 [x]   398  Spara's Headquarters                     {0}              Land — Forest Plains Island
@@ -645,7 +645,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   646  Goreclaw, Terror of Qal Sisma            {3}{G}           Legendary Creature — Bear
 [x]   647  Rite of Flame                            {R}              Sorcery
 [x]   648  Knight of the White Orchid               {W}{W}           Creature — Human Knight
-[ ]   649  Sanctum Weaver                           {1}{G}           Enchantment Creature — Dryad
+[x]   649  Sanctum Weaver                           {1}{G}           Enchantment Creature — Dryad
 [x]   650  Distant Melody                           {3}{U}           Sorcery
 [x]   651  Krosan Grip                              {2}{G}           Instant
 [ ]   652  Harmonic Prodigy                         {1}{R}           Creature — Human Wizard
@@ -671,7 +671,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   672  Sphere of Safety                         {4}{W}           Enchantment
 [x]   673  Wrath of God                             {2}{W}{W}        Sorcery
 [ ]   674  Gravecrawler                             {B}              Creature — Zombie
-[ ]   675  Changeling Outcast                       {B}              Creature — Shapeshifter
+[x]   675  Changeling Outcast                       {B}              Creature — Shapeshifter
 [ ]   676  Opal Palace                              {0}              Land
 [x]   677  Cryptolith Rite                          {1}{G}           Enchantment
 [x]   678  Hushwood Verge                           {0}              Land
@@ -1734,7 +1734,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1741  Alesha, Who Laughs at Fate               {1}{B}{R}        Legendary Creature — Human Warrior
 [ ]  1742  Blue Sun's Zenith                        {X}{U}{U}{U}     Instant
 [ ]  1743  Fable of the Mirror-Breaker // Reflection of Kiki-Jiki {3}              Enchantment — Saga // Enchantment Creature — Goblin Shaman
-[ ]  1744  The Scarab God                           {3}{U}{B}        Legendary Creature — God
+[x]  1744  The Scarab God                           {3}{U}{B}        Legendary Creature — God
 [ ]  1745  Archmage's Charm                         {U}{U}{U}        Instant
 [ ]  1746  Jaxis, the Troublemaker                  {3}{R}           Legendary Creature — Human Warrior
 [ ]  1747  Lithoform Engine                         {4}              Legendary Artifact

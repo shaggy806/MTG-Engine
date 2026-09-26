@@ -57,6 +57,7 @@ import _poolGreatHart from "../pool/great-hart.js";
 import _poolGreelsCaress from "../pool/greels-caress.js";
 import _poolGriffinDreamfinder from "../pool/griffin-dreamfinder.js";
 import _poolGrimBauble from "../pool/grim-bauble.js";
+import _poolGuardianProject from "../pool/guardian-project.js";
 import _poolGuardiansOfMeletis from "../pool/guardians-of-meletis.js";
 import _poolHallowedFountain from "../pool/hallowed-fountain.js";
 import _poolHandOfSilumgar from "../pool/hand-of-silumgar.js";
@@ -237,6 +238,7 @@ const shard: CardShard = {
     _poolGreelsCaress,
     _poolGriffinDreamfinder,
     _poolGrimBauble,
+    _poolGuardianProject,
     _poolGuardiansOfMeletis,
     _poolHallowedFountain,
     _poolHandOfSilumgar,

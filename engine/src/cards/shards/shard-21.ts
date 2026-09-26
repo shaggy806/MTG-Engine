@@ -14,6 +14,7 @@ import _poolAzlaskTheSwellingScourge from "../pool/azlask-the-swelling-scourge.j
 import _poolBalaGedSanctuary from "../pool/bala-ged-sanctuary.js";
 import _poolBallistaSquad from "../pool/ballista-squad.js";
 import _poolBeastmasterAscension from "../pool/beastmaster-ascension.js";
+import _poolBlackMarketConnections from "../pool/black-market-connections.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
 import _poolBrawnAmadeusCho from "../pool/brawn-amadeus-cho.js";
 import _poolBronzeWalrus from "../pool/bronze-walrus.js";
@@ -170,6 +171,7 @@ const shard: CardShard = {
     _poolBalaGedSanctuary,
     _poolBallistaSquad,
     _poolBeastmasterAscension,
+    _poolBlackMarketConnections,
     _poolBoonOfEmrakul,
     _poolBrawnAmadeusCho,
     _poolBronzeWalrus,

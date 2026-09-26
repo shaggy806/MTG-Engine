@@ -162,6 +162,20 @@ const SPELL_TYPE_SET: ReadonlySet<string> = new Set(["Adventure", "Arcane", "Cho
 /** The battle types (rule 205.3q). */
 const BATTLE_TYPE_SET: ReadonlySet<string> = new Set(["Siege"]);
 
+/** Which kind of subtype `subtype` is (rule 205.3): the card type it goes
+ * with. Anything on none of the lists is a planeswalker type (rule 205.3j). */
+export function subtypeKind(
+  subtype: string,
+): "creature" | "land" | "artifact" | "enchantment" | "spell" | "battle" | "planeswalker" {
+  if (subtype === EVERY_CREATURE_TYPE || CREATURE_TYPE_SET.has(subtype)) return "creature";
+  if (subtype === EVERY_LAND_TYPE || LAND_TYPE_SET.has(subtype)) return "land";
+  if (ARTIFACT_TYPE_SET.has(subtype)) return "artifact";
+  if (ENCHANTMENT_TYPE_SET.has(subtype)) return "enchantment";
+  if (SPELL_TYPE_SET.has(subtype)) return "spell";
+  if (BATTLE_TYPE_SET.has(subtype)) return "battle";
+  return "planeswalker";
+}
+
 /**
  * Whether `subtype` still belongs on an object whose card types are now
  * `types` (rule 205.1a): a subtype stays only while the object has a card

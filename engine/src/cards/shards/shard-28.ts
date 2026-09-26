@@ -128,6 +128,7 @@ import _poolRootwalla from "../pool/rootwalla.js";
 import _poolRuneclawBear from "../pool/runeclaw-bear.js";
 import _poolRunehornHellkite from "../pool/runehorn-hellkite.js";
 import _poolSabotender from "../pool/sabotender.js";
+import _poolSanctumWeaver from "../pool/sanctum-weaver.js";
 import _poolScaledWurm from "../pool/scaled-wurm.js";
 import _poolScribeOfTheMindful from "../pool/scribe-of-the-mindful.js";
 import _poolSetessanGriffin from "../pool/setessan-griffin.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolRuneclawBear,
     _poolRunehornHellkite,
     _poolSabotender,
+    _poolSanctumWeaver,
     _poolScaledWurm,
     _poolScribeOfTheMindful,
     _poolSetessanGriffin,

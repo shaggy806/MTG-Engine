@@ -159,6 +159,7 @@ import _poolTrokinHighGuard from "../pool/trokin-high-guard.js";
 import _poolTwoHeadedZombie from "../pool/two-headed-zombie.js";
 import _poolUndergrowthLeopard from "../pool/undergrowth-leopard.js";
 import _poolUnnaturalRestoration from "../pool/unnatural-restoration.js";
+import _poolUrzasSaga from "../pool/urzas-saga.js";
 import _poolValakutInvoker from "../pool/valakut-invoker.js";
 import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
@@ -337,6 +338,7 @@ const shard: CardShard = {
     _poolTwoHeadedZombie,
     _poolUndergrowthLeopard,
     _poolUnnaturalRestoration,
+    _poolUrzasSaga,
     _poolValakutInvoker,
     _poolVandalblast,
     _poolVandalize,

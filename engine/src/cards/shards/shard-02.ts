@@ -26,6 +26,7 @@ import _poolCabalCoffers from "../pool/cabal-coffers.js";
 import _poolCaptivatingCave from "../pool/captivating-cave.js";
 import _poolCatBurglar from "../pool/cat-burglar.js";
 import _poolCatacombSlug from "../pool/catacomb-slug.js";
+import _poolChangelingOutcast from "../pool/changeling-outcast.js";
 import _poolCircleOfTheLandDruid from "../pool/circle-of-the-land-druid.js";
 import _poolClear from "../pool/clear.js";
 import _poolClone from "../pool/clone.js";
@@ -211,6 +212,7 @@ const shard: CardShard = {
     _poolCaptivatingCave,
     _poolCatBurglar,
     _poolCatacombSlug,
+    _poolChangelingOutcast,
     _poolCircleOfTheLandDruid,
     _poolClear,
     _poolClone,

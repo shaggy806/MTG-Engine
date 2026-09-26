@@ -64,11 +64,13 @@ export interface NumCompare {
  *   resolution, and an effect's filter when that effect applies.
  * - `{ own }` is a characteristic of the very object being matched — "each
  *   creature spell with toughness **greater than its power**" is
- *   `toughness: { op: "gt", n: { own: "power" } }`. Needs no context.
+ *   `toughness: { op: "gt", n: { own: "power" } }`; Kutzil, Malamet
+ *   Exemplar's "each with power greater than its base power" is `power: {
+ *   op: "gt", n: { own: "basePower" } }`. Needs no context.
  */
 export type DynamicOperand =
   | { readonly amount: EffectAmount }
-  | { readonly own: "power" | "toughness" | "manaValue" };
+  | { readonly own: "power" | "toughness" | "basePower" | "baseToughness" | "manaValue" };
 
 /**
  * Does any clause of `filter` compare against `{X}` — `n: "x"`, or an
@@ -240,6 +242,11 @@ export interface CardFilter {
    * none (rule 712.8e — only its mana *value* comes from the front).
    */
   readonly xInManaCost?: boolean;
+  /** Its mana cost is exactly one of these, as printed — Urza's Saga's "an
+   * artifact card with mana cost {0} or {1}" is `["{0}", "{1}"]`: not {U},
+   * not {X}, not no mana cost at all (its ruling), whatever the mana value.
+   * Read from the same mana cost as `xInManaCost`. */
+  readonly manaCost?: readonly string[];
   /**
    * How many coloured mana symbols are in its mana cost — Omnath, Locus of
    * All's "three or more colored mana symbols in its mana cost" is `{ op:
@@ -264,6 +271,17 @@ export interface CardFilter {
    * and fails closed there.
    */
   readonly nameDiffersFromEach?: CardFilter;
+  /**
+   * Its name is different from each *other* battlefield permanent matching
+   * `others` and each card in a graveyard matching `graveyard` (rule
+   * 201.2c) — Guardian Project's "if it doesn't have the same name as
+   * another creature you control or a creature card in your graveyard" is `{
+   * others: { type: "creature", controlledBy: "you" }, graveyard: { type:
+   * "creature", ownedBy: "you" } }`. Unlike `nameDiffersFromEach`, the
+   * object itself is never one of the others. Fails closed inside the layer
+   * fold.
+   */
+  readonly nameUnlike?: { readonly others?: CardFilter; readonly graveyard?: CardFilter };
   /**
    * Is of the creature type chosen for the permanent applying the filter (its
    * `chosenCreatureType`, via `FilterContext.source`) — Morophon, the
@@ -674,7 +692,14 @@ export function matchesFilter(
   }
   // A `NumCompare` operand read off the game: `{ own }` from this object,
   // `{ amount }` from whoever is applying the filter.
-  let own: { readonly power: number; readonly toughness: number } | undefined = lki;
+  let own:
+    | {
+        readonly power: number;
+        readonly toughness: number;
+        readonly basePower: number;
+        readonly baseToughness: number;
+      }
+    | undefined = lki;
   const manaValueNow = (): number =>
     live !== undefined ? manaValueOfObject(registry, live) : lki!.manaValue;
   const dynamic = (operand: DynamicOperand): number | undefined => {
@@ -682,7 +707,7 @@ export function matchesFilter(
     if (operand.own === "manaValue") return manaValueNow();
     if (own === undefined && layered !== undefined) return undefined;
     own ??= computeCharacteristics(state, registry, id);
-    return operand.own === "power" ? own.power : own.toughness;
+    return own[operand.own];
   };
   const counters = live !== undefined ? live.counters : lki!.counters;
   if (filter.counters !== undefined) {
@@ -693,6 +718,11 @@ export function matchesFilter(
   }
   if (filter.manaValue !== undefined) {
     if (!compareNum(manaValueNow(), filter.manaValue, ctx.x, dynamic)) return false;
+  }
+  if (filter.manaCost !== undefined) {
+    const name = live !== undefined ? printedCardName(live) : lki!.name;
+    const cost = registry.has(name) ? registry.get(name).manaCost : null;
+    if (cost === null || !filter.manaCost.includes(cost)) return false;
   }
   if (filter.xInManaCost !== undefined || filter.coloredManaSymbols !== undefined) {
     const cost = ownManaCost(registry, live !== undefined ? printedCardName(live) : lki!.name);
@@ -851,7 +881,7 @@ export function matchesFilter(
   // These can't be answered from inside the layer fold (see each clause).
   if (
     layered !== undefined &&
-    (filter.hasAbilities !== undefined || filter.nameDiffersFromEach !== undefined)
+    (filter.hasAbilities !== undefined || filter.nameDiffersFromEach !== undefined || filter.nameUnlike !== undefined)
   ) {
     return false;
   }
@@ -878,6 +908,39 @@ export function matchesFilter(
       );
     });
     if (shared) return false;
+  }
+  if (filter.nameUnlike !== undefined) {
+    const { others, graveyard } = filter.nameUnlike;
+    const innerCtx: FilterContext = {
+      you: ctx.you,
+      ...(ctx.x !== undefined ? { x: ctx.x } : {}),
+      ...(ctx.amount !== undefined ? { amount: ctx.amount } : {}),
+      ...(ctx.source !== undefined ? { source: ctx.source } : {}),
+    };
+    const sameName = (other: ObjectId): boolean => {
+      const object = state.objects[other];
+      return object !== undefined && nameOf(object) === named;
+    };
+    if (
+      others !== undefined &&
+      state.zones.shared.battlefield.some(
+        // The object itself isn't "another" — but asked about as it last
+        // existed, whatever now has its id is a new object (rule 400.7).
+        (other) => (live === undefined || other !== id) && sameName(other) && matchesFilter(state, registry, other, others, innerCtx),
+      )
+    ) {
+      return false;
+    }
+    if (
+      graveyard !== undefined &&
+      state.turnOrder.some((player) =>
+        state.zones.perPlayer[player].graveyard.some(
+          (card) => sameName(card) && matchesFilter(state, registry, card, graveyard, innerCtx),
+        ),
+      )
+    ) {
+      return false;
+    }
   }
 
   // Only these need the layer fold (external anthems / keyword grants).

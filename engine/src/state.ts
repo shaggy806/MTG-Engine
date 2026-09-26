@@ -634,8 +634,10 @@ export interface PtModifier {
   setTypes?: CardType[];
   /** Layer 4 — subtypes this modifier adds (e.g. `["Blinkmoth"]`). */
   addSubtypes?: string[];
-  /** Layer 4 — subtypes this modifier *replaces* the printed ones with (Turn
-   * to Frog: "becomes a … Frog"). Applied before `addSubtypes`. */
+  /** Layer 4 — subtypes this modifier *replaces* them with (Turn to Frog:
+   * "becomes a … Frog"): each replaces the existing subtypes of its own kind
+   * (rule 205.1a — a Frog loses its creature types, not an Equipment's
+   * artifact type). Applied before `addSubtypes`. */
   setSubtypes?: string[];
   /** Layer 3 — a text-changing effect (Artificial Evolution): every instance
    * of the creature-type word `from` reads as `to`, in this permanent's own

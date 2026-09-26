@@ -951,7 +951,10 @@ exist (rule 111.7), so neither comes back.
   `"you"` — The Gitrog Monster's "sacrifice ~ unless **you** sacrifice a
   land" (`otherwise: { kind: "sacrifice-source" }`), which unlike a `may`
   with an `else` isn't offered without a land to sacrifice. Each
-  `UnlessOption` is `{ pay }` (mana), `{ payLife }`, `{ sacrifice }`,
+  `UnlessOption` is `{ pay }` (mana), `{ payGeneric }` (that much generic mana,
+  read as the effect applies — Esper Sentinel's "pays {X}, where X is this
+  creature's power" is `{ payGeneric: { powerOf: "source" }, text: "Pay {X}." }`,
+  `{X}` in the text showing the amount), `{ payLife }`, `{ sacrifice }`,
   `{ discard }` (a count — Tergrid's Lantern's "…unless they sacrifice a
   nonland permanent **or discard a card**") or `{ putFromHand }` (a filter —
   "put a land card from your hand onto the battlefield") plus a `text` label;
@@ -1034,9 +1037,16 @@ modified, anyOf, manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn,
 enteredThisTurn, attackedThisTurn, damagedThisTurnBy, excessDamageThisTurn,
 dealtDamageToCreatureThisTurn, cast, castBy, castFrom, enteredFrom,
 putThereBySource, sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, hasManaAbility, hasAbilities,
-xInManaCost, coloredManaSymbols, cardTypeCount, nameDiffersFromEach,
-ofChosenType }`,
-every present clause ANDed. `goaded` is goaded by anyone, however (a one-shot
+xInManaCost, manaCost, coloredManaSymbols, cardTypeCount, nameDiffersFromEach,
+nameUnlike, ofChosenType }`,
+every present clause ANDed. `manaCost: ["{0}", "{1}"]` is an exact printed
+mana cost (Urza's Saga's "an artifact card with mana cost {0} or {1}" — not
+{U}, {X} or none). `nameUnlike: { others?, graveyard? }` is Guardian
+Project's "if it doesn't have the same name as another creature you control
+or a creature card in your graveyard": no *other* battlefield permanent
+matching `others`, and no graveyard card matching `graveyard`, shares its
+name — asked as it last existed, whatever now has its id is another object.
+`goaded` is goaded by anyone, however (a one-shot
 goad, one for the rest of the game, a static one), and `suspected` rule
 701.60's designation; one that has left the battlefield is asked as it last
 was — Baeloth Barrityl's "whenever a goaded attacking or blocking creature
@@ -1161,9 +1171,11 @@ evaluated:
   "Power less than this creature's" is `{ amount: { powerOf: "source" } }`.
   There is no "plus one" amount yet, so "mana value equal to 1 plus the
   sacrificed creature's" can't be written.
-- `n: { own: "power" | "toughness" | "manaValue" }` — a characteristic of the
-  object being matched itself: "each creature spell with toughness greater
-  than its power" is `toughness: { op: "gt", n: { own: "power" } }`. Needs no
+- `n: { own: "power" | "toughness" | "basePower" | "baseToughness" | "manaValue" }` — a
+  characteristic of the object being matched itself: "each creature spell with
+  toughness greater than its power" is `toughness: { op: "gt", n: { own:
+  "power" } }`, Kutzil, Malamet Exemplar's "each with power greater than its
+  base power" `power: { op: "gt", n: { own: "basePower" } }`. Needs no
   context, so it works everywhere a filter does.
 
 Where `{ amount }` is answered, and when:

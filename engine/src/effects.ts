@@ -428,6 +428,10 @@ export function wardCostText(cost: WardCost): string {
  * hand. */
 export type UnlessOption =
   | { readonly pay: string; readonly text: string }
+  /** "…unless that player pays {X}, where X is this creature's power"
+   * (Esper Sentinel): that much generic mana, read as the effect applies —
+   * `{X}` in `text` shows the amount. A mana option like `pay`. */
+  | { readonly payGeneric: EffectAmount; readonly text: string }
   | { readonly payLife: number; readonly text: string }
   | { readonly sacrifice: CardFilter; readonly text: string }
   /** "…or discard a card" (Tergrid's Lantern, Torment of Hailfire). */
@@ -435,6 +439,10 @@ export type UnlessOption =
   /** "Put a land card from your hand onto the battlefield" (Kynaios and
    * Tiro of Meletis). */
   | { readonly putFromHand: CardFilter; readonly text: string };
+
+/** An {@link UnlessOption} with any generic amount fixed — what the engine
+ * offers. `"each-player-may"`'s options are these already. */
+export type BoundUnlessOption = Exclude<UnlessOption, { readonly payGeneric: EffectAmount }>;
 
 /**
  * How far an `"each-player-may"` has got — set by the engine on the copy it
@@ -1716,7 +1724,8 @@ export type EffectSpec =
       readonly toughness: EffectAmount;
       readonly addTypes: readonly CardType[];
       readonly addSubtypes: readonly string[];
-      /** Replace the printed subtypes entirely (Turn to Frog: "a … Frog"). */
+      /** Replace its subtypes of the same kind (Turn to Frog: "a … Frog" —
+       * its creature types; rule 205.1a). */
       readonly setSubtypes?: readonly string[];
       /** Set the colours (Turn to Frog: "blue"). */
       readonly setColors?: readonly Color[];
@@ -2084,7 +2093,7 @@ export type EffectSpec =
       readonly who: PlayerScope;
       readonly prompt?: string;
       readonly effect?: EffectSpec;
-      readonly options?: readonly UnlessOption[];
+      readonly options?: readonly BoundUnlessOption[];
       /**
        * Instead of a "may": a choice each of them **must** make between
        * these — "each opponent faces a villainous choice — [one], or
@@ -2890,7 +2899,7 @@ export interface EffectApi {
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
-    options: readonly UnlessOption[],
+    options: readonly BoundUnlessOption[],
     otherwise: EffectSpec,
   ): void;
   /** Ask `player` an `"each-player-may"`'s question: a `choose-modes`
@@ -4623,7 +4632,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       });
       return;
     case "unless":
-      ctx.unless(spec.chooser, spec.options, spec.otherwise);
+      ctx.unless(
+        spec.chooser,
+        // A generic amount is fixed as the effect applies.
+        spec.options.map((option): BoundUnlessOption => {
+          if (!("payGeneric" in option)) return option;
+          const n = amountValue(option.payGeneric, ctx);
+          return { pay: `{${n}}`, text: option.text.split("{X}").join(`{${n}}`) };
+        }),
+        spec.otherwise,
+      );
       return;
     case "each-player-may":
       applyEachPlayerMay(spec, ctx);

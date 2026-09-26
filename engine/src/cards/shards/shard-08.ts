@@ -63,6 +63,7 @@ import _poolElderleafMentor from "../pool/elderleaf-mentor.js";
 import _poolElephantAmbush from "../pool/elephant-ambush.js";
 import _poolElfswornGiant from "../pool/elfsworn-giant.js";
 import _poolElvishVanguard from "../pool/elvish-vanguard.js";
+import _poolEsperSentinel from "../pool/esper-sentinel.js";
 import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
@@ -254,6 +255,7 @@ const shard: CardShard = {
     _poolElephantAmbush,
     _poolElfswornGiant,
     _poolElvishVanguard,
+    _poolEsperSentinel,
     _poolFallajiChaindancer,
     _poolFerociousCharge,
     _poolFireDrake,

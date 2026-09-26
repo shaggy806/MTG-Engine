@@ -92,6 +92,7 @@ import _poolKitesailScout from "../pool/kitesail-scout.js";
 import _poolKnightOfMeadowgrain from "../pool/knight-of-meadowgrain.js";
 import _poolKrakenHatchling from "../pool/kraken-hatchling.js";
 import _poolKranioceros from "../pool/kranioceros.js";
+import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
 import _poolMassacreWurm from "../pool/massacre-wurm.js";
 import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
@@ -273,6 +274,7 @@ const shard: CardShard = {
     _poolKnightOfMeadowgrain,
     _poolKrakenHatchling,
     _poolKranioceros,
+    _poolKutzilMalametExemplar,
     _poolMagusOfTheBazaar,
     _poolMassacreWurm,
     _poolMerfolkOfTheDepths,

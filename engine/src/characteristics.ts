@@ -55,6 +55,7 @@ import {
   hasSubtype,
   isLandType,
   subtypeFitsTypes,
+  subtypeKind,
 } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 import { isMainPhase } from "./turn.js";
@@ -1033,7 +1034,12 @@ function applyModifierTypes(
     t = set;
     st = st.filter((s) => subtypeFitsTypes(s, set));
   }
-  if (modifier.setSubtypes) st = [...modifier.setSubtypes];
+  if (modifier.setSubtypes) {
+    // Rule 205.1a: the new subtypes replace the existing ones of their own
+    // kind — creature types for creature types — and the rest stay.
+    const kinds = new Set(modifier.setSubtypes.map(subtypeKind));
+    st = [...st.filter((s) => !kinds.has(subtypeKind(s))), ...modifier.setSubtypes];
+  }
   if (modifier.loseLandTypes) st = st.filter((s) => s !== EVERY_LAND_TYPE && !isLandType(s));
   if (modifier.addTypes && modifier.addTypes.length > 0) t = union(t, modifier.addTypes);
   if (modifier.addSubtypes && modifier.addSubtypes.length > 0) st = union(st, modifier.addSubtypes);

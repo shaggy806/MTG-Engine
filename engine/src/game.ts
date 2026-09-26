@@ -135,7 +135,7 @@ import type {
   LookAndChooseLeftoverIf,
   CopyExceptions,
   ZoneSecondPick,
-  UnlessOption,
+  BoundUnlessOption,
   WardCost,
   ModeOption,
   PlayerScope,
@@ -12612,7 +12612,7 @@ export class Game {
     targets: ResolvedTargets,
     triggerObject: ObjectId | undefined,
     chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
-    options: readonly UnlessOption[],
+    options: readonly BoundUnlessOption[],
     otherwise: EffectSpec,
     /** What the resolving ability knew about the objects it refers to: its
      * last-known references and target zones, carried to `otherwise`, and
@@ -12699,7 +12699,7 @@ export class Game {
    */
   private optionModes(
     player: PlayerId,
-    options: readonly UnlessOption[],
+    options: readonly BoundUnlessOption[],
   ): { readonly modes: ModeOption[]; readonly cost?: string } | null {
     const available = options.filter((option) => {
       if ("pay" in option) return this.payMana(player, parseManaCost(option.pay)) !== null;
@@ -12715,7 +12715,7 @@ export class Game {
       return this.eligibleSacrifices(player, option.sacrifice).length > 0;
     });
     if (available.length === 0) return null;
-    const mana = available.find((o): o is Extract<UnlessOption, { pay: string }> => "pay" in o);
+    const mana = available.find((o): o is Extract<BoundUnlessOption, { pay: string }> => "pay" in o);
     const modes = available.map(
       (option): ModeOption => ({
         text: option.text,

@@ -41,6 +41,7 @@ import _poolDragonmasterOutcast from "../pool/dragonmaster-outcast.js";
 import _poolDreamstoneHedron from "../pool/dreamstone-hedron.js";
 import _poolDromarsAttendant from "../pool/dromars-attendant.js";
 import _poolDrownInShapelessness from "../pool/drown-in-shapelessness.js";
+import _poolDryadOfTheIlysianGrove from "../pool/dryad-of-the-ilysian-grove.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
 import _poolExecutionersCapsule from "../pool/executioners-capsule.js";
@@ -221,6 +222,7 @@ const shard: CardShard = {
     _poolDreamstoneHedron,
     _poolDromarsAttendant,
     _poolDrownInShapelessness,
+    _poolDryadOfTheIlysianGrove,
     _poolElvishMystic,
     _poolErinisGloomStalker,
     _poolExecutionersCapsule,
