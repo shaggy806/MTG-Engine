@@ -241,6 +241,8 @@ export function standaloneManaChoices(
     if (mana === "any-color") return COLORS.map((c) => Array<ManaType>(amount).fill(c));
     const colors = oneOf(mana);
     if (colors.length === 0) return null;
+    // "X {G} or X {W}": all of one of them.
+    if ("oneOf" in mana && mana.same === true) return colors.map((c) => Array<ManaType>(amount).fill(c));
     // A live amount can be large, and every split of it is a separate menu
     // entry of `amount` units. Which split to float is the player's choice
     // (a 20-power Vivi floating ten of each), so every one is offered while
@@ -255,6 +257,9 @@ export function standaloneManaChoices(
   if (effect.amount < 1) return null;
   if (mana === "any-color") {
     return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
+  }
+  if ("oneOf" in mana && mana.same === true) {
+    return oneOf(mana).map((c) => Array<ManaType>(effect.amount as number).fill(c));
   }
   return manaCombinations(oneOf(mana), effect.amount);
 }

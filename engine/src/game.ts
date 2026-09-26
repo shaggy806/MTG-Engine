@@ -7602,8 +7602,10 @@ export class Game {
                 const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
                 for (let i = 0; i < units; i += 1) {
                   // "Any color" is any *one* colour however much is made
-                  // (Gilded Lotus), so the first pick names it for all.
-                  const pick = mana === "any-color" ? manaColors[0] : manaColors[i];
+                  // (Gilded Lotus), so the first pick names it for all — as
+                  // it does for "X {G} or X {W}" (`same`).
+                  const oneType = mana === "any-color" || ("oneOf" in mana && mana.same === true);
+                  const pick = oneType ? manaColors[0] : manaColors[i];
                   base.addMana(
                     p,
                     pick !== undefined && allowed.includes(pick) ? pick : mana,
@@ -8004,6 +8006,16 @@ export class Game {
                     ...tag,
                   },
                 ]
+            : typeof mana === "object" && "oneOf" in mana && mana.same === true
+              ? // "Add X {G} or X {W}": all of one of them, never a mix.
+                oneOf.map((c) => ({
+                  fixed: Array<ManaType>(manaAmount).fill(c),
+                  anyColor: 0,
+                  pain,
+                  lifeCost,
+                  genericCost,
+                  ...tag,
+                }))
             : typeof mana === "object"
               ? typeof ability.effect.amount !== "number"
                 ? // "X mana in any combination of …" with a live X: one
@@ -9035,7 +9047,9 @@ export class Game {
    * `player`: one of those colours (`PlayerState.commanderIdentity`), or
    * `null` — nothing at all — with none (no commander, or a colourless one:
    * the Command Tower rulings). */
-  private commanderIdentityMana(player: PlayerId): { readonly oneOf: readonly ManaType[] } | null {
+  private commanderIdentityMana(
+    player: PlayerId,
+  ): { readonly oneOf: readonly ManaType[]; readonly same?: true } | null {
     const colors = this.state.players[player]?.commanderIdentity ?? [];
     return colors.length === 0 ? null : { oneOf: colors };
   }

@@ -1388,7 +1388,12 @@ paying a cost) defaults to white for `"any-color"`, or `oneOf[0]` repeated for
 that fit. "Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
 `amount: 1`: one of each, `amount` times over (Ramos's
 "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}" is all five with `amount: 2`). **Not**
-`{ oneOf }` × 2, which could make {W}{W}.
+`{ oneOf }` × 2, which could make {W}{W}. `{ oneOf, same: true }` is all
+`amount` of **one** listed type, never a mix — Brigid, Doun's Mind's "Add X
+{G} or X {W}" — as `"any-color"` with an `amount` above 1 is over all five
+(Gilded Lotus's "three mana of any one color"; Helga, Skittish Seer's live "X
+mana of any one color"): the payer and a hand activation are offered one
+option per type, and a hand activation makes every unit its first pick.
 
 **A mana ability's `amount` may be a live `EffectAmount`** (Marwyn, the
 Nurturer: `{ powerOf: "source" }`; Kydele: `{ turnStat: "cards-drawn" }`).

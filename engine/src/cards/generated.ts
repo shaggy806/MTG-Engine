@@ -633,6 +633,8 @@ import _poolBriarpackAlpha from "./pool/briarpack-alpha.js";
 import _poolBridgeworksBattle from "./pool/bridgeworks-battle.js";
 import _poolBrightbladeStoat from "./pool/brightblade-stoat.js";
 import _poolBrightclimbPathway from "./pool/brightclimb-pathway.js";
+import _poolBrigidClachansHeart from "./pool/brigid-clachans-heart.js";
+import _poolBrigidDounsMind from "./pool/brigid-douns-mind.js";
 import _poolBrilliantPlan from "./pool/brilliant-plan.js";
 import _poolBrimstoneDragon from "./pool/brimstone-dragon.js";
 import _poolBrimstoneTrebuchet from "./pool/brimstone-trebuchet.js";
@@ -2151,6 +2153,7 @@ import _poolHedronCrawler from "./pool/hedron-crawler.js";
 import _poolHedronRover from "./pool/hedron-rover.js";
 import _poolHedronScrabbler from "./pool/hedron-scrabbler.js";
 import _poolHeiBaiForestGuardian from "./pool/hei-bai-forest-guardian.js";
+import _poolHelgaSkittishSeer from "./pool/helga-skittish-seer.js";
 import _poolHeliodsPilgrim from "./pool/heliods-pilgrim.js";
 import _poolHelionaut from "./pool/helionaut.js";
 import _poolHellkitePunisher from "./pool/hellkite-punisher.js";
@@ -5542,6 +5545,7 @@ import _tokensInsectTokenFlyingHaste from "./tokens/insect-token-flying-haste.js
 import _tokensInsectToken from "./tokens/insect-token.js";
 import _tokensJunkToken from "./tokens/junk-token.js";
 import _tokensKaroxBladewingToken from "./tokens/karox-bladewing-token.js";
+import _tokensKithkinToken from "./tokens/kithkin-token.js";
 import _tokensKnightToken from "./tokens/knight-token.js";
 import _tokensLifelinkSoldierToken from "./tokens/lifelink-soldier-token.js";
 import _tokensLifelinkVampireToken from "./tokens/lifelink-vampire-token.js";
@@ -6222,6 +6226,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBridgeworksBattle,
   _poolBrightbladeStoat,
   _poolBrightclimbPathway,
+  _poolBrigidClachansHeart,
+  _poolBrigidDounsMind,
   _poolBrilliantPlan,
   _poolBrimstoneDragon,
   _poolBrimstoneTrebuchet,
@@ -7740,6 +7746,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHedronRover,
   _poolHedronScrabbler,
   _poolHeiBaiForestGuardian,
+  _poolHelgaSkittishSeer,
   _poolHeliodsPilgrim,
   _poolHelionaut,
   _poolHellkitePunisher,
@@ -11137,6 +11144,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensInsectToken,
   _tokensJunkToken,
   _tokensKaroxBladewingToken,
+  _tokensKithkinToken,
   _tokensKnightToken,
   _tokensLifelinkSoldierToken,
   _tokensLifelinkVampireToken,

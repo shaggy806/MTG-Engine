@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-283 already implemented / 217 missing
+285 already implemented / 215 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -81,7 +81,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   75  The Wandering Minstrel                         20422 decks  {G}{U}           Legendary Creature — Human Bard
 [x]   76  Malcolm, Keen-Eyed Navigator                   20313 decks  {2}{U}           Legendary Creature — Siren Pirate
 [ ]   77  Avatar Aang                                    20168 decks  {R}{G}{W}{U}     Legendary Creature — Human Avatar Ally // Legendary Creature — Avatar Ally
-[ ]   78  Helga, Skittish Seer                           20147 decks  {G}{W}{U}        Legendary Creature — Frog Druid
+[x]   78  Helga, Skittish Seer                           20147 decks  {G}{W}{U}        Legendary Creature — Frog Druid
 [x]   79  Zaxara, the Exemplary                          20130 decks  {1}{B}{G}{U}     Legendary Creature — Nightmare Hydra
 [ ]   80  Choco, Seeker of Paradise                      19996 decks  {1}{G}{W}{U}     Legendary Creature — Bird
 [x]   81  Ghyrson Starn, Kelermorph                      19886 decks  {1}{U}{R}        Legendary Creature — Tyranid Human
@@ -434,7 +434,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  428  Ixhel, Scion of Atraxa                          6928 decks  {1}{W}{B}{G}     Legendary Creature — Phyrexian Angel
 [x]  429  Elenda, the Dusk Rose                           6927 decks  {2}{W}{B}        Legendary Creature — Vampire Knight
 [x]  430  Karlach, Fury of Avernus                        6900 decks  {4}{R}           Legendary Creature — Tiefling Barbarian
-[ ]  431  Brigid, Clachan's Heart                         6881 decks  {2}{W}           Legendary Creature — Kithkin Warrior // Legendary Creature — Kithkin Soldier
+[x]  431  Brigid, Clachan's Heart                         6881 decks  {2}{W}           Legendary Creature — Kithkin Warrior // Legendary Creature — Kithkin Soldier
 [ ]  432  Karumonix, the Rat King                         6865 decks  {1}{B}{B}        Legendary Creature — Phyrexian Rat
 [x]  433  Nahiri, Forged in Fury                          6865 decks  {4}{R}{W}        Legendary Creature — Kor Artificer
 [x]  434  Zimone and Dina                                 6842 decks  {B}{G}{U}        Legendary Creature — Human Dryad

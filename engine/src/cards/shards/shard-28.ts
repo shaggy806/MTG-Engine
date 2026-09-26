@@ -175,6 +175,7 @@ import _poolWingsOfAesthir from "../pool/wings-of-aesthir.js";
 import _poolYunaGrandSummoner from "../pool/yuna-grand-summoner.js";
 import _poolZap from "../pool/zap.js";
 import _poolZendikarFarguide from "../pool/zendikar-farguide.js";
+import _tokensKithkinToken from "../tokens/kithkin-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -351,7 +352,9 @@ const shard: CardShard = {
     _poolZap,
     _poolZendikarFarguide,
   ],
-  tokens: [],
+  tokens: [
+    _tokensKithkinToken,
+  ],
 };
 
 export default shard;

@@ -610,7 +610,9 @@ export type EffectSpec =
        * enumerates every achievable combination as a separate option and
        * picks whichever pays the cost; a standalone activation defaults to
        * `amount` of `oneOf[0]`, same simplification as "any-color" defaulting
-       * to white. needed-cards P20. */
+       * to white. needed-cards P20. With `same: true` every unit is the
+       * same one of the listed types — Brigid, Doun's Mind's "Add X {G} or X
+       * {W}" — never a mix, as `any-color` is over all five. */
       readonly kind: "add-mana";
       /** `"chosen"` is the colour this permanent's controller named as it
        * entered (Heraldic Banner's "{T}: Add one mana of the chosen color") —
@@ -629,7 +631,7 @@ export type EffectSpec =
          * permanent tapped for mana made (Roxanne, Starfall Savant; Mana
          * Flare). Anywhere else it makes nothing. */
         | "produced"
-        | { readonly oneOf: readonly ManaType[] }
+        | { readonly oneOf: readonly ManaType[]; readonly same?: true }
         /**
          * One of each listed type, all together, `amount` times over:
          * "Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
@@ -2401,7 +2403,7 @@ export interface EffectApi {
     mana:
       | ManaType
       | "any-color"
-      | { readonly oneOf: readonly ManaType[] }
+      | { readonly oneOf: readonly ManaType[]; readonly same?: true }
       | { readonly producedBy: "opponents-lands" },
     amount: number,
     /** The whole `add-mana` spec, so the engine can stamp this mana's

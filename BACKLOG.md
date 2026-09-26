@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**283 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**285 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -15,13 +15,13 @@ that one card is the reason the deck exists.
   least one feature; start from the greedy order below.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
-  that file's `built` array and author the commanders it unblocks in the same commit. The first
+  that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `keyword:changeling` (+1), `condition:filter-card-property-clauses` (+2),
-  `effect:create-token-with-counters` (+1), `mechanic:goad-extensions` (+3),
-  `effect:target-spec-additions` (+1), `effect:control-change-extensions` (+3),
-  `static:cant-be-sacrificed` (+2), `mechanic:suspect` (+1),
-  `effect:mana-ability-dynamic-amount` (+2), `stat:spells-cast-this-turn-record` (+2).
+  `stat:spells-cast-this-turn-record` (+2), `effect:amount-fields-dynamic` (+2),
+  `effect:look-and-choose-second-pick` (+1), `trigger:cast-spell-clauses` (+1),
+  `effect:copy-exceptions` (+4), `effect:token-copy-last-known-info` (+1),
+  `effect:exile-with-counters` (+2), `effect:impulse-exile-other-libraries` (+2),
+  `stat:object-damage-history` (+2), `zone:cast-cards-you-dont-own` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions`, `effect:copy-exceptions` and
   `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
@@ -138,6 +138,11 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
+- **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
+  own menu entry only while the list stays small (two colours up to X = 22). Past that it
+  offers all of one type per type, and a count picker would let the player choose any split.
+  And when the payer taps such a source for more than a payment needs, the player can't choose
+  the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
 - **Goaded and suspected aren't shown.** A goaded or suspected creature looks like any other;
   only the menace and can't-block that suspect gives appear. Both are designations the view could
   carry as a badge.
