@@ -343,7 +343,9 @@ function copyExceptionModifier(exceptions: CopyExceptions): PtModifier {
     power: 0,
     toughness: 0,
     keywords: [...(exceptions.keywords ?? [])],
+    ...(exceptions.setTypes !== undefined ? { setTypes: [...exceptions.setTypes] } : {}),
     ...(exceptions.addTypes !== undefined ? { addTypes: [...exceptions.addTypes] } : {}),
+    ...(exceptions.activated !== undefined ? { grantsActivated: [...exceptions.activated] } : {}),
     ...(exceptions.addSubtypes !== undefined ? { addSubtypes: [...exceptions.addSubtypes] } : {}),
     ...(exceptions.setColors !== undefined ? { setColors: [...exceptions.setColors] } : {}),
     ...(exceptions.addColors !== undefined ? { addColors: [...exceptions.addColors] } : {}),
@@ -7112,10 +7114,16 @@ export class Game {
   ): readonly { readonly ability: ActivatedAbility; readonly ref: GrantedAbilityRef }[] {
     const target = this.state.objects[objectId];
     if (target === undefined || target.zone !== "battlefield") return [];
-    const sources = grantors ?? this.activatedGrantSources();
-    if (sources.length === 0) return []; // nothing grants anything — the norm
     // Only what was granted after a loss of all its abilities (rule 613.7).
     const lostAt = abilitiesLostAt(target);
+    // Its own modifiers' grants first — a copy exception's, a one-shot's.
+    const own: { ability: ActivatedAbility; ref: GrantedAbilityRef }[] = [];
+    for (const modifier of target.modifiers) {
+      if (modifier.grantsActivated === undefined || !modifierGrantApplies(modifier, lostAt)) continue;
+      for (const ability of modifier.grantsActivated) own.push({ ability, ref: { kind: "modifier-activated", ability } });
+    }
+    const sources = grantors ?? this.activatedGrantSources();
+    if (sources.length === 0) return own; // nothing else grants anything — the norm
     const grants: {
       ts: number;
       entries: { ability: ActivatedAbility; ref: GrantedAbilityRef }[];
@@ -7135,7 +7143,7 @@ export class Game {
       });
     }
     grants.sort((a, b) => a.ts - b.ts);
-    return grants.flatMap((g) => g.entries);
+    return [...own, ...grants.flatMap((g) => g.entries)];
   }
 
   /** Where `sourceId`'s activated ability at `abilityIndex` was granted from,
@@ -7152,7 +7160,7 @@ export class Game {
   private abilityFromRef(
     ref: GrantedAbilityRef,
   ): ActivatedAbility | TriggeredAbility | undefined {
-    if (ref.kind === "modifier") return ref.ability;
+    if (ref.kind === "modifier" || ref.kind === "modifier-activated") return ref.ability;
     if (!this.registry.has(ref.cardName)) return undefined;
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
     return ref.list === "activated"
@@ -11602,7 +11610,7 @@ export class Game {
       },
       returnToHand: (target, from) =>
         this.returnToHandByEffect(target, true, from ?? "battlefield", source),
-      exileObject: (target, untilSourceLeaves) => {
+      exileObject: (target, untilSourceLeaves, withCounters) => {
         if (untilSourceLeaves === true) {
           // Rule 610.3c: exiled "until" something that has already happened
           // — its source gone, or back as a new object (400.7) — it isn't
@@ -11616,7 +11624,18 @@ export class Game {
             return;
           }
         }
+        const before = target.kind === "object" ? this.state.objects[target.object]?.zoneChangeCount : undefined;
         this.exileByEffect(target, untilSourceLeaves === true ? source : undefined);
+        // "…with a croak counter on it": on the card this put there.
+        const exiled = target.kind === "object" ? this.state.objects[target.object] : undefined;
+        if (
+          withCounters !== undefined &&
+          withCounters.amount > 0 &&
+          exiled?.zone === "exile" &&
+          exiled.zoneChangeCount !== before
+        ) {
+          exiled.counters[withCounters.kind] = (exiled.counters[withCounters.kind] ?? 0) + withCounters.amount;
+        }
       },
       chooseCreatureType: (then) =>
         this.beginCreatureTypeChoice(source, controller, undefined, { then, targets, x }),
@@ -11929,6 +11948,34 @@ export class Game {
           });
         }
       },
+      grantActivated: (target, ability, duration) => {
+        if (target.kind !== "object") return;
+        const id = this.splitOneFromStack(target.object);
+        const object = this.state.objects[id];
+        if (object === undefined || object.zone !== "battlefield") return;
+        object.modifiers.push({
+          timestamp: this.freshTimestamp(),
+          power: 0,
+          toughness: 0,
+          keywords: [],
+          grantsActivated: [ability],
+          untilEndOfTurn: duration === "end-of-turn",
+        });
+      },
+      grantActivatedAll: (filter, ability, duration) => {
+        // One effect, one timestamp (rule 613.7b), however many it reaches.
+        const timestamp = this.freshTimestamp();
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          this.state.objects[id]?.modifiers.push({
+            timestamp,
+            power: 0,
+            toughness: 0,
+            keywords: [],
+            grantsActivated: [ability],
+            untilEndOfTurn: duration === "end-of-turn",
+          });
+        }
+      },
       grantPlayerHexproof: (who) => {
         for (const player of scoped(who)) {
           if (!this.state.hexproofPlayers.includes(player)) {
@@ -12072,7 +12119,11 @@ export class Game {
           of,
           count,
           opts,
-          of === source ? departedSource() : lastKnownOf({ kind: "object", object: of }),
+          opts.asCard === true
+            ? undefined
+            : of === source
+              ? departedSource()
+              : lastKnownOf({ kind: "object", object: of }),
         ),
       conditionMet,
       attach: (target) => this.attachPermanent(source, target),
@@ -13273,6 +13324,7 @@ export class Game {
       under?: PlayerId;
       gainUntilEndOfTurn?: readonly Keyword[];
       exceptions?: CopyExceptions;
+      asCard?: boolean;
     },
     /** `ofId` as it last existed where the effect refers to it, when it has
      * left there since: its copiable values are read off this (rule

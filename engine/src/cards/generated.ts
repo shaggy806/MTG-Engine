@@ -629,6 +629,7 @@ import _poolBreathOfLife from "./pool/breath-of-life.js";
 import _poolBreathOfMalfegor from "./pool/breath-of-malfegor.js";
 import _poolBreathstealer from "./pool/breathstealer.js";
 import _poolBreedingPool from "./pool/breeding-pool.js";
+import _poolBrenardGingerSculptor from "./pool/brenard-ginger-sculptor.js";
 import _poolBriaRiptideRogue from "./pool/bria-riptide-rogue.js";
 import _poolBriarpackAlpha from "./pool/briarpack-alpha.js";
 import _poolBridgeworksBattle from "./pool/bridgeworks-battle.js";
@@ -3067,6 +3068,7 @@ import _poolMyrMoonvessel from "./pool/myr-moonvessel.js";
 import _poolMyrScrapling from "./pool/myr-scrapling.js";
 import _poolMyrTurbine from "./pool/myr-turbine.js";
 import _poolMyrelShieldOfArgive from "./pool/myrel-shield-of-argive.js";
+import _poolMyrkulLordOfBones from "./pool/myrkul-lord-of-bones.js";
 import _poolMysteriosPhantasm from "./pool/mysterios-phantasm.js";
 import _poolMysticArchaeologist from "./pool/mystic-archaeologist.js";
 import _poolMysticMonastery from "./pool/mystic-monastery.js";
@@ -3554,6 +3556,7 @@ import _poolRagingPoltergeist from "./pool/raging-poltergeist.js";
 import _poolRagingRedcap from "./pool/raging-redcap.js";
 import _poolRagostDeftGastronaut from "./pool/ragost-deft-gastronaut.js";
 import _poolRaidingNightstalker from "./pool/raiding-nightstalker.js";
+import _poolRainOfFilth from "./pool/rain-of-filth.js";
 import _poolRainOfRevelation from "./pool/rain-of-revelation.js";
 import _poolRainOfTears from "./pool/rain-of-tears.js";
 import _poolRainOfThorns from "./pool/rain-of-thorns.js";
@@ -6235,6 +6238,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBreathOfMalfegor,
   _poolBreathstealer,
   _poolBreedingPool,
+  _poolBrenardGingerSculptor,
   _poolBriaRiptideRogue,
   _poolBriarpackAlpha,
   _poolBridgeworksBattle,
@@ -8673,6 +8677,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMyrScrapling,
   _poolMyrTurbine,
   _poolMyrelShieldOfArgive,
+  _poolMyrkulLordOfBones,
   _poolMysteriosPhantasm,
   _poolMysticArchaeologist,
   _poolMysticMonastery,
@@ -9160,6 +9165,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRagingRedcap,
   _poolRagostDeftGastronaut,
   _poolRaidingNightstalker,
+  _poolRainOfFilth,
   _poolRainOfRevelation,
   _poolRainOfTears,
   _poolRainOfThorns,

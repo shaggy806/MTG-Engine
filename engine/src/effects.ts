@@ -8,7 +8,7 @@
  * into the spell's or ability's chosen targets, or the literal `"source"`.
  */
 
-import type { TriggeredAbility } from "./abilities.js";
+import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type {
   CardType,
   CombatRestriction,
@@ -898,9 +898,15 @@ export type EffectSpec =
       readonly filter: CardFilter;
     }
   | {
-      /** Put a target permanent into exile. */
+      /** Put a target permanent into exile — or, with `"trigger-object"`,
+       * the card a dies trigger is about, only while it's still that object
+       * in the graveyard it went to (rule 400.7 — "you may exile it", Myrkul,
+       * Lord of Bones). A `this-way` `"exiled"` condition is "if you do". */
       readonly kind: "exile";
-      readonly target: number;
+      readonly target: EffectTargetRef;
+      /** "Exile it **with a croak counter on it**": counters the card gets
+       * as it's exiled, there. */
+      readonly withCounters?: { readonly kind: string; readonly amount: number };
       /**
        * Exile **until this source leaves the battlefield** — an "O-Ring"
        * (Banishing Light, Conclave Tribunal). Rule 720.2: one ability that
@@ -1524,6 +1530,28 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
+      /**
+       * Give a permanent an activated ability — the one-shot counterpart of
+       * `StaticAbility.grantsActivated`, riding on the target's own modifiers
+       * like `grant-triggered`. A mana ability is seen by the mana payer, or
+       * activated by hand where the payer can't use it (see `manaSources`).
+       */
+      readonly kind: "grant-activated";
+      readonly target: EffectTargetRef;
+      readonly ability: ActivatedAbility;
+      readonly duration: PtDuration;
+    }
+  | {
+      /** The mass form of `grant-activated`: Rain of Filth's "until end of
+       * turn, lands you control gain 'Sacrifice this land: Add {B}.'" Matches
+       * are fixed as it resolves (rule 611.2c), and a token stack gains it
+       * whole. */
+      readonly kind: "grant-activated-all";
+      readonly filter: CardFilter;
+      readonly ability: ActivatedAbility;
+      readonly duration: PtDuration;
+    }
+  | {
       /** The mass form of `grant-triggered`: every battlefield permanent
        * matching `filter` (from the effect's controller's side) gains the
        * ability — Azlask, the Swelling Scourge's "Scions and Spawns you
@@ -1792,6 +1820,12 @@ export type EffectSpec =
       readonly basePt?: readonly [number, number];
       /** The rest of a copy's exceptions — see {@link CopyExceptions}. */
       readonly exceptions?: CopyExceptions;
+      /** A copy of **the card as it is now**, where the default copies a
+       * permanent that has left as it last existed on the battlefield
+       * (rule 608.2h): Myrkul, Lord of Bones's "a copy of that card", the
+       * one it just exiled — "not of the creature as it last existed on the
+       * battlefield" (its ruling). */
+      readonly asCard?: boolean;
     }
   | {
       /** Attach the source (an Aura/Equipment) to a target permanent. */
@@ -2345,12 +2379,17 @@ export type EffectSpec =
  */
 export interface CopyExceptions {
   readonly name?: string;
+  /** "It's an enchantment and loses all other card types" (Myrkul). */
+  readonly setTypes?: readonly CardType[];
   readonly addTypes?: readonly CardType[];
   readonly addSubtypes?: readonly string[];
   readonly setColors?: readonly Color[];
   readonly addColors?: readonly Color[];
   readonly basePt?: readonly [number, number];
   readonly keywords?: readonly Keyword[];
+  /** Activated abilities it has — "and it has '{2}, {T}, Sacrifice this
+   * token: You gain 3 life.'" (Brenard, Ginger Sculptor). */
+  readonly activated?: readonly ActivatedAbility[];
 }
 
 /** See the `look-and-choose` effect's `leftoverIf`. */
@@ -2544,7 +2583,13 @@ export interface EffectApi {
   /** See the `"return-to-hand"` {@link EffectSpec} — `from` defaults to the
    * battlefield. */
   returnToHand(target: TargetRef, from?: ReturnToHandZone): void;
-  exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
+  /** `withCounters`: counters the card gets there ("exile it with a croak
+   * counter on it"). */
+  exileObject(
+    target: TargetRef,
+    untilSourceLeaves?: boolean,
+    withCounters?: { readonly kind: string; readonly amount: number },
+  ): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}.
    * Returns `true` when it stopped to ask an "as this enters" choice first
    * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
@@ -2829,6 +2874,10 @@ export interface EffectApi {
   ): void;
   /** See the `"grant-triggered-all"` {@link EffectSpec}. */
   grantTriggeredAll(filter: CardFilter, ability: TriggeredAbility, duration: PtDuration): void;
+  /** See the `"grant-activated"` {@link EffectSpec}. */
+  grantActivated(target: TargetRef, ability: ActivatedAbility, duration: PtDuration): void;
+  /** See the `"grant-activated-all"` {@link EffectSpec}. */
+  grantActivatedAll(filter: CardFilter, ability: ActivatedAbility, duration: PtDuration): void;
   /** `player` takes an extra turn after this one (Time Warp). */
   takeExtraTurn(player: PlayerId): void;
   /** Storm — copy the spell `sourceId` for each earlier spell its controller
@@ -2919,6 +2968,8 @@ export interface EffectApi {
       /** Keywords the copies gain until end of turn. */
       gainUntilEndOfTurn?: readonly Keyword[];
       exceptions?: CopyExceptions;
+      /** Copy the object as it is now, never as it last existed elsewhere. */
+      asCard?: boolean;
     },
   ): void;
   /** True if `condition` holds from the effect source's controller's
@@ -3832,8 +3883,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "exile": {
-      const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true);
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true, spec.withCounters);
       return;
     }
     case "return-exiled-by-source": {
@@ -4204,6 +4255,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-triggered-all":
       ctx.grantTriggeredAll(spec.filter, spec.ability, spec.duration);
       return;
+    case "grant-activated": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.grantActivated(target, spec.ability, spec.duration);
+      return;
+    }
+    case "grant-activated-all":
+      ctx.grantActivatedAll(spec.filter, spec.ability, spec.duration);
+      return;
     case "take-extra-turn": {
       const target = spec.target === undefined ? undefined : ctx.targets[spec.target];
       if (spec.target !== undefined && target?.kind !== "player") return;
@@ -4337,6 +4396,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           ...(spec.basePt ? { basePt: spec.basePt } : {}),
           ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
           ...(spec.exceptions ? { exceptions: spec.exceptions } : {}),
+          ...(spec.asCard === true ? { asCard: true } : {}),
         });
       }
       return;

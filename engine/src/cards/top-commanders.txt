@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-296 already implemented / 204 missing
+298 already implemented / 202 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -294,7 +294,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  288  Wernog, Rider's Chaplain                        9258 decks  {W}{B}           Legendary Creature — Human
 [x]  289  Hazezon, Shaper of Sand                         9241 decks  {R}{G}{W}        Legendary Creature — Human Warrior
 [ ]  290  Tayam, Luminous Enigma                          9240 decks  {1}{W}{B}{G}     Legendary Creature — Nightmare Beast
-[ ]  291  Brenard, Ginger Sculptor                        9226 decks  {1}{G}{W}{U}     Legendary Creature — Human Artificer
+[x]  291  Brenard, Ginger Sculptor                        9226 decks  {1}{G}{W}{U}     Legendary Creature — Human Artificer
 [x]  292  Reaper King                                     9223 decks  {2/W}{2/U}{2/B}{2/R}{2/G} Legendary Artifact Creature — Scarecrow
 [ ]  293  Phenax, God of Deception                        9215 decks  {3}{U}{B}        Legendary Enchantment Creature — God
 [ ]  294  Indominus Rex, Alpha                            9195 decks  {1}{U/B}{U/B}{G}{G} Legendary Creature — Dinosaur Mutant
@@ -359,7 +359,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  353  Niv-Mizzet, Visionary                           7935 decks  {4}{U}{R}        Legendary Creature — Dragon Wizard
 [x]  354  Mishra, Eminent One                             7921 decks  {2}{U}{B}{R}     Legendary Creature — Human Artificer
 [x]  355  Shirei, Shizo's Caretaker                       7897 decks  {4}{B}           Legendary Creature — Spirit
-[ ]  356  Myrkul, Lord of Bones                           7891 decks  {4}{W}{B}{G}     Legendary Creature — God
+[x]  356  Myrkul, Lord of Bones                           7891 decks  {4}{W}{B}{G}     Legendary Creature — God
 [ ]  357  Ellivere of the Wild Court                      7866 decks  {2}{G}{W}        Legendary Creature — Human Knight
 [ ]  358  Koma, Cosmos Serpent                            7852 decks  {3}{G}{G}{U}{U}  Legendary Creature — Serpent
 [x]  359  Kodama of the East Tree                         7851 decks  {4}{G}{G}        Legendary Creature — Spirit

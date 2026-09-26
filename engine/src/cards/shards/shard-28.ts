@@ -99,6 +99,7 @@ import _poolMindControl from "../pool/mind-control.js";
 import _poolMinecartDaredevil from "../pool/minecart-daredevil.js";
 import _poolMoleManMoloidMaster from "../pool/mole-man-moloid-master.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
+import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolMinecartDaredevil,
     _poolMoleManMoloidMaster,
     _poolMutantTownMusicians,
+    _poolMyrkulLordOfBones,
     _poolMysticMonastery,
     _poolNightguardPatrol,
     _poolOmnathLocusOfCreation,

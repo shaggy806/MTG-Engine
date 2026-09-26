@@ -23,6 +23,7 @@
  * changeling makes it just a Frog — Mistform Ultimus's ruling).
  */
 
+import type { CardType } from "./cards/define.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 
 /** "Is every creature type" (rule 702.73a, changeling) in a subtype list. */
@@ -99,4 +100,72 @@ export function hasSubtype(subtypes: readonly string[], subtype: string): boolea
 /** `subtypes` without the markers — the subtypes a type line prints. */
 export function withoutTypeMarkers(subtypes: readonly string[]): readonly string[] {
   return subtypes.some(isTypeMarker) ? subtypes.filter((s) => !isTypeMarker(s)) : subtypes;
+}
+
+/** The artifact types (rule 205.3g). */
+const ARTIFACT_TYPE_SET: ReadonlySet<string> = new Set([
+  "Attraction",
+  "Blood",
+  "Bobblehead",
+  "Book",
+  "Clue",
+  "Contraption",
+  "Equipment",
+  "Food",
+  "Fortification",
+  "Gold",
+  "Heartwood",
+  "Incubator",
+  "Infinity",
+  "Junk",
+  "Lander",
+  "Map",
+  "Mutagen",
+  "Powerstone",
+  "Spacecraft",
+  "Stone",
+  "Treasure",
+  "Vehicle",
+  "Vibranium",
+]);
+
+/** The enchantment types (rule 205.3h). */
+const ENCHANTMENT_TYPE_SET: ReadonlySet<string> = new Set([
+  "Aura",
+  "Background",
+  "Cartouche",
+  "Case",
+  "Class",
+  "Curse",
+  "Plan",
+  "Role",
+  "Room",
+  "Rune",
+  "Saga",
+  "Shard",
+  "Shrine",
+]);
+
+/** The spell types, an instant's or a sorcery's (rule 205.3k). */
+const SPELL_TYPE_SET: ReadonlySet<string> = new Set(["Adventure", "Arcane", "Chorus", "Lesson", "Omen", "Trap"]);
+
+/** The battle types (rule 205.3q). */
+const BATTLE_TYPE_SET: ReadonlySet<string> = new Set(["Siege"]);
+
+/**
+ * Whether `subtype` still belongs on an object whose card types are now
+ * `types` (rule 205.1a): a subtype stays only while the object has a card
+ * type it's correlated with — creature types with creature, land types with
+ * land, artifact, enchantment and battle types with theirs, spell types with
+ * instant or sorcery. Anything else is a planeswalker type (rule 205.3j).
+ * Myrkul, Lord of Bones's enchantment copy of a creature card is no Bear.
+ */
+export function subtypeFitsTypes(subtype: string, types: readonly CardType[]): boolean {
+  if (subtype === EVERY_CREATURE_TYPE || CREATURE_TYPE_SET.has(subtype)) return types.includes("creature");
+  if (subtype === EVERY_LAND_TYPE || LAND_TYPE_SET.has(subtype)) return types.includes("land");
+  if (ARTIFACT_TYPE_SET.has(subtype)) return types.includes("artifact");
+  if (ENCHANTMENT_TYPE_SET.has(subtype)) return types.includes("enchantment");
+  if (SPELL_TYPE_SET.has(subtype)) return types.includes("instant") || types.includes("sorcery");
+  if (BATTLE_TYPE_SET.has(subtype)) return types.includes("battle");
+  return types.includes("planeswalker");
 }

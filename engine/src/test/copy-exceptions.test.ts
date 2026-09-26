@@ -8,10 +8,12 @@
 
 import { describe, expect, it } from "vitest";
 
+import { manaTapAbility } from "../cards/helpers.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import type { CopyExceptions } from "../effects.js";
 import { matchesFilter } from "../filter.js";
+import { hasSubtype, subtypeFitsTypes } from "../subtypes.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -149,6 +151,86 @@ describe("copy exceptions", () => {
       (id) => nameOf(game.state.objects[id]) === "Bontu's Monument",
     );
     expect(monuments).toHaveLength(1);
+  });
+
+  it("set types: only what they say, and the subtypes that went with the rest go too (rule 205.1a)", () => {
+    const { game } = setUp();
+    // A changeling card: every creature type, as long as it's a creature.
+    const morophon = game.debugSpawn("Morophon, the Boundless", A, "graveyard");
+    expect(hasSubtype(game.characteristics(morophon).subtypes, "Goblin")).toBe(true);
+    const token = copyOf(game, morophon, { setTypes: ["enchantment"] });
+    const c = game.characteristics(token);
+    expect(c.types).toEqual(["enchantment"]);
+    expect(hasSubtype(c.subtypes, "Goblin")).toBe(false);
+    // A type-adding exception beside it still applies on top.
+    const also = copyOf(game, morophon, { setTypes: ["enchantment"], addTypes: ["artifact"], addSubtypes: ["Food"] });
+    expect([...game.characteristics(also).types].sort()).toEqual(["artifact", "enchantment"]);
+    expect(game.characteristics(also).subtypes).toContain("Food");
+  });
+
+  it("which card types each kind of subtype goes with", () => {
+    expect(subtypeFitsTypes("Bear", ["enchantment"])).toBe(false);
+    expect(subtypeFitsTypes("Bear", ["artifact", "creature"])).toBe(true);
+    expect(subtypeFitsTypes("Forest", ["creature"])).toBe(false);
+    expect(subtypeFitsTypes("Forest", ["land"])).toBe(true);
+    expect(subtypeFitsTypes("Food", ["enchantment"])).toBe(false);
+    expect(subtypeFitsTypes("Equipment", ["artifact"])).toBe(true);
+    expect(subtypeFitsTypes("Aura", ["enchantment"])).toBe(true);
+    expect(subtypeFitsTypes("Saga", ["creature"])).toBe(false);
+    expect(subtypeFitsTypes("Arcane", ["instant"])).toBe(true);
+    expect(subtypeFitsTypes("Siege", ["battle"])).toBe(true);
+    expect(subtypeFitsTypes("Jace", ["planeswalker"])).toBe(true);
+    expect(subtypeFitsTypes("Jace", ["enchantment"])).toBe(false);
+  });
+
+  it("an activated ability: offered, activated, and lost with the rest of its abilities (rule 613.7)", () => {
+    const { game } = setUp();
+    const sacrifice = {
+      cost: { mana: "{1}", tap: false, sacrifice: "self" },
+      targets: [],
+      effect: { kind: "gain-life", amount: 2 },
+      resolve: null,
+      text: "{1}, Sacrifice this token: You gain 2 life.",
+    } as const;
+    const monument = game.debugSpawn("Bontu's Monument", A, "graveyard");
+    const token = copyOf(game, monument, { activated: [sacrifice] });
+    game.debugSpawn("Island", A, "battlefield");
+    const offered = (id: ObjectId) =>
+      game.legalActions(A).filter((action) => action.kind === "activate-ability" && action.source === id);
+    const [ability] = offered(token);
+    expect(ability).toMatchObject({ text: sacrifice.text });
+    // "A creature with no abilities" isn't one with a granted one.
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const hasAbilities = (id: ObjectId): boolean =>
+      matchesFilter(game.state, registry, id, { hasAbilities: true }, { you: A });
+    expect(hasAbilities(copyOf(game, bears))).toBe(false);
+    expect(hasAbilities(copyOf(game, bears, { activated: [sacrifice] }))).toBe(true);
+    // A copy of it has it too, until it loses all its abilities.
+    const copy = copyOf(game, token);
+    expect(offered(copy)).toHaveLength(1);
+    game.debugApplyEffect(B, registry.get("Turn to Frog").effect!, [{ kind: "object", object: copy }]);
+    expect(offered(copy)).toEqual([]);
+    if (ability?.kind !== "activate-ability") throw new Error("not offered");
+    const life = game.state.players[A].life;
+    game.dispatch({ type: "activate-ability", player: A, source: token, abilityIndex: ability.abilityIndex });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[token]).toBeUndefined();
+    expect(game.state.players[A].life).toBe(life + 2);
+  });
+
+  it("a mana ability among them pays for a spell", () => {
+    const { game } = setUp();
+    const monument = game.debugSpawn("Bontu's Monument", A, "graveyard");
+    const token = copyOf(game, monument, { activated: [manaTapAbility("G")] });
+    const hasManaAbility = (id: ObjectId): boolean =>
+      matchesFilter(game.state, registry, id, { hasManaAbility: true }, { you: A });
+    expect(hasManaAbility(token)).toBe(true);
+    expect(hasManaAbility(copyOf(game, monument))).toBe(false);
+    const elves = game.debugSpawn("Llanowar Elves", A, "hand");
+    expect(game.legalActions(A).some((action) => action.kind === "cast-spell" && action.card === elves)).toBe(true);
+    game.dispatch({ type: "cast-spell", player: A, card: elves });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[elves].zone).toBe("battlefield");
   });
 
   it("a copy of a copy that isn't legendary isn't legendary either", () => {

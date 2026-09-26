@@ -47,7 +47,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
-import { EVERY_CREATURE_TYPE, hasSubtype } from "./subtypes.js";
+import { EVERY_CREATURE_TYPE, hasSubtype, subtypeFitsTypes } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 import { isMainPhase } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -1019,6 +1019,12 @@ function applyModifierTypes(
 ): { types: readonly CardType[]; subtypes: readonly string[] } {
   let t = types;
   let st = subtypes;
+  if (modifier.setTypes) {
+    // Rule 205.1a: a subtype tied only to card types it no longer has goes too.
+    const set = [...modifier.setTypes];
+    t = set;
+    st = st.filter((s) => subtypeFitsTypes(s, set));
+  }
   if (modifier.setSubtypes) st = [...modifier.setSubtypes];
   if (modifier.addTypes && modifier.addTypes.length > 0) t = union(t, modifier.addTypes);
   if (modifier.addSubtypes && modifier.addSubtypes.length > 0) st = union(st, modifier.addSubtypes);
@@ -1619,7 +1625,10 @@ export function hasManaAbility(
   }
   if (
     object.modifiers.some(
-      (m) => modifierGrantApplies(m, lostAt) && m.grantsTriggered?.some(isTriggeredManaAbility) === true,
+      (m) =>
+        modifierGrantApplies(m, lostAt) &&
+        (m.grantsTriggered?.some(isTriggeredManaAbility) === true ||
+          m.grantsActivated?.some(isManaAbilityByRule) === true),
     )
   ) {
     return true;
@@ -1676,7 +1685,13 @@ export function hasAnyAbility(
   if (protection.colors.size > 0 || protection.types.size > 0 || protection.filters.length > 0) {
     return true;
   }
-  if (object.modifiers.some((m) => modifierGrantApplies(m, lostAt) && (m.grantsTriggered?.length ?? 0) > 0)) {
+  if (
+    object.modifiers.some(
+      (m) =>
+        modifierGrantApplies(m, lostAt) &&
+        ((m.grantsTriggered?.length ?? 0) > 0 || (m.grantsActivated?.length ?? 0) > 0),
+    )
+  ) {
     return true;
   }
   if (onBattlefield) {

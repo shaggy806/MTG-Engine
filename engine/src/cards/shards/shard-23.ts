@@ -114,6 +114,7 @@ import _poolPrimevalHerald from "../pool/primeval-herald.js";
 import _poolProdigiousGrowth from "../pool/prodigious-growth.js";
 import _poolProtectorOfGondor from "../pool/protector-of-gondor.js";
 import _poolPython from "../pool/python.js";
+import _poolRainOfFilth from "../pool/rain-of-filth.js";
 import _poolRakingClaws from "../pool/raking-claws.js";
 import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
 import _poolReachThroughMists from "../pool/reach-through-mists.js";
@@ -291,6 +292,7 @@ const shard: CardShard = {
     _poolProdigiousGrowth,
     _poolProtectorOfGondor,
     _poolPython,
+    _poolRainOfFilth,
     _poolRakingClaws,
     _poolRazakethTheFoulblooded,
     _poolReachThroughMists,

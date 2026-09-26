@@ -7,7 +7,7 @@
  */
 
 import type { CastVia } from "./actions.js";
-import type { TriggeredAbility } from "./abilities.js";
+import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type { EffectSpec, LookAndChooseLeftoverIf, ZoneSecondPick } from "./effects.js";
 import type { CardFilter } from "./filter.js";
@@ -614,6 +614,11 @@ export interface PtModifier {
   /** Layer 4 — card types this modifier adds (a man-land's "becomes a …
    * creature. It's still a land." keeps the printed types and adds these). */
   addTypes?: CardType[];
+  /** Layer 4 — card types this modifier *replaces* them with (Myrkul, Lord
+   * of Bones's copy: "it's an enchantment and loses all other card types").
+   * A subtype tied to a card type it no longer has goes too (rule 205.1a).
+   * Applied before `addTypes`. */
+  setTypes?: CardType[];
   /** Layer 4 — subtypes this modifier adds (e.g. `["Blinkmoth"]`). */
   addSubtypes?: string[];
   /** Layer 4 — subtypes this modifier *replaces* the printed ones with (Turn
@@ -645,6 +650,11 @@ export interface PtModifier {
    * Insight). The ongoing, static equivalent is
    * `StaticAbility.grantsTriggered`. */
   grantsTriggered?: TriggeredAbility[];
+  /** Layer 6 — activated abilities this modifier grants: a copy exception's
+   * "and it has '{2}, {T}, Sacrifice this token: You gain 3 life.'"
+   * (Brenard, Ginger Sculptor). Seen by `legalActions`, activation and the
+   * mana payer like any granted activated ability. */
+  grantsActivated?: ActivatedAbility[];
   /** Layer 6 — it gains "This creature can't be sacrificed" (the
    * `"cant-be-sacrificed"` effect). The static equivalent is
    * `StaticAbility.cantBeSacrificed`. */
@@ -693,7 +703,9 @@ export type GrantedAbilityRef =
       readonly list: "activated" | "triggered" | "spell-triggered";
       readonly index: number;
     }
-  | { readonly kind: "modifier"; readonly ability: TriggeredAbility };
+  | { readonly kind: "modifier"; readonly ability: TriggeredAbility }
+  /** An activated ability a modifier grants (`PtModifier.grantsActivated`). */
+  | { readonly kind: "modifier-activated"; readonly ability: ActivatedAbility };
 
 /**
  * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):

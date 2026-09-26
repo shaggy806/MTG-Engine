@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**296 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**298 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,18 +17,19 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:exile-with-counters` (+2), `effect:impulse-exile-other-libraries` (+2),
-  `stat:object-damage-history` (+2), `zone:cast-cards-you-dont-own` (+1),
-  `zone:visibility-extensions` (+2), `effect:duration-extensions` (+1),
-  `effect:modifier-grants-activated` (+1), `keyword:toxic` (+1),
-  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1).
+  `effect:duration-extensions` (+1), `effect:impulse-exile-other-libraries` (+2),
+  `static:basic-land-type-mana` (+2), `stat:object-damage-history` (+2),
+  `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own` (+3),
+  `keyword:toxic` (+1), `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `zone:cast-from-library-top` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
-  `effect:copy-spell-extensions`, `effect:copy-exceptions` and
-  `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
+  `effect:copy-spell-extensions` (11) and `effect:copy-permanent-spell` (10). Live numbers come
+  from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11), `effect:enter-attacking` and `effect:cast-during-resolution` (10 each),
-  `decision:free-cast-choices` (9), `effect:attach-extensions` and `decision:choose-tap-costs` (7 each).
+  `decision:free-cast-choices` (9), `effect:attach-extensions` and
+  `effect:modal-ability-targeted-modes` (7 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).

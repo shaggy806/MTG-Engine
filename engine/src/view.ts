@@ -11,7 +11,13 @@
  */
 
 import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards.js";
-import { computeCharacteristics, restrictionsOf, withComputedCache } from "./characteristics.js";
+import {
+  abilitiesLostAt,
+  computeCharacteristics,
+  modifierGrantApplies,
+  restrictionsOf,
+  withComputedCache,
+} from "./characteristics.js";
 import type { GameEvent } from "./events.js";
 import type { Color, ManaPool } from "./mana.js";
 import { poolCounts } from "./mana.js";
@@ -289,6 +295,18 @@ function visible(
     for (const m of object.modifiers) {
       if (m.textSubstitution) {
         text = text.split(m.textSubstitution.from).join(m.textSubstitution.to);
+      }
+    }
+  }
+  // Abilities an effect gave it read with its own: a copy exception's "and
+  // it has '…'" (rule 707.9b — Brenard's Food Golems), a one-shot's
+  // granted trigger. Only those it still has (rule 613.7).
+  if (onBattlefield) {
+    const lostAt = abilitiesLostAt(object);
+    for (const m of object.modifiers) {
+      if (!modifierGrantApplies(m, lostAt)) continue;
+      for (const ability of [...(m.grantsActivated ?? []), ...(m.grantsTriggered ?? [])]) {
+        text = text.length > 0 ? `${text}\n${ability.text}` : ability.text;
       }
     }
   }
