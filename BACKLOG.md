@@ -167,6 +167,14 @@ that one card is the reason the deck exists.
 
 ## Client / UI
 
+- **Highlight what the top of the stack targets (raised 2026-09-26).** When a spell or ability is
+  on top of the stack, the permanents and players it targets should be marked on the board, so a
+  player can see what a bot's Swords to Plowshares is aimed at before letting it resolve. Today
+  the only place a target shows is the text line under the entry in the `Stack` overlay (and
+  the History log). Client-only: `VisibleObject.targets` already carries each stack object's
+  targets. Needs its own highlight, distinct from the "legal target" one used while choosing,
+  on battlefield tiles, player panels and targeted spells on the stack; check it in a 2- and a
+  4-player room at 768px.
 - **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
   own menu entry only while the list stays small (two colours up to X = 22). Past that it
   offers all of one type per type, and a count picker would let the player choose any split.
