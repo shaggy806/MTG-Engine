@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-306 already implemented / 194 missing
+310 already implemented / 190 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -124,8 +124,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  118  Urza, Chief Artificer                          17039 decks  {3}{W}{U}{B}     Legendary Creature — Human Artificer
 [x]  119  Alela, Artful Provocateur                      16894 decks  {1}{W}{U}{B}     Legendary Creature — Faerie Warlock
 [ ]  120  Mendicant Core, Guidelight                     16880 decks  {W}{U}           Legendary Artifact Creature — Robot
-[ ]  121  Galadriel, Light of Valinor                    16855 decks  {2}{G}{W}{U}     Legendary Creature — Elf Noble
-[ ]  122  Jin Sakai, Ghost of Tsushima                   16513 decks  {1}{W}{U}{B}     Legendary Creature — Human Samurai
+[x]  121  Galadriel, Light of Valinor                    16855 decks  {2}{G}{W}{U}     Legendary Creature — Elf Noble
+[x]  122  Jin Sakai, Ghost of Tsushima                   16513 decks  {1}{W}{U}{B}     Legendary Creature — Human Samurai
 [ ]  123  Storm, Force of Nature                         16444 decks  {1}{G}{U}{R}     Legendary Creature — Mutant Hero
 [x]  124  Yoshimaru, Ever Faithful                       16385 decks  {W}              Legendary Creature — Dog
 [x]  125  Morophon, the Boundless                        16181 decks  {7}              Legendary Creature — Shapeshifter
@@ -142,7 +142,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  136  Marina Vendrell                                15239 decks  {W}{U}{B}{R}{G}  Legendary Creature — Human Warlock
 [x]  137  Éowyn, Shieldmaiden                            15206 decks  {2}{U}{R}{W}     Legendary Creature — Human Knight
 [ ]  138  Magus Lucea Kane                               15193 decks  {1}{G}{U}{R}     Legendary Creature — Human Tyranid Wizard
-[ ]  139  Brago, King Eternal                            15135 decks  {2}{W}{U}        Legendary Creature — Spirit Noble
+[x]  139  Brago, King Eternal                            15135 decks  {2}{W}{U}        Legendary Creature — Spirit Noble
 [x]  140  Lord of the Nazgûl                             15118 decks  {3}{U}{B}        Legendary Creature — Wraith Noble
 [x]  141  Iroh, Grand Lotus                              14966 decks  {3}{G}{U}{R}     Legendary Creature — Human Noble Ally
 [ ]  142  Satya, Aetherflux Genius                       14905 decks  {1}{U}{R}{W}     Legendary Creature — Human Artificer
@@ -389,7 +389,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  383  Sigarda, Font of Blessings                      7525 decks  {2}{G}{W}        Legendary Creature — Angel
 [x]  384  Thantis, the Warweaver                          7519 decks  {3}{B}{R}{G}     Legendary Creature — Spider
 [x]  385  The Lord of Pain                                7479 decks  {3}{B}{R}        Legendary Creature — Human Assassin
-[ ]  386  Ayula, Queen Among Bears                        7460 decks  {1}{G}           Legendary Creature — Bear
+[x]  386  Ayula, Queen Among Bears                        7460 decks  {1}{G}           Legendary Creature — Bear
 [x]  387  Evereth, Viceroy of Plunder                     7444 decks  {2}{B}           Legendary Creature — Vampire Soldier
 [x]  388  Slinza, the Spiked Stampede                     7440 decks  {4}{G}           Legendary Creature — Beast
 [x]  389  Ezuri, Claw of Progress                         7437 decks  {2}{G}{U}        Legendary Creature — Phyrexian Elf Warrior

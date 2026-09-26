@@ -20,6 +20,7 @@ import _poolBeastAttack from "../pool/beast-attack.js";
 import _poolBigfinBouncer from "../pool/bigfin-bouncer.js";
 import _poolBlindObedience from "../pool/blind-obedience.js";
 import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
+import _poolBreechesEagerPillager from "../pool/breeches-eager-pillager.js";
 import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
 import _poolBrigidDounsMind from "../pool/brigid-douns-mind.js";
 import _poolBristlyBillSpineSower from "../pool/bristly-bill-spine-sower.js";
@@ -112,6 +113,7 @@ import _poolPakoArcaneRetriever from "../pool/pako-arcane-retriever.js";
 import _poolParadoxGardens from "../pool/paradox-gardens.js";
 import _poolPeaceStrider from "../pool/peace-strider.js";
 import _poolPhyrexianBroodlings from "../pool/phyrexian-broodlings.js";
+import _poolPipBoy3000 from "../pool/pip-boy-3000.js";
 import _poolPlunderingPirate from "../pool/plundering-pirate.js";
 import _poolPrimalVisitation from "../pool/primal-visitation.js";
 import _poolPryingEyes from "../pool/prying-eyes.js";
@@ -209,6 +211,7 @@ const shard: CardShard = {
     _poolBigfinBouncer,
     _poolBlindObedience,
     _poolBootsOfSpeed,
+    _poolBreechesEagerPillager,
     _poolBrigidClachansHeart,
     _poolBrigidDounsMind,
     _poolBristlyBillSpineSower,
@@ -301,6 +304,7 @@ const shard: CardShard = {
     _poolParadoxGardens,
     _poolPeaceStrider,
     _poolPhyrexianBroodlings,
+    _poolPipBoy3000,
     _poolPlunderingPirate,
     _poolPrimalVisitation,
     _poolPryingEyes,

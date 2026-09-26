@@ -83,6 +83,7 @@ import _poolForestBear from "../pool/forest-bear.js";
 import _poolFortifiedRampart from "../pool/fortified-rampart.js";
 import _poolFreshVolunteers from "../pool/fresh-volunteers.js";
 import _poolFuturistForge from "../pool/futurist-forge.js";
+import _poolGaladrielLightOfValinor from "../pool/galadriel-light-of-valinor.js";
 import _poolGhostsOfTheDamned from "../pool/ghosts-of-the-damned.js";
 import _poolGobblingOoze from "../pool/gobbling-ooze.js";
 import _poolGoblinAssaultTeam from "../pool/goblin-assault-team.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolFortifiedRampart,
     _poolFreshVolunteers,
     _poolFuturistForge,
+    _poolGaladrielLightOfValinor,
     _poolGhostsOfTheDamned,
     _poolGobblingOoze,
     _poolGoblinAssaultTeam,

@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**306 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**310 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -36,10 +36,22 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,417 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,436 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
+- **Next: creatures that enter tapped and attacking (measured 2026-09-26: 58 missing top-5000
+  cards).** Adeline (#491), Hero of Bladehold, Anim Pakal, Mobilize (6), Myriad (10), Ninjutsu (17),
+  Ilharg, Kaalia, Winota. The core is rule 508.4: a permanent put onto the battlefield attacking,
+  never declared (no attack triggers), its controller choosing which defending player or
+  planeswalker each one attacks — in Commander every opponent is a defending player (802.2), so
+  that needs a new decision, and attacking tokens must not fold into a token stack (combat deals
+  one object's damage). Combat already reads attackers off `GameObject.attacking`. Ninjutsu attacks
+  whatever the returned creature was attacking (702.49c), so needs no choice.
+- **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
+  Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
+  the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
+  modes", for the rest of that family's blockers.
 - **Host-trigger cards, 34 left** (the equipped/enchanted-creature triggers are built): each is
   blocked by something shared with other cards — a static "is goaded", "return this card" after
   its host died, per-event "deals damage", per-mode targets on a modal trigger, free casts during

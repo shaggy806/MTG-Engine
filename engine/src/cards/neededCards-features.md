@@ -233,6 +233,33 @@ Garenbrig (717)
   Ponder (put cards back in any order), Chaos Warp (shuffle a permanent
   into a library), The One Ring (protection for a player), Urza's Saga.
 
+### Modal triggers with targeted modes — built 2026-09-26
+
+**Built** as `ModeOption.targets` on an `announced` modal effect: the chosen
+modes bring their targets as the ability goes on the stack, a mode needing a
+target it can't have isn't offered (rule 603.3c), and each mode reads its own
+slice of the targets as it resolves (`withTargetSlice`), so a mode whose
+target has gone still does the rest while an all-illegal ability does nothing
+(608.2b). "Choose one that hasn't been chosen this turn" now works announced
+too, recorded as each copy goes on the stack. Measured before: 32 missing
+top-5000 cards. Shipped: Hullbreaker Horror, Junji, Aether Channeler, Retreat
+to Coralhelm, Charming Prince, Silverback Elder, Retreat to Kazandu, Dread
+Presence, Pip-Boy 3000, Voracious Hydra (`double-counters` gained a
+`counter` kind), Retreat to Hagra, Shambling Ghast, Tiller Engine, Oltec
+Matterweaver, Kykar, Glorious Sunrise, and the commanders Ayula, Queen Among
+Bears, Jin Sakai, Ghost of Tsushima and Galadriel, Light of Valinor, with
+Breeches and Parapet Thrasher. Still blocked among the 32: shield counters
+(Titan of Industry), countering an ability (Ertai Resurrected), "remove up to
+three counters" of the player's choice (Glissa Sunslayer), a mode never chosen
+before, not just this turn (Silent Hallcreeper), mana spent as though any
+colour (Grenzo), a "life they lost this turn" read for a *target* player
+(Astarion — `turnStat` has no target scope), modes that must target
+different players (Shadrix), Role tokens (Charming Scoundrel), a
+nonartifact-spell mana restriction (The Mightstone and Weakstone), a card
+shuffled in from the graveyard (Kogla and Yidaro), and Caesar's attacking
+tokens. Modal *activated* abilities (Breya, Koma, Umezawa's Jitte) are
+`effect:modal-activated-targeted-modes` in the gaps file.
+
 ### Host triggers — built 2026-09-26
 
 **Built** as the `"attached"` `TriggerWho`: "whenever **equipped** creature

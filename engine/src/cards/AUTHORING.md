@@ -844,13 +844,25 @@ exist (rule 111.7), so neither comes back.
   "choose up to X"). Leave `announced` off for a choice the text makes on
   resolution ("create a Food token or a Treasure token", fabricate, "tap or
   untap") — those are asked as the effect applies, correctly. A modal
-  *activated* ability would still ask as it resolves (§15); the pool has none. **A mode can't introduce
-  a *new* target choice of its own.** A mode's effect *can* reference the
-  enclosing ability's own already-chosen targets (`target: 0`, same as
-  anywhere else) — needed-cards P19. `notChosenThisTurn: true` is "choose
-  one **that hasn't been chosen this turn**" (Galadriel, Light of Valinor):
-  only the modes this ability of this object hasn't had chosen yet this turn
-  are offered, and with none left nothing happens. Counted per ability, like
+  *activated* ability would still ask as it resolves (§15); the pool has none. **An announced
+  mode may have targets of its own** (`ModeOption.targets`, as a `castModal` mode does —
+  Aether Channeler's "return another target nonland permanent", Dread Presence's "deals 2
+  damage to any target"): the chosen modes bring them as it goes on the stack, a mode
+  needing a target it can't have isn't offered (rule 603.3c — Hullbreaker Horror with no
+  opposing spell on the stack offers only its permanent mode), and each mode's effect reads
+  just its own, as slots `0…`. A mode whose target has gone illegal still does whatever
+  else it says; with every target illegal, nothing happens (rule 608.2b — Dread Presence
+  gains no life). A resolution-time (not announced) `modal` or `may` **can't introduce a
+  new target choice**, but its modes can reference the enclosing ability's own
+  already-chosen targets (`target: 0`, same as anywhere else) — needed-cards P19;
+  Retreat to Coralhelm's "you may tap or untap target creature" is one inside an announced
+  mode, reading that mode's target. `notChosenThisTurn: true` is "choose
+  one **that hasn't been chosen this turn**" (Galadriel, Light of Valinor;
+  Breeches, Eager Pillager): only the modes this ability of this object hasn't
+  had chosen yet this turn are offered, and with none left nothing happens (an
+  announced one is removed from the stack). Announced, a mode counts as chosen
+  as the ability goes on the stack, so creatures entering together each take a
+  different one. Counted per ability, like
   `resolved-this-turn` (a permanent that leaves and returns starts again),
   and reset as each turn begins.
 - **`may { effect, prompt, cost?, costLife?, costEnergy?, then?, else?, oncePerTurn? }`** — "You may [effect]". One
@@ -2779,8 +2791,8 @@ Delete an entry in the same commit as the feature that retires it.
 - **Modal abilities** — a modal *activated* ability would choose its modes
   as it resolves, not as it's activated (rule 700.2b); the pool has none. A
   modal *triggered* ability announces them as it goes on the stack
-  (`announced`). Either way a mode can't bring targets of its own
-  (`effect:modal-ability-targeted-modes`).
+  (`announced`), and its modes may bring targets of their own. A modal
+  activated ability's modes can't.
   A modal *spell* has neither problem: it uses `castModal`.
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.

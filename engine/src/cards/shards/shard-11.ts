@@ -85,6 +85,7 @@ import _poolInvasionTactics from "../pool/invasion-tactics.js";
 import _poolJacesScrutiny from "../pool/jaces-scrutiny.js";
 import _poolJadeMage from "../pool/jade-mage.js";
 import _poolJayasGreeting from "../pool/jayas-greeting.js";
+import _poolJinSakaiGhostOfTsushima from "../pool/jin-sakai-ghost-of-tsushima.js";
 import _poolKangeesLieutenant from "../pool/kangees-lieutenant.js";
 import _poolKedissEmberclawFamiliar from "../pool/kediss-emberclaw-familiar.js";
 import _poolKetriaCrystal from "../pool/ketria-crystal.js";
@@ -285,6 +286,7 @@ const shard: CardShard = {
     _poolJacesScrutiny,
     _poolJadeMage,
     _poolJayasGreeting,
+    _poolJinSakaiGhostOfTsushima,
     _poolKangeesLieutenant,
     _poolKedissEmberclawFamiliar,
     _poolKetriaCrystal,

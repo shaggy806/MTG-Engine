@@ -136,7 +136,8 @@
   "effect:duration-extensions",
   "effect:impulse-exile-other-libraries",
   "static:basic-land-type-mana",
-  "stat:object-damage-history"
+  "stat:object-damage-history",
+  "effect:modal-ability-targeted-modes"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -444,6 +445,11 @@
    "ui": true,
    "description": "Let the payer steer mana payment: pay from sources rather than floating mana, and choose mana or 2 life for each Phyrexian pip, instead of the auto-payer deciding."
   },
+  "decision:trigger-order": {
+   "size": "medium",
+   "ui": true,
+   "description": "The controller orders their own simultaneous triggers going on the stack (rule 603.3b). Today the engine picks an order for them, which decides the outcome whenever two copies of an entry trigger interact (Yarok doubling a fetch, Tifa Lockhart's two halves)."
+  },
   "decision:variable-target-count": {
    "size": "medium",
    "ui": true,
@@ -662,7 +668,12 @@
   "effect:modal-ability-targeted-modes": {
    "size": "medium",
    "ui": true,
-   "description": "Modal triggered and activated abilities whose modes carry their own targets, with modes chosen as the ability goes on the stack (rule 700.2), the way castModal works for spells."
+   "description": "Modal triggered abilities whose modes carry their own targets, with modes chosen as the ability goes on the stack (rules 603.3c, 700.2), the way castModal works for spells. Built 2026-09-26 (Ayula, Hullbreaker Horror, Junji, …); modal activated abilities are effect:modal-activated-targeted-modes."
+  },
+  "effect:modal-activated-targeted-modes": {
+   "size": "medium",
+   "ui": true,
+   "description": "Modal activated abilities whose modes carry their own targets: modes chosen as it is activated (rule 700.2b), each bringing its targets, as a castModal spell does (Breya, Etherium Shaper; Koma, Cosmos Serpent; Umezawa's Jitte)."
   },
   "effect:modifier-grants-activated": {
    "size": "small",
@@ -758,6 +769,11 @@
    "size": "small",
    "ui": false,
    "description": "create-token-copy options: 'tapped', as create-token has, and one copy for each object in the triggering batch ('for each of them, create a token that's a copy of it'), token stacks included."
+  },
+  "keyword:affinity": {
+   "size": "small",
+   "ui": false,
+   "description": "Affinity for a card type or filter (rule 702.41): the spell costs {1} less for each matching permanent. A cost reduction that scales with a count already exists; this is the printed keyword, which also has to be grantable to other spells."
   },
   "keyword:airbend": {
    "size": "small",
@@ -1368,16 +1384,6 @@
    "size": "medium",
    "ui": false,
    "description": "Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card')."
-  },
-  "decision:trigger-order": {
-   "size": "medium",
-   "ui": true,
-   "description": "The controller orders their own simultaneous triggers going on the stack (rule 603.3b). Today the engine picks an order for them, which decides the outcome whenever two copies of an entry trigger interact (Yarok doubling a fetch, Tifa Lockhart's two halves)."
-  },
-  "keyword:affinity": {
-   "size": "small",
-   "ui": false,
-   "description": "Affinity for a card type or filter (rule 702.41): the spell costs {1} less for each matching permanent. A cost reduction that scales with a count already exists; this is the printed keyword, which also has to be grantable to other spells."
   }
  },
  "commanders": [
@@ -1747,7 +1753,7 @@
    "name": "Breya, Etherium Shaper",
    "needs": [
     "cost:sacrifice-multiple",
-    "effect:modal-ability-targeted-modes"
+    "effect:modal-activated-targeted-modes"
    ]
   },
   {
@@ -4246,7 +4252,7 @@
    "name": "Koma, Cosmos Serpent",
    "needs": [
     "effect:cast-and-activate-restrictions",
-    "effect:modal-ability-targeted-modes",
+    "effect:modal-activated-targeted-modes",
     "effect:target-other-than-source"
    ]
   },

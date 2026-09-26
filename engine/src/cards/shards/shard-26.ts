@@ -11,6 +11,7 @@ import _poolAkoumTeeth from "../pool/akoum-teeth.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
+import _poolAyulaQueenAmongBears from "../pool/ayula-queen-among-bears.js";
 import _poolAzamiLadyOfScrolls from "../pool/azami-lady-of-scrolls.js";
 import _poolBasiliskCollar from "../pool/basilisk-collar.js";
 import _poolBefuddle from "../pool/befuddle.js";
@@ -196,6 +197,7 @@ const shard: CardShard = {
     _poolAncientBrontodon,
     _poolAshcoatBear,
     _poolAtomize,
+    _poolAyulaQueenAmongBears,
     _poolAzamiLadyOfScrolls,
     _poolBasiliskCollar,
     _poolBefuddle,

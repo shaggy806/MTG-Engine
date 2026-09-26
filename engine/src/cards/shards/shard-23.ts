@@ -81,6 +81,7 @@ import _poolIdyllicTutor from "../pool/idyllic-tutor.js";
 import _poolIgneousCur from "../pool/igneous-cur.js";
 import _poolIncurableOgre from "../pool/incurable-ogre.js";
 import _poolIronpawAspirant from "../pool/ironpaw-aspirant.js";
+import _poolJunjiTheMidnightSky from "../pool/junji-the-midnight-sky.js";
 import _poolJunktown from "../pool/junktown.js";
 import _poolKarnsBastion from "../pool/karns-bastion.js";
 import _poolKeeningApparition from "../pool/keening-apparition.js";
@@ -129,6 +130,7 @@ import _poolRuneScarredDemon from "../pool/rune-scarred-demon.js";
 import _poolSelesnyaSignet from "../pool/selesnya-signet.js";
 import _poolServoExhibition from "../pool/servo-exhibition.js";
 import _poolSetessanTraining from "../pool/setessan-training.js";
+import _poolShamblingGhast from "../pool/shambling-ghast.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
@@ -265,6 +267,7 @@ const shard: CardShard = {
     _poolIgneousCur,
     _poolIncurableOgre,
     _poolIronpawAspirant,
+    _poolJunjiTheMidnightSky,
     _poolJunktown,
     _poolKarnsBastion,
     _poolKeeningApparition,
@@ -313,6 +316,7 @@ const shard: CardShard = {
     _poolSelesnyaSignet,
     _poolServoExhibition,
     _poolSetessanTraining,
+    _poolShamblingGhast,
     _poolShimmeringGrotto,
     _poolSkycloudExpanse,
     _poolSlobadGoblinTinkerer,

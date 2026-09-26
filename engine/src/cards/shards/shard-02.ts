@@ -188,6 +188,7 @@ import _poolWitheredWretch from "../pool/withered-wretch.js";
 import _poolWithoutWeakness from "../pool/without-weakness.js";
 import _poolWoollyThoctar from "../pool/woolly-thoctar.js";
 import _poolZephidsEmbrace from "../pool/zephids-embrace.js";
+import _tokensGnomeToken from "../tokens/gnome-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -377,7 +378,9 @@ const shard: CardShard = {
     _poolWoollyThoctar,
     _poolZephidsEmbrace,
   ],
-  tokens: [],
+  tokens: [
+    _tokensGnomeToken,
+  ],
 };
 
 export default shard;

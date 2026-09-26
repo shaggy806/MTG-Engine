@@ -514,6 +514,21 @@ function untilEndOfTurnKeywords(keywords: readonly Keyword[]): PtModifier[] {
     : [{ power: 0, toughness: 0, keywords: [...keywords], untilEndOfTurn: true }];
 }
 
+/** A triggered ability's target specs as it goes on the stack: its own,
+ * then each announced mode's, in listed order (rules 603.3c, 700.2 — a
+ * modal ability's chosen modes bring their targets with them). */
+function triggerTargetSpecs(
+  ability: { readonly targets: readonly TargetSpec[]; readonly effect: EffectSpec | null },
+  modes: readonly number[] | null | undefined,
+): readonly TargetSpec[] {
+  const effect = ability.effect;
+  if (modes === null || modes === undefined || effect === null || effect === undefined) return ability.targets;
+  if (effect.kind !== "modal") return ability.targets;
+  if (effect.announced !== true) return ability.targets;
+  const modeSpecs = modes.flatMap((i) => effect.modes[i]?.targets ?? []);
+  return modeSpecs.length === 0 ? ability.targets : [...ability.targets, ...modeSpecs];
+}
+
 /** The indices of a trigger's slots the triggering event filled (see
  * `GameObject.autoTargetSlots`). */
 function autoSlotsOf(slots: readonly object[]): number[] {
@@ -2996,7 +3011,16 @@ export class Game {
       const trigger = this.state.pendingModalTrigger;
       this.state.awaiting = null;
       delete this.state.pendingModalTrigger;
-      const ordered = [...modeIndices].sort((a, b) => a - b);
+      // Offered out of fewer than all of them (a mode with no legal target):
+      // which of the ability's own modes these are.
+      const from = awaiting.announcedFrom;
+      const ordered = [...modeIndices].sort((a, b) => a - b).map((i) => from?.[i] ?? i);
+      // "That hasn't been chosen this turn": chosen as it goes on the
+      // stack, so a second copy triggered alongside it already can't.
+      if (awaiting.abilityKey !== undefined && ordered.length > 0) {
+        const record = (this.state.modesChosenThisTurn ??= {});
+        record[awaiting.abilityKey] = [...(record[awaiting.abilityKey] ?? []), ...ordered];
+      }
       this.emit({ type: "modes-chosen", source: awaiting.source, player, modes: ordered });
       if (trigger !== undefined && this.placeTriggerOnStack({ ...trigger, modes: ordered }) === "paused") return;
       if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
@@ -9390,8 +9414,9 @@ export class Game {
 
     // Target filters re-read their dynamic operands now (rule 608.2b): the
     // triggering object may have changed or left since.
+    const specs = triggerTargetSpecs(ability, object.chosenModes);
     const targetSource =
-      ability.targets.length === 0
+      specs.length === 0
         ? undefined
         : this.abilityTargetSource({
             sourceObjectId: source,
@@ -9405,7 +9430,7 @@ export class Game {
           });
     // A delayed trigger chose no targets (603.7d); what it carries is read.
     const legality = this.targetLegality(
-      object.delayedTrigger !== undefined ? [] : ability.targets,
+      object.delayedTrigger !== undefined ? [] : specs,
       object.targets ?? [],
       targets,
       object.controller,
@@ -9509,6 +9534,19 @@ export class Game {
   /** Which ability of which object `object` (an ability on the stack) is, as
    * the per-turn records key it — see `ResolutionContext.abilityKey`. A
    * delayed trigger is no object's ability, and has none. */
+  /** `abilityTurnKey` for a trigger not yet on the stack — the same key the
+   * ability object it becomes will have (its source's timestamp is the one
+   * `mintAbilityObject` records). */
+  private pendingTriggerTurnKey(trigger: PendingTrigger): string | undefined {
+    if (trigger.delayed !== undefined || trigger.reflexive !== undefined) return undefined;
+    const granted = trigger.grantedAbility;
+    const which =
+      granted?.kind === "static"
+        ? `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`
+        : `${trigger.chapter ? "chapter" : "triggered"}:${trigger.abilityIndex}`;
+    return `${trigger.sourceObjectId}@${this.state.objects[trigger.sourceObjectId]?.timestamp ?? 0}#${which}`;
+  }
+
   private abilityTurnKey(object: GameObject): string | undefined {
     if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) return undefined;
     const granted = object.grantedAbility;
@@ -11073,7 +11111,24 @@ export class Game {
         [],
         trigger.lastKnownRefs,
       );
-      const maxModes = Math.min(amountValue(modal.maxModes, ctx), modal.modes.length);
+      // A mode that needs a target it can't have can't be chosen (rule
+      // 603.3c), nor, for "choose one that hasn't been chosen this turn"
+      // (Galadriel, Light of Valinor), one this ability of this object has
+      // had chosen this turn; with none left, the ability is removed.
+      const modeSource = this.abilityTargetSource(trigger);
+      const turnKey = modal.notChosenThisTurn === true ? this.pendingTriggerTurnKey(trigger) : undefined;
+      const chosenBefore = turnKey === undefined ? [] : (this.state.modesChosenThisTurn?.[turnKey] ?? []);
+      const offered = modal.modes.flatMap((mode, i) =>
+        !chosenBefore.includes(i) &&
+        (mode.targets ?? []).every(
+          (spec) =>
+            isOptionalSpec(spec) ||
+            legalTargets(this.state, this.registry, spec, trigger.controller, modeSource).length > 0,
+        )
+          ? [i]
+          : [],
+      );
+      const maxModes = Math.min(amountValue(modal.maxModes, ctx), offered.length);
       if (maxModes <= 0) {
         this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no modes chosen" });
         return "done";
@@ -11086,7 +11141,9 @@ export class Game {
         announcing: true,
         minModes: Math.min(modal.minModes, maxModes),
         maxModes,
-        modes: modal.modes.map((m) => ({ text: m.text, effect: m.effect })),
+        modes: offered.map((i) => ({ text: modal.modes[i].text, effect: modal.modes[i].effect })),
+        ...(offered.length < modal.modes.length ? { announcedFrom: offered } : {}),
+        ...(turnKey !== undefined ? { abilityKey: turnKey } : {}),
         x: trigger.x ?? 0,
         targets: [],
         ...(trigger.triggerValue !== undefined && trigger.triggerValue !== 0
@@ -11112,8 +11169,9 @@ export class Game {
       | { spec: TargetSpec; options: readonly TargetRef[] }
       | { skip: true }
     )[] = [];
-    for (let i = 0; i < ability.targets.length; i += 1) {
-      const spec = ability.targets[i];
+    const specs = triggerTargetSpecs(ability as TriggeredAbility, trigger.modes);
+    for (let i = 0; i < specs.length; i += 1) {
+      const spec = specs[i];
       if (auto[i] !== undefined) {
         if (
           !isLegalTarget(this.state, this.registry, spec, auto[i], trigger.controller, triggerSource, {
@@ -11155,7 +11213,7 @@ export class Game {
       // A skipped slot is a hole — or, for an "any number of" group, which
       // is always last, no slot at all.
       const filled = slots.map((s) => ("auto" in s ? s.auto : "skip" in s ? undefined : s.options[0]));
-      const group = anyNumberSlot(ability.targets);
+      const group = anyNumberSlot(specs);
       const targets = group >= 0 && filled[group] === undefined ? filled.slice(0, group) : filled;
       const abilityId = this.mintTriggerAbility(
         trigger.sourceObjectId,
@@ -11647,12 +11705,13 @@ export class Game {
       handSizeOf: (player) => this.state.zones.perPlayer[player]?.hand.length ?? 0,
       librarySizeOf: (player) => this.state.zones.perPlayer[player]?.library.length ?? 0,
       graveyardSizeOf: (player) => this.state.zones.perPlayer[player]?.graveyard.length ?? 0,
-      doubleCounters: (target) => {
+      doubleCounters: (target, counter) => {
         if (target.kind !== "object") return;
         const object = this.state.objects[target.object];
         if (object === undefined || object.zone !== "battlefield") return;
         // Each kind as it is now, read before any is added.
         for (const [kind, current] of Object.entries({ ...object.counters })) {
+          if (counter !== undefined && kind !== counter) continue;
           if ((current ?? 0) > 0) this.addCounter(target, kind, current ?? 0, false, controller);
         }
       },
@@ -11760,6 +11819,33 @@ export class Game {
           { ...refs, player },
           opts,
         ),
+      withTargetSlice: (offset, count) => {
+        const cut = <T,>(list: readonly T[]): T[] => list.slice(offset, offset + count);
+        const illegal = opts.illegalTargets;
+        return this.makeResolutionContext(
+          source,
+          controller,
+          cut(targets),
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          cut(targetZones),
+          refs,
+          {
+            ...opts,
+            ...(opts.readTargets !== undefined ? { readTargets: cut(opts.readTargets) } : {}),
+            ...(illegal !== undefined
+              ? {
+                  illegalTargets: illegal
+                    .filter((slot) => slot >= offset && slot < offset + count)
+                    .map((slot) => slot - offset),
+                }
+              : {}),
+          },
+        );
+      },
       withTargetAt: (from, index) => {
         const bind = <T,>(list: readonly T[]): T[] => [...list.slice(0, from), list[index] as T];
         const illegal = opts.illegalTargets;

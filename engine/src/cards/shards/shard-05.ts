@@ -159,6 +159,7 @@ import _poolTempleOfDeceit from "../pool/temple-of-deceit.js";
 import _poolTempleOfMalady from "../pool/temple-of-malady.js";
 import _poolTheLadyOfTheMountain from "../pool/the-lady-of-the-mountain.js";
 import _poolThinkTank from "../pool/think-tank.js";
+import _poolTillerEngine from "../pool/tiller-engine.js";
 import _poolTinderFarm from "../pool/tinder-farm.js";
 import _poolTomeRaider from "../pool/tome-raider.js";
 import _poolTwoHeadedHellkite from "../pool/two-headed-hellkite.js";
@@ -345,6 +346,7 @@ const shard: CardShard = {
     _poolTempleOfMalady,
     _poolTheLadyOfTheMountain,
     _poolThinkTank,
+    _poolTillerEngine,
     _poolTinderFarm,
     _poolTomeRaider,
     _poolTwoHeadedHellkite,

@@ -107,6 +107,7 @@ import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
 import _poolRamirezDepietro from "../pool/ramirez-depietro.js";
 import _poolRecover from "../pool/recover.js";
 import _poolRegathanFirecat from "../pool/regathan-firecat.js";
+import _poolRetreatToKazandu from "../pool/retreat-to-kazandu.js";
 import _poolRiverMerfolk from "../pool/river-merfolk.js";
 import _poolRodOfRuin from "../pool/rod-of-ruin.js";
 import _poolSagesKnowledge from "../pool/sages-knowledge.js";
@@ -116,6 +117,7 @@ import _poolScionOfTheSwarm from "../pool/scion-of-the-swarm.js";
 import _poolScrapyardSteelbreaker from "../pool/scrapyard-steelbreaker.js";
 import _poolSerraAscendant from "../pool/serra-ascendant.js";
 import _poolShivanOasis from "../pool/shivan-oasis.js";
+import _poolSilverbackElder from "../pool/silverback-elder.js";
 import _poolSilverchaseFox from "../pool/silverchase-fox.js";
 import _poolSkySpirit from "../pool/sky-spirit.js";
 import _poolSkybridgeTowers from "../pool/skybridge-towers.js";
@@ -284,6 +286,7 @@ const shard: CardShard = {
     _poolRamirezDepietro,
     _poolRecover,
     _poolRegathanFirecat,
+    _poolRetreatToKazandu,
     _poolRiverMerfolk,
     _poolRodOfRuin,
     _poolSagesKnowledge,
@@ -293,6 +296,7 @@ const shard: CardShard = {
     _poolScrapyardSteelbreaker,
     _poolSerraAscendant,
     _poolShivanOasis,
+    _poolSilverbackElder,
     _poolSilverchaseFox,
     _poolSkySpirit,
     _poolSkybridgeTowers,

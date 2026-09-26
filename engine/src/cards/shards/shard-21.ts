@@ -97,6 +97,7 @@ import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
 import _poolOrazcaRaptor from "../pool/orazca-raptor.js";
 import _poolOrzhovSignet from "../pool/orzhov-signet.js";
 import _poolParallelLives from "../pool/parallel-lives.js";
+import _poolParapetThrasher from "../pool/parapet-thrasher.js";
 import _poolPathOfAngersFlame from "../pool/path-of-angers-flame.js";
 import _poolPheresBandCentaurs from "../pool/pheres-band-centaurs.js";
 import _poolPhyrexianHulk from "../pool/phyrexian-hulk.js";
@@ -258,6 +259,7 @@ const shard: CardShard = {
     _poolOrazcaRaptor,
     _poolOrzhovSignet,
     _poolParallelLives,
+    _poolParapetThrasher,
     _poolPathOfAngersFlame,
     _poolPheresBandCentaurs,
     _poolPhyrexianHulk,

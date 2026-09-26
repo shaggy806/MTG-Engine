@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolActOfTreason from "../pool/act-of-treason.js";
+import _poolAetherChanneler from "../pool/aether-channeler.js";
 import _poolAffaGuardHound from "../pool/affa-guard-hound.js";
 import _poolAlelaArtfulProvocateur from "../pool/alela-artful-provocateur.js";
 import _poolAleshasLegacy from "../pool/aleshas-legacy.js";
@@ -165,6 +166,7 @@ import _poolTrainingCenter from "../pool/training-center.js";
 import _poolUndeadAugur from "../pool/undead-augur.js";
 import _poolViridianAcolyte from "../pool/viridian-acolyte.js";
 import _poolViridianZealot from "../pool/viridian-zealot.js";
+import _poolVoraciousHydra from "../pool/voracious-hydra.js";
 import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
 import _poolVulshokBerserker from "../pool/vulshok-berserker.js";
 import _poolWaytaTrainerProdigy from "../pool/wayta-trainer-prodigy.js";
@@ -180,6 +182,7 @@ import _tokensTarmogoyfToken from "../tokens/tarmogoyf-token.js";
 const shard: CardShard = {
   pool: [
     _poolActOfTreason,
+    _poolAetherChanneler,
     _poolAffaGuardHound,
     _poolAlelaArtfulProvocateur,
     _poolAleshasLegacy,
@@ -341,6 +344,7 @@ const shard: CardShard = {
     _poolUndeadAugur,
     _poolViridianAcolyte,
     _poolViridianZealot,
+    _poolVoraciousHydra,
     _poolVoyagingSatyr,
     _poolVulshokBerserker,
     _poolWaytaTrainerProdigy,

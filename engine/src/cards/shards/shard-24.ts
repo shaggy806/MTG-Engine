@@ -68,6 +68,7 @@ import _poolGeothermalCrevice from "../pool/geothermal-crevice.js";
 import _poolGiftedAetherborn from "../pool/gifted-aetherborn.js";
 import _poolGilacorn from "../pool/gilacorn.js";
 import _poolGishathSunsAvatar from "../pool/gishath-suns-avatar.js";
+import _poolGloriousSunrise from "../pool/glorious-sunrise.js";
 import _poolGoForth from "../pool/go-forth.js";
 import _poolGoblinAssailant from "../pool/goblin-assailant.js";
 import _poolGruulLocket from "../pool/gruul-locket.js";
@@ -247,6 +248,7 @@ const shard: CardShard = {
     _poolGiftedAetherborn,
     _poolGilacorn,
     _poolGishathSunsAvatar,
+    _poolGloriousSunrise,
     _poolGoForth,
     _poolGoblinAssailant,
     _poolGruulLocket,

@@ -1567,6 +1567,10 @@ export type AwaitingDecision =
        * each offered one is, recorded in `GameState.modesChosenThisTurn`
        * once chosen. */
       readonly notChosenThisTurn?: readonly number[];
+      /** Announcing (`announcing`) out of fewer than all of the ability's
+       * modes — one needing a target it can't have can't be chosen (rule
+       * 603.3c): which of its own modes each offered one is. */
+      readonly announcedFrom?: readonly number[];
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs

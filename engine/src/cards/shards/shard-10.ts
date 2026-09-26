@@ -82,6 +82,7 @@ import _poolGrimPhysician from "../pool/grim-physician.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
 import _poolHonoredKnightCaptain from "../pool/honored-knight-captain.js";
 import _poolHopeEstheim from "../pool/hope-estheim.js";
+import _poolHullbreakerHorror from "../pool/hullbreaker-horror.js";
 import _poolHuntedWitness from "../pool/hunted-witness.js";
 import _poolIdolOfOblivion from "../pool/idol-of-oblivion.js";
 import _poolIndathaCrystal from "../pool/indatha-crystal.js";
@@ -279,6 +280,7 @@ const shard: CardShard = {
     _poolHeroicIntervention,
     _poolHonoredKnightCaptain,
     _poolHopeEstheim,
+    _poolHullbreakerHorror,
     _poolHuntedWitness,
     _poolIdolOfOblivion,
     _poolIndathaCrystal,

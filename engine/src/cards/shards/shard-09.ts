@@ -32,6 +32,7 @@ import _poolBreathOfMalfegor from "../pool/breath-of-malfegor.js";
 import _poolBurglarRat from "../pool/burglar-rat.js";
 import _poolCaptainLanneryStorm from "../pool/captain-lannery-storm.js";
 import _poolCaptainNghathrod from "../pool/captain-nghathrod.js";
+import _poolCharmingPrince from "../pool/charming-prince.js";
 import _poolChulane from "../pool/chulane.js";
 import _poolCitanulDruid from "../pool/citanul-druid.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
@@ -82,6 +83,7 @@ import _poolJeskaWarriorAdept from "../pool/jeska-warrior-adept.js";
 import _poolKeeneyeAven from "../pool/keeneye-aven.js";
 import _poolKessigFlamebreather from "../pool/kessig-flamebreather.js";
 import _poolKrenkosEnforcer from "../pool/krenkos-enforcer.js";
+import _poolKykarZephyrAwakener from "../pool/kykar-zephyr-awakener.js";
 import _poolLagacLizard from "../pool/lagac-lizard.js";
 import _poolLandLeeches from "../pool/land-leeches.js";
 import _poolLazotepPlating from "../pool/lazotep-plating.js";
@@ -217,6 +219,7 @@ const shard: CardShard = {
     _poolBurglarRat,
     _poolCaptainLanneryStorm,
     _poolCaptainNghathrod,
+    _poolCharmingPrince,
     _poolChulane,
     _poolCitanulDruid,
     _poolClingingDarkness,
@@ -267,6 +270,7 @@ const shard: CardShard = {
     _poolKeeneyeAven,
     _poolKessigFlamebreather,
     _poolKrenkosEnforcer,
+    _poolKykarZephyrAwakener,
     _poolLagacLizard,
     _poolLandLeeches,
     _poolLazotepPlating,

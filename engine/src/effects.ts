@@ -1413,9 +1413,12 @@ export type EffectSpec =
       /** "Double the number of each kind of counter on" one permanent
        * (Deepglow Skate): another counter of each kind for each one already
        * there, put on the way a targeted `add-counter` puts them, so a
-       * Doubling Season applies. A permanent with no counters is untouched. */
+       * Doubling Season applies. A permanent with no counters is untouched.
+       * `counter` doubles just that kind — Voracious Hydra's "double the
+       * number of +1/+1 counters on this creature". */
       readonly kind: "double-counters";
       readonly target: EffectTargetRef;
+      readonly counter?: string;
     }
   | {
       /** Every battlefield permanent matching `filter` gains `keyword` (Overrun:
@@ -2541,10 +2544,12 @@ export interface ModeOption {
   /** Rules text of this mode, shown in the chooser. */
   readonly text: string;
   readonly effect: EffectSpec;
-  /** Target specs this mode needs (ROADMAP Phase 11 EG-2 — `castModal` only).
-   * The mode's `effect` reads them as slots `0..n-1` of the resolution
-   * context's targets. Omitted / empty for a non-targeted mode. The
-   * resolution-time `modal` / `may` effect requires *non*-targeted modes and
+  /** Target specs this mode needs — a `castModal` spell's (ROADMAP Phase 11
+   * EG-2), or an `announced` modal triggered ability's, whose chosen modes
+   * bring their targets as it goes on the stack (rules 603.3c, 700.2). The
+   * mode's `effect` reads them as slots `0..n-1` of the resolution context's
+   * targets. Omitted / empty for a non-targeted mode. A resolution-time
+   * `modal` / `may` effect (not announced) requires *non*-targeted modes and
    * ignores this. */
   readonly targets?: readonly TargetSpec[];
 }
@@ -2591,7 +2596,7 @@ export interface EffectApi {
   /** How many cards are in `player`'s graveyard — see `{ graveyardSize }`. */
   graveyardSizeOf(player: PlayerId): number;
   /** See the `"double-counters"` {@link EffectSpec}. */
-  doubleCounters(target: TargetRef): void;
+  doubleCounters(target: TargetRef, counter?: string): void;
   /** The colours of what `target` points at, as it last existed on the
    * battlefield if it has left — see `{ colorsOf }`. */
   colorsOf(target: TargetRef): readonly Color[];
@@ -2710,6 +2715,10 @@ export interface EffectApi {
    * where it was when targeted, whether it was found illegal — moves with
    * it. */
   withTargetAt(from: number, index: number): ResolutionContext;
+  /** This context with only targets `offset`…`offset + count - 1`, as
+   * slots 0… — one announced mode's own targets (see the `"modal"`
+   * {@link EffectSpec}), with what was known about each moving with it. */
+  withTargetSlice(offset: number, count: number): ResolutionContext;
   /** See the `"choose-permanents"` {@link EffectSpec}: raise the choice. */
   choosePermanents(filter: CardFilter, min: number, max: number, then: EffectSpec, prompt: string): void;
   /** This context, about `player`: the `"that-player"` scope names them —
@@ -4358,7 +4367,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "double-counters": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.doubleCounters(target);
+      if (target !== undefined) ctx.doubleCounters(target, spec.counter);
       return;
     }
     case "grant-keyword-all":
@@ -4668,10 +4677,19 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // Announced as the ability went on the stack: those modes, in printed
       // order.
       if (spec.announced === true && ctx.announcedModes !== undefined) {
-        for (const i of ctx.announcedModes) {
+        // Each mode with targets of its own reads just those, as slots 0…
+        // (rule 700.2): the ability's own targets come first, then each
+        // chosen mode's, in listed order — so a mode whose target has gone
+        // illegal still does whatever else it says, as a modal spell's does.
+        const counts = ctx.announcedModes.map((i) => spec.modes[i]?.targets?.length ?? 0);
+        let offset = ctx.targets.length - counts.reduce((a, b) => a + b, 0);
+        ctx.announcedModes.forEach((i, k) => {
           const mode = spec.modes[i];
-          if (mode !== undefined) applyEffectSpec(mode.effect, ctx);
-        }
+          const count = counts[k];
+          const modeCtx = count > 0 ? ctx.withTargetSlice(offset, count) : ctx;
+          offset += count;
+          if (mode !== undefined) applyEffectSpec(mode.effect, modeCtx);
+        });
         return;
       }
       ctx.chooseModes(

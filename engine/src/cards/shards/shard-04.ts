@@ -47,6 +47,7 @@ import _poolDesperateParry from "../pool/desperate-parry.js";
 import _poolDiabolicIntent from "../pool/diabolic-intent.js";
 import _poolDiscipleOfTeveshSzat from "../pool/disciple-of-tevesh-szat.js";
 import _poolDrakeHatchling from "../pool/drake-hatchling.js";
+import _poolDreadPresence from "../pool/dread-presence.js";
 import _poolDungeonShade from "../pool/dungeon-shade.js";
 import _poolEbonyRhino from "../pool/ebony-rhino.js";
 import _poolElderfangDisciple from "../pool/elderfang-disciple.js";
@@ -132,6 +133,8 @@ import _poolRaisedByGiants from "../pool/raised-by-giants.js";
 import _poolRangersLongbow from "../pool/rangers-longbow.js";
 import _poolResearchAssistant from "../pool/research-assistant.js";
 import _poolRestInPeace from "../pool/rest-in-peace.js";
+import _poolRetreatToCoralhelm from "../pool/retreat-to-coralhelm.js";
+import _poolRetreatToHagra from "../pool/retreat-to-hagra.js";
 import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
@@ -240,6 +243,7 @@ const shard: CardShard = {
     _poolDiabolicIntent,
     _poolDiscipleOfTeveshSzat,
     _poolDrakeHatchling,
+    _poolDreadPresence,
     _poolDungeonShade,
     _poolEbonyRhino,
     _poolElderfangDisciple,
@@ -325,6 +329,8 @@ const shard: CardShard = {
     _poolRangersLongbow,
     _poolResearchAssistant,
     _poolRestInPeace,
+    _poolRetreatToCoralhelm,
+    _poolRetreatToHagra,
     _poolRevitalizingRepast,
     _poolRevivingDose,
     _poolRidgeRannet,
