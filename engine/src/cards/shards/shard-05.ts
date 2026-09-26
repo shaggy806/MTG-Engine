@@ -23,6 +23,7 @@ import _poolBellowingCrier from "../pool/bellowing-crier.js";
 import _poolBishopOfWings from "../pool/bishop-of-wings.js";
 import _poolBladedSentinel from "../pool/bladed-sentinel.js";
 import _poolBlastedLandscape from "../pool/blasted-landscape.js";
+import _poolBleachboneVerge from "../pool/bleachbone-verge.js";
 import _poolBlessedLight from "../pool/blessed-light.js";
 import _poolBlightning from "../pool/blightning.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
@@ -103,6 +104,7 @@ import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
 import _poolMossMonster from "../pool/moss-monster.js";
 import _poolNetworkDisruptor from "../pool/network-disruptor.js";
+import _poolNobleHierarch from "../pool/noble-hierarch.js";
 import _poolNorinTheWary from "../pool/norin-the-wary.js";
 import _poolObsidianGiant from "../pool/obsidian-giant.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
@@ -116,6 +118,7 @@ import _poolRavenousIntruder from "../pool/ravenous-intruder.js";
 import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
 import _poolRiftBolt from "../pool/rift-bolt.js";
 import _poolRingOfTheLucii from "../pool/ring-of-the-lucii.js";
+import _poolRisingOfTheDay from "../pool/rising-of-the-day.js";
 import _poolRodeoPyromancers from "../pool/rodeo-pyromancers.js";
 import _poolRoothaMasteringTheMoment from "../pool/rootha-mastering-the-moment.js";
 import _poolRuggedHighlands from "../pool/rugged-highlands.js";
@@ -204,6 +207,7 @@ const shard: CardShard = {
     _poolBishopOfWings,
     _poolBladedSentinel,
     _poolBlastedLandscape,
+    _poolBleachboneVerge,
     _poolBlessedLight,
     _poolBlightning,
     _poolBodyDropper,
@@ -284,6 +288,7 @@ const shard: CardShard = {
     _poolMoonwingMoth,
     _poolMossMonster,
     _poolNetworkDisruptor,
+    _poolNobleHierarch,
     _poolNorinTheWary,
     _poolObsidianGiant,
     _poolOverwhelmingStampede,
@@ -297,6 +302,7 @@ const shard: CardShard = {
     _poolRememberTheFallen,
     _poolRiftBolt,
     _poolRingOfTheLucii,
+    _poolRisingOfTheDay,
     _poolRodeoPyromancers,
     _poolRoothaMasteringTheMoment,
     _poolRuggedHighlands,

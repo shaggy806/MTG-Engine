@@ -86,6 +86,7 @@ import _poolMindscourDragon from "../pool/mindscour-dragon.js";
 import _poolMinotaurWarrior from "../pool/minotaur-warrior.js";
 import _poolMintstrosity from "../pool/mintstrosity.js";
 import _poolMistyRainforest from "../pool/misty-rainforest.js";
+import _poolNadiersNightblade from "../pool/nadiers-nightblade.js";
 import _poolNagaOracle from "../pool/naga-oracle.js";
 import _poolNeedlethornDrake from "../pool/needlethorn-drake.js";
 import _poolNexusWardens from "../pool/nexus-wardens.js";
@@ -104,6 +105,7 @@ import _poolPlumeveil from "../pool/plumeveil.js";
 import _poolPollutedDelta from "../pool/polluted-delta.js";
 import _poolPrecisionBolt from "../pool/precision-bolt.js";
 import _poolProudMentor from "../pool/proud-mentor.js";
+import _poolRancor from "../pool/rancor.js";
 import _poolRatadrabikOfUrborg from "../pool/ratadrabik-of-urborg.js";
 import _poolRazorfinHunter from "../pool/razorfin-hunter.js";
 import _poolRazortipWhip from "../pool/razortip-whip.js";
@@ -260,6 +262,7 @@ const shard: CardShard = {
     _poolMinotaurWarrior,
     _poolMintstrosity,
     _poolMistyRainforest,
+    _poolNadiersNightblade,
     _poolNagaOracle,
     _poolNeedlethornDrake,
     _poolNexusWardens,
@@ -278,6 +281,7 @@ const shard: CardShard = {
     _poolPollutedDelta,
     _poolPrecisionBolt,
     _poolProudMentor,
+    _poolRancor,
     _poolRatadrabikOfUrborg,
     _poolRazorfinHunter,
     _poolRazortipWhip,

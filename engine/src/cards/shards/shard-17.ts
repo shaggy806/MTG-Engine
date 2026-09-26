@@ -141,6 +141,7 @@ import _poolSpinedWurm from "../pool/spined-wurm.js";
 import _poolSpireGarden from "../pool/spire-garden.js";
 import _poolStarlightInvoker from "../pool/starlight-invoker.js";
 import _poolSteadfastPaladin from "../pool/steadfast-paladin.js";
+import _poolSteelOverseer from "../pool/steel-overseer.js";
 import _poolSteepleCreeper from "../pool/steeple-creeper.js";
 import _poolSteppeLynx from "../pool/steppe-lynx.js";
 import _poolStewardOfValeron from "../pool/steward-of-valeron.js";
@@ -330,6 +331,7 @@ const shard: CardShard = {
     _poolSpireGarden,
     _poolStarlightInvoker,
     _poolSteadfastPaladin,
+    _poolSteelOverseer,
     _poolSteepleCreeper,
     _poolSteppeLynx,
     _poolStewardOfValeron,

@@ -7,6 +7,7 @@
 export const TOKEN_NAMES: readonly string[] = [
   "1/1 Blue Bird Token",
   "1/1 Green Cat Token",
+  "1/1 Red Elemental Token",
   "1/1 Vampire Token",
   "1/1 White Dog Token",
   "2/2 Black Bird Token",
@@ -14,6 +15,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "2/2 Red Spirit Token",
   "3/2 Shapeshifter Token",
   "3/3 Beast Token",
+  "4/4 Blue Red Elemental Token",
   "5/5 Elemental Token",
   "6/6 Dragon Token",
   "Ally Token",
@@ -149,6 +151,7 @@ export const PINNED_ART: Readonly<Partial<Record<string, string>>> = {
   "Mystic Peak": "https://cards.scryfall.io/art_crop/back/2/4/24d4f26e-7f96-4b38-867e-4fac819b2679.jpg",
   "Nicol Bolas, the Arisen": "https://cards.scryfall.io/art_crop/back/7/b/7b215968-93a6-4278-ac61-4e3e8c3c3943.jpg",
   "Oaken Boon": "https://cards.scryfall.io/art_crop/back/8/b/8bc518fc-904e-4e39-aeda-ffb222bfcc82.jpg",
+  "Old-Growth Grove": "https://cards.scryfall.io/art_crop/back/0/3/03522b6b-31ec-4126-8885-5dbb2248688b.jpg",
   "Pillarverge Pathway": "https://cards.scryfall.io/art_crop/back/6/5/6559047e-6ede-4815-a3a0-389062094f9d.jpg",
   "Psionic Pulse": "https://cards.scryfall.io/art_crop/back/c/0/c0deb9ea-a0d4-4c3f-888e-abd1995cf2b3.jpg",
   "Puny Snack": "https://cards.scryfall.io/art_crop/back/e/7/e77a8fd4-af5f-42b3-a87e-788baf2562dd.jpg",
@@ -178,6 +181,7 @@ export const PINNED_ART: Readonly<Partial<Record<string, string>>> = {
   "Twice the Rage": "https://cards.scryfall.io/art_crop/back/7/0/70c12e75-7e65-4706-b976-e47835910928.jpg",
   "Vastwood Thicket": "https://cards.scryfall.io/art_crop/back/3/a/3a7fd24e-84d8-405d-86e4-0571a9e23cc2.jpg",
   "Venture Deeper": "https://cards.scryfall.io/art_crop/back/c/e/ceb7308d-608c-4ede-9496-d795fc5bb271.jpg",
+  "Volcanic Fissure": "https://cards.scryfall.io/art_crop/back/5/0/50686ac7-346c-43d1-bdaa-28d46a12ad93.jpg",
   "Witch-Blessed Meadow": "https://cards.scryfall.io/art_crop/back/6/2/62061e7c-cf19-4f03-b8fa-2bdba62d6b0b.jpg",
   "Zof Bloodbog": "https://cards.scryfall.io/art_crop/back/9/8/98496d5b-1519-4f0c-8b46-0a43be643dfb.jpg",
 };

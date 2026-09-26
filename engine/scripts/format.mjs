@@ -146,7 +146,7 @@ export const makeFormatter = (game) => {
           e.duration === "end-of-turn" ? " until EOT" : ""
         }`;
       case "prohibition-imposed": {
-        const what = [e.spells ? "cast spells" : null, e.abilities ? "activate abilities" : null]
+        const what = [e.spells ? `cast ${e.spellsLabel ?? "spells"}` : null, e.abilities ? "activate abilities" : null]
           .filter((w) => w !== null)
           .join(" or ");
         return e.object !== undefined

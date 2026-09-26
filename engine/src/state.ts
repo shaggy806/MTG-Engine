@@ -2282,7 +2282,14 @@ export interface GameState {
    * can't cast spells and/or activate abilities, and permanents — the stint
    * they were in — whose activated abilities can't be activated. Turn-scoped. */
   turnProhibitions?: {
-    players: { readonly player: PlayerId; readonly spells: boolean; readonly abilities: boolean }[];
+    players: {
+      readonly player: PlayerId;
+      readonly spells: boolean;
+      readonly abilities: boolean;
+      /** Only the spells matching this, from `you`'s side — "can't cast
+       * noncreature spells this turn". */
+      readonly spellsMatching?: { readonly filter: CardFilter; readonly you: PlayerId };
+    }[];
     permanents: { readonly object: ObjectId; readonly zoneChangeCount: number }[];
   };
   /** Combat restrictions imposed as a rule for the rest of the turn — "creatures

@@ -71,6 +71,7 @@ import _poolGravitationalShift from "../pool/gravitational-shift.js";
 import _poolGreyHavensNavigator from "../pool/grey-havens-navigator.js";
 import _poolGroundbreaker from "../pool/groundbreaker.js";
 import _poolGuardDuty from "../pool/guard-duty.js";
+import _poolHighFaeTrickster from "../pool/high-fae-trickster.js";
 import _poolHourOfReckoning from "../pool/hour-of-reckoning.js";
 import _poolImprovisedArmor from "../pool/improvised-armor.js";
 import _poolInfuriate from "../pool/infuriate.js";
@@ -241,6 +242,7 @@ const shard: CardShard = {
     _poolGreyHavensNavigator,
     _poolGroundbreaker,
     _poolGuardDuty,
+    _poolHighFaeTrickster,
     _poolHourOfReckoning,
     _poolImprovisedArmor,
     _poolInfuriate,

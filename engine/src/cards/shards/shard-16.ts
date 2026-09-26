@@ -152,6 +152,7 @@ import _poolSpinningWheel from "../pool/spinning-wheel.js";
 import _poolSprout from "../pool/sprout.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
 import _poolStripMine from "../pool/strip-mine.js";
+import _poolSunderingEruption from "../pool/sundering-eruption.js";
 import _poolSunshotMilitia from "../pool/sunshot-militia.js";
 import _poolSurgeConductor from "../pool/surge-conductor.js";
 import _poolTalasScout from "../pool/talas-scout.js";
@@ -188,6 +189,7 @@ import _poolWallOfGranite from "../pool/wall-of-granite.js";
 import _poolWallOfHeat from "../pool/wall-of-heat.js";
 import _poolWallOfLava from "../pool/wall-of-lava.js";
 import _poolWarlordsAxe from "../pool/warlords-axe.js";
+import _poolWarstormSurge from "../pool/warstorm-surge.js";
 import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
@@ -349,6 +351,7 @@ const shard: CardShard = {
     _poolSprout,
     _poolStoneHavenMedic,
     _poolStripMine,
+    _poolSunderingEruption,
     _poolSunshotMilitia,
     _poolSurgeConductor,
     _poolTalasScout,
@@ -385,6 +388,7 @@ const shard: CardShard = {
     _poolWallOfHeat,
     _poolWallOfLava,
     _poolWarlordsAxe,
+    _poolWarstormSurge,
     _poolWaterTribeCaptain,
     _poolWizardsSchool,
     _poolXyrisTheWrithingStorm,

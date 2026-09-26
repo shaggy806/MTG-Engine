@@ -36,7 +36,7 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,272 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,316 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
@@ -114,7 +114,14 @@ that one card is the reason the deck exists.
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
 - **Unbounded targeting** ("any number of target …") is deliberately not built. The reasons,
-  and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
+  and when to revisit, are in `neededCards-features.md`, "Unbounded targeting". Re-measured
+  against the top 5000 (2026-09-26): 36 cards, up from 9 in the top 2000 — past the revisit line.
+- **Frantic Search targets its lands.** "Untap up to three lands" doesn't target, but the card
+  is authored as three optional target slots: the lands are picked as it's cast, a hexproof
+  land can't be picked, and three chosen lands all leaving in response fizzle the whole spell
+  (no draw). Needs a choice made on resolution — the same `decision:choose-permanent` Amass
+  and `sacrifice-all-but` want — which also unblocks Snap, Peregrine Drake, Rewind, Unwind and
+  Cloud of Faeries.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling

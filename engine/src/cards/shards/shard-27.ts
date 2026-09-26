@@ -99,6 +99,7 @@ import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
 import _poolOstiaryThrull from "../pool/ostiary-thrull.js";
 import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
+import _poolPriestOfTitania from "../pool/priest-of-titania.js";
 import _poolPrimordialWurm from "../pool/primordial-wurm.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
@@ -162,6 +163,7 @@ import _poolVesselOfVolatility from "../pool/vessel-of-volatility.js";
 import _poolVirulentEmissary from "../pool/virulent-emissary.js";
 import _poolVisceraSeer from "../pool/viscera-seer.js";
 import _poolVodalianMerchant from "../pool/vodalian-merchant.js";
+import _poolVolcanicFissure from "../pool/volcanic-fissure.js";
 import _poolWallOfStone from "../pool/wall-of-stone.js";
 import _poolWarriorsHonor from "../pool/warriors-honor.js";
 import _poolWaywardServant from "../pool/wayward-servant.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolOstiaryThrull,
     _poolPreordain,
     _poolPreyUpon,
+    _poolPriestOfTitania,
     _poolPrimordialWurm,
     _poolRageThrower,
     _poolRakdosCluestone,
@@ -334,6 +337,7 @@ const shard: CardShard = {
     _poolVirulentEmissary,
     _poolVisceraSeer,
     _poolVodalianMerchant,
+    _poolVolcanicFissure,
     _poolWallOfStone,
     _poolWarriorsHonor,
     _poolWaywardServant,

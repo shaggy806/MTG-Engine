@@ -12637,8 +12637,14 @@ export class Game {
             : chooser === "active-player"
               ? this.activePlayer
               : (() => {
+                  // A player, or an object's controller: "unless its
+                  // controller pays" (Spell Pierce), the spell's.
                   const ref = targets[chooser];
-                  return ref?.kind === "player" ? ref.player : undefined;
+                  return ref?.kind === "player"
+                    ? ref.player
+                    : ref?.kind === "object"
+                      ? this.state.objects[ref.object]?.controller
+                      : undefined;
                 })();
 
     const applyOtherwise = (): void => {
@@ -14032,7 +14038,7 @@ export class Game {
   private prohibit(
     players: readonly PlayerId[],
     target: TargetRef | undefined,
-    spells: boolean,
+    spells: boolean | { readonly filter: CardFilter; readonly label: string; readonly you: PlayerId },
     abilities: boolean,
   ): void {
     const record = (this.state.turnProhibitions ??= { players: [], permanents: [] });
@@ -14044,7 +14050,27 @@ export class Game {
       this.emit({ type: "prohibition-imposed", players: [], object: object.id, spells: false, abilities: true });
       return;
     }
-    if (players.length === 0 || (!spells && !abilities)) return;
+    if (players.length === 0 || (spells === false && !abilities)) return;
+    if (typeof spells === "object") {
+      // Only some spells — judged from the imposing effect's controller's
+      // side.
+      for (const player of players) {
+        record.players.push({
+          player,
+          spells: false,
+          abilities,
+          spellsMatching: { filter: spells.filter, you: spells.you },
+        });
+      }
+      this.emit({
+        type: "prohibition-imposed",
+        players: [...players],
+        spells: true,
+        spellsLabel: spells.label,
+        abilities,
+      });
+      return;
+    }
     for (const player of players) record.players.push({ player, spells, abilities });
     this.emit({ type: "prohibition-imposed", players: [...players], spells, abilities });
   }
@@ -14089,8 +14115,13 @@ export class Game {
         return `${printedCardName(spell)} has split second`;
       }
     }
-    if (this.state.turnProhibitions?.players.some((p) => p.player === player && p.spells) === true) {
-      return `${player} can't cast spells this turn`;
+    for (const p of this.state.turnProhibitions?.players ?? []) {
+      if (p.player !== player) continue;
+      if (p.spells) return `${player} can't cast spells this turn`;
+      const only = p.spellsMatching;
+      if (only !== undefined && matchesFilter(this.state, this.registry, cardId, only.filter, { you: only.you })) {
+        return `${player} can't cast ${def.name} this turn`;
+      }
     }
     for (const { source, prohibits } of this.prohibitionsOn(player)) {
       const spells = prohibits.spells;

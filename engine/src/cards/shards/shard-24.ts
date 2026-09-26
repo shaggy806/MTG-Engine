@@ -52,6 +52,7 @@ import _poolDesertOfTheFervent from "../pool/desert-of-the-fervent.js";
 import _poolDestructiveForce from "../pool/destructive-force.js";
 import _poolDimirInformant from "../pool/dimir-informant.js";
 import _poolDowsingShaman from "../pool/dowsing-shaman.js";
+import _poolEleshNornGrandCenobite from "../pool/elesh-norn-grand-cenobite.js";
 import _poolElvishVisionary from "../pool/elvish-visionary.js";
 import _poolExpeditionMap from "../pool/expedition-map.js";
 import _poolFellTheProfane from "../pool/fell-the-profane.js";
@@ -146,6 +147,7 @@ import _poolTeferisProtege from "../pool/teferis-protege.js";
 import _poolTheFabulousFrogMan from "../pool/the-fabulous-frog-man.js";
 import _poolTheFairBasilica from "../pool/the-fair-basilica.js";
 import _poolThornwealdArcher from "../pool/thornweald-archer.js";
+import _poolThoughtMonitor from "../pool/thought-monitor.js";
 import _poolThrabenInspector from "../pool/thraben-inspector.js";
 import _poolThroneOfTheHighCity from "../pool/throne-of-the-high-city.js";
 import _poolToskiBearerOfSecrets from "../pool/toski-bearer-of-secrets.js";
@@ -227,6 +229,7 @@ const shard: CardShard = {
     _poolDestructiveForce,
     _poolDimirInformant,
     _poolDowsingShaman,
+    _poolEleshNornGrandCenobite,
     _poolElvishVisionary,
     _poolExpeditionMap,
     _poolFellTheProfane,
@@ -321,6 +324,7 @@ const shard: CardShard = {
     _poolTheFabulousFrogMan,
     _poolTheFairBasilica,
     _poolThornwealdArcher,
+    _poolThoughtMonitor,
     _poolThrabenInspector,
     _poolThroneOfTheHighCity,
     _poolToskiBearerOfSecrets,

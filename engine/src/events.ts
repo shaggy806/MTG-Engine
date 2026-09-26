@@ -667,6 +667,8 @@ export type GameEvent =
       readonly players: readonly PlayerId[];
       readonly object?: ObjectId;
       readonly spells: boolean;
+      /** Only these spells — "noncreature spells" — when not every one. */
+      readonly spellsLabel?: string;
       readonly abilities: boolean;
     })
   | (Base & {

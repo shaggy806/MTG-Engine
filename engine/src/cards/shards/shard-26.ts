@@ -32,6 +32,7 @@ import _poolDrakewingKrasis from "../pool/drakewing-krasis.js";
 import _poolDrownerOfSecrets from "../pool/drowner-of-secrets.js";
 import _poolEarthElemental from "../pool/earth-elemental.js";
 import _poolEliteArrester from "../pool/elite-arrester.js";
+import _poolElvishArchdruid from "../pool/elvish-archdruid.js";
 import _poolElvishArchers from "../pool/elvish-archers.js";
 import _poolEmergencyWeld from "../pool/emergency-weld.js";
 import _poolEnforcerGriffin from "../pool/enforcer-griffin.js";
@@ -119,6 +120,7 @@ import _poolReclamationSage from "../pool/reclamation-sage.js";
 import _poolRetrievalAgent from "../pool/retrieval-agent.js";
 import _poolRhoxOracle from "../pool/rhox-oracle.js";
 import _poolRiderInNeed from "../pool/rider-in-need.js";
+import _poolRiverpyreVerge from "../pool/riverpyre-verge.js";
 import _poolRotShambler from "../pool/rot-shambler.js";
 import _poolRovingHarper from "../pool/roving-harper.js";
 import _poolRubblebeltBoar from "../pool/rubblebelt-boar.js";
@@ -214,6 +216,7 @@ const shard: CardShard = {
     _poolDrownerOfSecrets,
     _poolEarthElemental,
     _poolEliteArrester,
+    _poolElvishArchdruid,
     _poolElvishArchers,
     _poolEmergencyWeld,
     _poolEnforcerGriffin,
@@ -301,6 +304,7 @@ const shard: CardShard = {
     _poolRetrievalAgent,
     _poolRhoxOracle,
     _poolRiderInNeed,
+    _poolRiverpyreVerge,
     _poolRotShambler,
     _poolRovingHarper,
     _poolRubblebeltBoar,

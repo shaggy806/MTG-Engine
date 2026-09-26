@@ -1496,12 +1496,17 @@ export type EffectSpec =
        * holding a player or a scope, default you, with `spells` and/or
        * `abilities`), "its activated abilities can't be activated this turn"
        * (Koma, Cosmos Serpent — `target`, a permanent, this stint of it).
-       * Mana abilities are activated abilities too.
+       * Mana abilities are activated abilities too. `spells` may name only
+       * some spells: Ranger-Captain of Eos's "your opponents can't cast
+       * **noncreature** spells this turn" is `{ filter: { notTypes:
+       * ["creature"] }, label: "noncreature spells" }` — the filter matched
+       * against the card as it would be cast, from this effect's controller's
+       * side; `label` is how the log names them.
        */
       readonly kind: "prohibit";
       readonly who?: number | PlayerScope;
       readonly target?: EffectTargetRef;
-      readonly spells?: boolean;
+      readonly spells?: boolean | { readonly filter: CardFilter; readonly label: string };
       readonly abilities?: boolean;
     }
   | {
@@ -2045,7 +2050,9 @@ export type EffectSpec =
        * both land on `otherwise`.
        */
       readonly kind: "unless";
-      /** Who decides: a target-slot index holding a player, the controller
+      /** Who decides: a target-slot index holding a player — or an object,
+       * whose controller decides (Spell Pierce's "counter target noncreature
+       * spell unless **its controller** pays {2}") — the controller
        * of the permanent whose event fired this trigger (Kazuul's attacker),
        * the player the triggering event names, the effect's own controller
        * (The Gitrog Monster's "sacrifice ~ unless **you** sacrifice a land"),
@@ -2881,12 +2888,12 @@ export interface EffectApi {
    * {@link EffectSpec}): `true` if they won the flip. */
   flipCoin(): boolean;
   /** See the `"prohibit"` {@link EffectSpec}: `players` can't cast spells
-   * and/or activate abilities this turn, or `object`'s activated abilities
-   * can't be activated. */
+   * (every one, or those matching a filter) and/or activate abilities this
+   * turn, or `object`'s activated abilities can't be activated. */
   prohibit(
     players: readonly PlayerId[],
     object: TargetRef | undefined,
-    spells: boolean,
+    spells: boolean | { readonly filter: CardFilter; readonly label: string; readonly you: PlayerId },
     abilities: boolean,
   ): void;
   /** See the `"restrict"` {@link EffectSpec}: `target`'s restrictions until
@@ -4308,7 +4315,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               ? [slot.player]
               : []
             : ctx.playersInScope(spec.who);
-      ctx.prohibit(players, undefined, spec.spells === true, spec.abilities === true);
+      ctx.prohibit(
+        players,
+        undefined,
+        typeof spec.spells === "object" ? { ...spec.spells, you: ctx.controller } : spec.spells === true,
+        spec.abilities === true,
+      );
       return;
     }
     case "restrict": {

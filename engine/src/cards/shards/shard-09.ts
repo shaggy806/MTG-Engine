@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbruptDecay from "../pool/abrupt-decay.js";
 import _poolAcolyteOfXathrid from "../pool/acolyte-of-xathrid.js";
 import _poolAlleyEvasion from "../pool/alley-evasion.js";
 import _poolAngelfireCrusader from "../pool/angelfire-crusader.js";
@@ -150,10 +151,13 @@ import _poolThaumatog from "../pool/thaumatog.js";
 import _poolThermalNavigator from "../pool/thermal-navigator.js";
 import _poolThoseWhoServe from "../pool/those-who-serve.js";
 import _poolTitaniasBoon from "../pool/titanias-boon.js";
+import _poolTocasiasWelcome from "../pool/tocasias-welcome.js";
 import _poolTorporDust from "../pool/torpor-dust.js";
+import _poolTyvarsStand from "../pool/tyvars-stand.js";
 import _poolUnauthorizedExit from "../pool/unauthorized-exit.js";
 import _poolUnclaimedTerritory from "../pool/unclaimed-territory.js";
 import _poolValleyDasher from "../pool/valley-dasher.js";
+import _poolValleyFloodcaller from "../pool/valley-floodcaller.js";
 import _poolVanquishersAxe from "../pool/vanquishers-axe.js";
 import _poolVastwoodFortification from "../pool/vastwood-fortification.js";
 import _poolVenerableLammasu from "../pool/venerable-lammasu.js";
@@ -179,6 +183,7 @@ import _tokensZombieKnightToken from "../tokens/zombie-knight-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbruptDecay,
     _poolAcolyteOfXathrid,
     _poolAlleyEvasion,
     _poolAngelfireCrusader,
@@ -326,10 +331,13 @@ const shard: CardShard = {
     _poolThermalNavigator,
     _poolThoseWhoServe,
     _poolTitaniasBoon,
+    _poolTocasiasWelcome,
     _poolTorporDust,
+    _poolTyvarsStand,
     _poolUnauthorizedExit,
     _poolUnclaimedTerritory,
     _poolValleyDasher,
+    _poolValleyFloodcaller,
     _poolVanquishersAxe,
     _poolVastwoodFortification,
     _poolVenerableLammasu,

@@ -136,6 +136,7 @@ import _poolSorinOfHouseMarkov from "../pool/sorin-of-house-markov.js";
 import _poolSouldrinker from "../pool/souldrinker.js";
 import _poolSpiderwigBoggart from "../pool/spiderwig-boggart.js";
 import _poolSporecapSpider from "../pool/sporecap-spider.js";
+import _poolSpringbloomDruid from "../pool/springbloom-druid.js";
 import _poolStormHerd from "../pool/storm-herd.js";
 import _poolStrawSoldiers from "../pool/straw-soldiers.js";
 import _poolStripedRiverwinder from "../pool/striped-riverwinder.js";
@@ -178,6 +179,7 @@ import _poolWinterflame from "../pool/winterflame.js";
 import _poolWirewoodHivemaster from "../pool/wirewood-hivemaster.js";
 import _poolZimoneInfiniteAnalyst from "../pool/zimone-infinite-analyst.js";
 import _poolZofConsumption from "../pool/zof-consumption.js";
+import _tokensBlueRedElementalToken44 from "../tokens/blue-red-elemental-token-4-4.js";
 import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 
 const shard: CardShard = {
@@ -315,6 +317,7 @@ const shard: CardShard = {
     _poolSouldrinker,
     _poolSpiderwigBoggart,
     _poolSporecapSpider,
+    _poolSpringbloomDruid,
     _poolStormHerd,
     _poolStrawSoldiers,
     _poolStripedRiverwinder,
@@ -359,6 +362,7 @@ const shard: CardShard = {
     _poolZofConsumption,
   ],
   tokens: [
+    _tokensBlueRedElementalToken44,
     _tokensVampireToken11,
   ],
 };

@@ -28,6 +28,7 @@ import _poolBookOfRass from "../pool/book-of-rass.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolCarrionFeeder from "../pool/carrion-feeder.js";
+import _poolCastleLocthwain from "../pool/castle-locthwain.js";
 import _poolChocoSeekerOfParadise from "../pool/choco-seeker-of-paradise.js";
 import _poolChromeProwler from "../pool/chrome-prowler.js";
 import _poolCloudcrownOak from "../pool/cloudcrown-oak.js";
@@ -49,6 +50,7 @@ import _poolDregReaver from "../pool/dreg-reaver.js";
 import _poolDrossHopper from "../pool/dross-hopper.js";
 import _poolEagleOfTheWatch from "../pool/eagle-of-the-watch.js";
 import _poolEarthshakingSi from "../pool/earthshaking-si.js";
+import _poolEladamrisCall from "../pool/eladamris-call.js";
 import _poolElectrify from "../pool/electrify.js";
 import _poolElvishHerder from "../pool/elvish-herder.js";
 import _poolEmberShot from "../pool/ember-shot.js";
@@ -145,6 +147,7 @@ import _poolTerritorialBaloth from "../pool/territorial-baloth.js";
 import _poolTheLordOfPain from "../pool/the-lord-of-pain.js";
 import _poolTheScarabGod from "../pool/the-scarab-god.js";
 import _poolThievingMagpie from "../pool/thieving-magpie.js";
+import _poolThornspireVerge from "../pool/thornspire-verge.js";
 import _poolThrasiosTritonHero from "../pool/thrasios-triton-hero.js";
 import _poolThunderscapeApprentice from "../pool/thunderscape-apprentice.js";
 import _poolTrevasAttendant from "../pool/trevas-attendant.js";
@@ -195,6 +198,7 @@ const shard: CardShard = {
     _poolBorosCluestone,
     _poolBreathOfFire,
     _poolCarrionFeeder,
+    _poolCastleLocthwain,
     _poolChocoSeekerOfParadise,
     _poolChromeProwler,
     _poolCloudcrownOak,
@@ -216,6 +220,7 @@ const shard: CardShard = {
     _poolDrossHopper,
     _poolEagleOfTheWatch,
     _poolEarthshakingSi,
+    _poolEladamrisCall,
     _poolElectrify,
     _poolElvishHerder,
     _poolEmberShot,
@@ -312,6 +317,7 @@ const shard: CardShard = {
     _poolTheLordOfPain,
     _poolTheScarabGod,
     _poolThievingMagpie,
+    _poolThornspireVerge,
     _poolThrasiosTritonHero,
     _poolThunderscapeApprentice,
     _poolTrevasAttendant,

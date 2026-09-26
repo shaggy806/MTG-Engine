@@ -148,9 +148,11 @@ import _poolSliverConstruct from "../pool/sliver-construct.js";
 import _poolSoaringSeacliff from "../pool/soaring-seacliff.js";
 import _poolSokkaTenaciousTactician from "../pool/sokka-tenacious-tactician.js";
 import _poolSomberwaldDryad from "../pool/somberwald-dryad.js";
+import _poolSpellPierce from "../pool/spell-pierce.js";
 import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
+import _poolSunbillowVerge from "../pool/sunbillow-verge.js";
 import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
 import _poolSupportiveParents from "../pool/supportive-parents.js";
 import _poolSurrakarMarauder from "../pool/surrakar-marauder.js";
@@ -180,6 +182,7 @@ import _poolWintersIntervention from "../pool/winters-intervention.js";
 import _poolWyluliWolf from "../pool/wyluli-wolf.js";
 import _poolYavimayaWurm from "../pool/yavimaya-wurm.js";
 import _poolZombieGoliath from "../pool/zombie-goliath.js";
+import _tokensRedElementalToken11 from "../tokens/red-elemental-token-1-1.js";
 import _tokensServoToken from "../tokens/servo-token.js";
 
 const shard: CardShard = {
@@ -329,9 +332,11 @@ const shard: CardShard = {
     _poolSoaringSeacliff,
     _poolSokkaTenaciousTactician,
     _poolSomberwaldDryad,
+    _poolSpellPierce,
     _poolSramSeniorEdificer,
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
+    _poolSunbillowVerge,
     _poolSunbladeSamurai,
     _poolSupportiveParents,
     _poolSurrakarMarauder,
@@ -363,6 +368,7 @@ const shard: CardShard = {
     _poolZombieGoliath,
   ],
   tokens: [
+    _tokensRedElementalToken11,
     _tokensServoToken,
   ],
 };

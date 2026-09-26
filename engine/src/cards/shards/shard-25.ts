@@ -34,6 +34,7 @@ import _poolCloudCrusader from "../pool/cloud-crusader.js";
 import _poolCrudeBentBlade from "../pool/crude-bent-blade.js";
 import _poolCruelEdict from "../pool/cruel-edict.js";
 import _poolCruelWitness from "../pool/cruel-witness.js";
+import _poolDanithaCapashenParagon from "../pool/danitha-capashen-paragon.js";
 import _poolDarkborePathway from "../pool/darkbore-pathway.js";
 import _poolDauntlessVeteran from "../pool/dauntless-veteran.js";
 import _poolDeadWeight from "../pool/dead-weight.js";
@@ -98,6 +99,7 @@ import _poolLoomingAltisaur from "../pool/looming-altisaur.js";
 import _poolLootThePathfinder from "../pool/loot-the-pathfinder.js";
 import _poolLordOfTheNazgul from "../pool/lord-of-the-nazgul.js";
 import _poolLotusCobra from "../pool/lotus-cobra.js";
+import _poolLoyalApprentice from "../pool/loyal-apprentice.js";
 import _poolMantisRider from "../pool/mantis-rider.js";
 import _poolMinotaurAbomination from "../pool/minotaur-abomination.js";
 import _poolMoggcatcher from "../pool/moggcatcher.js";
@@ -111,6 +113,7 @@ import _poolNeurokCommando from "../pool/neurok-commando.js";
 import _poolNiblisOfTheMist from "../pool/niblis-of-the-mist.js";
 import _poolNorwoodArchers from "../pool/norwood-archers.js";
 import _poolNyxbornSeaguard from "../pool/nyxborn-seaguard.js";
+import _poolOldGrowthGrove from "../pool/old-growth-grove.js";
 import _poolOmashuCity from "../pool/omashu-city.js";
 import _poolOrnithopter from "../pool/ornithopter.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
@@ -215,6 +218,7 @@ const shard: CardShard = {
     _poolCrudeBentBlade,
     _poolCruelEdict,
     _poolCruelWitness,
+    _poolDanithaCapashenParagon,
     _poolDarkborePathway,
     _poolDauntlessVeteran,
     _poolDeadWeight,
@@ -279,6 +283,7 @@ const shard: CardShard = {
     _poolLootThePathfinder,
     _poolLordOfTheNazgul,
     _poolLotusCobra,
+    _poolLoyalApprentice,
     _poolMantisRider,
     _poolMinotaurAbomination,
     _poolMoggcatcher,
@@ -292,6 +297,7 @@ const shard: CardShard = {
     _poolNiblisOfTheMist,
     _poolNorwoodArchers,
     _poolNyxbornSeaguard,
+    _poolOldGrowthGrove,
     _poolOmashuCity,
     _poolOrnithopter,
     _poolOscorpResearchTeam,

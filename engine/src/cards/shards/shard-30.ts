@@ -37,6 +37,7 @@ import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
+import _poolCloudshift from "../pool/cloudshift.js";
 import _poolCoastalHornclaw from "../pool/coastal-hornclaw.js";
 import _poolCollectiveBlessing from "../pool/collective-blessing.js";
 import _poolConclaveNaturalists from "../pool/conclave-naturalists.js";
@@ -131,6 +132,7 @@ import _poolReadyToRumble from "../pool/ready-to-rumble.js";
 import _poolRejuvenate from "../pool/rejuvenate.js";
 import _poolReturnOfTheWildspeaker from "../pool/return-of-the-wildspeaker.js";
 import _poolReturnToBattle from "../pool/return-to-battle.js";
+import _poolRiteOfReplication from "../pool/rite-of-replication.js";
 import _poolRootwaterHunter from "../pool/rootwater-hunter.js";
 import _poolSageOfLatNam from "../pool/sage-of-lat-nam.js";
 import _poolSavageLands from "../pool/savage-lands.js";
@@ -175,6 +177,7 @@ import _poolVoltCharge from "../pool/volt-charge.js";
 import _poolVulpineGoliath from "../pool/vulpine-goliath.js";
 import _poolWallOfLostThoughts from "../pool/wall-of-lost-thoughts.js";
 import _poolWanderersIntervention from "../pool/wanderers-intervention.js";
+import _poolWarleadersCall from "../pool/warleaders-call.js";
 import _poolWatcherInTheMist from "../pool/watcher-in-the-mist.js";
 import _poolWateryGrave from "../pool/watery-grave.js";
 import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
@@ -222,6 +225,7 @@ const shard: CardShard = {
     _poolCelestialForce,
     _poolChainToMemory,
     _poolClockOfOmens,
+    _poolCloudshift,
     _poolCoastalHornclaw,
     _poolCollectiveBlessing,
     _poolConclaveNaturalists,
@@ -316,6 +320,7 @@ const shard: CardShard = {
     _poolRejuvenate,
     _poolReturnOfTheWildspeaker,
     _poolReturnToBattle,
+    _poolRiteOfReplication,
     _poolRootwaterHunter,
     _poolSageOfLatNam,
     _poolSavageLands,
@@ -360,6 +365,7 @@ const shard: CardShard = {
     _poolVulpineGoliath,
     _poolWallOfLostThoughts,
     _poolWanderersIntervention,
+    _poolWarleadersCall,
     _poolWatcherInTheMist,
     _poolWateryGrave,
     _poolWildwoodPatrol,

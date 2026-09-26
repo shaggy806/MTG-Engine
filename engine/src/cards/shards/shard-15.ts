@@ -174,6 +174,7 @@ import _poolWardenOfTheEye from "../pool/warden-of-the-eye.js";
 import _poolWeatherseedElf from "../pool/weatherseed-elf.js";
 import _poolWorthyKnight from "../pool/worthy-knight.js";
 import _poolWurmcoilEngine from "../pool/wurmcoil-engine.js";
+import _poolYoungPyromancer from "../pool/young-pyromancer.js";
 import _poolZuranSpellcaster from "../pool/zuran-spellcaster.js";
 import _tokensDragonToken55 from "../tokens/dragon-token-5-5.js";
 import _tokensGoblinToken from "../tokens/goblin-token.js";
@@ -355,6 +356,7 @@ const shard: CardShard = {
     _poolWeatherseedElf,
     _poolWorthyKnight,
     _poolWurmcoilEngine,
+    _poolYoungPyromancer,
     _poolZuranSpellcaster,
   ],
   tokens: [

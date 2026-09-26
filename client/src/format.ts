@@ -234,7 +234,7 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
         event.duration === 'end-of-turn' ? ' until EOT' : ''
       }`
     case 'prohibition-imposed': {
-      const what = [event.spells ? 'cast spells' : null, event.abilities ? 'activate abilities' : null]
+      const what = [event.spells ? `cast ${event.spellsLabel ?? 'spells'}` : null, event.abilities ? 'activate abilities' : null]
         .filter((w) => w !== null)
         .join(' or ')
       return event.object !== undefined

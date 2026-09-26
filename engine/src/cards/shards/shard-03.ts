@@ -10,6 +10,7 @@ import _poolAnodetLurker from "../pool/anodet-lurker.js";
 import _poolAppetiteForTheUnnatural from "../pool/appetite-for-the-unnatural.js";
 import _poolArmyOfTheDamned from "../pool/army-of-the-damned.js";
 import _poolAtarkaWorldRender from "../pool/atarka-world-render.js";
+import _poolAvacynAngelOfHope from "../pool/avacyn-angel-of-hope.js";
 import _poolBakeIntoAPie from "../pool/bake-into-a-pie.js";
 import _poolBeastWithin from "../pool/beast-within.js";
 import _poolBehemothSledge from "../pool/behemoth-sledge.js";
@@ -99,6 +100,7 @@ import _poolRampagingHippo from "../pool/rampaging-hippo.js";
 import _poolRaugrinCrystal from "../pool/raugrin-crystal.js";
 import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
 import _poolRejuvenatingSprings from "../pool/rejuvenating-springs.js";
+import _poolResculpt from "../pool/resculpt.js";
 import _poolRighteousBlow from "../pool/righteous-blow.js";
 import _poolRithsAttendant from "../pool/riths-attendant.js";
 import _poolRocHunter from "../pool/roc-hunter.js";
@@ -117,6 +119,7 @@ import _poolSerrasEmbrace from "../pool/serras-embrace.js";
 import _poolShamblingGhoul from "../pool/shambling-ghoul.js";
 import _poolSheHulkAttorneyAtLaw from "../pool/she-hulk-attorney-at-law.js";
 import _poolShelteredThicket from "../pool/sheltered-thicket.js";
+import _poolSheoldredWhisperingOne from "../pool/sheoldred-whispering-one.js";
 import _poolShopkeepersBane from "../pool/shopkeepers-bane.js";
 import _poolSilverbackShaman from "../pool/silverback-shaman.js";
 import _poolSkullOfOrm from "../pool/skull-of-orm.js";
@@ -176,6 +179,7 @@ const shard: CardShard = {
     _poolAppetiteForTheUnnatural,
     _poolArmyOfTheDamned,
     _poolAtarkaWorldRender,
+    _poolAvacynAngelOfHope,
     _poolBakeIntoAPie,
     _poolBeastWithin,
     _poolBehemothSledge,
@@ -265,6 +269,7 @@ const shard: CardShard = {
     _poolRaugrinCrystal,
     _poolRayOfDissolution,
     _poolRejuvenatingSprings,
+    _poolResculpt,
     _poolRighteousBlow,
     _poolRithsAttendant,
     _poolRocHunter,
@@ -283,6 +288,7 @@ const shard: CardShard = {
     _poolShamblingGhoul,
     _poolSheHulkAttorneyAtLaw,
     _poolShelteredThicket,
+    _poolSheoldredWhisperingOne,
     _poolShopkeepersBane,
     _poolSilverbackShaman,
     _poolSkullOfOrm,

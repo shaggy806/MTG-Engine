@@ -57,6 +57,7 @@ import _poolDragonsHoard from "../pool/dragons-hoard.js";
 import _poolDuneBeetle from "../pool/dune-beetle.js";
 import _poolDuskmantleHouseOfShadow from "../pool/duskmantle-house-of-shadow.js";
 import _poolEarthblighter from "../pool/earthblighter.js";
+import _poolEidolonOfBlossoms from "../pool/eidolon-of-blossoms.js";
 import _poolEliteCatWarrior from "../pool/elite-cat-warrior.js";
 import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
@@ -243,6 +244,7 @@ const shard: CardShard = {
     _poolDuneBeetle,
     _poolDuskmantleHouseOfShadow,
     _poolEarthblighter,
+    _poolEidolonOfBlossoms,
     _poolEliteCatWarrior,
     _poolEliteVanguard,
     _poolEnatuGolem,

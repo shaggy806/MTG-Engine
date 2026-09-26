@@ -63,6 +63,7 @@ import _poolForsakeTheWorldly from "../pool/forsake-the-worldly.js";
 import _poolForsakenSanctuary from "../pool/forsaken-sanctuary.js";
 import _poolGaeasCradle from "../pool/gaeas-cradle.js";
 import _poolGeodeRager from "../pool/geode-rager.js";
+import _poolGhostQuarter from "../pool/ghost-quarter.js";
 import _poolGiantCrab from "../pool/giant-crab.js";
 import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
@@ -129,6 +130,7 @@ import _poolRaisedByGiants from "../pool/raised-by-giants.js";
 import _poolRangersLongbow from "../pool/rangers-longbow.js";
 import _poolResearchAssistant from "../pool/research-assistant.js";
 import _poolRestInPeace from "../pool/rest-in-peace.js";
+import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
@@ -251,6 +253,7 @@ const shard: CardShard = {
     _poolForsakenSanctuary,
     _poolGaeasCradle,
     _poolGeodeRager,
+    _poolGhostQuarter,
     _poolGiantCrab,
     _poolGoblinAnarchomancer,
     _poolGoblinDeathraiders,
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolRangersLongbow,
     _poolResearchAssistant,
     _poolRestInPeace,
+    _poolRevitalizingRepast,
     _poolRevivingDose,
     _poolRidgeRannet,
     _poolRuneSealedWall,

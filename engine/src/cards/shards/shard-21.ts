@@ -89,6 +89,7 @@ import _poolMonoistSentry from "../pool/monoist-sentry.js";
 import _poolMorphicPool from "../pool/morphic-pool.js";
 import _poolMsBumbleflower from "../pool/ms-bumbleflower.js";
 import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
+import _poolMyrRetriever from "../pool/myr-retriever.js";
 import _poolNagaEternal from "../pool/naga-eternal.js";
 import _poolNoxiousRevival from "../pool/noxious-revival.js";
 import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
@@ -246,6 +247,7 @@ const shard: CardShard = {
     _poolMorphicPool,
     _poolMsBumbleflower,
     _poolMurmuringPhantasm,
+    _poolMyrRetriever,
     _poolNagaEternal,
     _poolNoxiousRevival,
     _poolObeliskOfGrixis,

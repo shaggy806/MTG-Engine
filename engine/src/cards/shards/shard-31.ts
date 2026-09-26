@@ -112,6 +112,7 @@ import _poolPetrifiedField from "../pool/petrified-field.js";
 import _poolPhyrexianLens from "../pool/phyrexian-lens.js";
 import _poolRabidBite from "../pool/rabid-bite.js";
 import _poolRaidingNightstalker from "../pool/raiding-nightstalker.js";
+import _poolRangerCaptainOfEos from "../pool/ranger-captain-of-eos.js";
 import _poolRegrowth from "../pool/regrowth.js";
 import _poolRemorsefulCleric from "../pool/remorseful-cleric.js";
 import _poolReturnFromTheWilds from "../pool/return-from-the-wilds.js";
@@ -285,6 +286,7 @@ const shard: CardShard = {
     _poolPhyrexianLens,
     _poolRabidBite,
     _poolRaidingNightstalker,
+    _poolRangerCaptainOfEos,
     _poolRegrowth,
     _poolRemorsefulCleric,
     _poolReturnFromTheWilds,

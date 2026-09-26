@@ -30,6 +30,7 @@ import _poolDejaVu from "../pool/deja-vu.js";
 import _poolDismalBackwater from "../pool/dismal-backwater.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
+import _poolEldritchEvolution from "../pool/eldritch-evolution.js";
 import _poolElectrostaticField from "../pool/electrostatic-field.js";
 import _poolElugeTheShorelessSea from "../pool/eluge-the-shoreless-sea.js";
 import _poolEmbodimentOfSpring from "../pool/embodiment-of-spring.js";
@@ -64,6 +65,7 @@ import _poolKaradorGhostChieftain from "../pool/karador-ghost-chieftain.js";
 import _poolKavuGlider from "../pool/kavu-glider.js";
 import _poolKenrithTheReturnedKing from "../pool/kenrith-the-returned-king.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
+import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
 import _poolLavaSpike from "../pool/lava-spike.js";
 import _poolLifegift from "../pool/lifegift.js";
 import _poolLilianasDevotee from "../pool/lilianas-devotee.js";
@@ -142,6 +144,7 @@ import _poolTwilightPanther from "../pool/twilight-panther.js";
 import _poolUnexpectedWindfall from "../pool/unexpected-windfall.js";
 import _poolUnseenWalker from "../pool/unseen-walker.js";
 import _poolVampireInterloper from "../pool/vampire-interloper.js";
+import _poolVanquishTheHorde from "../pool/vanquish-the-horde.js";
 import _poolVedalkenEntrancer from "../pool/vedalken-entrancer.js";
 import _poolVengefulDead from "../pool/vengeful-dead.js";
 import _poolVeteranCavalier from "../pool/veteran-cavalier.js";
@@ -181,6 +184,7 @@ const shard: CardShard = {
     _poolDismalBackwater,
     _poolDragonSniper,
     _poolDurkwoodBoars,
+    _poolEldritchEvolution,
     _poolElectrostaticField,
     _poolElugeTheShorelessSea,
     _poolEmbodimentOfSpring,
@@ -215,6 +219,7 @@ const shard: CardShard = {
     _poolKavuGlider,
     _poolKenrithTheReturnedKing,
     _poolKorHalberd,
+    _poolKrenkoTinStreetKingpin,
     _poolLavaSpike,
     _poolLifegift,
     _poolLilianasDevotee,
@@ -293,6 +298,7 @@ const shard: CardShard = {
     _poolUnexpectedWindfall,
     _poolUnseenWalker,
     _poolVampireInterloper,
+    _poolVanquishTheHorde,
     _poolVedalkenEntrancer,
     _poolVengefulDead,
     _poolVeteranCavalier,
