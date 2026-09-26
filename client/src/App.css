@@ -788,6 +788,13 @@
 .hand-strip.peekable:focus-within .hand-strip-inner {
   translate: 0 0;
 }
+/* A decision on the hand itself (discard, put-on-bottom) holds the tray open
+   and asks in the bottom-right .decision-banner like every other decision.
+   The fan's outer cards droop toward the bottom edge, so the rightmost ones
+   would sit under that banner: lift the fan clear of it. */
+.hand-strip.peekable.hand-decision .hand-strip-inner {
+  padding-bottom: calc(clamp(12px, 2vh, 20px) + 64px);
+}
 @media (prefers-reduced-motion: reduce) {
   .hand-strip.peekable .hand-strip-inner {
     transition: none;
@@ -825,8 +832,9 @@
 }
 
 /* Every mode's decision controls except priority (its own .priority-actions
-   corner) and discard/put-on-bottom (inline with the hand -- see App.tsx's
-   `peekable`) float here instead.
+   corner) and the mulligan (its own popup) float here instead -- discard and
+   put-on-bottom too, with the hand tray held open under them (App.tsx's
+   `handForcedOpen`).
 
    It sits in the **bottom-right corner, in the same place .priority-actions
    puts the Pass row**, and stacks its prompt directly above its own buttons.

@@ -1097,16 +1097,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                       ? 'targeting'
                       : 'priority'
 
-  // Only discard/put-on-bottom force the hand itself open (the player is
-  // choosing among their own hand cards) -- mulligan gets its own centered
-  // popup instead (see renderMulliganModal) and every other mode's decision
-  // is about the battlefield/stack/a popup (ZoneViewer for choose-from-zone
-  // and scry), not the hand, so the hand can stay collapsed to a peek for
-  // all of them too, same as ordinary priority. This is what keeps
-  // .quadrant-grid from losing height (and recomputeBoardMiniW crushing the
-  // board's mini tiles to compensate) every time one of those decisions
-  // comes up -- see renderHandStrip/the .decision-banner CSS.
-  const peekable = mode !== 'discard' && mode !== 'put-on-bottom' && mode !== 'mulligan'
+  // Every mode but the mulligan keeps the hand in its fixed tray (mulligan
+  // shows the hand in its own centered popup instead -- see
+  // renderMulliganModal). This is what keeps .quadrant-grid from losing
+  // height (and recomputeBoardMiniW crushing the board's mini tiles to
+  // compensate) every time a decision comes up -- see renderHandStrip/the
+  // .decision-banner CSS. A decision that picks cards out of the hand
+  // (discard, put-on-bottom) holds the tray open instead (`handForcedOpen`)
+  // and asks in the same bottom-right banner as every other decision: docking
+  // its controls beside the hand used to pull the whole strip out of the tray
+  // and squash the board for as long as it was up.
+  const peekable = mode !== 'mulligan'
+  const handForcedOpen = mode === 'discard' || mode === 'put-on-bottom'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -2850,8 +2852,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     controls = (
       <div className="controls">
         <span>
-          Put {bottomAction.count} card(s) on the bottom of your library —{' '}
-          {bottomPicks.length}/{bottomAction.count}
+          Put {bottomAction.count} card(s) on the bottom of your library — click cards in your
+          hand · {bottomPicks.length}/{bottomAction.count}
         </span>
         <button
           type="button"
@@ -3102,7 +3104,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 discardAction.count
               } card${discardAction.count === 1 ? '' : 's'}`
             : 'Discard to hand size'}{' '}
-          — {discardPicks.length}/{discardAction.count}
+          — click cards in your hand · {discardPicks.length}/{discardAction.count}
         </span>
         <button
           type="button"
@@ -3467,17 +3469,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   }
 
   /** Wraps `renderHandAndControls` with the collapsed-peek tray behavior —
-   * every mode except a forced decision on the hand itself (discard,
-   * put-on-bottom) or the mulligan popup, which stay fully visible exactly
-   * as before so nothing about those flows changes (see `peekable`'s own
-   * comment above, by the `mode` computation). A two-zone hitbox: a small
+   * every mode except the mulligan popup (see `peekable`'s own comment
+   * above, by the `mode` computation); a decision on the hand itself
+   * (discard, put-on-bottom) holds it raised. A two-zone hitbox: a small
    * `.hand-trigger` hugging the bottom edge is what raises it, but the whole
    * (much larger) `.hand-strip` has to be left before it lowers again --
    * easier to leave up than to summon by accident. */
   const renderHandStrip = () => {
     return (
       <div
-        className={`hand-strip ${peekable ? 'peekable' : ''} ${handRaised ? 'raised' : ''}`}
+        className={`hand-strip ${peekable ? 'peekable' : ''} ${handRaised || handForcedOpen ? 'raised' : ''} ${
+          handForcedOpen ? 'hand-decision' : ''
+        }`}
         onMouseLeave={() => setHandRaised(false)}
       >
         {peekable ? (
@@ -3653,16 +3656,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           priority mode's controls (Pass/Pass Turn/Auto-pass/Skip-mana) render
           in a fixed bottom-right bar instead (see .priority-actions below),
           mulligan's Keep/Mulligan choice (with the hand itself) renders as
-          its own centered popup (see .mulligan-modal below), and every mode
-          except discard/put-on-bottom floats its controls in a fixed
-          .decision-banner instead (see the return below) -- docking them
-          here would force this whole strip out of its peekable/fixed tray
-          and into normal layout flow, which used to steal height from
-          .quadrant-grid (and the board's own mini tiles) every time one of
-          those decisions came up. Discard/put-on-bottom keep their controls
-          here, inline with the hand, since those decisions are specifically
-          about picking cards out of it. */}
-      {mode === 'discard' || mode === 'put-on-bottom' ? controls : null}
+          its own centered popup (see .mulligan-modal below), and every other
+          mode floats its controls in a fixed .decision-banner (see the return
+          below) -- docking them here would force this whole strip out of its
+          peekable/fixed tray and into normal layout flow, which used to steal
+          height from .quadrant-grid (and the board's own mini tiles) every
+          time one of those decisions came up. Discard and put-on-bottom were
+          the last to dock here, and squashed the board while they were up. */}
 
       {/* mulligan shows the hand inside its own popup instead (see
           renderMulliganModal) -- rendering it here too would show it twice */}
