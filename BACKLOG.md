@@ -149,6 +149,17 @@ that one card is the reason the deck exists.
   `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
   in the scenario, harvest and tune workers and in `room-pacing.test.ts`.
 - **v2's Phase 7 feature list is superseded.** Don't build it. See `docs/plans/smarter-bots.md`.
+- **Hand-labelled target polarity (to explore, raised 2026-09-26).** A bot can't tell whether an
+  Aura or a targeted spell or ability helps what it's aimed at or hurts it: in a test game one put
+  an Aura that stops a creature attacking on its own creature. v2 scores the position after a
+  simulated action, and none of its features prices a combat restriction, so the Aura looked free.
+  The idea: a page listing each Aura and each targeted spell/ability slot, where the user marks it
+  good-to-have or bad-to-have, saved as a data file the bots read — aim the good ones at their own
+  permanents and the bad ones at opponents'. To explore first: how many cards that is (count the
+  pool's Auras and targeted effects); whether most can be labelled automatically from the effect
+  vocabulary (destroy/exile/`restrict` bad, +N/+N and keyword grants good) so the page only shows
+  the ambiguous rest; and where the bots would use the labels — pruning candidates in
+  `bot/candidates.ts`, or a feature in the evaluation.
 
 ## Client / UI
 
