@@ -1887,6 +1887,7 @@ import _poolGnawingVermin from "./pool/gnawing-vermin.js";
 import _poolGnottvoldRecluse from "./pool/gnottvold-recluse.js";
 import _poolGoForTheThroat from "./pool/go-for-the-throat.js";
 import _poolGoForth from "./pool/go-forth.js";
+import _poolGoShintaiOfLifesOrigin from "./pool/go-shintai-of-lifes-origin.js";
 import _poolGobblingOoze from "./pool/gobbling-ooze.js";
 import _poolGoblinAnarchomancer from "./pool/goblin-anarchomancer.js";
 import _poolGoblinAssailant from "./pool/goblin-assailant.js";
@@ -2538,6 +2539,7 @@ import _poolKodamaOfTheNorthTree from "./pool/kodama-of-the-north-tree.js";
 import _poolKodamasReach from "./pool/kodamas-reach.js";
 import _poolKolaghansCommand from "./pool/kolaghans-command.js";
 import _poolKomodoRhino from "./pool/komodo-rhino.js";
+import _poolKonaRescueBeastie from "./pool/kona-rescue-beastie.js";
 import _poolKongmingSleepingDragon from "./pool/kongming-sleeping-dragon.js";
 import _poolKorCartographer from "./pool/kor-cartographer.js";
 import _poolKorHalberd from "./pool/kor-halberd.js";
@@ -5446,6 +5448,7 @@ import _poolZoralineCosmosCaller from "./pool/zoraline-cosmos-caller.js";
 import _poolZukosOffense from "./pool/zukos-offense.js";
 import _poolZulaportChainmage from "./pool/zulaport-chainmage.js";
 import _poolZulaportCutthroat from "./pool/zulaport-cutthroat.js";
+import _poolZurTheEnchanter from "./pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "./pool/zuran-enchanter.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
 import _poolZuranSpellcaster from "./pool/zuran-spellcaster.js";
@@ -5517,6 +5520,7 @@ import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
 import _tokensSaprolingToken from "./tokens/saproling-token.js";
 import _tokensServoToken from "./tokens/servo-token.js";
+import _tokensShrineToken from "./tokens/shrine-token.js";
 import _tokensSlugToken from "./tokens/slug-token.js";
 import _tokensSnakeToken from "./tokens/snake-token.js";
 import _tokensSoldierArtifactToken from "./tokens/soldier-artifact-token.js";
@@ -7427,6 +7431,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGnottvoldRecluse,
   _poolGoForTheThroat,
   _poolGoForth,
+  _poolGoShintaiOfLifesOrigin,
   _poolGobblingOoze,
   _poolGoblinAnarchomancer,
   _poolGoblinAssailant,
@@ -8078,6 +8083,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKodamasReach,
   _poolKolaghansCommand,
   _poolKomodoRhino,
+  _poolKonaRescueBeastie,
   _poolKongmingSleepingDragon,
   _poolKorCartographer,
   _poolKorHalberd,
@@ -10986,6 +10992,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZukosOffense,
   _poolZulaportChainmage,
   _poolZulaportCutthroat,
+  _poolZurTheEnchanter,
   _poolZuranEnchanter,
   _poolZuranOrb,
   _poolZuranSpellcaster,
@@ -11063,6 +11070,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensSandWarriorToken,
   _tokensSaprolingToken,
   _tokensServoToken,
+  _tokensShrineToken,
   _tokensSlugToken,
   _tokensSnakeToken,
   _tokensSoldierArtifactToken,

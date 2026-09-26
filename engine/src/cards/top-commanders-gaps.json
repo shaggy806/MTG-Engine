@@ -113,7 +113,8 @@
   "bug:commander-eligibility-vehicles",
   "bug:modal-modes-on-cast",
   "bug:player-leaves-game-cleanup",
-  "bug:as-enters-choices-any-entry"
+  "bug:as-enters-choices-any-entry",
+  "effect:aura-enters-choice"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -479,7 +480,12 @@
   "effect:attach-extensions": {
    "size": "medium",
    "ui": true,
-   "description": "Aura and Equipment attachment beyond 'attach the source': an Aura put onto the battlefield without being cast attaches to a chosen or named legal object (rule 303.4f), including Aura tokens and token copies of a creature's attachments. Also attach chosen Equipment or Auras (any number) to a creature, and check legality (the enchant restriction, Equipment only on creatures)."
+   "description": "Aura and Equipment attachment beyond attaching the source and an entering Aura choosing what it enchants (built as effect:aura-enters-choice): an Aura put onto the battlefield attached to a named object (Light-Paws, Animate Dead), Aura tokens and token copies of a creature's attachments, and attaching chosen or target Equipment or Auras (any number) to a creature (Cloud, Ardenn)."
+  },
+  "effect:aura-enters-choice": {
+   "size": "medium",
+   "ui": true,
+   "description": "An Aura put onto the battlefield without being cast chooses what it enchants as it enters (rule 303.4f), and stays where it was with nothing to enchant (303.4g); an Aura attached to nothing or to something it can no longer enchant goes to the graveyard (704.5m), and attaching checks the enchant restriction and Equipment's creatures-only rule (701.3b)."
   },
   "effect:become-copy": {
    "size": "medium",
@@ -1843,7 +1849,7 @@
    "name": "Go-Shintai of Life's Origin",
    "needs": [
     "bug:as-enters-choices-any-entry",
-    "effect:attach-extensions"
+    "effect:aura-enters-choice"
    ]
   },
   {
@@ -2209,7 +2215,7 @@
    "rank": 117,
    "name": "Zur the Enchanter",
    "needs": [
-    "effect:attach-extensions"
+    "effect:aura-enters-choice"
    ]
   },
   {
@@ -2939,7 +2945,7 @@
    "needs": [
     "condition:source-state",
     "condition:turn-structure",
-    "effect:attach-extensions"
+    "effect:aura-enters-choice"
    ]
   },
   {

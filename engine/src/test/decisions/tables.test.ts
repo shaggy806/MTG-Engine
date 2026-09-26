@@ -13,7 +13,7 @@ import type { DecisionKind } from "../../decisions/contract.js";
  * one module. That is what this file is for.
  */
 describe("decision tables", () => {
-  const KIND_COUNT = 17;
+  const KIND_COUNT = 18;
 
   it("covers every decision kind, and only those", () => {
     expect(Object.keys(DECISION_ACTIONS)).toHaveLength(KIND_COUNT);

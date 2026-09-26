@@ -94,6 +94,7 @@ import { attackers } from "./decisions/attackers.js";
 import { chooseTargets } from "./decisions/choose-targets.js";
 import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
+import { chooseEnchant } from "./decisions/choose-enchant.js";
 import { legendRule } from "./decisions/legend-rule.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
@@ -647,6 +648,7 @@ export class Game {
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
+      applyEnchantChoice: (player, enchant) => this.applyEnchantChoice(player, enchant),
       applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
@@ -2646,6 +2648,24 @@ export class Game {
     };
     // A copy is announced as it enters; declining, now.
     if (copy === null) this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: null });
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  /** Answers a pending `choose-enchant` decision (rule 303.4f) — raised by
+   * `askEnterChoice` as an Aura is about to enter without being cast. The
+   * answer waits on the Aura, and its entry carries on once priority is next
+   * looked at; `moveObject` attaches it as it enters. */
+  private applyEnchantChoice(player: PlayerId, enchant: ObjectId): void {
+    const why = chooseEnchant.whyCannot(this.decisionCtx, { type: "choose-enchant", player, enchant }, player);
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "choose-enchant") {
+      throw new Error("unreachable: whyCannot should have caught this");
+    }
+    const aura = this.state.objects[awaiting.source];
+    // One token of a stack, not the whole stack.
+    aura.enterChoice = { ...aura.enterChoice, enchant: this.splitOneFromStack(enchant) };
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
@@ -4858,20 +4878,29 @@ export class Game {
    * the battlefield, or `null` once there's none left: a Clone's copy first
    * (rule 707.9), then — as whatever it's becoming — a creature type (Urza's
    * Incubator, Cavern of Souls) or a word from a list (Heraldic Banner's
-   * colour). An answer waits on the card, `GameObject.enterChoice`.
+   * colour), then what an Aura enchants (rule 303.4f). An answer waits on the
+   * card, `GameObject.enterChoice`.
    */
   private nextEnterChoice(
     id: ObjectId,
-  ): { readonly kind: "copy" } | { readonly kind: "choose"; readonly options?: readonly string[] } | null {
+  ):
+    | { readonly kind: "copy" }
+    | { readonly kind: "choose"; readonly options?: readonly string[] }
+    | { readonly kind: "enchant"; readonly as: CardDefinition }
+    | null {
     const object = this.state.objects[id];
     const answered = object.enterChoice;
     const def = this.registry.get(printedCardName(object));
     if (def.copyOnEnter !== null && answered?.copyOf === undefined) return { kind: "copy" };
-    if (answered?.chosen !== undefined) return null;
     const becoming =
       answered?.copyOf !== undefined && answered.copyOf !== null ? this.registry.get(answered.copyOf) : def;
-    if (becoming.chooseCreatureTypeOnEnter) return { kind: "choose" };
-    if (becoming.chooseOnEnter !== null) return { kind: "choose", options: becoming.chooseOnEnter };
+    if (answered?.chosen === undefined) {
+      if (becoming.chooseCreatureTypeOnEnter) return { kind: "choose" };
+      if (becoming.chooseOnEnter !== null) return { kind: "choose", options: becoming.chooseOnEnter };
+    }
+    if (becoming.subtypes.includes("Aura") && answered?.enchant === undefined) {
+      return { kind: "enchant", as: becoming };
+    }
     return null;
   }
 
@@ -4884,7 +4913,9 @@ export class Game {
    * decision is now up: if so nothing may move yet, and the entry is tried
    * again once it's answered — every way onto the battlefield does this, not
    * only a spell resolving or a land being played. A Clone with nothing to
-   * copy enters as itself (its "may", rule 707.9).
+   * copy enters as itself (its "may", rule 707.9); an Aura with nothing it
+   * could enchant doesn't enter at all (303.4g — `moveObject` leaves it where
+   * it is).
    */
   private askEnterChoice(id: ObjectId, chooser: PlayerId): boolean {
     const object = this.state.objects[id];
@@ -4894,6 +4925,17 @@ export class Game {
         this.beginCreatureTypeChoice(id, chooser, next.options);
         return true;
       }
+      if (next.kind === "enchant") {
+        const options = this.state.zones.shared.battlefield.filter((host) =>
+          this.canEnchant(id, host, chooser, next.as),
+        );
+        if (options.length > 0) {
+          this.state.awaiting = { kind: "choose-enchant", player: chooser, source: id, options };
+          return true;
+        }
+        object.enterChoice = { ...object.enterChoice, enchant: null };
+        continue;
+      }
       const options = this.copyOptions(id);
       if (options.length > 0) {
         this.state.awaiting = { kind: "choose-copy", player: chooser, source: id, options };
@@ -4902,6 +4944,45 @@ export class Game {
       object.enterChoice = { ...object.enterChoice, copyOf: null };
     }
     return false;
+  }
+
+  /**
+   * Could the Aura `aura` — as `def`, controlled by `controller` — enchant
+   * the permanent `host` (rule 303.4)? Whatever its enchant ability allows,
+   * which is the slot its spell targets (303.4a), read without the targeting
+   * rules: enchanting isn't targeting, so hexproof and shroud don't stop it.
+   * Protection does (702.16c). Never itself, nothing out of the game, and
+   * nothing at all while the Aura is a creature (303.4d). Enchanting a player
+   * isn't modeled; every Aura in the pool enchants a permanent.
+   */
+  private canEnchant(aura: ObjectId, host: ObjectId, controller: PlayerId, def: CardDefinition): boolean {
+    if (host === aura) return false;
+    const target = this.state.objects[host];
+    if (target === undefined || target.zone !== "battlefield" || !this.inGame(target)) return false;
+    const spec = def.targets[0];
+    if (spec === undefined) return false;
+    const onBattlefield = this.state.objects[aura]?.zone === "battlefield";
+    const types = onBattlefield ? computeCharacteristics(this.state, this.registry, aura).types : def.types;
+    if (types.includes("creature")) return false;
+    const ref: TargetRef = { kind: "object", object: host };
+    if (!isLegalTarget(this.state, this.registry, spec, ref, controller, undefined, { notTargeted: true })) {
+      return false;
+    }
+    const source = onBattlefield ? this.permanentSource(aura) : this.cardSource(def, aura);
+    return !protectionBlocks(this.state, this.registry, host, source);
+  }
+
+  /** Could the Equipment `equipment` equip `host` (rule 301.5): a creature
+   * on the battlefield other than itself, without protection from it
+   * (702.16d), while it isn't a creature itself (301.5c — reconfigure isn't
+   * modeled). */
+  private canEquip(equipment: ObjectId, host: ObjectId): boolean {
+    if (host === equipment) return false;
+    const target = this.state.objects[host];
+    if (target === undefined || target.zone !== "battlefield" || !this.inGame(target)) return false;
+    if (!effectiveTypes(this.state, this.registry, target).includes("creature")) return false;
+    if (computeCharacteristics(this.state, this.registry, equipment).types.includes("creature")) return false;
+    return !protectionBlocks(this.state, this.registry, host, this.permanentSource(equipment));
   }
 
   /** What a Clone entering may copy: a creature on the battlefield (rule
@@ -8653,17 +8734,23 @@ export class Game {
   private enterPermanentSpell(id: ObjectId): void {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return;
+    const def = this.registry.get(printedCardName(object));
+    // An Aura spell enters attached to what it targets (rule 608.3b) — the
+    // one way an Aura enters without choosing what it enchants (303.4f).
+    if (def.subtypes.includes("Aura") && object.enterChoice?.enchant === undefined) {
+      const target = this.targetsStillMeant(object)[0];
+      if (target?.kind === "object") object.enterChoice = { ...object.enterChoice, enchant: target.object };
+    }
     if (this.askEnterChoice(id, object.controller)) {
       this.state.suspendedResolutions.push({ effect: null, enter: { kind: "spell", object: id } });
       return;
     }
-    const def = this.registry.get(printedCardName(object));
-    const enchantTarget = def.subtypes.includes("Aura") ? this.targetsStillMeant(object)[0] : undefined;
     const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
     // "That creature enters with two additional +1/+1 counters" (Yuna).
     const extraCounters = object.entersWithCounters;
-    this.moveObject(id, "battlefield");
+    const entered = this.moveObject(id, "battlefield");
     object.targets = null;
+    if (!entered) return;
     if (extraCounters !== undefined && this.state.objects[id]?.zone === "battlefield") {
       for (const c of extraCounters) this.addCounter({ kind: "object", object: id }, c.kind, c.amount);
     }
@@ -8674,14 +8761,6 @@ export class Game {
       this.addCounter({ kind: "object", object: id }, escapedWith.kind, escapedWith.amount);
     }
     this.emit({ type: "permanent-entered-battlefield", object: id });
-    if (enchantTarget?.kind === "object") {
-      object.attachedTo = enchantTarget.object;
-      this.emit({
-        type: "permanent-attached",
-        source: id,
-        target: enchantTarget.object,
-      });
-    }
   }
 
   /** Finish an entry that stopped to ask an "as this enters" choice — see
@@ -13207,19 +13286,21 @@ export class Game {
     this.copyStackSpell(target.object, controller);
   }
 
-  /** Attach an Aura/Equipment (`source`) to `target` (used by Equip-like effects). */
+  /** Attach the Aura or Equipment `source` to `target` (rule 701.3; used by
+   * Equip-like effects) — only to something it could enchant or equip,
+   * protection included (702.16c–d), or it doesn't move (701.3b). Nor does
+   * anything else, or anything already attached there. */
   private attachPermanent(source: ObjectId, target: TargetRef): void {
     if (target.kind !== "object") return;
     const targetId = this.splitOneFromStack(target.object);
     const sourceObject = this.state.objects[source];
-    const targetObject = this.state.objects[targetId];
     if (sourceObject === undefined || sourceObject.zone !== "battlefield") return;
-    if (targetObject === undefined || targetObject.zone !== "battlefield") return;
-    // Protection (rule 702.16) — can't be enchanted / equipped by a matching
-    // Aura / Equipment.
-    if (protectionBlocks(this.state, this.registry, targetId, this.permanentSource(source))) {
-      return;
-    }
+    if (sourceObject.attachedTo === targetId) return;
+    const def = this.registry.get(printedCardName(sourceObject));
+    const legal = def.subtypes.includes("Aura")
+      ? this.canEnchant(source, targetId, sourceObject.controller, def)
+      : def.subtypes.includes("Equipment") && this.canEquip(source, targetId);
+    if (!legal) return;
     sourceObject.attachedTo = targetId;
     // An Aura or Equipment gets a new timestamp as it becomes attached (rule
     // 613.7e) — which is what a control-granting Aura moved onto a creature
@@ -14582,22 +14663,15 @@ export class Game {
     }
   }
 
-  /** Detach every Aura/Equipment pointed at `id` (rule 704.5n): an Aura goes
-   * to its owner's graveyard, Equipment just becomes unattached. */
+  /** Unattach everything attached to `id`, which is coming back as a new
+   * object (rule 400.7): the state-based check then puts each Aura into its
+   * owner's graveyard (704.5m), and each Equipment stays where it is. */
   private detachFrom(id: ObjectId): void {
-    for (const other of [...this.state.zones.shared.battlefield]) {
+    for (const other of this.state.zones.shared.battlefield) {
       const object = this.state.objects[other];
       if (object.attachedTo !== id) continue;
-      if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) {
-        this.moveObject(other, "graveyard");
-        this.emit({
-          type: "permanent-destroyed",
-          object: other,
-          reason: "no longer attached to a legal permanent",
-        });
-      } else {
-        object.attachedTo = null;
-      }
+      object.attachedTo = null;
+      invalidateComputedCache();
     }
   }
 
@@ -16329,15 +16403,18 @@ export class Game {
         changed = true;
       }
 
-      // Equipment attached to nothing just becomes unattached and stays on
-      // the battlefield (an Aura in the same position goes to the graveyard
-      // — `stateBasedGraveyardMoves`).
+      // An Equipment attached to an illegal permanent — one that's gone, isn't
+      // a creature or is protected from it, or while the Equipment is a
+      // creature itself (301.5c) — becomes unattached and stays on the
+      // battlefield (704.5n), as does anything else attached that isn't an
+      // Aura or an Equipment (704.5p). An Aura in the same position goes to
+      // the graveyard (`stateBasedGraveyardMoves`).
       for (const id of this.state.zones.shared.battlefield) {
         const object = this.state.objects[id];
         if (object.attachedTo === null || !this.inGame(object)) continue;
-        const host = this.state.objects[object.attachedTo];
-        if (host !== undefined && host.zone === "battlefield" && this.inGame(host)) continue;
-        if (this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
+        const subtypes = this.registry.get(printedCardName(object)).subtypes;
+        if (subtypes.includes("Aura")) continue;
+        if (subtypes.includes("Equipment") && this.canEquip(id, object.attachedTo)) continue;
         object.attachedTo = null;
         invalidateComputedCache();
         changed = true;
@@ -16573,20 +16650,23 @@ export class Game {
       add(id, { type: "permanent-destroyed", object: id, reason: "0 loyalty" });
     }
 
-    // An Aura attached to no legal permanent goes to the graveyard (704.5n).
-    // One whose host dies in this same check is still attached to it now, so
-    // it goes in the next check — as it would at a table.
+    // An Aura attached to an illegal object, or to nothing, is put into its
+    // owner's graveyard (704.5m): its host gone (a host whose owner left the
+    // game left with them, 800.4a), no longer something its enchant ability
+    // allows (a creature that stopped being one, or an "enchant creature you
+    // control" whose creature changed hands — 303.4c), protected from it
+    // (702.16c), or the Aura a creature itself (303.4d). One whose host dies
+    // in this same check is still attached to it now, so it goes in the next
+    // check — as it would at a table.
     for (const id of battlefield) {
       const object = this.state.objects[id];
-      if (object.attachedTo === null) continue;
-      const host = this.state.objects[object.attachedTo];
-      // A host whose owner left the game left with them (800.4a).
-      if (host !== undefined && host.zone === "battlefield" && this.inGame(host)) continue;
-      if (!this.registry.get(printedCardName(object)).subtypes.includes("Aura")) continue;
+      const def = this.registry.get(printedCardName(object));
+      if (!def.subtypes.includes("Aura")) continue;
+      if (object.attachedTo !== null && this.canEnchant(id, object.attachedTo, object.controller, def)) continue;
       add(id, {
         type: "permanent-destroyed",
         object: id,
-        reason: "no longer attached to a legal permanent",
+        reason: object.attachedTo === null ? "attached to nothing" : "no longer attached to a legal permanent",
       });
     }
 
@@ -17123,6 +17203,14 @@ export class Game {
       const types = computeCharacteristics(this.state, this.registry, id).types;
       if (types.includes("instant") || types.includes("sorcery")) return false;
     }
+    // So does an Aura with nothing it could enchant (rule 303.4g — see
+    // `askEnterChoice`), unless it was on the stack: that one is put into
+    // its owner's graveyard instead.
+    if (to === "battlefield" && object.enterChoice?.enchant === null) {
+      object.enterChoice = undefined;
+      if (object.zone === "stack") this.moveObjectUncached(id, "graveyard", {});
+      return false;
+    }
     const leavingBattlefield = object.zone === "battlefield" && to !== "battlefield";
     // Last-known information (rules 603.10a, 608.2h), taken before anything
     // below resets control, counters, modifiers or a copy effect: everything a
@@ -17439,6 +17527,14 @@ export class Game {
       if (enterChoice.chosen !== undefined) {
         object.chosenCreatureType = enterChoice.chosen;
         object.chosenOnEnter = enterChoice.chosen;
+      }
+      // An Aura enters attached to what it enchants (rule 303.4) — if that is
+      // still on the battlefield; if not, it's attached to nothing, and the
+      // state-based check puts it into the graveyard (704.5m).
+      const host = enterChoice.enchant ?? null;
+      if (host !== null && this.state.objects[host]?.zone === "battlefield") {
+        object.attachedTo = host;
+        this.emit({ type: "permanent-attached", source: id, target: host });
       }
     }
     // Alt-cast zone markers (ROADMAP Phase 6) end on any zone change: a

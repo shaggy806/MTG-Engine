@@ -155,6 +155,12 @@ export interface PlayerController {
     options: readonly ObjectId[],
   ): ObjectId | null;
   /**
+   * An Aura is entering the battlefield without being cast, and nothing says
+   * what it enchants — return which of `options`, the permanents it could
+   * enchant, it enters attached to (rule 303.4f).
+   */
+  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId;
+  /**
    * The legend rule (704.5j): you control two or more legendary permanents
    * named `name` — return which of `options` (the one you've controlled
    * longest first) to keep; the rest go to the graveyard.
@@ -383,6 +389,10 @@ export class AutomaticController implements PlayerController {
     return options[0] ?? null;
   }
 
+  chooseEnchant(_view: ControllerView, _source: ObjectId, options: readonly ObjectId[]): ObjectId {
+    return options[0];
+  }
+
   /** Keeps the one controlled longest — what the engine did before the
    * choice was a player's. */
   chooseLegendToKeep(_view: ControllerView, _name: string, options: readonly ObjectId[]): ObjectId {
@@ -576,6 +586,11 @@ export class ScriptedController implements PlayerController {
   payLifeForUntappedFn: (view: ControllerView, source: ObjectId, life: number) => boolean =
     () => false;
   chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
+  chooseEnchantFn: (view: ControllerView, source: ObjectId, options: readonly ObjectId[]) => ObjectId = (
+    _view,
+    _source,
+    options,
+  ) => options[0];
   chooseLegendToKeepFn: (view: ControllerView, name: string, options: readonly ObjectId[]) => ObjectId = (
     _view,
     _name,
@@ -699,6 +714,10 @@ export class ScriptedController implements PlayerController {
     options: readonly ObjectId[],
   ): ObjectId | null {
     return this.chooseCopyFn(view, source, options);
+  }
+
+  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId {
+    return this.chooseEnchantFn(view, source, options);
   }
 
   chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId {

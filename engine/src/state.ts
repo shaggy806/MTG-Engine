@@ -312,13 +312,20 @@ export interface GameObject {
   chosenOnEnter?: string | null;
   /**
    * "As this enters" choices (rule 614.12) made while it was still on its way:
-   * a Clone's copy (`copyOf`, `null` for none — rule 707.9), and a chosen
-   * creature type or word (`chosen`). They're asked before it moves, so the
-   * replacements that apply as it enters and the triggers that see it arrive
-   * both see it as chosen; `moveObject` applies them as it enters and clears
-   * them on any move. See `Game.askEnterChoice`.
+   * a Clone's copy (`copyOf`, `null` for none — rule 707.9), a chosen
+   * creature type or word (`chosen`), and what an Aura enchants (`enchant` —
+   * its target, for an Aura spell, or its controller's choice, rule 303.4f;
+   * `null` when there's nothing it could enchant, and then it doesn't enter,
+   * 303.4g). They're asked before it moves, so the replacements that apply
+   * as it enters and the triggers that see it arrive both see it as chosen;
+   * `moveObject` applies them as it enters and clears them on any move. See
+   * `Game.askEnterChoice`.
    */
-  enterChoice?: { readonly copyOf?: string | null; readonly chosen?: string };
+  enterChoice?: {
+    readonly copyOf?: string | null;
+    readonly chosen?: string;
+    readonly enchant?: ObjectId | null;
+  };
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
    * created. Absent for a single-faced card. */
@@ -1191,6 +1198,18 @@ export type AwaitingDecision =
        * what (if anything) it enters as a copy of (rule 707.9) — asked before
        * it moves, see `Game.askEnterChoice`. */
       readonly kind: "choose-copy";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly options: readonly ObjectId[];
+    }
+  | {
+      /** An Aura is about to enter the battlefield other than by resolving
+       * as an Aura spell, with nothing saying what it enchants: the player
+       * it's entering under chooses, from `options` — every permanent it
+       * could legally enchant (rule 303.4f). Asked before it moves, see
+       * `Game.askEnterChoice`; with nothing to choose from it isn't asked,
+       * and the Aura stays where it was (303.4g). */
+      readonly kind: "choose-enchant";
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly options: readonly ObjectId[];

@@ -59,6 +59,7 @@ import _poolGarruksGorehorn from "../pool/garruks-gorehorn.js";
 import _poolGhirapurOsprey from "../pool/ghirapur-osprey.js";
 import _poolGiantStrength from "../pool/giant-strength.js";
 import _poolGildedGoose from "../pool/gilded-goose.js";
+import _poolGoShintaiOfLifesOrigin from "../pool/go-shintai-of-lifes-origin.js";
 import _poolGoblinChieftain from "../pool/goblin-chieftain.js";
 import _poolGolbezCrystalCollector from "../pool/golbez-crystal-collector.js";
 import _poolGoliathSphinx from "../pool/goliath-sphinx.js";
@@ -251,6 +252,7 @@ const shard: CardShard = {
     _poolGhirapurOsprey,
     _poolGiantStrength,
     _poolGildedGoose,
+    _poolGoShintaiOfLifesOrigin,
     _poolGoblinChieftain,
     _poolGolbezCrystalCollector,
     _poolGoliathSphinx,

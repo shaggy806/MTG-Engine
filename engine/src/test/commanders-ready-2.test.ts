@@ -108,8 +108,10 @@ describe("Eriette of the Charmed Apple", () => {
   it("drains for each Aura you control at your end step", () => {
     const { game } = setUp();
     spawn(game, "Eriette of the Charmed Apple");
-    spawn(game, "Pacifism");
-    spawn(game, "Pacifism");
+    const bears = spawn(game, "Grizzly Bears", B);
+    for (const aura of [spawn(game, "Pacifism"), spawn(game, "Pacifism")]) {
+      game.state.objects[aura].attachedTo = bears;
+    }
     game.advanceUntil((s) => s.turn.number === 2);
     expect(life(game, B)).toBe(18);
     expect(life(game, A)).toBe(22);

@@ -169,6 +169,7 @@ import _poolYotianMedic from "../pool/yotian-medic.js";
 import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
 import _tokensHumanToken from "../tokens/human-token.js";
+import _tokensShrineToken from "../tokens/shrine-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -340,6 +341,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensHumanToken,
+    _tokensShrineToken,
   ],
 };
 

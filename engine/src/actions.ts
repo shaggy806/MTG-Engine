@@ -292,6 +292,13 @@ export type Action =
       readonly copy: ObjectId | null;
     }
   | {
+      /** Answers a pending "choose what this Aura enchants" decision (rule
+       * 303.4f): one of the offered permanents. */
+      readonly type: "choose-enchant";
+      readonly player: PlayerId;
+      readonly enchant: ObjectId;
+    }
+  | {
       /** Answers a pending legend-rule decision (rule 704.5j): the one of the
        * offered legendary permanents to keep. */
       readonly type: "legend-rule";
@@ -756,6 +763,14 @@ export type LegalAction =
       readonly kind: "choose-copy";
       readonly source: ObjectId;
       /** Permanents this Clone may copy; `null` (copy nothing) is also legal. */
+      readonly options: readonly ObjectId[];
+    }
+  | {
+      /** The Aura `source` is entering without being cast: choose one of
+       * `options`, the permanents it could enchant, for it to enter
+       * attached to. */
+      readonly kind: "choose-enchant";
+      readonly source: ObjectId;
       readonly options: readonly ObjectId[];
     }
   | {

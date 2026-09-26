@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**263 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**266 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -27,8 +27,8 @@ that one card is the reason the deck exists.
   `condition:filter-card-property-clauses` (11 each). Live numbers come from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
-  (11), `effect:enter-attacking`, `effect:attach-extensions`, `effect:cast-during-resolution`
-  (10 each), `decision:free-cast-choices` (9), `decision:choose-tap-costs` (7).
+  (11), `effect:enter-attacking` and `effect:cast-during-resolution` (10 each),
+  `decision:free-cast-choices` (9), `effect:attach-extensions` and `decision:choose-tap-costs` (7 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
@@ -105,14 +105,6 @@ that one card is the reason the deck exists.
   and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
-- **An Aura entering other than as a spell** is attached to nothing. Only a resolving Aura
-  spell attaches (`resolveTopObject`); one reanimated, returned by a flicker or put onto the
-  battlefield from a library or hand floats unattached for good. Rule 303.4f has its
-  controller choose what it enchants as it enters (303.4g: with nothing to choose, it stays
-  where it was), and the SBA sweep (`stateBasedGraveyardMoves`) skips an Aura attached to
-  nothing, where rule 704.5m puts it into the graveyard. The choice is UI-bound; fixing the
-  sweep alone would only trade a floating Aura for a lost one. It keeps Rise to Glory out of
-  the pool: the scaffolder leaves a "return target Aura card" to a person.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.

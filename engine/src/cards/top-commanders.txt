@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-263 already implemented / 237 missing
+266 already implemented / 234 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -73,7 +73,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   67  Korvold, Fae-Cursed King                       21034 decks  {2}{B}{R}{G}     Legendary Creature — Dragon Noble
 [ ]   68  Shorikai, Genesis Engine                       20987 decks  {2}{W}{U}        Legendary Artifact — Vehicle
 [ ]   69  Zurgo Stormrender                              20864 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
-[ ]   70  Go-Shintai of Life's Origin                    20615 decks  {3}{G}           Legendary Enchantment Creature — Shrine
+[x]   70  Go-Shintai of Life's Origin                    20615 decks  {3}{G}           Legendary Enchantment Creature — Shrine
 [ ]   71  Urza, Lord High Artificer                      20594 decks  {2}{U}{U}        Legendary Creature — Human Artificer
 [x]   72  Felothar the Steadfast                         20517 decks  {1}{W}{B}{G}     Legendary Creature — Human Warrior
 [x]   73  Queen Marchesa                                 20464 decks  {1}{R}{W}{B}     Legendary Creature — Human Assassin
@@ -120,7 +120,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  114  Etali, Primal Conqueror                        17174 decks  {5}{R}{R}        Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur
 [x]  115  Aesi, Tyrant of Gyre Strait                    17143 decks  {4}{G}{U}        Legendary Creature — Serpent
 [x]  116  Witherbloom, the Balancer                      17139 decks  {6}{B}{G}        Legendary Creature — Elder Dragon
-[ ]  117  Zur the Enchanter                              17114 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
+[x]  117  Zur the Enchanter                              17114 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
 [x]  118  Urza, Chief Artificer                          17039 decks  {3}{W}{U}{B}     Legendary Creature — Human Artificer
 [x]  119  Alela, Artful Provocateur                      16894 decks  {1}{W}{U}{B}     Legendary Creature — Faerie Warlock
 [ ]  120  Mendicant Core, Guidelight                     16880 decks  {W}{U}           Legendary Artifact Creature — Robot
@@ -209,7 +209,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  203  Celes, Rune Knight                             12104 decks  {1}{R}{W}{B}     Legendary Creature — Human Wizard Knight
 [x]  204  Sonic the Hedgehog                             12031 decks  {1}{U}{R}{W}     Legendary Creature — Hedgehog Warrior
 [ ]  205  Varina, Lich Queen                             11960 decks  {1}{W}{U}{B}     Legendary Creature — Zombie Wizard
-[ ]  206  Kona, Rescue Beastie                           11932 decks  {3}{G}           Legendary Creature — Beast Survivor
+[x]  206  Kona, Rescue Beastie                           11932 decks  {3}{G}           Legendary Creature — Beast Survivor
 [ ]  207  Captain Howler, Sea Scourge                    11896 decks  {2}{U}{R}        Legendary Creature — Shark Pirate
 [x]  208  Thalia and The Gitrog Monster                  11891 decks  {1}{W}{B}{G}     Legendary Creature — Human Frog Horror
 [x]  209  Shadow the Hedgehog                            11880 decks  {B}{B}{R}{R}     Legendary Creature — Hedgehog Mercenary

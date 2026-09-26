@@ -170,6 +170,7 @@ import _poolWoodlandLiege from "../pool/woodland-liege.js";
 import _poolYavimayaSapherd from "../pool/yavimaya-sapherd.js";
 import _poolYusriFortunesFlame from "../pool/yusri-fortunes-flame.js";
 import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
+import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
 
 const shard: CardShard = {
@@ -341,6 +342,7 @@ const shard: CardShard = {
     _poolYavimayaSapherd,
     _poolYusriFortunesFlame,
     _poolZulaportChainmage,
+    _poolZurTheEnchanter,
     _poolZuranEnchanter,
   ],
   tokens: [],

@@ -106,6 +106,7 @@ import _poolIsperiaSupremeJudge from "../pool/isperia-supreme-judge.js";
 import _poolJeditsDragoons from "../pool/jedits-dragoons.js";
 import _poolJoustingDummy from "../pool/jousting-dummy.js";
 import _poolKeenBuccaneer from "../pool/keen-buccaneer.js";
+import _poolKonaRescueBeastie from "../pool/kona-rescue-beastie.js";
 import _poolLingeringSouls from "../pool/lingering-souls.js";
 import _poolLlanowarElves from "../pool/llanowar-elves.js";
 import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
@@ -281,6 +282,7 @@ const shard: CardShard = {
     _poolJeditsDragoons,
     _poolJoustingDummy,
     _poolKeenBuccaneer,
+    _poolKonaRescueBeastie,
     _poolLingeringSouls,
     _poolLlanowarElves,
     _poolLoxodonStalwart,

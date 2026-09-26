@@ -75,6 +75,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Sand Warrior Token",
   "Saproling Token",
   "Servo Token",
+  "Shrine Token",
   "Slug Token",
   "Snake Token",
   "Soldier Artifact Token",

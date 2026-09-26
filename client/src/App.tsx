@@ -197,6 +197,7 @@ type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 type ShockChoiceAction = Extract<LegalAction, { kind: 'pay-life-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
+type EnchantChoiceAction = Extract<LegalAction, { kind: 'choose-enchant' }>
 type LegendRuleAction = Extract<LegalAction, { kind: 'legend-rule' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
@@ -318,6 +319,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'commander-replacement': 'decide where their commander goes',
   'pay-life-for-untapped': 'decide on a shock land',
   'choose-copy': 'choose what to copy',
+  'choose-enchant': 'choose what an Aura enchants',
   'legend-rule': 'choose which legend to keep',
   'choose-text': 'choose a text change',
   'choose-creature-type': 'choose a creature type',
@@ -892,6 +894,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const copyChoiceAction = actions.find(
     (a): a is CopyChoiceAction => a.kind === 'choose-copy',
   )
+  const enchantAction = actions.find(
+    (a): a is EnchantChoiceAction => a.kind === 'choose-enchant',
+  )
   const legendAction = actions.find((a): a is LegendRuleAction => a.kind === 'legend-rule')
   const textChoiceAction = actions.find(
     (a): a is TextChoiceAction => a.kind === 'choose-text',
@@ -982,6 +987,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'commander-replacement'
     | 'pay-life-for-untapped'
     | 'choose-copy'
+    | 'choose-enchant'
     | 'legend-rule'
     | 'choose-text'
     | 'choose-creature-type'
@@ -1005,6 +1011,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       ? 'pay-life-for-untapped'
       : copyChoiceAction
         ? 'choose-copy'
+        : enchantAction
+          ? 'choose-enchant'
         : legendAction
           ? 'legend-rule'
         : textChoiceAction
@@ -1523,6 +1531,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         )
         return
       }
+      if (mode === 'choose-enchant' && enchantAction) {
+        if (enchantAction.options.includes(id)) {
+          game.dispatch({ type: 'choose-enchant', player: seat, enchant: id })
+        }
+        return
+      }
       if (mode === 'legend-rule' && legendAction) {
         if (legendAction.options.includes(id)) {
           game.dispatch({ type: 'legend-rule', player: seat, keep: id })
@@ -1609,6 +1623,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       proliferateAction,
       activeTargeting,
       defendersFor,
+      enchantAction,
+      legendAction,
+      game,
+      seat,
     ],
   )
 
@@ -1829,6 +1847,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       highlight = of > taken && picks.length < offer.maxCreatures
       selected = taken > 0
       if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
+    } else if (mode === 'choose-enchant' && enchantAction) {
+      highlight = enchantAction.options.includes(id)
     } else if (mode === 'legend-rule' && legendAction) {
       highlight = legendAction.options.includes(id)
     } else if (mode === 'sacrifice' && sacrificeAction) {
@@ -2216,6 +2236,17 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
+      </div>
+    )
+  } else if (mode === 'choose-enchant' && enchantAction) {
+    // The Aura may still be somewhere this seat can't see (a library it's
+    // being tutored out of), so its name comes with the decision.
+    controls = (
+      <div className="controls">
+        <span>
+          {view.decisionSource?.cardName ?? game.nameOf(enchantAction.source)} is entering the
+          battlefield — click what it enchants.
+        </span>
       </div>
     )
   } else if (mode === 'legend-rule' && legendAction) {
