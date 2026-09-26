@@ -141,6 +141,7 @@ import {
   weightedMatches,
 } from "./filter.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
+import { goadersOf } from "./goad.js";
 import { colorIdentityOf } from "./identity.js";
 import type {
   EventOfType,
@@ -1890,6 +1891,8 @@ export class Game {
       o.sacrificeAtEndStep ?? false,
       o.notLegendary ?? false,
       o.goadedBy ?? [],
+      o.goadedForGameBy ?? [],
+      o.suspectedAt ?? null,
       o.mustAttackPlayer ?? null,
       o.controlEffects ?? null,
       o.controlEndsAtCleanup,
@@ -3584,14 +3587,23 @@ export class Game {
 
   private untapStep(): void {
     const active = this.activePlayer;
-    // A goad lasts "until your next turn" (rule 701.38), so the active
-    // player's own goads lapse now — on every creature, not just theirs.
+    // A goad lasts "until your next turn" (rule 701.15a), so the active
+    // player's own goads lapse now — on every creature, not just theirs. A
+    // goad for the rest of the game (`goadedForGameBy`) doesn't.
     for (const id of this.state.zones.shared.battlefield) {
       const goaded = this.state.objects[id]?.goadedBy;
       if (goaded === undefined || !goaded.includes(active)) continue;
       const left = goaded.filter((p) => p !== active);
       if (left.length === 0) delete this.state.objects[id].goadedBy;
       else this.state.objects[id].goadedBy = left;
+    }
+    // So do their attack-requirement rules (Kardur, Doomscourge's "until your
+    // next turn, creatures your opponents control attack each combat …").
+    const rules = this.state.attackRequirements;
+    if (rules !== undefined && rules.some((rule) => rule.by === active)) {
+      const left = rules.filter((rule) => rule.by !== active);
+      if (left.length === 0) delete this.state.attackRequirements;
+      else this.state.attackRequirements = left;
     }
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
@@ -11494,16 +11506,36 @@ export class Game {
           });
         }
       },
-      goadCreaturesOf: (player) => {
+      goadCreaturesOf: (player, forGame) => {
         for (const id of this.state.zones.shared.battlefield) {
-          const object = this.state.objects[id];
-          if (object === undefined || object.controller !== player) continue;
-          if (!computeCharacteristics(this.state, this.registry, id).types.includes("creature")) {
-            continue;
-          }
-          const by = object.goadedBy ?? [];
-          if (!by.includes(controller)) object.goadedBy = [...by, controller];
+          if (this.state.objects[id]?.controller !== player) continue;
+          this.goad(id, controller, forGame);
         }
+      },
+      goadCreature: (target, forGame) => {
+        if (target.kind === "object") this.goad(target.object, controller, forGame);
+      },
+      goadMatching: (filter, forGame) => {
+        for (const id of this.battlefieldMatching(controller, filter)) this.goad(id, controller, forGame);
+      },
+      suspect: (target) => {
+        if (target.kind === "object") this.suspect(target.object);
+      },
+      unsuspect: (target) => {
+        const ids =
+          "filter" in target
+            ? this.battlefieldMatching(controller, target.filter)
+            : target.kind === "object"
+              ? [target.object]
+              : [];
+        for (const id of ids) this.unsuspect(id);
+      },
+      addAttackRequirement: (filter, otherThanYou) => {
+        this.state.attackRequirements = [
+          ...(this.state.attackRequirements ?? []),
+          { by: controller, filter, otherThanYou },
+        ];
+        invalidateComputedCache();
       },
       impulseExile: (amount, duration, castOnly, opts) =>
         this.impulseExile(controller, source, amount, duration, castOnly, opts),
@@ -11679,11 +11711,14 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame) => {
+        // "The tokens are goaded for the rest of the game": by this effect's
+        // controller, whoever creates them (Rendmaw, Creaking Nest).
+        const goadedBy = goadedForGame === true ? controller : undefined;
         // "Each opponent creates a Treasure token": each of them, APNAP.
         if (who !== undefined && who !== "you" && who !== "target-controller") {
           for (const p of scoped(who)) {
-            this.createTokens(p, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn);
+            this.createTokens(p, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedBy);
           }
           return;
         }
@@ -11701,7 +11736,7 @@ export class Game {
             if (who !== undefined) tokenController = who;
           }
         }
-        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn);
+        this.createTokens(tokenController, token, count, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedBy);
       },
       // "That creature's controller" — who controlled it as it left, if it
       // has (rule 608.2h); `moveObject` has handed it back to its owner.
@@ -12853,6 +12888,8 @@ export class Game {
     tapped = false,
     sacrificeAtEndStep = false,
     gainUntilEndOfTurn: readonly Keyword[] = [],
+    /** The tokens are goaded by this player for the rest of the game. */
+    goadedForGameBy?: PlayerId,
   ): void {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
@@ -12868,6 +12905,7 @@ export class Game {
       false,
       tapped,
       sacrificeAtEndStep,
+      goadedForGameBy,
     );
   }
 
@@ -12966,6 +13004,7 @@ export class Game {
     copied: boolean,
     tapped = false,
     sacrificeAtEndStep = false,
+    goadedForGameBy?: PlayerId,
   ): void {
     if (total <= 0) return;
     this.state.players[controller].createdTokenThisTurn = true;
@@ -12984,6 +13023,7 @@ export class Game {
           false,
           tapped,
           sacrificeAtEndStep,
+          goadedForGameBy,
         );
         if (copied) this.emit({ type: "permanent-copied", object: id, copyOf: printedName });
         this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -13007,6 +13047,7 @@ export class Game {
       true, // skipBattlefield — the representative is only ever compared
       tapped,
       sacrificeAtEndStep,
+      goadedForGameBy,
     );
     const existing = this.findMergeableStack(repId, controller);
     delete this.state.objects[repId]; // the representative never really "exists" on its own
@@ -13030,6 +13071,7 @@ export class Game {
         false,
         tapped,
         sacrificeAtEndStep,
+        goadedForGameBy,
       );
       this.state.objects[id].stackCount = total;
       finalId = id;
@@ -13052,6 +13094,9 @@ export class Game {
     skipBattlefield = false,
     tapped = false,
     sacrificeAtEndStep = false,
+    /** It's goaded by this player for the rest of the game from the start —
+     * part of making it, so it folds only into a stack goaded the same way. */
+    goadedForGameBy?: PlayerId,
   ): ObjectId {
     const id = this.mintObjectId();
     this.state.objects[id] = {
@@ -13093,6 +13138,7 @@ export class Game {
       copyOf,
       ...(exileAtEndStep ? { exileAtEndStep: true } : {}),
       ...(notLegendary ? { notLegendary: true } : {}),
+      ...(goadedForGameBy !== undefined ? { goadedForGameBy: [goadedForGameBy] } : {}),
     };
     // Either source of "enters tapped" is enough — the token's own replacement
     // (a Treasure-like) or the effect that created it ("create thirteen
@@ -13571,6 +13617,44 @@ export class Game {
       untilEndOfTurn: true,
     });
     this.emit({ type: "restrictions-imposed", object: id, player: controller, restrictions: [...restrictions] });
+  }
+
+  /**
+   * `goader` goads `id` (rule 701.15a): until `goader`'s next turn — or, with
+   * `forGame`, for the rest of the game — it attacks each combat if able and
+   * attacks a player other than `goader` if able (701.15b). Only a creature
+   * on the battlefield can be; the same player goading it again adds nothing
+   * (701.15d). A token stack is goaded whole, every token in it; a targeted
+   * token was split off as it was targeted.
+   */
+  private goad(id: ObjectId, goader: PlayerId, forGame: boolean): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    if (!computeCharacteristics(this.state, this.registry, id).types.includes("creature")) return;
+    const field = forGame ? "goadedForGameBy" : "goadedBy";
+    const by = object[field] ?? [];
+    if (by.includes(goader)) return;
+    object[field] = [...by, goader];
+    invalidateComputedCache();
+  }
+
+  /** `id` becomes suspected (rule 701.60a) — unless it already is (701.60d).
+   * Its menace and "can't block" take their timestamp from now (see
+   * `GameObject.suspectedAt`). */
+  private suspect(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield" || object.suspectedAt !== undefined) return;
+    this.state.timestampSeq += 1;
+    object.suspectedAt = this.state.timestampSeq;
+    invalidateComputedCache();
+  }
+
+  /** `id` is no longer suspected (rule 701.60a). */
+  private unsuspect(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object?.suspectedAt === undefined) return;
+    delete object.suspectedAt;
+    invalidateComputedCache();
   }
 
   /** Which battlefield permanents a mass P/T / keyword effect (Overrun) hits —
@@ -17161,6 +17245,10 @@ export class Game {
     const granted = lostAbilities
       ? []
       : this.effectiveTriggeredEntries(id).flatMap((e) => (e.ref === undefined ? [] : [e.ref]));
+    // Whoever had goaded it, however — a static goad included, read while
+    // its source is still here (a simultaneous event snapshots every victim
+    // before the first moves).
+    const goaders = goadersOf(this.state, this.registry, id);
     return {
       zoneChangeCount: object.zoneChangeCount ?? 0,
       name,
@@ -17191,6 +17279,8 @@ export class Game {
       enchanted: attached.enchanted,
       enchantedByController: attached.enchantedByController,
       ...(attached.enchantedBy.length > 0 ? { enchantedBy: attached.enchantedBy } : {}),
+      ...(goaders.length > 0 ? { goaders: [...goaders] } : {}),
+      ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
       ...(granted.length > 0 ? { grantedTriggers: granted } : {}),
     };
@@ -17542,6 +17632,11 @@ export class Game {
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
     delete object.attackedThisTurn;
+    // Goaded and suspected are designations of the permanent that left
+    // (rules 400.7, 701.15b, 701.60a).
+    delete object.goadedBy;
+    delete object.goadedForGameBy;
+    delete object.suspectedAt;
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;

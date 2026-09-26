@@ -323,6 +323,11 @@ has ever run them.
   Oracle snapshot deals damage for entering untapped.
 - **Layer hook:** `PtModifier.addColors` (**untested**). The colour step reads
   it, but no effect sets it.
+- **Goad and suspect** (2026-09-25, `goad-extensions.test.ts`,
+  `suspect.test.ts`): `goad.forGame` (for Jon Irenicus), `create-token`'s
+  `goadedForGame` (for Rendmaw, Creaking Nest), the `unsuspect` effect,
+  `suspect` of `"source"` / `"trigger-object"`, and `attack-requirement`'s
+  `otherThanYou: false`.
 - **Optional fields no card sets yet:**
   - Effects: `add-mana.persists`, `exile-from-library.amount`,
     `return-from-graveyard.withCounters`, `reveal-until.tapped`,

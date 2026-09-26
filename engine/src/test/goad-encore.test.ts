@@ -1,5 +1,5 @@
 /**
- * Goad (rule 701.38) and Encore (702.140), which share a mechanism: an attack
+ * Goad (rule 701.15) and Encore (702.141), which share a mechanism: an attack
  * *requirement* aimed at a particular player.
  *
  * Goad is "attacks each combat if able, and attacks someone other than me if

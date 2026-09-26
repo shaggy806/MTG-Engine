@@ -715,6 +715,23 @@ export interface StaticAbility {
    * as a `CombatRestriction`: those are bare strings, and this one has to
    * know whose "you" it means. */
   readonly cantAttackController?: boolean;
+  /**
+   * The affected creatures **are goaded** (rule 701.15b) for as long as this
+   * static applies — Baeloth Barrityl, Entertainer's "creatures your
+   * opponents control with power less than Baeloth Barrityl's power are
+   * goaded", an Aura's "enchanted creature … is goaded" (`affects: { scope:
+   * "attached" }`). This permanent's controller is the goader: they "attack
+   * a player other than you if able". Not "until your next turn" (the
+   * Baeloth ruling) — it stops the moment this permanent leaves, loses the
+   * ability, or its scope stops reaching the creature, so it is read live
+   * (`goadersOf` in `goad.ts`) rather than marked on anything.
+   *
+   * A `filter` scope's `{ amount }` operand is answered here, unlike in any
+   * other static, but only for this permanent's own characteristics:
+   * `{ powerOf: "source" }`, `{ toughnessOf: "source" }`, `{ manaValueOf:
+   * "source" }`, read as it is now. Any other amount fails closed.
+   */
+  readonly goads?: boolean;
   /** The affected creatures "can't be blocked by [filter]" — Delney,
    * Streetwise Lookout's "creatures you control with power 2 or less can't
    * be blocked by creatures with power 3 or greater" (`{ power: { op:

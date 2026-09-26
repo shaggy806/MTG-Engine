@@ -3,28 +3,29 @@
  *
  * One of the two kinds whose validator carries real rules rather than a
  * shape check — every declared attacker is run through
- * `combat/eligibility.ts`'s `whyCannotAttack`, and then through goad and
- * encore, the rules that constrain *which* defender rather than whether the
- * creature may attack at all. Then the declaration as a whole: every
- * creature that must attack if able is in it (`combat/attacking.ts`).
+ * `combat/eligibility.ts`'s `whyCannotAttack`, and then through its attack
+ * requirements (goad, encore, an attack-requirement rule), the rules that
+ * constrain *which* defender rather than whether the creature may attack at
+ * all. Then the declaration as a whole: every creature that must attack if
+ * able is in it (`combat/attacking.ts`).
  *
  * The offer and the validator go through the same pair of functions, which is
  * an invariant worth stating: `defendersForAttacker` enumerates exactly what
- * `whyCannotAttack` + `goadForbidsDefender` + `mustAttackPlayerForbids` will
- * accept. Enumerating without goad is what let the fuzzer propose
- * declarations `dispatch` then refused.
+ * `whyCannotAttack` + `attackRequirementsForbid` will accept. Enumerating
+ * without goad is what let the fuzzer propose declarations `dispatch` then
+ * refused.
  */
 
 import type { Action, LegalAction } from "../actions.js";
 import { withRequiredAttackers } from "../combat/attacking.js";
 import type { AttackOffer } from "../combat/attacking.js";
 import {
+  attackRequirementsForbid,
+  attackRequirementsReason,
   creatureDef,
   defendersForAttacker,
-  goadForbidsDefender,
   legalDefenders,
   mustAttack,
-  mustAttackPlayerForbids,
   whyCannotAttack,
 } from "../combat/eligibility.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -78,15 +79,12 @@ export const attackers = defineDecision({
       seen.add(attacker);
       const why = whyCannotAttack(ctx.state, ctx.registry, player, attacker, defender);
       if (why !== null) return why;
-      // Goad (rule 701.38b) — "attacks a player other than you if able". The
-      // requirement only bites when some other defender was actually legal,
-      // so a goaded creature with nowhere else to go may still attack its
-      // goader.
-      if (goadForbidsDefender(ctx.state, ctx.registry, player, attacker, defender)) {
-        return `${nameOf(ctx, attacker)} is goaded and must attack someone else if able`;
-      }
-      if (mustAttackPlayerForbids(ctx.state, ctx.registry, player, attacker, defender)) {
-        return `${nameOf(ctx, attacker)} must attack the opponent it was made to attack`;
+      // Rule 508.1d — as many of its requirements obeyed as can be: goad's
+      // "attacks a player other than you if able" (701.15b), encore's
+      // "attacks that opponent if able". One that can't be obeyed (only the
+      // goader left to attack) rules nothing out.
+      if (attackRequirementsForbid(ctx.state, ctx.registry, player, attacker, defender)) {
+        return attackRequirementsReason(ctx.state, ctx.registry, attacker);
       }
     }
     // Rule 508.1d: every creature that must attack and can is declared. The

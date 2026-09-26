@@ -2,10 +2,12 @@ import { defineCard } from "../define.js";
 
 // The Chaos Incarnate precon's commander.
 //
-// The ETB is Goad in all but name: rule 701.38's "attacks each combat if able
-// and attacks a player other than [the goader] if able", lapsing on the
-// goader's next turn — which is exactly "until your next turn". So it's a
-// `goad` over every opponent rather than one chosen player.
+// The ETB imposes goad's two requirements without goading anything: it is a
+// continuous effect that modifies the rules of the game, so it binds every
+// creature an opponent controls until your next turn — one that comes under
+// their control afterwards too (rule 611.2c) — and none of them is *goaded*
+// (a "whenever a goaded creature …" doesn't see them). An `attack-requirement`,
+// not a `goad`.
 export default defineCard({
   name: "Kardur, Doomscourge",
   manaCost: "{2}{B}{R}",
@@ -25,7 +27,11 @@ export default defineCard({
     {
       trigger: { on: "enters-battlefield", who: "self" },
       targets: [],
-      effect: { kind: "goad", who: "each-opponent" },
+      effect: {
+        kind: "attack-requirement",
+        filter: { type: "creature", controlledBy: "opponent" },
+        otherThanYou: true,
+      },
       resolve: null,
       text:
         "When Kardur, Doomscourge enters, until your next turn, creatures your " +

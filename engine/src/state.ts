@@ -154,15 +154,37 @@ export interface GameObject {
    * change of zone (the permanent that comes back never attacked). */
   attackedThisTurn?: boolean;
   /**
-   * Players who have goaded this creature (rule 701.38). While non-empty it
-   * "attacks each combat if able and attacks a player other than [the
-   * goader] if able".
+   * Players who have goaded this creature (rule 701.15) with a one-shot goad
+   * — "goad target creature", "goad each creature target player controls".
+   * While it lasts the creature "attacks each combat if able and attacks a
+   * player other than [the goader] if able" (701.15b).
    *
    * Cleared for a given goader as *their* next turn begins, which is exactly
-   * how long the goad lasts. A creature can be goaded by several players at
-   * once, hence a list.
+   * how long such a goad lasts (701.15a). A creature can be goaded by several
+   * players at once, hence a list; the same player goading it again adds
+   * nothing (701.15d). Goaded is a designation of this object, so a zone
+   * change ends it (rule 400.7). This is one of three ways to be goaded —
+   * `goadedForGameBy` and a static goad are the others — so ask `goadersOf`
+   * (`goad.ts`), never this field, whether a creature is goaded.
    */
   goadedBy?: PlayerId[];
+  /**
+   * Players who have goaded this creature **for the rest of the game** — Jon
+   * Irenicus's "it's goaded for the rest of the game", the tokens Rendmaw,
+   * Creaking Nest makes. Never lapses; only leaving the battlefield ends it
+   * (rule 400.7), as for `goadedBy`.
+   */
+  goadedForGameBy?: PlayerId[];
+  /**
+   * The permanent is **suspected** (rule 701.60): `GameState.timestampSeq` as
+   * it became so. While suspected it has menace and "This creature can't
+   * block" (701.60c) — folded into its characteristics in layer 6, where an
+   * ability-removing effect with a later timestamp takes both away though it
+   * stays suspected (the ruling). A suspected permanent can't become
+   * suspected again (701.60d), so the timestamp is the first one. Neither an
+   * ability nor a copiable value (701.60b); a zone change ends it (701.60a).
+   */
+  suspectedAt?: number;
   /** This creature must attack this specific player if able — Encore's
    * "create a token copy that attacks that opponent this turn if able". */
   mustAttackPlayer?: PlayerId;
@@ -706,6 +728,13 @@ export interface LastKnownInfo {
   /** The controllers of the Auras on it, when there were any — the filter's
    * `enchantedBy`. */
   readonly enchantedBy?: readonly PlayerId[];
+  /** Every player who had goaded it, whichever way (`goadersOf` — a one-shot
+   * goad, one for the rest of the game, a static one), for the `goaded`
+   * filter clause: "whenever a goaded attacking or blocking creature dies"
+   * (Baeloth Barrityl, Entertainer). Absent when none had. */
+  readonly goaders?: readonly PlayerId[];
+  /** It was suspected (rule 701.60). */
+  readonly suspected?: boolean;
   /** It had lost all its abilities (layer 6 — Turn to Frog), so none of its
    * own leaves-the-battlefield abilities trigger. */
   readonly lostAbilities: boolean;
@@ -1775,6 +1804,26 @@ export interface PlayerEffect {
   };
 }
 
+/**
+ * "Until your next turn, creatures your opponents control attack each combat
+ * if able and attack a player other than you if able" (Kardur, Doomscourge):
+ * goad's two requirements (rule 701.15b) as a continuous effect that modifies
+ * the rules of the game, not a designation on anything. So it binds every
+ * creature matching `filter` (from `by`'s side) for as long as it lasts —
+ * including creatures that come under an opponent's control after it began
+ * (rule 611.2c) — and a creature it binds isn't *goaded*: nothing that asks
+ * about goaded creatures sees it. Read by the attack-requirement checks in
+ * `combat/eligibility.ts`; lapses as `by`'s next turn begins.
+ */
+export interface AttackRequirementRule {
+  /** The effect's controller — the "you" of "a player other than you". */
+  readonly by: PlayerId;
+  readonly filter: CardFilter;
+  /** "…and attack a player other than you if able", as well as "attack
+   * each combat if able". */
+  readonly otherThanYou: boolean;
+}
+
 export interface EmblemState {
   readonly id: string;
   readonly owner: PlayerId;
@@ -2093,6 +2142,10 @@ export interface GameState {
     readonly you: PlayerId;
     readonly restrictions: readonly CombatRestriction[];
   }[];
+  /** Attack requirements imposed as a rule of the game until a player's next
+   * turn — the `attack-requirement` effect (Kardur, Doomscourge). See
+   * {@link AttackRequirementRule}. Absent when there are none. */
+  attackRequirements?: AttackRequirementRule[];
   /** Combat phases owed straight after the combat phase under way ("after
    * this phase, there is an additional combat phase"), each maybe
    * "followed by an additional main phase". Turn-scoped. */

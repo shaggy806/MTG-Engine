@@ -659,8 +659,8 @@ export type LegalAction =
        * Legal defenders **per attacker**, keyed by attacker id.
        *
        * Not every eligible attacker may be sent at every defender: a goaded
-       * creature has to attack someone other than its goader when it can
-       * (rule 701.38b). `defenders` alone can't say that, and a caller that
+       * creature has to attack a player other than its goader when it can
+       * (rules 701.15b, 508.1d). `defenders` alone can't say that, and a caller that
        * picks from it uniformly — the fuzzer, or a UI letting you drag an
        * attacker onto any player — builds declarations `dispatch` rejects.
        */

@@ -842,6 +842,20 @@ export function hasLostAbilities(object: GameObject): boolean {
   return object.modifiers.some((m) => m.loseAbilities === true);
 }
 
+/**
+ * Whether a suspected permanent's menace and "This creature can't block"
+ * (rule 701.60c) apply to it now. They are abilities it has, added in layer 6
+ * as it became suspected, so an effect that removes all its abilities with a
+ * later timestamp takes both away — though it stays suspected (the Nelly
+ * Borca ruling) — while one from before it was suspected doesn't (rule
+ * 613.7). A removal with no timestamp is taken as the later.
+ */
+export function suspectedGrantsApply(object: GameObject): boolean {
+  const since = object.suspectedAt;
+  if (since === undefined) return false;
+  return !object.modifiers.some((m) => m.loseAbilities === true && (m.timestamp ?? Infinity) >= since);
+}
+
 /** Apply this object's own text-substitution modifiers (layer 3) to one word. */
 function substituteWord(object: GameObject, word: string): string {
   let w = word;
@@ -1276,6 +1290,11 @@ export interface TargetView {
    * a `filter` scope's clauses must not ask for them again (see
    * `FilterContext.layered`). */
   readonly inFold?: boolean;
+  /** Answers a `filter` scope's `{ amount }` operand (`FilterContext.amount`)
+   * — only a caller outside the fold has anything to answer it with (a
+   * static goad: "power less than Baeloth Barrityl's power"). Without one,
+   * such a comparison fails closed. */
+  readonly amount?: (amount: EffectAmount) => number;
 }
 
 /**
@@ -1314,6 +1333,7 @@ export function staticAffects(
       ...(view.inFold === true
         ? { layered: { types: view.types, subtypes: view.subtypes, keywords: view.keywords } }
         : {}),
+      ...(view.amount !== undefined ? { amount: view.amount } : {}),
     });
   }
   if (affects.scope === "lands-you-control") {
@@ -1614,6 +1634,7 @@ function collectStaticEffects(
         for (const effect of out) for (const k of effect.keywords) keywords.add(k);
         for (const modifier of target.modifiers) for (const k of modifier.keywords) keywords.add(k);
         for (const k of keywordCountersOn(target)) keywords.add(k);
+        if (suspectedGrantsApply(target)) keywords.add("menace");
       }
       return keywords;
     };
@@ -1759,6 +1780,12 @@ function computeCharacteristicsUncached(
     for (const r of modifier.restrictions ?? []) restrictions.add(r);
   }
   for (const keyword of keywordCountersOn(object)) keywords.add(keyword);
+  // Rule 701.60c — a suspected permanent has menace and "This creature can't
+  // block" for as long as it's suspected.
+  if (onBattlefield && suspectedGrantsApply(object)) {
+    keywords.add("menace");
+    restrictions.add("cant-block");
+  }
 
   // Layer 7b — base P/T set by this object's own characteristic-defining
   // ability (rule 604.3 / 613.4b). Only a `"self"` static applies — and not

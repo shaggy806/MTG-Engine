@@ -1424,7 +1424,7 @@ export class HeuristicBotController extends AutomaticController {
     const byValue = (a: PlayerId | ObjectId, b: PlayerId | ObjectId) =>
       this.defenderValue(state, a) - this.defenderValue(state, b);
     // Each attacker picks from its *own* legal defenders: a goaded creature
-    // must attack someone other than its goader when it can (rule 701.38b),
+    // must attack a player other than its goader when it can (rule 701.15b),
     // and a creature under Vow of Duty can't attack the Vow's controller.
     // One shared target for everyone is rejected by `dispatch` the moment
     // either applies.

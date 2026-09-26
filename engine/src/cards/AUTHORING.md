@@ -718,7 +718,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 | kind | fields |
 | --- | --- |
-| `create-token` | `token` (a registry name), `count`, `who?: "target-controller" \| PlayerScope` (Beast Within — under `targets[0]`'s controller; a scope has each of its players create `count` — "each opponent creates a Treasure token"), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) `gainUntilEndOfTurn?: Keyword[]` is "they gain haste until end of turn" (Ovika, Enigma Goliath): the keywords go on the tokens this makes as they're made, never on ones already there, and such a batch only folds into a token stack made the same way. |
+| `create-token` | `token` (a registry name), `count`, `who?: "target-controller" \| PlayerScope` (Beast Within — under `targets[0]`'s controller; a scope has each of its players create `count` — "each opponent creates a Treasure token"), `tapped?` (Army of the Damned — "create thirteen **tapped** … tokens"; a tapped batch is never folded into a token stack, since a stack carries one `tapped` flag for all of it) `gainUntilEndOfTurn?: Keyword[]` is "they gain haste until end of turn" (Ovika, Enigma Goliath): the keywords go on the tokens this makes as they're made, never on ones already there, and such a batch only folds into a token stack made the same way. `goadedForGame?: true` is "the tokens are goaded for the rest of the game" (Rendmaw, Creaking Nest), by the effect's controller — a token of their own included — made that way, as `gainUntilEndOfTurn` is. |
 | `create-token-copy` | `of: "source" \| "trigger-object" \| slot`, `count`, `gainsHaste?`, `exileAtEndStep?`, `notLegendary?`, `basePt?: [p, t]`, `who?: "you"` — a token that's a copy of a permanent, under *its* controller by default; `who: "you"` puts it under the effect's controller instead, which is what a card copying something an **opponent** controls means (Hate Mirage). `"trigger-object"` = the permanent whose entering/attacking fired the trigger (Miirym); a slot = a target (Saw in Half). `gainsHaste` is the copy exception "except it has haste" (Kiki-Jiki), which lasts; `gainUntilEndOfTurn?: Keyword[]` is "it gains haste until end of turn" (Mishra, Eminent One). |
 | melee | `melee()` from `helpers.ts` — rule 702.121, "Whenever this creature attacks, it gets +1/+1 until end of turn for each opponent you attacked with a creature this combat", as the attack trigger it is, reading the `{ opponentsAttacked: true }` amount (a planeswalker attacked isn't its controller). |
 | annihilator | `annihilator(n)` from `helpers.ts` — rule 702.86, "Whenever this creature attacks, defending player sacrifices N permanents", as the attack trigger it is (a `sacrifice` of `"trigger-player"`, who is the player attacked or the attacked planeswalker's controller). Put it in `triggered` or grant it with `grantsTriggered`, and the printed line in `text`. |
@@ -836,14 +836,39 @@ exist (rule 111.7), so neither comes back.
   count. Same per-ability count as `modal`'s `notChosenThisTurn` — a `may` is
   a choice of one mode. Not "This ability triggers only once each turn", which
   is the trigger's own `oncePerTurn` (§9).
-- **`goad { target }`** / **`goad { who }`** — goad every creature a target
-  player controls (rule 701.38 — Geode Rager), or every creature a whole
-  `PlayerScope` controls (Kardur, Doomscourge's `who: "each-opponent"`).
-  Marks `GameObject.goadedBy`; those creatures then attack each combat if able
-  and must attack someone *other* than the goader when another defender is
-  legal. The goad lapses as the goader's own next turn begins — which is why
-  a card printed as "until your next turn, creatures your opponents control
-  attack each combat if able" is a `goad` rather than a bespoke effect.
+- **`goad { target | who | filter, forGame? }`** — goad (rule 701.15): until
+  the effect's controller's next turn, each creature goaded attacks each
+  combat if able and attacks a player other than them if able. `target` is a
+  slot holding a **creature** ("goad target creature"; Killian, Decisive
+  Mentor's "tap up to one target creature and goad it" is a `tap` then a
+  `goad` of the same optional slot) or a **player**, every creature of whose
+  is goaded (Geode Rager); `who` is every creature a `PlayerScope` controls
+  (Marisi's `"trigger-player"`); `filter` is every creature matching it,
+  whoever controls it (Nelly Borca's "goad all suspected creatures" — `{
+  type: "creature", suspected: true }`). `forGame: true` is "it's goaded for
+  the rest of the game" (Jon Irenicus). A player goading a creature twice adds
+  nothing (701.15d). Which defenders a goaded creature may then be sent at is
+  worked out as rule 508.1d says — the most requirements obeyed — so it
+  attacks a *player* other than its goader rather than a planeswalker while it
+  can, and one goaded by every opponent attacks one of them. A goad is a
+  designation on the creature (`goadersOf` in `goad.ts` reads every kind), so
+  "until your next turn, creatures your opponents control attack each combat
+  if able and attack a player other than you if able" is **not** one — that's
+  `attack-requirement`.
+- **`attack-requirement { filter, otherThanYou }`** — Kardur, Doomscourge's
+  ETB: goad's requirements as a rule of the game until your next turn, over
+  every creature matching `filter` from your side — including creatures an
+  opponent gets later (rule 611.2c) — and none of them *goaded*.
+  `otherThanYou: false` is the bare "attack each combat if able".
+- **`suspect { target }`** / **`unsuspect { target | filter }`** — suspect a
+  creature (rule 701.60): a designation (`GameObject.suspectedAt`) that gives
+  it menace and "can't block" until it leaves the battlefield or is no longer
+  suspected. `target` is a slot, `"source"` or `"trigger-object"`; suspecting
+  a suspect does nothing (701.60d). The menace and can't-block are abilities,
+  added as it became suspected: an effect removing all its abilities
+  afterwards takes them away without ending the designation, one from before
+  doesn't. Not copiable. `unsuspect`'s `filter` is "all suspected creatures
+  are no longer suspected".
 - **`encore {}`** — Encore (rule 702.140 — Rakshasa Debaser, Kangee's
   Lieutenant): one hasty token copy per opponent, each with
   `mustAttackPlayer` set to *that* opponent, all sacrificed at the next end
@@ -966,8 +991,13 @@ manaValue, power, toughness, counters, controlledBy, ownedBy, keyword,
 notKeyword, tapped, token, isCommander, equipped, enchanted, modified, anyOf,
 manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn, enteredThisTurn,
 attackedThisTurn, cast, castBy, castFrom, enteredFrom, putThereBySource,
-sharesCardTypeWith, thisWay }`,
-every present clause ANDed. `controlledBy` is `"you"`, `"opponent"` or
+sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected }`,
+every present clause ANDed. `goaded` is goaded by anyone, however (a one-shot
+goad, one for the rest of the game, a static one), and `suspected` rule
+701.60's designation; one that has left the battlefield is asked as it last
+was — Baeloth Barrityl's "whenever a goaded attacking or blocking creature
+dies" is a `dies` trigger's `{ type: "creature", goaded: true, anyOf: [{
+attacking: true }, { blocking: true }] }`. `controlledBy` is `"you"`, `"opponent"` or
 `"active-player"` (whoever's turn it is, whoever is asking). `anyOf: CardFilter[]` is the "or": at least one of
 them has to match as well (historic is `anyOf: [{ type: "artifact" },
 { supertype: "legendary" }, { subtype: "Saga" }]`; Dogmeat's "enchanted or
@@ -1064,7 +1094,9 @@ Where `{ amount }` is answered, and when:
 - **Anywhere else** — a static ability's `condition`, a mana restriction, an
   imperative `resolve` building its own filter — nothing can answer it and the
   comparison **fails closed** (the object doesn't match). Use `{ own }` or a
-  printed number there.
+  printed number there. The one exception is a static goad's scope (`goads`,
+  §10), which answers the source's own `powerOf` / `toughnessOf` /
+  `manaValueOf: "source"`, read live.
 
 #### Last-known information (rule 608.2h)
 
@@ -1702,6 +1734,17 @@ anthem, the keyword grant and the granted trigger like any other creature.
   `{ type: "creature", enchantedBy: "you" }`. Checked in `whyCannotAttack`
   rather than as a `CombatRestriction`, because those are bare strings and
   can't say whose "you" is meant.
+- `goads: true` — the affected creatures **are goaded** (rule 701.15b), with
+  this permanent's controller as the goader, for exactly as long as the
+  static applies: Baeloth Barrityl, Entertainer's "creatures your opponents
+  control with power less than Baeloth Barrityl's power are goaded" (a
+  `filter` scope with `controlledBy: "opponent"` and `power: { op: "lt", n: {
+  amount: { powerOf: "source" } } }`), an Aura's "enchanted creature … is
+  goaded" (`scope: "attached"`). Not "until your next turn" — read live
+  (`goadersOf` in `goad.ts`), so it ends the moment the source leaves, loses
+  the ability, or its scope stops reaching the creature. The one static whose
+  scope answers an `{ amount }` operand, and only the source's own `powerOf`,
+  `toughnessOf` or `manaValueOf`.
 - `cantBeBlockedBy: CardFilter` / `canBlockOnly: CardFilter` — the affected
   creatures "can't be blocked by [filter]" (Delney, Streetwise Lookout's
   "creatures you control with power 2 or less can't be blocked by creatures

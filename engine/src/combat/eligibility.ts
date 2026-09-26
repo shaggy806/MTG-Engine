@@ -29,8 +29,9 @@ import type { StaticAbility } from "../cards.js";
 import type { CardFilter } from "../filter.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { matchesFilter } from "../filter.js";
+import { goadersOf } from "../goad.js";
 import { printedCardName } from "../state.js";
-import type { GameObject, GameState } from "../state.js";
+import type { AttackRequirementRule, GameObject, GameState } from "../state.js";
 import { permanentSource, protectionBlocks } from "../targeting.js";
 
 /** Each landwalk keyword and the land type it walks (rule 702.14). */
@@ -397,35 +398,119 @@ function blockFilters(
 }
 
 /**
- * Goad (rule 701.38b) — "attacks a player other than you if able". The
- * requirement only bites when some *other* defender was actually legal, so
- * a goaded creature with nowhere else to go may still attack its goader.
- *
- * Shared between `whyCannotDeclareAttackers` and `legalActions`: enumerating
- * defenders without it is what let the fuzzer propose a declaration that
- * `dispatch` then refused.
+ * The attack-requirement rules (the `attack-requirement` effect — Kardur,
+ * Doomscourge's "until your next turn, creatures your opponents control
+ * attack each combat if able …") that bind `id` right now: each one whose
+ * filter it matches from its controller's side, whenever it came under
+ * that control (rule 611.2c). See `AttackRequirementRule`.
  */
-export function goadForbidsDefender(
+export function attackRequirementRulesOf(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): readonly AttackRequirementRule[] {
+  const rules = state.attackRequirements;
+  if (rules === undefined || rules.length === 0) return [];
+  const object = state.objects[id];
+  if (object === undefined || object.zone !== "battlefield") return [];
+  return rules.filter((rule) => matchesFilter(state, registry, id, rule.filter, { you: rule.by }));
+}
+
+/**
+ * The players `attacker` must attack "a player other than" if able — one
+ * entry per requirement, since rule 508.1d counts requirements: each player
+ * who has goaded it (rule 701.15b — once each, 701.15d), and the controller
+ * of each attack-requirement rule binding it that says so.
+ */
+function otherThanRequirements(state: GameState, registry: CardRegistry, attacker: ObjectId): PlayerId[] {
+  return [
+    ...goadersOf(state, registry, attacker),
+    ...attackRequirementRulesOf(state, registry, attacker)
+      .filter((rule) => rule.otherThanYou)
+      .map((rule) => rule.by),
+  ];
+}
+
+/**
+ * How many of `attacker`'s attack requirements that care *where* it attacks
+ * are obeyed by attacking `defender` (rule 508.1d). "Attacks a player other
+ * than [them] if able" (goad, rule 701.15b) is obeyed only by attacking a
+ * **player** — a planeswalker isn't one — other than them; encore's "attacks
+ * that opponent if able" only by attacking that player. The "attacks each
+ * combat if able" every one of them also carries is obeyed wherever it
+ * attacks, so it doesn't tell defenders apart.
+ */
+function aimedRequirementsObeyed(
+  state: GameState,
+  others: readonly PlayerId[],
+  aimedAt: PlayerId | undefined,
+  defender: PlayerId | ObjectId,
+): number {
+  let obeyed = defender === aimedAt ? 1 : 0;
+  if (!isPlaneswalkerTarget(state, defender)) {
+    for (const other of others) if (other !== defender) obeyed += 1;
+  }
+  return obeyed;
+}
+
+/**
+ * Whether sending `attacker` at `defender` obeys fewer of its attack
+ * requirements than sending it at another defender it may attack — which
+ * rule 508.1d forbids: the number obeyed must be the most possible without
+ * breaking a restriction. No restriction the engine models ties one
+ * creature's attack to another's, so the most for each creature is the most
+ * for the declaration.
+ *
+ * What that comes to (the goad rulings): goaded by one player, it attacks a
+ * *player* other than them while one can be attacked, and only failing that
+ * the goader or a planeswalker. Goaded by each opponent, it attacks one of
+ * them — any — rather than a planeswalker. Goaded by two of three opponents,
+ * the third. Encore alone (`mustAttackPlayer`) sends it at that opponent
+ * while it can be attacked. And a requirement that can't be obeyed — only
+ * the goader left, an encore opponent it can't attack — rules nothing out.
+ *
+ * Shared between the `attackers` decision's validator and
+ * {@link defendersForAttacker}: enumerating defenders without it is what let
+ * the fuzzer propose a declaration that `dispatch` then refused.
+ */
+export function attackRequirementsForbid(
   state: GameState,
   registry: CardRegistry,
   player: PlayerId,
   attacker: ObjectId,
   defender: PlayerId | ObjectId,
 ): boolean {
-  const goadedBy = state.objects[attacker]?.goadedBy ?? [];
-  if (goadedBy.length === 0) return false;
-  if (!goadedBy.includes(defendingPlayerOf(state, defender))) return false;
+  const object = state.objects[attacker];
+  if (object === undefined) return false;
+  const others = otherThanRequirements(state, registry, attacker);
+  const aimedAt = object.mustAttackPlayer;
+  if (others.length === 0 && aimedAt === undefined) return false;
+  const here = aimedRequirementsObeyed(state, others, aimedAt, defender);
   return legalDefenders(state, registry, player).some(
-    (d) =>
-      !goadedBy.includes(defendingPlayerOf(state, d)) &&
-      whyCannotAttack(state, registry, player, attacker, d) === null,
+    (other) =>
+      other !== defender &&
+      aimedRequirementsObeyed(state, others, aimedAt, other) > here &&
+      whyCannotAttack(state, registry, player, attacker, other) === null,
   );
+}
+
+/** Why {@link attackRequirementsForbid} refuses `attacker`, for the
+ * validator's message. */
+export function attackRequirementsReason(state: GameState, registry: CardRegistry, attacker: ObjectId): string {
+  const name = creatureDef(state, registry, attacker)?.name ?? attacker;
+  if (goadersOf(state, registry, attacker).length > 0) {
+    return `${name} is goaded and must attack a player other than its goader if able`;
+  }
+  if (otherThanRequirements(state, registry, attacker).length > 0) {
+    return `${name} must attack a player other than ${otherThanRequirements(state, registry, attacker).join(", ")} if able`;
+  }
+  return `${name} must attack the opponent it was made to attack`;
 }
 
 /**
  * Which defenders *this* attacker may legally be sent at — the enumerator
- * half of the pair whose invariant {@link goadForbidsDefender} records: offer
- * exactly what `whyCannotDeclareAttackers` will accept, or the fuzzer
+ * half of the pair whose invariant {@link attackRequirementsForbid} records:
+ * offer exactly what `whyCannotDeclareAttackers` will accept, or the fuzzer
  * proposes declarations `dispatch` refuses.
  *
  * Not the same as {@link legalDefenders}, which is the union across every
@@ -443,43 +528,34 @@ export function defendersForAttacker(
   return legalDefenders(state, registry, player).filter(
     (defender) =>
       whyCannotAttack(state, registry, player, attacker, defender) === null &&
-      !goadForbidsDefender(state, registry, player, attacker, defender) &&
-      !mustAttackPlayerForbids(state, registry, player, attacker, defender),
+      !attackRequirementsForbid(state, registry, player, attacker, defender),
   );
 }
 
 /**
- * Encore's "attacks that opponent this turn if able" (rule 702.141a,
- * `GameObject.mustAttackPlayer`): while that player may be attacked, no one
- * else may be — not even their planeswalker, which isn't the player.
- */
-export function mustAttackPlayerForbids(
-  state: GameState,
-  registry: CardRegistry,
-  player: PlayerId,
-  attacker: ObjectId,
-  defender: PlayerId | ObjectId,
-): boolean {
-  const target = state.objects[attacker]?.mustAttackPlayer;
-  if (target === undefined || defender === target) return false;
-  return (
-    legalDefenders(state, registry, player).includes(target) &&
-    whyCannotAttack(state, registry, player, attacker, target) === null
-  );
-}
-
-/**
- * Whether `attacker` must attack this combat if able (rule 508.1d): "attacks
- * each combat if able", goad (rule 701.38a) or encore's "attacks that
- * opponent if able". Whether it *is* able is whether it has a legal
- * defender; the `declare-attackers` offer's `mustAttack` asks both.
+ * Whether `attacker` is under an attack requirement that attacking would
+ * obey (rule 508.1d), so it must attack if it can. "Attacks each combat if
+ * able" — its own (`"must-attack"`), a goad's (rule 701.15b, `goadersOf`), an
+ * attack-requirement rule's — is obeyed by attacking anyone. Encore's
+ * "attacks that opponent if able" (`GameObject.mustAttackPlayer`) only by
+ * attacking that opponent, so it binds only while they can be attacked. Whether
+ * it can attack at all is whether it has a legal defender; the
+ * `declare-attackers` offer's `mustAttack` asks both.
  */
 export function mustAttack(state: GameState, registry: CardRegistry, attacker: ObjectId): boolean {
   const object = state.objects[attacker];
   if (object === undefined) return false;
-  return (
-    (object.goadedBy ?? []).length > 0 ||
-    object.mustAttackPlayer !== undefined ||
+  if (
+    goadersOf(state, registry, attacker).length > 0 ||
+    attackRequirementRulesOf(state, registry, attacker).length > 0 ||
     restrictionsOf(state, registry, attacker).has("must-attack")
+  ) {
+    return true;
+  }
+  const aimedAt = object.mustAttackPlayer;
+  return (
+    aimedAt !== undefined &&
+    legalDefenders(state, registry, object.controller).includes(aimedAt) &&
+    whyCannotAttack(state, registry, object.controller, attacker, aimedAt) === null
   );
 }

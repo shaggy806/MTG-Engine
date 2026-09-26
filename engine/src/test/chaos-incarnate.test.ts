@@ -7,8 +7,9 @@
  * - `add-mana.amount` widened to an `EffectAmount` (Mana Geyser).
  * - `StaticCondition` `{ kind: "not", of }` (Titan Hunter).
  * - `damage { toControllerOfTarget }` (Unlicensed Disintegration).
- * - `goad { who }` and `CardFilter.attacking` reading last-known information
- *   off the battlefield (Kardur, Doomscourge).
+ * - `attack-requirement` (goad's requirements as a rule of the game) and
+ *   `CardFilter.attacking` reading last-known information off the
+ *   battlefield (Kardur, Doomscourge).
  */
 
 import { describe, expect, it } from "vitest";
@@ -223,7 +224,7 @@ describe("Unlicensed Disintegration", () => {
 });
 
 describe("Kardur, Doomscourge", () => {
-  it("goads every opponent's creatures at once", () => {
+  it("binds every opponent's creatures to attack someone else, goading none of them", () => {
     const game = makeGame([A, B, C]);
     openWith(game, 0);
     const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
@@ -233,9 +234,20 @@ describe("Kardur, Doomscourge", () => {
     game.debugSpawn("Kardur, Doomscourge", A, "battlefield", { announceEntry: true });
     settle(game);
 
-    expect(game.state.objects[theirs].goadedBy).toEqual([A]);
-    expect(game.state.objects[others].goadedBy).toEqual([A]);
-    expect(game.state.objects[mine].goadedBy).toBeUndefined();
+    // A rule of the game rather than a goad (rule 611.2c): nothing is marked
+    // goaded, and a creature an opponent gets afterwards is bound as well.
+    for (const id of [theirs, others, mine]) expect(game.state.objects[id].goadedBy).toBeUndefined();
+    const later = game.debugSpawn("Grizzly Bears", B, "battlefield");
+
+    game.advanceUntil(
+      (s) => (s.awaiting?.kind === "attackers" && s.awaiting.player === B) || s.result.over,
+    );
+    const offer = game.legalActions(B).find((o) => o.kind === "declare-attackers");
+    if (offer?.kind !== "declare-attackers") throw new Error("no attack offer");
+    expect([...offer.mustAttack].sort()).toEqual([theirs, later].sort());
+    // "…and attack a player other than you if able": C, not Alice.
+    expect(offer.defendersFor[theirs]).toEqual([C]);
+    expect(offer.defendersFor[later]).toEqual([C]);
   });
 
   it("drains when an attacking creature dies, using last-known attacking state", () => {

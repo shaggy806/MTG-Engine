@@ -23,6 +23,7 @@ import {
 } from "./characteristics.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount, ThisWayKind } from "./effects.js";
+import { isGoaded } from "./goad.js";
 import type { Color, ManaFromSpec } from "./mana.js";
 import { manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -181,6 +182,19 @@ export interface CardFilter {
   /** Currently blocking — the mirror of `attacking` (Kangee, Sky Warden's
    * "blocking creatures with flying get +0/+2"). */
   readonly blocking?: boolean;
+  /**
+   * Is (or isn't) **goaded** (rule 701.15b), by anyone and whichever way — a
+   * one-shot goad, one for the rest of the game, or a static one (`goadersOf`
+   * in `goad.ts`). One that has left the battlefield is asked as it last was:
+   * Baeloth Barrityl's "whenever a goaded attacking or blocking creature
+   * dies". Matched from inside the layer fold (a static's scope), a static
+   * goad whose own scope reads power or toughness can't be seen.
+   */
+  readonly goaded?: boolean;
+  /** Is (or isn't) **suspected** (rule 701.60 — `GameObject.suspectedAt`):
+   * Nelly Borca's "goad all suspected creatures". One that has left the
+   * battlefield is asked as it last was. */
+  readonly suspected?: boolean;
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
   /** Controlled by the filtering player (`"you"`), anyone else
@@ -520,6 +534,27 @@ export function matchesFilter(
     // a snapshot still knows (Kardur's "whenever an attacking creature dies").
     const attacking = live !== undefined ? live.attacking !== null : lki!.attacking;
     if (attacking !== filter.attacking) return false;
+  }
+  if (filter.suspected !== undefined) {
+    const suspected =
+      live !== undefined ? live.zone === "battlefield" && live.suspectedAt !== undefined : lki!.suspected === true;
+    if (suspected !== filter.suspected) return false;
+  }
+  if (filter.goaded !== undefined) {
+    // Goaded is a designation of a permanent (rule 701.15b): nothing off the
+    // battlefield is, bar what a snapshot says it was as it left.
+    const goaded =
+      live !== undefined
+        ? isGoaded(
+            state,
+            registry,
+            id,
+            layered === undefined
+              ? {}
+              : { inFold: true, types: layered.types, subtypes: layered.subtypes, keywords: layered.keywords },
+          )
+        : (lki!.goaders?.length ?? 0) > 0;
+    if (goaded !== filter.goaded) return false;
   }
   // A `NumCompare` operand read off the game: `{ own }` from this object,
   // `{ amount }` from whoever is applying the filter.

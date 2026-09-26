@@ -1634,6 +1634,11 @@ export type EffectSpec =
        * tokens just made and no others, since the grant is part of making
        * them (they fold into a token stack only with ones made the same way). */
       readonly gainUntilEndOfTurn?: readonly Keyword[];
+      /** "**The tokens are goaded for the rest of the game**" (Rendmaw,
+       * Creaking Nest; Nettling Nuisance) — by this effect's controller,
+       * whoever creates them: a token of their own must attack each combat
+       * too (rule 701.15b). Part of making them, like `gainUntilEndOfTurn`. */
+      readonly goadedForGame?: boolean;
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -1942,17 +1947,73 @@ export type EffectSpec =
     }
   | {
       /**
-       * Goad every creature a target player controls (rule 701.38 — Geode
-       * Rager). Until the goader's next turn those creatures attack each
-       * combat if able, and attack someone other than the goader if able.
+       * Goad (rule 701.15): until the goader's — this effect's controller's —
+       * next turn, each creature goaded "attacks each combat if able and
+       * attacks a player other than [the goader] if able". Which creatures,
+       * exactly one of:
+       * - `target` — a slot holding a **creature** ("goad target creature",
+       *   Killian, Decisive Mentor's "tap up to one target creature and goad
+       *   it"), or a **player**, whose every creature is goaded ("goad each
+       *   creature target player controls" — Geode Rager). An empty optional
+       *   slot goads nothing.
+       * - `who` — every creature each player in a scope controls (Marisi,
+       *   Breaker of the Coil's `"trigger-player"`).
+       * - `filter` — every creature matching it, from the controller's side,
+       *   whoever controls it (Nelly Borca's "goad all suspected creatures";
+       *   "goad all creatures your opponents control" is `controlledBy:
+       *   "opponent"`).
+       *
+       * `forGame` is "**it's goaded for the rest of the game**" (Jon Irenicus):
+       * a goad that never lapses. Goading a creature it has already goaded
+       * adds nothing (701.15d), though a goad for the rest of the game still
+       * outlasts one that was until their next turn.
        */
       readonly kind: "goad";
-      /** A target-slot index holding the player whose creatures are goaded. */
       readonly target?: number;
-      /** Goad a whole scope of players instead of one chosen target — Kardur,
-       * Doomscourge's "creatures your opponents control attack each combat if
-       * able". Mutually exclusive with `target`. */
       readonly who?: PlayerScope;
+      readonly filter?: CardFilter;
+      readonly forGame?: boolean;
+    }
+  | {
+      /**
+       * Suspect a creature (rule 701.60): it becomes **suspected**, and has
+       * menace and "This creature can't block" for as long as it is (701.60c)
+       * — until it leaves the battlefield or is no longer suspected. One
+       * already suspected can't become suspected again, so nothing changes
+       * (701.60d). `target` is a slot ("suspect target creature" — Nelly
+       * Borca, Impulsive Accuser), `"source"` ("suspect it" on an enters
+       * trigger) or `"trigger-object"`.
+       */
+      readonly kind: "suspect";
+      readonly target: EffectTargetRef;
+    }
+  | {
+      /**
+       * A permanent is **no longer suspected** (rule 701.60a — Airtight
+       * Alibi's "if it's suspected, it's no longer suspected"): `target` (a
+       * slot, `"source"` or `"trigger-object"`), or every permanent matching
+       * `filter` from the controller's side (Absolving Lammasu's "all
+       * suspected creatures are no longer suspected"). Exactly one of the two.
+       */
+      readonly kind: "unsuspect";
+      readonly target?: EffectTargetRef;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /**
+       * "Until your next turn, creatures your opponents control attack each
+       * combat if able **and attack a player other than you if able**"
+       * (Kardur, Doomscourge): goad's requirements imposed as a rule of the
+       * game rather than goading anything. So it binds every creature
+       * matching `filter` (from the controller's side) until the controller's
+       * next turn — including one that comes under an opponent's control
+       * after this resolved (rule 611.2c) — and none of them is *goaded*: a
+       * `goaded` filter doesn't see them. `otherThanYou: false` is the bare
+       * "attack each combat if able". See `AttackRequirementRule`.
+       */
+      readonly kind: "attack-requirement";
+      readonly filter: CardFilter;
+      readonly otherThanYou: boolean;
     }
   | {
       /**
@@ -2475,8 +2536,22 @@ export interface EffectApi {
   /** The colours in the effect's controller's commanders' colour identity —
    * see `PlayerState.commanderIdentity`. */
   commanderColors(): readonly ManaType[];
-  /** See the `"goad"` {@link EffectSpec}. */
-  goadCreaturesOf(player: PlayerId): void;
+  /** See the `"goad"` {@link EffectSpec}: goad each creature `player`
+   * controls. */
+  goadCreaturesOf(player: PlayerId, forGame: boolean): void;
+  /** See the `"goad"` {@link EffectSpec}: goad one creature — nothing, if
+   * `target` isn't a creature on the battlefield. */
+  goadCreature(target: TargetRef, forGame: boolean): void;
+  /** See the `"goad"` {@link EffectSpec}: goad every creature matching
+   * `filter`, from the effect's controller's side. */
+  goadMatching(filter: CardFilter, forGame: boolean): void;
+  /** See the `"suspect"` {@link EffectSpec}. */
+  suspect(target: TargetRef): void;
+  /** See the `"unsuspect"` {@link EffectSpec}: `target`, or every permanent
+   * matching `filter`. */
+  unsuspect(target: TargetRef | { readonly filter: CardFilter }): void;
+  /** See the `"attack-requirement"` {@link EffectSpec}. */
+  addAttackRequirement(filter: CardFilter, otherThanYou: boolean): void;
   /** See the `"impulse-exile"` {@link EffectSpec}. */
   impulseExile(
     amount: number,
@@ -2617,6 +2692,9 @@ export interface EffectApi {
     sacrificeAtEndStep?: boolean,
     /** Keywords the new tokens gain until end of turn. */
     gainUntilEndOfTurn?: readonly Keyword[],
+    /** The new tokens are goaded by the effect's controller for the rest of
+     * the game. */
+    goadedForGame?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -3935,6 +4013,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               spec.tapped === true,
               spec.sacrificeAtEndStep === true,
               spec.gainUntilEndOfTurn,
+              spec.goadedForGame === true,
             );
         }
         return;
@@ -3946,6 +4025,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.tapped === true,
         spec.sacrificeAtEndStep === true,
         spec.gainUntilEndOfTurn,
+        spec.goadedForGame === true,
       );
       return;
     case "create-token-copy": {
@@ -4064,14 +4144,37 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.encore();
       return;
     case "goad": {
+      const forGame = spec.forGame === true;
       if (spec.who !== undefined) {
-        for (const player of ctx.playersInScope(spec.who)) ctx.goadCreaturesOf(player);
+        for (const player of ctx.playersInScope(spec.who)) ctx.goadCreaturesOf(player, forGame);
+        return;
+      }
+      if (spec.filter !== undefined) {
+        ctx.goadMatching(spec.filter, forGame);
         return;
       }
       const ref = spec.target === undefined ? undefined : ctx.targets[spec.target];
-      if (ref?.kind === "player") ctx.goadCreaturesOf(ref.player);
+      if (ref?.kind === "player") ctx.goadCreaturesOf(ref.player, forGame);
+      else if (ref?.kind === "object") ctx.goadCreature(ref, forGame);
       return;
     }
+    case "suspect": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.suspect(target);
+      return;
+    }
+    case "unsuspect": {
+      if (spec.filter !== undefined) {
+        ctx.unsuspect({ filter: spec.filter });
+        return;
+      }
+      const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.unsuspect(target);
+      return;
+    }
+    case "attack-requirement":
+      ctx.addAttackRequirement(spec.filter, spec.otherThanYou);
+      return;
     case "impulse-exile":
       ctx.impulseExile(amountValue(spec.amount, ctx), spec.duration, spec.castOnly === true, {
         choose: spec.choose,
