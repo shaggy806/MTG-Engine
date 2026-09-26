@@ -163,6 +163,7 @@ import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
+import _poolVolcanicVillain from "../pool/volcanic-villain.js";
 import _poolWallOfRunes from "../pool/wall-of-runes.js";
 import _poolWardenOfGeometries from "../pool/warden-of-geometries.js";
 import _poolWardscaleCrocodile from "../pool/wardscale-crocodile.js";
@@ -338,6 +339,7 @@ const shard: CardShard = {
     _poolVandalize,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,
+    _poolVolcanicVillain,
     _poolWallOfRunes,
     _poolWardenOfGeometries,
     _poolWardscaleCrocodile,

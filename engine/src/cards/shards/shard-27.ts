@@ -52,6 +52,7 @@ import _poolErtaiWizardAdept from "../pool/ertai-wizard-adept.js";
 import _poolEsperCharm from "../pool/esper-charm.js";
 import _poolEssenceScatter from "../pool/essence-scatter.js";
 import _poolExpedite from "../pool/expedite.js";
+import _poolExtremisElite from "../pool/extremis-elite.js";
 import _poolFalseDefeat from "../pool/false-defeat.js";
 import _poolFellMire from "../pool/fell-mire.js";
 import _poolFeralInvocation from "../pool/feral-invocation.js";
@@ -222,6 +223,7 @@ const shard: CardShard = {
     _poolEsperCharm,
     _poolEssenceScatter,
     _poolExpedite,
+    _poolExtremisElite,
     _poolFalseDefeat,
     _poolFellMire,
     _poolFeralInvocation,

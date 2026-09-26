@@ -182,6 +182,7 @@ import _poolYouthfulKnight from "../pool/youthful-knight.js";
 import _poolYouthfulValkyrie from "../pool/youthful-valkyrie.js";
 import _poolZhaoTheSeethingFlame from "../pool/zhao-the-seething-flame.js";
 import _tokensLifelinkSoldierToken from "../tokens/lifelink-soldier-token.js";
+import _tokensMerfolkToken from "../tokens/merfolk-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -366,6 +367,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensLifelinkSoldierToken,
+    _tokensMerfolkToken,
   ],
 };
 

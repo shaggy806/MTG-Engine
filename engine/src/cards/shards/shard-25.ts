@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-titan.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
 import _poolAncientGrudge from "../pool/ancient-grudge.js";
 import _poolAquusSteed from "../pool/aquus-steed.js";
@@ -158,6 +159,7 @@ import _poolTitanHunter from "../pool/titan-hunter.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
 import _poolUltimoCivilizationsEnd from "../pool/ultimo-civilizations-end.js";
+import _poolUltronDrone from "../pool/ultron-drone.js";
 import _poolUndercitySewers from "../pool/undercity-sewers.js";
 import _poolUndergroundSea from "../pool/underground-sea.js";
 import _poolUnleashFury from "../pool/unleash-fury.js";
@@ -182,6 +184,7 @@ import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbominationTerrifyingTitan,
     _poolAltarOfDementia,
     _poolAncientGrudge,
     _poolAquusSteed,
@@ -337,6 +340,7 @@ const shard: CardShard = {
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
     _poolUltimoCivilizationsEnd,
+    _poolUltronDrone,
     _poolUndercitySewers,
     _poolUndergroundSea,
     _poolUnleashFury,

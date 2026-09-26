@@ -173,6 +173,7 @@ import _poolTurtleSeals from "../pool/turtle-seals.js";
 import _poolTwinscrollShaman from "../pool/twinscroll-shaman.js";
 import _poolTwistedExperiment from "../pool/twisted-experiment.js";
 import _poolUlvenwaldMysteries from "../pool/ulvenwald-mysteries.js";
+import _poolUnlivingLegionnaire from "../pool/unliving-legionnaire.js";
 import _poolUnmake from "../pool/unmake.js";
 import _poolUnrulyCatapult from "../pool/unruly-catapult.js";
 import _poolVenerableMonk from "../pool/venerable-monk.js";
@@ -368,6 +369,7 @@ const shard: CardShard = {
     _poolTwinscrollShaman,
     _poolTwistedExperiment,
     _poolUlvenwaldMysteries,
+    _poolUnlivingLegionnaire,
     _poolUnmake,
     _poolUnrulyCatapult,
     _poolVenerableMonk,

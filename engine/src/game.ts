@@ -7091,16 +7091,51 @@ export class Game {
       const mod = this.abilityCostModificationFor(sourceId);
       generic += mod.increaseGeneric - mod.reduceGeneric;
     }
-    return {
-      cost: {
-        colored: parsed.colored,
-        colorless: parsed.colorless,
-        generic: Math.max(0, generic),
-        x: 0,
-        hybrid: parsed.hybrid,
-      },
-      chosenX,
+    const cost: ManaCost = {
+      colored: parsed.colored,
+      colorless: parsed.colorless,
+      generic: Math.max(0, generic),
+      x: 0,
+      hybrid: parsed.hybrid,
     };
+    return { cost: ability.powerUp === true ? this.poweredUp(cost, sourceId) : cost, chosenX };
+  }
+
+  /**
+   * A power-up ability's cost (rule 702.193a): less by its permanent's mana
+   * cost while that permanent is on the battlefield the turn it entered.
+   * Generic reduces generic, each coloured or colourless symbol a symbol of
+   * its kind, and what finds none comes off the generic part (702.193b,
+   * rules 118.7a–d). A hybrid symbol reduces by the half its controller
+   * chooses (118.7e): a colour the cost still has a symbol of, coloured or
+   * hybrid — a coloured symbol gone is never worse for them than a generic
+   * one — and otherwise its generic half, or one generic. A Phyrexian symbol
+   * reduces by its colour (118.7f), and {X} by nothing, being 0 on the
+   * battlefield.
+   */
+  private poweredUp(cost: ManaCost, sourceId: ObjectId): ManaCost {
+    const source = this.state.objects[sourceId];
+    if (source === undefined || source.zone !== "battlefield") return cost;
+    if (source.enteredBattlefieldOnTurn !== this.state.turn.number) return cost;
+    const printed = this.registry.get(printedCardName(source)).manaCost;
+    if (printed === null) return cost;
+    const by = parseManaCost(printed);
+    const colors = { ...by.colored };
+    let generic = by.generic;
+    const inCost = (color: Color): boolean =>
+      cost.colored[color] > colors[color] || cost.hybrid.some((p) => p.some((o) => o.kind === "color" && o.color === color));
+    for (const pip of by.hybrid) {
+      const wanted = pip.find((option) => option.kind === "color" && inCost(option.color));
+      const color = wanted ?? pip.find((option) => option.kind === "color" && pip.some((o) => o.kind === "phyrexian"));
+      const twobrid = pip.find((option) => option.kind === "generic");
+      if (color?.kind === "color") colors[color.color] += 1;
+      else if (twobrid?.kind === "generic") generic += twobrid.amount;
+      else generic += 1;
+    }
+    const colorless = Math.min(by.colorless, cost.colorless);
+    return reduceManaCost({ ...cost, colorless: cost.colorless - colorless }, generic + by.colorless - colorless, [
+      { colors, coloredOnly: false },
+    ]);
   }
 
   /** What `abilityCostModification` statics on the battlefield do to the
@@ -7206,9 +7241,12 @@ export class Game {
     ) {
       return `${def.name}'s ability has already been activated this turn`;
     }
-    // Exhaust: once for as long as this object exists.
-    if (ability.exhaust === true && (source.exhaustedAbilities ?? []).includes(abilityIndex)) {
-      return `${def.name}'s exhaust ability has already been activated`;
+    // Exhaust and power-up: once for as long as this object exists.
+    if (
+      (ability.exhaust === true || ability.powerUp === true) &&
+      (source.exhaustedAbilities ?? []).includes(abilityIndex)
+    ) {
+      return `${def.name}'s ability can be activated only once, and has been`;
     }
     if (ability.loyaltyCost !== undefined) {
       // Loyalty ability (rule 606): sorcery-speed, once per permanent per turn,
@@ -7444,7 +7482,7 @@ export class Game {
         abilityIndex,
       ];
     }
-    if (ability.exhaust === true) {
+    if (ability.exhaust === true || ability.powerUp === true) {
       source.exhaustedAbilities = [...(source.exhaustedAbilities ?? []), abilityIndex];
     }
     if (ability.loyaltyCost !== undefined) {
@@ -7823,7 +7861,8 @@ export class Game {
           ability.cost.payEnergy !== undefined ||
           ability.cost.exileSelf === true ||
           ability.cost.discardHand === true ||
-          ability.exhaust === true
+          ability.exhaust === true ||
+          ability.powerUp === true
         ) {
           return;
         }

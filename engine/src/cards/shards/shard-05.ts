@@ -178,6 +178,7 @@ import _tokensDeathtouchSnakeToken from "../tokens/deathtouch-snake-token.js";
 import _tokensHumanSoldierToken from "../tokens/human-soldier-token.js";
 import _tokensInsectTokenFlyingHaste from "../tokens/insect-token-flying-haste.js";
 import _tokensRatTokenVren from "../tokens/rat-token-vren.js";
+import _tokensRobotVillainToken from "../tokens/robot-villain-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _tokensHumanSoldierToken,
     _tokensInsectTokenFlyingHaste,
     _tokensRatTokenVren,
+    _tokensRobotVillainToken,
   ],
 };
 

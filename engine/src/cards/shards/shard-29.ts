@@ -94,6 +94,7 @@ import _poolNullBrooch from "../pool/null-brooch.js";
 import _poolOjerAxonilDeepestMight from "../pool/ojer-axonil-deepest-might.js";
 import _poolOldGhastbark from "../pool/old-ghastbark.js";
 import _poolOnyxMage from "../pool/onyx-mage.js";
+import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
 import _poolPlatedSlagwurm from "../pool/plated-slagwurm.js";
 import _poolPrairieStream from "../pool/prairie-stream.js";
@@ -114,6 +115,7 @@ import _poolSavaiTriome from "../pool/savai-triome.js";
 import _poolScarlandThrinax from "../pool/scarland-thrinax.js";
 import _poolScatterArc from "../pool/scatter-arc.js";
 import _poolSeaSpirit from "../pool/sea-spirit.js";
+import _poolSerpentSpecialist from "../pool/serpent-specialist.js";
 import _poolShadowcloakVampire from "../pool/shadowcloak-vampire.js";
 import _poolShockingSharpshooter from "../pool/shocking-sharpshooter.js";
 import _poolSimicGrowthChamber from "../pool/simic-growth-chamber.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolOjerAxonilDeepestMight,
     _poolOldGhastbark,
     _poolOnyxMage,
+    _poolPetAvengers,
     _poolPhalanxVanguard,
     _poolPlatedSlagwurm,
     _poolPrairieStream,
@@ -272,6 +275,7 @@ const shard: CardShard = {
     _poolScarlandThrinax,
     _poolScatterArc,
     _poolSeaSpirit,
+    _poolSerpentSpecialist,
     _poolShadowcloakVampire,
     _poolShockingSharpshooter,
     _poolSimicGrowthChamber,

@@ -139,6 +139,28 @@ export const station = (text: string): ActivatedAbility => ({
 });
 
 /**
+ * Power-up (rule 702.193a): "Power-up — [Cost]: [Effect]" means "[Cost]:
+ * [Effect]. If this permanent entered this turn, this ability's cost is
+ * reduced by this permanent's mana cost. Activate this ability only once."
+ * No timing restriction of its own. `mana` is the printed cost; the
+ * reduction is worked out as it's activated (`Game.poweredUp`). `text` is
+ * the printed line, reminder text and all.
+ */
+export const powerUp = (
+  mana: string,
+  effect: EffectSpec,
+  text: string,
+  targets: readonly TargetSpec[] = [],
+): ActivatedAbility => ({
+  cost: { mana, tap: false },
+  targets,
+  effect,
+  resolve: null,
+  powerUp: true,
+  text,
+});
+
+/**
  * A station symbol (rule 721.2): a static ability giving its permanent what
  * the symbol's striation holds while it has `at` or more charge counters —
  * abilities (721.2a), and with a power/toughness box, being a creature with

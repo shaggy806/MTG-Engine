@@ -23,6 +23,7 @@ import _poolBrimstoneTrebuchet from "../pool/brimstone-trebuchet.js";
 import _poolBrotherhoodRegalia from "../pool/brotherhood-regalia.js";
 import _poolBurningTreeEmissary from "../pool/burning-tree-emissary.js";
 import _poolCallOfTheHerd from "../pool/call-of-the-herd.js";
+import _poolCaptainMarvelEarthsProtector from "../pool/captain-marvel-earths-protector.js";
 import _poolCarrionHowler from "../pool/carrion-howler.js";
 import _poolCatharticAdept from "../pool/cathartic-adept.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
@@ -199,6 +200,7 @@ const shard: CardShard = {
     _poolBrotherhoodRegalia,
     _poolBurningTreeEmissary,
     _poolCallOfTheHerd,
+    _poolCaptainMarvelEarthsProtector,
     _poolCarrionHowler,
     _poolCatharticAdept,
     _poolColdWaterSnapper,

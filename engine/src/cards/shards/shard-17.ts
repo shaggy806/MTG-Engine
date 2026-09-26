@@ -96,6 +96,7 @@ import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
 import _poolMagmaJet from "../pool/magma-jet.js";
 import _poolMinnWilyIllusionist from "../pool/minn-wily-illusionist.js";
 import _poolMistgatePathway from "../pool/mistgate-pathway.js";
+import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
 import _poolMomentOfTriumph from "../pool/moment-of-triumph.js";
 import _poolMonkIdealist from "../pool/monk-idealist.js";
 import _poolNemaSiltlurker from "../pool/nema-siltlurker.js";
@@ -283,6 +284,7 @@ const shard: CardShard = {
     _poolMagmaJet,
     _poolMinnWilyIllusionist,
     _poolMistgatePathway,
+    _poolMollyHayesRunaway,
     _poolMomentOfTriumph,
     _poolMonkIdealist,
     _poolNemaSiltlurker,

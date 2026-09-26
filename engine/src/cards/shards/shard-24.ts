@@ -102,6 +102,7 @@ import _poolMireInMisery from "../pool/mire-in-misery.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
+import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
 import _poolOgreWarrior from "../pool/ogre-warrior.js";
 import _poolOnTheJob from "../pool/on-the-job.js";
 import _poolParcelMyr from "../pool/parcel-myr.js";
@@ -169,6 +170,7 @@ import _poolYotianDissident from "../pool/yotian-dissident.js";
 import _poolZephyrSprite from "../pool/zephyr-sprite.js";
 import _poolZodiacGoat from "../pool/zodiac-goat.js";
 import _tokensFrogLizardToken from "../tokens/frog-lizard-token.js";
+import _tokensHeroToken from "../tokens/hero-token.js";
 import _tokensSquidToken from "../tokens/squid-token.js";
 
 const shard: CardShard = {
@@ -272,6 +274,7 @@ const shard: CardShard = {
     _poolMorgueToad,
     _poolNarstadScrapper,
     _poolNicolBolasTheRavager,
+    _poolNinjaOfTheHand,
     _poolOgreWarrior,
     _poolOnTheJob,
     _poolParcelMyr,
@@ -341,6 +344,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensFrogLizardToken,
+    _tokensHeroToken,
     _tokensSquidToken,
   ],
 };

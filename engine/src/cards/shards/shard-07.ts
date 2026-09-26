@@ -18,6 +18,7 @@ import _poolBlazingHellhound from "../pool/blazing-hellhound.js";
 import _poolBlightedFen from "../pool/blighted-fen.js";
 import _poolBloodCelebrant from "../pool/blood-celebrant.js";
 import _poolBojukaBog from "../pool/bojuka-bog.js";
+import _poolBoldBiochemist from "../pool/bold-biochemist.js";
 import _poolBronzebeakMoa from "../pool/bronzebeak-moa.js";
 import _poolChildOfAlara from "../pool/child-of-alara.js";
 import _poolChishiroTheShatteredBlade from "../pool/chishiro-the-shattered-blade.js";
@@ -65,6 +66,7 @@ import _poolHalfElfMonk from "../pool/half-elf-monk.js";
 import _poolHandOfDeath from "../pool/hand-of-death.js";
 import _poolHapatraVizierOfPoisons from "../pool/hapatra-vizier-of-poisons.js";
 import _poolHeartwoodGiant from "../pool/heartwood-giant.js";
+import _poolHerculesPrinceOfPower from "../pool/hercules-prince-of-power.js";
 import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
 import _poolHighlandLake from "../pool/highland-lake.js";
 import _poolIdyllicBeachfront from "../pool/idyllic-beachfront.js";
@@ -140,6 +142,7 @@ import _poolSepulcherGhoul from "../pool/sepulcher-ghoul.js";
 import _poolSerrasBlessing from "../pool/serras-blessing.js";
 import _poolSeshiroTheAnointed from "../pool/seshiro-the-anointed.js";
 import _poolShadowbeastSighting from "../pool/shadowbeast-sighting.js";
+import _poolSheHulkJadeDefender from "../pool/she-hulk-jade-defender.js";
 import _poolSimicCharm from "../pool/simic-charm.js";
 import _poolSkyshroudClaim from "../pool/skyshroud-claim.js";
 import _poolSkyshroudPoacher from "../pool/skyshroud-poacher.js";
@@ -206,6 +209,7 @@ const shard: CardShard = {
     _poolBlightedFen,
     _poolBloodCelebrant,
     _poolBojukaBog,
+    _poolBoldBiochemist,
     _poolBronzebeakMoa,
     _poolChildOfAlara,
     _poolChishiroTheShatteredBlade,
@@ -253,6 +257,7 @@ const shard: CardShard = {
     _poolHandOfDeath,
     _poolHapatraVizierOfPoisons,
     _poolHeartwoodGiant,
+    _poolHerculesPrinceOfPower,
     _poolHermiticNautilus,
     _poolHighlandLake,
     _poolIdyllicBeachfront,
@@ -328,6 +333,7 @@ const shard: CardShard = {
     _poolSerrasBlessing,
     _poolSeshiroTheAnointed,
     _poolShadowbeastSighting,
+    _poolSheHulkJadeDefender,
     _poolSimicCharm,
     _poolSkyshroudClaim,
     _poolSkyshroudPoacher,

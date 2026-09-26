@@ -15,6 +15,7 @@ import _poolBalaGedSanctuary from "../pool/bala-ged-sanctuary.js";
 import _poolBallistaSquad from "../pool/ballista-squad.js";
 import _poolBeastmasterAscension from "../pool/beastmaster-ascension.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
+import _poolBrawnAmadeusCho from "../pool/brawn-amadeus-cho.js";
 import _poolBronzeWalrus from "../pool/bronze-walrus.js";
 import _poolBurstOfSpeed from "../pool/burst-of-speed.js";
 import _poolCacklingFiend from "../pool/cackling-fiend.js";
@@ -169,6 +170,7 @@ const shard: CardShard = {
     _poolBallistaSquad,
     _poolBeastmasterAscension,
     _poolBoonOfEmrakul,
+    _poolBrawnAmadeusCho,
     _poolBronzeWalrus,
     _poolBurstOfSpeed,
     _poolCacklingFiend,

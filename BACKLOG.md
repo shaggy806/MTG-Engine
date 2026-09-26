@@ -86,8 +86,13 @@ that one card is the reason the deck exists.
   AUTHORING §15 and the limitation ledger.
 - **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
   which changes how its line works. The scaffolder leaves them to author:
-  - Power-up (37 cards): once only, and cheaper by the card's mana cost the turn it entered.
-    It is small: a flag beside `exhaust` plus that cost reduction.
+  - Power-up is built, and 21 of its 37 cards are authored. Blocked: Hulk, Gamma Goliath and
+    Wonder Man (effects on other power-up abilities), Kang the Conqueror (no power-up during
+    its extra turn), Thanos, the Mad Titan (an odd-or-even choice), Iron Fist (divided damage),
+    Loki Laufeyson (a copy's new targets), Nick Fury (transforming a card it finds),
+    Quicksilver (starting in play), Immortus, Donald Blake (a creature-type change that sets
+    no P/T) and White Tiger (the Tiger God's blocking restriction). Not yet checked: Black
+    Panther, Most Dangerous, Human Torch, Jack of Hearts, Shang-Chi and Stature.
   - Max speed (34): needs `mechanic:speed`.
   - A Case's To solve and Solved (13 each).
   - Forecast (11).

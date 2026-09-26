@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbbeyGriffin from "../pool/abbey-griffin.js";
 import _poolAccordersShield from "../pool/accorders-shield.js";
+import _poolAerialDoombot from "../pool/aerial-doombot.js";
 import _poolAerialResponder from "../pool/aerial-responder.js";
 import _poolAgentOfKotis from "../pool/agent-of-kotis.js";
 import _poolAkroanMastiff from "../pool/akroan-mastiff.js";
@@ -160,6 +161,7 @@ import _poolUkudCobra from "../pool/ukud-cobra.js";
 import _poolUnhinge from "../pool/unhinge.js";
 import _poolValiantGuard from "../pool/valiant-guard.js";
 import _poolViashinoSandsprinter from "../pool/viashino-sandsprinter.js";
+import _poolVivVisionTeenSynthezoid from "../pool/viv-vision-teen-synthezoid.js";
 import _poolVoiceOfMany from "../pool/voice-of-many.js";
 import _poolVoidwielder from "../pool/voidwielder.js";
 import _poolVulshokMorningstar from "../pool/vulshok-morningstar.js";
@@ -181,6 +183,7 @@ const shard: CardShard = {
   pool: [
     _poolAbbeyGriffin,
     _poolAccordersShield,
+    _poolAerialDoombot,
     _poolAerialResponder,
     _poolAgentOfKotis,
     _poolAkroanMastiff,
@@ -336,6 +339,7 @@ const shard: CardShard = {
     _poolUnhinge,
     _poolValiantGuard,
     _poolViashinoSandsprinter,
+    _poolVivVisionTeenSynthezoid,
     _poolVoiceOfMany,
     _poolVoidwielder,
     _poolVulshokMorningstar,

@@ -115,6 +115,7 @@ import _poolSeatOfTheSynod from "../pool/seat-of-the-synod.js";
 import _poolSeleniaDarkAngel from "../pool/selenia-dark-angel.js";
 import _poolSerrasEmbrace from "../pool/serras-embrace.js";
 import _poolShamblingGhoul from "../pool/shambling-ghoul.js";
+import _poolSheHulkAttorneyAtLaw from "../pool/she-hulk-attorney-at-law.js";
 import _poolShelteredThicket from "../pool/sheltered-thicket.js";
 import _poolShopkeepersBane from "../pool/shopkeepers-bane.js";
 import _poolSilverbackShaman from "../pool/silverback-shaman.js";
@@ -280,6 +281,7 @@ const shard: CardShard = {
     _poolSeleniaDarkAngel,
     _poolSerrasEmbrace,
     _poolShamblingGhoul,
+    _poolSheHulkAttorneyAtLaw,
     _poolShelteredThicket,
     _poolShopkeepersBane,
     _poolSilverbackShaman,

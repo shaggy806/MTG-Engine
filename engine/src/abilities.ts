@@ -155,6 +155,11 @@ export interface ActivatedAbility {
    * `GameObject.exhaustedAbilities`, which a zone change clears — the
    * permanent that comes back is a new object (rule 400.7). */
   readonly exhaust?: boolean;
+  /** Power-up (rule 702.193a): "Activate this ability only once", tracked as
+   * `exhaust` is — and while its permanent is on the battlefield the turn it
+   * entered, the ability costs less by that permanent's mana cost (702.193b,
+   * rule 118.7 — see `Game.poweredUp`). */
+  readonly powerUp?: boolean;
   /** Boast (rule 702.135 — Dragonkin Berserker): activatable only if this
    * creature attacked this turn, and only once each turn. Implies
    * `oncePerTurn`; the "attacked this turn" half reads

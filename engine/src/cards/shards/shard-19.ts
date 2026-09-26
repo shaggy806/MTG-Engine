@@ -51,6 +51,7 @@ import _poolGiantSpider from "../pool/giant-spider.js";
 import _poolGildedLotus from "../pool/gilded-lotus.js";
 import _poolGlassGolem from "../pool/glass-golem.js";
 import _poolGoblinGlider from "../pool/goblin-glider.js";
+import _poolGoliathMassManipulator from "../pool/goliath-mass-manipulator.js";
 import _poolGreatForestDruid from "../pool/great-forest-druid.js";
 import _poolGreatHart from "../pool/great-hart.js";
 import _poolGreelsCaress from "../pool/greels-caress.js";
@@ -229,6 +230,7 @@ const shard: CardShard = {
     _poolGildedLotus,
     _poolGlassGolem,
     _poolGoblinGlider,
+    _poolGoliathMassManipulator,
     _poolGreatForestDruid,
     _poolGreatHart,
     _poolGreelsCaress,
