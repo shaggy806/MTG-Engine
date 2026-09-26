@@ -180,7 +180,10 @@ export function whyCannotAttack(
       : "attackers can only attack an opponent who hasn't already lost";
   }
   const defendingPlayer = defendingPlayerOf(state, target);
-  if (restrictions.has("cant-attack-owner") && defendingPlayer === object.owner) {
+  // The owner, not their planeswalkers: a creature attacks a player or a
+  // planeswalker (rule 508.1b), and "can't attack its owner" names only the
+  // player (Alexios, Deimos of Kosmos's ruling).
+  if (restrictions.has("cant-attack-owner") && target === object.owner) {
     return `${def.name} can't attack its owner`;
   }
   const nearest = nearestOpponentRule(state, registry, player);

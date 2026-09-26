@@ -203,8 +203,11 @@ export type CombatRestriction =
    * when they can — a requirement (rule 509.1c), weighed against the rest
    * as the declaration is checked. */
   | "must-be-blocked-if-able"
-  /** "Can't attack its owner" — attacking a planeswalker its owner controls
-   * included. */
+  /** "Can't attack its owner" — the player only: a planeswalker its owner
+   * controls may still be attacked (Alexios, Deimos of Kosmos's ruling;
+   * rule 508.1b — a creature attacks a player *or* a planeswalker).
+   * Xantcha's "can't attack its owner or planeswalkers its owner controls"
+   * would be a restriction of its own. */
   | "cant-attack-owner";
 
 /**

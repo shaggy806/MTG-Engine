@@ -1896,8 +1896,11 @@ anthem, the keyword grant and the granted trigger like any other creature.
   with menace) whenever the defender has one to spare — also a rule 509.1c
   requirement, weighed as the declaration is checked (`ifAblePlan`; the
   creatures Lure needs stay with Lure). `"cant-attack-owner"` keeps a stolen
-  creature off its owner and their planeswalkers. The same list, until end of
-  turn, is what the `restrict` effect imposes (§6).
+  creature off its owner — the player only, so it may still attack their
+  planeswalkers (Alexios, Deimos of Kosmos's ruling; Xantcha's "or
+  planeswalkers its owner controls" would need a restriction of its own).
+  The same list, until end of turn, is what the `restrict` effect imposes
+  (§6).
 - `combatDamageByToughness: "always" | "if-toughness-greater"` — the affected
   creatures assign combat damage equal to their **toughness** rather than
   their power (Doran, the Siege Tower with `affects: { scope: "all-creatures"

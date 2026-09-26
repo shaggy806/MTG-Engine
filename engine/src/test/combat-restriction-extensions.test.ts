@@ -234,6 +234,20 @@ describe("who can be attacked", () => {
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     expect(defendersFor(game, B, hound)).toEqual([C]);
   });
+
+  // "Can't attack its owner" names the player, not their planeswalkers
+  // (Alexios, Deimos of Kosmos's ruling; rule 508.1b).
+  it("can still attack a planeswalker its owner controls", () => {
+    const { game } = setUp([A, B]);
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
+    const hound = ready(game, HOUND, A);
+    const walker = ready(game, "Ajani, Caller of the Pride", A);
+    const source = game.debugSpawn("Island", B, "battlefield");
+    run(game, { kind: "gain-control", target: 0, untilEndOfTurn: false }, source, hound, B);
+    game.state.objects[hound].summoningSick = false;
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    expect(defendersFor(game, B, hound)).toEqual([walker]);
+  });
 });
 
 describe("the nearest opponent in the chosen direction", () => {
