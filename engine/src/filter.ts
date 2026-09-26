@@ -132,6 +132,17 @@ export function compareNum(
   }
 }
 
+/**
+ * An object's supertypes: its card's, less "legendary" for a copy made
+ * "except it isn't legendary" (Miirym, Irenicus's Vile Duplication) — part of
+ * what the copy is (rule 707.9b), so no filter, snapshot or mana origin sees
+ * it as legendary either, not only the legend rule.
+ */
+export function supertypesOf(registry: CardRegistry, object: GameObject): readonly Supertype[] {
+  const printed = registry.get(printedCardName(object)).supertypes;
+  return object.notLegendary === true ? printed.filter((s) => s !== "legendary") : printed;
+}
+
 export interface CardFilter {
   /** Must have ALL of these card types. */
   readonly types?: readonly CardType[];
@@ -628,7 +639,7 @@ export function matchesFilter(
   }
   const name = live !== undefined ? printedCardName(live) : lki!.name;
   if (filter.supertype !== undefined || filter.notSupertype !== undefined) {
-    const supertypes = live !== undefined ? registry.get(name).supertypes : lki!.supertypes;
+    const supertypes = live !== undefined ? supertypesOf(registry, live) : lki!.supertypes;
     if (filter.supertype !== undefined && !supertypes.includes(filter.supertype)) return false;
     if (filter.notSupertype !== undefined && supertypes.includes(filter.notSupertype)) {
       return false;

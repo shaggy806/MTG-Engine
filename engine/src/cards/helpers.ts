@@ -664,6 +664,70 @@ export const triLand = (
     activated: colors.map((c) => manaTapAbility(c)),
   });
 
+/**
+ * A "fast land" (Blackcleave Cliffs, Seachrome Coast, Spirebluff Canal): "This
+ * land enters tapped unless you control two or fewer other lands. {T}: Add
+ * {X} or {Y}." The condition leaves the entering land out of the count, as a
+ * static's condition does (`ConditionOptions.includeSelf`), so it's "not
+ * three or more lands" — its first three land drops come in untapped.
+ */
+export const fastLand = (name: string, colors: readonly [Color, Color]): CardDefinition => {
+  const entry = "This land enters tapped unless you control two or fewer other lands.";
+  return defineCard({
+    name,
+    types: ["land"],
+    text: `${entry}
+{T}: Add {${colors[0]}} or {${colors[1]}}.`,
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: {
+          event: "enters-battlefield",
+          tappedUnless: { kind: "not", of: { kind: "controls", filter: { type: "land" }, atLeast: 3 } },
+        },
+        text: entry,
+      },
+    ],
+    activated: colors.map((c) => manaTapAbility(c)),
+  });
+};
+
+/**
+ * A "Thriving" land (Thriving Isle, Thriving Heath): enters tapped, and as it
+ * enters its controller chooses one of the four colours other than its own;
+ * it taps for its own colour or the chosen one. The choice is asked before it
+ * moves (rule 614.12 — `askEnterChoice`), like Heraldic Banner's.
+ */
+export const thrivingLand = (name: string, color: Color): CardDefinition => {
+  const others = (["W", "U", "B", "R", "G"] as const).filter((c) => c !== color);
+  return defineCard({
+    name,
+    types: ["land"],
+    text:
+      `This land enters tapped. As it enters, choose a color other than ${COLOR_WORD[color].toLowerCase()}.
+` +
+      `{T}: Add {${color}} or one mana of the chosen color.`,
+    chooseOnEnter: others,
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: { event: "enters-battlefield", tapped: true },
+        text: "This land enters tapped.",
+      },
+    ],
+    activated: [
+      manaTapAbility(color),
+      {
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: { kind: "add-mana", mana: "chosen", amount: 1 },
+        resolve: null,
+        text: "{T}: Add one mana of the chosen color.",
+      },
+    ],
+  });
+};
+
 export const enterTappedUnlessLands = (
   name: string,
   atLeast: number,

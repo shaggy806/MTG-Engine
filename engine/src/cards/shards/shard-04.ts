@@ -41,6 +41,7 @@ import _poolDarksteelMyr from "../pool/darksteel-myr.js";
 import _poolDauntlessSurvivor from "../pool/dauntless-survivor.js";
 import _poolDeadbridgeShaman from "../pool/deadbridge-shaman.js";
 import _poolDeafeningClarion from "../pool/deafening-clarion.js";
+import _poolDefile from "../pool/defile.js";
 import _poolDelneyStreetwiseLookout from "../pool/delney-streetwise-lookout.js";
 import _poolDesperateParry from "../pool/desperate-parry.js";
 import _poolDiabolicIntent from "../pool/diabolic-intent.js";
@@ -231,6 +232,7 @@ const shard: CardShard = {
     _poolDauntlessSurvivor,
     _poolDeadbridgeShaman,
     _poolDeafeningClarion,
+    _poolDefile,
     _poolDelneyStreetwiseLookout,
     _poolDesperateParry,
     _poolDiabolicIntent,

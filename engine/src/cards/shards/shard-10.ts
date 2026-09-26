@@ -152,6 +152,7 @@ import _poolSilentArtisan from "../pool/silent-artisan.js";
 import _poolSimplify from "../pool/simplify.js";
 import _poolSpatialContortion from "../pool/spatial-contortion.js";
 import _poolSphinxOfEnlightenment from "../pool/sphinx-of-enlightenment.js";
+import _poolSpirebluffCanal from "../pool/spirebluff-canal.js";
 import _poolSporeCrawler from "../pool/spore-crawler.js";
 import _poolSpringOfEternalPeace from "../pool/spring-of-eternal-peace.js";
 import _poolStaunchThroneguard from "../pool/staunch-throneguard.js";
@@ -346,6 +347,7 @@ const shard: CardShard = {
     _poolSimplify,
     _poolSpatialContortion,
     _poolSphinxOfEnlightenment,
+    _poolSpirebluffCanal,
     _poolSporeCrawler,
     _poolSpringOfEternalPeace,
     _poolStaunchThroneguard,

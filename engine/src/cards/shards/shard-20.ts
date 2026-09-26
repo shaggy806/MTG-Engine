@@ -49,6 +49,7 @@ import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
 import _poolDimirLocket from "../pool/dimir-locket.js";
+import _poolDispel from "../pool/dispel.js";
 import _poolDonatelloWayWithMachines from "../pool/donatello-way-with-machines.js";
 import _poolDoubleCleave from "../pool/double-cleave.js";
 import _poolDoublingSeason from "../pool/doubling-season.js";
@@ -157,6 +158,7 @@ import _poolTheEmperorOfPalamecia from "../pool/the-emperor-of-palamecia.js";
 import _poolTheWhizzerClassicSpeedster from "../pool/the-whizzer-classic-speedster.js";
 import _poolThoughtVessel from "../pool/thought-vessel.js";
 import _poolThrashingBrontodon from "../pool/thrashing-brontodon.js";
+import _poolThrivingHeath from "../pool/thriving-heath.js";
 import _poolTitansStrength from "../pool/titans-strength.js";
 import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTrainingCenter from "../pool/training-center.js";
@@ -167,6 +169,7 @@ import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
 import _poolVulshokBerserker from "../pool/vulshok-berserker.js";
 import _poolWaytaTrainerProdigy from "../pool/wayta-trainer-prodigy.js";
 import _poolWildCantor from "../pool/wild-cantor.js";
+import _poolWillowrushVerge from "../pool/willowrush-verge.js";
 import _poolZagothCrystal from "../pool/zagoth-crystal.js";
 import _poolZephyrNet from "../pool/zephyr-net.js";
 import _tokensFaerieToken from "../tokens/faerie-token.js";
@@ -222,6 +225,7 @@ const shard: CardShard = {
     _poolDeadlyInsect,
     _poolDeadlyRollick,
     _poolDimirLocket,
+    _poolDispel,
     _poolDonatelloWayWithMachines,
     _poolDoubleCleave,
     _poolDoublingSeason,
@@ -330,6 +334,7 @@ const shard: CardShard = {
     _poolTheWhizzerClassicSpeedster,
     _poolThoughtVessel,
     _poolThrashingBrontodon,
+    _poolThrivingHeath,
     _poolTitansStrength,
     _poolTomeBlast,
     _poolTrainingCenter,
@@ -340,6 +345,7 @@ const shard: CardShard = {
     _poolVulshokBerserker,
     _poolWaytaTrainerProdigy,
     _poolWildCantor,
+    _poolWillowrushVerge,
     _poolZagothCrystal,
     _poolZephyrNet,
   ],

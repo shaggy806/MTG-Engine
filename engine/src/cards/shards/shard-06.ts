@@ -53,6 +53,7 @@ import _poolDjinnOfTheLamp from "../pool/djinn-of-the-lamp.js";
 import _poolDrainTheWell from "../pool/drain-the-well.js";
 import _poolDrakusethMawOfFlames from "../pool/drakuseth-maw-of-flames.js";
 import _poolDutifulServants from "../pool/dutiful-servants.js";
+import _poolEmeriaTheSkyRuin from "../pool/emeria-the-sky-ruin.js";
 import _poolEmpyreanEagle from "../pool/empyrean-eagle.js";
 import _poolEshkiTemursRoar from "../pool/eshki-temurs-roar.js";
 import _poolEtheriumSculptor from "../pool/etherium-sculptor.js";
@@ -138,6 +139,7 @@ import _poolSpectralProcession from "../pool/spectral-procession.js";
 import _poolSquirmingMass from "../pool/squirming-mass.js";
 import _poolStormKilnArtist from "../pool/storm-kiln-artist.js";
 import _poolSundownPass from "../pool/sundown-pass.js";
+import _poolSunkenRuins from "../pool/sunken-ruins.js";
 import _poolSwiftwaterCliffs from "../pool/swiftwater-cliffs.js";
 import _poolTakenumaAbandonedMire from "../pool/takenuma-abandoned-mire.js";
 import _poolTeeterpeakAmbusher from "../pool/teeterpeak-ambusher.js";
@@ -224,6 +226,7 @@ const shard: CardShard = {
     _poolDrainTheWell,
     _poolDrakusethMawOfFlames,
     _poolDutifulServants,
+    _poolEmeriaTheSkyRuin,
     _poolEmpyreanEagle,
     _poolEshkiTemursRoar,
     _poolEtheriumSculptor,
@@ -309,6 +312,7 @@ const shard: CardShard = {
     _poolSquirmingMass,
     _poolStormKilnArtist,
     _poolSundownPass,
+    _poolSunkenRuins,
     _poolSwiftwaterCliffs,
     _poolTakenumaAbandonedMire,
     _poolTeeterpeakAmbusher,

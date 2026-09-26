@@ -101,6 +101,7 @@ import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
 import _poolMoanOfTheUnhallowed from "../pool/moan-of-the-unhallowed.js";
 import _poolNimReplica from "../pool/nim-replica.js";
+import _poolNoxiousGearhulk from "../pool/noxious-gearhulk.js";
 import _poolOkaunEyeOfChaos from "../pool/okaun-eye-of-chaos.js";
 import _poolOmenspeaker from "../pool/omenspeaker.js";
 import _poolOnduGreathorn from "../pool/ondu-greathorn.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolMarkerBeetles,
     _poolMoanOfTheUnhallowed,
     _poolNimReplica,
+    _poolNoxiousGearhulk,
     _poolOkaunEyeOfChaos,
     _poolOmenspeaker,
     _poolOnduGreathorn,

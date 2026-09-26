@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1330 already implemented / 3670 missing (marks refreshed 2026-09-26)
+1378 already implemented / 3622 missing (marks refreshed 2026-09-26)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -850,7 +850,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   854  Bloodletter of Aclazotz                  {1}{B}{B}{B}     Creature — Vampire Demon
 [ ]   855  Fiery Emancipation                       {3}{R}{R}{R}     Enchantment
 [x]   856  Murder                                   {1}{B}{B}        Instant
-[ ]   857  Mystic Gate                              {0}              Land
+[x]   857  Mystic Gate                              {0}              Land
 [x]   858  Tear Asunder                             {1}{G}           Instant
 [ ]   859  Tainted Pact                             {1}{B}           Instant
 [ ]   860  Boromir, Warden of the Tower             {2}{W}           Legendary Creature — Human Soldier
@@ -927,51 +927,51 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   931  Caged Sun                                {6}              Artifact
 [x]   932  Peregrine Drake                          {4}{U}           Creature — Drake
 [ ]   933  Evolution Witness                        {2}{G}           Creature — Elf Shaman Mutant
-[ ]   934  Dispel                                   {U}              Instant
-[ ]   935  Bastion Protector                        {2}{W}           Creature — Human Soldier
+[x]   934  Dispel                                   {U}              Instant
+[x]   935  Bastion Protector                        {2}{W}           Creature — Human Soldier
 [ ]   936  Evendo, Waking Haven                     {0}              Land — Planet
 [x]   937  Pull from Tomorrow                       {X}{U}{U}        Instant
 [ ]   938  Kappa Cannoneer                          {5}{U}           Artifact Creature — Turtle Warrior
 [x]   939  Bloodfell Caves                          {0}              Land
-[ ]   940  Thopter Spy Network                      {2}{U}{U}        Enchantment
-[ ]   941  Thoughtcast                              {4}{U}           Sorcery
-[ ]   942  Wilderness Reclamation                   {3}{G}           Enchantment
+[x]   940  Thopter Spy Network                      {2}{U}{U}        Enchantment
+[x]   941  Thoughtcast                              {4}{U}           Sorcery
+[x]   942  Wilderness Reclamation                   {3}{G}           Enchantment
 [ ]   943  Promise of Loyalty                       {4}{W}           Sorcery
-[ ]   944  Archmage of Runes                        {3}{U}{U}        Creature — Giant Wizard
-[ ]   945  Irenicus's Vile Duplication              {3}{U}           Sorcery
-[ ]   946  Stormcatch Mentor                        {U}{R}           Creature — Otter Wizard
+[x]   944  Archmage of Runes                        {3}{U}{U}        Creature — Giant Wizard
+[x]   945  Irenicus's Vile Duplication              {3}{U}           Sorcery
+[x]   946  Stormcatch Mentor                        {U}{R}           Creature — Otter Wizard
 [ ]   947  The Wind Crystal                         {2}{W}{W}        Legendary Artifact
 [ ]   948  Monument to Endurance                    {3}              Artifact
 [ ]   949  Coat of Arms                             {5}              Artifact
 [x]   950  Omnath, Locus of Rage                    {3}{R}{R}{G}{G}  Legendary Creature — Elemental
 [ ]   951  Tezzeret's Gambit                        {3}{U/P}         Sorcery
-[ ]   952  Wastewood Verge                          {0}              Land
+[x]   952  Wastewood Verge                          {0}              Land
 [ ]   953  Dusk // Dawn                             {2}{W}{W} // {3}{W}{W} Sorcery // Sorcery
 [x]   954  Phyrexian Reclamation                    {B}              Enchantment
-[ ]   955  Taurean Mauler                           {2}{R}           Creature — Shapeshifter
+[x]   955  Taurean Mauler                           {2}{R}           Creature — Shapeshifter
 [ ]   956  Desperate Ritual                         {1}{R}           Instant — Arcane
 [x]   957  Unearth                                  {B}              Sorcery
 [ ]   958  Sejiri Shelter // Sejiri Glacier         {2}              Instant // Land
 [ ]   959  Agadeem's Awakening // Agadeem, the Undercrypt {3}              Sorcery // Land
-[ ]   960  Cruel Celebrant                          {W}{B}           Creature — Vampire
-[ ]   961  Sunken Ruins                             {0}              Land
-[ ]   962  Ichor Wellspring                         {2}              Artifact
+[x]   960  Cruel Celebrant                          {W}{B}           Creature — Vampire
+[x]   961  Sunken Ruins                             {0}              Land
+[x]   962  Ichor Wellspring                         {2}              Artifact
 [ ]   963  Chain of Vapor                           {U}              Instant
 [ ]   964  Metallic Mimic                           {2}              Artifact Creature — Shapeshifter
 [x]   965  Crashing Drawbridge                      {2}              Artifact Creature — Wall
 [ ]   966  Devoted Druid                            {1}{G}           Creature — Elf Druid
-[ ]   967  Emeria, the Sky Ruin                     {0}              Land
+[x]   967  Emeria, the Sky Ruin                     {0}              Land
 [x]   968  Archaeomancer                            {2}{U}{U}        Creature — Human Wizard
-[ ]   969  Mindcrank                                {2}              Artifact
+[x]   969  Mindcrank                                {2}              Artifact
 [ ]   970  Alhammarret's Archive                    {5}              Legendary Artifact
 [x]   971  Cabaretti Courtyard                      {0}              Land
 [x]   972  Loxodon Warhammer                        {3}              Artifact — Equipment
-[ ]   973  Cabal Stronghold                         {0}              Land
+[x]   973  Cabal Stronghold                         {0}              Land
 [x]   974  Eerie Interlude                          {2}{W}           Instant
 [ ]   975  Narset, Parter of Veils                  {1}{U}{U}        Legendary Planeswalker — Narset
 [ ]   976  Razorkin Needlehead                      {R}{R}           Creature — Human Assassin
 [ ]   977  Karmic Guide                             {3}{W}{W}        Creature — Angel Spirit
-[ ]   978  Decimate                                 {2}{R}{G}        Sorcery
+[x]   978  Decimate                                 {2}{R}{G}        Sorcery
 [ ]   979  Last March of the Ents                   {6}{G}{G}        Sorcery
 [ ]   980  Moraug, Fury of Akoum                    {4}{R}{R}        Legendary Creature — Minotaur Warrior
 [ ]   981  Inspiring Statuary                       {3}              Artifact
@@ -979,11 +979,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   983  Kardur, Doomscourge                      {2}{B}{R}        Legendary Creature — Demon Berserker
 [ ]   984  Mask of Memory                           {2}              Artifact — Equipment
 [x]   985  Kodama of the East Tree                  {4}{G}{G}        Legendary Creature — Spirit
-[ ]   986  Defile                                   {B}              Instant
+[x]   986  Defile                                   {B}              Instant
 [ ]   987  Approach of the Second Sun               {6}{W}           Sorcery
 [ ]   988  Cut a Deal                               {2}{W}           Sorcery
-[ ]   989  Teleportation Circle                     {3}{W}           Enchantment
-[ ]   990  Moldervine Reclamation                   {3}{B}{G}        Enchantment
+[x]   989  Teleportation Circle                     {3}{W}           Enchantment
+[x]   990  Moldervine Reclamation                   {3}{B}{G}        Enchantment
 [ ]   991  Mirror Entity                            {2}{W}           Creature — Shapeshifter
 [ ]   992  Krosan Verge                             {0}              Land
 [ ]   993  All Is Dust                              {7}              Kindred Sorcery — Eldrazi
@@ -991,18 +991,18 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   995  Mechanized Production                    {2}{U}{U}        Enchantment — Aura
 [ ]   996  Mines of Moria                           {0}              Legendary Land
 [x]   997  Sythis, Harvest's Hand                   {G}{W}           Legendary Enchantment Creature — Nymph
-[ ]   998  Cyberdrive Awakener                      {5}{U}           Artifact Creature — Construct
+[x]   998  Cyberdrive Awakener                      {5}{U}           Artifact Creature — Construct
 [ ]   999  Windborn Muse                            {3}{W}           Creature — Spirit
 [x]  1000  Strike It Rich                           {R}              Sorcery
 [ ]  1001  Destiny Spinner                          {1}{G}           Enchantment Creature — Human
 [x]  1002  Enchantress's Presence                   {2}{G}           Enchantment
-[ ]  1003  Noxious Gearhulk                         {4}{B}{B}        Artifact Creature — Construct
+[x]  1003  Noxious Gearhulk                         {4}{B}{B}        Artifact Creature — Construct
 [x]  1004  Gavony Township                          {0}              Land
 [ ]  1005  Torbran, Thane of Red Fell               {1}{R}{R}{R}     Legendary Creature — Dwarf Noble
-[ ]  1006  Fumigate                                 {3}{W}{W}        Sorcery
+[x]  1006  Fumigate                                 {3}{W}{W}        Sorcery
 [ ]  1007  Combat Celebrant                         {2}{R}           Creature — Human Warrior
-[ ]  1008  Thriving Isle                            {0}              Land
-[ ]  1009  Castle Vantress                          {0}              Land
+[x]  1008  Thriving Isle                            {0}              Land
+[x]  1009  Castle Vantress                          {0}              Land
 [ ]  1009  Spellskite                               {2}              Artifact Creature — Phyrexian Horror
 [x]  1011  Dismal Backwater                         {0}              Land
 [ ]  1012  Annie Joins Up                           {1}{R}{G}{W}     Legendary Enchantment
@@ -1011,13 +1011,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1015  Rewind                                   {2}{U}{U}        Instant
 [x]  1016  Managorger Hydra                         {2}{G}           Creature — Hydra
 [ ]  1017  Necromancy                               {2}{B}           Enchantment
-[ ]  1018  Arasta of the Endless Web                {2}{G}{G}        Legendary Enchantment Creature — Spider
+[x]  1018  Arasta of the Endless Web                {2}{G}{G}        Legendary Enchantment Creature — Spider
 [ ]  1019  Nyxbloom Ancient                         {4}{G}{G}{G}     Enchantment Creature — Elemental
 [ ]  1020  Bloodghast                               {B}{B}           Creature — Vampire Spirit
 [ ]  1021  Omniscience                              {7}{U}{U}{U}     Enchantment
-[ ]  1022  Rivendell                                {0}              Legendary Land
+[x]  1022  Rivendell                                {0}              Legendary Land
 [x]  1023  Dictate of Erebos                        {3}{B}{B}        Enchantment
-[ ]  1024  Serra Ascendant                          {W}              Creature — Human Monk
+[x]  1024  Serra Ascendant                          {W}              Creature — Human Monk
 [x]  1025  Manifold Key                             {1}              Artifact
 [x]  1026  Inexorable Tide                          {3}{U}{U}        Enchantment
 [ ]  1027  Steelshaper's Gift                       {W}              Sorcery
@@ -1041,7 +1041,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1045  Charismatic Conqueror                    {1}{W}           Creature — Vampire Soldier
 [ ]  1046  Wayward Swordtooth                       {2}{G}           Creature — Dinosaur
 [ ]  1047  Chatterfang, Squirrel General            {2}{G}           Legendary Creature — Squirrel Warrior
-[ ]  1048  Willowrush Verge                         {0}              Land
+[x]  1048  Willowrush Verge                         {0}              Land
 [ ]  1049  Syphon Mind                              {3}{B}           Sorcery
 [ ]  1050  Roiling Regrowth                         {2}{G}           Instant
 [x]  1051  Barren Moor                              {0}              Land
@@ -1064,7 +1064,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1068  The Reality Chip                         {1}{U}           Legendary Artifact Creature — Equipment Jellyfish
 [ ]  1069  Witch's Clinic                           {0}              Land
 [ ]  1070  Sakashima of a Thousand Faces            {3}{U}           Legendary Creature — Human Rogue
-[ ]  1071  Blackcleave Cliffs                       {0}              Land
+[x]  1071  Blackcleave Cliffs                       {0}              Land
 [x]  1072  Jhoira, Weatherlight Captain             {2}{U}{R}        Legendary Creature — Human Artificer
 [ ]  1073  Pest Infestation                         {X}{X}{G}        Sorcery
 [x]  1074  Ghalta, Stampede Tyrant                  {5}{G}{G}{G}     Legendary Creature — Elder Dinosaur
@@ -1080,13 +1080,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1084  Genji Glove                              {5}              Artifact — Equipment
 [ ]  1085  Mesmeric Orb                             {2}              Artifact
 [x]  1086  Krenko, Mob Boss                         {2}{R}{R}        Legendary Creature — Goblin Warrior
-[ ]  1087  Castle Embereth                          {0}              Land
+[x]  1087  Castle Embereth                          {0}              Land
 [ ]  1088  Jace, Wielder of Mysteries               {1}{U}{U}{U}     Legendary Planeswalker — Jace
 [ ]  1089  Stoneforge Mystic                        {1}{W}           Creature — Kor Artificer
-[ ]  1090  Thriving Heath                           {0}              Land
+[x]  1090  Thriving Heath                           {0}              Land
 [ ]  1091  Archon of Cruelty                        {6}{B}{B}        Creature — Archon
 [ ]  1092  Slip Out the Back                        {U}              Instant
-[ ]  1093  Radiant Summit                           {0}              Land — Mountain Plains
+[x]  1093  Radiant Summit                           {0}              Land — Mountain Plains
 [x]  1094  Thornwood Falls                          {0}              Land
 [ ]  1095  Anim Pakal, Thousandth Moon              {1}{R}{W}        Legendary Creature — Human Soldier
 [ ]  1096  Ugin, the Ineffable                      {6}              Legendary Planeswalker — Ugin
@@ -1166,10 +1166,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1171  Darkbore Pathway // Slitherbore Pathway  {0}              Land // Land
 [ ]  1172  Kambal, Profiteering Mayor               {1}{W}{B}        Legendary Creature — Human Advisor
 [ ]  1173  The Shire                                {0}              Legendary Land
-[ ]  1174  Seachrome Coast                          {0}              Land
-[ ]  1175  Concealed Courtyard                      {0}              Land
+[x]  1174  Seachrome Coast                          {0}              Land
+[x]  1175  Concealed Courtyard                      {0}              Land
 [ ]  1176  Tarrian's Soulcleaver                    {1}              Legendary Artifact — Equipment
-[ ]  1177  Thriving Grove                           {0}              Land
+[x]  1177  Thriving Grove                           {0}              Land
 [x]  1178  Mikokoro, Center of the Sea              {0}              Legendary Land
 [ ]  1179  The Black Gate                           {0}              Legendary Land — Gate
 [ ]  1180  Triumph of the Hordes                    {2}{G}{G}        Sorcery
@@ -1183,7 +1183,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1188  The Darkness Crystal                     {2}{B}{B}        Legendary Artifact
 [ ]  1189  Siren Stormtamer                         {U}              Creature — Siren Pirate Wizard
 [ ]  1190  Badgermole Cub                           {1}{G}           Creature — Badger Mole
-[ ]  1191  Fire-Lit Thicket                         {0}              Land
+[x]  1191  Fire-Lit Thicket                         {0}              Land
 [ ]  1192  Neheb, the Eternal                       {3}{R}{R}        Legendary Creature — Zombie Minotaur Warrior
 [ ]  1193  Starfield Mystic                         {1}{W}           Creature — Human Cleric
 [ ]  1194  Insatiable Avarice                       {B}              Sorcery
@@ -1195,7 +1195,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1200  Notion Thief                             {2}{U}{B}        Creature — Human Rogue
 [ ]  1201  Moonshaker Cavalry                       {5}{W}{W}{W}     Creature — Spirit Knight
 [ ]  1202  Wheel of Misfortune                      {2}{R}           Sorcery
-[ ]  1203  Thriving Bluff                           {0}              Land
+[x]  1203  Thriving Bluff                           {0}              Land
 [ ]  1204  Mount Doom                               {0}              Legendary Land
 [x]  1205  Expedite                                 {R}              Instant
 [ ]  1206  Artisan of Kozilek                       {9}              Creature — Eldrazi
@@ -1213,7 +1213,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1218  Glaring Fleshraker                       {2}{C}           Creature — Eldrazi Drone
 [ ]  1219  Cascading Cataracts                      {0}              Land
 [ ]  1220  Midgar, City of Mako // Reactor Raid     {2}{B}           Land — Town // Sorcery — Adventure
-[ ]  1221  Thriving Moor                            {0}              Land
+[x]  1221  Thriving Moor                            {0}              Land
 [ ]  1222  Sterling Grove                           {G}{W}           Enchantment
 [ ]  1223  Tezzeret, Cruel Captain                  {3}              Legendary Planeswalker — Tezzeret
 [ ]  1224  Requisition Raid                         {W}              Sorcery
@@ -1387,7 +1387,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1394  Forensic Gadgeteer                       {2}{U}           Creature — Vedalken Artificer Detective
 [ ]  1395  All Will Be One                          {3}{R}{R}        Enchantment
 [ ]  1396  Martial Coup                             {X}{W}{W}        Sorcery
-[ ]  1397  Razorverge Thicket                       {0}              Land
+[x]  1397  Razorverge Thicket                       {0}              Land
 [ ]  1398  Rankle, Master of Pranks                 {2}{B}{B}        Legendary Creature — Faerie Rogue
 [ ]  1399  Shatterskull Smashing // Shatterskull, the Hammer Pass {2}              Sorcery // Land
 [x]  1400  Grave Titan                              {4}{B}{B}        Creature — Giant
@@ -1401,7 +1401,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1408  Baleful Mastery                          {3}{B}           Instant
 [ ]  1409  Mantle of the Ancients                   {3}{W}{W}        Enchantment — Aura
 [ ]  1410  Lindblum, Industrial Regency // Mage Siege {2}{R}           Land — Town // Instant — Adventure
-[ ]  1411  Darkslick Shores                         {0}              Land
+[x]  1411  Darkslick Shores                         {0}              Land
 [ ]  1412  Ominous Seas                             {1}{U}           Enchantment
 [x]  1413  Hedron Crab                              {U}              Creature — Crab
 [ ]  1414  Gaea's Gift                              {1}{G}           Instant
@@ -1444,7 +1444,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1451  Insidious Roots                          {B}{G}           Enchantment
 [ ]  1452  Temur Battle Rage                        {1}{R}           Instant
 [ ]  1453  Bulk Up                                  {1}{R}           Instant
-[ ]  1454  Inspiring Vantage                        {0}              Land
+[x]  1454  Inspiring Vantage                        {0}              Land
 [ ]  1455  Beledros Witherbloom                     {5}{B}{G}        Legendary Creature — Elder Dragon
 [ ]  1456  Fling                                    {1}{R}           Instant
 [x]  1457  Miirym, Sentinel Wyrm                    {3}{G}{U}{R}     Legendary Creature — Dragon Spirit
@@ -1498,7 +1498,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1505  Snake Umbra                              {2}{G}           Enchantment — Aura
 [x]  1506  Meren of Clan Nel Toth                   {2}{B}{G}        Legendary Creature — Human Shaman
 [ ]  1507  Patriarch's Bidding                      {3}{B}{B}        Sorcery
-[ ]  1508  Copperline Gorge                         {0}              Land
+[x]  1508  Copperline Gorge                         {0}              Land
 [ ]  1509  Case of the Locked Hothouse              {3}{G}           Enchantment — Case
 [ ]  1510  Haliya, Guided by Light                  {2}{W}           Legendary Creature — Human Soldier
 [ ]  1511  Blood Moon                               {2}{R}           Enchantment
@@ -1520,7 +1520,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1527  Izzet Charm                              {U}{R}           Instant
 [x]  1528  Myrel, Shield of Argive                  {3}{W}           Legendary Creature — Human Soldier
 [ ]  1529  Drana, Liberator of Malakir              {1}{B}{B}        Legendary Creature — Vampire Ally
-[ ]  1530  Blooming Marsh                           {0}              Land
+[x]  1530  Blooming Marsh                           {0}              Land
 [ ]  1531  Stubborn Denial                          {U}              Instant
 [ ]  1532  Chronicle of Victory                     {6}              Legendary Artifact
 [x]  1533  Tree of Tales                            {0}              Artifact Land
@@ -1564,7 +1564,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1571  Tergrid, God of Fright // Tergrid's Lantern {5}              Legendary Creature — God // Legendary Artifact
 [ ]  1572  Crux of Fate                             {3}{B}{B}        Sorcery
 [x]  1573  Morophon, the Boundless                  {7}              Legendary Creature — Shapeshifter
-[ ]  1574  Spirebluff Canal                         {0}              Land
+[x]  1574  Spirebluff Canal                         {0}              Land
 [ ]  1575  Smuggler's Surprise                      {G}              Instant
 [ ]  1576  Phelia, Exuberant Shepherd               {1}{W}           Legendary Creature — Dog
 [x]  1577  Archfiend of Depravity                   {3}{B}{B}        Creature — Demon
@@ -1645,7 +1645,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1652  Stridehangar Automaton                   {3}              Artifact Creature — Construct
 [ ]  1653  Blast Zone                               {0}              Land
 [x]  1654  Prismatic Lens                           {2}              Artifact
-[ ]  1655  Botanical Sanctum                        {0}              Land
+[x]  1655  Botanical Sanctum                        {0}              Land
 [ ]  1656  Blood Money                              {5}{B}{B}        Sorcery
 [ ]  1657  Nissa, Who Shakes the World              {3}{G}{G}        Legendary Planeswalker — Nissa
 [ ]  1658  Battle Hymn                              {1}{R}           Instant
@@ -2010,7 +2010,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2017  Daretti, Scrap Savant                    {3}{R}           Legendary Planeswalker — Daretti
 [ ]  2018  Righteous Valkyrie                       {2}{W}           Creature — Angel Cleric
 [ ]  2019  Thirst for Knowledge                     {2}{U}           Instant
-[ ]  2020  Wooded Bastion                           {0}              Land
+[x]  2020  Wooded Bastion                           {0}              Land
 [ ]  2021  Sunforger                                {3}              Artifact — Equipment
 [ ]  2022  Nevinyrral's Disk                        {4}              Artifact
 [x]  2023  Sangromancer                             {2}{B}{B}        Creature — Vampire Shaman

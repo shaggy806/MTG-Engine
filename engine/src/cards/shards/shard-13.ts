@@ -25,6 +25,7 @@ import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
+import _poolCastleEmbereth from "../pool/castle-embereth.js";
 import _poolCatharsShield from "../pool/cathars-shield.js";
 import _poolCavernOfSouls from "../pool/cavern-of-souls.js";
 import _poolCelestialUnicorn from "../pool/celestial-unicorn.js";
@@ -208,6 +209,7 @@ const shard: CardShard = {
     _poolBreathstealer,
     _poolCanopyGorger,
     _poolCarrionAnts,
+    _poolCastleEmbereth,
     _poolCatharsShield,
     _poolCavernOfSouls,
     _poolCelestialUnicorn,

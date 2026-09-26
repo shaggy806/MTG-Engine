@@ -27,6 +27,7 @@ import _poolCrashingDrawbridge from "../pool/crashing-drawbridge.js";
 import _poolCrucibleOfFire from "../pool/crucible-of-fire.js";
 import _poolDeadlyDerision from "../pool/deadly-derision.js";
 import _poolDeadlyVisit from "../pool/deadly-visit.js";
+import _poolDecimate from "../pool/decimate.js";
 import _poolDeeptreadMerrow from "../pool/deeptread-merrow.js";
 import _poolDefenseOfTheHeart from "../pool/defense-of-the-heart.js";
 import _poolDementiaBat from "../pool/dementia-bat.js";
@@ -60,6 +61,7 @@ import _poolHealersHawk from "../pool/healers-hawk.js";
 import _poolHengeOfRamos from "../pool/henge-of-ramos.js";
 import _poolHourOfDefeat from "../pool/hour-of-defeat.js";
 import _poolHowlingFury from "../pool/howling-fury.js";
+import _poolIchorWellspring from "../pool/ichor-wellspring.js";
 import _poolInfiniteGuidelineStation from "../pool/infinite-guideline-station.js";
 import _poolInsomniaCrownCity from "../pool/insomnia-crown-city.js";
 import _poolIrrigationDitch from "../pool/irrigation-ditch.js";
@@ -150,6 +152,8 @@ import _poolTemurAscendancy from "../pool/temur-ascendancy.js";
 import _poolTheIncredibleHulk from "../pool/the-incredible-hulk.js";
 import _poolTheUnspeakable from "../pool/the-unspeakable.js";
 import _poolThrillOfTheHunt from "../pool/thrill-of-the-hunt.js";
+import _poolThrivingBluff from "../pool/thriving-bluff.js";
+import _poolThrivingMoor from "../pool/thriving-moor.js";
 import _poolTidings from "../pool/tidings.js";
 import _poolTurnToFrog from "../pool/turn-to-frog.js";
 import _poolUndercityDireRat from "../pool/undercity-dire-rat.js";
@@ -196,6 +200,7 @@ const shard: CardShard = {
     _poolCrucibleOfFire,
     _poolDeadlyDerision,
     _poolDeadlyVisit,
+    _poolDecimate,
     _poolDeeptreadMerrow,
     _poolDefenseOfTheHeart,
     _poolDementiaBat,
@@ -229,6 +234,7 @@ const shard: CardShard = {
     _poolHengeOfRamos,
     _poolHourOfDefeat,
     _poolHowlingFury,
+    _poolIchorWellspring,
     _poolInfiniteGuidelineStation,
     _poolInsomniaCrownCity,
     _poolIrrigationDitch,
@@ -319,6 +325,8 @@ const shard: CardShard = {
     _poolTheIncredibleHulk,
     _poolTheUnspeakable,
     _poolThrillOfTheHunt,
+    _poolThrivingBluff,
+    _poolThrivingMoor,
     _poolTidings,
     _poolTurnToFrog,
     _poolUndercityDireRat,

@@ -22,6 +22,7 @@ import _poolBoseijuWhoEndures from "../pool/boseiju-who-endures.js";
 import _poolBrimstoneTrebuchet from "../pool/brimstone-trebuchet.js";
 import _poolBrotherhoodRegalia from "../pool/brotherhood-regalia.js";
 import _poolBurningTreeEmissary from "../pool/burning-tree-emissary.js";
+import _poolCabalStronghold from "../pool/cabal-stronghold.js";
 import _poolCallOfTheHerd from "../pool/call-of-the-herd.js";
 import _poolCaptainMarvelEarthsProtector from "../pool/captain-marvel-earths-protector.js";
 import _poolCarrionHowler from "../pool/carrion-howler.js";
@@ -29,6 +30,7 @@ import _poolCatharticAdept from "../pool/cathartic-adept.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
 import _poolCommodoreGuff from "../pool/commodore-guff.js";
+import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
@@ -202,6 +204,7 @@ const shard: CardShard = {
     _poolBrimstoneTrebuchet,
     _poolBrotherhoodRegalia,
     _poolBurningTreeEmissary,
+    _poolCabalStronghold,
     _poolCallOfTheHerd,
     _poolCaptainMarvelEarthsProtector,
     _poolCarrionHowler,
@@ -209,6 +212,7 @@ const shard: CardShard = {
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
     _poolCommodoreGuff,
+    _poolCopperlineGorge,
     _poolCrucibleOfWorlds,
     _poolDeeprootChampion,
     _poolDesperateCharge,

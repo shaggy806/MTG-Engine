@@ -15,6 +15,7 @@ import _poolBhaalsInvoker from "../pool/bhaals-invoker.js";
 import _poolBirninZanaPlaza from "../pool/birnin-zana-plaza.js";
 import _poolBlastingStation from "../pool/blasting-station.js";
 import _poolBogNaughty from "../pool/bog-naughty.js";
+import _poolBotanicalSanctum from "../pool/botanical-sanctum.js";
 import _poolBrimstoneDragon from "../pool/brimstone-dragon.js";
 import _poolBuoyancy from "../pool/buoyancy.js";
 import _poolCaelornaCoralTyrant from "../pool/caelorna-coral-tyrant.js";
@@ -98,6 +99,7 @@ import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
 import _poolMineshaftSpider from "../pool/mineshaft-spider.js";
 import _poolMiresGrasp from "../pool/mires-grasp.js";
+import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
 import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
 import _poolMuckRats from "../pool/muck-rats.js";
 import _poolNekusarTheMindrazer from "../pool/nekusar-the-mindrazer.js";
@@ -199,6 +201,7 @@ const shard: CardShard = {
     _poolBirninZanaPlaza,
     _poolBlastingStation,
     _poolBogNaughty,
+    _poolBotanicalSanctum,
     _poolBrimstoneDragon,
     _poolBuoyancy,
     _poolCaelornaCoralTyrant,
@@ -282,6 +285,7 @@ const shard: CardShard = {
     _poolMeticulousArchive,
     _poolMineshaftSpider,
     _poolMiresGrasp,
+    _poolMoldervineReclamation,
     _poolMorophonTheBoundless,
     _poolMuckRats,
     _poolNekusarTheMindrazer,

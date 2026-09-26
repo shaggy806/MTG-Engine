@@ -46,6 +46,7 @@ import _poolConsultTheNecrosages from "../pool/consult-the-necrosages.js";
 import _poolCorpseHauler from "../pool/corpse-hauler.js";
 import _poolCrystalBall from "../pool/crystal-ball.js";
 import _poolCuriousAltisaur from "../pool/curious-altisaur.js";
+import _poolCyberdriveAwakener from "../pool/cyberdrive-awakener.js";
 import _poolCyclopsOfEternalFury from "../pool/cyclops-of-eternal-fury.js";
 import _poolDakmorLancer from "../pool/dakmor-lancer.js";
 import _poolDarkslickDrake from "../pool/darkslick-drake.js";
@@ -227,6 +228,7 @@ const shard: CardShard = {
     _poolCorpseHauler,
     _poolCrystalBall,
     _poolCuriousAltisaur,
+    _poolCyberdriveAwakener,
     _poolCyclopsOfEternalFury,
     _poolDakmorLancer,
     _poolDarkslickDrake,

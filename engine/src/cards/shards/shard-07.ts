@@ -14,6 +14,7 @@ import _poolAustereCommand from "../pool/austere-command.js";
 import _poolBakeryRaid from "../pool/bakery-raid.js";
 import _poolBarTheDoor from "../pool/bar-the-door.js";
 import _poolBelakorTheDarkMaster from "../pool/belakor-the-dark-master.js";
+import _poolBlackcleaveCliffs from "../pool/blackcleave-cliffs.js";
 import _poolBlazingHellhound from "../pool/blazing-hellhound.js";
 import _poolBlightedFen from "../pool/blighted-fen.js";
 import _poolBloodCelebrant from "../pool/blood-celebrant.js";
@@ -206,6 +207,7 @@ const shard: CardShard = {
     _poolBakeryRaid,
     _poolBarTheDoor,
     _poolBelakorTheDarkMaster,
+    _poolBlackcleaveCliffs,
     _poolBlazingHellhound,
     _poolBlightedFen,
     _poolBloodCelebrant,

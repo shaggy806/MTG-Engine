@@ -79,6 +79,7 @@ import _poolHarrierStrix from "../pool/harrier-strix.js";
 import _poolHearthhullTheWorldseed from "../pool/hearthhull-the-worldseed.js";
 import _poolHornetSting from "../pool/hornet-sting.js";
 import _poolHulkBruceBanner from "../pool/hulk-bruce-banner.js";
+import _poolInspiringVantage from "../pool/inspiring-vantage.js";
 import _poolIsland from "../pool/island.js";
 import _poolJodahArchmageEternal from "../pool/jodah-archmage-eternal.js";
 import _poolJuriMasterOfTheRevue from "../pool/juri-master-of-the-revue.js";
@@ -165,6 +166,7 @@ import _poolVorstclaw from "../pool/vorstclaw.js";
 import _poolVowOfDuty from "../pool/vow-of-duty.js";
 import _poolWarMammoth from "../pool/war-mammoth.js";
 import _poolWelderAutomaton from "../pool/welder-automaton.js";
+import _poolWildernessReclamation from "../pool/wilderness-reclamation.js";
 import _poolWitchBlessedMeadow from "../pool/witch-blessed-meadow.js";
 import _poolWretchedDoll from "../pool/wretched-doll.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
@@ -249,6 +251,7 @@ const shard: CardShard = {
     _poolHearthhullTheWorldseed,
     _poolHornetSting,
     _poolHulkBruceBanner,
+    _poolInspiringVantage,
     _poolIsland,
     _poolJodahArchmageEternal,
     _poolJuriMasterOfTheRevue,
@@ -335,6 +338,7 @@ const shard: CardShard = {
     _poolVowOfDuty,
     _poolWarMammoth,
     _poolWelderAutomaton,
+    _poolWildernessReclamation,
     _poolWitchBlessedMeadow,
     _poolWretchedDoll,
   ],

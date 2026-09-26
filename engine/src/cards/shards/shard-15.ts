@@ -80,6 +80,7 @@ import _poolHealersFlock from "../pool/healers-flock.js";
 import _poolHighlandWeald from "../pool/highland-weald.js";
 import _poolHillGiant from "../pool/hill-giant.js";
 import _poolHonor from "../pool/honor.js";
+import _poolIrenicussVileDuplication from "../pool/irenicuss-vile-duplication.js";
 import _poolIronMyr from "../pool/iron-myr.js";
 import _poolIzzetCluestone from "../pool/izzet-cluestone.js";
 import _poolJhovallQueen from "../pool/jhovall-queen.js";
@@ -263,6 +264,7 @@ const shard: CardShard = {
     _poolHighlandWeald,
     _poolHillGiant,
     _poolHonor,
+    _poolIrenicussVileDuplication,
     _poolIronMyr,
     _poolIzzetCluestone,
     _poolJhovallQueen,

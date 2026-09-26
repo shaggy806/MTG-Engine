@@ -151,6 +151,7 @@ import {
   attachmentsOf,
   matchesFilter,
   printedManaCost,
+  supertypesOf,
   weightedMatches,
 } from "./filter.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
@@ -8604,7 +8605,7 @@ export class Game {
     return {
       types: [...effectiveTypes(this.state, this.registry, object)],
       subtypes: [...effectiveSubtypes(this.state, this.registry, object)],
-      supertypes: [...this.registry.get(printedCardName(object)).supertypes],
+      supertypes: [...supertypesOf(this.registry, object)],
     };
   }
 
@@ -10164,6 +10165,10 @@ export class Game {
       player = this.defendingPlayerOf(event.defender);
     } else if (event.type === "player-attacked") {
       player = event.defender;
+    } else if (event.type === "life-changed") {
+      // "That player" of a life-gain or life-loss trigger — the one whose
+      // life changed (Mindcrank: "that player mills that many cards").
+      player = event.player;
     } else if (event.type === "attacker-blocked") {
       // The defending player — the one whose creatures blocked it.
       const attacking = this.state.objects[event.attacker]?.attacking;
@@ -18251,7 +18256,6 @@ export class Game {
   private takeLastKnown(id: ObjectId): LastKnownInfo {
     const object = this.state.objects[id];
     const name = printedCardName(object);
-    const def = this.registry.get(name);
     const c = computeCharacteristics(this.state, this.registry, id);
     const attached = attachmentsOf(this.state, this.registry, id);
     const lostAbilities = hasLostAbilities(object);
@@ -18276,7 +18280,7 @@ export class Game {
       baseToughness: c.baseToughness,
       types: [...c.types],
       subtypes: [...c.subtypes],
-      supertypes: [...def.supertypes],
+      supertypes: [...supertypesOf(this.registry, object)],
       colors: [...c.colors],
       keywords: [...c.keywords],
       hasManaAbility: hasManaAbility(this.state, this.registry, object),

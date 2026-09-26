@@ -7,6 +7,7 @@ import _poolAgonyWarp from "../pool/agony-warp.js";
 import _poolAmbitionsCost from "../pool/ambitions-cost.js";
 import _poolAngelOfLight from "../pool/angel-of-light.js";
 import _poolAngrathsRampage from "../pool/angraths-rampage.js";
+import _poolArastaOfTheEndlessWeb from "../pool/arasta-of-the-endless-web.js";
 import _poolArcRunner from "../pool/arc-runner.js";
 import _poolArchaeologicalDig from "../pool/archaeological-dig.js";
 import _poolAridMesa from "../pool/arid-mesa.js";
@@ -27,8 +28,10 @@ import _poolBlessedSpirits from "../pool/blessed-spirits.js";
 import _poolBloodflowConnoisseur from "../pool/bloodflow-connoisseur.js";
 import _poolBloodrockCyclops from "../pool/bloodrock-cyclops.js";
 import _poolBloodstoneCameo from "../pool/bloodstone-cameo.js";
+import _poolBloomingMarsh from "../pool/blooming-marsh.js";
 import _poolBorderlandMinotaur from "../pool/borderland-minotaur.js";
 import _poolCapashenStandard from "../pool/capashen-standard.js";
+import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
 import _poolCatapultSquad from "../pool/catapult-squad.js";
 import _poolCephalidScout from "../pool/cephalid-scout.js";
@@ -188,6 +191,7 @@ const shard: CardShard = {
     _poolAmbitionsCost,
     _poolAngelOfLight,
     _poolAngrathsRampage,
+    _poolArastaOfTheEndlessWeb,
     _poolArcRunner,
     _poolArchaeologicalDig,
     _poolAridMesa,
@@ -208,8 +212,10 @@ const shard: CardShard = {
     _poolBloodflowConnoisseur,
     _poolBloodrockCyclops,
     _poolBloodstoneCameo,
+    _poolBloomingMarsh,
     _poolBorderlandMinotaur,
     _poolCapashenStandard,
+    _poolCastleVantress,
     _poolCatacombCrocodile,
     _poolCatapultSquad,
     _poolCephalidScout,

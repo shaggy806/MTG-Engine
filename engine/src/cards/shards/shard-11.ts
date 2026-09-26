@@ -108,6 +108,7 @@ import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
 import _poolMoriokReaver from "../pool/moriok-reaver.js";
 import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
+import _poolMysticGate from "../pool/mystic-gate.js";
 import _poolNessianCourser from "../pool/nessian-courser.js";
 import _poolNighthaze from "../pool/nighthaze.js";
 import _poolNivMizzetTheFiremind from "../pool/niv-mizzet-the-firemind.js";
@@ -124,6 +125,7 @@ import _poolPriestOfIroas from "../pool/priest-of-iroas.js";
 import _poolPrimalMight from "../pool/primal-might.js";
 import _poolQuilledSlagwurm from "../pool/quilled-slagwurm.js";
 import _poolRadiantGrove from "../pool/radiant-grove.js";
+import _poolRadiantSummit from "../pool/radiant-summit.js";
 import _poolRakdosSignet from "../pool/rakdos-signet.js";
 import _poolRavineRaider from "../pool/ravine-raider.js";
 import _poolRecumbentBliss from "../pool/recumbent-bliss.js";
@@ -304,6 +306,7 @@ const shard: CardShard = {
     _poolMoriokReaver,
     _poolMossDiamond,
     _poolMossdog,
+    _poolMysticGate,
     _poolNessianCourser,
     _poolNighthaze,
     _poolNivMizzetTheFiremind,
@@ -320,6 +323,7 @@ const shard: CardShard = {
     _poolPrimalMight,
     _poolQuilledSlagwurm,
     _poolRadiantGrove,
+    _poolRadiantSummit,
     _poolRakdosSignet,
     _poolRavineRaider,
     _poolRecumbentBliss,

@@ -44,6 +44,7 @@ import _poolFalseSummoning from "../pool/false-summoning.js";
 import _poolFarewell from "../pool/farewell.js";
 import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
+import _poolFireLitThicket from "../pool/fire-lit-thicket.js";
 import _poolFleetingEffigy from "../pool/fleeting-effigy.js";
 import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
 import _poolFrostwindInvoker from "../pool/frostwind-invoker.js";
@@ -137,6 +138,7 @@ import _poolTanglebloom from "../pool/tanglebloom.js";
 import _poolTanglepoolBridge from "../pool/tanglepool-bridge.js";
 import _poolTerrorOfTheFairgrounds from "../pool/terror-of-the-fairgrounds.js";
 import _poolThornwoodFalls from "../pool/thornwood-falls.js";
+import _poolThrivingGrove from "../pool/thriving-grove.js";
 import _poolTomBombadil from "../pool/tom-bombadil.js";
 import _poolTorstenVonUrsus from "../pool/torsten-von-ursus.js";
 import _poolTortoiseFormation from "../pool/tortoise-formation.js";
@@ -202,6 +204,7 @@ const shard: CardShard = {
     _poolFarewell,
     _poolFelidarRetreat,
     _poolFestivalCrasher,
+    _poolFireLitThicket,
     _poolFleetingEffigy,
     _poolFrontierBivouac,
     _poolFrostwindInvoker,
@@ -295,6 +298,7 @@ const shard: CardShard = {
     _poolTanglepoolBridge,
     _poolTerrorOfTheFairgrounds,
     _poolThornwoodFalls,
+    _poolThrivingGrove,
     _poolTomBombadil,
     _poolTorstenVonUrsus,
     _poolTortoiseFormation,

@@ -99,6 +99,7 @@ import _poolMentorOfTheMeek from "../pool/mentor-of-the-meek.js";
 import _poolMeteorSword from "../pool/meteor-sword.js";
 import _poolMillennialGargoyle from "../pool/millennial-gargoyle.js";
 import _poolMindRot from "../pool/mind-rot.js";
+import _poolMindcrank from "../pool/mindcrank.js";
 import _poolMinisterOfImpediments from "../pool/minister-of-impediments.js";
 import _poolMireInMisery from "../pool/mire-in-misery.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
@@ -128,6 +129,7 @@ import _poolSavageTwister from "../pool/savage-twister.js";
 import _poolScourgeOfValkas from "../pool/scourge-of-valkas.js";
 import _poolScrivener from "../pool/scrivener.js";
 import _poolScytheLeopard from "../pool/scythe-leopard.js";
+import _poolSeachromeCoast from "../pool/seachrome-coast.js";
 import _poolSeagrafSkaab from "../pool/seagraf-skaab.js";
 import _poolShrikeForce from "../pool/shrike-force.js";
 import _poolSicken from "../pool/sicken.js";
@@ -276,6 +278,7 @@ const shard: CardShard = {
     _poolMeteorSword,
     _poolMillennialGargoyle,
     _poolMindRot,
+    _poolMindcrank,
     _poolMinisterOfImpediments,
     _poolMireInMisery,
     _poolMorgueToad,
@@ -305,6 +308,7 @@ const shard: CardShard = {
     _poolScourgeOfValkas,
     _poolScrivener,
     _poolScytheLeopard,
+    _poolSeachromeCoast,
     _poolSeagrafSkaab,
     _poolShrikeForce,
     _poolSicken,

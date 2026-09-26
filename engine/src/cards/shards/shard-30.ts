@@ -45,6 +45,7 @@ import _poolConclaveNaturalists from "../pool/conclave-naturalists.js";
 import _poolConduitPylons from "../pool/conduit-pylons.js";
 import _poolCosmiumBlast from "../pool/cosmium-blast.js";
 import _poolCrossbowInfantry from "../pool/crossbow-infantry.js";
+import _poolCruelCelebrant from "../pool/cruel-celebrant.js";
 import _poolCruelFinality from "../pool/cruel-finality.js";
 import _poolCryptGhast from "../pool/crypt-ghast.js";
 import _poolDeftDuelist from "../pool/deft-duelist.js";
@@ -234,6 +235,7 @@ const shard: CardShard = {
     _poolConduitPylons,
     _poolCosmiumBlast,
     _poolCrossbowInfantry,
+    _poolCruelCelebrant,
     _poolCruelFinality,
     _poolCryptGhast,
     _poolDeftDuelist,

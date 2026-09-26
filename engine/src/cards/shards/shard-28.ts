@@ -30,6 +30,7 @@ import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
 import _poolCarrionCrow from "../pool/carrion-crow.js";
 import _poolCliveIfritsDominant from "../pool/clive-ifrits-dominant.js";
+import _poolConcealedCourtyard from "../pool/concealed-courtyard.js";
 import _poolCounselOfTheSoratami from "../pool/counsel-of-the-soratami.js";
 import _poolCrimsonMage from "../pool/crimson-mage.js";
 import _poolCultGuildmage from "../pool/cult-guildmage.js";
@@ -118,6 +119,7 @@ import _poolRagingMinotaur from "../pool/raging-minotaur.js";
 import _poolRakdosRagemutt from "../pool/rakdos-ragemutt.js";
 import _poolRamunapExcavator from "../pool/ramunap-excavator.js";
 import _poolRazortideBridge from "../pool/razortide-bridge.js";
+import _poolRazorvergeThicket from "../pool/razorverge-thicket.js";
 import _poolRedcapThief from "../pool/redcap-thief.js";
 import _poolResistanceSkywarden from "../pool/resistance-skywarden.js";
 import _poolResoluteReinforcements from "../pool/resolute-reinforcements.js";
@@ -210,6 +212,7 @@ const shard: CardShard = {
     _poolBullCerodon,
     _poolCarrionCrow,
     _poolCliveIfritsDominant,
+    _poolConcealedCourtyard,
     _poolCounselOfTheSoratami,
     _poolCrimsonMage,
     _poolCultGuildmage,
@@ -298,6 +301,7 @@ const shard: CardShard = {
     _poolRakdosRagemutt,
     _poolRamunapExcavator,
     _poolRazortideBridge,
+    _poolRazorvergeThicket,
     _poolRedcapThief,
     _poolResistanceSkywarden,
     _poolResoluteReinforcements,

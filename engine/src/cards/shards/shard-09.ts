@@ -9,6 +9,7 @@ import _poolAlleyEvasion from "../pool/alley-evasion.js";
 import _poolAngelfireCrusader from "../pool/angelfire-crusader.js";
 import _poolApprenticeWizard from "../pool/apprentice-wizard.js";
 import _poolArcadesTheStrategist from "../pool/arcades-the-strategist.js";
+import _poolArchmageOfRunes from "../pool/archmage-of-runes.js";
 import _poolArcticFlats from "../pool/arctic-flats.js";
 import _poolArgivianArchaeologist from "../pool/argivian-archaeologist.js";
 import _poolAsgardianCitadel from "../pool/asgardian-citadel.js";
@@ -151,6 +152,7 @@ import _poolTergridGodOfFright from "../pool/tergrid-god-of-fright.js";
 import _poolThaumatog from "../pool/thaumatog.js";
 import _poolThermalNavigator from "../pool/thermal-navigator.js";
 import _poolThoseWhoServe from "../pool/those-who-serve.js";
+import _poolThrivingIsle from "../pool/thriving-isle.js";
 import _poolTitaniasBoon from "../pool/titanias-boon.js";
 import _poolTocasiasWelcome from "../pool/tocasias-welcome.js";
 import _poolTorporDust from "../pool/torpor-dust.js";
@@ -190,6 +192,7 @@ const shard: CardShard = {
     _poolAngelfireCrusader,
     _poolApprenticeWizard,
     _poolArcadesTheStrategist,
+    _poolArchmageOfRunes,
     _poolArcticFlats,
     _poolArgivianArchaeologist,
     _poolAsgardianCitadel,
@@ -332,6 +335,7 @@ const shard: CardShard = {
     _poolThaumatog,
     _poolThermalNavigator,
     _poolThoseWhoServe,
+    _poolThrivingIsle,
     _poolTitaniasBoon,
     _poolTocasiasWelcome,
     _poolTorporDust,

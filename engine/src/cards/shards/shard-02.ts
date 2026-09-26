@@ -130,6 +130,7 @@ import _poolRavenousHarpy from "../pool/ravenous-harpy.js";
 import _poolRefute from "../pool/refute.js";
 import _poolRipplesOfUndeath from "../pool/ripples-of-undeath.js";
 import _poolRiptideTurtle from "../pool/riptide-turtle.js";
+import _poolRivendell from "../pool/rivendell.js";
 import _poolRocksteadyMutantMarauder from "../pool/rocksteady-mutant-marauder.js";
 import _poolRootwaterCommando from "../pool/rootwater-commando.js";
 import _poolSagesRowSavant from "../pool/sages-row-savant.js";
@@ -317,6 +318,7 @@ const shard: CardShard = {
     _poolRefute,
     _poolRipplesOfUndeath,
     _poolRiptideTurtle,
+    _poolRivendell,
     _poolRocksteadyMutantMarauder,
     _poolRootwaterCommando,
     _poolSagesRowSavant,

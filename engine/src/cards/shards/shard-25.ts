@@ -12,6 +12,7 @@ import _poolArmoredPegasus from "../pool/armored-pegasus.js";
 import _poolAshenMonstrosity from "../pool/ashen-monstrosity.js";
 import _poolAssaultZeppelid from "../pool/assault-zeppelid.js";
 import _poolBastionOfRemembrance from "../pool/bastion-of-remembrance.js";
+import _poolBastionProtector from "../pool/bastion-protector.js";
 import _poolBendersWaterskin from "../pool/benders-waterskin.js";
 import _poolBindingMummy from "../pool/binding-mummy.js";
 import _poolBlazingVolley from "../pool/blazing-volley.js";
@@ -66,6 +67,7 @@ import _poolFlowstoneInfusion from "../pool/flowstone-infusion.js";
 import _poolFontOfFortunes from "../pool/font-of-fortunes.js";
 import _poolFoundryOfTheConsuls from "../pool/foundry-of-the-consuls.js";
 import _poolFugitiveWizard from "../pool/fugitive-wizard.js";
+import _poolFumigate from "../pool/fumigate.js";
 import _poolGeothermalBog from "../pool/geothermal-bog.js";
 import _poolGhostWarden from "../pool/ghost-warden.js";
 import _poolGilanraCallerOfWirewood from "../pool/gilanra-caller-of-wirewood.js";
@@ -158,6 +160,7 @@ import _poolTaintedPeak from "../pool/tainted-peak.js";
 import _poolTarSnare from "../pool/tar-snare.js";
 import _poolTerramorphicExpanse from "../pool/terramorphic-expanse.js";
 import _poolThatsMine from "../pool/thats-mine.js";
+import _poolThopterSpyNetwork from "../pool/thopter-spy-network.js";
 import _poolTitanHunter from "../pool/titan-hunter.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
@@ -181,6 +184,7 @@ import _poolWallOfTanglecord from "../pool/wall-of-tanglecord.js";
 import _poolWanderingOnes from "../pool/wandering-ones.js";
 import _poolWeaveFate from "../pool/weave-fate.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
+import _poolWoodedBastion from "../pool/wooded-bastion.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
@@ -196,6 +200,7 @@ const shard: CardShard = {
     _poolAshenMonstrosity,
     _poolAssaultZeppelid,
     _poolBastionOfRemembrance,
+    _poolBastionProtector,
     _poolBendersWaterskin,
     _poolBindingMummy,
     _poolBlazingVolley,
@@ -250,6 +255,7 @@ const shard: CardShard = {
     _poolFontOfFortunes,
     _poolFoundryOfTheConsuls,
     _poolFugitiveWizard,
+    _poolFumigate,
     _poolGeothermalBog,
     _poolGhostWarden,
     _poolGilanraCallerOfWirewood,
@@ -342,6 +348,7 @@ const shard: CardShard = {
     _poolTarSnare,
     _poolTerramorphicExpanse,
     _poolThatsMine,
+    _poolThopterSpyNetwork,
     _poolTitanHunter,
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
@@ -365,6 +372,7 @@ const shard: CardShard = {
     _poolWanderingOnes,
     _poolWeaveFate,
     _poolWintersGrasp,
+    _poolWoodedBastion,
   ],
   tokens: [
     _tokensElfWarriorToken,
