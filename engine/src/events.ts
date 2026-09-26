@@ -12,6 +12,18 @@ import type { PlayerCounterKind, ZoneType } from "./state.js";
 import type { TargetRef } from "./target.js";
 import type { Phase, Step } from "./turn.js";
 
+/**
+ * How long an effect on a permanent lasts, as it's kept: until end of turn,
+ * for as long as the permanent stays ("permanent"), until a given player's
+ * next turn begins (an effect's "until your next turn", resolved to whose),
+ * or for as long as it has a counter of a kind on it. See `PtDuration`.
+ */
+export type EffectDuration =
+  | "end-of-turn"
+  | "permanent"
+  | { readonly untilTurnOf: PlayerId }
+  | { readonly whileCounter: string };
+
 interface Base {
   /** Monotonic sequence number, assigned when the event is appended. */
   readonly seq: number;
@@ -360,7 +372,7 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly power: number;
       readonly toughness: number;
-      readonly duration: "end-of-turn" | "permanent";
+      readonly duration: EffectDuration;
     })
   | (Base & {
       readonly type: "counter-added";
@@ -384,7 +396,7 @@ export type GameEvent =
       readonly type: "keyword-granted";
       readonly object: ObjectId;
       readonly keyword: string;
-      readonly duration: "end-of-turn" | "permanent";
+      readonly duration: EffectDuration;
     })
   | (Base & {
       readonly type: "pt-modifier-expired";
@@ -397,7 +409,7 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly power: number;
       readonly toughness: number;
-      readonly duration: "end-of-turn" | "permanent";
+      readonly duration: EffectDuration;
     })
   | (Base & {
       /** A permanent gained types or subtypes "in addition to its other
@@ -406,7 +418,7 @@ export type GameEvent =
       readonly object: ObjectId;
       readonly types: readonly CardType[];
       readonly subtypes: readonly string[];
-      readonly duration: "end-of-turn" | "permanent";
+      readonly duration: EffectDuration;
     })
   | (Base & {
       /** A text-changing effect replaced a creature-type word (Artificial

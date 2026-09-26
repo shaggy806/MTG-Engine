@@ -52,7 +52,21 @@ export type EffectTargetRef = number | "source" | "trigger-object";
 export type AmountRef = EffectTargetRef | "sacrificed" | "tapped";
 /** Where a `return-to-hand` effect takes its object from. */
 export type ReturnToHandZone = "battlefield" | "graveyard" | "exile" | "stack";
-export type PtDuration = "end-of-turn" | "permanent";
+/**
+ * How long an effect on a permanent lasts (rule 611.2a): until end of turn;
+ * for as long as the permanent stays on the battlefield (`"permanent"`);
+ * "until your next turn" — the effect's controller's, ending as that turn
+ * begins, or as it would have begun once they've left the game (rule
+ * 800.4m); or "for as long as it has a [kind] counter on it" (Ultima,
+ * Origin of Oblivion's blight — rule 611.2b), which does nothing if it has
+ * none as the effect would begin, ends as the last one is removed, and
+ * isn't brought back by a new one.
+ */
+export type PtDuration =
+  | "end-of-turn"
+  | "permanent"
+  | "until-your-next-turn"
+  | { readonly whileCounter: string };
 
 /**
  * A "spend this mana only to …" clause on a mana ability (rule 106.6b).
@@ -1531,6 +1545,20 @@ export type EffectSpec =
     }
   | {
       /**
+       * `target` loses all its abilities (layer 6) — with `loseLandTypes`,
+       * its land types too (layer 4; its other types and supertypes stay) —
+       * and has `activated` besides, granted by the same effect so they
+       * aren't lost with the rest (rule 613.7): Ultima, Origin of Oblivion's
+       * "it loses all land types and abilities and has '{T}: Add {C}.'"
+       */
+      readonly kind: "lose-abilities";
+      readonly target: EffectTargetRef;
+      readonly loseLandTypes?: boolean;
+      readonly activated?: readonly ActivatedAbility[];
+      readonly duration: PtDuration;
+    }
+  | {
+      /**
        * Give a permanent an activated ability — the one-shot counterpart of
        * `StaticAbility.grantsActivated`, riding on the target's own modifiers
        * like `grant-triggered`. A mana ability is seen by the mana payer, or
@@ -2876,6 +2904,15 @@ export interface EffectApi {
   grantTriggeredAll(filter: CardFilter, ability: TriggeredAbility, duration: PtDuration): void;
   /** See the `"grant-activated"` {@link EffectSpec}. */
   grantActivated(target: TargetRef, ability: ActivatedAbility, duration: PtDuration): void;
+  /** See the `"lose-abilities"` {@link EffectSpec}. */
+  loseAbilities(
+    target: TargetRef,
+    opts: {
+      readonly loseLandTypes: boolean;
+      readonly activated: readonly ActivatedAbility[];
+      readonly duration: PtDuration;
+    },
+  ): void;
   /** See the `"grant-activated-all"` {@link EffectSpec}. */
   grantActivatedAll(filter: CardFilter, ability: ActivatedAbility, duration: PtDuration): void;
   /** `player` takes an extra turn after this one (Time Warp). */
@@ -4263,6 +4300,17 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-activated-all":
       ctx.grantActivatedAll(spec.filter, spec.ability, spec.duration);
       return;
+    case "lose-abilities": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) {
+        ctx.loseAbilities(target, {
+          loseLandTypes: spec.loseLandTypes === true,
+          activated: spec.activated ?? [],
+          duration: spec.duration,
+        });
+      }
+      return;
+    }
     case "take-extra-turn": {
       const target = spec.target === undefined ? undefined : ctx.targets[spec.target];
       if (spec.target !== undefined && target?.kind !== "player") return;

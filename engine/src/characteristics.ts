@@ -47,7 +47,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
-import { EVERY_CREATURE_TYPE, hasSubtype, subtypeFitsTypes } from "./subtypes.js";
+import { EVERY_CREATURE_TYPE, EVERY_LAND_TYPE, hasSubtype, isLandType, subtypeFitsTypes } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 import { isMainPhase } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -1026,6 +1026,7 @@ function applyModifierTypes(
     st = st.filter((s) => subtypeFitsTypes(s, set));
   }
   if (modifier.setSubtypes) st = [...modifier.setSubtypes];
+  if (modifier.loseLandTypes) st = st.filter((s) => s !== EVERY_LAND_TYPE && !isLandType(s));
   if (modifier.addTypes && modifier.addTypes.length > 0) t = union(t, modifier.addTypes);
   if (modifier.addSubtypes && modifier.addSubtypes.length > 0) st = union(st, modifier.addSubtypes);
   return { types: t, subtypes: st };

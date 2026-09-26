@@ -4964,6 +4964,7 @@ import _poolTyrranax from "./pool/tyrranax.js";
 import _poolUktabiFaerie from "./pool/uktabi-faerie.js";
 import _poolUktabiOrangutan from "./pool/uktabi-orangutan.js";
 import _poolUkudCobra from "./pool/ukud-cobra.js";
+import _poolUltimaOriginOfOblivion from "./pool/ultima-origin-of-oblivion.js";
 import _poolUltimoCivilizationsEnd from "./pool/ultimo-civilizations-end.js";
 import _poolUltronDrone from "./pool/ultron-drone.js";
 import _poolUlvenwaldMysteries from "./pool/ulvenwald-mysteries.js";
@@ -10573,6 +10574,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUktabiFaerie,
   _poolUktabiOrangutan,
   _poolUkudCobra,
+  _poolUltimaOriginOfOblivion,
   _poolUltimoCivilizationsEnd,
   _poolUltronDrone,
   _poolUlvenwaldMysteries,

@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**298 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**299 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,11 +17,11 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:duration-extensions` (+1), `effect:impulse-exile-other-libraries` (+2),
-  `static:basic-land-type-mana` (+2), `stat:object-damage-history` (+2),
-  `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own` (+3),
-  `keyword:toxic` (+1), `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
-  `zone:cast-from-library-top` (+2).
+  `effect:impulse-exile-other-libraries` (+2), `static:basic-land-type-mana` (+2),
+  `stat:object-damage-history` (+2), `zone:visibility-extensions` (+1),
+  `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3),
+  `effect:amount-aggregate` (+1), `zone:cast-from-library-top` (+2),
+  `zone:play-from-exile-with-counter` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions` (11) and `effect:copy-permanent-spell` (10). Live numbers come
   from `cmdrs:gaps`.
@@ -103,10 +103,11 @@ that one card is the reason the deck exists.
   redirection to a third object.
 - **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
   timestamp order only.
-- **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`). Not yet:
-  a decision a departed player would have made (800.4g–h: another player makes it), an
-  effect ending that hands a permanent back to a departed default controller (800.4c: it's
-  exiled instead), and durations tied to their next turn (800.4m).
+- **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`), and so is
+  800.4m (a duration tied to a departed player's next turn lasts until it would have begun).
+  Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
+  and an effect ending that hands a permanent back to a departed default controller (800.4c:
+  it's exiled instead).
 - **Unbounded targeting** ("any number of target …") is deliberately not built. The reasons,
   and when to revisit, are in `neededCards-features.md`, "Unbounded targeting".
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is

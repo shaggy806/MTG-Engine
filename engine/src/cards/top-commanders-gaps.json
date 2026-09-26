@@ -132,7 +132,8 @@
   "effect:copy-exceptions",
   "effect:token-copy-last-known-info",
   "effect:exile-with-counters",
-  "effect:modifier-grants-activated"
+  "effect:modifier-grants-activated",
+  "effect:duration-extensions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

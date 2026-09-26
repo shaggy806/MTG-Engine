@@ -159,6 +159,7 @@ import _poolTravelersAmulet from "../pool/travelers-amulet.js";
 import _poolTresserhornSinks from "../pool/tresserhorn-sinks.js";
 import _poolTwoHeadedCerberus from "../pool/two-headed-cerberus.js";
 import _poolTyrantsMachine from "../pool/tyrants-machine.js";
+import _poolUltimaOriginOfOblivion from "../pool/ultima-origin-of-oblivion.js";
 import _poolUnburden from "../pool/unburden.js";
 import _poolUnwindingClock from "../pool/unwinding-clock.js";
 import _poolUtvaraScalper from "../pool/utvara-scalper.js";
@@ -332,6 +333,7 @@ const shard: CardShard = {
     _poolTresserhornSinks,
     _poolTwoHeadedCerberus,
     _poolTyrantsMachine,
+    _poolUltimaOriginOfOblivion,
     _poolUnburden,
     _poolUnwindingClock,
     _poolUtvaraScalper,

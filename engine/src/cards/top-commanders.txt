@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-298 already implemented / 202 missing
+299 already implemented / 201 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -374,7 +374,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  368  Kadena, Slinking Sorcerer                       7779 decks  {1}{B}{G}{U}     Legendary Creature — Snake Wizard Sorcerer
 [ ]  369  Sméagol, Helpful Guide                          7751 decks  {1}{B}{G}        Legendary Creature — Halfling Horror
 [x]  370  The Unbeatable Squirrel Girl                    7751 decks  {1}{G}{G}{G}     Legendary Creature — Squirrel Human Hero
-[ ]  371  Ultima, Origin of Oblivion                      7742 decks  {5}              Legendary Creature — God
+[x]  371  Ultima, Origin of Oblivion                      7742 decks  {5}              Legendary Creature — God
 [ ]  372  Yuma, Proud Protector                           7725 decks  {5}{R}{G}{W}     Legendary Creature — Human Ranger
 [ ]  373  Lathiel, the Bounteous Dawn                     7718 decks  {2}{G}{W}        Legendary Creature — Unicorn
 [ ]  374  Extus, Oriq Overlord                            7704 decks  {1}{W}{B}{B}     Legendary Creature — Human Warlock // Sorcery

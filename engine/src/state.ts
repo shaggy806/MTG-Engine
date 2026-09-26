@@ -614,6 +614,9 @@ export interface PtModifier {
   /** Layer 4 — card types this modifier adds (a man-land's "becomes a …
    * creature. It's still a land." keeps the printed types and adds these). */
   addTypes?: CardType[];
+  /** Layer 4 — it loses all its land types (Ultima, Origin of Oblivion's
+   * blight); its other subtypes, card types and supertypes stay. */
+  loseLandTypes?: true;
   /** Layer 4 — card types this modifier *replaces* them with (Myrkul, Lord
    * of Bones's copy: "it's an enchantment and loses all other card types").
    * A subtype tied to a card type it no longer has goes too (rule 205.1a).
@@ -655,6 +658,12 @@ export interface PtModifier {
    * (Brenard, Ginger Sculptor). Seen by `legalActions`, activation and the
    * mana payer like any granted activated ability. */
   grantsActivated?: ActivatedAbility[];
+  /** "Until your next turn": it ends as this player's next turn begins, or
+   * as it would have begun once they've left the game (rule 800.4m). */
+  untilTurnOf?: PlayerId;
+  /** "For as long as it has a [kind] counter on it" (rule 611.2b): it ends
+   * as the last one is removed, and a new one doesn't bring it back. */
+  whileCounter?: string;
   /** Layer 6 — it gains "This creature can't be sacrificed" (the
    * `"cant-be-sacrificed"` effect). The static equivalent is
    * `StaticAbility.cantBeSacrificed`. */

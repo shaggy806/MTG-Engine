@@ -153,6 +153,7 @@ import type { AggregateSpec, CardFilter } from "./filter.js";
 import { goadersOf } from "./goad.js";
 import { colorIdentityOf } from "./identity.js";
 import type {
+  EffectDuration,
   EventOfType,
   GameEvent,
   GameEventInput,
@@ -566,7 +567,33 @@ type ManaExtra = {
   readonly amount: number;
   /** The permanent whose triggered ability it is: the mana is from it. */
   readonly holder: ObjectId;
+  /** Only when the tapping made this type ("for {C}"). */
+  readonly producing?: "C";
 };
+
+/** `duration` as an effect `you` control keeps it: "until your next turn"
+ * is yours. */
+function lasting(duration: PtDuration, you: PlayerId): EffectDuration {
+  return duration === "until-your-next-turn" ? { untilTurnOf: you } : duration;
+}
+
+/** A modifier's duration fields for `duration`. */
+function durationFields(
+  duration: EffectDuration,
+): Pick<PtModifier, "untilEndOfTurn" | "untilTurnOf" | "whileCounter"> {
+  if (duration === "end-of-turn") return { untilEndOfTurn: true };
+  if (duration === "permanent") return { untilEndOfTurn: false };
+  return "untilTurnOf" in duration
+    ? { untilEndOfTurn: false, untilTurnOf: duration.untilTurnOf }
+    : { untilEndOfTurn: false, whileCounter: duration.whileCounter };
+}
+
+/** Whether an effect lasting `duration` on `object` begins at all: one
+ * "for as long as it has a [kind] counter on it" does nothing if it has none
+ * as it would begin (rule 611.2b). */
+function durationBegins(object: GameObject, duration: EffectDuration): boolean {
+  return typeof duration !== "object" || !("whileCounter" in duration) || (object.counters[duration.whileCounter] ?? 0) > 0;
+}
 
 export class Game {
   readonly state: GameState;
@@ -3341,6 +3368,10 @@ export class Game {
     // Bob's own.
     const turn = this.state.turn;
     const rotation = turn.isExtra ? (turn.rotationIndex ?? turn.activePlayerIndex) : turn.activePlayerIndex;
+    // Whose "next turn" begins now: the new active player's — and a departed
+    // player's whose turn the rotation passes over, which is when theirs
+    // would have begun (rule 800.4m).
+    const beginningFor: PlayerId[] = [];
     // An extra turn is taken instead of advancing the rotation, the most
     // recently created one first (rule 500.7); one for a player who has left
     // the game doesn't begin (800.4k).
@@ -3368,6 +3399,7 @@ export class Game {
             index = candidate;
             break;
           }
+          beginningFor.push(order[candidate]);
         }
         turn.activePlayerIndex = index;
       }
@@ -3386,13 +3418,38 @@ export class Game {
       this.state.players[player].usedGraveyardThisTurn = false;
       delete this.state.players[player].turnHistory;
     }
-    // "Until your next turn" player effects end as their owner's turn begins
-    // (the active player is the new one by now).
+    // "Until your next turn" effects end as that turn begins (the active
+    // player is the new one by now).
+    beginningFor.push(this.activePlayer);
     if (this.state.playerEffects !== undefined) {
-      const beginning = this.activePlayer;
       this.state.playerEffects = this.state.playerEffects.filter(
-        (e) => !(e.expires.kind === "your-next-turn" && e.owner === beginning),
+        (e) => !(e.expires.kind === "your-next-turn" && beginningFor.includes(e.owner)),
       );
+    }
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object !== undefined && object.modifiers.some((m) => m.untilTurnOf !== undefined)) {
+        object.modifiers = object.modifiers.filter(
+          (m) => m.untilTurnOf === undefined || !beginningFor.includes(m.untilTurnOf),
+        );
+      }
+      // A goad lasts "until your next turn" (rule 701.15a) — on every
+      // creature, not just the goader's. A goad for the rest of the game
+      // (`goadedForGameBy`) doesn't.
+      const goaded = object?.goadedBy;
+      if (goaded !== undefined && goaded.some((p) => beginningFor.includes(p))) {
+        const left = goaded.filter((p) => !beginningFor.includes(p));
+        if (left.length === 0) delete object.goadedBy;
+        else object.goadedBy = left;
+      }
+    }
+    // So do attack-requirement rules (Kardur, Doomscourge's "until your next
+    // turn, creatures your opponents control attack each combat …").
+    const rules = this.state.attackRequirements;
+    if (rules !== undefined && rules.some((rule) => beginningFor.includes(rule.by))) {
+      const left = rules.filter((rule) => !beginningFor.includes(rule.by));
+      if (left.length === 0) delete this.state.attackRequirements;
+      else this.state.attackRequirements = left;
     }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
@@ -3652,24 +3709,6 @@ export class Game {
 
   private untapStep(): void {
     const active = this.activePlayer;
-    // A goad lasts "until your next turn" (rule 701.15a), so the active
-    // player's own goads lapse now — on every creature, not just theirs. A
-    // goad for the rest of the game (`goadedForGameBy`) doesn't.
-    for (const id of this.state.zones.shared.battlefield) {
-      const goaded = this.state.objects[id]?.goadedBy;
-      if (goaded === undefined || !goaded.includes(active)) continue;
-      const left = goaded.filter((p) => p !== active);
-      if (left.length === 0) delete this.state.objects[id].goadedBy;
-      else this.state.objects[id].goadedBy = left;
-    }
-    // So do their attack-requirement rules (Kardur, Doomscourge's "until your
-    // next turn, creatures your opponents control attack each combat …").
-    const rules = this.state.attackRequirements;
-    if (rules !== undefined && rules.some((rule) => rule.by === active)) {
-      const left = rules.filter((rule) => rule.by !== active);
-      if (left.length === 0) delete this.state.attackRequirements;
-      else this.state.attackRequirements = left;
-    }
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== active) continue;
@@ -7700,6 +7739,7 @@ export class Game {
           .slice(poolBefore)
           .map((unit) => unit.type);
         for (const extra of this.tappedForManaExtras(source)) {
+          if (extra.producing !== undefined && !produced.includes(extra.producing)) continue;
           if (extra.mana === "produced") {
             if (produced.length > 0) {
               this.addMana(player, produced[0], extra.amount, undefined, this.manaOriginOf(extra.holder));
@@ -8320,6 +8360,8 @@ export class Game {
    * units and the extra come out as one colour).
    */
   private withManaExtra(option: ManaOption, extra: ManaExtra, player: PlayerId): ManaOption[] {
+    // "…for {C}": an option that makes none doesn't set it off.
+    if (extra.producing !== undefined && !option.fixed.includes(extra.producing)) return [option];
     // The extra units are the triggered ability's source's (see `ManaOrigin`).
     const extraFrom = [...(option.extraFrom ?? []), ...Array<ObjectId>(extra.amount).fill(extra.holder)];
     const plus = (type: ManaType, anyColor = option.anyColor): ManaOption => ({
@@ -8390,7 +8432,12 @@ export class Game {
         ) {
           continue;
         }
-        out.push({ mana: effect.mana, amount: effect.amount, holder: holder.id });
+        out.push({
+          mana: effect.mana,
+          amount: effect.amount,
+          holder: holder.id,
+          ...(trigger.producing !== undefined ? { producing: trigger.producing } : {}),
+        });
       }
     }
     return out;
@@ -11747,7 +11794,8 @@ export class Game {
         this.gainControlAllByEffect(controller, filter, untilEndOfTurn, who, exceptSource ? source : undefined),
       rotateControl: (filter, direction, exceptSource) =>
         this.rotateControlByEffect(controller, filter, direction, exceptSource ? source : undefined),
-      grantCantBeSacrificed: (target, duration) => this.grantCantBeSacrificed(target, duration),
+      grantCantBeSacrificed: (target, duration) =>
+        this.grantCantBeSacrificed(target, lasting(duration, controller)),
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count) => this.exileFromLibraryByEffect(target, count),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
@@ -11756,14 +11804,14 @@ export class Game {
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
       discardCards: (target, amount, random) => this.discardByEffect(target, amount, random === true),
       modifyPt: (target, power, toughness, duration) =>
-        this.modifyPt(target, power, toughness, duration),
+        this.modifyPt(target, power, toughness, lasting(duration, controller)),
       modifyPtAll: (filter, power, toughness, duration, exceptSource, scopeTo) =>
         this.modifyPtAll(
           scopeTo ?? controller,
           filter,
           power,
           toughness,
-          duration,
+          lasting(duration, controller),
           exceptSource === true ? source : undefined,
         ),
       grantKeywordAll: (filter, keyword, duration, exceptSource) =>
@@ -11771,10 +11819,10 @@ export class Game {
           controller,
           filter,
           keyword,
-          duration,
+          lasting(duration, controller),
           exceptSource === true ? source : undefined,
         ),
-      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, duration),
+      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, lasting(duration, controller)),
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount, by) =>
@@ -11920,7 +11968,7 @@ export class Game {
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
       grantKeyword: (target, keyword, duration) =>
-        this.grantKeyword(target, keyword, duration),
+        this.grantKeyword(target, keyword, lasting(duration, controller)),
       restrict: (target, filter, restrictions) =>
         this.restrict(controller, target, filter, restrictions),
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
@@ -11934,17 +11982,20 @@ export class Game {
         return won;
       },
       grantTriggered: (target, ability, duration) =>
-        this.grantTriggered(target, ability, duration),
+        this.grantTriggered(target, ability, lasting(duration, controller)),
       grantTriggeredAll: (filter, ability, duration) => {
         const timestamp = this.freshTimestamp();
+        const kept = lasting(duration, controller);
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.state.objects[id]?.modifiers.push({
+          const object = this.state.objects[id];
+          if (object === undefined || !durationBegins(object, kept)) continue;
+          object.modifiers.push({
             timestamp,
             power: 0,
             toughness: 0,
             keywords: [],
             grantsTriggered: [ability],
-            untilEndOfTurn: duration === "end-of-turn",
+            ...durationFields(kept),
           });
         }
       },
@@ -11952,29 +12003,54 @@ export class Game {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
-        if (object === undefined || object.zone !== "battlefield") return;
+        const kept = lasting(duration, controller);
+        if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, kept)) return;
         object.modifiers.push({
           timestamp: this.freshTimestamp(),
           power: 0,
           toughness: 0,
           keywords: [],
           grantsActivated: [ability],
-          untilEndOfTurn: duration === "end-of-turn",
+          ...durationFields(kept),
         });
       },
       grantActivatedAll: (filter, ability, duration) => {
         // One effect, one timestamp (rule 613.7b), however many it reaches.
         const timestamp = this.freshTimestamp();
+        const kept = lasting(duration, controller);
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.state.objects[id]?.modifiers.push({
+          const object = this.state.objects[id];
+          if (object === undefined || !durationBegins(object, kept)) continue;
+          object.modifiers.push({
             timestamp,
             power: 0,
             toughness: 0,
             keywords: [],
             grantsActivated: [ability],
-            untilEndOfTurn: duration === "end-of-turn",
+            ...durationFields(kept),
           });
         }
+      },
+      loseAbilities: (target, opts) => {
+        if (target.kind !== "object") return;
+        const id = this.splitOneFromStack(target.object);
+        const object = this.state.objects[id];
+        const kept = lasting(opts.duration, controller);
+        if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, kept)) return;
+        object.modifiers.push({
+          // What it has after the loss is granted by the same effect, so it
+          // isn't lost with the rest (rule 613.7).
+          timestamp: this.freshTimestamp(),
+          power: 0,
+          toughness: 0,
+          keywords: [],
+          loseAbilities: true,
+          ...(opts.loseLandTypes ? { loseLandTypes: true as const } : {}),
+          ...(opts.activated.length > 0 ? { grantsActivated: [...opts.activated] } : {}),
+          ...durationFields(kept),
+        });
+        // Nothing is announced, so nothing else invalidates the fold.
+        invalidateComputedCache();
       },
       grantPlayerHexproof: (who) => {
         for (const player of scoped(who)) {
@@ -12036,15 +12112,17 @@ export class Game {
           }
         }
       },
-      animate: (target, opts) => this.animate(target, opts),
-      addTypes: (target, types, subtypes, duration) => this.addTypes(target, types, subtypes, duration),
+      animate: (target, opts) => this.animate(target, { ...opts, duration: lasting(opts.duration, controller) }),
+      addTypes: (target, types, subtypes, duration) =>
+        this.addTypes(target, types, subtypes, lasting(duration, controller)),
       animateAll: (filter, opts) => {
         // Every match is fixed before the first one changes (a Treasure made
         // a creature mustn't change what the filter matches mid-loop), and a
         // token stack is animated whole, like any mass effect's.
         const timestamp = this.freshTimestamp();
+        const kept = { ...opts, duration: lasting(opts.duration, controller) };
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.animate({ kind: "object", object: id }, opts, false, timestamp);
+          this.animate({ kind: "object", object: id }, kept, false, timestamp);
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
@@ -13837,18 +13915,18 @@ export class Game {
     target: TargetRef,
     power: number,
     toughness: number,
-    duration: PtDuration,
+    duration: EffectDuration,
     split = true,
   ): void {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, duration)) return;
     object.modifiers.push({
       power,
       toughness,
       keywords: [],
-      untilEndOfTurn: duration === "end-of-turn",
+      ...durationFields(duration),
     });
     this.emit({
       type: "pt-modified",
@@ -13865,7 +13943,7 @@ export class Game {
   private grantKeyword(
     target: TargetRef,
     keyword: Keyword,
-    duration: PtDuration,
+    duration: EffectDuration,
     split = true,
     timestamp?: number,
   ): void {
@@ -13877,12 +13955,13 @@ export class Game {
     // clears modifiers as it leaves).
     if (object === undefined) return;
     if (object.zone !== "battlefield" && !(object.zone === "stack" && object.kind === "card")) return;
+    if (!durationBegins(object, duration)) return;
     object.modifiers.push({
       timestamp: timestamp ?? this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [keyword],
-      untilEndOfTurn: duration === "end-of-turn",
+      ...durationFields(duration),
     });
     this.emit({
       type: "keyword-granted",
@@ -14162,7 +14241,7 @@ export class Game {
     filter: CardFilter,
     power: number,
     toughness: number,
-    duration: PtDuration,
+    duration: EffectDuration,
     except?: ObjectId,
   ): void {
     for (const id of this.battlefieldMatching(you, filter)) {
@@ -14171,7 +14250,7 @@ export class Game {
     }
   }
 
-  private doublePtAll(you: PlayerId, filter: CardFilter, duration: PtDuration): void {
+  private doublePtAll(you: PlayerId, filter: CardFilter, duration: EffectDuration): void {
     // Each matching permanent's *own* current P/T, read individually — a 2/2
     // and a 5/5 both matching become a 4/4 and a 10/10, not identical stats
     // (unlike `modifyPtAll`'s single shared amount).
@@ -14195,19 +14274,19 @@ export class Game {
   private grantTriggered(
     target: TargetRef,
     ability: TriggeredAbility,
-    duration: PtDuration,
+    duration: EffectDuration,
   ): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, duration)) return;
     object.modifiers.push({
       timestamp: this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [],
       grantsTriggered: [ability],
-      untilEndOfTurn: duration === "end-of-turn",
+      ...durationFields(duration),
     });
   }
 
@@ -14215,7 +14294,7 @@ export class Game {
     you: PlayerId,
     filter: CardFilter,
     keyword: Keyword,
-    duration: PtDuration,
+    duration: EffectDuration,
     except?: ObjectId,
   ): void {
     // One effect, one timestamp (rule 613.7b), however many it reaches.
@@ -14241,7 +14320,7 @@ export class Game {
       readonly setColors?: readonly Color[];
       readonly loseAbilities?: boolean;
       readonly keywords: readonly Keyword[];
-      readonly duration: PtDuration;
+      readonly duration: EffectDuration;
     },
     split = true,
     timestamp?: number,
@@ -14249,7 +14328,7 @@ export class Game {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, opts.duration)) return;
     object.modifiers.push({
       // Ordered against type-granting and P/T-setting statics, and in layer 6
       // against keyword grants (rule 613.7).
@@ -14263,7 +14342,7 @@ export class Game {
       ...(opts.setColors ? { setColors: [...opts.setColors] } : {}),
       ...(opts.loseAbilities ? { loseAbilities: true } : {}),
       setPt: [opts.power, opts.toughness],
-      untilEndOfTurn: opts.duration === "end-of-turn",
+      ...durationFields(opts.duration),
     });
     this.emit({
       type: "permanent-animated",
@@ -14279,12 +14358,12 @@ export class Game {
     target: TargetRef,
     types: readonly CardType[],
     subtypes: readonly string[],
-    duration: PtDuration,
+    duration: EffectDuration,
   ): void {
     if (target.kind !== "object" || (types.length === 0 && subtypes.length === 0)) return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, duration)) return;
     object.modifiers.push({
       // Ordered against type-granting statics (rule 613.7).
       timestamp: this.state.timestampSeq,
@@ -14293,7 +14372,7 @@ export class Game {
       keywords: [],
       addTypes: [...types],
       addSubtypes: [...subtypes],
-      untilEndOfTurn: duration === "end-of-turn",
+      ...durationFields(duration),
     });
     this.emit({ type: "types-added", object: id, types: [...types], subtypes: [...subtypes], duration });
   }
@@ -16010,18 +16089,18 @@ export class Game {
 
   /** See the `"cant-be-sacrificed"` {@link EffectSpec}: `target` gains "This
    * creature can't be sacrificed" (`PtModifier.cantBeSacrificed`). */
-  private grantCantBeSacrificed(target: TargetRef, duration: PtDuration): void {
+  private grantCantBeSacrificed(target: TargetRef, duration: EffectDuration): void {
     if (target.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, duration)) return;
     object.modifiers.push({
       timestamp: this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [],
       cantBeSacrificed: true,
-      untilEndOfTurn: duration === "end-of-turn",
+      ...durationFields(duration),
     });
     // Nothing is announced, so nothing else invalidates the fold.
     invalidateComputedCache();
@@ -18699,6 +18778,17 @@ export class Game {
     return this.state.zones.shared[zone];
   }
 
+  /** Drop `id`'s modifiers that lasted "for as long as it has a [kind]
+   * counter on it" and now have none (rule 611.2b): ended for good, so a new
+   * counter doesn't bring them back. */
+  private endCounterDurations(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || !object.modifiers.some((m) => m.whileCounter !== undefined)) return;
+    object.modifiers = object.modifiers.filter(
+      (m) => m.whileCounter === undefined || (object.counters[m.whileCounter] ?? 0) > 0,
+    );
+  }
+
   private emit(event: GameEventInput): void {
     // Permanents entering together are announced together, once every one of
     // them is on the battlefield — see `withEnterBatch`.
@@ -18711,6 +18801,9 @@ export class Game {
     const full = { ...event, seq } as GameEvent;
     this.state.eventLog.push(full);
     this.recordTurnHistory(full);
+    // "For as long as it has a [kind] counter on it" ends with the last one
+    // (rule 611.2b), whatever removed it.
+    if (full.type === "counter-removed") this.endCounterDurations(full.object);
     // Every consequential state change announces itself here, so this is the
     // broad safety net for the computed-value cache: whatever just changed,
     // `detectTriggers` and everything after it read fresh values.

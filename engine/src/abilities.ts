@@ -535,6 +535,10 @@ export type TriggerSpec =
       readonly on: "tapped-for-mana";
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
+      /** "Whenever you tap a land **for {C}**" (Ultima, Origin of
+       * Oblivion): only when what it made includes colorless mana — once,
+       * however much. */
+      readonly producing?: "C";
     }
   | {
       /** A Saga's chapter ability resolved — `finalOnly` is "whenever the
