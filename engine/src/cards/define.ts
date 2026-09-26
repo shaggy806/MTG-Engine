@@ -824,6 +824,21 @@ export interface StaticAbility {
    * permission ends mid-combat (Arcades' ruling).
    */
   readonly canAttackAsThoughNoDefender?: boolean;
+  /**
+   * The affected permanents can't be sacrificed — Alexios, Deimos of
+   * Kosmos's "~ can't be sacrificed" (`"self"`), Zurgo, Thunder's Decree's
+   * "during your end step, Warrior tokens you control have 'This token can't
+   * be sacrificed'" (a `filter` scope with a `turn-structure` condition).
+   * Rule 701.21a: sacrificing is a move its controller makes, and one that
+   * can't be sacrificed isn't moved — "sacrifice it" does nothing to it
+   * (`sacrifice-source`'s "if you do" then fails), an edict or a "sacrifice
+   * a creature" cost never offers it (another must be chosen, if there is
+   * one), and a cost that names it ("Sacrifice ~", a Treasure's) can't be
+   * paid, so that ability can't be activated. A completed Saga that can't be
+   * sacrificed stays (rule 714.4). An ability like any other (layer 6): lost
+   * with the rest when the permanent loses its abilities.
+   */
+  readonly cantBeSacrificed?: boolean;
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
   /** Activated abilities this static grants to every object it `affects`

@@ -522,7 +522,8 @@ export type PlayerScope =
 /**
  * One player an effect names as the one who does something — who gains
  * control (`gain-control`), under whose control a card is put onto the
- * battlefield (`put-onto-battlefield`), who puts the counters (`add-counter`):
+ * battlefield (`put-onto-battlefield`), who puts the counters (`add-counter`)
+ * or untaps it (`untap`):
  * the effect's controller (`"you"`), a player target slot (`{ target: n }`),
  * or one of the single-player {@link PlayerScope}s the event names. Naming
  * nobody — an empty or illegal slot (rule 608.2b), a player who has left the
@@ -744,6 +745,10 @@ export type EffectSpec =
        * entered tapped). needed-cards P17. */
       readonly kind: "untap";
       readonly target: EffectTargetRef;
+      /** Who untaps it, when the card says a player does — "that player …
+       * untaps it" (Alexios, Deimos of Kosmos: `"active-player"`). Naming
+       * nobody — a player who has left the game — nothing is untapped. */
+      readonly by?: EffectPlayerRef;
     }
   | { readonly kind: "destroy"; readonly target: number }
   | {
@@ -1083,6 +1088,16 @@ export type EffectSpec =
       readonly direction: "left" | "right";
       readonly filter: CardFilter;
       readonly exceptSource?: boolean;
+    }
+  | {
+      /** `target` gains "This creature can't be sacrificed" (Jon Irenicus,
+       * Shattered One) — until end of turn, or (`"permanent"`) for as long
+       * as it stays on the battlefield. A modifier, like a keyword grant;
+       * the static form is `StaticAbility.cantBeSacrificed`, which says what
+       * it stops (rule 701.21a). */
+      readonly kind: "cant-be-sacrificed";
+      readonly target: EffectTargetRef;
+      readonly duration: PtDuration;
     }
   | {
       /** Target player puts the top `amount` cards of their library into
@@ -2557,6 +2572,9 @@ export interface EffectApi {
   ): void;
   /** See the `"rotate-control"` {@link EffectSpec}. */
   rotateControl(filter: CardFilter, direction: "left" | "right", exceptSource: boolean): void;
+  /** `target` gains "This creature can't be sacrificed" — see the
+   * `"cant-be-sacrificed"` {@link EffectSpec}. */
+  grantCantBeSacrificed(target: TargetRef, duration: PtDuration): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
   /** See the `"exile-from-library"` {@link EffectSpec}: the top `top` cards
@@ -3607,7 +3625,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "untap": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.untapPermanent(target);
+      if (target === undefined) return;
+      // "That player untaps it": no such player, nothing is untapped.
+      if (spec.by !== undefined && effectPlayer(spec.by, ctx) === undefined) return;
+      ctx.untapPermanent(target);
       return;
     }
     case "put-on-bottom-of-library": {
@@ -3688,6 +3709,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "rotate-control":
       ctx.rotateControl(spec.filter, spec.direction, spec.exceptSource === true);
       return;
+    case "cant-be-sacrificed": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.grantCantBeSacrificed(target, spec.duration);
+      return;
+    }
     case "return-to-hand": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.returnToHand(target, spec.from);

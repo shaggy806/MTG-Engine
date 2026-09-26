@@ -58,6 +58,7 @@ import type {
 } from "./cards.js";
 import {
   assignedCombatDamage,
+  cantBeSacrificed,
   countValue,
   damageDealtThisTurn,
   turnHistoryCount,
@@ -3578,10 +3579,15 @@ export class Game {
       }
     }
     // Encore's tokens are *sacrificed* rather than exiled, so dies-triggers
-    // see them go (rule 702.140).
+    // see them go (rule 702.140). This end step's sacrifice is the only one:
+    // a token that can't be sacrificed now stays for good (rule 701.21a).
     for (const id of [...this.state.zones.shared.battlefield]) {
       const object = this.state.objects[id];
       if (object?.sacrificeAtEndStep !== true) continue;
+      if (!this.canBeSacrificed(id)) {
+        delete object.sacrificeAtEndStep;
+        continue;
+      }
       const player = object.controller;
       this.moveObject(id, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: id, player });
@@ -6101,11 +6107,7 @@ export class Game {
       def.additionalCost?.sacrifice ??
       (costOption === undefined ? undefined : def.additionalCost?.options?.[costOption]?.sacrifice);
     if (filter === undefined) return [];
-    return this.state.zones.shared.battlefield.filter(
-      (id) =>
-        this.state.objects[id].controller === player &&
-        matchesFilter(this.state, this.registry, id, filter, { you: player }),
-    );
+    return this.eligibleSacrifices(player, filter);
   }
 
   /** Why the chosen `modes` are illegal for a `castModal` card (or `null`). */
@@ -6811,12 +6813,7 @@ export class Game {
       return `${player} has too little life to ${option.text.toLowerCase()} for ${def.name}`;
     }
     if (option.sacrifice !== undefined) {
-      const filter = option.sacrifice;
-      const candidates = this.state.zones.shared.battlefield.filter(
-        (id) =>
-          this.state.objects[id]?.controller === player &&
-          matchesFilter(this.state, this.registry, id, filter, { you: player }),
-      );
+      const candidates = this.eligibleSacrifices(player, option.sacrifice);
       if (candidates.length === 0) {
         return `${player} has nothing to sacrifice to cast ${def.name}`;
       }
@@ -6837,7 +6834,9 @@ export class Game {
   ): ObjectId[] {
     const sac = ability.cost.sacrifice;
     if (sac === undefined) return [];
-    if (sac === "self") return [sourceId];
+    // A cost naming a permanent that can't be sacrificed can't be paid (rule
+    // 701.21a), and one letting the player choose never offers it.
+    if (sac === "self") return this.canBeSacrificed(sourceId) ? [sourceId] : [];
     return this.state.zones.shared.battlefield.filter((id) => {
       const object = this.state.objects[id];
       if (object.controller !== player) return false;
@@ -6847,10 +6846,14 @@ export class Game {
       if (sac === "creature-you-control") {
         // What's a creature *now*: an animated land can be sacrificed, a
         // creature that stopped being one can't.
-        return effectiveTypes(this.state, this.registry, object).includes("creature");
+        return (
+          effectiveTypes(this.state, this.registry, object).includes("creature") && this.canBeSacrificed(id)
+        );
       }
       // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest".
-      return matchesFilter(this.state, this.registry, id, sac.filter, { you: player });
+      return (
+        matchesFilter(this.state, this.registry, id, sac.filter, { you: player }) && this.canBeSacrificed(id)
+      );
     });
   }
 
@@ -7870,6 +7873,8 @@ export class Game {
         // (Kykar's Spirits), removing counters (Ramos), energy, exiling or
         // discarding, and an exhaust ability's single use.
         if (ability.cost.tapOthers !== undefined) return;
+        // A Treasure that can't be sacrificed can't pay its own cost.
+        if (ability.cost.sacrifice === "self" && !this.canBeSacrificed(id)) return;
         if (
           (ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self") ||
           ability.cost.removeCounter !== undefined ||
@@ -11362,6 +11367,9 @@ export class Game {
       },
       sacrificeTarget: (target) => {
         if (target.kind !== "object") return;
+        // One that can't be sacrificed just stays (rule 701.21a) — checked
+        // before a token is peeled off a stack for it.
+        if (!this.canBeSacrificed(target.object)) return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
         if (object === undefined || object.zone !== "battlefield") return;
@@ -11498,6 +11506,7 @@ export class Game {
         this.gainControlAllByEffect(controller, filter, untilEndOfTurn, who, exceptSource ? source : undefined),
       rotateControl: (filter, direction, exceptSource) =>
         this.rotateControlByEffect(controller, filter, direction, exceptSource ? source : undefined),
+      grantCantBeSacrificed: (target, duration) => this.grantCantBeSacrificed(target, duration),
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count) => this.exileFromLibraryByEffect(target, count),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
@@ -14434,6 +14443,8 @@ export class Game {
   private sacrificeSourceByEffect(source: ObjectId): boolean {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
+    // One that can't be sacrificed stays, and "if you do" didn't happen.
+    if (!this.canBeSacrificed(source)) return false;
     // Its controller sacrifices it (rule 701.21a) — read before the move
     // hands it back to its owner.
     const sacrificer = object.controller;
@@ -14443,7 +14454,9 @@ export class Game {
   }
 
   /** Permanents `player` controls that match `filter` (they can only ever
-   * sacrifice their own — rule 701.16a), excluding `exceptId` ("another"). */
+   * sacrifice their own — rule 701.21a), excluding `exceptId` ("another")
+   * and any that can't be sacrificed: an edict or a "sacrifice a creature"
+   * cost must take another, and with none there's nothing to take. */
   private eligibleSacrifices(
     player: PlayerId,
     filter: CardFilter,
@@ -14453,7 +14466,8 @@ export class Game {
       (id) =>
         id !== exceptId &&
         this.state.objects[id].controller === player &&
-        matchesFilter(this.state, this.registry, id, filter, { you: player }),
+        matchesFilter(this.state, this.registry, id, filter, { you: player }) &&
+        this.canBeSacrificed(id),
     );
   }
 
@@ -15622,6 +15636,30 @@ export class Game {
     for (const { player, object } of moves) {
       this.gainControlByEffect(player, { kind: "object", object }, false, false, { split: false, timestamp });
     }
+  }
+
+  /** See the `"cant-be-sacrificed"` {@link EffectSpec}: `target` gains "This
+   * creature can't be sacrificed" (`PtModifier.cantBeSacrificed`). */
+  private grantCantBeSacrificed(target: TargetRef, duration: PtDuration): void {
+    if (target.kind !== "object") return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      cantBeSacrificed: true,
+      untilEndOfTurn: duration === "end-of-turn",
+    });
+    // Nothing is announced, so nothing else invalidates the fold.
+    invalidateComputedCache();
+  }
+
+  /** Rule 701.21a: whether `id`'s controller could sacrifice it — not if it
+   * can't be sacrificed (`cantBeSacrificed` in `characteristics.ts`). */
+  private canBeSacrificed(id: ObjectId): boolean {
+    return !cantBeSacrificed(this.state, this.registry, id);
   }
 
   /** Counter a spell on the stack (rule 701.5): it's removed from the stack and
@@ -17041,6 +17079,9 @@ export class Game {
         this.state.zones.shared.stack.some((sid) => this.state.objects[sid]?.sourceObjectId === id) ||
         this.state.pendingTriggers.some((t) => t.sourceObjectId === id);
       if (busy) continue;
+      // "Its controller sacrifices it" — so one that can't be sacrificed
+      // stays (rule 701.21a), and this finds nothing to do.
+      if (!this.canBeSacrificed(id)) continue;
       add(id, { type: "saga-completed", object: id });
     }
 

@@ -105,6 +105,7 @@ import _poolAlchemistsApprentice from "./pool/alchemists-apprentice.js";
 import _poolAlelaArtfulProvocateur from "./pool/alela-artful-provocateur.js";
 import _poolAlertShuInfantry from "./pool/alert-shu-infantry.js";
 import _poolAleshasLegacy from "./pool/aleshas-legacy.js";
+import _poolAlexiosDeimosOfKosmos from "./pool/alexios-deimos-of-kosmos.js";
 import _poolAlexisCloak from "./pool/alexis-cloak.js";
 import _poolAlgaeGharial from "./pool/algae-gharial.js";
 import _poolAllThatGlitters from "./pool/all-that-glitters.js";
@@ -5685,6 +5686,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAlelaArtfulProvocateur,
   _poolAlertShuInfantry,
   _poolAleshasLegacy,
+  _poolAlexiosDeimosOfKosmos,
   _poolAlexisCloak,
   _poolAlgaeGharial,
   _poolAllThatGlitters,

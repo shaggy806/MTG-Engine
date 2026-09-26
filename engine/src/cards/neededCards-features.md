@@ -305,8 +305,9 @@ review. The pieces marked **untested** have no unit test either, so nothing
 has ever run them.
 
 - **Effect kinds:** `prohibit` (for Sen Triplets and Koma, Cosmos Serpent),
-  `day-night` ("it becomes night"; **untested**) and `gain-control-all` (for
-  Dihada, Binder of Wills and Tevesh Szat).
+  `day-night` ("it becomes night"; **untested**), `gain-control-all` (for
+  Dihada, Binder of Wills and Tevesh Szat) and `cant-be-sacrificed` (for Jon
+  Irenicus, Shattered One).
 - **Trigger kinds:** `attacks-player`, and the `predicate` escape hatch
   (**untested**).
 - **Static conditions:** `source-greatest`, `player-counters`.
@@ -323,7 +324,6 @@ has ever run them.
   every filter, but taps only for what its own abilities say
   (`static:basic-land-type-mana` is still open).
 - **Amounts:** `{ sum }`, `{ damageDealtThisTurn }`.
-- **Combat restriction:** `cant-attack-owner`.
 - **Target spec:** `creature-or-player` (**untested**). One real card still
   prints "target creature or player": Firesong and Sunspeaker.
 - **Replacement fields:** `transformed` on enters-battlefield, `from` on

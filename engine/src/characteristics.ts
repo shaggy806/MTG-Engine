@@ -667,6 +667,11 @@ export interface Characteristics {
   /** It "can attack as though it didn't have defender" (a
    * `canAttackAsThoughNoDefender` static — Arcades, the Strategist). */
   readonly canAttackAsThoughNoDefender: boolean;
+  /** It can't be sacrificed (a `cantBeSacrificed` static, or the ability
+   * granted by the `"cant-be-sacrificed"` effect) — rule 701.21a. Read it
+   * through {@link cantBeSacrificed}, which skips the fold on the boards
+   * where nothing grants it. */
+  readonly cantBeSacrificed: boolean;
   /** Protection (rule 702.16): the union of every "protection from …" clause
    * — a source matching any of these colours, types or filters can't target /
    * block / enchant / damage this object. */
@@ -1680,6 +1685,7 @@ interface AppliedEffect {
   readonly restrictions: readonly CombatRestriction[];
   readonly combatDamageByToughness: StaticAbility["combatDamageByToughness"];
   readonly canAttackAsThoughNoDefender: boolean;
+  readonly cantBeSacrificed: boolean;
   readonly protection: {
     colors?: readonly Color[];
     types?: readonly CardType[];
@@ -1700,6 +1706,7 @@ function contributesToCharacteristics(ability: StaticAbility): boolean {
     ability.restrictions !== undefined ||
     ability.combatDamageByToughness !== undefined ||
     ability.canAttackAsThoughNoDefender === true ||
+    ability.cantBeSacrificed === true ||
     ability.protection !== undefined ||
     ability.setBasePt !== undefined
   );
@@ -1840,6 +1847,7 @@ function collectStaticEffects(
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
+      cantBeSacrificed: ability.cantBeSacrificed === true,
       protection: ability.protection ?? null,
       setBase: ability.setBasePt ?? null,
     };
@@ -1885,6 +1893,7 @@ function collectStaticEffects(
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
+      cantBeSacrificed: ability.cantBeSacrificed === true,
       protection: ability.protection ?? null,
       setBase: null,
     });
@@ -1965,6 +1974,7 @@ function assertSameCharacteristics(
       restrictions: [...c.restrictions].sort(),
       damageByToughness: c.damageByToughness,
       canAttackAsThoughNoDefender: c.canAttackAsThoughNoDefender,
+      cantBeSacrificed: c.cantBeSacrificed,
       protColors: [...c.protectionFrom.colors].sort(),
       protTypes: [...c.protectionFrom.types].sort(),
       // Serialised whole: a filter is a plain object, and two of them
@@ -2027,6 +2037,7 @@ function computeCharacteristicsUncached(
   const protFilters: CardFilter[] = [];
   let byToughness: StaticAbility["combatDamageByToughness"];
   let canAttackAsThoughNoDefender = false;
+  let cantBeSacrificed = false;
   for (const effect of staticEffects) {
     for (const keyword of effect.keywords) keywords.add(keyword);
     for (const r of effect.restrictions) restrictions.add(r);
@@ -2034,6 +2045,7 @@ function computeCharacteristicsUncached(
       byToughness = effect.combatDamageByToughness;
     }
     if (effect.canAttackAsThoughNoDefender) canAttackAsThoughNoDefender = true;
+    if (effect.cantBeSacrificed) cantBeSacrificed = true;
     if (effect.protection) {
       for (const c of effect.protection.colors ?? []) protColors.add(c);
       for (const t of effect.protection.types ?? []) protTypes.add(t);
@@ -2047,6 +2059,10 @@ function computeCharacteristicsUncached(
   for (const modifier of object.modifiers) {
     for (const keyword of modifier.keywords) keywords.add(keyword);
     for (const r of modifier.restrictions ?? []) restrictions.add(r);
+    // A granted "can't be sacrificed" is read like the keywords and
+    // restrictions a modifier grants, which `loseAbilities` (the permanent's
+    // *own* abilities) doesn't touch.
+    if (modifier.cantBeSacrificed === true) cantBeSacrificed = true;
   }
   for (const keyword of keywordCountersOn(object)) keywords.add(keyword);
   // Rule 701.60c — a suspected permanent has menace and "This creature can't
@@ -2148,8 +2164,34 @@ function computeCharacteristicsUncached(
     restrictions,
     damageByToughness,
     canAttackAsThoughNoDefender,
+    cantBeSacrificed,
     protectionFrom: { colors: protColors, types: protTypes, filters: protFilters },
   };
+}
+
+/**
+ * Whether permanent `id` can't be sacrificed (rule 701.21a) — a
+ * `cantBeSacrificed` static reaching it (Alexios, Deimos of Kosmos), or the
+ * ability granted by the `"cant-be-sacrificed"` effect. Every sacrifice the
+ * engine makes or offers asks this: an edict's and a sacrifice cost's
+ * choices, "Sacrifice ~" costs and effects, a Treasure's mana ability, a
+ * completed Saga, encore's end-step sacrifice.
+ *
+ * Folds the permanent's characteristics only when something on the
+ * battlefield could say so — the contributing-statics pre-scan is shared
+ * with the fold and memoized per cache region — so the answer on nearly
+ * every board is a short scan.
+ */
+export function cantBeSacrificed(state: GameState, registry: CardRegistry, id: ObjectId): boolean {
+  const object = state.objects[id];
+  if (object === undefined || object.zone !== "battlefield") return false;
+  if (
+    !object.modifiers.some((m) => m.cantBeSacrificed === true) &&
+    !contributingStaticSources(state, registry).some(({ ability }) => ability.cantBeSacrificed === true)
+  ) {
+    return false;
+  }
+  return computeCharacteristics(state, registry, id).cantBeSacrificed;
 }
 
 /**

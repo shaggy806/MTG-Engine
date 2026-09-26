@@ -582,7 +582,7 @@ them.
 | --- | --- | --- |
 | `tap` | `target` (index only) | |
 | `tap-all` | `filter` | Thundermaw Hellkite's "Tap those creatures" — the mirror of `untap-all`. `tap` only ever takes one chosen target. |
-| `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all |
+| `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"`; `by?` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all. `by` (an `EffectPlayerRef`) is "that player … untaps it" (Alexios, Deimos of Kosmos: `"active-player"`): a player who has left the game untaps nothing. |
 | `destroy` | `target` | Doom Blade |
 | `put-on-bottom-of-library` | `target` | Condemn — buries a permanent under its **owner's** library. Not a shuffle and not a bounce, which is why it isn't a `return-to-hand` variant. |
 | `destroy-all` | `filter` | Wrath of God |
@@ -608,6 +608,7 @@ them.
 | `gain-control` | `target` (an `EffectTargetRef`), `untilEndOfTurn`, `who?` | Act of Treason; `untilEndOfTurn: false` is "lasts indefinitely" (Sliver Overlord). A timestamped layer-2 effect: the latest control effect on a permanent wins, Aura or not (rule 613.7), and when one ends the next-latest takes over — including when the player it gave control to leaves the game (rule 800.4a), so it goes back to the player still in the game who most recently had it. `who` (an `EffectPlayerRef`) is who gains control, the effect's controller by default: a player slot — Zedruu the Greathearted's "target opponent gains control of target permanent you control" is `targets: ["opponent", { kind: "permanent", whose: "you", filter: {} }]` with `target: 1, who: { target: 0 }` — or a player the event names, like Alexios, Deimos of Kosmos's "that player gains control of Alexios" (`target: "source", who: "active-player"`). If either the permanent or the player has become an illegal target by resolution, it does nothing (rule 608.2b — `ResolutionContext.illegalTargets`). A player who has left the game gains control of nothing (800.4b). |
 | `gain-control-all` | `filter`, `untilEndOfTurn`, `who?`, `exceptSource?` | Every permanent matching `filter` changes control at once, as one effect with one timestamp (rule 613.7b): "gain control of all nonland permanents until end of turn" (Dihada, Binder of Wills), "gain control of all commanders" (Tevesh Szat). `who` as `gain-control`'s, or `"owner"`: "each player gains control of all creatures they own" (Homeward Path). A token stack changes hands whole. |
 | `rotate-control` | `direction: "left" \| "right"`, `filter`, `exceptSource?` | "Each player gains control of all [filter] controlled by the next player in the chosen direction" (Aminatou, the Fateshifter's −6): left is the next player in turn order (rule 101.4), right the one before, skipping anyone who has left the game. Every share is worked out first and changes hands at once, as one lasting effect. "Choose left or right" as it resolves is a `modal` with one `rotate-control` per mode. |
+| `cant-be-sacrificed` | `target`, `duration` | "It gains 'This creature can't be sacrificed'" (Jon Irenicus, Shattered One) — `"end-of-turn"` or `"permanent"` (while it stays on the battlefield). The static form, and what it stops, is §10's `cantBeSacrificed`. |
 
 #### Delayed triggered abilities (`delayed-trigger`)
 
@@ -1924,6 +1925,18 @@ anthem, the keyword grant and the granted trigger like any other creature.
   attacking if the permission goes away mid-combat (Arcades' ruling). The
   one-shot "can attack this turn as though it didn't have defender" (Assault
   Formation's `{G}`, Wakestone Gargoyle) has no effect form yet.
+- `cantBeSacrificed: true` — the affected permanents can't be sacrificed
+  (rule 701.21a): Alexios, Deimos of Kosmos's own (`"self"`), or "during your
+  end step, Warrior tokens you control have 'This token can't be
+  sacrificed'" (a `filter` scope and a condition). Every sacrifice the engine
+  makes or offers asks it (`cantBeSacrificed` in `characteristics.ts`): an
+  edict or a "sacrifice a creature" cost never offers it, so another must go;
+  a cost naming it ("Sacrifice ~", a Treasure's mana) can't be paid; "sacrifice
+  ~" and "sacrifice that creature" leave it be (and a `sacrifice-source`'s
+  "if you do" fails); a completed Saga stays; an end-step sacrifice (encore,
+  "sacrifice them at the beginning of the next end step") is spent without
+  taking it. The effect form, "it gains 'This creature can't be
+  sacrificed'", is the `cant-be-sacrificed` effect (§6).
 - `protection: { colors?, types? }` — rule 702.16 (White Knight: `{ colors:
   ["B"] }`).
 - Ward is **not** a static — it's a triggered ability; see `ward(...)` in §9.

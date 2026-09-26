@@ -633,6 +633,10 @@ export interface PtModifier {
    * Insight). The ongoing, static equivalent is
    * `StaticAbility.grantsTriggered`. */
   grantsTriggered?: TriggeredAbility[];
+  /** Layer 6 — it gains "This creature can't be sacrificed" (the
+   * `"cant-be-sacrificed"` effect). The static equivalent is
+   * `StaticAbility.cantBeSacrificed`. */
+  cantBeSacrificed?: boolean;
   untilEndOfTurn: boolean;
   /**
    * `GameState.timestampSeq` when the modifier was applied, for ordering its
