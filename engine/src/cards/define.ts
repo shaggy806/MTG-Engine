@@ -1081,6 +1081,11 @@ export interface StaticAbility {
      * includes that colour (rule 118.7e — paid as that colour), else, per
      * rule 118.7b/c, one generic — unless `coloredOnly`. */
     readonly reduceColored?: string;
+    /** `reduceColored` that many times — "{U} (or {1}) less to cast **for
+     * each** land you control with a flood counter on it" (Eluge, the
+     * Shoreless Sea): every {U} of the spell's cost first, then generic
+     * (its ruling). Read as the cost is worked out. */
+    readonly reduceColoredTimes?: CostReductionAmount;
     /** "This effect reduces only the amount of colored mana you pay"
      * (Edgewalker, Morophon): a coloured reduction with nothing coloured
      * left to take is lost rather than taken off the generic part. */

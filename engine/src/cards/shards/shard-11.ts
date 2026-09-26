@@ -113,6 +113,7 @@ import _poolNighthaze from "../pool/nighthaze.js";
 import _poolNivMizzetTheFiremind from "../pool/niv-mizzet-the-firemind.js";
 import _poolOakenform from "../pool/oakenform.js";
 import _poolOkosAccomplices from "../pool/okos-accomplices.js";
+import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
 import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
@@ -308,6 +309,7 @@ const shard: CardShard = {
     _poolNivMizzetTheFiremind,
     _poolOakenform,
     _poolOkosAccomplices,
+    _poolOmoQueenOfVesuva,
     _poolOpalineUnicorn,
     _poolOrzhovBasilica,
     _poolPelakkaWurm,

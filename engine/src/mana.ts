@@ -251,8 +251,10 @@ export interface ColoredReduction {
 
 /** The coloured symbols of `text` as a per-colour count, for a
  * {@link ColoredReduction} (`"{W}{B}"` → one W, one B). */
-export function coloredReductionOf(text: string, coloredOnly: boolean): ColoredReduction {
-  return { colors: { ...parseManaCost(text).colored }, coloredOnly };
+export function coloredReductionOf(text: string, coloredOnly: boolean, times = 1): ColoredReduction {
+  const colors = { ...parseManaCost(text).colored };
+  for (const color of COLORS) colors[color] *= times;
+  return { colors, coloredOnly };
 }
 
 /**

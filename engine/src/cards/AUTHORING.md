@@ -1998,6 +1998,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
     takes a pip of its colour, else a hybrid pip containing it (rule 118.7e),
     else one generic (118.7b/c) — unless `coloredOnly: true`, the printed
     "this effect reduces only the amount of colored mana you pay".
+    `reduceColoredTimes` (a `CostReductionAmount`) applies it that many
+    times: Eluge, the Shoreless Sea's "{U} (or {1}) less to cast for each
+    land you control with a flood counter on it".
 
   A generic reduction bigger than the generic part carries on to the `{2}`
   half of twobrid pips (`{2/W}`), but only the ones actually paid with
@@ -2442,6 +2445,19 @@ Add [two colours]" — see the converter note in §15), `tapLand` (enters tapped
 taps for two colours — Timber Gorge; pass `true` for the gain-1-life variant,
 Kazandu Refuge), `revealLand`, `basicLand`. `blood-crypt.ts` is the whole
 file: `export default shockLand("Blood Crypt", ["Swamp", "Mountain"]);`
+
+**Basic land types and their mana** (rules 305.6, 305.7): a land with a basic land type has "{T}: Add
+[its colour]" for having it. A typed land still spells that out — the helpers above and `basicLand`
+give it `manaTapAbility` per type, or one "{T}: Add {X} or {Y}." — and the engine reads those as
+*stand-ins* for its printed types' abilities (`intrinsicStandIns`; `test/intrinsic-mana.test.ts` holds
+every typed land in the pool to covering exactly its types). A stand-in lasts only while the land has
+those types (a Tropical Island made a Mountain taps for {R} alone), and a basic land type an effect
+gives a land brings its ability with it (Omo, Queen of Vesuva's everything counter; Eluge, the
+Shoreless Sea's flood) — so an effect that makes a land a Plains or an Island is an `add-types`,
+never an `add-types` plus a granted mana ability. A land that has lost all its abilities has none of
+them, whenever it got the type. An effect that *sets* a land's subtype to basic land types takes the
+abilities from its rules text too (rule 305.7 — Blood Moon, Spreading Seas); `setSubtypes` alone doesn't, so
+such a card waits for that.
 
 **{X} burn** (`fireball.ts` / `blaze.ts`): `manaCost: "{X}{R}"`, `targets:
 ["any-target"]`, `effect: { kind: "damage", amount: "x", target: 0 }`.

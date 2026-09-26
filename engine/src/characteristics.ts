@@ -21,6 +21,7 @@
  */
 
 import { isManaAbilityByRule, isTriggeredManaAbility } from "./abilities.js";
+import type { ActivatedAbility } from "./abilities.js";
 import type {
   AffectSpec,
   CardDefinition,
@@ -47,7 +48,14 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
-import { EVERY_CREATURE_TYPE, EVERY_LAND_TYPE, hasSubtype, isLandType, subtypeFitsTypes } from "./subtypes.js";
+import {
+  BASIC_LAND_TYPE_COLORS,
+  EVERY_CREATURE_TYPE,
+  EVERY_LAND_TYPE,
+  hasSubtype,
+  isLandType,
+  subtypeFitsTypes,
+} from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 import { isMainPhase } from "./turn.js";
 import type { Step } from "./turn.js";
@@ -1598,6 +1606,135 @@ function hasGrantedAbility(
 }
 
 /**
+ * The colours of the intrinsic "{T}: Add [mana]" abilities `object` has
+ * (rule 305.6): one for each basic land type it has now, as a land — a type
+ * an effect gave it included (Omo, Queen of Vesuva's everything counter;
+ * "every land type" is all five), none it no longer has (rule 305.7: a
+ * Tropical Island made a Mountain taps only for {R}). They exist before layer
+ * 6, so a permanent that has lost all its abilities has none of them,
+ * whenever it got the type. WUBRG order.
+ */
+export function intrinsicManaColors(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+): readonly Color[] {
+  const { types, subtypes } = layerFour(state, registry, object);
+  if (!types.includes("land")) return [];
+  if (object.zone === "battlefield" && abilitiesLostAt(object) !== null) return [];
+  return BASIC_LAND_TYPE_COLORS.filter(([type]) => hasSubtype(subtypes, type)).map(([, color]) => color);
+}
+
+const standInCache = new WeakMap<CardDefinition, readonly (readonly Color[] | null)[]>();
+
+/**
+ * Which of `def`'s printed activated abilities stand in for the intrinsic
+ * mana abilities of its printed basic land types, with the colours each one
+ * makes — a typed land's "({T}: Add {G} or {U}.)" is reminder text, and the
+ * ability is its types' (rule 305.6): a plain "{T}: Add" of one of those
+ * colours, or of "one of" several. `null` for every other ability. Such an
+ * ability is the land's only while it has those types (`inactiveStandIn`).
+ */
+export function intrinsicStandIns(def: CardDefinition): readonly (readonly Color[] | null)[] {
+  const cached = standInCache.get(def);
+  if (cached !== undefined) return cached;
+  const printed = def.types.includes("land")
+    ? BASIC_LAND_TYPE_COLORS.filter(([type]) => def.subtypes.includes(type)).map(([, color]) => color)
+    : [];
+  const defined = (o: object): string[] =>
+    Object.entries(o)
+      .filter(([, v]) => v !== undefined)
+      .map(([k]) => k);
+  const out = def.activated.map((ability): readonly Color[] | null => {
+    if (printed.length === 0) return null;
+    const effect = ability.effect;
+    if (effect === null || effect.kind !== "add-mana" || effect.amount !== 1 || ability.resolve !== null) return null;
+    if (ability.cost.mana !== null || ability.cost.tap !== true || ability.targets.length > 0) return null;
+    if (defined(ability.cost).some((k) => k !== "mana" && k !== "tap")) return null;
+    if (defined(effect).some((k) => k !== "kind" && k !== "mana" && k !== "amount")) return null;
+    if (defined(ability).some((k) => !["cost", "targets", "effect", "resolve", "text"].includes(k))) return null;
+    const mana = effect.mana;
+    const colors =
+      typeof mana === "string"
+        ? [mana]
+        : "oneOf" in mana && mana.same !== true
+          ? [...mana.oneOf]
+          : null;
+    if (colors === null || colors.some((c) => !printed.includes(c as Color))) return null;
+    return colors as Color[];
+  });
+  standInCache.set(def, out);
+  return out;
+}
+
+/** Whether nothing can have moved `object`'s land types or abilities off
+ * its printed ones: no type-granting static on the battlefield, and no
+ * modifier of its own that changes types, text or abilities. Then its
+ * printed stand-ins are exactly its intrinsic mana abilities (the pool test
+ * holds every typed land to that) — the case nearly every land is in, and
+ * the one `Game.effectiveActivated` asks about for every permanent. */
+function printedLandTypesHold(state: GameState, registry: CardRegistry, object: GameObject): boolean {
+  if (object.zone === "battlefield" && typeGrantSources(state, registry).length > 0) return false;
+  return !object.modifiers.some(
+    (m) =>
+      m.setTypes !== undefined ||
+      m.setSubtypes !== undefined ||
+      (m.addTypes?.length ?? 0) > 0 ||
+      (m.addSubtypes?.length ?? 0) > 0 ||
+      m.loseLandTypes === true ||
+      m.loseAbilities === true ||
+      m.textSubstitution !== undefined,
+  );
+}
+
+/** Whether `object`'s printed activated ability at `index` stands in for an
+ * intrinsic mana ability of a basic land type it no longer has (rule 305.7 —
+ * a Tropical Island that's a Mountain has lost "{T}: Add {G} or {U}"). */
+export function inactiveStandIn(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+  index: number,
+): boolean {
+  const colors = intrinsicStandIns(registry.get(printedCardName(object)))[index];
+  if (colors === null || colors === undefined) return false;
+  if (printedLandTypesHold(state, registry, object)) return false;
+  const has = intrinsicManaColors(state, registry, object);
+  return colors.some((c) => !has.includes(c));
+}
+
+/** The intrinsic mana abilities `object` has on top of its printed ones:
+ * one per basic land type it has that no printed stand-in covers — a type an
+ * effect gave it, or one whose combined stand-in went with another type. */
+export function extraIntrinsicManaColors(
+  state: GameState,
+  registry: CardRegistry,
+  object: GameObject,
+): readonly Color[] {
+  if (printedLandTypesHold(state, registry, object)) return [];
+  const has = intrinsicManaColors(state, registry, object);
+  if (has.length === 0) return has;
+  const covered = new Set<Color>();
+  for (const colors of intrinsicStandIns(registry.get(printedCardName(object)))) {
+    if (colors !== null && colors.every((c) => has.includes(c))) for (const c of colors) covered.add(c);
+  }
+  return covered.size === 0 ? has : has.filter((c) => !covered.has(c));
+}
+
+const INTRINSIC_MANA: Partial<Record<Color, ActivatedAbility>> = {};
+
+/** The intrinsic "{T}: Add [mana]" of a basic land type (rule 305.6). */
+export function intrinsicManaAbility(color: Color): ActivatedAbility {
+  return (INTRINSIC_MANA[color] ??= {
+    cost: { mana: null, tap: true },
+    targets: [],
+    effect: { kind: "add-mana", mana: color, amount: 1 },
+    resolve: null,
+    text: `{T}: Add {${color}}.`,
+  });
+}
+
+/**
  * Whether `object` has a **mana ability** (rule 605.1) — Raggadragga, Goreguts
  * Boss's "each creature you control with a mana ability". An activated one
  * (605.1a — `isManaAbilityByRule`, so one that works from another zone counts
@@ -1620,7 +1757,9 @@ export function hasManaAbility(
   const def = registry.get(printedCardName(object));
   if (
     lostAt === null &&
-    (def.activated.some(isManaAbilityByRule) || def.triggered.some(isTriggeredManaAbility))
+    (def.activated.some((a, i) => isManaAbilityByRule(a) && !inactiveStandIn(state, registry, object, i)) ||
+      def.triggered.some(isTriggeredManaAbility) ||
+      intrinsicManaColors(state, registry, object).length > 0)
   ) {
     return true;
   }
@@ -1679,6 +1818,7 @@ export function hasAnyAbility(
   const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
   const def = registry.get(printedCardName(object));
   if (lostAt === null && printedHasAbility(def)) return true;
+  if (intrinsicManaColors(state, registry, object).length > 0) return true;
   if (object.hastyUntilItLeaves === true) return true;
   const c = computeCharacteristics(state, registry, object.id);
   if (c.keywords.size > 0) return true;

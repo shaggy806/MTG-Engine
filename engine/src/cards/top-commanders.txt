@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-301 already implemented / 199 missing
+303 already implemented / 197 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -156,7 +156,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  150  Marrow-Gnawer                                  14305 decks  {3}{B}{B}        Legendary Creature — Rat Rogue
 [x]  151  Kykar, Wind's Fury                             14302 decks  {1}{U}{R}{W}     Legendary Creature — Bird Wizard
 [ ]  152  The Scarab God                                 14251 decks  {3}{U}{B}        Legendary Creature — God
-[ ]  153  Eluge, the Shoreless Sea                       14245 decks  {1}{U}{U}{U}     Legendary Creature — Elemental Fish
+[x]  153  Eluge, the Shoreless Sea                       14245 decks  {1}{U}{U}{U}     Legendary Creature — Elemental Fish
 [ ]  154  Winota, Joiner of Forces                       14222 decks  {2}{R}{W}        Legendary Creature — Human Warrior
 [x]  155  Sythis, Harvest's Hand                         14205 decks  {G}{W}           Legendary Enchantment Creature — Nymph
 [x]  156  Marchesa, the Black Rose                       14071 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
@@ -177,7 +177,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  171  Anikthea, Hand of Erebos                       13355 decks  {2}{W}{B}{G}     Legendary Enchantment Creature — Demigod
 [x]  172  Fire Lord Zuko                                 13329 decks  {R}{W}{B}        Legendary Creature — Human Noble Ally
 [x]  173  Rendmaw, Creaking Nest                         13317 decks  {3}{B}{G}        Legendary Artifact Creature — Scarecrow
-[ ]  174  Omo, Queen of Vesuva                           13314 decks  {2}{G/U}         Legendary Creature — Shapeshifter Noble
+[x]  174  Omo, Queen of Vesuva                           13314 decks  {2}{G/U}         Legendary Creature — Shapeshifter Noble
 [ ]  175  Yarok, the Desecrated                          13233 decks  {2}{B}{G}{U}     Legendary Creature — Elemental Horror
 [ ]  176  Edward Kenway                                  13083 decks  {2}{U}{B}{R}     Legendary Creature — Human Assassin Pirate
 [x]  177  Doran, Besieged by Time                        13058 decks  {1}{W}{B}{G}     Legendary Creature — Treefolk Druid

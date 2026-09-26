@@ -134,7 +134,8 @@
   "effect:exile-with-counters",
   "effect:modifier-grants-activated",
   "effect:duration-extensions",
-  "effect:impulse-exile-other-libraries"
+  "effect:impulse-exile-other-libraries",
+  "static:basic-land-type-mana"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

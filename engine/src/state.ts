@@ -717,7 +717,10 @@ export type GrantedAbilityRef =
     }
   | { readonly kind: "modifier"; readonly ability: TriggeredAbility }
   /** An activated ability a modifier grants (`PtModifier.grantsActivated`). */
-  | { readonly kind: "modifier-activated"; readonly ability: ActivatedAbility };
+  | { readonly kind: "modifier-activated"; readonly ability: ActivatedAbility }
+  /** A land's intrinsic mana ability from a basic land type it wasn't
+   * printed with (rule 305.6 — `intrinsicManaColors`). */
+  | { readonly kind: "intrinsic"; readonly color: Color };
 
 /**
  * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):

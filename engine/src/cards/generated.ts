@@ -1403,6 +1403,7 @@ import _poolElixirOfVitality from "./pool/elixir-of-vitality.js";
 import _poolEloiseNephaliaSleuth from "./pool/eloise-nephalia-sleuth.js";
 import _poolElsha from "./pool/elsha.js";
 import _poolElspethSunsChampion from "./pool/elspeth-suns-champion.js";
+import _poolElugeTheShorelessSea from "./pool/eluge-the-shoreless-sea.js";
 import _poolElvenLyre from "./pool/elven-lyre.js";
 import _poolElvishArchers from "./pool/elvish-archers.js";
 import _poolElvishDoomsayer from "./pool/elvish-doomsayer.js";
@@ -3241,6 +3242,7 @@ import _poolOminousAsylum from "./pool/ominous-asylum.js";
 import _poolOmnathLocusOfCreation from "./pool/omnath-locus-of-creation.js";
 import _poolOmnathLocusOfRage from "./pool/omnath-locus-of-rage.js";
 import _poolOmniCheesePizza from "./pool/omni-cheese-pizza.js";
+import _poolOmoQueenOfVesuva from "./pool/omo-queen-of-vesuva.js";
 import _poolOnTheJob from "./pool/on-the-job.js";
 import _poolOnakkeOgre from "./pool/onakke-ogre.js";
 import _poolOnduGiant from "./pool/ondu-giant.js";
@@ -7015,6 +7017,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEloiseNephaliaSleuth,
   _poolElsha,
   _poolElspethSunsChampion,
+  _poolElugeTheShorelessSea,
   _poolElvenLyre,
   _poolElvishArchers,
   _poolElvishDoomsayer,
@@ -8853,6 +8856,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOmnathLocusOfCreation,
   _poolOmnathLocusOfRage,
   _poolOmniCheesePizza,
+  _poolOmoQueenOfVesuva,
   _poolOnTheJob,
   _poolOnakkeOgre,
   _poolOnduGiant,

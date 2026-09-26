@@ -24,6 +24,7 @@
  */
 
 import type { CardType } from "./cards/define.js";
+import type { Color } from "./mana.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 
 /** "Is every creature type" (rule 702.73a, changeling) in a subtype list. */
@@ -34,10 +35,9 @@ export const EVERY_CREATURE_TYPE = "(every creature type)";
 export const EVERY_LAND_TYPE = "(every land type)";
 
 /** The land types (rule 205.3i). Five of them are the basic land types, each
- * with an intrinsic mana ability (rule 305.6) that the engine doesn't yet
- * grant to a land for having the type — `static:basic-land-type-mana` in
- * `cards/top-commanders-gaps.json`. A land that is every land type is a
- * Forest to every filter, but taps only for what its own abilities say. */
+ * with an intrinsic mana ability (rule 305.6 — `BASIC_LAND_TYPE_COLORS`,
+ * `intrinsicManaColors`): a land that is every land type is a Forest to
+ * every filter and taps for every colour. */
 export const LAND_TYPES: readonly string[] = [
   "Cave",
   "Desert",
@@ -56,6 +56,16 @@ export const LAND_TYPES: readonly string[] = [
   "Tower",
   "Town",
   "Urza's",
+];
+
+/** The basic land types and the colour of the mana each one's intrinsic
+ * "{T}: Add [mana]" makes (rule 305.6), in WUBRG order. */
+export const BASIC_LAND_TYPE_COLORS: readonly (readonly [string, Color])[] = [
+  ["Plains", "W"],
+  ["Island", "U"],
+  ["Swamp", "B"],
+  ["Mountain", "R"],
+  ["Forest", "G"],
 ];
 
 const CREATURE_TYPE_SET: ReadonlySet<string> = new Set(CREATURE_TYPES);

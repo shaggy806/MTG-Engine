@@ -14,6 +14,9 @@ import type { CardRegistry, CardType, CombatRestriction, Keyword } from "./cards
 import {
   abilitiesLostAt,
   computeCharacteristics,
+  extraIntrinsicManaColors,
+  inactiveStandIn,
+  intrinsicManaColors,
   modifierGrantApplies,
   restrictionsOf,
   withComputedCache,
@@ -302,6 +305,27 @@ function visible(
   // it has '…'" (rule 707.9b — Brenard's Food Golems), a one-shot's
   // granted trigger. Only those it still has (rule 613.7).
   if (onBattlefield) {
+    // Its basic land types' mana abilities (rule 305.6), written as a typed
+    // land's reminder is: a type it gained adds its line, and once a printed
+    // type has gone (rule 305.7) the printed line gives way to one for the
+    // types it has now.
+    const lapsed = def.activated.some((_, i) => inactiveStandIn(state, registry, object, i));
+    if (lapsed) {
+      text = text
+        .split("\n")
+        .filter((line) => !/^\(?\{T\}: Add [^()]*\.\)?$/.test(line))
+        .join("\n");
+    }
+    const extra = lapsed
+      ? intrinsicManaColors(state, registry, object)
+      : extraIntrinsicManaColors(state, registry, object);
+    if (extra.length > 0) {
+      const symbols = extra.map((c) => `{${c}}`);
+      const list =
+        symbols.length <= 2 ? symbols.join(" or ") : `${symbols.slice(0, -1).join(", ")}, or ${symbols.at(-1)}`;
+      const reminder = `({T}: Add ${list}.)`;
+      text = text.length > 0 ? `${text}\n${reminder}` : reminder;
+    }
     const lostAt = abilitiesLostAt(object);
     for (const m of object.modifiers) {
       if (!modifierGrantApplies(m, lostAt)) continue;

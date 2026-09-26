@@ -31,6 +31,7 @@ import _poolDismalBackwater from "../pool/dismal-backwater.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
 import _poolElectrostaticField from "../pool/electrostatic-field.js";
+import _poolElugeTheShorelessSea from "../pool/eluge-the-shoreless-sea.js";
 import _poolEmbodimentOfSpring from "../pool/embodiment-of-spring.js";
 import _poolEnvironmentalScientist from "../pool/environmental-scientist.js";
 import _poolEumidianTerrabotanist from "../pool/eumidian-terrabotanist.js";
@@ -181,6 +182,7 @@ const shard: CardShard = {
     _poolDragonSniper,
     _poolDurkwoodBoars,
     _poolElectrostaticField,
+    _poolElugeTheShorelessSea,
     _poolEmbodimentOfSpring,
     _poolEnvironmentalScientist,
     _poolEumidianTerrabotanist,

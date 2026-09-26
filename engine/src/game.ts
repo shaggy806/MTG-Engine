@@ -77,6 +77,9 @@ import {
   modifierGrantApplies,
   KEYWORD_COUNTERS,
   hasManaAbility,
+  extraIntrinsicManaColors,
+  inactiveStandIn,
+  intrinsicManaAbility,
   spellHasSplitSecond,
   invalidateComputedCache,
   staticConditionMet,
@@ -5824,7 +5827,12 @@ export class Game {
         }
         increaseGeneric += times * (mod.increaseGeneric ?? 0);
         if (mod.reduceColored !== undefined) {
-          colored.push(coloredReductionOf(mod.reduceColored, mod.coloredOnly === true));
+          const n =
+            times *
+            (mod.reduceColoredTimes === undefined
+              ? 1
+              : this.costReductionAmount(mod.reduceColoredTimes, source.controller, source.id));
+          if (n > 0) colored.push(coloredReductionOf(mod.reduceColored, mod.coloredOnly === true, n));
         }
       }
     }
@@ -7210,9 +7218,12 @@ export class Game {
    * or `undefined` for a printed one. Read *before* paying costs, which may
    * move the source and end the grant. */
   private activatedRefFor(sourceId: ObjectId, abilityIndex: number): GrantedAbilityRef | undefined {
-    const printed = this.registry.get(printedCardName(this.state.objects[sourceId])).activated.length;
+    const object = this.state.objects[sourceId];
+    const printed = this.registry.get(printedCardName(object)).activated.length;
     if (abilityIndex < printed) return undefined;
-    return this.grantedActivatedEntries(sourceId)[abilityIndex - printed]?.ref;
+    const intrinsic = this.intrinsicExtras(object);
+    if (abilityIndex < printed + intrinsic.length) return { kind: "intrinsic", color: intrinsic[abilityIndex - printed] };
+    return this.grantedActivatedEntries(sourceId)[abilityIndex - printed - intrinsic.length]?.ref;
   }
 
   /** The ability a {@link GrantedAbilityRef} names — plain registry data, so it
@@ -7221,6 +7232,7 @@ export class Game {
     ref: GrantedAbilityRef,
   ): ActivatedAbility | TriggeredAbility | undefined {
     if (ref.kind === "modifier" || ref.kind === "modifier-activated") return ref.ability;
+    if (ref.kind === "intrinsic") return intrinsicManaAbility(ref.color);
     if (!this.registry.has(ref.cardName)) return undefined;
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
     return ref.list === "activated"
@@ -7237,11 +7249,20 @@ export class Game {
     objectId: ObjectId,
     grantors?: readonly GrantSource[],
   ): readonly ActivatedAbility[] {
-    const printed = this.registry.get(
-      printedCardName(this.state.objects[objectId]),
-    ).activated;
+    const object = this.state.objects[objectId];
+    const printed = this.registry.get(printedCardName(object)).activated;
+    const intrinsic = this.intrinsicExtras(object);
     const granted = this.grantedActivated(objectId, grantors);
-    return granted.length === 0 ? printed : [...printed, ...granted];
+    return granted.length === 0 && intrinsic.length === 0
+      ? printed
+      : [...printed, ...intrinsic.map(intrinsicManaAbility), ...granted];
+  }
+
+  /** The intrinsic mana abilities a permanent has beyond its printed ones
+   * (rule 305.6 — `extraIntrinsicManaColors`), listed after them. */
+  private intrinsicExtras(object: GameObject | undefined): readonly Color[] {
+    if (object === undefined || object.zone !== "battlefield") return [];
+    return extraIntrinsicManaColors(this.state, this.registry, object);
   }
 
   /** `ability.cost.mana`, with `{X}` resolved to `xValue` (folded into
@@ -7379,6 +7400,9 @@ export class Game {
       // are left out of `effectiveActivated` when they came before.
       if (abilityIndex < def.activated.length && hasLostAbilities(source)) {
         return `${def.name} has lost its abilities`;
+      }
+      if (inactiveStandIn(this.state, this.registry, source, abilityIndex)) {
+        return `${def.name} no longer has the land type that ability comes from`;
       }
     }
     // Split second (rule 702.61b) leaves mana abilities alone; a prohibition
@@ -8007,6 +8031,7 @@ export class Game {
       this.effectiveActivated(id, grantors).forEach((ability, abilityIndex) => {
         if (
           abilityIndex < printedLost ||
+          inactiveStandIn(this.state, this.registry, object, abilityIndex) ||
           !isManaAbility(ability) ||
           ability.effect === null ||
           ability.effect.kind !== "add-mana"
