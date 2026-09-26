@@ -63,15 +63,20 @@ export function commandersOf(deck: {
 }
 
 /**
- * Whether `def` may be a deck's commander on its own (rule 903.3): a
- * legendary creature — or a planeswalker, which the engine lets command
- * without asking for the "can be your commander" line. A Background isn't
- * one: it commands only as the second half of a pair ({@link isBackground}).
+ * Whether `def` may be a deck's commander on its own. Rule 903.3: a
+ * legendary card that is a creature card, a Vehicle card, or a Spacecraft
+ * card with power/toughness — or, rule 903.3a, one that says it "can be your
+ * commander", which is how a planeswalker commands (Lord Windgrace, but not
+ * Garruk Wildspeaker). A Background isn't one: it commands only as the second
+ * half of a pair ({@link isBackground}).
  */
 export function canCommandAlone(def: CardDefinition): boolean {
+  if (!def.supertypes.includes("legendary")) return false;
   return (
-    def.supertypes.includes("legendary") &&
-    (def.types.includes("creature") || def.types.includes("planeswalker"))
+    def.canBeCommander ||
+    def.types.includes("creature") ||
+    def.subtypes.includes("Vehicle") ||
+    (def.subtypes.includes("Spacecraft") && def.power !== null)
   );
 }
 
@@ -233,7 +238,9 @@ export function validateCommanderDeck(
         );
       }
     } else if (!canCommandAlone(def)) {
-      violations.push(`"${name}" can't be a commander (not a legendary creature)`);
+      violations.push(
+        `"${name}" can't be a commander (not a legendary creature or Vehicle, and it doesn't say it can be your commander)`,
+      );
     }
     // A pair's colour identity is the union of both (rule 903.4).
     for (const c of colorIdentityOf(def, registry)) commanderIdentity.add(c);

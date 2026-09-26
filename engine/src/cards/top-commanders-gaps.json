@@ -109,7 +109,8 @@
   "bug:token-stack-fixes",
   "bug:commander-903-9a-current-rules",
   "bug:counter-annihilation",
-  "bug:lore-counters-fire-chapters"
+  "bug:lore-counters-fire-chapters",
+  "bug:commander-eligibility-vehicles"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

@@ -17,6 +17,7 @@ export default defineCard({
   types: ["planeswalker"],
   subtypes: ["Guff"],
   loyalty: 5,
+  canBeCommander: true,
   text: `${END_TEXT}\n${PLUS_TEXT}\n${MINUS_TEXT}\nCommodore Guff can be your commander.`,
   triggered: [
     {

@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { DragEvent, MouseEvent } from 'react'
 import type { CardDefinition } from 'engine/client'
-import { canPairCommanders, hasPartner, isDeckableCard, validateCommanderDeck } from 'engine/client'
+import {
+  canCommandAlone,
+  canPairCommanders,
+  hasPartner,
+  isDeckableCard,
+  validateCommanderDeck,
+} from 'engine/client'
 import { cardPool } from '../cards/cardData.ts'
 import { Symbols } from '../ui/Symbols.tsx'
 import { CardHoverPreview } from '../ui/CardHoverPreview.tsx'
@@ -40,10 +46,6 @@ function buildableCards(): readonly CardDefinition[] {
  * saved before that filter existed can still name one, and such a row has to
  * render (and be removable) rather than showing up as an unknown card. */
 const cardNamed = (name: string): CardDefinition | undefined => cardPool().byName.get(name)
-
-const isCommanderEligible = (def: CardDefinition): boolean =>
-  def.supertypes.includes('legendary') &&
-  (def.types.includes('creature') || def.types.includes('planeswalker'))
 
 /**
  * A deck's commanders once `cardName` is starred. Starring a commander again
@@ -410,7 +412,7 @@ export function DeckEditor({
                       onSelect: () => addCard(c.name),
                       disabled: isThisCommander,
                     },
-                    ...(isCommanderEligible(c)
+                    ...(canCommandAlone(c)
                       ? [
                           {
                             label: commanderAction(c.name),
@@ -431,7 +433,7 @@ export function DeckEditor({
                   ) : null}
                   {c.manaCost ? <Symbols text={c.manaCost} /> : null}
                   <span className="db-card-row-spacer" />
-                  {isCommanderEligible(c) ? (
+                  {canCommandAlone(c) ? (
                     <button
                       type="button"
                       title={commanderAction(c.name)}
@@ -516,7 +518,7 @@ export function DeckEditor({
             {deck.commanders.length === 0 ? (
               <div className="db-commander-slot">
                 <span className="muted">
-                  No commander — pick a legendary creature or planeswalker with ☆
+                  No commander — pick a legendary creature, or another card that can command, with ☆
                 </span>
               </div>
             ) : deck.commanders.length === 1 && hasPartner(cardPool().registry, deck.commanders[0]) ? (
@@ -552,7 +554,7 @@ export function DeckEditor({
                           // import: a decklist that didn't label its commander
                           // gets one guessed, and fixing that meant hunting the
                           // right card down in the pool.
-                          ...(row.def !== undefined && isCommanderEligible(row.def)
+                          ...(row.def !== undefined && canCommandAlone(row.def)
                             ? [
                                 {
                                   label: commanderAction(row.name),
@@ -571,7 +573,7 @@ export function DeckEditor({
                         ) : null}
                         {row.def?.manaCost ? <Symbols text={row.def.manaCost} /> : null}
                         <span className="db-card-row-spacer" />
-                        {row.def !== undefined && isCommanderEligible(row.def) ? (
+                        {row.def !== undefined && canCommandAlone(row.def) ? (
                           <button
                             type="button"
                             title={commanderAction(row.name)}

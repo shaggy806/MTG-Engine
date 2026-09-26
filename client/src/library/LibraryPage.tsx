@@ -3,6 +3,7 @@ import type { FocusEvent, MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { CardDefinition, CardType, Color } from 'engine/client'
 import {
+  canCommandAlone,
   edhrecRankOf,
   isCardFront,
   isTokenCard,
@@ -709,7 +710,7 @@ function FaceText({ def }: { readonly def: CardDefinition }) {
 function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonly isToken: boolean }) {
   const chips: string[] = []
   if (isToken) chips.push('token — not a card')
-  if (def.supertypes.includes('legendary') && (def.types.includes('creature') || def.types.includes('planeswalker'))) {
+  if (canCommandAlone(def)) {
     chips.push('can be your commander')
   }
   if (def.flashback) chips.push(`flashback ${def.flashback.cost}`)

@@ -561,7 +561,7 @@ export async function evaluateDecklist(
 }
 
 /** The pasted list's commanders: its "Commander" section when it had one,
- * otherwise the first implemented legendary creature or planeswalker. */
+ * otherwise the first implemented card that can command alone. */
 function commandersOf(
   entries: readonly DecklistEntry[],
   registry: CardRegistry,
@@ -570,11 +570,7 @@ function commandersOf(
   if (explicit.length > 0) return explicit;
   const guess = entries.find((e) => {
     if (!registry.has(e.name)) return false;
-    const def = registry.get(e.name);
-    return (
-      def.supertypes.includes("legendary") &&
-      (def.types.includes("creature") || def.types.includes("planeswalker"))
-    );
+    return canCommandAlone(registry.get(e.name));
   });
   return guess === undefined ? [] : [guess.name];
 }
@@ -680,8 +676,8 @@ function chooseReplacements(
  * A best-effort Commander-format check over the *implemented* cards in a
  * pasted list (ROADMAP Phase 9). Prefers `explicitCommanders` (from
  * `parseDecklistText`'s "Commander" section, when the pasted text had one);
- * otherwise falls back to guessing the first implemented legendary
- * creature/planeswalker in the list. Everything else is the 99. Only
+ * otherwise falls back to guessing the first implemented card in the list
+ * that can command alone (`canCommandAlone`). Everything else is the 99. Only
  * surfaces singleton / colour-identity / size violations — feasibility (is
  * each card implemented) is the `cards` report's job. An explicit commander
  * that isn't implemented is still reported *as* the commander (accurately

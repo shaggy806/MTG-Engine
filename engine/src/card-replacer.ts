@@ -24,6 +24,7 @@
 
 import { BUILTIN_CARDS, isDeckableCard } from "./cards.js";
 import type { CardDefinition, CardType } from "./cards/define.js";
+import { canCommandAlone } from "./deck-validation.js";
 import { colorIdentityOf, withinIdentity } from "./identity.js";
 import type { FaceLookup } from "./identity.js";
 import { COLORS, manaValue, parseManaCost } from "./mana.js";
@@ -286,13 +287,6 @@ function bodyScore(target: ReplacementTarget, def: CardDefinition): number {
   return 0.6 * size + 0.4 * keywords;
 }
 
-function canBeCommander(def: CardDefinition): boolean {
-  return (
-    def.supertypes.includes("legendary") &&
-    (def.types.includes("creature") || def.types.includes("planeswalker"))
-  );
-}
-
 function confidenceOf(similarity: number, targetHasTags: boolean): ReplacementConfidence {
   if (!targetHasTags) return "low";
   if (similarity >= HIGH_CONFIDENCE) return "high";
@@ -344,7 +338,7 @@ export function suggestReplacements(
     // entries (see `cards/classify.ts`); basics are never missing.
     if (!isDeckableCard(def) || def.supertypes.includes("basic")) continue;
     if (exclude.has(def.name) || def.name === target.name) continue;
-    if (context.forCommander === true && !canBeCommander(def)) continue;
+    if (context.forCommander === true && !canCommandAlone(def)) continue;
     if (identity !== null && !withinIdentity(colorIdentityOf(def, BUILTIN_FACES), identity)) continue;
 
     const defTypes = new Set<string>(def.types);

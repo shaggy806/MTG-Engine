@@ -746,7 +746,7 @@ export function parseFace(face, ctx = {}) {
       }
       continue;
     }
-    if (line === "~ can be your commander.") continue;
+    if (line === "~ can be your commander.") { out.canBeCommander = true; continue; }
     if (line === "Partner") { out.pairing = { kind: "partner" }; continue; }
     if ((m = /^Partner with (.+)$/.exec(line))) {
       out.pairing = { kind: "partner-with", name: m[1] };

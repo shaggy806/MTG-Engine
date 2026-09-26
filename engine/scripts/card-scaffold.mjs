@@ -177,6 +177,7 @@ function faceSource(face, ctx) {
     loyalty: num(face.loyalty),
     keywords: parsed.keywords.length ? [...new Set(parsed.keywords)] : undefined,
     pairing: parsed.pairing,
+    canBeCommander: parsed.canBeCommander,
     cantBeCountered: parsed.cantBeCountered,
     cycling: parsed.cycling,
     flashback: parsed.flashback,

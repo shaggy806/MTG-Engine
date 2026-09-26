@@ -298,6 +298,7 @@ from the same link.
 | `countersPersistAcrossZones` | `boolean` | "Counters remain on ~ as it moves to any zone other than a player's hand or library" (Skullbriar, the Walking Grave). `moveObject` keeps `counters` on every other move (graveyard, exile, command zone, stack, and back onto the battlefield, where enters-with-counters adds to them); everything else rule 400.7 resets still resets. Read off the object as it leaves, so a copy of the card keeps them and a permanent that has lost its abilities doesn't. Counters apply to P/T in every zone (layer 7c), so a grown card is that size in the graveyard too. |
 | `revealsOwnLibraryTop` | `boolean` | play with your top card revealed (Oracle of Mul Daya) |
 | `pairing` | `CommanderPairing` | the partner-family ability that lets this card be one of **two** commanders (rule 702.124) — §12. Never inferred from `text`. |
+| `canBeCommander` | `boolean` | "~ can be your commander." (rule 903.3a) — how a legendary card that isn't a creature, Vehicle or Spacecraft with P/T (a planeswalker) commands a deck — §12. Never inferred from `text`; `pool.test.ts` checks the two agree. |
 
 ---
 
@@ -2185,8 +2186,11 @@ Grep the pool for `resolve:` — there are very few.
   has left the stack its controller sacrifices it (rule 714.4) — a real
   sacrifice, so "whenever you sacrifice an enchantment" sees it — and the
   `chapter-resolves` trigger (§9) fires as each chapter ability resolves.
-- **Commander** — nothing on the card marks it; it's whichever card a
-  `DeckList.commander` names. `supertypes: ["legendary"]` is conventional. The
+- **Commander** — it's whichever card a `DeckList.commander` names, and the deck
+  validator (`canCommandAlone`) allows a legendary creature, Vehicle, or
+  Spacecraft with P/T (rule 903.3), or a legendary card with
+  `canBeCommander: true` for its printed "~ can be your commander" (903.3a —
+  `lord-windgrace.ts`); any other planeswalker can't command. The
   engine adds the `{2}` tax and the command-zone choice (rule 903.9)
   automatically — for a non-creature commander (a Background) too. A
   commander's own "when this dies" trigger works as written: it dies first,

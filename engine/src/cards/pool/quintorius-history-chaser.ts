@@ -17,6 +17,7 @@ export default defineCard({
   types: ["planeswalker"],
   subtypes: ["Quintorius"],
   loyalty: 5,
+  canBeCommander: true,
   text: `${LEAVE_TEXT}\n${PLUS_TEXT}\n${MINUS_TEXT}\nQuintorius, History Chaser can be your commander.`,
   triggered: [
     {

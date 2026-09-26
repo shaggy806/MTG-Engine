@@ -1457,6 +1457,11 @@ export interface CardDefinition {
    * alone. A deckbuilding rule, read by `deck-validation.ts`'s
    * `canPairCommanders` and nothing in play. See {@link CommanderPairing}. */
   readonly pairing: CommanderPairing | null;
+  /** "[This card] can be your commander." (rule 903.3a) — what lets a
+   * legendary card that is neither a creature, a Vehicle nor a Spacecraft
+   * with power/toughness (a planeswalker, say) command a deck. A
+   * deckbuilding rule, read by `deck-validation.ts`'s `canCommandAlone`. */
+  readonly canBeCommander: boolean;
 }
 
 /**
@@ -1577,6 +1582,7 @@ interface CardDraft {
   disturb?: { readonly cost: string };
   adventure?: boolean;
   pairing?: CommanderPairing;
+  canBeCommander?: boolean;
 }
 
 /** Build a {@link CardDefinition} from a partial draft, filling in defaults. */
@@ -1648,5 +1654,6 @@ export function defineCard(draft: CardDraft): CardDefinition {
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,
     pairing: draft.pairing ?? null,
+    canBeCommander: draft.canBeCommander ?? false,
   };
 }

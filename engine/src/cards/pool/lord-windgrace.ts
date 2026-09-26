@@ -25,6 +25,7 @@ export default defineCard({
   types: ["planeswalker"],
   subtypes: ["Windgrace"],
   loyalty: 5,
+  canBeCommander: true,
   text: `${PLUS_TEXT}\n${MINUS3_TEXT}\n${MINUS11_TEXT}\nLord Windgrace can be your commander.`,
   activated: [
     {

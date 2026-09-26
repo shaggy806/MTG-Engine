@@ -130,6 +130,17 @@ describe("card scaffolds", () => {
   });
 });
 
+describe("deckbuilding flags", () => {
+  // Rule 903.3a: a card that says it "can be your commander" is the only
+  // way a planeswalker commands. `deck-validation.ts` reads the declarative
+  // `canBeCommander`, never the text, so the two must agree.
+  it("canBeCommander is set exactly on the cards that say they can be your commander", () => {
+    const says = (def: CardDefinition): boolean => /can be your commander/i.test(def.text);
+    const mismatched = POOL_CARDS.filter((def) => def.canBeCommander !== says(def)).map((d) => d.name);
+    expect(mismatched).toEqual([]);
+  });
+});
+
 describe("classify", () => {
   it("isTokenCard is the tokens/ directory, not a name guess", () => {
     for (const def of TOKEN_CARDS) expect(isTokenCard(def), def.name).toBe(true);

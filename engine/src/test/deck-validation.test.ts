@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { canPairCommanders, commandersOf, validateCommanderDeck } from "../deck-validation.js";
+import {
+  canCommandAlone,
+  canPairCommanders,
+  commandersOf,
+  validateCommanderDeck,
+} from "../deck-validation.js";
 import { createDefaultRegistry } from "../cards.js";
+import { defineCard } from "../cards/define.js";
 
 const reg = createDefaultRegistry();
 
@@ -133,5 +139,45 @@ describe("commandersOf", () => {
     expect(commandersOf({})).toEqual([]);
     // An empty list is a deck with no commander, not a missing field.
     expect(commandersOf({ commanders: [], commander: "C" })).toEqual([]);
+  });
+});
+
+describe("who can be a commander (rule 903.3)", () => {
+  // No legendary Vehicle or Spacecraft is in the pool yet.
+  const vehicle = defineCard({
+    name: "Test Legendary Vehicle",
+    manaCost: "{3}",
+    supertypes: ["legendary"],
+    types: ["artifact"],
+    subtypes: ["Vehicle"],
+    power: 4,
+    toughness: 4,
+    text: "Crew 2",
+  });
+  const spacecraft = defineCard({ ...vehicle, name: "Test Spacecraft", subtypes: ["Spacecraft"] });
+  const unstationed = defineCard({
+    ...vehicle,
+    name: "Test Spacecraft Without A Box",
+    subtypes: ["Spacecraft"],
+    power: undefined,
+    toughness: undefined,
+  });
+
+  it("is a legendary creature, Vehicle, or Spacecraft with power/toughness", () => {
+    expect(canCommandAlone(reg.get("Atraxa, Praetors' Voice"))).toBe(true);
+    expect(canCommandAlone(vehicle)).toBe(true);
+    expect(canCommandAlone(spacecraft)).toBe(true);
+    expect(canCommandAlone(unstationed)).toBe(false);
+    expect(canCommandAlone(defineCard({ ...vehicle, name: "Test Vehicle", supertypes: [] }))).toBe(false);
+  });
+
+  it("is a planeswalker only when it says it can be your commander (903.3a)", () => {
+    expect(canCommandAlone(reg.get("Lord Windgrace"))).toBe(true);
+    expect(canCommandAlone(reg.get("Garruk Wildspeaker"))).toBe(false);
+    const r = validateCommanderDeck(
+      { commanders: ["Garruk Wildspeaker"], cards: Array<string>(99).fill("Forest"), size: 100 },
+      reg,
+    );
+    expect(r.violations.some((v) => v.includes("can't be a commander"))).toBe(true);
   });
 });
