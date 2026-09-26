@@ -72,6 +72,10 @@ import {
   effectiveTypes,
   hasAnyAbility,
   hasLostAbilities,
+  abilitiesLostAt,
+  grantOutlastsLoss,
+  modifierGrantApplies,
+  KEYWORD_COUNTERS,
   hasManaAbility,
   spellHasSplitSecond,
   invalidateComputedCache,
@@ -317,13 +321,21 @@ interface TriggeredGrantSource {
 /** Combat damage from the same commander at or above this total is a loss (rule 903.10a). */
 const COMMANDER_DAMAGE_THRESHOLD = COMMANDER_DAMAGE_LETHAL;
 
+/** One triggered ability an object has, as `Game.effectiveTriggeredEntries`
+ * lists them: a granted one with where it was granted from. A printed one the
+ * permanent has lost (layer 6 — Turn to Frog) is `lost`: kept in its place,
+ * so an index still names the ability that triggered before the loss (rule
+ * 113.7a), but it doesn't trigger. */
+interface TriggeredEntry {
+  readonly ability: TriggeredAbility;
+  readonly ref?: GrantedAbilityRef;
+  readonly lost?: true;
+}
+
 /** Shared empty result for `effectiveTriggeredEntries`' common no-triggers
  * case, so the per-event battlefield scan allocates nothing for a plain land
  * or vanilla creature. */
-const EMPTY_TRIGGERED_ENTRIES: readonly {
-  readonly ability: TriggeredAbility;
-  readonly ref?: GrantedAbilityRef;
-}[] = [];
+const EMPTY_TRIGGERED_ENTRIES: readonly TriggeredEntry[] = [];
 
 const EMPTY_ID_SET: ReadonlySet<ObjectId> = new Set();
 
@@ -1903,6 +1915,7 @@ export class Game {
       o.chosenOnEnter ?? null,
       o.chosenCreatureType ?? null,
       o.counters,
+      o.counterTimestamps ?? null,
       o.modifiers,
     ]);
   }
@@ -6904,14 +6917,18 @@ export class Game {
   }
 
   /** {@link effectiveTriggered}, with each granted ability's
-   * {@link GrantedAbilityRef} alongside it (absent for a printed one). */
+   * {@link GrantedAbilityRef} alongside it (absent for a printed one).
+   *
+   * Layer 6 runs in timestamp order (rule 613.7): a permanent that has lost
+   * all its abilities has only what was granted it since — by a static whose
+   * source is newer, or a later one-shot grant. Its printed abilities are
+   * still listed, marked `lost`, so the indices don't move. */
   private effectiveTriggeredEntries(
     objectId: ObjectId,
     grantors?: readonly TriggeredGrantSource[],
-  ): readonly { readonly ability: TriggeredAbility; readonly ref?: GrantedAbilityRef }[] {
+  ): readonly TriggeredEntry[] {
     const target = this.state.objects[objectId];
     if (target === undefined) return EMPTY_TRIGGERED_ENTRIES;
-    if (hasLostAbilities(target)) return EMPTY_TRIGGERED_ENTRIES;
     const printedAbilities = this.registry.get(printedCardName(target)).triggered;
     // The common case — a land, a vanilla creature — has nothing printed, no
     // modifiers and no grantors to consult: skip the allocations below. This
@@ -6924,12 +6941,16 @@ export class Game {
     ) {
       return EMPTY_TRIGGERED_ENTRIES;
     }
-    const printed = printedAbilities.map((ability) => ({ ability }));
+    const lostAt = abilitiesLostAt(target);
+    const printed: readonly TriggeredEntry[] = printedAbilities.map((ability) =>
+      lostAt === null ? { ability } : { ability, lost: true },
+    );
     const granted: { ability: TriggeredAbility; ref: GrantedAbilityRef }[] = [];
     // A one-shot grant rides on the object's own modifiers, so it works off
     // the battlefield too (a creature that died still has the modifier until
     // `moveObject` clears it).
     for (const modifier of target.modifiers) {
+      if (!modifierGrantApplies(modifier, lostAt)) continue;
       for (const ability of modifier.grantsTriggered ?? []) {
         granted.push({ ability, ref: { kind: "modifier", ability } });
       }
@@ -6941,6 +6962,7 @@ export class Game {
         entries: { ability: TriggeredAbility; ref: GrantedAbilityRef }[];
       }[] = [];
       for (const { source, ability, staticIndex, abilities } of sources) {
+        if (!grantOutlastsLoss(lostAt, source.timestamp)) continue;
         const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
         if (!staticReaches(this.state, this.registry, source, ability, target, { keywords })) continue;
         if (!this.staticActive(source, ability)) continue;
@@ -7023,14 +7045,16 @@ export class Game {
   ): readonly { readonly ability: ActivatedAbility; readonly ref: GrantedAbilityRef }[] {
     const target = this.state.objects[objectId];
     if (target === undefined || target.zone !== "battlefield") return [];
-    if (hasLostAbilities(target)) return [];
     const sources = grantors ?? this.activatedGrantSources();
     if (sources.length === 0) return []; // nothing grants anything — the norm
+    // Only what was granted after a loss of all its abilities (rule 613.7).
+    const lostAt = abilitiesLostAt(target);
     const grants: {
       ts: number;
       entries: { ability: ActivatedAbility; ref: GrantedAbilityRef }[];
     }[] = [];
     for (const { source, ability, staticIndex, abilities } of sources) {
+      if (!grantOutlastsLoss(lostAt, source.timestamp)) continue;
       const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
       if (!staticReaches(this.state, this.registry, source, ability, target, { keywords })) continue;
       if (!this.staticActive(source, ability)) continue;
@@ -7216,7 +7240,9 @@ export class Game {
       if (source.controller !== player) {
         return `${player} does not control that permanent`;
       }
-      if (hasLostAbilities(source)) {
+      // What was granted it after it lost them, it has (rule 613.7) — those
+      // are left out of `effectiveActivated` when they came before.
+      if (abilityIndex < def.activated.length && hasLostAbilities(source)) {
         return `${def.name} has lost its abilities`;
       }
     }
@@ -7820,7 +7846,6 @@ export class Game {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player) continue;
-      if (hasLostAbilities(object)) continue; // layer 6 — no mana ability
       // "Can't activate abilities of …" covers mana abilities (Myrel).
       if (this.abilitiesProhibited(player, object)) continue;
       // A `{T}` ability needs the permanent untapped and not summoning sick;
@@ -7828,6 +7853,9 @@ export class Game {
       const canTap = !object.tapped && !this.tapAbilityBlockedBySickness(object);
 
       const def = this.registry.get(printedCardName(object));
+      // Layer 6: one that has lost its abilities has no printed mana ability,
+      // only one granted it since (rule 613.7).
+      const printedLost = hasLostAbilities(object) ? def.activated.length : 0;
       const options: ManaOption[] = [];
       // `sacrificeSelf` is tracked per source, not per option: no real card
       // mixes a tap-only and a sacrifice mana ability on one permanent.
@@ -7840,6 +7868,7 @@ export class Game {
         `|${o.tag === undefined ? "" : JSON.stringify(o.tag)}`;
       this.effectiveActivated(id, grantors).forEach((ability, abilityIndex) => {
         if (
+          abilityIndex < printedLost ||
           !isManaAbility(ability) ||
           ability.effect === null ||
           ability.effect.kind !== "add-mana"
@@ -9360,8 +9389,6 @@ export class Game {
         leaving && (id === subject || lookBack.has(id)) && live.zone !== "battlefield"
           ? live.lastKnown
           : undefined;
-      // Layer 6 — a permanent that lost its abilities has no triggered ones.
-      if (lastSeen !== undefined ? lastSeen.lostAbilities : hasLostAbilities(live)) continue;
       const object =
         lastSeen !== undefined && lastSeen.controller !== live.controller
           ? { ...live, controller: lastSeen.controller }
@@ -9385,7 +9412,9 @@ export class Game {
         lastSeen !== undefined
           ? this.departedTriggeredEntries(lastSeen)
           : this.effectiveTriggeredEntries(id, triggerGrantors);
-      entries.forEach(({ ability, ref }, index) => {
+      entries.forEach(({ ability, ref, lost }, index) => {
+        // Layer 6 — a printed ability it has lost doesn't trigger.
+        if (lost === true) return;
         if (onlyEminence && ability.fromCommandZone !== true) return;
         if (onlyThisCast && ability.trigger.on !== "this-cast") return;
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
@@ -9816,11 +9845,10 @@ export class Game {
    * granted, in {@link effectiveTriggeredEntries}' order, so an index taken
    * here names the same ability when the trigger is placed and resolved.
    */
-  private departedTriggeredEntries(
-    departed: LastKnownInfo,
-  ): readonly { readonly ability: TriggeredAbility; readonly ref?: GrantedAbilityRef }[] {
-    if (departed.lostAbilities) return EMPTY_TRIGGERED_ENTRIES;
-    const printed = this.registry.get(departed.name).triggered.map((ability) => ({ ability }));
+  private departedTriggeredEntries(departed: LastKnownInfo): readonly TriggeredEntry[] {
+    const printed: readonly TriggeredEntry[] = this.registry
+      .get(departed.name)
+      .triggered.map((ability) => (departed.lostAbilities ? { ability, lost: true } : { ability }));
     const refs = departed.grantedTriggers ?? [];
     if (refs.length === 0) return printed;
     const granted: { ability: TriggeredAbility; ref: GrantedAbilityRef }[] = [];
@@ -11676,8 +11704,10 @@ export class Game {
       grantTriggered: (target, ability, duration) =>
         this.grantTriggered(target, ability, duration),
       grantTriggeredAll: (filter, ability, duration) => {
+        const timestamp = this.freshTimestamp();
         for (const id of this.battlefieldMatching(controller, filter)) {
           this.state.objects[id]?.modifiers.push({
+            timestamp,
             power: 0,
             toughness: 0,
             keywords: [],
@@ -11752,8 +11782,9 @@ export class Game {
         // Every match is fixed before the first one changes (a Treasure made
         // a creature mustn't change what the filter matches mid-loop), and a
         // token stack is animated whole, like any mass effect's.
+        const timestamp = this.freshTimestamp();
         for (const id of this.battlefieldMatching(controller, filter)) {
-          this.animate({ kind: "object", object: id }, opts, false);
+          this.animate({ kind: "object", object: id }, opts, false, timestamp);
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
@@ -13497,6 +13528,7 @@ export class Game {
     keyword: Keyword,
     duration: PtDuration,
     split = true,
+    timestamp?: number,
   ): void {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
@@ -13507,6 +13539,7 @@ export class Game {
     if (object === undefined) return;
     if (object.zone !== "battlefield" && !(object.zone === "stack" && object.kind === "card")) return;
     object.modifiers.push({
+      timestamp: timestamp ?? this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [keyword],
@@ -13830,6 +13863,7 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
+      timestamp: this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [],
@@ -13845,9 +13879,11 @@ export class Game {
     duration: PtDuration,
     except?: ObjectId,
   ): void {
+    // One effect, one timestamp (rule 613.7b), however many it reaches.
+    const timestamp = this.freshTimestamp();
     for (const id of this.battlefieldMatching(you, filter)) {
       if (id === except) continue;
-      this.grantKeyword({ kind: "object", object: id }, keyword, duration, false);
+      this.grantKeyword({ kind: "object", object: id }, keyword, duration, false, timestamp);
     }
   }
 
@@ -13869,14 +13905,16 @@ export class Game {
       readonly duration: PtDuration;
     },
     split = true,
+    timestamp?: number,
   ): void {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
-      // Ordered against type-granting and P/T-setting statics (rule 613.7).
-      timestamp: this.state.timestampSeq,
+      // Ordered against type-granting and P/T-setting statics, and in layer 6
+      // against keyword grants (rule 613.7).
+      timestamp: timestamp ?? this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [...opts.keywords],
@@ -14069,6 +14107,13 @@ export class Game {
     );
   }
 
+  /** A fresh timestamp (rule 613.7b) — for a continuous effect as it's
+   * created, so layer 6 can order it against a loss of all abilities. */
+  private freshTimestamp(): number {
+    this.state.timestampSeq += 1;
+    return this.state.timestampSeq;
+  }
+
   /** `split: false` (a counters-on-*each* effect) changes a compacted token
    * stack uniformly; the default singles one member out, for anything that
    * names one permanent. */
@@ -14092,6 +14137,11 @@ export class Game {
     const total = amount > 0 ? amount * this.counterMultiplier(id, counter) : amount;
     const before = object.counters[counter] ?? 0;
     object.counters[counter] = before + total;
+    // Every counter of a kind takes the newest one's timestamp (613.7c); a
+    // keyword counter's is what orders its keyword in layer 6.
+    if (total > 0 && KEYWORD_COUNTERS.has(counter as Keyword)) {
+      object.counterTimestamps = { ...object.counterTimestamps, [counter]: this.freshTimestamp() };
+    }
     this.emit({ type: "counter-added", object: id, counter, amount: total, by: by ?? object.controller });
     if (counter === "lore" && total > 0) this.triggerChapters(id, before, before + total);
   }
@@ -15627,6 +15677,7 @@ export class Game {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
     object.modifiers.push({
+      timestamp: this.freshTimestamp(),
       power: 0,
       toughness: 0,
       keywords: [],
@@ -17441,10 +17492,9 @@ export class Game {
     const lostAbilities = hasLostAbilities(object);
     // The granted triggered abilities, in `effectiveTriggered`'s order after
     // the printed ones: a granted dies trigger still fires once its grantor
-    // has left too, or its own modifiers have been cleared by the move.
-    const granted = lostAbilities
-      ? []
-      : this.effectiveTriggeredEntries(id).flatMap((e) => (e.ref === undefined ? [] : [e.ref]));
+    // has left too, or its own modifiers have been cleared by the move. Only
+    // those granted after any loss of all its abilities (rule 613.7).
+    const granted = this.effectiveTriggeredEntries(id).flatMap((e) => (e.ref === undefined ? [] : [e.ref]));
     // Whoever had goaded it, however — a static goad included, read while
     // its source is still here (a simultaneous event snapshots every victim
     // before the first moves).
@@ -17845,7 +17895,10 @@ export class Game {
     object.blockedBy = [];
     object.blocked = false;
     object.markedByDeathtouch = false;
-    if (!keepCounters) object.counters = {};
+    if (!keepCounters) {
+      object.counters = {};
+      delete object.counterTimestamps;
+    }
     object.modifiers = [];
     object.attachedTo = null;
     // A permanent that leaves the battlefield reverts to its owner's control

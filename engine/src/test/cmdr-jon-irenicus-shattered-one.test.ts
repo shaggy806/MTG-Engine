@@ -15,7 +15,7 @@ import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { goadersOf } from "../goad.js";
 import { asPlayerId } from "../primitives.js";
-import type { ObjectId } from "../primitives.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -48,9 +48,12 @@ const quiet = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0;
 const endStepDone = (game: Game) =>
   game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "end" && quiet(s));
+/** Bob, now its controller, is told to sacrifice a creature. The sacrifice
+ * is made at the priority check the resolution ends in, which
+ * `advanceUntil(quiet)` would skip with nothing else pending. */
 const cantBeSacrificed = (game: Game, id: ObjectId): boolean => {
   game.debugApplyEffect(B, { kind: "sacrifice", who: "you", filter: { type: "creature" }, count: 1 }, []);
-  game.advanceUntil(quiet);
+  (game as unknown as { prepareForPriority(p: PlayerId): void }).prepareForPriority(A);
   return game.state.objects[id].zone === "battlefield";
 };
 

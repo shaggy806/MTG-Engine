@@ -1678,8 +1678,8 @@ static: [
 `withKeyword` (either creature scope) and `withoutKeyword` read the target's
 **current** keywords (rule 613.8a — the anthem depends on whatever grants or
 removes the keyword): a creature flying because of an Aura, Equipment, an
-anthem or a `grant-keyword` spell counts, and one that lost its abilities
-(Turn to Frog) doesn't. `collectStaticEffects` gets there without recursing:
+anthem or a `grant-keyword` spell counts, and one whose flying a later loss
+of all abilities took away (Turn to Frog — rule 613.7) doesn't. `collectStaticEffects` gets there without recursing:
 it applies every other static first, then matches the keyword-scoped ones
 against the keywords that produced (Alela, Artful Provocateur; Empyrean
 Eagle; Gravitational Shift).

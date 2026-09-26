@@ -113,9 +113,6 @@ that one card is the reason the deck exists.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). Needs `decision:choose-permanent`,
   which is UI-bound. See AUTHORING §15, "Partial".
-- **Losing all abilities keeps granted keywords.** An effect that removes all abilities never
-  removes a keyword another effect granted, whichever came first (rule 613.7). Only suspect's
-  menace and can't-block are timestamped against it.
 - **A token copy isn't asked its "as this enters" choice** (a token copy of Clone, Morophon or
   Urza's Incubator), though the gaps list marks `bug:as-enters-choices-any-entry` built. See
   AUTHORING §15.

@@ -719,7 +719,6 @@ export function keywordCountersOn(object: GameObject): Keyword[] {
   return out;
 }
 
-/** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
 /**
  * One player's running total for `stat` this turn.
  *
@@ -872,8 +871,49 @@ function spellGrantedKeywords(state: GameState, registry: CardRegistry, spell: G
   return out;
 }
 
+/** True if this permanent has lost its own abilities (layer 6 — Turn to Frog). */
 export function hasLostAbilities(object: GameObject): boolean {
   return object.modifiers.some((m) => m.loseAbilities === true);
+}
+
+/** When `object` last lost all its abilities: the latest timestamp of a
+ * modifier that took them away (layer 6 — Turn to Frog), or `null` if none
+ * has. A loss with no timestamp counts as the latest. */
+export function abilitiesLostAt(object: GameObject): number | null {
+  let at: number | null = null;
+  for (const m of object.modifiers) {
+    if (m.loseAbilities !== true) continue;
+    const t = m.timestamp ?? Infinity;
+    if (at === null || t > at) at = t;
+  }
+  return at;
+}
+
+/**
+ * Whether an ability granted at `timestamp` — by another permanent's static,
+ * an effect, a keyword counter — still gives it: layer 6 applies its effects
+ * in timestamp order (rule 613.7), so losing all abilities takes away an
+ * earlier grant but not a later one. `lostAt` is `abilitiesLostAt`, and
+ * `null` means nothing took them. A grant with no timestamp counts as the
+ * earliest.
+ */
+export function grantOutlastsLoss(lostAt: number | null, timestamp: number | undefined): boolean {
+  return lostAt === null || (timestamp !== undefined && timestamp > lostAt);
+}
+
+/** {@link grantOutlastsLoss} for what a modifier grants — which, on the
+ * modifier that itself took the abilities away ("loses all abilities and
+ * has flying"), comes after that loss, as the one effect says. */
+export function modifierGrantApplies(modifier: PtModifier, lostAt: number | null): boolean {
+  if (grantOutlastsLoss(lostAt, modifier.timestamp)) return true;
+  return modifier.loseAbilities === true && (modifier.timestamp ?? Infinity) === lostAt;
+}
+
+/** The timestamp of `object`'s keyword counters of kind `keyword` (rule
+ * 613.7c — every counter of a kind takes the newest one's), or the
+ * permanent's own for one it entered with. */
+export function keywordCounterTimestamp(object: GameObject, keyword: Keyword): number {
+  return object.counterTimestamps?.[keyword] ?? object.timestamp;
 }
 
 /**
@@ -1515,6 +1555,7 @@ function hasGrantedAbility(
   object: GameObject,
   view: TargetView,
   grants: (ability: StaticAbility) => boolean,
+  lostAt: number | null,
 ): boolean {
   const sources = abilityGrantSources(state, registry);
   if (sources.length === 0 || grantedAbilitiesInProgress.has(object.id)) return false;
@@ -1527,6 +1568,7 @@ function hasGrantedAbility(
     return sources.some(
       ({ source, ability }) =>
         grants(ability) &&
+        grantOutlastsLoss(lostAt, source.timestamp) &&
         staticReaches(state, registry, source, ability, object, reach) &&
         (ability.condition === undefined ||
           staticConditionMet(state, registry, source, ability.condition)),
@@ -1543,8 +1585,8 @@ function hasGrantedAbility(
  * too) or a triggered one (605.1b — `isTriggeredManaAbility`, which
  * Raggadragga's ruling includes): printed, granted by a static that reaches it
  * (Cryptolith Rite, an Aura or Equipment), or granted by a one-shot modifier.
- * A permanent that has lost its abilities has none at all, as everywhere else
- * the engine asks (`Game.manaSources`).
+ * A permanent that has lost its abilities has only one granted it since (rule
+ * 613.7), as everywhere else the engine asks (`Game.manaSources`).
  *
  * See {@link hasGrantedAbility} for `view`.
  */
@@ -1555,12 +1597,19 @@ export function hasManaAbility(
   view: TargetView = {},
 ): boolean {
   const onBattlefield = object.zone === "battlefield";
-  if (onBattlefield && hasLostAbilities(object)) return false;
+  const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
   const def = registry.get(printedCardName(object));
-  if (def.activated.some(isManaAbilityByRule) || def.triggered.some(isTriggeredManaAbility)) {
+  if (
+    lostAt === null &&
+    (def.activated.some(isManaAbilityByRule) || def.triggered.some(isTriggeredManaAbility))
+  ) {
     return true;
   }
-  if (object.modifiers.some((m) => m.grantsTriggered?.some(isTriggeredManaAbility) === true)) {
+  if (
+    object.modifiers.some(
+      (m) => modifierGrantApplies(m, lostAt) && m.grantsTriggered?.some(isTriggeredManaAbility) === true,
+    )
+  ) {
     return true;
   }
   if (!onBattlefield) return false;
@@ -1572,6 +1621,7 @@ export function hasManaAbility(
     (ability) =>
       ability.grantsActivated?.some(isManaAbilityByRule) === true ||
       ability.grantsTriggered?.some(isTriggeredManaAbility) === true,
+    lostAt,
   );
 }
 
@@ -1586,8 +1636,8 @@ export function hasManaAbility(
  *   anthems, Auras and Equipment, emblems, keyword counters, `grant-keyword`,
  *   and on the stack what grants keywords to spells;
  * - an activated or triggered ability a static grants it, or a one-shot
- *   modifier's triggered ability (none once it has lost its abilities, as
- *   `Game` has it);
+ *   modifier's triggered ability (once it has lost its abilities, only one
+ *   granted it since — rule 613.7 — as `Game` has it);
  * - on the stack, a triggered ability or split second a `grantsToSpells`
  *   static gives it;
  * - in a graveyard, flashback or escape a `grantsToGraveyard` static gives it
@@ -1604,9 +1654,9 @@ export function hasAnyAbility(
   object: GameObject,
 ): boolean {
   const onBattlefield = object.zone === "battlefield";
-  const lost = onBattlefield && hasLostAbilities(object);
+  const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
   const def = registry.get(printedCardName(object));
-  if (!lost && printedHasAbility(def)) return true;
+  if (lostAt === null && printedHasAbility(def)) return true;
   if (object.hastyUntilItLeaves === true) return true;
   const c = computeCharacteristics(state, registry, object.id);
   if (c.keywords.size > 0) return true;
@@ -1614,18 +1664,17 @@ export function hasAnyAbility(
   if (protection.colors.size > 0 || protection.types.size > 0 || protection.filters.length > 0) {
     return true;
   }
-  if (!lost && object.modifiers.some((m) => (m.grantsTriggered?.length ?? 0) > 0)) return true;
+  if (object.modifiers.some((m) => modifierGrantApplies(m, lostAt) && (m.grantsTriggered?.length ?? 0) > 0)) {
+    return true;
+  }
   if (onBattlefield) {
-    return (
-      !lost &&
-      hasGrantedAbility(
-        state,
-        registry,
-        object,
-        {},
-        (ability) =>
-          (ability.grantsActivated?.length ?? 0) > 0 || (ability.grantsTriggered?.length ?? 0) > 0,
-      )
+    return hasGrantedAbility(
+      state,
+      registry,
+      object,
+      {},
+      (ability) => (ability.grantsActivated?.length ?? 0) > 0 || (ability.grantsTriggered?.length ?? 0) > 0,
+      lostAt,
     );
   }
   if (object.zone === "stack" && object.kind === "card") {
@@ -1905,9 +1954,16 @@ function collectStaticEffects(
         keywords = new Set(
           hasLostAbilities(target) ? [] : registry.get(printedCardName(target)).keywords,
         );
-        for (const effect of out) for (const k of effect.keywords) keywords.add(k);
-        for (const modifier of target.modifiers) for (const k of modifier.keywords) keywords.add(k);
-        for (const k of keywordCountersOn(target)) keywords.add(k);
+        const lostAt = target.zone === "battlefield" ? abilitiesLostAt(target) : null;
+        for (const effect of out) {
+          if (grantOutlastsLoss(lostAt, effect.timestamp)) for (const k of effect.keywords) keywords.add(k);
+        }
+        for (const modifier of target.modifiers) {
+          if (modifierGrantApplies(modifier, lostAt)) for (const k of modifier.keywords) keywords.add(k);
+        }
+        for (const k of keywordCountersOn(target)) {
+          if (grantOutlastsLoss(lostAt, keywordCounterTimestamp(target, k))) keywords.add(k);
+        }
         if (suspectedGrantsApply(target)) keywords.add("menace");
       }
       return keywords;
@@ -2027,8 +2083,8 @@ function computeCharacteristicsUncached(
     ? collectStaticEffects(state, registry, object)
     : [];
 
-  // Layer 6 — ability adds (external anthems + modifier grants still reach a
-  // permanent that lost its *own* abilities).
+  // Layer 6 — ability adds, each against a loss of all abilities in
+  // timestamp order (below).
   // `collectStaticEffects` already includes a permanent's own `"self"`
   // restriction static (Juggernaut) as well as external ones (Pacifism).
   const restrictions = new Set<CombatRestriction>();
@@ -2038,15 +2094,21 @@ function computeCharacteristicsUncached(
   let byToughness: StaticAbility["combatDamageByToughness"];
   let canAttackAsThoughNoDefender = false;
   let cantBeSacrificed = false;
+  // What another permanent's static or an effect grants it in layer 6 goes
+  // with a loss of all its abilities that came after (rule 613.7); what they
+  // merely stop it doing (Pacifism's "can't attack", "can't be sacrificed")
+  // isn't an ability it has, and stays.
+  const lostAt = onBattlefield ? abilitiesLostAt(object) : null;
   for (const effect of staticEffects) {
-    for (const keyword of effect.keywords) keywords.add(keyword);
+    const granted = grantOutlastsLoss(lostAt, effect.timestamp);
+    if (granted) for (const keyword of effect.keywords) keywords.add(keyword);
     for (const r of effect.restrictions) restrictions.add(r);
     if (effect.combatDamageByToughness !== undefined && byToughness !== "always") {
       byToughness = effect.combatDamageByToughness;
     }
     if (effect.canAttackAsThoughNoDefender) canAttackAsThoughNoDefender = true;
     if (effect.cantBeSacrificed) cantBeSacrificed = true;
-    if (effect.protection) {
+    if (effect.protection && granted) {
       for (const c of effect.protection.colors ?? []) protColors.add(c);
       for (const t of effect.protection.types ?? []) protTypes.add(t);
       if (effect.protection.filter !== undefined) protFilters.push(effect.protection.filter);
@@ -2057,14 +2119,16 @@ function computeCharacteristicsUncached(
     for (const keyword of spellGrantedKeywords(state, registry, object)) keywords.add(keyword);
   }
   for (const modifier of object.modifiers) {
-    for (const keyword of modifier.keywords) keywords.add(keyword);
+    const granted = modifierGrantApplies(modifier, lostAt);
+    if (granted) for (const keyword of modifier.keywords) keywords.add(keyword);
     for (const r of modifier.restrictions ?? []) restrictions.add(r);
-    // A granted "can't be sacrificed" is read like the keywords and
-    // restrictions a modifier grants, which `loseAbilities` (the permanent's
-    // *own* abilities) doesn't touch.
-    if (modifier.cantBeSacrificed === true) cantBeSacrificed = true;
+    // A granted "This creature can't be sacrificed" is an ability, and goes
+    // with a later loss like a granted keyword.
+    if (granted && modifier.cantBeSacrificed === true) cantBeSacrificed = true;
   }
-  for (const keyword of keywordCountersOn(object)) keywords.add(keyword);
+  for (const keyword of keywordCountersOn(object)) {
+    if (grantOutlastsLoss(lostAt, keywordCounterTimestamp(object, keyword))) keywords.add(keyword);
+  }
   // Rule 701.60c — a suspected permanent has menace and "This creature can't
   // block" for as long as it's suspected.
   if (onBattlefield && suspectedGrantsApply(object)) {

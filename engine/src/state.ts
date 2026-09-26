@@ -544,6 +544,12 @@ export interface GameObject {
   grantedAbility?: GrantedAbilityRef;
   /** Counters on this object, e.g. `{ "+1/+1": 2 }`. Cleared on any zone change. */
   counters: Record<string, number>;
+  /** When each kind of keyword counter was last put on it (rule 613.7c — every
+   * counter of a kind takes the newest one's timestamp), for ordering the
+   * keyword it gives against a loss of all abilities in layer 6. A kind
+   * missing here was on it as it entered, and has its timestamp. Cleared with
+   * the counters. */
+  counterTimestamps?: Record<string, number>;
   /** Temporary modifiers (P/T and/or granted keywords). `untilEndOfTurn` ones expire in cleanup. */
   modifiers: PtModifier[];
   /** Order this object entered the battlefield (rule 613.7 timestamp); 0 if never. */
@@ -620,9 +626,12 @@ export interface PtModifier {
   /** Layer 5 — colours this modifier *sets* (Turn to Frog: "becomes … blue").
    * Applied before `addColors`; the latest such modifier wins. */
   setColors?: Color[];
-  /** Layer 6 — this permanent loses all of its own abilities (Turn to Frog).
-   * External anthems / grants still apply to it; its own keywords / activated
-   * / triggered / static abilities stop functioning. */
+  /** Layer 6 — this permanent loses all of its abilities (Turn to Frog): its
+   * own keywords and activated, triggered and static abilities, and what
+   * was granted it before this modifier's `timestamp` — by an anthem, an
+   * Aura or Equipment, a keyword counter or a one-shot grant. What's granted
+   * after (including by this same modifier's `keywords`) it has (rule
+   * 613.7). */
   loseAbilities?: boolean;
   /** Layer 7b — a "becomes a N/N" that *sets* base P/T rather than adding to
    * it. Applied after a CDA, before counters (7c) and +N/+N bonuses (7d);
@@ -644,7 +653,9 @@ export interface PtModifier {
    * sorts after a static whose source has this timestamp or an earlier one.
    * Absent (the modifiers that change no types and set no P/T) sorts after
    * every static. A copy exception's base P/T (Saw in Half) is `-1`: it's a
-   * copiable value, under every other effect.
+   * copiable value, under every other effect. In layer 6 it orders what the
+   * modifier grants against a loss of all abilities, where absent counts as
+   * the earliest — so every modifier that grants something carries one.
    */
   timestamp?: number;
 }
@@ -753,7 +764,8 @@ export interface LastKnownInfo {
   readonly lostAbilities: boolean;
   /** The triggered abilities it had been *granted* — by another permanent's
    * static or a one-shot modifier — in the order `effectiveTriggered` lists
-   * them after its printed ones. A granted dies trigger fires even when its
+   * them after its printed ones; with `lostAbilities`, only those granted
+   * after the loss (rule 613.7). A granted dies trigger fires even when its
    * grantor is gone by the time the death is matched. Absent when none. */
   readonly grantedTriggers?: readonly GrantedAbilityRef[];
 }
