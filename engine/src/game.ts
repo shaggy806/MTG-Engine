@@ -10157,6 +10157,19 @@ export class Game {
       }
     } else if (event.type === "attacker-declared") {
       player = this.defendingPlayerOf(event.defender);
+      // "The player or planeswalker it's attacking" (Mage Slayer).
+      const defender = event.defender;
+      if (this.state.players[defender as PlayerId] !== undefined) {
+        recipient = { target: { kind: "player", player: defender as PlayerId } };
+      } else {
+        const walker = this.state.objects[defender as ObjectId];
+        if (walker?.zone === "battlefield") {
+          recipient = {
+            target: { kind: "object", object: defender as ObjectId },
+            zoneChangeCount: walker.zoneChangeCount ?? 0,
+          };
+        }
+      }
     } else if (event.type === "player-attacked") {
       player = event.defender;
     } else if (event.type === "life-changed") {

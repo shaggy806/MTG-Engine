@@ -177,6 +177,7 @@ import _poolWeakness from "../pool/weakness.js";
 import _poolWhisperingWizard from "../pool/whispering-wizard.js";
 import _poolWhitesunsPassage from "../pool/whitesuns-passage.js";
 import _poolWindreaderSphinx from "../pool/windreader-sphinx.js";
+import _poolWingedBoots from "../pool/winged-boots.js";
 import _poolWingedShepherd from "../pool/winged-shepherd.js";
 import _poolWitchHunter from "../pool/witch-hunter.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
@@ -359,6 +360,7 @@ const shard: CardShard = {
     _poolWhisperingWizard,
     _poolWhitesunsPassage,
     _poolWindreaderSphinx,
+    _poolWingedBoots,
     _poolWingedShepherd,
     _poolWitchHunter,
     _poolZealousLorecaster,

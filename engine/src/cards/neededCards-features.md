@@ -248,6 +248,42 @@ Feast and Famine, Sword of Fire and Ice, Sword of Light and Shadow,
 Curiosity, Ophidian Eye, Aqueous Form, Mask of Memory, Goldvein Pick,
 Beamtown Beatstick, Argentum Armor, Explorer's Scope and Sticky Fingers.
 
+A second batch followed the same day: Winged Boots, Bloodforged Battle-Axe,
+Super State, Sword of Truth and Justice (its "a creature you control" is a
+resolution-time `choose-permanents`), Kaya's Ghostform, Keen Sense,
+Overgrowth, Wolfwillow Haven, Rogue's Gloves, Zephyr Boots, Sword of Body and
+Mind, Sword of Sinew and Steel, Sword of War and Peace, Quietus Spike, Ultima
+Weapon, Staff of Titania, Wand of Orcus, Adaptive Omnitool, Bilbo's Ring, The
+Spear of Leonidas, Fiendlash, Sigil of Sleep, Resurrection Orb and Mage Slayer
+(an attack trigger's `toTriggerRecipient` is now the player or planeswalker
+attacked). 34 of the 75 are still blocked, each by something outside host
+triggers, most of it shared with other cards:
+
+- **A static "is goaded"** (the Impetus Auras: Shiny, Parasitic, Martial,
+  Ghoulish): goad as a continuous effect of an attachment, not a one-shot.
+- **"Return this card" after its host died** (Angelic Destiny, Endless Evil,
+  Gift of Immortality, Ghoulish Impetus): the Aura reaches the graveyard by the
+  state-based check after its trigger, so the ability has to follow that one
+  move, the way a leaves-the-battlefield trigger follows its own object.
+- **"Deals damage" once per event** (Spirit Link, Umezawa's Jitte, Lost
+  Jitte): with no recipient named, damage to several things at once is one
+  trigger (rule 603.2c), where `deals-damage` fires once per recipient.
+- **Per-mode targets on a modal trigger** (Pip-Boy 3000): `announced` modes
+  can't carry targets yet.
+- **Free casts during resolution** (Buster Sword, Sword of Once and Future, The
+  Key to the Vault), **"you may play an additional land this turn"** (Sword of
+  Forge and Frontier), **copy the next instant or sorcery** (Sword of Wealth
+  and Power), **tokens that enter tapped and attacking** (Andúril, Flame of
+  the West), **living weapon / For Mirrodin!** (Bitterthorn, Hexplate
+  Wallbreaker), **"the first combat phase of the turn"** (Genji Glove,
+  Hexplate Wallbreaker), **ascend** (Andúril, Narsil Reforged), **stun
+  counters** (Mjölnir), a **dynamic "pay X life"** (Mask of Griselbrand), an
+  **attached host condition** (Combat Research's "as long as enchanted
+  creature is legendary"), and one-offs (Sword of Hearth and Home, Songbirds'
+  Blessing, Heirloom Blade, Infiltration Lens, Thran Power Suit, Pain for All,
+  Ordeal of Nylea, The Aetherspark, Fertile Ground's any-colour extra on a
+  hand-tapped land, Vorpal Sword).
+
 Sword of Fire and Ice turned up a real bug: a combat damage trigger's first
 target slot was auto-filled with the damaged player whenever it could hold
 one, so Mindscour Dragon's "target player mills four" could only ever pick

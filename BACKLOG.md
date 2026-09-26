@@ -36,10 +36,15 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,393 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,417 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
+- **Host-trigger cards, 34 left** (the equipped/enchanted-creature triggers are built): each is
+  blocked by something shared with other cards — a static "is goaded", "return this card" after
+  its host died, per-event "deals damage", per-mode targets on a modal trigger, free casts during
+  resolution, tokens entering tapped and attacking, living weapon. See `neededCards-features.md`,
+  "Host triggers".
 
 - **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
   Reconfigure. Also open:

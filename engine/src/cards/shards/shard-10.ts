@@ -162,6 +162,7 @@ import _poolStriderHarness from "../pool/strider-harness.js";
 import _poolSummonTitan from "../pool/summon-titan.js";
 import _poolSurveillingSprite from "../pool/surveilling-sprite.js";
 import _poolSustenance from "../pool/sustenance.js";
+import _poolSwordOfTruthAndJustice from "../pool/sword-of-truth-and-justice.js";
 import _poolTalasMerchant from "../pool/talas-merchant.js";
 import _poolTalruumMinotaur from "../pool/talruum-minotaur.js";
 import _poolTamiyosSafekeeping from "../pool/tamiyos-safekeeping.js";
@@ -185,6 +186,7 @@ import _poolVampiricTutor from "../pool/vampiric-tutor.js";
 import _poolVenomthrope from "../pool/venomthrope.js";
 import _poolVindicate from "../pool/vindicate.js";
 import _poolWallOfFire from "../pool/wall-of-fire.js";
+import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
 import _poolWelcomingVampire from "../pool/welcoming-vampire.js";
 import _poolWildwoodRebirth from "../pool/wildwood-rebirth.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolSummonTitan,
     _poolSurveillingSprite,
     _poolSustenance,
+    _poolSwordOfTruthAndJustice,
     _poolTalasMerchant,
     _poolTalruumMinotaur,
     _poolTamiyosSafekeeping,
@@ -380,6 +383,7 @@ const shard: CardShard = {
     _poolVenomthrope,
     _poolVindicate,
     _poolWallOfFire,
+    _poolWandOfOrcus,
     _poolWanderingMusicians,
     _poolWelcomingVampire,
     _poolWildwoodRebirth,

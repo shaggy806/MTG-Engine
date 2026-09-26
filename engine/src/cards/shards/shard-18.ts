@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAdaptiveOmnitool from "../pool/adaptive-omnitool.js";
 import _poolAkkiBlizzardHerder from "../pool/akki-blizzard-herder.js";
 import _poolAkkiDrillmaster from "../pool/akki-drillmaster.js";
 import _poolAkkiScrapchomper from "../pool/akki-scrapchomper.js";
@@ -185,6 +186,7 @@ import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAdaptiveOmnitool,
     _poolAkkiBlizzardHerder,
     _poolAkkiDrillmaster,
     _poolAkkiScrapchomper,

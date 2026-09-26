@@ -124,8 +124,10 @@ import _poolReconnaissanceMission from "../pool/reconnaissance-mission.js";
 import _poolReflexes from "../pool/reflexes.js";
 import _poolRefurbish from "../pool/refurbish.js";
 import _poolRelicOfLegends from "../pool/relic-of-legends.js";
+import _poolResurrectionOrb from "../pool/resurrection-orb.js";
 import _poolReturnToNature from "../pool/return-to-nature.js";
 import _poolRevokeExistence from "../pool/revoke-existence.js";
+import _poolRoguesGloves from "../pool/rogues-gloves.js";
 import _poolRootbornDefenses from "../pool/rootborn-defenses.js";
 import _poolSHIELDDeploymentDrone from "../pool/s-h-i-e-l-d-deployment-drone.js";
 import _poolSacellumArchers from "../pool/sacellum-archers.js";
@@ -182,6 +184,7 @@ import _poolWernogRidersChaplain from "../pool/wernog-riders-chaplain.js";
 import _poolWhiptongueFrog from "../pool/whiptongue-frog.js";
 import _poolWillowDryad from "../pool/willow-dryad.js";
 import _poolWoebearer from "../pool/woebearer.js";
+import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
 import _poolWoodlandStream from "../pool/woodland-stream.js";
 import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
@@ -318,8 +321,10 @@ const shard: CardShard = {
     _poolReflexes,
     _poolRefurbish,
     _poolRelicOfLegends,
+    _poolResurrectionOrb,
     _poolReturnToNature,
     _poolRevokeExistence,
+    _poolRoguesGloves,
     _poolRootbornDefenses,
     _poolSHIELDDeploymentDrone,
     _poolSacellumArchers,
@@ -376,6 +381,7 @@ const shard: CardShard = {
     _poolWhiptongueFrog,
     _poolWillowDryad,
     _poolWoebearer,
+    _poolWolfwillowHaven,
     _poolWoodlandStream,
     _poolYavimayaAncients,
     _poolYotianSoldier,

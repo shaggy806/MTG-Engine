@@ -121,6 +121,7 @@ import _poolOctoprophet from "../pool/octoprophet.js";
 import _poolOmegaMyr from "../pool/omega-myr.js";
 import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
 import _poolOnulet from "../pool/onulet.js";
+import _poolOvergrowth from "../pool/overgrowth.js";
 import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
@@ -322,6 +323,7 @@ const shard: CardShard = {
     _poolOmegaMyr,
     _poolOneWithTheWind,
     _poolOnulet,
+    _poolOvergrowth,
     _poolPalladiumMyr,
     _poolPardicCollaborator,
     _poolPhantomWarrior,

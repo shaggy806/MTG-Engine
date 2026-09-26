@@ -92,6 +92,7 @@ import _poolLoreWeaver from "../pool/lore-weaver.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
 import _poolMabel from "../pool/mabel.js";
 import _poolMadcapSkills from "../pool/madcap-skills.js";
+import _poolMageSlayer from "../pool/mage-slayer.js";
 import _poolMagefireWings from "../pool/magefire-wings.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
@@ -158,6 +159,7 @@ import _poolSunbillowVerge from "../pool/sunbillow-verge.js";
 import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
 import _poolSupportiveParents from "../pool/supportive-parents.js";
 import _poolSurrakarMarauder from "../pool/surrakar-marauder.js";
+import _poolSwordOfSinewAndSteel from "../pool/sword-of-sinew-and-steel.js";
 import _poolTajuruSnarecaster from "../pool/tajuru-snarecaster.js";
 import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
@@ -278,6 +280,7 @@ const shard: CardShard = {
     _poolLylaHolographicAssistant,
     _poolMabel,
     _poolMadcapSkills,
+    _poolMageSlayer,
     _poolMagefireWings,
     _poolMakindiSliderunner,
     _poolManicVandal,
@@ -344,6 +347,7 @@ const shard: CardShard = {
     _poolSunbladeSamurai,
     _poolSupportiveParents,
     _poolSurrakarMarauder,
+    _poolSwordOfSinewAndSteel,
     _poolTajuruSnarecaster,
     _poolTomakulHonorGuard,
     _poolTopanAscetic,

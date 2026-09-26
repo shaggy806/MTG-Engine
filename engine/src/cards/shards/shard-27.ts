@@ -154,6 +154,7 @@ import _poolTragicSlip from "../pool/tragic-slip.js";
 import _poolTreeOfTales from "../pool/tree-of-tales.js";
 import _poolTrueConviction from "../pool/true-conviction.js";
 import _poolTrustyMachete from "../pool/trusty-machete.js";
+import _poolUltimaWeapon from "../pool/ultima-weapon.js";
 import _poolUnderdarkBasilisk from "../pool/underdark-basilisk.js";
 import _poolUnderworldRageHound from "../pool/underworld-rage-hound.js";
 import _poolUniversalSolvent from "../pool/universal-solvent.js";
@@ -330,6 +331,7 @@ const shard: CardShard = {
     _poolTreeOfTales,
     _poolTrueConviction,
     _poolTrustyMachete,
+    _poolUltimaWeapon,
     _poolUnderdarkBasilisk,
     _poolUnderworldRageHound,
     _poolUniversalSolvent,

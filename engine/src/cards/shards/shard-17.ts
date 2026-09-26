@@ -18,6 +18,7 @@ import _poolBastionEnforcer from "../pool/bastion-enforcer.js";
 import _poolBattlewiseValor from "../pool/battlewise-valor.js";
 import _poolBaylenTheHaymaker from "../pool/baylen-the-haymaker.js";
 import _poolBirdsOfParadise from "../pool/birds-of-paradise.js";
+import _poolBloodforgedBattleAxe from "../pool/bloodforged-battle-axe.js";
 import _poolBoggartBog from "../pool/boggart-bog.js";
 import _poolBondedFetch from "../pool/bonded-fetch.js";
 import _poolBorosCharm from "../pool/boros-charm.js";
@@ -209,6 +210,7 @@ const shard: CardShard = {
     _poolBattlewiseValor,
     _poolBaylenTheHaymaker,
     _poolBirdsOfParadise,
+    _poolBloodforgedBattleAxe,
     _poolBoggartBog,
     _poolBondedFetch,
     _poolBorosCharm,

@@ -130,6 +130,7 @@ import _poolSpewFlame from "../pool/spew-flame.js";
 import _poolStab from "../pool/stab.js";
 import _poolSungrassPrairie from "../pool/sungrass-prairie.js";
 import _poolSunscapeMaster from "../pool/sunscape-master.js";
+import _poolSuperState from "../pool/super-state.js";
 import _poolTalismanOfConviction from "../pool/talisman-of-conviction.js";
 import _poolTaureanMauler from "../pool/taurean-mauler.js";
 import _poolTeleportationCircle from "../pool/teleportation-circle.js";
@@ -138,6 +139,7 @@ import _poolTempleOfEpiphany from "../pool/temple-of-epiphany.js";
 import _poolTeyosLightshield from "../pool/teyos-lightshield.js";
 import _poolTheHunterMaze from "../pool/the-hunter-maze.js";
 import _poolTheMeathookMassacre from "../pool/the-meathook-massacre.js";
+import _poolTheSpearOfLeonidas from "../pool/the-spear-of-leonidas.js";
 import _poolThoughtcast from "../pool/thoughtcast.js";
 import _poolThreeTragedies from "../pool/three-tragedies.js";
 import _poolThrummingbird from "../pool/thrummingbird.js";
@@ -288,6 +290,7 @@ const shard: CardShard = {
     _poolStab,
     _poolSungrassPrairie,
     _poolSunscapeMaster,
+    _poolSuperState,
     _poolTalismanOfConviction,
     _poolTaureanMauler,
     _poolTeleportationCircle,
@@ -296,6 +299,7 @@ const shard: CardShard = {
     _poolTeyosLightshield,
     _poolTheHunterMaze,
     _poolTheMeathookMassacre,
+    _poolTheSpearOfLeonidas,
     _poolThoughtcast,
     _poolThreeTragedies,
     _poolThrummingbird,

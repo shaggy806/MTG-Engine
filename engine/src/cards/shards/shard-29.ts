@@ -48,6 +48,7 @@ import _poolEtheriumAstrolabe from "../pool/etherium-astrolabe.js";
 import _poolEyeOfRamos from "../pool/eye-of-ramos.js";
 import _poolFadeIntoAntiquity from "../pool/fade-into-antiquity.js";
 import _poolFairgroundsPatrol from "../pool/fairgrounds-patrol.js";
+import _poolFiendlash from "../pool/fiendlash.js";
 import _poolFinalDeath from "../pool/final-death.js";
 import _poolFlightOfFancy from "../pool/flight-of-fancy.js";
 import _poolFrogTongue from "../pool/frog-tongue.js";
@@ -102,6 +103,7 @@ import _poolPrairieStream from "../pool/prairie-stream.js";
 import _poolPrescientChimera from "../pool/prescient-chimera.js";
 import _poolQilinsBlessing from "../pool/qilins-blessing.js";
 import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
+import _poolQuietusSpike from "../pool/quietus-spike.js";
 import _poolRaffinesTower from "../pool/raffines-tower.js";
 import _poolRagingPoltergeist from "../pool/raging-poltergeist.js";
 import _poolRenegadeDemon from "../pool/renegade-demon.js";
@@ -212,6 +214,7 @@ const shard: CardShard = {
     _poolEyeOfRamos,
     _poolFadeIntoAntiquity,
     _poolFairgroundsPatrol,
+    _poolFiendlash,
     _poolFinalDeath,
     _poolFlightOfFancy,
     _poolFrogTongue,
@@ -266,6 +269,7 @@ const shard: CardShard = {
     _poolPrescientChimera,
     _poolQilinsBlessing,
     _poolQuaketuskBoar,
+    _poolQuietusSpike,
     _poolRaffinesTower,
     _poolRagingPoltergeist,
     _poolRenegadeDemon,

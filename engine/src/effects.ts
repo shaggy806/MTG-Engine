@@ -659,7 +659,8 @@ export type EffectSpec =
        * for each of them. */
       readonly who?: PlayerScope;
       /** Untargeted damage to whatever the triggering event was aimed at —
-       * "deals 2 damage to **that permanent or player**" (Ghyrson Starn).
+       * "deals 2 damage to **that permanent or player**" (Ghyrson Starn), or
+       * "the player or planeswalker **it's attacking**" (Mage Slayer).
        * See `LastKnownRefs.recipient`: a permanent that has left the
        * battlefield since is not dealt anything. */
       readonly toTriggerRecipient?: true;

@@ -887,7 +887,9 @@ export interface LastKnownRefs {
   /**
    * What the triggering event was aimed at, for a trigger whose event has a
    * recipient — the permanent or player a `damage-dealt` event hit
-   * (`deals-damage`, `dealt-damage`, `deals-combat-damage-to-player`).
+   * (`deals-damage`, `dealt-damage`, `deals-combat-damage-to-player`), or
+   * the player or planeswalker an attacker was declared attacking (`attacks`
+   * — Mage Slayer's "the player or planeswalker it's attacking").
    * `zoneChangeCount` is a permanent recipient's battlefield stint: "that
    * permanent" is gone, rather than read as it last was, once it has left
    * (Ghyrson Starn's 2 damage to a creature that has since died hits

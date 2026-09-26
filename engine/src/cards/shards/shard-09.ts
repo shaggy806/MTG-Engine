@@ -21,6 +21,7 @@ import _poolBanehound from "../pool/banehound.js";
 import _poolBarkhideMauler from "../pool/barkhide-mauler.js";
 import _poolBatheInDragonfire from "../pool/bathe-in-dragonfire.js";
 import _poolBearCub from "../pool/bear-cub.js";
+import _poolBilbosRing from "../pool/bilbos-ring.js";
 import _poolBlisteringBarrier from "../pool/blistering-barrier.js";
 import _poolBloodbriar from "../pool/bloodbriar.js";
 import _poolBloodrageBrawler from "../pool/bloodrage-brawler.js";
@@ -181,6 +182,7 @@ import _tokensArmyToken from "../tokens/army-token.js";
 import _tokensAssassinToken from "../tokens/assassin-token.js";
 import _tokensElementalTokenAllColors from "../tokens/elemental-token-all-colors.js";
 import _tokensElephantToken from "../tokens/elephant-token.js";
+import _tokensForestDryadToken from "../tokens/forest-dryad-token.js";
 import _tokensTreasureToken from "../tokens/treasure-token.js";
 import _tokensZombieKnightToken from "../tokens/zombie-knight-token.js";
 
@@ -204,6 +206,7 @@ const shard: CardShard = {
     _poolBarkhideMauler,
     _poolBatheInDragonfire,
     _poolBearCub,
+    _poolBilbosRing,
     _poolBlisteringBarrier,
     _poolBloodbriar,
     _poolBloodrageBrawler,
@@ -366,6 +369,7 @@ const shard: CardShard = {
     _tokensAssassinToken,
     _tokensElementalTokenAllColors,
     _tokensElephantToken,
+    _tokensForestDryadToken,
     _tokensTreasureToken,
     _tokensZombieKnightToken,
   ],

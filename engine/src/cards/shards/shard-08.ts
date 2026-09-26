@@ -193,6 +193,7 @@ import _poolZuranOrb from "../pool/zuran-orb.js";
 import _tokensCatWarriorToken from "../tokens/cat-warrior-token.js";
 import _tokensFoodToken from "../tokens/food-token.js";
 import _tokensThopterToken from "../tokens/thopter-token.js";
+import _tokensWolfToken from "../tokens/wolf-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -388,6 +389,7 @@ const shard: CardShard = {
     _tokensCatWarriorToken,
     _tokensFoodToken,
     _tokensThopterToken,
+    _tokensWolfToken,
   ],
 };
 

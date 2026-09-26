@@ -148,6 +148,7 @@ import _poolShiningAerosaur from "../pool/shining-aerosaur.js";
 import _poolShowOfValor from "../pool/show-of-valor.js";
 import _poolSiegeMastodon from "../pool/siege-mastodon.js";
 import _poolSiegeVeteran from "../pool/siege-veteran.js";
+import _poolSigilOfSleep from "../pool/sigil-of-sleep.js";
 import _poolSireOfSevenDeaths from "../pool/sire-of-seven-deaths.js";
 import _poolSistersOfTheFlame from "../pool/sisters-of-the-flame.js";
 import _poolSkyEelSchool from "../pool/sky-eel-school.js";
@@ -347,6 +348,7 @@ const shard: CardShard = {
     _poolShowOfValor,
     _poolSiegeMastodon,
     _poolSiegeVeteran,
+    _poolSigilOfSleep,
     _poolSireOfSevenDeaths,
     _poolSistersOfTheFlame,
     _poolSkyEelSchool,

@@ -149,6 +149,7 @@ import _poolSporeSwarm from "../pool/spore-swarm.js";
 import _poolSpringmaneCervin from "../pool/springmane-cervin.js";
 import _poolSquiresDevotion from "../pool/squires-devotion.js";
 import _poolStaffOfDomination from "../pool/staff-of-domination.js";
+import _poolStaffOfTitania from "../pool/staff-of-titania.js";
 import _poolStrokeOfMidnight from "../pool/stroke-of-midnight.js";
 import _poolSummitSentinel from "../pool/summit-sentinel.js";
 import _poolTajuruBlightblade from "../pool/tajuru-blightblade.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolSpringmaneCervin,
     _poolSquiresDevotion,
     _poolStaffOfDomination,
+    _poolStaffOfTitania,
     _poolStrokeOfMidnight,
     _poolSummitSentinel,
     _poolTajuruBlightblade,

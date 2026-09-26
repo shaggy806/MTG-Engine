@@ -84,6 +84,7 @@ import _poolIsland from "../pool/island.js";
 import _poolJodahArchmageEternal from "../pool/jodah-archmage-eternal.js";
 import _poolJuriMasterOfTheRevue from "../pool/juri-master-of-the-revue.js";
 import _poolKarlachFuryOfAvernus from "../pool/karlach-fury-of-avernus.js";
+import _poolKayasGhostform from "../pool/kayas-ghostform.js";
 import _poolKazuulTyrantOfTheCliffs from "../pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKeldonNecropolis from "../pool/keldon-necropolis.js";
 import _poolLastGasp from "../pool/last-gasp.js";
@@ -257,6 +258,7 @@ const shard: CardShard = {
     _poolJodahArchmageEternal,
     _poolJuriMasterOfTheRevue,
     _poolKarlachFuryOfAvernus,
+    _poolKayasGhostform,
     _poolKazuulTyrantOfTheCliffs,
     _poolKeldonNecropolis,
     _poolLastGasp,

@@ -141,6 +141,7 @@ import _poolStormcatchMentor from "../pool/stormcatch-mentor.js";
 import _poolStranglingSpores from "../pool/strangling-spores.js";
 import _poolSuChi from "../pool/su-chi.js";
 import _poolSwashbuckling from "../pool/swashbuckling.js";
+import _poolSwordOfWarAndPeace from "../pool/sword-of-war-and-peace.js";
 import _poolTaigamsScheming from "../pool/taigams-scheming.js";
 import _poolTaintedField from "../pool/tainted-field.js";
 import _poolTalismanOfUnity from "../pool/talisman-of-unity.js";
@@ -177,6 +178,7 @@ import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
+import _tokensPhobos from "../tokens/phobos.js";
 import _tokensSnakeToken from "../tokens/snake-token.js";
 
 const shard: CardShard = {
@@ -319,6 +321,7 @@ const shard: CardShard = {
     _poolStranglingSpores,
     _poolSuChi,
     _poolSwashbuckling,
+    _poolSwordOfWarAndPeace,
     _poolTaigamsScheming,
     _poolTaintedField,
     _poolTalismanOfUnity,
@@ -357,6 +360,7 @@ const shard: CardShard = {
     _poolYargleGluttonOfUrborg,
   ],
   tokens: [
+    _tokensPhobos,
     _tokensSnakeToken,
   ],
 };

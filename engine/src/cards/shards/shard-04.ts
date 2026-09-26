@@ -86,6 +86,7 @@ import _poolInfectiousHorror from "../pool/infectious-horror.js";
 import _poolIroassChampion from "../pool/iroass-champion.js";
 import _poolIroncladKrovod from "../pool/ironclad-krovod.js";
 import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
+import _poolKeenSense from "../pool/keen-sense.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
 import _poolKorvoldFaeCursedKing from "../pool/korvold-fae-cursed-king.js";
@@ -158,6 +159,7 @@ import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
 import _poolSwoopingLookout from "../pool/swooping-lookout.js";
+import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
 import _poolTangledFlorahedron from "../pool/tangled-florahedron.js";
 import _poolTelJiladJustice from "../pool/tel-jilad-justice.js";
 import _poolTerminate from "../pool/terminate.js";
@@ -277,6 +279,7 @@ const shard: CardShard = {
     _poolIroassChampion,
     _poolIroncladKrovod,
     _poolJenovaAncientCalamity,
+    _poolKeenSense,
     _poolKingCheetah,
     _poolKnightErrant,
     _poolKorvoldFaeCursedKing,
@@ -349,6 +352,7 @@ const shard: CardShard = {
     _poolSultaiSkullkeeper,
     _poolSuntailHawk,
     _poolSwoopingLookout,
+    _poolSwordOfBodyAndMind,
     _poolTangledFlorahedron,
     _poolTelJiladJustice,
     _poolTerminate,

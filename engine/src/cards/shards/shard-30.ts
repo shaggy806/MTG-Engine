@@ -186,6 +186,7 @@ import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
 import _poolWindStrider from "../pool/wind-strider.js";
 import _poolWindseekerCentaur from "../pool/windseeker-centaur.js";
 import _poolWindsweptHeath from "../pool/windswept-heath.js";
+import _poolZephyrBoots from "../pool/zephyr-boots.js";
 import _poolZodiacTiger from "../pool/zodiac-tiger.js";
 import _tokensDragonSpiritToken from "../tokens/dragon-spirit-token.js";
 import _tokensGreenCatToken11 from "../tokens/green-cat-token-1-1.js";
@@ -376,6 +377,7 @@ const shard: CardShard = {
     _poolWindStrider,
     _poolWindseekerCentaur,
     _poolWindsweptHeath,
+    _poolZephyrBoots,
     _poolZodiacTiger,
   ],
   tokens: [
