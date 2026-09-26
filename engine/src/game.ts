@@ -15937,6 +15937,10 @@ export class Game {
       // did (its lord) waits for the next check, as it should. A commander
       // among them goes too, and is offered the command zone by the next.
       const sweep = this.stateBasedGraveyardMoves();
+      // Rule 704.5q, performed with those moves: only on what stays, so a
+      // creature dying in this same check leaves with both kinds of counter
+      // still on it (a persist creature with a +1/+1 counter doesn't return).
+      if (this.annihilateCounters(new Set(sweep.map((m) => m.id)))) changed = true;
       if (sweep.length > 0) {
         this.withLeaveBatch(() => {
           this.snapshotLeaving(sweep.map((m) => m.id));
@@ -16036,6 +16040,29 @@ export class Game {
     }
     // The 903.9a choices this check found, now that the rest of it is done.
     this.raiseNextCommanderChoice();
+  }
+
+  /**
+   * Rule 704.5q: a permanent with both +1/+1 and -1/-1 counters on it has N
+   * of each removed, N the smaller count. `leaving` is what this same check
+   * is putting into a graveyard, which keeps its counters as it goes.
+   * Returns whether any were removed.
+   */
+  private annihilateCounters(leaving: ReadonlySet<ObjectId>): boolean {
+    let removed = false;
+    for (const id of this.state.zones.shared.battlefield) {
+      if (leaving.has(id)) continue;
+      const counters = this.state.objects[id].counters;
+      const n = Math.min(counters["+1/+1"] ?? 0, counters["-1/-1"] ?? 0);
+      if (n <= 0) continue;
+      for (const kind of ["+1/+1", "-1/-1"]) {
+        counters[kind] = (counters[kind] ?? 0) - n;
+        if (counters[kind] <= 0) delete counters[kind];
+        this.emit({ type: "counter-removed", object: id, counter: kind, amount: n });
+      }
+      removed = true;
+    }
+    return removed;
   }
 
   /**

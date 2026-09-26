@@ -107,7 +107,8 @@
   "bug:mana-any-one-color",
   "bug:simultaneous-zone-moves",
   "bug:token-stack-fixes",
-  "bug:commander-903-9a-current-rules"
+  "bug:commander-903-9a-current-rules",
+  "bug:counter-annihilation"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
