@@ -323,6 +323,14 @@
   outline: 2px solid var(--warn);
   cursor: pointer;
 }
+/* Picked, in a choice still being made (a proliferate's players): the
+   panel fills with the same gold the outline says it can be picked with.
+   Spelled out for the quadrant head too, whose `background: none` (below,
+   same weight) would otherwise win. */
+.player-panel.selected,
+.quadrant-head .player-panel.selected {
+  background: color-mix(in srgb, var(--warn) 18%, var(--panel));
+}
 .player-panel.lost {
   opacity: 0.6;
 }

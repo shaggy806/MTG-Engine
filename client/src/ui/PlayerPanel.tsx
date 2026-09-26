@@ -32,6 +32,8 @@ export interface PlayerPanelProps {
   readonly onOpenExile?: () => void
   readonly onOpenHand?: () => void
   readonly targetable?: boolean
+  /** Picked in a decision still being built (a proliferate's players). */
+  readonly selected?: boolean
   readonly onTargetClick?: () => void
 }
 
@@ -71,6 +73,7 @@ export function PlayerPanel({
   onOpenExile,
   onOpenHand,
   targetable = false,
+  selected = false,
   onTargetClick,
 }: PlayerPanelProps) {
   const mana = manaString(info.manaPool)
@@ -82,6 +85,7 @@ export function PlayerPanel({
     isActive ? 'active' : '',
     hasPriority ? 'priority' : '',
     targetable ? 'targetable' : '',
+    selected ? 'selected' : '',
     info.hasLost ? 'lost' : '',
   ]
     .filter(Boolean)

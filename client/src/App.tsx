@@ -1532,6 +1532,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         const found = ids.find((i) => choices.includes(i))
         if (found) return found
       }
+      if (mode === 'choose-copy' && copyChoiceAction) {
+        const found = ids.find((i) => copyChoiceAction.options.includes(i))
+        if (found) return found
+      }
       // A tile standing for several identical permanents: take a member not
       // already picked, so a second click picks the next one rather than
       // un-picking the first.
@@ -1549,7 +1553,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       }
       return ids[0]
     },
-    [mode, activeTargeting, pendingSac, pendingTap, pendingConvoke, permanentPicks],
+    [mode, activeTargeting, pendingSac, copyChoiceAction, pendingTap, pendingConvoke, permanentPicks],
   )
 
   const clickPermanent = useCallback(
@@ -1657,6 +1661,12 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       if (mode === 'choose-enchant' && enchantAction) {
         if (enchantAction.options.includes(id)) {
           game.dispatch({ type: 'choose-enchant', player: seat, enchant: id })
+        }
+        return
+      }
+      if (mode === 'choose-copy' && copyChoiceAction) {
+        if (copyChoiceAction.options.includes(id)) {
+          game.dispatch({ type: 'choose-copy', player: seat, copy: id })
         }
         return
       }
@@ -1769,6 +1779,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       activeTargeting,
       defendersFor,
       enchantAction,
+      copyChoiceAction,
       legendAction,
       game,
       seat,
@@ -1781,6 +1792,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         sendPicksAt(pid)
         return
       }
+      if (mode === 'proliferate' && proliferateAction) {
+        if (!proliferateAction.eligible.some((t) => t.kind === 'player' && t.player === pid)) return
+        setProliferatePicks((cur) =>
+          cur.some((t) => t.kind === 'player' && t.player === pid)
+            ? cur.filter((t) => !(t.kind === 'player' && t.player === pid))
+            : [...cur, { kind: 'player', player: pid }],
+        )
+        return
+      }
       if (mode !== 'targeting' || !activeTargeting) return
       const slot = currentSlotOptions(activeTargeting)
       if (slot.some((o) => o.kind === 'player' && o.player === pid)) {
@@ -1789,7 +1809,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         unpickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, mode, pickTarget, unpickTarget, activeTargeting, sendPicksAt],
+    [attackAction, mode, pickTarget, unpickTarget, activeTargeting, sendPicksAt, proliferateAction],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -1907,6 +1927,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     if (mode === 'attackers' && attackAction) {
       return canSendPicksAt(pid)
     }
+    if (mode === 'proliferate' && proliferateAction) {
+      return proliferateAction.eligible.some((t) => t.kind === 'player' && t.player === pid)
+    }
     return (
       mode === 'targeting' &&
       targetSlot.some((o) => o.kind === 'player' && o.player === pid)
@@ -1999,6 +2022,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       if (of > 1 && taken > 0) badge = `↷ ${taken}/${of}`
     } else if (mode === 'choose-enchant' && enchantAction) {
       highlight = enchantAction.options.includes(id)
+    } else if (mode === 'choose-copy' && copyChoiceAction) {
+      highlight = ids.some((i) => copyChoiceAction.options.includes(i))
     } else if (mode === 'legend-rule' && legendAction) {
       highlight = legendAction.options.includes(id)
     } else if (mode === 'sacrifice' && sacrificeAction) {
@@ -2425,20 +2450,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'choose-copy' && copyChoiceAction) {
+    // Picked on the board, where each creature shows what it is: two copies
+    // of one card are two buttons with the same name.
     controls = (
       <div className="controls">
-        <span>{game.nameOf(copyChoiceAction.source)} — copy which creature?</span>
-        {copyChoiceAction.options.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() =>
-              game.dispatch({ type: 'choose-copy', player: seat, copy: id })
-            }
-          >
-            {game.nameOf(id)}
-          </button>
-        ))}
+        <span>{game.nameOf(copyChoiceAction.source)} — click the creature to copy</span>
         <button
           type="button"
           onClick={() => game.dispatch({ type: 'choose-copy', player: seat, copy: null })}
@@ -2731,28 +2747,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'proliferate' && proliferateAction) {
-    const players = proliferateAction.eligible.filter((t) => t.kind === 'player')
     // A player's own counters are theirs to want, poison aside.
     const mine = proliferateAction.eligible.filter((t) =>
       t.kind === 'player'
         ? t.player === seat && (view.players[seat]?.counters.poison ?? 0) === 0
         : view.objects[t.object]?.controller === seat,
     )
-    const counterKinds = (player: PlayerId): string => {
-      const info = view.players[player]
-      const kinds = [
-        ...(info !== undefined && info.energy > 0 ? ['energy'] : []),
-        ...Object.entries(info?.counters ?? {})
-          .filter(([, n]) => (n ?? 0) > 0)
-          .map(([kind]) => kind),
-      ]
-      return kinds.length > 0 ? kinds.join(', ') : 'counters'
-    }
+    // Permanents and players alike are picked on the board: a player's
+    // panel shows the counters they have.
     controls = (
       <div className="controls">
         <span>
           {view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}
-          Proliferate — {proliferatePicks.length} chosen
+          Proliferate — click the permanents and players to add counters to ·{' '}
+          {proliferatePicks.length} chosen
         </span>
         {/* Atraxa asks this every end step, and the answer is nearly always
             "everything of mine" — so that has to be one click, not five. */}
@@ -2766,29 +2774,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         >
           Clear
         </button>
-        {players.map((t) => {
-          const player = t.kind === 'player' ? t.player : seat
-          const picked = proliferatePicks.some(
-            (p) => p.kind === 'player' && p.player === player,
-          )
-          return (
-            <button
-              key={player}
-              type="button"
-              className={picked ? 'selected' : undefined}
-              onClick={() =>
-                setProliferatePicks((cur) =>
-                  picked
-                    ? cur.filter((p) => !(p.kind === 'player' && p.player === player))
-                    : [...cur, { kind: 'player', player }],
-                )
-              }
-            >
-              {picked ? '✓ ' : ''}
-              {playerLabel(player)}&apos;s {counterKinds(player)}
-            </button>
-          )
-        })}
         {/* Never disabled: choosing nothing is a legal answer (rule 701.27a). */}
         <button
           type="button"
@@ -3367,6 +3352,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           : () => openZone(`${playerLabel(pid, game.seats)}'s hand`, view.zones.hands[pid] ?? [])
       }
       targetable={playerIsTargetable(pid)}
+      selected={
+        mode === 'proliferate' && proliferatePicks.some((t) => t.kind === 'player' && t.player === pid)
+      }
       onTargetClick={() => clickPlayerTarget(pid)}
     />
   )
