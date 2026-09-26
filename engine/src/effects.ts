@@ -1154,6 +1154,9 @@ export type EffectSpec =
        * `GameState.pendingDiscards`. */
       readonly target: number | PlayerScope;
       readonly amount: EffectAmount;
+      /** "Discards a card at random" (Hypnotic Specter): nobody chooses —
+       * the game picks, with its seeded shuffle. */
+      readonly random?: boolean;
     }
   | {
       readonly kind: "modify-pt";
@@ -1417,9 +1420,11 @@ export type EffectSpec =
       readonly duration: PtDuration;
     }
   | {
-      /** The effect's controller takes an extra turn after this one (Time
-       * Warp — rule 500.7 / ROADMAP Phase 7). */
+      /** The effect's controller takes an extra turn after this one (rule
+       * 500.7 — ROADMAP Phase 7), or with `target` the player in that slot
+       * (Time Warp: "target player takes an extra turn after this one"). */
       readonly kind: "take-extra-turn";
+      readonly target?: number;
     }
   | {
       /** Storm (rule 702.40 — ROADMAP Phase 8): put a copy of the spell this
@@ -2412,7 +2417,7 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
   ): boolean;
   /** `target` (a player) discards `amount` cards. */
-  discardCards(target: TargetRef, amount: number): void;
+  discardCards(target: TargetRef, amount: number, random?: boolean): void;
   modifyPt(
     target: TargetRef,
     power: number,
@@ -2527,8 +2532,8 @@ export interface EffectApi {
   ): void;
   /** See the `"grant-triggered-all"` {@link EffectSpec}. */
   grantTriggeredAll(filter: CardFilter, ability: TriggeredAbility, duration: PtDuration): void;
-  /** The effect's controller takes an extra turn after this one (Time Warp). */
-  takeExtraTurn(): void;
+  /** `player` takes an extra turn after this one (Time Warp). */
+  takeExtraTurn(player: PlayerId): void;
   /** Storm — copy the spell `sourceId` for each earlier spell its controller
    * cast this turn. */
   storm(sourceId: ObjectId): void;
@@ -3659,6 +3664,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ctx.discardCards(
           target,
           amountValue(spec.amount, ctx, target.kind === "player" ? target.player : undefined),
+          spec.random === true,
         );
       }
       return;
@@ -3798,9 +3804,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-triggered-all":
       ctx.grantTriggeredAll(spec.filter, spec.ability, spec.duration);
       return;
-    case "take-extra-turn":
-      ctx.takeExtraTurn();
+    case "take-extra-turn": {
+      const target = spec.target === undefined ? undefined : ctx.targets[spec.target];
+      if (spec.target !== undefined && target?.kind !== "player") return;
+      ctx.takeExtraTurn(target?.kind === "player" ? target.player : ctx.controller);
       return;
+    }
     case "storm":
       ctx.storm(ctx.source);
       return;

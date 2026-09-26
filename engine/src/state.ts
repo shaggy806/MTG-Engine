@@ -1017,6 +1017,12 @@ export interface TurnState {
   /** True when this turn was taken via an extra-turn effect (Time Warp) rather
    * than the normal rotation — ROADMAP Phase 7. */
   isExtra: boolean;
+  /** The seat of the last turn taken in the normal rotation, which an extra
+   * turn doesn't move: an extra turn is added directly after a turn (rule
+   * 500.7), so the turn after it is the one that would have come next anyway
+   * — Bob's extra turn from Alice's Time Warp is followed by Bob's own turn.
+   * Absent until an extra turn is first taken, when it's the active seat. */
+  rotationIndex?: number;
   /** How many combat and main phases have begun this turn — the one under
    * way included — for "if it's the first combat phase of the turn"
    * (Karlach) and "your second main phase". Reset as each turn begins. */

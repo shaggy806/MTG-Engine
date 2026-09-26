@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{1}{B}{B}{B}",
   colors: ["B"],
   types: ["enchantment"],
-  text: "Whenever a creature you control dies, each other player sacrifices a creature.",
+  text: "Whenever a creature you control dies, each other player sacrifices a creature of their choice.",
   triggered: [
     {
       trigger: { on: "dies", who: "you-control", filter: { type: "creature" } },
@@ -17,7 +17,7 @@ export default defineCard({
         count: 1,
       },
       resolve: null,
-      text: "Whenever a creature you control dies, each other player sacrifices a creature.",
+      text: "Whenever a creature you control dies, each other player sacrifices a creature of their choice.",
     },
   ],
 });

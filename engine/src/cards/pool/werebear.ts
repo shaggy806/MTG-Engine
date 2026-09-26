@@ -14,14 +14,14 @@ export default defineCard({
   subtypes: ["Human", "Bear", "Druid"],
   power: 1,
   toughness: 1,
-  text: "{T}: Add {G}.\nThreshold — Werebear gets +3/+3 as long as seven or more cards are in your graveyard.",
+  text: "{T}: Add {G}.\nThreshold — Werebear gets +3/+3 as long as there are seven or more cards in your graveyard.",
   activated: [manaTapAbility("G")],
   static: [
     {
       affects: { scope: "self" },
       condition: { kind: "threshold" },
       grantPt: [3, 3],
-      text: "Threshold — Werebear gets +3/+3 as long as seven or more cards are in your graveyard.",
+      text: "Threshold — Werebear gets +3/+3 as long as there are seven or more cards in your graveyard.",
     },
   ],
 });

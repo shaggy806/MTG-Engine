@@ -3213,28 +3213,41 @@ export class Game {
     delete this.state.extraMainPhases;
     delete this.state.turn.combatPhases;
     delete this.state.turn.mainPhases;
-    // An extra turn (Time Warp — rule 500.7) is taken by the player at the
-    // front of the queue instead of advancing the normal rotation.
-    const extraFor = this.state.extraTurns.length > 0 ? this.state.extraTurns.shift() ?? null : null;
-    if (extraFor !== null && this.state.turnOrder.includes(extraFor)) {
-      this.state.turn.activePlayerIndex = this.state.turnOrder.indexOf(extraFor);
-      this.state.turn.isExtra = true;
+    // Where the normal rotation is: the seat of the last turn that wasn't an
+    // extra one. An extra turn is added directly after a turn (rule 500.7),
+    // so it doesn't move the rotation — the turn after Bob's extra one is
+    // Bob's own.
+    const turn = this.state.turn;
+    const rotation = turn.isExtra ? (turn.rotationIndex ?? turn.activePlayerIndex) : turn.activePlayerIndex;
+    // An extra turn is taken instead of advancing the rotation, the most
+    // recently created one first (rule 500.7); one for a player who has left
+    // the game doesn't begin (800.4k).
+    let extraFor: PlayerId | null = null;
+    while (extraFor === null && this.state.extraTurns.length > 0) {
+      const next = this.state.extraTurns.pop() as PlayerId;
+      if (this.state.turnOrder.includes(next) && !this.state.players[next].hasLost) extraFor = next;
+    }
+    if (extraFor !== null) {
+      turn.rotationIndex = rotation;
+      turn.activePlayerIndex = this.state.turnOrder.indexOf(extraFor);
+      turn.isExtra = true;
     } else {
-      this.state.turn.isExtra = false;
-      if (this.state.turn.number > 1) {
+      turn.isExtra = false;
+      delete turn.rotationIndex;
+      if (turn.number > 1) {
         // Skip anyone who has left the game (rule 800.4). Without this an
         // eliminated player kept taking turns: untapping, drawing and holding
         // priority in a game they are no longer in.
         const order = this.state.turnOrder;
-        let index = this.state.turn.activePlayerIndex;
+        let index = rotation;
         for (let step = 1; step <= order.length; step += 1) {
-          const candidate = (this.state.turn.activePlayerIndex + step) % order.length;
+          const candidate = (rotation + step) % order.length;
           if (!this.state.players[order[candidate]].hasLost) {
             index = candidate;
             break;
           }
         }
-        this.state.turn.activePlayerIndex = index;
+        turn.activePlayerIndex = index;
       }
     }
     for (const player of this.state.turnOrder) {
@@ -11207,7 +11220,7 @@ export class Game {
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
-      discardCards: (target, amount) => this.discardByEffect(target, amount),
+      discardCards: (target, amount, random) => this.discardByEffect(target, amount, random === true),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, duration),
       modifyPtAll: (filter, power, toughness, duration, exceptSource, scopeTo) =>
@@ -11385,9 +11398,10 @@ export class Game {
           }
         }
       },
-      takeExtraTurn: () => {
-        this.state.extraTurns.push(controller);
-        this.emit({ type: "extra-turn-queued", player: controller });
+      takeExtraTurn: (player) => {
+        if (this.state.players[player]?.hasLost !== false) return;
+        this.state.extraTurns.push(player);
+        this.emit({ type: "extra-turn-queued", player });
       },
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
@@ -15444,10 +15458,22 @@ export class Game {
    * smaller they just discard all of it; otherwise the game waits on their
    * `discard` action (they choose which — same decision shape as the
    * cleanup-step discard, distinguished by `fromEffect`). */
-  private discardByEffect(target: TargetRef, amount: number): void {
+  private discardByEffect(target: TargetRef, amount: number, random = false): void {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined || amount <= 0) return;
+    // "At random": nobody is asked, so nothing waits its turn — the game
+    // picks, with the same seeded shuffle a library uses.
+    if (random) {
+      const picked = shuffle(this.state.zones.perPlayer[player].hand, this.rng).slice(0, amount);
+      this.state.rngState = this.rng.seed;
+      if (picked.length === 0) return;
+      this.withGraveyardEnterBatch(() => {
+        for (const id of picked) this.moveObject(id, "graveyard");
+      });
+      this.emit({ type: "cards-discarded", player, objects: picked });
+      return;
+    }
     // Someone is already being asked — "each opponent discards a card"
     // reaching its second opponent. Asking now would overwrite the first
     // player's question, so this one waits its turn — unless there's nothing

@@ -14,7 +14,7 @@ export default defineCard({
   power: 1,
   toughness: 1,
   text:
-    "Landfall — Whenever a land you control enters, if you control six or more lands, create a token that's a copy of Scute Swarm. Otherwise, create a 1/1 green Insect creature token.",
+    "Landfall — Whenever a land you control enters, create a 1/1 green Insect creature token. If you control six or more lands, create a token that's a copy of Scute Swarm instead.",
   triggered: [
     {
       trigger: {
@@ -31,7 +31,7 @@ export default defineCard({
       },
       resolve: null,
       text:
-        "Landfall — Whenever a land you control enters, if you control six or more lands, create a token that's a copy of Scute Swarm. Otherwise, create a 1/1 green Insect creature token.",
+        "Landfall — Whenever a land you control enters, create a 1/1 green Insect creature token. If you control six or more lands, create a token that's a copy of Scute Swarm instead.",
     },
   ],
 });

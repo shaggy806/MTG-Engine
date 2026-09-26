@@ -97,7 +97,7 @@ describe("Time Warp — an extra turn", () => {
       type: "cast-spell",
       player: A,
       card: cardNamed(game, game.handOf(A), "Time Warp"),
-      targets: [],
+      targets: [{ kind: "player", player: A }],
     });
     game.advanceUntil((s) => s.zones.shared.stack.length === 0);
     expect(game.eventsOfType("extra-turn-queued").some((e) => e.player === A)).toBe(true);
@@ -115,6 +115,45 @@ describe("Time Warp — an extra turn", () => {
     game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "upkeep");
     expect(game.state.turn.activePlayerIndex).toBe(game.state.turnOrder.indexOf(B));
     expect(game.state.turn.isExtra).toBe(false);
+  });
+
+  it("gives the extra turn to the player it targets", () => {
+    const game = mkGame(["Time Warp"]);
+    game.advanceUntil(atMain);
+    playAll(game, "Island");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: cardNamed(game, game.handOf(A), "Time Warp"),
+      targets: [{ kind: "player", player: B }],
+    });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0);
+    expect(game.eventsOfType("extra-turn-queued").map((e) => e.player)).toEqual([B]);
+
+    // Rule 500.7: the extra turn comes directly after this one, and then the
+    // rotation carries on from Alice's turn — so Bob takes his own turn next.
+    const seen: string[] = [];
+    for (const t of [2, 3, 4]) {
+      game.advanceUntil((s) => s.turn.number === t && s.turn.step === "upkeep");
+      seen.push(`${game.state.turnOrder[game.state.turn.activePlayerIndex]}${game.state.turn.isExtra ? " (extra)" : ""}`);
+    }
+    expect(seen).toEqual(["bob (extra)", "bob", "alice"]);
+  });
+  it("takes the most recently created extra turn first", () => {
+    const game = mkGame(["Time Warp", "Time Warp"]);
+    game.advanceUntil(atMain);
+    for (let i = 0; i < 10; i += 1) spawn(game, "Island", A);
+    const [first, second] = game.handOf(A).filter((id) => game.state.objects[id].cardName === "Time Warp");
+    for (const [card, player] of [[first, B], [second, A]] as const) {
+      game.dispatch({ type: "cast-spell", player: A, card, targets: [{ kind: "player", player }] });
+      game.advanceUntil((s) => s.zones.shared.stack.length === 0);
+    }
+    const seen: string[] = [];
+    for (const t of [2, 3, 4, 5]) {
+      game.advanceUntil((s) => s.turn.number === t && s.turn.step === "upkeep");
+      seen.push(`${game.state.turnOrder[game.state.turn.activePlayerIndex]}${game.state.turn.isExtra ? " (extra)" : ""}`);
+    }
+    expect(seen).toEqual(["alice (extra)", "bob (extra)", "bob", "alice"]);
   });
 });
 

@@ -13,13 +13,13 @@ export default defineCard({
   subtypes: ["Ape"],
   power: 1,
   toughness: 1,
-  text: "Kird Ape has +1/+2 as long as you control a Forest.",
+  text: "Kird Ape gets +1/+2 as long as you control a Forest.",
   static: [
     {
       affects: { scope: "self" },
       condition: { kind: "controls", filter: { subtype: "Forest" }, atLeast: 1 },
       grantPt: [1, 2],
-      text: "Kird Ape has +1/+2 as long as you control a Forest.",
+      text: "Kird Ape gets +1/+2 as long as you control a Forest.",
     },
   ],
 });

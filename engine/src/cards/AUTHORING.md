@@ -544,7 +544,7 @@ clause (below) chooses among them.
 | `lose-life` | `amount`, `who?` \| `target?` | Zulaport Cutthroat (`who`); Ob Nixilis, the Fallen — "target player loses 3 life" (`target`, a target-slot index — mutually exclusive with `who`, needed-cards P19) |
 | `draw` | `amount`, `who?`, `target?` | Divination (controller draws); Stormfist Crusader (`who: "each-player"`); Bloodgift Demon (`target`, a player slot). `target` wins if both are set. |
 | `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
-| `discard` | `target` (slot \| a `PlayerScope`), `amount` | Mind Rot / Faithless Looting (`"you"`) / "each opponent discards a card" (`"each-opponent"`). A scope asks each player with a real choice **in turn**, APNAP (`GameState.pendingDiscards`); a player whose hand is no bigger than the count discards it at once. |
+| `discard` | `target` (slot \| a `PlayerScope`), `amount`, `random?` | Mind Rot / Faithless Looting (`"you"`) / "each opponent discards a card" (`"each-opponent"`). A scope asks each player with a real choice **in turn**, APNAP (`GameState.pendingDiscards`); a player whose hand is no bigger than the count discards it at once. `random: true` is "discards a card at random" (Hypnotic Specter): nobody is asked, and the game picks with its seeded shuffle. |
 | `mill` | `target` (slot \| a `PlayerScope`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) / Hope Estheim (`"each-opponent"`) |
 | `exile-from-library` | `whose?` (slot \| a `PlayerScope`, default `"you"`), `amount?` \| `allBut?` | Exile the top `amount` cards of a library face up, or all but the bottom `allBut` — Nicol Bolas, the Arisen's "exile all but the bottom card of target player's library" is `{ whose: 0, allBut: 1 }`. No permission to play them (that's `impulse-exile`); `{ thisWay: "exiled" }` counts them. |
 
@@ -743,7 +743,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 ### Turn structure / cast-triggered
 
-`take-extra-turn`, `additional-combat { afterThisPhase?, withMain? }`, `additional-land-drop { amount }` (Explore's "You may
+`take-extra-turn { target? }` (the effect's controller, or with `target` the player in that slot — Time Warp's "target player takes an extra turn"; taken directly after this turn, the most recently created first, and the rotation then carries on from the turn it followed — rule 500.7), `additional-combat { afterThisPhase?, withMain? }`, `additional-land-drop { amount }` (Explore's "You may
 play an additional land this turn"), `untap-all { filter, controlledByTarget? }`, `storm`,
 `cascade`, `copy-spell { target }`.
 

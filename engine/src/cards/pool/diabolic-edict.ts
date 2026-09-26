@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{1}{B}",
   colors: ["B"],
   types: ["instant"],
-  text: "Target player sacrifices a creature.",
+  text: "Target player sacrifices a creature of their choice.",
   targets: ["player"],
   effect: {
     kind: "sacrifice",

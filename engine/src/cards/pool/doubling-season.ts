@@ -6,13 +6,13 @@ export default defineCard({
   colors: ["G"],
   types: ["enchantment"],
   text:
-    "If an effect would create one or more tokens under your control, it creates twice that many tokens instead.\n" +
+    "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.\n" +
     "If an effect would put one or more counters on a permanent you control, it puts twice that many of those counters on that permanent instead.",
   static: [
     {
       affects: { scope: "self" },
       replacement: { event: "would-create-token", multiplier: 2 },
-      text: "If an effect would create one or more tokens under your control, it creates twice that many tokens instead.",
+      text: "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.",
     },
     {
       affects: { scope: "self" },

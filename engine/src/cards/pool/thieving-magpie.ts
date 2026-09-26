@@ -1,5 +1,8 @@
 import { defineCard } from "../define.js";
 
+// Any damage to an opponent, not only combat damage.
+const TRIGGER_TEXT = "Whenever Thieving Magpie deals damage to an opponent, draw a card.";
+
 export default defineCard({
   name: "Thieving Magpie",
   manaCost: "{2}{U}{U}",
@@ -9,16 +12,14 @@ export default defineCard({
   power: 1,
   toughness: 3,
   keywords: ["flying"],
-  text:
-    "Flying\n" +
-    "Whenever Thieving Magpie deals combat damage to a player, draw a card.",
+  text: `Flying\n${TRIGGER_TEXT}`,
   triggered: [
     {
-      trigger: { on: "deals-combat-damage-to-player", who: "self" },
+      trigger: { on: "deals-damage", who: "self", to: "opponent" },
       targets: [],
       effect: { kind: "draw", amount: 1 },
       resolve: null,
-      text: "Whenever Thieving Magpie deals combat damage to a player, draw a card.",
+      text: TRIGGER_TEXT,
     },
   ],
 });

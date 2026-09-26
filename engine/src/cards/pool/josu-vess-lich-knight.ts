@@ -15,7 +15,7 @@ export default defineCard({
   text:
     "Kicker {5}{B}\n" +
     "Menace\n" +
-    "When Josu Vess, Lich Knight enters, if it was kicked, create eight 2/2 black " +
+    "When Josu Vess, Lich Knight enters, if he was kicked, create eight 2/2 black " +
     "Zombie Knight creature tokens with menace.",
   kicker: { cost: "{5}{B}" },
   triggered: [
@@ -26,7 +26,7 @@ export default defineCard({
       effect: { kind: "create-token", token: "Zombie Knight Token", count: 8 },
       resolve: null,
       text:
-        "When Josu Vess, Lich Knight enters, if it was kicked, create eight 2/2 black " +
+        "When Josu Vess, Lich Knight enters, if he was kicked, create eight 2/2 black " +
         "Zombie Knight creature tokens with menace.",
     },
   ],

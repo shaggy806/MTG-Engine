@@ -9,7 +9,7 @@ export default defineCard({
   power: 3,
   toughness: 1,
   text:
-    "When Fleshbag Marauder enters the battlefield, each player sacrifices a creature.",
+    "When Fleshbag Marauder enters, each player sacrifices a creature of their choice.",
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "self" },
@@ -21,7 +21,7 @@ export default defineCard({
         count: 1,
       },
       resolve: null,
-      text: "When Fleshbag Marauder enters the battlefield, each player sacrifices a creature.",
+      text: "When Fleshbag Marauder enters, each player sacrifices a creature of their choice.",
     },
   ],
 });
