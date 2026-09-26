@@ -3,6 +3,7 @@ import type { VisibleObject } from 'engine/client'
 import { LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
+import { TargetedMark } from './TargetedMark.tsx'
 import {
   isArtBlocked,
   isArtPending,
@@ -34,6 +35,9 @@ export interface CardTileProps {
    * overlaid on art and regularly unreadable — colour survives at tile size
    * where four characters of text do not. */
   readonly attackSeat?: string | null
+  /** What on the stack targets this card (a spell a counterspell is aimed
+   * at), or null: a red frame and a reticle over the art. */
+  readonly aimedBy?: string | null
   /** 'title' (default): a name+cost bar above the art, like a real card's
    * frame -- used everywhere except the hand. 'art-first': cost pips
    * overlaid on the art itself, with the name below it instead -- the
@@ -118,6 +122,7 @@ export function CardTile({
   extraGenericCost = 0,
   stackCount = null,
   attackSeat = null,
+  aimedBy = null,
   layout = 'title',
   onClick,
 }: CardTileProps) {
@@ -240,6 +245,7 @@ export function CardTile({
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
     attackSeat ? `attacking-at ${attackSeat}` : '',
+    aimedBy !== null ? 'aimed' : '',
     clickable ? 'clickable' : '',
   ]
     .filter(Boolean)
@@ -274,6 +280,7 @@ export function CardTile({
             is shown to be read (the hover card, the stack), and the badge
             used to land on its second line. */}
         {badge ? <span className="card-badge">{badge}</span> : null}
+        {aimedBy !== null ? <TargetedMark by={aimedBy} /> : null}
       </span>
 
       {artFirst ? <span className="ct-name-row">{nameNode}</span> : null}

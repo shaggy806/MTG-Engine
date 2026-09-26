@@ -729,6 +729,27 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | null
   >(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
+  // What a spell or ability on the stack is aimed at, marked on the board:
+  // the top of the stack's targets, or those of the entry the pointer is on
+  // (Stack's `onFocusEntry`). A bot's Swords to Plowshares shows what it's
+  // about to exile before anyone lets it resolve, instead of in the History.
+  const [stackFocus, setStackFocus] = useState<ObjectId | null>(null)
+  const aim = useMemo(() => {
+    const stack = view.zones.stack
+    const id = stackFocus !== null && stack.includes(stackFocus) ? stackFocus : stack[stack.length - 1]
+    const source = id === undefined ? undefined : view.objects[id]
+    const targets = source?.targets ?? []
+    if (source === undefined || targets.length === 0) return null
+    const by =
+      source.kind === 'ability'
+        ? `${(source.sourceObjectId ? view.objects[source.sourceObjectId]?.cardName : undefined) ?? source.cardName}'s ability`
+        : source.cardName
+    return {
+      by,
+      objects: new Set(targets.flatMap((t) => (t.kind === 'object' ? [t.object] : []))),
+      players: new Set(targets.flatMap((t) => (t.kind === 'player' ? [t.player] : []))),
+    }
+  }, [view, stackFocus])
   // Attacker -> chosen defender. A creature that must attack (rule 508.1d)
   // and has only one defender it may attack starts out assigned to it, as a
   // click on it would; one with a choice waits for the player to make it.
@@ -2051,6 +2072,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       selected = selectedSource !== null && ids.includes(selectedSource)
     }
 
+    // Any of the permanents the tile stands for (a folded land stack).
+    const aimedBy = aim !== null && ids.some((i) => aim.objects.has(i)) ? aim.by : null
     if (opts.mini) {
       return (
         <MiniTile
@@ -2062,6 +2085,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           badge={badge}
           stackCount={opts.stackCount ?? null}
           attackSeat={attackSeat}
+          aimedBy={aimedBy}
           onClick={() => clickPermanent(ids)}
         />
       )
@@ -2076,6 +2100,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         badge={badge}
         stackCount={opts.stackCount ?? null}
         attackSeat={attackSeat}
+        aimedBy={aimedBy}
         onClick={() => clickPermanent(ids)}
       />
     )
@@ -3357,6 +3382,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       selected={
         mode === 'proliferate' && proliferatePicks.some((t) => t.kind === 'player' && t.player === pid)
       }
+      aimedBy={aim !== null && aim.players.has(pid) ? aim.by : null}
       onTargetClick={() => clickPlayerTarget(pid)}
     />
   )
@@ -3771,6 +3797,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           targetSlot={targetSlot}
           pickedIds={pickedObjKeys}
           onTargetClick={(id) => clickPermanent([id])}
+          aimed={aim}
+          onFocusEntry={setStackFocus}
         />
       ) : null}
 

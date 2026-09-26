@@ -30,6 +30,12 @@ export interface StackProps {
   /** Only called for an id that's actually in `targetSlot` (CardTile itself
    * won't dispatch a click otherwise -- see its own `clickable` gate). */
   readonly onTargetClick?: (id: ObjectId) => void
+  /** Spells the focused stack entry targets (`Table`'s `aim`) and what that
+   * entry is called — a counterspell's spell gets the reticle too. */
+  readonly aimed?: { readonly by: string; readonly objects: ReadonlySet<ObjectId> } | null
+  /** The pointer (or keyboard focus) is on an entry, or has left: the board
+   * then marks that entry's targets rather than the top's. */
+  readonly onFocusEntry?: (id: ObjectId | null) => void
 }
 
 /**
@@ -51,7 +57,14 @@ export interface StackProps {
  * something to draw (`stackShowsSomething`) — Arena-style, it isn't a
  * permanent panel, it just appears when something's happening.
  */
-export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: StackProps) {
+export function Stack({
+  view,
+  targetSlot = [],
+  pickedIds,
+  onTargetClick,
+  aimed = null,
+  onFocusEntry,
+}: StackProps) {
   // The card that caused the decision you're being asked, when it isn't
   // already on the stack. A sacrifice or discard effect raises its prompt
   // *after* the spell that ordered it has finished resolving and gone to a
@@ -114,6 +127,10 @@ export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: Stack
               className={`stack-entry${isTop ? ' is-top' : ''}${isGhost ? ' is-prompt' : ''}`}
               key={id}
               style={style}
+              onMouseEnter={isGhost ? undefined : () => onFocusEntry?.(id)}
+              onMouseLeave={isGhost ? undefined : () => onFocusEntry?.(null)}
+              onFocus={isGhost ? undefined : () => onFocusEntry?.(id)}
+              onBlur={isGhost ? undefined : () => onFocusEntry?.(null)}
             >
               {label ? <div className="stack-entry-label">{label}</div> : null}
               <CardTile
@@ -121,6 +138,7 @@ export function Stack({ view, targetSlot = [], pickedIds, onTargetClick }: Stack
                 badge={obj.isCopy ? 'copy' : undefined}
                 highlight={targetable}
                 selected={!isGhost && (pickedIds?.has(id) ?? false)}
+                aimedBy={!isGhost && aimed !== null && aimed.objects.has(id) ? aimed.by : null}
                 onClick={!isGhost && onTargetClick ? () => onTargetClick(id) : undefined}
               />
               {!isGhost && obj.targets && obj.targets.length > 0 ? (

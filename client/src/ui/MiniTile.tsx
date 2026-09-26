@@ -7,6 +7,7 @@ import { useHoverPopover } from './useHoverPopover.ts'
 import { cardTint } from './symbols.ts'
 import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
+import { TargetedMark } from './TargetedMark.tsx'
 import {
   isArtBlocked,
   isArtPending,
@@ -33,6 +34,9 @@ export interface MiniTileProps {
    * overlaid on art and regularly unreadable — colour survives at tile size
    * where four characters of text do not. */
   readonly attackSeat?: string | null
+  /** What on the stack targets this permanent (`Table`'s `aim`), or null:
+   * a red frame and a reticle over the art. */
+  readonly aimedBy?: string | null
   readonly onClick?: () => void
 }
 
@@ -60,6 +64,7 @@ export function MiniTile({
   extraGenericCost = 0,
   stackCount = null,
   attackSeat = null,
+  aimedBy = null,
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
@@ -87,6 +92,7 @@ export function MiniTile({
     activatable ? 'activatable' : '',
     dimmed ? 'dimmed' : '',
     attackSeat ? `attacking-at ${attackSeat}` : '',
+    aimedBy !== null ? 'aimed' : '',
     clickable ? 'clickable' : '',
   ]
     .filter(Boolean)
@@ -158,6 +164,7 @@ export function MiniTile({
           {obj.tapped && TAP_ICON_URL ? (
             <img className="tap-icon" src={TAP_ICON_URL} alt="" />
           ) : null}
+          {aimedBy !== null ? <TargetedMark by={aimedBy} /> : null}
         </span>
       </button>
 

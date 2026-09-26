@@ -5,6 +5,7 @@ import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from 'protocol'
 import { CommanderDamageChip } from './CommanderDamageChip.tsx'
 import { Symbols } from './Symbols.tsx'
+import { TargetedMark } from './TargetedMark.tsx'
 
 export interface PlayerPanelProps {
   readonly info: PublicPlayerInfo
@@ -34,6 +35,9 @@ export interface PlayerPanelProps {
   readonly targetable?: boolean
   /** Picked in a decision still being built (a proliferate's players). */
   readonly selected?: boolean
+  /** What on the stack targets this player (`Table`'s `aim`), or null: a
+   * red frame round the panel and a "Targeted" chip beside the name. */
+  readonly aimedBy?: string | null
   readonly onTargetClick?: () => void
 }
 
@@ -74,6 +78,7 @@ export function PlayerPanel({
   onOpenHand,
   targetable = false,
   selected = false,
+  aimedBy = null,
   onTargetClick,
 }: PlayerPanelProps) {
   const mana = manaString(info.manaPool)
@@ -86,6 +91,7 @@ export function PlayerPanel({
     hasPriority ? 'priority' : '',
     targetable ? 'targetable' : '',
     selected ? 'selected' : '',
+    aimedBy !== null ? 'aimed' : '',
     info.hasLost ? 'lost' : '',
   ]
     .filter(Boolean)
@@ -108,6 +114,12 @@ export function PlayerPanel({
           />
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
+        {aimedBy !== null ? (
+          <span className="pp-aimed" title={`Targeted by ${aimedBy}`}>
+            <TargetedMark by={aimedBy} inline />
+            Targeted
+          </span>
+        ) : null}
         {/* Every counter the player has, beside the name — poison, energy,
             experience — rather than on a row of its own: they're read with
             the player, and a quadrant has no height to spare. */}

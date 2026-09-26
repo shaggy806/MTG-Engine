@@ -3105,6 +3105,108 @@
   vertical-align: middle;
 }
 
+/* ===== what a spell or ability on the stack targets =====
+
+   Whatever the top of the stack targets (or the stack entry the pointer is
+   on — see Table's `aim`) gets a red frame and a reticle, so a bot's
+   removal spell shows what it's aimed at before anyone lets it resolve. It
+   needs a channel of its own, because the others are all in use exactly
+   when this matters: the border ring means "a legal target for you" or
+   "picked" while you respond, and the outline says whom an attacker is
+   attacking — and an attacker is what removal usually points at. So the
+   frame is drawn inside the art (an inset shadow on a pseudo-element over
+   it) and the reticle sits over the art's centre, above the tapped scrim
+   and the tap icon. */
+.mini-tile.aimed .mt-body::after,
+.card-tile.aimed .ct-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 2px var(--bad),
+    inset 0 0 1.2em rgba(194, 86, 79, 0.55);
+  pointer-events: none;
+}
+.aimed-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  width: 44%;
+  max-width: 3.5em;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  color: var(--bad);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.95));
+  pointer-events: none;
+  animation: aimed-pulse 1.6s ease-in-out infinite;
+}
+.aimed-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Beside a player's name rather than over art. */
+.aimed-mark.inline {
+  position: static;
+  width: 1.15em;
+  max-width: none;
+  translate: none;
+  filter: none;
+}
+@keyframes aimed-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aimed-mark {
+    animation: none;
+  }
+}
+/* A spell on the stack that the focused entry targets (a counterspell's):
+   the stack's own orange glow turns red. A buried card shows only its
+   offset edge, so the reticle over its art is often covered by the card in
+   front — the red edge is what reads. */
+.stack-entry .card-tile.aimed {
+  border-color: var(--bad);
+  box-shadow:
+    0 0 0 2px rgba(194, 86, 79, 0.8),
+    0 0 16px 3px rgba(194, 86, 79, 0.6),
+    0 8px 24px rgba(0, 0, 0, 0.55);
+  animation: none;
+}
+/* A targeted player: the same red frame round their panel (a pseudo-element,
+   so it sits alongside the priority ring's inset shadow and the targetable
+   outline instead of replacing either), and a chip beside the name. */
+.player-panel.aimed {
+  position: relative;
+}
+.player-panel.aimed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 2px var(--bad),
+    inset 0 0 1.4em rgba(194, 86, 79, 0.3);
+  pointer-events: none;
+}
+.pp-aimed {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--bad);
+}
+
 /* ===== who is this creature attacking =====
 
    An attacking permanent is outlined in its *defender's* seat colour, the
