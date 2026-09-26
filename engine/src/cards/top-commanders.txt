@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-299 already implemented / 201 missing
+301 already implemented / 199 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -170,7 +170,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  164  Shelob, Child of Ungoliant                     13732 decks  {4}{B}{G}        Legendary Creature — Spider Demon
 [x]  165  Inspirit, Flagship Vessel                      13524 decks  {U}{R}{W}        Legendary Artifact — Spacecraft
 [ ]  166  Feather, the Redeemed                          13510 decks  {R}{W}{W}        Legendary Creature — Angel
-[ ]  167  Rocco, Street Chef                             13462 decks  {R}{G}{W}        Legendary Creature — Elf Druid
+[x]  167  Rocco, Street Chef                             13462 decks  {R}{G}{W}        Legendary Creature — Elf Druid
 [x]  168  Atreus, Impulsive Son                          13368 decks  {1}{U}{R}        Legendary Creature — God Archer
 [x]  169  Kratos, Stoic Father                           13368 decks  {2}{R}{W}        Legendary Creature — God Warrior
 [ ]  170  Sakashima of a Thousand Faces                  13361 decks  {3}{U}           Legendary Creature — Human Rogue
@@ -335,7 +335,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  329  Cloud, Midgar Mercenary                         8526 decks  {W}{W}           Legendary Creature — Human Soldier Mercenary
 [ ]  330  Braids, Arisen Nightmare                        8469 decks  {1}{B}{B}        Legendary Creature — Nightmare
 [ ]  331  Haldan, Avid Arcanist                           8466 decks  {2}{U}           Legendary Creature — Human Wizard
-[ ]  332  Pako, Arcane Retriever                          8466 decks  {3}{R}{G}        Legendary Creature — Elemental Dog
+[x]  332  Pako, Arcane Retriever                          8466 decks  {3}{R}{G}        Legendary Creature — Elemental Dog
 [x]  333  Clement, the Worrywort                          8335 decks  {1}{G}{U}        Legendary Creature — Frog Druid
 [x]  334  Szarel, Genesis Shepherd                        8322 decks  {2}{B}{R}{G}     Legendary Creature — Insect Druid
 [ ]  335  Strefan, Maurer Progenitor                      8289 decks  {2}{B}{R}        Legendary Creature — Vampire Noble

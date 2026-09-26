@@ -3451,6 +3451,19 @@ export class Game {
       if (left.length === 0) delete this.state.attackRequirements;
       else this.state.attackRequirements = left;
     }
+    // "Until your next end step" of a player who has left the game lasts
+    // until their turn would have begun (rule 800.4m) — the others' end with
+    // the end step itself (`endStepActions`).
+    for (const id of this.state.zones.shared.exile) {
+      const impulse = this.state.objects[id]?.impulse;
+      if (
+        impulse?.expiry.kind === "end-step-of" &&
+        impulse.expiry.player !== this.activePlayer &&
+        beginningFor.includes(impulse.expiry.player)
+      ) {
+        delete this.state.objects[id].impulse;
+      }
+    }
     // Day → night if the previous turn's player cast no spells (726.3);
     // night → day if they cast two or more (726.4). Only once it's day or night.
     if (prevActive !== null) {
@@ -3675,6 +3688,14 @@ export class Game {
    * beginning of their end step (rule 720.6 — a triggered ability; folded in
    * here without the stack, like the draw step). */
   private endStepActions(): void {
+    // "Until your next end step" impulse permissions lapse as it begins.
+    const active = this.activePlayer;
+    for (const id of this.state.zones.shared.exile) {
+      const impulse = this.state.objects[id]?.impulse;
+      if (impulse?.expiry.kind === "end-step-of" && impulse.expiry.player === active) {
+        delete this.state.objects[id].impulse;
+      }
+    }
     const monarch = this.state.monarch;
     if (
       monarch !== null &&
@@ -11797,7 +11818,7 @@ export class Game {
       grantCantBeSacrificed: (target, duration) =>
         this.grantCantBeSacrificed(target, lasting(duration, controller)),
       mill: (target, amount) => this.millByEffect(target, amount),
-      exileFromLibrary: (target, count) => this.exileFromLibraryByEffect(target, count),
+      exileFromLibrary: (target, count, withCounters) => this.exileFromLibraryByEffect(target, count, withCounters),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
@@ -12788,9 +12809,11 @@ export class Game {
     controller: PlayerId,
     source: ObjectId,
     amount: number,
-    duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled",
+    duration: "end-of-turn" | "your-next-turn" | "your-next-end-step" | "while-source" | "while-exiled",
     castOnly: boolean,
     opts: {
+      readonly players?: readonly PlayerId[];
+      readonly ownerPlays?: boolean;
       readonly choose?: number;
       readonly yourTurnOnly?: boolean;
       readonly gate?: StaticCondition;
@@ -12799,9 +12822,14 @@ export class Game {
     } = {},
   ): void {
     if (amount <= 0) return;
-    const taken = this.state.zones.perPlayer[controller].library.slice(0, amount);
+    // Each library's top `amount`, exiled at once.
+    const taken = (opts.players ?? [controller])
+      .filter((player) => this.state.players[player]?.hasLost === false)
+      .flatMap((player) => this.state.zones.perPlayer[player].library.slice(0, amount));
     if (taken.length === 0) return;
-    for (const id of taken) this.moveObject(id, "exile");
+    this.withGraveyardEnterBatch(() => {
+      for (const id of taken) this.moveObject(id, "exile");
+    });
 
     const grant: GameObject["impulse"] = {
       player: controller,
@@ -12814,9 +12842,11 @@ export class Game {
             // else's turn (Tectonic Giant targeted by an opponent's spell),
             // the next of theirs is already the last one.
             ? { kind: "your-turns", remaining: this.activePlayer === controller ? 1 : 0 }
-            : duration === "while-exiled"
-              ? { kind: "while-exiled" }
-              : { kind: "while-source", source },
+            : duration === "your-next-end-step"
+              ? { kind: "end-step-of", player: controller }
+              : duration === "while-exiled"
+                ? { kind: "while-exiled" }
+                : { kind: "while-source", source },
       ...(castOnly ? { castOnly: true } : {}),
       ...(opts.filter !== undefined ? { filter: opts.filter } : {}),
       ...(opts.free !== undefined ? { free: opts.free } : {}),
@@ -12842,7 +12872,8 @@ export class Game {
     }
     for (const id of taken) {
       const object = this.state.objects[id];
-      if (object !== undefined) object.impulse = { ...grant };
+      // "Each player may play the card they exiled": its owner's.
+      if (object !== undefined) object.impulse = { ...grant, ...(opts.ownerPlays ? { player: object.owner } : {}) };
     }
   }
 
@@ -14546,13 +14577,14 @@ export class Game {
     split = true,
     by?: PlayerId,
   ): void {
-    if (target.kind !== "object") return;
+    // Zero counters is no counters (a "for each" that came to none): nothing
+    // is put, nothing is announced, and no token is split off a stack for it.
+    if (target.kind !== "object" || amount <= 0) return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
-    // Doubling Season (rule 614): "twice that many counters instead" — only
-    // when counters are being *added*, never a removal.
-    const total = amount > 0 ? amount * this.counterMultiplier(id, counter) : amount;
+    // Doubling Season (rule 614): "twice that many counters instead".
+    const total = amount * this.counterMultiplier(id, counter);
     const before = object.counters[counter] ?? 0;
     object.counters[counter] = before + total;
     // Every counter of a kind takes the newest one's timestamp (613.7c); a
@@ -16342,11 +16374,19 @@ export class Game {
   private exileFromLibraryByEffect(
     target: TargetRef,
     count: { readonly top: number } | { readonly allBut: number },
+    withCounters?: { readonly kind: string; readonly amount: number },
   ): void {
     if (target.kind !== "player" || this.state.players[target.player] === undefined) return;
     const library = this.state.zones.perPlayer[target.player].library;
     const n = "top" in count ? Math.max(0, count.top) : Math.max(0, library.length - count.allBut);
-    for (const id of library.slice(0, n)) this.moveObject(id, "exile");
+    for (const id of library.slice(0, n)) {
+      this.moveObject(id, "exile");
+      // "…and put a fetch counter on each of them": there.
+      const exiled = this.state.objects[id];
+      if (withCounters !== undefined && withCounters.amount > 0 && exiled?.zone === "exile") {
+        exiled.counters[withCounters.kind] = (exiled.counters[withCounters.kind] ?? 0) + withCounters.amount;
+      }
+    }
   }
 
   /** See the `"return-from-graveyard"` {@link EffectSpec}. Returns cards from

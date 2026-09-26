@@ -153,3 +153,14 @@ describe("Hapatra, Vizier of Poisons", () => {
     expect(snakes(game)).toBe(0);
   });
 });
+
+describe("zero counters", () => {
+  it("is no counters: nothing on the permanent, and nothing announced", () => {
+    const { game } = setUp();
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const before = game.state.eventLog.length;
+    counters(game, A, [bears], "+1/+1", 0);
+    expect(game.state.objects[bears].counters).toEqual({});
+    expect(game.state.eventLog.slice(before).some((e) => e.type === "counter-added")).toBe(false);
+  });
+});

@@ -233,10 +233,13 @@ export interface GameObject {
      *   the battlefield (Theater of Horrors).
      * - `while-exiled` — "for as long as it remains exiled": never, while it
      *   stays (leaving exile ends it anyway, as for every permission).
+     * - `end-step-of` — "until your next end step" (Rocco, Street Chef): as
+     *   that player's next end step begins.
      */
     expiry:
       | { readonly kind: "end-of-turn"; readonly turn: number }
       | { kind: "your-turns"; remaining: number }
+      | { readonly kind: "end-step-of"; readonly player: PlayerId }
       | { readonly kind: "while-source"; readonly source: ObjectId }
       | { readonly kind: "while-exiled" };
     readonly castOnly?: boolean;

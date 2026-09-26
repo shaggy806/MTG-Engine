@@ -3308,6 +3308,7 @@ import _poolOxiddaScrapmelter from "./pool/oxidda-scrapmelter.js";
 import _poolPacificationArray from "./pool/pacification-array.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPaintedBluffs from "./pool/painted-bluffs.js";
+import _poolPakoArcaneRetriever from "./pool/pako-arcane-retriever.js";
 import _poolPalaceFamiliar from "./pool/palace-familiar.js";
 import _poolPalaceSentinels from "./pool/palace-sentinels.js";
 import _poolPaladinOfTheBloodstained from "./pool/paladin-of-the-bloodstained.js";
@@ -3761,6 +3762,7 @@ import _poolRobeOfMirrors from "./pool/robe-of-mirrors.js";
 import _poolRocHunter from "./pool/roc-hunter.js";
 import _poolRocOfKherRidges from "./pool/roc-of-kher-ridges.js";
 import _poolRoccoCabarettiCaterer from "./pool/rocco-cabaretti-caterer.js";
+import _poolRoccoStreetChef from "./pool/rocco-street-chef.js";
 import _poolRockBadger from "./pool/rock-badger.js";
 import _poolRockfallVale from "./pool/rockfall-vale.js";
 import _poolRockslideElemental from "./pool/rockslide-elemental.js";
@@ -8918,6 +8920,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPacificationArray,
   _poolPacifism,
   _poolPaintedBluffs,
+  _poolPakoArcaneRetriever,
   _poolPalaceFamiliar,
   _poolPalaceSentinels,
   _poolPaladinOfTheBloodstained,
@@ -9371,6 +9374,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRocHunter,
   _poolRocOfKherRidges,
   _poolRoccoCabarettiCaterer,
+  _poolRoccoStreetChef,
   _poolRockBadger,
   _poolRockfallVale,
   _poolRockslideElemental,

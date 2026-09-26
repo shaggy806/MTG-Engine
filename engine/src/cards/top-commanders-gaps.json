@@ -133,7 +133,8 @@
   "effect:token-copy-last-known-info",
   "effect:exile-with-counters",
   "effect:modifier-grants-activated",
-  "effect:duration-extensions"
+  "effect:duration-extensions",
+  "effect:impulse-exile-other-libraries"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1339,7 +1340,7 @@
   "zone:cast-cards-you-dont-own": {
    "size": "medium",
    "ui": false,
-   "description": "Casting a card you don't own (from an opponent's hand or from exile) makes the caster control the spell and the permanent it becomes. Today moveObject resets controller to owner. Add owner-relative cost modification ('spells you cast but don't own') and a turn-scoped permission to cast from an opponent's hand."
+   "description": "Casting a card you don't own (from an opponent's hand or from exile) makes the caster control the spell and the permanent it becomes. Today moveObject resets controller to owner. Add owner-relative cost modification ('spells you cast but don't own') and a turn-scoped permission to cast from an opponent's hand. With it, impulse-exile from another player's library can give the controller the permission (today a scope beyond \"you\" needs playedBy: \"owner\")."
   },
   "zone:cast-from-library-top": {
    "size": "medium",

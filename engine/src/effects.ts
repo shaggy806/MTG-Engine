@@ -1154,6 +1154,9 @@ export type EffectSpec =
       readonly whose?: number | PlayerScope;
       readonly amount?: EffectAmount;
       readonly allBut?: number;
+      /** "…and put a fetch counter on each of them" (Pako, Arcane
+       * Retriever): counters each card gets in exile. */
+      readonly withCounters?: { readonly kind: string; readonly amount: number };
     }
   | {
       /** Return every card matching `filter` from the effect's controller's
@@ -2223,8 +2226,19 @@ export type EffectSpec =
        */
       readonly kind: "impulse-exile";
       readonly amount: EffectAmount;
-      /** `"while-exiled"` is "for as long as it remains exiled". */
-      readonly duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled";
+      /** `"while-exiled"` is "for as long as it remains exiled";
+       * `"your-next-end-step"` is "until your next end step" (Rocco, Street
+       * Chef), ending as the controller's next end step begins. */
+      readonly duration: "end-of-turn" | "your-next-turn" | "your-next-end-step" | "while-source" | "while-exiled";
+      /** Whose libraries: the controller's (the default), or each player's in
+       * a scope, the top `amount` of each exiled at once — "each player
+       * exiles the top card of their library" (Rocco). Playing a card you
+       * don't own isn't built (`zone:cast-cards-you-dont-own`), so any
+       * scope but `"you"` needs `playedBy: "owner"`. */
+      readonly whose?: PlayerScope;
+      /** "Each player may play the card they exiled this way": the
+       * permission goes to each card's owner, not to the controller. */
+      readonly playedBy?: "owner";
       readonly castOnly?: boolean;
       /** Which of the exiled cards may be played — Narset, Enlightened
        * Master's "noncreature, nonland cards exiled with Narset". */
@@ -2749,7 +2763,11 @@ export interface EffectApi {
   mill(target: TargetRef, amount: number): void;
   /** See the `"exile-from-library"` {@link EffectSpec}: the top `top` cards
    * of `target`'s library, or all of it but the bottom `allBut`. */
-  exileFromLibrary(target: TargetRef, count: { readonly top: number } | { readonly allBut: number }): void;
+  exileFromLibrary(
+    target: TargetRef,
+    count: { readonly top: number } | { readonly allBut: number },
+    withCounters?: { readonly kind: string; readonly amount: number },
+  ): void;
   /** Number of battlefield permanents matching `filter`, evaluated with the
    * effect's controller as "you" (for an `EffectAmount` `{ countOf }`). */
   countMatching(filter: CardFilter, except?: readonly ObjectId[]): number;
@@ -2828,9 +2846,13 @@ export interface EffectApi {
   /** See the `"impulse-exile"` {@link EffectSpec}. */
   impulseExile(
     amount: number,
-    duration: "end-of-turn" | "your-next-turn" | "while-source" | "while-exiled",
+    duration: "end-of-turn" | "your-next-turn" | "your-next-end-step" | "while-source" | "while-exiled",
     castOnly: boolean,
     opts?: {
+      /** Whose libraries (the controller's alone when absent). */
+      readonly players?: readonly PlayerId[];
+      /** Each card's owner may play it, rather than the controller. */
+      readonly ownerPlays?: boolean;
       readonly choose?: number;
       readonly yourTurnOnly?: boolean;
       readonly gate?: StaticCondition;
@@ -4036,6 +4058,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
                   target.kind === "player" ? target.player : undefined,
                 ),
               },
+          spec.withCounters,
         );
       }
       return;
@@ -4586,6 +4609,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "impulse-exile":
       ctx.impulseExile(amountValue(spec.amount, ctx), spec.duration, spec.castOnly === true, {
+        ...(spec.whose !== undefined && spec.whose !== "you" ? { players: ctx.playersInScope(spec.whose) } : {}),
+        ...(spec.playedBy === "owner" ? { ownerPlays: true } : {}),
         choose: spec.choose,
         yourTurnOnly: spec.yourTurnOnly,
         gate: spec.gate,

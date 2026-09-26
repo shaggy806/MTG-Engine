@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**299 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**301 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,11 +17,11 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:impulse-exile-other-libraries` (+2), `static:basic-land-type-mana` (+2),
-  `stat:object-damage-history` (+2), `zone:visibility-extensions` (+1),
-  `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3),
-  `effect:amount-aggregate` (+1), `zone:cast-from-library-top` (+2),
-  `zone:play-from-exile-with-counter` (+2).
+  `static:basic-land-type-mana` (+2), `stat:object-damage-history` (+2),
+  `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1),
+  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `zone:cast-from-library-top` (+2), `zone:play-from-exile-with-counter` (+2),
+  `trigger:discards-extensions` (+1).
 - **Most-needed features overall.** `zone:visibility-extensions` (13),
   `effect:copy-spell-extensions` (11) and `effect:copy-permanent-spell` (10). Live numbers come
   from `cmdrs:gaps`.

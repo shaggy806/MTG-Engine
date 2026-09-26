@@ -135,6 +135,7 @@ import _poolRakdosCharm from "../pool/rakdos-charm.js";
 import _poolRegress from "../pool/regress.js";
 import _poolRemoteIsle from "../pool/remote-isle.js";
 import _poolRinAndSeriInseparable from "../pool/rin-and-seri-inseparable.js";
+import _poolRoccoStreetChef from "../pool/rocco-street-chef.js";
 import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
 import _poolScourgemark from "../pool/scourgemark.js";
@@ -312,6 +313,7 @@ const shard: CardShard = {
     _poolRegress,
     _poolRemoteIsle,
     _poolRinAndSeriInseparable,
+    _poolRoccoStreetChef,
     _poolRuinousGremlin,
     _poolSandsteppeCitadel,
     _poolScourgemark,

@@ -564,7 +564,7 @@ clause (below) chooses among them.
 | `discard-hand` | `who` | Dragon Mage — "each player discards their hand". A whole hand at once with nothing to choose, so unlike `discard` it never raises a decision, which is what lets "discards their hand, **then** draws seven" resolve in one pass. |
 | `discard` | `target` (slot \| a `PlayerScope`), `amount`, `random?` | Mind Rot / Faithless Looting (`"you"`) / "each opponent discards a card" (`"each-opponent"`). A scope asks each player with a real choice **in turn**, APNAP (`GameState.pendingDiscards`); a player whose hand is no bigger than the count discards it at once. `random: true` is "discards a card at random" (Hypnotic Specter): nobody is asked, and the game picks with its seeded shuffle. |
 | `mill` | `target` (slot \| a `PlayerScope`), `amount` | Tome Scour / Aftermath Analyst (`"you"`) / Hope Estheim (`"each-opponent"`) |
-| `exile-from-library` | `whose?` (slot \| a `PlayerScope`, default `"you"`), `amount?` \| `allBut?` | Exile the top `amount` cards of a library face up, or all but the bottom `allBut` — Nicol Bolas, the Arisen's "exile all but the bottom card of target player's library" is `{ whose: 0, allBut: 1 }`. No permission to play them (that's `impulse-exile`); `{ thisWay: "exiled" }` counts them. |
+| `exile-from-library` | `whose?` (slot \| a `PlayerScope`, default `"you"`), `amount?` \| `allBut?`, `withCounters?` | Exile the top `amount` cards of a library face up, or all but the bottom `allBut` — Nicol Bolas, the Arisen's "exile all but the bottom card of target player's library" is `{ whose: 0, allBut: 1 }`. No permission to play them (that's `impulse-exile`); `{ thisWay: "exiled" }` counts them. `withCounters: { kind, amount }` is "…and put a fetch counter on each of them" (Pako, Arcane Retriever). |
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
 "active-player" \| "trigger-controller" \| "trigger-player" \|
@@ -907,15 +907,24 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
   end, so extra turns and multiplayer order stay exact — granted during one of
   their own turns it lasts through the rest of it and all of the next, as
   Prosper, Tome-Bound's end-step exile does; granted on an opponent's turn it
-  lasts through their very next one), `"while-source"` or `"while-exiled"`
-  ("for as long as it remains exiled").
+  lasts through their very next one), `"your-next-end-step"` ("until your next
+  end step" — Rocco, Street Chef: it lapses as the controller's next end step
+  begins, or, once they've left the game, as their turn would have begun — rule
+  800.4m), `"while-source"` or `"while-exiled"` ("for as long as it remains
+  exiled"). `whose` exiles from each library in a `PlayerScope` at once, and
+  `playedBy: "owner"` gives each card's permission to its owner: Rocco's "each
+  player exiles the top card of their library. Until your next end step, each
+  player may play the card they exiled this way" is `{ amount: 1, duration:
+  "your-next-end-step", whose: "each-player", playedBy: "owner" }`. Playing a
+  card you don't own isn't built (`zone:cast-cards-you-dont-own`), so another
+  player's library needs `playedBy: "owner"`.
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
   them". `filter` narrows which of them the permission covers, and `free` is
   "without paying their mana costs" — for all of them, or those matching its
