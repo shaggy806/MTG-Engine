@@ -2457,20 +2457,20 @@ Delete an entry in the same commit as the feature that retires it.
   grant, not a one-shot resolution effect (needed-cards P18). The *triggered*
   equivalent does exist, for a single target: the `grant-triggered` effect
   (§6).
-- **"As this enters, choose …" only fires when the permanent is *cast or
-  played*.** `chooseCreatureTypeOnEnter` / `chooseOnEnter` hang off those two
-  paths, so a copy, a reanimation or a `debugSpawn` never raises the choice
-  and the permanent behaves as though nothing was chosen. (The *played* half
-  was added for Cavern of Souls and friends — a land is played, not cast, so
-  every one of them used to enter with no type named and its restricted mana
-  could pay for nothing.)
-- **"As this enters" choices are made after the replacements are read.** A
-  Clone's copy choice (`copyOnEnter`) and a chosen creature type are asked
-  once the permanent is on the battlefield, so an `others-enter-battlefield`
-  replacement judges it as it was printed: a Clone copying an Angel doesn't
-  get Giada's counters, where rule 614.12 says it should. Metallic Mimic ("each
-  other creature you control **of the chosen type** enters with an additional
-  +1/+1 counter") is blocked on the same ordering, and on a filter for the
+- **"As this enters" choices — the ways onto the battlefield that don't ask.**
+  A Clone's copy (`copyOnEnter`), a chosen creature type and a `chooseOnEnter`
+  word are asked *before* the permanent moves (rule 614.12 —
+  `Game.askEnterChoice`), so the replacements that apply as it enters and the
+  triggers that see it arrive both see it as chosen: a Clone copying an Angel
+  gets Giada's counters, and gets the Angel's own "when this enters". Asked
+  on a spell resolving, a land played, a reanimation (`put-onto-battlefield`,
+  `return-from-graveyard`), a blink or a delayed return, an O-Ring's return
+  and a tutor to the battlefield. Not asked — it enters with nothing chosen,
+  as before — for a token copy of such a card (never the case for a copy of a
+  Clone that copied something, which copies what it copied), a
+  `reveal-until` that puts its find onto the battlefield, and `debugSpawn`.
+  Metallic Mimic ("each other creature you control **of the chosen type**
+  enters with an additional +1/+1 counter") still needs a filter for the
   chosen type.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Eternalize** (rule
   702.129 — Fanatic of Rhonas), **retrace** (rule 702.83 — Six), **riot**

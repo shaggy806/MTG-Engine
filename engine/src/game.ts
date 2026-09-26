@@ -204,6 +204,7 @@ import type {
   LeaveDestination,
   MulliganHandState,
   TurnHistory,
+  PendingEntry,
   PendingTrigger,
   PlayerCounterKind,
   PreventionShield,
@@ -2595,20 +2596,8 @@ export class Game {
     this.prepareForPriority(this.activePlayer);
   }
 
-  /** A Clone-style permanent just entered — ask its controller what to copy
-   * (rule 707). With nothing legal to copy this doesn't pause: the permanent
-   * stays itself (a 0/0 Clone, which then dies to an SBA). */
-  private beginCopyChoice(cloneId: ObjectId, controller: PlayerId): void {
-    const options = this.state.zones.shared.battlefield.filter((id) => {
-      if (id === cloneId) return false;
-      const object = this.state.objects[id];
-      return this.registry.get(printedCardName(object)).types.includes("creature");
-    });
-    if (options.length === 0) return;
-    this.state.awaiting = { kind: "choose-copy", player: controller, source: cloneId, options };
-  }
-
-  /** Answers a pending `choose-copy` decision (rule 707). */
+  /** Answers a pending `choose-copy` decision (rule 707.9) — raised by
+   * `askEnterChoice` as a Clone is about to enter. */
   private applyCopyChoice(player: PlayerId, copy: ObjectId | null): void {
     const why = this.whyCannotCopyChoice(player, copy);
     if (why !== null) throw new Error(why);
@@ -2617,13 +2606,18 @@ export class Game {
       throw new Error("unreachable: whyCannotCopyChoice should have caught this");
     }
 
+    // Asked before the Clone moved (`askEnterChoice`), so the answer waits on
+    // it, and its entry carries on once priority is next looked at. What it
+    // copies is the *copiable* values (rule 707.2) — for our model, the
+    // copied card's printed name, which every characteristic read resolves
+    // through; `moveObject` makes it the copy as it enters.
     const clone = this.state.objects[awaiting.source];
-    if (copy !== null) {
-      // Copy the *copiable* values — for our model, the copied card's printed
-      // name, which every characteristic read resolves through.
-      clone.copyOf = printedCardName(this.state.objects[copy]);
-    }
-    this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: clone.copyOf });
+    clone.enterChoice = {
+      ...clone.enterChoice,
+      copyOf: copy === null ? null : printedCardName(this.state.objects[copy]),
+    };
+    // A copy is announced as it enters; declining, now.
+    if (copy === null) this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: null });
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
@@ -2686,14 +2680,14 @@ export class Game {
         ),
       );
     } else {
-      // A permanent entering. The same decision serves both "choose a
-      // creature type" (Urza's Incubator, which feeds a cost check) and the
-      // general "as this enters, choose …" (Heraldic Banner, Frontier
-      // Siege). Record it in both places so each reader finds it where it
-      // expects.
+      // A permanent about to enter, asked before it moved (`askEnterChoice`):
+      // the answer waits on it, and its entry carries on. `moveObject` records
+      // it where each reader expects it as it enters — the same decision
+      // serves "choose a creature type" (Urza's Incubator, which feeds a
+      // cost check) and the general "as this enters, choose …" (Heraldic
+      // Banner, Frontier Siege).
       const source = this.state.objects[awaiting.source];
-      source.chosenCreatureType = creatureType;
-      source.chosenOnEnter = creatureType;
+      source.enterChoice = { ...source.enterChoice, chosen: creatureType };
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
@@ -3704,22 +3698,55 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseFromZone should have caught this");
     }
 
-    const chosenSet = new Set(chosen);
-    const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
-
     // "…, reveal it, …" — before anything moves, so the event names the cards
     // where every player just saw them.
     if (awaiting.reveal === true && chosen.length > 0) {
       this.revealCards(player, chosen, "library");
     }
 
+    this.finishZoneChoice({ kind: "zone-choice", awaiting, player, chosen });
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  /**
+   * Carry out a `choose-from-zone` answer — once whatever it puts onto the
+   * battlefield has made its "as this enters" choices (rule 614.12), which it
+   * stops to ask first; nothing moves meanwhile, and this runs again with the
+   * answer (`PendingEntry`).
+   */
+  private finishZoneChoice(entry: Extract<PendingEntry, { kind: "zone-choice" }>): void {
+    const { awaiting, player, chosen } = entry;
+    for (const [index, id] of chosen.entries()) {
+      if (this.chosenFromZoneTo(awaiting, index) !== "battlefield") continue;
+      if (this.askEnterChoice(id, player)) {
+        this.state.suspendedResolutions.push({ effect: null, enter: entry });
+        return;
+      }
+    }
+    // The moves happen while the choice they carry out is still the decision
+    // up, as they always have: a shock land a search finds waits its turn.
+    this.state.awaiting = awaiting;
+    const chosenSet = new Set(chosen);
+    const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
     // The chosen cards move together, so the ones a choice takes out of a
     // graveyard leave it as one move ("return up to two cards").
     this.withGraveyardLeaveBatch(() => this.moveChosenFromZone(awaiting, player, chosen, leftover));
 
     this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
     this.state.awaiting = null;
-    this.finishChooseFromZone(awaiting, player, chosen);
+    this.applyChooseFromZoneThen(awaiting, player, chosen);
+  }
+
+  /** Where a `choose-from-zone` answer sends its `index`th chosen card: a
+   * split tutor (Cultivate) sends the first to `destination` and the rest to
+   * `restDestination`. */
+  private chosenFromZoneTo(
+    awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
+    index: number,
+  ): Extract<AwaitingDecision, { kind: "choose-from-zone" }>["destination"] {
+    return index === 0 || awaiting.restDestination === undefined
+      ? awaiting.destination
+      : awaiting.restDestination;
   }
 
   /** The moves half of {@link applyChooseFromZone}: the chosen cards to where
@@ -3744,13 +3771,10 @@ export class Game {
         }
         return;
       }
-      const to =
-        index === 0 || awaiting.restDestination === undefined
-          ? awaiting.destination
-          : awaiting.restDestination;
+      const to = this.chosenFromZoneTo(awaiting, index);
       // A tutor-to-top's find is put on top *after* the search's shuffle
       // (below) — moving it now would only have it shuffled back in.
-      if (to === "library-top") return;
+      if (to === "library-top" || to === "exile-playable") return;
       this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
       if (to === "battlefield") {
         this.enterWithCounters(id, awaiting.enterWithCounters, player);
@@ -3799,8 +3823,8 @@ export class Game {
   }
 
   /** The rest of {@link applyChooseFromZone}, once the cards have moved and
-   * the decision is answered: the choice's `then`, and priority. */
-  private finishChooseFromZone(
+   * the decision is answered: the choice's `then`. */
+  private applyChooseFromZoneThen(
     awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
     player: PlayerId,
     chosen: readonly ObjectId[],
@@ -3820,8 +3844,6 @@ export class Game {
         ),
       );
     }
-
-    this.prepareForPriority(this.activePlayer);
   }
 
   /** Kept because `applyChooseFromZone` validates before applying and
@@ -4757,34 +4779,88 @@ export class Game {
 
     const from = this.state.objects[cardId].zone;
     this.state.objects[cardId].face = face;
-    this.moveObject(cardId, "battlefield");
     playerState.landsPlayedThisTurn += 1;
-    this.emit({ type: "land-played", player, object: cardId, from });
-    this.emit({ type: "permanent-entered-battlefield", object: cardId });
-    // A land is *played*, not cast, so it never went through the spell
-    // resolution path where this used to live — and every "as this land
-    // enters, choose a creature type" card (Cavern of Souls, Unclaimed
-    // Territory, Secluded Courtyard) is a land. Without this they entered
-    // with no type chosen and their restricted mana could pay for nothing.
-    this.applyEnterChoices(cardId, player, this.registry.get(printedCardName(this.state.objects[cardId])));
+    this.finishLandPlay({ kind: "land", object: cardId, player, from });
     this.afterPlayerAction(player);
   }
 
   /**
-   * Raise an "as this enters, choose …" decision (rule 614.1c), shared by the
-   * two ways a permanent can arrive under its own steam: a permanent spell
-   * resolving, and a land being played.
-   *
-   * Still not reached by a permanent that arrives some *other* way — a copy,
-   * a reanimation, `debugSpawn` — which stays an AUTHORING §15 limitation.
-   * Nothing in the pool needs that yet; every card with this clause is either
-   * cast or played.
+   * The land a player is playing enters the battlefield — once its "as this
+   * enters" choice is made (Cavern of Souls' creature type, rule 614.12),
+   * which it stops to ask first; it waits in its zone meanwhile, and this runs
+   * again with the answer (`PendingEntry`).
    */
-  private applyEnterChoices(id: ObjectId, controller: PlayerId, def: CardDefinition): void {
-    if (def.chooseCreatureTypeOnEnter) this.beginCreatureTypeChoice(id, controller);
-    else if (def.chooseOnEnter !== null) {
-      this.beginCreatureTypeChoice(id, controller, def.chooseOnEnter);
+  private finishLandPlay(entry: Extract<PendingEntry, { kind: "land" }>): void {
+    const { object: cardId, player, from } = entry;
+    if (this.askEnterChoice(cardId, player)) {
+      this.state.suspendedResolutions.push({ effect: null, enter: entry });
+      return;
     }
+    this.moveObject(cardId, "battlefield");
+    this.emit({ type: "land-played", player, object: cardId, from });
+    this.emit({ type: "permanent-entered-battlefield", object: cardId });
+  }
+
+  /**
+   * The next "as this enters" choice the card `id` has to make on its way onto
+   * the battlefield, or `null` once there's none left: a Clone's copy first
+   * (rule 707.9), then — as whatever it's becoming — a creature type (Urza's
+   * Incubator, Cavern of Souls) or a word from a list (Heraldic Banner's
+   * colour). An answer waits on the card, `GameObject.enterChoice`.
+   */
+  private nextEnterChoice(
+    id: ObjectId,
+  ): { readonly kind: "copy" } | { readonly kind: "choose"; readonly options?: readonly string[] } | null {
+    const object = this.state.objects[id];
+    const answered = object.enterChoice;
+    const def = this.registry.get(printedCardName(object));
+    if (def.copyOnEnter !== null && answered?.copyOf === undefined) return { kind: "copy" };
+    if (answered?.chosen !== undefined) return null;
+    const becoming =
+      answered?.copyOf !== undefined && answered.copyOf !== null ? this.registry.get(answered.copyOf) : def;
+    if (becoming.chooseCreatureTypeOnEnter) return { kind: "choose" };
+    if (becoming.chooseOnEnter !== null) return { kind: "choose", options: becoming.chooseOnEnter };
+    return null;
+  }
+
+  /**
+   * Ask the next "as this enters" choice (rule 614.12) of the card `id`, about
+   * to be put onto the battlefield under `chooser`'s control — before it moves,
+   * so the replacements that apply as it enters (Giada's counters for a Clone
+   * copying an Angel) and the triggers that see it arrive (the copied
+   * creature's own "when this enters") all see it as chosen. Returns whether a
+   * decision is now up: if so nothing may move yet, and the entry is tried
+   * again once it's answered — every way onto the battlefield does this, not
+   * only a spell resolving or a land being played. A Clone with nothing to
+   * copy enters as itself (its "may", rule 707.9).
+   */
+  private askEnterChoice(id: ObjectId, chooser: PlayerId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined) return false;
+    for (let next = this.nextEnterChoice(id); next !== null; next = this.nextEnterChoice(id)) {
+      if (next.kind === "choose") {
+        this.beginCreatureTypeChoice(id, chooser, next.options);
+        return true;
+      }
+      const options = this.copyOptions(id);
+      if (options.length > 0) {
+        this.state.awaiting = { kind: "choose-copy", player: chooser, source: id, options };
+        return true;
+      }
+      object.enterChoice = { ...object.enterChoice, copyOf: null };
+    }
+    return false;
+  }
+
+  /** What a Clone entering may copy: a creature on the battlefield (rule
+   * 707.9 — "any creature on the battlefield"), bar itself and anything out
+   * of the game. */
+  private copyOptions(cloneId: ObjectId): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) => {
+      if (id === cloneId) return false;
+      const object = this.state.objects[id];
+      return this.inGame(object) && computeCharacteristics(this.state, this.registry, id).types.includes("creature");
+    });
   }
 
   /** Why `player` cannot suspend `cardId` from hand right now (rule 702.62 —
@@ -8463,6 +8539,11 @@ export class Game {
   private resumeSuspendedResolution(): void {
     const next = this.state.suspendedResolutions.pop();
     if (next === undefined || next.effect === null) {
+      if (next?.enter !== undefined) {
+        const parked = this.state.suspendedResolutions.length;
+        this.finishEntry(next.enter);
+        this.holdResolutionOpen(parked);
+      }
       this.endResolutionIfDone();
       return;
     }
@@ -8498,6 +8579,54 @@ export class Game {
     }
     this.holdResolutionOpen(parked);
     this.endResolutionIfDone();
+  }
+
+  /**
+   * A permanent spell resolving becomes a permanent: it enters the battlefield
+   * (rule 608.3) — once its "as this enters" choices are made, which it stops
+   * to ask for first (`askEnterChoice`). It waits on the stack meanwhile,
+   * still resolving, and this runs again with the answer (`PendingEntry`).
+   */
+  private enterPermanentSpell(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "stack") return;
+    if (this.askEnterChoice(id, object.controller)) {
+      this.state.suspendedResolutions.push({ effect: null, enter: { kind: "spell", object: id } });
+      return;
+    }
+    const def = this.registry.get(printedCardName(object));
+    const enchantTarget = def.subtypes.includes("Aura") ? this.targetsStillMeant(object)[0] : undefined;
+    const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
+    // "That creature enters with two additional +1/+1 counters" (Yuna).
+    const extraCounters = object.entersWithCounters;
+    this.moveObject(id, "battlefield");
+    object.targets = null;
+    if (extraCounters !== undefined && this.state.objects[id]?.zone === "battlefield") {
+      for (const c of extraCounters) this.addCounter({ kind: "object", object: id }, c.kind, c.amount);
+    }
+    // "This creature escapes with a +1/+1 counter on it" — before the
+    // enters-battlefield event, so an ETB trigger reads the counter the
+    // permanent genuinely arrived with (rule 614.1c).
+    if (escapedWith !== undefined && this.state.objects[id]?.zone === "battlefield") {
+      this.addCounter({ kind: "object", object: id }, escapedWith.kind, escapedWith.amount);
+    }
+    this.emit({ type: "permanent-entered-battlefield", object: id });
+    if (enchantTarget?.kind === "object") {
+      object.attachedTo = enchantTarget.object;
+      this.emit({
+        type: "permanent-attached",
+        source: id,
+        target: enchantTarget.object,
+      });
+    }
+  }
+
+  /** Finish an entry that stopped to ask an "as this enters" choice — see
+   * `PendingEntry`. */
+  private finishEntry(entry: PendingEntry): void {
+    if (entry.kind === "spell") this.enterPermanentSpell(entry.object);
+    else if (entry.kind === "land") this.finishLandPlay(entry);
+    else this.finishZoneChoice(entry);
   }
 
   private resolveTopObject(): void {
@@ -8629,34 +8758,7 @@ export class Game {
     }
 
     if (this.isPermanentSpell(def)) {
-      const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
-      // "That creature enters with two additional +1/+1 counters" (Yuna).
-      const extraCounters = object.entersWithCounters;
-      this.moveObject(id, "battlefield");
-      object.targets = null;
-      if (extraCounters !== undefined && this.state.objects[id]?.zone === "battlefield") {
-        for (const c of extraCounters) this.addCounter({ kind: "object", object: id }, c.kind, c.amount);
-      }
-      // "This creature escapes with a +1/+1 counter on it" — before the
-      // enters-battlefield event, so an ETB trigger reads the counter the
-      // permanent genuinely arrived with (rule 614.1c).
-      if (escapedWith !== undefined && this.state.objects[id]?.zone === "battlefield") {
-        this.addCounter({ kind: "object", object: id }, escapedWith.kind, escapedWith.amount);
-      }
-      this.emit({ type: "permanent-entered-battlefield", object: id });
-      if (def.subtypes.includes("Aura")) {
-        const enchantTarget = targets[0];
-        if (enchantTarget?.kind === "object") {
-          object.attachedTo = enchantTarget.object;
-          this.emit({
-            type: "permanent-attached",
-            source: id,
-            target: enchantTarget.object,
-          });
-        }
-      }
-      if (def.copyOnEnter !== null) this.beginCopyChoice(id, object.controller);
-      this.applyEnterChoices(id, object.controller, def);
+      this.enterPermanentSpell(id);
     } else if (
       // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
       // the card with a "you may cast the creature later" permission, instead
@@ -11022,16 +11124,21 @@ export class Game {
         // A token exiled this way ceased to exist (rule 111.7) and never
         // comes back; anything that moved on from exile in the meantime is
         // no longer linked, because `moveObject` cleared the mark. They all
-        // return at once.
+        // return at once — once each has made its "as this enters" choices
+        // (rule 614.12), asked one at a time before any moves.
+        const returning = this.state.zones.shared.exile.filter((id) => {
+          const object = this.state.objects[id];
+          return object?.exiledBy === source && !object.isToken;
+        });
+        if (returning.some((id) => this.askEnterChoice(id, this.state.objects[id].owner))) return true;
         this.withEnterBatch(() => {
-          for (const id of [...this.state.zones.shared.exile]) {
-            const object = this.state.objects[id];
-            if (object?.exiledBy !== source || object.isToken) continue;
-            object.exiledBy = undefined;
+          for (const id of returning) {
+            this.state.objects[id].exiledBy = undefined;
             this.moveObject(id, "battlefield");
             this.emit({ type: "permanent-entered-battlefield", object: id });
           }
         });
+        return false;
       },
       putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves, transformed) =>
         this.putOntoBattlefieldByEffect(
@@ -14124,19 +14231,22 @@ export class Game {
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave = false,
     transformed = false,
-  ): void {
-    if (target.kind !== "object") return;
+  ): boolean {
+    if (target.kind !== "object") return false;
     const object = this.state.objects[target.object];
     // Only from a zone a card can be reanimated out of; a permanent already
     // on the battlefield isn't put onto it again.
-    if (object === undefined || object.zone === "battlefield") return;
+    if (object === undefined || object.zone === "battlefield") return false;
+    // Its "as this enters" choices first (rule 614.12 — a reanimated Clone
+    // copies something): nothing moves until they're made.
+    if (this.askEnterChoice(target.object, underYourControl ? controller : object.owner)) return true;
     this.moveObject(target.object, "battlefield", {
       tapped: enterTapped,
       ...(underYourControl ? { under: controller } : {}),
       ...(transformed ? { transformed: true } : {}),
     });
     const entered = this.state.objects[target.object];
-    if (entered === undefined || entered.zone !== "battlefield") return;
+    if (entered === undefined || entered.zone !== "battlefield") return false;
     if (underYourControl && entered.controller !== controller) {
       // Layer 2 recomputes control every SBA pass and reverts to the owner
       // unless a control *effect* says otherwise, so this has to go through
@@ -14150,6 +14260,7 @@ export class Game {
       this.addCounter(target, withCounters.kind, withCounters.amount, true, controller);
     }
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
+    return false;
   }
 
   private exileByEffect(target: TargetRef, exiledBy?: ObjectId, split = true): void {
@@ -14193,7 +14304,7 @@ export class Game {
     controller: PlayerId,
     targets: readonly TargetRef[],
     options: FlickerOptions,
-  ): void {
+  ): EffectSpec | null {
     const returnUnder = options.underYourControl === true ? controller : undefined;
     const delayed = options.returnAt;
     // Minted only once something is actually exiled: a trigger that finds
@@ -14230,11 +14341,26 @@ export class Game {
       exiled.push(id);
     }
     if (delayed === undefined) {
+      // One coming back has an "as this enters" choice to make first (rule
+      // 614.12 — a blinked Clone copies afresh): it's asked now, and the
+      // return waits for the answer, linked to this exile the way a delayed
+      // one is.
+      if (exiled.some((id) => this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner))) {
+        const returnLink = `flicker-${this.state.nextObjectSeq++}`;
+        for (const id of exiled) this.state.objects[id].flickerLink = returnLink;
+        return {
+          kind: "return-flickered",
+          link: returnLink,
+          ...(options.thenCounters !== undefined ? { thenCounters: options.thenCounters } : {}),
+          ...(returnUnder !== undefined ? { underYourControl: true } : {}),
+          ...(options.transformed === true ? { transformed: true } : {}),
+        };
+      }
       this.completeFlickerReturn(exiled, options.thenCounters, returnUnder, options.transformed === true);
-      return;
+      return null;
     }
     // No link means nothing was exiled (or is waiting to be): no return.
-    if (link === undefined) return;
+    if (link === undefined) return null;
     this.createDelayedTrigger(
       source,
       controller,
@@ -14249,6 +14375,7 @@ export class Game {
       options.returnText ?? "Return the exiled card to the battlefield.",
       [],
     );
+    return null;
   }
 
   /** The delayed return of a `flicker` with `returnAt`: every card still in
@@ -14259,17 +14386,19 @@ export class Game {
     counters: FlickerCounters | undefined,
     returnUnder: PlayerId | undefined,
     transformed = false,
-  ): void {
+  ): boolean {
     const linked = this.state.zones.shared.exile.filter(
       (id) => this.state.objects[id]?.flickerLink === link,
     );
+    // "As this enters" choices first (rule 614.12), with the link still
+    // standing: this runs again with the answer.
+    const returning = linked.filter((id) => !this.state.objects[id].isToken);
+    if (returning.some((id) => this.askEnterChoice(id, returnUnder ?? this.state.objects[id].owner))) {
+      return true;
+    }
     for (const id of linked) this.state.objects[id].flickerLink = undefined;
-    this.completeFlickerReturn(
-      linked.filter((id) => !this.state.objects[id].isToken),
-      counters,
-      returnUnder,
-      transformed,
-    );
+    this.completeFlickerReturn(returning, counters, returnUnder, transformed);
+    return false;
   }
 
   /** The return half of a blink: bring `ids` back from exile together,
@@ -15251,12 +15380,17 @@ export class Game {
     count: number | "all",
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
-  ): void {
+  ): boolean {
     const eligible = this.state.zones.perPlayer[player].graveyard.filter((id) =>
       matchesFilter(this.state, this.registry, id, filter, { you: player }),
     );
-    if (eligible.length === 0) return;
+    if (eligible.length === 0) return false;
     if (count === "all" || eligible.length <= count) {
+      // Their "as this enters" choices first (rule 614.12), one at a time:
+      // nothing moves until they are all made, and this runs again with each.
+      if (destination === "battlefield" && eligible.some((id) => this.askEnterChoice(id, player))) {
+        return true;
+      }
       // "Return all land cards from your graveyard" moves them at once: one
       // graveyard departure, and one simultaneous entry.
       this.withGraveyardLeaveBatch(() => {
@@ -15270,7 +15404,7 @@ export class Game {
           }
         });
       });
-      return;
+      return false;
     }
     this.state.awaiting = {
       kind: "choose-from-zone",
@@ -15286,6 +15420,7 @@ export class Game {
         ? { enterWithCounters: withCounters }
         : {}),
     };
+    return false;
   }
 
   /** Put `withCounters` on `id`, just put onto the battlefield by `player`'s
@@ -17112,8 +17247,28 @@ export class Game {
     // that dies and returns is a Clone again.
     object.copyOf = null;
     // An ETB "choose a creature type" choice ends when the object changes
-    // zones — a fresh entry chooses again (Urza's Incubator — P14).
+    // zones — a fresh entry chooses again (Urza's Incubator — P14). So does
+    // any other "as this enters" choice (a Heraldic Banner that comes back
+    // names a colour afresh).
     object.chosenCreatureType = null;
+    delete object.chosenOnEnter;
+    // The "as this enters" choices made before this move (rule 614.12 —
+    // `askEnterChoice`) take effect as it enters: it *is* the copy, or has
+    // its creature type or word, before any replacement or trigger looks at
+    // it. Spent either way — a card that went somewhere else instead chooses
+    // again next time.
+    const enterChoice = object.enterChoice;
+    object.enterChoice = undefined;
+    if (to === "battlefield" && enterChoice !== undefined) {
+      if (enterChoice.copyOf !== undefined && enterChoice.copyOf !== null) {
+        object.copyOf = enterChoice.copyOf;
+        this.emit({ type: "permanent-copied", object: id, copyOf: enterChoice.copyOf });
+      }
+      if (enterChoice.chosen !== undefined) {
+        object.chosenCreatureType = enterChoice.chosen;
+        object.chosenOnEnter = enterChoice.chosen;
+      }
+    }
     // Alt-cast zone markers (ROADMAP Phase 6) end on any zone change: a
     // Snapcaster grant, a suspend / foretell exile state.
     object.grantedFlashback = null;

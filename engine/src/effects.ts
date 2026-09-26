@@ -2274,8 +2274,11 @@ export interface EffectApi {
    * battlefield. */
   returnToHand(target: TargetRef, from?: ReturnToHandZone): void;
   exileObject(target: TargetRef, untilSourceLeaves?: boolean): void;
-  /** See the `"return-exiled-by-source"` {@link EffectSpec}. */
-  returnExiledBySource(): void;
+  /** See the `"return-exiled-by-source"` {@link EffectSpec}.
+   * Returns `true` when it stopped to ask an "as this enters" choice first
+   * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
+   * again once it's answered. */
+  returnExiledBySource(): boolean;
   /** Sacrifice one named permanent — see the `"sacrifice-target"`
    * {@link EffectSpec}. */
   sacrificeTarget(target: TargetRef): void;
@@ -2352,15 +2355,20 @@ export interface EffectApi {
   /** Exile `targets`, then return them to the battlefield together — at once,
    * or linked to a delayed return — see the `"flicker"` {@link EffectSpec}.
    * `fromSource` marks a target that is the ability's own source, which is
-   * skipped if it has become a new object since. */
-  flicker(targets: readonly TargetRef[], options: FlickerOptions): void;
-  /** See the `"return-flickered"` {@link EffectSpec}. */
+   * skipped if it has become a new object since. Returns the return, as a
+   * `return-flickered` step to run once answered, when one coming back has
+   * an "as this enters" choice to ask first (rule 614.12); else `null`. */
+  flicker(targets: readonly TargetRef[], options: FlickerOptions): EffectSpec | null;
+  /** See the `"return-flickered"` {@link EffectSpec}.
+   * Returns `true` when it stopped to ask an "as this enters" choice first
+   * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
+   * again once it's answered. */
   returnFlickered(
     link: string,
     thenCounters: FlickerCounters | undefined,
     underYourControl: boolean,
     transformed: boolean,
-  ): void;
+  ): boolean;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
@@ -2387,14 +2395,17 @@ export interface EffectApi {
    * `except` left out one permanent apiece. */
   aggregate(spec: AggregateSpec, except: readonly ObjectId[]): number;
   /** See the `"return-from-graveyard"` {@link EffectSpec} — from the effect's
-   * controller's graveyard. */
+   * controller's graveyard.
+   * Returns `true` when it stopped to ask an "as this enters" choice first
+   * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
+   * again once it's answered. */
   returnFromGraveyard(
     filter: CardFilter,
     destination: "battlefield" | "hand",
     count: number | "all",
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
-  ): void;
+  ): boolean;
   /** `target` (a player) discards `amount` cards. */
   discardCards(target: TargetRef, amount: number): void;
   modifyPt(
@@ -2639,7 +2650,10 @@ export interface EffectApi {
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
   scry(amount: number, surveil: boolean, then: EffectSpec | undefined): void;
-  /** See the `"put-onto-battlefield"` {@link EffectSpec}. */
+  /** See the `"put-onto-battlefield"` {@link EffectSpec}.
+   * Returns `true` when it stopped to ask an "as this enters" choice first
+   * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
+   * again once it's answered. */
   putOntoBattlefield(
     target: TargetRef,
     underYourControl: boolean,
@@ -2647,7 +2661,7 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave?: boolean,
     transformed?: boolean,
-  ): void;
+  ): boolean;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
     player: PlayerId | null,
@@ -3418,16 +3432,22 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true);
       return;
     }
-    case "return-exiled-by-source":
-      ctx.returnExiledBySource();
+    case "return-exiled-by-source": {
+      // Each case below that puts something onto the battlefield may stop
+      // first to ask an "as this enters" choice (a Clone's copy — rule
+      // 614.12); it moved nothing, and runs again once that's answered.
+      const parked = ctx.parkedCount();
+      if (ctx.returnExiledBySource()) ctx.resumeAfterDecisions(spec, parked);
       return;
+    }
     case "choose-creature-type":
       ctx.chooseCreatureType(spec.then);
       return;
     case "put-onto-battlefield": {
       const target = resolveEffectTarget(spec.target, ctx);
+      const parked = ctx.parkedCount();
       if (target !== undefined) {
-        ctx.putOntoBattlefield(
+        const asked = ctx.putOntoBattlefield(
           target,
           spec.underYourControl === true,
           spec.enterTapped === true,
@@ -3435,6 +3455,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.exileIfItWouldLeave === true,
           spec.transformed === true,
         );
+        if (asked) ctx.resumeAfterDecisions(spec, parked);
       }
       return;
     }
@@ -3463,7 +3484,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const target = resolveEffectTarget(ref, ctx);
         if (target !== undefined) targets.push(target);
       }
-      ctx.flicker(targets, {
+      const parked = ctx.parkedCount();
+      const returning = ctx.flicker(targets, {
         ...(spec.thenCounters !== undefined ? { thenCounters: spec.thenCounters } : {}),
         ...(spec.underYourControl === true ? { underYourControl: true } : {}),
         ...(spec.returnAt !== undefined ? { returnAt: spec.returnAt } : {}),
@@ -3471,16 +3493,20 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ...(spec.transformed === true ? { transformed: true } : {}),
         ...(spec.target === "source" ? { fromSource: true } : {}),
       });
+      if (returning !== null) ctx.resumeAfterDecisions(returning, parked);
       return;
     }
-    case "return-flickered":
-      ctx.returnFlickered(
+    case "return-flickered": {
+      const parked = ctx.parkedCount();
+      const asked = ctx.returnFlickered(
         spec.link,
         spec.thenCounters,
         spec.underYourControl === true,
         spec.transformed === true,
       );
+      if (asked) ctx.resumeAfterDecisions(spec, parked);
       return;
+    }
     case "grant-flashback": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.grantFlashback(target);
@@ -3607,15 +3633,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.putOnLibrary(target, spec.position);
       return;
     }
-    case "return-from-graveyard":
-      ctx.returnFromGraveyard(
+    case "return-from-graveyard": {
+      const parked = ctx.parkedCount();
+      const asked = ctx.returnFromGraveyard(
         spec.filter,
         spec.destination,
         spec.count,
         spec.enterTapped ?? false,
         spec.withCounters,
       );
+      if (asked) ctx.resumeAfterDecisions(spec, parked);
       return;
+    }
     case "discard": {
       for (const target of scopedOrTargetedPlayers(spec.target, ctx)) {
         ctx.discardCards(

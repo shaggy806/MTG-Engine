@@ -310,6 +310,15 @@ export interface GameObject {
    * interprets.
    */
   chosenOnEnter?: string | null;
+  /**
+   * "As this enters" choices (rule 614.12) made while it was still on its way:
+   * a Clone's copy (`copyOf`, `null` for none — rule 707.9), and a chosen
+   * creature type or word (`chosen`). They're asked before it moves, so the
+   * replacements that apply as it enters and the triggers that see it arrive
+   * both see it as chosen; `moveObject` applies them as it enters and clears
+   * them on any move. See `Game.askEnterChoice`.
+   */
+  enterChoice?: { readonly copyOf?: string | null; readonly chosen?: string };
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
    * created. Absent for a single-faced card. */
@@ -1573,9 +1582,37 @@ export interface EntryRecord {
  * A resolution that stopped partway to ask someone something — see
  * {@link GameState.suspendedResolutions}. Either what is left of it (a
  * {@link ParkedSteps}), or, once nothing is left, just a note that it isn't
- * over until its last decision has been answered.
+ * over until its last decision has been answered — or, with `enter`, a
+ * permanent waiting on its "as this enters" choice to finish entering.
  */
-export type SuspendedResolution = ParkedSteps | { readonly effect: null };
+export type SuspendedResolution =
+  | ParkedSteps
+  | { readonly effect: null; readonly enter?: PendingEntry };
+
+/**
+ * A permanent part of the way onto the battlefield, stopped to make an "as
+ * this enters" choice (rule 614.12 — `Game.askEnterChoice`) before it moves:
+ * a permanent spell still resolving, or a land being played. It finishes
+ * entering once that's answered. An effect putting something onto the
+ * battlefield needs none of this — it parks itself, and runs again.
+ */
+export type PendingEntry =
+  | { readonly kind: "spell"; readonly object: ObjectId }
+  | {
+      readonly kind: "land";
+      readonly object: ObjectId;
+      readonly player: PlayerId;
+      readonly from: ZoneType;
+    }
+  | {
+      /** The answer to a `choose-from-zone` decision, not yet carried out
+       * because a card it puts onto the battlefield had to choose first (a
+       * tutored Cavern of Souls). */
+      readonly kind: "zone-choice";
+      readonly awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>;
+      readonly player: PlayerId;
+      readonly chosen: readonly ObjectId[];
+    };
 
 /**
  * The steps of a resolution still to apply, with everything its resolution

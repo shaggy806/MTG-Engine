@@ -112,7 +112,8 @@
   "bug:lore-counters-fire-chapters",
   "bug:commander-eligibility-vehicles",
   "bug:modal-modes-on-cast",
-  "bug:player-leaves-game-cleanup"
+  "bug:player-leaves-game-cleanup",
+  "bug:as-enters-choices-any-entry"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
