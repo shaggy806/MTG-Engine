@@ -25,7 +25,7 @@
 // Usage (after `npm run build -w engine`, which `card:scaffold` runs):
 //   npm run card:scaffold -w engine -- "Card Name" ["Another" ...]
 //   npm run card:scaffold -w engine -- --next 10            next unimplemented top-500 commanders
-//   npm run card:scaffold -w engine -- --next 10 --cards    next unimplemented top-2000 cards
+//   npm run card:scaffold -w engine -- --next 10 --cards    next unimplemented top-5000 cards
 //   npm run card:scaffold -w engine -- --auto-scan          auto-finish (into review/) every keyword-only card
 //                                                           in both backlog lists
 //   npm run card:scaffold -w engine -- --auto-scan --all    …in the whole snapshot

@@ -33,7 +33,13 @@ that one card is the reason the deck exists.
   player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
 
-## Card backlog (top-2000 staples and the precons)
+## Card backlog (top-5000 staples and the precons)
+
+- **The current priority (2026-09-26): the top 5000 cards, most-played first.**
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,260 implemented). Work
+  down its unmarked entries in rank order: author each card the engine runs faithfully, and
+  build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
+  holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
 
 - **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
   Reconfigure. Also open:
@@ -68,7 +74,7 @@ that one card is the reason the deck exists.
   `npm run card:text -w engine`.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
-  one-off requests. 48 of its cards are still missing, and 23 of those aren't in the top-2000
+  one-off requests. 48 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
 - **Precon stand-ins.** 42 cards in the five starter decks still play as substitutes. The

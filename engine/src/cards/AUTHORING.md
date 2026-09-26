@@ -108,7 +108,7 @@ the git-ignored `engine/.cache/scryfall/`; rerun it when a set comes out.
 
 **Or start from a scaffold.** `npm run card:scaffold -w engine -- "Card
 Name"` (or `--next 10` for the next unimplemented top-500 commanders,
-`--next 10 --cards` for the top-2000 backlog) writes the card's file from
+`--next 10 --cards` for the top-5000 backlog) writes the card's file from
 the snapshot into `engine/src/cards/scaffold/`: name, cost, colours, types,
 P/T, loyalty, faces and their layout flags, `text`, the keywords the engine
 models, a partner ability's `pairing`, the rulings in the header, and each

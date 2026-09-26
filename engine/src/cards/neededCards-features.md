@@ -7,8 +7,8 @@ cards each would unblock, from two measured populations:
 1. **The commander gap** (current priority): `top-commanders.txt` and the
    per-commander triage `top-commanders-gaps.json`, ranked by
    `npm run cmdrs:gaps -w engine`.
-2. **The card backlog**: `top-commander-cards.txt` (the top 2000 Commander
-   cards by EDHREC rank, cross-referenced against `cards/pool/` — see
+2. **The card backlog**: `top-commander-cards.txt` (the top 5000 Commander
+   cards by EDHREC rank, refetched 2026-09-26, cross-referenced against `cards/pool/` — see
    `engine/scripts/top-commander-cards.mjs`).
    **Refresh the `[x]` marks with `npm run cards:mark -w engine`** after
    authoring; that re-marks in place and leaves the ranking snapshot alone.

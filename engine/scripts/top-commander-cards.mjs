@@ -118,6 +118,13 @@ async function loadImplementedNames() {
   return names;
 }
 
+/** Whether a listed card is implemented: by its name, or — for a double-faced
+ * card, which Scryfall lists as "Front // Back" and the pool as its faces —
+ * by its front face's. */
+function isImplemented(implementedNames, name) {
+  return implementedNames.has(name) || implementedNames.has(name.split(" // ")[0]);
+}
+
 /** The card name on one line of an existing list file — see `formatLine`. */
 function nameOfLine(line) {
   // The name is `padEnd(40)` from column 11; a longer name overflows the field
@@ -139,7 +146,7 @@ async function refresh(outPath) {
   const marked = lines.map((line) => {
     if (!/^\[.\] /.test(line)) return line;
     total += 1;
-    const has = implementedNames.has(nameOfLine(line));
+    const has = isImplemented(implementedNames, nameOfLine(line));
     if (has) implemented += 1;
     return `${has ? "[x]" : "[ ]"}${line.slice(3)}`;
   });
@@ -188,7 +195,7 @@ async function main() {
 
   let implementedCount = 0;
   const lines = cards.map((card) => {
-    const implemented = implementedNames.has(card.name);
+    const implemented = isImplemented(implementedNames, card.name);
     if (implemented) implementedCount++;
     return formatLine(card, implemented);
   });
@@ -220,7 +227,7 @@ async function main() {
         type_line: f.type_line,
         oracle_text: f.oracle_text,
       })),
-      implemented: implementedNames.has(c.name),
+      implemented: isImplemented(implementedNames, c.name),
     }));
     writeFileSync(opts.cacheJson, JSON.stringify(slim, null, 1), "utf8");
     console.error(`Wrote raw card cache to ${opts.cacheJson}`);
