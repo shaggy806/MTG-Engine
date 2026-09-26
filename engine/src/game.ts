@@ -12063,7 +12063,17 @@ export class Game {
       },
       creaturesDiedThisTurn: () =>
         this.state.players[controller]?.creaturesDiedThisTurn ?? 0,
-      createTokenCopy: (of, count, opts) => this.createTokenCopy(of, count, opts),
+      // A copy of something that has left the zone this refers to it in —
+      // "a copy of that creature" of one that died — copies it as it last
+      // existed there (rule 608.2h): its source, triggering object or a
+      // target, by stint.
+      createTokenCopy: (of, count, opts) =>
+        this.createTokenCopy(
+          of,
+          count,
+          opts,
+          of === source ? departedSource() : lastKnownOf({ kind: "object", object: of }),
+        ),
       conditionMet,
       attach: (target) => this.attachPermanent(source, target),
       transform: (target) => {
@@ -13264,21 +13274,25 @@ export class Game {
       gainUntilEndOfTurn?: readonly Keyword[];
       exceptions?: CopyExceptions;
     },
+    /** `ofId` as it last existed where the effect refers to it, when it has
+     * left there since: its copiable values are read off this (rule
+     * 608.2h) — a token that died and ceased to exist included. */
+    departed?: LastKnownInfo,
   ): void {
     const of = this.state.objects[ofId];
-    if (of === undefined) return;
-    const copyName = printedCardName(of);
+    if (of === undefined && departed === undefined) return;
+    const copyName = departed !== undefined ? departed.name : printedCardName(of!);
     this.registry.get(copyName); // validate it's a known definition
     // The copy defaults to the copied permanent's controller (Miirym), but a
     // card that copies something an *opponent* controls means "under your
     // control" (Hate Mirage).
-    const controller = opts.under ?? of.controller;
+    const controller = opts.under ?? departed?.controller ?? of!.controller;
     const total = count * this.tokenCreationMultiplier(controller);
     // A copy exception is part of the copiable values (rule 707.9b): every
     // other effect applies over it, and a copy of this copy has it too. So
     // the copied object's own exceptions come first (a copy of an Anikthea
     // Zombie is a Zombie), then this copy's, which win where they differ.
-    const inherited: PtModifier[] = of.modifiers
+    const inherited: PtModifier[] = (departed !== undefined ? (departed.copiable ?? []) : of!.modifiers)
       .filter((m) => m.copiable === true)
       .map((m) => ({ ...m, timestamp: -2 }));
     const modifiers: PtModifier[] = [
@@ -13318,7 +13332,7 @@ export class Game {
       total,
       modifiers,
       opts.exileAtEndStep,
-      opts.notLegendary || of.notLegendary === true,
+      opts.notLegendary || (departed !== undefined ? departed.notLegendary === true : of!.notLegendary === true),
       true,
       false,
       opts.sacrificeAtEndStep === true,
@@ -17823,6 +17837,10 @@ export class Game {
       ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
       ...(renamed !== name ? { renamed } : {}),
+      ...(object.modifiers.some((m) => m.copiable === true)
+        ? { copiable: object.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })) }
+        : {}),
+      ...(object.notLegendary === true ? { notLegendary: true as const } : {}),
       ...(granted.length > 0 ? { grantedTriggers: granted } : {}),
     };
   }

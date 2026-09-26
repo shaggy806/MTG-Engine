@@ -104,6 +104,7 @@ import _poolPlumeveil from "../pool/plumeveil.js";
 import _poolPollutedDelta from "../pool/polluted-delta.js";
 import _poolPrecisionBolt from "../pool/precision-bolt.js";
 import _poolProudMentor from "../pool/proud-mentor.js";
+import _poolRatadrabikOfUrborg from "../pool/ratadrabik-of-urborg.js";
 import _poolRazorfinHunter from "../pool/razorfin-hunter.js";
 import _poolRazortipWhip from "../pool/razortip-whip.js";
 import _poolReinforcedRonin from "../pool/reinforced-ronin.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolPollutedDelta,
     _poolPrecisionBolt,
     _poolProudMentor,
+    _poolRatadrabikOfUrborg,
     _poolRazorfinHunter,
     _poolRazortipWhip,
     _poolReinforcedRonin,

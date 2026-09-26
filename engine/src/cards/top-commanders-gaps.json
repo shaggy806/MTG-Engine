@@ -129,7 +129,8 @@
   "effect:amount-fields-dynamic",
   "effect:look-and-choose-second-pick",
   "trigger:cast-spell-clauses",
-  "effect:copy-exceptions"
+  "effect:copy-exceptions",
+  "effect:token-copy-last-known-info"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

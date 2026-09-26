@@ -3588,6 +3588,7 @@ import _poolRaphaelToughTurtle from "./pool/raphael-tough-turtle.js";
 import _poolRapidHybridization from "./pool/rapid-hybridization.js";
 import _poolRaptorCompanion from "./pool/raptor-companion.js";
 import _poolRapturousMoment from "./pool/rapturous-moment.js";
+import _poolRatadrabikOfUrborg from "./pool/ratadrabik-of-urborg.js";
 import _poolRatcatcher from "./pool/ratcatcher.js";
 import _poolRathiTrapper from "./pool/rathi-trapper.js";
 import _poolRathsEdge from "./pool/raths-edge.js";
@@ -9193,6 +9194,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRapidHybridization,
   _poolRaptorCompanion,
   _poolRapturousMoment,
+  _poolRatadrabikOfUrborg,
   _poolRatcatcher,
   _poolRathiTrapper,
   _poolRathsEdge,

@@ -776,6 +776,13 @@ export interface LastKnownInfo {
   /** The name a copy exception gave it, where that isn't its card's
    * (`name`, which stays the registry key) — see {@link nameOf}. */
   readonly renamed?: string;
+  /** Its copy exceptions (`copiable` modifiers) and whether one made it not
+   * legendary: with `name` — the card it was a copy of, or the face that
+   * was up — its last copiable values, which a copy of it made once it has
+   * left copies (rule 608.2h — Ratadrabik of Urborg's "a copy of that
+   * creature"). Absent when it had none. */
+  readonly copiable?: readonly PtModifier[];
+  readonly notLegendary?: true;
   /** The triggered abilities it had been *granted* — by another permanent's
    * static or a one-shot modifier — in the order `effectiveTriggered` lists
    * them after its printed ones; with `lostAbilities`, only those granted

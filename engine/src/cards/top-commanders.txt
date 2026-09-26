@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-295 already implemented / 205 missing
+296 already implemented / 204 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -490,7 +490,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  484  Tevesh Szat, Doom of Fools                      6317 decks  {4}{B}           Legendary Planeswalker — Szat
 [ ]  485  Aeve, Progenitor Ooze                           6278 decks  {2}{G}{G}{G}     Legendary Creature — Ooze
 [x]  486  Narset, Enlightened Master                      6266 decks  {3}{U}{R}{W}     Legendary Creature — Human Monk
-[ ]  487  Ratadrabik of Urborg                            6248 decks  {2}{W}{B}        Legendary Creature — Zombie Wizard
+[x]  487  Ratadrabik of Urborg                            6248 decks  {2}{W}{B}        Legendary Creature — Zombie Wizard
 [x]  488  Nine-Fingers Keene                              6224 decks  {1}{B}{G}{U}     Legendary Creature — Human Rogue
 [x]  489  Loot, the Pathfinder                            6223 decks  {2}{G}{U}{R}     Legendary Creature — Beast Noble
 [x]  490  Kelsien, the Plague                             6180 decks  {R}{W}{B}        Legendary Creature — Human Assassin
