@@ -1,7 +1,8 @@
 import { defineCard } from "../define.js";
 
-// Every mode is a mass effect with no targets, so the modes are chosen as the
-// spell resolves (the `modal` `EffectSpec`) rather than at cast time.
+// Modes are chosen as it's cast (rules 601.2b, 700.2a — `castModal`, with no
+// targets), so everyone sees which two while it's on the stack. The chosen
+// modes then happen in printed order (700.2d).
 export default defineCard({
   name: "Austere Command",
   manaCost: "{4}{W}{W}",
@@ -13,17 +14,22 @@ export default defineCard({
     "• Destroy all enchantments.\n" +
     "• Destroy all creatures with mana value 3 or less.\n" +
     "• Destroy all creatures with mana value 4 or greater.",
-  effect: {
-    kind: "modal",
+  castModal: {
     minModes: 2,
     maxModes: 2,
     modes: [
-      { text: "Destroy all artifacts.", effect: { kind: "destroy-all", filter: { type: "artifact" } } },
       {
+        targets: [],
+        text: "Destroy all artifacts.",
+        effect: { kind: "destroy-all", filter: { type: "artifact" } },
+      },
+      {
+        targets: [],
         text: "Destroy all enchantments.",
         effect: { kind: "destroy-all", filter: { type: "enchantment" } },
       },
       {
+        targets: [],
         text: "Destroy all creatures with mana value 3 or less.",
         effect: {
           kind: "destroy-all",
@@ -31,6 +37,7 @@ export default defineCard({
         },
       },
       {
+        targets: [],
         text: "Destroy all creatures with mana value 4 or greater.",
         effect: {
           kind: "destroy-all",

@@ -130,6 +130,21 @@ describe("card scaffolds", () => {
   });
 });
 
+describe("modal spells", () => {
+  // Rules 601.2b, 700.2a: a modal spell's modes are chosen as it's cast, so
+  // they're part of the spell on the stack. The resolution-time `modal`
+  // effect is for a choice made as it resolves ("add one mana of any
+  // color"); a spell printed "Choose one —" with bullets uses `castModal`,
+  // targets or not. Austere Command was the one authored the other way.
+  it("no spell printed with bulleted modes chooses them as it resolves", () => {
+    const bulleted = /^Choose [^\n]*—\s*\n•/m;
+    const onResolution = POOL_CARDS.filter(
+      (def) => def.effect?.kind === "modal" && bulleted.test(def.text),
+    ).map((def) => def.name);
+    expect(onResolution).toEqual([]);
+  });
+});
+
 describe("deckbuilding flags", () => {
   // Rule 903.3a: a card that says it "can be your commander" is the only
   // way a planeswalker commands. `deck-validation.ts` reads the declarative

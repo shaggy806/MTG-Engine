@@ -268,7 +268,7 @@ from the same link.
 | field | shape | what it does |
 | --- | --- | --- |
 | `loyalty` | `number` | planeswalker starting loyalty — §8, §12 |
-| `castModal` | `{ minModes, maxModes, modes: ModeOption[] }` | a **targeted** modal spell (choose modes at cast time). Non-targeted modes use the `modal` *effect* instead — §6. |
+| `castModal` | `{ minModes, maxModes, modes: ModeOption[] }` | a modal **spell** ("Choose one —" and bullets) — its modes are chosen as it's cast (rules 601.2b, 700.2a), whether or not they target (Farewell's have no targets). The `modal` *effect* is for a choice made on resolution instead — §6. |
 | `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
 | `additionalCost.options` | `AdditionalCostOption[]` | a **choice** of whole costs, exactly one paid (Bitter Triumph: "discard a card or pay 3 life"; Demand Answers: "sacrifice an artifact or discard a card"). Each option takes a `text` label plus any of `discard` / `payLife` / `sacrifice` / `mana`, and is enumerated as its own castable variant — so the caster chooses by picking a `cast-spell`, not by answering a decision. **Not for a cost whose *filter* spans two types**: Deadly Dispute's "sacrifice an artifact or creature" is one cost with `typesAnyOf` and needs none of this. |
 | `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. |
@@ -790,11 +790,16 @@ exist (rule 111.7), so neither comes back.
   meanwhile (no state-based actions, no triggers put on the stack). So
   "each player sacrifices six creatures. You create six Zombies" is just two
   steps, and the Zombies can't be sacrificed.
-- **`modal { minModes, maxModes, modes: ModeOption[] }`** — "choose one" /
-  "choose one or both". Each `ModeOption` is `{ text, effect }`. **A mode
-  can't introduce a *new* target choice of its own** — for a modal spell whose
-  modes need their own targets, use the top-level `castModal` field instead
-  (mode choice happens at cast time). A mode's effect *can* reference the
+- **`modal { minModes, maxModes, modes: ModeOption[] }`** — a choice made as
+  the effect resolves: "add one mana of any color", "create a Food token or a
+  Treasure token", fabricate's counters-or-Servos. Each `ModeOption` is
+  `{ text, effect }`. **Not for a modal spell**: one printed "Choose one —"
+  with bulleted modes chooses them as it's cast (rules 601.2b, 700.2a), so it
+  uses the top-level `castModal` field even when no mode targets anything,
+  and `pool.test.ts` fails a spell that doesn't. A modal *triggered* or
+  *activated* ability still uses this effect, which asks as it resolves rather
+  than as it goes on the stack (rule 700.2b — §15). **A mode can't introduce
+  a *new* target choice of its own.** A mode's effect *can* reference the
   enclosing ability's own already-chosen targets (`target: 0`, same as
   anywhere else) — needed-cards P19. `notChosenThisTurn: true` is "choose
   one **that hasn't been chosen this turn**" (Galadriel, Light of Valinor):
@@ -2273,20 +2278,21 @@ static: [{ affects: { scope: "creatures-you-control" }, grantPt: [1, 1],
 **Token maker** (`raise-the-alarm.ts`): `effect: { kind: "create-token", token:
 "Soldier Token", count: 2 }`.
 
-**Modal instant** — non-targeted modes via the `modal` effect:
+**Modal instant** — `castModal`, modes chosen as it's cast, a mode with no
+targets saying so with `targets: []`:
 
 ```ts
-effect: {
-  kind: "modal", minModes: 1, maxModes: 1,
+castModal: {
+  minModes: 1, maxModes: 1,
   modes: [
-    { text: "You gain 3 life.", effect: { kind: "gain-life", amount: 3 } },
-    { text: "Draw a card.",     effect: { kind: "draw", amount: 1 } },
+    { targets: [], text: "You gain 3 life.", effect: { kind: "gain-life", amount: 3 } },
+    { targets: [], text: "Draw a card.",     effect: { kind: "draw", amount: 1 } },
   ],
 }
 ```
 
-Targeted modes → use `castModal` (see `duskwood-verdict.ts`,
-`sunder-charm.ts`).
+Modes with their own targets: `duskwood-verdict.ts`, `sunder-charm.ts`; none
+at all: `farewell.ts`, `austere-command.ts`.
 
 **Planeswalker** (`chandra-acolyte-of-flame.ts`): `loyalty: 4`, `activated`
 abilities each with a `loyaltyCost` and `cost: { mana: null, tap: false }`.
@@ -2503,8 +2509,10 @@ Delete an entry in the same commit as the feature that retires it.
 - **Replacement ordering** — if two replacements would apply to one event
   there's no `choose-replacement-order`; the pool has no such case. No damage
   **redirection** to a third object (Harm's Way).
-- **Modal** resolution-time modes must be non-targeted (targeted → `castModal`,
-  cast-time only).
+- **Modal abilities** — a modal triggered or activated ability chooses its
+  modes as it resolves, not as it goes on the stack (rule 700.2b), and a
+  mode can't bring targets of its own (`effect:modal-ability-targeted-modes`).
+  A modal *spell* has neither problem: it uses `castModal`.
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
 - **`populate`** copies the largest creature token you control rather than

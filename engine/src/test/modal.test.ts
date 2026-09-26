@@ -111,8 +111,9 @@ describe("a castModal spell cast from an alternative zone (Snapcaster-style flas
 });
 
 describe("modal spells (rule 700.2) — Austere Command", () => {
-  // Every mode is a targetless mass effect, so the modes are chosen as the
-  // spell *resolves* (the `modal` EffectSpec), not as it is cast.
+  // Rules 601.2b, 700.2a: the modes are chosen as the spell is cast, so
+  // they're part of the spell on the stack — even when, as here, no mode
+  // targets anything. The engine used to ask as the spell resolved.
   const withSixMana = (): ReturnType<typeof scriptedGame> => {
     const made = scriptedGame(["Austere Command"]);
     made.game.advanceUntil(toPrecombat);
@@ -120,33 +121,41 @@ describe("modal spells (rule 700.2) — Austere Command", () => {
     return made;
   };
 
-  const cast = (game: Game): void => {
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: named(game, game.handOf(A), "Austere Command"),
-    });
-    game.advanceUntil((s) => s.awaiting !== null);
+  const cast = (game: Game, modes: readonly number[]): ObjectId => {
+    const card = named(game, game.handOf(A), "Austere Command");
+    game.dispatch({ type: "cast-spell", player: A, card, modes, targets: [] });
+    return card;
   };
 
-  it("the game pauses on a choose-modes decision as the spell resolves", () => {
+  it("offers its modes with the cast, none of them targeted", () => {
     const { game } = withSixMana();
-    cast(game);
-
-    expect(game.state.awaiting).toMatchObject({ kind: "choose-modes", player: A });
-    const legal = game.legalActions(A);
-    expect(legal).toHaveLength(1);
-    expect(legal[0]).toMatchObject({
-      kind: "choose-modes",
-      minModes: 2,
-      maxModes: 2,
-      modeTexts: [
-        "Destroy all artifacts.",
-        "Destroy all enchantments.",
-        "Destroy all creatures with mana value 3 or less.",
-        "Destroy all creatures with mana value 4 or greater.",
-      ],
+    const offer = game
+      .legalActions(A)
+      .find(
+        (x) => x.kind === "cast-spell" && game.state.objects[x.card].cardName === "Austere Command",
+      );
+    expect(offer).toMatchObject({
+      castModal: {
+        minModes: 2,
+        maxModes: 2,
+        modes: [
+          { text: "Destroy all artifacts.", targetSpecs: [] },
+          { text: "Destroy all enchantments.", targetSpecs: [] },
+          { text: "Destroy all creatures with mana value 3 or less.", targetSpecs: [] },
+          { text: "Destroy all creatures with mana value 4 or greater.", targetSpecs: [] },
+        ],
+      },
     });
+  });
+
+  it("carries the chosen modes on the stack, and asks nothing as it resolves", () => {
+    const { game } = withSixMana();
+    const card = cast(game, [0, 2]);
+
+    expect(game.state.zones.shared.stack).toContain(card);
+    expect(game.state.objects[card].chosenModes).toEqual([0, 2]);
+    game.advanceUntil((s) => s.awaiting !== null || s.zones.shared.stack.length === 0);
+    expect(game.state.awaiting).toBeNull();
   });
 
   it("applies exactly the two chosen modes", () => {
@@ -155,9 +164,7 @@ describe("modal spells (rule 700.2) — Austere Command", () => {
     const anthem = spawn(game, "Glorious Anthem", A);
     const bears = spawn(game, "Grizzly Bears", A); // MV 2
     const wurm = spawn(game, "Craw Wurm", A); // MV 6
-    cast(game);
-
-    game.dispatch({ type: "choose-modes", player: A, modes: [0, 2] });
+    cast(game, [0, 2]);
     game.advanceUntil(settled);
 
     expect(game.state.objects[signet].zone).toBe("graveyard");
@@ -171,41 +178,22 @@ describe("modal spells (rule 700.2) — Austere Command", () => {
     const { game } = withSixMana();
     const bears = spawn(game, "Grizzly Bears", A); // MV 2
     const wurm = spawn(game, "Craw Wurm", A); // MV 6
-    cast(game);
-
-    game.dispatch({ type: "choose-modes", player: A, modes: [2, 3] });
+    cast(game, [2, 3]);
     game.advanceUntil(settled);
 
     expect(game.state.objects[bears].zone).toBe("graveyard");
     expect(game.state.objects[wurm].zone).toBe("graveyard");
   });
 
-  it("rejects any mode count other than exactly two", () => {
+  it("can't be cast with any mode count other than exactly two", () => {
     const { game } = withSixMana();
-    cast(game);
+    const card = named(game, game.handOf(A), "Austere Command");
+    const castWith = (modes: number[]) =>
+      game.canDispatch({ type: "cast-spell", player: A, card, modes, targets: [] });
 
-    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0] })).not.toBeNull();
-    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [] })).not.toBeNull();
-    expect(
-      game.canDispatch({ type: "choose-modes", player: A, modes: [0, 1, 2] }),
-    ).not.toBeNull();
-    expect(game.canDispatch({ type: "choose-modes", player: A, modes: [0, 1] })).toBeNull();
-  });
-
-  it("a ScriptedController answers via chooseModesFn", () => {
-    const { game, a } = withSixMana();
-    a.chooseModesFn = () => [1, 3];
-    const anthem = spawn(game, "Glorious Anthem", A);
-    const wurm = spawn(game, "Craw Wurm", A);
-
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: named(game, game.handOf(A), "Austere Command"),
-    });
-    game.advanceUntil(settled);
-
-    expect(game.state.objects[anthem].zone).toBe("graveyard");
-    expect(game.state.objects[wurm].zone).toBe("graveyard");
+    expect(castWith([0])).not.toBeNull();
+    expect(castWith([])).not.toBeNull();
+    expect(castWith([0, 1, 2])).not.toBeNull();
+    expect(castWith([0, 1])).toBeNull();
   });
 });
