@@ -883,6 +883,16 @@ export type TriggerSpec =
        * already use it — prowess is printed as its own word, not as a filter.
        */
       readonly filter?: CardFilter;
+      /** Only a **modal** spell — one whose modes were chosen as it was cast
+       * (rule 700.2; a `castModal` card): Riku of Many Paths' "whenever you
+       * cast a modal spell". `{ triggerValue: true }` is then the number of
+       * times a mode was chosen for it. */
+      readonly modal?: boolean;
+      /** Only a spell that shares no creature type with a creature its
+       * caster controls or a creature card in their graveyard — Volo, Guide
+       * to Monsters. A changeling on either side shares every type (rule
+       * 702.73a); a spell with no creature type shares none. */
+      readonly sharesNoCreatureType?: boolean;
     }
   | {
       /** *This* spell (the one carrying the ability) was cast — a triggered

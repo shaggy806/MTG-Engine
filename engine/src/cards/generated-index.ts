@@ -5,6 +5,7 @@
  * `TOKEN_CARDS`, as bare names, so asking whether a definition is a token
  * (`isTokenCard`) doesn't import every token to find out. */
 export const TOKEN_NAMES: readonly string[] = [
+  "1/1 Blue Bird Token",
   "1/1 Green Cat Token",
   "1/1 Vampire Token",
   "1/1 White Dog Token",

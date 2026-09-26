@@ -935,7 +935,12 @@ function fillEffect(ability, text, ctx, lines, i) {
       else modes.push({ text: b, effect: r.effect });
     }
     const [min, max] = modeCounts(modalHead[1], bullets.length);
-    if (ok) ability.effect = { kind: "modal", minModes: min, maxModes: max, modes };
+    // A modal triggered ability announces its modes as it goes on the stack
+    // (rules 603.3c, 700.2b). A modal activated ability would choose them as
+    // it resolves instead (AUTHORING §15), so it isn't read.
+    if (ok && ability.trigger === undefined) {
+      ability.__todo = [...(ability.__todo ?? []), `modes chosen as it resolves, not as it is activated: ${bullets.join(" / ")}`];
+    } else if (ok) ability.effect = { kind: "modal", announced: true, minModes: min, maxModes: max, modes };
     else ability.__todo = [...(ability.__todo ?? []), `the modes: ${bullets.join(" / ")}`];
     return j - 1;
   }

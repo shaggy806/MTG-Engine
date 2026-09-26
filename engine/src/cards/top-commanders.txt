@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-290 already implemented / 210 missing
+291 already implemented / 209 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -473,7 +473,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  467  Sorin of House Markov                           6536 decks  {1}{B}           Legendary Creature — Human Noble // Legendary Planeswalker — Sorin
 [ ]  468  Felothar, Dawn of the Abzan                     6533 decks  {W}{B}{G}        Legendary Creature — Human Warrior
 [ ]  469  Heliod, the Radiant Dawn                        6527 decks  {2}{W}{W}        Legendary Enchantment Creature — God // Legendary Enchantment Creature — Phyrexian God
-[ ]  470  Riku of Many Paths                              6486 decks  {G}{U}{R}        Legendary Creature — Human Wizard
+[x]  470  Riku of Many Paths                              6486 decks  {G}{U}{R}        Legendary Creature — Human Wizard
 [ ]  471  Tasigur, the Golden Fang                        6477 decks  {5}{B}           Legendary Creature — Human Shaman
 [ ]  472  Sin, Spira's Punishment                         6452 decks  {4}{B}{G}{U}     Legendary Creature — Leviathan Avatar
 [x]  473  Mr. Foxglove                                    6450 decks  {2}{G}{W}{U}     Legendary Creature — Fox Rogue

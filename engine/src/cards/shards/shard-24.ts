@@ -116,6 +116,7 @@ import _poolQuarryBeetle from "../pool/quarry-beetle.js";
 import _poolRakdosLordOfRiots from "../pool/rakdos-lord-of-riots.js";
 import _poolRenegadeMap from "../pool/renegade-map.js";
 import _poolRhoxBrute from "../pool/rhox-brute.js";
+import _poolRikuOfManyPaths from "../pool/riku-of-many-paths.js";
 import _poolRisenSanctuary from "../pool/risen-sanctuary.js";
 import _poolRoccoCabarettiCaterer from "../pool/rocco-cabaretti-caterer.js";
 import _poolRockslideElemental from "../pool/rockslide-elemental.js";
@@ -289,6 +290,7 @@ const shard: CardShard = {
     _poolRakdosLordOfRiots,
     _poolRenegadeMap,
     _poolRhoxBrute,
+    _poolRikuOfManyPaths,
     _poolRisenSanctuary,
     _poolRoccoCabarettiCaterer,
     _poolRockslideElemental,

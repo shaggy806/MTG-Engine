@@ -190,6 +190,7 @@ import _poolWindDancer from "../pool/wind-dancer.js";
 import _poolYokedPlowbeast from "../pool/yoked-plowbeast.js";
 import _poolZarichiTiger from "../pool/zarichi-tiger.js";
 import _poolZulaportCutthroat from "../pool/zulaport-cutthroat.js";
+import _tokens11BlueBirdToken from "../tokens/1-1-blue-bird-token.js";
 import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
 
 const shard: CardShard = {
@@ -383,6 +384,7 @@ const shard: CardShard = {
     _poolZulaportCutthroat,
   ],
   tokens: [
+    _tokens11BlueBirdToken,
     _tokensDragonToken66,
   ],
 };

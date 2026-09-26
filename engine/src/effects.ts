@@ -1870,6 +1870,17 @@ export type EffectSpec =
        * spells need cast-time mode selection — see ROADMAP Phase 1c / 6).
        * A `sequence` step after it waits for the choice. */
       readonly kind: "modal";
+      /**
+       * A modal **ability** — a triggered ability printed "Choose one —" with
+       * bullets (rule 700.2): its modes are chosen as it's put on the stack
+       * (rules 603.3c, 700.2b), before its targets, not as it resolves; with
+       * none chosen it's removed from the stack. Only as a triggered
+       * ability's whole effect. Left off, the choice is made as the effect
+       * applies, which is right for a choice the text makes on resolution
+       * ("create a Food token or a Treasure token", fabricate, "tap or
+       * untap").
+       */
+      readonly announced?: true;
       readonly minModes: number;
       /** At most this many; a live amount is read as the modes are chosen
        * (Riku of Many Paths' "choose up to X, where X is the number of times
@@ -2979,6 +2990,10 @@ export interface EffectApi {
 }
 
 export interface ResolutionContext extends EffectApi {
+  /** The modes a modal triggered ability announced as it went on the stack
+   * (`GameObject.chosenModes` on the ability) — see the `modal` effect's
+   * `announced`. */
+  readonly announcedModes?: readonly number[];
   readonly controller: PlayerId;
   readonly source: ObjectId;
   /** One entry per declared slot; a hole marks an **optional** slot the
@@ -4352,6 +4367,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "modal":
+      // Announced as the ability went on the stack: those modes, in printed
+      // order.
+      if (spec.announced === true && ctx.announcedModes !== undefined) {
+        for (const i of ctx.announcedModes) {
+          const mode = spec.modes[i];
+          if (mode !== undefined) applyEffectSpec(mode.effect, ctx);
+        }
+        return;
+      }
       ctx.chooseModes(
         spec.minModes,
         amountValue(spec.maxModes, ctx),

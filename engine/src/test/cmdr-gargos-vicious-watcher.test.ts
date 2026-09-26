@@ -248,6 +248,10 @@ describe("Tectonic Giant — spell only", () => {
     readyLands(game, 1, B);
     const card = game.debugSpawn("Test Twin Pump", B, "hand");
     game.dispatch({ type: "cast-spell", player: B, card, targets: [obj(giant), obj(giant)] });
+    // It triggered: its modes are chosen as it goes on the stack (rule 603.3c).
+    const asked = game.state.awaiting;
+    expect(asked?.kind === "choose-modes" ? [asked.player, asked.source] : null).toEqual([A, giant]);
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
     expect(triggered()).toBe(1);
   });
 });

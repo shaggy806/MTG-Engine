@@ -16,6 +16,7 @@ export default defineCard({
       targets: [],
       effect: {
         kind: "modal",
+        announced: true,
         minModes: 1,
         maxModes: 1,
         modes: [

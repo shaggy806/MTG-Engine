@@ -2920,6 +2920,18 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
+    // A modal trigger announcing its modes: they're the ability's, recorded
+    // as it goes on the stack, not applied now.
+    if (awaiting.announcing === true) {
+      const trigger = this.state.pendingModalTrigger;
+      this.state.awaiting = null;
+      delete this.state.pendingModalTrigger;
+      const ordered = [...modeIndices].sort((a, b) => a - b);
+      this.emit({ type: "modes-chosen", source: awaiting.source, player, modes: ordered });
+      if (trigger !== undefined && this.placeTriggerOnStack({ ...trigger, modes: ordered }) === "paused") return;
+      if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+      return;
+    }
     const { source, modes, x, onDecline, targets, cost, triggerValue, triggerObject, ward } =
       awaiting;
     const lastKnownRefs = awaiting.lastKnownRefs;
@@ -3047,7 +3059,7 @@ export class Game {
       const targets = trig.slots.map((s) =>
         "auto" in s ? s.auto : (queue.shift() as TargetRef),
       );
-      this.mintTriggerAbility(
+      const abilityId = this.mintTriggerAbility(
         trig.sourceObjectId,
         trig.cardName,
         trig.controller,
@@ -3064,6 +3076,7 @@ export class Game {
         trig.targetedBy,
         trig.reflexive,
       );
+      if (trig.modes !== undefined) this.state.objects[abilityId].chosenModes = [...trig.modes];
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
       if (!this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen])) {
@@ -9267,6 +9280,9 @@ export class Game {
         ...(transformSince !== undefined ? { transformSince } : {}),
         ...(readTargets !== undefined ? { readTargets } : {}),
         ...(illegalTargets.length > 0 ? { illegalTargets } : {}),
+        ...(object.chosenModes !== undefined && object.chosenModes !== null
+          ? { announcedModes: object.chosenModes }
+          : {}),
       },
     );
     const targetedBy = object.targetedBy;
@@ -9593,6 +9609,11 @@ export class Game {
                     : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
                     ? event.amount
+                    : // "The number of times you chose a mode for that spell".
+                    ability.trigger.on === "cast-spell" &&
+                      ability.trigger.modal === true &&
+                      event.type === "spell-cast"
+                    ? (this.state.objects[event.object]?.chosenModes?.length ?? 0)
                     : // "Loses that much life" (Sanguine Bond, Exquisite Blood):
                       // how much the life total moved.
                       (ability.trigger.on === "gains-life" || ability.trigger.on === "loses-life") &&
@@ -10492,6 +10513,10 @@ export class Game {
             return false;
           }
         }
+        if (spec.modal === true && !this.isModalSpell(event.object)) return false;
+        if (spec.sharesNoCreatureType === true && this.sharesCreatureTypeWithOwn(event.object, event.player)) {
+          return false;
+        }
         return true;
       }
       case "this-cast":
@@ -10671,6 +10696,54 @@ export class Game {
     }
   }
 
+  /** A modal spell: one whose modes were chosen as it was cast (rule 700.2
+   * — a `castModal` card, on the face that was cast). */
+  private isModalSpell(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    return object !== undefined && this.registry.get(printedCardName(object)).castModal !== null;
+  }
+
+  /** Whether the spell `id` shares a creature type with a creature `player`
+   * controls or a creature card in their graveyard (Volo, Guide to
+   * Monsters) — changeling on either side sharing every one. */
+  private sharesCreatureTypeWithOwn(id: ObjectId, player: PlayerId): boolean {
+    const spell = this.state.objects[id];
+    if (spell === undefined) return false;
+    const creatureTypes = (subtypes: readonly string[]): readonly string[] =>
+      subtypes.filter((s) => s === EVERY_CREATURE_TYPE || isCreatureType(s));
+    const its = creatureTypes(effectiveSubtypes(this.state, this.registry, spell));
+    if (its.length === 0) return false;
+    const theirs: (readonly string[])[] = [];
+    for (const other of this.state.zones.shared.battlefield) {
+      const o = this.state.objects[other];
+      if (o === undefined || o.controller !== player) continue;
+      if (!effectiveTypes(this.state, this.registry, o).includes("creature")) continue;
+      theirs.push(effectiveSubtypes(this.state, this.registry, o));
+    }
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const o = this.state.objects[card];
+      if (o === undefined || !this.registry.get(printedCardName(o)).types.includes("creature")) continue;
+      theirs.push(effectiveSubtypes(this.state, this.registry, o));
+    }
+    return theirs.some((subtypes) => its.some((t) => hasSubtype(subtypes, t)));
+  }
+
+  /** A fired trigger's `modal` effect, if it's a modal ability that
+   * announces its modes as it goes on the stack (the effect's `announced`). */
+  private announcedModal(trigger: PendingTrigger): Extract<EffectSpec, { kind: "modal" }> | undefined {
+    if (trigger.delayed !== undefined || trigger.chapter === true) return undefined;
+    const ability =
+      trigger.reflexive ??
+      (trigger.grantedAbility !== undefined
+        ? (this.abilityFromRef(trigger.grantedAbility) as TriggeredAbility | undefined)
+        : (this.triggeredOfSource(trigger.sourceObjectId, trigger.lastKnownRefs?.source)?.[trigger.abilityIndex] ??
+          this.registry.get(trigger.cardName).triggered[trigger.abilityIndex]));
+    const effect = ability?.effect;
+    return effect !== undefined && effect !== null && effect.kind === "modal" && effect.announced === true
+      ? effect
+      : undefined;
+  }
+
   /** Put every waiting trigger on the stack (APNAP). Returns whether any were. */
   private placePendingTriggers(): boolean {
     if (this.state.pendingTriggers.length === 0) return false;
@@ -10685,9 +10758,15 @@ export class Game {
       ...this.state.turnOrder.slice(activeIndex),
       ...this.state.turnOrder.slice(0, activeIndex),
     ];
-    const ordered = rotated.flatMap((player) =>
-      pending.filter((t) => t.controller === player),
-    );
+    // A modal trigger's copies each announce their own modes (rule 603.3c),
+    // so they go on the stack one at a time rather than as one stack.
+    const ordered = rotated
+      .flatMap((player) => pending.filter((t) => t.controller === player))
+      .flatMap((t) =>
+        (t.copies ?? 1) > 1 && this.announcedModal(t) !== undefined
+          ? Array.from({ length: t.copies ?? 1 }, () => ({ ...t, copies: 1 }))
+          : [t],
+      );
     for (let i = 0; i < ordered.length; i += 1) {
       if (this.placeTriggerOnStack(ordered[i]) === "paused") {
         // A trigger raised a `choose-targets` decision — put the not-yet-placed
@@ -10724,6 +10803,8 @@ export class Game {
     readonly lastKnownRefs?: LastKnownRefs;
     readonly targetedBy?: TargetedBy;
     readonly reflexive?: ReflexiveTrigger;
+    /** See `PendingTrigger.modes`. */
+    readonly modes?: readonly number[];
   }): "done" | "paused" {
     // A self-contained ability record (a mana-spend rider) has no card
     // ability to look up — mint it carrying its own record, exactly as
@@ -10776,6 +10857,51 @@ export class Game {
               trigger.abilityIndex
             ] ?? def.triggered[trigger.abilityIndex]);
       })();
+
+    // A modal ability ("Choose one —") announces its modes as it goes on
+    // the stack, before its targets (rules 603.3c, 700.2b); with none
+    // chosen it's removed. "Choose up to X" reads X as it triggered.
+    const modal = this.announcedModal(trigger);
+    if (modal !== undefined && trigger.modes === undefined) {
+      const ctx = this.makeResolutionContext(
+        trigger.sourceObjectId,
+        trigger.controller,
+        [],
+        trigger.x ?? 0,
+        trigger.triggerValue ?? 0,
+        trigger.triggerObject,
+        1,
+        0,
+        [],
+        trigger.lastKnownRefs,
+      );
+      const maxModes = Math.min(amountValue(modal.maxModes, ctx), modal.modes.length);
+      if (maxModes <= 0) {
+        this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no modes chosen" });
+        return "done";
+      }
+      this.state.pendingModalTrigger = { ...trigger };
+      this.state.awaiting = {
+        kind: "choose-modes",
+        player: trigger.controller,
+        source: trigger.sourceObjectId,
+        announcing: true,
+        minModes: Math.min(modal.minModes, maxModes),
+        maxModes,
+        modes: modal.modes.map((m) => ({ text: m.text, effect: m.effect })),
+        x: trigger.x ?? 0,
+        targets: [],
+        ...(trigger.triggerValue !== undefined && trigger.triggerValue !== 0
+          ? { triggerValue: trigger.triggerValue }
+          : {}),
+        ...(trigger.triggerObject !== undefined ? { triggerObject: trigger.triggerObject } : {}),
+      };
+      return "paused";
+    }
+    if (modal !== undefined && trigger.modes !== undefined && trigger.modes.length === 0) {
+      this.emit({ type: "trigger-removed", source: trigger.sourceObjectId, reason: "no modes chosen" });
+      return "done";
+    }
 
     const triggerSource = this.abilityTargetSource(trigger);
     const abilityKind: "triggered" | "chapter" = trigger.chapter ? "chapter" : "triggered";
@@ -10836,6 +10962,7 @@ export class Game {
         reflexive,
       );
       if ((trigger.copies ?? 1) > 1) this.state.objects[abilityId].stackCount = trigger.copies;
+      if (trigger.modes !== undefined) this.state.objects[abilityId].chosenModes = [...trigger.modes];
       return "done";
     }
 
@@ -10859,6 +10986,7 @@ export class Game {
       ...(trigger.lastKnownRefs !== undefined ? { lastKnownRefs: trigger.lastKnownRefs } : {}),
       ...(trigger.targetedBy !== undefined ? { targetedBy: trigger.targetedBy } : {}),
       ...(reflexive !== undefined ? { reflexive } : {}),
+      ...(trigger.modes !== undefined ? { modes: trigger.modes } : {}),
     };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -11040,6 +11168,7 @@ export class Game {
       readonly transformSince?: number;
       readonly readTargets?: ResolvedTargets;
       readonly illegalTargets?: readonly number[];
+      readonly announcedModes?: readonly number[];
     } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
@@ -11197,6 +11326,7 @@ export class Game {
         ? { triggerObjectLost: true }
         : {}),
       ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
+      ...(opts.announcedModes !== undefined ? { announcedModes: opts.announcedModes } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       ...(refs.tapped !== undefined ? { tapped: refs.tapped.object } : {}),
       decisionPending: () => this.decisionOutstanding(),

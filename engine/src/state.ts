@@ -920,6 +920,11 @@ export interface PendingTrigger {
    * like a card's own triggered ability, choosing its targets as it goes on
    * the stack, from this record's specs rather than a card's list. */
   readonly reflexive?: ReflexiveTrigger;
+  /** A modal ability's modes ("Choose one —"), announced as it goes on the
+   * stack (rules 603.3c, 700.2b) — set once its controller has answered the
+   * `choose-modes` it paused for, in printed order. See the `modal`
+   * effect's `announced`. */
+  readonly modes?: readonly number[];
 }
 
 /**
@@ -1403,6 +1408,10 @@ export type AwaitingDecision =
       /** The permanent (for an ability) or spell object the effect belongs to
        * — used to build the resolution context for the chosen modes. */
       readonly source: ObjectId;
+      /** The modes of a triggered ability going on the stack
+       * (`GameState.pendingModalTrigger`), not ones chosen as something
+       * resolves: the answer is recorded on the ability, not applied. */
+      readonly announcing?: true;
       readonly minModes: number;
       readonly maxModes: number;
       /** The modes, in order — text for the chooser, effect to apply. Plain
@@ -2001,7 +2010,17 @@ export interface GameState {
     readonly targetedBy?: TargetedBy;
     /** See {@link PendingTrigger.reflexive}. */
     readonly reflexive?: ReflexiveTrigger;
+    /** See {@link PendingTrigger.modes}. */
+    readonly modes?: readonly number[];
   } | null;
+  /**
+   * A fired modal trigger ("Choose one —") parked as it goes on the stack
+   * while its controller announces its modes (rules 603.3c, 700.2b): the
+   * `choose-modes` on `awaiting` is marked `announcing`, and answering it
+   * places this trigger again with its `modes` — on to its targets, if it
+   * has any. Absent when none is.
+   */
+  pendingModalTrigger?: PendingTrigger;
   /**
    * A suspended spell coming off suspend, parked while its controller chooses
    * targets (ROADMAP Phase 11 EG-1). `applyChooseTargets` commits the free cast.

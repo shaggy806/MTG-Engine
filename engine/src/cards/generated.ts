@@ -3713,6 +3713,7 @@ import _poolRiftBolt from "./pool/rift-bolt.js";
 import _poolRighteousAvengers from "./pool/righteous-avengers.js";
 import _poolRighteousBlow from "./pool/righteous-blow.js";
 import _poolRighteousCharge from "./pool/righteous-charge.js";
+import _poolRikuOfManyPaths from "./pool/riku-of-many-paths.js";
 import _poolRimefurReindeer from "./pool/rimefur-reindeer.js";
 import _poolRimeshieldFrostGiant from "./pool/rimeshield-frost-giant.js";
 import _poolRimewoodFalls from "./pool/rimewood-falls.js";
@@ -5498,6 +5499,7 @@ import _poolZurTheEnchanter from "./pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "./pool/zuran-enchanter.js";
 import _poolZuranOrb from "./pool/zuran-orb.js";
 import _poolZuranSpellcaster from "./pool/zuran-spellcaster.js";
+import _tokens11BlueBirdToken from "./tokens/1-1-blue-bird-token.js";
 import _tokens22BlackBirdToken from "./tokens/2-2-black-bird-token.js";
 import _tokensAllyToken from "./tokens/ally-token.js";
 import _tokensApeToken from "./tokens/ape-token.js";
@@ -9312,6 +9314,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRighteousAvengers,
   _poolRighteousBlow,
   _poolRighteousCharge,
+  _poolRikuOfManyPaths,
   _poolRimefurReindeer,
   _poolRimeshieldFrostGiant,
   _poolRimewoodFalls,
@@ -11103,6 +11106,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
  * other card (a `create-token` effect names one), but not a card: never
  * deck-legal, and hidden from the card library by default. */
 export const TOKEN_CARDS: readonly CardDefinition[] = [
+  _tokens11BlueBirdToken,
   _tokens22BlackBirdToken,
   _tokensAllyToken,
   _tokensApeToken,

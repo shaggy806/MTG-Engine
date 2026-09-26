@@ -127,7 +127,8 @@
   "effect:mana-ability-dynamic-amount",
   "stat:spells-cast-this-turn-record",
   "effect:amount-fields-dynamic",
-  "effect:look-and-choose-second-pick"
+  "effect:look-and-choose-second-pick",
+  "trigger:cast-spell-clauses"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
