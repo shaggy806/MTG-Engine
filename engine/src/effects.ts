@@ -519,6 +519,23 @@ export type PlayerScope =
    * `"trigger-player"`. Not a target. */
   | "that-player";
 
+/**
+ * One player an effect names as the one who does something — who gains
+ * control (`gain-control`), under whose control a card is put onto the
+ * battlefield (`put-onto-battlefield`), who puts the counters (`add-counter`):
+ * the effect's controller (`"you"`), a player target slot (`{ target: n }`),
+ * or one of the single-player {@link PlayerScope}s the event names. Naming
+ * nobody — an empty or illegal slot (rule 608.2b), a player who has left the
+ * game — the effect does nothing.
+ */
+export type EffectPlayerRef =
+  | "you"
+  | "active-player"
+  | "trigger-controller"
+  | "trigger-player"
+  | "that-player"
+  | { readonly target: number };
+
 /** A declarative effect. Grows as milestones add vocabulary. */
 export type EffectSpec =
   | {
@@ -914,6 +931,14 @@ export type EffectSpec =
        * trigger — Undying returns *itself*, which is never a chosen target. */
       readonly target: EffectTargetRef;
       readonly underYourControl?: boolean;
+      /** Under someone else's control — "target opponent … puts target
+       * creature card from your graveyard onto the battlefield under their
+       * control" (The Beamtown Bullies: `{ target: 0 }`). Their default
+       * control, like `underYourControl`'s (rule 110.2 — the permanent is
+       * exiled if they leave the game, rule 800.4a). Naming nobody (an
+       * illegal or empty slot, a player who has left) puts nothing anywhere
+       * (rules 608.2b, 800.4b). */
+      readonly under?: EffectPlayerRef;
       readonly enterTapped?: boolean;
       /** Counters it enters with (Undying: "with a +1/+1 counter on it";
        * Admiral Brass, Unsinkable: "with a finality counter on it" — a
@@ -1006,14 +1031,58 @@ export type EffectSpec =
       readonly into?: "hand";
     }
   | {
-      /** Gain control of a target permanent (rule 613.1b, layer 2): a
+      /** A player gains control of a permanent (rule 613.1b, layer 2): a
        * control effect timestamped as it resolves, recorded on
        * `GameObject.controlEffects`; the latest one on the permanent wins
        * (rule 613.7). `untilEndOfTurn` ends it in the cleanup step (Act of
-       * Treason); otherwise it lasts until the permanent changes zones. */
+       * Treason); otherwise it lasts until the permanent changes zones, or
+       * until the player it gives control to leaves the game (rule 800.4a),
+       * when the latest effect still standing applies again.
+       *
+       * `who` gains control: the effect's controller by default ("gain
+       * control of target …"); a player slot — "target opponent gains control
+       * of target permanent you control" (Zedruu the Greathearted's
+       * `{ target: 0 }`); or a player the event names — "that player gains
+       * control of ~" at the beginning of each player's upkeep (Alexios,
+       * Deimos of Kosmos's `"active-player"`, with `target: "source"`). A
+       * target found illegal as the spell or ability began to resolve —
+       * the permanent's slot or the player's — makes it do nothing (rule
+       * 608.2b; `ResolutionContext.illegalTargets`). */
       readonly kind: "gain-control";
-      readonly target: number;
+      readonly target: EffectTargetRef;
       readonly untilEndOfTurn: boolean;
+      readonly who?: EffectPlayerRef;
+    }
+  | {
+      /** Every battlefield permanent matching `filter` (read from the
+       * effect's controller's side) changes control at once — one effect, so
+       * one timestamp (rule 613.7b): "gain control of all nonland permanents
+       * until end of turn" (Dihada, Binder of Wills), "gain control of all
+       * commanders" (Tevesh Szat, Doom of Fools). `who` is `gain-control`'s,
+       * plus `"owner"` — "each player gains control of all creatures they
+       * own" (Homeward Path). A token stack changes hands whole.
+       * `exceptSource` spares the effect's own source. */
+      readonly kind: "gain-control-all";
+      readonly filter: CardFilter;
+      readonly untilEndOfTurn: boolean;
+      readonly who?: EffectPlayerRef | "owner";
+      readonly exceptSource?: boolean;
+    }
+  | {
+      /** "Each player gains control of all [`filter`] controlled by the next
+       * player in the chosen direction" (Aminatou, the Fateshifter's −6).
+       * `"left"` is the next player in turn order (rule 101.4: turn order
+       * passes to the left) and `"right"` the one before, skipping anyone
+       * who has left the game. What each player gets is fixed first, then
+       * every change happens at once, as one lasting effect with one
+       * timestamp (rule 613.7b) — in a two-player game the boards simply
+       * swap, whichever way was chosen. `exceptSource` spares the effect's
+       * own source ("other than Aminatou"). "Choose left or right" as it
+       * resolves is a `modal` with one of these per mode. */
+      readonly kind: "rotate-control";
+      readonly direction: "left" | "right";
+      readonly filter: CardFilter;
+      readonly exceptSource?: boolean;
     }
   | {
       /** Target player puts the top `amount` cards of their library into
@@ -1243,6 +1312,11 @@ export type EffectSpec =
        * +1/+1 counters, where X is the number of lands you control" —
        * needed-cards P16). */
       readonly amount: EffectAmount;
+      /** Who puts them, when the card says someone else does — "that player
+       * … puts a +1/+1 counter on it" (Alexios, Deimos of Kosmos:
+       * `"active-player"`). What a "whenever you put … counters" trigger
+       * asks (`counter-added`'s `by`). The effect's controller by default. */
+      readonly by?: EffectPlayerRef;
     }
   | {
       /**
@@ -2470,8 +2544,19 @@ export interface EffectApi {
   /** Counter a target spell on the stack — into its owner's hand instead
    * of their graveyard with `into: "hand"`. */
   counterSpell(target: TargetRef, into?: "hand"): void;
-  /** The effect's controller gains control of `target`. */
-  gainControl(target: TargetRef, untilEndOfTurn: boolean): void;
+  /** `player` gains control of `target` — see the `"gain-control"`
+   * {@link EffectSpec}. */
+  gainControl(target: TargetRef, untilEndOfTurn: boolean, player: PlayerId): void;
+  /** See the `"gain-control-all"` {@link EffectSpec}: `who` a player, or
+   * each permanent's own owner. */
+  gainControlAll(
+    filter: CardFilter,
+    untilEndOfTurn: boolean,
+    who: PlayerId | "owner",
+    exceptSource: boolean,
+  ): void;
+  /** See the `"rotate-control"` {@link EffectSpec}. */
+  rotateControl(filter: CardFilter, direction: "left" | "right", exceptSource: boolean): void;
   /** `target` (a player) mills `amount` cards. */
   mill(target: TargetRef, amount: number): void;
   /** See the `"exile-from-library"` {@link EffectSpec}: the top `top` cards
@@ -2616,7 +2701,8 @@ export interface EffectApi {
   ): void;
   /** See the `"double-counters-all"` {@link EffectSpec}. */
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
-  addCounter(target: TargetRef, counter: string, amount: number): void;
+  /** `by` is who puts them — the effect's controller when absent. */
+  addCounter(target: TargetRef, counter: string, amount: number, by?: PlayerId): void;
   /** Proliferate — see the `"proliferate"` {@link EffectSpec}. */
   proliferate(then: EffectSpec | null): void;
   grantKeyword(target: TargetRef, keyword: Keyword, duration: PtDuration): void;
@@ -2768,7 +2854,9 @@ export interface EffectApi {
    * again once it's answered. */
   putOntoBattlefield(
     target: TargetRef,
-    underYourControl: boolean,
+    /** Whose control it enters under, when that isn't its owner's — the
+     * effect's controller for "under your control", or another player. */
+    under: PlayerId | undefined,
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave?: boolean,
@@ -2816,6 +2904,17 @@ export interface ResolutionContext extends EffectApi {
    * the objects they were as it was created, the ones it may act on (rule
    * 400.7). Absent for anything else, whose reads use `targets`. */
   readonly readTargets?: ResolvedTargets;
+  /**
+   * The slots whose target was found illegal as this spell or ability began
+   * to resolve, while another stayed legal so it didn't fizzle (rule
+   * 608.2b): it does nothing to those targets and makes them do nothing,
+   * though it may still read them. Still in `targets`. Honoured so far by
+   * the control-changing effects (`gain-control`, `put-onto-battlefield`'s
+   * `under`) — every other effect still acts on a target that's become
+   * illegal beside a legal one (BACKLOG, "Engine rules gaps"). Absent when
+   * every target was legal.
+   */
+  readonly illegalTargets?: readonly number[];
   /** The value chosen for `{X}` when this spell/ability was put on the stack,
    * or 0 if its cost had no `{X}`. */
   readonly x: number;
@@ -3207,6 +3306,24 @@ function resolveEffectTarget(
   return ctx.targets[ref];
 }
 
+/** Whether slot `ref` held a target found illegal as the spell or ability
+ * began to resolve — see `ResolutionContext.illegalTargets` (rule 608.2b). */
+function illegalSlot(ref: EffectTargetRef, ctx: ResolutionContext): boolean {
+  return typeof ref === "number" && ctx.illegalTargets?.includes(ref) === true;
+}
+
+/** The one player `ref` names, or `undefined` for nobody — see
+ * {@link EffectPlayerRef}. */
+function effectPlayer(ref: EffectPlayerRef, ctx: ResolutionContext): PlayerId | undefined {
+  if (ref === "you") return ctx.controller;
+  if (typeof ref === "object") {
+    if (illegalSlot(ref.target, ctx)) return undefined;
+    const target = ctx.targets[ref.target];
+    return target?.kind === "player" ? target.player : undefined;
+  }
+  return ctx.playersInScope(ref)[0];
+}
+
 /** Keys under which an {@link EffectSpec} nests another one. Those are bound
  * when *they* are applied, in the context they're applied in — a delayed
  * trigger's effect when it fires, a `then` after the step before it. */
@@ -3553,10 +3670,24 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "gain-control": {
-      const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.gainControl(target, spec.untilEndOfTurn);
+      // Rule 608.2b: nothing is done to an illegal target, and an illegal
+      // player target does nothing — so either one stops the whole change.
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target === undefined || illegalSlot(spec.target, ctx)) return;
+      const player = effectPlayer(spec.who ?? "you", ctx);
+      if (player !== undefined) ctx.gainControl(target, spec.untilEndOfTurn, player);
       return;
     }
+    case "gain-control-all": {
+      const who = spec.who === "owner" ? "owner" : effectPlayer(spec.who ?? "you", ctx);
+      if (who !== undefined) {
+        ctx.gainControlAll(spec.filter, spec.untilEndOfTurn, who, spec.exceptSource === true);
+      }
+      return;
+    }
+    case "rotate-control":
+      ctx.rotateControl(spec.filter, spec.direction, spec.exceptSource === true);
+      return;
     case "return-to-hand": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.returnToHand(target, spec.from);
@@ -3582,9 +3713,17 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const target = resolveEffectTarget(spec.target, ctx);
       const parked = ctx.parkedCount();
       if (target !== undefined) {
+        let under = spec.underYourControl === true ? ctx.controller : undefined;
+        if (spec.under !== undefined) {
+          // Someone else puts it there, under their control: an illegal
+          // target — the card or that player — and nothing moves (608.2b).
+          if (illegalSlot(spec.target, ctx)) return;
+          under = effectPlayer(spec.under, ctx);
+          if (under === undefined) return;
+        }
         const asked = ctx.putOntoBattlefield(
           target,
-          spec.underYourControl === true,
+          under,
           spec.enterTapped === true,
           spec.withCounters,
           spec.exileIfItWouldLeave === true,
@@ -3840,9 +3979,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) {
-        ctx.addCounter(target, spec.counter, amountValue(spec.amount, ctx));
-      }
+      if (target === undefined) return;
+      // "That player puts a counter on it": no such player, no counter.
+      const by = spec.by === undefined ? undefined : effectPlayer(spec.by, ctx);
+      if (spec.by !== undefined && by === undefined) return;
+      ctx.addCounter(target, spec.counter, amountValue(spec.amount, ctx), by);
       return;
     }
     case "proliferate":

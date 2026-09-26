@@ -1727,6 +1727,9 @@ export interface ParkedSteps {
   readonly controller: PlayerId;
   readonly targets: ResolvedTargets;
   readonly targetZones: readonly (ZoneType | null)[];
+  /** See `ResolutionContext.illegalTargets`: found as the resolution began,
+   * so the steps after a decision still know. */
+  readonly illegalTargets?: readonly number[];
   readonly x: number;
   readonly triggerValue: number;
   readonly triggerObject?: ObjectId;

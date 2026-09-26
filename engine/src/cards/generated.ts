@@ -131,6 +131,7 @@ import _poolAmbushGigapede from "./pool/ambush-gigapede.js";
 import _poolAmbushParatrooper from "./pool/ambush-paratrooper.js";
 import _poolAmbushParty from "./pool/ambush-party.js";
 import _poolAmbushViper from "./pool/ambush-viper.js";
+import _poolAminatouTheFateshifter from "./pool/aminatou-the-fateshifter.js";
 import _poolAmphinCutthroat from "./pool/amphin-cutthroat.js";
 import _poolAmprynTactician from "./pool/ampryn-tactician.js";
 import _poolAmuletOfVigor from "./pool/amulet-of-vigor.js";
@@ -5442,6 +5443,7 @@ import _poolZarichiTiger from "./pool/zarichi-tiger.js";
 import _poolZealotOfTheGodPharaoh from "./pool/zealot-of-the-god-pharaoh.js";
 import _poolZealousGuardian from "./pool/zealous-guardian.js";
 import _poolZealousLorecaster from "./pool/zealous-lorecaster.js";
+import _poolZedruuTheGreathearted from "./pool/zedruu-the-greathearted.js";
 import _poolZendikarFarguide from "./pool/zendikar-farguide.js";
 import _poolZephid from "./pool/zephid.js";
 import _poolZephidsEmbrace from "./pool/zephids-embrace.js";
@@ -5709,6 +5711,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAmbushParatrooper,
   _poolAmbushParty,
   _poolAmbushViper,
+  _poolAminatouTheFateshifter,
   _poolAmphinCutthroat,
   _poolAmprynTactician,
   _poolAmuletOfVigor,
@@ -11020,6 +11023,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZealotOfTheGodPharaoh,
   _poolZealousGuardian,
   _poolZealousLorecaster,
+  _poolZedruuTheGreathearted,
   _poolZendikarFarguide,
   _poolZephid,
   _poolZephidsEmbrace,

@@ -169,6 +169,7 @@ import _poolWipeClean from "../pool/wipe-clean.js";
 import _poolWoodlandLiege from "../pool/woodland-liege.js";
 import _poolYavimayaSapherd from "../pool/yavimaya-sapherd.js";
 import _poolYusriFortunesFlame from "../pool/yusri-fortunes-flame.js";
+import _poolZedruuTheGreathearted from "../pool/zedruu-the-greathearted.js";
 import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
 import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
@@ -341,6 +342,7 @@ const shard: CardShard = {
     _poolWoodlandLiege,
     _poolYavimayaSapherd,
     _poolYusriFortunesFlame,
+    _poolZedruuTheGreathearted,
     _poolZulaportChainmage,
     _poolZurTheEnchanter,
     _poolZuranEnchanter,

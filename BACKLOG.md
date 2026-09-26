@@ -113,6 +113,10 @@ that one card is the reason the deck exists.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). Needs `decision:choose-permanent`,
   which is UI-bound. See AUTHORING §15, "Partial".
+- **A target gone illegal beside a legal one** (rule 608.2b). Resolution finds those slots
+  (`ResolutionContext.illegalTargets`), but only the control-changing effects skip them; every
+  other effect still acts on such a target (the hexproofed half of a two-target spell). Spread it
+  effect by effect: reading an illegal target is still allowed, acting on it isn't.
 - **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
   and neither is choosing which of a stack proliferate touches. See
   `docs/plans/token-stack-choices.md`.

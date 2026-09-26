@@ -305,7 +305,8 @@ review. The pieces marked **untested** have no unit test either, so nothing
 has ever run them.
 
 - **Effect kinds:** `prohibit` (for Sen Triplets and Koma, Cosmos Serpent),
-  and `day-night` ("it becomes night"; **untested**).
+  `day-night` ("it becomes night"; **untested**) and `gain-control-all` (for
+  Dihada, Binder of Wills and Tevesh Szat).
 - **Trigger kinds:** `attacks-player`, and the `predicate` escape hatch
   (**untested**).
 - **Static conditions:** `source-greatest`, `player-counters`.
@@ -344,7 +345,7 @@ has ever run them.
     `create-token-copy.gainUntilEndOfTurn`, `become-monarch.who`,
     `add-player-counters.target`, `get-energy.who`,
     `prevent-damage.combatOnly`, `modal.notChosenThisTurn`, `may.costEnergy`,
-    `may.else`.
+    `may.else`, `put-onto-battlefield.under` (for The Beamtown Bullies).
   - Triggers: `attacks.defender` and `.aloneAgainstDefender`,
     `transforms.filter`, `chapter-resolves.filter`,
     `deals-combat-damage-to-player.otherOnly`, `blocks.filter` and

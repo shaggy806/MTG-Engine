@@ -8779,6 +8779,7 @@ export class Game {
             ...(next.sourceLost === true ? { sourceLost: true } : {}),
             ...(next.abilityKey !== undefined ? { abilityKey: next.abilityKey } : {}),
             ...(next.transformSince !== undefined ? { transformSince: next.transformSince } : {}),
+            ...(next.illegalTargets !== undefined ? { illegalTargets: next.illegalTargets } : {}),
           },
         ),
       );
@@ -8923,6 +8924,11 @@ export class Game {
           this.emit({ type: "spell-fizzled", object: id, reason: "all chosen modes have illegal targets" });
         }
       } else {
+        // The targets that are illegal now, beside one that isn't (608.2b).
+        const illegalTargets =
+          castSpecs.length === 0
+            ? []
+            : this.illegalTargetSlots(castSpecs, targets, object.controller, this.cardSource(def, id));
         const context = this.makeResolutionContext(
           id,
           object.controller,
@@ -8934,6 +8940,7 @@ export class Game {
           0,
           object.targetZones,
           object.lastKnownRefs,
+          illegalTargets.length > 0 ? { illegalTargets } : {},
         );
         // Overload (rule 702.126) and kicker (rule 702.33) each replace the
         // ordinary effect "instead" when chosen; overload takes priority since
@@ -9130,26 +9137,24 @@ export class Game {
       }
     }
 
+    // Target filters re-read their dynamic operands now (rule 608.2b): the
+    // triggering object may have changed or left since.
+    const targetSource =
+      ability.targets.length === 0
+        ? undefined
+        : this.abilityTargetSource({
+            sourceObjectId: source,
+            controller: object.controller,
+            targets,
+            x: object.xValue ?? 0,
+            triggerValue: object.triggerValue ?? 0,
+            ...(object.triggerObject !== undefined ? { triggerObject: object.triggerObject } : {}),
+            ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
+            ...(object.lastKnownRefs !== undefined ? { lastKnownRefs: object.lastKnownRefs } : {}),
+          });
     if (
       ability.targets.length > 0 &&
-      !this.anyTargetLegal(
-        ability.targets,
-        targets,
-        object.controller,
-        // Target filters re-read their dynamic operands now (rule 608.2b):
-        // the triggering object may have changed or left since.
-        this.abilityTargetSource({
-          sourceObjectId: source,
-          controller: object.controller,
-          targets,
-          x: object.xValue ?? 0,
-          triggerValue: object.triggerValue ?? 0,
-          ...(object.triggerObject !== undefined ? { triggerObject: object.triggerObject } : {}),
-          ...(object.targetZones !== undefined ? { targetZones: object.targetZones } : {}),
-          ...(object.lastKnownRefs !== undefined ? { lastKnownRefs: object.lastKnownRefs } : {}),
-        }),
-        object.autoTargetSlots,
-      )
+      !this.anyTargetLegal(ability.targets, targets, object.controller, targetSource, object.autoTargetSlots)
     ) {
       this.removeAbilityFromStack(id);
       this.emit({
@@ -9159,6 +9164,18 @@ export class Game {
       });
       return;
     }
+    // The targets that are illegal now, beside one that isn't (rule 608.2b).
+    // A delayed trigger chose none (603.7d).
+    const illegalTargets =
+      ability.targets.length === 0 || object.delayedTrigger !== undefined
+        ? []
+        : this.illegalTargetSlots(
+            ability.targets,
+            targets,
+            object.controller,
+            targetSource,
+            object.autoTargetSlots,
+          );
 
     // An ability activated from a zone its source stayed in (Derevi from the
     // command zone): if the card has changed zones since, it's a new object
@@ -9187,6 +9204,7 @@ export class Game {
         // since it was created.
         ...(transformSince !== undefined ? { transformSince } : {}),
         ...(readTargets !== undefined ? { readTargets } : {}),
+        ...(illegalTargets.length > 0 ? { illegalTargets } : {}),
       },
     );
     const targetedBy = object.targetedBy;
@@ -10898,6 +10916,29 @@ export class Game {
     );
   }
 
+  /**
+   * Rule 608.2b, the other half of {@link anyTargetLegal}: of a spell or
+   * ability that isn't fizzling, the slots whose target is illegal as it
+   * starts to resolve — what `ResolutionContext.illegalTargets` carries. An
+   * empty (skipped) slot isn't illegal, and an event-filled one isn't a
+   * target at all.
+   */
+  private illegalTargetSlots(
+    specs: readonly TargetSpec[],
+    targets: ResolvedTargets,
+    forPlayer: PlayerId,
+    source?: TargetSource,
+    autoSlots: readonly number[] = [],
+  ): number[] {
+    const out: number[] = [];
+    specs.forEach((spec, i) => {
+      const ref = targets[i];
+      if (ref === undefined || autoSlots.includes(i)) return;
+      if (!isLegalTarget(this.state, this.registry, spec, ref, forPlayer, source)) out.push(i);
+    });
+    return out;
+  }
+
   private isPermanentSpell(def: CardDefinition): boolean {
     return def.types.some(
       (type) =>
@@ -10925,14 +10966,15 @@ export class Game {
      * sacrificed permanent the spell or ability refers to — see
      * {@link LastKnownRefs}. */
     lastKnownRefs: LastKnownRefs = {},
-    /** See `ResolutionContext.sourceLost`, `ResolutionContext.abilityKey`
-     * and `ResolutionContext.readTargets`; `transformSince` is
-     * `ParkedSteps.transformSince`. */
+    /** See `ResolutionContext.sourceLost`, `ResolutionContext.abilityKey`,
+     * `ResolutionContext.readTargets` and `ResolutionContext.illegalTargets`;
+     * `transformSince` is `ParkedSteps.transformSince`. */
     opts: {
       readonly sourceLost?: boolean;
       readonly abilityKey?: string;
       readonly transformSince?: number;
       readonly readTargets?: ResolvedTargets;
+      readonly illegalTargets?: readonly number[];
     } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
@@ -11075,6 +11117,7 @@ export class Game {
       source,
       targets,
       ...(opts.readTargets !== undefined ? { readTargets: opts.readTargets } : {}),
+      ...(opts.illegalTargets !== undefined ? { illegalTargets: opts.illegalTargets } : {}),
       x,
       triggerValue,
       triggerObject,
@@ -11102,6 +11145,7 @@ export class Game {
           controller,
           targets: [...targets],
           targetZones: [...targetZones],
+          ...(opts.illegalTargets !== undefined ? { illegalTargets: [...opts.illegalTargets] } : {}),
           x,
           triggerValue,
           ...(triggerObject !== undefined ? { triggerObject } : {}),
@@ -11388,15 +11432,16 @@ export class Game {
         });
         return false;
       },
-      putOntoBattlefield: (target, underYourControl, enterTapped, withCounters, exileIfLeaves, transformed) =>
+      putOntoBattlefield: (target, under, enterTapped, withCounters, exileIfLeaves, transformed) =>
         this.putOntoBattlefieldByEffect(
           target,
           controller,
-          underYourControl,
+          false,
           enterTapped,
           withCounters,
           exileIfLeaves === true,
           transformed === true,
+          under,
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
@@ -11447,8 +11492,12 @@ export class Game {
       },
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
-      gainControl: (target, untilEndOfTurn) =>
-        this.gainControlByEffect(controller, target, untilEndOfTurn),
+      gainControl: (target, untilEndOfTurn, player) =>
+        this.gainControlByEffect(player, target, untilEndOfTurn),
+      gainControlAll: (filter, untilEndOfTurn, who, exceptSource) =>
+        this.gainControlAllByEffect(controller, filter, untilEndOfTurn, who, exceptSource ? source : undefined),
+      rotateControl: (filter, direction, exceptSource) =>
+        this.rotateControlByEffect(controller, filter, direction, exceptSource ? source : undefined),
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count) => this.exileFromLibraryByEffect(target, count),
       countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
@@ -11478,8 +11527,8 @@ export class Game {
       doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, duration),
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
-      addCounter: (target, counter, amount) =>
-        this.addCounter(target, counter, amount, true, controller),
+      addCounter: (target, counter, amount, by) =>
+        this.addCounter(target, counter, amount, true, by ?? controller),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
       populate: () => this.populate(controller),
       encore: () => this.encore(controller, source),
@@ -14571,12 +14620,15 @@ export class Game {
    * `return-from-graveyard`, which filters over the resolving player's own
    * graveyard, this names one card and may take it from anyone's.
    *
-   * `underYourControl` sets `controller` away from `owner` — the card still
-   * belongs to whoever owned it, and goes back to *their* graveyard when it
-   * dies, which is why owner and controller have to diverge here rather than
-   * the object simply changing hands. `runStateBasedActions` recomputes
-   * control (layer 2) afterwards, and the control effect recorded here is
-   * what keeps it there.
+   * `underYourControl` — or `underPlayer`, another player's control (The
+   * Beamtown Bullies' target opponent, who is the one putting it there) —
+   * sets its controller away from `owner`: the card still belongs to
+   * whoever owned it, and goes back to *their* graveyard when it dies,
+   * which is why owner and controller have to diverge here rather than the
+   * object simply changing hands. `runStateBasedActions` recomputes control
+   * (layer 2) afterwards, and the control effect recorded here is what keeps
+   * it there. Nothing is put under a player who has left the game (rule
+   * 800.4b).
    */
   private putOntoBattlefieldByEffect(
     target: TargetRef,
@@ -14586,33 +14638,37 @@ export class Game {
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave = false,
     transformed = false,
+    underPlayer?: PlayerId,
   ): boolean {
+    const under = underPlayer ?? (underYourControl ? controller : undefined);
     if (target.kind !== "object") return false;
     const object = this.state.objects[target.object];
     // Only from a zone a card can be reanimated out of; a permanent already
     // on the battlefield isn't put onto it again.
     if (object === undefined || object.zone === "battlefield") return false;
+    if (under !== undefined && this.state.players[under]?.hasLost !== false) return false;
     // Its "as this enters" choices first (rule 614.12 — a reanimated Clone
     // copies something): nothing moves until they're made.
-    if (this.askEnterChoice(target.object, underYourControl ? controller : object.owner)) return true;
+    if (this.askEnterChoice(target.object, under ?? object.owner)) return true;
     this.moveObject(target.object, "battlefield", {
       tapped: enterTapped,
-      ...(underYourControl ? { under: controller } : {}),
+      ...(under !== undefined ? { under } : {}),
       ...(transformed ? { transformed: true } : {}),
     });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return false;
-    if (underYourControl && entered.controller !== controller) {
+    if (under !== undefined && entered.controller !== under) {
       // Layer 2 recomputes control every SBA pass and reverts to the owner
       // unless a control *effect* says otherwise, so this has to go through
       // the same path `gain-control` uses rather than just assigning.
-      this.gainControlByEffect(controller, { kind: "object", object: target.object }, false, true);
+      this.gainControlByEffect(under, { kind: "object", object: target.object }, false, true);
       entered.summoningSick = true;
     }
     // Set after the move, which clears it: this is the permanent it follows.
     if (exileIfItWouldLeave) entered.exileIfItWouldLeave = true;
     if (withCounters !== undefined) {
-      this.addCounter(target, withCounters.kind, withCounters.amount, true, controller);
+      // Put there, counters and all, by whoever puts it onto the battlefield.
+      this.addCounter(target, withCounters.kind, withCounters.amount, true, under ?? controller);
     }
     this.emit({ type: "permanent-entered-battlefield", object: target.object });
     return false;
@@ -15437,7 +15493,13 @@ export class Game {
    * (`recomputeControl`). Recorded even when `player` already controls it, so
    * that control survives the earlier effect ending. The creature is
    * summoning-sick for a new controller (rule 302.6; Act of Treason grants
-   * haste to compensate). `untilEndOfTurn` ends the effect in cleanup. */
+   * haste to compensate). `untilEndOfTurn` ends the effect in cleanup. A
+   * player who has left the game gains control of nothing (rule 800.4b).
+   *
+   * `opts.timestamp` is the one timestamp a mass change shares — one effect
+   * over many permanents (rule 613.7b; `gain-control-all`, `rotate-control`)
+   * — and `opts.split: false` hands a token stack over whole rather than
+   * peeling one token off it. */
   private gainControlByEffect(
     player: PlayerId,
     target: TargetRef,
@@ -15445,28 +15507,42 @@ export class Game {
     /** "Put it onto the battlefield under your control" — see
      * `ControlEffect.entered`. */
     entered = false,
+    opts: { readonly split?: boolean; readonly timestamp?: number } = {},
   ): void {
     if (target.kind !== "object") return;
-    const id = this.splitOneFromStack(target.object);
+    if (this.state.players[player]?.hasLost !== false) return;
+    const id = opts.split === false ? target.object : this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "battlefield") return;
-    this.state.timestampSeq += 1;
-    const effect = {
+    let timestamp = opts.timestamp;
+    if (timestamp === undefined) {
+      this.state.timestampSeq += 1;
+      timestamp = this.state.timestampSeq;
+    }
+    const effect: ControlEffect = {
       controller: player,
-      timestamp: this.state.timestampSeq,
+      timestamp,
       untilEndOfTurn,
       ...(entered ? { entered: true } : {}),
     };
-    // A lasting effect ends only with the permanent's zone change, which ends
-    // every other one too — so nothing older can ever apply again, and
-    // dropping it keeps Sliver Overlord's repeatable steal from growing this.
-    // Bar who it entered under, its default controller (rule 110.2): an
-    // effect ends when its holder leaves the game (800.4a), and then that
-    // player has it again.
-    object.controlEffects = untilEndOfTurn
-      ? [...(object.controlEffects ?? []), effect]
-      : [...(object.controlEffects ?? []).filter((e) => e.entered === true), effect];
-    object.controlEndsAtCleanup = untilEndOfTurn;
+    // An older effect applies again only once every newer one has ended. One
+    // giving this same player control ends no later than this one — a lasting
+    // one when the permanent changes zones or that player leaves the game
+    // (rule 800.4a), which ends this one too — so it never can: dropped,
+    // which keeps a repeatable steal (Sliver Overlord) from growing this. A
+    // lasting effect outlives an until-end-of-turn one, so the reverse isn't
+    // dropped. Everyone else's stay: when the latest holder leaves the game,
+    // the player still in it who most recently had control has it again
+    // (Alexios, Deimos of Kosmos's ruling) — so the list holds at most two
+    // per player. Default control ("put it onto the battlefield under your
+    // control", rule 110.2) isn't an effect that ends at all.
+    object.controlEffects = [
+      ...(object.controlEffects ?? []).filter(
+        (e) => e.entered === true || e.controller !== player || (!e.untilEndOfTurn && untilEndOfTurn),
+      ),
+      effect,
+    ];
+    object.controlEndsAtCleanup = object.controlEffects.some((e) => e.untilEndOfTurn);
     invalidateComputedCache();
     if (object.controller === player) return;
     object.controller = player;
@@ -15479,6 +15555,73 @@ export class Game {
       controller: player,
       untilEndOfTurn,
     });
+  }
+
+  /**
+   * See the `"gain-control-all"` {@link EffectSpec}: every permanent `filter`
+   * matches now (from `you`'s side, `except` aside) goes to `who` — or, for
+   * `"owner"`, each to its own owner — as one effect with one timestamp
+   * (rule 613.7b). A token stack changes hands whole.
+   */
+  private gainControlAllByEffect(
+    you: PlayerId,
+    filter: CardFilter,
+    untilEndOfTurn: boolean,
+    who: PlayerId | "owner",
+    except?: ObjectId,
+  ): void {
+    const matched = this.battlefieldMatching(you, filter).filter((id) => id !== except);
+    if (matched.length === 0) return;
+    this.state.timestampSeq += 1;
+    const timestamp = this.state.timestampSeq;
+    for (const id of matched) {
+      const object = this.state.objects[id];
+      if (object === undefined) continue;
+      this.gainControlByEffect(
+        who === "owner" ? object.owner : who,
+        { kind: "object", object: id },
+        untilEndOfTurn,
+        false,
+        { split: false, timestamp },
+      );
+    }
+  }
+
+  /**
+   * See the `"rotate-control"` {@link EffectSpec} (Aminatou, the
+   * Fateshifter's −6): each player still in the game gains control of every
+   * permanent `filter` matches (from `you`'s side, `except` aside) that the
+   * next player in `direction` controls — left is onward in turn order (rule
+   * 101.4), right is back. Who gets what is worked out for every player
+   * before anything changes hands, and then it all does at once, as one
+   * lasting effect with one timestamp (rule 613.7b). The effect outlasts its
+   * source and its controller; a player who leaves the game takes only their
+   * own share with them (800.4a), which goes back to whoever controlled it
+   * before.
+   */
+  private rotateControlByEffect(
+    you: PlayerId,
+    filter: CardFilter,
+    direction: "left" | "right",
+    except?: ObjectId,
+  ): void {
+    const players = this.state.turnOrder.filter((p) => this.state.players[p]?.hasLost === false);
+    if (players.length < 2) return;
+    const matched = this.battlefieldMatching(you, filter).filter((id) => id !== except);
+    const step = direction === "left" ? 1 : players.length - 1;
+    const moves: { readonly player: PlayerId; readonly object: ObjectId }[] = [];
+    players.forEach((player, i) => {
+      const from = players[(i + step) % players.length];
+      for (const id of matched) {
+        if (this.state.objects[id]?.controller === from) moves.push({ player, object: id });
+      }
+    });
+    if (moves.length === 0) return;
+    this.state.timestampSeq += 1;
+    const timestamp = this.state.timestampSeq;
+    for (const { player, object } of moves) {
+      this.gainControlByEffect(player, { kind: "object", object }, false, false, { split: false, timestamp });
+    }
   }
 
   /** Counter a spell on the stack (rule 701.5): it's removed from the stack and
@@ -16673,11 +16816,35 @@ export class Game {
     for (const id of [...this.state.zones.shared.battlefield]) {
       const object = this.state.objects[id];
       if (object === undefined || object.owner === player) continue;
-      const latest = (object.controlEffects ?? []).reduce<ControlEffect | null>(
-        (best, e) => (best === null || e.timestamp >= best.timestamp ? e : best),
-        null,
-      );
-      if (latest?.entered === true && latest.controller === player) {
+      // With every effect giving them control ended, do they still control
+      // it? Only by default — it entered under their control (rule 110.2) —
+      // and only if that's still the latest thing deciding it, no other
+      // player's effect or control Aura being newer.
+      const gone = (p: PlayerId): boolean => p !== player && this.state.players[p]?.hasLost === true;
+      let latest: { readonly timestamp: number; readonly byDefault: boolean; readonly controller: PlayerId } | null =
+        null;
+      for (const e of object.controlEffects ?? []) {
+        if ((e.controller === player && e.entered !== true) || gone(e.controller)) continue;
+        if (latest === null || e.timestamp >= latest.timestamp) {
+          latest = { timestamp: e.timestamp, byDefault: e.entered === true, controller: e.controller };
+        }
+      }
+      for (const auraId of this.state.zones.shared.battlefield) {
+        const aura = this.state.objects[auraId];
+        if (
+          aura?.attachedTo !== id ||
+          !this.registry.get(printedCardName(aura)).controlEnchanted ||
+          aura.controller === player ||
+          aura.owner === player ||
+          gone(aura.controller)
+        ) {
+          continue;
+        }
+        if (latest === null || aura.timestamp >= latest.timestamp) {
+          latest = { timestamp: aura.timestamp, byDefault: false, controller: aura.controller };
+        }
+      }
+      if (latest?.byDefault === true && latest.controller === player) {
         this.moveObject(id, "exile");
       }
     }
