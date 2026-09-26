@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-275 already implemented / 225 missing
+278 already implemented / 222 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -199,7 +199,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  193  Hylda of the Icy Crown                         12582 decks  {2}{W}{U}        Legendary Creature — Human Warlock
 [x]  194  Disa the Restless                              12558 decks  {2}{B}{R}{G}     Legendary Creature — Human Scout
 [ ]  195  Wick, the Whorled Mind                         12497 decks  {3}{B}           Legendary Creature — Rat Warlock
-[ ]  196  Zedruu the Greathearted                        12468 decks  {1}{U}{R}{W}     Legendary Creature — Minotaur Monk
+[x]  196  Zedruu the Greathearted                        12468 decks  {1}{U}{R}{W}     Legendary Creature — Minotaur Monk
 [ ]  197  Light-Paws, Emperor's Voice                    12403 decks  {1}{W}           Legendary Creature — Fox Advisor
 [ ]  198  Hazel of the Rootbloom                         12374 decks  {2}{B}{G}        Legendary Creature — Squirrel Druid
 [ ]  199  Stella Lee, Wild Card                          12366 decks  {1}{U}{R}        Legendary Creature — Human Rogue
@@ -315,7 +315,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  309  Minsc & Boo, Timeless Heroes                    8968 decks  {2}{R}{G}        Legendary Planeswalker — Minsc
 [x]  310  Ghalta, Primal Hunger                           8956 decks  {10}{G}{G}       Legendary Creature — Elder Dinosaur
 [x]  311  Dogmeat, Ever Loyal                             8944 decks  {R}{G}{W}        Legendary Creature — Dog
-[ ]  312  Alexios, Deimos of Kosmos                       8932 decks  {3}{R}           Legendary Creature — Human Berserker
+[x]  312  Alexios, Deimos of Kosmos                       8932 decks  {3}{R}           Legendary Creature — Human Berserker
 [x]  313  The Master of Keys                              8902 decks  {X}{W}{U}{B}     Legendary Enchantment Creature — Horror
 [x]  314  Myrel, Shield of Argive                         8893 decks  {3}{W}           Legendary Creature — Human Soldier
 [x]  315  Omnath, Locus of Rage                           8880 decks  {3}{R}{R}{G}{G}  Legendary Creature — Elemental
@@ -438,7 +438,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  432  Karumonix, the Rat King                         6865 decks  {1}{B}{B}        Legendary Creature — Phyrexian Rat
 [x]  433  Nahiri, Forged in Fury                          6865 decks  {4}{R}{W}        Legendary Creature — Kor Artificer
 [x]  434  Zimone and Dina                                 6842 decks  {B}{G}{U}        Legendary Creature — Human Dryad
-[ ]  435  Aminatou, the Fateshifter                       6822 decks  {W}{U}{B}        Legendary Planeswalker — Aminatou
+[x]  435  Aminatou, the Fateshifter                       6822 decks  {W}{U}{B}        Legendary Planeswalker — Aminatou
 [x]  436  The Locust God                                  6821 decks  {4}{U}{R}        Legendary Creature — God
 [x]  437  Ruric Thar, the Unbowed                         6811 decks  {4}{R}{G}        Legendary Creature — Ogre Warrior
 [x]  438  Baeloth Barrityl, Entertainer                   6809 decks  {4}{R}           Legendary Creature — Elf Shaman

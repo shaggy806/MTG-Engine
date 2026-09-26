@@ -119,7 +119,9 @@
   "mechanic:goad-extensions",
   "mechanic:suspect",
   "condition:filter-card-property-clauses",
-  "keyword:changeling"
+  "keyword:changeling",
+  "effect:control-change-extensions",
+  "static:cant-be-sacrificed"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
