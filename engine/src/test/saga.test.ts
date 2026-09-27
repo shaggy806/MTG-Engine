@@ -8,6 +8,7 @@ import type { GameConfig } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import type { TargetRef } from "../target.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -124,12 +125,16 @@ describe("Saga — Summon: Titan (an enchantment creature Saga)", () => {
         .every((id) => game.state.objects[id].tapped),
     ).toBe(true);
 
-    // Turn 5 — chapter III pumps a target creature by the (now larger) land
-    // count, then the SBA sacrifices the Saga. Force the target choice onto
-    // the bear rather than the Titan itself — the engine has no generic
-    // "not this object" targeting exclusion, so both are legal targets.
+    // Turn 5 — chapter III pumps *another* target creature by the (now
+    // larger) land count, then the SBA sacrifices the Saga. The Titan itself
+    // isn't offered. A second creature, so there's a choice to be asked.
     const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
-    a.chooseTargetsFn = () => [{ kind: "object", object: bear }];
+    const otherBear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    let offered: readonly TargetRef[] = [];
+    a.chooseTargetsFn = (_view, _source, _specs, legalOptions) => {
+      offered = legalOptions[0] ?? [];
+      return [{ kind: "object", object: bear }];
+    };
     const landCount = landsOnField();
     game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "declare-attackers");
     expect(game.eventsOfType("saga-completed").some((e) => e.object === titan)).toBe(true);
@@ -139,5 +144,8 @@ describe("Saga — Summon: Titan (an enchantment creature Saga)", () => {
       toughness: 2 + landCount,
     });
     expect(game.characteristics(bear).keywords.has("trample")).toBe(true);
+    expect(offered).toContainEqual({ kind: "object", object: bear });
+    expect(offered).toContainEqual({ kind: "object", object: otherBear });
+    expect(offered).not.toContainEqual({ kind: "object", object: titan });
   });
 });

@@ -29,7 +29,7 @@ export default defineCard({
     {
       cost: { mana: "{2}{R}", tap: true },
       // "**Another** target creature" — the Taunter can't fight itself.
-      targets: [{ kind: "permanent", filter: { type: "creature" } }],
+      targets: [{ kind: "other", of: { kind: "permanent", filter: { type: "creature" } } }],
       effect: { kind: "fight", a: "source", b: 0 },
       resolve: null,
       text: "{2}{R}, {T}: Brash Taunter fights another target creature.",
