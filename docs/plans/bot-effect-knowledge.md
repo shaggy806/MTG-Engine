@@ -194,3 +194,12 @@ unaimed v1 of the baseline build, three of them at four players, 400 games: **30
 deliberate and untested: it valued a player target at 100 minus their life, so burn always went
 face; `targetValue` puts a healthy opponent's face below a real creature and a dying one's above
 it. Still to do in v1.5 proper: "you may", sacrifices, discards and which ability to activate.
+
+**Step 4, done (2026-09-26).** v2 ranks each slot's options by polarity and value before the
+cap (`aimOffer`), for spells and abilities and for trigger targets; the scenario gate gains
+"removal finds the threat on a wide four-player board" (eight older creatures, two of them the
+bot's own, before carol's 6/4 — without the ranking v2 killed one of carol's Bears). With
+steps 1, 3 and 4 together, on the same 24 four-player seeds at the live 300 ms budget, v2's
+wrong-side picks fell from **48 of 489 (9.8%) to 11 of 570 (1.9%)**, four of those classifier
+artifacts (a spec-forced opponent target, exiles from its own graveyard) and the rest choices
+its search made with the right side ranked first.

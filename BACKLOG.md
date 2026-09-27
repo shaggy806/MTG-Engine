@@ -163,7 +163,6 @@ base, retire v3. One line per step still open:
   may" declined, sacrifices and discards taken from the front of the list, the first
   non-mana ability activated whatever it does. Each wants a rule of the same kind — does
   this help me — read off the effect.
-- **v2's target candidates ordered before the 8-combination cap.** Step 4.
 - **Evaluation terms.** Combat restrictions priced; `lifeDanger` swept; the `smarter-bots.md`
   Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)
   are back on, since v3 isn't coming to replace them. Step 5.

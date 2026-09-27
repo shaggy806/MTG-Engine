@@ -312,6 +312,41 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   },
+  {
+    name: "removal finds the threat on a wide four-player board",
+    rule: "The creature worth killing is found however many older ones are listed before it.",
+    run(weights, registry, makeBot) {
+      // `legalTargets` lists the battlefield oldest-first and a searching bot
+      // simulates a capped number of targets, so on a real four-player board
+      // the newest threat used to be past the cap — the bot never saw it. Eight
+      // small creatures, two of them our own, all older than carol's 6/4.
+      const [a, b, c, d] = ["alice", "bob", "carol", "dave"].map(asPlayerId);
+      const game = Game.create({ seed: 3, registry, decks: [a, b, c, d].map(forestDeck) });
+      game.advanceUntil((s) => s.priority.holder === a && s.turn.step === "precombat-main");
+      game.state.zones.perPlayer[a].hand = [];
+      for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", a, "battlefield");
+      for (const player of [a, b, c, d]) {
+        for (const name of ["Grizzly Bears", "Llanowar Elves"]) {
+          game.debugSpawn(name, player, "battlefield", { summoningSick: false });
+        }
+      }
+      const wurm = game.debugSpawn("Craw Wurm", c, "battlefield", { summoningSick: false });
+      game.debugSpawn("Murder", a, "hand");
+
+      const action = makeBot(a, registry, weights).act(viewOf(game, a));
+      const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
+      const hit = target != null && target.kind === "object" ? target.object : null;
+      return {
+        passed: hit === wurm,
+        detail:
+          action.type !== "cast-spell"
+            ? `did not cast removal: ${describeAction(action)}`
+            : `killed ${hit === null ? "nothing" : game.state.objects[hit]?.cardName} of ${
+                hit === null ? "?" : game.state.objects[hit]?.controller
+              }`,
+      };
+    },
+  },
 ];
 
 export const BOT_SCENARIOS = SCENARIOS;

@@ -31,6 +31,8 @@ import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
+import { withComputedCache } from "../characteristics.js";
+import { offerPolarities, pendingTargetPolarities, rankTargets } from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
 import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
@@ -282,7 +284,7 @@ function bestDecision(
     legal === undefined
       ? null
       : decisionCandidates(
-          legal,
+          withComputedCache(() => aimOffer(view.state, cards, me, legal)),
           me,
           (ids) => byManaValue(view.state, cards, ids),
           (id) => view.state.objects[id]?.controller,
@@ -310,6 +312,53 @@ function bestDecision(
     }
   }
   return best;
+}
+
+/**
+ * `legal` with each target slot's options in the order worth simulating:
+ * the side the slot's effect belongs on first, most valuable first
+ * (`target-polarity.ts`), then the rest, least valuable first.
+ *
+ * Candidates are capped — `MAX_TARGET_COMBOS` (8) combinations of a spell or
+ * ability, a dozen rollouts for a decision — and `legalTargets` lists the
+ * players in turn order, then the battlefield oldest-first. So on a wide
+ * four-player board the eight combinations v2 simulated for "destroy target
+ * permanent" were the eight oldest permanents, lands from turn one, and the
+ * threat worth destroying was never considered: measured, 27% of targeted
+ * offers had more combinations than the cap, and 1,266 of those had an
+ * opponent's target beyond it. Ranking first makes the cap cut the least
+ * likely targets instead.
+ *
+ * Wrong-side options go last rather than away: Brash Taunter fighting its
+ * own creature is a real play, and only the search can tell. A slot the
+ * polarity can't read keeps the offer's order.
+ */
+function aimOffer(
+  state: GameState,
+  cards: CardRegistry,
+  me: PlayerId,
+  legal: LegalAction,
+): LegalAction {
+  if (legal.kind === "choose-targets") {
+    const polarities = pendingTargetPolarities(state, cards);
+    if (polarities === null) return legal;
+    return {
+      ...legal,
+      options: legal.options.map((options, i) =>
+        rankTargets(state, cards, me, options, polarities[i] ?? "either"),
+      ),
+    };
+  }
+  if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return legal;
+  if (legal.targetOptions.length === 0) return legal;
+  const polarities = offerPolarities(cards, legal);
+  if (polarities === null) return legal;
+  return {
+    ...legal,
+    targetOptions: legal.targetOptions.map((options, i) =>
+      rankTargets(state, cards, me, options, polarities[i] ?? "either"),
+    ),
+  };
 }
 
 /** Highest mana value first — the order a capped tutor or discard search
@@ -417,14 +466,19 @@ export class EvalBotController extends HeuristicBotController {
     const pass: Action = { type: "pass-priority", player };
 
     const candidates: Action[] = [];
-    for (const legal of view.legalActions()) {
-      // Mana abilities are never worth a simulation: casting auto-pays, so
-      // tapping for mana on its own gains nothing the evaluation could see,
-      // and on a wide board they're nearly every candidate there is — 27 of
-      // 30 on one 38-permanent board, which made a single decision a 2s search.
-      if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
-      candidates.push(...candidateActions(legal, player));
-    }
+    // A read-only region: ranking targets folds every option's
+    // characteristics, and nothing changes the state until the simulations
+    // below, which run outside it.
+    withComputedCache(() => {
+      for (const legal of view.legalActions()) {
+        // Mana abilities are never worth a simulation: casting auto-pays, so
+        // tapping for mana on its own gains nothing the evaluation could see,
+        // and on a wide board they're nearly every candidate there is — 27 of
+        // 30 on one 38-permanent board, which made a single decision a 2s search.
+        if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
+        candidates.push(...candidateActions(aimOffer(view.state, this.cards, player, legal), player));
+      }
+    });
 
     // **Nothing to choose between, nothing to simulate.** Passing used to be
     // rolled out to the end of the turn *before* the candidates were listed,
