@@ -334,3 +334,27 @@ trusted on a corpus this size: its first try used `graveyard` 0.05 → 1 as a di
 since every spell cast lands in its caster's graveyard (the mill scenario now rules that out),
 and later ones cut `power` from the 0.5 the four-player sweep chose to 0.15 for margins nothing
 needed.
+
+**Step 8, the hand-tuned vector (2026-09-27).** Benched against three copies of the shipped
+vector, four players, count budgets: **26.8% [22.7, 31.4] over 399 games**, level (even 25%). By
+step 5's rule — a fix a scenario shows, and a bench that rules out a loss — it ships, frozen as
+`shipped-2026-09-27`, and the three scenarios it fixed move from training into the gate (36
+there; the Counterspell one stays in training). The 400th game ran past the bench's 25-minute
+limit, the first timeout in any of these benches, and replaying it found a slow game rather than
+a hung one: dave activating Lathliss, Dragon Queen's "{R}: Dragons you control get +1/+0" a dozen
+times and more a turn off a pile of Treasures, each activation a full search of a
+seventy-permanent board at eight to ten seconds. v1 caps any one ability at four activations a
+turn; v2 has no cap (BACKLOG). The new weights only steered that game there — replayed with the
+old ones, the same seed ends at turn 38.
+
+In games (`bot:behaviour`, count budgets, 48 four-player seeds, the old vector against the new on
+each): turns ending with a sorcery-speed spell castable and unplayed went from 91 of 2,260 to 81 of
+2,254; Vandalblast was held 9 times to 5, Fireball 10 to 5, Act of Treason 4 to 0. One new habit
+came with it: wrong-side targets with a right-side one legal went from 12 to 23, nine of the new
+ones an opponent's attacking creature pumped (Kessig Wolf Run, Fires of Yavimaya, Unleash Fury,
+Ajani's counter), which the old vector never did. That is `otherOpponents` working as set —
+damage one trailing opponent deals another now counts double what it did — on mana the
+evaluation prices at nothing (`untappedMana` is 0), so pushing someone else's attack costs the bot
+nothing it can see. A real multiplayer play, and an odd one to watch; BACKLOG has it. (The
+first 24 seeds alone read 8 wrong-side picks to 19, the next 24 read 18 to 18: which games a
+vector steers into moves these counts as much as the vector does.)

@@ -164,12 +164,18 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   lifeDanger: 1,
   commanderDamage: 2,
   hand: 2,
-  // Off to start, like `untappedMana` below. Each reads as a cost the moment a
-  // card or mana is *spent*: casting a sorcery gives up its hand value with
-  // nothing on the board to show for it. At 0.3 and 0.1 alongside the land
-  // cap they cost 8 points of win rate at four players (36% -> 28%, see the
-  // plan's Phase 1 notes). The tuner can switch either back on.
-  handManaValue: 0,
+  // A tie-breaker, no more. At zero a Forest in hand was worth a Craw Wurm in
+  // hand, so a forced discard with ten lands out threw away whichever came
+  // first ("discards its extra land, not its bomb"). Any more and it starts to
+  // cost casting, since a card's mana value in hand is what casting it gives
+  // up — Sol Ring on turn one wins by only half a point — and at 0.3 (beside
+  // `untappedMana` 0.1) it cost 8 points of win rate at four players (36% ->
+  // 28%, the plan's Phase 1 notes). Hand-tuned to a scenario, step 8 of
+  // `docs/plans/bot-effect-knowledge.md`, with `commanderOnBoard` and
+  // `otherOpponents` below: the three together benched 26.8% [22.7, 31.4]
+  // against three of the vector without them, four players, 399 games —
+  // level.
+  handManaValue: 0.05,
   // `creatures` and `lands` absorb what the old catch-all `permanents` term
   // (0.5) gave them, so the first measurement of the new vector starts from
   // the same valuation of a creature and a land drop.
@@ -232,14 +238,20 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   monarch: 3,
   emblems: 3,
   commanderTax: 0.5,
-  // Zero, and measured so: at 1, 2 and 2 together (with `idlePower` 0.5) they
-  // benched 26.0% [21.9, 30.5] against three of the vector without them, four
-  // players, 400 games — nothing a weight should ship on
-  // (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for a
-  // sweep that finds their peak, if one exists.
+  // Zero, and measured so: at 1 and 2 (with `commanderOnBoard` 2 and
+  // `idlePower` 0.5) they benched 26.0% [21.9, 30.5] against three of the
+  // vector without them, four players, 400 games — nothing a weight should
+  // ship on (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for
+  // a sweep that finds their peak, if one exists.
   nonlandMana: 0,
   drawEngines: 0,
-  commanderOnBoard: 0,
+  // A commander is the deck it leads, not a creature like any other. At zero
+  // the bot killed a bigger vanilla creature rather than a commander one hit
+  // from lethal commander damage ("kills the commander one hit from lethal
+  // commander damage") — nothing else in the evaluation looks at the next
+  // attack. Hand-tuned to that scenario (step 8); it values the bot's own on
+  // the battlefield the same way.
+  commanderOnBoard: 3,
   // **Keep equal to `power`.** Not a free weight: `power` is the combat damage
   // a creature could deal, and one that can't attack deals none, so this
   // takes back exactly what `power` credits it. At zero, v2 enchanted its own
@@ -249,7 +261,14 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // same term is what makes pacifying an opponent's attacker worth its power.
   idlePower: 0.5,
   opponent: 1,
-  otherOpponents: 0.25,
+  // Counted against the *average* of the trailing opponents, so at four
+  // players each one's board weighs a quarter of the leader's here. At 0.25
+  // (an eighth) the bot held its removal while a trailing player's creature
+  // was the only one on the table ("kills a trailing player's threat when the
+  // leader has none"); "removal takes the leader's threat first" keeps the
+  // leader first. Hand-tuned (step 8); what's still missing is a term for the
+  // threat to *us* — BACKLOG, "Removal only for the leader".
+  otherOpponents: 0.5,
   crackbackParanoia: 0.5,
   crackbackMargin: 2,
 };

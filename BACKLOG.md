@@ -163,18 +163,42 @@ base, retire v3. One line per step still open:
   may" declined, sacrifices and discards taken from the front of the list, the first
   non-mana ability activated whatever it does. Each wants a rule of the same kind — does
   this help me — read off the effect.
+- **More training scenarios.** Step 8's corpus holds four right answers the weights get wrong
+  (`kind: "training"` in `bot/scenarios.ts`) — too few to fit more than a lever or two
+  against. Each blunder a live game or `bot:behaviour` shows becomes one, and
+  `bot:fit-scenarios` says whether a weight fixes it or a feature is missing.
 
 Beyond that plan:
 
+- **An answer's option value.** v2 counters an opponent's Arcane Signet with its only
+  Counterspell (the "saves Counterspell for a threat" training scenario): `hand` prices a
+  Counterspell like any card, and every weight that would make holding it right —
+  `handManaValue`, `untappedMana`, a lower `otherPermanents` — also stops the bot casting its
+  rocks and draw spells (`bot:fit-scenarios` lists them). Wants a feature: what a reactive card
+  in hand could still answer.
+
 - **Removal only for the leader.** v2 subtracts its strongest opponent's score at full weight
-  and the *average* of the rest at `otherOpponents` (0.25), so at four players a trailing
-  opponent's permanent counts an eighth as much as the leader's, and a removal spell (a card,
-  worth 2) is cast on one only if it's worth 16. On a constructed board v2 Vandalblasted the
-  leader's Sol Ring and left a trailing player's alone, even at `otherOpponents` 1; Vandalblast
-  was the card v2 most often ended its turn holding after Clan Defiance (11 times in 24
-  four-player games). Pressing the leader is sound politics, but not when the trailing player's
-  creature is the one attacking the bot — which wants a threat-to-me term (what can attack me
-  next turn), not a bigger weight.
+  and the *average* of the rest at `otherOpponents`, so at four players a trailing opponent's
+  permanent counts a quarter as much as the leader's (an eighth before step 8 raised the
+  weight to 0.5, which fixed "kills a trailing player's threat when the leader has none"). A
+  removal spell (a card, worth 2) still goes on a trailing player's permanent only if it's
+  worth 8, and on a constructed board v2 Vandalblasted the leader's Sol Ring and left a
+  trailing player's alone even at `otherOpponents` 1. Pressing the leader is sound politics,
+  but not when the trailing player's creature is the one attacking the bot — which wants a
+  threat-to-me term (what can attack me next turn), not a bigger weight.
+- **Pumping an opponent's attacker.** Since step 8 raised `otherOpponents` to 0.5, v2 spends
+  pumps on an opponent's creature attacking another opponent — Kessig Wolf Run, Fires of
+  Yavimaya, Unleash Fury, Ajani's counter: nine times in 48 four-player games, none before. The
+  damage lands on a player the evaluation now counts double, and the mana costs nothing it can
+  see (`untappedMana` is 0). Political, and sometimes right, but it reads as helping the wrong
+  side; either mana gets a price or a training scenario says when pushing someone else's attack
+  is worth a card or a use.
+- **v2 repeats an activation without limit.** v1 activates any one ability at most four times a
+  turn (`MAX_ACTIVATIONS_PER_TURN`); v2 has no such cap, and on a seventy-permanent board with a
+  pile of Treasures it activated Lathliss, Dragon Queen's "{R}: Dragons you control get +1/+0"
+  a dozen times and more a turn, each a full search at eight to ten seconds under count budgets
+  — the one game of step 8's bench that timed out. Live rooms bound each search to 300 ms, but
+  every activation is still a paced frame. Wants the same cap, counted on v2's own choices.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
   `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.

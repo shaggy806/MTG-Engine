@@ -46,6 +46,9 @@ describe("recorded scenarios", () => {
 });
 
 describe("tuning against synthetic records", () => {
+  // A fixed base, so these say what the tuner does whatever the shipped
+  // weights are: `handManaValue` is zero here, as it was before step 8.
+  const BASE = { ...DEFAULT_WEIGHTS, handManaValue: 0 };
   const zero = Object.fromEntries(FEATURE_KEYS.map((k) => [k, 0])) as PlayerFeatures;
   const pass: Action = { type: "pass-priority", player: asPlayerId("alice") };
   const answer = (features: Partial<PlayerFeatures>, right: boolean) => ({
@@ -73,15 +76,15 @@ describe("tuning against synthetic records", () => {
   ]);
 
   it("finds the nearest single weight that fixes a scenario, and what it breaks", () => {
-    expect(replayRight(discard, DEFAULT_WEIGHTS)).toBe(false);
-    const levers = leversFor(discard, [discard, sol], DEFAULT_WEIGHTS, ["handManaValue"]);
+    expect(replayRight(discard, BASE)).toBe(false);
+    const levers = leversFor(discard, [discard, sol], BASE, ["handManaValue"]);
     expect(levers).toHaveLength(1);
     expect(levers[0]).toMatchObject({ key: "handManaValue", value: 0.05, breaks: [] });
-    expect(scenarioMargin(discard, { ...DEFAULT_WEIGHTS, handManaValue: 0.05 })).toBeCloseTo(0.3);
+    expect(scenarioMargin(discard, { ...BASE, handManaValue: 0.05 })).toBeCloseTo(0.3);
   });
 
   it("tunes by hand without breaking the gate", () => {
-    const tuned = handTune([discard, sol], DEFAULT_WEIGHTS, ["handManaValue"]);
+    const tuned = handTune([discard, sol], BASE, ["handManaValue"]);
     expect(tuned.pulled).toEqual([
       { scenario: "discard", key: "handManaValue", from: 0, value: 0.05 },
     ]);
@@ -96,15 +99,15 @@ describe("tuning against synthetic records", () => {
       answer({ otherPermanents: 1.5 }, false),
       answer({ hand: 1 }, true),
     ]);
-    expect(replayRight(rock, DEFAULT_WEIGHTS)).toBe(false);
-    expect(leversFor(rock, [rock], DEFAULT_WEIGHTS, ["otherPermanents"])).toEqual([]);
-    const fitted = fitWeights([rock], { base: DEFAULT_WEIGHTS, free: ["otherPermanents"] });
-    expect(fitted.weights.otherPermanents).toBeGreaterThanOrEqual(DEFAULT_WEIGHTS.hand);
+    expect(replayRight(rock, BASE)).toBe(false);
+    expect(leversFor(rock, [rock], BASE, ["otherPermanents"])).toEqual([]);
+    const fitted = fitWeights([rock], { base: BASE, free: ["otherPermanents"] });
+    expect(fitted.weights.otherPermanents).toBeGreaterThanOrEqual(BASE.hand);
   });
 
   it("fits jointly when asked, keeping the gate right", () => {
     const fitted = fitWeights([discard, sol], {
-      base: DEFAULT_WEIGHTS,
+      base: BASE,
       free: ["handManaValue"],
       lambda: 0.01,
     });

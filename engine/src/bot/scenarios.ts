@@ -904,40 +904,16 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
 
-  // --- training: right answers the shipped weights get wrong ----------------
-  asked({
-    name: "saves Counterspell for a threat",
-    rule: "A Counterspell is wasted on a mana rock when three opponents have bombs to come.",
-    kind: "training",
-    position(registry) {
-      // v2 counters bob's Arcane Signet: the Signet is worth `otherPermanents`
-      // + `permanentManaValue` to him, which is more than the card it costs
-      // us, and a card in hand is worth `hand` whatever it could answer later.
-      // No weight prices an answer's option value.
-      const game = table(registry, [A, B, C, D], B);
-      for (const player of [A, B, C, D]) {
-        lands(game, player === A ? "Island" : "Forest", player, 4);
-      }
-      game.debugSpawn("Counterspell", A, "hand");
-      castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
-      return {
-        game,
-        player: A,
-        judge: (action) => ({
-          passed: action.type !== "cast-spell",
-          detail: `with bob's Arcane Signet on the stack, chose ${describeAction(action)}`,
-        }),
-      };
-    },
-  }),
+  // --- tuned to (step 8): training scenarios the weights now get right ---
   asked({
     name: "kills the commander one hit from lethal commander damage",
     rule: "A commander that has dealt 18 of 21 is the threat, whatever else is bigger.",
-    kind: "training",
     position(registry) {
-      // v2 kills the bigger Craw Wurm: nothing in the evaluation looks at
-      // what the next attack would do, and `commanderDamage` counts damage
-      // already taken, which killing the commander doesn't undo.
+      // At `commanderOnBoard: 0` v2 killed the bigger Craw Wurm: nothing in the
+      // evaluation looks at what the next attack would do, and
+      // `commanderDamage` counts damage already taken, which killing the
+      // commander doesn't undo. Pricing a commander on the battlefield above
+      // its body is the lever `bot:fit-scenarios` found.
       const game = table(registry, [A, B], A);
       lands(game, "Swamp", A, 3);
       const commander = onBoard(game, "Anafenza, the Foremost", B);
@@ -961,10 +937,10 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "discards its extra land, not its bomb",
     rule: "With ten lands out, the land in hand is the card to lose.",
-    kind: "training",
     position(registry) {
-      // Every choice scores the same — `hand` prices a Forest in hand like a
-      // Craw Wurm — so the tie goes to v1's answer, the front of the hand.
+      // At `handManaValue: 0` every choice scored the same — `hand` prices a
+      // Forest in hand like a Craw Wurm — and the tie went to v1's answer, the
+      // front of the hand. A twentieth of a point per mana value breaks it.
       const game = table(registry, [A, B], A);
       lands(game, "Forest", A, 10);
       game.debugSpawn("Craw Wurm", A, "hand");
@@ -990,13 +966,13 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "kills a trailing player's threat when the leader has none",
     rule: "The only creature on the table is worth a removal spell, whoever controls it.",
-    kind: "training",
     position(registry) {
-      // Bob leads on lands and cards, carol has the table's only creature.
-      // v2 holds its Murder: a trailing opponent's score is averaged with the
-      // other trailing one's and counted at `otherOpponents`, so carol's Wurm
-      // is worth an eighth of bob's — see BACKLOG, "Removal only for the
-      // leader".
+      // Bob leads on lands and cards, carol has the table's only creature. A
+      // trailing opponent's score is averaged with the other trailing one's
+      // and counted at `otherOpponents`; at 0.25 carol's Wurm was worth an
+      // eighth of bob's, and v2 held its Murder. At 0.5 it kills the Wurm,
+      // and "removal takes the leader's threat first" still holds. See
+      // BACKLOG, "Removal only for the leader".
       const game = table(registry, [A, B, C, D], A);
       lands(game, "Swamp", A, 3);
       lands(game, "Forest", B, 9);
@@ -1018,6 +994,35 @@ const SCENARIOS: readonly BotScenario[] = [
                 : `chose ${describeAction(action)}`,
           };
         },
+      };
+    },
+  }),
+
+  // --- training: right answers the shipped weights get wrong ----------------
+  asked({
+    name: "saves Counterspell for a threat",
+    rule: "A Counterspell is wasted on a mana rock when three opponents have bombs to come.",
+    kind: "training",
+    position(registry) {
+      // v2 counters bob's Arcane Signet: the Signet is worth `otherPermanents`
+      // + `permanentManaValue` to him, which is more than the card it costs
+      // us, and a card in hand is worth `hand` whatever it could answer later.
+      // No weight prices an answer's option value: every one that would make
+      // holding right also stops the bot casting its rocks and draw spells.
+      // BACKLOG, "An answer's option value".
+      const game = table(registry, [A, B, C, D], B);
+      for (const player of [A, B, C, D]) {
+        lands(game, player === A ? "Island" : "Forest", player, 4);
+      }
+      game.debugSpawn("Counterspell", A, "hand");
+      castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `with bob's Arcane Signet on the stack, chose ${describeAction(action)}`,
+        }),
       };
     },
   }),
