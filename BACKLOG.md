@@ -253,6 +253,10 @@ Beyond that plan:
 
 ## Tooling / docs
 
+- **Say which turn it is for whom (raised 2026-09-27).** A turn number counts every player's
+  turns, so at a four-player table "turn 37" is the first player's 10th turn — which reads as a
+  much longer game than it is. Talk about turns with that extra specificity. To be discussed
+  before anything is built: where it applies and what form it takes.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
