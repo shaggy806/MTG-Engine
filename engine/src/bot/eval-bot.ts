@@ -37,6 +37,8 @@ import {
   offerPolarities,
   pendingTargetPolarities,
   rankTargets,
+  sideOf,
+  specSide,
 } from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
 import { decisionCandidates } from "./decisions.js";
@@ -44,7 +46,13 @@ import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from ".
 import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState, normalizeWeights } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
-import { CombatRolloutController, simulateAction, simulateCombat } from "./simulate.js";
+import {
+  CombatRolloutController,
+  MAX_BATCH,
+  simulateAction,
+  simulateCombat,
+  simulateRepeated,
+} from "./simulate.js";
 import type { Horizon, RolloutPolicy } from "./simulate.js";
 
 export interface EvalBotOptions {
@@ -469,6 +477,26 @@ export class EvalBotController extends HeuristicBotController {
   private readonly maxSimulations: number;
   private readonly timeBudgetMs: number;
   private readonly trace: EvalBotOptions["trace"];
+  /** The stack this bot last passed on, and on which turn — see
+   * `holdPass`. */
+  private passedOn: { readonly turn: number; readonly stack: readonly ObjectId[] } | null = null;
+  /** The stack a searched action (not a pass) was chosen on — see
+   * `holdPass`. */
+  private actedOn: { readonly turn: number; readonly stack: readonly ObjectId[] } | null = null;
+  /** A batch of activations under way — see `act` and `continueBatch`. */
+  private batch: {
+    readonly action: Action;
+    /** Each activation at a target none before it took — see
+     * `nextInBatch`. */
+    readonly spread: boolean;
+    readonly remaining: number;
+    readonly turn: number;
+    /** The stack's size before the first activation. */
+    readonly base: number;
+    /** The stack's size once our last activation went on it — or, while
+     * the batch resolves, the last time we passed. */
+    readonly stack: number;
+  } | null = null;
   /** See {@link DecisionAudit}. Written, never read. */
   lastDecision: DecisionAudit | null = null;
 
@@ -493,6 +521,14 @@ export class EvalBotController extends HeuristicBotController {
 
   act(view: ControllerView): Action {
     this.lastDecision = null;
+    const continued = this.continueBatch(view) ?? this.holdPass(view);
+    this.passedOn = null;
+    this.actedOn = null;
+    if (continued !== null) {
+      this.lastDecision = audit("priority", null);
+      if (continued.type === "pass-priority") this.rememberPass(view);
+      return continued;
+    }
     const inherited = super.act(view);
     // `super.act` has already routed anything the engine is waiting on
     // through `answerAwaited`, which calls back into this class's own
@@ -595,8 +631,250 @@ export class EvalBotController extends HeuristicBotController {
       bestScore = score;
       best = action;
     }
+
+    // **Batches.** An ability that can be activated again at once — a pump,
+    // firebreathing, "{R}: Dragons you control get +1/+0" — is also tried as
+    // many times in a row as the mana allows, as one candidate: twelve mana
+    // for +6/+0 is weighed as a whole, where one activation at a time asks
+    // twelve times whether two mana for +1/+0 is worth a search (Lathliss on a
+    // pile of Treasures: a dozen activations, each a full search, one game
+    // past a bench's time limit). Scored after every single move, so under a
+    // clock they're the first thing dropped.
+    // One batch per ability, from its best-ranked candidate — two for a
+    // targeted one: every activation at the same target (a ping at a
+    // two-toughness creature, a pump on one attacker) and each at a new one
+    // (Scavenging Ooze eating a graveyard), for the simulation to choose
+    // between.
+    let batch: { readonly times: number; readonly spread: boolean } | null = null;
+    const batched = new Set<string>();
+    for (const action of candidates) {
+      if (action.type !== "activate-ability") continue;
+      const key = `${action.source}:${action.abilityIndex}`;
+      if (batched.has(key)) continue;
+      batched.add(key);
+      const targeted = (action.targets ?? []).some((t) => t !== null);
+      for (const spread of targeted ? [false, true] : [false]) {
+        if (spent(budget)) break;
+        budget.left -= 1;
+        const result = timed(budget, () =>
+          simulateRepeated(
+            view.state,
+            this.cards,
+            action,
+            this.horizon,
+            this.rollout,
+            this.rolloutDecisions ? this.selfInRollouts() : undefined,
+            MAX_BATCH,
+            (game, previous) =>
+              this.nextInBatch(game.state, game.legalActions(this.playerId), previous, spread),
+          ),
+        );
+        if (result === null || result.times < 2) continue;
+        const score = evaluateState(result.state, this.cards, this.playerId, this.weights);
+        if (score <= bestScore) continue;
+        bestScore = score;
+        best = action;
+        batch = { times: result.times, spread };
+      }
+    }
+    if (batch !== null && best.type === "activate-ability") {
+      const base = view.state.zones.shared.stack.length;
+      this.batch = {
+        action: best,
+        spread: batch.spread,
+        remaining: batch.times - 1,
+        turn: view.state.turn.number,
+        base,
+        stack: base + 1,
+      };
+    }
     this.lastDecision = audit("priority", budget);
+    if (best.type === "pass-priority") this.rememberPass(view);
+    else if (this.batch === null && view.state.awaiting === null) {
+      this.actedOn = { turn: view.state.turn.number, stack: [...view.state.zones.shared.stack] };
+    }
     return best;
+  }
+
+  /** After passing with something on the stack, what that stack was — see
+   * `holdPass`. */
+  private rememberPass(view: ControllerView): void {
+    const stack = view.state.zones.shared.stack;
+    this.passedOn =
+      stack.length > 0 && view.state.awaiting === null
+        ? { turn: view.state.turn.number, stack: [...stack] }
+        : null;
+  }
+
+  /**
+   * Pass again, without a search, when all that has happened since this bot
+   * last passed is that the stack it passed on has been resolving: the stack
+   * now is the bottom of that one, with nothing added. Passing was scored as
+   * everyone passing until that stack resolved, so the answer is already
+   * made — the same "resolve all" as a batch's own (`continueBatch`), for a
+   * bot watching someone else's. Without it, nine stacked pumps meant nine
+   * more searches for every seat at the table, several seconds each on a big
+   * board. Anything new on the stack — a response, a trigger — or a decision
+   * or a new turn is searched as usual.
+   */
+  private holdPass(view: ControllerView): Action | null {
+    const state = view.state;
+    const stack = state.zones.shared.stack;
+    // Just after a searched action: the stack it was chosen on plus the one
+    // spell or ability it put there, ours. The action was scored as that and
+    // then everyone passing until it resolved, so this window is already
+    // decided — a cast used to cost a second full search here, before its
+    // caster passed on its own spell.
+    const acted = this.actedOn;
+    if (
+      acted !== null &&
+      state.awaiting === null &&
+      state.turn.number === acted.turn &&
+      stack.length === acted.stack.length + 1 &&
+      acted.stack.every((id, i) => stack[i] === id) &&
+      state.objects[stack[stack.length - 1]]?.controller === this.playerId
+    ) {
+      return { type: "pass-priority", player: this.playerId };
+    }
+    const held = this.passedOn;
+    if (held === null) return null;
+    if (
+      state.awaiting !== null ||
+      state.turn.number !== held.turn ||
+      stack.length === 0 ||
+      stack.length >= held.stack.length ||
+      stack.some((id, i) => held.stack[i] !== id)
+    ) {
+      return null;
+    }
+    return { type: "pass-priority", player: this.playerId };
+  }
+
+  /**
+   * The rest of a batch the search chose (see `act`), without searching
+   * again: the next activation, and once they're all on the stack, a pass at
+   * every window while they resolve — "resolve all" — since the candidate
+   * that won was scored as exactly that, the batch activated and then
+   * passed through. Searching those windows again cost a full search each
+   * on a big board: nine pumps resolving one at a time were nine more.
+   *
+   * `null`, dropping the batch, once anything but the batch has happened
+   * since: another object on the stack (an opponent's response, a trigger),
+   * a decision, a new turn, the ability no longer on offer, or the batch
+   * resolved.
+   */
+  private continueBatch(view: ControllerView): Action | null {
+    const batch = this.batch;
+    this.batch = null;
+    if (batch === null || batch.action.type !== "activate-ability") return null;
+    const state = view.state;
+    if (state.awaiting !== null || state.turn.number !== batch.turn) return null;
+    const action = batch.action;
+    const stack = state.zones.shared.stack;
+    if (batch.remaining <= 0) {
+      // Resolving: pass while everything above where the batch began is
+      // still one of its own activations.
+      const above = stack.slice(batch.base);
+      const onlyOurs =
+        above.length > 0 &&
+        above.every((id) => {
+          const object = state.objects[id];
+          return (
+            object?.kind === "ability" &&
+            object.abilityKind === "activated" &&
+            object.controller === this.playerId &&
+            object.sourceObjectId === action.source &&
+            object.abilityIndex === action.abilityIndex
+          );
+        });
+      if (!onlyOurs || stack.length > batch.stack) return null;
+      this.batch = { ...batch, stack: stack.length };
+      return { type: "pass-priority", player: this.playerId };
+    }
+    if (stack.length !== batch.stack) return null;
+    const following = this.nextInBatch(state, view.legalActions(), action, batch.spread);
+    if (following === null) return null;
+    this.batch = {
+      ...batch,
+      action: following,
+      remaining: batch.remaining - 1,
+      stack: batch.stack + 1,
+    };
+    return following;
+  }
+
+  /**
+   * The next activation of a batch. Unspread, `previous` again while its
+   * targets are still legal. Spread, the same ability aimed at the best
+   * target that none of the batch's activations already on the stack has
+   * taken (the ranking the search uses) — Scavenging Ooze eating one
+   * graveyard card after another, each its own full search before; a target
+   * stays legal until the activation aimed at it resolves, so repeating the
+   * action would only fizzle. `null` once the ability isn't offered, nothing
+   * is left to aim at, or the best of it is on the wrong side of the table
+   * (the Ooze with only our own graveyard left).
+   */
+  private nextInBatch(
+    state: GameState,
+    legal: readonly LegalAction[],
+    previous: Action,
+    spread: boolean,
+  ): Action | null {
+    if (previous.type !== "activate-ability") return null;
+    if (state.awaiting !== null || state.priority.holder !== this.playerId) return null;
+    const offer = legal.find(
+      (l): l is Extract<LegalAction, { kind: "activate-ability" }> =>
+        l.kind === "activate-ability" &&
+        l.source === previous.source &&
+        l.abilityIndex === previous.abilityIndex,
+    );
+    if (offer === undefined) return null;
+    const targeted = (previous.targets ?? []).some((t) => t !== null);
+    if (!spread || !targeted) {
+      const stillLegal = (previous.targets ?? []).every(
+        (target, i) =>
+          target === null ||
+          (offer.targetOptions[i] ?? []).some(
+            (option) => JSON.stringify(option) === JSON.stringify(target),
+          ),
+      );
+      return stillLegal ? previous : null;
+    }
+    // What this ability's activations on the stack are already aimed at.
+    const taken = new Set<string>();
+    for (const id of state.zones.shared.stack) {
+      const object = state.objects[id];
+      if (
+        object?.kind !== "ability" ||
+        object.sourceObjectId !== previous.source ||
+        object.abilityIndex !== previous.abilityIndex
+      ) {
+        continue;
+      }
+      for (const target of object.targets ?? []) {
+        if (target !== undefined) taken.add(JSON.stringify(target));
+      }
+    }
+    const fresh = {
+      ...offer,
+      targetOptions: offer.targetOptions.map((options) =>
+        options.filter((option) => !taken.has(JSON.stringify(option))),
+      ),
+    };
+    if (fresh.targetOptions.some((options, i) => options.length === 0 && offer.targetOptions[i].length > 0)) {
+      return null;
+    }
+    const polarities = offerPolarities(this.cards, offer);
+    const aimed = withComputedCache(() => aimOffer(state, this.cards, this.playerId, fresh));
+    const [following] = candidateActions(aimed, this.playerId);
+    if (following === undefined || following.type !== "activate-ability") return null;
+    const wrongSide = (following.targets ?? []).some((target, i) => {
+      const polarity = polarities?.[i];
+      if (target === null || (polarity !== "harm" && polarity !== "help")) return false;
+      if (specSide(offer.targetSpecs[i]) !== "any") return false;
+      return sideOf(state, target, this.playerId) !== (polarity === "harm" ? "opponent" : "own");
+    });
+    return wrongSide ? null : following;
   }
 
   /** A fresh budget for one decision. */

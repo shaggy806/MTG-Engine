@@ -96,6 +96,34 @@ export function simulateAction(
   policy: RolloutPolicy = "passive",
   self?: PlayerController,
 ): GameState | null {
+  return simulateRepeated(state, registry, action, horizon, policy, self, 1)?.state ?? null;
+}
+
+/** The most activations one batch simulates — a bound on a free, untapped
+ * ability that could otherwise be activated forever. */
+export const MAX_BATCH = 20;
+
+/**
+ * `simulateAction` for an activated ability dispatched up to `repeat` times
+ * in a row before anyone else acts — "give my Dragons +1/+0" six times with
+ * twelve spare mana, as one candidate. Activating hands priority straight
+ * back to the activator (rule 117.3c), so a batch is the next activation
+ * dispatched again for as long as there is one: by default the same action
+ * while the engine still offers it (`canRepeat`), or whatever `next` says —
+ * the same ability re-aimed, when the target the last one took is gone.
+ * `times` is how many went on the stack.
+ */
+export function simulateRepeated(
+  state: GameState,
+  registry: CardRegistry,
+  action: Action,
+  horizon: Horizon,
+  policy: RolloutPolicy,
+  self: PlayerController | undefined,
+  repeat: number,
+  next: (game: Game, previous: Action) => Action | null = (game, previous) =>
+    canRepeat(game, previous) ? previous : null,
+): { readonly state: GameState; readonly times: number } | null {
   // The event log is roughly half the bytes of a mid-game state and nothing
   // downstream of here reads it — dropping it before the clone takes the copy
   // from ~0.46ms to ~0.27ms.
@@ -108,6 +136,15 @@ export function simulateAction(
       controllers: rolloutControllers(state, registry, action.player, policy, self),
     });
     sim.dispatch(action);
+    let times = 1;
+    let previous = action;
+    while (times < Math.min(repeat, MAX_BATCH)) {
+      const following = next(sim, previous);
+      if (following === null) break;
+      sim.dispatch(following);
+      previous = following;
+      times += 1;
+    }
     let steps = 0;
     sim.advanceUntil((s) => {
       steps += 1;
@@ -120,10 +157,27 @@ export function simulateAction(
         ? s.zones.shared.stack.length === 0 && s.awaiting === null
         : s.turn.number !== startingTurn;
     });
-    return sim.state;
+    return { state: sim.state, times };
   } catch {
     return null;
   }
+}
+
+/** Whether `action`, an activation just dispatched, can be dispatched again
+ * right now: its player still holds priority with nothing to answer, and the
+ * engine still offers that ability. */
+export function canRepeat(game: Game, action: Action): boolean {
+  if (action.type !== "activate-ability") return false;
+  const state = game.state;
+  if (state.awaiting !== null || state.priority.holder !== action.player) return false;
+  return game
+    .legalActions(action.player)
+    .some(
+      (l) =>
+        l.kind === "activate-ability" &&
+        l.source === action.source &&
+        l.abilityIndex === action.abilityIndex,
+    );
 }
 
 /**
