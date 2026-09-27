@@ -35,6 +35,13 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
+- **Merge `fix/another-target-cards`** (pushed 2026-09-27): Summon: Titan's chapter III and
+  Brash Taunter's fight printed "another target creature" but could target themselves — the
+  Taunter fighting itself feeds its own damage trigger, a burn loop. The branch uses `{ kind:
+  "other" }` for both, with tests; only the touched test files have run, so run the full suite
+  and then merge. A grep of `pool/` for "another/other target" without an `other` spec found only
+  these two, but a card whose `text` phrases it differently would slip past it.
+
 - **The current priority (2026-09-26): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,436 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
