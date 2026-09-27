@@ -583,6 +583,8 @@ export type LegalAction =
          * has them all pay `"generic"` can therefore still fail to cover the
          * cost — which is correct rules behaviour, and used to crash the
          * fuzzer. A driver with no opinion should echo this back verbatim.
+         * Empty when `manaAffordable`: nothing need convoke, and a greedy
+         * allocation could tap a mana creature the cost needs for its colour.
          */
         readonly proof: readonly ConvokePayment[];
         /** Whether the spell can be paid for with mana alone. When it can't,

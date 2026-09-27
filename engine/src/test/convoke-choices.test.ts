@@ -147,4 +147,20 @@ describe("a creature can't both convoke and tap for mana", () => {
     expect(convoke?.manaAffordable).toBe(false);
     expect(convoke?.proof.map((p) => p.creature)).toEqual([bears, elves]);
   });
+
+  it("offers no proof when mana alone pays, so echoing it can't starve a colour", () => {
+    // Hour of Reckoning is {4}{W}{W}{W}. Two Plains and Avacyn's Pilgrim (a
+    // green creature tapping for {W}) make the three {W}; the greedy
+    // allocation convoked the Pilgrim for generic, and a bot echoing that
+    // proof was refused the cast it had been offered.
+    const game = mkGame();
+    spawn(game, "Avacyn's Pilgrim", A);
+    for (const land of ["Plains", "Plains", "Forest", "Forest", "Forest", "Forest"]) spawn(game, land, A);
+    const hour = game.debugSpawn("Hour of Reckoning", A, "hand");
+    const convoke = castOffer(game, hour)?.convoke;
+    expect(convoke?.manaAffordable).toBe(true);
+    expect(convoke?.proof).toEqual([]);
+    game.dispatch({ type: "cast-spell", player: A, card: hour, targets: [], convoke: [...(convoke?.proof ?? [])] });
+    expect(game.state.objects[hour].zone).toBe("stack");
+  });
 });

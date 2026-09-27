@@ -1823,7 +1823,12 @@ export class Game {
                 convoke: {
                   candidates,
                   maxGeneric: full.generic,
-                  proof: this.maxConvokeFor(candidates, full),
+                  // Mana alone pays: nothing need convoke, and the greedy
+                  // allocation might not work anyway (a green mana creature
+                  // convoking for generic leaves the {W}{W}{W} it would have
+                  // made unpaid). Otherwise it's the allocation `castableAt`
+                  // proved.
+                  proof: manaAffordable ? [] : this.maxConvokeFor(candidates, full),
                   manaAffordable,
                   maxCreatures: atMaxX.generic + COLORS.reduce((n, c) => n + atMaxX.colored[c], 0),
                   ...(xPlan !== null
