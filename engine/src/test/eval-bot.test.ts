@@ -310,6 +310,47 @@ describe("evaluateState features", () => {
     ).toBe(-7);
   });
 
+  it("counts the mana a turn nonland permanents make, net of what tapping them costs", () => {
+    expect(delta({ nonlandMana: 1 }, (g) => void g.debugSpawn("Sol Ring", A))).toBe(2);
+    // Two coloured mana for {1}: one more than it takes.
+    expect(delta({ nonlandMana: 1 }, (g) => void g.debugSpawn("Azorius Signet", A))).toBe(1);
+    expect(delta({ nonlandMana: 1 }, (g) => void g.debugSpawn("Llanowar Elves", A))).toBe(1);
+    // A land is `lands`' business.
+    expect(delta({ nonlandMana: 1 }, (g) => void g.debugSpawn("Forest", A))).toBe(0);
+  });
+
+  it("counts permanents that keep drawing cards, not ones that draw once", () => {
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Phyrexian Arena", A))).toBe(1);
+    // Draws when it dies, once.
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Solemn Simulacrum", A))).toBe(0);
+    // Draws when it's sacrificed, once.
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Mind Stone", A))).toBe(0);
+  });
+
+  it("counts our own commander on the battlefield", () => {
+    expect(
+      delta({ commanderOnBoard: 1 }, (g) => {
+        const id = g.debugSpawn("Grizzly Bears", A);
+        g.state.objects[id].isCommander = true;
+      }),
+    ).toBe(1);
+    expect(delta({ commanderOnBoard: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(0);
+  });
+
+  it("takes back the power of a creature that can't attack", () => {
+    expect(
+      delta({ idlePower: 1 }, (g) => {
+        const wurm = g.debugSpawn("Craw Wurm", A);
+        g.debugApplyEffect(
+          A,
+          { kind: "restrict", target: 0, restrictions: ["cant-attack"] },
+          [{ kind: "object", object: wurm }],
+        );
+      }),
+    ).toBe(-6);
+    expect(delta({ idlePower: 1 }, (g) => void g.debugSpawn("Craw Wurm", A))).toBe(0);
+  });
+
   it("values the mana value of nonland cards in my hand, and never an opponent's", () => {
     expect(delta({ handManaValue: 1 }, (g) => void g.debugSpawn("Craw Wurm", A, "hand"))).toBe(6);
     expect(delta({ handManaValue: 1 }, (g) => void g.debugSpawn("Forest", A, "hand"))).toBe(0);

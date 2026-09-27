@@ -116,6 +116,21 @@ export interface EvalWeights {
   /** Subtracted: commander casts from the command zone so far, each of which
    * makes the next cast {2} dearer (rule 903.8). */
   readonly commanderTax: number;
+  /** Mana a turn from nonland permanents, net of what tapping them costs:
+   * Sol Ring 2, a Signet 1, a dork 1. Lands have their own terms; before
+   * this, a rock was only a permanent, and the audit priced Sol Ring below a
+   * Forest. */
+  readonly nonlandMana: number;
+  /** Permanents that keep drawing their controller cards — an upkeep draw,
+   * a draw on others entering or dying, a repeatable draw ability. */
+  readonly drawEngines: number;
+  /** Our commanders on the battlefield under our control: the one card a
+   * deck is built around, which `creatures` scores like any other. */
+  readonly commanderOnBoard: number;
+  /** Subtracted: the combat damage of creatures that can't attack (Pacifism,
+   * defender). At `power`'s weight it takes back exactly what `power` gives
+   * them. */
+  readonly idlePower: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -211,6 +226,13 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   monarch: 3,
   emblems: 3,
   commanderTax: 0.5,
+  // The four terms below ship at zero — additive, so the evaluation is exactly
+  // what it was until a four-player bench says otherwise
+  // (`docs/plans/bot-effect-knowledge.md`, step 5).
+  nonlandMana: 0,
+  drawEngines: 0,
+  commanderOnBoard: 0,
+  idlePower: 0,
   opponent: 1,
   otherOpponents: 0.25,
   crackbackParanoia: 0.5,

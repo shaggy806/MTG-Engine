@@ -37,10 +37,12 @@
  */
 
 import { isManaAbility } from "../abilities.js";
+import type { TriggeredAbility } from "../abilities.js";
 import { combatDamageOf, computeCharacteristics, withComputedCache } from "../characteristics.js";
 import type { Characteristics } from "../characteristics.js";
 import type { CardRegistry } from "../cards.js";
-import type { Keyword } from "../cards/define.js";
+import type { CardDefinition, Keyword } from "../cards/define.js";
+import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { PlayerId } from "../primitives.js";
 import { POISON_LETHAL, printedCardName } from "../state.js";
@@ -77,6 +79,10 @@ export const FEATURE_KEYS = [
   "monarch",
   "emblems",
   "commanderTax",
+  "nonlandMana",
+  "drawEngines",
+  "commanderOnBoard",
+  "idlePower",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -89,6 +95,7 @@ const SUBTRACTED: ReadonlySet<string> = new Set([
   "commanderTax",
   "lifeDanger",
   "libraryDanger",
+  "idlePower",
 ]);
 
 /**
@@ -177,6 +184,91 @@ function castableFromGraveyard(registry: CardRegistry, object: GameObject): bool
 const count = (c: Characteristics, keywords: readonly Keyword[]): number =>
   keywords.filter((k) => c.keywords.has(k)).length;
 
+/** Mana one activation of an `add-mana` effect makes: Sol Ring's `{C}` twice
+ * is 2, a Signet's `{W}{U}` is 2. A live amount (Gaea's Cradle) counts 1 —
+ * enough to say it makes mana without guessing how much. */
+function manaMade(effect: EffectSpec | null | undefined): number {
+  if (effect === null || effect === undefined) return 0;
+  if (effect.kind === "sequence") return effect.effects.reduce((sum, e) => sum + manaMade(e), 0);
+  if (effect.kind !== "add-mana") return 0;
+  const units = typeof effect.amount === "number" ? effect.amount : 1;
+  const mana = effect.mana;
+  return units * (typeof mana === "object" && "all" in mana ? mana.all.length : 1);
+}
+
+const manaMemo = new WeakMap<CardDefinition, number>();
+
+/**
+ * The mana a permanent adds each turn, net of what the ability costs: Sol
+ * Ring 2, a Signet 1 (two for `{1}`), a dork 1. Its best `{T}` mana ability,
+ * since it taps once a turn; a sacrifice (a Treasure) is one mana once, not a
+ * mana source.
+ */
+function manaPerTurn(def: CardDefinition): number {
+  let found = manaMemo.get(def);
+  if (found === undefined) {
+    found = 0;
+    for (const ability of def.activated) {
+      if (!ability.cost.tap || ability.cost.sacrifice !== undefined || !isManaAbility(ability)) continue;
+      const cost = ability.cost.mana === null ? 0 : manaValue(parseManaCost(ability.cost.mana));
+      found = Math.max(found, manaMade(ability.effect) - cost);
+    }
+    manaMemo.set(def, found);
+  }
+  return found;
+}
+
+/** Does this effect make its own controller draw? Anywhere in the tree. */
+function drawsForController(effect: unknown): boolean {
+  if (effect === null || typeof effect !== "object") return false;
+  if (Array.isArray(effect)) return effect.some(drawsForController);
+  const node = effect as { readonly kind?: unknown; readonly target?: unknown; readonly who?: unknown };
+  if (node.kind === "draw" && node.target === undefined && (node.who === undefined || node.who === "you")) {
+    return true;
+  }
+  return Object.values(effect).some(
+    (value) => value !== null && typeof value === "object" && drawsForController(value),
+  );
+}
+
+/** A trigger that fires once in a permanent's life — its own entering, dying,
+ * leaving, being cast — draws once, not every turn. */
+function isOneShot(trigger: TriggeredAbility["trigger"]): boolean {
+  if (trigger.on === "this-cast") return true;
+  const who = (trigger as { readonly who?: unknown }).who;
+  return (
+    who === "self" &&
+    (trigger.on === "enters-battlefield" ||
+      trigger.on === "dies" ||
+      trigger.on === "leaves-battlefield" ||
+      trigger.on === "put-into-graveyard" ||
+      trigger.on === "transforms")
+  );
+}
+
+const engineMemo = new WeakMap<CardDefinition, boolean>();
+
+/**
+ * Whether a permanent keeps drawing its controller cards — an upkeep draw
+ * (Phyrexian Arena), a draw on others entering, dying or being cast, a
+ * repeatable activated or loyalty ability that draws. Not a one-shot: a
+ * Solemn Simulacrum draws once, when it dies, and a Mind Stone once, when it's
+ * sacrificed. The audit priced Phyrexian Arena at a quarter of a Grizzly
+ * Bears, because nothing counted what it keeps doing.
+ */
+function isDrawEngine(def: CardDefinition): boolean {
+  let found = engineMemo.get(def);
+  if (found === undefined) {
+    found =
+      def.triggered.some((t) => !isOneShot(t.trigger) && drawsForController(t.effect)) ||
+      def.activated.some(
+        (a) => a.cost.sacrifice !== "self" && !isManaAbility(a) && drawsForController(a.effect),
+      );
+    engineMemo.set(def, found);
+  }
+  return found;
+}
+
 /**
  * One player's raw feature vector.
  *
@@ -225,6 +317,10 @@ function playerFeaturesUncached(
   let permanentManaValue = 0;
   let loyalty = 0;
   let counters = 0;
+  let nonlandMana = 0;
+  let drawEngines = 0;
+  let commanderOnBoard = 0;
+  let idlePower = 0;
 
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
@@ -246,10 +342,26 @@ function playerFeaturesUncached(
       if (count(c, EVASION) > 0) evasivePower += damage * n;
       combatKeywords += count(c, COMBAT_KEYWORDS) * n;
       if (!object.tapped && !c.restrictions.has("cant-block")) untappedCreatures += n;
+      // A creature that can't attack deals none of its power: Pacifism, a
+      // defender. `power` counts it all the same — and so, before this, did
+      // the bot, which is how it came to pacify its own creatures for free.
+      if (
+        c.restrictions.has("cant-attack") ||
+        (c.keywords.has("defender") && !c.canAttackAsThoughNoDefender)
+      ) {
+        idlePower += damage * n;
+      }
     }
     if (isLand) landCount += n;
     else permanentManaValue += manaValueOf(registry, printedCardName(object)) * n;
     if (!isLand && !isCreature) otherPermanents += n;
+    const name = printedCardName(object);
+    if (!isLand && registry.has(name)) {
+      const def = registry.get(name);
+      nonlandMana += manaPerTurn(def) * n;
+      if (isDrawEngine(def)) drawEngines += n;
+    }
+    if (object.isCommander && object.owner === player) commanderOnBoard += 1;
     if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;
     if (c.types.includes("planeswalker")) loyalty += (object.counters.loyalty ?? 0) * n;
     for (const [kind, amount] of Object.entries(object.counters)) {
@@ -309,5 +421,9 @@ function playerFeaturesUncached(
     monarch: state.monarch === player ? 1 : 0,
     emblems: state.emblems.filter((e) => e.owner === player).length,
     commanderTax: Object.values(p.commanderCastCounts).reduce((a, b) => a + b, 0),
+    nonlandMana,
+    drawEngines,
+    commanderOnBoard,
+    idlePower,
   };
 }
