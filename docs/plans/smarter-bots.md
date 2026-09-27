@@ -1,11 +1,12 @@
 # Smarter bots (v2 — one-ply search over a tuned evaluation)
 
-Status: **shipped, and its search architecture is superseded.** `Room.addBot` seats
-`EvalBotController`, so this is what live rooms play. But the one-ply search and the evaluation
-built on it are replaced by `bot-v3-search.md`, which also records which of the decisions below
-were measured wrong and have to be undone — read that before changing how the bot picks actions.
-Phases 0-6 below are done; the Phase 7 feature list is **superseded**, because most of it exists
-to price potential that v3's rollouts simulate directly.
+Status: **shipped, and the search that stays.** `Room.addBot` seats `EvalBotController`, so this
+is what live rooms play. For a week (2026-09-17 to 09-26) its search was meant to be replaced by
+v3 (`bot-v3-search.md`); v3 lost to it at four players and is being retired, and the plan of
+record is now `bot-effect-knowledge.md` — this search, on an effect-aware base. Phases 0-6 below
+are done. The Phase 7 feature list was shelved because v3's rollouts were to price that potential
+directly; with v3 gone it is **back on**, as step 5 of that plan. `bot-v3-search.md`'s notes on
+which v2 decisions were measured inside a rollout that never spends mana still stand.
 
 The search bot, evaluation, benchmark and tuner are in
 `engine/src/bot/` and `engine/scripts/tune-bot.mjs`. Phase 0

@@ -1,17 +1,42 @@
 # Bot v3 — rollout search over sampled worlds
 
-Status: **built, benched, and not seated.** The search, the determinizer and `PlanBotController` are all in
-`engine/src/bot/`. It was seated in live rooms briefly and **reverted**: benched at the table
-size the site actually plays, it loses to v2 (see below). The **Sequencing** steps from
-"Re-run `bot:audit`" onwards are still outstanding — the evaluation has not been re-fitted for a
-search that now actually casts things, which is the likeliest cause of the measurement below. It supersedes the search architecture in
-`docs/plans/smarter-bots.md` (v2, one-ply + linear evaluation), which stays as the record of how
-we got here and why several of its decisions have to be undone.
+Status: **superseded — to be retired** (2026-09-26). The search, the determinizer and
+`PlanBotController` are in `engine/src/bot/`. It was seated in live rooms briefly and
+**reverted**: benched at the table size the site actually plays, it loses to v2 (see below).
+`bot-effect-knowledge.md` is now the plan of record: v2 stays, on an effect-aware base, and v3
+goes. The section right below says why; everything after it is the record as it stood.
 
 This document exists because v2's tuning stalled, twice, for the same reason: **the architecture
 could not represent the strategy we were trying to tune it into.** Writing it before touching
 code is deliberate — two rounds of weight tuning were spent compensating for defects that no
 weight could fix.
+
+## Found 2026-09-26: the plan walker cast one spell a turn
+
+`PlanBotController.act` walks its plan and skips any entry that isn't legal right now. After a
+spell is cast, its caster receives priority with that spell on the stack (rule 117.3c), where
+nothing sorcery-speed is legal — so the walk skipped, and *consumed*, every remaining entry and
+passed for the rest of the turn. Holding Forest, Grizzly Bears, Llanowar Elves and Centaur
+Courser with mana for all of them, v1 and v2 play all four; v3 planned all four (it kept v1's
+plan) and played the Forest and the Courser. The rollout-side `PlanController` has the same
+walk, so plans were *scored* that way too, and the frontier the climb appends from was captured
+at that same stack window, so a plan could only ever grow by instants after its first spell.
+This, rather than the tie trap, is the likelier cause of the skipped land drops below: a plan
+with its land after a spell loses the land.
+
+Patched outside the repo (wait while the stack is busy; capture the frontier, and build the
+plan, only at an empty stack) and benched at four players against three v2s, 100 games each,
+even 25%:
+
+| | win rate |
+|---|---|
+| v3, fixed | 16.0% [10.1, 24.4] |
+| v3, fixed, with a polarity-aware v1 as its rollout policy | 24.0% [16.7, 33.2] |
+
+So parity at best, at several times v2's compute (at four players the 1 s plan budget buys ~3-6
+evaluations a turn past turn 11 — see the census below). The rollout policy is worth ~8 points
+to it, exactly the policy-bias ceiling this document warned about; the same policy work lifts v2
+directly and costs it nothing per decision. That is why v3 is retired rather than re-fitted.
 
 ## Measured after seating it: v3 skips about one land drop in eight
 

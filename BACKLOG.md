@@ -156,26 +156,26 @@ that one card is the reason the deck exists.
 
 ## Bots
 
-- **v3 is built but not seated.** Its evaluation hasn't been re-fitted for a search that
-  actually casts things, and it benches six points behind v2 at four players. The
-  "Sequencing" steps from "Re-run `bot:audit`" onward are still outstanding. See
-  `docs/plans/bot-v3-search.md`. Nothing live runs it, and it hasn't changed since
-  2026-09-19, so decide: re-fit it, or retire it. Retiring means `bot/plan.ts`,
-  `plan-bot.ts` and `determinize.ts`, `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and
+The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
+base, retire v3. One line per step still open:
+
+- **v2 hygiene.** No simulation when passing is the only candidate; one deadline per combat
+  declaration; a predictive stop. Step 1.
+- **Target polarity.** `engine/src/target-polarity.ts`: which side of the table each targeted
+  slot belongs on, from a table total over `EffectSpec["kind"]`. Step 2. It replaces the
+  hand-labelling page idea (raised 2026-09-26): 74% of slots classify automatically.
+- **v1.5.** `HeuristicBotController` targets by polarity and value, never at the wrong side
+  alone. Step 3.
+- **v2's target candidates ordered before the 8-combination cap.** Step 4.
+- **Evaluation terms.** Combat restrictions priced; `lifeDanger` swept; the `smarter-bots.md`
+  Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)
+  are back on, since v3 isn't coming to replace them. Step 5.
+- **`bot:behaviour`**, and four-player scenarios for each measured blunder. Step 6.
+- **Retire v3.** It had a plan-walker bug that cast at most one spell a turn; fixed, it still
+  benches 16% against three v2s (even 25%). Remove `bot/plan.ts`, `plan-bot.ts`,
+  `determinize.ts`, `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and
   `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
-  in the scenario, harvest and tune workers and in `room-pacing.test.ts`.
-- **v2's Phase 7 feature list is superseded.** Don't build it. See `docs/plans/smarter-bots.md`.
-- **Hand-labelled target polarity (to explore, raised 2026-09-26).** A bot can't tell whether an
-  Aura or a targeted spell or ability helps what it's aimed at or hurts it: in a test game one put
-  an Aura that stops a creature attacking on its own creature. v2 scores the position after a
-  simulated action, and none of its features prices a combat restriction, so the Aura looked free.
-  The idea: a page listing each Aura and each targeted spell/ability slot, where the user marks it
-  good-to-have or bad-to-have, saved as a data file the bots read — aim the good ones at their own
-  permanents and the bad ones at opponents'. To explore first: how many cards that is (count the
-  pool's Auras and targeted effects); whether most can be labelled automatically from the effect
-  vocabulary (destroy/exile/`restrict` bad, +N/+N and keyword grants good) so the page only shows
-  the ambiguous rest; and where the bots would use the labels — pruning candidates in
-  `bot/candidates.ts`, or a feature in the evaluation.
+  in the scenario, harvest and tune workers and in `room-pacing.test.ts`. Step 7.
 
 ## Client / UI
 
