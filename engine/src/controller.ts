@@ -36,6 +36,7 @@ import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
 import {
   auraPolarity,
+  modalPolarities,
   offerPolarities,
   onlyWrongSide,
   pendingTargetPolarities,
@@ -1286,14 +1287,14 @@ export class HeuristicBotController extends AutomaticController {
     const pickLast = (n: number) => Math.max(0, n - 1);
     if (legal.castModal !== undefined) {
       const cm = legal.castModal;
-      const fillable = cm.modes
-        .map((_mode, i) => i)
-        .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
-      if (fillable.length < cm.minModes) return passFor(player);
-      const modes = fillable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, fillable.length)));
+      const byMode = modalPolarities(this.registry, legal);
+      const modes = this.usableModes(state, legal);
+      if (modes === null) return passFor(player);
       const targets = fitCastTargets(
         legal,
-        modes.flatMap((i) => firstOfEach(cm.modes[i].targetOptions, cm.modes[i].targetSpecs)),
+        modes.flatMap((i) =>
+          this.aimedTargets(state, cm.modes[i].targetOptions, cm.modes[i].targetSpecs, byMode?.[i] ?? null),
+        ),
         modes.flatMap((i) => cm.modes[i].targetOptions),
         modes.flatMap((i) => cm.modes[i].targetSpecs),
       );
@@ -1304,10 +1305,14 @@ export class HeuristicBotController extends AutomaticController {
         card: legal.card,
         targets,
         modes,
+        // A modal spell with X (Clan Defiance) is cast at its largest X like
+        // any other. Left out, the engine reads X as 0 — which is how this
+        // bot used to cast it, for no damage at all.
+        ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
         ...(legal.via !== undefined ? { via: legal.via } : {}),
         ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
         ...(legal.face !== undefined ? { face: legal.face } : {}),
-        ...castExtras(legal, pickLast),
+        ...castExtras(legal, pickLast, legal.xCost?.maxX),
       };
     }
     const targets = fitCastTargets(
@@ -1448,6 +1453,9 @@ export class HeuristicBotController extends AutomaticController {
     state: GameState,
     offer: CastSpellLegal | ActivateAbilityLegal,
   ): boolean {
+    if (offer.kind === "cast-spell" && offer.castModal !== undefined) {
+      return this.aimableModes(state, offer).length < offer.castModal.minModes;
+    }
     if (offer.targetOptions.length === 0) return false;
     const polarities = offerPolarities(this.registry, offer);
     if (polarities === null) return false;
@@ -1456,6 +1464,49 @@ export class HeuristicBotController extends AutomaticController {
         !isOptionalSpec(offer.targetSpecs[i]) &&
         onlyWrongSide(state, this.playerId, options, polarities[i] ?? "either", offer.targetSpecs[i]),
     );
+  }
+
+  /** The modes of a targeted modal spell that can be chosen and aimed at the
+   * right side of the table: X damage "to target creature with flying" isn't
+   * one when the only flyers are our own. */
+  private aimableModes(state: GameState, legal: CastSpellLegal): number[] {
+    const cm = legal.castModal;
+    if (cm === undefined) return [];
+    const byMode = modalPolarities(this.registry, legal);
+    return cm.modes
+      .map((_mode, i) => i)
+      .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0))
+      .filter(
+        (i) =>
+          !cm.modes[i].targetOptions.some(
+            (options, slot) =>
+              !isOptionalSpec(cm.modes[i].targetSpecs[slot]) &&
+              onlyWrongSide(
+                state,
+                this.playerId,
+                options,
+                byMode?.[i]?.[slot] ?? "either",
+                cm.modes[i].targetSpecs[slot],
+              ),
+          ),
+      );
+  }
+
+  /** Which modes of a targeted modal spell to choose: as many as allowed, in
+   * order, of the aimable ones — or of every mode with a legal target, when
+   * the aimable ones don't make the minimum. `null` when nothing does. */
+  private usableModes(state: GameState, legal: CastSpellLegal): number[] | null {
+    const cm = legal.castModal;
+    if (cm === undefined) return null;
+    const aimable = this.aimableModes(state, legal);
+    const usable =
+      aimable.length >= cm.minModes
+        ? aimable
+        : cm.modes
+            .map((_mode, i) => i)
+            .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
+    if (usable.length < cm.minModes) return null;
+    return usable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, usable.length)));
   }
 
   /** A trigger's targets (or a free cast's), aimed the same way as a cast's. */

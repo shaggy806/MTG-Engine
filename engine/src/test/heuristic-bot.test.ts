@@ -234,6 +234,34 @@ describe("HeuristicBotController — aiming", () => {
     expect(onlyTarget(action)).toBeNull();
   });
 
+  it("casts a modal X spell at the opponents, with its X", () => {
+    // Clan Defiance: X damage to a flyer, to a non-flyer, to a player. Our
+    // only flyer is our own Birds, so that mode is left out; the others go at
+    // bob. Cast without an X, the engine reads X as 0 — how it used to go.
+    const game = atMain("Forest");
+    for (const land of ["Mountain", "Mountain", "Forest", "Forest"]) {
+      game.debugSpawn(land, A, "battlefield");
+    }
+    creature(game, "Birds of Paradise", A);
+    const bears = creature(game, "Grizzly Bears", B);
+    game.debugSpawn("Clan Defiance", A, "hand");
+    const offer = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.cardName === "Clan Defiance");
+    const maxX = offer?.kind === "cast-spell" ? (offer.xCost?.maxX ?? 0) : 0;
+    expect(maxX).toBeGreaterThan(0);
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(action).toMatchObject({
+      type: "cast-spell",
+      modes: [1, 2],
+      xValue: maxX,
+      targets: [
+        { kind: "object", object: bears },
+        { kind: "player", player: B },
+      ],
+    });
+  });
+
   it("aims a trigger at the opponent's side", () => {
     const game = atMain("Forest");
     for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");

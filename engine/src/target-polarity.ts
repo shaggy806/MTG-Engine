@@ -436,6 +436,37 @@ export function offerPolarities(
   return castPolarities(def);
 }
 
+const modeMemo = new WeakMap<object, readonly Polarity[]>();
+
+/**
+ * For a targeted modal spell `legalActions` offered (`castModal` — "choose one
+ * or more —", each mode with targets of its own): the polarity of each target
+ * slot of each mode, in the offer's mode order. `null` when the definition
+ * can't be matched to the offer.
+ */
+export function modalPolarities(
+  registry: CardRegistry,
+  offer: CastOffer,
+): readonly (readonly Polarity[])[] | null {
+  if (offer.castModal === undefined || !registry.has(offer.cardName)) return null;
+  let def = registry.get(offer.cardName);
+  const face = offer.face !== undefined ? def.faces?.[offer.face] : undefined;
+  if (face !== undefined && face !== def.name) {
+    if (!registry.has(face)) return null;
+    def = registry.get(face);
+  }
+  const modes = def.castModal?.modes;
+  if (modes === undefined || modes.length !== offer.castModal.modes.length) return null;
+  return modes.map((mode) => {
+    let found = modeMemo.get(mode);
+    if (found === undefined) {
+      found = slotPolarities(mode.effect, mode.targets?.length ?? 0);
+      modeMemo.set(mode, found);
+    }
+    return found;
+  });
+}
+
 /**
  * The polarity of each slot a pending `choose-targets` decision asks about,
  * in answer order — a triggered ability's (or its reflexive trigger's, or a

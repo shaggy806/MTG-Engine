@@ -32,7 +32,12 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import { withComputedCache } from "../characteristics.js";
-import { offerPolarities, pendingTargetPolarities, rankTargets } from "../target-polarity.js";
+import {
+  modalPolarities,
+  offerPolarities,
+  pendingTargetPolarities,
+  rankTargets,
+} from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
 import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
@@ -350,6 +355,24 @@ function aimOffer(
     };
   }
   if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return legal;
+  if (legal.kind === "cast-spell" && legal.castModal !== undefined) {
+    // A targeted modal spell's modes carry targets of their own.
+    const modal = legal.castModal;
+    const byMode = modalPolarities(cards, legal);
+    if (byMode === null) return legal;
+    return {
+      ...legal,
+      castModal: {
+        ...modal,
+        modes: modal.modes.map((mode, m) => ({
+          ...mode,
+          targetOptions: mode.targetOptions.map((options, i) =>
+            rankTargets(state, cards, me, options, byMode[m]?.[i] ?? "either"),
+          ),
+        })),
+      },
+    };
+  }
   if (legal.targetOptions.length === 0) return legal;
   const polarities = offerPolarities(cards, legal);
   if (polarities === null) return legal;

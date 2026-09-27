@@ -15,6 +15,7 @@
 import type { Action, ConvokePayment, LegalAction } from "../actions.js";
 import { convokeProofFor } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import { subsetsBetween } from "../decisions/shared/subsets.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
 import { fitTargetCount } from "../target-count.js";
 import type { TargetRef, TargetSpec } from "../target.js";
@@ -80,6 +81,16 @@ function castExtras(legal: CastSpellLegal): {
   };
 }
 
+/**
+ * X at its maximum. Enumerating every X multiplies the search by the mana
+ * available and almost always lands on the maximum anyway. A targeted modal
+ * spell with X (Clan Defiance) needs it as much as any other: its candidates
+ * used to be cast without one.
+ */
+function xValueOf(legal: CastSpellLegal): { xValue?: number } {
+  return legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {};
+}
+
 function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
   const common = {
     type: "cast-spell" as const,
@@ -91,35 +102,58 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
     ...castExtras(legal),
   };
 
-  // A targeted modal spell picks its modes at cast time. Enumerating every
-  // subset of modes *and* every targeting of each is far too wide, so take
-  // the fillable modes in order — the same policy the v1 bot uses.
+  // A targeted modal spell picks its modes at cast time. Every subset of modes
+  // *and* every targeting of each is far too wide, so each choice of modes
+  // takes each mode's first target — the best, once `aimOffer` has ranked
+  // them — and the choices are capped. First, as many modes as allowed (what
+  // this used to offer as its only candidate), then each mode alone, then the
+  // other combinations: a "choose one" spell used to be tried only in its
+  // first mode, and "choose one or more" only as every mode at once, aimed at
+  // whatever came first — Clan Defiance, X damage to its own flyer, its own
+  // creature and itself, which is why it was the card v2 most often left in
+  // hand.
   const modal = legal.castModal;
   if (modal !== undefined) {
     const fillable = modal.modes
       .map((_mode, index) => index)
       .filter((index) => modal.modes[index].targetOptions.every((o) => o.length > 0));
     if (fillable.length < modal.minModes) return [];
-    const modes = fillable.slice(
+    const most = fillable.slice(
       0,
       Math.max(modal.minModes, Math.min(modal.maxModes, fillable.length)),
     );
-    const picked = modes.flatMap(
-      (index) =>
-        targetCombos(modal.modes[index].targetOptions, 1, modal.modes[index].targetSpecs)[0] ?? [],
-    );
-    const targets = fitTargets(
-      legal,
-      picked,
-      modes.flatMap((index) => modal.modes[index].targetOptions),
-      modes.flatMap((index) => modal.modes[index].targetSpecs),
-    );
-    return targets === null ? [] : [{ ...common, targets, modes }];
+    const choices = [most];
+    const seenModes = new Set([JSON.stringify(most)]);
+    for (const modes of subsetsBetween(
+      fillable,
+      Math.max(1, modal.minModes),
+      modal.maxModes,
+      MAX_TARGET_COMBOS * 2,
+    )) {
+      if (choices.length >= MAX_TARGET_COMBOS) break;
+      const key = JSON.stringify(modes);
+      if (seenModes.has(key)) continue;
+      seenModes.add(key);
+      choices.push(modes);
+    }
+    const out: Action[] = [];
+    for (const modes of choices) {
+      const picked = modes.flatMap(
+        (index) =>
+          targetCombos(modal.modes[index].targetOptions, 1, modal.modes[index].targetSpecs)[0] ?? [],
+      );
+      const targets = fitTargets(
+        legal,
+        picked,
+        modes.flatMap((index) => modal.modes[index].targetOptions),
+        modes.flatMap((index) => modal.modes[index].targetSpecs),
+      );
+      if (targets !== null) out.push({ ...common, ...xValueOf(legal), targets, modes });
+    }
+    return out;
   }
 
-  // X is taken at its maximum. Enumerating every X multiplies the search by
-  // the mana available and almost always lands on the maximum anyway.
-  const xValue = legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {};
+  const xValue = xValueOf(legal);
   // A "for each target" cost (Hinata) makes only some fillings affordable:
   // each is fitted into the offered range, and one that can't be is dropped.
   const seen = new Set<string>();

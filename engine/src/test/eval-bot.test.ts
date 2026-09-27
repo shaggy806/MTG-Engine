@@ -454,6 +454,69 @@ describe("candidateActions", () => {
     expect(granted?.kind === "activate-ability" && granted.manaAbility).toBe(true);
   });
 
+  it("offers a targeted modal spell's modes alone and together, each with its X", () => {
+    // Clan Defiance used to get one candidate — every mode at once, aimed at
+    // the first legal target of each, and cast without an X (so for 0).
+    const game = Game.create({
+      seed: 4,
+      registry,
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(40).fill("Forest") })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (const land of ["Mountain", "Mountain", "Forest", "Forest"]) {
+      game.debugSpawn(land, A, "battlefield");
+    }
+    game.debugSpawn("Birds of Paradise", B, "battlefield", { summoningSick: false });
+    game.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
+    game.debugSpawn("Clan Defiance", A, "hand");
+    const legal = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.cardName === "Clan Defiance");
+    if (legal === undefined) throw new Error("Clan Defiance not castable");
+    const actions = candidateActions(legal, A);
+    const modeSets = actions.map((a) => (a.type === "cast-spell" ? JSON.stringify(a.modes) : ""));
+    expect(modeSets).toEqual(["[0,1,2]", "[0]", "[1]", "[2]", "[0,1]", "[0,2]", "[1,2]"]);
+    const maxX = legal.kind === "cast-spell" ? (legal.xCost?.maxX ?? 0) : 0;
+    expect(maxX).toBeGreaterThan(0);
+    for (const action of actions) expect(action).toMatchObject({ xValue: maxX });
+    for (const action of actions) expect(game.canDispatch(action)).toBeNull();
+  });
+
+  it("casts a modal X spell at the opponent, not at itself", () => {
+    const game = Game.create({
+      seed: 4,
+      registry,
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(40).fill("Forest") })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    game.state.zones.perPlayer[A].hand = [];
+    for (const land of ["Mountain", "Mountain", "Mountain", "Forest", "Forest"]) {
+      game.debugSpawn(land, A, "battlefield");
+    }
+    game.debugSpawn("Birds of Paradise", A, "battlefield", { summoningSick: false });
+    game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+    game.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
+    game.debugSpawn("Clan Defiance", A, "hand");
+    const offer = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.cardName === "Clan Defiance");
+    const maxX = offer?.kind === "cast-spell" ? (offer.xCost?.maxX ?? 0) : 0;
+    expect(maxX).toBeGreaterThan(0);
+    const action = new EvalBotController(A, registry).act({
+      state: game.state,
+      player: A,
+      legalActions: () => game.legalActions(A),
+    });
+    expect(action.type).toBe("cast-spell");
+    if (action.type !== "cast-spell") return;
+    expect(action.xValue).toBe(maxX);
+    for (const target of action.targets ?? []) {
+      if (target === null) continue;
+      const side = target.kind === "player" ? target.player : game.state.objects[target.object].controller;
+      expect(side).toBe(B);
+    }
+  });
+
   it("returns nothing for combat declarations, which must stay constructive", () => {
     // Attacker subsets are (defenders + 1) ^ creatures — a ten-creature board
     // against three opponents is about a million. These must never be

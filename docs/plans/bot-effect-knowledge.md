@@ -204,6 +204,22 @@ wrong-side picks fell from **48 of 489 (9.8%) to 11 of 570 (1.9%)**, four of tho
 artifacts (a spec-forced opponent target, exiles from its own graveyard) and the rest choices
 its search made with the right side ranked first.
 
+**What steps 1-4 are worth in strength** — the new v2 against three copies of the v2 seated
+before this work began (the baseline build at `cfbf98be`), four players, count budgets:
+**28.6% [24.1, 33.6] over 339 games** (even 25%). The first 199 games read 30.7% and the next 140
+25.7%; the run was stopped there, because step 5 is benched against a fresh baseline anyway. So
+a few points at most. These steps were fixes to what a watching player sees — wrong-side targets,
+wasted CPU — and they bought that; strength is the evaluation's job (step 5).
+
+**Step 5, first finding (2026-09-26): modal spells were cast wrong, not valued wrong.** The
+card v2 most often left in hand at the end of its turn was Clan Defiance, and not because the
+evaluation disliked it. A targeted modal spell ("choose one or more —") got exactly one candidate:
+every fillable mode at once, each aimed at its first legal target — X damage to its own flyer, its
+own creature and itself — and, in both v1 and v2, **cast without an X, which the engine reads as
+0**. Now v2 tries each choice of modes (as many as allowed, each alone, then the rest, capped at
+eight) with each mode's targets ranked and X at its maximum, and v1 leaves out a mode it could only
+aim at its own side and passes its X.
+
 **Step 7, done (2026-09-26).** v3 is retired: `plan.ts`, `plan-bot.ts`, `bot-plan.test.ts`,
 the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS`, and the
 `--bot` flag of the bench, tune, harvest and scenario scripts. `determinize.ts` and `simulate.ts`'s
