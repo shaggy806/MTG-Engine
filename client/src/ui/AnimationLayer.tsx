@@ -232,8 +232,22 @@ function runHit(source: ObjectId, target: TargetRef): void {
   const dx = d.left + d.width / 2 - (a.left + a.width / 2)
   const dy = d.top + d.height / 2 - (a.top + a.height / 2)
   const dist = Math.hypot(dx, dy) || 1
-  const nx = (dx / dist) * LUNGE_DISTANCE_PX
-  const ny = (dy / dist) * LUNGE_DISTANCE_PX
+  // Kept inside the board's scroll box: that box clips it at its edge anyway,
+  // and a tile translated past its bottom or right edge counts toward the
+  // box's scrollable overflow, flashing a scrollbar for the length of the
+  // jab (an opponent's creature near the bottom of a crowded board, lunging
+  // down at you).
+  const box = srcEl.closest('.quadrant-body')?.getBoundingClientRect()
+  // The room between the tile and each edge, never past zero either way (a
+  // tile already scrolled partly out of view just doesn't move that way).
+  const within = (v: number, lo: number, hi: number) =>
+    Math.max(Math.min(0, lo), Math.min(Math.max(0, hi), v))
+  const nx = box
+    ? within((dx / dist) * LUNGE_DISTANCE_PX, box.left - a.left, box.right - a.right)
+    : (dx / dist) * LUNGE_DISTANCE_PX
+  const ny = box
+    ? within((dy / dist) * LUNGE_DISTANCE_PX, box.top - a.top, box.bottom - a.bottom)
+    : (dy / dist) * LUNGE_DISTANCE_PX
   const base = srcBaseTransform(srcEl)
 
   // The jab itself travels on the outer box (`data-obj-id`), which carries no
@@ -247,24 +261,9 @@ function runHit(source: ObjectId, target: TargetRef): void {
     { duration: LUNGE_DURATION_MS, easing: 'ease-out' },
   )
 
-  // An attacker is tapped, and a tapped tile is drawn tilted and shrunk (see
-  // `.mini-tile.tapped`) — so a creature attacking used to slide across the
-  // board at a 20° angle, which reads as a card being dragged rather than a
-  // creature striking. It straightens up and comes back to full size as it
-  // connects, then settles back to tapped. The tilt lives on the inner tile
-  // rather than the box the lunge moves, so the two compose without fighting.
-  const face = srcEl.querySelector<HTMLElement>('.mini-tile, .card-tile')
-  const faceBase = face ? srcBaseTransform(face) : ''
-  if (face && faceBase) {
-    face.animate(
-      [
-        { transform: faceBase, offset: 0 },
-        { transform: 'rotate(0deg) scale(1)', offset: LUNGE_IMPACT_FRACTION },
-        { transform: faceBase, offset: 1 },
-      ],
-      { duration: LUNGE_DURATION_MS, easing: 'ease-out' },
-    )
-  }
+  // Only the box moves: the tile inside keeps whatever tilt it has (an
+  // attacker is tapped). Straightening it up to full size as it connected
+  // was tried, and read as the card spinning rather than striking.
 
   window.setTimeout(() => {
     // Direction-agnostic shake (a fixed left/right wobble, not aimed back

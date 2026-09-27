@@ -291,6 +291,13 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* overflow-y: auto alone makes overflow-x auto too (the same trap as the
+     hand row's, below). Nothing here is meant to scroll sideways, but the
+     combat hit animations move things: the defending player's panel spans
+     the whole table, and its hit shake poked 1-3px past the right edge on
+     every hit, flashing a horizontal scrollbar that also took its height
+     from the quadrants and reflowed both boards. */
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 8px;
