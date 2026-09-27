@@ -10,4 +10,5 @@ export * from "./decisions.js";
 export * from "./mulligan.js";
 export * from "./eval-bot.js";
 export * from "./scenarios.js";
+export * from "./scenario-fit.js";
 export * from "./champions/index.js";

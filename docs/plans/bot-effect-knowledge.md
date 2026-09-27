@@ -159,6 +159,13 @@ none of them changes v2's search.
    `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts,
    `BOT_PLAN_BUDGET_MS`, and the v3 paths in the scenario, harvest and tune workers and in
    `room-pacing.test.ts`.
+8. **Weights fitted to scenarios** (added 2026-09-27, the user's suggestion). Hand-built
+   positions with a known right answer, many more of them, and the question each one asks of
+   the weights: what would they have to be for v2 to get it right, and what would that break?
+   Then bench the vector those answers add up to. This is comparison training — Deep Blue's
+   evaluation tuned to agree with grandmasters' moves, Bonanza's (MMTO) with professionals' —
+   rather than `bot:fit`'s regression on who won, which found `power` at 2.03 where play peaked
+   at 0.5.
 
 Not planned: a worker thread for the bots (v2's 300 ms fits the think pause it already hides
 in; revisit only if a budget grows), learned evaluation (after 2-5, over the polarity and role
@@ -287,3 +294,43 @@ the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS
 `"playing"` policy stay: `bot:audit --rollout` prices cards with them, and sampling is how v2
 would stop reading hands if that is ever worth its noise (Legends of Code and Magic found
 predicting the opponent's hand not worth its cost).
+
+**Step 8, the machinery (2026-09-27).** A priority window's rollouts never read the weights (v1
+plays every seat in them), so a scenario can be recorded once — every answer v2 simulated, the
+state each rollout reached read into features, and the judge's verdict on each — and replayed
+under any vector as plain arithmetic: `scoreOutcome`, the same function `evaluateState` now is,
+the first of any tie played (`bot/scenario-fit.ts`; `EvalBotOptions.trace` reports the answers).
+A test replays every recorded scenario under the shipped weights and requires the bot's own
+choice; with ties sent to the last answer instead, four of those go red. A decision's replay is
+close rather than exact (a decision inside its rollout is searched with the weights), so every
+result is also played for real. `npm run bot:fit-scenarios -w engine` then asks each scenario
+the weights get wrong what one weight alone would take to fix it — the nearest value that does,
+and what that change breaks — and tunes by hand: the cheapest lever that breaks nothing, one
+scenario at a time, each found against the vector as it stands, since levers interact.
+
+The corpus: the gate grew from 16 scenarios to 33, most of them counterweights — seven
+development positions (Sol Ring, a Signet, a two-drop, Cultivate, Divination, Phyrexian Arena, a
+six-drop), a Counterspell for a six-drop, an edict, a wrath when behind and none when ahead,
+Lightning Bolt at a creature and at a lethal face, a combat trick, Beast Within with only lands
+to hit, the leader's threat before a trailer's, and a mill trigger at an opponent rather than
+oneself. Without them a fit fixes a scenario about holding cards by pricing every card in hand
+up and stops casting Sol Ring, whose margin at the shipped weights is half a point. Four
+**training** scenarios hold right answers the shipped weights get wrong:
+
+| Training scenario | What v2 does | Levers that break nothing |
+|---|---|---|
+| Save Counterspell for a threat, not bob's Arcane Signet | counters it, by 1.0 | none: every one stops a development scenario |
+| Kill the commander one hit from lethal commander damage | kills the bigger Craw Wurm, by 2.45 | `commanderOnBoard` 0 → 3 |
+| Discard the extra land, not the Craw Wurm | a tie, broken toward the Wurm | `handManaValue` 0 → 0.05 |
+| Kill a trailing player's Craw Wurm when the leader has none | holds, by 0.58 | `otherOpponents` 0.25 → 0.38; or `power`, `permanentManaValue`, `toughness` ×3 |
+
+The Counterspell scenario is the finding: no weight prices an answer's option value, and
+whatever would (`handManaValue`, `untappedMana`, a lower `otherPermanents`) also stops the bot
+casting its rocks and draw spells. A feature, not a weight. By hand, the three levers came to
+`handManaValue` 0.05, `otherOpponents` 0.5 (0.38 no longer cleared the margin once the first was
+pulled) and `commanderOnBoard` 3 — all 33 gate scenarios and 3 of 4 training ones right, played
+for real. A joint fit (`--joint`, coordinate descent over every free weight) is kept but not
+trusted on a corpus this size: its first try used `graveyard` 0.05 → 1 as a discount on casting,
+since every spell cast lands in its caster's graveyard (the mill scenario now rules that out),
+and later ones cut `power` from the 0.5 the four-player sweep chose to 0.15 for margins nothing
+needed.

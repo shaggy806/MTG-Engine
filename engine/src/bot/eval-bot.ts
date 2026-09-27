@@ -91,6 +91,18 @@ export interface EvalBotOptions {
    * play rather than to whatever happened to be enumerated first.
    */
   readonly timeBudgetMs?: number;
+  /**
+   * Told every candidate a priority window or a decision simulates, with the
+   * state its rollout ended in (`null` when the engine refused it), in the
+   * order they were scored; the first of any tie is the one played, and a
+   * window answered without a simulation reports nothing. For measurement: a
+   * priority window's rollouts never read the weights, so `bot:fit-scenarios`
+   * can replay its choice under any vector from these states alone. A
+   * decision's rollouts can (a further decision inside one is searched with
+   * them), and combat declarations aren't reported at all: that search is
+   * steered by the weights as it goes.
+   */
+  readonly trace?: (action: Action, after: GameState | null) => void;
 }
 
 /**
@@ -281,6 +293,7 @@ function bestDecision(
   rollout: RolloutPolicy,
   budget: SearchBudget,
   selfFor?: () => PlayerController,
+  trace?: EvalBotOptions["trace"],
 ): Action {
   const me = view.player;
   if (inherited.player !== me || budget.left <= 1 || spent(budget)) return inherited;
@@ -302,6 +315,7 @@ function bestDecision(
     const after = timed(budget, () =>
       simulateAction(view.state, cards, action, horizon, rollout, selfFor?.()),
     );
+    trace?.(action, after);
     return after === null ? null : evaluateState(after, cards, me, weights);
   };
   let best = inherited;
@@ -454,6 +468,7 @@ export class EvalBotController extends HeuristicBotController {
   private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
   private readonly timeBudgetMs: number;
+  private readonly trace: EvalBotOptions["trace"];
   /** See {@link DecisionAudit}. Written, never read. */
   lastDecision: DecisionAudit | null = null;
 
@@ -473,6 +488,7 @@ export class EvalBotController extends HeuristicBotController {
     this.rolloutDecisions = options.rolloutDecisions ?? false;
     this.maxSimulations = options.maxSimulations ?? DEFAULT_MAX_SIMULATIONS;
     this.timeBudgetMs = options.timeBudgetMs ?? Infinity;
+    this.trace = options.trace;
   }
 
   act(view: ControllerView): Action {
@@ -606,6 +622,7 @@ export class EvalBotController extends HeuristicBotController {
       this.rollout,
       budget,
       () => this.selfInRollouts(),
+      this.trace,
     );
     // A combat declaration reaches here too, already searched — and recorded —
     // by its own method on the way through `super.act`; `bestDecision` has no
@@ -875,6 +892,7 @@ export class EvalBotController extends HeuristicBotController {
         this.rolloutDecisions ? this.selfInRollouts() : undefined,
       ),
     );
+    this.trace?.(action, after);
     if (after === null) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }

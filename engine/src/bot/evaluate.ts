@@ -305,45 +305,67 @@ export function scoreFeatures(features: PlayerFeatures, weights: EvalWeights): n
   return total;
 }
 
-function scorePlayer(
+/**
+ * One state, read once and scorable under any weight vector: the game's result
+ * if it's over, otherwise every live player's features. `evaluateState` is
+ * `scoreOutcome` of this, so a caller that scores the same state many times
+ * over — `bot:fit-scenarios`, trying weight vectors against the states a
+ * search reached — runs exactly the arithmetic the bot does.
+ */
+export interface EvalOutcome {
+  /** The score whatever the weights: a win, a loss or a draw. */
+  readonly decided?: number;
+  /** `null` once `me` has lost in a game that goes on without them. */
+  readonly mine: PlayerFeatures | null;
+  /** Every opponent still in the game. */
+  readonly theirs: readonly PlayerFeatures[];
+}
+
+export function outcomeOf(
   state: GameState,
   registry: CardRegistry,
-  player: PlayerId,
-  weights: EvalWeights,
-  isMe: boolean,
-): number {
-  const p = state.players[player];
-  if (p === undefined || p.hasLost) return DEAD;
-  return scoreFeatures(playerFeatures(state, registry, player, isMe, weights.landCap), weights);
+  me: PlayerId,
+  landCap: number,
+): EvalOutcome {
+  if (state.result.over) {
+    const decided = state.result.winner === null ? DRAW : state.result.winner === me ? WIN : -WIN;
+    return { decided, mine: null, theirs: [] };
+  }
+  const own = state.players[me];
+  const mine =
+    own === undefined || own.hasLost ? null : playerFeatures(state, registry, me, true, landCap);
+  const theirs = state.turnOrder
+    .filter((player) => player !== me && !state.players[player].hasLost)
+    .map((player) => playerFeatures(state, registry, player, false, landCap));
+  return { mine, theirs };
 }
 
 /**
- * Score `state` from `me`'s seat: my position, minus my strongest opponent's,
- * minus a smaller share of the average of everyone else still in the game.
+ * Score an {@link EvalOutcome} from `me`'s seat: my position, minus my
+ * strongest opponent's, minus a smaller share of the average of everyone else
+ * still in the game.
  *
  * Only the strongest opponent used to count, which made a four-player bot
  * indifferent to everyone but the leader — happy to feed the second-best
  * player a whole board as long as the leader stayed put.
  */
+export function scoreOutcome(outcome: EvalOutcome, weights: EvalWeights): number {
+  if (outcome.decided !== undefined) return outcome.decided;
+  const mine = outcome.mine === null ? DEAD : scoreFeatures(outcome.mine, weights);
+  const theirs = outcome.theirs.map((f) => scoreFeatures(f, weights)).sort((a, b) => b - a);
+  if (theirs.length === 0) return mine;
+
+  const [strongest, ...rest] = theirs;
+  const others = rest.length > 0 ? rest.reduce((a, b) => a + b, 0) / rest.length : 0;
+  return mine - weights.opponent * strongest - weights.otherOpponents * others;
+}
+
+/** Score `state` from `me`'s seat — see {@link scoreOutcome}. */
 export function evaluateState(
   state: GameState,
   registry: CardRegistry,
   me: PlayerId,
   weights: EvalWeights = DEFAULT_WEIGHTS,
 ): number {
-  if (state.result.over) {
-    if (state.result.winner === null) return DRAW;
-    return state.result.winner === me ? WIN : -WIN;
-  }
-
-  const mine = scorePlayer(state, registry, me, weights, true);
-  const theirs = state.turnOrder
-    .filter((player) => player !== me && !state.players[player].hasLost)
-    .map((player) => scorePlayer(state, registry, player, weights, false))
-    .sort((a, b) => b - a);
-  if (theirs.length === 0) return mine;
-
-  const [strongest, ...rest] = theirs;
-  const others = rest.length > 0 ? rest.reduce((a, b) => a + b, 0) / rest.length : 0;
-  return mine - weights.opponent * strongest - weights.otherOpponents * others;
+  return scoreOutcome(outcomeOf(state, registry, me, weights.landCap), weights);
 }

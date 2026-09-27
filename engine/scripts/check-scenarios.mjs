@@ -16,6 +16,7 @@ import { readFileSync } from "node:fs";
 import {
   DEFAULT_WEIGHTS,
   EvalBotController,
+  TRAINING_SCENARIOS,
   championById,
   createDefaultRegistry,
   runScenarios,
@@ -43,8 +44,12 @@ const label = champion ?? weightsFile ?? "current defaults";
 const makeBot = (player, registry, w) => new EvalBotController(player, registry, { weights: w });
 console.log(`scenarios: ${label}`);
 
-const reports = runScenarios(weights, createDefaultRegistry(), makeBot);
-const width = Math.max(...reports.map((r) => r.name.length));
+const registry = createDefaultRegistry();
+const reports = runScenarios(weights, registry, makeBot);
+// Training scenarios are right answers the shipped weights may still get
+// wrong — reported, never gated on (`src/bot/scenarios.ts`, "Two kinds").
+const training = runScenarios(weights, registry, makeBot, TRAINING_SCENARIOS);
+const width = Math.max(...[...reports, ...training].map((r) => r.name.length));
 for (const r of reports) {
   console.log(`  ${r.passed ? "PASS" : "FAIL"}  ${r.name.padEnd(width)} ${r.passed ? "" : `(${r.detail})`}`);
   if (!r.passed) console.log(`        rule: ${r.rule}`);
@@ -52,4 +57,9 @@ for (const r of reports) {
 
 const failed = reports.filter((r) => !r.passed);
 console.log(`${reports.length - failed.length}/${reports.length} passed`);
+console.log("training (not gated):");
+for (const r of training) {
+  console.log(`  ${r.passed ? "right" : "wrong"} ${r.name.padEnd(width)} ${r.passed ? "" : `(${r.detail})`}`);
+}
+console.log(`${training.filter((r) => r.passed).length}/${training.length} right`);
 process.exit(failed.length > 0 ? 1 : 0);

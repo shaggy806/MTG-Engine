@@ -21,8 +21,20 @@
  * vitest (`test/eval-bot-scenarios.test.ts`, against the shipped defaults) and
  * as a gate on a candidate vector (`scripts/check-scenarios.mjs --weights`).
  *
+ * ## Two kinds
+ *
+ * A **gate** scenario (the default) is a right answer the shipped weights must
+ * give. A **training** scenario is a right answer they may still get wrong:
+ * kept so `bot:fit-scenarios` can ask what weights would get it right, and so
+ * that one no weight can fix is on record as a missing feature rather than
+ * forgotten. Most scenarios are asked with one `act` and written as a
+ * `position` — the board and a judge of *any* answer — which is what lets the
+ * fitter judge every answer the bot weighed rather than only the one it chose
+ * (`bot/scenario-fit.ts`). Combat declarations are scripts, run whole.
+ *
  * They grow every time a live game shows a bad play. See
- * `docs/plans/smarter-bots.md`, "Not just beating v1".
+ * `docs/plans/smarter-bots.md`, "Not just beating v1", and
+ * `docs/plans/bot-effect-knowledge.md`, steps 6 and 8.
  */
 
 import type { Action } from "../actions.js";
@@ -32,6 +44,7 @@ import type { ControllerView, PlayerController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import { printedCardName } from "../state.js";
 import type { TargetRef } from "../target.js";
 import { EvalBotController } from "./eval-bot.js";
 import { DEFAULT_WEIGHTS } from "./evaluate.js";
@@ -56,10 +69,26 @@ export type BotFactory = (
   weights: EvalWeights,
 ) => PlayerController;
 
+/** A game paused where `player` must answer — a priority window or a
+ * decision — and a judge of any answer they could give. */
+export interface ScenarioPosition {
+  readonly game: Game;
+  readonly player: PlayerId;
+  judge(action: Action): ScenarioResult;
+}
+
 export interface BotScenario {
   readonly name: string;
   /** The rule being asserted, in one line. */
   readonly rule: string;
+  /** `"gate"` when absent — see "Two kinds" above. */
+  readonly kind?: "gate" | "training";
+  /**
+   * The scenario as a position, for one asked with a single `act`. A setup
+   * that didn't reach the question returns its failure instead, so a scenario
+   * can never pass by testing nothing.
+   */
+  position?(registry: CardRegistry): ScenarioPosition | ScenarioResult;
   run(weights: EvalWeights, registry: CardRegistry, makeBot: BotFactory): ScenarioResult;
 }
 
@@ -98,16 +127,80 @@ function fourPlayerMain(registry: CardRegistry): Game {
   return game;
 }
 
+/** A game paused at `active`'s precombat main, every hand empty. */
+function table(registry: CardRegistry, players: readonly PlayerId[], active: PlayerId): Game {
+  const game = Game.create({ seed: 3, registry, decks: players.map(forestDeck) });
+  game.advanceUntil(
+    (s) =>
+      s.turnOrder[s.turn.activePlayerIndex] === active &&
+      s.priority.holder === active &&
+      s.turn.step === "precombat-main",
+  );
+  for (const player of players) game.state.zones.perPlayer[player].hand = [];
+  return game;
+}
+
+/** A permanent that has been there since last turn. */
+const onBoard = (game: Game, name: string, player: PlayerId, tapped = false): ObjectId =>
+  game.debugSpawn(name, player, "battlefield", { summoningSick: false, tapped });
+
+const lands = (game: Game, name: string, player: PlayerId, count: number): void => {
+  for (let i = 0; i < count; i += 1) onBoard(game, name, player);
+};
+
+/** Cast `card` from `player`'s hand, then pass priority round until
+ * `responder` holds it with the spell still on the stack. */
+function castAndPassTo(game: Game, player: PlayerId, card: ObjectId, responder: PlayerId): void {
+  game.dispatch({ type: "cast-spell", player, card, targets: [] });
+  game.advanceUntil((s) => s.priority.holder === responder);
+}
+
 const evalBotFactory: BotFactory = (player, registry, weights) =>
   new EvalBotController(player, registry, { weights });
 
 const describeAction = (action: Action): string => JSON.stringify(action);
 
+/** Who a target belongs to: a player, or a permanent's controller. */
+function sideOf(game: Game, target: TargetRef): PlayerId | undefined {
+  return target.kind === "player" ? target.player : game.state.objects[target.object]?.controller;
+}
+
+/** The object a cast or activation aims its first target at, if any. */
+function firstTarget(action: Action): ObjectId | null {
+  const targets =
+    action.type === "cast-spell" || action.type === "activate-ability" ? action.targets : undefined;
+  const target = targets?.[0];
+  return target != null && target.kind === "object" ? target.object : null;
+}
+
+function cardOf(game: Game, id: ObjectId | null): string {
+  if (id === null) return "nothing";
+  const object = game.state.objects[id];
+  return object === undefined ? String(id) : `${object.controller}'s ${printedCardName(object)}`;
+}
+
+/** A scenario asked with one `act`, its `run` following from its position. */
+function asked(
+  spec: Omit<BotScenario, "run" | "position"> & Required<Pick<BotScenario, "position">>,
+): BotScenario {
+  return {
+    ...spec,
+    run(weights, registry, makeBot) {
+      const position = spec.position(registry);
+      if (!("game" in position)) return position;
+      const action = makeBot(position.player, registry, weights).act(
+        viewOf(position.game, position.player),
+      );
+      return position.judge(action);
+    },
+  };
+}
+
 const SCENARIOS: readonly BotScenario[] = [
-  {
+  asked({
     name: "plays a land",
     rule: "A land drop costs a card and must still be worth making, or the bot never develops.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // The founding regression: under the naive feature set a land drop is one
       // fewer card in hand and nothing else, so it scores negative and the bot
       // passes every turn for the whole game. Measured, before any of this
@@ -116,17 +209,20 @@ const SCENARIOS: readonly BotScenario[] = [
       const game = mainPhase((g) => {
         g.debugSpawn("Forest", A, "hand");
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type === "play-land",
-        detail: `played ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land",
+          detail: `played ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "plays a land past the land cap",
     rule: "Lands beyond `landCap` are worth less, never negative — a flooded board still develops.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // The trap a *fitted* vector walks into. Sitting on twelve lands is
       // strongly associated with losing, because it's usually a game that went
       // long for someone who was behind — so an unconstrained regression reads
@@ -139,17 +235,20 @@ const SCENARIOS: readonly BotScenario[] = [
         for (let i = 0; i < 12; i += 1) g.debugSpawn("Forest", A, "battlefield");
         g.debugSpawn("Forest", A, "hand");
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type === "play-land",
-        detail: `on 12 lands, chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land",
+          detail: `on 12 lands, chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "removal takes the biggest threat",
     rule: "Given one removal spell and two targets, the bigger creature is the one that dies.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       let big: ObjectId | null = null;
       let small: ObjectId | null = null;
       const game = mainPhase((g) => {
@@ -163,23 +262,26 @@ const SCENARIOS: readonly BotScenario[] = [
         small = g.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
         big = g.debugSpawn("Craw Wurm", B, "battlefield", { summoningSick: false });
       }, registry);
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
-      if (action.type !== "cast-spell") {
-        return { passed: false, detail: `did not cast removal: ${describeAction(action)}` };
-      }
-      const target = action.targets?.[0];
-      const hit = target != null && target.kind === "object" ? target.object : null;
       return {
-        passed: hit === big,
-        detail: hit === small ? "killed the 2/2 and left the 6/4" : `targeted ${String(hit)}`,
+        game,
+        player: A,
+        judge(action) {
+          if (action.type !== "cast-spell") {
+            return { passed: false, detail: `did not cast removal: ${describeAction(action)}` };
+          }
+          const hit = firstTarget(action);
+          return {
+            passed: hit === big,
+            detail: hit === small ? "killed the 2/2 and left the 6/4" : `targeted ${String(hit)}`,
+          };
+        },
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "does not tap mana for nothing",
     rule: "With nothing to cast, floating mana gains nothing and strands the source.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // v1 learned this the hard way and `candidates.ts` filters mana abilities
       // out of the search for it: casting auto-pays, so activating one on its
       // own can only lose you the source — and in a live room it reads as a
@@ -193,17 +295,20 @@ const SCENARIOS: readonly BotScenario[] = [
         // without ever testing what it claims to.
         g.state.zones.perPlayer[A].hand = [];
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type !== "activate-ability",
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "activate-ability",
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "recasts a taxed commander",
     rule: "Commander tax makes the next cast dearer; it doesn't make casting wrong.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // The other trap a fitted vector walks into. A commander that has been
       // cast four times is a commander that has *died* four times, so a high
       // tax is strongly associated with losing — and `commanderTax` is a
@@ -213,7 +318,11 @@ const SCENARIOS: readonly BotScenario[] = [
         seed: 3,
         registry,
         decks: [
-          { player: A, cards: Array<string>(40).fill("Forest"), commander: "Azusa, Lost but Seeking" },
+          {
+            player: A,
+            cards: Array<string>(40).fill("Forest"),
+            commander: "Azusa, Lost but Seeking",
+          },
           forestDeck(B),
         ],
       });
@@ -227,14 +336,16 @@ const SCENARIOS: readonly BotScenario[] = [
       // land-hungry vector picks it for the right reason. Asserting on a
       // single action can't tell those apart, so the alternative is removed.
       game.state.zones.perPlayer[A].hand = [];
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type === "cast-spell",
-        detail: `at {4} of tax with 8 lands, chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell",
+          detail: `at {4} of tax with 8 lands, chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
+  }),
   {
     name: "takes lethal on board",
     rule: "A swing that wins the game outranks every positional term.",
@@ -322,10 +433,10 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   },
-  {
+  asked({
     name: "does not pacify its own creature",
     rule: "An Aura that stops a creature attacking is worth nothing on your own creature.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // The Aura report behind `docs/plans/bot-effect-knowledge.md`: with no
       // opponent's creature to enchant, Pacifism's only legal target is our
       // own Craw Wurm, and an evaluation that counts a pacified creature's
@@ -344,60 +455,67 @@ const SCENARIOS: readonly BotScenario[] = [
         wurm = g.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false, tapped: true });
         g.debugSpawn("Pacifism", A, "hand");
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
-      const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
-      const hit = target != null && target.kind === "object" ? target.object : null;
       return {
-        passed: hit !== wurm,
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell" || firstTarget(action) !== wurm,
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "pays life for cards while it can spare it",
     rule: "At 40 life, two life is worth less than a card.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // Read the Bones is two cards for itself and two life — one card up.
       // With every point of life worth half a card whatever the total, that
-      // scored exactly zero — and ties go to passing, so v2 held it (and Sign in Blood)
-      // forever: it was the card v2 most often ended a turn holding, after
-      // Clan Defiance and Vandalblast, in 24 four-player games. `lifeDanger`
-      // is what lets a point of life be cheap at 40 and dear at 5; the twin
-      // scenario below is the other half.
+      // scored exactly zero — and ties go to passing, so v2 held it (and Sign
+      // in Blood) forever: it was the card v2 most often ended a turn holding,
+      // after Clan Defiance and Vandalblast, in 24 four-player games.
+      // `lifeDanger` is what lets a point of life be cheap at 40 and dear at
+      // 5; the twin scenario below is the other half.
       const game = mainPhase((g) => {
         g.state.zones.perPlayer[A].hand = [];
         for (let i = 0; i < 3; i += 1) g.debugSpawn("Swamp", A, "battlefield");
         g.debugSpawn("Read the Bones", A, "hand");
         g.state.players[A].life = 40;
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type === "cast-spell",
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell",
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "keeps its life when it is running out",
     rule: "At 5 life, two life is worth more than a card.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       const game = mainPhase((g) => {
         g.state.zones.perPlayer[A].hand = [];
         for (let i = 0; i < 3; i += 1) g.debugSpawn("Swamp", A, "battlefield");
         g.debugSpawn("Read the Bones", A, "hand");
         g.state.players[A].life = 5;
       }, registry);
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type !== "cast-spell",
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "removal finds the threat on a wide four-player board",
     rule: "The creature worth killing is found however many older ones are listed before it.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // `legalTargets` lists the battlefield oldest-first and a searching bot
       // simulates a capped number of targets, so on a real four-player board
       // the newest threat used to be past the cap — the bot never saw it. Eight
@@ -411,25 +529,26 @@ const SCENARIOS: readonly BotScenario[] = [
       }
       const wurm = game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });
       game.debugSpawn("Murder", A, "hand");
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
-      const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
-      const hit = target != null && target.kind === "object" ? target.object : null;
       return {
-        passed: hit === wurm,
-        detail:
-          action.type !== "cast-spell"
-            ? `did not cast removal: ${describeAction(action)}`
-            : `killed ${hit === null ? "nothing" : game.state.objects[hit]?.cardName} of ${
-                hit === null ? "?" : game.state.objects[hit]?.controller
-              }`,
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === wurm,
+            detail:
+              action.type !== "cast-spell"
+                ? `did not cast removal: ${describeAction(action)}`
+                : `killed ${cardOf(game, hit)}`,
+          };
+        },
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "aims Drakuseth's trigger at the opponents",
     rule: "Damage from our own attack trigger goes at the table, never at our side.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // Measured in four-player games before targets were ranked: players are
       // listed first, in turn order, so the first target combinations all put
       // the 4 damage on alice herself, the rest of the table lay past the
@@ -454,20 +573,24 @@ const SCENARIOS: readonly BotScenario[] = [
       if (game.state.awaiting?.kind !== "choose-targets") {
         return { passed: false, detail: "the attack trigger never asked for targets" };
       }
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
-      const targets = action.type === "choose-targets" ? action.targets : [];
-      const ours = targets.filter((t) => t !== null && sideOf(game, t) === A);
       return {
-        passed: action.type === "choose-targets" && targets.length > 0 && ours.length === 0,
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge(action) {
+          const targets = action.type === "choose-targets" ? action.targets : [];
+          const ours = targets.filter((t) => t !== null && sideOf(game, t) === A);
+          return {
+            passed: action.type === "choose-targets" && targets.length > 0 && ours.length === 0,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "puts its counter on its own creature on a wide board",
     rule: "A +1/+1 counter belongs on our creature, however many of theirs are listed first.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // Nine opposing creatures, all older than ours: in the battlefield's
       // order, ours comes tenth. Before the ranking, the bot saw only the
       // first eight choices, all of them opponents' — and passed.
@@ -479,22 +602,26 @@ const SCENARIOS: readonly BotScenario[] = [
       }
       game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
       const ajani = game.debugSpawn("Ajani, Caller of the Pride", A, "battlefield");
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
-      const targets = action.type === "activate-ability" ? (action.targets ?? []) : [];
       return {
-        passed:
-          action.type === "activate-ability" &&
-          action.source === ajani &&
-          targets.every((t) => t === null || sideOf(game, t) === A),
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge(action) {
+          const targets = action.type === "activate-ability" ? (action.targets ?? []) : [];
+          return {
+            passed:
+              action.type === "activate-ability" &&
+              action.source === ajani &&
+              targets.every((t) => t === null || sideOf(game, t) === A),
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
       };
     },
-  },
-  {
+  }),
+  asked({
     name: "does not counter its own spell",
     rule: "Absorb's three life is no reason to counter our own card draw.",
-    run(weights, registry, makeBot) {
+    position(registry) {
       // v1 did it, before it aimed: any spell on the stack is a legal target,
       // and ours was the only one. The evaluation prices it right at the
       // shipped weights, but a vector that rates three life above two cards
@@ -512,45 +639,426 @@ const SCENARIOS: readonly BotScenario[] = [
         .legalActions(A)
         .some((o) => o.kind === "cast-spell" && o.cardName === "Absorb");
       if (!offered) return { passed: false, detail: "Absorb wasn't castable" };
-
-      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       return {
-        passed: action.type !== "cast-spell",
-        detail: `chose ${describeAction(action)}`,
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
-  },
+  }),
+
+  // --- development ---------------------------------------------------------
+  //
+  // Each of these is right because a card deployed beats a card held, and each
+  // is a counterweight: `bot:fit-scenarios` would otherwise fix a scenario
+  // about holding cards (a Counterspell, a bomb it shouldn't discard) by
+  // making every card in hand dearer, and stop the bot casting Sol Ring.
+  ...(
+    [
+      ["casts Sol Ring on turn one", "Sol Ring", "Forest", 1],
+      ["casts a mana rock", "Arcane Signet", "Forest", 3],
+      ["casts a two-drop on turn two", "Grizzly Bears", "Forest", 2],
+      ["casts ramp", "Cultivate", "Forest", 3],
+      ["casts card draw with nothing better to do", "Divination", "Island", 3],
+      ["casts a draw engine", "Phyrexian Arena", "Swamp", 3],
+      ["casts a six-drop with six lands", "Craw Wurm", "Forest", 6],
+    ] as const
+  ).map(([name, card, land, count]) =>
+    asked({
+      name,
+      rule: "A card on the battlefield is worth more than the same card held.",
+      position(registry) {
+        const game = table(registry, [A, B], A);
+        lands(game, land, A, count);
+        game.debugSpawn(card, A, "hand");
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: action.type === "cast-spell",
+            detail: `with ${card} and ${count} ${land}, chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+
+  // --- answers -------------------------------------------------------------
+  asked({
+    name: "counters a big threat",
+    rule: "A Counterspell exists for the six-drop.",
+    position(registry) {
+      const game = table(registry, [A, B, C, D], B);
+      for (const player of [A, B, C, D]) {
+        lands(game, player === A ? "Island" : "Forest", player, 6);
+      }
+      game.debugSpawn("Counterspell", A, "hand");
+      castAndPassTo(game, B, game.debugSpawn("Craw Wurm", B, "hand"), A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell",
+          detail: `with bob's Craw Wurm on the stack, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "sacrifices its least creature to an edict",
+    rule: "An edict takes the creature we'd miss least.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Craw Wurm", A);
+      const bears = onBoard(game, "Grizzly Bears", A);
+      game.debugApplyEffect(
+        B,
+        { kind: "sacrifice", who: "each-opponent", filter: { type: "creature" }, count: 1 },
+        [],
+      );
+      game.advanceUntil((s) => s.awaiting !== null);
+      if (game.state.awaiting?.kind !== "sacrifice") {
+        return { passed: false, detail: "the edict never asked" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed:
+            action.type === "sacrifice" &&
+            action.permanents.length === 1 &&
+            action.permanents[0] === bears,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  ...(
+    [
+      ["wraths when far behind", ["Grizzly Bears"], ["Craw Wurm", "Craw Wurm", "Craw Wurm"], true],
+      ["keeps its own winning board", ["Craw Wurm", "Craw Wurm", "Craw Wurm"], ["Grizzly Bears"], false],
+    ] as const
+  ).map(([name, mine, theirs, wrath]) =>
+    asked({
+      name,
+      rule: "A wrath is for the board you're losing, not the one you're winning.",
+      position(registry) {
+        const game = table(registry, [A, B], A);
+        lands(game, "Plains", A, 4);
+        for (const creature of mine) onBoard(game, creature, A);
+        for (const creature of theirs) onBoard(game, creature, B);
+        game.debugSpawn("Wrath of God", A, "hand");
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "cast-spell") === wrath,
+            detail: `chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  ...(
+    [
+      ["bolts a creature before a healthy face", 40, "creature"],
+      ["bolts the face for lethal", 3, "face"],
+    ] as const
+  ).map(([name, life, aim]) =>
+    asked({
+      name,
+      rule: "Burn kills a creature, until the face is lethal.",
+      position(registry) {
+        const game = table(registry, [A, B], A);
+        onBoard(game, "Mountain", A);
+        const bears = onBoard(game, "Grizzly Bears", B);
+        game.state.players[B].life = life;
+        game.debugSpawn("Lightning Bolt", A, "hand");
+        return {
+          game,
+          player: A,
+          judge(action) {
+            const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
+            const right =
+              aim === "creature"
+                ? target?.kind === "object" && target.object === bears
+                : target?.kind === "player" && target.player === B;
+            return {
+              passed: action.type === "cast-spell" && right,
+              detail: `chose ${describeAction(action)}`,
+            };
+          },
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "pumps its blocked attacker",
+    rule: "A combat trick wins the fight it's in.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Forest", A);
+      const bears = onBoard(game, "Grizzly Bears", A);
+      const courser = onBoard(game, "Centaur Courser", B);
+      game.debugSpawn("Giant Growth", A, "hand");
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      game.dispatch({
+        type: "declare-attackers",
+        player: A,
+        attackers: [{ attacker: bears, defender: B }],
+      });
+      game.advanceUntil((s) => s.awaiting?.kind === "blockers" && s.awaiting.player === B);
+      game.dispatch({
+        type: "declare-blockers",
+        player: B,
+        blocks: [{ blocker: courser, attacker: bears }],
+      });
+      game.advanceUntil((s) => s.priority.holder === A);
+      if (game.state.turn.step !== "declare-blockers") {
+        return { passed: false, detail: `reached ${game.state.turn.step}, not the blocks` };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === bears,
+          detail: `with its 2/2 blocked by a 3/3, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "holds Beast Within with only lands to hit",
+    rule: "Destroying a land for a 3/3 Beast gives the Beast away.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      for (const player of [A, B]) lands(game, "Forest", player, 10);
+      game.debugSpawn("Beast Within", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "mills an opponent, not itself",
+    rule: "With nothing that wants a full graveyard, a mill trigger goes at an opponent.",
+    position(registry) {
+      // The counterweight to `graveyard` as a hidden discount: every spell cast
+      // lands in its caster's graveyard, so a fit that wants spells cast more
+      // readily can get it by pricing graveyard cards up — and then five
+      // cards milled into our own graveyard look like a gift.
+      const game = table(registry, [A, B], A);
+      game.debugSpawn("Geralf's Mindcrusher", A, "battlefield", { announceEntry: true });
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-targets") {
+        return { passed: false, detail: "the enters trigger never asked for a target" };
+      }
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const target = action.type === "choose-targets" ? action.targets[0] : undefined;
+          return {
+            passed: target?.kind === "player" && target.player === B,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "removal takes the leader's threat first",
+    rule: "Two equal threats: the one on the leading board dies.",
+    position(registry) {
+      // The counterweight to "kills a trailing player's threat" below: caring
+      // more about the players behind must not stop the bot pressing the one
+      // ahead.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Swamp", A, 3);
+      lands(game, "Forest", B, 8);
+      onBoard(game, "Grizzly Bears", B);
+      const leaders = onBoard(game, "Craw Wurm", B);
+      lands(game, "Forest", C, 3);
+      onBoard(game, "Craw Wurm", C);
+      lands(game, "Forest", D, 3);
+      game.debugSpawn("Murder", A, "hand");
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === leaders,
+            detail: `killed ${cardOf(game, hit)}`,
+          };
+        },
+      };
+    },
+  }),
+
+  // --- training: right answers the shipped weights get wrong ----------------
+  asked({
+    name: "saves Counterspell for a threat",
+    rule: "A Counterspell is wasted on a mana rock when three opponents have bombs to come.",
+    kind: "training",
+    position(registry) {
+      // v2 counters bob's Arcane Signet: the Signet is worth `otherPermanents`
+      // + `permanentManaValue` to him, which is more than the card it costs
+      // us, and a card in hand is worth `hand` whatever it could answer later.
+      // No weight prices an answer's option value.
+      const game = table(registry, [A, B, C, D], B);
+      for (const player of [A, B, C, D]) {
+        lands(game, player === A ? "Island" : "Forest", player, 4);
+      }
+      game.debugSpawn("Counterspell", A, "hand");
+      castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `with bob's Arcane Signet on the stack, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "kills the commander one hit from lethal commander damage",
+    rule: "A commander that has dealt 18 of 21 is the threat, whatever else is bigger.",
+    kind: "training",
+    position(registry) {
+      // v2 kills the bigger Craw Wurm: nothing in the evaluation looks at
+      // what the next attack would do, and `commanderDamage` counts damage
+      // already taken, which killing the commander doesn't undo.
+      const game = table(registry, [A, B], A);
+      lands(game, "Swamp", A, 3);
+      const commander = onBoard(game, "Anafenza, the Foremost", B);
+      game.state.objects[commander].isCommander = true;
+      onBoard(game, "Craw Wurm", B);
+      game.state.players[A].commanderDamageTaken = { [commander]: 18 };
+      game.debugSpawn("Murder", A, "hand");
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === commander,
+            detail: `killed ${cardOf(game, hit)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "discards its extra land, not its bomb",
+    rule: "With ten lands out, the land in hand is the card to lose.",
+    kind: "training",
+    position(registry) {
+      // Every choice scores the same — `hand` prices a Forest in hand like a
+      // Craw Wurm — so the tie goes to v1's answer, the front of the hand.
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 10);
+      game.debugSpawn("Craw Wurm", A, "hand");
+      game.debugSpawn("Grizzly Bears", A, "hand");
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.debugApplyEffect(B, { kind: "discard", target: 0, amount: 1 }, [
+        { kind: "player", player: A },
+      ]);
+      if (game.state.awaiting?.kind !== "discard") {
+        return { passed: false, detail: "the discard never asked" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed:
+            action.type === "discard" && action.cards.length === 1 && action.cards[0] === forest,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "kills a trailing player's threat when the leader has none",
+    rule: "The only creature on the table is worth a removal spell, whoever controls it.",
+    kind: "training",
+    position(registry) {
+      // Bob leads on lands and cards, carol has the table's only creature.
+      // v2 holds its Murder: a trailing opponent's score is averaged with the
+      // other trailing one's and counted at `otherOpponents`, so carol's Wurm
+      // is worth an eighth of bob's — see BACKLOG, "Removal only for the
+      // leader".
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Swamp", A, 3);
+      lands(game, "Forest", B, 9);
+      for (let i = 0; i < 6; i += 1) game.debugSpawn("Forest", B, "hand");
+      lands(game, "Forest", C, 3);
+      const wurm = onBoard(game, "Craw Wurm", C);
+      lands(game, "Forest", D, 3);
+      game.debugSpawn("Murder", A, "hand");
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === wurm,
+            detail:
+              action.type === "cast-spell"
+                ? `killed ${cardOf(game, hit)}`
+                : `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
 ];
 
-/** Who a target belongs to: a player, or a permanent's controller. */
-function sideOf(game: Game, target: TargetRef): PlayerId | undefined {
-  return target.kind === "player" ? target.player : game.state.objects[target.object]?.controller;
-}
+/** The gate: every vector that ships passes all of these. */
+export const BOT_SCENARIOS: readonly BotScenario[] = SCENARIOS.filter(
+  (scenario) => (scenario.kind ?? "gate") === "gate",
+);
 
-export const BOT_SCENARIOS = SCENARIOS;
+/** Right answers the shipped weights may still get wrong — see "Two kinds". */
+export const TRAINING_SCENARIOS: readonly BotScenario[] = SCENARIOS.filter(
+  (scenario) => scenario.kind === "training",
+);
 
 export interface ScenarioReport {
   readonly name: string;
   readonly rule: string;
+  readonly kind: "gate" | "training";
   readonly passed: boolean;
   readonly detail: string;
 }
 
-/** Every scenario against one weight vector. A vector that fails any of them
- * doesn't ship, whatever it benched. */
+/** Every scenario against one weight vector — the gate unless told otherwise.
+ * A vector that fails a gate scenario doesn't ship, whatever it benched. */
 export function runScenarios(
   weights: EvalWeights = DEFAULT_WEIGHTS,
   registry: CardRegistry = createDefaultRegistry(),
   makeBot: BotFactory = evalBotFactory,
+  scenarios: readonly BotScenario[] = BOT_SCENARIOS,
 ): ScenarioReport[] {
-  return SCENARIOS.map((scenario) => {
+  return scenarios.map((scenario) => {
+    const kind = scenario.kind ?? "gate";
     try {
       const { passed, detail } = scenario.run(weights, registry, makeBot);
-      return { name: scenario.name, rule: scenario.rule, passed, detail };
+      return { name: scenario.name, rule: scenario.rule, kind, passed, detail };
     } catch (error) {
       return {
         name: scenario.name,
         rule: scenario.rule,
+        kind,
         passed: false,
         detail: `threw: ${String((error as Error)?.message ?? error)}`,
       };
