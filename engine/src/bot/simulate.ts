@@ -52,7 +52,8 @@ export type Horizon = "stack" | "turn";
  * - `"defensive"` — v1's blocks everywhere, but only opponents attack; our
  *   own seat never does. v1 swings with everything, which is a poor stand-in
  *   for the bot's own, far more careful attacks.
- * - `"playing"` — **v3's policy**: every seat plays its whole turn as v1 does,
+ * - `"playing"` — every seat plays its whole turn as v1 does (what the retired
+ *   v3 planned with, and what `bot:audit --rollout` prices a card by),
  *   casting and activating rather than only fighting combat. The three above
  *   all pass at every priority window for *every* seat including our own, so a
  *   candidate is scored as "I do this, and then nobody does anything else all
@@ -65,12 +66,12 @@ export type Horizon = "stack" | "turn";
 export type RolloutPolicy = "passive" | "combat" | "defensive" | "playing";
 
 /**
- * How far past the candidate action a v3 rollout runs, counted in *player
- * turns* rather than rounds.
+ * How far past the candidate action a `simulateTurns` rollout runs, counted in
+ * *player turns* rather than rounds.
  *
  * `players + 1` is the meaningful default: far enough to come back round to
  * ourselves, so a play, every opponent's answer, and our own follow-up all sit
- * inside the horizon. At two players that is the three turns v3 is named for.
+ * inside the horizon. At two players that is three turns.
  */
 export interface Depth {
   readonly turns: number;
@@ -188,7 +189,7 @@ export class DefendingRolloutController extends CombatRolloutController {
 }
 
 /**
- * Plain v1, playing its whole turn — the v3 rollout stand-in.
+ * Plain v1, playing its whole turn — the stand-in of a `"playing"` rollout.
  *
  * It exists as a named class rather than using `HeuristicBotController`
  * directly so the policy table reads uniformly, and so there is one place to
@@ -203,7 +204,8 @@ export class PlayingRolloutController extends HeuristicBotController {}
 
 /**
  * Play `action` against a copy of `state` and run `depth.turns` player turns of
- * `policy` past it, returning the resulting state — v3's rollout.
+ * `policy` past it, returning the resulting state — the rollout `bot:audit`
+ * prices a card with (and the one the retired v3 planned over).
  *
  * The caller is expected to hand in an already-determinized `state` (see
  * `determinize.ts`) and to reuse the same sampled worlds across every candidate

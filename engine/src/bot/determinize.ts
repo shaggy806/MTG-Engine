@@ -1,16 +1,20 @@
 /**
- * Sampling a plausible world from one seat's point of view — the end of the
- * bot reading its opponents' hands.
+ * Sampling a plausible world from one seat's point of view — a bot that
+ * doesn't read its opponents' hands.
  *
  * `ControllerView.state` is the real, un-redacted `GameState`, opponents' hands
- * and library order included, and v2 exploited that hard: it scored a spell
- * against the exact card an opponent was holding, and its simulated draws came
- * off the real library because `fromSnapshot` restores `rngState`. See "Known:
- * the bot cheats" in `docs/plans/smarter-bots.md`.
+ * and library order included, and v2 exploits that: it scores a spell against
+ * the exact card an opponent is holding, and its simulated draws come off the
+ * real library because `fromSnapshot` restores `rngState`. See "Known: the bot
+ * cheats" in `docs/plans/smarter-bots.md`.
  *
- * ## Why this is the centre of v3 rather than a tidiness exercise
+ * Built for v3, which planned over sampled worlds and is retired
+ * (`docs/plans/bot-effect-knowledge.md`). What still uses it is the rollout
+ * column of `bot:audit`, and it is here for the day v2 stops cheating.
  *
- * Three separate things it buys, only one of which is about honesty:
+ * ## What sampling buys
+ *
+ * Three separate things, only one of which is about honesty:
  *
  * 1. **Measured strength becomes strength against people.** A bot that never
  *    has to guess looks better in self-play than it plays against a human, and

@@ -167,11 +167,6 @@ base, retire v3. One line per step still open:
   Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)
   are back on, since v3 isn't coming to replace them. Step 5.
 - **`bot:behaviour`**, and four-player scenarios for each measured blunder. Step 6.
-- **Retire v3.** It had a plan-walker bug that cast at most one spell a turn; fixed, it still
-  benches 16% against three v2s (even 25%). Remove `bot/plan.ts`, `plan-bot.ts`,
-  `determinize.ts`, `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and
-  `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
-  in the scenario, harvest and tune workers and in `room-pacing.test.ts`. Step 7.
 
 Beyond that plan:
 

@@ -30,7 +30,6 @@ import {
   COMMANDER_RULES,
   DEFAULT_WEIGHTS,
   EvalBotController,
-  PlanBotController,
   FEATURE_KEYS,
   Game,
   HeuristicBotController,
@@ -79,15 +78,7 @@ function difference(state, me, weights, landCap) {
   });
 }
 
-/** v2's per-window search or v3's turn planner. The positions harvested should
- * be the ones the bot being fitted actually reaches, so the policy that plays
- * them has to match the architecture the weights are for. */
-const botFor = (kind, seat, opts) =>
-  kind === "v3"
-    ? new PlanBotController(seat, registry, opts)
-    : new EvalBotController(seat, registry, opts);
-
-parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, botOptions, maxTurns, bot, players }) => {
+parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, botOptions, maxTurns, players }) => {
   const w = weights ?? DEFAULT_WEIGHTS;
   const { seats, decks } = tableFor(seed, players);
   const landCap = w.landCap;
@@ -100,7 +91,7 @@ parentPort.on("message", ({ seed, weights, opponentWeights, horizon, rollout, bo
     controllers[seat] =
       seatWeights === null
         ? new HeuristicBotController(seat, registry)
-        : botFor(bot, seat, { ...botOptions, weights: seatWeights, horizon, rollout });
+        : new EvalBotController(seat, registry, { ...botOptions, weights: seatWeights, horizon, rollout });
   }
 
   try {

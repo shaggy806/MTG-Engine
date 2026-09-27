@@ -137,23 +137,6 @@ const BOT_MIN_THINK_MS = 350;
  */
 const BOT_DECISION_BUDGET_MS = 300;
 /**
- * How long a bot may spend planning one of its own turns.
- *
- * Deliberately much larger than `BOT_DECISION_BUDGET_MS`, because it buys
- * something different: v3 plans **once per turn** rather than once per priority
- * window, and a turn has several windows. Unbounded, the worst planned turn
- * measured 87 seconds (see `PlanBotOptions.planBudgetMs`).
- *
- * Unlike the per-decision budget this one doesn't disappear inside the
- * animation pause — it lands as a single hitch at the bot's first main phase,
- * and it blocks the whole process while it runs, so every other room on this
- * server waits too. A second is the compromise: the neighbour ordering puts
- * appends first, so a search cut short still returns a turn's worth of plays
- * rather than nothing, and a partial plan degrades to v1's turn rather than to
- * passing.
- */
-export const BOT_PLAN_BUDGET_MS = 1_000;
-/**
  * The host's bot speed, as a pause *after* every client has finished showing
  * a bot's move and before the next one. On top of the animation wait rather
  * than instead of it: a card play already holds the table for its whole
@@ -209,9 +192,10 @@ export interface RoomOptions {
    *
    * For the pacing tests, which are about the frame/ack machinery and not
    * about how well anything plays: pinning the bot keeps them from breaking
-   * every time a smarter one ships. That isn't hypothetical — v3 plans a whole
-   * turn and will correctly decline to play a land on a deck where no land
-   * could ever be spent, which is exactly the deck those tests use.
+   * every time a smarter one ships. That isn't hypothetical — the retired v3
+   * planned a whole turn and would correctly decline to play a land on a deck
+   * where no land could ever be spent, which is exactly the deck those tests
+   * use.
    */
   readonly botController?: (player: PlayerId) => PlayerController;
 }
@@ -236,10 +220,10 @@ export interface RoomOptions {
  *   is the only one of the two below par. v2 is also about 35% cheaper per
  *   game.
  *
- * v3 stays built and reachable through {@link RoomOptions.botController}; what
- * it needs before it is seated again is the evaluation work in
- * `docs/plans/bot-v3-search.md`, not another architectural argument.
- * {@link BOT_PLAN_BUDGET_MS} is kept for whoever seats it next.
+ * It later turned out that v3 cast at most one spell a turn (its plan walker
+ * consumed the plan at the stack window after its first cast), and that fixed
+ * it was still no better than v2, so it is retired. What replaced it is v2 on
+ * an effect-aware base: `docs/plans/bot-effect-knowledge.md`.
  */
 const DEFAULT_BOT = (player: PlayerId): PlayerController =>
   new EvalBotController(player, undefined, {
@@ -655,13 +639,14 @@ export class Room {
    *
    * **Asking costs something, and asking twice is a bug.** `act` is a
    * controller's decision entry point, not a pure function of the board:
-   * v1 counts activations in it, v3 walks a turn plan through it, and both
-   * advance that state whether or not the caller uses the answer. This used
-   * to be asked once to decide whether the move was worth pacing and again
-   * when it was time to make it — which quietly consumed v3's plan two
-   * entries at a time until it ran out and passed every turn for the rest of
-   * the game, and double-counted v1's per-turn activation cap. `settle` now
-   * asks once and carries the answer (see the `eventSeq` check there).
+   * v1 counts activations in it (and the retired v3 walked a turn plan
+   * through it), advancing that state whether or not the caller uses the
+   * answer. This used to be asked once to decide whether the move was worth
+   * pacing and again when it was time to make it — which quietly consumed
+   * v3's plan two entries at a time until it ran out and passed every turn
+   * for the rest of the game, and double-counted v1's per-turn activation
+   * cap. `settle` now asks once and carries the answer (see the `eventSeq`
+   * check there).
    */
   private botAction(seat: PlayerId): Action {
     const bot = this.bots.get(seat);

@@ -16,7 +16,6 @@ import { readFileSync } from "node:fs";
 import {
   DEFAULT_WEIGHTS,
   EvalBotController,
-  PlanBotController,
   championById,
   createDefaultRegistry,
   runScenarios,
@@ -39,17 +38,10 @@ for (const key of Object.keys(weights)) {
 
 const label = champion ?? weightsFile ?? "current defaults";
 // The suite asserts what the bot *does*, never how it decided, so the same
-// positions gate every architecture — a new search earns the same correctness
-// bar as the one it replaces.
-const bot = flag("bot", "v2");
-const makeBot = (player, registry, w) =>
-  bot === "v3"
-    // Depth is left at its default — one lap of the table — because which
-    // point of the turn cycle the leaf lands on changes what the evaluation
-    // sees, and pinning it here would gate the bot on a setting it never plays.
-    ? new PlanBotController(player, registry, { weights: w })
-    : new EvalBotController(player, registry, { weights: w });
-console.log(`scenarios: ${label} (bot ${bot})`);
+// positions would gate any other search — a new one earns the same
+// correctness bar as the one it replaces.
+const makeBot = (player, registry, w) => new EvalBotController(player, registry, { weights: w });
+console.log(`scenarios: ${label}`);
 
 const reports = runScenarios(weights, createDefaultRegistry(), makeBot);
 for (const r of reports) {

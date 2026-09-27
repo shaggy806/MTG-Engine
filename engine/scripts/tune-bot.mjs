@@ -77,9 +77,6 @@ const jsonOut = flag("json", null);
 const workers = Math.max(1, Math.min(Number(flag("workers", String(os.cpus().length - 2))), os.cpus().length));
 const even = 1 / players;
 const opponentArg = flag("opponent", "v1");
-// Which searching bot the *candidate* is. `v2` is the per-window search that
-// live rooms play; `v3` is the turn planner (`docs/plans/bot-v3-search.md`).
-const bot = flag("bot", "v2");
 const gauntletGames = Math.ceil(Number(flag("gauntlet-games", String(games))) / players) * players;
 // Rounded like `games`, so a chunk keeps every seating block whole
 // (`bot-seating.mjs`: one seating per block of `players` seeds).
@@ -179,7 +176,7 @@ function runMatch(weights, opponents, seedOffset = 0, count = games, { skip, onR
           finish({ seed, error: `timed out after ${timeoutMs / 1000}s` });
           spawn();
         }, timeoutMs);
-        worker.postMessage({ seed, weights, opponents, players, horizon, rollout, botOptions, bot });
+        worker.postMessage({ seed, weights, opponents, players, horizon, rollout, botOptions });
       };
 
       worker.on("message", (result) => {
@@ -383,7 +380,7 @@ const profileLine = (profile) =>
 const startedAt = Date.now();
 const elapsed = () => `${((Date.now() - startedAt) / 1000).toFixed(1)}s`;
 console.log(
-  `${mode}: ${games} games/config, ${players} players, bot=${bot}, horizon=${horizon}, rollout=${rollout ?? "default"}, options=${JSON.stringify(botOptions)}, ${workers} workers`,
+  `${mode}: ${games} games/config, ${players} players, horizon=${horizon}, rollout=${rollout ?? "default"}, options=${JSON.stringify(botOptions)}, ${workers} workers`,
 );
 
 if (mode === "bench") {
@@ -408,7 +405,6 @@ if (mode === "bench") {
         weights: baseWeights,
         opponents: opponents.map((o) => o.id),
         players,
-        bot,
         horizon,
         rollout: rollout ?? null,
         botOptions,
@@ -423,7 +419,7 @@ if (mode === "bench") {
     const played = await runMatch(baseWeights, opponents, seedOffset, games, { skip, onResult });
     const results = [...recorded, ...played].sort((x, y) => x.seed - y.seed);
     const summary = summarise(results);
-    console.log(`${bot} vs ${opponents.map((o) => o.id).join("+")}: ${fmt(summary)}   (${elapsed()})`);
+    console.log(`v2 vs ${opponents.map((o) => o.id).join("+")}: ${fmt(summary)}   (${elapsed()})`);
     report(results);
     if (jsonOut) {
       writeFileSync(jsonOut, JSON.stringify({ weights: baseWeights, players, summary, results }, null, 2));

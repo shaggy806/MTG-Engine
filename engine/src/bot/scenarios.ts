@@ -43,8 +43,7 @@ export interface ScenarioResult {
 }
 
 /**
- * Builds the bot under test. Defaults to v2's `EvalBotController`; v3's
- * `PlanBotController` is passed in by `bot:scenarios --bot v3`.
+ * Builds the bot under test. Defaults to v2's `EvalBotController`.
  *
  * The scenarios are deliberately architecture-agnostic — they assert what the
  * bot *does*, never how it decided — so the same suite gates every version, and

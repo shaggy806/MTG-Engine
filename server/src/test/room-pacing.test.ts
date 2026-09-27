@@ -75,9 +75,9 @@ function watcher(room: () => Room, ackAll: boolean) {
  * is about the frame/ack machinery — that a bot action costs a frame, that the
  * frame is held until the clients catch up — and none of it is about how well
  * the bot plays. A searching bot is entitled to look at this deck, notice that
- * no land it plays could ever be spent on anything, and pass the turn; v3 does
- * exactly that, which broke the land-drop assertion below without anything
- * being wrong with the pacing.
+ * no land it plays could ever be spent on anything, and pass the turn; the
+ * retired v3 did exactly that, which broke the land-drop assertion below
+ * without anything being wrong with the pacing.
  */
 function makePacedRoom(
   ackAll: boolean,
@@ -200,8 +200,8 @@ describe("Room pacing (realtime)", () => {
    * A bot with one-shot state: it has exactly one land drop in it, and every
    * `act` call spends a step whether or not the caller uses the answer.
    *
-   * That is the shape of v3's turn plan (`PlanBotController` walks an index
-   * through a planned turn) and, more mildly, of v1's per-turn activation
+   * That was the shape of the retired v3's turn plan (it walked an index
+   * through a planned turn) and is, more mildly, v1's per-turn activation
    * counter. Standing in for them here keeps the test cheap and keeps it
    * about the room rather than about any particular bot.
    */

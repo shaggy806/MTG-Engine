@@ -203,3 +203,10 @@ steps 1, 3 and 4 together, on the same 24 four-player seeds at the live 300 ms b
 wrong-side picks fell from **48 of 489 (9.8%) to 11 of 570 (1.9%)**, four of those classifier
 artifacts (a spec-forced opponent target, exiles from its own graveyard) and the rest choices
 its search made with the right side ranked first.
+
+**Step 7, done (2026-09-26).** v3 is retired: `plan.ts`, `plan-bot.ts`, `bot-plan.test.ts`,
+the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS`, and the
+`--bot` flag of the bench, tune, harvest and scenario scripts. `determinize.ts` and `simulate.ts`'s
+`"playing"` policy stay: `bot:audit --rollout` prices cards with them, and sampling is how v2
+would stop reading hands if that is ever worth its noise (Legends of Code and Magic found
+predicting the opponent's hand not worth its cost).

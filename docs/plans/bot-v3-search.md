@@ -1,10 +1,12 @@
 # Bot v3 — rollout search over sampled worlds
 
-Status: **superseded — to be retired** (2026-09-26). The search, the determinizer and
-`PlanBotController` are in `engine/src/bot/`. It was seated in live rooms briefly and
-**reverted**: benched at the table size the site actually plays, it loses to v2 (see below).
-`bot-effect-knowledge.md` is now the plan of record: v2 stays, on an effect-aware base, and v3
-goes. The section right below says why; everything after it is the record as it stood.
+Status: **retired** (2026-09-26). It was seated in live rooms briefly and **reverted**: benched
+at the table size the site actually plays, it lost to v2 (see below). `bot-effect-knowledge.md`
+is now the plan of record: v2 stays, on an effect-aware base. `plan.ts`, `plan-bot.ts`, their
+test and the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts are deleted (they are in
+`git log`); `determinize.ts` and the `"playing"` rollout policy survive, because `bot:audit
+--rollout` prices cards with them. The section right below says why it went; everything after
+it is the record as it stood.
 
 This document exists because v2's tuning stalled, twice, for the same reason: **the architecture
 could not represent the strategy we were trying to tune it into.** Writing it before touching
