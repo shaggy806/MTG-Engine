@@ -290,6 +290,9 @@ Beyond that plan:
   battlefield on every call, per permanent, and `recomputeControl` rescans for control Auras per
   permanent once anything has a control effect. On a land-heavy board they were 31% of a
   profile, and turns slow down steadily. Not a hang, and the fuzzer's decks don't hit it.
+- **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
+  (424 files, 3,949 tests, about 100 s) and check what it actually guards. Unscoped: what the
+  audit looks for and what it produces.
 - **Small known slips.** Geode Rager targets an opponent where its text says "target player".
   `effects.ts` cites Encore as 702.140 (it's 702.141). Rin and Seri's and Urtet's `otherOnly`
   flags are redundant now, and their comments out of date. `TriggerWho` `"opponent"` is always
