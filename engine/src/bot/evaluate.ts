@@ -131,6 +131,10 @@ export interface EvalWeights {
    * defender). At `power`'s weight it takes back exactly what `power` gives
    * them. */
   readonly idlePower: number;
+  /** Identical noncreature tokens past `TOKEN_CAP` (features.ts) — the
+   * fifth Treasure of a pile on. At `otherPermanents`' weight it scores exactly
+   * as before the cap. */
+  readonly extraTokens: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -260,6 +264,11 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // counted was lost (the "does not pacify its own creature" scenario). The
   // same term is what makes pacifying an opponent's attacker worth its power.
   idlePower: 0.5,
+  // Zero, and it has to be: any value above it makes "pump, make eighteen
+  // Treasures" a gain forever, which is how seed 50's bot farmed Treasures
+  // off a dead player until the game timed out. A pile past a turn's spending
+  // is mana the evaluation can't see a use for — `untappedMana` is 0 too.
+  extraTokens: 0,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

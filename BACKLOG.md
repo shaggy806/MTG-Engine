@@ -207,12 +207,14 @@ Beyond that plan:
   see (`untappedMana` is 0). Political, and sometimes right, but it reads as helping the wrong
   side; either mana gets a price or a training scenario says when pushing someone else's attack
   is worth a card or a use.
-- **v2 repeats an activation without limit.** v1 activates any one ability at most four times a
-  turn (`MAX_ACTIVATIONS_PER_TURN`); v2 has no such cap, and on a seventy-permanent board with a
-  pile of Treasures it activated Lathliss, Dragon Queen's "{R}: Dragons you control get +1/+0"
-  a dozen times and more a turn, each a full search at eight to ten seconds under count budgets
-  — the one game of step 8's bench that timed out. Live rooms bound each search to 300 ms, but
-  every activation is still a paced frame. Wants the same cap, counted on v2's own choices.
+- **Pumps and mana spent too early.** On seed 50 v2 spent all its mana in its upkeep on
+  Lathliss, Dragon Queen's "+1/+0 until end of turn" and entered its main phase with none: the
+  rollout plays its own seat passively, so mana it would have cast spells with looks free to
+  spend first. A player pumps after blockers. Either an end-of-turn effect is held for combat,
+  or unspent mana gets a price in the rollout. The same gap as "Pumping an opponent's attacker".
+- **Big boards under count budgets.** A seventy-permanent board costs v2 ~33 s a window at the
+  bench's 200 simulations, so a long four-player game can still pass a bench's time limit
+  (seed 50's last turn took 15 minutes; it ends now). Live rooms stop at 300 ms.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
   `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.

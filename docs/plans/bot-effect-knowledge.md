@@ -387,3 +387,26 @@ rule out a loss. The bench's one refused action was an engine bug, fixed alongsi
 offer's proof could tap a green mana creature for generic that a mana-affordable cost needed for
 its colour (Hour of Reckoning with Avacyn's Pilgrim), so a driver echoing it was refused the
 cast; a mana-affordable offer now carries no proof.
+
+**After the plan: seed 50 (2026-09-27).** The one game of the step-3 A/B bench that ran past its
+25-minute limit, replayed and read turn by turn from a snapshot of its turn 40 (alice's tenth).
+Three things kept it from ending, each found only once the one before was fixed:
+
+- **One search per activation.** Lathliss, Dragon Queen's "{1}{R}: Dragons you control get
+  +1/+0" and Scavenging Ooze's "{G}: Exile target card from a graveyard" were each a full search
+  of a seventy-permanent board per activation, ~30-45 s at count budgets. v2 now also tries an
+  ability as a batch (as many activations as the mana allows, one candidate; a targeted one both
+  at the same target and at a new one each time) and plays the rest of a chosen batch without
+  searching, then holds its pass while the stack resolves. The same hold covers the window after
+  its own spell and every window after it passed, until something new lands. v1's four-a-turn
+  cap wasn't copied: with the mana for it, twelve pumps is right, and the batch lets the search
+  say so at the cost of one decision.
+- **Treasures counted without end.** With Old Gnawbone and Atarka, every pump made eighteen more
+  Treasures off a player already dead, each worth `otherPermanents` (2): +640 a batch, forever.
+  Identical noncreature tokens past four now go to `extraTokens`, at 0 — any positive weight
+  keeps that loop profitable. The champions carry their old `otherPermanents` there, so they
+  score exactly as they did.
+- **What's left is size.** With both fixed the game ends, alice winning on her tenth turn, 15.5
+  minutes after it began: a turn of ten spells at ~33 s a search. Not benched; shipped on the
+  replay, and on the decisions read along the way. Still open, in BACKLOG: mana spent in the
+  upkeep on a pump that only matters in combat.

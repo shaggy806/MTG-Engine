@@ -83,6 +83,7 @@ export const FEATURE_KEYS = [
   "drawEngines",
   "commanderOnBoard",
   "idlePower",
+  "extraTokens",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -126,6 +127,17 @@ const LIFE_DANGER_AT = 15;
  * and drawing from an empty library loses the game outright (rule 104.3c).
  */
 const LIBRARY_DANGER_AT = 15;
+
+/**
+ * How many identical noncreature tokens (Treasures, Clues, Food) count in
+ * full towards `otherPermanents`; the rest are `extraTokens`. The same shape
+ * as `landCap`/`extraLands`, and for a sharper reason: counted in full, a
+ * pile was worth 2 points a Treasure without end, so on seed 50 a bot with
+ * Old Gnawbone and Atarka pumped its Dragons again and again after the only
+ * player it was hitting had died — eighteen Treasures a pump, +640 a batch —
+ * and never finished the turn. A turn rarely spends more than a few.
+ */
+export const TOKEN_CAP = 4;
 
 export const featureSign = (key: FeatureKey): number => (SUBTRACTED.has(key) ? -1 : 1);
 
@@ -321,6 +333,8 @@ function playerFeaturesUncached(
   let drawEngines = 0;
   let commanderOnBoard = 0;
   let idlePower = 0;
+  /** Noncreature tokens by name — see `TOKEN_CAP`. */
+  const tokenPiles = new Map<string, number>();
 
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
@@ -354,7 +368,14 @@ function playerFeaturesUncached(
     }
     if (isLand) landCount += n;
     else permanentManaValue += manaValueOf(registry, printedCardName(object)) * n;
-    if (!isLand && !isCreature) otherPermanents += n;
+    if (!isLand && !isCreature) {
+      if (object.isToken) {
+        const name = printedCardName(object);
+        tokenPiles.set(name, (tokenPiles.get(name) ?? 0) + n);
+      } else {
+        otherPermanents += n;
+      }
+    }
     const name = printedCardName(object);
     if (!isLand && registry.has(name)) {
       const def = registry.get(name);
@@ -386,6 +407,11 @@ function playerFeaturesUncached(
   }
 
   const cap = Math.max(0, landCap);
+  let extraTokens = 0;
+  for (const pile of tokenPiles.values()) {
+    otherPermanents += Math.min(pile, TOKEN_CAP);
+    extraTokens += Math.max(0, pile - TOKEN_CAP);
+  }
 
   return {
     life: p.life,
@@ -425,5 +451,6 @@ function playerFeaturesUncached(
     drawEngines,
     commanderOnBoard,
     idlePower,
+    extraTokens,
   };
 }
