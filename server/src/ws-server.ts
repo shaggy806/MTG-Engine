@@ -10,6 +10,7 @@ import type { WebSocket, WebSocketServer } from "ws";
 import { COMMANDER_RULES } from "engine";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
+import type { CaptureLog } from "./capture.js";
 import { PendingRoom } from "./pending-room.js";
 import type { ClientMessage, ServerMessage } from "protocol";
 
@@ -50,8 +51,18 @@ function broadcast(room: Room): void {
       skipManaOnly: room.isSkippingManaOnly(seat),
       isHost: room.isHost(connection),
       botSpeed: room.botSpeed,
+      ...(room.captures !== null ? { capture: true as const } : {}),
     });
   }
+}
+
+/** The capture log of a room that keeps one, for its host — see
+ * `capture.ts`. */
+function requireCaptures(manager: RoomManager, roomId: string, connection: Connection): CaptureLog {
+  const room = requireActiveRoom(manager, roomId);
+  requireHost(room, connection, "capture positions");
+  if (room.captures === null) throw new Error("this server isn't capturing (start it with --capture)");
+  return room.captures;
 }
 
 /** A `room-joined` for one connection — `isHost` differs per recipient. */
@@ -371,6 +382,22 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         }
         case "resolve-all": {
           requireActiveRoom(manager, message.roomId).requestResolveAll(connection);
+          return;
+        }
+        case "capture-list": {
+          const log = requireCaptures(manager, message.roomId, connection);
+          connection.send({ type: "capture-list", entries: log.list() });
+          return;
+        }
+        case "capture-options": {
+          const log = requireCaptures(manager, message.roomId, connection);
+          connection.send({ type: "capture-options", id: message.id, ...log.options(message.id) });
+          return;
+        }
+        case "capture-save": {
+          const log = requireCaptures(manager, message.roomId, connection);
+          const file = log.save(message.id, message.expect, message.note ?? "", message.name);
+          connection.send({ type: "capture-saved", file });
           return;
         }
         case "ack": {

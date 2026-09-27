@@ -4,6 +4,7 @@ import { Game } from "engine";
 import { PendingRoom } from "./pending-room.js";
 import type { PendingGameConfig } from "./pending-room.js";
 import { Room } from "./room.js";
+import type { CaptureConfig } from "./capture.js";
 
 // No 0/O/1/I — avoids characters easily confused when a code is read aloud.
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -20,6 +21,12 @@ function randomRoomId(): string {
 export class RoomManager {
   private readonly rooms = new Map<string, Room | PendingRoom>();
   private created = 0;
+  /** Handed to every room this manager promotes — see `RoomOptions.capture`. */
+  private readonly capture: CaptureConfig | undefined;
+
+  constructor(options: { readonly capture?: CaptureConfig } = {}) {
+    this.capture = options.capture;
+  }
 
   /** Rooms created since the process started, including ones long since
    * reaped — the live count alone can't tell a quiet server from a restarted
@@ -72,6 +79,7 @@ export class RoomManager {
       onUpdate: (r) => this.onRoomUpdate(r),
       host: pending.host,
       botSpeed: pending.botSpeed,
+      ...(this.capture !== undefined ? { capture: this.capture } : {}),
     });
     for (const claim of pending.claims()) {
       room.claimSeat(claim.player, claim.clientToken, claim.connection, claim.displayName ?? undefined);

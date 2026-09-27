@@ -30,6 +30,8 @@
 
 import { EvalBotController, Game, actionPlayer, activePlayerOf, isSettled } from "engine";
 import { autoAnswerFor } from "engine";
+import { CaptureLog } from "./capture.js";
+import type { CaptureConfig } from "./capture.js";
 import type {
   Action,
   AwaitingDecision,
@@ -198,6 +200,10 @@ export interface RoomOptions {
    * use.
    */
   readonly botController?: (player: PlayerId) => PlayerController;
+  /** Keep the state before each bot decision, for saving one as a training
+   * scenario (`capture.ts`). A developer's server only — omitted, as on the
+   * public site, nothing is kept. */
+  readonly capture?: CaptureConfig;
 }
 
 /**
@@ -258,6 +264,9 @@ export class Room {
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
+  /** Recent bot decisions, when this server captures them — see
+   * `RoomOptions.capture`. */
+  readonly captures: CaptureLog | null;
 
   constructor(id: string, game: Game, options: RoomOptions = {}) {
     this.id = id;
@@ -268,6 +277,7 @@ export class Room {
     this.pacing = options.pacing ?? "realtime";
     this.timers = options.timers ?? realTimers;
     this.makeBot = options.botController ?? DEFAULT_BOT;
+    this.captures = options.capture !== undefined ? new CaptureLog(options.capture, id) : null;
     this.seats = game.state.turnOrder.map((player) => ({
       player,
       clientToken: null,
@@ -661,7 +671,15 @@ export class Room {
       player: seat,
       legalActions: () => (legal ??= this.game.legalActions(seat)),
     };
-    return bot.act(view);
+    // Captured only where there was a choice: a window where passing and
+    // tapping for mana are all there is teaches nothing.
+    const captured =
+      this.captures !== null && !this.game.isDeadForMana(seat)
+        ? this.captures.before(this.game.state)
+        : null;
+    const action = bot.act(view);
+    if (captured !== null) this.captures?.record(seat, captured, action);
+    return action;
   }
 
   /** Synthesizes and dispatches `seat`'s bot decision in-process — no

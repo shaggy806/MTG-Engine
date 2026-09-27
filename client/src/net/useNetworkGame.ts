@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine/client'
 import type { Frame } from '../game/usePlayback.ts'
-import type { BotSpeed, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
+import type { BotSpeed, CaptureSummary, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -118,6 +118,23 @@ function clearRoomFromUrl(): void {
   window.history.replaceState(null, '', url)
 }
 
+/** What a capture-enabled server has answered so far — see
+ * `NetworkGame.capture`. */
+export interface CaptureState {
+  /** The room's recent bot decisions, newest first, once listed. */
+  readonly entries: readonly CaptureSummary[] | null
+  /** What the bot could have done at one of them, once asked. */
+  readonly options: {
+    readonly id: number
+    readonly did: string
+    readonly options: readonly { readonly index: number; readonly text: string }[]
+  } | null
+  /** Where the last save was written. */
+  readonly saved: string | null
+}
+
+const NO_CAPTURE: CaptureState = { entries: null, options: null, saved: null }
+
 export interface NetworkGame {
   readonly status: ConnectionStatus
   /** Whether this page has ever had the room server on the line. A first
@@ -217,6 +234,19 @@ export interface NetworkGame {
    * as anything real happens — a decision for me, an opponent acting, or
    * something of mine being targeted or leaving the battlefield. */
   resolveAll: () => void
+  /** Whether the server keeps bot decisions for saving as training
+   * scenarios — a developer's server (`--capture`), never the public site. */
+  readonly captureEnabled: boolean
+  readonly capture: CaptureState
+  /** Asks for the room's recent bot decisions (host only). */
+  captureList: () => void
+  /** Asks what the bot could have done at decision `id`. */
+  captureOptions: (id: number) => void
+  /** Saves decision `id` as a training scenario: option `expect` was the
+   * right answer, or anything but what the bot did. */
+  captureSave: (id: number, expect: number | 'not-this', note: string, name?: string) => void
+  /** Forgets the capture answers, for closing the panel. */
+  clearCapture: () => void
   nameOf: (id: ObjectId) => string
   clearError: () => void
   reconnect: () => void
@@ -257,6 +287,8 @@ export function useNetworkGame(): NetworkGame {
   const [skipManaOnly, setSkipManaOnly] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
+  const [captureEnabled, setCaptureEnabled] = useState(false)
+  const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -365,7 +397,24 @@ export function useNetworkGame(): NetworkGame {
           setSkipManaOnly(message.skipManaOnly)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
+          setCaptureEnabled(message.capture === true)
           setStatus('playing')
+          return
+        }
+        case 'capture-list': {
+          setCapture((c) => ({ ...c, entries: message.entries, saved: null }))
+          return
+        }
+        case 'capture-options': {
+          setCapture((c) => ({
+            ...c,
+            options: { id: message.id, did: message.did, options: message.options },
+            saved: null,
+          }))
+          return
+        }
+        case 'capture-saved': {
+          setCapture((c) => ({ ...c, saved: message.file }))
           return
         }
         case 'error': {
@@ -581,6 +630,39 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'resolve-all', roomId: id })
   }, [send])
 
+  const captureList = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'capture-list', roomId: id })
+  }, [send])
+
+  const captureOptions = useCallback(
+    (capture: number) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'capture-options', roomId: id, id: capture })
+    },
+    [send],
+  )
+
+  const captureSave = useCallback(
+    (capture: number, expect: number | 'not-this', note: string, name?: string) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({
+        type: 'capture-save',
+        roomId: id,
+        id: capture,
+        expect,
+        note,
+        ...(name !== undefined && name.trim() !== '' ? { name } : {}),
+      })
+    },
+    [send],
+  )
+
+  const clearCapture = useCallback(() => setCapture(NO_CAPTURE), [])
+
   const nameOf = useCallback(
     (id: ObjectId): string => {
       const o = view?.objects[id]
@@ -646,6 +728,12 @@ export function useNetworkGame(): NetworkGame {
     autoPass,
     toggleManaSkip,
     resolveAll,
+    captureEnabled,
+    capture,
+    captureList,
+    captureOptions,
+    captureSave,
+    clearCapture,
     nameOf,
     clearError,
     reconnect,

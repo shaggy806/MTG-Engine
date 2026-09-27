@@ -47,6 +47,7 @@ import {
   runScenarios,
   scenarioMargin,
 } from "../dist/index.js";
+import { loadCaptureScenarios } from "./captures.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -80,7 +81,9 @@ const options = {
 const out = flag("out", null);
 
 const registry = createDefaultRegistry();
-const scenarios = [...BOT_SCENARIOS, ...TRAINING_SCENARIOS];
+// Positions captured from live games are training scenarios too
+// (`captures/`, git-ignored).
+const scenarios = [...BOT_SCENARIOS, ...TRAINING_SCENARIOS, ...loadCaptureScenarios()];
 console.log(
   `bot:fit-scenarios — base ${champion ?? "current defaults"}; margin ${options.margin}, ` +
     `lambda ${options.lambda}, gate x${options.gateCost}; ${free.length} free weights`,

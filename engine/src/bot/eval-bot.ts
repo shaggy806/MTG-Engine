@@ -360,7 +360,7 @@ function bestDecision(
  * own creature is a real play, and only the search can tell. A slot the
  * polarity can't read keeps the offer's order.
  */
-function aimOffer(
+export function aimOffer(
   state: GameState,
   cards: CardRegistry,
   me: PlayerId,

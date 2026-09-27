@@ -31,6 +31,7 @@ import { WebSocketServer } from "ws";
 import { COMMANDER_RULES, Game, HeuristicBotController, createDefaultRegistry } from "engine";
 import { Room } from "../dist/room.js";
 import { RoomManager } from "../dist/room-manager.js";
+import { DEFAULT_CAPTURE_DIR } from "../dist/capture.js";
 import { attachRoomServer } from "../dist/ws-server.js";
 import SCENARIOS, { COMMANDERS } from "./dev-scenarios.mjs";
 
@@ -131,7 +132,11 @@ function buildGame(scenario) {
   return game;
 }
 
-const manager = new RoomManager();
+// A developer's server: bot decisions are always kept for saving as training
+// scenarios (`src/capture.ts`), in its scenario rooms and in any room created
+// here.
+const CAPTURE = { dir: DEFAULT_CAPTURE_DIR, registry };
+const manager = new RoomManager({ capture: CAPTURE });
 /** code -> { room, game } for every scenario currently being served. */
 const live = new Map();
 
@@ -141,6 +146,7 @@ function buildRoom(code) {
   const bots = scenario.bots ?? {};
   const room = new Room(code, game, {
     pacing: "realtime",
+    capture: CAPTURE,
     botController: (player) => new ScriptedBot(player, bots[player] ?? {}),
   });
   for (const player of Object.keys(bots)) room.addBot(player);

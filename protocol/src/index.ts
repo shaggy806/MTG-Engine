@@ -13,6 +13,7 @@
 
 export type {
   BotSpeed,
+  CaptureSummary,
   ClientMessage,
   SeatCommander,
   SeatStatus,

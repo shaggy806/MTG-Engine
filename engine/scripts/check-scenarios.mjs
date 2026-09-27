@@ -21,6 +21,7 @@ import {
   createDefaultRegistry,
   runScenarios,
 } from "../dist/index.js";
+import { loadCaptureScenarios } from "./captures.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -48,7 +49,11 @@ const registry = createDefaultRegistry();
 const reports = runScenarios(weights, registry, makeBot);
 // Training scenarios are right answers the shipped weights may still get
 // wrong — reported, never gated on (`src/bot/scenarios.ts`, "Two kinds").
-const training = runScenarios(weights, registry, makeBot, TRAINING_SCENARIOS);
+// Positions captured from live games join them (`captures/`, git-ignored).
+const training = runScenarios(weights, registry, makeBot, [
+  ...TRAINING_SCENARIOS,
+  ...loadCaptureScenarios(),
+]);
 const width = Math.max(...[...reports, ...training].map((r) => r.name.length));
 for (const r of reports) {
   console.log(`  ${r.passed ? "PASS" : "FAIL"}  ${r.name.padEnd(width)} ${r.passed ? "" : `(${r.detail})`}`);

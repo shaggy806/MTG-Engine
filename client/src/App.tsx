@@ -56,6 +56,7 @@ import { CommanderTile } from './ui/CommanderTile.tsx'
 import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
+import { CapturePanel } from './ui/CapturePanel.tsx'
 import { BotSpeedControl } from './ui/BotSpeedControl.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
@@ -527,6 +528,7 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
 function GameScreen({ game }: { readonly game: NetworkGame }) {
   const { seat, opponents } = game
   const [showHistory, setShowHistory] = useState(false)
+  const [showCapture, setShowCapture] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
@@ -586,6 +588,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>
+          {/* A developer's server only (`--capture`), and only its host. */}
+          {game.captureEnabled && game.isHost ? (
+            <button type="button" onClick={() => setShowCapture(true)}>
+              Capture
+            </button>
+          ) : null}
           <button type="button" onClick={() => window.location.assign('/')}>
             Leave
           </button>
@@ -637,6 +645,8 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           </div>
         </div>
       ) : null}
+
+      {showCapture ? <CapturePanel game={game} onClose={() => setShowCapture(false)} /> : null}
     </div>
   )
 }

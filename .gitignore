@@ -34,3 +34,6 @@ client/playwright-report/
 
 # Scryfall bulk-data downloads (engine/scripts/gen-oracle.mjs)
 engine/.cache/
+
+# Positions captured from bot games (server --capture) — local training scenarios
+captures/

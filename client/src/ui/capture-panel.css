@@ -1,0 +1,92 @@
+/* The capture panel (CapturePanel.tsx) — a developer's tool inside the
+   History popup's overlay and box. */
+.capture-panel {
+  width: min(62rem, 100%);
+}
+.capture-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.capture-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+.capture-entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow-y: auto;
+}
+.capture-entries button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  text-align: left;
+}
+.capture-entries button.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.capture-when {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.capture-empty {
+  color: var(--muted);
+}
+.capture-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 0;
+  overflow: hidden;
+}
+.capture-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.capture-options label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+.capture-note {
+  min-height: 4rem;
+  resize: vertical;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  padding: 0.4rem;
+  font: inherit;
+}
+.capture-save {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.capture-saved {
+  color: var(--good);
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+@media (max-width: 48rem) {
+  .capture-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

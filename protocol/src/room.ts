@@ -270,7 +270,45 @@ export type ClientMessage =
       readonly type: "ack";
       readonly roomId: string;
       readonly seq: number;
+    }
+  // --- capture (a server started with `--capture` only; see the `state`
+  // message's `capture`) -----------------------------------------------------
+  | {
+      /** The room's recent bot decisions, to pick a blunder from. Answered
+       * with `capture-list`. Host only. */
+      readonly type: "capture-list";
+      readonly roomId: string;
+    }
+  | {
+      /** Everything the bot could have done at one of them. Answered with
+       * `capture-options`. Host only. */
+      readonly type: "capture-options";
+      readonly roomId: string;
+      readonly id: number;
+    }
+  | {
+      /** Saves decision `id` as a training scenario: the right answer is
+       * option `expect`, or anything but what the bot did. Answered with
+       * `capture-saved`. Host only. */
+      readonly type: "capture-save";
+      readonly roomId: string;
+      readonly id: number;
+      readonly expect: number | "not-this";
+      readonly note: string;
+      readonly name?: string;
     };
+
+/** One bot decision a capture-enabled room kept — see `capture-list`. */
+export interface CaptureSummary {
+  readonly id: number;
+  readonly player: PlayerId;
+  readonly turn: number;
+  readonly step: string;
+  /** `"priority"`, or the kind of decision it was answering. */
+  readonly decision: string;
+  /** What the bot did, in words. */
+  readonly did: string;
+}
 
 export type ServerMessage =
   | { readonly type: "room-created"; readonly roomId: string }
@@ -311,5 +349,16 @@ export type ServerMessage =
       /** Whether *this* connection holds the host role. */
       readonly isHost: boolean;
       readonly botSpeed: BotSpeed;
+      /** Present when this server captures bot decisions for training
+       * scenarios — a developer's server, never the public site. */
+      readonly capture?: true;
     }
+  | { readonly type: "capture-list"; readonly entries: readonly CaptureSummary[] }
+  | {
+      readonly type: "capture-options";
+      readonly id: number;
+      readonly did: string;
+      readonly options: readonly { readonly index: number; readonly text: string }[];
+    }
+  | { readonly type: "capture-saved"; readonly file: string }
   | { readonly type: "error"; readonly message: string };

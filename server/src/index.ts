@@ -6,14 +6,21 @@ import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 import { loadOracleTagIndex } from "./oracle-tags.js";
 import { startStatusServer } from "./status.js";
+import { DEFAULT_CAPTURE_DIR } from "./capture.js";
 
 const port = Number(process.env.PORT ?? 4000);
 // "*" is fine for local/LAN dev; set CLIENT_ORIGIN to the real site once
 // this is reachable from the open internet so a stranger's page can't drive
 // this endpoint against a browser that happens to have it open.
 const clientOrigin = process.env.CLIENT_ORIGIN ?? "*";
-const manager = new RoomManager();
 const registry = createDefaultRegistry();
+// `--capture`: keep bots' recent decisions so a blunder can be saved as a
+// training scenario (`capture.ts`). The local `dev` script passes it; the
+// production service runs `node dist/index.js` without it, and must — a
+// capture is the whole game, every hand included.
+const capture = process.argv.includes("--capture");
+const manager = new RoomManager(capture ? { capture: { dir: DEFAULT_CAPTURE_DIR, registry } } : {});
+if (capture) console.log(`capturing bot decisions to ${DEFAULT_CAPTURE_DIR}`);
 
 // An operator endpoint for `curl` over SSH, bound to loopback on a port the
 // Cloudflare tunnel does not forward. It carries room codes, which are join

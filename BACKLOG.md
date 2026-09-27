@@ -170,17 +170,6 @@ base, retire v3. One line per step still open:
   (`kind: "training"` in `bot/scenarios.ts`) — too few to fit more than a lever or two
   against. Each blunder a live game or `bot:behaviour` shows becomes one, and
   `bot:fit-scenarios` says whether a weight fixes it or a feature is missing.
-- **Capture a game as a training scenario (raised 2026-09-27).** A button in the game that saves
-  a position while testing against bots, so a blunder seen at the table becomes a training
-  scenario: a `position` that loads the file with `Game.fromSnapshot`, and a judge of the right
-  answer — ideally picked there and then from the legal actions ("it should have done this"),
-  so no code is needed. The moment worth saving is usually just *before* a bot's move, which is
-  on screen only as the move, so the server keeps the last few states from before each bot
-  decision and the button picks among them. Only the server can supply it: a client's view is
-  redacted, and the full state (`Game.snapshot()`, event log dropped) shows every hand and
-  library — fine for the host of a bot table, not for a table of people. dev-rooms' `state` op
-  is a readable summary, not a restorable state. Unscoped: where snapshots live, and how large
-  a four-player one is.
 
 Beyond that plan:
 
