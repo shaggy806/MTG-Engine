@@ -278,9 +278,11 @@ describe("Hinata, Dawn-Crowned — the bots keep to the offered range", () => {
   it("v1's pick is castable", () => {
     const { game, offer } = setup();
     const bot = new HeuristicBotController(A, game.registry);
-    const action = (bot as unknown as { toCastSpell(l: typeof offer): Parameters<Game["dispatch"]>[0] }).toCastSpell(
-      offer,
-    );
+    const action = (
+      bot as unknown as {
+        toCastSpell(s: typeof game.state, l: typeof offer): Parameters<Game["dispatch"]>[0];
+      }
+    ).toCastSpell(game.state, offer);
     expect(game.canDispatch(action)).toBeNull();
   });
 });

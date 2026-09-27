@@ -159,8 +159,10 @@ that one card is the reason the deck exists.
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **v1.5.** `HeuristicBotController` targets by polarity and value, never at the wrong side
-  alone. Step 3.
+- **v1.5's other choices.** Targeting is done (step 3). Still v1's placeholders: every "you
+  may" declined, sacrifices and discards taken from the front of the list, the first
+  non-mana ability activated whatever it does. Each wants a rule of the same kind — does
+  this help me — read off the effect.
 - **v2's target candidates ordered before the 8-combination cap.** Step 4.
 - **Evaluation terms.** Combat restrictions priced; `lifeDanger` swept; the `smarter-bots.md`
   Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)

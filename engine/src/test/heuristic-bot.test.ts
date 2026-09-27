@@ -147,6 +147,110 @@ describe("HeuristicBotController", () => {
 
 // Found by playing the precon starter decks (sample-decks.ts) bot-vs-bot: each
 // of these either threw out of `dispatch` or never left a main phase.
+describe("HeuristicBotController — aiming", () => {
+  // `legalTargets` lists the players in turn order, then the battlefield
+  // oldest-first. Each position here puts the bot's own permanent first, as
+  // it usually is, so the first legal target is always the wrong one. See
+  // `target-polarity.ts`.
+  const viewOf = (game: Game, player: PlayerId) => ({
+    state: game.state,
+    player,
+    legalActions: () => game.legalActions(player),
+  });
+  const atMain = (land: string, players: readonly PlayerId[] = [A, B]): Game => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: players.map((player) => ({ player, cards: Array<string>(40).fill(land) })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    game.state.zones.perPlayer[A].hand = [];
+    return game;
+  };
+  const creature = (game: Game, name: string, player: PlayerId) =>
+    game.debugSpawn(name, player, "battlefield", { summoningSick: false });
+  const onlyTarget = (action: { readonly type: string; readonly targets?: readonly unknown[] }) =>
+    action.targets?.[0];
+
+  it("kills the opponent's creature, not its own", () => {
+    const game = atMain("Swamp");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+    creature(game, "Grizzly Bears", A);
+    const wurm = creature(game, "Craw Wurm", B);
+    game.debugSpawn("Murder", A, "hand");
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(action.type).toBe("cast-spell");
+    expect(onlyTarget(action)).toEqual({ kind: "object", object: wurm });
+  });
+
+  it("pacifies the opponent's creature, not its own", () => {
+    const game = atMain("Plains");
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Plains", A, "battlefield");
+    creature(game, "Grizzly Bears", A);
+    const wurm = creature(game, "Craw Wurm", B);
+    game.debugSpawn("Pacifism", A, "hand");
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(onlyTarget(action)).toEqual({ kind: "object", object: wurm });
+  });
+
+  it("doesn't counter its own spell", () => {
+    const game = atMain("Island");
+    for (let i = 0; i < 5; i += 1) game.debugSpawn("Island", A, "battlefield");
+    const divination = game.debugSpawn("Divination", A, "hand");
+    game.debugSpawn("Counterspell", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: divination, targets: [] });
+    // Divination is on the stack and its caster holds priority (rule 117.3c);
+    // Counterspell is castable, and its only legal target is Divination.
+    expect(new HeuristicBotController(A).act(viewOf(game, A))).toEqual({
+      type: "pass-priority",
+      player: A,
+    });
+  });
+
+  it("finds the newest threat on a wide four-player board", () => {
+    // Beast Within can hit any permanent; the board's oldest are lands, and
+    // the one worth destroying is carol's Craw Wurm, the sixteenth option.
+    const game = atMain("Forest", [A, B, C, D]);
+    for (const player of [A, B, C, D]) {
+      for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", player, "battlefield");
+    }
+    creature(game, "Grizzly Bears", A);
+    creature(game, "Llanowar Elves", B);
+    creature(game, "Grizzly Bears", D);
+    const wurm = creature(game, "Craw Wurm", C);
+    game.debugSpawn("Beast Within", A, "hand");
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(action.type).toBe("cast-spell");
+    expect(onlyTarget(action)).toEqual({ kind: "object", object: wurm });
+  });
+
+  it("points an 'up to one' help at nothing rather than at an opponent's creature", () => {
+    const game = atMain("Plains");
+    const ajani = game.debugSpawn("Ajani, Caller of the Pride", A, "battlefield");
+    creature(game, "Craw Wurm", B);
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(action).toMatchObject({ type: "activate-ability", source: ajani, abilityIndex: 0 });
+    expect(onlyTarget(action)).toBeNull();
+  });
+
+  it("aims a trigger at the opponent's side", () => {
+    const game = atMain("Forest");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    game.debugSpawn("Sol Ring", A, "battlefield");
+    const signet = game.debugSpawn("Arcane Signet", B, "battlefield");
+    const sage = game.debugSpawn("Reclamation Sage", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: sage, targets: [] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    const action = new HeuristicBotController(A).act(viewOf(game, A));
+    expect(action).toEqual({
+      type: "choose-targets",
+      player: A,
+      targets: [{ kind: "object", object: signet }],
+    });
+  });
+});
+
 describe("HeuristicBotController — per-card legality", () => {
   const viewOf = (game: Game, player: PlayerId) => ({
     state: game.state,

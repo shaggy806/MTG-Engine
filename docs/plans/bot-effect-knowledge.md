@@ -185,3 +185,12 @@ reanimation and mill given sides, removal outranking its consolation — **98.6%
 prototype's 74%. So no labelling page: what's left is a transform, an animated land, a suspect,
 which really are the board's call. There is no override table yet; the first card the
 vocabulary gets wrong in a way that matters will start one.
+
+**Step 3, targeting done (2026-09-26).** `HeuristicBotController` aims casts, activations,
+trigger targets, an Aura entering uncast and a Clone's copy by polarity and `targetValue`, and
+leaves alone anything whose only legal targets are on the wrong side. Benched against the
+unaimed v1 of the baseline build, three of them at four players, 400 games: **30.0% [25.7,
+34.7]** (even 25%), in line with the prototype's 32.8%. One difference from the prototype is
+deliberate and untested: it valued a player target at 100 minus their life, so burn always went
+face; `targetValue` puts a healthy opponent's face below a real creature and a dying one's above
+it. Still to do in v1.5 proper: "you may", sacrifices, discards and which ability to activate.

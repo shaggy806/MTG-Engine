@@ -30,9 +30,18 @@ import type { EffectSpec } from "./effects.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
+import { printedCardName } from "./state.js";
 import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
+import {
+  auraPolarity,
+  offerPolarities,
+  onlyWrongSide,
+  pendingTargetPolarities,
+  rankTargets,
+} from "./target-polarity.js";
+import type { Polarity } from "./target-polarity.js";
 
 export type { AttackerDeclaration, BlockerDeclaration };
 
@@ -1268,7 +1277,7 @@ export class HeuristicBotController extends AutomaticController {
     };
   }
 
-  private toCastSpell(legal: CastSpellLegal): Action {
+  private toCastSpell(state: GameState, legal: CastSpellLegal): Action {
     const player = this.playerId;
     // Deterministic "pick the last option" policy for sacrifice/convoke
     // choices — for convoke specifically this maximizes creatures tapped,
@@ -1303,7 +1312,12 @@ export class HeuristicBotController extends AutomaticController {
     }
     const targets = fitCastTargets(
       legal,
-      firstOfEach(legal.targetOptions, legal.targetSpecs),
+      this.aimedTargets(
+        state,
+        legal.targetOptions,
+        legal.targetSpecs,
+        offerPolarities(this.registry, legal),
+      ),
       legal.targetOptions,
       legal.targetSpecs,
     );
@@ -1353,7 +1367,7 @@ export class HeuristicBotController extends AutomaticController {
     return on !== null && on !== undefined;
   }
 
-  private toActivateAbility(legal: ActivateAbilityLegal): Action {
+  private toActivateAbility(state: GameState, legal: ActivateAbilityLegal): Action {
     const player = this.playerId;
     const sac = legal.sacrifice;
     return {
@@ -1361,12 +1375,144 @@ export class HeuristicBotController extends AutomaticController {
       player,
       source: legal.source,
       abilityIndex: legal.abilityIndex,
-      targets: firstOfEach(legal.targetOptions, legal.targetSpecs),
+      targets: this.aimedTargets(
+        state,
+        legal.targetOptions,
+        legal.targetSpecs,
+        offerPolarities(this.registry, legal),
+      ),
       ...(sac !== undefined && sac.choices.length > 0
         ? { sacrifice: sac.choices[sac.choices.length - 1] }
         : {}),
       ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
     };
+  }
+
+  /**
+   * One target per slot, aimed by what the slot's effect does to its target
+   * (`target-polarity.ts`) — removal at the opponents' most valuable
+   * permanent, a pump at our own best creature — where this used to take the
+   * first legal option. `legalTargets` lists the players in turn order and
+   * then the battlefield oldest-first, so "first" was this bot itself or its
+   * own oldest permanent: it pacified its own creatures, Murdered its own
+   * Bears and cast Negate on its own spells. Measured over 40 four-player
+   * games, 22% of its targeted picks landed on the wrong side of the table;
+   * aimed, about 1%, and a prototype of this benched 32.8% [28.3, 37.5]
+   * against three unaimed copies at four players (even 25%).
+   *
+   * Slot by slot through `fillableOptions`, exactly as `firstOfEach` does, so
+   * an "another target" slot still skips what an earlier one took. A slot the
+   * polarity can't read keeps the first option, and an unknown source
+   * (`polarities` null — a granted ability, a targeted modal spell) keeps
+   * `firstOfEach` outright.
+   */
+  private aimedTargets(
+    state: GameState,
+    legalOptions: readonly (readonly TargetRef[])[],
+    specs: readonly TargetSpec[],
+    polarities: readonly Polarity[] | null,
+  ): ChosenTargets {
+    if (polarities === null) return firstOfEach(legalOptions, specs);
+    const picked: (TargetRef | null)[] = [];
+    const group = anyNumberSlot(specs);
+    for (let i = 0; i < legalOptions.length; i += 1) {
+      const polarity = polarities[i] ?? "either";
+      const fillable = fillableOptions(specs, legalOptions, i, picked);
+      const best = rankTargets(state, this.registry, this.playerId, fillable, polarity)[0];
+      // An "any number of" group (always last) takes one member, or none,
+      // as `firstOfEach` does.
+      if (i === group) {
+        if (best !== undefined) picked.push(best);
+        break;
+      }
+      // "Up to one target creature" with only the wrong side to point at is
+      // a choice to point at nothing.
+      const skip =
+        isOptionalSpec(specs[i]) &&
+        onlyWrongSide(state, this.playerId, fillable, polarity, specs[i]);
+      picked.push(skip ? null : (best ?? null));
+    }
+    return picked;
+  }
+
+  /**
+   * Whether a cast or activation could only be aimed at the wrong side of the
+   * table — a counterspell with only our own spell on the stack, a Murder
+   * with only our own creatures to kill, a +1/+1 counter with only the
+   * opponents' creatures to put it on. Such an offer is left alone rather
+   * than cast at whatever's legal. A slot whose spec names the side ("target
+   * creature you control") is the card's choice, not a mistake, and an
+   * optional slot can always be left empty.
+   */
+  private aimsOnlyAtWrongSide(
+    state: GameState,
+    offer: CastSpellLegal | ActivateAbilityLegal,
+  ): boolean {
+    if (offer.targetOptions.length === 0) return false;
+    const polarities = offerPolarities(this.registry, offer);
+    if (polarities === null) return false;
+    return offer.targetOptions.some(
+      (options, i) =>
+        !isOptionalSpec(offer.targetSpecs[i]) &&
+        onlyWrongSide(state, this.playerId, options, polarities[i] ?? "either", offer.targetSpecs[i]),
+    );
+  }
+
+  /** A trigger's targets (or a free cast's), aimed the same way as a cast's. */
+  chooseTargets(
+    view: ControllerView,
+    _sourceName: string,
+    specs: readonly TargetSpec[],
+    legalOptions: readonly (readonly TargetRef[])[],
+  ): ChosenTargets {
+    return this.aimedTargets(
+      view.state,
+      legalOptions,
+      specs,
+      pendingTargetPolarities(view.state, this.registry),
+    );
+  }
+
+  /** What an Aura put onto the battlefield without being cast enchants (rule
+   * 303.4f): the side its statics say — a Pacifism on an opponent's best
+   * creature, a Rancor on our own. */
+  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId {
+    const name = view.state.objects[source]?.cardName;
+    const polarity: Polarity =
+      name !== undefined && this.registry.has(name) ? auraPolarity(this.registry.get(name)) : "either";
+    const best = rankTargets(
+      view.state,
+      this.registry,
+      this.playerId,
+      options.map((object): TargetRef => ({ kind: "object", object })),
+      polarity,
+    )[0];
+    return best?.kind === "object" ? best.object : options[0];
+  }
+
+  /**
+   * What a Clone copies: the most valuable creature on the battlefield,
+   * whoever's it is — except a legendary one we already control, which the
+   * legend rule would make us choose between (rule 704.5j). The first option
+   * used to be the oldest creature, very often a mana dork.
+   */
+  chooseCopy(view: ControllerView, _source: ObjectId, options: readonly ObjectId[]): ObjectId | null {
+    const state = view.state;
+    const ownLegend = (id: ObjectId): boolean => {
+      const object = state.objects[id];
+      if (object === undefined || object.controller !== this.playerId) return false;
+      const name = printedCardName(object);
+      return this.registry.has(name) && (this.registry.get(name).supertypes ?? []).includes("legendary");
+    };
+    const worth = options.filter((id) => !ownLegend(id));
+    const best = rankTargets(
+      state,
+      this.registry,
+      this.playerId,
+      (worth.length > 0 ? worth : options).map((object): TargetRef => ({ kind: "object", object })),
+      "take",
+    )[0];
+    return best?.kind === "object" ? best.object : null;
   }
 
   /**
@@ -1449,13 +1595,16 @@ export class HeuristicBotController extends AutomaticController {
     if (lands.length > 0) return this.toPlayLand(this.bestLand(view.state, lands));
 
     const spells = options.filter(
-      (o): o is CastSpellLegal => o.kind === "cast-spell" && !this.taxWouldKill(view.state, o),
+      (o): o is CastSpellLegal =>
+        o.kind === "cast-spell" &&
+        !this.taxWouldKill(view.state, o) &&
+        !this.aimsOnlyAtWrongSide(view.state, o),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
         this.manaValueOf(b.cardName) > this.manaValueOf(a.cardName) ? b : a,
       );
-      return this.toCastSpell(best);
+      return this.toCastSpell(view.state, best);
     }
 
     if (view.state.turn.number !== this.activationTurn) {
@@ -1467,12 +1616,13 @@ export class HeuristicBotController extends AutomaticController {
         o.kind === "activate-ability" &&
         !this.isManaOnlyAbility(o) &&
         !this.isPointlessReattach(view.state, o) &&
-        (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) < MAX_ACTIVATIONS_PER_TURN,
+        (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) < MAX_ACTIVATIONS_PER_TURN &&
+        !this.aimsOnlyAtWrongSide(view.state, o),
     );
     if (ability !== undefined) {
       const key = `${ability.source}:${ability.abilityIndex}`;
       this.activations.set(key, (this.activations.get(key) ?? 0) + 1);
-      return this.toActivateAbility(ability);
+      return this.toActivateAbility(view.state, ability);
     }
 
     return passFor(player);
