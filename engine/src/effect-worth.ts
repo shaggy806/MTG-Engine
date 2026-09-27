@@ -285,3 +285,47 @@ export function costWorth(
   const life = cost.life !== undefined && cost.life > 0 ? lifeLoss(state, payer, cost.life) : 0;
   return -MANA_POINT * mana + life - 0.25 * (cost.energy ?? 0);
 }
+
+/** Whether every part of `effect` lasts only until end of turn — a pump, a
+ * keyword grant, an animation — so that it does nothing once the turn is
+ * over. Anything else (a draw, a counter, a lasting pump) is `false`. */
+export function onlyUntilEndOfTurn(effect: EffectSpec | null | undefined): boolean {
+  if (effect === null || effect === undefined) return false;
+  switch (effect.kind) {
+    case "sequence":
+      return effect.effects.length > 0 && effect.effects.every(onlyUntilEndOfTurn);
+    case "modify-pt":
+    case "modify-pt-all":
+    case "grant-keyword":
+    case "grant-keyword-all":
+    case "animate":
+      return effect.duration === "end-of-turn";
+    default:
+      return false;
+  }
+}
+
+/** Combat, any player's: where an until-end-of-turn pump changes damage or
+ * a block. */
+const COMBAT_STEPS: ReadonlySet<string> = new Set([
+  "begin-combat",
+  "declare-attackers",
+  "declare-blockers",
+  "combat-damage",
+]);
+
+/**
+ * Whether an until-end-of-turn effect used now could matter to `me`: in
+ * combat, in my own first main phase (a pump or an animation that sets up an
+ * attack), or in answer to something on the stack. Anywhere else it's gone
+ * before it does anything — and the mana it costs is mana not spent on a
+ * spell. On seed 50 v2 spent every land and Treasure in its upkeep on Lathliss,
+ * Dragon Queen's "+1/+0 until end of turn" and cast nothing that turn: its
+ * rollout plays its own seat passively, so mana it would have cast spells
+ * with looked free.
+ */
+export function temporaryEffectCanMatter(state: GameState, me: PlayerId): boolean {
+  if (state.zones.shared.stack.length > 0) return true;
+  if (COMBAT_STEPS.has(state.turn.step)) return true;
+  return state.turn.step === "precombat-main" && activePlayerOf(state) === me;
+}

@@ -410,3 +410,12 @@ Three things kept it from ending, each found only once the one before was fixed:
   minutes after it began: a turn of ten spells at ~33 s a search. Not benched; shipped on the
   replay, and on the decisions read along the way. Still open, in BACKLOG: mana spent in the
   upkeep on a pump that only matters in combat.
+
+**After the plan: pump timing and twin targets (2026-09-27).** An until-end-of-turn pump, keyword
+grant or animation is no longer a candidate where it can't matter — outside combat, outside the
+bot's own first main phase, with nothing on the stack — for v1 and v2 alike. Read with
+`bot:diff` against the build before it, over six four-player games: 18 of 13,875 decisions
+changed, every one of them that waste — the live v2 had been casting Unleash Fury on an
+opponent's creature in its own upkeep, three turns running, and activating Kessig Wolf Run for
+X=6 there. And twin targets, tokens nothing tells apart, are one option before the candidate
+cap (`bot/twins.ts`, on the token fold's own key): seven Treasures are one simulation.

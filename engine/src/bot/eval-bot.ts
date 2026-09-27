@@ -41,6 +41,9 @@ import {
   specSide,
 } from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
+import { collapseTwins } from "./twins.js";
+import type { TargetRef } from "../target.js";
+import type { Polarity } from "../target-polarity.js";
 import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
@@ -366,14 +369,15 @@ export function aimOffer(
   me: PlayerId,
   legal: LegalAction,
 ): LegalAction {
+  // Ranked, then twins cut to as many as there are slots (`bot/twins.ts`):
+  // seven identical Scute Swarms are one option, not seven simulations.
+  const aim = (options: readonly TargetRef[], polarity: Polarity | undefined, slots: number) =>
+    collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either"), slots);
   if (legal.kind === "choose-targets") {
     const polarities = pendingTargetPolarities(state, cards);
-    if (polarities === null) return legal;
     return {
       ...legal,
-      options: legal.options.map((options, i) =>
-        rankTargets(state, cards, me, options, polarities[i] ?? "either"),
-      ),
+      options: legal.options.map((options, i) => aim(options, polarities?.[i], legal.options.length)),
     };
   }
   if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return legal;
@@ -381,27 +385,24 @@ export function aimOffer(
     // A targeted modal spell's modes carry targets of their own.
     const modal = legal.castModal;
     const byMode = modalPolarities(cards, legal);
-    if (byMode === null) return legal;
+    const slots = modal.modes.reduce((n, mode) => n + mode.targetOptions.length, 0);
     return {
       ...legal,
       castModal: {
         ...modal,
         modes: modal.modes.map((mode, m) => ({
           ...mode,
-          targetOptions: mode.targetOptions.map((options, i) =>
-            rankTargets(state, cards, me, options, byMode[m]?.[i] ?? "either"),
-          ),
+          targetOptions: mode.targetOptions.map((options, i) => aim(options, byMode?.[m]?.[i], slots)),
         })),
       },
     };
   }
   if (legal.targetOptions.length === 0) return legal;
   const polarities = offerPolarities(cards, legal);
-  if (polarities === null) return legal;
   return {
     ...legal,
     targetOptions: legal.targetOptions.map((options, i) =>
-      rankTargets(state, cards, me, options, polarities[i] ?? "either"),
+      aim(options, polarities?.[i], legal.targetOptions.length),
     ),
   };
 }
@@ -549,6 +550,10 @@ export class EvalBotController extends HeuristicBotController {
         // and on a wide board they're nearly every candidate there is — 27 of
         // 30 on one 38-permanent board, which made a single decision a 2s search.
         if (legal.kind === "activate-ability" && this.isManaOnlyAbility(legal)) continue;
+        // An until-end-of-turn pump where it can't matter (`wastedNow`): the
+        // rollout plays our own seat passively, so mana it would have cast
+        // spells with looks free to spend, and v2 pumped away its upkeep.
+        if (this.wastedNow(view.state, legal)) continue;
         candidates.push(...candidateActions(aimOffer(view.state, this.cards, player, legal), player));
       }
     });

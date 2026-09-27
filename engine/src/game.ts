@@ -203,6 +203,7 @@ import {
   permanentCount,
   printedCardName,
   nameOf,
+  tokenFoldKey,
 } from "./state.js";
 import type {
   AwaitingDecision,
@@ -1985,29 +1986,7 @@ export class Game {
    * matches its old stack again and folds back.
    */
   private tokenFoldKey(o: GameObject): string {
-    return JSON.stringify([
-      o.cardName,
-      o.copyOf,
-      o.owner,
-      o.controller,
-      o.tapped,
-      o.summoningSick,
-      o.face ?? 0,
-      o.exileAtEndStep ?? false,
-      o.sacrificeAtEndStep ?? false,
-      o.notLegendary ?? false,
-      o.goadedBy ?? [],
-      o.goadedForGameBy ?? [],
-      o.suspectedAt ?? null,
-      o.mustAttackPlayer ?? null,
-      o.controlEffects ?? null,
-      o.controlEndsAtCleanup,
-      o.chosenOnEnter ?? null,
-      o.chosenCreatureType ?? null,
-      o.counters,
-      o.counterTimestamps ?? null,
-      o.modifiers,
-    ]);
+    return tokenFoldKey(o);
   }
 
   /** A token in the state a fresh one is in, as far as combat and damage go:

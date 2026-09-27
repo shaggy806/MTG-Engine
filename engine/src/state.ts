@@ -2508,3 +2508,39 @@ export const permanentCount = (state: GameState, ids: readonly ObjectId[]): numb
 
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];
+
+/**
+ * Everything two tokens must share to be folded into one stack, as one
+ * string — `Game`'s `findMergeableStack` compares a new batch against it and
+ * `recompactTokens` groups on it, and the bots use it to tell twin targets
+ * apart (`bot/twins.ts`). Anything that tells one token from another belongs
+ * here — whose it is (owner as well as controller: a token someone stole for
+ * good isn't one of the thief's own), its state, what's been done to it
+ * (counters, modifiers, a goad, a control effect, a transformed face, a choice
+ * made as it entered) and what's still due to happen to it.
+ */
+export function tokenFoldKey(o: GameObject): string {
+  return JSON.stringify([
+    o.cardName,
+    o.copyOf,
+    o.owner,
+    o.controller,
+    o.tapped,
+    o.summoningSick,
+    o.face ?? 0,
+    o.exileAtEndStep ?? false,
+    o.sacrificeAtEndStep ?? false,
+    o.notLegendary ?? false,
+    o.goadedBy ?? [],
+    o.goadedForGameBy ?? [],
+    o.suspectedAt ?? null,
+    o.mustAttackPlayer ?? null,
+    o.controlEffects ?? null,
+    o.controlEndsAtCleanup,
+    o.chosenOnEnter ?? null,
+    o.chosenCreatureType ?? null,
+    o.counters,
+    o.counterTimestamps ?? null,
+    o.modifiers,
+  ]);
+}

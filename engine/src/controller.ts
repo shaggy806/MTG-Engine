@@ -27,7 +27,12 @@ import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { EffectSpec } from "./effects.js";
-import { costWorth, effectWorth } from "./effect-worth.js";
+import {
+  costWorth,
+  effectWorth,
+  onlyUntilEndOfTurn,
+  temporaryEffectCanMatter,
+} from "./effect-worth.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
@@ -1431,6 +1436,29 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /**
+   * Whether `offer` only pumps, grants keywords or animates until end of
+   * turn, at a moment when that can't matter — outside combat, outside my
+   * own first main phase, with nothing on the stack to answer
+   * (`temporaryEffectCanMatter`). Such an offer is left alone, by v1 and by
+   * v2's search alike: its mana is better kept for a spell. A granted ability
+   * or a modal or multi-face spell, whose effect isn't read here, is never
+   * left out.
+   */
+  protected wastedNow(state: GameState, offer: LegalAction): boolean {
+    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability") return false;
+    if (temporaryEffectCanMatter(state, this.playerId)) return false;
+    if (!this.registry.has(offer.cardName)) return false;
+    const def = this.registry.get(offer.cardName);
+    if (offer.kind === "cast-spell") {
+      if (offer.castModal !== undefined || offer.face !== undefined) return false;
+      return onlyUntilEndOfTurn(def.effect);
+    }
+    const ability = def.activated?.[offer.abilityIndex];
+    if (ability === undefined || !offer.text.startsWith(ability.text)) return false;
+    return onlyUntilEndOfTurn(ability.effect);
+  }
+
+  /**
    * What activating `legal` is worth to this bot, or `null` to leave it
    * alone: its effect with the targets it would be aimed at
    * (`effect-worth.ts`), less the permanent a "sacrifice a creature" cost
@@ -1808,7 +1836,8 @@ export class HeuristicBotController extends AutomaticController {
       (o): o is CastSpellLegal =>
         o.kind === "cast-spell" &&
         !this.taxWouldKill(view.state, o) &&
-        !this.aimsOnlyAtWrongSide(view.state, o),
+        !this.aimsOnlyAtWrongSide(view.state, o) &&
+        !this.wastedNow(view.state, o),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
@@ -1830,7 +1859,8 @@ export class HeuristicBotController extends AutomaticController {
         this.isManaOnlyAbility(o) ||
         this.isPointlessReattach(view.state, o) ||
         (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) >= MAX_ACTIVATIONS_PER_TURN ||
-        this.aimsOnlyAtWrongSide(view.state, o)
+        this.aimsOnlyAtWrongSide(view.state, o) ||
+        this.wastedNow(view.state, o)
       ) {
         continue;
       }

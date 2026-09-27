@@ -196,11 +196,11 @@ Beyond that plan:
   see (`untappedMana` is 0). Political, and sometimes right, but it reads as helping the wrong
   side; either mana gets a price or a training scenario says when pushing someone else's attack
   is worth a card or a use.
-- **Pumps and mana spent too early.** On seed 50 v2 spent all its mana in its upkeep on
-  Lathliss, Dragon Queen's "+1/+0 until end of turn" and entered its main phase with none: the
-  rollout plays its own seat passively, so mana it would have cast spells with looks free to
-  spend first. A player pumps after blockers. Either an end-of-turn effect is held for combat,
-  or unspent mana gets a price in the rollout. The same gap as "Pumping an opponent's attacker".
+- **Mana spent early on lasting effects.** Until-end-of-turn pumps now wait for combat
+  (`effect-worth.ts`, `temporaryEffectCanMatter`), but v2 still spends its upkeep mana on lasting
+  activations (Hoard-Smelter Dragon, Scavenging Ooze) it could make in its main phase beside its
+  spells: the rollout plays its own seat passively, so unspent mana is worth nothing it can see.
+  The same gap as "Pumping an opponent's attacker"; wants unspent mana priced in the rollout.
 - **Big boards under count budgets.** A seventy-permanent board costs v2 ~33 s a window at the
   bench's 200 simulations, so a long four-player game can still pass a bench's time limit
   (seed 50's last turn took 15 minutes; it ends now). Live rooms stop at 300 ms.
