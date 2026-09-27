@@ -1838,6 +1838,12 @@
 .card-tile.art-first .ct-art {
   flex: 0 0 46%;
   height: auto;
+  /* A flex item's default min-height is its content's, and the <img> inside
+     is sized by the image's own aspect ratio: a landscape art crop is shorter
+     than 46% and never noticed, but a portrait one (the Final Fantasy
+     "Summon:" cards) grew the box to twice the card's height and pushed the
+     name, type line and rules text out of the bottom of the tile. */
+  min-height: 0;
 }
 /* direct child only -- art-first layout nests a second <img> (the overlaid
    cost pip's SVG, inside .ct-cost-overlay) inside .ct-art, and this rule
