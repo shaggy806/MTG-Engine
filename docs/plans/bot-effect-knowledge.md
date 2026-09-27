@@ -270,6 +270,17 @@ targets (and whether a right-side one was legal), own turns ending with a sorcer
 castable and unplayed (and which cards), skipped land drops, and time by kind of window against
 the room's budget. A few dozen games answer what a win rate needs hundreds for, and say why.
 
+**Step 6, done (2026-09-27).** The gate gained a scenario for each measured blunder a position
+can pin: Drakuseth's attack trigger at four players (before the ranking, v2 put the 4 damage on
+alice herself), Ajani's +1/+1 counter on a wide board (it saw only opponents' creatures, and
+passed) and Absorb with only its own Divination on the stack. Run against the v2 from before this
+plan (`cfbf98be`), the first two fail and pass now; the third passes on both, since the evaluation
+already prices it, but fails for any vector that values three life above two cards (at `life: 5`
+v2 counters its own draw spell). Two blunders got no scenario. Garruk's untap can't be posed:
+v2 always prefers his −1 Beast to the +1, so no position reaches the untap's targets. And Beast
+Within on its own land didn't recur in the positions tried: ranked last, its own lands fall past
+the eight targets simulated.
+
 **Step 7, done (2026-09-26).** v3 is retired: `plan.ts`, `plan-bot.ts`, `bot-plan.test.ts`,
 the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS`, and the
 `--bot` flag of the bench, tune, harvest and scenario scripts. `determinize.ts` and `simulate.ts`'s

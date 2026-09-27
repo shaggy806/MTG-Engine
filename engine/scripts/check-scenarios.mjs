@@ -44,8 +44,9 @@ const makeBot = (player, registry, w) => new EvalBotController(player, registry,
 console.log(`scenarios: ${label}`);
 
 const reports = runScenarios(weights, createDefaultRegistry(), makeBot);
+const width = Math.max(...reports.map((r) => r.name.length));
 for (const r of reports) {
-  console.log(`  ${r.passed ? "PASS" : "FAIL"}  ${r.name.padEnd(36)} ${r.passed ? "" : `(${r.detail})`}`);
+  console.log(`  ${r.passed ? "PASS" : "FAIL"}  ${r.name.padEnd(width)} ${r.passed ? "" : `(${r.detail})`}`);
   if (!r.passed) console.log(`        rule: ${r.rule}`);
 }
 

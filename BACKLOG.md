@@ -163,9 +163,6 @@ base, retire v3. One line per step still open:
   may" declined, sacrifices and discards taken from the front of the list, the first
   non-mana ability activated whatever it does. Each wants a rule of the same kind — does
   this help me — read off the effect.
-- **Scenarios for the blunders `bot:behaviour` measured.** The wide-board removal case is in
-  the gate; a Drakuseth-style trigger hitting its own side and help aimed at an opponent
-  (Garruk's untap, a +1/+1 counter) are covered only by v1 tests, not by a v2 scenario. Step 6.
 
 Beyond that plan:
 

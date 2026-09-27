@@ -32,6 +32,7 @@ import type { ControllerView, PlayerController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import type { TargetRef } from "../target.js";
 import { EvalBotController } from "./eval-bot.js";
 import { DEFAULT_WEIGHTS } from "./evaluate.js";
 import type { EvalWeights } from "./evaluate.js";
@@ -64,6 +65,8 @@ export interface BotScenario {
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
+const C = asPlayerId("carol");
+const D = asPlayerId("dave");
 
 const forestDeck = (player: PlayerId) => ({ player, cards: Array<string>(40).fill("Forest") });
 
@@ -84,6 +87,14 @@ function mainPhase(setup: (game: Game) => void, registry: CardRegistry): Game {
   const game = Game.create({ seed: 3, registry, decks: [forestDeck(A), forestDeck(B)] });
   game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
   setup(game);
+  return game;
+}
+
+/** A four-player game paused at Alice's precombat main, her hand empty. */
+function fourPlayerMain(registry: CardRegistry): Game {
+  const game = Game.create({ seed: 3, registry, decks: [A, B, C, D].map(forestDeck) });
+  game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+  game.state.zones.perPlayer[A].hand = [];
   return game;
 }
 
@@ -391,20 +402,17 @@ const SCENARIOS: readonly BotScenario[] = [
       // simulates a capped number of targets, so on a real four-player board
       // the newest threat used to be past the cap — the bot never saw it. Eight
       // small creatures, two of them our own, all older than carol's 6/4.
-      const [a, b, c, d] = ["alice", "bob", "carol", "dave"].map(asPlayerId);
-      const game = Game.create({ seed: 3, registry, decks: [a, b, c, d].map(forestDeck) });
-      game.advanceUntil((s) => s.priority.holder === a && s.turn.step === "precombat-main");
-      game.state.zones.perPlayer[a].hand = [];
-      for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", a, "battlefield");
-      for (const player of [a, b, c, d]) {
+      const game = fourPlayerMain(registry);
+      for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", A, "battlefield");
+      for (const player of [A, B, C, D]) {
         for (const name of ["Grizzly Bears", "Llanowar Elves"]) {
           game.debugSpawn(name, player, "battlefield", { summoningSick: false });
         }
       }
-      const wurm = game.debugSpawn("Craw Wurm", c, "battlefield", { summoningSick: false });
-      game.debugSpawn("Murder", a, "hand");
+      const wurm = game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });
+      game.debugSpawn("Murder", A, "hand");
 
-      const action = makeBot(a, registry, weights).act(viewOf(game, a));
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
       const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
       const hit = target != null && target.kind === "object" ? target.object : null;
       return {
@@ -418,7 +426,106 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   },
+  {
+    name: "aims Drakuseth's trigger at the opponents",
+    rule: "Damage from our own attack trigger goes at the table, never at our side.",
+    run(weights, registry, makeBot) {
+      // Measured in four-player games before targets were ranked: players are
+      // listed first, in turn order, so the first target combinations all put
+      // the 4 damage on alice herself, the rest of the table lay past the
+      // cap, and the bot chose the least bad of those.
+      const game = fourPlayerMain(registry);
+      for (const player of [A, B, C, D]) {
+        for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", player, "battlefield");
+        game.debugSpawn("Grizzly Bears", player, "battlefield", { summoningSick: false });
+      }
+      game.debugSpawn("Llanowar Elves", A, "battlefield", { summoningSick: false });
+      game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });
+      const drakuseth = game.debugSpawn("Drakuseth, Maw of Flames", A, "battlefield", {
+        summoningSick: false,
+      });
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      game.dispatch({
+        type: "declare-attackers",
+        player: A,
+        attackers: [{ attacker: drakuseth, defender: B }],
+      });
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-targets") {
+        return { passed: false, detail: "the attack trigger never asked for targets" };
+      }
+
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const targets = action.type === "choose-targets" ? action.targets : [];
+      const ours = targets.filter((t) => t !== null && sideOf(game, t) === A);
+      return {
+        passed: action.type === "choose-targets" && targets.length > 0 && ours.length === 0,
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
+  {
+    name: "puts its counter on its own creature on a wide board",
+    rule: "A +1/+1 counter belongs on our creature, however many of theirs are listed first.",
+    run(weights, registry, makeBot) {
+      // Nine opposing creatures, all older than ours: in the battlefield's
+      // order, ours comes tenth. Before the ranking, the bot saw only the
+      // first eight choices, all of them opponents' — and passed.
+      const game = fourPlayerMain(registry);
+      for (const player of [B, C, D]) {
+        for (let i = 0; i < 3; i += 1) {
+          game.debugSpawn("Grizzly Bears", player, "battlefield", { summoningSick: false });
+        }
+      }
+      game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+      const ajani = game.debugSpawn("Ajani, Caller of the Pride", A, "battlefield");
+
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const targets = action.type === "activate-ability" ? (action.targets ?? []) : [];
+      return {
+        passed:
+          action.type === "activate-ability" &&
+          action.source === ajani &&
+          targets.every((t) => t === null || sideOf(game, t) === A),
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
+  {
+    name: "does not counter its own spell",
+    rule: "Absorb's three life is no reason to counter our own card draw.",
+    run(weights, registry, makeBot) {
+      // v1 did it, before it aimed: any spell on the stack is a legal target,
+      // and ours was the only one. The evaluation prices it right at the
+      // shipped weights, but a vector that rates three life above two cards
+      // doesn't — at `life: 5`, v2 counters its own Divination.
+      const game = mainPhase((g) => {
+        g.state.zones.perPlayer[A].hand = [];
+        for (let i = 0; i < 9; i += 1) g.debugSpawn(i < 3 ? "Plains" : "Island", A, "battlefield");
+      }, registry);
+      const divination = game.debugSpawn("Divination", A, "hand");
+      game.debugSpawn("Absorb", A, "hand");
+      game.dispatch({ type: "cast-spell", player: A, card: divination, targets: [] });
+      // Divination is on the stack and its caster holds priority (rule
+      // 117.3c). Absorb has to be castable, or passing proves nothing.
+      const offered = game
+        .legalActions(A)
+        .some((o) => o.kind === "cast-spell" && o.cardName === "Absorb");
+      if (!offered) return { passed: false, detail: "Absorb wasn't castable" };
+
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      return {
+        passed: action.type !== "cast-spell",
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
 ];
+
+/** Who a target belongs to: a player, or a permanent's controller. */
+function sideOf(game: Game, target: TargetRef): PlayerId | undefined {
+  return target.kind === "player" ? target.player : game.state.objects[target.object]?.controller;
+}
 
 export const BOT_SCENARIOS = SCENARIOS;
 
