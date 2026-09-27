@@ -194,7 +194,7 @@ export function PlayerPanel({
           exile {exileSize}
         </button>
         <span>
-          lands {info.landsPlayedThisTurn}/{1}
+          lands {info.landsPlayedThisTurn}/{info.maxLandsThisTurn}
         </span>
       </div>
       {mana ? (

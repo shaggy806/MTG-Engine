@@ -48,6 +48,9 @@ export interface PublicPlayerInfo {
   readonly librarySize: number;
   readonly graveyardSize: number;
   readonly landsPlayedThisTurn: number;
+  /** How many lands this player may play this turn — the rules' one, plus
+   * extra land drops (Oracle of Mul Daya, Explore). */
+  readonly maxLandsThisTurn: number;
   readonly hasLost: boolean;
   readonly lossReason: string | null;
   /** Combat damage this player has taken from each commander so far, one
@@ -239,6 +242,11 @@ export interface ViewOptions {
    * `DecisionReadCtx` and `ManaPlanningView` use.
    */
   readonly effectiveCost?: (cardId: ObjectId) => string | null;
+  /** How many lands `player` may play this turn. Supplied by `Game.viewFor`
+   * for the same reason: an extra land drop is a static whose condition only
+   * `Game` can evaluate. Without it, the rules' base limit plus any one-shot
+   * extra land drops. */
+  readonly maxLands?: (player: PlayerId) => number;
 }
 
 /**
@@ -450,6 +458,9 @@ function viewForUncached(
       librarySize: zones.library.length,
       graveyardSize: zones.graveyard.length,
       landsPlayedThisTurn: playerState.landsPlayedThisTurn,
+      maxLandsThisTurn:
+        options.maxLands?.(player) ??
+        state.rules.maxLandsPerTurn + (playerState.extraLandsThisTurn ?? 0),
       hasLost: playerState.hasLost,
       lossReason: playerState.lossReason,
       commanderDamageTaken: Object.entries(playerState.commanderDamageTaken)

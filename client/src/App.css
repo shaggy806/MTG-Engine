@@ -1239,6 +1239,30 @@
 .commander-tile.paired .cmdt-art {
   height: calc(var(--card-w) * 0.35);
 }
+/* A library's revealed top card (Oracle of Mul Daya): the hand's own card
+   face, scaled down to the box of the face-down pile it replaces (.card-back,
+   and the quadrant rule that squashes that further), so revealing it doesn't
+   reshape the rail. --ct-scale shrinks its type with the rail's --card-w. */
+.library-top {
+  display: flex;
+  width: var(--card-w);
+}
+.library-top .card-tile {
+  --ct-scale: calc(var(--card-w) / var(--card-w-max));
+  width: 100%;
+  height: calc(var(--card-w) * 1.4);
+}
+.library-top .card-tile:disabled {
+  opacity: 1;
+}
+.quadrant-body .side-zone .library-top {
+  height: 100%;
+}
+.quadrant-body .side-zone .library-top .card-tile {
+  min-height: 40px;
+  height: 100%;
+  max-height: calc(var(--card-w) * 1.4);
+}
 /* face-down library placeholder — CSS-only, no image, so it can never 404 */
 .card-back {
   width: var(--card-w);

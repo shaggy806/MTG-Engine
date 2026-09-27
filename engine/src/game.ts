@@ -936,6 +936,7 @@ export class Game {
       // out needs commander tax and the battlefield's cost-modification
       // statics, neither of which it can see.
       effectiveCost: (cardId) => this.displayCostOf(player, cardId),
+      maxLands: (who) => this.maxLandsFor(who),
       ...options,
     });
   }

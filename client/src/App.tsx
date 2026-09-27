@@ -2210,6 +2210,39 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     )
   }
 
+  /** A library's revealed top card (Oracle of Mul Daya's "play with the top
+   * card of your library revealed"). Not a permanent, so not `tileFor`: that
+   * drew a full-height card in a rail sized for a squat pile, and routed its
+   * clicks to the battlefield handler, which knows nothing of playing a card.
+   * It's playable the way a hand card is — the engine offers a `play-land`
+   * (or `cast-spell`) naming it — so it goes through `clickHandCard`, and is
+   * drawn as it would be in the hand, scaled down to the face-down pile's
+   * box (`.library-top`). A card playable more than one way (a modal
+   * double-faced card's two land faces) gets a button per way, as in the
+   * hand. */
+  const libraryTopTile = (obj: VisibleObject) => {
+    const faceOpts = mode === 'priority' ? (playFacesByCard.get(obj.id) ?? []) : []
+    return (
+      <>
+        <div className="library-top" key={obj.id}>
+          <CardTile
+            obj={obj}
+            layout="art-first"
+            highlight={faceOpts.length > 0}
+            onClick={() => clickHandCard(obj.id)}
+          />
+        </div>
+        {faceOpts.length > 1
+          ? faceOpts.map((a, i) => (
+              <button key={i} type="button" onClick={() => playFace(a)}>
+                {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
+              </button>
+            ))
+          : null}
+      </>
+    )
+  }
+
   const renderSideZone = (pid: PlayerId) => {
     const commandIds = view.zones.command.filter((id) => view.objects[id]?.owner === pid)
     const topId = view.revealedLibraryTop[pid] ?? null
@@ -2244,7 +2277,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               (which swaps the pile below for a real tile). */}
           <div className="side-zone-cards" data-library-of={pid}>
             {topObj ? (
-              tileFor(topObj, pid, [topObj.id])
+              libraryTopTile(topObj)
             ) : librarySize > 0 ? (
               <div
                 className="card-back"

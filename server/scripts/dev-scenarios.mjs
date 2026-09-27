@@ -270,4 +270,30 @@ export default {
     },
     bots: { bob: {}, carol: {}, dave: {} },
   },
+
+  TOPLB: {
+    about:
+      "2p. Oracle of Mul Daya with a Forest revealed on top of alice's library, to play from " +
+      "the library rail, and Summon: Titan (a Saga creature) in her hand.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: { alice: ["Oracle of Mul Daya"], bob: ["Grizzly Bears"] },
+    hand: { alice: ["Summon: Titan"] },
+    setup(game) {
+      game.debugSpawn("Forest", "alice", "library");
+    },
+    bots: { bob: {} },
+  },
+
+  TOPL4: {
+    about: "4p. TOPLB's board for alice, in the quadrant layout.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 5, bob: 5, carol: 5, dave: 5 },
+    battlefield: { alice: ["Oracle of Mul Daya"], bob: ["Grizzly Bears"] },
+    hand: { alice: ["Summon: Titan"] },
+    setup(game) {
+      game.debugSpawn("Forest", "alice", "library");
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 };
