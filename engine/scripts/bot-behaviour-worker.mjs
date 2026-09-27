@@ -6,6 +6,7 @@ import { performance } from "node:perf_hooks";
 
 import {
   COMMANDER_RULES,
+  DEFAULT_WEIGHTS,
   EvalBotController,
   Game,
   HeuristicBotController,
@@ -173,7 +174,7 @@ function instrument(bot, me, stats, budget) {
   };
 }
 
-parentPort.on("message", ({ seed, players, bot, budget }) => {
+parentPort.on("message", ({ seed, players, bot, budget, weights }) => {
   const { seats, decks } = tableFor(seed, players);
   const stats = newStats();
   const controllers = {};
@@ -181,7 +182,10 @@ parentPort.on("message", ({ seed, players, bot, budget }) => {
     const controller =
       bot === "v1"
         ? new HeuristicBotController(seat, registry)
-        : new EvalBotController(seat, registry, budget === null ? {} : { timeBudgetMs: budget });
+        : new EvalBotController(seat, registry, {
+            ...(budget === null ? {} : { timeBudgetMs: budget }),
+            ...(weights === null ? {} : { weights: { ...DEFAULT_WEIGHTS, ...weights } }),
+          });
     instrument(controller, seat, stats, budget);
     controllers[seat] = controller;
   }

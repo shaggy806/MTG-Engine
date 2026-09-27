@@ -163,15 +163,27 @@ base, retire v3. One line per step still open:
   may" declined, sacrifices and discards taken from the front of the list, the first
   non-mana ability activated whatever it does. Each wants a rule of the same kind — does
   this help me — read off the effect.
-- **Evaluation terms.** Combat restrictions priced; `lifeDanger` swept; the `smarter-bots.md`
-  Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)
-  are back on, since v3 isn't coming to replace them. Step 5.
 - **Scenarios for the blunders `bot:behaviour` measured.** The wide-board removal case is in
   the gate; a Drakuseth-style trigger hitting its own side and help aimed at an opponent
   (Garruk's untap, a +1/+1 counter) are covered only by v1 tests, not by a v2 scenario. Step 6.
 
 Beyond that plan:
 
+- **Removal only for the leader.** v2 subtracts its strongest opponent's score at full weight
+  and the *average* of the rest at `otherOpponents` (0.25), so at four players a trailing
+  opponent's permanent counts an eighth as much as the leader's, and a removal spell (a card,
+  worth 2) is cast on one only if it's worth 16. On a constructed board v2 Vandalblasted the
+  leader's Sol Ring and left a trailing player's alone, even at `otherOpponents` 1; Vandalblast
+  was the card v2 most often ended its turn holding after Clan Defiance (11 times in 24
+  four-player games). Pressing the leader is sound politics, but not when the trailing player's
+  creature is the one attacking the bot — which wants a threat-to-me term (what can attack me
+  next turn), not a bigger weight.
+- **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
+  order their moves by an estimate that prices damage at `life` per point, without step 5's
+  `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.
+  Only the order is affected — though under a budget the order decides what gets simulated —
+  and v1's pick, which chump-blocks lethal, is scored first regardless. Small; wants a
+  `lifeCost(life, damage)` beside `LIFE_DANGER_AT`.
 - **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
   five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
   simple to play against. Add decks across a range of power levels for bots to bring. The same

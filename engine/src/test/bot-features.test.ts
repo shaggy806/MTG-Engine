@@ -72,28 +72,40 @@ describe("the nonlinear life and library terms", () => {
     expect(thinCost).toBeGreaterThan(deepCost);
   });
 
-  it("changes nothing at all while both weights are zero", () => {
+  it("changes nothing at all while its weight is zero", () => {
     const game = newGame();
     game.state.players[A].life = 4;
     game.state.zones.perPlayer[A].library.length = 3;
-    // Shipped defaults have both at 0, so a position deep in both danger zones
-    // must score exactly as it would with the terms stripped out entirely.
-    const withTerms = evaluateState(game.state, game.registry, A, DEFAULT_WEIGHTS);
-    const withoutTerms = evaluateState(game.state, game.registry, A, {
+    // `libraryDanger` ships at 0, so a position deep in its danger zone must
+    // score exactly as it would with the term stripped out entirely.
+    // (`lifeDanger` shipped on 2026-09-26, with `life` halved beside it.)
+    const withTerm = evaluateState(game.state, game.registry, A, DEFAULT_WEIGHTS);
+    const withoutTerm = evaluateState(game.state, game.registry, A, {
       ...DEFAULT_WEIGHTS,
-      lifeDanger: 0,
       libraryDanger: 0,
     });
-    expect(DEFAULT_WEIGHTS.lifeDanger).toBe(0);
     expect(DEFAULT_WEIGHTS.libraryDanger).toBe(0);
-    expect(withTerms).toBe(withoutTerms);
+    expect(withTerm).toBe(withoutTerm);
+  });
+
+  it("prices life at half a point above 15 and a point and a half below", () => {
+    const game = newGame();
+    const scoreAt = (life: number): number => {
+      game.state.players[A].life = life;
+      return evaluateState(game.state, game.registry, A, DEFAULT_WEIGHTS);
+    };
+    // Two life at 40 is half a card (`hand` is 2); two life at 10, a card
+    // and a half.
+    expect(scoreAt(40) - scoreAt(38)).toBeCloseTo(1, 9);
+    expect(scoreAt(10) - scoreAt(8)).toBeCloseTo(3, 9);
   });
 
   it("leaves every frozen champion's behaviour untouched", () => {
     // The gauntlet's whole job is to be a fixed reference. A new feature that
     // moved it would invalidate every regression veto measured against it.
+    // Only a vector frozen since `lifeDanger` shipped carries it.
     for (const champion of CHAMPIONS) {
-      expect(champion.weights.lifeDanger, champion.id).toBe(0);
+      if (champion.date < "2026-09-26") expect(champion.weights.lifeDanger, champion.id).toBe(0);
       expect(champion.weights.libraryDanger, champion.id).toBe(0);
     }
   });

@@ -36,6 +36,7 @@ export interface Champion {
   readonly weights: EvalWeights;
 }
 
+import { SHIPPED_2026_09_26 } from "./shipped-2026-09-26.js";
 import { SHIPPED_2026_09_23 } from "./shipped-2026-09-23.js";
 import { BASELINE_2026_09_17 } from "./baseline-2026-09-17.js";
 import { AGGRESSIVE } from "./aggressive.js";
@@ -48,6 +49,7 @@ import { RAMP } from "./ramp.js";
  * *different*, not to be good.
  */
 export const CHAMPIONS: readonly Champion[] = [
+  SHIPPED_2026_09_26,
   SHIPPED_2026_09_23,
   BASELINE_2026_09_17,
   AGGRESSIVE,
@@ -63,4 +65,4 @@ export function championById(id: string): Champion {
   return found;
 }
 
-export { SHIPPED_2026_09_23, BASELINE_2026_09_17, AGGRESSIVE, DEFENSIVE, RAMP };
+export { SHIPPED_2026_09_26, SHIPPED_2026_09_23, BASELINE_2026_09_17, AGGRESSIVE, DEFENSIVE, RAMP };

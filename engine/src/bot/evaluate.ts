@@ -150,12 +150,18 @@ export interface EvalWeights {
 }
 
 export const DEFAULT_WEIGHTS: EvalWeights = {
-  life: 1,
-  // Starts at 0 so this ships as a strict no-op, to be swept the way `power`
-  // was (four players, 200 games a value, against the mixed pod) rather than
-  // guessed at. A nonzero value here is the only thing that makes losing five
-  // life at 8 score worse than losing five at 40.
-  lifeDanger: 0,
+  // A point of life costs 0.5 above `LIFE_DANGER_AT` (15) and 1.5 below it —
+  // for opponents as for yourself, so damage that brings one into range is
+  // worth three times what it was worth at 40. At a flat 1, every point was
+  // half a card whatever the total: a card up for two life (Read the Bones,
+  // Sign in Blood) scored exactly zero, and since ties go to passing, v2 never
+  // cast either. Now it does down to 17 life ("pays life for cards while it
+  // can spare it", "keeps its life when it is running out"). Benched against
+  // the flat vector at four players over 400 games: 24.8% [20.8, 29.2] —
+  // level, which is as much as 400 games can say
+  // (`docs/plans/bot-effect-knowledge.md`, step 5).
+  life: 0.5,
+  lifeDanger: 1,
   commanderDamage: 2,
   hand: 2,
   // Off to start, like `untappedMana` below. Each reads as a cost the moment a
@@ -226,13 +232,22 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   monarch: 3,
   emblems: 3,
   commanderTax: 0.5,
-  // The four terms below ship at zero — additive, so the evaluation is exactly
-  // what it was until a four-player bench says otherwise
-  // (`docs/plans/bot-effect-knowledge.md`, step 5).
+  // Zero, and measured so: at 1, 2 and 2 together (with `idlePower` 0.5) they
+  // benched 26.0% [21.9, 30.5] against three of the vector without them, four
+  // players, 400 games — nothing a weight should ship on
+  // (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for a
+  // sweep that finds their peak, if one exists.
   nonlandMana: 0,
   drawEngines: 0,
   commanderOnBoard: 0,
-  idlePower: 0,
+  // **Keep equal to `power`.** Not a free weight: `power` is the combat damage
+  // a creature could deal, and one that can't attack deals none, so this
+  // takes back exactly what `power` credits it. At zero, v2 enchanted its own
+  // tapped Craw Wurm with Pacifism whenever the Wurm was the only legal
+  // target — the Aura is a permanent for a card, and nothing the evaluation
+  // counted was lost (the "does not pacify its own creature" scenario). The
+  // same term is what makes pacifying an opponent's attacker worth its power.
+  idlePower: 0.5,
   opponent: 1,
   otherOpponents: 0.25,
   crackbackParanoia: 0.5,

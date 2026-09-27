@@ -220,6 +220,50 @@ own creature and itself — and, in both v1 and v2, **cast without an X, which t
 eight) with each mode's targets ranked and X at its maximum, and v1 leaves out a mode it could only
 aim at its own side and passes its X.
 
+**Step 5, the terms (2026-09-26).** Each term went in additive at zero and was benched against
+three copies of the vector it would replace (`shipped-2026-09-23`), four players, 400 games, count
+budgets, even 25%:
+
+| Weights changed | Result |
+|---|---|
+| `nonlandMana` 1, `drawEngines` 2, `commanderOnBoard` 2, `idlePower` 0.5 | 26.0% [21.9, 30.5] |
+| `life` 1 → 0.5, `lifeDanger` 0 → 1 | 24.8% [20.8, 29.2] |
+
+Neither is a strength result. 400 four-player games resolve about four points either way, and
+a term that decides the odd game moves the win rate by less than that; what the runs rule out is
+a loss that size. So the weights that ship are the ones a scenario shows fixing something a
+player would see, and the rest stay at zero:
+
+- **`idlePower` 0.5**, equal to `power`, which it exists to cancel for a creature that can't
+  attack. At zero, v2 enchanted its own tapped Craw Wurm with Pacifism whenever that was the only
+  legal target: the Aura is a permanent for a card (+0.5 against `hand`) and nothing the
+  evaluation counted was lost. An untapped Wurm before combat never showed it — the rollout plays
+  the combat and sees the attack go — which is why the scenario's first draft passed at zero and
+  the gate's version taps the Wurm.
+- **`life` 0.5 with `lifeDanger` 1**, so a point of life costs 0.5 above 15 and 1.5 below, for
+  opponents as for the bot. Read the Bones and Sign in Blood, two cards for themselves and two
+  life, scored exactly zero with every point worth half a card, and ties go to passing: in 24
+  four-player games Read the Bones was the third card v2 most often ended its turn holding. It now
+  casts them down to 17 life, and two scenarios pin both halves (cast at 40, hold at 5).
+- **`nonlandMana`, `drawEngines` and `commanderOnBoard`** stay at zero for a sweep to find a
+  peak, if one exists. Commander damage *dealt*, the fourth Phase 7 term, needed none: the
+  evaluation subtracts opponents' features from ours, so the commander damage an opponent has
+  taken already counts in the bot's favour.
+
+`shipped-2026-09-26` freezes the result.
+
+In games, on the same 24 four-player seeds with count budgets (`bot:behaviour --weights`, old
+vector against new): turns ending with a sorcery-speed spell castable and unplayed fell from 53 of
+1,063 (5.0%) to 36 of 1,075 (3.3%) — Read the Bones held 11 times to 1, Sign in Blood 5 to 1. The
+price of cheaper life shows in the same list: Fireball held 3 times to 7, Act of Treason 0 to 4,
+since damage to a healthy opponent is now worth half what it was. Holding a Fireball against 40
+life is defensible; the bench saying it costs nothing measurable is why it ships anyway.
+
+The list of cards v2 ended its turn holding had one more that no weight fixes: Vandalblast, which
+at four players v2 casts only on the leader's artifacts, because a trailing opponent's score is
+averaged with the other's and counted at a quarter. That is a question of whose threat matters,
+not of a term's size; it is in BACKLOG ("Removal only for the leader").
+
 **Step 6, the script done (2026-09-26).** `npm run bot:behaviour -w engine` is the harness this
 plan's measurements came from, rebuilt on the engine's own `target-polarity.ts`: wrong-side
 targets (and whether a right-side one was legal), own turns ending with a sorcery-speed spell

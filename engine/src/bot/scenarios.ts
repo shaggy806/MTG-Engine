@@ -312,6 +312,78 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "does not pacify its own creature",
+    rule: "An Aura that stops a creature attacking is worth nothing on your own creature.",
+    run(weights, registry, makeBot) {
+      // The Aura report behind `docs/plans/bot-effect-knowledge.md`: with no
+      // opponent's creature to enchant, Pacifism's only legal target is our
+      // own Craw Wurm, and an evaluation that counts a pacified creature's
+      // power in full scores enchanting it as a gain — a permanent for a card
+      // (`otherPermanents` + `permanentManaValue` against `hand`), and nothing
+      // lost. It is a loss: the Wurm never attacks again.
+      //
+      // The Wurm is tapped — it has attacked — because an untapped one before
+      // combat doesn't test the evaluation: the rollout plays the combat and
+      // sees the attack lost. Tapped, or after combat, nothing but the
+      // evaluation can see it, and at `idlePower: 0` v2 cast it.
+      let wurm: ObjectId | null = null;
+      const game = mainPhase((g) => {
+        g.state.zones.perPlayer[A].hand = [];
+        for (let i = 0; i < 2; i += 1) g.debugSpawn("Plains", A, "battlefield");
+        wurm = g.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false, tapped: true });
+        g.debugSpawn("Pacifism", A, "hand");
+      }, registry);
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      const target = action.type === "cast-spell" ? action.targets?.[0] : undefined;
+      const hit = target != null && target.kind === "object" ? target.object : null;
+      return {
+        passed: hit !== wurm,
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
+  {
+    name: "pays life for cards while it can spare it",
+    rule: "At 40 life, two life is worth less than a card.",
+    run(weights, registry, makeBot) {
+      // Read the Bones is two cards for itself and two life — one card up.
+      // With every point of life worth half a card whatever the total, that
+      // scored exactly zero — and ties go to passing, so v2 held it (and Sign in Blood)
+      // forever: it was the card v2 most often ended a turn holding, after
+      // Clan Defiance and Vandalblast, in 24 four-player games. `lifeDanger`
+      // is what lets a point of life be cheap at 40 and dear at 5; the twin
+      // scenario below is the other half.
+      const game = mainPhase((g) => {
+        g.state.zones.perPlayer[A].hand = [];
+        for (let i = 0; i < 3; i += 1) g.debugSpawn("Swamp", A, "battlefield");
+        g.debugSpawn("Read the Bones", A, "hand");
+        g.state.players[A].life = 40;
+      }, registry);
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      return {
+        passed: action.type === "cast-spell",
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
+  {
+    name: "keeps its life when it is running out",
+    rule: "At 5 life, two life is worth more than a card.",
+    run(weights, registry, makeBot) {
+      const game = mainPhase((g) => {
+        g.state.zones.perPlayer[A].hand = [];
+        for (let i = 0; i < 3; i += 1) g.debugSpawn("Swamp", A, "battlefield");
+        g.debugSpawn("Read the Bones", A, "hand");
+        g.state.players[A].life = 5;
+      }, registry);
+      const action = makeBot(A, registry, weights).act(viewOf(game, A));
+      return {
+        passed: action.type !== "cast-spell",
+        detail: `chose ${describeAction(action)}`,
+      };
+    },
+  },
+  {
     name: "removal finds the threat on a wide four-player board",
     rule: "The creature worth killing is found however many older ones are listed before it.",
     run(weights, registry, makeBot) {

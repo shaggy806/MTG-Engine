@@ -4,6 +4,7 @@
 //   npm run bot:behaviour -w engine -- --games 40 --players 2
 //   npm run bot:behaviour -w engine -- --budget none --workers 18   # count budgets: exact, and faster
 //   npm run bot:behaviour -w engine -- --bot v1
+//   npm run bot:behaviour -w engine -- --budget none --weights '{"idlePower":0}'
 //
 // A win rate says whether a bot got stronger, needs hundreds of four-player
 // games to say it (±4 points at 400), and can't say why. This counts the
@@ -27,14 +28,19 @@
 // runs count budgets only, where the games replay exactly and any worker count
 // gives the same numbers.
 //
+// `--weights JSON` merges overrides onto `DEFAULT_WEIGHTS`, as `bot:bench`'s
+// does, so two vectors can be compared on the same seeds; with `--budget none`
+// every difference between the two reports is the weights'.
+//
 // Flags: --games N, --players 2-4, --workers N, --budget MS|none, --bot v1|v2,
-// --first SEED, --timeout SECONDS (per game, default 900), --json PATH (every
-// game's raw counts).
+// --weights JSON, --first SEED, --timeout SECONDS (per game, default 900),
+// --json PATH (every game's raw counts).
 
 import { Worker } from "node:worker_threads";
 import { writeFileSync } from "node:fs";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_WEIGHTS } from "../dist/index.js";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -52,6 +58,12 @@ const workers = Math.max(1, Math.min(Number(flag("workers", String(defaultWorker
 const first = Number(flag("first", "1"));
 const timeoutMs = Number(flag("timeout", "900")) * 1000;
 const jsonOut = flag("json", null);
+const weightsFlag = flag("weights", null);
+const weights = weightsFlag === null ? null : JSON.parse(weightsFlag);
+for (const key of Object.keys(weights ?? {})) {
+  if (!(key in DEFAULT_WEIGHTS)) throw new Error(`--weights: unknown weight "${key}"`);
+}
+if (weights !== null && bot === "v1") throw new Error("--weights: v1 has no weights");
 
 const WORKER = fileURLToPath(new URL("./bot-behaviour-worker.mjs", import.meta.url));
 const started = Date.now();
@@ -63,6 +75,7 @@ let running = 0;
 console.log(
   `bot:behaviour — ${games} ${players}-player games of ${bot}, budget ${budget === null ? "none (count only)" : `${budget} ms`}, ${workers} workers`,
 );
+if (weights !== null) console.log(`weights: ${weightsFlag}`);
 
 function spawn() {
   const worker = new Worker(WORKER);
@@ -86,7 +99,7 @@ function spawn() {
       if (next <= last) spawn();
       else if (running === 0) finish();
     }, timeoutMs);
-    worker.postMessage({ seed, players, bot, budget });
+    worker.postMessage({ seed, players, bot, budget, weights });
   };
   worker.on("message", (message) => {
     clearTimeout(timer);
