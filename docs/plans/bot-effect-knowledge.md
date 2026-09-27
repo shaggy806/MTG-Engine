@@ -177,3 +177,11 @@ to 0.4 ms), every other kind of window unchanged, and whole games 34% faster. Un
 The first version of the predictive stop could stop *before* v1's move was scored when the
 passing baseline alone was slow — 79 windows in 24 games that passed where v1 would have acted
 — which is why it now waits for both baselines.
+
+**Step 2, done (2026-09-26).** `engine/src/target-polarity.ts`. With a rule for every effect
+kind rather than the prototype's shortlist — bounce read by the zone it returns from, Equip and
+reanimation and mill given sides, removal outranking its consolation — **98.6% of the pool's
+1,771 targeted slots classify** (967 harm, 764 help, 15 take, 25 either), against the
+prototype's 74%. So no labelling page: what's left is a transform, an animated land, a suspect,
+which really are the board's call. There is no override table yet; the first card the
+vocabulary gets wrong in a way that matters will start one.

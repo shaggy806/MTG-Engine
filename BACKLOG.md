@@ -159,9 +159,6 @@ that one card is the reason the deck exists.
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **Target polarity.** `engine/src/target-polarity.ts`: which side of the table each targeted
-  slot belongs on, from a table total over `EffectSpec["kind"]`. Step 2. It replaces the
-  hand-labelling page idea (raised 2026-09-26): 74% of slots classify automatically.
 - **v1.5.** `HeuristicBotController` targets by polarity and value, never at the wrong side
   alone. Step 3.
 - **v2's target candidates ordered before the 8-combination cap.** Step 4.
@@ -174,6 +171,16 @@ base, retire v3. One line per step still open:
   `determinize.ts`, `test/bot-plan.test.ts`, the `bot:plan`, `bot:census` and
   `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS` in `server/src/room.ts`, and the `v3` paths
   in the scenario, harvest and tune workers and in `room-pacing.test.ts`. Step 7.
+
+Beyond that plan:
+
+- **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
+  five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
+  simple to play against. Add decks across a range of power levels for bots to bring. The same
+  decks should widen the bench, which today measures every bot on those five midrange precons
+  only — a result there isn't a result about the decks people bring. Unscoped: where the decks
+  come from (curated lists, or built from the pool around a commander), how a host picks a power
+  level, and how the bench samples them.
 
 ## Client / UI
 
