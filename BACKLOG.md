@@ -159,8 +159,6 @@ that one card is the reason the deck exists.
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **v2 hygiene.** No simulation when passing is the only candidate; one deadline per combat
-  declaration; a predictive stop. Step 1.
 - **Target polarity.** `engine/src/target-polarity.ts`: which side of the table each targeted
   slot belongs on, from a table total over `EffectSpec["kind"]`. Step 2. It replaces the
   hand-labelling page idea (raised 2026-09-26): 74% of slots classify automatically.

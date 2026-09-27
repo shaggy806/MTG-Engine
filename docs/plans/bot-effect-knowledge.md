@@ -163,3 +163,17 @@ none of them changes v2's search.
 Not planned: a worker thread for the bots (v2's 300 ms fits the think pause it already hides
 in; revisit only if a budget grows), learned evaluation (after 2-5, over the polarity and role
 features they add), and difficulty levels (v1.5 is a respectable easy bot when someone asks).
+
+## Progress
+
+**Step 1, done (2026-09-26).** v2 lists its candidates before simulating anything and passes
+without a rollout when there are none; the time budget stops predictively after its two
+baselines; one budget covers a whole attack declaration, v1's swing scored first; the room
+works a bot's legal actions out once per question. Count budgets are untouched, and a seeded
+check bore that out: six two-player games with no time budget replayed move for move
+identically on the old build and the new, with dead and mana-only windows ~10x cheaper (5.1 ms
+to 0.4 ms), every other kind of window unchanged, and whole games 34% faster. Under the live
+300 ms budget at four players, attack and block declarations over budget fell from 23% to 8%.
+The first version of the predictive stop could stop *before* v1's move was scored when the
+passing baseline alone was slow — 79 windows in 24 games that passed where v1 would have acted
+— which is why it now waits for both baselines.

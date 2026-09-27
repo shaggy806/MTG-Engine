@@ -35,6 +35,7 @@ import type {
   AwaitingDecision,
   ControllerView,
   GameState,
+  LegalAction,
   ObjectId,
   PlayerController,
   PlayerId,
@@ -665,10 +666,15 @@ export class Room {
   private botAction(seat: PlayerId): Action {
     const bot = this.bots.get(seat);
     if (bot === undefined) throw new Error(`no bot on seat ${seat}`);
+    // Worked out once per question, as `Game`'s own controller view does:
+    // nothing changes the state while a bot decides, and v2 alone asks three
+    // times (v1's pick, its candidates, a decision's offer) — each a full
+    // enumeration of the board's targets.
+    let legal: readonly LegalAction[] | undefined;
     const view: ControllerView = {
       state: this.game.state,
       player: seat,
-      legalActions: () => this.game.legalActions(seat),
+      legalActions: () => (legal ??= this.game.legalActions(seat)),
     };
     return bot.act(view);
   }

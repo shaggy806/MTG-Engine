@@ -175,6 +175,54 @@ describe("the decision time budget", () => {
   }, GAME_TIMEOUT_MS);
 });
 
+describe("what a decision costs", () => {
+  // Every seat gets priority at every step, so most windows in a game offer
+  // nothing but passing and tapping for mana. Rolling a pass out to the end
+  // of the turn at each of them was a third of all the bot's CPU.
+  const forests = (player: PlayerId) => ({ player, cards: Array<string>(40).fill("Forest") });
+  const atUpkeep = (): Game => {
+    const game = Game.create({ seed: 4, registry, decks: [forests(A), forests(B)] });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "upkeep");
+    game.state.zones.perPlayer[A].hand = [];
+    return game;
+  };
+  const viewOf = (game: Game): ControllerView => ({
+    state: game.state,
+    player: A,
+    legalActions: () => game.legalActions(A),
+  });
+
+  it("passes without a simulation when passing is the only move it would consider", () => {
+    const game = atUpkeep();
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const bot = new EvalBotController(A, registry);
+    expect(bot.act(viewOf(game))).toEqual({ type: "pass-priority", player: A });
+    expect(bot.lastDecision).toEqual({ kind: "priority", simulations: 0, ms: 0 });
+  });
+
+  it("plays a lone land drop without one either", () => {
+    const game = atUpkeep();
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    game.state.zones.perPlayer[A].hand = [];
+    game.debugSpawn("Forest", A, "hand");
+    const bot = new EvalBotController(A, registry);
+    expect(bot.act(viewOf(game)).type).toBe("play-land");
+    expect(bot.lastDecision?.simulations).toBe(0);
+  });
+
+  it("still searches a real choice, passing included", () => {
+    const game = atUpkeep();
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    game.state.zones.perPlayer[A].hand = [];
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", A, "hand");
+    const bot = new EvalBotController(A, registry);
+    expect(bot.act(viewOf(game)).type).toBe("cast-spell");
+    // Passing and the Bears, each rolled out to the horizon.
+    expect(bot.lastDecision?.simulations).toBe(2);
+  });
+});
+
 describe("evaluateState", () => {
   const twoPlayer = () =>
     Game.create({
