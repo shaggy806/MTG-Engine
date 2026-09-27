@@ -73,7 +73,7 @@ export const discard = defineDecision({
 
   ask: (controller, view, awaiting, player): Action => {
     const hand = view.state.zones.perPlayer[player].hand.map((id) => view.state.objects[id]);
-    return { type: "discard", player, cards: controller.chooseDiscards(hand, awaiting.count) };
+    return { type: "discard", player, cards: controller.chooseDiscards(hand, awaiting.count, view) };
   },
 
   /** Combinations of exactly `count`, cheapest first — `order` reversed, for

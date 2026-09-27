@@ -325,6 +325,33 @@ export function slotPolarities(
   effect: EffectSpec | null | undefined,
   count: number,
 ): readonly Polarity[] {
+  return slotTouches(effect, count).map(resolveSlot);
+}
+
+/** How much a slot's deciding effect weighs: 0 minor (a tap, two life), 1
+ * major (a card, a pump), 2 decisive (removal, theft). */
+export type SlotStrength = 0 | 1 | 2;
+
+/**
+ * Each slot's polarity with the weight of the effects that decided it, or
+ * `null` for a slot no effect touches — what `effect-worth.ts` needs to say
+ * how much a target on the wrong side costs, not just which side it is.
+ */
+export function slotStrengths(
+  effect: EffectSpec | null | undefined,
+  count: number,
+): readonly ({ readonly polarity: Polarity; readonly weight: SlotStrength } | null)[] {
+  return slotTouches(effect, count).map((touches) =>
+    touches.length === 0
+      ? null
+      : {
+          polarity: resolveSlot(touches),
+          weight: Math.max(...touches.map((t) => t.weight)) as SlotStrength,
+        },
+  );
+}
+
+function slotTouches(effect: EffectSpec | null | undefined, count: number): Touch[][] {
   const touches: Touch[][] = Array.from({ length: count }, () => []);
   const visit: Visit = {
     touch(ref, polarity, weight) {
@@ -339,7 +366,7 @@ export function slotPolarities(
   const walk = (node: EffectSpec): void =>
     (RULES[node.kind] as (n: EffectSpec, v: Visit) => void)(node, visit);
   if (effect !== null && effect !== undefined && count > 0) walk(effect);
-  return touches.map(resolveSlot);
+  return touches;
 }
 
 /**

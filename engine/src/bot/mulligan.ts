@@ -91,6 +91,9 @@ const MIN_KEPT = 4;
 /** Roughly what fraction of a kept hand should be lands, for
  * {@link chooseBottomOfHand}. */
 const LAND_SHARE = 0.45;
+/** How many lands a Commander deck wants on the battlefield before another
+ * one in hand is worth less than a spell. */
+const LANDS_WANTED = 7;
 
 const clamp = (n: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, n));
 
@@ -264,11 +267,18 @@ export function chooseBottomOfHand(
   hand: readonly GameObject[],
   registry: CardRegistry,
   count: number,
+  /** Lands already on the battlefield — a discard mid-game rather than a
+   * mulligan. A hand's lands are worth keeping only while the board is
+   * short of {@link LANDS_WANTED}; past that they are the first to go. */
+  landsInPlay = 0,
 ): readonly ObjectId[] {
   if (count <= 0) return [];
   const cards = readHand(hand, registry);
   const kept = Math.max(0, hand.length - count);
-  const keepLands = clamp(Math.round(kept * LAND_SHARE), 2, 4);
+  const keepLands =
+    landsInPlay > 0
+      ? Math.max(0, LANDS_WANTED - landsInPlay)
+      : clamp(Math.round(kept * LAND_SHARE), 2, 4);
 
   let landsSeen = 0;
   const ranked = cards.map((card, index) => {
@@ -276,6 +286,11 @@ export function chooseBottomOfHand(
     if (card.isLand) {
       landsSeen += 1;
       score = landsSeen <= keepLands ? 90 : -60;
+    } else if (landsInPlay > 0) {
+      // Mid-game the dear spells are the ones worth holding — once the
+      // board can nearly cast them. Only what's still out of reach sinks.
+      const outOfReach = Math.max(0, card.manaValue - (landsInPlay + 1));
+      score = 60 + card.manaValue - outOfReach * 8 + (card.isRamp && landsInPlay < LANDS_WANTED ? 10 : 0);
     } else {
       score = 60 - card.manaValue * 6 + (card.isRamp ? 10 : 0);
     }

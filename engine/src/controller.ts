@@ -27,6 +27,7 @@ import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { EffectSpec } from "./effects.js";
+import { costWorth, effectWorth } from "./effect-worth.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
@@ -41,6 +42,7 @@ import {
   onlyWrongSide,
   pendingTargetPolarities,
   rankTargets,
+  targetValue,
 } from "./target-polarity.js";
 import type { Polarity } from "./target-polarity.js";
 
@@ -79,8 +81,14 @@ export interface PlayerController {
   readonly playerId: PlayerId;
   /** Called whenever this player holds priority. Return an action to take. */
   act(view: ControllerView): Action;
-  /** Choose exactly `count` cards from `hand` to discard. */
-  chooseDiscards(hand: readonly GameObject[], count: number): readonly ObjectId[];
+  /** Choose exactly `count` cards from `hand` to discard. `view` is the
+   * board it's asked on, for a controller that weighs a card by what's
+   * already in play. */
+  chooseDiscards(
+    hand: readonly GameObject[],
+    count: number,
+    view?: ControllerView,
+  ): readonly ObjectId[];
   /** Declare this player's attackers. */
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[];
   /** Declare this player's blockers. */
@@ -1280,11 +1288,12 @@ export class HeuristicBotController extends AutomaticController {
 
   private toCastSpell(state: GameState, legal: CastSpellLegal): Action {
     const player = this.playerId;
-    // Deterministic "pick the last option" policy for sacrifice/convoke
-    // choices — for convoke specifically this maximizes creatures tapped,
-    // which is the payment this variant of the LegalAction may depend on
-    // being affordable at all (see castSpellActions's convoke fallback).
-    const pickLast = (n: number) => Math.max(0, n - 1);
+    // An additional cost's sacrifice gives up the cheapest permanent it may.
+    // (Convoke doesn't come through here: `castExtras` echoes the payment
+    // `legalActions` proved.)
+    const sacrificeChoices = legal.sacrifice?.choices ?? [];
+    const pickLast = (): number =>
+      sacrificeChoices.indexOf(this.cheapestPermanents(state, sacrificeChoices, 1)[0]);
     if (legal.castModal !== undefined) {
       const cm = legal.castModal;
       const byMode = modalPolarities(this.registry, legal);
@@ -1387,10 +1396,76 @@ export class HeuristicBotController extends AutomaticController {
         offerPolarities(this.registry, legal),
       ),
       ...(sac !== undefined && sac.choices.length > 0
-        ? { sacrifice: sac.choices[sac.choices.length - 1] }
+        ? { sacrifice: this.cheapestPermanents(state, sac.choices, 1)[0] }
         : {}),
       ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
     };
+  }
+
+  /**
+   * `count` of `eligible` — this bot's own permanents — least valuable first
+   * (`targetValue`), a token below the card it's worth the same as, and a
+   * token stack as many times as it has tokens. What a sacrifice, an edict
+   * or a cost gives up; v1 used to give up whatever was listed first, which
+   * is the oldest permanent, or the last, which is the newest.
+   */
+  private cheapestPermanents(
+    state: GameState,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[] {
+    const worth = (id: ObjectId): number =>
+      targetValue(state, this.registry, { kind: "object", object: id }) -
+      (state.objects[id]?.isToken === true ? 1 : 0);
+    const ranked = eligible
+      .map((id, index) => ({ id, index, worth: worth(id) }))
+      .sort((a, b) => a.worth - b.worth || a.index - b.index)
+      .map((entry) => entry.id);
+    const picked: ObjectId[] = [];
+    for (const id of ranked) {
+      const copies = state.objects[id]?.stackCount ?? 1;
+      for (let i = 0; i < copies && picked.length < count; i += 1) picked.push(id);
+      if (picked.length >= count) break;
+    }
+    return picked;
+  }
+
+  /**
+   * What activating `legal` is worth to this bot, or `null` to leave it
+   * alone: its effect with the targets it would be aimed at
+   * (`effect-worth.ts`), less the permanent a "sacrifice a creature" cost
+   * gives up and any life it pays. An ability the registry can't read (a
+   * granted one) is worth 0 — unknown, so still allowed, as before.
+   *
+   * v1 activated the first non-mana ability it found, whatever it did —
+   * Viscera Seer's "Sacrifice a creature: Scry 1" four times a turn.
+   */
+  private activationWorth(state: GameState, legal: ActivateAbilityLegal): number | null {
+    const ability = this.registry.has(legal.cardName)
+      ? this.registry.get(legal.cardName).activated?.[legal.abilityIndex]
+      : undefined;
+    // A granted ability sits past the printed ones; the text says which (an
+    // offer's text may carry an "(X=n)" after it).
+    if (ability === undefined || !legal.text.startsWith(ability.text)) return 0;
+    const targets = this.aimedTargets(
+      state,
+      legal.targetOptions,
+      legal.targetSpecs,
+      offerPolarities(this.registry, legal),
+    );
+    let worth = effectWorth(ability.effect, {
+      state,
+      me: this.playerId,
+      controller: this.playerId,
+      targets: targets.map((t) => t ?? undefined),
+      source: legal.source,
+    });
+    if (legal.sacrifice !== undefined) worth -= 2;
+    if (ability.cost.payLife !== undefined) {
+      if (ability.cost.payLife >= state.players[this.playerId].life) return null;
+      worth += costWorth(state, this.playerId, { life: ability.cost.payLife });
+    }
+    return worth < 0 ? null : worth;
   }
 
   /**
@@ -1584,22 +1659,106 @@ export class HeuristicBotController extends AutomaticController {
     return eligible.slice(0, Math.max(min, Math.min(max, eligible.length)));
   }
 
-  /** A ward payment (rule 702.21a) is offered only when it's affordable, and
+  /**
+   * A ward payment (rule 702.21a) is offered only when it's affordable, and
    * a spell of this bot's that targeted something is one it wanted to
    * resolve, so it pays — unless the life it would pay is all it has left.
-   * Every other "you may" keeps the do-nothing default. */
+   *
+   * Everything else — a "you may", a punisher's "unless", a villainous
+   * choice, a modal choice — is weighed by `effect-worth.ts`: each mode by
+   * what it does to this bot (with the targets it already has, so a "may"
+   * aimed at our own creature reads as the harm it is), less the choice's
+   * cost; and declining by what happens instead. Declining wins a tie, so a
+   * clause the worth can't read keeps v1's old do-nothing answer. v1 used to
+   * decline every "you may", Rhystic Study's {1} included, and take a modal
+   * choice's first modes whatever they were.
+   */
   chooseModes(
     view: ControllerView,
     minModes: number,
     maxModes: number,
     modeTexts: readonly string[],
   ): readonly number[] {
-    const awaiting = view.state.awaiting;
-    if (awaiting?.kind === "choose-modes" && awaiting.ward !== undefined) {
-      const life = view.state.players[view.player].life;
+    const state = view.state;
+    const awaiting = state.awaiting;
+    if (awaiting?.kind !== "choose-modes") {
+      return super.chooseModes(view, minModes, maxModes, modeTexts);
+    }
+    if (awaiting.ward !== undefined) {
+      const life = state.players[view.player].life;
       return lifePaidBy(awaiting.modes[0]?.effect) >= life ? [] : [0];
     }
-    return super.chooseModes(view, minModes, maxModes, modeTexts);
+    const context = {
+      state,
+      me: this.playerId,
+      targets: awaiting.targets,
+      source: awaiting.source,
+      ...(awaiting.triggerObject !== undefined ? { triggerObject: awaiting.triggerObject } : {}),
+      ...(awaiting.lastKnownRefs?.player !== undefined
+        ? { triggerPlayer: awaiting.lastKnownRefs.player }
+        : {}),
+    };
+    const cost = costWorth(state, this.playerId, {
+      ...(awaiting.cost !== undefined ? { mana: awaiting.cost } : {}),
+      ...(awaiting.costLife !== undefined ? { life: awaiting.costLife } : {}),
+      ...(awaiting.costEnergy !== undefined ? { energy: awaiting.costEnergy } : {}),
+    });
+    const scored = awaiting.modes
+      .map((mode, index) => ({
+        index,
+        worth: effectWorth(mode.effect, {
+          ...context,
+          controller: awaiting.modesController ?? awaiting.player,
+        }),
+      }))
+      .sort((a, b) => b.worth - a.worth || a.index - b.index);
+    // The fewest modes allowed, best first; then any more that are worth
+    // having on their own.
+    const chosen = scored.slice(0, minModes);
+    for (const mode of scored.slice(minModes)) {
+      if (chosen.length >= maxModes || mode.worth <= 0) break;
+      chosen.push(mode);
+    }
+    if (minModes === 0) {
+      const declined = effectWorth(awaiting.onDecline, {
+        ...context,
+        controller: awaiting.declineController ?? awaiting.player,
+      });
+      // Nothing worth having alone may still beat what declining lets
+      // happen: paying the punisher's {1}.
+      const best = scored[0];
+      if (chosen.length === 0 && best !== undefined && maxModes > 0) chosen.push(best);
+      const taken = chosen.reduce((sum, mode) => sum + mode.worth, 0) + cost;
+      if (taken <= declined) return [];
+    }
+    return chosen.map((mode) => mode.index).sort((a, b) => a - b);
+  }
+
+  /** The cheapest of what may be sacrificed — see `cheapestPermanents`. */
+  chooseSacrifices(
+    view: ControllerView,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[] {
+    return this.cheapestPermanents(view.state, eligible, count);
+  }
+
+  /** Surplus lands first, then what the board can't cast soon — see
+   * `chooseBottomOfHand`. v1 used to discard from the front of its hand. */
+  chooseDiscards(
+    hand: readonly GameObject[],
+    count: number,
+    view?: ControllerView,
+  ): readonly ObjectId[] {
+    const lands =
+      view === undefined
+        ? 0
+        : view.state.zones.shared.battlefield.filter(
+            (id) =>
+              view.state.objects[id]?.controller === this.playerId &&
+              computeCharacteristics(view.state, this.registry, id).types.includes("land"),
+          ).length;
+    return chooseBottomOfHand(hand, this.registry, count, lands);
   }
 
   /**
@@ -1662,14 +1821,25 @@ export class HeuristicBotController extends AutomaticController {
       this.activationTurn = view.state.turn.number;
       this.activations.clear();
     }
-    const ability = options.find(
-      (o): o is ActivateAbilityLegal =>
-        o.kind === "activate-ability" &&
-        !this.isManaOnlyAbility(o) &&
-        !this.isPointlessReattach(view.state, o) &&
-        (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) < MAX_ACTIVATIONS_PER_TURN &&
-        !this.aimsOnlyAtWrongSide(view.state, o),
-    );
+    // The ability worth most (`activationWorth`), the first of a tie.
+    let ability: ActivateAbilityLegal | undefined;
+    let abilityWorth = -Infinity;
+    for (const o of options) {
+      if (
+        o.kind !== "activate-ability" ||
+        this.isManaOnlyAbility(o) ||
+        this.isPointlessReattach(view.state, o) ||
+        (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) >= MAX_ACTIVATIONS_PER_TURN ||
+        this.aimsOnlyAtWrongSide(view.state, o)
+      ) {
+        continue;
+      }
+      const worth = this.activationWorth(view.state, o);
+      if (worth !== null && worth > abilityWorth) {
+        ability = o;
+        abilityWorth = worth;
+      }
+    }
     if (ability !== undefined) {
       const key = `${ability.source}:${ability.abilityIndex}`;
       this.activations.set(key, (this.activations.get(key) ?? 0) + 1);

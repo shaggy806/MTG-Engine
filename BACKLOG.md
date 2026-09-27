@@ -166,10 +166,6 @@ that one card is the reason the deck exists.
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **v1.5's other choices.** Targeting is done (step 3). Still v1's placeholders: every "you
-  may" declined, sacrifices and discards taken from the front of the list, the first
-  non-mana ability activated whatever it does. Each wants a rule of the same kind — does
-  this help me — read off the effect.
 - **More training scenarios.** Step 8's corpus holds four right answers the weights get wrong
   (`kind: "training"` in `bot/scenarios.ts`) — too few to fit more than a lever or two
   against. Each blunder a live game or `bot:behaviour` shows becomes one, and

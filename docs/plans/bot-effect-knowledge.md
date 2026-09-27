@@ -358,3 +358,32 @@ evaluation prices at nothing (`untappedMana` is 0), so pushing someone else's at
 nothing it can see. A real multiplayer play, and an odd one to watch; BACKLOG has it. (The
 first 24 seeds alone read 8 wrong-side picks to 19, the next 24 read 18 to 18: which games a
 vector steers into moves these counts as much as the vector does.)
+
+**Step 3, v1.5's other choices, done (2026-09-27).** `engine/src/effect-worth.ts` is the other
+half of target polarity: what an effect is worth to one player once its targets are chosen, as a
+coarse signed number (a card about 2, a point of life a quarter of one above 15 and three
+quarters below, removal 4), read off the targets through `slotStrengths` and off the player scope
+for the kinds nearly every optional clause is made of. v1 now takes a "you may" or pays a
+punisher when that beats what declining lets happen, takes a modal choice's best modes, sacrifices
+its cheapest permanent (a token below a card), discards surplus lands and what its board can't
+cast soon, and activates the ability worth most, never one worth less than nothing.
+
+What changed, read off 40 four-player v1 games with the old v1 asked every question beside the
+new: 690 disagreements, nearly all the intended ones. Draws, life, tokens and land searches the
+old v1 declined (Windreader Sphinx, Sangromancer, Isperia, Emeria Angel, Solemn Simulacrum);
+Rhystic Study's {1} paid; Titan Hunter no longer fed its own Windreader Sphinx and commanders for
+a point of life, 40-odd times; edicts paid in tokens. One misread turned up and was fixed:
+exiling a card from a graveyard read as `exile`'s decisive removal, so Scavenging Ooze's nibble
+outranked Vitu-Ghazi's token. The same comparison for v2 (the old build's v2 asked beside the
+new, six full four-player games): 22 disagreements, about four a game — Isperia's draws taken,
+Rakdos Charm on an opponent's Bident rather than passing, Dawn of Hope's {2} kept when short —
+and nothing a watching player would call a blunder.
+
+In strength, level. The new v1 against three old v1s: **26.7% [23.7, 29.8] over 800 games**
+(even 25%). v2 on the new v1 against three v2s on the old: **21.8% [17.1, 27.2] over 254
+games**, stopped there, before the Ooze fix, once the decisions had been read one by one and
+shown nothing systematic; it shipped on those decisions rather than on the bench, which didn't
+rule out a loss. The bench's one refused action was an engine bug, fixed alongside: a convoke
+offer's proof could tap a green mana creature for generic that a mana-affordable cost needed for
+its colour (Hour of Reckoning with Avacyn's Pilgrim), so a driver echoing it was refused the
+cast; a mana-affordable offer now carries no proof.
