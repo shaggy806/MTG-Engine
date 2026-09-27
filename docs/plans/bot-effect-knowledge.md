@@ -220,6 +220,12 @@ own creature and itself — and, in both v1 and v2, **cast without an X, which t
 eight) with each mode's targets ranked and X at its maximum, and v1 leaves out a mode it could only
 aim at its own side and passes its X.
 
+**Step 6, the script done (2026-09-26).** `npm run bot:behaviour -w engine` is the harness this
+plan's measurements came from, rebuilt on the engine's own `target-polarity.ts`: wrong-side
+targets (and whether a right-side one was legal), own turns ending with a sorcery-speed spell
+castable and unplayed (and which cards), skipped land drops, and time by kind of window against
+the room's budget. A few dozen games answer what a win rate needs hundreds for, and say why.
+
 **Step 7, done (2026-09-26).** v3 is retired: `plan.ts`, `plan-bot.ts`, `bot-plan.test.ts`,
 the `bot:plan`, `bot:census` and `bot:rollout-cost` scripts, `BOT_PLAN_BUDGET_MS`, and the
 `--bot` flag of the bench, tune, harvest and scenario scripts. `determinize.ts` and `simulate.ts`'s

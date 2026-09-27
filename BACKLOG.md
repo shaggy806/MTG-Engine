@@ -166,7 +166,9 @@ base, retire v3. One line per step still open:
 - **Evaluation terms.** Combat restrictions priced; `lifeDanger` swept; the `smarter-bots.md`
   Phase 7 terms (mana production, draw engines, commander on board, commander damage dealt)
   are back on, since v3 isn't coming to replace them. Step 5.
-- **`bot:behaviour`**, and four-player scenarios for each measured blunder. Step 6.
+- **Scenarios for the blunders `bot:behaviour` measured.** The wide-board removal case is in
+  the gate; a Drakuseth-style trigger hitting its own side and help aimed at an opponent
+  (Garruk's untap, a +1/+1 counter) are covered only by v1 tests, not by a v2 scenario. Step 6.
 
 Beyond that plan:
 
