@@ -15,7 +15,7 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "enters-battlefield", who: "you-control", filter: { type: "land" } },
-      targets: ["opponent"],
+      targets: ["player"],
       effect: { kind: "goad", target: 0 },
       resolve: null,
       text: "Landfall — Whenever a land you control enters, goad each creature target player controls.",

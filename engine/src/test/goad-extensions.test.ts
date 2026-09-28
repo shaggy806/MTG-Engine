@@ -260,3 +260,21 @@ describe("an attack-requirement rule (Kardur, Doomscourge)", () => {
     expect(sorted(offer.defendersFor[bears])).toEqual(sorted([A, C, garruk]));
   });
 });
+
+describe("Geode Rager — goad each creature target player controls", () => {
+  it("may target any player, its controller included", () => {
+    const { game, ctl } = setUp([A, B]);
+    spawn(game, "Geode Rager", A);
+    const bears = spawn(game, "Grizzly Bears", A);
+    let offered: readonly PlayerId[] = [];
+    ctl[A].chooseTargetsFn = (_view, _source, _specs, options) => {
+      offered = options[0].flatMap((t) => (t.kind === "player" ? [t.player] : []));
+      return [{ kind: "player", player: A }];
+    };
+    const mountain = game.debugSpawn("Mountain", A, "hand");
+    game.dispatch({ type: "play-land", player: A, card: mountain });
+    game.advanceUntil(quiet);
+    expect(sorted(offered)).toEqual(sorted([A, B]));
+    expect(goaders(game, bears)).toEqual([A]);
+  });
+});

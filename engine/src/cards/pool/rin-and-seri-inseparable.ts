@@ -24,22 +24,18 @@ export default defineCard({
   text: `${DOG_TEXT}\n${CAT_TEXT}\n${PING_TEXT}`,
   triggered: [
     {
-      // `otherOnly` restores rule 113.6 rather than adding a word: these
-      // abilities work only from the battlefield, so Rin and Seri being cast
-      // never triggers them (the 2020-06-23 ruling says so outright). But the
-      // spell a `spell-cast` event is about joins the trigger scan with all
-      // its abilities — Rin and Seri is a Dog spell *and* a Cat spell — so
-      // without it the card would make a Cat and a Dog off its own cast. A
-      // Rin and Seri already on the battlefield is never the spell being
-      // cast, so excluding the source loses nothing the card does.
-      trigger: { on: "cast-spell", who: "you", otherOnly: true, filter: { subtype: "Dog" } },
+      // Rin and Seri is a Dog spell *and* a Cat spell, but casting it never
+      // triggers these (rule 113.6, and the 2020-06-23 ruling): a spell's
+      // only abilities that work on the stack are its "when you cast this"
+      // ones, which the trigger scan enforces.
+      trigger: { on: "cast-spell", who: "you", filter: { subtype: "Dog" } },
       targets: [],
       effect: { kind: "create-token", token: "1/1 Green Cat Token", count: 1 },
       resolve: null,
       text: DOG_TEXT,
     },
     {
-      trigger: { on: "cast-spell", who: "you", otherOnly: true, filter: { subtype: "Cat" } },
+      trigger: { on: "cast-spell", who: "you", filter: { subtype: "Cat" } },
       targets: [],
       effect: { kind: "create-token", token: "1/1 White Dog Token", count: 1 },
       resolve: null,

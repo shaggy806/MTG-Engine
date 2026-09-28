@@ -86,7 +86,32 @@ export const KEYWORDS = {
   hexproof: "hexproof", shroud: "shroud", flash: "flash", fear: "fear", intimidate: "intimidate",
   plainswalk: "plainswalk", islandwalk: "islandwalk", swampwalk: "swampwalk",
   mountainwalk: "mountainwalk", forestwalk: "forestwalk", desertwalk: "desertwalk",
-  changeling: "changeling",
+  changeling: "changeling", daybound: "daybound", nightbound: "nightbound",
+};
+
+/** Prowess (rule 702.108) is a triggered ability, not a `Keyword`: the shape
+ * every pool card authors it in. */
+const prowessAbility = () => ({
+  trigger: { on: "cast-spell", who: "you", noncreatureOnly: true },
+  targets: [],
+  effect: { kind: "modify-pt", target: "source", power: 1, toughness: 1, duration: "end-of-turn" },
+  resolve: null,
+  text: "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+});
+
+const COLOR_WORD = { white: "W", blue: "U", black: "B", red: "R", green: "G" };
+/** "Protection from red", "protection from white and from blue",
+ * "protection from multicolored" — a static, or `null` for any other part. */
+const protectionOf = (part) => {
+  const m = /^protection from (\w+)(?: and from (\w+))?$/i.exec(part);
+  if (m === null) return null;
+  const words = [m[1], m[2]].filter(Boolean).map((w) => w.toLowerCase());
+  const text = part.charAt(0).toUpperCase() + part.slice(1);
+  if (words.length === 1 && words[0] === "multicolored") {
+    return { affects: { scope: "self" }, protection: { filter: { multicolored: true } }, text };
+  }
+  if (!words.every((w) => COLOR_WORD[w] !== undefined)) return null;
+  return { affects: { scope: "self" }, protection: { colors: words.map((w) => COLOR_WORD[w]) }, text };
 };
 const KW = `(${Object.keys(KEYWORDS).join("|")})`;
 
@@ -747,9 +772,12 @@ export function parseFace(face, ctx = {}) {
       if (w === null) return null;
       return /^\{/.test(w[1]) ? { mana: w[1] } : { payLife: Number(w[1]) };
     };
-    if (parts.every((p) => KEYWORDS[p.toLowerCase()] !== undefined || wardOf(p) !== null)) {
+    const isProwess = (p) => p.toLowerCase() === "prowess";
+    if (parts.every((p) => KEYWORDS[p.toLowerCase()] !== undefined || wardOf(p) !== null || isProwess(p) || protectionOf(p) !== null)) {
       for (const p of parts) {
         if (KEYWORDS[p.toLowerCase()] !== undefined) out.keywords.push(KEYWORDS[p.toLowerCase()]);
+        else if (isProwess(p)) out.triggered.push(prowessAbility());
+        else if (protectionOf(p) !== null) out.static.push(protectionOf(p));
         else out.triggered.push(wardAbility(wardOf(p)));
       }
       continue;

@@ -25,21 +25,11 @@ export default defineCard({
   text: `${CAST_TEXT}\n${COMBAT_TEXT}\n${PUMP_TEXT}`,
   triggered: [
     {
-      // The printed card doesn't say "another", and `otherOnly` isn't there to
-      // add the word: it restores rule 113.6. This ability works only while
-      // Urtet is on the battlefield, so Urtet being cast can never trigger it
-      // — but the spell a `spell-cast` event is about joins the trigger scan
-      // with all its abilities (that is how cascade sees its own cast), so
-      // without `otherOnly` Urtet would make a Myr off its own cast from the
-      // stack. An Urtet already on the battlefield is never the spell being
-      // cast, so excluding the source loses nothing the card does (rule
-      // 601.2i: casting a second Urtet still triggers the first).
-      trigger: {
-        on: "cast-spell",
-        who: "you",
-        otherOnly: true,
-        filter: { subtype: "Myr" },
-      },
+      // Urtet is a Myr spell, but casting it never triggers this (rule
+      // 113.6: a spell's only abilities that work on the stack are its "when
+      // you cast this" ones, which the trigger scan enforces). Casting a
+      // second Urtet still triggers the first (rule 601.2i).
+      trigger: { on: "cast-spell", who: "you", filter: { subtype: "Myr" } },
       targets: [],
       effect: { kind: "create-token", token: "Myr Token", count: 1 },
       resolve: null,
