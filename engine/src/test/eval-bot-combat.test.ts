@@ -125,6 +125,32 @@ describe("EvalBotController combat", () => {
     expect(bot().declareAttackers(viewOf(game, A))).toHaveLength(3);
   });
 
+  it("splits its attackers to kill two opponents at once", () => {
+    const C = asPlayerId("carol");
+    const game = Game.create({
+      seed: 3,
+      registry,
+      decks: [deckFor(A), deckFor(B), deckFor(C)],
+    });
+    game.advanceUntil((s) => s.priority.holder !== null);
+    // Two 6/4s and a bear against two players at 6 with nothing to block:
+    // one Wurm at each kills both. Everything at the first (the old alpha
+    // strike) killed one.
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: false });
+    game.debugSpawn("Grizzly Bears", A, "battlefield", { summoningSick: false });
+    game.state.players[B].life = 6;
+    game.state.players[C].life = 6;
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+    const declaration = bot().declareAttackers(viewOf(game, A));
+    const at = (p: PlayerId) => declaration.filter((d) => d.defender === p).length;
+    expect(at(B)).toBeGreaterThan(0);
+    expect(at(C)).toBeGreaterThan(0);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [...declaration] });
+    game.advanceUntil((s) => s.turn.step === "end" || s.result.over);
+    expect(game.state.players[B].hasLost).toBe(true);
+    expect(game.state.players[C].hasLost).toBe(true);
+  });
+
   it("holds back a blocker when attacking would lose to the crackback", () => {
     const board = (life: number) =>
       atDeclaration("attackers", (g) => {

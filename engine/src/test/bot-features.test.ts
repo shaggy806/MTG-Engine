@@ -15,6 +15,7 @@
 import { describe, expect, it } from "vitest";
 
 import { CHAMPIONS, DEFAULT_WEIGHTS, FEATURE_KEYS, evaluateState, playerFeatures } from "../bot/index.js";
+import { lifeCost } from "../bot/features.js";
 import { COMMANDER_RULES, Game } from "../index.js";
 import { SAMPLE_DECKS } from "../sample-decks.js";
 import { asPlayerId } from "../primitives.js";
@@ -115,5 +116,24 @@ describe("the nonlinear life and library terms", () => {
     // fit can ever speak about.
     expect(FEATURE_KEYS).toContain("lifeDanger");
     expect(FEATURE_KEYS).toContain("libraryDanger");
+  });
+});
+
+describe("lifeCost", () => {
+  it("prices losing life exactly as the evaluation does, bend included", () => {
+    const game = newGame();
+    const scoreAt = (life: number): number => {
+      game.state.players[A].life = life;
+      return evaluateState(game.state, game.registry, A, DEFAULT_WEIGHTS);
+    };
+    for (const [life, damage] of [
+      [40, 4],
+      [17, 4],
+      [10, 4],
+    ]) {
+      expect(lifeCost(life, damage, DEFAULT_WEIGHTS)).toBeCloseTo(scoreAt(life) - scoreAt(life - damage));
+    }
+    // Below the line the same four points cost three times as much.
+    expect(lifeCost(10, 4, DEFAULT_WEIGHTS)).toBeCloseTo(3 * lifeCost(40, 4, DEFAULT_WEIGHTS));
   });
 });

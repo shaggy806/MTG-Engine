@@ -179,10 +179,6 @@ base, retire v3. One line per step still open:
 
 Beyond that plan:
 
-- **Draw engines by rate.** `drawEngines` (4 since 2026-09-27, so an opponent's Rhystic Study is
-  worth a Counterspell) counts every engine alike: Rhystic Study, which draws off each
-  opponent's spell, scores the same as Phyrexian Arena's one card a turn. Pricing one by the
-  cards it draws a round would separate them.
 - **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
   Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a
   Grizzly Bears (worth 4.6 to counter, largely `threat`). If live games show it holding one
@@ -204,13 +200,17 @@ Beyond that plan:
   else's attacker (Kessig Wolf Run, Unleash Fury) remain allowed and still cost mana the
   evaluation can't see (`untappedMana` is 0): if they come up too often in live games, capture
   one — the scenario says whether they need a price.
-- **The rollout still can't see our own later spells.** Pumps wait for combat and the upkeep's
-  mana waits for the main phase (`wastedNow`, `holdsManaForMain`), but inside a main phase or
-  combat v2 still can't see what a spell it hasn't cast yet would have done with mana it spends
-  now: its rollouts pass at every window. Letting our own seat play its turn as v1 in the
-  rollout is the general fix, and has a trap — passing then scores the same as casting whatever
-  v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
-  tie-break toward acting, and a bench, before it's tried.
+- **The rollout still can't see our own later spells — tried, level.** Pumps wait for combat
+  and the upkeep's mana waits for the main phase (`wastedNow`, `holdsManaForMain`), but inside a
+  main phase or combat the default rollout passes at every window, so v2 can't see what a spell
+  it hasn't cast yet would have done with mana it spends now. The `"acting"` rollout policy
+  (2026-09-28, `simulate.ts`) lets our own seat play the rest of its turn as v1, with ties
+  against passing going to acting (without that the bot put its plays off — tested). It sees two
+  Grizzly Bears over one Rumbling Baloth with four mana, but benched **level**: 26.0%
+  [21.8, 30.6] against three default v2s over 400 four-player games (`bot:bench
+  --candidate-options '{"rollout":"acting"}' --opponent shipped-2026-09-27c`), with 23 games
+  timing out at 300 s. Opt-in, not the default. Worth another look only with a cheaper v1 in the
+  rollout or a reason to expect a different result.
 - **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
   takes 258 s (705 before 2026-09-27's fixes), and an ordinary four-player game's first 40
   turns 10.5 s (13.1 before the last two). Profiled after them, what's left is the engine's real
@@ -221,16 +221,6 @@ Beyond that plan:
   in the scan (under 2% once filters read types lazily), and a shared mana scan for casting
   (0.3% of an ordinary game). Live rooms stop at 300 ms, so this is the bench's time limit and a
   thinner search, not a hang.
-- **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
-  order their moves by an estimate that prices damage at `life` per point, without step 5's
-  `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.
-  Only the order is affected — though under a budget the order decides what gets simulated —
-  and v1's pick, which chump-blocks lethal, is scored first regardless. Small; wants a
-  `lifeCost(life, damage)` beside `LIFE_DANGER_AT`.
-- **Check that a bot kills several players at once when it can.** Double-check attacker
-  declaration: when the attackers can deal lethal to more than one opponent in the same combat,
-  the bot should split them to do so. The attack climb is in `bot/eval-bot.ts`, with v1's
-  lethal-in-order logic referenced from `bot/decisions.ts`.
 - **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
   five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
   simple to play against. Add decks across a range of power levels for bots to bring. The same

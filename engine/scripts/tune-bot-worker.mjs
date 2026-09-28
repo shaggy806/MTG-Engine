@@ -27,7 +27,7 @@ import { tableFor } from "./bot-seating.mjs";
 // rebuilding it per game dwarfs the game itself.
 const registry = createDefaultRegistry();
 
-parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout, botOptions }) => {
+parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout, botOptions, candidateOptions }) => {
   const { seats, block, measuredSeat: candidateSeat, decks } = tableFor(seed, players);
 
   // Opponents are dealt round-robin to the seats the candidate isn't in, in
@@ -41,7 +41,13 @@ parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout,
   let taken = block;
   for (const seat of seats) {
     if (seat === candidateSeat) {
-      controllers[seat] = new EvalBotController(seat, registry, { ...botOptions, weights, horizon, rollout });
+      controllers[seat] = new EvalBotController(seat, registry, {
+        ...botOptions,
+        weights,
+        horizon,
+        ...(rollout !== undefined ? { rollout } : {}),
+        ...candidateOptions,
+      });
       continue;
     }
     const spec = opponents[taken % opponents.length];

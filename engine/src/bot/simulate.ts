@@ -62,8 +62,15 @@ export type Horizon = "stack" | "turn";
  *   creatures in hand, rolled to end of turn, leaves an empty board under all
  *   three, and a board with both creatures under this one, for 1.7x the cost
  *   (1.26ms to 2.18ms). See `docs/plans/bot-v3-search.md`.
+ * - `"acting"` — `"combat"` for everyone else, but our own seat plays the
+ *   rest of the turn as v1: the mana a candidate spends now is then weighed
+ *   against the spells v1 would have cast with it later in the turn, which
+ *   every other policy's rollouts never cast. Passing is scored with those
+ *   later spells too, so it can tie with casting one now — the search breaks
+ *   such ties toward acting (`EvalBotController`), or the bot would put its
+ *   plays off.
  */
-export type RolloutPolicy = "passive" | "combat" | "defensive" | "playing";
+export type RolloutPolicy = "passive" | "combat" | "defensive" | "playing" | "acting";
 
 /**
  * How far past the candidate action a `simulateTurns` rollout runs, counted in
@@ -307,7 +314,7 @@ function rolloutControllers(
   const controllers: Record<PlayerId, PlayerController> = {};
   for (const player of state.turnOrder) {
     controllers[player] =
-      policy === "playing"
+      policy === "playing" || (policy === "acting" && player === me)
         ? new PlayingRolloutController(player, registry)
         : policy === "defensive" && player === me
           ? new DefendingRolloutController(player, registry)

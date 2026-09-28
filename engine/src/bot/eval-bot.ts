@@ -50,6 +50,7 @@ import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState, normalizeWeights } from "./evaluate.js";
+import { lifeCost } from "./features.js";
 import type { EvalWeights } from "./evaluate.js";
 import {
   CombatRolloutController,
@@ -229,10 +230,22 @@ const MAX_MENACE_PAIRS = 6;
  */
 const MOVES_PER_ROUND = 8;
 
+/** Two scores this close are a tie: the same end state reached by a
+ * different order of floating-point sums. */
+const TIE = 1e-9;
+
 /** What a creature is worth to the evaluation, roughly: its creature, power
  * and toughness terms. Only used to rank moves, never to choose one. */
 const creatureValue = (c: CombatCreature, w: EvalWeights): number =>
   w.creatures + w.power * Math.max(0, c.power) + w.toughness * Math.max(0, c.toughness);
+
+/** Every order of `items` — few: the opponents at one table. */
+function permutations<T>(items: readonly T[]): T[][] {
+  if (items.length <= 1) return [[...items]];
+  return items.flatMap((item, i) =>
+    permutations(items.filter((_, j) => j !== i)).map((rest) => [item, ...rest]),
+  );
+}
 
 /**
  * Greedy local search: from `start`, repeatedly simulate the most promising
@@ -463,7 +476,7 @@ class DecisionRolloutController extends CombatRolloutController {
   }
 
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {
-    return this.rollout === "combat" ? super.declareAttackers(view) : [];
+    return this.rollout === "combat" || this.rollout === "acting" ? super.declareAttackers(view) : [];
   }
 
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
@@ -641,12 +654,21 @@ export class EvalBotController extends HeuristicBotController {
       candidates.unshift(preferred);
     }
 
+    // Under the `"acting"` rollout, passing is scored with the spells our own
+    // seat casts later in the turn, so it ties with casting the first of them
+    // now; the tie goes to acting — to passing, the bot would put every play
+    // off until the last window of its turn. Against each other, candidates
+    // still need to be strictly better.
+    const tiesAct = this.rollout === "acting";
     for (const action of candidates) {
       if (spent(budget)) break;
       budget.left -= 1;
       const victim = mustKill.get(action);
       const score = this.score(view, action, budget, victim);
-      if (score === null || score <= bestScore) continue;
+      if (score === null) continue;
+      const beats =
+        score > bestScore || (tiesAct && best.type === "pass-priority" && score >= bestScore - TIE);
+      if (!beats) continue;
       bestScore = score;
       best = action;
     }
@@ -1008,7 +1030,8 @@ export class EvalBotController extends HeuristicBotController {
 
     // Cheap arithmetic to decide which moves are worth a simulation: the
     // damage it would deal, less the attacker if something there can block
-    // and kill it.
+    // and kill it. Damage to a player is priced at their life, with the
+    // evaluation's bend below `LIFE_DANGER_AT`; to a planeswalker, flat.
     const estimate = (d: AttackerDeclaration): number => {
       const attacker = mine.get(d.attacker);
       if (attacker === undefined) return -Infinity;
@@ -1016,7 +1039,13 @@ export class EvalBotController extends HeuristicBotController {
       const dies = blockers.some(
         (b) => b.damage >= attacker.toughness || b.keywords.has("deathtouch"),
       );
-      const unblocked = blockers.length === 0 ? attacker.damage * w.life : 0;
+      const player = state.players[d.defender as PlayerId];
+      const unblocked =
+        blockers.length > 0
+          ? 0
+          : player !== undefined
+            ? lifeCost(player.life, attacker.damage, w)
+            : attacker.damage * w.life;
       return unblocked + attacker.damage - (dies ? creatureValue(attacker, w) : 0);
     };
 
@@ -1074,9 +1103,24 @@ export class EvalBotController extends HeuristicBotController {
     const kills = (x: CombatCreature, y: CombatCreature): boolean =>
       x.damage >= y.toughness || x.keywords.has("deathtouch");
 
+    // Everything attacking us or our planeswalkers, as if unblocked — what a
+    // block's stopped damage comes off the end of.
+    const hitsUs = (id: ObjectId): boolean => {
+      const target = state.objects[id]?.attacking ?? null;
+      if (target === null) return false;
+      return target === me || state.objects[target as ObjectId]?.controller === me;
+    };
+    let incoming = 0;
+    for (const c of creatures.values()) {
+      if (hitsUs(c.id)) incoming += c.damage * (c.keywords.has("double-strike") ? 2 : 1);
+    }
+    const life = state.players[me].life;
+
     // Cheap arithmetic to decide which moves are worth a simulation: the damage
     // a block stops, plus the attacker if the blockers kill it, less each
-    // blocker the attacker kills.
+    // blocker the attacker kills. Stopped damage is priced as the last of
+    // what's coming in, with the evaluation's bend below `LIFE_DANGER_AT`, so
+    // at 8 life a block that keeps us out of single digits ranks high.
     const estimate = (move: readonly BlockerDeclaration[]): number => {
       const attacker = creatures.get(move[0].attacker);
       const blockers = move.map((b) => creatures.get(b.blocker));
@@ -1085,7 +1129,8 @@ export class EvalBotController extends HeuristicBotController {
       const toughness = blockers.reduce((sum, b) => sum + (b?.toughness ?? 0), 0);
       const stopped = attacker.keywords.has("trample") ? Math.min(damage, toughness) : damage;
       const power = blockers.reduce((sum, b) => sum + (b?.damage ?? 0), 0);
-      let value = stopped * w.life;
+      let value =
+        lifeCost(life, incoming, w) - lifeCost(life, Math.max(0, incoming - stopped), w);
       if (power >= attacker.toughness || blockers.some((b) => b?.keywords.has("deathtouch"))) {
         value += creatureValue(attacker, w);
       }
@@ -1141,10 +1186,16 @@ export class EvalBotController extends HeuristicBotController {
   }
 
   /**
-   * Swing with everything at an opponent when that's lethal through their
-   * best blocks. At a multiplayer table killing one player doesn't end the
-   * game, so the swing still has to leave us alive to everyone else's
-   * crackback.
+   * Attack for the kill when some opponent is dead through their best
+   * blocks — as many opponents as the attackers can kill at once. Each order
+   * of the killable opponents is tried (at most six, at four players), each
+   * taking the fewest attackers its kill needs from what the ones before it
+   * left: sending everything at the first opponent in reach killed one player
+   * when the same creatures, split, killed two. Killing one player doesn't
+   * end a multiplayer game, so a plan still has to leave us alive to the
+   * crackback of whoever survives it; the most kills that does is played,
+   * with the attackers left over piled onto a player being killed (a margin
+   * against a trick) unless keeping them home is what survives.
    */
   private alphaStrike(
     state: GameState,
@@ -1158,23 +1209,92 @@ export class EvalBotController extends HeuristicBotController {
         all.findIndex((m) => m.id === c.id) === i && c.damage > 0 && legal.eligible.includes(c.id),
     );
     const living = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
-    for (const defender of living) {
-      if (!legal.defenders.includes(defender)) continue;
-      const attackers = mine.filter((c) => (legal.defendersFor[c.id] ?? []).includes(defender));
-      if (attackers.length === 0) continue;
-      const blockers = combatCreatures(state, this.cards, defender, true);
-      if (!isLethal(state, defender, damageThrough(attackers, blockers))) continue;
+    const blockersOf = new Map(
+      living.map((p) => [p, combatCreatures(state, this.cards, p, true)] as const),
+    );
+    const canAttack = (c: CombatCreature, defender: PlayerId): boolean =>
+      (legal.defendersFor[c.id] ?? []).includes(defender);
+    // The fewest of `pool` that kill `defender` through their best blocks:
+    // the biggest first until it's lethal, then each one dropped, smallest
+    // first, that it stays lethal without. `null` when all of them don't.
+    const killWith = (
+      defender: PlayerId,
+      pool: readonly CombatCreature[],
+    ): CombatCreature[] | null => {
+      const blockers = blockersOf.get(defender) ?? [];
+      const lethal = (attackers: readonly CombatCreature[]): boolean =>
+        isLethal(state, defender, damageThrough(attackers, blockers));
+      const able = pool.filter((c) => canAttack(c, defender)).sort((a, b) => b.damage - a.damage);
+      const chosen: CombatCreature[] = [];
+      for (const c of able) {
+        chosen.push(c);
+        if (lethal(chosen)) break;
+      }
+      if (chosen.length === 0 || !lethal(chosen)) return null;
+      for (let i = chosen.length - 1; i >= 0; i -= 1) {
+        const without = chosen.filter((_, j) => j !== i);
+        if (without.length > 0 && lethal(without)) chosen.splice(i, 1);
+      }
+      return chosen;
+    };
 
-      const declaration = attackers.map((c) => ({ attacker: c.id, defender }));
-      if (living.length === 1 || deadAnyway) return declaration;
+    const killable = living.filter(
+      (p) => legal.defenders.includes(p) && killWith(p, mine) !== null,
+    );
+    if (killable.length === 0) return null;
+
+    interface Plan {
+      readonly kills: number;
+      readonly used: number;
+      readonly declaration: AttackerDeclaration[];
+    }
+    const plans: Plan[] = [];
+    const seen = new Set<string>();
+    const add = (declaration: AttackerDeclaration[], kills: number, used: number): void => {
+      const key = declaration
+        .map((d) => `${d.attacker}>${d.defender}`)
+        .sort()
+        .join(",");
+      if (seen.has(key)) return;
+      seen.add(key);
+      plans.push({ kills, used, declaration });
+    };
+    for (const order of permutations(killable)) {
+      let pool = [...mine];
+      const killed: PlayerId[] = [];
+      const declaration: AttackerDeclaration[] = [];
+      for (const defender of order) {
+        const set = killWith(defender, pool);
+        if (set === null) continue;
+        killed.push(defender);
+        for (const c of set) declaration.push({ attacker: c.id, defender });
+        pool = pool.filter((c) => !set.includes(c));
+      }
+      const piled = [...declaration];
+      for (const c of pool) {
+        const target = killed.find((p) => canAttack(c, p));
+        if (target !== undefined) piled.push({ attacker: c.id, defender: target });
+      }
+      add(piled, killed.length, declaration.length);
+      add(declaration, killed.length, declaration.length);
+    }
+    // Most kills first; among equals, the fewest attackers the kills need,
+    // then the piled-on plan before the lean one (the order they were added).
+    const ranked = plans
+      .map((plan, index) => ({ plan, index }))
+      .sort((a, b) => b.plan.kills - a.plan.kills || a.plan.used - b.plan.used || a.index - b.index)
+      .map(({ plan }) => plan);
+
+    for (const plan of ranked) {
+      if (plan.kills === living.length || deadAnyway) return plan.declaration;
       const after = timed(budget, () =>
         simulateCombat(state, this.cards, {
           type: "declare-attackers",
           player: me,
-          attackers: withRequiredAttackers(declaration, legal),
+          attackers: withRequiredAttackers(plan.declaration, legal),
         }),
       );
-      if (after !== null && !this.crackbackLethal(after)) return declaration;
+      if (after !== null && !this.crackbackLethal(after)) return plan.declaration;
     }
     return null;
   }

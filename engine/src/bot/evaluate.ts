@@ -121,8 +121,10 @@ export interface EvalWeights {
    * this, a rock was only a permanent, and the audit priced Sol Ring below a
    * Forest. */
   readonly nonlandMana: number;
-  /** Permanents that keep drawing their controller cards — an upkeep draw,
-   * a draw on others entering or dying, a repeatable draw ability. */
+  /** Cards a round of the table that permanents keep drawing their
+   * controller — an upkeep draw (Phyrexian Arena, 1), a draw off each
+   * opponent's spell (Rhystic Study, half a card per opponent, since they can
+   * pay), a repeatable draw ability. See `drawRate` in `features.ts`. */
   readonly drawEngines: number;
   /** Our commanders on the battlefield under our control: the one card a
    * deck is built around, which `creatures` scores like any other. */
@@ -255,9 +257,11 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // ship on (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for
   // a sweep that finds their peak, if one exists.
   nonlandMana: 0,
-  // An engine at 4 — about two cards, a couple of turns of Phyrexian Arena —
-  // so an opponent's Rhystic Study is worth a Counterspell's reserve
-  // (`answers`): at 0, countering one scored 1.4, below a Divination.
+  // A card a round at 4 — about two cards, a couple of turns of Phyrexian
+  // Arena — so an opponent's Rhystic Study is worth a Counterspell's reserve
+  // (`answers`): at 0, countering one scored 1.4, below a Divination. Priced
+  // by rate since 2026-09-28, so Rhystic Study at four players (1.5 a round)
+  // is worth half again an Arena.
   drawEngines: 4,
   // A commander is the deck it leads, not a creature like any other. At zero
   // the bot killed a bigger vanilla creature rather than a commander one hit
@@ -289,7 +293,7 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // The reserve a Counterspell in hand holds back for: the bot counters a
   // spell only when that's worth more than this. At 3 it lets a Signet (0.9),
   // a Divination (1.85) and a Cultivate (2.35) through, and counters a
-  // Grizzly Bears (4.6), a draw engine (5.4 with `drawEngines` 4), a Craw
+  // Grizzly Bears (4.6), a four-player Rhystic Study (7.4), a Craw
   // Wurm (10.9) and a wrath of its own board (26.8) — "saves Counterspell for
   // a threat", which no weight on the old terms could fix without also
   // stopping the bot casting its rocks and draw spells.

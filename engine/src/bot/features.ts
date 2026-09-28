@@ -124,6 +124,22 @@ const SUBTRACTED: ReadonlySet<string> = new Set([
 const LIFE_DANGER_AT = 15;
 
 /**
+ * What losing `damage` life from `life` costs the evaluation: `life` a
+ * point, plus `lifeDanger` for each point that lands below
+ * {@link LIFE_DANGER_AT} — the evaluation's own bend, for the cheap
+ * arithmetic that ranks combat moves before any is simulated. Priced
+ * linearly, a block at 8 life looked as cheap as one at 40.
+ */
+export function lifeCost(
+  life: number,
+  damage: number,
+  w: { readonly life: number; readonly lifeDanger: number },
+): number {
+  const below = (at: number): number => Math.max(0, LIFE_DANGER_AT - at);
+  return damage * w.life + (below(life - damage) - below(life)) * w.lifeDanger;
+}
+
+/**
  * Where a library stops being a resource and starts being a clock.
  *
  * Same shape and same reasoning as {@link LIFE_DANGER_AT}: milling ten off a
@@ -241,19 +257,6 @@ function manaPerTurn(def: CardDefinition): number {
   return found;
 }
 
-/** Does this effect make its own controller draw? Anywhere in the tree. */
-function drawsForController(effect: unknown): boolean {
-  if (effect === null || typeof effect !== "object") return false;
-  if (Array.isArray(effect)) return effect.some(drawsForController);
-  const node = effect as { readonly kind?: unknown; readonly target?: unknown; readonly who?: unknown };
-  if (node.kind === "draw" && node.target === undefined && (node.who === undefined || node.who === "you")) {
-    return true;
-  }
-  return Object.values(effect).some(
-    (value) => value !== null && typeof value === "object" && drawsForController(value),
-  );
-}
-
 /** A trigger that fires once in a permanent's life — its own entering, dying,
  * leaving, being cast — draws once, not every turn. */
 function isOneShot(trigger: TriggeredAbility["trigger"]): boolean {
@@ -290,27 +293,105 @@ function isAnswer(def: CardDefinition): boolean {
   return found;
 }
 
-const engineMemo = new WeakMap<CardDefinition, boolean>();
+/**
+ * The most a draw engine is credited a round: past it the estimate below is
+ * guessing (Consecrated Sphinx at four players would be six), and one engine
+ * shouldn't outweigh a board.
+ */
+const DRAW_RATE_CAP = 3;
+
+/** Cards one firing of `effect` draws its controller: the largest fixed
+ * `draw` in it (1 for a counted one), halved under an `unless` an opponent
+ * can pay to stop it (Rhystic Study, Esper Sentinel). 0 if it draws none. */
+function drawsPerFiring(effect: unknown, unless = false): number {
+  if (effect === null || typeof effect !== "object") return 0;
+  if (Array.isArray(effect)) return Math.max(0, ...effect.map((e) => drawsPerFiring(e, unless)));
+  const node = effect as {
+    readonly kind?: unknown;
+    readonly target?: unknown;
+    readonly who?: unknown;
+    readonly amount?: unknown;
+  };
+  if (node.kind === "draw" && node.target === undefined && (node.who === undefined || node.who === "you")) {
+    const cards = typeof node.amount === "number" ? Math.max(1, node.amount) : 1;
+    return unless ? cards / 2 : cards;
+  }
+  const inner = unless || node.kind === "unless";
+  return Math.max(
+    0,
+    ...Object.values(effect).map((value) =>
+      value !== null && typeof value === "object" ? drawsPerFiring(value, inner) : 0,
+    ),
+  );
+}
+
+/** A draw engine's cards a round of the table, as `fixed + perOpponent` ×
+ * the opponents still in: see {@link drawRate}. */
+interface DrawRate {
+  readonly fixed: number;
+  readonly perOpponent: number;
+}
+
+const engineMemo = new WeakMap<CardDefinition, DrawRate>();
 
 /**
- * Whether a permanent keeps drawing its controller cards — an upkeep draw
- * (Phyrexian Arena), a draw on others entering, dying or being cast, a
- * repeatable activated or loyalty ability that draws. Not a one-shot: a
- * Solemn Simulacrum draws once, when it dies, and a Mind Stone once, when it's
- * sacrificed. The audit priced Phyrexian Arena at a quarter of a Grizzly
- * Bears, because nothing counted what it keeps doing.
+ * How many cards a permanent keeps drawing its controller each round of the
+ * table — 0 for one that doesn't. An upkeep draw (Phyrexian Arena), a draw on
+ * others entering, dying or being cast, a repeatable activated or loyalty
+ * ability that draws. Not a one-shot: a Solemn Simulacrum draws once, when it
+ * dies, and a Mind Stone once, when it's sacrificed. The audit priced
+ * Phyrexian Arena at a quarter of a Grizzly Bears, because nothing counted
+ * what it keeps doing.
+ *
+ * By rate, so Rhystic Study, which draws off every opponent's spell, isn't
+ * scored the same as Phyrexian Arena's one card a turn. A trigger on what an
+ * opponent does fires once per opponent a round (half that when only their
+ * second draw or spell a turn counts, and once in all when it's their attack
+ * on us); one on anyone's spell, draw or step
+ * once per player; anything else — our own upkeep, our own spells, combat,
+ * a creature entering or dying — about once. Each firing draws what
+ * {@link drawsPerFiring} says. Activated abilities, which usually share a tap
+ * or the mana, count the best of them once. Arena is 1 by construction, so
+ * `drawEngines` prices a card a round.
  */
-function isDrawEngine(def: CardDefinition): boolean {
-  let found = engineMemo.get(def);
-  if (found === undefined) {
-    found =
-      def.triggered.some((t) => !isOneShot(t.trigger) && drawsForController(t.effect)) ||
-      def.activated.some(
-        (a) => a.cost.sacrifice !== "self" && !isManaAbility(a) && drawsForController(a.effect),
-      );
-    engineMemo.set(def, found);
+function drawRate(def: CardDefinition, opponents: number): number {
+  let rate = engineMemo.get(def);
+  if (rate === undefined) {
+    let fixed = 0;
+    let perOpponent = 0;
+    for (const t of def.triggered) {
+      if (isOneShot(t.trigger)) continue;
+      const cards = drawsPerFiring(t.effect);
+      if (cards === 0) continue;
+      const trigger = t.trigger as {
+        readonly on: string;
+        readonly who?: unknown;
+        readonly nthEachTurn?: unknown;
+        readonly attackingYou?: unknown;
+      };
+      // An opponent attacking *us* (Ever-Watching Threshold, Isperia) is one
+      // of their targets, not every opponent's every turn: about once.
+      if (trigger.who === "opponent" && trigger.attackingYou !== true) {
+        perOpponent += cards * (typeof trigger.nthEachTurn === "number" && trigger.nthEachTurn > 1 ? 0.5 : 1);
+      } else if (
+        trigger.who === "any" &&
+        (trigger.on === "cast-spell" || trigger.on === "draws" || trigger.on === "step-begins")
+      ) {
+        fixed += cards;
+        perOpponent += cards;
+      } else {
+        fixed += cards;
+      }
+    }
+    let activated = 0;
+    for (const a of def.activated) {
+      if (a.cost.sacrifice === "self" || isManaAbility(a)) continue;
+      activated = Math.max(activated, drawsPerFiring(a.effect));
+    }
+    rate = { fixed: fixed + activated, perOpponent };
+    engineMemo.set(def, rate);
   }
-  return found;
+  return Math.min(DRAW_RATE_CAP, rate.fixed + rate.perOpponent * opponents);
 }
 
 /**
@@ -363,6 +444,7 @@ function playerFeaturesUncached(
   let counters = 0;
   let nonlandMana = 0;
   let drawEngines = 0;
+  const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost).length;
   let commanderOnBoard = 0;
   let idlePower = 0;
   /** Noncreature tokens by name — see `TOKEN_CAP`. */
@@ -412,7 +494,7 @@ function playerFeaturesUncached(
     if (!isLand && registry.has(name)) {
       const def = registry.get(name);
       nonlandMana += manaPerTurn(def) * n;
-      if (isDrawEngine(def)) drawEngines += n;
+      drawEngines += drawRate(def, opponents) * n;
     }
     if (object.isCommander && object.owner === player) commanderOnBoard += 1;
     if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;

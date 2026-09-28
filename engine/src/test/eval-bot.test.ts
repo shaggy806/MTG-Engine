@@ -327,6 +327,18 @@ describe("evaluateState features", () => {
     expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Mind Stone", A))).toBe(0);
   });
 
+  it("prices a draw engine by the cards it draws a round", () => {
+    const four = [A, B, C, D];
+    // One card a turn, at any table.
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Phyrexian Arena", A), four)).toBe(1);
+    // A card off each opponent's spell, unless they pay {1}: half a card per
+    // opponent — three of them at four players, one at two.
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Rhystic Study", A), four)).toBe(1.5);
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Rhystic Study", A))).toBe(0.5);
+    // Two cards per opponent's draw would be six at four players: capped.
+    expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Consecrated Sphinx", A), four)).toBe(3);
+  });
+
   it("counts our own commander on the battlefield", () => {
     expect(
       delta({ commanderOnBoard: 1 }, (g) => {
@@ -568,5 +580,44 @@ describe("candidateActions", () => {
         A,
       ),
     ).toEqual([]);
+  });
+});
+
+describe("the acting rollout", () => {
+  /** Alice's first main phase with four Forests out and `hand` in hand. */
+  const mainPhaseWith = (hand: readonly string[]): Game => {
+    const game = Game.create({ seed: 3, registry, decks: seatsFor([A, B]) });
+    game.advanceUntil(
+      (s) =>
+        s.turn.step === "precombat-main" &&
+        s.priority.holder === A &&
+        s.turnOrder[s.turn.activePlayerIndex] === A,
+    );
+    game.state.zones.perPlayer[A].hand = [];
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    for (const name of hand) game.debugSpawn(name, A, "hand");
+    return game;
+  };
+  const choose = (game: Game, rollout: "combat" | "acting"): string => {
+    const action = new EvalBotController(A, registry, { rollout }).act({
+      state: game.state,
+      player: A,
+      legalActions: () => game.legalActions(A),
+    });
+    return action.type === "cast-spell" ? game.state.objects[action.card].cardName : action.type;
+  };
+
+  it("sees the second spell the mana it leaves would cast", () => {
+    const hand = ["Grizzly Bears", "Grizzly Bears", "Rumbling Baloth"];
+    // Passing at every window, the rollout never casts the second Bears, so
+    // one Bears loses to the Baloth; playing its turn out as v1, it does.
+    expect(choose(mainPhaseWith(hand), "combat")).toBe("Rumbling Baloth");
+    expect(choose(mainPhaseWith(hand), "acting")).toBe("Grizzly Bears");
+  });
+
+  it("casts now what passing would only cast later", () => {
+    // Passing is scored with v1 casting the Bears in the second main phase —
+    // the same end state. The tie goes to acting.
+    expect(choose(mainPhaseWith(["Grizzly Bears"]), "acting")).toBe("Grizzly Bears");
   });
 });
