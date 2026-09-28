@@ -3,7 +3,7 @@
 **Status: complete.** All 18 phases shipped and committed (see
 `git log -- client/BOARD_REDESIGN_PLAN.md client/src/App.css` for the phase-by-phase
 narrative, which used to live in this file). This is the design record kept for future
-reference, not living documentation — see `CLAUDE.md`'s "Client architecture" section for
+reference, not living documentation — see `docs/architecture/client.md` for
 current shape.
 
 **The visual reference** is a mockup iterated live as a Claude Artifact:
@@ -30,7 +30,7 @@ anything.
 
 ## Standing rules this established
 
-These now live in `CLAUDE.md`'s "Standing UI rules" (repeated here because they came from
+These now live in `client/CLAUDE.md`'s "Standing UI rules" (repeated here because they came from
 this work): no fixed px — derive from `--card-w` with `clamp()`/`vw`/`vh`; every mana symbol
 goes through `<Symbols text={…} />`, never a hand-rolled coloured circle; and since the
 client has no automated tests, verify every UI change live in *both* a 2-player and a 3-4

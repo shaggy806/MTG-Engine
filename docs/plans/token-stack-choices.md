@@ -9,7 +9,7 @@ client, and checked live in the browser, and so are **tap costs** and
 ## Background
 
 A compacted token stack is one `GameObject` standing for `stackCount`
-identical tokens (CLAUDE.md, "Token stacking"). Engine code that treats the
+identical tokens (docs/architecture/engine.md, "Token stacking"). Engine code that treats the
 stack as **all** its tokens, or singles **one** out, is now right:
 
 - **Counting** permanents weights a stack by its size (`permanentCount`).

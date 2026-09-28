@@ -169,7 +169,7 @@
   display: grid;
   /* A gallery card is bigger than a board tile but still card-shaped, so it
      derives from the shared --card-w token rather than inventing a number
-     (see CLAUDE.md's standing UI rules). minmax(0, …) on the max side keeps
+     (see client/CLAUDE.md's standing UI rules). minmax(0, …) on the max side keeps
      a nearly-empty last row from stretching one card across the page. */
   --lib-card-w: calc(var(--card-w) * 1.62);
   grid-template-columns: repeat(auto-fill, minmax(var(--lib-card-w), 1fr));

@@ -173,7 +173,7 @@ reboot` does *not* deploy new code** — it just restarts whatever's already bui
 run `./deploy.sh` instead.
 
 The client build is several files, not one: the game's own script, the library and the deck
-builder as lazy chunks, and the card pool in 32 shards (see CLAUDE.md, "`cards/cardData.ts`").
+builder as lazy chunks, and the card pool in 32 shards (see `docs/architecture/client.md`, "`cards/cardData.ts`").
 Each deploy replaces them under new hashed names. A tab left open across a deploy that then asks
 for a file it hadn't loaded yet gets `index.html` from Caddy's `try_files` fallback instead, which
 fails to load as a script. In a game that costs only extras (a history tooltip shows just the

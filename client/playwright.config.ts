@@ -18,7 +18,7 @@ export default defineConfig({
   use: {
     browserName: 'chromium',
     baseURL: 'http://127.0.0.1:5173',
-    // The short screen the layout rules are written against (CLAUDE.md).
+    // The short screen the layout rules are written against (client/CLAUDE.md).
     viewport: { width: 1366, height: 768 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

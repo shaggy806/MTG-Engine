@@ -222,8 +222,8 @@ Six increments closing gaps that made real cards inexpressible:
   offers something `dispatch` refuses, it crashes.
 - **Client:** every new `AwaitingDecision` = a `Table` `mode` + controls branch
   + `AWAITING_LABEL` entry + a browser check. Budget ~20% of each phase for this.
-- **CLAUDE.md:** update the engine-header "Implemented / Not yet" paragraph and
-  the affected file bullets in the same commit as the code.
+- **Docs:** update `docs/architecture/engine.md`'s "What's implemented" section and
+  the affected file entries (and `engine/CLAUDE.md` for a new invariant) in the same commit.
 - **Perf:** replacement + trigger + SBA loops nest; each needs a guard against
   non-termination (see `prepareForPriority`'s `guard > 1000`).
 

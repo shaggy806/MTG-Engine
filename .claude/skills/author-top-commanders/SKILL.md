@@ -47,7 +47,7 @@ Also grep the top-5000 backlog for cards the same feature unblocks
 
 Engine change + its own `engine/src/test/<feature>.test.ts` + its entry in
 AUTHORING.md's vocabulary (and `neededCards-features.md`'s index). Follow
-CLAUDE.md's architecture: every decision is a dispatched action with a
+`engine/CLAUDE.md`'s rules: every decision is a dispatched action with a
 `decisions/` module; `Game` is the only writer of state; cite the rule
 numbers. Add its key to `top-commanders-gaps.json`'s `built`.
 

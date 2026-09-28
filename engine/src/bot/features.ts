@@ -372,7 +372,7 @@ function playerFeaturesUncached(
     const object = state.objects[id];
     if (object === undefined || object.controller !== player) continue;
     // One object can stand in for many token copies — see "Token stacking" in
-    // CLAUDE.md. A stack of twenty Saprolings is twenty creatures, not one.
+    // docs/architecture/engine.md. A stack of twenty Saprolings is twenty creatures, not one.
     const n = object.stackCount ?? 1;
     const c = computeCharacteristics(state, registry, id);
     const isCreature = c.types.includes("creature");

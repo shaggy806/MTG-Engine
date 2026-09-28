@@ -8,7 +8,7 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 
 /**
  * Sacrificing several permanents when the only ones you control are a
- * compacted token stack (CLAUDE.md, "Token stacking").
+ * compacted token stack (docs/architecture/engine.md, "Token stacking").
  *
  * The offer is one entry per *object*, so nine Goblins folded into one stack
  * are one entry. Against "sacrifice three" that left no legal answer at all —

@@ -24,7 +24,7 @@ import { combinations } from "./shared/subsets.js";
 
 /**
  * How many permanents each eligible entry stands for, for the entries that
- * stand for more than one — a compacted token stack (see CLAUDE.md, "Token
+ * stand for more than one — a compacted token stack (see docs/architecture/engine.md, "Token
  * stacking"). Empty on any board without one, which is nearly all of them.
  */
 function stackSizes(

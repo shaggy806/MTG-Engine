@@ -425,7 +425,7 @@
    its content and an over-wide options row pushes its siblings out of the box
    instead of being clipped — with `justify-content: center` on `.rr-body`
    that shoved the card being replaced clean off the left edge of the screen.
-   The same footgun as `minmax(0, 1fr)` in grid (see CLAUDE.md's UI rules). */
+   The same footgun as `minmax(0, 1fr)` in grid (see client/CLAUDE.md's UI rules). */
 .rr-options {
   min-width: 0;
 }
@@ -883,7 +883,7 @@
 .db-printing-grid {
   display: grid;
   /* Card-shaped, so derived from the shared --card-w token rather than a new
-     hardcoded number (see CLAUDE.md's standing UI rules). */
+     hardcoded number (see client/CLAUDE.md's standing UI rules). */
   grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) * 1.15), 1fr));
   gap: 10px;
   overflow-y: auto;

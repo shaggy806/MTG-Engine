@@ -115,7 +115,7 @@ is far below the noise floor (see "Tuning"), and the fragility it deletes is rea
   landCap)`: one player's raw, *unweighted* feature vector. Two things that bit the prototype
   and are worth stating: `Characteristics.types` is a lowercase string **array**
   (`"creature"`, `"land"`), not a `Set` and not capitalized; and `GameObject.stackCount` means
-  one object can stand for twenty creatures (see `CLAUDE.md`'s "Token stacking"), so every
+  one object can stand for twenty creatures (see `docs/architecture/engine.md`'s "Token stacking"), so every
   per-object contribution multiplies by it. Split out of `evaluate.ts` so the weights can be
   fitted — see "Fitting the weights from self-play".
 - **`evaluate.ts`** — `EvalWeights` and `evaluateState(state, registry, me, weights)`, pure

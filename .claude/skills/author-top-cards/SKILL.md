@@ -52,7 +52,7 @@ snapshot; works offline; several names per call). Sort into:
 If one missing feature blocks **five or more** cards of the batch (or is the
 BACKLOG's **Next** line and blocks at least three here), build it before
 authoring: engine change + its own test file + the AUTHORING.md vocabulary
-entry, following CLAUDE.md's architecture notes (every decision is a
+entry, following `engine/CLAUDE.md`'s rules (every decision is a
 dispatched action; `Game` is the only writer; rules accuracy with rule
 numbers). A feature needing a new player decision is also a client change —
 check it live in a 2- and a 4-player room (`dev-up`, `dev-down`) at ~768px

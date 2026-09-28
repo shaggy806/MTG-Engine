@@ -18,7 +18,7 @@ the game in the browser. `dev-down` stops them.
   board", a room code like `FOURP` or `HORDE`, or checking a client change
   against a known position): `node scripts/dev-rooms.mjs` — the same server
   plus one preloaded room per scenario in `server/scripts/dev-scenarios.mjs`,
-  and a command port on `127.0.0.1:4099` (CLAUDE.md, "Server"). Capture is
+  and a command port on `127.0.0.1:4099` (`server/CLAUDE.md`; room codes and ops in `docs/architecture/server.md`). Capture is
   always on there too.
 
 Both use port 4000, so only one runs at a time.

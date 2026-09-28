@@ -62,7 +62,7 @@ export interface ControllerView {
 
 /**
  * The first `count` permanents from `eligible`, taking a compacted token
- * stack as many times as it has tokens (CLAUDE.md, "Token stacking"). An
+ * stack as many times as it has tokens (docs/architecture/engine.md, "Token stacking"). An
  * `eligible` list is one entry per *object*, so a plain `slice(0, count)`
  * returns too few whenever a stack is on the board — and too few is not a
  * legal answer, which is how "sacrifice three" against nine stacked Goblins

@@ -36,7 +36,7 @@ clobbered).
   neither was and why.
 - **Anything UI-visible**: `npm run test:e2e -w client`, and a look in the
   browser at a 2- and a 4-player table at ~768px tall (`dev-up`, then
-  `dev-down` after). CLAUDE.md's standing UI rules apply.
+  `dev-down` after). `client/CLAUDE.md`'s standing UI rules apply.
 - New test: break the code it covers and watch it fail, where a silent pass
   is plausible.
 
@@ -52,7 +52,7 @@ git on purpose; edit it with byte-preserving tools only).
 
 - `BACKLOG.md`: delete the line for what landed; add one for anything found
   and left.
-- `CLAUDE.md`: new files, flags, commands or architecture (it's the map).
+- `CLAUDE.md` (root or the workspace's) for a new invariant, command or doc, and the file's entry in `docs/architecture/<workspace>.md` for new files, flags or architecture.
 - A plan in `docs/plans/` the work belongs to: its progress entry.
 
 ## 5. Commit and push

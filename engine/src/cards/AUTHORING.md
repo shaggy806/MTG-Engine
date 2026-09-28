@@ -2608,7 +2608,7 @@ curl -s localhost:4099 -d '{"op":"spawn","room":"TWOPW","player":"alice","zone":
 
 `TWOPW` gives you eight lands against a creature and a planeswalker to target;
 `spawn` without `zone` puts a permanent straight onto the battlefield, and
-`reset` rebuilds the room. `CLAUDE.md` lists the other rooms and commands.
+`reset` rebuilds the room. `docs/architecture/server.md` lists the other rooms and commands.
 
 ---
 
