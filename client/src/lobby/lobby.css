@@ -19,16 +19,38 @@
 }
 
 .seat-board-grid {
+  /* A seat is the same width at any table size: the width it has when four
+     share the row. Letting 2 seats take a half each is what made the
+     2-player lobby a different screen from the 4-player one -- each deck's
+     art grew to 450px, the seats' contents to twice their height, and the
+     Start Game button fell below the fold at 768px, while four seats sat
+     compact on one screen. A smaller table is now a narrower, centred row
+     of the same seats. Percentages in a track size resolve against the
+     grid's own width, and the room for the controls column (below) is
+     always set aside, so four seats plus the column still fit the row. */
+  --seat-ctrl-w: clamp(76px, 8vw, 104px);
+  --seat-w: calc((100% - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
   display: grid;
-  grid-template-columns: repeat(var(--seat-count), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w)));
+  justify-content: center;
   gap: var(--seat-gap, 16px);
 }
-/* The "Add seat" tile sits on the end as a narrow `auto` column rather than
-   an equal share of the row -- it's a control, not a seat, and giving it a
-   seat's width makes a 2-player table look like a 3-player one with an empty
-   chair. `--seat-count` deliberately stays the number of real seats. */
-.seat-board-grid.has-add {
-  grid-template-columns: repeat(var(--seat-count), minmax(0, 1fr)) auto;
+/* The Add seat / Remove seat controls sit on the end as a narrow `auto`
+   column rather than an equal share of the row -- they're controls, not
+   seats, and giving them a seat's width makes a 2-player table look like a
+   3-player one with an empty chair. `--seat-count` deliberately stays the
+   number of real seats. */
+.seat-board-grid.has-controls {
+  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w))) auto;
+}
+/* Centred rather than stretched: a full-height dashed box beside the real
+   seats reads as another (empty) seat, which is the opposite of what a
+   control to make or drop one should look like. */
+.seat-controls {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  gap: 8px;
 }
 
 .seat-add-panel {
@@ -37,11 +59,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  /* Centred rather than stretched: a full-height dashed box beside the real
-     seats reads as another (empty) seat, which is the opposite of what a
-     control to *make* one should look like. */
-  align-self: center;
-  width: clamp(76px, 8vw, 104px);
+  width: var(--seat-ctrl-w);
   padding: 22px 10px;
   background: none;
   border: 1px dashed var(--border);
@@ -51,6 +69,13 @@
 .seat-add-panel:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+.seat-add-panel.remove {
+  padding-block: 12px;
+}
+.seat-add-panel.remove:hover {
+  border-color: var(--bad);
+  color: var(--bad);
 }
 .seat-add-plus {
   font-size: 26px;
@@ -168,9 +193,11 @@
 }
 .seat-deck-slot.blank {
   border-style: dashed;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(var(--card-w) * 0.9);
+}
+.seat-deck-art.blank-art {
+  display: grid;
+  place-items: center;
+  border-style: dashed;
 }
 .seat-deck-slot:disabled {
   opacity: 1;

@@ -37,7 +37,8 @@ const toWire = (d: DeckContents): WireDeck => ({
  * reopens my own deck slot for editing; a readied deck is locked until then.
  *
  * This is also where the table gets its size (2-4 seats), via the "Add seat"
- * tile on the end of the row and a small × on any seat nobody is sitting in.
+ * and "Remove seat" tiles on the end of the row and a small × on any seat
+ * nobody is sitting in.
  * That question used to be asked on the landing page instead, as three "N
  * players" buttons above "Create a game" — before anyone had seen a seat, in
  * a layout where nothing tied the counts to the button below them. Here the
@@ -111,10 +112,23 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   const host = game.isHost
   const canAddSeat = host && game.seats.length < MAX_SEATS
   const hostSeat = game.seats.find((s) => s.isHost)
+  // Nobody is sitting here, and dropping it wouldn't take the table below
+  // two. The seat I haven't claimed yet but would take on "Ready" counts as
+  // mine: removing the chair out from under myself just shunts me to the
+  // next one, which reads as a bug.
+  const isRemovable = (s: (typeof game.seats)[number]) =>
+    host && !s.claimed && s.player !== mySeatPlayer && game.seats.length > MIN_SEATS
+  // "Remove seat" beside "Add seat" drops the last seat that can go, so the
+  // table shrinks from the end the way it grows.
+  const lastRemovable = game.seats.findLast(isRemovable) ?? null
+  const seatLabel = (s: (typeof game.seats)[number]) =>
+    s.claimed || s.isBot
+      ? playerLabel(s.player, game.seats)
+      : `Player ${game.seats.indexOf(s) + 1}`
 
   return (
     <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
-      <div className={`seat-board-grid${canAddSeat ? ' has-add' : ''}`}>
+      <div className={`seat-board-grid${host ? ' has-controls' : ''}`}>
         {game.seats.map((s, i) => {
           const isMySeat = s.player === mySeatPlayer
           // My own seat draws from the local deck, which has the whole
@@ -130,11 +144,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
           // (a bot has no ready state of its own to gate on); a human's
           // seat other than mine is never editable.
           const deckEditable = isMySeat ? !amReady : host && !s.claimed
-          // Nobody is sitting here, and dropping it wouldn't take the table
-          // below two. `isMySeat` also covers the seat I haven't claimed yet
-          // but would take on "Ready" — removing the chair out from under
-          // myself just shunts me to the next one, which reads as a bug.
-          const removable = host && !s.claimed && !isMySeat && game.seats.length > MIN_SEATS
+          const removable = isRemovable(s)
 
           return (
             <div
@@ -143,7 +153,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
             >
               <div className="seat-panel-head">
                 <span className="seat-panel-name">
-                  {s.claimed || s.isBot ? playerLabel(s.player, game.seats) : `Player ${i + 1}`}
+                  {seatLabel(s)}
                   {isMySeat && joined ? ' (you)' : ''}
                 </span>
                 {s.isHost ? <span className="seat-host-badge">Host</span> : null}
@@ -203,11 +213,26 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
           )
         })}
 
-        {canAddSeat ? (
-          <button type="button" className="seat-add-panel" onClick={game.addSeat}>
-            <span className="seat-add-plus">+</span>
-            <span className="seat-add-label">Add seat</span>
-          </button>
+        {host ? (
+          <div className="seat-controls">
+            {canAddSeat ? (
+              <button type="button" className="seat-add-panel" onClick={game.addSeat}>
+                <span className="seat-add-plus">+</span>
+                <span className="seat-add-label">Add seat</span>
+              </button>
+            ) : null}
+            {lastRemovable !== null ? (
+              <button
+                type="button"
+                className="seat-add-panel remove"
+                title={`Remove ${seatLabel(lastRemovable)}'s seat`}
+                onClick={() => game.removeSeat(lastRemovable.player)}
+              >
+                <span className="seat-add-plus">−</span>
+                <span className="seat-add-label">Remove seat</span>
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
 
@@ -275,7 +300,16 @@ function DeckSlot({
           </span>
         </>
       ) : (
-        <span className="seat-deck-plus">+</span>
+        // Laid out like a chosen deck — an art-shaped box, then the name and
+        // commander lines — so an empty seat is exactly as tall as a filled
+        // one and the row doesn't go ragged as decks are picked.
+        <>
+          <span className="seat-deck-art blank-art">
+            <span className="seat-deck-plus">+</span>
+          </span>
+          <span className="seat-deck-name muted">No deck</span>
+          <span className="seat-deck-commander">&nbsp;</span>
+        </>
       )}
       {editable ? <span className="seat-deck-hint">{deck ? 'Change deck' : 'Pick a deck'}</span> : null}
     </button>
