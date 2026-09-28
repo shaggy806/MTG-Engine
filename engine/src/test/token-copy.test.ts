@@ -97,29 +97,51 @@ describe("Miirym, Sentinel Wyrm — a permanent, non-legendary copy", () => {
   });
 });
 
-describe("Saw in Half — two 1/1 copies for the destroyed creature's controller", () => {
-  it("destroys the target and mints two 1/1 copies under its controller", () => {
+describe("Saw in Half — two half-size copies, if the creature died", () => {
+  const sawIn = (target: (game: Game) => ObjectId, extra: readonly string[] = []) => {
     const { game } = mkGame(["Saw in Half"], "Swamp");
     game.advanceUntil(toPrecombat);
     for (let i = 0; i < 3; i += 1) game.debugSpawn("Swamp", A, "battlefield");
-    const bear = game.debugSpawn("Grizzly Bears", B, "battlefield");
-
+    for (const name of extra) game.debugSpawn(name, A, "battlefield");
+    const victim = target(game);
     game.dispatch({
       type: "cast-spell",
       player: A,
       card: named(game, game.handOf(A), "Saw in Half"),
-      targets: [{ kind: "object", object: bear }],
+      targets: [{ kind: "object", object: victim }],
     });
     game.advanceUntil(quiet);
+    return { game, victim };
+  };
 
-    expect(game.state.objects[bear].zone).toBe("graveyard");
-    const copies = tokensOf(game, B, "Grizzly Bears");
+  it("halves the power and toughness it died with, rounding up, under its controller", () => {
+    // A 6/4 Craw Wurm with a +1/+1 counter died a 7/5: the copies are 4/3,
+    // and don't copy the counter.
+    const { game, victim } = sawIn((g) => {
+      const wurm = g.debugSpawn("Craw Wurm", B, "battlefield");
+      g.state.objects[wurm].counters["+1/+1"] = 1;
+      return wurm;
+    });
+    expect(game.state.objects[victim].zone).toBe("graveyard");
+    const copies = tokensOf(game, B, "Craw Wurm");
     expect(copies).toHaveLength(2);
     for (const id of copies) {
-      expect(game.characteristics(id).power).toBe(1);
-      expect(game.characteristics(id).toughness).toBe(1);
+      expect(game.characteristics(id)).toMatchObject({ power: 4, toughness: 3 });
+      expect(game.state.objects[id].counters["+1/+1"] ?? 0).toBe(0);
     }
-    expect(tokensOf(game, A, "Grizzly Bears")).toHaveLength(0);
+    expect(tokensOf(game, A, "Craw Wurm")).toHaveLength(0);
+  });
+
+  it("makes nothing when the creature isn't destroyed", () => {
+    const { game, victim } = sawIn((g) => g.debugSpawn("Darksteel Myr", B, "battlefield"));
+    expect(game.state.objects[victim].zone).toBe("battlefield");
+    expect(tokensOf(game, B, "Darksteel Myr")).toHaveLength(0);
+  });
+
+  it("makes nothing when the creature is exiled instead of dying", () => {
+    const { game, victim } = sawIn((g) => g.debugSpawn("Craw Wurm", B, "battlefield"), ["Rest in Peace"]);
+    expect(game.state.objects[victim].zone).toBe("exile");
+    expect(tokensOf(game, B, "Craw Wurm")).toHaveLength(0);
   });
 });
 

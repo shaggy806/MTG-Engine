@@ -176,4 +176,75 @@ describe("Finale of Devastation — tutors a creature onto the battlefield", () 
     expect(c.keywords).toContain("haste");
   });
 
+  it("the creature it finds gets +X/+X and haste too", () => {
+    const { game, a } = mkGame(["Finale of Devastation", ...Array(6).fill("Plains")], ["Plains", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 12; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    a.chooseFromZoneFn = (_v, eligible, _min, max) => eligible.slice(0, max);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Finale of Devastation"),
+      targets: [],
+      xValue: 10,
+    });
+    game.advanceUntil(quiet);
+    const bear = game.battlefield.find((id) => game.state.objects[id].cardName === "Grizzly Bears")!;
+    const c = computeCharacteristics(game.state, game.registry, bear);
+    expect([c.power, c.toughness]).toEqual([12, 12]);
+    expect(c.keywords).toContain("haste");
+  });
+
+  it("searching only the graveyard finds there, must find, and doesn't shuffle the library", () => {
+    const { game, a } = mkGame(
+      ["Finale of Devastation", ...Array(6).fill("Plains")],
+      ["Plains", "Grizzly Bears", "Craw Wurm"],
+    );
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 6; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const buried = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const libraryBefore = [...game.state.zones.perPlayer[A].library];
+    let offered: { eligible: readonly ObjectId[]; min: number } | undefined;
+    a.chooseModesFn = (_v, _min, _max, texts) => [texts.indexOf("Search your graveyard")];
+    a.chooseFromZoneFn = (_v, eligible, min, max) => {
+      offered = { eligible, min };
+      return eligible.slice(0, max);
+    };
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Finale of Devastation"),
+      targets: [],
+      xValue: 2,
+    });
+    game.advanceUntil(quiet);
+    expect(offered).toEqual({ eligible: [buried], min: 1 });
+    expect(game.state.objects[buried].zone).toBe("battlefield");
+    expect(game.state.zones.perPlayer[A].library).toEqual(libraryBefore);
+  });
+
+  it("searching both offers the library's and the graveyard's creatures", () => {
+    const { game, a } = mkGame(["Finale of Devastation", ...Array(6).fill("Plains")], ["Plains", "Grizzly Bears"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 6; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const buried = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const inLibrary = game.state.zones.perPlayer[A].library.find(
+      (id) => game.state.objects[id].cardName === "Grizzly Bears",
+    )!;
+    let eligibleSeen: readonly ObjectId[] = [];
+    a.chooseModesFn = (_v, _min, _max, texts) => [texts.indexOf("Search your library and graveyard")];
+    a.chooseFromZoneFn = (_v, eligible, _min, max) => {
+      eligibleSeen = eligible;
+      return eligible.slice(0, max);
+    };
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Finale of Devastation"),
+      targets: [],
+      xValue: 2,
+    });
+    game.advanceUntil(quiet);
+    expect([...eligibleSeen].sort()).toEqual([buried, inLibrary].sort());
+  });
 });

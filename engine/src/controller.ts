@@ -39,7 +39,7 @@ import type { GameObject, GameState } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
-import { fitTargetCount } from "./target-count.js";
+import { fitTargetCount, maxXForTargets } from "./target-count.js";
 import {
   auraPolarity,
   modalPolarities,
@@ -1105,7 +1105,9 @@ export class RandomController extends AutomaticController {
         );
         if (targets === null) return passFor(player);
         const xValue =
-          legal.xCost !== undefined ? this.pickIndex(legal.xCost.maxX + 1) : undefined;
+          legal.xCost !== undefined
+            ? this.pickIndex(maxXForTargets(legal.xCost, legal.targetCount, targets) + 1)
+            : undefined;
         return {
           type: "cast-spell",
           player,
@@ -1321,20 +1323,21 @@ export class HeuristicBotController extends AutomaticController {
         modes.flatMap((i) => cm.modes[i].targetSpecs),
       );
       if (targets === null) return passFor(player);
+      // A modal spell with X (Clan Defiance) is cast at its largest X like
+      // any other. Left out, the engine reads X as 0 — which is how this bot
+      // used to cast it, for no damage at all.
+      const modalX = legal.xCost === undefined ? undefined : maxXForTargets(legal.xCost, legal.targetCount, targets);
       return {
         type: "cast-spell",
         player,
         card: legal.card,
         targets,
         modes,
-        // A modal spell with X (Clan Defiance) is cast at its largest X like
-        // any other. Left out, the engine reads X as 0 — which is how this
-        // bot used to cast it, for no damage at all.
-        ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
+        ...(modalX !== undefined ? { xValue: modalX } : {}),
         ...(legal.via !== undefined ? { via: legal.via } : {}),
         ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
         ...(legal.face !== undefined ? { face: legal.face } : {}),
-        ...castExtras(legal, pickLast, legal.xCost?.maxX),
+        ...castExtras(legal, pickLast, modalX),
       };
     }
     const targets = fitCastTargets(
@@ -1349,16 +1352,19 @@ export class HeuristicBotController extends AutomaticController {
       legal.targetSpecs,
     );
     if (targets === null) return passFor(player);
+    // Its largest X with the targets chosen: under Fireball's "{1} more for
+    // each target beyond the first", more targets leave less for X.
+    const xValue = legal.xCost === undefined ? undefined : maxXForTargets(legal.xCost, legal.targetCount, targets);
     return {
       type: "cast-spell",
       player,
       card: legal.card,
       targets,
-      ...(legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {}),
+      ...(xValue !== undefined ? { xValue } : {}),
       ...(legal.via !== undefined ? { via: legal.via } : {}),
       ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
       ...(legal.face !== undefined ? { face: legal.face } : {}),
-      ...castExtras(legal, pickLast, legal.xCost?.maxX),
+      ...castExtras(legal, pickLast, xValue),
     };
   }
 

@@ -1,6 +1,5 @@
 import { defineCard } from "../define.js";
 
-/** "It can't be regenerated" is a no-op — regeneration isn't modeled. */
 export default defineCard({
   name: "Rapid Hybridization",
   manaCost: "{U}",
@@ -13,7 +12,7 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      { kind: "destroy", target: 0 },
+      { kind: "destroy", target: 0, cantBeRegenerated: true },
       { kind: "create-token", token: "Frog Lizard Token", count: 1, who: "target-controller" },
     ],
   },

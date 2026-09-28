@@ -5,7 +5,6 @@ export default defineCard({
   manaCost: "{2}{W}{W}",
   colors: ["W"],
   types: ["sorcery"],
-  // "They can't be regenerated" is a no-op here — regeneration isn't modeled.
   text: "Destroy all creatures. They can't be regenerated.",
-  effect: { kind: "destroy-all", filter: { type: "creature" } },
+  effect: { kind: "destroy-all", filter: { type: "creature" }, cantBeRegenerated: true },
 });

@@ -295,6 +295,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} destroyed — ${event.reason}`
     case 'permanent-destroy-prevented':
       return `${name(event.object)} not destroyed — ${event.reason}`
+    case 'regeneration-shield-created':
+      return `${name(event.object)} will regenerate the next time it would be destroyed this turn`
     case 'combat-damage-prevention-set':
       return `all combat damage is prevented this turn`
     case 'damage-prevented':

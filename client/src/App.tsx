@@ -26,6 +26,7 @@ import {
   publicNameAt,
   slotOptions,
   standardAssignment,
+  targetCountAtX,
 } from 'engine/client'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
@@ -1393,6 +1394,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       startAbilityAtX(action, value)
       return
     }
+    // Where X and the number of targets trade off (Fireball's "{1} more for
+    // each target beyond the first"), the X chosen leaves only some counts
+    // payable.
+    const atX = action.targetCount === undefined ? null : targetCountAtX(action.targetCount, action.xCost, value)
     beginTargeting({
       kind: 'cast',
       source: action.card,
@@ -1402,6 +1407,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       options: action.targetOptions,
       xValue: value,
       ...castExtras(action),
+      ...(atX !== null ? { targetCount: atX } : {}),
       ...picks,
     })
   }, [beginTargeting, pendingX, startAbilityAtX])

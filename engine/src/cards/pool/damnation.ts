@@ -6,5 +6,5 @@ export default defineCard({
   colors: ["B"],
   types: ["sorcery"],
   text: "Destroy all creatures. They can't be regenerated.",
-  effect: { kind: "destroy-all", filter: { type: "creature" } },
+  effect: { kind: "destroy-all", filter: { type: "creature" }, cantBeRegenerated: true },
 });

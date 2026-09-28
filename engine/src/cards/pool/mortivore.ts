@@ -1,9 +1,8 @@
 import { defineCard } from "../define.js";
+import { regenerateSelfAbility } from "../helpers.js";
 
-/** Regenerate (rule 701.15 — 701.16 is Reveal) isn't modeled, so the "{B}:
- * Regenerate this creature" activated ability is dropped. That makes this
- * card one of AUTHORING §15's "Known exceptions": it predates rule zero (§0)
- * and would not be authorable today. Fix it or drop it; don't copy it. */
+/** Regeneration (rule 701.15) saves it from being destroyed, not from the
+ * 0 toughness of empty graveyards (704.5f isn't destruction). */
 export default defineCard({
   name: "Mortivore",
   manaCost: "{2}{B}{B}",
@@ -12,7 +11,9 @@ export default defineCard({
   subtypes: ["Lhurgoyf"],
   power: 0,
   toughness: 0,
-  text: "Mortivore's power and toughness are each equal to the number of creature cards in all graveyards.",
+  text:
+    "Mortivore's power and toughness are each equal to the number of creature cards in all graveyards.\n" +
+    "{B}: Regenerate this creature.",
   static: [
     {
       affects: { scope: "self" },
@@ -24,4 +25,5 @@ export default defineCard({
       text: "Mortivore's power and toughness are each equal to the number of creature cards in all graveyards.",
     },
   ],
+  activated: [regenerateSelfAbility("{B}", "{B}: Regenerate this creature.")],
 });

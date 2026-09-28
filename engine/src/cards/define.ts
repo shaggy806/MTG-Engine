@@ -579,6 +579,12 @@ export type StaticCondition =
    */
   | { readonly kind: "resolved-this-turn"; readonly n: number }
   /**
+   * "If X is 10 or more" (Finale of Devastation): the X the resolving spell
+   * or ability was cast or activated with. Only a resolution can answer it;
+   * anywhere else it is false.
+   */
+  | { readonly kind: "x"; readonly compare: NumCompare }
+  /**
    * "If a land card is discarded **this way**" (Lord Windgrace), "if you
    * **didn't** draw cards this way" (Mr. Foxglove) — a question about what the
    * resolving spell or ability has done so far, over the same cards the
@@ -1196,6 +1202,18 @@ export interface StaticAbility {
   readonly text: string;
 }
 
+/** A targeted modal spell's modes — see {@link CardDefinition.castModal}. */
+export interface CastModalSpec {
+  readonly minModes: number;
+  readonly maxModes: number;
+  /** A higher `maxModes` while a condition holds as the spell is cast (rule
+   * 601.2b, where the modes are chosen) — Will of the Sultai's "If you
+   * control a commander as you cast this spell, you may choose both
+   * instead." Asked of the card being cast, so `controls` reads its caster. */
+  readonly maxModesIf?: { readonly condition: StaticCondition; readonly maxModes: number };
+  readonly modes: readonly ModeOption[];
+}
+
 /** Printed characteristics of a card. Immutable reference data. */
 export interface CardDefinition {
   readonly name: string;
@@ -1228,11 +1246,7 @@ export interface CardDefinition {
    * targets for those modes (601.2c). Each mode's `effect` applies with its
    * own target slice. `null` for a non-modal card; a non-targeted modal spell
    * uses the resolution-time `modal` {@link EffectSpec} instead. */
-  readonly castModal: {
-    readonly minModes: number;
-    readonly maxModes: number;
-    readonly modes: readonly ModeOption[];
-  } | null;
+  readonly castModal: CastModalSpec | null;
   /**
    * An **additional cost** to cast this spell (rule 601.2f/h) — paid as it's
    * cast, so it happens even if the spell is later countered, and the spell
@@ -1364,6 +1378,15 @@ export interface CardDefinition {
     readonly condition: StaticCondition;
     readonly reduceGeneric: CostReductionAmount;
   } | null;
+  /**
+   * "This spell costs {1} more to cast for each target beyond the first"
+   * (Fireball; Strive — Twinflame's {2}{R}): this cost, once per distinct
+   * target after the first. A cost increase (rule 601.2f), so it's added to
+   * whatever cost is paid, an alternative one included, before any
+   * reduction; the spell is offered at every target count its caster can
+   * afford (`LegalAction.targetCount`). `null` for none.
+   */
+  readonly costPerExtraTarget: string | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -1576,6 +1599,7 @@ const PRINTED_ABILITY: {
   alternativeCost: (def) => def.alternativeCost !== null,
   convoke: (def) => def.convoke,
   selfCostReduction: (def) => def.selfCostReduction !== null,
+  costPerExtraTarget: (def) => def.costPerExtraTarget !== null,
   effect: (def) => def.effect !== null,
   resolve: (def) => def.resolve !== null,
   activated: (def) => def.activated.length > 0,
@@ -1673,11 +1697,7 @@ interface CardDraft {
   keywords?: readonly Keyword[];
   text?: string;
   targets?: readonly TargetSpec[];
-  castModal?: {
-    readonly minModes: number;
-    readonly maxModes: number;
-    readonly modes: readonly ModeOption[];
-  };
+  castModal?: CastModalSpec;
   additionalCost?: {
     readonly sacrifice?: CardFilter;
     readonly discard?: number;
@@ -1704,6 +1724,7 @@ interface CardDraft {
     readonly condition: StaticCondition;
     readonly reduceGeneric: CostReductionAmount;
   };
+  costPerExtraTarget?: string;
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -1780,6 +1801,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     alternativeCost: draft.alternativeCost ?? null,
     convoke: draft.convoke ?? false,
     selfCostReduction: draft.selfCostReduction ?? null,
+    costPerExtraTarget: draft.costPerExtraTarget ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],

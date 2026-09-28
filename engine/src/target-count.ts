@@ -2,7 +2,7 @@
 // modifications count (Hinata, Dawn-Crowned). Pure: no state, no registry, so
 // the engine, the controllers and the bot can all ask the same questions.
 
-import { isOptionalSpec } from "./target.js";
+import { anyNumberSlot, isOptionalSpec } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 
 /** The range of distinct-target counts a spell may be cast with and afford,
@@ -128,7 +128,9 @@ export function targetCountBounds(
  * Each change is kept only if it moves the count the right way (counted as
  * the engine counts it, token stacks included — `range.copies`). Drivers that
  * pick targets without reading costs (the fuzzer, the bots) run their choice
- * through this before echoing a `cast-spell` with a `targetCount`.
+ * through this before echoing a `cast-spell` with a `targetCount`. An "any
+ * number of target …" group (always last) is trimmed from its end or grown
+ * from its options instead, as its members are chosen targets, not slots.
  */
 export function fitTargetCount(
   chosen: readonly (TargetRef | null)[],
@@ -138,6 +140,28 @@ export function fitTargetCount(
 ): (TargetRef | null)[] | null {
   const out = [...chosen];
   const count = () => distinctTargetCount(out, range.copies);
+  const group = anyNumberSlot(specs);
+  if (group >= 0) {
+    while (count() > range.max && out.length > group) out.pop();
+    for (const o of options[group] ?? []) {
+      if (count() >= range.min) break;
+      const before = count();
+      out.push(o);
+      if (count() <= before) out.pop();
+    }
+    const n = count();
+    if (n >= range.min && n <= range.max) return out;
+    // Still outside: the slots before the group, as below.
+    const head = fitTargetCount(out.slice(0, group), options.slice(0, group), specs.slice(0, group), {
+      ...range,
+      min: Math.max(0, range.min - (n - distinctTargetCount(out.slice(0, group), range.copies))),
+      max: Math.max(0, range.max - (n - distinctTargetCount(out.slice(0, group), range.copies))),
+    });
+    if (head === null) return null;
+    const fitted = [...head, ...out.slice(group)];
+    const total = distinctTargetCount(fitted, range.copies);
+    return total >= range.min && total <= range.max ? fitted : null;
+  }
   /** Point slot `i` at `ref` if that moves the count by `dir`; say whether. */
   const tryRef = (i: number, ref: TargetRef | null, dir: 1 | -1): boolean => {
     const before = count();
@@ -157,4 +181,38 @@ export function fitTargetCount(
   }
   const n = count();
   return n >= range.min && n <= range.max ? out : null;
+}
+
+/** An `{X}` spell's offered X ceilings by target count — see
+ * `LegalAction` cast-spell's `xCost.maxXByTargetCount`. */
+export interface XCostOffer {
+  readonly maxX: number;
+  readonly maxXByTargetCount?: readonly number[];
+}
+
+/** The largest X payable with `targets` chosen, when the cost depends on how
+ * many there are (Fireball); `xCost.maxX` otherwise. */
+export function maxXForTargets(
+  xCost: XCostOffer,
+  range: TargetCountRange | undefined,
+  targets: readonly (TargetRef | null)[],
+): number {
+  const byCount = xCost.maxXByTargetCount;
+  if (byCount === undefined || range === undefined) return xCost.maxX;
+  return byCount[distinctTargetCount(targets, range.copies) - range.min] ?? 0;
+}
+
+/** The part of `range` still payable once X is `x`: the target counts whose
+ * ceiling reaches it. `range` itself when X doesn't trade off against the
+ * count; `null` when no count affords that X. */
+export function targetCountAtX(
+  range: TargetCountRange,
+  xCost: XCostOffer | undefined,
+  x: number,
+): TargetCountRange | null {
+  const byCount = xCost?.maxXByTargetCount;
+  if (byCount === undefined) return range;
+  const counts = byCount.flatMap((ceiling, i) => (ceiling >= x ? [range.min + i] : []));
+  if (counts.length === 0) return null;
+  return { ...range, min: counts[0], max: counts[counts.length - 1] };
 }

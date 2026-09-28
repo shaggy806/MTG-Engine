@@ -36,11 +36,21 @@ that one card is the reason the deck exists.
 ## Card backlog (top-5000 staples and the precons)
 
 - **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
-  or misplay a printed clause (Saw in Half, Finale of Devastation, Fireball, Mortivore, Iridescent
-  Vinelasher's Offspring, …). Give each its proper, faithful implementation, building whatever
-  feature blocks it; don't just delete them. The list and each card's blocker are in
-  `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run card:text -w engine`
-  is the live ledger.
+  or misplay a printed clause. Give each its proper, faithful implementation, building whatever
+  feature blocks it; don't just delete them. Left, each with what it needs: Iridescent
+  Vinelasher (Offspring — 7 top-5000 cards), Starfield Vocalist (Warp — 10), Fanatic of Rhonas
+  (Eternalize; Embalm is its sibling — 3), Chandra, Acolyte of Flame (casting a target card from
+  a graveyard during resolution — 4, Torrential Gearhulk among them), Terror of the Peaks (a
+  cast-time additional cost imposed by the target), Combat Thresher (Prototype) and Artificial
+  Evolution (layer-3 text changing across a card's abilities, not just its type line; neither is
+  in the top 5000). Each card's blocker is in `cards/AUTHORING.md` §15, "Known exceptions
+  already in the pool"; `npm run card:text -w engine` is the live ledger. Fixed so far: Saw in
+  Half, Finale of Devastation, Fireball, Mortivore, Will of the Sultai (and Rydia, earlier).
+- **Unblocked by those fixes, for the next top-5000 batch:** the rest of the Will cycle (Jeskai
+  #2169, Mardu #2236, Abzan #2579, Temur #4037 — `castModal.maxModesIf`), Strive (Twinflame
+  #1260, Call the Coppercoats #1627 — `costPerExtraTarget`), and regeneration (Nightscape
+  Familiar #1150, Asceticism #1329, Golgari Charm, Swarmyard, Golgari Grave-Troll, Snuff Out,
+  Decree of Pain, … — about 20). Check each for anything else it needs.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,436 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
@@ -89,8 +99,8 @@ that one card is the reason the deck exists.
   - The rest of the backlog is untriaged: 62 commanders and 1,006 cards, the lists' unmarked
     entries past those batches. The scaffolder can't finish any of them on its own.
 - **The limitation ledger.** Protection from a filter (19 cards) is the largest remaining gap.
-  Then regeneration, the "put into a graveyard from anywhere" trigger, "as this enters" on a
-  non-cast permanent, and discard as an ability cost. See `neededCards-features.md`, "The
+  Then the "put into a graveyard from anywhere" trigger, "as this enters" on a non-cast
+  permanent, and discard as an ability cost (regeneration is built, 2026-09-28). See `neededCards-features.md`, "The
   limitation ledger", and `cards/AUTHORING.md` §15.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
@@ -133,10 +143,10 @@ that one card is the reason the deck exists.
   Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
-- **Dividing among targets.** "Any number of target …" is built (the `any-number` group), but
-  "N damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka), "distribute
-  N counters among" (Lathiel) and Fireball's "divided evenly" (still authored single-target)
-  aren't, nor is Strive. See `neededCards-features.md`, "Unbounded targeting".
+- **Dividing among targets.** "Any number of target …" is built (the `any-number` group), and
+  so are Fireball's "divided evenly" and Strive's cost per extra target (2026-09-28), but "N
+  damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka) and "distribute
+  N counters among" (Lathiel) aren't. See `neededCards-features.md`, "Unbounded targeting".
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
@@ -238,6 +248,11 @@ Beyond that plan:
 - **Audit how many ways a card is rendered (raised 2026-09-28).** Count the distinct card
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
+
+- **Show regeneration shields on the card.** A permanent's shields (`GameObject
+  .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
+  only the log line says one was made. Add them to `VisibleObject` and a small badge beside
+  the damage marker; check it live.
 
 - **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
   own menu entry only while the list stays small (two colours up to X = 22). Past that it

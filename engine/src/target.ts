@@ -392,7 +392,10 @@ export function otherSlotConflict(
 export function describeTargetSpec(spec: TargetSpec | string): string {
   if (typeof spec === "string") return spec;
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
-  if (spec.kind === "any-number") return `any number of ${describeTargetSpec(spec.of)}`;
+  if (spec.kind === "any-number") {
+    // Fireball's "any number of targets", not "any number of any-target".
+    return spec.of === "any-target" ? "any number of targets" : `any number of ${describeTargetSpec(spec.of)}`;
+  }
   if (spec.kind === "other") {
     const than = spec.than ?? "source";
     const inner = describeTargetSpec(spec.of);

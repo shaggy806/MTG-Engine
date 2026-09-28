@@ -2,8 +2,7 @@ import { defineCard } from "../define.js";
 
 // #227 in top-commanders.txt. As a commander it dies before its owner is
 // offered the command zone (rule 903.9a, a state-based action), so its
-// trigger happens whichever zone they pick. "They can't be regenerated" is a
-// no-op here, as on Wrath of God: regeneration isn't modeled.
+// trigger happens whichever zone they pick.
 const DIES_TEXT =
   "When Child of Alara dies, destroy all nonland permanents. They can't be regenerated.";
 
@@ -22,7 +21,7 @@ export default defineCard({
     {
       trigger: { on: "dies", who: "self" },
       targets: [],
-      effect: { kind: "destroy-all", filter: { notTypes: ["land"] } },
+      effect: { kind: "destroy-all", filter: { notTypes: ["land"] }, cantBeRegenerated: true },
       resolve: null,
       text: DIES_TEXT,
     },

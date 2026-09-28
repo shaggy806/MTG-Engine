@@ -85,6 +85,9 @@ export function thisWayEntries(
   const leftBy = (id: ObjectId): PlayerId | undefined =>
     state.objects[id]?.lastKnown?.controller ?? state.ceasedTokens?.[id]?.controller;
   const ownerOf = (id: ObjectId): PlayerId | undefined => state.objects[id]?.owner;
+  // What left the battlefield for a graveyard, for "died": a destroyed
+  // permanent a replacement sent elsewhere (Rest in Peace) didn't die.
+  const wentToGraveyard = new Set<ObjectId>();
   for (const event of eventsSince(state, since)) {
     switch (what) {
       case "discarded":
@@ -103,6 +106,20 @@ export function thisWayEntries(
         // A destroy effect's, not a creature dying of damage or the legend
         // rule (both of which share the event).
         if (event.type === "permanent-destroyed" && event.reason === "destroyed") {
+          add(event.object, leftBy(event.object), true);
+        }
+        break;
+      case "died":
+        // "If that creature dies this way" (Saw in Half): destroyed, and put
+        // into a graveyard from the battlefield (rule 700.4). The move is
+        // logged before the destroy event that reports it.
+        if (event.type === "permanent-left-battlefield" && event.toZone === "graveyard") {
+          wentToGraveyard.add(event.object);
+        } else if (
+          event.type === "permanent-destroyed" &&
+          event.reason === "destroyed" &&
+          wentToGraveyard.has(event.object)
+        ) {
           add(event.object, leftBy(event.object), true);
         }
         break;

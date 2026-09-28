@@ -495,6 +495,13 @@ describe("target counting", () => {
     expect(distinctTargetCount(fitTargetCount([p(A), p(A)], options, ["player", "player"], { min: 2, max: 2 }))).toBe(2);
     expect(fitTargetCount([p(A)], [[p(A)]], ["player"], { min: 2, max: 2 })).toBeNull();
   });
+
+  it("fits an any-number group by trimming or growing its members (Fireball)", () => {
+    const group = [{ kind: "any-number", of: "any-target" }] as const;
+    const options = [[p(A), p(B), o("x")]];
+    expect(fitTargetCount([p(A), p(B), o("x")], options, group, { min: 0, max: 2 })).toEqual([p(A), p(B)]);
+    expect(fitTargetCount([], options, group, { min: 2, max: 3 })).toEqual([p(A), p(B)]);
+  });
 });
 
 describe("Hinata, Dawn-Crowned — a token stack named in two slots is two targets", () => {

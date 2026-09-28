@@ -324,6 +324,19 @@ export const manaTapAbility = (mana: Color): ActivatedAbility => ({
 });
 
 /**
+ * "{B}: Regenerate this creature." (rule 701.15a — Mortivore) — `mana` is the
+ * cost as printed. `text` is the ability as the card prints it, reminder text
+ * included where it has one.
+ */
+export const regenerateSelfAbility = (mana: string, text: string): ActivatedAbility => ({
+  cost: { mana, tap: false },
+  targets: [],
+  effect: { kind: "regenerate", target: "source" },
+  resolve: null,
+  text,
+});
+
+/**
  * A `{T}: Add …` mana ability for a rock or utility land — `mana` may be a
  * concrete type or `"any-color"` (Arcane Signet, Command Tower, Treasure),
  * `amount` defaults to 1, and `sacrifice: "self"` makes it a Treasure-style

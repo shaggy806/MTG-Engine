@@ -2,22 +2,21 @@ import { defineCard } from "../define.js";
 
 // needed-cards P16. New: EffectSpec "add-counter" gains a live-count amount
 // (mirrors modify-pt's power/toughness already being an EffectAmount).
-// Drops "if you control a commander as you cast this spell, you may choose
-// both instead" — castModal's minModes/maxModes are fixed per card, not
-// conditional on board state at cast time; approximated as a plain "choose
-// one," the common case.
+// "Choose both" while you control a commander — anyone's (the ruling) — is
+// `maxModesIf`, asked once as the modes are chosen.
 export default defineCard({
   name: "Will of the Sultai",
   manaCost: "{4}{G}",
   colors: ["G"],
   types: ["sorcery"],
   text:
-    "Choose one —\n" +
+    "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n" +
     "• Target player mills three cards. Return all land cards from your graveyard to the battlefield tapped.\n" +
     "• Put X +1/+1 counters on target creature, where X is the number of lands you control. It gains trample until end of turn.",
   castModal: {
     minModes: 1,
     maxModes: 1,
+    maxModesIf: { condition: { kind: "controls", filter: { isCommander: true }, atLeast: 1 }, maxModes: 2 },
     modes: [
       {
         text:

@@ -664,6 +664,7 @@ function evalStaticCondition(
     case "trigger-object":
     case "sacrificed":
     case "resolved-this-turn":
+    case "x":
     case "this-way":
     case "source-on-battlefield":
       // A static ability has no triggering object, no chosen targets and no

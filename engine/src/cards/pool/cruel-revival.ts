@@ -18,9 +18,7 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      // Regeneration isn't modeled at all, so "it can't be regenerated" is
-      // already true of every destroy this engine performs.
-      { kind: "destroy", target: 0 },
+      { kind: "destroy", target: 0, cantBeRegenerated: true },
       { kind: "return-to-hand", target: 1 },
     ],
   },

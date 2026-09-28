@@ -483,8 +483,13 @@ export type LegalAction =
       /** Set when the spell's cost contains `{X}`. `maxX` is the largest value
        * of X this player could currently pay for (0 when only X=0 is
        * affordable). A driver must include `xValue` in the `cast-spell`
-       * action; anything from 0 to `maxX` is legal. */
-      readonly xCost?: { readonly maxX: number };
+       * action; anything from 0 to `maxX` is legal — but where the cost also
+       * depends on the number of targets (`targetCount` — Fireball's "{1}
+       * more for each target beyond the first"), X and that number trade off:
+       * `maxXByTargetCount[i]` is the largest X payable with `targetCount.min
+       * + i` distinct targets, and `maxX` is the largest of them. See
+       * `maxXForTargets` / `targetCountAtX`. */
+      readonly xCost?: { readonly maxX: number; readonly maxXByTargetCount?: readonly number[] };
       /** Set when what the spell costs depends on how many targets it has — a
        * "for each target" cost modification reaches it (Hinata,
        * Dawn-Crowned). The spell is affordable only with a number of
@@ -492,7 +497,8 @@ export type LegalAction =
        * many slots name it — bar a token stack, which is a target per slot
        * up to its size, `copies`) from `min` to `max`; a driver has to choose
        * targets inside that range (`fitTargetCount`), or the cast is
-       * refused. `xCost.maxX` holds anywhere in the range. */
+       * refused. The range is what X=0 affords; with an `{X}`, see
+       * `xCost.maxXByTargetCount`. */
       readonly targetCount?: TargetCountRange;
       /** Present when this is an alternative-permission cast (not from the hand
        * for the printed cost — `"flashback"` / `"escape"` from the graveyard,

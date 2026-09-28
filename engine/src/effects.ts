@@ -34,6 +34,8 @@ import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
  * P15 — Exalted's "that creature gets +1/+1", the lone attacker rather than
  * a target or the ability's own source). */
 export type EffectTargetRef = number | "source" | "trigger-object";
+/** What a `search-library` searches — see its `zones`. */
+export type SearchZones = "library" | "graveyard" | "library-and-graveyard";
 /**
  * What an amount that reads an object (`powerOf`, `toughnessOf`,
  * `manaValueOf`, `manaSpentOf`) may point at: anything an
@@ -528,6 +530,8 @@ export type ThisWayKind =
   | "milled"
   | "sacrificed"
   | "destroyed"
+  /** Destroyed and put into a graveyard: "if that creature dies this way". */
+  | "died"
   | "exiled"
   | "returned-to-hand"
   | "put-into-graveyard"
@@ -662,6 +666,18 @@ export type EffectSpec =
       readonly from: number;
       readonly index: number;
       readonly effect: EffectSpec;
+    }
+  | {
+      /**
+       * "Deals X damage **divided evenly, rounded down**, among any number of
+       * targets" (Fireball): the targets from slot `from` on — an
+       * `any-number` group — each dealt `amount` divided by how many of them
+       * are still legal as it resolves (the ruling), all at once. More legal
+       * targets than damage deals none to any.
+       */
+      readonly kind: "damage-divided-evenly";
+      readonly amount: EffectAmount;
+      readonly from: number;
     }
   | {
       readonly kind: "damage";
@@ -855,7 +871,30 @@ export type EffectSpec =
        * nobody — a player who has left the game — nothing is untapped. */
       readonly by?: EffectPlayerRef;
     }
-  | { readonly kind: "destroy"; readonly target: number }
+  | {
+      readonly kind: "destroy";
+      readonly target: number;
+      /** "It can't be regenerated" (rule 701.15c — Terminate): a
+       * regeneration shield doesn't replace this destruction. */
+      readonly cantBeRegenerated?: boolean;
+    }
+  | {
+      /**
+       * Regenerate a permanent (rule 701.15a — "{B}: Regenerate this
+       * creature", "Regenerate target creature"): it gets a shield that
+       * replaces the next time it would be destroyed this turn with removing
+       * all damage from it, tapping it and removing it from combat. The shield
+       * lasts until used or the turn ends; each regeneration is one more.
+       */
+      readonly kind: "regenerate";
+      readonly target: EffectTargetRef;
+    }
+  | {
+      /** Regenerate every battlefield permanent matching `filter` (Wrap in
+       * Vigor: "Regenerate each creature you control"). */
+      readonly kind: "regenerate-all";
+      readonly filter: CardFilter;
+    }
   | {
       /** Put a permanent on the bottom of its **owner's** library (Condemn).
        * Not a shuffle and not a bounce: the card is buried, which is why this
@@ -874,6 +913,8 @@ export type EffectSpec =
        * clause because it's a fact about the source, not about the permanent
        * being matched. */
       readonly onlyControllersDamagedBySource?: boolean;
+      /** "They can't be regenerated" (rule 701.15c — Wrath of God). */
+      readonly cantBeRegenerated?: boolean;
     }
   | {
       /** Deal `amount` damage to every battlefield permanent matching `filter`
@@ -1948,9 +1989,13 @@ export type EffectSpec =
        * the effect's controller instead, which is what a card that copies
        * something an opponent controls means (Hate Mirage). */
       readonly who?: "you";
-      /** Override the copies' base power/toughness (Saw in Half — "except
-       * they're each 1/1"; a layer-7b set, so counters / anthems still apply). */
-      readonly basePt?: readonly [number, number];
+      /** Override the copies' base power/toughness, as part of their copiable
+       * values (rule 707.9b), so counters and anthems still apply: "except
+       * it's 1/1", or Saw in Half's "except their power is half that
+       * creature's power …" — `{ half: { powerOf: 0 }, round: "up" }`, read
+       * as the destroyed creature last existed (its ruling). Read signed: a
+       * value that *sets* power or toughness may be negative (rule 107.1b). */
+      readonly basePt?: readonly [EffectAmount, EffectAmount];
       /** The rest of a copy's exceptions — see {@link CopyExceptions}. */
       readonly exceptions?: CopyExceptions;
       /** A copy of **the card as it is now**, where the default copies a
@@ -2432,6 +2477,16 @@ export type EffectSpec =
        * always optional for someone else, which `min: 0` already expresses.
        */
       readonly who?: { readonly controllerOfTarget: number };
+      /**
+       * Which zones are searched: the library (the default), the graveyard,
+       * or both — "search your library **and/or graveyard**" (Finale of
+       * Devastation) is a resolution-time `modal` over the three, so the
+       * player says which. Only a search that includes the library shuffles
+       * it ("if you search your library this way, shuffle"). A graveyard is
+       * public, so a matching card there can't be missed: failing to find is
+       * allowed only in a hidden zone (rule 701.19b).
+       */
+      readonly zones?: SearchZones;
     }
   | {
       /** Reveal `count` cards from the top of the controller's library (or
@@ -2582,6 +2637,8 @@ export interface EffectApi {
   /** Deal damage to a whole scope of players, untargeted (Sabotender /
    * Tannuk: "deals 1 damage to each opponent" — needed-cards P16), all at
    * once. `amountFor` is asked per player, for a per-player amount. */
+  /** Deal `amount` to each of `targets`, as one event. */
+  dealDamageToEach(targets: readonly TargetRef[], amount: number): void;
   dealDamageScoped(
     who: PlayerScope,
     amountFor: (player: PlayerId) => number,
@@ -2698,11 +2755,20 @@ export interface EffectApi {
   ): void;
   tapPermanent(target: TargetRef): void;
   untapPermanent(target: TargetRef): void;
-  destroyPermanent(target: TargetRef): void;
+  /** `cantBeRegenerated`: rule 701.15c. */
+  destroyPermanent(target: TargetRef, cantBeRegenerated?: boolean): void;
   /** Destroy every battlefield permanent matching `filter`. With
    * `onlyControllersDamagedBySource`, restricted to those whose controller
    * this effect's source dealt combat damage to this turn. */
-  destroyAll(filter: CardFilter, onlyControllersDamagedBySource?: boolean): void;
+  destroyAll(
+    filter: CardFilter,
+    onlyControllersDamagedBySource?: boolean,
+    cantBeRegenerated?: boolean,
+  ): void;
+  /** Give a permanent a regeneration shield (rule 701.15a). */
+  regenerate(target: TargetRef): void;
+  /** Give every battlefield permanent matching `filter` one. */
+  regenerateAll(filter: CardFilter): void;
   /** Return every battlefield permanent matching `filter` to its owner's hand. */
   returnToHandAll(filter: CardFilter): void;
   /** Exile every battlefield permanent matching `filter` — see `exile-all`. */
@@ -3232,6 +3298,7 @@ export interface EffectApi {
     enterTapped: boolean,
     restDestination?: "hand" | "battlefield",
     reveal?: boolean,
+    zones?: SearchZones,
   ): void;
   /** See the `"reveal-top"` {@link EffectSpec}. */
   revealTop(then: EffectSpec): void;
@@ -3477,6 +3544,15 @@ export function amountValue(
 }
 
 /**
+ * An amount that *sets* a power or toughness — a token copy's "except its
+ * power is half that creature's power". Not clamped: rule 107.1b lets a value
+ * that sets power or toughness be negative.
+ */
+export function ptSetValue(amount: EffectAmount, ctx: ResolutionContext): number {
+  return signedAmountValue(amount, ctx);
+}
+
+/**
  * The amount a `modify-pt` or `modify-pt-all` adds to power or toughness.
  * Unlike every other amount it may be negative, but only by the card's own
  * sign: "-X/-X" is written `{ product: ["x", -1] }`, and its X is clamped at
@@ -3517,8 +3593,10 @@ function signedAmountValue(
     return ctx.lifeTotalOf(amount.lifeTotal === "each" ? (each ?? ctx.controller) : ctx.controller);
   }
   if ("half" in amount) {
+    // Signed, like the rest of this function: `amountValue` clamps the
+    // result, and a value setting power keeps its sign (rule 107.1b).
     const n = signedAmountValue(amount.half, ctx, each) / 2;
-    return Math.max(0, amount.round === "up" ? Math.ceil(n) : Math.floor(n));
+    return amount.round === "up" ? Math.ceil(n) : Math.floor(n);
   }
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
   if ("product" in amount) {
@@ -3892,6 +3970,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "choose-permanents":
       ctx.choosePermanents(spec.filter, spec.min ?? 0, amountValue(spec.upTo, ctx), spec.then, spec.prompt);
       return;
+    case "damage-divided-evenly": {
+      // A member found illegal as it resolved isn't there (rule 608.2b), and
+      // doesn't count toward the division.
+      const members = ctx.targets.slice(spec.from).filter((t): t is TargetRef => t !== undefined);
+      if (members.length === 0) return;
+      ctx.dealDamageToEach(members, Math.floor(amountValue(spec.amount, ctx) / members.length));
+      return;
+    }
     case "damage": {
       if (spec.toControllerOfTarget !== undefined) {
         const of = ctx.targets[spec.toControllerOfTarget];
@@ -4021,11 +4107,19 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "destroy": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.destroyPermanent(target);
+      if (target !== undefined) ctx.destroyPermanent(target, spec.cantBeRegenerated === true);
       return;
     }
     case "destroy-all":
-      ctx.destroyAll(spec.filter, spec.onlyControllersDamagedBySource);
+      ctx.destroyAll(spec.filter, spec.onlyControllersDamagedBySource, spec.cantBeRegenerated === true);
+      return;
+    case "regenerate": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.regenerate(target);
+      return;
+    }
+    case "regenerate-all":
+      ctx.regenerateAll(spec.filter);
       return;
     case "return-to-hand-all":
       ctx.returnToHandAll(spec.filter);
@@ -4656,7 +4750,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           exileAtEndStep: spec.exileAtEndStep ?? false,
           notLegendary: spec.notLegendary ?? false,
           under: spec.who === "you" ? ctx.controller : undefined,
-          ...(spec.basePt ? { basePt: spec.basePt } : {}),
+          ...(spec.basePt
+            ? { basePt: [ptSetValue(spec.basePt[0], ctx), ptSetValue(spec.basePt[1], ctx)] as const }
+            : {}),
           ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
           ...(spec.exceptions ? { exceptions: spec.exceptions } : {}),
           ...(spec.asCard === true ? { asCard: true } : {}),
@@ -4868,6 +4964,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.enterTapped === true,
         spec.restDestination,
         spec.reveal === true,
+        spec.zones,
       );
       return;
     }

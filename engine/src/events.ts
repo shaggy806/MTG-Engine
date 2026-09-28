@@ -604,9 +604,15 @@ export type GameEvent =
       readonly player: PlayerId;
     })
   | (Base & {
+      /** `reason` "regenerated": a regeneration shield used up (rule 701.15a). */
       readonly type: "permanent-destroy-prevented";
       readonly object: ObjectId;
       readonly reason: string;
+    })
+  | (Base & {
+      /** A permanent got a regeneration shield (rule 701.15a). */
+      readonly type: "regeneration-shield-created";
+      readonly object: ObjectId;
     })
   | (Base & {
       /** A Fog-style effect resolved — all combat damage is prevented for the

@@ -202,3 +202,70 @@ describe("Fireball", () => {
     expect(game.state.players[B].life).toBe(17);
   });
 });
+
+describe("Fireball — any number of targets, {1} more for each beyond the first", () => {
+  const fiveLands = () => {
+    const game = mkGame(["Mountain", "Mountain", "Mountain", "Mountain", "Mountain", "Fireball"]);
+    game.advanceUntil(atFirstMain);
+    playN(game, "Mountain", 5);
+    return game;
+  };
+  const fireball = (game: Game, targets: readonly ObjectId[], xValue: number) =>
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: cardNamed(game, game.handOf(A), "Fireball"),
+      targets: targets.map((object) => ({ kind: "object" as const, object })),
+      xValue,
+    });
+
+  it("divides X evenly, rounded down, among its targets", () => {
+    const game = fiveLands();
+    const one = spawn(game, "Craw Wurm", B);
+    const two = spawn(game, "Craw Wurm", B);
+    // {3}{R} + {1} for the second target: all five lands.
+    fireball(game, [one, two], 3);
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[one].damageMarked).toBe(1);
+    expect(game.state.objects[two].damageMarked).toBe(1);
+  });
+
+  it("offers X and the number of targets as a trade-off", () => {
+    const game = fiveLands();
+    spawn(game, "Craw Wurm", B);
+    spawn(game, "Craw Wurm", B);
+    const offer = game.legalActions(A).find((a) => a.kind === "cast-spell" && a.cardName === "Fireball");
+    if (offer?.kind !== "cast-spell") throw new Error("no Fireball offer");
+    // Four targets (two players, two Wurms): 0 or 1 target leaves X=4; each
+    // one more costs {1} of it.
+    expect(offer.targetCount).toMatchObject({ min: 0, max: 4 });
+    expect(offer.xCost).toEqual({ maxX: 4, maxXByTargetCount: [4, 4, 3, 2, 1] });
+  });
+
+  it("refuses a target the mana can't pay for", () => {
+    const game = fiveLands();
+    const one = spawn(game, "Craw Wurm", B);
+    const two = spawn(game, "Craw Wurm", B);
+    expect(() => fireball(game, [one, two], 4)).toThrow(/pay/);
+  });
+
+  it("divides among the targets still legal as it resolves", () => {
+    const game = fiveLands();
+    const one = spawn(game, "Craw Wurm", B);
+    const two = spawn(game, "Craw Wurm", B);
+    fireball(game, [one, two], 3);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [{ kind: "object", object: one }]);
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[two].damageMarked).toBe(3);
+  });
+
+  it("deals none when there are more legal targets than damage", () => {
+    const game = fiveLands();
+    const one = spawn(game, "Craw Wurm", B);
+    const two = spawn(game, "Craw Wurm", B);
+    fireball(game, [one, two], 1);
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[one].damageMarked).toBe(0);
+    expect(game.state.objects[two].damageMarked).toBe(0);
+  });
+});

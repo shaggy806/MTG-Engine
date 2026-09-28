@@ -51,6 +51,7 @@ import type {
   AdditionalCostOption,
   CardDefinition,
   CardType,
+  CastModalSpec,
   CombatRestriction,
   Keyword,
   StaticAbility,
@@ -145,12 +146,14 @@ import type {
   PtDuration,
   ResolutionContext,
   ReturnToHandZone,
+  SearchZones,
   ThisWayKind,
   ZoneChoiceFilter,
 } from "./effects.js";
 import {
   aggregateOver,
   attachmentsOf,
+  compareNum,
   matchesFilter,
   printedManaCost,
   supertypesOf,
@@ -1586,7 +1589,7 @@ export class Game {
     return {
       castModal: {
         minModes: def.castModal.minModes,
-        maxModes: def.castModal.maxModes,
+        maxModes: this.castModalMaxModes(def.castModal, card),
         modes: def.castModal.modes.map((m) => ({
           text: m.text,
           targetSpecs: [...(m.targets ?? [])],
@@ -1798,6 +1801,17 @@ export class Game {
       const sacrifices = this.additionalCostSacrifices(player, def, costOption);
       const xPlan =
         parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
+      // X and the number of targets trade off when both are paid for
+      // (Fireball): the largest X at each count on offer, so neither is
+      // capped by the dearest end of the other.
+      const maxXByTargetCount =
+        xPlan === null || targetCount === undefined
+          ? undefined
+          : Array.from({ length: targetCount.max - targetCount.min + 1 }, (_, i) =>
+              targetCount.min + i === pricedAt
+                ? xPlan.maxX
+                : Math.max(0, this.xPlanFor(player, card, def, cost, face ?? 0, targetCount.min + i).maxX),
+            );
       out.push({
         kind: "cast-spell",
         card,
@@ -1880,7 +1894,12 @@ export class Game {
           : {}),
         ...(targetCount !== undefined ? { targetCount } : {}),
         ...(xPlan !== null
-          ? { xCost: { maxX: xPlan.maxX } }
+          ? {
+              xCost:
+                maxXByTargetCount === undefined
+                  ? { maxX: xPlan.maxX }
+                  : { maxX: Math.max(...maxXByTargetCount), maxXByTargetCount },
+            }
           : def.additionalCost?.payLifeX === true
             ? // "Pay X life" — the ceiling is what you have, not what your
               // lands can make (rule 118.4: any amount of life you have).
@@ -4217,6 +4236,8 @@ export class Game {
     const cleared: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
+      // Regeneration shields last only this turn (rule 514.2).
+      delete object.regenerationShields;
       if (object.damageMarked !== 0 || object.markedByDeathtouch) {
         object.damageMarked = 0;
         object.markedByDeathtouch = false;
@@ -5669,7 +5690,22 @@ export class Game {
     costString: string | null = def.manaCost,
     targetCount = 0,
   ): ManaCost {
-    const base = parseManaCost(costString);
+    const printed = parseManaCost(costString);
+    // "Costs {1} more to cast for each target beyond the first" (Fireball,
+    // Strive) — an increase, so it comes before any reduction (rule 601.2f).
+    const beyond = def.costPerExtraTarget === null ? 0 : Math.max(0, targetCount - 1);
+    const perTarget = beyond === 0 ? null : parseManaCost(def.costPerExtraTarget);
+    const base: ManaCost =
+      perTarget === null
+        ? printed
+        : {
+            ...printed,
+            generic: printed.generic + perTarget.generic * beyond,
+            colorless: printed.colorless + perTarget.colorless * beyond,
+            colored: Object.fromEntries(
+              Object.entries(printed.colored).map(([c, n]) => [c, n + perTarget.colored[c as Color] * beyond]),
+            ) as Record<Color, number>,
+          };
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
     const mods = this.costModificationFor(player, cardId, targetCount);
     let reduction = mods.reduceGeneric;
@@ -5700,6 +5736,7 @@ export class Game {
     def: CardDefinition,
     costString: string | null,
   ): boolean {
+    if (def.costPerExtraTarget !== null) return true;
     const anyPerTarget = [...this.state.zones.shared.battlefield, ...this.state.zones.shared.command].some(
       (id) => {
         const source = this.state.objects[id];
@@ -5756,9 +5793,10 @@ export class Game {
     }
     let min = Number.POSITIVE_INFINITY;
     let max = -1;
+    const maxModes = this.castModalMaxModes(modal, card);
     for (let mask = 0; mask < 1 << modal.modes.length; mask += 1) {
       const modes = modal.modes.map((_m, i) => i).filter((i) => (mask & (1 << i)) !== 0);
-      if (modes.length < modal.minModes || modes.length > modal.maxModes) continue;
+      if (modes.length < modal.minModes || modes.length > maxModes) continue;
       const bounds = boundsOf(modes);
       if (bounds === null) continue;
       min = Math.min(min, bounds.min);
@@ -6367,14 +6405,29 @@ export class Game {
     return this.eligibleSacrifices(player, filter);
   }
 
+  /** The most modes `card` may be cast with: its `maxModesIf`'s count while
+   * that condition holds as it's cast (rule 601.2b — Will of the Sultai's
+   * "if you control a commander"), else `maxModes`. */
+  private castModalMaxModes(castModal: CastModalSpec, card: ObjectId): number {
+    const raised = castModal.maxModesIf;
+    const object = this.state.objects[card];
+    return raised !== undefined &&
+      object !== undefined &&
+      staticConditionMet(this.state, this.registry, object, raised.condition)
+      ? Math.max(castModal.maxModes, raised.maxModes)
+      : castModal.maxModes;
+  }
+
   /** Why the chosen `modes` are illegal for a `castModal` card (or `null`). */
   private whyCannotChooseCastModes(
-    castModal: NonNullable<CardDefinition["castModal"]>,
+    castModal: CastModalSpec,
+    card: ObjectId,
     modes: readonly number[],
   ): string | null {
     if (new Set(modes).size !== modes.length) return "the same mode was chosen twice";
-    if (modes.length < castModal.minModes || modes.length > castModal.maxModes) {
-      return `choose between ${castModal.minModes} and ${castModal.maxModes} mode(s)`;
+    const maxModes = this.castModalMaxModes(castModal, card);
+    if (modes.length < castModal.minModes || modes.length > maxModes) {
+      return `choose between ${castModal.minModes} and ${maxModes} mode(s)`;
     }
     if (modes.some((i) => !Number.isInteger(i) || i < 0 || i >= castModal.modes.length)) {
       return "invalid mode index";
@@ -6506,7 +6559,7 @@ export class Game {
       if (timing !== null) return timing;
     }
     if (def.castModal !== null && modes !== undefined) {
-      const bad = this.whyCannotChooseCastModes(def.castModal, modes);
+      const bad = this.whyCannotChooseCastModes(def.castModal, cardId, modes);
       if (bad !== null) return `${def.name}: ${bad}`;
     }
     // A choice of additional costs: the driver must name a branch, and the
@@ -11625,6 +11678,8 @@ export class Game {
         return sacrificed !== undefined && matchesKnown(sacrificed.object, condition.filter);
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
+      // "If X is 10 or more" — the X the resolving spell was cast with.
+      if (condition.kind === "x") return compareNum(x, condition.compare, x);
       // "If ~ is still on the battlefield" — as the same object.
       if (condition.kind === "source-on-battlefield") {
         return opts.sourceLost !== true && this.state.objects[source]?.zone === "battlefield";
@@ -11716,6 +11771,12 @@ export class Game {
         const by = damageSource(from);
         this.dealDamage(by.id, this.splitTargetRef(target), amount, false, by.lastKnown);
       },
+      dealDamageToEach: (targets, amount) =>
+        this.withDamageBatch(() => {
+          for (const target of targets) {
+            this.dealDamage(source, this.splitTargetRef(target), amount, false, departedSource());
+          }
+        }),
       dealDamageScoped: (who, amountFor, from) => {
         const by = damageSource(from);
         this.withDamageBatch(() => {
@@ -11854,14 +11915,22 @@ export class Game {
         ),
       tapPermanent: (target) => this.setTapped(target, true),
       untapPermanent: (target) => this.setTapped(target, false),
-      destroyPermanent: (target) => this.destroyByEffect(target),
-      destroyAll: (filter, onlyDamaged) =>
+      destroyPermanent: (target, cantBeRegenerated) =>
+        this.destroyByEffect(target, true, cantBeRegenerated === true),
+      destroyAll: (filter, onlyDamaged, cantBeRegenerated) =>
         this.destroyAllByEffect(
           controller,
           filter,
           onlyDamaged === true ? source : undefined,
           x,
+          cantBeRegenerated === true,
         ),
+      regenerate: (target) => this.regenerateByEffect(target),
+      regenerateAll: (filter) => {
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          this.regenerateByEffect({ kind: "object", object: id });
+        }
+      },
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       exileAll: (filter) => this.exileAllByEffect(controller, filter),
       damageAll: (filter, amount, exceptSource) =>
@@ -12621,6 +12690,7 @@ export class Game {
         enterTapped,
         restDestination,
         reveal,
+        zones,
       ) =>
         this.beginLibrarySearch(
           player ?? controller,
@@ -12632,6 +12702,7 @@ export class Game {
           restDestination,
           reveal === true,
           x,
+          zones,
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
@@ -12742,21 +12813,30 @@ export class Game {
     restDestination?: "hand" | "battlefield",
     reveal = false,
     x = 0,
+    zones: SearchZones = "library",
   ): void {
     // `x` is the searching spell's X, for "mana value X or less" (Chord of
     // Calling).
-    const eligible = this.state.zones.perPlayer[player].library.filter((id) =>
-      matchesFilter(this.state, this.registry, id, filter, { you: player, x }),
-    );
+    const matching = (zone: "library" | "graveyard"): ObjectId[] =>
+      this.state.zones.perPlayer[player][zone].filter((id) =>
+        matchesFilter(this.state, this.registry, id, filter, { you: player, x }),
+      );
+    const library = zones !== "graveyard";
+    const inGraveyard = zones === "library" ? [] : matching("graveyard");
+    const eligible = [...(library ? matching("library") : []), ...inGraveyard];
+    // Only a hidden zone lets a search fail to find (rule 701.19b): a match
+    // in the graveyard, which everyone can see, must be found.
+    const least = inGraveyard.length > 0 ? Math.max(min, 1) : min;
     this.state.awaiting = {
       kind: "choose-from-zone",
       player,
       ids: eligible,
       eligible,
-      min: Math.min(min, eligible.length),
+      min: Math.min(least, max, eligible.length),
       max: Math.min(max, eligible.length),
       destination,
-      leftover: "shuffle",
+      // "If you search your library this way, shuffle."
+      leftover: library ? "shuffle" : "stay",
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
       ...(restDestination !== undefined ? { restDestination } : {}),
       ...(reveal ? { reveal: true } : {}),
@@ -15159,7 +15239,7 @@ export class Game {
    * whole matched permanent uniformly — a compacted stack goes wholesale.
    * `split: true` (the default — a single *targeted* destroy effect) singles
    * one member off a stack first. */
-  private destroyByEffect(target: TargetRef, split = true): void {
+  private destroyByEffect(target: TargetRef, split = true, cantBeRegenerated = false): void {
     if (target.kind !== "object") return;
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
@@ -15172,12 +15252,68 @@ export class Game {
       });
       return;
     }
+    if (!cantBeRegenerated && this.regenerateInstead(id)) return;
     if (!this.moveObject(id, "graveyard")) return;
     this.emit({
       type: "permanent-destroyed",
       object: id,
       reason: "destroyed",
     });
+  }
+
+  /** A regeneration shield on `target` (rule 701.15a — see the
+   * `regenerate` {@link EffectSpec}). Nothing for a permanent that has left. */
+  private regenerateByEffect(target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const object = this.state.objects[target.object];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.regenerationShields = (object.regenerationShields ?? 0) + 1;
+    this.emit({ type: "regeneration-shield-created", object: target.object });
+  }
+
+  /**
+   * Rule 701.15a: if `id` has a regeneration shield, use it up instead of
+   * destroying it — remove all damage from it, tap it and remove it from
+   * combat. Whether it did. Every destruction comes here, an effect's and the
+   * lethal-damage and deathtouch state-based actions' (704.5g-h), unless it
+   * "can't be regenerated" (701.15c); a sacrifice, the legend rule or 0
+   * toughness isn't destruction, so none of those does.
+   */
+  private regenerateInstead(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    const shields = object?.regenerationShields ?? 0;
+    if (shields <= 0) return false;
+    if (shields === 1) delete object.regenerationShields;
+    else object.regenerationShields = shields - 1;
+    if (object.damageMarked !== 0 || object.markedByDeathtouch) {
+      object.damageMarked = 0;
+      object.markedByDeathtouch = false;
+      this.emit({ type: "damage-cleared", objects: [id] });
+    }
+    if (!object.tapped) {
+      object.tapped = true;
+      this.emit({ type: "permanent-tapped", object: id });
+    }
+    this.removeFromCombat(id);
+    invalidateComputedCache();
+    this.emit({ type: "permanent-destroy-prevented", object: id, reason: "regenerated" });
+    return true;
+  }
+
+  /** Rule 506.4: `id` stops being an attacking, blocking, blocked or
+   * unblocked creature. An attacker it was blocking stays blocked (506.4,
+   * 509.1h), with one blocker fewer to deal and be dealt damage. */
+  private removeFromCombat(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object.attacking === null && object.blocking === null) return;
+    object.attacking = null;
+    object.blocking = null;
+    object.blocked = false;
+    object.blockedBy = [];
+    for (const other of this.state.zones.shared.battlefield) {
+      const o = this.state.objects[other];
+      if (o.blockedBy.includes(id)) o.blockedBy = o.blockedBy.filter((b) => b !== id);
+    }
   }
 
   /** Destroy every battlefield permanent matching `filter` (Wrath of God),
@@ -15190,6 +15326,7 @@ export class Game {
     filter: CardFilter,
     damagedBy?: ObjectId,
     x = 0,
+    cantBeRegenerated = false,
   ): void {
     // Steel Hellkite: only permanents controlled by a player this source hit
     // in combat this turn. Read off the source rather than a filter clause,
@@ -15207,6 +15344,7 @@ export class Game {
       }
       if (matchesFilter(this.state, this.registry, id, filter, { you, x })) {
         this.state.pendingDestruction.push(id);
+        if (cantBeRegenerated) (this.state.pendingDestructionNoRegen ??= []).push(id);
       }
     }
     this.drainPendingDestruction();
@@ -15249,11 +15387,13 @@ export class Game {
     if (this.state.awaiting !== null) return;
     this.withLeaveBatch(() => {
       this.snapshotLeaving(this.state.pendingDestruction);
+      const noRegen = new Set(this.state.pendingDestructionNoRegen ?? []);
+      delete this.state.pendingDestructionNoRegen;
       while (this.state.pendingDestruction.length > 0) {
         const id = this.state.pendingDestruction.shift() as ObjectId;
         const object = this.state.objects[id];
         if (object === undefined || object.zone !== "battlefield") continue;
-        this.destroyByEffect({ kind: "object", object: id }, false);
+        this.destroyByEffect({ kind: "object", object: id }, false, noRegen.has(id));
       }
     });
   }
@@ -18030,6 +18170,11 @@ export class Game {
         } else if (!indestructible && object.markedByDeathtouch && object.damageMarked > 0) {
           reason = "deathtouch";
         }
+        // Both damage checks destroy it (704.5g-h), which a regeneration
+        // shield replaces (701.15a); 0 toughness doesn't.
+        if (reason !== null && reason !== "toughness is 0 or less" && this.regenerateInstead(id)) {
+          reason = null;
+        }
         if (reason !== null) add(id, { type: "permanent-destroyed", object: id, reason });
       }
     }
@@ -18970,6 +19115,7 @@ export class Game {
     object.blockedBy = [];
     object.blocked = false;
     object.markedByDeathtouch = false;
+    delete object.regenerationShields;
     if (!keepCounters) {
       object.counters = {};
       delete object.counterTimestamps;

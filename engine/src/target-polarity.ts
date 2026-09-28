@@ -104,6 +104,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     v.touch(n.target, "harm", MAJOR);
     v.touch(n.toControllerOfTarget, "harm", MINOR);
   },
+  "damage-divided-evenly": (n, v) => v.touch(n.from, "harm", MAJOR),
   "add-mana": none,
   draw: (n, v) => v.touch(n.target, "help", MAJOR),
   "discard-hand": none,
@@ -117,6 +118,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   destroy: (n, v) => v.touch(n.target, "harm", DECISIVE),
   "put-on-bottom-of-library": (n, v) => v.touch(n.target, "harm", DECISIVE),
   "destroy-all": none,
+  regenerate: (n, v) => v.touch(n.target, "help", MINOR),
+  "regenerate-all": none,
   "damage-all": none,
   "creatures-damage-controllers": none,
   // An edict: the targeted player picks what goes, so it is major rather

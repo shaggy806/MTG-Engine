@@ -329,11 +329,14 @@ of a choice expands the group from the number of targets actually chosen
 targets it went on the stack with. It shipped with Eerie Interlude, Brago,
 Divine Resilience, Mindbreak Trap, Court of Cunning, Riverchurn Monument,
 Singularity Rupture, Deepglow Skate and Stonespeaker Crystal. Still blocked
-among the 36: divided damage or counters (Fury, Fire Covenant, Dragonlord
-Atarka, Magma Opus, Lathiel, Vorinclex's saga, Fireball), Strive (Twinflame,
-Call the Coppercoats), phasing (Clever Concealment, Guardian of Faith), a
+among the 36: divided damage or counters as the caster chooses (Fury, Fire
+Covenant, Dragonlord Atarka, Magma Opus, Lathiel, Vorinclex's saga), phasing (Clever Concealment, Guardian of Faith), a
 constraint relating the chosen cards (Ancient Brass Dragon, Rampaging Yao
-Guai, V.A.T.S.), and one-offs each needing something of their own.
+Guai, V.A.T.S.), and one-offs each needing something of their own. Since
+2026-09-28 Fireball's "divided evenly" (`damage-divided-evenly`) and a cost
+for each target beyond the first (`costPerExtraTarget` — Fireball, and
+Strive's Twinflame and Call the Coppercoats) are built too; an `{X}` spell's
+offer then carries the largest X at each target count.
 
 The original scoping, kept for the reasoning:
 
@@ -374,7 +377,7 @@ nothing in the repo distinguished them.
 | **mana provenance** (all three shapes) | 21 | **14** | 1 | 7 |
 | **protection from [filter]** | 19 | **92** | 1 | 4 |
 | ~~unbounded targeting~~ *(built 2026-09-26 — see above)* | 9 | 544 | 0 | 0 |
-| regeneration | 7 | 705 | 0 | 0 |
+| ~~regeneration~~ *(built 2026-09-28 — Mortivore)* | 7 | 705 | 0 | 0 |
 | Station | 7 | 951 | 0 | 0 |
 | "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |
 | "as this enters" on a non-cast permanent | 5 | 132 | 0 | 1 |

@@ -102,6 +102,15 @@ export interface GameObject {
   exileIfWouldGoToGraveyard?: boolean;
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
+  /**
+   * Regeneration shields on this permanent (rule 701.15a): each replaces the
+   * next time it would be destroyed this turn — by an effect, or by lethal
+   * or deathtouch damage (704.5g-h) — with removing all damage from it,
+   * tapping it and removing it from combat. Gone at cleanup (514.2) and when
+   * it changes zones (400.7). For a token stack, each token in it has this
+   * many.
+   */
+  regenerationShields?: number;
   /** Turn number this object last entered the battlefield; `null` otherwise. */
   enteredBattlefieldOnTurn: number | null;
   /**
@@ -2224,6 +2233,9 @@ export interface GameState {
    * for the `prepareForPriority` fixpoint.
    */
   pendingDestruction: ObjectId[];
+  /** The members of `pendingDestruction` that "can't be regenerated" (rule
+   * 701.15c — Wrath of God). */
+  pendingDestructionNoRegen?: ObjectId[];
   /**
    * Players still owed a "discard N cards" decision from a *scoped* discard
    * effect ("each opponent discards a card") — one player's choice is asked
@@ -2607,5 +2619,6 @@ export function tokenFoldKey(o: GameObject): string {
     o.counters,
     o.counterTimestamps ?? null,
     o.modifiers,
+    o.regenerationShields ?? 0,
   ]);
 }

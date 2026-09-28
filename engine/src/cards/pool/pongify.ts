@@ -1,7 +1,6 @@
 import { defineCard } from "../define.js";
 
-// Beast Within in blue, on a creature only. "It can't be regenerated" is a
-// no-op — regeneration isn't modeled.
+// Beast Within in blue, on a creature only.
 export default defineCard({
   name: "Pongify",
   manaCost: "{U}",
@@ -14,7 +13,7 @@ export default defineCard({
   effect: {
     kind: "sequence",
     effects: [
-      { kind: "destroy", target: 0 },
+      { kind: "destroy", target: 0, cantBeRegenerated: true },
       { kind: "create-token", token: "Ape Token", count: 1, who: "target-controller" },
     ],
   },

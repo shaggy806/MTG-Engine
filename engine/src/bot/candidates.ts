@@ -17,7 +17,7 @@ import { convokeProofFor } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { subsetsBetween } from "../decisions/shared/subsets.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
-import { fitTargetCount } from "../target-count.js";
+import { fitTargetCount, maxXForTargets } from "../target-count.js";
 import type { TargetRef, TargetSpec } from "../target.js";
 
 // Re-exported from its new home: a decision module needs it too, and nothing
@@ -85,10 +85,11 @@ function castExtras(legal: CastSpellLegal): {
  * X at its maximum. Enumerating every X multiplies the search by the mana
  * available and almost always lands on the maximum anyway. A targeted modal
  * spell with X (Clan Defiance) needs it as much as any other: its candidates
- * used to be cast without one.
+ * used to be cast without one. The largest with `targets`, where more
+ * targets leave less for X (Fireball).
  */
-function xValueOf(legal: CastSpellLegal): { xValue?: number } {
-  return legal.xCost !== undefined ? { xValue: legal.xCost.maxX } : {};
+function xValueOf(legal: CastSpellLegal, targets: readonly (TargetRef | null)[]): { xValue?: number } {
+  return legal.xCost !== undefined ? { xValue: maxXForTargets(legal.xCost, legal.targetCount, targets) } : {};
 }
 
 function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
@@ -148,12 +149,11 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
         modes.flatMap((index) => modal.modes[index].targetOptions),
         modes.flatMap((index) => modal.modes[index].targetSpecs),
       );
-      if (targets !== null) out.push({ ...common, ...xValueOf(legal), targets, modes });
+      if (targets !== null) out.push({ ...common, ...xValueOf(legal, targets), targets, modes });
     }
     return out;
   }
 
-  const xValue = xValueOf(legal);
   // A "for each target" cost (Hinata) makes only some fillings affordable:
   // each is fitted into the offered range, and one that can't be is dropped.
   const seen = new Set<string>();
@@ -164,7 +164,7 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
     const key = JSON.stringify(targets);
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ ...common, ...xValue, targets });
+    out.push({ ...common, ...xValueOf(legal, targets), targets });
   }
   return out;
 }

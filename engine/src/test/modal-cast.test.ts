@@ -211,3 +211,56 @@ describe("Will of the Sultai — mode 2 puts X counters where X is lands control
     expect(computeCharacteristics(game.state, reg, bear).keywords.has("trample")).toBe(true);
   });
 });
+
+describe("Will of the Sultai — both modes while you control a commander", () => {
+  const setUp = (commanderFor: PlayerId | null) => {
+    const { game } = makeGame(["Will of the Sultai"], "Forest");
+    mana(game);
+    const bear = spawn(game, "Grizzly Bears", A);
+    if (commanderFor !== null) {
+      const commander = spawn(game, "Anafenza, the Foremost", commanderFor);
+      game.state.objects[commander].isCommander = true;
+    }
+    game.advanceUntil(atMain);
+    const card = inHand(game, "Will of the Sultai");
+    const offer = game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === card);
+    const castBoth = () =>
+      game.dispatch({
+        type: "cast-spell",
+        player: A,
+        card,
+        modes: [0, 1],
+        targets: [
+          { kind: "player", player: B },
+          { kind: "object", object: bear },
+        ],
+      });
+    return { game, bear, offer, castBoth };
+  };
+
+  it("offers and resolves both modes while you control a commander", () => {
+    const { game, bear, offer, castBoth } = setUp(A);
+    expect(offer?.kind === "cast-spell" ? offer.castModal?.maxModes : undefined).toBe(2);
+    castBoth();
+    game.advanceUntil(settled);
+    expect(game.state.zones.perPlayer[B].graveyard).toHaveLength(3);
+    expect(game.state.objects[bear].counters["+1/+1"]).toBeGreaterThan(0);
+  });
+
+  it("counts a commander you control that isn't yours (the ruling)", () => {
+    // Bob's commander, under Alice's control.
+    const { game, offer } = setUp(B);
+    const commander = game.battlefield.find((id) => game.state.objects[id].isCommander)!;
+    game.state.objects[commander].controller = A;
+    const again = game
+      .legalActions(A)
+      .find((a) => a.kind === "cast-spell" && a.card === (offer?.kind === "cast-spell" ? offer.card : undefined));
+    expect(again?.kind === "cast-spell" ? again.castModal?.maxModes : undefined).toBe(2);
+  });
+
+  it("is choose one without a commander, and refuses both", () => {
+    const { offer, castBoth } = setUp(null);
+    expect(offer?.kind === "cast-spell" ? offer.castModal?.maxModes : undefined).toBe(1);
+    expect(castBoth).toThrow(/mode/);
+  });
+});
