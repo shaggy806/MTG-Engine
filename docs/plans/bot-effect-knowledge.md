@@ -486,4 +486,12 @@ hit 116 times, since a region lasts one event, and was taken back out. The cost 
 `matchesFilter` read every object's types before any clause, running the layer-4 fold (uncached
 under a condition) on all 73 permanents to answer a filter that never asks about types. It reads
 them only when a clause does now (331 s), and a count against a threshold ("controls at least one")
-stops when it reaches it (259 s — 63% under where the day began). What's left is in BACKLOG.
+stops when it reaches it (259 s — 63% under where the day began). Profiling an ordinary four-player
+game rather than seed 50 found two more: state-based actions walked every object in the game —
+every library card — on every pass to find tokens that had left the battlefield, which `moveObject`
+now records as they leave; and the bot's combat maths read land types (landwalk) over the whole
+battlefield per land type, outside any cache region. Together an ordinary game's first 40 turns go
+from 13.1 s to 10.5 s, with no decision changed. Two more ideas were built, measured at nothing and
+dropped: deferring conditional trigger grants in the trigger scan (the lazy type read had already
+taken their cost), and sharing casting's mana scan (0.3% of an ordinary game). What's left is in
+BACKLOG.

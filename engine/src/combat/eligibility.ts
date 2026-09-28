@@ -53,14 +53,18 @@ export function landTypesControlledBy(
 ): Set<string> {
   const types = new Set<string>();
   for (const [, landType] of LANDWALK) {
-    const controls = state.zones.shared.battlefield.some((id) =>
-      matchesFilter(
-        state,
-        registry,
-        id,
-        { type: "land", subtype: landType, controlledBy: "you" },
-        { you: player },
-      ),
+    // Whose it is first: the filter's type clause folds layer 4, and this
+    // runs once per land type over the whole battlefield.
+    const controls = state.zones.shared.battlefield.some(
+      (id) =>
+        state.objects[id]?.controller === player &&
+        matchesFilter(
+          state,
+          registry,
+          id,
+          { type: "land", subtype: landType, controlledBy: "you" },
+          { you: player },
+        ),
     );
     if (controls) types.add(landType);
   }

@@ -19,7 +19,7 @@
 
 import type { CardType, Keyword } from "../cards/define.js";
 import type { Color } from "../mana.js";
-import { combatDamageOf, computeCharacteristics } from "../characteristics.js";
+import { combatDamageOf, computeCharacteristics, withComputedCache } from "../characteristics.js";
 import { LANDWALK, landTypesControlledBy } from "../combat/eligibility.js";
 import type { CardRegistry } from "../cards.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -58,6 +58,17 @@ const MAX_COPIES = 30;
  * blocker needs; an attacker on a future turn will have untapped anyway.
  */
 export function combatCreatures(
+  state: GameState,
+  registry: CardRegistry,
+  player: PlayerId,
+  untappedOnly: boolean,
+): CombatCreature[] {
+  // A pure read of one state, called outside any other cache region by the
+  // combat search: without one, every characteristics fold here was fresh.
+  return withComputedCache(() => combatCreaturesUncached(state, registry, player, untappedOnly));
+}
+
+function combatCreaturesUncached(
   state: GameState,
   registry: CardRegistry,
   player: PlayerId,

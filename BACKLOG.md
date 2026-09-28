@@ -208,14 +208,15 @@ Beyond that plan:
   v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
   tie-break toward acting, and a bench, before it's tried.
 - **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
-  takes 259 s (705 before 2026-09-27's fixes); nearly all of it is the engine running rollouts.
-  What the last profile left: trigger detection lists every permanent's triggered abilities on
-  every event, evaluating each conditional grant's condition first (Tyrant's Familiar's "as long
-  as you control your commander", recounted per event) — skipping a grant no trigger of which
-  could match the event would save it, but `triggeredOnceThisTurn` indexes that list, so a skip
-  must not shift its indices; a per-region condition cache was tried and hit 116 times in 58,000
-  (regions last one event). Casting a spell still plans its mana twice. And the layer-4 fold.
-  Live rooms stop at 300 ms, so this is the bench's time limit and a thinner search, not a hang.
+  takes 258 s (705 before 2026-09-27's fixes), and an ordinary four-player game's first 40
+  turns 10.5 s (13.1 before the last two). Profiled after them, what's left is the engine's real
+  work: state-based actions folding every permanent's characteristics each check
+  (`stateBasedGraveyardMoves`, ~13%), the characteristics fold itself, and cloning states for
+  the search (~9%). Tried and dropped, each measured at nothing: a per-region cache of condition
+  answers (116 hits in 58,000 — a region lasts one event), deferring conditional trigger grants
+  in the scan (under 2% once filters read types lazily), and a shared mana scan for casting
+  (0.3% of an ordinary game). Live rooms stop at 300 ms, so this is the bench's time limit and a
+  thinner search, not a hang.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
   `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.
