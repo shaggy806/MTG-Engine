@@ -157,6 +157,10 @@ that one card is the reason the deck exists.
   `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
+- **Kardur, Doomscourge forces attacks at players only.** The rulings say the affected creatures
+  can attack planeswalkers too; the engine currently requires
+  a player. Check the rulings before fixing. The requirement lives in the `attack-requirement`
+  effect, `engine/src/combat/eligibility.ts` (~line 417).
 
 ## Bots
 
