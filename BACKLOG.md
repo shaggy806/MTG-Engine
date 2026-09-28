@@ -225,6 +225,20 @@ Beyond that plan:
 
 ## Client / UI
 
+- **Picking creatures out of a token stack (raised 2026-09-28).** Attacked by a stack of
+  tokens, the user could visually block only one of them. The flow for choosing some number of
+  a stack (blocking, and wherever else a stack's members are picked) needs work. A first idea,
+  not settled: a small box with − / + buttons and a number field you can also type into.
+- **Saga creatures' art at full height in the cast spotlight (raised 2026-09-28).** A Saga
+  creature (Summon: Titan) shown at the center of the screen as it's cast displays the full
+  height of its (tall, Saga-frame) art instead of the usual crop.
+- **Show counters on card tiles (raised 2026-09-28).** A creature's counters have no visual on
+  the board, only a line of text on hover. Check whether the mana font the client already uses
+  has a symbol for each counter kind that a tile could show.
+- **Audit how many ways a card is rendered (raised 2026-09-28).** Count the distinct card
+  renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
+  see whether they can reasonably be condensed into fewer.
+
 - **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
   own menu entry only while the list stays small (two colours up to X = 22). Past that it
   offers all of one type per type, and a count picker would let the player choose any split.
