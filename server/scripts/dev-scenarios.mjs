@@ -162,6 +162,18 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  ZNNYA: {
+    about:
+      "2p. Zinnia, Valley's Voice grants offspring {2} to creature spells: each creature in " +
+      "alice's hand offers an offspring cast, and Agate Instigator (offspring of its own) can " +
+      "pay both.",
+    players: ["alice", "bob"],
+    lands: { alice: 8, bob: 3 },
+    battlefield: { alice: ["Zinnia, Valley's Voice", "Llanowar Elves"] },
+    hand: { alice: ["Grizzly Bears", "Agate Instigator"] },
+    bots: { bob: {} },
+  },
+
   HORDE4: {
     about:
       "4p. HORDE from the bottom-right seat, whose quadrant the decision panel floats " +

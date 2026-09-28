@@ -5717,6 +5717,7 @@ import _poolZhaoTheSeethingFlame from "./pool/zhao-the-seething-flame.js";
 import _poolZiatorasProvingGround from "./pool/ziatoras-proving-ground.js";
 import _poolZimoneAndDina from "./pool/zimone-and-dina.js";
 import _poolZimoneInfiniteAnalyst from "./pool/zimone-infinite-analyst.js";
+import _poolZinniaValleysVoice from "./pool/zinnia-valleys-voice.js";
 import _poolZndrspltEyeOfWisdom from "./pool/zndrsplt-eye-of-wisdom.js";
 import _poolZodiacDog from "./pool/zodiac-dog.js";
 import _poolZodiacGoat from "./pool/zodiac-goat.js";
@@ -11581,6 +11582,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZiatorasProvingGround,
   _poolZimoneAndDina,
   _poolZimoneInfiniteAnalyst,
+  _poolZinniaValleysVoice,
   _poolZndrspltEyeOfWisdom,
   _poolZodiacDog,
   _poolZodiacGoat,

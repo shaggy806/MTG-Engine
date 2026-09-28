@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-319 already implemented / 181 missing
+320 already implemented / 180 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -107,7 +107,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  101  Magda, Brazen Outlaw                           17938 decks  {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  102  Ezio Auditore da Firenze                       17857 decks  {1}{B}           Legendary Creature — Human Assassin
 [x]  103  Alela, Cunning Conqueror                       17841 decks  {2}{U}{B}        Legendary Creature — Faerie Warlock
-[ ]  104  Zinnia, Valley's Voice                         17824 decks  {U}{R}{W}        Legendary Creature — Bird Bard
+[x]  104  Zinnia, Valley's Voice                         17824 decks  {U}{R}{W}        Legendary Creature — Bird Bard
 [x]  105  Sidar Jabari of Zhalfir                        17798 decks  {1}{W}{U}{B}     Legendary Creature — Human Knight
 [ ]  106  Obeka, Splitter of Seconds                     17786 decks  {1}{U}{B}{R}     Legendary Creature — Ogre Warlock
 [x]  107  Silas Renn, Seeker Adept                       17784 decks  {1}{U}{B}        Legendary Artifact Creature — Human

@@ -158,6 +158,7 @@ function graveyardVariantLabel(
     if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
     if (a.kicked) parts.push(`${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''}`.trim())
     if (a.prototype) parts.push(`prototype ${a.prototypeCost ?? ''}`.trim())
+    if (a.offspring) parts.push(`offspring ${a.offspringCost ?? ''}`.trim())
   }
   return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
@@ -169,6 +170,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.face !== undefined ? { face: cast.face } : {}),
   ...(cast.kicked === true ? { kicked: true } : {}),
   ...(cast.prototype === true ? { prototype: true } : {}),
+  ...(cast.offspring === true ? { offspring: true } : {}),
   ...(cast.overload === true ? { overload: true } : {}),
   ...(cast.free === true ? { free: true } : {}),
   // Each is a variant of its own too: without the flag the engine reads the
@@ -283,6 +285,8 @@ interface Targeting {
   readonly kicked?: boolean
   /** A prototyped cast (rule 718) — echoed back like `kicked`. */
   readonly prototype?: boolean
+  /** Paying a granted offspring cost too (Zinnia) — echoed back like `kicked`. */
+  readonly offspring?: boolean
   /** Casting this for its overload cost (rule 702.126) instead of its mana
    * cost — no targets are chosen for this variant. */
   readonly overload?: boolean
@@ -1259,6 +1263,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'modes'
         | 'kicked'
         | 'prototype'
+        | 'offspring'
         | 'overload'
         | 'free'
         | 'manaColors'
@@ -1285,6 +1290,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.face !== undefined ? { face: t.face } : {}),
                 ...(t.kicked === true ? { kicked: true } : {}),
                 ...(t.prototype === true ? { prototype: true } : {}),
+                ...(t.offspring === true ? { offspring: true } : {}),
                 ...(t.overload === true ? { overload: true } : {}),
                 ...(t.free === true ? { free: true } : {}),
                 ...(t.altCost === true ? { altCost: true } : {}),
@@ -3077,6 +3083,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             {c.costOptionText ? ` (${c.costOptionText})` : ''}
             {c.free ? ' (free)' : ''}
             {c.prototype ? <> (prototype <Symbols text={c.prototypeCost ?? ''} />)</> : null}
+            {c.offspring ? <> (offspring <Symbols text={c.offspringCost ?? ''} />)</> : null}
           </button>
         ))}
         <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
@@ -3936,6 +3943,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                       ) : null}
                       {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
+                      {a.kind === 'cast-spell' && a.offspring ? (
+                        <> (offspring <Symbols text={a.offspringCost ?? ''} />)</>
+                      ) : null}
                       {a.kind === 'cast-spell' && a.prototype ? (
                         <> (prototype <Symbols text={a.prototypeCost ?? ''} />)</>
                       ) : null}

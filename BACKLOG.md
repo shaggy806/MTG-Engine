@@ -6,22 +6,21 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**319 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**320 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, no engine work: none left** (2026-09-28: Astarion, Wolverine, Tannuk and
-  both Zurgos were the last). Zinnia, Valley's Voice turned out to need
-  `static:grant-offspring-to-spells`, now first in the greedy order.
+- **Ready to author, no engine work: none left** (2026-09-28: Astarion, Wolverine, Tannuk,
+  both Zurgos, and Zinnia with `static:grant-offspring-to-spells`, were the last).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `static:grant-offspring-to-spells` (+1), `zone:visibility-extensions` (+1),
-  `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3),
-  `effect:amount-aggregate` (+1), `zone:cast-from-library-top` (+2),
-  `zone:play-from-exile-with-counter` (+2), `trigger:discards-extensions` (+1),
-  `effect:token-copy-options` (+1).
+  `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1),
+  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `zone:cast-from-library-top` (+2), `zone:play-from-exile-with-counter` (+2),
+  `trigger:discards-extensions` (+1), `effect:token-copy-options` (+1),
+  `effect:delayed-trigger-extensions` (+2).
 - **Most-needed features overall.** `zone:visibility-extensions` and
   `effect:may-sacrifice-then` (13 each), `decision:copy-new-targets` (12),
   `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each). Live numbers come
