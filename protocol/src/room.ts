@@ -296,6 +296,16 @@ export type ClientMessage =
       readonly expect: number | "not-this";
       readonly note: string;
       readonly name?: string;
+    }
+  | {
+      /** Files a bug report: the game as it stands, with what went wrong.
+       * Answered with `capture-saved`. Host only. */
+      readonly type: "capture-report";
+      readonly roomId: string;
+      readonly title: string;
+      readonly description: string;
+      /** A photo of what went wrong, as a PNG, JPEG, GIF or WebP data URL. */
+      readonly image?: string;
     };
 
 /** One bot decision a capture-enabled room kept — see `capture-list`. */

@@ -3,6 +3,49 @@
 .capture-panel {
   width: min(62rem, 100%);
 }
+.capture-modes {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: auto;
+  margin-right: 0.6rem;
+}
+.capture-modes button.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.capture-bug-text {
+  min-height: 10rem;
+}
+.capture-photo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.capture-photo-pick {
+  cursor: pointer;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+}
+.capture-photo-pick input {
+  display: none;
+}
+.capture-photo-thumb {
+  max-height: 4rem;
+  max-width: 8rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border);
+}
+.capture-photo-name {
+  color: var(--muted);
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+.capture-photo-error {
+  color: var(--bad);
+  font-size: 0.8rem;
+}
 .capture-hint {
   margin: 0;
   color: var(--muted);

@@ -245,6 +245,8 @@ export interface NetworkGame {
   /** Saves decision `id` as a training scenario: option `expect` was the
    * right answer, or anything but what the bot did. */
   captureSave: (id: number, expect: number | 'not-this', note: string, name?: string) => void
+  /** Files a bug report: the game as it stands, with what went wrong. */
+  captureReport: (title: string, description: string, image?: string) => void
   /** Forgets the capture answers, for closing the panel. */
   clearCapture: () => void
   nameOf: (id: ObjectId) => string
@@ -661,6 +663,21 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const captureReport = useCallback(
+    (title: string, description: string, image?: string) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({
+        type: 'capture-report',
+        roomId: id,
+        title,
+        description,
+        ...(image !== undefined ? { image } : {}),
+      })
+    },
+    [send],
+  )
+
   const clearCapture = useCallback(() => setCapture(NO_CAPTURE), [])
 
   const nameOf = useCallback(
@@ -733,6 +750,7 @@ export function useNetworkGame(): NetworkGame {
     captureList,
     captureOptions,
     captureSave,
+    captureReport,
     clearCapture,
     nameOf,
     clearError,

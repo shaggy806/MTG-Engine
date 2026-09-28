@@ -400,6 +400,19 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           connection.send({ type: "capture-saved", file });
           return;
         }
+        case "capture-report": {
+          const log = requireCaptures(manager, message.roomId, connection);
+          const room = requireActiveRoom(manager, message.roomId);
+          const file = log.report(
+            room.game.state,
+            room.seatOf(connection),
+            message.title ?? "",
+            message.description ?? "",
+            message.image,
+          );
+          connection.send({ type: "capture-saved", file });
+          return;
+        }
         case "ack": {
           // Purely a pacing signal, and one the client sends on its own
           // schedule — a stale room id here means the game is over or the

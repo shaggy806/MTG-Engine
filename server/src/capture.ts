@@ -10,6 +10,13 @@
  * writes it to the git-ignored `captures/` folder at the repo root as a
  * `ScenarioCapture`, which `bot:scenarios` and `bot:fit-scenarios` read as a
  * training scenario. See `engine/src/bot/capture.ts`.
+ *
+ * The same panel files a bug report: the game as it stands now, its recent
+ * events and what the tester saw, written to `captures/bugs/` — out of the
+ * scenario loaders' way, which read only `captures/*.json`. Its `state` is a
+ * snapshot `bot:replay --from` starts from. A photo sent with it (a
+ * screenshot of what looked wrong) is written beside it, same name, its own
+ * extension.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,7 +24,15 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { captureOptions, cloneGameState, describeMove } from "engine";
-import type { Action, CaptureOption, CardRegistry, GameState, PlayerId, ScenarioCapture } from "engine";
+import type {
+  Action,
+  CaptureOption,
+  CardRegistry,
+  GameEvent,
+  GameState,
+  PlayerId,
+  ScenarioCapture,
+} from "engine";
 import type { CaptureSummary } from "protocol";
 
 /** Where captures go unless told otherwise: `captures/` at the repo root. */
@@ -26,6 +41,35 @@ export const DEFAULT_CAPTURE_DIR = fileURLToPath(new URL("../../captures/", impo
 /** How many recent bot decisions a room keeps. A late four-player state is
  * a few megabytes in memory, so not many. */
 export const CAPTURE_KEEP = 12;
+
+/** How many of the game's latest events a bug report keeps — enough to see
+ * what led up to it, without a whole long game's log. */
+export const BUG_REPORT_EVENTS = 300;
+
+/** A bug report's photo may be one of these, sent as a data URL. */
+const IMAGE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp" } as const;
+
+/** The largest photo a bug report takes, decoded. */
+export const BUG_REPORT_IMAGE_MAX = 10 * 1024 * 1024;
+
+/** What a bug-report file holds. `version` is bumped if the shape changes. */
+export interface BugReport {
+  readonly version: 1;
+  readonly kind: "bug-report";
+  readonly title: string;
+  /** What went wrong, in the tester's words. */
+  readonly description: string;
+  readonly roomId: string;
+  /** The seat that filed it, or null for a spectating host. */
+  readonly reporter: PlayerId | null;
+  /** The photo sent with it: a file name in the same folder. */
+  readonly image?: string;
+  /** The game when it was filed, its event log cut to the last
+   * {@link BUG_REPORT_EVENTS}. */
+  readonly state: GameState;
+  /** ISO time it was saved. */
+  readonly savedAt: string;
+}
 
 export interface CaptureConfig {
   readonly dir: string;
@@ -39,6 +83,20 @@ interface Captured {
   readonly action: Action;
   /** Worked out the first time someone asks (`options`). */
   options?: readonly CaptureOption[];
+}
+
+/** A photo's bytes and extension from its data URL — an image of a type in
+ * {@link IMAGE_TYPES}, no bigger than {@link BUG_REPORT_IMAGE_MAX} — or a
+ * thrown error saying why not. */
+function decodeImage(dataUrl: string): { bytes: Buffer; extension: string } {
+  const match = /^data:([a-z/]+);base64,([A-Za-z0-9+/=]*)$/.exec(dataUrl);
+  const type = match?.[1];
+  if (match === null || type === undefined || !(type in IMAGE_TYPES)) {
+    throw new Error("a bug report's photo must be a PNG, JPEG, GIF or WebP image");
+  }
+  const bytes = Buffer.from(match[2], "base64");
+  if (bytes.length > BUG_REPORT_IMAGE_MAX) throw new Error("that photo is over 10 MB");
+  return { bytes, extension: IMAGE_TYPES[type as keyof typeof IMAGE_TYPES] };
 }
 
 export class CaptureLog {
@@ -114,6 +172,39 @@ export class CaptureLog {
     const stamp = capture.savedAt.replace(/[:.]/g, "-");
     const file = join(this.config.dir, `${stamp}-${this.roomId}-t${turn}-${entry.player}.json`);
     writeFileSync(file, JSON.stringify(capture));
+    return file;
+  }
+
+  /** Writes the game as it stands as a bug report, returning the file path. */
+  report(
+    state: GameState,
+    reporter: PlayerId | null,
+    title: string,
+    description: string,
+    imageDataUrl?: string,
+  ): string {
+    const image = imageDataUrl === undefined ? null : decodeImage(imageDataUrl);
+    const eventLog: GameEvent[] = state.eventLog.slice(-BUG_REPORT_EVENTS);
+    const turn = state.turn.number;
+    const savedAt = new Date().toISOString();
+    const base = `${savedAt.replace(/[:.]/g, "-")}-${this.roomId}-t${turn}`;
+    const imageFile = image === null ? null : `${base}.${image.extension}`;
+    const report: BugReport = {
+      version: 1,
+      kind: "bug-report",
+      title: title.trim() || `Turn ${turn} ${state.turn.step}`,
+      description: description.trim(),
+      roomId: this.roomId,
+      reporter,
+      ...(imageFile !== null ? { image: imageFile } : {}),
+      state: cloneGameState({ ...state, eventLog }),
+      savedAt,
+    };
+    const dir = join(this.config.dir, "bugs");
+    mkdirSync(dir, { recursive: true });
+    if (image !== null && imageFile !== null) writeFileSync(join(dir, imageFile), image.bytes);
+    const file = join(dir, `${base}.json`);
+    writeFileSync(file, JSON.stringify(report));
     return file;
   }
 

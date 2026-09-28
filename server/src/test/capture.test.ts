@@ -13,7 +13,8 @@ import {
 } from "engine";
 import type { ScenarioCapture } from "engine";
 
-import { CAPTURE_KEEP } from "../capture.js";
+import { BUG_REPORT_EVENTS, CAPTURE_KEEP } from "../capture.js";
+import type { BugReport } from "../capture.js";
 import { ALICE, BOB, DECKS } from "../decks.js";
 import { Room } from "../room.js";
 
@@ -94,5 +95,47 @@ describe("capturing bot decisions", () => {
   it("refuses a decision it no longer keeps", () => {
     const { room } = playedRoom(true);
     expect(() => room.captures?.options(1)).toThrow(/only the last/);
+  });
+});
+
+describe("bug reports", () => {
+  // The smallest PNG there is: one transparent pixel.
+  const PIXEL =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+  it("saves the game as it stands, with a photo beside it, out of the scenarios' folder", () => {
+    const { room, dir } = playedRoom(true);
+    const log = room.captures;
+    if (log === null) throw new Error("no capture log");
+    const file = log.report(room.game.state, ALICE, "a title", "what went wrong", PIXEL);
+    // Nothing in `captures/` itself, where the scenario loaders read.
+    expect(readdirSync(dir)).toEqual(["bugs"]);
+    const report = JSON.parse(readFileSync(file, "utf8")) as BugReport;
+    expect(report).toMatchObject({
+      version: 1,
+      kind: "bug-report",
+      title: "a title",
+      description: "what went wrong",
+      reporter: ALICE,
+    });
+    expect(report.state.eventLog.length).toBeLessThanOrEqual(BUG_REPORT_EVENTS);
+    expect(report.state.eventLog.length).toBeGreaterThan(0);
+    expect(report.image).toMatch(/\.png$/);
+    const bytes = readFileSync(join(dir, "bugs", report.image ?? ""));
+    expect(bytes.subarray(1, 4).toString()).toBe("PNG");
+  });
+
+  it("files a report without a photo, and refuses one that isn't an image", () => {
+    const { room, dir } = playedRoom(true);
+    const log = room.captures;
+    if (log === null) throw new Error("no capture log");
+    const report = JSON.parse(readFileSync(log.report(room.game.state, null, "", "text only"), "utf8")) as BugReport;
+    expect(report.image).toBeUndefined();
+    expect(report.title).toMatch(/^Turn \d+/);
+    expect(() =>
+      log.report(room.game.state, null, "", "x", "data:text/html;base64,PGI+aGk8L2I+"),
+    ).toThrow(/PNG, JPEG, GIF or WebP/);
+    // The refused one wrote nothing.
+    expect(readdirSync(join(dir, "bugs"))).toHaveLength(1);
   });
 });

@@ -10,7 +10,8 @@
 //
 // Flags: --seed N, --players 2-4 (default 4), --bot v1|v2 (default v2, on
 // every seat, count budgets), --snapshot-at TURN (saves to
-// .scratch/replays/seed-N-tTURN.json and plays on), --from FILE, --until TURN
+// .scratch/replays/seed-N-tTURN.json and plays on), --from FILE (a snapshot,
+// or a capture or bug report from `captures/`), --until TURN
 // (stop once this turn begins), --slow MS (log decisions slower than this,
 // default 2000), --quiet-before TURN (log only from this turn on).
 //
@@ -74,7 +75,10 @@ const controllersFor = (seats) => {
 
 let game;
 if (from !== null) {
-  const snapshot = JSON.parse(readFileSync(from, "utf8"));
+  // A bare snapshot, or a capture or bug report (`captures/`), which holds one
+  // as its `state`.
+  const saved = JSON.parse(readFileSync(from, "utf8"));
+  const snapshot = saved.state ?? saved;
   game = Game.fromSnapshot(snapshot, { registry, controllers: controllersFor(snapshot.turnOrder) });
   console.log(`bot:replay — ${bot}, from ${from} (turn ${game.state.turn.number}, ${game.state.turn.step})`);
 } else {
