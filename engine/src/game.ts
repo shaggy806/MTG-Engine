@@ -2238,26 +2238,26 @@ export class Game {
    * restriction on an over-cap stack (508.1d / 509.1c would demand all of
    * them); no token in the pool is both stackable and restricted.
    *
-   * A known, documented restriction either way: a compacted stack attacks or
-   * blocks as a whole up to the cap — today's `AttackerDeclaration` /
-   * `BlockerDeclaration` can't name the same id twice to mean "N of them", so
-   * a player can't deliberately hold *part* of an accumulated army back.
+   * `wanted` wakes only that many (a declaration's `count`: rules 508.1a /
+   * 509.1a let each token attack or block or not, so a player may hold part
+   * of an army back, or split it between defenders); the rest stays
+   * compacted on `id`. Absent, it's the whole stack, up to the cap.
    */
-  private materializeStack(id: ObjectId): ObjectId[] {
+  private materializeStack(id: ObjectId, wanted?: number): ObjectId[] {
     const stack = this.state.objects[id];
     const count = stack?.stackCount ?? 1;
     if (stack === undefined || count <= 1) return [id];
-    if (count <= Game.MAX_MATERIALIZED) {
-      // `id` itself becomes the last individual as its count drains to 1.
-      const ids = [id];
-      for (let i = 1; i < count; i += 1) ids.push(this.splitOneFromStack(id));
-      return ids;
+    const n = Math.min(wanted ?? count, Game.MAX_MATERIALIZED);
+    if (n < count) {
+      const ids: ObjectId[] = [];
+      for (let i = 0; i < n; i += 1) ids.push(this.splitOneFromStack(id));
+      return ids; // `id` keeps the rest, compacted and out of this combat
     }
-    const ids: ObjectId[] = [];
-    for (let i = 0; i < Game.MAX_MATERIALIZED; i += 1) {
-      ids.push(this.splitOneFromStack(id));
-    }
-    return ids; // `id` keeps the rest, compacted and out of this combat
+    // All of it: `id` itself becomes the last individual as its count
+    // drains to 1. (A stack past the cap always took the branch above.)
+    const ids = [id];
+    for (let i = 1; i < count; i += 1) ids.push(this.splitOneFromStack(id));
+    return ids;
   }
 
   /**
@@ -4528,10 +4528,10 @@ export class Game {
     // attacking that player" sees every attacker, not just the ones declared
     // before its own.
     const declaredNow: { readonly id: ObjectId; readonly defender: PlayerId | ObjectId; readonly taps: boolean }[] = [];
-    for (const { attacker, defender } of declarations) {
+    for (const { attacker, defender, count } of declarations) {
       // A compacted stack materializes into real individual attackers here —
-      // see `materializeStack`.
-      for (const id of this.materializeStack(attacker)) {
+      // all of it, or the entry's `count` — see `materializeStack`.
+      for (const id of this.materializeStack(attacker, count)) {
         const object = this.state.objects[id];
         object.attacking = defender;
         object.blockedBy = [];
@@ -4602,11 +4602,11 @@ export class Game {
     // Every block is made before any is announced, as with attackers: the
     // declaration is one action (rule 509.1) and its triggers see all of it.
     const blockedNow: { readonly blocker: ObjectId; readonly attacker: ObjectId }[] = [];
-    for (const { blocker: blockerId, attacker: attackerId } of blocks) {
+    for (const { blocker: blockerId, attacker: attackerId, count } of blocks) {
       // A compacted stack materializes into real individual blockers here —
-      // the attacker is never a stack itself by this point (it already
-      // materialized when declared, above).
-      for (const bId of this.materializeStack(blockerId)) {
+      // all of it, or the entry's `count`. The attacker is never a stack
+      // itself by this point (it already materialized when declared, above).
+      for (const bId of this.materializeStack(blockerId, count)) {
         const blocker = this.state.objects[bId];
         const attacker = this.state.objects[attackerId];
         blocker.blocking = attackerId;

@@ -24,6 +24,7 @@ import {
   whyCannotBlock,
 } from "../combat/eligibility.js";
 import { objHasKeyword, restrictionsOf } from "../characteristics.js";
+import { whyCountsInvalid } from "../combat/stack-counts.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import type { DecisionReadCtx } from "./contract.js";
@@ -89,10 +90,17 @@ export const blockers = defineDecision({
     const name = (id: ObjectId): string =>
       creatureDef(ctx.state, ctx.registry, id)?.name ?? id;
 
-    const seen = new Set<ObjectId>();
+    // A token stack may be named more than once, each entry with how many of
+    // it block which attacker (`combat/stack-counts.ts`); anything else only
+    // once — one creature blocks one attacker.
+    const badCounts = whyCountsInvalid(
+      action.blocks.map((b) => ({ id: b.blocker, count: b.count })),
+      (id) => ctx.state.objects[id]?.stackCount ?? 1,
+      name,
+      (id) => `${name(id)} is already blocking`,
+    );
+    if (badCounts !== null) return badCounts;
     for (const { blocker, attacker } of action.blocks) {
-      if (seen.has(blocker)) return `${name(blocker)} is already blocking`;
-      seen.add(blocker);
       const why = whyCannotBlock(ctx.state, ctx.registry, player, blocker, attacker);
       if (why !== null) return why;
     }

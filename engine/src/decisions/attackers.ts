@@ -28,6 +28,7 @@ import {
   mustAttack,
   whyCannotAttack,
 } from "../combat/eligibility.js";
+import { declaredTokens, whyCountsInvalid } from "../combat/stack-counts.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import type { DecisionReadCtx } from "./contract.js";
@@ -71,12 +72,19 @@ export const attackers = defineDecision({
     if (awaiting === null || awaiting.kind !== "attackers" || awaiting.player !== player) {
       return `${player} is not being asked to declare attackers`;
     }
-    const seen = new Set<ObjectId>();
+    // A token stack may be named more than once, each entry with how many of
+    // it go where (`combat/stack-counts.ts`); anything else only once.
+    const tokensIn = (id: ObjectId): number => ctx.state.objects[id]?.stackCount ?? 1;
+    const entries = action.attackers.map((d) => ({ id: d.attacker, count: d.count }));
+    const badCounts = whyCountsInvalid(
+      entries,
+      tokensIn,
+      (id) => nameOf(ctx, id),
+      (id) => `${id} was declared as an attacker twice`,
+    );
+    if (badCounts !== null) return badCounts;
+    const declared = declaredTokens(entries, tokensIn);
     for (const { attacker, defender } of action.attackers) {
-      if (seen.has(attacker)) {
-        return `${attacker} was declared as an attacker twice`;
-      }
-      seen.add(attacker);
       const why = whyCannotAttack(ctx.state, ctx.registry, player, attacker, defender);
       if (why !== null) return why;
       // Rule 508.1d — as many of its requirements obeyed as can be: goad's
@@ -90,10 +98,11 @@ export const attackers = defineDecision({
     // Rule 508.1d: every creature that must attack and can is declared. The
     // offer's `mustAttack` asked only of the ones left out, rather than
     // building the whole offer again (`attackingViolations` is that check
-    // against the offer, for the client).
+    // against the offer, for the client). A token stack that must attack
+    // attacks whole: a count holding some of it back leaves those out.
     const missing = ctx.state.zones.shared.battlefield.filter(
       (id) =>
-        !seen.has(id) &&
+        (declared.get(id) ?? 0) < tokensIn(id) &&
         ctx.state.objects[id]?.controller === player &&
         mustAttack(ctx.state, ctx.registry, id) &&
         defendersForAttacker(ctx.state, ctx.registry, player, id).length > 0,

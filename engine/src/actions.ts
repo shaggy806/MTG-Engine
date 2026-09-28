@@ -84,11 +84,22 @@ export interface AttackerDeclaration {
   readonly attacker: ObjectId;
   /** A player, or an opponent's planeswalker to attack (rule 508.1). */
   readonly defender: PlayerId | ObjectId;
+  /** How many of a compacted token stack (`GameObject.stackCount`) attack
+   * with this entry. Absent: every token in it (up to the engine's wake-up
+   * cap). Attacking is optional for each creature (rule 508.1a), so a
+   * player may hold part of a stack back, and several entries may name the
+   * same stack — each with a `count` — to send its tokens at different
+   * defenders; the counts may total no more than the stack holds. */
+  readonly count?: number;
 }
 
 export interface BlockerDeclaration {
   readonly blocker: ObjectId;
   readonly attacker: ObjectId;
+  /** How many of a compacted token stack (the offer's `copies`) block with
+   * this entry — see {@link AttackerDeclaration.count}, which works the same
+   * way (rule 509.1a). Absent: every token in it. */
+  readonly count?: number;
 }
 
 /**
@@ -721,9 +732,10 @@ export type LegalAction =
       readonly eligible: readonly {
         readonly blocker: ObjectId;
         readonly canBlock: readonly ObjectId[];
-        /** How many creatures this entry is: a compacted token stack blocks
-         * as every token in it (it's woken up into that many on
-         * declaration). Absent for an ordinary one-creature permanent. */
+        /** How many creatures this entry is: a compacted token stack, woken
+         * up into that many on declaration. It blocks as every token in it
+         * unless a declaration's `count` sends fewer. Absent for an ordinary
+         * one-creature permanent. */
         readonly copies?: number;
       }[];
       /** Attackers with menace: block them with 0 or 2+ creatures, never 1. */

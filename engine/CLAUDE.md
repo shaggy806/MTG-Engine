@@ -29,8 +29,9 @@ Read a file's entry before changing that file; you don't need the rest.
 - **Token stacks.** One `GameObject` with `stackCount` can stand for many identical tokens.
   **Anything that counts permanents counts a stack as every token in it** (`permanentCount`,
   `weightedMatches`). Anything that singles one token out splits it off first (`splitOneFromStack`,
-  targets at `lockInTargets`). Loops that mint one real thing per unit stop at
-  `Game.MAX_EFFECT_INSTANCES`.
+  targets at `lockInTargets`). Combat wakes a stack into one object per token
+  (`materializeStack`), or only a declaration's `count` of them (`combat/stack-counts.ts`).
+  Loops that mint one real thing per unit stop at `Game.MAX_EFFECT_INSTANCES`.
 - **Computed-value cache** (`characteristics.ts`): wrap new read-only hot paths in
   `withComputedCache`, and never let a region span a mutation without `invalidateComputedCache()`.
   `MTG_CACHE_CHECK=1` on the fuzzer verifies it.

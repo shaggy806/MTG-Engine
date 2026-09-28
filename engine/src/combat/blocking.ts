@@ -156,11 +156,13 @@ export function blockingViolations(
 ): BlockingViolation[] {
   const out: BlockingViolation[] = [];
   // Creatures, not declarations: a token stack assigned to an attacker is
-  // every token in it, so a stack of eight satisfies menace on its own.
+  // every token in it, so a stack of eight satisfies menace on its own —
+  // or as many as the entry's `count` says (`combat/stack-counts.ts`).
   const copies = new Map(offer.eligible.map((e) => [e.blocker, e.copies ?? 1]));
+  const weight = (b: BlockerDeclaration): number => b.count ?? copies.get(b.blocker) ?? 1;
   const perAttacker = new Map<ObjectId, number>();
-  for (const { blocker, attacker } of blocks) {
-    perAttacker.set(attacker, (perAttacker.get(attacker) ?? 0) + (copies.get(blocker) ?? 1));
+  for (const b of blocks) {
+    perAttacker.set(b.attacker, (perAttacker.get(b.attacker) ?? 0) + weight(b));
   }
   for (const [attacker, count] of perAttacker) {
     if (count === 1 && offer.menaceAttackers.includes(attacker)) {
@@ -174,14 +176,19 @@ export function blockingViolations(
   // exactly every creature able to block one that isn't.
   if (offer.mustBlock.length > 0) {
     const plan = lurePlan(offer);
-    const blockingAMust = new Set(
-      blocks.filter((b) => offer.mustBlock.includes(b.attacker)).map((b) => b.blocker),
-    );
+    // How many of each blocker (a stack may send only some) block one.
+    const blockingAMust = new Map<ObjectId, number>();
+    for (const b of blocks) {
+      if (offer.mustBlock.includes(b.attacker)) {
+        blockingAMust.set(b.blocker, (blockingAMust.get(b.blocker) ?? 0) + weight(b));
+      }
+    }
     let obeyed = 0;
-    for (const blocker of blockingAMust) obeyed += copies.get(blocker) ?? 1;
+    for (const n of blockingAMust.values()) obeyed += n;
     if (obeyed < plan.required) {
       for (const entry of offer.eligible) {
-        if (!blockingAMust.has(entry.blocker) && plan.assignment.has(entry.blocker)) {
+        const short = (blockingAMust.get(entry.blocker) ?? 0) < (entry.copies ?? 1);
+        if (short && plan.assignment.has(entry.blocker)) {
           out.push({ kind: "must-be-blocked", blocker: entry.blocker });
         }
       }
@@ -294,8 +301,8 @@ export function obeyingLure(
   ];
   const copies = new Map(offer.eligible.map((e) => [e.blocker, e.copies ?? 1]));
   const load = new Map<ObjectId, number>();
-  for (const { blocker, attacker } of moved) {
-    load.set(attacker, (load.get(attacker) ?? 0) + (copies.get(blocker) ?? 1));
+  for (const { blocker, attacker, count } of moved) {
+    load.set(attacker, (load.get(attacker) ?? 0) + (count ?? copies.get(blocker) ?? 1));
   }
   return moved.filter((b) => !offer.menaceAttackers.includes(b.attacker) || (load.get(b.attacker) ?? 0) >= 2);
 }
