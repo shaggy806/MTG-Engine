@@ -140,12 +140,20 @@ export function hasSummoningSickness(object: GameObject): boolean {
   return object.summoningSick;
 }
 
+/** `nextTurn`: ask as of its controller's next combat rather than now —
+ * being tapped or summoning sick will have worn off by then, and nothing
+ * else is assumed to change. What the bots' `threat` term asks. */
+export interface AttackAsOf {
+  readonly nextTurn?: boolean;
+}
+
 export function whyCannotAttack(
   state: GameState,
   registry: CardRegistry,
   player: PlayerId,
   creatureId: ObjectId,
   target: PlayerId | ObjectId,
+  asOf: AttackAsOf = {},
 ): string | null {
   const object = state.objects[creatureId];
   const def = creatureDef(state, registry, creatureId);
@@ -155,7 +163,7 @@ export function whyCannotAttack(
   if (object.controller !== player) {
     return `${def.name} is not controlled by the active player`;
   }
-  if (object.tapped) return `${def.name} is tapped and cannot attack`;
+  if (object.tapped && asOf.nextTurn !== true) return `${def.name} is tapped and cannot attack`;
   // Defender (rule 702.3b), unless something lets it "attack as though it
   // didn't have defender" (Arcades, the Strategist) — which lifts only this.
   if (
@@ -169,6 +177,7 @@ export function whyCannotAttack(
     return `${def.name} can't attack`;
   }
   if (
+    asOf.nextTurn !== true &&
     hasSummoningSickness(object) &&
     !objHasKeyword(state, registry, creatureId, "haste")
   ) {
@@ -482,6 +491,7 @@ export function attackRequirementsForbid(
   player: PlayerId,
   attacker: ObjectId,
   defender: PlayerId | ObjectId,
+  asOf: AttackAsOf = {},
 ): boolean {
   const object = state.objects[attacker];
   if (object === undefined) return false;
@@ -493,7 +503,7 @@ export function attackRequirementsForbid(
     (other) =>
       other !== defender &&
       aimedRequirementsObeyed(state, others, aimedAt, other) > here &&
-      whyCannotAttack(state, registry, player, attacker, other) === null,
+      whyCannotAttack(state, registry, player, attacker, other, asOf) === null,
   );
 }
 
@@ -532,6 +542,30 @@ export function defendersForAttacker(
     (defender) =>
       whyCannotAttack(state, registry, player, attacker, defender) === null &&
       !attackRequirementsForbid(state, registry, player, attacker, defender),
+  );
+}
+
+/**
+ * The players `attacker` could attack at its controller's next combat: every
+ * one {@link defendersForAttacker} would allow once it has untapped and lost
+ * summoning sickness (`AttackAsOf.nextTurn`), with the board otherwise as it
+ * is. A Vow of Duty, a goad pointing elsewhere, Pacifism or defender all
+ * narrow it. Players only — a planeswalker's controller isn't attacked.
+ */
+export function playersAttackableNextTurn(
+  state: GameState,
+  registry: CardRegistry,
+  attacker: ObjectId,
+): PlayerId[] {
+  const object = state.objects[attacker];
+  if (object === undefined) return [];
+  const player = object.controller;
+  const asOf: AttackAsOf = { nextTurn: true };
+  return legalDefenders(state, registry, player).filter(
+    (defender): defender is PlayerId =>
+      !isPlaneswalkerTarget(state, defender) &&
+      whyCannotAttack(state, registry, player, attacker, defender, asOf) === null &&
+      !attackRequirementsForbid(state, registry, player, attacker, defender, asOf),
   );
 }
 

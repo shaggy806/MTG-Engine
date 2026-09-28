@@ -188,10 +188,6 @@ Beyond that plan:
   Regent. At low life that's right; at 33 it's a judgment call. The gate's "wraths when far
   behind" and "keeps its own winning board" hold. If a live game shows a wasted wrath, capture
   it: the scenario is what would say whether `threat` needs a cap or a sweeper needs pricing.
-- **A threat that can't attack us.** `threat` counts every opponent's creature able to attack,
-  including one that can't attack *us* (Vow of Duty on it, or a goad pointing elsewhere), so
-  v2 stopped casting Vow of Duty on an opponent's creature: the +2/+2 reads as more threat.
-  Wants `whyCannotAttack` against us in the term.
 - **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
   (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
   attacks someone else, and then with help that ends at end of turn, on a creature goaded by

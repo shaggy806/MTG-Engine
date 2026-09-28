@@ -1094,6 +1094,39 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
 
+  asked({
+    name: "puts Vow of Duty on the creature attacking it",
+    rule: "A creature that can't attack us is no threat to us, however big.",
+    position(registry) {
+      // `threat` counted every creature able to attack, so Vow of Duty's
+      // +2/+2 read as more threat and v2 stopped casting it on an
+      // opponent's creature. It now asks the attack rules who the creature
+      // could attack next turn (`playersAttackableNextTurn`). Carol's Craw
+      // Wurm attacked alice last round; bob's twin never has.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Plains", A, 3);
+      onBoard(game, "Craw Wurm", B);
+      const attacker = onBoard(game, "Craw Wurm", C);
+      game.debugSpawn("Vow of Duty", A, "hand");
+      game.state.players[A].life = 20;
+      game.state.players[A].lastAttackedBy = { [C]: game.state.turn.number - 1 };
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === attacker,
+            detail:
+              action.type === "cast-spell"
+                ? `enchanted ${cardOf(game, hit)}`
+                : `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+
   // --- training: right answers the shipped weights get wrong ----------------
 ];
 

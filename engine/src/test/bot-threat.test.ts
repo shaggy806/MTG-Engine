@@ -47,6 +47,27 @@ describe("threat", () => {
     expect(threatTo(game)).toBeCloseTo(8);
   });
 
+  it("counts only what could attack us next turn", () => {
+    const game = table();
+    const wurm = game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });
+    expect(threatTo(game)).toBeCloseTo(2);
+    // Tapped and summoning sick now, both gone by carol's next combat.
+    game.state.objects[wurm].tapped = true;
+    game.state.objects[wurm].summoningSick = true;
+    expect(threatTo(game)).toBeCloseTo(2);
+    // Goaded by us, with others to attack: it has to go elsewhere.
+    game.state.objects[wurm].goadedForGameBy = [A];
+    expect(threatTo(game)).toBeCloseTo(0);
+    game.state.objects[wurm].goadedForGameBy = undefined;
+    // Under our Vow of Duty it can't attack us at all, +2/+2 or not.
+    const vow = game.debugSpawn("Vow of Duty", A, "battlefield");
+    game.state.objects[vow].attachedTo = wurm;
+    expect(threatTo(game)).toBeCloseTo(0);
+    // Under bob's it can't attack bob: an 8/8 split between us and dave.
+    game.state.objects[vow].controller = B;
+    expect(threatTo(game)).toBeCloseTo(4);
+  });
+
   it("scales a commander by what's left of its 21", () => {
     const game = table();
     const commander = game.debugSpawn("Anafenza, the Foremost", B, "battlefield", { summoningSick: false });

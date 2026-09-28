@@ -46,6 +46,7 @@ import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { PlayerId } from "../primitives.js";
 import { POISON_LETHAL, printedCardName } from "../state.js";
+import { playersAttackableNextTurn } from "../combat/eligibility.js";
 import { COMMANDER_DAMAGE_LETHAL } from "../view.js";
 import type { GameObject, GameState } from "../state.js";
 
@@ -423,9 +424,9 @@ function playerFeaturesUncached(
 
   // Subtracted: the combat damage opponents' creatures could turn on us —
   // each counted in full when its controller attacked us within the last
-  // round (`PlayerState.lastAttackedBy`), else split across that player's
-  // opponents. A search scores a move at the end of the turn, when nothing is
-  // attacking any more, so the attack a trailing player just made at us was
+  // round (`PlayerState.lastAttackedBy`), else split across the players it
+  // could attack. A search scores a move at the end of the turn, when nothing
+  // is attacking any more, so the attack a trailing player just made at us was
   // invisible: v2 killed the leader's Craw Wurm and took six from the one
   // swinging at it ("kills the creature attacking it, not the leader's").
   let threat = 0;
@@ -438,15 +439,15 @@ function playerFeaturesUncached(
       if (state.players[object.controller]?.hasLost !== false) continue;
       const c = computeCharacteristics(state, registry, id);
       if (!c.types.includes("creature")) continue;
-      if (
-        c.restrictions.has("cant-attack") ||
-        (c.keywords.has("defender") && !c.canAttackAsThoughNoDefender)
-      ) {
-        continue;
-      }
+      // Who it could attack next turn, by the attack rules themselves: none
+      // of it is a threat to us under our Vow of Duty, goaded by us with
+      // someone else to hit, or pacified (v2 stopped casting Vow of Duty on
+      // an opponent's creature, whose +2/+2 read as more threat).
+      const targets = playersAttackableNextTurn(state, registry, id);
+      if (!targets.includes(player)) continue;
       const last = attackedBy[object.controller];
       const recent = last !== undefined && state.turn.number - last < living.length;
-      const share = recent ? 1 : 1 / Math.max(1, living.length - 1);
+      const share = recent ? 1 : 1 / targets.length;
       // Damage against what's left to lose — our life, or for a commander
       // what's left of its 21, whichever is nearer: a 2/2 isn't a threat to
       // someone at 38 (v2 Fireballed a Cat token over casting Phyrexian

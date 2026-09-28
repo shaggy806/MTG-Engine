@@ -455,3 +455,15 @@ draw engines cast ahead of creatures (Greed, Dawn of Hope, Midnight Reaper, Elem
 removal and Cleansing Nova aimed at opponents' engines, an Abrade held rather than spent on a Sol
 Ring, and an edict answered with the commander over Mentor of the Meek. Frozen as
 `shipped-2026-09-27c`. Not benched.
+
+**After the plan: a threat that can't attack us (2026-09-27).** `threat` counted every opponent's
+creature that could attack at all, so Vow of Duty's +2/+2 on an opponent's creature read as more
+threat, and v2 held the Vow ("puts Vow of Duty on the creature attacking it", now in the gate).
+The term now asks the attack rules themselves who each creature could attack at its controller's
+next combat (`playersAttackableNextTurn`, over `whyCannotAttack` with `AttackAsOf.nextTurn`, which
+ignores being tapped or summoning sick now): nothing from one under our Vow of Duty, goaded by us
+with someone else to hit, or pacified, and a creature that can't attack everyone is split across
+only those it can. `bot:diff` against the build before, six four-player games: 2 of 13,355
+decisions changed, both Kardur, Doomscourge cast over another spell (its "attack a player other
+than you" now reads as less threat). The feature scan costs about 0.25 ms more per evaluation on
+seed 50's 73-permanent board. No weight changed.
