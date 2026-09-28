@@ -211,8 +211,19 @@ describe("the default answer", () => {
     const bot = new AutomaticController(A);
     const view = { state: game.state, player: A, legalActions: () => game.legalActions(A) };
     game.debugApplyEffect(A, { kind: "exile", target: 0 }, [obj(krenko)]);
-    expect(bot.commanderReplacement(view, krenko)).toBe(true);
+    expect(bot.commanderReplacement(view, krenko, "exile")).toBe(true);
     game.state.objects[krenko].onAdventure = true;
-    expect(bot.commanderReplacement(view, krenko)).toBe(false);
+    expect(bot.commanderReplacement(view, krenko, "exile")).toBe(false);
+  });
+
+  it("keeps a commander bounced to hand there, where recasting it costs no tax", () => {
+    // Captured live (2026-09-28): a bot sent its bounced commander to the
+    // command zone, so its next cast paid commander tax for nothing.
+    const game = table(A);
+    const krenko = commander(game, "Krenko, Mob Boss", A);
+    const bot = new AutomaticController(A);
+    const view = { state: game.state, player: A, legalActions: () => game.legalActions(A) };
+    expect(bot.commanderReplacement(view, krenko, "hand")).toBe(false);
+    expect(bot.commanderReplacement(view, krenko, "library")).toBe(true);
   });
 });

@@ -406,7 +406,15 @@ export class AutomaticController implements PlayerController {
     return discardFromFront(hand, count);
   }
 
-  commanderReplacement(view: ControllerView, commander: ObjectId): boolean {
+  commanderReplacement(
+    view: ControllerView,
+    commander: ObjectId,
+    movedTo: "graveyard" | "exile" | "hand" | "library",
+  ): boolean {
+    // A commander bounced to its owner's hand stays there: casting it from the
+    // hand costs no commander tax (rule 903.8 taxes only casts from the
+    // command zone), so the command zone is strictly worse.
+    if (movedTo === "hand") return false;
     // The command zone — but a commander in exile that can still be cast from
     // there (on an adventure, foretold, suspended) is where its owner put it
     // on purpose, and casting it from there costs no tax.
