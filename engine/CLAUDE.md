@@ -14,7 +14,7 @@ Read a file's entry before changing that file; you don't need the rest.
   selectors, `mana-payment.ts` (returns a plan and never applies it), `combat/`, `decisions/`.
   `GameState` is one plain, clonable tree: no class instances, `Map`/`Set` or functions in it.
 - **Every player decision is a dispatched action**, never a synchronous callback. Each of the
-  19 kinds is a module under `decisions/`, registered in total `as const satisfies` tables, so a
+  20 kinds is a module under `decisions/`, registered in total `as const satisfies` tables, so a
   new kind fails the build until it's wired everywhere (`docs/plans/decision-registry.md`).
   **Nothing under `decisions/` imports `game.js`, and `state.ts` imports nothing from
   `decisions/`** (real ESM cycles). `defineDecision` is in its own file for the same reason.

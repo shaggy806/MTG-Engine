@@ -230,6 +230,7 @@ type SacrificeAction = Extract<LegalAction, { kind: 'sacrifice' }>
 type ProliferateAction = Extract<LegalAction, { kind: 'proliferate' }>
 type ChoosePermanentsAction = Extract<LegalAction, { kind: 'choose-permanents' }>
 type ScryAction = Extract<LegalAction, { kind: 'scry' }>
+type CastNowAction = Extract<LegalAction, { kind: 'cast-now' }>
 type AssignDamageAction = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
 
@@ -363,6 +364,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-creature-type': 'choose a creature type',
   'choose-modes': 'choose a mode',
   'choose-targets': 'choose targets',
+  'cast-now': 'decide whether to cast a spell',
   'assign-combat-damage': 'assign combat damage',
   sacrifice: 'choose what to sacrifice',
   proliferate: 'choose what to proliferate',
@@ -992,6 +994,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (a): a is ProliferateAction => a.kind === 'proliferate',
   )
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
+  const castNowAction = actions.find((a): a is CastNowAction => a.kind === 'cast-now')
   const assignDamageAction = actions.find(
     (a): a is AssignDamageAction => a.kind === 'assign-combat-damage',
   )
@@ -1082,6 +1085,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     | 'choose-convoke'
     | 'assign-combat-damage'
     | 'targeting'
+    | 'cast-now'
     | 'priority' = mulliganAction
     ? 'mulligan'
     : commanderChoiceAction
@@ -1134,6 +1138,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                       ? 'choose-convoke'
                     : activeTargeting
                       ? 'targeting'
+                    // Last: once a variant is picked, its X / modes / targets
+                    // steps above take over until the cast goes out.
+                    : castNowAction
+                      ? 'cast-now'
                       : 'priority'
 
   // Every mode but the mulligan keeps the hand in its fixed tray (mulligan
@@ -2912,6 +2920,26 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           }
         >
           {cmdThere ? `Leave in ${cmdZone}` : `Put into ${cmdZone}`}
+        </button>
+      </div>
+    )
+  } else if (mode === 'cast-now' && castNowAction) {
+    // "You may cast that card" while something resolves: each way to cast it
+    // runs the ordinary cast steps, and the finished cast goes out as the
+    // decision's answer (`useNetworkGame`'s `dispatch` wraps it).
+    controls = (
+      <div className="controls">
+        <span>Cast {castNowAction.cardName} now?</span>
+        {castNowAction.casts.map((c, i) => (
+          <button key={i} type="button" onClick={() => beginCast(c)}>
+            Cast {c.cardName}
+            {c.kicked ? ` (${c.kickerKeyword ?? 'kicked'} ${c.kickerCost ?? ''})` : ''}
+            {c.costOptionText ? ` (${c.costOptionText})` : ''}
+            {c.free ? ' (free)' : ''}
+          </button>
+        ))}
+        <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
+          Don't cast
         </button>
       </div>
     )

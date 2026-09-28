@@ -37,6 +37,7 @@ import { assignCombatDamage } from "./assign-combat-damage.js";
 import { attackers } from "./attackers.js";
 import { blockers } from "./blockers.js";
 import { chooseTargets } from "./choose-targets.js";
+import { castNow } from "./cast-now.js";
 import { scry } from "./scry.js";
 
 export { defineDecision } from "./define.js";
@@ -61,6 +62,7 @@ export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   attackers,
   blockers,
   "choose-targets": chooseTargets,
+  "cast-now": castNow,
   scry,
 };
 

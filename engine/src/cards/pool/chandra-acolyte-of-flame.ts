@@ -1,12 +1,13 @@
 import { defineCard } from "../define.js";
 
 /**
- * Both printed 0 abilities. The −2 ("You may cast target instant or sorcery
- * card with mana value 3 or less from your graveyard") is dropped: there is no
- * target spec for an instant/sorcery in a graveyard *bounded by mana value*,
- * and no way to say "if that spell would be put into your graveyard, exile it
- * instead" for one specific cast.
+ * The −2 is the `cast-now` effect: the card is cast by the ordinary rules
+ * (its modes, X, kicker, targets and mana cost), timing ignored, and exiled
+ * instead of going to the graveyard afterwards.
  */
+const MINUS_TWO_TEXT =
+  "[−2]: You may cast target instant or sorcery card with mana value 3 or less from your " +
+  "graveyard. If that spell would be put into your graveyard, exile it instead.";
 export default defineCard({
   name: "Chandra, Acolyte of Flame",
   manaCost: "{1}{R}{R}",
@@ -18,7 +19,8 @@ export default defineCard({
   text:
     "[0]: Put a loyalty counter on each red planeswalker you control.\n" +
     "[0]: Create two 1/1 red Elemental creature tokens. They gain haste. " +
-    "Sacrifice them at the beginning of the next end step.",
+    "Sacrifice them at the beginning of the next end step.\n" +
+    MINUS_TWO_TEXT,
   activated: [
     {
       loyaltyCost: 0,
@@ -47,6 +49,20 @@ export default defineCard({
       text:
         "[0]: Create two 1/1 red Elemental creature tokens. They gain haste. " +
         "Sacrifice them at the beginning of the next end step.",
+    },
+    {
+      loyaltyCost: -2,
+      cost: { mana: null, tap: false },
+      targets: [
+        {
+          kind: "card-in-graveyard",
+          whose: "you",
+          filter: { typesAnyOf: ["instant", "sorcery"], manaValue: { op: "lte", n: 3 } },
+        },
+      ],
+      effect: { kind: "cast-now", target: 0, exileAfter: true },
+      resolve: null,
+      text: MINUS_TWO_TEXT,
     },
   ],
 });

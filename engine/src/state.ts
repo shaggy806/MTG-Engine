@@ -6,7 +6,7 @@
  * instance and is the only thing that writes to it; everything else reads.
  */
 
-import type { CastVia } from "./actions.js";
+import type { CastSpellOffer, CastVia } from "./actions.js";
 import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type { EffectSpec, LookAndChooseLeftoverIf, ZoneSecondPick } from "./effects.js";
@@ -1613,6 +1613,25 @@ export type AwaitingDecision =
       readonly cardName: string;
       readonly specs: readonly TargetSpec[];
       readonly options: readonly (readonly TargetRef[])[];
+    }
+  | {
+      /**
+       * "You may cast [that card]" while a spell or ability resolves (the
+       * `cast-now` effect — Chandra, Acolyte of Flame's −2): `player` casts
+       * `card` now, following the casting rules in full (601.2 — modes, X,
+       * kicker, targets, costs) but ignoring timing, or declines. `offers`
+       * are the card's cast variants, worked out as this was raised (the
+       * board can't change while it's asked); the answer names one, or
+       * nothing. `source` is what's resolving.
+       */
+      readonly kind: "cast-now";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly card: ObjectId;
+      readonly cardName: string;
+      readonly offers: readonly CastSpellOffer[];
+      /** "If that spell would be put into your graveyard, exile it instead." */
+      readonly exileAfter: boolean;
     }
   | {
       /** A blocked attacker's controller assigns its combat damage among the

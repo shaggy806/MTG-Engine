@@ -1335,6 +1335,23 @@ export type EffectSpec =
       readonly amount: EffectAmount;
     }
   | {
+      /**
+       * "You may cast target card" while this resolves (Chandra, Acolyte of
+       * Flame's −2: "You may cast target instant or sorcery card with mana
+       * value 3 or less from your graveyard. If that spell would be put into
+       * your graveyard, exile it instead."): its controller casts the card
+       * now, from wherever it is, by the ordinary casting rules — modes, X,
+       * kicker, targets, costs — with timing ignored (rule 608.2g), or
+       * declines. Raised as a `cast-now` decision; a `sequence` step after
+       * it waits for the answer. Nothing is asked for a card that can't be
+       * cast (no legal targets, no way to pay).
+       */
+      readonly kind: "cast-now";
+      readonly target: EffectTargetRef;
+      /** "If that spell would be put into your graveyard, exile it instead." */
+      readonly exileAfter?: boolean;
+    }
+  | {
       /** "Until end of turn, you may cast that card" — a card in exile
        * (Codie, Vociferous Codex's, found by a `reveal-until`): cast only,
        * this turn, by the effect's controller; with `free`, only "without
@@ -2861,6 +2878,8 @@ export interface EffectApi {
   entersWithCounters(target: TargetRef, counter: string, amount: number): void;
   /** See the `"allow-cast-from-exile"` {@link EffectSpec}. */
   allowCastFromExile(target: TargetRef, free: boolean, laterTurns?: boolean): void;
+  /** See the `"cast-now"` {@link EffectSpec}. */
+  castNow(target: TargetRef, exileAfter: boolean): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
@@ -4367,6 +4386,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "enters-with-counters": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.entersWithCounters(target, spec.counter, amountValue(spec.amount, ctx));
+      return;
+    }
+    case "cast-now": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.castNow(target, spec.exileAfter === true);
       return;
     }
     case "allow-cast-from-exile": {

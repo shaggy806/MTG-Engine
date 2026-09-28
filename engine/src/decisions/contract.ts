@@ -96,6 +96,7 @@ export const DECISION_ACTIONS = {
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
   "choose-targets": ["choose-targets"],
+  "cast-now": ["cast-now"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
   "choose-permanents": ["choose-permanents"],
@@ -128,6 +129,7 @@ export const DECISION_OFFERS = {
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
   "choose-targets": ["choose-targets"],
+  "cast-now": ["cast-now"],
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
   "choose-permanents": ["choose-permanents"],
@@ -183,6 +185,9 @@ export interface DecisionReadCtx {
    * still around, and none once it has left (rule 608.2b).
    */
   readonly pendingTriggerTargetSource: () => TargetSource | undefined;
+  /** Why `cast` isn't a legal answer to the pending `cast-now` decision —
+   * the whole of `whyCannotCastSpell`, which only `Game` can run. */
+  readonly whyCannotCastNow: (cast: Extract<Action, { type: "cast-spell" }>) => string | null;
 }
 
 /**
@@ -215,6 +220,7 @@ export interface DecisionHost {
   readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
   readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
   readonly applyChooseTargets: (player: PlayerId, targets: ResolvedTargets) => void;
+  readonly applyCastNow: (player: PlayerId, cast: Extract<Action, { type: "cast-spell" }> | null) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

@@ -169,7 +169,7 @@ describe("Doom Blade (layer 5 — colour-conditional target)", () => {
         card: hand(game, A, "Doom Blade"),
         targets: [{ kind: "object", object: hawk }],
       }),
-    ).toThrow(/nonblack-creature target/i);
+    ).toThrow(/nonblack creature target/i);
 
     game.dispatch({
       type: "cast-spell",

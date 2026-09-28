@@ -527,7 +527,14 @@ export function useNetworkGame(): NetworkGame {
     (action: Action) => {
       const id = roomIdRef.current
       if (id === null) return
-      send({ type: 'dispatch', roomId: id, action })
+      // A cast a resolving spell asked for ("you may cast that card" — the
+      // `cast-now` decision) is built by the ordinary cast steps and sent as
+      // that decision's answer.
+      const sent: Action =
+        action.type === 'cast-spell' && action.via === 'effect'
+          ? { type: 'cast-now', player: action.player, cast: action }
+          : action
+      send({ type: 'dispatch', roomId: id, action: sent })
     },
     [send],
   )

@@ -44,6 +44,10 @@ export type CastVia =
   /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
    * card exiled face-up with permission to play it, for its normal cost. */
   | "impulse"
+  /** Cast now, from wherever it is, because a resolving spell or ability
+   * says "you may cast it" (the `cast-now` decision — Chandra, Acolyte of
+   * Flame): timing is ignored (rule 608.2g). Only as that decision's answer. */
+  | "effect"
   /** Warp (rule 702.185): cast from the hand for the card's warp cost, an
    * alternative cost — exiled at the next end step, castable from exile on a
    * later turn (which is an `"impulse"` cast). */
@@ -344,6 +348,14 @@ export type Action =
       readonly type: "choose-targets";
       readonly player: PlayerId;
       readonly targets: ChosenTargets;
+    }
+  | {
+      /** Answers a pending `cast-now` decision: the cast, built from one of
+       * the offer's `casts` exactly as a `cast-spell` from priority is (it
+       * has `via: "effect"`), or `null` to decline ("you *may* cast"). */
+      readonly type: "cast-now";
+      readonly player: PlayerId;
+      readonly cast: Extract<Action, { type: "cast-spell" }> | null;
     }
   | {
       /** Answers a pending `assign-combat-damage` decision (rule 510.1c —
@@ -889,6 +901,15 @@ export type LegalAction =
       readonly cards: readonly ObjectId[];
     }
   | {
+      /** "You may cast that card" during a resolution (the `cast-now`
+       * decision): the card's cast variants, each an ordinary `cast-spell`
+       * offer with `via: "effect"`. Answer with a `cast-now` action. */
+      readonly kind: "cast-now";
+      readonly card: ObjectId;
+      readonly cardName: string;
+      readonly casts: readonly CastSpellOffer[];
+    }
+  | {
       /** A triggered ability / suspended spell needs targets — one per
        * `specs`/`options` slot (ROADMAP Phase 11 EG-1). */
       readonly kind: "choose-targets";
@@ -897,3 +918,6 @@ export type LegalAction =
       readonly specs: readonly TargetSpec[];
       readonly options: readonly (readonly TargetRef[])[];
     };
+
+/** A `cast-spell` offer — what a `cast-now` decision lists as its `casts`. */
+export type CastSpellOffer = Extract<LegalAction, { kind: "cast-spell" }>;

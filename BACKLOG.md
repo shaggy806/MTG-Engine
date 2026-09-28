@@ -37,15 +37,19 @@ that one card is the reason the deck exists.
 
 - **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
   or misplay a printed clause. Give each its proper, faithful implementation, building whatever
-  feature blocks it; don't just delete them. Left, each with what it needs: Chandra, Acolyte
-  of Flame (casting a target card from a graveyard during resolution — 4 top-5000 cards,
-  Torrential Gearhulk among them), Terror of the Peaks (a cast-time additional cost imposed by
+  feature blocks it; don't just delete them. Left, each with what it needs: Terror of the Peaks (a cast-time additional cost imposed by
   the target), Combat Thresher (Prototype) and Artificial Evolution (layer-3 text changing
   across a card's abilities, not just its type line; neither is in the top 5000). Each card's
   blocker is in `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run
   card:text -w engine` is the live ledger. Fixed so far: Saw in Half, Finale of Devastation,
   Fireball, Mortivore, Will of the Sultai, Starfield Vocalist (Warp), Iridescent Vinelasher
-  (Offspring), Fanatic of Rhonas (Eternalize), and Rydia earlier.
+  (Offspring), Fanatic of Rhonas (Eternalize), Chandra, Acolyte of Flame (`cast-now`), and
+  Rydia earlier.
+- **`cast-now` without paying the mana cost.** The "you may cast that card" decision (Chandra,
+  Acolyte of Flame) offers only a paid cast. Torrential Gearhulk (#2708), Emet-Selch of the Third
+  Seat, Vohar and Zul Ashur cast it "without paying its mana cost": offer only the free variant
+  (`castSpellActions`' `free`) when the effect says so. The cast-now decision has no bot
+  `candidates` yet either; v2 falls back to v1's answer.
 - **Unblocked by those fixes, for the next top-5000 batch:** the rest of the Will cycle (Jeskai
   #2169, Mardu #2236, Abzan #2579, Temur #4037 — `castModal.maxModesIf`), Strive (Twinflame
   #1260, Call the Coppercoats #1627 — `costPerExtraTarget`), and regeneration (Nightscape
@@ -256,12 +260,6 @@ Beyond that plan:
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
 
-- **Dev rooms open on a lobby instead of their board (found 2026-09-28).** With `dev-rooms`
-  running, `localhost:5173/?room=TWOAA` (and FOURP, MULD4) shows the new-room lobby — Player 1,
-  a default deck, Ready / Start Game — and Ready answers "room … has already started"
-  (`requirePendingRoom`, `server/src/ws-server.ts`). TWOAA joined through that same Ready once
-  earlier the same day, so it may depend on the tab's stored seat. It blocks live checks
-  against a known board.
 - **Show regeneration shields on the card.** A permanent's shields (`GameObject
   .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
   only the log line says one was made. Add them to `VisibleObject` and a small badge beside

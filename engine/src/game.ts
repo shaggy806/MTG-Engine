@@ -24,6 +24,7 @@ import type {
   Action,
   AttackerDeclaration,
   BlockerDeclaration,
+  CastSpellOffer,
   CastVia,
   ConvokePayment,
   GraveyardGrant,
@@ -753,6 +754,7 @@ export class Game {
         const pending = this.state.pendingTargetedTrigger;
         return pending === null ? undefined : this.abilityTargetSource(pending);
       },
+      whyCannotCastNow: (cast) => this.canDispatch(cast),
     };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
@@ -774,6 +776,7 @@ export class Game {
       applyAttackerDeclarations: (p, d) => this.applyAttackerDeclarations(p, d),
       applyBlockerDeclarations: (p, b) => this.applyBlockerDeclarations(p, b),
       applyChooseTargets: (p, t) => this.applyChooseTargets(p, t),
+      applyCastNow: (p, cast) => this.applyCastNow(p, cast),
       applyScry: (player, away) => this.applyScry(player, away),
     };
   }
@@ -6476,7 +6479,14 @@ export class Game {
     targetCount = 0,
     escapeExile?: readonly ObjectId[],
   ): string | null {
-    const blocked = this.whyCannotAct(player);
+    // Cast because a resolving spell or ability says so: no priority needed,
+    // but only the card it offered, by the player it offered it to.
+    const blocked =
+      via === "effect"
+        ? this.castNowMatches(player, cardId)
+          ? null
+          : "that card isn't being offered to cast now"
+        : this.whyCannotAct(player);
     if (blocked !== null) return blocked;
     const def = this.faceDef(cardId, face);
     const prohibited = this.whyProhibitedFromCasting(player, cardId, def);
@@ -6543,6 +6553,8 @@ export class Game {
       if (this.findGraveyardGrant(player, cardId, face, graveyardGrant) === null) {
         return `${player} has no permission to cast ${def.name} from their graveyard`;
       }
+    } else if (via === "effect") {
+      // Wherever the card is — the offer is the permission (checked above).
     } else if (via === "warp") {
       // Rule 702.185a — from the hand, for its warp cost: an alternative cost,
       // so no other one goes with it (118.9a).
@@ -6579,8 +6591,10 @@ export class Game {
     }
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant, has flash (rule 702.8) or may be cast
-    // as though it had flash; otherwise sorcery timing applies.
+    // as though it had flash; otherwise sorcery timing applies — unless an
+    // effect has it cast now, which ignores timing (rule 608.2g).
     if (
+      via !== "effect" &&
       !def.types.includes("instant") &&
       !def.keywords.includes("flash") &&
       !this.castsAsThoughFlash(player, cardId)
@@ -6817,6 +6831,111 @@ export class Game {
     return { ...cost, generic, colored };
   }
 
+  /**
+   * The card a `cast-now` decision is about, while its offers are worked out
+   * (before the decision is raised) — what a `via: "effect"` cast is
+   * checked against then. `awaiting` names it after that.
+   */
+  private castNowProbe: {
+    readonly player: PlayerId;
+    readonly card: ObjectId;
+    readonly exileAfter?: boolean;
+  } | null = null;
+
+  /** Whether `player` may cast `cardId` `via: "effect"` right now: it's the
+   * card a pending `cast-now` decision (or one being raised) offers them. */
+  private castNowMatches(player: PlayerId, cardId: ObjectId): boolean {
+    const awaiting = this.state.awaiting;
+    const asked =
+      awaiting?.kind === "cast-now" ? { player: awaiting.player, card: awaiting.card } : this.castNowProbe;
+    return asked !== null && asked.player === player && asked.card === cardId;
+  }
+
+  /**
+   * "You may cast that card" (the `cast-now` effect): offer `player` every
+   * way to cast `cardId` from where it is, ignoring timing (rule 608.2g), as
+   * a `cast-now` decision — or nothing, when it can't be cast at all (no
+   * legal targets, no way to pay). The resolution waits on the answer.
+   */
+  private raiseCastNow(player: PlayerId, source: ObjectId, cardId: ObjectId, exileAfter: boolean): void {
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.zone === "stack" || object.zone === "battlefield") return;
+    const ownDef = this.registry.get(object.cardName);
+    if (ownDef.types.includes("land")) return;
+    this.castNowProbe = { player, card: cardId };
+    const offers: CastSpellOffer[] = [];
+    try {
+      const faces: readonly (number | undefined)[] =
+        !ownDef.transform && ownDef.faces !== null ? ownDef.faces.map((_n, i) => i) : [undefined];
+      for (const face of faces) {
+        const def = this.faceDef(cardId, face ?? 0);
+        if (def.types.includes("land")) continue;
+        for (const legal of this.castSpellActions(player, cardId, def.name, def, {
+          ...(face !== undefined ? { face } : {}),
+          via: "effect",
+          costString: def.manaCost,
+        })) {
+          if (legal.kind === "cast-spell") offers.push(legal);
+        }
+      }
+    } finally {
+      this.castNowProbe = null;
+    }
+    if (offers.length === 0) return;
+    this.state.awaiting = {
+      kind: "cast-now",
+      player,
+      source,
+      card: cardId,
+      cardName: ownDef.name,
+      offers,
+      exileAfter,
+    };
+  }
+
+  /** Answer a pending `cast-now` decision: cast the card as `cast` says, or
+   * decline. The resolution that asked carries on after it. */
+  private applyCastNow(player: PlayerId, cast: Extract<Action, { type: "cast-spell" }> | null): void {
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "cast-now" || awaiting.player !== player) {
+      throw new Error(`${player} is not being asked to cast a card`);
+    }
+    if (cast === null) {
+      this.state.awaiting = null;
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
+    const why = this.canDispatch(cast);
+    if (why !== null) throw new Error(why);
+    // Checked against the decision; cast with it answered, so the cast's own
+    // costs (a discard) can raise decisions of their own.
+    this.castNowProbe = { player, card: awaiting.card, exileAfter: awaiting.exileAfter };
+    this.state.awaiting = null;
+    try {
+      this.castSpell(
+        cast.player,
+        cast.card,
+        normalizeTargets(cast.targets),
+        cast.xValue ?? 0,
+        cast.via,
+        cast.face ?? 0,
+        cast.modes,
+        cast.kicked === true,
+        cast.sacrifice,
+        cast.overload === true,
+        cast.free === true,
+        cast.convoke,
+        cast.altCost === true,
+        cast.costOption,
+        cast.tap,
+        cast.graveyardGrant,
+        cast.escapeExile,
+      );
+    } finally {
+      this.castNowProbe = null;
+    }
+  }
+
   private castSpell(
     player: PlayerId,
     cardId: ObjectId,
@@ -7011,6 +7130,9 @@ export class Game {
     // Kess's "if a spell cast this way would be put into your graveyard,
     // exile it instead" — set after the move to the stack, which clears it.
     if (graveyardPermission?.exileAfterwards === true) object.exileIfWouldGoToGraveyard = true;
+    // Chandra, Acolyte of Flame's "if that spell would be put into your
+    // graveyard, exile it instead", for the cast her −2 asked for.
+    if (via === "effect" && this.castNowProbe?.exileAfter === true) object.exileIfWouldGoToGraveyard = true;
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
     if (kicked) object.kicked = true;
@@ -7121,7 +7243,9 @@ export class Game {
         this.discardByEffect({ kind: "player", player }, costDiscard);
       });
     }
-    this.afterPlayerAction(player);
+    // Cast during a resolution: once that resolution finishes, the active
+    // player gets priority (rule 117.3b), not necessarily the caster.
+    this.afterPlayerAction(via === "effect" ? this.activePlayer : player);
   }
 
   /**
@@ -12543,6 +12667,9 @@ export class Game {
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       finishCascade: (finish) => this.finishCascade(finish),
+      castNow: (target, exileAfter) => {
+        if (target.kind === "object") this.raiseCastNow(controller, source, target.object, exileAfter);
+      },
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
       placeFound: (hit, put, tapped) => this.placeFound(hit, put, tapped),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),

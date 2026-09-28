@@ -390,10 +390,11 @@ export function otherSlotConflict(
  * one needs building.
  */
 export function describeTargetSpec(spec: TargetSpec | string): string {
-  if (typeof spec === "string") return spec;
+  // A named spec reads as words: "any target", "creature you control".
+  if (typeof spec === "string") return spec.replace(/-/g, " ");
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
   if (spec.kind === "any-number") {
-    // Fireball's "any number of targets", not "any number of any-target".
+    // Fireball's "any number of targets", not "any number of any target".
     return spec.of === "any-target" ? "any number of targets" : `any number of ${describeTargetSpec(spec.of)}`;
   }
   if (spec.kind === "other") {

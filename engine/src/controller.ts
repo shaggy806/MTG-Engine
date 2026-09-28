@@ -129,6 +129,12 @@ export interface PlayerController {
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets;
   /**
+   * "You may cast that card" during a resolution (the `cast-now` decision):
+   * one of `offer.casts` built into a `cast-spell` action (modes, X,
+   * targets, costs — as from priority), or `null` to decline.
+   */
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null;
+  /**
    * Choose between `min` and `max` cards from `eligible` (the choosable
    * subset of a `"look-and-choose"` effect's revealed candidates — narrower
    * than everything revealed when the effect restricts the choice, e.g. to
@@ -384,6 +390,11 @@ export class AutomaticController implements PlayerController {
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets {
     return firstOfEach(legalOptions, specs);
+  }
+
+  /** Declines; the controllers that cast things override it. */
+  chooseCastNow(_view: ControllerView, _offer: CastNowOffer): CastSpellAction | null {
+    return null;
   }
 
   chooseFromZone(
@@ -654,6 +665,8 @@ export class ScriptedController implements PlayerController {
   private readonly queue: ScriptEntry[];
 
   declareAttackersFn: AttackChooser = () => [];
+  /** "You may cast that card" — declines by default. */
+  chooseCastNowFn: (view: ControllerView, offer: CastNowOffer) => CastSpellAction | null = () => null;
   /** Which cards to discard — a cost's or an effect's. The front of the hand
    * by default. */
   chooseDiscardsFn: (hand: readonly GameObject[], count: number) => readonly ObjectId[] = (hand, count) =>
@@ -764,6 +777,10 @@ export class ScriptedController implements PlayerController {
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets {
     return this.chooseTargetsFn(view, sourceName, specs, legalOptions);
+  }
+
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null {
+    return this.chooseCastNowFn(view, offer);
   }
 
   chooseFromZone(
@@ -1160,6 +1177,8 @@ export class RandomController extends AutomaticController {
 }
 
 type CastSpellLegal = Extract<LegalAction, { kind: "cast-spell" }>;
+type CastNowOffer = Extract<LegalAction, { kind: "cast-now" }>;
+type CastSpellAction = Extract<Action, { type: "cast-spell" }>;
 type PlayLandLegal = Extract<LegalAction, { kind: "play-land" }>;
 type ActivateAbilityLegal = Extract<LegalAction, { kind: "activate-ability" }>;
 type DeclareAttackersLegal = Extract<LegalAction, { kind: "declare-attackers" }>;
@@ -1665,6 +1684,16 @@ export class HeuristicBotController extends AutomaticController {
             .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
     if (usable.length < cm.minModes) return null;
     return usable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, usable.length)));
+  }
+
+  /** "You may cast that card": cast it, as the first of its variants that
+   * builds into a cast — the same way this bot casts from priority. */
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null {
+    for (const legal of offer.casts) {
+      const action = this.toCastSpell(view.state, legal);
+      if (action.type === "cast-spell") return action;
+    }
+    return null;
   }
 
   /** A trigger's targets (or a free cast's), aimed the same way as a cast's. */
