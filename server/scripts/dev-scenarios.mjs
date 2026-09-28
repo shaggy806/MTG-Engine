@@ -221,6 +221,36 @@ export default {
     bots: { bob: {} },
   },
 
+  COUNT: {
+    about:
+      "2p. Permanents carrying counters, for the counter chips on a board tile: +1/+1 on the " +
+      "Bears, −1/−1 on the Hill Giant, three kinds on one Serra Angel (+1/+1 and two keyword " +
+      "counters), charge on a Sol Ring (no P/T badge), a kind with no glyph (quest) on the " +
+      "Elves, and a planeswalker whose loyalty stays on its shield.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: ["Grizzly Bears", "Hill Giant", "Serra Angel", "Sol Ring", "Llanowar Elves"],
+      bob: ["Garruk Wildspeaker", "Colossal Dreadmaw"],
+    },
+    setup(game, ids) {
+      const put = (player, id, counter, amount) =>
+        game.debugApplyEffect(player, { kind: "add-counter", target: "source", counter, amount }, [], {
+          source: id,
+        });
+      const [bears, giant, angel, ring, elves] = ids.alice;
+      put("alice", bears, "+1/+1", 2);
+      put("alice", giant, "-1/-1", 1);
+      put("alice", angel, "+1/+1", 3);
+      put("alice", angel, "flying", 1);
+      put("alice", angel, "lifelink", 1);
+      put("alice", ring, "charge", 4);
+      put("alice", elves, "quest", 12);
+      put("bob", ids.bob[1], "+1/+1", 5);
+    },
+    bots: { bob: {} },
+  },
+
   TAPCS: {
     about:
       "2p. Costs that tap other permanents, for picking what to tap: Selesnya Evangel taps one " +

@@ -9,6 +9,7 @@ import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
 import { TargetedMark } from './TargetedMark.tsx'
 import { CardFlags } from './CardFlags.tsx'
+import { CounterChips } from './CounterChips.tsx'
 import type { Goader } from './CardFlags.tsx'
 import {
   isArtBlocked,
@@ -160,6 +161,7 @@ export function MiniTile({
             </span>
           ) : null}
           {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
+          <CounterChips obj={obj} />
 
           {stackCount !== null && stackCount > 1 ? (
             <span className="card-stack">×{stackCount}</span>

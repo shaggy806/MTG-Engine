@@ -1843,6 +1843,16 @@
      name, type line and rules text out of the bottom of the tile. */
   min-height: 0;
 }
+/* ...and that 46% only resolves against a definite height. The hand and the
+   library's top card set one, but the cast spotlight (.played-card-fly) and a
+   reveal didn't, so there the art box fell back to the image's own height:
+   an ordinary landscape crop came out close enough to pass, but a Saga
+   creature's tall art (Summon: Titan) showed at full height. Every art-first
+   tile is card-shaped, so give them all the card's silhouette; the rules text
+   already shrinks to fit that box (CardTile's --text-scale). */
+.card-tile.art-first {
+  height: calc(var(--card-w) * 1.4);
+}
 /* direct child only -- art-first layout nests a second <img> (the overlaid
    cost pip's SVG, inside .ct-cost-overlay) inside .ct-art, and this rule
    must not also stretch that one to fill the art box. */
@@ -2217,6 +2227,63 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* A permanent's counters (ui/CounterChips.tsx): one pill per kind, its Mana
+   font glyph and the count, stacked up the right edge from just above the
+   P/T or loyalty badge. Sized off the tile like the keyword discs, which
+   hold the left edge, so the two columns never meet. */
+.mt-counters {
+  --ctr-size: clamp(11px, calc(var(--mini-w) * 0.15), 17px);
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 1px;
+  max-height: calc(100% - 4px);
+  overflow: hidden;
+  pointer-events: none;
+}
+/* clear of the P/T badge, which is sized the same way (.ct-pt) */
+.mt-counters.above-stat {
+  bottom: calc(22px * var(--ct-scale, 1));
+  max-height: calc(100% - 24px * var(--ct-scale, 1));
+}
+.mt-counter {
+  height: var(--ctr-size);
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 calc(var(--ctr-size) * 0.22) 0 calc(var(--ctr-size) * 0.1);
+  font-size: calc(var(--ctr-size) * 0.66);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #8be0a8;
+  background: rgba(10, 12, 16, 0.85);
+  border: 1px solid rgba(139, 224, 168, 0.45);
+  border-radius: calc(var(--ctr-size) / 2);
+  white-space: nowrap;
+}
+.mt-counter.minus {
+  color: #ff8f8f;
+  border-color: rgba(255, 143, 143, 0.45);
+}
+.mt-counter-glyph,
+.mt-counter-letter {
+  width: calc(var(--ctr-size) * 0.8);
+  display: grid;
+  place-items: center;
+}
+.mt-counter-glyph {
+  font-family: 'Mana';
+  font-weight: normal;
+  font-size: 1.05em;
+}
+.mt-counter-n {
+  color: #f4f4f4;
 }
 
 /* the full CardTile, mounted only while the tile it belongs to is hovered or
