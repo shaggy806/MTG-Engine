@@ -87,6 +87,4 @@ cmd //c start "" "http://localhost:5173/"
 
 Two or three lines: which server and the URL; for dev-rooms, the room codes
 from the top of `$TEMP/mtg-server.log` (or the one opened); that Capture is on;
-and that `dev-down` stops everything. Mention that the library and deck builder
-are slow to open under Vite dev (every card is its own module — BACKLOG), so a
-first visit taking 20-40 s is expected, not a hang.
+and that `dev-down` stops everything.

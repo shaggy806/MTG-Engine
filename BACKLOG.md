@@ -254,10 +254,6 @@ Beyond that plan:
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
-- **In dev, the library and the deck builder load every card as its own module.** Vite's dev
-  server doesn't bundle, so their 32 card shards arrive as ~5,600 requests and take 20-40 s to
-  open. The game and the lobby touch no card module. Emitting each shard as one bundled file in
-  the engine's build would fix it.
 - **CI's fuzzer reaches three quarters of the pool.** CI's 38 fixed seeds put 3,904 of the
   5,369 deckable cards in some deck. The other quarter is never fuzzed in CI, only locally,
   where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
