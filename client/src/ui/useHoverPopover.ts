@@ -4,9 +4,9 @@ import { useLayoutEffect, useRef, useState } from 'react'
  * popover and the viewport edge it gets clamped against. */
 const POPOVER_GAP = 6
 
-export interface HoverPopover {
+export interface HoverPopover<T extends HTMLElement = HTMLDivElement> {
   /** Put on the element the popover is positioned against. */
-  readonly wrapRef: React.RefObject<HTMLDivElement | null>
+  readonly wrapRef: React.RefObject<T | null>
   /** Put on the portalled popover itself. */
   readonly popoverRef: React.RefObject<HTMLDivElement | null>
   readonly open: boolean
@@ -46,8 +46,8 @@ export interface HoverPopover {
  *   pushed view changing the card's rules text, say) and so is a reason to
  *   re-place it.
  */
-export function useHoverPopover(dep?: unknown): HoverPopover {
-  const wrapRef = useRef<HTMLDivElement>(null)
+export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: unknown): HoverPopover<T> {
+  const wrapRef = useRef<T>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
 

@@ -1548,12 +1548,10 @@
   text-align: right;
 }
 /* A card name inside a log line. Bold so a sentence full of names is
-   scannable, and `help` + a native tooltip because "what does this card
-   actually do" is the reason to hover one — the tooltip carries its cost,
-   type line and rules text. Native rather than a portalled popover: the log
-   is itself a scroll box inside a popup, which is exactly the nesting that
-   made the board's hover preview need a portal, and a name is not worth
-   that. */
+   scannable, and `help` because "what does this card actually do" is the
+   reason to hover one: hovering shows the whole card (EventLog.tsx's
+   `LogCardName`), portalled like the board's, since the log is a scroll box
+   inside a popup. */
 .event-log .ev-card {
   font-weight: 700;
   color: var(--text);
@@ -2267,6 +2265,11 @@
    off screen. */
 .mini-tile-popover {
   --card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
+}
+/* The history's card preview opens over the history popup (130), which the
+   board's own preview sits under on purpose. */
+.mini-tile-popover.over-history {
+  z-index: 140;
 }
 .mini-tile-popover .card-tile {
   --ct-scale: calc(var(--card-w) / var(--card-w-max));

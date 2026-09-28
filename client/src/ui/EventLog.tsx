@@ -1,13 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CardDefinition, GameEvent } from 'engine/client'
-import { describeEvent, isDetailOnlyEvent, type NameOf } from '../format.ts'
+import { createPortal } from 'react-dom'
+import type { CardDefinition, GameEvent, ObjectId } from 'engine/client'
+import { describeEvent, isDetailOnlyEvent } from '../format.ts'
 import { requestCards, useCardData } from '../cards/cardData.ts'
+import { CardTile } from './CardTile.tsx'
+import { defToVisible } from './defToVisible.ts'
+import { useHoverPopover } from './useHoverPopover.ts'
 
 type CardLookup = (name: string) => CardDefinition | null | undefined
 
+/** What to call object `id` in the line for event `seq` — the name it was
+ * known by then (`publicNameAt`), so a line keeps its card's name after the
+ * card goes somewhere hidden. */
+export type NameAt = (id: ObjectId, seq: number) => string
+
 export interface EventLogProps {
   readonly events: readonly GameEvent[]
-  readonly nameOf: NameOf
+  readonly nameAt: NameAt
 }
 
 /**
@@ -24,37 +33,59 @@ export interface EventLogProps {
 const MARK_START = '\u0001'
 const MARK_END = '\u0002'
 
-/** What a card's name shows on hover — the answer to "what does this do?".
- * Just the name until its definition has loaded (see `EventText`). */
-function cardTooltip(name: string, def: CardDefinition | null | undefined): string {
-  if (!def) return name
-  const typeLine = [
-    ...(def.supertypes ?? []),
-    ...def.types,
-    ...(def.subtypes.length > 0 ? ['—', ...def.subtypes] : []),
-  ].join(' ')
-  const pt = def.power !== null && def.toughness !== null ? `\n${def.power}/${def.toughness}` : ''
-  return [name, def.manaCost ?? '', typeLine].filter((s) => s.length > 0).join(' · ') +
-    pt +
-    (def.text.length > 0 ? `\n\n${def.text}` : '')
+/**
+ * A card name in a log line, which shows the whole card on hover or focus,
+ * portalled out of the log's scroll box the way the board's previews are
+ * (`useHoverPopover`). The definition is fetched the first time the pointer
+ * reaches the name rather than for every name the log holds; a name that
+ * isn't a card (an object nobody could see) is just bold text.
+ */
+function LogCardName({ name, lookup }: { readonly name: string; readonly lookup: CardLookup }) {
+  const def = lookup(name)
+  const { wrapRef, popoverRef, open, handlers } = useHoverPopover<HTMLElement>(def)
+  const load = () => requestCards([name])
+  return (
+    <strong
+      className="ev-card"
+      ref={wrapRef}
+      tabIndex={0}
+      {...handlers}
+      onMouseEnter={() => {
+        load()
+        handlers.onMouseEnter()
+      }}
+      onFocus={() => {
+        load()
+        handlers.onFocus()
+      }}
+    >
+      {name}
+      {open && def
+        ? createPortal(
+            <div className="mini-tile-popover over-history" ref={popoverRef}>
+              <CardTile obj={defToVisible(def)} />
+            </div>,
+            document.body,
+          )
+        : null}
+    </strong>
+  )
 }
 
-/** One event's sentence, with its card names as hoverable bold runs. A
- * name's definition, which its tooltip is made of, is fetched the first time
- * the pointer reaches it, rather than for every name the log holds. */
+/** One event's sentence, with its card names as hoverable bold runs. */
 function EventText({
   event,
-  nameOf,
+  nameAt,
   lookup,
 }: {
   readonly event: GameEvent
-  readonly nameOf: NameOf
+  readonly nameAt: NameAt
   readonly lookup: CardLookup
 }) {
-  const marked = describeEvent(event, (id) => `${MARK_START}${nameOf(id)}${MARK_END}`)
+  const marked = describeEvent(event, (id) => `${MARK_START}${nameAt(id, event.seq)}${MARK_END}`)
   // Odd indices are the marked names — `split` on a single-char delimiter
   // pair alternates plain/marked as long as marks never nest, which they
-  // can't: `nameOf` is a leaf substitution.
+  // can't: the name is a leaf substitution.
   const parts = marked.split(MARK_START).flatMap((chunk, i) => {
     if (i === 0) return [{ text: chunk, card: false }]
     const [name, ...rest] = chunk.split(MARK_END)
@@ -67,14 +98,7 @@ function EventText({
     <span className="ev-text">
       {parts.map((part, i) =>
         part.text.length === 0 ? null : part.card ? (
-          <strong
-            key={i}
-            className="ev-card"
-            title={cardTooltip(part.text, lookup(part.text))}
-            onPointerEnter={() => requestCards([part.text])}
-          >
-            {part.text}
-          </strong>
+          <LogCardName key={i} name={part.text} lookup={lookup} />
         ) : (
           <span key={i}>{part.text}</span>
         ),
@@ -93,7 +117,7 @@ function EventText({
  * The choice is per-session rather than persisted — it's a debugging mode,
  * and the useful default is the one you get on every fresh visit.
  */
-export function EventLog({ events, nameOf }: EventLogProps) {
+export function EventLog({ events, nameAt }: EventLogProps) {
   const boxRef = useRef<HTMLDivElement>(null)
   const [detailed, setDetailed] = useState(false)
   const lookup = useCardData()
@@ -133,7 +157,7 @@ export function EventLog({ events, nameOf }: EventLogProps) {
         {shown.map((event) => (
           <li key={event.seq} className={`ev ev-${event.type}`}>
             <span className="ev-seq">{event.seq}</span>
-            <EventText event={event} nameOf={nameOf} lookup={lookup} />
+            <EventText event={event} nameAt={nameAt} lookup={lookup} />
           </li>
         ))}
       </ul>

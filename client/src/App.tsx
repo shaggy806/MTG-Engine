@@ -23,6 +23,7 @@ import {
   describeTargetSpec,
   distinctTargetCount,
   isOptionalSpec,
+  publicNameAt,
   slotOptions,
   standardAssignment,
 } from 'engine/client'
@@ -642,7 +643,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
                 Close
               </button>
             </div>
-            <EventLog events={view.events} nameOf={game.nameOf} />
+            <EventLog
+              events={view.events}
+              nameAt={(id, seq) => publicNameAt(view.publicStints, id, seq) ?? game.nameOf(id)}
+            />
           </div>
         </div>
       ) : null}

@@ -137,19 +137,14 @@ that one card is the reason the deck exists.
   Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
-- **An O-Ring's exile doesn't end when its owner leaves the game.** Seen live: a bot died
-  while controlling Banishing Light, and the creature it had exiled stayed in exile. Under
-  800.4a the Banishing Light leaves the game with its owner. That counts as leaving the
-  battlefield, so the "until ~ leaves the battlefield" exile ends (610.3) and the card
-  returns to the battlefield under its owner's control. `leaveGame` leaves the departed
-  player's permanents where they are, so the `exiledBy` return never fires.
 - **Dividing among targets.** "Any number of target …" is built (the `any-number` group), but
   "N damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka), "distribute
   N counters among" (Lathiel) and Fireball's "divided evenly" (still authored single-target)
   aren't, nor is Strive. See `neededCards-features.md`, "Unbounded targeting".
-- **A cascaded spell's targets are picked for the player.** `castCardWithoutPaying` takes the
-  first legal target of each slot for a cascade cast (and one member of an "any number of"
-  group), where rule 702.85a has the caster choose.
+- **Cascade always casts what it finds.** Rule 702.85a says "you may cast it", but the cascade
+  step in `game.ts` casts the hit whenever it can (its targets are the caster's to choose, since
+  2026-09-27). Declining would put it on the bottom with the rest. Needs a yes/no decision before
+  the cast.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
@@ -245,6 +240,11 @@ Beyond that plan:
   offers all of one type per type, and a count picker would let the player choose any split.
   And when the payer taps such a source for more than a payment needs, the player can't choose
   the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
+- **Declaring attackers makes you pick the defender when there's only one.** In a 2-player
+  game the opponent is the only possible defender unless they control a planeswalker, yet each
+  attacker still has to be clicked and then sent at them (`attackPicks` → `canSendPicksAt` in
+  `client/src/App.tsx`). When an attacker's `defendersFor` has one entry, selecting it should
+  assign it there directly.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
@@ -296,8 +296,3 @@ Beyond that plan:
 - **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
   (430 files, 3,979 tests, about 100 s) and check what it actually guards. Unscoped: what the
   audit looks for and what it produces.
-- **Small known slips.** Geode Rager targets an opponent where its text says "target player".
-  `effects.ts` cites Encore as 702.140 (it's 702.141). Rin and Seri's and Urtet's `otherOnly`
-  flags are redundant now, and their comments out of date. `TriggerWho` `"opponent"` is always
-  false on a trigger about an object (no pool card uses it). `card:parse-check` reports four
-  keyword disagreements (Harvesttide Assailant and Infiltrator, Sokka, Stonecoil Serpent).
