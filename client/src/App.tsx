@@ -1906,7 +1906,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // --- keyboard ----------------------------------------------------
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === ' ' && mode === 'priority') {
+      // Typing in a text field (the capture panel's note, a bug report) is
+      // text, not a pass.
+      const t = e.target
+      const typing =
+        t instanceof HTMLElement &&
+        (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable)
+      if (e.key === ' ' && mode === 'priority' && !typing) {
         e.preventDefault()
         pass()
       } else if (e.key === 'Escape') {
