@@ -6,29 +6,30 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**310 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**314 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, no engine work: none left.** Every commander the gaps JSON marked
-  ready was authored on 2026-09-24 (`test/commanders-ready-*.test.ts`). Each one left needs at
-  least one feature; start from the greedy order below.
+- **Ready to author, by the gaps JSON (check each against its Oracle text first):** Zinnia,
+  Valley's Voice; Wolverine, Best There Is; Tannuk, Steadfast Second; Astarion, the Decadent.
+  Zinnia and Tannuk became ready when Offspring and Warp, both built 2026-09-28, went into its
+  `built` list (2026-09-28 audit).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own` (+3), `keyword:toxic` (+1),
-  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `keyword:mobilize` (+2), `zone:visibility-extensions` (+1), `zone:cast-cards-you-dont-own`
+  (+3), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
   `zone:cast-from-library-top` (+2), `zone:play-from-exile-with-counter` (+2),
-  `trigger:discards-extensions` (+1), `effect:token-copy-options` (+1), `keyword:connive` (+2).
-- **Most-needed features overall.** `zone:visibility-extensions` (13),
-  `effect:copy-spell-extensions` (11) and `effect:copy-permanent-spell` (10). Live numbers come
+  `trigger:discards-extensions` (+1), `effect:token-copy-options` (+1).
+- **Most-needed features overall.** `zone:visibility-extensions` and
+  `effect:may-sacrifice-then` (13 each), `decision:copy-new-targets` (12),
+  `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each). Live numbers come
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11) and `effect:cast-during-resolution` (10),
-  `decision:free-cast-choices` (9), `effect:attach-extensions` and
-  `effect:modal-ability-targeted-modes` (7 each).
+  `decision:free-cast-choices` (9), `effect:attach-extensions` (7).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`), and so does Hero of Bladehold. Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
@@ -44,7 +45,7 @@ that one card is the reason the deck exists.
   your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
   Faces (Embalm through its Clone ability).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,464 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,479 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
@@ -79,7 +80,7 @@ that one card is the reason the deck exists.
 - **Host-trigger cards, 34 left** (the equipped/enchanted-creature triggers are built): each is
   blocked by something shared with other cards — a static "is goaded", "return this card" after
   its host died, per-event "deals damage", per-mode targets on a modal trigger, free casts during
-  resolution, tokens entering tapped and attacking, living weapon. See `neededCards-features.md`,
+  resolution, living weapon (tokens entering tapped and attacking are built). See `neededCards-features.md`,
   "Host triggers".
 
 - **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
@@ -106,13 +107,15 @@ that one card is the reason the deck exists.
     `effect:add-mana-extensions` and `bug:as-enters-choices-any-entry` (10 each).
   - The rest of the backlog is untriaged: 62 commanders and 1,006 cards, the lists' unmarked
     entries past those batches. The scaffolder can't finish any of them on its own.
-- **The limitation ledger.** Protection from a filter (19 cards) is the largest remaining gap.
-  Then the "put into a graveyard from anywhere" trigger, "as this enters" on a non-cast
+- **The limitation ledger.** Protection from a filter is built (2026-09-21); what its "19 cards"
+  still hides is protection *granted* by an effect with a duration (Akroma's Will, Mother of
+  Runes), protection from a chosen colour, and player protection (The One Ring, Teferi's
+  Protection). Beyond it: the "put into a graveyard from anywhere" trigger, "as this enters" on a non-cast
   permanent, and discard as an ability cost (regeneration is built, 2026-09-28). See `neededCards-features.md`, "The
   limitation ledger", and `cards/AUTHORING.md` §15.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
-  one-off requests. 48 of its cards are still missing, and 7 of those aren't in the top-5000
+  one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
 - **Precon stand-ins.** 42 cards in the five starter decks still play as substitutes. The
@@ -166,9 +169,9 @@ that one card is the reason the deck exists.
 - **`sacrifice-all-but` always keeps the most it may.** "Choose up to N, then sacrifice the rest"
   never lets the player keep fewer (to sacrifice more for death triggers). The `choose-permanents`
   decision could ask it.
-- **Token stacks in combat.** Splitting one stack across attackers or blockers is not built,
-  and neither is choosing which of a stack proliferate touches. See
-  `docs/plans/token-stack-choices.md`.
+- **Proliferate over a token stack.** A stack is one proliferate entry and every member gets the
+  counter; choosing some of them isn't built. (Splitting a stack across attackers or blockers is,
+  since 2026-09-28.) See `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
 - **Kardur, Doomscourge forces attacks at players only.** The rulings say the affected creatures

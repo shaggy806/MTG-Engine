@@ -3,8 +3,8 @@
 **Status:** in progress (2026-09-22). Requested by the user: "when we need to
 select multiple creatures out of a token stack, can we get a menu to do so?
 Similar to how we activate abilities". **Sacrifice is built**, engine and
-client, and checked live in the browser, and so are **tap costs** and
-**convoke**; combat is not. The counting and whole-stack fixes it builds on are done (see below).
+client, and checked live in the browser, and so are **tap costs**,
+**convoke**, and **attack and block splitting** (2026-09-28); only proliferate is left. The counting and whole-stack fixes it builds on are done (see below).
 
 ## Background
 
@@ -44,7 +44,7 @@ Found by the review of the counting fix (a sweep by code and by card):
 |---|---|
 | ~~Sacrifice N (`promptNextSacrifice` → `sacrifice` decision): Necrotic Hex, Fleshbag Marauder with N > 1~~ | **Built.** The offer used to list the stack once while `count` demanded more picks than there were entries, so no answer was accepted and the game stalled. |
 | ~~"Choose up to N, sacrifice the rest" (`sacrificeAllBut`): Archfiend of Depravity~~ | **Built**, as the same decision. |
-| Declare attackers / blockers (`materializeStack`) | A stack always attacks or blocks as a whole (up to `MAX_MATERIALIZED`). It can't hold some back or split them across attackers. |
+| ~~Declare attackers / blockers (`materializeStack`)~~ | **Built** (2026-09-28), with a `count` on each declaration rather than a repeated id — see below. |
 | ~~Convoke (`convokeCandidates`)~~ | **Built.** A stack was one candidate, so it could pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens got one. |
 | ~~"Tap N untapped creatures" costs (`tapOthersCandidates`): Gravespawn Sovereign, Selesnya Evangel, Sephara's alternative cost~~ | **Built.** They were counted and tapped as objects, and picked for the player (`.slice(0, count)`), which was also an AUTHORING §0 problem. |
 | Proliferate (`proliferateTargets`) | A stack is one entry and gets the counter on every member. Harmless for the player, since you'd normally want all of them, but not a choice. |
@@ -151,3 +151,14 @@ named once per token in `Action.convoke`. Three things differ from tap costs:
 Stacks larger than `MAX_MATERIALIZED` stay partly compacted in combat, which
 is the existing resource-safety cap. A stack past that size that's granted an
 activated ability isn't woken at all.
+
+## What combat shipped
+
+A different shape from the proposal: `AttackerDeclaration` and `BlockerDeclaration` take an
+optional `count` (`combat/stack-counts.ts`) instead of naming a stack id once per token, because
+naming it once already meant "the whole stack" and every existing driver relied on that. An
+entry without a count is still the whole stack; several entries may name one stack when each has
+a count. `materializeStack` wakes exactly that many. The client expands a stack into one member
+id per token while a declaration is built (`game/stackMembers.ts`), so its per-tile click and
+count-row logic (`game/attackGroups.ts`, `game/blockGroups.ts`) covers engine stacks and
+board-folded tokens alike, and folds the members back into counted entries on Confirm.

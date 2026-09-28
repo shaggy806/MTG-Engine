@@ -375,23 +375,23 @@ nothing in the repo distinguished them.
 | limitation | blocked | best rank | ≤100 | ≤500 |
 | --- | ---: | ---: | ---: | ---: |
 | **mana provenance** (all three shapes) | 21 | **14** | 1 | 7 |
-| **protection from [filter]** | 19 | **92** | 1 | 4 |
+| ~~protection from [filter]~~ *(the filter half built 2026-09-21; granted, chosen-colour and player protection still open)* | 19 | 92 | 1 | 4 |
 | ~~unbounded targeting~~ *(built 2026-09-26 — see above)* | 9 | 544 | 0 | 0 |
 | ~~regeneration~~ *(built 2026-09-28 — Mortivore)* | 7 | 705 | 0 | 0 |
-| Station | 7 | 951 | 0 | 0 |
+| ~~Station~~ *(built — Hearthhull, the Worldseed)* | 7 | 951 | 0 | 0 |
 | "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |
 | "as this enters" on a non-cast permanent | 5 | 132 | 0 | 1 |
 | discard-a-card as an ability cost | 5 | 834 | 0 | 0 |
 | damage doubling (a replacement) | 4 | 794 | 0 | 0 |
 | another player's graveyard → hand | 4 | 620 | 0 | 0 |
 | Hideaway | 3 | 195 | 0 | 1 |
-| Offspring | 3 | 793 | 0 | 0 |
-| Warp | 3 | 1387 | 0 | 0 |
+| ~~Offspring~~ *(built 2026-09-28)* | 3 | 793 | 0 | 0 |
+| ~~Warp~~ *(built 2026-09-28)* | 3 | 1387 | 0 | 0 |
 | phasing | 3 | 575 | 0 | 0 |
 | snow sources | 3 | 445 | 0 | 1 |
 | multikicker | 2 | 254 | 0 | 1 |
 | plays-a-land trigger | 1 | 899 | 0 | 0 |
-| Bestow / Eternalize / Coven / Raid | 1 each | 697+ | 0 | 0 |
+| Bestow / ~~Eternalize~~ *(built 2026-09-28)* / Coven / Raid | 1 each | 697+ | 0 | 0 |
 | retrace / riot / Prototype | **0** | — | 0 | 0 |
 
 Retrace, riot and Prototype gate **nothing** in the top 2000 — they are in §15
@@ -408,14 +408,14 @@ reaches it. Keep it, and give the first card that uses one a close rules
 review. The pieces marked **untested** have no unit test either, so nothing
 has ever run them.
 
-- **Effect kinds:** `prohibit` (for Sen Triplets and Koma, Cosmos Serpent),
-  `day-night` ("it becomes night"; **untested**), `gain-control-all` (for
-  Dihada, Binder of Wills and Tevesh Szat) and `cant-be-sacrificed` (for Jon
-  Irenicus, Shattered One).
-- **Trigger kinds:** `attacks-player`, and the `predicate` escape hatch
-  (**untested**).
+- **Effect kinds:** `day-night` ("it becomes night"; **untested**) and
+  `gain-control-all` (for Dihada, Binder of Wills and Tevesh Szat).
+- **Trigger kinds:** the `predicate` escape hatch (**untested**).
 - **Static conditions:** `source-greatest`, `player-counters`.
-- **Static-ability fields:** `canBlockOnly`, `castAsThoughFlash`.
+- **Static-ability fields:** `canBlockOnly`.
+
+(Rechecked 2026-09-28: `prohibit`, `cant-be-sacrificed`, `attacks-player` —
+Soaring Lightbringer — and `castAsThoughFlash` now have cards using them.)
 - **Filter clauses:** `notColors`, `notName`, `sharesCardTypeWith`, and five
   of the card-property clauses built beside Raggadragga's and Duskana's:
   `hasAbilities` (Jasmine Boreal of the Seven), `xInManaCost` (Zaxara,
