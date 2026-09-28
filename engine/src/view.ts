@@ -36,6 +36,7 @@ import type {
   ZoneType,
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
+import { goadersOf } from "./goad.js";
 import { activePlayerOf, faceName, nameOf, printedCardName } from "./state.js";
 import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
@@ -180,6 +181,14 @@ export interface VisibleObject {
   readonly attachedTo: ObjectId | null;
   /** Is this its owner's designated commander (rule 903)? */
   readonly isCommander: boolean;
+  /** Every player who has goaded this creature (rule 701.15), however —
+   * a one-shot goad, one for the rest of the game, or a static one (`goad.ts`'s
+   * `goadersOf`). Empty off the battlefield or when it isn't goaded. A
+   * designation, not an ability, so nothing else in the view shows it. */
+  readonly goadedBy: readonly PlayerId[];
+  /** Suspected (rule 701.60). Its menace and can't-block already show among
+   * `keywords` and `restrictions`; this is the designation itself. */
+  readonly suspected: boolean;
 }
 
 export interface PlayerView {
@@ -229,7 +238,8 @@ export interface PlayerView {
   /** The monarch (rule 720 — ROADMAP Phase 10), or `null`. */
   readonly monarch: PlayerId | null;
   /** Emblems in the game (rule 114 — ROADMAP Phase 10), owner + text only. */
-  readonly emblems: readonly { readonly owner: PlayerId; readonly text: string }[];
+  /** `source` is the name of the card that created the emblem, or `null`. */
+  readonly emblems: readonly { readonly owner: PlayerId; readonly text: string; readonly source: string | null }[];
   readonly events: readonly GameEvent[];
 }
 
@@ -394,6 +404,8 @@ function visible(
     foretold: object.foretold ?? false,
     attachedTo: object.attachedTo,
     isCommander: object.isCommander,
+    goadedBy: [...goadersOf(state, registry, id)],
+    suspected: object.zone === "battlefield" && object.suspectedAt !== undefined,
   };
 }
 
@@ -543,7 +555,7 @@ function viewForUncached(
     revealedLibraryTop,
     dayNight: state.dayNight,
     monarch: state.monarch,
-    emblems: state.emblems.map((e) => ({ owner: e.owner, text: e.text })),
+    emblems: state.emblems.map((e) => ({ owner: e.owner, text: e.text, source: e.sourceName ?? null })),
     events: state.eventLog,
   };
 }

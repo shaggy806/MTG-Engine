@@ -178,13 +178,6 @@
   font-size: 12px;
   color: #9fb8e6;
 }
-.pp-emblems {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--muted);
-}
 .turn-banner.seat-a .turn-banner-player {
   color: var(--seat-a);
 }
@@ -1648,7 +1641,7 @@
    same-specificity conflict regardless of what's declared here. */
 .ct-pt,
 .ct-loyalty,
-.card-flag,
+.card-flags,
 .card-badge,
 .mt-kw,
 .mt-badge {
@@ -1979,16 +1972,40 @@
   color: #8be0a8;
 }
 
-.card-flag.sick {
+/* Summoning sickness and the designations a tile has no other way to show
+   (ui/CardFlags.tsx), in a row along the bottom-left corner. Capped short of
+   the P/T badge in the bottom-right, and wrapping upward rather than into it. */
+.card-flags {
   position: absolute;
   left: 4px;
   bottom: 3px;
+  max-width: 60%;
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: 2px;
+}
+.card-flag {
   font-size: 8px;
   font-weight: 700;
+  line-height: 1.35;
   color: #0b0e14;
   background: #cfcfcf;
   border-radius: 3px;
   padding: 0 3px;
+  white-space: nowrap;
+}
+/* A battlefield tile is too narrow for a row beside its P/T badge, so there
+   the chips stack up the left edge instead. */
+.mini-tile .card-flags {
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+.card-flag.goad {
+  background: var(--goader, #e0775b);
+}
+.card-flag.suspect {
+  background: #b89be0;
 }
 /* Sits in the art box's top-left corner (CardTile renders it inside .ct-art),
    scaled with the card like everything else on its face. */

@@ -60,8 +60,10 @@ describe("suspect (rule 701.60)", () => {
     const elves = spawn(game, "Llanowar Elves", B);
     const giant = spawn(game, "Hill Giant", A);
     expect(menace(game, bears)).toBe(false);
+    expect(game.viewFor(A).objects[bears].suspected).toBe(false);
     suspect(game, bears);
     expect(suspected(game, bears)).toBe(true);
+    expect(game.viewFor(A).objects[bears].suspected).toBe(true);
     expect(menace(game, bears)).toBe(true);
     expect(cantBlock(game, bears)).toBe(true);
 

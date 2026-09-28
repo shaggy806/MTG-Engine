@@ -76,6 +76,14 @@ describe("goading a target creature", () => {
     expect(offer.defendersFor[bears]).toEqual([C]);
   });
 
+  it("every seat's view names the goader, so a client can show the designation", () => {
+    const { game } = setUp([A, B, C]);
+    const bears = spawn(game, "Grizzly Bears", B);
+    expect(game.viewFor(C).objects[bears].goadedBy).toEqual([]);
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [obj(bears)]);
+    for (const seat of [A, B, C]) expect(game.viewFor(seat).objects[bears].goadedBy).toEqual([A]);
+  });
+
   it("goading it again adds nothing (rule 701.15d)", () => {
     const { game } = setUp();
     const bears = spawn(game, "Grizzly Bears", B);

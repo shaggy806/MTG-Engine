@@ -12529,8 +12529,10 @@ export class Game {
       addPlayerCounters: (player, counter, amount) =>
         this.changePlayerCounters(player, counter, amount),
       playerCountersOf: (player, counter) => this.state.players[player]?.counters[counter] ?? 0,
-      createEmblem: (text, staticAbility) =>
-        this.createEmblem(controller, text, staticAbility ?? null),
+      createEmblem: (text, staticAbility) => {
+        const from = this.state.objects[source];
+        this.createEmblem(controller, text, staticAbility ?? null, from === undefined ? undefined : nameOf(from));
+      },
       preventAllCombatDamage: () => {
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
@@ -17542,12 +17544,14 @@ export class Game {
     owner: PlayerId,
     text: string,
     staticAbility: StaticAbility | null,
+    sourceName: string | undefined,
   ): void {
     this.state.timestampSeq += 1;
     this.state.emblems.push({
       id: `emblem-${this.state.emblems.length + 1}`,
       owner,
       text,
+      ...(sourceName !== undefined ? { sourceName } : {}),
       timestamp: this.state.timestampSeq,
       static: staticAbility,
     });

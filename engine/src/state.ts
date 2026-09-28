@@ -2011,6 +2011,10 @@ export interface EmblemState {
   readonly id: string;
   readonly owner: PlayerId;
   readonly text: string;
+  /** The name of the card whose effect created it ("Elspeth, Knight-Errant"),
+   * for a player reading their emblems. `undefined` in a state saved before
+   * it was recorded. */
+  readonly sourceName?: string;
   /** Timestamp (rule 613.7) for ordering this emblem's anthem among others. */
   readonly timestamp: number;
   readonly static: StaticAbility | null;

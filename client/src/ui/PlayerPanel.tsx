@@ -26,12 +26,13 @@ export interface PlayerPanelProps {
   readonly wentFirst?: boolean
   /** This player is the monarch (rule 720). */
   readonly isMonarch?: boolean
-  /** Rules text of this player's emblems (rule 114), if any. */
-  readonly emblemTexts?: readonly string[]
+  /** How many emblems (rule 114) this player has. */
+  readonly emblemCount?: number
   /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
   readonly onOpenGraveyard?: () => void
   readonly onOpenExile?: () => void
   readonly onOpenHand?: () => void
+  readonly onOpenEmblems?: () => void
   readonly targetable?: boolean
   /** Picked in a decision still being built (a proliferate's players). */
   readonly selected?: boolean
@@ -72,10 +73,11 @@ export function PlayerPanel({
   exileSize = 0,
   wentFirst = false,
   isMonarch = false,
-  emblemTexts = [],
+  emblemCount = 0,
   onOpenGraveyard,
   onOpenExile,
   onOpenHand,
+  onOpenEmblems,
   targetable = false,
   selected = false,
   aimedBy = null,
@@ -193,6 +195,22 @@ export function PlayerPanel({
         >
           exile {exileSize}
         </button>
+        {/* Only once there's one: most games never make an emblem, and the
+            row has no room for a zone that's always empty. */}
+        {emblemCount > 0 ? (
+          <button
+            type="button"
+            className="pp-zone-link"
+            title="Emblems (rule 114)"
+            disabled={!onOpenEmblems}
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenEmblems?.()
+            }}
+          >
+            emblems {emblemCount}
+          </button>
+        ) : null}
         <span>
           lands {info.landsPlayedThisTurn}/{info.maxLandsThisTurn}
         </span>
@@ -200,13 +218,6 @@ export function PlayerPanel({
       {mana ? (
         <div className="pp-mana" title="Mana pool">
           <Symbols text={mana} />
-        </div>
-      ) : null}
-      {emblemTexts.length > 0 ? (
-        <div className="pp-emblems" title="Emblems (rule 114)">
-          {emblemTexts.map((t, i) => (
-            <span key={i}>🎗 {t}</span>
-          ))}
         </div>
       ) : null}
       {info.hasLost ? <div className="pp-lost">{info.lossReason}</div> : null}

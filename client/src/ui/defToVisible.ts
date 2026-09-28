@@ -57,5 +57,65 @@ export function defToVisible(def: CardDefinition, art?: string | null): VisibleO
     foretold: false,
     attachedTo: null,
     isCommander: def.supertypes.includes('legendary'),
+    goadedBy: [],
+    suspected: false,
+  }
+}
+
+/**
+ * An emblem (rule 114) as a card the zone viewer can draw. Emblems aren't
+ * objects, so the view lists them by owner and text; this dresses one up the
+ * way a printed emblem looks: titled "Emblem — <source>", with the source
+ * card's art (looked up by its name) and the emblem's text. `index` only has
+ * to be unique among the emblems shown.
+ */
+export function emblemToVisible(
+  emblem: { readonly owner: PlayerId; readonly text: string; readonly source: string | null },
+  index: number,
+): VisibleObject {
+  const face = emblem.source ?? 'Emblem'
+  return {
+    id: `emblem-${index}` as ObjectId,
+    cardName: face,
+    copyOf: null,
+    // The source card's name, so the art lookup finds its illustration.
+    faceName: face,
+    name: emblem.source === null ? 'Emblem' : `Emblem — ${emblem.source}`,
+    faces: null,
+    art: null,
+    faceIsBack: false,
+    owner: emblem.owner,
+    controller: emblem.owner,
+    zone: 'command',
+    manaCost: null,
+    text: emblem.text,
+    types: [],
+    subtypes: [],
+    power: null,
+    toughness: null,
+    loyalty: null,
+    keywords: [],
+    restrictions: [],
+    colors: [],
+    tapped: false,
+    damageMarked: 0,
+    counters: {},
+    summoningSick: false,
+    attacking: null,
+    blocking: null,
+    kind: 'card',
+    sourceObjectId: null,
+    abilityIndex: null,
+    targets: null,
+    xValue: null,
+    isToken: false,
+    stackCount: null,
+    isCopy: false,
+    suspended: false,
+    foretold: false,
+    attachedTo: null,
+    isCommander: false,
+    goadedBy: [],
+    suspected: false,
   }
 }

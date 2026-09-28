@@ -59,6 +59,7 @@ import { EventLog } from './ui/EventLog.tsx'
 import { CapturePanel } from './ui/CapturePanel.tsx'
 import { BotSpeedControl } from './ui/BotSpeedControl.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
+import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
@@ -826,6 +827,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [zoneView, setZoneView] = useState<{
     readonly title: string
     readonly ids: readonly ObjectId[]
+    /** Draws what isn't in `view.objects` (emblems); the view's objects otherwise. */
+    readonly resolve?: (id: ObjectId) => VisibleObject | undefined
   } | null>(null)
   // A forced-decision popup (choose-from-zone, scry/surveil, the creature-type
   // picker) hidden via its "View board" button so the board can be read before
@@ -2084,6 +2087,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
     // Any of the permanents the tile stands for (a folded land stack).
     const aimedBy = aim !== null && ids.some((i) => aim.objects.has(i)) ? aim.by : null
+    const goaders = obj.goadedBy
+      .filter((p) => view.turnOrder.includes(p))
+      .map((p) => ({ seat: seatClassOf(view.turnOrder, p), name: playerLabel(p, game.seats) }))
     if (opts.mini) {
       return (
         <MiniTile
@@ -2096,6 +2102,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           stackCount={opts.stackCount ?? null}
           attackSeat={attackSeat}
           aimedBy={aimedBy}
+          goaders={goaders}
           onClick={() => clickPermanent(ids)}
         />
       )
@@ -2111,6 +2118,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         stackCount={opts.stackCount ?? null}
         attackSeat={attackSeat}
         aimedBy={aimedBy}
+        goaders={goaders}
         onClick={() => clickPermanent(ids)}
       />
     )
@@ -3411,7 +3419,16 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       exileSize={exileOf(pid).length}
       wentFirst={pid === view.startingPlayer}
       isMonarch={view.monarch === pid}
-      emblemTexts={view.emblems.filter((e) => e.owner === pid).map((e) => e.text)}
+      emblemCount={view.emblems.filter((e) => e.owner === pid).length}
+      onOpenEmblems={() => {
+        const cards = view.emblems.flatMap((e, i) => (e.owner === pid ? [emblemToVisible(e, i)] : []))
+        const byId = new Map(cards.map((c) => [c.id, c]))
+        setZoneView({
+          title: `${playerLabel(pid, game.seats)}'s emblems`,
+          ids: cards.map((c) => c.id),
+          resolve: (id) => byId.get(id),
+        })
+      }}
       onOpenGraveyard={() =>
         openZone(`${playerLabel(pid, game.seats)}'s graveyard`, view.zones.graveyards[pid] ?? [])
       }
@@ -3875,7 +3892,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         <ZoneViewer
           title={zoneView.title}
           ids={zoneView.ids}
-          resolve={(id) => view.objects[id]}
+          resolve={zoneView.resolve ?? ((id) => view.objects[id])}
           onClose={() => setZoneView(null)}
           castable={{
             // Flashback/escape/… casts from the graveyard (Phase 6), plus a

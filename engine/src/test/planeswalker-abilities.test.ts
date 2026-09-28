@@ -148,6 +148,10 @@ describe("EG-5 — an emblem outlives its planeswalker", () => {
     game.dispatch({ type: "activate-ability", player: A, source: elspeth, abilityIndex: 2 });
     game.advanceUntil(settled);
     expect(pt(game, bear)).toEqual([4, 4]);
+    // The view names the card that made it, for the emblem viewer.
+    expect(game.viewFor(B).emblems).toEqual([
+      { owner: A, text: expect.any(String), source: "Elspeth, Sun's Champion" },
+    ]);
 
     removeFromBattlefield(game, elspeth);
     expect(pt(game, bear)).toEqual([4, 4]); // the emblem is not a permanent

@@ -245,22 +245,8 @@ Beyond that plan:
   offers all of one type per type, and a count picker would let the player choose any split.
   And when the payer taps such a source for more than a payment needs, the player can't choose
   the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
-- **Goaded and suspected aren't shown.** A goaded or suspected creature looks like any other;
-  only the menace and can't-block that suspect gives appear. Both are designations the view could
-  carry as a badge.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
-- **Player designations as a viewable zone.** Emblems are listed as text lines under the
-  player panel today. Give them (and, once modeled, the Ring and the Initiative/dungeon) a zone
-  button on the player banner that opens a viewer, the way graveyard and exile do. The monarch
-  keeps its 👑 beside the player's name (`PlayerPanel`'s `pp-monarch`, checked in 2- and
-  4-player rooms).
-- **The library can't reverse its sort.** Name, mana value, colour and popularity each sort
-  one way only (`client/src/library/LibraryPage.tsx`'s `sort`); an ascending/descending toggle
-  beside the sort picker would show the priciest or least-played cards first.
-- **The library's last row looks like the end of the pool.** A page is a fixed `PAGE_SIZE` (60)
-  cards (`client/src/library/LibraryPage.tsx`), so depending on the screen width the final row
-  of loaded cards comes up short of the others, and the gallery reads as if it ends there.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing

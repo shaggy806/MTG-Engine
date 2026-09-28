@@ -4,6 +4,8 @@ import { LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import { TargetedMark } from './TargetedMark.tsx'
+import { CardFlags } from './CardFlags.tsx'
+import type { Goader } from './CardFlags.tsx'
 import {
   isArtBlocked,
   isArtPending,
@@ -38,6 +40,8 @@ export interface CardTileProps {
   /** What on the stack targets this card (a spell a counterspell is aimed
    * at), or null: a red frame and a reticle over the art. */
   readonly aimedBy?: string | null
+  /** Who has goaded it (`CardFlags`), each with their seat colour. */
+  readonly goaders?: readonly Goader[]
   /** 'title' (default): a name+cost bar above the art, like a real card's
    * frame -- used everywhere except the hand. 'art-first': cost pips
    * overlaid on the art itself, with the name below it instead -- the
@@ -123,6 +127,7 @@ export function CardTile({
   stackCount = null,
   attackSeat = null,
   aimedBy = null,
+  goaders = [],
   layout = 'title',
   onClick,
 }: CardTileProps) {
@@ -321,9 +326,7 @@ export function CardTile({
       {stackCount !== null && stackCount > 1 ? (
         <span className="card-stack">×{stackCount}</span>
       ) : null}
-      {obj.summoningSick && isCreature ? (
-        <span className="card-flag sick">sick</span>
-      ) : null}
+      <CardFlags obj={obj} goaders={goaders} compact={false} />
       {obj.tapped && TAP_ICON_URL ? (
         <img className="tap-icon" src={TAP_ICON_URL} alt="" />
       ) : null}

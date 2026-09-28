@@ -8,6 +8,8 @@ import { cardTint } from './symbols.ts'
 import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
 import { TargetedMark } from './TargetedMark.tsx'
+import { CardFlags } from './CardFlags.tsx'
+import type { Goader } from './CardFlags.tsx'
 import {
   isArtBlocked,
   isArtPending,
@@ -37,6 +39,8 @@ export interface MiniTileProps {
   /** What on the stack targets this permanent (`Table`'s `aim`), or null:
    * a red frame and a reticle over the art. */
   readonly aimedBy?: string | null
+  /** Who has goaded it (`CardFlags`), each with their seat colour. */
+  readonly goaders?: readonly Goader[]
   readonly onClick?: () => void
 }
 
@@ -65,6 +69,7 @@ export function MiniTile({
   stackCount = null,
   attackSeat = null,
   aimedBy = null,
+  goaders = [],
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
@@ -159,7 +164,7 @@ export function MiniTile({
           {stackCount !== null && stackCount > 1 ? (
             <span className="card-stack">×{stackCount}</span>
           ) : null}
-          {obj.summoningSick && isCreature ? <span className="card-flag sick">Z</span> : null}
+          <CardFlags obj={obj} goaders={goaders} compact />
           {badge ? <span className="mt-badge">{badge}</span> : null}
           {obj.tapped && TAP_ICON_URL ? (
             <img className="tap-icon" src={TAP_ICON_URL} alt="" />
@@ -171,7 +176,7 @@ export function MiniTile({
       {open
         ? createPortal(
             <div className="mini-tile-popover" ref={popoverRef}>
-              <CardTile obj={obj} extraGenericCost={extraGenericCost} badge={badge} />
+              <CardTile obj={obj} extraGenericCost={extraGenericCost} badge={badge} goaders={goaders} />
             </div>,
             document.body,
           )
