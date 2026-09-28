@@ -450,7 +450,7 @@ export interface GameObject {
    * `endStepActions`. */
   exileAtEndStep?: boolean;
   /** True on a token that must be *sacrificed* at the beginning of the next
-   * end step (Encore — rule 702.140). Distinct from `exileAtEndStep`: a
+   * end step (Encore — rule 702.141). Distinct from `exileAtEndStep`: a
    * sacrifice sees dies-triggers, an exile doesn't. */
   sacrificeAtEndStep?: boolean;
   /** "If it would leave the battlefield, exile it instead of putting it
@@ -1883,6 +1883,13 @@ export type PendingEntry =
       readonly awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>;
       readonly player: PlayerId;
       readonly chosen: readonly ObjectId[];
+    }
+  | {
+      /** Cards exiled "until" a permanent leaves, coming back because its
+       * owner left the game (rules 610.3, 800.4a — `Game.leaveGame`), waiting
+       * on one of them's "as this enters" choice. */
+      readonly kind: "exiled-return";
+      readonly objects: readonly ObjectId[];
     };
 
 /**
@@ -2007,6 +2014,41 @@ export interface AttackRequirementRule {
   readonly otherThanYou: boolean;
 }
 
+/**
+ * A stretch of the game during which every player knew what an object was:
+ * from the event it became public (`from`, an `eventSeq`) until knowledge of
+ * it was lost (`until`, exclusive — absent while it still holds). It becomes
+ * public by entering a public zone or being revealed. It stays known when it
+ * goes from there into a hand or library (a bounced card is still known to be
+ * that card), and stops being known when it moves on from a hidden zone, when
+ * its library is shuffled, or when it's turned face down (foretold). The
+ * history names an event's objects by the stint covering that event, so a
+ * line keeps the name it had when it happened. `name` is the face it showed
+ * last while public.
+ */
+export interface PublicStint {
+  from: number;
+  until?: number;
+  name: string;
+}
+
+/** The name `id` was publicly known by when the event numbered `seq`
+ * happened, or `undefined` if nobody but its holder knew what it was then —
+ * the {@link PublicStint} covering that moment. */
+export function publicNameAt(
+  stints: Readonly<Record<string, readonly PublicStint[]>>,
+  id: string,
+  seq: number,
+): string | undefined {
+  const list = stints[id];
+  if (list === undefined) return undefined;
+  for (let i = list.length - 1; i >= 0; i -= 1) {
+    const s = list[i];
+    if (s.from <= seq && (s.until === undefined || seq < s.until)) return s.name;
+  }
+  return undefined;
+}
+
 export interface EmblemState {
   readonly id: string;
   readonly owner: PlayerId;
@@ -2048,6 +2090,9 @@ export interface GameState {
    * see it), while one revealed and drawn later does not.
    */
   revealedThisTurn: ObjectId[];
+  /** When each object's identity was known to every player — see
+   * {@link PublicStint}. Absent until the first object becomes public. */
+  publicStints?: Record<ObjectId, PublicStint[]>;
   /**
    * The {@link GameObject.lastKnown} of each token that ceased to exist this
    * turn (rule 111.7), keyed by its old id: the object is deleted, but an

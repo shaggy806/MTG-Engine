@@ -233,10 +233,12 @@ export type TriggerWho =
   | "you-control"
   | "any"
   | "you"
-  /** An opponent of this permanent's controller. Only meaningful where the
-   * subject is a *player* — a `step-begins` trigger's "each opponent's end
-   * step" (Archfiend of Depravity), which fires once per opponent's turn
-   * rather than once per opponent. */
+  /** An opponent of this permanent's controller. Where the subject is a
+   * *player*, that player is an opponent — a `step-begins` trigger's "each
+   * opponent's end step" (Archfiend of Depravity), which fires once per
+   * opponent's turn rather than once per opponent. Where it is an *object*,
+   * an opponent controls it ("whenever a creature an opponent controls
+   * dies"), read as it last existed on the battlefield if it has left. */
   | "opponent"
   /**
    * The permanent this one is attached to — "**equipped** creature",

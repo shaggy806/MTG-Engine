@@ -178,3 +178,67 @@ describe("a player leaving the game (rule 800.4a)", () => {
     expect(options).not.toContainEqual(obj(theirs));
   });
 });
+
+describe("an exile until a departed player's permanent leaves (rules 610.3, 800.4a)", () => {
+  const settle = (game: Game): void =>
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0);
+
+  /** `owner`'s Banishing Light enters and exiles the only nonland permanent
+   * an opponent controls, `target`. */
+  const banish = (game: Game, owner: PlayerId, target: ObjectId): ObjectId => {
+    const light = game.debugSpawn("Banishing Light", owner, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(game.state.objects[target].zone).toBe("exile");
+    expect(game.state.objects[target].exiledBy).toBe(light);
+    return light;
+  };
+
+  it("ends when the Banishing Light's owner leaves: the card comes back under its owner", () => {
+    const game = table();
+    const bears = spawn(game, "Grizzly Bears", A);
+    banish(game, C, bears);
+
+    knockOut(game, C);
+
+    expect(game.state.objects[bears].zone).toBe("battlefield");
+    expect(game.state.objects[bears].exiledBy).toBeUndefined();
+    expect(creatureOfA(game, bears)).toBe(true);
+  });
+
+  it("doesn't end when only its controller leaves: a stolen Banishing Light goes home and stays", () => {
+    const game = table();
+    const bears = spawn(game, "Grizzly Bears", A);
+    const light = banish(game, B, bears);
+    game.debugApplyEffect(C, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(light)]);
+    check(game);
+    expect(game.state.objects[light].controller).toBe(C);
+
+    knockOut(game, C);
+
+    expect(game.state.objects[light].controller).toBe(B);
+    expect(game.state.objects[bears].zone).toBe("exile");
+  });
+
+  it("asks a returning Clone what to copy before it enters", () => {
+    const game = table();
+    const clone = spawn(game, "Clone", A);
+    // On the battlefield as a copy of Grizzly Bears (not a 0/0); exile
+    // resets that, so it chooses again on the way back.
+    game.state.objects[clone].copyOf = "Grizzly Bears";
+    banish(game, C, clone);
+    expect(game.state.objects[clone].copyOf).toBeNull();
+    // Something to copy by the time it comes back.
+    const angel = spawn(game, "Serra Angel", B);
+
+    knockOut(game, C);
+
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-copy") throw new Error(`expected choose-copy, got ${awaiting?.kind}`);
+    expect(awaiting.player).toBe(A);
+    expect(game.state.objects[clone].zone).toBe("exile");
+    game.dispatch({ type: "choose-copy", player: A, copy: angel });
+    settle(game);
+    expect(game.state.objects[clone].zone).toBe("battlefield");
+    expect(game.state.objects[clone].copyOf).toBe("Serra Angel");
+  });
+});

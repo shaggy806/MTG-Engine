@@ -200,6 +200,7 @@ import {
   activePlayerOf,
   cloneGameState,
   createPlayerState,
+  faceName,
   permanentCount,
   printedCardName,
   nameOf,
@@ -228,6 +229,7 @@ import type {
   TurnHistory,
   PendingEntry,
   PendingTrigger,
+  PublicStint,
   PlayerCounterKind,
   PreventionShield,
   ReflexiveTrigger,
@@ -2505,6 +2507,7 @@ export class Game {
         this.rng,
       );
       this.state.rngState = this.rng.seed;
+      this.forgetStints(this.state.zones.perPlayer[player].library);
       for (let i = 0; i < this.state.rules.openingHandSize; i += 1) {
         this.drawCard(player);
       }
@@ -3194,7 +3197,15 @@ export class Game {
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
       if (!this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen])) {
-        this.abandonSuspendedCast(cast.cardId, "cost increase can't be paid");
+        // A card cascade found but couldn't cast goes to the bottom with the
+        // rest it exiled (rule 702.85e); the rest already went while this
+        // was asked. A suspended one stays exiled (702.62e).
+        if (cast.via === "cascade") {
+          this.emit({ type: "spell-fizzled", object: cast.cardId, reason: "cost increase can't be paid" });
+          this.moveObject(cast.cardId, "library");
+        } else {
+          this.abandonSuspendedCast(cast.cardId, "cost increase can't be paid");
+        }
       }
       // Other suspended cards owed a free cast this upkeep (rule 702.62e).
       while (this.state.pendingSuspendedCasts.length > 0 && this.state.awaiting === null) {
@@ -3772,7 +3783,7 @@ export class Game {
       }
     }
     // Encore's tokens are *sacrificed* rather than exiled, so dies-triggers
-    // see them go (rule 702.140). This end step's sacrifice is the only one:
+    // see them go (rule 702.141). This end step's sacrifice is the only one:
     // a token that can't be sacrificed now stays for good (rule 701.21a).
     for (const id of [...this.state.zones.shared.battlefield]) {
       const object = this.state.objects[id];
@@ -5453,7 +5464,7 @@ export class Game {
       (o, i) => o.length === 1 && !isOptionalSpec(def.targets[i]),
     );
     const nothingToChoose = optionsPerSlot.every((o) => o.length === 0);
-    if (def.targets.length === 0 || forced || nothingToChoose || opts.via === "cascade") {
+    if (def.targets.length === 0 || forced || nothingToChoose) {
       // A group left empty contributes no slots at all.
       const picks = optionsPerSlot.map((o) => o[0]);
       const group = anyNumberSlot(def.targets);
@@ -5465,7 +5476,8 @@ export class Game {
       );
     }
 
-    // A suspend cast with a real choice — park a `choose-targets` decision.
+    // A real choice is the caster's (rule 601.2c — cascade's 702.85a, suspend's
+    // 702.62e), so park a `choose-targets` decision.
     this.state.pendingTargetedCast = { cardId, via: opts.via, grantHaste };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -5591,6 +5603,8 @@ export class Game {
     this.executePayment(player, payment);
     object.foretold = true;
     object.foretoldOnTurn = this.state.turn.number;
+    // Face down in exile: nobody else knows what it is any more.
+    this.forgetStints([cardId]);
     this.emit({ type: "card-foretold", player, object: cardId });
     this.afterPlayerAction(player);
   }
@@ -9155,7 +9169,33 @@ export class Game {
   private finishEntry(entry: PendingEntry): void {
     if (entry.kind === "spell") this.enterPermanentSpell(entry.object);
     else if (entry.kind === "land") this.finishLandPlay(entry);
+    else if (entry.kind === "exiled-return") this.returnExiledCards(entry.objects);
     else this.finishZoneChoice(entry);
+  }
+
+  /**
+   * Return cards exiled "until" some permanent leaves the battlefield, all at
+   * once, each under its owner's control (rule 610.3) — once each has made
+   * its "as this enters" choices (rule 614.12), asked one at a time before
+   * any moves, parking the return (`PendingEntry`) while one is asked. The
+   * effect-step twin of this is `returnExiledBySource`.
+   */
+  private returnExiledCards(ids: readonly ObjectId[]): void {
+    const returning = ids.filter((id) => this.state.objects[id]?.zone === "exile");
+    for (const id of returning) {
+      if (this.askEnterChoice(id, this.state.objects[id].owner)) {
+        this.state.suspendedResolutions.push({ effect: null, enter: { kind: "exiled-return", objects: returning } });
+        return;
+      }
+    }
+    this.withEnterBatch(() => {
+      for (const id of returning) {
+        this.state.objects[id].exiledBy = undefined;
+        if (this.moveObject(id, "battlefield")) {
+          this.emit({ type: "permanent-entered-battlefield", object: id });
+        }
+      }
+    });
   }
 
   private resolveTopObject(): void {
@@ -10947,14 +10987,16 @@ export class Game {
         return subject === self.id;
       case "you":
         return this.activePlayer === self.controller;
-      case "you-control": {
+      case "you-control":
+      case "opponent": {
         const object = this.state.objects[subject];
         if (object === undefined) return false;
         const controller =
           lastKnown && object.zone !== "battlefield"
             ? (object.lastKnown?.controller ?? object.controller)
             : object.controller;
-        return controller === self.controller;
+        // Every other player is an opponent (rule 102.2 — no teams here).
+        return who === "you-control" ? controller === self.controller : controller !== self.controller;
       }
       case "attached": {
         // The host as the event happened: a source still on the battlefield
@@ -13202,6 +13244,7 @@ export class Game {
     library.length = 0;
     library.push(...order);
     this.state.rngState = this.rng.seed;
+    this.forgetStints(library);
     this.emit({ type: "library-shuffled", player });
   }
 
@@ -15788,6 +15831,7 @@ export class Game {
       if (!this.state.revealedThisTurn.includes(id)) {
         this.state.revealedThisTurn.push(id);
       }
+      this.openStint(id);
     }
     this.emit({ type: "cards-revealed", player, objects: [...real], from });
   }
@@ -17778,7 +17822,12 @@ export class Game {
    * - the triggered abilities they'd control that haven't gone on the stack
    *   never will, delayed ones included (800.4d);
    * - if they were the monarch, the active player becomes it, or the next
-   *   player in turn order if that's them (725.4).
+   *   player in turn order if that's them (725.4);
+   * - what their permanents exiled "until" they leave the battlefield comes
+   *   back (610.3): leaving the game takes a permanent off the battlefield,
+   *   though the engine leaves it where it is. Banishing Light's own "leaves
+   *   the battlefield" trigger can't do it — it never moves, and it would be
+   *   theirs to control (800.4d) — so the exile ends here.
    */
   private leaveGame(player: PlayerId): void {
     for (const id of [...this.state.zones.shared.stack]) {
@@ -17860,6 +17909,22 @@ export class Game {
     }
 
     this.recomputeControl();
+
+    const leaving = new Set(
+      this.state.zones.shared.battlefield.filter((id) => this.state.objects[id]?.owner === player),
+    );
+    const exiled = this.state.zones.shared.exile.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        object?.exiledBy !== undefined &&
+        leaving.has(object.exiledBy) &&
+        // A token exiled this way ceased to exist (rule 111.7); a card whose
+        // owner has left the game too stays out of it.
+        !object.isToken &&
+        this.state.players[object.owner]?.hasLost !== true
+      );
+    });
+    if (exiled.length > 0) this.returnExiledCards(exiled);
   }
 
   /**
@@ -18509,10 +18574,57 @@ export class Game {
    * applied afterwards, so the enters-battlefield replacements see it.
    */
   private moveObject(id: ObjectId, to: ZoneType, enter: EnterOptions = {}): boolean {
+    const from = this.state.objects[id]?.zone;
     // Zone moves interleave reads and writes too finely for point
     // invalidation — run with the computed-value cache off (and cleared on
     // the way out). See `suspendComputedCache`.
-    return suspendComputedCache(() => this.moveObjectUncached(id, to, enter));
+    const moved = suspendComputedCache(() => this.moveObjectUncached(id, to, enter));
+    const now = this.state.objects[id]?.zone;
+    if (from !== undefined && now !== undefined && now !== from) this.trackPublicity(id, from, now);
+    return moved;
+  }
+
+  /** Keep `GameState.publicStints` up to date across one zone change of `id`
+   * — see {@link PublicStint}. */
+  private trackPublicity(id: ObjectId, from: ZoneType, to: ZoneType): void {
+    const hidden = (zone: ZoneType): boolean => zone === "hand" || zone === "library";
+    const open = this.openStintOf(id);
+    if (!hidden(to)) {
+      this.openStint(id);
+      return;
+    }
+    // Into a hand or library: still known if it was public a moment ago, and
+    // no longer if it only moved between hidden zones (a card put back from
+    // hand, or drawn).
+    if (open !== undefined && hidden(from)) open.until = this.state.eventSeq;
+  }
+
+  private openStintOf(id: ObjectId): PublicStint | undefined {
+    const stints = this.state.publicStints?.[id];
+    const last = stints?.[stints.length - 1];
+    return last !== undefined && last.until === undefined ? last : undefined;
+  }
+
+  /** `id` is public knowledge from now on (it entered a public zone, or was
+   * revealed): open a stint, or carry the open one on under its current name. */
+  private openStint(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined) return;
+    const open = this.openStintOf(id);
+    if (open !== undefined) {
+      open.name = faceName(object);
+      return;
+    }
+    ((this.state.publicStints ??= {})[id] ??= []).push({ from: this.state.eventSeq, name: faceName(object) });
+  }
+
+  /** Knowledge of what each of `ids` is ends now: a library shuffled, a card
+   * turned face down. */
+  private forgetStints(ids: readonly ObjectId[]): void {
+    for (const id of ids) {
+      const open = this.openStintOf(id);
+      if (open !== undefined) open.until = this.state.eventSeq;
+    }
   }
 
   private moveObjectUncached(id: ObjectId, to: ZoneType, enter: EnterOptions): boolean {

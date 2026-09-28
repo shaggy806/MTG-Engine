@@ -2216,7 +2216,7 @@ export type EffectSpec =
     }
   | {
       /**
-       * Encore (rule 702.140) — "For each opponent, create a token copy of
+       * Encore (rule 702.141) — "For each opponent, create a token copy of
        * this card that attacks that opponent this turn if able. They gain
        * haste. Sacrifice them at the beginning of the next end step."
        *

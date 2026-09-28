@@ -1664,9 +1664,11 @@ triggered: [
 
 **`who: TriggerWho`** = `"self"` (this permanent) / `"you-control"` / `"you"`
 (this permanent's controller did it) / `"opponent"` / `"any"`. `"opponent"`
-is only meaningful where the subject is a *player* — a `step-begins`
+about a *player* is that player being an opponent — a `step-begins`
 trigger's "each opponent's end step" (Archfiend of Depravity), which fires
-once per opponent's **turn**, not once per opponent. `"attached"` is the
+once per opponent's **turn**, not once per opponent; about an *object* it is
+"… an opponent controls" ("whenever a creature an opponent controls dies"),
+read as it last existed on the battlefield once it has left. `"attached"` is the
 permanent this one is attached to — "whenever **equipped** creature dies"
 (Skullclamp), "whenever **enchanted** land is tapped for mana" (Wild Growth),
 "whenever **enchanted** creature deals damage to an opponent" (Curiosity):

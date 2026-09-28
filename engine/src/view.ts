@@ -32,6 +32,7 @@ import type {
   GameState,
   PlayerCounterKind,
   PriorityState,
+  PublicStint,
   TurnState,
   ZoneType,
 } from "./state.js";
@@ -241,6 +242,10 @@ export interface PlayerView {
   /** `source` is the name of the card that created the emblem, or `null`. */
   readonly emblems: readonly { readonly owner: PlayerId; readonly text: string; readonly source: string | null }[];
   readonly events: readonly GameEvent[];
+  /** When each object was public knowledge, and as what (`PublicStint`): how
+   * the history names an object in a line from a time it was known, after it
+   * has gone somewhere this viewer can't see. */
+  readonly publicStints: Readonly<Record<string, readonly PublicStint[]>>;
 }
 
 export interface ViewOptions {
@@ -557,5 +562,6 @@ function viewForUncached(
     monarch: state.monarch,
     emblems: state.emblems.map((e) => ({ owner: e.owner, text: e.text, source: e.sourceName ?? null })),
     events: state.eventLog,
+    publicStints: state.publicStints ?? {},
   };
 }
