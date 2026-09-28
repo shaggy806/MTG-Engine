@@ -1006,6 +1006,7 @@ export class Game {
           action.graveyardGrant,
           action.escapeExile,
           action.prototype === true,
+          action.offspring === true,
         );
         break;
       case "activate-ability":
@@ -1073,6 +1074,7 @@ export class Game {
           distinctTargetCount(action.targets, this.targetCopies(action.targets ?? [])),
           action.escapeExile,
           action.prototype === true,
+          action.offspring === true,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1656,6 +1658,7 @@ export class Game {
       altCost?: boolean;
       costOption?: number;
       prototype?: boolean;
+      offspring?: boolean;
     }[] = [{ kicked: false, overload: false, free: false }];
     // An impulse permission only to cast it free (Narset): no paid variant.
     const impulseFree = via === "impulse" ? this.impulseFreeCast(card) : null;
@@ -1697,7 +1700,18 @@ export class Game {
       variants.length = 0;
       variants.push(...crossed);
     }
-    for (const { kicked, overload, free, altCost, costOption, prototype } of variants) {
+    // Offspring granted as it's cast (Zinnia, Valley's Voice): an additional
+    // cost of its own (rule 702.175), so every variant that pays a cost it
+    // can add to is castable with it paid too.
+    const offspringCost = this.grantedOffspringCost(card, player);
+    if (offspringCost !== null) {
+      variants.push(
+        ...variants
+          .filter((v) => !v.free && !v.overload && v.altCost !== true)
+          .map((v) => ({ ...v, offspring: true })),
+      );
+    }
+    for (const { kicked, overload, free, altCost, costOption, prototype, offspring } of variants) {
       // A prototyped variant is worked out as the prototyped spell it is: its
       // prototype cost, colors and size (rule 718 — the rulings).
       const undoPrototype = prototype === true ? this.applyPrototype(card) : () => {};
@@ -1725,6 +1739,9 @@ export class Game {
             graveyardGrant,
             0,
             targetCount,
+            undefined,
+            false,
+            offspring === true,
           ) === null;
         const manaAffordable = castable;
         // Convoke (rule 702.51): not affordable with mana alone doesn't mean
@@ -1737,7 +1754,19 @@ export class Game {
               card,
               def,
               0,
-              this.castCostString(card, via, face, kicked, overload, free, false, undefined, undefined, graveyardGrant),
+              this.castCostString(
+                card,
+                via,
+                face,
+                kicked,
+                overload,
+                free,
+                false,
+                undefined,
+                undefined,
+                graveyardGrant,
+                offspring === true,
+              ),
               targetCount,
             ),
           );
@@ -1761,6 +1790,9 @@ export class Game {
               graveyardGrant,
               0,
               targetCount,
+              undefined,
+              false,
+              offspring === true,
             ) === null
           ) {
             castable = true;
@@ -1788,6 +1820,7 @@ export class Game {
         costOption,
         player,
         graveyardGrant,
+        offspring === true,
       );
       if (this.withFace(card, face ?? 0, () => this.costDependsOnTargets(player, card, def, variantCost))) {
         const bounds = this.withFace(card, face ?? 0, () =>
@@ -1837,8 +1870,10 @@ export class Game {
         : overload && def.overload !== null
           ? def.overload.cost
           : kicked && def.kicker !== null && printedOrPrototype !== null
-            ? printedOrPrototype + def.kicker.cost
-            : printedOrPrototype;
+            ? printedOrPrototype + def.kicker.cost + (offspring === true ? (offspringCost ?? "") : "")
+            : printedOrPrototype !== null && offspring === true
+              ? printedOrPrototype + (offspringCost ?? "")
+              : printedOrPrototype;
       const sacrifices = this.additionalCostSacrifices(player, def, costOption);
       const xPlan =
         parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
@@ -1874,6 +1909,7 @@ export class Game {
         ...(overload && def.overload !== null
           ? { overload: true, overloadCost: def.overload.cost }
           : {}),
+        ...(offspring === true && offspringCost !== null ? { offspring: true, offspringCost } : {}),
         ...(free ? { free: true } : {}),
         ...(altCost === true
           ? (() => {
@@ -6475,6 +6511,8 @@ export class Game {
     caster?: PlayerId,
     /** For an escape cast, which escape — see `escapeOf`. */
     graveyardGrant?: GraveyardGrant,
+    /** Paying a granted offspring cost too (`grantsOffspringToSpells`). */
+    offspring = false,
   ): string | null {
     const def = this.faceDef(cardId, face);
     // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
@@ -6524,8 +6562,14 @@ export class Game {
     const withOption = base === null || optionMana === undefined ? base : base + optionMana;
     // Kicker (rule 702.33) is an additional cost, so it just concatenates onto
     // whatever cost is being paid — `parseManaCost` is order-independent.
-    if (!kicked || def.kicker === null || withOption === null) return withOption;
-    return withOption + def.kicker.cost;
+    const withKicker =
+      !kicked || def.kicker === null || withOption === null ? withOption : withOption + def.kicker.cost;
+    // Granted offspring (Zinnia) is an additional cost of its own beside any
+    // kicker or printed offspring (rule 702.175b), so it concatenates too.
+    if (!offspring || withKicker === null) return withKicker;
+    const who = caster ?? this.state.objects[cardId]?.owner;
+    const grant = who === undefined ? null : this.grantedOffspringCost(cardId, who);
+    return grant === null ? withKicker : withKicker + grant;
   }
 
   /** The concrete target specs of a spell — its own, the kicked ones if it was
@@ -6617,6 +6661,7 @@ export class Game {
     targetCount = 0,
     escapeExile?: readonly ObjectId[],
     prototype = false,
+    offspring = false,
   ): string | null {
     // Prototyped (rule 718): judged as the prototyped spell it would be —
     // its prototype cost, colors and size (the rulings) — so asked again
@@ -6625,7 +6670,7 @@ export class Game {
       if (this.faceDef(cardId, face).prototype === null) return `${this.faceDef(cardId, face).name} has no prototype`;
       return this.withPrototype(cardId, () =>
         this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
-          altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true),
+          altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true, offspring),
       );
     }
     // Cast because a resolving spell or ability says so: no priority needed,
@@ -6771,6 +6816,9 @@ export class Game {
       return `${def.name} has no choice of additional cost`;
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
+    if (offspring && (free || overload || altCost || this.grantedOffspringCost(cardId, player) === null)) {
+      return `${def.name} has no offspring to pay for this way`;
+    }
     if (overload && def.overload === null) return `${def.name} has no overload cost`;
     const impulseFree = via === "impulse" ? this.impulseFreeCast(cardId) : null;
     if (impulseFree === "only" && !free) {
@@ -6846,7 +6894,7 @@ export class Game {
         cardId,
         def,
         Math.max(0, Math.floor(xValue)),
-        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant),
+        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring),
         targetCount,
       ),
     );
@@ -7105,12 +7153,13 @@ export class Game {
     graveyardGrant?: GraveyardGrant,
     escapeExile?: readonly ObjectId[],
     prototype = false,
+    offspring = false,
   ): void {
     if (prototype && !this.prototypeApplied(cardId)) {
       if (this.faceDef(cardId, face).prototype === null) throw new Error(`${this.faceDef(cardId, face).name} has no prototype`);
       this.withPrototype(cardId, () =>
         this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
-          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true),
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true, offspring),
       );
       return;
     }
@@ -7135,6 +7184,8 @@ export class Game {
       xValue,
       targetCount,
       escapeExile,
+      false,
+      offspring,
     );
     if (why !== null) throw new Error(why);
 
@@ -7161,6 +7212,7 @@ export class Game {
       costOption,
       player,
       graveyardGrant,
+      offspring,
     );
     const hasX =
       parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
@@ -7308,6 +7360,7 @@ export class Game {
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
     if (kicked) object.kicked = true;
+    if (offspring) object.offspringGrantPaid = true;
     if (overload) object.overloaded = true;
     this.executePayment(player, payment);
     // `resolved` is the concrete cost after hybrid and Phyrexian choices, so
@@ -9533,9 +9586,33 @@ export class Game {
     const warped = object.castVia === "warp";
     // "That creature enters with two additional +1/+1 counters" (Yuna).
     const extraCounters = object.entersWithCounters;
+    // Read before the move, which ends it with the stack.
+    const offspringPaid = object.offspringGrantPaid === true;
     const entered = this.moveObject(id, "battlefield");
     object.targets = null;
     if (!entered) return;
+    // Its granted offspring was paid (Zinnia): the permanent it becomes has
+    // offspring's "when this permanent enters, if its offspring cost was
+    // paid, create a token that's a copy of it, except it's 1/1" (rule
+    // 702.175a), there as it enters so it triggers on that entry.
+    if (offspringPaid && this.state.objects[id]?.zone === "battlefield") {
+      this.state.objects[id].modifiers.push({
+        power: 0,
+        toughness: 0,
+        keywords: [],
+        untilEndOfTurn: false,
+        timestamp: this.freshTimestamp(),
+        grantsTriggered: [
+          {
+            trigger: { on: "enters-battlefield", who: "self" },
+            targets: [],
+            effect: { kind: "create-token-copy", of: "source", count: 1, basePt: [1, 1] },
+            resolve: null,
+            text: "Offspring — when this permanent enters, create a 1/1 token copy of it.",
+          },
+        ],
+      });
+    }
     if (extraCounters !== undefined && this.state.objects[id]?.zone === "battlefield") {
       for (const c of extraCounters) this.addCounter({ kind: "object", object: id }, c.kind, c.amount);
     }
@@ -16999,6 +17076,23 @@ export class Game {
   }
 
   /**
+   * The offspring cost a `grantsOffspringToSpells` static of a permanent
+   * `player` controls gives `cardId` as they cast it (Zinnia, Valley's
+   * Voice's "creature spells you cast gain offspring {2} as you cast them"),
+   * or `null`. With several, the first; each is a separate offspring (rule
+   * 702.175b), but no pool card grants it twice.
+   */
+  private grantedOffspringCost(cardId: ObjectId, player: PlayerId): string | null {
+    for (const { ability } of this.activeStaticsOf(player, (a) => a.grantsOffspringToSpells !== undefined)) {
+      const grant = ability.grantsOffspringToSpells!;
+      if (grant.filter === undefined || matchesFilter(this.state, this.registry, cardId, grant.filter, { you: player })) {
+        return grant.cost;
+      }
+    }
+    return null;
+  }
+
+  /**
    * The warp cost `player` may cast `cardId` from their hand for (rule
    * 702.185): its own, or one a `grantsWarpInHand` static of a permanent they
    * control gives it (Tannuk, Steadfast Second). `null` when it has none, or
@@ -19716,6 +19810,7 @@ export class Game {
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
     object.kicked = undefined;
+    object.offspringGrantPaid = undefined;
     // "That spell can't be countered" was about this casting, so it ends when
     // the spell leaves the stack (Cavern of Souls). So does what the casting
     // sacrificed ("the sacrificed creature" — see `LastKnownRefs`).

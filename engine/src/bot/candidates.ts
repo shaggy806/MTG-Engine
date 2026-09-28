@@ -50,6 +50,7 @@ function castExtras(legal: CastSpellLegal): {
   const convoke = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.offspring === true ? { offspring: true } : {}),
     ...(legal.prototype === true ? { prototype: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),

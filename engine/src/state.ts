@@ -438,6 +438,10 @@ export interface GameObject {
    * kicker cost was paid, so `resolveTopOfStack` applies the kicked `effect`.
    * Absent for an unkicked or unkickable spell; cleared on any zone change. */
   kicked?: boolean;
+  /** A granted offspring cost was paid as this spell was cast (Zinnia): the
+   * permanent it becomes gets offspring's trigger as it enters. Cleared on
+   * any zone change after that. */
+  offspringGrantPaid?: boolean;
   /** This spell was cast for its overload cost (rule 702.126 — Cyclonic
    * Rift): its overload cost was paid instead of its mana cost, with no
    * targets, so `resolveTopOfStack` applies `CardDefinition.overload.effect`.

@@ -954,6 +954,15 @@ export interface StaticAbility {
    */
   readonly grantsWarpInHand?: { readonly cost: string; readonly filter: CardFilter };
   /**
+   * The spells this permanent's controller casts that match `filter` gain
+   * offspring for `cost` as they're cast (rule 702.175) — Zinnia, Valley's
+   * Voice's "creature spells you cast gain offspring {2} as you cast them":
+   * an optional additional cost of its own, beside any kicker or printed
+   * offspring (702.175b), offered as the cast's `offspring` variant, and the
+   * permanent that spell becomes enters with offspring's trigger.
+   */
+  readonly grantsOffspringToSpells?: { readonly cost: string; readonly filter?: CardFilter };
+  /**
    * Keywords and abilities the spells this permanent's controller casts have
    * while they're on the stack (rule 113.6 — a spell's abilities work there):
    * Abaddon the Despoiler's "during your turn, spells you cast from your hand

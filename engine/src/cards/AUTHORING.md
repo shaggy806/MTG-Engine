@@ -1929,6 +1929,12 @@ anthem, the keyword grant and the granted trigger like any other creature.
   `splitSecond: true` gives them split second — Shadow the Hedgehog's "each
   spell you cast has split second if mana from an artifact was spent to cast
   it" is `{ filter: { manaFrom: { type: "artifact" } }, splitSecond: true }`.
+- `grantsOffspringToSpells: { cost, filter? }` — the spells you cast that
+  match `filter` gain offspring for `cost` (rule 702.175 — Zinnia, Valley's
+  Voice's "creature spells you cast gain offspring {2} as you cast them"):
+  its own additional cost beside any kicker or printed offspring (702.175b),
+  offered as the cast's `offspring` variant; paid, the permanent enters
+  with offspring's trigger.
 - `grantsWarpInHand: { cost, filter }` — cards matching `filter` in your
   hand have warp for `cost` (rule 702.185 — Tannuk, Steadfast Second's
   "artifact cards and red creature cards in your hand have warp {2}{R}"):

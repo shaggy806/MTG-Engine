@@ -185,6 +185,10 @@ export type Action =
        * cast and *before* targets are chosen — it can change the target specs.
        * Only meaningful for a card with `CardDefinition.kicker`. P8. */
       readonly kicked?: boolean;
+      /** Pay a granted offspring cost too (`grantsOffspringToSpells` — Zinnia,
+       * Valley's Voice): its own additional cost beside any kicker (rule
+       * 702.175b). Echoed from the offer's `offspring`. */
+      readonly offspring?: boolean;
       /** Cast it prototyped (rule 718): with its prototype mana cost, colors
        * and power/toughness. Only for a card with `CardDefinition.prototype`. */
       readonly prototype?: boolean;
@@ -569,6 +573,11 @@ export type LegalAction =
       /** The keyword that optional cost goes by when it isn't kicker —
        * `"offspring"` (rule 702.175) — for labelling. */
       readonly kickerKeyword?: "offspring";
+      /** A variant that pays a granted offspring cost as well (Zinnia) —
+       * echoed back as the action's `offspring`; `offspringCost` for
+       * labelling. */
+      readonly offspring?: true;
+      readonly offspringCost?: string;
       /** A prototyped cast (rule 718) — echoed back as the action's
        * `prototype`; `prototypeCost` is the cost it pays, for labelling. */
       readonly prototype?: true;
