@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1436 already implemented / 3564 missing (marks refreshed 2026-09-26)
+1449 already implemented / 3551 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -795,7 +795,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   799  High Tide                                {U}              Instant
 [ ]   800  Escape Tunnel                            {0}              Land
 [x]   801  Bleachbone Verge                         {0}              Land
-[ ]   802  Coruscation Mage                         {1}{R}           Creature — Otter Wizard
+[x]   802  Coruscation Mage                         {1}{R}           Creature — Otter Wizard
 [x]   803  Gilded Goose                             {G}              Creature — Bird
 [ ]   804  Urza, Lord High Artificer                {2}{U}{U}        Legendary Creature — Human Artificer
 [ ]   805  Flowering of the White Tree              {W}{W}           Legendary Enchantment
@@ -1225,7 +1225,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1230  Amphibian Downpour                       {2}{U}           Enchantment — Aura
 [ ]  1231  Skyclave Apparition                      {1}{W}{W}        Creature — Kor Spirit
 [ ]  1232  Light Up the Stage                       {2}{R}           Sorcery
-[ ]  1233  Agate Instigator                         {1}{R}           Creature — Lizard Rogue
+[x]  1233  Agate Instigator                         {1}{R}           Creature — Lizard Rogue
 [x]  1234  Junji, the Midnight Sky                  {3}{B}{B}        Legendary Creature — Dragon Spirit
 [ ]  1235  Explosive Vegetation                     {3}{G}           Sorcery
 [ ]  1236  Dark Confidant                           {1}{B}           Creature — Human Wizard
@@ -1296,7 +1296,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1302  Valgavoth, Terror Eater                  {6}{B}{B}{B}     Legendary Creature — Elder Demon
 [x]  1303  Rune-Scarred Demon                       {5}{B}{B}        Creature — Demon
 [ ]  1304  Tendershoot Dryad                        {4}{G}           Creature — Dryad
-[ ]  1305  Timeless Witness                         {2}{G}{G}        Creature — Human Shaman
+[x]  1305  Timeless Witness                         {2}{G}{G}        Creature — Human Shaman
 [ ]  1306  Mirage Mirror                            {3}              Artifact
 [ ]  1307  Guildless Commons                        {0}              Land
 [ ]  1308  Courser of Kruphix                       {1}{G}{G}        Enchantment Creature — Centaur
@@ -1346,7 +1346,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1353  Soul-Guide Lantern                       {1}              Artifact
 [x]  1354  Pristine Talisman                        {3}              Artifact
 [ ]  1355  Grand Crescendo                          {X}{W}{W}        Instant
-[ ]  1356  Exalted Sunborn                          {3}{W}{W}        Creature — Angel Wizard
+[x]  1356  Exalted Sunborn                          {3}{W}{W}        Creature — Angel Wizard
 [ ]  1357  Colossal Majesty                         {2}{G}           Enchantment
 [ ]  1358  Binding the Old Gods                     {2}{B}{G}        Enchantment — Saga
 [ ]  1359  Crime Novelist                           {2}{R}           Creature — Goblin Bard
@@ -1391,7 +1391,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1398  Rankle, Master of Pranks                 {2}{B}{B}        Legendary Creature — Faerie Rogue
 [ ]  1399  Shatterskull Smashing // Shatterskull, the Hammer Pass {2}              Sorcery // Land
 [x]  1400  Grave Titan                              {4}{B}{B}        Creature — Giant
-[ ]  1401  Weftstalker Ardent                       {2}{R}           Creature — Drix Artificer
+[x]  1401  Weftstalker Ardent                       {2}{R}           Creature — Drix Artificer
 [ ]  1402  Thousand-Year Storm                      {4}{U}{R}        Enchantment
 [ ]  1403  Crawlspace                               {3}              Artifact
 [x]  1404  Adrix and Nev, Twincasters               {2}{G}{U}        Legendary Creature — Merfolk Wizard
@@ -1500,7 +1500,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1507  Patriarch's Bidding                      {3}{B}{B}        Sorcery
 [x]  1508  Copperline Gorge                         {0}              Land
 [ ]  1509  Case of the Locked Hothouse              {3}{G}           Enchantment — Case
-[ ]  1510  Haliya, Guided by Light                  {2}{W}           Legendary Creature — Human Soldier
+[x]  1510  Haliya, Guided by Light                  {2}{W}           Legendary Creature — Human Soldier
 [ ]  1511  Blood Moon                               {2}{R}           Enchantment
 [ ]  1512  Misdirection                             {3}{U}{U}        Instant
 [ ]  1513  Gratuitous Violence                      {2}{R}{R}{R}     Enchantment
@@ -1989,7 +1989,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1996  Summon: Titan                            {3}{G}{G}        Enchantment Creature — Saga Giant
 [x]  1997  Lord of the Accursed                     {2}{B}           Creature — Zombie
 [ ]  1998  Venser's Journal                         {5}              Artifact — Book
-[ ]  1999  Starscape Cleric                         {1}{B}           Creature — Bat Cleric
+[x]  1999  Starscape Cleric                         {1}{B}           Creature — Bat Cleric
 [ ]  2000  Gix, Yawgmoth Praetor                    {1}{B}{B}        Legendary Creature — Phyrexian Praetor
 [ ]  2001  Magda, the Hoardmaster                   {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  2002  Ravenform                                {2}{U}           Sorcery
@@ -2436,7 +2436,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2443  Harvest Season                           {2}{G}           Sorcery
 [ ]  2444  Mogis, God of Slaughter                  {2}{B}{R}        Legendary Enchantment Creature — God
 [x]  2445  The Jolly Balloon Man                    {1}{R}{W}        Legendary Creature — Human Clown
-[ ]  2446  Starwinder                               {5}{U}{U}        Creature — Leviathan
+[x]  2446  Starwinder                               {5}{U}{U}        Creature — Leviathan
 [x]  2447  Boreal Druid                             {G}              Snow Creature — Elf Druid
 [ ]  2448  Accursed Duneyard                        {0}              Land
 [ ]  2449  Dollmaker's Shop // Porcelain Gallery    {1}{W} // {4}{W}{W} Enchantment — Room // Enchantment — Room
@@ -3131,7 +3131,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3138  Marrow-Gnawer                            {3}{B}{B}        Legendary Creature — Rat Rogue
 [ ]  3139  Naya Charm                               {R}{G}{W}        Instant
 [ ]  3140  Mask of Griselbrand                      {1}{B}{B}        Legendary Artifact — Equipment
-[ ]  3141  Mightform Harmonizer                     {2}{G}{G}        Creature — Insect Druid
+[x]  3141  Mightform Harmonizer                     {2}{G}{G}        Creature — Insect Druid
 [ ]  3142  Overmaster                               {R}              Sorcery
 [ ]  3143  Herald of War                            {3}{W}{W}        Creature — Angel
 [ ]  3144  Canopy Gargantuan                        {5}{G}{G}        Creature — Dragon
@@ -3151,7 +3151,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3158  Demon of Fate's Design                   {4}{B}{B}        Enchantment Creature — Demon
 [x]  3159  Malcolm, Keen-Eyed Navigator             {2}{U}           Legendary Creature — Siren Pirate
 [x]  3160  Kilo, Apogee Mind                        {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
-[ ]  3161  Darkstar Augur                           {2}{B}           Creature — Bat Warlock
+[x]  3161  Darkstar Augur                           {2}{B}           Creature — Bat Warlock
 [ ]  3162  Etchings of the Chosen                   {1}{W}{B}        Enchantment
 [ ]  3163  Ingenious Infiltrator                    {2}{U}{B}        Creature — Vedalken Ninja
 [x]  3164  Spectacular Spider-Man                   {1}{W}           Legendary Creature — Spider Human Hero
@@ -4176,7 +4176,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4183  Faldorn, Dread Wolf Herald               {1}{R}{G}        Legendary Creature — Human Druid
 [ ]  4184  Veinwitch Coven                          {2}{B}           Creature — Vampire Warlock
 [ ]  4185  Level Up                                 {1}{G}           Enchantment — Aura
-[ ]  4186  Bygone Colossus                          {9}              Artifact Creature — Robot Giant
+[x]  4186  Bygone Colossus                          {9}              Artifact Creature — Robot Giant
 [ ]  4187  Kaito, Cunning Infiltrator               {1}{U}{U}        Legendary Planeswalker — Kaito
 [ ]  4188  Jace's Sanctum                           {3}{U}           Enchantment
 [ ]  4189  Overlord of the Mistmoors                {5}{W}{W}        Enchantment Creature — Avatar Horror
@@ -4187,7 +4187,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4194  Drogskol Reaver                          {5}{W}{U}        Creature — Spirit
 [ ]  4195  Tail Swipe                               {G}              Instant
 [ ]  4196  The Millennium Calendar                  {1}              Legendary Artifact
-[ ]  4197  Tender Wildguide                         {1}{G}           Creature — Possum Druid
+[x]  4197  Tender Wildguide                         {1}{G}           Creature — Possum Druid
 [ ]  4198  Stormsplitter                            {3}{R}           Creature — Otter Wizard
 [ ]  4199  Spiked Corridor // Torture Pit           {3}{R} // {3}{R} Enchantment — Room // Enchantment — Room
 [x]  4200  Sword of Sinew and Steel                 {3}              Artifact — Equipment
@@ -4311,7 +4311,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4318  Malevolent Hermit // Benevolent Geist    {2}              Creature — Human Wizard // Creature — Spirit Wizard
 [ ]  4319  Phyrexian Rebirth                        {4}{W}{W}        Sorcery
 [ ]  4320  Boomerang Basics                         {U}              Sorcery — Lesson
-[ ]  4321  Starfield Shepherd                       {3}{W}{W}        Creature — Angel
+[x]  4321  Starfield Shepherd                       {3}{W}{W}        Creature — Angel
 [ ]  4322  Reach the Horizon                        {3}{G}           Sorcery
 [ ]  4323  Shifting Sliver                          {3}{U}           Creature — Sliver
 [ ]  4324  Permission Denied                        {W}{U}           Instant

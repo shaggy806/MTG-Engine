@@ -38,7 +38,7 @@ import type {
 } from "./state.js";
 import { decisionHasSource } from "./decisions/registry.js";
 import { goadersOf } from "./goad.js";
-import { activePlayerOf, faceName, nameOf, printedCardName } from "./state.js";
+import { activePlayerOf, faceName, hasNoManaCost, nameOf, printedCardName } from "./state.js";
 import { withoutTypeMarkers } from "./subtypes.js";
 import type { TargetRef } from "./target.js";
 
@@ -371,7 +371,7 @@ function visible(
     owner: object.owner,
     controller: object.controller,
     zone: object.zone,
-    manaCost: def.manaCost,
+    manaCost: hasNoManaCost(object) ? null : def.manaCost,
     text,
     types: computed.types,
     // The subtypes a type line shows: a changeling's "every creature type"

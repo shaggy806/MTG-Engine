@@ -1343,6 +1343,11 @@ export type EffectSpec =
       readonly kind: "allow-cast-from-exile";
       readonly target: EffectTargetRef;
       readonly free?: boolean;
+      /** Warp's "its owner may cast this card **after the current turn has
+       * ended** for as long as it remains exiled" (rule 702.185a): the card's
+       * owner, not the effect's controller; from the next turn on; with no
+       * end but its leaving exile. */
+      readonly laterTurns?: boolean;
     }
   | {
       /**
@@ -2591,6 +2596,8 @@ export interface CopyExceptions {
   readonly setColors?: readonly Color[];
   readonly addColors?: readonly Color[];
   readonly basePt?: readonly [number, number];
+  /** "…with no mana cost" (eternalize, embalm): its mana value is 0. */
+  readonly noManaCost?: boolean;
   readonly keywords?: readonly Keyword[];
   /** Activated abilities it has — "and it has '{2}, {T}, Sacrifice this
    * token: You gain 3 life.'" (Brenard, Ginger Sculptor). */
@@ -2853,7 +2860,7 @@ export interface EffectApi {
   /** See the `"enters-with-counters"` {@link EffectSpec}. */
   entersWithCounters(target: TargetRef, counter: string, amount: number): void;
   /** See the `"allow-cast-from-exile"` {@link EffectSpec}. */
-  allowCastFromExile(target: TargetRef, free: boolean): void;
+  allowCastFromExile(target: TargetRef, free: boolean, laterTurns?: boolean): void;
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
@@ -4364,7 +4371,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "allow-cast-from-exile": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true);
+      if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true, spec.laterTurns === true);
       return;
     }
     case "earthbend": {

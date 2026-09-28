@@ -569,7 +569,14 @@ function evalStaticCondition(
       // On the battlefield it's `enteredKicked` (the stack flag is cleared by
       // the move that put the permanent here); `kicked` still answers for a
       // source that is itself on the stack.
-      return source.enteredKicked === true || source.kicked === true;
+      // A source that has left since is asked as it last existed there: the
+      // spell was still kicked (Offspring's ruling — the copy is made even if
+      // the creature has left).
+      return (
+        source.enteredKicked === true ||
+        source.kicked === true ||
+        opts.sourceLastKnown?.enteredKicked === true
+      );
     case "creature-died-this-turn":
       return state.creaturesDiedThisTurn > 0;
     case "created-token-this-turn":

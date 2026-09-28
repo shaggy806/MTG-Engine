@@ -1311,6 +1311,15 @@ export interface CardDefinition {
     readonly cost: string;
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
+    /**
+     * Another keyword that is the same optional additional cost under its
+     * own name — Offspring (rule 702.175a: "You may pay an additional [cost]
+     * as you cast this spell"). Paying it is what `self-kicked` asks about
+     * (the `offspringTrigger()` helper's "if its offspring cost was paid"),
+     * and the offer says `kickerKeyword` so it's labelled for what it is. A
+     * spell cast this way is not a *kicked* spell to anything else.
+     */
+    readonly keyword?: "offspring";
   } | null;
   /**
    * Overload (rule 702.126 — Cyclonic Rift): an alternative cost that
@@ -1448,6 +1457,16 @@ export interface CardDefinition {
    * `{2}` to exile this card from your hand face-down; on a later turn you may
    * cast it from exile for `cost`. `null` for a card without foretell. */
   readonly foretell: { readonly cost: string } | null;
+  /**
+   * Warp (rule 702.185 — Starfield Vocalist): "You may cast this card from
+   * your hand for its warp cost. Exile this [permanent] at the beginning of
+   * the next end step, then you may cast it from exile on a later turn." An
+   * alternative cost, offered as its own `cast-spell` (`via: "warp"`); the
+   * exile is a delayed triggered ability made as the permanent enters, and
+   * the exiled card's owner may cast it for its mana cost after that turn
+   * has ended, for as long as it stays exiled. `null` for none.
+   */
+  readonly warp: { readonly cost: string } | null;
   /** Escape (rule 702.139 — ROADMAP Phase 6b) — cast from your graveyard for
    * `cost` plus exiling `exileCount` other cards from your graveyard as an
    * additional cost. Unlike flashback the spell resolves normally (it can be
@@ -1615,6 +1634,7 @@ const PRINTED_ABILITY: {
   loyalty: false,
   flashback: (def) => def.flashback !== null,
   foretell: (def) => def.foretell !== null,
+  warp: (def) => def.warp !== null,
   escape: (def) => def.escape !== null,
   suspend: (def) => def.suspend !== null,
   cycling: (def) => def.cycling !== null,
@@ -1709,6 +1729,7 @@ interface CardDraft {
     readonly cost: string;
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
+    readonly keyword?: "offspring";
   };
   overload?: {
     readonly cost: string;
@@ -1740,6 +1761,7 @@ interface CardDraft {
   loyalty?: number;
   flashback?: { readonly cost: string; readonly payLife?: number };
   foretell?: { readonly cost: string };
+  warp?: { readonly cost: string };
   suspend?: { readonly n: number; readonly cost: string };
   cycling?: { readonly cost: string; readonly search?: CardFilter };
   escape?: {
@@ -1817,6 +1839,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     loyalty,
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,
+    warp: draft.warp ?? null,
     suspend: draft.suspend ?? null,
     cycling: draft.cycling ?? null,
     escape: draft.escape ?? null,

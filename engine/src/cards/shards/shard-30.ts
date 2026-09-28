@@ -150,6 +150,7 @@ import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
 import _poolSpinedThopter from "../pool/spined-thopter.js";
 import _poolSpireMonitor from "../pool/spire-monitor.js";
 import _poolSquire from "../pool/squire.js";
+import _poolStarfieldShepherd from "../pool/starfield-shepherd.js";
 import _poolStarfieldVocalist from "../pool/starfield-vocalist.js";
 import _poolSwelteringSuns from "../pool/sweltering-suns.js";
 import _poolTangleMantis from "../pool/tangle-mantis.js";
@@ -341,6 +342,7 @@ const shard: CardShard = {
     _poolSpinedThopter,
     _poolSpireMonitor,
     _poolSquire,
+    _poolStarfieldShepherd,
     _poolStarfieldVocalist,
     _poolSwelteringSuns,
     _poolTangleMantis,

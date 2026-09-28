@@ -144,7 +144,7 @@ function graveyardVariantLabel(
   }
   if (a.kind === 'cast-spell') {
     if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
-    if (a.kicked) parts.push(`kicked ${a.kickerCost ?? ''}`.trim())
+    if (a.kicked) parts.push(`${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''}`.trim())
   }
   return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
@@ -3716,12 +3716,13 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                     <button key={i} type="button" onClick={() => playFace(a)}>
                       {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
                       {a.kind === 'cast-spell' && a.kicked
-                        ? ` (kicked ${a.kickerCost ?? ''})`
+                        ? ` (${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''})`
                         : ''}
                       {a.kind === 'cast-spell' && a.overload
                         ? ` (overload ${a.overloadCost ?? ''})`
                         : ''}
                       {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
+                      {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
                       {a.kind === 'cast-spell' && a.altCost ? ' (alternative cost)' : ''}
                       {a.kind === 'cast-spell' && a.costOptionText
                         ? ` (${a.costOptionText})`

@@ -28,6 +28,7 @@ import _poolBronzeSword from "../pool/bronze-sword.js";
 import _poolBroodhunterWurm from "../pool/broodhunter-wurm.js";
 import _poolBruteForce from "../pool/brute-force.js";
 import _poolBurningOil from "../pool/burning-oil.js";
+import _poolBygoneColossus from "../pool/bygone-colossus.js";
 import _poolCageOfHands from "../pool/cage-of-hands.js";
 import _poolCaveOfTemptation from "../pool/cave-of-temptation.js";
 import _poolChildOfThorns from "../pool/child-of-thorns.js";
@@ -219,6 +220,7 @@ const shard: CardShard = {
     _poolBroodhunterWurm,
     _poolBruteForce,
     _poolBurningOil,
+    _poolBygoneColossus,
     _poolCageOfHands,
     _poolCaveOfTemptation,
     _poolChildOfThorns,

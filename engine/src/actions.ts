@@ -44,6 +44,10 @@ export type CastVia =
   /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
    * card exiled face-up with permission to play it, for its normal cost. */
   | "impulse"
+  /** Warp (rule 702.185): cast from the hand for the card's warp cost, an
+   * alternative cost — exiled at the next end step, castable from exile on a
+   * later turn (which is an `"impulse"` cast). */
+  | "warp"
   /** Cast from your graveyard for its normal cost, under a permission a
    * permanent you control grants (Gisa and Geralf: "you may cast a Zombie
    * creature spell from your graveyard"). Unlike flashback, nothing exiles
@@ -525,6 +529,9 @@ export type LegalAction =
       readonly kicked?: boolean;
       /** The kicker cost this variant pays, for labelling. Set with `kicked`. */
       readonly kickerCost?: string;
+      /** The keyword that optional cost goes by when it isn't kicker —
+       * `"offspring"` (rule 702.175) — for labelling. */
+      readonly kickerKeyword?: "offspring";
       /** An overloadable spell (rule 702.126) is enumerated **twice**, once
        * normal and once with `overload: true` — this variant's `targetSpecs`
        * is always `[]` (you can't choose targets for an overloaded spell).

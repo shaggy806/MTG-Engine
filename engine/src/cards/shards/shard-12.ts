@@ -75,6 +75,7 @@ import _poolGiantSpectacle from "../pool/giant-spectacle.js";
 import _poolGnarledMass from "../pool/gnarled-mass.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
 import _poolHaazdaOfficer from "../pool/haazda-officer.js";
+import _poolHaliyaGuidedByLight from "../pool/haliya-guided-by-light.js";
 import _poolHarrierStrix from "../pool/harrier-strix.js";
 import _poolHearthhullTheWorldseed from "../pool/hearthhull-the-worldseed.js";
 import _poolHornetSting from "../pool/hornet-sting.js";
@@ -249,6 +250,7 @@ const shard: CardShard = {
     _poolGnarledMass,
     _poolGoobbueGardener,
     _poolHaazdaOfficer,
+    _poolHaliyaGuidedByLight,
     _poolHarrierStrix,
     _poolHearthhullTheWorldseed,
     _poolHornetSting,

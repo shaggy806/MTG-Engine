@@ -145,6 +145,7 @@ import _poolTalionTheKindlyLord from "../pool/talion-the-kindly-lord.js";
 import _poolTalismanOfIndulgence from "../pool/talisman-of-indulgence.js";
 import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
+import _poolTenderWildguide from "../pool/tender-wildguide.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
 import _poolTheWanderingMinstrel from "../pool/the-wandering-minstrel.js";
 import _poolThreeTreeRootweaver from "../pool/three-tree-rootweaver.js";
@@ -324,6 +325,7 @@ const shard: CardShard = {
     _poolTalismanOfIndulgence,
     _poolTempleOfEnlightenment,
     _poolTempleOfPlenty,
+    _poolTenderWildguide,
     _poolThantisTheWarweaver,
     _poolTheWanderingMinstrel,
     _poolThreeTreeRootweaver,

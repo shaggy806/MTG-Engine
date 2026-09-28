@@ -37,22 +37,26 @@ that one card is the reason the deck exists.
 
 - **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
   or misplay a printed clause. Give each its proper, faithful implementation, building whatever
-  feature blocks it; don't just delete them. Left, each with what it needs: Iridescent
-  Vinelasher (Offspring — 7 top-5000 cards), Starfield Vocalist (Warp — 10), Fanatic of Rhonas
-  (Eternalize; Embalm is its sibling — 3), Chandra, Acolyte of Flame (casting a target card from
-  a graveyard during resolution — 4, Torrential Gearhulk among them), Terror of the Peaks (a
-  cast-time additional cost imposed by the target), Combat Thresher (Prototype) and Artificial
-  Evolution (layer-3 text changing across a card's abilities, not just its type line; neither is
-  in the top 5000). Each card's blocker is in `cards/AUTHORING.md` §15, "Known exceptions
-  already in the pool"; `npm run card:text -w engine` is the live ledger. Fixed so far: Saw in
-  Half, Finale of Devastation, Fireball, Mortivore, Will of the Sultai (and Rydia, earlier).
+  feature blocks it; don't just delete them. Left, each with what it needs: Chandra, Acolyte
+  of Flame (casting a target card from a graveyard during resolution — 4 top-5000 cards,
+  Torrential Gearhulk among them), Terror of the Peaks (a cast-time additional cost imposed by
+  the target), Combat Thresher (Prototype) and Artificial Evolution (layer-3 text changing
+  across a card's abilities, not just its type line; neither is in the top 5000). Each card's
+  blocker is in `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run
+  card:text -w engine` is the live ledger. Fixed so far: Saw in Half, Finale of Devastation,
+  Fireball, Mortivore, Will of the Sultai, Starfield Vocalist (Warp), Iridescent Vinelasher
+  (Offspring), Fanatic of Rhonas (Eternalize), and Rydia earlier.
 - **Unblocked by those fixes, for the next top-5000 batch:** the rest of the Will cycle (Jeskai
   #2169, Mardu #2236, Abzan #2579, Temur #4037 — `castModal.maxModesIf`), Strive (Twinflame
   #1260, Call the Coppercoats #1627 — `costPerExtraTarget`), and regeneration (Nightscape
   Familiar #1150, Asceticism #1329, Golgari Charm, Swarmyard, Golgari Grave-Troll, Snuff Out,
-  Decree of Pain, … — about 20). Check each for anything else it needs.
+  Decree of Pain, … — about 20). Check each for anything else it needs. Still blocked among
+  the Warp / Offspring / Eternalize cards: Loading Zone (counters a permanent *enters* with
+  doubled too), Anticausal Vestige (a hand filter reading your land count), Warren Warleader
+  (a token entering tapped and attacking) and Vizier of Many Faces (Embalm through its Clone
+  ability).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,436 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,449 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
@@ -252,6 +256,12 @@ Beyond that plan:
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
 
+- **Dev rooms open on a lobby instead of their board (found 2026-09-28).** With `dev-rooms`
+  running, `localhost:5173/?room=TWOAA` (and FOURP, MULD4) shows the new-room lobby — Player 1,
+  a default deck, Ready / Start Game — and Ready answers "room … has already started"
+  (`requirePendingRoom`, `server/src/ws-server.ts`). TWOAA joined through that same Ready once
+  earlier the same day, so it may depend on the tab's stored seat. It blocks live checks
+  against a known board.
 - **Show regeneration shields on the card.** A permanent's shields (`GameObject
   .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
   only the log line says one was made. Add them to `VisibleObject` and a small badge beside

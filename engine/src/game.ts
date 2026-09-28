@@ -376,6 +376,7 @@ function copyExceptionModifier(exceptions: CopyExceptions): PtModifier {
       ? { setPt: [exceptions.basePt[0], exceptions.basePt[1]] as [number, number] }
       : {}),
     ...(exceptions.name !== undefined ? { setName: exceptions.name } : {}),
+    ...(exceptions.noManaCost === true ? { noManaCost: true as const } : {}),
     untilEndOfTurn: false,
     copiable: true,
     timestamp: -1,
@@ -1128,6 +1129,16 @@ export class Game {
               costString: def.manaCost,
             }),
           );
+          // Warp (rule 702.185) — from the hand only, for its warp cost.
+          if (def.warp !== null && this.state.zones.perPlayer[player].hand.includes(card)) {
+            out.push(
+              ...this.castSpellActions(player, card, cardName, def, {
+                ...faceProp,
+                via: "warp",
+                costString: def.warp.cost,
+              }),
+            );
+          }
         }
       }
       const cardName = ownName;
@@ -1643,14 +1654,19 @@ export class Game {
     }
     // Overload (rule 702.126) and a conditional free-cast permission (Fierce
     // Guardianship) are each an alternative cast, mutually exclusive with
-    // kicker and each other (no card on the list has more than one).
-    if (def.overload !== null && impulseFree !== "only") {
+    // kicker and each other (no card on the list has more than one) — and
+    // with warp, itself an alternative cost (rule 118.9a: only one applies).
+    const warp = via === "warp";
+    if (def.overload !== null && impulseFree !== "only" && !warp) {
       variants.push({ kicked: false, overload: true, free: false });
     }
-    if (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card)) || impulseFree !== null) {
+    if (
+      !warp &&
+      (def.freeCastIf !== null || (via === undefined && this.freeFromHand(card)) || impulseFree !== null)
+    ) {
       variants.push({ kicked: false, overload: false, free: true });
     }
-    if (impulseFree !== "only" && this.alternativeCostOf(card, def, via, player) !== null) {
+    if (!warp && impulseFree !== "only" && this.alternativeCostOf(card, def, via, player) !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
     // A choice of additional costs (rule 601.2b) multiplies through whatever
@@ -1824,7 +1840,11 @@ export class Game {
         ...this.castModalDescriptor(def, player, card),
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
         ...(kicked && def.kicker !== null
-          ? { kicked: true, kickerCost: def.kicker.cost }
+          ? {
+              kicked: true,
+              kickerCost: def.kicker.cost,
+              ...(def.kicker.keyword !== undefined ? { kickerKeyword: def.kicker.keyword } : {}),
+            }
           : {}),
         ...(overload && def.overload !== null
           ? { overload: true, overloadCost: def.overload.cost }
@@ -6344,6 +6364,8 @@ export class Game {
           ? (this.escapeOf(cardId, face, graveyardGrant)?.cost ?? null)
           : via === "foretell"
             ? (def.foretell?.cost ?? null)
+            : via === "warp"
+              ? (def.warp?.cost ?? null)
             : // Disturb (rule 702.150) — the disturb cost is on the front face.
               via === "disturb"
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
@@ -6521,6 +6543,14 @@ export class Game {
       if (this.findGraveyardGrant(player, cardId, face, graveyardGrant) === null) {
         return `${player} has no permission to cast ${def.name} from their graveyard`;
       }
+    } else if (via === "warp") {
+      // Rule 702.185a — from the hand, for its warp cost: an alternative cost,
+      // so no other one goes with it (118.9a).
+      if (def.warp === null) return `${def.name} does not have warp`;
+      if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
+        return `${player} does not have that card in hand`;
+      }
+      if (overload || free || altCost) return `warp is an alternative cost, and can't be combined with another`;
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
       !this.isCastableCommander(player, cardId)
@@ -9202,6 +9232,7 @@ export class Game {
       return;
     }
     const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
+    const warped = object.castVia === "warp";
     // "That creature enters with two additional +1/+1 counters" (Yuna).
     const extraCounters = object.entersWithCounters;
     const entered = this.moveObject(id, "battlefield");
@@ -9217,6 +9248,30 @@ export class Game {
       this.addCounter({ kind: "object", object: id }, escapedWith.kind, escapedWith.amount);
     }
     this.emit({ type: "permanent-entered-battlefield", object: id });
+    // Warp (rule 702.185a): its warp cost was paid, so it's exiled at the
+    // beginning of the next end step — a delayed triggered ability, which
+    // players can respond to, and which finds nothing once it has left and
+    // come back (400.7). Its owner may then cast it on a later turn.
+    if (warped && this.state.objects[id]?.zone === "battlefield") {
+      this.createDelayedTrigger(
+        id,
+        object.controller,
+        "next-end-step",
+        {
+          kind: "sequence",
+          effects: [
+            { kind: "exile", target: "source" },
+            {
+              kind: "conditional",
+              condition: { kind: "this-way", what: "exiled" },
+              then: { kind: "allow-cast-from-exile", target: "source", laterTurns: true },
+            },
+          ],
+        },
+        "Warp — exile it at the beginning of the next end step. You may cast it from exile on a later turn.",
+        [],
+      );
+    }
   }
 
   /** Finish an entry that stopped to ask an "as this enters" choice — see
@@ -12185,16 +12240,25 @@ export class Game {
         if (spell === undefined || spell.zone !== "stack" || spell.kind !== "card") return;
         spell.entersWithCounters = [...(spell.entersWithCounters ?? []), { kind: counter, amount }];
       },
-      allowCastFromExile: (target, free) => {
+      allowCastFromExile: (target, free, laterTurns) => {
         if (target.kind !== "object") return;
         const card = this.state.objects[target.object];
         if (card === undefined || card.zone !== "exile") return;
-        card.impulse = {
-          player: controller,
-          expiry: { kind: "end-of-turn", turn: this.state.turn.number },
-          castOnly: true,
-          ...(free ? { free: { only: true } } : {}),
-        };
+        card.impulse = laterTurns === true
+          ? {
+              // Warp: its owner, from the next turn on, for as long as it
+              // stays exiled (rule 702.185a).
+              player: card.owner,
+              expiry: { kind: "while-exiled" },
+              castOnly: true,
+              fromTurn: this.state.turn.number + 1,
+            }
+          : {
+              player: controller,
+              expiry: { kind: "end-of-turn", turn: this.state.turn.number },
+              castOnly: true,
+              ...(free ? { free: { only: true } } : {}),
+            };
       },
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
@@ -13487,6 +13551,7 @@ export class Game {
     // Gates on *using* it, checked live — Theater of Horrors' cards come and
     // go as the turn and the life-loss condition change.
     if (impulse.yourTurnOnly === true && this.activePlayer !== player) return false;
+    if (impulse.fromTurn !== undefined && this.state.turn.number < impulse.fromTurn) return false;
     if (impulse.gate !== undefined) {
       const gateSource =
         impulse.expiry.kind === "while-source"
@@ -18684,6 +18749,7 @@ export class Game {
       isToken: object.isToken,
       isCommander: object.isCommander,
       tapped: object.tapped,
+      ...(object.enteredKicked === true ? { enteredKicked: true } : {}),
       ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
       ...(object.entry !== undefined ? { entry: object.entry } : {}),
       ...(object.attackedThisTurn === true ? { attackedOnTurn: this.state.turn.number } : {}),

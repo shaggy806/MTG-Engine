@@ -273,6 +273,9 @@ export interface GameObject {
      * turn**, you may play …". Evaluated live, so the cards become playable
      * and unplayable again as the condition changes. */
     readonly yourTurnOnly?: boolean;
+    /** Not usable before this turn number — warp's "after the current turn
+     * has ended" (rule 702.185a). */
+    readonly fromTurn?: number;
     readonly gate?: StaticCondition;
   };
   /**
@@ -697,6 +700,10 @@ export interface PtModifier {
   /** Its name — a copy exception's "except its name is Mishra's Warform".
    * Read through {@link nameOf}. */
   setName?: string;
+  /** It has no mana cost — eternalize's and embalm's "a copy of it, except
+   * … with no mana cost" (rules 702.128a, 702.129a): mana value 0. Read
+   * through {@link hasNoManaCost}. */
+  noManaCost?: true;
   untilEndOfTurn: boolean;
   /**
    * `GameState.timestampSeq` when the modifier was applied, for ordering its
@@ -792,6 +799,9 @@ export interface LastKnownInfo {
   readonly isToken: boolean;
   readonly isCommander: boolean;
   readonly tapped: boolean;
+  /** Its spell was cast kicked (or its offspring cost paid) — `enteredKicked`,
+   * so "if it was kicked" still answers once it has left. */
+  readonly enteredKicked?: boolean;
   /** The turn it entered the battlefield on, and the turn it attacked on if
    * it did — for the `enteredThisTurn` / `attackedThisTurn` filter clauses. */
   readonly enteredOnTurn?: number;
@@ -2560,6 +2570,11 @@ export const printedCardName = (object: GameObject): string =>
  * ("except its name is Mishra's Warform" — a copiable `setName`, the latest
  * such), else its card's ({@link printedCardName}). What the legend rule and
  * every "named …" read; the registry stays keyed by `printedCardName`. */
+/** A copy exception took its mana cost away (see `PtModifier.noManaCost`):
+ * it has none, so its mana value is 0 (rule 202.1b). */
+export const hasNoManaCost = (object: GameObject): boolean =>
+  object.modifiers.some((m) => m.copiable === true && m.noManaCost === true);
+
 export const nameOf = (object: GameObject): string => {
   for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {
     const m = object.modifiers[i];

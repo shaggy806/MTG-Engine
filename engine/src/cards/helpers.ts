@@ -324,6 +324,48 @@ export const manaTapAbility = (mana: Color): ActivatedAbility => ({
 });
 
 /**
+ * Offspring's trigger (rule 702.175a — Iridescent Vinelasher): "When this
+ * permanent enters, if its offspring cost was paid, create a token that's a
+ * copy of it, except it's 1/1." Pair it with `kicker: { cost, keyword:
+ * "offspring" }`, the optional additional cost. The copy is made even if the
+ * creature has left by then, as it last existed (the ruling), and isn't cast,
+ * so it makes no offspring of its own.
+ */
+export const offspringTrigger = (): TriggeredAbility => ({
+  trigger: { on: "enters-battlefield", who: "self" },
+  condition: { kind: "self-kicked" },
+  targets: [],
+  effect: { kind: "create-token-copy", of: "source", count: 1, basePt: [1, 1] },
+  resolve: null,
+  text: "When this creature enters, if its offspring cost was paid, create a 1/1 token copy of it.",
+});
+
+/**
+ * Eternalize (rule 702.129a — Fanatic of Rhonas): "[Cost], Exile this card
+ * from your graveyard: Create a token that's a copy of it, except it's a 4/4
+ * black Zombie [its other creature types] with no mana cost. Eternalize only
+ * as a sorcery." The copy is of the card (as printed, not as it last was on
+ * the battlefield — the ruling), and the exceptions are its copiable values.
+ * `text` is the ability as printed, reminder text included.
+ */
+export const eternalizeAbility = (cost: string, text: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: false },
+  zone: "graveyard",
+  sorcerySpeed: true,
+  targets: [],
+  effect: {
+    kind: "create-token-copy",
+    of: "source",
+    count: 1,
+    who: "you",
+    asCard: true,
+    exceptions: { basePt: [4, 4], setColors: ["B"], addSubtypes: ["Zombie"], noManaCost: true },
+  },
+  resolve: null,
+  text,
+});
+
+/**
  * "{B}: Regenerate this creature." (rule 701.15a — Mortivore) — `mana` is the
  * cost as printed. `text` is the ability as the card prints it, reminder text
  * included where it has one.

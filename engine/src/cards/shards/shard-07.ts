@@ -154,6 +154,7 @@ import _poolSlimefootAndSquee from "../pool/slimefoot-and-squee.js";
 import _poolSokkasSwordTraining from "../pool/sokkas-sword-training.js";
 import _poolSoulSnare from "../pool/soul-snare.js";
 import _poolSpitfireLagac from "../pool/spitfire-lagac.js";
+import _poolStarscapeCleric from "../pool/starscape-cleric.js";
 import _poolStarvedRusalka from "../pool/starved-rusalka.js";
 import _poolStormscapeApprentice from "../pool/stormscape-apprentice.js";
 import _poolSuddenStrength from "../pool/sudden-strength.js";
@@ -351,6 +352,7 @@ const shard: CardShard = {
     _poolSokkasSwordTraining,
     _poolSoulSnare,
     _poolSpitfireLagac,
+    _poolStarscapeCleric,
     _poolStarvedRusalka,
     _poolStormscapeApprentice,
     _poolSuddenStrength,

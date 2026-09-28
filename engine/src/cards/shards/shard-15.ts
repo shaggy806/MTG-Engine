@@ -44,6 +44,7 @@ import _poolDrownInShapelessness from "../pool/drown-in-shapelessness.js";
 import _poolDryadOfTheIlysianGrove from "../pool/dryad-of-the-ilysian-grove.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
+import _poolExaltedSunborn from "../pool/exalted-sunborn.js";
 import _poolExecutionersCapsule from "../pool/executioners-capsule.js";
 import _poolEzuriClawOfProgress from "../pool/ezuri-claw-of-progress.js";
 import _poolFatefulEnd from "../pool/fateful-end.js";
@@ -228,6 +229,7 @@ const shard: CardShard = {
     _poolDryadOfTheIlysianGrove,
     _poolElvishMystic,
     _poolErinisGloomStalker,
+    _poolExaltedSunborn,
     _poolExecutionersCapsule,
     _poolEzuriClawOfProgress,
     _poolFatefulEnd,

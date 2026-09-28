@@ -32,11 +32,13 @@ import _poolCelestialUnicorn from "../pool/celestial-unicorn.js";
 import _poolCloudreaderSphinx from "../pool/cloudreader-sphinx.js";
 import _poolCoastalTower from "../pool/coastal-tower.js";
 import _poolCommandersInsignia from "../pool/commanders-insignia.js";
+import _poolCoruscationMage from "../pool/coruscation-mage.js";
 import _poolCragcrownPathway from "../pool/cragcrown-pathway.js";
 import _poolCrawWurm from "../pool/craw-wurm.js";
 import _poolCrazedGoblin from "../pool/crazed-goblin.js";
 import _poolCruelRevival from "../pool/cruel-revival.js";
 import _poolCunningBreezedancer from "../pool/cunning-breezedancer.js";
+import _poolDarkstarAugur from "../pool/darkstar-augur.js";
 import _poolDawnhartDisciple from "../pool/dawnhart-disciple.js";
 import _poolDeathcapMarionette from "../pool/deathcap-marionette.js";
 import _poolDefyGravity from "../pool/defy-gravity.js";
@@ -175,6 +177,7 @@ import _poolWardenOfEvosIsle from "../pool/warden-of-evos-isle.js";
 import _poolWarriorsCharge from "../pool/warriors-charge.js";
 import _poolWarshipScout from "../pool/warship-scout.js";
 import _poolWaspLancer from "../pool/wasp-lancer.js";
+import _poolWeftstalkerArdent from "../pool/weftstalker-ardent.js";
 import _poolWildAesthir from "../pool/wild-aesthir.js";
 import _poolWildWanderer from "../pool/wild-wanderer.js";
 import _poolWoodlandPatrol from "../pool/woodland-patrol.js";
@@ -216,11 +219,13 @@ const shard: CardShard = {
     _poolCloudreaderSphinx,
     _poolCoastalTower,
     _poolCommandersInsignia,
+    _poolCoruscationMage,
     _poolCragcrownPathway,
     _poolCrawWurm,
     _poolCrazedGoblin,
     _poolCruelRevival,
     _poolCunningBreezedancer,
+    _poolDarkstarAugur,
     _poolDawnhartDisciple,
     _poolDeathcapMarionette,
     _poolDefyGravity,
@@ -359,6 +364,7 @@ const shard: CardShard = {
     _poolWarriorsCharge,
     _poolWarshipScout,
     _poolWaspLancer,
+    _poolWeftstalkerArdent,
     _poolWildAesthir,
     _poolWildWanderer,
     _poolWoodlandPatrol,

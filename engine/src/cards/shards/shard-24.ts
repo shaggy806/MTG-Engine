@@ -142,6 +142,7 @@ import _poolSkullFracture from "../pool/skull-fracture.js";
 import _poolSokenzanBruiser from "../pool/sokenzan-bruiser.js";
 import _poolSoothsayerAdept from "../pool/soothsayer-adept.js";
 import _poolStaggeringInsight from "../pool/staggering-insight.js";
+import _poolStarwinder from "../pool/starwinder.js";
 import _poolSteelHellkite from "../pool/steel-hellkite.js";
 import _poolSteelWall from "../pool/steel-wall.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
@@ -322,6 +323,7 @@ const shard: CardShard = {
     _poolSokenzanBruiser,
     _poolSoothsayerAdept,
     _poolStaggeringInsight,
+    _poolStarwinder,
     _poolSteelHellkite,
     _poolSteelWall,
     _poolSunbladeAngel,
