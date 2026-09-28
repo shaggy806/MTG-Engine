@@ -467,3 +467,12 @@ only those it can. `bot:diff` against the build before, six four-player games: 2
 decisions changed, both Kardur, Doomscourge cast over another spell (its "attack a player other
 than you" now reads as less threat). The feature scan costs about 0.25 ms more per evaluation on
 seed 50's 73-permanent board. No weight changed.
+
+**After the plan: big boards, first cut (2026-09-27).** A CPU profile of seed 50's turn 40 (73
+permanents, 705 s) put 93% of the time in the engine running rollouts and under 1% in cloning and
+scoring. The largest single piece, 27%, was the batch asking the full `legalActions` between
+activations just to see whether that one ability could be activated again, which plans a mana
+payment for every ability on the board. `Game.legalActivationsOf` answers for one source (the
+same enumeration, moved into `pushActivations` so `legalActions` keeps its order and every fuzzer
+seed replays unchanged), and a test checks it equals `legalActions` narrowed at every window of a
+four-player game. The turn now takes 508 s with the same decisions. What's left is in BACKLOG.

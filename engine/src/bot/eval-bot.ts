@@ -685,7 +685,16 @@ export class EvalBotController extends HeuristicBotController {
             this.rolloutDecisions ? this.selfInRollouts() : undefined,
             MAX_BATCH,
             (game, previous) =>
-              this.nextInBatch(game.state, game.legalActions(this.playerId), previous, spread),
+              this.nextInBatch(
+                game.state,
+                // Only this ability's offers: the whole list plans a mana
+                // payment for every ability on the board, per activation.
+                previous.type === "activate-ability"
+                  ? game.legalActivationsOf(this.playerId, previous.source)
+                  : [],
+                previous,
+                spread,
+              ),
           ),
         );
         if (result === null || result.times < 2) continue;

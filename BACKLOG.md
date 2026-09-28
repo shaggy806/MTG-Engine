@@ -207,10 +207,14 @@ Beyond that plan:
   rollout is the general fix, and has a trap — passing then scores the same as casting whatever
   v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
   tie-break toward acting, and a bench, before it's tried.
-- **Big boards under count budgets.** A seventy-permanent board cost v2 ~33 s a window at the
-  bench's 200 simulations (measured before twin targets, batches and the hold after a decided
-  window cut the searches; not re-measured), so a long four-player game can still pass a bench's time limit
-  (seed 50's last turn took 15 minutes; it ends now). Live rooms stop at 300 ms.
+- **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
+  takes 508 s, about a second a simulation; 93% of it is the engine running rollouts, under 1%
+  cloning and scoring. Profiled 2026-09-27, the next levers: activating an ability plans its mana
+  payment twice, once in `whyCannotActivateAbility` and again to pay, each rebuilding
+  `manaSources` over the board (a quarter of what's left); `computeCharacteristics` is a third,
+  mostly the layer-4 fold and static conditions recounting the battlefield (`countWhere`); and
+  the prohibition scans (Code health, "Prohibition scans are quadratic"). Live rooms stop at
+  300 ms, so this is the bench's time limit and a thinner search on a big board, not a hang.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
   `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.

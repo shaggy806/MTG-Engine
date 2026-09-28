@@ -1330,6 +1330,16 @@ export class Game {
       }
     }
 
+    this.pushActivations(player, out);
+    return out;
+  }
+
+  /**
+   * The activated abilities `player` may activate right now, as
+   * `legalActions` offers them (appended to `out`, in its order) — of every
+   * permanent and card they could activate from, or of `onlySource` alone.
+   */
+  private pushActivations(player: PlayerId, out: LegalAction[], onlySource?: ObjectId): void {
     const pushActivateAbility = (
       source: ObjectId,
       cardName: string,
@@ -1396,6 +1406,7 @@ export class Game {
 
     const abilityGrantors = this.activatedGrantSources();
     for (const source of this.state.zones.shared.battlefield) {
+      if (onlySource !== undefined && source !== onlySource) continue;
       const object = this.state.objects[source];
       if (object.controller !== player) continue;
       this.effectiveActivated(source, abilityGrantors).forEach((ability, index) => {
@@ -1437,6 +1448,7 @@ export class Game {
     // `ActivatedAbility.zone`.
     for (const zone of ["hand", "graveyard"] as const) {
       for (const card of this.state.zones.perPlayer[player][zone]) {
+        if (onlySource !== undefined && card !== onlySource) continue;
         const def = this.registry.get(this.state.objects[card].cardName);
         this.effectiveActivated(card).forEach((ability, index) => {
           if (ability.zone === zone) pushActivateAbility(card, def.name, ability, index);
@@ -1445,6 +1457,7 @@ export class Game {
     }
     // The command zone is shared, so only the cards `player` owns.
     for (const card of this.state.zones.shared.command) {
+      if (onlySource !== undefined && card !== onlySource) continue;
       const object = this.state.objects[card];
       if (object === undefined || object.owner !== player || object.kind !== "card") continue;
       const def = this.registry.get(object.cardName);
@@ -1452,8 +1465,23 @@ export class Game {
         if (ability.zone === "command") pushActivateAbility(card, def.name, ability, index);
       });
     }
+  }
 
-    return out;
+  /**
+   * `legalActions`, narrowed to the abilities of one permanent or card:
+   * what a bot's batch asks between activations (`bot/simulate.ts`'s
+   * `canRepeat`). The whole enumeration plans a mana payment for every
+   * ability on the board; on seed 50's 73 permanents, asking it twenty times
+   * a batch was a quarter of a turn's search.
+   */
+  legalActivationsOf(player: PlayerId, source: ObjectId): LegalAction[] {
+    return withComputedCache(() => {
+      if (this.state.result.over || this.state.awaiting !== null) return [];
+      if (this.state.priority.holder !== player) return [];
+      const out: LegalAction[] = [];
+      this.pushActivations(player, out, source);
+      return out;
+    });
   }
 
   /**

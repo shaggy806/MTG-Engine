@@ -171,7 +171,7 @@ export function canRepeat(game: Game, action: Action): boolean {
   const state = game.state;
   if (state.awaiting !== null || state.priority.holder !== action.player) return false;
   return game
-    .legalActions(action.player)
+    .legalActivationsOf(action.player, action.source)
     .some(
       (l) =>
         l.kind === "activate-ability" &&
