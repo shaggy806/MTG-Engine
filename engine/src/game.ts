@@ -2988,6 +2988,8 @@ export class Game {
       readonly costEnergy?: number;
       /** See the `choose-modes` decision's `modesController`. */
       readonly modesController?: PlayerId;
+      /** See the `choose-modes` decision's `about`. */
+      readonly about?: PlayerId;
     } = {},
   ): void {
     const key = ability.key;
@@ -3044,6 +3046,7 @@ export class Game {
     this.state.awaiting = {
       kind: "choose-modes",
       player: controller,
+      ...(ability.about !== undefined ? { about: ability.about } : {}),
       source,
       minModes: Math.min(minModes, offered.length),
       maxModes: Math.min(maxModes, offered.length),
@@ -4164,6 +4167,9 @@ export class Game {
       if (to === "library-top" || to === "exile-playable") return;
       const moved = this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
       if (moved && to === "battlefield") {
+        // "…onto the battlefield tapped and attacking" (rule 508.4): as it
+        // enters, before anything sees it arrive.
+        if (awaiting.enterAttacking !== undefined) this.putIntoAttack([id], player, awaiting.enterAttacking);
         this.enterWithCounters(id, awaiting.enterWithCounters, player);
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
@@ -12838,7 +12844,7 @@ export class Game {
         if (target.kind === "object") this.raiseCastNow(controller, source, target.object, exileAfter);
       },
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
-      placeFound: (hit, put, tapped) => this.placeFound(hit, put, tapped),
+      placeFound: (hit, put, tapped, attacking) => this.placeFound(hit, put, tapped, attacking),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
       withTargets: (newTargets) =>
         this.makeResolutionContext(
@@ -12970,7 +12976,7 @@ export class Game {
         this.createTokenCopy(
           of,
           count,
-          opts,
+          { ...opts, source, effectController: controller },
           opts.asCard === true
             ? undefined
             : of === source
@@ -13017,7 +13023,7 @@ export class Game {
         this.state.preventionShields.push({ target, amount, combatOnly });
         this.emit({ type: "prevention-shield-created", target, amount });
       },
-      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost) =>
+      chooseModes: (minModes, maxModes, modes, onDecline, cost, notChosenThisTurn, otherCost, about) =>
         this.beginModesChoice(
           source,
           controller,
@@ -13038,6 +13044,7 @@ export class Game {
             notChosenThisTurn: notChosenThisTurn === true,
             ...(otherCost?.life !== undefined ? { costLife: otherCost.life } : {}),
             ...(otherCost?.energy !== undefined ? { costEnergy: otherCost.energy } : {}),
+            ...(about !== undefined ? { about } : {}),
           },
         ),
       changeLifeScoped: (who, delta) =>
@@ -13084,7 +13091,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking) =>
         this.beginZoneChoice(
           controller,
           zone,
@@ -13101,6 +13108,7 @@ export class Game {
           reveal === true,
           leftoverIf,
           secondPick,
+          attacking,
         ),
     };
   }
@@ -13132,6 +13140,7 @@ export class Game {
     reveal = false,
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
+    attacking?: ResolvedEnterAttacking,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -13153,6 +13162,7 @@ export class Game {
       destination,
       leftover,
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
+      ...(attacking !== undefined && destination === "battlefield" ? { enterAttacking: attacking } : {}),
       ...(then?.effect !== undefined ? { then: then.effect } : {}),
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
       ...(leftoverIf !== undefined ? { leftoverIf } : {}),
@@ -14208,6 +14218,12 @@ export class Game {
       gainUntilEndOfTurn?: readonly Keyword[];
       exceptions?: CopyExceptions;
       asCard?: boolean;
+      tapped?: boolean;
+      attacking?: ResolvedEnterAttacking;
+      exileAtEndOfCombat?: boolean;
+      /** The effect making them, for a delayed trigger it sets up. */
+      source?: ObjectId;
+      effectController?: PlayerId;
     },
     /** `ofId` as it last existed where the effect refers to it, when it has
      * left there since: its copiable values are read off this (rule
@@ -14260,7 +14276,7 @@ export class Game {
       ...(opts.exceptions !== undefined ? [copyExceptionModifier(opts.exceptions)] : []),
       ...untilEndOfTurnKeywords(opts.gainUntilEndOfTurn ?? []),
     ];
-    this.mintTokenBatch(
+    const made = this.mintTokenBatch(
       controller,
       copyName,
       copyName,
@@ -14269,9 +14285,29 @@ export class Game {
       opts.exileAtEndStep,
       opts.notLegendary || (departed !== undefined ? departed.notLegendary === true : of!.notLegendary === true),
       true,
-      false,
+      opts.tapped === true,
       opts.sacrificeAtEndStep === true,
     );
+    // "…that's tapped and attacking" (rule 508.4).
+    if (opts.attacking !== undefined) this.putIntoAttack(made, controller, opts.attacking);
+    // "Exile the tokens at end of combat": one delayed triggered ability over
+    // every copy made (rule 603.7), which leaves alone any that has left the
+    // battlefield by then (rule 400.7).
+    if (opts.exileAtEndOfCombat === true && made.length > 0 && opts.source !== undefined) {
+      this.createDelayedTrigger(
+        opts.source,
+        opts.effectController ?? controller,
+        "end-of-combat",
+        {
+          kind: "for-each-target",
+          from: 0,
+          effect: { kind: "exile", target: 0 },
+          simultaneous: true,
+        },
+        "Exile the tokens at end of combat.",
+        made.map((id) => ({ kind: "object", object: id })),
+      );
+    }
   }
 
   /** Below this, a *fresh* batch (no existing pristine match to fold into)
@@ -14654,7 +14690,12 @@ export class Game {
    * moved, to run again with the answer; and announcing its entry, which its
    * own "when this enters" and everything watching permanents enter see.
    */
-  private placeFound(hit: ObjectId, put: "battlefield" | "hand" | "graveyard", tapped: boolean): boolean {
+  private placeFound(
+    hit: ObjectId,
+    put: "battlefield" | "hand" | "graveyard",
+    tapped: boolean,
+    attacking?: ResolvedEnterAttacking,
+  ): boolean {
     const object = this.state.objects[hit];
     if (object === undefined) return false;
     if (put !== "battlefield") {
@@ -14663,6 +14704,8 @@ export class Game {
     }
     if (this.askEnterChoice(hit, object.owner)) return true;
     if (this.moveObject(hit, "battlefield", tapped ? { tapped: true } : {})) {
+      // "…tapped and attacking" (rule 508.4), as it enters.
+      if (attacking !== undefined) this.putIntoAttack([hit], this.state.objects[hit].controller, attacking);
       this.emit({ type: "permanent-entered-battlefield", object: hit });
     }
     return false;
@@ -16575,6 +16618,10 @@ export class Game {
         return step === "upkeep" && laterTurn;
       case "your-next-upkeep":
         return step === "upkeep" && laterTurn && active === trigger.controller;
+      // Made during this combat's end of combat step, it waits for the next
+      // one: this step began before it existed.
+      case "end-of-combat":
+        return step === "end-combat";
       case "your-next-main-phase":
         // The first main phase of yours to *begin* after it was created. This
         // only runs as a step begins, and one created during a main phase was

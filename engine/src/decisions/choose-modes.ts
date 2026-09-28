@@ -30,6 +30,7 @@ export const chooseModes = defineDecision({
       minModes: awaiting.minModes,
       maxModes: awaiting.maxModes,
       modeTexts: awaiting.modes.map((m) => m.text),
+      ...(awaiting.about !== undefined ? { about: awaiting.about } : {}),
       ...(awaiting.ward !== undefined ? { ward: { spell: awaiting.ward.spell } } : {}),
       // "You may pay {X}{R}" — tell the driver how large X may be.
       ...(awaiting.cost !== undefined && parseManaCost(awaiting.cost).x > 0

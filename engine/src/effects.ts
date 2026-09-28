@@ -1826,6 +1826,10 @@ export type EffectSpec =
       readonly put?: "battlefield" | "hand" | "graveyard";
       /** A card put onto the battlefield enters tapped. */
       readonly tapped?: boolean;
+      /** …and attacking (rule 508.4) — Raph & Mikey, Troublemakers' "put
+       * that card onto the battlefield tapped and attacking". See
+       * {@link EnterAttacking}. */
+      readonly attacking?: EnterAttacking;
       /** Applied once the card found is placed, with it as target 0 — "you
        * may put that card onto the battlefield" is a `may` of a
        * `put-onto-battlefield` of 0. Skipped when nothing matched. */
@@ -2022,6 +2026,10 @@ export type EffectSpec =
       readonly kind: "for-each-player";
       readonly who: PlayerScope;
       readonly effect: EffectSpec;
+      /** Set by the engine on the copy it parks when one player's `effect`
+       * stops to ask something (myriad's "you may"): the players still to
+       * go, fixed when it began. */
+      readonly remaining?: readonly PlayerId[];
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -2042,6 +2050,15 @@ export type EffectSpec =
       readonly gainUntilEndOfTurn?: readonly Keyword[];
       /** Exile the token copies at the beginning of the next end step (Miirym). */
       readonly exileAtEndStep?: boolean;
+      /** "Exile the tokens at end of combat" (myriad, rule 702.116a; Delina,
+       * Wild Mage): a delayed triggered ability over the copies made, at the
+       * beginning of the end of combat step — on the stack, like any. */
+      readonly exileAtEndOfCombat?: boolean;
+      /** The copies enter **tapped** — with `attacking`, "a token copy that's
+       * tapped and attacking" (myriad). */
+      readonly tapped?: boolean;
+      /** …and **attacking** (rule 508.4) — see {@link EnterAttacking}. */
+      readonly attacking?: EnterAttacking;
       /** *Sacrifice* them at the beginning of the next end step instead
        * (Kiki-Jiki, Mirror Breaker) — the difference is whether dies-triggers
        * see them go. */
@@ -2191,6 +2208,11 @@ export type EffectSpec =
       readonly effect: EffectSpec;
       /** The yes/no prompt, e.g. "Draw a card?". */
       readonly prompt: string;
+      /** The question is about `"that-player"` — asked once per player
+       * inside a `for-each-player` (myriad: "for each opponent other than
+       * defending player, you may …"). The offer names them (`about`), since
+       * the same prompt comes up once for each. */
+      readonly aboutThatPlayer?: boolean;
       /**
        * An optional *cost* to say yes — "you may pay {B}. If you do, draw a
        * card" (Nihil Spellbomb, Dawn of Hope, Mentor of the Meek).
@@ -2584,6 +2606,10 @@ export type EffectSpec =
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
+      /** …and **attacking** (rule 508.4) — Kaalia of the Vast's "onto the
+       * battlefield tapped and attacking that opponent", Winota's. See
+       * {@link EnterAttacking}. */
+      readonly attacking?: EnterAttacking;
       /** `"hand"` (needed-cards P19 — Genesis Ultimatum: "…and the rest into
        * your hand") puts every non-chosen looked-at card into the chooser's
        * hand, regardless of `filter`; `"graveyard"` ("…put the rest into your
@@ -2962,7 +2988,12 @@ export interface EffectApi {
   /** Put the card a `reveal-until` found where its `put` says. Returns
    * `true` when it stopped first to ask an "as this enters" choice, having
    * moved nothing — try again once that's answered. */
-  placeFound(hit: ObjectId, put: "battlefield" | "hand" | "graveyard", tapped: boolean): boolean;
+  placeFound(
+    hit: ObjectId,
+    put: "battlefield" | "hand" | "graveyard",
+    tapped: boolean,
+    attacking?: ResolvedEnterAttacking,
+  ): boolean;
   /** Place what a `reveal-until` revealed that is still where it was
    * revealed — see its `rest`. */
   placeRevealed(
@@ -3295,6 +3326,9 @@ export interface EffectApi {
       exceptions?: CopyExceptions;
       /** Copy the object as it is now, never as it last existed elsewhere. */
       asCard?: boolean;
+      tapped?: boolean;
+      attacking?: ResolvedEnterAttacking;
+      exileAtEndOfCombat?: boolean;
     },
   ): void;
   /** True if `condition` holds from the effect source's controller's
@@ -3340,6 +3374,8 @@ export interface EffectApi {
     notChosenThisTurn?: boolean,
     /** The rest of a `may`'s cost: life and energy, as numbers. */
     otherCost?: { readonly life?: number; readonly energy?: number },
+    /** The player the question is about — see `may`'s `aboutThatPlayer`. */
+    about?: PlayerId,
   ): void;
   /** Scry (`surveil: false`) or surveil (`surveil: true`) `amount` cards;
    * apply `then` afterwards. See the `"scry"` / `"surveil"` {@link EffectSpec}. */
@@ -3386,6 +3422,7 @@ export interface EffectApi {
     reveal?: boolean,
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
+    attacking?: ResolvedEnterAttacking,
   ): void;
 }
 
@@ -3574,7 +3611,10 @@ function applyRevealUntil(
   const hit = progress.hit;
   if (!progress.placed && hit !== null) {
     const parked = ctx.parkedCount();
-    if (spec.put !== undefined && ctx.placeFound(hit, spec.put, spec.tapped === true)) {
+    if (
+      spec.put !== undefined &&
+      ctx.placeFound(hit, spec.put, spec.tapped === true, resolveEnterAttacking(spec.attacking, ctx))
+    ) {
       ctx.resumeAfterDecisions({ ...spec, progress }, parked);
       return;
     }
@@ -4820,11 +4860,22 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         resolveEnterAttacking(spec.attacking, ctx),
       );
       return;
-    case "for-each-player":
-      for (const player of ctx.playersInScope(spec.who)) {
-        applyEffectSpec(spec.effect, ctx.aboutPlayer(player));
+    case "for-each-player": {
+      // Player by player, as a `sequence`'s steps: one whose effect stops to
+      // ask something is answered before the next player's happens, the rest
+      // parked with the players fixed as they were when this began.
+      const players = spec.remaining ?? ctx.playersInScope(spec.who);
+      const pendingBefore = ctx.decisionPending();
+      for (let i = 0; i < players.length; i += 1) {
+        const parked = ctx.parkedCount();
+        applyEffectSpec(spec.effect, ctx.aboutPlayer(players[i]));
+        if (i + 1 < players.length && !pendingBefore && ctx.decisionPending()) {
+          ctx.resumeAfterDecisions({ ...spec, remaining: players.slice(i + 1) }, parked);
+          return;
+        }
       }
       return;
+    }
     case "create-token-copy": {
       let of: ObjectId | undefined;
       if (spec.of === "source") of = ctx.source;
@@ -4846,6 +4897,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
           ...(spec.exceptions ? { exceptions: spec.exceptions } : {}),
           ...(spec.asCard === true ? { asCard: true } : {}),
+          ...(spec.tapped === true ? { tapped: true } : {}),
+          ...(spec.attacking !== undefined ? { attacking: resolveEnterAttacking(spec.attacking, ctx) } : {}),
+          ...(spec.exileAtEndOfCombat === true ? { exileAtEndOfCombat: true } : {}),
         });
       }
       return;
@@ -4951,6 +5005,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               ...(spec.costLife !== undefined ? { life: amountValue(spec.costLife, ctx) } : {}),
               ...(spec.costEnergy !== undefined ? { energy: amountValue(spec.costEnergy, ctx) } : {}),
             },
+        spec.aboutThatPlayer === true ? effectPlayer("that-player", ctx) : undefined,
       );
       return;
     }
@@ -5080,6 +5135,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               destination: spec.secondPick.destination,
               ...(spec.secondPick.enterTapped === true ? { enterTapped: true } : {}),
             },
+        resolveEnterAttacking(spec.attacking, ctx),
       );
       return;
     default:

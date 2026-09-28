@@ -119,6 +119,44 @@ export const dethrone = (): TriggeredAbility => ({
 });
 
 /**
+ * Myriad (rule 702.116a): "Whenever this creature attacks, for each opponent
+ * other than defending player, you may create a token that's a copy of this
+ * creature that's tapped and attacking that player or a planeswalker they
+ * control. If one or more tokens are created this way, exile the tokens at
+ * end of combat." The defending player is the trigger's `"trigger-player"`
+ * (the one it attacks, or who controls the planeswalker it attacks), so the
+ * opponents are `"each-other-opponent"`; the "you may" is asked once for each,
+ * naming them. Each copy's own target is chosen as it enters where that
+ * player has a planeswalker (rule 508.4). The copies were never declared, so
+ * their own myriad doesn't trigger (508.3a). A triggered ability, so a static
+ * can grant it (Legion Loyalty) and each instance triggers on its own
+ * (702.116b). Put the printed line in the card's `text` as well.
+ */
+export const myriad = (): TriggeredAbility => ({
+  trigger: { on: "attacks", who: "self" },
+  targets: [],
+  effect: {
+    kind: "for-each-player",
+    who: "each-other-opponent",
+    effect: {
+      kind: "may",
+      prompt: "Myriad: create a token copy attacking this player?",
+      aboutThatPlayer: true,
+      effect: {
+        kind: "create-token-copy",
+        of: "source",
+        count: 1,
+        tapped: true,
+        attacking: { player: "that-player", orTheirPlaneswalker: true },
+        exileAtEndOfCombat: true,
+      },
+    },
+  },
+  resolve: null,
+  text: "Myriad",
+});
+
+/**
  * Station (rule 702.184a): "Tap another untapped creature you control: Put a
  * number of charge counters on this permanent equal to the tapped creature's
  * power. Activate only as a sorcery." The power is read as the ability

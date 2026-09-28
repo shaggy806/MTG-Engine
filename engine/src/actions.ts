@@ -876,6 +876,10 @@ export type LegalAction =
       readonly source: ObjectId;
       readonly minModes: number;
       readonly maxModes: number;
+      /** The player the question is about, when there is one per player
+       * (myriad's "for each opponent … you may"): a driver shows it beside
+       * the prompt. See the `may` effect's `aboutThatPlayer`. */
+      readonly about?: PlayerId;
       /** Present when the decision's cost contains `{X}` (Flameblast
        * Dragon): the largest X the chooser could pay for right now. The
        * driver echoes its pick back as `xValue`. */

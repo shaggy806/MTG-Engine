@@ -9,7 +9,12 @@
 import type { CastSpellOffer, CastVia } from "./actions.js";
 import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
-import type { EffectSpec, LookAndChooseLeftoverIf, ZoneSecondPick } from "./effects.js";
+import type {
+  EffectSpec,
+  LookAndChooseLeftoverIf,
+  ResolvedEnterAttacking,
+  ZoneSecondPick,
+} from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -1322,6 +1327,10 @@ export type AwaitingDecision =
       /** A library-search result that enters the battlefield does so tapped
        * (Rampant Growth). Only meaningful with `destination: "battlefield"`. */
       readonly enterTapped?: boolean;
+      /** …and attacking (rule 508.4 — a `look-and-choose`'s `attacking`):
+       * Kaalia of the Vast, Winota. Only meaningful with `destination:
+       * "battlefield"`. */
+      readonly enterAttacking?: ResolvedEnterAttacking;
       /** Counters each card put onto the battlefield enters with — a
        * `return-from-graveyard`'s `withCounters`. */
       readonly enterWithCounters?: { readonly kind: string; readonly amount: number };
@@ -1544,6 +1553,8 @@ export type AwaitingDecision =
        * `maxModes` distinct modes; their effects apply after. */
       readonly kind: "choose-modes";
       readonly player: PlayerId;
+      /** The player the question is about — see the offer's `about`. */
+      readonly about?: PlayerId;
       /** The permanent (for an ability) or spell object the effect belongs to
        * — used to build the resolution context for the chosen modes. */
       readonly source: ObjectId;
@@ -1699,7 +1710,10 @@ export type DelayedTriggerTiming =
    * beginning of your next main phase"). */
   | "your-next-upkeep"
   | "your-next-end-step"
-  | "your-next-main-phase";
+  | "your-next-main-phase"
+  /** "At end of combat" — the beginning of the next end of combat step
+   * (rule 511.2): myriad's "exile the tokens at end of combat". */
+  | "end-of-combat";
 
 /** One object in a {@link TurnHistory} list; a token stack entering or
  * leaving at once counts as every token in it. */
