@@ -61,6 +61,36 @@ const SORT_LABEL: Record<Sort, string> = {
  */
 const PAGE_SIZE = 60
 
+/**
+ * `PAGE_SIZE` rounded to a whole number of grid rows, so only the last page
+ * ends in a short row. A fixed 60 left the final row of every page short at
+ * most widths (7, 8, 9 or 11 columns), and the gallery read as if the pool
+ * ended there.
+ */
+function pageSizeFor(columns: number): number {
+  if (columns <= 0) return PAGE_SIZE
+  return columns * Math.max(1, Math.round(PAGE_SIZE / columns))
+}
+
+/**
+ * How many columns the gallery grid has, measured off its computed
+ * `grid-template-columns` (it's `auto-fill`, so only the layout knows). A
+ * callback ref rather than an effect, so the first paint already uses it.
+ */
+function useGridColumns(): [number, (el: HTMLElement | null) => void] {
+  const [columns, setColumns] = useState(0)
+  const ref = useCallback((el: HTMLElement | null) => {
+    if (el === null) return
+    const measure = () =>
+      setColumns(getComputedStyle(el).gridTemplateColumns.split(' ').filter(Boolean).length)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  return [columns, ref]
+}
+
 /** Sort buckets — the order a decklist or a Scryfall "type" sort reads in. */
 const TYPE_ORDER: readonly CardType[] = [
   'creature',
@@ -219,6 +249,7 @@ export function LibraryPage() {
   const [typeFilter, setTypeFilter] = useState<CardType | null>(null)
   const [colorFilter, setColorFilter] = useState<readonly ColorFilter[]>([])
   const [sort, setSort] = useState<Sort>('name')
+  const [descending, setDescending] = useState(false)
   const [showTokens, setShowTokens] = useState(() => {
     // A deep link straight to a token shouldn't land on an empty gallery.
     const param = cardParam()
@@ -239,22 +270,33 @@ export function LibraryPage() {
       return q === '' || e.haystack.includes(q)
     })
     const byName = (a: Entry, b: Entry) => a.def.name.localeCompare(b.def.name)
-    if (sort === 'name') return rows
+    if (sort === 'name') return descending ? [...rows].reverse() : rows
+    const sign = descending ? -1 : 1
     return [...rows].sort((a, b) => {
+      // Unranked cards (basics, anything too new) sort last either way: the
+      // least-played cards are the ones with the biggest rank, not no rank.
+      if (sort === 'edhrec' && (a.edhrec === Infinity) !== (b.edhrec === Infinity)) {
+        return a.edhrec === Infinity ? 1 : -1
+      }
       const key =
         sort === 'mana'
           ? a.mv - b.mv
           : sort === 'color'
             ? a.colorRank - b.colorRank
             : sort === 'edhrec'
-              ? a.edhrec - b.edhrec
+              ? a.edhrec === b.edhrec
+                ? 0
+                : a.edhrec - b.edhrec
               : a.typeRank - b.typeRank
-      return key !== 0 ? key : byName(a, b)
+      // Ties stay alphabetical whichever way the sort runs.
+      return key !== 0 ? sign * key : byName(a, b)
     })
-  }, [entries, query, typeFilter, colorFilter, sort, showTokens])
+  }, [entries, query, typeFilter, colorFilter, sort, descending, showTokens])
 
+  const [columns, gridRef] = useGridColumns()
+  const pageSize = pageSizeFor(columns)
   const [page, setPage] = useState(0)
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   // Any change to the result set puts you back on page one: staying on page 7
   // of a search that now has two pages shows an empty grid, and the count
   // above it would say otherwise.
@@ -263,7 +305,7 @@ export function LibraryPage() {
   // effect. An effect would commit the stale page first and then immediately
   // re-render (which `react/set-state-in-effect` flags); this is React's
   // documented "adjust state when a prop changes" pattern and repaints once.
-  const filterKey = `${query}|${typeFilter ?? ''}|${[...colorFilter].sort().join(',')}|${sort}|${showTokens}`
+  const filterKey = `${query}|${typeFilter ?? ''}|${[...colorFilter].sort().join(',')}|${sort}|${descending}|${showTokens}`
   const [pagedFor, setPagedFor] = useState(filterKey)
   if (pagedFor !== filterKey) {
     setPagedFor(filterKey)
@@ -271,8 +313,8 @@ export function LibraryPage() {
   }
   const safePage = Math.min(page, pageCount - 1)
   const pageRows = useMemo(
-    () => filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
-    [filtered, safePage],
+    () => filtered.slice(safePage * pageSize, safePage * pageSize + pageSize),
+    [filtered, safePage, pageSize],
   )
 
   /**
@@ -319,16 +361,16 @@ export function LibraryPage() {
       // stepping across a boundary has to carry the grid with it — otherwise
       // closing the overlay lands you on a page that doesn't contain the card
       // you were just looking at.
-      setPage(Math.floor(at / PAGE_SIZE))
+      setPage(Math.floor(at / pageSize))
     },
-    [filtered, selectedIndex, select],
+    [filtered, selectedIndex, select, pageSize],
   )
 
   const toggleColor = (c: ColorFilter) =>
     setColorFilter((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
 
   const anyFilter =
-    query !== '' || typeFilter !== null || colorFilter.length > 0 || sort !== 'name' || showTokens
+    query !== '' || typeFilter !== null || colorFilter.length > 0 || sort !== 'name' || descending || showTokens
 
   return (
     <div className="lib-page">
@@ -393,6 +435,15 @@ export function LibraryPage() {
                 </option>
               ))}
             </select>
+            <button
+              type="button"
+              className="lib-sort-dir"
+              aria-label={descending ? 'Descending' : 'Ascending'}
+              title={descending ? 'Descending: click to sort ascending' : 'Ascending: click to sort descending'}
+              onClick={() => setDescending((d) => !d)}
+            >
+              {descending ? '↓' : '↑'}
+            </button>
           </label>
 
           <label className="lib-toggle" title="Tokens aren't cards — they can't go in a deck">
@@ -413,6 +464,7 @@ export function LibraryPage() {
                 setTypeFilter(null)
                 setColorFilter([])
                 setSort('name')
+                setDescending(false)
                 setShowTokens(false)
               }}
             >
@@ -426,7 +478,7 @@ export function LibraryPage() {
         <p className="lib-count muted mono">
           {filtered.length} {filtered.length === 1 ? 'card' : 'cards'}
           {pageCount > 1
-            ? ` — showing ${safePage * PAGE_SIZE + 1}-${Math.min(filtered.length, (safePage + 1) * PAGE_SIZE)}`
+            ? ` — showing ${safePage * pageSize + 1}-${Math.min(filtered.length, (safePage + 1) * pageSize)}`
             : ''}
         </p>
         {filtered.length === 0 ? (
@@ -435,7 +487,7 @@ export function LibraryPage() {
           </p>
         ) : (
           <>
-            <div className="lib-grid">
+            <div className="lib-grid" ref={gridRef}>
               {pageRows.map((e) => (
                 <GridCard key={e.def.name} entry={e} onOpen={() => select(e.def.name)} />
               ))}

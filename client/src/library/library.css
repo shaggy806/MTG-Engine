@@ -112,13 +112,18 @@
   color: var(--muted);
   white-space: nowrap;
 }
-.lib-sort select {
+.lib-sort select,
+.lib-sort-dir {
   font: inherit;
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 4px 8px;
+}
+.lib-sort-dir {
+  line-height: 1;
+  cursor: pointer;
 }
 
 .lib-clear {
