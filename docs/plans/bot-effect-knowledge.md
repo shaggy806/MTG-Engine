@@ -437,3 +437,21 @@ was scaled by life and shipped at 1.0, where the scenario flips at ~0.66. At 1.0
 decisions changed over six four-player games: more favourable blocks and chump blocks at low
 life, removal on the creatures that mattered, and more sweepers — the one thing left to watch
 (BACKLOG). Frozen as `shipped-2026-09-27b`. Not benched.
+
+**After the plan: a Counterspell's reserve (2026-09-27).** v2 countered an opponent's Arcane Signet
+with its only Counterspell, and no weight on the old terms held it without also stopping the bot
+casting its rocks and draw spells. A new feature, `answers`, counts the counterspells in the bot's
+own hand (anything whose spell, or one of its modes, counters a spell), so casting one gives up a
+reserve on top of the card: the bot counters only what's worth more than that. Measured at four
+players before the reserve, countering was worth 0.4 against a Sol Ring, 0.9 a Signet, 1.85 a
+Divination, 2.35 a Cultivate, 4.6 a Grizzly Bears, 11-13 a Craw Wurm, Serra Angel or Shivan
+Dragon, and 26.8 a Wrath of God on three of our creatures; `answers` ships at 3. Rhystic Study
+scored 1.4, below a Divination, because `drawEngines` stood at 0: the user's point was that it's
+almost always worth a counter, so `drawEngines` goes to 4 (5.4 to counter one). Three gate
+scenarios pin it: saves Counterspell for a Signet, counters a Rhystic Study, lets a Divination
+through; each fails without its weight. `bot:diff` against the build before, six four-player games:
+28 of 11,693 decisions changed, all from `drawEngines` (no starter deck plays a counterspell) —
+draw engines cast ahead of creatures (Greed, Dawn of Hope, Midnight Reaper, Elemental Bond),
+removal and Cleansing Nova aimed at opponents' engines, an Abrade held rather than spent on a Sol
+Ring, and an edict answered with the commander over Mentor of the Meek. Frozen as
+`shipped-2026-09-27c`. Not benched.

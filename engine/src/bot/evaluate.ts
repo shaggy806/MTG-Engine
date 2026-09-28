@@ -139,6 +139,9 @@ export interface EvalWeights {
    * in full from a player who attacked us within the last round
    * (`features.ts`). */
   readonly threat: number;
+  /** Counterspells in our hand (`features.ts`): what one could still answer,
+   * on top of the card `hand` counts it as. */
+  readonly answers: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -252,7 +255,10 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // ship on (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for
   // a sweep that finds their peak, if one exists.
   nonlandMana: 0,
-  drawEngines: 0,
+  // An engine at 4 — about two cards, a couple of turns of Phyrexian Arena —
+  // so an opponent's Rhystic Study is worth a Counterspell's reserve
+  // (`answers`): at 0, countering one scored 1.4, below a Divination.
+  drawEngines: 4,
   // A commander is the deck it leads, not a creature like any other. At zero
   // the bot killed a bigger vanilla creature rather than a commander one hit
   // from lethal commander damage ("kills the commander one hit from lethal
@@ -280,6 +286,14 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // about 0.66; 1.0 keeps a margin of ~2 without the removal-happy streak 1.5
   // showed in `bot:diff` (a Fireball on a Cat token over Phyrexian Arena).
   threat: 1,
+  // The reserve a Counterspell in hand holds back for: the bot counters a
+  // spell only when that's worth more than this. At 3 it lets a Signet (0.9),
+  // a Divination (1.85) and a Cultivate (2.35) through, and counters a
+  // Grizzly Bears (4.6), a draw engine (5.4 with `drawEngines` 4), a Craw
+  // Wurm (10.9) and a wrath of its own board (26.8) — "saves Counterspell for
+  // a threat", which no weight on the old terms could fix without also
+  // stopping the bot casting its rocks and draw spells.
+  answers: 3,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

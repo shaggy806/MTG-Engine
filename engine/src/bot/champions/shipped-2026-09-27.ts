@@ -58,6 +58,7 @@ export const SHIPPED_2026_09_27: Champion = {
     // Frozen before the token cap: its old uncapped count, exactly.
     extraTokens: 2,
     threat: 0,
+    answers: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,

@@ -2,19 +2,19 @@ import type { Champion } from "./index.js";
 
 /**
  * The v2 vector live rooms seat, as `DEFAULT_WEIGHTS` stood at the end of
- * 2026-09-27: `shipped-2026-09-27` plus two terms added that day.
+ * 2026-09-27, after `shipped-2026-09-27b`:
  *
- * - `extraTokens` 0 — identical noncreature tokens past four count for
- *   nothing, so a pile of Treasures stops being worth farming (seed 50).
- * - `threat` 1 — opponents' creatures by the damage they could turn on us,
- *   in full from a player who attacked us last round, as a share of what we
- *   have left to lose. The lever for "kills the creature attacking it, not
- *   the leader's"; read with `bot:diff` rather than benched.
+ * - `answers` 3 — a Counterspell in hand is held back for anything worth
+ *   more than this to counter: a Signet or a Divination goes through, a
+ *   creature, a draw engine or a wrath of our board doesn't.
+ * - `drawEngines` 4 — an opponent's Rhystic Study is worth countering.
+ *
+ * Read with `bot:diff` rather than benched.
  */
-export const SHIPPED_2026_09_27B: Champion = {
-  id: "shipped-2026-09-27b",
+export const SHIPPED_2026_09_27C: Champion = {
+  id: "shipped-2026-09-27c",
   date: "2026-09-27",
-  note: "DEFAULT_WEIGHTS at the end of 2026-09-27: shipped-2026-09-27 with the token cap (extraTokens 0) and threat 1",
+  note: "DEFAULT_WEIGHTS at the end of 2026-09-27: shipped-2026-09-27b with a Counterspell reserve (answers 3) and draw engines at 4",
   weights: {
     life: 0.5,
     lifeDanger: 1,
@@ -44,12 +44,12 @@ export const SHIPPED_2026_09_27B: Champion = {
     emblems: 3,
     commanderTax: 0.5,
     nonlandMana: 0,
-    drawEngines: 0,
+    drawEngines: 4,
     commanderOnBoard: 3,
     idlePower: 0.5,
     extraTokens: 0,
     threat: 1,
-    answers: 0,
+    answers: 3,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,

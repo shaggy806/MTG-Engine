@@ -173,13 +173,15 @@ base, retire v3. One line per step still open:
 
 Beyond that plan:
 
-- **An answer's option value.** v2 counters an opponent's Arcane Signet with its only
-  Counterspell (the "saves Counterspell for a threat" training scenario): `hand` prices a
-  Counterspell like any card, and every weight that would make holding it right —
-  `handManaValue`, `untappedMana`, a lower `otherPermanents` — also stops the bot casting its
-  rocks and draw spells (`bot:fit-scenarios` lists them). Wants a feature: what a reactive card
-  in hand could still answer.
-
+- **Draw engines by rate.** `drawEngines` (4 since 2026-09-27, so an opponent's Rhystic Study is
+  worth a Counterspell) counts every engine alike: Rhystic Study, which draws off each
+  opponent's spell, scores the same as Phyrexian Arena's one card a turn. Pricing one by the
+  cards it draws a round would separate them.
+- **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
+  Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a
+  Grizzly Bears (worth 4.6 to counter, largely `threat`). If live games show it holding one
+  into a loss, or spending one on a small creature, capture the position: a reserve scaled by
+  opponents' cards in hand is the obvious next shape.
 - **Watch the wraths since `threat`.** With the threat term (2026-09-27) v2 casts more
   sweepers: in six four-player games, Cleansing Nova three times (at 33, 19 and 5 life) and
   Blasphemous Act over recasting its commander, and a turn-7 Magmaquake over Thunderbreak
@@ -238,6 +240,9 @@ Beyond that plan:
   button on the player banner that opens a viewer, the way graveyard and exile do. The monarch
   keeps its 👑 beside the player's name (`PlayerPanel`'s `pp-monarch`, checked in 2- and
   4-player rooms).
+- **The library can't reverse its sort.** Name, mana value, colour and popularity each sort
+  one way only (`client/src/library/LibraryPage.tsx`'s `sort`); an ascending/descending toggle
+  beside the sort picker would show the priciest or least-played cards first.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing

@@ -85,6 +85,7 @@ export const FEATURE_KEYS = [
   "idlePower",
   "extraTokens",
   "threat",
+  "answers",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -267,6 +268,27 @@ function isOneShot(trigger: TriggeredAbility["trigger"]): boolean {
   );
 }
 
+/** Does this effect counter a spell? Anywhere in the tree. */
+function counters(effect: unknown): boolean {
+  if (effect === null || typeof effect !== "object") return false;
+  if (Array.isArray(effect)) return effect.some(counters);
+  if ((effect as { readonly kind?: unknown }).kind === "counter") return true;
+  return Object.values(effect).some((value) => value !== null && typeof value === "object" && counters(value));
+}
+
+const answerMemo = new WeakMap<CardDefinition, boolean>();
+
+/** A card held to counter something: its spell (or one of its modes) counters
+ * a spell. Counterspell, Negate, Cryptic Command. */
+function isAnswer(def: CardDefinition): boolean {
+  let found = answerMemo.get(def);
+  if (found === undefined) {
+    found = counters(def.effect) || counters(def.castModal);
+    answerMemo.set(def, found);
+  }
+  return found;
+}
+
 const engineMemo = new WeakMap<CardDefinition, boolean>();
 
 /**
@@ -442,12 +464,18 @@ function playerFeaturesUncached(
   }
 
   let handManaValue = 0;
+  // Counterspells still in hand: what they could answer later, which `hand`
+  // prices like any card. v2 countered bob's Arcane Signet with its only
+  // Counterspell ("saves Counterspell for a threat"), and every weight that
+  // would have held it also stopped the bot casting its rocks and draw spells.
+  let answers = 0;
   if (isMe) {
     for (const id of zones.hand) {
       const object = state.objects[id];
       if (object === undefined || !registry.has(object.cardName)) continue;
       const def = registry.get(object.cardName);
       if (!def.types.includes("land")) handManaValue += manaValueOf(registry, def.name);
+      if (isAnswer(def)) answers += 1;
     }
   }
 
@@ -504,5 +532,6 @@ function playerFeaturesUncached(
     idlePower,
     extraTokens,
     threat,
+    answers,
   };
 }

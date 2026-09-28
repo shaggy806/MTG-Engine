@@ -52,6 +52,7 @@ export const RAMP: Champion = {
     // Frozen before the token cap: its old uncapped count, exactly.
     extraTokens: 1,
     threat: 0,
+    answers: 0,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.75,

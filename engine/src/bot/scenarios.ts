@@ -708,6 +708,59 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "saves Counterspell for a threat",
+    rule: "A Counterspell is wasted on a mana rock when three opponents have bombs to come.",
+    position(registry) {
+      // v2 countered bob's Arcane Signet: the Signet is worth `otherPermanents`
+      // + `permanentManaValue` to him, more than the card it cost us, while
+      // a card in hand was worth `hand` whatever it could answer later.
+      // `answers` is that reserve.
+      const game = table(registry, [A, B, C, D], B);
+      for (const player of [A, B, C, D]) {
+        lands(game, player === A ? "Island" : "Forest", player, 4);
+      }
+      game.debugSpawn("Counterspell", A, "hand");
+      castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type !== "cast-spell",
+          detail: `with bob's Arcane Signet on the stack, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  ...(
+    [
+      ["counters a draw engine", "Rhystic Study", "Island", true],
+      ["lets a cantrip through", "Divination", "Island", false],
+    ] as const
+  ).map(([name, card, land, counter]) =>
+    asked({
+      name,
+      rule: counter
+        ? "A draw engine is worth a Counterspell's reserve: it keeps drawing."
+        : "Two cards once aren't worth the Counterspell's reserve.",
+      position(registry) {
+        const game = table(registry, [A, B, C, D], B);
+        for (const player of [A, B, C, D]) {
+          lands(game, player === A || player === B ? land : "Forest", player, 4);
+        }
+        game.debugSpawn("Counterspell", A, "hand");
+        castAndPassTo(game, B, game.debugSpawn(card, B, "hand"), A);
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "cast-spell") === counter,
+            detail: `with bob's ${card} on the stack, chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  asked({
     name: "sacrifices its least creature to an edict",
     rule: "An edict takes the creature we'd miss least.",
     position(registry) {
@@ -1042,33 +1095,6 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
 
   // --- training: right answers the shipped weights get wrong ----------------
-  asked({
-    name: "saves Counterspell for a threat",
-    rule: "A Counterspell is wasted on a mana rock when three opponents have bombs to come.",
-    kind: "training",
-    position(registry) {
-      // v2 counters bob's Arcane Signet: the Signet is worth `otherPermanents`
-      // + `permanentManaValue` to him, which is more than the card it costs
-      // us, and a card in hand is worth `hand` whatever it could answer later.
-      // No weight prices an answer's option value: every one that would make
-      // holding right also stops the bot casting its rocks and draw spells.
-      // BACKLOG, "An answer's option value".
-      const game = table(registry, [A, B, C, D], B);
-      for (const player of [A, B, C, D]) {
-        lands(game, player === A ? "Island" : "Forest", player, 4);
-      }
-      game.debugSpawn("Counterspell", A, "hand");
-      castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
-      return {
-        game,
-        player: A,
-        judge: (action) => ({
-          passed: action.type !== "cast-spell",
-          detail: `with bob's Arcane Signet on the stack, chose ${describeAction(action)}`,
-        }),
-      };
-    },
-  }),
 ];
 
 /** The gate: every vector that ships passes all of these. */
