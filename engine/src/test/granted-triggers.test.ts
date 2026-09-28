@@ -11,8 +11,11 @@
 
 import { describe, expect, it } from "vitest";
 
+import { defineCard } from "../cards/define.js";
+import { createDefaultRegistry } from "../cards/registry.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
+import type { ObjectId } from "../primitives.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
@@ -238,5 +241,84 @@ describe("becomes-target", () => {
 
     expect(game.state.players[C].life).toBe(cLife - 3);
     expect(game.state.players[B].life).toBe(bLife);
+  });
+});
+
+describe("a conditional grant beside another grant", () => {
+  // A grant whose condition isn't met is left out of the trigger scan's list,
+  // and a once-per-turn ability is remembered by its place in that list: an
+  // inactive grant ahead of it mustn't make it fire twice.
+  const grantor = (name: string, extra: object, oncePerTurn = false) =>
+    defineCard({
+      name,
+      manaCost: "{1}",
+      colors: [],
+      types: ["enchantment"],
+      text: name,
+      static: [
+        {
+          affects: { scope: "creatures-you-control" },
+          grantsTriggered: [
+            {
+              trigger: { on: "dealt-damage", who: "self" },
+              targets: [],
+              effect: { kind: "gain-life", amount: 1 },
+              resolve: null,
+              text: `${name}: gain 1 life`,
+              ...(oncePerTurn ? { oncePerTurn } : {}),
+            },
+          ],
+          text: name,
+          ...extra,
+        },
+      ],
+    });
+  const setUp = (oncePerTurn: boolean) => {
+    const registry = createDefaultRegistry();
+    // Never in force: nobody controls a card of that name.
+    registry.register(
+      grantor("Test Dormant Grantor", {
+        condition: { kind: "controls", filter: { name: "Nothing By This Name" }, atLeast: 1 },
+      }),
+    );
+    registry.register(grantor("Test Once Grantor", {}, oncePerTurn));
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(40).fill("Mountain") })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    return game;
+  };
+  const hit = (game: Game, wurm: ObjectId) => {
+    game.debugApplyEffect(B, { kind: "damage", target: 0, amount: 1 }, [{ kind: "object", object: wurm }]);
+    game.advanceUntil(
+      (s) => s.pendingTriggers.length === 0 && s.zones.shared.stack.length === 0 && s.priority.holder === A,
+    );
+  };
+
+  it("fires a once-per-turn grant once, behind a grant not in force", () => {
+    const game = setUp(true);
+    game.debugSpawn("Test Dormant Grantor", A, "battlefield");
+    // Newer, so its grant stands behind the dormant one's.
+    game.debugSpawn("Test Once Grantor", A, "battlefield");
+    const wurm = game.debugSpawn("Craw Wurm", A, "battlefield");
+    const life = game.state.players[A].life;
+    hit(game, wurm);
+    hit(game, wurm);
+    expect(game.state.players[A].life).toBe(life + 1);
+  });
+
+  it("fires the grant in force and not the dormant one", () => {
+    const game = setUp(false);
+    game.debugSpawn("Test Dormant Grantor", A, "battlefield");
+    game.debugSpawn("Test Once Grantor", A, "battlefield");
+    const wurm = game.debugSpawn("Craw Wurm", A, "battlefield");
+    const life = game.state.players[A].life;
+    hit(game, wurm);
+    hit(game, wurm);
+    expect(game.state.players[A].life).toBe(life + 2);
   });
 });

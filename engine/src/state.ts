@@ -2054,6 +2054,13 @@ export interface GameState {
    */
   ceasedTokens?: Record<ObjectId, LastKnownInfo>;
   /**
+   * Tokens `moveObject` has taken off the battlefield since the last
+   * state-based check, which deletes them (rule 111.7, 704.5d) and empties
+   * this. The check used to walk every object in the game — each library
+   * card included — on every pass to find them.
+   */
+  tokensLeftBattlefield?: ObjectId[];
+  /**
    * How many times each ability has resolved this turn, for "if this is the
    * Nth time this ability has resolved this turn" (`StaticCondition`
    * `resolved-this-turn`). Keyed by source object, that object's timestamp

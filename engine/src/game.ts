@@ -17693,13 +17693,14 @@ export class Game {
       }
 
       // A token that isn't on the battlefield ceases to exist (rule 111.7/704.5d).
-      // `for…in` rather than `Object.keys`: this sweep visits every object in
-      // the game on every pass, and deleting the *current* key mid-iteration
-      // is well-defined.
-      for (const key in this.state.objects) {
-        const id = key as ObjectId;
+      // Only one `moveObject` has taken off the battlefield can be one: this
+      // used to walk every object in the game, library cards and all, on
+      // every pass.
+      const leftBattlefield = this.state.tokensLeftBattlefield ?? [];
+      if (leftBattlefield.length > 0) this.state.tokensLeftBattlefield = [];
+      for (const id of leftBattlefield) {
         const object = this.state.objects[id];
-        if (!object.isToken || object.zone === "battlefield") continue;
+        if (object === undefined || !object.isToken || object.zone === "battlefield") continue;
         const zone = this.zoneList(object.zone, object.owner);
         const index = zone.indexOf(id);
         if (index >= 0) zone.splice(index, 1);
@@ -18800,6 +18801,7 @@ export class Game {
     object.zone = to;
     this.zoneList(to, object.owner).push(id);
     object.zoneChangeCount = (object.zoneChangeCount ?? 0) + 1;
+    if (object.isToken && to !== "battlefield") (this.state.tokensLeftBattlefield ??= []).push(id);
     // Rule 903.9a: a commander put into a graveyard or exile — from anywhere —
     // may go to the command zone, which the next state-based check offers.
     // Only this arrival: the count it came with says which one.
