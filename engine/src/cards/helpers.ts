@@ -157,6 +157,30 @@ export const myriad = (): TriggeredAbility => ({
 });
 
 /**
+ * Mobilize N (rule 702.181a): "Whenever this creature attacks, create N 1/1
+ * red Warrior creature tokens. Those tokens enter tapped and attacking.
+ * Sacrifice them at the beginning of the next end step." Each token's target
+ * is its controller's choice, not necessarily what this creature attacks
+ * (rule 508.4), and they were never declared (508.3a). `n` may be a live
+ * amount (Avenger of the Fallen's "mobilize X"). A triggered ability, so a
+ * static can grant it. Put the printed line in the card's `text` as well.
+ */
+export const mobilize = (n: EffectAmount): TriggeredAbility => ({
+  trigger: { on: "attacks", who: "self" },
+  targets: [],
+  effect: {
+    kind: "create-token",
+    token: "Red Warrior Token",
+    count: n,
+    tapped: true,
+    attacking: "choose",
+    sacrificeAtEndStep: true,
+  },
+  resolve: null,
+  text: `Mobilize ${typeof n === "number" ? n : "X"}`,
+});
+
+/**
  * Station (rule 702.184a): "Tap another untapped creature you control: Put a
  * number of charge counters on this permanent equal to the tapped creature's
  * power. Activate only as a sorcery." The power is read as the ability

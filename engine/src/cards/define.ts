@@ -945,6 +945,15 @@ export interface StaticAbility {
    */
   readonly alternativeCostForSpells?: { readonly mana: string; readonly filter?: CardFilter };
   /**
+   * Cards matching `filter` in this permanent's controller's hand have warp
+   * for `cost` (rule 702.185) — Tannuk, Steadfast Second's "artifact cards
+   * and red creature cards in your hand have warp {2}{R}". Offered exactly as
+   * a printed warp is (`via: "warp"`), and a permanent cast that way is
+   * exiled at the next end step and may be cast from exile later like any
+   * warped one; a card with warp of its own uses its own.
+   */
+  readonly grantsWarpInHand?: { readonly cost: string; readonly filter: CardFilter };
+  /**
    * Keywords and abilities the spells this permanent's controller casts have
    * while they're on the stack (rule 113.6 — a spell's abilities work there):
    * Abaddon the Despoiler's "during your turn, spells you cast from your hand

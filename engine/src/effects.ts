@@ -278,9 +278,11 @@ export type EffectAmount =
    * the players `who` names (default `"you"`) — Kydele's "{C} for each card
    * you've drawn this turn", or "the total life your opponents lost this
    * turn" as `who: "each-opponent"`. A player who has left the game is no
-   * longer in any scope, so their total drops out.
+   * longer in any scope, so their total drops out. `target` reads the player
+   * in that target slot instead — Astarion, the Decadent's "target opponent
+   * loses life equal to the amount of life **they** lost this turn".
    */
-  | { readonly turnStat: TurnStat; readonly who?: PlayerScope }
+  | { readonly turnStat: TurnStat; readonly who?: PlayerScope; readonly target?: number }
   /** The spells `who` (you by default) cast this turn that match the
    * filter, each read as it was cast (`PlayerState.spellsCastThisTurnAs`):
    * how many, or with `greatest: "mana-value"` the greatest mana value
@@ -3761,6 +3763,10 @@ function signedAmountValue(
     return ctx.lifeLostThisWay(amount.who === undefined ? undefined : ctx.playersInScope(amount.who));
   }
   if ("turnStat" in amount) {
+    if (amount.target !== undefined) {
+      const ref = ctx.targets[amount.target];
+      return ref?.kind === "player" ? ctx.turnStatOf(ref.player, amount.turnStat) : 0;
+    }
     return ctx
       .playersInScope(amount.who ?? "you")
       .reduce((n, p) => n + ctx.turnStatOf(p, amount.turnStat), 0);

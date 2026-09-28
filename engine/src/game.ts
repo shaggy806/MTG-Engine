@@ -1140,12 +1140,13 @@ export class Game {
             }),
           );
           // Warp (rule 702.185) — from the hand only, for its warp cost.
-          if (def.warp !== null && this.state.zones.perPlayer[player].hand.includes(card)) {
+          const warpCost = this.warpCostOf(card, def, player);
+          if (warpCost !== null) {
             out.push(
               ...this.castSpellActions(player, card, cardName, def, {
                 ...faceProp,
                 via: "warp",
-                costString: def.warp.cost,
+                costString: warpCost,
               }),
             );
           }
@@ -6504,7 +6505,7 @@ export class Game {
           : via === "foretell"
             ? (def.foretell?.cost ?? null)
             : via === "warp"
-              ? (def.warp?.cost ?? null)
+              ? this.warpCostOfCaster(cardId, def, caster)
             : // Disturb (rule 702.150) — the disturb cost is on the front face.
               via === "disturb"
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
@@ -6706,10 +6707,10 @@ export class Game {
     } else if (via === "warp") {
       // Rule 702.185a — from the hand, for its warp cost: an alternative cost,
       // so no other one goes with it (118.9a).
-      if (def.warp === null) return `${def.name} does not have warp`;
       if (!this.state.zones.perPlayer[player].hand.includes(cardId)) {
         return `${player} does not have that card in hand`;
       }
+      if (this.warpCostOf(cardId, def, player) === null) return `${def.name} does not have warp`;
       if (overload || free || altCost) return `warp is an alternative cost, and can't be combined with another`;
     } else if (
       !this.state.zones.perPlayer[player].hand.includes(cardId) &&
@@ -16998,6 +16999,27 @@ export class Game {
   }
 
   /**
+   * The warp cost `player` may cast `cardId` from their hand for (rule
+   * 702.185): its own, or one a `grantsWarpInHand` static of a permanent they
+   * control gives it (Tannuk, Steadfast Second). `null` when it has none, or
+   * isn't in their hand.
+   */
+  private warpCostOfCaster(cardId: ObjectId, def: CardDefinition, caster: PlayerId | undefined): string | null {
+    const who = caster ?? this.state.objects[cardId]?.owner;
+    return who === undefined ? null : this.warpCostOf(cardId, def, who);
+  }
+
+  private warpCostOf(cardId: ObjectId, def: CardDefinition, player: PlayerId): string | null {
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId)) return null;
+    if (def.warp !== null) return def.warp.cost;
+    for (const { ability } of this.activeStaticsOf(player, (a) => a.grantsWarpInHand !== undefined)) {
+      const grant = ability.grantsWarpInHand!;
+      if (matchesFilter(this.state, this.registry, cardId, grant.filter, { you: player })) return grant.cost;
+    }
+    return null;
+  }
+
+  /**
    * The alternative cost (rule 118.9) `caster` may cast `cardId` for: the
    * card's own (Sephara, Sky's Blade), or — for a spell cast for its mana
    * cost rather than already for another alternative cost — one an
@@ -17891,6 +17913,7 @@ export class Game {
     const recipientController =
       target.kind === "player" ? target.player : this.state.objects[target.object]?.controller;
     if (r.combat !== undefined && r.combat !== combat) return false;
+    if (r.fromSelf === true && source !== by.id) return false;
     switch (r.to) {
       case undefined:
         break;

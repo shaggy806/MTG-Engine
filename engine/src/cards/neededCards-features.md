@@ -382,7 +382,7 @@ nothing in the repo distinguished them.
 | "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |
 | "as this enters" on a non-cast permanent | 5 | 132 | 0 | 1 |
 | discard-a-card as an ability cost | 5 | 834 | 0 | 0 |
-| damage doubling (a replacement) | 4 | 794 | 0 | 0 |
+| ~~damage doubling (a replacement)~~ *(built — `would-deal-damage`; Wolverine's `fromSelf` 2026-09-28)* | 4 | 794 | 0 | 0 |
 | another player's graveyard → hand | 4 | 620 | 0 | 0 |
 | Hideaway | 3 | 195 | 0 | 1 |
 | ~~Offspring~~ *(built 2026-09-28)* | 3 | 793 | 0 | 0 |

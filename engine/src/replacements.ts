@@ -275,5 +275,8 @@ export interface DamageMultiplierReplacement {
   readonly prevent?: boolean;
   readonly then?: EffectSpec;
   readonly source?: CardFilter;
+  /** Only damage **this permanent** would deal — Wolverine, Best There
+   * Is's "double all damage Wolverine would deal". */
+  readonly fromSelf?: boolean;
   readonly to?: "opponent" | "opponent-side" | "you" | "self";
 }
