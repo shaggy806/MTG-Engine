@@ -475,4 +475,8 @@ activations just to see whether that one ability could be activated again, which
 payment for every ability on the board. `Game.legalActivationsOf` answers for one source (the
 same enumeration, moved into `pushActivations` so `legalActions` keeps its order and every fuzzer
 seed replays unchanged), and a test checks it equals `legalActions` narrowed at every window of a
-four-player game. The turn now takes 508 s with the same decisions. What's left is in BACKLOG.
+four-player game. The turn now takes 508 s with the same decisions. The next piece: activating an
+ability planned its mana payment twice, once to check it could be paid and again to pay, each
+rebuilding `manaSources` over the whole board. Checking and planning now share one computed-cache
+region (nothing mutates between them), and the turn takes 366 s, all 92 decisions unchanged —
+about half the 705 it started at. What's left is in BACKLOG.

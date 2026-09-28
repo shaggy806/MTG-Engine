@@ -7644,92 +7644,107 @@ export class Game {
     manaColors?: readonly ManaType[],
     tap?: readonly ObjectId[],
   ): void {
-    const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex, tap, xValue);
-    if (why !== null) throw new Error(why);
+    // Checking and planning share one cache region, so the board's mana
+    // sources are worked out once: `whyCannotActivateAbility` plans the
+    // payment to see that it can be made, then it is planned again to pay,
+    // and nothing changes in between. On seed 50's 73 permanents the second
+    // `manaSources` was an eighth of a bot's turn.
+    const planned = withComputedCache(() => {
+      const why = this.whyCannotActivateAbility(player, sourceId, abilityIndex, tap, xValue);
+      if (why !== null) throw new Error(why);
 
-    const source = this.state.objects[sourceId];
-    const def = this.registry.get(printedCardName(source));
-    const ability = this.effectiveActivated(sourceId)[abilityIndex];
-    // Captured now: a cost below (sacrificing the creature an Aura grants
-    // this to) can end the grant before the ability is on the stack.
-    const grantedAbility = this.activatedRefFor(sourceId, abilityIndex);
-    // Likewise which permanent the source is, before a "Sacrifice ~" cost
-    // takes it away: "it" in the effect is that permanent as it last existed
-    // (rule 608.2h). A hand, graveyard or command-zone source is no
-    // permanent, and is read wherever it is.
-    const sourceStint =
-      source.zone === "battlefield" ? (source.zoneChangeCount ?? 0) : undefined;
-    let sacrificedRef: LastKnownRefs["sacrificed"];
+      const source = this.state.objects[sourceId];
+      const def = this.registry.get(printedCardName(source));
+      const ability = this.effectiveActivated(sourceId)[abilityIndex];
+      // Captured now: a cost below (sacrificing the creature an Aura grants
+      // this to) can end the grant before the ability is on the stack.
+      const grantedAbility = this.activatedRefFor(sourceId, abilityIndex);
+      // Likewise which permanent the source is, before a "Sacrifice ~" cost
+      // takes it away: "it" in the effect is that permanent as it last existed
+      // (rule 608.2h). A hand, graveyard or command-zone source is no
+      // permanent, and is read wherever it is.
+      const sourceStint =
+        source.zone === "battlefield" ? (source.zoneChangeCount ?? 0) : undefined;
 
-    const badTarget = this.whyTargetsInvalid(
-      ability.targets,
-      targets,
-      player,
-      `${def.name}'s ability`,
-      this.permanentSource(sourceId, xValue),
-    );
-    if (badTarget !== null) throw new Error(badTarget);
-
-    // Resolve which permanent the sacrifice cost (if any) will consume.
-    let sacrificeVictim: ObjectId | null = null;
-    if (ability.cost.sacrifice !== undefined) {
-      const candidates = this.sacrificeCandidates(player, sourceId, ability);
-      if (ability.cost.sacrifice === "self") {
-        sacrificeVictim = sourceId;
-      } else {
-        if (sacrifice === undefined || !candidates.includes(sacrifice)) {
-          throw new Error(
-            `${def.name}'s ability requires sacrificing a permanent you control`,
-          );
-        }
-        sacrificeVictim = sacrifice;
-      }
-    }
-
-    // `{X}` in the cost (rule 107.3 — ROADMAP Phase 11 EG-3): fold the chosen
-    // value into the generic portion before paying, and stamp it on the
-    // ability object below so `ctx.x` reads it at resolution. Also folds in
-    // `ability.costReduction` (the Kamigawa Channel lands' per-legendary
-    // discount).
-    const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, sourceId, ability, xValue);
-    // A `{T}` in the cost taps the source as part of paying, so it can't also
-    // be tapped for mana toward the same activation (rule 602.2a) — that's an
-    // exclusion, not a preference. Otherwise merely prefer to leave the source
-    // alone unless there's no other way to pay (it may want to attack, or hold
-    // up its own `{T}` ability). A hand-zone (Channel) source is never a mana
-    // source to begin with.
-    // "Tap five untapped Zombies you control": picked (or checked) before
-    // anything is paid, and kept out of the mana plan — see `tapCostOffer`.
-    let tapPicked: ObjectId[] = [];
-    let manaArrangement: ManaSourceArrangement | undefined;
-    if (ability.cost.tapOthers !== undefined) {
-      const offer = this.tapCostOffer(
+      const badTarget = this.whyTargetsInvalid(
+        ability.targets,
+        targets,
         player,
-        sourceId,
-        ability.cost.tapOthers,
+        `${def.name}'s ability`,
+        this.permanentSource(sourceId, xValue),
+      );
+      if (badTarget !== null) throw new Error(badTarget);
+
+      // Resolve which permanent the sacrifice cost (if any) will consume.
+      let sacrificeVictim: ObjectId | null = null;
+      if (ability.cost.sacrifice !== undefined) {
+        const candidates = this.sacrificeCandidates(player, sourceId, ability);
+        if (ability.cost.sacrifice === "self") {
+          sacrificeVictim = sourceId;
+        } else {
+          if (sacrifice === undefined || !candidates.includes(sacrifice)) {
+            throw new Error(
+              `${def.name}'s ability requires sacrificing a permanent you control`,
+            );
+          }
+          sacrificeVictim = sacrifice;
+        }
+      }
+
+      // `{X}` in the cost (rule 107.3 — ROADMAP Phase 11 EG-3): fold the chosen
+      // value into the generic portion before paying, and stamp it on the
+      // ability object below so `ctx.x` reads it at resolution. Also folds in
+      // `ability.costReduction` (the Kamigawa Channel lands' per-legendary
+      // discount).
+      const { cost: manaCost, chosenX } = this.activatedAbilityManaCost(player, sourceId, ability, xValue);
+      // A `{T}` in the cost taps the source as part of paying, so it can't also
+      // be tapped for mana toward the same activation (rule 602.2a) — that's an
+      // exclusion, not a preference. Otherwise merely prefer to leave the source
+      // alone unless there's no other way to pay (it may want to attack, or hold
+      // up its own `{T}` ability). A hand-zone (Channel) source is never a mana
+      // source to begin with.
+      // "Tap five untapped Zombies you control": picked (or checked) before
+      // anything is paid, and kept out of the mana plan — see `tapCostOffer`.
+      let tapPicked: ObjectId[] = [];
+      let manaArrangement: ManaSourceArrangement | undefined;
+      if (ability.cost.tapOthers !== undefined) {
+        const offer = this.tapCostOffer(
+          player,
+          sourceId,
+          ability.cost.tapOthers,
+          manaCost,
+          ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
+          ability.cost.tap ? sourceId : undefined,
+          { kind: "ability", source: sourceId },
+        );
+        if (offer === null) throw new Error(`${player} cannot pay for ${def.name}'s ability`);
+        tapPicked = this.tapCostPicks(`${def.name}'s ability`, offer, tap);
+        manaArrangement = {
+          last: new Set(this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers)),
+          withheld: new Set(tapPicked),
+        };
+      }
+      const payment = this.payMana(
+        player,
         manaCost,
         ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
         ability.cost.tap ? sourceId : undefined,
         { kind: "ability", source: sourceId },
+        manaArrangement,
       );
-      if (offer === null) throw new Error(`${player} cannot pay for ${def.name}'s ability`);
-      tapPicked = this.tapCostPicks(`${def.name}'s ability`, offer, tap);
-      manaArrangement = {
-        last: new Set(this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers)),
-        withheld: new Set(tapPicked),
+      if (payment === null) {
+        throw new Error(`${player} cannot pay for ${def.name}'s ability`);
+      }
+      return {
+        source, def, ability, grantedAbility, sourceStint,
+        sacrificeVictim, chosenX, tapPicked, payment,
       };
-    }
-    const payment = this.payMana(
-      player,
-      manaCost,
-      ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
-      ability.cost.tap ? sourceId : undefined,
-      { kind: "ability", source: sourceId },
-      manaArrangement,
-    );
-    if (payment === null) {
-      throw new Error(`${player} cannot pay for ${def.name}'s ability`);
-    }
+    });
+    const {
+      source, def, ability, grantedAbility, sourceStint,
+      sacrificeVictim, chosenX, tapPicked, payment,
+    } = planned;
+    let sacrificedRef: LastKnownRefs["sacrificed"];
 
     // Pay the cost.
     if (ability.cost.tap) {

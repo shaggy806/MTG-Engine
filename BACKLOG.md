@@ -208,10 +208,11 @@ Beyond that plan:
   v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
   tie-break toward acting, and a bench, before it's tried.
 - **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
-  takes 508 s, about a second a simulation; 93% of it is the engine running rollouts, under 1%
-  cloning and scoring. Profiled 2026-09-27, the next levers: activating an ability plans its mana
-  payment twice, once in `whyCannotActivateAbility` and again to pay, each rebuilding
-  `manaSources` over the board (a quarter of what's left); `computeCharacteristics` is a third,
+  takes 366 s (705 before two fixes on 2026-09-27); 93% of it is the engine running rollouts,
+  under 1% cloning and scoring. Profiled, the next levers: casting a spell still plans its mana
+  payment twice, once in `whyCannotCastSpell` and again to pay (an activation now shares one
+  cache region for both — small on this board, unmeasured on a spell-heavy one);
+  `computeCharacteristics` is a third,
   mostly the layer-4 fold and static conditions recounting the battlefield (`countWhere`); and
   the prohibition scans (Code health, "Prohibition scans are quadratic"). Live rooms stop at
   300 ms, so this is the bench's time limit and a thinner search on a big board, not a hang.
