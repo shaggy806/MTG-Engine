@@ -245,10 +245,6 @@ Beyond that plan:
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
 
-- **The stack shows an ability's source as printed (found 2026-09-28).** With a prototyped
-  Combat Thresher's draw trigger on the stack, the source card beside it read {7} 3/3 while the
-  permanent was a {2}{W} 1/1 — the preview is drawn from the definition, not the live object.
-  Draw it from the view's object when that still exists.
 - **Show regeneration shields on the card.** A permanent's shields (`GameObject
   .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
   only the log line says one was made. Add them to `VisibleObject` and a small badge beside

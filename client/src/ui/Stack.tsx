@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { ObjectId, PlayerView, TargetRef } from 'engine/client'
+import type { ObjectId, PlayerView, TargetRef, VisibleObject } from 'engine/client'
 import { decisionGhostOf } from '../game/decisionSource.ts'
 import { describeTarget } from '../format.ts'
 import { CardTile } from './CardTile.tsx'
@@ -75,6 +75,38 @@ export function Stack({
   const ids = [...(ghost ? [ghost] : []), ...[...view.zones.stack].reverse()]
   const N = ids.length
   const nameOf = (id: ObjectId): string => view.objects[id]?.cardName ?? id
+  /** What an entry's card shows. An ability carries only its source's card
+   * name, so drawn by itself it's the card as printed — a prototyped Combat
+   * Thresher's draw trigger read {7} 3/3 beside the {2}{W} 1/1 that made it.
+   * While the source is still on the battlefield it's drawn as that
+   * permanent is now (cost, colors, size, types, text, art), keeping the
+   * entry's own identity and targets and none of the permanent's board state. */
+  const faceOf = (obj: VisibleObject): VisibleObject => {
+    const source = obj.kind === 'ability' && obj.sourceObjectId ? view.objects[obj.sourceObjectId] : undefined
+    if (source === undefined || source.zone !== 'battlefield') return obj
+    return {
+      ...source,
+      id: obj.id,
+      kind: obj.kind,
+      zone: obj.zone,
+      controller: obj.controller,
+      sourceObjectId: obj.sourceObjectId,
+      abilityIndex: obj.abilityIndex,
+      targets: obj.targets,
+      xValue: obj.xValue,
+      stackCount: obj.stackCount,
+      isCopy: obj.isCopy,
+      tapped: false,
+      damageMarked: 0,
+      counters: {},
+      summoningSick: false,
+      attacking: null,
+      blocking: null,
+      attachedTo: null,
+      goadedBy: [],
+      suspected: false,
+    }
+  }
   const tgt = (ref: TargetRef): string => describeTarget(ref, nameOf)
   const isTargetable = (id: ObjectId): boolean =>
     targetSlot.some((o) => o.kind === 'object' && o.object === id)
@@ -134,7 +166,7 @@ export function Stack({
             >
               {label ? <div className="stack-entry-label">{label}</div> : null}
               <CardTile
-                obj={obj}
+                obj={faceOf(obj)}
                 badge={obj.isCopy ? 'copy' : undefined}
                 highlight={targetable}
                 selected={!isGhost && (pickedIds?.has(id) ?? false)}
