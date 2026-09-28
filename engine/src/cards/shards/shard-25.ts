@@ -84,6 +84,7 @@ import _poolHydrosurge from "../pool/hydrosurge.js";
 import _poolIgneousGolem from "../pool/igneous-golem.js";
 import _poolIllvoiGaleblade from "../pool/illvoi-galeblade.js";
 import _poolIndomitableWill from "../pool/indomitable-will.js";
+import _poolInfantryShield from "../pool/infantry-shield.js";
 import _poolInkwellLeviathan from "../pool/inkwell-leviathan.js";
 import _poolJetMedallion from "../pool/jet-medallion.js";
 import _poolJoragaVisionary from "../pool/joraga-visionary.js";
@@ -274,6 +275,7 @@ const shard: CardShard = {
     _poolIgneousGolem,
     _poolIllvoiGaleblade,
     _poolIndomitableWill,
+    _poolInfantryShield,
     _poolInkwellLeviathan,
     _poolJetMedallion,
     _poolJoragaVisionary,

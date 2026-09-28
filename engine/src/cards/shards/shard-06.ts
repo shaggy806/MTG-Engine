@@ -140,6 +140,7 @@ import _poolSnappingGnarlid from "../pool/snapping-gnarlid.js";
 import _poolSoulboundGuardians from "../pool/soulbound-guardians.js";
 import _poolSpectralProcession from "../pool/spectral-procession.js";
 import _poolSquirmingMass from "../pool/squirming-mass.js";
+import _poolStadiumHeadliner from "../pool/stadium-headliner.js";
 import _poolStormKilnArtist from "../pool/storm-kiln-artist.js";
 import _poolSundownPass from "../pool/sundown-pass.js";
 import _poolSunkenRuins from "../pool/sunken-ruins.js";
@@ -318,6 +319,7 @@ const shard: CardShard = {
     _poolSoulboundGuardians,
     _poolSpectralProcession,
     _poolSquirmingMass,
+    _poolStadiumHeadliner,
     _poolStormKilnArtist,
     _poolSundownPass,
     _poolSunkenRuins,

@@ -13,6 +13,7 @@ import _poolArcticTreeline from "../pool/arctic-treeline.js";
 import _poolArdentRecruit from "../pool/ardent-recruit.js";
 import _poolAtreusImpulsiveSon from "../pool/atreus-impulsive-son.js";
 import _poolAttendedSocialite from "../pool/attended-socialite.js";
+import _poolAvengerOfTheFallen from "../pool/avenger-of-the-fallen.js";
 import _poolAvengersHangar from "../pool/avengers-hangar.js";
 import _poolBastionEnforcer from "../pool/bastion-enforcer.js";
 import _poolBattlewiseValor from "../pool/battlewise-valor.js";
@@ -205,6 +206,7 @@ const shard: CardShard = {
     _poolArdentRecruit,
     _poolAtreusImpulsiveSon,
     _poolAttendedSocialite,
+    _poolAvengerOfTheFallen,
     _poolAvengersHangar,
     _poolBastionEnforcer,
     _poolBattlewiseValor,

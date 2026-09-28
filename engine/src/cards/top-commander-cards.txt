@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1479 already implemented / 3521 missing (marks refreshed 2026-09-28)
+1487 already implemented / 3513 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -518,7 +518,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   519  Tainted Isle                             {0}              Land
 [ ]   520  Wishclaw Talisman                        {1}{B}           Artifact
 [x]   521  Chord of Calling                         {X}{G}{G}{G}     Instant
-[ ]   522  Voice of Victory                         {1}{W}           Creature — Human Bard
+[x]   522  Voice of Victory                         {1}{W}           Creature — Human Bard
 [x]   523  Culling the Weak                         {B}              Instant
 [ ]   524  Gitaxian Probe                           {U/P}            Sorcery
 [ ]   525  Veil of Summer                           {G}              Instant
@@ -2969,7 +2969,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2976  Jumbo Cactuar                            {5}{G}{G}        Creature — Plant
 [ ]  2977  Tamiyo, Field Researcher                 {1}{G}{W}{U}     Legendary Planeswalker — Tamiyo
 [x]  2978  Phyrexian Walker                         {0}              Artifact Creature — Phyrexian Construct
-[ ]  2979  Zurgo Stormrender                        {R}{W}{B}        Legendary Creature — Orc Warrior
+[x]  2979  Zurgo Stormrender                        {R}{W}{B}        Legendary Creature — Orc Warrior
 [ ]  2980  Galvanic Iteration                       {U}{R}           Instant
 [ ]  2981  Ancestral Vision                         {0}              Sorcery
 [ ]  2982  Rivaz of the Claw                        {1}{B}{R}        Legendary Creature — Lizard Warlock
@@ -3255,7 +3255,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3262  Duress                                   {B}              Sorcery
 [x]  3263  Goblin Instigator                        {1}{R}           Creature — Goblin Rogue
 [ ]  3264  Savvy Hunter                             {1}{B}{G}        Creature — Human Warrior
-[ ]  3265  Infantry Shield                          {2}{R}           Artifact — Equipment
+[x]  3265  Infantry Shield                          {2}{R}           Artifact — Equipment
 [ ]  3266  Manaweft Sliver                          {1}{G}           Creature — Sliver
 [ ]  3267  Conspicuous Snoop                        {R}{R}           Creature — Goblin Rogue
 [ ]  3268  Jin-Gitaxias // The Great Synthesis      {5}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
@@ -3729,7 +3729,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3736  Wheel of Fate                            {0}              Sorcery
 [x]  3737  Desert of the Mindful                    {0}              Land — Desert
 [ ]  3738  Final Act                                {4}{B}{B}        Sorcery
-[ ]  3739  Astarion, the Decadent                   {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
+[x]  3739  Astarion, the Decadent                   {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
 [ ]  3740  Wildwood Scourge                         {X}{G}           Creature — Hydra
 [ ]  3741  Tablet of Discovery                      {2}{R}           Artifact
 [ ]  3742  Access Denied                            {3}{U}{U}        Instant
@@ -3940,7 +3940,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3947  Druid's Deliverance                      {1}{G}           Instant
 [ ]  3948  Breaching Dragonstorm                    {4}{R}           Enchantment
 [x]  3949  Hedron Crawler                           {2}              Artifact Creature — Construct
-[ ]  3950  Avenger of the Fallen                    {2}{B}           Creature — Human Warrior
+[x]  3950  Avenger of the Fallen                    {2}{B}           Creature — Human Warrior
 [ ]  3951  Traxos, Scourge of Kroog                 {4}              Legendary Artifact Creature — Dragon Construct
 [ ]  3952  Apex of Power                            {7}{R}{R}{R}     Sorcery
 [ ]  3953  General Ferrous Rokiric                  {1}{R}{W}        Legendary Creature — Human Soldier
@@ -4475,7 +4475,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4482  Lost Jitte                               {1}              Legendary Artifact — Equipment
 [ ]  4483  Deeproot Pilgrimage                      {1}{U}           Enchantment
 [ ]  4484  Katilda, Dawnhart Prime                  {G}{W}           Legendary Creature — Human Warlock
-[ ]  4485  Bone-Cairn Butcher                       {1}{R}{W}{B}     Creature — Demon
+[x]  4485  Bone-Cairn Butcher                       {1}{R}{W}{B}     Creature — Demon
 [ ]  4486  Vizkopa Guildmage                        {W}{B}           Creature — Human Wizard
 [ ]  4487  Tasha, the Witch Queen                   {3}{U}{B}        Legendary Planeswalker — Tasha
 [ ]  4488  Helix Pinnacle                           {G}              Enchantment
@@ -4624,7 +4624,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4631  The Odd Acorn Gang                       {3}{B}{G}        Legendary Creature — Squirrel Warrior
 [ ]  4632  Keep Watch                               {2}{U}           Instant
 [ ]  4633  Shrieking Drake                          {U}              Creature — Drake
-[ ]  4634  Tannuk, Steadfast Second                 {2}{R}{R}        Legendary Creature — Kavu Pilot
+[x]  4634  Tannuk, Steadfast Second                 {2}{R}{R}        Legendary Creature — Kavu Pilot
 [ ]  4635  Plundering Barbarian                     {2}{R}           Creature — Dwarf Barbarian
 [ ]  4636  Satsuki, the Living Lore                 {G}{W}           Legendary Creature — Human Druid
 [ ]  4637  Excalibur II                             {1}              Legendary Artifact — Equipment
@@ -4978,7 +4978,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4985  Joint Exploration                        {1}{U}           Instant
 [ ]  4986  Mm'menon, the Right Hand                 {3}{U}{U}        Legendary Creature — Jellyfish Advisor
 [ ]  4987  Abomination of Llanowar                  {1}{B}{G}        Legendary Creature — Elf Horror
-[ ]  4988  Stadium Headliner                        {R}              Creature — Goblin Warrior
+[x]  4988  Stadium Headliner                        {R}              Creature — Goblin Warrior
 [ ]  4989  The Wanderer                             {3}{W}           Legendary Planeswalker
 [ ]  4990  God-Eternal Rhonas                       {3}{G}{G}        Legendary Creature — Zombie God
 [x]  4991  Rydia, Summoner of Mist                  {R}{G}           Legendary Creature — Human Shaman

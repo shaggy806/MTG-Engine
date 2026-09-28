@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-314 already implemented / 186 missing
+319 already implemented / 181 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -72,7 +72,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   66  Atla Palani, Nest Tender                       21123 decks  {1}{R}{G}{W}     Legendary Creature — Human Shaman
 [x]   67  Korvold, Fae-Cursed King                       21034 decks  {2}{B}{R}{G}     Legendary Creature — Dragon Noble
 [ ]   68  Shorikai, Genesis Engine                       20987 decks  {2}{W}{U}        Legendary Artifact — Vehicle
-[ ]   69  Zurgo Stormrender                              20864 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
+[x]   69  Zurgo Stormrender                              20864 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
 [x]   70  Go-Shintai of Life's Origin                    20615 decks  {3}{G}           Legendary Enchantment Creature — Shrine
 [ ]   71  Urza, Lord High Artificer                      20594 decks  {2}{U}{U}        Legendary Creature — Human Artificer
 [x]   72  Felothar the Steadfast                         20517 decks  {1}{W}{B}{G}     Legendary Creature — Human Warrior
@@ -187,7 +187,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  181  Tivit, Seller of Secrets                       12979 decks  {3}{W}{U}{B}     Legendary Creature — Sphinx Rogue
 [x]  182  Shroofus Sproutsire                            12929 decks  {2}{G}           Legendary Creature — Saproling
 [x]  183  Jon Irenicus, Shattered One                    12889 decks  {2}{U}{B}        Legendary Creature — Elf Wizard
-[ ]  184  Wolverine, Best There Is                       12856 decks  {1}{R}{G}        Legendary Creature — Mutant Berserker Hero
+[x]  184  Wolverine, Best There Is                       12856 decks  {1}{R}{G}        Legendary Creature — Mutant Berserker Hero
 [x]  185  Vren, the Relentless                           12840 decks  {2}{U}{B}        Legendary Creature — Rat Rogue
 [x]  186  Blech, Loafing Pest                            12836 decks  {1}{B}{G}        Legendary Creature — Pest
 [ ]  187  Sefris of the Hidden Ways                      12800 decks  {W}{U}{B}        Legendary Creature — Human Wizard
@@ -256,7 +256,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  250  Raffine, Scheming Seer                         10235 decks  {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  251  Yidris, Maelstrom Wielder                      10231 decks  {U}{B}{R}{G}     Legendary Creature — Ogre Wizard
 [x]  252  Vihaan, Goldwaker                              10220 decks  {R}{W}{B}        Legendary Creature — Dwarf Warlock
-[ ]  253  Tannuk, Steadfast Second                       10189 decks  {2}{R}{R}        Legendary Creature — Kavu Pilot
+[x]  253  Tannuk, Steadfast Second                       10189 decks  {2}{R}{R}        Legendary Creature — Kavu Pilot
 [x]  254  Gev, Scaled Scorch                             10169 decks  {B}{R}           Legendary Creature — Lizard Mercenary
 [x]  255  Kediss, Emberclaw Familiar                     10160 decks  {1}{R}           Legendary Creature — Elemental Lizard
 [x]  256  Lord Windgrace                                 10113 decks  {2}{B}{R}{G}     Legendary Planeswalker — Windgrace
@@ -403,7 +403,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  397  Raph & Mikey, Troublemakers                     7320 decks  {5}{R/G}{R/G}    Legendary Creature — Mutant Ninja Turtle
 [x]  398  Ayara, First of Locthwain                       7292 decks  {B}{B}{B}        Legendary Creature — Elf Noble
 [ ]  399  Laughing Jasper Flint                           7270 decks  {1}{B}{R}        Legendary Creature — Lizard Rogue
-[ ]  400  Zurgo, Thunder's Decree                         7259 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
+[x]  400  Zurgo, Thunder's Decree                         7259 decks  {R}{W}{B}        Legendary Creature — Orc Warrior
 [x]  401  Ardbert, Warrior of Darkness                    7215 decks  {1}{W}{B}        Legendary Creature — Spirit Warrior
 [x]  402  Millicent, Restless Revenant                    7213 decks  {5}{W}{U}        Legendary Creature — Spirit Soldier
 [x]  403  Mabel, Heir to Cragflame                        7206 decks  {1}{R}{W}        Legendary Creature — Mouse Soldier
@@ -417,7 +417,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  411  Anowon, the Ruin Thief                          7111 decks  {2}{U}{B}        Legendary Creature — Vampire Rogue
 [x]  412  Hei Bai, Forest Guardian                        7082 decks  {3}{G}           Legendary Creature — Bear Spirit
 [x]  413  Kwain, Itinerant Meddler                        7068 decks  {W}{U}           Legendary Creature — Rabbit Wizard
-[ ]  414  Astarion, the Decadent                          7064 decks  {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
+[x]  414  Astarion, the Decadent                          7064 decks  {4}{W}{B}        Legendary Creature — Vampire Elf Rogue
 [x]  415  Chishiro, the Shattered Blade                   7060 decks  {2}{R}{G}        Legendary Creature — Snake Samurai
 [x]  416  Jenova, Ancient Calamity                        7056 decks  {2}{B}{G}        Legendary Creature — Alien
 [x]  417  Raised by Giants                                7033 decks  {5}{G}           Legendary Enchantment — Background

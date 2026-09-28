@@ -14,6 +14,7 @@ import _poolAphettoGrifter from "../pool/aphetto-grifter.js";
 import _poolArchangelOfThune from "../pool/archangel-of-thune.js";
 import _poolArchmageEmeritus from "../pool/archmage-emeritus.js";
 import _poolAssaultStrobe from "../pool/assault-strobe.js";
+import _poolAstarionTheDecadent from "../pool/astarion-the-decadent.js";
 import _poolAvacynsPilgrim from "../pool/avacyns-pilgrim.js";
 import _poolAvenReedstalker from "../pool/aven-reedstalker.js";
 import _poolBarktoothWarbeard from "../pool/barktooth-warbeard.js";
@@ -181,6 +182,7 @@ import _poolYoshimaru from "../pool/yoshimaru.js";
 import _poolYouthfulScholar from "../pool/youthful-scholar.js";
 import _poolZodiacRooster from "../pool/zodiac-rooster.js";
 import _poolZodiacSnake from "../pool/zodiac-snake.js";
+import _poolZurgoStormrender from "../pool/zurgo-stormrender.js";
 import _tokensBananaToken from "../tokens/banana-token.js";
 import _tokensDeathtouchSnakeToken from "../tokens/deathtouch-snake-token.js";
 import _tokensHumanSoldierToken from "../tokens/human-soldier-token.js";
@@ -201,6 +203,7 @@ const shard: CardShard = {
     _poolArchangelOfThune,
     _poolArchmageEmeritus,
     _poolAssaultStrobe,
+    _poolAstarionTheDecadent,
     _poolAvacynsPilgrim,
     _poolAvenReedstalker,
     _poolBarktoothWarbeard,
@@ -368,6 +371,7 @@ const shard: CardShard = {
     _poolYouthfulScholar,
     _poolZodiacRooster,
     _poolZodiacSnake,
+    _poolZurgoStormrender,
   ],
   tokens: [
     _tokensBananaToken,

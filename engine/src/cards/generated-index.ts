@@ -90,6 +90,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Rat Token",
   "Rat Token (Vren)",
   "Red Human Token",
+  "Red Warrior Token",
   "Robot Token",
   "Robot Villain Token",
   "Sand Warrior Token",

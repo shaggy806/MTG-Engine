@@ -184,6 +184,7 @@ import _poolViashinoBladescout from "../pool/viashino-bladescout.js";
 import _poolVillageCannibals from "../pool/village-cannibals.js";
 import _poolVitalizingWind from "../pool/vitalizing-wind.js";
 import _poolVoiceOfTheProvinces from "../pool/voice-of-the-provinces.js";
+import _poolVoiceOfVictory from "../pool/voice-of-victory.js";
 import _poolVoltaicServant from "../pool/voltaic-servant.js";
 import _poolWallOfTorches from "../pool/wall-of-torches.js";
 import _poolWardenOfTheWoods from "../pool/warden-of-the-woods.js";
@@ -380,6 +381,7 @@ const shard: CardShard = {
     _poolVillageCannibals,
     _poolVitalizingWind,
     _poolVoiceOfTheProvinces,
+    _poolVoiceOfVictory,
     _poolVoltaicServant,
     _poolWallOfTorches,
     _poolWardenOfTheWoods,

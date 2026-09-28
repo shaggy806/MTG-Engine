@@ -186,6 +186,7 @@ import _poolZuranSpellcaster from "../pool/zuran-spellcaster.js";
 import _tokensDragonToken55 from "../tokens/dragon-token-5-5.js";
 import _tokensGoblinToken from "../tokens/goblin-token.js";
 import _tokensMonkToken from "../tokens/monk-token.js";
+import _tokensRedWarriorToken from "../tokens/red-warrior-token.js";
 import _tokensSlugToken from "../tokens/slug-token.js";
 import _tokensSpiritTokenHeiBai from "../tokens/spirit-token-hei-bai.js";
 import _tokensSquirrelToken from "../tokens/squirrel-token.js";
@@ -377,6 +378,7 @@ const shard: CardShard = {
     _tokensDragonToken55,
     _tokensGoblinToken,
     _tokensMonkToken,
+    _tokensRedWarriorToken,
     _tokensSlugToken,
     _tokensSpiritTokenHeiBai,
     _tokensSquirrelToken,

@@ -133,6 +133,7 @@ import _poolSungrassPrairie from "../pool/sungrass-prairie.js";
 import _poolSunscapeMaster from "../pool/sunscape-master.js";
 import _poolSuperState from "../pool/super-state.js";
 import _poolTalismanOfConviction from "../pool/talisman-of-conviction.js";
+import _poolTannukSteadfastSecond from "../pool/tannuk-steadfast-second.js";
 import _poolTaureanMauler from "../pool/taurean-mauler.js";
 import _poolTeleportationCircle from "../pool/teleportation-circle.js";
 import _poolTelethopter from "../pool/telethopter.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolSunscapeMaster,
     _poolSuperState,
     _poolTalismanOfConviction,
+    _poolTannukSteadfastSecond,
     _poolTaureanMauler,
     _poolTeleportationCircle,
     _poolTelethopter,

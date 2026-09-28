@@ -198,6 +198,7 @@ import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
 import _poolWildGrowth from "../pool/wild-growth.js";
 import _poolWillOfTheTemur from "../pool/will-of-the-temur.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
+import _poolWolverineBestThereIs from "../pool/wolverine-best-there-is.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
 import _poolZodiacHorse from "../pool/zodiac-horse.js";
 import _tokensBlackDeathtouchSnakeToken from "../tokens/black-deathtouch-snake-token.js";
@@ -403,6 +404,7 @@ const shard: CardShard = {
     _poolWildGrowth,
     _poolWillOfTheTemur,
     _poolWizardsSchool,
+    _poolWolverineBestThereIs,
     _poolXyrisTheWrithingStorm,
     _poolZodiacHorse,
   ],

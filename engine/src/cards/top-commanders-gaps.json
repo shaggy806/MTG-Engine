@@ -2,6 +2,7 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "keyword:mobilize",
   "keyword:offspring",
   "keyword:warp",
   "effect:enter-attacking",
@@ -922,7 +923,12 @@
   "keyword:offspring": {
    "size": "medium",
    "ui": false,
-   "description": "Offspring: an optional additional cost with a 'paid' bit carried onto the permanent, and the linked ETB 'if its offspring cost was paid, create a 1/1 token copy of it'. Includes a static that grants offspring to creature spells you cast."
+   "description": "Offspring: an optional additional cost with a 'paid' bit carried onto the permanent, and the linked ETB 'if its offspring cost was paid, create a 1/1 token copy of it'. The keyword itself is built (2026-09-28); the static that grants offspring to creature spells you cast is split off as static:grant-offspring-to-spells."
+  },
+  "static:grant-offspring-to-spells": {
+   "size": "small",
+   "ui": false,
+   "description": "A static that gives the creature spells you cast offspring {N} as you cast them (Zinnia, Valley's Voice): the optional additional cost offered on every creature spell, and the linked 1/1 token copy when it enters. Split off keyword:offspring in the 2026-09-28 audit."
   },
   "keyword:saddle": {
    "size": "medium",
@@ -2158,6 +2164,7 @@
    "rank": 104,
    "name": "Zinnia, Valley's Voice",
    "needs": [
+    "static:grant-offspring-to-spells",
     "condition:filter-card-property-clauses",
     "keyword:offspring",
     "static:grant-to-cards-outside-battlefield"

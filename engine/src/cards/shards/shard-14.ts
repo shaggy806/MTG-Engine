@@ -22,6 +22,7 @@ import _poolBlisterspitGremlin from "../pool/blisterspit-gremlin.js";
 import _poolBloodthirstyConqueror from "../pool/bloodthirsty-conqueror.js";
 import _poolBlossomDryad from "../pool/blossom-dryad.js";
 import _poolBoltwingMarauder from "../pool/boltwing-marauder.js";
+import _poolBoneCairnButcher from "../pool/bone-cairn-butcher.js";
 import _poolBontusMonument from "../pool/bontus-monument.js";
 import _poolBorosSignet from "../pool/boros-signet.js";
 import _poolBraveBrawler from "../pool/brave-brawler.js";
@@ -207,6 +208,7 @@ const shard: CardShard = {
     _poolBloodthirstyConqueror,
     _poolBlossomDryad,
     _poolBoltwingMarauder,
+    _poolBoneCairnButcher,
     _poolBontusMonument,
     _poolBorosSignet,
     _poolBraveBrawler,
