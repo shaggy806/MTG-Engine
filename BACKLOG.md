@@ -35,13 +35,6 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
-- **Merge `fix/another-target-cards`** (pushed 2026-09-27): Summon: Titan's chapter III and
-  Brash Taunter's fight printed "another target creature" but could target themselves — the
-  Taunter fighting itself feeds its own damage trigger, a burn loop. The branch uses `{ kind:
-  "other" }` for both, with tests; only the touched test files have run, so run the full suite
-  and then merge. A grep of `pool/` for "another/other target" without an `other` spec found only
-  these two, but a card whose `text` phrases it differently would slip past it.
-
 - **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
   or misplay a printed clause (Saw in Half, Finale of Devastation, Fireball, Mortivore, Iridescent
   Vinelasher's Offspring, …). Give each its proper, faithful implementation, building whatever
