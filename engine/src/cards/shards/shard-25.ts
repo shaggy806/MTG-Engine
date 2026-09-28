@@ -187,6 +187,7 @@ import _poolWeaveFate from "../pool/weave-fate.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
 import _poolWoodedBastion from "../pool/wooded-bastion.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
+import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
 
@@ -378,6 +379,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensElfWarriorToken,
+    _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,
     _tokensWizardTokenKuja,
   ],

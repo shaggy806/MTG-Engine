@@ -146,6 +146,7 @@ import _poolShuko from "../pool/shuko.js";
 import _poolSift from "../pool/sift.js";
 import _poolSignInBlood from "../pool/sign-in-blood.js";
 import _poolSkirmishRhino from "../pool/skirmish-rhino.js";
+import _poolSkyknightVanguard from "../pool/skyknight-vanguard.js";
 import _poolSkyshaper from "../pool/skyshaper.js";
 import _poolSliverConstruct from "../pool/sliver-construct.js";
 import _poolSoaringSeacliff from "../pool/soaring-seacliff.js";
@@ -334,6 +335,7 @@ const shard: CardShard = {
     _poolSift,
     _poolSignInBlood,
     _poolSkirmishRhino,
+    _poolSkyknightVanguard,
     _poolSkyshaper,
     _poolSliverConstruct,
     _poolSoaringSeacliff,

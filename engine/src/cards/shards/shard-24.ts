@@ -72,6 +72,7 @@ import _poolGloriousSunrise from "../pool/glorious-sunrise.js";
 import _poolGoForth from "../pool/go-forth.js";
 import _poolGoblinAssailant from "../pool/goblin-assailant.js";
 import _poolGruulLocket from "../pool/gruul-locket.js";
+import _poolHanweirGarrison from "../pool/hanweir-garrison.js";
 import _poolHeartWarden from "../pool/heart-warden.js";
 import _poolHelgaSkittishSeer from "../pool/helga-skittish-seer.js";
 import _poolHellsKitchen from "../pool/hells-kitchen.js";
@@ -253,6 +254,7 @@ const shard: CardShard = {
     _poolGoForth,
     _poolGoblinAssailant,
     _poolGruulLocket,
+    _poolHanweirGarrison,
     _poolHeartWarden,
     _poolHelgaSkittishSeer,
     _poolHellsKitchen,

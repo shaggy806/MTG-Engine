@@ -11,6 +11,7 @@ import _poolAmbassadorLaquatus from "../pool/ambassador-laquatus.js";
 import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
+import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
 import _poolArachnoid from "../pool/arachnoid.js";
 import _poolArgothianSwine from "../pool/argothian-swine.js";
 import _poolAtalanJackal from "../pool/atalan-jackal.js";
@@ -183,6 +184,7 @@ import _poolYunaGrandSummoner from "../pool/yuna-grand-summoner.js";
 import _poolZap from "../pool/zap.js";
 import _poolZendikarFarguide from "../pool/zendikar-farguide.js";
 import _tokensKithkinToken from "../tokens/kithkin-token.js";
+import _tokensRedHumanToken from "../tokens/red-human-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -194,6 +196,7 @@ const shard: CardShard = {
     _poolAnaDisciple,
     _poolAnchovyBananaPizza,
     _poolAniktheaHandOfErebos,
+    _poolAnimPakalThousandthMoon,
     _poolArachnoid,
     _poolArgothianSwine,
     _poolAtalanJackal,
@@ -368,6 +371,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensKithkinToken,
+    _tokensRedHumanToken,
   ],
 };
 

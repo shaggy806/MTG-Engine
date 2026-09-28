@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1464 already implemented / 3536 missing (marks refreshed 2026-09-28)
+1471 already implemented / 3529 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -487,7 +487,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   488  Field of the Dead                        {0}              Land
 [x]   489  Ancient Den                              {0}              Artifact Land
 [ ]   490  Maskwood Nexus                           {4}              Artifact
-[ ]   491  Adeline, Resplendent Cathar              {1}{W}{W}        Legendary Creature — Human Knight
+[x]   491  Adeline, Resplendent Cathar              {1}{W}{W}        Legendary Creature — Human Knight
 [x]   492  Vito, Thorn of the Dusk Rose             {2}{B}           Legendary Creature — Vampire Cleric
 [ ]   493  Birgi, God of Storytelling // Harnfel, Horn of Bounty {3}              Legendary Creature — God // Legendary Artifact
 [x]   494  Tainted Peak                             {0}              Land
@@ -1088,7 +1088,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1092  Slip Out the Back                        {U}              Instant
 [x]  1093  Radiant Summit                           {0}              Land — Mountain Plains
 [x]  1094  Thornwood Falls                          {0}              Land
-[ ]  1095  Anim Pakal, Thousandth Moon              {1}{R}{W}        Legendary Creature — Human Soldier
+[x]  1095  Anim Pakal, Thousandth Moon              {1}{R}{W}        Legendary Creature — Human Soldier
 [ ]  1096  Ugin, the Ineffable                      {6}              Legendary Planeswalker — Ugin
 [ ]  1097  Ethereal Armor                           {W}              Enchantment — Aura
 [x]  1098  Muldrotha, the Gravetide                 {3}{B}{G}{U}     Legendary Creature — Elemental Avatar
@@ -2252,7 +2252,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2259  Treasonous Ogre                          {3}{R}           Creature — Ogre Shaman
 [ ]  2260  Ancestral Mask                           {2}{G}           Enchantment — Aura
 [ ]  2261  Court of Garenbrig                       {1}{G}{G}        Enchantment
-[ ]  2262  General Kreat, the Boltbringer           {2}{R}           Legendary Creature — Goblin Soldier
+[x]  2262  General Kreat, the Boltbringer           {2}{R}           Legendary Creature — Goblin Soldier
 [ ]  2263  Squee, the Immortal                      {1}{R}{R}        Legendary Creature — Goblin
 [ ]  2264  Wrathful Red Dragon                      {3}{R}{R}        Creature — Dragon
 [x]  2265  Elder Gargaroth                          {3}{G}{G}        Creature — Beast
@@ -3273,7 +3273,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3280  Godo, Bandit Warlord                     {5}{R}           Legendary Creature — Human Barbarian
 [ ]  3281  Ojer Pakpatiq, Deepest Epoch // Temple of Cyclical Time {4}              Legendary Creature — God // Land
 [ ]  3282  Take the Bait                            {2}{R}{W}        Instant
-[ ]  3283  Leonin Warleader                         {2}{W}{W}        Creature — Cat Soldier
+[x]  3283  Leonin Warleader                         {2}{W}{W}        Creature — Cat Soldier
 [ ]  3284  Grim Guardian                            {2}{B}           Enchantment Creature — Zombie
 [ ]  3285  Shielded by Faith                        {1}{W}{W}        Enchantment — Aura
 [ ]  3286  Axebane Guardian                         {2}{G}           Creature — Human Druid
@@ -3888,7 +3888,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3895  Colossal Skyturtle                       {4}{G}{G}{U}     Enchantment Creature — Turtle
 [x]  3896  Seeker of Skybreak                       {1}{G}           Creature — Elf
 [ ]  3897  Roadside Reliquary                       {0}              Land
-[ ]  3898  Skyknight Vanguard                       {R}{W}           Creature — Human Knight
+[x]  3898  Skyknight Vanguard                       {R}{W}           Creature — Human Knight
 [ ]  3899  Vohar, Vodalian Desecrator               {U}{B}           Legendary Creature — Phyrexian Merfolk Wizard
 [ ]  3900  Mystic Reflection                        {1}{U}           Instant
 [ ]  3901  Eroded Canyon                            {0}              Land — Desert
@@ -3899,7 +3899,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3906  Harmonic Sliver                          {1}{G}{W}        Creature — Sliver
 [ ]  3907  Noble Heritage                           {1}{W}           Legendary Enchantment — Background
 [ ]  3908  Sunfall                                  {3}{W}{W}        Sorcery
-[ ]  3909  Soaring Lightbringer                     {4}{W}           Enchantment Creature — Bird Glimmer
+[x]  3909  Soaring Lightbringer                     {4}{W}           Enchantment Creature — Bird Glimmer
 [ ]  3910  Sunblast Angel                           {4}{W}{W}        Creature — Angel
 [ ]  3911  Bovine Intervention                      {1}{W}           Instant
 [ ]  3912  Gemrazer                                 {3}{G}           Creature — Beast
@@ -4286,7 +4286,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4293  Idyllic Grange                           {0}              Land — Plains
 [ ]  4294  Biotransference                          {2}{B}{B}        Enchantment
 [ ]  4295  Nightmare Shepherd                       {2}{B}{B}        Enchantment Creature — Demon
-[ ]  4296  Hanweir Garrison                         {2}{R}           Creature — Human Soldier
+[x]  4296  Hanweir Garrison                         {2}{R}           Creature — Human Soldier
 [ ]  4297  Replication Technique                    {4}{U}           Sorcery
 [ ]  4298  Hordewing Skaab                          {4}{U}           Creature — Zombie Horror
 [ ]  4299  Hydra Broodmaster                        {4}{G}{G}        Creature — Hydra

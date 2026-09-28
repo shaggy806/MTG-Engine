@@ -26,11 +26,12 @@ that one card is the reason the deck exists.
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
-  (11), `effect:enter-attacking` and `effect:cast-during-resolution` (10 each),
+  (11), `effect:enter-attacking` (10; the token half is built, see the card backlog) and
+  `effect:cast-during-resolution` (10),
   `decision:free-cast-choices` (9), `effect:attach-extensions` and
   `effect:modal-ability-targeted-modes` (7 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
-  player to order simultaneous triggers (`decision:trigger-order`). Aragorn, the Uniter needs
+  player to order simultaneous triggers (`decision:trigger-order`), and so does Hero of Bladehold. Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).
 
 ## Card backlog (top-5000 staples and the precons)
@@ -48,14 +49,26 @@ that one card is the reason the deck exists.
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
-- **Next: creatures that enter tapped and attacking (measured 2026-09-26: 58 missing top-5000
-  cards).** Adeline (#491), Hero of Bladehold, Anim Pakal, Mobilize (6), Myriad (10), Ninjutsu (17),
-  Ilharg, Kaalia, Winota. The core is rule 508.4: a permanent put onto the battlefield attacking,
-  never declared (no attack triggers), its controller choosing which defending player or
-  planeswalker each one attacks — in Commander every opponent is a defending player (802.2), so
-  that needs a new decision, and attacking tokens must not fold into a token stack (combat deals
-  one object's damage). Combat already reads attackers off `GameObject.attacking`. Ninjutsu attacks
-  whatever the returned creature was attacking (702.49c), so needs no choice.
+- **Next: the rest of "enters tapped and attacking" (rule 508.4).** The token half is built
+  (2026-09-28): `create-token`'s `attacking`, the `for-each-player` effect, and the
+  `enter-attacking` decision, asked only where there's more than one defender. Seven cards use it
+  (Adeline, Anim Pakal, Leonin Warleader, General Kreat, …; dev-rooms `ENTAT`). Still blocked, by
+  family:
+  - A **card** put onto the battlefield attacking: Kaalia of the Vast, Ilharg, Winota (her only
+    listed commander need), Zara, Doors of Durin, Senu. Needs `attacking` on
+    `put-onto-battlefield` / `look-and-choose`. This is what's left before `effect:enter-attacking`
+    goes in the gaps JSON's `built` list.
+  - **Ninjutsu** (17 cards): an activated ability from hand whose cost returns an unblocked
+    attacker. The ninja attacks what that creature attacked (702.49c), so there's no choice.
+  - **Myriad** (10) and **token copies** entering attacking (Delina, Flamerush Rider, Redoubled
+    Stormsinger, Echoing Assault): `create-token-copy` needs `attacking`, plus myriad's "each
+    opponent other than defending player".
+  - **Mobilize** (6: Voice of Victory, Bone-Cairn Butcher, Avenger of the Fallen, …): the tokens
+    are buildable now, with `sacrificeAtEndStep`. Each card is blocked by its other text.
+  - **Hero of Bladehold**: battle cry and the token trigger fire together, and which resolves
+    first is the player's choice (603.3b), so it waits on `decision:trigger-order`.
+  - Cards blocked by other text as well: Otharri, Ghalta and Mavren, Caesar, Ainok Strike
+    Leader, Endless Foot Assault, Andúril, Dalkovan Encampment, Zurgo Stormrender.
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
   the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted

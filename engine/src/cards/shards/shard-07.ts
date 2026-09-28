@@ -58,6 +58,7 @@ import _poolFlamebornViron from "../pool/flameborn-viron.js";
 import _poolFlowstoneOverseer from "../pool/flowstone-overseer.js";
 import _poolFuriousStrength from "../pool/furious-strength.js";
 import _poolGalecasterColossus from "../pool/galecaster-colossus.js";
+import _poolGeneralKreatTheBoltbringer from "../pool/general-kreat-the-boltbringer.js";
 import _poolGhaltaStampedeTyrant from "../pool/ghalta-stampede-tyrant.js";
 import _poolGoldMyr from "../pool/gold-myr.js";
 import _poolGoldhound from "../pool/goldhound.js";
@@ -151,6 +152,7 @@ import _poolSimicCharm from "../pool/simic-charm.js";
 import _poolSkyshroudClaim from "../pool/skyshroud-claim.js";
 import _poolSkyshroudPoacher from "../pool/skyshroud-poacher.js";
 import _poolSlimefootAndSquee from "../pool/slimefoot-and-squee.js";
+import _poolSoaringLightbringer from "../pool/soaring-lightbringer.js";
 import _poolSokkasSwordTraining from "../pool/sokkas-sword-training.js";
 import _poolSoulSnare from "../pool/soul-snare.js";
 import _poolSpitfireLagac from "../pool/spitfire-lagac.js";
@@ -256,6 +258,7 @@ const shard: CardShard = {
     _poolFlowstoneOverseer,
     _poolFuriousStrength,
     _poolGalecasterColossus,
+    _poolGeneralKreatTheBoltbringer,
     _poolGhaltaStampedeTyrant,
     _poolGoldMyr,
     _poolGoldhound,
@@ -349,6 +352,7 @@ const shard: CardShard = {
     _poolSkyshroudClaim,
     _poolSkyshroudPoacher,
     _poolSlimefootAndSquee,
+    _poolSoaringLightbringer,
     _poolSokkasSwordTraining,
     _poolSoulSnare,
     _poolSpitfireLagac,

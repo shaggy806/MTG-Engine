@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAdelineResplendentCathar from "../pool/adeline-resplendent-cathar.js";
 import _poolAetherize from "../pool/aetherize.js";
 import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
 import _poolAlexiosDeimosOfKosmos from "../pool/alexios-deimos-of-kosmos.js";
@@ -179,6 +180,7 @@ import _tokensWizardTokenGuff from "../tokens/wizard-token-guff.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAdelineResplendentCathar,
     _poolAetherize,
     _poolAlabasterHostSanctifier,
     _poolAlexiosDeimosOfKosmos,
