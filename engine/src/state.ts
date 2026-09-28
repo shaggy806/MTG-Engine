@@ -1264,6 +1264,13 @@ export interface MulliganHandState {
  * A decision the rules are waiting on. While this is set, the named player's
  * only legal action is the matching declaration.
  */
+/** One creature put onto the battlefield attacking, and what it may attack
+ * (rule 508.4) — see the `enter-attacking` decision. */
+export interface EnterAttackingChoice {
+  readonly object: ObjectId;
+  readonly options: readonly (PlayerId | ObjectId)[];
+}
+
 export type AwaitingDecision =
   | { readonly kind: "attackers"; readonly player: PlayerId }
   | { readonly kind: "blockers"; readonly player: PlayerId }
@@ -1510,6 +1517,16 @@ export type AwaitingDecision =
        * `proliferate`'s do. A compacted token stack is one entry that may be
        * named up to its size.
        */
+      /** Creatures this player put onto the battlefield attacking, each with
+       * a choice of what it attacks (rule 508.4): a defending player, or a
+       * planeswalker one controls — unless the effect named the player, when
+       * it's that player or their planeswalkers. Asked only where there's a
+       * real choice; each is attacking its first option until answered. */
+      readonly kind: "enter-attacking";
+      readonly player: PlayerId;
+      readonly creatures: readonly EnterAttackingChoice[];
+    }
+  | {
       readonly kind: "choose-permanents";
       readonly player: PlayerId;
       readonly eligible: readonly ObjectId[];
@@ -2284,6 +2301,20 @@ export interface GameState {
     readonly player: PlayerId;
     readonly count: number;
     /** What ordered the discard — see `pendingSacrifices`' `source`. */
+    readonly source?: DecisionSource;
+  }[];
+  /**
+   * Creatures put onto the battlefield attacking whose controller still owes
+   * the choice of what each attacks (rule 508.4) — queued as they enter and
+   * asked, one batch per player, by `promptNextEnterAttacking` in the
+   * `prepareForPriority` fixpoint (see `Game.putIntoAttack`). Each is already
+   * attacking its first option meanwhile; the answer only re-points it.
+   * Optional so a snapshot saved before it existed still loads.
+   */
+  pendingEnterAttacking?: {
+    readonly player: PlayerId;
+    readonly creatures: readonly EnterAttackingChoice[];
+    /** What put them there — see `pendingSacrifices`' `source`. */
     readonly source?: DecisionSource;
   }[];
   /**

@@ -23,6 +23,7 @@ import { payLifeForUntapped } from "./pay-life-for-untapped.js";
 import { chooseCopy } from "./choose-copy.js";
 import { chooseEnchant } from "./choose-enchant.js";
 import { choosePermanents } from "./choose-permanents.js";
+import { enterAttacking } from "./enter-attacking.js";
 import { legendRule } from "./legend-rule.js";
 import { chooseText } from "./choose-text.js";
 import { proliferate } from "./proliferate.js";
@@ -48,6 +49,7 @@ export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   "choose-copy": chooseCopy,
   "choose-enchant": chooseEnchant,
   "choose-permanents": choosePermanents,
+  "enter-attacking": enterAttacking,
   "legend-rule": legendRule,
   "choose-text": chooseText,
   proliferate,

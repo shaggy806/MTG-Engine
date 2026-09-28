@@ -35,7 +35,7 @@ import {
 } from "./effect-worth.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { GameObject, GameState } from "./state.js";
+import type { EnterAttackingChoice, GameObject, GameState } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -268,6 +268,40 @@ export interface PlayerController {
     min: number,
     max: number,
   ): readonly ObjectId[];
+  /**
+   * Creatures were put onto the battlefield attacking with a choice of what
+   * each attacks (rule 508.4): one of its `options` for every one of them.
+   */
+  chooseAttackTargets(
+    view: ControllerView,
+    creatures: readonly EnterAttackingChoice[],
+  ): readonly AttackTargetChoice[];
+}
+
+/** One answer to `chooseAttackTargets`. */
+export interface AttackTargetChoice {
+  readonly object: ObjectId;
+  readonly target: PlayerId | ObjectId;
+}
+
+/**
+ * The default answer to what creatures entering attacking attack: the
+ * opponent with the least life among each one's options — damage finishes a
+ * player sooner than it spreads — and a planeswalker only when no player is
+ * on offer.
+ */
+export function attackLowestLife(
+  view: ControllerView,
+  creatures: readonly EnterAttackingChoice[],
+): readonly AttackTargetChoice[] {
+  return creatures.map(({ object, options }) => {
+    const players = options.filter((o) => view.state.players[o as PlayerId] !== undefined) as PlayerId[];
+    const pick =
+      players.length > 0
+        ? players.reduce((best, p) => (view.state.players[p].life < view.state.players[best].life ? p : best))
+        : options[0];
+    return { object, target: pick };
+  });
 }
 
 const passFor = (player: PlayerId): Action => ({
@@ -523,6 +557,13 @@ export class AutomaticController implements PlayerController {
   ): readonly ObjectId[] {
     return ownPermanentsFirst(view, eligible, min, max);
   }
+
+  chooseAttackTargets(
+    view: ControllerView,
+    creatures: readonly EnterAttackingChoice[],
+  ): readonly AttackTargetChoice[] {
+    return attackLowestLife(view, creatures);
+  }
 }
 
 /**
@@ -715,6 +756,11 @@ export class ScriptedController implements PlayerController {
     min: number,
     max: number,
   ) => readonly ObjectId[] = (view, eligible, min, max) => ownPermanentsFirst(view, eligible, min, max);
+  /** The opponent with the least life — see `attackLowestLife`. */
+  chooseAttackTargetsFn: (
+    view: ControllerView,
+    creatures: readonly EnterAttackingChoice[],
+  ) => readonly AttackTargetChoice[] = attackLowestLife;
 
   constructor(playerId: PlayerId, script: readonly ScriptEntry[] = []) {
     this.playerId = playerId;
@@ -886,6 +932,13 @@ export class ScriptedController implements PlayerController {
     max: number,
   ): readonly ObjectId[] {
     return this.choosePermanentsFn(view, eligible, min, max);
+  }
+
+  chooseAttackTargets(
+    view: ControllerView,
+    creatures: readonly EnterAttackingChoice[],
+  ): readonly AttackTargetChoice[] {
+    return this.chooseAttackTargetsFn(view, creatures);
   }
 }
 

@@ -8,7 +8,7 @@ import {
   decisionForOffer,
   decisionHasSource,
 } from "../../decisions/registry.js";
-import { asObjectId } from "../../primitives.js";
+import { asObjectId, asPlayerId } from "../../primitives.js";
 import type { PlayerId } from "../../primitives.js";
 import type { AwaitingDecision } from "../../state.js";
 
@@ -108,6 +108,11 @@ const FIXTURES: Partial<Record<DecisionKind, AwaitingDecision>> = {
     eligible: [{ kind: "object", object: asObjectId("obj-1") }],
     source: asObjectId("obj-2"),
   },
+  "enter-attacking": {
+    kind: "enter-attacking",
+    player: ALICE,
+    creatures: [{ object: asObjectId("obj-1"), options: [asPlayerId("bob"), asObjectId("obj-2")] }],
+  },
   "choose-permanents": {
     kind: "choose-permanents",
     player: ALICE,
@@ -197,10 +202,10 @@ describe("decision registry", () => {
     expect(decisionForOffer({ kind: "pass-priority" })).toBeUndefined();
   });
 
-  it("covers all twenty kinds, with a fixture for each", () => {
+  it("covers all twenty-one kinds, with a fixture for each", () => {
     // The table is total now, so a missing module fails the build. This is
     // the check that the fixtures below don't fall behind it.
-    expect(Object.keys(DECISIONS)).toHaveLength(20);
+    expect(Object.keys(DECISIONS)).toHaveLength(21);
     for (const kind of Object.keys(DECISIONS) as DecisionKind[]) {
       expect(FIXTURES[kind], `no FIXTURES entry for "${kind}"`).toBeDefined();
     }

@@ -98,6 +98,7 @@ function amountSign(amount: EffectAmount): number {
 const RULES: { readonly [K in Kind]: Rule<K> } = {
   sequence: (n, v) => n.effects.forEach((e) => v.child(e)),
   "for-each-target": (n, v) => v.child(n.effect),
+  "for-each-player": (n, v) => v.child(n.effect),
   "for-target": (n, v) => v.child(n.effect),
   "choose-permanents": none,
   damage: (n, v) => {

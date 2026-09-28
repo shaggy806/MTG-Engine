@@ -388,6 +388,17 @@ export type Action =
       readonly permanents: readonly ObjectId[];
     }
   | {
+      /** Answers a pending `enter-attacking` decision (rule 508.4): what
+       * each creature put onto the battlefield attacking attacks — one of its
+       * offered options, for every creature offered. */
+      readonly type: "enter-attacking";
+      readonly player: PlayerId;
+      readonly assignments: readonly {
+        readonly object: ObjectId;
+        readonly target: PlayerId | ObjectId;
+      }[];
+    }
+  | {
       /** Answers a pending `choose-permanents` decision ("untap up to two
        * lands"): the permanents chosen, a token stack named once per token. */
       readonly type: "choose-permanents";
@@ -900,6 +911,16 @@ export type LegalAction =
        * including none. No `count`: that is the point of the card. */
       readonly kind: "proliferate";
       readonly eligible: readonly TargetRef[];
+    }
+  | {
+      /** Choose what each of these creatures, put onto the battlefield
+       * attacking, attacks (rule 508.4): every one needs an answer, from its
+       * own `options` (a defending player or a planeswalker one controls). */
+      readonly kind: "enter-attacking";
+      readonly creatures: readonly {
+        readonly object: ObjectId;
+        readonly options: readonly (PlayerId | ObjectId)[];
+      }[];
     }
   | {
       /** Choose from `min` to `max` of `eligible` as an effect resolves —

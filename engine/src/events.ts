@@ -435,6 +435,14 @@ export type GameEvent =
       readonly defender: PlayerId | ObjectId;
     })
   | (Base & {
+      /** A creature was put onto the battlefield attacking `defender` (rule
+       * 508.4) — once its target is settled. It was never declared, so it
+       * never "attacked" (508.3a): no attack trigger reads this. */
+      readonly type: "entered-attacking";
+      readonly object: ObjectId;
+      readonly defender: PlayerId | ObjectId;
+    })
+  | (Base & {
       /** The whole attack declaration, once it's known — for "whenever you
        * attack with N or more creatures" (Overwhelming Instinct, Tide
        * Skimmer), which can't be read off the per-attacker events. Emitted

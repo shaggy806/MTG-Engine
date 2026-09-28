@@ -108,6 +108,7 @@ import { blockers } from "./decisions/blockers.js";
 import { chooseCopy } from "./decisions/choose-copy.js";
 import { chooseEnchant } from "./decisions/choose-enchant.js";
 import { choosePermanents } from "./decisions/choose-permanents.js";
+import { enterAttacking } from "./decisions/enter-attacking.js";
 import { legendRule } from "./decisions/legend-rule.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
@@ -146,6 +147,7 @@ import type {
   PlayerScope,
   PtDuration,
   ResolutionContext,
+  ResolvedEnterAttacking,
   ReturnToHandZone,
   SearchZones,
   ThisWayKind,
@@ -222,6 +224,7 @@ import type {
   DelayedCastWatch,
   DelayedLeaveWatch,
   DelayedTrigger,
+  EnterAttackingChoice,
   EntryRecord,
   DelayedTriggerTiming,
   GameObject,
@@ -762,6 +765,7 @@ export class Game {
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyEnchantChoice: (player, enchant) => this.applyEnchantChoice(player, enchant),
       applyChoosePermanents: (player, chosen) => this.applyChoosePermanents(player, chosen),
+      applyEnterAttacking: (player, assignments) => this.applyEnterAttacking(player, assignments),
       applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
@@ -3453,6 +3457,11 @@ export class Game {
         opts.x ?? 0,
       ),
     );
+    // As a resolution ending would: creatures it put onto the battlefield
+    // attacking with a choice of target ask their controller now.
+    if (this.state.awaiting === null && (this.state.pendingEnterAttacking?.length ?? 0) > 0) {
+      this.promptNextEnterAttacking();
+    }
     if (!this.decisionOutstanding()) this.endResolutionIfDone();
   }
 
@@ -3725,6 +3734,12 @@ export class Game {
       }
       if (this.state.pendingSacrificeVictims.length > 0) {
         this.drainPendingSacrificeVictims();
+        continue;
+      }
+      // Creatures put onto the battlefield attacking whose controller has a
+      // choice of what each attacks (rule 508.4).
+      if ((this.state.pendingEnterAttacking?.length ?? 0) > 0) {
+        this.promptNextEnterAttacking();
         continue;
       }
       // Everything a suspended resolution was waiting on has been answered:
@@ -9425,6 +9440,7 @@ export class Game {
     return (
       s.awaiting !== null ||
       s.pendingDiscards.length > 0 ||
+      (s.pendingEnterAttacking?.length ?? 0) > 0 ||
       s.pendingSacrifices.length > 0 ||
       s.pendingSacrificeVictims.length > 0 ||
       s.pendingDestruction.length > 0 ||
@@ -12881,7 +12897,7 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
@@ -12899,10 +12915,13 @@ export class Game {
             thenCounters !== undefined,
             basePt,
           );
-          if (thenCounters === undefined || thenCounters.amount <= 0) return;
-          for (const id of made) {
-            this.addCounter({ kind: "object", object: id }, thenCounters.kind, thenCounters.amount, false, controller);
+          if (thenCounters !== undefined && thenCounters.amount > 0) {
+            for (const id of made) {
+              this.addCounter({ kind: "object", object: id }, thenCounters.kind, thenCounters.amount, false, controller);
+            }
           }
+          // "…that are tapped and attacking" (rule 508.4).
+          if (attacking !== undefined) this.putIntoAttack(made, p, attacking);
         };
         // "Each opponent creates a Treasure token": each of them, APNAP.
         if (who !== undefined && who !== "you" && who !== "target-controller") {
@@ -15523,6 +15542,109 @@ export class Game {
       source,
       x,
     };
+  }
+
+  /**
+   * Creatures that have just entered the battlefield, put there attacking
+   * (rule 508.4) — see {@link EnterAttacking}. Only a creature, under the
+   * attacking player's control, during combat, attacks at all (rule
+   * 506.3a-c: anything else just stays where it entered), and only at a
+   * defending player or a planeswalker one controls — or the one player the
+   * effect names, and their planeswalkers if it says so. With one option it
+   * attacks that; with more, it attacks the first until its controller
+   * chooses (`pendingEnterAttacking` → the `enter-attacking` decision).
+   *
+   * It was never declared, so no "attacks" trigger sees it (508.3a) and it
+   * didn't attack this turn; no attack requirement or restriction applies
+   * (508.4c). Entering after blockers are declared it's unblocked (508.4d),
+   * which a fresh `blocked: false` already is.
+   */
+  private putIntoAttack(ids: readonly ObjectId[], controller: PlayerId, how: ResolvedEnterAttacking): void {
+    const step = this.state.turn.step;
+    const inCombat =
+      step === "begin-combat" ||
+      step === "declare-attackers" ||
+      step === "declare-blockers" ||
+      step === "combat-damage" ||
+      step === "end-combat";
+    if (!inCombat || controller !== this.activePlayer) return;
+    const defenders = this.legalDefenders(controller);
+    let options: (PlayerId | ObjectId)[];
+    if (how === "choose") {
+      options = defenders;
+    } else {
+      // "Attacking that player": a defending player still in the game
+      // (rule 508.4a), or nothing.
+      const named = how.player;
+      if (named === undefined || !defenders.includes(named)) return;
+      options = defenders.filter(
+        (d) => d === named || (how.orTheirPlaneswalker && this.state.objects[d as ObjectId]?.controller === named),
+      );
+    }
+    if (options.length === 0) return;
+    const choosing: EnterAttackingChoice[] = [];
+    for (const id of ids) {
+      const object = this.state.objects[id];
+      if (object === undefined || object.zone !== "battlefield" || object.controller !== controller) continue;
+      if (!effectiveTypes(this.state, this.registry, object).includes("creature")) continue;
+      object.attacking = options[0];
+      object.blockedBy = [];
+      object.blocked = false;
+      if (options.length > 1) choosing.push({ object: id, options });
+      else this.emit({ type: "entered-attacking", object: id, defender: options[0] });
+    }
+    if (choosing.length > 0) {
+      const source = this.state.decisionSource ?? undefined;
+      (this.state.pendingEnterAttacking ??= []).push({
+        player: controller,
+        creatures: choosing,
+        ...(source !== undefined ? { source } : {}),
+      });
+    }
+  }
+
+  /** Ask the next player queued in `pendingEnterAttacking` what their
+   * creatures attack — every batch of theirs at once, and only the creatures
+   * still on the battlefield attacking. */
+  private promptNextEnterAttacking(): void {
+    const queue = this.state.pendingEnterAttacking ?? [];
+    const first = queue[0];
+    if (first === undefined) return;
+    const player = first.player;
+    const mine = queue.filter((q) => q.player === player);
+    this.state.pendingEnterAttacking = queue.filter((q) => q.player !== player);
+    const creatures = mine
+      .flatMap((q) => q.creatures)
+      .filter((c) => {
+        const object = this.state.objects[c.object];
+        return object?.zone === "battlefield" && object.attacking !== null;
+      });
+    if (creatures.length === 0 || this.state.players[player]?.hasLost === true) return;
+    this.state.awaiting = { kind: "enter-attacking", player, creatures };
+    // The card behind it, so the player being asked can be told why.
+    this.state.decisionSource = first.source ?? null;
+  }
+
+  /** Answers a pending `enter-attacking` decision: each creature attacks what
+   * its controller chose for it. */
+  private applyEnterAttacking(
+    player: PlayerId,
+    assignments: readonly { readonly object: ObjectId; readonly target: PlayerId | ObjectId }[],
+  ): void {
+    const why = enterAttacking.whyCannot(
+      this.decisionCtx,
+      { type: "enter-attacking", player, assignments },
+      player,
+    );
+    if (why !== null) throw new Error(why);
+    this.state.awaiting = null;
+    for (const { object: id, target } of assignments) {
+      const object = this.state.objects[id];
+      if (object?.zone !== "battlefield" || object.attacking === null) continue;
+      object.attacking = target;
+      this.emit({ type: "entered-attacking", object: id, defender: target });
+    }
+    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
   /** Answers a pending `choose-permanents` decision: `then` for each one

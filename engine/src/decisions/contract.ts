@@ -100,6 +100,7 @@ export const DECISION_ACTIONS = {
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
   "choose-permanents": ["choose-permanents"],
+  "enter-attacking": ["enter-attacking"],
   scry: ["scry"],
 } as const satisfies Record<DecisionKind, readonly Action["type"][]>;
 
@@ -133,6 +134,7 @@ export const DECISION_OFFERS = {
   sacrifice: ["sacrifice"],
   proliferate: ["proliferate"],
   "choose-permanents": ["choose-permanents"],
+  "enter-attacking": ["enter-attacking"],
   scry: ["scry"],
 } as const satisfies Record<DecisionKind, readonly LegalAction["kind"][]>;
 
@@ -208,6 +210,10 @@ export interface DecisionHost {
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyChoosePermanents: (player: PlayerId, chosen: readonly ObjectId[]) => void;
+  readonly applyEnterAttacking: (
+    player: PlayerId,
+    assignments: readonly { readonly object: ObjectId; readonly target: PlayerId | ObjectId }[],
+  ) => void;
   readonly applyCreatureTypeChoice: (player: PlayerId, creatureType: string) => void;
   readonly applyModesChoice: (player: PlayerId, modes: readonly number[], xValue?: number) => void;
   readonly applyChooseFromZone: (player: PlayerId, chosen: readonly ObjectId[]) => void;

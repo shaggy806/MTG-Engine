@@ -582,6 +582,30 @@ export type EffectPlayerRef =
   | "that-player"
   | { readonly target: number };
 
+/**
+ * What a creature put onto the battlefield attacking attacks (rule 508.4).
+ * `"choose"`: its controller chooses a defending player or a planeswalker one
+ * controls, for each creature — asked only when there's more than one
+ * (`enter-attacking` decision). `{ player }`: the effect names the player
+ * ("tapped and attacking that player" — Ainok Strike Leader), and with
+ * `orTheirPlaneswalker` their planeswalkers are options too ("…that player or
+ * a planeswalker they control" — Adeline, myriad).
+ *
+ * Only a creature controlled by the attacking player, during combat, ever
+ * ends up attacking (rule 506.3a-c): anything else just enters. It was never
+ * declared, so it never "attacked" (508.3a) and no attack requirement or
+ * restriction applies to it (508.4c). Entering after blockers are declared,
+ * it's unblocked (508.4d).
+ */
+export type EnterAttacking =
+  | "choose"
+  | { readonly player: EffectPlayerRef; readonly orTheirPlaneswalker?: boolean };
+
+/** {@link EnterAttacking} with its player resolved, as `Game` takes it. */
+export type ResolvedEnterAttacking =
+  | "choose"
+  | { readonly player: PlayerId | undefined; readonly orTheirPlaneswalker: boolean };
+
 /** A declarative effect. Grows as milestones add vocabulary. */
 /** What cascade found: the card it may cast, its name, and everything it
  * exiled on the way (the card included). */
@@ -1980,6 +2004,24 @@ export type EffectSpec =
        * applies over them (Rootha, Mastering the Moment's Elemental, the
        * token's printed P/T being 0/0). Read once, as the effect resolves. */
       readonly basePt?: { readonly power: EffectAmount; readonly toughness: EffectAmount };
+      /** The tokens enter **attacking** (rule 508.4) — "create two 1/1 white
+       * Soldier creature tokens that are tapped and attacking" (Hero of
+       * Bladehold) is this with `tapped`. See {@link EnterAttacking}. */
+      readonly attacking?: EnterAttacking;
+    }
+  | {
+      /**
+       * Do `effect` once for each player in `who`, in turn order, as this
+       * effect's controller, with the `"that-player"` scope naming that
+       * player: Adeline, Resplendent Cathar's "for each opponent, create a
+       * 1/1 white Human creature token that's tapped and attacking that
+       * player or a planeswalker they control". Unlike `each-player-may`,
+       * nobody is asked anything; and unlike a `create-token`'s `who`, it's
+       * this effect's controller doing it, about each of them.
+       */
+      readonly kind: "for-each-player";
+      readonly who: PlayerScope;
+      readonly effect: EffectSpec;
     }
   | {
       /** Create `count` token(s) that are copies of a permanent (rule 707.10 —
@@ -3230,6 +3272,8 @@ export interface EffectApi {
     thenCounters?: { readonly kind: string; readonly amount: number },
     /** The new tokens' base power and toughness, for an X/X token. */
     basePt?: readonly [number, number],
+    /** The new tokens enter attacking (rule 508.4). */
+    attacking?: ResolvedEnterAttacking,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -3794,6 +3838,14 @@ function illegalSlot(ref: EffectTargetRef, ctx: ResolutionContext): boolean {
 
 /** The one player `ref` names, or `undefined` for nobody — see
  * {@link EffectPlayerRef}. */
+function resolveEnterAttacking(
+  how: EnterAttacking | undefined,
+  ctx: ResolutionContext,
+): ResolvedEnterAttacking | undefined {
+  if (how === undefined || how === "choose") return how;
+  return { player: effectPlayer(how.player, ctx), orTheirPlaneswalker: how.orTheirPlaneswalker === true };
+}
+
 function effectPlayer(ref: EffectPlayerRef, ctx: ResolutionContext): PlayerId | undefined {
   if (ref === "you") return ctx.controller;
   if (typeof ref === "object") {
@@ -4746,6 +4798,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               spec.basePt === undefined
                 ? undefined
                 : [amountValue(spec.basePt.power, ctx, player), amountValue(spec.basePt.toughness, ctx, player)],
+              resolveEnterAttacking(spec.attacking, ctx.aboutPlayer(player)),
             );
         }
         return;
@@ -4764,7 +4817,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.basePt === undefined
           ? undefined
           : [amountValue(spec.basePt.power, ctx), amountValue(spec.basePt.toughness, ctx)],
+        resolveEnterAttacking(spec.attacking, ctx),
       );
+      return;
+    case "for-each-player":
+      for (const player of ctx.playersInScope(spec.who)) {
+        applyEffectSpec(spec.effect, ctx.aboutPlayer(player));
+      }
       return;
     case "create-token-copy": {
       let of: ObjectId | undefined;
