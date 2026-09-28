@@ -1860,6 +1860,13 @@ anthem, the keyword grant and the granted trigger like any other creature.
   going through the layer system; pair it with `affects: { scope: "self" }`.
 - `doesntUntap: true` — "This artifact doesn't untap during your untap step"
   (Mana Vault, Basalt Monolith). Only its controller's own untap step.
+- `targetedBySpellsCost: { payLife }` — "Spells your opponents cast that
+  target this creature cost an additional 3 life to cast" (Terror of the
+  Peaks): paid as part of the spell's cost (rule 601.2f), once per spell
+  however many slots name it, never for an ability or a copy. An opponent
+  with too little life can't target it with a spell (119.4), so it's left
+  out of their offers. Not ward — ward counters after the cast and reaches
+  abilities too.
 - `untapsDuringOthersUntap: "self" | CardFilter` — untap during each **other**
   player's untap step too: `"self"` is Bender's Waterskin, a filter is every
   permanent you control matching it (Seedborn Muse `{}`, Unwinding Clock
@@ -2861,7 +2868,6 @@ clause gone missing). It found 13 of 739 on the day the rule landed:
 | card | what's missing | blocked on |
 | --- | --- | --- |
 | **Combat Thresher** | Prototype | Prototype |
-| **Terror of the Peaks** | "spells your opponents cast that target this creature **cost an additional 3 life**" runs as `ward({ payLife: 3 })`: paid or countered after the cast, and it also reaches abilities | a cast-time additional cost imposed by the target |
 | **Artificial Evolution** | "target spell or permanent" is a creature only; the change reaches its type line but not the creature-type words in its rules text ("all instances"); and the words offered are a fixed menu of 12 types, not every creature type | layer-3 text changing across a card's abilities |
 
 Fixed since, with the feature each needed: Rydia, Summoner of Mist (the Summon
@@ -2876,7 +2882,8 @@ regenerated"); Will of the Sultai (`castModal.maxModesIf`); Starfield Vocalist
 `offspringTrigger`, and "if it was kicked" now reads a departed permanent's
 last-known information, which Verix Bladewing needed too); Fanatic of Rhonas
 (`eternalizeAbility` and the `noManaCost` copy exception); Chandra, Acolyte of
-Flame (the `cast-now` effect and decision).
+Flame (the `cast-now` effect and decision); Terror of the Peaks (the
+`targetedBySpellsCost` static, in place of a ward stand-in).
 
 The five `proliferate` cards were a fourteenth entry of exactly the kind
 `card:text` cannot see — their text was right and their *behaviour* wasn't —

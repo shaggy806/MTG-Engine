@@ -995,6 +995,16 @@ export interface StaticAbility {
    * ignored — it is always the permanent carrying it. */
   readonly doesntUntap?: boolean;
   /**
+   * "Spells your opponents cast that target this creature cost an additional
+   * 3 life to cast" (Terror of the Peaks): an additional cost of the spell,
+   * part of its total cost as it's cast (rule 601.2f) — once per spell
+   * however many of its targets name this, never for an ability or a copy,
+   * and not payable with less life than it asks (119.4), so an opponent that
+   * low can't target it with a spell at all. `affects` is ignored: it is
+   * always the permanent carrying it.
+   */
+  readonly targetedBySpellsCost?: { readonly payLife: number };
+  /**
    * Untap during each **other** player's untap step, as well as your own:
    * `"self"` is Bender's Waterskin ("untap this artifact"), a `CardFilter` is
    * every permanent you control matching it — Seedborn Muse's `{}` ("all

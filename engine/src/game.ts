@@ -1607,10 +1607,9 @@ export class Game {
         modes: def.castModal.modes.map((m) => ({
           text: m.text,
           targetSpecs: [...(m.targets ?? [])],
-          targetOptions: this.targetOptionsFor(
-            m.targets ?? [],
+          targetOptions: this.affordableTargetOptions(
             player,
-            this.cardSource(def, card),
+            this.targetOptionsFor(m.targets ?? [], player, this.cardSource(def, card)),
           ),
         })),
       },
@@ -1795,7 +1794,10 @@ export class Game {
         manaAffordable = at.manaAffordable;
       }
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
-      const options = this.targetOptionsFor(specs, player, this.cardSource(def, card));
+      const options = this.affordableTargetOptions(
+        player,
+        this.targetOptionsFor(specs, player, this.cardSource(def, card)),
+      );
       // Rule 601.2c — a spell can't be cast without a legal target for every
       // slot that demands one. An *optional* slot ("up to one target
       // creature") with nothing to point at is simply skipped, so it never
@@ -5498,7 +5500,9 @@ export class Game {
 
     const optionsPerSlot: TargetRef[][] = [];
     for (const spec of def.targets) {
-      const options = legalTargets(this.state, this.registry, spec, owner, this.cardSource(def, cardId));
+      const [options] = this.affordableTargetOptions(owner, [
+        legalTargets(this.state, this.registry, spec, owner, this.cardSource(def, cardId)),
+      ]);
       // "Up to one" or "any number of" with nothing to point at is a legal
       // choice of none (rule 601.2c); only a required slot can't be filled.
       if (options.length === 0 && !isOptionalSpec(spec)) return false;
@@ -5536,6 +5540,42 @@ export class Game {
     return true;
   }
 
+  /**
+   * The life `caster` must pay for a spell aimed at `targets`: Terror of the
+   * Peaks' "spells your opponents cast that target this creature cost an
+   * additional 3 life to cast" (a `targetedBySpellsCost` static), once for
+   * each such permanent however many slots name it. Only a *cast* spell
+   * pays — a copy isn't cast — and only one of the permanent's controller's
+   * opponents. Nothing from a permanent that has lost its abilities.
+   */
+  private targetingLifeCost(caster: PlayerId, targets: readonly (TargetRef | null | undefined)[]): number {
+    let total = 0;
+    const seen = new Set<ObjectId>();
+    for (const target of targets) {
+      if (target?.kind !== "object" || seen.has(target.object)) continue;
+      seen.add(target.object);
+      const object = this.state.objects[target.object];
+      if (object === undefined || object.zone !== "battlefield" || object.controller === caster) continue;
+      if (hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        if (ability.targetedBySpellsCost !== undefined && this.staticActive(object, ability)) {
+          total += ability.targetedBySpellsCost.payLife;
+        }
+      }
+    }
+    return total;
+  }
+
+  /** `options` less the targets whose life cost (`targetingLifeCost`) is
+   * more than `caster` has: a spell can't be cast with them. */
+  private affordableTargetOptions(
+    caster: PlayerId,
+    options: readonly (readonly TargetRef[])[],
+  ): TargetRef[][] {
+    const life = this.state.players[caster].life;
+    return options.map((slot) => slot.filter((ref) => this.targetingLifeCost(caster, [ref]) <= life));
+  }
+
   /** Move `cardId` to the stack as a free cast with the given targets (rule
    * 702.62e / 702.85e) — the commit half of {@link castCardWithoutPaying}.
    * `false`, with nothing moved, when a cost increase can't be paid. */
@@ -5563,8 +5603,12 @@ export class Game {
     );
     const payment = this.payMana(owner, increase, undefined, undefined, { kind: "cast", card: cardId });
     if (payment === null) return false;
+    // Terror of the Peaks' extra life is no mana cost: a free cast pays it too.
+    const targetingLife = this.targetingLifeCost(owner, chosen);
+    if (this.state.players[owner].life < targetingLife) return false;
     this.moveObject(cardId, "stack");
     this.executePayment(owner, payment);
+    if (targetingLife > 0) this.changeLife(owner, -targetingLife);
     // Nothing to pay, so a target in a token stack is peeled off at once.
     const targets = this.lockInTargets(chosen);
     object.targets = targets.length > 0 ? [...targets] : null;
@@ -7033,6 +7077,13 @@ export class Game {
     if (this.state.players[player].life < taxLife) {
       throw new Error(`${player} has too little life to pay ${def.name}'s commander tax`);
     }
+    // Terror of the Peaks: "spells your opponents cast that target this
+    // creature cost an additional 3 life to cast" — part of the total cost
+    // (rule 601.2f), which can't be paid with less life than it asks (119.4).
+    const targetingLife = this.targetingLifeCost(player, targets);
+    if (targetingLife > 0 && this.state.players[player].life < taxLife + targetingLife) {
+      throw new Error(`${player} has too little life to pay the ${targetingLife} life targeting costs`);
+    }
     const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString, targetCount);
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
@@ -7212,6 +7263,7 @@ export class Game {
     if (def.additionalCost?.payLife !== undefined) {
       this.changeLife(player, -def.additionalCost.payLife);
     }
+    if (targetingLife > 0) this.changeLife(player, -targetingLife);
     if (def.additionalCost?.payLifeX === true && chosenX > 0) {
       this.changeLife(player, -chosenX);
     }

@@ -37,14 +37,14 @@ that one card is the reason the deck exists.
 
 - **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
   or misplay a printed clause. Give each its proper, faithful implementation, building whatever
-  feature blocks it; don't just delete them. Left, each with what it needs: Terror of the Peaks (a cast-time additional cost imposed by
-  the target), Combat Thresher (Prototype) and Artificial Evolution (layer-3 text changing
-  across a card's abilities, not just its type line; neither is in the top 5000). Each card's
-  blocker is in `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run
-  card:text -w engine` is the live ledger. Fixed so far: Saw in Half, Finale of Devastation,
-  Fireball, Mortivore, Will of the Sultai, Starfield Vocalist (Warp), Iridescent Vinelasher
-  (Offspring), Fanatic of Rhonas (Eternalize), Chandra, Acolyte of Flame (`cast-now`), and
-  Rydia earlier.
+  feature blocks it; don't just delete them. Left, each with what it needs: Combat Thresher
+  (Prototype) and Artificial Evolution (layer-3 text changing across a card's abilities, not
+  just its type line). Neither is in the top 5000. Each card's blocker is in
+  `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run card:text -w
+  engine` is the live ledger. Fixed so far: Saw in Half, Finale of Devastation, Fireball,
+  Mortivore, Will of the Sultai, Starfield Vocalist (Warp), Iridescent Vinelasher (Offspring),
+  Fanatic of Rhonas (Eternalize), Chandra, Acolyte of Flame (`cast-now`), Terror of the Peaks
+  (a spell's life cost for targeting it), and Rydia earlier.
 - **`cast-now` without paying the mana cost.** The "you may cast that card" decision (Chandra,
   Acolyte of Flame) offers only a paid cast. Torrential Gearhulk (#2708), Emet-Selch of the Third
   Seat, Vohar and Zul Ashur cast it "without paying its mana cost": offer only the free variant
