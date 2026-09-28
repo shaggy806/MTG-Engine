@@ -125,6 +125,23 @@ export default {
     bots: { bob: { attack: "alice" } },
   },
 
+  ENTAT: {
+    about:
+      "4p. Tokens that enter tapped and attacking (rule 508.4): attack with alice's Leonin " +
+      "Warleader, Hanweir Garrison, Adeline and General Kreat. Their tokens ask what each " +
+      "attacks; Adeline's ask only for carol, the one opponent with a planeswalker.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 6, bob: 3, carol: 3, dave: 3 },
+    battlefield: {
+      alice: [
+        "Leonin Warleader", "Hanweir Garrison", "Adeline, Resplendent Cathar",
+        "General Kreat, the Boltbringer",
+      ],
+      carol: ["Garruk Wildspeaker"],
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
   HORDE4: {
     about:
       "4p. HORDE from the bottom-right seat, whose quadrant the decision panel floats " +

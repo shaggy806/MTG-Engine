@@ -263,6 +263,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
     case 'attacker-declared':
       return `${name(event.attacker)} attacks ${name(event.defender as ObjectId)}`
+    case 'entered-attacking':
+      return `${name(event.object)} enters attacking ${name(event.defender as ObjectId)}`
     case 'attackers-declared':
       return `${event.player} attacks with ${event.attackers.length}`
     case 'attacked-alone':

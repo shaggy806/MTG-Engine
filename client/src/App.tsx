@@ -227,6 +227,7 @@ type ForetellAction = Extract<LegalAction, { kind: 'foretell' }>
 type CycleAction = Extract<LegalAction, { kind: 'cycle' }>
 type AbilityAction = Extract<LegalAction, { kind: 'activate-ability' }>
 type AttackAction = Extract<LegalAction, { kind: 'declare-attackers' }>
+type EnterAttackingAction = Extract<LegalAction, { kind: 'enter-attacking' }>
 type BlockAction = Extract<LegalAction, { kind: 'declare-blockers' }>
 type DiscardAction = Extract<LegalAction, { kind: 'discard' }>
 type ZoneChoiceAction = Extract<LegalAction, { kind: 'choose-from-zone' }>
@@ -385,6 +386,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   sacrifice: 'choose what to sacrifice',
   proliferate: 'choose what to proliferate',
   'choose-permanents': 'choose permanents',
+  'enter-attacking': 'choose what their creatures attack',
   scry: 'scry',
 }
 
@@ -922,9 +924,28 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // The offer with each compacted token stack as one member per token
   // (game/stackMembers.ts): the bar picks and counts creatures, and
   // `confirmAttackers` folds the members back into counted entries.
-  const rawAttackAction = actions.find(
-    (a): a is AttackAction => a.kind === 'declare-attackers',
+  //
+  // Creatures put onto the battlefield attacking, with a choice of what each
+  // attacks (rule 508.4 — the `enter-attacking` decision), are answered with
+  // the same bar: its offer, reshaped as an attack in which every one of them
+  // must be sent somewhere (`mustAttack`), and `confirmAttackers` sends the
+  // answer as that decision's instead.
+  const enterAttackingAction = actions.find(
+    (a): a is EnterAttackingAction => a.kind === 'enter-attacking',
   )
+  const rawAttackAction = useMemo((): AttackAction | undefined => {
+    const declared = actions.find((a): a is AttackAction => a.kind === 'declare-attackers')
+    if (declared !== undefined || enterAttackingAction === undefined) return declared
+    const ids = enterAttackingAction.creatures.map((c) => c.object)
+    const defenders = [...new Set(enterAttackingAction.creatures.flatMap((c) => c.options))]
+    return {
+      kind: 'declare-attackers',
+      eligible: ids,
+      defenders,
+      defendersFor: Object.fromEntries(enterAttackingAction.creatures.map((c) => [c.object, c.options])),
+      mustAttack: ids,
+    }
+  }, [actions, enterAttackingAction])
   const attackExpansion = useMemo(
     () =>
       rawAttackAction
@@ -1949,12 +1970,23 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   )
 
   const confirmAttackers = useCallback(() => {
+    if (enterAttackingAction !== undefined) {
+      game.dispatch({
+        type: 'enter-attacking',
+        player: seat,
+        assignments: Object.entries(attackAssignments).map(([object, target]) => ({
+          object: object as ObjectId,
+          target,
+        })),
+      })
+      return
+    }
     game.dispatch({
       type: 'declare-attackers',
       player: seat,
       attackers: collapseAttacks(attackAssignments, stackMembers),
     })
-  }, [attackAssignments, game, seat, stackMembers])
+  }, [attackAssignments, enterAttackingAction, game, seat, stackMembers])
 
   const confirmBlockers = useCallback(() => {
     game.dispatch({
@@ -2090,10 +2122,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     // (game/stackMembers.ts) while a combat declaration is being built.
     const members = expandIds(ids, stackMembers)
     const assignedAt = members.map((m) => attackAssignments[m]).find((d) => d !== undefined)
-    const aimedAt = assignedAt ?? obj.attacking ?? null
+    // A creature entering attacking whose target is still being chosen
+    // (rule 508.4) attacks its first option meanwhile, as far as the view
+    // says — that's a placeholder, not a choice, so the tile shows none.
+    const choosingTarget =
+      enterAttackingAction?.creatures.some((c) => members.includes(c.object)) ?? false
+    const aimedAt = assignedAt ?? (choosingTarget ? null : obj.attacking) ?? null
     const attackSeat = aimedAt === null ? null : attackSeatClass(aimedAt)
 
-    if (obj.attacking) badge = `⚔ ${attackTargetLabel(obj.attacking)}`
+    if (obj.attacking && !choosingTarget) badge = `⚔ ${attackTargetLabel(obj.attacking)}`
     else if (obj.blocking) badge = `\u{1F6E1} ${game.nameOf(obj.blocking)}`
     else if (obj.isCommander) badge = 'Commander'
 
@@ -3228,14 +3265,18 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     controls = (
       <div className="controls">
         <span>
-          Declare attackers — {assignedCount} attacking
+          {enterAttackingAction !== undefined
+            ? // Rule 508.4: each creature put onto the battlefield attacking
+              // needs a target, so the count is out of all of them.
+              `${view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}choose what each attacks — ${assignedCount} of ${attackAction.eligible.length}`
+            : `Declare attackers — ${assignedCount} attacking`}
           {attackPicks.length > 0 ? `, ${attackPicks.length} selected` : ''}
           {attackPicks.length > 0
             ? groupTargets.length > 0
               ? ' · click who they attack'
               : ' · no one legal for all of them — narrow the selection'
             : ''}
-          {unmetMusts.length > 0
+          {unmetMusts.length > 0 && enterAttackingAction === undefined
             ? ` · ${unmetMusts.map((id) => game.nameOf(id)).join(', ')} must attack`
             : ''}
         </span>
@@ -3282,7 +3323,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           </button>
         ) : null}
         <button type="button" disabled={unmetMusts.length > 0} onClick={confirmAttackers}>
-          {assignedCount === 0 ? 'No attacks' : `Attack with ${assignedCount}`}
+          {enterAttackingAction !== undefined
+            ? 'Confirm'
+            : assignedCount === 0
+              ? 'No attacks'
+              : `Attack with ${assignedCount}`}
         </button>
       </div>
     )
