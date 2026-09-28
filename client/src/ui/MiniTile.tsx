@@ -32,6 +32,10 @@ export interface MiniTileProps {
   readonly badge?: string | null
   readonly extraGenericCost?: number
   readonly stackCount?: number | null
+  /** How many of the attacking tokens this tile stands for are blocked
+   * (declared, or picked in this seat's block bar): drawn beside the `×N`
+   * pill as a shield and the count. 0 draws nothing. */
+  readonly blockedCount?: number
   /** The seat-colour class of whoever this permanent is attacking, or null.
    * The tile is outlined in it, because the `⚔ <name>` badge is small,
    * overlaid on art and regularly unreadable — colour survives at tile size
@@ -68,6 +72,7 @@ export function MiniTile({
   badge = null,
   extraGenericCost = 0,
   stackCount = null,
+  blockedCount = 0,
   attackSeat = null,
   aimedBy = null,
   goaders = [],
@@ -163,8 +168,21 @@ export function MiniTile({
           {obj.loyalty !== null ? <LoyaltyCounter value={obj.loyalty} /> : null}
           <CounterChips obj={obj} />
 
-          {stackCount !== null && stackCount > 1 ? (
-            <span className="card-stack">×{stackCount}</span>
+          {(stackCount !== null && stackCount > 1) || blockedCount > 0 ? (
+            <span className="mt-stack-row">
+              {stackCount !== null && stackCount > 1 ? (
+                <span className="card-stack">×{stackCount}</span>
+              ) : null}
+              {blockedCount > 0 ? (
+                <span
+                  className="mt-blocked"
+                  title={`${blockedCount} of ${stackCount ?? blockedCount} blocked`}
+                >
+                  <span aria-hidden="true">{'\u{1F6E1}'}</span>
+                  {blockedCount}
+                </span>
+              ) : null}
+            </span>
           ) : null}
           <CardFlags obj={obj} goaders={goaders} compact />
           {badge ? <span className="mt-badge">{badge}</span> : null}

@@ -155,6 +155,11 @@ export interface VisibleObject {
   /** A player, or an opponent's planeswalker (an `ObjectId`), or `null`. */
   readonly attacking: PlayerId | ObjectId | null;
   readonly blocking: ObjectId | null;
+  /** An attacker that has been blocked this combat — and stays blocked
+   * after its blockers leave (rule 509.1h), which no blocker's `blocking`
+   * can show. Lets a board tile standing for several attacking tokens say
+   * how many of them are blocked. */
+  readonly blocked: boolean;
   readonly kind: "card" | "ability";
   readonly sourceObjectId: ObjectId | null;
   readonly abilityIndex: number | null;
@@ -393,6 +398,7 @@ function visible(
     summoningSick: object.summoningSick,
     attacking: object.attacking,
     blocking: object.blocking,
+    blocked: object.attacking !== null && object.blocked,
     kind: object.kind,
     sourceObjectId: object.sourceObjectId,
     abilityIndex: object.abilityIndex,

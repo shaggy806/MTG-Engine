@@ -2081,10 +2081,6 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           ids.length > 1
             ? `\u{1F6E1} ${blocking.length}/${ids.length}`
             : `\u{1F6E1} ${game.nameOf(blockAssign[blocking[0]])}`
-      } else if (ids.length > 1 && obj.attacking) {
-        // A folded stack of attackers: how many of them have a blocker.
-        const blocked = ids.filter((i) => Object.values(blockAssign).includes(i)).length
-        if (blocked > 0) badge = `\u{1F6E1} ${blocked}/${ids.length} blocked`
       }
     } else if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
       const members = damageMembersOf(ids)
@@ -2151,6 +2147,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
 
     // Any of the permanents the tile stands for (a folded land stack).
     const aimedBy = aim !== null && ids.some((i) => aim.objects.has(i)) ? aim.by : null
+    // A tile of several attacking tokens: how many of them are blocked —
+    // declared (`blocked`, which every seat sees, and which stays true once
+    // the blockers are gone) or, while this seat is still choosing, picked
+    // in its own block bar.
+    const pendingBlocked = mode === 'blockers' ? new Set(Object.values(blockAssign)) : null
+    const blockedCount =
+      obj.attacking !== null && ids.length > 1
+        ? ids.filter((i) => view.objects[i]?.blocked || pendingBlocked?.has(i)).length
+        : 0
     const goaders = obj.goadedBy
       .filter((p) => view.turnOrder.includes(p))
       .map((p) => ({ seat: seatClassOf(view.turnOrder, p), name: playerLabel(p, game.seats) }))
@@ -2164,6 +2169,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           activatable={activatable}
           badge={badge}
           stackCount={opts.stackCount ?? null}
+          blockedCount={blockedCount}
           attackSeat={attackSeat}
           aimedBy={aimedBy}
           goaders={goaders}

@@ -2074,6 +2074,35 @@
   border-radius: 9px;
   z-index: 2;
 }
+/* A battlefield tile's top-left row: the ×N stack pill and, on a stack of
+   attacking tokens, how many of them are blocked (MiniTile's blockedCount).
+   The row owns the corner, so the pills sit side by side rather than on top
+   of each other. */
+.mt-stack-row {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+}
+.mt-stack-row .card-stack {
+  position: static;
+}
+.mt-blocked {
+  height: 17px;
+  padding: 0 5px 0 3px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0b0e14;
+  background: var(--warn);
+  border-radius: 9px;
+  white-space: nowrap;
+}
 /* ===== MiniTile — a battlefield permanent reduced to its art + a stat badge.
    Hovering/focusing reveals the full CardTile in .mini-tile-popover, anchored
    to the tile itself (not cursor-tracked) but rendered out of this subtree

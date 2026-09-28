@@ -58,9 +58,13 @@ const isEmpty = (counters: Readonly<Record<string, number>>): boolean =>
  * (it used to be name, tapped, P/T and summoning sickness) put a Cat that
  * Jump had given flying under the tile of the Cats that hadn't, drawn without
  * its flying.
+ *
+ * `blocked` is left out too: some of a stack of attacking tokens being
+ * blocked doesn't make them different creatures, and the stack's tile counts
+ * how many are (`MiniTile`'s `blockedCount`) rather than splitting in two.
  */
 function tileKey(obj: VisibleObject): string {
-  const { id: _id, stackCount: _stackCount, ...shown } = obj
+  const { id: _id, stackCount: _stackCount, blocked: _blocked, ...shown } = obj
   return JSON.stringify(shown)
 }
 
