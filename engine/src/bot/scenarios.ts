@@ -998,6 +998,49 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
 
+  asked({
+    name: "kills the creature attacking it, not the leader's",
+    rule: "A trailing player's creature swinging at us is the threat, over the leader's twin at home.",
+    position(registry) {
+      // BACKLOG, "Removal only for the leader": the evaluation weighed a
+      // player's board by where they stand — the leader at `opponent`, the
+      // rest averaged at `otherOpponents` — and nothing in it asked whose
+      // creatures are pointed at us, so v2 killed bob's Wurm and took six.
+      // Carol trails and attacks alice with a Craw Wurm; bob leads with the
+      // same Wurm at home. Fixed by `threat` (1.0), from who attacked whom.
+      const game = table(registry, [A, B, C, D], C);
+      lands(game, "Swamp", A, 3);
+      lands(game, "Forest", B, 9);
+      for (let i = 0; i < 6; i += 1) game.debugSpawn("Forest", B, "hand");
+      onBoard(game, "Craw Wurm", B);
+      lands(game, "Forest", C, 3);
+      const attacker = onBoard(game, "Craw Wurm", C);
+      lands(game, "Forest", D, 3);
+      game.debugSpawn("Murder", A, "hand");
+      game.state.players[A].life = 20;
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+      game.dispatch({ type: "declare-attackers", player: C, attackers: [{ attacker, defender: A }] });
+      game.advanceUntil((s) => s.priority.holder === A);
+      if (game.state.objects[attacker].attacking !== A) {
+        return { passed: false, detail: "carol's Wurm never attacked" };
+      }
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === attacker,
+            detail:
+              action.type === "cast-spell"
+                ? `killed ${cardOf(game, hit)}`
+                : `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+
   // --- training: right answers the shipped weights get wrong ----------------
   asked({
     name: "saves Counterspell for a threat",

@@ -4445,6 +4445,16 @@ export class Game {
       // never fired on the commonest way a creature gets tapped.
       if (taps) this.emit({ type: "permanent-tapped", object: id });
       this.emit({ type: "attacker-declared", attacker: id, defender });
+      // Who attacked whom, for the bots' sense of threat (`PlayerState.
+      // lastAttackedBy`): a planeswalker's controller counts as attacked.
+      const attacked = this.state.players[defender as PlayerId]
+        ? (defender as PlayerId)
+        : this.state.objects[defender as ObjectId]?.controller;
+      const attackerController = this.state.objects[id]?.controller;
+      if (attacked !== undefined && attackerController !== undefined && attacked !== attackerController) {
+        const record = (this.state.players[attacked].lastAttackedBy ??= {});
+        record[attackerController] = this.state.turn.number;
+      }
     }
     // Exalted (rule 702.111a — needed-cards P15): a single dedicated event
     // once the whole declaration is known, rather than checking "how many

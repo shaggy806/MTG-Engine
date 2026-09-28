@@ -48,6 +48,7 @@ export const BASELINE_2026_09_17: Champion = {
     idlePower: 0,
     // Frozen before the token cap: its old uncapped count, exactly.
     extraTokens: 0.5,
+    threat: 0,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.5,

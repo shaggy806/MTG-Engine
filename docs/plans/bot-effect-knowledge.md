@@ -419,3 +419,21 @@ changed, every one of them that waste — the live v2 had been casting Unleash F
 opponent's creature in its own upkeep, three turns running, and activating Kessig Wolf Run for
 X=6 there. And twin targets, tokens nothing tells apart, are one option before the candidate
 cap (`bot/twins.ts`, on the token fold's own key): seven Treasures are one simulation.
+
+**After the plan: a threat to me (2026-09-27).** The evaluation weighed each opponent by where
+they stood — the leader at `opponent`, the rest averaged at `otherOpponents` — and nothing in it
+asked whose creatures were pointed at the bot. So v2, with Murder in hand while a trailing player
+attacked it with a Craw Wurm, killed the leader's identical Wurm at home and took six ("kills the
+creature attacking it, not the leader's", now in the gate). The attack itself is invisible where a
+search scores a move — at the end of the turn, when nothing is attacking any more — so the game
+now remembers who last attacked whom (`PlayerState.lastAttackedBy`, public information), and a
+subtracted `threat` feature counts opponents' creatures by the combat damage they could turn on
+us: in full from a player who attacked us within the last round, split across their opponents
+otherwise, and as a share of what we have left to lose (life, or a commander's remaining 21,
+whichever is nearer — so Anafenza three short of lethal commander damage still outranks a bigger
+Wurm). `bot:fit-scenarios` found the lever at 1.5, breaking nothing; `bot:diff` against the build
+before showed that as removal-happy (a Fireball on a Cat token over Phyrexian Arena), so the term
+was scaled by life and shipped at 1.0, where the scenario flips at ~0.66. At 1.0, 44 of 14,532
+decisions changed over six four-player games: more favourable blocks and chump blocks at low
+life, removal on the creatures that mattered, and more sweepers — the one thing left to watch
+(BACKLOG). Frozen as `shipped-2026-09-27b`. Not benched.

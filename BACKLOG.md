@@ -180,15 +180,16 @@ Beyond that plan:
   rocks and draw spells (`bot:fit-scenarios` lists them). Wants a feature: what a reactive card
   in hand could still answer.
 
-- **Removal only for the leader.** v2 subtracts its strongest opponent's score at full weight
-  and the *average* of the rest at `otherOpponents`, so at four players a trailing opponent's
-  permanent counts a quarter as much as the leader's (an eighth before step 8 raised the
-  weight to 0.5, which fixed "kills a trailing player's threat when the leader has none"). A
-  removal spell (a card, worth 2) still goes on a trailing player's permanent only if it's
-  worth 8, and on a constructed board v2 Vandalblasted the leader's Sol Ring and left a
-  trailing player's alone even at `otherOpponents` 1. Pressing the leader is sound politics,
-  but not when the trailing player's creature is the one attacking the bot — which wants a
-  threat-to-me term (what can attack me next turn), not a bigger weight.
+- **Watch the wraths since `threat`.** With the threat term (2026-09-27) v2 casts more
+  sweepers: in six four-player games, Cleansing Nova three times (at 33, 19 and 5 life) and
+  Blasphemous Act over recasting its commander, and a turn-7 Magmaquake over Thunderbreak
+  Regent. At low life that's right; at 33 it's a judgment call. The gate's "wraths when far
+  behind" and "keeps its own winning board" hold. If a live game shows a wasted wrath, capture
+  it: the scenario is what would say whether `threat` needs a cap or a sweeper needs pricing.
+- **A threat that can't attack us.** `threat` counts every opponent's creature able to attack,
+  including one that can't attack *us* (Vow of Duty on it, or a goad pointing elsewhere), so
+  v2 stopped casting Vow of Duty on an opponent's creature: the +2/+2 reads as more threat.
+  Wants `whyCannotAttack` against us in the term.
 - **Pumping an opponent's attacker.** Since step 8 raised `otherOpponents` to 0.5, v2 spends
   pumps on an opponent's creature attacking another opponent — Kessig Wolf Run, Fires of
   Yavimaya, Unleash Fury, Ajani's counter: nine times in 48 four-player games, none before. The

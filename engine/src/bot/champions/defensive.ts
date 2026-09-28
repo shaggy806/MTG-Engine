@@ -49,6 +49,7 @@ export const DEFENSIVE: Champion = {
     idlePower: 0,
     // Frozen before the token cap: its old uncapped count, exactly.
     extraTokens: 0.75,
+    threat: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 1,

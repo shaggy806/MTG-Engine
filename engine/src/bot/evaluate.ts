@@ -135,6 +135,10 @@ export interface EvalWeights {
    * fifth Treasure of a pile on. At `otherPermanents`' weight it scores exactly
    * as before the cap. */
   readonly extraTokens: number;
+  /** Subtracted: the combat damage opponents' creatures could turn on us,
+   * in full from a player who attacked us within the last round
+   * (`features.ts`). */
+  readonly threat: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -269,6 +273,13 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // off a dead player until the game timed out. A pile past a turn's spending
   // is mana the evaluation can't see a use for — `untappedMana` is 0 too.
   extraTokens: 0,
+  // The lever `bot:fit-scenarios` found for "kills the creature attacking
+  // it, not the leader's", breaking no other scenario: a creature whose
+  // controller swung at us last round counts its combat damage in full, as a
+  // share of what we have left to lose (`features.ts`). The scenario flips at
+  // about 0.66; 1.0 keeps a margin of ~2 without the removal-happy streak 1.5
+  // showed in `bot:diff` (a Fireball on a Cat token over Phyrexian Arena).
+  threat: 1,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

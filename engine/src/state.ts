@@ -1127,6 +1127,15 @@ export interface PlayerState {
    */
   counters: Partial<Record<PlayerCounterKind, number>>;
   /**
+   * The last turn each opponent attacked this player or a planeswalker they
+   * control, by attacking player — public, since every attack is announced.
+   * Rules never read it; the bots' evaluation does (`bot/features.ts`'s
+   * `threat`): whoever swung at you last round is likelier to again, and by
+   * the end of a turn — where a search scores a move — nothing is attacking
+   * any more. Absent until someone attacks.
+   */
+  lastAttackedBy?: Partial<Record<PlayerId, number>>;
+  /**
    * Which printing of each card this player brought, keyed by card name — a
    * Scryfall reference in the same shapes {@link CardDefinition.art} accepts
    * (see `DeckList.printings`). Purely cosmetic: nothing in the rules engine

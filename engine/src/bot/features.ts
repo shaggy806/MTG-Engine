@@ -84,6 +84,7 @@ export const FEATURE_KEYS = [
   "commanderOnBoard",
   "idlePower",
   "extraTokens",
+  "threat",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -97,6 +98,7 @@ const SUBTRACTED: ReadonlySet<string> = new Set([
   "lifeDanger",
   "libraryDanger",
   "idlePower",
+  "threat",
 ]);
 
 /**
@@ -127,6 +129,13 @@ const LIFE_DANGER_AT = 15;
  * and drawing from an empty library loses the game outright (rule 104.3c).
  */
 const LIBRARY_DANGER_AT = 15;
+
+/** `threat` weighs damage against what's left to lose: at this much life a
+ * point counts as one, at twice it as a half. */
+const THREAT_LIFE = 20;
+/** The most one point of damage can count for in `threat`, however close
+ * to lethal. */
+const MAX_THREAT_SCALE = 10;
 
 /**
  * How many identical noncreature tokens (Treasures, Clues, Food) count in
@@ -390,6 +399,48 @@ function playerFeaturesUncached(
     }
   }
 
+  // Subtracted: the combat damage opponents' creatures could turn on us —
+  // each counted in full when its controller attacked us within the last
+  // round (`PlayerState.lastAttackedBy`), else split across that player's
+  // opponents. A search scores a move at the end of the turn, when nothing is
+  // attacking any more, so the attack a trailing player just made at us was
+  // invisible: v2 killed the leader's Craw Wurm and took six from the one
+  // swinging at it ("kills the creature attacking it, not the leader's").
+  let threat = 0;
+  if (isMe) {
+    const living = state.turnOrder.filter((q) => !state.players[q].hasLost);
+    const attackedBy = p.lastAttackedBy ?? {};
+    for (const id of state.zones.shared.battlefield) {
+      const object = state.objects[id];
+      if (object === undefined || object.controller === player) continue;
+      if (state.players[object.controller]?.hasLost !== false) continue;
+      const c = computeCharacteristics(state, registry, id);
+      if (!c.types.includes("creature")) continue;
+      if (
+        c.restrictions.has("cant-attack") ||
+        (c.keywords.has("defender") && !c.canAttackAsThoughNoDefender)
+      ) {
+        continue;
+      }
+      const last = attackedBy[object.controller];
+      const recent = last !== undefined && state.turn.number - last < living.length;
+      const share = recent ? 1 : 1 / Math.max(1, living.length - 1);
+      // Damage against what's left to lose — our life, or for a commander
+      // what's left of its 21, whichever is nearer: a 2/2 isn't a threat to
+      // someone at 38 (v2 Fireballed a Cat token over casting Phyrexian
+      // Arena), and Anafenza three short of lethal commander damage
+      // outweighs a bigger Craw Wurm.
+      const commanderLeft = object.isCommander
+        ? COMMANDER_DAMAGE_LETHAL - (p.commanderDamageTaken[id] ?? 0)
+        : Infinity;
+      const scale = Math.min(
+        MAX_THREAT_SCALE,
+        THREAT_LIFE / Math.max(1, Math.min(p.life, commanderLeft)),
+      );
+      threat += combatDamageOf(c) * (object.stackCount ?? 1) * share * scale;
+    }
+  }
+
   let handManaValue = 0;
   if (isMe) {
     for (const id of zones.hand) {
@@ -452,5 +503,6 @@ function playerFeaturesUncached(
     commanderOnBoard,
     idlePower,
     extraTokens,
+    threat,
   };
 }
