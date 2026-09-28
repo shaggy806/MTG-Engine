@@ -166,10 +166,12 @@ that one card is the reason the deck exists.
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **More training scenarios.** Step 8's corpus holds four right answers the weights get wrong
-  (`kind: "training"` in `bot/scenarios.ts`) — too few to fit more than a lever or two
-  against. Each blunder a live game or `bot:behaviour` shows becomes one, and
-  `bot:fit-scenarios` says whether a weight fixes it or a feature is missing.
+- **More training scenarios.** Every hand-built scenario the weights got wrong has since been
+  fixed and moved into the gate (41 there, none left in training — `kind: "training"` in
+  `bot/scenarios.ts`), so there is nothing to fit against. New ones come from live games: the
+  in-game Capture button (`--capture`) saves a position to `captures/`, which `bot:scenarios`
+  and `bot:fit-scenarios` read as training scenarios, as does each blunder `bot:behaviour`
+  shows.
 
 Beyond that plan:
 
@@ -188,6 +190,9 @@ Beyond that plan:
   Regent. At low life that's right; at 33 it's a judgment call. The gate's "wraths when far
   behind" and "keeps its own winning board" hold. If a live game shows a wasted wrath, capture
   it: the scenario is what would say whether `threat` needs a cap or a sweeper needs pricing.
+  Since `drawEngines` 4 (same day) Cleansing Nova's artifact-and-enchantment mode and removal
+  go after opponents' draw engines too, and one edict took the bot's own commander (Emmara)
+  over Mentor of the Meek, a judgment call worth capturing if it recurs.
 - **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
   (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
   attacks someone else, and then with help that ends at end of turn, on a creature goaded by
@@ -202,8 +207,9 @@ Beyond that plan:
   rollout is the general fix, and has a trap — passing then scores the same as casting whatever
   v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
   tie-break toward acting, and a bench, before it's tried.
-- **Big boards under count budgets.** A seventy-permanent board costs v2 ~33 s a window at the
-  bench's 200 simulations, so a long four-player game can still pass a bench's time limit
+- **Big boards under count budgets.** A seventy-permanent board cost v2 ~33 s a window at the
+  bench's 200 simulations (measured before twin targets, batches and the hold after a decided
+  window cut the searches; not re-measured), so a long four-player game can still pass a bench's time limit
   (seed 50's last turn took 15 minutes; it ends now). Live rooms stop at 300 ms.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
@@ -215,7 +221,8 @@ Beyond that plan:
   five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
   simple to play against. Add decks across a range of power levels for bots to bring. The same
   decks should widen the bench, which today measures every bot on those five midrange precons
-  only — a result there isn't a result about the decks people bring. Unscoped: where the decks
+  only — a result there isn't a result about the decks people bring. None of the five plays a
+  counterspell, so `bot:diff` and the bench can't see the `answers` reserve at all. Unscoped: where the decks
   come from (curated lists, or built from the pool around a commander), how a host picks a power
   level, and how the bench samples them.
 
@@ -289,7 +296,7 @@ Beyond that plan:
   permanent once anything has a control effect. On a land-heavy board they were 31% of a
   profile, and turns slow down steadily. Not a hang, and the fuzzer's decks don't hit it.
 - **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
-  (424 files, 3,949 tests, about 100 s) and check what it actually guards. Unscoped: what the
+  (430 files, 3,979 tests, about 100 s) and check what it actually guards. Unscoped: what the
   audit looks for and what it produces.
 - **Small known slips.** Geode Rager targets an opponent where its text says "target player".
   `effects.ts` cites Encore as 702.140 (it's 702.141). Rin and Seri's and Urtet's `otherOnly`
