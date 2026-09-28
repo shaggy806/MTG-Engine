@@ -36,7 +36,7 @@ import {
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameObject, GameState } from "./state.js";
-import { printedCardName } from "./state.js";
+import { activePlayerOf, printedCardName } from "./state.js";
 import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import { fitTargetCount } from "./target-count.js";
@@ -1450,6 +1450,35 @@ export class HeuristicBotController extends AutomaticController {
     return effect !== undefined && onlyUntilEndOfTurn(effect);
   }
 
+  /**
+   * Whether `offer` would spend mana in this bot's own upkeep or draw step,
+   * with nothing on the stack — mana its main phase could have cast a spell
+   * with. The search can't see that: its rollouts pass at every window, so
+   * the main phase's spells never appear in them and the mana looks free. On
+   * seed 50 v2 spent its upkeep on Hoard-Smelter Dragon and Scavenging Ooze
+   * and cast nothing after. Mana spent on an opponent's turn untaps on ours,
+   * so this is about our own turn only; an ability with an activation
+   * condition (it may only be usable now) is left alone.
+   */
+  protected holdsManaForMain(state: GameState, offer: LegalAction): boolean {
+    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability") return false;
+    if (state.zones.shared.stack.length > 0) return false;
+    if (state.turn.step !== "upkeep" && state.turn.step !== "draw") return false;
+    if (activePlayerOf(state) !== this.playerId) return false;
+    if (offer.kind === "activate-ability" && offer.manaAbility === true) return false;
+    if (!this.registry.has(offer.cardName)) return false;
+    const def = this.registry.get(offer.cardName);
+    if (offer.kind === "cast-spell") {
+      if (offer.free === true) return false;
+      return def.manaCost !== null && manaValue(parseManaCost(def.manaCost)) > 0;
+    }
+    const ability = def.activated?.[offer.abilityIndex];
+    if (ability === undefined || !offer.text.startsWith(ability.text)) return false;
+    if (ability.condition !== undefined) return false;
+    const mana = ability.cost.mana;
+    return mana !== null && mana !== "" && mana !== "{0}";
+  }
+
   /** The effect a cast or activation offer resolves with, or `undefined`
    * where it isn't read here: a granted ability, a modal or multi-face
    * spell, anything else. */
@@ -1845,7 +1874,8 @@ export class HeuristicBotController extends AutomaticController {
         o.kind === "cast-spell" &&
         !this.taxWouldKill(view.state, o) &&
         !this.aimsOnlyAtWrongSide(view.state, o) &&
-        !this.wastedNow(view.state, o),
+        !this.wastedNow(view.state, o) &&
+        !this.holdsManaForMain(view.state, o),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
@@ -1868,7 +1898,8 @@ export class HeuristicBotController extends AutomaticController {
         this.isPointlessReattach(view.state, o) ||
         (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) >= MAX_ACTIVATIONS_PER_TURN ||
         this.aimsOnlyAtWrongSide(view.state, o) ||
-        this.wastedNow(view.state, o)
+        this.wastedNow(view.state, o) ||
+        this.holdsManaForMain(view.state, o)
       ) {
         continue;
       }

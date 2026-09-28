@@ -197,11 +197,13 @@ Beyond that plan:
   else's attacker (Kessig Wolf Run, Unleash Fury) remain allowed and still cost mana the
   evaluation can't see (`untappedMana` is 0): if they come up too often in live games, capture
   one — the scenario says whether they need a price.
-- **Mana spent early on lasting effects.** Until-end-of-turn pumps now wait for combat
-  (`effect-worth.ts`, `temporaryEffectCanMatter`), but v2 still spends its upkeep mana on lasting
-  activations (Hoard-Smelter Dragon, Scavenging Ooze) it could make in its main phase beside its
-  spells: the rollout plays its own seat passively, so unspent mana is worth nothing it can see.
-  The same gap as "Pumping an opponent's attacker"; wants unspent mana priced in the rollout.
+- **The rollout still can't see our own later spells.** Pumps wait for combat and the upkeep's
+  mana waits for the main phase (`wastedNow`, `holdsManaForMain`), but inside a main phase or
+  combat v2 still can't see what a spell it hasn't cast yet would have done with mana it spends
+  now: its rollouts pass at every window. Letting our own seat play its turn as v1 in the
+  rollout is the general fix, and has a trap — passing then scores the same as casting whatever
+  v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
+  tie-break toward acting, and a bench, before it's tried.
 - **Big boards under count budgets.** A seventy-permanent board costs v2 ~33 s a window at the
   bench's 200 simulations, so a long four-player game can still pass a bench's time limit
   (seed 50's last turn took 15 minutes; it ends now). Live rooms stop at 300 ms.

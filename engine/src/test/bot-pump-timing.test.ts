@@ -78,4 +78,20 @@ describe("until-end-of-turn pumps", () => {
     upkeep.advanceUntil((s) => s.priority.holder === A);
     expect(temporaryEffectCanMatter(upkeep.state, A)).toBe(true);
   });
+
+  it("holds mana through its own upkeep for the main phase", () => {
+    // Scavenging Ooze's exile is a lasting effect, so the pump gate doesn't
+    // cover it; spending the upkeep's mana on it is still mana the main
+    // phase's spells can't have (seed 50).
+    const game = at("upkeep");
+    game.debugSpawn("Scavenging Ooze", A, "battlefield", { summoningSick: false });
+    game.debugSpawn("Forest", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "graveyard");
+    const ooze = game
+      .legalActions(A)
+      .filter((l) => l.kind === "activate-ability" && l.cardName === "Scavenging Ooze");
+    expect(ooze).not.toHaveLength(0);
+    expect(new EvalBotController(A, registry).act(viewOf(game)).type).toBe("pass-priority");
+    expect(new HeuristicBotController(A, registry).act(viewOf(game)).type).toBe("pass-priority");
+  });
 });

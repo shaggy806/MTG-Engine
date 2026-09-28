@@ -559,6 +559,9 @@ export class EvalBotController extends HeuristicBotController {
         // rollout plays our own seat passively, so mana it would have cast
         // spells with looks free to spend, and v2 pumped away its upkeep.
         if (this.wastedNow(view.state, legal)) continue;
+        // Mana our own main phase could cast a spell with, spent in our upkeep
+        // (`holdsManaForMain`): the rollouts never show that spell.
+        if (this.holdsManaForMain(view.state, legal)) continue;
         for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
           const verdict = this.opponentPump(view.state, legal, action);
           if (verdict === "drop") continue;
