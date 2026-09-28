@@ -42,7 +42,13 @@ that one card is the reason the deck exists.
   and then merge. A grep of `pool/` for "another/other target" without an `other` spec found only
   these two, but a card whose `text` phrases it differently would slip past it.
 
-- **The current priority (2026-09-26): the top 5000 cards, most-played first.**
+- **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
+  or misplay a printed clause (Saw in Half, Finale of Devastation, Fireball, Mortivore, Iridescent
+  Vinelasher's Offspring, …). Give each its proper, faithful implementation, building whatever
+  feature blocks it; don't just delete them. The list and each card's blocker are in
+  `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run card:text -w engine`
+  is the live ledger.
+- **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,436 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
@@ -55,9 +61,6 @@ that one card is the reason the deck exists.
   that needs a new decision, and attacking tokens must not fold into a token stack (combat deals
   one object's damage). Combat already reads attackers off `GameObject.attacking`. Ninjutsu attacks
   whatever the returned creature was attacking (702.49c), so needs no choice.
-- **Iridescent Vinelasher is missing its Offspring {2}.** It's in the pool with only the landfall
-  ping (`cards/pool/iridescent-vinelasher.ts`); Offspring needs a cast-time optional additional
-  cost and a 1/1 token copy (the P5 note in `neededCards-features.md`).
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
   the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
@@ -96,9 +99,6 @@ that one card is the reason the deck exists.
   Then regeneration, the "put into a graveyard from anywhere" trigger, "as this enters" on a
   non-cast permanent, and discard as an ability cost. See `neededCards-features.md`, "The
   limitation ledger", and `cards/AUTHORING.md` §15.
-- **Pre-§0 debt.** Some cards in the pool lose or misplay a printed clause. Fix or delete each
-  one. See `cards/AUTHORING.md` §15, "Known exceptions already in the pool", and
-  `npm run card:text -w engine`.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
   one-off requests. 48 of its cards are still missing, and 7 of those aren't in the top-5000
