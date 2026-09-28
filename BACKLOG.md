@@ -243,6 +243,9 @@ Beyond that plan:
 - **The library can't reverse its sort.** Name, mana value, colour and popularity each sort
   one way only (`client/src/library/LibraryPage.tsx`'s `sort`); an ascending/descending toggle
   beside the sort picker would show the priciest or least-played cards first.
+- **The library's last row looks like the end of the pool.** A page is a fixed `PAGE_SIZE` (60)
+  cards (`client/src/library/LibraryPage.tsx`), so depending on the screen width the final row
+  of loaded cards comes up short of the others, and the gallery reads as if it ends there.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing
