@@ -2,6 +2,7 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "trigger:enters-batch",
   "static:grant-offspring-to-spells",
   "keyword:mobilize",
   "keyword:offspring",
@@ -3192,8 +3193,7 @@
     "effect:control-change-extensions",
     "effect:duration-extensions",
     "effect:look-and-choose-leftover",
-    "effect:this-way-results",
-    "zone:visibility-extensions"
+    "effect:this-way-results"
    ]
   },
   {

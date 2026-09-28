@@ -498,6 +498,12 @@ in `git log`.
   Boundless, with the `ofChosenType` filter clause for its anthem;
   `changeling.test.ts`). Realmwalker and Mirror Entity, the other Tier 2
   names, each still need pieces of their own.
+- **Batched entries** (`trigger:enters-batch`) — `enters-battlefield`'s
+  `batched`: "whenever one or more … enter" fires once per simultaneous entry
+  (`withEnterBatch`), a compacted token stack counting as its tokens, with
+  "that much" as how many matched (Marneus Calgar, Ingenious Artillerist;
+  `enters-batch.test.ts`). Kambal's "for each of them, create a copy" still
+  needs `effect:token-copy-options`.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

@@ -70,6 +70,7 @@ import _poolHurloonMinotaur from "../pool/hurloon-minotaur.js";
 import _poolIcecaveCrasher from "../pool/icecave-crasher.js";
 import _poolImotekhTheStormlord from "../pool/imotekh-the-stormlord.js";
 import _poolImperialCeratops from "../pool/imperial-ceratops.js";
+import _poolIngeniousArtillerist from "../pool/ingenious-artillerist.js";
 import _poolJuggernaut from "../pool/juggernaut.js";
 import _poolKazanduNectarpot from "../pool/kazandu-nectarpot.js";
 import _poolKessigWolf from "../pool/kessig-wolf.js";
@@ -236,6 +237,7 @@ const shard: CardShard = {
     _poolIcecaveCrasher,
     _poolImotekhTheStormlord,
     _poolImperialCeratops,
+    _poolIngeniousArtillerist,
     _poolJuggernaut,
     _poolKazanduNectarpot,
     _poolKessigWolf,

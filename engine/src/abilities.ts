@@ -260,6 +260,11 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
       /** "another …" — the source permanent entering doesn't count. */
       readonly otherOnly?: boolean;
+      /** "Whenever **one or more** … enter" (Marneus Calgar's tokens): once
+       * per simultaneous entry, however many of its permanents match — a
+       * batch of tokens, a mass reanimation. Its trigger object is the first
+       * of them to match; don't read it. */
+      readonly batched?: boolean;
     }
   | {
       readonly on: "dies";

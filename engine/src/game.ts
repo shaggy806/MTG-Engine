@@ -700,6 +700,13 @@ export class Game {
    * held back until all of its permanents are on the battlefield — see
    * {@link withEnterBatch}. `null` outside one. */
   private enterAnnouncements: GameEventInput[] | null = null;
+  /** While a simultaneous entry is being announced: the batched
+   * `enters-battlefield` triggers ("whenever one or more … enter") that have
+   * already fired for it, keyed `source#ability`, so each fires once per
+   * entry however many of the permanents match. `null` otherwise. */
+  private enterBatchFired: Set<string> | null = null;
+  /** …and that entry's announcements, which a batched trigger counts. */
+  private enterBatchEvents: readonly GameEventInput[] | null = null;
   /** The player whose leaving the game (`leaveGame`) is under way. While it
    * is, their own cards may still move — off the stack, as they leave — and
    * nothing triggers on it: those cards left the game rather than going
@@ -10250,6 +10257,7 @@ export class Game {
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
+          !this.enterBatchAlreadyFired(ability.trigger, `${id}#${index}`) &&
           !(
             ability.oncePerTurn === true &&
             this.triggeredOnceThisTurn(live, index, lastSeen?.zoneChangeCount)
@@ -10344,7 +10352,12 @@ export class Game {
                 ? event.attacker
                 : undefined;
           const triggerValue =
-            powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
+            // "That much": how many permanents of the entry matched.
+            ability.trigger.on === "enters-battlefield" &&
+            ability.trigger.batched === true &&
+            event.type === "permanent-entered-battlefield"
+              ? this.enterBatchMatches(ability.trigger, event, object)
+              : powerOfId !== undefined && this.state.objects[powerOfId] !== undefined
               ? computeCharacteristics(this.state, this.registry, powerOfId).power
               : (ability.trigger.on === "deals-combat-damage-to-player" ||
                     ability.trigger.on === "dealt-damage" ||
@@ -10479,9 +10492,14 @@ export class Game {
           if (ability.oncePerTurn === true) {
             this.markTriggeredOnce(live, index, lastSeen?.zoneChangeCount);
           }
+          // "Whenever one or more … enter": this firing is the entry's one
+          // (see `enterBatchAlreadyFired`), whatever the batch count.
+          const batchedEntry =
+            ability.trigger.on === "enters-battlefield" && ability.trigger.batched === true;
+          if (batchedEntry) this.enterBatchFired?.add(`${id}#${index}`);
           const multiplier =
             (object.stackCount ?? 1) *
-            (ability.oncePerTurn === true
+            (ability.oncePerTurn === true || batchedEntry
               ? 1
               : departed *
                 recipients *
@@ -10936,7 +10954,14 @@ export class Game {
     // the others enter (rule 603.6a): "whenever another creature enters"
     // among them triggers for all the rest, whichever the engine moved
     // first (the Elas il-Kor ruling).
-    for (const event of entered) this.emit(event);
+    const outer = [this.enterBatchFired, this.enterBatchEvents] as const;
+    this.enterBatchFired = new Set();
+    this.enterBatchEvents = entered;
+    try {
+      for (const event of entered) this.emit(event);
+    } finally {
+      [this.enterBatchFired, this.enterBatchEvents] = outer;
+    }
     return result;
   }
 
@@ -10957,6 +10982,35 @@ export class Game {
         this.state.objects[attacker] !== undefined &&
         this.triggerFilterOk(spec.filter, attacker, self),
     );
+  }
+
+  /**
+   * A batched `enters-battlefield` trigger ("whenever one or more tokens you
+   * control enter" — Marneus Calgar) that has already fired for the
+   * simultaneous entry being announced. Permanents entering at once are one
+   * event (rule 603.2c: an ability triggers once however many objects the
+   * event involves), announced one permanent at a time by `withEnterBatch`;
+   * an entry outside a batch is its own event.
+   */
+  private enterBatchAlreadyFired(spec: TriggerSpec, key: string): boolean {
+    return (
+      spec.on === "enters-battlefield" &&
+      spec.batched === true &&
+      this.enterBatchFired?.has(key) === true
+    );
+  }
+
+  /** How many permanents of the simultaneous entry `event` belongs to a
+   * batched `enters-battlefield` trigger matches — a compacted token stack
+   * counting as each of its tokens. */
+  private enterBatchMatches(spec: TriggerSpec, event: GameEvent, self: GameObject): number {
+    const events = this.enterBatchEvents ?? [event];
+    let n = 0;
+    for (const e of events) {
+      if (e.type !== "permanent-entered-battlefield") continue;
+      if (this.triggerMatches(spec, e as GameEvent, self)) n += e.count ?? 1;
+    }
+    return n;
   }
 
   private triggerMatches(

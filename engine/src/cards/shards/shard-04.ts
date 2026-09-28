@@ -102,6 +102,7 @@ import _poolLoyalSubordinate from "../pool/loyal-subordinate.js";
 import _poolMagnifyingGlass from "../pool/magnifying-glass.js";
 import _poolMalcolmKeenEyedNavigator from "../pool/malcolm-keen-eyed-navigator.js";
 import _poolManaConfluence from "../pool/mana-confluence.js";
+import _poolMarneusCalgar from "../pool/marneus-calgar.js";
 import _poolMawcor from "../pool/mawcor.js";
 import _poolMentalNote from "../pool/mental-note.js";
 import _poolMindfulBiomancer from "../pool/mindful-biomancer.js";
@@ -299,6 +300,7 @@ const shard: CardShard = {
     _poolMagnifyingGlass,
     _poolMalcolmKeenEyedNavigator,
     _poolManaConfluence,
+    _poolMarneusCalgar,
     _poolMawcor,
     _poolMentalNote,
     _poolMindfulBiomancer,

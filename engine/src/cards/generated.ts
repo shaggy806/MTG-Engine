@@ -1251,6 +1251,7 @@ import _poolDiabolicTutor from "./pool/diabolic-tutor.js";
 import _poolDictateOfErebos from "./pool/dictate-of-erebos.js";
 import _poolDictateOfHeliod from "./pool/dictate-of-heliod.js";
 import _poolDictateOfTheTwinGods from "./pool/dictate-of-the-twin-gods.js";
+import _poolDihadaBinderOfWills from "./pool/dihada-binder-of-wills.js";
 import _poolDimensionX from "./pool/dimension-x.js";
 import _poolDimirAqueduct from "./pool/dimir-aqueduct.js";
 import _poolDimirCluestone from "./pool/dimir-cluestone.js";
@@ -2424,6 +2425,7 @@ import _poolInfernoFist from "./pool/inferno-fist.js";
 import _poolInfernoJet from "./pool/inferno-jet.js";
 import _poolInfiniteGuidelineStation from "./pool/infinite-guideline-station.js";
 import _poolInfuriate from "./pool/infuriate.js";
+import _poolIngeniousArtillerist from "./pool/ingenious-artillerist.js";
 import _poolInkriseInfiltrator from "./pool/inkrise-infiltrator.js";
 import _poolInkwellLeviathan from "./pool/inkwell-leviathan.js";
 import _poolInnocentBlood from "./pool/innocent-blood.js";
@@ -2969,6 +2971,7 @@ import _poolMarkOfTheVampire from "./pool/mark-of-the-vampire.js";
 import _poolMarkedByHonor from "./pool/marked-by-honor.js";
 import _poolMarkerBeetles from "./pool/marker-beetles.js";
 import _poolMarkovPatrician from "./pool/markov-patrician.js";
+import _poolMarneusCalgar from "./pool/marneus-calgar.js";
 import _poolMarrowGnawer from "./pool/marrow-gnawer.js";
 import _poolMarshBoa from "./pool/marsh-boa.js";
 import _poolMarshFlats from "./pool/marsh-flats.js";
@@ -5756,6 +5759,7 @@ import _tokensAllyToken from "./tokens/ally-token.js";
 import _tokensApeToken from "./tokens/ape-token.js";
 import _tokensArmyToken from "./tokens/army-token.js";
 import _tokensAssassinToken from "./tokens/assassin-token.js";
+import _tokensAstartesWarriorToken from "./tokens/astartes-warrior-token.js";
 import _tokensBananaToken from "./tokens/banana-token.js";
 import _tokensBeastToken33 from "./tokens/beast-token-3-3.js";
 import _tokensBeastToken from "./tokens/beast-token.js";
@@ -7116,6 +7120,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDictateOfErebos,
   _poolDictateOfHeliod,
   _poolDictateOfTheTwinGods,
+  _poolDihadaBinderOfWills,
   _poolDimensionX,
   _poolDimirAqueduct,
   _poolDimirCluestone,
@@ -8289,6 +8294,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolInfernoJet,
   _poolInfiniteGuidelineStation,
   _poolInfuriate,
+  _poolIngeniousArtillerist,
   _poolInkriseInfiltrator,
   _poolInkwellLeviathan,
   _poolInnocentBlood,
@@ -8834,6 +8840,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMarkedByHonor,
   _poolMarkerBeetles,
   _poolMarkovPatrician,
+  _poolMarneusCalgar,
   _poolMarrowGnawer,
   _poolMarshBoa,
   _poolMarshFlats,
@@ -11627,6 +11634,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensApeToken,
   _tokensArmyToken,
   _tokensAssassinToken,
+  _tokensAstartesWarriorToken,
   _tokensBananaToken,
   _tokensBeastToken33,
   _tokensBeastToken,

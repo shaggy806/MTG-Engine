@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1487 already implemented / 3513 missing (marks refreshed 2026-09-28)
+1489 already implemented / 3511 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1766,7 +1766,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1773  Vaultborn Tyrant                         {5}{G}{G}        Creature — Dinosaur
 [ ]  1774  Uthros Research Craft                    {2}{U}           Artifact — Spacecraft
 [ ]  1775  Riptide Laboratory                       {0}              Land
-[ ]  1776  Ingenious Artillerist                    {2}{R}           Creature — Human Artificer
+[x]  1776  Ingenious Artillerist                    {2}{R}           Creature — Human Artificer
 [ ]  1777  Circuitous Route                         {3}{G}           Sorcery
 [ ]  1778  Walk-In Closet // Forgotten Cellar       {2}{G} // {3}{G}{G} Enchantment — Room // Enchantment — Room
 [ ]  1779  Ilysian Caryatid                         {1}{G}           Creature — Plant
@@ -3513,7 +3513,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3520  God-Eternal Bontu                        {3}{B}{B}        Legendary Creature — Zombie God
 [ ]  3521  Blitzball                                {3}              Artifact
 [ ]  3522  Amphin Mutineer                          {3}{U}           Creature — Salamander Pirate
-[ ]  3523  Dihada, Binder of Wills                  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
+[x]  3523  Dihada, Binder of Wills                  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
 [x]  3524  Fervor                                   {2}{R}           Enchantment
 [x]  3525  Maja, Bretagard Protector                {2}{G}{W}{W}     Legendary Creature — Human Warrior
 [ ]  3526  Curtains' Call                           {5}{B}           Instant

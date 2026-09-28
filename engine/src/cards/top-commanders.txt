@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-320 already implemented / 180 missing
+322 already implemented / 178 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -113,7 +113,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  107  Silas Renn, Seeker Adept                       17784 decks  {1}{U}{B}        Legendary Artifact Creature — Human
 [ ]  108  High Perfect Morcant                           17751 decks  {2}{B}{G}        Legendary Creature — Elf Noble
 [x]  109  Kraum, Ludevic's Opus                          17741 decks  {3}{U}{R}        Legendary Creature — Zombie Horror
-[ ]  110  Marneus Calgar                                 17703 decks  {2}{W}{U}{B}     Legendary Creature — Astartes Warrior
+[x]  110  Marneus Calgar                                 17703 decks  {2}{W}{U}{B}     Legendary Creature — Astartes Warrior
 [ ]  111  Atraxa, Grand Unifier                          17614 decks  {3}{G}{W}{U}{B}  Legendary Creature — Phyrexian Angel
 [ ]  112  Deadpool, Trading Card                         17208 decks  {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
 [ ]  113  Aminatou, Veil Piercer                         17186 decks  {1}{W}{U}{B}     Legendary Creature — Human Wizard
@@ -231,7 +231,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  225  Tinybones, Bauble Burglar                      11172 decks  {1}{B}           Legendary Creature — Skeleton Rogue
 [x]  226  Dina, Essence Brewer                           11138 decks  {1}{B}{G}        Legendary Creature — Dryad Druid
 [x]  227  Child of Alara                                 11113 decks  {W}{U}{B}{R}{G}  Legendary Creature — Avatar
-[ ]  228  Dihada, Binder of Wills                        11029 decks  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
+[x]  228  Dihada, Binder of Wills                        11029 decks  {1}{R}{W}{B}     Legendary Planeswalker — Dihada
 [x]  229  Sliver Overlord                                11004 decks  {W}{U}{B}{R}{G}  Legendary Creature — Sliver Mutant
 [ ]  230  Silverquill, the Disputant                     10944 decks  {2}{W}{B}        Legendary Creature — Elder Dragon
 [x]  231  Tana, the Bloodsower                           10938 decks  {2}{R}{G}        Legendary Creature — Elf Druid

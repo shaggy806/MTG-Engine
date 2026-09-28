@@ -1648,7 +1648,7 @@ triggered: [
 
 | `on` | extra fields | fires when |
 | --- | --- | --- |
-| `enters-battlefield` | `who`, `filter?`, `otherOnly?` | a permanent enters |
+| `enters-battlefield` | `who`, `filter?`, `otherOnly?`, `batched?` | a permanent enters; `batched` is "whenever **one or more** … enter": once per simultaneous entry, `{ triggerValue: true }` how many matched (Marneus Calgar, Ingenious Artillerist) |
 | `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander dies like anything else: its owner is offered the command zone only once it's in the graveyard (903.9a). |
 | `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot when that slot can hold a player ("deals 3 damage to that player"). |
 | `tapped-for-mana` | `who`, `filter?`, `producing?: "C"` | a permanent was tapped for mana (its mana ability with `{T}` in the cost); `producing: "C"` is "whenever you tap a land **for {C}**" (Ultima, Origin of Oblivion) — only when it made colorless mana, once however much. A **triggered mana ability** (rule 605.1b): never on the stack, its `add-mana` is made with the tapped permanent's mana and counted by the auto-payer — see "Triggered mana abilities" in §8. |
@@ -1736,7 +1736,8 @@ scope.
 turn, further events don't trigger it — which also makes "whenever **one or
 more** …" exact on a per-object trigger, since the first of a batch triggers
 it and the rest can't. Per ability of one object: a permanent that leaves
-and returns may trigger again.
+and returns may trigger again. A "one or more … enter" with no once-a-turn
+limit is `batched: true` on the `enters-battlefield` trigger instead.
 
 **`condition?`** (`StaticCondition`, the same union section 10 documents) is an
 **intervening-if** clause — rule 603.4, "When ~ enters, **if** you control a

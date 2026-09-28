@@ -193,6 +193,7 @@ import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
 import _poolZephyrScribe from "../pool/zephyr-scribe.js";
 import _poolZodiacDog from "../pool/zodiac-dog.js";
+import _tokensAstartesWarriorToken from "../tokens/astartes-warrior-token.js";
 import _tokensCragflame from "../tokens/cragflame.js";
 import _tokensDrakeToken from "../tokens/drake-token.js";
 import _tokensEggToken from "../tokens/egg-token.js";
@@ -395,6 +396,7 @@ const shard: CardShard = {
     _poolZodiacDog,
   ],
   tokens: [
+    _tokensAstartesWarriorToken,
     _tokensCragflame,
     _tokensDrakeToken,
     _tokensEggToken,
