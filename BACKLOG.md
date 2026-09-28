@@ -137,6 +137,12 @@ that one card is the reason the deck exists.
   Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
+- **An O-Ring's exile doesn't end when its owner leaves the game.** Seen live: a bot died
+  while controlling Banishing Light, and the creature it had exiled stayed in exile. Under
+  800.4a the Banishing Light leaves the game with its owner. That counts as leaving the
+  battlefield, so the "until ~ leaves the battlefield" exile ends (610.3) and the card
+  returns to the battlefield under its owner's control. `leaveGame` leaves the departed
+  player's permanents where they are, so the `exiledBy` return never fires.
 - **Dividing among targets.** "Any number of target …" is built (the `any-number` group), but
   "N damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka), "distribute
   N counters among" (Lathiel) and Fireball's "divided evenly" (still authored single-target)
