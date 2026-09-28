@@ -102,9 +102,12 @@ describe("a batch of activations", () => {
     const bot = new EvalBotController(A, registry, { horizon: "turn" });
     const { game } = setup(bot);
     const watcher = new EvalBotController(B, registry, { horizon: "turn" });
-    // Something Bob could do at every window but never wants to: the only
-    // creature Giant Growth can target is Alice's.
+    // Something Bob could do at every window but never wants to: Giant
+    // Growth on his own Bears in Alice's main phase. (Not on Alice's
+    // creature — help for an opponent's creature at home is never a
+    // candidate, `opponentPump`.)
     game.debugSpawn("Forest", B, "battlefield");
+    game.debugSpawn("Grizzly Bears", B, "battlefield", { summoningSick: false });
     game.debugSpawn("Giant Growth", B, "hand");
     const bobsSearches: number[] = [];
     let steps = 0;

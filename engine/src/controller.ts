@@ -1445,17 +1445,25 @@ export class HeuristicBotController extends AutomaticController {
    * left out.
    */
   protected wastedNow(state: GameState, offer: LegalAction): boolean {
-    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability") return false;
     if (temporaryEffectCanMatter(state, this.playerId)) return false;
-    if (!this.registry.has(offer.cardName)) return false;
+    const effect = this.offerEffect(offer);
+    return effect !== undefined && onlyUntilEndOfTurn(effect);
+  }
+
+  /** The effect a cast or activation offer resolves with, or `undefined`
+   * where it isn't read here: a granted ability, a modal or multi-face
+   * spell, anything else. */
+  protected offerEffect(offer: LegalAction): EffectSpec | null | undefined {
+    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability") return undefined;
+    if (!this.registry.has(offer.cardName)) return undefined;
     const def = this.registry.get(offer.cardName);
     if (offer.kind === "cast-spell") {
-      if (offer.castModal !== undefined || offer.face !== undefined) return false;
-      return onlyUntilEndOfTurn(def.effect);
+      if (offer.castModal !== undefined || offer.face !== undefined) return undefined;
+      return def.effect;
     }
     const ability = def.activated?.[offer.abilityIndex];
-    if (ability === undefined || !offer.text.startsWith(ability.text)) return false;
-    return onlyUntilEndOfTurn(ability.effect);
+    if (ability === undefined || !offer.text.startsWith(ability.text)) return undefined;
+    return ability.effect;
   }
 
   /**

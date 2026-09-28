@@ -31,7 +31,9 @@ import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
-import { withComputedCache } from "../characteristics.js";
+import { computeCharacteristics, withComputedCache } from "../characteristics.js";
+import { onlyUntilEndOfTurn } from "../effect-worth.js";
+import { goadersOf } from "../goad.js";
 import {
   modalPolarities,
   offerPolarities,
@@ -540,6 +542,9 @@ export class EvalBotController extends HeuristicBotController {
     const pass: Action = { type: "pass-priority", player };
 
     const candidates: Action[] = [];
+    // Candidates that help an opponent's attacker with something lasting:
+    // kept only if the defending player dies (`opponentPump`).
+    const mustKill = new Map<Action, PlayerId>();
     // A read-only region: ranking targets folds every option's
     // characteristics, and nothing changes the state until the simulations
     // below, which run outside it.
@@ -554,7 +559,12 @@ export class EvalBotController extends HeuristicBotController {
         // rollout plays our own seat passively, so mana it would have cast
         // spells with looks free to spend, and v2 pumped away its upkeep.
         if (this.wastedNow(view.state, legal)) continue;
-        candidates.push(...candidateActions(aimOffer(view.state, this.cards, player, legal), player));
+        for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
+          const verdict = this.opponentPump(view.state, legal, action);
+          if (verdict === "drop") continue;
+          if (verdict !== "ok") mustKill.set(action, verdict.kills);
+          candidates.push(action);
+        }
       }
     });
 
@@ -631,7 +641,8 @@ export class EvalBotController extends HeuristicBotController {
     for (const action of candidates) {
       if (spent(budget)) break;
       budget.left -= 1;
-      const score = this.score(view, action, budget);
+      const victim = mustKill.get(action);
+      const score = this.score(view, action, budget, victim);
       if (score === null || score <= bestScore) continue;
       bestScore = score;
       best = action;
@@ -653,7 +664,7 @@ export class EvalBotController extends HeuristicBotController {
     let batch: { readonly times: number; readonly spread: boolean } | null = null;
     const batched = new Set<string>();
     for (const action of candidates) {
-      if (action.type !== "activate-ability") continue;
+      if (action.type !== "activate-ability" || mustKill.has(action)) continue;
       const key = `${action.source}:${action.abilityIndex}`;
       if (batched.has(key)) continue;
       batched.add(key);
@@ -1164,7 +1175,53 @@ export class EvalBotController extends HeuristicBotController {
   }
 
   /** `null` when the engine refused this concrete filling of a legal shape. */
-  private score(view: ControllerView, action: Action, budget: SearchBudget): number | null {
+  /**
+   * Whether `action` may help an opponent's creature, by the rule the user
+   * set (2026-09-27): helping an opponent's creature is only worth it while
+   * it attacks someone else — never one at home, never one attacking us —
+   * and then when the help ends at end of turn, or the creature is goaded by
+   * us (it can't turn on us), or, for anything lasting (a +1/+1 counter, an
+   * Aura), when it kills the player being attacked. `ok`, `drop`, or the
+   * player whose death the candidate is kept for.
+   */
+  private opponentPump(
+    state: GameState,
+    legal: LegalAction,
+    action: Action,
+  ): "ok" | "drop" | { readonly kills: PlayerId } {
+    if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return "ok";
+    if (legal.kind === "cast-spell" && legal.castModal !== undefined) return "ok";
+    if (action.type !== "cast-spell" && action.type !== "activate-ability") return "ok";
+    const polarities = offerPolarities(this.cards, legal);
+    if (polarities === null) return "ok";
+    const me = this.playerId;
+    let kills: PlayerId | null = null;
+    for (const [i, target] of (action.targets ?? []).entries()) {
+      if (polarities[i] !== "help" || target === null || target.kind !== "object") continue;
+      const object = state.objects[target.object];
+      if (object === undefined || object.zone !== "battlefield" || object.controller === me) continue;
+      if (!computeCharacteristics(state, this.cards, target.object).types.includes("creature")) continue;
+      const attacking = object.attacking;
+      if (attacking === null) return "drop";
+      const defender =
+        state.players[attacking as PlayerId] !== undefined
+          ? (attacking as PlayerId)
+          : state.objects[attacking as ObjectId]?.controller;
+      if (defender === undefined || defender === me) return "drop";
+      if (goadersOf(state, this.cards, target.object).includes(me)) continue;
+      if (onlyUntilEndOfTurn(this.offerEffect(legal))) continue;
+      kills = defender;
+    }
+    return kills === null ? "ok" : { kills };
+  }
+
+  private score(
+    view: ControllerView,
+    action: Action,
+    budget: SearchBudget,
+    /** Kept only if this player has lost by the end of the rollout. */
+    mustKill?: PlayerId,
+  ): number | null {
     const after = timed(budget, () =>
       simulateAction(
         view.state,
@@ -1177,6 +1234,7 @@ export class EvalBotController extends HeuristicBotController {
     );
     this.trace?.(action, after);
     if (after === null) return null;
+    if (mustKill !== undefined && after.players[mustKill]?.hasLost !== true) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }
 }

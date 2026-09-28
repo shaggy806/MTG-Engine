@@ -190,13 +190,13 @@ Beyond that plan:
   including one that can't attack *us* (Vow of Duty on it, or a goad pointing elsewhere), so
   v2 stopped casting Vow of Duty on an opponent's creature: the +2/+2 reads as more threat.
   Wants `whyCannotAttack` against us in the term.
-- **Pumping an opponent's attacker.** Since step 8 raised `otherOpponents` to 0.5, v2 spends
-  pumps on an opponent's creature attacking another opponent — Kessig Wolf Run, Fires of
-  Yavimaya, Unleash Fury, Ajani's counter: nine times in 48 four-player games, none before. The
-  damage lands on a player the evaluation now counts double, and the mana costs nothing it can
-  see (`untappedMana` is 0). Political, and sometimes right, but it reads as helping the wrong
-  side; either mana gets a price or a training scenario says when pushing someone else's attack
-  is worth a card or a use.
+- **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
+  (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
+  attacks someone else, and then with help that ends at end of turn, on a creature goaded by
+  us, or — lasting help — only when it kills the player attacked. Temporary pumps on someone
+  else's attacker (Kessig Wolf Run, Unleash Fury) remain allowed and still cost mana the
+  evaluation can't see (`untappedMana` is 0): if they come up too often in live games, capture
+  one — the scenario says whether they need a price.
 - **Mana spent early on lasting effects.** Until-end-of-turn pumps now wait for combat
   (`effect-worth.ts`, `temporaryEffectCanMatter`), but v2 still spends its upkeep mana on lasting
   activations (Hoard-Smelter Dragon, Scavenging Ooze) it could make in its main phase beside its
