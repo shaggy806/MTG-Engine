@@ -55,6 +55,9 @@ that one card is the reason the deck exists.
   that needs a new decision, and attacking tokens must not fold into a token stack (combat deals
   one object's damage). Combat already reads attackers off `GameObject.attacking`. Ninjutsu attacks
   whatever the returned creature was attacking (702.49c), so needs no choice.
+- **Iridescent Vinelasher is missing its Offspring {2}.** It's in the pool with only the landfall
+  ping (`cards/pool/iridescent-vinelasher.ts`); Offspring needs a cast-time optional additional
+  cost and a 1/1 token copy (the P5 note in `neededCards-features.md`).
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
   the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
