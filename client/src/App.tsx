@@ -3097,9 +3097,23 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         {unpicked.length > 0 ? (
           <button
             type="button"
-            onClick={() => setAttackPicks((cur) => [...cur, ...unpicked])}
+            onClick={() => {
+              // As a click on each would: a creature with only one legal
+              // defender (every one, at a two-player table without a
+              // planeswalker) is sent there outright, and only those with a
+              // real choice wait in the group for the player to point.
+              const single = unpicked.filter((id) => defendersFor(id).length === 1)
+              const choosing = unpicked.filter((id) => defendersFor(id).length !== 1)
+              if (single.length > 0) {
+                setAttackAssignments((cur) => ({
+                  ...cur,
+                  ...Object.fromEntries(single.map((id) => [id, defendersFor(id)[0]])),
+                }))
+              }
+              if (choosing.length > 0) setAttackPicks((cur) => [...cur, ...choosing])
+            }}
           >
-            Select all
+            {unpicked.every((id) => defendersFor(id).length === 1) ? 'All attack' : 'Select all'}
           </button>
         ) : null}
         {attackPicks.length > 0 ? (
