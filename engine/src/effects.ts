@@ -579,6 +579,21 @@ export type EffectPlayerRef =
   | { readonly target: number };
 
 /** A declarative effect. Grows as milestones add vocabulary. */
+/** What cascade found: the card it may cast, its name, and everything it
+ * exiled on the way (the card included). */
+export interface CascadeFound {
+  readonly hit: ObjectId;
+  readonly name: string;
+  readonly exiled: readonly ObjectId[];
+}
+
+/** The answer to cascade's "you may cast it" — see `EffectSpec` `cascade`. */
+export interface CascadeFinish {
+  readonly hit: ObjectId;
+  readonly exiled: readonly ObjectId[];
+  readonly cast: boolean;
+}
+
 export type EffectSpec =
   | {
       /** Apply several effects in order, sharing the same targets and X.
@@ -1690,8 +1705,13 @@ export type EffectSpec =
   | {
       /** Cascade (rule 702.85 — ROADMAP Phase 8): exile cards off the top of
        * the controller's library until a nonland card with lesser mana value
-       * is exiled, then cast that card for free; the rest go to the bottom. */
+       * is exiled; its controller may cast that card for free (702.85a), and
+       * the rest go to the bottom. */
       readonly kind: "cascade";
+      /** The second half, once the player has said whether to cast what was
+       * found: the two answers to the "you may cast it" choice. Only the engine
+       * builds this; a card is authored as a bare `{ kind: "cascade" }`. */
+      readonly finish?: CascadeFinish;
     }
   | {
       /**
@@ -3049,7 +3069,11 @@ export interface EffectApi {
    * cast this turn. */
   storm(sourceId: ObjectId): void;
   /** Cascade off `sourceId` (the cascade spell) for `controller`. */
-  cascade(controller: PlayerId, sourceId: ObjectId): void;
+  /** Exile off the top until a card cascade may cast (rule 702.85a) — `null`,
+   * with everything already on the bottom, when there's none it could cast. */
+  cascade(controller: PlayerId, sourceId: ObjectId): CascadeFound | null;
+  /** Cast what cascade found, or not, and put the rest on the bottom. */
+  finishCascade(finish: CascadeFinish): void;
   /** Copy the spell at `TargetRef` (an instant/sorcery on the stack). */
   copySpell(target: TargetRef): void;
   /** Queue an additional combat + main phase after this main phase (Aggravated
@@ -4495,9 +4519,25 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "storm":
       ctx.storm(ctx.source);
       return;
-    case "cascade":
-      ctx.cascade(ctx.controller, ctx.source);
+    case "cascade": {
+      if (spec.finish !== undefined) {
+        ctx.finishCascade(spec.finish);
+        return;
+      }
+      const found = ctx.cascade(ctx.controller, ctx.source);
+      if (found === null) return;
+      const finish = (cast: boolean): EffectSpec => ({
+        kind: "cascade",
+        finish: { hit: found.hit, exiled: found.exiled, cast },
+      });
+      ctx.chooseModes(
+        0,
+        1,
+        [{ text: `Cast ${found.name} without paying its mana cost`, effect: finish(true) }],
+        finish(false),
+      );
       return;
+    }
     case "reveal-until":
       applyRevealUntil(spec, ctx);
       return;

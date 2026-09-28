@@ -141,10 +141,6 @@ that one card is the reason the deck exists.
   "N damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka), "distribute
   N counters among" (Lathiel) and Fireball's "divided evenly" (still authored single-target)
   aren't, nor is Strive. See `neededCards-features.md`, "Unbounded targeting".
-- **Cascade always casts what it finds.** Rule 702.85a says "you may cast it", but the cascade
-  step in `game.ts` casts the hit whenever it can (its targets are the caster's to choose, since
-  2026-09-27). Declining would put it on the bottom with the rest. Needs a yes/no decision before
-  the cast.
 - **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
   UI-bound.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
@@ -240,11 +236,6 @@ Beyond that plan:
   offers all of one type per type, and a count picker would let the player choose any split.
   And when the payer taps such a source for more than a payment needs, the player can't choose
   the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
-- **Declaring attackers makes you pick the defender when there's only one.** In a 2-player
-  game the opponent is the only possible defender unless they control a planeswalker, yet each
-  attacker still has to be clicked and then sent at them (`attackPicks` → `canSendPicksAt` in
-  `client/src/App.tsx`). When an attacker's `defendersFor` has one entry, selecting it should
-  assign it there directly.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.

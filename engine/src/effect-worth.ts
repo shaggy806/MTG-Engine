@@ -263,6 +263,9 @@ function untargetedWorth(effect: EffectSpec, ctx: WorthContext): number {
     }
     case "take-extra-turn":
       return effect.target === undefined ? onPlayers(you, 3 * CARD, ctx) : 0;
+    case "cascade":
+      // Taking cascade's free spell: about a card, like a tutor to hand.
+      return effect.finish?.cast === true ? onPlayers(you, CARD, ctx) : 0;
     default:
       return 0;
   }

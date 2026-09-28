@@ -16,7 +16,7 @@ import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
-import type { ObjectId } from "../primitives.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -90,13 +90,24 @@ const registry = createDefaultRegistry()
     }),
   );
 
+/** Takes cascade's "you may cast it" (rule 702.85a); every other "may" as
+ * the scripted default does, declined. */
+const castsCascades = (player: PlayerId): ScriptedController => {
+  const controller = new ScriptedController(player);
+  controller.chooseModesFn = (_view, minModes, _maxModes, texts) =>
+    texts.length === 1 && /^Cast .* without paying/.test(texts[0])
+      ? [0]
+      : Array.from({ length: minModes }, (_unused, i) => i);
+  return controller;
+};
+
 const setUp = (hand: readonly string[]) => {
   const game = Game.create({
     seed: 1,
     shuffle: false,
     registry,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
-    controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+    controllers: { [A]: castsCascades(A), [B]: new ScriptedController(B) },
     decks: [
       // Under the opening seven and the first draw: Grizzly Bears — a cascade
       // from a four-drop finds it.

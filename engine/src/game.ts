@@ -128,6 +128,8 @@ import {
   wardCostText,
 } from "./effects.js";
 import type {
+  CascadeFinish,
+  CascadeFound,
   DelayedNextSpell,
   EffectAmount,
   EffectSpec,
@@ -12407,6 +12409,7 @@ export class Game {
       },
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
+      finishCascade: (finish) => this.finishCascade(finish),
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
       placeFound: (hit, put, tapped) => this.placeFound(hit, put, tapped),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
@@ -14092,13 +14095,15 @@ export class Game {
     for (let i = 0; i < n; i += 1) this.copyStackSpell(sourceId, source.controller);
   }
 
-  /** Cascade (rule 702.85e): exile off the top of `controller`'s library until
-   * a nonland card with mana value less than the cascade spell's is exiled,
-   * then cast it without paying its mana cost. The rest go to the bottom in a
-   * random order; the trigger card too if nothing castable turned up. */
-  private cascade(controller: PlayerId, sourceId: ObjectId): void {
+  /** Cascade (rule 702.85a): exile off the top of `controller`'s library until
+   * a nonland card with mana value less than the cascade spell's is exiled.
+   * Its controller may cast it without paying its mana cost — asked by the
+   * effect (`finishCascade` is the answer); the rest go to the bottom in a
+   * random order, and so does the card if it isn't cast. `null` when there's
+   * nothing it could cast: then everything is already on the bottom. */
+  private cascade(controller: PlayerId, sourceId: ObjectId): CascadeFound | null {
     const source = this.state.objects[sourceId];
-    if (source === undefined) return;
+    if (source === undefined) return null;
     const threshold = manaValue(parseManaCost(this.registry.get(printedCardName(source)).manaCost));
     const library = this.state.zones.perPlayer[controller].library;
     const exiledHere: ObjectId[] = [];
@@ -14118,20 +14123,43 @@ export class Game {
 
     this.emit({ type: "cascade-revealed", player: controller, exiled: [...exiledHere], cast: hit });
 
-    if (hit !== null) {
-      const cast = this.castCardWithoutPaying(hit, { via: "cascade", grantHaste: false });
-      // No legal targets, or a cost increase it can't pay: it goes to the
-      // bottom too.
-      if (!cast) hit = null;
+    // One it couldn't cast (no legal target, or a "can't cast") isn't
+    // offered, as a "may" that can't be done isn't.
+    if (hit === null || !this.canCastWithoutPaying(hit)) {
+      this.finishCascade({ hit: hit ?? sourceId, exiled: exiledHere, cast: false });
+      return null;
     }
+    return { hit, name: printedCardName(this.state.objects[hit]), exiled: exiledHere };
+  }
 
-    // Everything still in exile from this cascade goes to the bottom of the
-    // library in a random order (rule 702.85e).
-    const toBottom = exiledHere.filter(
-      (id) => id !== hit && this.state.objects[id]?.zone === "exile",
-    );
+  /** The answer to cascade's "you may cast it" (rule 702.85a): cast the card
+   * or not, then put everything still exiled by it on the bottom of the
+   * library in a random order (702.85e) — the card too if it wasn't cast.
+   * A cast with a real target choice parks one (`castCardWithoutPaying`); the
+   * card waits in exile for it, and the rest go meanwhile. */
+  private finishCascade(finish: CascadeFinish): void {
+    let hit: ObjectId | null = finish.hit;
+    if (!finish.cast || this.state.objects[hit]?.zone !== "exile") hit = null;
+    else if (!this.castCardWithoutPaying(hit, { via: "cascade", grantHaste: false })) hit = null;
+    const toBottom = finish.exiled.filter((id) => id !== hit && this.state.objects[id]?.zone === "exile");
     for (const id of shuffle(toBottom, this.rng)) this.moveObject(id, "library");
     this.state.rngState = this.rng.seed;
+  }
+
+  /** Could `cardId` be cast without paying its mana cost right now, as far as
+   * anything but a cost increase goes: not prohibited, and every required
+   * target slot has a legal target. The first half of
+   * `castCardWithoutPaying`, without casting. */
+  private canCastWithoutPaying(cardId: ObjectId): boolean {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return false;
+    const def = this.registry.get(object.cardName);
+    if (this.whyProhibitedFromCasting(object.owner, cardId, def) !== null) return false;
+    return def.targets.every(
+      (spec) =>
+        isOptionalSpec(spec) ||
+        legalTargets(this.state, this.registry, spec, object.owner, this.cardSource(def, cardId)).length > 0,
+    );
   }
 
   /**

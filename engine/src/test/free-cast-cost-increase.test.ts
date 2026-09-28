@@ -27,6 +27,20 @@ const mkGame = (aLibrary: readonly string[]): Game =>
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
+/** Settle, saying yes to cascade's "you may cast it" (rule 702.85a) each
+ * time it's asked — the default controller declines every "may". */
+const settleCasting = (game: Game): void => {
+  for (;;) {
+    game.advanceUntil(
+      (s) =>
+        (s.awaiting?.kind === "choose-modes" && /^Cast .* without paying/.test(s.awaiting.modes[0]?.text ?? "")) ||
+        settled(s),
+    );
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-modes") return;
+    game.dispatch({ type: "choose-modes", player: awaiting.player, modes: [0] });
+  }
+};
 
 const onBattlefield = (game: Game, player: PlayerId, name: string, n: number): ObjectId[] =>
   Array.from({ length: n }, () => game.debugSpawn(name, player, "battlefield"));
@@ -56,7 +70,7 @@ describe("cascade under Thalia, Guardian of Thraben", () => {
     const elf = game.handOf(A).find((id) => game.state.objects[id].cardName === "Bloodbraid Elf");
     if (elf === undefined) throw new Error("no Bloodbraid Elf in hand");
     game.dispatch({ type: "cast-spell", player: A, card: elf, targets: [] });
-    game.advanceUntil(settled);
+    settleCasting(game);
     const hit = Object.values(game.state.objects).find((o) => o.cardName === "Raise the Alarm");
     if (hit === undefined) throw new Error("no Raise the Alarm");
     return { game, hit: hit.id };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { HeuristicBotController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
@@ -17,9 +18,15 @@ const B = asPlayerId("bob");
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const settled = (s: GameState): boolean => s.zones.shared.stack.length === 0 && s.awaiting === null;
 
+const cascadeOffer = (s: GameState): boolean =>
+  s.awaiting?.kind === "choose-modes" && /^Cast .* without paying/.test(s.awaiting.modes[0]?.text ?? "");
+
 /** Alice casts Bloodbraid Elf; under the opening hand and the first draw the
- * library's top two are an Island the cascade skips, then Lightning Bolt. */
-const castElf = (opts: { thalia?: boolean; mountains?: number } = {}): { game: Game; bolt: ObjectId } => {
+ * library's top two are an Island the cascade skips, then Lightning Bolt.
+ * She says yes to casting the Bolt unless `decline`. */
+const castElf = (
+  opts: { thalia?: boolean; mountains?: number; decline?: boolean } = {},
+): { game: Game; bolt: ObjectId } => {
   const hand = ["Bloodbraid Elf", ...Array(6).fill("Mountain")];
   const game = Game.create({
     seed: 1,
@@ -37,11 +44,78 @@ const castElf = (opts: { thalia?: boolean; mountains?: number } = {}): { game: G
   const elf = game.handOf(A).find((id) => game.state.objects[id].cardName === "Bloodbraid Elf");
   if (elf === undefined) throw new Error("no Bloodbraid Elf in hand");
   game.dispatch({ type: "cast-spell", player: A, card: elf, targets: [] });
+  game.advanceUntil((s) => cascadeOffer(s) || settled(s));
+  if (cascadeOffer(game.state)) {
+    game.dispatch({ type: "choose-modes", player: A, modes: opts.decline === true ? [] : [0] });
+  }
   game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || settled(s));
   const bolt = Object.values(game.state.objects).find((o) => o.cardName === "Lightning Bolt");
   if (bolt === undefined) throw new Error("no Lightning Bolt");
   return { game, bolt: bolt.id };
 };
+
+describe("cascade's \"you may cast it\" (rule 702.85a)", () => {
+  it("is asked, naming the card found", () => {
+    const hand = ["Bloodbraid Elf", ...Array(6).fill("Mountain")];
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { maxLandsPerTurn: 99, skipFirstDraw: false },
+      decks: [
+        { player: A, cards: [...hand, "Mountain", "Island", "Lightning Bolt", ...Array(40).fill("Mountain")] },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil(atFirstMain);
+    game.debugSpawn("Forest", A, "battlefield");
+    for (let i = 0; i < 3; i++) game.debugSpawn("Mountain", A, "battlefield");
+    const elf = game.handOf(A).find((id) => game.state.objects[id].cardName === "Bloodbraid Elf");
+    if (elf === undefined) throw new Error("no Bloodbraid Elf in hand");
+    game.dispatch({ type: "cast-spell", player: A, card: elf, targets: [] });
+    game.advanceUntil((s) => cascadeOffer(s) || settled(s));
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-modes") throw new Error("cascade didn't ask");
+    expect(awaiting.player).toBe(A);
+    expect(awaiting.minModes).toBe(0);
+    expect(awaiting.modes.map((m) => m.text)).toEqual(["Cast Lightning Bolt without paying its mana cost"]);
+  });
+
+  it("the bot says yes: a free spell is worth about a card to it", () => {
+    const bot = new HeuristicBotController(A);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { maxLandsPerTurn: 99, skipFirstDraw: false },
+      decks: [
+        {
+          player: A,
+          cards: ["Bloodbraid Elf", ...Array(6).fill("Mountain"), "Mountain", "Island", "Lightning Bolt", ...Array(40).fill("Mountain")],
+        },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil(atFirstMain);
+    game.debugSpawn("Forest", A, "battlefield");
+    for (let i = 0; i < 3; i++) game.debugSpawn("Mountain", A, "battlefield");
+    const elf = game.handOf(A).find((id) => game.state.objects[id].cardName === "Bloodbraid Elf");
+    if (elf === undefined) throw new Error("no Bloodbraid Elf in hand");
+    game.dispatch({ type: "cast-spell", player: A, card: elf, targets: [] });
+    game.advanceUntil((s) => cascadeOffer(s) || settled(s));
+    if (!cascadeOffer(game.state)) throw new Error("cascade didn't ask");
+    const answer = bot.act({ state: game.state, player: A, legalActions: () => game.legalActions(A) });
+    expect(answer).toEqual({ type: "choose-modes", player: A, modes: [0] });
+  });
+
+  it("declined, the card goes to the bottom with the rest, uncast", () => {
+    const { game, bolt } = castElf({ decline: true });
+    game.advanceUntil(settled);
+    expect(game.eventsOfType("spell-cast").some((e) => e.object === bolt)).toBe(false);
+    expect(game.state.players[B].life).toBe(20);
+    expect(game.state.objects[bolt].zone).toBe("library");
+    const island = Object.values(game.state.objects).find((o) => o.cardName === "Island");
+    expect(island?.zone).toBe("library");
+  });
+});
 
 describe("a cascaded spell's targets (rule 702.85a)", () => {
   it("are the caster's to choose", () => {

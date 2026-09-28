@@ -33,6 +33,20 @@ const mkGame = (
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
+/** Settle, saying yes to cascade's "you may cast it" (rule 702.85a) each
+ * time it's asked — the default controller declines every "may". */
+const settleCasting = (game: Game): void => {
+  for (;;) {
+    game.advanceUntil(
+      (s) =>
+        (s.awaiting?.kind === "choose-modes" && /^Cast .* without paying/.test(s.awaiting.modes[0]?.text ?? "")) ||
+        settled(s),
+    );
+    const awaiting = game.state.awaiting;
+    if (awaiting?.kind !== "choose-modes") return;
+    game.dispatch({ type: "choose-modes", player: awaiting.player, modes: [0] });
+  }
+};
 
 const cardNamed = (game: Game, ids: readonly ObjectId[], name: string): ObjectId => {
   const id = ids.find((each) => game.state.objects[each].cardName === name);
@@ -130,7 +144,7 @@ describe("Cascade — Bloodbraid Elf", () => {
 
     const bbe = cardNamed(game, game.handOf(A), "Bloodbraid Elf");
     game.dispatch({ type: "cast-spell", player: A, card: bbe, targets: [] });
-    game.advanceUntil(settled);
+    settleCasting(game);
 
     const revealed = game.eventsOfType("cascade-revealed")[0];
     expect(revealed).toBeDefined();
