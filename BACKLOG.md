@@ -208,14 +208,14 @@ Beyond that plan:
   v1 would cast next, and ties go to passing, so the bot would put its plays off. Wants a
   tie-break toward acting, and a bench, before it's tried.
 - **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
-  takes 366 s (705 before two fixes on 2026-09-27); 93% of it is the engine running rollouts,
-  under 1% cloning and scoring. Profiled, the next levers: casting a spell still plans its mana
-  payment twice, once in `whyCannotCastSpell` and again to pay (an activation now shares one
-  cache region for both — small on this board, unmeasured on a spell-heavy one);
-  `computeCharacteristics` is a third,
-  mostly the layer-4 fold and static conditions recounting the battlefield (`countWhere`); and
-  the prohibition scans (Code health, "Prohibition scans are quadratic"). Live rooms stop at
-  300 ms, so this is the bench's time limit and a thinner search on a big board, not a hang.
+  takes 259 s (705 before 2026-09-27's fixes); nearly all of it is the engine running rollouts.
+  What the last profile left: trigger detection lists every permanent's triggered abilities on
+  every event, evaluating each conditional grant's condition first (Tyrant's Familiar's "as long
+  as you control your commander", recounted per event) — skipping a grant no trigger of which
+  could match the event would save it, but `triggeredOnceThisTurn` indexes that list, so a skip
+  must not shift its indices; a per-region condition cache was tried and hit 116 times in 58,000
+  (regions last one event). Casting a spell still plans its mana twice. And the layer-4 fold.
+  Live rooms stop at 300 ms, so this is the bench's time limit and a thinner search, not a hang.
 - **Combat move ordering reads life linearly.** The attack and block climbs in `eval-bot.ts`
   order their moves by an estimate that prices damage at `life` per point, without step 5's
   `lifeDanger` bend, so below 15 life a block is ordered as if the damage it stops were cheap.

@@ -363,6 +363,25 @@ function evalStaticCondition(
     except: readonly ObjectId[] = [],
     countSelf = false,
   ): number => matchesWhere(keep, except, countSelf).reduce((n, m) => n + m.weight, 0);
+  // `countWhere(...) >= atLeast`, stopping at the permanent that reaches it:
+  // "as long as you control your commander" needn't read past the commander
+  // (Tyrant's Familiar, asked on every event).
+  const reaches = (
+    atLeast: number,
+    keep: (id: ObjectId) => boolean,
+    except: readonly ObjectId[] = [],
+    countSelf = false,
+  ): boolean => {
+    if (atLeast <= 0) return true;
+    let n = 0;
+    for (const id of state.zones.shared.battlefield) {
+      const object = state.objects[id];
+      if (object === undefined || !(countSelf || !skipsSelf(id)) || !keep(id)) continue;
+      n += (object.stackCount ?? 1) - (except.includes(id) ? 1 : 0);
+      if (n >= atLeast) return true;
+    }
+    return false;
+  };
   switch (condition.kind) {
     case "your-turn":
       return state.turnOrder[state.turn.activePlayerIndex] === you;
@@ -434,12 +453,10 @@ function evalStaticCondition(
       return types.size >= 4;
     }
     case "metalcraft":
-      return (
-        countWhere((id) => {
-          const o = state.objects[id];
-          return o.controller === you && effectiveTypes(state, registry, o).includes("artifact");
-        }) >= 3
-      );
+      return reaches(3, (id) => {
+        const o = state.objects[id];
+        return o.controller === you && effectiveTypes(state, registry, o).includes("artifact");
+      });
     case "controls": {
       // A static ability's scan has already skipped the source whole.
       const except: ObjectId[] = [];
@@ -448,14 +465,13 @@ function evalStaticCondition(
         const ref = opts.targets?.[condition.excludeTarget];
         if (ref?.kind === "object") except.push(ref.object);
       }
-      return (
-        countWhere(
-          (id) =>
-            state.objects[id].controller === you &&
-            matchesFilter(state, registry, id, condition.filter, { you }),
-          except,
-          condition.countsSelf === true,
-        ) >= condition.atLeast
+      return reaches(
+        condition.atLeast,
+        (id) =>
+          state.objects[id].controller === you &&
+          matchesFilter(state, registry, id, condition.filter, { you }),
+        except,
+        condition.countsSelf === true,
       );
     }
     case "aggregate": {
@@ -495,11 +511,12 @@ function evalStaticCondition(
         (p) =>
           p !== you &&
           !state.players[p].hasLost &&
-          countWhere(
+          reaches(
+            condition.atLeast,
             (id) =>
               state.objects[id].controller === p &&
               matchesFilter(state, registry, id, condition.filter, { you: p }),
-          ) >= condition.atLeast,
+          ),
       );
     case "opponent-controls-more": {
       const mine = countWhere(
@@ -519,16 +536,14 @@ function evalStaticCondition(
       );
     }
     case "opponents-control-total":
-      return (
-        countWhere((id) => {
-          const controller = state.objects[id].controller;
-          return (
-            controller !== you &&
-            !state.players[controller].hasLost &&
-            matchesFilter(state, registry, id, condition.filter, { you: controller })
-          );
-        }) >= condition.atLeast
-      );
+      return reaches(condition.atLeast, (id) => {
+        const controller = state.objects[id].controller;
+        return (
+          controller !== you &&
+          !state.players[controller].hasLost &&
+          matchesFilter(state, registry, id, condition.filter, { you: controller })
+        );
+      });
     case "opponent-count":
       // Counted live: a table that has shrunk to a duel no longer has "two or
       // more opponents", and an eliminated player is not one.

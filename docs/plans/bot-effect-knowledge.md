@@ -479,4 +479,11 @@ four-player game. The turn now takes 508 s with the same decisions. The next pie
 ability planned its mana payment twice, once to check it could be paid and again to pay, each
 rebuilding `manaSources` over the whole board. Checking and planning now share one computed-cache
 region (nothing mutates between them), and the turn takes 366 s, all 92 decisions unchanged —
-about half the 705 it started at. What's left is in BACKLOG.
+about half the 705 it started at. Then static conditions: Tyrant's Familiar's "as long as you
+control your commander" was asked 58,000 times in 30 seconds, once per event (the trigger scan lists
+its granted attack trigger) and per characteristics fold. A per-region cache of condition answers
+hit 116 times, since a region lasts one event, and was taken back out. The cost was elsewhere:
+`matchesFilter` read every object's types before any clause, running the layer-4 fold (uncached
+under a condition) on all 73 permanents to answer a filter that never asks about types. It reads
+them only when a clause does now (331 s), and a count against a threshold ("controls at least one")
+stops when it reaches it (259 s — 63% under where the day began). What's left is in BACKLOG.

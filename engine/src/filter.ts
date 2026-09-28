@@ -593,18 +593,25 @@ export function matchesFilter(
   // ability's condition (Kird Ape's "you control a Forest") runs this over the
   // whole battlefield every time anything reads its characteristics.
   const layered = live !== undefined ? ctx.layered : undefined;
-  const types =
-    live !== undefined
-      ? (layered?.types ?? effectiveTypes(state, registry, live))
-      : lki!.types;
-  if (filter.type !== undefined && !types.includes(filter.type)) return false;
-  if (filter.types !== undefined && !filter.types.every((t) => types.includes(t))) {
+  // Read only when a clause asks: a filter with no type clause ("your
+  // commander") would otherwise run the layer-4 fold over every object it
+  // scans, uncached under a static condition — Tyrant's Familiar's "as long
+  // as you control your commander", asked on every event, was a quarter of a
+  // bot's turn on seed 50's 73 permanents.
+  let typesRead: readonly CardType[] | undefined;
+  const types = (): readonly CardType[] =>
+    (typesRead ??=
+      live !== undefined
+        ? (layered?.types ?? effectiveTypes(state, registry, live))
+        : lki!.types);
+  if (filter.type !== undefined && !types().includes(filter.type)) return false;
+  if (filter.types !== undefined && !filter.types.every((t) => types().includes(t))) {
     return false;
   }
-  if (filter.notTypes !== undefined && filter.notTypes.some((t) => types.includes(t))) {
+  if (filter.notTypes !== undefined && filter.notTypes.some((t) => types().includes(t))) {
     return false;
   }
-  if (filter.typesAnyOf !== undefined && !filter.typesAnyOf.some((t) => types.includes(t))) {
+  if (filter.typesAnyOf !== undefined && !filter.typesAnyOf.some((t) => types().includes(t))) {
     return false;
   }
   if (
@@ -747,7 +754,7 @@ export function matchesFilter(
   }
   if (
     filter.cardTypeCount !== undefined &&
-    !compareNum(types.length, filter.cardTypeCount, ctx.x, dynamic)
+    !compareNum(types().length, filter.cardTypeCount, ctx.x, dynamic)
   ) {
     return false;
   }
