@@ -11,6 +11,7 @@ import _poolAngelOfTheGodPharaoh from "../pool/angel-of-the-god-pharaoh.js";
 import _poolArchivist from "../pool/archivist.js";
 import _poolArdentMilitia from "../pool/ardent-militia.js";
 import _poolArkOfBlight from "../pool/ark-of-blight.js";
+import _poolArtifactMutation from "../pool/artifact-mutation.js";
 import _poolAshenmoorGouger from "../pool/ashenmoor-gouger.js";
 import _poolAugerSpree from "../pool/auger-spree.js";
 import _poolAvenFleetwing from "../pool/aven-fleetwing.js";
@@ -191,6 +192,7 @@ const shard: CardShard = {
     _poolArchivist,
     _poolArdentMilitia,
     _poolArkOfBlight,
+    _poolArtifactMutation,
     _poolAshenmoorGouger,
     _poolAugerSpree,
     _poolAvenFleetwing,

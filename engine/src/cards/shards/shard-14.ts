@@ -166,6 +166,7 @@ import _poolToucanPuffin from "../pool/toucan-puffin.js";
 import _poolTrainedJackal from "../pool/trained-jackal.js";
 import _poolTranceKujaFateDefied from "../pool/trance-kuja-fate-defied.js";
 import _poolTreasureTrove from "../pool/treasure-trove.js";
+import _poolTwinflame from "../pool/twinflame.js";
 import _poolUmezawasCharm from "../pool/umezawas-charm.js";
 import _poolUndermine from "../pool/undermine.js";
 import _poolUnnaturalGrowth from "../pool/unnatural-growth.js";
@@ -350,6 +351,7 @@ const shard: CardShard = {
     _poolTrainedJackal,
     _poolTranceKujaFateDefied,
     _poolTreasureTrove,
+    _poolTwinflame,
     _poolUmezawasCharm,
     _poolUndermine,
     _poolUnnaturalGrowth,

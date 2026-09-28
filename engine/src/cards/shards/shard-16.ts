@@ -72,6 +72,7 @@ import _poolGlacialWall from "../pool/glacial-wall.js";
 import _poolGlimmerBairn from "../pool/glimmer-bairn.js";
 import _poolGlissaTheTraitor from "../pool/glissa-the-traitor.js";
 import _poolGlitterfang from "../pool/glitterfang.js";
+import _poolGoblinChirurgeon from "../pool/goblin-chirurgeon.js";
 import _poolGrapeshot from "../pool/grapeshot.js";
 import _poolGraspOfDarkness from "../pool/grasp-of-darkness.js";
 import _poolGraveTitan from "../pool/grave-titan.js";
@@ -193,6 +194,7 @@ import _poolWarlordsAxe from "../pool/warlords-axe.js";
 import _poolWarstormSurge from "../pool/warstorm-surge.js";
 import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
 import _poolWildGrowth from "../pool/wild-growth.js";
+import _poolWillOfTheTemur from "../pool/will-of-the-temur.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
 import _poolZodiacHorse from "../pool/zodiac-horse.js";
@@ -273,6 +275,7 @@ const shard: CardShard = {
     _poolGlimmerBairn,
     _poolGlissaTheTraitor,
     _poolGlitterfang,
+    _poolGoblinChirurgeon,
     _poolGrapeshot,
     _poolGraspOfDarkness,
     _poolGraveTitan,
@@ -394,6 +397,7 @@ const shard: CardShard = {
     _poolWarstormSurge,
     _poolWaterTribeCaptain,
     _poolWildGrowth,
+    _poolWillOfTheTemur,
     _poolWizardsSchool,
     _poolXyrisTheWrithingStorm,
     _poolZodiacHorse,

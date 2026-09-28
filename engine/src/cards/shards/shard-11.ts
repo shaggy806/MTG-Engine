@@ -197,6 +197,7 @@ import _poolWieldingTheGreenDragon from "../pool/wielding-the-green-dragon.js";
 import _poolWildJhovall from "../pool/wild-jhovall.js";
 import _poolWishcoinCrab from "../pool/wishcoin-crab.js";
 import _poolZetalpaPrimalDawn from "../pool/zetalpa-primal-dawn.js";
+import _poolZombieMaster from "../pool/zombie-master.js";
 import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
@@ -398,6 +399,7 @@ const shard: CardShard = {
     _poolWildJhovall,
     _poolWishcoinCrab,
     _poolZetalpaPrimalDawn,
+    _poolZombieMaster,
   ],
   tokens: [
     _tokens22BlackBirdToken,

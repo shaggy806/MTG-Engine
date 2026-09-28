@@ -12,6 +12,7 @@ import _poolAnointedProcession from "../pool/anointed-procession.js";
 import _poolAppendageAmalgam from "../pool/appendage-amalgam.js";
 import _poolArahboRoarOfTheWorld from "../pool/arahbo-roar-of-the-world.js";
 import _poolArmyAnts from "../pool/army-ants.js";
+import _poolAsceticism from "../pool/asceticism.js";
 import _poolAysenAbbey from "../pool/aysen-abbey.js";
 import _poolBadlands from "../pool/badlands.js";
 import _poolBalduvianBears from "../pool/balduvian-bears.js";
@@ -210,6 +211,7 @@ const shard: CardShard = {
     _poolAppendageAmalgam,
     _poolArahboRoarOfTheWorld,
     _poolArmyAnts,
+    _poolAsceticism,
     _poolAysenAbbey,
     _poolBadlands,
     _poolBalduvianBears,

@@ -35,17 +35,16 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
-- **Unblocked by the pre-§0 debt fixes (all done 2026-09-28), for the next top-5000 batch:** the rest of the Will cycle (Jeskai
-  #2169, Mardu #2236, Abzan #2579, Temur #4037 — `castModal.maxModesIf`), Strive (Twinflame
-  #1260, Call the Coppercoats #1627 — `costPerExtraTarget`), and regeneration (Nightscape
-  Familiar #1150, Asceticism #1329, Golgari Charm, Swarmyard, Golgari Grave-Troll, Snuff Out,
-  Decree of Pain, … — about 20). Check each for anything else it needs. Still blocked among
-  the Warp / Offspring / Eternalize cards: Loading Zone (counters a permanent *enters* with
-  doubled too), Anticausal Vestige (a hand filter reading your land count), Warren Warleader
-  (a token entering tapped and attacking) and Vizier of Many Faces (Embalm through its Clone
-  ability).
+- **Top-5000 batch 4 (2026-09-28) took the cards the debt fixes unblocked:** 15 authored
+  (regeneration, Strive's Twinflame, Will of the Temur, …); 10 still blocked, each named in
+  `engine/data/sweep-3/B4.json`. The two cheapest wins there: a count of a *targeted* player's
+  permanents (Will of the Mardu, Call the Coppercoats) and a "when you cycle this card" trigger
+  (Decree of Pain). Still blocked among the Warp / Offspring / Eternalize cards: Loading Zone
+  (counters a permanent *enters* with doubled too), Anticausal Vestige (a hand filter reading
+  your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
+  Faces (Embalm through its Clone ability).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,449 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,464 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.

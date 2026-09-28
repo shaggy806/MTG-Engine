@@ -175,6 +175,7 @@ import _poolVolatileFjord from "../pool/volatile-fjord.js";
 import _poolVoltaicKey from "../pool/voltaic-key.js";
 import _poolWanderersTwig from "../pool/wanderers-twig.js";
 import _poolWarriorsOfWakanda from "../pool/warriors-of-wakanda.js";
+import _poolWeldingJar from "../pool/welding-jar.js";
 import _poolWingsOfHope from "../pool/wings-of-hope.js";
 import _poolWitchEnchanter from "../pool/witch-enchanter.js";
 import _poolWolfCoveVillager from "../pool/wolf-cove-villager.js";
@@ -361,6 +362,7 @@ const shard: CardShard = {
     _poolVoltaicKey,
     _poolWanderersTwig,
     _poolWarriorsOfWakanda,
+    _poolWeldingJar,
     _poolWingsOfHope,
     _poolWitchEnchanter,
     _poolWolfCoveVillager,

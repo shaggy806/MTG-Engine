@@ -159,6 +159,7 @@ import _poolVizkopaVampire from "../pool/vizkopa-vampire.js";
 import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
 import _poolXandersLounge from "../pool/xanders-lounge.js";
+import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
 import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
 import _poolZadasCommando from "../pool/zadas-commando.js";
 
@@ -320,6 +321,7 @@ const shard: CardShard = {
     _poolWanderOff,
     _poolWastewoodVerge,
     _poolXandersLounge,
+    _poolYavimayaHollow,
     _poolYgraEaterOfAll,
     _poolZadasCommando,
   ],

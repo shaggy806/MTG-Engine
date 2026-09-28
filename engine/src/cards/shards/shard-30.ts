@@ -185,6 +185,7 @@ import _poolWatcherInTheMist from "../pool/watcher-in-the-mist.js";
 import _poolWateryGrave from "../pool/watery-grave.js";
 import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
 import _poolWindStrider from "../pool/wind-strider.js";
+import _poolWindsOfRath from "../pool/winds-of-rath.js";
 import _poolWindseekerCentaur from "../pool/windseeker-centaur.js";
 import _poolWindsweptHeath from "../pool/windswept-heath.js";
 import _poolZephyrBoots from "../pool/zephyr-boots.js";
@@ -377,6 +378,7 @@ const shard: CardShard = {
     _poolWateryGrave,
     _poolWildwoodPatrol,
     _poolWindStrider,
+    _poolWindsOfRath,
     _poolWindseekerCentaur,
     _poolWindsweptHeath,
     _poolZephyrBoots,

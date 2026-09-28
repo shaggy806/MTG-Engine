@@ -149,6 +149,7 @@ import _poolSpriteDragon from "../pool/sprite-dragon.js";
 import _poolStensiaBloodhall from "../pool/stensia-bloodhall.js";
 import _poolStoneskin from "../pool/stoneskin.js";
 import _poolStrokeOfGenius from "../pool/stroke-of-genius.js";
+import _poolSwarmyard from "../pool/swarmyard.js";
 import _poolSylvanSafekeeper from "../pool/sylvan-safekeeper.js";
 import _poolTatteredMummy from "../pool/tattered-mummy.js";
 import _poolTeferisTutelage from "../pool/teferis-tutelage.js";
@@ -326,6 +327,7 @@ const shard: CardShard = {
     _poolStensiaBloodhall,
     _poolStoneskin,
     _poolStrokeOfGenius,
+    _poolSwarmyard,
     _poolSylvanSafekeeper,
     _poolTatteredMummy,
     _poolTeferisTutelage,

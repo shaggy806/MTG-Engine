@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1449 already implemented / 3551 missing (marks refreshed 2026-09-28)
+1464 already implemented / 3536 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1025,7 +1025,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1029  Combustible Gearhulk                     {4}{R}{R}        Artifact Creature — Construct
 [ ]  1030  Heliod, Sun-Crowned                      {2}{W}           Legendary Enchantment Creature — God
 [x]  1031  Staff of Domination                      {3}              Artifact
-[ ]  1032  Swarmyard                                {0}              Land
+[x]  1032  Swarmyard                                {0}              Land
 [x]  1033  Yahenni, Undying Partisan                {2}{B}           Legendary Creature — Aetherborn Vampire
 [ ]  1034  Setessan Champion                        {2}{G}           Creature — Human Warrior
 [x]  1035  Hour of Reckoning                        {4}{W}{W}{W}     Sorcery
@@ -1142,7 +1142,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1147  Haven of the Spirit Dragon               {0}              Land
 [ ]  1148  Mirrormade                               {1}{U}{U}        Enchantment
 [x]  1149  Sheoldred's Edict                        {1}{B}           Instant
-[ ]  1150  Nightscape Familiar                      {1}{B}           Creature — Zombie
+[x]  1150  Nightscape Familiar                      {1}{B}           Creature — Zombie
 [ ]  1151  Grasp of Fate                            {1}{W}{W}        Enchantment
 [ ]  1152  Plumb the Forbidden                      {1}{B}           Instant
 [ ]  1153  Recruiter of the Guard                   {2}{W}           Creature — Human Soldier
@@ -1251,7 +1251,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1257  Rosie Cotton of South Lane               {2}{W}           Legendary Creature — Halfling Peasant
 [ ]  1258  Bushwhack                                {G}              Sorcery
 [ ]  1259  Hedge Shredder                           {2}{G}{G}        Artifact — Vehicle
-[ ]  1260  Twinflame                                {1}{R}           Sorcery
+[x]  1260  Twinflame                                {1}{R}           Sorcery
 [ ]  1261  Saryth, the Viper's Fang                 {2}{G}{G}        Legendary Creature — Human Warlock
 [ ]  1262  Coveted Jewel                            {6}              Artifact
 [ ]  1263  Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel {3}              Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar
@@ -1319,7 +1319,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1326  Umbral Collar Zealot                     {1}{B}           Creature — Human Cleric
 [ ]  1327  Key to the City                          {2}              Artifact
 [ ]  1328  Brainsurge                               {2}{U}           Instant
-[ ]  1329  Asceticism                               {3}{G}{G}        Enchantment
+[x]  1329  Asceticism                               {3}{G}{G}        Enchantment
 [ ]  1330  Laelia, the Blade Reforged               {2}{R}           Legendary Creature — Spirit Warrior
 [ ]  1331  Jukai Naturalist                         {G}{W}           Enchantment Creature — Human Monk
 [ ]  1332  Endurance                                {1}{G}{G}        Creature — Elemental Incarnation
@@ -1605,7 +1605,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1612  Cryptic Command                          {1}{U}{U}{U}     Instant
 [ ]  1613  Consuming Aberration                     {3}{U}{B}        Creature — Horror
 [ ]  1614  Unmarked Grave                           {1}{B}           Sorcery
-[ ]  1615  Golgari Charm                            {B}{G}           Instant
+[x]  1615  Golgari Charm                            {B}{G}           Instant
 [ ]  1616  Ugin, the Spirit Dragon                  {8}              Legendary Planeswalker — Ugin
 [ ]  1617  Ondu Spiritdancer                        {4}{W}           Creature — Kor Cleric
 [ ]  1618  Replicating Ring                         {3}              Snow Artifact
@@ -1650,7 +1650,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1657  Nissa, Who Shakes the World              {3}{G}{G}        Legendary Planeswalker — Nissa
 [ ]  1658  Battle Hymn                              {1}{R}           Instant
 [x]  1659  Poison-Tip Archer                        {2}{B}{G}        Creature — Elf Archer
-[ ]  1660  Winds of Rath                            {3}{W}{W}        Sorcery
+[x]  1660  Winds of Rath                            {3}{W}{W}        Sorcery
 [ ]  1661  Parting Gust                             {W}{W}           Instant
 [ ]  1662  Obscura Storefront                       {0}              Land
 [ ]  1663  Court of Grace                           {2}{W}{W}        Enchantment
@@ -2308,7 +2308,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2315  Geth's Grimoire                          {4}              Artifact — Book
 [ ]  2316  Rev, Tithe Extractor                     {3}{B}           Legendary Creature — Human Rogue
 [ ]  2317  Displace                                 {2}{U}           Instant
-[ ]  2318  Ezuri, Renegade Leader                   {1}{G}{G}        Legendary Creature — Elf Warrior
+[x]  2318  Ezuri, Renegade Leader                   {1}{G}{G}        Legendary Creature — Elf Warrior
 [ ]  2319  Tarnished Citadel                        {0}              Land
 [ ]  2320  Spiteful Visions                         {2}{B/R}{B/R}    Enchantment
 [ ]  2321  Grave Researcher // Reanimate            {2}{B} // {B}    Creature — Troll Warlock // Sorcery
@@ -2319,7 +2319,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2326  Diregraf Captain                         {1}{U}{B}        Creature — Zombie Soldier
 [ ]  2327  Manamorphose                             {1}{R/G}         Instant
 [ ]  2328  Duty Beyond Death                        {1}{W}           Instant
-[ ]  2329  Wrap in Vigor                            {1}{G}           Instant
+[x]  2329  Wrap in Vigor                            {1}{G}           Instant
 [x]  2330  Sanctum Seeker                           {2}{B}{B}        Creature — Vampire Knight
 [ ]  2331  Brilliant Restoration                    {3}{W}{W}{W}{W}  Sorcery
 [ ]  2332  Inscription of Abundance                 {1}{G}           Instant
@@ -2438,7 +2438,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2445  The Jolly Balloon Man                    {1}{R}{W}        Legendary Creature — Human Clown
 [x]  2446  Starwinder                               {5}{U}{U}        Creature — Leviathan
 [x]  2447  Boreal Druid                             {G}              Snow Creature — Elf Druid
-[ ]  2448  Accursed Duneyard                        {0}              Land
+[x]  2448  Accursed Duneyard                        {0}              Land
 [ ]  2449  Dollmaker's Shop // Porcelain Gallery    {1}{W} // {4}{W}{W} Enchantment — Room // Enchantment — Room
 [ ]  2450  Cranial Plating                          {2}              Artifact — Equipment
 [ ]  2451  Endless Ranks of the Dead                {2}{B}{B}        Enchantment
@@ -2531,7 +2531,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2538  Rip Apart                                {R}{W}           Sorcery
 [x]  2539  Bloodline Keeper // Lord of Lineage      {4}              Creature — Vampire // Creature — Vampire
 [x]  2540  Niv-Mizzet, the Firemind                 {2}{U}{U}{R}{R}  Legendary Creature — Dragon Wizard
-[ ]  2541  Artifact Mutation                        {R}{G}           Instant
+[x]  2541  Artifact Mutation                        {R}{G}           Instant
 [ ]  2542  Kellogg, Dangerous Mind                  {1}{B}{R}        Legendary Creature — Human Mercenary
 [ ]  2543  Temple of the Dragon Queen               {0}              Land
 [ ]  2544  Debt to the Deathless                    {X}{W}{W}{B}{B}  Sorcery
@@ -2733,7 +2733,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2740  Clifftop Lookout                         {2}{G}           Creature — Frog Scout
 [x]  2741  Aether Spellbomb                         {1}              Artifact
 [ ]  2742  Boseiju, Who Shelters All                {0}              Legendary Land
-[ ]  2743  Zombie Master                            {1}{B}{B}        Creature — Zombie
+[x]  2743  Zombie Master                            {1}{B}{B}        Creature — Zombie
 [ ]  2744  Semester's End                           {3}{W}           Instant
 [ ]  2745  Miscast                                  {U}              Instant
 [x]  2746  Dina, Soul Steeper                       {B}{G}           Legendary Creature — Dryad Druid
@@ -3125,7 +3125,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3132  Witch's Oven                             {1}              Artifact
 [ ]  3133  Thraben Charm                            {1}{W}           Instant
 [x]  3134  Stonespeaker Crystal                     {4}              Artifact
-[ ]  3135  Welding Jar                              {0}              Artifact
+[x]  3135  Welding Jar                              {0}              Artifact
 [ ]  3136  Tolarian Winds                           {1}{U}           Instant
 [ ]  3137  Hazel of the Rootbloom                   {2}{B}{G}        Legendary Creature — Squirrel Druid
 [x]  3138  Marrow-Gnawer                            {3}{B}{B}        Legendary Creature — Rat Rogue
@@ -3336,7 +3336,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3343  Magus of the Moon                        {2}{R}           Creature — Human Wizard
 [ ]  3344  Planar Engineering                       {3}{G}           Sorcery
 [ ]  3345  Evolutionary Leap                        {1}{G}           Enchantment
-[ ]  3346  Goblin Chirurgeon                        {R}              Creature — Goblin Shaman
+[x]  3346  Goblin Chirurgeon                        {R}              Creature — Goblin Shaman
 [ ]  3347  Goblin Recruiter                         {1}{R}           Creature — Goblin
 [ ]  3348  Sigarda, Font of Blessings               {2}{G}{W}        Legendary Creature — Angel
 [ ]  3349  Mycosynth Golem                          {11}             Artifact Creature — Golem
@@ -3699,7 +3699,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3706  Screaming Nemesis                        {2}{R}           Creature — Spirit
 [ ]  3707  Fire Lord Azula                          {1}{U}{B}{R}     Legendary Creature — Human Noble
 [ ]  3708  The Second Doctor                        {2}{W}{U}        Legendary Creature — Time Lord Doctor
-[ ]  3709  Yavimaya Hollow                          {0}              Legendary Land
+[x]  3709  Yavimaya Hollow                          {0}              Legendary Land
 [x]  3710  Absorb                                   {W}{U}{U}        Instant
 [ ]  3711  Polyraptor                               {6}{G}{G}        Creature — Dinosaur
 [ ]  3712  Mana Sculpt                              {1}{U}{U}        Instant
@@ -4027,7 +4027,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4034  Ajani's Chosen                           {2}{W}{W}        Creature — Cat Soldier
 [ ]  4035  Bag of Holding                           {1}              Artifact
 [ ]  4036  Lotus Bloom                              {0}              Artifact
-[ ]  4037  Will of the Temur                        {5}{U}           Sorcery
+[x]  4037  Will of the Temur                        {5}{U}           Sorcery
 [ ]  4038  Canoptek Scarab Swarm                    {4}              Artifact Creature — Insect
 [ ]  4039  Titania's Command                        {4}{G}{G}        Sorcery
 [ ]  4040  Bottle-Cap Blast                         {4}{R}           Instant

@@ -1,0 +1,163 @@
+{
+  "batch": "B4",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Wrap in Vigor",
+      "files": [
+        "engine/src/cards/pool/wrap-in-vigor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Welding Jar",
+      "files": [
+        "engine/src/cards/pool/welding-jar.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Goblin Chirurgeon",
+      "files": [
+        "engine/src/cards/pool/goblin-chirurgeon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Yavimaya Hollow",
+      "files": [
+        "engine/src/cards/pool/yavimaya-hollow.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Swarmyard",
+      "files": [
+        "engine/src/cards/pool/swarmyard.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Accursed Duneyard",
+      "files": [
+        "engine/src/cards/pool/accursed-duneyard.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Asceticism",
+      "files": [
+        "engine/src/cards/pool/asceticism.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nightscape Familiar",
+      "files": [
+        "engine/src/cards/pool/nightscape-familiar.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ezuri, Renegade Leader",
+      "files": [
+        "engine/src/cards/pool/ezuri-renegade-leader.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Zombie Master",
+      "files": [
+        "engine/src/cards/pool/zombie-master.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Artifact Mutation",
+      "files": [
+        "engine/src/cards/pool/artifact-mutation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Winds of Rath",
+      "files": [
+        "engine/src/cards/pool/winds-of-rath.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Golgari Charm",
+      "files": [
+        "engine/src/cards/pool/golgari-charm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Twinflame",
+      "files": [
+        "engine/src/cards/pool/twinflame.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Will of the Temur",
+      "files": [
+        "engine/src/cards/pool/will-of-the-temur.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Will of the Mardu",
+      "needs": "new:count-of-target-players-permanents",
+      "why": "'the number of creatures target player controls' — a filter can't point at a targeted player"
+    },
+    {
+      "name": "Will of the Abzan",
+      "needs": "new:sacrifice-greatest-power",
+      "why": "'any number of target opponents each sacrifice a creature with the greatest power among creatures that player controls'"
+    },
+    {
+      "name": "Will of the Jeskai",
+      "needs": "new:grant-flashback-to-graveyard",
+      "why": "'each instant and sorcery card in your graveyard gains flashback until end of turn' (not checked further)"
+    },
+    {
+      "name": "Call the Coppercoats",
+      "needs": "new:count-of-target-players-permanents",
+      "why": "X counts the creatures of every targeted opponent"
+    },
+    {
+      "name": "Big Game Hunter",
+      "needs": "new:madness",
+      "why": "Madness isn't modeled"
+    },
+    {
+      "name": "Skithiryx, the Blight Dragon",
+      "needs": "new:infect",
+      "why": "infect isn't a keyword the engine has"
+    },
+    {
+      "name": "Decree of Pain",
+      "needs": "new:cycle-trigger",
+      "why": "'When you cycle this card' — no trigger on cycling"
+    },
+    {
+      "name": "Snuff Out",
+      "needs": "new:alternative-cost-pay-life",
+      "why": "'you may pay 4 life rather than pay this spell's mana cost' if you control a Swamp"
+    },
+    {
+      "name": "Dawn Charm",
+      "needs": "new:target-spell-that-targets-you",
+      "why": "'counter target spell that targets you'"
+    },
+    {
+      "name": "Golgari Grave-Troll",
+      "needs": "new:enters-with-counters-per-graveyard-count",
+      "why": "not checked: enters with a +1/+1 counter for each creature card in your graveyard; the remove-a-counter regenerate cost exists"
+    }
+  ]
+}

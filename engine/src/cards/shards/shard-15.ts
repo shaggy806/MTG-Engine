@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAangAirNomad from "../pool/aang-air-nomad.js";
+import _poolAccursedDuneyard from "../pool/accursed-duneyard.js";
 import _poolAkkiAvalanchers from "../pool/akki-avalanchers.js";
 import _poolAkoumHellhound from "../pool/akoum-hellhound.js";
 import _poolAlabasterKirin from "../pool/alabaster-kirin.js";
@@ -71,6 +72,7 @@ import _poolGnottvoldRecluse from "../pool/gnottvold-recluse.js";
 import _poolGoForTheThroat from "../pool/go-for-the-throat.js";
 import _poolGoblinBrigand from "../pool/goblin-brigand.js";
 import _poolGoblinSledder from "../pool/goblin-sledder.js";
+import _poolGolgariCharm from "../pool/golgari-charm.js";
 import _poolGolgariLonglegs from "../pool/golgari-longlegs.js";
 import _poolGolgariRotFarm from "../pool/golgari-rot-farm.js";
 import _poolGraniteGargoyle from "../pool/granite-gargoyle.js";
@@ -189,6 +191,7 @@ import _tokensSquirrelToken from "../tokens/squirrel-token.js";
 const shard: CardShard = {
   pool: [
     _poolAangAirNomad,
+    _poolAccursedDuneyard,
     _poolAkkiAvalanchers,
     _poolAkoumHellhound,
     _poolAlabasterKirin,
@@ -256,6 +259,7 @@ const shard: CardShard = {
     _poolGoForTheThroat,
     _poolGoblinBrigand,
     _poolGoblinSledder,
+    _poolGolgariCharm,
     _poolGolgariLonglegs,
     _poolGolgariRotFarm,
     _poolGraniteGargoyle,

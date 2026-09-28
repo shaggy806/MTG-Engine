@@ -175,6 +175,7 @@ import _poolWarriorsHonor from "../pool/warriors-honor.js";
 import _poolWaywardServant from "../pool/wayward-servant.js";
 import _poolWitheringTorment from "../pool/withering-torment.js";
 import _poolWoodlandCemetery from "../pool/woodland-cemetery.js";
+import _poolWrapInVigor from "../pool/wrap-in-vigor.js";
 import _poolYotianMedic from "../pool/yotian-medic.js";
 import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
@@ -355,6 +356,7 @@ const shard: CardShard = {
     _poolWaywardServant,
     _poolWitheringTorment,
     _poolWoodlandCemetery,
+    _poolWrapInVigor,
     _poolYotianMedic,
     _poolZiatorasProvingGround,
     _poolZodiacRabbit,
