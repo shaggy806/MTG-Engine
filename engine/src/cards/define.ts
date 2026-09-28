@@ -1477,6 +1477,19 @@ export interface CardDefinition {
    * has ended, for as long as it stays exiled. `null` for none.
    */
   readonly warp: { readonly cost: string } | null;
+  /**
+   * Prototype (rule 718 — Combat Thresher: "Prototype {2}{W} — 1/1"): it may
+   * be cast with this mana cost and power/toughness instead, and the colors
+   * of that cost. Not an alternative cost — offered as its own `cast-spell`
+   * variant (`prototype: true`), combinable with one. The spell and the
+   * permanent it becomes have those characteristics as copiable values; on
+   * any other move it's back to normal. `null` for none.
+   */
+  readonly prototype: {
+    readonly cost: string;
+    readonly power: number;
+    readonly toughness: number;
+  } | null;
   /** Escape (rule 702.139 — ROADMAP Phase 6b) — cast from your graveyard for
    * `cost` plus exiling `exileCount` other cards from your graveyard as an
    * additional cost. Unlike flashback the spell resolves normally (it can be
@@ -1645,6 +1658,7 @@ const PRINTED_ABILITY: {
   flashback: (def) => def.flashback !== null,
   foretell: (def) => def.foretell !== null,
   warp: (def) => def.warp !== null,
+  prototype: (def) => def.prototype !== null,
   escape: (def) => def.escape !== null,
   suspend: (def) => def.suspend !== null,
   cycling: (def) => def.cycling !== null,
@@ -1772,6 +1786,7 @@ interface CardDraft {
   flashback?: { readonly cost: string; readonly payLife?: number };
   foretell?: { readonly cost: string };
   warp?: { readonly cost: string };
+  prototype?: { readonly cost: string; readonly power: number; readonly toughness: number };
   suspend?: { readonly n: number; readonly cost: string };
   cycling?: { readonly cost: string; readonly search?: CardFilter };
   escape?: {
@@ -1850,6 +1865,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,
     warp: draft.warp ?? null,
+    prototype: draft.prototype ?? null,
     suspend: draft.suspend ?? null,
     cycling: draft.cycling ?? null,
     escape: draft.escape ?? null,

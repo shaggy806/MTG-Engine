@@ -282,6 +282,7 @@ from the same link.
 | `selfCostReduction` | `{ condition: StaticCondition, reduceGeneric }` | a reduction printed on the spell itself, gated on board state (rule 601.2f — Ferocious, Finale of Devastation: "if you control a creature with power 4 or greater, this spell costs {2} less"). Unlike a `StaticAbility.costModification` (a permanent reducing *other* spells) this is evaluated for the card being cast, from whatever zone — no permanent has to be on the battlefield granting it. `reduceGeneric` accepts a live count too (`{ countOf: CardFilter }` — Blasphemous Act: "{1} less for each creature on the battlefield", `{ type: "creature" }` with no `controlledBy` counts every player's) and an aggregate (`{ aggregate: "sum", of: "power", filter: { type: "creature", controlledBy: "you" } }` — Ghalta, Primal Hunger's "{X} less, where X is the total power of creatures you control"; clamped at 0) and `{ playerCounters: "experience" }` (Mizzix of the Izmagnus's "{1} less for each experience counter you have") and `{ turnStat, who }` (a turn stat summed over players — Rakdos, Lord of Riots' "{1} less for each 1 life your opponents have lost this turn" is `{ turnStat: "life-lost", who: "opponent" }`; a `costModification`'s `reduceGeneric` takes the same amounts). `condition` is mandatory; a reduction with no real "if" clause uses `{ kind: "controls", filter: {}, atLeast: 0 }` (trivially always true). **Affinity for [something]** (rule 702.41a — "{1} less for each [something] you control") is `affinity(filter)` from `helpers.ts`, which writes exactly that (`selfCostReduction: affinity({ type: "artifact" })`); affinity *granted* to other spells ("instant and sorcery spells you cast have affinity for creatures") is the static `grantAffinity(spells, filter, text)`, a `costModification` counting the caster's permanents — two grants both apply, as two instances of affinity do (702.41b). needed-cards P10, P19. |
 | `flashback` | `{ cost, payLife? }` | cast from graveyard, then exiled (rule 702.34). `payLife` is part of the cost (Deep Analysis's "Flashback—{1}{U}, Pay 3 life"), so it gates castability and is paid as the spell is cast. |
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
+| `prototype` | `{ cost, power, toughness }` | **Prototype** (rule 718 — Combat Thresher's "Prototype {2}{W} — 1/1"): not an alternative cost, but a variant of every cast (`prototype: true` on the `cast-spell` offer). Cast that way the spell has the prototype mana cost, that cost's colors and that power/toughness — copiable values, so a copy of the spell or the permanent has them too — from the stack onto the battlefield, and is its printed self everywhere else. Its legality and cost are worked out as the prototyped spell (a white {2}{W} spell, mana value 3). |
 | `warp` | `{ cost }` | **Warp** (rule 702.185 — Starfield Vocalist): an alternative cost from the hand, offered as a `cast-spell` with `via: "warp"`. The permanent it becomes gets a delayed trigger exiling it at the beginning of the next end step (it finds nothing if the permanent left and came back), and its owner may cast the exiled card for its mana cost from the next turn on, for as long as it stays exiled. |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
 | `suspend` | `{ n, cost }` | exile with N time counters; cast free at 0 with haste |
@@ -2798,8 +2799,9 @@ Delete an entry in the same commit as the feature that retires it.
   automatically rather than offered as a choice — see
   `tappedUnlessRevealFromHand` above.
 
-- **Text-change** only swaps one creature-type word (Artificial Evolution). No
-  full "the words X become Y".
+- **Text-change** (`change-text`) only swaps one creature-type word on the type
+  line, from a fixed menu. No full "the words X become Y" across a card's
+  abilities — which is why Artificial Evolution was removed; no card uses it.
 - **Protection** is `{ colors, types }` only — not "protection from
   [full filter]" (e.g. "from Dragons", "from everything").
 - **Conditional statics / intervening-ifs** are limited to the
@@ -2857,20 +2859,20 @@ makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
 
 ### Known exceptions already in the pool
 
-Rule zero (§0) was written on **2026-09-20**, after 739 cards were already in.
-These are the cards that predate it and don't meet it — every one either loses
-a printed ability or runs a wrong one. They are **debt, not precedent**: each
-is a card to fix or to delete, and no new card joins this list.
+**None, since 2026-09-28.** Rule zero (§0) was written on **2026-09-20**, after
+739 cards were already in, and the cards that predated it and didn't meet it —
+each lost a printed ability or ran a wrong one — were debt, not precedent. No
+new card joins this list: one the engine can't run exactly isn't authored.
 
 `npm run card:text -w engine` is the live ledger for the first kind (a whole
-clause gone missing). It found 13 of 739 on the day the rule landed:
-
-| card | what's missing | blocked on |
-| --- | --- | --- |
-| **Combat Thresher** | Prototype | Prototype |
-| **Artificial Evolution** | "target spell or permanent" is a creature only; the change reaches its type line but not the creature-type words in its rules text ("all instances"); and the words offered are a fixed menu of 12 types, not every creature type | layer-3 text changing across a card's abilities |
-
-Fixed since, with the feature each needed: Rydia, Summoner of Mist (the Summon
+clause gone missing). It found 13 of 739 on the day the rule landed. Every one
+was fixed, with the feature each needed, but one:
+Artificial Evolution was **removed** (2026-09-28): it changed only a
+creature's type line, not the creature-type words in its rules text, and only
+from a fixed menu of 12 types, and doing it properly — layer-3 text changing
+across a card's abilities, for spells too — was more than one card rated. The
+`change-text` effect and `choose-text` decision it used are still in the
+engine, unused. The fixes: Rydia, Summoner of Mist (the Summon
 ability — Saga reanimation, `{X}` in a target filter); Saw in Half (half the
 creature's P/T as a copy's `basePt`, and the `"died"` this-way gate — it had
 made two 1/1s even of an indestructible creature); Finale of Devastation
@@ -2883,7 +2885,8 @@ regenerated"); Will of the Sultai (`castModal.maxModesIf`); Starfield Vocalist
 last-known information, which Verix Bladewing needed too); Fanatic of Rhonas
 (`eternalizeAbility` and the `noManaCost` copy exception); Chandra, Acolyte of
 Flame (the `cast-now` effect and decision); Terror of the Peaks (the
-`targetedBySpellsCost` static, in place of a ward stand-in).
+`targetedBySpellsCost` static, in place of a ward stand-in); Combat Thresher
+(`prototype`).
 
 The five `proliferate` cards were a fourteenth entry of exactly the kind
 `card:text` cannot see — their text was right and their *behaviour* wasn't —

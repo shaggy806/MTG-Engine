@@ -263,7 +263,6 @@ import _poolAronBenaliasRuin from "./pool/aron-benalias-ruin.js";
 import _poolArrogantVampire from "./pool/arrogant-vampire.js";
 import _poolArrowsOfJustice from "./pool/arrows-of-justice.js";
 import _poolArtfulTakedown from "./pool/artful-takedown.js";
-import _poolArtificialEvolution from "./pool/artificial-evolution.js";
 import _poolArtisansSorrow from "./pool/artisans-sorrow.js";
 import _poolAscendedLawmage from "./pool/ascended-lawmage.js";
 import _poolAsgardianCitadel from "./pool/asgardian-citadel.js";
@@ -6080,7 +6079,6 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolArrogantVampire,
   _poolArrowsOfJustice,
   _poolArtfulTakedown,
-  _poolArtificialEvolution,
   _poolArtisansSorrow,
   _poolAscendedLawmage,
   _poolAsgardianCitadel,

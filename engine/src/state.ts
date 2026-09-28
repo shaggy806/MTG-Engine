@@ -702,8 +702,14 @@ export interface PtModifier {
   setName?: string;
   /** It has no mana cost — eternalize's and embalm's "a copy of it, except
    * … with no mana cost" (rules 702.128a, 702.129a): mana value 0. Read
-   * through {@link hasNoManaCost}. */
+   * through {@link manaCostOverride}. */
   noManaCost?: true;
+  /** Its mana cost is this instead — a prototyped spell's or permanent's
+   * (rule 718.3b). Read through {@link manaCostOverride}. */
+  setManaCost?: string;
+  /** The prototype characteristics of a spell cast prototyped (rule 718):
+   * kept from the stack onto the battlefield, gone on any other move. */
+  prototype?: true;
   untilEndOfTurn: boolean;
   /**
    * `GameState.timestampSeq` when the modifier was applied, for ordering its
@@ -2589,10 +2595,19 @@ export const printedCardName = (object: GameObject): string =>
  * ("except its name is Mishra's Warform" — a copiable `setName`, the latest
  * such), else its card's ({@link printedCardName}). What the legend rule and
  * every "named …" read; the registry stays keyed by `printedCardName`. */
-/** A copy exception took its mana cost away (see `PtModifier.noManaCost`):
- * it has none, so its mana value is 0 (rule 202.1b). */
-export const hasNoManaCost = (object: GameObject): boolean =>
-  object.modifiers.some((m) => m.copiable === true && m.noManaCost === true);
+/** The mana cost a copiable value gives it in place of its printed one: a
+ * prototyped spell's (`setManaCost`, rule 718.3b), or none at all
+ * (`noManaCost` — eternalize, embalm: mana value 0, rule 202.1b). The
+ * latest wins; `undefined` when nothing replaces the printed cost. */
+export const manaCostOverride = (object: GameObject): string | null | undefined => {
+  for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {
+    const m = object.modifiers[i];
+    if (m.copiable !== true) continue;
+    if (m.noManaCost === true) return null;
+    if (m.setManaCost !== undefined) return m.setManaCost;
+  }
+  return undefined;
+};
 
 export const nameOf = (object: GameObject): string => {
   for (let i = object.modifiers.length - 1; i >= 0; i -= 1) {

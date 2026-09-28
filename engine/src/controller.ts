@@ -958,11 +958,14 @@ function castExtras(
   costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
+  prototype?: boolean;
 } {
   const sac = legal.sacrifice;
   const convokeInfo = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    // Prototyped is a variant of its own, like kicked: echoed back.
+    ...(legal.prototype === true ? { prototype: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
     // Sephara's alternative cost is its own variant too. Dropping the flag

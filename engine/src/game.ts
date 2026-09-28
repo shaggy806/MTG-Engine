@@ -207,6 +207,7 @@ import {
   cloneGameState,
   createPlayerState,
   faceName,
+  manaCostOverride,
   permanentCount,
   printedCardName,
   nameOf,
@@ -1000,6 +1001,7 @@ export class Game {
           action.tap,
           action.graveyardGrant,
           action.escapeExile,
+          action.prototype === true,
         );
         break;
       case "activate-ability":
@@ -1066,6 +1068,7 @@ export class Game {
           action.xValue,
           distinctTargetCount(action.targets, this.targetCopies(action.targets ?? [])),
           action.escapeExile,
+          action.prototype === true,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1647,6 +1650,7 @@ export class Game {
       free: boolean;
       altCost?: boolean;
       costOption?: number;
+      prototype?: boolean;
     }[] = [{ kicked: false, overload: false, free: false }];
     // An impulse permission only to cast it free (Narset): no paid variant.
     const impulseFree = via === "impulse" ? this.impulseFreeCast(card) : null;
@@ -1671,6 +1675,11 @@ export class Game {
     if (!warp && impulseFree !== "only" && this.alternativeCostOf(card, def, via, player) !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
+    // Prototype (rule 718) isn't an alternative cost: every way to cast it
+    // may be done prototyped too.
+    if (def.prototype !== null) {
+      variants.push(...variants.map((variant) => ({ ...variant, prototype: true })));
+    }
     // A choice of additional costs (rule 601.2b) multiplies through whatever
     // variants already exist: each is castable by paying either branch, and
     // the driver picks one by picking a `LegalAction`. Every card in the pool
@@ -1683,7 +1692,13 @@ export class Game {
       variants.length = 0;
       variants.push(...crossed);
     }
-    for (const { kicked, overload, free, altCost, costOption } of variants) {
+    for (const { kicked, overload, free, altCost, costOption, prototype } of variants) {
+      // A prototyped variant is worked out as the prototyped spell it is: its
+      // prototype cost, colors and size (rule 718 — the rulings).
+      const undoPrototype = prototype === true ? this.applyPrototype(card) : () => {};
+      try {
+      const printedOrPrototype =
+        prototype === true && def.prototype !== null && costString === def.manaCost ? def.prototype.cost : costString;
       /** Whether this variant can be cast with `targetCount` distinct
        * targets, and whether mana alone pays for it. */
       const castableAt = (targetCount: number): { castable: boolean; manaAffordable: boolean } => {
@@ -1816,9 +1831,9 @@ export class Game {
         ? "{0}"
         : overload && def.overload !== null
           ? def.overload.cost
-          : kicked && def.kicker !== null && costString !== null
-            ? costString + def.kicker.cost
-            : costString;
+          : kicked && def.kicker !== null && printedOrPrototype !== null
+            ? printedOrPrototype + def.kicker.cost
+            : printedOrPrototype;
       const sacrifices = this.additionalCostSacrifices(player, def, costOption);
       const xPlan =
         parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
@@ -1930,7 +1945,13 @@ export class Game {
               // lands can make (rule 118.4: any amount of life you have).
               { xCost: { maxX: this.state.players[player].life } }
             : {}),
+        ...(prototype === true && def.prototype !== null
+          ? { prototype: true, prototypeCost: def.prototype.cost }
+          : {}),
       });
+      } finally {
+        undoPrototype();
+      }
     }
     return out;
   }
@@ -4986,6 +5007,56 @@ export class Game {
    * being cast/played, not whichever face happens to be up. Restored on the way
    * out — a query, not a mutation. No-op for a single-faced card.
    */
+  /** The copiable values a prototyped spell has (rule 718.3b): its prototype
+   * mana cost, the colors of that cost, and its prototype power/toughness. */
+  private prototypeModifier(cardId: ObjectId, face = 0): PtModifier {
+    const proto = this.faceDef(cardId, face).prototype;
+    if (proto === null) throw new Error("no prototype");
+    const colored = parseManaCost(proto.cost).colored;
+    return {
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      setPt: [proto.power, proto.toughness],
+      setColors: COLORS.filter((c) => colored[c] > 0),
+      setManaCost: proto.cost,
+      copiable: true,
+      prototype: true,
+      untilEndOfTurn: false,
+      timestamp: -1,
+    };
+  }
+
+  private prototypeApplied(cardId: ObjectId): boolean {
+    return this.state.objects[cardId]?.modifiers.some((m) => m.prototype === true) === true;
+  }
+
+  /** Run `fn` with `cardId` wearing its prototype characteristics, as the
+   * prototyped spell it would be cast as — the `withFace` of prototype. */
+  private withPrototype<T>(cardId: ObjectId, fn: () => T): T {
+    const undo = this.applyPrototype(cardId);
+    try {
+      return fn();
+    } finally {
+      undo();
+    }
+  }
+
+  /** `withPrototype` in two halves, for a loop body that `continue`s: put
+   * the prototype characteristics on, and get back what takes them off. */
+  private applyPrototype(cardId: ObjectId): () => void {
+    const object = this.state.objects[cardId];
+    if (object === undefined) return () => {};
+    const modifier = this.prototypeModifier(cardId, object.face ?? 0);
+    object.modifiers = [...object.modifiers, modifier];
+    invalidateComputedCache();
+    return () => {
+      const now = this.state.objects[cardId];
+      if (now !== undefined) now.modifiers = now.modifiers.filter((m) => m !== modifier);
+      invalidateComputedCache();
+    };
+  }
+
   private withFace<T>(cardId: ObjectId, face: number, fn: () => T): T {
     const object = this.state.objects[cardId];
     if (object === undefined || object.faces === undefined || object.face === face) {
@@ -6417,7 +6488,8 @@ export class Game {
               via === "disturb"
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
               : // Adventure (rule 715) — the creature is cast for its own cost.
-                def.manaCost;
+                // Prototyped, its prototype cost (rule 718.3b).
+                (this.prototypeApplied(cardId) ? (manaCostOverride(this.state.objects[cardId]) ?? def.manaCost) : def.manaCost);
     // A chosen additional-cost branch that is paid in mana (Redirect
     // Lightning's "or pay {2}") concatenates the same way kicker does, and
     // for the same reason — an additional cost adds to what's being paid.
@@ -6522,7 +6594,18 @@ export class Game {
     xValue = 0,
     targetCount = 0,
     escapeExile?: readonly ObjectId[],
+    prototype = false,
   ): string | null {
+    // Prototyped (rule 718): judged as the prototyped spell it would be —
+    // its prototype cost, colors and size (the rulings) — so asked again
+    // with those applied.
+    if (prototype && !this.prototypeApplied(cardId)) {
+      if (this.faceDef(cardId, face).prototype === null) return `${this.faceDef(cardId, face).name} has no prototype`;
+      return this.withPrototype(cardId, () =>
+        this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
+          altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true),
+      );
+    }
     // Cast because a resolving spell or ability says so: no priority needed,
     // but only the card it offered, by the player it offered it to.
     const blocked =
@@ -6974,6 +7057,7 @@ export class Game {
         cast.tap,
         cast.graveyardGrant,
         cast.escapeExile,
+        cast.prototype === true,
       );
     } finally {
       this.castNowProbe = null;
@@ -6998,7 +7082,16 @@ export class Game {
     tap?: readonly ObjectId[],
     graveyardGrant?: GraveyardGrant,
     escapeExile?: readonly ObjectId[],
+    prototype = false,
   ): void {
+    if (prototype && !this.prototypeApplied(cardId)) {
+      if (this.faceDef(cardId, face).prototype === null) throw new Error(`${this.faceDef(cardId, face).name} has no prototype`);
+      this.withPrototype(cardId, () =>
+        this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true),
+      );
+      return;
+    }
     // "For each target" cost modifications (Hinata) count these: the targets
     // are chosen before the total cost is determined (rule 601.2c, 601.2f).
     const targetCount = distinctTargetCount(targets, this.targetCopies(targets));
@@ -7176,6 +7269,12 @@ export class Game {
     // Commit: move to the stack, pay, announce. The targets are recorded
     // once the costs are paid, below.
     this.moveObject(cardId, "stack");
+    // A prototyped spell has its prototype characteristics on the stack, and
+    // the permanent it becomes keeps them (rule 718.3b; `moveObject`).
+    if (prototype) {
+      object.modifiers.push(this.prototypeModifier(cardId, face));
+      invalidateComputedCache();
+    }
     object.xValue = hasX ? chosenX : null;
     object.castVia = via ?? null;
     // Kess's "if a spell cast this way would be put into your graveyard,
@@ -14391,7 +14490,9 @@ export class Game {
       sourceObjectId: null,
       abilityIndex: null,
       counters: {},
-      modifiers: [],
+      // A copy copies the spell's copiable values (rule 707.10): a prototyped
+      // spell's copy is prototyped too, as the permanent it becomes (718.3c).
+      modifiers: original.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })),
       timestamp: 0,
       isToken: false,
       isCopy: true,
@@ -19266,6 +19367,10 @@ export class Game {
     // already here (Verix Bladewing). Cleared like any other zone-scoped
     // flag on the *next* move, so a Verix that dies and returns is unkicked.
     const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
+    // A prototyped spell's characteristics stay with the permanent it
+    // becomes; any other move drops them (rule 718.3b).
+    const keptPrototype =
+      object.zone === "stack" && to === "battlefield" ? object.modifiers.filter((m) => m.prototype === true) : [];
     // Last-known information for a spell leaving the stack: its mana value
     // with X, read by "that spell's mana value" after it's gone (Mana Drain).
     // Deliberately not cleared by later moves: it's only ever read through a
@@ -19365,7 +19470,7 @@ export class Game {
       object.counters = {};
       delete object.counterTimestamps;
     }
-    object.modifiers = [];
+    object.modifiers = keptPrototype;
     object.attachedTo = null;
     // A permanent that leaves the battlefield reverts to its owner's control
     // (rule 110.2 / 400.3) — so a stolen creature that dies or is bounced goes

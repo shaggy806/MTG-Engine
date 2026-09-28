@@ -12,7 +12,6 @@ import _poolAncientZiggurat from "../pool/ancient-ziggurat.js";
 import _poolAqueousForm from "../pool/aqueous-form.js";
 import _poolArborElf from "../pool/arbor-elf.js";
 import _poolArtfulTakedown from "../pool/artful-takedown.js";
-import _poolArtificialEvolution from "../pool/artificial-evolution.js";
 import _poolAshBarrens from "../pool/ash-barrens.js";
 import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
 import _poolAuramancer from "../pool/auramancer.js";
@@ -214,7 +213,6 @@ const shard: CardShard = {
     _poolAqueousForm,
     _poolArborElf,
     _poolArtfulTakedown,
-    _poolArtificialEvolution,
     _poolAshBarrens,
     _poolAtlaPalaniNestTender,
     _poolAuramancer,

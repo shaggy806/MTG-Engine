@@ -29,7 +29,7 @@ import { isGoaded } from "./goad.js";
 import type { Color, ManaCost, ManaFromSpec } from "./mana.js";
 import { COLORS, manaOriginMatches, manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { activePlayerOf, hasNoManaCost, nameOf, printedCardName } from "./state.js";
+import { activePlayerOf, manaCostOverride, nameOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
 import { hasSubtype } from "./subtypes.js";
 import { thisWayEntries } from "./this-way.js";
@@ -501,7 +501,8 @@ export function attachmentsOf(
  * back face is a card face you cast or play, and uses its own.
  */
 export function printedManaCost(registry: CardRegistry, object: GameObject): string | null {
-  if (hasNoManaCost(object)) return null;
+  const override = manaCostOverride(object);
+  if (override !== undefined) return override;
   const def = registry.get(printedCardName(object));
   const front = def.faces?.[0];
   if (def.transform === true && front !== undefined && front !== def.name && registry.has(front)) {
@@ -740,8 +741,8 @@ export function matchesFilter(
   }
   if (filter.manaCost !== undefined) {
     const name = live !== undefined ? printedCardName(live) : lki!.name;
-    const cost =
-      live !== undefined && hasNoManaCost(live) ? null : registry.has(name) ? registry.get(name).manaCost : null;
+    const override = live === undefined ? undefined : manaCostOverride(live);
+    const cost = override !== undefined ? override : registry.has(name) ? registry.get(name).manaCost : null;
     if (cost === null || !filter.manaCost.includes(cost)) return false;
   }
   if (filter.xInManaCost !== undefined || filter.coloredManaSymbols !== undefined) {

@@ -174,6 +174,9 @@ export type Action =
        * cast and *before* targets are chosen — it can change the target specs.
        * Only meaningful for a card with `CardDefinition.kicker`. P8. */
       readonly kicked?: boolean;
+      /** Cast it prototyped (rule 718): with its prototype mana cost, colors
+       * and power/toughness. Only for a card with `CardDefinition.prototype`. */
+      readonly prototype?: boolean;
       /** Cast for the card's overload cost (rule 702.126) instead of its mana
        * cost — replaces "target" with "each" and takes no targets. Only
        * meaningful for a card with `CardDefinition.overload`. */
@@ -544,6 +547,10 @@ export type LegalAction =
       /** The keyword that optional cost goes by when it isn't kicker —
        * `"offspring"` (rule 702.175) — for labelling. */
       readonly kickerKeyword?: "offspring";
+      /** A prototyped cast (rule 718) — echoed back as the action's
+       * `prototype`; `prototypeCost` is the cost it pays, for labelling. */
+      readonly prototype?: true;
+      readonly prototypeCost?: string;
       /** An overloadable spell (rule 702.126) is enumerated **twice**, once
        * normal and once with `overload: true` — this variant's `targetSpecs`
        * is always `[]` (you can't choose targets for an overloaded spell).

@@ -35,22 +35,7 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
-- **Fix the pre-§0 debt ASAP, ahead of the top 5000 (2026-09-28).** Some cards in the pool lose
-  or misplay a printed clause. Give each its proper, faithful implementation, building whatever
-  feature blocks it; don't just delete them. Left, each with what it needs: Combat Thresher
-  (Prototype) and Artificial Evolution (layer-3 text changing across a card's abilities, not
-  just its type line). Neither is in the top 5000. Each card's blocker is in
-  `cards/AUTHORING.md` §15, "Known exceptions already in the pool"; `npm run card:text -w
-  engine` is the live ledger. Fixed so far: Saw in Half, Finale of Devastation, Fireball,
-  Mortivore, Will of the Sultai, Starfield Vocalist (Warp), Iridescent Vinelasher (Offspring),
-  Fanatic of Rhonas (Eternalize), Chandra, Acolyte of Flame (`cast-now`), Terror of the Peaks
-  (a spell's life cost for targeting it), and Rydia earlier.
-- **`cast-now` without paying the mana cost.** The "you may cast that card" decision (Chandra,
-  Acolyte of Flame) offers only a paid cast. Torrential Gearhulk (#2708), Emet-Selch of the Third
-  Seat, Vohar and Zul Ashur cast it "without paying its mana cost": offer only the free variant
-  (`castSpellActions`' `free`) when the effect says so. The cast-now decision has no bot
-  `candidates` yet either; v2 falls back to v1's answer.
-- **Unblocked by those fixes, for the next top-5000 batch:** the rest of the Will cycle (Jeskai
+- **Unblocked by the pre-§0 debt fixes (all done 2026-09-28), for the next top-5000 batch:** the rest of the Will cycle (Jeskai
   #2169, Mardu #2236, Abzan #2579, Temur #4037 — `castModal.maxModesIf`), Strive (Twinflame
   #1260, Call the Coppercoats #1627 — `costPerExtraTarget`), and regeneration (Nightscape
   Familiar #1150, Asceticism #1329, Golgari Charm, Swarmyard, Golgari Grave-Troll, Snuff Out,
@@ -260,6 +245,10 @@ Beyond that plan:
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
 
+- **The stack shows an ability's source as printed (found 2026-09-28).** With a prototyped
+  Combat Thresher's draw trigger on the stack, the source card beside it read {7} 3/3 while the
+  permanent was a {2}{W} 1/1 — the preview is drawn from the definition, not the live object.
+  Draw it from the view's object when that still exists.
 - **Show regeneration shields on the card.** A permanent's shields (`GameObject
   .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
   only the log line says one was made. Add them to `VisibleObject` and a small badge beside
@@ -296,6 +285,11 @@ Beyond that plan:
 
 ## Code health
 
+- **`change-text` / `choose-text` are unused (2026-09-28).** Artificial Evolution, their only
+  card, was removed: it swapped one creature type on the type line from a fixed 12-type menu,
+  not "all instances" across the card's text. Either build real layer-3 text changing (every
+  creature-type word in a card's abilities, every creature type offered, spells as targets) or
+  remove the effect and the decision kind.
 - **Two ways to name a deck's commanders.** `DeckList` and `WireDeck` carry a lone
   `commander` beside `commanders`, and `commandersOf` reads either. `WireDeck`'s doc calls the
   lone field a shim for clients from before Partner pairs, but `SAMPLE_DECKS`, the server's

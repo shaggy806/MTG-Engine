@@ -206,11 +206,13 @@ describe("Doom Blade (layer 5 — colour-conditional target)", () => {
   });
 });
 
-describe("Artificial Evolution (layer 3 — text-change)", () => {
+// The `change-text` effect (layer 3). No pool card uses it since Artificial
+// Evolution was removed (it only ever changed the type line, from a fixed
+// menu), so it's applied directly.
+describe("change-text (layer 3)", () => {
   it("rewrites a lord's creature-type word so it buffs a different tribe", () => {
-    const { game, a } = makeGame(["Artificial Evolution"]);
+    const { game, a } = makeGame([]);
     game.advanceUntil(atFirstMain);
-    giveLands(game, A, 1);
     const chieftain = spawn(game, "Goblin Chieftain", A); // Goblins get +1/+1, haste
     const bear = spawn(game, "Grizzly Bears", A); // 2/2 Bear
     const rager = spawn(game, "Raging Goblin", A); // 1/1 Goblin, haste
@@ -220,12 +222,7 @@ describe("Artificial Evolution (layer 3 — text-change)", () => {
     expect(game.characteristics(bear)).toMatchObject({ power: 2, toughness: 2 });
 
     a.chooseTextFn = () => ["Goblin", "Bear"];
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: hand(game, A, "Artificial Evolution"),
-      targets: [{ kind: "object", object: chieftain }],
-    });
+    game.debugApplyEffect(A, { kind: "change-text", target: 0 }, [{ kind: "object", object: chieftain }]);
     game.advanceUntil(settled);
 
     // The word "Goblin" now reads "Bear" everywhere on the Chieftain.
@@ -239,18 +236,12 @@ describe("Artificial Evolution (layer 3 — text-change)", () => {
   });
 
   it("does nothing to a creature with no matching creature type", () => {
-    const { game, a } = makeGame(["Artificial Evolution"]);
+    const { game, a } = makeGame([]);
     game.advanceUntil(atFirstMain);
-    giveLands(game, A, 1);
     const wurm = spawn(game, "Craw Wurm", B); // subtype Wurm — not in the menu
 
     a.chooseTextFn = () => ["Goblin", "Bear"];
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: hand(game, A, "Artificial Evolution"),
-      targets: [{ kind: "object", object: wurm }],
-    });
+    game.debugApplyEffect(A, { kind: "change-text", target: 0 }, [{ kind: "object", object: wurm }]);
     game.advanceUntil(settled);
 
     expect(game.eventsOfType("text-changed")).toHaveLength(0);

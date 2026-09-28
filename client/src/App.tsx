@@ -32,6 +32,7 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
+import { Symbols } from './ui/Symbols.tsx'
 import type { BoardEntry } from './game/board.ts'
 import {
   addToGroup,
@@ -145,6 +146,7 @@ function graveyardVariantLabel(
   if (a.kind === 'cast-spell') {
     if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
     if (a.kicked) parts.push(`${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''}`.trim())
+    if (a.prototype) parts.push(`prototype ${a.prototypeCost ?? ''}`.trim())
   }
   return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
@@ -155,6 +157,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.via !== undefined ? { via: cast.via } : {}),
   ...(cast.face !== undefined ? { face: cast.face } : {}),
   ...(cast.kicked === true ? { kicked: true } : {}),
+  ...(cast.prototype === true ? { prototype: true } : {}),
   ...(cast.overload === true ? { overload: true } : {}),
   ...(cast.free === true ? { free: true } : {}),
   // Each is a variant of its own too: without the flag the engine reads the
@@ -266,6 +269,8 @@ interface Targeting {
    * kicked and unkicked as separate `cast-spell` actions; this just echoes
    * which one the player picked. */
   readonly kicked?: boolean
+  /** A prototyped cast (rule 718) — echoed back like `kicked`. */
+  readonly prototype?: boolean
   /** Casting this for its overload cost (rule 702.126) instead of its mana
    * cost — no targets are chosen for this variant. */
   readonly overload?: boolean
@@ -1176,6 +1181,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'face'
         | 'modes'
         | 'kicked'
+        | 'prototype'
         | 'overload'
         | 'free'
         | 'manaColors'
@@ -1201,6 +1207,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.via !== undefined ? { via: t.via } : {}),
                 ...(t.face !== undefined ? { face: t.face } : {}),
                 ...(t.kicked === true ? { kicked: true } : {}),
+                ...(t.prototype === true ? { prototype: true } : {}),
                 ...(t.overload === true ? { overload: true } : {}),
                 ...(t.free === true ? { free: true } : {}),
                 ...(t.altCost === true ? { altCost: true } : {}),
@@ -2933,9 +2940,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         {castNowAction.casts.map((c, i) => (
           <button key={i} type="button" onClick={() => beginCast(c)}>
             Cast {c.cardName}
-            {c.kicked ? ` (${c.kickerKeyword ?? 'kicked'} ${c.kickerCost ?? ''})` : ''}
+            {c.kicked ? <> ({c.kickerKeyword ?? 'kicked'} <Symbols text={c.kickerCost ?? ''} />)</> : null}
             {c.costOptionText ? ` (${c.costOptionText})` : ''}
             {c.free ? ' (free)' : ''}
+            {c.prototype ? <> (prototype <Symbols text={c.prototypeCost ?? ''} />)</> : null}
           </button>
         ))}
         <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
@@ -3743,14 +3751,17 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ? faceOpts.map((a, i) => (
                     <button key={i} type="button" onClick={() => playFace(a)}>
                       {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
-                      {a.kind === 'cast-spell' && a.kicked
-                        ? ` (${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''})`
-                        : ''}
-                      {a.kind === 'cast-spell' && a.overload
-                        ? ` (overload ${a.overloadCost ?? ''})`
-                        : ''}
+                      {a.kind === 'cast-spell' && a.kicked ? (
+                        <> ({a.kickerKeyword ?? 'kicked'} <Symbols text={a.kickerCost ?? ''} />)</>
+                      ) : null}
+                      {a.kind === 'cast-spell' && a.overload ? (
+                        <> (overload <Symbols text={a.overloadCost ?? ''} />)</>
+                      ) : null}
                       {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
+                      {a.kind === 'cast-spell' && a.prototype ? (
+                        <> (prototype <Symbols text={a.prototypeCost ?? ''} />)</>
+                      ) : null}
                       {a.kind === 'cast-spell' && a.altCost ? ' (alternative cost)' : ''}
                       {a.kind === 'cast-spell' && a.costOptionText
                         ? ` (${a.costOptionText})`

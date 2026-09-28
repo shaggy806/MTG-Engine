@@ -290,7 +290,7 @@ describe("changeling — every creature type (rule 702.73a)", () => {
   });
 
   it("gives a text change no creature-type word to replace that the card doesn't print (rule 612)", () => {
-    // Artificial Evolution rewrites words printed on the card. Being every
+    // A text change rewrites words printed on the card. Being every
     // creature type puts none of them there, so on Morophon — which prints
     // only "Shapeshifter" — there's nothing on its menu to replace.
     const game = makeGame();

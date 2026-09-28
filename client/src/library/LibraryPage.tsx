@@ -769,6 +769,7 @@ function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonl
   if (def.escape) chips.push(`escape ${def.escape.cost}`)
   if (def.foretell) chips.push(`foretell ${def.foretell.cost}`)
   if (def.warp) chips.push(`warp ${def.warp.cost}`)
+  if (def.prototype) chips.push(`prototype ${def.prototype.cost} — ${def.prototype.power}/${def.prototype.toughness}`)
   if (def.suspend) chips.push(`suspend ${def.suspend.n} — ${def.suspend.cost}`)
   if (def.cycling) chips.push(`cycling ${def.cycling.cost}`)
   if (def.kicker) chips.push(`${def.kicker.keyword ?? "kicker"} ${def.kicker.cost}`)

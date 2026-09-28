@@ -44,11 +44,13 @@ function castExtras(legal: CastSpellLegal): {
   costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
+  prototype?: boolean;
 } {
   const sacrifice = legal.sacrifice;
   const convoke = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.prototype === true ? { prototype: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),
     ...(legal.altCost === true ? { altCost: true } : {}),

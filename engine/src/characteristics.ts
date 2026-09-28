@@ -2272,9 +2272,13 @@ function computeCharacteristicsUncached(
   // card in a library is a Goblin card to a tutor.
   const subtypes: readonly string[] = layer4?.subtypes ?? withChangeling(def, def.subtypes);
   // Layer 5 — colour-changing effects.
+  // Off the battlefield only copiable values change them: a prototyped
+  // spell's colors on the stack (rule 718.3b).
   const colors: ReadonlySet<Color> = onBattlefield
     ? effectiveColors(registry, object)
-    : new Set(def.colors);
+    : object.modifiers.some((m) => m.copiable === true)
+      ? effectiveColors(registry, { ...object, modifiers: object.modifiers.filter((m) => m.copiable === true) })
+      : new Set(def.colors);
 
   const staticEffects = onBattlefield
     ? collectStaticEffects(state, registry, object)
@@ -2382,6 +2386,12 @@ function computeCharacteristicsUncached(
     for (const set of sets) {
       if (set.power !== undefined) power = set.power;
       if (set.toughness !== undefined) toughness = set.toughness;
+    }
+  } else {
+    // Off the battlefield only copiable values set it: a prototyped spell's
+    // "1/1" on the stack (rule 718.3b).
+    for (const modifier of object.modifiers) {
+      if (modifier.copiable === true && modifier.setPt) [power, toughness] = modifier.setPt;
     }
   }
   // Base power and toughness: everything up to here (rule 613.4b), nothing
