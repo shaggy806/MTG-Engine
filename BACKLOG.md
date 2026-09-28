@@ -227,6 +227,10 @@ Beyond that plan:
   Only the order is affected — though under a budget the order decides what gets simulated —
   and v1's pick, which chump-blocks lethal, is scored first regardless. Small; wants a
   `lifeCost(life, damage)` beside `LIFE_DANGER_AT`.
+- **Check that a bot kills several players at once when it can.** Double-check attacker
+  declaration: when the attackers can deal lethal to more than one opponent in the same combat,
+  the bot should split them to do so. The attack climb is in `bot/eval-bot.ts`, with v1's
+  lethal-in-order logic referenced from `bot/decisions.ts`.
 - **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
   five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
   simple to play against. Add decks across a range of power levels for bots to bring. The same
