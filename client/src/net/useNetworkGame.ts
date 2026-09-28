@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine/client'
 import type { Frame } from '../game/usePlayback.ts'
+import { realId } from '../game/stackMembers.ts'
 import type { BotSpeed, CaptureSummary, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
 
 const SERVER_URL =
@@ -689,7 +690,9 @@ export function useNetworkGame(): NetworkGame {
 
   const nameOf = useCallback(
     (id: ObjectId): string => {
-      const o = view?.objects[id]
+      // A member id (`<id>#<k>`, one token of a compacted stack while a
+      // combat declaration is built — game/stackMembers.ts) is its stack.
+      const o = view?.objects[realId(id)]
       return o ? (o.faceName ?? o.cardName) : id
     },
     [view],

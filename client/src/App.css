@@ -945,10 +945,11 @@
 .damage-short {
   color: var(--warn);
 }
-/* declare-blockers: a count per (your folded token tile → the attackers it
-   blocks), game/blockGroups.ts. Same shared-grid rows as .damage-rows, so
-   several steppers line up. */
-.block-counts {
+/* declare-attackers / declare-blockers: a count per (your tile of several
+   tokens → a defender, or the attackers it blocks) — game/attackGroups.ts,
+   game/blockGroups.ts. Same shared-grid rows as .damage-rows, so several
+   steppers line up. */
+.stack-counts {
   flex: 0 0 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto auto auto;

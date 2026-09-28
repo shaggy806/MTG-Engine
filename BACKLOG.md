@@ -227,11 +227,6 @@ Beyond that plan:
 
 ## Client / UI
 
-- **Blocking with part of an engine token stack.** A compacted stack (`copies` on a
-  `declare-blockers` entry) still blocks whole: `BlockerDeclaration` has no count, so twenty
-  Goblins in one engine object can't send five. Stacks of separate objects the board folds,
-  and attacking stacks (woken into one object per token), take a count already
-  (`game/blockGroups.ts`). The same gap applies to attacking with part of a stack.
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
   art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),

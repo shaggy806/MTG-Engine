@@ -35,6 +35,15 @@ import { computeBoardEntries } from './game/board.ts'
 import { Symbols } from './ui/Symbols.tsx'
 import type { BoardEntry } from './game/board.ts'
 import { blockPairs, freeBlocker, leastBlocked, setPairCount } from './game/blockGroups.ts'
+import { attackPairs, freeAttacker, setAttackPairCount } from './game/attackGroups.ts'
+import {
+  collapseAttacks,
+  collapseBlocks,
+  expandAttackOffer,
+  expandBlockOffer,
+  expandIds,
+} from './game/stackMembers.ts'
+import type { Members } from './game/stackMembers.ts'
 import { CountStepper } from './ui/CountStepper.tsx'
 import {
   addToGroup,
@@ -781,7 +790,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const [attackAssignments, setAttackAssignments] = useState<
     Record<string, PlayerId | ObjectId>
   >(() => {
-    const offer = actions.find((a): a is AttackAction => a.kind === 'declare-attackers')
+    const raw = actions.find((a): a is AttackAction => a.kind === 'declare-attackers')
+    // In members, as the bar works (game/stackMembers.ts).
+    const offer = raw
+      ? expandAttackOffer(raw, (id) => view.objects[id]?.stackCount ?? 1).offer
+      : undefined
     const start: Record<string, PlayerId | ObjectId> = {}
     for (const id of offer?.mustAttack ?? []) {
       const defenders = offer?.defendersFor[id] ?? []
@@ -906,9 +919,20 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     return m
   }, [actions])
 
-  const attackAction = actions.find(
+  // The offer with each compacted token stack as one member per token
+  // (game/stackMembers.ts): the bar picks and counts creatures, and
+  // `confirmAttackers` folds the members back into counted entries.
+  const rawAttackAction = actions.find(
     (a): a is AttackAction => a.kind === 'declare-attackers',
   )
+  const attackExpansion = useMemo(
+    () =>
+      rawAttackAction
+        ? expandAttackOffer(rawAttackAction, (id) => view.objects[id]?.stackCount ?? 1)
+        : null,
+    [rawAttackAction, view],
+  )
+  const attackAction = attackExpansion?.offer
   // Which defenders *this* attacker may legally be sent at. Not the same as
   // `attackAction.defenders`, which is the union across every attacker: a
   // goaded creature has to attack someone other than its goader when it can
@@ -954,8 +978,19 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     },
     [attackPicks, canSendPicksAt],
   )
-  const blockAction = actions.find(
+  // As with attacks: a compacted stack blocks as its members, one per token.
+  const rawBlockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
+  )
+  const blockExpansion = useMemo(
+    () => (rawBlockAction ? expandBlockOffer(rawBlockAction) : null),
+    [rawBlockAction],
+  )
+  const blockAction = blockExpansion?.offer
+  /** The members of whichever combat declaration is being built. */
+  const stackMembers: Members = useMemo(
+    () => attackExpansion?.members ?? blockExpansion?.members ?? new Map(),
+    [attackExpansion, blockExpansion],
   )
   /** Every member of the board tile an id is drawn in — several when
    * identical tokens fold into one (`computeBoardEntries`), itself alone
@@ -964,11 +999,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     const out = new Map<ObjectId, readonly ObjectId[]>()
     for (const pid of view.turnOrder) {
       for (const entry of computeBoardEntries(view, pid)) {
-        for (const id of entry.ids) out.set(id, entry.ids)
+        // A compacted stack's members are members of its tile too.
+        const members = expandIds(entry.ids, stackMembers)
+        for (const id of members) out.set(id, members)
+        for (const id of entry.ids) out.set(id, members)
       }
     }
     return out
-  }, [view])
+  }, [view, stackMembers])
   const tileOf = useCallback(
     (id: ObjectId): readonly ObjectId[] => tileMembers.get(id) ?? [id],
     [tileMembers],
@@ -1660,31 +1698,37 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         // An opponent's planeswalker is a defender, not an attacker, so a
         // click on one sends the pending group at it (the same thing
         // clicking a seat panel does).
-        if (!attackAction.eligible.includes(id)) {
+        // Over the whole tile — several folded tokens, or a compacted
+        // stack's members (game/stackMembers.ts) — and a click takes one
+        // that isn't attacking yet (game/attackGroups.ts).
+        const members = expandIds(ids, stackMembers)
+        if (!members.some((i) => attackAction.eligible.includes(i))) {
           sendPicksAt(id)
           return
         }
-        if (attackAssignments[id] !== undefined) {
-          // Already pointed at someone — take it back out of the attack.
+        const fresh = freeAttacker(members, attackAction.eligible, attackAssignments, attackPicks)
+        if (fresh === null) {
+          // Every member is attacking or waiting already: take the tile back
+          // out of the attack. One creature's tile toggles, as it always
+          // did; a stack's count row in the bar takes out fewer.
           setAttackAssignments((cur) => {
             const next = { ...cur }
-            delete next[id]
+            for (const i of members) delete next[i]
             return next
           })
+          setAttackPicks((cur) => cur.filter((x) => !members.includes(x)))
           return
         }
-        const myDefenders = defendersFor(id)
+        const myDefenders = defendersFor(fresh)
         // No choice to make, so don't make the player make one: a creature
         // with exactly one legal defender is assigned outright. That is what
         // keeps a two-player board at one click per attacker, and it also
         // covers a goaded creature whose goader is its only legal target.
         if (myDefenders.length === 1) {
-          setAttackAssignments((cur) => ({ ...cur, [id]: myDefenders[0] }))
+          setAttackAssignments((cur) => ({ ...cur, [fresh]: myDefenders[0] }))
           return
         }
-        setAttackPicks((cur) =>
-          cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
-        )
+        setAttackPicks((cur) => [...cur, fresh])
         return
       }
       if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
@@ -1804,9 +1848,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       }
       if (mode === 'blockers' && blockAction) {
         // Over the whole tile, not `id`: a folded tile is several creatures,
-        // and a click takes one that fits (game/blockGroups.ts).
-        if (ids.some((i) => blockAction.eligible.some((e) => e.blocker === i))) {
-          const fresh = freeBlocker(ids, blockAction, blockAssign, blockFocus)
+        // and a click takes one that fits (game/blockGroups.ts). A compacted
+        // stack is its members here (game/stackMembers.ts).
+        const members = expandIds(ids, stackMembers)
+        if (members.some((i) => blockAction.eligible.some((e) => e.blocker === i))) {
+          const fresh = freeBlocker(members, blockAction, blockAssign, blockFocus)
           if (fresh === null) {
             // Every member is blocking or waiting for an attacker already:
             // the click takes the tile back out of the block. One creature's
@@ -1814,7 +1860,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             // is how to take out fewer than all of it.
             setBlockAssign((cur) => {
               const next = { ...cur }
-              for (const i of ids) delete next[i]
+              for (const i of members) delete next[i]
               return next
             })
             setBlockFocus(null)
@@ -1846,12 +1892,14 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       assignDamageAction,
       attackAction,
       attackAssignments,
+      attackPicks,
       damageAnswer,
       damageMembersOf,
       sendPicksAt,
       blockAction,
       blockAssign,
       blockFocus,
+      stackMembers,
       mode,
       pickIdForClick,
       pickTarget,
@@ -1904,23 +1952,17 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     game.dispatch({
       type: 'declare-attackers',
       player: seat,
-      attackers: Object.entries(attackAssignments).map(([attacker, defender]) => ({
-        attacker: attacker as ObjectId,
-        defender,
-      })),
+      attackers: collapseAttacks(attackAssignments, stackMembers),
     })
-  }, [attackAssignments, game, seat])
+  }, [attackAssignments, game, seat, stackMembers])
 
   const confirmBlockers = useCallback(() => {
     game.dispatch({
       type: 'declare-blockers',
       player: seat,
-      blocks: Object.entries(blockAssign).map(([blocker, attacker]) => ({
-        blocker: blocker as ObjectId,
-        attacker,
-      })),
+      blocks: collapseBlocks(blockAssign, stackMembers),
     })
-  }, [blockAssign, game, seat])
+  }, [blockAssign, game, seat, stackMembers])
 
   const confirmDiscard = useCallback(() => {
     game.dispatch({ type: 'discard', player: seat, cards: [...discardPicks] })
@@ -2044,7 +2086,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     // Both halves of "is this attacking someone": a declaration this seat is
     // still building (`attackAssignments`, mine only) and an attack already
     // on the board (`obj.attacking`, which every seat sees).
-    const aimedAt = attackAssignments[id] ?? obj.attacking ?? null
+    // Every creature the tile stands for, a compacted stack as its members
+    // (game/stackMembers.ts) while a combat declaration is being built.
+    const members = expandIds(ids, stackMembers)
+    const assignedAt = members.map((m) => attackAssignments[m]).find((d) => d !== undefined)
+    const aimedAt = assignedAt ?? obj.attacking ?? null
     const attackSeat = aimedAt === null ? null : attackSeatClass(aimedAt)
 
     if (obj.attacking) badge = `⚔ ${attackTargetLabel(obj.attacking)}`
@@ -2060,26 +2106,35 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // An opponent's planeswalker is a legal defender: highlight it once a
       // group is waiting, so it can be clicked as the attack target.
       const isDefenderPw = Boolean(view.objects[id]) && canSendPicksAt(id)
-      const picked = attackPicks.includes(id)
-      highlight = (attackAction.eligible.includes(id) && !picked) || isDefenderPw
-      const assignedTo = attackAssignments[id]
-      selected = assignedTo !== undefined || picked
-      if (assignedTo) badge = `⚔ ${attackTargetLabel(assignedTo)}`
+      const free = freeAttacker(members, attackAction.eligible, attackAssignments, attackPicks)
+      const attacking = members.filter((m) => attackAssignments[m] !== undefined)
+      const picked = members.filter((m) => attackPicks.includes(m))
+      highlight = free !== null || isDefenderPw
+      selected = attacking.length > 0 || picked.length > 0
+      // A tile of several: how many of them attack, its count row in the
+      // bar says whom. One creature: whom it attacks.
+      if (attacking.length > 0) {
+        badge =
+          members.length > 1
+            ? `⚔ ${attacking.length}/${members.length}`
+            : `⚔ ${attackTargetLabel(attackAssignments[attacking[0]])}`
+      }
       // A selected-but-unpointed attacker is a distinct state from an
       // assigned one, and the board has to say which is which.
-      else if (picked) badge = '⚔ ?'
+      else if (picked.length > 0) badge = members.length > 1 ? `⚔ ? ×${picked.length}` : '⚔ ?'
     } else if (mode === 'blockers' && blockAction) {
-      // Over every creature the tile stands for (a folded stack of tokens).
-      const isBlocker = ids.some((i) => blockAction.eligible.some((e) => e.blocker === i))
-      const blocking = ids.filter((i) => blockAssign[i] !== undefined)
+      // Over every creature the tile stands for (folded tokens, or a
+      // compacted stack's members).
+      const isBlocker = members.some((i) => blockAction.eligible.some((e) => e.blocker === i))
+      const blocking = members.filter((i) => blockAssign[i] !== undefined)
       const focusedCanHit =
-        blockFocus !== null && leastBlocked(ids, blockFocus, blockAction, blockAssign) !== null
+        blockFocus !== null && leastBlocked(members, blockFocus, blockAction, blockAssign) !== null
       highlight = isBlocker || focusedCanHit
-      selected = blocking.length > 0 || (blockFocus !== null && ids.includes(blockFocus))
+      selected = blocking.length > 0 || (blockFocus !== null && members.includes(blockFocus))
       if (blocking.length > 0) {
         badge =
-          ids.length > 1
-            ? `\u{1F6E1} ${blocking.length}/${ids.length}`
+          members.length > 1
+            ? `\u{1F6E1} ${blocking.length}/${members.length}`
             : `\u{1F6E1} ${game.nameOf(blockAssign[blocking[0]])}`
       }
     } else if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
@@ -3167,6 +3222,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       })),
       attackAction,
     ).map((v) => v.attacker)
+    // A tile of several with some attacking: a count per defender, rather
+    // than a click per creature (game/attackGroups.ts).
+    const pairs = attackPairs(attackAssignments, attackPicks, defendersFor, tileOf)
     controls = (
       <div className="controls">
         <span>
@@ -3181,6 +3239,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             ? ` · ${unmetMusts.map((id) => game.nameOf(id)).join(', ')} must attack`
             : ''}
         </span>
+        {pairs.length > 0 ? (
+          <span className="stack-counts">
+            {pairs.map((p) => (
+              <CountStepper
+                key={`${p.attackers[0]}>${p.defender}`}
+                label={`${game.nameOf(p.attackers[0])} → ${attackTargetLabel(p.defender)}`}
+                count={p.count}
+                max={p.max}
+                onChange={(n) =>
+                  setAttackAssignments((cur) => setAttackPairCount(p, n, attackPicks, defendersFor, cur))
+                }
+              />
+            ))}
+          </span>
+        ) : null}
         {unpicked.length > 0 ? (
           <button
             type="button"
@@ -3258,7 +3331,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             : ''}
         </span>
         {pairs.length > 0 ? (
-          <span className="block-counts">
+          <span className="stack-counts">
             {pairs.map((p) => (
               <CountStepper
                 key={`${p.blockers[0]}>${p.attackers[0]}`}

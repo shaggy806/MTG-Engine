@@ -109,7 +109,9 @@ export default {
     about:
       "2p. Blocking a token stack: pass the turn and bob attacks with a stack of six Goblin " +
       "tokens (woken into six attackers, one board tile). Block several of them with the " +
-      "Grizzly Bears, the Hill Giant and alice's own folded Soldier tokens.",
+      "Grizzly Bears, the Hill Giant, alice's three Soldier tokens (separate objects the " +
+      "board folds) and some of her ten Zombie tokens (one compacted engine stack). On her " +
+      "next turn, attack with part of the Zombie stack.",
     players: ["alice", "bob"],
     lands: { alice: 5, bob: 5 },
     battlefield: {
@@ -118,6 +120,7 @@ export default {
     setup(game) {
       game.debugApplyEffect("bob", { kind: "create-token", token: "Goblin Token", count: 6 });
       game.debugApplyEffect("alice", { kind: "create-token", token: "Soldier Token", count: 3 });
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Zombie Token", count: 10 });
     },
     bots: { bob: { attack: "alice" } },
   },
