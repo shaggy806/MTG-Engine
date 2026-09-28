@@ -34,6 +34,8 @@ import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { Symbols } from './ui/Symbols.tsx'
 import type { BoardEntry } from './game/board.ts'
+import { blockPairs, freeBlocker, leastBlocked, setPairCount } from './game/blockGroups.ts'
+import { CountStepper } from './ui/CountStepper.tsx'
 import {
   addToGroup,
   clickMembers,
@@ -955,6 +957,22 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   const blockAction = actions.find(
     (a): a is BlockAction => a.kind === 'declare-blockers',
   )
+  /** Every member of the board tile an id is drawn in — several when
+   * identical tokens fold into one (`computeBoardEntries`), itself alone
+   * otherwise. The block bar counts and spreads blocks over a whole tile. */
+  const tileMembers = useMemo(() => {
+    const out = new Map<ObjectId, readonly ObjectId[]>()
+    for (const pid of view.turnOrder) {
+      for (const entry of computeBoardEntries(view, pid)) {
+        for (const id of entry.ids) out.set(id, entry.ids)
+      }
+    }
+    return out
+  }, [view])
+  const tileOf = useCallback(
+    (id: ObjectId): readonly ObjectId[] => tileMembers.get(id) ?? [id],
+    [tileMembers],
+  )
   const discardAction = actions.find(
     (a): a is DiscardAction => a.kind === 'discard',
   )
@@ -1785,26 +1803,35 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         return
       }
       if (mode === 'blockers' && blockAction) {
-        const entry = blockAction.eligible.find((e) => e.blocker === id)
-        if (entry) {
-          if (blockAssign[id]) {
+        // Over the whole tile, not `id`: a folded tile is several creatures,
+        // and a click takes one that fits (game/blockGroups.ts).
+        if (ids.some((i) => blockAction.eligible.some((e) => e.blocker === i))) {
+          const fresh = freeBlocker(ids, blockAction, blockAssign, blockFocus)
+          if (fresh === null) {
+            // Every member is blocking or waiting for an attacker already:
+            // the click takes the tile back out of the block. One creature's
+            // tile toggles, as it always did; a stack's count row in the bar
+            // is how to take out fewer than all of it.
             setBlockAssign((cur) => {
               const next = { ...cur }
-              delete next[id]
+              for (const i of ids) delete next[i]
               return next
             })
             setBlockFocus(null)
-          } else if (entry.canBlock.length === 1) {
-            setBlockAssign((cur) => ({ ...cur, [id]: entry.canBlock[0] }))
+            return
+          }
+          const canBlock = blockAction.eligible.find((e) => e.blocker === fresh)?.canBlock ?? []
+          if (canBlock.length === 1) {
+            setBlockAssign((cur) => ({ ...cur, [fresh]: canBlock[0] }))
           } else {
-            setBlockFocus((cur) => (cur === id ? null : id))
+            setBlockFocus(fresh)
           }
           return
         }
         if (blockFocus) {
-          const f = blockAction.eligible.find((e) => e.blocker === blockFocus)
-          if (f?.canBlock.includes(id)) {
-            setBlockAssign((cur) => ({ ...cur, [blockFocus]: id }))
+          const at = leastBlocked(ids, blockFocus, blockAction, blockAssign)
+          if (at !== null) {
+            setBlockAssign((cur) => ({ ...cur, [blockFocus]: at }))
             setBlockFocus(null)
           }
         }
@@ -2042,17 +2069,23 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       // assigned one, and the board has to say which is which.
       else if (picked) badge = '⚔ ?'
     } else if (mode === 'blockers' && blockAction) {
-      const isBlocker = blockAction.eligible.some((e) => e.blocker === id)
-      const assignedTo = blockAssign[id]
+      // Over every creature the tile stands for (a folded stack of tokens).
+      const isBlocker = ids.some((i) => blockAction.eligible.some((e) => e.blocker === i))
+      const blocking = ids.filter((i) => blockAssign[i] !== undefined)
       const focusedCanHit =
-        blockFocus !== null &&
-        (blockAction.eligible
-          .find((e) => e.blocker === blockFocus)
-          ?.canBlock.includes(id) ??
-          false)
+        blockFocus !== null && leastBlocked(ids, blockFocus, blockAction, blockAssign) !== null
       highlight = isBlocker || focusedCanHit
-      selected = Boolean(assignedTo) || blockFocus === id
-      if (assignedTo) badge = `\u{1F6E1} ${game.nameOf(assignedTo)}`
+      selected = blocking.length > 0 || (blockFocus !== null && ids.includes(blockFocus))
+      if (blocking.length > 0) {
+        badge =
+          ids.length > 1
+            ? `\u{1F6E1} ${blocking.length}/${ids.length}`
+            : `\u{1F6E1} ${game.nameOf(blockAssign[blocking[0]])}`
+      } else if (ids.length > 1 && obj.attacking) {
+        // A folded stack of attackers: how many of them have a blocker.
+        const blocked = ids.filter((i) => Object.values(blockAssign).includes(i)).length
+        if (blocked > 0) badge = `\u{1F6E1} ${blocked}/${ids.length} blocked`
+      }
     } else if (mode === 'assign-combat-damage' && assignDamageAction && damageAnswer) {
       const members = damageMembersOf(ids)
       if (members.length > 0) {
@@ -3192,6 +3225,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     const unblockedMusts = violations.flatMap((v) =>
       v.kind === 'must-be-blocked-if-able' ? [v.attacker] : [],
     )
+    // A folded tile of yours with blocks out: a count to set, rather than a
+    // click per creature (game/blockGroups.ts).
+    const pairs = blockPairs(blockAction, blockAssign, tileOf)
     controls = (
       <div className="controls">
         <span>
@@ -3215,6 +3251,21 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 .join(', ')} must be blocked if able`
             : ''}
         </span>
+        {pairs.length > 0 ? (
+          <span className="block-counts">
+            {pairs.map((p) => (
+              <CountStepper
+                key={`${p.blockers[0]}>${p.attackers[0]}`}
+                label={`${game.nameOf(p.blockers[0])} → ${game.nameOf(p.attackers[0])}${
+                  p.attackers.length > 1 ? ` ×${p.attackers.length}` : ''
+                }`}
+                count={p.count}
+                max={p.max}
+                onChange={(n) => setBlockAssign((cur) => setPairCount(p, n, blockAction, cur))}
+              />
+            ))}
+          </span>
+        ) : null}
         <button
           type="button"
           onClick={() => {

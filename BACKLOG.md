@@ -227,22 +227,22 @@ Beyond that plan:
 
 ## Client / UI
 
-- **Picking creatures out of a token stack (raised 2026-09-28).** Attacked by a stack of
-  tokens, the user could visually block only one of them. The flow for choosing some number of
-  a stack (blocking, and wherever else a stack's members are picked) needs work. A first idea,
-  not settled: a small box with − / + buttons and a number field you can also type into.
-- **Saga creatures' art at full height in the cast spotlight (raised 2026-09-28).** A Saga
-  creature (Summon: Titan) shown at the center of the screen as it's cast displays the full
-  height of its (tall, Saga-frame) art instead of the usual crop.
-- **Show counters on card tiles (raised 2026-09-28).** A creature's counters have no visual on
-  the board, only a line of text on hover. Check whether the mana font the client already uses
-  has a symbol for each counter kind that a tile could show.
-- **The lobby looks very different at two seats than at four (raised 2026-09-28).** Evaluate
-  the visual disparity between a 2-player and a 4-player room lobby and decrease it. Also add a
-  button to remove a seat (today a seat can be added — "Add seat" — but not taken away).
-- **Audit how many ways a card is rendered (raised 2026-09-28).** Count the distinct card
-  renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
-  see whether they can reasonably be condensed into fewer.
+- **Blocking with part of an engine token stack.** A compacted stack (`copies` on a
+  `declare-blockers` entry) still blocks whole: `BlockerDeclaration` has no count, so twenty
+  Goblins in one engine object can't send five. Stacks of separate objects the board folds,
+  and attacking stacks (woken into one object per token), take a count already
+  (`game/blockGroups.ts`). The same gap applies to attacking with part of a stack.
+- **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
+  eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
+  art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
+  `CommanderTile` (command zone), `CommanderDamageChip`, the card back, `CardImage` (library,
+  replacement review), the lobby's `CommanderArt`, `PrintingPicker`'s thumbnails, the deck
+  builder's text rows and the landing hero. Each shape answers a size the others can't, so
+  merging them isn't worth it. What is duplicated is the art-crop box inside five of them:
+  `queueArtLookup` / `isArtPending` / `resolveArtUrl` / `recordArtFailure` and the tint
+  fallback, repeated in `CardTile`, `MiniTile`, `CommanderTile`, `CommanderDamageChip` and
+  `CommanderArt`. Extract one `ArtCrop` component; and `PrintingPicker`'s raw `<img>` could be a
+  `CardImage`.
 
 - **Show regeneration shields on the card.** A permanent's shields (`GameObject
   .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;

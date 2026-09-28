@@ -945,6 +945,34 @@
 .damage-short {
   color: var(--warn);
 }
+/* declare-blockers: a count per (your folded token tile → the attackers it
+   blocks), game/blockGroups.ts. Same shared-grid rows as .damage-rows, so
+   several steppers line up. */
+.block-counts {
+  flex: 0 0 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: 4px 6px;
+  max-height: min(26vh, 11em);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.count-stepper {
+  display: contents;
+}
+.count-stepper-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.count-stepper button {
+  padding: 2px 8px;
+  line-height: 1.2;
+}
+.count-stepper input {
+  width: 3.2em;
+}
 @keyframes decision-pulse {
   0%,
   100% {

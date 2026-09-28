@@ -105,6 +105,23 @@ export default {
     },
   },
 
+  HORDB: {
+    about:
+      "2p. Blocking a token stack: pass the turn and bob attacks with a stack of six Goblin " +
+      "tokens (woken into six attackers, one board tile). Block several of them with the " +
+      "Grizzly Bears, the Hill Giant and alice's own folded Soldier tokens.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: {
+      alice: ["Grizzly Bears", "Grizzly Bears", "Hill Giant"],
+    },
+    setup(game) {
+      game.debugApplyEffect("bob", { kind: "create-token", token: "Goblin Token", count: 6 });
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Soldier Token", count: 3 });
+    },
+    bots: { bob: { attack: "alice" } },
+  },
+
   HORDE4: {
     about:
       "4p. HORDE from the bottom-right seat, whose quadrant the decision panel floats " +
