@@ -654,6 +654,10 @@ export class ScriptedController implements PlayerController {
   private readonly queue: ScriptEntry[];
 
   declareAttackersFn: AttackChooser = () => [];
+  /** Which cards to discard — a cost's or an effect's. The front of the hand
+   * by default. */
+  chooseDiscardsFn: (hand: readonly GameObject[], count: number) => readonly ObjectId[] = (hand, count) =>
+    discardFromFront(hand, count);
   declareBlockersFn: BlockChooser = () => [];
   assignCombatDamageFn: DamageAssigner = (_view, a) => standardDamageAssignment(a);
   chooseTargetsFn: TargetChooser = (_view, _source, specs, legalOptions) =>
@@ -728,7 +732,7 @@ export class ScriptedController implements PlayerController {
     hand: readonly GameObject[],
     count: number,
   ): readonly ObjectId[] {
-    return discardFromFront(hand, count);
+    return this.chooseDiscardsFn(hand, count);
   }
 
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {

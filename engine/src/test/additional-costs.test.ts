@@ -445,6 +445,90 @@ describe("discard as an additional cost", () => {
   });
 });
 
+describe("discard as an additional cost — the edges", () => {
+  const forests = (game: Game, n: number): ObjectId[] =>
+    game
+      .handOf(A)
+      .filter((id) => game.state.objects[id].cardName === "Forest")
+      .slice(0, n);
+  const castBigScore = (game: Game) => {
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    const spell = named(game, game.handOf(A), "Big Score");
+    game.dispatch({ type: "cast-spell", player: A, card: spell, targets: [] });
+    return spell;
+  };
+
+  it("nobody gets priority until the discard is chosen (rule 601.2h)", () => {
+    const { game, a } = mkGame(["Big Score"]);
+    game.advanceUntil(toPrecombat);
+    let asked = false;
+    a.chooseDiscardsFn = (_v, n) => {
+      asked = true;
+      // Still paying: the opponent has nothing to do yet.
+      expect(game.legalActions(B)).toHaveLength(0);
+      return forests(game, n);
+    };
+    castBigScore(game);
+    game.advanceUntil((s) => s.awaiting === null);
+    expect(asked).toBe(true);
+  });
+
+  it("stays paid when the spell is countered: the card is gone, nothing is drawn", () => {
+    const { game, a } = mkGame(["Big Score"]);
+    game.advanceUntil(toPrecombat);
+    // The last Forest, not the first: the default would take the front of the hand.
+    const discarded = forests(game, 99).at(-1)!;
+    a.chooseDiscardsFn = () => [discarded];
+    const spell = castBigScore(game);
+    game.advanceUntil((s) => s.awaiting === null);
+    const handBefore = game.handOf(A).length;
+    game.debugApplyEffect(B, { kind: "counter", target: 0 }, [{ kind: "object", object: spell }]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[spell].zone).toBe("graveyard");
+    expect(game.state.objects[discarded].zone).toBe("graveyard");
+    expect(game.handOf(A).length).toBe(handBefore);
+    expect(game.battlefield.some((id) => game.state.objects[id].cardName === "Treasure Token")).toBe(false);
+  });
+
+  it("is a discard to anything that watches for one (Dying to Serve)", () => {
+    const { game, a } = mkGame(["Big Score"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Dying to Serve", A, "battlefield");
+    a.chooseDiscardsFn = (_v, n) => forests(game, n);
+    castBigScore(game);
+    game.advanceUntil(quiet);
+    expect(game.battlefield.some((id) => game.state.objects[id].cardName === "Zombie Token")).toBe(true);
+  });
+
+  it("Bitter Triumph's discard branch discards the card chosen and destroys the target", () => {
+    const { game, a } = mkGame(["Bitter Triumph"]);
+    game.advanceUntil(toPrecombat);
+    game.debugSpawn("Swamp", A, "battlefield");
+    game.debugSpawn("Swamp", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    // The last Forest, not the first: the default would take the front of the hand.
+    const discarded = forests(game, 99).at(-1)!;
+    a.chooseDiscardsFn = () => [discarded];
+    const life = game.state.players[A].life;
+    const spell = named(game, game.handOf(A), "Bitter Triumph");
+    const offer = game
+      .legalActions(A)
+      .find((x) => x.kind === "cast-spell" && x.card === spell && x.costOptionText === "Discard a card");
+    expect(offer?.kind).toBe("cast-spell");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: spell,
+      targets: [{ kind: "object", object: bear }],
+      costOption: offer?.kind === "cast-spell" ? offer.costOption : undefined,
+    });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[discarded].zone).toBe("graveyard");
+    expect(game.state.objects[bear].zone).toBe("graveyard");
+    expect(game.state.players[A].life).toBe(life);
+  });
+});
+
 describe("Culling the Weak — a sacrifice cost that was expressible all along", () => {
   it("eats a creature for {B}{B}{B}{B}", () => {
     const { game } = mkGame(["Culling the Weak"]);
