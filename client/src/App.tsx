@@ -2769,7 +2769,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'choose-modes' && modesChoiceAction) {
-    const { minModes, maxModes, modeTexts, source, ward } = modesChoiceAction
+    const { minModes, maxModes, modeTexts, source, ward, about } = modesChoiceAction
     const optional = minModes === 0 && maxModes === 1
     const single = minModes === 1 && maxModes === 1
     const toggle = (i: number) =>
@@ -2789,6 +2789,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             : single
               ? 'choose one'
               : `choose ${minModes === maxModes ? minModes : `${minModes}–${maxModes}`}`}
+          {/* The same question once per player (myriad): which one this is. */}
+          {about !== undefined ? ` — ${playerLabel(about, game.seats)}` : ''}
         </span>
         {optional ? (
           <>

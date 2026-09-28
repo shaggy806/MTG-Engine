@@ -142,6 +142,26 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  MYRAD: {
+    about:
+      "4p. Cards put onto the battlefield attacking, and myriad: attack bob with Kaalia (an " +
+      "Angel from hand joins, attacking him), Goldlust Triad (myriad asks about carol and dave " +
+      "in turn; its copies go at end of combat) and a Grizzly Bears (Winota looks at the top six " +
+      "and finds a Human).",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 6, bob: 3, carol: 3, dave: 3 },
+    battlefield: {
+      alice: [
+        "Kaalia of the Vast", "Goldlust Triad", "Winota, Joiner of Forces", "Grizzly Bears",
+      ],
+    },
+    hand: { alice: ["Serra Angel"] },
+    setup(game) {
+      game.debugSpawn("Skyknight Vanguard", "alice", "library");
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
   HORDE4: {
     about:
       "4p. HORDE from the bottom-right seat, whose quadrant the decision panel floats " +
