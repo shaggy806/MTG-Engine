@@ -51,6 +51,7 @@ import _poolGisaAndGeralf from "../pool/gisa-and-geralf.js";
 import _poolGlissasCourier from "../pool/glissas-courier.js";
 import _poolGnawingVermin from "../pool/gnawing-vermin.js";
 import _poolGoblinCannon from "../pool/goblin-cannon.js";
+import _poolGoldlustTriad from "../pool/goldlust-triad.js";
 import _poolGoldmeadowHarrier from "../pool/goldmeadow-harrier.js";
 import _poolGorgonsHead from "../pool/gorgons-head.js";
 import _poolGuardianKirin from "../pool/guardian-kirin.js";
@@ -224,6 +225,7 @@ const shard: CardShard = {
     _poolGlissasCourier,
     _poolGnawingVermin,
     _poolGoblinCannon,
+    _poolGoldlustTriad,
     _poolGoldmeadowHarrier,
     _poolGorgonsHead,
     _poolGuardianKirin,

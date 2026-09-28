@@ -26,8 +26,7 @@ that one card is the reason the deck exists.
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
-  (11), `effect:enter-attacking` (10; the token half is built, see the card backlog) and
-  `effect:cast-during-resolution` (10),
+  (11) and `effect:cast-during-resolution` (10),
   `decision:free-cast-choices` (9), `effect:attach-extensions` and
   `effect:modal-ability-targeted-modes` (7 each).
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
@@ -49,22 +48,26 @@ that one card is the reason the deck exists.
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
-- **Next: the rest of "enters tapped and attacking" (rule 508.4).** The token half is built
-  (2026-09-28): `create-token`'s `attacking`, the `for-each-player` effect, and the
-  `enter-attacking` decision, asked only where there's more than one defender. Seven cards use it
-  (Adeline, Anim Pakal, Leonin Warleader, General Kreat, …; dev-rooms `ENTAT`). Still blocked, by
-  family:
-  - A **card** put onto the battlefield attacking: Kaalia of the Vast, Ilharg, Winota (her only
-    listed commander need), Zara, Doors of Durin, Senu. Needs `attacking` on
-    `put-onto-battlefield` / `look-and-choose`. This is what's left before `effect:enter-attacking`
-    goes in the gaps JSON's `built` list.
-  - **Ninjutsu** (17 cards): an activated ability from hand whose cost returns an unblocked
-    attacker. The ninja attacks what that creature attacked (702.49c), so there's no choice.
-  - **Myriad** (10) and **token copies** entering attacking (Delina, Flamerush Rider, Redoubled
-    Stormsinger, Echoing Assault): `create-token-copy` needs `attacking`, plus myriad's "each
-    opponent other than defending player".
+- **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
+  cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
+  enter attacking, with the `enter-attacking` decision where there's a choice, and delayed
+  triggers "at end of combat". `effect:enter-attacking` is in the gaps JSON's `built` list.
+  19 cards use it (dev-rooms `ENTAT`, `MYRAD`). Still blocked, by family:
+  - **Ninjutsu** (17 cards): an activated ability from hand (`ActivatedAbility.zone`) whose cost
+    returns an unblocked attacker. The ninja attacks what that creature attacked (702.49c).
+  - **Other myriad cards:** Scion of Calamity and Hammers of Moradin need a target "that player
+    controls" for the damaged or each opponent; Elturel Survivors a count of the defending
+    player's lands; Scurry of Squirrels, Battle Angels of Tyr, The Master, Multiplied and Auton
+    Soldier their other text.
+  - **Other token copies entering attacking:** Delina (a d20), Flamerush Rider (Dash),
+    Redoubled Stormsinger ("tokens that entered this turn"), Echoing Assault (a copy "except
+    it's 1/1" attacking a named player).
   - **Mobilize** (6: Voice of Victory, Bone-Cairn Butcher, Avenger of the Fallen, …): the tokens
-    are buildable now, with `sacrificeAtEndStep`. Each card is blocked by its other text.
+    are buildable, with `sacrificeAtEndStep`; each card is blocked by its other text.
+  - **Ilharg, the Raze-Boar**: "when it dies or is put into exile, put it into its owner's
+    library third from the top". **Zara**: a creature from an opponent's hand under your
+    control. **Senu**: a trigger while it's in exile. **Doors of Durin**: grants "until your next
+    turn" conditioned on a Dwarf / an Elf.
   - **Hero of Bladehold**: battle cry and the token trigger fire together, and which resolves
     first is the player's choice (603.3b), so it waits on `decision:trigger-order`.
   - Cards blocked by other text as well: Otharri, Ghalta and Mavren, Caesar, Ainok Strike

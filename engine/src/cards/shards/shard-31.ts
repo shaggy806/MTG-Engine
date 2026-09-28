@@ -27,6 +27,7 @@ import _poolCaptainsCall from "../pool/captains-call.js";
 import _poolCastleSengir from "../pool/castle-sengir.js";
 import _poolCatalystElemental from "../pool/catalyst-elemental.js";
 import _poolCharityExtractor from "../pool/charity-extractor.js";
+import _poolChitteringDispatcher from "../pool/chittering-dispatcher.js";
 import _poolClearwaterPathway from "../pool/clearwater-pathway.js";
 import _poolClinquantSkymage from "../pool/clinquant-skymage.js";
 import _poolCloudkinSeer from "../pool/cloudkin-seer.js";
@@ -205,6 +206,7 @@ const shard: CardShard = {
     _poolCastleSengir,
     _poolCatalystElemental,
     _poolCharityExtractor,
+    _poolChitteringDispatcher,
     _poolClearwaterPathway,
     _poolClinquantSkymage,
     _poolCloudkinSeer,

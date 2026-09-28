@@ -173,6 +173,7 @@ import _poolZhalfirinVoid from "../pool/zhalfirin-void.js";
 import _poolZodiacMonkey from "../pool/zodiac-monkey.js";
 import _tokensBeastToken33 from "../tokens/beast-token-3-3.js";
 import _tokensBlueBirdToken from "../tokens/blue-bird-token.js";
+import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
 import _tokensMeteoriteToken from "../tokens/meteorite-token.js";
@@ -352,6 +353,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBeastToken33,
     _tokensBlueBirdToken,
+    _tokensEldraziSpawnToken,
     _tokensHydraToken,
     _tokensJunkToken,
     _tokensMeteoriteToken,

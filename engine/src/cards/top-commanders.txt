@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-310 already implemented / 190 missing
+314 already implemented / 186 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -13,7 +13,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]    7  Thrasios, Triton Hero                          43075 decks  {G}{U}           Legendary Creature — Merfolk Wizard
 [x]    8  Vivi Ornitier                                  40728 decks  {1}{U}{R}        Legendary Creature — Wizard
 [ ]    9  Sauron, the Dark Lord                          39908 decks  {3}{U}{B}{R}     Legendary Creature — Avatar Horror
-[ ]   10  Kaalia of the Vast                             39741 decks  {1}{R}{W}{B}     Legendary Creature — Human Cleric
+[x]   10  Kaalia of the Vast                             39741 decks  {1}{R}{W}{B}     Legendary Creature — Human Cleric
 [x]   11  Rograkh, Son of Rohgahh                        38866 decks  {0}              Legendary Creature — Kobold Warrior
 [x]   12  Teval, the Balanced Scale                      38826 decks  {1}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]   13  Fire Lord Azula                                37711 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble
@@ -157,10 +157,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  151  Kykar, Wind's Fury                             14302 decks  {1}{U}{R}{W}     Legendary Creature — Bird Wizard
 [x]  152  The Scarab God                                 14251 decks  {3}{U}{B}        Legendary Creature — God
 [x]  153  Eluge, the Shoreless Sea                       14245 decks  {1}{U}{U}{U}     Legendary Creature — Elemental Fish
-[ ]  154  Winota, Joiner of Forces                       14222 decks  {2}{R}{W}        Legendary Creature — Human Warrior
+[x]  154  Winota, Joiner of Forces                       14222 decks  {2}{R}{W}        Legendary Creature — Human Warrior
 [x]  155  Sythis, Harvest's Hand                         14205 decks  {G}{W}           Legendary Enchantment Creature — Nymph
 [x]  156  Marchesa, the Black Rose                       14071 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
-[ ]  157  Najeela, the Blade-Blossom                     14034 decks  {2}{R}           Legendary Creature — Human Warrior
+[x]  157  Najeela, the Blade-Blossom                     14034 decks  {2}{R}           Legendary Creature — Human Warrior
 [x]  158  Grand Arbiter Augustin IV                      14006 decks  {2}{W}{U}        Legendary Creature — Human Advisor
 [x]  159  Temmet, Naktamun's Will                        13931 decks  {2}{W}{U}{B}     Legendary Creature — Zombie Wizard
 [ ]  160  Tiamat                                         13863 decks  {2}{W}{U}{B}{R}{G} Legendary Creature — Dragon God
@@ -400,7 +400,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  394  Kiora, Sovereign of the Deep                    7371 decks  {3}{G}{U}        Legendary Creature — Merfolk Noble
 [x]  395  Azusa, Lost but Seeking                         7363 decks  {2}{G}           Legendary Creature — Human Monk
 [x]  396  Clive, Ifrit's Dominant                         7343 decks  {4}{R}{R}        Legendary Creature — Human Noble Warrior // Legendary Enchantment Creature — Saga Demon
-[ ]  397  Raph & Mikey, Troublemakers                     7320 decks  {5}{R/G}{R/G}    Legendary Creature — Mutant Ninja Turtle
+[x]  397  Raph & Mikey, Troublemakers                     7320 decks  {5}{R/G}{R/G}    Legendary Creature — Mutant Ninja Turtle
 [x]  398  Ayara, First of Locthwain                       7292 decks  {B}{B}{B}        Legendary Creature — Elf Noble
 [ ]  399  Laughing Jasper Flint                           7270 decks  {1}{B}{R}        Legendary Creature — Lizard Rogue
 [ ]  400  Zurgo, Thunder's Decree                         7259 decks  {R}{W}{B}        Legendary Creature — Orc Warrior

@@ -86,6 +86,7 @@ import _poolInfectiousHost from "../pool/infectious-host.js";
 import _poolIonasJudgment from "../pool/ionas-judgment.js";
 import _poolJibbirikOmnivore from "../pool/jibbirik-omnivore.js";
 import _poolJundBattlemage from "../pool/jund-battlemage.js";
+import _poolKaaliaOfTheVast from "../pool/kaalia-of-the-vast.js";
 import _poolKeepersOfTheFaith from "../pool/keepers-of-the-faith.js";
 import _poolKessigRecluse from "../pool/kessig-recluse.js";
 import _poolKillianDecisiveMentor from "../pool/killian-decisive-mentor.js";
@@ -275,6 +276,7 @@ const shard: CardShard = {
     _poolIonasJudgment,
     _poolJibbirikOmnivore,
     _poolJundBattlemage,
+    _poolKaaliaOfTheVast,
     _poolKeepersOfTheFaith,
     _poolKessigRecluse,
     _poolKillianDecisiveMentor,

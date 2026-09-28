@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1471 already implemented / 3529 missing (marks refreshed 2026-09-28)
+1479 already implemented / 3521 missing (marks refreshed 2026-09-28)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -895,7 +895,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   899  Reconnaissance Mission                   {2}{U}{U}        Enchantment
 [ ]   900  Raise the Palisade                       {4}{U}           Sorcery
 [ ]   901  Burgeoning                               {G}              Enchantment
-[ ]   902  Blade of Selves                          {2}              Artifact — Equipment
+[x]   902  Blade of Selves                          {2}              Artifact — Equipment
 [ ]   903  Sword of Hearth and Home                 {3}              Artifact — Equipment
 [ ]   904  Ojer Taq, Deepest Foundation // Temple of Civilization {6}              Legendary Creature — God // Land
 [x]   905  Spell Pierce                             {U}              Instant
@@ -1921,7 +1921,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1928  Day of Judgment                          {2}{W}{W}        Sorcery
 [ ]  1929  Black Sun's Zenith                       {X}{B}{B}        Sorcery
 [ ]  1930  Teferi's Puzzle Box                      {4}              Artifact
-[ ]  1931  Goldlust Triad                           {4}{R}           Creature — Dragon
+[x]  1931  Goldlust Triad                           {4}{R}           Creature — Dragon
 [ ]  1932  Cycle of Renewal                         {2}{G}           Instant — Lesson
 [ ]  1933  Inti, Seneschal of the Sun               {1}{R}           Legendary Creature — Human Knight
 [x]  1934  Adaptive Omnitool                        {2}              Artifact — Equipment
@@ -2053,7 +2053,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2060  Skrelv's Hive                            {1}{W}           Enchantment
 [ ]  2061  Thousand Moons Smithy // Barracks of the Thousand {4}              Legendary Artifact // Legendary Artifact Land
 [ ]  2062  Abstergo Entertainment                   {0}              Legendary Land
-[ ]  2063  Cybermen Squadron                        {7}              Artifact Creature — Cyberman
+[x]  2063  Cybermen Squadron                        {7}              Artifact Creature — Cyberman
 [ ]  2064  Angel of Vitality                        {2}{W}           Creature — Angel
 [ ]  2065  Elvish Reclaimer                         {G}              Creature — Elf Warrior
 [x]  2066  Darksteel Ingot                          {3}              Artifact
@@ -2920,7 +2920,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2927  Nykthos Paragon                          {4}{W}{W}        Enchantment Creature — Human Soldier
 [ ]  2928  Crystalline Crawler                      {4}              Artifact Creature — Construct
 [x]  2929  Derevi, Empyrial Tactician               {G}{W}{U}        Legendary Creature — Bird Wizard
-[ ]  2930  Legion Loyalty                           {6}{W}{W}        Enchantment
+[x]  2930  Legion Loyalty                           {6}{W}{W}        Enchantment
 [ ]  2931  Skirge Familiar                          {4}{B}           Creature — Phyrexian Imp
 [ ]  2932  Mudflat Village                          {0}              Land
 [ ]  2933  Duplicant                                {6}              Artifact Creature — Shapeshifter
@@ -3469,7 +3469,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3476  Burning Inquiry                          {R}              Sorcery
 [ ]  3477  Master of Cruelties                      {3}{B}{R}        Creature — Demon
 [ ]  3478  Coalition Relic                          {3}              Artifact
-[ ]  3479  Kaalia of the Vast                       {1}{R}{W}{B}     Legendary Creature — Human Cleric
+[x]  3479  Kaalia of the Vast                       {1}{R}{W}{B}     Legendary Creature — Human Cleric
 [ ]  3480  Berserk                                  {G}              Instant
 [ ]  3481  Scion of Oona                            {2}{U}           Creature — Faerie Soldier
 [ ]  3482  Rona, Herald of Invasion // Rona, Tolarian Obliterator {2}              Legendary Creature — Human Wizard // Legendary Creature — Phyrexian Wizard
@@ -3964,7 +3964,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3971  Vesuvan Duplimancy                       {3}{U}           Enchantment
 [ ]  3972  Elementalist's Palette                   {3}              Artifact
 [ ]  3973  Hushbringer                              {1}{W}           Creature — Faerie
-[ ]  3974  Wizards of Thay                          {3}{U}           Creature — Human Wizard
+[x]  3974  Wizards of Thay                          {3}{U}           Creature — Human Wizard
 [x]  3975  Zur, Eternal Schemer                     {W}{U}{B}        Legendary Creature — Human Wizard
 [ ]  3976  Relm's Sketching                         {2}{U}{U}        Sorcery
 [ ]  3977  Search for Azcanta // Azcanta, the Sunken Ruin {2}              Legendary Enchantment // Legendary Land
@@ -4273,7 +4273,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4280  Highway Robbery                          {1}{R}           Sorcery
 [ ]  4281  Angel of Finality                        {3}{W}           Creature — Angel
 [ ]  4282  Vanishing Verse                          {W}{B}           Instant
-[ ]  4283  Chittering Dispatcher                    {2}{G}           Creature — Eldrazi Drone
+[x]  4283  Chittering Dispatcher                    {2}{G}           Creature — Eldrazi Drone
 [ ]  4284  The Ooze                                 {2}              Legendary Artifact
 [x]  4285  Ice Tunnel                               {0}              Snow Land — Island Swamp
 [ ]  4286  Spawning Pit                             {2}              Artifact
@@ -4840,7 +4840,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4847  Liliana's Mastery                        {3}{B}{B}        Enchantment
 [ ]  4848  Summon: Magus Sisters                    {4}{G}           Enchantment Creature — Saga Faerie
 [ ]  4849  Avatar Roku, Firebender                  {3}{R}{R}{R}     Legendary Creature — Human Avatar
-[ ]  4850  Winota, Joiner of Forces                 {2}{R}{W}        Legendary Creature — Human Warrior
+[x]  4850  Winota, Joiner of Forces                 {2}{R}{W}        Legendary Creature — Human Warrior
 [ ]  4851  Lumbering Falls                          {0}              Land
 [ ]  4852  Goblin Lackey                            {R}              Creature — Goblin
 [ ]  4853  Open the Gates                           {G}              Sorcery

@@ -22,6 +22,7 @@ import _poolBeastKinRanger from "../pool/beast-kin-ranger.js";
 import _poolBeetlebackChief from "../pool/beetleback-chief.js";
 import _poolBishopsSoldier from "../pool/bishops-soldier.js";
 import _poolBlackWidowNatashaRomanoff from "../pool/black-widow-natasha-romanoff.js";
+import _poolBladeOfSelves from "../pool/blade-of-selves.js";
 import _poolBlindPhantasm from "../pool/blind-phantasm.js";
 import _poolBloodfellCaves from "../pool/bloodfell-caves.js";
 import _poolBloodthirstyAerialist from "../pool/bloodthirsty-aerialist.js";
@@ -112,6 +113,7 @@ import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMillstone from "../pool/millstone.js";
 import _poolMundasVanguard from "../pool/mundas-vanguard.js";
 import _poolMyrTurbine from "../pool/myr-turbine.js";
+import _poolNajeelaTheBladeBlossom from "../pool/najeela-the-blade-blossom.js";
 import _poolNaturalize from "../pool/naturalize.js";
 import _poolNaturesChant from "../pool/natures-chant.js";
 import _poolNellyBorcaImpulsiveAccuser from "../pool/nelly-borca-impulsive-accuser.js";
@@ -225,6 +227,7 @@ const shard: CardShard = {
     _poolBeetlebackChief,
     _poolBishopsSoldier,
     _poolBlackWidowNatashaRomanoff,
+    _poolBladeOfSelves,
     _poolBlindPhantasm,
     _poolBloodfellCaves,
     _poolBloodthirstyAerialist,
@@ -315,6 +318,7 @@ const shard: CardShard = {
     _poolMillstone,
     _poolMundasVanguard,
     _poolMyrTurbine,
+    _poolNajeelaTheBladeBlossom,
     _poolNaturalize,
     _poolNaturesChant,
     _poolNellyBorcaImpulsiveAccuser,

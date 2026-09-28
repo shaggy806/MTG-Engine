@@ -97,6 +97,7 @@ import _poolKnightOfMeadowgrain from "../pool/knight-of-meadowgrain.js";
 import _poolKrakenHatchling from "../pool/kraken-hatchling.js";
 import _poolKranioceros from "../pool/kranioceros.js";
 import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
+import _poolLegionLoyalty from "../pool/legion-loyalty.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
 import _poolMassacreWurm from "../pool/massacre-wurm.js";
 import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
@@ -180,6 +181,7 @@ import _poolWaspLancer from "../pool/wasp-lancer.js";
 import _poolWeftstalkerArdent from "../pool/weftstalker-ardent.js";
 import _poolWildAesthir from "../pool/wild-aesthir.js";
 import _poolWildWanderer from "../pool/wild-wanderer.js";
+import _poolWinotaJoinerOfForces from "../pool/winota-joiner-of-forces.js";
 import _poolWoodlandPatrol from "../pool/woodland-patrol.js";
 import _poolZephid from "../pool/zephid.js";
 import _poolZephyrCharge from "../pool/zephyr-charge.js";
@@ -284,6 +286,7 @@ const shard: CardShard = {
     _poolKrakenHatchling,
     _poolKranioceros,
     _poolKutzilMalametExemplar,
+    _poolLegionLoyalty,
     _poolMagusOfTheBazaar,
     _poolMassacreWurm,
     _poolMerfolkOfTheDepths,
@@ -367,6 +370,7 @@ const shard: CardShard = {
     _poolWeftstalkerArdent,
     _poolWildAesthir,
     _poolWildWanderer,
+    _poolWinotaJoinerOfForces,
     _poolWoodlandPatrol,
     _poolZephid,
     _poolZephyrCharge,

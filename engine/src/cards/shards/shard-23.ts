@@ -120,6 +120,7 @@ import _poolProtectorOfGondor from "../pool/protector-of-gondor.js";
 import _poolPython from "../pool/python.js";
 import _poolRainOfFilth from "../pool/rain-of-filth.js";
 import _poolRakingClaws from "../pool/raking-claws.js";
+import _poolRaphMikeyTroublemakers from "../pool/raph-mikey-troublemakers.js";
 import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
 import _poolReachThroughMists from "../pool/reach-through-mists.js";
 import _poolRelicBarrier from "../pool/relic-barrier.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolPython,
     _poolRainOfFilth,
     _poolRakingClaws,
+    _poolRaphMikeyTroublemakers,
     _poolRazakethTheFoulblooded,
     _poolReachThroughMists,
     _poolRelicBarrier,
