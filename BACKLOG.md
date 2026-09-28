@@ -245,6 +245,9 @@ Beyond that plan:
 - **Show counters on card tiles (raised 2026-09-28).** A creature's counters have no visual on
   the board, only a line of text on hover. Check whether the mana font the client already uses
   has a symbol for each counter kind that a tile could show.
+- **The lobby looks very different at two seats than at four (raised 2026-09-28).** Evaluate
+  the visual disparity between a 2-player and a 4-player room lobby and decrease it. Also add a
+  button to remove a seat (today a seat can be added — "Add seat" — but not taken away).
 - **Audit how many ways a card is rendered (raised 2026-09-28).** Count the distinct card
   renderings across the client (`CardTile`, `MiniTile`, hand, stack, previews, pickers, …) and
   see whether they can reasonably be condensed into fewer.
