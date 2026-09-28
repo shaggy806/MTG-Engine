@@ -6,9 +6,6 @@ import { defineCard } from "../define.js";
 // works exactly like any other Saga (the SBA that sacrifices a completed
 // Saga doesn't care what other types it has), and every chapter effect is
 // already-shipped vocab (mill / return-from-graveyard / a countOf pump).
-// Chapter III's "another target creature" drops the "another" the same way
-// Anafenza, the Foremost's attack trigger does — the engine has no generic
-// "not this object" targeting exclusion.
 export default defineCard({
   name: "Summon: Titan",
   manaCost: "{3}{G}{G}",
@@ -48,7 +45,7 @@ export default defineCard({
     },
     {
       at: [3],
-      targets: ["creature-you-control"],
+      targets: [{ kind: "other", of: "creature-you-control" }],
       effect: {
         kind: "sequence",
         effects: [

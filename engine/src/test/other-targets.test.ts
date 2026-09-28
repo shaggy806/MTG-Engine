@@ -219,6 +219,28 @@ describe("another target — not the source", () => {
       }),
     ).toThrow();
   });
+
+  it("Brash Taunter can't fight itself", () => {
+    // Fighting itself would feed its own damage trigger: a burn loop the
+    // real card doesn't have.
+    const { game } = setUp();
+    const taunter = game.debugSpawn("Brash Taunter", A, "battlefield", { summoningSick: false });
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    for (let i = 0; i < 3; i++) game.debugSpawn("Mountain", A, "battlefield");
+    const offer = game
+      .legalActions(A)
+      .find((o) => o.kind === "activate-ability" && o.source === taunter && o.abilityIndex === 0);
+    expect(offer?.kind === "activate-ability" ? objectIds(offer.targetOptions[0]) : []).toEqual([bears]);
+    expect(() =>
+      game.dispatch({
+        type: "activate-ability",
+        player: A,
+        source: taunter,
+        abilityIndex: 0,
+        targets: [{ kind: "object", object: taunter }],
+      }),
+    ).toThrow();
+  });
 });
 
 describe("another target — not the triggering object or player", () => {
