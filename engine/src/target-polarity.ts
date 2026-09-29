@@ -195,6 +195,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "add-counter": (n, v) =>
     v.touch(n.target, HARMFUL_COUNTERS.has(n.counter) ? "harm" : "help", MAJOR),
   "add-counter-all": none,
+  // Card selection and maybe a counter, for the conniving permanent's side.
+  connive: (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-player-hexproof": none,
   populate: none,
   amass: none,

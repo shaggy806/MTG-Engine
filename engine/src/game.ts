@@ -12149,9 +12149,10 @@ export class Game {
       what: ThisWayKind,
       players: readonly PlayerId[] | undefined,
       filter: CardFilter | undefined,
+      from?: number,
     ): ThisWayEntry[] => {
       const whose = players === undefined ? undefined : new Set(players);
-      return thisWayEntries(this.state, what, since).filter(
+      return thisWayEntries(this.state, what, from ?? since).filter(
         (entry) =>
           (whose === undefined || whose.has(entry.player)) &&
           (filter === undefined ||
@@ -13133,8 +13134,10 @@ export class Game {
             this.countBattlefieldMatching(p, filter) < mine,
         ).length;
       },
-      creaturesDiedThisTurn: () =>
-        this.state.players[controller]?.creaturesDiedThisTurn ?? 0,
+      creaturesDiedThisTurn: (anyController) =>
+        anyController === true
+          ? this.state.creaturesDiedThisTurn
+          : (this.state.players[controller]?.creaturesDiedThisTurn ?? 0),
       // A copy of something that has left the zone this refers to it in —
       // "a copy of that creature" of one that died — copies it as it last
       // existed there (rule 608.2h): its source, triggering object or a

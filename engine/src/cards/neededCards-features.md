@@ -506,6 +506,10 @@ in `git log`.
   is "for each of them, create a copy of it" over that entry, carried in
   `LastKnownRefs.enteredTogether` (`effect:token-copy-options` — Kambal,
   Profiteering Mayor; `token-copy-entered-together.test.ts`).
+- **Connive** (`keyword:connive`, rule 701.50) — the `connive` effect: the
+  permanent's controller draws N, discards N, and puts a +1/+1 counter on it
+  per nonland card of those discards (Raffine, Scheming Seer; Ledger
+  Shredder, Spymaster's Vault; `connive.test.ts`).
 - **Delayed triggers over what was just made** (part of
   `effect:delayed-trigger-extensions`) — `delayed-trigger`'s `about`, with
   the `"created"` this-way kind: the delayed ability's targets are the

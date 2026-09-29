@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1491 already implemented / 3509 missing (marks refreshed 2026-09-29)
+1494 already implemented / 3506 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -826,7 +826,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   830  Sigarda's Aid                            {W}              Enchantment
 [x]   831  Young Pyromancer                         {1}{R}           Creature — Human Shaman
 [x]   832  Bloodthirsty Conqueror                   {3}{B}{B}        Creature — Vampire Knight
-[ ]   833  Ledger Shredder                          {1}{U}           Creature — Bird Advisor
+[x]   833  Ledger Shredder                          {1}{U}           Creature — Bird Advisor
 [x]   834  Aesi, Tyrant of Gyre Strait              {4}{G}{U}        Legendary Creature — Serpent
 [ ]   835  Yawgmoth, Thran Physician                {2}{B}{B}        Legendary Creature — Human Cleric
 [ ]   836  Urza's Tower                             {0}              Land — Urza's Tower
@@ -1135,7 +1135,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1140  Augur of Autumn                          {1}{G}{G}        Creature — Human Druid
 [x]  1141  Lonely Sandbar                           {0}              Land
 [ ]  1142  Grim Haruspex                            {2}{B}           Creature — Human Wizard
-[ ]  1143  Spymaster's Vault                        {0}              Land
+[x]  1143  Spymaster's Vault                        {0}              Land
 [ ]  1144  Fiery Inscription                        {2}{R}           Enchantment
 [x]  1145  Waterlogged Grove                        {0}              Land
 [ ]  1146  Revel in Riches                          {4}{B}           Enchantment
@@ -4700,7 +4700,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4707  Marshal's Anthem                         {2}{W}{W}        Enchantment
 [ ]  4708  Guardian Scalelord                       {4}{W}           Creature — Dragon
 [ ]  4709  Felisa, Fang of Silverquill              {2}{W}{B}        Legendary Creature — Vampire Wizard
-[ ]  4710  Raffine, Scheming Seer                   {W}{U}{B}        Legendary Creature — Sphinx Demon
+[x]  4710  Raffine, Scheming Seer                   {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  4711  Dina's Guidance                          {1}{B}{G}        Instant
 [ ]  4712  Garnet, Princess of Alexandria           {G}{W}           Legendary Creature — Human Noble Cleric
 [ ]  4713  Metropolis Reformer                      {2}{W}           Creature — Angel Cleric

@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-325 already implemented / 175 missing
+326 already implemented / 174 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -253,7 +253,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  247  Volo, Guide to Monsters                        10359 decks  {2}{G}{U}        Legendary Creature — Human Wizard
 [ ]  248  Kastral, the Windcrested                       10313 decks  {3}{W}{U}        Legendary Creature — Bird Scout
 [x]  249  Saheeli, Radiant Creator                       10286 decks  {1}{G}{U}{R}     Legendary Creature — Human Artificer
-[ ]  250  Raffine, Scheming Seer                         10235 decks  {W}{U}{B}        Legendary Creature — Sphinx Demon
+[x]  250  Raffine, Scheming Seer                         10235 decks  {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  251  Yidris, Maelstrom Wielder                      10231 decks  {U}{B}{R}{G}     Legendary Creature — Ogre Wizard
 [x]  252  Vihaan, Goldwaker                              10220 decks  {R}{W}{B}        Legendary Creature — Dwarf Warlock
 [x]  253  Tannuk, Steadfast Second                       10189 decks  {2}{R}{R}        Legendary Creature — Kavu Pilot

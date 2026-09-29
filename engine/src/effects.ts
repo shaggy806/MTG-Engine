@@ -250,8 +250,10 @@ export type EffectAmount =
    * devotion to black". */
   | { readonly devotionTo: Color }
   /** How many creatures died under the effect controller's control this turn
-   * — Liliana's Standard Bearer. Reads `PlayerState.creaturesDiedThisTurn`. */
-  | { readonly creaturesDiedThisTurn: true }
+   * — Liliana's Standard Bearer. Reads `PlayerState.creaturesDiedThisTurn`.
+   * `anyController`: every creature that died this turn, whoever controlled
+   * it (Spymaster's Vault). */
+  | { readonly creaturesDiedThisTurn: true; readonly anyController?: true }
   /** The product of several amounts — Gray Merchant of Asphodel gains "life
    * equal to the life lost this way", which is its devotion to black times
    * the number of opponents who lost that much. Composes, so it stays out of
@@ -1544,6 +1546,21 @@ export type EffectSpec =
       readonly exceptSource?: boolean;
     }
   | {
+      /**
+       * Connive (rule 701.50): the permanent's controller draws `amount`
+       * cards (1 by default — "connives X" is an amount), then discards that
+       * many, then puts a +1/+1 counter on it for each nonland card
+       * discarded. A permanent that has left is still connived with — its
+       * last controller draws and discards — but gets no counter (701.50c).
+       */
+      readonly kind: "connive";
+      readonly target: EffectTargetRef;
+      readonly amount?: EffectAmount;
+      /** Set by the engine on the part it parks while the discard is being
+       * chosen: the event the connive's draw began at. Never authored. */
+      readonly discardsSince?: number;
+    }
+  | {
       readonly kind: "add-counter";
       readonly target: EffectTargetRef;
       readonly counter: string;
@@ -2789,7 +2806,14 @@ export interface EffectApi {
   /** What this resolution has done `what` to so far, whose it was among
    * `players` (everyone's when absent) and matching `filter` — see the
    * `thisWay` {@link EffectAmount}. */
-  thisWay(what: ThisWayKind, players?: readonly PlayerId[], filter?: CardFilter): readonly ThisWayEntry[];
+  thisWay(
+    what: ThisWayKind,
+    players?: readonly PlayerId[],
+    filter?: CardFilter,
+    /** From this event on instead of the resolution's start (a connive's
+     * own discards). */
+    since?: number,
+  ): readonly ThisWayEntry[];
   /** How much life `players` (everyone when absent) have lost so far in
    * this resolution — see the `lifeLostThisWay` {@link EffectAmount}. */
   lifeLostThisWay(players?: readonly PlayerId[]): number;
@@ -2821,7 +2845,7 @@ export interface EffectApi {
   /** See the `{ opponentsControllingFewer }` {@link EffectAmount}. */
   opponentsControllingFewer(filter: CardFilter): number;
   /** See the `{ creaturesDiedThisTurn }` {@link EffectAmount}. */
-  creaturesDiedThisTurn(): number;
+  creaturesDiedThisTurn(anyController?: boolean): number;
   /** See the `{ powerOf }` / `{ toughnessOf }` {@link EffectAmount}s — a
    * permanent that has left the battlefield since the spell or ability
    * referred to it reads as it last existed there. */
@@ -3807,7 +3831,7 @@ function signedAmountValue(
     return ctx.opponentsControllingFewer(amount.opponentsControllingFewer);
   }
   if ("devotionTo" in amount) return ctx.devotionTo(amount.devotionTo);
-  if ("creaturesDiedThisTurn" in amount) return ctx.creaturesDiedThisTurn();
+  if ("creaturesDiedThisTurn" in amount) return ctx.creaturesDiedThisTurn(amount.anyController === true);
   if ("powerOf" in amount) {
     const ref = resolveAmountRef(amount.powerOf, ctx);
     return ref === undefined ? 0 : ctx.powerOf(ref);
@@ -4641,6 +4665,33 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-keyword-all":
       ctx.grantKeywordAll(spec.filter, spec.keyword, spec.duration, spec.exceptSource === true);
       return;
+    case "connive": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target?.kind !== "object") return;
+      if (spec.discardsSince === undefined) {
+        const player = ctx.controllerOf(target);
+        const n = amountValue(spec.amount ?? 1, ctx);
+        if (player === undefined || n <= 0) return;
+        const since = ctx.nextEventSeq();
+        ctx.draw(player, n);
+        const parked = ctx.parkedCount();
+        const pendingBefore = ctx.decisionPending();
+        ctx.discardCards({ kind: "player", player }, n, false);
+        const rest = { ...spec, discardsSince: since };
+        // No actions happen in between (the ruling): the counters wait only
+        // for the discard to be chosen.
+        if (!pendingBefore && ctx.decisionPending()) {
+          ctx.resumeAfterDecisions(rest, parked);
+          return;
+        }
+        applyEffectSpec(rest, ctx);
+        return;
+      }
+      const nonland = ctx.thisWay("discarded", undefined, { notTypes: ["land"] }, spec.discardsSince);
+      const amount = nonland.reduce((n, e) => n + e.count, 0);
+      if (amount > 0) ctx.addCounter(target, "+1/+1", amount);
+      return;
+    }
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target === undefined) return;

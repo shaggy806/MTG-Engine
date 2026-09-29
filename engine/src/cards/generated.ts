@@ -2751,6 +2751,7 @@ import _poolLeapingMaster from "./pool/leaping-master.js";
 import _poolLeatherbackBaloth from "./pool/leatherback-baloth.js";
 import _poolLeatherheadIronGator from "./pool/leatherhead-iron-gator.js";
 import _poolLeaveInTheDust from "./pool/leave-in-the-dust.js";
+import _poolLedgerShredder from "./pool/ledger-shredder.js";
 import _poolLegionLoyalty from "./pool/legion-loyalty.js";
 import _poolLeonardoTheBalance from "./pool/leonardo-the-balance.js";
 import _poolLeoninArmorguard from "./pool/leonin-armorguard.js";
@@ -3677,6 +3678,7 @@ import _poolRadhaHeirToKeld from "./pool/radha-heir-to-keld.js";
 import _poolRadiantFountain from "./pool/radiant-fountain.js";
 import _poolRadiantGrove from "./pool/radiant-grove.js";
 import _poolRadiantSummit from "./pool/radiant-summit.js";
+import _poolRaffineSchemingSeer from "./pool/raffine-scheming-seer.js";
 import _poolRaffinesTower from "./pool/raffines-tower.js";
 import _poolRageReflection from "./pool/rage-reflection.js";
 import _poolRageThrower from "./pool/rage-thrower.js";
@@ -4562,6 +4564,7 @@ import _poolSpriteDragon from "./pool/sprite-dragon.js";
 import _poolSprout from "./pool/sprout.js";
 import _poolSproutingThrinax from "./pool/sprouting-thrinax.js";
 import _poolSpurredWolverine from "./pool/spurred-wolverine.js";
+import _poolSpymastersVault from "./pool/spymasters-vault.js";
 import _poolSquallDrifter from "./pool/squall-drifter.js";
 import _poolSquall from "./pool/squall.js";
 import _poolSquire from "./pool/squire.js";
@@ -8623,6 +8626,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLeatherbackBaloth,
   _poolLeatherheadIronGator,
   _poolLeaveInTheDust,
+  _poolLedgerShredder,
   _poolLegionLoyalty,
   _poolLeonardoTheBalance,
   _poolLeoninArmorguard,
@@ -9549,6 +9553,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRadiantFountain,
   _poolRadiantGrove,
   _poolRadiantSummit,
+  _poolRaffineSchemingSeer,
   _poolRaffinesTower,
   _poolRageReflection,
   _poolRageThrower,
@@ -10434,6 +10439,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSprout,
   _poolSproutingThrinax,
   _poolSpurredWolverine,
+  _poolSpymastersVault,
   _poolSquallDrifter,
   _poolSquall,
   _poolSquire,

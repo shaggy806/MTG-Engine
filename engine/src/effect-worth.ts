@@ -252,6 +252,9 @@ function untargetedWorth(effect: EffectSpec, ctx: WorthContext): number {
       );
     case "untap":
       return typeof effect.target === "number" ? 0 : onObjectRef(effect.target, 0.5, ctx);
+    case "connive":
+      if (typeof effect.target === "number") return 0;
+      return onObjectRef(effect.target, 0.5, ctx);
     case "add-counter":
       if (typeof effect.target === "number") return 0;
       return onObjectRef(effect.target, HARMFUL_COUNTERS.has(effect.counter) ? -1 : 1, ctx);

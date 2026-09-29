@@ -88,6 +88,7 @@ import _poolKykarZephyrAwakener from "../pool/kykar-zephyr-awakener.js";
 import _poolLagacLizard from "../pool/lagac-lizard.js";
 import _poolLandLeeches from "../pool/land-leeches.js";
 import _poolLazotepPlating from "../pool/lazotep-plating.js";
+import _poolLedgerShredder from "../pool/ledger-shredder.js";
 import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
 import _poolLushPortico from "../pool/lush-portico.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
@@ -143,6 +144,7 @@ import _poolSoaringDrake from "../pool/soaring-drake.js";
 import _poolSoaringShowOff from "../pool/soaring-show-off.js";
 import _poolSparkTrooper from "../pool/spark-trooper.js";
 import _poolSplatterGoblin from "../pool/splatter-goblin.js";
+import _poolSpymastersVault from "../pool/spymasters-vault.js";
 import _poolStaffOfZegon from "../pool/staff-of-zegon.js";
 import _poolStonewoodInvoker from "../pool/stonewood-invoker.js";
 import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
@@ -276,6 +278,7 @@ const shard: CardShard = {
     _poolLagacLizard,
     _poolLandLeeches,
     _poolLazotepPlating,
+    _poolLedgerShredder,
     _poolLightningArmyOfOne,
     _poolLushPortico,
     _poolManaGeyser,
@@ -331,6 +334,7 @@ const shard: CardShard = {
     _poolSoaringShowOff,
     _poolSparkTrooper,
     _poolSplatterGoblin,
+    _poolSpymastersVault,
     _poolStaffOfZegon,
     _poolStonewoodInvoker,
     _poolStormcarvedCoast,
