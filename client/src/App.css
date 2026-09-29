@@ -2044,6 +2044,9 @@
 .card-flag.suspect {
   background: #b89be0;
 }
+.card-flag.holding {
+  background: #9fc3e8;
+}
 /* Sits in the art box's top-left corner (CardTile renders it inside .ct-art),
    scaled with the card like everything else on its face. */
 .card-badge {
@@ -2389,7 +2392,49 @@
    JS and clamped inside the viewport, so the bigger card still never runs
    off screen. */
 .mini-tile-popover {
-  --card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
+  --pop-card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
+  --card-w: var(--pop-card-w);
+}
+/* A permanent holding cards in exile (a Banishing Light's) shows them beside
+   its own card, smaller as there are more: one at 80%, two at 65%, three or
+   more at half size in rows of three. The popover is clamped inside the
+   viewport by useHoverPopover, so a wide one still never runs off screen. */
+.mini-tile-popover.with-held {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--pop-card-w) * 0.06);
+}
+.popover-held {
+  --card-w: calc(var(--pop-card-w) * 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pop-card-w) * 0.03);
+}
+.popover-held.held-2 {
+  --card-w: calc(var(--pop-card-w) * 0.65);
+}
+.popover-held.held-3 {
+  --card-w: calc(var(--pop-card-w) * 0.5);
+}
+.popover-held-label {
+  align-self: flex-start;
+  font-size: clamp(10px, 1.4vh, 13px);
+  font-weight: 700;
+  color: #0b0e14;
+  background: #9fc3e8;
+  border-radius: 4px;
+  padding: 0 0.5em;
+}
+.popover-held-cards {
+  display: grid;
+  grid-template-columns: repeat(3, var(--card-w));
+  gap: calc(var(--pop-card-w) * 0.03);
+}
+.popover-held.held-1 .popover-held-cards {
+  grid-template-columns: var(--card-w);
+}
+.popover-held.held-2 .popover-held-cards {
+  grid-template-columns: repeat(2, var(--card-w));
 }
 /* The history's card preview opens over the history popup (130), which the
    board's own preview sits under on purpose. */

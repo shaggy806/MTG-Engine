@@ -46,7 +46,16 @@ export interface MiniTileProps {
   readonly aimedBy?: string | null
   /** Who has goaded it (`CardFlags`), each with their seat colour. */
   readonly goaders?: readonly Goader[]
+  /** The cards in exile this permanent holds (`VisibleObject.holding`),
+   * each with what this seat can see of it — `null` for one exiled face
+   * down (rule 406.3), drawn as a card back. Shown beside the hover card. */
+  readonly held?: readonly HeldCard[]
   readonly onClick?: () => void
+}
+
+export interface HeldCard {
+  readonly id: string
+  readonly obj: VisibleObject | null
 }
 
 /**
@@ -76,6 +85,7 @@ export function MiniTile({
   attackSeat = null,
   aimedBy = null,
   goaders = [],
+  held = [],
   onClick,
 }: MiniTileProps) {
   const face = obj.copyOf ?? obj.faceName ?? obj.cardName
@@ -93,7 +103,7 @@ export function MiniTile({
   const clickable = Boolean(onClick) && (highlight || selected || activatable)
   const tint = cardTint(obj)
 
-  const { wrapRef, popoverRef, open, handlers } = useHoverPopover(obj)
+  const { wrapRef, popoverRef, open, handlers } = useHoverPopover(held.length > 0 ? [obj, held] : obj)
 
   const classes = [
     'mini-tile',
@@ -195,8 +205,22 @@ export function MiniTile({
 
       {open
         ? createPortal(
-            <div className="mini-tile-popover" ref={popoverRef}>
+            <div className={`mini-tile-popover${held.length > 0 ? ' with-held' : ''}`} ref={popoverRef}>
               <CardTile obj={obj} extraGenericCost={extraGenericCost} badge={badge} goaders={goaders} />
+              {held.length > 0 ? (
+                <div className={`popover-held held-${Math.min(held.length, 3)}`}>
+                  <span className="popover-held-label">Exiled with it</span>
+                  <div className="popover-held-cards">
+                    {held.map((h) =>
+                      h.obj !== null ? (
+                        <CardTile key={h.id} obj={h.obj} />
+                      ) : (
+                        <div key={h.id} className="card-back" title="face-down card" />
+                      ),
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>,
             document.body,
           )

@@ -2280,6 +2280,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           attackSeat={attackSeat}
           aimedBy={aimedBy}
           goaders={goaders}
+          held={(obj.holding ?? []).map((h) => ({ id: h, obj: view.objects[h] ?? null }))}
           onClick={() => clickPermanent(ids)}
         />
       )

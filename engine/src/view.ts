@@ -195,6 +195,13 @@ export interface VisibleObject {
   /** Suspected (rule 701.60). Its menace and can't-block already show among
    * `keywords` and `restrictions`; this is the designation itself. */
   readonly suspected: boolean;
+  /** On a permanent: the cards in exile linked to it — what an O-Ring holds
+   * until it leaves (rule 720.2 — Banishing Light), or cards exiled with it
+   * that it lets someone play (Theater of Horrors, Maralen). Ids only: a
+   * card exiled face down (rule 406.3) is in the list, but its identity
+   * stays out of `objects` for a seat that can't look at it, so a client
+   * draws a card back. Absent when it holds nothing. */
+  readonly holding?: readonly ObjectId[];
 }
 
 export interface PlayerView {
@@ -420,6 +427,37 @@ function visible(
   };
 }
 
+/**
+ * Each battlefield permanent's linked exile — see `VisibleObject.holding`.
+ * A link counts only while its permanent is on the battlefield: an O-Ring's
+ * `exiledBy`, or an impulse permission's source (`source`, and only while
+ * it's still the same object — rule 400.7; or a `while-source` expiry).
+ */
+function exileHoldings(state: GameState): Map<ObjectId, ObjectId[]> {
+  const out = new Map<ObjectId, ObjectId[]>();
+  const onBattlefield = (id: ObjectId): boolean => state.objects[id]?.zone === "battlefield";
+  for (const id of state.zones.shared.exile) {
+    const object = state.objects[id];
+    if (object === undefined) continue;
+    const linked = object.impulse?.source;
+    const holder =
+      object.exiledBy !== undefined && onBattlefield(object.exiledBy)
+        ? object.exiledBy
+        : linked !== undefined &&
+            onBattlefield(linked.id) &&
+            (state.objects[linked.id].zoneChangeCount ?? 0) === linked.zoneChangeCount
+          ? linked.id
+          : object.impulse?.expiry.kind === "while-source" && onBattlefield(object.impulse.expiry.source)
+            ? object.impulse.expiry.source
+            : undefined;
+    if (holder === undefined) continue;
+    const list = out.get(holder);
+    if (list === undefined) out.set(holder, [id]);
+    else list.push(id);
+  }
+  return out;
+}
+
 export function viewFor(
   state: GameState,
   registry: CardRegistry,
@@ -529,6 +567,7 @@ function viewForUncached(
     }
   }
 
+  const holdings = exileHoldings(state);
   const objects: Record<ObjectId, VisibleObject> = {};
   // The viewer's own castable-from zones. A modified cost is only meaningful
   // (and only theirs to know) for cards they could actually cast.
@@ -543,7 +582,9 @@ function viewForUncached(
         options.effectiveCost !== undefined && ownCastable.has(id)
           ? options.effectiveCost(id)
           : null;
-      objects[id] = cost === null ? base : { ...base, effectiveManaCost: cost };
+      const held = holdings.get(id);
+      const withHeld = held === undefined ? base : { ...base, holding: held };
+      objects[id] = cost === null ? withHeld : { ...withHeld, effectiveManaCost: cost };
     }
   }
 

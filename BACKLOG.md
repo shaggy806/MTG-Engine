@@ -311,6 +311,12 @@ Beyond that plan:
 
 ## Client / UI
 
+- **A face-down exiled card drops out of its owner's exile count and list** for every seat that
+  can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in
+  `App.tsx` groups exile by `view.objects[id].owner`, and a hidden card has no object. The
+  owner is public (rule 406.3 hides the face, not whose card it is), so the view could carry
+  owners for hidden exile ids.
+
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
   art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
