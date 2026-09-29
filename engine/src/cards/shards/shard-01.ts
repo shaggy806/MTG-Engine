@@ -49,6 +49,7 @@ import _poolGolgariGuildmage from "../pool/golgari-guildmage.js";
 import _poolGorgonFlail from "../pool/gorgon-flail.js";
 import _poolGuttersnipe from "../pool/guttersnipe.js";
 import _poolHarrierGriffin from "../pool/harrier-griffin.js";
+import _poolHashatonScarabsFist from "../pool/hashaton-scarabs-fist.js";
 import _poolHaywireMite from "../pool/haywire-mite.js";
 import _poolHedronCrab from "../pool/hedron-crab.js";
 import _poolHighlandGiant from "../pool/highland-giant.js";
@@ -212,6 +213,7 @@ const shard: CardShard = {
     _poolGorgonFlail,
     _poolGuttersnipe,
     _poolHarrierGriffin,
+    _poolHashatonScarabsFist,
     _poolHaywireMite,
     _poolHedronCrab,
     _poolHighlandGiant,

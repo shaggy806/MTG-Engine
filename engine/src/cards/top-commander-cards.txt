@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1489 already implemented / 3511 missing (marks refreshed 2026-09-28)
+1490 already implemented / 3510 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -3458,7 +3458,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3465  Invigorate                               {2}{G}           Instant
 [ ]  3466  Andúril, Flame of the West               {3}              Legendary Artifact — Equipment
 [ ]  3467  Trygon Predator                          {1}{G}{U}        Creature — Beast
-[ ]  3468  Hashaton, Scarab's Fist                  {W}{B}           Legendary Creature — Zombie Wizard
+[x]  3468  Hashaton, Scarab's Fist                  {W}{B}           Legendary Creature — Zombie Wizard
 [ ]  3469  Species Specialist                       {2}{B}{B}        Creature — Human Warrior
 [ ]  3470  K-9, Mark I                              {U}              Legendary Artifact Creature — Robot Dog
 [x]  3471  Caustic Caterpillar                      {G}              Creature — Insect

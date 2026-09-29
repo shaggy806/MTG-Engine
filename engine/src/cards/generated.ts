@@ -2205,6 +2205,7 @@ import _poolHarvestSeason from "./pool/harvest-season.js";
 import _poolHarvesterOfSouls from "./pool/harvester-of-souls.js";
 import _poolHarvesttideAssailant from "./pool/harvesttide-assailant.js";
 import _poolHarvesttideInfiltrator from "./pool/harvesttide-infiltrator.js";
+import _poolHashatonScarabsFist from "./pool/hashaton-scarabs-fist.js";
 import _poolHashepOasis from "./pool/hashep-oasis.js";
 import _poolHateMirage from "./pool/hate-mirage.js";
 import _poolHauntedGuardian from "./pool/haunted-guardian.js";
@@ -8074,6 +8075,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHarvesterOfSouls,
   _poolHarvesttideAssailant,
   _poolHarvesttideInfiltrator,
+  _poolHashatonScarabsFist,
   _poolHashepOasis,
   _poolHateMirage,
   _poolHauntedGuardian,

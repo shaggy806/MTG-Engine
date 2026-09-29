@@ -1636,9 +1636,7 @@
    "name": "Hashaton, Scarab's Fist",
    "needs": [
     "effect:copy-exceptions",
-    "effect:token-copy-last-known-info",
-    "effect:token-copy-options",
-    "trigger:discards-extensions"
+    "effect:token-copy-last-known-info"
    ]
   },
   {

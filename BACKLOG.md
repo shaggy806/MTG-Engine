@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**322 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**323 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -16,8 +16,8 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:token-copy-options` (+1), `trigger:discards-extensions` (+1),
-  `effect:delayed-trigger-extensions` (+2), `keyword:connive` (+2), `keyword:evoke` (+1),
+  `effect:token-copy-options` (+1), `effect:delayed-trigger-extensions` (+1),
+  `trigger:discards-extensions` (+1), `keyword:connive` (+2), `keyword:evoke` (+1),
   `zone:cast-cards-you-dont-own` (+1), `zone:visibility-extensions` (+2), `keyword:toxic` (+1),
   `cost:mana-spending-rules` (+3), `zone:play-from-exile-with-counter` (+3).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
@@ -43,7 +43,7 @@ that one card is the reason the deck exists.
   your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
   Faces (Embalm through its Clone ability).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,489 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,490 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
