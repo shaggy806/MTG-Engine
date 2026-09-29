@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-326 already implemented / 174 missing
+328 already implemented / 172 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -210,7 +210,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  204  Sonic the Hedgehog                             12031 decks  {1}{U}{R}{W}     Legendary Creature — Hedgehog Warrior
 [ ]  205  Varina, Lich Queen                             11960 decks  {1}{W}{U}{B}     Legendary Creature — Zombie Wizard
 [x]  206  Kona, Rescue Beastie                           11932 decks  {3}{G}           Legendary Creature — Beast Survivor
-[ ]  207  Captain Howler, Sea Scourge                    11896 decks  {2}{U}{R}        Legendary Creature — Shark Pirate
+[x]  207  Captain Howler, Sea Scourge                    11896 decks  {2}{U}{R}        Legendary Creature — Shark Pirate
 [x]  208  Thalia and The Gitrog Monster                  11891 decks  {1}{W}{B}{G}     Legendary Creature — Human Frog Horror
 [x]  209  Shadow the Hedgehog                            11880 decks  {B}{B}{R}{R}     Legendary Creature — Hedgehog Mercenary
 [x]  210  Derevi, Empyrial Tactician                     11868 decks  {G}{W}{U}        Legendary Creature — Bird Wizard
@@ -265,7 +265,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  259  Zndrsplt, Eye of Wisdom                        10074 decks  {4}{U}           Legendary Creature — Homunculus
 [x]  260  Katara, the Fearless                           10063 decks  {G}{W}{U}        Legendary Creature — Human Warrior Ally
 [x]  261  Betor, Kin to All                              10019 decks  {2}{W}{B}{G}     Legendary Creature — Spirit Dragon
-[ ]  262  Doctor Doom, King of Latveria                   9982 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble Villain
+[x]  262  Doctor Doom, King of Latveria                   9982 decks  {1}{U}{B}{R}     Legendary Creature — Human Noble Villain
 [x]  263  Bria, Riptide Rogue                             9969 decks  {2}{U}{R}        Legendary Creature — Otter Rogue
 [x]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
 [ ]  265  Aloy, Savior of Meridian                        9887 decks  {3}{G}{U}        Legendary Creature — Human Warrior

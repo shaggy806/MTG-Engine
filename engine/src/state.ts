@@ -1804,6 +1804,15 @@ export interface DelayedLeaveWatch {
 
 /** A delayed trigger waiting for its controller's next spell this turn
  * matching `nextSpell` — see `DelayedNextSpell`. */
+/** A delayed trigger waiting on a permanent's combat damage to a player this
+ * turn — see `DelayedCombatDamage`. Fires each time; lapses with the turn. */
+export interface DelayedDamageWatch {
+  readonly dealsCombatDamage: ObjectId;
+  /** Which stint of it on the battlefield. */
+  readonly stint: number;
+  readonly turn: number;
+}
+
 export interface DelayedCastWatch {
   readonly nextSpell: CardFilter;
   /** The turn it was made on: it lapses as the next begins. */
@@ -1826,7 +1835,7 @@ export interface DelayedTrigger {
   readonly controller: PlayerId;
   /** The step it waits for, the permanent whose leaving it waits for, or
    * the spell its controller casts next. */
-  readonly at: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch;
+  readonly at: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch | DelayedDamageWatch;
   /** The creating ability's trigger object, and its `zoneChangeCount` then
    * — "return **that card** to the battlefield" (Shirei, Shizo's Caretaker).
    * It's the delayed ability's trigger object too, as long as it's still that

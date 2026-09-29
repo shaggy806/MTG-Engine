@@ -32,6 +32,7 @@ import _poolDeeptreadMerrow from "../pool/deeptread-merrow.js";
 import _poolDefenseOfTheHeart from "../pool/defense-of-the-heart.js";
 import _poolDementiaBat from "../pool/dementia-bat.js";
 import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
+import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
 import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
 import _poolDreamTwist from "../pool/dream-twist.js";
 import _poolEloiseNephaliaSleuth from "../pool/eloise-nephalia-sleuth.js";
@@ -206,6 +207,7 @@ const shard: CardShard = {
     _poolDefenseOfTheHeart,
     _poolDementiaBat,
     _poolDiscipleOfTheOldWays,
+    _poolDoctorDoomKingOfLatveria,
     _poolDogmeatEverLoyal,
     _poolDreamTwist,
     _poolEloiseNephaliaSleuth,

@@ -755,6 +755,7 @@ import _poolCapashenTemplar from "./pool/capashen-templar.js";
 import _poolCapashenUnicorn from "./pool/capashen-unicorn.js";
 import _poolCapitalCity from "./pool/capital-city.js";
 import _poolCapitalGuard from "./pool/capital-guard.js";
+import _poolCaptainHowlerSeaScourge from "./pool/captain-howler-sea-scourge.js";
 import _poolCaptainLanneryStorm from "./pool/captain-lannery-storm.js";
 import _poolCaptainMarvelEarthsProtector from "./pool/captain-marvel-earths-protector.js";
 import _poolCaptainNghathrod from "./pool/captain-nghathrod.js";
@@ -1302,6 +1303,7 @@ import _poolDivineVerdict from "./pool/divine-verdict.js";
 import _poolDivingGriffin from "./pool/diving-griffin.js";
 import _poolDjinnOfTheLamp from "./pool/djinn-of-the-lamp.js";
 import _poolDocksideChef from "./pool/dockside-chef.js";
+import _poolDoctorDoomKingOfLatveria from "./pool/doctor-doom-king-of-latveria.js";
 import _poolDoggedPursuit from "./pool/dogged-pursuit.js";
 import _poolDogmeatEverLoyal from "./pool/dogmeat-ever-loyal.js";
 import _poolDonAndresTheRenegade from "./pool/don-andres-the-renegade.js";
@@ -6630,6 +6632,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCapashenUnicorn,
   _poolCapitalCity,
   _poolCapitalGuard,
+  _poolCaptainHowlerSeaScourge,
   _poolCaptainLanneryStorm,
   _poolCaptainMarvelEarthsProtector,
   _poolCaptainNghathrod,
@@ -7177,6 +7180,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDivingGriffin,
   _poolDjinnOfTheLamp,
   _poolDocksideChef,
+  _poolDoctorDoomKingOfLatveria,
   _poolDoggedPursuit,
   _poolDogmeatEverLoyal,
   _poolDonAndresTheRenegade,

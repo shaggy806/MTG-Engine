@@ -19,6 +19,7 @@ import _poolBotanicalSanctum from "../pool/botanical-sanctum.js";
 import _poolBrimstoneDragon from "../pool/brimstone-dragon.js";
 import _poolBuoyancy from "../pool/buoyancy.js";
 import _poolCaelornaCoralTyrant from "../pool/caelorna-coral-tyrant.js";
+import _poolCaptainHowlerSeaScourge from "../pool/captain-howler-sea-scourge.js";
 import _poolCartographer from "../pool/cartographer.js";
 import _poolCatharsCrusade from "../pool/cathars-crusade.js";
 import _poolCausticRain from "../pool/caustic-rain.js";
@@ -208,6 +209,7 @@ const shard: CardShard = {
     _poolBrimstoneDragon,
     _poolBuoyancy,
     _poolCaelornaCoralTyrant,
+    _poolCaptainHowlerSeaScourge,
     _poolCartographer,
     _poolCatharsCrusade,
     _poolCausticRain,

@@ -132,6 +132,15 @@ export interface DelayedNextSpell {
   readonly nextSpell: CardFilter;
 }
 
+/** "Whenever **that creature** deals combat damage to a player this turn"
+ * (Captain Howler, Sea Scourge) — a delayed trigger keyed to the permanent in
+ * `dealsCombatDamage`'s slot, for this stint of it on the battlefield. A
+ * "whenever": it fires each time (double strike twice), and lapses as the
+ * turn ends. That permanent is its trigger object. */
+export interface DelayedCombatDamage {
+  readonly dealsCombatDamage: EffectTargetRef;
+}
+
 /** How a `flicker` returns what it exiled — the non-target half of its
  * {@link EffectSpec}. */
 export interface FlickerOptions {
@@ -1344,7 +1353,7 @@ export type EffectSpec =
        * card** to the battlefield at the beginning of the next end step" —
        * Shirei, Shizo's Caretaker) is the delayed ability's too, unless the
        * spell it waits for is. */
-      readonly at: DelayedTriggerTiming | DelayedLeaves | DelayedNextSpell;
+      readonly at: DelayedTriggerTiming | DelayedLeaves | DelayedNextSpell | DelayedCombatDamage;
       readonly effect: EffectSpec;
       /** Text for the log and the stack. */
       readonly text: string;
@@ -2974,7 +2983,8 @@ export interface EffectApi {
           readonly to: readonly LeaveDestination[];
           readonly thisTurn?: boolean;
         }
-      | DelayedNextSpell,
+      | DelayedNextSpell
+      | { readonly dealsCombatDamage: ObjectId },
     effect: EffectSpec,
     text: string,
     controller: PlayerId,
@@ -4496,6 +4506,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const who = of === undefined ? undefined : ctx.controllerOf(of);
         if (who === undefined) return;
         controller = who;
+      }
+      if (typeof spec.at === "object" && "dealsCombatDamage" in spec.at) {
+        const watched = resolveEffectTarget(spec.at.dealsCombatDamage, ctx);
+        if (watched?.kind !== "object") return;
+        ctx.delayTrigger({ dealsCombatDamage: watched.object }, spec.effect, spec.text, controller);
+        return;
       }
       if (typeof spec.at === "object" && "nextSpell" in spec.at) {
         ctx.delayTrigger({ nextSpell: spec.at.nextSpell }, spec.effect, spec.text, controller);

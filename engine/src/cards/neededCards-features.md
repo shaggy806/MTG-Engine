@@ -514,7 +514,10 @@ in `git log`.
   `effect:delayed-trigger-extensions`) — `delayed-trigger`'s `about`, with
   the `"created"` this-way kind: the delayed ability's targets are the
   tokens its resolution created (Satya, Aetherflux Genius;
-  `commanders-satya.test.ts`).
+  `commanders-satya.test.ts`); and `at: { dealsCombatDamage }`, "whenever
+  that creature deals combat damage to a player this turn", firing each time
+  (Captain Howler, Sea Scourge; `commanders-doom-howler.test.ts`), which
+  finishes the feature.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

@@ -222,6 +222,7 @@ import type {
   CommanderReplacementZone,
   ControlEffect,
   DelayedCastWatch,
+  DelayedDamageWatch,
   DelayedLeaveWatch,
   DelayedTrigger,
   EnterAttackingChoice,
@@ -2164,6 +2165,7 @@ export class Game {
       pinned.add(trigger.source);
       for (const t of trigger.targets) if (t?.kind === "object") pinned.add(t.object);
       if (typeof trigger.at === "object" && "leaves" in trigger.at) pinned.add(trigger.at.leaves);
+      if (typeof trigger.at === "object" && "dealsCombatDamage" in trigger.at) pinned.add(trigger.at.dealsCombatDamage);
       if (trigger.triggerObject !== undefined) pinned.add(trigger.triggerObject);
     }
     for (const shield of this.state.preventionShields) {
@@ -10641,6 +10643,7 @@ export class Game {
     // see them.
     if (event.type === "permanent-left-battlefield") this.fireLeaveWatchers(event);
     if (event.type === "spell-cast") this.fireCastWatchers(event);
+    if (event.type === "damage-dealt") this.fireDamageWatchers(event);
   }
 
   /** Has `object`'s `oncePerTurn` triggered ability `index` triggered yet
@@ -16699,7 +16702,8 @@ export class Game {
           readonly to: readonly LeaveDestination[];
           readonly thisTurn?: boolean;
         }
-      | DelayedNextSpell,
+      | DelayedNextSpell
+      | { readonly dealsCombatDamage: ObjectId },
     effect: EffectSpec,
     text: string,
     targets: ResolvedTargets,
@@ -16707,9 +16711,17 @@ export class Game {
     /** The creating ability's trigger object, and how it knew it. */
     creator: { readonly triggerObject?: ObjectId; readonly refs?: LastKnownRefs } = {},
   ): void {
-    let when: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch;
+    let when: DelayedTriggerTiming | DelayedLeaveWatch | DelayedCastWatch | DelayedDamageWatch;
     if (typeof at === "object" && "nextSpell" in at) {
       when = { nextSpell: at.nextSpell, turn: this.state.turn.number };
+    } else if (typeof at === "object" && "dealsCombatDamage" in at) {
+      const watched = this.state.objects[at.dealsCombatDamage];
+      if (watched?.zone !== "battlefield") return;
+      when = {
+        dealsCombatDamage: at.dealsCombatDamage,
+        stint: watched.zoneChangeCount ?? 0,
+        turn: this.state.turn.number,
+      };
     } else if (typeof at === "object") {
       const watched = this.state.objects[at.leaves];
       if (watched?.zone !== "battlefield") return;
@@ -16915,6 +16927,34 @@ export class Game {
    * the spell matches. Each fires once — queued like any trigger, the spell
    * as its trigger object — and is used up.
    */
+  private fireDamageWatchers(event: Extract<GameEvent, { type: "damage-dealt" }>): void {
+    if (this.state.delayedTriggers.length === 0 || event.combat !== true || event.target.kind !== "player") return;
+    const object = this.state.objects[event.source];
+    if (object?.zone !== "battlefield") return;
+    const stint = object.zoneChangeCount ?? 0;
+    for (const trigger of this.state.delayedTriggers) {
+      if (
+        typeof trigger.at !== "object" ||
+        !("dealsCombatDamage" in trigger.at) ||
+        trigger.at.dealsCombatDamage !== event.source ||
+        trigger.at.stint !== stint ||
+        trigger.at.turn !== this.state.turn.number
+      ) {
+        continue;
+      }
+      // Not used up: "whenever" fires again on a second combat damage step.
+      this.state.pendingTriggers.push({
+        sourceObjectId: trigger.source,
+        cardName: trigger.sourceName,
+        abilityIndex: 0,
+        controller: trigger.controller,
+        triggerObject: event.source,
+        lastKnownRefs: { triggerObject: stint },
+        delayed: trigger,
+      });
+    }
+  }
+
   private fireCastWatchers(event: Extract<GameEvent, { type: "spell-cast" }>): void {
     if (this.state.delayedTriggers.length === 0) return;
     const firing = this.state.delayedTriggers.filter(
