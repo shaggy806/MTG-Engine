@@ -514,6 +514,13 @@ export interface GameObject {
    * turn). Both cleared on any zone change. */
   foretold?: boolean;
   foretoldOnTurn?: number | null;
+  /** Exiled **face down** (rule 406.3): nobody may look at it but these
+   * players — the one an instruction let look at it ("look at the top card
+   * of that player's library, then exile it face down" — Edward Kenway), who
+   * may go on looking for as long as it stays exiled. Its owner isn't one
+   * unless named. Cleared on any zone change: it's turned face up as it
+   * leaves exile. */
+  exiledFaceDown?: { readonly lookers: readonly PlayerId[] };
   /** True while this adventure card sits in exile after its adventure resolved
    * (rule 715.3 — ROADMAP Phase 10): its owner may cast the creature half from
    * exile. Cleared on any zone change. */

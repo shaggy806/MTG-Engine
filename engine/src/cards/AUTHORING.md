@@ -959,7 +959,7 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn?, faceDown? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
@@ -994,6 +994,12 @@ exist (rule 111.7), so neither comes back.
   castOnly: true, filter: { manaValue: { op: "lte", n: { amount: { countOf:
   … } } } }, free: { only: true }, whileSource: true, oncePerTurn: true }`.
   A permission ends when the card leaves exile (rule 400.7).
+  `faceDown: true` is "look at the top card of that player's library, then
+  exile it **face down**" (Edward Kenway's `{ amount: 1, whose:
+  "trigger-player", duration: "while-exiled", faceDown: true }`): only the
+  controller may look at the card (rule 406.3) — every other seat's view,
+  its owner's included, shows a face-down card in exile, and the history
+  never names it. It's turned face up as it leaves exile, cast or not.
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
   them". `filter` narrows which of them the permission covers, and `free` is
   "without paying their mana costs" — for all of them, or those matching its

@@ -82,4 +82,16 @@ describe("public stints", () => {
     expect(seenAs(game, bears, shuffled.seq - 1)).toBe("Grizzly Bears");
     expect(seenAs(game, bears, shuffled.seq)).toBeUndefined();
   });
+
+  it("a card put face down straight from a hidden zone is never named — not even over its own payment", () => {
+    const game = setUp();
+    game.debugSpawn("Island", A, "battlefield");
+    game.debugSpawn("Island", A, "battlefield");
+    const behold = game.debugSpawn("Behold the Multiverse", A, "hand");
+    const before = game.state.eventSeq;
+    game.dispatch({ type: "foretell", player: A, card: behold });
+    expect(game.state.objects[behold].zone).toBe("exile");
+    expect(game.state.eventSeq).toBeGreaterThan(before + 1);
+    for (let seq = before; seq < game.state.eventSeq; seq += 1) expect(seenAs(game, behold, seq)).toBeUndefined();
+  });
 });

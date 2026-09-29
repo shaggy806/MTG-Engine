@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**330 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**331 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -16,18 +16,22 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `zone:visibility-extensions` (+2), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3),
-  `effect:amount-aggregate` (+1), `zone:cast-from-library-top` (+2),
+  `cost:mana-spending-rules` (+2), `effect:amount-aggregate` (+1), `keyword:toxic` (+1),
   `zone:play-from-exile-with-counter` (+2), `trigger:discards-extensions` (+1),
-  `keyword:blitz` (+1), `keyword:mayhem` (+1), `effect:additional-upkeep-steps` (+1).
+  `zone:visibility-extensions` (+1), `zone:cast-from-library-top` (+2), `keyword:blitz` (+1),
+  `keyword:mayhem` (+1), `effect:additional-upkeep-steps` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
-  `decision:copy-new-targets` and `zone:visibility-extensions`
-  (12 each), `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each). Live numbers come
+  `decision:copy-new-targets` (12), `effect:copy-spell-extensions` and
+  `decision:choose-permanent` (11 each). `zone:exile-face-down` (Edward Kenway) was split
+  out of `zone:visibility-extensions` and built; Gonti and Ixhel still need
+  `cost:mana-spending-rules`. Live numbers come
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
   (11) and `effect:cast-during-resolution` (10),
-  `decision:free-cast-choices` (9), `effect:attach-extensions` (7).
+  `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
+  `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
+  the revealed hand itself.
 - **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
   player to order simultaneous triggers (`decision:trigger-order`), and so does Hero of Bladehold. Aragorn, the Uniter needs
   scry to let the player order the kept cards (`decision:library-ordering`).

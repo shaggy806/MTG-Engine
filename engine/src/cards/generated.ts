@@ -1493,6 +1493,7 @@ import _poolEbonyRhino from "./pool/ebony-rhino.js";
 import _poolEbonyTreefolk from "./pool/ebony-treefolk.js";
 import _poolEcologistsTerrarium from "./pool/ecologists-terrarium.js";
 import _poolEdgarMarkov from "./pool/edgar-markov.js";
+import _poolEdwardKenway from "./pool/edward-kenway.js";
 import _poolEerieInterlude from "./pool/eerie-interlude.js";
 import _poolEfficientConstruction from "./pool/efficient-construction.js";
 import _poolEidolonOfBlossoms from "./pool/eidolon-of-blossoms.js";
@@ -7616,6 +7617,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEbonyTreefolk,
   _poolEcologistsTerrarium,
   _poolEdgarMarkov,
+  _poolEdwardKenway,
   _poolEerieInterlude,
   _poolEfficientConstruction,
   _poolEidolonOfBlossoms,

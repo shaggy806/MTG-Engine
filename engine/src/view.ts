@@ -445,10 +445,13 @@ function viewForUncached(
     ...state.zones.shared.battlefield,
     ...state.zones.shared.stack,
     // A foretold card is face-down in exile — its identity is hidden from
-    // everyone but its owner (ROADMAP Phase 6b). The id still appears in the
-    // `exile` zone list, so a client renders a face-down back for it.
+    // everyone but its owner (ROADMAP Phase 6b); a card exiled face down by
+    // an effect, from everyone but the players it lets look (rule 406.3 —
+    // Edward Kenway). The id still appears in the `exile` zone list, so a
+    // client renders a face-down back for it.
     ...state.zones.shared.exile.filter((id) => {
       const object = state.objects[id];
+      if (object?.exiledFaceDown !== undefined) return object.exiledFaceDown.lookers.includes(viewer);
       return object?.foretold !== true || object.owner === viewer;
     }),
     ...state.zones.shared.command,

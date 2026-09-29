@@ -149,7 +149,8 @@
   "effect:impulse-exile-other-libraries",
   "static:basic-land-type-mana",
   "stat:object-damage-history",
-  "effect:modal-ability-targeted-modes"
+  "effect:modal-ability-targeted-modes",
+  "zone:exile-face-down"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -1400,7 +1401,17 @@
   "zone:visibility-extensions": {
    "size": "medium",
    "ui": false,
-   "description": "Who can see what, in viewFor and revealedThisTurn: a card exiled face down that only the exiler may look at, 'plays with their hand revealed', 'look at the top card of your library any time' (owner only), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card')."
+   "description": "Who can see what, in viewFor and revealedThisTurn: 'plays with their hand revealed' (Sen Triplets), 'look at the top card of your library any time' (owner only — Glarb, Sigarda), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card'). A card exiled face down is split out as zone:exile-face-down (built)."
+  },
+  "zone:exile-face-down": {
+   "size": "small",
+   "ui": false,
+   "description": "A card exiled face down that only the player who looked at it may see (rule 406.3) — Edward Kenway, Gonti, Ixhel. Built: impulse-exile's faceDown."
+  },
+  "zone:cast-from-opponents-hand": {
+   "size": "medium",
+   "ui": true,
+   "description": "Play lands and cast spells from another player's hand (Sen Triplets): every hand check assumes the caster's own hand, and the client needs the opponent's revealed hand cards to be playable."
   }
  },
  "commanders": [
@@ -2742,7 +2753,7 @@
     "effect:impulse-exile-other-libraries",
     "zone:cast-cards-you-dont-own",
     "zone:impulse-permission-options",
-    "zone:visibility-extensions"
+    "zone:exile-face-down"
    ]
   },
   {
@@ -3137,7 +3148,7 @@
     "trigger:combat-damage-batch",
     "zone:cast-cards-you-dont-own",
     "zone:impulse-permission-options",
-    "zone:visibility-extensions"
+    "zone:exile-face-down"
    ]
   },
   {
@@ -4155,7 +4166,8 @@
    "needs": [
     "effect:cast-and-activate-restrictions",
     "zone:cast-cards-you-dont-own",
-    "zone:visibility-extensions"
+    "zone:visibility-extensions",
+    "zone:cast-from-opponents-hand"
    ]
   },
   {
@@ -4824,7 +4836,7 @@
     "keyword:toxic",
     "mechanic:player-counters",
     "zone:impulse-permission-options",
-    "zone:visibility-extensions"
+    "zone:exile-face-down"
    ]
   },
   {

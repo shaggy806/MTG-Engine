@@ -531,6 +531,14 @@ in `git log`.
   permission to its source (Maralen, Fae Ascendant; Agent of Treachery;
   `cast-cards-you-dont-own.test.ts`, `commanders-maralen.test.ts`). An
   impulse permission now ends when its card leaves exile (400.7).
+- **Exiled face down** (`zone:exile-face-down`, rule 406.3) —
+  `impulse-exile`'s `faceDown`: `GameObject.exiledFaceDown` names who may
+  look, `viewFor` hides the card from everyone else, and the public stint the
+  move opened is dropped rather than closed, so the history never names it —
+  foretell now drops its stint the same way (Edward Kenway;
+  `commanders-edward-kenway.test.ts`, `public-stints.test.ts`). Split out of
+  `zone:visibility-extensions`, which keeps the revealed hand, the private
+  look at a library's top, and reveals to everyone.
 - **Top-5000 batch 5** (2026-09-29, `top5000-batch-5.test.ts`) — the
   Enduring cycle's return "as an enchantment" (`put-onto-battlefield`'s
   `setTypes`, in place as it enters; part of `static:self-type-changes`),

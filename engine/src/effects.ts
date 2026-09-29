@@ -2626,6 +2626,10 @@ export type EffectSpec =
       /** "Once each turn, you may cast a spell … from among" them: one cast
        * a turn across every card this source exiled with the permission. */
       readonly oncePerTurn?: boolean;
+      /** "Look at the top card of that player's library, then exile it
+       * **face down**" (Edward Kenway): the cards are exiled face down
+       * (rule 406.3), and only the controller may look at them. */
+      readonly faceDown?: boolean;
     }
   | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
@@ -3315,6 +3319,8 @@ export interface EffectApi {
       readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
       readonly whileSource?: boolean;
       readonly oncePerTurn?: boolean;
+      /** Exiled face down, for the controller's eyes only (rule 406.3). */
+      readonly faceDown?: boolean;
     },
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
@@ -5324,6 +5330,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           : {}),
         ...(spec.whileSource === true ? { whileSource: true } : {}),
         ...(spec.oncePerTurn === true ? { oncePerTurn: true } : {}),
+        ...(spec.faceDown === true ? { faceDown: true } : {}),
         ...(spec.playedBy === "owner" ? { ownerPlays: true } : {}),
         choose: spec.choose,
         yourTurnOnly: spec.yourTurnOnly,

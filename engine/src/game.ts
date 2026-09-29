@@ -5909,12 +5909,13 @@ export class Game {
     const payment = this.payMana(player, parseManaCost(Game.FORETELL_COST));
     if (payment === null) throw new Error(`${player} cannot pay the foretell cost`);
 
+    const since = this.state.eventSeq;
     this.moveObject(cardId, "exile");
     this.executePayment(player, payment);
     object.foretold = true;
     object.foretoldOnTurn = this.state.turn.number;
     // Face down in exile: nobody else knows what it is any more.
-    this.forgetStints([cardId]);
+    this.forgetStints([cardId], since);
     this.emit({ type: "card-foretold", player, object: cardId });
     this.afterPlayerAction(player);
   }
@@ -14056,6 +14057,7 @@ export class Game {
       readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
       readonly whileSource?: boolean;
       readonly oncePerTurn?: boolean;
+      readonly faceDown?: boolean;
     } = {},
   ): void {
     if (amount <= 0) return;
@@ -14070,9 +14072,18 @@ export class Game {
       .filter((player) => this.state.players[player]?.hasLost === false)
       .flatMap((player) => this.state.zones.perPlayer[player].library.slice(0, amount));
     if (taken.length === 0) return;
+    const since = this.state.eventSeq;
     this.withGraveyardEnterBatch(() => {
       for (const id of taken) this.moveObject(id, "exile");
     });
+    // "Look at the top card …, then exile it face down" (rule 406.3): the
+    // controller looked, so they may go on looking; nobody else knows what
+    // it is — its owner included.
+    if (opts.faceDown === true) {
+      const exiled = taken.filter((id) => this.state.objects[id]?.zone === "exile");
+      for (const id of exiled) this.state.objects[id].exiledFaceDown = { lookers: [controller] };
+      this.forgetStints(exiled, since);
+    }
 
     const grant: GameObject["impulse"] = {
       player: controller,
@@ -19938,11 +19949,17 @@ export class Game {
   }
 
   /** Knowledge of what each of `ids` is ends now: a library shuffled, a card
-   * turned face down. */
-  private forgetStints(ids: readonly ObjectId[]): void {
+   * turned face down. `since` is the `eventSeq` before a move that put the
+   * card face down straight from a hidden zone: the stint that move opened
+   * was never real — nobody saw the card — so it goes, rather than naming
+   * the card over the events in between (the move's own enter batch, the
+   * foretell payment). */
+  private forgetStints(ids: readonly ObjectId[], since?: number): void {
     for (const id of ids) {
       const open = this.openStintOf(id);
-      if (open !== undefined) open.until = this.state.eventSeq;
+      if (open === undefined) continue;
+      if (since !== undefined && open.from >= since) this.state.publicStints?.[id]?.pop();
+      else open.until = this.state.eventSeq;
     }
   }
 
@@ -20325,6 +20342,7 @@ export class Game {
     object.exileAtEndStep = false;
     object.foretold = false;
     object.foretoldOnTurn = null;
+    object.exiledFaceDown = undefined;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;

@@ -49,6 +49,7 @@ import _poolDrumhunter from "../pool/drumhunter.js";
 import _poolDukharaPeafowl from "../pool/dukhara-peafowl.js";
 import _poolEbonStronghold from "../pool/ebon-stronghold.js";
 import _poolEcologistsTerrarium from "../pool/ecologists-terrarium.js";
+import _poolEdwardKenway from "../pool/edward-kenway.js";
 import _poolElementalBond from "../pool/elemental-bond.js";
 import _poolElvishLookout from "../pool/elvish-lookout.js";
 import _poolEpicProportions from "../pool/epic-proportions.js";
@@ -236,6 +237,7 @@ const shard: CardShard = {
     _poolDukharaPeafowl,
     _poolEbonStronghold,
     _poolEcologistsTerrarium,
+    _poolEdwardKenway,
     _poolElementalBond,
     _poolElvishLookout,
     _poolEpicProportions,
