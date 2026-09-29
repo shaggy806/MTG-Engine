@@ -103,6 +103,7 @@ import _poolKraulWarrior from "../pool/kraul-warrior.js";
 import _poolLadyCaleria from "../pool/lady-caleria.js";
 import _poolLibrary from "../pool/library.js";
 import _poolLifecreedDuo from "../pool/lifecreed-duo.js";
+import _poolLionsEyeDiamond from "../pool/lions-eye-diamond.js";
 import _poolLiquimetalTorque from "../pool/liquimetal-torque.js";
 import _poolLongtuskCub from "../pool/longtusk-cub.js";
 import _poolLoxodonLineBreaker from "../pool/loxodon-line-breaker.js";
@@ -131,6 +132,7 @@ import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
 import _poolRagingBull from "../pool/raging-bull.js";
+import _poolRazorkinNeedlehead from "../pool/razorkin-needlehead.js";
 import _poolRegalUnicorn from "../pool/regal-unicorn.js";
 import _poolRelicSloth from "../pool/relic-sloth.js";
 import _poolRemand from "../pool/remand.js";
@@ -182,6 +184,7 @@ import _poolUlvenwaldMysteries from "../pool/ulvenwald-mysteries.js";
 import _poolUnlivingLegionnaire from "../pool/unliving-legionnaire.js";
 import _poolUnmake from "../pool/unmake.js";
 import _poolUnrulyCatapult from "../pool/unruly-catapult.js";
+import _poolUrzasMine from "../pool/urzas-mine.js";
 import _poolVenerableMonk from "../pool/venerable-monk.js";
 import _poolVerminGorger from "../pool/vermin-gorger.js";
 import _poolVeteranSwordsmith from "../pool/veteran-swordsmith.js";
@@ -309,6 +312,7 @@ const shard: CardShard = {
     _poolLadyCaleria,
     _poolLibrary,
     _poolLifecreedDuo,
+    _poolLionsEyeDiamond,
     _poolLiquimetalTorque,
     _poolLongtuskCub,
     _poolLoxodonLineBreaker,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolProwcatcherSpecialist,
     _poolRabanastreRoyalCity,
     _poolRagingBull,
+    _poolRazorkinNeedlehead,
     _poolRegalUnicorn,
     _poolRelicSloth,
     _poolRemand,
@@ -388,6 +393,7 @@ const shard: CardShard = {
     _poolUnlivingLegionnaire,
     _poolUnmake,
     _poolUnrulyCatapult,
+    _poolUrzasMine,
     _poolVenerableMonk,
     _poolVerminGorger,
     _poolVeteranSwordsmith,

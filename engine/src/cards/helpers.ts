@@ -428,6 +428,61 @@ export const eternalizeAbility = (cost: string, text: string): ActivatedAbility 
 });
 
 /**
+ * Evolve (rule 702.100a): "Whenever a creature you control enters, if that
+ * creature's power is greater than this creature's power and/or that
+ * creature's toughness is greater than this creature's toughness, put a +1/+1
+ * counter on this creature." An intervening-if (rule 603.4), so the
+ * comparison is made twice: as the creature enters (the trigger's filter —
+ * counters it entered with count) and again as the ability resolves (the
+ * `conditional`, the entering creature read as it last existed if it has
+ * left — the Gyre Sage ruling). Power is compared with power and toughness
+ * with toughness, never across. Each instance triggers on its own
+ * (702.100d). Put the keyword line in `text`.
+ */
+export const evolve = (): TriggeredAbility => {
+  const bigger: CardFilter = {
+    type: "creature",
+    anyOf: [
+      { power: { op: "gt", n: { amount: { powerOf: "source" } } } },
+      { toughness: { op: "gt", n: { amount: { toughnessOf: "source" } } } },
+    ],
+  };
+  return {
+    trigger: { on: "enters-battlefield", who: "you-control", filter: bigger },
+    targets: [],
+    effect: {
+      kind: "conditional",
+      condition: { kind: "trigger-object", filter: bigger },
+      then: { kind: "add-counter", target: "source", counter: "+1/+1", amount: 1 },
+    },
+    resolve: null,
+    text:
+      "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+  };
+};
+
+/**
+ * The Enduring cycle's (Duskmourn) "When [name] dies, if it was a creature,
+ * return it to the battlefield under its owner's control. It's an
+ * enchantment. (It's not a creature.)" "If it was a creature" is an
+ * intervening-if read as it last existed on the battlefield, which is what
+ * stops the loop: it comes back an enchantment, and dies next time as one. It
+ * returns *as* an enchantment (`setTypes`), losing its creature types — a
+ * "whenever a creature enters" never sees it, an enchantment's enters
+ * trigger does. The card follows itself to the graveyard and no further: a
+ * token copy has ceased to exist, and a card that has left the graveyard in
+ * response stays where it went (rule 400.7).
+ */
+export const enduringReturn = (name: string): TriggeredAbility => ({
+  trigger: { on: "dies", who: "self" },
+  condition: { kind: "source", filter: { type: "creature" } },
+  targets: [],
+  effect: { kind: "put-onto-battlefield", target: "trigger-object", setTypes: ["enchantment"] },
+  resolve: null,
+  text: `When ${name} dies, if it was a creature, return it to the battlefield under its owner's control. It's an enchantment. (It's not a creature.)`,
+});
+
+/**
  * "{B}: Regenerate this creature." (rule 701.15a — Mortivore) — `mana` is the
  * cost as printed. `text` is the ability as the card prints it, reminder text
  * included where it has one.
@@ -1156,6 +1211,104 @@ export const talisman = (name: string, colors: readonly [Color, Color]): CardDef
       })),
     ],
   });
+
+/**
+ * The Throne of Eldraine land cycle that rewards entering untapped (Mystic
+ * Sanctuary, Witch's Cottage, Dwarven Mine, Gingerbread Cabin, Idyllic
+ * Grange): a basic land type and its mana, "This land enters tapped unless
+ * you control three or more other [type]s", and "When this land enters
+ * untapped, [effect]". How it entered is the trigger *event*, so "untapped"
+ * is the trigger's filter, read as it enters — tapping it for mana in
+ * response doesn't stop the ability, as an intervening-if rechecked on
+ * resolution would. "Other" needs nothing: a land's own enters replacement
+ * never counts the land.
+ */
+export const untappedEntryLand = (
+  name: string,
+  landType: "Plains" | "Island" | "Swamp" | "Mountain" | "Forest",
+  trigger: { readonly text: string; readonly targets: readonly TargetSpec[]; readonly effect: EffectSpec },
+): CardDefinition => {
+  const produces = ({ Plains: "W", Island: "U", Swamp: "B", Mountain: "R", Forest: "G" } as const)[landType];
+  const plural = ({ Plains: "Plains", Island: "Islands", Swamp: "Swamps", Mountain: "Mountains", Forest: "Forests" } as const)[
+    landType
+  ];
+  const tappedText = `This land enters tapped unless you control three or more other ${plural}.`;
+  return defineCard({
+    name,
+    types: ["land"],
+    subtypes: [landType],
+    text: `({T}: Add {${produces}}.)\n${tappedText}\n${trigger.text}`,
+    activated: [manaTapAbility(produces)],
+    static: [
+      {
+        affects: { scope: "self" },
+        replacement: {
+          event: "enters-battlefield",
+          tappedUnless: { kind: "controls", filter: { subtype: landType }, atLeast: 3 },
+        },
+        text: tappedText,
+      },
+    ],
+    triggered: [
+      {
+        trigger: { on: "enters-battlefield", who: "self", filter: { tapped: false } },
+        targets: [...trigger.targets],
+        effect: trigger.effect,
+        resolve: null,
+        text: trigger.text,
+      },
+    ],
+  });
+};
+
+/**
+ * The Urza's lands — Urza's Tower, Urza's Mine, Urza's Power Plant. "Land —
+ * Urza's Tower" is two land types, Urza's and Tower (rule 205.3i), and "{T}:
+ * Add {C}. If you control an Urza's Mine and an Urza's Power-Plant, add
+ * {C}{C}{C} instead" checks land types, not names (the ruling) — the land
+ * itself included, should it have the others' types too. One ability whose
+ * amount is decided as it resolves (`ifCondition`), which is also how the
+ * auto-payer sizes it: a mana ability can't be a `conditional`.
+ */
+export const urzaLand = (
+  name: string,
+  own: string,
+  others: readonly [string, string],
+  assembled: number,
+): CardDefinition => {
+  const urzas = (type: string): CardFilter => ({ type: "land", subtype: "Urza's", anyOf: [{ subtype: type }] });
+  const colorless = "{C}".repeat(assembled);
+  const text = `{T}: Add {C}. If you control an Urza's ${others[0]} and an Urza's ${others[1]}, add ${colorless} instead.`;
+  return defineCard({
+    name,
+    types: ["land"],
+    subtypes: ["Urza's", own],
+    text,
+    activated: [
+      {
+        cost: { mana: null, tap: true },
+        targets: [],
+        effect: {
+          kind: "add-mana",
+          mana: "C",
+          amount: {
+            ifCondition: {
+              kind: "all",
+              of: [
+                { kind: "controls", filter: urzas(others[0]), atLeast: 1 },
+                { kind: "controls", filter: urzas(others[1]), atLeast: 1 },
+              ],
+            },
+            then: assembled,
+            else: 1,
+          },
+        },
+        resolve: null,
+        text,
+      },
+    ],
+  });
+};
 
 export const basicLand = (
   name: string,

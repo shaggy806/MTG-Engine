@@ -44,6 +44,8 @@ import _poolDivineTransformation from "../pool/divine-transformation.js";
 import _poolDivineVerdict from "../pool/divine-verdict.js";
 import _poolEidolonOfPhilosophy from "../pool/eidolon-of-philosophy.js";
 import _poolElvishRegrower from "../pool/elvish-regrower.js";
+import _poolEnduringCourage from "../pool/enduring-courage.js";
+import _poolEnduringVitality from "../pool/enduring-vitality.js";
 import _poolEpicureOfBlood from "../pool/epicure-of-blood.js";
 import _poolFacetReader from "../pool/facet-reader.js";
 import _poolFanaticOfRhonas from "../pool/fanatic-of-rhonas.js";
@@ -246,6 +248,8 @@ const shard: CardShard = {
     _poolDivineVerdict,
     _poolEidolonOfPhilosophy,
     _poolElvishRegrower,
+    _poolEnduringCourage,
+    _poolEnduringVitality,
     _poolEpicureOfBlood,
     _poolFacetReader,
     _poolFanaticOfRhonas,

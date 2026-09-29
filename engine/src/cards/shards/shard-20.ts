@@ -57,6 +57,7 @@ import _poolDoublingSeason from "../pool/doubling-season.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
 import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
+import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
 import _poolEsperCormorants from "../pool/esper-cormorants.js";
 import _poolFierceWitchstalker from "../pool/fierce-witchstalker.js";
 import _poolFireNationAmbushers from "../pool/fire-nation-ambushers.js";
@@ -155,6 +156,7 @@ import _poolTalasAirShip from "../pool/talas-air-ship.js";
 import _poolTalismanOfHierarchy from "../pool/talisman-of-hierarchy.js";
 import _poolTatyova from "../pool/tatyova.js";
 import _poolTerritorialScythecat from "../pool/territorial-scythecat.js";
+import _poolTezzeretsGambit from "../pool/tezzerets-gambit.js";
 import _poolThaliaGuardianOfThraben from "../pool/thalia-guardian-of-thraben.js";
 import _poolTheEmperorOfPalamecia from "../pool/the-emperor-of-palamecia.js";
 import _poolTheWhizzerClassicSpeedster from "../pool/the-whizzer-classic-speedster.js";
@@ -236,6 +238,7 @@ const shard: CardShard = {
     _poolEbonyTreefolk,
     _poolEidolonOfInspiration,
     _poolEmberethShieldbreaker,
+    _poolEnduringTenacity,
     _poolEsperCormorants,
     _poolFierceWitchstalker,
     _poolFireNationAmbushers,
@@ -334,6 +337,7 @@ const shard: CardShard = {
     _poolTalismanOfHierarchy,
     _poolTatyova,
     _poolTerritorialScythecat,
+    _poolTezzeretsGambit,
     _poolThaliaGuardianOfThraben,
     _poolTheEmperorOfPalamecia,
     _poolTheWhizzerClassicSpeedster,

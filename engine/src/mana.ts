@@ -40,8 +40,15 @@ export interface ManaRestriction {
   readonly spell?: CardFilter;
   /** Permanents whose *activated abilities* this mana may also pay for
    * (Eldrazi Temple, Castle Garenbrig: "…or activate abilities of Eldrazi").
-   * Absent means the mana is for casting only. */
+   * Absent means the mana is for casting only. Only an ability of a
+   * permanent on the battlefield — "abilities of creatures" means creature
+   * permanents (rule 109.2), which is Castle Garenbrig's and Eldrazi
+   * Temple's ruling — unless `abilityOfAnyZone`. */
   readonly abilityOf?: CardFilter;
+  /** `abilityOf` reaches a card's abilities in any zone: "an ability of a
+   * creature **source**" (Secluded Courtyard) names a source, not a
+   * permanent (rule 109.2a). */
+  readonly abilityOfAnyZone?: true;
   readonly text: string;
 }
 

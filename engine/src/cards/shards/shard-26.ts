@@ -36,6 +36,7 @@ import _poolEliteArrester from "../pool/elite-arrester.js";
 import _poolElvishArchdruid from "../pool/elvish-archdruid.js";
 import _poolElvishArchers from "../pool/elvish-archers.js";
 import _poolEmergencyWeld from "../pool/emergency-weld.js";
+import _poolEnduringCuriosity from "../pool/enduring-curiosity.js";
 import _poolEnforcerGriffin from "../pool/enforcer-griffin.js";
 import _poolEnvironmentalSciences from "../pool/environmental-sciences.js";
 import _poolEpfPointSquad from "../pool/epf-point-squad.js";
@@ -43,6 +44,7 @@ import _poolEverWatchingThreshold from "../pool/ever-watching-threshold.js";
 import _poolEvolutionSage from "../pool/evolution-sage.js";
 import _poolExploration from "../pool/exploration.js";
 import _poolFetidPools from "../pool/fetid-pools.js";
+import _poolFieryEmancipation from "../pool/fiery-emancipation.js";
 import _poolFinishingBlow from "../pool/finishing-blow.js";
 import _poolFiresOfYavimaya from "../pool/fires-of-yavimaya.js";
 import _poolFleetfootDancer from "../pool/fleetfoot-dancer.js";
@@ -98,6 +100,7 @@ import _poolMossfireValley from "../pool/mossfire-valley.js";
 import _poolMurder from "../pool/murder.js";
 import _poolMuseDrake from "../pool/muse-drake.js";
 import _poolMyrScrapling from "../pool/myr-scrapling.js";
+import _poolMysticSanctuary from "../pool/mystic-sanctuary.js";
 import _poolNephaliaMoondrakes from "../pool/nephalia-moondrakes.js";
 import _poolNeurokHoversail from "../pool/neurok-hoversail.js";
 import _poolNeutralize from "../pool/neutralize.js";
@@ -157,6 +160,7 @@ import _poolTajuruBlightblade from "../pool/tajuru-blightblade.js";
 import _poolTakeItBack from "../pool/take-it-back.js";
 import _poolTalismanOfProgress from "../pool/talisman-of-progress.js";
 import _poolTerrianWorldTyrant from "../pool/terrian-world-tyrant.js";
+import _poolTheFireCrystal from "../pool/the-fire-crystal.js";
 import _poolTheGreatHenge from "../pool/the-great-henge.js";
 import _poolThirstingShade from "../pool/thirsting-shade.js";
 import _poolThornhideWolves from "../pool/thornhide-wolves.js";
@@ -223,6 +227,7 @@ const shard: CardShard = {
     _poolElvishArchdruid,
     _poolElvishArchers,
     _poolEmergencyWeld,
+    _poolEnduringCuriosity,
     _poolEnforcerGriffin,
     _poolEnvironmentalSciences,
     _poolEpfPointSquad,
@@ -230,6 +235,7 @@ const shard: CardShard = {
     _poolEvolutionSage,
     _poolExploration,
     _poolFetidPools,
+    _poolFieryEmancipation,
     _poolFinishingBlow,
     _poolFiresOfYavimaya,
     _poolFleetfootDancer,
@@ -285,6 +291,7 @@ const shard: CardShard = {
     _poolMurder,
     _poolMuseDrake,
     _poolMyrScrapling,
+    _poolMysticSanctuary,
     _poolNephaliaMoondrakes,
     _poolNeurokHoversail,
     _poolNeutralize,
@@ -344,6 +351,7 @@ const shard: CardShard = {
     _poolTakeItBack,
     _poolTalismanOfProgress,
     _poolTerrianWorldTyrant,
+    _poolTheFireCrystal,
     _poolTheGreatHenge,
     _poolThirstingShade,
     _poolThornhideWolves,

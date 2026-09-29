@@ -212,14 +212,13 @@ Garenbrig (717)
 - **Conditional free-cast**: Deflecting Swat (targeting a stack *ability* and
   a change-the-target effect); Etali, Primal Storm (multi-card impulse +
   cast-any-number).
-- **Damage doubling** (Twinflame Tyrant, Solphim, Gisela, City on Fire): a
-  continuous replacement on damage events; `replacements.ts` has no
-  damage-multiplier kind.
+- **Damage doubling** is built (`would-deal-damage`): Twinflame Tyrant, City
+  on Fire and Fiery Emancipation were authored 2026-09-29. Solphim still
+  waits on "Discard two cards" as a cost.
 - **Convoke**: Clever Concealment (phasing).
 - **Additional costs**: an optional, repeatable cost — Plumb the Forbidden,
   Dargo ("sacrifice one or more creatures"). Redirect Lightning needs a
   change-the-target effect.
-- **Put from hand**: Last March of the Ents (a greatest-toughness amount).
 - **Global land-type statics**: Urborg, Tomb of Yawgmoth and Yavimaya, Cradle
   of Growth — `effectiveSubtypes` is deliberately given no `GameState`, so a
   board-dependent land subtype touches check lands and every `subtype`
@@ -532,6 +531,21 @@ in `git log`.
   permission to its source (Maralen, Fae Ascendant; Agent of Treachery;
   `cast-cards-you-dont-own.test.ts`, `commanders-maralen.test.ts`). An
   impulse permission now ends when its card leaves exile (400.7).
+- **Top-5000 batch 5** (2026-09-29, `top5000-batch-5.test.ts`) — the
+  Enduring cycle's return "as an enchantment" (`put-onto-battlefield`'s
+  `setTypes`, in place as it enters; part of `static:self-type-changes`),
+  attaching an Equipment the effect names (`attach`'s `attachment` — Hammer
+  of Nazahn, Sigarda's Aid; part of `effect:attach-extensions`), an amount
+  picked by a condition (`ifCondition` — the Urza's lands, a mana ability
+  that can't be a `conditional`), "a target was chosen" (`target-chosen` —
+  The Earth Crystal's two counters over one or two targets), mana that pays
+  only for abilities of creature *permanents* unless it says "source"
+  (`abilityOfAnyZone` — Castle Garenbrig; Secluded Courtyard), and a check
+  land not counting lands that enter beside it (`ConditionOptions.
+  notYetHere`). Helpers: `evolve`, `enduringReturn`, `untappedEntryLand`
+  (Mystic Sanctuary's cycle, whose "enters untapped" is the trigger's filter
+  rather than an intervening-if), `urzaLand`. B5.json lists the 79 cards it
+  left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

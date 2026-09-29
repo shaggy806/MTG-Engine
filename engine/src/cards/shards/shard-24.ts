@@ -34,6 +34,7 @@ import _poolCatalog from "../pool/catalog.js";
 import _poolCathodion from "../pool/cathodion.js";
 import _poolCavernCrawler from "../pool/cavern-crawler.js";
 import _poolCemeteryReaper from "../pool/cemetery-reaper.js";
+import _poolCephalidColiseum from "../pool/cephalid-coliseum.js";
 import _poolCerodonYearling from "../pool/cerodon-yearling.js";
 import _poolChampionOfThePerished from "../pool/champion-of-the-perished.js";
 import _poolClawsOfGix from "../pool/claws-of-gix.js";
@@ -105,6 +106,7 @@ import _poolMindRot from "../pool/mind-rot.js";
 import _poolMindcrank from "../pool/mindcrank.js";
 import _poolMinisterOfImpediments from "../pool/minister-of-impediments.js";
 import _poolMireInMisery from "../pool/mire-in-misery.js";
+import _poolMonumentToEndurance from "../pool/monument-to-endurance.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
@@ -152,6 +154,7 @@ import _poolTangledVale from "../pool/tangled-vale.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
 import _poolTheFabulousFrogMan from "../pool/the-fabulous-frog-man.js";
 import _poolTheFairBasilica from "../pool/the-fair-basilica.js";
+import _poolTheWorldTree from "../pool/the-world-tree.js";
 import _poolThornwealdArcher from "../pool/thornweald-archer.js";
 import _poolThoughtMonitor from "../pool/thought-monitor.js";
 import _poolThrabenInspector from "../pool/thraben-inspector.js";
@@ -163,6 +166,7 @@ import _poolTwinbladeBlessing from "../pool/twinblade-blessing.js";
 import _poolUnnaturalSpeed from "../pool/unnatural-speed.js";
 import _poolUrGolemsEye from "../pool/ur-golems-eye.js";
 import _poolUrtetRemnantOfMemnarch from "../pool/urtet-remnant-of-memnarch.js";
+import _poolUrzasTower from "../pool/urzas-tower.js";
 import _poolVampireOpportunist from "../pool/vampire-opportunist.js";
 import _poolVastwoodGorger from "../pool/vastwood-gorger.js";
 import _poolVerdantForce from "../pool/verdant-force.js";
@@ -217,6 +221,7 @@ const shard: CardShard = {
     _poolCathodion,
     _poolCavernCrawler,
     _poolCemeteryReaper,
+    _poolCephalidColiseum,
     _poolCerodonYearling,
     _poolChampionOfThePerished,
     _poolClawsOfGix,
@@ -288,6 +293,7 @@ const shard: CardShard = {
     _poolMindcrank,
     _poolMinisterOfImpediments,
     _poolMireInMisery,
+    _poolMonumentToEndurance,
     _poolMorgueToad,
     _poolNarstadScrapper,
     _poolNicolBolasTheRavager,
@@ -335,6 +341,7 @@ const shard: CardShard = {
     _poolTeferisProtege,
     _poolTheFabulousFrogMan,
     _poolTheFairBasilica,
+    _poolTheWorldTree,
     _poolThornwealdArcher,
     _poolThoughtMonitor,
     _poolThrabenInspector,
@@ -346,6 +353,7 @@ const shard: CardShard = {
     _poolUnnaturalSpeed,
     _poolUrGolemsEye,
     _poolUrtetRemnantOfMemnarch,
+    _poolUrzasTower,
     _poolVampireOpportunist,
     _poolVastwoodGorger,
     _poolVerdantForce,

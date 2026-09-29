@@ -80,6 +80,7 @@ import _poolGracefulAdept from "../pool/graceful-adept.js";
 import _poolGreaterGood from "../pool/greater-good.js";
 import _poolGrimMonolith from "../pool/grim-monolith.js";
 import _poolGrimPhysician from "../pool/grim-physician.js";
+import _poolHammerOfNazahn from "../pool/hammer-of-nazahn.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
 import _poolHonoredKnightCaptain from "../pool/honored-knight-captain.js";
 import _poolHopeEstheim from "../pool/hope-estheim.js";
@@ -181,6 +182,7 @@ import _poolTranquilCove from "../pool/tranquil-cove.js";
 import _poolTreetopSnarespinner from "../pool/treetop-snarespinner.js";
 import _poolTrenchingSteed from "../pool/trenching-steed.js";
 import _poolTuraKennerudSkyknight from "../pool/tura-kennerud-skyknight.js";
+import _poolTwinflameTyrant from "../pool/twinflame-tyrant.js";
 import _poolUmbralExpanse from "../pool/umbral-expanse.js";
 import _poolUnyaroBeeSting from "../pool/unyaro-bee-sting.js";
 import _poolVampireOfTheDireMoon from "../pool/vampire-of-the-dire-moon.js";
@@ -279,6 +281,7 @@ const shard: CardShard = {
     _poolGreaterGood,
     _poolGrimMonolith,
     _poolGrimPhysician,
+    _poolHammerOfNazahn,
     _poolHeroicIntervention,
     _poolHonoredKnightCaptain,
     _poolHopeEstheim,
@@ -380,6 +383,7 @@ const shard: CardShard = {
     _poolTreetopSnarespinner,
     _poolTrenchingSteed,
     _poolTuraKennerudSkyknight,
+    _poolTwinflameTyrant,
     _poolUmbralExpanse,
     _poolUnyaroBeeSting,
     _poolVampireOfTheDireMoon,

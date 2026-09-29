@@ -52,6 +52,7 @@ import _poolEerieInterlude from "../pool/eerie-interlude.js";
 import _poolElegantParlor from "../pool/elegant-parlor.js";
 import _poolElendaTheDuskRose from "../pool/elenda-the-dusk-rose.js";
 import _poolElixirOfVitality from "../pool/elixir-of-vitality.js";
+import _poolElspethStormSlayer from "../pool/elspeth-storm-slayer.js";
 import _poolElvishLyrist from "../pool/elvish-lyrist.js";
 import _poolEnergyRefractor from "../pool/energy-refractor.js";
 import _poolFacevaulter from "../pool/facevaulter.js";
@@ -231,6 +232,7 @@ const shard: CardShard = {
     _poolElegantParlor,
     _poolElendaTheDuskRose,
     _poolElixirOfVitality,
+    _poolElspethStormSlayer,
     _poolElvishLyrist,
     _poolEnergyRefractor,
     _poolFacevaulter,

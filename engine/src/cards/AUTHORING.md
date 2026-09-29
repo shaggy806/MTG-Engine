@@ -431,7 +431,14 @@ ability**: the entering / attacking creature's power (Terror of the Peaks:
 `{ chosenNumber: true }` — the number chosen as the source entered, from a
 `chooseOnEnter` of numbers (Talion, the Kindly Lord's "the chosen number",
 compared in its trigger's filter as `n: { amount: { chosenNumber: true } }`).
-`NaN` when none was chosen, so a comparison with it never holds. An
+`NaN` when none was chosen, so a comparison with it never holds; or
+`{ ifCondition: StaticCondition, then: EffectAmount, else: EffectAmount }` — one
+amount or the other by a condition asked as the amount is read, from the
+controller's side with the source counted (as a `conditional` effect's is):
+Urza's Tower's "{T}: Add {C}. If you control an Urza's Mine and an Urza's
+Power-Plant, add {C}{C}{C} instead" (`urzaLand` in `helpers.ts`) — the way a
+mana ability says "instead", since it can't be a `conditional`; the auto-payer
+sizes it against the board as it stands. An
 `EffectAmount` is accepted by `damage` / `damage-all` / `mill` / `discard` /
 `draw` / `gain-life` / `lose-life` / `prevent-damage` `amount`, `modify-pt` /
 `modify-pt-all` `power`/`toughness`, `add-mana` `amount`, and `create-token`
@@ -612,7 +619,7 @@ them.
 | `destroy-all` | `filter`, `cantBeRegenerated?` | Wrath of God (`cantBeRegenerated: true` — "They can't be regenerated"). |
 | `exile` | `target`, `untilSourceLeaves?`, `withCounters?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch), and on a **spell**: it leaves the stack without being countered, so one that can't be countered goes too (Mindbreak Trap), and a copy ceases to exist (rule 707.10c). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. `target` may be `"trigger-object"`: a dies trigger's "you may exile it" (Brenard, Ginger Sculptor; Myrkul, Lord of Bones), which acts only while it's still the card that died (rule 400.7 — reanimated in response, it's a new object and stays put); follow it with a `this-way` `"exiled"` `conditional` for "if you do". `withCounters: { kind, amount }` is "exile it **with a croak counter on it**": counters the card gets in exile, only if this effect put it there (whatever it had on the battlefield is gone, rule 400.7). |
 | `return-exiled-by-source` | — | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. |
-| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `under?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?`, `transformed?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. `under` (an `EffectPlayerRef`) is someone else's control instead — The Beamtown Bullies' "target opponent … puts target … card from your graveyard onto the battlefield under their control" (`under: { target: 0 }`); an illegal target, either one, moves nothing (rule 608.2b). `transformed` is "…onto the battlefield transformed" (Ojer Axonil's "return it to the battlefield tapped and transformed"): a transforming double-faced card enters back face up; anything else just enters. |
+| `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `under?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?`, `transformed?`, `setTypes?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. `under` (an `EffectPlayerRef`) is someone else's control instead — The Beamtown Bullies' "target opponent … puts target … card from your graveyard onto the battlefield under their control" (`under: { target: 0 }`); an illegal target, either one, moves nothing (rule 608.2b). `transformed` is "…onto the battlefield transformed" (Ojer Axonil's "return it to the battlefield tapped and transformed"): a transforming double-faced card enters back face up; anything else just enters. `setTypes` replaces its card types for as long as it stays: the Enduring cycle's "return it to the battlefield under its owner's control. It's an enchantment. (It's not a creature.)" is `setTypes: ["enchantment"]` (the `enduringReturn(name)` helper writes the whole trigger). It's in place as the card enters (rule 614.12), so it enters *as* an enchantment — a "whenever a creature enters" never sees it, an enchantment's enters trigger does — and the subtypes that went only with the lost types go too (rule 205.1a); supertypes stay. |
 | `exile-graveyard` | `target` (a player slot, or `"you"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted) |
 | `flicker` | `target`, `thenCounters?`, `underYourControl?`, `transformed?`, `returnAt?`, `returnText?` | Essence Flux — exiles `target`, then immediately returns it to the battlefield under its owner's control (rule 400.7 — a brand-new object; a token exiled this way never comes back). `target` is a slot, `"source"` (the ability's own permanent *as it was when the ability triggered* — one that has blinked since is left alone) or an array of slots, all exiled first and returned together so each one's enters triggers see the others — or `{ from: n }`, every slot from `n` on, an "any number of target …" group (Eerie Interlude). `underYourControl` returns them under the effect's controller. `transformed` is "…return it to the battlefield **transformed**" (Clive, Ifrit's Dominant), now or at a delayed return. `returnAt` (a `DelayedTriggerTiming`) makes the return a delayed trigger instead — Norin the Wary's "exile Norin. Return it … at the beginning of the next end step" — linked to the exile (rule 610.3): a card that left exile in between stays where it is, and nothing is set up when nothing was exiled, so a second trigger in one turn does nothing. Don't build that with `exile` + `delayed-trigger`: the delayed effect can't tell the exiled card from a new object. (`return-flickered` is the delayed half it builds; never author it.) |
 | `return-to-hand` | `target: EffectTargetRef`, `from?: "battlefield" \| "graveyard" \| "exile" \| "stack"` | Unsummon (a bounce — `from` omitted). With `from`, it takes a card out of that zone instead, to its **owner's** hand: `"graveyard"` + a `card-in-graveyard` target is "return target creature card from your graveyard to your hand" (Golbez, Crystal Collector); `"source"` / `"trigger-object"` with `"graveyard"` or `"exile"` is "return it to its owner's hand" off a dies / leaves trigger, and works inside a `delayed-trigger` too. `"stack"` + a `"spell"` target is Unsubstantiate or Venser, Shaper Savant — **not a counter**: a spell that can't be countered still goes back, a copy of a spell ceases to exist (rule 707.10c), and an ability or the resolving spell itself is left alone. The object has to be in the `from` zone when the effect applies, or nothing happens. A commander returned this way offers the command zone (rule 903.9b), like a bounced one. |
@@ -771,12 +778,13 @@ ability would have no way to name a token that didn't exist when it was set up.
 | offspring | `kicker: { cost, keyword: "offspring" }` plus `offspringTrigger()` in `triggered` — rule 702.175a, "When this permanent enters, if its offspring cost was paid, create a token that's a copy of it, except it's 1/1." The copy is made even if the creature has left by then (as it last existed), and isn't cast, so it has no offspring of its own. |
 | eternalize | `eternalizeAbility(cost, text)` in `activated` — rule 702.129a: from the graveyard, exiling the card, as a sorcery; a token copy of the card, a 4/4 black Zombie with no mana cost (the `noManaCost` copy exception). |
 | regenerate | `regenerateSelfAbility(cost, text)` in `activated` — "{B}: Regenerate this creature" (rule 701.15; the `regenerate` effect, §6). |
+| evolve | `evolve()` from `helpers.ts` — rule 702.100a, "Whenever a creature you control enters, if that creature's power is greater than this creature's power and/or that creature's toughness is greater than this creature's toughness, put a +1/+1 counter on this creature": the comparison as the creature enters is the trigger's filter, and again as it resolves a `conditional` (the entering creature read as it last existed), power against power and toughness against toughness. Gyre Sage. Put it in `triggered`; its `text` is the keyword line with reminder text. |
 | dethrone | `dethrone()` from `helpers.ts` — rule 702.105a, "Whenever this creature attacks the player with the most life or tied for most life, put a +1/+1 counter on this creature", as the attack trigger it is (`defenderLife: "most"`). Every player is compared, you included, and attacking a planeswalker never counts. Not an intervening-if — the counter goes on however life totals change before it resolves. Put it in `triggered`, or grant it with `grantsTriggered` (Marchesa, the Black Rose's "other creatures you control have dethrone" is `affects: { scope: "creatures-you-control", excludeSelf: true }`), and the printed line in `text`. |
 | firebending | `firebending(amount, text?)` from `helpers.ts` — "Firebending N (Whenever this creature attacks, add N {R}. This mana lasts until end of combat.)" as the triggered ability it is: put it in `triggered` (or grant it with `grantsTriggered`), and the printed line in `text`. `amount` takes any `EffectAmount` — Fire Lord Zuko's "firebending X, where X is Fire Lord Zuko's power" is `firebending({ powerOf: "source" })`, read as the trigger resolves. |
 | investigate | `investigate(times?)` from `helpers.ts` — rule 701.36a, "create a Clue token", written as the `create-token` of `"Clue Token"` it is ("investigate twice" is `investigate(2)`; `times` takes any `EffectAmount`). The Clue (`{2}, Sacrifice this token: Draw a card.`) has an activated ability, so Clues are never folded into a token stack. |
 | station | `station(text)` and `stationBand(n, band)` from `helpers.ts` — rule 702.184a, "Tap another untapped creature you control: Put a number of charge counters on this permanent equal to the tapped creature's power. Activate only as a sorcery", as the activated ability it is (a `tapOthers` cost, and `{ powerOf: "tapped" }` for the power, read as it resolves), and each station symbol (rule 721.2) as a `stationBand`: a static on the card itself, live while it has `n` or more charge counters, holding whatever that striation holds — `grantsActivated`, `grantsTriggered`, `grantKeywords`, and for a power/toughness box `addTypes: ["creature"]` with `setBasePt`. A striation runs to the next station symbol: in Oracle text **every** line after an "N+ |" line belongs to it, not just the first (Hearthhull's "Whenever you sacrifice a land" is an 8+ ability, granted by that band), and one of its statics that reaches other permanents passes its own `affects` (Inspirit's "Other artifacts you control have hexproof and indestructible"). A station card's printed `power`/`toughness` (kept for `card:verify` and commander eligibility, rule 903.3) only ever apply through that band (721.2b–c). Hearthhull, the Worldseed; Inspirit, Flagship Vessel; Infinite Guideline Station. |
 | power-up | `powerUp(mana, effect, text, targets?)` from `helpers.ts` — rule 702.193a, "Power-up — [Cost]: [Effect]": the activated ability it is, activatable only once for as long as the permanent exists (like `exhaust`), and on the battlefield the turn it entered it costs less by the permanent's mana cost — generic by generic, each coloured symbol by a symbol of its colour, the excess off generic (702.193b, rule 118.7; a hybrid symbol takes off the half that helps most). No timing restriction of its own. Put the printed line, reminder text and all, in `text` and in the card's `text`. Aerial Doombot; Brawn, Amadeus Cho (a hybrid cost). |
-| `attach` | `target` (Equip-style) |
+| `attach` | `target` (Equip-style), `attachment?` — the source (an Equip ability) by default; with `attachment` (an `EffectTargetRef`) another Aura or Equipment: Hammer of Nazahn's and Sigarda's Aid's "you may attach **that Equipment** to target creature you control" is `attachment: "trigger-object"`, the Equipment whose entering fired it. The same object only (rule 400.7), and only onto something it could legally be attached to (rule 301.5c). |
 | `transform` | `target` (`"source"` \| slot) | A transforming DFC turns over; since the 2025 rules change so does a modal DFC, to a face that's a permanent (Kazandu Mammoth to Kazandu Valley, never Fell Mire to Fell the Profane). Rule 701.28f is built in: an ability transforming its own permanent does nothing if the permanent has transformed since the ability was put on the stack — for a delayed trigger ("transform it at the beginning of the next upkeep"), since the delayed trigger was created. A card put onto the battlefield transformed (`put-onto-battlefield`'s `transformed`, a flicker's return) enters with its back face up, so the back face's enters replacements apply — a planeswalker back face gets its loyalty. |
 | `day-night` | `value: "day" \| "night"` |
 
@@ -2348,6 +2356,13 @@ clause (section 9):
   it had no +1/+1 counters on it" can be asked at all: a dies-trigger is
   checked after the card is already in a graveyard, and `moveObject` clears
   counters on every zone change (`GameObject.lastKnown`).
+- `{ kind: "target-chosen", index }` — a target was chosen for slot `index`,
+  whether or not it's still legal: false only for an optional slot left
+  empty. The Earth Crystal's "distribute two +1/+1 counters among one or two
+  target creatures" puts one on each when a second was chosen — and a target
+  found illegal loses its counter rather than passing it on (the ruling),
+  which a `target` condition (blank for an illegal slot) would get wrong.
+  Only meaningful inside a `conditional` effect.
 - `{ kind: "target", index, filter }` — the object in target slot `index`
   matches `filter` (Scavenging Ooze: "Exile target card from a graveyard.
   **If it was a creature card**, …"). Same restriction as `trigger-object`
@@ -2414,7 +2429,9 @@ clause (section 9):
   you control" is a plain `countOf`).
   `tapped` is unconditional; `tappedUnless: StaticCondition` is the check-land
   cycle (Rootbound Crag: `{ kind: "controls", filter: { subtypes: [...] },
-  atLeast: 1 }`, via the `checkLandStatic`/`enterTappedUnlessLands` helpers);
+  atLeast: 1 }`, via the `checkLandStatic`/`enterTappedUnlessLands` helpers),
+  asked of what's already on the battlefield — never a land entering beside
+  it (a tutor's finds, Scapeshift: rule 614.12, the check-land rulings);
   `tappedUnlessRevealFromHand: [type, type]` is the reveal-land cycle (Port
   Town, via the `revealLand` helper) — the one enters-tapped check that reads
   your **hand** rather than the battlefield, which is why it isn't a
@@ -2597,7 +2614,9 @@ activated: [{
 
 **A whole land/rock cycle** — `cards/helpers.ts` has a one-line constructor for
 each of the big repeating shapes, and a new member of a cycle should use it
-rather than being spelled out: `shockLand`, `fetchLand`, `checkLandStatic`,
+rather than being spelled out: `urzaLand` (Urza's Tower, Mine, Power Plant), `untappedEntryLand` (Mystic Sanctuary's
+cycle — "When this land enters untapped" is the trigger's `filter: { tapped: false }`, read as it
+enters, so tapping it for mana in response doesn't stop it, as an intervening-if would), `shockLand`, `fetchLand`, `checkLandStatic`,
 `enterTappedUnlessLands`, `painLand`, `sacrificeFetchLand`, `talisman` (a pain land's
 ability set on a `{2}` artifact), `signet` (a `{2}` artifact with "{1}, {T}:
 Add [two colours]" — see the converter note in §15), `tapLand` (enters tapped,
@@ -2749,7 +2768,11 @@ Delete an entry in the same commit as the feature that retires it.
     "Spend this mana only to cast a creature spell of the chosen type"
     (Cavern of Souls, Unclaimed Territory, Secluded Courtyard, Ancient
     Ziggurat). `chosenType` folds in the type named as the permanent entered;
-    `abilityOf` adds the "…or activate an ability of" half;
+    `abilityOf` adds the "…or activate an ability of" half — of a
+    permanent on the battlefield ("abilities of creatures" means creature
+    permanents: Castle Garenbrig's ruling), unless `abilityOfAnyZone: true`
+    ("an ability of a creature **source**" — Secluded Courtyard — which a
+    card in the hand or a graveyard can be, rule 109.2a);
     `uncounterable` is Cavern's "and that spell can't be countered", which
     is a property of the spell the mana paid for rather than of the land.
   - `whenSpent: { spell?, effect, text }` — "When that mana is spent to cast

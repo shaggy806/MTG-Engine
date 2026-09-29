@@ -303,6 +303,14 @@ export interface ConditionOptions {
    * its latest snapshot.
    */
   readonly sourceLastKnown?: LastKnownInfo;
+  /**
+   * Permanents entering the battlefield in the same event as the one asking,
+   * and so not there yet for it (rule 614.12): a check land put onto the
+   * battlefield together with three Islands (Scapeshift, a mass reanimation)
+   * doesn't see them — the Mystic Sanctuary and check-land rulings. The
+   * board-scanning conditions skip them.
+   */
+  readonly notYetHere?: ReadonlySet<ObjectId>;
 }
 
 /**
@@ -343,6 +351,7 @@ function evalStaticCondition(
   const you = source.controller;
   const skipsSelf = (id: ObjectId): boolean =>
     opts.includeSelf !== true && id === source.id;
+  const notYetHere = (id: ObjectId): boolean => opts.notYetHere?.has(id) === true;
   // Counts are of permanents, not objects (`permanentCount`). The source is
   // skipped *before* its filter is asked, never matched and subtracted:
   // asking whether the source matches can mean folding its characteristics,
@@ -355,7 +364,7 @@ function evalStaticCondition(
     weightedMatches(
       state,
       state.zones.shared.battlefield,
-      (id) => (countSelf || !skipsSelf(id)) && keep(id),
+      (id) => !notYetHere(id) && (countSelf || !skipsSelf(id)) && keep(id),
       except,
     );
   const countWhere = (
@@ -376,7 +385,7 @@ function evalStaticCondition(
     let n = 0;
     for (const id of state.zones.shared.battlefield) {
       const object = state.objects[id];
-      if (object === undefined || !(countSelf || !skipsSelf(id)) || !keep(id)) continue;
+      if (object === undefined || notYetHere(id) || !(countSelf || !skipsSelf(id)) || !keep(id)) continue;
       n += (object.stackCount ?? 1) - (except.includes(id) ? 1 : 0);
       if (n >= atLeast) return true;
     }
@@ -668,6 +677,7 @@ function evalStaticCondition(
       return compareNum(n, condition.compare);
     }
     case "target":
+    case "target-chosen":
     case "trigger-object":
     case "sacrificed":
     case "resolved-this-turn":

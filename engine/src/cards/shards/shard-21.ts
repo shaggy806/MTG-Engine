@@ -36,6 +36,7 @@ import _poolDeathgreeter from "../pool/deathgreeter.js";
 import _poolDeduce from "../pool/deduce.js";
 import _poolDegaDisciple from "../pool/dega-disciple.js";
 import _poolDesperateBloodseeker from "../pool/desperate-bloodseeker.js";
+import _poolDisruptDecorum from "../pool/disrupt-decorum.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
 import _poolElvishDoomsayer from "../pool/elvish-doomsayer.js";
 import _poolEmmessiTome from "../pool/emmessi-tome.js";
@@ -198,6 +199,7 @@ const shard: CardShard = {
     _poolDeduce,
     _poolDegaDisciple,
     _poolDesperateBloodseeker,
+    _poolDisruptDecorum,
     _poolDranasChosen,
     _poolElvishDoomsayer,
     _poolEmmessiTome,

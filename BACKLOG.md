@@ -46,11 +46,25 @@ that one card is the reason the deck exists.
   (counters a permanent *enters* with doubled too), Anticausal Vestige (a hand filter reading
   your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
   Faces (Embalm through its Clone ability).
+- **Top-5000 batch 5 (2026-09-29) triaged every open entry through rank 981:** 51 authored —
+  the Enduring cycle, the Urza's lands, Mystic Sanctuary's cycle (its other members down to
+  rank 4293), The Earth Crystal, Elspeth, Storm Slayer, Last March of the Ents and 36 more —
+  with six small engine pieces (see `neededCards-features.md`,
+  "Top-5000 batch 5"); 79 blocked, each in `engine/data/sweep-3/B5.json`. **Next**, by what
+  blocks the most of them: a free cast during resolution (`effect:cast-during-resolution`, 4 —
+  Isochron Scepter, Mizzix's Mastery, Beseech the Mirror, Buster Sword); then 3 each for
+  "Sacrifice N [things]" as a cost (`cost:sacrifice-multiple` — Sai, Peregrin Took, Grim
+  Hireling, and Mondrak and Magda before them), improvise (Kappa Cannoneer, Inspiring
+  Statuary, Archway of Innovation) and a copy's new targets. Cheaper, and wider than this
+  batch: an Aura's static that sets what the enchanted creature is (Kenrith's Transformation,
+  Imprisoned in the Moon, then Darksteel Mutation, Song of the Dryads, Frogify) and a life-gain
+  multiplier (The Wind Crystal, Alhammarret's Archive, Rhox Faithmender, Boon Reflection).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,500 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,551 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
-  holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
+  holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
+  the batches since; past rank 981, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed
@@ -322,7 +336,11 @@ Beyond that plan:
 - **Prohibition scans are quadratic.** `abilitiesProhibited`/`prohibitionsOn` rescan the whole
   battlefield on every call, per permanent, and `recomputeControl` rescans for control Auras per
   permanent once anything has a control effect. On a land-heavy board they were 31% of a
-  profile, and turns slow down steadily. Not a hang, and the fuzzer's decks don't hit it.
+  profile, and turns slow down steadily. Not a hang, but the fuzzer now meets it: four-player
+  seed 27 (as the pool stood on 2026-09-29) is a 182-turn game of land-heavy boards that ends
+  in deck-outs and takes ~32 s, past the local 30 s default (CI's four-player pass allows
+  120 s), with `abilitiesProhibited`/`prohibitionsOn` ~10% of its profile and registry lookups
+  another 10%.
 - **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
   (430 files, 3,979 tests, about 100 s) and check what it actually guards. Unscoped: what the
   audit looks for and what it produces.

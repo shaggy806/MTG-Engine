@@ -187,6 +187,7 @@ import _poolWitchHunter from "../pool/witch-hunter.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
+import _tokensFishToken from "../tokens/fish-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -376,6 +377,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensApeToken,
+    _tokensFishToken,
   ],
 };
 

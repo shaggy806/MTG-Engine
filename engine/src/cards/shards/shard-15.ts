@@ -163,6 +163,7 @@ import _poolTangleSpider from "../pool/tangle-spider.js";
 import _poolTenementCrasher from "../pool/tenement-crasher.js";
 import _poolTenthDistrictGuard from "../pool/tenth-district-guard.js";
 import _poolTerrainElemental from "../pool/terrain-elemental.js";
+import _poolTerrasymbiosis from "../pool/terrasymbiosis.js";
 import _poolTerritorialHammerskull from "../pool/territorial-hammerskull.js";
 import _poolTheTerrorOfSerpentsPass from "../pool/the-terror-of-serpents-pass.js";
 import _poolThinkTwice from "../pool/think-twice.js";
@@ -353,6 +354,7 @@ const shard: CardShard = {
     _poolTenementCrasher,
     _poolTenthDistrictGuard,
     _poolTerrainElemental,
+    _poolTerrasymbiosis,
     _poolTerritorialHammerskull,
     _poolTheTerrorOfSerpentsPass,
     _poolThinkTwice,

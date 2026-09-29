@@ -55,6 +55,7 @@ import _poolElderfangDisciple from "../pool/elderfang-disciple.js";
 import _poolElvishWarrior from "../pool/elvish-warrior.js";
 import _poolEmergeFromTheCocoon from "../pool/emerge-from-the-cocoon.js";
 import _poolEngineRat from "../pool/engine-rat.js";
+import _poolExcaliburSwordOfEden from "../pool/excalibur-sword-of-eden.js";
 import _poolFabricate from "../pool/fabricate.js";
 import _poolFatefulDiscovery from "../pool/fateful-discovery.js";
 import _poolFelotharTheSteadfast from "../pool/felothar-the-steadfast.js";
@@ -68,6 +69,7 @@ import _poolGaeasCradle from "../pool/gaeas-cradle.js";
 import _poolGeodeRager from "../pool/geode-rager.js";
 import _poolGhostQuarter from "../pool/ghost-quarter.js";
 import _poolGiantCrab from "../pool/giant-crab.js";
+import _poolGingerbreadCabin from "../pool/gingerbread-cabin.js";
 import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
 import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
@@ -254,6 +256,7 @@ const shard: CardShard = {
     _poolElvishWarrior,
     _poolEmergeFromTheCocoon,
     _poolEngineRat,
+    _poolExcaliburSwordOfEden,
     _poolFabricate,
     _poolFatefulDiscovery,
     _poolFelotharTheSteadfast,
@@ -267,6 +270,7 @@ const shard: CardShard = {
     _poolGeodeRager,
     _poolGhostQuarter,
     _poolGiantCrab,
+    _poolGingerbreadCabin,
     _poolGoblinAnarchomancer,
     _poolGoblinDeathraiders,
     _poolGoblinSpelunkers,

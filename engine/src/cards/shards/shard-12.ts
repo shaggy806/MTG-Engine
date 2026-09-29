@@ -82,6 +82,7 @@ import _poolHornetSting from "../pool/hornet-sting.js";
 import _poolHulkBruceBanner from "../pool/hulk-bruce-banner.js";
 import _poolInspiringVantage from "../pool/inspiring-vantage.js";
 import _poolIsland from "../pool/island.js";
+import _poolJaheiraFriendOfTheForest from "../pool/jaheira-friend-of-the-forest.js";
 import _poolJodahArchmageEternal from "../pool/jodah-archmage-eternal.js";
 import _poolJuriMasterOfTheRevue from "../pool/juri-master-of-the-revue.js";
 import _poolKarlachFuryOfAvernus from "../pool/karlach-fury-of-avernus.js";
@@ -259,6 +260,7 @@ const shard: CardShard = {
     _poolHulkBruceBanner,
     _poolInspiringVantage,
     _poolIsland,
+    _poolJaheiraFriendOfTheForest,
     _poolJodahArchmageEternal,
     _poolJuriMasterOfTheRevue,
     _poolKarlachFuryOfAvernus,

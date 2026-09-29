@@ -125,6 +125,7 @@ import _poolScepterOfFugue from "../pool/scepter-of-fugue.js";
 import _poolScrap from "../pool/scrap.js";
 import _poolSentinelSpider from "../pool/sentinel-spider.js";
 import _poolShatteredAngel from "../pool/shattered-angel.js";
+import _poolSigardasAid from "../pool/sigardas-aid.js";
 import _poolSilverbluffBridge from "../pool/silverbluff-bridge.js";
 import _poolSilvercladFerocidons from "../pool/silverclad-ferocidons.js";
 import _poolSimicCluestone from "../pool/simic-cluestone.js";
@@ -143,6 +144,7 @@ import _poolSyrKonradTheGrim from "../pool/syr-konrad-the-grim.js";
 import _poolTalismanOfCuriosity from "../pool/talisman-of-curiosity.js";
 import _poolTerraHeraldOfHope from "../pool/terra-herald-of-hope.js";
 import _poolThallidSoothsayer from "../pool/thallid-soothsayer.js";
+import _poolTheEarthCrystal from "../pool/the-earth-crystal.js";
 import _poolThirstingRoots from "../pool/thirsting-roots.js";
 import _poolThistledownPlayers from "../pool/thistledown-players.js";
 import _poolThoughtflare from "../pool/thoughtflare.js";
@@ -309,6 +311,7 @@ const shard: CardShard = {
     _poolScrap,
     _poolSentinelSpider,
     _poolShatteredAngel,
+    _poolSigardasAid,
     _poolSilverbluffBridge,
     _poolSilvercladFerocidons,
     _poolSimicCluestone,
@@ -327,6 +330,7 @@ const shard: CardShard = {
     _poolTalismanOfCuriosity,
     _poolTerraHeraldOfHope,
     _poolThallidSoothsayer,
+    _poolTheEarthCrystal,
     _poolThirstingRoots,
     _poolThistledownPlayers,
     _poolThoughtflare,

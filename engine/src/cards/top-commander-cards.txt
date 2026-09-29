@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1500 already implemented / 3500 missing (marks refreshed 2026-09-29)
+1551 already implemented / 3449 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -170,7 +170,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   171  Austere Command                          {4}{W}{W}        Sorcery
 [x]   172  Izzet Signet                             {2}              Artifact
 [x]   173  Farewell                                 {4}{W}{W}        Sorcery
-[ ]   174  Mystic Sanctuary                         {0}              Land — Island
+[x]   174  Mystic Sanctuary                         {0}              Land — Island
 [x]   175  Dreamroot Cascade                        {0}              Land
 [x]   176  Undergrowth Stadium                      {0}              Land
 [ ]   177  Three Tree City                          {0}              Legendary Land
@@ -418,7 +418,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   419  Undercity Sewers                         {0}              Land — Island Swamp
 [x]   420  Shineshadow Snarl                        {0}              Land
 [x]   421  Bayou                                    {0}              Land — Swamp Forest
-[ ]   422  Enduring Vitality                        {1}{G}{G}        Enchantment Creature — Elk Glimmer
+[x]   422  Enduring Vitality                        {1}{G}{G}        Enchantment Creature — Elk Glimmer
 [x]   423  Hall of Heliod's Generosity              {0}              Legendary Land
 [x]   424  Raffine's Tower                          {0}              Land — Plains Island Swamp
 [x]   425  Walking Ballista                         {X}{X}           Artifact Creature — Construct
@@ -606,7 +606,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   607  Realmwalker                              {2}{G}           Creature — Shapeshifter
 [ ]   608  Deathrite Shaman                         {B/G}            Creature — Elf Shaman
 [ ]   609  Hydroelectric Specimen // Hydroelectric Laboratory {3}              Creature — Weird // Land
-[ ]   610  Cloud Key                                {3}              Artifact
+[x]   610  Cloud Key                                {3}              Artifact
 [x]   611  Tribute to the World Tree                {G}{G}{G}        Enchantment
 [ ]   612  Mangara, the Diplomat                    {3}{W}           Legendary Creature — Human Cleric
 [x]   613  Carrion Feeder                           {B}              Creature — Zombie
@@ -696,9 +696,9 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   697  Snuff Out                                {3}{B}           Instant
 [x]   698  Charcoal Diamond                         {2}              Artifact
 [ ]   699  Curse of Opulence                        {R}              Enchantment — Aura Curse
-[ ]   700  The Earth Crystal                        {2}{G}{G}        Legendary Artifact
+[x]   700  The Earth Crystal                        {2}{G}{G}        Legendary Artifact
 [ ]   701  Springheart Nantuko                      {1}{G}           Enchantment Creature — Insect Monk
-[ ]   702  Elspeth, Storm Slayer                    {3}{W}{W}        Legendary Planeswalker — Elspeth
+[x]   702  Elspeth, Storm Slayer                    {3}{W}{W}        Legendary Planeswalker — Elspeth
 [x]   703  Kindred Dominance                        {5}{B}{B}        Sorcery
 [x]   704  Chasm Skulker                            {2}{U}           Creature — Squid Horror
 [ ]   705  Mirari's Wake                            {3}{G}{W}        Enchantment
@@ -713,7 +713,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   714  Golgari Signet                           {2}              Artifact
 [x]   715  Riveteers Overlook                       {0}              Land
 [x]   716  Howling Mine                             {2}              Artifact
-[ ]   717  Castle Garenbrig                         {0}              Land
+[x]   717  Castle Garenbrig                         {0}              Land
 [ ]   718  Starting Town                            {0}              Land — Town
 [x]   719  Fire Diamond                             {2}              Artifact
 [x]   720  Overflowing Basin                        {0}              Land
@@ -724,8 +724,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   725  Tyvar's Stand                            {X}{G}           Instant
 [x]   726  Rising of the Day                        {2}{R}           Enchantment
 [x]   727  Grapeshot                                {1}{R}           Sorcery
-[ ]   728  Enduring Innocence                       {1}{W}{W}        Enchantment Creature — Sheep Glimmer
-[ ]   729  Hammer of Nazahn                         {4}              Legendary Artifact — Equipment
+[x]   728  Enduring Innocence                       {1}{W}{W}        Enchantment Creature — Sheep Glimmer
+[x]   729  Hammer of Nazahn                         {4}              Legendary Artifact — Equipment
 [x]   730  Warstorm Surge                           {5}{R}           Enchantment
 [ ]   731  Forbidden Orchard                        {0}              Land
 [x]   732  Thornspire Verge                         {0}              Land
@@ -733,7 +733,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   734  Lush Portico                             {0}              Land — Forest Plains
 [x]   735  Elves of Deep Shadow                     {G}              Creature — Elf Druid
 [x]   736  Oran-Rief, the Vastwood                  {0}              Land
-[ ]   737  Lion's Eye Diamond                       {0}              Artifact
+[x]   737  Lion's Eye Diamond                       {0}              Artifact
 [x]   738  Abrupt Decay                             {B}{G}           Instant
 [ ]   739  Drannith Magistrate                      {1}{W}           Creature — Human Wizard
 [ ]   740  Flare of Fortitude                       {2}{W}{W}        Instant
@@ -752,13 +752,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   753  Loyal Apprentice                         {1}{R}           Creature — Human Artificer
 [x]   754  Eldritch Evolution                       {1}{G}{G}        Sorcery
 [ ]   755  Chimil, the Inner Sun                    {6}              Legendary Artifact
-[ ]   756  Bloodchief Ascension                     {B}              Enchantment
+[x]   756  Bloodchief Ascension                     {B}              Enchantment
 [x]   757  Aqueous Form                             {U}              Enchantment — Aura
 [x]   758  Valley Floodcaller                       {2}{U}           Creature — Otter Wizard
 [x]   759  Veyran, Voice of Duality                 {1}{U}{R}        Legendary Creature — Efreet Wizard
 [x]   760  Seize the Spoils                         {2}{R}           Sorcery
 [x]   761  Void Rend                                {W}{U}{B}        Instant
-[ ]   762  Mossborn Hydra                           {2}{G}           Creature — Elemental Hydra
+[x]   762  Mossborn Hydra                           {2}{G}           Creature — Elemental Hydra
 [x]   763  Avacyn, Angel of Hope                    {5}{W}{W}{W}     Legendary Creature — Angel
 [ ]   764  Imprisoned in the Moon                   {2}{U}           Enchantment — Aura
 [x]   765  Kaya's Ghostform                         {B}              Enchantment — Aura
@@ -777,15 +777,15 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   779  Springbloom Druid                        {2}{G}           Creature — Elf Druid
 [x]   780  Ornithopter                              {0}              Artifact Creature — Thopter
 [ ]   781  Spinerock Knoll                          {0}              Land
-[ ]   783  Twinflame Tyrant                         {3}{R}{R}        Creature — Dragon
+[x]   783  Twinflame Tyrant                         {3}{R}{R}        Creature — Dragon
 [x]   784  Niv-Mizzet, Parun                        {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
 [x]   785  Jungle Hollow                            {0}              Land
 [ ]   786  Inkshield                                {3}{W}{B}        Instant
 [x]   787  Ranger-Captain of Eos                    {1}{W}{W}        Creature — Human Soldier Ranger
-[ ]   788  Terrasymbiosis                           {2}{G}           Enchantment
+[x]   788  Terrasymbiosis                           {2}{G}           Enchantment
 [x]   789  Talrand, Sky Summoner                    {2}{U}{U}        Legendary Creature — Merfolk Wizard
 [ ]   790  Peregrin Took                            {2}{G}           Legendary Creature — Halfling Citizen
-[ ]   792  Enduring Tenacity                        {2}{B}{B}        Enchantment Creature — Snake Glimmer
+[x]   792  Enduring Tenacity                        {2}{B}{B}        Enchantment Creature — Snake Glimmer
 [x]   793  Danitha Capashen, Paragon                {2}{W}           Legendary Creature — Human Knight
 [x]   794  Castle Locthwain                         {0}              Land
 [x]   795  Brash Taunter                            {4}{R}           Creature — Goblin
@@ -793,12 +793,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   797  Vanquish the Horde                       {6}{W}{W}        Sorcery
 [x]   798  Meteor Golem                             {7}              Artifact Creature — Golem
 [ ]   799  High Tide                                {U}              Instant
-[ ]   800  Escape Tunnel                            {0}              Land
+[x]   800  Escape Tunnel                            {0}              Land
 [x]   801  Bleachbone Verge                         {0}              Land
 [x]   802  Coruscation Mage                         {1}{R}           Creature — Otter Wizard
 [x]   803  Gilded Goose                             {G}              Creature — Bird
 [ ]   804  Urza, Lord High Artificer                {2}{U}{U}        Legendary Creature — Human Artificer
-[ ]   805  Flowering of the White Tree              {W}{W}           Legendary Enchantment
+[x]   805  Flowering of the White Tree              {W}{W}           Legendary Enchantment
 [ ]   806  Etali, Primal Conqueror // Etali, Primal Sickness {7}              Legendary Creature — Elder Dinosaur // Legendary Creature — Phyrexian Elder Dinosaur
 [x]   807  Clearwater Pathway // Murkwater Pathway  {0}              Land // Land
 [x]   808  Sky Diamond                              {2}              Artifact
@@ -806,11 +806,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   810  Fleshbag Marauder                        {2}{B}           Creature — Zombie Warrior
 [ ]   811  Mizzix's Mastery                         {3}{R}           Sorcery
 [x]   812  Brightclimb Pathway // Grimclimb Pathway {0}              Land // Land
-[ ]   813  Enduring Curiosity                       {2}{U}{U}        Enchantment Creature — Cat Glimmer
+[x]   813  Enduring Curiosity                       {2}{U}{U}        Enchantment Creature — Cat Glimmer
 [ ]   814  Cankerbloom                              {1}{G}           Creature — Phyrexian Fungus
 [x]   815  Irrigated Farmland                       {0}              Land — Plains Island
 [x]   816  Sunscorched Divide                       {0}              Land
-[ ]   817  The World Tree                           {0}              Land
+[x]   817  The World Tree                           {0}              Land
 [x]   818  Gruul Signet                             {2}              Artifact
 [x]   819  Mesa Enchantress                         {1}{W}{W}        Creature — Human Druid
 [x]   820  Sunbillow Verge                          {0}              Land
@@ -819,28 +819,28 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   823  Sai, Master Thopterist                   {2}{U}           Legendary Creature — Human Artificer
 [x]   824  Tocasia's Welcome                        {2}{W}           Enchantment
 [x]   825  Soul's Attendant                         {W}              Creature — Human Cleric
-[ ]   826  Ashaya, Soul of the Wild                 {3}{G}{G}        Legendary Creature — Elemental
+[x]   826  Ashaya, Soul of the Wild                 {3}{G}{G}        Legendary Creature — Elemental
 [x]   827  Elspeth, Sun's Champion                  {4}{W}{W}        Legendary Planeswalker — Elspeth
 [x]   828  Ghost Quarter                            {0}              Land
 [ ]   829  Wonder                                   {3}{U}           Creature — Incarnation
-[ ]   830  Sigarda's Aid                            {W}              Enchantment
+[x]   830  Sigarda's Aid                            {W}              Enchantment
 [x]   831  Young Pyromancer                         {1}{R}           Creature — Human Shaman
 [x]   832  Bloodthirsty Conqueror                   {3}{B}{B}        Creature — Vampire Knight
 [x]   833  Ledger Shredder                          {1}{U}           Creature — Bird Advisor
 [x]   834  Aesi, Tyrant of Gyre Strait              {4}{G}{U}        Legendary Creature — Serpent
 [ ]   835  Yawgmoth, Thran Physician                {2}{B}{B}        Legendary Creature — Human Cleric
-[ ]   836  Urza's Tower                             {0}              Land — Urza's Tower
+[x]   836  Urza's Tower                             {0}              Land — Urza's Tower
 [x]   837  Bitter Triumph                           {1}{B}           Instant
 [x]   838  Blightstep Pathway // Searstep Pathway   {0}              Land // Land
-[ ]   839  Gyre Sage                                {1}{G}           Creature — Elf Druid
+[x]   839  Gyre Sage                                {1}{G}           Creature — Elf Druid
 [x]   840  Rancor                                   {G}              Enchantment — Aura
 [x]   841  Delney, Streetwise Lookout               {2}{W}           Legendary Creature — Human Scout
 [x]   842  Thrummingbird                            {1}{U}           Creature — Phyrexian Bird Horror
-[ ]   843  Urza's Mine                              {0}              Land — Urza's Mine
+[x]   843  Urza's Mine                              {0}              Land — Urza's Mine
 [ ]   844  Curse of the Swine                       {X}{U}{U}        Sorcery
-[ ]   845  Urza's Power Plant                       {0}              Land — Urza's Power-Plant
-[ ]   846  Kodama of the West Tree                  {2}{G}           Legendary Creature — Spirit
-[ ]   847  Cephalid Coliseum                        {0}              Land
+[x]   845  Urza's Power Plant                       {0}              Land — Urza's Power-Plant
+[x]   846  Kodama of the West Tree                  {2}{G}           Legendary Creature — Spirit
+[x]   847  Cephalid Coliseum                        {0}              Land
 [x]   848  Nadier's Nightblade                      {2}{B}           Creature — Elf Warrior
 [x]   849  Dragon Tempest                           {1}{R}           Enchantment
 [x]   850  Ayara, First of Locthwain                {B}{B}{B}        Legendary Creature — Elf Noble
@@ -848,7 +848,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   852  Fetid Pools                              {0}              Land — Island Swamp
 [ ]   853  The Mycosynth Gardens                    {0}              Land — Sphere
 [ ]   854  Bloodletter of Aclazotz                  {1}{B}{B}{B}     Creature — Vampire Demon
-[ ]   855  Fiery Emancipation                       {3}{R}{R}{R}     Enchantment
+[x]   855  Fiery Emancipation                       {3}{R}{R}{R}     Enchantment
 [x]   856  Murder                                   {1}{B}{B}        Instant
 [x]   857  Mystic Gate                              {0}              Land
 [x]   858  Tear Asunder                             {1}{G}           Instant
@@ -861,7 +861,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   865  Riverglide Pathway // Lavaglide Pathway  {0}              Land // Land
 [x]   866  Riverpyre Verge                          {0}              Land
 [x]   867  Forgotten Cave                           {0}              Land
-[ ]   868  Scrap Trawler                            {3}              Artifact Creature — Construct
+[x]   868  Scrap Trawler                            {3}              Artifact Creature — Construct
 [ ]   869  Beseech the Mirror                       {1}{B}{B}{B}     Sorcery
 [x]   870  Rishkar, Peema Renegade                  {2}{G}           Legendary Creature — Elf Druid
 [ ]   871  Breach the Multiverse                    {5}{B}{B}        Sorcery
@@ -870,31 +870,31 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   874  Lotus Field                              {0}              Land
 [x]   875  Tragic Slip                              {B}              Instant
 [ ]   876  Buster Sword                             {3}              Artifact — Equipment
-[ ]   877  The Fire Crystal                         {2}{R}{R}        Legendary Artifact
-[ ]   878  City on Fire                             {5}{R}{R}{R}     Enchantment
+[x]   877  The Fire Crystal                         {2}{R}{R}        Legendary Artifact
+[x]   878  City on Fire                             {5}{R}{R}{R}     Enchantment
 [ ]   879  Expressive Iteration                     {U}{R}           Sorcery
 [x]   880  Elvish Archdruid                         {1}{G}{G}        Creature — Elf Druid
 [ ]   881  Thousand-Year Elixir                     {3}              Artifact
 [x]   882  Myr Retriever                            {2}              Artifact Creature — Myr
 [ ]   883  Bear Umbra                               {2}{G}{G}        Enchantment — Aura
-[ ]   884  Witch's Cottage                          {0}              Land — Swamp
+[x]   884  Witch's Cottage                          {0}              Land — Swamp
 [ ]   885  Throne of Eldraine                       {5}              Legendary Artifact
-[ ]   886  Descent into Avernus                     {2}{R}           Enchantment
+[x]   886  Descent into Avernus                     {2}{R}           Enchantment
 [x]   887  Serum Visions                            {U}              Sorcery
-[ ]   888  Disrupt Decorum                          {2}{R}{R}        Sorcery
+[x]   888  Disrupt Decorum                          {2}{R}{R}        Sorcery
 [ ]   889  Solphim, Mayhem Dominus                  {2}{R}{R}        Legendary Creature — Phyrexian Horror
 [ ]   890  Nature's Rhythm                          {X}{G}{G}        Sorcery
 [x]   891  Temur Ascendancy                         {G}{U}{R}        Enchantment
 [ ]   892  Grim Hireling                            {3}{B}           Creature — Tiefling Rogue
-[ ]   893  Loot, Exuberant Explorer                 {2}{G}           Legendary Creature — Beast Noble
+[x]   893  Loot, Exuberant Explorer                 {2}{G}           Legendary Creature — Beast Noble
 [ ]   894  Demonic Consultation                     {B}              Instant
 [x]   895  Rite of Replication                      {2}{U}{U}        Sorcery
 [ ]   896  Xorn                                     {2}{R}           Creature — Elemental
-[ ]   897  Forsaken Monument                        {5}              Legendary Artifact
+[x]   897  Forsaken Monument                        {5}              Legendary Artifact
 [ ]   898  Reconnaissance                           {W}              Enchantment
 [x]   899  Reconnaissance Mission                   {2}{U}{U}        Enchantment
-[ ]   900  Raise the Palisade                       {4}{U}           Sorcery
-[ ]   901  Burgeoning                               {G}              Enchantment
+[x]   900  Raise the Palisade                       {4}{U}           Sorcery
+[x]   901  Burgeoning                               {G}              Enchantment
 [x]   902  Blade of Selves                          {2}              Artifact — Equipment
 [ ]   903  Sword of Hearth and Home                 {3}              Artifact — Equipment
 [ ]   904  Ojer Taq, Deepest Foundation // Temple of Civilization {6}              Legendary Creature — God // Land
@@ -907,29 +907,29 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   911  Eidolon of Blossoms                      {2}{G}{G}        Enchantment Creature — Spirit
 [x]   912  Warleader's Call                         {1}{R}{W}        Enchantment
 [x]   913  Resculpt                                 {1}{U}           Instant
-[ ]   914  Excalibur, Sword of Eden                 {12}             Legendary Artifact — Equipment
+[x]   914  Excalibur, Sword of Eden                 {12}             Legendary Artifact — Equipment
 [x]   915  Darksteel Plate                          {3}              Artifact — Equipment
 [x]   916  Essence Flux                             {U}              Instant
 [x]   917  Bristly Bill, Spine Sower                {1}{G}           Legendary Creature — Plant Druid
-[ ]   918  Jaheira, Friend of the Forest            {2}{G}           Legendary Creature — Human Elf Druid
+[x]   918  Jaheira, Friend of the Forest            {2}{G}           Legendary Creature — Human Elf Druid
 [x]   919  Dismember                                {1}{B/P}{B/P}    Instant
 [x]   920  Desolate Mire                            {0}              Land
 [ ]   921  Archway of Innovation                    {0}              Land
 [ ]   922  Vesuva                                   {0}              Land
 [x]   923  Spirited Companion                       {1}{W}           Enchantment Creature — Dog
 [ ]   924  Myr Battlesphere                         {7}              Artifact Creature — Myr Construct
-[ ]   925  Blighted Woodland                        {0}              Land
+[x]   925  Blighted Woodland                        {0}              Land
 [x]   926  Old Gnawbone                             {5}{G}{G}        Legendary Creature — Dragon
 [ ]   927  The Soul Stone                           {1}{B}           Legendary Artifact — Infinity Stone
 [ ]   928  Ripples of Potential                     {1}{U}           Instant
-[ ]   929  Fountainport                             {0}              Land
+[x]   929  Fountainport                             {0}              Land
 [x]   930  Solve the Equation                       {2}{U}           Sorcery
 [ ]   931  Caged Sun                                {6}              Artifact
 [x]   932  Peregrine Drake                          {4}{U}           Creature — Drake
-[ ]   933  Evolution Witness                        {2}{G}           Creature — Elf Shaman Mutant
+[x]   933  Evolution Witness                        {2}{G}           Creature — Elf Shaman Mutant
 [x]   934  Dispel                                   {U}              Instant
 [x]   935  Bastion Protector                        {2}{W}           Creature — Human Soldier
-[ ]   936  Evendo, Waking Haven                     {0}              Land — Planet
+[x]   936  Evendo, Waking Haven                     {0}              Land — Planet
 [x]   937  Pull from Tomorrow                       {X}{U}{U}        Instant
 [ ]   938  Kappa Cannoneer                          {5}{U}           Artifact Creature — Turtle Warrior
 [x]   939  Bloodfell Caves                          {0}              Land
@@ -941,10 +941,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   945  Irenicus's Vile Duplication              {3}{U}           Sorcery
 [x]   946  Stormcatch Mentor                        {U}{R}           Creature — Otter Wizard
 [ ]   947  The Wind Crystal                         {2}{W}{W}        Legendary Artifact
-[ ]   948  Monument to Endurance                    {3}              Artifact
+[x]   948  Monument to Endurance                    {3}              Artifact
 [ ]   949  Coat of Arms                             {5}              Artifact
 [x]   950  Omnath, Locus of Rage                    {3}{R}{R}{G}{G}  Legendary Creature — Elemental
-[ ]   951  Tezzeret's Gambit                        {3}{U/P}         Sorcery
+[x]   951  Tezzeret's Gambit                        {3}{U/P}         Sorcery
 [x]   952  Wastewood Verge                          {0}              Land
 [ ]   953  Dusk // Dawn                             {2}{W}{W} // {3}{W}{W} Sorcery // Sorcery
 [x]   954  Phyrexian Reclamation                    {B}              Enchantment
@@ -969,10 +969,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   973  Cabal Stronghold                         {0}              Land
 [x]   974  Eerie Interlude                          {2}{W}           Instant
 [ ]   975  Narset, Parter of Veils                  {1}{U}{U}        Legendary Planeswalker — Narset
-[ ]   976  Razorkin Needlehead                      {R}{R}           Creature — Human Assassin
+[x]   976  Razorkin Needlehead                      {R}{R}           Creature — Human Assassin
 [ ]   977  Karmic Guide                             {3}{W}{W}        Creature — Angel Spirit
 [x]   978  Decimate                                 {2}{R}{G}        Sorcery
-[ ]   979  Last March of the Ents                   {6}{G}{G}        Sorcery
+[x]   979  Last March of the Ents                   {6}{G}{G}        Sorcery
 [ ]   980  Moraug, Fury of Akoum                    {4}{R}{R}        Legendary Creature — Minotaur Warrior
 [ ]   981  Inspiring Statuary                       {3}              Artifact
 [ ]   982  Blightsteel Colossus                     {12}             Artifact Creature — Phyrexian Golem
@@ -1127,7 +1127,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1132  Ravenous Chupacabra                      {2}{B}{B}        Creature — Beast Horror
 [ ]  1133  Flare of Duplication                     {1}{R}{R}        Instant
 [ ]  1134  Twilight Prophet                         {2}{B}{B}        Creature — Vampire Cleric
-[ ]  1135  Enduring Courage                         {2}{R}{R}        Enchantment Creature — Dog Glimmer
+[x]  1135  Enduring Courage                         {2}{R}{R}        Enchantment Creature — Dog Glimmer
 [ ]  1136  Deflecting Palm                          {R}{W}           Instant
 [ ]  1137  Gisela, Blade of Goldnight               {4}{R}{W}{W}     Legendary Creature — Angel
 [ ]  1138  Teferi, Time Raveler                     {1}{W}{U}        Legendary Planeswalker — Teferi
@@ -2763,7 +2763,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2770  Alseid of Life's Bounty                  {W}              Enchantment Creature — Nymph
 [ ]  2771  Greensleeves, Maro-Sorcerer              {3}{G}{G}        Legendary Creature — Elemental Sorcerer
 [ ]  2772  Emiel the Blessed                        {2}{W}{W}        Legendary Creature — Unicorn
-[ ]  2773  Dwarven Mine                             {0}              Land — Mountain
+[x]  2773  Dwarven Mine                             {0}              Land — Mountain
 [ ]  2774  Expel the Interlopers                    {3}{W}{W}        Sorcery
 [ ]  2775  Golgari Grave-Troll                      {4}{G}           Creature — Troll Skeleton
 [ ]  2776  Troll of Khazad-dûm                      {5}{B}           Creature — Troll
@@ -2854,7 +2854,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2861  Ichormoon Gauntlet                       {2}{U}           Artifact
 [ ]  2862  Drift of Phantasms                       {2}{U}           Creature — Spirit
 [ ]  2863  Sacrifice                                {B}              Instant
-[ ]  2864  Gingerbread Cabin                        {0}              Land — Forest
+[x]  2864  Gingerbread Cabin                        {0}              Land — Forest
 [ ]  2865  Revenge of Ravens                        {3}{B}           Enchantment
 [ ]  2866  Inspiring Leader                         {2}{W}           Legendary Enchantment — Background
 [ ]  2867  Venat, Heart of Hydaelyn // Hydaelyn, the Mothercrystal {3}              Legendary Creature — Elder Wizard // Legendary Creature — God
@@ -4283,7 +4283,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4290  Riveteers Ascendancy                     {B}{R}{G}        Enchantment
 [ ]  4291  Submerge                                 {4}{U}           Instant
 [ ]  4292  Spectral Deluge                          {4}{U}{U}        Sorcery
-[ ]  4293  Idyllic Grange                           {0}              Land — Plains
+[x]  4293  Idyllic Grange                           {0}              Land — Plains
 [ ]  4294  Biotransference                          {2}{B}{B}        Enchantment
 [ ]  4295  Nightmare Shepherd                       {2}{B}{B}        Enchantment Creature — Demon
 [x]  4296  Hanweir Garrison                         {2}{R}           Creature — Human Soldier

@@ -17,6 +17,7 @@ import _poolBlightedBat from "../pool/blighted-bat.js";
 import _poolBlisterBeetle from "../pool/blister-beetle.js";
 import _poolBloodcrusherOfKhorne from "../pool/bloodcrusher-of-khorne.js";
 import _poolBruseTarlBoorishHerder from "../pool/bruse-tarl-boorish-herder.js";
+import _poolBurgeoning from "../pool/burgeoning.js";
 import _poolBuriedAlive from "../pool/buried-alive.js";
 import _poolBurningFields from "../pool/burning-fields.js";
 import _poolCadaverImp from "../pool/cadaver-imp.js";
@@ -43,6 +44,7 @@ import _poolDriftingShade from "../pool/drifting-shade.js";
 import _poolDrownyardExplorers from "../pool/drownyard-explorers.js";
 import _poolDwarvenBloodboiler from "../pool/dwarven-bloodboiler.js";
 import _poolEleshNornMotherOfMachines from "../pool/elesh-norn-mother-of-machines.js";
+import _poolEnduringInnocence from "../pool/enduring-innocence.js";
 import _poolErietteOfTheCharmedApple from "../pool/eriette-of-the-charmed-apple.js";
 import _poolEtheriumAstrolabe from "../pool/etherium-astrolabe.js";
 import _poolEyeOfRamos from "../pool/eye-of-ramos.js";
@@ -185,6 +187,7 @@ const shard: CardShard = {
     _poolBlisterBeetle,
     _poolBloodcrusherOfKhorne,
     _poolBruseTarlBoorishHerder,
+    _poolBurgeoning,
     _poolBuriedAlive,
     _poolBurningFields,
     _poolCadaverImp,
@@ -211,6 +214,7 @@ const shard: CardShard = {
     _poolDrownyardExplorers,
     _poolDwarvenBloodboiler,
     _poolEleshNornMotherOfMachines,
+    _poolEnduringInnocence,
     _poolErietteOfTheCharmedApple,
     _poolEtheriumAstrolabe,
     _poolEyeOfRamos,

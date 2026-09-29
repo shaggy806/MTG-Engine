@@ -409,6 +409,14 @@ interface EnterOptions {
   /** "…onto the battlefield transformed" — a transforming double-faced card
    * enters with its back face up (rule 712.14). */
   readonly transformed?: boolean;
+  /** The card types the effect putting it there says it has — the Enduring
+   * cycle's "return it to the battlefield … It's an enchantment. (It's not a
+   * creature.)": a lasting layer-4 effect on the permanent it becomes, in
+   * place from the moment it enters, so it enters as that (the replacements
+   * that apply as it enters and every trigger that sees it arrive judge it
+   * by these types — rule 614.12) and loses the subtypes that went only with
+   * the types it lost (rule 205.1a). */
+  readonly setTypes?: readonly CardType[];
 }
 
 /** Everything the enters-battlefield replacements decided about one entry
@@ -9330,6 +9338,7 @@ export class Game {
       tag.restriction = {
         ...(spell !== undefined ? { spell } : {}),
         ...(abilityOf !== undefined ? { abilityOf } : {}),
+        ...(spendOnly.abilityOfAnyZone === true ? { abilityOfAnyZone: true } : {}),
         text: spendOnly.text,
       };
       if (spendOnly.uncounterable === true) tag.uncounterable = true;
@@ -9383,6 +9392,16 @@ export class Game {
         ? [restriction.spell, purpose.card]
         : [restriction.abilityOf, purpose.source];
     if (filter === undefined) return false;
+    // "Activate abilities of creatures" is about creature permanents (rule
+    // 109.2): a creature card's ability from the hand or a graveyard isn't
+    // one (Castle Garenbrig's ruling). "A creature source" is (109.2a).
+    if (
+      purpose.kind !== "cast" &&
+      restriction.abilityOfAnyZone !== true &&
+      this.state.objects[subject]?.zone !== "battlefield"
+    ) {
+      return false;
+    }
     return matchesFilter(this.state, this.registry, subject, filter, { you: player });
   }
 
@@ -12276,6 +12295,10 @@ export class Game {
         if (ref === undefined || ref.kind !== "object") return false;
         return matchesKnown(ref.object, condition.filter);
       }
+      // A slot found illegal is blank in `targets` but was still chosen.
+      if (condition.kind === "target-chosen") {
+        return targets[condition.index] !== undefined || opts.illegalTargets?.includes(condition.index) === true;
+      }
       if (condition.kind === "trigger-object") {
         if (triggerObject === undefined) return false;
         return matchesKnown(triggerObject, condition.filter);
@@ -12748,7 +12771,7 @@ export class Game {
         });
         return false;
       },
-      putOntoBattlefield: (target, under, enterTapped, withCounters, exileIfLeaves, transformed) =>
+      putOntoBattlefield: (target, under, enterTapped, withCounters, exileIfLeaves, transformed, setTypes) =>
         this.putOntoBattlefieldByEffect(
           target,
           controller,
@@ -12758,6 +12781,7 @@ export class Game {
           exileIfLeaves === true,
           transformed === true,
           under,
+          setTypes,
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
@@ -13255,7 +13279,13 @@ export class Game {
               : lastKnownOf({ kind: "object", object: of }),
         ),
       conditionMet,
-      attach: (target) => this.attachPermanent(source, target),
+      attach: (target, attachment) => {
+        if (attachment === undefined) {
+          this.attachPermanent(source, target);
+          return;
+        }
+        if (attachment.kind === "object") this.attachPermanent(attachment.object, target);
+      },
       transform: (target) => {
         const t = this.splitTargetRef(target);
         if (t.kind !== "object") return;
@@ -16526,6 +16556,7 @@ export class Game {
     exileIfItWouldLeave = false,
     transformed = false,
     underPlayer?: PlayerId,
+    setTypes?: readonly CardType[],
   ): boolean {
     const under = underPlayer ?? (underYourControl ? controller : undefined);
     if (target.kind !== "object") return false;
@@ -16541,6 +16572,7 @@ export class Game {
       tapped: enterTapped,
       ...(under !== undefined ? { under } : {}),
       ...(transformed ? { transformed: true } : {}),
+      ...(setTypes !== undefined ? { setTypes } : {}),
     });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return false;
@@ -19372,9 +19404,17 @@ export class Game {
       if (r === undefined || r.event !== "enters-battlefield") continue;
       if (!this.staticActive(object, ability)) continue;
       if (r.tapped) tapped = true;
+      // What it counts is what's already there: a land entering alongside it
+      // isn't yet (rule 614.12 — the check-land rulings).
       if (
         r.tappedUnless !== undefined &&
-        !staticConditionMet(this.state, this.registry, object, r.tappedUnless)
+        !staticConditionMet(
+          this.state,
+          this.registry,
+          object,
+          r.tappedUnless,
+          this.enterBatch !== null ? { notYetHere: this.enterBatch } : {},
+        )
       ) {
         tapped = true;
       }
@@ -20172,6 +20212,16 @@ export class Game {
       object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
+      if (enter.setTypes !== undefined) {
+        object.modifiers.push({
+          timestamp: object.timestamp,
+          power: 0,
+          toughness: 0,
+          keywords: [],
+          setTypes: [...enter.setTypes],
+          untilEndOfTurn: false,
+        });
+      }
       // Who it enters under: its owner, unless the effect puts it onto the
       // battlefield under someone else's control. The control effect that
       // keeps it there is the caller's to create, after the move (layer 2

@@ -44,6 +44,7 @@ import _poolFeebleness from "../pool/feebleness.js";
 import _poolFireSprites from "../pool/fire-sprites.js";
 import _poolFlamewaveInvoker from "../pool/flamewave-invoker.js";
 import _poolFlight from "../pool/flight.js";
+import _poolForsakenMonument from "../pool/forsaken-monument.js";
 import _poolFyndhornBow from "../pool/fyndhorn-bow.js";
 import _poolGalvanicKey from "../pool/galvanic-key.js";
 import _poolGameTrail from "../pool/game-trail.js";
@@ -115,6 +116,7 @@ import _poolRushwoodElemental from "../pool/rushwood-elemental.js";
 import _poolSacredPrey from "../pool/sacred-prey.js";
 import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
+import _poolScrapTrawler from "../pool/scrap-trawler.js";
 import _poolSeacoastDrake from "../pool/seacoast-drake.js";
 import _poolSeasideCitadel from "../pool/seaside-citadel.js";
 import _poolSeatOfTheSynod from "../pool/seat-of-the-synod.js";
@@ -219,6 +221,7 @@ const shard: CardShard = {
     _poolFireSprites,
     _poolFlamewaveInvoker,
     _poolFlight,
+    _poolForsakenMonument,
     _poolFyndhornBow,
     _poolGalvanicKey,
     _poolGameTrail,
@@ -290,6 +293,7 @@ const shard: CardShard = {
     _poolSacredPrey,
     _poolSadisticHypnotist,
     _poolSalvagedManaworker,
+    _poolScrapTrawler,
     _poolSeacoastDrake,
     _poolSeasideCitadel,
     _poolSeatOfTheSynod,

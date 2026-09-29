@@ -36,6 +36,7 @@ import _poolElugeTheShorelessSea from "../pool/eluge-the-shoreless-sea.js";
 import _poolEmbodimentOfSpring from "../pool/embodiment-of-spring.js";
 import _poolEnvironmentalScientist from "../pool/environmental-scientist.js";
 import _poolEumidianTerrabotanist from "../pool/eumidian-terrabotanist.js";
+import _poolEvolutionWitness from "../pool/evolution-witness.js";
 import _poolFarbogBoneflinger from "../pool/farbog-boneflinger.js";
 import _poolFarbogExplorer from "../pool/farbog-explorer.js";
 import _poolFlameblastDragon from "../pool/flameblast-dragon.js";
@@ -65,6 +66,7 @@ import _poolJhessianLookout from "../pool/jhessian-lookout.js";
 import _poolKaradorGhostChieftain from "../pool/karador-ghost-chieftain.js";
 import _poolKavuGlider from "../pool/kavu-glider.js";
 import _poolKenrithTheReturnedKing from "../pool/kenrith-the-returned-king.js";
+import _poolKodamaOfTheWestTree from "../pool/kodama-of-the-west-tree.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
 import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
 import _poolLavaSpike from "../pool/lava-spike.js";
@@ -151,6 +153,7 @@ import _poolTwiceTheRage from "../pool/twice-the-rage.js";
 import _poolTwilightPanther from "../pool/twilight-panther.js";
 import _poolUnexpectedWindfall from "../pool/unexpected-windfall.js";
 import _poolUnseenWalker from "../pool/unseen-walker.js";
+import _poolUrzasPowerPlant from "../pool/urzas-power-plant.js";
 import _poolVampireInterloper from "../pool/vampire-interloper.js";
 import _poolVanquishTheHorde from "../pool/vanquish-the-horde.js";
 import _poolVedalkenEntrancer from "../pool/vedalken-entrancer.js";
@@ -200,6 +203,7 @@ const shard: CardShard = {
     _poolEmbodimentOfSpring,
     _poolEnvironmentalScientist,
     _poolEumidianTerrabotanist,
+    _poolEvolutionWitness,
     _poolFarbogBoneflinger,
     _poolFarbogExplorer,
     _poolFlameblastDragon,
@@ -229,6 +233,7 @@ const shard: CardShard = {
     _poolKaradorGhostChieftain,
     _poolKavuGlider,
     _poolKenrithTheReturnedKing,
+    _poolKodamaOfTheWestTree,
     _poolKorHalberd,
     _poolKrenkoTinStreetKingpin,
     _poolLavaSpike,
@@ -315,6 +320,7 @@ const shard: CardShard = {
     _poolTwilightPanther,
     _poolUnexpectedWindfall,
     _poolUnseenWalker,
+    _poolUrzasPowerPlant,
     _poolVampireInterloper,
     _poolVanquishTheHorde,
     _poolVedalkenEntrancer,

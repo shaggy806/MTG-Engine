@@ -55,6 +55,7 @@ import _poolFarseek from "../pool/farseek.js";
 import _poolFightingDrake from "../pool/fighting-drake.js";
 import _poolFlowstoneShambler from "../pool/flowstone-shambler.js";
 import _poolFontOfVigor from "../pool/font-of-vigor.js";
+import _poolFountainport from "../pool/fountainport.js";
 import _poolGargosViciousWatcher from "../pool/gargos-vicious-watcher.js";
 import _poolGlacialFortress from "../pool/glacial-fortress.js";
 import _poolGlazeFiend from "../pool/glaze-fiend.js";
@@ -76,6 +77,7 @@ import _poolKessDissidentMage from "../pool/kess-dissident-mage.js";
 import _poolKikiJikiMirrorBreaker from "../pool/kiki-jiki-mirror-breaker.js";
 import _poolKindredDominance from "../pool/kindred-dominance.js";
 import _poolKnightOfTheWhiteOrchid from "../pool/knight-of-the-white-orchid.js";
+import _poolLastMarchOfTheEnts from "../pool/last-march-of-the-ents.js";
 import _poolLightningJavelin from "../pool/lightning-javelin.js";
 import _poolLilianasMastery from "../pool/lilianas-mastery.js";
 import _poolLivingTempest from "../pool/living-tempest.js";
@@ -179,6 +181,7 @@ import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
+import _tokensDwarfToken from "../tokens/dwarf-token.js";
 import _tokensLifelinkCatToken from "../tokens/lifelink-cat-token.js";
 import _tokensPhobos from "../tokens/phobos.js";
 import _tokensSnakeToken from "../tokens/snake-token.js";
@@ -237,6 +240,7 @@ const shard: CardShard = {
     _poolFightingDrake,
     _poolFlowstoneShambler,
     _poolFontOfVigor,
+    _poolFountainport,
     _poolGargosViciousWatcher,
     _poolGlacialFortress,
     _poolGlazeFiend,
@@ -258,6 +262,7 @@ const shard: CardShard = {
     _poolKikiJikiMirrorBreaker,
     _poolKindredDominance,
     _poolKnightOfTheWhiteOrchid,
+    _poolLastMarchOfTheEnts,
     _poolLightningJavelin,
     _poolLilianasMastery,
     _poolLivingTempest,
@@ -363,6 +368,7 @@ const shard: CardShard = {
     _poolYargleGluttonOfUrborg,
   ],
   tokens: [
+    _tokensDwarfToken,
     _tokensLifelinkCatToken,
     _tokensPhobos,
     _tokensSnakeToken,

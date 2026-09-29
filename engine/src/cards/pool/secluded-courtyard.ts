@@ -27,8 +27,10 @@ export default defineCard({
         spendOnly: {
           spell: { type: "creature" },
           // The extra half over Unclaimed Territory: this mana also pays for
-          // activated abilities of matching creatures.
+          // activated abilities of matching creatures — of a creature
+          // *source*, so a creature card's ability too (rule 109.2a).
           abilityOf: { type: "creature" },
+          abilityOfAnyZone: true,
           chosenType: true,
           text:
             "Spend this mana only to cast a creature spell of the chosen type or activate an " +

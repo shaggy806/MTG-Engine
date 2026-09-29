@@ -520,7 +520,7 @@
   "effect:attach-extensions": {
    "size": "medium",
    "ui": true,
-   "description": "Aura and Equipment attachment beyond attaching the source and an entering Aura choosing what it enchants (built as effect:aura-enters-choice): an Aura put onto the battlefield attached to a named object (Light-Paws, Animate Dead), Aura tokens and token copies of a creature's attachments, and attaching chosen or target Equipment or Auras (any number) to a creature (Cloud, Ardenn)."
+   "description": "Aura and Equipment attachment beyond attaching the source and an entering Aura choosing what it enchants (built as effect:aura-enters-choice): an Aura put onto the battlefield attached to a named object (Light-Paws, Animate Dead), Aura tokens and token copies of a creature's attachments, and attaching chosen or target Equipment or Auras (any number) to a creature (Cloud, Ardenn). Built so far: attaching one Equipment or Aura the effect names — the one whose entering fired the trigger included — to a target (`attach`'s `attachment`: Hammer of Nazahn, Sigarda's Aid)."
   },
   "effect:aura-enters-choice": {
    "size": "medium",
@@ -1225,7 +1225,7 @@
   "static:self-type-changes": {
    "size": "medium",
    "ui": false,
-   "description": "Conditional layer-4 changes to a permanent's own types: remove a card type ('isn't a creature' unless devotion is high enough), and add types while it's off the battlefield ('as long as it isn't on the battlefield, it's a 1/1 Insect creature')."
+   "description": "Conditional layer-4 changes to a permanent's own types: remove a card type ('isn't a creature' unless devotion is high enough), and add types while it's off the battlefield ('as long as it isn't on the battlefield, it's a 1/1 Insect creature'). Built so far: returning a card to the battlefield with its card types replaced — the Enduring cycle's 'It's an enchantment. (It's not a creature.)' (`put-onto-battlefield`'s `setTypes`, in place as it enters)."
   },
   "static:set-base-pt-others": {
    "size": "medium",

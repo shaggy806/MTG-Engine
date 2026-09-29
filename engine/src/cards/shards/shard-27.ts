@@ -19,6 +19,7 @@ import _poolBeskirShieldmate from "../pool/beskir-shieldmate.js";
 import _poolBladedPinions from "../pool/bladed-pinions.js";
 import _poolBloodBairn from "../pool/blood-bairn.js";
 import _poolBloodResearcher from "../pool/blood-researcher.js";
+import _poolBloodchiefAscension from "../pool/bloodchief-ascension.js";
 import _poolBogstomper from "../pool/bogstomper.js";
 import _poolBondersEnclave from "../pool/bonders-enclave.js";
 import _poolBorderlandRanger from "../pool/borderland-ranger.js";
@@ -77,6 +78,7 @@ import _poolHonedKhopesh from "../pool/honed-khopesh.js";
 import _poolHoodedKavu from "../pool/hooded-kavu.js";
 import _poolHornOfRamos from "../pool/horn-of-ramos.js";
 import _poolHussarPatrol from "../pool/hussar-patrol.js";
+import _poolIdyllicGrange from "../pool/idyllic-grange.js";
 import _poolJungleShrine from "../pool/jungle-shrine.js";
 import _poolKelinoreBat from "../pool/kelinore-bat.js";
 import _poolKillMaimBurn from "../pool/kill-maim-burn.js";
@@ -200,6 +202,7 @@ const shard: CardShard = {
     _poolBladedPinions,
     _poolBloodBairn,
     _poolBloodResearcher,
+    _poolBloodchiefAscension,
     _poolBogstomper,
     _poolBondersEnclave,
     _poolBorderlandRanger,
@@ -258,6 +261,7 @@ const shard: CardShard = {
     _poolHoodedKavu,
     _poolHornOfRamos,
     _poolHussarPatrol,
+    _poolIdyllicGrange,
     _poolJungleShrine,
     _poolKelinoreBat,
     _poolKillMaimBurn,

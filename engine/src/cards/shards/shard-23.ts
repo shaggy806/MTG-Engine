@@ -52,6 +52,7 @@ import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
 import _poolEnfeeblement from "../pool/enfeeblement.js";
 import _poolErtaiTheCorrupted from "../pool/ertai-the-corrupted.js";
 import _poolEtherealGuidance from "../pool/ethereal-guidance.js";
+import _poolEvendoWakingHaven from "../pool/evendo-waking-haven.js";
 import _poolExclusionMage from "../pool/exclusion-mage.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
@@ -119,6 +120,7 @@ import _poolProdigiousGrowth from "../pool/prodigious-growth.js";
 import _poolProtectorOfGondor from "../pool/protector-of-gondor.js";
 import _poolPython from "../pool/python.js";
 import _poolRainOfFilth from "../pool/rain-of-filth.js";
+import _poolRaiseThePalisade from "../pool/raise-the-palisade.js";
 import _poolRakingClaws from "../pool/raking-claws.js";
 import _poolRaphMikeyTroublemakers from "../pool/raph-mikey-troublemakers.js";
 import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
@@ -239,6 +241,7 @@ const shard: CardShard = {
     _poolEnfeeblement,
     _poolErtaiTheCorrupted,
     _poolEtherealGuidance,
+    _poolEvendoWakingHaven,
     _poolExclusionMage,
     _poolFiligreeFamiliar,
     _poolFirescreamer,
@@ -306,6 +309,7 @@ const shard: CardShard = {
     _poolProtectorOfGondor,
     _poolPython,
     _poolRainOfFilth,
+    _poolRaiseThePalisade,
     _poolRakingClaws,
     _poolRaphMikeyTroublemakers,
     _poolRazakethTheFoulblooded,

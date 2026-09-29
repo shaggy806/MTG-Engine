@@ -1,0 +1,927 @@
+{
+  "batch": "B5",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Enduring Innocence",
+      "files": [
+        "engine/src/cards/pool/enduring-innocence.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Enduring Tenacity",
+      "files": [
+        "engine/src/cards/pool/enduring-tenacity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Enduring Curiosity",
+      "files": [
+        "engine/src/cards/pool/enduring-curiosity.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Enduring Vitality",
+      "files": [
+        "engine/src/cards/pool/enduring-vitality.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Enduring Courage",
+      "files": [
+        "engine/src/cards/pool/enduring-courage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mystic Sanctuary",
+      "files": [
+        "engine/src/cards/pool/mystic-sanctuary.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Witch's Cottage",
+      "files": [
+        "engine/src/cards/pool/witchs-cottage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dwarven Mine",
+      "files": [
+        "engine/src/cards/pool/dwarven-mine.ts",
+        "engine/src/cards/tokens/dwarf-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gingerbread Cabin",
+      "files": [
+        "engine/src/cards/pool/gingerbread-cabin.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Idyllic Grange",
+      "files": [
+        "engine/src/cards/pool/idyllic-grange.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Earth Crystal",
+      "files": [
+        "engine/src/cards/pool/the-earth-crystal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Fire Crystal",
+      "files": [
+        "engine/src/cards/pool/the-fire-crystal.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Elspeth, Storm Slayer",
+      "files": [
+        "engine/src/cards/pool/elspeth-storm-slayer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Castle Garenbrig",
+      "files": [
+        "engine/src/cards/pool/castle-garenbrig.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lion's Eye Diamond",
+      "files": [
+        "engine/src/cards/pool/lions-eye-diamond.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bloodchief Ascension",
+      "files": [
+        "engine/src/cards/pool/bloodchief-ascension.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mossborn Hydra",
+      "files": [
+        "engine/src/cards/pool/mossborn-hydra.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Twinflame Tyrant",
+      "files": [
+        "engine/src/cards/pool/twinflame-tyrant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fiery Emancipation",
+      "files": [
+        "engine/src/cards/pool/fiery-emancipation.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "City on Fire",
+      "files": [
+        "engine/src/cards/pool/city-on-fire.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Terrasymbiosis",
+      "files": [
+        "engine/src/cards/pool/terrasymbiosis.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Razorkin Needlehead",
+      "files": [
+        "engine/src/cards/pool/razorkin-needlehead.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hammer of Nazahn",
+      "files": [
+        "engine/src/cards/pool/hammer-of-nazahn.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sigarda's Aid",
+      "files": [
+        "engine/src/cards/pool/sigardas-aid.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Escape Tunnel",
+      "files": [
+        "engine/src/cards/pool/escape-tunnel.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Flowering of the White Tree",
+      "files": [
+        "engine/src/cards/pool/flowering-of-the-white-tree.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The World Tree",
+      "files": [
+        "engine/src/cards/pool/the-world-tree.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ashaya, Soul of the Wild",
+      "files": [
+        "engine/src/cards/pool/ashaya-soul-of-the-wild.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Gyre Sage",
+      "files": [
+        "engine/src/cards/pool/gyre-sage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kodama of the West Tree",
+      "files": [
+        "engine/src/cards/pool/kodama-of-the-west-tree.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cephalid Coliseum",
+      "files": [
+        "engine/src/cards/pool/cephalid-coliseum.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cloud Key",
+      "files": [
+        "engine/src/cards/pool/cloud-key.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Urza's Tower",
+      "files": [
+        "engine/src/cards/pool/urzas-tower.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Urza's Mine",
+      "files": [
+        "engine/src/cards/pool/urzas-mine.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Urza's Power Plant",
+      "files": [
+        "engine/src/cards/pool/urzas-power-plant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Scrap Trawler",
+      "files": [
+        "engine/src/cards/pool/scrap-trawler.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Descent into Avernus",
+      "files": [
+        "engine/src/cards/pool/descent-into-avernus.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Disrupt Decorum",
+      "files": [
+        "engine/src/cards/pool/disrupt-decorum.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Loot, Exuberant Explorer",
+      "files": [
+        "engine/src/cards/pool/loot-exuberant-explorer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Forsaken Monument",
+      "files": [
+        "engine/src/cards/pool/forsaken-monument.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Raise the Palisade",
+      "files": [
+        "engine/src/cards/pool/raise-the-palisade.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Burgeoning",
+      "files": [
+        "engine/src/cards/pool/burgeoning.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Excalibur, Sword of Eden",
+      "files": [
+        "engine/src/cards/pool/excalibur-sword-of-eden.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Jaheira, Friend of the Forest",
+      "files": [
+        "engine/src/cards/pool/jaheira-friend-of-the-forest.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blighted Woodland",
+      "files": [
+        "engine/src/cards/pool/blighted-woodland.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fountainport",
+      "files": [
+        "engine/src/cards/pool/fountainport.ts",
+        "engine/src/cards/tokens/fish-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Evolution Witness",
+      "files": [
+        "engine/src/cards/pool/evolution-witness.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Evendo, Waking Haven",
+      "files": [
+        "engine/src/cards/pool/evendo-waking-haven.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Monument to Endurance",
+      "files": [
+        "engine/src/cards/pool/monument-to-endurance.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tezzeret's Gambit",
+      "files": [
+        "engine/src/cards/pool/tezzerets-gambit.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Last March of the Ents",
+      "files": [
+        "engine/src/cards/pool/last-march-of-the-ents.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Sink into Stupor // Soporific Springs",
+      "needs": [
+        "new:spell-or-permanent-target"
+      ],
+      "why": "\"Return target spell or nonland permanent an opponent controls\": no target spec spans the stack and the battlefield in one slot."
+    },
+    {
+      "name": "Selvala, Heart of the Wilds",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"X mana in any combination of colors\" is always activated by hand (its {G} cost keeps it off the auto-payer), and by hand past X = 4 across five colours only all-of-one-colour is offered, so the split isn't the player's."
+    },
+    {
+      "name": "Maskwood Nexus",
+      "needs": [
+        "new:static-types-outside-battlefield"
+      ],
+      "why": "Creature spells you control and creature cards you own outside the battlefield are every creature type too; a static's types reach only the battlefield."
+    },
+    {
+      "name": "Curse of Opulence",
+      "needs": [
+        "mechanic:curses"
+      ],
+      "why": "An Aura that enchants a player, and 'whenever enchanted player is attacked'."
+    },
+    {
+      "name": "Springheart Nantuko",
+      "needs": [
+        "new:bestow"
+      ],
+      "why": "Bestow isn't modeled (AUTHORING §15)."
+    },
+    {
+      "name": "Mirari's Wake",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "\"One mana of any type that land produced\": a land tapped by hand for two types at once (a Karoo) gets the first type, not the player's pick; the auto-payer does offer each."
+    },
+    {
+      "name": "Life from the Loam",
+      "needs": [
+        "keyword:dredge"
+      ],
+      "why": "Dredge 3."
+    },
+    {
+      "name": "Archaeomancer's Map",
+      "needs": [
+        "new:that-player-controls-more"
+      ],
+      "why": "\"If that player controls more lands than you\": opponent-controls-more asks about any opponent, not the one whose land entered."
+    },
+    {
+      "name": "Fact or Fiction",
+      "needs": [
+        "new:separate-into-piles"
+      ],
+      "why": "An opponent separates the revealed cards into two piles, and you choose one."
+    },
+    {
+      "name": "Starting Town",
+      "needs": [
+        "new:turn-count-condition"
+      ],
+      "why": "\"Unless it's your first, second, or third turn of the game\": no per-player count of turns taken."
+    },
+    {
+      "name": "Narset's Reversal",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "\"You may choose new targets for the copy.\""
+    },
+    {
+      "name": "Forbidden Orchard",
+      "needs": [
+        "new:tapped-for-mana-stack-trigger"
+      ],
+      "why": "\"Whenever you tap this land for mana, target opponent creates a Spirit\" is a targeted trigger that uses the stack; a tapped-for-mana trigger is only ever a triggered mana ability's add-mana."
+    },
+    {
+      "name": "Mockingbird",
+      "needs": [
+        "replacement:copy-on-enter-options",
+        "effect:copy-exceptions"
+      ],
+      "why": "Enter as a copy of a creature with mana value at most the mana spent, except a Bird with flying; copyOnEnter takes no filter and no exceptions."
+    },
+    {
+      "name": "Drannith Magistrate",
+      "needs": [
+        "new:prohibit-cast-by-zone"
+      ],
+      "why": "\"Can't cast spells from anywhere other than their hands\": a static prohibition's spell filter can't ask which zone the card is cast from."
+    },
+    {
+      "name": "Flare of Fortitude",
+      "needs": [
+        "new:life-total-cant-change"
+      ],
+      "why": "\"Until end of turn, your life total can't change.\""
+    },
+    {
+      "name": "Kenrith's Transformation",
+      "needs": [
+        "new:static-set-characteristics"
+      ],
+      "why": "The enchanted creature loses all abilities and is a green 3/3 Elk (only): a static can add types but not set types or colour, or remove abilities."
+    },
+    {
+      "name": "Champion's Helm",
+      "needs": [
+        "new:attached-host-condition"
+      ],
+      "why": "\"As long as equipped creature is legendary, it has hexproof\": no static condition asks about the permanent an Equipment is attached to."
+    },
+    {
+      "name": "Leyline of Anticipation",
+      "needs": [
+        "new:opening-hand-actions"
+      ],
+      "why": "Beginning the game with it on the battlefield from the opening hand."
+    },
+    {
+      "name": "Elvish Spirit Guide",
+      "needs": [
+        "new:hand-mana-ability"
+      ],
+      "why": "\"Exile this card from your hand: Add {G}\" is a mana ability from the hand; zone abilities are never mana abilities."
+    },
+    {
+      "name": "Hellkite Tyrant",
+      "needs": [
+        "new:win-game",
+        "new:filter-controlled-by-trigger-player"
+      ],
+      "why": "\"You win the game\", and \"gain control of all artifacts that player controls\" — no filter clause names the damaged player."
+    },
+    {
+      "name": "Isochron Scepter",
+      "needs": [
+        "new:imprint",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Imprint an instant from hand; cast a copy of it free as the ability resolves."
+    },
+    {
+      "name": "Chimil, the Inner Sun",
+      "needs": [
+        "keyword:discover"
+      ],
+      "why": "Discover 5."
+    },
+    {
+      "name": "Imprisoned in the Moon",
+      "needs": [
+        "new:static-set-characteristics"
+      ],
+      "why": "The enchanted permanent is a colorless land with \"{T}: Add {C}\" and loses all other card types and abilities: statics can't set types or colour, or remove abilities."
+    },
+    {
+      "name": "Collective Resistance",
+      "needs": [
+        "new:escalate"
+      ],
+      "why": "Escalate {G}: a cost for each mode beyond the first."
+    },
+    {
+      "name": "Brain Freeze",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Storm's copies \"may choose new targets\"."
+    },
+    {
+      "name": "Spinerock Knoll",
+      "needs": [
+        "new:hideaway"
+      ],
+      "why": "Hideaway 4 (AUTHORING §15)."
+    },
+    {
+      "name": "Inkshield",
+      "needs": [
+        "new:prevention-then-per-damage"
+      ],
+      "why": "A spell's prevention of all combat damage to you this turn, making a token for each 1 damage prevented."
+    },
+    {
+      "name": "Peregrin Took",
+      "needs": [
+        "replacement:token-creation-additive",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "\"Those tokens plus an additional Food\", and \"Sacrifice three Foods\" as a cost."
+    },
+    {
+      "name": "Liliana, Dreadhorde General",
+      "needs": [
+        "new:keep-one-of-each-permanent-type"
+      ],
+      "why": "−9: each opponent keeps one permanent of each permanent type (a multi-typed one counting for any) and sacrifices the rest."
+    },
+    {
+      "name": "High Tide",
+      "needs": [
+        "new:turn-scoped-mana-trigger"
+      ],
+      "why": "\"Until end of turn, whenever a player taps an Island for mana\" — a triggered mana ability for every player that lasts the turn, Islands entering later included."
+    },
+    {
+      "name": "Mizzix's Mastery",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Casting copies of the exiled cards free as it resolves."
+    },
+    {
+      "name": "Cankerbloom",
+      "needs": [
+        "effect:modal-activated-targeted-modes"
+      ],
+      "why": "A modal activated ability whose modes target."
+    },
+    {
+      "name": "Colossus Hammer",
+      "needs": [
+        "new:static-lose-keyword"
+      ],
+      "why": "\"Equipped creature … loses flying\": a static can grant keywords but not remove one."
+    },
+    {
+      "name": "Aurelia, the Warleader",
+      "needs": [
+        "new:attacks-first-time-each-turn"
+      ],
+      "why": "\"Whenever Aurelia attacks for the first time each turn\": the attack flag is set before triggers are checked, and a once-a-turn trigger differs when the first attack didn't trigger it."
+    },
+    {
+      "name": "Sai, Master Thopterist",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "\"Sacrifice two artifacts\" as an activation cost."
+    },
+    {
+      "name": "Wonder",
+      "needs": [
+        "new:graveyard-static"
+      ],
+      "why": "\"As long as this card is in your graveyard and you control an Island\": statics work only from the battlefield."
+    },
+    {
+      "name": "Yawgmoth, Thran Physician",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "\"{B}{B}, Discard a card: Proliferate\" — discard as an activation cost."
+    },
+    {
+      "name": "Curse of the Swine",
+      "needs": [
+        "new:x-targets"
+      ],
+      "why": "\"Exile X target creatures\": a target count equal to the X chosen."
+    },
+    {
+      "name": "The Mycosynth Gardens",
+      "needs": [
+        "effect:become-copy"
+      ],
+      "why": "\"This land becomes a copy of target nontoken artifact you control with mana value X.\""
+    },
+    {
+      "name": "Bloodletter of Aclazotz",
+      "needs": [
+        "new:would-lose-life"
+      ],
+      "why": "\"If an opponent would lose life during your turn, they lose twice that much\": no life-loss replacement."
+    },
+    {
+      "name": "Tainted Pact",
+      "needs": [
+        "effect:repeat-process"
+      ],
+      "why": "Exile until you keep a card or exile two with the same name."
+    },
+    {
+      "name": "Boromir, Warden of the Tower",
+      "needs": [
+        "new:the-ring"
+      ],
+      "why": "\"The Ring tempts you\" isn't modeled."
+    },
+    {
+      "name": "Beseech the Mirror",
+      "needs": [
+        "new:bargain",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Bargain, and casting the found card free as it resolves."
+    },
+    {
+      "name": "Breach the Multiverse",
+      "needs": [
+        "new:choose-card-per-graveyard"
+      ],
+      "why": "\"For each player, choose a creature or planeswalker card in that player's graveyard\", all put onto the battlefield under your control together."
+    },
+    {
+      "name": "Tempt with Discovery",
+      "needs": [
+        "effect:choices-by-other-players"
+      ],
+      "why": "The accepted searches happen together once every opponent has decided (the ruling); each-player-may does each as it's answered, so the next opponent sees the land fetched."
+    },
+    {
+      "name": "Buster Sword",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Casting a spell from hand free as the trigger resolves."
+    },
+    {
+      "name": "Expressive Iteration",
+      "needs": [
+        "new:look-three-way-split"
+      ],
+      "why": "Of the three cards: one to hand, one to the bottom, one exiled and playable this turn."
+    },
+    {
+      "name": "Thousand-Year Elixir",
+      "needs": [
+        "new:abilities-as-though-haste"
+      ],
+      "why": "\"Activate abilities of creatures you control as though those creatures had haste.\""
+    },
+    {
+      "name": "Bear Umbra",
+      "needs": [
+        "new:umbra-armor"
+      ],
+      "why": "Umbra armor (totem armor)."
+    },
+    {
+      "name": "Throne of Eldraine",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "\"Spend only mana of the chosen color to activate this ability\", and mana for monocolored spells of that colour."
+    },
+    {
+      "name": "Solphim, Mayhem Dominus",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "\"Discard two cards\" as an activation cost."
+    },
+    {
+      "name": "Nature's Rhythm",
+      "needs": [
+        "new:harmonize"
+      ],
+      "why": "Harmonize (cast from the graveyard, tapping a creature to reduce the cost)."
+    },
+    {
+      "name": "Grim Hireling",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "\"Sacrifice X Treasures\" as a cost."
+    },
+    {
+      "name": "Demonic Consultation",
+      "needs": [
+        "new:name-a-card"
+      ],
+      "why": "\"Choose a card name.\""
+    },
+    {
+      "name": "Xorn",
+      "needs": [
+        "replacement:token-creation-additive"
+      ],
+      "why": "\"Those tokens plus an additional Treasure token.\""
+    },
+    {
+      "name": "Reconnaissance",
+      "needs": [
+        "new:remove-from-combat"
+      ],
+      "why": "Remove target attacking creature from combat."
+    },
+    {
+      "name": "Sword of Hearth and Home",
+      "needs": [
+        "new:mixed-simultaneous-entry"
+      ],
+      "why": "The exiled creature and the found basic land enter together; a flicker and a search are two entries."
+    },
+    {
+      "name": "Field of Ruin",
+      "needs": [
+        "new:each-player-searches"
+      ],
+      "why": "\"Each player searches their library for a basic land card\" — a search by every player, not optional."
+    },
+    {
+      "name": "Padeem, Consul of Innovation",
+      "needs": [
+        "new:dynamic-operand-in-intervening-if"
+      ],
+      "why": "\"If you control the artifact with the greatest mana value\" compares with a live maximum, which a trigger's intervening-if can't read."
+    },
+    {
+      "name": "Archway of Innovation",
+      "needs": [
+        "new:improvise"
+      ],
+      "why": "\"The next spell you cast this turn has improvise.\""
+    },
+    {
+      "name": "Vesuva",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "Enter tapped as a copy of any land; copyOnEnter copies only creatures."
+    },
+    {
+      "name": "Myr Battlesphere",
+      "needs": [
+        "new:tap-x-then"
+      ],
+      "why": "\"You may tap X untapped Myr you control. If you do, … +X/+0 and deals X damage\": no count of what an effect tapped."
+    },
+    {
+      "name": "The Soul Stone",
+      "needs": [
+        "new:infinity-stones"
+      ],
+      "why": "Harness and the ∞ ability."
+    },
+    {
+      "name": "Ripples of Potential",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "Phasing."
+    },
+    {
+      "name": "Caged Sun",
+      "needs": [
+        "new:mana-trigger-chosen-color"
+      ],
+      "why": "\"Whenever a land's ability causes you to add mana of the chosen color\": any land mana ability, not just a {T} one, filtered by a chosen colour."
+    },
+    {
+      "name": "Kappa Cannoneer",
+      "needs": [
+        "new:improvise"
+      ],
+      "why": "Improvise."
+    },
+    {
+      "name": "Promise of Loyalty",
+      "needs": [
+        "new:vow-counters"
+      ],
+      "why": "Each player keeps a creature of their choice with a vow counter and sacrifices the rest; the vow's attack restriction."
+    },
+    {
+      "name": "The Wind Crystal",
+      "needs": [
+        "new:gain-life-multiplier"
+      ],
+      "why": "\"You gain twice that much life instead\": would-gain-life adds, never multiplies."
+    },
+    {
+      "name": "Coat of Arms",
+      "needs": [
+        "new:shares-creature-type-count"
+      ],
+      "why": "+1/+1 for each other creature sharing a creature type with each creature."
+    },
+    {
+      "name": "Desperate Ritual",
+      "needs": [
+        "new:splice"
+      ],
+      "why": "Splice onto Arcane."
+    },
+    {
+      "name": "Sejiri Shelter // Sejiri Glacier",
+      "needs": [
+        "new:protection-chosen-color"
+      ],
+      "why": "\"Protection from the color of your choice.\""
+    },
+    {
+      "name": "Chain of Vapor",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "The sacrificing player copies it with a new target."
+    },
+    {
+      "name": "Metallic Mimic",
+      "needs": [
+        "new:chosen-type-in-addition"
+      ],
+      "why": "\"This creature is the chosen type in addition to its other types\" (AUTHORING §15)."
+    },
+    {
+      "name": "Devoted Druid",
+      "needs": [
+        "new:put-counter-cost"
+      ],
+      "why": "\"Put a -1/-1 counter on this creature\" as a cost."
+    },
+    {
+      "name": "Alhammarret's Archive",
+      "needs": [
+        "new:gain-life-multiplier",
+        "new:draw-replacement-except-first"
+      ],
+      "why": "Doubled life gain, and doubled draws except the first in each draw step."
+    },
+    {
+      "name": "Narset, Parter of Veils",
+      "needs": [
+        "new:draw-limit"
+      ],
+      "why": "\"Each opponent can't draw more than one card each turn.\""
+    },
+    {
+      "name": "Karmic Guide",
+      "needs": [
+        "new:echo"
+      ],
+      "why": "Echo."
+    },
+    {
+      "name": "Moraug, Fury of Akoum",
+      "needs": [
+        "new:attack-count-this-turn",
+        "new:additional-combat-after-main"
+      ],
+      "why": "+1/+0 per time each creature attacked this turn, and an extra combat after a main phase with a beginning-of-combat untap."
+    },
+    {
+      "name": "Inspiring Statuary",
+      "needs": [
+        "new:improvise"
+      ],
+      "why": "Nonartifact spells you cast have improvise."
+    }
+  ]
+}

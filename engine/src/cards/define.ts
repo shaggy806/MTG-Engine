@@ -558,6 +558,16 @@ export type StaticCondition =
    */
   | { readonly kind: "target"; readonly index: number; readonly filter: CardFilter }
   /**
+   * A target was chosen for slot `index` of the resolving spell or ability —
+   * still true once that target has become illegal (rule 608.2b), false only
+   * for an optional slot left empty. The Earth Crystal's "distribute two
+   * +1/+1 counters among one or two target creatures you control": with two
+   * chosen, each gets one however they fare by resolution, and one found
+   * illegal loses its counter rather than passing it on (the ruling). Only
+   * meaningful inside a `conditional` effect.
+   */
+  | { readonly kind: "target-chosen"; readonly index: number }
+  /**
    * The permanent sacrificed to pay the spell's or ability's cost (or by a
    * `sacrifice-source` step before this one) matched `filter` as it last
    * existed on the battlefield — "if the sacrificed creature was a

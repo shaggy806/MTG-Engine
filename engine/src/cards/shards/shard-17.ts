@@ -11,6 +11,7 @@ import _poolAmbushViper from "../pool/ambush-viper.js";
 import _poolAngelicPage from "../pool/angelic-page.js";
 import _poolArcticTreeline from "../pool/arctic-treeline.js";
 import _poolArdentRecruit from "../pool/ardent-recruit.js";
+import _poolAshayaSoulOfTheWild from "../pool/ashaya-soul-of-the-wild.js";
 import _poolAtreusImpulsiveSon from "../pool/atreus-impulsive-son.js";
 import _poolAttendedSocialite from "../pool/attended-socialite.js";
 import _poolAvengerOfTheFallen from "../pool/avenger-of-the-fallen.js";
@@ -29,9 +30,11 @@ import _poolCascadeBluffs from "../pool/cascade-bluffs.js";
 import _poolCharge from "../pool/charge.js";
 import _poolCheckpointOfficer from "../pool/checkpoint-officer.js";
 import _poolChitinousCloak from "../pool/chitinous-cloak.js";
+import _poolCityOnFire from "../pool/city-on-fire.js";
 import _poolCitywideBust from "../pool/citywide-bust.js";
 import _poolCleansingNova from "../pool/cleansing-nova.js";
 import _poolCleverLumimancer from "../pool/clever-lumimancer.js";
+import _poolCloudKey from "../pool/cloud-key.js";
 import _poolCogworkWrestler from "../pool/cogwork-wrestler.js";
 import _poolConcordiaPegasus from "../pool/concordia-pegasus.js";
 import _poolContaminatedAquifer from "../pool/contaminated-aquifer.js";
@@ -207,6 +210,7 @@ const shard: CardShard = {
     _poolAngelicPage,
     _poolArcticTreeline,
     _poolArdentRecruit,
+    _poolAshayaSoulOfTheWild,
     _poolAtreusImpulsiveSon,
     _poolAttendedSocialite,
     _poolAvengerOfTheFallen,
@@ -225,9 +229,11 @@ const shard: CardShard = {
     _poolCharge,
     _poolCheckpointOfficer,
     _poolChitinousCloak,
+    _poolCityOnFire,
     _poolCitywideBust,
     _poolCleansingNova,
     _poolCleverLumimancer,
+    _poolCloudKey,
     _poolCogworkWrestler,
     _poolConcordiaPegasus,
     _poolContaminatedAquifer,

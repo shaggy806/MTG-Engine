@@ -82,7 +82,14 @@ export type PtDuration =
  */
 export interface ManaSpendOnly {
   readonly spell?: CardFilter;
+  /** "…or activate abilities of [X]": abilities of permanents on the
+   * battlefield matching this — "abilities of creatures" means creature
+   * permanents (rule 109.2; Castle Garenbrig's ruling). */
   readonly abilityOf?: CardFilter;
+  /** `abilityOf` covers a card's abilities in any zone too — "an ability of
+   * a creature **source**" (Secluded Courtyard), which names a source rather
+   * than a permanent (rule 109.2a). */
+  readonly abilityOfAnyZone?: true;
   readonly chosenType?: boolean;
   /** "…and that spell can't be countered" (Cavern of Souls, Delighted
    * Halfling). A property of the spell this mana pays for, not of the land. */
@@ -400,6 +407,20 @@ export type EffectAmount =
       readonly who?: PlayerScope | "each";
       readonly filter?: CardFilter;
       readonly cardTypes?: boolean;
+    }
+  /**
+   * One amount or another, by a condition read as the amount is — Urza's
+   * Tower's "{T}: Add {C}. If you control an Urza's Mine and an Urza's
+   * Power-Plant, add {C}{C}{C} instead" is `{ ifCondition: <both>, then: 3,
+   * else: 1 }`. Asked from the effect's controller's side, as a
+   * `conditional` effect's condition is (the source counts itself), so it
+   * suits a mana ability, which can't be a `conditional`: the auto-payer and
+   * a hand activation size it against the board as it stands.
+   */
+  | {
+      readonly ifCondition: StaticCondition;
+      readonly then: EffectAmount;
+      readonly else: EffectAmount;
     };
 
 /**
@@ -1148,6 +1169,15 @@ export type EffectSpec =
        * to the battlefield tapped and transformed") — a transforming
        * double-faced card enters with its back face up. */
       readonly transformed?: boolean;
+      /** The card types it has, replacing its own, for as long as it stays
+       * on the battlefield — the Enduring cycle's "return it to the
+       * battlefield under its owner's control. It's an enchantment. (It's
+       * not a creature.)" is `setTypes: ["enchantment"]`. In place as it
+       * enters (rule 614.12), so it enters as an enchantment: a "whenever a
+       * creature enters" doesn't see it and an enchantment's enters trigger
+       * does. The subtypes that went only with the lost types go too (rule
+       * 205.1a — no Sheep, no Glimmer); supertypes stay. */
+      readonly setTypes?: readonly CardType[];
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
@@ -2126,9 +2156,16 @@ export type EffectSpec =
       readonly asCard?: boolean;
     }
   | {
-      /** Attach the source (an Aura/Equipment) to a target permanent. */
+      /** Attach an Aura or Equipment to a target permanent: the source (an
+       * Equip ability), or with `attachment` another one — Hammer of
+       * Nazahn's and Sigarda's Aid's "you may attach **that Equipment** to
+       * target creature you control" is `attachment: "trigger-object"`, the
+       * Equipment whose entering fired the trigger. Only the same object
+       * that did (rule 400.7), and only onto something it could legally be
+       * attached to (rule 301.5c); otherwise nothing moves. */
       readonly kind: "attach";
       readonly target: number;
+      readonly attachment?: EffectTargetRef;
     }
   | {
       /** Transform `target` — turn a transforming double-faced permanent over
@@ -3398,8 +3435,9 @@ export interface EffectApi {
   /** True if `condition` holds from the effect source's controller's
    * perspective — see the `"conditional"` {@link EffectSpec}. */
   conditionMet(condition: StaticCondition): boolean;
-  /** Attach `ctx.source` (an Aura/Equipment) to `target`. */
-  attach(target: TargetRef): void;
+  /** Attach `attachment` (an Aura/Equipment) to `target` — `ctx.source`
+   * when it's omitted. See the `"attach"` {@link EffectSpec}. */
+  attach(target: TargetRef, attachment?: TargetRef): void;
   /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
    * {@link EffectSpec}. */
   transform(target: TargetRef): void;
@@ -3457,6 +3495,9 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave?: boolean,
     transformed?: boolean,
+    /** The card types it enters with in place of its own — see the effect's
+     * `setTypes`. */
+    setTypes?: readonly CardType[],
   ): boolean;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
@@ -3776,6 +3817,9 @@ function signedAmountValue(
     return amount.round === "up" ? Math.ceil(n) : Math.floor(n);
   }
   if ("countInGraveyard" in amount) return ctx.countInGraveyard(amount.countInGraveyard);
+  if ("ifCondition" in amount) {
+    return signedAmountValue(ctx.conditionMet(amount.ifCondition) ? amount.then : amount.else, ctx, each);
+  }
   if ("product" in amount) {
     return amount.product.reduce<number>((n, a) => n * signedAmountValue(a, ctx, each), 1);
   }
@@ -4069,6 +4113,7 @@ function readsEachPlayer(amount: EffectAmount): boolean {
   if ("product" in amount) return amount.product.some(readsEachPlayer);
   if ("sum" in amount) return amount.sum.some(readsEachPlayer);
   if ("difference" in amount) return amount.difference.some(readsEachPlayer);
+  if ("ifCondition" in amount) return readsEachPlayer(amount.then) || readsEachPlayer(amount.else);
   return false;
 }
 
@@ -4427,6 +4472,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.withCounters,
           spec.exileIfItWouldLeave === true,
           spec.transformed === true,
+          spec.setTypes,
         );
         if (asked) ctx.resumeAfterDecisions(spec, parked);
       }
@@ -5031,7 +5077,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "attach": {
       const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.attach(target);
+      if (target === undefined) return;
+      if (spec.attachment === undefined) {
+        ctx.attach(target);
+        return;
+      }
+      const attachment = resolveEffectTarget(spec.attachment, ctx);
+      if (attachment !== undefined) ctx.attach(target, attachment);
       return;
     }
     case "transform": {

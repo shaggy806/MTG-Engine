@@ -34,6 +34,7 @@ import _poolDarigaazsAttendant from "../pool/darigaazs-attendant.js";
 import _poolDawnGryff from "../pool/dawn-gryff.js";
 import _poolDaysquadMarshal from "../pool/daysquad-marshal.js";
 import _poolDazzlingAngel from "../pool/dazzling-angel.js";
+import _poolDescentIntoAvernus from "../pool/descent-into-avernus.js";
 import _poolDestructiveDigger from "../pool/destructive-digger.js";
 import _poolDevilsPlay from "../pool/devils-play.js";
 import _poolDictateOfHeliod from "../pool/dictate-of-heliod.js";
@@ -43,6 +44,7 @@ import _poolDivineResilience from "../pool/divine-resilience.js";
 import _poolDosansOldestChant from "../pool/dosans-oldest-chant.js";
 import _poolDreadmalkin from "../pool/dreadmalkin.js";
 import _poolDruidOfTheAnima from "../pool/druid-of-the-anima.js";
+import _poolDwarvenMine from "../pool/dwarven-mine.js";
 import _poolDwarvenRuins from "../pool/dwarven-ruins.js";
 import _poolEliteInstructor from "../pool/elite-instructor.js";
 import _poolElvishRanger from "../pool/elvish-ranger.js";
@@ -55,6 +57,7 @@ import _poolFerrovore from "../pool/ferrovore.js";
 import _poolFetidHorror from "../pool/fetid-horror.js";
 import _poolFieryIntervention from "../pool/fiery-intervention.js";
 import _poolFlamebornViron from "../pool/flameborn-viron.js";
+import _poolFloweringOfTheWhiteTree from "../pool/flowering-of-the-white-tree.js";
 import _poolFlowstoneOverseer from "../pool/flowstone-overseer.js";
 import _poolFuriousStrength from "../pool/furious-strength.js";
 import _poolGalecasterColossus from "../pool/galecaster-colossus.js";
@@ -235,6 +238,7 @@ const shard: CardShard = {
     _poolDawnGryff,
     _poolDaysquadMarshal,
     _poolDazzlingAngel,
+    _poolDescentIntoAvernus,
     _poolDestructiveDigger,
     _poolDevilsPlay,
     _poolDictateOfHeliod,
@@ -244,6 +248,7 @@ const shard: CardShard = {
     _poolDosansOldestChant,
     _poolDreadmalkin,
     _poolDruidOfTheAnima,
+    _poolDwarvenMine,
     _poolDwarvenRuins,
     _poolEliteInstructor,
     _poolElvishRanger,
@@ -256,6 +261,7 @@ const shard: CardShard = {
     _poolFetidHorror,
     _poolFieryIntervention,
     _poolFlamebornViron,
+    _poolFloweringOfTheWhiteTree,
     _poolFlowstoneOverseer,
     _poolFuriousStrength,
     _poolGalecasterColossus,

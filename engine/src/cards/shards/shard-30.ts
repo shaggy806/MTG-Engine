@@ -23,6 +23,7 @@ import _poolAzulaAlwaysLies from "../pool/azula-always-lies.js";
 import _poolBilboBirthdayCelebrant from "../pool/bilbo-birthday-celebrant.js";
 import _poolBlackPantherVanguard from "../pool/black-panther-vanguard.js";
 import _poolBlackbladeReforged from "../pool/blackblade-reforged.js";
+import _poolBlightedWoodland from "../pool/blighted-woodland.js";
 import _poolBloodArtist from "../pool/blood-artist.js";
 import _poolBloodPet from "../pool/blood-pet.js";
 import _poolBloodbraidElf from "../pool/bloodbraid-elf.js";
@@ -101,6 +102,7 @@ import _poolKeenEyedArchers from "../pool/keen-eyed-archers.js";
 import _poolKingpinsEnforcers from "../pool/kingpins-enforcers.js";
 import _poolLavaglidePathway from "../pool/lavaglide-pathway.js";
 import _poolLightOfHope from "../pool/light-of-hope.js";
+import _poolLootExuberantExplorer from "../pool/loot-exuberant-explorer.js";
 import _poolLoporritScout from "../pool/loporrit-scout.js";
 import _poolLumengridGargoyle from "../pool/lumengrid-gargoyle.js";
 import _poolManyPartings from "../pool/many-partings.js";
@@ -217,6 +219,7 @@ const shard: CardShard = {
     _poolBilboBirthdayCelebrant,
     _poolBlackPantherVanguard,
     _poolBlackbladeReforged,
+    _poolBlightedWoodland,
     _poolBloodArtist,
     _poolBloodPet,
     _poolBloodbraidElf,
@@ -295,6 +298,7 @@ const shard: CardShard = {
     _poolKingpinsEnforcers,
     _poolLavaglidePathway,
     _poolLightOfHope,
+    _poolLootExuberantExplorer,
     _poolLoporritScout,
     _poolLumengridGargoyle,
     _poolManyPartings,
