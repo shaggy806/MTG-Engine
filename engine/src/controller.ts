@@ -1018,6 +1018,7 @@ function castExtras(
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
     ...(legal.offspring === true ? { offspring: true } : {}),
+    ...(legal.evoke === true ? { evoke: true, evokeCost: legal.evokeCost } : {}),
     // Prototyped is a variant of its own, like kicked: echoed back.
     ...(legal.prototype === true ? { prototype: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),

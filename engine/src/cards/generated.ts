@@ -275,6 +275,7 @@ import _poolAshBarrens from "./pool/ash-barrens.js";
 import _poolAshcoatBear from "./pool/ashcoat-bear.js";
 import _poolAshenMonstrosity from "./pool/ashen-monstrosity.js";
 import _poolAshenmoorGouger from "./pool/ashenmoor-gouger.js";
+import _poolAshlingTheLimitless from "./pool/ashling-the-limitless.js";
 import _poolAshnodsAltar from "./pool/ashnods-altar.js";
 import _poolAspectOfGorgon from "./pool/aspect-of-gorgon.js";
 import _poolAspectOfLamprey from "./pool/aspect-of-lamprey.js";
@@ -1795,6 +1796,7 @@ import _poolFortuitousFind from "./pool/fortuitous-find.js";
 import _poolForumOfAmity from "./pool/forum-of-amity.js";
 import _poolFoulFamiliar from "./pool/foul-familiar.js";
 import _poolFoulOrchard from "./pool/foul-orchard.js";
+import _poolFoundationBreaker from "./pool/foundation-breaker.js";
 import _poolFoundryInspector from "./pool/foundry-inspector.js";
 import _poolFoundryOfTheConsuls from "./pool/foundry-of-the-consuls.js";
 import _poolFountainOfRenewal from "./pool/fountain-of-renewal.js";
@@ -3171,6 +3173,7 @@ import _poolMsBumbleflower from "./pool/ms-bumbleflower.js";
 import _poolMuckRats from "./pool/muck-rats.js";
 import _poolMudbuttonTorchrunner from "./pool/mudbutton-torchrunner.js";
 import _poolMuldrothaTheGravetide from "./pool/muldrotha-the-gravetide.js";
+import _poolMulldrifter from "./pool/mulldrifter.js";
 import _poolMummyParamount from "./pool/mummy-paramount.js";
 import _poolMundasVanguard from "./pool/mundas-vanguard.js";
 import _poolMurasaBrute from "./pool/murasa-brute.js";
@@ -3307,6 +3310,7 @@ import _poolNoxiousRevival from "./pool/noxious-revival.js";
 import _poolNoxiousToad from "./pool/noxious-toad.js";
 import _poolNukaColaVendingMachine from "./pool/nuka-cola-vending-machine.js";
 import _poolNullBrooch from "./pool/null-brooch.js";
+import _poolNulldrifter from "./pool/nulldrifter.js";
 import _poolNullmageShepherd from "./pool/nullmage-shepherd.js";
 import _poolNurturingPeatland from "./pool/nurturing-peatland.js";
 import _poolNyleasForerunner from "./pool/nyleas-forerunner.js";
@@ -3843,6 +3847,7 @@ import _poolReturnOfTheWildspeaker from "./pool/return-of-the-wildspeaker.js";
 import _poolReturnToBattle from "./pool/return-to-battle.js";
 import _poolReturnToNature from "./pool/return-to-nature.js";
 import _poolReturnedCentaur from "./pool/returned-centaur.js";
+import _poolReveillark from "./pool/reveillark.js";
 import _poolRevelsongHorn from "./pool/revelsong-horn.js";
 import _poolRevitalize from "./pool/revitalize.js";
 import _poolRevitalizingRepast from "./pool/revitalizing-repast.js";
@@ -4285,6 +4290,7 @@ import _poolShortSword from "./pool/short-sword.js";
 import _poolShowOfValor from "./pool/show-of-valor.js";
 import _poolShriekOfDread from "./pool/shriek-of-dread.js";
 import _poolShriekdiver from "./pool/shriekdiver.js";
+import _poolShriekmaw from "./pool/shriekmaw.js";
 import _poolShrikeForce from "./pool/shrike-force.js";
 import _poolShrink from "./pool/shrink.js";
 import _poolShroofusSproutsire from "./pool/shroofus-sproutsire.js";
@@ -6152,6 +6158,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAshcoatBear,
   _poolAshenMonstrosity,
   _poolAshenmoorGouger,
+  _poolAshlingTheLimitless,
   _poolAshnodsAltar,
   _poolAspectOfGorgon,
   _poolAspectOfLamprey,
@@ -7672,6 +7679,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolForumOfAmity,
   _poolFoulFamiliar,
   _poolFoulOrchard,
+  _poolFoundationBreaker,
   _poolFoundryInspector,
   _poolFoundryOfTheConsuls,
   _poolFountainOfRenewal,
@@ -9048,6 +9056,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMuckRats,
   _poolMudbuttonTorchrunner,
   _poolMuldrothaTheGravetide,
+  _poolMulldrifter,
   _poolMummyParamount,
   _poolMundasVanguard,
   _poolMurasaBrute,
@@ -9184,6 +9193,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNoxiousToad,
   _poolNukaColaVendingMachine,
   _poolNullBrooch,
+  _poolNulldrifter,
   _poolNullmageShepherd,
   _poolNurturingPeatland,
   _poolNyleasForerunner,
@@ -9720,6 +9730,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolReturnToBattle,
   _poolReturnToNature,
   _poolReturnedCentaur,
+  _poolReveillark,
   _poolRevelsongHorn,
   _poolRevitalize,
   _poolRevitalizingRepast,
@@ -10162,6 +10173,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShowOfValor,
   _poolShriekOfDread,
   _poolShriekdiver,
+  _poolShriekmaw,
   _poolShrikeForce,
   _poolShrink,
   _poolShroofusSproutsire,

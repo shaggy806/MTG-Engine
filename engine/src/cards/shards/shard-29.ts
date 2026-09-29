@@ -87,6 +87,7 @@ import _poolMessengersSpeed from "../pool/messengers-speed.js";
 import _poolMistLeopard from "../pool/mist-leopard.js";
 import _poolMistvaultBridge from "../pool/mistvault-bridge.js";
 import _poolMorgueTheft from "../pool/morgue-theft.js";
+import _poolMulldrifter from "../pool/mulldrifter.js";
 import _poolNaturesSpiral from "../pool/natures-spiral.js";
 import _poolNecroblossomSnarl from "../pool/necroblossom-snarl.js";
 import _poolNephaliaDrownyard from "../pool/nephalia-drownyard.js";
@@ -254,6 +255,7 @@ const shard: CardShard = {
     _poolMistLeopard,
     _poolMistvaultBridge,
     _poolMorgueTheft,
+    _poolMulldrifter,
     _poolNaturesSpiral,
     _poolNecroblossomSnarl,
     _poolNephaliaDrownyard,

@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**328 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**329 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -16,10 +16,10 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `keyword:evoke` (+1), `zone:cast-cards-you-dont-own` (+1), `zone:visibility-extensions` (+2),
-  `keyword:toxic` (+1), `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `zone:cast-cards-you-dont-own` (+1), `zone:visibility-extensions` (+2), `keyword:toxic` (+1),
+  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
   `zone:cast-from-library-top` (+2), `zone:play-from-exile-with-counter` (+2),
-  `trigger:discards-extensions` (+1), `keyword:blitz` (+1).
+  `trigger:discards-extensions` (+1), `keyword:blitz` (+1), `keyword:mayhem` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `decision:copy-new-targets` and `zone:visibility-extensions`
   (12 each), `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each). Live numbers come
@@ -34,6 +34,10 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
+- **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
+  mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
+  by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
+  carry yet (`evokeCostsOf` in `game.ts`). Fury needs damage divided among targets as well.
 - **Top-5000 batch 4 (2026-09-28) took the cards the debt fixes unblocked:** 15 authored
   (regeneration, Strive's Twinflame, Will of the Temur, …); 10 still blocked, each named in
   `engine/data/sweep-3/B4.json`. The two cheapest wins there: a count of a *targeted* player's
@@ -43,7 +47,7 @@ that one card is the reason the deck exists.
   your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
   Faces (Embalm through its Clone ability).
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,494 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,499 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped; past those, nothing is triaged.
@@ -120,6 +124,12 @@ that one card is the reason the deck exists.
 
 ## Engine rules gaps
 
+- **Explore auto-determining the best trigger stacking order.** Simultaneous triggers a player
+  controls go on the stack in detection order (`placePendingTriggers` in `game.ts`), never the
+  player's choice (603.3b). Explore whether the engine could pick the best order itself, as an
+  alternative to (or default for) the `decision:trigger-order` decision that blocks Tifa,
+  Yarok, Hero of Bladehold and evoke creatures with order-dependent ETBs. Evoke's sacrifice
+  already uses a hard-coded stand-in (`TriggeredAbility.stackFirst`: resolve after the ETBs).
 - **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
   "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
   the Ring lands), banding, Companion,

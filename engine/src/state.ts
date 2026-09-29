@@ -442,6 +442,10 @@ export interface GameObject {
    * permanent it becomes gets offspring's trigger as it enters. Cleared on
    * any zone change after that. */
   offspringGrantPaid?: boolean;
+  /** This spell was cast for its evoke cost (rule 702.74): the permanent it
+   * becomes gets evoke's sacrifice trigger as it enters. Cleared on any
+   * zone change after that. */
+  evokePaid?: boolean;
   /** This spell was cast for its overload cost (rule 702.126 — Cyclonic
    * Rift): its overload cost was paid instead of its mana cost, with no
    * targets, so `resolveTopOfStack` applies `CardDefinition.overload.effect`.
@@ -969,6 +973,8 @@ export interface PendingTrigger {
   readonly cardName: string;
   readonly abilityIndex: number;
   readonly controller: PlayerId;
+  /** Its ability's `stackFirst`: placed before its controller's others. */
+  readonly stackFirst?: boolean;
   /** A target the triggering *event* determines (not chosen) — e.g. the
    * player a saboteur just dealt combat damage to. Fills the ability's target
    * slots in order, ahead of any `chooseTargets` prompt. */

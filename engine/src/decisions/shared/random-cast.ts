@@ -64,6 +64,7 @@ export function randomCast(
     ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
     ...(legal.kicked === true ? { kicked: true } : {}),
     ...(legal.offspring === true ? { offspring: true } : {}),
+    ...(legal.evoke === true ? { evoke: true, evokeCost: legal.evokeCost } : {}),
     ...(legal.prototype === true ? { prototype: true } : {}),
     ...(legal.overload === true ? { overload: true } : {}),
     ...(legal.free === true ? { free: true } : {}),

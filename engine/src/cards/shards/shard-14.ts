@@ -149,6 +149,7 @@ import _poolShatter from "../pool/shatter.js";
 import _poolShelteringLight from "../pool/sheltering-light.js";
 import _poolShivanGorge from "../pool/shivan-gorge.js";
 import _poolShorecomberCrab from "../pool/shorecomber-crab.js";
+import _poolShriekmaw from "../pool/shriekmaw.js";
 import _poolShuFootSoldiers from "../pool/shu-foot-soldiers.js";
 import _poolSiegeZombie from "../pool/siege-zombie.js";
 import _poolSilverRaven from "../pool/silver-raven.js";
@@ -335,6 +336,7 @@ const shard: CardShard = {
     _poolShelteringLight,
     _poolShivanGorge,
     _poolShorecomberCrab,
+    _poolShriekmaw,
     _poolShuFootSoldiers,
     _poolSiegeZombie,
     _poolSilverRaven,

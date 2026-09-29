@@ -963,6 +963,16 @@ export interface StaticAbility {
    */
   readonly grantsOffspringToSpells?: { readonly cost: string; readonly filter?: CardFilter };
   /**
+   * The spells this permanent's controller casts that match `filter` gain
+   * evoke for `cost` as they're cast (rule 702.74) — Ashling, the Limitless's
+   * "Elemental permanent spells you cast from your hand gain evoke {4} as you
+   * cast them": offered as the cast's `evoke` variant, exactly as a printed
+   * evoke is. `fromHand` limits it to spells cast from the hand. The
+   * permanent such a spell becomes keeps evoke's trigger even if this
+   * permanent has left by then (the ruling).
+   */
+  readonly grantsEvokeToSpells?: { readonly cost: string; readonly filter?: CardFilter; readonly fromHand?: boolean };
+  /**
    * Keywords and abilities the spells this permanent's controller casts have
    * while they're on the stack (rule 113.6 — a spell's abilities work there):
    * Abaddon the Despoiler's "during your turn, spells you cast from your hand
@@ -1496,6 +1506,15 @@ export interface CardDefinition {
    */
   readonly warp: { readonly cost: string } | null;
   /**
+   * Evoke (rule 702.74 — Mulldrifter): "You may cast this spell by paying
+   * [cost] rather than paying its mana cost" and "When this permanent
+   * enters, if its evoke cost was paid, its controller sacrifices it." An
+   * alternative cost, offered as the cast's `evoke` variant wherever the
+   * card may be cast for its mana cost; the sacrifice trigger is given to
+   * the permanent as it enters. `null` for none.
+   */
+  readonly evoke: { readonly cost: string } | null;
+  /**
    * Prototype (rule 718 — Combat Thresher: "Prototype {2}{W} — 1/1"): it may
    * be cast with this mana cost and power/toughness instead, and the colors
    * of that cost. Not an alternative cost — offered as its own `cast-spell`
@@ -1676,6 +1695,7 @@ const PRINTED_ABILITY: {
   flashback: (def) => def.flashback !== null,
   foretell: (def) => def.foretell !== null,
   warp: (def) => def.warp !== null,
+  evoke: (def) => def.evoke !== null,
   prototype: (def) => def.prototype !== null,
   escape: (def) => def.escape !== null,
   suspend: (def) => def.suspend !== null,
@@ -1804,6 +1824,7 @@ interface CardDraft {
   flashback?: { readonly cost: string; readonly payLife?: number };
   foretell?: { readonly cost: string };
   warp?: { readonly cost: string };
+  evoke?: { readonly cost: string };
   prototype?: { readonly cost: string; readonly power: number; readonly toughness: number };
   suspend?: { readonly n: number; readonly cost: string };
   cycling?: { readonly cost: string; readonly search?: CardFilter };
@@ -1883,6 +1904,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     flashback: draft.flashback ?? null,
     foretell: draft.foretell ?? null,
     warp: draft.warp ?? null,
+    evoke: draft.evoke ?? null,
     prototype: draft.prototype ?? null,
     suspend: draft.suspend ?? null,
     cycling: draft.cycling ?? null,

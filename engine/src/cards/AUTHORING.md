@@ -284,6 +284,7 @@ from the same link.
 | `foretell` | `{ cost }` | pay `{2}` to exile face-down, cast later for `cost` |
 | `prototype` | `{ cost, power, toughness }` | **Prototype** (rule 718 — Combat Thresher's "Prototype {2}{W} — 1/1"): not an alternative cost, but a variant of every cast (`prototype: true` on the `cast-spell` offer). Cast that way the spell has the prototype mana cost, that cost's colors and that power/toughness — copiable values, so a copy of the spell or the permanent has them too — from the stack onto the battlefield, and is its printed self everywhere else. Its legality and cost are worked out as the prototyped spell (a white {2}{W} spell, mana value 3). |
 | `warp` | `{ cost }` | **Warp** (rule 702.185 — Starfield Vocalist): an alternative cost from the hand, offered as a `cast-spell` with `via: "warp"`. The permanent it becomes gets a delayed trigger exiling it at the beginning of the next end step (it finds nothing if the permanent left and came back), and its owner may cast the exiled card for its mana cost from the next turn on, for as long as it stays exiled. |
+| `evoke` | `{ cost }` | **Evoke** (rule 702.74 — Mulldrifter): an alternative cost, offered as the cast's `evoke` variant (echoed back with its `evokeCost`) wherever the card may be cast for its mana cost — the hand, the command zone, an impulse or graveyard permission — beside kicker or an additional cost's branch, never beside overload, a free cast or another alternative cost (118.9a). Paid, the permanent it becomes gets "when this permanent enters, its controller sacrifices it" as it enters. That trigger goes on the stack before its controller's other triggers of the moment (`TriggeredAbility.stackFirst`), so the creature's own enters abilities resolve first, while it's still there — the order the rulings describe; the engine doesn't yet ask (`decision:trigger-order`), so don't author an evoke card whose enters ability would want the other order. Mana costs only: the Incarnations' "Evoke—Exile a green card from your hand" isn't expressible. Put the printed evoke line in `text`. |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
 | `suspend` | `{ n, cost }` | exile with N time counters; cast free at 0 with haste |
 | `cycling` | `{ cost, search? }` | pay `cost`, discard this card, draw a card (rule 702.29). With `search` it's **landcycling / typecycling** (702.29f — Migratory Route's "Basic landcycling {2}"): the same special action, but a library search into your hand instead of the draw. |
@@ -1939,6 +1940,14 @@ anthem, the keyword grant and the granted trigger like any other creature.
   its own additional cost beside any kicker or printed offspring (702.175b),
   offered as the cast's `offspring` variant; paid, the permanent enters
   with offspring's trigger.
+- `grantsEvokeToSpells: { cost, filter?, fromHand? }` — the spells you cast
+  that match `filter` gain evoke for `cost` as you cast them (rule 702.74 —
+  Ashling, the Limitless's "Elemental permanent spells you cast from your
+  hand gain evoke {4}" is `{ cost: "{4}", filter: { subtype: "Elemental",
+  notTypes: ["instant", "sorcery"] }, fromHand: true }`): offered exactly as
+  a printed `evoke` is, and a card with evoke of its own is offered both
+  (each its own `evokeCost`). The permanent keeps evoke's trigger if the
+  granting permanent leaves before the spell resolves (the ruling).
 - `grantsWarpInHand: { cost, filter }` — cards matching `filter` in your
   hand have warp for `cost` (rule 702.185 — Tannuk, Steadfast Second's
   "artifact cards and red creature cards in your hand have warp {2}{R}"):

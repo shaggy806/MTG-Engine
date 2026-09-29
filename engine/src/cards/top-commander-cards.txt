@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1494 already implemented / 3506 missing (marks refreshed 2026-09-29)
+1499 already implemented / 3501 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -593,7 +593,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   594  Gloomlake Verge                          {0}              Land
 [ ]   595  Tibalt's Trickery                        {1}{R}           Instant
 [x]   596  Puresteel Paladin                        {W}{W}           Creature — Human Knight
-[ ]   597  Mulldrifter                              {4}{U}           Creature — Elemental
+[x]   597  Mulldrifter                              {4}{U}           Creature — Elemental
 [ ]   598  Strionic Resonator                       {2}              Artifact
 [x]   599  Corrupted Conviction                     {B}              Instant
 [x]   600  Crucible of Worlds                       {3}              Artifact
@@ -1578,7 +1578,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1585  Desynchronization                        {2}{U}{U}        Instant
 [x]  1586  Deserted Temple                          {0}              Land
 [ ]  1587  Ouroboroid                               {2}{G}{G}        Creature — Plant Wurm
-[ ]  1588  Shriekmaw                                {4}{B}           Creature — Elemental
+[x]  1588  Shriekmaw                                {4}{B}           Creature — Elemental
 [x]  1589  Whirlwind of Thought                     {1}{U}{R}{W}     Enchantment
 [ ]  1590  Goblin Welder                            {R}              Creature — Goblin Artificer
 [ ]  1591  Kiora's Follower                         {G}{U}           Creature — Merfolk
@@ -2481,7 +2481,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2488  Captivating Vampire                      {1}{B}{B}        Creature — Vampire
 [ ]  2489  The Regalia                              {4}              Legendary Artifact — Vehicle
 [ ]  2490  Agna Qel'a                               {0}              Land
-[ ]  2491  Nulldrifter                              {7}              Creature — Eldrazi Elemental
+[x]  2491  Nulldrifter                              {7}              Creature — Eldrazi Elemental
 [x]  2492  Hordeling Outburst                       {1}{R}{R}        Sorcery
 [ ]  2493  Powerbalance                             {R}{R}           Enchantment
 [ ]  2494  Envoy of the Ancestors                   {2}{W}           Creature — Human Cleric
@@ -2926,7 +2926,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2933  Duplicant                                {6}              Artifact Creature — Shapeshifter
 [ ]  2934  Savage Beating                           {3}{R}{R}        Instant
 [ ]  2935  Brokers Ascendancy                       {G}{W}{U}        Enchantment
-[ ]  2936  Foundation Breaker                       {3}{G}           Creature — Elemental
+[x]  2936  Foundation Breaker                       {3}{G}           Creature — Elemental
 [ ]  2937  Toph, Hardheaded Teacher                 {2}{R}{G}        Legendary Creature — Human Warrior Ally
 [ ]  2938  Angel of Destiny                         {3}{W}{W}        Creature — Angel Cleric
 [ ]  2939  Necroskitter                             {1}{B}{B}        Creature — Elemental
@@ -3600,7 +3600,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3607  Spider-Punk                              {1}{R}           Legendary Creature — Spider Human Hero
 [ ]  3608  Bramble Familiar // Fetch Quest          {1}{G} // {5}{G}{G} Creature — Elemental Raccoon // Sorcery — Adventure
 [x]  3609  Parapet Thrasher                         {2}{R}{R}        Creature — Dragon
-[ ]  3610  Reveillark                               {4}{W}           Creature — Elemental
+[x]  3610  Reveillark                               {4}{W}           Creature — Elemental
 [ ]  3611  Rootcast Apprenticeship                  {3}{G}           Sorcery
 [ ]  3612  Risky Shortcut                           {2}{B}           Sorcery
 [ ]  3613  Mind's Desire                            {4}{U}{U}        Sorcery

@@ -189,6 +189,12 @@ export type Action =
        * Valley's Voice): its own additional cost beside any kicker (rule
        * 702.175b). Echoed from the offer's `offspring`. */
       readonly offspring?: boolean;
+      /** Cast for its evoke cost (rule 702.74) instead of its mana cost —
+       * printed, or granted (Ashling, the Limitless). Echoed from the
+       * offer's `evoke`, with `evokeCost` naming which evoke when it has
+       * more than one (the first when left out). */
+      readonly evoke?: boolean;
+      readonly evokeCost?: string;
       /** Cast it prototyped (rule 718): with its prototype mana cost, colors
        * and power/toughness. Only for a card with `CardDefinition.prototype`. */
       readonly prototype?: boolean;
@@ -578,6 +584,11 @@ export type LegalAction =
        * labelling. */
       readonly offspring?: true;
       readonly offspringCost?: string;
+      /** A variant cast for its evoke cost (rule 702.74) — echoed back as
+       * the action's `evoke` and `evokeCost` (one offer per distinct evoke
+       * cost: Mulldrifter under Ashling has {2}{U} and {4}). */
+      readonly evoke?: true;
+      readonly evokeCost?: string;
       /** A prototyped cast (rule 718) — echoed back as the action's
        * `prototype`; `prototypeCost` is the cost it pays, for labelling. */
       readonly prototype?: true;

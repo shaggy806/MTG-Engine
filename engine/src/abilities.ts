@@ -942,6 +942,14 @@ export interface TriggeredAbility {
    * an unmarked one on the same card still doesn't appear.
    */
   readonly fromCommandZone?: boolean;
+  /**
+   * Goes on the stack before its controller's other triggers of the same
+   * moment, so it resolves after them. The engine doesn't yet ask a player
+   * to order simultaneous triggers (rule 603.3b), so this stands in for the
+   * order that's never worse — only evoke's sacrifice trigger sets it, so
+   * the creature's own enters abilities resolve first (the evoke rulings).
+   */
+  readonly stackFirst?: boolean;
   readonly trigger: TriggerSpec;
   readonly targets: readonly TargetSpec[];
   readonly effect: EffectSpec | null;

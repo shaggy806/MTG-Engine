@@ -518,6 +518,13 @@ in `git log`.
   that creature deals combat damage to a player this turn", firing each time
   (Captain Howler, Sea Scourge; `commanders-doom-howler.test.ts`), which
   finishes the feature.
+- **Evoke** (`keyword:evoke`, rule 702.74) — `evoke: { cost }`, the cast's
+  `evoke` variant, and the sacrifice trigger given as the permanent enters,
+  stacked first so its own enters abilities resolve before it
+  (`TriggeredAbility.stackFirst`); `grantsEvokeToSpells` for Ashling, the
+  Limitless (Mulldrifter, Shriekmaw, Nulldrifter, Foundation Breaker,
+  Reveillark; `evoke.test.ts`, `commanders-ashling.test.ts`). The
+  Incarnations' "exile a card from your hand" evoke cost is still open.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

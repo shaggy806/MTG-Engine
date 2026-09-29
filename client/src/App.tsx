@@ -159,6 +159,7 @@ function graveyardVariantLabel(
     if (a.kicked) parts.push(`${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''}`.trim())
     if (a.prototype) parts.push(`prototype ${a.prototypeCost ?? ''}`.trim())
     if (a.offspring) parts.push(`offspring ${a.offspringCost ?? ''}`.trim())
+    if (a.evoke) parts.push(`evoke ${a.evokeCost ?? ''}`.trim())
   }
   return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
@@ -171,6 +172,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.kicked === true ? { kicked: true } : {}),
   ...(cast.prototype === true ? { prototype: true } : {}),
   ...(cast.offspring === true ? { offspring: true } : {}),
+  ...(cast.evoke === true ? { evoke: true, evokeCost: cast.evokeCost } : {}),
   ...(cast.overload === true ? { overload: true } : {}),
   ...(cast.free === true ? { free: true } : {}),
   // Each is a variant of its own too: without the flag the engine reads the
@@ -287,6 +289,10 @@ interface Targeting {
   readonly prototype?: boolean
   /** Paying a granted offspring cost too (Zinnia) — echoed back like `kicked`. */
   readonly offspring?: boolean
+  /** Casting this for its evoke cost (rule 702.74) — echoed back like `kicked`,
+   * with which evoke cost when it has more than one. */
+  readonly evoke?: boolean
+  readonly evokeCost?: string
   /** Casting this for its overload cost (rule 702.126) instead of its mana
    * cost — no targets are chosen for this variant. */
   readonly overload?: boolean
@@ -1264,6 +1270,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         | 'kicked'
         | 'prototype'
         | 'offspring'
+        | 'evoke'
+        | 'evokeCost'
         | 'overload'
         | 'free'
         | 'manaColors'
@@ -1291,6 +1299,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                 ...(t.kicked === true ? { kicked: true } : {}),
                 ...(t.prototype === true ? { prototype: true } : {}),
                 ...(t.offspring === true ? { offspring: true } : {}),
+                ...(t.evoke === true ? { evoke: true, evokeCost: t.evokeCost } : {}),
                 ...(t.overload === true ? { overload: true } : {}),
                 ...(t.free === true ? { free: true } : {}),
                 ...(t.altCost === true ? { altCost: true } : {}),
@@ -3084,6 +3093,7 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             {c.free ? ' (free)' : ''}
             {c.prototype ? <> (prototype <Symbols text={c.prototypeCost ?? ''} />)</> : null}
             {c.offspring ? <> (offspring <Symbols text={c.offspringCost ?? ''} />)</> : null}
+            {c.evoke ? <> (evoke <Symbols text={c.evokeCost ?? ''} />)</> : null}
           </button>
         ))}
         <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
@@ -3945,6 +3955,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
                       {a.kind === 'cast-spell' && a.offspring ? (
                         <> (offspring <Symbols text={a.offspringCost ?? ''} />)</>
+                      ) : null}
+                      {a.kind === 'cast-spell' && a.evoke ? (
+                        <> (evoke <Symbols text={a.evokeCost ?? ''} />)</>
                       ) : null}
                       {a.kind === 'cast-spell' && a.prototype ? (
                         <> (prototype <Symbols text={a.prototypeCost ?? ''} />)</>

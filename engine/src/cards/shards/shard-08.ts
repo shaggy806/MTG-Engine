@@ -69,6 +69,7 @@ import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
 import _poolFireUrchin from "../pool/fire-urchin.js";
+import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
 import _poolGlaringAegis from "../pool/glaring-aegis.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
@@ -265,6 +266,7 @@ const shard: CardShard = {
     _poolFerociousCharge,
     _poolFireDrake,
     _poolFireUrchin,
+    _poolFoundationBreaker,
     _poolFrostOgre,
     _poolGlaringAegis,
     _poolGoldenTailDisciple,

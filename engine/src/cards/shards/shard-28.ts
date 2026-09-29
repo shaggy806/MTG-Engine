@@ -124,6 +124,7 @@ import _poolRazorvergeThicket from "../pool/razorverge-thicket.js";
 import _poolRedcapThief from "../pool/redcap-thief.js";
 import _poolResistanceSkywarden from "../pool/resistance-skywarden.js";
 import _poolResoluteReinforcements from "../pool/resolute-reinforcements.js";
+import _poolReveillark from "../pool/reveillark.js";
 import _poolReviveTheShire from "../pool/revive-the-shire.js";
 import _poolRimeshieldFrostGiant from "../pool/rimeshield-frost-giant.js";
 import _poolRobeOfMirrors from "../pool/robe-of-mirrors.js";
@@ -309,6 +310,7 @@ const shard: CardShard = {
     _poolRedcapThief,
     _poolResistanceSkywarden,
     _poolResoluteReinforcements,
+    _poolReveillark,
     _poolReviveTheShire,
     _poolRimeshieldFrostGiant,
     _poolRobeOfMirrors,

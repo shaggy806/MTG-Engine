@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-328 already implemented / 172 missing
+329 already implemented / 171 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -40,7 +40,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   34  Frodo, Adventurous Hobbit                      26958 decks  {W}{B}           Legendary Creature — Halfling Scout
 [x]   35  Sam, Loyal Attendant                           26958 decks  {1}{G}{W}        Legendary Creature — Halfling Peasant
 [x]   36  Hashaton, Scarab's Fist                        26919 decks  {W}{B}           Legendary Creature — Zombie Wizard
-[ ]   37  Ashling, the Limitless                         26287 decks  {2}{R}           Legendary Creature — Elemental Sorcerer
+[x]   37  Ashling, the Limitless                         26287 decks  {2}{R}           Legendary Creature — Elemental Sorcerer
 [x]   38  Bello, Bard of the Brambles                    26266 decks  {1}{R}{G}        Legendary Creature — Raccoon Bard
 [x]   39  Esika, God of the Tree                         26010 decks  {1}{G}{G}        Legendary Creature — God // Legendary Enchantment
 [ ]   40  Hakbal of the Surging Soul                     25305 decks  {2}{G}{U}        Legendary Creature — Merfolk Scout
