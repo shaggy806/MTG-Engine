@@ -127,6 +127,7 @@ import _poolRottingRegisaur from "../pool/rotting-regisaur.js";
 import _poolRuricThar from "../pool/ruric-thar.js";
 import _poolRydiaSummonerOfMist from "../pool/rydia-summoner-of-mist.js";
 import _poolSailorOfMeans from "../pool/sailor-of-means.js";
+import _poolSatyaAetherfluxGenius from "../pool/satya-aetherflux-genius.js";
 import _poolSavaiSabertooth from "../pool/savai-sabertooth.js";
 import _poolSavor from "../pool/savor.js";
 import _poolScarletWitchWandaMaximoff from "../pool/scarlet-witch-wanda-maximoff.js";
@@ -303,6 +304,7 @@ const shard: CardShard = {
     _poolRuricThar,
     _poolRydiaSummonerOfMist,
     _poolSailorOfMeans,
+    _poolSatyaAetherfluxGenius,
     _poolSavaiSabertooth,
     _poolSavor,
     _poolScarletWitchWandaMaximoff,

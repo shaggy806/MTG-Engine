@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-324 already implemented / 176 missing
+325 already implemented / 175 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -145,7 +145,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  139  Brago, King Eternal                            15135 decks  {2}{W}{U}        Legendary Creature — Spirit Noble
 [x]  140  Lord of the Nazgûl                             15118 decks  {3}{U}{B}        Legendary Creature — Wraith Noble
 [x]  141  Iroh, Grand Lotus                              14966 decks  {3}{G}{U}{R}     Legendary Creature — Human Noble Ally
-[ ]  142  Satya, Aetherflux Genius                       14905 decks  {1}{U}{R}{W}     Legendary Creature — Human Artificer
+[x]  142  Satya, Aetherflux Genius                       14905 decks  {1}{U}{R}{W}     Legendary Creature — Human Artificer
 [x]  143  Lightning, Army of One                         14834 decks  {1}{R}{W}        Legendary Creature — Human Soldier
 [x]  144  Kibo, Uktabi Prince                            14790 decks  {2}{G}           Legendary Creature — Monkey Noble
 [ ]  145  Satoru Umezawa                                 14657 decks  {1}{U}{B}        Legendary Creature — Human Ninja

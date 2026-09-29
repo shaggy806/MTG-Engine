@@ -506,6 +506,11 @@ in `git log`.
   is "for each of them, create a copy of it" over that entry, carried in
   `LastKnownRefs.enteredTogether` (`effect:token-copy-options` — Kambal,
   Profiteering Mayor; `token-copy-entered-together.test.ts`).
+- **Delayed triggers over what was just made** (part of
+  `effect:delayed-trigger-extensions`) — `delayed-trigger`'s `about`, with
+  the `"created"` this-way kind: the delayed ability's targets are the
+  tokens its resolution created (Satya, Aetherflux Genius;
+  `commanders-satya.test.ts`).
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

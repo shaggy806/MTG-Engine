@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**324 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**325 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -16,10 +16,11 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ten, engine-only, with the commanders each fully unblocks:
-  `effect:delayed-trigger-extensions` (+1), `trigger:discards-extensions` (+1),
-  `keyword:connive` (+2), `keyword:evoke` (+1), `zone:cast-cards-you-dont-own` (+1),
-  `zone:visibility-extensions` (+2), `keyword:toxic` (+1), `cost:mana-spending-rules` (+3),
-  `zone:play-from-exile-with-counter` (+3), `effect:amount-aggregate` (+1).
+  `zone:cast-cards-you-dont-own` (+1), `zone:visibility-extensions` (+2), `keyword:toxic` (+1),
+  `cost:mana-spending-rules` (+3), `effect:amount-aggregate` (+1),
+  `zone:cast-from-library-top` (+2), `zone:play-from-exile-with-counter` (+2),
+  `trigger:discards-extensions` (+1), `keyword:connive` (+2),
+  `effect:delayed-trigger-extensions` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `decision:copy-new-targets` and `zone:visibility-extensions`
   (12 each), `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each). Live numbers come

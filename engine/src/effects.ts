@@ -537,7 +537,9 @@ export type ThisWayKind =
   | "exiled"
   | "returned-to-hand"
   | "put-into-graveyard"
-  | "put-onto-battlefield";
+  | "put-onto-battlefield"
+  /** Tokens it created (a compacted stack as each of its tokens). */
+  | "created";
 
 export type PlayerScope =
   | "each-player"
@@ -1348,6 +1350,12 @@ export type EffectSpec =
        * default, or the controller of a target slot (Arcane Denial hands its
        * "may draw two cards" to the player whose spell was countered). */
       readonly controller?: { readonly controllerOfTarget: number };
+      /** "At the beginning of the next end step, sacrifice **that token**"
+       * (Satya, Aetherflux Genius): the delayed ability's targets are what
+       * this resolution did this to so far — the token it just created —
+       * in place of the creating ability's own. With nothing done, no delayed
+       * ability is set up. */
+      readonly about?: ThisWayKind;
     }
   | {
       /** "That creature enters with two additional +1/+1 counters on it"
@@ -2946,6 +2954,8 @@ export interface EffectApi {
     effect: EffectSpec,
     text: string,
     controller: PlayerId,
+    /** Its targets, in place of the creating ability's (`about`). */
+    targets?: readonly TargetRef[],
   ): void;
   /** See the `"enters-with-counters"` {@link EffectSpec}. */
   entersWithCounters(target: TargetRef, counter: string, amount: number): void;
@@ -4482,6 +4492,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.text,
           controller,
         );
+        return;
+      }
+      if (spec.about !== undefined) {
+        const done = ctx.thisWay(spec.about).map((e) => ({ kind: "object", object: e.object }) as const);
+        if (done.length > 0) ctx.delayTrigger(spec.at, spec.effect, spec.text, controller, done);
         return;
       }
       ctx.delayTrigger(spec.at, spec.effect, spec.text, controller);

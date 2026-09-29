@@ -144,6 +144,16 @@ export function thisWayEntries(
           for (const { object, from } of event.arrivals) add(object, ownerOf(object), from === "battlefield");
         }
         break;
+      case "created":
+        // A token only ever enters by being created.
+        if (event.type === "permanent-entered-battlefield" && state.objects[event.object]?.isToken === true) {
+          const object = event.object;
+          if (!seen.has(object)) {
+            seen.add(object);
+            out.push({ object, player: state.objects[object].controller, departed: false, count: event.count ?? 1 });
+          }
+        }
+        break;
       case "put-onto-battlefield":
         // Moved there from a zone — not a token created, nor a permanent
         // spell resolving.

@@ -12682,11 +12682,22 @@ export class Game {
       putOnLibrary: (target, position) => {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
       },
-      delayTrigger: (at, effect, text, delayedController) =>
-        this.createDelayedTrigger(source, delayedController, at, effect, text, targets, targetZones, {
-          ...(triggerObject !== undefined ? { triggerObject } : {}),
-          refs,
-        }),
+      delayTrigger: (at, effect, text, delayedController, own) =>
+        this.createDelayedTrigger(
+          source,
+          delayedController,
+          at,
+          effect,
+          text,
+          own ?? targets,
+          own !== undefined
+            ? own.map((t) => (t.kind === "object" ? (this.state.objects[t.object]?.zone ?? null) : null))
+            : targetZones,
+          {
+            ...(triggerObject !== undefined ? { triggerObject } : {}),
+            refs,
+          },
+        ),
       entersWithCounters: (target, counter, amount) => {
         if (target.kind !== "object" || amount <= 0) return;
         const spell = this.state.objects[target.object];
