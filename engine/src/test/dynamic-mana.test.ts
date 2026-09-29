@@ -18,6 +18,7 @@ import { Game } from "../game.js";
 import { poolCounts, poolTotal } from "../mana.js";
 import { asPlayerId, createRng } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
+import { activePlayerOf } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -237,7 +238,7 @@ describe("Vivi Ornitier", () => {
     const { game, vivi } = setup();
     expect(canCast(game, game.debugSpawn("Opt", A, "hand"))).toBe(false);
     counters(game, vivi, 3);
-    game.advanceUntil((s) => s.turn.activePlayer === B && s.priority.holder === A);
+    game.advanceUntil((s) => activePlayerOf(s) === B && s.priority.holder === A);
     const opt = game.debugSpawn("Opt", A, "hand");
     expect(canCast(game, opt)).toBe(false);
   });

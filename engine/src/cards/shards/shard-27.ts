@@ -95,6 +95,7 @@ import _poolLumengridWarden from "../pool/lumengrid-warden.js";
 import _poolMagmaw from "../pool/magmaw.js";
 import _poolMasterDecoy from "../pool/master-decoy.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
+import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
 import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
 import _poolNegate from "../pool/negate.js";
@@ -280,6 +281,7 @@ const shard: CardShard = {
     _poolMagmaw,
     _poolMasterDecoy,
     _poolMidnightHaunting,
+    _poolMoltenGatekeeper,
     _poolMoonlitWake,
     _poolMosscoatGoriak,
     _poolNegate,

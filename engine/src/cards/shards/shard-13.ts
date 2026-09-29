@@ -189,6 +189,7 @@ import _poolZephyrCharge from "../pool/zephyr-charge.js";
 import _poolZndrspltEyeOfWisdom from "../pool/zndrsplt-eye-of-wisdom.js";
 import _tokensClueToken from "../tokens/clue-token.js";
 import _tokensHumanWarriorToken from "../tokens/human-warrior-token.js";
+import _tokensPegasusToken22 from "../tokens/pegasus-token-2-2.js";
 import _tokensSpiritToken from "../tokens/spirit-token.js";
 
 const shard: CardShard = {
@@ -381,6 +382,7 @@ const shard: CardShard = {
   tokens: [
     _tokensClueToken,
     _tokensHumanWarriorToken,
+    _tokensPegasusToken22,
     _tokensSpiritToken,
   ],
 };

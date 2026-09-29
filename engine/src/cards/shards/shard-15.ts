@@ -98,6 +98,7 @@ import _poolLanternKami from "../pool/lantern-kami.js";
 import _poolLarderZombie from "../pool/larder-zombie.js";
 import _poolLawlessBroker from "../pool/lawless-broker.js";
 import _poolLazotepReaver from "../pool/lazotep-reaver.js";
+import _poolLegionStronghold from "../pool/legion-stronghold.js";
 import _poolLeoninWarleader from "../pool/leonin-warleader.js";
 import _poolLightningRigCrew from "../pool/lightning-rig-crew.js";
 import _poolLoranOfTheThirdPath from "../pool/loran-of-the-third-path.js";
@@ -150,6 +151,7 @@ import _poolSliverOverlord from "../pool/sliver-overlord.js";
 import _poolSlumReaper from "../pool/slum-reaper.js";
 import _poolSnakeBasket from "../pool/snake-basket.js";
 import _poolSokenzanCrucibleOfDefiance from "../pool/sokenzan-crucible-of-defiance.js";
+import _poolSoulGuideLantern from "../pool/soul-guide-lantern.js";
 import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
@@ -291,6 +293,7 @@ const shard: CardShard = {
     _poolLarderZombie,
     _poolLawlessBroker,
     _poolLazotepReaver,
+    _poolLegionStronghold,
     _poolLeoninWarleader,
     _poolLightningRigCrew,
     _poolLoranOfTheThirdPath,
@@ -343,6 +346,7 @@ const shard: CardShard = {
     _poolSlumReaper,
     _poolSnakeBasket,
     _poolSokenzanCrucibleOfDefiance,
+    _poolSoulGuideLantern,
     _poolSoulWarden,
     _poolSpellscornCoven,
     _poolStormriderSpirit,

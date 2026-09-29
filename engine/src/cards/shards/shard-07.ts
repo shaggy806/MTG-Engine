@@ -49,6 +49,7 @@ import _poolDwarvenRuins from "../pool/dwarven-ruins.js";
 import _poolEliteInstructor from "../pool/elite-instructor.js";
 import _poolElvishRanger from "../pool/elvish-ranger.js";
 import _poolEmeraldDragonfly from "../pool/emerald-dragonfly.js";
+import _poolEnterTheEnigma from "../pool/enter-the-enigma.js";
 import _poolExultantSkymarcher from "../pool/exultant-skymarcher.js";
 import _poolFavoredOfIroas from "../pool/favored-of-iroas.js";
 import _poolFear from "../pool/fear.js";
@@ -159,6 +160,7 @@ import _poolSoaringLightbringer from "../pool/soaring-lightbringer.js";
 import _poolSokkasSwordTraining from "../pool/sokkas-sword-training.js";
 import _poolSoulSnare from "../pool/soul-snare.js";
 import _poolSpitfireLagac from "../pool/spitfire-lagac.js";
+import _poolStaffOfCompleation from "../pool/staff-of-compleation.js";
 import _poolStarscapeCleric from "../pool/starscape-cleric.js";
 import _poolStarvedRusalka from "../pool/starved-rusalka.js";
 import _poolStormscapeApprentice from "../pool/stormscape-apprentice.js";
@@ -254,6 +256,7 @@ const shard: CardShard = {
     _poolEliteInstructor,
     _poolElvishRanger,
     _poolEmeraldDragonfly,
+    _poolEnterTheEnigma,
     _poolExultantSkymarcher,
     _poolFavoredOfIroas,
     _poolFear,
@@ -364,6 +367,7 @@ const shard: CardShard = {
     _poolSokkasSwordTraining,
     _poolSoulSnare,
     _poolSpitfireLagac,
+    _poolStaffOfCompleation,
     _poolStarscapeCleric,
     _poolStarvedRusalka,
     _poolStormscapeApprentice,

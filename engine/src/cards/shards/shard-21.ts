@@ -13,6 +13,7 @@ import _poolAvenWindMage from "../pool/aven-wind-mage.js";
 import _poolAzlaskTheSwellingScourge from "../pool/azlask-the-swelling-scourge.js";
 import _poolBalaGedSanctuary from "../pool/bala-ged-sanctuary.js";
 import _poolBallistaSquad from "../pool/ballista-squad.js";
+import _poolBaneOfProgress from "../pool/bane-of-progress.js";
 import _poolBeastmasterAscension from "../pool/beastmaster-ascension.js";
 import _poolBlackMarketConnections from "../pool/black-market-connections.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
@@ -71,6 +72,7 @@ import _poolImperialRecruiter from "../pool/imperial-recruiter.js";
 import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
 import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
+import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
 import _poolKeeperOfTheNineGales from "../pool/keeper-of-the-nine-gales.js";
 import _poolKiorasDambreaker from "../pool/kioras-dambreaker.js";
 import _poolKodamaOfTheNorthTree from "../pool/kodama-of-the-north-tree.js";
@@ -134,6 +136,7 @@ import _poolStandingStones from "../pool/standing-stones.js";
 import _poolStoneDocent from "../pool/stone-docent.js";
 import _poolStormcallerOfKeranos from "../pool/stormcaller-of-keranos.js";
 import _poolStudentOfOjutai from "../pool/student-of-ojutai.js";
+import _poolStumpStomp from "../pool/stump-stomp.js";
 import _poolSubmergedBoneyard from "../pool/submerged-boneyard.js";
 import _poolSunastianFalconer from "../pool/sunastian-falconer.js";
 import _poolSwordOfFeastAndFamine from "../pool/sword-of-feast-and-famine.js";
@@ -156,6 +159,7 @@ import _poolUnholyStrength from "../pool/unholy-strength.js";
 import _poolValorousSteed from "../pool/valorous-steed.js";
 import _poolVesperGhoul from "../pool/vesper-ghoul.js";
 import _poolVesselOfEphemera from "../pool/vessel-of-ephemera.js";
+import _poolVexingBauble from "../pool/vexing-bauble.js";
 import _poolViridescentBog from "../pool/viridescent-bog.js";
 import _poolVoraciousNull from "../pool/voracious-null.js";
 import _poolWarrenSoultrader from "../pool/warren-soultrader.js";
@@ -178,6 +182,7 @@ const shard: CardShard = {
     _poolAzlaskTheSwellingScourge,
     _poolBalaGedSanctuary,
     _poolBallistaSquad,
+    _poolBaneOfProgress,
     _poolBeastmasterAscension,
     _poolBlackMarketConnections,
     _poolBoonOfEmrakul,
@@ -236,6 +241,7 @@ const shard: CardShard = {
     _poolIridescentBlademaster,
     _poolJasperaSentinel,
     _poolJetmirNexusOfRevels,
+    _poolKeeperOfTheAccord,
     _poolKeeperOfTheNineGales,
     _poolKiorasDambreaker,
     _poolKodamaOfTheNorthTree,
@@ -299,6 +305,7 @@ const shard: CardShard = {
     _poolStoneDocent,
     _poolStormcallerOfKeranos,
     _poolStudentOfOjutai,
+    _poolStumpStomp,
     _poolSubmergedBoneyard,
     _poolSunastianFalconer,
     _poolSwordOfFeastAndFamine,
@@ -321,6 +328,7 @@ const shard: CardShard = {
     _poolValorousSteed,
     _poolVesperGhoul,
     _poolVesselOfEphemera,
+    _poolVexingBauble,
     _poolViridescentBog,
     _poolVoraciousNull,
     _poolWarrenSoultrader,

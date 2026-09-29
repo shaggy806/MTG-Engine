@@ -30,6 +30,7 @@ import _poolBloodrockCyclops from "../pool/bloodrock-cyclops.js";
 import _poolBloodstoneCameo from "../pool/bloodstone-cameo.js";
 import _poolBloomingMarsh from "../pool/blooming-marsh.js";
 import _poolBorderlandMinotaur from "../pool/borderland-minotaur.js";
+import _poolBrasssBounty from "../pool/brasss-bounty.js";
 import _poolCapashenStandard from "../pool/capashen-standard.js";
 import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
@@ -140,6 +141,7 @@ import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
 import _poolSmash from "../pool/smash.js";
+import _poolSoddenVerdure from "../pool/sodden-verdure.js";
 import _poolSolemnSimulacrum from "../pool/solemn-simulacrum.js";
 import _poolSolveTheEquation from "../pool/solve-the-equation.js";
 import _poolSorinOfHouseMarkov from "../pool/sorin-of-house-markov.js";
@@ -221,6 +223,7 @@ const shard: CardShard = {
     _poolBloodstoneCameo,
     _poolBloomingMarsh,
     _poolBorderlandMinotaur,
+    _poolBrasssBounty,
     _poolCapashenStandard,
     _poolCastleVantress,
     _poolCatacombCrocodile,
@@ -331,6 +334,7 @@ const shard: CardShard = {
     _poolSkycloudExpanse,
     _poolSlobadGoblinTinkerer,
     _poolSmash,
+    _poolSoddenVerdure,
     _poolSolemnSimulacrum,
     _poolSolveTheEquation,
     _poolSorinOfHouseMarkov,

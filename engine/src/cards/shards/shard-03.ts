@@ -82,6 +82,7 @@ import _poolLlanowarTribe from "../pool/llanowar-tribe.js";
 import _poolLoxodonMystic from "../pool/loxodon-mystic.js";
 import _poolLurchingRotbeast from "../pool/lurching-rotbeast.js";
 import _poolMachinesmithAutomaton from "../pool/machinesmith-automaton.js";
+import _poolMahadiEmporiumMaster from "../pool/mahadi-emporium-master.js";
 import _poolMakindiMesas from "../pool/makindi-mesas.js";
 import _poolMalevolentAwakening from "../pool/malevolent-awakening.js";
 import _poolMerfolkCoralsmith from "../pool/merfolk-coralsmith.js";
@@ -98,6 +99,7 @@ import _poolNyxbornBrute from "../pool/nyxborn-brute.js";
 import _poolOgreResister from "../pool/ogre-resister.js";
 import _poolOracleOfMulDaya from "../pool/oracle-of-mul-daya.js";
 import _poolOrazcaFrillback from "../pool/orazca-frillback.js";
+import _poolPersist from "../pool/persist.js";
 import _poolPiggyBank from "../pool/piggy-bank.js";
 import _poolProsshSkyraiderOfKher from "../pool/prossh-skyraider-of-kher.js";
 import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
@@ -261,6 +263,7 @@ const shard: CardShard = {
     _poolLoxodonMystic,
     _poolLurchingRotbeast,
     _poolMachinesmithAutomaton,
+    _poolMahadiEmporiumMaster,
     _poolMakindiMesas,
     _poolMalevolentAwakening,
     _poolMerfolkCoralsmith,
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolOgreResister,
     _poolOracleOfMulDaya,
     _poolOrazcaFrillback,
+    _poolPersist,
     _poolPiggyBank,
     _poolProsshSkyraiderOfKher,
     _poolProwlingSerpopard,

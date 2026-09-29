@@ -609,6 +609,17 @@ type GraveyardGrantOption = {
   readonly permission: NonNullable<StaticAbility["castFromGraveyard"]> | null;
 };
 
+/** One flashback a graveyard card has (rule 702.34) — see `Game.flashbacksOf`. */
+type FlashbackOption = {
+  readonly cost: string;
+  /** Life paid alongside the mana — only a printed flashback's (Deep
+   * Analysis). */
+  readonly payLife?: number;
+  /** What gave it: the effect's source (Past in Flames) or the permanent
+   * whose static grants it. Absent for the card's own. */
+  readonly grantor?: ObjectId;
+};
+
 /** One escape a graveyard card has (rule 702.138) — see `Game.escapesOf`. */
 type EscapeOption = {
   readonly cost: string;
@@ -1217,18 +1228,22 @@ export class Game {
 
     // Flashback (rule 702.34) — an instant/sorcery in this player's graveyard
     // with a printed *or granted* (Snapcaster Mage) flashback cost may be cast
-    // from there.
+    // from there. Once per flashback it has, when it has several (Past in
+    // Flames' ruling: the player chooses which cost to pay), each named by
+    // `graveyardGrant`.
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const cardName = this.state.objects[card].cardName;
       const def = this.registry.get(cardName);
-      const cost = this.flashbackCostOf(card);
-      if (cost === null) continue;
-      out.push(
-        ...this.castSpellActions(player, card, cardName, def, {
-          via: "flashback",
-          costString: cost,
-        }),
-      );
+      const flashbacks = this.flashbacksOf(card);
+      for (const flashback of flashbacks) {
+        out.push(
+          ...this.castSpellActions(player, card, cardName, def, {
+            via: "flashback",
+            costString: flashback.cost,
+            ...(flashbacks.length > 1 ? { graveyardGrant: { source: flashback.grantor ?? card } } : {}),
+          }),
+        );
+      }
     }
 
     // Disturb (rule 702.150) — a transforming DFC in this player's graveyard
@@ -5538,6 +5553,10 @@ export class Game {
     if (payment === null) throw new Error(`${player} cannot pay the cycling cost of ${def.name}`);
     this.executePayment(player, payment);
     this.moveObject(cardId, "graveyard");
+    // Cycling's cost discards the card (rule 702.29a: "[Cost], Discard this
+    // card"), so it is a discard to everything watching for one — Archfiend
+    // of Ifnir's "whenever you cycle or discard another card", Waste Not.
+    this.emit({ type: "cards-discarded", player, objects: [cardId] });
     this.emit({ type: "card-cycled", player, object: cardId });
     const cyclingSearch = cycling.search;
     if (cyclingSearch !== undefined) {
@@ -6609,7 +6628,7 @@ export class Game {
       evoke !== null
         ? this.evokeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner, evoke)
         : via === "flashback"
-        ? this.flashbackCostOf(cardId)
+        ? (this.flashbackOf(cardId, graveyardGrant)?.cost ?? null)
         : via === "escape"
           ? (this.escapeOf(cardId, face, graveyardGrant)?.cost ?? null)
           : via === "foretell"
@@ -6759,13 +6778,18 @@ export class Game {
     const prohibited = this.whyProhibitedFromCasting(player, cardId, def);
     if (prohibited !== null) return prohibited;
     if (via === "flashback") {
-      if (this.flashbackCostOf(cardId) === null) return `${def.name} does not have flashback`;
+      const flashback = this.flashbackOf(cardId, graveyardGrant);
+      if (flashback === null) {
+        return graveyardGrant === undefined
+          ? `${def.name} does not have flashback`
+          : `${def.name} does not have that flashback`;
+      }
       if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
         return `${def.name} is not in ${player}'s graveyard`;
       }
       // "Flashback—{1}{U}, Pay 3 life" (Deep Analysis) — part of the cost, so
       // it gates castability the same way the mana does.
-      const life = def.flashback?.payLife;
+      const life = flashback.payLife;
       if (life !== undefined && this.state.players[player].life <= life) {
         return `${player} cannot pay ${life} life for ${def.name}'s flashback`;
       }
@@ -6849,9 +6873,14 @@ export class Game {
       }
     }
     // It names the permission a graveyard-permission cast spends, or which of
-    // several escapes an escape cast uses.
-    if (graveyardGrant !== undefined && via !== "graveyard-permission" && via !== "escape") {
-      return "a graveyard permission only names a graveyard-permission or escape cast";
+    // several escapes or flashbacks an escape or flashback cast uses.
+    if (
+      graveyardGrant !== undefined &&
+      via !== "graveyard-permission" &&
+      via !== "escape" &&
+      via !== "flashback"
+    ) {
+      return "a graveyard permission only names a graveyard-permission, escape or flashback cast";
     }
     if (escapeExile !== undefined && via !== "escape") {
       return "only an escape cast exiles cards from the graveyard to pay for it";
@@ -7284,6 +7313,7 @@ export class Game {
     // Read while the card is still where it's cast from: a granted escape or
     // alternative cost belongs to it there.
     const escape = via === "escape" ? this.escapeOf(cardId, face, graveyardGrant) : null;
+    const flashback = via === "flashback" ? this.flashbackOf(cardId, graveyardGrant) : null;
     const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
     const costString = this.castCostString(
       cardId,
@@ -7469,10 +7499,9 @@ export class Game {
     // other half of its alternative cost, paid as the spell is cast.
     this.payTapCost(tapPicked);
     // "Flashback—{cost}, Pay N life" (Deep Analysis) — part of the cost, paid
-    // as the spell is cast.
-    if (via === "flashback" && def.flashback?.payLife !== undefined) {
-      this.changeLife(player, -def.flashback.payLife);
-    }
+    // as the spell is cast. Only its own flashback's: one Past in Flames gave
+    // it costs just the mana.
+    if (flashback?.payLife !== undefined) this.changeLife(player, -flashback.payLife);
     // A graveyard permission's own extra cost ("by paying 3 life in addition
     // to paying their other costs").
     if (graveyardPermission?.payLife !== undefined) {
@@ -10117,7 +10146,7 @@ export class Game {
       const sourceLastKnown =
         stint === undefined ? undefined : this.lastKnownOfStint(source, stint);
       if (
-        !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown) ||
+        !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown, object.triggerObject) ||
         !this.attackConditionsStillHold(ability, object)
       ) {
         this.removeOneAbilityCopy(id);
@@ -10425,7 +10454,15 @@ export class Game {
             ability.oncePerTurn === true &&
             this.triggeredOnceThisTurn(live, index, lastSeen?.zoneChangeCount)
           ) &&
-          this.interveningIfMet(ability.condition, object, undefined, lastSeen) &&
+          this.interveningIfMet(
+            ability.condition,
+            object,
+            undefined,
+            lastSeen,
+            // The entering permanent, for "if you control five other
+            // Mountains" — what `triggerObject` below also names.
+            event.type === "permanent-entered-battlefield" ? event.object : undefined,
+          ) &&
           // Elesh Norn, Mother of Machines / Torpor Orb: an entering
           // permanent causes none of this controller's triggers.
           !(
@@ -11573,12 +11610,15 @@ export class Game {
     /** The source as it last existed on the battlefield, when the ability
      * is about a permanent that has left (its own dies trigger). */
     sourceLastKnown?: LastKnownInfo,
+    /** The object whose event fired it — see `ConditionOptions.triggerObject`. */
+    triggerObject?: ObjectId,
   ): boolean {
     if (condition === undefined) return true;
     return staticConditionMet(this.state, this.registry, source, condition, {
       includeSelf: true,
       ...(sourceTimestamp !== undefined ? { sourceTimestamp } : {}),
       ...(sourceLastKnown !== undefined ? { sourceLastKnown } : {}),
+      ...(triggerObject !== undefined ? { triggerObject } : {}),
     });
   }
 
@@ -11662,8 +11702,9 @@ export class Game {
       if (spec.to === "permanent" || spec.to === "creature" || spec.to === "planeswalker") return false;
       if (spec.toFilter !== undefined) return false;
       if (spec.to === "opponent" && target.player === self.controller) return false;
+      if (spec.to === "you" && target.player !== self.controller) return false;
     } else {
-      if (spec.to === "player" || spec.to === "opponent") return false;
+      if (spec.to === "player" || spec.to === "opponent" || spec.to === "you") return false;
       if (spec.to === "creature" || spec.to === "planeswalker") {
         if (this.state.objects[target.object] === undefined) return false;
         const types = computeCharacteristics(this.state, this.registry, target.object).types;
@@ -12620,7 +12661,7 @@ export class Game {
       },
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       exileAll: (filter) => this.exileAllByEffect(controller, filter),
-      damageAll: (filter, amount, exceptSource) =>
+      damageAll: (filter, amount, exceptSource, whose) =>
         this.damageAllByEffect(
           source,
           controller,
@@ -12628,6 +12669,7 @@ export class Game {
           amount,
           exceptSource === true,
           departedSource(),
+          whose,
         ),
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
@@ -12857,7 +12899,15 @@ export class Game {
           underYourControl ? controller : undefined,
           transformed,
         ),
-      grantFlashback: (target) => this.grantFlashbackByEffect(target),
+      grantFlashback: (target) => this.grantFlashbackByEffect(target, source),
+      grantFlashbackAll: (filter) => {
+        // Fixed as it resolves: a snapshot, since granting moves nothing.
+        for (const id of [...this.state.zones.perPlayer[controller].graveyard]) {
+          if (matchesFilter(this.state, this.registry, id, filter, { you: controller })) {
+            this.grantFlashbackByEffect({ kind: "object", object: id }, source);
+          }
+        }
+      },
       grantGraveyardCast: (target) => this.grantGraveyardCastByEffect(controller, target),
       putOnLibrary: (target, position) => {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
@@ -16305,11 +16355,14 @@ export class Game {
     amount: number,
     exceptSource = false,
     sourceLastKnown?: LastKnownInfo,
+    /** Only permanents these players control (`damage-all`'s `whose`). */
+    whose?: readonly PlayerId[],
   ): void {
     if (amount <= 0) return;
     this.withDamageBatch(() => {
       for (const id of [...this.state.zones.shared.battlefield]) {
         if (exceptSource && id === source) continue;
+        if (whose !== undefined && !whose.includes(this.state.objects[id].controller)) continue;
         if (matchesFilter(this.state, this.registry, id, filter, { you })) {
           this.dealDamage(source, { kind: "object", object: id }, amount, false, sourceLastKnown);
         }
@@ -17324,24 +17377,58 @@ export class Game {
 
   /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until
    * end of turn, at a cost equal to its mana cost. */
-  private grantFlashbackByEffect(target: TargetRef): void {
+  private grantFlashbackByEffect(target: TargetRef, by: ObjectId): void {
     if (target.kind !== "object") return;
     const object = this.state.objects[target.object];
     if (object === undefined || object.zone !== "graveyard") return;
     const cost = this.registry.get(printedCardName(object)).manaCost;
     if (cost === null) return;
-    object.grantedFlashback = { cost, untilEndOfTurn: true };
+    object.grantedFlashback = { cost, untilEndOfTurn: true, by };
     this.emit({ type: "flashback-granted", object: target.object, cost });
   }
 
-  /** The flashback cost `cardId` currently has — its printed `flashback.cost`,
-   * or a temporary grant (Snapcaster Mage), or `null`. */
-  private flashbackCostOf(cardId: ObjectId): string | null {
+  /**
+   * Every flashback `cardId` has: its printed one, one an effect gave it
+   * (Snapcaster Mage, Past in Flames), and each a `grantsToGraveyard` static
+   * of a permanent its owner controls gives it in that owner's graveyard. A
+   * card with several may be cast with any of them — the player chooses
+   * which cost to pay (Past in Flames' ruling) — so each is its own way to
+   * cast it, named by its `grantor`. Flashbacks identical in cost are listed
+   * once, since nothing tells them apart.
+   */
+  private flashbacksOf(cardId: ObjectId): FlashbackOption[] {
     const object = this.state.objects[cardId];
-    if (object === undefined) return null;
-    const printed = this.registry.get(object.cardName).flashback?.cost;
-    if (printed !== undefined) return printed;
-    return object.grantedFlashback?.cost ?? this.graveyardGrantOf(cardId, "flashback")?.cost ?? null;
+    if (object === undefined) return [];
+    const out: FlashbackOption[] = [];
+    const add = (option: FlashbackOption): void => {
+      if (out.some((f) => f.cost === option.cost && f.payLife === option.payLife)) return;
+      out.push(option);
+    };
+    const printed = this.registry.get(object.cardName).flashback;
+    if (printed !== null) add(printed.payLife === undefined ? { cost: printed.cost } : { ...printed });
+    const granted = object.grantedFlashback;
+    if (granted != null) add({ cost: granted.cost, ...(granted.by !== undefined ? { grantor: granted.by } : {}) });
+    if (object.zone !== "graveyard") return out;
+    for (const { source, ability } of this.activeStaticsOf(
+      object.owner,
+      (a) => a.grantsToGraveyard?.flashback !== undefined,
+    )) {
+      const grant = ability.grantsToGraveyard!;
+      if (!matchesFilter(this.state, this.registry, cardId, grant.filter, { you: object.owner })) continue;
+      const spec = grant.flashback!;
+      const cost = spec.cost === "mana-cost" ? this.registry.get(object.cardName).manaCost : spec.cost;
+      if (cost !== null) add({ cost, grantor: source.id });
+    }
+    return out;
+  }
+
+  /** The flashback `cardId` is cast with: the one `grant` names — the
+   * granting object, or the card itself for its own flashback — or, unnamed,
+   * the first of {@link flashbacksOf}. `null` when there's no such flashback. */
+  private flashbackOf(cardId: ObjectId, grant?: GraveyardGrant): FlashbackOption | null {
+    const flashbacks = this.flashbacksOf(cardId);
+    if (grant === undefined) return flashbacks[0] ?? null;
+    return flashbacks.find((f) => (f.grantor ?? cardId) === grant.source) ?? null;
   }
 
   /**
@@ -17402,27 +17489,6 @@ export class Game {
       }
     }
     return out;
-  }
-
-  /** Flashback a `grantsToGraveyard` static of a permanent its owner
-   * controls gives `cardId` in that owner's graveyard — the first that
-   * applies — with its cost worked out; `null` when none does. (Escape lists
-   * every one: see `escapesOf`.) */
-  private graveyardGrantOf(cardId: ObjectId, keyword: "flashback"): { readonly cost: string } | null {
-    const card = this.state.objects[cardId];
-    if (card === undefined || card.zone !== "graveyard") return null;
-    for (const { ability } of this.activeStaticsOf(
-      card.owner,
-      (a) => a.grantsToGraveyard?.[keyword] !== undefined,
-    )) {
-      const grant = ability.grantsToGraveyard!;
-      if (!matchesFilter(this.state, this.registry, cardId, grant.filter, { you: card.owner })) continue;
-      const spec = grant[keyword]!;
-      const cost = spec.cost === "mana-cost" ? this.registry.get(card.cardName).manaCost : spec.cost;
-      if (cost === null) continue;
-      return { cost };
-    }
-    return null;
   }
 
   /**
@@ -17964,7 +18030,10 @@ export class Game {
       computeCharacteristics(this.state, this.registry, id).power;
 
     const aLive = liveCreature(a.object);
-    const bLive = liveCreature(b.object);
+    // A one-sided "deals damage equal to its power to target creature or
+    // planeswalker" (Stump Stomp) needs only its receiver on the
+    // battlefield; a fight needs two creatures (rule 701.12b).
+    const bLive = oneSided ? this.state.objects[b.object]?.zone === "battlefield" : liveCreature(b.object);
     const aPower = aLive ? powerOf(a.object) : 0;
     const bPower = bLive ? powerOf(b.object) : 0;
 

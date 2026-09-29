@@ -54,6 +54,7 @@ import _poolFieryIslet from "../pool/fiery-islet.js";
 import _poolFontOfFertility from "../pool/font-of-fertility.js";
 import _poolForatog from "../pool/foratog.js";
 import _poolForsakenDrifters from "../pool/forsaken-drifters.js";
+import _poolFracture from "../pool/fracture.js";
 import _poolFranticStrength from "../pool/frantic-strength.js";
 import _poolFrenziedRage from "../pool/frenzied-rage.js";
 import _poolGaiusVanBaelsar from "../pool/gaius-van-baelsar.js";
@@ -72,6 +73,7 @@ import _poolGrazingWhiptail from "../pool/grazing-whiptail.js";
 import _poolGreatsword from "../pool/greatsword.js";
 import _poolGrowthSpiral from "../pool/growth-spiral.js";
 import _poolGryffVanguard from "../pool/gryff-vanguard.js";
+import _poolGuildlessCommons from "../pool/guildless-commons.js";
 import _poolGutlessGhoul from "../pool/gutless-ghoul.js";
 import _poolHearthfireHobgoblin from "../pool/hearthfire-hobgoblin.js";
 import _poolHeatedDebate from "../pool/heated-debate.js";
@@ -192,6 +194,7 @@ import _poolUndergroundMortuary from "../pool/underground-mortuary.js";
 import _poolUnfriendlyFire from "../pool/unfriendly-fire.js";
 import _poolUrborgElf from "../pool/urborg-elf.js";
 import _poolUrnOfGodfire from "../pool/urn-of-godfire.js";
+import _poolUthrosTitanicGodcore from "../pool/uthros-titanic-godcore.js";
 import _poolVaultOfWhispers from "../pool/vault-of-whispers.js";
 import _poolViashinoSlaughtermaster from "../pool/viashino-slaughtermaster.js";
 import _poolVodalianHypnotist from "../pool/vodalian-hypnotist.js";
@@ -262,6 +265,7 @@ const shard: CardShard = {
     _poolFontOfFertility,
     _poolForatog,
     _poolForsakenDrifters,
+    _poolFracture,
     _poolFranticStrength,
     _poolFrenziedRage,
     _poolGaiusVanBaelsar,
@@ -280,6 +284,7 @@ const shard: CardShard = {
     _poolGreatsword,
     _poolGrowthSpiral,
     _poolGryffVanguard,
+    _poolGuildlessCommons,
     _poolGutlessGhoul,
     _poolHearthfireHobgoblin,
     _poolHeatedDebate,
@@ -400,6 +405,7 @@ const shard: CardShard = {
     _poolUnfriendlyFire,
     _poolUrborgElf,
     _poolUrnOfGodfire,
+    _poolUthrosTitanicGodcore,
     _poolVaultOfWhispers,
     _poolViashinoSlaughtermaster,
     _poolVodalianHypnotist,

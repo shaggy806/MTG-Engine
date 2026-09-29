@@ -8,6 +8,7 @@ import _poolAccessTunnel from "../pool/access-tunnel.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
 import _poolAvatarEnthusiasts from "../pool/avatar-enthusiasts.js";
+import _poolAwakenTheWoods from "../pool/awaken-the-woods.js";
 import _poolBarbarianHorde from "../pool/barbarian-horde.js";
 import _poolBenalishTrapper from "../pool/benalish-trapper.js";
 import _poolBewilder from "../pool/bewilder.js";
@@ -199,6 +200,7 @@ const shard: CardShard = {
     _poolAncientTomb,
     _poolArashinCleric,
     _poolAvatarEnthusiasts,
+    _poolAwakenTheWoods,
     _poolBarbarianHorde,
     _poolBenalishTrapper,
     _poolBewilder,

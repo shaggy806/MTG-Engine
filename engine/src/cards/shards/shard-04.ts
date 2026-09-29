@@ -120,6 +120,7 @@ import _poolOasisGardener from "../pool/oasis-gardener.js";
 import _poolOdunosRiverTrawler from "../pool/odunos-river-trawler.js";
 import _poolOrderOfMidnight from "../pool/order-of-midnight.js";
 import _poolOvergrownTomb from "../pool/overgrown-tomb.js";
+import _poolPastInFlames from "../pool/past-in-flames.js";
 import _poolPathOfAncestry from "../pool/path-of-ancestry.js";
 import _poolPestMascot from "../pool/pest-mascot.js";
 import _poolPhyrexianGhoul from "../pool/phyrexian-ghoul.js";
@@ -165,6 +166,7 @@ import _poolSpitFlame from "../pool/spit-flame.js";
 import _poolSpringleafDrum from "../pool/springleaf-drum.js";
 import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
+import _poolSummonBahamut from "../pool/summon-bahamut.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
 import _poolSwoopingLookout from "../pool/swooping-lookout.js";
 import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
@@ -181,6 +183,7 @@ import _poolTritonWaverider from "../pool/triton-waverider.js";
 import _poolTrostaniThreeWhispers from "../pool/trostani-three-whispers.js";
 import _poolTrustyPackbeast from "../pool/trusty-packbeast.js";
 import _poolTwilightMire from "../pool/twilight-mire.js";
+import _poolUlamogTheCeaselessHunger from "../pool/ulamog-the-ceaseless-hunger.js";
 import _poolUnburiedEarthcarver from "../pool/unburied-earthcarver.js";
 import _poolVampireChampion from "../pool/vampire-champion.js";
 import _poolVaultSkirge from "../pool/vault-skirge.js";
@@ -323,6 +326,7 @@ const shard: CardShard = {
     _poolOdunosRiverTrawler,
     _poolOrderOfMidnight,
     _poolOvergrownTomb,
+    _poolPastInFlames,
     _poolPathOfAncestry,
     _poolPestMascot,
     _poolPhyrexianGhoul,
@@ -368,6 +372,7 @@ const shard: CardShard = {
     _poolSpringleafDrum,
     _poolSproutingThrinax,
     _poolSultaiSkullkeeper,
+    _poolSummonBahamut,
     _poolSuntailHawk,
     _poolSwoopingLookout,
     _poolSwordOfBodyAndMind,
@@ -384,6 +389,7 @@ const shard: CardShard = {
     _poolTrostaniThreeWhispers,
     _poolTrustyPackbeast,
     _poolTwilightMire,
+    _poolUlamogTheCeaselessHunger,
     _poolUnburiedEarthcarver,
     _poolVampireChampion,
     _poolVaultSkirge,

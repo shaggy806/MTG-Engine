@@ -4,6 +4,7 @@ import { Game } from "../game.js";
 import type { GameConfig } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId } from "../primitives.js";
+import { activePlayerOf } from "../state.js";
 import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
@@ -52,7 +53,7 @@ describe("Flashback — Faithless Looting", () => {
   it("casts from hand, then from the graveyard for its flashback cost, then exiles", () => {
     const game = mkGame(["Faithless Looting"]);
     game.advanceUntil(atFirstMain);
-    playN(game, "Mountain", 3);
+    playN(game, "Mountain", 4);
 
     const fl = cardNamed(game, game.handOf(A), "Faithless Looting");
     game.dispatch({ type: "cast-spell", player: A, card: fl, targets: [] });
@@ -89,7 +90,7 @@ describe("Flashback — Faithless Looting", () => {
     expect(game.graveyardOf(A)).toContain(fl);
 
     // Pass to Bob's turn.
-    game.advanceUntil((s) => s.turn.activePlayer === B && s.turn.step === "precombat-main");
+    game.advanceUntil((s) => activePlayerOf(s) === B && s.turn.step === "precombat-main");
     expect(
       game.legalActions(A).some((x) => x.kind === "cast-spell" && x.card === fl),
     ).toBe(false);
@@ -140,9 +141,12 @@ describe("Snapcaster Mage — a granted flashback", () => {
 
   it("lets the graveyard spell be cast from there until end of turn, then exiles it", () => {
     const { game, bolt } = setup();
+    const snap = game.battlefield.find((id) => game.state.objects[id].cardName === "Snapcaster Mage");
+    // `by` names the flashback beside a card's own, when it has one.
     expect(game.state.objects[bolt].grantedFlashback).toEqual({
       cost: "{R}",
       untilEndOfTurn: true,
+      by: snap,
     });
     expect(game.eventsOfType("flashback-granted").some((e) => e.object === bolt)).toBe(true);
 
@@ -166,7 +170,7 @@ describe("Snapcaster Mage — a granted flashback", () => {
 
   it("the grant expires at end of turn if unused", () => {
     const { game, bolt } = setup();
-    game.advanceUntil((s) => s.turn.activePlayer === B && s.turn.step === "precombat-main");
+    game.advanceUntil((s) => activePlayerOf(s) === B && s.turn.step === "precombat-main");
     expect(game.state.objects[bolt].grantedFlashback ?? null).toBeNull();
     expect(game.eventsOfType("flashback-grant-expired").some((e) => e.object === bolt)).toBe(true);
     expect(game.graveyardOf(A)).toContain(bolt);

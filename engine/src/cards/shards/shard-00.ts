@@ -184,6 +184,7 @@ import _poolVolunteerMilitia from "../pool/volunteer-militia.js";
 import _poolWallOfBlossoms from "../pool/wall-of-blossoms.js";
 import _poolWallOfSwords from "../pool/wall-of-swords.js";
 import _poolWanderingTombshell from "../pool/wandering-tombshell.js";
+import _poolWasteNot from "../pool/waste-not.js";
 import _poolWeeDragonauts from "../pool/wee-dragonauts.js";
 import _poolWhisperOfTheDross from "../pool/whisper-of-the-dross.js";
 import _poolWildCeratok from "../pool/wild-ceratok.js";
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _poolWallOfBlossoms,
     _poolWallOfSwords,
     _poolWanderingTombshell,
+    _poolWasteNot,
     _poolWeeDragonauts,
     _poolWhisperOfTheDross,
     _poolWildCeratok,

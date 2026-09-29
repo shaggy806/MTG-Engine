@@ -327,6 +327,11 @@ export interface CardFilter {
   readonly equipped?: boolean;
   /** Has an Aura attached to it, whoever controls the Aura (rule 303.4). */
   readonly enchanted?: boolean;
+  /** Is itself attached to a permanent matching this filter — an Aura or
+   * Equipment on something: Conqueror's Flail's "as long as this Equipment
+   * is attached to a creature" is `{ attachedTo: { type: "creature" } }`
+   * (a `source` condition). The host is matched as it is now. */
+  readonly attachedTo?: CardFilter;
   /** Has an Aura attached to it that **you** control — Eriette of the
    * Charmed Apple's "each creature that's enchanted by an Aura you
    * control". */
@@ -858,6 +863,17 @@ export function matchesFilter(
       live.zone === "graveyard" &&
       live.putIntoGraveyardFromLibraryOnTurn === state.turn.number;
     if (milled !== filter.putIntoGraveyardFromLibraryThisTurn) return false;
+  }
+  if (filter.attachedTo !== undefined) {
+    const host = live !== undefined ? live.attachedTo : lki!.attachedTo;
+    if (
+      host === null ||
+      host === undefined ||
+      state.objects[host]?.zone !== "battlefield" ||
+      !matchesFilter(state, registry, host, filter.attachedTo, ctx)
+    ) {
+      return false;
+    }
   }
   if (
     filter.equipped !== undefined ||

@@ -71,6 +71,7 @@ import _poolFrontlineRebel from "../pool/frontline-rebel.js";
 import _poolGallantCitizen from "../pool/gallant-citizen.js";
 import _poolGarruksUprising from "../pool/garruks-uprising.js";
 import _poolGerrardsIrregulars from "../pool/gerrards-irregulars.js";
+import _poolGlaringFleshraker from "../pool/glaring-fleshraker.js";
 import _poolGolgariLocket from "../pool/golgari-locket.js";
 import _poolGrayscaledGharial from "../pool/grayscaled-gharial.js";
 import _poolGreatFurnace from "../pool/great-furnace.js";
@@ -96,6 +97,7 @@ import _poolKrenkosCommand from "../pool/krenkos-command.js";
 import _poolLargeBear from "../pool/large-bear.js";
 import _poolLichsCaress from "../pool/lichs-caress.js";
 import _poolLifespringDruid from "../pool/lifespring-druid.js";
+import _poolLorienRevealed from "../pool/lorien-revealed.js";
 import _poolLostInALabyrinth from "../pool/lost-in-a-labyrinth.js";
 import _poolLostInTheMist from "../pool/lost-in-the-mist.js";
 import _poolMadrushCyclops from "../pool/madrush-cyclops.js";
@@ -264,6 +266,7 @@ const shard: CardShard = {
     _poolGallantCitizen,
     _poolGarruksUprising,
     _poolGerrardsIrregulars,
+    _poolGlaringFleshraker,
     _poolGolgariLocket,
     _poolGrayscaledGharial,
     _poolGreatFurnace,
@@ -289,6 +292,7 @@ const shard: CardShard = {
     _poolLargeBear,
     _poolLichsCaress,
     _poolLifespringDruid,
+    _poolLorienRevealed,
     _poolLostInALabyrinth,
     _poolLostInTheMist,
     _poolMadrushCyclops,

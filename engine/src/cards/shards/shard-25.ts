@@ -149,6 +149,7 @@ import _poolShivanDragon from "../pool/shivan-dragon.js";
 import _poolSimicRagworm from "../pool/simic-ragworm.js";
 import _poolSkullclamp from "../pool/skullclamp.js";
 import _poolSkystreakEngineer from "../pool/skystreak-engineer.js";
+import _poolSlayersStronghold from "../pool/slayers-stronghold.js";
 import _poolSmotheringTithe from "../pool/smothering-tithe.js";
 import _poolSolidarity from "../pool/solidarity.js";
 import _poolSoulmender from "../pool/soulmender.js";
@@ -164,6 +165,7 @@ import _poolTerramorphicExpanse from "../pool/terramorphic-expanse.js";
 import _poolThatsMine from "../pool/thats-mine.js";
 import _poolThopterSpyNetwork from "../pool/thopter-spy-network.js";
 import _poolTitanHunter from "../pool/titan-hunter.js";
+import _poolTopiaryStomper from "../pool/topiary-stomper.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
 import _poolUltimoCivilizationsEnd from "../pool/ultimo-civilizations-end.js";
@@ -185,6 +187,7 @@ import _poolWallOfDistortion from "../pool/wall-of-distortion.js";
 import _poolWallOfTanglecord from "../pool/wall-of-tanglecord.js";
 import _poolWanderingOnes from "../pool/wandering-ones.js";
 import _poolWeaveFate from "../pool/weave-fate.js";
+import _poolWindcragSiege from "../pool/windcrag-siege.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
 import _poolWoodedBastion from "../pool/wooded-bastion.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
@@ -340,6 +343,7 @@ const shard: CardShard = {
     _poolSimicRagworm,
     _poolSkullclamp,
     _poolSkystreakEngineer,
+    _poolSlayersStronghold,
     _poolSmotheringTithe,
     _poolSolidarity,
     _poolSoulmender,
@@ -355,6 +359,7 @@ const shard: CardShard = {
     _poolThatsMine,
     _poolThopterSpyNetwork,
     _poolTitanHunter,
+    _poolTopiaryStomper,
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
     _poolUltimoCivilizationsEnd,
@@ -376,6 +381,7 @@ const shard: CardShard = {
     _poolWallOfTanglecord,
     _poolWanderingOnes,
     _poolWeaveFate,
+    _poolWindcragSiege,
     _poolWintersGrasp,
     _poolWoodedBastion,
   ],

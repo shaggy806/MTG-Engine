@@ -1,0 +1,794 @@
+{
+  "batch": "B7",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Akroma's Memorial",
+      "files": [
+        "engine/src/cards/pool/akromas-memorial.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Exemplar of Light",
+      "files": [
+        "engine/src/cards/pool/exemplar-of-light.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Migration Path",
+      "files": [
+        "engine/src/cards/pool/migration-path.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Patriar's Seal",
+      "files": [
+        "engine/src/cards/pool/patriars-seal.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Archon of Sun's Grace",
+      "files": [
+        "engine/src/cards/pool/archon-of-suns-grace.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lórien Revealed",
+      "files": [
+        "engine/src/cards/pool/lorien-revealed.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Legion Leadership // Legion Stronghold",
+      "files": [
+        "engine/src/cards/pool/legion-leadership.ts",
+        "engine/src/cards/pool/legion-stronghold.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Glaring Fleshraker",
+      "files": [
+        "engine/src/cards/pool/glaring-fleshraker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sterling Grove",
+      "files": [
+        "engine/src/cards/pool/sterling-grove.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kogla, the Titan Ape",
+      "files": [
+        "engine/src/cards/pool/kogla-the-titan-ape.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shrine of the Forsaken Gods",
+      "files": [
+        "engine/src/cards/pool/shrine-of-the-forsaken-gods.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Explosive Vegetation",
+      "files": [
+        "engine/src/cards/pool/explosive-vegetation.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dark Confidant",
+      "files": [
+        "engine/src/cards/pool/dark-confidant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bane of Progress",
+      "files": [
+        "engine/src/cards/pool/bane-of-progress.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Secure the Wastes",
+      "files": [
+        "engine/src/cards/pool/secure-the-wastes.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Waste Not",
+      "files": [
+        "engine/src/cards/pool/waste-not.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Topiary Stomper",
+      "files": [
+        "engine/src/cards/pool/topiary-stomper.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Slayers' Stronghold",
+      "files": [
+        "engine/src/cards/pool/slayers-stronghold.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Summon: Bahamut",
+      "files": [
+        "engine/src/cards/pool/summon-bahamut.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fracture",
+      "files": [
+        "engine/src/cards/pool/fracture.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bushwhack",
+      "files": [
+        "engine/src/cards/pool/bushwhack.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Saryth, the Viper's Fang",
+      "files": [
+        "engine/src/cards/pool/saryth-the-vipers-fang.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wight of the Reliquary",
+      "files": [
+        "engine/src/cards/pool/wight-of-the-reliquary.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sheltered by Ghosts",
+      "files": [
+        "engine/src/cards/pool/sheltered-by-ghosts.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sphere Grid",
+      "files": [
+        "engine/src/cards/pool/sphere-grid.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mahadi, Emporium Master",
+      "files": [
+        "engine/src/cards/pool/mahadi-emporium-master.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Enter the Enigma",
+      "files": [
+        "engine/src/cards/pool/enter-the-enigma.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Past in Flames",
+      "files": [
+        "engine/src/cards/pool/past-in-flames.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Balefire Dragon",
+      "files": [
+        "engine/src/cards/pool/balefire-dragon.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Keeper of the Accord",
+      "files": [
+        "engine/src/cards/pool/keeper-of-the-accord.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Molten Gatekeeper",
+      "files": [
+        "engine/src/cards/pool/molten-gatekeeper.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Peer into the Abyss",
+      "files": [
+        "engine/src/cards/pool/peer-into-the-abyss.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Maestros Theater",
+      "files": [
+        "engine/src/cards/pool/maestros-theater.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Stump Stomp // Burnwillow Clearing",
+      "files": [
+        "engine/src/cards/pool/burnwillow-clearing.ts",
+        "engine/src/cards/pool/stump-stomp.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Duelist's Heritage",
+      "files": [
+        "engine/src/cards/pool/duelists-heritage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Archfiend of Ifnir",
+      "files": [
+        "engine/src/cards/pool/archfiend-of-ifnir.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Windcrag Siege",
+      "files": [
+        "engine/src/cards/pool/windcrag-siege.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vexing Bauble",
+      "files": [
+        "engine/src/cards/pool/vexing-bauble.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kambal, Consul of Allocation",
+      "files": [
+        "engine/src/cards/pool/kambal-consul-of-allocation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Guildless Commons",
+      "files": [
+        "engine/src/cards/pool/guildless-commons.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Courser of Kruphix",
+      "files": [
+        "engine/src/cards/pool/courser-of-kruphix.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Brokers Hideout",
+      "files": [
+        "engine/src/cards/pool/brokers-hideout.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Undying Malice",
+      "files": [
+        "engine/src/cards/pool/undying-malice.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mikaeus, the Unhallowed",
+      "files": [
+        "engine/src/cards/pool/mikaeus-the-unhallowed.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Astral Cornucopia",
+      "files": [
+        "engine/src/cards/pool/astral-cornucopia.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Valakut, the Molten Pinnacle",
+      "files": [
+        "engine/src/cards/pool/valakut-the-molten-pinnacle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Uthros, Titanic Godcore",
+      "files": [
+        "engine/src/cards/pool/uthros-titanic-godcore.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Awaken the Woods",
+      "files": [
+        "engine/src/cards/pool/awaken-the-woods.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Brainsurge",
+      "files": [
+        "engine/src/cards/pool/brainsurge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Laelia, the Blade Reforged",
+      "files": [
+        "engine/src/cards/pool/laelia-the-blade-reforged.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Jukai Naturalist",
+      "files": [
+        "engine/src/cards/pool/jukai-naturalist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Conqueror's Flail",
+      "files": [
+        "engine/src/cards/pool/conquerors-flail.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shimmer Myr",
+      "files": [
+        "engine/src/cards/pool/shimmer-myr.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ulamog, the Ceaseless Hunger",
+      "files": [
+        "engine/src/cards/pool/ulamog-the-ceaseless-hunger.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Brass's Bounty",
+      "files": [
+        "engine/src/cards/pool/brasss-bounty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sodden Verdure",
+      "files": [
+        "engine/src/cards/pool/sodden-verdure.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Persist",
+      "files": [
+        "engine/src/cards/pool/persist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Staff of Compleation",
+      "files": [
+        "engine/src/cards/pool/staff-of-compleation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Soul-Guide Lantern",
+      "files": [
+        "engine/src/cards/pool/soul-guide-lantern.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grand Crescendo",
+      "files": [
+        "engine/src/cards/pool/grand-crescendo.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Will of the Jeskai",
+      "files": [
+        "engine/src/cards/pool/will-of-the-jeskai.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Cascading Cataracts",
+      "needs": [
+        "new:mana-any-combination-choice"
+      ],
+      "why": "'{5}, {T}: Add five mana in any combination of colors' — the auto-payer never taps an even converter, so it's activated by hand, and that's 126 splits to offer as separate actions; needs the colours chosen unit by unit"
+    },
+    {
+      "name": "Midgar, City of Mako // Reactor Raid",
+      "needs": [
+        "new:land-adventure"
+      ],
+      "why": "A land with an Adventure: after the Adventure resolves, the card is exiled and may be *played* as a land from exile — adventure permissions only cast."
+    },
+    {
+      "name": "Tezzeret, Cruel Captain",
+      "needs": [
+        "effect:emblem-triggered-abilities"
+      ],
+      "why": "−7: an emblem with 'At the beginning of combat on your turn, put three +1/+1 counters on target artifact you control …'."
+    },
+    {
+      "name": "Requisition Raid",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree: a mode per additional cost."
+    },
+    {
+      "name": "Primal Vigor",
+      "needs": [
+        "new:replacement-any-controller"
+      ],
+      "why": "Doubles tokens created under anyone's control and +1/+1 counters put on anyone's creatures; the token and counter multipliers apply only to their controller's."
+    },
+    {
+      "name": "Tekuthal, Inquiry Dominus",
+      "needs": [
+        "new:proliferate-replacement",
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "'If you would proliferate, proliferate twice instead', and 'Remove three counters from among other artifacts, creatures, and planeswalkers you control' as a cost."
+    },
+    {
+      "name": "Amphibian Downpour",
+      "needs": [
+        "new:static-set-characteristics"
+      ],
+      "why": "'Enchanted creature loses all abilities and is a blue Frog creature with base power and toughness 1/1' — an Aura's static that sets what the creature is; and storm copies of an Aura become tokens."
+    },
+    {
+      "name": "Skyclave Apparition",
+      "needs": [
+        "new:linked-exiled-card"
+      ],
+      "why": "The leaves-the-battlefield ability reads 'the exiled card' its enters ability exiled for good (its owner and mana value): no link from a source to a card it exiled permanently."
+    },
+    {
+      "name": "Light Up the Stage",
+      "needs": [
+        "new:spectacle"
+      ],
+      "why": "Spectacle — an alternative cost usable only if an opponent lost life this turn."
+    },
+    {
+      "name": "Aven Mindcensor",
+      "needs": [
+        "new:search-library-control"
+      ],
+      "why": "'If an opponent would search a library, that player searches the top four cards of that library instead.'"
+    },
+    {
+      "name": "Arachnogenesis",
+      "needs": [
+        "new:prevent-combat-damage-by-filter"
+      ],
+      "why": "'Prevent all combat damage that would be dealt this turn by non-Spider creatures', and X counts the creatures attacking you."
+    },
+    {
+      "name": "Clever Impersonator",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "Enters as a copy of any nonland permanent."
+    },
+    {
+      "name": "Shark Typhoon",
+      "needs": [
+        "new:cycle-trigger"
+      ],
+      "why": "'When you cycle this card, create an X/X Shark' with a cycling cost of {X}{1}{U}: cycling is a special action with no trigger and no X."
+    },
+    {
+      "name": "Liberator, Urza's Battlethopter",
+      "needs": [
+        "new:intervening-if-amounts"
+      ],
+      "why": "'If the amount of mana spent to cast that spell is greater than Liberator's power' is an intervening-if rechecked on resolution; a condition's `{ amount }` operand fails closed."
+    },
+    {
+      "name": "Vorinclex, Monstrous Raider",
+      "needs": [
+        "new:counter-replacement-players"
+      ],
+      "why": "Doubles every counter you'd put on a permanent or player and halves an opponent's; the counter multiplier reaches only your own permanents."
+    },
+    {
+      "name": "Chromatic Orrery",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "'You may spend mana as though it were mana of any color.'"
+    },
+    {
+      "name": "Wan Shi Tong, Librarian",
+      "needs": [
+        "new:search-trigger"
+      ],
+      "why": "'Whenever an opponent searches their library' — no trigger on a search."
+    },
+    {
+      "name": "Rosie Cotton of South Lane",
+      "needs": [
+        "new:token-created-trigger"
+      ],
+      "why": "'Whenever you create a token' — no trigger on token creation."
+    },
+    {
+      "name": "Hedge Shredder",
+      "needs": [
+        "keyword:crew"
+      ],
+      "why": "A Vehicle with crew 1."
+    },
+    {
+      "name": "Coveted Jewel",
+      "needs": [
+        "new:unblocked-attackers-trigger"
+      ],
+      "why": "'Whenever one or more creatures an opponent controls attack you and aren't blocked, that player draws three cards and gains control of this artifact.'"
+    },
+    {
+      "name": "Stock Up",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "'The rest on the bottom of your library in any order' — the order is the player's; look-and-choose puts them in a random order."
+    },
+    {
+      "name": "Wandering Archaic // Explore the Vastlands",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "'You may copy that spell. You may choose new targets for the copy.'"
+    },
+    {
+      "name": "Lethal Scheme",
+      "needs": [
+        "new:convoked-creatures"
+      ],
+      "why": "'Each creature that convoked this spell connives' — no record of which creatures convoked."
+    },
+    {
+      "name": "Scapeshift",
+      "needs": [
+        "new:sacrifice-any-number"
+      ],
+      "why": "'Sacrifice any number of lands' as one simultaneous sacrifice, then a search for that many: choose-permanents sacrifices one at a time."
+    },
+    {
+      "name": "Scourge of the Throne",
+      "needs": [
+        "new:first-attack-each-turn"
+      ],
+      "why": "'Whenever this creature attacks for the first time each turn, if …' — no record of a creature's first attack of the turn."
+    },
+    {
+      "name": "Carpet of Flowers",
+      "needs": [
+        "new:count-of-target-players-permanents"
+      ],
+      "why": "X is the number of Islands target opponent controls, and 'if you haven't added mana with this ability this turn'."
+    },
+    {
+      "name": "Thassa, Deep-Dwelling",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'As long as your devotion to blue is less than five, Thassa isn't a creature.'"
+    },
+    {
+      "name": "Dakmor Salvage",
+      "needs": [
+        "keyword:dredge"
+      ],
+      "why": "Dredge 2."
+    },
+    {
+      "name": "Flare of Malice",
+      "needs": [
+        "new:alt-cost-sacrifice",
+        "new:sacrifice-greatest-among"
+      ],
+      "why": "'Sacrifice a nontoken black creature rather than pay this spell's mana cost', and each opponent sacrifices one with the greatest mana value among theirs."
+    },
+    {
+      "name": "Electro, Assaulting Battery",
+      "needs": [
+        "replacement:mana-pool-emptying"
+      ],
+      "why": "'You don't lose unspent red mana as steps and phases end.'"
+    },
+    {
+      "name": "Simic Ascendancy",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'If this enchantment has twenty or more growth counters on it, you win the game.'"
+    },
+    {
+      "name": "Valgavoth, Terror Eater",
+      "needs": [
+        "new:exiled-with-source-play",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "Ward—Sacrifice three nonland permanents; 'if a card you didn't control would be put into an opponent's graveyard, exile it instead'; and playing the cards exiled with it for life."
+    },
+    {
+      "name": "Tendershoot Dryad",
+      "needs": [
+        "new:ascend"
+      ],
+      "why": "Ascend and the city's blessing."
+    },
+    {
+      "name": "Mirage Mirror",
+      "needs": [
+        "effect:become-copy"
+      ],
+      "why": "'This artifact becomes a copy of target artifact, creature, enchantment, or land until end of turn.'"
+    },
+    {
+      "name": "Vigor",
+      "needs": [
+        "replacement:damage-modification",
+        "new:shuffle-self-into-library"
+      ],
+      "why": "Prevents damage to your other creatures and puts that many +1/+1 counters on each one; 'when Vigor is put into a graveyard from anywhere, shuffle it into its owner's library'."
+    },
+    {
+      "name": "Finale of Revelation",
+      "needs": [
+        "new:shuffle-graveyard-into-library"
+      ],
+      "why": "X ≥ 10: shuffle your graveyard into your library, untap up to five lands, no maximum hand size for the rest of the game."
+    },
+    {
+      "name": "Halimar Depths",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "'Look at the top three cards of your library, then put them back in any order.'"
+    },
+    {
+      "name": "Whir of Invention",
+      "needs": [
+        "new:improvise"
+      ],
+      "why": "Improvise."
+    },
+    {
+      "name": "Organic Extinction",
+      "needs": [
+        "new:improvise"
+      ],
+      "why": "Improvise."
+    },
+    {
+      "name": "Experimental Augury",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "'The rest on the bottom of your library in any order.'"
+    },
+    {
+      "name": "Key to the City",
+      "needs": [
+        "cost:choose-cards-as-cost",
+        "new:untap-trigger"
+      ],
+      "why": "'{T}, Discard a card' as a cost, and 'whenever this artifact becomes untapped'."
+    },
+    {
+      "name": "Endurance",
+      "needs": [
+        "new:alt-cost-exile-from-hand"
+      ],
+      "why": "'Evoke—Exile a green card from your hand.'"
+    },
+    {
+      "name": "Vraska, Betrayal's Sting",
+      "needs": [
+        "new:compleated",
+        "new:static-set-characteristics"
+      ],
+      "why": "Compleated, and −2's 'becomes a Treasure artifact … and loses all other card types and abilities'."
+    },
+    {
+      "name": "Baral, Chief of Compliance",
+      "needs": [
+        "new:counters-a-spell-trigger"
+      ],
+      "why": "'Whenever a spell or ability you control counters a spell' — no trigger on countering."
+    },
+    {
+      "name": "Secret Tunnel",
+      "needs": [
+        "new:targets-share-type"
+      ],
+      "why": "'Two target creatures you control that share a creature type' — a constraint across the targets."
+    },
+    {
+      "name": "Jadar, Ghoulcaller of Nephalia",
+      "needs": [
+        "keyword:decayed"
+      ],
+      "why": "Decayed Zombie tokens."
+    },
+    {
+      "name": "Palantír of Orthanc",
+      "needs": [
+        "new:target-opponent-chooses"
+      ],
+      "why": "'Target opponent may have you draw a card. If that player doesn't, you mill X cards …'"
+    },
+    {
+      "name": "Ad Nauseam",
+      "needs": [
+        "effect:repeat-process"
+      ],
+      "why": "'You may repeat this process any number of times.'"
+    },
+    {
+      "name": "Dolmen Gate",
+      "needs": [
+        "new:prevent-damage-to-filter"
+      ],
+      "why": "'Prevent all combat damage that would be dealt to attacking creatures you control' — a static prevention for a set of recipients."
+    },
+    {
+      "name": "Full Throttle",
+      "needs": [
+        "new:delayed-trigger-each-combat"
+      ],
+      "why": "Two additional combat phases after this main phase, and 'at the beginning of each combat this turn, untap all creatures that attacked this turn'."
+    }
+  ]
+}

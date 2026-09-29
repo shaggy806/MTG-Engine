@@ -55,6 +55,7 @@ import _poolDispel from "../pool/dispel.js";
 import _poolDonatelloWayWithMachines from "../pool/donatello-way-with-machines.js";
 import _poolDoubleCleave from "../pool/double-cleave.js";
 import _poolDoublingSeason from "../pool/doubling-season.js";
+import _poolDuelistsHeritage from "../pool/duelists-heritage.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
 import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
@@ -133,6 +134,7 @@ import _poolSearingFlesh from "../pool/searing-flesh.js";
 import _poolShalaiAndHallar from "../pool/shalai-and-hallar.js";
 import _poolShamanicRevelation from "../pool/shamanic-revelation.js";
 import _poolSheoldredsEdict from "../pool/sheoldreds-edict.js";
+import _poolShimmerMyr from "../pool/shimmer-myr.js";
 import _poolSinisterSabotage from "../pool/sinister-sabotage.js";
 import _poolSirShandlarOfEberyn from "../pool/sir-shandlar-of-eberyn.js";
 import _poolSkyshipStalker from "../pool/skyship-stalker.js";
@@ -238,6 +240,7 @@ const shard: CardShard = {
     _poolDonatelloWayWithMachines,
     _poolDoubleCleave,
     _poolDoublingSeason,
+    _poolDuelistsHeritage,
     _poolEbonyTreefolk,
     _poolEidolonOfInspiration,
     _poolEmberethShieldbreaker,
@@ -316,6 +319,7 @@ const shard: CardShard = {
     _poolShalaiAndHallar,
     _poolShamanicRevelation,
     _poolSheoldredsEdict,
+    _poolShimmerMyr,
     _poolSinisterSabotage,
     _poolSirShandlarOfEberyn,
     _poolSkyshipStalker,

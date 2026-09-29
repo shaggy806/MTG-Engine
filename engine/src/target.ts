@@ -105,10 +105,13 @@ export type TargetSpec =
    * triggered ability — the player its event names (`TargetSource.triggerPlayer`
    * — Alela, Cunning Conqueror's "goad target creature **that player**
    * controls", the player her Faeries dealt combat damage to).
+   * `"defending-player"` is the player the ability's source is attacking, as
+   * for `"creature-defending-player-controls"` (Kogla, the Titan Ape's
+   * "target artifact or enchantment defending player controls").
    */
   | {
       readonly kind: "permanent";
-      readonly whose?: "any" | "you" | "opponent" | "trigger-player";
+      readonly whose?: "any" | "you" | "opponent" | "trigger-player" | "defending-player";
       readonly filter: CardFilter;
     }
   /**
@@ -421,6 +424,7 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
     const noun = spec.filter.type ?? spec.filter.subtype ?? "permanent";
     if (spec.whose === "you") return `${noun} you control`;
     if (spec.whose === "opponent") return `${noun} an opponent controls`;
+    if (spec.whose === "defending-player") return `${noun} defending player controls`;
     return noun;
   }
   const whose =

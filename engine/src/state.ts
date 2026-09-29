@@ -476,8 +476,9 @@ export interface GameObject {
   /** A temporary "this instant/sorcery card in a graveyard has flashback"
    * grant (Snapcaster Mage — ROADMAP Phase 6b). Read alongside
    * `CardDefinition.flashback`. Cleared on any zone change and (when
-   * `untilEndOfTurn`) in cleanup. */
-  grantedFlashback?: { cost: string; untilEndOfTurn: boolean } | null;
+   * `untilEndOfTurn`) in cleanup. `by` is the source of the effect that gave
+   * it (Past in Flames), which names this flashback beside the card's own. */
+  grantedFlashback?: { cost: string; untilEndOfTurn: boolean; by?: ObjectId } | null;
   /** True while this card is suspended — exiled with time counters (rule
    * 702.62 — ROADMAP Phase 6b). A turn-based action removes one time counter
    * at the owner's upkeep; at zero it's cast for free. Cleared on any zone

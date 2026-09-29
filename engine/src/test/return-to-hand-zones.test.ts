@@ -441,7 +441,7 @@ describe("Remand — counter target spell, into its owner's hand instead", () =>
 describe.each([STACK_BOUNCE, "Remand"])("a flashed-back spell answered by %s", (answer) => {
   it("is exiled instead, since it would leave the stack (rule 702.34a)", () => {
     const game = mkGame();
-    lands(game, "Mountain", A, 2);
+    lands(game, "Mountain", A, 3);
     lands(game, "Island", B, 2);
     const loot = game.debugSpawn("Faithless Looting", A, "graveyard");
     game.dispatch({ type: "cast-spell", player: A, card: loot, targets: [], via: "flashback" });

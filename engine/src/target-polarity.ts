@@ -221,6 +221,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     v.touch(n.target, helps && hurts ? "either" : helps ? "help" : "harm", MINOR);
   },
   "grant-flashback": (n, v) => v.touch(n.target, "help", MAJOR),
+  "grant-flashback-all": none,
   "grant-graveyard-cast": (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-triggered": (n, v) => v.touch(n.target, "help", MAJOR),
   "lose-abilities": (n, v) => v.touch(n.target, "harm", MAJOR),
@@ -562,7 +563,11 @@ export function specSide(spec: TargetSpec): SpecSide {
       case "any-number":
         return specSide(spec.of);
       case "permanent":
-        return spec.whose === "you" ? "you" : spec.whose === "opponent" || spec.whose === "trigger-player" ? "opponent" : "any";
+        return spec.whose === "you"
+          ? "you"
+          : spec.whose === "opponent" || spec.whose === "trigger-player" || spec.whose === "defending-player"
+            ? "opponent"
+            : "any";
       case "spell":
         return spec.whose === "you" ? "you" : spec.whose === "opponent" ? "opponent" : "any";
       case "card-in-graveyard":

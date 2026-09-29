@@ -46,7 +46,7 @@ import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { permanentCount, printedCardName } from "./state.js";
+import { activePlayerOf, permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
 import {
   BASIC_LAND_TYPE_COLORS,
@@ -311,6 +311,12 @@ export interface ConditionOptions {
    * board-scanning conditions skip them.
    */
   readonly notYetHere?: ReadonlySet<ObjectId>;
+  /**
+   * The object whose event fired the triggered ability asking, for a
+   * `controls` condition's `excludeTriggerObject`. Passed by the
+   * intervening-if checks, as it triggers and as it resolves.
+   */
+  readonly triggerObject?: ObjectId;
 }
 
 /**
@@ -474,6 +480,9 @@ function evalStaticCondition(
         const ref = opts.targets?.[condition.excludeTarget];
         if (ref?.kind === "object") except.push(ref.object);
       }
+      if (condition.excludeTriggerObject === true && opts.triggerObject !== undefined) {
+        except.push(opts.triggerObject);
+      }
       return reaches(
         condition.atLeast,
         (id) =>
@@ -537,6 +546,7 @@ function evalStaticCondition(
         (p) =>
           p !== you &&
           !state.players[p].hasLost &&
+          (condition.activePlayerOnly !== true || p === activePlayerOf(state)) &&
           countWhere(
             (id) =>
               state.objects[id].controller === p &&
@@ -1946,7 +1956,7 @@ export function hasAnyAbility(
 }
 
 /** Whether a `grantsToGraveyard` static of a permanent `card`'s owner
- * controls gives it flashback or escape (see `Game.graveyardGrantOf` /
+ * controls gives it flashback or escape (see `Game.flashbacksOf` /
  * `escapesOf`): active, matching, and with a cost — a "mana cost" grant gives
  * a card with no mana cost nothing. */
 function graveyardGrantReaches(
@@ -2097,6 +2107,17 @@ function collectStaticEffects(
           state.objects[id]?.isToken !== true &&
           matchesFilter(state, registry, id, exiledFilter, { you: source.controller }),
       ).length;
+    // Cards in graveyards: "each creature card in your graveyard" is
+    // `ownedBy`, read from the source's controller's side.
+    const graveyardMatching = (graveyardFilter: CardFilter): number => {
+      let n = 0;
+      for (const player of state.turnOrder) {
+        for (const id of state.zones.perPlayer[player]?.graveyard ?? []) {
+          if (matchesFilter(state, registry, id, graveyardFilter, { you: source.controller })) n += 1;
+        }
+      }
+      return n;
+    };
     if (ability.grantPtPerCount !== undefined) {
       const per = ability.grantPtPerCount;
       const filter = per.filter;
@@ -2114,6 +2135,8 @@ function collectStaticEffects(
             ? (source.counters[per.countersOnSource] ?? 0)
             : per.exiled !== undefined
             ? exiledMatching(per.exiled)
+            : per.inGraveyard !== undefined
+            ? graveyardMatching(per.inGraveyard)
             : per.colorsAmong !== undefined
             ? colorsAmongPermanents(
                 state,

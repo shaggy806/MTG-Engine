@@ -29,6 +29,7 @@ import _poolBlessedLight from "../pool/blessed-light.js";
 import _poolBlightning from "../pool/blightning.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
+import _poolBushwhack from "../pool/bushwhack.js";
 import _poolCanyonWildcat from "../pool/canyon-wildcat.js";
 import _poolCaravanHurda from "../pool/caravan-hurda.js";
 import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
@@ -40,9 +41,11 @@ import _poolCitywatchSphinx from "../pool/citywatch-sphinx.js";
 import _poolCleaverRiot from "../pool/cleaver-riot.js";
 import _poolCliffhavenSellSword from "../pool/cliffhaven-sell-sword.js";
 import _poolCloudManta from "../pool/cloud-manta.js";
+import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
 import _poolContentiousPlan from "../pool/contentious-plan.js";
 import _poolCustodianOfTheTrove from "../pool/custodian-of-the-trove.js";
+import _poolDarkConfidant from "../pool/dark-confidant.js";
 import _poolDawnToDusk from "../pool/dawn-to-dusk.js";
 import _poolDealGoneBad from "../pool/deal-gone-bad.js";
 import _poolDefiantElf from "../pool/defiant-elf.js";
@@ -72,6 +75,7 @@ import _poolGluttonousZombie from "../pool/gluttonous-zombie.js";
 import _poolGoblinRoughrider from "../pool/goblin-roughrider.js";
 import _poolGoblinSettler from "../pool/goblin-settler.js";
 import _poolGoldenHind from "../pool/golden-hind.js";
+import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
@@ -220,6 +224,7 @@ const shard: CardShard = {
     _poolBlightning,
     _poolBodyDropper,
     _poolBrineShaman,
+    _poolBushwhack,
     _poolCanyonWildcat,
     _poolCaravanHurda,
     _poolCastleArdenvale,
@@ -231,9 +236,11 @@ const shard: CardShard = {
     _poolCleaverRiot,
     _poolCliffhavenSellSword,
     _poolCloudManta,
+    _poolConquerorsFlail,
     _poolConsulateSkygate,
     _poolContentiousPlan,
     _poolCustodianOfTheTrove,
+    _poolDarkConfidant,
     _poolDawnToDusk,
     _poolDealGoneBad,
     _poolDefiantElf,
@@ -263,6 +270,7 @@ const shard: CardShard = {
     _poolGoblinRoughrider,
     _poolGoblinSettler,
     _poolGoldenHind,
+    _poolGrandCrescendo,
     _poolGravespawnSovereign,
     _poolGrimBackwoods,
     _poolGrimclimbPathway,

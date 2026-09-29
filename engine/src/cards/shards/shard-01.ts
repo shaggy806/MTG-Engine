@@ -15,6 +15,8 @@ import _poolAzureDrake from "../pool/azure-drake.js";
 import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
+import _poolBrokersHideout from "../pool/brokers-hideout.js";
+import _poolBurnwillowClearing from "../pool/burnwillow-clearing.js";
 import _poolBurrogBefuddler from "../pool/burrog-befuddler.js";
 import _poolCacklingImp from "../pool/cackling-imp.js";
 import _poolCatapultMaster from "../pool/catapult-master.js";
@@ -155,6 +157,7 @@ import _poolTwilightPanther from "../pool/twilight-panther.js";
 import _poolUnexpectedWindfall from "../pool/unexpected-windfall.js";
 import _poolUnseenWalker from "../pool/unseen-walker.js";
 import _poolUrzasPowerPlant from "../pool/urzas-power-plant.js";
+import _poolValakutTheMoltenPinnacle from "../pool/valakut-the-molten-pinnacle.js";
 import _poolVampireInterloper from "../pool/vampire-interloper.js";
 import _poolVanquishTheHorde from "../pool/vanquish-the-horde.js";
 import _poolVedalkenEntrancer from "../pool/vedalken-entrancer.js";
@@ -183,6 +186,8 @@ const shard: CardShard = {
     _poolBarrageOfExpendables,
     _poolBeastWhisperer,
     _poolBellowsLizard,
+    _poolBrokersHideout,
+    _poolBurnwillowClearing,
     _poolBurrogBefuddler,
     _poolCacklingImp,
     _poolCatapultMaster,
@@ -323,6 +328,7 @@ const shard: CardShard = {
     _poolUnexpectedWindfall,
     _poolUnseenWalker,
     _poolUrzasPowerPlant,
+    _poolValakutTheMoltenPinnacle,
     _poolVampireInterloper,
     _poolVanquishTheHorde,
     _poolVedalkenEntrancer,

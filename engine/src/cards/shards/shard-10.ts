@@ -16,6 +16,7 @@ import _poolAsceticism from "../pool/asceticism.js";
 import _poolAysenAbbey from "../pool/aysen-abbey.js";
 import _poolBadlands from "../pool/badlands.js";
 import _poolBalduvianBears from "../pool/balduvian-bears.js";
+import _poolBalefireDragon from "../pool/balefire-dragon.js";
 import _poolBasrisSolidarity from "../pool/basris-solidarity.js";
 import _poolBattlefieldForge from "../pool/battlefield-forge.js";
 import _poolBidentOfThassa from "../pool/bident-of-thassa.js";
@@ -114,6 +115,7 @@ import _poolMarduDevotee from "../pool/mardu-devotee.js";
 import _poolMarduHateblade from "../pool/mardu-hateblade.js";
 import _poolMerfolkMesmerist from "../pool/merfolk-mesmerist.js";
 import _poolMerfolkSkyscout from "../pool/merfolk-skyscout.js";
+import _poolMigrationPath from "../pool/migration-path.js";
 import _poolMoonHeron from "../pool/moon-heron.js";
 import _poolMoorFiend from "../pool/moor-fiend.js";
 import _poolNantukoShade from "../pool/nantuko-shade.js";
@@ -219,6 +221,7 @@ const shard: CardShard = {
     _poolAysenAbbey,
     _poolBadlands,
     _poolBalduvianBears,
+    _poolBalefireDragon,
     _poolBasrisSolidarity,
     _poolBattlefieldForge,
     _poolBidentOfThassa,
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolMarduHateblade,
     _poolMerfolkMesmerist,
     _poolMerfolkSkyscout,
+    _poolMigrationPath,
     _poolMoonHeron,
     _poolMoorFiend,
     _poolNantukoShade,

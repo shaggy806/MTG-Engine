@@ -23,6 +23,7 @@ import _poolBloodthroneVampire from "../pool/bloodthrone-vampire.js";
 import _poolBogRaiders from "../pool/bog-raiders.js";
 import _poolBoulderloftPathway from "../pool/boulderloft-pathway.js";
 import _poolBoundingWolf from "../pool/bounding-wolf.js";
+import _poolBrainsurge from "../pool/brainsurge.js";
 import _poolBrindleBoar from "../pool/brindle-boar.js";
 import _poolCaptainsCall from "../pool/captains-call.js";
 import _poolCastleSengir from "../pool/castle-sengir.js";
@@ -113,6 +114,7 @@ import _poolOrcishVandal from "../pool/orcish-vandal.js";
 import _poolOrochiSustainer from "../pool/orochi-sustainer.js";
 import _poolOverkill from "../pool/overkill.js";
 import _poolPacifism from "../pool/pacifism.js";
+import _poolPatriarsSeal from "../pool/patriars-seal.js";
 import _poolPeregrineGriffin from "../pool/peregrine-griffin.js";
 import _poolPetrifiedField from "../pool/petrified-field.js";
 import _poolPhyrexianLens from "../pool/phyrexian-lens.js";
@@ -205,6 +207,7 @@ const shard: CardShard = {
     _poolBogRaiders,
     _poolBoulderloftPathway,
     _poolBoundingWolf,
+    _poolBrainsurge,
     _poolBrindleBoar,
     _poolCaptainsCall,
     _poolCastleSengir,
@@ -295,6 +298,7 @@ const shard: CardShard = {
     _poolOrochiSustainer,
     _poolOverkill,
     _poolPacifism,
+    _poolPatriarsSeal,
     _poolPeregrineGriffin,
     _poolPetrifiedField,
     _poolPhyrexianLens,

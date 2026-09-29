@@ -121,6 +121,7 @@ import _poolRunedServitor from "../pool/runed-servitor.js";
 import _poolSacredArmory from "../pool/sacred-armory.js";
 import _poolSaheeliRadiantCreator from "../pool/saheeli-radiant-creator.js";
 import _poolSanctuaryCat from "../pool/sanctuary-cat.js";
+import _poolSarythTheVipersFang from "../pool/saryth-the-vipers-fang.js";
 import _poolSavaiTriome from "../pool/savai-triome.js";
 import _poolScarlandThrinax from "../pool/scarland-thrinax.js";
 import _poolScatterArc from "../pool/scatter-arc.js";
@@ -294,6 +295,7 @@ const shard: CardShard = {
     _poolSacredArmory,
     _poolSaheeliRadiantCreator,
     _poolSanctuaryCat,
+    _poolSarythTheVipersFang,
     _poolSavaiTriome,
     _poolScarlandThrinax,
     _poolScatterArc,

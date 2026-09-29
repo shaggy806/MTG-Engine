@@ -32,6 +32,7 @@ import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
 import _poolCommodoreGuff from "../pool/commodore-guff.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
+import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
@@ -77,6 +78,7 @@ import _poolKothsCourier from "../pool/koths-courier.js";
 import _poolKrenkoMobBoss from "../pool/krenko-mob-boss.js";
 import _poolKynaiosAndTiroOfMeletis from "../pool/kynaios-and-tiro-of-meletis.js";
 import _poolLavafumeInvoker from "../pool/lavafume-invoker.js";
+import _poolLegionLeadership from "../pool/legion-leadership.js";
 import _poolLevitation from "../pool/levitation.js";
 import _poolLightlessEvangel from "../pool/lightless-evangel.js";
 import _poolLightningGreaves from "../pool/lightning-greaves.js";
@@ -173,6 +175,7 @@ import _poolWatchfulGiant from "../pool/watchful-giant.js";
 import _poolWerebear from "../pool/werebear.js";
 import _poolWetlandSambar from "../pool/wetland-sambar.js";
 import _poolWhiteSunsZenith from "../pool/white-suns-zenith.js";
+import _poolWillOfTheJeskai from "../pool/will-of-the-jeskai.js";
 import _poolWiltLeafCavaliers from "../pool/wilt-leaf-cavaliers.js";
 import _poolWirewoodSavage from "../pool/wirewood-savage.js";
 import _poolWrathOfGod from "../pool/wrath-of-god.js";
@@ -219,6 +222,7 @@ const shard: CardShard = {
     _poolCollectiveUnconscious,
     _poolCommodoreGuff,
     _poolCopperlineGorge,
+    _poolCourserOfKruphix,
     _poolCrucibleOfWorlds,
     _poolDeeprootChampion,
     _poolDesperateCharge,
@@ -264,6 +268,7 @@ const shard: CardShard = {
     _poolKrenkoMobBoss,
     _poolKynaiosAndTiroOfMeletis,
     _poolLavafumeInvoker,
+    _poolLegionLeadership,
     _poolLevitation,
     _poolLightlessEvangel,
     _poolLightningGreaves,
@@ -360,6 +365,7 @@ const shard: CardShard = {
     _poolWerebear,
     _poolWetlandSambar,
     _poolWhiteSunsZenith,
+    _poolWillOfTheJeskai,
     _poolWiltLeafCavaliers,
     _poolWirewoodSavage,
     _poolWrathOfGod,

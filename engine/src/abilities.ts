@@ -828,8 +828,10 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
       /** "**another** source" — this permanent's own damage doesn't count. */
       readonly otherOnly?: boolean;
-      /** What the damage was dealt to. Omitted: any permanent or player. */
-      readonly to?: "player" | "opponent" | "permanent" | "creature" | "planeswalker";
+      /** What the damage was dealt to. Omitted: any permanent or player.
+       * `"you"` is this permanent's controller — Mikaeus, the Unhallowed's
+       * "whenever a Human deals damage to you". */
+      readonly to?: "player" | "opponent" | "you" | "permanent" | "creature" | "planeswalker";
       /** A filter on a *permanent* recipient ("deals damage to a creature an
        * opponent controls"). Never matches a player. */
       readonly toFilter?: CardFilter;

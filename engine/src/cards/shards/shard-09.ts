@@ -11,6 +11,7 @@ import _poolAngelfireCrusader from "../pool/angelfire-crusader.js";
 import _poolApprenticeWizard from "../pool/apprentice-wizard.js";
 import _poolArcadesTheStrategist from "../pool/arcades-the-strategist.js";
 import _poolArchmageOfRunes from "../pool/archmage-of-runes.js";
+import _poolArchonOfSunsGrace from "../pool/archon-of-suns-grace.js";
 import _poolArcticFlats from "../pool/arctic-flats.js";
 import _poolArgivianArchaeologist from "../pool/argivian-archaeologist.js";
 import _poolAsgardianCitadel from "../pool/asgardian-citadel.js";
@@ -202,6 +203,7 @@ const shard: CardShard = {
     _poolApprenticeWizard,
     _poolArcadesTheStrategist,
     _poolArchmageOfRunes,
+    _poolArchonOfSunsGrace,
     _poolArcticFlats,
     _poolArgivianArchaeologist,
     _poolAsgardianCitadel,

@@ -236,7 +236,7 @@ describe("leaves-graveyard — every way out counts", () => {
   it("casting a card from the graveyard (flashback) is a card leaving it", () => {
     const game = makeGame();
     const w = game.debugSpawn(YOURS, A);
-    for (let i = 0; i < 2; i += 1) game.debugSpawn("Mountain", A);
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Mountain", A);
     const [looting] = yard(game, ["Faithless Looting"]);
     game.dispatch({
       type: "cast-spell",

@@ -7,6 +7,7 @@ import _poolAccursedSpirit from "../pool/accursed-spirit.js";
 import _poolAgelessGuardian from "../pool/ageless-guardian.js";
 import _poolAirshipEngineRoom from "../pool/airship-engine-room.js";
 import _poolAjanisSunstriker from "../pool/ajanis-sunstriker.js";
+import _poolAkromasMemorial from "../pool/akromas-memorial.js";
 import _poolAmbassadorLaquatus from "../pool/ambassador-laquatus.js";
 import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
@@ -197,6 +198,7 @@ const shard: CardShard = {
     _poolAgelessGuardian,
     _poolAirshipEngineRoom,
     _poolAjanisSunstriker,
+    _poolAkromasMemorial,
     _poolAmbassadorLaquatus,
     _poolAnaDisciple,
     _poolAnchovyBananaPizza,

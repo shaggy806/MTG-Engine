@@ -47,6 +47,7 @@ import _poolDwarvenGrunt from "../pool/dwarven-grunt.js";
 import _poolEarthRift from "../pool/earth-rift.js";
 import _poolEject from "../pool/eject.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
+import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
 import _poolExquisiteBlood from "../pool/exquisite-blood.js";
 import _poolFailedInspection from "../pool/failed-inspection.js";
 import _poolFallenAngel from "../pool/fallen-angel.js";
@@ -71,6 +72,7 @@ import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
 import _poolInexorableTide from "../pool/inexorable-tide.js";
 import _poolIntrepidTenderfoot from "../pool/intrepid-tenderfoot.js";
+import _poolJukaiNaturalist from "../pool/jukai-naturalist.js";
 import _poolJungleDelver from "../pool/jungle-delver.js";
 import _poolKaervekTheMerciless from "../pool/kaervek-the-merciless.js";
 import _poolKessDissidentMage from "../pool/kess-dissident-mage.js";
@@ -138,6 +140,7 @@ import _poolSpellgorgerWeird from "../pool/spellgorger-weird.js";
 import _poolSphinxsRevelation from "../pool/sphinxs-revelation.js";
 import _poolSquall from "../pool/squall.js";
 import _poolStarkIndustriesExecutive from "../pool/stark-industries-executive.js";
+import _poolSterlingGrove from "../pool/sterling-grove.js";
 import _poolStoneGolem from "../pool/stone-golem.js";
 import _poolStoneQuarry from "../pool/stone-quarry.js";
 import _poolStoneforgeMystic from "../pool/stoneforge-mystic.js";
@@ -233,6 +236,7 @@ const shard: CardShard = {
     _poolEarthRift,
     _poolEject,
     _poolEtherswornAdjudicator,
+    _poolExemplarOfLight,
     _poolExquisiteBlood,
     _poolFailedInspection,
     _poolFallenAngel,
@@ -257,6 +261,7 @@ const shard: CardShard = {
     _poolHoverBarrier,
     _poolInexorableTide,
     _poolIntrepidTenderfoot,
+    _poolJukaiNaturalist,
     _poolJungleDelver,
     _poolKaervekTheMerciless,
     _poolKessDissidentMage,
@@ -324,6 +329,7 @@ const shard: CardShard = {
     _poolSphinxsRevelation,
     _poolSquall,
     _poolStarkIndustriesExecutive,
+    _poolSterlingGrove,
     _poolStoneGolem,
     _poolStoneQuarry,
     _poolStoneforgeMystic,

@@ -145,7 +145,7 @@ describe("Teval's graveyard trigger — once per move, not once per card", () =>
   it("each separate move makes its own: casting a flashback spell, then returning a card", () => {
     const game = makeGame();
     teval(game);
-    for (let i = 0; i < 2; i += 1) game.debugSpawn("Mountain", A);
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Mountain", A);
     const looting = game.debugSpawn("Faithless Looting", A, "graveyard");
     const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
     game.dispatch({ type: "cast-spell", player: A, card: looting, targets: [], via: "flashback" });

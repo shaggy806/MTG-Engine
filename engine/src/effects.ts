@@ -933,7 +933,10 @@ export type EffectSpec =
     }
   | {
       readonly kind: "destroy";
-      readonly target: number;
+      /** A target slot, or a reference to the object the ability is about —
+       * "destroy it" of a trigger (Mikaeus, the Unhallowed: the Human that
+       * dealt you damage, `"trigger-object"`). */
+      readonly target: EffectTargetRef;
       /** "It can't be regenerated" (rule 701.15c — Terminate): a
        * regeneration shield doesn't replace this destruction. */
       readonly cantBeRegenerated?: boolean;
@@ -983,6 +986,10 @@ export type EffectSpec =
       readonly kind: "damage-all";
       readonly filter: CardFilter;
       readonly amount: EffectAmount;
+      /** Only permanents these players control — Balefire Dragon's "it deals
+       * that much damage to each creature **that player** controls" is
+       * `"trigger-player"`, the player it dealt combat damage to. */
+      readonly whose?: PlayerScope;
       /** Spare the effect's own source — "each **other** creature with
        * flying" (Harbinger of the Hunt). A `CardFilter` can't say this: it
        * describes the permanent being matched, not its relationship to the
@@ -1035,7 +1042,9 @@ export type EffectSpec =
   | {
       /** `targets[a]` and `targets[b]` each deal damage equal to their power
        * to the other (rule 701.12). With `oneSided`, only `a` deals to `b`
-       * (Rabid Bite). */
+       * (Rabid Bite) — and `b` may be any permanent that can be dealt damage,
+       * a planeswalker too (Stump Stomp's "to target creature or
+       * planeswalker"). */
       readonly kind: "fight";
       /** `EffectTargetRef`s, so `"trigger-object"` works — Frontier Siege's
        * "you may have **it** fight target creature", where "it" is the
@@ -1192,7 +1201,9 @@ export type EffectSpec =
        * the effect's own controller with no slot, or `"each-player"` for every
        * graveyard at once (Rest in Peace). needed-cards P8. */
       readonly kind: "exile-graveyard";
-      readonly target: number | "you" | "each-player";
+      /** `"each-opponent"`: Soul-Guide Lantern's "exile each opponent's
+       * graveyard", one move like `"each-player"`. */
+      readonly target: number | "you" | "each-player" | "each-opponent";
     }
   | {
       /** Exile a target permanent, then immediately return it to the
@@ -1256,7 +1267,10 @@ export type EffectSpec =
        * countered stays on the stack and resolves, and a copy of a spell
        * ceases to exist rather than going anywhere (rule 707.10c). */
       readonly kind: "counter";
-      readonly target: number;
+      /** A target slot, or `"trigger-object"` — the spell whose casting
+       * fired this trigger, untargeted: Vexing Bauble's "whenever a player
+       * casts a spell, if no mana was spent to cast it, counter that spell". */
+      readonly target: EffectTargetRef;
       /**
        * `"hand"`: if the spell is countered this way, put it into its
        * owner's hand instead of into their graveyard (Remand). Still a
@@ -1775,6 +1789,15 @@ export type EffectSpec =
        * (ROADMAP Phase 6b). */
       readonly kind: "grant-flashback";
       readonly target: number;
+    }
+  | {
+      /** The mass form of `grant-flashback`: each card in your graveyard
+       * matching `filter` gains flashback until end of turn, at a cost equal
+       * to its mana cost — Past in Flames' "each instant and sorcery card in
+       * your graveyard". The cards are fixed as it resolves (rule 611.2c):
+       * one put there later this turn doesn't gain it. */
+      readonly kind: "grant-flashback-all";
+      readonly filter: CardFilter;
     }
   | {
       /** "Choose target artifact card in your graveyard. You may cast that
@@ -2987,7 +3010,7 @@ export interface EffectApi {
   /** Exile every battlefield permanent matching `filter` — see `exile-all`. */
   exileAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
-  damageAll(filter: CardFilter, amount: number, exceptSource?: boolean): void;
+  damageAll(filter: CardFilter, amount: number, exceptSource?: boolean, whose?: readonly PlayerId[]): void;
   /** Every battlefield permanent matching `filter` deals `amount` damage to
    * its own controller — see the `"creatures-damage-controllers"`
    * {@link EffectSpec}. */
@@ -3150,10 +3173,13 @@ export interface EffectApi {
    * the rest of the turn, at a flashback cost equal to its mana cost
    * (Snapcaster Mage). */
   grantFlashback(target: TargetRef): void;
+  /** See the `"grant-flashback-all"` {@link EffectSpec}. */
+  grantFlashbackAll(filter: CardFilter): void;
   /** Let this effect's controller cast `target` (a card in a graveyard)
    * from there this turn — see the `grant-graveyard-cast` effect. */
   grantGraveyardCast(target: TargetRef): void;
-  /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals. */
+  /** `a` and `b` (both creatures) fight; with `oneSided` only `a` deals,
+   * to a creature or a planeswalker. */
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** Counter a target spell on the stack — into its owner's hand instead
    * of their graveyard with `into: "hand"`. */
@@ -4339,16 +4365,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "lose-life": {
+      if (spec.target !== undefined && spec.toControllerOfTarget === undefined) {
+        // A per-player amount is the target's own: Peer into the Abyss's
+        // "target player … loses half their life".
+        const ref = ctx.targets[spec.target];
+        if (ref?.kind === "player") ctx.loseLife(ref.player, amountValue(spec.amount, ctx, ref.player));
+        return;
+      }
       const life = amountValue(spec.amount, ctx);
       if (spec.toControllerOfTarget !== undefined) {
         const of = ctx.targets[spec.toControllerOfTarget];
         const who = of === undefined ? undefined : ctx.controllerOf(of);
         if (who !== undefined) ctx.loseLife(who, life);
-        return;
-      }
-      if (spec.target !== undefined) {
-        const ref = ctx.targets[spec.target];
-        if (ref?.kind === "player") ctx.loseLife(ref.player, life);
         return;
       }
       if (spec.who === undefined || spec.who === "you") ctx.loseLife(ctx.controller, life);
@@ -4379,7 +4407,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "destroy": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.destroyPermanent(target, spec.cantBeRegenerated === true);
       return;
     }
@@ -4401,7 +4429,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.exileAll(spec.filter);
       return;
     case "damage-all":
-      ctx.damageAll(spec.filter, amountValue(spec.amount, ctx), spec.exceptSource === true);
+      ctx.damageAll(
+        spec.filter,
+        amountValue(spec.amount, ctx),
+        spec.exceptSource === true,
+        spec.whose === undefined ? undefined : ctx.playersInScope(spec.whose),
+      );
       return;
     case "creatures-damage-controllers":
       ctx.creaturesDamageControllers(spec.filter, amountValue(spec.amount, ctx));
@@ -4436,7 +4469,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "counter": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.counterSpell(target, spec.into);
       return;
     }
@@ -4516,10 +4549,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "exile-graveyard": {
-      if (spec.target === "each-player") {
+      if (spec.target === "each-player" || spec.target === "each-opponent") {
         // "Exile all graveyards" is one move, not one per player.
+        const scope = spec.target;
         ctx.simultaneously(() => {
-          for (const player of ctx.playersInScope("each-player")) {
+          for (const player of ctx.playersInScope(scope)) {
             ctx.exileGraveyard({ kind: "player", player });
           }
         });
@@ -4573,6 +4607,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.grantFlashback(target);
       return;
     }
+    case "grant-flashback-all":
+      ctx.grantFlashbackAll(spec.filter);
+      return;
     case "grant-graveyard-cast": {
       const target = ctx.targets[spec.target];
       if (target !== undefined) ctx.grantGraveyardCast(target);

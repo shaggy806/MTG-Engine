@@ -107,6 +107,18 @@ function isLivingCreature(
 }
 
 /** A spell (a card, not an ability) currently on the stack. */
+/** The player the ability's source is attacking — the controller of the
+ * planeswalker it's attacking, if that — or `undefined` when it isn't
+ * attacking: "defending player" of `"creature-defending-player-controls"` and
+ * the `whose: "defending-player"` specs. */
+function defendingPlayerOf(state: GameState, source: TargetSource | undefined): PlayerId | undefined {
+  const attacking = source?.object !== undefined ? state.objects[source.object]?.attacking : undefined;
+  if (attacking === null || attacking === undefined) return undefined;
+  return state.players[attacking as PlayerId] !== undefined
+    ? (attacking as PlayerId)
+    : state.objects[attacking as ObjectId]?.controller;
+}
+
 function isSpellOnStack(state: GameState, id: ObjectId): boolean {
   const object = state.objects[id];
   return object !== undefined && object.zone === "stack" && object.kind === "card";
@@ -210,6 +222,7 @@ export function isLegalTarget(
     if (whose === "trigger-player" && (source?.triggerPlayer === undefined || object.controller !== source.triggerPlayer)) {
       return false;
     }
+    if (whose === "defending-player" && object.controller !== defendingPlayerOf(state, source)) return false;
     return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
   }
   // A filtered spell on the stack.
@@ -231,16 +244,7 @@ export function isLegalTarget(
     const whose = spec.whose ?? "any";
     if (whose === "you" && object.owner !== forPlayer) return false;
     if (whose === "opponent" && object.owner === forPlayer) return false;
-    if (whose === "defending-player") {
-      const attacker = source?.object !== undefined ? state.objects[source.object] : undefined;
-      const attacking = attacker?.attacking;
-      if (attacking === null || attacking === undefined) return false;
-      const defender =
-        state.players[attacking as PlayerId] !== undefined
-          ? (attacking as PlayerId)
-          : state.objects[attacking as ObjectId]?.controller;
-      if (defender === undefined || object.owner !== defender) return false;
-    }
+    if (whose === "defending-player" && object.owner !== defendingPlayerOf(state, source)) return false;
     // Printed characteristics: layer effects don't reach a graveyard, and
     // `matchesFilter` degrades to printed values off the battlefield anyway.
     return (
@@ -375,15 +379,8 @@ export function isLegalTarget(
         )
       );
     case "creature-defending-player-controls": {
-      if (ref.kind !== "object" || source?.object === undefined) return false;
-      const attacker = state.objects[source.object];
-      const defending = attacker?.attacking;
-      if (defending === null || defending === undefined) return false;
-      // `attacking` is a player, or a planeswalker that player controls.
-      const defender =
-        state.players[defending as PlayerId] !== undefined
-          ? (defending as PlayerId)
-          : state.objects[defending as ObjectId]?.controller;
+      if (ref.kind !== "object") return false;
+      const defender = defendingPlayerOf(state, source);
       if (defender === undefined) return false;
       return (
         isLivingCreature(state, registry, ref.object) &&

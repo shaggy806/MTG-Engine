@@ -98,9 +98,11 @@ import _poolInspiringCall from "../pool/inspiring-call.js";
 import _poolIntimidation from "../pool/intimidation.js";
 import _poolIrohGrandLotus from "../pool/iroh-grand-lotus.js";
 import _poolJeongJeongsDeserters from "../pool/jeong-jeongs-deserters.js";
+import _poolKambalConsulOfAllocation from "../pool/kambal-consul-of-allocation.js";
 import _poolKavuClimber from "../pool/kavu-climber.js";
 import _poolKeenEyedArchers from "../pool/keen-eyed-archers.js";
 import _poolKingpinsEnforcers from "../pool/kingpins-enforcers.js";
+import _poolLaeliaTheBladeReforged from "../pool/laelia-the-blade-reforged.js";
 import _poolLavaglidePathway from "../pool/lavaglide-pathway.js";
 import _poolLightOfHope from "../pool/light-of-hope.js";
 import _poolLootExuberantExplorer from "../pool/loot-exuberant-explorer.js";
@@ -147,6 +149,7 @@ import _poolSetessanSkirmisher from "../pool/setessan-skirmisher.js";
 import _poolShadowGlider from "../pool/shadow-glider.js";
 import _poolShatteringBlow from "../pool/shattering-blow.js";
 import _poolShivanHellkite from "../pool/shivan-hellkite.js";
+import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js";
 import _poolShuSoldierFarmers from "../pool/shu-soldier-farmers.js";
 import _poolSkyshroudElf from "../pool/skyshroud-elf.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
@@ -186,6 +189,7 @@ import _poolWanderersIntervention from "../pool/wanderers-intervention.js";
 import _poolWarleadersCall from "../pool/warleaders-call.js";
 import _poolWatcherInTheMist from "../pool/watcher-in-the-mist.js";
 import _poolWateryGrave from "../pool/watery-grave.js";
+import _poolWightOfTheReliquary from "../pool/wight-of-the-reliquary.js";
 import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
 import _poolWindStrider from "../pool/wind-strider.js";
 import _poolWindsOfRath from "../pool/winds-of-rath.js";
@@ -295,9 +299,11 @@ const shard: CardShard = {
     _poolIntimidation,
     _poolIrohGrandLotus,
     _poolJeongJeongsDeserters,
+    _poolKambalConsulOfAllocation,
     _poolKavuClimber,
     _poolKeenEyedArchers,
     _poolKingpinsEnforcers,
+    _poolLaeliaTheBladeReforged,
     _poolLavaglidePathway,
     _poolLightOfHope,
     _poolLootExuberantExplorer,
@@ -344,6 +350,7 @@ const shard: CardShard = {
     _poolShadowGlider,
     _poolShatteringBlow,
     _poolShivanHellkite,
+    _poolShrineOfTheForsakenGods,
     _poolShuSoldierFarmers,
     _poolSkyshroudElf,
     _poolSneeringShadewriter,
@@ -383,6 +390,7 @@ const shard: CardShard = {
     _poolWarleadersCall,
     _poolWatcherInTheMist,
     _poolWateryGrave,
+    _poolWightOfTheReliquary,
     _poolWildwoodPatrol,
     _poolWindStrider,
     _poolWindsOfRath,

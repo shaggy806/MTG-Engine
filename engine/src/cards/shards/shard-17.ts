@@ -12,6 +12,7 @@ import _poolAngelicPage from "../pool/angelic-page.js";
 import _poolArcticTreeline from "../pool/arctic-treeline.js";
 import _poolArdentRecruit from "../pool/ardent-recruit.js";
 import _poolAshayaSoulOfTheWild from "../pool/ashaya-soul-of-the-wild.js";
+import _poolAstralCornucopia from "../pool/astral-cornucopia.js";
 import _poolAtreusImpulsiveSon from "../pool/atreus-impulsive-son.js";
 import _poolAttendedSocialite from "../pool/attended-socialite.js";
 import _poolAvengerOfTheFallen from "../pool/avenger-of-the-fallen.js";
@@ -213,6 +214,7 @@ const shard: CardShard = {
     _poolArcticTreeline,
     _poolArdentRecruit,
     _poolAshayaSoulOfTheWild,
+    _poolAstralCornucopia,
     _poolAtreusImpulsiveSon,
     _poolAttendedSocialite,
     _poolAvengerOfTheFallen,

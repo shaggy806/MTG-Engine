@@ -64,6 +64,7 @@ import _poolElephantAmbush from "../pool/elephant-ambush.js";
 import _poolElfswornGiant from "../pool/elfsworn-giant.js";
 import _poolElvishVanguard from "../pool/elvish-vanguard.js";
 import _poolEsperSentinel from "../pool/esper-sentinel.js";
+import _poolExplosiveVegetation from "../pool/explosive-vegetation.js";
 import _poolEzuriRenegadeLeader from "../pool/ezuri-renegade-leader.js";
 import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
@@ -156,6 +157,7 @@ import _poolSkyswirlHarrier from "../pool/skyswirl-harrier.js";
 import _poolSlagwurmArmor from "../pool/slagwurm-armor.js";
 import _poolSmelt from "../pool/smelt.js";
 import _poolSoulShred from "../pool/soul-shred.js";
+import _poolSphereGrid from "../pool/sphere-grid.js";
 import _poolSpiritOfMalevolence from "../pool/spirit-of-malevolence.js";
 import _poolSulfurousMire from "../pool/sulfurous-mire.js";
 import _poolSyphonFuel from "../pool/syphon-fuel.js";
@@ -263,6 +265,7 @@ const shard: CardShard = {
     _poolElfswornGiant,
     _poolElvishVanguard,
     _poolEsperSentinel,
+    _poolExplosiveVegetation,
     _poolEzuriRenegadeLeader,
     _poolFallajiChaindancer,
     _poolFerociousCharge,
@@ -355,6 +358,7 @@ const shard: CardShard = {
     _poolSlagwurmArmor,
     _poolSmelt,
     _poolSoulShred,
+    _poolSphereGrid,
     _poolSpiritOfMalevolence,
     _poolSulfurousMire,
     _poolSyphonFuel,

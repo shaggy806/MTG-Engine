@@ -112,6 +112,7 @@ import _poolLynx from "../pool/lynx.js";
 import _poolMaalfeldTwins from "../pool/maalfeld-twins.js";
 import _poolMalakirRebirth from "../pool/malakir-rebirth.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
+import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
 import _poolMundasVanguard from "../pool/mundas-vanguard.js";
 import _poolMyrTurbine from "../pool/myr-turbine.js";
@@ -182,6 +183,7 @@ import _poolTurtleSeals from "../pool/turtle-seals.js";
 import _poolTwinscrollShaman from "../pool/twinscroll-shaman.js";
 import _poolTwistedExperiment from "../pool/twisted-experiment.js";
 import _poolUlvenwaldMysteries from "../pool/ulvenwald-mysteries.js";
+import _poolUndyingMalice from "../pool/undying-malice.js";
 import _poolUnlivingLegionnaire from "../pool/unliving-legionnaire.js";
 import _poolUnmake from "../pool/unmake.js";
 import _poolUnrulyCatapult from "../pool/unruly-catapult.js";
@@ -322,6 +324,7 @@ const shard: CardShard = {
     _poolMaalfeldTwins,
     _poolMalakirRebirth,
     _poolMerfolkSkydiver,
+    _poolMikaeusTheUnhallowed,
     _poolMillstone,
     _poolMundasVanguard,
     _poolMyrTurbine,
@@ -392,6 +395,7 @@ const shard: CardShard = {
     _poolTwinscrollShaman,
     _poolTwistedExperiment,
     _poolUlvenwaldMysteries,
+    _poolUndyingMalice,
     _poolUnlivingLegionnaire,
     _poolUnmake,
     _poolUnrulyCatapult,

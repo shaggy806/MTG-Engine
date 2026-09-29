@@ -561,6 +561,26 @@ in `git log`.
   Destinies). "Its controller creates …" now comes before the counter (An
   Offer You Can't Refuse, Strix Serenade): a countered copy has ceased to
   exist by then. B6.json lists the 64 cards it left blocked.
+- **Top-5000 batch 7** (2026-09-29, `top5000-batch-7.test.ts`) — unearth
+  (`unearth()` — Molten Gatekeeper) and undying as a grantable ability
+  (`undying()` — Mikaeus, the Unhallowed), "+1/+1 for each creature card in
+  your graveyard" (`grantPtPerCount.inGraveyard` — Wight of the Reliquary),
+  Past in Flames' mass flashback (`grant-flashback-all` — and Will of the
+  Jeskai, blocked on it in B4), a card with its own flashback and a granted
+  one casting with either (`Game.flashbacksOf`, named by `graveyardGrant`, as
+  escape already was — Snapcaster Mage had only offered the printed one),
+  `counter` and `destroy` of `"trigger-object"` (Vexing Bauble; Mikaeus's
+  "destroy it"), `exile-graveyard` of `"each-opponent"` (Soul-Guide
+  Lantern), `damage-all`'s `whose` (Balefire Dragon), a `controls`
+  condition's `excludeTriggerObject` (Valakut's "five other Mountains"),
+  `opponent-controls-more`'s `activePlayerOnly` (Keeper of the Accord),
+  `deals-damage`'s `to: "you"`, a `CardFilter`'s `attachedTo` (Conqueror's
+  Flail), a permanent target `whose: "defending-player"` (Kogla), a
+  one-sided fight at a planeswalker (Stump Stomp), a targeted `lose-life`
+  reading the target's own life (Peer into the Abyss), and cycling as the
+  discard it is (Archfiend of Ifnir, Waste Not — it had never fired a
+  discard trigger). Faithless Looting's flashback was {1}{R}; it's {2}{R}.
+  B7.json lists the 50 cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

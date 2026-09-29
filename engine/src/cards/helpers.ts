@@ -65,6 +65,23 @@ export const ward = (cost: WardCost): TriggeredAbility => {
 };
 
 /**
+ * Undying (rule 702.93): "When this permanent dies, if it had no +1/+1
+ * counters on it, return it to the battlefield under its owner's control with
+ * a +1/+1 counter on it." A real triggered ability — the "if" is an
+ * intervening-if read from last-known information — so a static can grant it
+ * (Mikaeus, the Unhallowed's "other non-Human creatures you control … have
+ * undying" is `grantsTriggered: [undying()]`). Put "Undying" in `text` as well.
+ */
+export const undying = (): TriggeredAbility => ({
+  trigger: { on: "dies", who: "self" },
+  condition: { kind: "self-counters", counter: "+1/+1", compare: { op: "eq", n: 0 } },
+  targets: [],
+  effect: { kind: "put-onto-battlefield", target: "trigger-object", withCounters: { kind: "+1/+1", amount: 1 } },
+  resolve: null,
+  text: "Undying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+});
+
+/**
  * Melee (rule 702.121): "Whenever this creature attacks, it gets +1/+1 until
  * end of turn for each opponent you attacked with a creature this combat."
  * Each instance triggers on its own. Put "Melee" in `text` as well.
@@ -397,6 +414,41 @@ export const livingWeapon = (): TriggeredAbility => ({
   },
   resolve: null,
   text: "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)",
+});
+
+/**
+ * Unearth (rule 702.84a): "[cost]: Return this card from your graveyard to
+ * the battlefield. It gains haste. Exile it at the beginning of the next end
+ * step. If it would leave the battlefield, exile it instead of putting it
+ * anywhere else. Activate only as a sorcery." The card's own ability in the
+ * graveyard, whose cost doesn't move it (`staysInZone`): a second activation
+ * in response finds it gone, and one exiled or returned in response is a new
+ * object that nothing here reaches (rule 400.7). The haste lasts as long as
+ * it stays; the "exile instead" replacement follows the permanent
+ * (`exileIfItWouldLeave`, as Whip of Erebos); the end-step exile is a delayed
+ * trigger. Put the printed "Unearth {cost}" line in `text`.
+ */
+export const unearth = (cost: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: false },
+  zone: "graveyard",
+  staysInZone: true,
+  sorcerySpeed: true,
+  targets: [],
+  effect: {
+    kind: "sequence",
+    effects: [
+      { kind: "put-onto-battlefield", target: "source", exileIfItWouldLeave: true },
+      { kind: "grant-keyword", target: "source", keyword: "haste", duration: "permanent" },
+      {
+        kind: "delayed-trigger",
+        at: "next-end-step",
+        effect: { kind: "exile", target: "source" },
+        text: "Exile the unearthed card.",
+      },
+    ],
+  },
+  resolve: null,
+  text: `Unearth ${cost}`,
 });
 
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({

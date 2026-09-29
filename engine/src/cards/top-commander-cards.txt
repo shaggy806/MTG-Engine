@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1604 already implemented / 3396 missing (marks refreshed 2026-09-29)
+1665 already implemented / 3335 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1203,149 +1203,149 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1208  Wasteland                                {0}              Land
 [ ]  1209  Xenagos, God of Revels                   {3}{R}{G}        Legendary Enchantment Creature — God
 [ ]  1210  Forge Anew                               {2}{W}           Enchantment
-[ ]  1211  Akroma's Memorial                        {7}              Legendary Artifact
-[ ]  1212  Exemplar of Light                        {2}{W}{W}        Creature — Angel
-[ ]  1213  Migration Path                           {3}{G}           Sorcery
-[ ]  1214  Patriar's Seal                           {3}              Artifact
-[ ]  1215  Archon of Sun's Grace                    {2}{W}{W}        Creature — Archon
-[ ]  1216  Lórien Revealed                          {3}{U}{U}        Sorcery
-[ ]  1217  Legion Leadership // Legion Stronghold   {2}              Instant // Land
-[ ]  1218  Glaring Fleshraker                       {2}{C}           Creature — Eldrazi Drone
+[x]  1211  Akroma's Memorial                        {7}              Legendary Artifact
+[x]  1212  Exemplar of Light                        {2}{W}{W}        Creature — Angel
+[x]  1213  Migration Path                           {3}{G}           Sorcery
+[x]  1214  Patriar's Seal                           {3}              Artifact
+[x]  1215  Archon of Sun's Grace                    {2}{W}{W}        Creature — Archon
+[x]  1216  Lórien Revealed                          {3}{U}{U}        Sorcery
+[x]  1217  Legion Leadership // Legion Stronghold   {2}              Instant // Land
+[x]  1218  Glaring Fleshraker                       {2}{C}           Creature — Eldrazi Drone
 [ ]  1219  Cascading Cataracts                      {0}              Land
 [ ]  1220  Midgar, City of Mako // Reactor Raid     {2}{B}           Land — Town // Sorcery — Adventure
 [x]  1221  Thriving Moor                            {0}              Land
-[ ]  1222  Sterling Grove                           {G}{W}           Enchantment
+[x]  1222  Sterling Grove                           {G}{W}           Enchantment
 [ ]  1223  Tezzeret, Cruel Captain                  {3}              Legendary Planeswalker — Tezzeret
 [ ]  1224  Requisition Raid                         {W}              Sorcery
 [ ]  1225  Primal Vigor                             {4}{G}           Enchantment
 [ ]  1226  Tekuthal, Inquiry Dominus                {2}{U}{U}        Legendary Creature — Phyrexian Horror
-[ ]  1227  Kogla, the Titan Ape                     {3}{G}{G}{G}     Legendary Creature — Ape
-[ ]  1228  Shrine of the Forsaken Gods              {0}              Land
+[x]  1227  Kogla, the Titan Ape                     {3}{G}{G}{G}     Legendary Creature — Ape
+[x]  1228  Shrine of the Forsaken Gods              {0}              Land
 [ ]  1229  Magda, Brazen Outlaw                     {1}{R}           Legendary Creature — Dwarf Berserker
 [ ]  1230  Amphibian Downpour                       {2}{U}           Enchantment — Aura
 [ ]  1231  Skyclave Apparition                      {1}{W}{W}        Creature — Kor Spirit
 [ ]  1232  Light Up the Stage                       {2}{R}           Sorcery
 [x]  1233  Agate Instigator                         {1}{R}           Creature — Lizard Rogue
 [x]  1234  Junji, the Midnight Sky                  {3}{B}{B}        Legendary Creature — Dragon Spirit
-[ ]  1235  Explosive Vegetation                     {3}{G}           Sorcery
-[ ]  1236  Dark Confidant                           {1}{B}           Creature — Human Wizard
+[x]  1235  Explosive Vegetation                     {3}{G}           Sorcery
+[x]  1236  Dark Confidant                           {1}{B}           Creature — Human Wizard
 [x]  1237  Iron Myr                                 {2}              Artifact Creature — Myr
-[ ]  1238  Bane of Progress                         {4}{G}{G}        Creature — Elemental
+[x]  1238  Bane of Progress                         {4}{G}{G}        Creature — Elemental
 [x]  1239  Rustvale Bridge                          {0}              Artifact Land
 [ ]  1240  Aven Mindcensor                          {2}{W}           Creature — Bird Wizard
 [ ]  1241  Arachnogenesis                           {2}{G}           Instant
 [ ]  1242  Clever Impersonator                      {2}{U}{U}        Creature — Shapeshifter
-[ ]  1244  Secure the Wastes                        {X}{W}           Instant
-[ ]  1245  Waste Not                                {1}{B}           Enchantment
-[ ]  1246  Topiary Stomper                          {1}{G}{G}        Creature — Plant Dinosaur
+[x]  1244  Secure the Wastes                        {X}{W}           Instant
+[x]  1245  Waste Not                                {1}{B}           Enchantment
+[x]  1246  Topiary Stomper                          {1}{G}{G}        Creature — Plant Dinosaur
 [ ]  1247  Shark Typhoon                            {5}{U}           Enchantment
 [ ]  1248  Liberator, Urza's Battlethopter          {3}              Legendary Artifact Creature — Thopter
 [ ]  1249  Vorinclex, Monstrous Raider              {4}{G}{G}        Legendary Creature — Phyrexian Praetor
 [ ]  1250  Chromatic Orrery                         {7}              Legendary Artifact
-[ ]  1251  Slayers' Stronghold                      {0}              Land
-[ ]  1252  Summon: Bahamut                          {9}              Enchantment Creature — Saga Dragon
-[ ]  1253  Fracture                                 {W}{B}           Instant
+[x]  1251  Slayers' Stronghold                      {0}              Land
+[x]  1252  Summon: Bahamut                          {9}              Enchantment Creature — Saga Dragon
+[x]  1253  Fracture                                 {W}{B}           Instant
 [x]  1254  Silver Myr                               {2}              Artifact Creature — Myr
 [ ]  1255  Wan Shi Tong, Librarian                  {X}{U}{U}        Legendary Creature — Bird Spirit
 [x]  1256  Kiki-Jiki, Mirror Breaker                {2}{R}{R}{R}     Legendary Creature — Goblin Shaman
 [ ]  1257  Rosie Cotton of South Lane               {2}{W}           Legendary Creature — Halfling Peasant
-[ ]  1258  Bushwhack                                {G}              Sorcery
+[x]  1258  Bushwhack                                {G}              Sorcery
 [ ]  1259  Hedge Shredder                           {2}{G}{G}        Artifact — Vehicle
 [x]  1260  Twinflame                                {1}{R}           Sorcery
-[ ]  1261  Saryth, the Viper's Fang                 {2}{G}{G}        Legendary Creature — Human Warlock
+[x]  1261  Saryth, the Viper's Fang                 {2}{G}{G}        Legendary Creature — Human Warlock
 [ ]  1262  Coveted Jewel                            {6}              Artifact
 [ ]  1263  Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel {3}              Legendary Creature — Human Avatar Soldier // Legendary Creature — Angel Nightmare Avatar
 [ ]  1264  Stock Up                                 {2}{U}           Sorcery
-[ ]  1265  Wight of the Reliquary                   {B}{G}           Creature — Zombie Knight
+[x]  1265  Wight of the Reliquary                   {B}{G}           Creature — Zombie Knight
 [x]  1266  Elenda, the Dusk Rose                    {2}{W}{B}        Legendary Creature — Vampire Knight
-[ ]  1267  Sheltered by Ghosts                      {1}{W}           Enchantment — Aura
-[ ]  1268  Sphere Grid                              {1}{G}           Enchantment
-[ ]  1269  Mahadi, Emporium Master                  {1}{B}{R}        Legendary Creature — Devil
-[ ]  1270  Enter the Enigma                         {U}              Sorcery
-[ ]  1271  Past in Flames                           {3}{R}           Sorcery
+[x]  1267  Sheltered by Ghosts                      {1}{W}           Enchantment — Aura
+[x]  1268  Sphere Grid                              {1}{G}           Enchantment
+[x]  1269  Mahadi, Emporium Master                  {1}{B}{R}        Legendary Creature — Devil
+[x]  1270  Enter the Enigma                         {U}              Sorcery
+[x]  1271  Past in Flames                           {3}{R}           Sorcery
 [x]  1272  Amulet of Vigor                          {1}              Artifact
 [ ]  1273  Wandering Archaic // Explore the Vastlands {5}              Creature — Avatar // Sorcery
-[ ]  1274  Balefire Dragon                          {5}{R}{R}        Creature — Dragon
+[x]  1274  Balefire Dragon                          {5}{R}{R}        Creature — Dragon
 [x]  1275  Cleansing Nova                           {3}{W}{W}        Sorcery
-[ ]  1276  Keeper of the Accord                     {3}{W}           Creature — Human Soldier
+[x]  1276  Keeper of the Accord                     {3}{W}           Creature — Human Soldier
 [x]  1277  Alexios, Deimos of Kosmos                {3}{R}           Legendary Creature — Human Berserker
 [ ]  1278  Lethal Scheme                            {2}{B}{B}        Instant
-[ ]  1279  Molten Gatekeeper                        {2}{R}           Artifact Creature — Golem
-[ ]  1280  Peer into the Abyss                      {4}{B}{B}{B}     Sorcery
-[ ]  1281  Maestros Theater                         {0}              Land
-[ ]  1282  Stump Stomp // Burnwillow Clearing       {2}              Sorcery // Land
-[ ]  1283  Duelist's Heritage                       {2}{W}           Enchantment
+[x]  1279  Molten Gatekeeper                        {2}{R}           Artifact Creature — Golem
+[x]  1280  Peer into the Abyss                      {4}{B}{B}{B}     Sorcery
+[x]  1281  Maestros Theater                         {0}              Land
+[x]  1282  Stump Stomp // Burnwillow Clearing       {2}              Sorcery // Land
+[x]  1283  Duelist's Heritage                       {2}{W}           Enchantment
 [ ]  1284  Scapeshift                               {2}{G}{G}        Sorcery
 [ ]  1285  Scourge of the Throne                    {4}{R}{R}        Creature — Dragon
 [x]  1286  Ruin Crab                                {U}              Creature — Crab
 [ ]  1287  Carpet of Flowers                        {G}              Enchantment
-[ ]  1288  Archfiend of Ifnir                       {3}{B}{B}        Creature — Demon
+[x]  1288  Archfiend of Ifnir                       {3}{B}{B}        Creature — Demon
 [ ]  1289  Thassa, Deep-Dwelling                    {3}{U}           Legendary Enchantment Creature — God
 [x]  1290  Sylvan Scrying                           {1}{G}           Sorcery
 [x]  1291  Nuka-Cola Vending Machine                {3}              Artifact
 [x]  1292  Flux Channeler                           {2}{U}           Creature — Human Wizard
-[ ]  1293  Windcrag Siege                           {1}{R}{W}        Enchantment
+[x]  1293  Windcrag Siege                           {1}{R}{W}        Enchantment
 [ ]  1294  Dakmor Salvage                           {0}              Land
 [ ]  1295  Flare of Malice                          {2}{B}{B}        Instant
 [x]  1296  Haunted Mire                             {0}              Land — Swamp Forest
 [ ]  1297  Electro, Assaulting Battery              {1}{R}{R}        Legendary Creature — Human Villain
 [ ]  1298  Simic Ascendancy                         {G}{U}           Enchantment
-[ ]  1299  Vexing Bauble                            {1}              Artifact
-[ ]  1300  Kambal, Consul of Allocation             {1}{W}{B}        Legendary Creature — Human Advisor
+[x]  1299  Vexing Bauble                            {1}              Artifact
+[x]  1300  Kambal, Consul of Allocation             {1}{W}{B}        Legendary Creature — Human Advisor
 [x]  1301  Defense of the Heart                     {3}{G}           Enchantment
 [ ]  1302  Valgavoth, Terror Eater                  {6}{B}{B}{B}     Legendary Creature — Elder Demon
 [x]  1303  Rune-Scarred Demon                       {5}{B}{B}        Creature — Demon
 [ ]  1304  Tendershoot Dryad                        {4}{G}           Creature — Dryad
 [x]  1305  Timeless Witness                         {2}{G}{G}        Creature — Human Shaman
 [ ]  1306  Mirage Mirror                            {3}              Artifact
-[ ]  1307  Guildless Commons                        {0}              Land
-[ ]  1308  Courser of Kruphix                       {1}{G}{G}        Enchantment Creature — Centaur
+[x]  1307  Guildless Commons                        {0}              Land
+[x]  1308  Courser of Kruphix                       {1}{G}{G}        Enchantment Creature — Centaur
 [ ]  1309  Vigor                                    {3}{G}{G}{G}     Creature — Elemental Incarnation
-[ ]  1310  Brokers Hideout                          {0}              Land
-[ ]  1311  Undying Malice                           {B}              Instant
+[x]  1310  Brokers Hideout                          {0}              Land
+[x]  1311  Undying Malice                           {B}              Instant
 [ ]  1312  Finale of Revelation                     {X}{U}{U}        Sorcery
-[ ]  1313  Mikaeus, the Unhallowed                  {3}{B}{B}{B}     Legendary Creature — Zombie Cleric
-[ ]  1314  Astral Cornucopia                        {X}{X}{X}        Artifact
+[x]  1313  Mikaeus, the Unhallowed                  {3}{B}{B}{B}     Legendary Creature — Zombie Cleric
+[x]  1314  Astral Cornucopia                        {X}{X}{X}        Artifact
 [x]  1315  Teysa Karlov                             {2}{W}{B}        Legendary Creature — Human Advisor
-[ ]  1317  Valakut, the Molten Pinnacle             {0}              Land
+[x]  1317  Valakut, the Molten Pinnacle             {0}              Land
 [x]  1318  Dragonspeaker Shaman                     {1}{R}{R}        Creature — Human Barbarian Shaman
 [ ]  1319  Halimar Depths                           {0}              Land
 [ ]  1320  Whir of Invention                        {X}{U}{U}{U}     Instant
-[ ]  1321  Uthros, Titanic Godcore                  {0}              Land — Planet
+[x]  1321  Uthros, Titanic Godcore                  {0}              Land — Planet
 [x]  1322  Krark-Clan Ironworks                     {4}              Artifact
-[ ]  1323  Awaken the Woods                         {X}{G}{G}        Sorcery
+[x]  1323  Awaken the Woods                         {X}{G}{G}        Sorcery
 [ ]  1324  Organic Extinction                       {8}{W}{W}        Sorcery
 [ ]  1325  Experimental Augury                      {1}{U}           Instant
 [x]  1326  Umbral Collar Zealot                     {1}{B}           Creature — Human Cleric
 [ ]  1327  Key to the City                          {2}              Artifact
-[ ]  1328  Brainsurge                               {2}{U}           Instant
+[x]  1328  Brainsurge                               {2}{U}           Instant
 [x]  1329  Asceticism                               {3}{G}{G}        Enchantment
-[ ]  1330  Laelia, the Blade Reforged               {2}{R}           Legendary Creature — Spirit Warrior
-[ ]  1331  Jukai Naturalist                         {G}{W}           Enchantment Creature — Human Monk
+[x]  1330  Laelia, the Blade Reforged               {2}{R}           Legendary Creature — Spirit Warrior
+[x]  1331  Jukai Naturalist                         {G}{W}           Enchantment Creature — Human Monk
 [ ]  1332  Endurance                                {1}{G}{G}        Creature — Elemental Incarnation
 [ ]  1333  Vraska, Betrayal's Sting                 {4}{B}{B/P}      Legendary Planeswalker — Vraska
-[ ]  1334  Conqueror's Flail                        {2}              Artifact — Equipment
+[x]  1334  Conqueror's Flail                        {2}              Artifact — Equipment
 [x]  1335  Sword of Fire and Ice                    {3}              Artifact — Equipment
 [ ]  1336  Baral, Chief of Compliance               {1}{U}           Legendary Creature — Human Wizard
 [ ]  1337  Secret Tunnel                            {0}              Land — Cave
 [ ]  1338  Jadar, Ghoulcaller of Nephalia           {1}{B}           Legendary Creature — Human Wizard
-[ ]  1339  Shimmer Myr                              {3}              Artifact Creature — Myr
+[x]  1339  Shimmer Myr                              {3}              Artifact Creature — Myr
 [x]  1340  Rootborn Defenses                        {2}{W}           Instant
-[ ]  1341  Ulamog, the Ceaseless Hunger             {10}             Legendary Creature — Eldrazi
+[x]  1341  Ulamog, the Ceaseless Hunger             {10}             Legendary Creature — Eldrazi
 [ ]  1342  Palantír of Orthanc                      {3}              Legendary Artifact
 [x]  1343  Skirk Prospector                         {R}              Creature — Goblin
 [ ]  1344  Ad Nauseam                               {3}{B}{B}        Instant
 [ ]  1345  Dolmen Gate                              {2}              Artifact
-[ ]  1346  Brass's Bounty                           {6}{R}           Sorcery
-[ ]  1347  Sodden Verdure                           {0}              Land — Forest Island
+[x]  1346  Brass's Bounty                           {6}{R}           Sorcery
+[x]  1347  Sodden Verdure                           {0}              Land — Forest Island
 [ ]  1348  Full Throttle                            {4}{R}{R}        Sorcery
-[ ]  1349  Persist                                  {1}{B}           Sorcery
+[x]  1349  Persist                                  {1}{B}           Sorcery
 [x]  1350  Archangel of Thune                       {3}{W}{W}        Creature — Angel
 [x]  1351  Dragonlord's Servant                     {1}{R}           Creature — Goblin Shaman
-[ ]  1352  Staff of Compleation                     {3}              Artifact
-[ ]  1353  Soul-Guide Lantern                       {1}              Artifact
+[x]  1352  Staff of Compleation                     {3}              Artifact
+[x]  1353  Soul-Guide Lantern                       {1}              Artifact
 [x]  1354  Pristine Talisman                        {3}              Artifact
-[ ]  1355  Grand Crescendo                          {X}{W}{W}        Instant
+[x]  1355  Grand Crescendo                          {X}{W}{W}        Instant
 [x]  1356  Exalted Sunborn                          {3}{W}{W}        Creature — Angel Wizard
 [ ]  1357  Colossal Majesty                         {2}{G}           Enchantment
 [ ]  1358  Binding the Old Gods                     {2}{B}{G}        Enchantment — Saga
@@ -2159,7 +2159,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2166  Grinding Station                         {2}              Artifact
 [ ]  2167  Master of Etherium                       {2}{U}           Artifact Creature — Vedalken Wizard
 [ ]  2168  Kitsa, Otterball Elite                   {1}{U}           Legendary Creature — Otter Wizard
-[ ]  2169  Will of the Jeskai                       {3}{R}           Sorcery
+[x]  2169  Will of the Jeskai                       {3}{R}           Sorcery
 [ ]  2170  Arboreal Grazer                          {G}              Creature — Sloth Beast
 [ ]  2171  Grapple with the Past                    {1}{G}           Instant
 [ ]  2172  Mina and Denn, Wildborn                  {2}{R}{G}        Legendary Creature — Elf Ally

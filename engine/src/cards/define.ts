@@ -310,6 +310,12 @@ export type StaticCondition =
        * where there are targets (a `conditional` effect); ignored on a
        * static ability. */
       readonly excludeTarget?: number;
+      /** Leave out the object whose event fired the triggered ability asking
+       * — Valakut, the Molten Pinnacle's "whenever a Mountain you control
+       * enters, if you control at least five **other** Mountains": the one
+       * entering doesn't count, and once it has left, the rest still do.
+       * Only meaningful as a triggered ability's intervening-if. */
+      readonly excludeTriggerObject?: boolean;
       readonly countsSelf?: boolean;
     }
   /**
@@ -365,6 +371,10 @@ export type StaticCondition =
   | {
       readonly kind: "opponent-controls-more";
       readonly filter: CardFilter;
+      /** Only the player whose turn it is, when that's an opponent — Keeper
+       * of the Accord's "at the beginning of each opponent's end step, if
+       * **that player** controls more creatures than you". */
+      readonly activePlayerOnly?: boolean;
     }
   /** Your opponents control at least `atLeast` permanents matching `filter`
    * *combined* (Turbulent Fen — "unless your opponents control eight or more
@@ -750,6 +760,10 @@ export interface StaticAbility {
      * each card your opponents own in exile" is `{ ownedBy: "opponent" }`.
      * Face-down cards count; they're still cards. */
     readonly exiled?: CardFilter;
+    /** Cards in graveyards matching a filter, from this permanent's
+     * controller's side — Wight of the Reliquary's "+1/+1 for each creature
+     * card in your graveyard" is `{ type: "creature", ownedBy: "you" }`. */
+    readonly inGraveyard?: CardFilter;
     /** Colours among battlefield permanents matching a filter, each once —
      * Sisay, Weatherlight Captain's "+1/+1 for each color among other
      * legendary permanents you control" (with `excludeSelf`). */
@@ -1577,7 +1591,9 @@ export interface CardDefinition {
   /** Cycling (rule 702.29) — `cost`, Discard this card: Draw a card. Any time
    * you could cast an instant. Modeled as an immediate special action (pay,
    * discard, draw), not a stack-using ability — no "respond to cycling"
-   * window, no "when you cycle" triggers. `null` for a card without cycling. */
+   * window, no "when you cycle" triggers. The discard is a real one, seen by
+   * every `discards` trigger (Archfiend of Ifnir's "whenever you cycle or
+   * discard another card"). `null` for a card without cycling. */
   readonly cycling: {
     readonly cost: string;
     /**

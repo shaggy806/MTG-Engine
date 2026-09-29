@@ -89,6 +89,7 @@ import _poolLiturgyOfBlood from "../pool/liturgy-of-blood.js";
 import _poolLivingLightning from "../pool/living-lightning.js";
 import _poolLothlorienLookout from "../pool/lothlorien-lookout.js";
 import _poolLumengridSentinel from "../pool/lumengrid-sentinel.js";
+import _poolMaestrosTheater from "../pool/maestros-theater.js";
 import _poolMahamotiDjinn from "../pool/mahamoti-djinn.js";
 import _poolMalametWarScribe from "../pool/malamet-war-scribe.js";
 import _poolMantleOfWebs from "../pool/mantle-of-webs.js";
@@ -281,6 +282,7 @@ const shard: CardShard = {
     _poolLivingLightning,
     _poolLothlorienLookout,
     _poolLumengridSentinel,
+    _poolMaestrosTheater,
     _poolMahamotiDjinn,
     _poolMalametWarScribe,
     _poolMantleOfWebs,

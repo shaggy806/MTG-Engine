@@ -8,6 +8,7 @@ import _poolAgeGracedChapel from "../pool/age-graced-chapel.js";
 import _poolAjanisWelcome from "../pool/ajanis-welcome.js";
 import _poolAntManScottLang from "../pool/ant-man-scott-lang.js";
 import _poolArchaeomancer from "../pool/archaeomancer.js";
+import _poolArchfiendOfIfnir from "../pool/archfiend-of-ifnir.js";
 import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
 import _poolArdentElementalist from "../pool/ardent-elementalist.js";
 import _poolAvenOfEnduringHope from "../pool/aven-of-enduring-hope.js";
@@ -199,6 +200,7 @@ const shard: CardShard = {
     _poolAjanisWelcome,
     _poolAntManScottLang,
     _poolArchaeomancer,
+    _poolArchfiendOfIfnir,
     _poolArchonOfRedemption,
     _poolArdentElementalist,
     _poolAvenOfEnduringHope,

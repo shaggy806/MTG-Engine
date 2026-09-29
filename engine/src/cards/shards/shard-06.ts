@@ -107,6 +107,7 @@ import _poolOracleOfNectars from "../pool/oracle-of-nectars.js";
 import _poolOvikaEnigmaGoliath from "../pool/ovika-enigma-goliath.js";
 import _poolPaladinOfTheBloodstained from "../pool/paladin-of-the-bloodstained.js";
 import _poolPardicWanderer from "../pool/pardic-wanderer.js";
+import _poolPeerIntoTheAbyss from "../pool/peer-into-the-abyss.js";
 import _poolPharikasMender from "../pool/pharikas-mender.js";
 import _poolPhyrexianArena from "../pool/phyrexian-arena.js";
 import _poolPhyrexianDenouncer from "../pool/phyrexian-denouncer.js";
@@ -131,6 +132,7 @@ import _poolSawInHalf from "../pool/saw-in-half.js";
 import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
+import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
 import _poolSetessanChampion from "../pool/setessan-champion.js";
 import _poolSidarJabariOfZhalfir from "../pool/sidar-jabari-of-zhalfir.js";
 import _poolSiegecraft from "../pool/siegecraft.js";
@@ -178,6 +180,7 @@ import _poolZhalfirinVoid from "../pool/zhalfirin-void.js";
 import _poolZodiacMonkey from "../pool/zodiac-monkey.js";
 import _tokensBeastToken33 from "../tokens/beast-token-3-3.js";
 import _tokensBlueBirdToken from "../tokens/blue-bird-token.js";
+import _tokensCitizenToken from "../tokens/citizen-token.js";
 import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
@@ -290,6 +293,7 @@ const shard: CardShard = {
     _poolOvikaEnigmaGoliath,
     _poolPaladinOfTheBloodstained,
     _poolPardicWanderer,
+    _poolPeerIntoTheAbyss,
     _poolPharikasMender,
     _poolPhyrexianArena,
     _poolPhyrexianDenouncer,
@@ -314,6 +318,7 @@ const shard: CardShard = {
     _poolScepterOfInsight,
     _poolScorchingSpear,
     _poolSearstepPathway,
+    _poolSecureTheWastes,
     _poolSetessanChampion,
     _poolSidarJabariOfZhalfir,
     _poolSiegecraft,
@@ -363,6 +368,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBeastToken33,
     _tokensBlueBirdToken,
+    _tokensCitizenToken,
     _tokensEldraziSpawnToken,
     _tokensHydraToken,
     _tokensJunkToken,
