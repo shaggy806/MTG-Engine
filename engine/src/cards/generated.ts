@@ -2569,6 +2569,7 @@ import _poolKalonianBehemoth from "./pool/kalonian-behemoth.js";
 import _poolKalonianHydra from "./pool/kalonian-hydra.js";
 import _poolKalonianTusker from "./pool/kalonian-tusker.js";
 import _poolKamahlPitFighter from "./pool/kamahl-pit-fighter.js";
+import _poolKambalProfiteeringMayor from "./pool/kambal-profiteering-mayor.js";
 import _poolKamiOfAncientLaw from "./pool/kami-of-ancient-law.js";
 import _poolKamiOfOldStone from "./pool/kami-of-old-stone.js";
 import _poolKamiOfTwistedReflection from "./pool/kami-of-twisted-reflection.js";
@@ -8439,6 +8440,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKalonianHydra,
   _poolKalonianTusker,
   _poolKamahlPitFighter,
+  _poolKambalProfiteeringMayor,
   _poolKamiOfAncientLaw,
   _poolKamiOfOldStone,
   _poolKamiOfTwistedReflection,

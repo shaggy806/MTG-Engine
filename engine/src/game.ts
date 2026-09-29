@@ -10422,7 +10422,17 @@ export class Game {
           // Which stint on the battlefield the source and the triggering
           // object were in — what the ability means by "it" and "that
           // creature" if either has left by the time it resolves (608.2h).
-          const lastKnownRefs = this.refsAtTrigger(live, lastSeen, event, triggerObject);
+          const atTrigger = this.refsAtTrigger(live, lastSeen, event, triggerObject);
+          // "For each of them": which permanents the batched entry brought.
+          const lastKnownRefs =
+            ability.trigger.on === "enters-battlefield" &&
+            ability.trigger.batched === true &&
+            event.type === "permanent-entered-battlefield"
+              ? {
+                  ...(atTrigger ?? {}),
+                  enteredTogether: this.enterBatchMatching(ability.trigger, event, object),
+                }
+              : atTrigger;
           const base = {
             sourceObjectId: id,
             cardName: lastSeen !== undefined ? lastSeen.name : printedCardName(object),
@@ -11004,13 +11014,24 @@ export class Game {
    * batched `enters-battlefield` trigger matches — a compacted token stack
    * counting as each of its tokens. */
   private enterBatchMatches(spec: TriggerSpec, event: GameEvent, self: GameObject): number {
-    const events = this.enterBatchEvents ?? [event];
-    let n = 0;
-    for (const e of events) {
+    return this.enterBatchMatching(spec, event, self).reduce((n, e) => n + e.count, 0);
+  }
+
+  /** The permanents of that entry the trigger matches, as `LastKnownRefs
+   * .enteredTogether` records them. */
+  private enterBatchMatching(
+    spec: TriggerSpec,
+    event: GameEvent,
+    self: GameObject,
+  ): { object: ObjectId; zoneChangeCount: number; count: number }[] {
+    const matching: { object: ObjectId; zoneChangeCount: number; count: number }[] = [];
+    for (const e of this.enterBatchEvents ?? [event]) {
       if (e.type !== "permanent-entered-battlefield") continue;
-      if (this.triggerMatches(spec, e as GameEvent, self)) n += e.count ?? 1;
+      if (!this.triggerMatches(spec, e as GameEvent, self)) continue;
+      const zoneChangeCount = this.state.objects[e.object]?.zoneChangeCount ?? 0;
+      matching.push({ object: e.object, zoneChangeCount, count: e.count ?? 1 });
     }
-    return n;
+    return matching;
   }
 
   private triggerMatches(
@@ -12090,7 +12111,7 @@ export class Game {
             ? refs.sacrificed.zoneChangeCount
             : refs.tapped?.object === id
               ? refs.tapped.zoneChangeCount
-              : undefined;
+              : refs.enteredTogether?.find((e) => e.object === id)?.zoneChangeCount;
     const lastKnownOf = (target: TargetRef): LastKnownInfo | undefined => {
       if (target.kind !== "object") return undefined;
       const stint = stintOf(target.object);
@@ -12224,6 +12245,9 @@ export class Game {
       ...(opts.announcedModes !== undefined ? { announcedModes: opts.announcedModes } : {}),
       ...(refs.sacrificed !== undefined ? { sacrificed: refs.sacrificed.object } : {}),
       ...(refs.tapped !== undefined ? { tapped: refs.tapped.object } : {}),
+      ...(refs.enteredTogether !== undefined
+        ? { enteredTogether: refs.enteredTogether.map(({ object, count }) => ({ object, count })) }
+        : {}),
       decisionPending: () => this.decisionOutstanding(),
       parkedCount: () => this.state.suspendedResolutions.length,
       resumeAfterDecisions: (rest, below) => {

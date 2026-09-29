@@ -2042,7 +2042,10 @@ export type EffectSpec =
        * "its controller creates" — for a destroyed target its last-known
        * controller). */
       readonly kind: "create-token-copy";
-      readonly of: "source" | "trigger-object" | number;
+      /** `"entered-together"` is "for each of them": a copy (`count`) of
+       * each permanent of the entry a batched `enters-battlefield` trigger
+       * fired on — Kambal, Profiteering Mayor. */
+      readonly of: "source" | "trigger-object" | "entered-together" | number;
       readonly count: number;
       /** The token copies have haste — a copy exception ("except it has
        * haste" — Kiki-Jiki), which lasts as long as they do. */
@@ -3473,6 +3476,9 @@ export interface ResolutionContext extends EffectApi {
    * last-known information and still works. See `LastKnownRefs
    * .triggerObjectAfterLeaving`. */
   readonly triggerObjectLost?: boolean;
+  /** See `LastKnownRefs.enteredTogether`: the permanents a batched entry
+   * trigger fired on, and how many tokens each stood for. */
+  readonly enteredTogether?: readonly { readonly object: ObjectId; readonly count: number }[];
   /** How many real, independent firings this resolution stands for — see
    * `GameObject.stackMultiplier`. `1` outside a scaled resolution. Only
    * `create-token` / `create-token-copy` read it (the only effect kinds
@@ -3517,7 +3523,7 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
     case "create-token-copy":
       // "trigger-object" / a target slot each name a specific instance from
       // *this* firing — not safe to multiply as "N more of the same".
-      return effect.of !== "trigger-object" && typeof effect.of !== "number";
+      return effect.of === "source";
     case "sequence":
       return effect.effects.every(isCountScalableEffect);
     case "conditional":
@@ -4883,15 +4889,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "create-token-copy": {
-      let of: ObjectId | undefined;
-      if (spec.of === "source") of = ctx.source;
-      else if (spec.of === "trigger-object") of = ctx.triggerObject;
-      else {
-        const ref = ctx.targets[spec.of];
-        of = ref?.kind === "object" ? ref.object : undefined;
-      }
-      if (of !== undefined) {
-        ctx.createTokenCopy(of, spec.count * ctx.stackMultiplier, {
+      const copy = (of: ObjectId, count: number): void =>
+        ctx.createTokenCopy(of, count, {
           gainsHaste: spec.gainsHaste ?? false,
           sacrificeAtEndStep: spec.sacrificeAtEndStep ?? false,
           exileAtEndStep: spec.exileAtEndStep ?? false,
@@ -4907,7 +4906,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           ...(spec.attacking !== undefined ? { attacking: resolveEnterAttacking(spec.attacking, ctx) } : {}),
           ...(spec.exileAtEndOfCombat === true ? { exileAtEndOfCombat: true } : {}),
         });
+      if (spec.of === "entered-together") {
+        for (const { object, count } of ctx.enteredTogether ?? []) copy(object, spec.count * count);
+        return;
       }
+      let of: ObjectId | undefined;
+      if (spec.of === "source") of = ctx.source;
+      else if (spec.of === "trigger-object") of = ctx.triggerObject;
+      else {
+        const ref = ctx.targets[spec.of];
+        of = ref?.kind === "object" ? ref.object : undefined;
+      }
+      if (of !== undefined) copy(of, spec.count * ctx.stackMultiplier);
       return;
     }
     case "conditional": {

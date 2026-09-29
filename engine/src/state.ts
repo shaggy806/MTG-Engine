@@ -899,6 +899,15 @@ export interface CastSpellRecord {
 export interface LastKnownRefs {
   readonly source?: number;
   readonly triggerObject?: number;
+  /** "For each of them" (Kambal, Profiteering Mayor): the permanents of the
+   * simultaneous entry a batched `enters-battlefield` trigger fired on, each
+   * with its battlefield stint and how many tokens it stood for (a
+   * compacted stack is its tokens). */
+  readonly enteredTogether?: readonly {
+    readonly object: ObjectId;
+    readonly zoneChangeCount: number;
+    readonly count: number;
+  }[];
   /**
    * For a trigger fired by its triggering object *leaving* the battlefield (a
    * dies trigger, a delayed "when it dies or is exiled") or arriving in a

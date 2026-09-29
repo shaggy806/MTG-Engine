@@ -88,6 +88,7 @@ import _poolIronWill from "../pool/iron-will.js";
 import _poolIzzetGuildgate from "../pool/izzet-guildgate.js";
 import _poolJhovallRider from "../pool/jhovall-rider.js";
 import _poolKamahlPitFighter from "../pool/kamahl-pit-fighter.js";
+import _poolKambalProfiteeringMayor from "../pool/kambal-profiteering-mayor.js";
 import _poolKilnFiend from "../pool/kiln-fiend.js";
 import _poolKratosStoicFather from "../pool/kratos-stoic-father.js";
 import _poolLandTax from "../pool/land-tax.js";
@@ -282,6 +283,7 @@ const shard: CardShard = {
     _poolIzzetGuildgate,
     _poolJhovallRider,
     _poolKamahlPitFighter,
+    _poolKambalProfiteeringMayor,
     _poolKilnFiend,
     _poolKratosStoicFather,
     _poolLandTax,

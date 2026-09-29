@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-323 already implemented / 177 missing
+324 already implemented / 176 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -447,7 +447,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  441  Don Andres, the Renegade                        6779 decks  {1}{U}{B}{R}     Legendary Creature — Vampire Pirate
 [ ]  442  Zethi, Arcane Blademaster                       6777 decks  {1}{W}{U}        Legendary Creature — Human Soldier
 [x]  443  Emry, Lurker of the Loch                        6759 decks  {2}{U}           Legendary Creature — Merfolk Wizard
-[ ]  444  Kambal, Profiteering Mayor                      6759 decks  {1}{W}{B}        Legendary Creature — Human Advisor
+[x]  444  Kambal, Profiteering Mayor                      6759 decks  {1}{W}{B}        Legendary Creature — Human Advisor
 [ ]  445  Brudiclad, Telchor Engineer                     6751 decks  {4}{U}{R}        Legendary Artifact Creature — Phyrexian Artificer
 [ ]  446  Magar of the Magic Strings                      6744 decks  {1}{B}{R}        Legendary Creature — Minotaur Performer
 [x]  447  Ravos, Soultender                               6739 decks  {3}{W}{B}        Legendary Creature — Human Cleric

@@ -502,8 +502,10 @@ in `git log`.
   `batched`: "whenever one or more … enter" fires once per simultaneous entry
   (`withEnterBatch`), a compacted token stack counting as its tokens, with
   "that much" as how many matched (Marneus Calgar, Ingenious Artillerist;
-  `enters-batch.test.ts`). Kambal's "for each of them, create a copy" still
-  needs `effect:token-copy-options`.
+  `enters-batch.test.ts`). `create-token-copy`'s `of: "entered-together"`
+  is "for each of them, create a copy of it" over that entry, carried in
+  `LastKnownRefs.enteredTogether` (`effect:token-copy-options` — Kambal,
+  Profiteering Mayor; `token-copy-entered-together.test.ts`).
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

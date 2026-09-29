@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1490 already implemented / 3510 missing (marks refreshed 2026-09-29)
+1491 already implemented / 3509 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1164,7 +1164,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1169  Crackle with Power                       {X}{X}{X}{R}{R}  Sorcery
 [x]  1170  Silverbluff Bridge                       {0}              Artifact Land
 [x]  1171  Darkbore Pathway // Slitherbore Pathway  {0}              Land // Land
-[ ]  1172  Kambal, Profiteering Mayor               {1}{W}{B}        Legendary Creature — Human Advisor
+[x]  1172  Kambal, Profiteering Mayor               {1}{W}{B}        Legendary Creature — Human Advisor
 [ ]  1173  The Shire                                {0}              Legendary Land
 [x]  1174  Seachrome Coast                          {0}              Land
 [x]  1175  Concealed Courtyard                      {0}              Land
