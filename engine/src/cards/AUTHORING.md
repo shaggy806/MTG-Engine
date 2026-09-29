@@ -946,7 +946,7 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
@@ -957,13 +957,30 @@ exist (rule 111.7), so neither comes back.
   end step" — Rocco, Street Chef: it lapses as the controller's next end step
   begins, or, once they've left the game, as their turn would have begun — rule
   800.4m), `"while-source"` or `"while-exiled"` ("for as long as it remains
-  exiled"). `whose` exiles from each library in a `PlayerScope` at once, and
-  `playedBy: "owner"` gives each card's permission to its owner: Rocco's "each
+  exiled"). `whose` exiles from each library in a `PlayerScope` at once, or
+  from the library of the player in a target slot ("target opponent's
+  library" is `whose: 0` with an `"opponent"` target), and `playedBy:
+  "owner"` gives each card's permission to its owner: Rocco's "each
   player exiles the top card of their library. Until your next end step, each
   player may play the card they exiled this way" is `{ amount: 1, duration:
-  "your-next-end-step", whose: "each-player", playedBy: "owner" }`. Playing a
-  card you don't own isn't built (`zone:cast-cards-you-dont-own`), so another
-  player's library needs `playedBy: "owner"`.
+  "your-next-end-step", whose: "each-player", playedBy: "owner" }`. Without
+  `playedBy` the permission is the controller's whoever owns the cards: a
+  spell cast from one is the caster's (rule 601.2a), the permanent it becomes
+  enters under them (608.3a), a land played from one is theirs, and each
+  goes to its owner's zones after that. `whileSource: true` makes it
+  "from among cards exiled with [this permanent]" as a static ability of the
+  source — usable only while that permanent stays on the battlefield as the
+  same object, on top of `duration` — and leaves `filter`'s `{ amount }`
+  operands unbound, counted from the source's side each time the permission
+  is used; `oncePerTurn: true` is "once each turn": one cast a turn across
+  every card the source exiled this way. Maralen, Fae Ascendant's "exile the
+  top two cards of target opponent's library. Once each turn, you may cast a
+  spell with mana value less than or equal to the number of Elves and
+  Faeries you control from among cards exiled with Maralen this turn without
+  paying its mana cost" is `{ amount: 2, whose: 0, duration: "end-of-turn",
+  castOnly: true, filter: { manaValue: { op: "lte", n: { amount: { countOf:
+  … } } } }, free: { only: true }, whileSource: true, oncePerTurn: true }`.
+  A permission ends when the card leaves exile (rule 400.7).
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
   them". `filter` narrows which of them the permission covers, and `free` is
   "without paying their mana costs" — for all of them, or those matching its

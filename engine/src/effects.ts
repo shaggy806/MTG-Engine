@@ -2506,10 +2506,13 @@ export type EffectSpec =
       readonly duration: "end-of-turn" | "your-next-turn" | "your-next-end-step" | "while-source" | "while-exiled";
       /** Whose libraries: the controller's (the default), or each player's in
        * a scope, the top `amount` of each exiled at once — "each player
-       * exiles the top card of their library" (Rocco). Playing a card you
-       * don't own isn't built (`zone:cast-cards-you-dont-own`), so any
-       * scope but `"you"` needs `playedBy: "owner"`. */
-      readonly whose?: PlayerScope;
+       * exiles the top card of their library" (Rocco) — or a target slot
+       * holding a player (Maralen, Fae Ascendant's "target opponent's
+       * library"). The permission is the controller's unless `playedBy`
+       * says otherwise, whoever owns the cards: a spell cast from them is
+       * its caster's, and so is the permanent it becomes (rule 601.2a,
+       * 608.3a). */
+      readonly whose?: number | PlayerScope;
       /** "Each player may play the card they exiled this way": the
        * permission goes to each card's owner, not to the controller. */
       readonly playedBy?: "owner";
@@ -2531,6 +2534,16 @@ export type EffectSpec =
        * `duration`, which is when it lapses for good. */
       readonly yourTurnOnly?: boolean;
       readonly gate?: StaticCondition;
+      /** "From among cards exiled with [this permanent]" as a static ability
+       * of it: usable only while this source stays on the battlefield as the
+       * same object, on top of `duration` (Maralen, Fae Ascendant). With it,
+       * a `filter`'s `{ amount }` operand is counted live from the source's
+       * side — "mana value less than or equal to the number of Elves and
+       * Faeries you control". */
+      readonly whileSource?: boolean;
+      /** "Once each turn, you may cast a spell … from among" them: one cast
+       * a turn across every card this source exiled with the permission. */
+      readonly oncePerTurn?: boolean;
     }
   | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
@@ -3198,6 +3211,8 @@ export interface EffectApi {
       readonly gate?: StaticCondition;
       readonly filter?: CardFilter;
       readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
+      readonly whileSource?: boolean;
+      readonly oncePerTurn?: boolean;
     },
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
@@ -4018,8 +4033,15 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
       const operand = record["n"] as { readonly amount: EffectAmount };
       return { ...record, n: amountValue(operand.amount, ctx) };
     }
+    // A `whileSource` impulse permission's filter is its source's static
+    // ability, read as the card is cast (Maralen's "the number of Elves and
+    // Faeries you control"), so it stays unbound — `impulsePlayable` counts it.
+    const liveFilter = record["kind"] === "impulse-exile" && record["whileSource"] === true;
     const walked = Object.fromEntries(
-      Object.entries(record).map(([key, v]) => [key, NESTED_EFFECT_KEYS.has(key) ? v : walk(v)]),
+      Object.entries(record).map(([key, v]) => [
+        key,
+        NESTED_EFFECT_KEYS.has(key) || (liveFilter && key === "filter") ? v : walk(v),
+      ]),
     );
     if (!("sharesCardTypeWith" in walked)) return walked;
     // "Shares a card type with it": the sacrificed permanent's types as it
@@ -5149,7 +5171,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "impulse-exile":
       ctx.impulseExile(amountValue(spec.amount, ctx), spec.duration, spec.castOnly === true, {
-        ...(spec.whose !== undefined && spec.whose !== "you" ? { players: ctx.playersInScope(spec.whose) } : {}),
+        ...(spec.whose !== undefined && spec.whose !== "you"
+          ? {
+              players: scopedOrTargetedPlayers(spec.whose, ctx).flatMap((ref) =>
+                ref?.kind === "player" ? [ref.player] : [],
+              ),
+            }
+          : {}),
+        ...(spec.whileSource === true ? { whileSource: true } : {}),
+        ...(spec.oncePerTurn === true ? { oncePerTurn: true } : {}),
         ...(spec.playedBy === "owner" ? { ownerPlays: true } : {}),
         choose: spec.choose,
         yourTurnOnly: spec.yourTurnOnly,

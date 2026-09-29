@@ -5321,7 +5321,14 @@ export class Game {
       this.state.suspendedResolutions.push({ effect: null, enter: entry });
       return;
     }
-    this.moveObject(cardId, "battlefield");
+    // The player who plays a land controls it (rule 305.1, 110.2) — one they
+    // don't own too (played off an opponent's exiled card).
+    const owner = this.state.objects[cardId]?.owner;
+    const under = owner !== undefined && owner !== player ? player : undefined;
+    this.moveObject(cardId, "battlefield", under !== undefined ? { under } : {});
+    if (under !== undefined && this.state.objects[cardId]?.zone === "battlefield" && this.state.objects[cardId].controller !== under) {
+      this.gainControlByEffect(under, { kind: "object", object: cardId }, false, true, { split: false });
+    }
     this.emit({ type: "land-played", player, object: cardId, from });
     this.emit({ type: "permanent-entered-battlefield", object: cardId });
   }
@@ -7389,9 +7396,19 @@ export class Game {
       }
     }
 
+    // A once-each-turn permission is used up by this cast (Maralen) — read
+    // before the move, which ends the permission with the card's stint.
+    const impulseUsed = via === "impulse" ? object.impulse : undefined;
     // Commit: move to the stack, pay, announce. The targets are recorded
     // once the costs are paid, below.
     this.moveObject(cardId, "stack");
+    // The player who casts a spell controls it (rule 601.2a) — a card cast
+    // from an opponent's exile or library (Maralen) too.
+    object.controller = player;
+    if (impulseUsed?.oncePerTurn === true && impulseUsed.source !== undefined) {
+      const linked = this.state.objects[impulseUsed.source.id];
+      if (linked !== undefined) linked.impulseCastOnTurn = this.state.turn.number;
+    }
     // A prototyped spell has its prototype characteristics on the stack, and
     // the permanent it becomes keeps them (rule 718.3b; `moveObject`).
     if (prototype) {
@@ -9639,9 +9656,19 @@ export class Game {
     // Read before the move, which ends it with the stack.
     const offspringPaid = object.offspringGrantPaid === true;
     const evoked = object.evokePaid === true;
-    const entered = this.moveObject(id, "battlefield");
+    // A permanent spell resolves onto the battlefield under its controller's
+    // control (rule 608.3a) — the caster's, for one cast from a card they
+    // don't own (Maralen). Default control, like "put it onto the
+    // battlefield under your control" (rule 110.2), not a control-changing
+    // effect.
+    const under = object.controller !== object.owner ? object.controller : undefined;
+    const entered = this.moveObject(id, "battlefield", under !== undefined ? { under } : {});
     object.targets = null;
     if (!entered) return;
+    if (under !== undefined && this.state.objects[id]?.zone === "battlefield" && this.state.objects[id].controller !== under) {
+      this.gainControlByEffect(under, { kind: "object", object: id }, false, true, { split: false });
+      this.state.objects[id].summoningSick = true;
+    }
     // Its granted offspring was paid (Zinnia): the permanent it becomes has
     // offspring's "when this permanent enters, if its offspring cost was
     // paid, create a token that's a copy of it, except it's 1/1" (rule
@@ -13845,9 +13872,17 @@ export class Game {
       readonly gate?: StaticCondition;
       readonly filter?: CardFilter;
       readonly free?: { readonly filter?: CardFilter; readonly only?: boolean };
+      readonly whileSource?: boolean;
+      readonly oncePerTurn?: boolean;
     } = {},
   ): void {
     if (amount <= 0) return;
+    // "Exiled with [this]": the source as it is now, this stint of it.
+    const sourceObject = this.state.objects[source];
+    const linked =
+      (opts.whileSource === true || opts.oncePerTurn === true) && sourceObject !== undefined
+        ? { id: source, zoneChangeCount: sourceObject.zoneChangeCount ?? 0 }
+        : undefined;
     // Each library's top `amount`, exiled at once.
     const taken = (opts.players ?? [controller])
       .filter((player) => this.state.players[player]?.hasLost === false)
@@ -13878,6 +13913,9 @@ export class Game {
       ...(opts.free !== undefined ? { free: opts.free } : {}),
       ...(opts.yourTurnOnly ? { yourTurnOnly: true } : {}),
       ...(opts.gate !== undefined ? { gate: opts.gate } : {}),
+      ...(linked !== undefined ? { source: linked } : {}),
+      ...(linked !== undefined && opts.whileSource === true ? { whileSource: true } : {}),
+      ...(linked !== undefined && opts.oncePerTurn === true ? { oncePerTurn: true } : {}),
     };
 
     // "Choose one of them" — the rest stay exiled with no permission.
@@ -14092,10 +14130,31 @@ export class Game {
     const impulse = object?.impulse;
     if (object === undefined || impulse === undefined) return false;
     if (object.zone !== "exile" || impulse.player !== player) return false;
-    // Only the cards it covers — Narset's "noncreature, nonland cards".
+    // "Exiled with Maralen": a static ability of that permanent, so only
+    // while it's still the same object on the battlefield (rule 400.7) —
+    // and "once each turn" across all the cards it gave the permission.
+    const linkedSource = impulse.source === undefined ? undefined : this.state.objects[impulse.source.id];
+    if (impulse.whileSource === true || impulse.oncePerTurn === true) {
+      if (
+        linkedSource === undefined ||
+        linkedSource.zone !== "battlefield" ||
+        (linkedSource.zoneChangeCount ?? 0) !== impulse.source!.zoneChangeCount
+      ) {
+        return false;
+      }
+      if (impulse.oncePerTurn === true && linkedSource.impulseCastOnTurn === this.state.turn.number) return false;
+    }
+    // Only the cards it covers — Narset's "noncreature, nonland cards". An
+    // `{ amount }` in it is counted from the linked source's side, live
+    // (Maralen's "the number of Elves and Faeries you control").
     if (
       impulse.filter !== undefined &&
-      !matchesFilter(this.state, this.registry, card, impulse.filter, { you: player })
+      !matchesFilter(this.state, this.registry, card, impulse.filter, {
+        you: player,
+        ...(linkedSource !== undefined
+          ? { amount: this.filterAmounts({ source: linkedSource.id, controller: player }) }
+          : {}),
+      })
     ) {
       return false;
     }
@@ -19984,6 +20043,11 @@ export class Game {
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
+    // A permission to play it from exile was about that stint (rule 400.7):
+    // exiled again later, it's a new object with none. Every grant sets it
+    // after the move that exiles the card.
+    delete object.impulse;
+    delete object.impulseCastOnTurn;
     delete object.attackedThisTurn;
     delete object.damageThisTurn;
     delete object.dealtDamageToCreatureOnTurn;

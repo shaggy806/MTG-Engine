@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1499 already implemented / 3501 missing (marks refreshed 2026-09-29)
+1500 already implemented / 3500 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2117,7 +2117,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2124  Hydra's Growth                           {2}{G}           Enchantment — Aura
 [ ]  2125  Selvala, Explorer Returned               {1}{G}{W}        Legendary Creature — Elf Scout
 [ ]  2126  Crackling Doom                           {R}{W}{B}        Instant
-[ ]  2127  Agent of Treachery                       {5}{U}{U}        Creature — Human Rogue
+[x]  2127  Agent of Treachery                       {5}{U}{U}        Creature — Human Rogue
 [ ]  2128  Diregraf Colossus                        {2}{B}           Creature — Zombie Giant
 [ ]  2129  Horn of Greed                            {3}              Artifact
 [ ]  2130  Emeria Shepherd                          {5}{W}{W}        Creature — Angel

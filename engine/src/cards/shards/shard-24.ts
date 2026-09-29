@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbsorb from "../pool/absorb.js";
 import _poolAesthirGlider from "../pool/aesthir-glider.js";
 import _poolAgentOfStromgald from "../pool/agent-of-stromgald.js";
+import _poolAgentOfTreachery from "../pool/agent-of-treachery.js";
 import _poolAggressiveMammoth from "../pool/aggressive-mammoth.js";
 import _poolAggressiveUrge from "../pool/aggressive-urge.js";
 import _poolAgoraphobia from "../pool/agoraphobia.js";
@@ -188,6 +189,7 @@ const shard: CardShard = {
     _poolAbsorb,
     _poolAesthirGlider,
     _poolAgentOfStromgald,
+    _poolAgentOfTreachery,
     _poolAggressiveMammoth,
     _poolAggressiveUrge,
     _poolAgoraphobia,

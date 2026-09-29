@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-329 already implemented / 171 missing
+330 already implemented / 170 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -58,7 +58,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   52  Arabella, Abandoned Doll                       22645 decks  {R}{W}           Legendary Artifact Creature — Toy
 [ ]   53  Breya, Etherium Shaper                         22511 decks  {W}{U}{B}{R}     Legendary Artifact Creature — Human
 [ ]   54  Wilhelt, the Rotcleaver                        22477 decks  {2}{U}{B}        Legendary Creature — Zombie Warrior
-[ ]   55  Maralen, Fae Ascendant                         22471 decks  {2}{B}{G}{U}     Legendary Creature — Elf Faerie Noble
+[x]   55  Maralen, Fae Ascendant                         22471 decks  {2}{B}{G}{U}     Legendary Creature — Elf Faerie Noble
 [x]   56  Oloro, Ageless Ascetic                         22360 decks  {3}{W}{U}{B}     Legendary Creature — Giant Soldier
 [x]   57  Meren of Clan Nel Toth                         22233 decks  {2}{B}{G}        Legendary Creature — Human Shaman
 [x]   58  Kuja, Genome Sorcerer                          22133 decks  {2}{B}{R}        Legendary Creature — Human Mutant Wizard // Legendary Creature — Avatar Wizard

@@ -72,6 +72,7 @@ import _poolAgelessGuardian from "./pool/ageless-guardian.js";
 import _poolAgentOfKotis from "./pool/agent-of-kotis.js";
 import _poolAgentOfShauku from "./pool/agent-of-shauku.js";
 import _poolAgentOfStromgald from "./pool/agent-of-stromgald.js";
+import _poolAgentOfTreachery from "./pool/agent-of-treachery.js";
 import _poolAggravatedAssault from "./pool/aggravated-assault.js";
 import _poolAggressiveMammoth from "./pool/aggressive-mammoth.js";
 import _poolAggressiveUrge from "./pool/aggressive-urge.js";
@@ -2959,6 +2960,7 @@ import _poolMantisRider from "./pool/mantis-rider.js";
 import _poolMantleOfWebs from "./pool/mantle-of-webs.js";
 import _poolManyPartings from "./pool/many-partings.js";
 import _poolMaraleafPixie from "./pool/maraleaf-pixie.js";
+import _poolMaralenFaeAscendant from "./pool/maralen-fae-ascendant.js";
 import _poolMaraudersAxe from "./pool/marauders-axe.js";
 import _poolMaraudingBlightPriest from "./pool/marauding-blight-priest.js";
 import _poolMarbleChalice from "./pool/marble-chalice.js";
@@ -5955,6 +5957,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAgentOfKotis,
   _poolAgentOfShauku,
   _poolAgentOfStromgald,
+  _poolAgentOfTreachery,
   _poolAggravatedAssault,
   _poolAggressiveMammoth,
   _poolAggressiveUrge,
@@ -8842,6 +8845,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMantleOfWebs,
   _poolManyPartings,
   _poolMaraleafPixie,
+  _poolMaralenFaeAscendant,
   _poolMaraudersAxe,
   _poolMaraudingBlightPriest,
   _poolMarbleChalice,

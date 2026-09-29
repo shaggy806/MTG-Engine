@@ -92,6 +92,7 @@ import _poolLucentLiminid from "../pool/lucent-liminid.js";
 import _poolLuxurySuite from "../pool/luxury-suite.js";
 import _poolManaGeode from "../pool/mana-geode.js";
 import _poolMandroidSquadron from "../pool/mandroid-squadron.js";
+import _poolMaralenFaeAscendant from "../pool/maralen-fae-ascendant.js";
 import _poolMarchesaTheBlackRose from "../pool/marchesa-the-black-rose.js";
 import _poolMarionetteApprentice from "../pool/marionette-apprentice.js";
 import _poolMarkOfTheVampire from "../pool/mark-of-the-vampire.js";
@@ -278,6 +279,7 @@ const shard: CardShard = {
     _poolLuxurySuite,
     _poolManaGeode,
     _poolMandroidSquadron,
+    _poolMaralenFaeAscendant,
     _poolMarchesaTheBlackRose,
     _poolMarionetteApprentice,
     _poolMarkOfTheVampire,

@@ -282,7 +282,24 @@ export interface GameObject {
      * has ended" (rule 702.185a). */
     readonly fromTurn?: number;
     readonly gate?: StaticCondition;
+    /** The permanent the card was exiled with, in the stint it was in then —
+     * Maralen, Fae Ascendant's "cards exiled with Maralen". Set with
+     * `whileSource` or `oncePerTurn`; it also answers `filter`'s `{ amount }`
+     * operands, from that permanent's side, live. */
+    readonly source?: { readonly id: ObjectId; readonly zoneChangeCount: number };
+    /** Usable only while `source` is still on the battlefield as the same
+     * object (rule 400.7): the permission is a static ability of it ("you may
+     * cast … from among cards exiled with Maralen this turn"), on top of
+     * whatever `expiry` says. */
+    readonly whileSource?: boolean;
+    /** "Once each turn": one cast a turn among every card `source` gave this
+     * permission, counted on `source` (`GameObject.impulseCastOnTurn`). */
+    readonly oncePerTurn?: boolean;
   };
+  /** The turn a `oncePerTurn` impulse permission this permanent gave was
+   * last used (Maralen, Fae Ascendant). Cleared on any zone change: the
+   * permanent that comes back is a new object (rule 400.7). */
+  impulseCastOnTurn?: number;
   /**
    * Players this permanent has dealt combat damage to this turn — Steel
    * Hellkite's "whose controller was dealt combat damage by this creature

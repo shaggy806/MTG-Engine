@@ -525,6 +525,13 @@ in `git log`.
   Limitless (Mulldrifter, Shriekmaw, Nulldrifter, Foundation Breaker,
   Reveillark; `evoke.test.ts`, `commanders-ashling.test.ts`). The
   Incarnations' "exile a card from your hand" evoke cost is still open.
+- **Casting cards you don't own** (`zone:cast-cards-you-dont-own`) — the
+  caster controls the spell (rule 601.2a), a permanent spell resolves under
+  them (608.3a), and a land played is the player's; `impulse-exile`'s
+  `whose` takes a target slot, and `whileSource` / `oncePerTurn` link the
+  permission to its source (Maralen, Fae Ascendant; Agent of Treachery;
+  `cast-cards-you-dont-own.test.ts`, `commanders-maralen.test.ts`). An
+  impulse permission now ends when its card leaves exile (400.7).
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,
