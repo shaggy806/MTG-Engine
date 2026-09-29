@@ -91,6 +91,7 @@ import _poolLazotepPlating from "../pool/lazotep-plating.js";
 import _poolLedgerShredder from "../pool/ledger-shredder.js";
 import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
 import _poolLushPortico from "../pool/lush-portico.js";
+import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
 import _poolMerfolkPupil from "../pool/merfolk-pupil.js";
 import _poolMistralCharger from "../pool/mistral-charger.js";
@@ -281,6 +282,7 @@ const shard: CardShard = {
     _poolLedgerShredder,
     _poolLightningArmyOfOne,
     _poolLushPortico,
+    _poolMagusOfTheWheel,
     _poolManaGeyser,
     _poolMerfolkPupil,
     _poolMistralCharger,

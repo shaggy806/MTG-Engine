@@ -49,6 +49,7 @@ import _poolCrossbowInfantry from "../pool/crossbow-infantry.js";
 import _poolCruelCelebrant from "../pool/cruel-celebrant.js";
 import _poolCruelFinality from "../pool/cruel-finality.js";
 import _poolCryptGhast from "../pool/crypt-ghast.js";
+import _poolCutADeal from "../pool/cut-a-deal.js";
 import _poolDeftDuelist from "../pool/deft-duelist.js";
 import _poolDerangedOutcast from "../pool/deranged-outcast.js";
 import _poolDesolationProwler from "../pool/desolation-prowler.js";
@@ -245,6 +246,7 @@ const shard: CardShard = {
     _poolCruelCelebrant,
     _poolCruelFinality,
     _poolCryptGhast,
+    _poolCutADeal,
     _poolDeftDuelist,
     _poolDerangedOutcast,
     _poolDesolationProwler,

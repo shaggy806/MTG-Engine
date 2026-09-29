@@ -1178,6 +1178,13 @@ export type EffectSpec =
        * does. The subtypes that went only with the lost types go too (rule
        * 205.1a — no Sheep, no Glimmer); supertypes stay. */
       readonly setTypes?: readonly CardType[];
+      /** Subtypes it has **in addition to its other types**, for as long as
+       * it stays on the battlefield — Portal to Phyrexia's "put target
+       * creature card from a graveyard onto the battlefield under your
+       * control. It's a Phyrexian in addition to its other types." In place
+       * as it enters, as `setTypes` is: "whenever a Phyrexian enters" sees
+       * it arrive as one. */
+      readonly addSubtypes?: readonly string[];
     }
   | {
       /** Exile every card in a target *player's* graveyard (rule 406 — Bojuka
@@ -2013,12 +2020,15 @@ export type EffectSpec =
        * toughness 1/1 until end of turn").
        *
        * The matches are fixed as the effect begins, and a token stack is
-       * animated whole rather than split.
+       * animated whole rather than split. The P/T may be a live amount, read
+       * once as the effect applies and fixed from then on (rule 608.2h) —
+       * Mirror Entity's "{X}: … creatures you control have base power and
+       * toughness X/X" is `"x"`.
        */
       readonly kind: "animate-all";
       readonly filter: CardFilter;
-      readonly power: number;
-      readonly toughness: number;
+      readonly power: EffectAmount;
+      readonly toughness: EffectAmount;
       readonly addTypes?: readonly CardType[];
       readonly addSubtypes?: readonly string[];
       readonly keywords?: readonly Keyword[];
@@ -2162,9 +2172,15 @@ export type EffectSpec =
        * target creature you control" is `attachment: "trigger-object"`, the
        * Equipment whose entering fired the trigger. Only the same object
        * that did (rule 400.7), and only onto something it could legally be
-       * attached to (rule 301.5c); otherwise nothing moves. */
+       * attached to (rule 301.5c); otherwise nothing moves.
+       *
+       * `target: "created"` is the token an earlier step of this resolution
+       * created, rather than a target — living weapon's "create a 0/0 black
+       * Phyrexian Germ creature token, then attach this to it" (rule
+       * 702.92a), with `attachment: "source"`. With several made (Doubling
+       * Season), it goes onto one of them (the rulings). */
       readonly kind: "attach";
-      readonly target: number;
+      readonly target: number | "created";
       readonly attachment?: EffectTargetRef;
     }
   | {
@@ -2746,6 +2762,15 @@ export type EffectSpec =
        */
       readonly then?: EffectSpec;
     };
+
+/** The types a `put-onto-battlefield` says the permanent has, in place as it
+ * enters (rule 614.12): its card types instead of its own (`setTypes` — the
+ * Enduring cycle), and subtypes in addition to its own (`addSubtypes` —
+ * Portal to Phyrexia's Phyrexian). */
+export interface EnterTypes {
+  readonly setTypes?: readonly CardType[];
+  readonly addSubtypes?: readonly string[];
+}
 
 /**
  * What a copy effect makes different about its copy — "except it's a 3/3
@@ -3495,9 +3520,9 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
     exileIfItWouldLeave?: boolean,
     transformed?: boolean,
-    /** The card types it enters with in place of its own — see the effect's
-     * `setTypes`. */
-    setTypes?: readonly CardType[],
+    /** The types it enters with — see the effect's `setTypes` and
+     * `addSubtypes`. */
+    types?: EnterTypes,
   ): boolean;
   /** See the `"search-library"` {@link EffectSpec}. */
   searchLibrary(
@@ -3943,6 +3968,13 @@ function scopedController(
   if (slot === undefined) return undefined;
   const ref = ctx.targets[slot];
   return ref === undefined ? undefined : ctx.controllerOf(ref);
+}
+
+/** The first token this resolution has created that is still on the
+ * battlefield — living weapon's "then attach this to it". */
+function createdThisWay(ctx: ResolutionContext): TargetRef | undefined {
+  const made = ctx.thisWay("created").find((entry) => !entry.departed);
+  return made === undefined ? undefined : { kind: "object", object: made.object };
 }
 
 /** Imperative escape hatch for a spell or ability the vocab can't express. */
@@ -4472,7 +4504,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           spec.withCounters,
           spec.exileIfItWouldLeave === true,
           spec.transformed === true,
-          spec.setTypes,
+          spec.setTypes !== undefined || spec.addSubtypes !== undefined
+            ? {
+                ...(spec.setTypes !== undefined ? { setTypes: spec.setTypes } : {}),
+                ...(spec.addSubtypes !== undefined ? { addSubtypes: spec.addSubtypes } : {}),
+              }
+            : undefined,
         );
         if (asked) ctx.resumeAfterDecisions(spec, parked);
       }
@@ -4965,8 +5002,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "animate-all":
       ctx.animateAll(spec.filter, {
-        power: spec.power,
-        toughness: spec.toughness,
+        power: amountValue(spec.power, ctx),
+        toughness: amountValue(spec.toughness, ctx),
         addTypes: spec.addTypes ?? [],
         addSubtypes: spec.addSubtypes ?? [],
         keywords: spec.keywords ?? [],
@@ -5076,7 +5113,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "attach": {
-      const target = ctx.targets[spec.target];
+      const target = spec.target === "created" ? createdThisWay(ctx) : ctx.targets[spec.target];
       if (target === undefined) return;
       if (spec.attachment === undefined) {
         ctx.attach(target);

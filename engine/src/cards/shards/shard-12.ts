@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbaddonTheDespoiler from "../pool/abaddon-the-despoiler.js";
+import _poolAbandonedAirTemple from "../pool/abandoned-air-temple.js";
 import _poolAkoumRefuge from "../pool/akoum-refuge.js";
 import _poolAladdinsRing from "../pool/aladdins-ring.js";
 import _poolAncientDen from "../pool/ancient-den.js";
@@ -37,6 +38,7 @@ import _poolDarkmossBridge from "../pool/darkmoss-bridge.js";
 import _poolDarksteelGargoyle from "../pool/darksteel-gargoyle.js";
 import _poolDawntreaderElk from "../pool/dawntreader-elk.js";
 import _poolDemonicTutor from "../pool/demonic-tutor.js";
+import _poolDestinySpinner from "../pool/destiny-spinner.js";
 import _poolDetainedByLegionnaires from "../pool/detained-by-legionnaires.js";
 import _poolDimirCluestone from "../pool/dimir-cluestone.js";
 import _poolDisaTheRestless from "../pool/disa-the-restless.js";
@@ -113,6 +115,7 @@ import _poolPendrellDrake from "../pool/pendrell-drake.js";
 import _poolPhyrexianReclamation from "../pool/phyrexian-reclamation.js";
 import _poolPinnacleMonk from "../pool/pinnacle-monk.js";
 import _poolPiracyCharm from "../pool/piracy-charm.js";
+import _poolPortalToPhyrexia from "../pool/portal-to-phyrexia.js";
 import _poolPretendingPoxbearers from "../pool/pretending-poxbearers.js";
 import _poolProphetOfThePeak from "../pool/prophet-of-the-peak.js";
 import _poolProsperity from "../pool/prosperity.js";
@@ -182,6 +185,7 @@ import _tokensVampireToken from "../tokens/vampire-token.js";
 const shard: CardShard = {
   pool: [
     _poolAbaddonTheDespoiler,
+    _poolAbandonedAirTemple,
     _poolAkoumRefuge,
     _poolAladdinsRing,
     _poolAncientDen,
@@ -215,6 +219,7 @@ const shard: CardShard = {
     _poolDarksteelGargoyle,
     _poolDawntreaderElk,
     _poolDemonicTutor,
+    _poolDestinySpinner,
     _poolDetainedByLegionnaires,
     _poolDimirCluestone,
     _poolDisaTheRestless,
@@ -291,6 +296,7 @@ const shard: CardShard = {
     _poolPhyrexianReclamation,
     _poolPinnacleMonk,
     _poolPiracyCharm,
+    _poolPortalToPhyrexia,
     _poolPretendingPoxbearers,
     _poolProphetOfThePeak,
     _poolProsperity,

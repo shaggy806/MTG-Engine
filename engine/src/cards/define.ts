@@ -742,6 +742,10 @@ export interface StaticAbility {
      * the Corrosive's "creatures your opponents control get -1/-1 for each
      * slime counter on them": each creature by its own count. */
     readonly countersOnAffected?: string;
+    /** Counters of a kind on **this permanent** — Door of Destinies'
+     * "creatures you control of the chosen type get +1/+1 for each charge
+     * counter on this artifact". */
+    readonly countersOnSource?: string;
     /** Cards in exile matching a filter — Umbris, Fear Manifest's "+1/+1 for
      * each card your opponents own in exile" is `{ ownedBy: "opponent" }`.
      * Face-down cards count; they're still cards. */
@@ -1005,12 +1009,27 @@ export interface StaticAbility {
      * from an artifact was spent to cast it" (`filter: { manaFrom: { type:
      * "artifact" } }`). Read wherever a printed split second is. */
     readonly splitSecond?: boolean;
+    /** The spells **can't be countered** (rule 701.5f): Prowling
+     * Serpopard's "creature spells you control can't be countered"
+     * (`filter: { type: "creature" }`), Hexing Squelcher's "spells you
+     * control" (no filter). Read where a printed "this spell can't be
+     * countered" is, as the counter would happen — a spell that stops
+     * matching, or whose granting permanent leaves, can be countered again.
+     * Every spell its controller controls counts, a copy too, and not only
+     * ones cast from the hand. */
+    readonly cantBeCountered?: boolean;
   };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so
    * it's read straight off the battlefield at cleanup rather than through the
    * layer system. */
   readonly noMaxHandSize?: boolean;
+  /** "**You** have hexproof" (rule 702.11d — Shalai, Voice of Plenty): this
+   * permanent's controller can't be the target of spells or abilities their
+   * opponents control. Like `noMaxHandSize`, a property of the player, read
+   * off the battlefield as a target is checked (`playerHasHexproof`);
+   * `affects` is ignored. */
+  readonly playerHexproof?: boolean;
   /**
    * A maximum hand size, read at cleanup like `noMaxHandSize` (which wins
    * over it): `who`'s becomes `set` less the live count `minus` (a

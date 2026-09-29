@@ -12,6 +12,10 @@ export default defineCard({
   effect: { kind: "damage", amount: 4, target: 0 },
   triggered: [
     {
+      // It returns its own card from the graveyard, so it works only there
+      // (rule 113.6k), and returns that card — not another Spit Flame, and
+      // nothing if this one has left the graveyard since.
+      fromGraveyard: true,
       trigger: {
         on: "enters-battlefield",
         who: "you-control",
@@ -22,14 +26,7 @@ export default defineCard({
         kind: "may",
         prompt: "Pay {R} to return Spit Flame to your hand?",
         cost: "{R}",
-        // "this card from your graveyard" — a name-filtered recursion of
-        // itself, which is the only card the filter can ever match.
-        effect: {
-          kind: "return-from-graveyard",
-          filter: { name: "Spit Flame" },
-          destination: "hand",
-          count: 1,
-        },
+        effect: { kind: "return-to-hand", target: "source", from: "graveyard" },
       },
       resolve: null,
       text: "Whenever a Dragon you control enters, you may pay {R}. If you do, return this card from your graveyard to your hand.",

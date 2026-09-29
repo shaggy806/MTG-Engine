@@ -22,6 +22,7 @@ import _poolAvenBattlePriest from "../pool/aven-battle-priest.js";
 import _poolAxebaneBeast from "../pool/axebane-beast.js";
 import _poolBalshanCollaborator from "../pool/balshan-collaborator.js";
 import _poolBarkchannelPathway from "../pool/barkchannel-pathway.js";
+import _poolBatterskull from "../pool/batterskull.js";
 import _poolBlanchwoodTreefolk from "../pool/blanchwood-treefolk.js";
 import _poolBlurredMongoose from "../pool/blurred-mongoose.js";
 import _poolBoggartTrawler from "../pool/boggart-trawler.js";
@@ -59,6 +60,7 @@ import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
 import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
 import _poolEsperCormorants from "../pool/esper-cormorants.js";
+import _poolEtherealArmor from "../pool/ethereal-armor.js";
 import _poolFierceWitchstalker from "../pool/fierce-witchstalker.js";
 import _poolFireNationAmbushers from "../pool/fire-nation-ambushers.js";
 import _poolFiresOfUndeath from "../pool/fires-of-undeath.js";
@@ -203,6 +205,7 @@ const shard: CardShard = {
     _poolAxebaneBeast,
     _poolBalshanCollaborator,
     _poolBarkchannelPathway,
+    _poolBatterskull,
     _poolBlanchwoodTreefolk,
     _poolBlurredMongoose,
     _poolBoggartTrawler,
@@ -240,6 +243,7 @@ const shard: CardShard = {
     _poolEmberethShieldbreaker,
     _poolEnduringTenacity,
     _poolEsperCormorants,
+    _poolEtherealArmor,
     _poolFierceWitchstalker,
     _poolFireNationAmbushers,
     _poolFiresOfUndeath,

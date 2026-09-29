@@ -79,6 +79,7 @@ import _poolHeartWarden from "../pool/heart-warden.js";
 import _poolHelgaSkittishSeer from "../pool/helga-skittish-seer.js";
 import _poolHellsKitchen from "../pool/hells-kitchen.js";
 import _poolHeritageDruid from "../pool/heritage-druid.js";
+import _poolHexingSquelcher from "../pool/hexing-squelcher.js";
 import _poolHiddenGrotto from "../pool/hidden-grotto.js";
 import _poolHotDogCart from "../pool/hot-dog-cart.js";
 import _poolHuntersProwess from "../pool/hunters-prowess.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolHelgaSkittishSeer,
     _poolHellsKitchen,
     _poolHeritageDruid,
+    _poolHexingSquelcher,
     _poolHiddenGrotto,
     _poolHotDogCart,
     _poolHuntersProwess,

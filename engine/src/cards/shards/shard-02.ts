@@ -36,6 +36,7 @@ import _poolConscriptedInfantry from "../pool/conscripted-infantry.js";
 import _poolCopperHostCrusher from "../pool/copper-host-crusher.js";
 import _poolCyclonicRift from "../pool/cyclonic-rift.js";
 import _poolCyclopsOfOneEyedPass from "../pool/cyclops-of-one-eyed-pass.js";
+import _poolDamningVerdict from "../pool/damning-verdict.js";
 import _poolDarklitGargoyle from "../pool/darklit-gargoyle.js";
 import _poolDarksteelPendant from "../pool/darksteel-pendant.js";
 import _poolDartingMerfolk from "../pool/darting-merfolk.js";
@@ -111,6 +112,7 @@ import _poolNissasExpedition from "../pool/nissas-expedition.js";
 import _poolNoviceInspector from "../pool/novice-inspector.js";
 import _poolNurturingPeatland from "../pool/nurturing-peatland.js";
 import _poolObeliskOfJund from "../pool/obelisk-of-jund.js";
+import _poolOketrasMonument from "../pool/oketras-monument.js";
 import _poolOloroAgelessAscetic from "../pool/oloro-ageless-ascetic.js";
 import _poolOnslaught from "../pool/onslaught.js";
 import _poolPaleBears from "../pool/pale-bears.js";
@@ -142,6 +144,7 @@ import _poolScionOfGlaciers from "../pool/scion-of-glaciers.js";
 import _poolScouringSands from "../pool/scouring-sands.js";
 import _poolScrybSprites from "../pool/scryb-sprites.js";
 import _poolSerraSphinx from "../pool/serra-sphinx.js";
+import _poolShalaiVoiceOfPlenty from "../pool/shalai-voice-of-plenty.js";
 import _poolShatterskullGiant from "../pool/shatterskull-giant.js";
 import _poolSinisterStarfish from "../pool/sinister-starfish.js";
 import _poolSkeletalSnake from "../pool/skeletal-snake.js";
@@ -226,6 +229,7 @@ const shard: CardShard = {
     _poolCopperHostCrusher,
     _poolCyclonicRift,
     _poolCyclopsOfOneEyedPass,
+    _poolDamningVerdict,
     _poolDarklitGargoyle,
     _poolDarksteelPendant,
     _poolDartingMerfolk,
@@ -301,6 +305,7 @@ const shard: CardShard = {
     _poolNoviceInspector,
     _poolNurturingPeatland,
     _poolObeliskOfJund,
+    _poolOketrasMonument,
     _poolOloroAgelessAscetic,
     _poolOnslaught,
     _poolPaleBears,
@@ -332,6 +337,7 @@ const shard: CardShard = {
     _poolScouringSands,
     _poolScrybSprites,
     _poolSerraSphinx,
+    _poolShalaiVoiceOfPlenty,
     _poolShatterskullGiant,
     _poolSinisterStarfish,
     _poolSkeletalSnake,

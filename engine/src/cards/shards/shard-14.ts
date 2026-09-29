@@ -39,6 +39,7 @@ import _poolCatharsCompanion from "../pool/cathars-companion.js";
 import _poolCauldronOfEssence from "../pool/cauldron-of-essence.js";
 import _poolChannelTheSuns from "../pool/channel-the-suns.js";
 import _poolChiefOfTheScale from "../pool/chief-of-the-scale.js";
+import _poolCircleOfDreamsDruid from "../pool/circle-of-dreams-druid.js";
 import _poolCobaltGolem from "../pool/cobalt-golem.js";
 import _poolCombatThresher from "../pool/combat-thresher.js";
 import _poolConiferStrider from "../pool/conifer-strider.js";
@@ -172,6 +173,7 @@ import _poolTwinflame from "../pool/twinflame.js";
 import _poolUmezawasCharm from "../pool/umezawas-charm.js";
 import _poolUndermine from "../pool/undermine.js";
 import _poolUnnaturalGrowth from "../pool/unnatural-growth.js";
+import _poolUpTheBeanstalk from "../pool/up-the-beanstalk.js";
 import _poolUrzasCave from "../pool/urzas-cave.js";
 import _poolUrzasIncubator from "../pool/urzas-incubator.js";
 import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
@@ -184,6 +186,7 @@ import _poolWindreaderSphinx from "../pool/windreader-sphinx.js";
 import _poolWingedBoots from "../pool/winged-boots.js";
 import _poolWingedShepherd from "../pool/winged-shepherd.js";
 import _poolWitchHunter from "../pool/witch-hunter.js";
+import _poolWitchsClinic from "../pool/witchs-clinic.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
@@ -227,6 +230,7 @@ const shard: CardShard = {
     _poolCauldronOfEssence,
     _poolChannelTheSuns,
     _poolChiefOfTheScale,
+    _poolCircleOfDreamsDruid,
     _poolCobaltGolem,
     _poolCombatThresher,
     _poolConiferStrider,
@@ -360,6 +364,7 @@ const shard: CardShard = {
     _poolUmezawasCharm,
     _poolUndermine,
     _poolUnnaturalGrowth,
+    _poolUpTheBeanstalk,
     _poolUrzasCave,
     _poolUrzasIncubator,
     _poolVampireNighthawk,
@@ -372,6 +377,7 @@ const shard: CardShard = {
     _poolWingedBoots,
     _poolWingedShepherd,
     _poolWitchHunter,
+    _poolWitchsClinic,
     _poolZealousLorecaster,
     _poolZukosOffense,
   ],

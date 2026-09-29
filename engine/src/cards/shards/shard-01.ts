@@ -148,6 +148,7 @@ import _poolTheSpearOfLeonidas from "../pool/the-spear-of-leonidas.js";
 import _poolThoughtcast from "../pool/thoughtcast.js";
 import _poolThreeTragedies from "../pool/three-tragedies.js";
 import _poolThrummingbird from "../pool/thrummingbird.js";
+import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.js";
 import _poolTragicPoet from "../pool/tragic-poet.js";
 import _poolTwiceTheRage from "../pool/twice-the-rage.js";
 import _poolTwilightPanther from "../pool/twilight-panther.js";
@@ -315,6 +316,7 @@ const shard: CardShard = {
     _poolThoughtcast,
     _poolThreeTragedies,
     _poolThrummingbird,
+    _poolTitaniaProtectorOfArgoth,
     _poolTragicPoet,
     _poolTwiceTheRage,
     _poolTwilightPanther,

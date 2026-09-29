@@ -111,6 +111,7 @@ import _poolPharikasMender from "../pool/pharikas-mender.js";
 import _poolPhyrexianArena from "../pool/phyrexian-arena.js";
 import _poolPhyrexianDenouncer from "../pool/phyrexian-denouncer.js";
 import _poolPlagueBeetle from "../pool/plague-beetle.js";
+import _poolPollywogProdigy from "../pool/pollywog-prodigy.js";
 import _poolPrimalFrenzy from "../pool/primal-frenzy.js";
 import _poolPrismaticVista from "../pool/prismatic-vista.js";
 import _poolProsperTomeBound from "../pool/prosper-tome-bound.js";
@@ -130,6 +131,7 @@ import _poolSawInHalf from "../pool/saw-in-half.js";
 import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
+import _poolSetessanChampion from "../pool/setessan-champion.js";
 import _poolSidarJabariOfZhalfir from "../pool/sidar-jabari-of-zhalfir.js";
 import _poolSiegecraft from "../pool/siegecraft.js";
 import _poolSilentObserver from "../pool/silent-observer.js";
@@ -140,6 +142,7 @@ import _poolSmolderingCrater from "../pool/smoldering-crater.js";
 import _poolSnappingGnarlid from "../pool/snapping-gnarlid.js";
 import _poolSoulboundGuardians from "../pool/soulbound-guardians.js";
 import _poolSpectralProcession from "../pool/spectral-procession.js";
+import _poolSpellseeker from "../pool/spellseeker.js";
 import _poolSquirmingMass from "../pool/squirming-mass.js";
 import _poolStadiumHeadliner from "../pool/stadium-headliner.js";
 import _poolStormKilnArtist from "../pool/storm-kiln-artist.js";
@@ -291,6 +294,7 @@ const shard: CardShard = {
     _poolPhyrexianArena,
     _poolPhyrexianDenouncer,
     _poolPlagueBeetle,
+    _poolPollywogProdigy,
     _poolPrimalFrenzy,
     _poolPrismaticVista,
     _poolProsperTomeBound,
@@ -310,6 +314,7 @@ const shard: CardShard = {
     _poolScepterOfInsight,
     _poolScorchingSpear,
     _poolSearstepPathway,
+    _poolSetessanChampion,
     _poolSidarJabariOfZhalfir,
     _poolSiegecraft,
     _poolSilentObserver,
@@ -320,6 +325,7 @@ const shard: CardShard = {
     _poolSnappingGnarlid,
     _poolSoulboundGuardians,
     _poolSpectralProcession,
+    _poolSpellseeker,
     _poolSquirmingMass,
     _poolStadiumHeadliner,
     _poolStormKilnArtist,

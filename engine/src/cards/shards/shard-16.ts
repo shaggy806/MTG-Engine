@@ -46,6 +46,7 @@ import _poolDazzlingRamparts from "../pool/dazzling-ramparts.js";
 import _poolDeepwoodTantiv from "../pool/deepwood-tantiv.js";
 import _poolDelightedHalfling from "../pool/delighted-halfling.js";
 import _poolDesolateLighthouse from "../pool/desolate-lighthouse.js";
+import _poolDoorOfDestinies from "../pool/door-of-destinies.js";
 import _poolDragonTempest from "../pool/dragon-tempest.js";
 import _poolDragonsEyeSentry from "../pool/dragons-eye-sentry.js";
 import _poolDwarvenTrader from "../pool/dwarven-trader.js";
@@ -255,6 +256,7 @@ const shard: CardShard = {
     _poolDeepwoodTantiv,
     _poolDelightedHalfling,
     _poolDesolateLighthouse,
+    _poolDoorOfDestinies,
     _poolDragonTempest,
     _poolDragonsEyeSentry,
     _poolDwarvenTrader,

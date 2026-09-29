@@ -909,6 +909,47 @@ export function spellHasSplitSecond(state: GameState, registry: CardRegistry, sp
   return false;
 }
 
+/** Whether `spell`, on the stack, can't be countered (rule 701.5f): printed
+ * ("this spell can't be countered"), or given by a `grantsToSpells` static
+ * on the battlefield ("creature spells you control can't be countered").
+ * How it was paid for (Cavern of Souls) is `GameObject.uncounterable`, read
+ * alongside this. */
+export function spellCantBeCountered(state: GameState, registry: CardRegistry, spell: GameObject): boolean {
+  if (spell.kind !== "card") return false;
+  if (registry.get(printedCardName(spell)).cantBeCountered) return true;
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (ability.grantsToSpells?.cantBeCountered === true && spellGrantReaches(state, registry, source, ability, spell)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Whether `player` has hexproof (rule 702.11d): from an effect that gave it
+ * to them ("you gain hexproof until end of turn" — `GameState.hexproofPlayers`)
+ * or a `playerHexproof` static of a permanent they control ("you have
+ * hexproof" — Shalai, Voice of Plenty). */
+export function playerHasHexproof(state: GameState, registry: CardRegistry, player: PlayerId): boolean {
+  if (state.hexproofPlayers?.includes(player) === true) return true;
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (
+        ability.playerHexproof === true &&
+        (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition))
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** The keywords `grantsToSpells` statics on the battlefield give `spell`. */
 function spellGrantedKeywords(state: GameState, registry: CardRegistry, spell: GameObject): Keyword[] {
   const out: Keyword[] = [];
@@ -2069,6 +2110,8 @@ function collectStaticEffects(
             ? (state.players[source.controller]?.counters[per.playerCounters] ?? 0)
             : per.countersOnAffected !== undefined
             ? (target.counters[per.countersOnAffected] ?? 0)
+            : per.countersOnSource !== undefined
+            ? (source.counters[per.countersOnSource] ?? 0)
             : per.exiled !== undefined
             ? exiledMatching(per.exiled)
             : per.colorsAmong !== undefined

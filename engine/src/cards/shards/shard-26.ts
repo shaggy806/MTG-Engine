@@ -9,6 +9,7 @@ import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
 import _poolAirElemental from "../pool/air-elemental.js";
 import _poolAkoumTeeth from "../pool/akoum-teeth.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
+import _poolApexDevastator from "../pool/apex-devastator.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
 import _poolAyulaQueenAmongBears from "../pool/ayula-queen-among-bears.js";
@@ -200,6 +201,7 @@ const shard: CardShard = {
     _poolAirElemental,
     _poolAkoumTeeth,
     _poolAncientBrontodon,
+    _poolApexDevastator,
     _poolAshcoatBear,
     _poolAtomize,
     _poolAyulaQueenAmongBears,

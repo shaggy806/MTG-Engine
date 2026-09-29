@@ -300,9 +300,9 @@ triggers, most of it shared with other cards:
   Key to the Vault), **"you may play an additional land this turn"** (Sword of
   Forge and Frontier), **copy the next instant or sorcery** (Sword of Wealth
   and Power), **tokens that enter tapped and attacking** (Andúril, Flame of
-  the West), **living weapon / For Mirrodin!** (Bitterthorn, Hexplate
-  Wallbreaker), **"the first combat phase of the turn"** (Genji Glove,
-  Hexplate Wallbreaker), **ascend** (Andúril, Narsil Reforged), **stun
+  the West), **For Mirrodin!** (Hexplate Wallbreaker; living weapon and
+  "the first combat phase of the turn" are built — Genji Glove and
+  Nettlecyst are authored), **ascend** (Andúril, Narsil Reforged), **stun
   counters** (Mjölnir), a **dynamic "pay X life"** (Mask of Griselbrand), an
   **attached host condition** (Combat Research's "as long as enchanted
   creature is legendary"), and one-offs (Sword of Hearth and Home, Songbirds'
@@ -546,6 +546,21 @@ in `git log`.
   (Mystic Sanctuary's cycle, whose "enters untapped" is the trigger's filter
   rather than an intervening-if), `urzaLand`. B5.json lists the 79 cards it
   left blocked.
+- **Top-5000 batch 6** (2026-09-29, `top5000-batch-6.test.ts`) — "spells
+  you control can't be countered" (`grantsToSpells.cantBeCountered` —
+  Destiny Spinner, Prowling Serpopard, Allosaurus Shepherd, Hexing
+  Squelcher), triggered abilities that work in the graveyard
+  (`TriggeredAbility.fromGraveyard`, rule 113.6k — Bloodghast; Spit Flame's
+  return had never fired), a "you may" that keeps knowing its source became
+  a new object (the `choose-modes` decision's `sourceLost`), `animate-all`
+  P/T from a live amount (Mirror Entity's X), a subtype added as a card
+  enters (`put-onto-battlefield`'s `addSubtypes` — Portal to Phyrexia),
+  `plays-land`'s `otherOnly` (City of Traitors), "you have hexproof"
+  (`playerHexproof` — Shalai), living weapon (`livingWeapon()`: `attach`'s
+  `target: "created"`), and `grantPtPerCount.countersOnSource` (Door of
+  Destinies). "Its controller creates …" now comes before the counter (An
+  Offer You Can't Refuse, Strix Serenade): a countered copy has ceased to
+  exist by then. B6.json lists the 64 cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

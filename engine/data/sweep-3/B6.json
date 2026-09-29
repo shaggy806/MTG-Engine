@@ -1,0 +1,835 @@
+{
+  "batch": "B6",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Hexing Squelcher",
+      "files": [
+        "engine/src/cards/pool/hexing-squelcher.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cut a Deal",
+      "files": [
+        "engine/src/cards/pool/cut-a-deal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mirror Entity",
+      "files": [
+        "engine/src/cards/pool/mirror-entity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sokenzan, Crucible of Defiance",
+      "files": [
+        "engine/src/cards/pool/sokenzan-crucible-of-defiance.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Destiny Spinner",
+      "files": [
+        "engine/src/cards/pool/destiny-spinner.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Torbran, Thane of Red Fell",
+      "files": [
+        "engine/src/cards/pool/torbran-thane-of-red-fell.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Annie Joins Up",
+      "files": [
+        "engine/src/cards/pool/annie-joins-up.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bloodghast",
+      "files": [
+        "engine/src/cards/pool/bloodghast.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Steelshaper's Gift",
+      "files": [
+        "engine/src/cards/pool/steelshapers-gift.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Setessan Champion",
+      "files": [
+        "engine/src/cards/pool/setessan-champion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nettlecyst",
+      "files": [
+        "engine/src/cards/pool/nettlecyst.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Oketra's Monument",
+      "files": [
+        "engine/src/cards/pool/oketras-monument.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Spellseeker",
+      "files": [
+        "engine/src/cards/pool/spellseeker.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Apex Devastator",
+      "files": [
+        "engine/src/cards/pool/apex-devastator.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Syphon Mind",
+      "files": [
+        "engine/src/cards/pool/syphon-mind.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Roiling Regrowth",
+      "files": [
+        "engine/src/cards/pool/roiling-regrowth.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Jhoira's Familiar",
+      "files": [
+        "engine/src/cards/pool/jhoiras-familiar.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Herald of Secret Streams",
+      "files": [
+        "engine/src/cards/pool/herald-of-secret-streams.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Strix Serenade",
+      "files": [
+        "engine/src/cards/pool/strix-serenade.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Angel of the Ruins",
+      "files": [
+        "engine/src/cards/pool/angel-of-the-ruins.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Portal to Phyrexia",
+      "files": [
+        "engine/src/cards/pool/portal-to-phyrexia.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Monologue Tax",
+      "files": [
+        "engine/src/cards/pool/monologue-tax.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Witch's Clinic",
+      "files": [
+        "engine/src/cards/pool/witchs-clinic.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Door of Destinies",
+      "files": [
+        "engine/src/cards/pool/door-of-destinies.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Genji Glove",
+      "files": [
+        "engine/src/cards/pool/genji-glove.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Stoneforge Mystic",
+      "files": [
+        "engine/src/cards/pool/stoneforge-mystic.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Archon of Cruelty",
+      "files": [
+        "engine/src/cards/pool/archon-of-cruelty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ethereal Armor",
+      "files": [
+        "engine/src/cards/pool/ethereal-armor.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prismari Command",
+      "files": [
+        "engine/src/cards/pool/prismari-command.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Circle of Dreams Druid",
+      "files": [
+        "engine/src/cards/pool/circle-of-dreams-druid.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Herd Heirloom",
+      "files": [
+        "engine/src/cards/pool/herd-heirloom.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Up the Beanstalk",
+      "files": [
+        "engine/src/cards/pool/up-the-beanstalk.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vilis, Broker of Blood",
+      "files": [
+        "engine/src/cards/pool/vilis-broker-of-blood.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Tyrite Sanctum",
+      "files": [
+        "engine/src/cards/pool/tyrite-sanctum.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Secret Rendezvous",
+      "files": [
+        "engine/src/cards/pool/secret-rendezvous.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Spore Frog",
+      "files": [
+        "engine/src/cards/pool/spore-frog.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Haven of the Spirit Dragon",
+      "files": [
+        "engine/src/cards/pool/haven-of-the-spirit-dragon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Recruiter of the Guard",
+      "files": [
+        "engine/src/cards/pool/recruiter-of-the-guard.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Magus of the Wheel",
+      "files": [
+        "engine/src/cards/pool/magus-of-the-wheel.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shalai, Voice of Plenty",
+      "files": [
+        "engine/src/cards/pool/shalai-voice-of-plenty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Damning Verdict",
+      "files": [
+        "engine/src/cards/pool/damning-verdict.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Titania, Protector of Argoth",
+      "files": [
+        "engine/src/cards/pool/titania-protector-of-argoth.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "City of Traitors",
+      "files": [
+        "engine/src/cards/pool/city-of-traitors.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Luminous Broodmoth",
+      "files": [
+        "engine/src/cards/pool/luminous-broodmoth.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Suture Priest",
+      "files": [
+        "engine/src/cards/pool/suture-priest.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Shire",
+      "files": [
+        "engine/src/cards/pool/the-shire.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Goblin Engineer",
+      "files": [
+        "engine/src/cards/pool/goblin-engineer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Pollywog Prodigy",
+      "files": [
+        "engine/src/cards/pool/pollywog-prodigy.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Painful Quandary",
+      "files": [
+        "engine/src/cards/pool/painful-quandary.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Abandoned Air Temple",
+      "files": [
+        "engine/src/cards/pool/abandoned-air-temple.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Allosaurus Shepherd",
+      "files": [
+        "engine/src/cards/pool/allosaurus-shepherd.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prowling Serpopard",
+      "files": [
+        "engine/src/cards/pool/prowling-serpopard.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Batterskull",
+      "files": [
+        "engine/src/cards/pool/batterskull.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Ojer Taq, Deepest Foundation // Temple of Civilization",
+      "needs": [
+        "new:token-multiplier-filter",
+        "new:attacked-with-count"
+      ],
+      "why": "'Three times that many' applies only to creature tokens (the token multiplier has no filter), and the Temple's 'if you attacked with three or more creatures this turn' has no count of attackers."
+    },
+    {
+      "name": "Dusk // Dawn",
+      "needs": [
+        "new:split-cards"
+      ],
+      "why": "A split card with aftermath: no split-card layout (two castable halves, a graveyard-only half)."
+    },
+    {
+      "name": "Agadeem's Awakening // Agadeem, the Undercrypt",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "'Any number of target creature cards that each have a different mana value X or less': a variable target count with a constraint across the set."
+    },
+    {
+      "name": "Blightsteel Colossus",
+      "needs": [
+        "new:infect"
+      ],
+      "why": "Infect, and 'if it would be put into a graveyard from anywhere, shuffle it into its owner's library instead'."
+    },
+    {
+      "name": "Approach of the Second Sun",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You win the game', read off a game-long record of spells named Approach cast, and 'seventh from the top'."
+    },
+    {
+      "name": "Krosan Verge",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "'Search your library for a Forest card and a Plains card' — one search whose two finds each meet a different filter, entering together."
+    },
+    {
+      "name": "All Is Dust",
+      "needs": [
+        "new:kindred-card-type"
+      ],
+      "why": "A Kindred Sorcery — Eldrazi: the engine has no kindred type, so it would be neither an Eldrazi spell (Eldrazi Temple's mana) nor two card types in a graveyard."
+    },
+    {
+      "name": "Mechanized Production",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'If you control eight or more artifacts with the same name as one another, you win the game.'"
+    },
+    {
+      "name": "Mines of Moria",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Exile three cards from your graveyard' as part of an activation cost."
+    },
+    {
+      "name": "Windborn Muse",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "'Creatures can't attack you unless their controller pays {2} for each' — the Propaganda tax."
+    },
+    {
+      "name": "Combat Celebrant",
+      "needs": [
+        "new:exert"
+      ],
+      "why": "Exert as it attacks, with a 'when you do' trigger."
+    },
+    {
+      "name": "Spellskite",
+      "needs": [
+        "new:change-target"
+      ],
+      "why": "'Change a target of target spell or ability to this creature.'"
+    },
+    {
+      "name": "Force of Vigor",
+      "needs": [
+        "new:alt-cost-exile-from-hand"
+      ],
+      "why": "'If it's not your turn, you may exile a green card from your hand rather than pay this spell's mana cost.'"
+    },
+    {
+      "name": "Necromancy",
+      "needs": [
+        "effect:attach-extensions",
+        "new:flash-cast-sacrifice"
+      ],
+      "why": "Becomes an Aura with 'enchant creature put onto the battlefield with Necromancy' and attaches to the returned creature; and the cleanup sacrifice only when cast at instant timing."
+    },
+    {
+      "name": "Nyxbloom Ancient",
+      "needs": [
+        "new:mana-multiplier"
+      ],
+      "why": "'If you tap a permanent for mana, it produces three times as much of that mana instead' — a mana replacement."
+    },
+    {
+      "name": "Omniscience",
+      "needs": [
+        "new:free-cast-from-hand-static"
+      ],
+      "why": "'You may cast spells from your hand without paying their mana costs': alternativeCostForSpells can't be limited to the hand, and a card with an alternative cost of its own would be offered only that one."
+    },
+    {
+      "name": "Combustible Gearhulk",
+      "needs": [
+        "new:target-opponent-chooses"
+      ],
+      "why": "'Target opponent may have you draw three cards. If the player doesn't, you mill three cards, then … damage equal to the total mana value of those cards' — a choice by a targeted opponent between two of your effects."
+    },
+    {
+      "name": "Heliod, Sun-Crowned",
+      "needs": [
+        "condition:devotion",
+        "static:self-type-changes"
+      ],
+      "why": "'As long as your devotion to white is less than five, Heliod isn't a creature.'"
+    },
+    {
+      "name": "Wear // Tear",
+      "needs": [
+        "new:split-cards"
+      ],
+      "why": "A split card with fuse."
+    },
+    {
+      "name": "Training Grounds",
+      "needs": [
+        "new:ability-cost-floor"
+      ],
+      "why": "'Can't reduce the mana in that cost to less than one mana', and it reaches creatures' mana abilities, which abilityCostModification leaves alone."
+    },
+    {
+      "name": "Arcane Lighthouse",
+      "needs": [
+        "new:lose-keywords-effect"
+      ],
+      "why": "'Creatures your opponents control lose hexproof and shroud and can't have hexproof or shroud' until end of turn."
+    },
+    {
+      "name": "Charismatic Conqueror",
+      "needs": [
+        "new:each-player-may-feasibility"
+      ],
+      "why": "'They may tap that permanent. If they don't, you create a token' — the ruling says they can't choose to tap one that's already tapped or gone, but each-player-may offers its effect regardless."
+    },
+    {
+      "name": "Wayward Swordtooth",
+      "needs": [
+        "new:ascend"
+      ],
+      "why": "Ascend and the city's blessing."
+    },
+    {
+      "name": "The Reality Chip",
+      "needs": [
+        "new:reconfigure",
+        "zone:visibility-extensions"
+      ],
+      "why": "Reconfigure, and 'you may look at the top card of your library any time'."
+    },
+    {
+      "name": "Pest Infestation",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "'Destroy up to X target artifacts and/or enchantments.'"
+    },
+    {
+      "name": "Three Steps Ahead",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree: a mode per additional cost."
+    },
+    {
+      "name": "Fertile Ground",
+      "needs": [
+        "new:mana-trigger-color-choice"
+      ],
+      "why": "'Adds an additional one mana of any color' on a land tapped by hand: a tapped-for-mana extra of any colour is made white there, with no choice."
+    },
+    {
+      "name": "Tataru Taru",
+      "needs": [
+        "new:target-opponent-may"
+      ],
+      "why": "'Target opponent may draw a card' — a may answered by a targeted player — and 'if it isn't that player's turn'."
+    },
+    {
+      "name": "Marvin, Murderous Mimic",
+      "needs": [
+        "new:gain-activated-abilities-of-others"
+      ],
+      "why": "'Has all activated abilities of creatures you control that don't have the same name.'"
+    },
+    {
+      "name": "Mesmeric Orb",
+      "needs": [
+        "new:untap-trigger"
+      ],
+      "why": "'Whenever a permanent becomes untapped' — no untap trigger."
+    },
+    {
+      "name": "Jace, Wielder of Mysteries",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'If you would draw a card while your library has no cards in it, you win the game instead.'"
+    },
+    {
+      "name": "Slip Out the Back",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "'It phases out.'"
+    },
+    {
+      "name": "Ugin, the Ineffable",
+      "needs": [
+        "mechanic:face-down",
+        "new:linked-token-leaves"
+      ],
+      "why": "+1 exiles a card face down that only you may look at, and 'when that token leaves the battlefield, put the exiled card into your hand' links the card to the token."
+    },
+    {
+      "name": "Ram Through",
+      "needs": [
+        "new:excess-damage-to-controller"
+      ],
+      "why": "'If the creature you control has trample, excess damage is dealt to that creature's controller instead.'"
+    },
+    {
+      "name": "Not Dead After All",
+      "needs": [
+        "mechanic:role-tokens"
+      ],
+      "why": "Creates a Wicked Role token attached to the returned creature."
+    },
+    {
+      "name": "Restoration Magic",
+      "needs": [
+        "new:tiered"
+      ],
+      "why": "Tiered: choose exactly one mode, each with its own additional cost."
+    },
+    {
+      "name": "Ocelot Pride",
+      "needs": [
+        "new:ascend"
+      ],
+      "why": "Ascend and the city's blessing, then a token copy of each token that entered this turn."
+    },
+    {
+      "name": "Mishra's Bauble",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "'Look at the top card of target player's library' — a private look at another player's library."
+    },
+    {
+      "name": "Alchemist's Refuge",
+      "needs": [
+        "new:flash-permission-this-turn"
+      ],
+      "why": "'You may cast spells this turn as though they had flash.'"
+    },
+    {
+      "name": "Nezahal, Primal Tide",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard three cards' as an activation cost."
+    },
+    {
+      "name": "Great Train Heist",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree: a mode per additional cost."
+    },
+    {
+      "name": "Kozilek, Butcher of Truth",
+      "needs": [
+        "new:shuffle-graveyard-into-library"
+      ],
+      "why": "'When Kozilek is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.'"
+    },
+    {
+      "name": "Skrelv, Defector Mite",
+      "needs": [
+        "keyword:toxic",
+        "new:hexproof-from-colors"
+      ],
+      "why": "Toxic 1, and 'hexproof from that color' for a chosen colour."
+    },
+    {
+      "name": "Well of Lost Dreams",
+      "needs": [
+        "decision:choose-number"
+      ],
+      "why": "'You may pay {X}, where X is less than or equal to the amount of life you gained' — X chosen on resolution."
+    },
+    {
+      "name": "Flare of Duplication",
+      "needs": [
+        "decision:copy-new-targets",
+        "new:alt-cost-sacrifice"
+      ],
+      "why": "'You may choose new targets for the copy', and 'sacrifice a nontoken red creature rather than pay this spell's mana cost'."
+    },
+    {
+      "name": "Twilight Prophet",
+      "needs": [
+        "new:ascend"
+      ],
+      "why": "Ascend and the city's blessing."
+    },
+    {
+      "name": "Deflecting Palm",
+      "needs": [
+        "new:prevent-damage-from-chosen-source"
+      ],
+      "why": "'The next time a source of your choice would deal damage to you this turn, prevent that damage' and redirect it."
+    },
+    {
+      "name": "Gisela, Blade of Goldnight",
+      "needs": [
+        "new:prevent-half-damage"
+      ],
+      "why": "'Prevent half that damage, rounded up' to you and your permanents."
+    },
+    {
+      "name": "Teferi, Time Raveler",
+      "needs": [
+        "new:opponents-sorcery-timing"
+      ],
+      "why": "'Each opponent can cast spells only any time they could cast a sorcery.'"
+    },
+    {
+      "name": "Augur of Autumn",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "'You may look at the top card of your library any time.'"
+    },
+    {
+      "name": "Grim Haruspex",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "Morph."
+    },
+    {
+      "name": "Fiery Inscription",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "'The Ring tempts you.'"
+    },
+    {
+      "name": "Revel in Riches",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'At the beginning of your upkeep, if you control ten or more Treasures, you win the game.'"
+    },
+    {
+      "name": "Mirrormade",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "Enters as a copy of an artifact or enchantment."
+    },
+    {
+      "name": "Grasp of Fate",
+      "needs": [
+        "new:target-per-opponent"
+      ],
+      "why": "'For each opponent, exile up to one target nonland permanent that player controls.'"
+    },
+    {
+      "name": "Plumb the Forbidden",
+      "needs": [
+        "cost:sacrifice-multiple",
+        "decision:copy-new-targets"
+      ],
+      "why": "'Sacrifice one or more creatures' as an additional cost, and a copy per creature."
+    },
+    {
+      "name": "Soul Shatter",
+      "needs": [
+        "new:sacrifice-greatest-among"
+      ],
+      "why": "Each opponent sacrifices one with the greatest mana value among the creatures and planeswalkers they control."
+    },
+    {
+      "name": "Silent Arbiter",
+      "needs": [
+        "new:max-attackers-blockers"
+      ],
+      "why": "'No more than one creature can attack each combat' and the same for blocks."
+    },
+    {
+      "name": "Glasspool Mimic // Glasspool Shore",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "Enters as a copy of a creature you control, except it's a Shapeshifter Rogue too."
+    },
+    {
+      "name": "Crackle with Power",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "'Each of up to X targets.'"
+    },
+    {
+      "name": "Tarrian's Soulcleaver",
+      "needs": [
+        "new:attached-object-ref"
+      ],
+      "why": "'Put a +1/+1 counter on equipped creature' from a trigger about another object: no effect reference to the equipped creature."
+    },
+    {
+      "name": "The Black Gate",
+      "needs": [
+        "decision:choose-player"
+      ],
+      "why": "'Choose a player with the most life or tied for most life', then a can't-be-blocked-by-that-player's-creatures restriction."
+    },
+    {
+      "name": "Triumph of the Hordes",
+      "needs": [
+        "new:infect"
+      ],
+      "why": "Grants infect."
+    },
+    {
+      "name": "Zopandrel, Hunger Dominus",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Sacrifice two other creatures' as an activation cost."
+    }
+  ]
+}

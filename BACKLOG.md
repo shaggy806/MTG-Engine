@@ -59,12 +59,26 @@ that one card is the reason the deck exists.
   batch: an Aura's static that sets what the enchanted creature is (Kenrith's Transformation,
   Imprisoned in the Moon, then Darksteel Mutation, Song of the Dryads, Frogify) and a life-gain
   multiplier (The Wind Crystal, Alhammarret's Archive, Rhox Faithmender, Boon Reflection).
+- **Top-5000 batch 6 (2026-09-29) triaged ranks 982–1210 and the three double-faced cards
+  batch 5's list reader skipped:** 53 authored — 49 from the batch (Torbran, Annie Joins Up,
+  Mirror Entity, Stoneforge Mystic, Bloodghast, Luminous Broodmoth, Archon of Cruelty and 42
+  more) and 4 further down that its new engine pieces unblocked (Prowling Serpopard,
+  Allosaurus Shepherd, Hexing Squelcher, Batterskull — see `neededCards-features.md`,
+  "Top-5000 batch 6"); 64 blocked, each in `engine/data/sweep-3/B6.json`. **Next**, by what blocks the most of them:
+  "you win the game" (`new:win-game`, 4 here — Approach of the Second Sun, Mechanized
+  Production, Jace, Wielder of Mysteries, Revel in Riches — and 7 across every record, with
+  Thassa's Oracle, Laboratory Maniac and Hellkite Tyrant); then 3 each for a variable number
+  of targets (`decision:variable-target-count` — Agadeem's Awakening, Pest Infestation,
+  Crackle with Power), ascend (Wayward Swordtooth, Ocelot Pride, Twilight Prophet) and
+  looking at the top card of a library (`zone:visibility-extensions` — The Reality Chip,
+  Mishra's Bauble, Augur of Autumn). Ojer Taq needs only two small pieces: a token
+  multiplier limited to creature tokens, and a count of the creatures attacked with this turn.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,551 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,604 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 981, nothing is triaged.
+  the batches since; past rank 1210, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

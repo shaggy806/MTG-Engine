@@ -114,6 +114,7 @@ import _poolOldGnawbone from "../pool/old-gnawbone.js";
 import _poolPeregrineDrake from "../pool/peregrine-drake.js";
 import _poolPhyrexianVault from "../pool/phyrexian-vault.js";
 import _poolPrimevalShambler from "../pool/primeval-shambler.js";
+import _poolPrismariCommand from "../pool/prismari-command.js";
 import _poolPullFromTomorrow from "../pool/pull-from-tomorrow.js";
 import _poolPyreCharger from "../pool/pyre-charger.js";
 import _poolQueenMarchesa from "../pool/queen-marchesa.js";
@@ -122,6 +123,7 @@ import _poolRaffineSchemingSeer from "../pool/raffine-scheming-seer.js";
 import _poolRainOfTears from "../pool/rain-of-tears.js";
 import _poolRavos from "../pool/ravos.js";
 import _poolReadTheBones from "../pool/read-the-bones.js";
+import _poolRecruiterOfTheGuard from "../pool/recruiter-of-the-guard.js";
 import _poolResoluteWatchdog from "../pool/resolute-watchdog.js";
 import _poolRishadanDockhand from "../pool/rishadan-dockhand.js";
 import _poolRiverBear from "../pool/river-bear.js";
@@ -313,6 +315,7 @@ const shard: CardShard = {
     _poolPeregrineDrake,
     _poolPhyrexianVault,
     _poolPrimevalShambler,
+    _poolPrismariCommand,
     _poolPullFromTomorrow,
     _poolPyreCharger,
     _poolQueenMarchesa,
@@ -321,6 +324,7 @@ const shard: CardShard = {
     _poolRainOfTears,
     _poolRavos,
     _poolReadTheBones,
+    _poolRecruiterOfTheGuard,
     _poolResoluteWatchdog,
     _poolRishadanDockhand,
     _poolRiverBear,

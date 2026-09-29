@@ -679,9 +679,9 @@
     {
       "name": "Tempt with Discovery",
       "needs": [
-        "effect:choices-by-other-players"
+        "new:each-player-may-simultaneous"
       ],
-      "why": "The accepted searches happen together once every opponent has decided (the ruling); each-player-may does each as it's answered, so the next opponent sees the land fetched."
+      "why": "Tempting offer: the opponents who accept all search at the same time after everyone has decided (the ruling), then you search once per acceptor; each-player-may performs each acceptance as it's answered."
     },
     {
       "name": "Buster Sword",

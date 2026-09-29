@@ -83,6 +83,7 @@ import {
   inactiveStandIn,
   intrinsicManaAbility,
   spellHasSplitSecond,
+  spellCantBeCountered,
   invalidateComputedCache,
   staticConditionMet,
   spellGrantReaches,
@@ -136,6 +137,7 @@ import type {
   DelayedNextSpell,
   EffectAmount,
   EffectSpec,
+  EnterTypes,
   FlickerCounters,
   FlickerOptions,
   LookAndChooseLeftoverIf,
@@ -417,6 +419,9 @@ interface EnterOptions {
    * by these types — rule 614.12) and loses the subtypes that went only with
    * the types it lost (rule 205.1a). */
   readonly setTypes?: readonly CardType[];
+  /** Subtypes it has in addition to its own, the same way — Portal to
+   * Phyrexia's "It's a Phyrexian in addition to its other types." */
+  readonly addSubtypes?: readonly string[];
 }
 
 /** Everything the enters-battlefield replacements decided about one entry
@@ -741,6 +746,11 @@ export class Game {
    * cards as it was in the graveyard — what a `leaves-graveyard` trigger's
    * filter is matched against (rule 603.10a). `null` the rest of the time. */
   private graveyardDepartures: ReadonlyMap<ObjectId, LastKnownInfo> | null = null;
+  /** Which printed cards have a triggered ability that works in the
+   * graveyard (`TriggeredAbility.fromGraveyard`), by name, filled in as
+   * cards are asked about — the trigger scan asks of every graveyard card on
+   * every event. Not game state: it only caches the registry. */
+  private readonly graveyardTriggerNames = new Map<string, boolean>();
 
   private constructor(
     state: GameState,
@@ -3066,9 +3076,15 @@ export class Game {
       readonly modesController?: PlayerId;
       /** See the `choose-modes` decision's `about`. */
       readonly about?: PlayerId;
+      /** See the `choose-modes` decision's `sourceLost`. */
+      readonly sourceLost?: boolean;
     } = {},
   ): void {
     const key = ability.key;
+    const identity = {
+      ...(key !== undefined ? { abilityKey: key } : {}),
+      ...(ability.sourceLost === true ? { sourceLost: true } : {}),
+    };
     const decline = (): void => {
       if (onDecline === undefined) return;
       applyEffectSpec(
@@ -3084,7 +3100,7 @@ export class Game {
           0,
           targetZones ?? [],
           lastKnownRefs,
-          key !== undefined ? { abilityKey: key } : {},
+          identity,
         ),
       );
     };
@@ -3147,6 +3163,7 @@ export class Game {
       ...(ability.modesController !== undefined && ability.modesController !== controller
         ? { modesController: ability.modesController }
         : {}),
+      ...(ability.sourceLost === true ? { sourceLost: true } : {}),
     };
   }
 
@@ -3232,6 +3249,10 @@ export class Game {
     const unchosen = awaiting.notChosenThisTurn;
     const own = unchosen === undefined ? ordered : ordered.map((i) => unchosen[i]);
     const abilityKey = awaiting.abilityKey;
+    const identity = {
+      ...(abilityKey !== undefined ? { abilityKey } : {}),
+      ...(awaiting.sourceLost === true ? { sourceLost: true } : {}),
+    };
     if (unchosen !== undefined && abilityKey !== undefined && own.length > 0) {
       const record = (this.state.modesChosenThisTurn ??= {});
       record[abilityKey] = [...(record[abilityKey] ?? []), ...own];
@@ -3253,7 +3274,7 @@ export class Game {
       0,
       targetZones,
       modesBy === undefined ? lastKnownRefs : { ...lastKnownRefs, player },
-      abilityKey !== undefined ? { abilityKey } : {},
+      identity,
     );
     for (const i of ordered) applyEffectSpec(modes[i].effect, context);
     // Logged once the payment has been made, and ahead of the counter.
@@ -3281,7 +3302,7 @@ export class Game {
               0,
               targetZones,
               lastKnownRefs,
-              abilityKey !== undefined ? { abilityKey } : {},
+              identity,
             ),
       );
     }
@@ -7650,6 +7671,20 @@ export class Game {
     return out;
   }
 
+  /** Whether `id` is a card with a triggered ability that works in the
+   * graveyard (`TriggeredAbility.fromGraveyard`). */
+  private hasGraveyardTrigger(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || object.kind !== "card") return false;
+    const name = printedCardName(object);
+    let has = this.graveyardTriggerNames.get(name);
+    if (has === undefined) {
+      has = this.registry.get(name).triggered.some((ability) => ability.fromGraveyard === true);
+      this.graveyardTriggerNames.set(name, has);
+    }
+    return has;
+  }
+
   /**
    * `objectId`'s printed `triggered` abilities plus any currently granted to
    * it — by a `grantsTriggered` static (Tyrant's Familiar's Lieutenant
@@ -10323,6 +10358,20 @@ export class Game {
       candidates.add(id);
       eminenceOnly.delete(id);
     }
+    // Rule 113.6k: an ability that moves its own card out of the graveyard
+    // works only there (`TriggeredAbility.fromGraveyard` — Bloodghast's
+    // landfall). Such cards join the scan from every graveyard, contributing
+    // only those abilities. One that got there in this very event — it left
+    // the battlefield with the subject, earlier in the same wrath — wasn't
+    // there to see it (Nether Traitor's ruling).
+    const graveyardOnly = new Set<ObjectId>();
+    for (const player of this.state.turnOrder) {
+      for (const id of this.state.zones.perPlayer[player]?.graveyard ?? []) {
+        if (id === subject || lookBack.has(id) || !this.hasGraveyardTrigger(id)) continue;
+        candidates.add(id);
+        graveyardOnly.add(id);
+      }
+    }
     const leaving = isLeaveEvent(event);
     for (const id of candidates) {
       const live = this.state.objects[id];
@@ -10366,6 +10415,7 @@ export class Game {
         // Layer 6 — a printed ability it has lost doesn't trigger.
         if (lost === true) return;
         if (onlyEminence && ability.fromCommandZone !== true) return;
+        if ((ability.fromGraveyard === true) !== graveyardOnly.has(id)) return;
         if (onlyThisCast && ability.trigger.on !== "this-cast") return;
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
@@ -11217,7 +11267,11 @@ export class Game {
           (spec.exceptFirstInDrawStep !== true || event.firstInDrawStep !== true)
         );
       case "plays-land":
-        return event.type === "land-played" && this.matchesWhoPlayer(spec.who, event.player, self);
+        return (
+          event.type === "land-played" &&
+          this.matchesWhoPlayer(spec.who, event.player, self) &&
+          !(spec.otherOnly === true && event.object === self.id)
+        );
       case "plays-card": {
         // Playing a card is playing a land or casting a spell (rule 601.2 /
         // 305.1) — both events, each carrying the zone it came from.
@@ -12771,7 +12825,7 @@ export class Game {
         });
         return false;
       },
-      putOntoBattlefield: (target, under, enterTapped, withCounters, exileIfLeaves, transformed, setTypes) =>
+      putOntoBattlefield: (target, under, enterTapped, withCounters, exileIfLeaves, transformed, types) =>
         this.putOntoBattlefieldByEffect(
           target,
           controller,
@@ -12781,7 +12835,7 @@ export class Game {
           exileIfLeaves === true,
           transformed === true,
           under,
-          setTypes,
+          types,
         ),
       exileGraveyard: (target) => {
         if (target.kind !== "player") return;
@@ -13342,6 +13396,7 @@ export class Game {
           targetZones,
           {
             key: opts.abilityKey,
+            ...(opts.sourceLost === true ? { sourceLost: true } : {}),
             notChosenThisTurn: notChosenThisTurn === true,
             ...(otherCost?.life !== undefined ? { costLife: otherCost.life } : {}),
             ...(otherCost?.energy !== undefined ? { costEnergy: otherCost.energy } : {}),
@@ -16556,7 +16611,7 @@ export class Game {
     exileIfItWouldLeave = false,
     transformed = false,
     underPlayer?: PlayerId,
-    setTypes?: readonly CardType[],
+    types?: EnterTypes,
   ): boolean {
     const under = underPlayer ?? (underYourControl ? controller : undefined);
     if (target.kind !== "object") return false;
@@ -16572,7 +16627,8 @@ export class Game {
       tapped: enterTapped,
       ...(under !== undefined ? { under } : {}),
       ...(transformed ? { transformed: true } : {}),
-      ...(setTypes !== undefined ? { setTypes } : {}),
+      ...(types?.setTypes !== undefined ? { setTypes: types.setTypes } : {}),
+      ...(types?.addSubtypes !== undefined ? { addSubtypes: types.addSubtypes } : {}),
     });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return false;
@@ -17852,8 +17908,10 @@ export class Game {
 
   /**
    * Counter the spell/ability on the stack (rule 701.5). Returns `false`
-   * without countering when it "can't be countered" (`CardDefinition.cantBeCountered`
-   * — rule 701.5f), so the caller lets it resolve; `true` when it was countered.
+   * without countering when it "can't be countered" — printed, granted by a
+   * permanent ("creature spells you control can't be countered"), or from how
+   * it was paid for (`spellCantBeCountered`, `GameObject.uncounterable` —
+   * rule 701.5f) — so the caller lets it resolve; `true` when it was countered.
    *
    * A countered spell goes to its owner's graveyard, or with `into: "hand"`
    * to their hand instead (Remand's "if that spell is countered this way,
@@ -17865,11 +17923,7 @@ export class Game {
   private counterObject(id: ObjectId, into: "graveyard" | "hand" = "graveyard"): boolean {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return false;
-    if (
-      object.uncounterable === true ||
-      (object.kind === "card" &&
-        this.registry.get(printedCardName(object)).cantBeCountered)
-    ) {
+    if (object.uncounterable === true || spellCantBeCountered(this.state, this.registry, object)) {
       this.emit({ type: "counter-failed", object: id });
       return false;
     }
@@ -20212,13 +20266,14 @@ export class Game {
       object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
-      if (enter.setTypes !== undefined) {
+      if (enter.setTypes !== undefined || enter.addSubtypes !== undefined) {
         object.modifiers.push({
           timestamp: object.timestamp,
           power: 0,
           toughness: 0,
           keywords: [],
-          setTypes: [...enter.setTypes],
+          ...(enter.setTypes !== undefined ? { setTypes: [...enter.setTypes] } : {}),
+          ...(enter.addSubtypes !== undefined ? { addSubtypes: [...enter.addSubtypes] } : {}),
           untilEndOfTurn: false,
         });
       }

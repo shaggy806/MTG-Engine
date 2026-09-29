@@ -139,6 +139,7 @@ import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
 import _poolStarstorm from "../pool/starstorm.js";
+import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
 import _poolSyrKonradTheGrim from "../pool/syr-konrad-the-grim.js";
 import _poolTalismanOfCuriosity from "../pool/talisman-of-curiosity.js";
@@ -325,6 +326,7 @@ const shard: CardShard = {
     _poolSpellkeeperWeird,
     _poolStandingTroops,
     _poolStarstorm,
+    _poolSuturePriest,
     _poolSymbioteSpawn,
     _poolSyrKonradTheGrim,
     _poolTalismanOfCuriosity,

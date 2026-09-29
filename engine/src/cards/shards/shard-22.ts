@@ -140,6 +140,7 @@ import _poolSquall from "../pool/squall.js";
 import _poolStarkIndustriesExecutive from "../pool/stark-industries-executive.js";
 import _poolStoneGolem from "../pool/stone-golem.js";
 import _poolStoneQuarry from "../pool/stone-quarry.js";
+import _poolStoneforgeMystic from "../pool/stoneforge-mystic.js";
 import _poolStormcatchMentor from "../pool/stormcatch-mentor.js";
 import _poolStranglingSpores from "../pool/strangling-spores.js";
 import _poolSuChi from "../pool/su-chi.js";
@@ -325,6 +326,7 @@ const shard: CardShard = {
     _poolStarkIndustriesExecutive,
     _poolStoneGolem,
     _poolStoneQuarry,
+    _poolStoneforgeMystic,
     _poolStormcatchMentor,
     _poolStranglingSpores,
     _poolSuChi,

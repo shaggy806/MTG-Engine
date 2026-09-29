@@ -12,6 +12,7 @@ import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
+import _poolAnnieJoinsUp from "../pool/annie-joins-up.js";
 import _poolArachnoid from "../pool/arachnoid.js";
 import _poolArgothianSwine from "../pool/argothian-swine.js";
 import _poolAtalanJackal from "../pool/atalan-jackal.js";
@@ -153,6 +154,7 @@ import _poolSkyclaveGeopede from "../pool/skyclave-geopede.js";
 import _poolSkyscanner from "../pool/skyscanner.js";
 import _poolSliptideSerpent from "../pool/sliptide-serpent.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
+import _poolSporeFrog from "../pool/spore-frog.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
 import _poolSunbeamSpellbomb from "../pool/sunbeam-spellbomb.js";
 import _poolTajuruPathwarden from "../pool/tajuru-pathwarden.js";
@@ -200,6 +202,7 @@ const shard: CardShard = {
     _poolAnchovyBananaPizza,
     _poolAniktheaHandOfErebos,
     _poolAnimPakalThousandthMoon,
+    _poolAnnieJoinsUp,
     _poolArachnoid,
     _poolArgothianSwine,
     _poolAtalanJackal,
@@ -341,6 +344,7 @@ const shard: CardShard = {
     _poolSkyscanner,
     _poolSliptideSerpent,
     _poolSnareThopter,
+    _poolSporeFrog,
     _poolStickyFingers,
     _poolSunbeamSpellbomb,
     _poolTajuruPathwarden,

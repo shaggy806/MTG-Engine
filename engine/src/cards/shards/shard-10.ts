@@ -177,6 +177,7 @@ import _poolTigereyeCameo from "../pool/tigereye-cameo.js";
 import _poolTirelessMissionaries from "../pool/tireless-missionaries.js";
 import _poolTitaniumGolem from "../pool/titanium-golem.js";
 import _poolTolarianSerpent from "../pool/tolarian-serpent.js";
+import _poolTorbranThaneOfRedFell from "../pool/torbran-thane-of-red-fell.js";
 import _poolToxrillTheCorrosive from "../pool/toxrill-the-corrosive.js";
 import _poolTranquilCove from "../pool/tranquil-cove.js";
 import _poolTreetopSnarespinner from "../pool/treetop-snarespinner.js";
@@ -188,6 +189,7 @@ import _poolUnyaroBeeSting from "../pool/unyaro-bee-sting.js";
 import _poolVampireOfTheDireMoon from "../pool/vampire-of-the-dire-moon.js";
 import _poolVampiricTutor from "../pool/vampiric-tutor.js";
 import _poolVenomthrope from "../pool/venomthrope.js";
+import _poolVilisBrokerOfBlood from "../pool/vilis-broker-of-blood.js";
 import _poolVindicate from "../pool/vindicate.js";
 import _poolWallOfFire from "../pool/wall-of-fire.js";
 import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
@@ -378,6 +380,7 @@ const shard: CardShard = {
     _poolTirelessMissionaries,
     _poolTitaniumGolem,
     _poolTolarianSerpent,
+    _poolTorbranThaneOfRedFell,
     _poolToxrillTheCorrosive,
     _poolTranquilCove,
     _poolTreetopSnarespinner,
@@ -389,6 +392,7 @@ const shard: CardShard = {
     _poolVampireOfTheDireMoon,
     _poolVampiricTutor,
     _poolVenomthrope,
+    _poolVilisBrokerOfBlood,
     _poolVindicate,
     _poolWallOfFire,
     _poolWandOfOrcus,

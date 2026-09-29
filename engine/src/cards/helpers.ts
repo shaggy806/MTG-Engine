@@ -377,6 +377,28 @@ export const equip = (cost: string): ActivatedAbility => ({
   sorcerySpeed: true,
 });
 
+/**
+ * Living weapon (rule 702.92a): "When this Equipment enters, create a 0/0
+ * black Phyrexian Germ creature token, then attach this to it." The Germ is
+ * attached before state-based actions look at a 0/0 (the rulings); with two
+ * made (Doubling Season), the Equipment goes onto one and the other dies. An
+ * Equipment that has left the battlefield since, or come back as a new
+ * object, attaches to nothing.
+ */
+export const livingWeapon = (): TriggeredAbility => ({
+  trigger: { on: "enters-battlefield", who: "self" },
+  targets: [],
+  effect: {
+    kind: "sequence",
+    effects: [
+      { kind: "create-token", token: "Phyrexian Germ Token", count: 1 },
+      { kind: "attach", target: "created", attachment: "source" },
+    ],
+  },
+  resolve: null,
+  text: "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)",
+});
+
 export const manaTapAbility = (mana: Color): ActivatedAbility => ({
   cost: { mana: null, tap: true },
   targets: [],

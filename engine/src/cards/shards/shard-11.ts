@@ -87,6 +87,7 @@ import _poolInvasionTactics from "../pool/invasion-tactics.js";
 import _poolJacesScrutiny from "../pool/jaces-scrutiny.js";
 import _poolJadeMage from "../pool/jade-mage.js";
 import _poolJayasGreeting from "../pool/jayas-greeting.js";
+import _poolJhoirasFamiliar from "../pool/jhoiras-familiar.js";
 import _poolJinSakaiGhostOfTsushima from "../pool/jin-sakai-ghost-of-tsushima.js";
 import _poolKangeesLieutenant from "../pool/kangees-lieutenant.js";
 import _poolKedissEmberclawFamiliar from "../pool/kediss-emberclaw-familiar.js";
@@ -106,6 +107,7 @@ import _poolManaCylix from "../pool/mana-cylix.js";
 import _poolMercilessEnforcers from "../pool/merciless-enforcers.js";
 import _poolMistyPalmsOasis from "../pool/misty-palms-oasis.js";
 import _poolMmmenonUthrosExile from "../pool/mmmenon-uthros-exile.js";
+import _poolMonologueTax from "../pool/monologue-tax.js";
 import _poolMonssGoblinRaiders from "../pool/monss-goblin-raiders.js";
 import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
 import _poolMoriokReaver from "../pool/moriok-reaver.js";
@@ -164,6 +166,7 @@ import _poolSporemound from "../pool/sporemound.js";
 import _poolSpringsageRitual from "../pool/springsage-ritual.js";
 import _poolSquallDrifter from "../pool/squall-drifter.js";
 import _poolStaffOfNin from "../pool/staff-of-nin.js";
+import _poolSteelshapersGift from "../pool/steelshapers-gift.js";
 import _poolStomperCub from "../pool/stomper-cub.js";
 import _poolStormfistCrusader from "../pool/stormfist-crusader.js";
 import _poolStreetbreakerWurm from "../pool/streetbreaker-wurm.js";
@@ -204,6 +207,7 @@ import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
 import _tokensOgreToken from "../tokens/ogre-token.js";
+import _tokensWarriorTokenVigilance from "../tokens/warrior-token-vigilance.js";
 
 const shard: CardShard = {
   pool: [
@@ -291,6 +295,7 @@ const shard: CardShard = {
     _poolJacesScrutiny,
     _poolJadeMage,
     _poolJayasGreeting,
+    _poolJhoirasFamiliar,
     _poolJinSakaiGhostOfTsushima,
     _poolKangeesLieutenant,
     _poolKedissEmberclawFamiliar,
@@ -310,6 +315,7 @@ const shard: CardShard = {
     _poolMercilessEnforcers,
     _poolMistyPalmsOasis,
     _poolMmmenonUthrosExile,
+    _poolMonologueTax,
     _poolMonssGoblinRaiders,
     _poolMoonriseCleric,
     _poolMoriokReaver,
@@ -368,6 +374,7 @@ const shard: CardShard = {
     _poolSpringsageRitual,
     _poolSquallDrifter,
     _poolStaffOfNin,
+    _poolSteelshapersGift,
     _poolStomperCub,
     _poolStormfistCrusader,
     _poolStreetbreakerWurm,
@@ -410,6 +417,7 @@ const shard: CardShard = {
     _tokensElementalToken,
     _tokensNecronWarriorToken,
     _tokensOgreToken,
+    _tokensWarriorTokenVigilance,
   ],
 };
 

@@ -80,6 +80,7 @@ import _poolGraniteGargoyle from "../pool/granite-gargoyle.js";
 import _poolGrapplerSpider from "../pool/grappler-spider.js";
 import _poolGruulGuildmage from "../pool/gruul-guildmage.js";
 import _poolHamatoNinpo from "../pool/hamato-ninpo.js";
+import _poolHavenOfTheSpiritDragon from "../pool/haven-of-the-spirit-dragon.js";
 import _poolHealersFlock from "../pool/healers-flock.js";
 import _poolHighlandWeald from "../pool/highland-weald.js";
 import _poolHillGiant from "../pool/hill-giant.js";
@@ -148,6 +149,7 @@ import _poolSkorpekhDestroyer from "../pool/skorpekh-destroyer.js";
 import _poolSliverOverlord from "../pool/sliver-overlord.js";
 import _poolSlumReaper from "../pool/slum-reaper.js";
 import _poolSnakeBasket from "../pool/snake-basket.js";
+import _poolSokenzanCrucibleOfDefiance from "../pool/sokenzan-crucible-of-defiance.js";
 import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolGrapplerSpider,
     _poolGruulGuildmage,
     _poolHamatoNinpo,
+    _poolHavenOfTheSpiritDragon,
     _poolHealersFlock,
     _poolHighlandWeald,
     _poolHillGiant,
@@ -339,6 +342,7 @@ const shard: CardShard = {
     _poolSliverOverlord,
     _poolSlumReaper,
     _poolSnakeBasket,
+    _poolSokenzanCrucibleOfDefiance,
     _poolSoulWarden,
     _poolSpellscornCoven,
     _poolStormriderSpirit,

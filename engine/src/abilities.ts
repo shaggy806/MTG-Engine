@@ -319,6 +319,10 @@ export type TriggerSpec =
        */
       readonly on: "plays-land";
       readonly who: TriggerWho;
+      /** "When you play **another** land" (City of Traitors): playing this
+       * land itself doesn't count — it's on the battlefield by the time its
+       * own play is announced. */
+      readonly otherOnly?: boolean;
     }
   | {
       /**
@@ -942,6 +946,23 @@ export interface TriggeredAbility {
    * an unmarked one on the same card still doesn't appear.
    */
   readonly fromCommandZone?: boolean;
+  /**
+   * This ability works while its card is in a **graveyard**, and only there
+   * (rule 113.6k: an ability that moves its own object out of a zone —
+   * "return this card from your graveyard to the battlefield" — functions
+   * only in that zone): Bloodghast's "Landfall — … you may return this card
+   * from your graveyard to the battlefield", Spit Flame's "… return this
+   * card from your graveyard to your hand".
+   *
+   * The trigger scan adds such cards from every graveyard, for these
+   * abilities alone, and never counts them on the battlefield. Its
+   * controller is the card's owner. A card that reached the graveyard in the
+   * very event being scanned — it left the battlefield together with the
+   * creature whose death fired it — wasn't there to see it (Nether Traitor's
+   * ruling). `"source"` in the effect finds the card only if it's the same
+   * object when the ability resolves (rule 400.7).
+   */
+  readonly fromGraveyard?: boolean;
   /**
    * Goes on the stack before its controller's other triggers of the same
    * moment, so it resolves after them. The engine doesn't yet ask a player

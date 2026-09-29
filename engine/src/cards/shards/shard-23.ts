@@ -64,6 +64,7 @@ import _poolGhirapurGearcrafter from "../pool/ghirapur-gearcrafter.js";
 import _poolGhostLitRedeemer from "../pool/ghost-lit-redeemer.js";
 import _poolGiantCockroach from "../pool/giant-cockroach.js";
 import _poolGlowingAnemone from "../pool/glowing-anemone.js";
+import _poolGoblinEngineer from "../pool/goblin-engineer.js";
 import _poolGrayMerchantOfAsphodel from "../pool/gray-merchant-of-asphodel.js";
 import _poolGreenwoodSentinel from "../pool/greenwood-sentinel.js";
 import _poolGustSkimmer from "../pool/gust-skimmer.js";
@@ -112,6 +113,7 @@ import _poolNantukoElder from "../pool/nantuko-elder.js";
 import _poolNarnamCobra from "../pool/narnam-cobra.js";
 import _poolOhranFrostfang from "../pool/ohran-frostfang.js";
 import _poolOvergrownFarmland from "../pool/overgrown-farmland.js";
+import _poolPainfulQuandary from "../pool/painful-quandary.js";
 import _poolPlasmancer from "../pool/plasmancer.js";
 import _poolPollutedMire from "../pool/polluted-mire.js";
 import _poolPongify from "../pool/pongify.js";
@@ -253,6 +255,7 @@ const shard: CardShard = {
     _poolGhostLitRedeemer,
     _poolGiantCockroach,
     _poolGlowingAnemone,
+    _poolGoblinEngineer,
     _poolGrayMerchantOfAsphodel,
     _poolGreenwoodSentinel,
     _poolGustSkimmer,
@@ -301,6 +304,7 @@ const shard: CardShard = {
     _poolNarnamCobra,
     _poolOhranFrostfang,
     _poolOvergrownFarmland,
+    _poolPainfulQuandary,
     _poolPlasmancer,
     _poolPollutedMire,
     _poolPongify,

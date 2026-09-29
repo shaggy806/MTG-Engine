@@ -107,6 +107,7 @@ import _poolMonstrousGrowth from "../pool/monstrous-growth.js";
 import _poolMortivore from "../pool/mortivore.js";
 import _poolMourning from "../pool/mourning.js";
 import _poolNaturesLore from "../pool/natures-lore.js";
+import _poolNettlecyst from "../pool/nettlecyst.js";
 import _poolNightshadeStinger from "../pool/nightshade-stinger.js";
 import _poolNyleasForerunner from "../pool/nyleas-forerunner.js";
 import _poolOpenTheGraves from "../pool/open-the-graves.js";
@@ -154,6 +155,7 @@ import _poolSpectacleSummit from "../pool/spectacle-summit.js";
 import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
 import _poolStoneworkPuma from "../pool/stonework-puma.js";
+import _poolStrixSerenade from "../pool/strix-serenade.js";
 import _poolStrongarmThug from "../pool/strongarm-thug.js";
 import _poolStrongholdAssassin from "../pool/stronghold-assassin.js";
 import _poolSunhomeFortressOfTheLegion from "../pool/sunhome-fortress-of-the-legion.js";
@@ -195,6 +197,7 @@ import _poolZurgoThundersDecree from "../pool/zurgo-thunders-decree.js";
 import _tokensGreenSpiderTokenReach from "../tokens/green-spider-token-reach.js";
 import _tokensLifelinkSoldierToken from "../tokens/lifelink-soldier-token.js";
 import _tokensMerfolkToken from "../tokens/merfolk-token.js";
+import _tokensSpiritTokenColorless from "../tokens/spirit-token-colorless.js";
 
 const shard: CardShard = {
   pool: [
@@ -302,6 +305,7 @@ const shard: CardShard = {
     _poolMortivore,
     _poolMourning,
     _poolNaturesLore,
+    _poolNettlecyst,
     _poolNightshadeStinger,
     _poolNyleasForerunner,
     _poolOpenTheGraves,
@@ -349,6 +353,7 @@ const shard: CardShard = {
     _poolSpinedMegalodon,
     _poolStarkIndustries,
     _poolStoneworkPuma,
+    _poolStrixSerenade,
     _poolStrongarmThug,
     _poolStrongholdAssassin,
     _poolSunhomeFortressOfTheLegion,
@@ -392,6 +397,7 @@ const shard: CardShard = {
     _tokensGreenSpiderTokenReach,
     _tokensLifelinkSoldierToken,
     _tokensMerfolkToken,
+    _tokensSpiritTokenColorless,
   ],
 };
 

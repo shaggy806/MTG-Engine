@@ -2,7 +2,7 @@
 
 import type { CardDefinition, CardRegistry, CardType } from "./cards.js";
 import type { EffectAmount } from "./effects.js";
-import { computeCharacteristics, effectiveTypes } from "./characteristics.js";
+import { computeCharacteristics, effectiveTypes, playerHasHexproof } from "./characteristics.js";
 import { filterReadsX, matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -178,11 +178,12 @@ export function isLegalTarget(
       return false;
     }
   } else if (
-    // A player with hexproof (Lazotep Plating's "you … gain hexproof") can't
-    // be the target of spells or abilities their opponents control, which at
-    // a multiplayer table is everyone else (rule 702.11d).
+    // A player with hexproof (Lazotep Plating's "you … gain hexproof",
+    // Shalai's "you … have hexproof") can't be the target of spells or
+    // abilities their opponents control, which at a multiplayer table is
+    // everyone else (rule 702.11d).
     ref.player !== forPlayer &&
-    state.hexproofPlayers?.includes(ref.player) === true
+    playerHasHexproof(state, registry, ref.player)
   ) {
     return false;
   }

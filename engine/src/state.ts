@@ -1658,6 +1658,12 @@ export type AwaitingDecision =
        * and `may.costEnergy` — paid alongside `cost` as the choice is made. */
       readonly costLife?: number;
       readonly costEnergy?: number;
+      /** The ability's source had become a new object by the time it
+       * resolved (rule 400.7 — `ResolutionContext.sourceLost`), so "~" in
+       * the modes finds nothing: a Bloodghast exiled and put back in the
+       * graveyard in response isn't returned by the "you may" of its first
+       * self. */
+      readonly sourceLost?: true;
       /** Which ability is choosing (`ResolutionContext.abilityKey`), so a
        * mode's effect resolves as part of it. */
       readonly abilityKey?: string;

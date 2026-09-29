@@ -8,6 +8,7 @@ import _poolAlabornMusketeer from "../pool/alaborn-musketeer.js";
 import _poolAnafenzaTheForemost from "../pool/anafenza-the-foremost.js";
 import _poolAnodetLurker from "../pool/anodet-lurker.js";
 import _poolAppetiteForTheUnnatural from "../pool/appetite-for-the-unnatural.js";
+import _poolArchonOfCruelty from "../pool/archon-of-cruelty.js";
 import _poolArmyOfTheDamned from "../pool/army-of-the-damned.js";
 import _poolAtarkaWorldRender from "../pool/atarka-world-render.js";
 import _poolAvacynAngelOfHope from "../pool/avacyn-angel-of-hope.js";
@@ -99,6 +100,7 @@ import _poolOracleOfMulDaya from "../pool/oracle-of-mul-daya.js";
 import _poolOrazcaFrillback from "../pool/orazca-frillback.js";
 import _poolPiggyBank from "../pool/piggy-bank.js";
 import _poolProsshSkyraiderOfKher from "../pool/prossh-skyraider-of-kher.js";
+import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
 import _poolPsionicPulse from "../pool/psionic-pulse.js";
 import _poolPyroclasticElemental from "../pool/pyroclastic-elemental.js";
 import _poolRampagingHippo from "../pool/rampaging-hippo.js";
@@ -185,6 +187,7 @@ const shard: CardShard = {
     _poolAnafenzaTheForemost,
     _poolAnodetLurker,
     _poolAppetiteForTheUnnatural,
+    _poolArchonOfCruelty,
     _poolArmyOfTheDamned,
     _poolAtarkaWorldRender,
     _poolAvacynAngelOfHope,
@@ -276,6 +279,7 @@ const shard: CardShard = {
     _poolOrazcaFrillback,
     _poolPiggyBank,
     _poolProsshSkyraiderOfKher,
+    _poolProwlingSerpopard,
     _poolPsionicPulse,
     _poolPyroclasticElemental,
     _poolRampagingHippo,

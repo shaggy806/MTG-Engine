@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAIMSynthoids from "../pool/a-i-m-synthoids.js";
 import _poolAdaptiveGemguard from "../pool/adaptive-gemguard.js";
 import _poolAffaProtector from "../pool/affa-protector.js";
+import _poolAllosaurusShepherd from "../pool/allosaurus-shepherd.js";
 import _poolArdbert from "../pool/ardbert.js";
 import _poolArgentumArmor from "../pool/argentum-armor.js";
 import _poolAttendedKnight from "../pool/attended-knight.js";
@@ -65,6 +66,7 @@ import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
 import _poolHavocDevils from "../pool/havoc-devils.js";
 import _poolHedronRover from "../pool/hedron-rover.js";
+import _poolHeraldOfSecretStreams from "../pool/herald-of-secret-streams.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
 import _poolHulkingBugbear from "../pool/hulking-bugbear.js";
 import _poolHuntersInsight from "../pool/hunters-insight.js";
@@ -165,6 +167,7 @@ import _poolWithstandDeath from "../pool/withstand-death.js";
 import _poolWortBoggartAuntie from "../pool/wort-boggart-auntie.js";
 import _poolYellowScarvesTroops from "../pool/yellow-scarves-troops.js";
 import _poolZookeeperMechan from "../pool/zookeeper-mechan.js";
+import _tokensElementalToken53 from "../tokens/elemental-token-5-3.js";
 import _tokensHornetToken from "../tokens/hornet-token.js";
 import _tokensImpTokenJudith from "../tokens/imp-token-judith.js";
 import _tokensRatToken from "../tokens/rat-token.js";
@@ -176,6 +179,7 @@ const shard: CardShard = {
     _poolAIMSynthoids,
     _poolAdaptiveGemguard,
     _poolAffaProtector,
+    _poolAllosaurusShepherd,
     _poolArdbert,
     _poolArgentumArmor,
     _poolAttendedKnight,
@@ -235,6 +239,7 @@ const shard: CardShard = {
     _poolGyreEngineer,
     _poolHavocDevils,
     _poolHedronRover,
+    _poolHeraldOfSecretStreams,
     _poolHithlainKnots,
     _poolHulkingBugbear,
     _poolHuntersInsight,
@@ -337,6 +342,7 @@ const shard: CardShard = {
     _poolZookeeperMechan,
   ],
   tokens: [
+    _tokensElementalToken53,
     _tokensHornetToken,
     _tokensImpTokenJudith,
     _tokensRatToken,

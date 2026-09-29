@@ -19,6 +19,7 @@ import _poolBattlewandOak from "../pool/battlewand-oak.js";
 import _poolBlackWaltzNo3 from "../pool/black-waltz-no-3.js";
 import _poolBlistergrub from "../pool/blistergrub.js";
 import _poolBloodRites from "../pool/blood-rites.js";
+import _poolBloodghast from "../pool/bloodghast.js";
 import _poolBloodstainedMire from "../pool/bloodstained-mire.js";
 import _poolBogWreckage from "../pool/bog-wreckage.js";
 import _poolBoneToAsh from "../pool/bone-to-ash.js";
@@ -167,6 +168,7 @@ import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
 import _poolSwoopingLookout from "../pool/swooping-lookout.js";
 import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
+import _poolSyphonMind from "../pool/syphon-mind.js";
 import _poolTangledFlorahedron from "../pool/tangled-florahedron.js";
 import _poolTelJiladJustice from "../pool/tel-jilad-justice.js";
 import _poolTerminate from "../pool/terminate.js";
@@ -220,6 +222,7 @@ const shard: CardShard = {
     _poolBlackWaltzNo3,
     _poolBlistergrub,
     _poolBloodRites,
+    _poolBloodghast,
     _poolBloodstainedMire,
     _poolBogWreckage,
     _poolBoneToAsh,
@@ -368,6 +371,7 @@ const shard: CardShard = {
     _poolSuntailHawk,
     _poolSwoopingLookout,
     _poolSwordOfBodyAndMind,
+    _poolSyphonMind,
     _poolTangledFlorahedron,
     _poolTelJiladJustice,
     _poolTerminate,

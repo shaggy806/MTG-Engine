@@ -86,6 +86,7 @@ import _poolMarwynTheNurturer from "../pool/marwyn-the-nurturer.js";
 import _poolMerfolkSecretkeeper from "../pool/merfolk-secretkeeper.js";
 import _poolMesaEnchantress from "../pool/mesa-enchantress.js";
 import _poolMessengerDrake from "../pool/messenger-drake.js";
+import _poolMirrorEntity from "../pool/mirror-entity.js";
 import _poolMisguidedRage from "../pool/misguided-rage.js";
 import _poolMonoistSentry from "../pool/monoist-sentry.js";
 import _poolMorphicPool from "../pool/morphic-pool.js";
@@ -114,6 +115,7 @@ import _poolRazortoothRats from "../pool/razortooth-rats.js";
 import _poolRedHerring from "../pool/red-herring.js";
 import _poolRendmawCreakingNest from "../pool/rendmaw-creaking-nest.js";
 import _poolRipchainRazorkin from "../pool/ripchain-razorkin.js";
+import _poolRoilingRegrowth from "../pool/roiling-regrowth.js";
 import _poolRustwingFalcon from "../pool/rustwing-falcon.js";
 import _poolSceneOfTheCrime from "../pool/scene-of-the-crime.js";
 import _poolScrubland from "../pool/scrubland.js";
@@ -249,6 +251,7 @@ const shard: CardShard = {
     _poolMerfolkSecretkeeper,
     _poolMesaEnchantress,
     _poolMessengerDrake,
+    _poolMirrorEntity,
     _poolMisguidedRage,
     _poolMonoistSentry,
     _poolMorphicPool,
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolRedHerring,
     _poolRendmawCreakingNest,
     _poolRipchainRazorkin,
+    _poolRoilingRegrowth,
     _poolRustwingFalcon,
     _poolSceneOfTheCrime,
     _poolScrubland,

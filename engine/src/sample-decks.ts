@@ -174,11 +174,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Scavenging Ooze",
         "Cheap green creature that interacts with graveyards.",
       ),
-      sub(
-        "Haven of the Spirit Dragon",
-        "Kessig Wolf Run",
-        "Utility land that taps for colorless.",
-      ),
     ],
   }),
   precon({
@@ -339,11 +334,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Coveted Jewel",
         "Hedron Archive",
         "Mana rock that cashes in for cards.",
-      ),
-      sub(
-        "Syphon Mind",
-        "Blightning",
-        "Makes opponents discard.",
       ),
       sub(
         "Explosion of Riches",

@@ -32,6 +32,7 @@ import _poolCelebrityFencer from "../pool/celebrity-fencer.js";
 import _poolCentaurSafeguard from "../pool/centaur-safeguard.js";
 import _poolChantOfTheSkifsang from "../pool/chant-of-the-skifsang.js";
 import _poolChromeCat from "../pool/chrome-cat.js";
+import _poolCityOfTraitors from "../pool/city-of-traitors.js";
 import _poolCommercialDistrict from "../pool/commercial-district.js";
 import _poolConsumptiveGoo from "../pool/consumptive-goo.js";
 import _poolCryptRipper from "../pool/crypt-ripper.js";
@@ -159,6 +160,7 @@ import _poolTragicSlip from "../pool/tragic-slip.js";
 import _poolTreeOfTales from "../pool/tree-of-tales.js";
 import _poolTrueConviction from "../pool/true-conviction.js";
 import _poolTrustyMachete from "../pool/trusty-machete.js";
+import _poolTyriteSanctum from "../pool/tyrite-sanctum.js";
 import _poolUltimaWeapon from "../pool/ultima-weapon.js";
 import _poolUnderdarkBasilisk from "../pool/underdark-basilisk.js";
 import _poolUnderworldRageHound from "../pool/underworld-rage-hound.js";
@@ -215,6 +217,7 @@ const shard: CardShard = {
     _poolCentaurSafeguard,
     _poolChantOfTheSkifsang,
     _poolChromeCat,
+    _poolCityOfTraitors,
     _poolCommercialDistrict,
     _poolConsumptiveGoo,
     _poolCryptRipper,
@@ -342,6 +345,7 @@ const shard: CardShard = {
     _poolTreeOfTales,
     _poolTrueConviction,
     _poolTrustyMachete,
+    _poolTyriteSanctum,
     _poolUltimaWeapon,
     _poolUnderdarkBasilisk,
     _poolUnderworldRageHound,

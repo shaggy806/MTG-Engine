@@ -10,6 +10,7 @@ import _poolAlphaMyr from "../pool/alpha-myr.js";
 import _poolAltanakTheThriceCalled from "../pool/altanak-the-thrice-called.js";
 import _poolAncestralReminiscence from "../pool/ancestral-reminiscence.js";
 import _poolAngelOfMercy from "../pool/angel-of-mercy.js";
+import _poolAngelOfTheRuins from "../pool/angel-of-the-ruins.js";
 import _poolAnguishedUnmaking from "../pool/anguished-unmaking.js";
 import _poolArchersParapet from "../pool/archers-parapet.js";
 import _poolArmoredCancrix from "../pool/armored-cancrix.js";
@@ -180,6 +181,7 @@ import _poolZedruuTheGreathearted from "../pool/zedruu-the-greathearted.js";
 import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
 import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
+import _tokensPhyrexianGermToken from "../tokens/phyrexian-germ-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -190,6 +192,7 @@ const shard: CardShard = {
     _poolAltanakTheThriceCalled,
     _poolAncestralReminiscence,
     _poolAngelOfMercy,
+    _poolAngelOfTheRuins,
     _poolAnguishedUnmaking,
     _poolArchersParapet,
     _poolArmoredCancrix,
@@ -361,7 +364,9 @@ const shard: CardShard = {
     _poolZurTheEnchanter,
     _poolZuranEnchanter,
   ],
-  tokens: [],
+  tokens: [
+    _tokensPhyrexianGermToken,
+  ],
 };
 
 export default shard;

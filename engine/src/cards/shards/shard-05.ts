@@ -63,6 +63,7 @@ import _poolFinneasAceArcher from "../pool/finneas-ace-archer.js";
 import _poolFlawlessManeuver from "../pool/flawless-maneuver.js";
 import _poolFrenziedDevils from "../pool/frenzied-devils.js";
 import _poolGaleSwooper from "../pool/gale-swooper.js";
+import _poolGenjiGlove from "../pool/genji-glove.js";
 import _poolGingerbreadHunter from "../pool/gingerbread-hunter.js";
 import _poolGixianInfiltrator from "../pool/gixian-infiltrator.js";
 import _poolGlimmerbell from "../pool/glimmerbell.js";
@@ -78,6 +79,7 @@ import _poolGuardianLions from "../pool/guardian-lions.js";
 import _poolHauntedMire from "../pool/haunted-mire.js";
 import _poolHedronCrawler from "../pool/hedron-crawler.js";
 import _poolHelpfulHunter from "../pool/helpful-hunter.js";
+import _poolHerdHeirloom from "../pool/herd-heirloom.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolFlawlessManeuver,
     _poolFrenziedDevils,
     _poolGaleSwooper,
+    _poolGenjiGlove,
     _poolGingerbreadHunter,
     _poolGixianInfiltrator,
     _poolGlimmerbell,
@@ -267,6 +270,7 @@ const shard: CardShard = {
     _poolHauntedMire,
     _poolHedronCrawler,
     _poolHelpfulHunter,
+    _poolHerdHeirloom,
     _poolHorseshoeCrab,
     _poolHowlingGolem,
     _poolHumblingElder,

@@ -168,6 +168,7 @@ import _poolSungracePegasus from "../pool/sungrace-pegasus.js";
 import _poolSwordOfFireAndIce from "../pool/sword-of-fire-and-ice.js";
 import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
+import _poolTheShire from "../pool/the-shire.js";
 import _poolThornglintBridge from "../pool/thornglint-bridge.js";
 import _poolThunderWall from "../pool/thunder-wall.js";
 import _poolTimberlandGuide from "../pool/timberland-guide.js";
@@ -372,6 +373,7 @@ const shard: CardShard = {
     _poolSwordOfFireAndIce,
     _poolTalismanOfDominance,
     _poolTemporalAdept,
+    _poolTheShire,
     _poolThornglintBridge,
     _poolThunderWall,
     _poolTimberlandGuide,

@@ -299,7 +299,7 @@
     {
       "name": "Laboratory Maniac",
       "needs": [
-        "new:win-the-game"
+        "new:win-game"
       ],
       "why": "'If you would draw a card while your library has no cards in it, you win the game instead' — no win-the-game replacement."
     },
@@ -779,7 +779,7 @@
     "new:flash-permission-this-turn": "A one-shot 'you may cast spells this turn as though they had flash' for the effect's controller.",
     "new:trigger-on-attached-permanent": "An Aura's or Equipment's own triggered ability watching the enchanted/equipped permanent ('whenever enchanted creature deals damage…', 'whenever equipped creature deals combat damage to a player…'), controlled by the attachment's controller.",
     "new:prevent-damage-by-and-to-permanent": "Prevent all (combat) damage dealt to and dealt by a target permanent this turn.",
-    "new:win-the-game": "A 'you win the game' outcome, including as a replacement for drawing from an empty library.",
+    "new:win-game": "A 'you win the game' outcome, including as a replacement for drawing from an empty library.",
     "new:addendum": "Addendum: a spell condition true only if the spell was actually cast during its controller's main phase (a copy wasn't cast).",
     "new:token-copy-for-each-matching": "Create one token copy of each permanent matching a filter ('for each token you control, create a token that's a copy of it').",
     "new:search-library-control": "Hooks on library searches: control an opponent while they search, and redirect what they find to exile for you to play.",
