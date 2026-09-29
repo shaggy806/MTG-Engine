@@ -20,6 +20,7 @@ import _poolAvenReedstalker from "../pool/aven-reedstalker.js";
 import _poolBarktoothWarbeard from "../pool/barktooth-warbeard.js";
 import _poolBasalThrull from "../pool/basal-thrull.js";
 import _poolBattleDisplay from "../pool/battle-display.js";
+import _poolBeledrosWitherbloom from "../pool/beledros-witherbloom.js";
 import _poolBellowingCrier from "../pool/bellowing-crier.js";
 import _poolBishopOfWings from "../pool/bishop-of-wings.js";
 import _poolBladedSentinel from "../pool/bladed-sentinel.js";
@@ -61,6 +62,7 @@ import _poolEmeraldOryx from "../pool/emerald-oryx.js";
 import _poolEnormousBaloth from "../pool/enormous-baloth.js";
 import _poolEternalWitness from "../pool/eternal-witness.js";
 import _poolEyeblightAssassin from "../pool/eyeblight-assassin.js";
+import _poolFakeYourOwnDeath from "../pool/fake-your-own-death.js";
 import _poolFiligreeSages from "../pool/filigree-sages.js";
 import _poolFinneasAceArcher from "../pool/finneas-ace-archer.js";
 import _poolFlawlessManeuver from "../pool/flawless-maneuver.js";
@@ -215,6 +217,7 @@ const shard: CardShard = {
     _poolBarktoothWarbeard,
     _poolBasalThrull,
     _poolBattleDisplay,
+    _poolBeledrosWitherbloom,
     _poolBellowingCrier,
     _poolBishopOfWings,
     _poolBladedSentinel,
@@ -256,6 +259,7 @@ const shard: CardShard = {
     _poolEnormousBaloth,
     _poolEternalWitness,
     _poolEyeblightAssassin,
+    _poolFakeYourOwnDeath,
     _poolFiligreeSages,
     _poolFinneasAceArcher,
     _poolFlawlessManeuver,

@@ -6,9 +6,10 @@
  * they're mana abilities" (Suppression Field's shape).
  *
  * The filter is matched against the ability's *source*, with the static's
- * controller as "you". Generic mana only, never below {0}, and a mana ability
- * is left alone. `legalActions`, activation and the `{X}` ceiling all price
- * the same cost.
+ * controller as "you". Generic mana only, never below {0}; a mana ability is
+ * reached too unless the static spares mana abilities, as Suppression Field
+ * does. `legalActions`, activation and the `{X}` ceiling all price the same
+ * cost.
  */
 
 import { describe, expect, it } from "vitest";
@@ -60,7 +61,7 @@ const registry = createDefaultRegistry()
       static: [
         {
           affects: { scope: "self" },
-          abilityCostModification: { applies: {}, increaseGeneric: 2 },
+          abilityCostModification: { applies: {}, increaseGeneric: 2, exceptManaAbilities: true },
           text: "Activated abilities cost {2} more to activate unless they're mana abilities.",
         },
       ],
@@ -165,5 +166,14 @@ describe("an increase for every non-mana ability", () => {
       .legalActions(A)
       .find((o) => o.kind === "activate-ability" && o.source === cannon);
     expect(offer?.kind === "activate-ability" ? offer.xCost?.maxX : undefined).toBe(1);
+  });
+
+  it("spares a mana ability: a lone Island still taps for {U}", () => {
+    const game = setUp();
+    const [island] = lands(game, A, 1);
+    game.debugSpawn(FIELD, A, "battlefield");
+    expect(canActivate(game, A, island)).toBe(true);
+    game.dispatch({ type: "activate-ability", player: A, source: island, abilityIndex: 0, targets: [] });
+    expect(game.state.players[A].manaPool.map((u) => u.type)).toEqual(["U"]);
   });
 });

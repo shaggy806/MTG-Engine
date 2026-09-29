@@ -178,6 +178,7 @@ import _poolUtvaraScalper from "../pool/utvara-scalper.js";
 import _poolVirtuousCharge from "../pool/virtuous-charge.js";
 import _poolVulshokBattlegear from "../pool/vulshok-battlegear.js";
 import _poolWallOfOpposition from "../pool/wall-of-opposition.js";
+import _poolWaterloggedTeachings from "../pool/waterlogged-teachings.js";
 import _poolWhisperingShade from "../pool/whispering-shade.js";
 import _poolWildGriffin from "../pool/wild-griffin.js";
 import _poolWilyBandar from "../pool/wily-bandar.js";
@@ -367,6 +368,7 @@ const shard: CardShard = {
     _poolVirtuousCharge,
     _poolVulshokBattlegear,
     _poolWallOfOpposition,
+    _poolWaterloggedTeachings,
     _poolWhisperingShade,
     _poolWildGriffin,
     _poolWilyBandar,

@@ -168,6 +168,7 @@ import _poolThunderingRebuke from "../pool/thundering-rebuke.js";
 import _poolTideSkimmer from "../pool/tide-skimmer.js";
 import _poolTurntimberAscetic from "../pool/turntimber-ascetic.js";
 import _poolUktabiFaerie from "../pool/uktabi-faerie.js";
+import _poolUnderworldDreams from "../pool/underworld-dreams.js";
 import _poolUnholyOfficiant from "../pool/unholy-officiant.js";
 import _poolUnknownShores from "../pool/unknown-shores.js";
 import _poolUnsummon from "../pool/unsummon.js";
@@ -370,6 +371,7 @@ const shard: CardShard = {
     _poolTideSkimmer,
     _poolTurntimberAscetic,
     _poolUktabiFaerie,
+    _poolUnderworldDreams,
     _poolUnholyOfficiant,
     _poolUnknownShores,
     _poolUnsummon,

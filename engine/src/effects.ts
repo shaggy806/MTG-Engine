@@ -2111,6 +2111,12 @@ export type EffectSpec =
        * Soldier creature tokens that are tapped and attacking" (Hero of
        * Bladehold) is this with `tapped`. See {@link EnterAttacking}. */
       readonly attacking?: EnterAttacking;
+      /** Each token made its own object, never folded into a token stack —
+       * for an effect that goes on to tell the tokens it made from older
+       * ones: Martial Coup's "create X 1/1 white Soldier creature tokens …
+       * destroy all **other** creatures" (`notThisWay: "created"`), where a
+       * stack of Soldiers the new ones joined would be spared with them. */
+      readonly separate?: boolean;
     }
   | {
       /**
@@ -2722,8 +2728,11 @@ export type EffectSpec =
       readonly count?: EffectAmount;
       /** The looked-at library cards are **revealed** to every player (rule
        * 701.16), not just seen by the chooser: Gishath's "reveal that many
-       * cards". */
-      readonly reveal?: boolean;
+       * cards". `"chosen"` reveals only the cards taken, as they're taken —
+       * "look at the top five cards … You may **reveal** a historic card from
+       * among them and put it into your hand" (Monumental Henge, Adaptive
+       * Omnitool): the rest are seen by the chooser alone. */
+      readonly reveal?: boolean | "chosen";
       readonly min: number;
       /** At most this many; a live amount is read as the effect applies. */
       readonly max: EffectAmount;
@@ -2769,6 +2778,10 @@ export type EffectSpec =
         readonly max: EffectAmount;
         readonly destination: "battlefield" | "hand" | "graveyard";
         readonly enterTapped?: boolean;
+        /** Only when the first choice took nothing — Planar Genesis's "You
+         * may put a land card from among them onto the battlefield tapped.
+         * **If you don't**, put a card from among them into your hand." */
+        readonly ifNoneChosen?: boolean;
       };
       /** Narrows which revealed candidates can be chosen (e.g. Ureni of the
        * Unwritten: only a Dragon card). Everything is still revealed either
@@ -2840,6 +2853,7 @@ export interface ZoneSecondPick {
   readonly max: number;
   readonly destination: "battlefield" | "hand" | "graveyard";
   readonly enterTapped?: boolean;
+  readonly ifNoneChosen?: boolean;
 }
 
 /** One selectable mode of a `modal` effect (rule 700.2) or a `castModal` card
@@ -3457,6 +3471,8 @@ export interface EffectApi {
     basePt?: readonly [number, number],
     /** The new tokens enter attacking (rule 508.4). */
     attacking?: ResolvedEnterAttacking,
+    /** Each new token its own object, never folded into a token stack. */
+    separate?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -3575,7 +3591,7 @@ export interface EffectApi {
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
     then?: EffectSpec,
-    reveal?: boolean,
+    reveal?: boolean | "chosen",
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
@@ -5075,6 +5091,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
                 ? undefined
                 : [amountValue(spec.basePt.power, ctx, player), amountValue(spec.basePt.toughness, ctx, player)],
               resolveEnterAttacking(spec.attacking, ctx.aboutPlayer(player)),
+              spec.separate === true,
             );
         }
         return;
@@ -5094,6 +5111,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           ? undefined
           : [amountValue(spec.basePt.power, ctx), amountValue(spec.basePt.toughness, ctx)],
         resolveEnterAttacking(spec.attacking, ctx),
+        spec.separate === true,
       );
       return;
     case "for-each-player": {
@@ -5378,7 +5396,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.filter,
         spec.enterTapped === true,
         spec.then,
-        spec.reveal === true,
+        spec.reveal ?? false,
         spec.leftoverIf,
         spec.secondPick === undefined
           ? undefined
@@ -5388,6 +5406,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               max: amountValue(spec.secondPick.max, ctx),
               destination: spec.secondPick.destination,
               ...(spec.secondPick.enterTapped === true ? { enterTapped: true } : {}),
+              ...(spec.secondPick.ifNoneChosen === true ? { ifNoneChosen: true } : {}),
             },
         resolveEnterAttacking(spec.attacking, ctx),
       );

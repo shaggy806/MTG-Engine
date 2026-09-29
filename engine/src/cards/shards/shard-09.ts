@@ -45,6 +45,7 @@ import _poolCrystalVein from "../pool/crystal-vein.js";
 import _poolDauntlessCathar from "../pool/dauntless-cathar.js";
 import _poolDeadlyRecluse from "../pool/deadly-recluse.js";
 import _poolDefiantKhenra from "../pool/defiant-khenra.js";
+import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
 import _poolEmmaraSoulOfTheAccord from "../pool/emmara-soul-of-the-accord.js";
@@ -62,6 +63,7 @@ import _poolFertileFootsteps from "../pool/fertile-footsteps.js";
 import _poolFireSnake from "../pool/fire-snake.js";
 import _poolFishliverOil from "../pool/fishliver-oil.js";
 import _poolFlatten from "../pool/flatten.js";
+import _poolFling from "../pool/fling.js";
 import _poolFrontPorchSentries from "../pool/front-porch-sentries.js";
 import _poolFuriousAssault from "../pool/furious-assault.js";
 import _poolGammaGrotesque from "../pool/gamma-grotesque.js";
@@ -72,6 +74,7 @@ import _poolGloomhunter from "../pool/gloomhunter.js";
 import _poolGloomlakeVerge from "../pool/gloomlake-verge.js";
 import _poolGoblinWarDrums from "../pool/goblin-war-drums.js";
 import _poolGoldmawChampion from "../pool/goldmaw-champion.js";
+import _poolGoldveinHydra from "../pool/goldvein-hydra.js";
 import _poolGoreclawTerrorOfQalSisma from "../pool/goreclaw-terror-of-qal-sisma.js";
 import _poolHauntedRidge from "../pool/haunted-ridge.js";
 import _poolHeavyInfantry from "../pool/heavy-infantry.js";
@@ -107,6 +110,7 @@ import _poolNightsWhisper from "../pool/nights-whisper.js";
 import _poolNobleSteeds from "../pool/noble-steeds.js";
 import _poolNullmageShepherd from "../pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "../pool/ob-nixilis-the-fallen.js";
+import _poolOdricLunarchMarshal from "../pool/odric-lunarch-marshal.js";
 import _poolOgreArsonist from "../pool/ogre-arsonist.js";
 import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
 import _poolParapetWatchers from "../pool/parapet-watchers.js";
@@ -156,6 +160,7 @@ import _poolSurvivorsEncampment from "../pool/survivors-encampment.js";
 import _poolSylvanScrying from "../pool/sylvan-scrying.js";
 import _poolSythisHarvestsHand from "../pool/sythis-harvests-hand.js";
 import _poolTaxiDriver from "../pool/taxi-driver.js";
+import _poolTemurBattleRage from "../pool/temur-battle-rage.js";
 import _poolTergridGodOfFright from "../pool/tergrid-god-of-fright.js";
 import _poolThaumatog from "../pool/thaumatog.js";
 import _poolThermalNavigator from "../pool/thermal-navigator.js";
@@ -237,6 +242,7 @@ const shard: CardShard = {
     _poolDauntlessCathar,
     _poolDeadlyRecluse,
     _poolDefiantKhenra,
+    _poolDiamondPickAxe,
     _poolDoomWhisperer,
     _poolDragonRoost,
     _poolEmmaraSoulOfTheAccord,
@@ -254,6 +260,7 @@ const shard: CardShard = {
     _poolFireSnake,
     _poolFishliverOil,
     _poolFlatten,
+    _poolFling,
     _poolFrontPorchSentries,
     _poolFuriousAssault,
     _poolGammaGrotesque,
@@ -264,6 +271,7 @@ const shard: CardShard = {
     _poolGloomlakeVerge,
     _poolGoblinWarDrums,
     _poolGoldmawChampion,
+    _poolGoldveinHydra,
     _poolGoreclawTerrorOfQalSisma,
     _poolHauntedRidge,
     _poolHeavyInfantry,
@@ -299,6 +307,7 @@ const shard: CardShard = {
     _poolNobleSteeds,
     _poolNullmageShepherd,
     _poolObNixilisTheFallen,
+    _poolOdricLunarchMarshal,
     _poolOgreArsonist,
     _poolOtherworldlyGaze,
     _poolParapetWatchers,
@@ -348,6 +357,7 @@ const shard: CardShard = {
     _poolSylvanScrying,
     _poolSythisHarvestsHand,
     _poolTaxiDriver,
+    _poolTemurBattleRage,
     _poolTergridGodOfFright,
     _poolThaumatog,
     _poolThermalNavigator,

@@ -61,6 +61,7 @@ import _poolEowynShieldmaiden from "../pool/eowyn-shieldmaiden.js";
 import _poolEviscerate from "../pool/eviscerate.js";
 import _poolExperimentalArmor from "../pool/experimental-armor.js";
 import _poolFalkenrathReaver from "../pool/falkenrath-reaver.js";
+import _poolFeignDeath from "../pool/feign-death.js";
 import _poolFell from "../pool/fell.js";
 import _poolFerventDenial from "../pool/fervent-denial.js";
 import _poolFesteringThicket from "../pool/festering-thicket.js";
@@ -140,6 +141,7 @@ import _poolSedgeScorpion from "../pool/sedge-scorpion.js";
 import _poolShelteredByGhosts from "../pool/sheltered-by-ghosts.js";
 import _poolShelteringBoughs from "../pool/sheltering-boughs.js";
 import _poolShockingGrasp from "../pool/shocking-grasp.js";
+import _poolSigilOfTheEmptyThrone from "../pool/sigil-of-the-empty-throne.js";
 import _poolSilence from "../pool/silence.js";
 import _poolSinisterHideout from "../pool/sinister-hideout.js";
 import _poolSinisterMonolith from "../pool/sinister-monolith.js";
@@ -243,6 +245,7 @@ const shard: CardShard = {
     _poolEviscerate,
     _poolExperimentalArmor,
     _poolFalkenrathReaver,
+    _poolFeignDeath,
     _poolFell,
     _poolFerventDenial,
     _poolFesteringThicket,
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolShelteredByGhosts,
     _poolShelteringBoughs,
     _poolShockingGrasp,
+    _poolSigilOfTheEmptyThrone,
     _poolSilence,
     _poolSinisterHideout,
     _poolSinisterMonolith,

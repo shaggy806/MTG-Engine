@@ -66,6 +66,7 @@ import _poolHengeOfRamos from "../pool/henge-of-ramos.js";
 import _poolHourOfDefeat from "../pool/hour-of-defeat.js";
 import _poolHowlingFury from "../pool/howling-fury.js";
 import _poolIchorWellspring from "../pool/ichor-wellspring.js";
+import _poolImperiousPerfect from "../pool/imperious-perfect.js";
 import _poolInfiniteGuidelineStation from "../pool/infinite-guideline-station.js";
 import _poolInsomniaCrownCity from "../pool/insomnia-crown-city.js";
 import _poolIrrigationDitch from "../pool/irrigation-ditch.js";
@@ -247,6 +248,7 @@ const shard: CardShard = {
     _poolHourOfDefeat,
     _poolHowlingFury,
     _poolIchorWellspring,
+    _poolImperiousPerfect,
     _poolInfiniteGuidelineStation,
     _poolInsomniaCrownCity,
     _poolIrrigationDitch,

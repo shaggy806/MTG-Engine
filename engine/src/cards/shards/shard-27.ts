@@ -22,6 +22,7 @@ import _poolBloodResearcher from "../pool/blood-researcher.js";
 import _poolBloodchiefAscension from "../pool/bloodchief-ascension.js";
 import _poolBogstomper from "../pool/bogstomper.js";
 import _poolBondersEnclave from "../pool/bonders-enclave.js";
+import _poolBonehoardDracosaur from "../pool/bonehoard-dracosaur.js";
 import _poolBorderlandRanger from "../pool/borderland-ranger.js";
 import _poolBorosGarrison from "../pool/boros-garrison.js";
 import _poolBrilliantPlan from "../pool/brilliant-plan.js";
@@ -208,6 +209,7 @@ const shard: CardShard = {
     _poolBloodchiefAscension,
     _poolBogstomper,
     _poolBondersEnclave,
+    _poolBonehoardDracosaur,
     _poolBorderlandRanger,
     _poolBorosGarrison,
     _poolBrilliantPlan,

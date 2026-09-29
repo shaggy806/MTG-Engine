@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1665 already implemented / 3335 missing (marks refreshed 2026-09-29)
+1722 already implemented / 3278 missing (marks refreshed 2026-09-29)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1034,7 +1034,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1038  Nettlecyst                               {3}              Artifact — Equipment
 [ ]  1039  Wear // Tear                             {1}{R} // {W}    Instant // Instant
 [x]  1040  Oketra's Monument                        {3}              Legendary Artifact
-[ ]  1041  Training Grounds                         {U}              Enchantment
+[x]  1041  Training Grounds                         {U}              Enchantment
 [ ]  1042  Arcane Lighthouse                        {0}              Land
 [x]  1043  Spellseeker                              {2}{U}           Creature — Human Wizard
 [x]  1044  Apex Devastator                          {8}{G}{G}        Creature — Chimera Hydra
@@ -1347,26 +1347,26 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1354  Pristine Talisman                        {3}              Artifact
 [x]  1355  Grand Crescendo                          {X}{W}{W}        Instant
 [x]  1356  Exalted Sunborn                          {3}{W}{W}        Creature — Angel Wizard
-[ ]  1357  Colossal Majesty                         {2}{G}           Enchantment
-[ ]  1358  Binding the Old Gods                     {2}{B}{G}        Enchantment — Saga
+[x]  1357  Colossal Majesty                         {2}{G}           Enchantment
+[x]  1358  Binding the Old Gods                     {2}{B}{G}        Enchantment — Saga
 [ ]  1359  Crime Novelist                           {2}{R}           Creature — Goblin Bard
 [x]  1360  Gold Myr                                 {2}              Artifact Creature — Myr
-[ ]  1361  Formidable Speaker                       {2}{G}           Creature — Elf Druid
+[x]  1361  Formidable Speaker                       {2}{G}           Creature — Elf Druid
 [ ]  1362  Kinnan, Bonder Prodigy                   {G}{U}           Legendary Creature — Human Druid
 [ ]  1363  Leyline Axe                              {4}              Artifact — Equipment
 [x]  1364  Atarka, World Render                     {5}{R}{G}        Legendary Creature — Dragon
-[ ]  1365  Embercleave                              {4}{R}{R}        Legendary Artifact — Equipment
+[x]  1365  Embercleave                              {4}{R}{R}        Legendary Artifact — Equipment
 [x]  1366  Third Path Iconoclast                    {U}{R}           Creature — Human Monk
-[ ]  1367  Genesis Wave                             {X}{G}{G}{G}     Sorcery
+[x]  1367  Genesis Wave                             {X}{G}{G}{G}     Sorcery
 [ ]  1368  Cavern-Hoard Dragon                      {7}{R}{R}        Creature — Dragon
-[ ]  1369  Grisly Salvage                           {B}{G}           Instant
-[ ]  1370  Atsushi, the Blazing Sky                 {2}{R}{R}        Legendary Creature — Dragon Spirit
-[ ]  1371  Butcher of Malakir                       {5}{B}{B}        Creature — Vampire Warrior
-[ ]  1372  Coiling Oracle                           {G}{U}           Creature — Snake Elf Druid
+[x]  1369  Grisly Salvage                           {B}{G}           Instant
+[x]  1370  Atsushi, the Blazing Sky                 {2}{R}{R}        Legendary Creature — Dragon Spirit
+[x]  1371  Butcher of Malakir                       {5}{B}{B}        Creature — Vampire Warrior
+[x]  1372  Coiling Oracle                           {G}{U}           Creature — Snake Elf Druid
 [ ]  1373  Scroll Rack                              {2}              Artifact
 [ ]  1374  Agatha's Soul Cauldron                   {2}              Legendary Artifact
 [ ]  1375  Glissa Sunslayer                         {1}{B}{G}        Legendary Creature — Phyrexian Zombie Elf
-[ ]  1376  Enthusiastic Mechanaut                   {U}{R}           Artifact Creature — Goblin Artificer
+[x]  1376  Enthusiastic Mechanaut                   {U}{R}           Artifact Creature — Goblin Artificer
 [x]  1377  Sephara, Sky's Blade                     {4}{W}{W}{W}     Legendary Creature — Angel
 [x]  1378  Tangled Islet                            {0}              Land — Forest Island
 [ ]  1379  Elven Chorus                             {3}{G}           Enchantment
@@ -1376,19 +1376,19 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1383  Ulamog, the Infinite Gyre                {11}             Legendary Creature — Eldrazi
 [x]  1384  Vampiric Rites                           {B}              Enchantment
 [ ]  1385  Giver of Runes                           {W}              Creature — Kor Cleric
-[ ]  1386  Bonehoard Dracosaur                      {3}{R}{R}        Creature — Dinosaur Dragon
-[ ]  1387  Sigil of the Empty Throne                {3}{W}{W}        Enchantment
-[ ]  1388  Shiny Impetus                            {2}{R}           Enchantment — Aura
+[x]  1386  Bonehoard Dracosaur                      {3}{R}{R}        Creature — Dinosaur Dragon
+[x]  1387  Sigil of the Empty Throne                {3}{W}{W}        Enchantment
+[x]  1388  Shiny Impetus                            {2}{R}           Enchantment — Aura
 [ ]  1389  Electrodominance                         {X}{R}{R}        Instant
-[ ]  1390  Restoration Angel                        {3}{W}           Creature — Angel
+[x]  1390  Restoration Angel                        {3}{W}           Creature — Angel
 [ ]  1391  Priest of Forgotten Gods                 {1}{B}           Creature — Human Cleric
-[ ]  1392  Waterlogged Teachings // Inundated Archive {4}              Instant // Land
+[x]  1392  Waterlogged Teachings // Inundated Archive {4}              Instant // Land
 [x]  1393  Skull Prophet                            {B}{G}           Creature — Human Druid
-[ ]  1394  Forensic Gadgeteer                       {2}{U}           Creature — Vedalken Artificer Detective
+[x]  1394  Forensic Gadgeteer                       {2}{U}           Creature — Vedalken Artificer Detective
 [ ]  1395  All Will Be One                          {3}{R}{R}        Enchantment
-[ ]  1396  Martial Coup                             {X}{W}{W}        Sorcery
+[x]  1396  Martial Coup                             {X}{W}{W}        Sorcery
 [x]  1397  Razorverge Thicket                       {0}              Land
-[ ]  1398  Rankle, Master of Pranks                 {2}{B}{B}        Legendary Creature — Faerie Rogue
+[x]  1398  Rankle, Master of Pranks                 {2}{B}{B}        Legendary Creature — Faerie Rogue
 [ ]  1399  Shatterskull Smashing // Shatterskull, the Hammer Pass {2}              Sorcery // Land
 [x]  1400  Grave Titan                              {4}{B}{B}        Creature — Giant
 [x]  1401  Weftstalker Ardent                       {2}{R}           Creature — Drix Artificer
@@ -1397,30 +1397,30 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1404  Adrix and Nev, Twincasters               {2}{G}{U}        Legendary Creature — Merfolk Wizard
 [ ]  1405  Call of the Ring                         {1}{B}           Enchantment
 [ ]  1406  Decree of Pain                           {6}{B}{B}        Sorcery
-[ ]  1407  Delayed Blast Fireball                   {1}{R}{R}        Instant
+[x]  1407  Delayed Blast Fireball                   {1}{R}{R}        Instant
 [ ]  1408  Baleful Mastery                          {3}{B}           Instant
 [ ]  1409  Mantle of the Ancients                   {3}{W}{W}        Enchantment — Aura
 [ ]  1410  Lindblum, Industrial Regency // Mage Siege {2}{R}           Land — Town // Instant — Adventure
 [x]  1411  Darkslick Shores                         {0}              Land
-[ ]  1412  Ominous Seas                             {1}{U}           Enchantment
+[x]  1412  Ominous Seas                             {1}{U}           Enchantment
 [x]  1413  Hedron Crab                              {U}              Creature — Crab
-[ ]  1414  Gaea's Gift                              {1}{G}           Instant
-[ ]  1415  Terastodon                               {6}{G}{G}        Creature — Elephant
-[ ]  1416  Duskshell Crawler                        {1}{G}           Creature — Insect
-[ ]  1417  Abzan Falconer                           {2}{W}           Creature — Human Soldier
+[x]  1414  Gaea's Gift                              {1}{G}           Instant
+[x]  1415  Terastodon                               {6}{G}{G}        Creature — Elephant
+[x]  1416  Duskshell Crawler                        {1}{G}           Creature — Insect
+[x]  1417  Abzan Falconer                           {2}{W}           Creature — Human Soldier
 [ ]  1418  Reverberate                              {R}{R}           Instant
 [x]  1419  Vibrant Cityscape                        {0}              Land
-[ ]  1420  Lifecrafter's Bestiary                   {3}              Artifact
+[x]  1420  Lifecrafter's Bestiary                   {3}              Artifact
 [x]  1421  Altar of the Brood                       {1}              Artifact
 [ ]  1422  Ghostly Pilferer                         {1}{U}           Creature — Spirit Rogue
-[ ]  1423  Contagion Clasp                          {2}              Artifact
+[x]  1423  Contagion Clasp                          {2}              Artifact
 [ ]  1424  Rings of Brighthearth                    {3}              Artifact
 [x]  1425  Cathar Commando                          {1}{W}           Creature — Human Soldier
 [x]  1426  Boltwave                                 {R}              Sorcery
-[ ]  1427  Imperious Perfect                        {2}{G}           Creature — Elf Warrior
+[x]  1427  Imperious Perfect                        {2}{G}           Creature — Elf Warrior
 [x]  1428  Time Wipe                                {2}{W}{W}{U}     Sorcery
-[ ]  1429  Legolas's Quick Reflexes                 {G}              Instant
-[ ]  1430  Darksteel Forge                          {9}              Artifact
+[x]  1429  Legolas's Quick Reflexes                 {G}              Instant
+[x]  1430  Darksteel Forge                          {9}              Artifact
 [ ]  1431  Silent Hallcreeper                       {1}{U}           Enchantment Creature — Horror
 [ ]  1432  Muraganda Raceway                        {0}              Land
 [x]  1433  Rugged Highlands                         {0}              Land
@@ -1428,73 +1428,73 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1435  Caduceus, Staff of Hermes                {2}{W}           Legendary Artifact — Equipment
 [ ]  1436  Flare of Denial                          {1}{U}{U}        Instant
 [x]  1437  Corpse Knight                            {W}{B}           Creature — Zombie Knight
-[ ]  1438  Weathered Wayfarer                       {W}              Creature — Human Nomad Cleric
-[ ]  1439  Goldvein Hydra                           {X}{G}           Creature — Hydra
+[x]  1438  Weathered Wayfarer                       {W}              Creature — Human Nomad Cleric
+[x]  1439  Goldvein Hydra                           {X}{G}           Creature — Hydra
 [ ]  1440  Koma, Cosmos Serpent                     {3}{G}{G}{U}{U}  Legendary Creature — Serpent
 [x]  1441  Snapcaster Mage                          {1}{U}           Creature — Human Wizard
 [ ]  1442  Ancient Silver Dragon                    {6}{U}{U}        Creature — Elder Dragon
 [ ]  1443  Elixir of Immortality                    {1}              Artifact
 [ ]  1444  Ishgard, the Holy See // Faith & Grief   {3}{W}{W}        Land — Town // Sorcery — Adventure
 [ ]  1445  Comet Storm                              {X}{R}{R}        Instant
-[ ]  1446  Underworld Dreams                        {B}{B}{B}        Enchantment
+[x]  1446  Underworld Dreams                        {B}{B}{B}        Enchantment
 [ ]  1447  Drown in the Loch                        {U}{B}           Instant
 [x]  1448  Deep Analysis                            {3}{U}           Sorcery
-[ ]  1449  Dreadhorde Invasion                      {1}{B}           Enchantment
+[x]  1449  Dreadhorde Invasion                      {1}{B}           Enchantment
 [ ]  1450  Cleric Class                             {W}              Enchantment — Class
 [x]  1451  Insidious Roots                          {B}{G}           Enchantment
-[ ]  1452  Temur Battle Rage                        {1}{R}           Instant
-[ ]  1453  Bulk Up                                  {1}{R}           Instant
+[x]  1452  Temur Battle Rage                        {1}{R}           Instant
+[x]  1453  Bulk Up                                  {1}{R}           Instant
 [x]  1454  Inspiring Vantage                        {0}              Land
-[ ]  1455  Beledros Witherbloom                     {5}{B}{G}        Legendary Creature — Elder Dragon
-[ ]  1456  Fling                                    {1}{R}           Instant
+[x]  1455  Beledros Witherbloom                     {5}{B}{G}        Legendary Creature — Elder Dragon
+[x]  1456  Fling                                    {1}{R}           Instant
 [x]  1457  Miirym, Sentinel Wyrm                    {3}{G}{U}{R}     Legendary Creature — Dragon Spirit
 [ ]  1458  Iroas, God of Victory                    {2}{R}{W}        Legendary Enchantment Creature — God
 [ ]  1459  Lizard Blades                            {1}{R}           Artifact Creature — Equipment Lizard
-[ ]  1460  No Mercy                                 {2}{B}{B}        Enchantment
-[ ]  1461  Dark Deal                                {2}{B}           Sorcery
-[ ]  1462  Eldrazi Monument                         {5}              Artifact
-[ ]  1463  Vedalken Orrery                          {4}              Artifact
+[x]  1460  No Mercy                                 {2}{B}{B}        Enchantment
+[x]  1461  Dark Deal                                {2}{B}           Sorcery
+[x]  1462  Eldrazi Monument                         {5}              Artifact
+[x]  1463  Vedalken Orrery                          {4}              Artifact
 [ ]  1464  Concordant Crossroads                    {G}              World Enchantment
 [ ]  1465  Dark Depths                              {0}              Legendary Snow Land
 [ ]  1466  Mystic Confluence                        {3}{U}{U}        Instant
 [ ]  1467  Treasure Nabber                          {2}{R}           Creature — Goblin Rogue
 [x]  1468  Isshin, Two Heavens as One               {R}{W}{B}        Legendary Creature — Human Samurai
-[ ]  1469  Feign Death                              {B}              Instant
+[x]  1469  Feign Death                              {B}              Instant
 [ ]  1470  Long River's Pull                        {U}{U}           Instant
 [x]  1471  Secluded Steppe                          {0}              Land
-[ ]  1472  Fake Your Own Death                      {1}{B}           Instant
+[x]  1472  Fake Your Own Death                      {1}{B}           Instant
 [ ]  1473  Triskaidekaphile                         {1}{U}           Creature — Human Wizard
-[ ]  1474  In Garruk's Wake                         {7}{B}{B}        Sorcery
+[x]  1474  In Garruk's Wake                         {7}{B}{B}        Sorcery
 [x]  1475  Thalia, Heretic Cathar                   {2}{W}           Legendary Creature — Human Soldier
-[ ]  1476  Cover of Darkness                        {1}{B}           Enchantment
+[x]  1476  Cover of Darkness                        {1}{B}           Enchantment
 [ ]  1477  Lae'zel, Vlaakith's Champion             {2}{W}           Legendary Creature — Gith Warrior
-[ ]  1478  Fell the Mighty                          {4}{W}           Sorcery
+[x]  1478  Fell the Mighty                          {4}{W}           Sorcery
 [x]  1479  Kessig Flamebreather                     {1}{R}           Creature — Human Shaman
 [x]  1480  Prosperous Innkeeper                     {1}{G}           Creature — Halfling Citizen
-[ ]  1481  Monumental Henge                         {0}              Land
+[x]  1481  Monumental Henge                         {0}              Land
 [ ]  1482  Fauna Shaman                             {1}{G}           Creature — Elf Shaman
-[ ]  1483  Diamond Pick-Axe                         {R}              Artifact — Equipment
+[x]  1483  Diamond Pick-Axe                         {R}              Artifact — Equipment
 [ ]  1484  Deadeye Navigator                        {4}{U}{U}        Creature — Spirit
 [x]  1485  Sunbaked Canyon                          {0}              Land
 [x]  1486  Witty Roastmaster                        {2}{R}           Creature — Devil Citizen
-[ ]  1487  Twitching Doll                           {1}{G}           Artifact Creature — Spider Toy
-[ ]  1488  Apex Altisaur                            {7}{G}{G}        Creature — Dinosaur
+[x]  1487  Twitching Doll                           {1}{G}           Artifact Creature — Spider Toy
+[x]  1488  Apex Altisaur                            {7}{G}{G}        Creature — Dinosaur
 [ ]  1489  Rain of Riches                           {3}{R}{R}        Enchantment
 [ ]  1490  Echoes of Eternity                       {3}{C}{C}{C}     Kindred Enchantment — Eldrazi
-[ ]  1491  Planar Genesis                           {G}{U}           Instant
+[x]  1491  Planar Genesis                           {G}{U}           Instant
 [x]  1492  Crystal Vein                             {0}              Land
-[ ]  1493  Odric, Lunarch Marshal                   {3}{W}           Legendary Creature — Human Soldier
+[x]  1493  Odric, Lunarch Marshal                   {3}{W}           Legendary Creature — Human Soldier
 [ ]  1494  Obscuring Haze                           {2}{G}           Instant
 [ ]  1495  Phantasmal Image                         {1}{U}           Creature — Illusion
 [ ]  1496  Westvale Abbey // Ormendahl, Profane Prince {0}              Land // Legendary Creature — Demon
 [x]  1497  World Shaper                             {3}{G}           Creature — Merfolk Shaman
 [x]  1498  Farhaven Elf                             {2}{G}           Creature — Elf Druid
-[ ]  1499  Wave Goodbye                             {2}{U}{U}        Sorcery
-[ ]  1500  Arid Archway                             {0}              Land — Desert
-[ ]  1501  Acidic Slime                             {3}{G}{G}        Creature — Ooze
+[x]  1499  Wave Goodbye                             {2}{U}{U}        Sorcery
+[x]  1500  Arid Archway                             {0}              Land — Desert
+[x]  1501  Acidic Slime                             {3}{G}{G}        Creature — Ooze
 [x]  1502  Sneak Attack                             {3}{R}           Enchantment
 [ ]  1503  Heliod's Intervention                    {X}{W}{W}        Instant
-[ ]  1504  Guide of Souls                           {W}              Creature — Human Cleric
+[x]  1504  Guide of Souls                           {W}              Creature — Human Cleric
 [ ]  1505  Snake Umbra                              {2}{G}           Enchantment — Aura
 [x]  1506  Meren of Clan Nel Toth                   {2}{B}{G}        Legendary Creature — Human Shaman
 [ ]  1507  Patriarch's Bidding                      {3}{B}{B}        Sorcery

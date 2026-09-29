@@ -417,6 +417,20 @@ export const livingWeapon = (): TriggeredAbility => ({
 });
 
 /**
+ * Outlast (rule 702.107a): "[cost], {T}: Put a +1/+1 counter on this
+ * permanent. Activate only as a sorcery." Put the printed "Outlast {cost}"
+ * line in `text`.
+ */
+export const outlast = (cost: string): ActivatedAbility => ({
+  cost: { mana: cost, tap: true },
+  sorcerySpeed: true,
+  targets: [],
+  effect: { kind: "add-counter", target: "source", counter: "+1/+1", amount: 1 },
+  resolve: null,
+  text: `Outlast ${cost}`,
+});
+
+/**
  * Unearth (rule 702.84a): "[cost]: Return this card from your graveyard to
  * the battlefield. It gains haste. Exile it at the beginning of the next end
  * step. If it would leave the battlefield, exile it instead of putting it

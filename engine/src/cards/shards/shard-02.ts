@@ -7,6 +7,7 @@ import _poolAdrixAndNev from "../pool/adrix-and-nev.js";
 import _poolAdvancedHoverguard from "../pool/advanced-hoverguard.js";
 import _poolAlexisCloak from "../pool/alexis-cloak.js";
 import _poolAngelicWall from "../pool/angelic-wall.js";
+import _poolApexAltisaur from "../pool/apex-altisaur.js";
 import _poolArcaneDenial from "../pool/arcane-denial.js";
 import _poolArmoredWolfRider from "../pool/armored-wolf-rider.js";
 import _poolArmorerGuildmage from "../pool/armorer-guildmage.js";
@@ -22,6 +23,7 @@ import _poolBogWraith from "../pool/bog-wraith.js";
 import _poolBoonOfTheWishGiver from "../pool/boon-of-the-wish-giver.js";
 import _poolBranchingEvolution from "../pool/branching-evolution.js";
 import _poolBruceBanner from "../pool/bruce-banner.js";
+import _poolBulkUp from "../pool/bulk-up.js";
 import _poolCabalCoffers from "../pool/cabal-coffers.js";
 import _poolCaptivatingCave from "../pool/captivating-cave.js";
 import _poolCatBurglar from "../pool/cat-burglar.js";
@@ -133,6 +135,7 @@ import _poolRavenousBaloth from "../pool/ravenous-baloth.js";
 import _poolRavenousChupacabra from "../pool/ravenous-chupacabra.js";
 import _poolRavenousHarpy from "../pool/ravenous-harpy.js";
 import _poolRefute from "../pool/refute.js";
+import _poolRestorationAngel from "../pool/restoration-angel.js";
 import _poolRipplesOfUndeath from "../pool/ripples-of-undeath.js";
 import _poolRiptideTurtle from "../pool/riptide-turtle.js";
 import _poolRivendell from "../pool/rivendell.js";
@@ -202,6 +205,7 @@ const shard: CardShard = {
     _poolAdvancedHoverguard,
     _poolAlexisCloak,
     _poolAngelicWall,
+    _poolApexAltisaur,
     _poolArcaneDenial,
     _poolArmoredWolfRider,
     _poolArmorerGuildmage,
@@ -217,6 +221,7 @@ const shard: CardShard = {
     _poolBoonOfTheWishGiver,
     _poolBranchingEvolution,
     _poolBruceBanner,
+    _poolBulkUp,
     _poolCabalCoffers,
     _poolCaptivatingCave,
     _poolCatBurglar,
@@ -328,6 +333,7 @@ const shard: CardShard = {
     _poolRavenousChupacabra,
     _poolRavenousHarpy,
     _poolRefute,
+    _poolRestorationAngel,
     _poolRipplesOfUndeath,
     _poolRiptideTurtle,
     _poolRivendell,

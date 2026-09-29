@@ -30,6 +30,7 @@ import _poolCarrionHowler from "../pool/carrion-howler.js";
 import _poolCatharticAdept from "../pool/cathartic-adept.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
+import _poolColossalMajesty from "../pool/colossal-majesty.js";
 import _poolCommodoreGuff from "../pool/commodore-guff.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
@@ -145,6 +146,7 @@ import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
 import _poolSyrKonradTheGrim from "../pool/syr-konrad-the-grim.js";
 import _poolTalismanOfCuriosity from "../pool/talisman-of-curiosity.js";
+import _poolTerastodon from "../pool/terastodon.js";
 import _poolTerraHeraldOfHope from "../pool/terra-herald-of-hope.js";
 import _poolThallidSoothsayer from "../pool/thallid-soothsayer.js";
 import _poolTheEarthCrystal from "../pool/the-earth-crystal.js";
@@ -220,6 +222,7 @@ const shard: CardShard = {
     _poolCatharticAdept,
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
+    _poolColossalMajesty,
     _poolCommodoreGuff,
     _poolCopperlineGorge,
     _poolCourserOfKruphix,
@@ -335,6 +338,7 @@ const shard: CardShard = {
     _poolSymbioteSpawn,
     _poolSyrKonradTheGrim,
     _poolTalismanOfCuriosity,
+    _poolTerastodon,
     _poolTerraHeraldOfHope,
     _poolThallidSoothsayer,
     _poolTheEarthCrystal,

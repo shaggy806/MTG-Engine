@@ -42,9 +42,11 @@ import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
+import _poolFellTheMighty from "../pool/fell-the-mighty.js";
 import _poolFireLordZuko from "../pool/fire-lord-zuko.js";
 import _poolFlowstoneKavu from "../pool/flowstone-kavu.js";
 import _poolFlyingDolphinFish from "../pool/flying-dolphin-fish.js";
+import _poolFormidableSpeaker from "../pool/formidable-speaker.js";
 import _poolFortifiedVillage from "../pool/fortified-village.js";
 import _poolFugue from "../pool/fugue.js";
 import _poolGenerousGift from "../pool/generous-gift.js";
@@ -89,6 +91,7 @@ import _poolKykarWindsFury from "../pool/kykar-winds-fury.js";
 import _poolLashOfMalice from "../pool/lash-of-malice.js";
 import _poolLayWaste from "../pool/lay-waste.js";
 import _poolLeap from "../pool/leap.js";
+import _poolLifecraftersBestiary from "../pool/lifecrafters-bestiary.js";
 import _poolLifelink from "../pool/lifelink.js";
 import _poolLoreWeaver from "../pool/lore-weaver.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
@@ -234,9 +237,11 @@ const shard: CardShard = {
     _poolDrossSkullbomb,
     _poolExsanguinate,
     _poolFabledPassage,
+    _poolFellTheMighty,
     _poolFireLordZuko,
     _poolFlowstoneKavu,
     _poolFlyingDolphinFish,
+    _poolFormidableSpeaker,
     _poolFortifiedVillage,
     _poolFugue,
     _poolGenerousGift,
@@ -281,6 +286,7 @@ const shard: CardShard = {
     _poolLashOfMalice,
     _poolLayWaste,
     _poolLeap,
+    _poolLifecraftersBestiary,
     _poolLifelink,
     _poolLoreWeaver,
     _poolLylaHolographicAssistant,

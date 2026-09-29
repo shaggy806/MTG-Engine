@@ -177,8 +177,10 @@ import _poolTimberlandGuide from "../pool/timberland-guide.js";
 import _poolTimeWipe from "../pool/time-wipe.js";
 import _poolTorGiant from "../pool/tor-giant.js";
 import _poolTowerOfFortunes from "../pool/tower-of-fortunes.js";
+import _poolTrainingGrounds from "../pool/training-grounds.js";
 import _poolTranquilThicket from "../pool/tranquil-thicket.js";
 import _poolTuinvaleTreefolk from "../pool/tuinvale-treefolk.js";
+import _poolTwitchingDoll from "../pool/twitching-doll.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
 import _poolValkyriorSkyrider from "../pool/valkyrior-skyrider.js";
 import _poolVenomousHierophant from "../pool/venomous-hierophant.js";
@@ -384,8 +386,10 @@ const shard: CardShard = {
     _poolTimeWipe,
     _poolTorGiant,
     _poolTowerOfFortunes,
+    _poolTrainingGrounds,
     _poolTranquilThicket,
     _poolTuinvaleTreefolk,
+    _poolTwitchingDoll,
     _poolUnyieldingKrumar,
     _poolValkyriorSkyrider,
     _poolVenomousHierophant,

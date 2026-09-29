@@ -4,12 +4,14 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAangAirNomad from "../pool/aang-air-nomad.js";
+import _poolAbzanFalconer from "../pool/abzan-falconer.js";
 import _poolAccursedDuneyard from "../pool/accursed-duneyard.js";
 import _poolAkkiAvalanchers from "../pool/akki-avalanchers.js";
 import _poolAkoumHellhound from "../pool/akoum-hellhound.js";
 import _poolAlabasterKirin from "../pool/alabaster-kirin.js";
 import _poolAnglerDrake from "../pool/angler-drake.js";
 import _poolArgivianFind from "../pool/argivian-find.js";
+import _poolAtsushiTheBlazingSky from "../pool/atsushi-the-blazing-sky.js";
 import _poolAzimaetDrake from "../pool/azimaet-drake.js";
 import _poolBayou from "../pool/bayou.js";
 import _poolBenthicGiant from "../pool/benthic-giant.js";
@@ -199,12 +201,14 @@ import _tokensSquirrelToken from "../tokens/squirrel-token.js";
 const shard: CardShard = {
   pool: [
     _poolAangAirNomad,
+    _poolAbzanFalconer,
     _poolAccursedDuneyard,
     _poolAkkiAvalanchers,
     _poolAkoumHellhound,
     _poolAlabasterKirin,
     _poolAnglerDrake,
     _poolArgivianFind,
+    _poolAtsushiTheBlazingSky,
     _poolAzimaetDrake,
     _poolBayou,
     _poolBenthicGiant,

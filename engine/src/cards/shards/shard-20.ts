@@ -45,11 +45,14 @@ import _poolChakramSlinger from "../pool/chakram-slinger.js";
 import _poolCobblebrute from "../pool/cobblebrute.js";
 import _poolCoiledTinviper from "../pool/coiled-tinviper.js";
 import _poolColosYearling from "../pool/colos-yearling.js";
+import _poolContagionClasp from "../pool/contagion-clasp.js";
 import _poolCopperMyr from "../pool/copper-myr.js";
 import _poolCoralMerfolk from "../pool/coral-merfolk.js";
+import _poolCoverOfDarkness from "../pool/cover-of-darkness.js";
 import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
+import _poolDelayedBlastFireball from "../pool/delayed-blast-fireball.js";
 import _poolDimirLocket from "../pool/dimir-locket.js";
 import _poolDispel from "../pool/dispel.js";
 import _poolDonatelloWayWithMachines from "../pool/donatello-way-with-machines.js";
@@ -77,6 +80,7 @@ import _poolGoliathSpider from "../pool/goliath-spider.js";
 import _poolGravedigger from "../pool/gravedigger.js";
 import _poolGrimDiscovery from "../pool/grim-discovery.js";
 import _poolGrizzledOutrider from "../pool/grizzled-outrider.js";
+import _poolGuideOfSouls from "../pool/guide-of-souls.js";
 import _poolHairStrungKoto from "../pool/hair-strung-koto.js";
 import _poolHarrow from "../pool/harrow.js";
 import _poolHateMirage from "../pool/hate-mirage.js";
@@ -230,11 +234,14 @@ const shard: CardShard = {
     _poolCobblebrute,
     _poolCoiledTinviper,
     _poolColosYearling,
+    _poolContagionClasp,
     _poolCopperMyr,
     _poolCoralMerfolk,
+    _poolCoverOfDarkness,
     _poolCrashOfRhinos,
     _poolDeadlyInsect,
     _poolDeadlyRollick,
+    _poolDelayedBlastFireball,
     _poolDimirLocket,
     _poolDispel,
     _poolDonatelloWayWithMachines,
@@ -262,6 +269,7 @@ const shard: CardShard = {
     _poolGravedigger,
     _poolGrimDiscovery,
     _poolGrizzledOutrider,
+    _poolGuideOfSouls,
     _poolHairStrungKoto,
     _poolHarrow,
     _poolHateMirage,

@@ -51,6 +51,7 @@ import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
 import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
 import _poolEnfeeblement from "../pool/enfeeblement.js";
+import _poolEnthusiasticMechanaut from "../pool/enthusiastic-mechanaut.js";
 import _poolErtaiTheCorrupted from "../pool/ertai-the-corrupted.js";
 import _poolEtherealGuidance from "../pool/ethereal-guidance.js";
 import _poolEvendoWakingHaven from "../pool/evendo-waking-haven.js";
@@ -138,6 +139,7 @@ import _poolServoExhibition from "../pool/servo-exhibition.js";
 import _poolSetessanTraining from "../pool/setessan-training.js";
 import _poolShamblingGhast from "../pool/shambling-ghast.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
+import _poolShinyImpetus from "../pool/shiny-impetus.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
 import _poolSmash from "../pool/smash.js";
@@ -244,6 +246,7 @@ const shard: CardShard = {
     _poolEiganjoSeatOfTheEmpire,
     _poolEncampmentKeeper,
     _poolEnfeeblement,
+    _poolEnthusiasticMechanaut,
     _poolErtaiTheCorrupted,
     _poolEtherealGuidance,
     _poolEvendoWakingHaven,
@@ -331,6 +334,7 @@ const shard: CardShard = {
     _poolSetessanTraining,
     _poolShamblingGhast,
     _poolShimmeringGrotto,
+    _poolShinyImpetus,
     _poolSkycloudExpanse,
     _poolSlobadGoblinTinkerer,
     _poolSmash,

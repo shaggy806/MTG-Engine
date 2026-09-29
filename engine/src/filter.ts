@@ -380,7 +380,9 @@ export interface CardFilter {
   readonly cast?: boolean;
   /** …cast by **you** — "if you cast it" (Anti-Venom, Rocco, Tiamat). */
   readonly castBy?: "you";
-  /** …cast from this zone — "if it was cast from a graveyard". */
+  /** …cast from this zone — "if it was cast from a graveyard". Asked of a
+   * spell still on the stack, where it was cast from: Delayed Blast
+   * Fireball's "if this spell was cast from exile". */
   readonly castFrom?: ZoneType;
   /** It entered the battlefield from this zone — "enters from exile" (Fire
    * Lord Zuko), "came from a graveyard" (a spell's entry comes from the
@@ -408,6 +410,14 @@ export interface CardFilter {
    * resolutions nothing matches.
    */
   readonly thisWay?: ThisWayKind;
+  /**
+   * None of the objects the resolving spell or ability has done this to —
+   * Martial Coup's "create X 1/1 white Soldier creature tokens … destroy all
+   * **other** creatures" is `{ type: "creature", notThisWay: "created" }`.
+   * Between resolutions nothing has been done this way, so it excludes
+   * nothing.
+   */
+  readonly notThisWay?: ThisWayKind;
   /**
    * At least one of these filters must match, as well as every other clause
    * here — the "or" a flat clause list can't say: historic ("artifact,
@@ -590,6 +600,9 @@ export function matchesFilter(
   // anywhere nothing could answer it — it matches nothing.
   if (filter.sharesCardTypeWith !== undefined) return false;
   if (filter.thisWay !== undefined && !thisWayEntries(state, filter.thisWay).some((e) => e.object === id)) {
+    return false;
+  }
+  if (filter.notThisWay !== undefined && thisWayEntries(state, filter.notThisWay).some((e) => e.object === id)) {
     return false;
   }
 
@@ -809,9 +822,18 @@ export function matchesFilter(
     filter.putThereBySource !== undefined
   ) {
     const entry = live !== undefined ? (live.zone === "battlefield" ? live.entry : undefined) : lki!.entry;
-    if (filter.cast !== undefined && (entry?.cast !== undefined) !== filter.cast) return false;
-    if (filter.castBy === "you" && entry?.cast?.by !== ctx.you) return false;
-    if (filter.castFrom !== undefined && entry?.cast?.from !== filter.castFrom) return false;
+    // A spell still on the stack: how it was cast, as its move onto the
+    // battlefield would record it — Delayed Blast Fireball's "if this spell
+    // was cast from exile". A copy was never cast.
+    const cast =
+      live !== undefined && live.zone === "stack"
+        ? live.kind === "card" && live.castFrom !== undefined
+          ? { by: live.controller, from: live.castFrom }
+          : undefined
+        : entry?.cast;
+    if (filter.cast !== undefined && (cast !== undefined) !== filter.cast) return false;
+    if (filter.castBy === "you" && cast?.by !== ctx.you) return false;
+    if (filter.castFrom !== undefined && cast?.from !== filter.castFrom) return false;
     if (filter.enteredFrom !== undefined && entry?.from !== filter.enteredFrom) return false;
     if (filter.putThereBySource !== undefined) {
       const by = entry?.by;

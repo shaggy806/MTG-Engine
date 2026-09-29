@@ -27,11 +27,13 @@ import _poolClementTheWorrywort from "../pool/clement-the-worrywort.js";
 import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
+import _poolDarkDeal from "../pool/dark-deal.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
 import _poolDismalBackwater from "../pool/dismal-backwater.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
+import _poolEldraziMonument from "../pool/eldrazi-monument.js";
 import _poolEldritchEvolution from "../pool/eldritch-evolution.js";
 import _poolElectrostaticField from "../pool/electrostatic-field.js";
 import _poolElugeTheShorelessSea from "../pool/eluge-the-shoreless-sea.js";
@@ -167,6 +169,7 @@ import _poolVirusBeetle from "../pool/virus-beetle.js";
 import _poolVizkopaVampire from "../pool/vizkopa-vampire.js";
 import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
+import _poolWeatheredWayfarer from "../pool/weathered-wayfarer.js";
 import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
 import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
@@ -198,11 +201,13 @@ const shard: CardShard = {
     _poolCloudheathDrake,
     _poolCosmicSpiderMan,
     _poolCourierHawk,
+    _poolDarkDeal,
     _poolDefiantSalvager,
     _poolDejaVu,
     _poolDismalBackwater,
     _poolDragonSniper,
     _poolDurkwoodBoars,
+    _poolEldraziMonument,
     _poolEldritchEvolution,
     _poolElectrostaticField,
     _poolElugeTheShorelessSea,
@@ -338,6 +343,7 @@ const shard: CardShard = {
     _poolVizkopaVampire,
     _poolWanderOff,
     _poolWastewoodVerge,
+    _poolWeatheredWayfarer,
     _poolXandersLounge,
     _poolYavimayaHollow,
     _poolYgraEaterOfAll,

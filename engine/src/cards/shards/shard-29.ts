@@ -75,6 +75,7 @@ import _poolIcecaveCrasher from "../pool/icecave-crasher.js";
 import _poolImotekhTheStormlord from "../pool/imotekh-the-stormlord.js";
 import _poolImperialCeratops from "../pool/imperial-ceratops.js";
 import _poolIngeniousArtillerist from "../pool/ingenious-artillerist.js";
+import _poolInundatedArchive from "../pool/inundated-archive.js";
 import _poolJuggernaut from "../pool/juggernaut.js";
 import _poolKazanduNectarpot from "../pool/kazandu-nectarpot.js";
 import _poolKessigWolf from "../pool/kessig-wolf.js";
@@ -82,6 +83,7 @@ import _poolKnightlyValor from "../pool/knightly-valor.js";
 import _poolKraulRaider from "../pool/kraul-raider.js";
 import _poolKrovikanScoundrel from "../pool/krovikan-scoundrel.js";
 import _poolKujarSeedsculptor from "../pool/kujar-seedsculptor.js";
+import _poolLegolassQuickReflexes from "../pool/legolass-quick-reflexes.js";
 import _poolLonelySandbar from "../pool/lonely-sandbar.js";
 import _poolMagesGuile from "../pool/mages-guile.js";
 import _poolMagmaticForce from "../pool/magmatic-force.js";
@@ -101,6 +103,7 @@ import _poolNipGwyllion from "../pool/nip-gwyllion.js";
 import _poolNullBrooch from "../pool/null-brooch.js";
 import _poolOjerAxonilDeepestMight from "../pool/ojer-axonil-deepest-might.js";
 import _poolOldGhastbark from "../pool/old-ghastbark.js";
+import _poolOminousSeas from "../pool/ominous-seas.js";
 import _poolOnyxMage from "../pool/onyx-mage.js";
 import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
@@ -249,6 +252,7 @@ const shard: CardShard = {
     _poolImotekhTheStormlord,
     _poolImperialCeratops,
     _poolIngeniousArtillerist,
+    _poolInundatedArchive,
     _poolJuggernaut,
     _poolKazanduNectarpot,
     _poolKessigWolf,
@@ -256,6 +260,7 @@ const shard: CardShard = {
     _poolKraulRaider,
     _poolKrovikanScoundrel,
     _poolKujarSeedsculptor,
+    _poolLegolassQuickReflexes,
     _poolLonelySandbar,
     _poolMagesGuile,
     _poolMagmaticForce,
@@ -275,6 +280,7 @@ const shard: CardShard = {
     _poolNullBrooch,
     _poolOjerAxonilDeepestMight,
     _poolOldGhastbark,
+    _poolOminousSeas,
     _poolOnyxMage,
     _poolPetAvengers,
     _poolPhalanxVanguard,

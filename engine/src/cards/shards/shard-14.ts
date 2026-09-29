@@ -125,10 +125,12 @@ import _poolMidnightAssassin from "../pool/midnight-assassin.js";
 import _poolMirranSpy from "../pool/mirran-spy.js";
 import _poolMnemonicSphere from "../pool/mnemonic-sphere.js";
 import _poolMonkRealist from "../pool/monk-realist.js";
+import _poolMonumentalHenge from "../pool/monumental-henge.js";
 import _poolMoongloveWinnower from "../pool/moonglove-winnower.js";
 import _poolMutantTown from "../pool/mutant-town.js";
 import _poolMyrelShieldOfArgive from "../pool/myrel-shield-of-argive.js";
 import _poolNivMizzetParun from "../pool/niv-mizzet-parun.js";
+import _poolNoMercy from "../pool/no-mercy.js";
 import _poolObeliskOfNaya from "../pool/obelisk-of-naya.js";
 import _poolOnyxGoblet from "../pool/onyx-goblet.js";
 import _poolPearledUnicorn from "../pool/pearled-unicorn.js";
@@ -192,6 +194,7 @@ import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
 import _tokensFishToken from "../tokens/fish-token.js";
+import _tokensKrakenToken from "../tokens/kraken-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -317,10 +320,12 @@ const shard: CardShard = {
     _poolMirranSpy,
     _poolMnemonicSphere,
     _poolMonkRealist,
+    _poolMonumentalHenge,
     _poolMoongloveWinnower,
     _poolMutantTown,
     _poolMyrelShieldOfArgive,
     _poolNivMizzetParun,
+    _poolNoMercy,
     _poolObeliskOfNaya,
     _poolOnyxGoblet,
     _poolPearledUnicorn,
@@ -386,6 +391,7 @@ const shard: CardShard = {
   tokens: [
     _tokensApeToken,
     _tokensFishToken,
+    _tokensKrakenToken,
   ],
 };
 

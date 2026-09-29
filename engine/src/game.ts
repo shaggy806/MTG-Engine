@@ -4217,7 +4217,12 @@ export class Game {
     // could take, the rest simply go.
     const second = awaiting.secondPick;
     if (second === undefined) return;
-    const eligible = leftover.filter((id) => this.matchesZoneChoiceFilter(id, second.filter, player));
+    // "If you don't, put a card from among them into your hand" (Planar
+    // Genesis): a first choice that took something leaves nothing to ask.
+    const skipped = second.ifNoneChosen === true && chosen.length > 0;
+    const eligible = skipped
+      ? []
+      : leftover.filter((id) => this.matchesZoneChoiceFilter(id, second.filter, player));
     const next: Extract<AwaitingDecision, { kind: "choose-from-zone" }> = {
       kind: "choose-from-zone",
       player,
@@ -7960,14 +7965,23 @@ export class Game {
     const parsed = parseManaCost(ability.cost.mana);
     const hasX = parsed.x > 0;
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
-    let generic = parsed.generic + parsed.x * chosenX;
+    const mod = this.abilityCostModificationFor(sourceId, isManaAbility(ability));
+    // Increases first, then the reductions (rule 601.2f).
+    let generic = parsed.generic + parsed.x * chosenX + mod.increaseGeneric;
+    // "This effect can't reduce the mana in that cost to less than one mana"
+    // (Training Grounds): only down to one mana counting every symbol left,
+    // and before any unlimited reduction — the order that leaves the least
+    // to pay, which the payer is free to choose.
+    if (mod.reduceGenericLeavingOne > 0) {
+      const otherSymbols =
+        COLORS.reduce((n, c) => n + parsed.colored[c], 0) + parsed.colorless + parsed.hybrid.length;
+      const floor = Math.max(0, 1 - otherSymbols);
+      generic = Math.max(Math.min(generic, floor), generic - mod.reduceGenericLeavingOne);
+    }
     if (ability.costReduction !== undefined) {
       generic -= this.costReductionAmount(ability.costReduction.reduceGeneric, player);
     }
-    if (!isManaAbility(ability)) {
-      const mod = this.abilityCostModificationFor(sourceId);
-      generic += mod.increaseGeneric - mod.reduceGeneric;
-    }
+    generic -= mod.reduceGeneric;
     const cost: ManaCost = {
       colored: parsed.colored,
       colorless: parsed.colorless,
@@ -8017,27 +8031,51 @@ export class Game {
 
   /** What `abilityCostModification` statics on the battlefield do to the
    * activation cost of an ability of `sourceId`: the generic mana they add
-   * and take off (rule 602.2b). */
-  private abilityCostModificationFor(sourceId: ObjectId): {
+   * and take off (rule 602.2b), the reductions that must leave one mana
+   * apart. Only an ability of a permanent: every one of them reads
+   * "activated abilities of [permanents] you control", and a card in a hand
+   * or graveyard is no permanent (Forensic Gadgeteer's ruling on cycling). */
+  private abilityCostModificationFor(sourceId: ObjectId, manaAbility: boolean): {
     increaseGeneric: number;
     reduceGeneric: number;
+    reduceGenericLeavingOne: number;
   } {
     let increaseGeneric = 0;
     let reduceGeneric = 0;
-    for (const id of this.state.zones.shared.battlefield) {
-      const source = this.state.objects[id];
-      if (source === undefined || hasLostAbilities(source)) continue;
-      for (const ability of this.registry.get(printedCardName(source)).static) {
-        const mod = ability.abilityCostModification;
-        if (mod === undefined || !this.staticActive(source, ability)) continue;
-        if (!matchesFilter(this.state, this.registry, sourceId, mod.applies, { you: source.controller })) {
-          continue;
-        }
-        increaseGeneric += mod.increaseGeneric ?? 0;
-        reduceGeneric += mod.reduceGeneric ?? 0;
-      }
+    let reduceGenericLeavingOne = 0;
+    if (this.state.objects[sourceId]?.zone !== "battlefield") {
+      return { increaseGeneric, reduceGeneric, reduceGenericLeavingOne };
     }
-    return { increaseGeneric, reduceGeneric };
+    for (const { controller, mod } of this.abilityCostModifiers()) {
+      // "…unless they're mana abilities" (Suppression Field, Zirda).
+      if (manaAbility && mod.exceptManaAbilities === true) continue;
+      if (!matchesFilter(this.state, this.registry, sourceId, mod.applies, { you: controller })) continue;
+      increaseGeneric += mod.increaseGeneric ?? 0;
+      if (mod.leavesOneMana === true) reduceGenericLeavingOne += mod.reduceGeneric ?? 0;
+      else reduceGeneric += mod.reduceGeneric ?? 0;
+    }
+    return { increaseGeneric, reduceGeneric, reduceGenericLeavingOne };
+  }
+
+  /** The `abilityCostModification` statics in force, with whose each is —
+   * asked of every ability `legalActions` prices (a land's mana ability
+   * included), so found once per cache region, and nearly always none. */
+  private abilityCostModifiers(): readonly {
+    readonly controller: PlayerId;
+    readonly mod: NonNullable<StaticAbility["abilityCostModification"]>;
+  }[] {
+    return computedCacheMemo("abilityCostModifiers", () => {
+      const out: { controller: PlayerId; mod: NonNullable<StaticAbility["abilityCostModification"]> }[] = [];
+      for (const id of this.state.zones.shared.battlefield) {
+        const source = this.state.objects[id];
+        if (source === undefined || hasLostAbilities(source)) continue;
+        for (const ability of this.registry.get(printedCardName(source)).static) {
+          const mod = ability.abilityCostModification;
+          if (mod !== undefined && this.staticActive(source, ability)) out.push({ controller: source.controller, mod });
+        }
+      }
+      return out;
+    });
   }
 
   /** `x` is the `{X}` chosen for the activation. Without one — `legalActions`
@@ -8783,11 +8821,13 @@ export class Game {
           const colouredPips =
             COLORS.reduce((n, c) => n + parsed.colored[c], 0) + parsed.colorless;
           if (colouredPips > 0 || parsed.x > 0 || parsed.hybrid.length > 0) return;
-          genericCost = parsed.generic;
           // A printed `{0}` is a cost of nothing (Vivi Ornitier) — only an
           // untapped once-a-turn ability can get here with one, since a
           // `{0}, {T}` ability is written as a plain tap.
-          if (genericCost <= 0 && ability.cost.tap) return;
+          if (parsed.generic <= 0 && ability.cost.tap) return;
+          // What activating it costs now — Forensic Gadgeteer's reduction
+          // reaches a Signet's `{1}` as it would by hand.
+          genericCost = this.activatedAbilityManaCost(player, id, ability).cost.generic;
         }
         if (
           ability.condition !== undefined &&
@@ -12414,7 +12454,11 @@ export class Game {
           condition.what,
           condition.who === undefined ? undefined : scoped(condition.who),
           condition.filter,
-        ).reduce((n, entry) => n + entry.count, 0);
+        )
+          // "If **another** Desert was returned this way": not the source
+          // itself, which keeps its id as it changes zones.
+          .filter((entry) => condition.other !== true || entry.object !== source)
+          .reduce((n, entry) => n + entry.count, 0);
         const atLeast = condition.atLeast ?? (condition.atMost === undefined ? 1 : 0);
         return done >= atLeast && (condition.atMost === undefined || done <= condition.atMost);
       }
@@ -13300,7 +13344,7 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
@@ -13315,7 +13359,7 @@ export class Game {
             sacrificeAtEndStep,
             gainUntilEndOfTurn,
             goadedBy,
-            thenCounters !== undefined,
+            thenCounters !== undefined || separate === true,
             basePt,
           );
           if (thenCounters !== undefined && thenCounters.amount > 0) {
@@ -13511,7 +13555,7 @@ export class Game {
           // The source and X outlive the resolution for a `then` to apply
           // and a `leftoverIf` to be asked once the choice is answered.
           then === undefined && leftoverIf === undefined ? undefined : { effect: then, source, x },
-          reveal === true,
+          reveal ?? false,
           leftoverIf,
           secondPick,
           attacking,
@@ -13543,7 +13587,7 @@ export class Game {
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
     then?: { effect: EffectSpec | undefined; source: ObjectId; x: number },
-    reveal = false,
+    reveal: boolean | "chosen" = false,
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
@@ -13552,7 +13596,7 @@ export class Game {
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
-    if (reveal && zone === "library") this.revealCards(player, ids, "library");
+    if (reveal === true && zone === "library") this.revealCards(player, ids, "library");
     // A filter (e.g. "only a Dragon card") narrows what's *choosable*, never
     // what's *revealed* — the player still looks at everything either way,
     // and naturally ends up unable to choose anything if nothing matches
@@ -13573,6 +13617,9 @@ export class Game {
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
       ...(leftoverIf !== undefined ? { leftoverIf } : {}),
       ...(secondPick !== undefined ? { secondPick } : {}),
+      // "You may reveal a historic card from among them and put it into your
+      // hand": only what's taken is shown, as it's taken.
+      ...(reveal === "chosen" && zone === "library" ? { reveal: true } : {}),
     };
   }
 

@@ -581,6 +581,21 @@ in `git log`.
   discard it is (Archfiend of Ifnir, Waste Not — it had never fired a
   discard trigger). Faithless Looting's flashback was {1}{R}; it's {2}{R}.
   B7.json lists the 50 cards it left blocked.
+- **Top-5000 batch 8** (2026-09-29, `top5000-batch-8.test.ts`) — a filter's
+  `notThisWay` and `create-token`'s `separate` (Martial Coup's "destroy all
+  **other** creatures" after making its Soldiers, which would otherwise join
+  and shield an older Soldier stack), a `this-way` condition's `other`
+  (Arid Archway's "if **another** Desert was returned this way"), a
+  `look-and-choose` second pick only `ifNoneChosen` (Planar Genesis's "if you
+  don't") and `reveal: "chosen"` (Monumental Henge's "you may reveal a
+  historic card from among them" — Adaptive Omnitool had been revealing all
+  six), `abilityCostModification`'s `leavesOneMana` (Forensic Gadgeteer, and
+  Training Grounds, blocked on it in B6) — which now also reaches mana
+  abilities, by hand and as the auto-payer prices a converter, and only a
+  permanent's abilities (Dauntless Cathar's graveyard ability was reduced) —
+  `cast`/`castFrom` asked of a spell still on the stack (Delayed Blast
+  Fireball's "if this spell was cast from exile"), and `outlast()` (Abzan
+  Falconer). B8.json lists the 54 cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

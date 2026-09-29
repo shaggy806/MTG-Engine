@@ -70,6 +70,7 @@ import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
 import _poolFireUrchin from "../pool/fire-urchin.js";
+import _poolForensicGadgeteer from "../pool/forensic-gadgeteer.js";
 import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
 import _poolGlaringAegis from "../pool/glaring-aegis.js";
@@ -101,6 +102,7 @@ import _poolLongBodiedGreyDog from "../pool/long-bodied-grey-dog.js";
 import _poolLotusField from "../pool/lotus-field.js";
 import _poolMagetasBoon from "../pool/magetas-boon.js";
 import _poolMalakirCullblade from "../pool/malakir-cullblade.js";
+import _poolMartialCoup from "../pool/martial-coup.js";
 import _poolMemnite from "../pool/memnite.js";
 import _poolMercurialGeists from "../pool/mercurial-geists.js";
 import _poolMesaFalcon from "../pool/mesa-falcon.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolFerociousCharge,
     _poolFireDrake,
     _poolFireUrchin,
+    _poolForensicGadgeteer,
     _poolFoundationBreaker,
     _poolFrostOgre,
     _poolGlaringAegis,
@@ -302,6 +305,7 @@ const shard: CardShard = {
     _poolLotusField,
     _poolMagetasBoon,
     _poolMalakirCullblade,
+    _poolMartialCoup,
     _poolMemnite,
     _poolMercurialGeists,
     _poolMesaFalcon,

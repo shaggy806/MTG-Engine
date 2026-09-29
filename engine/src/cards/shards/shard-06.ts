@@ -74,6 +74,7 @@ import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
 import _poolGravitationalShift from "../pool/gravitational-shift.js";
 import _poolGreyHavensNavigator from "../pool/grey-havens-navigator.js";
+import _poolGrislySalvage from "../pool/grisly-salvage.js";
 import _poolGroundbreaker from "../pool/groundbreaker.js";
 import _poolGuardDuty from "../pool/guard-duty.js";
 import _poolHighFaeTrickster from "../pool/high-fae-trickster.js";
@@ -122,6 +123,7 @@ import _poolRaggadraggaGoregutsBoss from "../pool/raggadragga-goreguts-boss.js";
 import _poolRagingGoblin from "../pool/raging-goblin.js";
 import _poolRainOfThorns from "../pool/rain-of-thorns.js";
 import _poolRamunapRuins from "../pool/ramunap-ruins.js";
+import _poolRankleMasterOfPranks from "../pool/rankle-master-of-pranks.js";
 import _poolRiotGear from "../pool/riot-gear.js";
 import _poolRiptideCrab from "../pool/riptide-crab.js";
 import _poolRousingRead from "../pool/rousing-read.js";
@@ -260,6 +262,7 @@ const shard: CardShard = {
     _poolGoblinRally,
     _poolGravitationalShift,
     _poolGreyHavensNavigator,
+    _poolGrislySalvage,
     _poolGroundbreaker,
     _poolGuardDuty,
     _poolHighFaeTrickster,
@@ -308,6 +311,7 @@ const shard: CardShard = {
     _poolRagingGoblin,
     _poolRainOfThorns,
     _poolRamunapRuins,
+    _poolRankleMasterOfPranks,
     _poolRiotGear,
     _poolRiptideCrab,
     _poolRousingRead,

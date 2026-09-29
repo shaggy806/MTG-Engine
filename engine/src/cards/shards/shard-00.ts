@@ -53,6 +53,7 @@ import _poolEagerTrufflesnout from "../pool/eager-trufflesnout.js";
 import _poolElfhameWurm from "../pool/elfhame-wurm.js";
 import _poolEliteArchers from "../pool/elite-archers.js";
 import _poolElvishHandservant from "../pool/elvish-handservant.js";
+import _poolEmbercleave from "../pool/embercleave.js";
 import _poolEverethViceroyOfPlunder from "../pool/evereth-viceroy-of-plunder.js";
 import _poolExplorersScope from "../pool/explorers-scope.js";
 import _poolExposeToDaylight from "../pool/expose-to-daylight.js";
@@ -78,6 +79,7 @@ import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHannaShipsNavigator from "../pool/hanna-ships-navigator.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
 import _poolImperialOutrider from "../pool/imperial-outrider.js";
+import _poolInGarruksWake from "../pool/in-garruks-wake.js";
 import _poolIronLance from "../pool/iron-lance.js";
 import _poolIvyDancer from "../pool/ivy-dancer.js";
 import _poolJacesIngenuity from "../pool/jaces-ingenuity.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolElfhameWurm,
     _poolEliteArchers,
     _poolElvishHandservant,
+    _poolEmbercleave,
     _poolEverethViceroyOfPlunder,
     _poolExplorersScope,
     _poolExposeToDaylight,
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolHannaShipsNavigator,
     _poolHornetHarasser,
     _poolImperialOutrider,
+    _poolInGarruksWake,
     _poolIronLance,
     _poolIvyDancer,
     _poolJacesIngenuity,

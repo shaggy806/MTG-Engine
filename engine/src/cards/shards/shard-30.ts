@@ -56,6 +56,7 @@ import _poolDesolationProwler from "../pool/desolation-prowler.js";
 import _poolDimirAqueduct from "../pool/dimir-aqueduct.js";
 import _poolDirtwaterWraith from "../pool/dirtwater-wraith.js";
 import _poolDisperse from "../pool/disperse.js";
+import _poolDreadhordeInvasion from "../pool/dreadhorde-invasion.js";
 import _poolDreamBeavers from "../pool/dream-beavers.js";
 import _poolDreamrootCascade from "../pool/dreamroot-cascade.js";
 import _poolDromokaWarrior from "../pool/dromoka-warrior.js";
@@ -257,6 +258,7 @@ const shard: CardShard = {
     _poolDimirAqueduct,
     _poolDirtwaterWraith,
     _poolDisperse,
+    _poolDreadhordeInvasion,
     _poolDreamBeavers,
     _poolDreamrootCascade,
     _poolDromokaWarrior,

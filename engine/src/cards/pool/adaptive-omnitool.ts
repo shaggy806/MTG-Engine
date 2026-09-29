@@ -26,7 +26,7 @@ export default defineCard({
         kind: "look-and-choose",
         zone: "library",
         count: 6,
-        reveal: true,
+        reveal: "chosen",
         min: 0,
         max: 1,
         filter: { type: "artifact" },

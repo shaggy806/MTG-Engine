@@ -18,6 +18,7 @@ import _poolAtraxaPraetorsVoice from "../pool/atraxa-praetors-voice.js";
 import _poolBallroom from "../pool/ballroom.js";
 import _poolBarbarianRiftcutter from "../pool/barbarian-riftcutter.js";
 import _poolBeanstalkGiant from "../pool/beanstalk-giant.js";
+import _poolBindingTheOldGods from "../pool/binding-the-old-gods.js";
 import _poolBloodCrypt from "../pool/blood-crypt.js";
 import _poolBloodthroneVampire from "../pool/bloodthrone-vampire.js";
 import _poolBogRaiders from "../pool/bog-raiders.js";
@@ -175,6 +176,7 @@ import _poolViashinoSpearhunter from "../pool/viashino-spearhunter.js";
 import _poolWallOfMist from "../pool/wall-of-mist.js";
 import _poolWallOfWood from "../pool/wall-of-wood.js";
 import _poolWaterfrontDistrict from "../pool/waterfront-district.js";
+import _poolWaveGoodbye from "../pool/wave-goodbye.js";
 import _poolWipeClean from "../pool/wipe-clean.js";
 import _poolWoodlandLiege from "../pool/woodland-liege.js";
 import _poolYavimayaSapherd from "../pool/yavimaya-sapherd.js";
@@ -202,6 +204,7 @@ const shard: CardShard = {
     _poolBallroom,
     _poolBarbarianRiftcutter,
     _poolBeanstalkGiant,
+    _poolBindingTheOldGods,
     _poolBloodCrypt,
     _poolBloodthroneVampire,
     _poolBogRaiders,
@@ -359,6 +362,7 @@ const shard: CardShard = {
     _poolWallOfMist,
     _poolWallOfWood,
     _poolWaterfrontDistrict,
+    _poolWaveGoodbye,
     _poolWipeClean,
     _poolWoodlandLiege,
     _poolYavimayaSapherd,

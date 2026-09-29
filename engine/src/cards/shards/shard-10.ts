@@ -70,6 +70,7 @@ import _poolFoggyBottomSwamp from "../pool/foggy-bottom-swamp.js";
 import _poolGaeasSkyfolk from "../pool/gaeas-skyfolk.js";
 import _poolGavonyUnhallowed from "../pool/gavony-unhallowed.js";
 import _poolGenerousStray from "../pool/generous-stray.js";
+import _poolGenesisWave from "../pool/genesis-wave.js";
 import _poolGeyserfieldStalker from "../pool/geyserfield-stalker.js";
 import _poolGiantWarthog from "../pool/giant-warthog.js";
 import _poolGiftOfGranite from "../pool/gift-of-granite.js";
@@ -190,6 +191,7 @@ import _poolUmbralExpanse from "../pool/umbral-expanse.js";
 import _poolUnyaroBeeSting from "../pool/unyaro-bee-sting.js";
 import _poolVampireOfTheDireMoon from "../pool/vampire-of-the-dire-moon.js";
 import _poolVampiricTutor from "../pool/vampiric-tutor.js";
+import _poolVedalkenOrrery from "../pool/vedalken-orrery.js";
 import _poolVenomthrope from "../pool/venomthrope.js";
 import _poolVilisBrokerOfBlood from "../pool/vilis-broker-of-blood.js";
 import _poolVindicate from "../pool/vindicate.js";
@@ -275,6 +277,7 @@ const shard: CardShard = {
     _poolGaeasSkyfolk,
     _poolGavonyUnhallowed,
     _poolGenerousStray,
+    _poolGenesisWave,
     _poolGeyserfieldStalker,
     _poolGiantWarthog,
     _poolGiftOfGranite,
@@ -395,6 +398,7 @@ const shard: CardShard = {
     _poolUnyaroBeeSting,
     _poolVampireOfTheDireMoon,
     _poolVampiricTutor,
+    _poolVedalkenOrrery,
     _poolVenomthrope,
     _poolVilisBrokerOfBlood,
     _poolVindicate,

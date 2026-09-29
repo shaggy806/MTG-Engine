@@ -512,13 +512,6 @@
       "why": "A split card with fuse."
     },
     {
-      "name": "Training Grounds",
-      "needs": [
-        "new:ability-cost-floor"
-      ],
-      "why": "'Can't reduce the mana in that cost to less than one mana', and it reaches creatures' mana abilities, which abilityCostModification leaves alone."
-    },
-    {
       "name": "Arcane Lighthouse",
       "needs": [
         "new:lose-keywords-effect"

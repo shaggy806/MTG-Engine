@@ -35,6 +35,7 @@ import _poolClifftopRetreat from "../pool/clifftop-retreat.js";
 import _poolClockworkDrawbridge from "../pool/clockwork-drawbridge.js";
 import _poolCripplingFear from "../pool/crippling-fear.js";
 import _poolCuriosityCrafter from "../pool/curiosity-crafter.js";
+import _poolDarksteelForge from "../pool/darksteel-forge.js";
 import _poolDemystify from "../pool/demystify.js";
 import _poolDevoteeOfStrength from "../pool/devotee-of-strength.js";
 import _poolDimirGuildmage from "../pool/dimir-guildmage.js";
@@ -127,6 +128,7 @@ import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
 import _poolPharikasChosen from "../pool/pharikas-chosen.js";
+import _poolPlanarGenesis from "../pool/planar-genesis.js";
 import _poolPlatedSeastrider from "../pool/plated-seastrider.js";
 import _poolPriestOfIroas from "../pool/priest-of-iroas.js";
 import _poolPrimalMight from "../pool/primal-might.js";
@@ -210,6 +212,7 @@ import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
 import _tokensOgreToken from "../tokens/ogre-token.js";
+import _tokensSpiderToken22Reach from "../tokens/spider-token-2-2-reach.js";
 import _tokensWarriorTokenVigilance from "../tokens/warrior-token-vigilance.js";
 
 const shard: CardShard = {
@@ -246,6 +249,7 @@ const shard: CardShard = {
     _poolClockworkDrawbridge,
     _poolCripplingFear,
     _poolCuriosityCrafter,
+    _poolDarksteelForge,
     _poolDemystify,
     _poolDevoteeOfStrength,
     _poolDimirGuildmage,
@@ -338,6 +342,7 @@ const shard: CardShard = {
     _poolPelakkaWurm,
     _poolPestilentKathari,
     _poolPharikasChosen,
+    _poolPlanarGenesis,
     _poolPlatedSeastrider,
     _poolPriestOfIroas,
     _poolPrimalMight,
@@ -423,6 +428,7 @@ const shard: CardShard = {
     _tokensElementalToken,
     _tokensNecronWarriorToken,
     _tokensOgreToken,
+    _tokensSpiderToken22Reach,
     _tokensWarriorTokenVigilance,
   ],
 };

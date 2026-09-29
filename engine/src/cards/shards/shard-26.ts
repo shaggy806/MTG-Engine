@@ -32,6 +32,7 @@ import _poolDrEggman from "../pool/dr-eggman.js";
 import _poolDragonFodder from "../pool/dragon-fodder.js";
 import _poolDrakewingKrasis from "../pool/drakewing-krasis.js";
 import _poolDrownerOfSecrets from "../pool/drowner-of-secrets.js";
+import _poolDuskshellCrawler from "../pool/duskshell-crawler.js";
 import _poolEarthElemental from "../pool/earth-elemental.js";
 import _poolEliteArrester from "../pool/elite-arrester.js";
 import _poolElvishArchdruid from "../pool/elvish-archdruid.js";
@@ -225,6 +226,7 @@ const shard: CardShard = {
     _poolDragonFodder,
     _poolDrakewingKrasis,
     _poolDrownerOfSecrets,
+    _poolDuskshellCrawler,
     _poolEarthElemental,
     _poolEliteArrester,
     _poolElvishArchdruid,

@@ -1,0 +1,798 @@
+{
+  "batch": "B8",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Colossal Majesty",
+      "files": [
+        "engine/src/cards/pool/colossal-majesty.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Binding the Old Gods",
+      "files": [
+        "engine/src/cards/pool/binding-the-old-gods.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Formidable Speaker",
+      "files": [
+        "engine/src/cards/pool/formidable-speaker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Embercleave",
+      "files": [
+        "engine/src/cards/pool/embercleave.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Genesis Wave",
+      "files": [
+        "engine/src/cards/pool/genesis-wave.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grisly Salvage",
+      "files": [
+        "engine/src/cards/pool/grisly-salvage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Atsushi, the Blazing Sky",
+      "files": [
+        "engine/src/cards/pool/atsushi-the-blazing-sky.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Butcher of Malakir",
+      "files": [
+        "engine/src/cards/pool/butcher-of-malakir.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Coiling Oracle",
+      "files": [
+        "engine/src/cards/pool/coiling-oracle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Enthusiastic Mechanaut",
+      "files": [
+        "engine/src/cards/pool/enthusiastic-mechanaut.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bonehoard Dracosaur",
+      "files": [
+        "engine/src/cards/pool/bonehoard-dracosaur.ts",
+        "engine/src/cards/tokens/dinosaur-token-3-1.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sigil of the Empty Throne",
+      "files": [
+        "engine/src/cards/pool/sigil-of-the-empty-throne.ts",
+        "engine/src/cards/tokens/angel-token-4-4.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Shiny Impetus",
+      "files": [
+        "engine/src/cards/pool/shiny-impetus.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Restoration Angel",
+      "files": [
+        "engine/src/cards/pool/restoration-angel.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Waterlogged Teachings // Inundated Archive",
+      "files": [
+        "engine/src/cards/pool/waterlogged-teachings.ts",
+        "engine/src/cards/pool/inundated-archive.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Forensic Gadgeteer",
+      "files": [
+        "engine/src/cards/pool/forensic-gadgeteer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Martial Coup",
+      "files": [
+        "engine/src/cards/pool/martial-coup.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rankle, Master of Pranks",
+      "files": [
+        "engine/src/cards/pool/rankle-master-of-pranks.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Delayed Blast Fireball",
+      "files": [
+        "engine/src/cards/pool/delayed-blast-fireball.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ominous Seas",
+      "files": [
+        "engine/src/cards/pool/ominous-seas.ts",
+        "engine/src/cards/tokens/kraken-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gaea's Gift",
+      "files": [
+        "engine/src/cards/pool/gaeas-gift.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Terastodon",
+      "files": [
+        "engine/src/cards/pool/terastodon.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Duskshell Crawler",
+      "files": [
+        "engine/src/cards/pool/duskshell-crawler.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Abzan Falconer",
+      "files": [
+        "engine/src/cards/pool/abzan-falconer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Lifecrafter's Bestiary",
+      "files": [
+        "engine/src/cards/pool/lifecrafters-bestiary.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Contagion Clasp",
+      "files": [
+        "engine/src/cards/pool/contagion-clasp.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Imperious Perfect",
+      "files": [
+        "engine/src/cards/pool/imperious-perfect.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Legolas's Quick Reflexes",
+      "files": [
+        "engine/src/cards/pool/legolass-quick-reflexes.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Darksteel Forge",
+      "files": [
+        "engine/src/cards/pool/darksteel-forge.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Weathered Wayfarer",
+      "files": [
+        "engine/src/cards/pool/weathered-wayfarer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Goldvein Hydra",
+      "files": [
+        "engine/src/cards/pool/goldvein-hydra.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Underworld Dreams",
+      "files": [
+        "engine/src/cards/pool/underworld-dreams.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dreadhorde Invasion",
+      "files": [
+        "engine/src/cards/pool/dreadhorde-invasion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Temur Battle Rage",
+      "files": [
+        "engine/src/cards/pool/temur-battle-rage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bulk Up",
+      "files": [
+        "engine/src/cards/pool/bulk-up.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Beledros Witherbloom",
+      "files": [
+        "engine/src/cards/pool/beledros-witherbloom.ts",
+        "engine/src/cards/tokens/pest-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fling",
+      "files": [
+        "engine/src/cards/pool/fling.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "No Mercy",
+      "files": [
+        "engine/src/cards/pool/no-mercy.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dark Deal",
+      "files": [
+        "engine/src/cards/pool/dark-deal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Eldrazi Monument",
+      "files": [
+        "engine/src/cards/pool/eldrazi-monument.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vedalken Orrery",
+      "files": [
+        "engine/src/cards/pool/vedalken-orrery.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Feign Death",
+      "files": [
+        "engine/src/cards/pool/feign-death.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fake Your Own Death",
+      "files": [
+        "engine/src/cards/pool/fake-your-own-death.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "In Garruk's Wake",
+      "files": [
+        "engine/src/cards/pool/in-garruks-wake.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cover of Darkness",
+      "files": [
+        "engine/src/cards/pool/cover-of-darkness.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fell the Mighty",
+      "files": [
+        "engine/src/cards/pool/fell-the-mighty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Monumental Henge",
+      "files": [
+        "engine/src/cards/pool/monumental-henge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Diamond Pick-Axe",
+      "files": [
+        "engine/src/cards/pool/diamond-pick-axe.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Twitching Doll",
+      "files": [
+        "engine/src/cards/pool/twitching-doll.ts",
+        "engine/src/cards/tokens/spider-token-2-2-reach.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Apex Altisaur",
+      "files": [
+        "engine/src/cards/pool/apex-altisaur.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Planar Genesis",
+      "files": [
+        "engine/src/cards/pool/planar-genesis.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Odric, Lunarch Marshal",
+      "files": [
+        "engine/src/cards/pool/odric-lunarch-marshal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wave Goodbye",
+      "files": [
+        "engine/src/cards/pool/wave-goodbye.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Arid Archway",
+      "files": [
+        "engine/src/cards/pool/arid-archway.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Acidic Slime",
+      "files": [
+        "engine/src/cards/pool/acidic-slime.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Guide of Souls",
+      "files": [
+        "engine/src/cards/pool/guide-of-souls.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Training Grounds",
+      "files": [
+        "engine/src/cards/pool/training-grounds.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Crime Novelist",
+      "needs": [
+        "new:sacrifice-triggered-mana-ability"
+      ],
+      "why": "'Whenever you sacrifice an artifact, put a +1/+1 counter on this creature and add {R}' \u2014 a triggered mana ability (rule 605.1b) resolves at once, off the stack; every engine trigger uses the stack."
+    },
+    {
+      "name": "Kinnan, Bonder Prodigy",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "'Whenever you tap a nonland permanent for mana, add one mana of any type that permanent produced' \u2014 a triggered mana ability keyed to what the tapped permanent made."
+    },
+    {
+      "name": "Leyline Axe",
+      "needs": [
+        "new:leyline-opening-hand"
+      ],
+      "why": "'If this card is in your opening hand, you may begin the game with it on the battlefield.'"
+    },
+    {
+      "name": "Cavern-Hoard Dragon",
+      "needs": [
+        "new:cost-reduction-greatest-opponent-count",
+        "new:count-of-damaged-players-permanents"
+      ],
+      "why": "Costs {X} less where X is the greatest number of artifacts an opponent controls; its combat-damage Treasures count the damaged player's artifacts."
+    },
+    {
+      "name": "Scroll Rack",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "Exile any number of cards from hand face down, draw that many, then put the exiled cards on top in any order."
+    },
+    {
+      "name": "Agatha's Soul Cauldron",
+      "needs": [
+        "new:grant-exiled-cards-activated-abilities",
+        "cost:mana-spending-rules"
+      ],
+      "why": "Creatures with +1/+1 counters have the activated abilities of creature cards it exiled; mana spent as though any colour for creatures' abilities."
+    },
+    {
+      "name": "Glissa Sunslayer",
+      "needs": [
+        "new:remove-counters-effect"
+      ],
+      "why": "Third mode: 'Remove up to three counters from target permanent' \u2014 no effect removes counters of the chooser's choice."
+    },
+    {
+      "name": "Elven Chorus",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "Look at the top card of your library any time and cast creature spells from it."
+    },
+    {
+      "name": "Invasion of Ikoria // Zilortha, Apex of Ikoria",
+      "needs": [
+        "mechanic:battles"
+      ],
+      "why": "A siege battle."
+    },
+    {
+      "name": "Ulamog, the Infinite Gyre",
+      "needs": [
+        "new:shuffle-graveyard-into-library"
+      ],
+      "why": "'When Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.'"
+    },
+    {
+      "name": "Giver of Runes",
+      "needs": [
+        "effect:grant-protection-choice"
+      ],
+      "why": "'Gains protection from colorless or from the color of your choice' \u2014 protection chosen on resolution."
+    },
+    {
+      "name": "Electrodominance",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "'You may cast a spell with mana value X or less from your hand without paying its mana cost' as it resolves."
+    },
+    {
+      "name": "Priest of Forgotten Gods",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'{T}, Sacrifice two other creatures' plus any number of target players."
+    },
+    {
+      "name": "All Will Be One",
+      "needs": [
+        "new:counters-put-on-players"
+      ],
+      "why": "'Whenever you put one or more counters on a permanent or player' \u2014 a counters-put trigger with the amount, players included."
+    },
+    {
+      "name": "Shatterskull Smashing // Shatterskull, the Hammer Pass",
+      "needs": [
+        "new:divided-damage"
+      ],
+      "why": "X damage divided as you choose among up to two targets (twice X if X is 6 or more)."
+    },
+    {
+      "name": "Thousand-Year Storm",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copies with 'you may choose new targets for the copies'."
+    },
+    {
+      "name": "Crawlspace",
+      "needs": [
+        "new:attack-limit"
+      ],
+      "why": "'No more than two creatures can attack you each combat.'"
+    },
+    {
+      "name": "Call of the Ring",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "The Ring tempts you."
+    },
+    {
+      "name": "Baleful Mastery",
+      "needs": [
+        "decision:choose-opponent"
+      ],
+      "why": "'If the {1}{B} cost was paid, an opponent draws a card' \u2014 the caster chooses which opponent."
+    },
+    {
+      "name": "Mantle of the Ancients",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "Returns any number of Aura and Equipment cards from the graveyard attached to the enchanted creature."
+    },
+    {
+      "name": "Lindblum, Industrial Regency // Mage Siege",
+      "needs": [
+        "new:land-adventure"
+      ],
+      "why": "A land with an Adventure: played as a land from exile afterwards."
+    },
+    {
+      "name": "Reverberate",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "'Copy target instant or sorcery spell. You may choose new targets for the copy.'"
+    },
+    {
+      "name": "Ghostly Pilferer",
+      "needs": [
+        "new:untap-trigger",
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Whenever this creature becomes untapped' and 'Discard a card:' as an activation cost."
+    },
+    {
+      "name": "Rings of Brighthearth",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copies an activated ability, new targets allowed."
+    },
+    {
+      "name": "Silent Hallcreeper",
+      "needs": [
+        "effect:become-copy",
+        "new:modes-not-chosen-before"
+      ],
+      "why": "'Choose one that hasn't been chosen' and 'becomes a copy of another target creature you control'."
+    },
+    {
+      "name": "Muraganda Raceway",
+      "needs": [
+        "mechanic:speed"
+      ],
+      "why": "Speed and 'Max speed'."
+    },
+    {
+      "name": "Caduceus, Staff of Hermes",
+      "needs": [
+        "new:prevent-damage-to-filter"
+      ],
+      "why": "Grants 'Prevent all damage that would be dealt to this creature' while you have 30 or more life."
+    },
+    {
+      "name": "Flare of Denial",
+      "needs": [
+        "new:alt-cost-sacrifice"
+      ],
+      "why": "'You may sacrifice a nontoken blue creature rather than pay this spell's mana cost.'"
+    },
+    {
+      "name": "Koma, Cosmos Serpent",
+      "needs": [
+        "effect:modal-activated-targeted-modes"
+      ],
+      "why": "'Sacrifice another Serpent: Choose one \u2014' with a targeted mode (and 'its activated abilities can't be activated this turn')."
+    },
+    {
+      "name": "Ancient Silver Dragon",
+      "needs": [
+        "new:dice-rolls"
+      ],
+      "why": "Rolls a d20; also 'no maximum hand size for the rest of the game'."
+    },
+    {
+      "name": "Elixir of Immortality",
+      "needs": [
+        "new:shuffle-graveyard-into-library"
+      ],
+      "why": "'Shuffle this artifact and your graveyard into their owner's library.'"
+    },
+    {
+      "name": "Ishgard, the Holy See // Faith & Grief",
+      "needs": [
+        "new:land-adventure"
+      ],
+      "why": "A land with an Adventure."
+    },
+    {
+      "name": "Comet Storm",
+      "needs": [
+        "keyword:multikicker",
+        "decision:variable-target-count"
+      ],
+      "why": "Multikicker, and one more target for each time it was kicked."
+    },
+    {
+      "name": "Drown in the Loch",
+      "needs": [
+        "new:target-filter-relative-to-controller"
+      ],
+      "why": "'Mana value less than or equal to the number of cards in its controller's graveyard' \u2014 a target filter read against the target's own controller."
+    },
+    {
+      "name": "Cleric Class",
+      "needs": [
+        "new:class-levels"
+      ],
+      "why": "A Class."
+    },
+    {
+      "name": "Iroas, God of Victory",
+      "needs": [
+        "static:self-type-changes",
+        "new:prevent-damage-to-filter"
+      ],
+      "why": "Not a creature below devotion seven; 'Prevent all damage that would be dealt to attacking creatures you control.'"
+    },
+    {
+      "name": "Lizard Blades",
+      "needs": [
+        "keyword:reconfigure"
+      ],
+      "why": "Reconfigure."
+    },
+    {
+      "name": "Concordant Crossroads",
+      "needs": [
+        "new:world-rule"
+      ],
+      "why": "A World enchantment (rule 704.5k)."
+    },
+    {
+      "name": "Dark Depths",
+      "needs": [
+        "new:state-triggers"
+      ],
+      "why": "'When Dark Depths has no ice counters on it' is a state trigger (rule 603.8)."
+    },
+    {
+      "name": "Mystic Confluence",
+      "needs": [
+        "new:repeatable-modes"
+      ],
+      "why": "'Choose three. You may choose the same mode more than once.'"
+    },
+    {
+      "name": "Treasure Nabber",
+      "needs": [
+        "new:tapped-for-mana-trigger",
+        "effect:control-change-extensions"
+      ],
+      "why": "'Whenever an opponent taps an artifact for mana' and control 'until the end of your next turn'."
+    },
+    {
+      "name": "Long River's Pull",
+      "needs": [
+        "keyword:gift"
+      ],
+      "why": "Gift a card."
+    },
+    {
+      "name": "Triskaidekaphile",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You win the game.'"
+    },
+    {
+      "name": "Lae'zel, Vlaakith's Champion",
+      "needs": [
+        "new:counter-replacement-players"
+      ],
+      "why": "Counter replacement that also covers counters put on you."
+    },
+    {
+      "name": "Fauna Shaman",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard a creature card' as an activation cost."
+    },
+    {
+      "name": "Deadeye Navigator",
+      "needs": [
+        "keyword:soulbond"
+      ],
+      "why": "Soulbond."
+    },
+    {
+      "name": "Rain of Riches",
+      "needs": [
+        "new:grant-to-first-matching-spell"
+      ],
+      "why": "'The first spell you cast each turn that mana from a Treasure was spent to cast has cascade.'"
+    },
+    {
+      "name": "Echoes of Eternity",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copies colorless spells with new targets; also doubles colorless triggers."
+    },
+    {
+      "name": "Obscuring Haze",
+      "needs": [
+        "new:prevent-damage-by-filter"
+      ],
+      "why": "'Prevent all damage that would be dealt this turn by creatures your opponents control.'"
+    },
+    {
+      "name": "Phantasmal Image",
+      "needs": [
+        "replacement:copy-on-enter-options"
+      ],
+      "why": "Enters as a copy 'except it's an Illusion \u2026 and it has \"When this creature becomes the target of a spell or ability, sacrifice it\"'."
+    },
+    {
+      "name": "Westvale Abbey // Ormendahl, Profane Prince",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'{5}, {T}, Sacrifice five creatures: Transform this land.'"
+    },
+    {
+      "name": "Heliod's Intervention",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "'Destroy X target artifacts and/or enchantments.'"
+    },
+    {
+      "name": "Snake Umbra",
+      "needs": [
+        "keyword:umbra-armor"
+      ],
+      "why": "Umbra armor."
+    },
+    {
+      "name": "Grab the Prize",
+      "needs": [
+        "new:cost-discarded-reference"
+      ],
+      "why": "'If the discarded card wasn't a land card' \u2014 nothing records the card discarded as the spell's additional cost."
+    }
+  ]
+}

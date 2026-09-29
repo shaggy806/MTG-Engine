@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbsorb from "../pool/absorb.js";
+import _poolAcidicSlime from "../pool/acidic-slime.js";
 import _poolAesthirGlider from "../pool/aesthir-glider.js";
 import _poolAgentOfStromgald from "../pool/agent-of-stromgald.js";
 import _poolAgentOfTreachery from "../pool/agent-of-treachery.js";
@@ -15,6 +16,7 @@ import _poolAngelsMercy from "../pool/angels-mercy.js";
 import _poolArchersOfQarsi from "../pool/archers-of-qarsi.js";
 import _poolArchfiendOfDepravity from "../pool/archfiend-of-depravity.js";
 import _poolArchiveDragon from "../pool/archive-dragon.js";
+import _poolAridArchway from "../pool/arid-archway.js";
 import _poolBalefulStrix from "../pool/baleful-strix.js";
 import _poolBaneAlleyBlackguard from "../pool/bane-alley-blackguard.js";
 import _poolBannersRaised from "../pool/banners-raised.js";
@@ -30,6 +32,7 @@ import _poolBorborygmos from "../pool/borborygmos.js";
 import _poolBrambleweftBehemoth from "../pool/brambleweft-behemoth.js";
 import _poolBrashTaunter from "../pool/brash-taunter.js";
 import _poolBronzeSable from "../pool/bronze-sable.js";
+import _poolButcherOfMalakir from "../pool/butcher-of-malakir.js";
 import _poolCatalog from "../pool/catalog.js";
 import _poolCathodion from "../pool/cathodion.js";
 import _poolCavernCrawler from "../pool/cavern-crawler.js";
@@ -39,6 +42,7 @@ import _poolCerodonYearling from "../pool/cerodon-yearling.js";
 import _poolChampionOfThePerished from "../pool/champion-of-the-perished.js";
 import _poolClawsOfGix from "../pool/claws-of-gix.js";
 import _poolCliffThreader from "../pool/cliff-threader.js";
+import _poolCoilingOracle from "../pool/coiling-oracle.js";
 import _poolColossalDreadmaw from "../pool/colossal-dreadmaw.js";
 import _poolCommandTheStorm from "../pool/command-the-storm.js";
 import _poolCoralEel from "../pool/coral-eel.js";
@@ -186,13 +190,16 @@ import _poolYotianDissident from "../pool/yotian-dissident.js";
 import _poolZephyrSprite from "../pool/zephyr-sprite.js";
 import _poolZodiacGoat from "../pool/zodiac-goat.js";
 import _tokens32ShapeshifterToken from "../tokens/3-2-shapeshifter-token.js";
+import _tokensAngelToken44 from "../tokens/angel-token-4-4.js";
 import _tokensFrogLizardToken from "../tokens/frog-lizard-token.js";
 import _tokensHeroToken from "../tokens/hero-token.js";
+import _tokensPestToken from "../tokens/pest-token.js";
 import _tokensSquidToken from "../tokens/squid-token.js";
 
 const shard: CardShard = {
   pool: [
     _poolAbsorb,
+    _poolAcidicSlime,
     _poolAesthirGlider,
     _poolAgentOfStromgald,
     _poolAgentOfTreachery,
@@ -204,6 +211,7 @@ const shard: CardShard = {
     _poolArchersOfQarsi,
     _poolArchfiendOfDepravity,
     _poolArchiveDragon,
+    _poolAridArchway,
     _poolBalefulStrix,
     _poolBaneAlleyBlackguard,
     _poolBannersRaised,
@@ -219,6 +227,7 @@ const shard: CardShard = {
     _poolBrambleweftBehemoth,
     _poolBrashTaunter,
     _poolBronzeSable,
+    _poolButcherOfMalakir,
     _poolCatalog,
     _poolCathodion,
     _poolCavernCrawler,
@@ -228,6 +237,7 @@ const shard: CardShard = {
     _poolChampionOfThePerished,
     _poolClawsOfGix,
     _poolCliffThreader,
+    _poolCoilingOracle,
     _poolColossalDreadmaw,
     _poolCommandTheStorm,
     _poolCoralEel,
@@ -377,8 +387,10 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokens32ShapeshifterToken,
+    _tokensAngelToken44,
     _tokensFrogLizardToken,
     _tokensHeroToken,
+    _tokensPestToken,
     _tokensSquidToken,
   ],
 };

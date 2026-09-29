@@ -611,7 +611,10 @@ export type StaticCondition =
    * `thisWay` amount counts. Met when there are at least `atLeast` and at
    * most `atMost` of them — `atLeast` defaults to 1, or to 0 when `atMost` is
    * given, so `{ atMost: 0 }` is "didn't". Only a resolution can answer it;
-   * anywhere else it is false.
+   * anywhere else it is false. `other` leaves the ability's own source out:
+   * Arid Archway's "return a land you control to its owner's hand. If
+   * **another** Desert was returned this way, surveil 1" — it returning
+   * itself doesn't count.
    */
   | {
       readonly kind: "this-way";
@@ -620,6 +623,7 @@ export type StaticCondition =
       readonly filter?: CardFilter;
       readonly atLeast?: number;
       readonly atMost?: number;
+      readonly other?: boolean;
     }
   /**
    * "If ~ is still on the battlefield" (Shirei, Shizo's Caretaker's delayed
@@ -1184,16 +1188,31 @@ export interface StaticAbility {
    * "Activated abilities of Foods you control cost {1} less to activate"
    * (Sam, Loyal Attendant) is `{ applies: { subtype: "Food", controlledBy:
    * "you" }, reduceGeneric: 1 }`. `applies` is matched against the ability's
-   * source, with this static's controller as "you". Generic mana only, added
+   * source, with this static's controller as "you", and only while that
+   * source is a permanent: "activated abilities of artifacts you control"
+   * never reaches a card's ability in a hand or graveyard (Forensic
+   * Gadgeteer's ruling — cycling isn't reduced). Generic mana only, added
    * before anything is taken off, and never below {0}; an increase puts a
-   * cost on an ability that had no mana in it. Mana abilities are left alone
-   * — the payment planner prices those as sources, not as costs. `affects` is
-   * ignored.
+   * cost on an ability that had no mana in it. Mana abilities are modified
+   * too (a Signet's `{1}`), both when activated by hand and as the payment
+   * planner prices a converter, unless `exceptManaAbilities` says "…unless
+   * they're mana abilities" (Suppression Field). `affects` is ignored.
    */
   readonly abilityCostModification?: {
     readonly applies: CardFilter;
     readonly reduceGeneric?: number;
     readonly increaseGeneric?: number;
+    /**
+     * "This effect can't reduce the mana in that cost to less than one mana"
+     * (Training Grounds, Forensic Gadgeteer): `reduceGeneric` stops where
+     * the cost — generic, coloured, colourless and hybrid symbols together —
+     * is down to one mana, and takes nothing off a cost that had none. So
+     * `{3}` less 2 is `{1}`, `{1}{G}` is `{G}`, and `{1}` stays `{1}`. These
+     * reductions go before any unlimited one, the order that leaves the
+     * least to pay (rule 601.2f lets the payer apply reductions in any order).
+     */
+    readonly leavesOneMana?: boolean;
+    readonly exceptManaAbilities?: boolean;
   };
   /** Layer 7b: set base power and toughness to a dynamic count (+ the given
    * offsets). Only meaningful with `affects.scope === "self"` (a CDA). */
