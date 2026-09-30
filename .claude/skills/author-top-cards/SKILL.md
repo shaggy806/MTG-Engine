@@ -1,12 +1,15 @@
 ---
 name: author-top-cards
-description: Author the next batch of the top-5000 Commander cards (engine/src/cards/top-commander-cards.txt, most-played first) — pick the next unimplemented cards, author every one the engine runs faithfully, record what blocks the rest, build the blocking feature when one clearly leads, test, and ship the batch. Use when the user says to work on cards, author cards, do the next card batch, continue the top-5000 / card backlog, or runs this skill with no other instructions.
+description: Author the next batch of missing cards — while the starter precons (engine/src/sample-decks.ts, the bots' default decks) still have stand-ins, their missing cards deck by deck; after that, the top-5000 Commander cards (engine/src/cards/top-commander-cards.txt, most-played first) — pick the next unimplemented cards, author every one the engine runs faithfully, record what blocks the rest, build the blocking feature when one clearly leads, test, and ship the batch. Use when the user says to work on cards, author cards, do the next card batch, continue the top-5000 / card backlog, or runs this skill with no other instructions.
 ---
 
-# Author the next top-5000 batch
+# Author the next card batch
 
-The current authoring priority (BACKLOG, "Card backlog"): the top 5000 cards
-by EDHREC rank, worked down in rank order. One run = one batch, shipped.
+The current authoring priority (BACKLOG, "Card backlog"): **the missing cards
+of the Tarkir: Dragonstorm precons** — the five `SAMPLE_DECKS` every bot plays,
+whose `substitutions` tables list what the engine can't run yet — and after
+them the top 5000 cards by EDHREC rank, worked down in rank order. One run =
+one batch, shipped.
 
 **Rule zero governs everything here** (`engine/src/cards/AUTHORING.md` §0):
 never author a card the engine can't run *exactly* — no dropped clause, no
@@ -28,6 +31,12 @@ If BACKLOG lists something to do *before* authoring (a branch to merge, a
 broken build), do that first or tell the user.
 
 ## 1. Pick the batch
+
+**While any `SAMPLE_DECKS` deck has substitutions**, the batch is precon
+cards: the `original`s of one or two decks' `substitutions` tables in
+`engine/src/sample-decks.ts` (the deck with the fewest left first, so a deck
+gets fully real soonest), skipping any a `engine/data/sweep-3/TDC*.json`
+already records as blocked. Otherwise, the top-5000 list:
 
 The next ~60 unmarked `[ ]` entries of `engine/src/cards/top-commander-cards.txt`
 in rank order. Skip the ones `engine/data/sweep-2/K*.json` or a
@@ -74,7 +83,7 @@ Target 30-50 cards. For each:
 ## 4. Test
 
 - `engine/src/test/top5000-batch-<N>.test.ts` (next N after the existing
-  ones): one focused test per card whose behaviour is more than a stat line
+  ones; `precon-tdc-batch-<N>.test.ts` for precon cards): one focused test per card whose behaviour is more than a stat line
   or a copy of a tested pattern — the clause most likely to be wrong. For a
   test that could pass by accident, break the card and watch it fail.
 - `npm run card:verify -w engine` (stat blocks against Scryfall — needs the
@@ -89,6 +98,12 @@ Target 30-50 cards. For each:
 
 ## 5. Record
 
+- Precon cards: delete each authored card's entry from its deck's
+  `substitutions` table in `sample-decks.ts` and its row in
+  `docs/plans/precon-decks.md` (the section's count too), and update the
+  missing counts on BACKLOG's **Now** line. `sample-decks.test.ts` fails
+  until every implemented card's substitution is gone. Blocked precon cards
+  go in `engine/data/sweep-3/TDC<N>.json`.
 - `npm run cards:mark -w engine` — re-marks `top-commander-cards.txt`.
 - The blocked cards: `engine/data/sweep-3/<batch>.json`, same shape as
   `sweep-2`'s files (`batch`, `status`, `authored: [{name, files, tested}]`,
@@ -101,7 +116,8 @@ Target 30-50 cards. For each:
 ## 6. Ship
 
 Use the `ship` skill. Commit message in the history's style: `Cards:
-top-5000 batch <N> — <three or four headline cards> and <count> more`, the
+top-5000 batch <N> — <three or four headline cards> and <count> more` (or
+`Cards: TDC precons batch <N> — …` for precon cards, naming the decks), the
 rank range, the cycles, and any engine fix found on the way, each with why.
 
 ## 7. Report and offer the next

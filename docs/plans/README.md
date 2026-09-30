@@ -6,7 +6,7 @@ where it stands, and none is living documentation: the code and `docs/architectu
 The index, as of the last update:
 
 Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `card-replacer` (reworked
-onto Scryfall Tagger oracle tags), `precon-decks` (the five starter decks and their stand-ins), `resolve-all-stack` (the one-shot "resolve the whole stack" button),
+onto Scryfall Tagger oracle tags), `precon-decks` (the five Tarkir: Dragonstorm starter decks and their stand-ins), `resolve-all-stack` (the one-shot "resolve the whole stack" button),
 `auto-pass-interruptions` (the shared "something real happened" scan that
 stops both it and auto-pass).
 `engine-gaps` records the engine work that unblocked most of the precons, paused with the rest

@@ -20,7 +20,10 @@ before authoring any card; this file is a priority list, not a how-to.
 
 ---
 
-## The commander gap — the current authoring priority
+## The commander gap
+
+(Card authoring's priority is now the Tarkir: Dragonstorm precons' missing cards, then the
+top-5000 list — `BACKLOG.md`, "Card backlog". The commander numbers below date from 2026-09-25.)
 
 **256 of the 500 most-played commanders are implemented** (2026-09-25).
 Almost any real decklist someone imports still has its commander substituted,

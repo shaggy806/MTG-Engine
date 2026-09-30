@@ -539,7 +539,8 @@ is not a result.
 The tuner is only as meaningful as the games it measures, and `SAMPLE_DECKS` was originally
 not format-legal: 60 cards instead of 100, colour identity ignored, and curated to exercise
 engine features rather than to play a game of Magic. That prerequisite is met — `SAMPLE_DECKS`
-is now the five 2022 Starter Commander Decks (`docs/plans/precon-decks.md`).
+is the five Tarkir: Dragonstorm Commander decks (`docs/plans/precon-decks.md`; the 2022 Starter
+Commander Decks until 2026-09-30, so bench numbers from before then don't compare).
 
 ## Measuring the game rooms actually play (Phase 0 — done)
 
