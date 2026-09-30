@@ -291,6 +291,15 @@ that one card is the reason the deck exists.
 
 ## Engine rules gaps
 
+- **Reveal lands never ask, and never show what they revealed** (Game Trail, Port Town,
+  Foreboding Ruins, Fortified Village; the user hit it with Game Trail, 2026-09-30).
+  `tappedUnlessRevealFromHand` reveals automatically whenever the hand has a qualifying card,
+  so the player isn't given the "you may" (declining is legal: hide the card, take the tapped
+  land), and nothing is emitted, so no other player sees the card and History has no entry,
+  though a revealed card is shown to all players (rule 701.20a). The deliberate shortcut is
+  noted in `AUTHORING.md` ("declining only ever hides information"). Needs a decision (like the
+  shock lands' `pay-life-for-untapped`) offering which qualifying card to reveal or none, and a
+  `cards-revealed` event for the one chosen, which the client already holds up for everyone.
 - **Explore auto-determining the best trigger stacking order.** Simultaneous triggers a player
   controls go on the stack in detection order (`placePendingTriggers` in `game.ts`), never the
   player's choice (603.3b). Explore whether the engine could pick the best order itself, as an
