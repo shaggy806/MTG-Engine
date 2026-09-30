@@ -1337,6 +1337,9 @@ export interface CardDefinition {
    * printing, or to lock in a preferred illustration.
    */
   readonly art: string | null;
+  /** `null` is no mana cost — an unpayable one (rule 118.6), so the card is
+   * cast only for an alternative cost or without paying it (118.6a):
+   * Ancestral Vision is only ever suspended. */
   readonly manaCost: string | null;
   readonly colors: readonly Color[];
   readonly supertypes: readonly Supertype[];

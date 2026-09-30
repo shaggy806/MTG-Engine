@@ -12,6 +12,7 @@ import _poolAkroanMastiff from "../pool/akroan-mastiff.js";
 import _poolAltarsLight from "../pool/altars-light.js";
 import _poolAminatouTheFateshifter from "../pool/aminatou-the-fateshifter.js";
 import _poolAncientGreenwarden from "../pool/ancient-greenwarden.js";
+import _poolAngelOfInvention from "../pool/angel-of-invention.js";
 import _poolArcaneSignet from "../pool/arcane-signet.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
@@ -22,6 +23,7 @@ import _poolBlazemireVerge from "../pool/blazemire-verge.js";
 import _poolBogImp from "../pool/bog-imp.js";
 import _poolBoggartBrute from "../pool/boggart-brute.js";
 import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
+import _poolBoneDevourer from "../pool/bone-devourer.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
@@ -192,6 +194,7 @@ import _poolWaspLancer from "../pool/wasp-lancer.js";
 import _poolWeftstalkerArdent from "../pool/weftstalker-ardent.js";
 import _poolWildAesthir from "../pool/wild-aesthir.js";
 import _poolWildWanderer from "../pool/wild-wanderer.js";
+import _poolWingmantleChaplain from "../pool/wingmantle-chaplain.js";
 import _poolWinotaJoinerOfForces from "../pool/winota-joiner-of-forces.js";
 import _poolWoodlandPatrol from "../pool/woodland-patrol.js";
 import _poolZephid from "../pool/zephid.js";
@@ -214,6 +217,7 @@ const shard: CardShard = {
     _poolAltarsLight,
     _poolAminatouTheFateshifter,
     _poolAncientGreenwarden,
+    _poolAngelOfInvention,
     _poolArcaneSignet,
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,
@@ -224,6 +228,7 @@ const shard: CardShard = {
     _poolBogImp,
     _poolBoggartBrute,
     _poolBoilingRockPrison,
+    _poolBoneDevourer,
     _poolBreathstealer,
     _poolCanopyGorger,
     _poolCarrionAnts,
@@ -394,6 +399,7 @@ const shard: CardShard = {
     _poolWeftstalkerArdent,
     _poolWildAesthir,
     _poolWildWanderer,
+    _poolWingmantleChaplain,
     _poolWinotaJoinerOfForces,
     _poolWoodlandPatrol,
     _poolZephid,

@@ -76,6 +76,7 @@ import _poolFireUrchin from "../pool/fire-urchin.js";
 import _poolForensicGadgeteer from "../pool/forensic-gadgeteer.js";
 import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
+import _poolGadrakTheCrownScourge from "../pool/gadrak-the-crown-scourge.js";
 import _poolGlaringAegis from "../pool/glaring-aegis.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
 import _poolGolgariRotwurm from "../pool/golgari-rotwurm.js";
@@ -284,6 +285,7 @@ const shard: CardShard = {
     _poolForensicGadgeteer,
     _poolFoundationBreaker,
     _poolFrostOgre,
+    _poolGadrakTheCrownScourge,
     _poolGlaringAegis,
     _poolGoldenTailDisciple,
     _poolGolgariRotwurm,

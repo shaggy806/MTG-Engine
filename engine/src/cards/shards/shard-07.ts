@@ -83,6 +83,7 @@ import _poolInordinateRage from "../pool/inordinate-rage.js";
 import _poolIsamaruHoundOfKonda from "../pool/isamaru-hound-of-konda.js";
 import _poolJetmirsGarden from "../pool/jetmirs-garden.js";
 import _poolKabutoMoth from "../pool/kabuto-moth.js";
+import _poolKeigaTheTideStar from "../pool/keiga-the-tide-star.js";
 import _poolKindercatch from "../pool/kindercatch.js";
 import _poolKingfisher from "../pool/kingfisher.js";
 import _poolKnightOfTheTusk from "../pool/knight-of-the-tusk.js";
@@ -194,6 +195,7 @@ import _poolVigilantBaloth from "../pool/vigilant-baloth.js";
 import _poolViviOrnitier from "../pool/vivi-ornitier.js";
 import _poolVolcanicGeyser from "../pool/volcanic-geyser.js";
 import _poolWakandanDroneFlock from "../pool/wakandan-drone-flock.js";
+import _poolWallOfLimbs from "../pool/wall-of-limbs.js";
 import _poolWallOfRazors from "../pool/wall-of-razors.js";
 import _poolWallOfVines from "../pool/wall-of-vines.js";
 import _poolWarthog from "../pool/warthog.js";
@@ -299,6 +301,7 @@ const shard: CardShard = {
     _poolIsamaruHoundOfKonda,
     _poolJetmirsGarden,
     _poolKabutoMoth,
+    _poolKeigaTheTideStar,
     _poolKindercatch,
     _poolKingfisher,
     _poolKnightOfTheTusk,
@@ -410,6 +413,7 @@ const shard: CardShard = {
     _poolViviOrnitier,
     _poolVolcanicGeyser,
     _poolWakandanDroneFlock,
+    _poolWallOfLimbs,
     _poolWallOfRazors,
     _poolWallOfVines,
     _poolWarthog,

@@ -170,6 +170,7 @@ import _poolTimeWarp from "../pool/time-warp.js";
 import _poolTimelessWitness from "../pool/timeless-witness.js";
 import _poolTomeScour from "../pool/tome-scour.js";
 import _poolTorment from "../pool/torment.js";
+import _poolTowerDefense from "../pool/tower-defense.js";
 import _poolTremble from "../pool/tremble.js";
 import _poolTruefirePaladin from "../pool/truefire-paladin.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
@@ -374,6 +375,7 @@ const shard: CardShard = {
     _poolTimelessWitness,
     _poolTomeScour,
     _poolTorment,
+    _poolTowerDefense,
     _poolTremble,
     _poolTruefirePaladin,
     _poolTyphoidRats,

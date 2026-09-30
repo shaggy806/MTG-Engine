@@ -35,6 +35,7 @@ import _poolBruteForce from "../pool/brute-force.js";
 import _poolBurningOil from "../pool/burning-oil.js";
 import _poolBygoneColossus from "../pool/bygone-colossus.js";
 import _poolCageOfHands from "../pool/cage-of-hands.js";
+import _poolCalderaPyremaw from "../pool/caldera-pyremaw.js";
 import _poolCastleGarenbrig from "../pool/castle-garenbrig.js";
 import _poolCaveOfTemptation from "../pool/cave-of-temptation.js";
 import _poolChildOfThorns from "../pool/child-of-thorns.js";
@@ -82,6 +83,7 @@ import _poolGravewaker from "../pool/gravewaker.js";
 import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHannaShipsNavigator from "../pool/hanna-ships-navigator.js";
+import _poolHaughtyDjinn from "../pool/haughty-djinn.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
 import _poolImperialOutrider from "../pool/imperial-outrider.js";
 import _poolInGarruksWake from "../pool/in-garruks-wake.js";
@@ -249,6 +251,7 @@ const shard: CardShard = {
     _poolBurningOil,
     _poolBygoneColossus,
     _poolCageOfHands,
+    _poolCalderaPyremaw,
     _poolCastleGarenbrig,
     _poolCaveOfTemptation,
     _poolChildOfThorns,
@@ -296,6 +299,7 @@ const shard: CardShard = {
     _poolGuardianAutomaton,
     _poolGyreSage,
     _poolHannaShipsNavigator,
+    _poolHaughtyDjinn,
     _poolHornetHarasser,
     _poolImperialOutrider,
     _poolInGarruksWake,

@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbyssalGorestalker from "../pool/abyssal-gorestalker.js";
 import _poolAccessTunnel from "../pool/access-tunnel.js";
+import _poolAmphinMutineer from "../pool/amphin-mutineer.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
 import _poolAvatarEnthusiasts from "../pool/avatar-enthusiasts.js";
@@ -104,6 +105,7 @@ import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
 import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
+import _poolMindbladeRender from "../pool/mindblade-render.js";
 import _poolMineshaftSpider from "../pool/mineshaft-spider.js";
 import _poolMiresGrasp from "../pool/mires-grasp.js";
 import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
@@ -188,6 +190,7 @@ import _poolVoyagesEnd from "../pool/voyages-end.js";
 import _poolVulshokHeartstoker from "../pool/vulshok-heartstoker.js";
 import _poolWakingNightmare from "../pool/waking-nightmare.js";
 import _poolWallOfMulch from "../pool/wall-of-mulch.js";
+import _poolWallOfReverence from "../pool/wall-of-reverence.js";
 import _poolWarPriestOfThune from "../pool/war-priest-of-thune.js";
 import _poolWarScreecher from "../pool/war-screecher.js";
 import _poolWhirlwindOfThought from "../pool/whirlwind-of-thought.js";
@@ -207,6 +210,7 @@ const shard: CardShard = {
   pool: [
     _poolAbyssalGorestalker,
     _poolAccessTunnel,
+    _poolAmphinMutineer,
     _poolAncientTomb,
     _poolArashinCleric,
     _poolAvatarEnthusiasts,
@@ -306,6 +310,7 @@ const shard: CardShard = {
     _poolManicVandal,
     _poolMercilessExecutioner,
     _poolMeticulousArchive,
+    _poolMindbladeRender,
     _poolMineshaftSpider,
     _poolMiresGrasp,
     _poolMoldervineReclamation,
@@ -390,6 +395,7 @@ const shard: CardShard = {
     _poolVulshokHeartstoker,
     _poolWakingNightmare,
     _poolWallOfMulch,
+    _poolWallOfReverence,
     _poolWarPriestOfThune,
     _poolWarScreecher,
     _poolWhirlwindOfThought,

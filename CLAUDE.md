@@ -49,8 +49,8 @@ for:
   order. Add a feature's key to the JSON's `built` array when it lands. The card backlog is
   `top-commander-cards.txt` (the top 5000 Commander cards by
   EDHREC rank against the pool, ahead of more commanders), re-marked in place by `npm run cards:mark -w engine`.
-  **The current authoring priority (since 2026-09-30) comes before both:** the 147 missing cards
-  of the five Tarkir: Dragonstorm precons that are the bots' default decks — the substitution
+  **The current authoring priority (since 2026-09-30) comes before both:** the missing cards of
+  the five Tarkir: Dragonstorm precons that are the bots' default decks — the substitution
   tables in `engine/src/sample-decks.ts` (and `docs/plans/precon-decks.md`). The pool is
   ~5,400 real cards (`npm run card:verify -w engine` prints the current count of definitions,
   which is a little higher: each face of a double-faced card is its own).

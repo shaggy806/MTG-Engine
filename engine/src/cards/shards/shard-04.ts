@@ -34,6 +34,7 @@ import _poolChainersEdict from "../pool/chainers-edict.js";
 import _poolChardalynDragon from "../pool/chardalyn-dragon.js";
 import _poolChasmDrake from "../pool/chasm-drake.js";
 import _poolContradict from "../pool/contradict.js";
+import _poolCrawlingSensation from "../pool/crawling-sensation.js";
 import _poolCrimsonCaravaneer from "../pool/crimson-caravaneer.js";
 import _poolCrimsonKobolds from "../pool/crimson-kobolds.js";
 import _poolCrumblingNecropolis from "../pool/crumbling-necropolis.js";
@@ -191,6 +192,7 @@ import _poolThrorsMap from "../pool/thrors-map.js";
 import _poolTigerClaws from "../pool/tiger-claws.js";
 import _poolTobiasAndrion from "../pool/tobias-andrion.js";
 import _poolTorturedExistence from "../pool/tortured-existence.js";
+import _poolToweringTitan from "../pool/towering-titan.js";
 import _poolToxicDeluge from "../pool/toxic-deluge.js";
 import _poolTritonWaverider from "../pool/triton-waverider.js";
 import _poolTrostaniThreeWhispers from "../pool/trostani-three-whispers.js";
@@ -219,6 +221,7 @@ import _poolZephyrFalcon from "../pool/zephyr-falcon.js";
 import _poolZofBloodbog from "../pool/zof-bloodbog.js";
 import _tokensSandWarriorToken from "../tokens/sand-warrior-token.js";
 import _tokensSoldierToken from "../tokens/soldier-token.js";
+import _tokensWallToken13 from "../tokens/wall-token-1-3.js";
 
 const shard: CardShard = {
   pool: [
@@ -253,6 +256,7 @@ const shard: CardShard = {
     _poolChardalynDragon,
     _poolChasmDrake,
     _poolContradict,
+    _poolCrawlingSensation,
     _poolCrimsonCaravaneer,
     _poolCrimsonKobolds,
     _poolCrumblingNecropolis,
@@ -410,6 +414,7 @@ const shard: CardShard = {
     _poolTigerClaws,
     _poolTobiasAndrion,
     _poolTorturedExistence,
+    _poolToweringTitan,
     _poolToxicDeluge,
     _poolTritonWaverider,
     _poolTrostaniThreeWhispers,
@@ -440,6 +445,7 @@ const shard: CardShard = {
   tokens: [
     _tokensSandWarriorToken,
     _tokensSoldierToken,
+    _tokensWallToken13,
   ],
 };
 

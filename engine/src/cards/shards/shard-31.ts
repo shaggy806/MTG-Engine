@@ -66,6 +66,7 @@ import _poolFesteringGoblin from "../pool/festering-goblin.js";
 import _poolFetidHeath from "../pool/fetid-heath.js";
 import _poolFlameJavelin from "../pool/flame-javelin.js";
 import _poolFlameRift from "../pool/flame-rift.js";
+import _poolFloralEvoker from "../pool/floral-evoker.js";
 import _poolFog from "../pool/fog.js";
 import _poolFontOfMythos from "../pool/font-of-mythos.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
@@ -81,6 +82,7 @@ import _poolGoldenglowMoth from "../pool/goldenglow-moth.js";
 import _poolGolgariGermination from "../pool/golgari-germination.js";
 import _poolGrabbyGiant from "../pool/grabby-giant.js";
 import _poolHalberdier from "../pool/halberdier.js";
+import _poolHammerheadTyrant from "../pool/hammerhead-tyrant.js";
 import _poolHanaKami from "../pool/hana-kami.js";
 import _poolHedronArchive from "../pool/hedron-archive.js";
 import _poolHerosResolve from "../pool/heros-resolve.js";
@@ -262,6 +264,7 @@ const shard: CardShard = {
     _poolFetidHeath,
     _poolFlameJavelin,
     _poolFlameRift,
+    _poolFloralEvoker,
     _poolFog,
     _poolFontOfMythos,
     _poolFoundryInspector,
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolGolgariGermination,
     _poolGrabbyGiant,
     _poolHalberdier,
+    _poolHammerheadTyrant,
     _poolHanaKami,
     _poolHedronArchive,
     _poolHerosResolve,

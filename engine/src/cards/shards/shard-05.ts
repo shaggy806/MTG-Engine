@@ -27,6 +27,7 @@ import _poolBladedSentinel from "../pool/bladed-sentinel.js";
 import _poolBlastedLandscape from "../pool/blasted-landscape.js";
 import _poolBleachboneVerge from "../pool/bleachbone-verge.js";
 import _poolBlessedLight from "../pool/blessed-light.js";
+import _poolBlightPile from "../pool/blight-pile.js";
 import _poolBlightning from "../pool/blightning.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
@@ -36,6 +37,7 @@ import _poolCaravanHurda from "../pool/caravan-hurda.js";
 import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
 import _poolChampionOfTheParish from "../pool/champion-of-the-parish.js";
 import _poolCharismaticVanguard from "../pool/charismatic-vanguard.js";
+import _poolChitteringWitch from "../pool/chittering-witch.js";
 import _poolChorusOfWoe from "../pool/chorus-of-woe.js";
 import _poolChronicleOfVictory from "../pool/chronicle-of-victory.js";
 import _poolChronomaton from "../pool/chronomaton.js";
@@ -236,6 +238,7 @@ const shard: CardShard = {
     _poolBlastedLandscape,
     _poolBleachboneVerge,
     _poolBlessedLight,
+    _poolBlightPile,
     _poolBlightning,
     _poolBodyDropper,
     _poolBrineShaman,
@@ -245,6 +248,7 @@ const shard: CardShard = {
     _poolCastleArdenvale,
     _poolChampionOfTheParish,
     _poolCharismaticVanguard,
+    _poolChitteringWitch,
     _poolChorusOfWoe,
     _poolChronicleOfVictory,
     _poolChronomaton,

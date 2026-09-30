@@ -1,0 +1,731 @@
+{
+  "batch": "TDC1",
+  "status": "complete",
+  "ranks": "Tarkir: Dragonstorm precons (all five decks)",
+  "authored": [
+    {
+      "name": "Become the Avalanche",
+      "files": [
+        "engine/src/cards/pool/become-the-avalanche.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Broodcaller Scourge",
+      "files": [
+        "engine/src/cards/pool/broodcaller-scourge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Draconic Lore",
+      "files": [
+        "engine/src/cards/pool/draconic-lore.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gadrak, the Crown-Scourge",
+      "files": [
+        "engine/src/cards/pool/gadrak-the-crown-scourge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Keiga, the Tide Star",
+      "files": [
+        "engine/src/cards/pool/keiga-the-tide-star.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nesting Dragon",
+      "files": [
+        "engine/src/cards/pool/nesting-dragon.ts",
+        "engine/src/cards/tokens/dragon-egg-token.ts",
+        "engine/src/cards/tokens/dragon-token-firebreathing.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nogi, Draco-Zealot",
+      "files": [
+        "engine/src/cards/pool/nogi-draco-zealot.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Storm's Wrath",
+      "files": [
+        "engine/src/cards/pool/storms-wrath.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hammerhead Tyrant",
+      "files": [
+        "engine/src/cards/pool/hammerhead-tyrant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Amphin Mutineer",
+      "files": [
+        "engine/src/cards/pool/amphin-mutineer.ts",
+        "engine/src/cards/tokens/salamander-warrior-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Crawling Sensation",
+      "files": [
+        "engine/src/cards/pool/crawling-sensation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Floral Evoker",
+      "files": [
+        "engine/src/cards/pool/floral-evoker.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Forbidden Alchemy",
+      "files": [
+        "engine/src/cards/pool/forbidden-alchemy.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kishla Skimmer",
+      "files": [
+        "engine/src/cards/pool/kishla-skimmer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Arbor Adherent",
+      "files": [
+        "engine/src/cards/pool/arbor-adherent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Axebane Guardian",
+      "files": [
+        "engine/src/cards/pool/axebane-guardian.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blight Pile",
+      "files": [
+        "engine/src/cards/pool/blight-pile.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Expel the Interlopers",
+      "files": [
+        "engine/src/cards/pool/expel-the-interlopers.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Indulging Patrician",
+      "files": [
+        "engine/src/cards/pool/indulging-patrician.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Jaws of Defeat",
+      "files": [
+        "engine/src/cards/pool/jaws-of-defeat.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Overgrown Battlement",
+      "files": [
+        "engine/src/cards/pool/overgrown-battlement.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rampart Architect",
+      "files": [
+        "engine/src/cards/pool/rampart-architect.ts",
+        "engine/src/cards/tokens/wall-token-1-3.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tower Defense",
+      "files": [
+        "engine/src/cards/pool/tower-defense.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Towering Titan",
+      "files": [
+        "engine/src/cards/pool/towering-titan.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wall of Limbs",
+      "files": [
+        "engine/src/cards/pool/wall-of-limbs.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Wall of Reverence",
+      "files": [
+        "engine/src/cards/pool/wall-of-reverence.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Wingmantle Chaplain",
+      "files": [
+        "engine/src/cards/pool/wingmantle-chaplain.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Angel of Invention",
+      "files": [
+        "engine/src/cards/pool/angel-of-invention.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bone Devourer",
+      "files": [
+        "engine/src/cards/pool/bone-devourer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Chittering Witch",
+      "files": [
+        "engine/src/cards/pool/chittering-witch.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ironwill Forger",
+      "files": [
+        "engine/src/cards/pool/ironwill-forger.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mindblade Render",
+      "files": [
+        "engine/src/cards/pool/mindblade-render.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ogre Battledriver",
+      "files": [
+        "engine/src/cards/pool/ogre-battledriver.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tempt with Vengeance",
+      "files": [
+        "engine/src/cards/pool/tempt-with-vengeance.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Thalisse, Reverent Medium",
+      "files": [
+        "engine/src/cards/pool/thalisse-reverent-medium.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Twilight Drover",
+      "files": [
+        "engine/src/cards/pool/twilight-drover.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Caldera Pyremaw",
+      "files": [
+        "engine/src/cards/pool/caldera-pyremaw.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Haughty Djinn",
+      "files": [
+        "engine/src/cards/pool/haughty-djinn.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ancestral Vision",
+      "files": [
+        "engine/src/cards/pool/ancestral-vision.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Aligned Heart",
+      "files": [
+        "engine/src/cards/pool/aligned-heart.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Manaform Hellkite",
+      "files": [
+        "engine/src/cards/pool/manaform-hellkite.ts",
+        "engine/src/cards/tokens/dragon-illusion-token.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Breaching Dragonstorm",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Exile until a nonland card, then you may cast it free if its mana value is 8 or less; if you don't, it goes to your hand."
+    },
+    {
+      "name": "Deceptive Frostkite",
+      "needs": [
+        "new:clone-filter-exceptions"
+      ],
+      "why": "Enters as a copy of a creature you control with power 4 or greater, except a Dragon with flying: copyOnEnter takes no filter or exceptions."
+    },
+    {
+      "name": "Dragonlord Atarka",
+      "needs": [
+        "new:divide-damage"
+      ],
+      "why": "5 damage divided as you choose among any number of targets; only 'divided evenly' exists."
+    },
+    {
+      "name": "Glorybringer",
+      "needs": [
+        "new:exert"
+      ],
+      "why": "Exert as it attacks, and a reflexive trigger from it."
+    },
+    {
+      "name": "Leyline Tyrant",
+      "needs": [
+        "new:mana-persists",
+        "new:pay-any-amount-reflexive"
+      ],
+      "why": "'You don't lose unspent red mana', and 'pay any amount of {R}. When you do, it deals that much damage'."
+    },
+    {
+      "name": "Opportunistic Dragon",
+      "needs": [
+        "new:control-while-source"
+      ],
+      "why": "Control, loss of abilities and can't attack or block 'for as long as this creature remains on the battlefield'; gain-control lasts until end of turn or for good."
+    },
+    {
+      "name": "Selvala's Stampede",
+      "needs": [
+        "new:council-voting"
+      ],
+      "why": "Council's dilemma voting."
+    },
+    {
+      "name": "Skarrgan Hellkite",
+      "needs": [
+        "new:riot"
+      ],
+      "why": "Riot. (Its '2 damage divided among one or two targets' is expressible — the split is forced.)"
+    },
+    {
+      "name": "Stormbreath Dragon",
+      "needs": [
+        "new:monstrosity"
+      ],
+      "why": "Monstrosity, and a 'becomes monstrous' trigger."
+    },
+    {
+      "name": "Stormshriek Feral",
+      "needs": [
+        "new:omen"
+      ],
+      "why": "Omen (Flush Out): cast the Omen, then shuffle the card into its owner's library."
+    },
+    {
+      "name": "Temple of the Dragon Queen",
+      "needs": [
+        "new:reveal-or-control-condition"
+      ],
+      "why": "Enters tapped unless you revealed a Dragon card or control a Dragon: the reveal and the board condition each force it tapped (an AND), not either one sparing it."
+    },
+    {
+      "name": "Territorial Hellkite",
+      "needs": [
+        "new:random-opponent-attack-requirement"
+      ],
+      "why": "Attacks an opponent chosen at random that it didn't attack last combat, or taps."
+    },
+    {
+      "name": "Thundermane Dragon",
+      "needs": [
+        "zone:visibility-extensions",
+        "new:cast-from-library-top-filter"
+      ],
+      "why": "Look at the top card any time; cast creature spells with power 4 or greater from the top of your library."
+    },
+    {
+      "name": "Whirlwing Stormbrood",
+      "needs": [
+        "new:omen"
+      ],
+      "why": "Omen (Dynamic Soar)."
+    },
+    {
+      "name": "Zenith Festival",
+      "needs": [
+        "new:harmonize"
+      ],
+      "why": "Harmonize."
+    },
+    {
+      "name": "Afterlife from the Loam",
+      "needs": [
+        "keyword:delve",
+        "new:target-per-player-graveyard"
+      ],
+      "why": "Delve, and up to one target creature card from each player's graveyard."
+    },
+    {
+      "name": "Diviner of Mist",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Mill four, then you may cast an instant or sorcery with mana value 4 or less from your graveyard free."
+    },
+    {
+      "name": "Essence Anchor",
+      "needs": [
+        "new:card-left-graveyard-condition"
+      ],
+      "why": "'Activate only if a card left your graveyard this turn' — the used-graveyard-this-turn condition asks something else (a spell cast or ability activated from a graveyard)."
+    },
+    {
+      "name": "Kotis, Sibsig Champion",
+      "needs": [
+        "new:graveyard-cast-exile-cost",
+        "new:entered-from-graveyard"
+      ],
+      "why": "Casting a creature from your graveyard by exiling three other cards (escape would wrongly mark it escaped), and 'entered from a graveyard or was cast from a graveyard'."
+    },
+    {
+      "name": "Lord of the Forsaken",
+      "needs": [
+        "new:mana-restriction-cast-from-graveyard"
+      ],
+      "why": "Mana spendable only to cast a spell from your graveyard: a mana restriction can't ask the spell's zone."
+    },
+    {
+      "name": "Millikin",
+      "needs": [
+        "new:mill-cost"
+      ],
+      "why": "'{T}, Mill a card: Add {C}' — milling as a cost."
+    },
+    {
+      "name": "Necromantic Selection",
+      "needs": [
+        "new:choose-from-this-way",
+        "new:exile-self-on-resolve"
+      ],
+      "why": "Return one of the creature cards put into graveyards this way, and 'Exile Necromantic Selection'."
+    },
+    {
+      "name": "Necropolis Fiend",
+      "needs": [
+        "keyword:delve",
+        "new:exile-x-cards-cost"
+      ],
+      "why": "Delve, and 'Exile X cards from your graveyard' as a cost."
+    },
+    {
+      "name": "River Kelpie",
+      "needs": [
+        "new:entered-from-graveyard"
+      ],
+      "why": "'Whenever this creature or another permanent enters from a graveyard': no trigger knows where a permanent entered from."
+    },
+    {
+      "name": "Steward of the Harvest",
+      "needs": [
+        "new:grant-activated-abilities-of-exiled"
+      ],
+      "why": "Creatures have the activated abilities of the land cards exiled with it."
+    },
+    {
+      "name": "Tasigur, the Golden Fang",
+      "needs": [
+        "keyword:delve",
+        "decision:opponent-chooses-card"
+      ],
+      "why": "Delve, and a nonland card of an opponent's choice returned."
+    },
+    {
+      "name": "Welcome the Dead",
+      "needs": [
+        "new:turn-stat-cards-to-graveyard"
+      ],
+      "why": "X is the cards put into your graveyard from your hand or library this turn."
+    },
+    {
+      "name": "Assault Formation",
+      "needs": [
+        "new:attack-despite-defender-eot"
+      ],
+      "why": "'Target creature with defender can attack this turn as though it didn't have defender' — only a static grants that."
+    },
+    {
+      "name": "Baldin, Century Herdmaster",
+      "needs": [
+        "new:any-number-max"
+      ],
+      "why": "'Up to one hundred target creatures': an any-number target group has no maximum."
+    },
+    {
+      "name": "Behind the Scenes",
+      "needs": [
+        "new:skulk"
+      ],
+      "why": "Skulk."
+    },
+    {
+      "name": "Canopy Gargantuan",
+      "needs": [
+        "new:add-counter-all-per-object"
+      ],
+      "why": "Counters on each other creature equal to that creature's toughness."
+    },
+    {
+      "name": "Colfenor's Urn",
+      "needs": [
+        "new:exiled-with-source-count"
+      ],
+      "why": "'If three or more cards have been exiled with this artifact', then return those cards."
+    },
+    {
+      "name": "Protector of the Wastes",
+      "needs": [
+        "new:monstrosity",
+        "new:targets-different-controllers"
+      ],
+      "why": "Monstrosity, and two targets controlled by different players."
+    },
+    {
+      "name": "Reunion of the House",
+      "needs": [
+        "new:target-total-power",
+        "new:exile-self-on-resolve"
+      ],
+      "why": "Targets with total power 10 or less, and exiling itself."
+    },
+    {
+      "name": "Shadrix Silverquill",
+      "needs": [
+        "new:modes-target-different-players"
+      ],
+      "why": "Choose two modes, each targeting a different player."
+    },
+    {
+      "name": "Sidar Kondo of Jamuraa",
+      "needs": [
+        "new:flanking",
+        "new:block-restriction-by-power"
+      ],
+      "why": "Flanking, and opponents' creatures without flying or reach can't block creatures with power 2 or less."
+    },
+    {
+      "name": "Tip the Scales",
+      "needs": [
+        "new:sacrificed-by-effect-reference"
+      ],
+      "why": "The toughness of the creature the effect had you sacrifice."
+    },
+    {
+      "name": "Tree of Redemption",
+      "needs": [
+        "new:exchange-life-toughness"
+      ],
+      "why": "Exchange your life total with its toughness."
+    },
+    {
+      "name": "Wakestone Gargoyle",
+      "needs": [
+        "new:attack-despite-defender-eot"
+      ],
+      "why": "Defenders you control can attack this turn as though they didn't have defender."
+    },
+    {
+      "name": "Walking Bulwark",
+      "needs": [
+        "new:attack-despite-defender-eot",
+        "new:damage-by-toughness-eot"
+      ],
+      "why": "Until end of turn a defender attacks despite defender and deals damage by toughness."
+    },
+    {
+      "name": "Wall of Roots",
+      "needs": [
+        "new:counter-cost",
+        "new:minus-zero-minus-one-counters"
+      ],
+      "why": "Putting a -0/-1 counter on itself as a cost."
+    },
+    {
+      "name": "Weathered Sentinels",
+      "needs": [
+        "new:attack-despite-defender-conditional"
+      ],
+      "why": "Attacks players who attacked you last turn as though it didn't have defender."
+    },
+    {
+      "name": "Eliminate the Competition",
+      "needs": [
+        "new:x-targets",
+        "cost:sacrifice-x"
+      ],
+      "why": "Sacrifice X creatures, destroy X targets."
+    },
+    {
+      "name": "Kaya, Geist Hunter",
+      "needs": [
+        "new:temporary-token-doubling"
+      ],
+      "why": "−2: token doubling until end of turn — only static doublers exist."
+    },
+    {
+      "name": "Neriv, Crackling Vanguard",
+      "needs": [
+        "new:count-distinct-token-names",
+        "new:play-if-attacked-with-commander"
+      ],
+      "why": "Exile a card per differently named token, playable during a turn you attacked with a commander."
+    },
+    {
+      "name": "Redoubled Stormsinger",
+      "needs": [
+        "new:copy-each-matching-token"
+      ],
+      "why": "A tapped and attacking copy of each creature token that entered this turn."
+    },
+    {
+      "name": "Within Range",
+      "needs": [
+        "new:count-attackers-per-player"
+      ],
+      "why": "Each opponent loses life equal to the number of creatures attacking them."
+    },
+    {
+      "name": "Adaptive Training Post",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copy the next instant or sorcery with new targets."
+    },
+    {
+      "name": "Baral and Kari Zev",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Cast a lesser spell sharing a card type from your hand free, or create First Mate Ragavan."
+    },
+    {
+      "name": "Baral's Expertise",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Cast a spell with mana value 4 or less from your hand free."
+    },
+    {
+      "name": "Compulsive Research",
+      "needs": [
+        "new:discard-unless-land"
+      ],
+      "why": "Discard two cards unless they discard a land card."
+    },
+    {
+      "name": "Dismantling Wave",
+      "needs": [
+        "new:target-per-opponent",
+        "new:cycle-trigger"
+      ],
+      "why": "Up to one target per opponent, and a 'when you cycle this card' trigger."
+    },
+    {
+      "name": "Expansion // Explosion",
+      "needs": [
+        "new:split-cards",
+        "decision:copy-new-targets"
+      ],
+      "why": "A split card, and a copy with new targets."
+    },
+    {
+      "name": "Magma Opus",
+      "needs": [
+        "new:divide-damage"
+      ],
+      "why": "4 damage divided as you choose among any number of targets."
+    },
+    {
+      "name": "Tempest Technique",
+      "needs": [
+        "effect:copy-permanent-spell"
+      ],
+      "why": "Storm on an Aura spell — the copies become token Auras."
+    },
+    {
+      "name": "Transcendent Dragon",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Counter a spell, exile it, then you may cast it free."
+    },
+    {
+      "name": "Transforming Flourish",
+      "needs": [
+        "new:demonstrate",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Demonstrate, and the destroyed permanent's controller casts what they exiled free."
+    },
+    {
+      "name": "Velomachus Lorehold",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Cast an instant or sorcery from the top seven cards free."
+    },
+    {
+      "name": "Voracious Bibliophile",
+      "needs": [
+        "new:count-spell-targets"
+      ],
+      "why": "Draw as many cards as the spell cast has targets."
+    }
+  ]
+}

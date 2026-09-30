@@ -639,6 +639,9 @@ in `git log`.
 - **Top-5000 batch 18** (2026-09-30, `top5000-batch-18.test.ts`) — 41 cards, one engine change:
   `FlickerCounters.entering` (Planar Incision's "return it … with a +1/+1 counter on it").
   B18.json lists the 34 it left blocked.
+- **Tarkir: Dragonstorm precons batch 1** (2026-09-30, `precon-tdc-batch-1.test.ts`) — 41 of the
+  default decks' 147 missing cards; `create-token`'s `exileAtEndStep`, and no mana cost is an
+  unpayable one (rule 118.6). TDC1.json lists the 59 newly triaged cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

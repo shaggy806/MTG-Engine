@@ -58,6 +58,7 @@ import _poolDimirAqueduct from "../pool/dimir-aqueduct.js";
 import _poolDiregrafColossus from "../pool/diregraf-colossus.js";
 import _poolDirtwaterWraith from "../pool/dirtwater-wraith.js";
 import _poolDisperse from "../pool/disperse.js";
+import _poolDraconicLore from "../pool/draconic-lore.js";
 import _poolDreadhordeInvasion from "../pool/dreadhorde-invasion.js";
 import _poolDreamBeavers from "../pool/dream-beavers.js";
 import _poolDreamrootCascade from "../pool/dreamroot-cascade.js";
@@ -273,6 +274,7 @@ const shard: CardShard = {
     _poolDiregrafColossus,
     _poolDirtwaterWraith,
     _poolDisperse,
+    _poolDraconicLore,
     _poolDreadhordeInvasion,
     _poolDreamBeavers,
     _poolDreamrootCascade,

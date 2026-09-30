@@ -151,6 +151,7 @@ import _poolTaureanMauler from "../pool/taurean-mauler.js";
 import _poolTeleportationCircle from "../pool/teleportation-circle.js";
 import _poolTelethopter from "../pool/telethopter.js";
 import _poolTempleOfEpiphany from "../pool/temple-of-epiphany.js";
+import _poolTemptWithVengeance from "../pool/tempt-with-vengeance.js";
 import _poolTeyosLightshield from "../pool/teyos-lightshield.js";
 import _poolTheHunterMaze from "../pool/the-hunter-maze.js";
 import _poolTheMeathookMassacre from "../pool/the-meathook-massacre.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolTeleportationCircle,
     _poolTelethopter,
     _poolTempleOfEpiphany,
+    _poolTemptWithVengeance,
     _poolTeyosLightshield,
     _poolTheHunterMaze,
     _poolTheMeathookMassacre,

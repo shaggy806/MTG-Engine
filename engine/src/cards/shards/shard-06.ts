@@ -11,6 +11,7 @@ import _poolAlleyStrangler from "../pool/alley-strangler.js";
 import _poolAngelOfRetribution from "../pool/angel-of-retribution.js";
 import _poolAnowonTheRuinThief from "../pool/anowon-the-ruin-thief.js";
 import _poolArabellaAbandonedDoll from "../pool/arabella-abandoned-doll.js";
+import _poolArborAdherent from "../pool/arbor-adherent.js";
 import _poolArchangel from "../pool/archangel.js";
 import _poolArmoredGriffin from "../pool/armored-griffin.js";
 import _poolAtog from "../pool/atog.js";
@@ -18,6 +19,7 @@ import _poolAugmentingAutomaton from "../pool/augmenting-automaton.js";
 import _poolBallLightning from "../pool/ball-lightning.js";
 import _poolBantBattlemage from "../pool/bant-battlemage.js";
 import _poolBeamtownBeatstick from "../pool/beamtown-beatstick.js";
+import _poolBecomeTheAvalanche from "../pool/become-the-avalanche.js";
 import _poolBenalishKnight from "../pool/benalish-knight.js";
 import _poolBlessedOrator from "../pool/blessed-orator.js";
 import _poolBlindCreeper from "../pool/blind-creeper.js";
@@ -189,6 +191,7 @@ import _poolZodiacMonkey from "../pool/zodiac-monkey.js";
 import _tokensBeastToken33 from "../tokens/beast-token-3-3.js";
 import _tokensBlueBirdToken from "../tokens/blue-bird-token.js";
 import _tokensCitizenToken from "../tokens/citizen-token.js";
+import _tokensDragonTokenFirebreathing from "../tokens/dragon-token-firebreathing.js";
 import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
@@ -206,6 +209,7 @@ const shard: CardShard = {
     _poolAngelOfRetribution,
     _poolAnowonTheRuinThief,
     _poolArabellaAbandonedDoll,
+    _poolArborAdherent,
     _poolArchangel,
     _poolArmoredGriffin,
     _poolAtog,
@@ -213,6 +217,7 @@ const shard: CardShard = {
     _poolBallLightning,
     _poolBantBattlemage,
     _poolBeamtownBeatstick,
+    _poolBecomeTheAvalanche,
     _poolBenalishKnight,
     _poolBlessedOrator,
     _poolBlindCreeper,
@@ -386,6 +391,7 @@ const shard: CardShard = {
     _tokensBeastToken33,
     _tokensBlueBirdToken,
     _tokensCitizenToken,
+    _tokensDragonTokenFirebreathing,
     _tokensEldraziSpawnToken,
     _tokensHydraToken,
     _tokensJunkToken,

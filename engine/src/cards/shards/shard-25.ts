@@ -140,6 +140,7 @@ import _poolPymTechnologies from "../pool/pym-technologies.js";
 import _poolPyroclasm from "../pool/pyroclasm.js";
 import _poolQuilledWolf from "../pool/quilled-wolf.js";
 import _poolRakdosLocket from "../pool/rakdos-locket.js";
+import _poolRampartArchitect from "../pool/rampart-architect.js";
 import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
@@ -347,6 +348,7 @@ const shard: CardShard = {
     _poolPyroclasm,
     _poolQuilledWolf,
     _poolRakdosLocket,
+    _poolRampartArchitect,
     _poolRaphaelToughTurtle,
     _poolRebelliousStrike,
     _poolRecklessBarbarian,

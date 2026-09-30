@@ -92,6 +92,7 @@ import _poolHurloonShaman from "../pool/hurloon-shaman.js";
 import _poolHyraxTowerScout from "../pool/hyrax-tower-scout.js";
 import _poolInfectiousHost from "../pool/infectious-host.js";
 import _poolIonasJudgment from "../pool/ionas-judgment.js";
+import _poolJawsOfDefeat from "../pool/jaws-of-defeat.js";
 import _poolJibbirikOmnivore from "../pool/jibbirik-omnivore.js";
 import _poolJundBattlemage from "../pool/jund-battlemage.js";
 import _poolKaaliaOfTheVast from "../pool/kaalia-of-the-vast.js";
@@ -206,6 +207,7 @@ import _poolWithoutWeakness from "../pool/without-weakness.js";
 import _poolWoollyThoctar from "../pool/woolly-thoctar.js";
 import _poolZephidsEmbrace from "../pool/zephids-embrace.js";
 import _tokensGnomeToken from "../tokens/gnome-token.js";
+import _tokensSalamanderWarriorToken from "../tokens/salamander-warrior-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -298,6 +300,7 @@ const shard: CardShard = {
     _poolHyraxTowerScout,
     _poolInfectiousHost,
     _poolIonasJudgment,
+    _poolJawsOfDefeat,
     _poolJibbirikOmnivore,
     _poolJundBattlemage,
     _poolKaaliaOfTheVast,
@@ -414,6 +417,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensGnomeToken,
+    _tokensSalamanderWarriorToken,
   ],
 };
 

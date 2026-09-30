@@ -14,6 +14,7 @@ import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
 import _poolArdentElementalist from "../pool/ardent-elementalist.js";
 import _poolAureliaTheLawAbove from "../pool/aurelia-the-law-above.js";
 import _poolAvenOfEnduringHope from "../pool/aven-of-enduring-hope.js";
+import _poolAxebaneGuardian from "../pool/axebane-guardian.js";
 import _poolAzureMage from "../pool/azure-mage.js";
 import _poolBackupAgent from "../pool/backup-agent.js";
 import _poolBartizanBats from "../pool/bartizan-bats.js";
@@ -175,6 +176,7 @@ import _poolTalrand from "../pool/talrand.js";
 import _poolTanaTheBloodsower from "../pool/tana-the-bloodsower.js";
 import _poolTempleOfSilence from "../pool/temple-of-silence.js";
 import _poolTempleOfTriumph from "../pool/temple-of-triumph.js";
+import _poolThalisseReverentMedium from "../pool/thalisse-reverent-medium.js";
 import _poolTheEternityElevator from "../pool/the-eternity-elevator.js";
 import _poolTheGitrogMonster from "../pool/the-gitrog-monster.js";
 import _poolToucanPuffin from "../pool/toucan-puffin.js";
@@ -221,6 +223,7 @@ const shard: CardShard = {
     _poolArdentElementalist,
     _poolAureliaTheLawAbove,
     _poolAvenOfEnduringHope,
+    _poolAxebaneGuardian,
     _poolAzureMage,
     _poolBackupAgent,
     _poolBartizanBats,
@@ -382,6 +385,7 @@ const shard: CardShard = {
     _poolTanaTheBloodsower,
     _poolTempleOfSilence,
     _poolTempleOfTriumph,
+    _poolThalisseReverentMedium,
     _poolTheEternityElevator,
     _poolTheGitrogMonster,
     _poolToucanPuffin,

@@ -119,6 +119,7 @@ import _poolLoxodonLineBreaker from "../pool/loxodon-line-breaker.js";
 import _poolLynx from "../pool/lynx.js";
 import _poolMaalfeldTwins from "../pool/maalfeld-twins.js";
 import _poolMalakirRebirth from "../pool/malakir-rebirth.js";
+import _poolManaformHellkite from "../pool/manaform-hellkite.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
@@ -128,6 +129,7 @@ import _poolNajeelaTheBladeBlossom from "../pool/najeela-the-blade-blossom.js";
 import _poolNaturalize from "../pool/naturalize.js";
 import _poolNaturesChant from "../pool/natures-chant.js";
 import _poolNellyBorcaImpulsiveAccuser from "../pool/nelly-borca-impulsive-accuser.js";
+import _poolNestingDragon from "../pool/nesting-dragon.js";
 import _poolNighthawkScavenger from "../pool/nighthawk-scavenger.js";
 import _poolNocturnalFeeder from "../pool/nocturnal-feeder.js";
 import _poolNoxiousNewt from "../pool/noxious-newt.js";
@@ -171,6 +173,7 @@ import _poolSpinningWheel from "../pool/spinning-wheel.js";
 import _poolSpitefulVisions from "../pool/spiteful-visions.js";
 import _poolSprout from "../pool/sprout.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
+import _poolStormsWrath from "../pool/storms-wrath.js";
 import _poolStripMine from "../pool/strip-mine.js";
 import _poolSunderingEruption from "../pool/sundering-eruption.js";
 import _poolSunshotMilitia from "../pool/sunshot-militia.js";
@@ -351,6 +354,7 @@ const shard: CardShard = {
     _poolLynx,
     _poolMaalfeldTwins,
     _poolMalakirRebirth,
+    _poolManaformHellkite,
     _poolMerfolkSkydiver,
     _poolMikaeusTheUnhallowed,
     _poolMillstone,
@@ -360,6 +364,7 @@ const shard: CardShard = {
     _poolNaturalize,
     _poolNaturesChant,
     _poolNellyBorcaImpulsiveAccuser,
+    _poolNestingDragon,
     _poolNighthawkScavenger,
     _poolNocturnalFeeder,
     _poolNoxiousNewt,
@@ -403,6 +408,7 @@ const shard: CardShard = {
     _poolSpitefulVisions,
     _poolSprout,
     _poolStoneHavenMedic,
+    _poolStormsWrath,
     _poolStripMine,
     _poolSunderingEruption,
     _poolSunshotMilitia,

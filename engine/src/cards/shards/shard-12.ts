@@ -193,6 +193,7 @@ import _poolWildernessReclamation from "../pool/wilderness-reclamation.js";
 import _poolWitchBlessedMeadow from "../pool/witch-blessed-meadow.js";
 import _poolWretchedDoll from "../pool/wretched-doll.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
+import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
 import _tokensWurmToken66 from "../tokens/wurm-token-6-6.js";
@@ -391,6 +392,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensChocoboBirdToken,
+    _tokensDragonIllusionToken,
     _tokensElementalToken55,
     _tokensVampireToken,
     _tokensWurmToken66,

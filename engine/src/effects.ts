@@ -2097,6 +2097,10 @@ export type EffectSpec =
        * Acolyte of Flame). Sacrificed rather than exiled, so dies-triggers
        * see them go — the same per-object flag Encore uses. */
       readonly sacrificeAtEndStep?: boolean;
+      /** "Exile that token at the beginning of the next end step" (Manaform
+       * Hellkite): exiled, not sacrificed, so nothing sees it die — the
+       * per-object flag a token copy's `exileAtEndStep` sets. */
+      readonly exileAtEndStep?: boolean;
       /** "**They gain haste until end of turn**" (Ovika, Enigma Goliath): the
        * tokens this creates get these keywords until the turn ends — the
        * tokens just made and no others, since the grant is part of making
@@ -3491,6 +3495,8 @@ export interface EffectApi {
     attacking?: ResolvedEnterAttacking,
     /** Each new token its own object, never folded into a token stack. */
     separate?: boolean,
+    /** Exile them at the beginning of the next end step. */
+    exileAtEndStep?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -5110,6 +5116,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
                 : [amountValue(spec.basePt.power, ctx, player), amountValue(spec.basePt.toughness, ctx, player)],
               resolveEnterAttacking(spec.attacking, ctx.aboutPlayer(player)),
               spec.separate === true,
+              spec.exileAtEndStep === true,
             );
         }
         return;
@@ -5130,6 +5137,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           : [amountValue(spec.basePt.power, ctx), amountValue(spec.basePt.toughness, ctx)],
         resolveEnterAttacking(spec.attacking, ctx),
         spec.separate === true,
+        spec.exileAtEndStep === true,
       );
       return;
     case "for-each-player": {

@@ -22,6 +22,7 @@ import _poolBazaarTrademage from "../pool/bazaar-trademage.js";
 import _poolBeeSting from "../pool/bee-sting.js";
 import _poolBenalishHeralds from "../pool/benalish-heralds.js";
 import _poolBogInitiate from "../pool/bog-initiate.js";
+import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
@@ -78,6 +79,7 @@ import _poolHoverBarrier from "../pool/hover-barrier.js";
 import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
 import _poolInexorableTide from "../pool/inexorable-tide.js";
 import _poolIntrepidTenderfoot from "../pool/intrepid-tenderfoot.js";
+import _poolIronwillForger from "../pool/ironwill-forger.js";
 import _poolJukaiNaturalist from "../pool/jukai-naturalist.js";
 import _poolJungleDelver from "../pool/jungle-delver.js";
 import _poolKaervekTheMerciless from "../pool/kaervek-the-merciless.js";
@@ -196,6 +198,7 @@ import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
 import _poolYawgmothThranPhysician from "../pool/yawgmoth-thran-physician.js";
+import _tokensDragonEggToken from "../tokens/dragon-egg-token.js";
 import _tokensDwarfToken from "../tokens/dwarf-token.js";
 import _tokensLifelinkCatToken from "../tokens/lifelink-cat-token.js";
 import _tokensPhobos from "../tokens/phobos.js";
@@ -222,6 +225,7 @@ const shard: CardShard = {
     _poolBeeSting,
     _poolBenalishHeralds,
     _poolBogInitiate,
+    _poolBroodcallerScourge,
     _poolBuriedRuin,
     _poolCanalMonitor,
     _poolCatharticReunion,
@@ -278,6 +282,7 @@ const shard: CardShard = {
     _poolImpulsivePilferer,
     _poolInexorableTide,
     _poolIntrepidTenderfoot,
+    _poolIronwillForger,
     _poolJukaiNaturalist,
     _poolJungleDelver,
     _poolKaervekTheMerciless,
@@ -398,6 +403,7 @@ const shard: CardShard = {
     _poolYawgmothThranPhysician,
   ],
   tokens: [
+    _tokensDragonEggToken,
     _tokensDwarfToken,
     _tokensLifelinkCatToken,
     _tokensPhobos,

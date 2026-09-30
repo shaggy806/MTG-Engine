@@ -178,6 +178,7 @@ import _poolTigraFelineFury from "../pool/tigra-feline-fury.js";
 import _poolTrainedCaracal from "../pool/trained-caracal.js";
 import _poolTraumaticCritique from "../pool/traumatic-critique.js";
 import _poolTrokinHighGuard from "../pool/trokin-high-guard.js";
+import _poolTwilightDrover from "../pool/twilight-drover.js";
 import _poolTwoHeadedZombie from "../pool/two-headed-zombie.js";
 import _poolUndergrowthLeopard from "../pool/undergrowth-leopard.js";
 import _poolUnnaturalRestoration from "../pool/unnatural-restoration.js";
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _poolTrainedCaracal,
     _poolTraumaticCritique,
     _poolTrokinHighGuard,
+    _poolTwilightDrover,
     _poolTwoHeadedZombie,
     _poolUndergrowthLeopard,
     _poolUnnaturalRestoration,

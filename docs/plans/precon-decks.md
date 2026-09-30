@@ -1,10 +1,11 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 348 of the 495
-non-commander slots are the printed cards; the other 147 are cards the engine doesn't implement
-yet, played by stand-ins listed under [Substitutions](#substitutions) below. Authoring those 147
-is the current card priority (`BACKLOG.md`, "Card backlog").
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 389 of the 495
+non-commander slots are the printed cards; the other 106 are cards the engine doesn't implement
+yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
+TDC batch 1 authored 41). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
 down to 40 stand-ins by then; their lists and substitution tables are in git history
@@ -25,13 +26,13 @@ against each other — which is what makes a bot-vs-bot result mean something. T
 Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bots' defaults on
 2026-09-30.
 
-| deck | commander | plan | cards to author |
+| deck | commander | plan | cards left to author |
 |---|---|---|---|
-| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 31 |
-| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 34 |
-| Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 31 |
-| Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 23 |
-| Jeskai Striker | Elsha, Threefold Master | instants and sorceries, prowess, Monk tokens | 28 |
+| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 22 |
+| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 29 |
+| Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
+| Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
+| Jeskai Striker | Elsha, Threefold Master | instants and sorceries, prowess, Monk tokens | 23 |
 
 All five commanders are implemented, and no missing card is missing from more than one deck.
 `server/src/decks.ts`'s `SEATS` takes the first four for its seats (and every bot's deck), so
@@ -82,26 +83,18 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (31)
+### Temur Roar — Ureni of the Unwritten (22)
 
 | printed card | plays as | why |
 |---|---|---|
-| Become the Avalanche | Boon of the Wish-Giver | Six-mana sorcery: card draw, card advantage. |
 | Breaching Dragonstorm | Fateful Discovery | Five-mana enchantment: card advantage. |
-| Broodcaller Scourge | Old Gnawbone | Seven-mana green Dragon. |
 | Chaos Warp | Regress | Three-mana instant: removal. |
 | Deceptive Frostkite | Sprite Dragon | Two-mana blue flying Dragon. |
-| Draconic Lore | Opportunity | Six-mana instant: card draw, card advantage. |
 | Dragonlord Atarka | Drakuseth, Maw of Flames | Seven-mana legendary Dragon that burns as it attacks. |
-| Gadrak, the Crown-Scourge | Bhaal's Invoker | Three-mana red Dragon. |
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |
-| Hammerhead Tyrant | Archive Dragon | Six-mana blue flying Dragon. |
 | Hellkite Courser | Rorix Bladewing | Six-mana red flying Dragon with haste. |
-| Keiga, the Tide Star | Mindscour Dragon | Six-mana blue flying Dragon. |
 | Leyline Tyrant | Archwing Dragon | Four-mana red flying Dragon. |
 | Mosswort Bridge | Khalni Garden | Land: tapped land, utility land. |
-| Nesting Dragon | Goldlust Triad | Five-mana red Dragon. |
-| Nogi, Draco-Zealot | Dragonspeaker Shaman | Three-mana creature: cost reducer. |
 | Opportunistic Dragon | Skyship Stalker | Four-mana red flying Dragon. |
 | Reality Shift | Resculpt | Two-mana instant: removal, creature removal. |
 | Reflections of Littjara | Crucible of Fire | Enchantment that rewards a deck of Dragons. |
@@ -109,7 +102,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Scourge of the Throne | Savage Ventmaw | Six-mana red-green flying Dragon that rewards attacking. |
 | Selvala's Stampede | Kodama of the East Tree | Six-mana sorcery: puts creatures onto the battlefield, ramp. |
 | Skarrgan Hellkite | Scourge of Valkas | Five-mana red flying Dragon that deals damage as Dragons enter. |
-| Storm's Wrath | Chain Reaction | Four-mana red sweeper. |
 | Stormbreath Dragon | Thundermaw Hellkite | Five-mana red flying Dragon with haste. |
 | Stormshriek Feral | Demanding Dragon | Five-mana red flying Dragon. |
 | Temple of the Dragon Queen | Game Trail | Land that makes the deck's colours. |
@@ -118,26 +110,21 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (34)
+### Sultai Arisen — Teval, the Balanced Scale (29)
 
 | printed card | plays as | why |
 |---|---|---|
 | Afterlife from the Loam | Reanimate | Reanimates a creature from any graveyard. |
-| Amphin Mutineer | Ravenous Chupacabra | Four-mana creature that removes a creature as it enters. |
 | Colossal Grave-Reaver | Archon of Cruelty | Eight-mana creature: attack trigger, evasive creature. |
 | Command Beacon | Path of Ancestry | Land: commander payoff, utility land. |
 | Conduit of Worlds | Crucible of Worlds | Four-mana artifact: land recursion, reanimation. |
 | Consuming Aberration | Umbris, Fear Manifest | Five-mana creature: mill. |
-| Crawling Sensation | Dying to Serve | Three-mana enchantment: token maker. |
 | Dauthi Voidwalker | Scavenging Ooze | Two-mana creature: graveyard hate. |
 | Disciple of Bolas | Thallid Soothsayer | Turns a sacrificed creature into cards. |
 | Diviner of Mist | Mindeye Drake | Five-mana blue flier that mills. |
 | Essence Anchor | Rune-Sealed Wall | Three-mana artifact: self-mill, library manipulation. |
-| Floral Evoker | Ramunap Excavator | Three-mana creature: land recursion, reanimation. |
-| Forbidden Alchemy | Curate | Instant that digs and fills the graveyard. |
 | Gravecrawler | Bloodghast | Cheap black creature that keeps coming back from the graveyard. |
 | Jarad, Golgari Lich Lord | Nantuko Husk | Sacrifice outlet that turns creatures into damage. |
-| Kishla Skimmer | Faerie Mastermind | Two-mana creature: card draw, card advantage. |
 | Kotis, Sibsig Champion | Doomed Necromancer | Three-mana creature: reanimation, recursion. |
 | Lethal Scheme | Hero's Downfall | Instant-speed creature or planeswalker removal. |
 | Life from the Loam | Grim Discovery | Two-mana sorcery: land recursion, regrowth. |
@@ -157,80 +144,55 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Welcome the Dead | Deep Analysis | Four-mana sorcery: card draw for life, card draw. |
 | Wonder | Pixie Queen | Four-mana creature: gives flying, evasion. |
 
-### Abzan Armor — Felothar the Steadfast (31)
+### Abzan Armor — Felothar the Steadfast (18)
 
 | printed card | plays as | why |
 |---|---|---|
-| Arbor Adherent | Skyshroud Troopers | Four-mana creature: mana creature, ramp. |
 | Assault Formation | Doran, the Siege Tower | Creatures deal combat damage equal to their toughness. |
-| Axebane Guardian | Circle of Dreams Druid | Three-mana creature: mana creature. |
 | Baldin, Century Herdmaster | Syr Alin, the Lion's Claw | Six-mana creature: team pump, attack trigger. |
 | Behind the Scenes | History of Benalia | Three-mana enchantment: team pump. |
-| Blight Pile | Archers' Parapet | Two-mana creature: drains opponents. |
 | Canopy Gargantuan | Old Gnawbone | Seven-mana green Dragon. |
 | Colfenor's Urn | Resurrection Orb | Three-mana artifact: protection. |
-| Expel the Interlopers | Fell the Mighty | Five-mana sorcery: sweeper. |
 | Faeburrow Elder | Fyndhorn Elder | Three-mana creature: mana creature, ramp. |
-| Indulging Patrician | Marauding Blight-Priest | Three-mana creature: lifegain payoff, drains opponents. |
-| Jaws of Defeat | Dogged Pursuit | Four-mana enchantment: drains opponents. |
-| Overgrown Battlement | Gleaming Barrier | Two-mana wall. |
 | Protector of the Wastes | Angel of the Ruins | Six-mana creature: artifact and enchantment removal, removal. |
-| Rampart Architect | Ondu Giant | Four-mana creature: land fetcher, ramp. |
 | Reunion of the House | Brilliant Restoration | Seven-mana sorcery: mass reanimation, reanimation. |
 | Shadrix Silverquill | Archangel of Thune | Five-mana white flier that grows the team. |
 | Sidar Kondo of Jamuraa | Delney, Streetwise Lookout | Four-mana creature: evasion. |
 | Slaughter the Strong | Citywide Bust | Three-mana sorcery: sweeper, creature removal. |
 | Tip the Scales | Toxic Deluge | Three-mana sorcery: removal, sweeper. |
-| Tower Defense | Shield Wall | Two-mana instant: team pump, combat trick. |
-| Towering Titan | Betor, Kin to All | Big creature that rewards total toughness. |
 | Tree of Redemption | Ancient Lumberknot | Four-mana creature that deals damage by toughness. |
 | Wakestone Gargoyle | Wall of Swords | Four-mana creature: evasive creature. |
 | Walking Bulwark | Steel Wall | One-mana artifact wall. |
-| Wall of Limbs | Moaning Wall | Three-mana black wall. |
-| Wall of Reverence | Wall of Faith | Four-mana white wall. |
 | Wall of Roots | Vine Trellis | Two-mana creature: mana creature, ramp. |
 | Weathered Sentinels | Guardians of Meletis | Three-mana artifact defender with high toughness. |
 | Will of the Abzan | Breath of Life | Four-mana sorcery: reanimation, recursion. |
-| Wingmantle Chaplain | Clarion Cathars | Four-mana creature: tokens. |
 
-### Mardu Surge — Zurgo Stormrender (23)
+### Mardu Surge — Zurgo Stormrender (14)
 
 | printed card | plays as | why |
 |---|---|---|
 | Ainok Strike Leader | Hanweir Garrison | Attacks and brings attacking tokens with it. |
-| Angel of Invention | Lyra Dawnbringer | Five-mana creature: anthem, team pump. |
-| Bone Devourer | Exemplar of Light | Four-mana creature: card draw. |
-| Chittering Witch | Disciple of Tevesh Szat | Four-mana creature: protection, removal. |
 | Divine Visitation | Anointed Procession | Five-mana enchantment: token payoff. |
 | Eliminate the Competition | Lich's Caress | Five-mana sorcery: removal, creature removal. |
 | Gix, Yawgmoth Praetor | Midnight Reaper | Three-mana creature: card draw for life, card draw. |
 | Grenzo, Havoc Raiser | Killian, Decisive Mentor | Two-mana creature: card advantage. |
 | Hero of Bladehold | Leonin Warleader | Four-mana white creature that makes attacking tokens. |
-| Ironwill Forger | Kratos, Stoic Father | Four-mana creature: attack trigger. |
 | Kaya, Geist Hunter | Ajani, Caller of the Pride | Three-mana planeswalker. |
 | Legion Warboss | Krenko, Tin Street Kingpin | Three-mana creature: token maker, attack trigger. |
-| Mindblade Render | Undead Augur | Two-mana creature: card draw for life, card draw. |
 | Myr Battlesphere | Threefold Thunderhulk | Seven-mana artifact creature that makes an army. |
 | Neriv, Crackling Vanguard | Bonehoard Dracosaur | Five-mana creature: impulse draw, card advantage. |
-| Ogre Battledriver | Tannuk, Steadfast Second | Gives the team haste. |
 | Redoubled Stormsinger | Zurgo, Thunder's Decree | Three-mana creature: token payoff, token maker. |
-| Tempt with Vengeance | Secure the Wastes | One-mana sorcery: tokens. |
-| Thalisse, Reverent Medium | Thorin, King of Durin's Folk | Five-mana creature: token payoff, token maker. |
-| Twilight Drover | Anim Pakal, Thousandth Moon | Three-mana creature: token maker. |
 | Will of the Mardu | Bombard | Three-mana instant: burn, removal. |
 | Windbrisk Heights | Memorial to Glory | Land: tapped land, utility land. |
 | Within Range | Dogged Pursuit | Four-mana enchantment: drains opponents. |
 
-### Jeskai Striker — Elsha, Threefold Master (28)
+### Jeskai Striker — Elsha, Threefold Master (23)
 
 | printed card | plays as | why |
 |---|---|---|
 | Adaptive Training Post | Unruly Catapult | Three-mana artifact: spell payoff. |
-| Aligned Heart | Contemplation | Three-mana enchantment: spell payoff. |
-| Ancestral Vision | Braingeyser | Cheap spell that draws several cards. |
 | Baral and Kari Zev | Lorehold Pledgemage | Three-mana creature: spell payoff. |
 | Baral's Expertise | Raise the Palisade | Five-mana sorcery: bounce, creature removal. |
-| Caldera Pyremaw | Sunscorch Regent | Five-mana flying Dragon. |
 | Compulsive Research | Catalog | Three-mana sorcery: looting, card draw. |
 | Curse of Opulence | Sticky Fingers | One-mana enchantment: token maker, ramp. |
 | Curse of the Swine | Resculpt | Two-mana sorcery: removal, creature removal. |
@@ -239,10 +201,8 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Expansion // Explosion | Fireball | X-damage spell. |
 | Expressive Iteration | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 | Ghostly Prison | Aura of Silence | Three-mana white enchantment that taxes opponents. |
-| Haughty Djinn | Aven Wind Mage | Three-mana creature: spell payoff, evasive creature. |
 | Lier, Disciple of the Drowned | Archmage of Runes | Five-mana creature: spell payoff. |
 | Magma Opus | Searing Wind | Eight-mana instant: burn. |
-| Manaform Hellkite | Whispering Wizard | Four-mana creature: spell payoff. |
 | Mangara, the Diplomat | Aragorn, King of Gondor | Four-mana creature: card draw, lifegain. |
 | Narset's Reversal | Twincast | Two-mana instant: spell copy. |
 | Ponder | Serum Visions | One-mana sorcery: cantrip, library manipulation. |

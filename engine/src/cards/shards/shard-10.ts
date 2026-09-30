@@ -138,6 +138,7 @@ import _poolNimbleBirdsticker from "../pool/nimble-birdsticker.js";
 import _poolNimbusMaze from "../pool/nimbus-maze.js";
 import _poolNorthPoleGates from "../pool/north-pole-gates.js";
 import _poolOashraCultivator from "../pool/oashra-cultivator.js";
+import _poolOgreBattledriver from "../pool/ogre-battledriver.js";
 import _poolOnduGiant from "../pool/ondu-giant.js";
 import _poolOranRiefTheVastwood from "../pool/oran-rief-the-vastwood.js";
 import _poolPerimeterPatrol from "../pool/perimeter-patrol.js";
@@ -362,6 +363,7 @@ const shard: CardShard = {
     _poolNimbusMaze,
     _poolNorthPoleGates,
     _poolOashraCultivator,
+    _poolOgreBattledriver,
     _poolOnduGiant,
     _poolOranRiefTheVastwood,
     _poolPerimeterPatrol,

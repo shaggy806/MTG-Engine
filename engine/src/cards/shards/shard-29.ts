@@ -54,6 +54,7 @@ import _poolFairgroundsPatrol from "../pool/fairgrounds-patrol.js";
 import _poolFiendlash from "../pool/fiendlash.js";
 import _poolFinalDeath from "../pool/final-death.js";
 import _poolFlightOfFancy from "../pool/flight-of-fancy.js";
+import _poolForbiddenAlchemy from "../pool/forbidden-alchemy.js";
 import _poolFrogTongue from "../pool/frog-tongue.js";
 import _poolGelectrode from "../pool/gelectrode.js";
 import _poolGenerousVisitor from "../pool/generous-visitor.js";
@@ -236,6 +237,7 @@ const shard: CardShard = {
     _poolFiendlash,
     _poolFinalDeath,
     _poolFlightOfFancy,
+    _poolForbiddenAlchemy,
     _poolFrogTongue,
     _poolGelectrode,
     _poolGenerousVisitor,

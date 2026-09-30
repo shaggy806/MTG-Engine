@@ -11,6 +11,7 @@ import _poolAkromasMemorial from "../pool/akromas-memorial.js";
 import _poolAmbassadorLaquatus from "../pool/ambassador-laquatus.js";
 import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAncestralMask from "../pool/ancestral-mask.js";
+import _poolAncestralVision from "../pool/ancestral-vision.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
@@ -113,6 +114,7 @@ import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
+import _poolOvergrownBattlement from "../pool/overgrown-battlement.js";
 import _poolPacificationArray from "../pool/pacification-array.js";
 import _poolPaintedBluffs from "../pool/painted-bluffs.js";
 import _poolPalaceFamiliar from "../pool/palace-familiar.js";
@@ -209,6 +211,7 @@ const shard: CardShard = {
     _poolAmbassadorLaquatus,
     _poolAnaDisciple,
     _poolAncestralMask,
+    _poolAncestralVision,
     _poolAnchovyBananaPizza,
     _poolAniktheaHandOfErebos,
     _poolAnimPakalThousandthMoon,
@@ -311,6 +314,7 @@ const shard: CardShard = {
     _poolMysticMonastery,
     _poolNightguardPatrol,
     _poolOmnathLocusOfCreation,
+    _poolOvergrownBattlement,
     _poolPacificationArray,
     _poolPaintedBluffs,
     _poolPalaceFamiliar,

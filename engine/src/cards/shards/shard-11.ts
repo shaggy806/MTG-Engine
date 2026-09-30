@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbbeyMatron from "../pool/abbey-matron.js";
 import _poolAkkiRockspeaker from "../pool/akki-rockspeaker.js";
+import _poolAlignedHeart from "../pool/aligned-heart.js";
 import _poolAlpineMeadow from "../pool/alpine-meadow.js";
 import _poolAncientCarp from "../pool/ancient-carp.js";
 import _poolAncientCrab from "../pool/ancient-crab.js";
@@ -91,6 +92,7 @@ import _poolHoardRobber from "../pool/hoard-robber.js";
 import _poolHoardSmelterDragon from "../pool/hoard-smelter-dragon.js";
 import _poolHookHauntDrifter from "../pool/hook-haunt-drifter.js";
 import _poolHovermyr from "../pool/hovermyr.js";
+import _poolIndulgingPatrician from "../pool/indulging-patrician.js";
 import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
 import _poolIntrudingSoulrager from "../pool/intruding-soulrager.js";
 import _poolInvasionTactics from "../pool/invasion-tactics.js";
@@ -127,6 +129,7 @@ import _poolMysticGate from "../pool/mystic-gate.js";
 import _poolNessianCourser from "../pool/nessian-courser.js";
 import _poolNighthaze from "../pool/nighthaze.js";
 import _poolNivMizzetTheFiremind from "../pool/niv-mizzet-the-firemind.js";
+import _poolNogiDracoZealot from "../pool/nogi-draco-zealot.js";
 import _poolNullElementalBlast from "../pool/null-elemental-blast.js";
 import _poolOakenform from "../pool/oakenform.js";
 import _poolOkosAccomplices from "../pool/okos-accomplices.js";
@@ -235,6 +238,7 @@ const shard: CardShard = {
   pool: [
     _poolAbbeyMatron,
     _poolAkkiRockspeaker,
+    _poolAlignedHeart,
     _poolAlpineMeadow,
     _poolAncientCarp,
     _poolAncientCrab,
@@ -321,6 +325,7 @@ const shard: CardShard = {
     _poolHoardSmelterDragon,
     _poolHookHauntDrifter,
     _poolHovermyr,
+    _poolIndulgingPatrician,
     _poolInspiringOverseer,
     _poolIntrudingSoulrager,
     _poolInvasionTactics,
@@ -357,6 +362,7 @@ const shard: CardShard = {
     _poolNessianCourser,
     _poolNighthaze,
     _poolNivMizzetTheFiremind,
+    _poolNogiDracoZealot,
     _poolNullElementalBlast,
     _poolOakenform,
     _poolOkosAccomplices,

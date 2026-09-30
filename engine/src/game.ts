@@ -7005,17 +7005,18 @@ export class Game {
     if (this.state.players[player].life < this.commanderTaxLife(player, cardId)) {
       return `${player} has too little life to pay ${def.name}'s commander tax`;
     }
+    // Rule 118.6: a card with no mana cost has an unpayable one, so it can't
+    // be cast for it — only for an alternative cost or without paying it
+    // (118.6a), each of which names a cost of its own (Ancestral Vision is
+    // only ever suspended).
+    const costString = this.withFace(cardId, face, () =>
+      this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke),
+    );
+    if (costString === null) return `${def.name} has no mana cost to pay (rule 118.6)`;
     // At the X being cast for: convoking creatures can pay for X (Chord of
     // Calling), so a convoke can't be judged against the cost at X=0.
     const baseCost = this.withFace(cardId, face, () =>
-      this.castingCostOf(
-        player,
-        cardId,
-        def,
-        Math.max(0, Math.floor(xValue)),
-        this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke),
-        targetCount,
-      ),
+      this.castingCostOf(player, cardId, def, Math.max(0, Math.floor(xValue)), costString, targetCount),
     );
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
@@ -13365,7 +13366,7 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate, exileAtEndStep) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
@@ -13382,6 +13383,7 @@ export class Game {
             goadedBy,
             thenCounters !== undefined || separate === true,
             basePt,
+            exileAtEndStep === true,
           );
           if (thenCounters !== undefined && thenCounters.amount > 0) {
             for (const id of made) {
@@ -14678,6 +14680,8 @@ export class Game {
     separate = false,
     /** An X/X token's base power and toughness. */
     basePt?: readonly [number, number],
+    /** Exiled at the beginning of the next end step (Manaform Hellkite). */
+    exileAtEndStep = false,
   ): readonly ObjectId[] {
     this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
@@ -14704,7 +14708,7 @@ export class Game {
               },
             ]),
       ],
-      false,
+      exileAtEndStep,
       false,
       false,
       tapped,

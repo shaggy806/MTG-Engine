@@ -66,6 +66,7 @@ import _poolEfficientConstruction from "../pool/efficient-construction.js";
 import _poolElspethSunsChampion from "../pool/elspeth-suns-champion.js";
 import _poolEmblemOfTheWarmind from "../pool/emblem-of-the-warmind.js";
 import _poolEnterTheGodEternals from "../pool/enter-the-god-eternals.js";
+import _poolExpelTheInterlopers from "../pool/expel-the-interlopers.js";
 import _poolFearOfSurveillance from "../pool/fear-of-surveillance.js";
 import _poolFeatherOfFlight from "../pool/feather-of-flight.js";
 import _poolFervor from "../pool/fervor.js";
@@ -100,6 +101,7 @@ import _poolJhovallRider from "../pool/jhovall-rider.js";
 import _poolKamahlPitFighter from "../pool/kamahl-pit-fighter.js";
 import _poolKambalProfiteeringMayor from "../pool/kambal-profiteering-mayor.js";
 import _poolKilnFiend from "../pool/kiln-fiend.js";
+import _poolKishlaSkimmer from "../pool/kishla-skimmer.js";
 import _poolKratosStoicFather from "../pool/kratos-stoic-father.js";
 import _poolLandTax from "../pool/land-tax.js";
 import _poolLashOfTheWhip from "../pool/lash-of-the-whip.js";
@@ -279,6 +281,7 @@ const shard: CardShard = {
     _poolElspethSunsChampion,
     _poolEmblemOfTheWarmind,
     _poolEnterTheGodEternals,
+    _poolExpelTheInterlopers,
     _poolFearOfSurveillance,
     _poolFeatherOfFlight,
     _poolFervor,
@@ -313,6 +316,7 @@ const shard: CardShard = {
     _poolKamahlPitFighter,
     _poolKambalProfiteeringMayor,
     _poolKilnFiend,
+    _poolKishlaSkimmer,
     _poolKratosStoicFather,
     _poolLandTax,
     _poolLashOfTheWhip,

@@ -42,8 +42,17 @@ that one card is the reason the deck exists.
   The five TDC decks are `SAMPLE_DECKS`, so every bot and every unclaimed seat plays them, with
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
-  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing:
-  Temur Roar 31, Sultai Arisen 34, Abzan Armor 31, Mardu Surge 23, Jeskai Striker 28.
+  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
+  after TDC batch 1 (41 authored, `precon-tdc-batch-1.test.ts`): Temur Roar 22, Sultai Arisen 29,
+  Abzan Armor 18, Mardu Surge 14, Jeskai Striker 23 — 106, every one recorded with what it needs
+  (`engine/data/sweep-3/TDC1.json` and the earlier sweeps). **Next:** casting a spell as another
+  resolves, free or from a chosen card (`effect:cast-during-resolution` — `cast-now` exists, but
+  only for a target and at full cost) blocks 9: Breaching Dragonstorm, Diviner of Mist, Baral
+  and Kari Zev, Baral's Expertise, Transcendent Dragon, Transforming Flourish, Velomachus
+  Lorehold, Electrodominance, Conduit of Worlds. Then delve (4, though only Treasure Cruise needs
+  nothing else), a copy with new targets (4), "can attack as though it didn't have defender"
+  until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking Bulwark), and two each
+  for Omen, monstrosity, divided damage, hideaway and "entered from a graveyard".
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
@@ -197,7 +206,7 @@ that one card is the reason the deck exists.
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,020 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,045 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
@@ -269,7 +278,7 @@ that one card is the reason the deck exists.
   one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
-- **Precon stand-ins.** 147 cards in the five Tarkir: Dragonstorm starter decks play as
+- **Precon stand-ins.** 106 cards in the five Tarkir: Dragonstorm starter decks play as
   substitutes; authoring them is the card priority ("Card backlog" above). See
   `docs/plans/precon-decks.md` (the substitution tables). Deleting a substitution is the whole
   revert.
