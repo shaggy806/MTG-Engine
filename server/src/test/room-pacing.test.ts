@@ -274,7 +274,7 @@ describe("Room pacing (realtime)", () => {
     clock.advance(1000);
     expect(alice.frames.length).toBe(before); // still holding
 
-    clock.advance(6000); // past the ack timeout
+    clock.advance(12000); // past the ack timeout
     expect(alice.frames.length).toBeGreaterThan(before);
   });
 

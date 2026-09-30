@@ -1,4 +1,5 @@
 import type { GameEvent, PlayerView } from 'engine/client'
+import type { Half } from './animationSchedule.ts'
 
 /**
  * The one channel between "what the board is currently playing out"
@@ -25,6 +26,9 @@ export interface AnimationCue {
   readonly view: PlayerView
   /** Milliseconds from publication until this cue's animation should fire. */
   readonly delay: number
+  /** Which board it plays over (see `Half`). An `after` cue is published
+   * before the new board is painted, and has to start in that same task. */
+  readonly half: Half
 }
 
 type Listener = (cues: readonly AnimationCue[]) => void

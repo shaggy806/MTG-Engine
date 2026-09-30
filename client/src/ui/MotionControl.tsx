@@ -1,0 +1,79 @@
+import { useEffect, useRef, useState } from 'react'
+import { ANIM_SCALES, setMotionSettings, useMotionPrefs } from '../game/motionPrefs.ts'
+import type { AnimScale } from '../game/motionPrefs.ts'
+
+const SPEED_LABEL: Record<AnimScale, string> = {
+  0.5: 'Fast',
+  1: 'Normal',
+  1.5: 'Slow',
+  2: 'Slowest',
+}
+
+/**
+ * This viewer's animation settings (see `motionPrefs.ts`): how long every
+ * animation lasts on this screen, and whether movement is turned off. The one
+ * pacing control each player owns — bot speed is the host's — so it sits in
+ * everyone's top strip, as a button that opens a small panel rather than two
+ * more rows of options in a strip that has no room for them.
+ */
+export function MotionControl() {
+  const prefs = useMotionPrefs()
+  const [open, setOpen] = useState(false)
+  const boxRef = useRef<HTMLDivElement>(null)
+
+  // Closes on a click anywhere else, or Escape.
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div className="motion-control" ref={boxRef}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        Animations
+      </button>
+      {open ? (
+        <div className="motion-panel" role="dialog" aria-label="Animation settings">
+          <div className="motion-row" role="group" aria-label="Animation speed">
+            <span className="motion-label">Speed</span>
+            {ANIM_SCALES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`motion-option${s === prefs.animScale ? ' active' : ''}`}
+                aria-pressed={s === prefs.animScale}
+                onClick={() => setMotionSettings({ animScale: s })}
+              >
+                {SPEED_LABEL[s]}
+              </button>
+            ))}
+          </div>
+          <label className="motion-row">
+            <input
+              type="checkbox"
+              checked={prefs.reduced}
+              // The browser's own preference can't be switched off from here.
+              disabled={prefs.reduced && !prefs.reduceMotion}
+              onChange={(e) => setMotionSettings({ reduceMotion: e.target.checked })}
+            />
+            Reduce motion
+            {prefs.reduced && !prefs.reduceMotion ? (
+              <span className="motion-note">(set by your system)</span>
+            ) : null}
+          </label>
+        </div>
+      ) : null}
+    </div>
+  )
+}

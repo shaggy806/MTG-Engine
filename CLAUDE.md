@@ -75,7 +75,7 @@ them in full.
 
 **Whole repo** (root scripts fan out with `--workspaces --if-present`):
 - `npm run build` — builds `engine` (tsc), then `server` (tsc), then `client` (`tsc -b && vite build`)
-- `npm test` — runs `engine` and `server` vitest, each once (the client's Playwright suite is separate: `npm run test:e2e -w client`)
+- `npm test` — runs `engine`, `server` and `client` vitest, each once (the client's Playwright suite is separate: `npm run test:e2e -w client`)
 - `npm run lint` — oxlint on `client`
 - `npm run typecheck` — `tsc --noEmit` on `engine`, `tsc --noEmit` on `server`, `tsc -b` on `client`
 

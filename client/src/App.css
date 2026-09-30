@@ -102,6 +102,44 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+/* The viewer's animation settings (ui/MotionControl.tsx): a button in the
+   strip and a small panel dropped below it. */
+.motion-control {
+  position: relative;
+}
+.motion-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10002; /* above the animation layer, so a playing card can't cover it */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.motion-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.motion-label {
+  color: var(--muted);
+  margin-right: 2px;
+}
+.ts-menu .motion-option.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.motion-note {
+  color: var(--muted);
+}
 
 /* phase track — a compact pip row, meant to sit inline in .top-strip */
 .phase-steps {
@@ -247,10 +285,8 @@
     translate: -50% -8px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .error-toast {
-    animation: none;
-  }
+:root[data-reduce-motion] .error-toast {
+  animation: none;
 }
 
 .highroll-banner {
@@ -803,10 +839,8 @@
 .hand-strip.peekable.hand-decision .hand-strip-inner {
   padding-bottom: calc(clamp(12px, 2vh, 20px) + 64px);
 }
-@media (prefers-reduced-motion: reduce) {
-  .hand-strip.peekable .hand-strip-inner {
-    transition: none;
-  }
+:root[data-reduce-motion] .hand-strip.peekable .hand-strip-inner {
+  transition: none;
 }
 
 /* priority mode's Pass/Pass Turn/Auto-pass/Skip-mana controls, pulled out of
@@ -995,11 +1029,9 @@
       0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .decision-banner .controls {
-    animation: none;
-    border-color: var(--accent);
-  }
+:root[data-reduce-motion] .decision-banner .controls {
+  animation: none;
+  border-color: var(--accent);
 }
 
 .board {
@@ -1468,11 +1500,9 @@
     scale: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .stack-entry {
-    transition: none;
-    animation: none;
-  }
+:root[data-reduce-motion] .stack-entry {
+  transition: none;
+  animation: none;
 }
 /* Every card on the stack gets a warm outline so "something is on the stack"
    is impossible to miss against the dark table; the top one -- what a player
@@ -1511,10 +1541,8 @@
       0 8px 24px rgba(0, 0, 0, 0.55);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .stack-entry.is-top .card-tile {
-    animation: none;
-  }
+:root[data-reduce-motion] .stack-entry.is-top .card-tile {
+  animation: none;
 }
 /* The card that *caused* the decision you're answering, when it isn't on the
    stack any more (an edict's sacrifice is asked after the edict has resolved
@@ -2452,10 +2480,8 @@
 .mini-tile-popover .card-tile {
   --ct-scale: calc(var(--card-w) / var(--card-w-max));
 }
-@media (prefers-reduced-motion: reduce) {
-  .mini-tile-popover {
-    transition: none;
-  }
+:root[data-reduce-motion] .mini-tile-popover {
+  transition: none;
 }
 
 /* controls */
@@ -2540,10 +2566,8 @@
   background: var(--accent-bg);
   border-color: var(--accent);
 }
-@media (prefers-reduced-motion: reduce) {
-  .ability-menu {
-    transition: none;
-  }
+:root[data-reduce-motion] .ability-menu {
+  transition: none;
 }
 
 /* Mulligan is the one forced decision that blocks the whole table (every
@@ -2737,10 +2761,8 @@
 .mulligan-modal .hand-cards .hand-card:focus-within {
   z-index: var(--z, 0);
 }
-@media (prefers-reduced-motion: reduce) {
-  .hand-cards .hand-card .card-tile {
-    transition: none;
-  }
+:root[data-reduce-motion] .hand-cards .hand-card .card-tile {
+  transition: none;
 }
 /* Fixed silhouette regardless of card text length -- .card-tile's shared
    min-height (needed elsewhere so e.g. a zone-viewer tile can grow if it
@@ -2962,7 +2984,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  animation: reveal-show 2.6s ease-out forwards;
+  animation: reveal-show calc(2600ms * var(--anim-scale, 1)) ease-out forwards;
 }
 .reveal-caption {
   font-size: 13px;
@@ -3008,18 +3030,16 @@
     transform: translateY(-8px) scale(0.97);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .reveal-show {
-    animation: reveal-fade 2.6s linear forwards;
+:root[data-reduce-motion] .reveal-show {
+  animation: reveal-fade calc(2600ms * var(--anim-scale, 1)) linear forwards;
+}
+@keyframes reveal-fade {
+  0%,
+  80% {
+    opacity: 1;
   }
-  @keyframes reveal-fade {
-    0%,
-    80% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -3039,7 +3059,7 @@
      left the wrapper animating for 0s and the card with no keyframes at all,
      so the overlay simply sat there at full opacity and vanished.
      1.8s matches AnimationLayer.tsx's own PLAYED_CARD_DURATION_MS. */
-  animation: played-card-fly 1.8s ease-out forwards;
+  animation: played-card-fly calc(1800ms * var(--anim-scale, 1)) ease-out forwards;
   /* Double the ordinary card size -- this is the "here is what just got
      played" beat, so it wants to dominate the screen -- capped against
      viewport height as well (a card box is 1.4x its own width, and the two
@@ -3084,7 +3104,7 @@
      board's own card sizing isn't reliably in scope here. */
   width: clamp(46px, 4.2vw, 82px);
   /* 0.52s matches AnimationLayer.tsx's own DRAWN_CARD_DURATION_MS. */
-  animation: drawn-card-fly 0.52s cubic-bezier(0.3, 0, 0.35, 1) forwards;
+  animation: drawn-card-fly calc(520ms * var(--anim-scale, 1)) cubic-bezier(0.3, 0, 0.35, 1) forwards;
 }
 .drawn-card-fly .card-back {
   width: 100%;
@@ -3134,6 +3154,33 @@
     opacity: 0;
   }
 }
+/* Reduced motion: the played card still shows up in the middle for the same
+   time -- it's the information -- but fades in and out in place instead of
+   flying from its owner's side. */
+:root[data-reduce-motion] .played-card-fly {
+  animation-name: played-card-fade;
+}
+@keyframes played-card-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  80% {
+    opacity: 1;
+  }
+}
+
+/* A copy of a card moving from one place to another (AnimationLayer's
+   flyGhost): made outside React, placed over the tile it copies in viewport
+   px, and removed when it lands. --mini-w is set inline to the tile's own
+   width, since the copy has left the board that sized it. */
+.ghost-flight {
+  position: fixed;
+  z-index: 10001; /* with .anim-layer, above the mini-tile popover */
+  pointer-events: none;
+  will-change: transform, opacity;
+}
 
 /* Turn/phase banners -- a small sequential queue (see AnimationLayer.tsx),
    so a settle() that auto-advances through several steps in one push (an
@@ -3157,7 +3204,7 @@
   font-size: clamp(1.1rem, 2.4vw, 1.8rem);
   color: var(--accent);
   /* matches AnimationLayer.tsx's TURN_BANNER_DURATION_MS (= TURN_STEP_MS) */
-  animation-duration: 1.3s;
+  animation-duration: calc(1300ms * var(--anim-scale, 1));
 }
 .tp-banner.tp-turn.seat-a {
   color: var(--seat-a);
@@ -3179,7 +3226,7 @@
   font-size: clamp(0.9rem, 1.8vw, 1.3rem);
   color: var(--text);
   /* matches AnimationLayer.tsx's PHASE_BANNER_DURATION_MS (= PHASE_STEP_MS) */
-  animation-duration: 0.7s;
+  animation-duration: calc(700ms * var(--anim-scale, 1));
 }
 @keyframes tp-banner-pop {
   0% {
@@ -3399,10 +3446,8 @@
     opacity: 0.55;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .aimed-mark {
-    animation: none;
-  }
+:root[data-reduce-motion] .aimed-mark {
+  animation: none;
 }
 /* A spell on the stack that the focused entry targets (a counterspell's):
    the stack's own orange glow turns red. A buried card shows only its

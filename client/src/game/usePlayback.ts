@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { LegalAction, PlayerView } from 'engine/client'
 import { phaseOfStep } from 'engine/client'
 import { scheduleEvents } from './animationSchedule.ts'
+import type { ScheduledEvent } from './animationSchedule.ts'
 import type { AnimationBus } from './animationBus.ts'
+import { motionPrefs } from './motionPrefs.ts'
 
 /** One server push: the events since the previous frame, the board they
  * settled into, and what this seat may do once it's shown. */
@@ -21,7 +23,7 @@ export interface Playback {
   readonly revision: number
   /** A frame is playing, or one is waiting behind it. Nothing may be clicked
    * while this holds: those actions belong to a board that isn't on screen
-   * yet. */
+   * yet, or one whose changes are still being shown. */
   readonly busy: boolean
 }
 
@@ -45,7 +47,14 @@ const MAX_QUEUED_FRAMES = 4
  * land has to play while the battlefield still doesn't have that land on it,
  * or the animation is just decoration over an outcome already visible.
  *
- * `onShown` fires as each frame lands, and the caller turns that into the
+ * A frame has a second half, too: animations that describe something only
+ * the new board has (a tile tilting to tapped) play over it once it's shown,
+ * and the frame isn't finished until they have. Those cues are published from
+ * a layout effect, after the new board is in the DOM and before it's painted,
+ * so `AnimationLayer` can start them from the old pose without the new one
+ * flashing up first.
+ *
+ * `onShown` fires as each frame finishes, and the caller turns that into the
  * `ack` the server paces its bots against, so a bot's next move can't start
  * until this client has finished showing the last one.
  */
@@ -75,6 +84,12 @@ export function usePlayback(
    * does get shown and, more to the point, acked. */
   const lastQueuedSeqRef = useRef(-1)
   const phaseRef = useRef(frame ? phaseOfStep(frame.view.turn.step) : 'beginning')
+  /** The second half of the frame just shown, waiting for the layout effect
+   * below to publish it against the board that has now mounted. */
+  const pendingAfterRef = useRef<{
+    readonly view: PlayerView
+    readonly items: readonly ScheduledEvent[]
+  } | null>(null)
 
   // Read through refs so the playback loop below doesn't have to be rebuilt
   // (and every in-flight timer torn down) each time a new push re-renders.
@@ -115,40 +130,92 @@ export function usePlayback(
     // than we've already shown; there's nothing sensible to animate then.
     const from = shownEventsRef.current <= total ? shownEventsRef.current : total
     shownEventsRef.current = total
-    const schedule = scheduleEvents(next.view.events.slice(from), phaseRef.current)
+    const prefs = motionPrefs()
+    const schedule = scheduleEvents(next.view.events.slice(from), phaseRef.current, {
+      scale: prefs.animScale,
+      reduced: prefs.reduced,
+    })
     phaseRef.current = schedule.endPhase
-    busRef.current.publish(
-      schedule.items.map((i) => ({ event: i.event, view: next.view, delay: i.offset })),
-    )
+    // A hidden tab has nobody watching, and the browser throttles its timers
+    // to about one tick a second, so playing the frame out would only hold up
+    // the server's bots for nothing. Show it at once instead.
+    const watching = document.visibilityState !== 'hidden'
+    const beforeMs = watching ? schedule.totalMs : 0
+    const afterMs = watching ? schedule.afterMs : 0
+    if (watching) {
+      busRef.current.publish(
+        schedule.items.map((i) => ({
+          event: i.event,
+          view: next.view,
+          delay: i.offset,
+          half: 'before' as const,
+        })),
+      )
+    }
+
+    const finish = (): void => {
+      timerRef.current = null
+      playingRef.current = false
+      if (afterMs > 0) {
+        // The second half is done: the player may act on this board now,
+        // unless another frame is already waiting behind it.
+        const busy = queueRef.current.length > 0
+        setDisplayed((cur) => (cur.busy === busy ? cur : { ...cur, busy }))
+      }
+      onShownRef.current(next.seq)
+      playNext()
+    }
 
     // `totalMs` counts only the animations the game waits for (see
     // animationSchedule's PACED), so a frame carrying nothing but banners
     // lands at once and the banners play over the board that follows it.
     const show = (): void => {
       timerRef.current = null
-      playingRef.current = false
       revisionRef.current += 1
+      if (watching && schedule.after.length > 0) {
+        pendingAfterRef.current = { view: next.view, items: schedule.after }
+      }
       setDisplayed({
         view: next.view,
         actions: next.actions,
         revision: revisionRef.current,
-        busy: queueRef.current.length > 0,
+        // Still busy through the second half: the board is on screen, but
+        // what's happening to it isn't finished yet.
+        busy: afterMs > 0 || queueRef.current.length > 0,
       })
-      onShownRef.current(next.seq)
-      playNext()
+      if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
+      else finish()
     }
 
-    if (schedule.totalMs <= 0) show()
+    if (beforeMs <= 0) show()
     else {
-      timerRef.current = window.setTimeout(show, schedule.totalMs)
+      timerRef.current = window.setTimeout(show, beforeMs)
       // Returning `cur` unchanged bails the re-render out entirely.
       setDisplayed((cur) => (cur.busy ? cur : { ...cur, busy: true }))
     }
   }, [])
 
+  // The second half's cues go out once its board has mounted: a layout effect
+  // of the component that renders `Table` runs after every tile is in the DOM
+  // and before any of it is painted.
+  useLayoutEffect(() => {
+    const pending = pendingAfterRef.current
+    if (pending === null) return
+    pendingAfterRef.current = null
+    busRef.current.publish(
+      pending.items.map((i) => ({
+        event: i.event,
+        view: pending.view,
+        delay: i.offset,
+        half: 'after' as const,
+      })),
+    )
+  }, [displayed.revision])
+
   useEffect(() => {
     if (frame === null) {
       queueRef.current = []
+      pendingAfterRef.current = null
       if (timerRef.current !== null) window.clearTimeout(timerRef.current)
       timerRef.current = null
       playingRef.current = false

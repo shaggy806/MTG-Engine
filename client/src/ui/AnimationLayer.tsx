@@ -20,9 +20,11 @@ import {
   DRAW_STEP_MS,
   PHASE_STEP_MS,
   REVEAL_STEP_MS,
+  TAP_STEP_MS,
   TURN_STEP_MS,
 } from '../game/animationSchedule.ts'
 import type { AnimationBus } from '../game/animationBus.ts'
+import { motionPrefs } from '../game/motionPrefs.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
  * fixed jab distance rather than a fraction of the real gap between the two
@@ -46,6 +48,16 @@ const TURN_BANNER_DURATION_MS = TURN_STEP_MS
 const PHASE_BANNER_DURATION_MS = PHASE_STEP_MS
 const DEATH_DURATION_MS = DEATH_STEP_MS
 const DRAWN_CARD_DURATION_MS = DRAW_STEP_MS
+/** The pose `.mini-tile.tapped` wears in App.css. Untapping starts from it,
+ * and by then the tile no longer has the class to read it from. */
+const TAPPED_POSE = 'rotate(20deg) scale(0.68)'
+
+/** A duration at the viewer's speed (see `motionPrefs.ts`). Every timer and
+ * `.animate()` here goes through this, matching the scaled slots
+ * `animationSchedule` reserved for them. */
+function scaled(ms: number): number {
+  return ms * motionPrefs().animScale
+}
 
 /** How far the banner queue may fall behind the game before it starts
  * dropping the oldest. */
@@ -158,19 +170,25 @@ function drawFlight(
   const cell = panel?.closest<HTMLElement>('.quadrant-cell')
   if (!pile || !cell) return null
 
-  const cx = window.innerWidth / 2
-  const cy = window.innerHeight / 2
   const p = pile.getBoundingClientRect()
-  const c = cell.getBoundingClientRect()
-  // Top half of the table means a seat facing us, so their hand reads as
-  // being off the top of their own cell; ours is off the bottom of it.
-  const topRow = c.top + c.height / 2 < cy
+  const to = handPoint(cell)
   return {
-    fromX: p.left + p.width / 2 - cx,
-    fromY: p.top + p.height / 2 - cy,
-    toX: c.left + c.width / 2 - cx,
-    toY: (topRow ? c.top : c.bottom) - cy,
+    fromX: p.left + p.width / 2 - window.innerWidth / 2,
+    fromY: p.top + p.height / 2 - window.innerHeight / 2,
+    toX: to.x,
+    toY: to.y,
   }
+}
+
+/** Where a seat's hand is, for a card flying into it: the middle of the near
+ * edge of that seat's cell, as an offset from the centre of the viewport.
+ * Top half of the table means a seat facing us, so their hand reads as being
+ * off the top of their own cell; ours is off the bottom of it. */
+function handPoint(cell: HTMLElement): { x: number; y: number } {
+  const cy = window.innerHeight / 2
+  const c = cell.getBoundingClientRect()
+  const topRow = c.top + c.height / 2 < cy
+  return { x: c.left + c.width / 2 - window.innerWidth / 2, y: (topRow ? c.top : c.bottom) - cy }
 }
 
 interface Banner {
@@ -226,6 +244,22 @@ function runHit(source: ObjectId, target: TargetRef): void {
   const srcEl = elementFor({ kind: 'object', object: source })
   const targetEl = elementFor(target)
   if (!srcEl || !targetEl) return
+  const lungeMs = scaled(LUNGE_DURATION_MS)
+  const reactionMs = scaled(HIT_REACTION_DURATION_MS)
+
+  // Reduced motion keeps the information — what got hit — and drops the
+  // movement: no jab, no shake, just the red flash on the target.
+  if (motionPrefs().reduced) {
+    targetEl.animate(
+      [
+        { filter: 'brightness(1)' },
+        { filter: 'brightness(1.5) drop-shadow(0 0 10px rgba(255, 70, 70, 0.85))', offset: 0.3 },
+        { filter: 'brightness(1)' },
+      ],
+      { duration: lungeMs + reactionMs, easing: 'ease-out' },
+    )
+    return
+  }
 
   const a = srcEl.getBoundingClientRect()
   const d = targetEl.getBoundingClientRect()
@@ -258,7 +292,7 @@ function runHit(source: ObjectId, target: TargetRef): void {
       { transform: `translate(${nx}px, ${ny}px) ${base}`, offset: LUNGE_IMPACT_FRACTION },
       { transform: `translate(0, 0) ${base}`, offset: 1 },
     ],
-    { duration: LUNGE_DURATION_MS, easing: 'ease-out' },
+    { duration: lungeMs, easing: 'ease-out' },
   )
 
   // Only the box moves: the tile inside keeps whatever tilt it has (an
@@ -284,9 +318,9 @@ function runHit(source: ObjectId, target: TargetRef): void {
         { transform: `translate(-2px, 0) ${targetBase}`, offset: 0.78 },
         { transform: `translate(0, 0) ${targetBase}`, filter: 'brightness(1)', offset: 1 },
       ],
-      { duration: HIT_REACTION_DURATION_MS, easing: 'ease-out' },
+      { duration: reactionMs, easing: 'ease-out' },
     )
-  }, LUNGE_DURATION_MS * LUNGE_IMPACT_FRACTION)
+  }, lungeMs * LUNGE_IMPACT_FRACTION)
 }
 
 /**
@@ -299,6 +333,13 @@ function runHit(source: ObjectId, target: TargetRef): void {
 function runDeath(object: ObjectId): void {
   const el = elementFor({ kind: 'object', object })
   if (!el) return // never drawn (entered and left inside one frame)
+  if (motionPrefs().reduced) {
+    el.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: scaled(DEATH_DURATION_MS),
+      fill: 'forwards',
+    })
+    return
+  }
   const base = srcBaseTransform(el)
   el.animate(
     [
@@ -316,8 +357,99 @@ function runDeath(object: ObjectId): void {
         offset: 1,
       },
     ],
-    { duration: DEATH_DURATION_MS, easing: 'ease-in', fill: 'forwards' },
+    { duration: scaled(DEATH_DURATION_MS), easing: 'ease-in', fill: 'forwards' },
   )
+}
+
+/**
+ * Flies a copy of an element from where it is now to `to` (an offset from
+ * the centre of the viewport), shrinking and fading as it lands — the one
+ * helper every "a card moves from here to there" animation goes through.
+ *
+ * A copy, because the element itself belongs to a board that `Table` is about
+ * to remount: the copy lives in its own container on `<body>`, outside React
+ * entirely, and removes itself when it lands. The original is hidden for the
+ * flight so the card doesn't appear to be in two places. Sized from the
+ * tile's layout box rather than its on-screen one, which a tapped tile's
+ * tilt makes wider than the tile itself.
+ */
+function flyGhost(el: HTMLElement, to: { x: number; y: number }, duration: number): void {
+  const r = el.getBoundingClientRect()
+  if (r.width === 0 && r.height === 0) return
+  const tile = el.querySelector<HTMLElement>('.mini-tile') ?? el
+  const ghost = el.cloneNode(true) as HTMLElement
+  ghost.removeAttribute('data-obj-id')
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  box.style.setProperty('--mini-w', `${tile.offsetWidth}px`)
+  box.style.left = `${r.left}px`
+  box.style.top = `${r.top}px`
+  box.style.width = `${r.width}px`
+  box.style.height = `${r.height}px`
+  box.appendChild(ghost)
+  document.body.appendChild(box)
+  el.style.visibility = 'hidden'
+
+  const dx = to.x - (r.left + r.width / 2 - window.innerWidth / 2)
+  const dy = to.y - (r.top + r.height / 2 - window.innerHeight / 2)
+  const flight = box.animate(
+    [
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${dx * 0.15}px, ${dy * 0.15}px) scale(1.08)`, opacity: 1, offset: 0.2 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0.55)`, opacity: 0 },
+    ],
+    { duration, easing: 'cubic-bezier(0.3, 0, 0.35, 1)', fill: 'forwards' },
+  )
+  flight.onfinish = () => box.remove()
+  flight.oncancel = () => box.remove()
+}
+
+/**
+ * A permanent returned to its hand flies there — the draw flight run in
+ * reverse. It heads for the hand of the board it was on, which is its
+ * controller's: a stolen creature bounced back to its owner goes the wrong
+ * way, which is a rare enough case to leave until control changes get their
+ * own animation. Falls back to the ordinary fade where there's nothing to fly
+ * (the tile or its cell can't be found) or motion is reduced.
+ */
+function runBounce(object: ObjectId): void {
+  const el = elementFor({ kind: 'object', object })
+  const cell = el?.closest<HTMLElement>('.quadrant-cell')
+  if (!el || !cell || motionPrefs().reduced) {
+    runDeath(object)
+    return
+  }
+  flyGhost(el, handPoint(cell), scaled(DEATH_DURATION_MS))
+}
+
+/**
+ * A permanent tilting to tapped, or back upright. Plays in a frame's second
+ * half, over the board that already shows the tile in its new pose, so it
+ * runs from the old pose to whatever the tile is wearing now. `fill:
+ * 'backwards'` holds the old pose through `delay`, and the cue is started
+ * before that board is painted (see `usePlayback`), so the new pose never
+ * flashes up first.
+ */
+function runTap(object: ObjectId, tapped: boolean, delay: number): void {
+  const tile = document.querySelector<HTMLElement>(
+    `[data-obj-id="${CSS.escape(object)}"] .mini-tile`,
+  )
+  if (!tile) return
+  const timing: KeyframeAnimationOptions = {
+    duration: scaled(TAP_STEP_MS),
+    delay,
+    easing: 'cubic-bezier(0.3, 0, 0.3, 1)',
+    fill: 'backwards',
+  }
+  tile.animate([{ transform: tapped ? 'none' : TAPPED_POSE }, {}], timing)
+  if (!tapped) return
+  // The dimming scrim darkens with the tilt rather than ahead of it. (An
+  // untapped tile has no scrim left to fade out.)
+  try {
+    tile.animate([{ opacity: 0 }, {}], { ...timing, pseudoElement: '::before' })
+  } catch {
+    // A browser that can't animate a pseudo-element just shows the scrim.
+  }
 }
 
 /**
@@ -381,7 +513,7 @@ export function AnimationLayer({
           bannerTimerRef.current = null
           advanceBannerQueue()
         },
-        next.kind === 'turn' ? TURN_BANNER_DURATION_MS : PHASE_BANNER_DURATION_MS,
+        scaled(next.kind === 'turn' ? TURN_BANNER_DURATION_MS : PHASE_BANNER_DURATION_MS),
       )
     }
     const enqueueBanner = (b: Banner) => {
@@ -405,11 +537,12 @@ export function AnimationLayer({
         setPlayedCards((cur) => [...cur, { key, obj, originX: origin.x, originY: origin.y }])
         window.setTimeout(() => {
           setPlayedCards((cur) => cur.filter((c) => c.key !== key))
-        }, PLAYED_CARD_DURATION_MS)
+        }, scaled(PLAYED_CARD_DURATION_MS))
       } else if (ev.type === 'damage-dealt' && ev.combat) {
         runHit(ev.source, ev.target)
       } else if (ev.type === 'permanent-left-battlefield') {
-        runDeath(ev.object)
+        if (ev.toZone === 'hand') runBounce(ev.object)
+        else runDeath(ev.object)
       } else if (ev.type === 'cards-revealed') {
         const cards = ev.objects
           .map((id) => view.objects[id])
@@ -423,7 +556,7 @@ export function AnimationLayer({
         ])
         window.setTimeout(() => {
           setReveals((cur) => cur.filter((r) => r.key !== key))
-        }, REVEAL_STEP_MS)
+        }, scaled(REVEAL_STEP_MS))
       } else if (ev.type === 'card-drawn') {
         const flight = drawFlight(ev.player)
         if (!flight) return
@@ -431,7 +564,7 @@ export function AnimationLayer({
         setDrawnCards((cur) => [...cur, { key, ...flight }])
         window.setTimeout(() => {
           setDrawnCards((cur) => cur.filter((c) => c.key !== key))
-        }, DRAWN_CARD_DURATION_MS)
+        }, scaled(DRAWN_CARD_DURATION_MS))
       } else if (ev.type === 'turn-began') {
         enqueueBanner({
           key: `turn-${ev.seq}`,
@@ -448,6 +581,16 @@ export function AnimationLayer({
 
     return bus.subscribe((cues) => {
       for (const cue of cues) {
+        if (cue.half === 'after') {
+          // Started now, in the task that mounted the new board, with the
+          // wait handed to the animation itself: a timer would let that board
+          // paint once in its final pose before the animation took it back.
+          if (cue.event.type === 'permanent-tapped') runTap(cue.event.object, true, cue.delay)
+          else if (cue.event.type === 'permanent-untapped') {
+            runTap(cue.event.object, false, cue.delay)
+          }
+          continue
+        }
         window.setTimeout(() => fire(cue.event, cue.view), cue.delay)
       }
     })

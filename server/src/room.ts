@@ -113,10 +113,14 @@ interface Seat {
 }
 
 /** How long the frame gate will wait on a seat that has acked before but has
- * gone quiet — a backgrounded tab throttles its timers, so its animations
- * (and therefore its acks) can slow right down. Past this the game moves on
- * without it rather than stalling for everyone else. */
-const FRAME_ACK_TIMEOUT_MS = 6_000;
+ * gone quiet. Past this the game moves on without it rather than stalling for
+ * everyone else. It has to stay above the longest frame a client will play —
+ * the client caps one at 11 s whatever its viewer's animation speed
+ * (`FRAME_CEILING_MS` in `client/src/game/animationSchedule.ts`) — or a
+ * viewer who slowed their animations down gets a bot moving underneath them.
+ * A backgrounded tab doesn't lean on this: it stops animating and acks each
+ * frame straight away. */
+const FRAME_ACK_TIMEOUT_MS = 12_000;
 /** A floor on the gap between one bot action and the next, so a string of
  * moves with nothing animatable in them (passing priority round a table,
  * say) still reads as separate moves rather than one blur. */

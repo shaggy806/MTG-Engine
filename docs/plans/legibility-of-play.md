@@ -1,8 +1,8 @@
 # Legibility of play: animation and pacing
 
-Status: **planned** (2026-09-30). Nothing built yet. The item list is `BACKLOG.md`'s "Legibility of
-play" section. This file orders that list and settles the two design questions everything else
-depends on.
+Status: **in progress**. Planned 2026-09-30; Step 0 (the groundwork) done the same day, Steps 1–5
+not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
+list and settles the design questions everything else depends on.
 
 ## The problem
 
@@ -34,25 +34,32 @@ halves automatically.
 - **After** (new board): enter, tap/untap, counters, buff, damage/life flash, floating numbers,
   transform flip, attach, change of control, trigger-source pulse.
 
-## Design decision 2: tile effects are CSS animations on mount, not overlays
+## Design decision 2: tile effects start on the freshly mounted board, before it paints
 
 `Table` remounts per frame shown. That's why a CSS *transition* on a tile never plays: there is no
-previous style to transition from. A CSS `@keyframes` *animation* does play on mount, though, and
-the after-half runs on exactly that mount. So the effect channel is:
+previous style to transition from. The effect has to start on the new board's elements, from the
+old pose, before that board is ever painted in its new one.
 
-- `usePlayback` hands `Table` a per-frame `effects: ReadonlyMap<ObjectId, TileEffect[]>` (plus
-  `playerEffects` keyed by seat) built from the after-schedule, each entry with a
-  `delay`. `MiniTile` / `PlayerPanel` put a class and `--fx-delay` on the element, and App.css
-  owns the keyframes. There's no DOM lookup, no measuring, and nothing to clean up.
-- Tapping is a keyframe from `rotate(0)` to the tapped pose. Untapping is the reverse.
-- `AnimationLayer` keeps what only an overlay can draw: things *moving between places* (bounce to
-  hand, dying to the graveyard, control change, attach, mill), arrows, and floating numbers. A
-  move uses a **ghost flight**, one shared helper: measure the source rect on the old board
-  before the swap, then the destination rect after it (by `data-obj-id`, `data-library-of`, and
-  new `data-graveyard-of` / `data-hand-of` / `data-exile-of` anchors), and fly a `CardTile` ghost
-  between them. The real destination tile is hidden until the ghost lands (a `fx-arriving` class
-  on it in the effects map). `runHit` and the draw flight already do half of this, so the helper
-  generalises them rather than adding a third copy.
+*As planned*, that was a per-frame effects map handed down to `MiniTile`/`PlayerPanel` as classes
+and CSS `@keyframes`, which play on mount. *As built* (Step 0), it's simpler and matches how
+`runHit`/`runDeath` already work: `usePlayback` publishes the `after` cues from a **layout
+effect**, which runs once the new board is in the DOM and before it's painted, and
+`AnimationLayer` starts each one in that same task as a Web Animation on the tile it finds by
+`data-obj-id`, with the wait passed as `delay` and `fill: 'backwards'` holding the old pose until
+then. That needs no prop threading through `Table`'s many render paths, and nothing to clean up.
+Measured live: on the first painted frame, a tile that just tapped already has its `tapped` class
+but still has an identity transform, and one that just untapped is still at exactly the tapped
+pose. A timer instead of the same-task start would paint the new pose first.
+
+- Tapping runs from `transform: none` to the tapped pose, with the dimming scrim fading in on
+  `::before`. Untapping runs from the tapped pose to upright.
+- Things *moving between places* go through **`flyGhost`**, one shared helper: a copy of the tile
+  in its own box on `<body>`, outside React, flown with `.animate()` and removed when it lands,
+  while the real tile is hidden. Bounce to hand is its first user, and needs only the old board
+  (the hand edge of the tile's cell). A move whose destination only exists on the new board
+  (control change, attach) will measure the source before the swap and the destination after it.
+  The new zone anchors (`data-graveyard-of` / `data-hand-of` / `data-exile-of`) come with the
+  first item that needs them.
 
 ## Design decision 3: one timing scale, set by the viewer
 
@@ -66,9 +73,15 @@ Every `*_STEP_MS` and every CSS duration reads from one multiplier:
   the information stays and the motion goes.
 - **The host's bot speed** stays a server-side linger and doesn't change the client's scale. The
   cast spotlight's length follows the viewer's scale, not the bot speed.
-- **`MAX_FRAME_MS`** scales too, and becomes a per-half ceiling. Adding paced slots makes a big
-  frame (a wrath, a token army) likelier to hit it. Past the ceiling, coalescing replaces
-  dropping: all tokens entering in one frame share one beat, the way deaths already share one.
+- **`MAX_FRAME_MS`** scales too. As built it's one ceiling for both halves together, since the
+  server waits on the whole frame, capped at 11 s (`FRAME_CEILING_MS`) however slow the viewer;
+  the server's `FRAME_ACK_TIMEOUT_MS` went from 6 s to 12 s to sit above it. The first paced slot
+  that won't fit ends the frame (the old check let a frame run one slot past its ceiling: four
+  casts took 7.2 s against a 6 s server timeout). Adding paced slots makes a big frame (a wrath, a
+  token army) likelier to hit it, so each run of one kind shares one beat: deaths already did, and
+  taps and untaps do now.
+- **A hidden tab animates nothing** and acks each frame at once, rather than leaning on the
+  server's timeout. Nobody is watching it, and its timers are throttled anyway.
 
 This comes first because every later item must honour both settings, and retrofitting them onto
 twenty animations is the expensive order.
@@ -78,14 +91,17 @@ twenty animations is the expensive order.
 Each step can ship on its own and is checked live (2-player, 4-player, ~768 px tall) before the
 next.
 
-**Step 0: groundwork.**
-- The settings popover (animation speed, reduce motion, and a sound toggle that stays unwired for
-  now), `--anim-scale`, `useMotionPrefs`.
-- The before/after split in `scheduleEvents` + `usePlayback`, with unit tests for the scheduler:
-  both halves, coalescing, and ceilings.
-- The tile effect map, with tap/untap as its first user. It's the simplest effect and proves the
-  mount-animation approach.
-- The ghost-flight helper and zone anchors, with bounce to hand as its first user.
+**Step 0: groundwork.** *Done 2026-09-30.*
+- The settings panel (the "Animations" button: speed and reduce motion; no sound toggle until
+  there are sounds), `--anim-scale`, `useMotionPrefs`. Every existing reduced-motion rule in
+  App.css now keys on `:root[data-reduce-motion]`, set by the setting or the media query.
+- The before/after split in `scheduleEvents` + `usePlayback`, with vitest unit tests for the
+  scheduler (the client's first): both halves, shared beats, speed, reduced motion, ceilings.
+- The tile effect channel (decision 2), with tap/untap as its first user.
+- `flyGhost`, with bounce to hand as its first user.
+- Found while checking it live, and fixed separately: a board whose tile-size search looped
+  forever as a scrollbar came and went, so its tiles jumped between rows every frame. Not caused
+  by this work (it reproduced on the code before it); fixed with `scrollbar-gutter: stable`.
 
 **Step 1: the stack and whose turn it is.** These were the loudest complaints.
 - Stack label and target text sized from `--card-w`, not 11 px. Move the stack left so it stops

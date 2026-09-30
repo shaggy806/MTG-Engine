@@ -433,28 +433,24 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md` (planned, not started). The problem is that a bot
-turn can't be followed by eye, even at the slow bot speed. Only three kinds of event hold the game
-up for their animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat
-hit, a permanent leaving). Everything else lands with the next board and has no animation at all.
-The pipeline is in `docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`).
+The build order and design are in `docs/plans/legibility-of-play.md` (Step 0, the groundwork, is
+done). The problem is that a bot turn can't be followed by eye, even at the slow bot speed. Only a
+few kinds of event hold the game up for their animation (`PACED` in
+`client/src/game/animationSchedule.ts`: a card played, a combat hit, a permanent leaving, a tap).
+Everything else lands with the next board and has no animation at all. The pipeline is in
+`docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`). Each item below is
+now a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
+not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an `after` cue, or
+`flyGhost` for a move — and each must honour `motionPrefs` (speed and reduced motion).
 
-- **Groundwork: a per-permanent effect channel.** Most items below are an effect on one tile (a
-  glow, a flash, a tilt, a move). `Table` remounts per frame, so a CSS transition on a tile never
-  plays. Tapping, for example, snaps the tile straight to the tilted pose. The effects have to be
-  cues that `AnimationLayer` draws over the tile, found by `data-obj-id` the way `runHit` and
-  `runDeath` find theirs. A move from one spot to another (entering, changing control) needs the
-  tile's position before and after the move (FLIP). Build this once, then add each effect as a
-  small follow-up. Each new event kind also needs a `slotFor` entry, and paced or unpaced has to
-  be decided for each one.
 - **Bots play too fast to follow, even on "slow".** `BOT_LINGER_MS.slow` (`server/src/room.ts`)
   is a 1.6s pause after each frame, but a bot passing priority is never published as a frame of
   its own. Its effects arrive in the next frame, and that frame animates only what `PACED`
   covers. So most of the fix is giving more events paced slots (the items below), not a longer
   linger.
-- **Show who cast a spell, and keep it up longer.** The cast spotlight flies from the owner's
-  quadrant but doesn't name them. Its `CARD_STEP_MS` (1.8s) doesn't grow with bot speed. Stack
-  entries don't show a controller either.
+- **Show who cast a spell.** The cast spotlight flies from the owner's quadrant but doesn't name
+  them, and stack entries don't show a controller either. (How long it stays up is now the
+  viewer's animation-speed setting.)
 - **"Resolve all" should resolve the stack one item at a time, not jump.**
   `requestResolveAll` passes through `autoAdvanceHumanSeat` inside `settle()`'s loop without
   publishing a frame, so the whole stack resolves in one frame. It needs a frame and the frame
@@ -473,15 +469,13 @@ The pipeline is in `docs/architecture/client.md` (`usePlayback`/`animationBus`/`
 - **Life gain: a green flash; life loss and damage: a red flash**, on the player panel
   (`life-changed` by the sign of its `delta`) and on a creature for noncombat damage
   (`damage-dealt` without `combat`, which today has no animation at all).
-- **Animate tapping and untapping** (`permanent-tapped`/`permanent-untapped`). See the
-  groundwork line.
 - **Cards milled or exiled from the top of a library** (`cards-milled`, `cards-put-into-exile`
   from a library) should leave the library pile visibly, e.g. flipping into the graveyard or
   exile.
-- **A permanent bounced to hand** (`permanent-returned-to-hand`) should fly to its owner's hand,
-  like the draw flight run in reverse.
 - **A change of control** (`control-changed`) should move the permanent across to its new
-  controller's board.
+  controller's board (an `after` cue with `flyGhost` from the old spot). The same work should
+  send a bounced permanent to its *owner's* hand: `runBounce` flies it to the hand of the board
+  it was on, its controller's, which is wrong for a stolen creature.
 - **Exiled should look different from destroyed.** `runDeath` fades every permanent that
   leaves, wherever it goes. Exile (`permanent-exiled`) should look distinct from dying
   (`permanent-destroyed`, `permanent-sacrificed`).
@@ -497,8 +491,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   alongside the green and red flashes.
 - **A host control to pause the bots or step them one action at a time.** It would hold the
   room's frame gate (`server/src/room.ts`).
-- **A per-client animation-speed setting** that scales every `*_STEP_MS` and CSS duration on
-  that screen. Bot speed is host-only, so this is the one control each player owns.
 - **A "thinking…" indicator** on the player panel of the seat the game is waiting on, bot or
   human.
 - **Replay the last update's animations** on demand: re-fire the last frame's schedule against
@@ -523,8 +515,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   Initiative has no event yet.
 - **Clicking a history log entry highlights the cards it involved on the board** (`EventLog`).
 - **Optional sound effects, off by default.**
-- **A reduce-motion setting.** Every new animation should respect both it and the browser's
-  `prefers-reduced-motion`, which some existing animations already honour in `App.css`.
 
 - **A face-down exiled card drops out of its owner's exile count and list** for every seat that
   can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in

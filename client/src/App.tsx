@@ -63,6 +63,7 @@ import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
 import { AnimationLayer } from './ui/AnimationLayer.tsx'
+import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
@@ -618,6 +619,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               onChange={game.setBotSpeed}
             />
           ) : null}
+          <MotionControl />
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>

@@ -1,12 +1,14 @@
 import type { GameEvent, Phase } from 'engine/client'
 
 /**
- * How long each kind of animation is on screen. `AnimationLayer` imports
- * these for its own overlay timeouts and the matching CSS
- * `animation-duration`s in App.css are written to the same numbers, so an
- * overlay never outlives the time budgeted for it.
+ * How long each kind of animation is on screen, at the viewer's normal speed.
+ * Every one is multiplied by the viewer's `animScale` (see `motionPrefs.ts`):
+ * here for the slots, in `AnimationLayer` for its overlay timeouts, and in
+ * App.css as `calc(<ms> * var(--anim-scale))` for the matching
+ * `animation-duration`s, so an overlay never outlives the time budgeted for
+ * it.
  *
- * Only the two below marked as paced (see `PACED`) also hold the game up.
+ * Only the ones marked as paced (see `PACED`) also hold the game up.
  * The turn and phase durations are how long that banner shows for, nothing
  * more — the game does not wait on them.
  *
@@ -27,6 +29,9 @@ export const TURN_STEP_MS = 1300
 export const PHASE_STEP_MS = 700
 /** A cardback travelling from a library to its owner's hand. */
 export const DRAW_STEP_MS = 520
+/** A permanent tilting to tapped, or back upright. One beat for every tap in
+ * the frame (a spell's mana, an untap step), not one each. */
+export const TAP_STEP_MS = 260
 /** How long a revealed card is held up for everyone to read. Longer than a
  * banner because there's a card face to actually take in, and unpaced — the
  * information is already in the History log, so nobody has to catch it. */
@@ -41,52 +46,99 @@ const DRAW_STAGGER_MS = 110
 const MAX_DRAWN_PER_FRAME = 5
 
 /**
- * A ceiling on one frame. The server's pacing keeps frames small, so this is
- * a backstop for the cases it doesn't cover — a seat auto-passing its own
- * way through several turns with nobody to stop at, most of all. Events past
- * the ceiling are shown without animating: they get no slot *and* no
- * overlay, so nothing ever plays over a board that has moved on, which is
- * what clustering them at the ceiling used to do.
+ * A ceiling on one frame at normal speed. The server's pacing keeps frames
+ * small, so this is a backstop for the cases it doesn't cover — a seat
+ * auto-passing its own way through several turns with nobody to stop at,
+ * most of all. Events past the ceiling are shown without animating: they get
+ * no slot *and* no overlay, so nothing ever plays over a board that has
+ * moved on, which is what clustering them at the ceiling used to do.
  */
 const MAX_FRAME_MS = 6000
+/**
+ * The ceiling whatever the viewer's speed: `MAX_FRAME_MS` grows with a slower
+ * `animScale`, but never past this. It has to stay under the server's
+ * `FRAME_ACK_TIMEOUT_MS` (12 s, `server/src/room.ts`), or the server gives up
+ * on this seat mid-animation and the bot moves on underneath it.
+ */
+const FRAME_CEILING_MS = 11000
+
+/**
+ * Which half of a frame an animation plays in.
+ *
+ * `before` runs over the board the frame started from, which is still on
+ * screen: a card flying in, a creature striking, a permanent leaving. Those
+ * describe the change, so the board mustn't jump to the outcome first.
+ *
+ * `after` runs over the new board, once it's shown: a tile tilting to
+ * tapped. Those describe something only the new board has, so they can't
+ * start until it's there. See `usePlayback`.
+ */
+export type Half = 'before' | 'after'
 
 export interface ScheduledEvent {
   readonly event: GameEvent
-  /** Milliseconds from the start of this frame at which this event's own
+  /** Milliseconds from the start of its half at which this event's own
    * animation should fire. */
   readonly offset: number
 }
 
+/** The viewer's settings the schedule depends on (see `motionPrefs.ts`),
+ * passed in so this module stays free of the DOM and testable on its own. */
+export interface ScheduleOptions {
+  readonly scale: number
+  readonly reduced: boolean
+}
+
+const NORMAL_SPEED: ScheduleOptions = { scale: 1, reduced: false }
+
 export interface EventSchedule {
-  /** Only the events that actually get an animation — the playback hook
-   * doesn't need this list at all, but `AnimationLayer` iterates it to know
-   * what to trigger and when. */
+  /** The events animated over the old board — `AnimationLayer` iterates it to
+   * know what to trigger and when. */
   readonly items: readonly ScheduledEvent[]
   /**
    * How long to stay on the *previous* board before showing this frame's
-   * outcome, and so how long before the next frame may start and the server
-   * may be told this one is done. Only the animations that describe a change
-   * to the board count toward it — see `PACED` below.
+   * outcome. Only the animations that describe a change to the board count
+   * toward it — see `PACED` below.
    */
   readonly totalMs: number
+  /** The events animated over the new board, offsets from when it's shown. */
+  readonly after: readonly ScheduledEvent[]
+  /** How long to hold the new board before the next frame may start and the
+   * server may be told this one is done. */
+  readonly afterMs: number
   /** The step-based phase tracking (for skipping a redundant "Beginning
    * Phase" banner/slot right after a turn starts) carries across frames —
    * pass this back in as the next call's `startPhase`. */
   readonly endPhase: Phase
 }
 
-type SlotKind = 'card' | 'hit' | 'death' | 'draw' | 'turn' | 'phase' | 'reveal'
+type SlotKind =
+  | 'card'
+  | 'hit'
+  | 'death'
+  | 'draw'
+  | 'turn'
+  | 'phase'
+  | 'reveal'
+  | 'tap'
+  | 'untap'
+
+/** The kinds that play over the new board rather than the old one. */
+const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(['tap', 'untap'])
 
 /**
  * Which animations the game actually waits for. A card being played, a
- * creature connecting, a permanent leaving the board are *what happened*, so
- * the board mustn't jump to the outcome until they've run. A turn or phase
- * banner is only a caption on top: it holds nothing up, costs no time, and
- * plays over whatever the board has moved on to — otherwise a land the bot
- * played sits in the air for the length of an "End Phase" banner before
+ * creature connecting, a permanent leaving the board, a tile tapping are
+ * *what happened*, so the board mustn't move on until they've run. A turn or
+ * phase banner is only a caption on top: it holds nothing up, costs no time,
+ * and plays over whatever the board has moved on to — otherwise a land the
+ * bot played sits in the air for the length of an "End Phase" banner before
  * reaching the table.
  */
-const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>(['card', 'hit', 'death'])
+const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>(['card', 'hit', 'death', 'tap', 'untap'])
+/** Kinds where a run in one frame plays together on one beat rather than one
+ * after another: a wrath's deaths, a spell's worth of lands tapping. */
+const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>(['death', 'tap', 'untap'])
 
 interface Slot {
   readonly event: GameEvent
@@ -98,7 +150,7 @@ interface Slot {
  * animation. Mutates `phase` so a `step-began` into the *same* phase, or the
  * "beginning" phase a `turn-began` already announced, doesn't also claim
  * one. */
-function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
+function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Slot | null {
   if (ev.type === 'spell-cast' || ev.type === 'land-played') {
     return { event: ev, kind: 'card', duration: CARD_STEP_MS }
   }
@@ -108,8 +160,17 @@ function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
   if (ev.type === 'permanent-left-battlefield') {
     return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
   }
+  // Pure movement, so reduced motion leaves nothing to show: the tile is
+  // simply drawn tapped, and the hand simply has one more card.
+  if (ev.type === 'permanent-tapped' || ev.type === 'permanent-untapped') {
+    if (reduced) return null
+    // Separate kinds, so an untap step followed by tapping for mana reads as
+    // two moves rather than one blur of tiles going both ways.
+    const kind = ev.type === 'permanent-tapped' ? 'tap' : 'untap'
+    return { event: ev, kind, duration: TAP_STEP_MS }
+  }
   if (ev.type === 'card-drawn') {
-    return { event: ev, kind: 'draw', duration: DRAW_STEP_MS }
+    return reduced ? null : { event: ev, kind: 'draw', duration: DRAW_STEP_MS }
   }
   if (ev.type === 'cards-revealed') {
     return { event: ev, kind: 'reveal', duration: REVEAL_STEP_MS }
@@ -129,11 +190,13 @@ function slotFor(ev: GameEvent, phase: { current: Phase }): Slot | null {
 export function scheduleEvents(
   events: readonly GameEvent[],
   startPhase: Phase,
+  options: ScheduleOptions = NORMAL_SPEED,
 ): EventSchedule {
+  const { scale, reduced } = options
   const phase = { current: startPhase }
   const slots: Slot[] = []
   for (const event of events) {
-    const slot = slotFor(event, phase)
+    const slot = slotFor(event, phase, reduced)
     if (slot !== null) slots.push(slot)
   }
 
@@ -152,32 +215,66 @@ export function scheduleEvents(
   }
   kept.reverse()
 
+  // One ceiling for both halves together: it's the whole frame the server
+  // waits on.
+  const ceiling = Math.min(MAX_FRAME_MS * scale, FRAME_CEILING_MS)
+  const before = layOut(
+    kept.filter((s) => !AFTER.has(s.kind)),
+    scale,
+    ceiling,
+  )
+  const after = layOut(
+    kept.filter((s) => AFTER.has(s.kind)),
+    scale,
+    ceiling - before.totalMs,
+  )
+  return {
+    items: before.items,
+    totalMs: before.totalMs,
+    after: after.items,
+    afterMs: after.totalMs,
+    endPhase: phase.current,
+  }
+}
+
+/** One half's slots, laid end to end. The first paced slot that won't fit
+ * under `ceiling` ends the half: it and everything after it are simply not
+ * animated (the phase tracking has still been advanced, so the next frame's
+ * banners stay right). Stopping there rather than skipping to whatever fits
+ * keeps what's shown in order. */
+function layOut(
+  slots: readonly Slot[],
+  scale: number,
+  ceiling: number,
+): { items: ScheduledEvent[]; totalMs: number } {
   const items: ScheduledEvent[] = []
   let cumulative = 0
-  // A run of permanents leaving at once (a wrath, a creature and the Aura
-  // that fell off it) fades together on one beat rather than queueing up one
-  // death-length each — the board is showing them all go at the same moment,
-  // because they did.
-  let sharedDeathOffset: number | null = null
+  // A run of one shared-beat kind (see `SHARED_BEAT`) goes together at the
+  // offset the first of them got — the board is showing them all happen at
+  // once, because they did.
+  let shared: { kind: SlotKind; offset: number } | null = null
   let drawsSoFar = 0
-  for (const slot of kept) {
-    // Past the ceiling an event is simply not animated — the phase tracking
-    // above has still been advanced, so the next frame's banners stay right.
-    if (cumulative >= MAX_FRAME_MS) continue
-    if (slot.kind === 'death' && sharedDeathOffset !== null) {
-      items.push({ event: slot.event, offset: sharedDeathOffset })
+  for (const slot of slots) {
+    if (cumulative >= ceiling) break
+    if (shared !== null && shared.kind === slot.kind) {
+      items.push({ event: slot.event, offset: shared.offset })
       continue
     }
     if (slot.kind === 'draw') {
       // Dealt out one after another without the game waiting on any of them.
       if (drawsSoFar >= MAX_DRAWN_PER_FRAME) continue
-      items.push({ event: slot.event, offset: cumulative + drawsSoFar * DRAW_STAGGER_MS })
+      items.push({
+        event: slot.event,
+        offset: cumulative + drawsSoFar * DRAW_STAGGER_MS * scale,
+      })
       drawsSoFar += 1
       continue
     }
+    const cost = PACED.has(slot.kind) ? slot.duration * scale : 0
+    if (cumulative + cost > ceiling) break
     items.push({ event: slot.event, offset: cumulative })
-    sharedDeathOffset = slot.kind === 'death' ? cumulative : null
-    if (PACED.has(slot.kind)) cumulative += slot.duration
+    shared = SHARED_BEAT.has(slot.kind) ? { kind: slot.kind, offset: cumulative } : null
+    cumulative += cost
   }
-  return { items, totalMs: cumulative, endPhase: phase.current }
+  return { items, totalMs: cumulative }
 }

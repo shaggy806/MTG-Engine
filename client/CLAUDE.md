@@ -46,5 +46,5 @@ The full text of each rule, with the bug that prompted it, is in `docs/architect
 ## Commands
 
 (From the repo root with `-w client`.) `dev` (needs a room server on `ws://<host>:4000`: use the
-`dev-up` skill), `build`, `lint` (oxlint), `test:e2e` (build `engine`, `protocol` and `server`
+`dev-up` skill), `build`, `lint` (oxlint), `test` (vitest unit tests, `src/**/*.test.ts`), `test:e2e` (build `engine`, `protocol` and `server`
 first).
