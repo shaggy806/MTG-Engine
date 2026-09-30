@@ -163,8 +163,7 @@ that one card is the reason the deck exists.
   `top5000-batch-15.test.ts`); 39 blocked, each in `engine/data/sweep-3/B15.json`. Five of those
   were recorded without a close check (their `why` says so): Generous Plunderer, Vengeful
   Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa — look again before building for
-  them. The six Landscape fetch-cyclers (Foreboding, Twisted, Shattered, Seething, Perilous,
-  Tranquil) are six copies of one shape: fold them into a `helpers.ts` helper.
+  them.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.

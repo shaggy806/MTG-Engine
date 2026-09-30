@@ -1135,6 +1135,48 @@ export const sacrificeFetchLand = (
 };
 
 /**
+ * The Alara "Landscape" cycle (Foreboding, Twisted, Shattered, Seething,
+ * Perilous, Tranquil Landscape): "{T}: Add {C}. {T}, Sacrifice this land:
+ * Search your library for a basic A, B, or C card, put it onto the
+ * battlefield tapped, then shuffle. Cycling {X}{Y}{Z}." `landTypes` in
+ * printed order; `cycling` the cost string.
+ */
+export const landscape = (
+  name: string,
+  landTypes: readonly [string, string, string],
+  cycling: string,
+): CardDefinition => {
+  const fetchText =
+    `{T}, Sacrifice this land: Search your library for a basic ${landTypes[0]}, ${landTypes[1]}, or ${landTypes[2]} card, ` +
+    "put it onto the battlefield tapped, then shuffle.";
+  return defineCard({
+    name,
+    types: ["land"],
+    text: `{T}: Add {C}.
+${fetchText}
+Cycling ${cycling} (${cycling}, Discard this card: Draw a card.)`,
+    activated: [
+      addManaAbility({ mana: "C", text: "{T}: Add {C}." }),
+      {
+        cost: { mana: null, tap: true, sacrifice: "self" },
+        targets: [],
+        effect: {
+          kind: "search-library",
+          filter: { supertype: "basic", subtypes: [...landTypes] },
+          destination: "battlefield",
+          enterTapped: true,
+          min: 0,
+          max: 1,
+        },
+        resolve: null,
+        text: fetchText,
+      },
+    ],
+    cycling: { cost: cycling },
+  });
+};
+
+/**
  * A "pain land" (Karplusan Forest, Shivan Reef, Yavimaya Coast): "{T}: Add
  * {C}." plus "{T}: Add {A} or {B}. ~ deals 1 damage to you." — the coloured
  * tap hurts, the colourless one doesn't. The auto-payer reaches for the
