@@ -189,6 +189,7 @@ import _tokensCitizenToken from "../tokens/citizen-token.js";
 import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
+import _tokensLanderToken from "../tokens/lander-token.js";
 import _tokensMeteoriteToken from "../tokens/meteorite-token.js";
 import _tokensWizardTokenGuff from "../tokens/wizard-token-guff.js";
 
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _tokensEldraziSpawnToken,
     _tokensHydraToken,
     _tokensJunkToken,
+    _tokensLanderToken,
     _tokensMeteoriteToken,
     _tokensWizardTokenGuff,
   ],

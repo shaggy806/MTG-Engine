@@ -47,6 +47,7 @@ import _poolFarewell from "../pool/farewell.js";
 import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
 import _poolFireLitThicket from "../pool/fire-lit-thicket.js";
+import _poolFlameOfAnor from "../pool/flame-of-anor.js";
 import _poolFleetingEffigy from "../pool/fleeting-effigy.js";
 import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
 import _poolFrostwindInvoker from "../pool/frostwind-invoker.js";
@@ -68,6 +69,7 @@ import _poolHighPriestOfPenance from "../pool/high-priest-of-penance.js";
 import _poolHighlandForest from "../pool/highland-forest.js";
 import _poolHillcomberGiant from "../pool/hillcomber-giant.js";
 import _poolHoneyMammoth from "../pool/honey-mammoth.js";
+import _poolIlysianCaryatid from "../pool/ilysian-caryatid.js";
 import _poolImperialRecruiter from "../pool/imperial-recruiter.js";
 import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
@@ -156,6 +158,7 @@ import _poolTundra from "../pool/tundra.js";
 import _poolTurbulentFen from "../pool/turbulent-fen.js";
 import _poolUndeadMinotaur from "../pool/undead-minotaur.js";
 import _poolUnholyStrength from "../pool/unholy-strength.js";
+import _poolUnstoppablePlan from "../pool/unstoppable-plan.js";
 import _poolValorousSteed from "../pool/valorous-steed.js";
 import _poolVesperGhoul from "../pool/vesper-ghoul.js";
 import _poolVesselOfEphemera from "../pool/vessel-of-ephemera.js";
@@ -216,6 +219,7 @@ const shard: CardShard = {
     _poolFelidarRetreat,
     _poolFestivalCrasher,
     _poolFireLitThicket,
+    _poolFlameOfAnor,
     _poolFleetingEffigy,
     _poolFrontierBivouac,
     _poolFrostwindInvoker,
@@ -237,6 +241,7 @@ const shard: CardShard = {
     _poolHighlandForest,
     _poolHillcomberGiant,
     _poolHoneyMammoth,
+    _poolIlysianCaryatid,
     _poolImperialRecruiter,
     _poolIridescentBlademaster,
     _poolJasperaSentinel,
@@ -325,6 +330,7 @@ const shard: CardShard = {
     _poolTurbulentFen,
     _poolUndeadMinotaur,
     _poolUnholyStrength,
+    _poolUnstoppablePlan,
     _poolValorousSteed,
     _poolVesperGhoul,
     _poolVesselOfEphemera,

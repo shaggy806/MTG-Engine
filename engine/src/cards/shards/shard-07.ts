@@ -185,6 +185,7 @@ import _poolTranquilThicket from "../pool/tranquil-thicket.js";
 import _poolTuinvaleTreefolk from "../pool/tuinvale-treefolk.js";
 import _poolTwitchingDoll from "../pool/twitching-doll.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
+import _poolUthrosResearchCraft from "../pool/uthros-research-craft.js";
 import _poolValkyriorSkyrider from "../pool/valkyrior-skyrider.js";
 import _poolVenomousHierophant from "../pool/venomous-hierophant.js";
 import _poolVigilantBaloth from "../pool/vigilant-baloth.js";
@@ -397,6 +398,7 @@ const shard: CardShard = {
     _poolTuinvaleTreefolk,
     _poolTwitchingDoll,
     _poolUnyieldingKrumar,
+    _poolUthrosResearchCraft,
     _poolValkyriorSkyrider,
     _poolVenomousHierophant,
     _poolVigilantBaloth,

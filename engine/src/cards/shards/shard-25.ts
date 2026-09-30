@@ -137,6 +137,7 @@ import _poolRakdosLocket from "../pool/rakdos-locket.js";
 import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
+import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
@@ -334,6 +335,7 @@ const shard: CardShard = {
     _poolRaphaelToughTurtle,
     _poolRebelliousStrike,
     _poolRecklessBarbarian,
+    _poolRiptideLaboratory,
     _poolRiveteersInitiate,
     _poolRockfallVale,
     _poolRograkhSonOfRohgahh,

@@ -49,6 +49,7 @@ import _poolCursedFlesh from "../pool/cursed-flesh.js";
 import _poolDarigaazsCharm from "../pool/darigaazs-charm.js";
 import _poolDarkthicketWolf from "../pool/darkthicket-wolf.js";
 import _poolDeadapult from "../pool/deadapult.js";
+import _poolDeathBaron from "../pool/death-baron.js";
 import _poolDecoyPloy from "../pool/decoy-ploy.js";
 import _poolDiregrafCaptain from "../pool/diregraf-captain.js";
 import _poolDiversionaryTactics from "../pool/diversionary-tactics.js";
@@ -256,6 +257,7 @@ const shard: CardShard = {
     _poolDarigaazsCharm,
     _poolDarkthicketWolf,
     _poolDeadapult,
+    _poolDeathBaron,
     _poolDecoyPloy,
     _poolDiregrafCaptain,
     _poolDiversionaryTactics,

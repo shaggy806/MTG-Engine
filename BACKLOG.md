@@ -125,15 +125,21 @@ that one card is the reason the deck exists.
   put on" is once per counter for Fathom Mage (its ruling) where `counters-put` fires per event.
   Across every record the leaders are unchanged: a copy's new targets
   (`decision:copy-new-targets`, 28), a free cast during resolution (18), "sacrifice N" costs (16).
+- **Top-5000 batch 11 (2026-09-29) triaged ranks 1723–1801:** 31 authored with no new engine
+  vocabulary (Mana Leak, Archmage's Charm, Death Baron, Alesha, Vaultborn Tyrant, Aurelia, the Law
+  Above, Urabrask the Hidden and 24 more — `top5000-batch-11.test.ts`); 29 blocked, each in
+  `engine/data/sweep-3/B11.json`. The copy family (`decision:copy-new-targets`, now 30 across
+  records) and Rooms, rebound, d20 rolls and "choose one that hasn't been chosen this turn"
+  (Teval's Judgment, Gala Greeters) each block two or more.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,799 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,830 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 1722, nothing is triaged.
+  the batches since; past rank 1801, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

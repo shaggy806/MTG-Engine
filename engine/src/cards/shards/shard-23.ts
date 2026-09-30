@@ -67,6 +67,7 @@ import _poolGhostLitRedeemer from "../pool/ghost-lit-redeemer.js";
 import _poolGiantCockroach from "../pool/giant-cockroach.js";
 import _poolGlowingAnemone from "../pool/glowing-anemone.js";
 import _poolGoblinEngineer from "../pool/goblin-engineer.js";
+import _poolGoblinMatron from "../pool/goblin-matron.js";
 import _poolGrayMerchantOfAsphodel from "../pool/gray-merchant-of-asphodel.js";
 import _poolGreenwoodSentinel from "../pool/greenwood-sentinel.js";
 import _poolGustSkimmer from "../pool/gust-skimmer.js";
@@ -174,6 +175,7 @@ import _poolTrokinHighGuard from "../pool/trokin-high-guard.js";
 import _poolTwoHeadedZombie from "../pool/two-headed-zombie.js";
 import _poolUndergrowthLeopard from "../pool/undergrowth-leopard.js";
 import _poolUnnaturalRestoration from "../pool/unnatural-restoration.js";
+import _poolUrabraskTheHidden from "../pool/urabrask-the-hidden.js";
 import _poolUrzasSaga from "../pool/urzas-saga.js";
 import _poolValakutInvoker from "../pool/valakut-invoker.js";
 import _poolVandalblast from "../pool/vandalblast.js";
@@ -262,6 +264,7 @@ const shard: CardShard = {
     _poolGiantCockroach,
     _poolGlowingAnemone,
     _poolGoblinEngineer,
+    _poolGoblinMatron,
     _poolGrayMerchantOfAsphodel,
     _poolGreenwoodSentinel,
     _poolGustSkimmer,
@@ -369,6 +372,7 @@ const shard: CardShard = {
     _poolTwoHeadedZombie,
     _poolUndergrowthLeopard,
     _poolUnnaturalRestoration,
+    _poolUrabraskTheHidden,
     _poolUrzasSaga,
     _poolValakutInvoker,
     _poolVandalblast,

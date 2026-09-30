@@ -11,6 +11,7 @@ import _poolArchaeomancer from "../pool/archaeomancer.js";
 import _poolArchfiendOfIfnir from "../pool/archfiend-of-ifnir.js";
 import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
 import _poolArdentElementalist from "../pool/ardent-elementalist.js";
+import _poolAureliaTheLawAbove from "../pool/aurelia-the-law-above.js";
 import _poolAvenOfEnduringHope from "../pool/aven-of-enduring-hope.js";
 import _poolAzureMage from "../pool/azure-mage.js";
 import _poolBackupAgent from "../pool/backup-agent.js";
@@ -126,6 +127,7 @@ import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
 import _poolMidnightAssassin from "../pool/midnight-assassin.js";
 import _poolMirranSpy from "../pool/mirran-spy.js";
 import _poolMnemonicSphere from "../pool/mnemonic-sphere.js";
+import _poolMoltenDuplication from "../pool/molten-duplication.js";
 import _poolMonkRealist from "../pool/monk-realist.js";
 import _poolMonumentalHenge from "../pool/monumental-henge.js";
 import _poolMoongloveWinnower from "../pool/moonglove-winnower.js";
@@ -210,6 +212,7 @@ const shard: CardShard = {
     _poolArchfiendOfIfnir,
     _poolArchonOfRedemption,
     _poolArdentElementalist,
+    _poolAureliaTheLawAbove,
     _poolAvenOfEnduringHope,
     _poolAzureMage,
     _poolBackupAgent,
@@ -325,6 +328,7 @@ const shard: CardShard = {
     _poolMidnightAssassin,
     _poolMirranSpy,
     _poolMnemonicSphere,
+    _poolMoltenDuplication,
     _poolMonkRealist,
     _poolMonumentalHenge,
     _poolMoongloveWinnower,

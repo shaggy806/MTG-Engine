@@ -1,0 +1,436 @@
+{
+  "batch": "B11",
+  "status": "complete",
+  "ranks": "1723-1801",
+  "authored": [
+    {
+      "name": "Mana Leak",
+      "files": [
+        "engine/src/cards/pool/mana-leak.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blue Sun's Zenith",
+      "files": [
+        "engine/src/cards/pool/blue-suns-zenith.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Impulsive Pilferer",
+      "files": [
+        "engine/src/cards/pool/impulsive-pilferer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nyx Weaver",
+      "files": [
+        "engine/src/cards/pool/nyx-weaver.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Death Baron",
+      "files": [
+        "engine/src/cards/pool/death-baron.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Molten Duplication",
+      "files": [
+        "engine/src/cards/pool/molten-duplication.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Flame of Anor",
+      "files": [
+        "engine/src/cards/pool/flame-of-anor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Alesha, Who Laughs at Fate",
+      "files": [
+        "engine/src/cards/pool/alesha-who-laughs-at-fate.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Archmage's Charm",
+      "files": [
+        "engine/src/cards/pool/archmages-charm.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Khalni Ambush",
+      "files": [
+        "engine/src/cards/pool/khalni-ambush.ts",
+        "engine/src/cards/pool/khalni-territory.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Relic of Sauron",
+      "files": [
+        "engine/src/cards/pool/relic-of-sauron.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Barad-dûr",
+      "files": [
+        "engine/src/cards/pool/barad-dur.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Proft's Eidetic Memory",
+      "files": [
+        "engine/src/cards/pool/profts-eidetic-memory.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Tomb of the Spirit Dragon",
+      "files": [
+        "engine/src/cards/pool/tomb-of-the-spirit-dragon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Vengeful Bloodwitch",
+      "files": [
+        "engine/src/cards/pool/vengeful-bloodwitch.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Satyr Wayfinder",
+      "files": [
+        "engine/src/cards/pool/satyr-wayfinder.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Supernatural Stamina",
+      "files": [
+        "engine/src/cards/pool/supernatural-stamina.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Extravagant Replication",
+      "files": [
+        "engine/src/cards/pool/extravagant-replication.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Vaultborn Tyrant",
+      "files": [
+        "engine/src/cards/pool/vaultborn-tyrant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Uthros Research Craft",
+      "files": [
+        "engine/src/cards/pool/uthros-research-craft.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Riptide Laboratory",
+      "files": [
+        "engine/src/cards/pool/riptide-laboratory.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Circuitous Route",
+      "files": [
+        "engine/src/cards/pool/circuitous-route.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Horizon Explorer",
+      "files": [
+        "engine/src/cards/pool/horizon-explorer.ts",
+        "engine/src/cards/tokens/lander-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Urabrask the Hidden",
+      "files": [
+        "engine/src/cards/pool/urabrask-the-hidden.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Aurelia, the Law Above",
+      "files": [
+        "engine/src/cards/pool/aurelia-the-law-above.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ilysian Caryatid",
+      "files": [
+        "engine/src/cards/pool/ilysian-caryatid.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Paradise Mantle",
+      "files": [
+        "engine/src/cards/pool/paradise-mantle.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Goblin Matron",
+      "files": [
+        "engine/src/cards/pool/goblin-matron.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Humble Defector",
+      "files": [
+        "engine/src/cards/pool/humble-defector.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Demonic Counsel",
+      "files": [
+        "engine/src/cards/pool/demonic-counsel.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Unstoppable Plan",
+      "files": [
+        "engine/src/cards/pool/unstoppable-plan.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Massacre Girl",
+      "needs": [
+        "new:delayed-trigger-rest-of-turn"
+      ],
+      "why": "'Whenever a creature dies this turn, each creature other than Massacre Girl gets -1/-1' — a delayed trigger that repeats for the rest of the turn."
+    },
+    {
+      "name": "Intruder Alarm",
+      "needs": [
+        "new:doesnt-untap-filter"
+      ],
+      "why": "'Creatures don't untap during their controllers' untap steps' — doesntUntap only covers its own permanent."
+    },
+    {
+      "name": "Renewed Solidarity",
+      "needs": [
+        "new:tokens-entered-this-turn-copies"
+      ],
+      "why": "A copy of each token of the chosen type that entered this turn, at end step."
+    },
+    {
+      "name": "Delina, Wild Mage",
+      "needs": [
+        "new:d20"
+      ],
+      "why": "Rolling a d20 and 'you may roll again'."
+    },
+    {
+      "name": "Jin-Gitaxias, Progress Tyrant",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying a spell with new targets."
+    },
+    {
+      "name": "Ancient Brass Dragon",
+      "needs": [
+        "new:d20",
+        "new:targets-total-mana-value"
+      ],
+      "why": "A d20 roll, then any number of targets with total mana value X or less."
+    },
+    {
+      "name": "Tezzeret the Seeker",
+      "needs": [
+        "new:loyalty-x"
+      ],
+      "why": "A −X loyalty ability."
+    },
+    {
+      "name": "Leyline of the Guildpact",
+      "needs": [
+        "new:leyline-opening-hand",
+        "new:all-colors-static"
+      ],
+      "why": "Begin the game with it on the battlefield; each nonland permanent is all colors; lands are every basic land type."
+    },
+    {
+      "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+      "needs": [
+        "decision:discard-any-number"
+      ],
+      "why": "Chapter II: discard up to two cards, then draw that many."
+    },
+    {
+      "name": "Jaxis, the Troublemaker",
+      "needs": [
+        "cost:choose-cards-as-cost",
+        "new:blitz"
+      ],
+      "why": "'Discard a card' as an activation cost, and blitz."
+    },
+    {
+      "name": "Lithoform Engine",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying abilities and spells with new targets."
+    },
+    {
+      "name": "Season of Gathering",
+      "needs": [
+        "new:modal-repeat-modes",
+        "new:pawprint-modes"
+      ],
+      "why": "Pawprint modes, repeatable."
+    },
+    {
+      "name": "Vorinclex, Voice of Hunger",
+      "needs": [
+        "new:doesnt-untap-next-untap-step"
+      ],
+      "why": "'That land doesn't untap during its controller's next untap step'."
+    },
+    {
+      "name": "Seize the Spotlight",
+      "needs": [
+        "new:fame-or-fortune"
+      ],
+      "why": "Each opponent chooses fame or fortune."
+    },
+    {
+      "name": "Teval's Judgment",
+      "needs": [
+        "new:mode-not-chosen-this-turn"
+      ],
+      "why": "'Choose one that hasn't been chosen this turn'."
+    },
+    {
+      "name": "Daxos, Blessed by the Sun",
+      "needs": [
+        "new:cda-devotion"
+      ],
+      "why": "Toughness equal to devotion to white: a CDA count can't read devotion."
+    },
+    {
+      "name": "Nyx Lotus",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "Choose a color, add mana equal to your devotion to it."
+    },
+    {
+      "name": "Ugin, Eye of the Storms",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "−11: exile any number of colorless cards and cast them free this turn."
+    },
+    {
+      "name": "Adaptive Automaton",
+      "needs": [
+        "new:is-chosen-type"
+      ],
+      "why": "'This creature is the chosen type in addition to its other types' (AUTHORING §15)."
+    },
+    {
+      "name": "Quantum Misalignment",
+      "needs": [
+        "new:rebound"
+      ],
+      "why": "Rebound isn't modeled."
+    },
+    {
+      "name": "Ghalta and Mavren",
+      "needs": [
+        "new:attack-batch-aggregates"
+      ],
+      "why": "X from the other attacking creatures (greatest power, count)."
+    },
+    {
+      "name": "Platinum Angel",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You can't lose the game and your opponents can't win the game'."
+    },
+    {
+      "name": "Walk-In Closet // Forgotten Cellar",
+      "needs": [
+        "new:rooms"
+      ],
+      "why": "Rooms aren't modeled."
+    },
+    {
+      "name": "Battle Angels of Tyr",
+      "needs": [
+        "new:compare-each-other-player"
+      ],
+      "why": "Myriad plus checks against each other player's hand and lands."
+    },
+    {
+      "name": "Lion Sash",
+      "needs": [
+        "new:reconfigure"
+      ],
+      "why": "Reconfigure isn't modeled."
+    },
+    {
+      "name": "Dazzling Theater // Prop Room",
+      "needs": [
+        "new:rooms"
+      ],
+      "why": "Rooms aren't modeled."
+    },
+    {
+      "name": "Matzalantli, the Great Door // The Core",
+      "needs": [
+        "new:permanent-types-in-graveyard"
+      ],
+      "why": "Four or more permanent types among cards in your graveyard, and fathomless descent."
+    },
+    {
+      "name": "Legion Warboss",
+      "needs": [
+        "new:token-attacks-if-able"
+      ],
+      "why": "Mentor, and a created token that attacks this combat if able."
+    },
+    {
+      "name": "Chameleon, Master of Disguise",
+      "needs": [
+        "new:mayhem",
+        "effect:copy-exceptions"
+      ],
+      "why": "Mayhem, and a Clone of your own creature keeping its name."
+    }
+  ]
+}

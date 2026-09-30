@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1799 already implemented / 3201 missing (marks refreshed 2026-09-30)
+1830 already implemented / 3170 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1713,82 +1713,82 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1720  Painful Truths                           {2}{B}           Sorcery
 [ ]  1721  Overlord of the Hauntwoods               {3}{G}{G}        Enchantment Creature — Avatar Horror
 [x]  1722  Fate Unraveler                           {3}{B}           Enchantment Creature — Hag
-[ ]  1723  Impulsive Pilferer                       {R}              Creature — Goblin Pirate
+[x]  1723  Impulsive Pilferer                       {R}              Creature — Goblin Pirate
 [ ]  1724  Massacre Girl                            {3}{B}{B}        Legendary Creature — Human Assassin
-[ ]  1725  Nyx Weaver                               {1}{B}{G}        Enchantment Creature — Spider
+[x]  1725  Nyx Weaver                               {1}{B}{G}        Enchantment Creature — Spider
 [ ]  1726  Intruder Alarm                           {2}{U}           Enchantment
 [x]  1727  Slither Blade                            {U}              Creature — Snake Rogue
 [x]  1728  The Locust God                           {4}{U}{R}        Legendary Creature — God
 [x]  1729  Thermo-Alchemist                         {1}{R}           Creature — Human Shaman
 [x]  1730  Bountiful Landscape                      {0}              Land
-[ ]  1731  Death Baron                              {1}{B}{B}        Creature — Zombie Wizard
+[x]  1731  Death Baron                              {1}{B}{B}        Creature — Zombie Wizard
 [ ]  1732  Renewed Solidarity                       {2}{W}           Enchantment
 [ ]  1733  Delina, Wild Mage                        {3}{R}           Legendary Creature — Elf Shaman
 [ ]  1734  Jin-Gitaxias, Progress Tyrant            {5}{U}{U}        Legendary Creature — Phyrexian Praetor
-[ ]  1735  Molten Duplication                       {1}{R}           Sorcery
-[ ]  1736  Flame of Anor                            {1}{U}{R}        Instant
+[x]  1735  Molten Duplication                       {1}{R}           Sorcery
+[x]  1736  Flame of Anor                            {1}{U}{R}        Instant
 [ ]  1737  Ancient Brass Dragon                     {5}{B}{B}        Creature — Elder Dragon
 [ ]  1738  Tezzeret the Seeker                      {3}{U}{U}        Legendary Planeswalker — Tezzeret
 [x]  1739  Voltaic Key                              {1}              Artifact
 [ ]  1740  Leyline of the Guildpact                 {G/W}{G/U}{B/G}{R/G} Enchantment
-[ ]  1741  Alesha, Who Laughs at Fate               {1}{B}{R}        Legendary Creature — Human Warrior
-[ ]  1742  Blue Sun's Zenith                        {X}{U}{U}{U}     Instant
+[x]  1741  Alesha, Who Laughs at Fate               {1}{B}{R}        Legendary Creature — Human Warrior
+[x]  1742  Blue Sun's Zenith                        {X}{U}{U}{U}     Instant
 [ ]  1743  Fable of the Mirror-Breaker // Reflection of Kiki-Jiki {3}              Enchantment — Saga // Enchantment Creature — Goblin Shaman
 [x]  1744  The Scarab God                           {3}{U}{B}        Legendary Creature — God
-[ ]  1745  Archmage's Charm                         {U}{U}{U}        Instant
+[x]  1745  Archmage's Charm                         {U}{U}{U}        Instant
 [ ]  1746  Jaxis, the Troublemaker                  {3}{R}           Legendary Creature — Human Warrior
 [ ]  1747  Lithoform Engine                         {4}              Legendary Artifact
-[ ]  1748  Khalni Ambush // Khalni Territory        {3}              Instant // Land
-[ ]  1749  Relic of Sauron                          {4}              Artifact
+[x]  1748  Khalni Ambush // Khalni Territory        {3}              Instant // Land
+[x]  1749  Relic of Sauron                          {4}              Artifact
 [x]  1750  Vampire Nighthawk                        {1}{B}{B}        Creature — Vampire Shaman
 [ ]  1751  Season of Gathering                      {4}{G}{G}        Sorcery
 [ ]  1752  Vorinclex, Voice of Hunger               {6}{G}{G}        Legendary Creature — Phyrexian Praetor
-[ ]  1753  Barad-dûr                                {0}              Legendary Land
+[x]  1753  Barad-dûr                                {0}              Legendary Land
 [ ]  1754  Seize the Spotlight                      {2}{R}           Sorcery
-[ ]  1755  Mana Leak                                {1}{U}           Instant
-[ ]  1756  Proft's Eidetic Memory                   {1}{U}           Legendary Enchantment
+[x]  1755  Mana Leak                                {1}{U}           Instant
+[x]  1756  Proft's Eidetic Memory                   {1}{U}           Legendary Enchantment
 [x]  1757  Sacred Peaks                             {0}              Land — Mountain Plains
 [ ]  1758  Teval's Judgment                         {2}{B}           Enchantment
 [ ]  1759  Daxos, Blessed by the Sun                {W}{W}           Legendary Enchantment Creature — Demigod
-[ ]  1760  Tomb of the Spirit Dragon                {0}              Land
+[x]  1760  Tomb of the Spirit Dragon                {0}              Land
 [ ]  1761  Nyx Lotus                                {4}              Legendary Artifact
 [ ]  1762  Ugin, Eye of the Storms                  {7}              Legendary Planeswalker — Ugin
 [x]  1763  Retreat to Coralhelm                     {2}{U}           Enchantment
-[ ]  1764  Vengeful Bloodwitch                      {1}{B}           Creature — Vampire Warlock
-[ ]  1765  Satyr Wayfinder                          {1}{G}           Creature — Satyr
+[x]  1764  Vengeful Bloodwitch                      {1}{B}           Creature — Vampire Warlock
+[x]  1765  Satyr Wayfinder                          {1}{G}           Creature — Satyr
 [ ]  1766  Adaptive Automaton                       {3}              Artifact Creature — Construct
-[ ]  1767  Supernatural Stamina                     {B}              Instant
+[x]  1767  Supernatural Stamina                     {B}              Instant
 [x]  1768  Sunlit Marsh                             {0}              Land — Plains Swamp
 [ ]  1769  Quantum Misalignment                     {4}{U}           Sorcery
 [ ]  1770  Ghalta and Mavren                        {3}{G}{G}{W}{W}  Legendary Creature — Dinosaur Vampire
 [ ]  1771  Platinum Angel                           {7}              Artifact Creature — Angel
-[ ]  1772  Extravagant Replication                  {4}{U}{U}        Enchantment
-[ ]  1773  Vaultborn Tyrant                         {5}{G}{G}        Creature — Dinosaur
-[ ]  1774  Uthros Research Craft                    {2}{U}           Artifact — Spacecraft
-[ ]  1775  Riptide Laboratory                       {0}              Land
+[x]  1772  Extravagant Replication                  {4}{U}{U}        Enchantment
+[x]  1773  Vaultborn Tyrant                         {5}{G}{G}        Creature — Dinosaur
+[x]  1774  Uthros Research Craft                    {2}{U}           Artifact — Spacecraft
+[x]  1775  Riptide Laboratory                       {0}              Land
 [x]  1776  Ingenious Artillerist                    {2}{R}           Creature — Human Artificer
-[ ]  1777  Circuitous Route                         {3}{G}           Sorcery
+[x]  1777  Circuitous Route                         {3}{G}           Sorcery
 [ ]  1778  Walk-In Closet // Forgotten Cellar       {2}{G} // {3}{G}{G} Enchantment — Room // Enchantment — Room
-[ ]  1779  Ilysian Caryatid                         {1}{G}           Creature — Plant
-[ ]  1780  Urabrask the Hidden                      {3}{R}{R}        Legendary Creature — Phyrexian Praetor
+[x]  1779  Ilysian Caryatid                         {1}{G}           Creature — Plant
+[x]  1780  Urabrask the Hidden                      {3}{R}{R}        Legendary Creature — Phyrexian Praetor
 [ ]  1781  Battle Angels of Tyr                     {2}{W}{W}        Creature — Angel Knight
 [ ]  1782  Lion Sash                                {1}{W}           Artifact Creature — Equipment Cat
 [x]  1783  Psychic Corrosion                        {2}{U}           Enchantment
-[ ]  1784  Aurelia, the Law Above                   {3}{R}{W}        Legendary Creature — Angel
-[ ]  1785  Horizon Explorer                         {2}{G}           Creature — Insect Scout
+[x]  1784  Aurelia, the Law Above                   {3}{R}{W}        Legendary Creature — Angel
+[x]  1785  Horizon Explorer                         {2}{G}           Creature — Insect Scout
 [ ]  1786  Dazzling Theater // Prop Room            {3}{W} // {2}{W} Enchantment — Room // Enchantment — Room
 [x]  1787  Bartolomé del Presidio                   {W}{B}           Legendary Creature — Vampire Knight
-[ ]  1788  Paradise Mantle                          {0}              Artifact — Equipment
-[ ]  1789  Goblin Matron                            {2}{R}           Creature — Goblin
-[ ]  1790  Humble Defector                          {1}{R}           Creature — Human Rogue
+[x]  1788  Paradise Mantle                          {0}              Artifact — Equipment
+[x]  1789  Goblin Matron                            {2}{R}           Creature — Goblin
+[x]  1790  Humble Defector                          {1}{R}           Creature — Human Rogue
 [x]  1791  Thought Scour                            {U}              Instant
 [x]  1792  Charming Prince                          {1}{W}           Creature — Human Noble
 [x]  1793  Izzet Guildgate                          {0}              Land — Gate
-[ ]  1794  Demonic Counsel                          {1}{B}           Sorcery
+[x]  1794  Demonic Counsel                          {1}{B}           Sorcery
 [x]  1795  Grand Arbiter Augustin IV                {2}{W}{U}        Legendary Creature — Human Advisor
 [x]  1796  Tannuk, Memorial Ensign                  {1}{R}{G}        Legendary Creature — Kavu Pilot
 [ ]  1797  Matzalantli, the Great Door // The Core  {3}              Legendary Artifact // Legendary Land
-[ ]  1798  Unstoppable Plan                         {2}{U}           Enchantment
+[x]  1798  Unstoppable Plan                         {2}{U}           Enchantment
 [ ]  1799  Legion Warboss                           {2}{R}           Creature — Goblin Soldier
 [x]  1800  Army of the Damned                       {5}{B}{B}{B}     Sorcery
 [ ]  1801  Chameleon, Master of Disguise            {3}{U}           Legendary Creature — Human Shapeshifter Villain

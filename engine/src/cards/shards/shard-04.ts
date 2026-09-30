@@ -116,6 +116,7 @@ import _poolNineFingersKeene from "../pool/nine-fingers-keene.js";
 import _poolNirkanaAssassin from "../pool/nirkana-assassin.js";
 import _poolNivMizzetVisionary from "../pool/niv-mizzet-visionary.js";
 import _poolNotionThief from "../pool/notion-thief.js";
+import _poolNyxWeaver from "../pool/nyx-weaver.js";
 import _poolNyxbornColossus from "../pool/nyxborn-colossus.js";
 import _poolOasisGardener from "../pool/oasis-gardener.js";
 import _poolOdunosRiverTrawler from "../pool/odunos-river-trawler.js";
@@ -324,6 +325,7 @@ const shard: CardShard = {
     _poolNirkanaAssassin,
     _poolNivMizzetVisionary,
     _poolNotionThief,
+    _poolNyxWeaver,
     _poolNyxbornColossus,
     _poolOasisGardener,
     _poolOdunosRiverTrawler,

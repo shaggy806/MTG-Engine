@@ -16,6 +16,7 @@ import _poolArchersParapet from "../pool/archers-parapet.js";
 import _poolArmoredCancrix from "../pool/armored-cancrix.js";
 import _poolAtraxaPraetorsVoice from "../pool/atraxa-praetors-voice.js";
 import _poolBallroom from "../pool/ballroom.js";
+import _poolBaradDur from "../pool/barad-dur.js";
 import _poolBarbarianRiftcutter from "../pool/barbarian-riftcutter.js";
 import _poolBeanstalkGiant from "../pool/beanstalk-giant.js";
 import _poolBindingTheOldGods from "../pool/binding-the-old-gods.js";
@@ -83,6 +84,7 @@ import _poolHedronArchive from "../pool/hedron-archive.js";
 import _poolHerosResolve from "../pool/heros-resolve.js";
 import _poolHideousVisage from "../pool/hideous-visage.js";
 import _poolHoldoutSettlement from "../pool/holdout-settlement.js";
+import _poolHorizonExplorer from "../pool/horizon-explorer.js";
 import _poolHulkingDevil from "../pool/hulking-devil.js";
 import _poolIcewindElemental from "../pool/icewind-elemental.js";
 import _poolIntoTheMawOfHell from "../pool/into-the-maw-of-hell.js";
@@ -203,6 +205,7 @@ const shard: CardShard = {
     _poolArmoredCancrix,
     _poolAtraxaPraetorsVoice,
     _poolBallroom,
+    _poolBaradDur,
     _poolBarbarianRiftcutter,
     _poolBeanstalkGiant,
     _poolBindingTheOldGods,
@@ -270,6 +273,7 @@ const shard: CardShard = {
     _poolHerosResolve,
     _poolHideousVisage,
     _poolHoldoutSettlement,
+    _poolHorizonExplorer,
     _poolHulkingDevil,
     _poolIcewindElemental,
     _poolIntoTheMawOfHell,

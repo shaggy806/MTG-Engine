@@ -70,6 +70,7 @@ import _poolHeavyBallista from "../pool/heavy-ballista.js";
 import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
+import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
 import _poolInexorableTide from "../pool/inexorable-tide.js";
 import _poolIntrepidTenderfoot from "../pool/intrepid-tenderfoot.js";
 import _poolJukaiNaturalist from "../pool/jukai-naturalist.js";
@@ -261,6 +262,7 @@ const shard: CardShard = {
     _poolHighlandGame,
     _poolHonorGuard,
     _poolHoverBarrier,
+    _poolImpulsivePilferer,
     _poolInexorableTide,
     _poolIntrepidTenderfoot,
     _poolJukaiNaturalist,

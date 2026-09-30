@@ -57,6 +57,7 @@ import _poolEndRazeForerunners from "../pool/end-raze-forerunners.js";
 import _poolEnlightenedTutor from "../pool/enlightened-tutor.js";
 import _poolEssenceFlux from "../pool/essence-flux.js";
 import _poolEternalWarrior from "../pool/eternal-warrior.js";
+import _poolExtravagantReplication from "../pool/extravagant-replication.js";
 import _poolFaerieSeer from "../pool/faerie-seer.js";
 import _poolFavorableWinds from "../pool/favorable-winds.js";
 import _poolFeralFerocity from "../pool/feral-ferocity.js";
@@ -192,6 +193,7 @@ import _poolUnlivingLegionnaire from "../pool/unliving-legionnaire.js";
 import _poolUnmake from "../pool/unmake.js";
 import _poolUnrulyCatapult from "../pool/unruly-catapult.js";
 import _poolUrzasMine from "../pool/urzas-mine.js";
+import _poolVaultbornTyrant from "../pool/vaultborn-tyrant.js";
 import _poolVenerableMonk from "../pool/venerable-monk.js";
 import _poolVerminGorger from "../pool/vermin-gorger.js";
 import _poolVeteranSwordsmith from "../pool/veteran-swordsmith.js";
@@ -274,6 +276,7 @@ const shard: CardShard = {
     _poolEnlightenedTutor,
     _poolEssenceFlux,
     _poolEternalWarrior,
+    _poolExtravagantReplication,
     _poolFaerieSeer,
     _poolFavorableWinds,
     _poolFeralFerocity,
@@ -409,6 +412,7 @@ const shard: CardShard = {
     _poolUnmake,
     _poolUnrulyCatapult,
     _poolUrzasMine,
+    _poolVaultbornTyrant,
     _poolVenerableMonk,
     _poolVerminGorger,
     _poolVeteranSwordsmith,

@@ -92,6 +92,7 @@ import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
 import _poolJayemdaeTome from "../pool/jayemdae-tome.js";
 import _poolJonIrenicusShatteredOne from "../pool/jon-irenicus-shattered-one.js";
 import _poolJwariScuttler from "../pool/jwari-scuttler.js";
+import _poolKhalniTerritory from "../pool/khalni-territory.js";
 import _poolKinsbaileSkirmisher from "../pool/kinsbaile-skirmisher.js";
 import _poolKomodoRhino from "../pool/komodo-rhino.js";
 import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolJayemdaeTome,
     _poolJonIrenicusShatteredOne,
     _poolJwariScuttler,
+    _poolKhalniTerritory,
     _poolKinsbaileSkirmisher,
     _poolKomodoRhino,
     _poolKwainItinerantMeddler,

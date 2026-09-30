@@ -115,6 +115,7 @@ import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
 import _poolQuietusSpike from "../pool/quietus-spike.js";
 import _poolRaffinesTower from "../pool/raffines-tower.js";
 import _poolRagingPoltergeist from "../pool/raging-poltergeist.js";
+import _poolRelicOfSauron from "../pool/relic-of-sauron.js";
 import _poolRenegadeDemon from "../pool/renegade-demon.js";
 import _poolReprieve from "../pool/reprieve.js";
 import _poolRevivingMelody from "../pool/reviving-melody.js";
@@ -294,6 +295,7 @@ const shard: CardShard = {
     _poolQuietusSpike,
     _poolRaffinesTower,
     _poolRagingPoltergeist,
+    _poolRelicOfSauron,
     _poolRenegadeDemon,
     _poolReprieve,
     _poolRevivingMelody,

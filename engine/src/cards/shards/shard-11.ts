@@ -17,6 +17,7 @@ import _poolBarbaryApes from "../pool/barbary-apes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
 import _poolBlaze from "../pool/blaze.js";
 import _poolBloodVassal from "../pool/blood-vassal.js";
+import _poolBlueSunsZenith from "../pool/blue-suns-zenith.js";
 import _poolBoomerang from "../pool/boomerang.js";
 import _poolBorderPatrol from "../pool/border-patrol.js";
 import _poolBorosGuildmage from "../pool/boros-guildmage.js";
@@ -130,6 +131,7 @@ import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
 import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolOuroboroid from "../pool/ouroboroid.js";
+import _poolParadiseMantle from "../pool/paradise-mantle.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
 import _poolPharikasChosen from "../pool/pharikas-chosen.js";
@@ -151,6 +153,7 @@ import _poolRootriderFaun from "../pool/rootrider-faun.js";
 import _poolRuinCrab from "../pool/ruin-crab.js";
 import _poolSageOfTheInwardEye from "../pool/sage-of-the-inward-eye.js";
 import _poolSaprazzanHeir from "../pool/saprazzan-heir.js";
+import _poolSatyrWayfinder from "../pool/satyr-wayfinder.js";
 import _poolSchoolOfTheUnseen from "../pool/school-of-the-unseen.js";
 import _poolScorchingMissile from "../pool/scorching-missile.js";
 import _poolScrawlingCrawler from "../pool/scrawling-crawler.js";
@@ -192,6 +195,7 @@ import _poolTheBeamtownBullies from "../pool/the-beamtown-bullies.js";
 import _poolThornscapeApprentice from "../pool/thornscape-apprentice.js";
 import _poolThunderfootBaloth from "../pool/thunderfoot-baloth.js";
 import _poolTimeOfNeed from "../pool/time-of-need.js";
+import _poolTombOfTheSpiritDragon from "../pool/tomb-of-the-spirit-dragon.js";
 import _poolTowerOfCalamities from "../pool/tower-of-calamities.js";
 import _poolTrainedOrgg from "../pool/trained-orgg.js";
 import _poolTranquilExpanse from "../pool/tranquil-expanse.js";
@@ -237,6 +241,7 @@ const shard: CardShard = {
     _poolBerserkersOfBloodRidge,
     _poolBlaze,
     _poolBloodVassal,
+    _poolBlueSunsZenith,
     _poolBoomerang,
     _poolBorderPatrol,
     _poolBorosGuildmage,
@@ -350,6 +355,7 @@ const shard: CardShard = {
     _poolOpalineUnicorn,
     _poolOrzhovBasilica,
     _poolOuroboroid,
+    _poolParadiseMantle,
     _poolPelakkaWurm,
     _poolPestilentKathari,
     _poolPharikasChosen,
@@ -371,6 +377,7 @@ const shard: CardShard = {
     _poolRuinCrab,
     _poolSageOfTheInwardEye,
     _poolSaprazzanHeir,
+    _poolSatyrWayfinder,
     _poolSchoolOfTheUnseen,
     _poolScorchingMissile,
     _poolScrawlingCrawler,
@@ -412,6 +419,7 @@ const shard: CardShard = {
     _poolThornscapeApprentice,
     _poolThunderfootBaloth,
     _poolTimeOfNeed,
+    _poolTombOfTheSpiritDragon,
     _poolTowerOfCalamities,
     _poolTrainedOrgg,
     _poolTranquilExpanse,

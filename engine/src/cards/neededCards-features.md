@@ -617,6 +617,8 @@ in `git log`.
   `persist()` beside `undying()` (Glen Elendra Archmage), and `put-on-library`
   naming the trigger object (Murderous Rider's "put it on the bottom of its
   owner's library"). B10.json lists the 29 cards it left blocked.
+- **Top-5000 batch 11** (2026-09-29, `top5000-batch-11.test.ts`) — nothing new: 31
+  cards on the existing vocabulary. B11.json lists the 29 it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

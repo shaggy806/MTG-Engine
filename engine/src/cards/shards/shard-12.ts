@@ -32,6 +32,7 @@ import _poolCarrionFeeder from "../pool/carrion-feeder.js";
 import _poolCastleLocthwain from "../pool/castle-locthwain.js";
 import _poolChocoSeekerOfParadise from "../pool/choco-seeker-of-paradise.js";
 import _poolChromeProwler from "../pool/chrome-prowler.js";
+import _poolCircuitousRoute from "../pool/circuitous-route.js";
 import _poolCloudcrownOak from "../pool/cloudcrown-oak.js";
 import _poolCrystalSlipper from "../pool/crystal-slipper.js";
 import _poolDarkmossBridge from "../pool/darkmoss-bridge.js";
@@ -155,6 +156,7 @@ import _poolSpellbook from "../pool/spellbook.js";
 import _poolSternProctor from "../pool/stern-proctor.js";
 import _poolStrixLookout from "../pool/strix-lookout.js";
 import _poolSunbakedCanyon from "../pool/sunbaked-canyon.js";
+import _poolSupernaturalStamina from "../pool/supernatural-stamina.js";
 import _poolTalonrend from "../pool/talonrend.js";
 import _poolTempleOfAbandon from "../pool/temple-of-abandon.js";
 import _poolTerritorialBaloth from "../pool/territorial-baloth.js";
@@ -170,6 +172,7 @@ import _poolUnburialRites from "../pool/unburial-rites.js";
 import _poolUntamedHunger from "../pool/untamed-hunger.js";
 import _poolValgavothsFaithful from "../pool/valgavoths-faithful.js";
 import _poolVaultOfChampions from "../pool/vault-of-champions.js";
+import _poolVengefulBloodwitch from "../pool/vengeful-bloodwitch.js";
 import _poolVerdantCatacombs from "../pool/verdant-catacombs.js";
 import _poolVernadiShieldmate from "../pool/vernadi-shieldmate.js";
 import _poolVineTrellis from "../pool/vine-trellis.js";
@@ -217,6 +220,7 @@ const shard: CardShard = {
     _poolCastleLocthwain,
     _poolChocoSeekerOfParadise,
     _poolChromeProwler,
+    _poolCircuitousRoute,
     _poolCloudcrownOak,
     _poolCrystalSlipper,
     _poolDarkmossBridge,
@@ -340,6 +344,7 @@ const shard: CardShard = {
     _poolSternProctor,
     _poolStrixLookout,
     _poolSunbakedCanyon,
+    _poolSupernaturalStamina,
     _poolTalonrend,
     _poolTempleOfAbandon,
     _poolTerritorialBaloth,
@@ -355,6 +360,7 @@ const shard: CardShard = {
     _poolUntamedHunger,
     _poolValgavothsFaithful,
     _poolVaultOfChampions,
+    _poolVengefulBloodwitch,
     _poolVerdantCatacombs,
     _poolVernadiShieldmate,
     _poolVineTrellis,

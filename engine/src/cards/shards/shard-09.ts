@@ -98,6 +98,7 @@ import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
 import _poolLushPortico from "../pool/lush-portico.js";
 import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
+import _poolManaLeak from "../pool/mana-leak.js";
 import _poolMerfolkPupil from "../pool/merfolk-pupil.js";
 import _poolMistralCharger from "../pool/mistral-charger.js";
 import _poolMonasterySwiftspear from "../pool/monastery-swiftspear.js";
@@ -297,6 +298,7 @@ const shard: CardShard = {
     _poolLushPortico,
     _poolMagusOfTheWheel,
     _poolManaGeyser,
+    _poolManaLeak,
     _poolMerfolkPupil,
     _poolMistralCharger,
     _poolMonasterySwiftspear,

@@ -9,6 +9,7 @@ import _poolAkkiDrillmaster from "../pool/akki-drillmaster.js";
 import _poolAkkiScrapchomper from "../pool/akki-scrapchomper.js";
 import _poolAnOfferYouCantRefuse from "../pool/an-offer-you-cant-refuse.js";
 import _poolAnarchist from "../pool/anarchist.js";
+import _poolArchmagesCharm from "../pool/archmages-charm.js";
 import _poolAvengerOfZendikar from "../pool/avenger-of-zendikar.js";
 import _poolAzoriusSignet from "../pool/azorius-signet.js";
 import _poolBanishingBetrayal from "../pool/banishing-betrayal.js";
@@ -115,6 +116,7 @@ import _poolPitilessPontiff from "../pool/pitiless-pontiff.js";
 import _poolPlaguedRusalka from "../pool/plagued-rusalka.js";
 import _poolPlatedRootwalla from "../pool/plated-rootwalla.js";
 import _poolPouncingCheetah from "../pool/pouncing-cheetah.js";
+import _poolProftsEideticMemory from "../pool/profts-eidetic-memory.js";
 import _poolPsychosisCrawler from "../pool/psychosis-crawler.js";
 import _poolPutrefy from "../pool/putrefy.js";
 import _poolQuandrixPledgemage from "../pool/quandrix-pledgemage.js";
@@ -203,6 +205,7 @@ const shard: CardShard = {
     _poolAkkiScrapchomper,
     _poolAnOfferYouCantRefuse,
     _poolAnarchist,
+    _poolArchmagesCharm,
     _poolAvengerOfZendikar,
     _poolAzoriusSignet,
     _poolBanishingBetrayal,
@@ -309,6 +312,7 @@ const shard: CardShard = {
     _poolPlaguedRusalka,
     _poolPlatedRootwalla,
     _poolPouncingCheetah,
+    _poolProftsEideticMemory,
     _poolPsychosisCrawler,
     _poolPutrefy,
     _poolQuandrixPledgemage,

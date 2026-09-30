@@ -39,6 +39,7 @@ import _poolCrowdFavorites from "../pool/crowd-favorites.js";
 import _poolCrystalQuarry from "../pool/crystal-quarry.js";
 import _poolCutthroatContender from "../pool/cutthroat-contender.js";
 import _poolCybermenSquadron from "../pool/cybermen-squadron.js";
+import _poolDemonicCounsel from "../pool/demonic-counsel.js";
 import _poolDespark from "../pool/despark.js";
 import _poolDivingGriffin from "../pool/diving-griffin.js";
 import _poolDoranBesiegedByTime from "../pool/doran-besieged-by-time.js";
@@ -240,6 +241,7 @@ const shard: CardShard = {
     _poolCrystalQuarry,
     _poolCutthroatContender,
     _poolCybermenSquadron,
+    _poolDemonicCounsel,
     _poolDespark,
     _poolDivingGriffin,
     _poolDoranBesiegedByTime,

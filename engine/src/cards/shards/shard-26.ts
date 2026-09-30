@@ -71,6 +71,7 @@ import _poolGutterSkulk from "../pool/gutter-skulk.js";
 import _poolHarbingerOfTheHunt from "../pool/harbinger-of-the-hunt.js";
 import _poolHeapGate from "../pool/heap-gate.js";
 import _poolHostileMinotaur from "../pool/hostile-minotaur.js";
+import _poolHumbleDefector from "../pool/humble-defector.js";
 import _poolHungryMegasloth from "../pool/hungry-megasloth.js";
 import _poolIcatianScout from "../pool/icatian-scout.js";
 import _poolIceTunnel from "../pool/ice-tunnel.js";
@@ -85,6 +86,7 @@ import _poolJosuVessLichKnight from "../pool/josu-vess-lich-knight.js";
 import _poolKangeeSkyWarden from "../pool/kangee-sky-warden.js";
 import _poolKederektCreeper from "../pool/kederekt-creeper.js";
 import _poolKefkaCourtMage from "../pool/kefka-court-mage.js";
+import _poolKhalniAmbush from "../pool/khalni-ambush.js";
 import _poolLeoninLightscribe from "../pool/leonin-lightscribe.js";
 import _poolLiesaShroudOfDusk from "../pool/liesa-shroud-of-dusk.js";
 import _poolLiturgyOfBlood from "../pool/liturgy-of-blood.js";
@@ -268,6 +270,7 @@ const shard: CardShard = {
     _poolHarbingerOfTheHunt,
     _poolHeapGate,
     _poolHostileMinotaur,
+    _poolHumbleDefector,
     _poolHungryMegasloth,
     _poolIcatianScout,
     _poolIceTunnel,
@@ -282,6 +285,7 @@ const shard: CardShard = {
     _poolKangeeSkyWarden,
     _poolKederektCreeper,
     _poolKefkaCourtMage,
+    _poolKhalniAmbush,
     _poolLeoninLightscribe,
     _poolLiesaShroudOfDusk,
     _poolLiturgyOfBlood,
