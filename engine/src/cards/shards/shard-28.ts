@@ -165,6 +165,7 @@ import _poolTerritorialRoc from "../pool/territorial-roc.js";
 import _poolTeysaKarlov from "../pool/teysa-karlov.js";
 import _poolThanosDeathsConsort from "../pool/thanos-deaths-consort.js";
 import _poolTheUnbeatableSquirrelGirl from "../pool/the-unbeatable-squirrel-girl.js";
+import _poolThreefoldThunderhulk from "../pool/threefold-thunderhulk.js";
 import _poolThunderclapWyvern from "../pool/thunderclap-wyvern.js";
 import _poolThundermawHellkite from "../pool/thundermaw-hellkite.js";
 import _poolTickedOff from "../pool/ticked-off.js";
@@ -357,6 +358,7 @@ const shard: CardShard = {
     _poolTeysaKarlov,
     _poolThanosDeathsConsort,
     _poolTheUnbeatableSquirrelGirl,
+    _poolThreefoldThunderhulk,
     _poolThunderclapWyvern,
     _poolThundermawHellkite,
     _poolTickedOff,

@@ -117,6 +117,7 @@ import _poolOrnithopterOfParadise from "../pool/ornithopter-of-paradise.js";
 import _poolOrzhovGuildgate from "../pool/orzhov-guildgate.js";
 import _poolOverseerOfTheDamned from "../pool/overseer-of-the-damned.js";
 import _poolOversoldCemetery from "../pool/oversold-cemetery.js";
+import _poolPassionateArchaeologist from "../pool/passionate-archaeologist.js";
 import _poolPrecinctCaptain from "../pool/precinct-captain.js";
 import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
@@ -203,6 +204,7 @@ import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
 import _poolWoodlandStream from "../pool/woodland-stream.js";
 import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
+import _poolZacamaPrimalCalamity from "../pool/zacama-primal-calamity.js";
 import _poolZephyrScribe from "../pool/zephyr-scribe.js";
 import _poolZodiacDog from "../pool/zodiac-dog.js";
 import _tokensAstartesWarriorToken from "../tokens/astartes-warrior-token.js";
@@ -330,6 +332,7 @@ const shard: CardShard = {
     _poolOrzhovGuildgate,
     _poolOverseerOfTheDamned,
     _poolOversoldCemetery,
+    _poolPassionateArchaeologist,
     _poolPrecinctCaptain,
     _poolPresenceOfGond,
     _poolPriestOfGix,
@@ -416,6 +419,7 @@ const shard: CardShard = {
     _poolWoodlandStream,
     _poolYavimayaAncients,
     _poolYotianSoldier,
+    _poolZacamaPrimalCalamity,
     _poolZephyrScribe,
     _poolZodiacDog,
   ],

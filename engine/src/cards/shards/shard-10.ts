@@ -48,6 +48,7 @@ import _poolCryptOfAgadeem from "../pool/crypt-of-agadeem.js";
 import _poolCultivate from "../pool/cultivate.js";
 import _poolCunningManeuver from "../pool/cunning-maneuver.js";
 import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
+import _poolDarkness from "../pool/darkness.js";
 import _poolDaybreakCharger from "../pool/daybreak-charger.js";
 import _poolDefensiveStance from "../pool/defensive-stance.js";
 import _poolDictateOfErebos from "../pool/dictate-of-erebos.js";
@@ -112,6 +113,7 @@ import _poolLionheartGlimmer from "../pool/lionheart-glimmer.js";
 import _poolLiveOrDie from "../pool/live-or-die.js";
 import _poolLordOfExtinction from "../pool/lord-of-extinction.js";
 import _poolLuminarchAspirant from "../pool/luminarch-aspirant.js";
+import _poolLyraDawnbringer from "../pool/lyra-dawnbringer.js";
 import _poolMajaBretagardProtector from "../pool/maja-bretagard-protector.js";
 import _poolManifoldKey from "../pool/manifold-key.js";
 import _poolMarduDevotee from "../pool/mardu-devotee.js";
@@ -127,6 +129,7 @@ import _poolNecrogenSpellbomb from "../pool/necrogen-spellbomb.js";
 import _poolNecromancersAssistant from "../pool/necromancers-assistant.js";
 import _poolNeedleshotGourna from "../pool/needleshot-gourna.js";
 import _poolNimbleBirdsticker from "../pool/nimble-birdsticker.js";
+import _poolNimbusMaze from "../pool/nimbus-maze.js";
 import _poolNorthPoleGates from "../pool/north-pole-gates.js";
 import _poolOashraCultivator from "../pool/oashra-cultivator.js";
 import _poolOnduGiant from "../pool/ondu-giant.js";
@@ -259,6 +262,7 @@ const shard: CardShard = {
     _poolCultivate,
     _poolCunningManeuver,
     _poolDaggerdromeImp,
+    _poolDarkness,
     _poolDaybreakCharger,
     _poolDefensiveStance,
     _poolDictateOfErebos,
@@ -323,6 +327,7 @@ const shard: CardShard = {
     _poolLiveOrDie,
     _poolLordOfExtinction,
     _poolLuminarchAspirant,
+    _poolLyraDawnbringer,
     _poolMajaBretagardProtector,
     _poolManifoldKey,
     _poolMarduDevotee,
@@ -338,6 +343,7 @@ const shard: CardShard = {
     _poolNecromancersAssistant,
     _poolNeedleshotGourna,
     _poolNimbleBirdsticker,
+    _poolNimbusMaze,
     _poolNorthPoleGates,
     _poolOashraCultivator,
     _poolOnduGiant,

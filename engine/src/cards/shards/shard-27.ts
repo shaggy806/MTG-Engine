@@ -111,6 +111,7 @@ import _poolPrimordialWurm from "../pool/primordial-wurm.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
 import _poolRamirezDepietro from "../pool/ramirez-depietro.js";
+import _poolRazorgrassField from "../pool/razorgrass-field.js";
 import _poolRecover from "../pool/recover.js";
 import _poolRegathanFirecat from "../pool/regathan-firecat.js";
 import _poolRetreatToKazandu from "../pool/retreat-to-kazandu.js";
@@ -123,6 +124,7 @@ import _poolScionOfTheSwarm from "../pool/scion-of-the-swarm.js";
 import _poolScrapyardSteelbreaker from "../pool/scrapyard-steelbreaker.js";
 import _poolSerraAscendant from "../pool/serra-ascendant.js";
 import _poolShivanOasis from "../pool/shivan-oasis.js";
+import _poolSilverShroudCostume from "../pool/silver-shroud-costume.js";
 import _poolSilverbackElder from "../pool/silverback-elder.js";
 import _poolSilverchaseFox from "../pool/silverchase-fox.js";
 import _poolSkySpirit from "../pool/sky-spirit.js";
@@ -300,6 +302,7 @@ const shard: CardShard = {
     _poolRageThrower,
     _poolRakdosCluestone,
     _poolRamirezDepietro,
+    _poolRazorgrassField,
     _poolRecover,
     _poolRegathanFirecat,
     _poolRetreatToKazandu,
@@ -312,6 +315,7 @@ const shard: CardShard = {
     _poolScrapyardSteelbreaker,
     _poolSerraAscendant,
     _poolShivanOasis,
+    _poolSilverShroudCostume,
     _poolSilverbackElder,
     _poolSilverchaseFox,
     _poolSkySpirit,

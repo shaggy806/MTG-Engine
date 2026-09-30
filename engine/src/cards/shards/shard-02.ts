@@ -66,6 +66,7 @@ import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFarfinder from "../pool/farfinder.js";
+import _poolFistsOfFlame from "../pool/fists-of-flame.js";
 import _poolFlamingSword from "../pool/flaming-sword.js";
 import _poolFranticSearch from "../pool/frantic-search.js";
 import _poolFrilledMystic from "../pool/frilled-mystic.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolEnatuGolem,
     _poolExiledBoggart,
     _poolFarfinder,
+    _poolFistsOfFlame,
     _poolFlamingSword,
     _poolFranticSearch,
     _poolFrilledMystic,

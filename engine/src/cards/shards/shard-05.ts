@@ -82,6 +82,7 @@ import _poolGoblinSettler from "../pool/goblin-settler.js";
 import _poolGoldenHind from "../pool/golden-hind.js";
 import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
+import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
 import _poolGuardianLions from "../pool/guardian-lions.js";
@@ -284,6 +285,7 @@ const shard: CardShard = {
     _poolGoldenHind,
     _poolGrandCrescendo,
     _poolGravespawnSovereign,
+    _poolGreatHallOfTheCitadel,
     _poolGrimBackwoods,
     _poolGrimclimbPathway,
     _poolGuardianLions,

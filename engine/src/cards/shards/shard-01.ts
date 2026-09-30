@@ -127,6 +127,7 @@ import _poolSavageMansion from "../pool/savage-mansion.js";
 import _poolSavannah from "../pool/savannah.js";
 import _poolScaldingTarn from "../pool/scalding-tarn.js";
 import _poolScreamingPhantom from "../pool/screaming-phantom.js";
+import _poolSearchForTomorrow from "../pool/search-for-tomorrow.js";
 import _poolSeashellCameo from "../pool/seashell-cameo.js";
 import _poolSensoryDeprivation from "../pool/sensory-deprivation.js";
 import _poolSerrasGuardian from "../pool/serras-guardian.js";
@@ -304,6 +305,7 @@ const shard: CardShard = {
     _poolSavannah,
     _poolScaldingTarn,
     _poolScreamingPhantom,
+    _poolSearchForTomorrow,
     _poolSeashellCameo,
     _poolSensoryDeprivation,
     _poolSerrasGuardian,

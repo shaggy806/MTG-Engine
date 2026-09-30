@@ -14,6 +14,7 @@ import _poolArchmageOfRunes from "../pool/archmage-of-runes.js";
 import _poolArchonOfSunsGrace from "../pool/archon-of-suns-grace.js";
 import _poolArcticFlats from "../pool/arctic-flats.js";
 import _poolArgivianArchaeologist from "../pool/argivian-archaeologist.js";
+import _poolArwenWeaverOfHope from "../pool/arwen-weaver-of-hope.js";
 import _poolAsgardianCitadel from "../pool/asgardian-citadel.js";
 import _poolAspiringAeronaut from "../pool/aspiring-aeronaut.js";
 import _poolAuraMutation from "../pool/aura-mutation.js";
@@ -214,6 +215,7 @@ const shard: CardShard = {
     _poolArchonOfSunsGrace,
     _poolArcticFlats,
     _poolArgivianArchaeologist,
+    _poolArwenWeaverOfHope,
     _poolAsgardianCitadel,
     _poolAspiringAeronaut,
     _poolAuraMutation,

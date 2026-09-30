@@ -163,10 +163,12 @@ import _poolSylvanSafekeeper from "../pool/sylvan-safekeeper.js";
 import _poolTatteredMummy from "../pool/tattered-mummy.js";
 import _poolTeferisTutelage from "../pool/teferis-tutelage.js";
 import _poolTemurBattlecrier from "../pool/temur-battlecrier.js";
+import _poolTheBattleOfBywater from "../pool/the-battle-of-bywater.js";
 import _poolTheReaverCleaver from "../pool/the-reaver-cleaver.js";
 import _poolThorinsLastStand from "../pool/thorins-last-stand.js";
 import _poolTimbercrownPathway from "../pool/timbercrown-pathway.js";
 import _poolTorchFiend from "../pool/torch-fiend.js";
+import _poolTouchTheSpiritRealm from "../pool/touch-the-spirit-realm.js";
 import _poolTowerOfChampions from "../pool/tower-of-champions.js";
 import _poolToweringIndrik from "../pool/towering-indrik.js";
 import _poolToxinAnalysis from "../pool/toxin-analysis.js";
@@ -352,10 +354,12 @@ const shard: CardShard = {
     _poolTatteredMummy,
     _poolTeferisTutelage,
     _poolTemurBattlecrier,
+    _poolTheBattleOfBywater,
     _poolTheReaverCleaver,
     _poolThorinsLastStand,
     _poolTimbercrownPathway,
     _poolTorchFiend,
+    _poolTouchTheSpiritRealm,
     _poolTowerOfChampions,
     _poolToweringIndrik,
     _poolToxinAnalysis,

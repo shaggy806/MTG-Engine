@@ -106,12 +106,14 @@ import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
 import _poolMireTriton from "../pool/mire-triton.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
+import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
 import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
 import _poolNarciFableSinger from "../pool/narci-fable-singer.js";
 import _poolNightscapeFamiliar from "../pool/nightscape-familiar.js";
 import _poolNyxbornMarauder from "../pool/nyxborn-marauder.js";
 import _poolOphidianEye from "../pool/ophidian-eye.js";
+import _poolOrimsChant from "../pool/orims-chant.js";
 import _poolOxiddaScrapmelter from "../pool/oxidda-scrapmelter.js";
 import _poolPatagiaGolem from "../pool/patagia-golem.js";
 import _poolPendrellDrake from "../pool/pendrell-drake.js";
@@ -294,12 +296,14 @@ const shard: CardShard = {
     _poolMindSculpt,
     _poolMireTriton,
     _poolMoltenBlast,
+    _poolMurmuringMystic,
     _poolMyrKinsmith,
     _poolNantukoHusk,
     _poolNarciFableSinger,
     _poolNightscapeFamiliar,
     _poolNyxbornMarauder,
     _poolOphidianEye,
+    _poolOrimsChant,
     _poolOxiddaScrapmelter,
     _poolPatagiaGolem,
     _poolPendrellDrake,

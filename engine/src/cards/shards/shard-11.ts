@@ -34,6 +34,7 @@ import _poolCitanulStalwart from "../pool/citanul-stalwart.js";
 import _poolCivicStalwart from "../pool/civic-stalwart.js";
 import _poolClifftopRetreat from "../pool/clifftop-retreat.js";
 import _poolClockworkDrawbridge from "../pool/clockwork-drawbridge.js";
+import _poolCordialVampire from "../pool/cordial-vampire.js";
 import _poolCripplingFear from "../pool/crippling-fear.js";
 import _poolCuriosityCrafter from "../pool/curiosity-crafter.js";
 import _poolDarksteelForge from "../pool/darksteel-forge.js";
@@ -258,6 +259,7 @@ const shard: CardShard = {
     _poolCivicStalwart,
     _poolClifftopRetreat,
     _poolClockworkDrawbridge,
+    _poolCordialVampire,
     _poolCripplingFear,
     _poolCuriosityCrafter,
     _poolDarksteelForge,

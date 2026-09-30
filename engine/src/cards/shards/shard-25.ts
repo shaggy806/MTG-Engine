@@ -42,6 +42,7 @@ import _poolDauntlessVeteran from "../pool/dauntless-veteran.js";
 import _poolDeadWeight from "../pool/dead-weight.js";
 import _poolDeathlessAngel from "../pool/deathless-angel.js";
 import _poolDemandingDragon from "../pool/demanding-dragon.js";
+import _poolDictateOfKruphix from "../pool/dictate-of-kruphix.js";
 import _poolDoggedPursuit from "../pool/dogged-pursuit.js";
 import _poolDonAndresTheRenegade from "../pool/don-andres-the-renegade.js";
 import _poolDovinsVeto from "../pool/dovins-veto.js";
@@ -240,6 +241,7 @@ const shard: CardShard = {
     _poolDeadWeight,
     _poolDeathlessAngel,
     _poolDemandingDragon,
+    _poolDictateOfKruphix,
     _poolDoggedPursuit,
     _poolDonAndresTheRenegade,
     _poolDovinsVeto,

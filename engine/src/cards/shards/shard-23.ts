@@ -89,6 +89,7 @@ import _poolIncurableOgre from "../pool/incurable-ogre.js";
 import _poolIronpawAspirant from "../pool/ironpaw-aspirant.js";
 import _poolJunjiTheMidnightSky from "../pool/junji-the-midnight-sky.js";
 import _poolJunktown from "../pool/junktown.js";
+import _poolKamiOfTheCrescentMoon from "../pool/kami-of-the-crescent-moon.js";
 import _poolKarnsBastion from "../pool/karns-bastion.js";
 import _poolKeeningApparition from "../pool/keening-apparition.js";
 import _poolKembasSkyguard from "../pool/kembas-skyguard.js";
@@ -287,6 +288,7 @@ const shard: CardShard = {
     _poolIronpawAspirant,
     _poolJunjiTheMidnightSky,
     _poolJunktown,
+    _poolKamiOfTheCrescentMoon,
     _poolKarnsBastion,
     _poolKeeningApparition,
     _poolKembasSkyguard,

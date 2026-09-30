@@ -133,6 +133,7 @@ import _poolSkyRuinDrake from "../pool/sky-ruin-drake.js";
 import _poolSlinkingSerpent from "../pool/slinking-serpent.js";
 import _poolSolphimMayhemDominus from "../pool/solphim-mayhem-dominus.js";
 import _poolSpikedBaloth from "../pool/spiked-baloth.js";
+import _poolSpringleafParade from "../pool/springleaf-parade.js";
 import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
 import _poolStandFirm from "../pool/stand-firm.js";
 import _poolStandingStones from "../pool/standing-stones.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolSlinkingSerpent,
     _poolSolphimMayhemDominus,
     _poolSpikedBaloth,
+    _poolSpringleafParade,
     _poolStampedingScurryfoot,
     _poolStandFirm,
     _poolStandingStones,

@@ -53,6 +53,7 @@ import _poolDeathBaron from "../pool/death-baron.js";
 import _poolDecoyPloy from "../pool/decoy-ploy.js";
 import _poolDiregrafCaptain from "../pool/diregraf-captain.js";
 import _poolDiversionaryTactics from "../pool/diversionary-tactics.js";
+import _poolDoomwakeGiant from "../pool/doomwake-giant.js";
 import _poolDraugrRecruiter from "../pool/draugr-recruiter.js";
 import _poolDrogskolReaver from "../pool/drogskol-reaver.js";
 import _poolDromadPurebred from "../pool/dromad-purebred.js";
@@ -261,6 +262,7 @@ const shard: CardShard = {
     _poolDecoyPloy,
     _poolDiregrafCaptain,
     _poolDiversionaryTactics,
+    _poolDoomwakeGiant,
     _poolDraugrRecruiter,
     _poolDrogskolReaver,
     _poolDromadPurebred,

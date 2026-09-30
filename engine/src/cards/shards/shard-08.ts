@@ -60,6 +60,7 @@ import _poolDruidOfTheCowl from "../pool/druid-of-the-cowl.js";
 import _poolDuneDiviner from "../pool/dune-diviner.js";
 import _poolDwarvenProvisioner from "../pool/dwarven-provisioner.js";
 import _poolElderleafMentor from "../pool/elderleaf-mentor.js";
+import _poolElendasHierophant from "../pool/elendas-hierophant.js";
 import _poolElephantAmbush from "../pool/elephant-ambush.js";
 import _poolElfswornGiant from "../pool/elfsworn-giant.js";
 import _poolElvishVanguard from "../pool/elvish-vanguard.js";
@@ -264,6 +265,7 @@ const shard: CardShard = {
     _poolDuneDiviner,
     _poolDwarvenProvisioner,
     _poolElderleafMentor,
+    _poolElendasHierophant,
     _poolElephantAmbush,
     _poolElfswornGiant,
     _poolElvishVanguard,

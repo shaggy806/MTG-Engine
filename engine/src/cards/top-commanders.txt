@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-331 already implemented / 169 missing
+332 already implemented / 168 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -412,7 +412,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  406  Winter, Cynical Opportunist                     7190 decks  {2}{B}{G}        Legendary Creature — Human Warlock
 [ ]  407  Jasmine Boreal of the Seven                     7179 decks  {1}{G}{W}        Legendary Creature — Human Druid
 [x]  408  Jhoira, Weatherlight Captain                    7178 decks  {2}{U}{R}        Legendary Creature — Human Artificer
-[ ]  409  Yawgmoth, Thran Physician                       7176 decks  {2}{B}{B}        Legendary Creature — Human Cleric
+[x]  409  Yawgmoth, Thran Physician                       7176 decks  {2}{B}{B}        Legendary Creature — Human Cleric
 [x]  410  Maarika, Brutal Gladiator                       7164 decks  {2}{B}{R}{G}     Legendary Creature — Human Warrior
 [x]  411  Anowon, the Ruin Thief                          7111 decks  {2}{U}{B}        Legendary Creature — Vampire Rogue
 [x]  412  Hei Bai, Forest Guardian                        7082 decks  {3}{G}           Legendary Creature — Bear Spirit

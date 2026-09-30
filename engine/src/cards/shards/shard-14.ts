@@ -18,6 +18,7 @@ import _poolBackupAgent from "../pool/backup-agent.js";
 import _poolBartizanBats from "../pool/bartizan-bats.js";
 import _poolBattleMastery from "../pool/battle-mastery.js";
 import _poolBattleRampart from "../pool/battle-rampart.js";
+import _poolBennieBracksZoologist from "../pool/bennie-bracks-zoologist.js";
 import _poolBileUrchin from "../pool/bile-urchin.js";
 import _poolBlinkmothNexus from "../pool/blinkmoth-nexus.js";
 import _poolBlisterspitGremlin from "../pool/blisterspit-gremlin.js";
@@ -219,6 +220,7 @@ const shard: CardShard = {
     _poolBartizanBats,
     _poolBattleMastery,
     _poolBattleRampart,
+    _poolBennieBracksZoologist,
     _poolBileUrchin,
     _poolBlinkmothNexus,
     _poolBlisterspitGremlin,

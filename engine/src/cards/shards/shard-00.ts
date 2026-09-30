@@ -116,6 +116,7 @@ import _poolNightshadeStinger from "../pool/nightshade-stinger.js";
 import _poolNyleasForerunner from "../pool/nyleas-forerunner.js";
 import _poolOpenTheGraves from "../pool/open-the-graves.js";
 import _poolOpulentPalace from "../pool/opulent-palace.js";
+import _poolOriginOfMetalbending from "../pool/origin-of-metalbending.js";
 import _poolOwlFamiliar from "../pool/owl-familiar.js";
 import _poolPakoArcaneRetriever from "../pool/pako-arcane-retriever.js";
 import _poolParadoxGardens from "../pool/paradox-gardens.js";
@@ -123,6 +124,7 @@ import _poolPeaceStrider from "../pool/peace-strider.js";
 import _poolPhyrexianBroodlings from "../pool/phyrexian-broodlings.js";
 import _poolPipBoy3000 from "../pool/pip-boy-3000.js";
 import _poolPlunderingPirate from "../pool/plundering-pirate.js";
+import _poolPowerFist from "../pool/power-fist.js";
 import _poolPrimalVisitation from "../pool/primal-visitation.js";
 import _poolPryingEyes from "../pool/prying-eyes.js";
 import _poolQuakestriderCeratops from "../pool/quakestrider-ceratops.js";
@@ -181,6 +183,7 @@ import _poolTimberlandRuins from "../pool/timberland-ruins.js";
 import _poolToothOfRamos from "../pool/tooth-of-ramos.js";
 import _poolTorchDrake from "../pool/torch-drake.js";
 import _poolTrenoDarkCity from "../pool/treno-dark-city.js";
+import _poolTwistedLandscape from "../pool/twisted-landscape.js";
 import _poolUnspeakableSymbol from "../pool/unspeakable-symbol.js";
 import _poolUnstableObelisk from "../pool/unstable-obelisk.js";
 import _poolUreniOfTheUnwritten from "../pool/ureni-of-the-unwritten.js";
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolNyleasForerunner,
     _poolOpenTheGraves,
     _poolOpulentPalace,
+    _poolOriginOfMetalbending,
     _poolOwlFamiliar,
     _poolPakoArcaneRetriever,
     _poolParadoxGardens,
@@ -329,6 +333,7 @@ const shard: CardShard = {
     _poolPhyrexianBroodlings,
     _poolPipBoy3000,
     _poolPlunderingPirate,
+    _poolPowerFist,
     _poolPrimalVisitation,
     _poolPryingEyes,
     _poolQuakestriderCeratops,
@@ -387,6 +392,7 @@ const shard: CardShard = {
     _poolToothOfRamos,
     _poolTorchDrake,
     _poolTrenoDarkCity,
+    _poolTwistedLandscape,
     _poolUnspeakableSymbol,
     _poolUnstableObelisk,
     _poolUreniOfTheUnwritten,

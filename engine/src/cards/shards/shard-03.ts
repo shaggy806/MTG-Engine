@@ -121,6 +121,7 @@ import _poolRuneCervinRider from "../pool/rune-cervin-rider.js";
 import _poolRushwoodElemental from "../pool/rushwood-elemental.js";
 import _poolSacredPrey from "../pool/sacred-prey.js";
 import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
+import _poolSagesReverie from "../pool/sages-reverie.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
 import _poolScrapTrawler from "../pool/scrap-trawler.js";
 import _poolSeacoastDrake from "../pool/seacoast-drake.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolRushwoodElemental,
     _poolSacredPrey,
     _poolSadisticHypnotist,
+    _poolSagesReverie,
     _poolSalvagedManaworker,
     _poolScrapTrawler,
     _poolSeacoastDrake,

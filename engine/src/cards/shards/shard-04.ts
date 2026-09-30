@@ -76,6 +76,7 @@ import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
 import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
 import _poolGohnTownOfRuin from "../pool/gohn-town-of-ruin.js";
+import _poolGratefulApparition from "../pool/grateful-apparition.js";
 import _poolGriffinSentinel from "../pool/griffin-sentinel.js";
 import _poolGrislyTransformation from "../pool/grisly-transformation.js";
 import _poolHammerheadMaggiaBoss from "../pool/hammerhead-maggia-boss.js";
@@ -89,6 +90,7 @@ import _poolHumongulus from "../pool/humongulus.js";
 import _poolImposingVantasaur from "../pool/imposing-vantasaur.js";
 import _poolIndrikStomphowler from "../pool/indrik-stomphowler.js";
 import _poolInfectiousHorror from "../pool/infectious-horror.js";
+import _poolInsurrection from "../pool/insurrection.js";
 import _poolIroassChampion from "../pool/iroass-champion.js";
 import _poolIroncladKrovod from "../pool/ironclad-krovod.js";
 import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
@@ -286,6 +288,7 @@ const shard: CardShard = {
     _poolGoblinDeathraiders,
     _poolGoblinSpelunkers,
     _poolGohnTownOfRuin,
+    _poolGratefulApparition,
     _poolGriffinSentinel,
     _poolGrislyTransformation,
     _poolHammerheadMaggiaBoss,
@@ -299,6 +302,7 @@ const shard: CardShard = {
     _poolImposingVantasaur,
     _poolIndrikStomphowler,
     _poolInfectiousHorror,
+    _poolInsurrection,
     _poolIroassChampion,
     _poolIroncladKrovod,
     _poolJenovaAncientCalamity,

@@ -30,6 +30,7 @@ import _poolBurrowing from "../pool/burrowing.js";
 import _poolCallToMind from "../pool/call-to-mind.js";
 import _poolCanopySpider from "../pool/canopy-spider.js";
 import _poolCapitalCity from "../pool/capital-city.js";
+import _poolCasualtiesOfWar from "../pool/casualties-of-war.js";
 import _poolCentaurHealer from "../pool/centaur-healer.js";
 import _poolCharcoalDiamond from "../pool/charcoal-diamond.js";
 import _poolChasmSkulker from "../pool/chasm-skulker.js";
@@ -80,6 +81,7 @@ import _poolGrislySalvage from "../pool/grisly-salvage.js";
 import _poolGroundbreaker from "../pool/groundbreaker.js";
 import _poolGuardDuty from "../pool/guard-duty.js";
 import _poolHighFaeTrickster from "../pool/high-fae-trickster.js";
+import _poolHonestRutstein from "../pool/honest-rutstein.js";
 import _poolHourOfReckoning from "../pool/hour-of-reckoning.js";
 import _poolImprovisedArmor from "../pool/improvised-armor.js";
 import _poolInfuriate from "../pool/infuriate.js";
@@ -222,6 +224,7 @@ const shard: CardShard = {
     _poolCallToMind,
     _poolCanopySpider,
     _poolCapitalCity,
+    _poolCasualtiesOfWar,
     _poolCentaurHealer,
     _poolCharcoalDiamond,
     _poolChasmSkulker,
@@ -272,6 +275,7 @@ const shard: CardShard = {
     _poolGroundbreaker,
     _poolGuardDuty,
     _poolHighFaeTrickster,
+    _poolHonestRutstein,
     _poolHourOfReckoning,
     _poolImprovisedArmor,
     _poolInfuriate,

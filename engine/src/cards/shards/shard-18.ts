@@ -17,6 +17,7 @@ import _poolBarbedBattlegear from "../pool/barbed-battlegear.js";
 import _poolBedevil from "../pool/bedevil.js";
 import _poolBirdMaiden from "../pool/bird-maiden.js";
 import _poolBlindingMage from "../pool/blinding-mage.js";
+import _poolBloodlinePretender from "../pool/bloodline-pretender.js";
 import _poolBloomHulk from "../pool/bloom-hulk.js";
 import _poolBonePitBrute from "../pool/bone-pit-brute.js";
 import _poolBoneSaw from "../pool/bone-saw.js";
@@ -146,6 +147,7 @@ import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
 import _poolStarstorm from "../pool/starstorm.js";
+import _poolSusurSecundiVoidAltar from "../pool/susur-secundi-void-altar.js";
 import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
 import _poolSyrKonradTheGrim from "../pool/syr-konrad-the-grim.js";
@@ -213,6 +215,7 @@ const shard: CardShard = {
     _poolBedevil,
     _poolBirdMaiden,
     _poolBlindingMage,
+    _poolBloodlinePretender,
     _poolBloomHulk,
     _poolBonePitBrute,
     _poolBoneSaw,
@@ -342,6 +345,7 @@ const shard: CardShard = {
     _poolSpellkeeperWeird,
     _poolStandingTroops,
     _poolStarstorm,
+    _poolSusurSecundiVoidAltar,
     _poolSuturePriest,
     _poolSymbioteSpawn,
     _poolSyrKonradTheGrim,

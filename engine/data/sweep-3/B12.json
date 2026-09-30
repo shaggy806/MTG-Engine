@@ -1,0 +1,437 @@
+{
+  "batch": "B12",
+  "status": "complete",
+  "ranks": "1802-1877",
+  "authored": [
+    {
+      "name": "Kami of the Crescent Moon",
+      "files": [
+        "engine/src/cards/pool/kami-of-the-crescent-moon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dictate of Kruphix",
+      "files": [
+        "engine/src/cards/pool/dictate-of-kruphix.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Zacama, Primal Calamity",
+      "files": [
+        "engine/src/cards/pool/zacama-primal-calamity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Orim's Chant",
+      "files": [
+        "engine/src/cards/pool/orims-chant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lyra Dawnbringer",
+      "files": [
+        "engine/src/cards/pool/lyra-dawnbringer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nimbus Maze",
+      "files": [
+        "engine/src/cards/pool/nimbus-maze.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Silver Shroud Costume",
+      "files": [
+        "engine/src/cards/pool/silver-shroud-costume.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Power Fist",
+      "files": [
+        "engine/src/cards/pool/power-fist.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Honest Rutstein",
+      "files": [
+        "engine/src/cards/pool/honest-rutstein.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Doomwake Giant",
+      "files": [
+        "engine/src/cards/pool/doomwake-giant.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Murmuring Mystic",
+      "files": [
+        "engine/src/cards/pool/murmuring-mystic.ts",
+        "engine/src/cards/tokens/bird-illusion-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Springleaf Parade",
+      "files": [
+        "engine/src/cards/pool/springleaf-parade.ts",
+        "engine/src/cards/tokens/shapeshifter-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Great Hall of the Citadel",
+      "files": [
+        "engine/src/cards/pool/great-hall-of-the-citadel.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Search for Tomorrow",
+      "files": [
+        "engine/src/cards/pool/search-for-tomorrow.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Casualties of War",
+      "files": [
+        "engine/src/cards/pool/casualties-of-war.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Grateful Apparition",
+      "files": [
+        "engine/src/cards/pool/grateful-apparition.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tormod's Crypt",
+      "files": [
+        "engine/src/cards/pool/tormods-crypt.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Sage's Reverie",
+      "files": [
+        "engine/src/cards/pool/sages-reverie.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bennie Bracks, Zoologist",
+      "files": [
+        "engine/src/cards/pool/bennie-bracks-zoologist.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Susur Secundi, Void Altar",
+      "files": [
+        "engine/src/cards/pool/susur-secundi-void-altar.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Insurrection",
+      "files": [
+        "engine/src/cards/pool/insurrection.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Battle of Bywater",
+      "files": [
+        "engine/src/cards/pool/the-battle-of-bywater.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Threefold Thunderhulk",
+      "files": [
+        "engine/src/cards/pool/threefold-thunderhulk.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Razorgrass Ambush",
+      "files": [
+        "engine/src/cards/pool/razorgrass-ambush.ts",
+        "engine/src/cards/pool/razorgrass-field.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Origin of Metalbending",
+      "files": [
+        "engine/src/cards/pool/origin-of-metalbending.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Darkness",
+      "files": [
+        "engine/src/cards/pool/darkness.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Elenda's Hierophant",
+      "files": [
+        "engine/src/cards/pool/elendas-hierophant.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Arwen, Weaver of Hope",
+      "files": [
+        "engine/src/cards/pool/arwen-weaver-of-hope.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Twisted Landscape",
+      "files": [
+        "engine/src/cards/pool/twisted-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Passionate Archaeologist",
+      "files": [
+        "engine/src/cards/pool/passionate-archaeologist.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fists of Flame",
+      "files": [
+        "engine/src/cards/pool/fists-of-flame.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Touch the Spirit Realm",
+      "files": [
+        "engine/src/cards/pool/touch-the-spirit-realm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cordial Vampire",
+      "files": [
+        "engine/src/cards/pool/cordial-vampire.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bloodline Pretender",
+      "files": [
+        "engine/src/cards/pool/bloodline-pretender.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Call Forth the Tempest",
+      "needs": [
+        "new:total-mana-value-cast-this-turn"
+      ],
+      "why": "Damage equal to the total mana value of other spells cast this turn, beside two cascades."
+    },
+    {
+      "name": "Brave the Sands",
+      "needs": [
+        "new:block-additional-creature"
+      ],
+      "why": "'Can block an additional creature each combat'."
+    },
+    {
+      "name": "Hit the Mother Lode",
+      "needs": [
+        "new:discover"
+      ],
+      "why": "Discover 10, then Treasures for the difference."
+    },
+    {
+      "name": "Get Lost",
+      "needs": [
+        "new:explore",
+        "new:map-token"
+      ],
+      "why": "Map tokens (explore)."
+    },
+    {
+      "name": "Jarad, Golgari Lich Lord",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Sacrifice a Swamp and a Forest' as a graveyard ability's cost."
+    },
+    {
+      "name": "Song of the Dryads",
+      "needs": [
+        "new:set-characteristics-aura"
+      ],
+      "why": "'Enchanted permanent is a colorless Forest land' (AUTHORING §15)."
+    },
+    {
+      "name": "Disallow",
+      "needs": [
+        "new:counter-ability"
+      ],
+      "why": "Countering an activated or triggered ability."
+    },
+    {
+      "name": "Mana Reflection",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "'It produces twice as much of that mana instead' — a mana replacement, not a trigger."
+    },
+    {
+      "name": "The Eternal Wanderer",
+      "needs": [
+        "new:attack-limit-planeswalker",
+        "decision:choose-permanent"
+      ],
+      "why": "'No more than one creature can attack' it, and −4's choice per player."
+    },
+    {
+      "name": "Scheming Symmetry",
+      "needs": [
+        "new:two-players-search"
+      ],
+      "why": "Two target players each search and put a card on top."
+    },
+    {
+      "name": "Firemane Commando",
+      "needs": [
+        "new:attack-with-not-attacking-you"
+      ],
+      "why": "'They draw a card if none of those creatures attacked you'."
+    },
+    {
+      "name": "Archetype of Imagination",
+      "needs": [
+        "new:cant-have-keyword"
+      ],
+      "why": "'Can't have or gain flying'."
+    },
+    {
+      "name": "Emrakul, the Promised End",
+      "needs": [
+        "new:control-player-turn"
+      ],
+      "why": "Gaining control of a player during their next turn."
+    },
+    {
+      "name": "Claim Jumper",
+      "needs": [
+        "new:repeat-process"
+      ],
+      "why": "'Then if an opponent controls more lands than you, repeat this process once' with a may."
+    },
+    {
+      "name": "Contagion Engine",
+      "needs": [
+        "new:add-counter-all-target-player"
+      ],
+      "why": "A -1/-1 counter on each creature target player controls (add-counter-all can't scope to a target)."
+    },
+    {
+      "name": "Containment Construct",
+      "needs": [
+        "new:exile-discarded-play-this-turn"
+      ],
+      "why": "Exile the discarded card and play it this turn."
+    },
+    {
+      "name": "Knuckles the Echidna",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You win the game'."
+    },
+    {
+      "name": "The Aetherspark",
+      "needs": [
+        "new:planeswalker-equipment"
+      ],
+      "why": "A planeswalker Equipment that can't be attacked while attached."
+    },
+    {
+      "name": "Junk Winder",
+      "needs": [
+        "new:doesnt-untap-next-untap-step"
+      ],
+      "why": "'It doesn't untap during its controller's next untap step'."
+    },
+    {
+      "name": "Multani, Yavimaya's Avatar",
+      "needs": [
+        "new:return-lands-cost"
+      ],
+      "why": "'Return two lands you control to their owner's hand' as a cost."
+    },
+    {
+      "name": "Hero's Blade",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "'You may attach this Equipment to it' — attach can't name the trigger object as the creature."
+    },
+    {
+      "name": "Drivnod, Carnage Dominus",
+      "needs": [
+        "new:dies-trigger-doubling",
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "Death-trigger doubling, and exiling three creature cards from your graveyard as a cost."
+    },
+    {
+      "name": "Urabrask // The Great Work",
+      "needs": [
+        "new:exile-transform-return",
+        "new:cast-from-any-graveyard"
+      ],
+      "why": "Its transform ability and The Great Work's chapter III."
+    },
+    {
+      "name": "Phyrexian Obliterator",
+      "needs": [
+        "new:sacrifice-amount"
+      ],
+      "why": "'Sacrifices that many permanents' — sacrifice counts are fixed numbers (AUTHORING §15)."
+    },
+    {
+      "name": "Lazotep Quarry",
+      "needs": [
+        "new:target-filter-x-activated"
+      ],
+      "why": "A target with mana value X on an activated ability, untested; left for a check."
+    },
+    {
+      "name": "Wedding Ring",
+      "needs": [
+        "new:opponent-token-copy",
+        "new:named-artifact-condition"
+      ],
+      "why": "An opponent gets a copy; triggers on opponents controlling an artifact named Wedding Ring."
+    }
+  ]
+}

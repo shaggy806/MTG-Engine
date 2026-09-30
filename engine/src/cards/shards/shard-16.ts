@@ -213,11 +213,13 @@ import _poolWizardsSchool from "../pool/wizards-school.js";
 import _poolWolverineBestThereIs from "../pool/wolverine-best-there-is.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
 import _poolZodiacHorse from "../pool/zodiac-horse.js";
+import _tokensBirdIllusionToken from "../tokens/bird-illusion-token.js";
 import _tokensBlackDeathtouchSnakeToken from "../tokens/black-deathtouch-snake-token.js";
 import _tokensDinosaurToken31 from "../tokens/dinosaur-token-3-1.js";
 import _tokensInsectToken from "../tokens/insect-token.js";
 import _tokensLifelinkVampireToken from "../tokens/lifelink-vampire-token.js";
 import _tokensPhyrexianWurmLifelink from "../tokens/phyrexian-wurm-lifelink.js";
+import _tokensShapeshifterToken from "../tokens/shapeshifter-token.js";
 import _tokensSoldierArtifactToken from "../tokens/soldier-artifact-token.js";
 
 const shard: CardShard = {
@@ -434,11 +436,13 @@ const shard: CardShard = {
     _poolZodiacHorse,
   ],
   tokens: [
+    _tokensBirdIllusionToken,
     _tokensBlackDeathtouchSnakeToken,
     _tokensDinosaurToken31,
     _tokensInsectToken,
     _tokensLifelinkVampireToken,
     _tokensPhyrexianWurmLifelink,
+    _tokensShapeshifterToken,
     _tokensSoldierArtifactToken,
   ],
 };
