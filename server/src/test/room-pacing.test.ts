@@ -345,14 +345,28 @@ describe("Room pacing (realtime)", () => {
 
       room.requestPassTurn(alice.connection);
       const before = alice.frames.length;
-      // A slow client catches up just before the 6s backstop would have
-      // fired; the pause still runs its full length after that.
+      // A slow client catches up well inside the 12s backstop; the pause
+      // still runs its full length after that.
       clock.advance(5_900);
       room.ack(alice.connection, room.frameSeq);
       clock.advance(1_000);
       expect(alice.frames.length).toBe(before);
       clock.advance(700);
       expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("never lets a slow client's frame outlast the ack timeout", () => {
+      // The client caps one frame at 11 s (FRAME_CEILING_MS in
+      // client/src/game/animationSchedule.ts), however slow its viewer's
+      // animation setting. A client acking at 11 s must still be waited for.
+      const { room, clock, alice } = makePacedRoom(false);
+      room.addBot(BOB);
+      room.start();
+      room.ack(alice.connection, room.frameSeq);
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(11_000);
+      expect(alice.frames.length).toBe(before);
     });
 
     it("applies a changed speed to the next move", () => {
@@ -364,6 +378,68 @@ describe("Room pacing (realtime)", () => {
       const before = alice.frames.length;
       clock.advance(400);
       expect(alice.frames.length).toBeGreaterThan(before);
+    });
+  });
+
+  describe("resolve all", () => {
+    /**
+     * Alice (human, acking every frame) with three spells on the stack, and a
+     * real choice at every window — a Forest and a Fog — so the stack only
+     * drains because she asked it to. A bot Bob passes behind her.
+     */
+    function stackedPacedRoom(depth: number) {
+      const paced = makePacedRoom(true);
+      paced.room.addBot(BOB);
+      paced.room.start();
+      const game = paced.room.game;
+      game.debugSpawn("Forest", ALICE, "battlefield");
+      game.debugSpawn("Fog", ALICE, "hand");
+      for (let i = 0; i < depth; i += 1) game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      return paced;
+    }
+
+    it("resolves the stack one object per frame, each held for the clients", () => {
+      const { room, clock, alice } = stackedPacedRoom(3);
+      const stack = () => room.game.state.zones.shared.stack.length;
+      expect(stack()).toBe(3);
+
+      room.requestResolveAll(alice.connection);
+      // One object resolved, and that board went out as its own frame,
+      // parked behind the gate rather than running on into the next.
+      expect(stack()).toBe(2);
+      clock.advance(400);
+      expect(stack()).toBe(1);
+      clock.advance(400);
+      expect(stack()).toBe(0);
+    });
+
+    it("resolves it all at once for a room that doesn't pace", () => {
+      const clock = fakeClock();
+      const forests = Array<string>(40).fill("Forest");
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        decks: [
+          { player: ALICE, cards: forests },
+          { player: BOB, cards: forests },
+        ],
+      });
+      autoSettle(game);
+      const room = new Room("PACE2", game, {
+        timers: clock.timers,
+        pacing: "immediate",
+        botController: (player) => new HeuristicBotController(player),
+      });
+      const { connection } = watcher(() => room, true);
+      room.claimSeat(ALICE, "alice-token", connection);
+      room.addBot(BOB);
+      room.start();
+      game.debugSpawn("Forest", ALICE, "battlefield");
+      game.debugSpawn("Fog", ALICE, "hand");
+      for (let i = 0; i < 3; i += 1) game.debugSpawn("Ambition's Cost", ALICE, "stack");
+
+      room.requestResolveAll(connection);
+      expect(game.state.zones.shared.stack).toHaveLength(0);
     });
   });
 });

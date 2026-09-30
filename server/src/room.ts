@@ -265,6 +265,10 @@ export class Room {
   private readonly timers: RoomTimers;
   private readonly makeBot: (player: PlayerId) => PlayerController;
   private seq = 0;
+  /** How long the game's event log was when the last frame went out — so
+   * `settle()` can tell a resolve-all's resolution apart from what the last
+   * frame already showed. */
+  private eventsAtPublish = 0;
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
@@ -855,6 +859,12 @@ export class Room {
       const s = this.game.state;
       if (s.result.over) break;
 
+      if (this.pacing !== "immediate" && this.resolvedUnshown()) {
+        this.publish();
+        this.holdForClients(() => this.settle());
+        return;
+      }
+
       const bot = this.currentBotActor();
       if (bot !== null) {
         if (this.pacing === "immediate") {
@@ -981,7 +991,33 @@ export class Room {
    * seat — so every seat always sees the same frame under the same `seq`. */
   publish(): void {
     this.seq += 1;
+    this.eventsAtPublish = this.game.events.length;
     this.onUpdate(this);
+  }
+
+  /**
+   * A resolve-all is draining the stack and something has left it since the
+   * last frame. `settle()` then shows that board and waits for the clients
+   * before the next object resolves, the way it waits after a bot's move, so
+   * the stack comes down one object at a time instead of vanishing in a
+   * single frame. Counted in resolutions rather than stack depth: a spell
+   * whose resolving puts a trigger on the stack leaves the depth unchanged.
+   */
+  private resolvedUnshown(): boolean {
+    if (!this.seats.some((seat) => seat.resolveAllFrom !== null)) return false;
+    const events = this.game.events;
+    for (let i = this.eventsAtPublish; i < events.length; i += 1) {
+      const type = events[i].type;
+      if (
+        type === "spell-resolved" ||
+        type === "ability-resolved" ||
+        type === "spell-countered" ||
+        type === "spell-fizzled"
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   disconnect(connection: Connection): void {
