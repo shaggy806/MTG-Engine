@@ -431,6 +431,61 @@ Beyond that plan:
 
 ## Client / UI
 
+### Legibility of play: animation and pacing (the user's list, 2026-09-30)
+
+Planning only so far, since none of it can be checked without a browser. The problem is that a bot
+turn can't be followed by eye, even at the slow bot speed. Only three kinds of event hold the game
+up for their animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat
+hit, a permanent leaving). Everything else lands with the next board and has no animation at all.
+The pipeline is in `docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`).
+
+- **Groundwork: a per-permanent effect channel.** Most items below are an effect on one tile (a
+  glow, a flash, a tilt, a move). `Table` remounts per frame, so a CSS transition on a tile never
+  plays. Tapping, for example, snaps the tile straight to the tilted pose. The effects have to be
+  cues that `AnimationLayer` draws over the tile, found by `data-obj-id` the way `runHit` and
+  `runDeath` find theirs. A move from one spot to another (entering, changing control) needs the
+  tile's position before and after the move (FLIP). Build this once, then add each effect as a
+  small follow-up. Each new event kind also needs a `slotFor` entry, and paced or unpaced has to
+  be decided for each one.
+- **Bots play too fast to follow, even on "slow".** `BOT_LINGER_MS.slow` (`server/src/room.ts`)
+  is a 1.6s pause after each frame, but a bot passing priority is never published as a frame of
+  its own. Its effects arrive in the next frame, and that frame animates only what `PACED`
+  covers. So most of the fix is giving more events paced slots (the items below), not a longer
+  linger.
+- **Show who cast a spell, and keep it up longer.** The cast spotlight flies from the owner's
+  quadrant but doesn't name them. Its `CARD_STEP_MS` (1.8s) doesn't grow with bot speed. Stack
+  entries don't show a controller either.
+- **"Resolve all" should resolve the stack one item at a time, not jump.**
+  `requestResolveAll` passes through `autoAdvanceHumanSeat` inside `settle()`'s loop without
+  publishing a frame, so the whole stack resolves in one frame. It needs a frame and the frame
+  gate for each resolution, plus a slot for `spell-resolved`/`ability-resolved`.
+- **Stack exit animation, and move the stack left.** A resolving entry just disappears. It
+  should animate out, toward its destination for a spell. The pile (`.stack-overlay`, fixed to
+  the right edge) covers the life total of the bottom-right player.
+- **The text above and below a trigger or ability on the stack is too small to read.**
+  `.stack-entry-label` (the "X's ability" line) and `.stack-targets` (the "→ target" line) are
+  fixed at 11px, which also breaks the no-fixed-px rule. Size them from `--card-w`.
+- **Counters placed on a permanent: a short glow on the tile** (`counter-added`, `proliferated`).
+- **A buff that isn't counters should show too** (`pt-modified`, `keyword-granted`). It should
+  look different from the counter glow.
+- **Creatures (every permanent) should animate onto the board instead of popping in**
+  (`permanent-entered-battlefield`). Tokens need this most, since they have no cast spotlight.
+- **Life gain: a green flash; life loss and damage: a red flash**, on the player panel
+  (`life-changed` by the sign of its `delta`) and on a creature for noncombat damage
+  (`damage-dealt` without `combat`, which today has no animation at all).
+- **Animate tapping and untapping** (`permanent-tapped`/`permanent-untapped`). See the
+  groundwork line.
+- **Cards milled or exiled from the top of a library** (`cards-milled`, `cards-put-into-exile`
+  from a library) should leave the library pile visibly, e.g. flipping into the graveyard or
+  exile.
+- **A permanent bounced to hand** (`permanent-returned-to-hand`) should fly to its owner's hand,
+  like the draw flight run in reverse.
+- **A change of control** (`control-changed`) should move the permanent across to its new
+  controller's board.
+- **Exiled should look different from destroyed.** `runDeath` fades every permanent that
+  leaves, wherever it goes. Exile (`permanent-exiled`) should look distinct from dying
+  (`permanent-destroyed`, `permanent-sacrificed`).
+
 - **A face-down exiled card drops out of its owner's exile count and list** for every seat that
   can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in
   `App.tsx` groups exile by `view.objects[id].owner`, and a hidden card has no object. The
