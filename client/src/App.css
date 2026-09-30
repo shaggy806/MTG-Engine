@@ -613,6 +613,14 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* The scrollbar's room is always reserved, so its coming and going never
+     changes this box's width. Without it, `recomputeBoardMiniW` (App.tsx)
+     could loop forever: a board that fits at some tile width with no
+     scrollbar wraps a tile onto a new row once one appears, so it picks one
+     pixel smaller, the scrollbar goes, it picks the larger width again, and
+     the tiles jump between rows every frame. Seen on six lands, one tapped,
+     in a 4-player quadrant at a 715px-tall window. */
+  scrollbar-gutter: stable;
   padding: 6px 7px;
   /* a size container, so the command/library rail inside can size its card
      slots against the height this quadrant actually has (cqh) instead of
