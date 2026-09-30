@@ -594,7 +594,12 @@ function viewForUncached(
     activePlayer: activePlayerOf(state),
     turn: { ...state.turn },
     priority: { ...state.priority, passed: [...state.priority.passed] },
-    awaiting: state.awaiting,
+    // Which hand cards may pay a "discard a creature card" cost says what
+    // kind of card each is: only the player asked sees it.
+    awaiting:
+      state.awaiting?.kind === "discard" && state.awaiting.eligible !== undefined && state.awaiting.player !== viewer
+        ? (({ eligible: _hidden, ...rest }) => rest)(state.awaiting)
+        : state.awaiting,
     decisionSource: decisionSourceFor(state),
     result: { ...state.result },
     players,

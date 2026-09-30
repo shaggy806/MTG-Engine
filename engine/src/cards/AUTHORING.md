@@ -1507,7 +1507,7 @@ activated: [
 ```
 
 **`AbilityCost`** (`abilities.ts`): `{ mana?, tap?, sacrifice?, payLife?,
-removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
+removeCounter?, payEnergy?, discardHand?, discard?, tapOthers? }`.
 
 - `mana`: a cost string (`"{2}"`) or `null`. May contain `{X}`.
 - `tap: true` adds `{T}`.
@@ -1526,6 +1526,13 @@ removeCounter?, payEnergy?, discardHand?, tapOthers? }`.
   Slate of Ancestry's "Discard your hand"; being a *cost* is what makes its
   "draw a card for each creature you control" a refill rather than a wash, and
   an empty hand is a legal payment, so it never gates activation.
+- `discard: { count, filter? }` — "Discard a card" (Yawgmoth, Thran
+  Physician), "Discard two cards" (Solphim), "Discard a creature card"
+  (Fauna Shaman: `filter: { type: "creature" }`). The player picks which, with
+  the ordinary `discard` decision, as the ability goes on the stack; with a
+  filter only the matching cards are offered (`eligible`, which only that
+  player sees). It gates activation on having `count` such cards besides the
+  source, and a hand with no more than that discards without asking.
 - `tapOthers: { count, filter, includeSelf? }` — tap *other* permanents you
   control (Gravespawn Sovereign's "Tap five untapped Zombies you control"), as
   opposed to `tap`, which taps the source. `includeSelf` lets the source be
@@ -2828,7 +2835,6 @@ Delete an entry in the same commit as the feature that retires it.
   `CardFilter` constrains each card independently; nothing relates one chosen
   card to another. (A plain two-destination split — Cultivate — *is* now
   expressible, via `search-library.restDestination`.)
-- `discard` as part of an **activated ability cost**.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 - **Divided damage and distributed counters** — "N damage divided as you
   choose among any number of targets" (Fury, Magma Opus), "distribute N

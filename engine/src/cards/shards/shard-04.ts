@@ -181,6 +181,7 @@ import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
 import _poolThrorsMap from "../pool/thrors-map.js";
 import _poolTigerClaws from "../pool/tiger-claws.js";
 import _poolTobiasAndrion from "../pool/tobias-andrion.js";
+import _poolTorturedExistence from "../pool/tortured-existence.js";
 import _poolToxicDeluge from "../pool/toxic-deluge.js";
 import _poolTritonWaverider from "../pool/triton-waverider.js";
 import _poolTrostaniThreeWhispers from "../pool/trostani-three-whispers.js";
@@ -390,6 +391,7 @@ const shard: CardShard = {
     _poolThrorsMap,
     _poolTigerClaws,
     _poolTobiasAndrion,
+    _poolTorturedExistence,
     _poolToxicDeluge,
     _poolTritonWaverider,
     _poolTrostaniThreeWhispers,

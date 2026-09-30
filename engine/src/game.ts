@@ -8248,6 +8248,12 @@ export class Game {
     ) {
       return `${player} does not have ${ability.cost.payLife} life to pay`;
     }
+    if (ability.cost.discard !== undefined) {
+      const { count, filter } = ability.cost.discard;
+      if (this.discardCandidates(player, filter, sourceId).length < count) {
+        return `${player} has too few cards in hand to pay ${def.name}'s cost`;
+      }
+    }
     if (ability.cost.removeCounter !== undefined) {
       const { kind, count } = ability.cost.removeCounter;
       if ((source.counters[kind] ?? 0) < count) {
@@ -8589,6 +8595,14 @@ export class Game {
       onStack: true,
     });
     this.announceTargeted(chosen, player, sourceId, false, abilityId);
+    // "Discard a card" in the cost: asked now, as a spell's additional
+    // discard is, before anyone gets priority (rule 602.2b).
+    const costDiscard = ability.cost.discard;
+    if (costDiscard !== undefined) {
+      this.withDecisionSource(sourceId, () => {
+        this.discardByEffect({ kind: "player", player }, costDiscard.count, false, costDiscard.filter);
+      });
+    }
     this.afterPlayerAction(player);
   }
 
@@ -8808,6 +8822,7 @@ export class Game {
           ability.cost.payEnergy !== undefined ||
           ability.cost.exileSelf === true ||
           ability.cost.discardHand === true ||
+          ability.cost.discard !== undefined ||
           ability.exhaust === true ||
           ability.powerUp === true
         ) {
@@ -18225,7 +18240,7 @@ export class Game {
    * smaller they just discard all of it; otherwise the game waits on their
    * `discard` action (they choose which — same decision shape as the
    * cleanup-step discard, distinguished by `fromEffect`). */
-  private discardByEffect(target: TargetRef, amount: number, random = false): void {
+  private discardByEffect(target: TargetRef, amount: number, random = false, filter?: CardFilter): void {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined || amount <= 0) return;
@@ -18245,17 +18260,18 @@ export class Game {
     // reaching its second opponent. Asking now would overwrite the first
     // player's question, so this one waits its turn — unless there's nothing
     // to ask: a hand no bigger than the count is discarded at once.
-    const trivial = this.state.zones.perPlayer[player].hand.length <= amount;
+    const trivial = this.discardCandidates(player, filter).length <= amount;
     if (!trivial && (this.state.awaiting !== null || this.state.pendingDiscards.length > 0)) {
       const from = this.state.decisionSource;
       this.state.pendingDiscards.push({
         player,
         count: amount,
         ...(from !== null ? { source: from } : {}),
+        ...(filter !== undefined ? { filter } : {}),
       });
       return;
     }
-    this.discardNow(player, amount);
+    this.discardNow(player, amount, filter);
   }
 
   /** Ask the next player queued in `pendingDiscards` (see `discardByEffect`).
@@ -18264,7 +18280,7 @@ export class Game {
   private promptNextDiscard(): void {
     const next = this.state.pendingDiscards.shift();
     if (next === undefined || this.state.players[next.player]?.hasLost === true) return;
-    this.discardNow(next.player, next.count);
+    this.discardNow(next.player, next.count, next.filter);
     if (this.state.awaiting !== null && next.source !== undefined) {
       this.state.decisionSource = next.source;
     }
@@ -18272,8 +18288,8 @@ export class Game {
 
   /** Discard `amount` cards from `player`'s hand: the whole hand at once if
    * that's all there is, else ask which. */
-  private discardNow(player: PlayerId, amount: number): void {
-    const hand = this.state.zones.perPlayer[player].hand;
+  private discardNow(player: PlayerId, amount: number, filter?: CardFilter): void {
+    const hand = this.discardCandidates(player, filter);
     if (hand.length <= amount) {
       const all = [...hand];
       this.withGraveyardEnterBatch(() => {
@@ -18284,7 +18300,24 @@ export class Game {
       }
       return;
     }
-    this.state.awaiting = { kind: "discard", player, count: amount, fromEffect: true };
+    this.state.awaiting = {
+      kind: "discard",
+      player,
+      count: amount,
+      fromEffect: true,
+      ...(filter !== undefined ? { eligible: hand } : {}),
+    };
+  }
+
+  /** The cards in `player`'s hand a discard may take: those matching
+   * `filter` (printed characteristics — layer effects don't reach a hand),
+   * never `except` (an ability's own source card). */
+  private discardCandidates(player: PlayerId, filter?: CardFilter, except?: ObjectId): ObjectId[] {
+    return this.state.zones.perPlayer[player].hand.filter(
+      (id) =>
+        id !== except &&
+        (filter === undefined || matchesFilter(this.state, this.registry, id, filter, { you: player })),
+    );
   }
 
   /**

@@ -1333,6 +1333,10 @@ export type AwaitingDecision =
        * after: an effect-discard just resumes the game, cleanup runs the rest
        * of the cleanup step. */
       readonly fromEffect?: boolean;
+      /** Only these cards may be discarded — a cost that names a kind of
+       * card ("Discard a creature card": Tortured Existence). Absent, any
+       * card in hand. */
+      readonly eligible?: readonly ObjectId[];
     }
   | {
       readonly kind: "choose-from-zone";
@@ -2381,6 +2385,9 @@ export interface GameState {
     readonly count: number;
     /** What ordered the discard — see `pendingSacrifices`' `source`. */
     readonly source?: DecisionSource;
+    /** Only cards matching this may go — see the `discard` decision's
+     * `eligible`. */
+    readonly filter?: CardFilter;
   }[];
   /**
    * Creatures put onto the battlefield attacking whose controller still owes

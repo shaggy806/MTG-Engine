@@ -395,4 +395,30 @@ export default {
     },
     bots: { bob: {}, carol: {}, dave: {} },
   },
+
+  DISCD: {
+    about:
+      "2p. Discard as an activation cost: Tortured Existence and Fauna Shaman want a creature " +
+      "card, so only the two creatures in alice's hand light up and a land can't be picked.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 3 },
+    battlefield: { alice: ["Tortured Existence", "Fauna Shaman"] },
+    hand: { alice: ["Grizzly Bears", "Hill Giant", "Forest", "Island"] },
+    setup(game) {
+      game.debugSpawn("Llanowar Elves", "alice", "graveyard");
+    },
+    bots: { bob: {} },
+  },
+
+  DISC4: {
+    about: "4p. DISCD's board for alice, in the quadrant layout.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 5, bob: 3, carol: 3, dave: 3 },
+    battlefield: { alice: ["Tortured Existence", "Fauna Shaman"] },
+    hand: { alice: ["Grizzly Bears", "Hill Giant", "Forest", "Island"] },
+    setup(game) {
+      game.debugSpawn("Llanowar Elves", "alice", "graveyard");
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 };

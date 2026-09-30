@@ -131,11 +131,20 @@ that one card is the reason the deck exists.
   `engine/data/sweep-3/B11.json`. The copy family (`decision:copy-new-targets`, now 30 across
   records) and Rooms, rebound, d20 rolls and "choose one that hasn't been chosen this turn"
   (Teval's Judgment, Gala Greeters) each block two or more.
+- **Discard as an activation cost is built (2026-09-29, `ability-discard-cost.test.ts`):**
+  `AbilityCost.discard: { count, filter? }`, paid with the `discard` decision (narrowed to the
+  matching cards for "Discard a creature card"; dev-rooms `DISCD`/`DISC4`). It unblocked
+  Tortured Existence, Fomori Vault, Yawgmoth, Fauna Shaman and Solphim. Still waiting on other
+  pieces: Nezahal (a flicker returning tapped), Key to the City and Ghostly Pilferer ("whenever
+  this becomes untapped"), Kozilek (a discard matching the target's mana value), Jaxis (blitz),
+  Chainer (a one-shot graveyard cast permission); and the other half of
+  `cost:choose-cards-as-cost`, exiling cards from your graveyard as a cost (Mines of Moria,
+  Varina).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,830 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,835 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`

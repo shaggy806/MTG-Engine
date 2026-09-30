@@ -131,6 +131,7 @@ import _poolShinenOfFlightsWings from "../pool/shinen-of-flights-wings.js";
 import _poolSilentAttendant from "../pool/silent-attendant.js";
 import _poolSkyRuinDrake from "../pool/sky-ruin-drake.js";
 import _poolSlinkingSerpent from "../pool/slinking-serpent.js";
+import _poolSolphimMayhemDominus from "../pool/solphim-mayhem-dominus.js";
 import _poolSpikedBaloth from "../pool/spiked-baloth.js";
 import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
 import _poolStandFirm from "../pool/stand-firm.js";
@@ -303,6 +304,7 @@ const shard: CardShard = {
     _poolSilentAttendant,
     _poolSkyRuinDrake,
     _poolSlinkingSerpent,
+    _poolSolphimMayhemDominus,
     _poolSpikedBaloth,
     _poolStampedingScurryfoot,
     _poolStandFirm,

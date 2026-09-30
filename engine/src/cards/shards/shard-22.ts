@@ -188,6 +188,7 @@ import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
+import _poolYawgmothThranPhysician from "../pool/yawgmoth-thran-physician.js";
 import _tokensDwarfToken from "../tokens/dwarf-token.js";
 import _tokensLifelinkCatToken from "../tokens/lifelink-cat-token.js";
 import _tokensPhobos from "../tokens/phobos.js";
@@ -380,6 +381,7 @@ const shard: CardShard = {
     _poolWydwenTheBitingGale,
     _poolYargleAndMultani,
     _poolYargleGluttonOfUrborg,
+    _poolYawgmothThranPhysician,
   ],
   tokens: [
     _tokensDwarfToken,

@@ -58,6 +58,7 @@ import _poolEternalSkylord from "../pool/eternal-skylord.js";
 import _poolExoticOrchard from "../pool/exotic-orchard.js";
 import _poolExplore from "../pool/explore.js";
 import _poolExplosiveShot from "../pool/explosive-shot.js";
+import _poolFaunaShaman from "../pool/fauna-shaman.js";
 import _poolFelidarCub from "../pool/felidar-cub.js";
 import _poolFlubsTheFool from "../pool/flubs-the-fool.js";
 import _poolFriendlyTeddy from "../pool/friendly-teddy.js";
@@ -249,6 +250,7 @@ const shard: CardShard = {
     _poolExoticOrchard,
     _poolExplore,
     _poolExplosiveShot,
+    _poolFaunaShaman,
     _poolFelidarCub,
     _poolFlubsTheFool,
     _poolFriendlyTeddy,

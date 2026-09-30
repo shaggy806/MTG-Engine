@@ -35,9 +35,9 @@ export const discard = defineDecision({
     {
       kind: "discard",
       count: awaiting.count,
-      // The whole hand is offered; unlike most kinds there is no narrower
-      // `eligible` list, because any card in hand may be discarded.
-      from: [...ctx.state.zones.perPlayer[player].hand],
+      // The whole hand, unless a cost names a kind of card ("Discard a
+      // creature card") — then only those.
+      from: [...(awaiting.eligible ?? ctx.state.zones.perPlayer[player].hand)],
     },
   ],
 
@@ -62,7 +62,10 @@ export const discard = defineDecision({
         cards,
         ctx.state.zones.perPlayer[player].hand,
         (id) => `${player} tried to discard ${id}, not in hand`,
-      )
+      ) ??
+      (awaiting.eligible === undefined
+        ? null
+        : subsetOf(cards, awaiting.eligible, (id) => `${id} can't be discarded to pay this cost`))
     );
   },
 
@@ -72,7 +75,7 @@ export const discard = defineDecision({
   },
 
   ask: (controller, view, awaiting, player): Action => {
-    const hand = view.state.zones.perPlayer[player].hand.map((id) => view.state.objects[id]);
+    const hand = (awaiting.eligible ?? view.state.zones.perPlayer[player].hand).map((id) => view.state.objects[id]);
     return { type: "discard", player, cards: controller.chooseDiscards(hand, awaiting.count, view) };
   },
 

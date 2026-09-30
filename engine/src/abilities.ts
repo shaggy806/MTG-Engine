@@ -56,6 +56,15 @@ export interface AbilityCost {
    * a legal payment, which is why this never gates activation. */
   readonly discardHand?: boolean;
   /**
+   * Discard `count` cards, matching `filter` if given, as part of the cost —
+   * "{B}{B}, Discard a card: Proliferate" (Yawgmoth), "Discard a creature
+   * card" (Fauna Shaman, Tortured Existence). The player picks which, with
+   * the ordinary `discard` decision, as the ability goes on the stack (the
+   * way a spell's `additionalCost.discard` is paid); the source itself never
+   * counts. Gates activation on having enough such cards in hand.
+   */
+  readonly discard?: { readonly count: number; readonly filter?: CardFilter };
+  /**
    * Tap *other* permanents you control as part of the cost — Gravespawn
    * Sovereign's "Tap five untapped Zombies you control". Distinct from
    * `tap`, which taps the source itself.

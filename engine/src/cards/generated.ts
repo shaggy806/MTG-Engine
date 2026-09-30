@@ -1739,6 +1739,7 @@ import _poolFateUnraveler from "./pool/fate-unraveler.js";
 import _poolFatefulDiscovery from "./pool/fateful-discovery.js";
 import _poolFatefulEnd from "./pool/fateful-end.js";
 import _poolFathomFleetFirebrand from "./pool/fathom-fleet-firebrand.js";
+import _poolFaunaShaman from "./pool/fauna-shaman.js";
 import _poolFavorableWinds from "./pool/favorable-winds.js";
 import _poolFavoredOfIroas from "./pool/favored-of-iroas.js";
 import _poolFearOfSurveillance from "./pool/fear-of-surveillance.js";
@@ -1890,6 +1891,7 @@ import _poolFog from "./pool/fog.js";
 import _poolFoggyBottomSwamp from "./pool/foggy-bottom-swamp.js";
 import _poolFolkOfThePines from "./pool/folk-of-the-pines.js";
 import _poolFomoriNomad from "./pool/fomori-nomad.js";
+import _poolFomoriVault from "./pool/fomori-vault.js";
 import _poolFontOfFertility from "./pool/font-of-fertility.js";
 import _poolFontOfFortunes from "./pool/font-of-fortunes.js";
 import _poolFontOfVigor from "./pool/font-of-vigor.js";
@@ -4742,6 +4744,7 @@ import _poolSolemnOffering from "./pool/solemn-offering.js";
 import _poolSolemnSimulacrum from "./pool/solemn-simulacrum.js";
 import _poolSolidarity from "./pool/solidarity.js";
 import _poolSoliton from "./pool/soliton.js";
+import _poolSolphimMayhemDominus from "./pool/solphim-mayhem-dominus.js";
 import _poolSolveTheEquation from "./pool/solve-the-equation.js";
 import _poolSomberwaldDryad from "./pool/somberwald-dryad.js";
 import _poolSomnomancer from "./pool/somnomancer.js";
@@ -5384,6 +5387,7 @@ import _poolTormentedAngel from "./pool/tormented-angel.js";
 import _poolTorporDust from "./pool/torpor-dust.js";
 import _poolTorstenVonUrsus from "./pool/torsten-von-ursus.js";
 import _poolTortoiseFormation from "./pool/tortoise-formation.js";
+import _poolTorturedExistence from "./pool/tortured-existence.js";
 import _poolToskiBearerOfSecrets from "./pool/toski-bearer-of-secrets.js";
 import _poolTotemGuideHartebeest from "./pool/totem-guide-hartebeest.js";
 import _poolTotemSpeaker from "./pool/totem-speaker.js";
@@ -6029,6 +6033,7 @@ import _poolYavimayaCradleOfGrowth from "./pool/yavimaya-cradle-of-growth.js";
 import _poolYavimayaHollow from "./pool/yavimaya-hollow.js";
 import _poolYavimayaSapherd from "./pool/yavimaya-sapherd.js";
 import _poolYavimayaWurm from "./pool/yavimaya-wurm.js";
+import _poolYawgmothThranPhysician from "./pool/yawgmoth-thran-physician.js";
 import _poolYawningFissure from "./pool/yawning-fissure.js";
 import _poolYellowScarvesTroops from "./pool/yellow-scarves-troops.js";
 import _poolYevasForcemage from "./pool/yevas-forcemage.js";
@@ -7976,6 +7981,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFatefulDiscovery,
   _poolFatefulEnd,
   _poolFathomFleetFirebrand,
+  _poolFaunaShaman,
   _poolFavorableWinds,
   _poolFavoredOfIroas,
   _poolFearOfSurveillance,
@@ -8127,6 +8133,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFoggyBottomSwamp,
   _poolFolkOfThePines,
   _poolFomoriNomad,
+  _poolFomoriVault,
   _poolFontOfFertility,
   _poolFontOfFortunes,
   _poolFontOfVigor,
@@ -10979,6 +10986,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSolemnSimulacrum,
   _poolSolidarity,
   _poolSoliton,
+  _poolSolphimMayhemDominus,
   _poolSolveTheEquation,
   _poolSomberwaldDryad,
   _poolSomnomancer,
@@ -11621,6 +11629,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTorporDust,
   _poolTorstenVonUrsus,
   _poolTortoiseFormation,
+  _poolTorturedExistence,
   _poolToskiBearerOfSecrets,
   _poolTotemGuideHartebeest,
   _poolTotemSpeaker,
@@ -12266,6 +12275,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolYavimayaHollow,
   _poolYavimayaSapherd,
   _poolYavimayaWurm,
+  _poolYawgmothThranPhysician,
   _poolYawningFissure,
   _poolYellowScarvesTroops,
   _poolYevasForcemage,

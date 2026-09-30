@@ -1645,6 +1645,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
     (id: ObjectId) => {
       if (mode === 'discard') {
         if (!discardAction) return
+        // A cost can name a kind of card ("Discard a creature card"): only
+        // the offered ones can be picked.
+        if (!discardAction.from.includes(id)) return
         setDiscardPicks((cur) => {
           if (cur.includes(id)) return cur.filter((x) => x !== id)
           if (cur.length >= discardAction.count) return cur

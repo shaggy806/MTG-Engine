@@ -59,6 +59,7 @@ import _poolExclusionMage from "../pool/exclusion-mage.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
 import _poolFiskTower from "../pool/fisk-tower.js";
+import _poolFomoriVault from "../pool/fomori-vault.js";
 import _poolFrogButler from "../pool/frog-butler.js";
 import _poolFrontierSiege from "../pool/frontier-siege.js";
 import _poolFuneralCharm from "../pool/funeral-charm.js";
@@ -256,6 +257,7 @@ const shard: CardShard = {
     _poolFiligreeFamiliar,
     _poolFirescreamer,
     _poolFiskTower,
+    _poolFomoriVault,
     _poolFrogButler,
     _poolFrontierSiege,
     _poolFuneralCharm,

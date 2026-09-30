@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1830 already implemented / 3170 missing (marks refreshed 2026-09-30)
+1835 already implemented / 3165 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -828,7 +828,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   832  Bloodthirsty Conqueror                   {3}{B}{B}        Creature — Vampire Knight
 [x]   833  Ledger Shredder                          {1}{U}           Creature — Bird Advisor
 [x]   834  Aesi, Tyrant of Gyre Strait              {4}{G}{U}        Legendary Creature — Serpent
-[ ]   835  Yawgmoth, Thran Physician                {2}{B}{B}        Legendary Creature — Human Cleric
+[x]   835  Yawgmoth, Thran Physician                {2}{B}{B}        Legendary Creature — Human Cleric
 [x]   836  Urza's Tower                             {0}              Land — Urza's Tower
 [x]   837  Bitter Triumph                           {1}{B}           Instant
 [x]   838  Blightstep Pathway // Searstep Pathway   {0}              Land // Land
@@ -882,7 +882,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   886  Descent into Avernus                     {2}{R}           Enchantment
 [x]   887  Serum Visions                            {U}              Sorcery
 [x]   888  Disrupt Decorum                          {2}{R}{R}        Sorcery
-[ ]   889  Solphim, Mayhem Dominus                  {2}{R}{R}        Legendary Creature — Phyrexian Horror
+[x]   889  Solphim, Mayhem Dominus                  {2}{R}{R}        Legendary Creature — Phyrexian Horror
 [ ]   890  Nature's Rhythm                          {X}{G}{G}        Sorcery
 [x]   891  Temur Ascendancy                         {G}{U}{R}        Enchantment
 [ ]   892  Grim Hireling                            {3}{B}           Creature — Tiefling Rogue
@@ -1472,7 +1472,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1479  Kessig Flamebreather                     {1}{R}           Creature — Human Shaman
 [x]  1480  Prosperous Innkeeper                     {1}{G}           Creature — Halfling Citizen
 [x]  1481  Monumental Henge                         {0}              Land
-[ ]  1482  Fauna Shaman                             {1}{G}           Creature — Elf Shaman
+[x]  1482  Fauna Shaman                             {1}{G}           Creature — Elf Shaman
 [x]  1483  Diamond Pick-Axe                         {R}              Artifact — Equipment
 [ ]  1484  Deadeye Navigator                        {4}{U}{U}        Creature — Spirit
 [x]  1485  Sunbaked Canyon                          {0}              Land
@@ -1536,7 +1536,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1543  Creeping Bloodsucker                     {1}{B}           Creature — Vampire
 [x]  1544  Pawn of Ulamog                           {1}{B}{B}        Creature — Vampire Shaman
 [x]  1545  Hydroid Krasis                           {X}{G}{U}        Creature — Jellyfish Hydra Beast
-[ ]  1546  Tortured Existence                       {B}              Enchantment
+[x]  1546  Tortured Existence                       {B}              Enchantment
 [x]  1547  Rumor Gatherer                           {1}{W}{W}        Creature — Elf Wizard
 [x]  1548  Dragonmaster Outcast                     {R}              Creature — Human Shaman
 [ ]  1549  Chandra, Torch of Defiance               {2}{R}{R}        Legendary Planeswalker — Chandra
@@ -1597,7 +1597,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1604  Seize the Day                            {3}{R}           Sorcery
 [ ]  1605  Maelstrom Wanderer                       {5}{G}{U}{R}     Legendary Creature — Elemental
 [x]  1606  Nurturing Peatland                       {0}              Land
-[ ]  1607  Fomori Vault                             {0}              Land
+[x]  1607  Fomori Vault                             {0}              Land
 [x]  1608  End-Raze Forerunners                     {5}{G}{G}{G}     Creature — Boar
 [ ]  1609  Thran Power Suit                         {2}              Artifact — Equipment
 [x]  1610  Electrostatic Field                      {1}{R}           Creature — Wall
