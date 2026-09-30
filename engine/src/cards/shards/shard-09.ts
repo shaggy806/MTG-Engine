@@ -120,6 +120,7 @@ import _poolOgreArsonist from "../pool/ogre-arsonist.js";
 import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
 import _poolParapetWatchers from "../pool/parapet-watchers.js";
 import _poolPawnOfUlamog from "../pool/pawn-of-ulamog.js";
+import _poolPerplexingTest from "../pool/perplexing-test.js";
 import _poolPhyrexianDebaser from "../pool/phyrexian-debaser.js";
 import _poolPhytoburst from "../pool/phytoburst.js";
 import _poolPlateau from "../pool/plateau.js";
@@ -323,6 +324,7 @@ const shard: CardShard = {
     _poolOtherworldlyGaze,
     _poolParapetWatchers,
     _poolPawnOfUlamog,
+    _poolPerplexingTest,
     _poolPhyrexianDebaser,
     _poolPhytoburst,
     _poolPlateau,

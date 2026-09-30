@@ -223,6 +223,7 @@ import _poolZetalpaPrimalDawn from "../pool/zetalpa-primal-dawn.js";
 import _poolZombieMaster from "../pool/zombie-master.js";
 import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
+import _tokensGreenElementalToken22 from "../tokens/green-elemental-token-2-2.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
 import _tokensOgreToken from "../tokens/ogre-token.js";
 import _tokensSpiderToken22Reach from "../tokens/spider-token-2-2-reach.js";
@@ -452,6 +453,7 @@ const shard: CardShard = {
   tokens: [
     _tokens22BlackBirdToken,
     _tokensElementalToken,
+    _tokensGreenElementalToken22,
     _tokensNecronWarriorToken,
     _tokensOgreToken,
     _tokensSpiderToken22Reach,

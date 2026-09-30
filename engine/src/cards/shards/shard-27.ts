@@ -89,6 +89,7 @@ import _poolJunkDiver from "../pool/junk-diver.js";
 import _poolKelinoreBat from "../pool/kelinore-bat.js";
 import _poolKillMaimBurn from "../pool/kill-maim-burn.js";
 import _poolKoboldTaskmaster from "../pool/kobold-taskmaster.js";
+import _poolKomaWorldEater from "../pool/koma-world-eater.js";
 import _poolKoskunKeep from "../pool/koskun-keep.js";
 import _poolKyoshiWarriors from "../pool/kyoshi-warriors.js";
 import _poolLathnuSailback from "../pool/lathnu-sailback.js";
@@ -191,6 +192,7 @@ import _poolWitheringTorment from "../pool/withering-torment.js";
 import _poolWoodlandCemetery from "../pool/woodland-cemetery.js";
 import _poolWrapInVigor from "../pool/wrap-in-vigor.js";
 import _poolYotianMedic from "../pool/yotian-medic.js";
+import _poolZendikarsRoil from "../pool/zendikars-roil.js";
 import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
 import _tokensHumanToken from "../tokens/human-token.js";
@@ -284,6 +286,7 @@ const shard: CardShard = {
     _poolKelinoreBat,
     _poolKillMaimBurn,
     _poolKoboldTaskmaster,
+    _poolKomaWorldEater,
     _poolKoskunKeep,
     _poolKyoshiWarriors,
     _poolLathnuSailback,
@@ -386,6 +389,7 @@ const shard: CardShard = {
     _poolWoodlandCemetery,
     _poolWrapInVigor,
     _poolYotianMedic,
+    _poolZendikarsRoil,
     _poolZiatorasProvingGround,
     _poolZodiacRabbit,
   ],

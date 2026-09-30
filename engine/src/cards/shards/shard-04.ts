@@ -61,6 +61,7 @@ import _poolExcaliburSwordOfEden from "../pool/excalibur-sword-of-eden.js";
 import _poolFabricate from "../pool/fabricate.js";
 import _poolFatefulDiscovery from "../pool/fateful-discovery.js";
 import _poolFelotharTheSteadfast from "../pool/felothar-the-steadfast.js";
+import _poolFierceEmpath from "../pool/fierce-empath.js";
 import _poolFiligreeCrawler from "../pool/filigree-crawler.js";
 import _poolFlameLash from "../pool/flame-lash.js";
 import _poolFlankingTroops from "../pool/flanking-troops.js";
@@ -85,6 +86,7 @@ import _poolHealerOfThePride from "../pool/healer-of-the-pride.js";
 import _poolHeartwoodTreefolk from "../pool/heartwood-treefolk.js";
 import _poolHerdGnarr from "../pool/herd-gnarr.js";
 import _poolHerosDownfall from "../pool/heros-downfall.js";
+import _poolHornOfGreed from "../pool/horn-of-greed.js";
 import _poolHornetCobra from "../pool/hornet-cobra.js";
 import _poolHulkingGoblin from "../pool/hulking-goblin.js";
 import _poolHumongulus from "../pool/humongulus.js";
@@ -149,6 +151,7 @@ import _poolRetreatToHagra from "../pool/retreat-to-hagra.js";
 import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
+import _poolRubyDaringTracker from "../pool/ruby-daring-tracker.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
 import _poolSanctify from "../pool/sanctify.js";
 import _poolSarkhansTriumph from "../pool/sarkhans-triumph.js";
@@ -274,6 +277,7 @@ const shard: CardShard = {
     _poolFabricate,
     _poolFatefulDiscovery,
     _poolFelotharTheSteadfast,
+    _poolFierceEmpath,
     _poolFiligreeCrawler,
     _poolFlameLash,
     _poolFlankingTroops,
@@ -298,6 +302,7 @@ const shard: CardShard = {
     _poolHeartwoodTreefolk,
     _poolHerdGnarr,
     _poolHerosDownfall,
+    _poolHornOfGreed,
     _poolHornetCobra,
     _poolHulkingGoblin,
     _poolHumongulus,
@@ -362,6 +367,7 @@ const shard: CardShard = {
     _poolRevitalizingRepast,
     _poolRevivingDose,
     _poolRidgeRannet,
+    _poolRubyDaringTracker,
     _poolRuneSealedWall,
     _poolSanctify,
     _poolSarkhansTriumph,

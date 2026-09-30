@@ -7,6 +7,7 @@ import _poolAeronautsWings from "../pool/aeronauts-wings.js";
 import _poolAgeGracedChapel from "../pool/age-graced-chapel.js";
 import _poolAjanisWelcome from "../pool/ajanis-welcome.js";
 import _poolAntManScottLang from "../pool/ant-man-scott-lang.js";
+import _poolArborealGrazer from "../pool/arboreal-grazer.js";
 import _poolArchaeomancer from "../pool/archaeomancer.js";
 import _poolArchfiendOfIfnir from "../pool/archfiend-of-ifnir.js";
 import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
@@ -180,6 +181,7 @@ import _poolToucanPuffin from "../pool/toucan-puffin.js";
 import _poolTrainedJackal from "../pool/trained-jackal.js";
 import _poolTranceKujaFateDefied from "../pool/trance-kuja-fate-defied.js";
 import _poolTreasureTrove from "../pool/treasure-trove.js";
+import _poolTributeMage from "../pool/tribute-mage.js";
 import _poolTwinflame from "../pool/twinflame.js";
 import _poolUmezawasCharm from "../pool/umezawas-charm.js";
 import _poolUndermine from "../pool/undermine.js";
@@ -210,6 +212,7 @@ const shard: CardShard = {
     _poolAgeGracedChapel,
     _poolAjanisWelcome,
     _poolAntManScottLang,
+    _poolArborealGrazer,
     _poolArchaeomancer,
     _poolArchfiendOfIfnir,
     _poolArchonOfRedemption,
@@ -383,6 +386,7 @@ const shard: CardShard = {
     _poolTrainedJackal,
     _poolTranceKujaFateDefied,
     _poolTreasureTrove,
+    _poolTributeMage,
     _poolTwinflame,
     _poolUmezawasCharm,
     _poolUndermine,

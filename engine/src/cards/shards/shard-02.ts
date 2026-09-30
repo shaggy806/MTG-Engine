@@ -16,6 +16,7 @@ import _poolAvenEnvoy from "../pool/aven-envoy.js";
 import _poolAxebaneStag from "../pool/axebane-stag.js";
 import _poolBalaGedRecovery from "../pool/bala-ged-recovery.js";
 import _poolBanishingLight from "../pool/banishing-light.js";
+import _poolBaskingBroodscale from "../pool/basking-broodscale.js";
 import _poolBastionMastodon from "../pool/bastion-mastodon.js";
 import _poolBatterhorn from "../pool/batterhorn.js";
 import _poolBeaconHawk from "../pool/beacon-hawk.js";
@@ -219,6 +220,7 @@ const shard: CardShard = {
     _poolAxebaneStag,
     _poolBalaGedRecovery,
     _poolBanishingLight,
+    _poolBaskingBroodscale,
     _poolBastionMastodon,
     _poolBatterhorn,
     _poolBeaconHawk,

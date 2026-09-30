@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1941 already implemented / 3059 missing (marks refreshed 2026-09-30)
+1966 already implemented / 3034 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2107,61 +2107,61 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2114  Cityscape Leveler                        {8}              Artifact Creature — Construct
 [ ]  2115  Kozilek's Command                        {X}{C}{C}        Kindred Instant — Eldrazi
 [ ]  2116  Oko, Thief of Crowns                     {1}{G}{U}        Legendary Planeswalker — Oko
-[ ]  2117  Perplexing Test                          {3}{U}{U}        Instant
-[ ]  2118  Balmor, Battlemage Captain               {U}{R}           Legendary Creature — Bird Wizard
-[ ]  2119  Basking Broodscale                       {1}{G}           Creature — Eldrazi Lizard
+[x]  2117  Perplexing Test                          {3}{U}{U}        Instant
+[x]  2118  Balmor, Battlemage Captain               {U}{R}           Legendary Creature — Bird Wizard
+[x]  2119  Basking Broodscale                       {1}{G}           Creature — Eldrazi Lizard
 [x]  2120  The Mindskinner                          {U}{U}{U}        Legendary Enchantment Creature — Nightmare
 [ ]  2121  Masked Vandal                            {1}{G}           Creature — Shapeshifter
-[ ]  2122  Reckless Impulse                         {1}{R}           Sorcery
-[ ]  2123  Universal Automaton                      {1}              Artifact Creature — Shapeshifter
+[x]  2122  Reckless Impulse                         {1}{R}           Sorcery
+[x]  2123  Universal Automaton                      {1}              Artifact Creature — Shapeshifter
 [ ]  2124  Hydra's Growth                           {2}{G}           Enchantment — Aura
 [ ]  2125  Selvala, Explorer Returned               {1}{G}{W}        Legendary Creature — Elf Scout
 [ ]  2126  Crackling Doom                           {R}{W}{B}        Instant
 [x]  2127  Agent of Treachery                       {5}{U}{U}        Creature — Human Rogue
-[ ]  2128  Diregraf Colossus                        {2}{B}           Creature — Zombie Giant
-[ ]  2129  Horn of Greed                            {3}              Artifact
+[x]  2128  Diregraf Colossus                        {2}{B}           Creature — Zombie Giant
+[x]  2129  Horn of Greed                            {3}              Artifact
 [ ]  2130  Emeria Shepherd                          {5}{W}{W}        Creature — Angel
 [ ]  2131  Food Chain                               {2}{G}           Enchantment
-[ ]  2132  Koma, World-Eater                        {3}{G}{G}{U}{U}  Legendary Creature — Serpent
-[ ]  2133  Haunted Cloak                            {3}              Artifact — Equipment
+[x]  2132  Koma, World-Eater                        {3}{G}{G}{U}{U}  Legendary Creature — Serpent
+[x]  2133  Haunted Cloak                            {3}              Artifact — Equipment
 [ ]  2134  Ancient Gold Dragon                      {5}{W}{W}        Creature — Elder Dragon
 [ ]  2135  Minas Morgul, Dark Fortress              {0}              Legendary Land
-[ ]  2136  Fierce Empath                            {2}{G}           Creature — Elf
-[ ]  2137  Wrenn's Resolve                          {1}{R}           Sorcery
-[ ]  2138  Bone Miser                               {4}{B}           Creature — Zombie Wizard
+[x]  2136  Fierce Empath                            {2}{G}           Creature — Elf
+[x]  2137  Wrenn's Resolve                          {1}{R}           Sorcery
+[x]  2138  Bone Miser                               {4}{B}           Creature — Zombie Wizard
 [ ]  2139  Multiversal Passage                      {0}              Land
 [ ]  2140  Entity Tracker                           {2}{U}           Creature — Human Scout
-[ ]  2141  Zendikar's Roil                          {3}{G}{G}        Enchantment
+[x]  2141  Zendikar's Roil                          {3}{G}{G}        Enchantment
 [ ]  2142  Plague Myr                               {2}              Artifact Creature — Phyrexian Myr
 [ ]  2143  Liliana of the Dark Realms               {2}{B}{B}        Legendary Planeswalker — Liliana
 [ ]  2144  Galadhrim Ambush                         {3}{G}           Instant
-[ ]  2145  Trading Post                             {4}              Artifact
+[x]  2145  Trading Post                             {4}              Artifact
 [x]  2146  Overkill                                 {2}{B}           Instant
 [ ]  2147  Ainok Strike Leader                      {1}{W}           Creature — Dog Warrior
 [x]  2148  Kwain, Itinerant Meddler                 {W}{U}           Legendary Creature — Rabbit Wizard
-[ ]  2149  Rhonas's Monument                        {3}              Legendary Artifact
-[ ]  2150  Mana Tithe                               {W}              Instant
+[x]  2149  Rhonas's Monument                        {3}              Legendary Artifact
+[x]  2150  Mana Tithe                               {W}              Instant
 [ ]  2151  Primal Amulet // Primal Wellspring       {4}              Artifact // Land
 [ ]  2152  Rise of the Eldrazi                      {9}{C}{C}{C}     Sorcery
-[ ]  2153  Tribute Mage                             {2}{U}           Creature — Human Wizard
+[x]  2153  Tribute Mage                             {2}{U}           Creature — Human Wizard
 [ ]  2154  Hellkite Charger                         {4}{R}{R}        Creature — Dragon
-[ ]  2155  Aerith Gainsborough                      {2}{W}           Legendary Creature — Human Cleric
+[x]  2155  Aerith Gainsborough                      {2}{W}           Legendary Creature — Human Cleric
 [ ]  2156  Jacked Rabbit                            {X}{1}{W}        Creature — Rabbit Warrior
 [ ]  2157  Risen Reef                               {1}{G}{U}        Creature — Elemental
 [ ]  2158  Thunderclap Drake                        {1}{U}           Creature — Drake
 [ ]  2159  Dragonfire Blade                         {1}              Artifact — Equipment
-[ ]  2160  Ruby, Daring Tracker                     {R}{G}           Legendary Creature — Human Scout
+[x]  2160  Ruby, Daring Tracker                     {R}{G}           Legendary Creature — Human Scout
 [x]  2161  Timeless Lotus                           {5}              Legendary Artifact
 [x]  2162  Gruul Guildgate                          {0}              Land — Gate
 [ ]  2163  Brudiclad, Telchor Engineer              {4}{U}{R}        Legendary Artifact Creature — Phyrexian Artificer
 [ ]  2164  Glimpse the Impossible                   {2}{R}           Sorcery
-[ ]  2165  Font of Mythos                           {4}              Artifact
+[x]  2165  Font of Mythos                           {4}              Artifact
 [x]  2166  Grinding Station                         {2}              Artifact
-[ ]  2167  Master of Etherium                       {2}{U}           Artifact Creature — Vedalken Wizard
+[x]  2167  Master of Etherium                       {2}{U}           Artifact Creature — Vedalken Wizard
 [ ]  2168  Kitsa, Otterball Elite                   {1}{U}           Legendary Creature — Otter Wizard
 [x]  2169  Will of the Jeskai                       {3}{R}           Sorcery
-[ ]  2170  Arboreal Grazer                          {G}              Creature — Sloth Beast
-[ ]  2171  Grapple with the Past                    {1}{G}           Instant
+[x]  2170  Arboreal Grazer                          {G}              Creature — Sloth Beast
+[x]  2171  Grapple with the Past                    {1}{G}           Instant
 [ ]  2172  Mina and Denn, Wildborn                  {2}{R}{G}        Legendary Creature — Elf Ally
 [ ]  2173  Klauth, Unrivaled Ancient                {5}{R}{G}        Legendary Creature — Dragon
 [x]  2174  Prosper, Tome-Bound                      {2}{B}{R}        Legendary Creature — Tiefling Warlock
@@ -2169,12 +2169,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2176  The Key to the Vault                     {1}{U}           Legendary Artifact — Equipment
 [ ]  2177  Monstrous Vortex                         {3}{G}           Enchantment
 [x]  2178  Contaminated Aquifer                     {0}              Land — Island Swamp
-[ ]  2179  Verdant Sun's Avatar                     {5}{G}{G}        Creature — Dinosaur Avatar
+[x]  2179  Verdant Sun's Avatar                     {5}{G}{G}        Creature — Dinosaur Avatar
 [x]  2180  Primeval Bounty                          {5}{G}           Enchantment
 [ ]  2181  Lier, Disciple of the Drowned            {3}{U}{U}        Legendary Creature — Human Wizard
 [x]  2182  Desolate Lighthouse                      {0}              Land
 [ ]  2183  Jidoor, Aristocratic Capital // Overture {4}{U}{U}        Land — Town // Sorcery — Adventure
-[ ]  2184  Aura of Silence                          {1}{W}{W}        Enchantment
+[x]  2184  Aura of Silence                          {1}{W}{W}        Enchantment
 [ ]  2185  Flare of Cultivation                     {1}{G}{G}        Sorcery
 [ ]  2186  Archangel of Tithes                      {1}{W}{W}{W}     Creature — Angel
 [x]  2187  Niv-Mizzet, Visionary                    {4}{U}{R}        Legendary Creature — Dragon Wizard

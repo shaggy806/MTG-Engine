@@ -67,6 +67,7 @@ import _poolFetidHeath from "../pool/fetid-heath.js";
 import _poolFlameJavelin from "../pool/flame-javelin.js";
 import _poolFlameRift from "../pool/flame-rift.js";
 import _poolFog from "../pool/fog.js";
+import _poolFontOfMythos from "../pool/font-of-mythos.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
@@ -260,6 +261,7 @@ const shard: CardShard = {
     _poolFlameJavelin,
     _poolFlameRift,
     _poolFog,
+    _poolFontOfMythos,
     _poolFoundryInspector,
     _poolFoxfireOak,
     _poolFungalInfection,

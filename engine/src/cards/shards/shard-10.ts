@@ -18,6 +18,7 @@ import _poolAysenAbbey from "../pool/aysen-abbey.js";
 import _poolBadlands from "../pool/badlands.js";
 import _poolBalduvianBears from "../pool/balduvian-bears.js";
 import _poolBalefireDragon from "../pool/balefire-dragon.js";
+import _poolBalmorBattlemageCaptain from "../pool/balmor-battlemage-captain.js";
 import _poolBasrisSolidarity from "../pool/basris-solidarity.js";
 import _poolBattlefieldForge from "../pool/battlefield-forge.js";
 import _poolBidentOfThassa from "../pool/bident-of-thassa.js";
@@ -219,6 +220,7 @@ import _poolZarichiTiger from "../pool/zarichi-tiger.js";
 import _poolZulaportCutthroat from "../pool/zulaport-cutthroat.js";
 import _tokens11BlueBirdToken from "../tokens/1-1-blue-bird-token.js";
 import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
+import _tokensKomasCoil from "../tokens/komas-coil.js";
 
 const shard: CardShard = {
   pool: [
@@ -237,6 +239,7 @@ const shard: CardShard = {
     _poolBadlands,
     _poolBalduvianBears,
     _poolBalefireDragon,
+    _poolBalmorBattlemageCaptain,
     _poolBasrisSolidarity,
     _poolBattlefieldForge,
     _poolBidentOfThassa,
@@ -440,6 +443,7 @@ const shard: CardShard = {
   tokens: [
     _tokens11BlueBirdToken,
     _tokensDragonToken66,
+    _tokensKomasCoil,
   ],
 };
 

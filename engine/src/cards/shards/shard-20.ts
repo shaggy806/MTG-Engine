@@ -180,6 +180,7 @@ import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTormodsCrypt from "../pool/tormods-crypt.js";
 import _poolTrainingCenter from "../pool/training-center.js";
 import _poolUndeadAugur from "../pool/undead-augur.js";
+import _poolVerdantSunsAvatar from "../pool/verdant-suns-avatar.js";
 import _poolViridianAcolyte from "../pool/viridian-acolyte.js";
 import _poolViridianZealot from "../pool/viridian-zealot.js";
 import _poolVoraciousHydra from "../pool/voracious-hydra.js";
@@ -374,6 +375,7 @@ const shard: CardShard = {
     _poolTormodsCrypt,
     _poolTrainingCenter,
     _poolUndeadAugur,
+    _poolVerdantSunsAvatar,
     _poolViridianAcolyte,
     _poolViridianZealot,
     _poolVoraciousHydra,

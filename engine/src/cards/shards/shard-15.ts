@@ -21,6 +21,7 @@ import _poolBloodMoney from "../pool/blood-money.js";
 import _poolBloodtallowCandle from "../pool/bloodtallow-candle.js";
 import _poolBoltwave from "../pool/boltwave.js";
 import _poolBondBeetle from "../pool/bond-beetle.js";
+import _poolBoneMiser from "../pool/bone-miser.js";
 import _poolBrainWeevil from "../pool/brain-weevil.js";
 import _poolBrenardGingerSculptor from "../pool/brenard-ginger-sculptor.js";
 import _poolCanopyBaloth from "../pool/canopy-baloth.js";
@@ -224,6 +225,7 @@ const shard: CardShard = {
     _poolBloodtallowCandle,
     _poolBoltwave,
     _poolBondBeetle,
+    _poolBoneMiser,
     _poolBrainWeevil,
     _poolBrenardGingerSculptor,
     _poolCanopyBaloth,

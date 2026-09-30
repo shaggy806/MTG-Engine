@@ -164,15 +164,21 @@ that one card is the reason the deck exists.
   were recorded without a close check (their `why` says so): Generous Plunderer, Vengeful
   Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa — look again before building for
   them.
+- **Top-5000 batch 16 (2026-09-29) triaged ranks 2112–2184:** 25 authored (Koma, World-Eater,
+  Master of Etherium, Mana Tithe, Trading Post, Aerith Gainsborough, Bone Miser and 19 more —
+  `top5000-batch-16.test.ts`); 35 blocked, each in `engine/data/sweep-3/B16.json`. Recurring
+  across B9–B16 and cheap: "can't cast more than one spell each turn" (Archon of Emeria,
+  Deafening Silence), infect (Plague Myr, Inkmoth Nexus) and the d20 (Delina, both Ancient
+  Dragons).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,941 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,966 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 2111, nothing is triaged.
+  the batches since; past rank 2184, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

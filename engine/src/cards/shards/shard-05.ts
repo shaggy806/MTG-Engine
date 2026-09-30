@@ -83,6 +83,7 @@ import _poolGoblinRoughrider from "../pool/goblin-roughrider.js";
 import _poolGoblinSettler from "../pool/goblin-settler.js";
 import _poolGoldenHind from "../pool/golden-hind.js";
 import _poolGrandCrescendo from "../pool/grand-crescendo.js";
+import _poolGrappleWithThePast from "../pool/grapple-with-the-past.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
@@ -135,6 +136,7 @@ import _poolRaccoonRallier from "../pool/raccoon-rallier.js";
 import _poolRakdosShredFreak from "../pool/rakdos-shred-freak.js";
 import _poolRavenousIntruder from "../pool/ravenous-intruder.js";
 import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
+import _poolRhonassMonument from "../pool/rhonass-monument.js";
 import _poolRiftBolt from "../pool/rift-bolt.js";
 import _poolRingOfTheLucii from "../pool/ring-of-the-lucii.js";
 import _poolRisingOfTheDay from "../pool/rising-of-the-day.js";
@@ -290,6 +292,7 @@ const shard: CardShard = {
     _poolGoblinSettler,
     _poolGoldenHind,
     _poolGrandCrescendo,
+    _poolGrappleWithThePast,
     _poolGravespawnSovereign,
     _poolGreatHallOfTheCitadel,
     _poolGrimBackwoods,
@@ -342,6 +345,7 @@ const shard: CardShard = {
     _poolRakdosShredFreak,
     _poolRavenousIntruder,
     _poolRememberTheFallen,
+    _poolRhonassMonument,
     _poolRiftBolt,
     _poolRingOfTheLucii,
     _poolRisingOfTheDay,

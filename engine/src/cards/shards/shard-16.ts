@@ -14,6 +14,7 @@ import _poolArborElf from "../pool/arbor-elf.js";
 import _poolArtfulTakedown from "../pool/artful-takedown.js";
 import _poolAshBarrens from "../pool/ash-barrens.js";
 import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
+import _poolAuraOfSilence from "../pool/aura-of-silence.js";
 import _poolAuramancer from "../pool/auramancer.js";
 import _poolAvenArcher from "../pool/aven-archer.js";
 import _poolBattleRageBlessing from "../pool/battle-rage-blessing.js";
@@ -183,6 +184,7 @@ import _poolThraxodemon from "../pool/thraxodemon.js";
 import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
+import _poolTradingPost from "../pool/trading-post.js";
 import _poolTukatongueThallid from "../pool/tukatongue-thallid.js";
 import _poolTunnelingGeopede from "../pool/tunneling-geopede.js";
 import _poolTurtleSeals from "../pool/turtle-seals.js";
@@ -237,6 +239,7 @@ const shard: CardShard = {
     _poolArtfulTakedown,
     _poolAshBarrens,
     _poolAtlaPalaniNestTender,
+    _poolAuraOfSilence,
     _poolAuramancer,
     _poolAvenArcher,
     _poolBattleRageBlessing,
@@ -406,6 +409,7 @@ const shard: CardShard = {
     _poolThunderingTanadon,
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,
+    _poolTradingPost,
     _poolTukatongueThallid,
     _poolTunnelingGeopede,
     _poolTurtleSeals,

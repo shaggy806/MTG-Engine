@@ -55,6 +55,7 @@ import _poolDeftDuelist from "../pool/deft-duelist.js";
 import _poolDerangedOutcast from "../pool/deranged-outcast.js";
 import _poolDesolationProwler from "../pool/desolation-prowler.js";
 import _poolDimirAqueduct from "../pool/dimir-aqueduct.js";
+import _poolDiregrafColossus from "../pool/diregraf-colossus.js";
 import _poolDirtwaterWraith from "../pool/dirtwater-wraith.js";
 import _poolDisperse from "../pool/disperse.js";
 import _poolDreadhordeInvasion from "../pool/dreadhorde-invasion.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolDerangedOutcast,
     _poolDesolationProwler,
     _poolDimirAqueduct,
+    _poolDiregrafColossus,
     _poolDirtwaterWraith,
     _poolDisperse,
     _poolDreadhordeInvasion,

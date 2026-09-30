@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAdaptiveOmnitool from "../pool/adaptive-omnitool.js";
+import _poolAerithGainsborough from "../pool/aerith-gainsborough.js";
 import _poolAkkiBlizzardHerder from "../pool/akki-blizzard-herder.js";
 import _poolAkkiDrillmaster from "../pool/akki-drillmaster.js";
 import _poolAkkiScrapchomper from "../pool/akki-scrapchomper.js";
@@ -68,6 +69,7 @@ import _poolGoldenBear from "../pool/golden-bear.js";
 import _poolGrandmotherSengir from "../pool/grandmother-sengir.js";
 import _poolHall from "../pool/hall.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
+import _poolHauntedCloak from "../pool/haunted-cloak.js";
 import _poolHillGiantHerdgorger from "../pool/hill-giant-herdgorger.js";
 import _poolHippoCows from "../pool/hippo-cows.js";
 import _poolHornOfGondor from "../pool/horn-of-gondor.js";
@@ -204,6 +206,7 @@ import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
 const shard: CardShard = {
   pool: [
     _poolAdaptiveOmnitool,
+    _poolAerithGainsborough,
     _poolAkkiBlizzardHerder,
     _poolAkkiDrillmaster,
     _poolAkkiScrapchomper,
@@ -268,6 +271,7 @@ const shard: CardShard = {
     _poolGrandmotherSengir,
     _poolHall,
     _poolHardenedTactician,
+    _poolHauntedCloak,
     _poolHillGiantHerdgorger,
     _poolHippoCows,
     _poolHornOfGondor,

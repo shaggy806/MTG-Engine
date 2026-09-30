@@ -127,6 +127,7 @@ import _poolRakdosRagemutt from "../pool/rakdos-ragemutt.js";
 import _poolRamunapExcavator from "../pool/ramunap-excavator.js";
 import _poolRazortideBridge from "../pool/razortide-bridge.js";
 import _poolRazorvergeThicket from "../pool/razorverge-thicket.js";
+import _poolRecklessImpulse from "../pool/reckless-impulse.js";
 import _poolRedcapThief from "../pool/redcap-thief.js";
 import _poolResistanceSkywarden from "../pool/resistance-skywarden.js";
 import _poolResoluteReinforcements from "../pool/resolute-reinforcements.js";
@@ -179,6 +180,7 @@ import _poolTuskedColossodon from "../pool/tusked-colossodon.js";
 import _poolTyrranax from "../pool/tyrranax.js";
 import _poolUndergroundRiver from "../pool/underground-river.js";
 import _poolUnderworldBreach from "../pool/underworld-breach.js";
+import _poolUniversalAutomaton from "../pool/universal-automaton.js";
 import _poolUrsapine from "../pool/ursapine.js";
 import _poolVampireRevenant from "../pool/vampire-revenant.js";
 import _poolViashinoSandscout from "../pool/viashino-sandscout.js";
@@ -322,6 +324,7 @@ const shard: CardShard = {
     _poolRamunapExcavator,
     _poolRazortideBridge,
     _poolRazorvergeThicket,
+    _poolRecklessImpulse,
     _poolRedcapThief,
     _poolResistanceSkywarden,
     _poolResoluteReinforcements,
@@ -374,6 +377,7 @@ const shard: CardShard = {
     _poolTyrranax,
     _poolUndergroundRiver,
     _poolUnderworldBreach,
+    _poolUniversalAutomaton,
     _poolUrsapine,
     _poolVampireRevenant,
     _poolViashinoSandscout,

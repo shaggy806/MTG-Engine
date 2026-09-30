@@ -103,6 +103,7 @@ import _poolLodestoneMyr from "../pool/lodestone-myr.js";
 import _poolLongbowArcher from "../pool/longbow-archer.js";
 import _poolLorescaleCoatl from "../pool/lorescale-coatl.js";
 import _poolLosDiablosMissileBase from "../pool/los-diablos-missile-base.js";
+import _poolManaTithe from "../pool/mana-tithe.js";
 import _poolMarbleDiamond from "../pool/marble-diamond.js";
 import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
@@ -297,6 +298,7 @@ const shard: CardShard = {
     _poolLongbowArcher,
     _poolLorescaleCoatl,
     _poolLosDiablosMissileBase,
+    _poolManaTithe,
     _poolMarbleDiamond,
     _poolMigratoryRoute,
     _poolMindSculpt,

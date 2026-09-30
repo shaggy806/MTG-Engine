@@ -1,0 +1,437 @@
+{
+  "batch": "B16",
+  "status": "complete",
+  "ranks": "2112-2184",
+  "authored": [
+    {
+      "name": "Perplexing Test",
+      "files": [
+        "engine/src/cards/pool/perplexing-test.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Balmor, Battlemage Captain",
+      "files": [
+        "engine/src/cards/pool/balmor-battlemage-captain.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Basking Broodscale",
+      "files": [
+        "engine/src/cards/pool/basking-broodscale.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Reckless Impulse",
+      "files": [
+        "engine/src/cards/pool/reckless-impulse.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Universal Automaton",
+      "files": [
+        "engine/src/cards/pool/universal-automaton.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Diregraf Colossus",
+      "files": [
+        "engine/src/cards/pool/diregraf-colossus.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Horn of Greed",
+      "files": [
+        "engine/src/cards/pool/horn-of-greed.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Koma, World-Eater",
+      "files": [
+        "engine/src/cards/pool/koma-world-eater.ts",
+        "engine/src/cards/tokens/komas-coil.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Haunted Cloak",
+      "files": [
+        "engine/src/cards/pool/haunted-cloak.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fierce Empath",
+      "files": [
+        "engine/src/cards/pool/fierce-empath.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Wrenn's Resolve",
+      "files": [
+        "engine/src/cards/pool/wrenns-resolve.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bone Miser",
+      "files": [
+        "engine/src/cards/pool/bone-miser.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Zendikar's Roil",
+      "files": [
+        "engine/src/cards/pool/zendikars-roil.ts",
+        "engine/src/cards/tokens/green-elemental-token-2-2.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Trading Post",
+      "files": [
+        "engine/src/cards/pool/trading-post.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rhonas's Monument",
+      "files": [
+        "engine/src/cards/pool/rhonass-monument.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mana Tithe",
+      "files": [
+        "engine/src/cards/pool/mana-tithe.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tribute Mage",
+      "files": [
+        "engine/src/cards/pool/tribute-mage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Aerith Gainsborough",
+      "files": [
+        "engine/src/cards/pool/aerith-gainsborough.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ruby, Daring Tracker",
+      "files": [
+        "engine/src/cards/pool/ruby-daring-tracker.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Font of Mythos",
+      "files": [
+        "engine/src/cards/pool/font-of-mythos.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Master of Etherium",
+      "files": [
+        "engine/src/cards/pool/master-of-etherium.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Arboreal Grazer",
+      "files": [
+        "engine/src/cards/pool/arboreal-grazer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Grapple with the Past",
+      "files": [
+        "engine/src/cards/pool/grapple-with-the-past.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Verdant Sun's Avatar",
+      "files": [
+        "engine/src/cards/pool/verdant-suns-avatar.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Aura of Silence",
+      "files": [
+        "engine/src/cards/pool/aura-of-silence.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Archon of Emeria",
+      "needs": [
+        "new:cast-limit"
+      ],
+      "why": "'Each player can't cast more than one spell each turn'."
+    },
+    {
+      "name": "Psychic Frog",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Exile three cards from your graveyard' as a cost (its discard cost is built)."
+    },
+    {
+      "name": "Cityscape Leveler",
+      "needs": [
+        "new:unearth",
+        "new:powerstone-token"
+      ],
+      "why": "Unearth, and Powerstone tokens for the destroyed permanent's controller."
+    },
+    {
+      "name": "Kozilek's Command",
+      "needs": [
+        "new:kindred-type"
+      ],
+      "why": "Kindred Instant."
+    },
+    {
+      "name": "Oko, Thief of Crowns",
+      "needs": [
+        "new:set-characteristics",
+        "new:exchange-control"
+      ],
+      "why": "Becoming a 3/3 Elk that loses all abilities; exchanging control."
+    },
+    {
+      "name": "Masked Vandal",
+      "needs": [
+        "new:may-exile-card-if-you-do"
+      ],
+      "why": "'You may exile a creature card from your graveyard. If you do'."
+    },
+    {
+      "name": "Hydra's Growth",
+      "needs": [
+        "new:attached-effect-ref"
+      ],
+      "why": "Doubling counters on the enchanted creature — no effect target names the host."
+    },
+    {
+      "name": "Selvala, Explorer Returned",
+      "needs": [
+        "new:parley"
+      ],
+      "why": "Parley."
+    },
+    {
+      "name": "Crackling Doom",
+      "needs": [
+        "new:sacrifice-greatest-power"
+      ],
+      "why": "Each opponent sacrifices a creature with the greatest power among theirs."
+    },
+    {
+      "name": "Emeria Shepherd",
+      "needs": [
+        "new:conditional-destination"
+      ],
+      "why": "Return to hand, or to the battlefield if the land is a Plains."
+    },
+    {
+      "name": "Food Chain",
+      "needs": [
+        "new:exile-creature-cost"
+      ],
+      "why": "Exiling a creature as a cost, with mana from its mana value."
+    },
+    {
+      "name": "Ancient Gold Dragon",
+      "needs": [
+        "new:d20"
+      ],
+      "why": "A d20 roll."
+    },
+    {
+      "name": "Minas Morgul, Dark Fortress",
+      "needs": [
+        "new:shadow"
+      ],
+      "why": "Shadow counters."
+    },
+    {
+      "name": "Multiversal Passage",
+      "needs": [
+        "new:choose-basic-land-type"
+      ],
+      "why": "Choose a basic land type as it enters; it is that type."
+    },
+    {
+      "name": "Entity Tracker",
+      "needs": [
+        "new:rooms"
+      ],
+      "why": "'Whenever you fully unlock a Room' — Rooms aren't modeled."
+    },
+    {
+      "name": "Plague Myr",
+      "needs": [
+        "new:infect"
+      ],
+      "why": "Infect."
+    },
+    {
+      "name": "Liliana of the Dark Realms",
+      "needs": [
+        "new:choose-plus-or-minus",
+        "new:emblem-grants-activated"
+      ],
+      "why": "+X/+X or -X/-X chosen as it resolves, and an emblem granting Swamps an ability."
+    },
+    {
+      "name": "Galadhrim Ambush",
+      "needs": [
+        "new:prevent-damage-by-filter"
+      ],
+      "why": "Prevent combat damage dealt by non-Elf creatures."
+    },
+    {
+      "name": "Ainok Strike Leader",
+      "needs": [
+        "new:attack-with-commander-trigger"
+      ],
+      "why": "'Whenever you attack with this creature and/or your commander' (BACKLOG)."
+    },
+    {
+      "name": "Primal Amulet // Primal Wellspring",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying a spell."
+    },
+    {
+      "name": "Rise of the Eldrazi",
+      "needs": [
+        "new:exile-self-on-resolve"
+      ],
+      "why": "'Exile Rise of the Eldrazi' as it resolves."
+    },
+    {
+      "name": "Hellkite Charger",
+      "needs": [
+        "new:additional-combat-after-this-phase"
+      ],
+      "why": "An additional combat 'after this phase' — during combat, not a main phase."
+    },
+    {
+      "name": "Jacked Rabbit",
+      "needs": [
+        "new:ravenous"
+      ],
+      "why": "Ravenous."
+    },
+    {
+      "name": "Risen Reef",
+      "needs": [
+        "new:look-top-land-or-hand"
+      ],
+      "why": "Look at the top card: a land onto the battlefield, else may put it into your hand."
+    },
+    {
+      "name": "Thunderclap Drake",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copies per commander cast."
+    },
+    {
+      "name": "Dragonfire Blade",
+      "needs": [
+        "new:hexproof-from-monocolored",
+        "new:equip-cost-per-color"
+      ],
+      "why": "Hexproof from monocolored; equip cost by the target's colors."
+    },
+    {
+      "name": "Brudiclad, Telchor Engineer",
+      "needs": [
+        "new:tokens-become-copies"
+      ],
+      "why": "Each other token becomes a copy of a chosen token."
+    },
+    {
+      "name": "Glimpse the Impossible",
+      "needs": [
+        "new:exiled-this-way-to-graveyard"
+      ],
+      "why": "Remaining exiled cards go to the graveyard at the next end step."
+    },
+    {
+      "name": "Kitsa, Otterball Elite",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying an instant or sorcery spell."
+    },
+    {
+      "name": "Mina and Denn, Wildborn",
+      "needs": [
+        "new:return-lands-cost"
+      ],
+      "why": "Returning a land you control as a cost."
+    },
+    {
+      "name": "Klauth, Unrivaled Ancient",
+      "needs": [
+        "new:mana-any-combination-choice",
+        "new:mana-persistence-color"
+      ],
+      "why": "X mana in any combination, kept until end of turn."
+    },
+    {
+      "name": "The Key to the Vault",
+      "needs": [
+        "new:exile-cast-free-from-look"
+      ],
+      "why": "Exile a nonland card from the looked-at cards to cast free."
+    },
+    {
+      "name": "Monstrous Vortex",
+      "needs": [
+        "new:discover"
+      ],
+      "why": "Discover X."
+    },
+    {
+      "name": "Lier, Disciple of the Drowned",
+      "needs": [
+        "new:spells-cant-be-countered",
+        "new:grant-flashback-static"
+      ],
+      "why": "'Spells can't be countered' and flashback for every instant and sorcery in your graveyard."
+    },
+    {
+      "name": "Jidoor, Aristocratic Capital // Overture",
+      "needs": [
+        "new:land-adventure"
+      ],
+      "why": "A land with an Adventure (Overture)."
+    }
+  ]
+}
