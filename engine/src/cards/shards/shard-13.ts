@@ -47,6 +47,7 @@ import _poolDiabolicEdict from "../pool/diabolic-edict.js";
 import _poolDriftingMeadow from "../pool/drifting-meadow.js";
 import _poolDualSunAdepts from "../pool/dual-sun-adepts.js";
 import _poolDuskanaTheRageMother from "../pool/duskana-the-rage-mother.js";
+import _poolEldraziTemple from "../pool/eldrazi-temple.js";
 import _poolElsha from "../pool/elsha.js";
 import _poolElvesOfDeepShadow from "../pool/elves-of-deep-shadow.js";
 import _poolEmryLurkerOfTheLoch from "../pool/emry-lurker-of-the-loch.js";
@@ -56,6 +57,7 @@ import _poolExperimentalAviator from "../pool/experimental-aviator.js";
 import _poolFallOfTheGavel from "../pool/fall-of-the-gavel.js";
 import _poolFatalFumes from "../pool/fatal-fumes.js";
 import _poolFelhideMinotaur from "../pool/felhide-minotaur.js";
+import _poolFelidarGuardian from "../pool/felidar-guardian.js";
 import _poolFieldCreeper from "../pool/field-creeper.js";
 import _poolFieryHellhound from "../pool/fiery-hellhound.js";
 import _poolFireNationSentinels from "../pool/fire-nation-sentinels.js";
@@ -157,6 +159,7 @@ import _poolStrandsOfNight from "../pool/strands-of-night.js";
 import _poolStubbornDenial from "../pool/stubborn-denial.js";
 import _poolSunBlessedPeak from "../pool/sun-blessed-peak.js";
 import _poolSunlitMarsh from "../pool/sunlit-marsh.js";
+import _poolSwiftEnd from "../pool/swift-end.js";
 import _poolSwiftSpinner from "../pool/swift-spinner.js";
 import _poolSylvanBrushstrider from "../pool/sylvan-brushstrider.js";
 import _poolSylvanRanger from "../pool/sylvan-ranger.js";
@@ -241,6 +244,7 @@ const shard: CardShard = {
     _poolDriftingMeadow,
     _poolDualSunAdepts,
     _poolDuskanaTheRageMother,
+    _poolEldraziTemple,
     _poolElsha,
     _poolElvesOfDeepShadow,
     _poolEmryLurkerOfTheLoch,
@@ -250,6 +254,7 @@ const shard: CardShard = {
     _poolFallOfTheGavel,
     _poolFatalFumes,
     _poolFelhideMinotaur,
+    _poolFelidarGuardian,
     _poolFieldCreeper,
     _poolFieryHellhound,
     _poolFireNationSentinels,
@@ -351,6 +356,7 @@ const shard: CardShard = {
     _poolStubbornDenial,
     _poolSunBlessedPeak,
     _poolSunlitMarsh,
+    _poolSwiftEnd,
     _poolSwiftSpinner,
     _poolSylvanBrushstrider,
     _poolSylvanRanger,

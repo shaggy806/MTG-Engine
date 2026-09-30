@@ -139,13 +139,12 @@ it fails for any substitution whose original is now registered, and checks every
 
 The table below mirrors `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Draconic Destruction — Atarka, World Render (6)
+### Draconic Destruction — Atarka, World Render (5)
 
 | printed card | plays as | why |
 |---|---|---|
 | Sarkhan, the Dragonspeaker | Garruk Wildspeaker | Green planeswalker that makes creatures and has an overrun finisher. |
 | Foe-Razer Regent | Old Gnawbone | Seven-mana green flying Dragon. |
-| Savage Ventmaw | Lathliss, Dragon Queen | Six-mana flying Dragon. |
 | Loaming Shaman | Scavenging Ooze | Cheap green creature that interacts with graveyards. |
 | Haven of the Spirit Dragon | Kessig Wolf Run | Utility land that taps for colorless. |
 | Path of Ancestry | Sheltered Thicket | Enters-tapped land that makes the deck's colours. |

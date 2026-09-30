@@ -133,6 +133,7 @@ import _poolRiveteersOverlook from "../pool/riveteers-overlook.js";
 import _poolRoguesPassage from "../pool/rogues-passage.js";
 import _poolRowanScionOfWar from "../pool/rowan-scion-of-war.js";
 import _poolRubbleReading from "../pool/rubble-reading.js";
+import _poolRunawaySteamKin from "../pool/runaway-steam-kin.js";
 import _poolSandblast from "../pool/sandblast.js";
 import _poolSaruliCaretaker from "../pool/saruli-caretaker.js";
 import _poolScavengerGrounds from "../pool/scavenger-grounds.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolRoguesPassage,
     _poolRowanScionOfWar,
     _poolRubbleReading,
+    _poolRunawaySteamKin,
     _poolSandblast,
     _poolSaruliCaretaker,
     _poolScavengerGrounds,

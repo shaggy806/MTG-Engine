@@ -154,6 +154,7 @@ import _poolSenateGriffin from "../pool/senate-griffin.js";
 import _poolSetonKrosanProtector from "../pool/seton-krosan-protector.js";
 import _poolSisaysRing from "../pool/sisays-ring.js";
 import _poolSnappingDrake from "../pool/snapping-drake.js";
+import _poolSoulherder from "../pool/soulherder.js";
 import _poolSpectacleSummit from "../pool/spectacle-summit.js";
 import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
@@ -163,6 +164,7 @@ import _poolStrongarmThug from "../pool/strongarm-thug.js";
 import _poolStrongholdAssassin from "../pool/stronghold-assassin.js";
 import _poolSunhomeFortressOfTheLegion from "../pool/sunhome-fortress-of-the-legion.js";
 import _poolSunpetalGrove from "../pool/sunpetal-grove.js";
+import _poolSunscorchRegent from "../pool/sunscorch-regent.js";
 import _poolSwordwiseCentaur from "../pool/swordwise-centaur.js";
 import _poolTalonTrooper from "../pool/talon-trooper.js";
 import _poolTaoistHermit from "../pool/taoist-hermit.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolSetonKrosanProtector,
     _poolSisaysRing,
     _poolSnappingDrake,
+    _poolSoulherder,
     _poolSpectacleSummit,
     _poolSpinedMegalodon,
     _poolStarkIndustries,
@@ -366,6 +369,7 @@ const shard: CardShard = {
     _poolStrongholdAssassin,
     _poolSunhomeFortressOfTheLegion,
     _poolSunpetalGrove,
+    _poolSunscorchRegent,
     _poolSwordwiseCentaur,
     _poolTalonTrooper,
     _poolTaoistHermit,

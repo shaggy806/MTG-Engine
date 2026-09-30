@@ -1512,7 +1512,10 @@ export type EffectSpec =
        * chosen target, so the card and its owner are whatever was targeted.
        */
       readonly kind: "put-on-library";
-      readonly target: number;
+      /** A target slot, or `"trigger-object"` — Murderous Rider's "when this
+       * creature dies, put it on the bottom of its owner's library", found in
+       * the graveyard it went to and only there (rule 400.7). */
+      readonly target: EffectTargetRef;
       readonly position: "top" | "bottom";
     }
   | {
@@ -4766,7 +4769,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "put-on-library": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.putOnLibrary(target, spec.position);
       return;
     }

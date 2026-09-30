@@ -82,6 +82,21 @@ export const undying = (): TriggeredAbility => ({
 });
 
 /**
+ * Persist (rule 702.79): "When this permanent dies, if it had no -1/-1
+ * counters on it, return it to the battlefield under its owner's control with
+ * a -1/-1 counter on it." Undying's mirror image. Put "Persist" in `text` as
+ * well.
+ */
+export const persist = (): TriggeredAbility => ({
+  trigger: { on: "dies", who: "self" },
+  condition: { kind: "self-counters", counter: "-1/-1", compare: { op: "eq", n: 0 } },
+  targets: [],
+  effect: { kind: "put-onto-battlefield", target: "trigger-object", withCounters: { kind: "-1/-1", amount: 1 } },
+  resolve: null,
+  text: "Persist (When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.)",
+});
+
+/**
  * Melee (rule 702.121): "Whenever this creature attacks, it gets +1/+1 until
  * end of turn for each opponent you attacked with a creature this combat."
  * Each instance triggers on its own. Put "Melee" in `text` as well.

@@ -170,6 +170,7 @@ import _poolUnderworldRageHound from "../pool/underworld-rage-hound.js";
 import _poolUniversalSolvent from "../pool/universal-solvent.js";
 import _poolUnlicensedDisintegration from "../pool/unlicensed-disintegration.js";
 import _poolUrborgTombOfYawgmoth from "../pool/urborg-tomb-of-yawgmoth.js";
+import _poolValgavothsLair from "../pool/valgavoths-lair.js";
 import _poolVectisSilencers from "../pool/vectis-silencers.js";
 import _poolVelaTheNightClad from "../pool/vela-the-night-clad.js";
 import _poolVesselOfVolatility from "../pool/vessel-of-volatility.js";
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _poolUniversalSolvent,
     _poolUnlicensedDisintegration,
     _poolUrborgTombOfYawgmoth,
+    _poolValgavothsLair,
     _poolVectisSilencers,
     _poolVelaTheNightClad,
     _poolVesselOfVolatility,

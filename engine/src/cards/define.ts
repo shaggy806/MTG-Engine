@@ -434,6 +434,10 @@ export type StaticCondition =
   | { readonly kind: "cards-in-exile"; readonly atLeast: number; readonly filter?: CardFilter }
   /** Threshold (rule 702.27) — seven or more cards in your graveyard. */
   | { readonly kind: "threshold" }
+  /** At least `atLeast` cards in your graveyard matching `filter` — Oversold
+   * Cemetery's "if you have four or more creature cards in your graveyard".
+   * Threshold is this with seven and no filter. */
+  | { readonly kind: "cards-in-graveyard"; readonly atLeast: number; readonly filter?: CardFilter }
   /** Delirium (rule 702.120) — four or more *card types* among the cards in
    * your graveyard. Counts distinct types, not cards: one artifact creature
    * is two of the four. A card's printed types are what count — layer

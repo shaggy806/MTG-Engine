@@ -93,6 +93,7 @@ import _poolJundBattlemage from "../pool/jund-battlemage.js";
 import _poolKaaliaOfTheVast from "../pool/kaalia-of-the-vast.js";
 import _poolKeepersOfTheFaith from "../pool/keepers-of-the-faith.js";
 import _poolKessigRecluse from "../pool/kessig-recluse.js";
+import _poolKherKeep from "../pool/kher-keep.js";
 import _poolKillianDecisiveMentor from "../pool/killian-decisive-mentor.js";
 import _poolKnighthood from "../pool/knighthood.js";
 import _poolKrenkosCommand from "../pool/krenkos-command.js";
@@ -292,6 +293,7 @@ const shard: CardShard = {
     _poolKaaliaOfTheVast,
     _poolKeepersOfTheFaith,
     _poolKessigRecluse,
+    _poolKherKeep,
     _poolKillianDecisiveMentor,
     _poolKnighthood,
     _poolKrenkosCommand,

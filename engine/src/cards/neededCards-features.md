@@ -612,6 +612,11 @@ in `git log`.
   permanent's entry (Uro's "unless it escaped"), and a spell's own "when you
   cast this spell" reading its X (Hydroid Krasis). B9.json lists the 57
   cards it left blocked.
+- **Top-5000 batch 10** (2026-09-29, `top5000-batch-10.test.ts`) — a
+  `cards-in-graveyard` condition (Oversold Cemetery's four creature cards),
+  `persist()` beside `undying()` (Glen Elendra Archmage), and `put-on-library`
+  naming the trigger object (Murderous Rider's "put it on the bottom of its
+  owner's library"). B10.json lists the 29 cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

@@ -64,6 +64,7 @@ import _poolFireSnake from "../pool/fire-snake.js";
 import _poolFishliverOil from "../pool/fishliver-oil.js";
 import _poolFlatten from "../pool/flatten.js";
 import _poolFling from "../pool/fling.js";
+import _poolForebodingLandscape from "../pool/foreboding-landscape.js";
 import _poolFrontPorchSentries from "../pool/front-porch-sentries.js";
 import _poolFuriousAssault from "../pool/furious-assault.js";
 import _poolGammaGrotesque from "../pool/gamma-grotesque.js";
@@ -262,6 +263,7 @@ const shard: CardShard = {
     _poolFishliverOil,
     _poolFlatten,
     _poolFling,
+    _poolForebodingLandscape,
     _poolFrontPorchSentries,
     _poolFuriousAssault,
     _poolGammaGrotesque,

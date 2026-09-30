@@ -11,6 +11,7 @@ import _poolArcaneEncyclopedia from "../pool/arcane-encyclopedia.js";
 import _poolArmoredPegasus from "../pool/armored-pegasus.js";
 import _poolAshenMonstrosity from "../pool/ashen-monstrosity.js";
 import _poolAssaultZeppelid from "../pool/assault-zeppelid.js";
+import _poolBaSingSe from "../pool/ba-sing-se.js";
 import _poolBastionOfRemembrance from "../pool/bastion-of-remembrance.js";
 import _poolBastionProtector from "../pool/bastion-protector.js";
 import _poolBendersWaterskin from "../pool/benders-waterskin.js";
@@ -207,6 +208,7 @@ const shard: CardShard = {
     _poolArmoredPegasus,
     _poolAshenMonstrosity,
     _poolAssaultZeppelid,
+    _poolBaSingSe,
     _poolBastionOfRemembrance,
     _poolBastionProtector,
     _poolBendersWaterskin,

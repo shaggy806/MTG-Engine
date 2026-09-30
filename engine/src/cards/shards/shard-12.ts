@@ -66,6 +66,7 @@ import _poolFell from "../pool/fell.js";
 import _poolFerventDenial from "../pool/fervent-denial.js";
 import _poolFesteringThicket from "../pool/festering-thicket.js";
 import _poolFieldsOfStrife from "../pool/fields-of-strife.js";
+import _poolFireNationPalace from "../pool/fire-nation-palace.js";
 import _poolFistsOfIronwood from "../pool/fists-of-ironwood.js";
 import _poolFlamekinSpitfire from "../pool/flamekin-spitfire.js";
 import _poolFrolickingFamiliar from "../pool/frolicking-familiar.js";
@@ -250,6 +251,7 @@ const shard: CardShard = {
     _poolFerventDenial,
     _poolFesteringThicket,
     _poolFieldsOfStrife,
+    _poolFireNationPalace,
     _poolFistsOfIronwood,
     _poolFlamekinSpitfire,
     _poolFrolickingFamiliar,

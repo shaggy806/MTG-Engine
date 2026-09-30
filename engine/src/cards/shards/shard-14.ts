@@ -112,12 +112,14 @@ import _poolInvokeTheFiremind from "../pool/invoke-the-firemind.js";
 import _poolIronshellBeetle from "../pool/ironshell-beetle.js";
 import _poolIsperiaSupremeJudge from "../pool/isperia-supreme-judge.js";
 import _poolJeditsDragoons from "../pool/jedits-dragoons.js";
+import _poolJinGitaxiasCoreAugur from "../pool/jin-gitaxias-core-augur.js";
 import _poolJoustingDummy from "../pool/jousting-dummy.js";
 import _poolKeenBuccaneer from "../pool/keen-buccaneer.js";
 import _poolKonaRescueBeastie from "../pool/kona-rescue-beastie.js";
 import _poolLingeringSouls from "../pool/lingering-souls.js";
 import _poolLlanowarElves from "../pool/llanowar-elves.js";
 import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
+import _poolLoyalWarhound from "../pool/loyal-warhound.js";
 import _poolMedusaInhumanQueen from "../pool/medusa-inhuman-queen.js";
 import _poolMerfolkLooter from "../pool/merfolk-looter.js";
 import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
@@ -309,12 +311,14 @@ const shard: CardShard = {
     _poolIronshellBeetle,
     _poolIsperiaSupremeJudge,
     _poolJeditsDragoons,
+    _poolJinGitaxiasCoreAugur,
     _poolJoustingDummy,
     _poolKeenBuccaneer,
     _poolKonaRescueBeastie,
     _poolLingeringSouls,
     _poolLlanowarElves,
     _poolLoxodonStalwart,
+    _poolLoyalWarhound,
     _poolMedusaInhumanQueen,
     _poolMerfolkLooter,
     _poolMerrowWitsniper,

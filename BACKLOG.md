@@ -116,15 +116,24 @@ that one card is the reason the deck exists.
   pieces it found: stun counters (Unstoppable Slasher), a batched leaves-battlefield trigger
   (Dour Port-Mage), a damage replacement filtered by recipient (Losheel), the Kindred card type
   (Eldrazi Conscription).
+- **Top-5000 batch 10 (2026-09-29) triaged ranks 1645–1722:** 31 authored (Nissa, Who Shakes the
+  World, Glen Elendra Archmage, Blast Zone, Murderous Rider, Court of Grace, Jin-Gitaxias and 25
+  more — see `neededCards-features.md`, "Top-5000 batch 10"); 29 blocked, each in
+  `engine/data/sweep-3/B10.json`, almost all by features no other card here needs. Two measured
+  surprises: a static can't choose what it affects by power or toughness (Tetsuko Umezawa — an
+  `affects` filter reading P/T matches nothing inside the layer fold), and "whenever a counter is
+  put on" is once per counter for Fathom Mage (its ruling) where `counters-put` fires per event.
+  Across every record the leaders are unchanged: a copy's new targets
+  (`decision:copy-new-targets`, 28), a free cast during resolution (18), "sacrifice N" costs (16).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,768 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,799 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 1632, nothing is triaged.
+  the batches since; past rank 1722, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed
@@ -192,7 +201,7 @@ that one card is the reason the deck exists.
   one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
-- **Precon stand-ins.** 42 cards in the five starter decks still play as substitutes. The
+- **Precon stand-ins.** 41 cards in the five starter decks still play as substitutes. The
   engine plan for them is paused. See `docs/plans/precon-decks.md` (the substitution list) and
   `docs/plans/engine-gaps.md`. Deleting a substitution is the whole revert.
 

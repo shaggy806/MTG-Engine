@@ -1,0 +1,433 @@
+{
+  "batch": "B10",
+  "status": "complete",
+  "ranks": "1645-1722",
+  "authored": [
+    {
+      "name": "Loyal Warhound",
+      "files": [
+        "engine/src/cards/pool/loyal-warhound.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Gaffer",
+      "files": [
+        "engine/src/cards/pool/the-gaffer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blood Money",
+      "files": [
+        "engine/src/cards/pool/blood-money.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nissa, Who Shakes the World",
+      "files": [
+        "engine/src/cards/pool/nissa-who-shakes-the-world.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Battle Hymn",
+      "files": [
+        "engine/src/cards/pool/battle-hymn.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Court of Grace",
+      "files": [
+        "engine/src/cards/pool/court-of-grace.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Inspiring Overseer",
+      "files": [
+        "engine/src/cards/pool/inspiring-overseer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Sunscorch Regent",
+      "files": [
+        "engine/src/cards/pool/sunscorch-regent.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Murderous Rider",
+      "files": [
+        "engine/src/cards/pool/murderous-rider.ts",
+        "engine/src/cards/pool/swift-end.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Runaway Steam-Kin",
+      "files": [
+        "engine/src/cards/pool/runaway-steam-kin.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ba Sing Se",
+      "files": [
+        "engine/src/cards/pool/ba-sing-se.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Moonsilver Key",
+      "files": [
+        "engine/src/cards/pool/moonsilver-key.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Savage Ventmaw",
+      "files": [
+        "engine/src/cards/pool/savage-ventmaw.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Valgavoth's Lair",
+      "files": [
+        "engine/src/cards/pool/valgavoths-lair.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Fire Nation Palace",
+      "files": [
+        "engine/src/cards/pool/fire-nation-palace.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Woe Strider",
+      "files": [
+        "engine/src/cards/pool/woe-strider.ts",
+        "engine/src/cards/tokens/goat-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Soulherder",
+      "files": [
+        "engine/src/cards/pool/soulherder.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Foreboding Landscape",
+      "files": [
+        "engine/src/cards/pool/foreboding-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Shore Up",
+      "files": [
+        "engine/src/cards/pool/shore-up.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Gift of the Viper",
+      "files": [
+        "engine/src/cards/pool/gift-of-the-viper.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Felidar Guardian",
+      "files": [
+        "engine/src/cards/pool/felidar-guardian.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Simulacrum Synthesizer",
+      "files": [
+        "engine/src/cards/pool/simulacrum-synthesizer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kher Keep",
+      "files": [
+        "engine/src/cards/pool/kher-keep.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Glen Elendra Archmage",
+      "files": [
+        "engine/src/cards/pool/glen-elendra-archmage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Oversold Cemetery",
+      "files": [
+        "engine/src/cards/pool/oversold-cemetery.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Eldrazi Temple",
+      "files": [
+        "engine/src/cards/pool/eldrazi-temple.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Crypt of Agadeem",
+      "files": [
+        "engine/src/cards/pool/crypt-of-agadeem.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Jin-Gitaxias, Core Augur",
+      "files": [
+        "engine/src/cards/pool/jin-gitaxias-core-augur.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Fate Unraveler",
+      "files": [
+        "engine/src/cards/pool/fate-unraveler.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Obscura Storefront",
+      "files": [
+        "engine/src/cards/pool/obscura-storefront.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Blast Zone",
+      "files": [
+        "engine/src/cards/pool/blast-zone.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Grenzo, Havoc Raiser",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "'You may spend mana as though it were mana of any color to cast that spell'."
+    },
+    {
+      "name": "Galadriel's Dismissal",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "Phasing isn't modeled."
+    },
+    {
+      "name": "Tetsuko Umezawa, Fugitive",
+      "needs": [
+        "new:pt-filtered-static"
+      ],
+      "why": "A static affecting 'creatures with power or toughness 1 or less': an affects filter can't read P/T inside the layer fold (it matched nothing when tried)."
+    },
+    {
+      "name": "Stridehangar Automaton",
+      "needs": [
+        "new:token-creation-add-extra"
+      ],
+      "why": "'Those tokens plus an additional Thopter' — a token replacement that adds a different token."
+    },
+    {
+      "name": "Parting Gust",
+      "needs": [
+        "new:gift"
+      ],
+      "why": "Gift isn't modeled."
+    },
+    {
+      "name": "Gwenna, Eyes of Gaea",
+      "needs": [
+        "new:mana-any-combination-choice"
+      ],
+      "why": "'Two mana in any combination of colors' with a spend restriction."
+    },
+    {
+      "name": "Kaldra Compleat",
+      "needs": [
+        "new:trigger-recipient-ref"
+      ],
+      "why": "'Whenever this creature deals combat damage to a creature, exile that creature': only a damage effect can reach the trigger's recipient."
+    },
+    {
+      "name": "Metalwork Colossus",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'Sacrifice two artifacts' as a cost, and a cost reduction by total mana value."
+    },
+    {
+      "name": "Gingerbrute",
+      "needs": [
+        "new:blockable-only-by-filter"
+      ],
+      "why": "'Can't be blocked this turn except by creatures with haste'."
+    },
+    {
+      "name": "Open the Way",
+      "needs": [
+        "new:x-max-player-count",
+        "new:reveal-until-count"
+      ],
+      "why": "X capped at the number of players, and revealing until X land cards."
+    },
+    {
+      "name": "Run Away Together",
+      "needs": [
+        "new:target-different-controllers"
+      ],
+      "why": "Two target creatures controlled by different players."
+    },
+    {
+      "name": "Smuggler's Share",
+      "needs": [
+        "new:count-players-with-turn-history"
+      ],
+      "why": "Counts opponents who drew two or more cards / had two or more lands enter this turn."
+    },
+    {
+      "name": "Void Winnower",
+      "needs": [
+        "new:parity-restrictions"
+      ],
+      "why": "Opponents can't cast spells or block with creatures with even mana values."
+    },
+    {
+      "name": "Praetor's Grasp",
+      "needs": [
+        "new:search-opponent-library"
+      ],
+      "why": "Search target opponent's library and exile a card face down, playable by you."
+    },
+    {
+      "name": "Reforge the Soul",
+      "needs": [
+        "new:miracle"
+      ],
+      "why": "Miracle isn't modeled."
+    },
+    {
+      "name": "Lively Dirge",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree isn't modeled."
+    },
+    {
+      "name": "Massacre Girl, Known Killer",
+      "needs": [
+        "new:wither"
+      ],
+      "why": "Wither isn't modeled."
+    },
+    {
+      "name": "Extraplanar Lens",
+      "needs": [
+        "new:imprint-same-name"
+      ],
+      "why": "Imprint a land and trigger on lands with the same name."
+    },
+    {
+      "name": "Timely Ward",
+      "needs": [
+        "new:flash-if-targets-commander"
+      ],
+      "why": "'As though it had flash if it targets a commander'."
+    },
+    {
+      "name": "Mirror Box",
+      "needs": [
+        "new:legend-rule-off"
+      ],
+      "why": "'The legend rule doesn't apply to permanents you control', and a same-name count per creature."
+    },
+    {
+      "name": "Sublime Epiphany",
+      "needs": [
+        "new:counter-ability"
+      ],
+      "why": "'Counter target activated or triggered ability' mode."
+    },
+    {
+      "name": "Shigeki, Jukai Visionary",
+      "needs": [
+        "new:return-to-hand-cost",
+        "new:channel"
+      ],
+      "why": "Returning itself to hand as a cost, and channel."
+    },
+    {
+      "name": "Profane Tutor",
+      "needs": [
+        "new:suspend-no-mana-cost"
+      ],
+      "why": "A card with no mana cost cast only through suspend; unverified that the engine treats it as a card rather than a token."
+    },
+    {
+      "name": "Fathom Mage",
+      "needs": [
+        "new:per-counter-trigger"
+      ],
+      "why": "Triggers once for each +1/+1 counter put on it (its ruling); counters-put fires once per event."
+    },
+    {
+      "name": "Hoarding Broodlord",
+      "needs": [
+        "new:grant-convoke"
+      ],
+      "why": "'Spells you cast from exile have convoke'."
+    },
+    {
+      "name": "Gala Greeters",
+      "needs": [
+        "new:mode-not-chosen-this-turn"
+      ],
+      "why": "'Choose one that hasn't been chosen this turn'."
+    },
+    {
+      "name": "Twinning Staff",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "A spell-copy replacement with new targets."
+    },
+    {
+      "name": "Painful Truths",
+      "needs": [
+        "new:converge"
+      ],
+      "why": "Converge — colors of mana spent."
+    },
+    {
+      "name": "Overlord of the Hauntwoods",
+      "needs": [
+        "new:impending"
+      ],
+      "why": "Impending isn't modeled."
+    }
+  ]
+}

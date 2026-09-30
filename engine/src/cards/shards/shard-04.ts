@@ -71,6 +71,7 @@ import _poolGeodeRager from "../pool/geode-rager.js";
 import _poolGhostQuarter from "../pool/ghost-quarter.js";
 import _poolGiantCrab from "../pool/giant-crab.js";
 import _poolGingerbreadCabin from "../pool/gingerbread-cabin.js";
+import _poolGlenElendraArchmage from "../pool/glen-elendra-archmage.js";
 import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
 import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
@@ -278,6 +279,7 @@ const shard: CardShard = {
     _poolGhostQuarter,
     _poolGiantCrab,
     _poolGingerbreadCabin,
+    _poolGlenElendraArchmage,
     _poolGoblinAnarchomancer,
     _poolGoblinDeathraiders,
     _poolGoblinSpelunkers,

@@ -44,6 +44,7 @@ import _poolCompellingArgument from "../pool/compelling-argument.js";
 import _poolCrookshankKobolds from "../pool/crookshank-kobolds.js";
 import _poolCrossroadsWatcher from "../pool/crossroads-watcher.js";
 import _poolCrushContraband from "../pool/crush-contraband.js";
+import _poolCryptOfAgadeem from "../pool/crypt-of-agadeem.js";
 import _poolCultivate from "../pool/cultivate.js";
 import _poolCunningManeuver from "../pool/cunning-maneuver.js";
 import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
@@ -119,6 +120,7 @@ import _poolMerfolkMesmerist from "../pool/merfolk-mesmerist.js";
 import _poolMerfolkSkyscout from "../pool/merfolk-skyscout.js";
 import _poolMigrationPath from "../pool/migration-path.js";
 import _poolMoonHeron from "../pool/moon-heron.js";
+import _poolMoonsilverKey from "../pool/moonsilver-key.js";
 import _poolMoorFiend from "../pool/moor-fiend.js";
 import _poolNantukoShade from "../pool/nantuko-shade.js";
 import _poolNecrogenSpellbomb from "../pool/necrogen-spellbomb.js";
@@ -150,6 +152,7 @@ import _poolRushwoodDryad from "../pool/rushwood-dryad.js";
 import _poolRustvaleBridge from "../pool/rustvale-bridge.js";
 import _poolSacredNectar from "../pool/sacred-nectar.js";
 import _poolSanguineBond from "../pool/sanguine-bond.js";
+import _poolSavageVentmaw from "../pool/savage-ventmaw.js";
 import _poolScavengerDrake from "../pool/scavenger-drake.js";
 import _poolSeaGateBanneret from "../pool/sea-gate-banneret.js";
 import _poolSepharaSkysBlade from "../pool/sephara-skys-blade.js";
@@ -252,6 +255,7 @@ const shard: CardShard = {
     _poolCrookshankKobolds,
     _poolCrossroadsWatcher,
     _poolCrushContraband,
+    _poolCryptOfAgadeem,
     _poolCultivate,
     _poolCunningManeuver,
     _poolDaggerdromeImp,
@@ -327,6 +331,7 @@ const shard: CardShard = {
     _poolMerfolkSkyscout,
     _poolMigrationPath,
     _poolMoonHeron,
+    _poolMoonsilverKey,
     _poolMoorFiend,
     _poolNantukoShade,
     _poolNecrogenSpellbomb,
@@ -358,6 +363,7 @@ const shard: CardShard = {
     _poolRustvaleBridge,
     _poolSacredNectar,
     _poolSanguineBond,
+    _poolSavageVentmaw,
     _poolScavengerDrake,
     _poolSeaGateBanneret,
     _poolSepharaSkysBlade,

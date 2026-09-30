@@ -65,6 +65,7 @@ import _poolEnormousBaloth from "../pool/enormous-baloth.js";
 import _poolEternalWitness from "../pool/eternal-witness.js";
 import _poolEyeblightAssassin from "../pool/eyeblight-assassin.js";
 import _poolFakeYourOwnDeath from "../pool/fake-your-own-death.js";
+import _poolFateUnraveler from "../pool/fate-unraveler.js";
 import _poolFiligreeSages from "../pool/filigree-sages.js";
 import _poolFinneasAceArcher from "../pool/finneas-ace-archer.js";
 import _poolFlawlessManeuver from "../pool/flawless-maneuver.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolEternalWitness,
     _poolEyeblightAssassin,
     _poolFakeYourOwnDeath,
+    _poolFateUnraveler,
     _poolFiligreeSages,
     _poolFinneasAceArcher,
     _poolFlawlessManeuver,

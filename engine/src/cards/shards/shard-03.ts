@@ -159,6 +159,7 @@ import _poolTarpan from "../pool/tarpan.js";
 import _poolTcriBuilding from "../pool/tcri-building.js";
 import _poolTempleOfTheFalseGod from "../pool/temple-of-the-false-god.js";
 import _poolTemurAscendancy from "../pool/temur-ascendancy.js";
+import _poolTheGaffer from "../pool/the-gaffer.js";
 import _poolTheIncredibleHulk from "../pool/the-incredible-hulk.js";
 import _poolTheUnspeakable from "../pool/the-unspeakable.js";
 import _poolThrillOfTheHunt from "../pool/thrill-of-the-hunt.js";
@@ -173,6 +174,7 @@ import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
 import _poolWhiteKnight from "../pool/white-knight.js";
 import _poolWittyRoastmaster from "../pool/witty-roastmaster.js";
+import _poolWoeStrider from "../pool/woe-strider.js";
 import _poolWoodlandChasm from "../pool/woodland-chasm.js";
 import _poolWornPowerstone from "../pool/worn-powerstone.js";
 import _poolWraithViciousVigilante from "../pool/wraith-vicious-vigilante.js";
@@ -342,6 +344,7 @@ const shard: CardShard = {
     _poolTcriBuilding,
     _poolTempleOfTheFalseGod,
     _poolTemurAscendancy,
+    _poolTheGaffer,
     _poolTheIncredibleHulk,
     _poolTheUnspeakable,
     _poolThrillOfTheHunt,
@@ -356,6 +359,7 @@ const shard: CardShard = {
     _poolVraskasContempt,
     _poolWhiteKnight,
     _poolWittyRoastmaster,
+    _poolWoeStrider,
     _poolWoodlandChasm,
     _poolWornPowerstone,
     _poolWraithViciousVigilante,

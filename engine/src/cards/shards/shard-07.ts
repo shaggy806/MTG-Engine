@@ -108,6 +108,7 @@ import _poolMonsterMashup from "../pool/monster-mashup.js";
 import _poolMordantDragon from "../pool/mordant-dragon.js";
 import _poolMossbeardAncient from "../pool/mossbeard-ancient.js";
 import _poolMummyParamount from "../pool/mummy-paramount.js";
+import _poolMurderousRider from "../pool/murderous-rider.js";
 import _poolNecroticHex from "../pool/necrotic-hex.js";
 import _poolOnakkeOgre from "../pool/onakke-ogre.js";
 import _poolOnduWarCleric from "../pool/ondu-war-cleric.js";
@@ -115,6 +116,7 @@ import _poolOpenFire from "../pool/open-fire.js";
 import _poolOrnithopterOfParadise from "../pool/ornithopter-of-paradise.js";
 import _poolOrzhovGuildgate from "../pool/orzhov-guildgate.js";
 import _poolOverseerOfTheDamned from "../pool/overseer-of-the-damned.js";
+import _poolOversoldCemetery from "../pool/oversold-cemetery.js";
 import _poolPrecinctCaptain from "../pool/precinct-captain.js";
 import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
@@ -318,6 +320,7 @@ const shard: CardShard = {
     _poolMordantDragon,
     _poolMossbeardAncient,
     _poolMummyParamount,
+    _poolMurderousRider,
     _poolNecroticHex,
     _poolOnakkeOgre,
     _poolOnduWarCleric,
@@ -325,6 +328,7 @@ const shard: CardShard = {
     _poolOrnithopterOfParadise,
     _poolOrzhovGuildgate,
     _poolOverseerOfTheDamned,
+    _poolOversoldCemetery,
     _poolPrecinctCaptain,
     _poolPresenceOfGond,
     _poolPriestOfGix,

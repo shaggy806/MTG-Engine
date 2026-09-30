@@ -17,6 +17,7 @@ import _poolBayou from "../pool/bayou.js";
 import _poolBenthicGiant from "../pool/benthic-giant.js";
 import _poolBladeOfTheSixthPride from "../pool/blade-of-the-sixth-pride.js";
 import _poolBlightstepPathway from "../pool/blightstep-pathway.js";
+import _poolBloodMoney from "../pool/blood-money.js";
 import _poolBloodtallowCandle from "../pool/bloodtallow-candle.js";
 import _poolBoltwave from "../pool/boltwave.js";
 import _poolBondBeetle from "../pool/bond-beetle.js";
@@ -193,6 +194,7 @@ import _poolWurmcoilEngine from "../pool/wurmcoil-engine.js";
 import _poolYoungPyromancer from "../pool/young-pyromancer.js";
 import _poolZuranSpellcaster from "../pool/zuran-spellcaster.js";
 import _tokensDragonToken55 from "../tokens/dragon-token-5-5.js";
+import _tokensGoatToken from "../tokens/goat-token.js";
 import _tokensGoblinToken from "../tokens/goblin-token.js";
 import _tokensMonkToken from "../tokens/monk-token.js";
 import _tokensRedWarriorToken from "../tokens/red-warrior-token.js";
@@ -216,6 +218,7 @@ const shard: CardShard = {
     _poolBenthicGiant,
     _poolBladeOfTheSixthPride,
     _poolBlightstepPathway,
+    _poolBloodMoney,
     _poolBloodtallowCandle,
     _poolBoltwave,
     _poolBondBeetle,
@@ -394,6 +397,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensDragonToken55,
+    _tokensGoatToken,
     _tokensGoblinToken,
     _tokensMonkToken,
     _tokensRedWarriorToken,

@@ -117,6 +117,7 @@ import _poolMorgueToad from "../pool/morgue-toad.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
 import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
+import _poolObscuraStorefront from "../pool/obscura-storefront.js";
 import _poolOgreWarrior from "../pool/ogre-warrior.js";
 import _poolOnTheJob from "../pool/on-the-job.js";
 import _poolParcelMyr from "../pool/parcel-myr.js";
@@ -312,6 +313,7 @@ const shard: CardShard = {
     _poolNarstadScrapper,
     _poolNicolBolasTheRavager,
     _poolNinjaOfTheHand,
+    _poolObscuraStorefront,
     _poolOgreWarrior,
     _poolOnTheJob,
     _poolParcelMyr,

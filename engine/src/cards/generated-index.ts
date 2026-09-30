@@ -63,6 +63,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Fungus Token (Can't Block)",
   "Glimmer Token",
   "Gnome Token",
+  "Goat Token",
   "Goblin Token",
   "Hero Token",
   "Human Knight Token",

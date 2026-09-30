@@ -165,11 +165,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Seven-mana green flying Dragon.",
       ),
       sub(
-        "Savage Ventmaw",
-        "Lathliss, Dragon Queen",
-        "Six-mana flying Dragon.",
-      ),
-      sub(
         "Loaming Shaman",
         "Scavenging Ooze",
         "Cheap green creature that interacts with graveyards.",

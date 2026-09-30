@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1768 already implemented / 3232 missing (marks refreshed 2026-09-30)
+1799 already implemented / 3201 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1636,83 +1636,83 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1643  Trumpeting Carnosaur                     {4}{R}{R}        Creature — Dinosaur
 [ ]  1644  Wild-Magic Sorcerer                      {3}{R}           Creature — Orc Shaman Sorcerer
 [ ]  1645  Grenzo, Havoc Raiser                     {R}{R}           Legendary Creature — Goblin Rogue
-[ ]  1646  Loyal Warhound                           {1}{W}           Creature — Dog
+[x]  1646  Loyal Warhound                           {1}{W}           Creature — Dog
 [ ]  1647  Galadriel's Dismissal                    {W}              Instant
 [ ]  1648  Tetsuko Umezawa, Fugitive                {1}{U}           Legendary Creature — Human Rogue
 [x]  1649  Zetalpa, Primal Dawn                     {6}{W}{W}        Legendary Creature — Elder Dinosaur
 [x]  1650  Silent Clearing                          {0}              Land
-[ ]  1651  The Gaffer                               {2}{W}           Legendary Creature — Halfling Peasant
+[x]  1651  The Gaffer                               {2}{W}           Legendary Creature — Halfling Peasant
 [ ]  1652  Stridehangar Automaton                   {3}              Artifact Creature — Construct
-[ ]  1653  Blast Zone                               {0}              Land
+[x]  1653  Blast Zone                               {0}              Land
 [x]  1654  Prismatic Lens                           {2}              Artifact
 [x]  1655  Botanical Sanctum                        {0}              Land
-[ ]  1656  Blood Money                              {5}{B}{B}        Sorcery
-[ ]  1657  Nissa, Who Shakes the World              {3}{G}{G}        Legendary Planeswalker — Nissa
-[ ]  1658  Battle Hymn                              {1}{R}           Instant
+[x]  1656  Blood Money                              {5}{B}{B}        Sorcery
+[x]  1657  Nissa, Who Shakes the World              {3}{G}{G}        Legendary Planeswalker — Nissa
+[x]  1658  Battle Hymn                              {1}{R}           Instant
 [x]  1659  Poison-Tip Archer                        {2}{B}{G}        Creature — Elf Archer
 [x]  1660  Winds of Rath                            {3}{W}{W}        Sorcery
 [ ]  1661  Parting Gust                             {W}{W}           Instant
-[ ]  1662  Obscura Storefront                       {0}              Land
-[ ]  1663  Court of Grace                           {2}{W}{W}        Enchantment
+[x]  1662  Obscura Storefront                       {0}              Land
+[x]  1663  Court of Grace                           {2}{W}{W}        Enchantment
 [ ]  1664  Gwenna, Eyes of Gaea                     {2}{G}           Legendary Creature — Elf Druid Scout
-[ ]  1665  Inspiring Overseer                       {2}{W}           Creature — Angel Cleric
-[ ]  1666  Sunscorch Regent                         {3}{W}{W}        Creature — Dragon
-[ ]  1667  Murderous Rider // Swift End             {1}{B}{B} // {1}{B}{B} Creature — Zombie Knight // Instant — Adventure
-[ ]  1668  Runaway Steam-Kin                        {1}{R}           Creature — Elemental
+[x]  1665  Inspiring Overseer                       {2}{W}           Creature — Angel Cleric
+[x]  1666  Sunscorch Regent                         {3}{W}{W}        Creature — Dragon
+[x]  1667  Murderous Rider // Swift End             {1}{B}{B} // {1}{B}{B} Creature — Zombie Knight // Instant — Adventure
+[x]  1668  Runaway Steam-Kin                        {1}{R}           Creature — Elemental
 [x]  1669  Allosaurus Shepherd                      {G}              Creature — Elf Shaman
 [x]  1670  Giada, Font of Hope                      {1}{W}           Legendary Creature — Angel
 [ ]  1671  Kaldra Compleat                          {7}              Legendary Artifact — Equipment
-[ ]  1672  Ba Sing Se                               {0}              Land
+[x]  1672  Ba Sing Se                               {0}              Land
 [ ]  1673  Metalwork Colossus                       {11}             Artifact Creature — Construct
-[ ]  1674  Moonsilver Key                           {2}              Artifact
+[x]  1674  Moonsilver Key                           {2}              Artifact
 [ ]  1675  Gingerbrute                              {1}              Artifact Creature — Food Golem
-[ ]  1676  Savage Ventmaw                           {4}{R}{G}        Creature — Dragon
-[ ]  1677  Valgavoth's Lair                         {0}              Enchantment Land
+[x]  1676  Savage Ventmaw                           {4}{R}{G}        Creature — Dragon
+[x]  1677  Valgavoth's Lair                         {0}              Enchantment Land
 [ ]  1678  Open the Way                             {X}{G}{G}        Sorcery
 [ ]  1679  Run Away Together                        {1}{U}           Instant
 [x]  1680  Horizon Canopy                           {0}              Land
 [ ]  1681  Smuggler's Share                         {2}{W}           Enchantment
-[ ]  1682  Fire Nation Palace                       {0}              Land
-[ ]  1683  Woe Strider                              {2}{B}           Creature — Horror
+[x]  1682  Fire Nation Palace                       {0}              Land
+[x]  1683  Woe Strider                              {2}{B}           Creature — Horror
 [ ]  1684  Void Winnower                            {9}              Creature — Eldrazi
-[ ]  1685  Soulherder                               {1}{W}{U}        Creature — Spirit
-[ ]  1686  Foreboding Landscape                     {0}              Land
+[x]  1685  Soulherder                               {1}{W}{U}        Creature — Spirit
+[x]  1686  Foreboding Landscape                     {0}              Land
 [x]  1687  Talion, the Kindly Lord                  {2}{U}{B}        Legendary Creature — Faerie Noble
-[ ]  1688  Shore Up                                 {U}              Instant
+[x]  1688  Shore Up                                 {U}              Instant
 [ ]  1689  Ardenn, Intrepid Archaeologist           {2}{W}           Legendary Creature — Kor Scout
-[ ]  1690  Gift of the Viper                        {G}              Instant
+[x]  1690  Gift of the Viper                        {G}              Instant
 [ ]  1691  Praetor's Grasp                          {1}{B}{B}        Sorcery
-[ ]  1692  Felidar Guardian                         {3}{W}           Creature — Cat Beast
+[x]  1692  Felidar Guardian                         {3}{W}           Creature — Cat Beast
 [x]  1693  Sword of Truth and Justice               {3}              Artifact — Equipment
 [ ]  1694  Reforge the Soul                         {3}{R}{R}        Sorcery
-[ ]  1695  Simulacrum Synthesizer                   {2}{U}           Artifact
-[ ]  1696  Kher Keep                                {0}              Legendary Land
+[x]  1695  Simulacrum Synthesizer                   {2}{U}           Artifact
+[x]  1696  Kher Keep                                {0}              Legendary Land
 [ ]  1697  Lively Dirge                             {1}{B}           Sorcery
 [ ]  1698  Massacre Girl, Known Killer              {2}{B}{B}        Legendary Creature — Human Assassin
 [x]  1699  Spirit Mantle                            {1}{W}           Enchantment — Aura
-[ ]  1700  Glen Elendra Archmage                    {3}{U}           Creature — Faerie Wizard
+[x]  1700  Glen Elendra Archmage                    {3}{U}           Creature — Faerie Wizard
 [x]  1701  Curiosity Crafter                        {3}{U}           Creature — Bird Wizard
 [ ]  1702  Extraplanar Lens                         {3}              Artifact
 [ ]  1703  Timely Ward                              {2}{W}           Enchantment — Aura
-[ ]  1704  Oversold Cemetery                        {1}{B}           Enchantment
+[x]  1704  Oversold Cemetery                        {1}{B}           Enchantment
 [ ]  1705  Mirror Box                               {3}              Artifact
 [ ]  1706  Sublime Epiphany                         {4}{U}{U}        Instant
 [x]  1707  Hornet Queen                             {4}{G}{G}{G}     Creature — Insect
 [x]  1708  Overrun                                  {2}{G}{G}{G}     Sorcery
-[ ]  1709  Eldrazi Temple                           {0}              Land
+[x]  1709  Eldrazi Temple                           {0}              Land
 [ ]  1710  Shigeki, Jukai Visionary                 {1}{G}           Legendary Enchantment Creature — Snake Druid
 [ ]  1711  Profane Tutor                            {0}              Sorcery
 [x]  1712  Clock of Omens                           {4}              Artifact
 [x]  1713  Utter End                                {2}{W}{B}        Instant
 [ ]  1714  Fathom Mage                              {2}{G}{U}        Creature — Human Wizard
 [ ]  1715  Hoarding Broodlord                       {5}{B}{B}{B}     Creature — Dragon
-[ ]  1716  Crypt of Agadeem                         {0}              Land
-[ ]  1717  Jin-Gitaxias, Core Augur                 {8}{U}{U}        Legendary Creature — Phyrexian Praetor
+[x]  1716  Crypt of Agadeem                         {0}              Land
+[x]  1717  Jin-Gitaxias, Core Augur                 {8}{U}{U}        Legendary Creature — Phyrexian Praetor
 [ ]  1718  Gala Greeters                            {1}{G}           Creature — Elf Druid
 [ ]  1719  Twinning Staff                           {3}              Artifact
 [ ]  1720  Painful Truths                           {2}{B}           Sorcery
 [ ]  1721  Overlord of the Hauntwoods               {3}{G}{G}        Enchantment Creature — Avatar Horror
-[ ]  1722  Fate Unraveler                           {3}{B}           Enchantment Creature — Hag
+[x]  1722  Fate Unraveler                           {3}{B}           Enchantment Creature — Hag
 [ ]  1723  Impulsive Pilferer                       {R}              Creature — Goblin Pirate
 [ ]  1724  Massacre Girl                            {3}{B}{B}        Legendary Creature — Human Assassin
 [ ]  1725  Nyx Weaver                               {1}{B}{G}        Enchantment Creature — Spider

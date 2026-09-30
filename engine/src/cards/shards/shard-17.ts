@@ -21,6 +21,7 @@ import _poolBastionEnforcer from "../pool/bastion-enforcer.js";
 import _poolBattlewiseValor from "../pool/battlewise-valor.js";
 import _poolBaylenTheHaymaker from "../pool/baylen-the-haymaker.js";
 import _poolBirdsOfParadise from "../pool/birds-of-paradise.js";
+import _poolBlastZone from "../pool/blast-zone.js";
 import _poolBloodforgedBattleAxe from "../pool/bloodforged-battle-axe.js";
 import _poolBoggartBog from "../pool/boggart-bog.js";
 import _poolBondedFetch from "../pool/bonded-fetch.js";
@@ -40,6 +41,7 @@ import _poolCogworkWrestler from "../pool/cogwork-wrestler.js";
 import _poolConcordiaPegasus from "../pool/concordia-pegasus.js";
 import _poolContaminatedAquifer from "../pool/contaminated-aquifer.js";
 import _poolContrabandKingpin from "../pool/contraband-kingpin.js";
+import _poolCourtOfGrace from "../pool/court-of-grace.js";
 import _poolCrashThrough from "../pool/crash-through.js";
 import _poolCrosissAttendant from "../pool/crosiss-attendant.js";
 import _poolCurioVendor from "../pool/curio-vendor.js";
@@ -226,6 +228,7 @@ const shard: CardShard = {
     _poolBattlewiseValor,
     _poolBaylenTheHaymaker,
     _poolBirdsOfParadise,
+    _poolBlastZone,
     _poolBloodforgedBattleAxe,
     _poolBoggartBog,
     _poolBondedFetch,
@@ -245,6 +248,7 @@ const shard: CardShard = {
     _poolConcordiaPegasus,
     _poolContaminatedAquifer,
     _poolContrabandKingpin,
+    _poolCourtOfGrace,
     _poolCrashThrough,
     _poolCrosissAttendant,
     _poolCurioVendor,

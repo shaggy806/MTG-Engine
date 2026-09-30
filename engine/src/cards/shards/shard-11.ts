@@ -63,6 +63,7 @@ import _poolGaiusVanBaelsar from "../pool/gaius-van-baelsar.js";
 import _poolGarruksGorehorn from "../pool/garruks-gorehorn.js";
 import _poolGhirapurOsprey from "../pool/ghirapur-osprey.js";
 import _poolGiantStrength from "../pool/giant-strength.js";
+import _poolGiftOfTheViper from "../pool/gift-of-the-viper.js";
 import _poolGildedGoose from "../pool/gilded-goose.js";
 import _poolGoShintaiOfLifesOrigin from "../pool/go-shintai-of-lifes-origin.js";
 import _poolGoblinChieftain from "../pool/goblin-chieftain.js";
@@ -86,6 +87,7 @@ import _poolHoardRobber from "../pool/hoard-robber.js";
 import _poolHoardSmelterDragon from "../pool/hoard-smelter-dragon.js";
 import _poolHookHauntDrifter from "../pool/hook-haunt-drifter.js";
 import _poolHovermyr from "../pool/hovermyr.js";
+import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
 import _poolIntrudingSoulrager from "../pool/intruding-soulrager.js";
 import _poolInvasionTactics from "../pool/invasion-tactics.js";
 import _poolJacesScrutiny from "../pool/jaces-scrutiny.js";
@@ -157,6 +159,7 @@ import _poolSejiriRefuge from "../pool/sejiri-refuge.js";
 import _poolSerpentineKavu from "../pool/serpentine-kavu.js";
 import _poolShamblingStrider from "../pool/shambling-strider.js";
 import _poolShiningAerosaur from "../pool/shining-aerosaur.js";
+import _poolShoreUp from "../pool/shore-up.js";
 import _poolShowOfValor from "../pool/show-of-valor.js";
 import _poolSiegeMastodon from "../pool/siege-mastodon.js";
 import _poolSiegeVeteran from "../pool/siege-veteran.js";
@@ -280,6 +283,7 @@ const shard: CardShard = {
     _poolGarruksGorehorn,
     _poolGhirapurOsprey,
     _poolGiantStrength,
+    _poolGiftOfTheViper,
     _poolGildedGoose,
     _poolGoShintaiOfLifesOrigin,
     _poolGoblinChieftain,
@@ -303,6 +307,7 @@ const shard: CardShard = {
     _poolHoardSmelterDragon,
     _poolHookHauntDrifter,
     _poolHovermyr,
+    _poolInspiringOverseer,
     _poolIntrudingSoulrager,
     _poolInvasionTactics,
     _poolJacesScrutiny,
@@ -374,6 +379,7 @@ const shard: CardShard = {
     _poolSerpentineKavu,
     _poolShamblingStrider,
     _poolShiningAerosaur,
+    _poolShoreUp,
     _poolShowOfValor,
     _poolSiegeMastodon,
     _poolSiegeVeteran,

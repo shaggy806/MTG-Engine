@@ -456,6 +456,15 @@ function evalStaticCondition(
     }
     case "threshold":
       return state.zones.perPlayer[you].graveyard.length >= 7;
+    case "cards-in-graveyard": {
+      let n = 0;
+      for (const id of state.zones.perPlayer[you].graveyard) {
+        if (state.objects[id] === undefined) continue;
+        if (condition.filter !== undefined && !matchesFilter(state, registry, id, condition.filter, { you })) continue;
+        n += 1;
+      }
+      return n >= condition.atLeast;
+    }
     case "delirium": {
       // Distinct card *types*, not cards — one artifact creature is two of
       // the four. Printed types: layer effects don't reach a graveyard.

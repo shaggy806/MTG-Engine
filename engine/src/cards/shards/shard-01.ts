@@ -13,6 +13,7 @@ import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
 import _poolAzureDrake from "../pool/azure-drake.js";
 import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
+import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
 import _poolBrokersHideout from "../pool/brokers-hideout.js";
@@ -98,6 +99,7 @@ import _poolMinotaurSureshot from "../pool/minotaur-sureshot.js";
 import _poolMountainGoat from "../pool/mountain-goat.js";
 import _poolMurkwaterPathway from "../pool/murkwater-pathway.js";
 import _poolNightscapeMaster from "../pool/nightscape-master.js";
+import _poolNissaWhoShakesTheWorld from "../pool/nissa-who-shakes-the-world.js";
 import _poolOgnis from "../pool/ognis.js";
 import _poolOgreTaskmaster from "../pool/ogre-taskmaster.js";
 import _poolOwlinShieldmage from "../pool/owlin-shieldmage.js";
@@ -188,6 +190,7 @@ const shard: CardShard = {
     _poolArtisansSorrow,
     _poolAzureDrake,
     _poolBarrageOfExpendables,
+    _poolBattleHymn,
     _poolBeastWhisperer,
     _poolBellowsLizard,
     _poolBrokersHideout,
@@ -273,6 +276,7 @@ const shard: CardShard = {
     _poolMountainGoat,
     _poolMurkwaterPathway,
     _poolNightscapeMaster,
+    _poolNissaWhoShakesTheWorld,
     _poolOgnis,
     _poolOgreTaskmaster,
     _poolOwlinShieldmage,
