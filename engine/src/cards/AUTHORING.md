@@ -1113,7 +1113,7 @@ manaValue, power, toughness, basePower, baseToughness, counters, controlledBy,
 ownedBy, keyword, notKeyword, tapped, token, isCommander, equipped, enchanted,
 modified, anyOf, manaSpent, manaFrom, putIntoGraveyardFromLibraryThisTurn,
 enteredThisTurn, attackedThisTurn, damagedThisTurnBy, excessDamageThisTurn,
-dealtDamageToCreatureThisTurn, cast, castBy, castFrom, enteredFrom,
+dealtDamageToCreatureThisTurn, cast, castBy, castFrom, castVia, enteredFrom,
 putThereBySource, sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, hasManaAbility, hasAbilities,
 xInManaCost, manaCost, coloredManaSymbols, cardTypeCount, nameDiffersFromEach,
 nameUnlike, ofChosenType }`,
@@ -1176,7 +1176,9 @@ filter: { cast: true, castBy: "you" } }`, since whether it was cast never
 changes; a copy of a spell was never cast), cast from which zone (asked of a
 spell still on the stack, where it's being cast from — Delayed Blast
 Fireball's "if this spell was cast from exile" is a `conditional` on `{ kind:
-"source", filter: { castFrom: "exile" } }`), from which
+"source", filter: { castFrom: "exile" } }`), under which permission (`castVia`
+— Uro's "sacrifice it unless it escaped" is a `conditional` on `{ kind: "not",
+of: { kind: "source", filter: { castVia: "escape" } } }`), from which
 zone it entered (Fire Lord Zuko's "whenever a permanent you control enters
 from exile" — a spell comes from the stack, so a creature cast from exile
 doesn't), and whether an ability of the permanent applying the filter put it
@@ -2250,7 +2252,9 @@ anthem, the keyword grant and the granted trigger like any other creature.
   revealed" half, which only affects `viewFor`).
 - `extraLandsPerTurn: number` — additional land drops per turn for this
   permanent's controller (Oracle of Mul Daya, Azusa, Lost but Seeking — needed-cards
-  P16). `affects` is ignored.
+  P16). `affects` is ignored. With `extraLandsForEachPlayer: true` it reaches
+  every player instead (Rites of Flourishing: "each player may play an
+  additional land on each of their turns").
 - `doubleEntryTriggers: { filter? }` — Panharmonicon-style doubling (needed-cards
   P15 — Starfield Vocalist): if a permanent entering causes a triggered ability
   of this permanent's controller to trigger, it triggers an additional time.
@@ -2548,14 +2552,20 @@ clause (section 9):
   Thief. `{ event: "would-draw", who: "you", instead: { draws: N } }` is "if
   you would draw a card, draw N cards instead" (gate it with the static's
   `condition`); neither applies again to the draws it makes (rule 614.5).
-- `{ event: "would-mill", who, multiplier }` — Bruvac the Grandiloquent's "if
-  an opponent would mill one or more cards, they mill twice that many cards
-  instead" (`who: "opponent"`, `multiplier: 2`); several multiply.
-- `{ event: "would-gain-life", who, plus?, prevent? }` — Bilbo, Birthday
+- `{ event: "would-mill", who, multiplier?, plus? }` — Bruvac the
+  Grandiloquent's "if an opponent would mill one or more cards, they mill
+  twice that many cards instead" (`who: "opponent"`, `multiplier: 2`), The
+  Water Crystal's "…they mill that many cards plus four instead" (`plus: 4`).
+  Several multiply, then every `plus` adds, as damage's do; a mill of none is
+  never replaced.
+- `{ event: "would-gain-life", who, plus?, multiplier?, prevent? }` — Bilbo, Birthday
   Celebrant's "if you would gain life, you gain that much life plus 1
   instead" (`who: "you"`, `plus: 1`), or "your opponents can't gain life"
   (The Lord of Pain — `who: "opponent"`, `prevent: true`). Applied to every
   life gain, lifelink's included; one `prevent` beats every `plus`.
+  `multiplier: 2` is Rhox Faithmender's "you gain twice that much life
+  instead", applied after every `plus` (the order the gaining player would
+  pick, rule 616.1).
 - `{ event: "would-deal-damage", multiplier?, plus?, atLeast?, combat?, prevent?, then?, source?, fromSelf?, to? }`
   (`fromSelf: true` — only damage this permanent deals: Wolverine's "double all damage Wolverine would deal")
   — damage about to be dealt, changed. With neither `source` nor `to` it is
@@ -2807,10 +2817,9 @@ Delete an entry in the same commit as the feature that retires it.
   Putting a card **on top of / on the bottom of a library** is the
   `put-on-library` effect (Academy Ruins) and `search-library`'s
   `destination: "library-top"` (Vampiric Tutor).
-- `modify-pt` / `tap` targeting **another player** by scope, and `mill` by
-  scope — `discard`/`mill` take a target-player slot (or `"you"`) but there's
-  no "each opponent mills" form. (`draw` *does* now take both a `who` scope
-  and a `target` slot, and `discard-hand` takes a scope — see §6.)
+- `modify-pt` / `tap` targeting **another player** by scope. (`mill` takes
+  a scope — `"each-opponent"` — as well as a target slot; `draw` takes both a
+  `who` scope and a `target` slot, and `discard-hand` takes a scope — see §6.)
 - Reordering the cards you keep on top after a scry.
 - Tutors whose finds must **share a characteristic with each other** (Myriad
   Landscape: "up to two basic land cards that share a land type"). A
@@ -2992,7 +3001,9 @@ Delete an entry in the same commit as the feature that retires it.
 **Not modeled at all:** phasing, Battles, dungeons / the Initiative / the Ring,
 banding, "day/night"-independent double-faced tokens, a static ability that
 makes a planeswalker a creature (Gideon), ability-dependency ordering (rule
-613.8), companions.
+613.8), companions, the Kindred card type (Eldrazi Conscription), stun
+counters (rule 122.1d), Cases and Classes, a −X loyalty cost (Ugin, the
+Spirit Dragon).
 
 ### Known exceptions already in the pool
 

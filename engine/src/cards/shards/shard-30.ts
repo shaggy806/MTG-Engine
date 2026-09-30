@@ -61,6 +61,7 @@ import _poolDreamBeavers from "../pool/dream-beavers.js";
 import _poolDreamrootCascade from "../pool/dreamroot-cascade.js";
 import _poolDromokaWarrior from "../pool/dromoka-warrior.js";
 import _poolElasIlKorSadisticPilgrim from "../pool/elas-il-kor-sadistic-pilgrim.js";
+import _poolElvishWarmaster from "../pool/elvish-warmaster.js";
 import _poolEmeraldMedallion from "../pool/emerald-medallion.js";
 import _poolEnergizer from "../pool/energizer.js";
 import _poolEnhancedAwareness from "../pool/enhanced-awareness.js";
@@ -74,6 +75,7 @@ import _poolFloodfarmVerge from "../pool/floodfarm-verge.js";
 import _poolFortuitousFind from "../pool/fortuitous-find.js";
 import _poolFrenziedRaptor from "../pool/frenzied-raptor.js";
 import _poolFrogSquirrels from "../pool/frog-squirrels.js";
+import _poolFrostcliffSiege from "../pool/frostcliff-siege.js";
 import _poolFuelTheFlames from "../pool/fuel-the-flames.js";
 import _poolFurtiveAnalyst from "../pool/furtive-analyst.js";
 import _poolGaladhrimGuide from "../pool/galadhrim-guide.js";
@@ -101,6 +103,7 @@ import _poolIrohGrandLotus from "../pool/iroh-grand-lotus.js";
 import _poolJeongJeongsDeserters from "../pool/jeong-jeongs-deserters.js";
 import _poolKambalConsulOfAllocation from "../pool/kambal-consul-of-allocation.js";
 import _poolKavuClimber from "../pool/kavu-climber.js";
+import _poolKazuulsCliffs from "../pool/kazuuls-cliffs.js";
 import _poolKeenEyedArchers from "../pool/keen-eyed-archers.js";
 import _poolKingpinsEnforcers from "../pool/kingpins-enforcers.js";
 import _poolLaeliaTheBladeReforged from "../pool/laelia-the-blade-reforged.js";
@@ -129,6 +132,7 @@ import _poolNimbleThopterist from "../pool/nimble-thopterist.js";
 import _poolOfferImmortality from "../pool/offer-immortality.js";
 import _poolOmenOfTheDead from "../pool/omen-of-the-dead.js";
 import _poolOrcishBowmasters from "../pool/orcish-bowmasters.js";
+import _poolOverprotect from "../pool/overprotect.js";
 import _poolPanharmonicon from "../pool/panharmonicon.js";
 import _poolPantherWarriors from "../pool/panther-warriors.js";
 import _poolPiousWayfarer from "../pool/pious-wayfarer.js";
@@ -263,6 +267,7 @@ const shard: CardShard = {
     _poolDreamrootCascade,
     _poolDromokaWarrior,
     _poolElasIlKorSadisticPilgrim,
+    _poolElvishWarmaster,
     _poolEmeraldMedallion,
     _poolEnergizer,
     _poolEnhancedAwareness,
@@ -276,6 +281,7 @@ const shard: CardShard = {
     _poolFortuitousFind,
     _poolFrenziedRaptor,
     _poolFrogSquirrels,
+    _poolFrostcliffSiege,
     _poolFuelTheFlames,
     _poolFurtiveAnalyst,
     _poolGaladhrimGuide,
@@ -303,6 +309,7 @@ const shard: CardShard = {
     _poolJeongJeongsDeserters,
     _poolKambalConsulOfAllocation,
     _poolKavuClimber,
+    _poolKazuulsCliffs,
     _poolKeenEyedArchers,
     _poolKingpinsEnforcers,
     _poolLaeliaTheBladeReforged,
@@ -331,6 +338,7 @@ const shard: CardShard = {
     _poolOfferImmortality,
     _poolOmenOfTheDead,
     _poolOrcishBowmasters,
+    _poolOverprotect,
     _poolPanharmonicon,
     _poolPantherWarriors,
     _poolPiousWayfarer,

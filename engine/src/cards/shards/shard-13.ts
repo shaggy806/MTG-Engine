@@ -92,6 +92,7 @@ import _poolJourneyersKite from "../pool/journeyers-kite.js";
 import _poolJump from "../pool/jump.js";
 import _poolKeenGlidemaster from "../pool/keen-glidemaster.js";
 import _poolKiboUktabiPrince from "../pool/kibo-uktabi-prince.js";
+import _poolKiorasFollower from "../pool/kioras-follower.js";
 import _poolKitesailScout from "../pool/kitesail-scout.js";
 import _poolKnightOfMeadowgrain from "../pool/knight-of-meadowgrain.js";
 import _poolKrakenHatchling from "../pool/kraken-hatchling.js";
@@ -128,6 +129,7 @@ import _poolRhoxWarMonk from "../pool/rhox-war-monk.js";
 import _poolRideTheRails from "../pool/ride-the-rails.js";
 import _poolRimewoodFalls from "../pool/rimewood-falls.js";
 import _poolRipscalePredator from "../pool/ripscale-predator.js";
+import _poolRitesOfFlourishing from "../pool/rites-of-flourishing.js";
 import _poolRivenTurnbull from "../pool/riven-turnbull.js";
 import _poolRottingMastodon from "../pool/rotting-mastodon.js";
 import _poolRoyalFalcon from "../pool/royal-falcon.js";
@@ -152,6 +154,7 @@ import _poolSteadfastSentry from "../pool/steadfast-sentry.js";
 import _poolStirge from "../pool/stirge.js";
 import _poolStompingGround from "../pool/stomping-ground.js";
 import _poolStrandsOfNight from "../pool/strands-of-night.js";
+import _poolStubbornDenial from "../pool/stubborn-denial.js";
 import _poolSunBlessedPeak from "../pool/sun-blessed-peak.js";
 import _poolSunlitMarsh from "../pool/sunlit-marsh.js";
 import _poolSwiftSpinner from "../pool/swift-spinner.js";
@@ -283,6 +286,7 @@ const shard: CardShard = {
     _poolJump,
     _poolKeenGlidemaster,
     _poolKiboUktabiPrince,
+    _poolKiorasFollower,
     _poolKitesailScout,
     _poolKnightOfMeadowgrain,
     _poolKrakenHatchling,
@@ -319,6 +323,7 @@ const shard: CardShard = {
     _poolRideTheRails,
     _poolRimewoodFalls,
     _poolRipscalePredator,
+    _poolRitesOfFlourishing,
     _poolRivenTurnbull,
     _poolRottingMastodon,
     _poolRoyalFalcon,
@@ -343,6 +348,7 @@ const shard: CardShard = {
     _poolStirge,
     _poolStompingGround,
     _poolStrandsOfNight,
+    _poolStubbornDenial,
     _poolSunBlessedPeak,
     _poolSunlitMarsh,
     _poolSwiftSpinner,

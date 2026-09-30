@@ -85,6 +85,7 @@ import _poolHedgeMaze from "../pool/hedge-maze.js";
 import _poolHornedTurtle from "../pool/horned-turtle.js";
 import _poolHornetNest from "../pool/hornet-nest.js";
 import _poolHushwoodVerge from "../pool/hushwood-verge.js";
+import _poolHydroidKrasis from "../pool/hydroid-krasis.js";
 import _poolIndulgentTormentor from "../pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "../pool/infernal-grasp.js";
 import _poolIronTuskElephant from "../pool/iron-tusk-elephant.js";
@@ -158,6 +159,7 @@ import _poolSteppeLynx from "../pool/steppe-lynx.js";
 import _poolStewardOfValeron from "../pool/steward-of-valeron.js";
 import _poolSummitProwler from "../pool/summit-prowler.js";
 import _poolSwiftbladeVindicator from "../pool/swiftblade-vindicator.js";
+import _poolSwordOfVengeance from "../pool/sword-of-vengeance.js";
 import _poolTaintedIsle from "../pool/tainted-isle.js";
 import _poolTatteredApparition from "../pool/tattered-apparition.js";
 import _poolThaumaturgesFamiliar from "../pool/thaumaturges-familiar.js";
@@ -288,6 +290,7 @@ const shard: CardShard = {
     _poolHornedTurtle,
     _poolHornetNest,
     _poolHushwoodVerge,
+    _poolHydroidKrasis,
     _poolIndulgentTormentor,
     _poolInfernalGrasp,
     _poolIronTuskElephant,
@@ -361,6 +364,7 @@ const shard: CardShard = {
     _poolStewardOfValeron,
     _poolSummitProwler,
     _poolSwiftbladeVindicator,
+    _poolSwordOfVengeance,
     _poolTaintedIsle,
     _poolTatteredApparition,
     _poolThaumaturgesFamiliar,

@@ -168,6 +168,7 @@ export const PINNED_ART: Readonly<Partial<Record<string, string>>> = {
   "Ifrit, Warden of Inferno": "https://cards.scryfall.io/art_crop/back/9/a/9a069e96-2786-493d-aca8-f70611435dbe.jpg",
   "Inundated Archive": "https://cards.scryfall.io/art_crop/back/0/6/060f9675-4921-4cbb-bae2-54c85c679fd4.jpg",
   "Kazandu Valley": "https://cards.scryfall.io/art_crop/back/2/f/2f632537-63bf-4490-86e6-e6067b9c1a3b.jpg",
+  "Kazuul's Cliffs": "https://cards.scryfall.io/art_crop/back/7/5/75240bbc-adc7-48ff-9523-c79776d710d3.jpg",
   "Kefka, Ruler of Ruin": "https://cards.scryfall.io/art_crop/back/8/f/8fcf3fbb-1ddd-437e-81c1-f5a3133f5ee8.jpg",
   "Lavaglide Pathway": "https://cards.scryfall.io/art_crop/back/2/6/2668ac91-6cda-4f81-a08d-4fc5f9cb35b2.jpg",
   "Legion Stronghold": "https://cards.scryfall.io/art_crop/back/7/6/7676abd9-0a3d-4721-b17b-778d2e3c2e25.jpg",

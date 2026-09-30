@@ -214,15 +214,19 @@ export interface DrawRedirectReplacement {
 }
 
 /**
- * A mill, multiplied (rule 614.1a) — Bruvac the Grandiloquent's "if an
+ * A mill, made bigger (rule 614.1a) — Bruvac the Grandiloquent's "if an
  * opponent would mill one or more cards, they mill twice that many cards
- * instead" (`who: "opponent"`, `multiplier: 2`). `who` is whose mill,
- * relative to this permanent's controller; several multiply together.
+ * instead" (`who: "opponent"`, `multiplier: 2`), The Water Crystal's "…they
+ * mill that many cards plus four instead" (`plus: 4`). `who` is whose mill,
+ * relative to this permanent's controller. Several multiply together, then
+ * every `plus` adds up, the way `Game.dealDamage` orders damage's (rule 616.1
+ * would let the milled player choose, and that order mills fewer).
  */
 export interface MillMultiplierReplacement {
   readonly event: "would-mill";
   readonly who: "opponent" | "you" | "any-player";
-  readonly multiplier: number;
+  readonly multiplier?: number;
+  readonly plus?: number;
 }
 
 /**
@@ -237,6 +241,9 @@ export interface LifeGainReplacement {
   readonly event: "would-gain-life";
   readonly who: "opponent" | "you" | "any-player";
   readonly plus?: number;
+  /** "…you gain twice that much life instead" (Rhox Faithmender, Boon
+   * Reflection) — applied after every `plus`, the order that gains most. */
+  readonly multiplier?: number;
   readonly prevent?: boolean;
 }
 

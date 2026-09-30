@@ -1227,8 +1227,12 @@ export interface StaticAbility {
   };
   /** Additional land drops per turn for this permanent's controller (rule
    * 305.2c-adjacent — needed-cards P16, Azusa, Lost but Seeking / Icetill Explorer).
-   * `affects` is ignored — folded into the controller's land-drop budget. */
+   * `affects` is ignored — folded into the controller's land-drop budget,
+   * or with `extraLandsForEachPlayer` into every player's: Rites of
+   * Flourishing's "each player may play an additional land on each of their
+   * turns". */
   readonly extraLandsPerTurn?: number;
+  readonly extraLandsForEachPlayer?: boolean;
   /** Panharmonicon-style doubling (needed-cards P15 — Starfield Vocalist:
    * "If a permanent entering the battlefield causes a triggered ability of a
    * permanent you control to trigger, that ability triggers an additional

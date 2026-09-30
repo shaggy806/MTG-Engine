@@ -1976,7 +1976,13 @@ export interface EntryRecord {
   /** It got here as a spell that was cast and resolved: who cast it and
    * from which zone — "if you cast it" (Anti-Venom, Rocco, Tiamat), "cast
    * from a graveyard". A copy of a spell was never cast. */
-  readonly cast?: { readonly by: PlayerId; readonly from: ZoneType };
+  readonly cast?: {
+    readonly by: PlayerId;
+    readonly from: ZoneType;
+    /** The permission it was cast under, if not a normal cast from hand
+     * (`GameObject.castVia`) — Uro's "unless it escaped". */
+    readonly via?: CastVia;
+  };
   /** The source of the ability that put it here, with that source's
    * timestamp then — Kodama of the East Tree's "if it wasn't put onto the
    * battlefield with this ability". */

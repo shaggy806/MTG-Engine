@@ -1,0 +1,739 @@
+{
+  "batch": "B9",
+  "status": "complete",
+  "ranks": "1507-1632",
+  "authored": [
+    {
+      "name": "Gratuitous Violence",
+      "files": [
+        "engine/src/cards/pool/gratuitous-violence.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Coastal Piracy",
+      "files": [
+        "engine/src/cards/pool/coastal-piracy.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rites of Flourishing",
+      "files": [
+        "engine/src/cards/pool/rites-of-flourishing.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lavaspur Boots",
+      "files": [
+        "engine/src/cards/pool/lavaspur-boots.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hangarback Walker",
+      "files": [
+        "engine/src/cards/pool/hangarback-walker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Izzet Charm",
+      "files": [
+        "engine/src/cards/pool/izzet-charm.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Drana, Liberator of Malakir",
+      "files": [
+        "engine/src/cards/pool/drana-liberator-of-malakir.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Stubborn Denial",
+      "files": [
+        "engine/src/cards/pool/stubborn-denial.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Chronicle of Victory",
+      "files": [
+        "engine/src/cards/pool/chronicle-of-victory.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Codsworth, Handy Helper",
+      "files": [
+        "engine/src/cards/pool/codsworth-handy-helper.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Water Crystal",
+      "files": [
+        "engine/src/cards/pool/the-water-crystal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Natural Order",
+      "files": [
+        "engine/src/cards/pool/natural-order.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Pawn of Ulamog",
+      "files": [
+        "engine/src/cards/pool/pawn-of-ulamog.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hydroid Krasis",
+      "files": [
+        "engine/src/cards/pool/hydroid-krasis.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rumor Gatherer",
+      "files": [
+        "engine/src/cards/pool/rumor-gatherer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "It That Betrays",
+      "files": [
+        "engine/src/cards/pool/it-that-betrays.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Uro, Titan of Nature's Wrath",
+      "files": [
+        "engine/src/cards/pool/uro-titan-of-natures-wrath.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Marionette Master",
+      "files": [
+        "engine/src/cards/pool/marionette-master.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Corpsejack Menace",
+      "files": [
+        "engine/src/cards/pool/corpsejack-menace.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Monastery Mentor",
+      "files": [
+        "engine/src/cards/pool/monastery-mentor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Relentless Assault",
+      "files": [
+        "engine/src/cards/pool/relentless-assault.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Null Elemental Blast",
+      "files": [
+        "engine/src/cards/pool/null-elemental-blast.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mazirek, Kraul Death Priest",
+      "files": [
+        "engine/src/cards/pool/mazirek-kraul-death-priest.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Crux of Fate",
+      "files": [
+        "engine/src/cards/pool/crux-of-fate.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Overprotect",
+      "files": [
+        "engine/src/cards/pool/overprotect.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Awakening Zone",
+      "files": [
+        "engine/src/cards/pool/awakening-zone.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Desynchronization",
+      "files": [
+        "engine/src/cards/pool/desynchronization.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ouroboroid",
+      "files": [
+        "engine/src/cards/pool/ouroboroid.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kiora's Follower",
+      "files": [
+        "engine/src/cards/pool/kioras-follower.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Surrak and Goreclaw",
+      "files": [
+        "engine/src/cards/pool/surrak-and-goreclaw.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Sword of Vengeance",
+      "files": [
+        "engine/src/cards/pool/sword-of-vengeance.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Seize the Day",
+      "files": [
+        "engine/src/cards/pool/seize-the-day.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "End-Raze Forerunners",
+      "files": [
+        "engine/src/cards/pool/end-raze-forerunners.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cryptic Command",
+      "files": [
+        "engine/src/cards/pool/cryptic-command.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Unmarked Grave",
+      "files": [
+        "engine/src/cards/pool/unmarked-grave.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Stitch Together",
+      "files": [
+        "engine/src/cards/pool/stitch-together.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Maddening Cacophony",
+      "files": [
+        "engine/src/cards/pool/maddening-cacophony.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Pirate's Pillage",
+      "files": [
+        "engine/src/cards/pool/pirates-pillage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Traverse the Outlands",
+      "files": [
+        "engine/src/cards/pool/traverse-the-outlands.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kazuul's Fury",
+      "files": [
+        "engine/src/cards/pool/kazuuls-fury.ts",
+        "engine/src/cards/pool/kazuuls-cliffs.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Elvish Warmaster",
+      "files": [
+        "engine/src/cards/pool/elvish-warmaster.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Frostcliff Siege",
+      "files": [
+        "engine/src/cards/pool/frostcliff-siege.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Eternity Elevator",
+      "files": [
+        "engine/src/cards/pool/the-eternity-elevator.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rhox Faithmender",
+      "files": [
+        "engine/src/cards/pool/rhox-faithmender.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Boon Reflection",
+      "files": [
+        "engine/src/cards/pool/boon-reflection.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Wind Crystal",
+      "files": [
+        "engine/src/cards/pool/the-wind-crystal.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Patriarch's Bidding",
+      "needs": [
+        "new:each-player-chooses-creature-type"
+      ],
+      "why": "Each player chooses a creature type, in turn order, and each returns creature cards of any chosen type at once; choose-creature-type asks only the resolving player."
+    },
+    {
+      "name": "Case of the Locked Hothouse",
+      "needs": [
+        "new:case",
+        "zone:visibility-extensions"
+      ],
+      "why": "No Case (to solve / solved) mechanic, and 'look at the top card of your library any time' is private looking, not revealing."
+    },
+    {
+      "name": "Blood Moon",
+      "needs": [
+        "new:land-type-setting"
+      ],
+      "why": "'Nonbasic lands are Mountains' sets land types and removes their other abilities in layer 4; no static sets a land type."
+    },
+    {
+      "name": "Misdirection",
+      "needs": [
+        "new:change-target",
+        "new:alt-cost-exile-card"
+      ],
+      "why": "Changing a spell's target, and 'exile a blue card from your hand rather than pay this spell's mana cost'."
+    },
+    {
+      "name": "Disciple of Bolas",
+      "needs": [
+        "new:sacrificed-by-effect-reference"
+      ],
+      "why": "'Sacrifice another creature ... X is that creature's power': only a cost's or sacrifice-source's victim is remembered, not an edict's."
+    },
+    {
+      "name": "Dour Port-Mage",
+      "needs": [
+        "new:leaves-batch-trigger"
+      ],
+      "why": "'Whenever one or more other creatures you control leave the battlefield without dying' needs a batched leaves-battlefield trigger."
+    },
+    {
+      "name": "Final Fortune",
+      "needs": [
+        "new:lose-game"
+      ],
+      "why": "'At the beginning of that turn's end step, you lose the game' has no effect to lose the game."
+    },
+    {
+      "name": "Horizon of Progress",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "'Any type that a land you control could produce' (colorless included); producedBy reads only opponents' lands."
+    },
+    {
+      "name": "Eerie Ultimatum",
+      "needs": [
+        "new:choose-any-number-different-names"
+      ],
+      "why": "Any number of permanent cards with different names from your graveyard, chosen as it resolves."
+    },
+    {
+      "name": "Creeping Bloodsucker",
+      "needs": [
+        "new:damage-dealt-this-way"
+      ],
+      "why": "'Gain life equal to the damage dealt this way' needs the damage actually dealt (Torbran, prevention), which no amount reads."
+    },
+    {
+      "name": "Tortured Existence",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard a creature card' as an activation cost."
+    },
+    {
+      "name": "Chandra, Torch of Defiance",
+      "needs": [
+        "effect:cast-during-resolution",
+        "new:emblem-triggered"
+      ],
+      "why": "'You may cast that card. If you don't, ...' during resolution, and an emblem with a triggered ability."
+    },
+    {
+      "name": "Unstoppable Slasher",
+      "needs": [
+        "new:stun-counters"
+      ],
+      "why": "Returns with two stun counters (rule 122.1d); stun counters aren't modeled."
+    },
+    {
+      "name": "Artist's Talent",
+      "needs": [
+        "new:class"
+      ],
+      "why": "Class levels aren't modeled."
+    },
+    {
+      "name": "Feldon of the Third Path",
+      "needs": [
+        "new:created-token-reference"
+      ],
+      "why": "'It gains haste' on the token copy is not a copy exception (a copy of the token doesn't get it), and nothing names the token created."
+    },
+    {
+      "name": "The Grey Havens",
+      "needs": [
+        "effect:add-mana-extensions"
+      ],
+      "why": "'Any color among legendary creature cards in your graveyard'."
+    },
+    {
+      "name": "Gifts Ungiven",
+      "needs": [
+        "new:opponent-chooses-from-found"
+      ],
+      "why": "Up to four cards with different names, of which an opponent picks two for the graveyard."
+    },
+    {
+      "name": "Malcolm, Alluring Scoundrel",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "'You may cast the discarded card without paying its mana cost' needs the discarded card named and cast during resolution."
+    },
+    {
+      "name": "Kozilek, the Great Distortion",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard a card with mana value X' as a cost, X matching the targeted spell."
+    },
+    {
+      "name": "Freed from the Real",
+      "needs": [
+        "new:attached-effect-ref"
+      ],
+      "why": "'Tap/untap enchanted creature' — no effect target names the Aura's host."
+    },
+    {
+      "name": "Ulamog, the Defiler",
+      "needs": [
+        "new:ward-nonmana-cost",
+        "new:annihilator-x"
+      ],
+      "why": "Ward—Sacrifice two permanents, and annihilator X where X is its +1/+1 counters."
+    },
+    {
+      "name": "Smuggler's Surprise",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree isn't modeled."
+    },
+    {
+      "name": "Phelia, Exuberant Shepherd",
+      "needs": [
+        "new:flicker-return-then"
+      ],
+      "why": "'If it entered under your control, put a +1/+1 counter on Phelia' after the delayed return."
+    },
+    {
+      "name": "Resourceful Defense",
+      "needs": [
+        "new:move-counters"
+      ],
+      "why": "'Put those counters on target permanent' and moving counters between permanents."
+    },
+    {
+      "name": "Brass's Tunnel-Grinder // Tecutlan, the Searing Rift",
+      "needs": [
+        "decision:discard-any-number",
+        "new:descend",
+        "new:discover"
+      ],
+      "why": "Discard any number then draw that many plus one, descend, and discover X."
+    },
+    {
+      "name": "Goblin Welder",
+      "needs": [
+        "new:target-in-that-players-graveyard"
+      ],
+      "why": "A second target 'in that player's graveyard', tied to the first target's controller, swapped simultaneously."
+    },
+    {
+      "name": "March of Swirling Mist",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "Phasing isn't modeled."
+    },
+    {
+      "name": "Losheel, Clockwork Scholar",
+      "needs": [
+        "new:damage-prevented-to-filter"
+      ],
+      "why": "'Prevent all combat damage that would be dealt to attacking artifact creatures you control': a damage replacement can't filter the recipient."
+    },
+    {
+      "name": "Cultivator Colossus",
+      "needs": [
+        "new:repeat-process"
+      ],
+      "why": "'If you do, draw a card and repeat this process' until declined."
+    },
+    {
+      "name": "Eldrazi Conscription",
+      "needs": [
+        "new:kindred-type"
+      ],
+      "why": "A Kindred Enchantment — the Kindred card type isn't modeled."
+    },
+    {
+      "name": "Fiery Confluence",
+      "needs": [
+        "new:modal-repeat-modes"
+      ],
+      "why": "'You may choose the same mode more than once'."
+    },
+    {
+      "name": "Valakut Exploration",
+      "needs": [
+        "new:exiled-with-source-to-graveyard"
+      ],
+      "why": "'If there are cards exiled with this enchantment, put them into their owner's graveyard, then deal that much damage'."
+    },
+    {
+      "name": "Return to Dust",
+      "needs": [
+        "new:cast-timing-condition"
+      ],
+      "why": "'If you cast this spell during your main phase' gates the second target on how it was cast."
+    },
+    {
+      "name": "Rebuff the Wicked",
+      "needs": [
+        "new:spell-targets-filter"
+      ],
+      "why": "'Target spell that targets a permanent you control'."
+    },
+    {
+      "name": "Fomori Vault",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard a card' as an activation cost."
+    },
+    {
+      "name": "Ashling, Flame Dancer",
+      "needs": [
+        "new:copy-spell-trigger",
+        "new:mana-persistence-color"
+      ],
+      "why": "Magecraft ('cast or copy') and 'you don't lose unspent red mana'."
+    },
+    {
+      "name": "Exploration Broodship",
+      "needs": [
+        "new:graveyard-cast-sacrifice-land"
+      ],
+      "why": "Casting a permanent spell from the graveyard by sacrificing a land as an additional cost."
+    },
+    {
+      "name": "Alhammarret's Archive",
+      "needs": [
+        "new:draw-replacement-except-first"
+      ],
+      "why": "'If you would draw a card except the first one you draw in each of your draw steps, draw two instead'. Its life doubling is built."
+    },
+    {
+      "name": "Thran Power Suit",
+      "needs": [
+        "new:count-attached-to-affected"
+      ],
+      "why": "'+1/+1 for each Aura and Equipment attached to it' counts relative to the equipped creature."
+    },
+    {
+      "name": "Avatar's Wrath",
+      "needs": [
+        "new:airbend"
+      ],
+      "why": "Airbend, and 'opponents can't cast spells from anywhere other than their hands'."
+    },
+    {
+      "name": "Consuming Aberration",
+      "needs": [
+        "new:reveal-until-each-opponent"
+      ],
+      "why": "Each opponent reveals until a land and mills them; reveal-until reads only a target slot's library."
+    },
+    {
+      "name": "Ugin, the Spirit Dragon",
+      "needs": [
+        "new:loyalty-x"
+      ],
+      "why": "A −X loyalty ability."
+    },
+    {
+      "name": "Ondu Spiritdancer",
+      "needs": [
+        "new:do-this-once-each-turn"
+      ],
+      "why": "'Do this only once each turn' lets a declined 'may' trigger again; oncePerTurn would stop the trigger itself."
+    },
+    {
+      "name": "Replicating Ring",
+      "needs": [
+        "new:remove-all-counters"
+      ],
+      "why": "'Remove all of them' and a named snow token."
+    },
+    {
+      "name": "Masterwork of Ingenuity",
+      "needs": [
+        "new:clone-noncreature"
+      ],
+      "why": "Entering as a copy of an Equipment; copyOnEnter copies only creatures."
+    },
+    {
+      "name": "Urza's Ruinous Blast",
+      "needs": [
+        "new:legendary-sorcery"
+      ],
+      "why": "The legendary sorcery casting restriction (rule 205.4d)."
+    },
+    {
+      "name": "Chainer, Nightmare Adept",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Discard a card:' as an activation cost, and a one-shot graveyard creature cast permission."
+    },
+    {
+      "name": "Defiler of Vigor",
+      "needs": [
+        "cost:pay-life-for-pips"
+      ],
+      "why": "Paying 2 life in place of {G} for green permanent spells."
+    },
+    {
+      "name": "Sting, the Glinting Dagger",
+      "needs": [
+        "new:blocking-subtype-condition"
+      ],
+      "why": "First strike 'as long as it's blocking or blocked by a Goblin or Orc'."
+    },
+    {
+      "name": "Illusionist's Bracers",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying an activated ability with new targets."
+    },
+    {
+      "name": "Adagia, Windswept Bastion",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "A token copy 'except it's legendary' — no supertype copy exception."
+    },
+    {
+      "name": "The Skullspore Nexus",
+      "needs": [
+        "new:batched-dies-total-power"
+      ],
+      "why": "A token with base P/T equal to the total power of the nontoken creatures that died together."
+    },
+    {
+      "name": "Twenty-Toed Toad",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You win the game'."
+    },
+    {
+      "name": "Druid Class",
+      "needs": [
+        "new:class"
+      ],
+      "why": "Class levels aren't modeled."
+    },
+    {
+      "name": "Felidar Sovereign",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You win the game'."
+    },
+    {
+      "name": "Trumpeting Carnosaur",
+      "needs": [
+        "new:discover",
+        "new:ability-from-hand"
+      ],
+      "why": "Discover 5, and an ability activated by discarding it from hand."
+    },
+    {
+      "name": "Wild-Magic Sorcerer",
+      "needs": [
+        "new:grant-cascade"
+      ],
+      "why": "'The first spell you cast from exile each turn has cascade'."
+    }
+  ]
+}

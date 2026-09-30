@@ -80,6 +80,7 @@ import _poolGolgariLonglegs from "../pool/golgari-longlegs.js";
 import _poolGolgariRotFarm from "../pool/golgari-rot-farm.js";
 import _poolGraniteGargoyle from "../pool/granite-gargoyle.js";
 import _poolGrapplerSpider from "../pool/grappler-spider.js";
+import _poolGratuitousViolence from "../pool/gratuitous-violence.js";
 import _poolGruulGuildmage from "../pool/gruul-guildmage.js";
 import _poolHamatoNinpo from "../pool/hamato-ninpo.js";
 import _poolHavenOfTheSpiritDragon from "../pool/haven-of-the-spirit-dragon.js";
@@ -178,6 +179,7 @@ import _poolThunderwolfCavalry from "../pool/thunderwolf-cavalry.js";
 import _poolTidepoolTurtle from "../pool/tidepool-turtle.js";
 import _poolTundraWolves from "../pool/tundra-wolves.js";
 import _poolTymorasInvoker from "../pool/tymoras-invoker.js";
+import _poolUnmarkedGrave from "../pool/unmarked-grave.js";
 import _poolVampireSoulcaller from "../pool/vampire-soulcaller.js";
 import _poolViashinoGrappler from "../pool/viashino-grappler.js";
 import _poolViashivanDragon from "../pool/viashivan-dragon.js";
@@ -277,6 +279,7 @@ const shard: CardShard = {
     _poolGolgariRotFarm,
     _poolGraniteGargoyle,
     _poolGrapplerSpider,
+    _poolGratuitousViolence,
     _poolGruulGuildmage,
     _poolHamatoNinpo,
     _poolHavenOfTheSpiritDragon,
@@ -375,6 +378,7 @@ const shard: CardShard = {
     _poolTidepoolTurtle,
     _poolTundraWolves,
     _poolTymorasInvoker,
+    _poolUnmarkedGrave,
     _poolVampireSoulcaller,
     _poolViashinoGrappler,
     _poolViashivanDragon,

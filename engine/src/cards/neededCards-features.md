@@ -604,6 +604,14 @@ in `git log`.
   `cast`/`castFrom` asked of a spell still on the stack (Delayed Blast
   Fireball's "if this spell was cast from exile"), and `outlast()` (Abzan
   Falconer). B8.json lists the 54 cards it left blocked.
+- **Top-5000 batch 9** (2026-09-29, `top5000-batch-9.test.ts`) —
+  `extraLandsForEachPlayer` (Rites of Flourishing's land drop for every
+  player), `would-mill`'s `plus` (The Water Crystal; after any multiplier),
+  `would-gain-life`'s `multiplier` (Rhox Faithmender, Boon Reflection, The
+  Wind Crystal; after any `plus`), a `castVia` filter clause read off the
+  permanent's entry (Uro's "unless it escaped"), and a spell's own "when you
+  cast this spell" reading its X (Hydroid Krasis). B9.json lists the 57
+  cards it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

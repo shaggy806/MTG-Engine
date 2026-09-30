@@ -40,6 +40,7 @@ import _poolCloudchaserEagle from "../pool/cloudchaser-eagle.js";
 import _poolConsider from "../pool/consider.js";
 import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
+import _poolCrypticCommand from "../pool/cryptic-command.js";
 import _poolCuriosity from "../pool/curiosity.js";
 import _poolDaggerclawImp from "../pool/daggerclaw-imp.js";
 import _poolDaiLiCensor from "../pool/dai-li-censor.js";
@@ -51,6 +52,7 @@ import _poolDawnwingMarshal from "../pool/dawnwing-marshal.js";
 import _poolDepthsOfDesire from "../pool/depths-of-desire.js";
 import _poolDesertedBeach from "../pool/deserted-beach.js";
 import _poolDesertedTemple from "../pool/deserted-temple.js";
+import _poolDesynchronization from "../pool/desynchronization.js";
 import _poolDictateOfTheTwinGods from "../pool/dictate-of-the-twin-gods.js";
 import _poolDihadaBinderOfWills from "../pool/dihada-binder-of-wills.js";
 import _poolDjinnOfTheLamp from "../pool/djinn-of-the-lamp.js";
@@ -163,6 +165,7 @@ import _poolThunderSpirit from "../pool/thunder-spirit.js";
 import _poolTidechannelPathway from "../pool/tidechannel-pathway.js";
 import _poolTirelessProvisioner from "../pool/tireless-provisioner.js";
 import _poolTouchOfBrilliance from "../pool/touch-of-brilliance.js";
+import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
 import _poolTreeMonkey from "../pool/tree-monkey.js";
 import _poolTurntimberGrove from "../pool/turntimber-grove.js";
 import _poolTyrantsFamiliar from "../pool/tyrants-familiar.js";
@@ -228,6 +231,7 @@ const shard: CardShard = {
     _poolConsider,
     _poolCorruptCourtOfficial,
     _poolCrackTheEarth,
+    _poolCrypticCommand,
     _poolCuriosity,
     _poolDaggerclawImp,
     _poolDaiLiCensor,
@@ -239,6 +243,7 @@ const shard: CardShard = {
     _poolDepthsOfDesire,
     _poolDesertedBeach,
     _poolDesertedTemple,
+    _poolDesynchronization,
     _poolDictateOfTheTwinGods,
     _poolDihadaBinderOfWills,
     _poolDjinnOfTheLamp,
@@ -351,6 +356,7 @@ const shard: CardShard = {
     _poolTidechannelPathway,
     _poolTirelessProvisioner,
     _poolTouchOfBrilliance,
+    _poolTraverseTheOutlands,
     _poolTreeMonkey,
     _poolTurntimberGrove,
     _poolTyrantsFamiliar,

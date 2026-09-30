@@ -5276,13 +5276,15 @@ export class Game {
   }
 
   /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
-   * controls (Azusa, Lost but Seeking, Icetill Explorer — needed-cards P16). */
+   * controls (Azusa, Lost but Seeking, Icetill Explorer — needed-cards P16),
+   * and any anyone controls that reach each player (Rites of Flourishing). */
   private maxLandsFor(player: PlayerId): number {
     let extra = 0;
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
-      if (source.controller !== player || hasLostAbilities(source)) continue;
+      if (hasLostAbilities(source)) continue;
       for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (source.controller !== player && ability.extraLandsForEachPlayer !== true) continue;
         if (ability.extraLandsPerTurn !== undefined && this.staticActive(source, ability)) {
           extra += ability.extraLandsPerTurn;
         }
@@ -10652,12 +10654,15 @@ export class Game {
           // the Exemplary's "a spell with {X} in its mana cost … put X +1/+1
           // counters"): chosen as it was cast (rule 601.2b) and fixed from
           // then on, so it's read now — the spell may be countered first.
+          // The same for the spell's own "when you cast this spell" (Hydroid
+          // Krasis's "half X").
           const castX =
             ability.trigger.on === "enters-battlefield" &&
             event.type === "permanent-entered-battlefield" &&
             event.object === id
               ? (object.xValue ?? undefined)
-              : ability.trigger.on === "cast-spell" && event.type === "spell-cast"
+              : (ability.trigger.on === "cast-spell" || ability.trigger.on === "this-cast") &&
+                  event.type === "spell-cast"
                 ? (this.state.objects[event.object]?.xValue ?? undefined)
                 : undefined;
           // Which stint on the battlefield the source and the triggering
@@ -18103,9 +18108,16 @@ export class Game {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined) return;
-    // "…they mill twice that many cards instead" (Bruvac).
-    for (const r of this.playerEventReplacements(player)) {
-      if (r.event === "would-mill") amount *= r.multiplier;
+    // "…they mill twice that many cards instead" (Bruvac), then "…that
+    // many cards plus four instead" (The Water Crystal). Only a mill of one
+    // or more cards is replaced. Multipliers go first, as for damage: rule
+    // 616.1 lets the milled player order them, and that order mills fewer.
+    if (amount > 0) {
+      const replacements = this.playerEventReplacements(player).filter(
+        (r): r is MillMultiplierReplacement => r.event === "would-mill",
+      );
+      for (const r of replacements) amount *= r.multiplier ?? 1;
+      for (const r of replacements) amount += r.plus ?? 0;
     }
     const milled: ObjectId[] = [];
     this.withGraveyardEnterBatch(() => {
@@ -18787,14 +18799,17 @@ export class Game {
   }
 
   private changeLife(player: PlayerId, delta: number): void {
-    // Gaining life, changed: "…that much life plus 1 instead" (Bilbo), or not
-    // at all ("your opponents can't gain life").
+    // Gaining life, changed: "…that much life plus 1 instead" (Bilbo),
+    // "…twice that much life instead" (Rhox Faithmender), or not at all
+    // ("your opponents can't gain life"). Rule 616.1 lets the player gaining
+    // order them, and additions before doublings is the order that gains most.
     if (delta > 0) {
       const replacements = this.playerEventReplacements(player).filter(
         (r): r is LifeGainReplacement => r.event === "would-gain-life",
       );
       if (replacements.some((r) => r.prevent === true)) return;
       for (const r of replacements) delta += r.plus ?? 0;
+      for (const r of replacements) delta *= r.multiplier ?? 1;
     }
     const playerState = this.state.players[player];
     playerState.life += delta;
@@ -20246,7 +20261,13 @@ export class Game {
         : {
             from: previousZone,
             ...(previousZone === "stack" && object.kind === "card" && object.castFrom !== undefined
-              ? { cast: { by: object.controller, from: object.castFrom } }
+              ? {
+                  cast: {
+                    by: object.controller,
+                    from: object.castFrom,
+                    ...(object.castVia != null ? { via: object.castVia } : {}),
+                  },
+                }
               : {}),
             ...(this.state.resolvingSource !== undefined ? { by: this.state.resolvingSource } : {}),
           };

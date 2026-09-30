@@ -28,6 +28,7 @@ import _poolCallOfTheHerd from "../pool/call-of-the-herd.js";
 import _poolCaptainMarvelEarthsProtector from "../pool/captain-marvel-earths-protector.js";
 import _poolCarrionHowler from "../pool/carrion-howler.js";
 import _poolCatharticAdept from "../pool/cathartic-adept.js";
+import _poolCodsworthHandyHelper from "../pool/codsworth-handy-helper.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
 import _poolColossalMajesty from "../pool/colossal-majesty.js";
@@ -71,6 +72,7 @@ import _poolIndependentTroops from "../pool/independent-troops.js";
 import _poolInfernoFist from "../pool/inferno-fist.js";
 import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
+import _poolIzzetCharm from "../pool/izzet-charm.js";
 import _poolJagwaspSwarm from "../pool/jagwasp-swarm.js";
 import _poolKalonianHydra from "../pool/kalonian-hydra.js";
 import _poolKeeningBanshee from "../pool/keening-banshee.js";
@@ -220,6 +222,7 @@ const shard: CardShard = {
     _poolCaptainMarvelEarthsProtector,
     _poolCarrionHowler,
     _poolCatharticAdept,
+    _poolCodsworthHandyHelper,
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
     _poolColossalMajesty,
@@ -263,6 +266,7 @@ const shard: CardShard = {
     _poolInfernoFist,
     _poolInspiredInsurgent,
     _poolInspiringCaptain,
+    _poolIzzetCharm,
     _poolJagwaspSwarm,
     _poolKalonianHydra,
     _poolKeeningBanshee,

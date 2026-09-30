@@ -27,6 +27,7 @@ import _poolBlanchwoodTreefolk from "../pool/blanchwood-treefolk.js";
 import _poolBlurredMongoose from "../pool/blurred-mongoose.js";
 import _poolBoggartTrawler from "../pool/boggart-trawler.js";
 import _poolBoltOfKeranos from "../pool/bolt-of-keranos.js";
+import _poolBoonReflection from "../pool/boon-reflection.js";
 import _poolBorosLocket from "../pool/boros-locket.js";
 import _poolBragoKingEternal from "../pool/brago-king-eternal.js";
 import _poolBrassSecretary from "../pool/brass-secretary.js";
@@ -105,6 +106,7 @@ import _poolMirriCatWarrior from "../pool/mirri-cat-warrior.js";
 import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
 import _poolMomentOfCraving from "../pool/moment-of-craving.js";
+import _poolMonasteryMentor from "../pool/monastery-mentor.js";
 import _poolMysticSnake from "../pool/mystic-snake.js";
 import _poolNoDachi from "../pool/no-dachi.js";
 import _poolNulldrifter from "../pool/nulldrifter.js";
@@ -216,6 +218,7 @@ const shard: CardShard = {
     _poolBlurredMongoose,
     _poolBoggartTrawler,
     _poolBoltOfKeranos,
+    _poolBoonReflection,
     _poolBorosLocket,
     _poolBragoKingEternal,
     _poolBrassSecretary,
@@ -294,6 +297,7 @@ const shard: CardShard = {
     _poolMoltenTributary,
     _poolMoltensteelDragon,
     _poolMomentOfCraving,
+    _poolMonasteryMentor,
     _poolMysticSnake,
     _poolNoDachi,
     _poolNulldrifter,

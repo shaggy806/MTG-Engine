@@ -103,6 +103,7 @@ import _poolKratosGodOfWar from "../pool/kratos-god-of-war.js";
 import _poolKraumLudevicsOpus from "../pool/kraum-ludevics-opus.js";
 import _poolLadyOrca from "../pool/lady-orca.js";
 import _poolLateToDinner from "../pool/late-to-dinner.js";
+import _poolLavaspurBoots from "../pool/lavaspur-boots.js";
 import _poolLayOfTheLand from "../pool/lay-of-the-land.js";
 import _poolLeoninScimitar from "../pool/leonin-scimitar.js";
 import _poolLightningTalons from "../pool/lightning-talons.js";
@@ -310,6 +311,7 @@ const shard: CardShard = {
     _poolKraumLudevicsOpus,
     _poolLadyOrca,
     _poolLateToDinner,
+    _poolLavaspurBoots,
     _poolLayOfTheLand,
     _poolLeoninScimitar,
     _poolLightningTalons,

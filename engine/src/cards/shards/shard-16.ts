@@ -41,6 +41,7 @@ import _poolCityPigeon from "../pool/city-pigeon.js";
 import _poolCobbledWings from "../pool/cobbled-wings.js";
 import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
 import _poolCraterize from "../pool/craterize.js";
+import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
 import _poolDazzlingRamparts from "../pool/dazzling-ramparts.js";
 import _poolDeepwoodTantiv from "../pool/deepwood-tantiv.js";
@@ -52,6 +53,7 @@ import _poolDragonsEyeSentry from "../pool/dragons-eye-sentry.js";
 import _poolDwarvenTrader from "../pool/dwarven-trader.js";
 import _poolEmbraalGearSmasher from "../pool/embraal-gear-smasher.js";
 import _poolEncroachingDragonstorm from "../pool/encroaching-dragonstorm.js";
+import _poolEndRazeForerunners from "../pool/end-raze-forerunners.js";
 import _poolEnlightenedTutor from "../pool/enlightened-tutor.js";
 import _poolEssenceFlux from "../pool/essence-flux.js";
 import _poolEternalWarrior from "../pool/eternal-warrior.js";
@@ -131,6 +133,7 @@ import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
 import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
+import _poolPiratesPillage from "../pool/pirates-pillage.js";
 import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
 import _poolRagingBull from "../pool/raging-bull.js";
@@ -163,6 +166,7 @@ import _poolStripMine from "../pool/strip-mine.js";
 import _poolSunderingEruption from "../pool/sundering-eruption.js";
 import _poolSunshotMilitia from "../pool/sunshot-militia.js";
 import _poolSurgeConductor from "../pool/surge-conductor.js";
+import _poolSurrakAndGoreclaw from "../pool/surrak-and-goreclaw.js";
 import _poolTalasScout from "../pool/talas-scout.js";
 import _poolTalismanOfResilience from "../pool/talisman-of-resilience.js";
 import _poolTempleOfPower from "../pool/temple-of-power.js";
@@ -254,6 +258,7 @@ const shard: CardShard = {
     _poolCobbledWings,
     _poolColdCaseCracker,
     _poolCraterize,
+    _poolCruxOfFate,
     _poolCunningSparkmage,
     _poolDazzlingRamparts,
     _poolDeepwoodTantiv,
@@ -265,6 +270,7 @@ const shard: CardShard = {
     _poolDwarvenTrader,
     _poolEmbraalGearSmasher,
     _poolEncroachingDragonstorm,
+    _poolEndRazeForerunners,
     _poolEnlightenedTutor,
     _poolEssenceFlux,
     _poolEternalWarrior,
@@ -344,6 +350,7 @@ const shard: CardShard = {
     _poolPardicCollaborator,
     _poolPhantomWarrior,
     _poolPhyrexianDefiler,
+    _poolPiratesPillage,
     _poolProwcatcherSpecialist,
     _poolRabanastreRoyalCity,
     _poolRagingBull,
@@ -376,6 +383,7 @@ const shard: CardShard = {
     _poolSunderingEruption,
     _poolSunshotMilitia,
     _poolSurgeConductor,
+    _poolSurrakAndGoreclaw,
     _poolTalasScout,
     _poolTalismanOfResilience,
     _poolTempleOfPower,

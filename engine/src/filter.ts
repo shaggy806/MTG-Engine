@@ -23,6 +23,7 @@ import {
   hasLostAbilities,
   hasManaAbility,
 } from "./characteristics.js";
+import type { CastVia } from "./actions.js";
 import type { CardRegistry, CardType, Keyword, Supertype } from "./cards.js";
 import type { EffectAmount, ThisWayKind } from "./effects.js";
 import { isGoaded } from "./goad.js";
@@ -384,6 +385,11 @@ export interface CardFilter {
    * spell still on the stack, where it was cast from: Delayed Blast
    * Fireball's "if this spell was cast from exile". */
   readonly castFrom?: ZoneType;
+  /** …cast under this permission — Uro, Titan of Nature's Wrath's "sacrifice
+   * it unless it escaped" is `{ castVia: "escape" }` under a `not`. A spell
+   * cast from the graveyard some other way (Muldrotha, flashback granted by
+   * another card) didn't escape (its ruling). */
+  readonly castVia?: CastVia;
   /** It entered the battlefield from this zone — "enters from exile" (Fire
    * Lord Zuko), "came from a graveyard" (a spell's entry comes from the
    * stack; `castFrom` says where it was cast). */
@@ -818,6 +824,7 @@ export function matchesFilter(
     filter.cast !== undefined ||
     filter.castBy !== undefined ||
     filter.castFrom !== undefined ||
+    filter.castVia !== undefined ||
     filter.enteredFrom !== undefined ||
     filter.putThereBySource !== undefined
   ) {
@@ -828,12 +835,13 @@ export function matchesFilter(
     const cast =
       live !== undefined && live.zone === "stack"
         ? live.kind === "card" && live.castFrom !== undefined
-          ? { by: live.controller, from: live.castFrom }
+          ? { by: live.controller, from: live.castFrom, via: live.castVia ?? undefined }
           : undefined
         : entry?.cast;
     if (filter.cast !== undefined && (cast !== undefined) !== filter.cast) return false;
     if (filter.castBy === "you" && cast?.by !== ctx.you) return false;
     if (filter.castFrom !== undefined && cast?.from !== filter.castFrom) return false;
+    if (filter.castVia !== undefined && cast?.via !== filter.castVia) return false;
     if (filter.enteredFrom !== undefined && entry?.from !== filter.enteredFrom) return false;
     if (filter.putThereBySource !== undefined) {
       const by = entry?.by;

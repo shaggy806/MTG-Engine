@@ -87,6 +87,7 @@ import _poolMalakirFamiliar from "../pool/malakir-familiar.js";
 import _poolMalakirMire from "../pool/malakir-mire.js";
 import _poolMantaRiders from "../pool/manta-riders.js";
 import _poolMaraleafPixie from "../pool/maraleaf-pixie.js";
+import _poolMarionetteMaster from "../pool/marionette-master.js";
 import _poolMawOfTheMire from "../pool/maw-of-the-mire.js";
 import _poolMemorialToGlory from "../pool/memorial-to-glory.js";
 import _poolMentalMisstep from "../pool/mental-misstep.js";
@@ -261,6 +262,7 @@ const shard: CardShard = {
     _poolMalakirMire,
     _poolMantaRiders,
     _poolMaraleafPixie,
+    _poolMarionetteMaster,
     _poolMawOfTheMire,
     _poolMemorialToGlory,
     _poolMentalMisstep,

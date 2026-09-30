@@ -37,6 +37,7 @@ import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
 import _poolChampionOfTheParish from "../pool/champion-of-the-parish.js";
 import _poolCharismaticVanguard from "../pool/charismatic-vanguard.js";
 import _poolChorusOfWoe from "../pool/chorus-of-woe.js";
+import _poolChronicleOfVictory from "../pool/chronicle-of-victory.js";
 import _poolChronomaton from "../pool/chronomaton.js";
 import _poolCitywatchSphinx from "../pool/citywatch-sphinx.js";
 import _poolCleaverRiot from "../pool/cleaver-riot.js";
@@ -45,6 +46,7 @@ import _poolCloudManta from "../pool/cloud-manta.js";
 import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
 import _poolContentiousPlan from "../pool/contentious-plan.js";
+import _poolCorpsejackMenace from "../pool/corpsejack-menace.js";
 import _poolCustodianOfTheTrove from "../pool/custodian-of-the-trove.js";
 import _poolDarkConfidant from "../pool/dark-confidant.js";
 import _poolDawnToDusk from "../pool/dawn-to-dusk.js";
@@ -82,6 +84,7 @@ import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
 import _poolGuardianLions from "../pool/guardian-lions.js";
+import _poolHangarbackWalker from "../pool/hangarback-walker.js";
 import _poolHauntedMire from "../pool/haunted-mire.js";
 import _poolHedronCrawler from "../pool/hedron-crawler.js";
 import _poolHelpfulHunter from "../pool/helpful-hunter.js";
@@ -167,6 +170,7 @@ import _poolTempleBell from "../pool/temple-bell.js";
 import _poolTempleOfDeceit from "../pool/temple-of-deceit.js";
 import _poolTempleOfMalady from "../pool/temple-of-malady.js";
 import _poolTheLadyOfTheMountain from "../pool/the-lady-of-the-mountain.js";
+import _poolTheWaterCrystal from "../pool/the-water-crystal.js";
 import _poolThinkTank from "../pool/think-tank.js";
 import _poolTillerEngine from "../pool/tiller-engine.js";
 import _poolTinderFarm from "../pool/tinder-farm.js";
@@ -234,6 +238,7 @@ const shard: CardShard = {
     _poolChampionOfTheParish,
     _poolCharismaticVanguard,
     _poolChorusOfWoe,
+    _poolChronicleOfVictory,
     _poolChronomaton,
     _poolCitywatchSphinx,
     _poolCleaverRiot,
@@ -242,6 +247,7 @@ const shard: CardShard = {
     _poolConquerorsFlail,
     _poolConsulateSkygate,
     _poolContentiousPlan,
+    _poolCorpsejackMenace,
     _poolCustodianOfTheTrove,
     _poolDarkConfidant,
     _poolDawnToDusk,
@@ -279,6 +285,7 @@ const shard: CardShard = {
     _poolGrimBackwoods,
     _poolGrimclimbPathway,
     _poolGuardianLions,
+    _poolHangarbackWalker,
     _poolHauntedMire,
     _poolHedronCrawler,
     _poolHelpfulHunter,
@@ -364,6 +371,7 @@ const shard: CardShard = {
     _poolTempleOfDeceit,
     _poolTempleOfMalady,
     _poolTheLadyOfTheMountain,
+    _poolTheWaterCrystal,
     _poolThinkTank,
     _poolTillerEngine,
     _poolTinderFarm,

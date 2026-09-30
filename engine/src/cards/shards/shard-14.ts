@@ -159,6 +159,7 @@ import _poolSiegeZombie from "../pool/siege-zombie.js";
 import _poolSilverRaven from "../pool/silver-raven.js";
 import _poolSparringConstruct from "../pool/sparring-construct.js";
 import _poolSpitefulMotives from "../pool/spiteful-motives.js";
+import _poolStitchTogether from "../pool/stitch-together.js";
 import _poolStrikeItRich from "../pool/strike-it-rich.js";
 import _poolStudy from "../pool/study.js";
 import _poolSurgicalSkullbomb from "../pool/surgical-skullbomb.js";
@@ -167,6 +168,7 @@ import _poolTalrand from "../pool/talrand.js";
 import _poolTanaTheBloodsower from "../pool/tana-the-bloodsower.js";
 import _poolTempleOfSilence from "../pool/temple-of-silence.js";
 import _poolTempleOfTriumph from "../pool/temple-of-triumph.js";
+import _poolTheEternityElevator from "../pool/the-eternity-elevator.js";
 import _poolTheGitrogMonster from "../pool/the-gitrog-monster.js";
 import _poolToucanPuffin from "../pool/toucan-puffin.js";
 import _poolTrainedJackal from "../pool/trained-jackal.js";
@@ -354,6 +356,7 @@ const shard: CardShard = {
     _poolSilverRaven,
     _poolSparringConstruct,
     _poolSpitefulMotives,
+    _poolStitchTogether,
     _poolStrikeItRich,
     _poolStudy,
     _poolSurgicalSkullbomb,
@@ -362,6 +365,7 @@ const shard: CardShard = {
     _poolTanaTheBloodsower,
     _poolTempleOfSilence,
     _poolTempleOfTriumph,
+    _poolTheEternityElevator,
     _poolTheGitrogMonster,
     _poolToucanPuffin,
     _poolTrainedJackal,

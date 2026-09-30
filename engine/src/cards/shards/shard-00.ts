@@ -13,6 +13,7 @@ import _poolAngelicGift from "../pool/angelic-gift.js";
 import _poolArcaneSanctum from "../pool/arcane-sanctum.js";
 import _poolAvenCloudchaser from "../pool/aven-cloudchaser.js";
 import _poolAvenSentry from "../pool/aven-sentry.js";
+import _poolAwakeningZone from "../pool/awakening-zone.js";
 import _poolAzoriusCluestone from "../pool/azorius-cluestone.js";
 import _poolBasaltMonolith from "../pool/basalt-monolith.js";
 import _poolBatheInGold from "../pool/bathe-in-gold.js";
@@ -168,6 +169,7 @@ import _poolTaoistHermit from "../pool/taoist-hermit.js";
 import _poolTempestAngler from "../pool/tempest-angler.js";
 import _poolTempestDrake from "../pool/tempest-drake.js";
 import _poolTheMycotyrant from "../pool/the-mycotyrant.js";
+import _poolTheWindCrystal from "../pool/the-wind-crystal.js";
 import _poolThirdPathSavant from "../pool/third-path-savant.js";
 import _poolThragtusk from "../pool/thragtusk.js";
 import _poolThranDynamo from "../pool/thran-dynamo.js";
@@ -214,6 +216,7 @@ const shard: CardShard = {
     _poolArcaneSanctum,
     _poolAvenCloudchaser,
     _poolAvenSentry,
+    _poolAwakeningZone,
     _poolAzoriusCluestone,
     _poolBasaltMonolith,
     _poolBatheInGold,
@@ -369,6 +372,7 @@ const shard: CardShard = {
     _poolTempestAngler,
     _poolTempestDrake,
     _poolTheMycotyrant,
+    _poolTheWindCrystal,
     _poolThirdPathSavant,
     _poolThragtusk,
     _poolThranDynamo,

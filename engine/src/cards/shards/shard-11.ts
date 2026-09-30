@@ -43,6 +43,7 @@ import _poolDiningRoom from "../pool/dining-room.js";
 import _poolDispatch from "../pool/dispatch.js";
 import _poolDivineTransformation from "../pool/divine-transformation.js";
 import _poolDivineVerdict from "../pool/divine-verdict.js";
+import _poolDranaLiberatorOfMalakir from "../pool/drana-liberator-of-malakir.js";
 import _poolEidolonOfPhilosophy from "../pool/eidolon-of-philosophy.js";
 import _poolElvishRegrower from "../pool/elvish-regrower.js";
 import _poolEnduringCourage from "../pool/enduring-courage.js";
@@ -120,11 +121,13 @@ import _poolMysticGate from "../pool/mystic-gate.js";
 import _poolNessianCourser from "../pool/nessian-courser.js";
 import _poolNighthaze from "../pool/nighthaze.js";
 import _poolNivMizzetTheFiremind from "../pool/niv-mizzet-the-firemind.js";
+import _poolNullElementalBlast from "../pool/null-elemental-blast.js";
 import _poolOakenform from "../pool/oakenform.js";
 import _poolOkosAccomplices from "../pool/okos-accomplices.js";
 import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
 import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
+import _poolOuroboroid from "../pool/ouroboroid.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
 import _poolPharikasChosen from "../pool/pharikas-chosen.js";
@@ -257,6 +260,7 @@ const shard: CardShard = {
     _poolDispatch,
     _poolDivineTransformation,
     _poolDivineVerdict,
+    _poolDranaLiberatorOfMalakir,
     _poolEidolonOfPhilosophy,
     _poolElvishRegrower,
     _poolEnduringCourage,
@@ -334,11 +338,13 @@ const shard: CardShard = {
     _poolNessianCourser,
     _poolNighthaze,
     _poolNivMizzetTheFiremind,
+    _poolNullElementalBlast,
     _poolOakenform,
     _poolOkosAccomplices,
     _poolOmoQueenOfVesuva,
     _poolOpalineUnicorn,
     _poolOrzhovBasilica,
+    _poolOuroboroid,
     _poolPelakkaWurm,
     _poolPestilentKathari,
     _poolPharikasChosen,

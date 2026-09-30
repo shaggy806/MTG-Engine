@@ -160,6 +160,7 @@ import _poolTorWauki from "../pool/tor-wauki.js";
 import _poolTuknirDeathlock from "../pool/tuknir-deathlock.js";
 import _poolTymnaTheWeaver from "../pool/tymna-the-weaver.js";
 import _poolUnderseaInvader from "../pool/undersea-invader.js";
+import _poolUroTitanOfNaturesWrath from "../pool/uro-titan-of-natures-wrath.js";
 import _poolViciousConquistador from "../pool/vicious-conquistador.js";
 import _poolVictimize from "../pool/victimize.js";
 import _poolVoicelessSpirit from "../pool/voiceless-spirit.js";
@@ -337,6 +338,7 @@ const shard: CardShard = {
     _poolTuknirDeathlock,
     _poolTymnaTheWeaver,
     _poolUnderseaInvader,
+    _poolUroTitanOfNaturesWrath,
     _poolViciousConquistador,
     _poolVictimize,
     _poolVoicelessSpirit,

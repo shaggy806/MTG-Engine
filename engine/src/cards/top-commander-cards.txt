@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1722 already implemented / 3278 missing (marks refreshed 2026-09-29)
+1768 already implemented / 3232 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -940,7 +940,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   944  Archmage of Runes                        {3}{U}{U}        Creature — Giant Wizard
 [x]   945  Irenicus's Vile Duplication              {3}{U}           Sorcery
 [x]   946  Stormcatch Mentor                        {U}{R}           Creature — Otter Wizard
-[ ]   947  The Wind Crystal                         {2}{W}{W}        Legendary Artifact
+[x]   947  The Wind Crystal                         {2}{W}{W}        Legendary Artifact
 [x]   948  Monument to Endurance                    {3}              Artifact
 [ ]   949  Coat of Arms                             {5}              Artifact
 [x]   950  Omnath, Locus of Rage                    {3}{R}{R}{G}{G}  Legendary Creature — Elemental
@@ -1503,135 +1503,135 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1510  Haliya, Guided by Light                  {2}{W}           Legendary Creature — Human Soldier
 [ ]  1511  Blood Moon                               {2}{R}           Enchantment
 [ ]  1512  Misdirection                             {3}{U}{U}        Instant
-[ ]  1513  Gratuitous Violence                      {2}{R}{R}{R}     Enchantment
-[ ]  1514  Coastal Piracy                           {2}{U}{U}        Enchantment
+[x]  1513  Gratuitous Violence                      {2}{R}{R}{R}     Enchantment
+[x]  1514  Coastal Piracy                           {2}{U}{U}        Enchantment
 [x]  1515  Stonecoil Serpent                        {X}              Artifact Creature — Snake
 [x]  1516  Metastatic Evangel                       {1}{W}           Creature — Phyrexian Human Cleric
 [x]  1517  Unnatural Restoration                    {1}{G}           Sorcery
 [ ]  1518  Disciple of Bolas                        {3}{B}           Creature — Human Wizard
 [ ]  1519  Dour Port-Mage                           {1}{U}           Creature — Frog Wizard
-[ ]  1520  Rites of Flourishing                     {2}{G}           Enchantment
-[ ]  1521  Lavaspur Boots                           {1}              Artifact — Equipment
+[x]  1520  Rites of Flourishing                     {2}{G}           Enchantment
+[x]  1521  Lavaspur Boots                           {1}              Artifact — Equipment
 [ ]  1522  Final Fortune                            {R}{R}           Instant
 [x]  1523  Adventurer's Inn                         {0}              Land — Town
-[ ]  1524  Hangarback Walker                        {X}{X}           Artifact Creature — Construct
+[x]  1524  Hangarback Walker                        {X}{X}           Artifact Creature — Construct
 [ ]  1525  Horizon of Progress                      {0}              Land
 [x]  1526  Scourge of Valkas                        {2}{R}{R}{R}     Creature — Dragon
-[ ]  1527  Izzet Charm                              {U}{R}           Instant
+[x]  1527  Izzet Charm                              {U}{R}           Instant
 [x]  1528  Myrel, Shield of Argive                  {3}{W}           Legendary Creature — Human Soldier
-[ ]  1529  Drana, Liberator of Malakir              {1}{B}{B}        Legendary Creature — Vampire Ally
+[x]  1529  Drana, Liberator of Malakir              {1}{B}{B}        Legendary Creature — Vampire Ally
 [x]  1530  Blooming Marsh                           {0}              Land
-[ ]  1531  Stubborn Denial                          {U}              Instant
-[ ]  1532  Chronicle of Victory                     {6}              Legendary Artifact
+[x]  1531  Stubborn Denial                          {U}              Instant
+[x]  1532  Chronicle of Victory                     {6}              Legendary Artifact
 [x]  1533  Tree of Tales                            {0}              Artifact Land
 [x]  1534  Radiant Grove                            {0}              Land — Forest Plains
 [x]  1535  Ojer Axonil, Deepest Might // Temple of Power {4}              Legendary Creature — God // Land
-[ ]  1536  Codsworth, Handy Helper                  {2}{W}           Legendary Artifact Creature — Robot
-[ ]  1537  The Water Crystal                        {2}{U}{U}        Legendary Artifact
+[x]  1536  Codsworth, Handy Helper                  {2}{W}           Legendary Artifact Creature — Robot
+[x]  1537  The Water Crystal                        {2}{U}{U}        Legendary Artifact
 [ ]  1538  Feldon of the Third Path                 {1}{R}{R}        Legendary Creature — Human Artificer
-[ ]  1539  Natural Order                            {2}{G}{G}        Sorcery
+[x]  1539  Natural Order                            {2}{G}{G}        Sorcery
 [x]  1540  Utvara Hellkite                          {6}{R}{R}        Creature — Dragon
 [ ]  1541  Rebuff the Wicked                        {W}              Instant
 [ ]  1542  Eerie Ultimatum                          {W}{W}{B}{B}{B}{G}{G} Sorcery
 [ ]  1543  Creeping Bloodsucker                     {1}{B}           Creature — Vampire
-[ ]  1544  Pawn of Ulamog                           {1}{B}{B}        Creature — Vampire Shaman
-[ ]  1545  Hydroid Krasis                           {X}{G}{U}        Creature — Jellyfish Hydra Beast
+[x]  1544  Pawn of Ulamog                           {1}{B}{B}        Creature — Vampire Shaman
+[x]  1545  Hydroid Krasis                           {X}{G}{U}        Creature — Jellyfish Hydra Beast
 [ ]  1546  Tortured Existence                       {B}              Enchantment
-[ ]  1547  Rumor Gatherer                           {1}{W}{W}        Creature — Elf Wizard
+[x]  1547  Rumor Gatherer                           {1}{W}{W}        Creature — Elf Wizard
 [x]  1548  Dragonmaster Outcast                     {R}              Creature — Human Shaman
 [ ]  1549  Chandra, Torch of Defiance               {2}{R}{R}        Legendary Planeswalker — Chandra
 [x]  1550  Ganax, Astral Hunter                     {4}{R}           Legendary Creature — Dragon
 [x]  1551  Aether Channeler                         {2}{U}           Creature — Human Wizard
 [ ]  1552  Unstoppable Slasher                      {2}{B}           Creature — Zombie Assassin
-[ ]  1553  It That Betrays                          {12}             Creature — Eldrazi
-[ ]  1554  Uro, Titan of Nature's Wrath             {1}{G}{U}        Legendary Creature — Elder Giant
+[x]  1553  It That Betrays                          {12}             Creature — Eldrazi
+[x]  1554  Uro, Titan of Nature's Wrath             {1}{G}{U}        Legendary Creature — Elder Giant
 [x]  1555  Simic Guildgate                          {0}              Land — Gate
 [ ]  1556  Artist's Talent                          {1}{R}           Enchantment — Class
-[ ]  1557  Marionette Master                        {4}{B}{B}        Creature — Human Artificer
+[x]  1557  Marionette Master                        {4}{B}{B}        Creature — Human Artificer
 [ ]  1558  Ashling, Flame Dancer                    {2}{R}{R}        Legendary Creature — Elemental Shaman
 [x]  1559  Radiant Fountain                         {0}              Land
-[ ]  1560  Corpsejack Menace                        {2}{B}{G}        Creature — Fungus
-[ ]  1561  Monastery Mentor                         {2}{W}           Creature — Human Monk
+[x]  1560  Corpsejack Menace                        {2}{B}{G}        Creature — Fungus
+[x]  1561  Monastery Mentor                         {2}{W}           Creature — Human Monk
 [ ]  1562  The Grey Havens                          {0}              Legendary Land
-[ ]  1563  Relentless Assault                       {2}{R}{R}        Sorcery
+[x]  1563  Relentless Assault                       {2}{R}{R}        Sorcery
 [ ]  1564  Gifts Ungiven                            {3}{U}           Instant
-[ ]  1565  Null Elemental Blast                     {C}              Instant
+[x]  1565  Null Elemental Blast                     {C}              Instant
 [ ]  1566  Malcolm, Alluring Scoundrel              {1}{U}           Legendary Creature — Siren Pirate
 [ ]  1567  Kozilek, the Great Distortion            {8}{C}{C}        Legendary Creature — Eldrazi
 [ ]  1568  Freed from the Real                      {2}{U}           Enchantment — Aura
 [ ]  1569  Ulamog, the Defiler                      {10}             Legendary Creature — Eldrazi
-[ ]  1570  Mazirek, Kraul Death Priest              {3}{B}{G}        Legendary Creature — Insect Shaman
+[x]  1570  Mazirek, Kraul Death Priest              {3}{B}{G}        Legendary Creature — Insect Shaman
 [x]  1571  Tergrid, God of Fright // Tergrid's Lantern {5}              Legendary Creature — God // Legendary Artifact
-[ ]  1572  Crux of Fate                             {3}{B}{B}        Sorcery
+[x]  1572  Crux of Fate                             {3}{B}{B}        Sorcery
 [x]  1573  Morophon, the Boundless                  {7}              Legendary Creature — Shapeshifter
 [x]  1574  Spirebluff Canal                         {0}              Land
 [ ]  1575  Smuggler's Surprise                      {G}              Instant
 [ ]  1576  Phelia, Exuberant Shepherd               {1}{W}           Legendary Creature — Dog
 [x]  1577  Archfiend of Depravity                   {3}{B}{B}        Creature — Demon
-[ ]  1578  Overprotect                              {1}{G}           Instant
+[x]  1578  Overprotect                              {1}{G}           Instant
 [x]  1579  Cloud, Midgar Mercenary                  {W}{W}           Legendary Creature — Human Soldier Mercenary
 [ ]  1580  Resourceful Defense                      {2}{W}           Enchantment
 [x]  1581  Bloodforged Battle-Axe                   {1}              Artifact — Equipment
 [ ]  1582  Exploration Broodship                    {G}              Artifact — Spacecraft
 [ ]  1583  Brass's Tunnel-Grinder // Tecutlan, the Searing Rift {3}              Legendary Artifact // Legendary Land — Cave
-[ ]  1584  Awakening Zone                           {2}{G}           Enchantment
-[ ]  1585  Desynchronization                        {2}{U}{U}        Instant
+[x]  1584  Awakening Zone                           {2}{G}           Enchantment
+[x]  1585  Desynchronization                        {2}{U}{U}        Instant
 [x]  1586  Deserted Temple                          {0}              Land
-[ ]  1587  Ouroboroid                               {2}{G}{G}        Creature — Plant Wurm
+[x]  1587  Ouroboroid                               {2}{G}{G}        Creature — Plant Wurm
 [x]  1588  Shriekmaw                                {4}{B}           Creature — Elemental
 [x]  1589  Whirlwind of Thought                     {1}{U}{R}{W}     Enchantment
 [ ]  1590  Goblin Welder                            {R}              Creature — Goblin Artificer
-[ ]  1591  Kiora's Follower                         {G}{U}           Creature — Merfolk
+[x]  1591  Kiora's Follower                         {G}{U}           Creature — Merfolk
 [ ]  1592  March of Swirling Mist                   {X}{U}           Instant
 [ ]  1593  Losheel, Clockwork Scholar               {2}{W}           Legendary Creature — Elephant Artificer
-[ ]  1594  Surrak and Goreclaw                      {4}{G}{G}        Legendary Creature — Human Bear
+[x]  1594  Surrak and Goreclaw                      {4}{G}{G}        Legendary Creature — Human Bear
 [ ]  1595  Cultivator Colossus                      {4}{G}{G}{G}     Creature — Plant Beast
 [x]  1596  Siege-Gang Commander                     {3}{R}{R}        Creature — Goblin
 [ ]  1597  Eldrazi Conscription                     {8}              Kindred Enchantment — Eldrazi Aura
-[ ]  1598  Sword of Vengeance                       {3}              Artifact — Equipment
+[x]  1598  Sword of Vengeance                       {3}              Artifact — Equipment
 [ ]  1599  Fiery Confluence                         {2}{R}{R}        Sorcery
 [ ]  1600  Valakut Exploration                      {2}{R}           Enchantment
-[ ]  1601  Rhox Faithmender                         {3}{W}           Creature — Rhino Monk
+[x]  1601  Rhox Faithmender                         {3}{W}           Creature — Rhino Monk
 [ ]  1602  Return to Dust                           {2}{W}{W}        Instant
 [x]  1603  Scavenging Ooze                          {1}{G}           Creature — Ooze
-[ ]  1604  Seize the Day                            {3}{R}           Sorcery
+[x]  1604  Seize the Day                            {3}{R}           Sorcery
 [ ]  1605  Maelstrom Wanderer                       {5}{G}{U}{R}     Legendary Creature — Elemental
 [x]  1606  Nurturing Peatland                       {0}              Land
 [ ]  1607  Fomori Vault                             {0}              Land
-[ ]  1608  End-Raze Forerunners                     {5}{G}{G}{G}     Creature — Boar
+[x]  1608  End-Raze Forerunners                     {5}{G}{G}{G}     Creature — Boar
 [ ]  1609  Thran Power Suit                         {2}              Artifact — Equipment
 [x]  1610  Electrostatic Field                      {1}{R}           Creature — Wall
 [ ]  1611  Avatar's Wrath                           {2}{W}{W}        Sorcery
-[ ]  1612  Cryptic Command                          {1}{U}{U}{U}     Instant
+[x]  1612  Cryptic Command                          {1}{U}{U}{U}     Instant
 [ ]  1613  Consuming Aberration                     {3}{U}{B}        Creature — Horror
-[ ]  1614  Unmarked Grave                           {1}{B}           Sorcery
+[x]  1614  Unmarked Grave                           {1}{B}           Sorcery
 [x]  1615  Golgari Charm                            {B}{G}           Instant
 [ ]  1616  Ugin, the Spirit Dragon                  {8}              Legendary Planeswalker — Ugin
 [ ]  1617  Ondu Spiritdancer                        {4}{W}           Creature — Kor Cleric
 [ ]  1618  Replicating Ring                         {3}              Snow Artifact
 [ ]  1619  Masterwork of Ingenuity                  {1}              Artifact — Equipment
-[ ]  1620  Stitch Together                          {B}{B}           Sorcery
+[x]  1620  Stitch Together                          {B}{B}           Sorcery
 [ ]  1621  Urza's Ruinous Blast                     {4}{W}           Legendary Sorcery
 [x]  1622  Ophidian Eye                             {2}{U}           Enchantment — Aura
 [ ]  1623  Chainer, Nightmare Adept                 {2}{B}{R}        Legendary Creature — Human Minion
-[ ]  1624  Elvish Warmaster                         {1}{G}           Creature — Elf Warrior
+[x]  1624  Elvish Warmaster                         {1}{G}           Creature — Elf Warrior
 [ ]  1625  Defiler of Vigor                         {3}{G}{G}        Creature — Phyrexian Wurm
 [x]  1626  Golgari Guildgate                        {0}              Land — Gate
 [ ]  1627  Call the Coppercoats                     {2}{W}           Instant
-[ ]  1628  The Eternity Elevator                    {5}              Legendary Artifact — Spacecraft
+[x]  1628  The Eternity Elevator                    {5}              Legendary Artifact — Spacecraft
 [ ]  1629  Sting, the Glinting Dagger               {2}              Legendary Artifact — Equipment
-[ ]  1630  Maddening Cacophony                      {1}{U}           Sorcery
+[x]  1630  Maddening Cacophony                      {1}{U}           Sorcery
 [ ]  1631  Illusionist's Bracers                    {2}              Artifact — Equipment
-[ ]  1632  Frostcliff Siege                         {1}{U}{R}        Enchantment
-[ ]  1633  Kazuul's Fury // Kazuul's Cliffs         {3}              Instant // Land
-[ ]  1634  Pirate's Pillage                         {3}{R}           Sorcery
+[x]  1632  Frostcliff Siege                         {1}{U}{R}        Enchantment
+[x]  1633  Kazuul's Fury // Kazuul's Cliffs         {3}              Instant // Land
+[x]  1634  Pirate's Pillage                         {3}{R}           Sorcery
 [x]  1635  Unleash Fury                             {1}{R}           Instant
 [ ]  1636  Adagia, Windswept Bastion                {0}              Land — Planet
 [ ]  1637  The Skullspore Nexus                     {6}{G}{G}        Legendary Artifact
 [ ]  1638  Twenty-Toed Toad                         {3}{U}           Creature — Frog Wizard
 [x]  1639  Soul of the Harvest                      {4}{G}{G}        Creature — Elemental
 [ ]  1640  Druid Class                              {1}{G}           Enchantment — Class
-[ ]  1641  Traverse the Outlands                    {4}{G}           Sorcery
+[x]  1641  Traverse the Outlands                    {4}{G}           Sorcery
 [ ]  1642  Felidar Sovereign                        {4}{W}{W}        Creature — Cat Beast
 [ ]  1643  Trumpeting Carnosaur                     {4}{R}{R}        Creature — Dinosaur
 [ ]  1644  Wild-Magic Sorcerer                      {3}{R}           Creature — Orc Shaman Sorcerer
@@ -4509,7 +4509,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4516  Rundvelt Hordemaster                     {1}{R}           Creature — Goblin Warrior
 [x]  4517  Zephyr Boots                             {1}              Artifact — Equipment
 [ ]  4518  Eagle Vision                             {4}{U}           Sorcery
-[ ]  4519  Boon Reflection                          {4}{W}           Enchantment
+[x]  4519  Boon Reflection                          {4}{W}           Enchantment
 [ ]  4520  Fractured Identity                       {3}{W}{U}        Sorcery
 [ ]  4521  Distinguished Conjurer                   {1}{W}           Creature — Human Wizard
 [ ]  4522  Mechtitan Core                           {2}              Artifact — Vehicle

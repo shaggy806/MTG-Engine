@@ -24,6 +24,7 @@ import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
 import _poolCityOfBrass from "../pool/city-of-brass.js";
+import _poolCoastalPiracy from "../pool/coastal-piracy.js";
 import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
 import _poolCorpseKnight from "../pool/corpse-knight.js";
 import _poolCrenellatedWall from "../pool/crenellated-wall.js";
@@ -90,6 +91,7 @@ import _poolLiturgyOfBlood from "../pool/liturgy-of-blood.js";
 import _poolLivingLightning from "../pool/living-lightning.js";
 import _poolLothlorienLookout from "../pool/lothlorien-lookout.js";
 import _poolLumengridSentinel from "../pool/lumengrid-sentinel.js";
+import _poolMaddeningCacophony from "../pool/maddening-cacophony.js";
 import _poolMaestrosTheater from "../pool/maestros-theater.js";
 import _poolMahamotiDjinn from "../pool/mahamoti-djinn.js";
 import _poolMalametWarScribe from "../pool/malamet-war-scribe.js";
@@ -104,6 +106,7 @@ import _poolMurder from "../pool/murder.js";
 import _poolMuseDrake from "../pool/muse-drake.js";
 import _poolMyrScrapling from "../pool/myr-scrapling.js";
 import _poolMysticSanctuary from "../pool/mystic-sanctuary.js";
+import _poolNaturalOrder from "../pool/natural-order.js";
 import _poolNephaliaMoondrakes from "../pool/nephalia-moondrakes.js";
 import _poolNeurokHoversail from "../pool/neurok-hoversail.js";
 import _poolNeutralize from "../pool/neutralize.js";
@@ -218,6 +221,7 @@ const shard: CardShard = {
     _poolCanyonJerboa,
     _poolChaplainsBlessing,
     _poolCityOfBrass,
+    _poolCoastalPiracy,
     _poolCogworkersPuzzleknot,
     _poolCorpseKnight,
     _poolCrenellatedWall,
@@ -284,6 +288,7 @@ const shard: CardShard = {
     _poolLivingLightning,
     _poolLothlorienLookout,
     _poolLumengridSentinel,
+    _poolMaddeningCacophony,
     _poolMaestrosTheater,
     _poolMahamotiDjinn,
     _poolMalametWarScribe,
@@ -298,6 +303,7 @@ const shard: CardShard = {
     _poolMuseDrake,
     _poolMyrScrapling,
     _poolMysticSanctuary,
+    _poolNaturalOrder,
     _poolNephaliaMoondrakes,
     _poolNeurokHoversail,
     _poolNeutralize,

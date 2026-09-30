@@ -93,6 +93,7 @@ import _poolJudgeMagisterGabranth from "../pool/judge-magister-gabranth.js";
 import _poolKaleidostone from "../pool/kaleidostone.js";
 import _poolKarametrasFavor from "../pool/karametras-favor.js";
 import _poolKataraTheFearless from "../pool/katara-the-fearless.js";
+import _poolKazuulsFury from "../pool/kazuuls-fury.js";
 import _poolKindlesparkDuo from "../pool/kindlespark-duo.js";
 import _poolKnightOfNewBenalia from "../pool/knight-of-new-benalia.js";
 import _poolKydeleChosenOfKruphix from "../pool/kydele-chosen-of-kruphix.js";
@@ -288,6 +289,7 @@ const shard: CardShard = {
     _poolKaleidostone,
     _poolKarametrasFavor,
     _poolKataraTheFearless,
+    _poolKazuulsFury,
     _poolKindlesparkDuo,
     _poolKnightOfNewBenalia,
     _poolKydeleChosenOfKruphix,

@@ -104,12 +104,27 @@ that one card is the reason the deck exists.
   the next are a free cast during resolution (`effect:cast-during-resolution`, 16) and
   "sacrifice N" costs (`cost:sacrifice-multiple`, 15). Grab the Prize needs only the card
   discarded as its cost remembered, as a sacrificed one already is (`new:cost-discarded-reference`).
+- **Top-5000 batch 9 (2026-09-29) triaged ranks 1507–1632:** 46 authored (Uro, Cryptic Command,
+  Natural Order, Hangarback Walker, Monastery Mentor, Hydroid Krasis, It That Betrays and 39
+  more, with Boon Reflection and The Wind Crystal from further down, which the new life-gain
+  doubler unblocked — see `neededCards-features.md`, "Top-5000 batch 9"); 57 blocked, each in
+  `engine/data/sweep-3/B9.json`. **Next**, by what blocks the most of them: discard (or exile
+  cards) as an activation cost (`cost:choose-cards-as-cost`, 4 here — Tortured Existence, Fomori
+  Vault, Kozilek, Chainer — and 14 across every record, with Yawgmoth, Fauna Shaman, Nezahal and
+  Solphim waiting on nothing else); then "you win / lose the game" (`new:win-game`, 11 across
+  records with Final Fortune, Felidar Sovereign and Twenty-Toed Toad). Cheap single-card
+  pieces it found: stun counters (Unstoppable Slasher), a batched leaves-battlefield trigger
+  (Dour Port-Mage), a damage replacement filtered by recipient (Losheel), the Kindred card type
+  (Eldrazi Conscription).
+- **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
+  wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
+  amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,722 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,768 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 1505, nothing is triaged.
+  the batches since; past rank 1632, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

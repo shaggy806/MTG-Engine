@@ -88,6 +88,7 @@ import _poolIcewindElemental from "../pool/icewind-elemental.js";
 import _poolIntoTheMawOfHell from "../pool/into-the-maw-of-hell.js";
 import _poolIronBully from "../pool/iron-bully.js";
 import _poolIshaiOjutaiDragonspeaker from "../pool/ishai-ojutai-dragonspeaker.js";
+import _poolItThatBetrays from "../pool/it-that-betrays.js";
 import _poolIthilienKingfisher from "../pool/ithilien-kingfisher.js";
 import _poolIzzetSignet from "../pool/izzet-signet.js";
 import _poolJerrardOfTheClosedFist from "../pool/jerrard-of-the-closed-fist.js";
@@ -274,6 +275,7 @@ const shard: CardShard = {
     _poolIntoTheMawOfHell,
     _poolIronBully,
     _poolIshaiOjutaiDragonspeaker,
+    _poolItThatBetrays,
     _poolIthilienKingfisher,
     _poolIzzetSignet,
     _poolJerrardOfTheClosedFist,

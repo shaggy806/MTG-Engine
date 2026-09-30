@@ -150,6 +150,7 @@ import _poolSarkhansTriumph from "../pool/sarkhans-triumph.js";
 import _poolScarbladeScout from "../pool/scarblade-scout.js";
 import _poolScatteredGroves from "../pool/scattered-groves.js";
 import _poolSeafloorOracle from "../pool/seafloor-oracle.js";
+import _poolSeizeTheDay from "../pool/seize-the-day.js";
 import _poolShadowyBackstreet from "../pool/shadowy-backstreet.js";
 import _poolShieldWall from "../pool/shield-wall.js";
 import _poolShimmeringWings from "../pool/shimmering-wings.js";
@@ -356,6 +357,7 @@ const shard: CardShard = {
     _poolScarbladeScout,
     _poolScatteredGroves,
     _poolSeafloorOracle,
+    _poolSeizeTheDay,
     _poolShadowyBackstreet,
     _poolShieldWall,
     _poolShimmeringWings,

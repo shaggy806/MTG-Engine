@@ -132,6 +132,7 @@ import _poolRelicOfLegends from "../pool/relic-of-legends.js";
 import _poolResurrectionOrb from "../pool/resurrection-orb.js";
 import _poolReturnToNature from "../pool/return-to-nature.js";
 import _poolRevokeExistence from "../pool/revoke-existence.js";
+import _poolRhoxFaithmender from "../pool/rhox-faithmender.js";
 import _poolRoguesGloves from "../pool/rogues-gloves.js";
 import _poolRootbornDefenses from "../pool/rootborn-defenses.js";
 import _poolSHIELDDeploymentDrone from "../pool/s-h-i-e-l-d-deployment-drone.js";
@@ -341,6 +342,7 @@ const shard: CardShard = {
     _poolResurrectionOrb,
     _poolReturnToNature,
     _poolRevokeExistence,
+    _poolRhoxFaithmender,
     _poolRoguesGloves,
     _poolRootbornDefenses,
     _poolSHIELDDeploymentDrone,
