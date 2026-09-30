@@ -212,6 +212,7 @@ import _poolYouthfulValkyrie from "../pool/youthful-valkyrie.js";
 import _poolZhaoTheSeethingFlame from "../pool/zhao-the-seething-flame.js";
 import _poolZurEternalSchemer from "../pool/zur-eternal-schemer.js";
 import _poolZurgoThundersDecree from "../pool/zurgo-thunders-decree.js";
+import _tokensFirstMateRagavan from "../tokens/first-mate-ragavan.js";
 import _tokensGreenSpiderTokenReach from "../tokens/green-spider-token-reach.js";
 import _tokensLifelinkSoldierToken from "../tokens/lifelink-soldier-token.js";
 import _tokensMerfolkToken from "../tokens/merfolk-token.js";
@@ -430,6 +431,7 @@ const shard: CardShard = {
     _poolZurgoThundersDecree,
   ],
   tokens: [
+    _tokensFirstMateRagavan,
     _tokensGreenSpiderTokenReach,
     _tokensLifelinkSoldierToken,
     _tokensMerfolkToken,

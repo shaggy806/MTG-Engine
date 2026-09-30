@@ -211,9 +211,11 @@ describe("a step after a discard waits for the discard", () => {
     cast(game, A, RUMMAGE);
     game.advanceUntil(awaiting("discard"));
 
-    // Asked with the draw still to come: the next card isn't in hand yet.
+    // Asked with the draw still to come: the next card isn't in hand yet, and
+    // the spell waits beneath it to leave the stack (rule 608.2n).
     expect(game.handOf(A)).not.toContain(topOfLibrary);
-    expect(game.state.suspendedResolutions).toHaveLength(1);
+    expect(game.state.suspendedResolutions.filter((r) => r.effect !== null)).toHaveLength(1);
+    expect(game.state.suspendedResolutions[0]).toMatchObject({ effect: null, leaveStack: expect.any(String) });
 
     game.dispatch({ type: "discard", player: A, cards: [inHand(game, A, "Grizzly Bears")] });
     game.advanceUntil(quiet);

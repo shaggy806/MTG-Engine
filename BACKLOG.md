@@ -28,7 +28,8 @@ that one card is the reason the deck exists.
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
-  (11) and `effect:cast-during-resolution` (10),
+  (11) and `effect:cast-during-resolution` (10 — partly built on 2026-09-30 as the `cast-now`
+  effect; what's left is in its `top-commanders-gaps.json` description),
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
@@ -38,21 +39,26 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
-- **Now (priority since 2026-09-30): the 147 missing cards of the Tarkir: Dragonstorm precons.**
+- **Now (priority since 2026-09-30): the missing cards of the Tarkir: Dragonstorm precons.**
   The five TDC decks are `SAMPLE_DECKS`, so every bot and every unclaimed seat plays them, with
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
-  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  after TDC batch 1 (41 authored, `precon-tdc-batch-1.test.ts`): Temur Roar 22, Sultai Arisen 29,
-  Abzan Armor 18, Mardu Surge 14, Jeskai Striker 23 — 106, every one recorded with what it needs
-  (`engine/data/sweep-3/TDC1.json` and the earlier sweeps). **Next:** casting a spell as another
-  resolves, free or from a chosen card (`effect:cast-during-resolution` — `cast-now` exists, but
-  only for a target and at full cost) blocks 9: Breaching Dragonstorm, Diviner of Mist, Baral
-  and Kari Zev, Baral's Expertise, Transcendent Dragon, Transforming Flourish, Velomachus
-  Lorehold, Electrodominance, Conduit of Worlds. Then delve (4, though only Treasure Cruise needs
-  nothing else), a copy with new targets (4), "can attack as though it didn't have defender"
-  until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking Bulwark), and two each
-  for Omen, monstrosity, divided damage, hideaway and "entered from a graveyard".
+  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). 147 were
+  missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
+  that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
+  effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
+  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 18 — 98, every
+  one recorded with what it needs (`engine/data/sweep-3/TDC1.json`, `TDC2.json` and the earlier
+  sweeps). No one feature leads any more. **Next:** a copy with new targets
+  (`decision:copy-new-targets`, 4 — Adaptive Training Post and Expansion // Explosion need
+  nothing else), delve (4, only Treasure Cruise needing nothing else), "can attack as though it
+  didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
+  Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
+- **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
+  gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
+  still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a
+  `reveal-until` whose `then` is a free `cast-now`), Kellan, the Kid, Descendants' Path and
+  Buster Sword. Recheck each against its Oracle text before authoring it.
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
@@ -206,7 +212,7 @@ that one card is the reason the deck exists.
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,045 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,049 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
@@ -278,7 +284,7 @@ that one card is the reason the deck exists.
   one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
-- **Precon stand-ins.** 106 cards in the five Tarkir: Dragonstorm starter decks play as
+- **Precon stand-ins.** 98 cards in the five Tarkir: Dragonstorm starter decks play as
   substitutes; authoring them is the card priority ("Card backlog" above). See
   `docs/plans/precon-decks.md` (the substitution tables). Deleting a substitution is the whole
   revert.

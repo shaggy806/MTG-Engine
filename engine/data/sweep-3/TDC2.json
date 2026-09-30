@@ -1,0 +1,74 @@
+{
+  "batch": "TDC2",
+  "status": "complete",
+  "ranks": "Tarkir: Dragonstorm precons: casting a spell as another resolves (effect:cast-during-resolution, the cast-now effect)",
+  "authored": [
+    {
+      "name": "Breaching Dragonstorm",
+      "files": [
+        "engine/src/cards/pool/breaching-dragonstorm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Diviner of Mist",
+      "files": [
+        "engine/src/cards/pool/diviner-of-mist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Baral and Kari Zev",
+      "files": [
+        "engine/src/cards/pool/baral-and-kari-zev.ts",
+        "engine/src/cards/pool/../tokens/first-mate-ragavan.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Baral's Expertise",
+      "files": [
+        "engine/src/cards/pool/barals-expertise.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Transcendent Dragon",
+      "files": [
+        "engine/src/cards/pool/transcendent-dragon.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Velomachus Lorehold",
+      "files": [
+        "engine/src/cards/pool/velomachus-lorehold.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Electrodominance",
+      "files": [
+        "engine/src/cards/pool/electrodominance.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Conduit of Worlds",
+      "files": [
+        "engine/src/cards/pool/conduit-of-worlds.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Transforming Flourish",
+      "needs": [
+        "new:demonstrate",
+        "new:cast-now-other-player"
+      ],
+      "why": "Demonstrate (a copy with new targets for you and one for an opponent), and the destroyed permanent's controller — not the spell's — exiling until a nonland card and casting it free: cast-now casts only as the effect's controller. Re-triaged from TDC1."
+    }
+  ]
+}

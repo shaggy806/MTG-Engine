@@ -1744,10 +1744,13 @@ export class HeuristicBotController extends AutomaticController {
     return usable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, usable.length)));
   }
 
-  /** "You may cast that card": cast it, as the first of its variants that
-   * builds into a cast — the same way this bot casts from priority. */
+  /** "You may cast [a card]": cast it — of several, the one of highest mana
+   * value, which a free cast gets the most for — as the first of its
+   * variants that builds into a cast, the same way this bot casts from
+   * priority. */
   chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null {
-    for (const legal of offer.casts) {
+    const worth = (legal: CastSpellLegal): number => this.manaValueOf(legal.cardName);
+    for (const legal of [...offer.casts].sort((a, b) => worth(b) - worth(a))) {
       const action = this.toCastSpell(view.state, legal);
       if (action.type === "cast-spell") return action;
     }

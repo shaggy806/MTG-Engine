@@ -172,7 +172,11 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "delayed-trigger": (n, v) => v.child(n.effect),
   "enters-with-counters": (n, v) => v.touch(n.target, "help", MINOR),
   "allow-cast-from-exile": (n, v) => v.touch(n.target, "take", MAJOR),
-  "cast-now": (n, v) => v.touch(n.target, "take", MAJOR),
+  "cast-now": (n, v) => {
+    v.touch(n.target, "take", MAJOR);
+    v.child(n.then);
+    v.child(n.else);
+  },
   earthbend: (n, v) => v.touch(n.target, "help", MAJOR),
   "reflexive-trigger": none,
   "put-on-library": (n, v) => v.touch(n.target, "help", MINOR),

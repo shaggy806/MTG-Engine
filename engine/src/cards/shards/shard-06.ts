@@ -18,6 +18,7 @@ import _poolAtog from "../pool/atog.js";
 import _poolAugmentingAutomaton from "../pool/augmenting-automaton.js";
 import _poolBallLightning from "../pool/ball-lightning.js";
 import _poolBantBattlemage from "../pool/bant-battlemage.js";
+import _poolBaralsExpertise from "../pool/barals-expertise.js";
 import _poolBeamtownBeatstick from "../pool/beamtown-beatstick.js";
 import _poolBecomeTheAvalanche from "../pool/become-the-avalanche.js";
 import _poolBenalishKnight from "../pool/benalish-knight.js";
@@ -216,6 +217,7 @@ const shard: CardShard = {
     _poolAugmentingAutomaton,
     _poolBallLightning,
     _poolBantBattlemage,
+    _poolBaralsExpertise,
     _poolBeamtownBeatstick,
     _poolBecomeTheAvalanche,
     _poolBenalishKnight,

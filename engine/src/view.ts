@@ -219,8 +219,8 @@ export interface PlayerView {
    * when the decision isn't any one card's doing (combat declarations, the
    * cleanup discard, the mulligan).
    *
-   * The named object is usually in `objects` (a resolved sorcery is in its
-   * controller's graveyard, an ability's source is still on the battlefield),
+   * The named object is usually in `objects` (a sorcery asking as it
+   * resolves is still on the stack, an ability's source on the battlefield),
    * but not always — a spell that exiled itself, or a face-down foretold card
    * — so `cardName` stands on its own and a client must tolerate a missing
    * `objects[object]`.
@@ -505,6 +505,11 @@ function viewForUncached(
   if (state.awaiting?.kind === "scry" && state.awaiting.player === viewer) {
     visibleIds.push(...state.awaiting.cards);
   }
+  // So does a `cast-now` that has its player look at the top of their
+  // library to choose a spell from among (Velomachus Lorehold).
+  if (state.awaiting?.kind === "cast-now" && state.awaiting.player === viewer) {
+    visibleIds.push(...(state.awaiting.looked ?? []));
+  }
   // A real reveal (rule 701.16) is to *everyone*, which is the whole point —
   // this is the only path that puts a card another player owns, and that is
   // sitting in a hidden zone, into your view. Turn-scoped, so it stops being
@@ -599,7 +604,11 @@ function viewForUncached(
     awaiting:
       state.awaiting?.kind === "discard" && state.awaiting.eligible !== undefined && state.awaiting.player !== viewer
         ? (({ eligible: _hidden, ...rest }) => rest)(state.awaiting)
-        : state.awaiting,
+        : // What a `cast-now` offers can be cards in its player's hand or
+          // library: to anyone else, only that they're deciding.
+          state.awaiting?.kind === "cast-now" && state.awaiting.player !== viewer
+          ? (({ looked: _looked, ...rest }) => ({ ...rest, cards: [], offers: [] }))(state.awaiting)
+          : state.awaiting,
     decisionSource: decisionSourceFor(state),
     result: { ...state.result },
     players,

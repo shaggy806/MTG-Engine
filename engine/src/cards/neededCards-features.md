@@ -642,6 +642,15 @@ in `git log`.
 - **Tarkir: Dragonstorm precons batch 1** (2026-09-30, `precon-tdc-batch-1.test.ts`) — 41 of the
   default decks' 147 missing cards; `create-token`'s `exileAtEndStep`, and no mana cost is an
   unpayable one (rule 118.6). TDC1.json lists the 59 newly triaged cards it left blocked.
+- **Tarkir: Dragonstorm precons batch 2** (2026-09-30, `precon-tdc-batch-2.test.ts`,
+  `cast-now.test.ts`) — casting a spell as another resolves (rule 608.2g), most of
+  `effect:cast-during-resolution`: the `cast-now` effect grew `from` (a hand, a graveyard, the
+  looked-at top N of a library), `spell` (a filter on the spell as it would be cast — 601.3e),
+  `free` (an alternative cost of {0} that kicker may be paid on top of — 118.9d), `then` / `else`
+  and `rest`, and the decision offers several cards at once. An instant or sorcery now leaves the
+  stack only once its parked steps are done (608.2n), `counter` can exile, and a cast trigger's
+  "that spell's mana value" reads a spell countered in response as it was on the stack
+  (`LastKnownRefs.triggerSpell`). 8 cards; TDC2.json re-triages Transforming Flourish.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

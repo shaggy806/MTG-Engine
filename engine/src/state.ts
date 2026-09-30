@@ -928,6 +928,12 @@ export interface CastSpellRecord {
 export interface LastKnownRefs {
   readonly source?: number;
   readonly triggerObject?: number;
+  /** For a trigger fired by a spell — its casting (Baral and Kari Zev's
+   * "your first instant or sorcery spell each turn"): the spell's
+   * `zoneChangeCount` on the stack. Once it has left the stack (countered in
+   * response), "that spell's mana value" is read as it last was there, its
+   * {X} included (`GameObject.lastStackManaValue` — rule 608.2h). */
+  readonly triggerSpell?: number;
   /** "For each of them" (Kambal, Profiteering Mayor): the permanents of the
    * simultaneous entry a batched `enters-battlefield` trigger fired on, each
    * with its battlefield stint and how many tokens it stood for (a
@@ -1704,20 +1710,29 @@ export type AwaitingDecision =
     }
   | {
       /**
-       * "You may cast [that card]" while a spell or ability resolves (the
-       * `cast-now` effect — Chandra, Acolyte of Flame's −2): `player` casts
-       * `card` now, following the casting rules in full (601.2 — modes, X,
-       * kicker, targets, costs) but ignoring timing, or declines. `offers`
-       * are the card's cast variants, worked out as this was raised (the
-       * board can't change while it's asked); the answer names one, or
-       * nothing. `source` is what's resolving.
+       * "You may cast [a card]" while a spell or ability resolves (the
+       * `cast-now` effect — Chandra, Acolyte of Flame's −2, Baral's
+       * Expertise): `player` casts one of `cards` now, following the casting
+       * rules in full (601.2 — modes, X, kicker, targets, costs) but ignoring
+       * timing (608.2g), or declines. `offers` are the cards' cast variants,
+       * worked out as this was raised (the board can't change while it's
+       * asked); the answer names one, or nothing. `source` is what's
+       * resolving.
        */
       readonly kind: "cast-now";
       readonly player: PlayerId;
       readonly source: ObjectId;
-      readonly card: ObjectId;
-      readonly cardName: string;
+      /** The cards on offer, each with at least one way in `offers`. */
+      readonly cards: readonly ObjectId[];
+      /** Cards `player` looks at to choose among — the top of their library
+       * (Velomachus Lorehold) — castable or not; revealed to them alone. */
+      readonly looked?: readonly ObjectId[];
       readonly offers: readonly CastSpellOffer[];
+      /** "Without paying its mana cost" — the only way it's offered. */
+      readonly free: boolean;
+      /** What the spell must be, matched as it's cast — see the effect's
+       * `spell`, bound when it was raised. */
+      readonly spell?: CardFilter;
       /** "If that spell would be put into your graveyard, exile it instead." */
       readonly exileAfter: boolean;
     }
@@ -1998,11 +2013,15 @@ export interface EntryRecord {
  * {@link GameState.suspendedResolutions}. Either what is left of it (a
  * {@link ParkedSteps}), or, once nothing is left, just a note that it isn't
  * over until its last decision has been answered — or, with `enter`, a
- * permanent waiting on its "as this enters" choice to finish entering.
+ * permanent waiting on its "as this enters" choice to finish entering; or,
+ * with `leaveStack`, an instant or sorcery whose instructions are done,
+ * leaving the stack as the final part of its resolution (rule 608.2n) once
+ * the steps it parked above this are: a spell it lets its controller cast
+ * as it resolves is cast while it's still on the stack (608.2g).
  */
 export type SuspendedResolution =
   | ParkedSteps
-  | { readonly effect: null; readonly enter?: PendingEntry };
+  | { readonly effect: null; readonly enter?: PendingEntry; readonly leaveStack?: ObjectId };
 
 /**
  * A permanent part of the way onto the battlefield, stopped to make an "as

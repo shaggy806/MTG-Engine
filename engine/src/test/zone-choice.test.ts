@@ -118,7 +118,9 @@ describe("look-and-choose: graveyard", () => {
       card: named(game, game.handOf(A), GRAVE_PICK),
       targets: [],
     });
-    game.advanceUntil(stackEmpty);
+    // Asked as the spell resolves, with it still on the stack (rule 608.2n):
+    // it isn't in the graveyard to pick.
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || stackEmpty(s));
 
     const awaiting = game.state.awaiting;
     if (awaiting?.kind !== "choose-from-zone") throw new Error("unreachable");

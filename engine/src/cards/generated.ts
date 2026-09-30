@@ -417,6 +417,8 @@ import _poolBannersRaised from "./pool/banners-raised.js";
 import _poolBantBattlemage from "./pool/bant-battlemage.js";
 import _poolBarTheDoor from "./pool/bar-the-door.js";
 import _poolBaradDur from "./pool/barad-dur.js";
+import _poolBaralAndKariZev from "./pool/baral-and-kari-zev.js";
+import _poolBaralsExpertise from "./pool/barals-expertise.js";
 import _poolBarbarianHorde from "./pool/barbarian-horde.js";
 import _poolBarbarianRiftcutter from "./pool/barbarian-riftcutter.js";
 import _poolBarbaryApes from "./pool/barbary-apes.js";
@@ -722,6 +724,7 @@ import _poolBrawlersPlate from "./pool/brawlers-plate.js";
 import _poolBrawnAmadeusCho from "./pool/brawn-amadeus-cho.js";
 import _poolBrazenFreebooter from "./pool/brazen-freebooter.js";
 import _poolBrazenScourge from "./pool/brazen-scourge.js";
+import _poolBreachingDragonstorm from "./pool/breaching-dragonstorm.js";
 import _poolBreakAsunder from "./pool/break-asunder.js";
 import _poolBreakDown from "./pool/break-down.js";
 import _poolBreakneckBerserker from "./pool/breakneck-berserker.js";
@@ -1063,6 +1066,7 @@ import _poolConclaveTribunal from "./pool/conclave-tribunal.js";
 import _poolConcordiaPegasus from "./pool/concordia-pegasus.js";
 import _poolCondemn from "./pool/condemn.js";
 import _poolConduitOfRuin from "./pool/conduit-of-ruin.js";
+import _poolConduitOfWorlds from "./pool/conduit-of-worlds.js";
 import _poolConduitPylons from "./pool/conduit-pylons.js";
 import _poolConiferStrider from "./pool/conifer-strider.js";
 import _poolConjurersCloset from "./pool/conjurers-closet.js";
@@ -1436,6 +1440,7 @@ import _poolDivineFavor from "./pool/divine-favor.js";
 import _poolDivineResilience from "./pool/divine-resilience.js";
 import _poolDivineTransformation from "./pool/divine-transformation.js";
 import _poolDivineVerdict from "./pool/divine-verdict.js";
+import _poolDivinerOfMist from "./pool/diviner-of-mist.js";
 import _poolDivingGriffin from "./pool/diving-griffin.js";
 import _poolDjinnOfTheLamp from "./pool/djinn-of-the-lamp.js";
 import _poolDocksideChef from "./pool/dockside-chef.js";
@@ -1599,6 +1604,7 @@ import _poolEldraziMonument from "./pool/eldrazi-monument.js";
 import _poolEldraziTemple from "./pool/eldrazi-temple.js";
 import _poolEldritchEvolution from "./pool/eldritch-evolution.js";
 import _poolElectrify from "./pool/electrify.js";
+import _poolElectrodominance from "./pool/electrodominance.js";
 import _poolElectrostaticField from "./pool/electrostatic-field.js";
 import _poolElectrostaticInfantry from "./pool/electrostatic-infantry.js";
 import _poolElegantParlor from "./pool/elegant-parlor.js";
@@ -5631,6 +5637,7 @@ import _poolTranquilCove from "./pool/tranquil-cove.js";
 import _poolTranquilExpanse from "./pool/tranquil-expanse.js";
 import _poolTranquilLandscape from "./pool/tranquil-landscape.js";
 import _poolTranquilThicket from "./pool/tranquil-thicket.js";
+import _poolTranscendentDragon from "./pool/transcendent-dragon.js";
 import _poolTrapmakersSnare from "./pool/trapmakers-snare.js";
 import _poolTraumaticCritique from "./pool/traumatic-critique.js";
 import _poolTravelersAmulet from "./pool/travelers-amulet.js";
@@ -5860,6 +5867,7 @@ import _poolVedalkenMesmerist from "./pool/vedalken-mesmerist.js";
 import _poolVedalkenOrrery from "./pool/vedalken-orrery.js";
 import _poolVeiledShade from "./pool/veiled-shade.js";
 import _poolVelaTheNightClad from "./pool/vela-the-night-clad.js";
+import _poolVelomachusLorehold from "./pool/velomachus-lorehold.js";
 import _poolVenerableLammasu from "./pool/venerable-lammasu.js";
 import _poolVenerableMonk from "./pool/venerable-monk.js";
 import _poolVengefulAncestor from "./pool/vengeful-ancestor.js";
@@ -6391,6 +6399,7 @@ import _tokensElephantToken from "./tokens/elephant-token.js";
 import _tokensElfWarriorToken from "./tokens/elf-warrior-token.js";
 import _tokensFaerieRogueToken from "./tokens/faerie-rogue-token.js";
 import _tokensFaerieToken from "./tokens/faerie-token.js";
+import _tokensFirstMateRagavan from "./tokens/first-mate-ragavan.js";
 import _tokensFishToken from "./tokens/fish-token.js";
 import _tokensFoodToken from "./tokens/food-token.js";
 import _tokensForestDryadToken from "./tokens/forest-dryad-token.js";
@@ -6909,6 +6918,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBantBattlemage,
   _poolBarTheDoor,
   _poolBaradDur,
+  _poolBaralAndKariZev,
+  _poolBaralsExpertise,
   _poolBarbarianHorde,
   _poolBarbarianRiftcutter,
   _poolBarbaryApes,
@@ -7214,6 +7225,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBrawnAmadeusCho,
   _poolBrazenFreebooter,
   _poolBrazenScourge,
+  _poolBreachingDragonstorm,
   _poolBreakAsunder,
   _poolBreakDown,
   _poolBreakneckBerserker,
@@ -7555,6 +7567,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolConcordiaPegasus,
   _poolCondemn,
   _poolConduitOfRuin,
+  _poolConduitOfWorlds,
   _poolConduitPylons,
   _poolConiferStrider,
   _poolConjurersCloset,
@@ -7928,6 +7941,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDivineResilience,
   _poolDivineTransformation,
   _poolDivineVerdict,
+  _poolDivinerOfMist,
   _poolDivingGriffin,
   _poolDjinnOfTheLamp,
   _poolDocksideChef,
@@ -8091,6 +8105,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEldraziTemple,
   _poolEldritchEvolution,
   _poolElectrify,
+  _poolElectrodominance,
   _poolElectrostaticField,
   _poolElectrostaticInfantry,
   _poolElegantParlor,
@@ -12123,6 +12138,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTranquilExpanse,
   _poolTranquilLandscape,
   _poolTranquilThicket,
+  _poolTranscendentDragon,
   _poolTrapmakersSnare,
   _poolTraumaticCritique,
   _poolTravelersAmulet,
@@ -12352,6 +12368,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVedalkenOrrery,
   _poolVeiledShade,
   _poolVelaTheNightClad,
+  _poolVelomachusLorehold,
   _poolVenerableLammasu,
   _poolVenerableMonk,
   _poolVengefulAncestor,
@@ -12889,6 +12906,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensElfWarriorToken,
   _tokensFaerieRogueToken,
   _tokensFaerieToken,
+  _tokensFirstMateRagavan,
   _tokensFishToken,
   _tokensFoodToken,
   _tokensForestDryadToken,

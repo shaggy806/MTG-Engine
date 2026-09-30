@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 389 of the 495
-non-commander slots are the printed cards; the other 106 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 397 of the 495
+non-commander slots are the printed cards; the other 98 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -28,11 +28,11 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 
 | deck | commander | plan | cards left to author |
 |---|---|---|---|
-| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 22 |
-| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 29 |
+| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 21 |
+| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 27 |
 | Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
 | Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
-| Jeskai Striker | Elsha, Threefold Master | instants and sorceries, prowess, Monk tokens | 23 |
+| Jeskai Striker | Elsha, Threefold Master | instants and sorceries, prowess, Monk tokens | 18 |
 
 All five commanders are implemented, and no missing card is missing from more than one deck.
 `server/src/decks.ts`'s `SEATS` takes the first four for its seats (and every bot's deck), so
@@ -83,11 +83,10 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (22)
+### Temur Roar — Ureni of the Unwritten (21)
 
 | printed card | plays as | why |
 |---|---|---|
-| Breaching Dragonstorm | Fateful Discovery | Five-mana enchantment: card advantage. |
 | Chaos Warp | Regress | Three-mana instant: removal. |
 | Deceptive Frostkite | Sprite Dragon | Two-mana blue flying Dragon. |
 | Dragonlord Atarka | Drakuseth, Maw of Flames | Seven-mana legendary Dragon that burns as it attacks. |
@@ -110,18 +109,16 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (29)
+### Sultai Arisen — Teval, the Balanced Scale (27)
 
 | printed card | plays as | why |
 |---|---|---|
 | Afterlife from the Loam | Reanimate | Reanimates a creature from any graveyard. |
 | Colossal Grave-Reaver | Archon of Cruelty | Eight-mana creature: attack trigger, evasive creature. |
 | Command Beacon | Path of Ancestry | Land: commander payoff, utility land. |
-| Conduit of Worlds | Crucible of Worlds | Four-mana artifact: land recursion, reanimation. |
 | Consuming Aberration | Umbris, Fear Manifest | Five-mana creature: mill. |
 | Dauthi Voidwalker | Scavenging Ooze | Two-mana creature: graveyard hate. |
 | Disciple of Bolas | Thallid Soothsayer | Turns a sacrificed creature into cards. |
-| Diviner of Mist | Mindeye Drake | Five-mana blue flier that mills. |
 | Essence Anchor | Rune-Sealed Wall | Three-mana artifact: self-mill, library manipulation. |
 | Gravecrawler | Bloodghast | Cheap black creature that keeps coming back from the graveyard. |
 | Jarad, Golgari Lich Lord | Nantuko Husk | Sacrifice outlet that turns creatures into damage. |
@@ -186,18 +183,15 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Windbrisk Heights | Memorial to Glory | Land: tapped land, utility land. |
 | Within Range | Dogged Pursuit | Four-mana enchantment: drains opponents. |
 
-### Jeskai Striker — Elsha, Threefold Master (23)
+### Jeskai Striker — Elsha, Threefold Master (18)
 
 | printed card | plays as | why |
 |---|---|---|
 | Adaptive Training Post | Unruly Catapult | Three-mana artifact: spell payoff. |
-| Baral and Kari Zev | Lorehold Pledgemage | Three-mana creature: spell payoff. |
-| Baral's Expertise | Raise the Palisade | Five-mana sorcery: bounce, creature removal. |
 | Compulsive Research | Catalog | Three-mana sorcery: looting, card draw. |
 | Curse of Opulence | Sticky Fingers | One-mana enchantment: token maker, ramp. |
 | Curse of the Swine | Resculpt | Two-mana sorcery: removal, creature removal. |
 | Dismantling Wave | Solemn Offering | Three-mana sorcery: artifact and enchantment removal, removal. |
-| Electrodominance | Lightning Strike | Two-mana instant: burn. |
 | Expansion // Explosion | Fireball | X-damage spell. |
 | Expressive Iteration | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 | Ghostly Prison | Aura of Silence | Three-mana white enchantment that taxes opponents. |
@@ -209,7 +203,5 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Shiko and Narset, Unified | Palace Sentinels | Four-mana creature: card draw, card advantage. |
 | Sublime Epiphany | Contradict | Counterspell that draws a card. |
 | Tempest Technique | Efficient Construction | Four-mana enchantment: spell payoff. |
-| Transcendent Dragon | Scion of Ugin | Six-mana creature: evasive creature. |
 | Transforming Flourish | Stroke of Midnight | Three-mana instant: removal. |
-| Velomachus Lorehold | Tyrant's Familiar | Seven-mana creature: attack trigger, evasive creature. |
 | Voracious Bibliophile | Storyteller Pixie | Four-mana creature: spell payoff, card draw. |

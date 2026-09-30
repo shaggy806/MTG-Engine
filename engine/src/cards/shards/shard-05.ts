@@ -189,6 +189,7 @@ import _poolTwoHeadedHellkite from "../pool/two-headed-hellkite.js";
 import _poolUndergrowthRecon from "../pool/undergrowth-recon.js";
 import _poolUndergrowthStadium from "../pool/undergrowth-stadium.js";
 import _poolVampireNoble from "../pool/vampire-noble.js";
+import _poolVelomachusLorehold from "../pool/velomachus-lorehold.js";
 import _poolVentureDeeper from "../pool/venture-deeper.js";
 import _poolViridianShaman from "../pool/viridian-shaman.js";
 import _poolVolcanicIsland from "../pool/volcanic-island.js";
@@ -400,6 +401,7 @@ const shard: CardShard = {
     _poolUndergrowthRecon,
     _poolUndergrowthStadium,
     _poolVampireNoble,
+    _poolVelomachusLorehold,
     _poolVentureDeeper,
     _poolViridianShaman,
     _poolVolcanicIsland,

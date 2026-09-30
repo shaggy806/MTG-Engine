@@ -403,11 +403,13 @@ export interface CardFilter {
    * Shares at least one card type with the permanent sacrificed to pay for
    * (or earlier in) the spell or ability applying this filter — "a permanent
    * that shares a card type with it" (Braids, Arisen Nightmare), read from
-   * the sacrificed permanent as it last existed on the battlefield. Bound to
-   * a plain `typesAnyOf` as the effect applies (`bindDynamicCompares`); with
-   * nothing sacrificed, or anywhere else, it matches nothing.
+   * the sacrificed permanent as it last existed on the battlefield — or with
+   * the trigger object: "a spell … that shares a card type with it" (Baral
+   * and Kari Zev), the spell whose casting fired the trigger. Bound to a
+   * plain `typesAnyOf` as the effect applies (`bindDynamicCompares`); with
+   * nothing to share with, or anywhere else, it matches nothing.
    */
-  readonly sharesCardTypeWith?: "sacrificed";
+  readonly sharesCardTypeWith?: "sacrificed" | "trigger-object";
   /**
    * One of the objects the spell or ability now resolving has done this to
    * (see `ThisWayKind`) — choosing among the cards just moved: "you may put
@@ -601,9 +603,10 @@ export function matchesFilter(
   ) {
     return false;
   }
-  // "Shares a card type with the sacrificed creature" is bound to plain
-  // types by the effect applying it (`bindDynamicCompares`); left unbound —
-  // anywhere nothing could answer it — it matches nothing.
+  // "Shares a card type with the sacrificed creature" (or the trigger object)
+  // is bound to plain types by the effect applying it
+  // (`bindDynamicCompares`); left unbound — anywhere nothing could answer
+  // it — it matches nothing.
   if (filter.sharesCardTypeWith !== undefined) return false;
   if (filter.thisWay !== undefined && !thisWayEntries(state, filter.thisWay).some((e) => e.object === id)) {
     return false;

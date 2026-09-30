@@ -58,6 +58,7 @@ import _poolDimirGuildgate from "../pool/dimir-guildgate.js";
 import _poolDimirSpybug from "../pool/dimir-spybug.js";
 import _poolDisorient from "../pool/disorient.js";
 import _poolDissolve from "../pool/dissolve.js";
+import _poolDivinerOfMist from "../pool/diviner-of-mist.js";
 import _poolDreadShade from "../pool/dread-shade.js";
 import _poolDutyBeyondDeath from "../pool/duty-beyond-death.js";
 import _poolEkunduGriffin from "../pool/ekundu-griffin.js";
@@ -283,6 +284,7 @@ const shard: CardShard = {
     _poolDimirSpybug,
     _poolDisorient,
     _poolDissolve,
+    _poolDivinerOfMist,
     _poolDreadShade,
     _poolDutyBeyondDeath,
     _poolEkunduGriffin,

@@ -134,6 +134,7 @@ import {
 import type {
   CascadeFinish,
   CascadeFound,
+  CastNowOptions,
   DelayedNextSpell,
   EffectAmount,
   EffectSpec,
@@ -638,6 +639,16 @@ type ManaExtra = {
   /** Only when the tapping made this type ("for {C}"). */
   readonly producing?: "C";
 };
+
+/** What a `cast-now` offers — to whom, which cards, on what terms (see the
+ * `cast-now` {@link EffectSpec}) — as `Game.castNowOffer` reads it. */
+interface CastNowAsk {
+  readonly player: PlayerId;
+  readonly cards: readonly ObjectId[];
+  readonly free: boolean;
+  readonly exileAfter: boolean;
+  readonly spell?: CardFilter;
+}
 
 /** `duration` as an effect `you` control keeps it: "until your next turn"
  * is yours. */
@@ -1728,6 +1739,15 @@ export class Game {
     if (!warp && impulseFree !== "only" && this.alternativeCostOf(card, def, via, player) !== null) {
       variants.push({ kicked: false, overload: false, free: false, altCost: true });
     }
+    // A resolving effect's "you may cast it without paying its mana cost"
+    // (a free `cast-now`) is the only way it offers the card: that
+    // alternative cost and no other (rule 118.9a), with or without kicker
+    // paid on top of it (118.9d).
+    if (via === "effect" && this.castNowOffer(player, card)?.free === true) {
+      variants.length = 0;
+      variants.push({ kicked: false, overload: false, free: true });
+      if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: true });
+    }
     // Prototype (rule 718) isn't an alternative cost: every way to cast it
     // may be done prototyped too.
     if (def.prototype !== null) {
@@ -1821,7 +1841,7 @@ export class Game {
                 free,
                 false,
                 undefined,
-                undefined,
+                player,
                 graveyardGrant,
                 offspring === true,
                 evoke ?? null,
@@ -1928,7 +1948,7 @@ export class Game {
       const cost = alternative !== null
         ? alternative.mana
         : free
-        ? "{0}"
+        ? kicked && def.kicker !== null ? "{0}" + def.kicker.cost : "{0}"
         : overload && def.overload !== null
           ? def.overload.cost
           : kicked && def.kicker !== null && paidBase !== null
@@ -6619,21 +6639,25 @@ export class Game {
       const alternative = this.alternativeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner);
       if (alternative !== null) return alternative.mana;
     }
-    // A conditional free-cast permission (Fierce Guardianship) also replaces
-    // the mana cost entirely, same as overload.
-    if (
+    // A free-cast permission — conditional (Fierce Guardianship), a static's
+    // (Omniscience), an impulse's, or a resolving effect's "without paying
+    // its mana cost" — is an alternative cost of {0}: it replaces the mana
+    // cost entirely, same as overload, but additional costs (kicker, a mana
+    // branch of a choice of additional costs) are still paid on top of it
+    // (rule 118.9d).
+    const freeCast =
       free &&
       (def.freeCastIf !== null ||
         (via === undefined && this.freeFromHand(cardId)) ||
-        (via === "impulse" && this.impulseFreeCast(cardId) !== null))
-    ) {
-      return "{0}";
-    }
+        (via === "impulse" && this.impulseFreeCast(cardId) !== null) ||
+        (via === "effect" &&
+          this.castNowOffer(caster ?? this.state.objects[cardId]?.owner, cardId)?.free === true));
     // Overload (rule 702.126b) *replaces* the mana cost entirely, unlike
     // kicker's additive cost.
-    if (overload && def.overload !== null) return def.overload.cost;
-    const base =
-      evoke !== null
+    if (!freeCast && overload && def.overload !== null) return def.overload.cost;
+    const base = freeCast
+      ? "{0}"
+      : evoke !== null
         ? this.evokeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner, evoke)
         : via === "flashback"
         ? (this.flashbackOf(cardId, graveyardGrant)?.cost ?? null)
@@ -6775,9 +6799,10 @@ export class Game {
     }
     // Cast because a resolving spell or ability says so: no priority needed,
     // but only the card it offered, by the player it offered it to.
+    const offered = via === "effect" ? this.castNowOffer(player, cardId) : null;
     const blocked =
       via === "effect"
-        ? this.castNowMatches(player, cardId)
+        ? offered !== null
           ? null
           : "that card isn't being offered to cast now"
         : this.whyCannotAct(player);
@@ -6785,6 +6810,22 @@ export class Game {
     const def = this.faceDef(cardId, face);
     const prohibited = this.whyProhibitedFromCasting(player, cardId, def);
     if (prohibited !== null) return prohibited;
+    // The offer's own terms: "without paying its mana cost" is the only way
+    // it allows — an alternative cost, so no other goes with it (rule
+    // 118.9a) — and only a spell its filter matches, judged as the spell it
+    // would be (601.3e: this face, prototyped or not).
+    if (offered !== null) {
+      if (offered.free && (!free || altCost || overload || evoke !== null)) {
+        return `${def.name} may only be cast without paying its mana cost`;
+      }
+      const spell = offered.spell;
+      if (
+        spell !== undefined &&
+        !this.withFace(cardId, face, () => matchesFilter(this.state, this.registry, cardId, spell, { you: player }))
+      ) {
+        return `${def.name} isn't a spell this lets ${player} cast`;
+      }
+    }
     if (via === "flashback") {
       const flashback = this.flashbackOf(cardId, graveyardGrant);
       if (flashback === null) {
@@ -6943,7 +6984,7 @@ export class Game {
     if (impulseFree === "only" && !free) {
       return `${def.name} may be cast from exile only without paying its mana cost`;
     }
-    if (free && !(via === undefined && this.freeFromHand(cardId)) && impulseFree === null) {
+    if (free && !(via === undefined && this.freeFromHand(cardId)) && impulseFree === null && offered?.free !== true) {
       if (def.freeCastIf === null) return `${def.name} has no free-cast permission`;
       if (!staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.freeCastIf.condition)) {
         return `${def.name}'s free-cast condition isn't met`;
@@ -7149,51 +7190,75 @@ export class Game {
   }
 
   /**
-   * The card a `cast-now` decision is about, while its offers are worked out
-   * (before the decision is raised) — what a `via: "effect"` cast is
-   * checked against then. `awaiting` names it after that.
+   * What a `cast-now` offers while its offers are worked out (before the
+   * decision is raised) and while the answer is cast (after it's cleared) —
+   * what a `via: "effect"` cast is checked against then. `awaiting` says it
+   * in between.
    */
-  private castNowProbe: {
-    readonly player: PlayerId;
-    readonly card: ObjectId;
-    readonly exileAfter?: boolean;
-  } | null = null;
+  private castNowProbe: CastNowAsk | null = null;
 
-  /** Whether `player` may cast `cardId` `via: "effect"` right now: it's the
-   * card a pending `cast-now` decision (or one being raised) offers them. */
-  private castNowMatches(player: PlayerId, cardId: ObjectId): boolean {
+  /** The `cast-now` offer that lets `player` cast `cardId` `via: "effect"`
+   * right now — the pending decision's, or the one being raised or answered
+   * — or `null`. */
+  private castNowOffer(player: PlayerId | undefined, cardId: ObjectId): CastNowAsk | null {
     const awaiting = this.state.awaiting;
-    const asked =
-      awaiting?.kind === "cast-now" ? { player: awaiting.player, card: awaiting.card } : this.castNowProbe;
-    return asked !== null && asked.player === player && asked.card === cardId;
+    const asked: CastNowAsk | null =
+      awaiting?.kind === "cast-now"
+        ? {
+            player: awaiting.player,
+            cards: awaiting.cards,
+            free: awaiting.free,
+            exileAfter: awaiting.exileAfter,
+            ...(awaiting.spell !== undefined ? { spell: awaiting.spell } : {}),
+          }
+        : this.castNowProbe;
+    return asked !== null && asked.player === player && asked.cards.includes(cardId) ? asked : null;
   }
 
   /**
-   * "You may cast that card" (the `cast-now` effect): offer `player` every
-   * way to cast `cardId` from where it is, ignoring timing (rule 608.2g), as
-   * a `cast-now` decision — or nothing, when it can't be cast at all (no
-   * legal targets, no way to pay). The resolution waits on the answer.
+   * "You may cast [a card]" (the `cast-now` effect): offer `player` every
+   * way to cast each of `cards` from where it is, ignoring timing (rule
+   * 608.2g), on the offer's terms — "without paying its mana cost", a spell
+   * its filter matches — as one `cast-now` decision; or nothing, when none
+   * of them can be cast at all (no legal targets, no way to pay). A land
+   * card is played, never cast. The resolution waits on the answer.
    */
-  private raiseCastNow(player: PlayerId, source: ObjectId, cardId: ObjectId, exileAfter: boolean): void {
-    const object = this.state.objects[cardId];
-    if (object === undefined || object.zone === "stack" || object.zone === "battlefield") return;
-    const ownDef = this.registry.get(object.cardName);
-    if (ownDef.types.includes("land")) return;
-    this.castNowProbe = { player, card: cardId };
+  private raiseCastNow(
+    player: PlayerId,
+    source: ObjectId,
+    cards: readonly ObjectId[],
+    options: CastNowOptions,
+  ): void {
+    this.castNowProbe = {
+      player,
+      cards,
+      free: options.free,
+      exileAfter: options.exileAfter,
+      ...(options.spell !== undefined ? { spell: options.spell } : {}),
+    };
     const offers: CastSpellOffer[] = [];
+    const offered: ObjectId[] = [];
     try {
-      const faces: readonly (number | undefined)[] =
-        !ownDef.transform && ownDef.faces !== null ? ownDef.faces.map((_n, i) => i) : [undefined];
-      for (const face of faces) {
-        const def = this.faceDef(cardId, face ?? 0);
-        if (def.types.includes("land")) continue;
-        for (const legal of this.castSpellActions(player, cardId, def.name, def, {
-          ...(face !== undefined ? { face } : {}),
-          via: "effect",
-          costString: def.manaCost,
-        })) {
-          if (legal.kind === "cast-spell") offers.push(legal);
+      for (const cardId of cards) {
+        const object = this.state.objects[cardId];
+        if (object === undefined || object.zone === "stack" || object.zone === "battlefield") continue;
+        const ownDef = this.registry.get(object.cardName);
+        if (ownDef.types.includes("land")) continue;
+        const before = offers.length;
+        const faces: readonly (number | undefined)[] =
+          !ownDef.transform && ownDef.faces !== null ? ownDef.faces.map((_n, i) => i) : [undefined];
+        for (const face of faces) {
+          const def = this.faceDef(cardId, face ?? 0);
+          if (def.types.includes("land")) continue;
+          for (const legal of this.castSpellActions(player, cardId, def.name, def, {
+            ...(face !== undefined ? { face } : {}),
+            via: "effect",
+            costString: def.manaCost,
+          })) {
+            if (legal.kind === "cast-spell") offers.push(legal);
+          }
         }
+        if (offers.length > before) offered.push(cardId);
       }
     } finally {
       this.castNowProbe = null;
@@ -7203,10 +7268,12 @@ export class Game {
       kind: "cast-now",
       player,
       source,
-      card: cardId,
-      cardName: ownDef.name,
+      cards: offered,
+      ...(options.looked !== undefined ? { looked: [...options.looked] } : {}),
       offers,
-      exileAfter,
+      free: options.free,
+      ...(options.spell !== undefined ? { spell: options.spell } : {}),
+      exileAfter: options.exileAfter,
     };
   }
 
@@ -7226,7 +7293,7 @@ export class Game {
     if (why !== null) throw new Error(why);
     // Checked against the decision; cast with it answered, so the cast's own
     // costs (a discard) can raise decisions of their own.
-    this.castNowProbe = { player, card: awaiting.card, exileAfter: awaiting.exileAfter };
+    this.castNowProbe = this.castNowOffer(player, cast.card);
     this.state.awaiting = null;
     try {
       this.castSpell(
@@ -9733,6 +9800,7 @@ export class Game {
         this.finishEntry(next.enter);
         this.holdResolutionOpen(parked);
       }
+      if (next?.leaveStack !== undefined) this.leaveStackAfterResolving(next.leaveStack);
       this.endResolutionIfDone();
       return;
     }
@@ -9930,6 +9998,8 @@ export class Game {
     const stack = this.state.zones.shared.stack;
     const id = stack[stack.length - 1];
     const object = this.state.objects[id];
+    // Whatever this resolution parks goes above these.
+    const parked = this.state.suspendedResolutions.length;
 
     if (object.kind === "ability") {
       this.resolveAbility(object);
@@ -10041,6 +10111,31 @@ export class Game {
     });
     this.emit({ type: "spell-resolved", object: id });
 
+    if (!object.isCopy && this.isPermanentSpell(def)) {
+      this.enterPermanentSpell(id);
+      return;
+    }
+    // An instant or sorcery leaves the stack as the final part of its
+    // resolution (rule 608.2n): after any of its steps still waiting on a
+    // decision. So a spell it lets its controller cast as it resolves is cast
+    // with it still on the stack (608.2g) — Baral's Expertise isn't in the
+    // graveyard for its free Regrowth to target.
+    if (this.state.suspendedResolutions.length > parked || this.decisionOutstanding()) {
+      this.state.suspendedResolutions.splice(parked, 0, { effect: null, leaveStack: id });
+      return;
+    }
+    this.leaveStackAfterResolving(id);
+  }
+
+  /**
+   * An instant or sorcery, done resolving, leaves the stack (rule 608.2n):
+   * to its owner's graveyard, or wherever its own rules send it instead —
+   * exile on an adventure, the library, exile — and a copy ceases to exist.
+   * Nothing, if it has left already.
+   */
+  private leaveStackAfterResolving(id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "stack") return;
     // A copy of a spell (rule 707.10c) ceases to exist instead of moving to
     // any zone other than the stack.
     if (object.isCopy) {
@@ -10050,10 +10145,8 @@ export class Game {
       delete this.state.objects[id];
       return;
     }
-
-    if (this.isPermanentSpell(def)) {
-      this.enterPermanentSpell(id);
-    } else if (
+    const def = this.registry.get(printedCardName(object));
+    if (
       // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
       // the card with a "you may cast the creature later" permission, instead
       // of going to the graveyard.
@@ -11008,10 +11101,15 @@ export class Game {
           : undefined;
     let triggerStint: number | undefined;
     let afterLeaving: number | undefined;
+    let triggerSpell: number | undefined;
     if (triggerObject !== undefined) {
       const t = this.state.objects[triggerObject];
       if (t?.zone === "battlefield") {
         triggerStint = t.zoneChangeCount ?? 0;
+      } else if (t?.zone === "stack" && t.kind === "card") {
+        // A spell — the one whose casting fired this: which stint of it on
+        // the stack "that spell" means.
+        triggerSpell = t.zoneChangeCount ?? 0;
       } else if (
         t?.lastKnown !== undefined &&
         isLeaveEvent(event) &&
@@ -11077,6 +11175,7 @@ export class Game {
     if (
       sourceStint === undefined &&
       triggerStint === undefined &&
+      triggerSpell === undefined &&
       recipient === undefined &&
       player === undefined
     ) {
@@ -11085,6 +11184,7 @@ export class Game {
     return {
       ...(sourceStint !== undefined ? { source: sourceStint } : {}),
       ...(triggerStint !== undefined ? { triggerObject: triggerStint } : {}),
+      ...(triggerSpell !== undefined ? { triggerSpell } : {}),
       ...(afterLeaving !== undefined ? { triggerObjectAfterLeaving: afterLeaving } : {}),
       ...(recipient !== undefined ? { recipient } : {}),
       ...(player !== undefined ? { player } : {}),
@@ -12613,8 +12713,21 @@ export class Game {
       // Clement, the Worrywort's "lesser mana value" after the entering
       // creature was killed in response. A spell that fired a cast trigger
       // was never a permanent, and is read on the stack.
-      manaValueOf: (target) =>
-        this.manaValueOfTarget(target, expectedZoneOf(target), lastKnownOf(target)),
+      manaValueOf: (target) => {
+        // The spell whose casting fired this, gone from the stack since
+        // (countered in response): its mana value as it last was there, its
+        // {X} included (rule 608.2h).
+        const spell = target.kind === "object" && target.object === triggerObject ? this.state.objects[target.object] : undefined;
+        if (
+          spell !== undefined &&
+          refs.triggerSpell !== undefined &&
+          (spell.zone !== "stack" || (spell.zoneChangeCount ?? 0) !== refs.triggerSpell) &&
+          spell.lastStackManaValue !== undefined
+        ) {
+          return spell.lastStackManaValue;
+        }
+        return this.manaValueOfTarget(target, expectedZoneOf(target), lastKnownOf(target));
+      },
       manaSpentOf: (target) => {
         if (target.kind !== "object") return 0;
         const lki = lastKnownOf(target);
@@ -13303,9 +13416,18 @@ export class Game {
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       finishCascade: (finish) => this.finishCascade(finish),
-      castNow: (target, exileAfter) => {
-        if (target.kind === "object") this.raiseCastNow(controller, source, target.object, exileAfter);
-      },
+      castNow: (cards, options) => this.raiseCastNow(controller, source, cards, options),
+      castSince: (cards, since) =>
+        eventLogSince(this.state, since).some(
+          (event) =>
+            event.type === "spell-cast" &&
+            event.player === controller &&
+            event.via === "effect" &&
+            cards.includes(event.object),
+        ),
+      cardsIn: (player, zone) => [...(this.state.zones.perPlayer[player]?.[zone] ?? [])],
+      libraryTop: (player, count) =>
+        (this.state.zones.perPlayer[player]?.library ?? []).slice(0, Math.max(0, count)),
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
       placeFound: (hit, put, tapped, attacking) => this.placeFound(hit, put, tapped, attacking),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
@@ -18058,7 +18180,7 @@ export class Game {
     return true;
   }
 
-  private counterSpellByEffect(target: TargetRef, into: "hand" | undefined): void {
+  private counterSpellByEffect(target: TargetRef, into: "hand" | "exile" | undefined): void {
     if (target.kind !== "object") return;
     this.counterObject(target.object, into ?? "graveyard");
   }
@@ -18072,12 +18194,14 @@ export class Game {
    *
    * A countered spell goes to its owner's graveyard, or with `into: "hand"`
    * to their hand instead (Remand's "if that spell is countered this way,
-   * put it into its owner's hand instead"). Either is still `moveObject`'s
+   * put it into its owner's hand instead"), or with `into: "exile"` into
+   * exile (Transcendent Dragon's "exile it instead of putting it into its
+   * owner's graveyard"). Each is still `moveObject`'s
    * to redirect: a flashed-back spell is exiled (rule 702.34a), and a
    * commander sent to hand may go to the command zone (rule 903.9b). A copy
    * of a spell goes to neither — it ceases to exist (rule 707.10c).
    */
-  private counterObject(id: ObjectId, into: "graveyard" | "hand" = "graveyard"): boolean {
+  private counterObject(id: ObjectId, into: "graveyard" | "hand" | "exile" = "graveyard"): boolean {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return false;
     if (object.uncounterable === true || spellCantBeCountered(this.state, this.registry, object)) {

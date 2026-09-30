@@ -875,6 +875,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   // Table remounts per frame, but no frame arrives while the game waits on
   // this seat's answer, so this outlives exactly the decision it belongs to.
   const [decisionCollapsed, setDecisionCollapsed] = useState(false)
+  // The card picked from a `cast-now` offer of several (or of cards looked
+  // at first — the top of a library), whose ways to cast it the decision
+  // strip then offers. Per frame, like `decisionCollapsed`.
+  const [castNowPick, setCastNowPick] = useState<ObjectId | null>(null)
   // The same for the popup a graveyard or exile target is picked from, by the
   // slot it was hidden for (`zoneTargetKey`): the next slot, or a targeting
   // backed out of and begun again, starts shown.
@@ -1087,6 +1091,10 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
   )
   const scryAction = actions.find((a): a is ScryAction => a.kind === 'scry')
   const castNowAction = actions.find((a): a is CastNowAction => a.kind === 'cast-now')
+  // "You may cast a spell from your hand" and the like: more than one card on
+  // offer, or cards to look at first, so the card is picked from a popup.
+  const castNowPicking =
+    castNowAction !== undefined && (castNowAction.cards.length > 1 || castNowAction.looked !== undefined)
   const assignDamageAction = actions.find(
     (a): a is AssignDamageAction => a.kind === 'assign-combat-damage',
   )
@@ -3083,13 +3091,30 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       </div>
     )
   } else if (mode === 'cast-now' && castNowAction) {
-    // "You may cast that card" while something resolves: each way to cast it
+    // "You may cast [a card]" while something resolves: each way to cast it
     // runs the ordinary cast steps, and the finished cast goes out as the
-    // decision's answer (`useNetworkGame`'s `dispatch` wraps it).
-    controls = (
+    // decision's answer (`useNetworkGame`'s `dispatch` wraps it). With
+    // several cards on offer the card is picked in the popup first.
+    const card = castNowPicking ? castNowPick : (castNowAction.cards[0] ?? null)
+    const ways = card === null ? [] : castNowAction.casts.filter((c) => c.card === card)
+    controls = card === null ? (
       <div className="controls">
-        <span>Cast {castNowAction.cardName} now?</span>
-        {castNowAction.casts.map((c, i) => (
+        <span className="muted">
+          {decisionCollapsed ? 'Choosing a spell to cast' : 'Look at the popup to choose'}
+        </span>
+        {decisionCollapsed ? (
+          <button type="button" onClick={() => setDecisionCollapsed(false)}>
+            Show choices
+          </button>
+        ) : null}
+      </div>
+    ) : (
+      <div className="controls">
+        <span>
+          Cast {ways[0]?.cardName ?? game.nameOf(card)}
+          {castNowAction.free ? ' without paying its mana cost' : ' now'}?
+        </span>
+        {ways.map((c, i) => (
           <button key={i} type="button" onClick={() => beginCast(c)}>
             Cast {c.cardName}
             {c.kicked ? <> ({c.kickerKeyword ?? 'kicked'} <Symbols text={c.kickerCost ?? ''} />)</> : null}
@@ -3100,6 +3125,11 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
             {c.evoke ? <> (evoke <Symbols text={c.evokeCost ?? ''} />)</> : null}
           </button>
         ))}
+        {castNowPicking ? (
+          <button type="button" onClick={() => setCastNowPick(null)}>
+            Back
+          </button>
+        ) : null}
         <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
           Don't cast
         </button>
@@ -4206,6 +4236,36 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
               }))
             },
           }}
+        />
+      ) : null}
+
+      {mode === 'cast-now' && castNowAction && castNowPicking && castNowPick === null ? (
+        <ZoneViewer
+          title={`${game.nameOf(castNowAction.source)} — you may cast ${
+            castNowAction.cards.length === 1 ? 'this spell' : 'one of these'
+          }${castNowAction.free ? ' without paying its mana cost' : ''}`}
+          ids={castNowAction.looked ?? castNowAction.cards}
+          resolve={(id) => view.objects[id]}
+          selection={{
+            min: 0,
+            max: 1,
+            eligible: castNowAction.cards,
+            noneLabel: "Don't cast",
+            onConfirm: (chosen) => {
+              const card = chosen[0]
+              if (card === undefined) {
+                game.dispatch({ type: 'cast-now', player: seat, cast: null })
+                return
+              }
+              // One way to cast it goes straight into the cast steps; more
+              // (kicked or not, a face) are offered as buttons.
+              const ways = castNowAction.casts.filter((c) => c.card === card)
+              if (ways.length === 1) beginCast(ways[0])
+              else setCastNowPick(card)
+            },
+          }}
+          collapsed={decisionCollapsed}
+          onCollapse={() => setDecisionCollapsed(true)}
         />
       ) : null}
 

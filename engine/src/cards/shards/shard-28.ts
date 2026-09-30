@@ -30,6 +30,7 @@ import _poolBloodGlutton from "../pool/blood-glutton.js";
 import _poolBoarQPine from "../pool/boar-q-pine.js";
 import _poolBountyOfMight from "../pool/bounty-of-might.js";
 import _poolBramblesnap from "../pool/bramblesnap.js";
+import _poolBreachingDragonstorm from "../pool/breaching-dragonstorm.js";
 import _poolBroadsideBarrage from "../pool/broadside-barrage.js";
 import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
@@ -230,6 +231,7 @@ const shard: CardShard = {
     _poolBoarQPine,
     _poolBountyOfMight,
     _poolBramblesnap,
+    _poolBreachingDragonstorm,
     _poolBroadsideBarrage,
     _poolBrushstrider,
     _poolBullCerodon,

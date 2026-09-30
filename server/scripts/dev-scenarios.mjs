@@ -421,4 +421,37 @@ export default {
     },
     bots: { bob: {}, carol: {}, dave: {} },
   },
+
+  CASTN: {
+    about:
+      "2p. Casting a spell as another resolves (the cast-now popup): Baral's Expertise offers " +
+      "the cheap spells in alice's hand free (Orim's Chant kicked or not), and attacking with " +
+      "Velomachus Lorehold shows her the top seven of her library to cast an instant or " +
+      "sorcery from.",
+    players: ["alice", "bob"],
+    lands: { alice: 8, bob: 3 },
+    battlefield: { alice: ["Velomachus Lorehold"], bob: ["Grizzly Bears", "Hill Giant"] },
+    hand: { alice: ["Baral's Expertise", "Divination", "Lightning Bolt", "Opt", "Orim's Chant", "Shivan Dragon"] },
+    setup(game) {
+      // Put on top of the library in reverse, so Lightning Bolt ends up on top.
+      for (const name of ["Counterspell", "Opt", "Lava Spike", "Island", "Divination", "Shivan Dragon", "Lightning Bolt"]) {
+        game.debugSpawn(name, "alice", "library");
+      }
+    },
+    bots: { bob: {} },
+  },
+
+  CAST4: {
+    about: "4p. CASTN's board for alice, in the quadrant layout.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 8, bob: 3, carol: 3, dave: 3 },
+    battlefield: { alice: ["Velomachus Lorehold"], bob: ["Grizzly Bears", "Hill Giant"] },
+    hand: { alice: ["Baral's Expertise", "Divination", "Lightning Bolt", "Opt", "Orim's Chant", "Shivan Dragon"] },
+    setup(game) {
+      for (const name of ["Counterspell", "Opt", "Lava Spike", "Island", "Divination", "Shivan Dragon", "Lightning Bolt"]) {
+        game.debugSpawn(name, "alice", "library");
+      }
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
 };

@@ -37,6 +37,7 @@ import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
 import _poolEldraziMonument from "../pool/eldrazi-monument.js";
 import _poolEldritchEvolution from "../pool/eldritch-evolution.js";
+import _poolElectrodominance from "../pool/electrodominance.js";
 import _poolElectrostaticField from "../pool/electrostatic-field.js";
 import _poolElugeTheShorelessSea from "../pool/eluge-the-shoreless-sea.js";
 import _poolEmbodimentOfSpring from "../pool/embodiment-of-spring.js";
@@ -220,6 +221,7 @@ const shard: CardShard = {
     _poolDurkwoodBoars,
     _poolEldraziMonument,
     _poolEldritchEvolution,
+    _poolElectrodominance,
     _poolElectrostaticField,
     _poolElugeTheShorelessSea,
     _poolEmbodimentOfSpring,

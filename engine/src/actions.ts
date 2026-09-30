@@ -965,12 +965,21 @@ export type LegalAction =
       readonly cards: readonly ObjectId[];
     }
   | {
-      /** "You may cast that card" during a resolution (the `cast-now`
-       * decision): the card's cast variants, each an ordinary `cast-spell`
-       * offer with `via: "effect"`. Answer with a `cast-now` action. */
+      /** "You may cast [a card]" during a resolution (the `cast-now`
+       * decision): every way to cast each card on offer, each an ordinary
+       * `cast-spell` offer with `via: "effect"` naming its card. Answer with
+       * a `cast-now` action. */
       readonly kind: "cast-now";
-      readonly card: ObjectId;
-      readonly cardName: string;
+      /** What's resolving — the spell or ability offering the cast. */
+      readonly source: ObjectId;
+      /** The cards on offer, each with at least one way in `casts`. */
+      readonly cards: readonly ObjectId[];
+      /** Cards the player looks at to choose among — the top of their
+       * library — castable or not. Absent when they're where the player can
+       * see them anyway (a hand, a graveyard, exile). */
+      readonly looked?: readonly ObjectId[];
+      /** "Without paying its mana cost": every cast on offer is free. */
+      readonly free: boolean;
       readonly casts: readonly CastSpellOffer[];
     }
   | {

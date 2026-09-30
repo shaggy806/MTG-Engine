@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2045 already implemented / 2955 missing (marks refreshed 2026-09-30)
+2049 already implemented / 2951 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -556,7 +556,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   557  Elemental Bond                           {2}{G}           Enchantment
 [x]   558  Brotherhood Regalia                      {2}              Artifact — Equipment
 [ ]   559  Nesting Grounds                          {0}              Land
-[ ]   560  Conduit of Worlds                        {2}{G}{G}        Artifact
+[x]   560  Conduit of Worlds                        {2}{G}{G}        Artifact
 [ ]   561  Second Harvest                           {2}{G}{G}        Instant
 [ ]   562  Unbreakable Formation                    {2}{W}           Instant
 [x]   563  Marionette Apprentice                    {1}{B}           Creature — Human Artificer
@@ -1379,7 +1379,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1386  Bonehoard Dracosaur                      {3}{R}{R}        Creature — Dinosaur Dragon
 [x]  1387  Sigil of the Empty Throne                {3}{W}{W}        Enchantment
 [x]  1388  Shiny Impetus                            {2}{R}           Enchantment — Aura
-[ ]  1389  Electrodominance                         {X}{R}{R}        Instant
+[x]  1389  Electrodominance                         {X}{R}{R}        Instant
 [x]  1390  Restoration Angel                        {3}{W}           Creature — Angel
 [ ]  1391  Priest of Forgotten Gods                 {1}{B}           Creature — Human Cleric
 [x]  1392  Waterlogged Teachings // Inundated Archive {4}              Instant // Land
@@ -3811,7 +3811,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3818  Lifecreed Duo                            {1}{W}           Creature — Bat Bird
 [x]  3819  Sharding Sphinx                          {4}{U}{U}        Artifact Creature — Sphinx
 [ ]  3820  Sorcerer Class                           {U}{R}           Enchantment — Class
-[ ]  3821  Baral's Expertise                        {3}{U}{U}        Sorcery
+[x]  3821  Baral's Expertise                        {3}{U}{U}        Sorcery
 [ ]  3822  Svyelun of Sea and Sky                   {1}{U}{U}        Legendary Creature — Merfolk God
 [ ]  3823  Mavren Fein, Dusk Apostle                {2}{W}           Legendary Creature — Vampire Cleric
 [ ]  3824  Avishkar Raceway                         {0}              Land
@@ -3938,7 +3938,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3945  Captain of the Watch                     {4}{W}{W}        Creature — Human Soldier
 [ ]  3946  Exhume                                   {1}{B}           Sorcery
 [ ]  3947  Druid's Deliverance                      {1}{G}           Instant
-[ ]  3948  Breaching Dragonstorm                    {4}{R}           Enchantment
+[x]  3948  Breaching Dragonstorm                    {4}{R}           Enchantment
 [x]  3949  Hedron Crawler                           {2}              Artifact Creature — Construct
 [x]  3950  Avenger of the Fallen                    {2}{B}           Creature — Human Warrior
 [ ]  3951  Traxos, Scourge of Kroog                 {4}              Legendary Artifact Creature — Dragon Construct

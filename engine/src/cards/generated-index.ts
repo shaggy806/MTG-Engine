@@ -66,6 +66,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Elf Warrior Token",
   "Faerie Rogue Token",
   "Faerie Token",
+  "First Mate Ragavan",
   "Fish Token",
   "Food Token",
   "Forest Dryad Token",

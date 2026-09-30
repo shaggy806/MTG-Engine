@@ -663,6 +663,27 @@ export interface CascadeFinish {
   readonly cast: boolean;
 }
 
+/** How a `cast-now` offers its cards — see that {@link EffectSpec}. */
+export interface CastNowOptions {
+  readonly free: boolean;
+  readonly exileAfter: boolean;
+  readonly spell?: CardFilter;
+  /** The library cards the player looks at to choose among, shown to them
+   * castable or not. */
+  readonly looked?: readonly ObjectId[];
+}
+
+/** A `cast-now` parked across its decision: the event it asked at and the
+ * cards it offered — "if you do" is whether one of them was cast since
+ * (`ResolutionContext.castSince`) — and the library cards it looked at, for
+ * `rest`. `followed` once `then` or `else` is done and only `rest` is left. */
+export interface CastNowProgress {
+  readonly since: number;
+  readonly cards: readonly ObjectId[];
+  readonly looked: readonly ObjectId[];
+  readonly followed?: boolean;
+}
+
 export type EffectSpec =
   | {
       /** Apply several effects in order, sharing the same targets and X.
@@ -1284,9 +1305,13 @@ export type EffectSpec =
        * `"hand"`: if the spell is countered this way, put it into its
        * owner's hand instead of into their graveyard (Remand). Still a
        * counter — it does nothing to a spell that can't be countered — unlike
-       * `return-to-hand` with `from: "stack"`, which isn't one.
+       * `return-to-hand` with `from: "stack"`, which isn't one. `"exile"`:
+       * "exile it instead of putting it into its owner's graveyard"
+       * (Transcendent Dragon, whose `cast-now` of the same slot then finds it
+       * there — a spell that wasn't countered is still on the stack, where
+       * nothing is cast from).
        */
-      readonly into?: "hand";
+      readonly into?: "hand" | "exile";
     }
   | {
       /** A player gains control of a permanent (rule 613.1b, layer 2): a
@@ -1441,20 +1466,66 @@ export type EffectSpec =
     }
   | {
       /**
-       * "You may cast target card" while this resolves (Chandra, Acolyte of
-       * Flame's −2: "You may cast target instant or sorcery card with mana
-       * value 3 or less from your graveyard. If that spell would be put into
-       * your graveyard, exile it instead."): its controller casts the card
-       * now, from wherever it is, by the ordinary casting rules — modes, X,
-       * kicker, targets, costs — with timing ignored (rule 608.2g), or
-       * declines. Raised as a `cast-now` decision; a `sequence` step after
-       * it waits for the answer. Nothing is asked for a card that can't be
-       * cast (no legal targets, no way to pay).
+       * "You may cast [a card]" while this resolves (rule 608.2g): the
+       * effect's controller casts one card now, from wherever it is, by the
+       * ordinary casting rules — modes, X, kicker, targets, costs — with
+       * timing ignored, or declines. Raised as a `cast-now` decision; a
+       * `sequence` step after it waits for the answer. Nothing is asked when
+       * nothing can be cast (no legal targets, no way to pay), which is a
+       * "don't" for `else`.
+       *
+       * The card is `target` — "you may cast target instant or sorcery card
+       * with mana value 3 or less from your graveyard" (Chandra, Acolyte of
+       * Flame's −2), the card a `reveal-until` found (Breaching Dragonstorm),
+       * the spell a `counter` just exiled (Transcendent Dragon) — or, with
+       * `from`, whichever card the player picks from a zone of theirs: "you
+       * may cast a spell with mana value 4 or less from your hand" (Baral's
+       * Expertise).
        */
       readonly kind: "cast-now";
-      readonly target: EffectTargetRef;
+      /** The card, when it's one card; absent with `from`. */
+      readonly target?: EffectTargetRef;
+      /**
+       * Where the player picks the card from, when it's any of several:
+       * their hand, their graveyard ("an instant or sorcery spell from your
+       * graveyard" — Diviner of Mist), or "from among" the top `libraryTop`
+       * cards of their library, which they look at (Velomachus Lorehold's top
+       * seven — see `rest`).
+       */
+      readonly from?: "hand" | "graveyard" | { readonly libraryTop: number };
+      /**
+       * What the spell cast must be — "an instant or sorcery spell with mana
+       * value 4 or less", "if that spell's mana value is 8 or less" —
+       * matched against the card as the spell it would be (rule 601.3e): the
+       * face being cast (a modal double-faced card's back, an adventure), or
+       * its prototype. An `{ amount }` compare is bound as this applies
+       * ("mana value X or less" — Electrodominance). The card is judged at
+       * X = 0, which is a free cast's X (rule 107.3b), so a mana-value clause
+       * goes with `free`.
+       */
+      readonly spell?: CardFilter;
+      /**
+       * "…without paying its mana cost" — the only way the card is offered.
+       * An alternative cost (rule 118.9), so no other one goes with it
+       * (118.9a) and X is 0 (107.3b); additional costs such as kicker may
+       * still be paid, and cost increases apply (118.9d).
+       */
+      readonly free?: boolean;
       /** "If that spell would be put into your graveyard, exile it instead." */
       readonly exileAfter?: boolean;
+      /** "If you do, …" — a spell was cast this way (Conduit of Worlds: "you
+       * can't cast additional spells this turn"). */
+      readonly then?: EffectSpec;
+      /** "If you don't, …" — nothing was cast, declined or not castable:
+       * Breaching Dragonstorm's "put that card into your hand", Baral and
+       * Kari Zev's First Mate Ragavan. */
+      readonly else?: EffectSpec;
+      /** With `libraryTop`: "put the rest on the bottom of your library in a
+       * random order" — every card looked at and not cast, once `then` or
+       * `else` is done. Without it they stay where they are. */
+      readonly rest?: "bottom-random";
+      /** Set only on the copy parked across the decision. */
+      readonly progress?: CastNowProgress;
     }
   | {
       /** "Until end of turn, you may cast that card" — a card in exile
@@ -3127,8 +3198,17 @@ export interface EffectApi {
   entersWithCounters(target: TargetRef, counter: string, amount: number): void;
   /** See the `"allow-cast-from-exile"` {@link EffectSpec}. */
   allowCastFromExile(target: TargetRef, free: boolean, laterTurns?: boolean): void;
-  /** See the `"cast-now"` {@link EffectSpec}. */
-  castNow(target: TargetRef, exileAfter: boolean): void;
+  /** See the `"cast-now"` {@link EffectSpec}: offer the effect's
+   * controller the cast of one of `cards`, as a `cast-now` decision — or
+   * nothing, when none of them can be cast. */
+  castNow(cards: readonly ObjectId[], options: CastNowOptions): void;
+  /** Whether the effect's controller has cast one of `cards` at a
+   * `cast-now`'s offer since event `since`. */
+  castSince(cards: readonly ObjectId[], since: number): boolean;
+  /** The cards in `player`'s hand or graveyard. */
+  cardsIn(player: PlayerId, zone: "hand" | "graveyard"): readonly ObjectId[];
+  /** The top `count` cards of `player`'s library, top first. */
+  libraryTop(player: PlayerId, count: number): readonly ObjectId[];
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
@@ -3217,7 +3297,7 @@ export interface EffectApi {
   fight(a: TargetRef, b: TargetRef, oneSided: boolean): void;
   /** Counter a target spell on the stack — into its owner's hand instead
    * of their graveyard with `into: "hand"`. */
-  counterSpell(target: TargetRef, into?: "hand"): void;
+  counterSpell(target: TargetRef, into?: "hand" | "exile"): void;
   /** `player` gains control of `target` — see the `"gain-control"`
    * {@link EffectSpec}. */
   gainControl(target: TargetRef, untilEndOfTurn: boolean, player: PlayerId): void;
@@ -3830,6 +3910,59 @@ function applyRevealUntil(
   ctx.placeRevealed(progress.owner, progress.revealed, spec.rest, spec.exile === true);
 }
 
+/**
+ * A `"cast-now"`: offer the cast; once it's answered, "if you do" or "if you
+ * don't"; then the looked-at cards not cast to the bottom. Waiting on the
+ * decision parks the rest as a copy carrying its `progress`, and a follow-up
+ * that stops to ask something parks `rest` beneath whatever it parked.
+ */
+function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: ResolutionContext): void {
+  let progress = spec.progress;
+  if (progress === undefined) {
+    const from = spec.from;
+    const looked = typeof from === "object" ? ctx.libraryTop(ctx.controller, from.libraryTop) : [];
+    let cards: readonly ObjectId[];
+    if (from === undefined) {
+      const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
+      cards = target?.kind === "object" ? [target.object] : [];
+    } else {
+      cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
+    }
+    progress = { since: ctx.nextEventSeq(), cards, looked };
+    const parked = ctx.parkedCount();
+    const pendingBefore = ctx.decisionPending();
+    if (cards.length > 0) {
+      ctx.castNow(cards, {
+        free: spec.free === true,
+        exileAfter: spec.exileAfter === true,
+        ...(spec.spell !== undefined ? { spell: spec.spell } : {}),
+        ...(looked.length > 0 ? { looked } : {}),
+      });
+    }
+    if (!pendingBefore && ctx.decisionPending()) {
+      if (spec.then !== undefined || spec.else !== undefined || spec.rest !== undefined) {
+        ctx.resumeAfterDecisions({ ...spec, progress }, parked);
+      }
+      return;
+    }
+  }
+  if (progress.followed !== true) {
+    const followUp = ctx.castSince(progress.cards, progress.since) ? spec.then : spec.else;
+    if (followUp !== undefined) {
+      const parked = ctx.parkedCount();
+      const pendingBefore = ctx.decisionPending();
+      applyEffectSpec(followUp, ctx);
+      if (spec.rest !== undefined && !pendingBefore && ctx.decisionPending()) {
+        ctx.resumeAfterDecisions({ ...spec, progress: { ...progress, followed: true } }, parked);
+        return;
+      }
+    }
+  }
+  if (spec.rest !== undefined && progress.looked.length > 0) {
+    ctx.placeRevealed(ctx.controller, progress.looked, spec.rest, false);
+  }
+}
+
 /** How many flips "flip a coin until you lose a flip" makes at most — a
  * bound the seeded stream practically never reaches, against a loop. */
 const MAX_FLIPS = 1000;
@@ -4160,9 +4293,9 @@ function containsDynamicCompare(value: unknown): boolean {
  * one greater" reads the sacrifice that has just happened. `{ own }` operands
  * are left alone: they're about each object matched, not about the effect.
  *
- * `CardFilter.sharesCardTypeWith: "sacrificed"` is bound the same way, to the
- * card types the sacrificed permanent had as it last existed on the
- * battlefield (an `anyOf` of one `typesAnyOf`, so an `anyOf` the filter
+ * `CardFilter.sharesCardTypeWith` is bound the same way, to the card types the
+ * sacrificed permanent had as it last existed on the battlefield, or the
+ * trigger object's (an `anyOf` of one `typesAnyOf`, so an `anyOf` the filter
  * already had still applies).
  */
 export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): EffectSpec {
@@ -4187,12 +4320,11 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
     );
     if (!("sharesCardTypeWith" in walked)) return walked;
     // "Shares a card type with it": the sacrificed permanent's types as it
-    // last existed, ANDed with whatever `anyOf` the filter already had.
-    const { sharesCardTypeWith: _with, anyOf, ...rest } = walked as CardFilter;
-    const types =
-      ctx.sacrificed === undefined
-        ? []
-        : ctx.cardTypesOf({ kind: "object", object: ctx.sacrificed });
+    // last existed, or the trigger object's — the spell whose casting fired
+    // the trigger — ANDed with whatever `anyOf` the filter already had.
+    const { sharesCardTypeWith: withWhat, anyOf, ...rest } = walked as CardFilter;
+    const other = withWhat === "trigger-object" ? ctx.triggerObject : ctx.sacrificed;
+    const types = other === undefined ? [] : ctx.cardTypesOf({ kind: "object", object: other });
     const shares: CardFilter = { typesAnyOf: types, ...(anyOf !== undefined ? { anyOf } : {}) };
     return { ...rest, anyOf: [shares] };
   };
@@ -4729,11 +4861,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (target !== undefined) ctx.entersWithCounters(target, spec.counter, amountValue(spec.amount, ctx));
       return;
     }
-    case "cast-now": {
-      const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.castNow(target, spec.exileAfter === true);
+    case "cast-now":
+      applyCastNowSpec(spec, ctx);
       return;
-    }
     case "allow-cast-from-exile": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.allowCastFromExile(target, spec.free === true, spec.laterTurns === true);

@@ -78,7 +78,7 @@ const spawn = (game: Game, cardName: string, controller: PlayerId): ObjectId => 
 };
 
 describe("PlayerView.decisionSource", () => {
-  it("names the edict that made an opponent sacrifice, after it left the stack", () => {
+  it("names the edict that made an opponent sacrifice, still resolving", () => {
     const game = mkGame(["Diabolic Edict"]);
     game.advanceUntil(toPrecombat);
     spawn(game, "Raging Goblin", B);
@@ -95,11 +95,13 @@ describe("PlayerView.decisionSource", () => {
     });
     game.advanceUntil((s) => s.awaiting?.kind === "sacrifice");
 
-    // The edict itself is in A's graveyard by now — the whole point.
-    expect(game.state.objects[edict].zone).toBe("graveyard");
+    // The edict is still on the stack while it resolves: it goes to the
+    // graveyard as the final part of that, once the sacrifice is chosen
+    // (rule 608.2n).
+    expect(game.state.objects[edict].zone).toBe("stack");
     const view = game.viewFor(B);
     expect(view.decisionSource).toEqual({ object: edict, cardName: "Diabolic Edict" });
-    // And the deciding player can actually render it: a graveyard is public.
+    // And the deciding player can actually render it: the stack is public.
     expect(view.objects[edict]).toBeDefined();
   });
 

@@ -541,7 +541,7 @@
   "effect:cast-during-resolution": {
    "size": "medium",
    "ui": true,
-   "description": "Casting during resolution: cast a chosen matching card from hand, from the top X of the library, or the card just exiled, without paying its mana cost or for an alternative cost such as discarding a card. Also copy a card and cast the copy for free."
+   "description": "Casting during resolution for an alternative cost such as discarding a card (The Infamous Cruelclaw), copying a card and casting the copy for free (Mizzix's Mastery, Isochron Scepter, Narset), another player casting (Transforming Flourish, Tibalt's Trickery), casting several (Etali), a revealed top X read as an amount (Sunbird's Invocation) and the card discarded this way (Malcolm). Built so far (2026-09-30, the cast-now effect): the effect's controller casting a target card, or one picked from their hand, graveyard or the looked-at top N of their library, paid or without paying its mana cost, with a filter on the spell and 'if you do' / 'if you don't'."
   },
   "effect:choices-by-other-players": {
    "size": "medium",
