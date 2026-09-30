@@ -1544,6 +1544,7 @@ import _poolEagleOfTheWatch from "./pool/eagle-of-the-watch.js";
 import _poolEarthElemental from "./pool/earth-elemental.js";
 import _poolEarthOriginYak from "./pool/earth-origin-yak.js";
 import _poolEarthRift from "./pool/earth-rift.js";
+import _poolEarthbenderAscension from "./pool/earthbender-ascension.js";
 import _poolEarthblighter from "./pool/earthblighter.js";
 import _poolEarthshakingSi from "./pool/earthshaking-si.js";
 import _poolEastWindAvatar from "./pool/east-wind-avatar.js";
@@ -3029,6 +3030,7 @@ import _poolLeylineProwler from "./pool/leyline-prowler.js";
 import _poolLibraryLarcenist from "./pool/library-larcenist.js";
 import _poolLibrary from "./pool/library.js";
 import _poolLichsCaress from "./pool/lichs-caress.js";
+import _poolLiesaForgottenArchangel from "./pool/liesa-forgotten-archangel.js";
 import _poolLiesaShroudOfDusk from "./pool/liesa-shroud-of-dusk.js";
 import _poolLifecraftersBestiary from "./pool/lifecrafters-bestiary.js";
 import _poolLifecreedDuo from "./pool/lifecreed-duo.js";
@@ -3580,6 +3582,7 @@ import _poolNineTailWhiteFox from "./pool/nine-tail-white-fox.js";
 import _poolNinjaOfTheHand from "./pool/ninja-of-the-hand.js";
 import _poolNipGwyllion from "./pool/nip-gwyllion.js";
 import _poolNirkanaAssassin from "./pool/nirkana-assassin.js";
+import _poolNissaResurgentAnimist from "./pool/nissa-resurgent-animist.js";
 import _poolNissaWhoShakesTheWorld from "./pool/nissa-who-shakes-the-world.js";
 import _poolNissasExpedition from "./pool/nissas-expedition.js";
 import _poolNivMizzetParun from "./pool/niv-mizzet-parun.js";
@@ -4885,6 +4888,7 @@ import _poolSoulreaperOfMogis from "./pool/soulreaper-of-mogis.js";
 import _poolSoulsAttendant from "./pool/souls-attendant.js";
 import _poolSoulswornJury from "./pool/soulsworn-jury.js";
 import _poolSouthernElephant from "./pool/southern-elephant.js";
+import _poolSowingMycospawn from "./pool/sowing-mycospawn.js";
 import _poolSparasHeadquarters from "./pool/sparas-headquarters.js";
 import _poolSpareSupplies from "./pool/spare-supplies.js";
 import _poolSparkElemental from "./pool/spark-elemental.js";
@@ -5781,6 +5785,7 @@ import _poolVeiledShade from "./pool/veiled-shade.js";
 import _poolVelaTheNightClad from "./pool/vela-the-night-clad.js";
 import _poolVenerableLammasu from "./pool/venerable-lammasu.js";
 import _poolVenerableMonk from "./pool/venerable-monk.js";
+import _poolVengefulAncestor from "./pool/vengeful-ancestor.js";
 import _poolVengefulBloodwitch from "./pool/vengeful-bloodwitch.js";
 import _poolVengefulDead from "./pool/vengeful-dead.js";
 import _poolVenomcrawler from "./pool/venomcrawler.js";
@@ -7943,6 +7948,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEarthElemental,
   _poolEarthOriginYak,
   _poolEarthRift,
+  _poolEarthbenderAscension,
   _poolEarthblighter,
   _poolEarthshakingSi,
   _poolEastWindAvatar,
@@ -9428,6 +9434,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLibraryLarcenist,
   _poolLibrary,
   _poolLichsCaress,
+  _poolLiesaForgottenArchangel,
   _poolLiesaShroudOfDusk,
   _poolLifecraftersBestiary,
   _poolLifecreedDuo,
@@ -9979,6 +9986,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNinjaOfTheHand,
   _poolNipGwyllion,
   _poolNirkanaAssassin,
+  _poolNissaResurgentAnimist,
   _poolNissaWhoShakesTheWorld,
   _poolNissasExpedition,
   _poolNivMizzetParun,
@@ -11284,6 +11292,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSoulsAttendant,
   _poolSoulswornJury,
   _poolSouthernElephant,
+  _poolSowingMycospawn,
   _poolSparasHeadquarters,
   _poolSpareSupplies,
   _poolSparkElemental,
@@ -12180,6 +12189,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVelaTheNightClad,
   _poolVenerableLammasu,
   _poolVenerableMonk,
+  _poolVengefulAncestor,
   _poolVengefulBloodwitch,
   _poolVengefulDead,
   _poolVenomcrawler,

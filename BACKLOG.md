@@ -158,30 +158,29 @@ that one card is the reason the deck exists.
   the "look at the top card of your library any time" family (`zone:visibility-extensions`) and
   a damage replacement filtered by recipient (`new:damage-prevented-to-filter` — Losheel, Crystal
   Barricade, Mutational Advantage) come up most among the one-feature blockers.
-- **Top-5000 batch 15 (2026-09-29) triaged ranks 2036–2111:** 21 authored (Birthing Pod, Garruk,
-  Primal Hunter, Paradise Druid, Goblin Warchief, Trinket Mage and 16 more —
-  `top5000-batch-15.test.ts`); 39 blocked, each in `engine/data/sweep-3/B15.json`. Five of those
-  were recorded without a close check (their `why` says so): Generous Plunderer, Vengeful
-  Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa — look again before building for
-  them.
+- **Top-5000 batch 15 (2026-09-29) triaged ranks 2036–2111:** 25 authored (Birthing Pod, Garruk,
+  Primal Hunter, Paradise Druid, Goblin Warchief, Trinket Mage and 16 more, plus Vengeful
+  Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa from a recheck of its blockers —
+  `top5000-batch-15.test.ts`); 35 blocked, each in `engine/data/sweep-3/B15.json`. Generous
+  Plunderer was rechecked and waits only on a count of the defending player's permanents
+  (`new:count-of-trigger-players-permanents`), the same count Will of the Mardu and Carpet of
+  Flowers need for a target player.
 - **Top-5000 batch 16 (2026-09-29) triaged ranks 2112–2184:** 25 authored (Koma, World-Eater,
   Master of Etherium, Mana Tithe, Trading Post, Aerith Gainsborough, Bone Miser and 19 more —
   `top5000-batch-16.test.ts`); 35 blocked, each in `engine/data/sweep-3/B16.json`. Recurring
   across B9–B16 and cheap: "can't cast more than one spell each turn" (Archon of Emeria,
   Deafening Silence), infect (Plague Myr, Inkmoth Nexus) and the d20 (Delina, both Ancient
   Dragons).
-- **Top-5000 batch 17 (2026-09-29) was a short, time-boxed pass over ranks 2185–2243:** 8
+- **Top-5000 batch 17 (2026-09-29) was a short, time-boxed pass over ranks 2185–2243:** 9
   authored (Ondu Inversion, Scourge of Fleets, Assemble the Legion, Summon: Knights of Round,
-  Slip Through Space, and — on a recheck of its short-pass blockers — Swarmyard Massacre, Forge
-  of Heroes, Triplicate Titan; `top5000-batch-17.test.ts`); 32 recorded as blocked in
-  `engine/data/sweep-3/B17.json`. Combat Research was rechecked and stays blocked. Still marked
-  "short pass" and worth a proper look before batch 18: Earthbender Ascension, Giggling
-  Skitterspike and Ral, Crackling Wit here, and B15's five "not checked closely" entries.
+  Slip Through Space, and — on a recheck of its blockers — Swarmyard Massacre, Forge of Heroes,
+  Triplicate Titan, Earthbender Ascension; `top5000-batch-17.test.ts`); 31 blocked in
+  `engine/data/sweep-3/B17.json`, every one now checked closely.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,974 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,979 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`

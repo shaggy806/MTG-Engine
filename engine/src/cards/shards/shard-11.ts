@@ -176,6 +176,7 @@ import _poolSkyclaveCleric from "../pool/skyclave-cleric.js";
 import _poolSkyhunterSkirmisher from "../pool/skyhunter-skirmisher.js";
 import _poolSomnomancer from "../pool/somnomancer.js";
 import _poolSorinRavenousNeonate from "../pool/sorin-ravenous-neonate.js";
+import _poolSowingMycospawn from "../pool/sowing-mycospawn.js";
 import _poolSpiritMantle from "../pool/spirit-mantle.js";
 import _poolSporemound from "../pool/sporemound.js";
 import _poolSpringsageRitual from "../pool/springsage-ritual.js";
@@ -404,6 +405,7 @@ const shard: CardShard = {
     _poolSkyhunterSkirmisher,
     _poolSomnomancer,
     _poolSorinRavenousNeonate,
+    _poolSowingMycospawn,
     _poolSpiritMantle,
     _poolSporemound,
     _poolSpringsageRitual,

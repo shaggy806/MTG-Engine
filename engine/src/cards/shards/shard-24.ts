@@ -98,6 +98,7 @@ import _poolLaboratoryBrute from "../pool/laboratory-brute.js";
 import _poolLeadenMyr from "../pool/leaden-myr.js";
 import _poolLeafDancer from "../pool/leaf-dancer.js";
 import _poolLeafGilder from "../pool/leaf-gilder.js";
+import _poolLiesaForgottenArchangel from "../pool/liesa-forgotten-archangel.js";
 import _poolLightningBolt from "../pool/lightning-bolt.js";
 import _poolLightningHounds from "../pool/lightning-hounds.js";
 import _poolLotusPetal from "../pool/lotus-petal.js";
@@ -297,6 +298,7 @@ const shard: CardShard = {
     _poolLeadenMyr,
     _poolLeafDancer,
     _poolLeafGilder,
+    _poolLiesaForgottenArchangel,
     _poolLightningBolt,
     _poolLightningHounds,
     _poolLotusPetal,

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1974 already implemented / 3026 missing (marks refreshed 2026-09-30)
+1979 already implemented / 3021 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2071,12 +2071,12 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2078  Winding Constrictor                      {B}{G}           Creature — Snake
 [ ]  2079  Pearl-Ear, Imperial Advisor              {1}{W}{W}        Legendary Creature — Fox Advisor
 [x]  2080  Grim Backwoods                           {0}              Land
-[ ]  2081  Vengeful Ancestor                        {2}{R}{R}        Creature — Spirit Dragon
-[ ]  2082  Sowing Mycospawn                         {3}{G}           Creature — Eldrazi Fungus
+[x]  2081  Vengeful Ancestor                        {2}{R}{R}        Creature — Spirit Dragon
+[x]  2082  Sowing Mycospawn                         {3}{G}           Creature — Eldrazi Fungus
 [ ]  2083  Sudden Spoiling                          {1}{B}{B}        Instant
 [ ]  2084  Liliana, Death's Majesty                 {3}{B}{B}        Legendary Planeswalker — Liliana
 [x]  2085  Deathreap Ritual                         {2}{B}{G}        Enchantment
-[ ]  2086  Nissa, Resurgent Animist                 {2}{G}           Legendary Creature — Elf Scout
+[x]  2086  Nissa, Resurgent Animist                 {2}{G}           Legendary Creature — Elf Scout
 [x]  2087  Body of Knowledge                        {3}{U}{U}        Creature — Avatar
 [ ]  2088  Dawn Charm                               {1}{W}           Instant
 [x]  2089  Personal Tutor                           {U}              Sorcery
@@ -2098,7 +2098,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2105  Karn, the Great Creator                  {4}              Legendary Planeswalker — Karn
 [ ]  2106  Illustrious Wanderglyph                  {4}{W}           Artifact Creature — Golem
 [ ]  2107  Weaver of Harmony                        {1}{G}           Enchantment Creature — Snake Druid
-[ ]  2108  Liesa, Forgotten Archangel               {2}{W}{W}{B}     Legendary Creature — Angel
+[x]  2108  Liesa, Forgotten Archangel               {2}{W}{W}{B}     Legendary Creature — Angel
 [ ]  2109  Semblance Anvil                          {3}              Artifact
 [x]  2110  Tranquil Landscape                       {0}              Land
 [x]  2111  Coldsteel Heart                          {2}              Snow Artifact
@@ -2179,7 +2179,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2186  Archangel of Tithes                      {1}{W}{W}{W}     Creature — Angel
 [x]  2187  Niv-Mizzet, Visionary                    {4}{U}{R}        Legendary Creature — Dragon Wizard
 [ ]  2188  Descendants' Path                        {2}{G}           Enchantment
-[ ]  2189  Earthbender Ascension                    {2}{G}           Enchantment
+[x]  2189  Earthbender Ascension                    {2}{G}           Enchantment
 [ ]  2190  Sepulchral Primordial                    {5}{B}{B}        Creature — Avatar
 [x]  2191  Greed                                    {3}{B}           Enchantment
 [ ]  2192  Teferi, Master of Time                   {2}{U}{U}        Legendary Planeswalker — Teferi

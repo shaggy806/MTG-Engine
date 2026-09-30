@@ -64,6 +64,13 @@
         "engine/src/cards/pool/swarmyard-massacre.ts"
       ],
       "tested": true
+    },
+    {
+      "name": "Earthbender Ascension",
+      "files": [
+        "engine/src/cards/pool/earthbender-ascension.ts"
+      ],
+      "tested": true
     }
   ],
   "blocked": [
@@ -89,13 +96,6 @@
       "why": "Cast the revealed card free if it shares a creature type."
     },
     {
-      "name": "Earthbender Ascension",
-      "needs": [
-        "new:reflexive-quest-counter"
-      ],
-      "why": "A reflexive trigger reading quest counters (short pass — recheck)."
-    },
-    {
       "name": "Sepulchral Primordial",
       "needs": [
         "new:target-per-opponent-graveyard"
@@ -115,7 +115,7 @@
       "needs": [
         "new:monstrosity"
       ],
-      "why": "Monstrosity, and a becomes-target-of-a-spell trigger (short pass)."
+      "why": "Rechecked: monstrosity (the monstrous designation) isn't modeled. The rest is expressible."
     },
     {
       "name": "Delay",
@@ -204,9 +204,9 @@
     {
       "name": "Ral, Crackling Wit",
       "needs": [
-        "new:emblem-grants-storm"
+        "new:emblem-grants-to-spells"
       ],
-      "why": "An emblem granting storm; an Otter token (short pass)."
+      "why": "Rechecked: the -10's emblem grants storm to spells, but spell grants are read only off battlefield permanents, never an emblem."
     },
     {
       "name": "Imposter Mech",

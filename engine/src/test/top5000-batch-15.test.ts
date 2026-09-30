@@ -5,7 +5,12 @@
  * plus one (Birthing Pod), the graveyard-count condition on a static
  * (Elvish Reclaimer), hexproof only while untapped (Paradise Druid), a hand
  * size CDA (Body of Knowledge), a discard cost firing a discard trigger
- * (Glint-Horn Buccaneer), and "twice X" (Drown in Dreams).
+ * (Glint-Horn Buccaneer), and "twice X" (Drown in Dreams). A recheck of the
+ * batch's blockers added four more: damage from a goaded attacker to its own
+ * controller (Vengeful Ancestor), a kicked-only cast trigger (Sowing
+ * Mycospawn), a reveal on the second resolution of a turn only (Nissa,
+ * Resurgent Animist), and a delayed return beside an exile replacement
+ * (Liesa, Forgotten Archangel).
  */
 import { describe, expect, it } from "vitest";
 
@@ -158,5 +163,120 @@ describe("top-5000 batch 15 — Drown in Dreams", () => {
     });
     settle(game);
     expect(game.state.zones.perPlayer[B].graveyard).toHaveLength(4);
+  });
+});
+
+/** A game whose A library is `library` in order, top first, after the
+ * opening hand and first draw — and A's controller, for its callbacks. */
+const withLibrary = (library: readonly string[]): { game: Game; a: ScriptedController } => {
+  const a = yes(new ScriptedController(A));
+  const game = Game.create({
+    seed: 1,
+    shuffle: false,
+    startingPlayer: A,
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+    controllers: { [A]: a, [B]: new ScriptedController(B) },
+    decks: [
+      { player: A, cards: [...Array<string>(8).fill("Wastes"), ...library, ...Array<string>(30).fill("Wastes")] },
+      { player: B, cards: Array<string>(40).fill("Wastes") },
+    ],
+  });
+  game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+  return { game, a };
+};
+const life = (game: Game, player: PlayerId): number => game.state.players[player].life;
+
+describe("top-5000 batch 15 — Vengeful Ancestor", () => {
+  it("has a goaded attacker deal 1 damage to its own controller, and only a goaded one", () => {
+    const game = setUp();
+    spawn(game, "Vengeful Ancestor");
+    const goaded = spawn(game, "Grizzly Bears");
+    const plain = spawn(game, "Hill Giant");
+    game.debugApplyEffect(A, { kind: "goad", target: 0 }, [{ kind: "object", object: goaded }]);
+    settle(game);
+    game.advanceUntil((s) => s.turn.step === "declare-attackers" && s.awaiting?.kind === "attackers");
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: goaded, defender: B },
+        { attacker: plain, defender: B },
+      ],
+    });
+    settle(game);
+    expect(life(game, A)).toBe(19);
+  });
+});
+
+describe("top-5000 batch 15 — Sowing Mycospawn", () => {
+  const cast = (kicked: boolean): Game => {
+    const { game, a } = withLibrary([]);
+    const spell = game.debugSpawn("Sowing Mycospawn", A, "hand");
+    lands(game, "Forest", 2);
+    lands(game, "Wastes", 4);
+    const theirs = spawn(game, "Forest", B);
+    a.chooseTargetsFn = () => [{ kind: "object", object: theirs }];
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: spell,
+      targets: [],
+      ...(kicked ? { kicked: true } : {}),
+    });
+    settle(game);
+    return game;
+  };
+  it("kicked: finds a land and exiles target land", () => {
+    const game = cast(true);
+    expect(named(game, "Sowing Mycospawn")).toHaveLength(1);
+    expect(game.battlefield.filter((id) => game.state.objects[id].controller === B)).toHaveLength(0);
+    // Two Forests and four Wastes paid, plus the Wastes the search found.
+    expect(named(game, "Wastes")).toHaveLength(5);
+  });
+  it("unkicked: finds a land and exiles nothing", () => {
+    const game = cast(false);
+    expect(game.battlefield.filter((id) => game.state.objects[id].controller === B)).toHaveLength(1);
+    expect(named(game, "Wastes")).toHaveLength(5);
+  });
+});
+
+describe("top-5000 batch 15 — Nissa, Resurgent Animist", () => {
+  it("reveals for an Elf or Elemental on the second landfall of the turn only", () => {
+    const { game } = withLibrary(["Wastes", "Wastes", "Llanowar Elves", "Wastes", "Elvish Mystic"]);
+    spawn(game, "Nissa, Resurgent Animist");
+    const hand = (): string[] => game.handOf(A).map((id) => game.state.objects[id].cardName);
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(hand()).not.toContain("Llanowar Elves");
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(hand()).toContain("Llanowar Elves");
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    settle(game);
+    expect(hand()).not.toContain("Elvish Mystic");
+    // The two Wastes revealed went to the bottom; the next card is the one
+    // after the Elf.
+    const library = game.state.zones.perPlayer[A].library;
+    expect(game.state.objects[library[0]].cardName).toBe("Wastes");
+    expect(game.state.objects[library[1]].cardName).toBe("Elvish Mystic");
+  });
+});
+
+describe("top-5000 batch 15 — Liesa, Forgotten Archangel", () => {
+  it("returns your creature that died at the next end step, and exiles an opponent's", () => {
+    const game = setUp();
+    spawn(game, "Liesa, Forgotten Archangel");
+    const mine = spawn(game, "Grizzly Bears");
+    const theirs = spawn(game, "Hill Giant", B);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [{ kind: "object", object: mine }]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [{ kind: "object", object: theirs }]);
+    settle(game);
+    expect(zone(game, theirs)).toBe("exile");
+    expect(game.state.zones.perPlayer[A].graveyard.map((id) => game.state.objects[id].cardName)).toContain(
+      "Grizzly Bears",
+    );
+    game.advanceUntil((s) => s.turn.step === "end" && quiet(s));
+    settle(game);
+    expect(game.handOf(A).map((id) => game.state.objects[id].cardName)).toContain("Grizzly Bears");
   });
 });

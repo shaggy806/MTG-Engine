@@ -61,6 +61,7 @@ import _poolDonatelloWayWithMachines from "../pool/donatello-way-with-machines.j
 import _poolDoubleCleave from "../pool/double-cleave.js";
 import _poolDoublingSeason from "../pool/doubling-season.js";
 import _poolDuelistsHeritage from "../pool/duelists-heritage.js";
+import _poolEarthbenderAscension from "../pool/earthbender-ascension.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
 import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
@@ -257,6 +258,7 @@ const shard: CardShard = {
     _poolDoubleCleave,
     _poolDoublingSeason,
     _poolDuelistsHeritage,
+    _poolEarthbenderAscension,
     _poolEbonyTreefolk,
     _poolEidolonOfInspiration,
     _poolEmberethShieldbreaker,

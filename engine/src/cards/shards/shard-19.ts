@@ -114,6 +114,7 @@ import _poolNephaliaSeakite from "../pool/nephalia-seakite.js";
 import _poolNewBenalia from "../pool/new-benalia.js";
 import _poolNightwingShade from "../pool/nightwing-shade.js";
 import _poolNihilSpellbomb from "../pool/nihil-spellbomb.js";
+import _poolNissaResurgentAnimist from "../pool/nissa-resurgent-animist.js";
 import _poolOgreBerserker from "../pool/ogre-berserker.js";
 import _poolOrzhovLocket from "../pool/orzhov-locket.js";
 import _poolOutlawMedic from "../pool/outlaw-medic.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolNewBenalia,
     _poolNightwingShade,
     _poolNihilSpellbomb,
+    _poolNissaResurgentAnimist,
     _poolOgreBerserker,
     _poolOrzhovLocket,
     _poolOutlawMedic,

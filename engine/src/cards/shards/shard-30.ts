@@ -188,6 +188,7 @@ import _poolUnearth from "../pool/unearth.js";
 import _poolUnexplainedDisappearance from "../pool/unexplained-disappearance.js";
 import _poolUnfulfilledDesires from "../pool/unfulfilled-desires.js";
 import _poolUniversityCampus from "../pool/university-campus.js";
+import _poolVengefulAncestor from "../pool/vengeful-ancestor.js";
 import _poolVermiculos from "../pool/vermiculos.js";
 import _poolVialOfPoison from "../pool/vial-of-poison.js";
 import _poolVibrantCityscape from "../pool/vibrant-cityscape.js";
@@ -401,6 +402,7 @@ const shard: CardShard = {
     _poolUnexplainedDisappearance,
     _poolUnfulfilledDesires,
     _poolUniversityCampus,
+    _poolVengefulAncestor,
     _poolVermiculos,
     _poolVialOfPoison,
     _poolVibrantCityscape,

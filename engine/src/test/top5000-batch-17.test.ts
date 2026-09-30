@@ -5,7 +5,8 @@
  * (Assemble the Legion). The recheck of the batch's short-pass blockers
  * added three more: a mass -1/-1 counted after its own tokens (Swarmyard
  * Massacre), counters by the target's type (Forge of Heroes), and three
- * different tokens on death (Triplicate Titan).
+ * different tokens on death (Triplicate Titan), and a reflexive trigger
+ * behind an intervening-if (Earthbender Ascension).
  */
 import { describe, expect, it } from "vitest";
 
@@ -21,13 +22,19 @@ const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 const registry = createDefaultRegistry();
 
-const setUp = (): Game => {
+/** A searches for as many cards as it may, up to one. */
+const searching = (): ScriptedController => {
+  const c = new ScriptedController(A);
+  c.chooseFromZoneFn = (_view, eligible, min, max) => eligible.slice(0, Math.max(min, Math.min(max, 1)));
+  return c;
+};
+const setUp = (a: ScriptedController = new ScriptedController(A)): Game => {
   const game = Game.create({
     seed: 1,
     shuffle: false,
     startingPlayer: A,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
-    controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+    controllers: { [A]: a, [B]: new ScriptedController(B) },
     decks: [
       { player: A, cards: Array<string>(40).fill("Wastes") },
       { player: B, cards: Array<string>(40).fill("Wastes") },
@@ -116,5 +123,52 @@ describe("top-5000 batch 17 — Triplicate Titan", () => {
       const golem = game.battlefield.find((id) => game.state.objects[id].cardName === name)!;
       expect(computeCharacteristics(game.state, registry, golem).keywords.has(kw)).toBe(true);
     }
+  });
+});
+
+describe("top-5000 batch 17 — Earthbender Ascension", () => {
+  const quest = (game: Game, id: ObjectId): number => game.state.objects[id].counters?.["quest"] ?? 0;
+  const plusOne = (game: Game, id: ObjectId): number => game.state.objects[id].counters?.["+1/+1"] ?? 0;
+
+  it("earthbends 2 and fetches a basic land tapped as it enters", () => {
+    const game = setUp(searching());
+    const forest = spawn(game, "Forest");
+    const ascension = game.debugSpawn("Earthbender Ascension", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(plusOne(game, forest)).toBe(2);
+    expect(computeCharacteristics(game.state, registry, forest).types).toContain("creature");
+    const fetched = game.battlefield.filter((id) => game.state.objects[id].cardName === "Wastes");
+    expect(fetched).toHaveLength(1);
+    expect(game.state.objects[fetched[0]].tapped).toBe(true);
+    // The fetched land's landfall.
+    expect(quest(game, ascension)).toBe(1);
+  });
+
+  it("pumps a creature from the fourth quest counter on", () => {
+    const game = setUp();
+    const ascension = spawn(game, "Earthbender Ascension");
+    const bears = spawn(game, "Grizzly Bears");
+    game.state.objects[ascension].counters = { quest: 2 };
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(quest(game, ascension)).toBe(3);
+    expect(plusOne(game, bears)).toBe(0);
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(quest(game, ascension)).toBe(4);
+    expect(plusOne(game, bears)).toBe(1);
+    expect(computeCharacteristics(game.state, registry, bears).keywords.has("trample")).toBe(true);
+  });
+
+  it("does nothing more once it has left, however many counters it had", () => {
+    const game = setUp();
+    const ascension = spawn(game, "Earthbender Ascension");
+    const bears = spawn(game, "Grizzly Bears");
+    game.state.objects[ascension].counters = { quest: 5 };
+    game.debugSpawn("Forest", A, "battlefield", { announceEntry: true });
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [{ kind: "object", object: ascension }]);
+    game.advanceUntil(quiet);
+    expect(zone(game, ascension)).toBe("graveyard");
+    expect(plusOne(game, bears)).toBe(0);
   });
 });

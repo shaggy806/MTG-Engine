@@ -150,6 +150,34 @@
         "engine/src/cards/pool/coldsteel-heart.ts"
       ],
       "tested": false
+    },
+    {
+      "name": "Vengeful Ancestor",
+      "files": [
+        "engine/src/cards/pool/vengeful-ancestor.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sowing Mycospawn",
+      "files": [
+        "engine/src/cards/pool/sowing-mycospawn.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nissa, Resurgent Animist",
+      "files": [
+        "engine/src/cards/pool/nissa-resurgent-animist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Liesa, Forgotten Archangel",
+      "files": [
+        "engine/src/cards/pool/liesa-forgotten-archangel.ts"
+      ],
+      "tested": true
     }
   ],
   "blocked": [
@@ -236,9 +264,9 @@
     {
       "name": "Generous Plunderer",
       "needs": [
-        "new:create-token-for-target-player"
+        "new:count-of-trigger-players-permanents"
       ],
-      "why": "'Target opponent creates a tapped Treasure token' after a may — not checked closely this pass."
+      "why": "Rechecked: the upkeep half is expressible (a reflexive create-token for the target opponent), but 'damage equal to the number of artifacts they control' needs a count from the defending player's side; countOf only counts from the controller's."
     },
     {
       "name": "Skrelv's Hive",
@@ -321,20 +349,6 @@
       "why": "Enchantment spells with affinity for Auras; a trigger on an Aura targeting a modified permanent."
     },
     {
-      "name": "Vengeful Ancestor",
-      "needs": [
-        "new:damage-from-trigger-object-to-its-controller"
-      ],
-      "why": "A goaded attacker dealing 1 damage to its own controller — not checked closely this pass."
-    },
-    {
-      "name": "Sowing Mycospawn",
-      "needs": [
-        "new:kicked-cast-trigger"
-      ],
-      "why": "'When you cast this spell, if it was kicked, exile target land' — not checked closely this pass."
-    },
-    {
       "name": "Sudden Spoiling",
       "needs": [
         "new:split-second",
@@ -348,13 +362,6 @@
         "new:return-with-added-color"
       ],
       "why": "'A black Zombie in addition to its other colors and types' — put-onto-battlefield can't add a color."
-    },
-    {
-      "name": "Nissa, Resurgent Animist",
-      "needs": [
-        "new:reveal-until-subtypes-rest-bottom"
-      ],
-      "why": "A second-resolution reveal-until for an Elf or Elemental — not checked closely this pass."
     },
     {
       "name": "Ruthless Technomancer",
@@ -421,13 +428,6 @@
         "decision:copy-new-targets"
       ],
       "why": "Copying an ability with new targets."
-    },
-    {
-      "name": "Liesa, Forgotten Archangel",
-      "needs": [
-        "new:delayed-return-dies-trigger"
-      ],
-      "why": "Returning each nontoken creature that died at the next end step — not checked closely this pass."
     },
     {
       "name": "Semblance Anvil",
