@@ -3307,6 +3307,31 @@
   }
 }
 
+/* Words floating up off a life total or a tile (AnimationLayer's floatText):
+   "−3", "+1/+1", "Flying". Placed by its centre in viewport px, outside
+   React; the colour says which way it went. */
+.float-text {
+  position: fixed;
+  z-index: 10001; /* with .anim-layer */
+  pointer-events: none;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: clamp(1rem, 1.5vw, 1.9rem);
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.95),
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+.float-text.gain {
+  color: #7be08f;
+}
+.float-text.loss {
+  color: #ff6b6b;
+}
+.float-text.info {
+  color: #9fd0ff;
+}
+
 /* A copy of a card moving from one place to another (AnimationLayer's
    flyGhost): made outside React, placed over the tile it copies in viewport
    px, and removed when it lands. --mini-w is set inline to the tile's own

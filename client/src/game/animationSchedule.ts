@@ -40,6 +40,16 @@ export const STACK_EXIT_MS = 520
 /** The permanent a triggered ability came from lighting up as the trigger
  * goes on the stack. One beat for every trigger in the frame. */
 export const TRIGGER_STEP_MS = 480
+/** A permanent arriving on the board (a token materialising). */
+export const ENTER_STEP_MS = 420
+/** A glow for counters landing on a permanent, or a buff that isn't counters
+ * (a pump, a granted keyword), with the change floating off it. */
+export const MARK_STEP_MS = 520
+/** A double-faced card turning over. */
+export const FLIP_STEP_MS = 460
+/** Life gained or lost, damage marked on a creature: a flash and a number
+ * floating up off the life total or the tile. Long enough to read the number. */
+export const HURT_STEP_MS = 700
 /** How long a revealed card is held up for everyone to read. Longer than a
  * banner because there's a card face to actually take in, and unpaced — the
  * information is already in the History log, so nobody has to catch it. */
@@ -132,9 +142,33 @@ type SlotKind =
   | 'untap'
   | 'exit'
   | 'pulse'
+  | 'enter'
+  | 'counter'
+  | 'buff'
+  | 'flip'
+  | 'hurt'
 
-/** The kinds that play over the new board rather than the old one. */
-const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(['tap', 'untap', 'pulse'])
+/**
+ * The kinds that play over the new board rather than the old one, in the
+ * order they play. Unlike the first half, whose order is the story of the
+ * frame (a card played, then a creature striking, then it dying), everything
+ * here is a change the board already shows, so it's grouped by kind: a
+ * creature that enters with counters and an enters trigger reads as three
+ * beats — it arrives, its counters glow, its trigger lights up — rather than
+ * whatever order the engine happened to log them in, and each run of one kind
+ * shares a beat.
+ */
+const AFTER_ORDER: readonly SlotKind[] = [
+  'untap',
+  'tap',
+  'enter',
+  'flip',
+  'counter',
+  'buff',
+  'hurt',
+  'pulse',
+]
+const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(AFTER_ORDER)
 
 /**
  * Which animations the game actually waits for. A card being played, a
@@ -153,10 +187,18 @@ const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'untap',
   'exit',
   'pulse',
+  'enter',
+  'counter',
+  'buff',
+  'flip',
+  'hurt',
 ])
 /** Kinds where a run in one frame plays together on one beat rather than one
  * after another: a wrath's deaths, a spell's worth of lands tapping. */
-const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>(['death', 'tap', 'untap', 'pulse'])
+const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>([
+  'death',
+  ...AFTER_ORDER,
+])
 
 interface Slot {
   readonly event: GameEvent
@@ -164,16 +206,48 @@ interface Slot {
   readonly duration: number
 }
 
-/** Each event's own reserved slot, or `null` for anything with no dedicated
- * animation. Mutates `phase` so a `step-began` into the *same* phase, or the
- * "beginning" phase a `turn-began` already announced, doesn't also claim
- * one. */
+/** Each event's own reserved slots, or none for anything with no dedicated
+ * animation — usually one, but combat damage to a creature is two: the
+ * strike over the old board, the number over the new one. */
+function slotsFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Slot[] {
+  if (ev.type === 'damage-dealt') {
+    const slots: Slot[] = []
+    if (ev.combat) slots.push({ event: ev, kind: 'hit', duration: HIT_STEP_MS })
+    // Damage to a player is shown by the life it cost (`life-changed`), so
+    // only a creature or planeswalker gets its own number here.
+    if (ev.target.kind === 'object' && ev.amount > 0) {
+      slots.push({ event: ev, kind: 'hurt', duration: HURT_STEP_MS })
+    }
+    return slots
+  }
+  const slot = slotFor(ev, phase, reduced)
+  return slot === null ? [] : [slot]
+}
+
+/** The single slot an event reserves, or `null`. Mutates `phase` so a
+ * `step-began` into the *same* phase, or the "beginning" phase a
+ * `turn-began` already announced, doesn't also claim one. */
 function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Slot | null {
   if (ev.type === 'spell-cast' || ev.type === 'land-played') {
     return { event: ev, kind: 'card', duration: CARD_STEP_MS }
   }
-  if (ev.type === 'damage-dealt' && ev.combat) {
-    return { event: ev, kind: 'hit', duration: HIT_STEP_MS }
+  // Changes to the new board, each played over it (see AFTER_ORDER). All
+  // but the flip keep something under reduced motion: an arrival fades in,
+  // a glow and a number are colour and text, not movement.
+  if (ev.type === 'permanent-entered-battlefield') {
+    return { event: ev, kind: 'enter', duration: ENTER_STEP_MS }
+  }
+  if (ev.type === 'counter-added' && ev.amount > 0) {
+    return { event: ev, kind: 'counter', duration: MARK_STEP_MS }
+  }
+  if (ev.type === 'pt-modified' || ev.type === 'keyword-granted') {
+    return { event: ev, kind: 'buff', duration: MARK_STEP_MS }
+  }
+  if (ev.type === 'permanent-transformed') {
+    return reduced ? null : { event: ev, kind: 'flip', duration: FLIP_STEP_MS }
+  }
+  if (ev.type === 'life-changed' && ev.delta !== 0) {
+    return { event: ev, kind: 'hurt', duration: HURT_STEP_MS }
   }
   if (ev.type === 'permanent-left-battlefield') {
     return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
@@ -229,10 +303,7 @@ export function scheduleEvents(
   const { scale, reduced } = options
   const phase = { current: startPhase }
   const slots: Slot[] = []
-  for (const event of events) {
-    const slot = slotFor(event, phase, reduced)
-    if (slot !== null) slots.push(slot)
-  }
+  for (const event of events) slots.push(...slotsFor(event, phase, reduced))
 
   // Announce only the phase a frame *lands* in, not every one it passed
   // through. A frame shows exactly one board — its own end state — so a
@@ -258,7 +329,10 @@ export function scheduleEvents(
     ceiling,
   )
   const after = layOut(
-    kept.filter((s) => AFTER.has(s.kind)),
+    // A stable sort, so events of one kind keep the order they happened in.
+    kept
+      .filter((s) => AFTER.has(s.kind))
+      .sort((a, b) => AFTER_ORDER.indexOf(a.kind) - AFTER_ORDER.indexOf(b.kind)),
     scale,
     ceiling - before.totalMs,
   )

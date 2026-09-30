@@ -3,7 +3,10 @@ import type { GameEvent } from 'engine/client'
 import {
   CARD_STEP_MS,
   DEATH_STEP_MS,
+  ENTER_STEP_MS,
   HIT_STEP_MS,
+  HURT_STEP_MS,
+  MARK_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -39,10 +42,18 @@ describe('scheduleEvents', () => {
     expect(s.afterMs).toBe(TAP_STEP_MS)
   })
 
-  it('plays a run of taps and untaps as one beat each', () => {
+  it('plays a run of taps and untaps as one beat each, untaps first', () => {
     const s = scheduleEvents([tap(), tap(), tap(), untap(), untap()], 'beginning')
-    expect(s.after.map((i) => i.offset)).toEqual([0, 0, 0, TAP_STEP_MS, TAP_STEP_MS])
-    // Two beats, not five: the untaps are a different kind, so a new beat.
+    // Untapping comes first however the engine logged them — an untap step,
+    // then tapping for mana — and each kind is one beat.
+    expect(s.after.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-untapped', 0],
+      ['permanent-untapped', 0],
+      ['permanent-tapped', TAP_STEP_MS],
+      ['permanent-tapped', TAP_STEP_MS],
+      ['permanent-tapped', TAP_STEP_MS],
+    ])
+    // Two beats, not five.
     expect(s.afterMs).toBe(2 * TAP_STEP_MS)
   })
 
@@ -104,6 +115,57 @@ describe('scheduleEvents', () => {
     // Two triggers, one beat.
     expect(s.after.map((i) => i.offset)).toEqual([0, 0])
     expect(s.afterMs).toBe(TRIGGER_STEP_MS)
+  })
+
+  it('groups the second half by kind: arrivals, then counters, then triggers', () => {
+    const s = scheduleEvents(
+      [
+        ev({ type: 'permanent-entered-battlefield', object: 'a' }),
+        ev({ type: 'counter-added', object: 'a', counter: '+1/+1', amount: 2 }),
+        ev({ type: 'ability-triggered', source: 'a', controller: 'p1' }),
+        ev({ type: 'permanent-entered-battlefield', object: 'b' }),
+        ev({ type: 'counter-added', object: 'b', counter: '+1/+1', amount: 1 }),
+      ],
+      'precombat-main',
+    )
+    expect(types(s.after)).toEqual([
+      'permanent-entered-battlefield',
+      'permanent-entered-battlefield',
+      'counter-added',
+      'counter-added',
+      'ability-triggered',
+    ])
+    expect(s.after.map((i) => i.offset)).toEqual([
+      0,
+      0,
+      ENTER_STEP_MS,
+      ENTER_STEP_MS,
+      ENTER_STEP_MS + MARK_STEP_MS,
+    ])
+    expect(s.afterMs).toBe(ENTER_STEP_MS + MARK_STEP_MS + TRIGGER_STEP_MS)
+  })
+
+  it('strikes with combat damage over the old board, and numbers it over the new', () => {
+    const toCreature = ev({
+      type: 'damage-dealt',
+      source: 'a',
+      target: { kind: 'object', object: 'b' },
+      amount: 3,
+      combat: true,
+    })
+    const s = scheduleEvents(
+      [toCreature, hit(), ev({ type: 'life-changed', player: 'p2', delta: -2, life: 18 })],
+      'combat',
+    )
+    expect(types(s.items)).toEqual(['damage-dealt', 'damage-dealt'])
+    expect(s.totalMs).toBe(2 * HIT_STEP_MS)
+    // The creature's number and the player's life loss share one beat; the
+    // hit on the player has no number of its own, its life-changed is it.
+    expect(s.after.map((i) => [i.event.type, i.offset])).toEqual([
+      ['damage-dealt', 0],
+      ['life-changed', 0],
+    ])
+    expect(s.afterMs).toBe(HURT_STEP_MS)
   })
 
   it('leaves a frame of banners and draws with nothing to wait on', () => {

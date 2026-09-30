@@ -442,11 +442,12 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0 and 1 are done:
-the groundwork, then the stack and whose turn it is). The problem is that a bot turn can't be
+The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0–2 are done: the
+groundwork, the stack and whose turn it is, and effects on the board's tiles and life totals). The problem is that a bot turn can't be
 followed by eye, even at the slow bot speed. Only some kinds of event hold the game up for their
 animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat hit, a
-permanent leaving, a tap, something leaving the stack, a trigger's source lighting up).
+permanent leaving, a tap, something leaving the stack, a trigger's source lighting up, a
+permanent arriving, counters, buffs, a transform, life and damage).
 Everything else lands with the next board and has no animation at all. The pipeline is in
 `docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`). Each item below is
 now a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
@@ -458,14 +459,9 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
   its own. Its effects arrive in the next frame, and that frame animates only what `PACED`
   covers. So most of the fix is giving more events paced slots (the items below), not a longer
   linger.
-- **Counters placed on a permanent: a short glow on the tile** (`counter-added`, `proliferated`).
-- **A buff that isn't counters should show too** (`pt-modified`, `keyword-granted`). It should
-  look different from the counter glow.
-- **Creatures (every permanent) should animate onto the board instead of popping in**
-  (`permanent-entered-battlefield`). Tokens need this most, since they have no cast spotlight.
-- **Life gain: a green flash; life loss and damage: a red flash**, on the player panel
-  (`life-changed` by the sign of its `delta`) and on a creature for noncombat damage
-  (`damage-dealt` without `combat`, which today has no animation at all).
+- **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
+  +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
+  `pt-modified` is only a one-shot pump.
 - **Cards milled or exiled from the top of a library** (`cards-milled`, `cards-put-into-exile`
   from a library) should leave the library pile visibly, e.g. flipping into the graveyard or
   exile.
@@ -482,8 +478,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **Arrows from source to target** when a spell or ability goes on the stack
   (`object-targeted`). Today `Table`'s `aim` marks only the target: a reticle, a frame, or a
   "Targeted" chip.
-- **Floating numbers** (−3, +4) over life totals and creatures when life or damage changes,
-  alongside the green and red flashes.
 - **A host control to pause the bots or step them one action at a time.** It would hold the
   room's frame gate (`server/src/room.ts`).
 - **Replay the last update's animations** on demand: re-fire the last frame's schedule against
@@ -494,12 +488,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
   (`permanent-left-battlefield` to the graveyard).
 - **A discarded card flies from hand to graveyard** (`cards-discarded`).
 - **An Aura or Equipment flies onto the permanent it attaches to** (`permanent-attached`).
-- **A double-faced card flips over when it transforms** (`permanent-transformed`).
 - **The cast spotlight starts from the zone the spell was cast from** (`spell-cast`'s `from`):
   the graveyard, exile or the command zone, not the owner's quadrant.
-- **A token being created looks different from a spell resolving.** The engine has no
-  token-specific event: `permanent-entered-battlefield` carries only `object` and `count`, so
-  the view has to say it's a token.
+- **Folded tokens arrive as one tile**: two Soldiers from Raise the Alarm are separate objects
+  the board folds into one tile, so only the first one's `permanent-entered-battlefield` finds a
+  tile to animate. Harmless, but a "×2" arriving could say so.
 - **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.

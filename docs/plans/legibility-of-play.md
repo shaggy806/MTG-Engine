@@ -1,7 +1,7 @@
 # Legibility of play: animation and pacing
 
-Status: **in progress**. Planned 2026-09-30; Step 0 (the groundwork) and Step 1 (the stack and
-whose turn it is) done the same day, Steps 2–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
+Status: **in progress**. Planned 2026-09-30; Steps 0–2 (the groundwork, the stack and whose turn
+it is, tile effects) done the same day, Steps 3–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
 list and settles the design questions everything else depends on.
 
 ## The problem
@@ -136,7 +136,15 @@ Items:
   seat the game is waiting on, which the client can work out from the view (priority holder or
   pending decision) without a protocol change.
 
-**Step 2: after-half tile effects.** Each is a few lines of CSS plus a map entry once Step 0
+**Step 2: after-half tile effects.** *Done 2026-09-30.* As built: every effect plays in the after
+half, which is now ordered by kind (`AFTER_ORDER`: untap, tap, enter, flip, counter, buff, hurt,
+pulse) rather than log order, with each run of a kind on one shared beat, so a creature entering
+with counters and a trigger reads as three beats. Combat damage to a creature claims two slots (the
+strike before, the number after); damage to a player is shown only by its `life-changed`. Text
+floats off through one helper, `floatText`. Also: the played-card spotlight now *rises* from one
+spot for everyone by default (the user's pick, 2026-09-30, after the caster's name went on it —
+flying in from their side read as wrong); the old flight and a plain fade stay as options in the
+Animations panel for now. Each is a few lines of CSS plus a map entry once Step 0
 exists.
 - Enter (tokens get a distinct materialise, using `VisibleObject.isToken`, which the view already
   carries, so no engine change is needed).

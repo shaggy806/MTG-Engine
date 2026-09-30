@@ -18,6 +18,10 @@ import {
   CARD_STEP_MS,
   DEATH_STEP_MS,
   DRAW_STEP_MS,
+  ENTER_STEP_MS,
+  FLIP_STEP_MS,
+  HURT_STEP_MS,
+  MARK_STEP_MS,
   PHASE_STEP_MS,
   REVEAL_STEP_MS,
   STACK_EXIT_MS,
@@ -589,6 +593,195 @@ function runPulse(source: ObjectId, delay: number): void {
   }
 }
 
+/** A permanent's tile on the battlefield — its outer `data-obj-id` box (the
+ * hand and the stack carry the id too, so this looks only on a board). */
+function boardTileOf(object: ObjectId): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`.board [data-obj-id="${CSS.escape(object)}"]`)
+}
+
+type Tone = 'gain' | 'loss' | 'info'
+
+/** The glow colour for each tone, as the `r, g, b` an `rgba()` takes. */
+const TONE_RGB: Record<Tone, string> = {
+  gain: '110, 220, 140',
+  loss: '255, 90, 90',
+  info: '130, 190, 255',
+}
+
+/**
+ * A few words floating up off an element and fading: "−3" off a life total,
+ * "+1/+1" off a creature, "Flying" off one that just gained it. Made outside
+ * React, like the ghosts, and gone when it's done. Waits out `delay` hidden
+ * (`fill: 'both'`), since after-half cues are all started at once. Under
+ * reduced motion it fades where it is instead of rising.
+ */
+function floatText(from: Element, text: string, tone: Tone, delay: number, duration: number): void {
+  const r = from.getBoundingClientRect()
+  if (r.width === 0 && r.height === 0) return
+  const el = document.createElement('div')
+  el.className = `float-text ${tone}`
+  el.textContent = text
+  el.style.left = `${r.left + r.width / 2}px`
+  el.style.top = `${r.top + r.height / 2}px`
+  document.body.appendChild(el)
+  const rise = motionPrefs().reduced ? 0 : 1
+  const animation = el.animate(
+    [
+      { opacity: 0, transform: `translate(-50%, -50%) translateY(${0.4 * rise}em) scale(0.85)` },
+      { opacity: 1, transform: 'translate(-50%, -50%) scale(1.1)', offset: 0.18 },
+      { opacity: 1, transform: `translate(-50%, -50%) translateY(${-1.2 * rise}em)`, offset: 0.7 },
+      { opacity: 0, transform: `translate(-50%, -50%) translateY(${-2 * rise}em)` },
+    ],
+    { duration, delay, easing: 'ease-out', fill: 'both' },
+  )
+  animation.onfinish = () => el.remove()
+  animation.oncancel = () => el.remove()
+}
+
+/** A ring of colour round a tile that comes and goes: counters, buffs. */
+function glow(el: HTMLElement, tone: Tone, delay: number, duration: number): void {
+  const rgb = TONE_RGB[tone]
+  el.animate(
+    [
+      { boxShadow: `0 0 0 0 rgba(${rgb}, 0)` },
+      { boxShadow: `0 0 0 3px rgba(${rgb}, 0.95), 0 0 18px 5px rgba(${rgb}, 0.6)`, offset: 0.3 },
+      { boxShadow: `0 0 0 0 rgba(${rgb}, 0)` },
+    ],
+    { duration, delay, easing: 'ease-out' },
+  )
+}
+
+/**
+ * A permanent arriving: it grows into its place on the new board rather than
+ * popping in. A token, which had no spell to show it coming, also shimmers in
+ * cyan, so making tokens reads differently from a spell resolving. Reduced
+ * motion fades it in.
+ */
+function runEnter(object: ObjectId, isToken: boolean, delay: number): void {
+  const wrap = boardTileOf(object)
+  if (!wrap) return
+  const duration = scaled(ENTER_STEP_MS)
+  const timing: KeyframeAnimationOptions = { duration, delay, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1.2)', fill: 'backwards' }
+  if (motionPrefs().reduced) wrap.animate([{ opacity: 0 }, { opacity: 1 }], timing)
+  else {
+    wrap.animate(
+      [
+        { opacity: 0, scale: '0.55', translate: '0 -0.8em' },
+        { opacity: 1, scale: '1', translate: '0 0' },
+      ],
+      timing,
+    )
+  }
+  const tile = wrap.querySelector<HTMLElement>('.mini-tile')
+  if (isToken && tile) {
+    tile.animate(
+      [
+        { filter: 'brightness(2) saturate(0.4)', boxShadow: '0 0 0 3px rgba(120, 230, 255, 0.95), 0 0 22px 8px rgba(90, 210, 255, 0.7)' },
+        { filter: 'brightness(1) saturate(1)', boxShadow: '0 0 0 0 rgba(120, 230, 255, 0)' },
+      ],
+      { duration: duration * 1.4, delay, easing: 'ease-out', fill: 'backwards' },
+    )
+  }
+}
+
+/** "+1/+1", "+1/+1 ×2", "+1 charge": what a `counter-added` says, as short
+ * as it can. A P/T counter's kind already carries its sign. */
+function counterText(counter: string, amount: number): string {
+  if (/^[+-]\d+\/[+-]\d+$/.test(counter)) return amount > 1 ? `${counter} ×${amount}` : counter
+  return `+${amount} ${counter}`
+}
+
+/**
+ * Counters landing on a permanent, or a buff that isn't counters (a pump
+ * until end of turn, a granted keyword): the tile glows and the change floats
+ * off it. Counters and buffs glow in different colours — green (or purple for
+ * a −1/−1 counter) for counters, blue for a buff, red for a shrink — so a
+ * permanent getting bigger for good reads differently from one pumped for
+ * the turn.
+ */
+function runMark(ev: GameEvent, delay: number): void {
+  if (ev.type !== 'counter-added' && ev.type !== 'pt-modified' && ev.type !== 'keyword-granted') {
+    return
+  }
+  const wrap = boardTileOf(ev.object)
+  const tile = wrap?.querySelector<HTMLElement>('.mini-tile')
+  if (!wrap || !tile) return
+  const duration = scaled(MARK_STEP_MS)
+  let tone: Tone
+  let text: string
+  if (ev.type === 'counter-added') {
+    const shrinking = ev.counter.startsWith('-')
+    tone = shrinking ? 'loss' : 'gain'
+    text = counterText(ev.counter, ev.amount)
+    if (shrinking) glow(tile, 'loss', delay, duration)
+    else glow(tile, 'gain', delay, duration)
+  } else if (ev.type === 'pt-modified') {
+    const sign = (n: number): string => (n >= 0 ? `+${n}` : `−${-n}`)
+    tone = ev.power + ev.toughness < 0 ? 'loss' : 'info'
+    text = `${sign(ev.power)}/${sign(ev.toughness)}`
+    glow(tile, tone, delay, duration)
+  } else {
+    tone = 'info'
+    text = ev.keyword.charAt(0).toUpperCase() + ev.keyword.slice(1)
+    glow(tile, 'info', delay, duration)
+  }
+  floatText(wrap, text, tone, delay, duration * 1.5)
+}
+
+/** A double-faced card turning over: the new face swings in edge-on. */
+function runFlip(object: ObjectId, delay: number): void {
+  const tile = boardTileOf(object)?.querySelector<HTMLElement>('.mini-tile')
+  if (!tile) return
+  tile.animate(
+    [
+      { rotate: 'y 90deg', filter: 'brightness(1.8)' },
+      { rotate: 'y 0deg', filter: 'brightness(1)' },
+    ],
+    { duration: scaled(FLIP_STEP_MS), delay, easing: 'ease-out', fill: 'backwards' },
+  )
+}
+
+/**
+ * Life gained or lost, or damage marked on a creature: a green or red flash
+ * and the amount floating off it. A player's shows on their panel's life
+ * total; a creature's on its tile, if it survived to be on the new board (one
+ * that died has already faded). Colour and a number, so reduced motion keeps
+ * all of it but the rise.
+ */
+function runHurt(ev: GameEvent, delay: number): void {
+  const duration = scaled(HURT_STEP_MS)
+  if (ev.type === 'life-changed') {
+    const panel = document.querySelector<HTMLElement>(`[data-player-id="${CSS.escape(ev.player)}"]`)
+    if (!panel) return
+    const tone: Tone = ev.delta > 0 ? 'gain' : 'loss'
+    const rgb = TONE_RGB[tone]
+    panel.animate(
+      [
+        { boxShadow: `inset 0 0 0 0 rgba(${rgb}, 0)` },
+        { boxShadow: `inset 0 0 0 2px rgba(${rgb}, 0.9), 0 0 22px 2px rgba(${rgb}, 0.55)`, offset: 0.2 },
+        { boxShadow: `inset 0 0 0 0 rgba(${rgb}, 0)` },
+      ],
+      { duration, delay, easing: 'ease-out' },
+    )
+    const life = panel.querySelector<HTMLElement>('.pp-life') ?? panel
+    life.animate([{ color: `rgb(${rgb})` }, { color: `rgb(${rgb})`, offset: 0.6 }, {}], {
+      duration,
+      delay,
+      fill: 'backwards',
+    })
+    floatText(life, ev.delta > 0 ? `+${ev.delta}` : `−${-ev.delta}`, tone, delay, duration * 1.3)
+    return
+  }
+  if (ev.type !== 'damage-dealt' || ev.target.kind !== 'object') return
+  const wrap = boardTileOf(ev.target.object)
+  if (!wrap) return
+  const tile = wrap.querySelector<HTMLElement>('.mini-tile')
+  // Combat damage already had its hit reaction over the old board; burn and
+  // abilities had nothing, so they get the red flash here.
+  if (tile && !ev.combat) glow(tile, 'loss', delay, duration)
+  floatText(wrap, `−${ev.amount}`, 'loss', delay, duration * 1.3)
+}
+
 /**
  * A permanent returned to its hand flies there — the draw flight run in
  * reverse. It heads for the hand of the board it was on, which is its
@@ -787,6 +980,18 @@ export function AnimationLayer({
           else if (cue.event.type === 'permanent-untapped') {
             runTap(cue.event.object, false, cue.delay)
           } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
+          else if (cue.event.type === 'permanent-entered-battlefield') {
+            runEnter(cue.event.object, cue.view.objects[cue.event.object]?.isToken ?? false, cue.delay)
+          } else if (
+            cue.event.type === 'counter-added' ||
+            cue.event.type === 'pt-modified' ||
+            cue.event.type === 'keyword-granted'
+          ) {
+            runMark(cue.event, cue.delay)
+          } else if (cue.event.type === 'permanent-transformed') runFlip(cue.event.object, cue.delay)
+          else if (cue.event.type === 'life-changed' || cue.event.type === 'damage-dealt') {
+            runHurt(cue.event, cue.delay)
+          }
           continue
         }
         window.setTimeout(() => fire(cue.event, cue.view), cue.delay)
