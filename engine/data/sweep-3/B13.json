@@ -1,0 +1,436 @@
+{
+  "batch": "B13",
+  "status": "complete",
+  "ranks": "1880-1956",
+  "authored": [
+    {
+      "name": "Sword of Forge and Frontier",
+      "files": [
+        "engine/src/cards/pool/sword-of-forge-and-frontier.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Evacuation",
+      "files": [
+        "engine/src/cards/pool/evacuation.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dragonlord Dromoka",
+      "files": [
+        "engine/src/cards/pool/dragonlord-dromoka.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tormenting Voice",
+      "files": [
+        "engine/src/cards/pool/tormenting-voice.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bronze Guardian",
+      "files": [
+        "engine/src/cards/pool/bronze-guardian.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vile Entomber",
+      "files": [
+        "engine/src/cards/pool/vile-entomber.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nighthawk Scavenger",
+      "files": [
+        "engine/src/cards/pool/nighthawk-scavenger.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Leaf-Crowned Visionary",
+      "files": [
+        "engine/src/cards/pool/leaf-crowned-visionary.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Helm of Awakening",
+      "files": [
+        "engine/src/cards/pool/helm-of-awakening.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Moon-Blessed Cleric",
+      "files": [
+        "engine/src/cards/pool/moon-blessed-cleric.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Drumbellower",
+      "files": [
+        "engine/src/cards/pool/drumbellower.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Herald of the Pantheon",
+      "files": [
+        "engine/src/cards/pool/herald-of-the-pantheon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Bitterbloom Bearer",
+      "files": [
+        "engine/src/cards/pool/bitterbloom-bearer.ts",
+        "engine/src/cards/tokens/blue-black-faerie-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hazoret's Monument",
+      "files": [
+        "engine/src/cards/pool/hazorets-monument.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Teshar, Ancestor's Apostle",
+      "files": [
+        "engine/src/cards/pool/teshar-ancestors-apostle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sonic Screwdriver",
+      "files": [
+        "engine/src/cards/pool/sonic-screwdriver.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Day of Judgment",
+      "files": [
+        "engine/src/cards/pool/day-of-judgment.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Black Sun's Zenith",
+      "files": [
+        "engine/src/cards/pool/black-suns-zenith.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cycle of Renewal",
+      "files": [
+        "engine/src/cards/pool/cycle-of-renewal.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Walls of Ba Sing Se",
+      "files": [
+        "engine/src/cards/pool/the-walls-of-ba-sing-se.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Erode",
+      "files": [
+        "engine/src/cards/pool/erode.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shattered Landscape",
+      "files": [
+        "engine/src/cards/pool/shattered-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Split Up",
+      "files": [
+        "engine/src/cards/pool/split-up.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nasty End",
+      "files": [
+        "engine/src/cards/pool/nasty-end.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bitterthorn, Nissa's Animus",
+      "files": [
+        "engine/src/cards/pool/bitterthorn-nissas-animus.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "As Foretold",
+      "needs": [
+        "new:free-cast-once-each-turn"
+      ],
+      "why": "'Once each turn, you may pay {0} rather than pay the mana cost' for spells up to its time counters."
+    },
+    {
+      "name": "Colossal Grave-Reaver",
+      "needs": [
+        "new:choose-from-batch"
+      ],
+      "why": "'Put one of them onto the battlefield' from the creature cards milled together."
+    },
+    {
+      "name": "Gift of Immortality",
+      "needs": [
+        "new:aura-returns-attached"
+      ],
+      "why": "The Aura returning attached to the returned creature."
+    },
+    {
+      "name": "Monster Manual // Zoological Study",
+      "needs": [
+        "new:return-milled-this-way"
+      ],
+      "why": "'Return a creature card milled this way to your hand'."
+    },
+    {
+      "name": "Hellkite Courser",
+      "needs": [
+        "new:commander-from-command-zone"
+      ],
+      "why": "Putting a commander from the command zone onto the battlefield."
+    },
+    {
+      "name": "Halo Fountain",
+      "needs": [
+        "new:untap-cost",
+        "new:win-game"
+      ],
+      "why": "Untapping creatures as a cost, and 'you win the game'."
+    },
+    {
+      "name": "Divine Visitation",
+      "needs": [
+        "new:token-replacement-different"
+      ],
+      "why": "Creature tokens are created as 4/4 Angels instead."
+    },
+    {
+      "name": "Traveling Chocobo",
+      "needs": [
+        "zone:visibility-extensions",
+        "new:trigger-doubling-filter"
+      ],
+      "why": "Look at the top card any time; play Birds from the top; doubled triggers for lands and Birds."
+    },
+    {
+      "name": "Insidious Fungus",
+      "needs": [
+        "new:modal-activated-targets"
+      ],
+      "why": "A modal activated ability with targeted modes (BACKLOG)."
+    },
+    {
+      "name": "Jace's Archivist",
+      "needs": [
+        "new:greatest-discarded"
+      ],
+      "why": "Draw the greatest number of cards a player discarded this way."
+    },
+    {
+      "name": "Mutavault",
+      "needs": [
+        "new:all-creature-types-animate"
+      ],
+      "why": "Becoming a creature 'with all creature types' until end of turn."
+    },
+    {
+      "name": "Hostage Taker",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "'Mana of any type can be spent to cast that spell'."
+    },
+    {
+      "name": "Aven Interrupter",
+      "needs": [
+        "new:plot"
+      ],
+      "why": "Plotting a spell on the stack."
+    },
+    {
+      "name": "Abundance",
+      "needs": [
+        "new:draw-replacement-reveal"
+      ],
+      "why": "A draw replaced by revealing until land or nonland."
+    },
+    {
+      "name": "Smuggler's Copter",
+      "needs": [
+        "new:crew"
+      ],
+      "why": "Crew isn't modeled."
+    },
+    {
+      "name": "Tree of Perdition",
+      "needs": [
+        "new:exchange-life-toughness"
+      ],
+      "why": "Exchanging a life total with toughness."
+    },
+    {
+      "name": "Sunbird's Invocation",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Cast a revealed card free during resolution."
+    },
+    {
+      "name": "Defense Grid",
+      "needs": [
+        "new:cost-increase-not-your-turn"
+      ],
+      "why": "Spells cost more except during their controller's turn."
+    },
+    {
+      "name": "Temur Sabertooth",
+      "needs": [
+        "new:may-return-if-you-do"
+      ],
+      "why": "'You may return another creature … If you do' — no 'if you do' for a bounce."
+    },
+    {
+      "name": "Drana and Linvala",
+      "needs": [
+        "new:gain-opponents-abilities"
+      ],
+      "why": "Having all activated abilities of opponents' creatures."
+    },
+    {
+      "name": "Guardian of Faith",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "Phasing isn't modeled."
+    },
+    {
+      "name": "Commandeer",
+      "needs": [
+        "new:gain-control-spell",
+        "new:alt-cost-exile-card"
+      ],
+      "why": "Gaining control of a spell, and exiling two blue cards as its cost."
+    },
+    {
+      "name": "Teferi's Puzzle Box",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "Put the hand on the bottom in any order."
+    },
+    {
+      "name": "Inti, Seneschal of the Sun",
+      "needs": [
+        "new:discards-batch-trigger"
+      ],
+      "why": "'Whenever you discard one or more cards' and a may-discard reflexive trigger."
+    },
+    {
+      "name": "One with the Multiverse",
+      "needs": [
+        "zone:visibility-extensions",
+        "new:free-cast-once-each-turn"
+      ],
+      "why": "Play from the top, and a free cast once each turn."
+    },
+    {
+      "name": "Wild Magic Surge",
+      "needs": [
+        "new:reveal-until-shares-type"
+      ],
+      "why": "Reveal until a permanent card sharing a card type with the destroyed one."
+    },
+    {
+      "name": "Rise of the Witch-king",
+      "needs": [
+        "new:return-if-sacrificed-this-way"
+      ],
+      "why": "'If you sacrificed a creature this way, you may return another permanent card'."
+    },
+    {
+      "name": "For the Common Good",
+      "needs": [
+        "new:token-copy-count-amount"
+      ],
+      "why": "X token copies: create-token-copy's count is a fixed number."
+    },
+    {
+      "name": "Brawn",
+      "needs": [
+        "new:static-from-graveyard"
+      ],
+      "why": "A static ability that works from the graveyard."
+    },
+    {
+      "name": "Port Razer",
+      "needs": [
+        "new:cant-attack-same-player"
+      ],
+      "why": "'Can't attack a player it has already attacked this turn'."
+    },
+    {
+      "name": "Eldritch Immunity",
+      "needs": [
+        "new:kindred-type",
+        "new:protection-from-each-color-overload"
+      ],
+      "why": "Kindred Instant with overload."
+    },
+    {
+      "name": "Norn's Annex",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "Attacks cost {W/P} per creature."
+    },
+    {
+      "name": "Tempt with Bunnies",
+      "needs": [
+        "new:tempting-offer"
+      ],
+      "why": "Tempting offer."
+    },
+    {
+      "name": "Varragoth, Bloodsky Sire",
+      "needs": [
+        "new:boast",
+        "new:target-player-searches"
+      ],
+      "why": "Boast, and a target player's search to the top of their library."
+    },
+    {
+      "name": "Witness Protection",
+      "needs": [
+        "new:set-characteristics-aura"
+      ],
+      "why": "An Aura that sets name, types, colors and base P/T."
+    }
+  ]
+}

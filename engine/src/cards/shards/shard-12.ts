@@ -95,6 +95,7 @@ import _poolKayasGhostform from "../pool/kayas-ghostform.js";
 import _poolKazuulTyrantOfTheCliffs from "../pool/kazuul-tyrant-of-the-cliffs.js";
 import _poolKeldonNecropolis from "../pool/keldon-necropolis.js";
 import _poolLastGasp from "../pool/last-gasp.js";
+import _poolLeafCrownedVisionary from "../pool/leaf-crowned-visionary.js";
 import _poolLeylineProwler from "../pool/leyline-prowler.js";
 import _poolLightshieldParry from "../pool/lightshield-parry.js";
 import _poolLodestoneMyr from "../pool/lodestone-myr.js";
@@ -168,6 +169,7 @@ import _poolThievingMagpie from "../pool/thieving-magpie.js";
 import _poolThornspireVerge from "../pool/thornspire-verge.js";
 import _poolThrasiosTritonHero from "../pool/thrasios-triton-hero.js";
 import _poolThunderscapeApprentice from "../pool/thunderscape-apprentice.js";
+import _poolTormentingVoice from "../pool/tormenting-voice.js";
 import _poolTrevasAttendant from "../pool/trevas-attendant.js";
 import _poolTwincast from "../pool/twincast.js";
 import _poolUnburialRites from "../pool/unburial-rites.js";
@@ -285,6 +287,7 @@ const shard: CardShard = {
     _poolKazuulTyrantOfTheCliffs,
     _poolKeldonNecropolis,
     _poolLastGasp,
+    _poolLeafCrownedVisionary,
     _poolLeylineProwler,
     _poolLightshieldParry,
     _poolLodestoneMyr,
@@ -358,6 +361,7 @@ const shard: CardShard = {
     _poolThornspireVerge,
     _poolThrasiosTritonHero,
     _poolThunderscapeApprentice,
+    _poolTormentingVoice,
     _poolTrevasAttendant,
     _poolTwincast,
     _poolUnburialRites,

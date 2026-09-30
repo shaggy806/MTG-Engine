@@ -50,6 +50,7 @@ import _poolCruelCelebrant from "../pool/cruel-celebrant.js";
 import _poolCruelFinality from "../pool/cruel-finality.js";
 import _poolCryptGhast from "../pool/crypt-ghast.js";
 import _poolCutADeal from "../pool/cut-a-deal.js";
+import _poolDayOfJudgment from "../pool/day-of-judgment.js";
 import _poolDeftDuelist from "../pool/deft-duelist.js";
 import _poolDerangedOutcast from "../pool/deranged-outcast.js";
 import _poolDesolationProwler from "../pool/desolation-prowler.js";
@@ -164,6 +165,7 @@ import _poolSquire from "../pool/squire.js";
 import _poolStarfieldShepherd from "../pool/starfield-shepherd.js";
 import _poolStarfieldVocalist from "../pool/starfield-vocalist.js";
 import _poolSwelteringSuns from "../pool/sweltering-suns.js";
+import _poolSwordOfForgeAndFrontier from "../pool/sword-of-forge-and-frontier.js";
 import _poolTangleMantis from "../pool/tangle-mantis.js";
 import _poolTempleOfMalice from "../pool/temple-of-malice.js";
 import _poolTheaterOfHorrors from "../pool/theater-of-horrors.js";
@@ -256,6 +258,7 @@ const shard: CardShard = {
     _poolCruelFinality,
     _poolCryptGhast,
     _poolCutADeal,
+    _poolDayOfJudgment,
     _poolDeftDuelist,
     _poolDerangedOutcast,
     _poolDesolationProwler,
@@ -370,6 +373,7 @@ const shard: CardShard = {
     _poolStarfieldShepherd,
     _poolStarfieldVocalist,
     _poolSwelteringSuns,
+    _poolSwordOfForgeAndFrontier,
     _poolTangleMantis,
     _poolTempleOfMalice,
     _poolTheaterOfHorrors,

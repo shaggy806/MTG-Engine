@@ -104,6 +104,7 @@ import _poolHagraCrocodile from "../pool/hagra-crocodile.js";
 import _poolHazardOfTheDunes from "../pool/hazard-of-the-dunes.js";
 import _poolHazezonShaperOfSand from "../pool/hazezon-shaper-of-sand.js";
 import _poolHeartOfRamos from "../pool/heart-of-ramos.js";
+import _poolHeraldOfThePantheon from "../pool/herald-of-the-pantheon.js";
 import _poolHistoryOfBenalia from "../pool/history-of-benalia.js";
 import _poolHoarShade from "../pool/hoar-shade.js";
 import _poolHollowScavenger from "../pool/hollow-scavenger.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolHazardOfTheDunes,
     _poolHazezonShaperOfSand,
     _poolHeartOfRamos,
+    _poolHeraldOfThePantheon,
     _poolHistoryOfBenalia,
     _poolHoarShade,
     _poolHollowScavenger,

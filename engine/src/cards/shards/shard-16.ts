@@ -123,6 +123,7 @@ import _poolNajeelaTheBladeBlossom from "../pool/najeela-the-blade-blossom.js";
 import _poolNaturalize from "../pool/naturalize.js";
 import _poolNaturesChant from "../pool/natures-chant.js";
 import _poolNellyBorcaImpulsiveAccuser from "../pool/nelly-borca-impulsive-accuser.js";
+import _poolNighthawkScavenger from "../pool/nighthawk-scavenger.js";
 import _poolNocturnalFeeder from "../pool/nocturnal-feeder.js";
 import _poolNoxiousNewt from "../pool/noxious-newt.js";
 import _poolOctoprophet from "../pool/octoprophet.js";
@@ -215,6 +216,7 @@ import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
 import _poolZodiacHorse from "../pool/zodiac-horse.js";
 import _tokensBirdIllusionToken from "../tokens/bird-illusion-token.js";
 import _tokensBlackDeathtouchSnakeToken from "../tokens/black-deathtouch-snake-token.js";
+import _tokensBlueBlackFaerieToken from "../tokens/blue-black-faerie-token.js";
 import _tokensDinosaurToken31 from "../tokens/dinosaur-token-3-1.js";
 import _tokensInsectToken from "../tokens/insect-token.js";
 import _tokensLifelinkVampireToken from "../tokens/lifelink-vampire-token.js";
@@ -344,6 +346,7 @@ const shard: CardShard = {
     _poolNaturalize,
     _poolNaturesChant,
     _poolNellyBorcaImpulsiveAccuser,
+    _poolNighthawkScavenger,
     _poolNocturnalFeeder,
     _poolNoxiousNewt,
     _poolOctoprophet,
@@ -438,6 +441,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBirdIllusionToken,
     _tokensBlackDeathtouchSnakeToken,
+    _tokensBlueBlackFaerieToken,
     _tokensDinosaurToken31,
     _tokensInsectToken,
     _tokensLifelinkVampireToken,

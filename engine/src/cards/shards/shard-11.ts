@@ -83,6 +83,7 @@ import _poolGutlessGhoul from "../pool/gutless-ghoul.js";
 import _poolHearthfireHobgoblin from "../pool/hearthfire-hobgoblin.js";
 import _poolHeatedDebate from "../pool/heated-debate.js";
 import _poolHedronScrabbler from "../pool/hedron-scrabbler.js";
+import _poolHelmOfAwakening from "../pool/helm-of-awakening.js";
 import _poolHeraldicBanner from "../pool/heraldic-banner.js";
 import _poolHitchclawRecluse from "../pool/hitchclaw-recluse.js";
 import _poolHoardRobber from "../pool/hoard-robber.js";
@@ -308,6 +309,7 @@ const shard: CardShard = {
     _poolHearthfireHobgoblin,
     _poolHeatedDebate,
     _poolHedronScrabbler,
+    _poolHelmOfAwakening,
     _poolHeraldicBanner,
     _poolHitchclawRecluse,
     _poolHoardRobber,

@@ -25,6 +25,7 @@ import _poolBarkhideMauler from "../pool/barkhide-mauler.js";
 import _poolBatheInDragonfire from "../pool/bathe-in-dragonfire.js";
 import _poolBearCub from "../pool/bear-cub.js";
 import _poolBilbosRing from "../pool/bilbos-ring.js";
+import _poolBitterthornNissasAnimus from "../pool/bitterthorn-nissas-animus.js";
 import _poolBlisteringBarrier from "../pool/blistering-barrier.js";
 import _poolBloodbriar from "../pool/bloodbriar.js";
 import _poolBloodrageBrawler from "../pool/bloodrage-brawler.js";
@@ -49,6 +50,7 @@ import _poolDefiantKhenra from "../pool/defiant-khenra.js";
 import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
+import _poolDrumbellower from "../pool/drumbellower.js";
 import _poolEmmaraSoulOfTheAccord from "../pool/emmara-soul-of-the-accord.js";
 import _poolEshkiDragonclaw from "../pool/eshki-dragonclaw.js";
 import _poolEvolutionCharm from "../pool/evolution-charm.js";
@@ -226,6 +228,7 @@ const shard: CardShard = {
     _poolBatheInDragonfire,
     _poolBearCub,
     _poolBilbosRing,
+    _poolBitterthornNissasAnimus,
     _poolBlisteringBarrier,
     _poolBloodbriar,
     _poolBloodrageBrawler,
@@ -250,6 +253,7 @@ const shard: CardShard = {
     _poolDiamondPickAxe,
     _poolDoomWhisperer,
     _poolDragonRoost,
+    _poolDrumbellower,
     _poolEmmaraSoulOfTheAccord,
     _poolEshkiDragonclaw,
     _poolEvolutionCharm,

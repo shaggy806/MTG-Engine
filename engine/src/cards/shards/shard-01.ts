@@ -96,6 +96,7 @@ import _poolMerenOfClanNelToth from "../pool/meren-of-clan-nel-toth.js";
 import _poolMeteorGolem from "../pool/meteor-golem.js";
 import _poolMightformHarmonizer from "../pool/mightform-harmonizer.js";
 import _poolMinotaurSureshot from "../pool/minotaur-sureshot.js";
+import _poolMoonBlessedCleric from "../pool/moon-blessed-cleric.js";
 import _poolMountainGoat from "../pool/mountain-goat.js";
 import _poolMurkwaterPathway from "../pool/murkwater-pathway.js";
 import _poolNightscapeMaster from "../pool/nightscape-master.js";
@@ -274,6 +275,7 @@ const shard: CardShard = {
     _poolMeteorGolem,
     _poolMightformHarmonizer,
     _poolMinotaurSureshot,
+    _poolMoonBlessedCleric,
     _poolMountainGoat,
     _poolMurkwaterPathway,
     _poolNightscapeMaster,

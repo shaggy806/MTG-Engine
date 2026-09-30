@@ -36,6 +36,7 @@ import _poolCloudMidgarMercenary from "../pool/cloud-midgar-mercenary.js";
 import _poolCollectorsVault from "../pool/collectors-vault.js";
 import _poolConscriptedInfantry from "../pool/conscripted-infantry.js";
 import _poolCopperHostCrusher from "../pool/copper-host-crusher.js";
+import _poolCycleOfRenewal from "../pool/cycle-of-renewal.js";
 import _poolCyclonicRift from "../pool/cyclonic-rift.js";
 import _poolCyclopsOfOneEyedPass from "../pool/cyclops-of-one-eyed-pass.js";
 import _poolDamningVerdict from "../pool/damning-verdict.js";
@@ -237,6 +238,7 @@ const shard: CardShard = {
     _poolCollectorsVault,
     _poolConscriptedInfantry,
     _poolCopperHostCrusher,
+    _poolCycleOfRenewal,
     _poolCyclonicRift,
     _poolCyclopsOfOneEyedPass,
     _poolDamningVerdict,

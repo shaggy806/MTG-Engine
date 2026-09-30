@@ -26,6 +26,7 @@ import _poolBreechesEagerPillager from "../pool/breeches-eager-pillager.js";
 import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
 import _poolBrigidDounsMind from "../pool/brigid-douns-mind.js";
 import _poolBristlyBillSpineSower from "../pool/bristly-bill-spine-sower.js";
+import _poolBronzeGuardian from "../pool/bronze-guardian.js";
 import _poolBronzeSword from "../pool/bronze-sword.js";
 import _poolBroodhunterWurm from "../pool/broodhunter-wurm.js";
 import _poolBruteForce from "../pool/brute-force.js";
@@ -235,6 +236,7 @@ const shard: CardShard = {
     _poolBrigidClachansHeart,
     _poolBrigidDounsMind,
     _poolBristlyBillSpineSower,
+    _poolBronzeGuardian,
     _poolBronzeSword,
     _poolBroodhunterWurm,
     _poolBruteForce,

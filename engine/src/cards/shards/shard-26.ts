@@ -31,6 +31,7 @@ import _poolCrenellatedWall from "../pool/crenellated-wall.js";
 import _poolDinaEssenceBrewer from "../pool/dina-essence-brewer.js";
 import _poolDrEggman from "../pool/dr-eggman.js";
 import _poolDragonFodder from "../pool/dragon-fodder.js";
+import _poolDragonlordDromoka from "../pool/dragonlord-dromoka.js";
 import _poolDrakewingKrasis from "../pool/drakewing-krasis.js";
 import _poolDrownerOfSecrets from "../pool/drowner-of-secrets.js";
 import _poolDuskshellCrawler from "../pool/duskshell-crawler.js";
@@ -148,6 +149,7 @@ import _poolSenateGuildmage from "../pool/senate-guildmage.js";
 import _poolSeraphSanctuary from "../pool/seraph-sanctuary.js";
 import _poolShanodinDryads from "../pool/shanodin-dryads.js";
 import _poolShatteredAcolyte from "../pool/shattered-acolyte.js";
+import _poolShatteredLandscape from "../pool/shattered-landscape.js";
 import _poolShelobChildOfUngoliant from "../pool/shelob-child-of-ungoliant.js";
 import _poolShepherdOfTheLost from "../pool/shepherd-of-the-lost.js";
 import _poolShireiShizosCaretaker from "../pool/shirei-shizos-caretaker.js";
@@ -230,6 +232,7 @@ const shard: CardShard = {
     _poolDinaEssenceBrewer,
     _poolDrEggman,
     _poolDragonFodder,
+    _poolDragonlordDromoka,
     _poolDrakewingKrasis,
     _poolDrownerOfSecrets,
     _poolDuskshellCrawler,
@@ -347,6 +350,7 @@ const shard: CardShard = {
     _poolSeraphSanctuary,
     _poolShanodinDryads,
     _poolShatteredAcolyte,
+    _poolShatteredLandscape,
     _poolShelobChildOfUngoliant,
     _poolShepherdOfTheLost,
     _poolShireiShizosCaretaker,

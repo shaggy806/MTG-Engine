@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1869 already implemented / 3131 missing (marks refreshed 2026-09-30)
+1894 already implemented / 3106 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1871,18 +1871,18 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1878  Kazuul, Tyrant of the Cliffs             {3}{R}{R}        Legendary Creature — Ogre Warrior
 [x]  1879  Starfield Vocalist                       {3}{U}           Creature — Human Bard
 [ ]  1880  As Foretold                              {2}{U}           Enchantment
-[ ]  1881  Sword of Forge and Frontier              {3}              Artifact — Equipment
+[x]  1881  Sword of Forge and Frontier              {3}              Artifact — Equipment
 [ ]  1882  Colossal Grave-Reaver                    {6}{B}{G}        Creature — Dragon
 [x]  1883  Terrain Generator                        {0}              Land
 [ ]  1884  Breena, the Demagogue                    {1}{W}{B}        Legendary Creature — Bird Warlock
-[ ]  1885  Evacuation                               {3}{U}{U}        Instant
-[ ]  1886  Dragonlord Dromoka                       {4}{G}{W}        Legendary Creature — Elder Dragon
-[ ]  1887  Tormenting Voice                         {1}{R}           Sorcery
+[x]  1885  Evacuation                               {3}{U}{U}        Instant
+[x]  1886  Dragonlord Dromoka                       {4}{G}{W}        Legendary Creature — Elder Dragon
+[x]  1887  Tormenting Voice                         {1}{R}           Sorcery
 [x]  1888  Refute                                   {1}{U}{U}        Instant
 [ ]  1889  Gift of Immortality                      {2}{W}           Enchantment — Aura
 [x]  1890  Temple Bell                              {3}              Artifact
 [ ]  1891  Monster Manual // Zoological Study       {3}{G} // {2}{G} Artifact — Book // Sorcery — Adventure
-[ ]  1892  Bronze Guardian                          {4}{W}           Artifact Creature — Golem
+[x]  1892  Bronze Guardian                          {4}{W}           Artifact Creature — Golem
 [ ]  1893  Hellkite Courser                         {4}{R}{R}        Creature — Dragon
 [ ]  1894  Halo Fountain                            {2}{W}           Artifact
 [ ]  1895  Divine Visitation                        {3}{W}{W}        Enchantment
@@ -1890,39 +1890,39 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1897  Insidious Fungus                         {G}              Creature — Fungus
 [ ]  1898  Jace's Archivist                         {1}{U}{U}        Creature — Vedalken Wizard
 [x]  1899  Festering Thicket                        {0}              Land — Swamp Forest
-[ ]  1900  Vile Entomber                            {2}{B}{B}        Creature — Zombie Warlock
+[x]  1900  Vile Entomber                            {2}{B}{B}        Creature — Zombie Warlock
 [ ]  1901  Mutavault                                {0}              Land
 [ ]  1902  Hostage Taker                            {2}{U}{B}        Creature — Human Pirate
 [x]  1903  Loran's Escape                           {W}              Instant
-[ ]  1904  Nighthawk Scavenger                      {1}{B}{B}        Creature — Vampire Rogue
+[x]  1904  Nighthawk Scavenger                      {1}{B}{B}        Creature — Vampire Rogue
 [x]  1905  Sylvan Caryatid                          {1}{G}           Creature — Plant
 [ ]  1906  Aven Interrupter                         {1}{W}{W}        Creature — Bird Rogue
 [x]  1907  Harvester of Souls                       {4}{B}{B}        Creature — Demon
 [ ]  1908  Abundance                                {2}{G}{G}        Enchantment
 [ ]  1909  Smuggler's Copter                        {2}              Artifact — Vehicle
-[ ]  1910  Leaf-Crowned Visionary                   {G}{G}           Creature — Elf Druid
+[x]  1910  Leaf-Crowned Visionary                   {G}{G}           Creature — Elf Druid
 [ ]  1911  Tree of Perdition                        {3}{B}           Creature — Plant
 [ ]  1912  Sunbird's Invocation                     {5}{R}           Enchantment
 [ ]  1913  Defense Grid                             {2}              Artifact
-[ ]  1914  Helm of Awakening                        {2}              Artifact
-[ ]  1915  Moon-Blessed Cleric                      {2}{W}           Creature — Human Elf Cleric
-[ ]  1916  Drumbellower                             {2}{W}           Creature — Spirit
+[x]  1914  Helm of Awakening                        {2}              Artifact
+[x]  1915  Moon-Blessed Cleric                      {2}{W}           Creature — Human Elf Cleric
+[x]  1916  Drumbellower                             {2}{W}           Creature — Spirit
 [ ]  1917  Temur Sabertooth                         {2}{G}{G}        Creature — Cat
-[ ]  1918  Herald of the Pantheon                   {1}{G}           Creature — Centaur Shaman
+[x]  1918  Herald of the Pantheon                   {1}{G}           Creature — Centaur Shaman
 [x]  1919  Winged Boots                             {1}{U}           Artifact — Equipment
 [ ]  1920  Drana and Linvala                        {1}{W}{W}{B}     Legendary Creature — Vampire Angel
-[ ]  1921  Bitterbloom Bearer                       {B}{B}           Creature — Faerie Rogue
+[x]  1921  Bitterbloom Bearer                       {B}{B}           Creature — Faerie Rogue
 [x]  1922  Spellbook                                {0}              Artifact — Book
 [ ]  1923  Guardian of Faith                        {1}{W}{W}        Creature — Spirit Knight
-[ ]  1924  Hazoret's Monument                       {3}              Legendary Artifact
-[ ]  1925  Teshar, Ancestor's Apostle               {3}{W}           Legendary Creature — Bird Cleric
+[x]  1924  Hazoret's Monument                       {3}              Legendary Artifact
+[x]  1925  Teshar, Ancestor's Apostle               {3}{W}           Legendary Creature — Bird Cleric
 [ ]  1926  Commandeer                               {5}{U}{U}        Instant
-[ ]  1927  Sonic Screwdriver                        {3}              Artifact
-[ ]  1928  Day of Judgment                          {2}{W}{W}        Sorcery
-[ ]  1929  Black Sun's Zenith                       {X}{B}{B}        Sorcery
+[x]  1927  Sonic Screwdriver                        {3}              Artifact
+[x]  1928  Day of Judgment                          {2}{W}{W}        Sorcery
+[x]  1929  Black Sun's Zenith                       {X}{B}{B}        Sorcery
 [ ]  1930  Teferi's Puzzle Box                      {4}              Artifact
 [x]  1931  Goldlust Triad                           {4}{R}           Creature — Dragon
-[ ]  1932  Cycle of Renewal                         {2}{G}           Instant — Lesson
+[x]  1932  Cycle of Renewal                         {2}{G}           Instant — Lesson
 [ ]  1933  Inti, Seneschal of the Sun               {1}{R}           Legendary Creature — Human Knight
 [x]  1934  Adaptive Omnitool                        {2}              Artifact — Equipment
 [x]  1935  Dreamstone Hedron                        {6}              Artifact
@@ -1931,19 +1931,19 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1938  Rise of the Witch-king                   {2}{B}{G}        Sorcery
 [ ]  1939  For the Common Good                      {X}{X}{G}        Sorcery
 [ ]  1940  Brawn                                    {3}{G}           Creature — Incarnation
-[ ]  1941  The Walls of Ba Sing Se                  {8}              Legendary Artifact Creature — Wall
+[x]  1941  The Walls of Ba Sing Se                  {8}              Legendary Artifact Creature — Wall
 [ ]  1942  Port Razer                               {3}{R}{R}        Creature — Orc Pirate
 [x]  1943  Helpful Hunter                           {1}{W}           Creature — Cat
-[ ]  1944  Erode                                    {W}              Instant
+[x]  1944  Erode                                    {W}              Instant
 [ ]  1945  Eldritch Immunity                        {C}              Kindred Instant — Eldrazi
-[ ]  1946  Shattered Landscape                      {0}              Land
-[ ]  1947  Split Up                                 {1}{W}{W}        Sorcery
+[x]  1946  Shattered Landscape                      {0}              Land
+[x]  1947  Split Up                                 {1}{W}{W}        Sorcery
 [x]  1948  Maha, Its Feathers Night                 {3}{B}{B}        Legendary Creature — Elemental Bird
-[ ]  1949  Nasty End                                {1}{B}           Instant
+[x]  1949  Nasty End                                {1}{B}           Instant
 [ ]  1950  Norn's Annex                             {3}{W/P}{W/P}    Artifact
 [ ]  1951  Tempt with Bunnies                       {2}{W}           Sorcery
 [ ]  1952  Varragoth, Bloodsky Sire                 {2}{B}           Legendary Creature — Demon Rogue
-[ ]  1953  Bitterthorn, Nissa's Animus              {3}              Legendary Artifact — Equipment
+[x]  1953  Bitterthorn, Nissa's Animus              {3}              Legendary Artifact — Equipment
 [x]  1954  Dragon Fodder                            {1}{R}           Sorcery
 [x]  1955  Ob Nixilis, the Fallen                   {3}{B}{B}        Legendary Creature — Demon
 [ ]  1956  Witness Protection                       {U}              Enchantment — Aura

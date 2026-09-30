@@ -60,6 +60,7 @@ import _poolDimirInformant from "../pool/dimir-informant.js";
 import _poolDowsingShaman from "../pool/dowsing-shaman.js";
 import _poolEleshNornGrandCenobite from "../pool/elesh-norn-grand-cenobite.js";
 import _poolElvishVisionary from "../pool/elvish-visionary.js";
+import _poolErode from "../pool/erode.js";
 import _poolExpeditionMap from "../pool/expedition-map.js";
 import _poolFellTheProfane from "../pool/fell-the-profane.js";
 import _poolFeralProwler from "../pool/feral-prowler.js";
@@ -256,6 +257,7 @@ const shard: CardShard = {
     _poolDowsingShaman,
     _poolEleshNornGrandCenobite,
     _poolElvishVisionary,
+    _poolErode,
     _poolExpeditionMap,
     _poolFellTheProfane,
     _poolFeralProwler,

@@ -16,6 +16,7 @@ import _poolBaronyVampire from "../pool/barony-vampire.js";
 import _poolBarrinMasterWizard from "../pool/barrin-master-wizard.js";
 import _poolBashToBits from "../pool/bash-to-bits.js";
 import _poolBattlewandOak from "../pool/battlewand-oak.js";
+import _poolBlackSunsZenith from "../pool/black-suns-zenith.js";
 import _poolBlackWaltzNo3 from "../pool/black-waltz-no-3.js";
 import _poolBlistergrub from "../pool/blistergrub.js";
 import _poolBloodRites from "../pool/blood-rites.js";
@@ -228,6 +229,7 @@ const shard: CardShard = {
     _poolBarrinMasterWizard,
     _poolBashToBits,
     _poolBattlewandOak,
+    _poolBlackSunsZenith,
     _poolBlackWaltzNo3,
     _poolBlistergrub,
     _poolBloodRites,

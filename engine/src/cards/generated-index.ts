@@ -34,6 +34,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Bird Illusion Token",
   "Bird Token",
   "Black Deathtouch Snake Token",
+  "Blue-Black Faerie Token",
   "Cat Beast Token",
   "Cat Bird Token",
   "Cat Token",

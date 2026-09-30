@@ -16,6 +16,7 @@ import _poolAssaultGriffin from "../pool/assault-griffin.js";
 import _poolBarbtoothWurm from "../pool/barbtooth-wurm.js";
 import _poolBattleHurda from "../pool/battle-hurda.js";
 import _poolBeskirShieldmate from "../pool/beskir-shieldmate.js";
+import _poolBitterbloomBearer from "../pool/bitterbloom-bearer.js";
 import _poolBladedPinions from "../pool/bladed-pinions.js";
 import _poolBloodBairn from "../pool/blood-bairn.js";
 import _poolBloodResearcher from "../pool/blood-researcher.js";
@@ -71,6 +72,7 @@ import _poolGladecoverScout from "../pool/gladecover-scout.js";
 import _poolGoblinMountaineer from "../pool/goblin-mountaineer.js";
 import _poolGrimclawBats from "../pool/grimclaw-bats.js";
 import _poolHavenwoodBattleground from "../pool/havenwood-battleground.js";
+import _poolHazoretsMonument from "../pool/hazorets-monument.js";
 import _poolHealerOfTheGlade from "../pool/healer-of-the-glade.js";
 import _poolHeatRay from "../pool/heat-ray.js";
 import _poolHeiBaiForestGuardian from "../pool/hei-bai-forest-guardian.js";
@@ -100,6 +102,7 @@ import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
 import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
+import _poolNastyEnd from "../pool/nasty-end.js";
 import _poolNegate from "../pool/negate.js";
 import _poolObsianusGolem from "../pool/obsianus-golem.js";
 import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
@@ -207,6 +210,7 @@ const shard: CardShard = {
     _poolBarbtoothWurm,
     _poolBattleHurda,
     _poolBeskirShieldmate,
+    _poolBitterbloomBearer,
     _poolBladedPinions,
     _poolBloodBairn,
     _poolBloodResearcher,
@@ -262,6 +266,7 @@ const shard: CardShard = {
     _poolGoblinMountaineer,
     _poolGrimclawBats,
     _poolHavenwoodBattleground,
+    _poolHazoretsMonument,
     _poolHealerOfTheGlade,
     _poolHeatRay,
     _poolHeiBaiForestGuardian,
@@ -291,6 +296,7 @@ const shard: CardShard = {
     _poolMoltenGatekeeper,
     _poolMoonlitWake,
     _poolMosscoatGoriak,
+    _poolNastyEnd,
     _poolNegate,
     _poolObsianusGolem,
     _poolOreskosSwiftclaw,

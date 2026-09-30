@@ -623,6 +623,8 @@ in `git log`.
   `AbilityCost.discard`, half of `cost:choose-cards-as-cost` (the graveyard-exile half is open).
 - **Top-5000 batch 12** (2026-09-29, `top5000-batch-12.test.ts`) — 34 cards on the existing
   vocabulary. B12.json lists the 26 it left blocked.
+- **Top-5000 batch 13** (2026-09-29, `top5000-batch-13.test.ts`) — 25 cards on the existing
+  vocabulary. B13.json lists the 35 it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

@@ -185,6 +185,7 @@ import _poolUnmarkedGrave from "../pool/unmarked-grave.js";
 import _poolVampireSoulcaller from "../pool/vampire-soulcaller.js";
 import _poolViashinoGrappler from "../pool/viashino-grappler.js";
 import _poolViashivanDragon from "../pool/viashivan-dragon.js";
+import _poolVileEntomber from "../pool/vile-entomber.js";
 import _poolVinelasherKudzu from "../pool/vinelasher-kudzu.js";
 import _poolVolcanoImp from "../pool/volcano-imp.js";
 import _poolVolrathsGardens from "../pool/volraths-gardens.js";
@@ -387,6 +388,7 @@ const shard: CardShard = {
     _poolVampireSoulcaller,
     _poolViashinoGrappler,
     _poolViashivanDragon,
+    _poolVileEntomber,
     _poolVinelasherKudzu,
     _poolVolcanoImp,
     _poolVolrathsGardens,
