@@ -40,6 +40,30 @@
         "engine/src/cards/tokens/plain-knight-token.ts"
       ],
       "tested": false
+    },
+    {
+      "name": "Triplicate Titan",
+      "files": [
+        "engine/src/cards/pool/triplicate-titan.ts",
+        "engine/src/cards/tokens/golem-flying-token.ts",
+        "engine/src/cards/tokens/golem-vigilance-token.ts",
+        "engine/src/cards/tokens/golem-trample-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Forge of Heroes",
+      "files": [
+        "engine/src/cards/pool/forge-of-heroes.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Swarmyard Massacre",
+      "files": [
+        "engine/src/cards/pool/swarmyard-massacre.ts"
+      ],
+      "tested": true
     }
   ],
   "blocked": [
@@ -108,32 +132,11 @@
       "why": "Impending."
     },
     {
-      "name": "Forge of Heroes",
-      "needs": [
-        "new:target-commander-entered-this-turn"
-      ],
-      "why": "Target commander that entered this turn, counter by type (short pass — recheck)."
-    },
-    {
       "name": "Combat Research",
       "needs": [
         "new:aura-conditional-on-legendary"
       ],
-      "why": "Grants that depend on the enchanted creature being legendary (short pass — recheck)."
-    },
-    {
-      "name": "Swarmyard Massacre",
-      "needs": [
-        "new:pt-per-count-mass"
-      ],
-      "why": "-1/-1 per creature you control of certain types, to each other creature (short pass)."
-    },
-    {
-      "name": "Triplicate Titan",
-      "needs": [
-        "new:three-distinct-tokens"
-      ],
-      "why": "Three differently-keyworded Golem tokens (needs three token files; short pass)."
+      "why": "Grants that apply only while the enchanted creature is legendary: no static condition reads the attached object (rechecked)."
     },
     {
       "name": "Season of Weaving",

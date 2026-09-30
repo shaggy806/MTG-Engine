@@ -60,6 +60,7 @@ import _poolFieryIntervention from "../pool/fiery-intervention.js";
 import _poolFlamebornViron from "../pool/flameborn-viron.js";
 import _poolFloweringOfTheWhiteTree from "../pool/flowering-of-the-white-tree.js";
 import _poolFlowstoneOverseer from "../pool/flowstone-overseer.js";
+import _poolForgeOfHeroes from "../pool/forge-of-heroes.js";
 import _poolFuriousStrength from "../pool/furious-strength.js";
 import _poolGalecasterColossus from "../pool/galecaster-colossus.js";
 import _poolGeneralKreatTheBoltbringer from "../pool/general-kreat-the-boltbringer.js";
@@ -275,6 +276,7 @@ const shard: CardShard = {
     _poolFlamebornViron,
     _poolFloweringOfTheWhiteTree,
     _poolFlowstoneOverseer,
+    _poolForgeOfHeroes,
     _poolFuriousStrength,
     _poolGalecasterColossus,
     _poolGeneralKreatTheBoltbringer,

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1971 already implemented / 3029 missing (marks refreshed 2026-09-30)
+1974 already implemented / 3026 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2188,10 +2188,10 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2195  Delay                                    {1}{U}           Instant
 [x]  2196  Scourge of Fleets                        {5}{U}{U}        Creature — Kraken
 [ ]  2197  Overlord of the Balemurk                 {3}{B}{B}        Enchantment Creature — Avatar Horror
-[ ]  2198  Forge of Heroes                          {0}              Land
+[x]  2198  Forge of Heroes                          {0}              Land
 [ ]  2199  Combat Research                          {U}              Enchantment — Aura
-[ ]  2200  Swarmyard Massacre                       {3}{B}{B}        Sorcery
-[ ]  2201  Triplicate Titan                         {9}              Artifact Creature — Golem
+[x]  2200  Swarmyard Massacre                       {3}{B}{B}        Sorcery
+[x]  2201  Triplicate Titan                         {9}              Artifact Creature — Golem
 [x]  2202  Merciless Executioner                    {2}{B}           Creature — Orc Warrior
 [x]  2203  Doom Blade                               {1}{B}           Instant
 [x]  2204  Think Twice                              {1}{U}           Instant

@@ -1951,6 +1951,7 @@ import _poolForecastingFortuneTeller from "./pool/forecasting-fortune-teller.js"
 import _poolForensicGadgeteer from "./pool/forensic-gadgeteer.js";
 import _poolForestBear from "./pool/forest-bear.js";
 import _poolForest from "./pool/forest.js";
+import _poolForgeOfHeroes from "./pool/forge-of-heroes.js";
 import _poolForgottenCave from "./pool/forgotten-cave.js";
 import _poolForgottenSentinel from "./pool/forgotten-sentinel.js";
 import _poolFormidableSpeaker from "./pool/formidable-speaker.js";
@@ -5158,6 +5159,7 @@ import _poolSvyeluniteTemple from "./pool/svyelunite-temple.js";
 import _poolSwabGoblin from "./pool/swab-goblin.js";
 import _poolSwamp from "./pool/swamp.js";
 import _poolSwanSong from "./pool/swan-song.js";
+import _poolSwarmyardMassacre from "./pool/swarmyard-massacre.js";
 import _poolSwarmyard from "./pool/swarmyard.js";
 import _poolSwashbuckling from "./pool/swashbuckling.js";
 import _poolSweettoothWitch from "./pool/sweettooth-witch.js";
@@ -5577,6 +5579,7 @@ import _poolTributeToTheWild from "./pool/tribute-to-the-wild.js";
 import _poolTributeToTheWorldTree from "./pool/tribute-to-the-world-tree.js";
 import _poolTrinketMage from "./pool/trinket-mage.js";
 import _poolTripNoose from "./pool/trip-noose.js";
+import _poolTriplicateTitan from "./pool/triplicate-titan.js";
 import _poolTritonShorestalker from "./pool/triton-shorestalker.js";
 import _poolTritonShorethief from "./pool/triton-shorethief.js";
 import _poolTritonWaverider from "./pool/triton-waverider.js";
@@ -6307,6 +6310,9 @@ import _tokensGlimmerToken from "./tokens/glimmer-token.js";
 import _tokensGnomeToken from "./tokens/gnome-token.js";
 import _tokensGoatToken from "./tokens/goat-token.js";
 import _tokensGoblinToken from "./tokens/goblin-token.js";
+import _tokensGolemFlyingToken from "./tokens/golem-flying-token.js";
+import _tokensGolemTrampleToken from "./tokens/golem-trample-token.js";
+import _tokensGolemVigilanceToken from "./tokens/golem-vigilance-token.js";
 import _tokensGreenCatToken11 from "./tokens/green-cat-token-1-1.js";
 import _tokensGreenElementalToken22 from "./tokens/green-elemental-token-2-2.js";
 import _tokensGreenSpiderTokenReach from "./tokens/green-spider-token-reach.js";
@@ -8344,6 +8350,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolForensicGadgeteer,
   _poolForestBear,
   _poolForest,
+  _poolForgeOfHeroes,
   _poolForgottenCave,
   _poolForgottenSentinel,
   _poolFormidableSpeaker,
@@ -11551,6 +11558,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSwabGoblin,
   _poolSwamp,
   _poolSwanSong,
+  _poolSwarmyardMassacre,
   _poolSwarmyard,
   _poolSwashbuckling,
   _poolSweettoothWitch,
@@ -11970,6 +11978,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTributeToTheWorldTree,
   _poolTrinketMage,
   _poolTripNoose,
+  _poolTriplicateTitan,
   _poolTritonShorestalker,
   _poolTritonShorethief,
   _poolTritonWaverider,
@@ -12706,6 +12715,9 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensGnomeToken,
   _tokensGoatToken,
   _tokensGoblinToken,
+  _tokensGolemFlyingToken,
+  _tokensGolemTrampleToken,
+  _tokensGolemVigilanceToken,
   _tokensGreenCatToken11,
   _tokensGreenElementalToken22,
   _tokensGreenSpiderTokenReach,

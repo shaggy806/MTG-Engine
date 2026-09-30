@@ -2,10 +2,15 @@
  * Top-5000 batch 17 (ranks 2185–2243, a short batch). No new engine
  * vocabulary; these pin a mass bounce whose toughness bound is read off the
  * board (Scourge of Fleets) and a token count that grows with a counter
- * (Assemble the Legion).
+ * (Assemble the Legion). The recheck of the batch's short-pass blockers
+ * added three more: a mass -1/-1 counted after its own tokens (Swarmyard
+ * Massacre), counters by the target's type (Forge of Heroes), and three
+ * different tokens on death (Triplicate Titan).
  */
 import { describe, expect, it } from "vitest";
 
+import { computeCharacteristics } from "../characteristics.js";
+import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -14,6 +19,7 @@ import type { GameState } from "../state.js";
 
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
+const registry = createDefaultRegistry();
 
 const setUp = (): Game => {
   const game = Game.create({
@@ -64,5 +70,51 @@ describe("top-5000 batch 17 — Assemble the Legion", () => {
     expect(tokens(game, "Red-White Soldier Token")).toBe(1);
     game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "precombat-main");
     expect(tokens(game, "Red-White Soldier Token")).toBe(3);
+  });
+});
+
+describe("top-5000 batch 17 — Swarmyard Massacre", () => {
+  it("gives -1/-1 per Insect, Rat, Spider or Squirrel, counting its own Squirrels", () => {
+    const game = setUp();
+    const bears = spawn(game, "Grizzly Bears", B);
+    const giant = spawn(game, "Hill Giant", B);
+    game.debugApplyEffect(A, registry.get("Swarmyard Massacre")!.effect!, []);
+    game.advanceUntil(quiet);
+    // Two Squirrels: -2/-2 to each creature that isn't one of the four types.
+    expect(computeCharacteristics(game.state, registry, bears).toughness).toBe(0);
+    expect(computeCharacteristics(game.state, registry, giant).toughness).toBe(1);
+    expect(tokens(game, "Squirrel Token")).toBe(2);
+  });
+});
+
+describe("top-5000 batch 17 — Forge of Heroes", () => {
+  it("puts a +1/+1 counter on a creature commander that entered this turn", () => {
+    const game = setUp();
+    const forge = spawn(game, "Forge of Heroes");
+    const commander = spawn(game, "Grizzly Bears");
+    game.state.objects[commander].isCommander = true;
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: forge,
+      abilityIndex: 1,
+      targets: [{ kind: "object", object: commander }],
+    });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[commander].counters?.["+1/+1"] ?? 0).toBe(1);
+    expect(game.state.objects[commander].counters?.["loyalty"] ?? 0).toBe(0);
+  });
+});
+
+describe("top-5000 batch 17 — Triplicate Titan", () => {
+  it("leaves a flying, a vigilance and a trample Golem", () => {
+    const game = setUp();
+    const titan = spawn(game, "Triplicate Titan");
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [{ kind: "object", object: titan }]);
+    game.advanceUntil(quiet);
+    for (const [name, kw] of [["Golem Flying Token", "flying"], ["Golem Vigilance Token", "vigilance"], ["Golem Trample Token", "trample"]] as const) {
+      const golem = game.battlefield.find((id) => game.state.objects[id].cardName === name)!;
+      expect(computeCharacteristics(game.state, registry, golem).keywords.has(kw)).toBe(true);
+    }
   });
 });

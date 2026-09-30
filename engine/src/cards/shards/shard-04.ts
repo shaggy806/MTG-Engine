@@ -177,6 +177,7 @@ import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSummonBahamut from "../pool/summon-bahamut.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
+import _poolSwarmyardMassacre from "../pool/swarmyard-massacre.js";
 import _poolSwoopingLookout from "../pool/swooping-lookout.js";
 import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
 import _poolSyphonMind from "../pool/syphon-mind.js";
@@ -393,6 +394,7 @@ const shard: CardShard = {
     _poolSultaiSkullkeeper,
     _poolSummonBahamut,
     _poolSuntailHawk,
+    _poolSwarmyardMassacre,
     _poolSwoopingLookout,
     _poolSwordOfBodyAndMind,
     _poolSyphonMind,

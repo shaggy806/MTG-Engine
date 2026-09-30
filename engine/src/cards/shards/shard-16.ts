@@ -186,6 +186,7 @@ import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
 import _poolTradingPost from "../pool/trading-post.js";
+import _poolTriplicateTitan from "../pool/triplicate-titan.js";
 import _poolTukatongueThallid from "../pool/tukatongue-thallid.js";
 import _poolTunnelingGeopede from "../pool/tunneling-geopede.js";
 import _poolTurtleSeals from "../pool/turtle-seals.js";
@@ -412,6 +413,7 @@ const shard: CardShard = {
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,
     _poolTradingPost,
+    _poolTriplicateTitan,
     _poolTukatongueThallid,
     _poolTunnelingGeopede,
     _poolTurtleSeals,

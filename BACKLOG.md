@@ -170,17 +170,18 @@ that one card is the reason the deck exists.
   across B9–B16 and cheap: "can't cast more than one spell each turn" (Archon of Emeria,
   Deafening Silence), infect (Plague Myr, Inkmoth Nexus) and the d20 (Delina, both Ancient
   Dragons).
-- **Top-5000 batch 17 (2026-09-29) was a short, time-boxed pass over ranks 2185–2243:** 5
+- **Top-5000 batch 17 (2026-09-29) was a short, time-boxed pass over ranks 2185–2243:** 8
   authored (Ondu Inversion, Scourge of Fleets, Assemble the Legion, Summon: Knights of Round,
-  Slip Through Space — `top5000-batch-17.test.ts`); 35 recorded as blocked in
-  `engine/data/sweep-3/B17.json`, several marked "short pass — recheck" (Earthbender Ascension,
-  Forge of Heroes, Combat Research, Swarmyard Massacre, Triplicate Titan, Ral, Giggling
-  Skitterspike). Give those a proper look before starting batch 18.
+  Slip Through Space, and — on a recheck of its short-pass blockers — Swarmyard Massacre, Forge
+  of Heroes, Triplicate Titan; `top5000-batch-17.test.ts`); 32 recorded as blocked in
+  `engine/data/sweep-3/B17.json`. Combat Research was rechecked and stays blocked. Still marked
+  "short pass" and worth a proper look before batch 18: Earthbender Ascension, Giggling
+  Skitterspike and Ral, Crackling Wit here, and B15's five "not checked closely" entries.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,971 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,974 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
