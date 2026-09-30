@@ -416,6 +416,18 @@ Beyond that plan:
   counterspell, so `bot:diff` and the bench can't see the `answers` reserve at all. Unscoped: where the decks
   come from (curated lists, or built from the pool around a commander), how a host picks a power
   level, and how the bench samples them.
+- **Biases for certain bots: Teval should always mill itself.** Some decks want their bot to
+  lean a set way, and the user wants such biases added; the first they named is Teval, the
+  Balanced Scale (Sultai Arisen's self-mill plan), which should always mill itself rather than
+  its opponents. Today a mill's target is aimed by `target-polarity.ts`'s generic rule (`mill`
+  harms its target), which points it at an opponent.
+- **Lengthen the log Capture can reach back into.** A room keeps only its last 12 bot decisions
+  (`CAPTURE_KEEP` in `server/src/capture.ts`, kept small because a late four-player state is a
+  few megabytes), and a bot's misplay was followed by so many more of its actions that it had
+  dropped out before the user could capture it.
+- **Transcendent Dragon wasted with nothing to counter.** Look into bots casting it (flash; "when
+  this creature enters, if you cast it, counter target spell") with no spell on the stack, so its
+  trigger does nothing — it wants holding for an opponent's spell.
 
 ## Client / UI
 
