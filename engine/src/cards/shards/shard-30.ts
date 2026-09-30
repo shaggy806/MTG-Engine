@@ -125,6 +125,7 @@ import _poolMessengerFalcons from "../pool/messenger-falcons.js";
 import _poolMetastaticEvangel from "../pool/metastatic-evangel.js";
 import _poolMetropolisSprite from "../pool/metropolis-sprite.js";
 import _poolMikaeusTheLunarch from "../pool/mikaeus-the-lunarch.js";
+import _poolMindsEye from "../pool/minds-eye.js";
 import _poolMoaningWall from "../pool/moaning-wall.js";
 import _poolMoggRaider from "../pool/mogg-raider.js";
 import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
@@ -339,6 +340,7 @@ const shard: CardShard = {
     _poolMetastaticEvangel,
     _poolMetropolisSprite,
     _poolMikaeusTheLunarch,
+    _poolMindsEye,
     _poolMoaningWall,
     _poolMoggRaider,
     _poolMoorishCavalry,

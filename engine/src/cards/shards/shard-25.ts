@@ -34,6 +34,7 @@ import _poolChiefOfTheEdge from "../pool/chief-of-the-edge.js";
 import _poolCinderGlade from "../pool/cinder-glade.js";
 import _poolCliffhavenVampire from "../pool/cliffhaven-vampire.js";
 import _poolCloudCrusader from "../pool/cloud-crusader.js";
+import _poolContaminatedLandscape from "../pool/contaminated-landscape.js";
 import _poolCrudeBentBlade from "../pool/crude-bent-blade.js";
 import _poolCruelEdict from "../pool/cruel-edict.js";
 import _poolCruelWitness from "../pool/cruel-witness.js";
@@ -56,6 +57,7 @@ import _poolDrownInIchor from "../pool/drown-in-ichor.js";
 import _poolEldraziDevastator from "../pool/eldrazi-devastator.js";
 import _poolElvenLyre from "../pool/elven-lyre.js";
 import _poolElvishHexhunter from "../pool/elvish-hexhunter.js";
+import _poolEscapeToTheWilds from "../pool/escape-to-the-wilds.js";
 import _poolExpeditionEnvoy from "../pool/expedition-envoy.js";
 import _poolEyeOfNowhere from "../pool/eye-of-nowhere.js";
 import _poolFaithbearerPaladin from "../pool/faithbearer-paladin.js";
@@ -128,6 +130,7 @@ import _poolOrnithopter from "../pool/ornithopter.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
 import _poolPhyrexianAltar from "../pool/phyrexian-altar.js";
 import _poolPitilessPlunderer from "../pool/pitiless-plunderer.js";
+import _poolPlanarIncision from "../pool/planar-incision.js";
 import _poolPloverKnights from "../pool/plover-knights.js";
 import _poolPorcelainLegionnaire from "../pool/porcelain-legionnaire.js";
 import _poolPrimocEscapee from "../pool/primoc-escapee.js";
@@ -144,6 +147,7 @@ import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
+import _poolRoyalAssassin from "../pool/royal-assassin.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
 import _poolSandsower from "../pool/sandsower.js";
 import _poolScourgeOfFleets from "../pool/scourge-of-fleets.js";
@@ -237,6 +241,7 @@ const shard: CardShard = {
     _poolCinderGlade,
     _poolCliffhavenVampire,
     _poolCloudCrusader,
+    _poolContaminatedLandscape,
     _poolCrudeBentBlade,
     _poolCruelEdict,
     _poolCruelWitness,
@@ -259,6 +264,7 @@ const shard: CardShard = {
     _poolEldraziDevastator,
     _poolElvenLyre,
     _poolElvishHexhunter,
+    _poolEscapeToTheWilds,
     _poolExpeditionEnvoy,
     _poolEyeOfNowhere,
     _poolFaithbearerPaladin,
@@ -331,6 +337,7 @@ const shard: CardShard = {
     _poolOscorpResearchTeam,
     _poolPhyrexianAltar,
     _poolPitilessPlunderer,
+    _poolPlanarIncision,
     _poolPloverKnights,
     _poolPorcelainLegionnaire,
     _poolPrimocEscapee,
@@ -347,6 +354,7 @@ const shard: CardShard = {
     _poolRiveteersInitiate,
     _poolRockfallVale,
     _poolRograkhSonOfRohgahh,
+    _poolRoyalAssassin,
     _poolRumblingBaloth,
     _poolSandsower,
     _poolScourgeOfFleets,

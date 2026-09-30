@@ -67,6 +67,7 @@ import _poolGleamingOverseer from "../pool/gleaming-overseer.js";
 import _poolGoblinFirebomb from "../pool/goblin-firebomb.js";
 import _poolGoldenBear from "../pool/golden-bear.js";
 import _poolGrandmotherSengir from "../pool/grandmother-sengir.js";
+import _poolGreedyFreebooter from "../pool/greedy-freebooter.js";
 import _poolHall from "../pool/hall.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
 import _poolHauntedCloak from "../pool/haunted-cloak.js";
@@ -200,6 +201,7 @@ import _tokensAllyToken from "../tokens/ally-token.js";
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
+import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
 import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
 
@@ -269,6 +271,7 @@ const shard: CardShard = {
     _poolGoblinFirebomb,
     _poolGoldenBear,
     _poolGrandmotherSengir,
+    _poolGreedyFreebooter,
     _poolHall,
     _poolHardenedTactician,
     _poolHauntedCloak,
@@ -404,6 +407,7 @@ const shard: CardShard = {
     _tokensCatToken,
     _tokensFaerieRogueToken,
     _tokensHumanKnightToken,
+    _tokensRatTokenCantBlock,
     _tokensWhiteDogToken11,
     _tokensZombieDruidToken,
   ],

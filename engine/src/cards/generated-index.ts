@@ -113,6 +113,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Phyrexian Wurm Token (Lifelink)",
   "Plant Token",
   "Rat Token",
+  "Rat Token (Can't Block)",
   "Rat Token (Vren)",
   "Red Human Token",
   "Red Warrior Token",

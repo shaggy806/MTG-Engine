@@ -42,6 +42,7 @@ import _poolChildOfNight from "../pool/child-of-night.js";
 import _poolCityPigeon from "../pool/city-pigeon.js";
 import _poolCobbledWings from "../pool/cobbled-wings.js";
 import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
+import _poolCourtOfGarenbrig from "../pool/court-of-garenbrig.js";
 import _poolCraterize from "../pool/craterize.js";
 import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
@@ -68,6 +69,7 @@ import _poolFlamebornHellion from "../pool/flameborn-hellion.js";
 import _poolFledglingGriffin from "../pool/fledgling-griffin.js";
 import _poolFleetingImage from "../pool/fleeting-image.js";
 import _poolFleetingMemories from "../pool/fleeting-memories.js";
+import _poolFlickerwisp from "../pool/flickerwisp.js";
 import _poolFolkOfThePines from "../pool/folk-of-the-pines.js";
 import _poolFomoriNomad from "../pool/fomori-nomad.js";
 import _poolFoulOrchard from "../pool/foul-orchard.js";
@@ -100,6 +102,7 @@ import _poolInvasionReinforcements from "../pool/invasion-reinforcements.js";
 import _poolInventorsFair from "../pool/inventors-fair.js";
 import _poolInvisibleStalker from "../pool/invisible-stalker.js";
 import _poolIpnuRivulet from "../pool/ipnu-rivulet.js";
+import _poolItThatHeraldsTheEnd from "../pool/it-that-heralds-the-end.js";
 import _poolJungleWeaver from "../pool/jungle-weaver.js";
 import _poolKataraHeroicHealer from "../pool/katara-heroic-healer.js";
 import _poolKazanduValley from "../pool/kazandu-valley.js";
@@ -151,6 +154,7 @@ import _poolRonomUnicorn from "../pool/ronom-unicorn.js";
 import _poolRootboundCrag from "../pool/rootbound-crag.js";
 import _poolSacredFoundry from "../pool/sacred-foundry.js";
 import _poolScatterTheSeeds from "../pool/scatter-the-seeds.js";
+import _poolScurryOak from "../pool/scurry-oak.js";
 import _poolSelesnyaGuildmage from "../pool/selesnya-guildmage.js";
 import _poolSenateCourier from "../pool/senate-courier.js";
 import _poolShatteredSanctum from "../pool/shattered-sanctum.js";
@@ -164,6 +168,7 @@ import _poolSmaugTheGreatCalamity from "../pool/smaug-the-great-calamity.js";
 import _poolSmolderingMarsh from "../pool/smoldering-marsh.js";
 import _poolSpinedKarok from "../pool/spined-karok.js";
 import _poolSpinningWheel from "../pool/spinning-wheel.js";
+import _poolSpitefulVisions from "../pool/spiteful-visions.js";
 import _poolSprout from "../pool/sprout.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
 import _poolStripMine from "../pool/strip-mine.js";
@@ -269,6 +274,7 @@ const shard: CardShard = {
     _poolCityPigeon,
     _poolCobbledWings,
     _poolColdCaseCracker,
+    _poolCourtOfGarenbrig,
     _poolCraterize,
     _poolCruxOfFate,
     _poolCunningSparkmage,
@@ -295,6 +301,7 @@ const shard: CardShard = {
     _poolFledglingGriffin,
     _poolFleetingImage,
     _poolFleetingMemories,
+    _poolFlickerwisp,
     _poolFolkOfThePines,
     _poolFomoriNomad,
     _poolFoulOrchard,
@@ -327,6 +334,7 @@ const shard: CardShard = {
     _poolInventorsFair,
     _poolInvisibleStalker,
     _poolIpnuRivulet,
+    _poolItThatHeraldsTheEnd,
     _poolJungleWeaver,
     _poolKataraHeroicHealer,
     _poolKazanduValley,
@@ -378,6 +386,7 @@ const shard: CardShard = {
     _poolRootboundCrag,
     _poolSacredFoundry,
     _poolScatterTheSeeds,
+    _poolScurryOak,
     _poolSelesnyaGuildmage,
     _poolSenateCourier,
     _poolShatteredSanctum,
@@ -391,6 +400,7 @@ const shard: CardShard = {
     _poolSmolderingMarsh,
     _poolSpinedKarok,
     _poolSpinningWheel,
+    _poolSpitefulVisions,
     _poolSprout,
     _poolStoneHavenMedic,
     _poolStripMine,

@@ -168,6 +168,7 @@ import _poolTotemSpeaker from "../pool/totem-speaker.js";
 import _poolToweringViewpoint from "../pool/towering-viewpoint.js";
 import _poolTragicSlip from "../pool/tragic-slip.js";
 import _poolTreeOfTales from "../pool/tree-of-tales.js";
+import _poolTrophyMage from "../pool/trophy-mage.js";
 import _poolTrueConviction from "../pool/true-conviction.js";
 import _poolTrustyMachete from "../pool/trusty-machete.js";
 import _poolTyriteSanctum from "../pool/tyrite-sanctum.js";
@@ -365,6 +366,7 @@ const shard: CardShard = {
     _poolToweringViewpoint,
     _poolTragicSlip,
     _poolTreeOfTales,
+    _poolTrophyMage,
     _poolTrueConviction,
     _poolTrustyMachete,
     _poolTyriteSanctum,

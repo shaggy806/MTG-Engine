@@ -38,6 +38,7 @@ import _poolDeathGrasp from "../pool/death-grasp.js";
 import _poolDeathbloomGardener from "../pool/deathbloom-gardener.js";
 import _poolDeathcapGlade from "../pool/deathcap-glade.js";
 import _poolDispellersCapsule from "../pool/dispellers-capsule.js";
+import _poolDisplace from "../pool/displace.js";
 import _poolDistantMelody from "../pool/distant-melody.js";
 import _poolDoomBlade from "../pool/doom-blade.js";
 import _poolDraconicMuralists from "../pool/draconic-muralists.js";
@@ -47,6 +48,7 @@ import _poolDrogskolCavalry from "../pool/drogskol-cavalry.js";
 import _poolDwarvenGrunt from "../pool/dwarven-grunt.js";
 import _poolEarthRift from "../pool/earth-rift.js";
 import _poolEject from "../pool/eject.js";
+import _poolEndTheFestivities from "../pool/end-the-festivities.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
 import _poolExquisiteBlood from "../pool/exquisite-blood.js";
@@ -236,6 +238,7 @@ const shard: CardShard = {
     _poolDeathbloomGardener,
     _poolDeathcapGlade,
     _poolDispellersCapsule,
+    _poolDisplace,
     _poolDistantMelody,
     _poolDoomBlade,
     _poolDraconicMuralists,
@@ -245,6 +248,7 @@ const shard: CardShard = {
     _poolDwarvenGrunt,
     _poolEarthRift,
     _poolEject,
+    _poolEndTheFestivities,
     _poolEtherswornAdjudicator,
     _poolExemplarOfLight,
     _poolExquisiteBlood,

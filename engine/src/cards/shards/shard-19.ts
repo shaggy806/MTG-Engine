@@ -124,6 +124,7 @@ import _poolPerilousLandscape from "../pool/perilous-landscape.js";
 import _poolPestilentWolf from "../pool/pestilent-wolf.js";
 import _poolPiratePeddlers from "../pool/pirate-peddlers.js";
 import _poolPlayfulShove from "../pool/playful-shove.js";
+import _poolPrizedStatue from "../pool/prized-statue.js";
 import _poolProsperousPirates from "../pool/prosperous-pirates.js";
 import _poolPseudodragonFamiliar from "../pool/pseudodragon-familiar.js";
 import _poolRecklessBrute from "../pool/reckless-brute.js";
@@ -172,6 +173,7 @@ import _poolSupportiveParents from "../pool/supportive-parents.js";
 import _poolSurrakarMarauder from "../pool/surrakar-marauder.js";
 import _poolSwordOfSinewAndSteel from "../pool/sword-of-sinew-and-steel.js";
 import _poolTajuruSnarecaster from "../pool/tajuru-snarecaster.js";
+import _poolTarnishedCitadel from "../pool/tarnished-citadel.js";
 import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
 import _poolTowerDrake from "../pool/tower-drake.js";
@@ -324,6 +326,7 @@ const shard: CardShard = {
     _poolPestilentWolf,
     _poolPiratePeddlers,
     _poolPlayfulShove,
+    _poolPrizedStatue,
     _poolProsperousPirates,
     _poolPseudodragonFamiliar,
     _poolRecklessBrute,
@@ -372,6 +375,7 @@ const shard: CardShard = {
     _poolSurrakarMarauder,
     _poolSwordOfSinewAndSteel,
     _poolTajuruSnarecaster,
+    _poolTarnishedCitadel,
     _poolTomakulHonorGuard,
     _poolTopanAscetic,
     _poolTowerDrake,

@@ -144,6 +144,7 @@ import _poolSelesnyaSignet from "../pool/selesnya-signet.js";
 import _poolServoExhibition from "../pool/servo-exhibition.js";
 import _poolSetessanTraining from "../pool/setessan-training.js";
 import _poolShamblingGhast from "../pool/shambling-ghast.js";
+import _poolShelteringLandscape from "../pool/sheltering-landscape.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolShinyImpetus from "../pool/shiny-impetus.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
@@ -347,6 +348,7 @@ const shard: CardShard = {
     _poolServoExhibition,
     _poolSetessanTraining,
     _poolShamblingGhast,
+    _poolShelteringLandscape,
     _poolShimmeringGrotto,
     _poolShinyImpetus,
     _poolSkycloudExpanse,

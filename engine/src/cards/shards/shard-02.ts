@@ -166,6 +166,7 @@ import _poolSlashPanther from "../pool/slash-panther.js";
 import _poolSlitherborePathway from "../pool/slitherbore-pathway.js";
 import _poolSnowCoveredIsland from "../pool/snow-covered-island.js";
 import _poolSoldierOfTheGreyHost from "../pool/soldier-of-the-grey-host.js";
+import _poolSongOfTotentanz from "../pool/song-of-totentanz.js";
 import _poolSpidersilkNet from "../pool/spidersilk-net.js";
 import _poolSpikeJester from "../pool/spike-jester.js";
 import _poolSpittingDrake from "../pool/spitting-drake.js";
@@ -186,6 +187,7 @@ import _poolTributeToTheWild from "../pool/tribute-to-the-wild.js";
 import _poolTritonShorethief from "../pool/triton-shorethief.js";
 import _poolTropicalIsland from "../pool/tropical-island.js";
 import _poolUmbralCollarZealot from "../pool/umbral-collar-zealot.js";
+import _poolUrzasWorkshop from "../pool/urzas-workshop.js";
 import _poolVassalSoul from "../pool/vassal-soul.js";
 import _poolVerixBladewing from "../pool/verix-bladewing.js";
 import _poolViashinoCutthroat from "../pool/viashino-cutthroat.js";
@@ -370,6 +372,7 @@ const shard: CardShard = {
     _poolSlitherborePathway,
     _poolSnowCoveredIsland,
     _poolSoldierOfTheGreyHost,
+    _poolSongOfTotentanz,
     _poolSpidersilkNet,
     _poolSpikeJester,
     _poolSpittingDrake,
@@ -390,6 +393,7 @@ const shard: CardShard = {
     _poolTritonShorethief,
     _poolTropicalIsland,
     _poolUmbralCollarZealot,
+    _poolUrzasWorkshop,
     _poolVassalSoul,
     _poolVerixBladewing,
     _poolViashinoCutthroat,

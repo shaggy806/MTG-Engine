@@ -59,6 +59,7 @@ import _poolDimirSpybug from "../pool/dimir-spybug.js";
 import _poolDisorient from "../pool/disorient.js";
 import _poolDissolve from "../pool/dissolve.js";
 import _poolDreadShade from "../pool/dread-shade.js";
+import _poolDutyBeyondDeath from "../pool/duty-beyond-death.js";
 import _poolEkunduGriffin from "../pool/ekundu-griffin.js";
 import _poolElectrostaticInfantry from "../pool/electrostatic-infantry.js";
 import _poolEntropicCloud from "../pool/entropic-cloud.js";
@@ -88,6 +89,7 @@ import _poolGreaterGood from "../pool/greater-good.js";
 import _poolGrimMonolith from "../pool/grim-monolith.js";
 import _poolGrimPhysician from "../pool/grim-physician.js";
 import _poolHammerOfNazahn from "../pool/hammer-of-nazahn.js";
+import _poolHermitDruid from "../pool/hermit-druid.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
 import _poolHonoredKnightCaptain from "../pool/honored-knight-captain.js";
 import _poolHopeEstheim from "../pool/hope-estheim.js";
@@ -118,6 +120,7 @@ import _poolLordOfExtinction from "../pool/lord-of-extinction.js";
 import _poolLuminarchAspirant from "../pool/luminarch-aspirant.js";
 import _poolLyraDawnbringer from "../pool/lyra-dawnbringer.js";
 import _poolMajaBretagardProtector from "../pool/maja-bretagard-protector.js";
+import _poolManglehorn from "../pool/manglehorn.js";
 import _poolManifoldKey from "../pool/manifold-key.js";
 import _poolMarduDevotee from "../pool/mardu-devotee.js";
 import _poolMarduHateblade from "../pool/mardu-hateblade.js";
@@ -280,6 +283,7 @@ const shard: CardShard = {
     _poolDisorient,
     _poolDissolve,
     _poolDreadShade,
+    _poolDutyBeyondDeath,
     _poolEkunduGriffin,
     _poolElectrostaticInfantry,
     _poolEntropicCloud,
@@ -309,6 +313,7 @@ const shard: CardShard = {
     _poolGrimMonolith,
     _poolGrimPhysician,
     _poolHammerOfNazahn,
+    _poolHermitDruid,
     _poolHeroicIntervention,
     _poolHonoredKnightCaptain,
     _poolHopeEstheim,
@@ -339,6 +344,7 @@ const shard: CardShard = {
     _poolLuminarchAspirant,
     _poolLyraDawnbringer,
     _poolMajaBretagardProtector,
+    _poolManglehorn,
     _poolManifoldKey,
     _poolMarduDevotee,
     _poolMarduHateblade,

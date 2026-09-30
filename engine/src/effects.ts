@@ -109,6 +109,11 @@ export interface FlickerCounters {
   readonly kind: string;
   readonly amount: number;
   readonly onlyIf?: CardFilter;
+  /** The permanent comes back **with** them — Planar Incision's "return it
+   * to the battlefield … with a +1/+1 counter on it": on it as it enters
+   * (rule 122.6), so its enters triggers see them. Without it they're put
+   * on after it has returned, as Essence Flux's are. */
+  readonly entering?: boolean;
 }
 
 /**
@@ -780,16 +785,20 @@ export type EffectSpec =
        * player's choice (Arcane Signet, Command Tower, Treasure). With an
        * `amount` above 1 it is that much mana of any **one** colour (Gilded
        * Lotus: "three mana of any one color"), never a mix. During
-       * cost payment the planner picks the colour it needs; a standalone
-       * activation (holding priority, not paying anything) just adds white.
+       * cost payment the planner picks the colour it needs; a mana ability
+       * activated on its own makes the colour the player picked (the
+       * action's `manaColors`). Anywhere else — a spell or a triggered
+       * ability resolving — nothing is asked and it makes white, so a card
+       * that adds "one mana of any color" as it resolves spells the choice
+       * out as a `modal` over the five (Lotus Cobra, Manamorphose).
        * `mana: { oneOf: [...] }` — `amount` mana in any combination of the
        * listed colours, each unit independently chosen (Orcish Lumberjack:
        * "three mana in any combination of {R} and/or {G}" —
        * `{ oneOf: ["R", "G"] }`, `amount: 3`). During cost payment the planner
        * enumerates every achievable combination as a separate option and
-       * picks whichever pays the cost; a standalone activation defaults to
-       * `amount` of `oneOf[0]`, same simplification as "any-color" defaulting
-       * to white. needed-cards P20. With `same: true` every unit is the
+       * picks whichever pays the cost; activated on its own, each unit is
+       * the player's pick, and elsewhere `oneOf[0]`, as "any-color" is
+       * white. needed-cards P20. With `same: true` every unit is the
        * same one of the listed types — Brigid, Doun's Mind's "Add X {G} or X
        * {W}" — never a mix, as `any-color` is over all five. */
       readonly kind: "add-mana";

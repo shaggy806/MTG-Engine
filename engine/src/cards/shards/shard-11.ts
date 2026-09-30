@@ -63,6 +63,7 @@ import _poolFranticStrength from "../pool/frantic-strength.js";
 import _poolFrenziedRage from "../pool/frenzied-rage.js";
 import _poolGaiusVanBaelsar from "../pool/gaius-van-baelsar.js";
 import _poolGarruksGorehorn from "../pool/garruks-gorehorn.js";
+import _poolGethsGrimoire from "../pool/geths-grimoire.js";
 import _poolGhirapurOsprey from "../pool/ghirapur-osprey.js";
 import _poolGiantStrength from "../pool/giant-strength.js";
 import _poolGiftOfTheViper from "../pool/gift-of-the-viper.js";
@@ -292,6 +293,7 @@ const shard: CardShard = {
     _poolFrenziedRage,
     _poolGaiusVanBaelsar,
     _poolGarruksGorehorn,
+    _poolGethsGrimoire,
     _poolGhirapurOsprey,
     _poolGiantStrength,
     _poolGiftOfTheViper,

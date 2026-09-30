@@ -10,6 +10,7 @@ import _poolAjanisSunstriker from "../pool/ajanis-sunstriker.js";
 import _poolAkromasMemorial from "../pool/akromas-memorial.js";
 import _poolAmbassadorLaquatus from "../pool/ambassador-laquatus.js";
 import _poolAnaDisciple from "../pool/ana-disciple.js";
+import _poolAncestralMask from "../pool/ancestral-mask.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
@@ -207,6 +208,7 @@ const shard: CardShard = {
     _poolAkromasMemorial,
     _poolAmbassadorLaquatus,
     _poolAnaDisciple,
+    _poolAncestralMask,
     _poolAnchovyBananaPizza,
     _poolAniktheaHandOfErebos,
     _poolAnimPakalThousandthMoon,

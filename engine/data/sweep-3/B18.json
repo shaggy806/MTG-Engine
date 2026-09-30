@@ -1,0 +1,541 @@
+{
+  "batch": "B18",
+  "status": "complete",
+  "ranks": "2245-2346",
+  "authored": [
+    {
+      "name": "Deceptive Landscape",
+      "files": [
+        "engine/src/cards/pool/deceptive-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Broken Bond",
+      "files": [
+        "engine/src/cards/pool/broken-bond.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Laughing Mad",
+      "files": [
+        "engine/src/cards/pool/laughing-mad.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Flickerwisp",
+      "files": [
+        "engine/src/cards/pool/flickerwisp.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Planar Incision",
+      "files": [
+        "engine/src/cards/pool/planar-incision.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Whirler Rogue",
+      "files": [
+        "engine/src/cards/pool/whirler-rogue.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Treasonous Ogre",
+      "files": [
+        "engine/src/cards/pool/treasonous-ogre.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ancestral Mask",
+      "files": [
+        "engine/src/cards/pool/ancestral-mask.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Court of Garenbrig",
+      "files": [
+        "engine/src/cards/pool/court-of-garenbrig.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "End the Festivities",
+      "files": [
+        "engine/src/cards/pool/end-the-festivities.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tome of Legends",
+      "files": [
+        "engine/src/cards/pool/tome-of-legends.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Song of Totentanz",
+      "files": [
+        "engine/src/cards/pool/song-of-totentanz.ts",
+        "engine/src/cards/tokens/rat-token-cant-block.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Scurry Oak",
+      "files": [
+        "engine/src/cards/pool/scurry-oak.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Royal Assassin",
+      "files": [
+        "engine/src/cards/pool/royal-assassin.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Spiteful Banditry",
+      "files": [
+        "engine/src/cards/pool/spiteful-banditry.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mind's Eye",
+      "files": [
+        "engine/src/cards/pool/minds-eye.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hermit Druid",
+      "files": [
+        "engine/src/cards/pool/hermit-druid.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Manglehorn",
+      "files": [
+        "engine/src/cards/pool/manglehorn.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blacksmith's Skill",
+      "files": [
+        "engine/src/cards/pool/blacksmiths-skill.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Agent of the Iron Throne",
+      "files": [
+        "engine/src/cards/pool/agent-of-the-iron-throne.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kokusho, the Evening Star",
+      "files": [
+        "engine/src/cards/pool/kokusho-the-evening-star.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Blur",
+      "files": [
+        "engine/src/cards/pool/blur.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Sheltering Landscape",
+      "files": [
+        "engine/src/cards/pool/sheltering-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Trophy Mage",
+      "files": [
+        "engine/src/cards/pool/trophy-mage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Contaminated Landscape",
+      "files": [
+        "engine/src/cards/pool/contaminated-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Urza's Workshop",
+      "files": [
+        "engine/src/cards/pool/urzas-workshop.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Geth's Grimoire",
+      "files": [
+        "engine/src/cards/pool/geths-grimoire.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rev, Tithe Extractor",
+      "files": [
+        "engine/src/cards/pool/rev-tithe-extractor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Displace",
+      "files": [
+        "engine/src/cards/pool/displace.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Tarnished Citadel",
+      "files": [
+        "engine/src/cards/pool/tarnished-citadel.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Spiteful Visions",
+      "files": [
+        "engine/src/cards/pool/spiteful-visions.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "It That Heralds the End",
+      "files": [
+        "engine/src/cards/pool/it-that-heralds-the-end.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prized Statue",
+      "files": [
+        "engine/src/cards/pool/prized-statue.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Manamorphose",
+      "files": [
+        "engine/src/cards/pool/manamorphose.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Duty Beyond Death",
+      "files": [
+        "engine/src/cards/pool/duty-beyond-death.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Brilliant Restoration",
+      "files": [
+        "engine/src/cards/pool/brilliant-restoration.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Vraska's Fall",
+      "files": [
+        "engine/src/cards/pool/vraskas-fall.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Greedy Freebooter",
+      "files": [
+        "engine/src/cards/pool/greedy-freebooter.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Survival of the Fittest",
+      "files": [
+        "engine/src/cards/pool/survival-of-the-fittest.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Escape to the Wilds",
+      "files": [
+        "engine/src/cards/pool/escape-to-the-wilds.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Conduit of Ruin",
+      "files": [
+        "engine/src/cards/pool/conduit-of-ruin.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Dragonhawk, Fate's Tempest",
+      "needs": [
+        "new:delayed-count-still-exiled"
+      ],
+      "why": "At your next end step, 2 damage to each opponent for each card exiled this way that's still exiled; nothing tracks which of them remain."
+    },
+    {
+      "name": "Jaya's Immolating Inferno",
+      "needs": [
+        "new:legendary-sorcery"
+      ],
+      "why": "The legendary sorcery casting restriction (rule 205.4e)."
+    },
+    {
+      "name": "Manabarbs",
+      "needs": [
+        "new:tapped-for-mana-stack-trigger"
+      ],
+      "why": "'Whenever a player taps a land for mana' dealing damage: a tapped-for-mana trigger is only ever a triggered mana ability, never put on the stack."
+    },
+    {
+      "name": "Squee, the Immortal",
+      "needs": [
+        "new:cast-self-from-graveyard"
+      ],
+      "why": "'You may cast this card from your graveyard or from exile': a card's own permission to be cast from those zones. Gravecrawler (K2) waits on it too."
+    },
+    {
+      "name": "Wrathful Red Dragon",
+      "needs": [
+        "new:any-target-filter"
+      ],
+      "why": "'Any target that isn't a Dragon': no target spec narrows 'any target' by a filter."
+    },
+    {
+      "name": "Starfield of Nyx",
+      "needs": [
+        "new:static-base-pt-own-mana-value"
+      ],
+      "why": "Each other non-Aura enchantment is a creature with base P/T equal to its own mana value, as a static; only a one-shot (Zur) exists."
+    },
+    {
+      "name": "Quilled Greatwurm",
+      "needs": [
+        "new:cast-self-from-graveyard",
+        "cost:remove-counters-among"
+      ],
+      "why": "Cast from your graveyard by removing six counters from among creatures you control."
+    },
+    {
+      "name": "Dracogenesis",
+      "needs": [
+        "new:multiple-alternative-costs"
+      ],
+      "why": "An alternative cost for Dragon spells; with Jodah, Archmage Eternal out too, the engine offers only the first alternative cost it finds rather than the player's choice."
+    },
+    {
+      "name": "Rooftop Storm",
+      "needs": [
+        "new:multiple-alternative-costs"
+      ],
+      "why": "An alternative cost for Zombie creature spells; beside Jodah the engine offers only the first alternative cost it finds."
+    },
+    {
+      "name": "Fighter Class",
+      "needs": [
+        "new:class"
+      ],
+      "why": "Class levels."
+    },
+    {
+      "name": "Glittering Stockpile",
+      "needs": [
+        "new:mana-ability-side-effect"
+      ],
+      "why": "'{T}: Add {R}. Put a stash counter on this artifact' is a mana ability (rule 605.1a), but here a mana ability can only add mana; with the counter it would use the stack."
+    },
+    {
+      "name": "Thrumming Stone",
+      "needs": [
+        "new:ripple"
+      ],
+      "why": "Ripple, granted to the spells you cast."
+    },
+    {
+      "name": "Dance of the Dead",
+      "needs": [
+        "new:enchant-card-in-graveyard"
+      ],
+      "why": "Enchant creature card in a graveyard (Animate Dead's shape)."
+    },
+    {
+      "name": "Riot Control",
+      "needs": [
+        "new:prevent-all-damage-to-player"
+      ],
+      "why": "'Prevent all damage that would be dealt to you this turn'; prevent-damage is a shield of a fixed size."
+    },
+    {
+      "name": "Plargg and Nassari",
+      "needs": [
+        "new:opponent-chooses-exiled",
+        "decision:cast-up-to-n-free"
+      ],
+      "why": "Each player exiles until a nonland card, an opponent picks one, and you may cast up to two of the others free."
+    },
+    {
+      "name": "Umbral Mantle",
+      "needs": [
+        "new:untap-symbol-cost"
+      ],
+      "why": "A granted '{3}, {Q}' ability; there's no untap-symbol cost."
+    },
+    {
+      "name": "The Cabbage Merchant",
+      "needs": [
+        "new:combat-damage-to-you-trigger"
+      ],
+      "why": "'Whenever a creature deals combat damage to you': the per-creature combat damage trigger can't narrow the player dealt damage to you."
+    },
+    {
+      "name": "Nexus of Fate",
+      "needs": [
+        "new:shuffle-into-library-instead"
+      ],
+      "why": "'If it would be put into a graveyard from anywhere, reveal it and shuffle it into its owner's library instead'; only 'exile instead' exists. Darksteel Colossus waits on it too."
+    },
+    {
+      "name": "Grafted Exoskeleton",
+      "needs": [
+        "new:infect",
+        "new:sacrifice-on-unattach"
+      ],
+      "why": "Infect, and 'whenever this Equipment becomes unattached from a permanent, sacrifice that permanent'."
+    },
+    {
+      "name": "Summon: Primal Odin",
+      "needs": [
+        "new:lose-game-effect"
+      ],
+      "why": "Chapter II grants 'that player loses the game'; no effect makes a player lose."
+    },
+    {
+      "name": "Lignify",
+      "needs": [
+        "new:kindred-type"
+      ],
+      "why": "Kindred Enchantment — Treefolk Aura."
+    },
+    {
+      "name": "Kindred Summons",
+      "needs": [
+        "new:reveal-until-count",
+        "decision:choose-creature-type-on-resolution"
+      ],
+      "why": "Choose a creature type, then reveal until X creature cards of it."
+    },
+    {
+      "name": "Arcane Bombardment",
+      "needs": [
+        "new:cast-copies-of-exiled"
+      ],
+      "why": "Copy each card exiled with it and cast any number of the copies free."
+    },
+    {
+      "name": "Grave Researcher // Reanimate",
+      "needs": [
+        "new:prepared"
+      ],
+      "why": "Prepared."
+    },
+    {
+      "name": "Oblivion Sower",
+      "needs": [
+        "new:put-exiled-lands-under-your-control"
+      ],
+      "why": "Put any number of land cards that player owns from among the exiled cards onto the battlefield under your control."
+    },
+    {
+      "name": "Inscription of Abundance",
+      "needs": [
+        "new:aggregate-of-target-players-permanents",
+        "new:kicker-any-number-of-modes"
+      ],
+      "why": "Life equal to the greatest power among creatures the target player controls; kicked, any number of modes."
+    },
+    {
+      "name": "Summon: Yojimbo",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "'Creatures can't attack you unless their controller pays {2} for each' until your next turn."
+    },
+    {
+      "name": "Constant Mists",
+      "needs": [
+        "new:buyback"
+      ],
+      "why": "Buyback — sacrifice a land."
+    },
+    {
+      "name": "Tainted Strike",
+      "needs": [
+        "new:infect"
+      ],
+      "why": "Gains infect until end of turn."
+    },
+    {
+      "name": "Hazel's Brewmaster",
+      "needs": [
+        "new:grant-activated-abilities-of-exiled"
+      ],
+      "why": "Foods have all activated abilities of all creature cards exiled with it."
+    },
+    {
+      "name": "Slaughter the Strong",
+      "needs": [
+        "decision:choose-total-power-subset"
+      ],
+      "why": "Each player keeps creatures with total power 4 or less and sacrifices the rest."
+    },
+    {
+      "name": "Thieving Skydiver",
+      "needs": [
+        "new:kicker-x"
+      ],
+      "why": "Kicker {X} (X can't be 0), and a gain-control target bound by X."
+    },
+    {
+      "name": "Chthonian Nightmare",
+      "needs": [
+        "new:pay-x-energy-cost",
+        "new:return-self-to-hand-cost"
+      ],
+      "why": "Pay X {E} and return this enchantment to its owner's hand as costs."
+    },
+    {
+      "name": "Neoform",
+      "needs": [
+        "new:search-with-counters"
+      ],
+      "why": "The creature found enters with an additional +1/+1 counter; a search can't add counters."
+    }
+  ]
+}

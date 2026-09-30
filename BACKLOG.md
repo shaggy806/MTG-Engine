@@ -176,15 +176,26 @@ that one card is the reason the deck exists.
   Slip Through Space, and — on a recheck of its blockers — Swarmyard Massacre, Forge of Heroes,
   Triplicate Titan, Earthbender Ascension; `top5000-batch-17.test.ts`); 31 blocked in
   `engine/data/sweep-3/B17.json`, every one now checked closely.
+- **Top-5000 batch 18 (2026-09-30) triaged ranks 2245–2346:** 41 authored (Flickerwisp, Kokusho,
+  Survival of the Fittest, Royal Assassin, Court of Garenbrig, Manamorphose, Tome of Legends and
+  34 more — `top5000-batch-18.test.ts`); 34 blocked, each in `engine/data/sweep-3/B18.json`.
+  One engine change: a flicker can return a permanent *with* its counters (Planar Incision).
+  The blockers that recur across batches and are cheap to build: infect (Grafted Exoskeleton,
+  Tainted Strike, plus B16's Plague Myr and Inkmoth Nexus), a card's own permission to be cast
+  from its graveyard (Squee, Quilled Greatwurm, Gravecrawler), the legendary sorcery restriction
+  (rule 205.4e — Jaya's Immolating Inferno, Urza's Ruinous Blast), "shuffle it into its owner's
+  library instead" (Nexus of Fate, Darksteel Colossus at rank 2408), and offering every
+  alternative cost that applies rather than the first found (Dracogenesis, Rooftop Storm — Jodah
+  shows the gap today).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,979 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,020 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 2243, nothing is triaged.
+  the batches since; past rank 2346, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed
@@ -252,7 +263,7 @@ that one card is the reason the deck exists.
   one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
-- **Precon stand-ins.** 41 cards in the five starter decks still play as substitutes. The
+- **Precon stand-ins.** 40 cards in the five starter decks still play as substitutes. The
   engine plan for them is paused. See `docs/plans/precon-decks.md` (the substitution list) and
   `docs/plans/engine-gaps.md`. Deleting a substitution is the whole revert.
 
@@ -391,6 +402,11 @@ Beyond that plan:
   `App.tsx` groups exile by `view.objects[id].owner`, and a hidden card has no object. The
   owner is public (rule 406.3 hides the face, not whose card it is), so the view could carry
   owners for hidden exile ids.
+
+- **Face-down permanents should sit on their controller's board, and turning one face up should
+  work like any other activated ability** (the user's ask): a click on the card opens the same
+  little menu another permanent's activated abilities use, with "turn face up" in it when the
+  card can be turned face up.
 
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;

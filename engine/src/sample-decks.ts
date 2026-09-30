@@ -321,11 +321,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
         "Four-mana red creature that turns into damage.",
       ),
       sub(
-        "Spiteful Visions",
-        "Greed",
-        "Four-mana card-draw enchantment paid for in life.",
-      ),
-      sub(
         "Coveted Jewel",
         "Hedron Archive",
         "Mana rock that cashes in for cards.",

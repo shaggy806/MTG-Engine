@@ -50,6 +50,7 @@ import _poolDarigaazsCharm from "../pool/darigaazs-charm.js";
 import _poolDarkthicketWolf from "../pool/darkthicket-wolf.js";
 import _poolDeadapult from "../pool/deadapult.js";
 import _poolDeathBaron from "../pool/death-baron.js";
+import _poolDeceptiveLandscape from "../pool/deceptive-landscape.js";
 import _poolDecoyPloy from "../pool/decoy-ploy.js";
 import _poolDiregrafCaptain from "../pool/diregraf-captain.js";
 import _poolDiversionaryTactics from "../pool/diversionary-tactics.js";
@@ -106,6 +107,7 @@ import _poolLeoninSnarecaster from "../pool/leonin-snarecaster.js";
 import _poolLetterOfAcceptance from "../pool/letter-of-acceptance.js";
 import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
 import _poolMagmaJet from "../pool/magma-jet.js";
+import _poolManamorphose from "../pool/manamorphose.js";
 import _poolMinnWilyIllusionist from "../pool/minn-wily-illusionist.js";
 import _poolMistgatePathway from "../pool/mistgate-pathway.js";
 import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
@@ -261,6 +263,7 @@ const shard: CardShard = {
     _poolDarkthicketWolf,
     _poolDeadapult,
     _poolDeathBaron,
+    _poolDeceptiveLandscape,
     _poolDecoyPloy,
     _poolDiregrafCaptain,
     _poolDiversionaryTactics,
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolLetterOfAcceptance,
     _poolMacetailHystrodon,
     _poolMagmaJet,
+    _poolManamorphose,
     _poolMinnWilyIllusionist,
     _poolMistgatePathway,
     _poolMollyHayesRunaway,

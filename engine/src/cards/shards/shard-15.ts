@@ -180,6 +180,7 @@ import _poolThinkTwice from "../pool/think-twice.js";
 import _poolThornLieutenant from "../pool/thorn-lieutenant.js";
 import _poolThunderwolfCavalry from "../pool/thunderwolf-cavalry.js";
 import _poolTidepoolTurtle from "../pool/tidepool-turtle.js";
+import _poolTreasonousOgre from "../pool/treasonous-ogre.js";
 import _poolTundraWolves from "../pool/tundra-wolves.js";
 import _poolTymorasInvoker from "../pool/tymoras-invoker.js";
 import _poolUnmarkedGrave from "../pool/unmarked-grave.js";
@@ -384,6 +385,7 @@ const shard: CardShard = {
     _poolThornLieutenant,
     _poolThunderwolfCavalry,
     _poolTidepoolTurtle,
+    _poolTreasonousOgre,
     _poolTundraWolves,
     _poolTymorasInvoker,
     _poolUnmarkedGrave,

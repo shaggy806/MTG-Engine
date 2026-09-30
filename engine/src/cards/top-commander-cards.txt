@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1979 already implemented / 3021 missing (marks refreshed 2026-09-30)
+2020 already implemented / 2980 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2238,47 +2238,47 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2245  Dragonhawk, Fate's Tempest               {3}{R}{R}        Legendary Creature — Bird Dragon
 [x]  2246  Llanowar Tribe                           {G}{G}{G}        Creature — Elf Druid
 [ ]  2247  Jaya's Immolating Inferno                {X}{R}{R}        Legendary Sorcery
-[ ]  2248  Deceptive Landscape                      {0}              Land
+[x]  2248  Deceptive Landscape                      {0}              Land
 [x]  2249  Gut Shot                                 {R/P}            Instant
 [x]  2250  Explorer's Scope                         {1}              Artifact — Equipment
-[ ]  2251  Broken Bond                              {1}{G}           Sorcery
+[x]  2251  Broken Bond                              {1}{G}           Sorcery
 [x]  2252  Temur Battlecrier                        {G}{U}{R}        Creature — Orc Ranger
 [ ]  2253  Manabarbs                                {3}{R}           Enchantment
-[ ]  2254  Laughing Mad                             {2}{R}           Instant
-[ ]  2255  Flickerwisp                              {1}{W}{W}        Creature — Elemental
-[ ]  2256  Planar Incision                          {1}{U}           Instant
+[x]  2254  Laughing Mad                             {2}{R}           Instant
+[x]  2255  Flickerwisp                              {1}{W}{W}        Creature — Elemental
+[x]  2256  Planar Incision                          {1}{U}           Instant
 [x]  2257  Hidden Grotto                            {0}              Land
-[ ]  2258  Whirler Rogue                            {2}{U}{U}        Creature — Human Rogue Artificer
-[ ]  2259  Treasonous Ogre                          {3}{R}           Creature — Ogre Shaman
-[ ]  2260  Ancestral Mask                           {2}{G}           Enchantment — Aura
-[ ]  2261  Court of Garenbrig                       {1}{G}{G}        Enchantment
+[x]  2258  Whirler Rogue                            {2}{U}{U}        Creature — Human Rogue Artificer
+[x]  2259  Treasonous Ogre                          {3}{R}           Creature — Ogre Shaman
+[x]  2260  Ancestral Mask                           {2}{G}           Enchantment — Aura
+[x]  2261  Court of Garenbrig                       {1}{G}{G}        Enchantment
 [x]  2262  General Kreat, the Boltbringer           {2}{R}           Legendary Creature — Goblin Soldier
 [ ]  2263  Squee, the Immortal                      {1}{R}{R}        Legendary Creature — Goblin
 [ ]  2264  Wrathful Red Dragon                      {3}{R}{R}        Creature — Dragon
 [x]  2265  Elder Gargaroth                          {3}{G}{G}        Creature — Beast
-[ ]  2266  End the Festivities                      {R}              Sorcery
+[x]  2266  End the Festivities                      {R}              Sorcery
 [x]  2267  Satyr Enchanter                          {1}{G}{W}        Creature — Satyr Druid
 [ ]  2268  Starfield of Nyx                         {4}{W}           Enchantment
 [ ]  2269  Quilled Greatwurm                        {4}{G}{G}        Creature — Wurm
-[ ]  2270  Tome of Legends                          {2}              Artifact — Book
+[x]  2270  Tome of Legends                          {2}              Artifact — Book
 [ ]  2271  Dracogenesis                             {6}{R}{R}        Enchantment
-[ ]  2272  Song of Totentanz                        {X}{R}           Sorcery
-[ ]  2273  Scurry Oak                               {2}{G}           Creature — Treefolk
-[ ]  2274  Royal Assassin                           {1}{B}{B}        Creature — Human Assassin
+[x]  2272  Song of Totentanz                        {X}{R}           Sorcery
+[x]  2273  Scurry Oak                               {2}{G}           Creature — Treefolk
+[x]  2274  Royal Assassin                           {1}{B}{B}        Creature — Human Assassin
 [ ]  2275  Rooftop Storm                            {5}{U}           Enchantment
-[ ]  2276  Spiteful Banditry                        {X}{R}{R}        Enchantment
-[ ]  2277  Mind's Eye                               {5}              Artifact
-[ ]  2278  Hermit Druid                             {1}{G}           Creature — Human Druid
-[ ]  2279  Manglehorn                               {2}{G}           Creature — Beast
+[x]  2276  Spiteful Banditry                        {X}{R}{R}        Enchantment
+[x]  2277  Mind's Eye                               {5}              Artifact
+[x]  2278  Hermit Druid                             {1}{G}           Creature — Human Druid
+[x]  2279  Manglehorn                               {2}{G}           Creature — Beast
 [x]  2280  Goldmire Bridge                          {0}              Artifact Land
 [ ]  2281  Fighter Class                            {R}{W}           Enchantment — Class
 [ ]  2282  Glittering Stockpile                     {2}{R}           Artifact — Treasure
 [ ]  2283  Thrumming Stone                          {5}              Legendary Artifact
 [ ]  2284  Dance of the Dead                        {1}{B}           Enchantment — Aura
-[ ]  2285  Blacksmith's Skill                       {W}              Instant
-[ ]  2286  Agent of the Iron Throne                 {2}{B}           Legendary Enchantment — Background
+[x]  2285  Blacksmith's Skill                       {W}              Instant
+[x]  2286  Agent of the Iron Throne                 {2}{B}           Legendary Enchantment — Background
 [ ]  2287  Neoform                                  {G}{U}           Sorcery
-[ ]  2288  Kokusho, the Evening Star                {4}{B}{B}        Legendary Creature — Dragon Spirit
+[x]  2288  Kokusho, the Evening Star                {4}{B}{B}        Legendary Creature — Dragon Spirit
 [x]  2289  Memnite                                  {0}              Artifact Creature — Construct
 [x]  2290  Shire Terrace                            {0}              Land
 [ ]  2291  Riot Control                             {2}{W}           Instant
@@ -2287,56 +2287,56 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2294  Lightning Strike                         {1}{R}           Instant
 [ ]  2295  The Cabbage Merchant                     {2}{G}           Legendary Creature — Human Citizen
 [ ]  2296  Nexus of Fate                            {5}{U}{U}        Instant
-[ ]  2297  Blur                                     {2}{U}           Instant
+[x]  2297  Blur                                     {2}{U}           Instant
 [x]  2298  Rest in Peace                            {1}{W}           Enchantment
 [ ]  2299  Grafted Exoskeleton                      {4}              Artifact — Equipment
 [x]  2300  Elvish Visionary                         {1}{G}           Creature — Elf Shaman
 [x]  2301  Brago, King Eternal                      {2}{W}{U}        Legendary Creature — Spirit Noble
-[ ]  2302  Sheltering Landscape                     {0}              Land
+[x]  2302  Sheltering Landscape                     {0}              Land
 [x]  2303  Lys Alana Huntmaster                     {2}{G}{G}        Creature — Elf Warrior
 [ ]  2304  Shorikai, Genesis Engine                 {2}{W}{U}        Legendary Artifact — Vehicle
 [x]  2305  Drossforge Bridge                        {0}              Artifact Land
 [ ]  2306  Summon: Primal Odin                      {4}{B}{B}        Enchantment Creature — Saga Knight
-[ ]  2307  Trophy Mage                              {2}{U}           Creature — Human Wizard
-[ ]  2308  Contaminated Landscape                   {0}              Land
+[x]  2307  Trophy Mage                              {2}{U}           Creature — Human Wizard
+[x]  2308  Contaminated Landscape                   {0}              Land
 [ ]  2309  Lignify                                  {1}{G}           Kindred Enchantment — Treefolk Aura
-[ ]  2310  Urza's Workshop                          {0}              Land — Urza's
+[x]  2310  Urza's Workshop                          {0}              Land — Urza's
 [x]  2311  Super State                              {7}              Legendary Enchantment — Aura
 [ ]  2312  Turntimber Symbiosis // Turntimber, Serpentine Wood {7}              Sorcery // Land
 [ ]  2313  Kindred Summons                          {5}{G}{G}        Instant
 [ ]  2314  Arcane Bombardment                       {4}{R}{R}        Enchantment
-[ ]  2315  Geth's Grimoire                          {4}              Artifact — Book
-[ ]  2316  Rev, Tithe Extractor                     {3}{B}           Legendary Creature — Human Rogue
-[ ]  2317  Displace                                 {2}{U}           Instant
+[x]  2315  Geth's Grimoire                          {4}              Artifact — Book
+[x]  2316  Rev, Tithe Extractor                     {3}{B}           Legendary Creature — Human Rogue
+[x]  2317  Displace                                 {2}{U}           Instant
 [x]  2318  Ezuri, Renegade Leader                   {1}{G}{G}        Legendary Creature — Elf Warrior
-[ ]  2319  Tarnished Citadel                        {0}              Land
-[ ]  2320  Spiteful Visions                         {2}{B/R}{B/R}    Enchantment
+[x]  2319  Tarnished Citadel                        {0}              Land
+[x]  2320  Spiteful Visions                         {2}{B/R}{B/R}    Enchantment
 [ ]  2321  Grave Researcher // Reanimate            {2}{B} // {B}    Creature — Troll Warlock // Sorcery
 [x]  2322  Singularity Rupture                      {3}{U}{B}{B}     Sorcery
-[ ]  2323  It That Heralds the End                  {1}{C}           Creature — Eldrazi Drone
-[ ]  2324  Prized Statue                            {2}              Artifact
+[x]  2323  It That Heralds the End                  {1}{C}           Creature — Eldrazi Drone
+[x]  2324  Prized Statue                            {2}              Artifact
 [ ]  2325  Oblivion Sower                           {6}              Creature — Eldrazi
 [x]  2326  Diregraf Captain                         {1}{U}{B}        Creature — Zombie Soldier
-[ ]  2327  Manamorphose                             {1}{R/G}         Instant
-[ ]  2328  Duty Beyond Death                        {1}{W}           Instant
+[x]  2327  Manamorphose                             {1}{R/G}         Instant
+[x]  2328  Duty Beyond Death                        {1}{W}           Instant
 [x]  2329  Wrap in Vigor                            {1}{G}           Instant
 [x]  2330  Sanctum Seeker                           {2}{B}{B}        Creature — Vampire Knight
-[ ]  2331  Brilliant Restoration                    {3}{W}{W}{W}{W}  Sorcery
+[x]  2331  Brilliant Restoration                    {3}{W}{W}{W}{W}  Sorcery
 [ ]  2332  Inscription of Abundance                 {1}{G}           Instant
-[ ]  2333  Vraska's Fall                            {2}{B}           Instant
+[x]  2333  Vraska's Fall                            {2}{B}           Instant
 [x]  2334  Thalia, Guardian of Thraben              {1}{W}           Legendary Creature — Human Soldier
 [ ]  2335  Summon: Yojimbo                          {3}{W}           Enchantment Creature — Saga Samurai
 [x]  2336  Verduran Enchantress                     {1}{G}{G}        Creature — Human Druid
 [ ]  2337  Constant Mists                           {1}{G}           Instant
-[ ]  2338  Greedy Freebooter                        {B}              Creature — Human Pirate
-[ ]  2339  Survival of the Fittest                  {1}{G}           Enchantment
+[x]  2338  Greedy Freebooter                        {B}              Creature — Human Pirate
+[x]  2339  Survival of the Fittest                  {1}{G}           Enchantment
 [ ]  2340  Tainted Strike                           {B}              Instant
 [ ]  2341  Hazel's Brewmaster                       {3}{B}           Creature — Squirrel Warlock
 [ ]  2342  Slaughter the Strong                     {1}{W}{W}        Sorcery
 [ ]  2343  Thieving Skydiver                        {1}{U}           Creature — Merfolk Rogue
 [ ]  2344  Chthonian Nightmare                      {1}{B}           Enchantment
-[ ]  2345  Conduit of Ruin                          {6}              Creature — Eldrazi
-[ ]  2346  Escape to the Wilds                      {3}{R}{G}        Sorcery
+[x]  2345  Conduit of Ruin                          {6}              Creature — Eldrazi
+[x]  2346  Escape to the Wilds                      {3}{R}{G}        Sorcery
 [ ]  2347  Silkguard                                {X}{G}           Instant
 [ ]  2348  Sceptre of Eternal Glory                 {4}              Legendary Artifact
 [ ]  2349  Sandwurm Convergence                     {6}{G}{G}        Enchantment

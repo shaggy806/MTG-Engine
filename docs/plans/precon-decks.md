@@ -149,7 +149,7 @@ The table below mirrors `sample-decks.ts` at the time of the swap; the code is a
 | Haven of the Spirit Dragon | Kessig Wolf Run | Utility land that taps for colorless. |
 | Path of Ancestry | Sheltered Thicket | Enters-tapped land that makes the deck's colours. |
 
-### Chaos Incarnate — Kardur, Doomscourge (20)
+### Chaos Incarnate — Kardur, Doomscourge (19)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -167,7 +167,6 @@ The table below mirrors `sample-decks.ts` at the time of the swap; the code is a
 | Sunbird's Invocation | Phyrexian Arena | Card-advantage enchantment. |
 | Wild Ricochet | Act of Treason | Uses an opponent's resources against them. |
 | Wildfire Devils | Cinder Elemental | Four-mana red creature that turns into damage. |
-| Spiteful Visions | Greed | Four-mana card-draw enchantment paid for in life. |
 | Coveted Jewel | Hedron Archive | Mana rock that cashes in for cards. |
 | Syphon Mind | Blightning | Makes opponents discard. |
 | Explosion of Riches | Fireball | Top-end damage spell aimed at opponents. |

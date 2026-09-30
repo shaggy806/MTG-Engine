@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAccursedMarauder from "../pool/accursed-marauder.js";
 import _poolAdornedCrocodile from "../pool/adorned-crocodile.js";
 import _poolAfflict from "../pool/afflict.js";
+import _poolAgentOfTheIronThrone from "../pool/agent-of-the-iron-throne.js";
 import _poolAleshaWhoLaughsAtFate from "../pool/alesha-who-laughs-at-fate.js";
 import _poolAlloyMyr from "../pool/alloy-myr.js";
 import _poolAncientSpider from "../pool/ancient-spider.js";
@@ -25,6 +26,7 @@ import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
 import _poolBreechesEagerPillager from "../pool/breeches-eager-pillager.js";
 import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
 import _poolBrigidDounsMind from "../pool/brigid-douns-mind.js";
+import _poolBrilliantRestoration from "../pool/brilliant-restoration.js";
 import _poolBristlyBillSpineSower from "../pool/bristly-bill-spine-sower.js";
 import _poolBronzeGuardian from "../pool/bronze-guardian.js";
 import _poolBronzeSword from "../pool/bronze-sword.js";
@@ -218,6 +220,7 @@ const shard: CardShard = {
     _poolAccursedMarauder,
     _poolAdornedCrocodile,
     _poolAfflict,
+    _poolAgentOfTheIronThrone,
     _poolAleshaWhoLaughsAtFate,
     _poolAlloyMyr,
     _poolAncientSpider,
@@ -237,6 +240,7 @@ const shard: CardShard = {
     _poolBreechesEagerPillager,
     _poolBrigidClachansHeart,
     _poolBrigidDounsMind,
+    _poolBrilliantRestoration,
     _poolBristlyBillSpineSower,
     _poolBronzeGuardian,
     _poolBronzeSword,

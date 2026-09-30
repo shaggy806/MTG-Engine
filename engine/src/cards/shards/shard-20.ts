@@ -132,6 +132,7 @@ import _poolRagingCougar from "../pool/raging-cougar.js";
 import _poolRatcatcher from "../pool/ratcatcher.js";
 import _poolRavagingHorde from "../pool/ravaging-horde.js";
 import _poolRecklessAssault from "../pool/reckless-assault.js";
+import _poolRevTitheExtractor from "../pool/rev-tithe-extractor.js";
 import _poolReyhanLastOfTheAbzan from "../pool/reyhan-last-of-the-abzan.js";
 import _poolRidgescaleTusker from "../pool/ridgescale-tusker.js";
 import _poolRishkarPeemaRenegade from "../pool/rishkar-peema-renegade.js";
@@ -152,6 +153,7 @@ import _poolSlipThroughSpace from "../pool/slip-through-space.js";
 import _poolSnowCoveredMountain from "../pool/snow-covered-mountain.js";
 import _poolSocialClimber from "../pool/social-climber.js";
 import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
+import _poolSpitefulBanditry from "../pool/spiteful-banditry.js";
 import _poolSquirrelanoids from "../pool/squirrelanoids.js";
 import _poolStoicBuilder from "../pool/stoic-builder.js";
 import _poolStoneRain from "../pool/stone-rain.js";
@@ -329,6 +331,7 @@ const shard: CardShard = {
     _poolRatcatcher,
     _poolRavagingHorde,
     _poolRecklessAssault,
+    _poolRevTitheExtractor,
     _poolReyhanLastOfTheAbzan,
     _poolRidgescaleTusker,
     _poolRishkarPeemaRenegade,
@@ -349,6 +352,7 @@ const shard: CardShard = {
     _poolSnowCoveredMountain,
     _poolSocialClimber,
     _poolSorcererOfTheFang,
+    _poolSpitefulBanditry,
     _poolSquirrelanoids,
     _poolStoicBuilder,
     _poolStoneRain,

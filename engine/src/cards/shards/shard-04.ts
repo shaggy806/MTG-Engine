@@ -100,6 +100,7 @@ import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
 import _poolKeenSense from "../pool/keen-sense.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
+import _poolKokushoTheEveningStar from "../pool/kokusho-the-evening-star.js";
 import _poolKorvoldFaeCursedKing from "../pool/korvold-fae-cursed-king.js";
 import _poolKozileksChanneler from "../pool/kozileks-channeler.js";
 import _poolKudoKingAmongBears from "../pool/kudo-king-among-bears.js";
@@ -177,6 +178,7 @@ import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSummonBahamut from "../pool/summon-bahamut.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
+import _poolSurvivalOfTheFittest from "../pool/survival-of-the-fittest.js";
 import _poolSwarmyardMassacre from "../pool/swarmyard-massacre.js";
 import _poolSwoopingLookout from "../pool/swooping-lookout.js";
 import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
@@ -317,6 +319,7 @@ const shard: CardShard = {
     _poolKeenSense,
     _poolKingCheetah,
     _poolKnightErrant,
+    _poolKokushoTheEveningStar,
     _poolKorvoldFaeCursedKing,
     _poolKozileksChanneler,
     _poolKudoKingAmongBears,
@@ -394,6 +397,7 @@ const shard: CardShard = {
     _poolSultaiSkullkeeper,
     _poolSummonBahamut,
     _poolSuntailHawk,
+    _poolSurvivalOfTheFittest,
     _poolSwarmyardMassacre,
     _poolSwoopingLookout,
     _poolSwordOfBodyAndMind,

@@ -26,7 +26,9 @@ import _poolBattlegrowth from "../pool/battlegrowth.js";
 import _poolBelligerentWhiptail from "../pool/belligerent-whiptail.js";
 import _poolBetorAncestorsVoice from "../pool/betor-ancestors-voice.js";
 import _poolBitterbowSharpshooters from "../pool/bitterbow-sharpshooters.js";
+import _poolBlacksmithsSkill from "../pool/blacksmiths-skill.js";
 import _poolBlinkingSpirit from "../pool/blinking-spirit.js";
+import _poolBlur from "../pool/blur.js";
 import _poolBonesplitter from "../pool/bonesplitter.js";
 import _poolBorborygmos from "../pool/borborygmos.js";
 import _poolBrambleweftBehemoth from "../pool/brambleweft-behemoth.js";
@@ -182,6 +184,7 @@ import _poolVastwoodGorger from "../pool/vastwood-gorger.js";
 import _poolVerdantForce from "../pool/verdant-force.js";
 import _poolVeteranArmorer from "../pool/veteran-armorer.js";
 import _poolViridianClaw from "../pool/viridian-claw.js";
+import _poolVraskasFall from "../pool/vraskas-fall.js";
 import _poolWakandanShieldGuard from "../pool/wakandan-shield-guard.js";
 import _poolWallOfSpears from "../pool/wall-of-spears.js";
 import _poolWarlordsFury from "../pool/warlords-fury.js";
@@ -226,7 +229,9 @@ const shard: CardShard = {
     _poolBelligerentWhiptail,
     _poolBetorAncestorsVoice,
     _poolBitterbowSharpshooters,
+    _poolBlacksmithsSkill,
     _poolBlinkingSpirit,
+    _poolBlur,
     _poolBonesplitter,
     _poolBorborygmos,
     _poolBrambleweftBehemoth,
@@ -382,6 +387,7 @@ const shard: CardShard = {
     _poolVerdantForce,
     _poolVeteranArmorer,
     _poolViridianClaw,
+    _poolVraskasFall,
     _poolWakandanShieldGuard,
     _poolWallOfSpears,
     _poolWarlordsFury,

@@ -16,6 +16,7 @@ import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
 import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
+import _poolBrokenBond from "../pool/broken-bond.js";
 import _poolBrokersHideout from "../pool/brokers-hideout.js";
 import _poolBurnwillowClearing from "../pool/burnwillow-clearing.js";
 import _poolBurrogBefuddler from "../pool/burrog-befuddler.js";
@@ -197,6 +198,7 @@ const shard: CardShard = {
     _poolBattleHymn,
     _poolBeastWhisperer,
     _poolBellowsLizard,
+    _poolBrokenBond,
     _poolBrokersHideout,
     _poolBurnwillowClearing,
     _poolBurrogBefuddler,

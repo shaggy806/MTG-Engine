@@ -193,6 +193,7 @@ import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
 import _poolVeteranArmorsmith from "../pool/veteran-armorsmith.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
 import _poolWeakness from "../pool/weakness.js";
+import _poolWhirlerRogue from "../pool/whirler-rogue.js";
 import _poolWhisperingWizard from "../pool/whispering-wizard.js";
 import _poolWhitesunsPassage from "../pool/whitesuns-passage.js";
 import _poolWindreaderSphinx from "../pool/windreader-sphinx.js";
@@ -399,6 +400,7 @@ const shard: CardShard = {
     _poolVeteranArmorsmith,
     _poolWalkingBallista,
     _poolWeakness,
+    _poolWhirlerRogue,
     _poolWhisperingWizard,
     _poolWhitesunsPassage,
     _poolWindreaderSphinx,

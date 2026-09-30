@@ -16982,10 +16982,19 @@ export class Game {
     });
     // Announced once every one of them is back: they return simultaneously,
     // so each one's enters triggers see the others (rule 603.6a).
+    // "Return it with a counter on it" (Planar Incision): on it as it
+    // enters (rule 122.6), so its enter triggers see it. Essence Flux's
+    // "put a counter on it" comes after the return.
+    if (counters?.entering === true) this.putFlickerCounters(entered, counters);
     for (const id of entered) {
       this.emit({ type: "permanent-entered-battlefield", object: id });
     }
-    if (counters === undefined) return;
+    if (counters === undefined || counters.entering === true) return;
+    this.putFlickerCounters(entered, counters);
+  }
+
+  /** A flicker's `thenCounters`, on each returned permanent they match. */
+  private putFlickerCounters(entered: readonly ObjectId[], counters: FlickerCounters): void {
     for (const id of entered) {
       if (this.state.objects[id]?.zone !== "battlefield") continue;
       const matches =

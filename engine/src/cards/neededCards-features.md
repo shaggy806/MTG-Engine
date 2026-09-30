@@ -633,6 +633,9 @@ in `git log`.
   vocabulary. B16.json lists the 35 it left blocked.
 - **Top-5000 batch 17** (2026-09-29, `top5000-batch-17.test.ts`) — 9 cards; a short pass (4 of them from a recheck of its blockers).
   B17.json lists the 31 it left blocked.
+- **Top-5000 batch 18** (2026-09-30, `top5000-batch-18.test.ts`) — 41 cards, one engine change:
+  `FlickerCounters.entering` (Planar Incision's "return it … with a +1/+1 counter on it").
+  B18.json lists the 34 it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

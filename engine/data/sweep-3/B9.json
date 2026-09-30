@@ -655,7 +655,7 @@
       "needs": [
         "new:legendary-sorcery"
       ],
-      "why": "The legendary sorcery casting restriction (rule 205.4d)."
+      "why": "The legendary sorcery casting restriction (rule 205.4e)."
     },
     {
       "name": "Chainer, Nightmare Adept",
