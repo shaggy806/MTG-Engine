@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1966 already implemented / 3034 missing (marks refreshed 2026-09-30)
+1971 already implemented / 3029 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2184,9 +2184,9 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2191  Greed                                    {3}{B}           Enchantment
 [ ]  2192  Teferi, Master of Time                   {2}{U}{U}        Legendary Planeswalker — Teferi
 [ ]  2193  Giggling Skitterspike                    {4}              Artifact Creature — Toy
-[ ]  2194  Summon: Knights of Round                 {6}{W}{W}        Enchantment Creature — Saga Knight
+[x]  2194  Summon: Knights of Round                 {6}{W}{W}        Enchantment Creature — Saga Knight
 [ ]  2195  Delay                                    {1}{U}           Instant
-[ ]  2196  Scourge of Fleets                        {5}{U}{U}        Creature — Kraken
+[x]  2196  Scourge of Fleets                        {5}{U}{U}        Creature — Kraken
 [ ]  2197  Overlord of the Balemurk                 {3}{B}{B}        Enchantment Creature — Avatar Horror
 [ ]  2198  Forge of Heroes                          {0}              Land
 [ ]  2199  Combat Research                          {U}              Enchantment — Aura
@@ -2196,7 +2196,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2203  Doom Blade                               {1}{B}           Instant
 [x]  2204  Think Twice                              {1}{U}           Instant
 [ ]  2205  Season of Weaving                        {4}{U}{U}        Sorcery
-[ ]  2206  Ondu Inversion // Ondu Skyruins          {8}              Sorcery // Land
+[x]  2206  Ondu Inversion // Ondu Skyruins          {8}              Sorcery // Land
 [x]  2207  Argentum Armor                           {6}              Artifact — Equipment
 [x]  2208  Wall of Blossoms                         {1}{G}           Creature — Plant Wall
 [ ]  2209  Season of Growth                         {1}{G}           Enchantment
@@ -2227,11 +2227,11 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2234  Tyvar, Jubilant Brawler                  {1}{B}{G}        Legendary Planeswalker — Tyvar
 [ ]  2235  Starfall Invocation                      {3}{W}{W}        Sorcery
 [ ]  2236  Will of the Mardu                        {2}{W}           Instant
-[ ]  2237  Slip Through Space                       {U}              Sorcery
+[x]  2237  Slip Through Space                       {U}              Sorcery
 [x]  2238  Demon's Disciple                         {2}{B}           Creature — Human Cleric
 [ ]  2239  Virtue of Knowledge // Vantress Visions  {4}{U} // {1}{U} Enchantment // Instant — Adventure
 [ ]  2240  Bloodthirsty Blade                       {2}              Artifact — Equipment
-[ ]  2241  Assemble the Legion                      {3}{R}{W}        Enchantment
+[x]  2241  Assemble the Legion                      {3}{R}{W}        Enchantment
 [x]  2242  Idyllic Beachfront                       {0}              Land — Plains Island
 [ ]  2243  Stuffy Doll                              {5}              Artifact Creature — Construct
 [x]  2244  Sword of Light and Shadow                {3}              Artifact — Equipment

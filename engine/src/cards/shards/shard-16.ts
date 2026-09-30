@@ -13,6 +13,7 @@ import _poolAqueousForm from "../pool/aqueous-form.js";
 import _poolArborElf from "../pool/arbor-elf.js";
 import _poolArtfulTakedown from "../pool/artful-takedown.js";
 import _poolAshBarrens from "../pool/ash-barrens.js";
+import _poolAssembleTheLegion from "../pool/assemble-the-legion.js";
 import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
 import _poolAuraOfSilence from "../pool/aura-of-silence.js";
 import _poolAuramancer from "../pool/auramancer.js";
@@ -238,6 +239,7 @@ const shard: CardShard = {
     _poolArborElf,
     _poolArtfulTakedown,
     _poolAshBarrens,
+    _poolAssembleTheLegion,
     _poolAtlaPalaniNestTender,
     _poolAuraOfSilence,
     _poolAuramancer,

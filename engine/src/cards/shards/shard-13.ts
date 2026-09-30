@@ -116,6 +116,7 @@ import _poolNomadicElf from "../pool/nomadic-elf.js";
 import _poolNoviceDissector from "../pool/novice-dissector.js";
 import _poolOakenBoon from "../pool/oaken-boon.js";
 import _poolOmenOfTheHunt from "../pool/omen-of-the-hunt.js";
+import _poolOnduSkyruins from "../pool/ondu-skyruins.js";
 import _poolOrcishLumberjack from "../pool/orcish-lumberjack.js";
 import _poolOrzhovCluestone from "../pool/orzhov-cluestone.js";
 import _poolOverflowingInsight from "../pool/overflowing-insight.js";
@@ -315,6 +316,7 @@ const shard: CardShard = {
     _poolNoviceDissector,
     _poolOakenBoon,
     _poolOmenOfTheHunt,
+    _poolOnduSkyruins,
     _poolOrcishLumberjack,
     _poolOrzhovCluestone,
     _poolOverflowingInsight,

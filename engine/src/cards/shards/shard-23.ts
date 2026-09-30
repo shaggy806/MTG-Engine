@@ -201,6 +201,7 @@ import _poolWirewoodHivemaster from "../pool/wirewood-hivemaster.js";
 import _poolZimoneInfiniteAnalyst from "../pool/zimone-infinite-analyst.js";
 import _poolZofConsumption from "../pool/zof-consumption.js";
 import _tokensBlueRedElementalToken44 from "../tokens/blue-red-elemental-token-4-4.js";
+import _tokensPlainKnightToken from "../tokens/plain-knight-token.js";
 import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 
 const shard: CardShard = {
@@ -405,6 +406,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensBlueRedElementalToken44,
+    _tokensPlainKnightToken,
     _tokensVampireToken11,
   ],
 };

@@ -147,6 +147,7 @@ import _poolSinisterSabotage from "../pool/sinister-sabotage.js";
 import _poolSirShandlarOfEberyn from "../pool/sir-shandlar-of-eberyn.js";
 import _poolSkyshipStalker from "../pool/skyship-stalker.js";
 import _poolSkysnareSpider from "../pool/skysnare-spider.js";
+import _poolSlipThroughSpace from "../pool/slip-through-space.js";
 import _poolSnowCoveredMountain from "../pool/snow-covered-mountain.js";
 import _poolSocialClimber from "../pool/social-climber.js";
 import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
@@ -342,6 +343,7 @@ const shard: CardShard = {
     _poolSirShandlarOfEberyn,
     _poolSkyshipStalker,
     _poolSkysnareSpider,
+    _poolSlipThroughSpace,
     _poolSnowCoveredMountain,
     _poolSocialClimber,
     _poolSorcererOfTheFang,

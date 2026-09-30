@@ -306,6 +306,7 @@ import _poolAssassinsTrophy from "./pool/assassins-trophy.js";
 import _poolAssaultGriffin from "./pool/assault-griffin.js";
 import _poolAssaultStrobe from "./pool/assault-strobe.js";
 import _poolAssaultZeppelid from "./pool/assault-zeppelid.js";
+import _poolAssembleTheLegion from "./pool/assemble-the-legion.js";
 import _poolAstarionTheDecadent from "./pool/astarion-the-decadent.js";
 import _poolAstralCornucopia from "./pool/astral-cornucopia.js";
 import _poolAtalanJackal from "./pool/atalan-jackal.js";
@@ -3680,6 +3681,8 @@ import _poolOnTheJob from "./pool/on-the-job.js";
 import _poolOnakkeOgre from "./pool/onakke-ogre.js";
 import _poolOnduGiant from "./pool/ondu-giant.js";
 import _poolOnduGreathorn from "./pool/ondu-greathorn.js";
+import _poolOnduInversion from "./pool/ondu-inversion.js";
+import _poolOnduSkyruins from "./pool/ondu-skyruins.js";
 import _poolOnduWarCleric from "./pool/ondu-war-cleric.js";
 import _poolOneWithTheWind from "./pool/one-with-the-wind.js";
 import _poolOneirophage from "./pool/oneirophage.js";
@@ -4461,6 +4464,7 @@ import _poolScorpionsSting from "./pool/scorpions-sting.js";
 import _poolScourForScrap from "./pool/scour-for-scrap.js";
 import _poolScourFromExistence from "./pool/scour-from-existence.js";
 import _poolScouredBarrens from "./pool/scoured-barrens.js";
+import _poolScourgeOfFleets from "./pool/scourge-of-fleets.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScourgemark from "./pool/scourgemark.js";
 import _poolScouringSands from "./pool/scouring-sands.js";
@@ -4800,6 +4804,7 @@ import _poolSlimefootTheStowaway from "./pool/slimefoot-the-stowaway.js";
 import _poolSlinkingSerpent from "./pool/slinking-serpent.js";
 import _poolSlinkingSkirge from "./pool/slinking-skirge.js";
 import _poolSlinzaTheSpikedStampede from "./pool/slinza-the-spiked-stampede.js";
+import _poolSlipThroughSpace from "./pool/slip-through-space.js";
 import _poolSlipperyBogle from "./pool/slippery-bogle.js";
 import _poolSlipperyKarst from "./pool/slippery-karst.js";
 import _poolSliptideSerpent from "./pool/sliptide-serpent.js";
@@ -5099,6 +5104,7 @@ import _poolSultaiSkullkeeper from "./pool/sultai-skullkeeper.js";
 import _poolSummitProwler from "./pool/summit-prowler.js";
 import _poolSummitSentinel from "./pool/summit-sentinel.js";
 import _poolSummonBahamut from "./pool/summon-bahamut.js";
+import _poolSummonKnightsOfRound from "./pool/summon-knights-of-round.js";
 import _poolSummonTitan from "./pool/summon-titan.js";
 import _poolSunBlessedPeak from "./pool/sun-blessed-peak.js";
 import _poolSunCollaredRaptor from "./pool/sun-collared-raptor.js";
@@ -6341,6 +6347,7 @@ import _tokensPhyrexianGermToken from "./tokens/phyrexian-germ-token.js";
 import _tokensPhyrexianGoblinToken from "./tokens/phyrexian-goblin-token.js";
 import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.js";
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
+import _tokensPlainKnightToken from "./tokens/plain-knight-token.js";
 import _tokensPlantToken from "./tokens/plant-token.js";
 import _tokensRatTokenVren from "./tokens/rat-token-vren.js";
 import _tokensRatToken from "./tokens/rat-token.js";
@@ -6348,6 +6355,7 @@ import _tokensRedElementalToken11 from "./tokens/red-elemental-token-1-1.js";
 import _tokensRedHumanToken from "./tokens/red-human-token.js";
 import _tokensRedSpiritTokenMenace from "./tokens/red-spirit-token-menace.js";
 import _tokensRedWarriorToken from "./tokens/red-warrior-token.js";
+import _tokensRedWhiteSoldierHasteToken from "./tokens/red-white-soldier-haste-token.js";
 import _tokensRobotToken from "./tokens/robot-token.js";
 import _tokensRobotVillainToken from "./tokens/robot-villain-token.js";
 import _tokensSandWarriorToken from "./tokens/sand-warrior-token.js";
@@ -6691,6 +6699,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAssaultGriffin,
   _poolAssaultStrobe,
   _poolAssaultZeppelid,
+  _poolAssembleTheLegion,
   _poolAstarionTheDecadent,
   _poolAstralCornucopia,
   _poolAtalanJackal,
@@ -10065,6 +10074,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOnakkeOgre,
   _poolOnduGiant,
   _poolOnduGreathorn,
+  _poolOnduInversion,
+  _poolOnduSkyruins,
   _poolOnduWarCleric,
   _poolOneWithTheWind,
   _poolOneirophage,
@@ -10846,6 +10857,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolScourForScrap,
   _poolScourFromExistence,
   _poolScouredBarrens,
+  _poolScourgeOfFleets,
   _poolScourgeOfValkas,
   _poolScourgemark,
   _poolScouringSands,
@@ -11185,6 +11197,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSlinkingSerpent,
   _poolSlinkingSkirge,
   _poolSlinzaTheSpikedStampede,
+  _poolSlipThroughSpace,
   _poolSlipperyBogle,
   _poolSlipperyKarst,
   _poolSliptideSerpent,
@@ -11484,6 +11497,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSummitProwler,
   _poolSummitSentinel,
   _poolSummonBahamut,
+  _poolSummonKnightsOfRound,
   _poolSummonTitan,
   _poolSunBlessedPeak,
   _poolSunCollaredRaptor,
@@ -12732,6 +12746,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPhyrexianGoblinToken,
   _tokensPhyrexianWurmDeathtouch,
   _tokensPhyrexianWurmLifelink,
+  _tokensPlainKnightToken,
   _tokensPlantToken,
   _tokensRatTokenVren,
   _tokensRatToken,
@@ -12739,6 +12754,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensRedHumanToken,
   _tokensRedSpiritTokenMenace,
   _tokensRedWarriorToken,
+  _tokensRedWhiteSoldierHasteToken,
   _tokensRobotToken,
   _tokensRobotVillainToken,
   _tokensSandWarriorToken,

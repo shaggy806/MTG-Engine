@@ -194,6 +194,7 @@ import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
 import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
 import _tokensPhyrexianGermToken from "../tokens/phyrexian-germ-token.js";
+import _tokensRedWhiteSoldierHasteToken from "../tokens/red-white-soldier-haste-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -390,6 +391,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensPhyrexianGermToken,
+    _tokensRedWhiteSoldierHasteToken,
   ],
 };
 

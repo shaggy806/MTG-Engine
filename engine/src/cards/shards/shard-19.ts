@@ -164,6 +164,7 @@ import _poolSpellPierce from "../pool/spell-pierce.js";
 import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
+import _poolSummonKnightsOfRound from "../pool/summon-knights-of-round.js";
 import _poolSunbillowVerge from "../pool/sunbillow-verge.js";
 import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
 import _poolSupportiveParents from "../pool/supportive-parents.js";
@@ -362,6 +363,7 @@ const shard: CardShard = {
     _poolSramSeniorEdificer,
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
+    _poolSummonKnightsOfRound,
     _poolSunbillowVerge,
     _poolSunbladeSamurai,
     _poolSupportiveParents,

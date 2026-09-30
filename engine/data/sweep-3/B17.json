@@ -1,0 +1,295 @@
+{
+  "batch": "B17",
+  "status": "complete",
+  "ranks": "2185-2243",
+  "authored": [
+    {
+      "name": "Ondu Inversion",
+      "files": [
+        "engine/src/cards/pool/ondu-inversion.ts",
+        "engine/src/cards/pool/ondu-skyruins.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Scourge of Fleets",
+      "files": [
+        "engine/src/cards/pool/scourge-of-fleets.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Slip Through Space",
+      "files": [
+        "engine/src/cards/pool/slip-through-space.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Assemble the Legion",
+      "files": [
+        "engine/src/cards/pool/assemble-the-legion.ts",
+        "engine/src/cards/tokens/red-white-soldier-haste-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Summon: Knights of Round",
+      "files": [
+        "engine/src/cards/pool/summon-knights-of-round.ts",
+        "engine/src/cards/tokens/plain-knight-token.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Flare of Cultivation",
+      "needs": [
+        "new:alt-cost-sacrifice"
+      ],
+      "why": "'Sacrifice a nontoken green creature rather than pay this spell's mana cost', and a two-way search split."
+    },
+    {
+      "name": "Archangel of Tithes",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "Attack and block taxes."
+    },
+    {
+      "name": "Descendants' Path",
+      "needs": [
+        "effect:cast-during-resolution"
+      ],
+      "why": "Cast the revealed card free if it shares a creature type."
+    },
+    {
+      "name": "Earthbender Ascension",
+      "needs": [
+        "new:reflexive-quest-counter"
+      ],
+      "why": "A reflexive trigger reading quest counters (short pass — recheck)."
+    },
+    {
+      "name": "Sepulchral Primordial",
+      "needs": [
+        "new:target-per-opponent-graveyard"
+      ],
+      "why": "Up to one target creature card from each opponent's graveyard."
+    },
+    {
+      "name": "Teferi, Master of Time",
+      "needs": [
+        "new:phasing",
+        "new:instant-speed-loyalty"
+      ],
+      "why": "Loyalty abilities at instant speed, and phasing."
+    },
+    {
+      "name": "Giggling Skitterspike",
+      "needs": [
+        "new:monstrosity"
+      ],
+      "why": "Monstrosity, and a becomes-target-of-a-spell trigger (short pass)."
+    },
+    {
+      "name": "Delay",
+      "needs": [
+        "new:counter-into-exile-suspend"
+      ],
+      "why": "Countering into exile with time counters and suspend."
+    },
+    {
+      "name": "Overlord of the Balemurk",
+      "needs": [
+        "new:impending"
+      ],
+      "why": "Impending."
+    },
+    {
+      "name": "Forge of Heroes",
+      "needs": [
+        "new:target-commander-entered-this-turn"
+      ],
+      "why": "Target commander that entered this turn, counter by type (short pass — recheck)."
+    },
+    {
+      "name": "Combat Research",
+      "needs": [
+        "new:aura-conditional-on-legendary"
+      ],
+      "why": "Grants that depend on the enchanted creature being legendary (short pass — recheck)."
+    },
+    {
+      "name": "Swarmyard Massacre",
+      "needs": [
+        "new:pt-per-count-mass"
+      ],
+      "why": "-1/-1 per creature you control of certain types, to each other creature (short pass)."
+    },
+    {
+      "name": "Triplicate Titan",
+      "needs": [
+        "new:three-distinct-tokens"
+      ],
+      "why": "Three differently-keyworded Golem tokens (needs three token files; short pass)."
+    },
+    {
+      "name": "Season of Weaving",
+      "needs": [
+        "new:pawprint-modes"
+      ],
+      "why": "Pawprint modes."
+    },
+    {
+      "name": "Season of Growth",
+      "needs": [
+        "new:cast-spell-targets-your-creature"
+      ],
+      "why": "'Whenever you cast a spell that targets a creature you control'."
+    },
+    {
+      "name": "Carnelian Orb of Dragonkind",
+      "needs": [
+        "new:when-spent-grant"
+      ],
+      "why": "Haste for the Dragon creature spell that mana paid for."
+    },
+    {
+      "name": "Final Showdown",
+      "needs": [
+        "new:spree"
+      ],
+      "why": "Spree."
+    },
+    {
+      "name": "Quirion Ranger",
+      "needs": [
+        "new:return-lands-cost"
+      ],
+      "why": "Returning a Forest as a cost."
+    },
+    {
+      "name": "Pact of the Serpent",
+      "needs": [
+        "new:count-target-players-chosen-type"
+      ],
+      "why": "Creatures of the chosen type the target player controls."
+    },
+    {
+      "name": "Warden of the Grove",
+      "needs": [
+        "new:endure-x"
+      ],
+      "why": "'It endures X' — endure isn't an effect kind."
+    },
+    {
+      "name": "Deep Gnome Terramancer",
+      "needs": [
+        "new:lands-enter-without-being-played"
+      ],
+      "why": "Lands entering under an opponent's control without being played."
+    },
+    {
+      "name": "Brainstealer Dragon",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "Playing opponents' exiled cards with any-type mana, and a steal trigger."
+    },
+    {
+      "name": "Ral, Crackling Wit",
+      "needs": [
+        "new:emblem-grants-storm"
+      ],
+      "why": "An emblem granting storm; an Otter token (short pass)."
+    },
+    {
+      "name": "Imposter Mech",
+      "needs": [
+        "new:clone-as-vehicle",
+        "new:crew"
+      ],
+      "why": "A copy that's a Vehicle with crew 3."
+    },
+    {
+      "name": "Sword of Wealth and Power",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying the next instant or sorcery."
+    },
+    {
+      "name": "Electroduplicate",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "A copy granted a copiable end-step sacrifice trigger."
+    },
+    {
+      "name": "Invert Polarity",
+      "needs": [
+        "new:gain-control-spell"
+      ],
+      "why": "Gaining control of a spell on a coin flip."
+    },
+    {
+      "name": "Tandem Lookout",
+      "needs": [
+        "new:soulbond"
+      ],
+      "why": "Soulbond."
+    },
+    {
+      "name": "Glacial Chasm",
+      "needs": [
+        "new:cumulative-upkeep"
+      ],
+      "why": "Cumulative upkeep, and preventing all damage to you."
+    },
+    {
+      "name": "Bubbling Muck",
+      "needs": [
+        "new:player-effect-mana-trigger"
+      ],
+      "why": "A turn-long 'whenever a player taps a Swamp for mana' effect."
+    },
+    {
+      "name": "Tyvar, Jubilant Brawler",
+      "needs": [
+        "new:abilities-as-though-haste"
+      ],
+      "why": "Activating creatures' abilities as though they had haste."
+    },
+    {
+      "name": "Starfall Invocation",
+      "needs": [
+        "new:gift"
+      ],
+      "why": "Gift."
+    },
+    {
+      "name": "Virtue of Knowledge // Vantress Visions",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying an ability, and trigger doubling for entering permanents."
+    },
+    {
+      "name": "Bloodthirsty Blade",
+      "needs": [
+        "new:static-goad",
+        "new:attach-to-opponents-creature"
+      ],
+      "why": "'Is goaded' as a static; attaching to an opponent's creature."
+    },
+    {
+      "name": "Stuffy Doll",
+      "needs": [
+        "new:choose-player-on-enter"
+      ],
+      "why": "Choosing a player as it enters."
+    }
+  ]
+}

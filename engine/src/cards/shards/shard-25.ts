@@ -146,6 +146,7 @@ import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
 import _poolSandsower from "../pool/sandsower.js";
+import _poolScourgeOfFleets from "../pool/scourge-of-fleets.js";
 import _poolScuteSwarm from "../pool/scute-swarm.js";
 import _poolSeasonOfRenewal from "../pool/season-of-renewal.js";
 import _poolSecretPassage from "../pool/secret-passage.js";
@@ -348,6 +349,7 @@ const shard: CardShard = {
     _poolRograkhSonOfRohgahh,
     _poolRumblingBaloth,
     _poolSandsower,
+    _poolScourgeOfFleets,
     _poolScuteSwarm,
     _poolSeasonOfRenewal,
     _poolSecretPassage,

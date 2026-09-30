@@ -136,6 +136,7 @@ import _poolNimbleInnovator from "../pool/nimble-innovator.js";
 import _poolNimbleThopterist from "../pool/nimble-thopterist.js";
 import _poolOfferImmortality from "../pool/offer-immortality.js";
 import _poolOmenOfTheDead from "../pool/omen-of-the-dead.js";
+import _poolOnduInversion from "../pool/ondu-inversion.js";
 import _poolOrcishBowmasters from "../pool/orcish-bowmasters.js";
 import _poolOverprotect from "../pool/overprotect.js";
 import _poolPanharmonicon from "../pool/panharmonicon.js";
@@ -348,6 +349,7 @@ const shard: CardShard = {
     _poolNimbleThopterist,
     _poolOfferImmortality,
     _poolOmenOfTheDead,
+    _poolOnduInversion,
     _poolOrcishBowmasters,
     _poolOverprotect,
     _poolPanharmonicon,
