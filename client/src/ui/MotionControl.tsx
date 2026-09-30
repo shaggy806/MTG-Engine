@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { ANIM_SCALES, setMotionSettings, useMotionPrefs } from '../game/motionPrefs.ts'
-import type { AnimScale } from '../game/motionPrefs.ts'
+import {
+  ANIM_SCALES,
+  CAST_ENTRANCES,
+  setMotionSettings,
+  useMotionPrefs,
+} from '../game/motionPrefs.ts'
+import type { AnimScale, CastEntrance } from '../game/motionPrefs.ts'
 
 const SPEED_LABEL: Record<AnimScale, string> = {
   0.5: 'Fast',
   1: 'Normal',
   1.5: 'Slow',
   2: 'Slowest',
+}
+
+const ENTRANCE_LABEL: Record<CastEntrance, string> = {
+  rise: 'Rise',
+  side: 'From player',
+  fade: 'Fade',
 }
 
 /**
@@ -56,6 +67,20 @@ export function MotionControl() {
                 onClick={() => setMotionSettings({ animScale: s })}
               >
                 {SPEED_LABEL[s]}
+              </button>
+            ))}
+          </div>
+          <div className="motion-row" role="group" aria-label="Played card entrance">
+            <span className="motion-label">Card entrance</span>
+            {CAST_ENTRANCES.map((e) => (
+              <button
+                key={e}
+                type="button"
+                className={`motion-option${e === prefs.castEntrance ? ' active' : ''}`}
+                aria-pressed={e === prefs.castEntrance}
+                onClick={() => setMotionSettings({ castEntrance: e })}
+              >
+                {ENTRANCE_LABEL[e]}
               </button>
             ))}
           </div>

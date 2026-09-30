@@ -3260,6 +3260,36 @@
     opacity: 0;
   }
 }
+/* How the played card comes in (motionPrefs' `castEntrance`, the Animations
+   panel's "Card entrance"): the same beat and the same length, a different
+   way in. `rise`, the default, comes up from one spot below the middle for
+   every player — the caption says whose it is, and flying in from their side
+   of the table read as wrong once it did. `side` is that flight (the base
+   rule above); `fade` is the reduced-motion fade below. */
+:root[data-cast-entrance='rise'] .played-card-fly {
+  animation-name: played-card-rise;
+}
+:root[data-cast-entrance='fade'] .played-card-fly {
+  animation-name: played-card-fade;
+}
+@keyframes played-card-rise {
+  0% {
+    transform: translateY(14vh) scale(0.7);
+    opacity: 0;
+  }
+  18% {
+    transform: translateY(0) scale(1.08);
+    opacity: 1;
+  }
+  72% {
+    transform: translateY(0) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-4vh) scale(0.92);
+    opacity: 0;
+  }
+}
 /* Reduced motion: the played card still shows up in the middle for the same
    time -- it's the information -- but fades in and out in place instead of
    flying from its owner's side. */

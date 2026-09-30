@@ -19,10 +19,19 @@ import { useSyncExternalStore } from 'react'
 export const ANIM_SCALES = [0.5, 1, 1.5, 2] as const
 export type AnimScale = (typeof ANIM_SCALES)[number]
 
+/** How a played card's spotlight comes in. `rise` (the default, the user's
+ * pick on 2026-09-30) comes up from the same spot for everyone — with the
+ * caption naming the player, flying in from their side of the table read as
+ * wrong; `side` is that older flight, kept as an option for now; `fade` fades
+ * in place. Read by CSS as `:root[data-cast-entrance]`. */
+export const CAST_ENTRANCES = ['rise', 'side', 'fade'] as const
+export type CastEntrance = (typeof CAST_ENTRANCES)[number]
+
 export interface MotionSettings {
   readonly animScale: AnimScale
   /** The viewer's own switch, not counting the browser's preference. */
   readonly reduceMotion: boolean
+  readonly castEntrance: CastEntrance
 }
 
 export interface MotionPrefs extends MotionSettings {
@@ -31,7 +40,7 @@ export interface MotionPrefs extends MotionSettings {
 }
 
 const STORAGE_KEY = 'mtg.motion'
-const DEFAULTS: MotionSettings = { animScale: 1, reduceMotion: false }
+const DEFAULTS: MotionSettings = { animScale: 1, reduceMotion: false, castEntrance: 'rise' }
 
 function readStored(): MotionSettings {
   try {
@@ -39,7 +48,9 @@ function readStored(): MotionSettings {
     if (raw === null) return DEFAULTS
     const parsed = JSON.parse(raw) as Partial<MotionSettings>
     const animScale = ANIM_SCALES.find((s) => s === parsed.animScale) ?? DEFAULTS.animScale
-    return { animScale, reduceMotion: parsed.reduceMotion === true }
+    const castEntrance =
+      CAST_ENTRANCES.find((e) => e === parsed.castEntrance) ?? DEFAULTS.castEntrance
+    return { animScale, reduceMotion: parsed.reduceMotion === true, castEntrance }
   } catch {
     return DEFAULTS
   }
@@ -65,6 +76,7 @@ function apply(): void {
   current = derive(settings)
   const root = document.documentElement
   root.style.setProperty('--anim-scale', String(current.animScale))
+  root.setAttribute('data-cast-entrance', current.castEntrance)
   if (current.reduced) root.setAttribute('data-reduce-motion', '')
   else root.removeAttribute('data-reduce-motion')
   for (const l of listeners) l()
