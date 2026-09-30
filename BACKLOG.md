@@ -486,6 +486,46 @@ The pipeline is in `docs/architecture/client.md` (`usePlayback`/`animationBus`/`
   leaves, wherever it goes. Exile (`permanent-exiled`) should look distinct from dying
   (`permanent-destroyed`, `permanent-sacrificed`).
 
+Follow-on ideas, approved by the user on 2026-09-30:
+
+- **Arrows from source to target** when a spell or ability goes on the stack
+  (`object-targeted`). Today `Table`'s `aim` marks only the target: a reticle, a frame, or a
+  "Targeted" chip.
+- **The source of a trigger pulses** when its ability goes on the stack (`ability-triggered`),
+  so it's clear where the trigger came from.
+- **Floating numbers** (−3, +4) over life totals and creatures when life or damage changes,
+  alongside the green and red flashes.
+- **A host control to pause the bots or step them one action at a time.** It would hold the
+  room's frame gate (`server/src/room.ts`).
+- **A per-client animation-speed setting** that scales every `*_STEP_MS` and CSS duration on
+  that screen. Bot speed is host-only, so this is the one control each player owns.
+- **A "thinking…" indicator** on the player panel of the seat the game is waiting on, bot or
+  human.
+- **Replay the last update's animations** on demand: re-fire the last frame's schedule against
+  the view before it.
+- **Clearer attacks and blocks.** Attackers step forward or get arrows to what they attack
+  (`attackers-declared`), and lines join blockers to their attackers (`blocker-declared`).
+- **A dying creature flies to its owner's graveyard pile** instead of only fading out
+  (`permanent-left-battlefield` to the graveyard).
+- **A discarded card flies from hand to graveyard** (`cards-discarded`).
+- **A countered or fizzled spell gets its own exit** (`spell-countered`, `spell-fizzled`), so it
+  doesn't read as having resolved.
+- **An Aura or Equipment flies onto the permanent it attaches to** (`permanent-attached`).
+- **A double-faced card flips over when it transforms** (`permanent-transformed`).
+- **The cast spotlight starts from the zone the spell was cast from** (`spell-cast`'s `from`):
+  the graveyard, exile or the command zone, not the owner's quadrant.
+- **A token being created looks different from a spell resolving.** The engine has no
+  token-specific event: `permanent-entered-battlefield` carries only `object` and `count`, so
+  the view has to say it's a token.
+- **The active player's quadrant is highlighted for the whole turn**, not just while the turn
+  banner shows.
+- **Monarch and similar markers visibly move to their new holder** (`monarch-changed`).
+  Initiative has no event yet.
+- **Clicking a history log entry highlights the cards it involved on the board** (`EventLog`).
+- **Optional sound effects, off by default.**
+- **A reduce-motion setting.** Every new animation should respect both it and the browser's
+  `prefers-reduced-motion`, which some existing animations already honour in `App.css`.
+
 - **A face-down exiled card drops out of its owner's exile count and list** for every seat that
   can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in
   `App.tsx` groups exile by `view.objects[id].owner`, and a hidden card has no object. The
