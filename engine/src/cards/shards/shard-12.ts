@@ -193,6 +193,7 @@ import _poolWretchedDoll from "../pool/wretched-doll.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
+import _tokensWurmToken66 from "../tokens/wurm-token-6-6.js";
 
 const shard: CardShard = {
   pool: [
@@ -388,6 +389,7 @@ const shard: CardShard = {
     _tokensChocoboBirdToken,
     _tokensElementalToken55,
     _tokensVampireToken,
+    _tokensWurmToken66,
   ],
 };
 

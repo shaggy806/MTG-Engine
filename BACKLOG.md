@@ -158,15 +158,22 @@ that one card is the reason the deck exists.
   the "look at the top card of your library any time" family (`zone:visibility-extensions`) and
   a damage replacement filtered by recipient (`new:damage-prevented-to-filter` — Losheel, Crystal
   Barricade, Mutational Advantage) come up most among the one-feature blockers.
+- **Top-5000 batch 15 (2026-09-29) triaged ranks 2036–2111:** 21 authored (Birthing Pod, Garruk,
+  Primal Hunter, Paradise Druid, Goblin Warchief, Trinket Mage and 16 more —
+  `top5000-batch-15.test.ts`); 39 blocked, each in `engine/data/sweep-3/B15.json`. Five of those
+  were recorded without a close check (their `why` says so): Generous Plunderer, Vengeful
+  Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa — look again before building for
+  them. The six Landscape fetch-cyclers (Foreboding, Twisted, Shattered, Seething, Perilous,
+  Tranquil) are six copies of one shape: fold them into a `helpers.ts` helper.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,920 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,941 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 2035, nothing is triaged.
+  the batches since; past rank 2111, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

@@ -19,6 +19,7 @@ import _poolBirdMaiden from "../pool/bird-maiden.js";
 import _poolBlindingMage from "../pool/blinding-mage.js";
 import _poolBloodlinePretender from "../pool/bloodline-pretender.js";
 import _poolBloomHulk from "../pool/bloom-hulk.js";
+import _poolBodyOfKnowledge from "../pool/body-of-knowledge.js";
 import _poolBonePitBrute from "../pool/bone-pit-brute.js";
 import _poolBoneSaw from "../pool/bone-saw.js";
 import _poolBoseijuWhoEndures from "../pool/boseiju-who-endures.js";
@@ -218,6 +219,7 @@ const shard: CardShard = {
     _poolBlindingMage,
     _poolBloodlinePretender,
     _poolBloomHulk,
+    _poolBodyOfKnowledge,
     _poolBonePitBrute,
     _poolBoneSaw,
     _poolBoseijuWhoEndures,

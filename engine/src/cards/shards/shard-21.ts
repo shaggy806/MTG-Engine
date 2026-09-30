@@ -57,6 +57,7 @@ import _poolGiganticBigBear from "../pool/gigantic-big-bear.js";
 import _poolGliderKids from "../pool/glider-kids.js";
 import _poolGloriousCharge from "../pool/glorious-charge.js";
 import _poolGoblinSurprise from "../pool/goblin-surprise.js";
+import _poolGoblinWarchief from "../pool/goblin-warchief.js";
 import _poolGreaterTanuki from "../pool/greater-tanuki.js";
 import _poolGruesomeDeformity from "../pool/gruesome-deformity.js";
 import _poolGruulTurf from "../pool/gruul-turf.js";
@@ -234,6 +235,7 @@ const shard: CardShard = {
     _poolGliderKids,
     _poolGloriousCharge,
     _poolGoblinSurprise,
+    _poolGoblinWarchief,
     _poolGreaterTanuki,
     _poolGruesomeDeformity,
     _poolGruulTurf,

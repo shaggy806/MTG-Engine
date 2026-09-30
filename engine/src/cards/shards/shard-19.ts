@@ -119,6 +119,7 @@ import _poolOrzhovLocket from "../pool/orzhov-locket.js";
 import _poolOutlawMedic from "../pool/outlaw-medic.js";
 import _poolOwlbear from "../pool/owlbear.js";
 import _poolPendulumOfPatterns from "../pool/pendulum-of-patterns.js";
+import _poolPerilousLandscape from "../pool/perilous-landscape.js";
 import _poolPestilentWolf from "../pool/pestilent-wolf.js";
 import _poolPiratePeddlers from "../pool/pirate-peddlers.js";
 import _poolPlayfulShove from "../pool/playful-shove.js";
@@ -316,6 +317,7 @@ const shard: CardShard = {
     _poolOutlawMedic,
     _poolOwlbear,
     _poolPendulumOfPatterns,
+    _poolPerilousLandscape,
     _poolPestilentWolf,
     _poolPiratePeddlers,
     _poolPlayfulShove,

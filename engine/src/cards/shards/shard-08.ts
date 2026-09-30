@@ -39,6 +39,7 @@ import _poolCallTheGatewatch from "../pool/call-the-gatewatch.js";
 import _poolCarnageAltar from "../pool/carnage-altar.js";
 import _poolCatharCommando from "../pool/cathar-commando.js";
 import _poolCloakOfTheBat from "../pool/cloak-of-the-bat.js";
+import _poolColdEyedSelkie from "../pool/cold-eyed-selkie.js";
 import _poolCompositeGolem from "../pool/composite-golem.js";
 import _poolContemplation from "../pool/contemplation.js";
 import _poolCoralCommando from "../pool/coral-commando.js";
@@ -245,6 +246,7 @@ const shard: CardShard = {
     _poolCarnageAltar,
     _poolCatharCommando,
     _poolCloakOfTheBat,
+    _poolColdEyedSelkie,
     _poolCompositeGolem,
     _poolContemplation,
     _poolCoralCommando,

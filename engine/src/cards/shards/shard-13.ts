@@ -119,6 +119,7 @@ import _poolOmenOfTheHunt from "../pool/omen-of-the-hunt.js";
 import _poolOrcishLumberjack from "../pool/orcish-lumberjack.js";
 import _poolOrzhovCluestone from "../pool/orzhov-cluestone.js";
 import _poolOverflowingInsight from "../pool/overflowing-insight.js";
+import _poolPersonalTutor from "../pool/personal-tutor.js";
 import _poolPhyrexianVivisector from "../pool/phyrexian-vivisector.js";
 import _poolPiousInterdiction from "../pool/pious-interdiction.js";
 import _poolPiranhaFly from "../pool/piranha-fly.js";
@@ -317,6 +318,7 @@ const shard: CardShard = {
     _poolOrcishLumberjack,
     _poolOrzhovCluestone,
     _poolOverflowingInsight,
+    _poolPersonalTutor,
     _poolPhyrexianVivisector,
     _poolPiousInterdiction,
     _poolPiranhaFly,

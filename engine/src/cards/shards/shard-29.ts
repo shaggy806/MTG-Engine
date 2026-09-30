@@ -85,6 +85,7 @@ import _poolKrovikanScoundrel from "../pool/krovikan-scoundrel.js";
 import _poolKujarSeedsculptor from "../pool/kujar-seedsculptor.js";
 import _poolLegolassQuickReflexes from "../pool/legolass-quick-reflexes.js";
 import _poolLonelySandbar from "../pool/lonely-sandbar.js";
+import _poolMaelstromOfTheSpiritDragon from "../pool/maelstrom-of-the-spirit-dragon.js";
 import _poolMagesGuile from "../pool/mages-guile.js";
 import _poolMagmaticForce from "../pool/magmatic-force.js";
 import _poolMantisEngine from "../pool/mantis-engine.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolKujarSeedsculptor,
     _poolLegolassQuickReflexes,
     _poolLonelySandbar,
+    _poolMaelstromOfTheSpiritDragon,
     _poolMagesGuile,
     _poolMagmaticForce,
     _poolMantisEngine,

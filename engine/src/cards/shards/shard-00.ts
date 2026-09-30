@@ -120,6 +120,7 @@ import _poolOpulentPalace from "../pool/opulent-palace.js";
 import _poolOriginOfMetalbending from "../pool/origin-of-metalbending.js";
 import _poolOwlFamiliar from "../pool/owl-familiar.js";
 import _poolPakoArcaneRetriever from "../pool/pako-arcane-retriever.js";
+import _poolParadiseDruid from "../pool/paradise-druid.js";
 import _poolParadoxGardens from "../pool/paradox-gardens.js";
 import _poolPeaceStrider from "../pool/peace-strider.js";
 import _poolPhyrexianBroodlings from "../pool/phyrexian-broodlings.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolOriginOfMetalbending,
     _poolOwlFamiliar,
     _poolPakoArcaneRetriever,
+    _poolParadiseDruid,
     _poolParadoxGardens,
     _poolPeaceStrider,
     _poolPhyrexianBroodlings,

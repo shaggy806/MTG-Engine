@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _pool2Mace from "../pool/2-mace.js";
+import _poolAbstergoEntertainment from "../pool/abstergo-entertainment.js";
 import _poolAdultGoldDragon from "../pool/adult-gold-dragon.js";
 import _poolAmphinCutthroat from "../pool/amphin-cutthroat.js";
 import _poolAncestralVengeance from "../pool/ancestral-vengeance.js";
@@ -193,6 +194,7 @@ import _poolTolarianSerpent from "../pool/tolarian-serpent.js";
 import _poolTorbranThaneOfRedFell from "../pool/torbran-thane-of-red-fell.js";
 import _poolToxrillTheCorrosive from "../pool/toxrill-the-corrosive.js";
 import _poolTranquilCove from "../pool/tranquil-cove.js";
+import _poolTranquilLandscape from "../pool/tranquil-landscape.js";
 import _poolTreetopSnarespinner from "../pool/treetop-snarespinner.js";
 import _poolTrenchingSteed from "../pool/trenching-steed.js";
 import _poolTuraKennerudSkyknight from "../pool/tura-kennerud-skyknight.js";
@@ -221,6 +223,7 @@ import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
 const shard: CardShard = {
   pool: [
     _pool2Mace,
+    _poolAbstergoEntertainment,
     _poolAdultGoldDragon,
     _poolAmphinCutthroat,
     _poolAncestralVengeance,
@@ -410,6 +413,7 @@ const shard: CardShard = {
     _poolTorbranThaneOfRedFell,
     _poolToxrillTheCorrosive,
     _poolTranquilCove,
+    _poolTranquilLandscape,
     _poolTreetopSnarespinner,
     _poolTrenchingSteed,
     _poolTuraKennerudSkyknight,

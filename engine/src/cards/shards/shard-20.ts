@@ -53,6 +53,7 @@ import _poolCoverOfDarkness from "../pool/cover-of-darkness.js";
 import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
+import _poolDeathreapRitual from "../pool/deathreap-ritual.js";
 import _poolDelayedBlastFireball from "../pool/delayed-blast-fireball.js";
 import _poolDimirLocket from "../pool/dimir-locket.js";
 import _poolDispel from "../pool/dispel.js";
@@ -246,6 +247,7 @@ const shard: CardShard = {
     _poolCrashOfRhinos,
     _poolDeadlyInsect,
     _poolDeadlyRollick,
+    _poolDeathreapRitual,
     _poolDelayedBlastFireball,
     _poolDimirLocket,
     _poolDispel,

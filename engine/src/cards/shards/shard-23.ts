@@ -66,6 +66,7 @@ import _poolFuneralCharm from "../pool/funeral-charm.js";
 import _poolGhirapurGearcrafter from "../pool/ghirapur-gearcrafter.js";
 import _poolGhostLitRedeemer from "../pool/ghost-lit-redeemer.js";
 import _poolGiantCockroach from "../pool/giant-cockroach.js";
+import _poolGlintHornBuccaneer from "../pool/glint-horn-buccaneer.js";
 import _poolGlowingAnemone from "../pool/glowing-anemone.js";
 import _poolGoblinEngineer from "../pool/goblin-engineer.js";
 import _poolGoblinMatron from "../pool/goblin-matron.js";
@@ -267,6 +268,7 @@ const shard: CardShard = {
     _poolGhirapurGearcrafter,
     _poolGhostLitRedeemer,
     _poolGiantCockroach,
+    _poolGlintHornBuccaneer,
     _poolGlowingAnemone,
     _poolGoblinEngineer,
     _poolGoblinMatron,

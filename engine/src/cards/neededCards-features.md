@@ -627,6 +627,8 @@ in `git log`.
   vocabulary. B13.json lists the 35 it left blocked.
 - **Top-5000 batch 14** (2026-09-29, `top5000-batch-14.test.ts`) — 26 cards on the existing
   vocabulary. B14.json lists the 34 it left blocked.
+- **Top-5000 batch 15** (2026-09-29, `top5000-batch-15.test.ts`) — 21 cards on the existing
+  vocabulary. B15.json lists the 39 it left blocked.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

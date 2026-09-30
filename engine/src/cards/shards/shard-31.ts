@@ -11,6 +11,7 @@ import _poolAltanakTheThriceCalled from "../pool/altanak-the-thrice-called.js";
 import _poolAncestralReminiscence from "../pool/ancestral-reminiscence.js";
 import _poolAngelOfMercy from "../pool/angel-of-mercy.js";
 import _poolAngelOfTheRuins from "../pool/angel-of-the-ruins.js";
+import _poolAngelOfVitality from "../pool/angel-of-vitality.js";
 import _poolAnguishedUnmaking from "../pool/anguished-unmaking.js";
 import _poolArchersParapet from "../pool/archers-parapet.js";
 import _poolArmoredCancrix from "../pool/armored-cancrix.js";
@@ -203,6 +204,7 @@ const shard: CardShard = {
     _poolAncestralReminiscence,
     _poolAngelOfMercy,
     _poolAngelOfTheRuins,
+    _poolAngelOfVitality,
     _poolAnguishedUnmaking,
     _poolArchersParapet,
     _poolArmoredCancrix,

@@ -113,6 +113,7 @@ import _poolMomentOfTriumph from "../pool/moment-of-triumph.js";
 import _poolMonkIdealist from "../pool/monk-idealist.js";
 import _poolNemaSiltlurker from "../pool/nema-siltlurker.js";
 import _poolNestRobber from "../pool/nest-robber.js";
+import _poolNightOfTheSweetsRevenge from "../pool/night-of-the-sweets-revenge.js";
 import _poolNimanaSkydancer from "../pool/nimana-skydancer.js";
 import _poolObyraDreamingDuelist from "../pool/obyra-dreaming-duelist.js";
 import _poolOgreSentry from "../pool/ogre-sentry.js";
@@ -323,6 +324,7 @@ const shard: CardShard = {
     _poolMonkIdealist,
     _poolNemaSiltlurker,
     _poolNestRobber,
+    _poolNightOfTheSweetsRevenge,
     _poolNimanaSkydancer,
     _poolObyraDreamingDuelist,
     _poolOgreSentry,

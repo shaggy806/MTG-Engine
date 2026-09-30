@@ -48,6 +48,7 @@ import _poolDispersalTechnician from "../pool/dispersal-technician.js";
 import _poolDreamPillager from "../pool/dream-pillager.js";
 import _poolDregRecycler from "../pool/dreg-recycler.js";
 import _poolDrossRipper from "../pool/dross-ripper.js";
+import _poolDrownInDreams from "../pool/drown-in-dreams.js";
 import _poolEmberEyeWolf from "../pool/ember-eye-wolf.js";
 import _poolEnchantresssPresence from "../pool/enchantresss-presence.js";
 import _poolEngulfingEruption from "../pool/engulfing-eruption.js";
@@ -242,6 +243,7 @@ const shard: CardShard = {
     _poolDreamPillager,
     _poolDregRecycler,
     _poolDrossRipper,
+    _poolDrownInDreams,
     _poolEmberEyeWolf,
     _poolEnchantresssPresence,
     _poolEngulfingEruption,

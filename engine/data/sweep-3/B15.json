@@ -1,0 +1,440 @@
+{
+  "batch": "B15",
+  "status": "complete",
+  "ranks": "2036-2111",
+  "authored": [
+    {
+      "name": "Glint-Horn Buccaneer",
+      "files": [
+        "engine/src/cards/pool/glint-horn-buccaneer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Maelstrom of the Spirit Dragon",
+      "files": [
+        "engine/src/cards/pool/maelstrom-of-the-spirit-dragon.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Homunculus Horde",
+      "files": [
+        "engine/src/cards/pool/homunculus-horde.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Trinket Mage",
+      "files": [
+        "engine/src/cards/pool/trinket-mage.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Birthing Pod",
+      "files": [
+        "engine/src/cards/pool/birthing-pod.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Night of the Sweets' Revenge",
+      "files": [
+        "engine/src/cards/pool/night-of-the-sweets-revenge.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Garruk, Primal Hunter",
+      "files": [
+        "engine/src/cards/pool/garruk-primal-hunter.ts",
+        "engine/src/cards/tokens/wurm-token-6-6.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Abstergo Entertainment",
+      "files": [
+        "engine/src/cards/pool/abstergo-entertainment.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Angel of Vitality",
+      "files": [
+        "engine/src/cards/pool/angel-of-vitality.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Elvish Reclaimer",
+      "files": [
+        "engine/src/cards/pool/elvish-reclaimer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Goblin Warchief",
+      "files": [
+        "engine/src/cards/pool/goblin-warchief.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Deathreap Ritual",
+      "files": [
+        "engine/src/cards/pool/deathreap-ritual.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Body of Knowledge",
+      "files": [
+        "engine/src/cards/pool/body-of-knowledge.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Personal Tutor",
+      "files": [
+        "engine/src/cards/pool/personal-tutor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Paradise Druid",
+      "files": [
+        "engine/src/cards/pool/paradise-druid.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cold-Eyed Selkie",
+      "files": [
+        "engine/src/cards/pool/cold-eyed-selkie.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Perilous Landscape",
+      "files": [
+        "engine/src/cards/pool/perilous-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tranquil Landscape",
+      "files": [
+        "engine/src/cards/pool/tranquil-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Drown in Dreams",
+      "files": [
+        "engine/src/cards/pool/drown-in-dreams.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Flicker of Fate",
+      "files": [
+        "engine/src/cards/pool/flicker-of-fate.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Coldsteel Heart",
+      "files": [
+        "engine/src/cards/pool/coldsteel-heart.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "White Sun's Twilight",
+      "needs": [
+        "new:toxic"
+      ],
+      "why": "Phyrexian Mite tokens with toxic 1."
+    },
+    {
+      "name": "Wake the Past",
+      "needs": [
+        "new:returned-this-way-grant"
+      ],
+      "why": "'They gain haste' for the artifacts returned this way."
+    },
+    {
+      "name": "The Last Agni Kai",
+      "needs": [
+        "new:excess-damage-mana",
+        "new:mana-persistence-color"
+      ],
+      "why": "Mana equal to excess fight damage, kept through the turn."
+    },
+    {
+      "name": "Volatile Stormdrake",
+      "needs": [
+        "new:exchange-control",
+        "new:hexproof-from-abilities"
+      ],
+      "why": "Exchange of control, energy upkeep, and hexproof from activated and triggered abilities."
+    },
+    {
+      "name": "There and Back Again",
+      "needs": [
+        "new:the-ring"
+      ],
+      "why": "The Ring tempts you, and Smaug's token."
+    },
+    {
+      "name": "Single Combat",
+      "needs": [
+        "decision:choose-permanent",
+        "new:cast-restriction-until-your-next-turn"
+      ],
+      "why": "Each player keeps one; creature spells locked until the end of your next turn."
+    },
+    {
+      "name": "The Council of Four",
+      "needs": [
+        "new:nth-during-own-turn"
+      ],
+      "why": "A player's second draw / second spell during their own turn."
+    },
+    {
+      "name": "Mycosynth Lattice",
+      "needs": [
+        "new:all-permanents-artifacts-colorless"
+      ],
+      "why": "Type and color setting over everything, and any-color mana spending."
+    },
+    {
+      "name": "Copy Enchantment",
+      "needs": [
+        "new:clone-noncreature"
+      ],
+      "why": "Entering as a copy of an enchantment."
+    },
+    {
+      "name": "Akiri, Fearless Voyager",
+      "needs": [
+        "new:unattach-effect"
+      ],
+      "why": "Unattaching an Equipment as an effect."
+    },
+    {
+      "name": "Nashi, Moon Sage's Scion",
+      "needs": [
+        "new:ninjutsu"
+      ],
+      "why": "Ninjutsu (BACKLOG)."
+    },
+    {
+      "name": "Generous Plunderer",
+      "needs": [
+        "new:create-token-for-target-player"
+      ],
+      "why": "'Target opponent creates a tapped Treasure token' after a may — not checked closely this pass."
+    },
+    {
+      "name": "Skrelv's Hive",
+      "needs": [
+        "new:toxic",
+        "new:corrupted"
+      ],
+      "why": "Toxic Mite tokens and corrupted."
+    },
+    {
+      "name": "Thousand Moons Smithy // Barracks of the Thousand",
+      "needs": [
+        "new:tap-cost-transform-trigger"
+      ],
+      "why": "Tapping five permanents as an optional trigger cost to transform, and mana-provenance tokens."
+    },
+    {
+      "name": "Likeness Looter",
+      "needs": [
+        "new:become-copy-of-card"
+      ],
+      "why": "Becoming a copy of a graveyard card with mana value X."
+    },
+    {
+      "name": "Sarkhan, Soul Aflame",
+      "needs": [
+        "new:become-copy-until-eot"
+      ],
+      "why": "Becoming a copy of a Dragon until end of turn, keeping its name."
+    },
+    {
+      "name": "Alchemist's Talent",
+      "needs": [
+        "new:class"
+      ],
+      "why": "Class levels aren't modeled."
+    },
+    {
+      "name": "Funeral Room // Awakening Hall",
+      "needs": [
+        "new:rooms"
+      ],
+      "why": "Rooms aren't modeled."
+    },
+    {
+      "name": "Gonti, Lord of Luxury",
+      "needs": [
+        "cost:mana-spending-rules"
+      ],
+      "why": "'You may spend mana as though it were mana of any type' for the exiled card."
+    },
+    {
+      "name": "Everybody Lives!",
+      "needs": [
+        "new:win-game",
+        "new:player-hexproof-all"
+      ],
+      "why": "Players can't lose life or the game this turn."
+    },
+    {
+      "name": "Fallen Shinobi",
+      "needs": [
+        "new:ninjutsu"
+      ],
+      "why": "Ninjutsu, and playing the opponent's exiled cards free."
+    },
+    {
+      "name": "Winding Constrictor",
+      "needs": [
+        "new:counter-plus-one"
+      ],
+      "why": "'That many plus one' counters, on permanents and on you."
+    },
+    {
+      "name": "Pearl-Ear, Imperial Advisor",
+      "needs": [
+        "new:grant-affinity-auras",
+        "new:targets-modified-permanent"
+      ],
+      "why": "Enchantment spells with affinity for Auras; a trigger on an Aura targeting a modified permanent."
+    },
+    {
+      "name": "Vengeful Ancestor",
+      "needs": [
+        "new:damage-from-trigger-object-to-its-controller"
+      ],
+      "why": "A goaded attacker dealing 1 damage to its own controller — not checked closely this pass."
+    },
+    {
+      "name": "Sowing Mycospawn",
+      "needs": [
+        "new:kicked-cast-trigger"
+      ],
+      "why": "'When you cast this spell, if it was kicked, exile target land' — not checked closely this pass."
+    },
+    {
+      "name": "Sudden Spoiling",
+      "needs": [
+        "new:split-second",
+        "new:set-base-pt-all"
+      ],
+      "why": "Split second, and base P/T 0/2 with abilities lost for a player's creatures."
+    },
+    {
+      "name": "Liliana, Death's Majesty",
+      "needs": [
+        "new:return-with-added-color"
+      ],
+      "why": "'A black Zombie in addition to its other colors and types' — put-onto-battlefield can't add a color."
+    },
+    {
+      "name": "Nissa, Resurgent Animist",
+      "needs": [
+        "new:reveal-until-subtypes-rest-bottom"
+      ],
+      "why": "A second-resolution reveal-until for an Elf or Elemental — not checked closely this pass."
+    },
+    {
+      "name": "Ruthless Technomancer",
+      "needs": [
+        "new:may-sacrifice-then",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "'You may sacrifice another creature. If you do', and sacrificing X artifacts as a cost."
+    },
+    {
+      "name": "Patrolling Peacemaker",
+      "needs": [
+        "new:crime"
+      ],
+      "why": "'Whenever an opponent commits a crime'."
+    },
+    {
+      "name": "Hagra Mauling // Hagra Broodpit",
+      "needs": [
+        "new:some-opponent-controls-none"
+      ],
+      "why": "'Costs {1} less if an opponent controls no basic lands' — one opponent with none."
+    },
+    {
+      "name": "Party Thrasher",
+      "needs": [
+        "new:grant-convoke",
+        "new:choose-one-of-exiled"
+      ],
+      "why": "Convoke for spells from exile, and choosing one of two exiled cards to play."
+    },
+    {
+      "name": "Grafdigger's Cage",
+      "needs": [
+        "new:zone-entry-prohibition"
+      ],
+      "why": "Creature cards in graveyards and libraries can't enter; no casting from them."
+    },
+    {
+      "name": "Mycoloth",
+      "needs": [
+        "new:devour"
+      ],
+      "why": "Devour."
+    },
+    {
+      "name": "Karn, the Great Creator",
+      "needs": [
+        "new:outside-the-game",
+        "new:loyalty-animate-until-your-next-turn"
+      ],
+      "why": "Cards from outside the game, and animating an artifact until your next turn."
+    },
+    {
+      "name": "Illustrious Wanderglyph",
+      "needs": [
+        "new:ascend"
+      ],
+      "why": "Ascend (the city's blessing)."
+    },
+    {
+      "name": "Weaver of Harmony",
+      "needs": [
+        "decision:copy-new-targets"
+      ],
+      "why": "Copying an ability with new targets."
+    },
+    {
+      "name": "Liesa, Forgotten Archangel",
+      "needs": [
+        "new:delayed-return-dies-trigger"
+      ],
+      "why": "Returning each nontoken creature that died at the next end step — not checked closely this pass."
+    },
+    {
+      "name": "Semblance Anvil",
+      "needs": [
+        "new:imprint-shared-type"
+      ],
+      "why": "Imprint, and spells sharing a card type with the exiled card."
+    }
+  ]
+}

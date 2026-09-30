@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1920 already implemented / 3080 missing (marks refreshed 2026-09-30)
+1941 already implemented / 3059 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2026,18 +2026,18 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2033  Perpetual Timepiece                      {2}              Artifact
 [x]  2034  Warping Wail                             {1}{C}           Instant
 [ ]  2035  Sakashima the Impostor                   {2}{U}{U}        Legendary Creature — Human Rogue
-[ ]  2036  Glint-Horn Buccaneer                     {1}{R}{R}        Creature — Minotaur Pirate
+[x]  2036  Glint-Horn Buccaneer                     {1}{R}{R}        Creature — Minotaur Pirate
 [x]  2037  Krenko's Command                         {1}{R}           Sorcery
-[ ]  2038  Maelstrom of the Spirit Dragon           {0}              Land
+[x]  2038  Maelstrom of the Spirit Dragon           {0}              Land
 [ ]  2039  White Sun's Twilight                     {X}{W}{W}        Sorcery
 [ ]  2040  Wake the Past                            {5}{R}{W}        Sorcery
-[ ]  2041  Homunculus Horde                         {3}{U}           Creature — Homunculus
+[x]  2041  Homunculus Horde                         {3}{U}           Creature — Homunculus
 [x]  2042  Rakdos Guildgate                         {0}              Land — Gate
 [ ]  2043  The Last Agni Kai                        {1}{R}           Instant
 [ ]  2044  Volatile Stormdrake                      {1}{U}           Creature — Drake
 [x]  2045  Crippling Fear                           {2}{B}{B}        Sorcery
-[ ]  2046  Trinket Mage                             {2}{U}           Creature — Human Wizard
-[ ]  2047  Birthing Pod                             {3}{G/P}         Artifact
+[x]  2046  Trinket Mage                             {2}{U}           Creature — Human Wizard
+[x]  2047  Birthing Pod                             {3}{G/P}         Artifact
 [ ]  2048  There and Back Again                     {3}{R}{R}        Enchantment — Saga
 [ ]  2049  Single Combat                            {3}{W}{W}        Sorcery
 [ ]  2050  The Council of Four                      {3}{W}{U}        Legendary Creature — Human Noble
@@ -2047,19 +2047,19 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2054  Crash Through                            {R}              Sorcery
 [ ]  2055  Nashi, Moon Sage's Scion                 {1}{B}{B}        Legendary Creature — Rat Ninja
 [x]  2056  Sire of Seven Deaths                     {7}              Creature — Eldrazi
-[ ]  2057  Night of the Sweets' Revenge             {3}{G}           Enchantment
-[ ]  2058  Garruk, Primal Hunter                    {2}{G}{G}{G}     Legendary Planeswalker — Garruk
+[x]  2057  Night of the Sweets' Revenge             {3}{G}           Enchantment
+[x]  2058  Garruk, Primal Hunter                    {2}{G}{G}{G}     Legendary Planeswalker — Garruk
 [ ]  2059  Generous Plunderer                       {1}{R}           Creature — Human Rogue
 [ ]  2060  Skrelv's Hive                            {1}{W}           Enchantment
 [ ]  2061  Thousand Moons Smithy // Barracks of the Thousand {4}              Legendary Artifact // Legendary Artifact Land
-[ ]  2062  Abstergo Entertainment                   {0}              Legendary Land
+[x]  2062  Abstergo Entertainment                   {0}              Legendary Land
 [x]  2063  Cybermen Squadron                        {7}              Artifact Creature — Cyberman
-[ ]  2064  Angel of Vitality                        {2}{W}           Creature — Angel
-[ ]  2065  Elvish Reclaimer                         {G}              Creature — Elf Warrior
+[x]  2064  Angel of Vitality                        {2}{W}           Creature — Angel
+[x]  2065  Elvish Reclaimer                         {G}              Creature — Elf Warrior
 [x]  2066  Darksteel Ingot                          {3}              Artifact
 [x]  2067  Drown in Ichor                           {1}{B}           Sorcery
 [ ]  2068  Likeness Looter                          {U}{B}           Creature — Faerie Shapeshifter
-[ ]  2069  Goblin Warchief                          {1}{R}{R}        Creature — Goblin Warrior
+[x]  2069  Goblin Warchief                          {1}{R}{R}        Creature — Goblin Warrior
 [ ]  2070  Sarkhan, Soul Aflame                     {1}{U}{R}        Legendary Creature — Human Shaman
 [x]  2071  Cancel                                   {1}{U}{U}        Instant
 [ ]  2072  Alchemist's Talent                       {3}{R}           Enchantment — Class
@@ -2075,23 +2075,23 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2082  Sowing Mycospawn                         {3}{G}           Creature — Eldrazi Fungus
 [ ]  2083  Sudden Spoiling                          {1}{B}{B}        Instant
 [ ]  2084  Liliana, Death's Majesty                 {3}{B}{B}        Legendary Planeswalker — Liliana
-[ ]  2085  Deathreap Ritual                         {2}{B}{G}        Enchantment
+[x]  2085  Deathreap Ritual                         {2}{B}{G}        Enchantment
 [ ]  2086  Nissa, Resurgent Animist                 {2}{G}           Legendary Creature — Elf Scout
-[ ]  2087  Body of Knowledge                        {3}{U}{U}        Creature — Avatar
+[x]  2087  Body of Knowledge                        {3}{U}{U}        Creature — Avatar
 [ ]  2088  Dawn Charm                               {1}{W}           Instant
-[ ]  2089  Personal Tutor                           {U}              Sorcery
-[ ]  2090  Paradise Druid                           {1}{G}           Creature — Elf Druid
+[x]  2089  Personal Tutor                           {U}              Sorcery
+[x]  2090  Paradise Druid                           {1}{G}           Creature — Elf Druid
 [ ]  2091  Ruthless Technomancer                    {3}{B}           Creature — Human Wizard
 [ ]  2092  Patrolling Peacemaker                    {2}{W}           Artifact Creature — Robot Soldier
 [ ]  2093  Hagra Mauling // Hagra Broodpit          {4}              Instant // Land
 [x]  2094  Azorius Guildgate                        {0}              Land — Gate
-[ ]  2095  Cold-Eyed Selkie                         {1}{G/U}{G/U}    Creature — Merfolk Rogue
+[x]  2095  Cold-Eyed Selkie                         {1}{G/U}{G/U}    Creature — Merfolk Rogue
 [x]  2096  Atomize                                  {2}{B}{G}        Instant
-[ ]  2097  Perilous Landscape                       {0}              Land
+[x]  2097  Perilous Landscape                       {0}              Land
 [x]  2098  Silverback Elder                         {2}{G}{G}{G}     Creature — Ape Shaman
 [ ]  2099  Party Thrasher                           {1}{R}           Creature — Lizard Wizard
-[ ]  2100  Drown in Dreams                          {X}{2}{U}        Instant
-[ ]  2101  Flicker of Fate                          {1}{W}           Instant
+[x]  2100  Drown in Dreams                          {X}{2}{U}        Instant
+[x]  2101  Flicker of Fate                          {1}{W}           Instant
 [ ]  2102  Grafdigger's Cage                        {1}              Artifact
 [x]  2103  Bruvac the Grandiloquent                 {2}{U}           Legendary Creature — Human Advisor
 [ ]  2104  Mycoloth                                 {3}{G}{G}        Creature — Fungus
@@ -2100,8 +2100,8 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2107  Weaver of Harmony                        {1}{G}           Enchantment Creature — Snake Druid
 [ ]  2108  Liesa, Forgotten Archangel               {2}{W}{W}{B}     Legendary Creature — Angel
 [ ]  2109  Semblance Anvil                          {3}              Artifact
-[ ]  2110  Tranquil Landscape                       {0}              Land
-[ ]  2111  Coldsteel Heart                          {2}              Snow Artifact
+[x]  2110  Tranquil Landscape                       {0}              Land
+[x]  2111  Coldsteel Heart                          {2}              Snow Artifact
 [ ]  2112  Archon of Emeria                         {2}{W}           Creature — Archon
 [ ]  2113  Psychic Frog                             {U}{B}           Creature — Frog
 [ ]  2114  Cityscape Leveler                        {8}              Artifact Creature — Construct

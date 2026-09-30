@@ -25,6 +25,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "5/3 Green Elemental Token",
   "5/5 Elemental Token",
   "6/6 Dragon Token",
+  "6/6 Wurm Token",
   "Ally Token",
   "Ape Token",
   "Army Token",

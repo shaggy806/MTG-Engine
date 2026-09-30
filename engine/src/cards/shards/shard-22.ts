@@ -27,6 +27,7 @@ import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
 import _poolCoalGolem from "../pool/coal-golem.js";
+import _poolColdsteelHeart from "../pool/coldsteel-heart.js";
 import _poolColossadactyl from "../pool/colossadactyl.js";
 import _poolCouncilOfAdvisors from "../pool/council-of-advisors.js";
 import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
@@ -54,6 +55,7 @@ import _poolFallenAngel from "../pool/fallen-angel.js";
 import _poolFangrenHunter from "../pool/fangren-hunter.js";
 import _poolFarseek from "../pool/farseek.js";
 import _poolFightingDrake from "../pool/fighting-drake.js";
+import _poolFlickerOfFate from "../pool/flicker-of-fate.js";
 import _poolFlowstoneShambler from "../pool/flowstone-shambler.js";
 import _poolFontOfVigor from "../pool/font-of-vigor.js";
 import _poolFountainport from "../pool/fountainport.js";
@@ -68,6 +70,7 @@ import _poolGuadosalamFarplaneGateway from "../pool/guadosalam-farplane-gateway.
 import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
 import _poolHeavyBallista from "../pool/heavy-ballista.js";
 import _poolHighlandGame from "../pool/highland-game.js";
+import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
 import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
@@ -172,6 +175,7 @@ import _poolTowerOfMurmurs from "../pool/tower-of-murmurs.js";
 import _poolToweringThunderfist from "../pool/towering-thunderfist.js";
 import _poolTravelersAmulet from "../pool/travelers-amulet.js";
 import _poolTresserhornSinks from "../pool/tresserhorn-sinks.js";
+import _poolTrinketMage from "../pool/trinket-mage.js";
 import _poolTwoHeadedCerberus from "../pool/two-headed-cerberus.js";
 import _poolTyrantsMachine from "../pool/tyrants-machine.js";
 import _poolUltimaOriginOfOblivion from "../pool/ultima-origin-of-oblivion.js";
@@ -221,6 +225,7 @@ const shard: CardShard = {
     _poolCatharticReunion,
     _poolChokedEstuary,
     _poolCoalGolem,
+    _poolColdsteelHeart,
     _poolColossadactyl,
     _poolCouncilOfAdvisors,
     _poolCracklingPerimeter,
@@ -248,6 +253,7 @@ const shard: CardShard = {
     _poolFangrenHunter,
     _poolFarseek,
     _poolFightingDrake,
+    _poolFlickerOfFate,
     _poolFlowstoneShambler,
     _poolFontOfVigor,
     _poolFountainport,
@@ -262,6 +268,7 @@ const shard: CardShard = {
     _poolGuardianOfPilgrims,
     _poolHeavyBallista,
     _poolHighlandGame,
+    _poolHomunculusHorde,
     _poolHonorGuard,
     _poolHoverBarrier,
     _poolImpulsivePilferer,
@@ -366,6 +373,7 @@ const shard: CardShard = {
     _poolToweringThunderfist,
     _poolTravelersAmulet,
     _poolTresserhornSinks,
+    _poolTrinketMage,
     _poolTwoHeadedCerberus,
     _poolTyrantsMachine,
     _poolUltimaOriginOfOblivion,

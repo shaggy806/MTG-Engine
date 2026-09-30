@@ -16,6 +16,7 @@ import _poolBastionOfRemembrance from "../pool/bastion-of-remembrance.js";
 import _poolBastionProtector from "../pool/bastion-protector.js";
 import _poolBendersWaterskin from "../pool/benders-waterskin.js";
 import _poolBindingMummy from "../pool/binding-mummy.js";
+import _poolBirthingPod from "../pool/birthing-pod.js";
 import _poolBlazingVolley from "../pool/blazing-volley.js";
 import _poolBlisteringDieflyn from "../pool/blistering-dieflyn.js";
 import _poolBloodlineKeeper from "../pool/bloodline-keeper.js";
@@ -216,6 +217,7 @@ const shard: CardShard = {
     _poolBastionProtector,
     _poolBendersWaterskin,
     _poolBindingMummy,
+    _poolBirthingPod,
     _poolBlazingVolley,
     _poolBlisteringDieflyn,
     _poolBloodlineKeeper,
