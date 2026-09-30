@@ -58,6 +58,7 @@ import _poolDivineFavor from "../pool/divine-favor.js";
 import _poolDoranTheSiegeTower from "../pool/doran-the-siege-tower.js";
 import _poolDragonbornLooter from "../pool/dragonborn-looter.js";
 import _poolDragonsHoard from "../pool/dragons-hoard.js";
+import _poolDrownyardTemple from "../pool/drownyard-temple.js";
 import _poolDuneBeetle from "../pool/dune-beetle.js";
 import _poolDuskmantleHouseOfShadow from "../pool/duskmantle-house-of-shadow.js";
 import _poolEarthblighter from "../pool/earthblighter.js";
@@ -260,6 +261,7 @@ const shard: CardShard = {
     _poolDoranTheSiegeTower,
     _poolDragonbornLooter,
     _poolDragonsHoard,
+    _poolDrownyardTemple,
     _poolDuneBeetle,
     _poolDuskmantleHouseOfShadow,
     _poolEarthblighter,

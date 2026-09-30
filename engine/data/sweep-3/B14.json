@@ -1,0 +1,437 @@
+{
+  "batch": "B14",
+  "status": "complete",
+  "ranks": "1957-2035",
+  "authored": [
+    {
+      "name": "Seething Landscape",
+      "files": [
+        "engine/src/cards/pool/seething-landscape.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hulking Raptor",
+      "files": [
+        "engine/src/cards/pool/hulking-raptor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Chart a Course",
+      "files": [
+        "engine/src/cards/pool/chart-a-course.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Junk Diver",
+      "files": [
+        "engine/src/cards/pool/junk-diver.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shinka, the Bloodsoaked Keep",
+      "files": [
+        "engine/src/cards/pool/shinka-the-bloodsoaked-keep.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "The Eldest Reborn",
+      "files": [
+        "engine/src/cards/pool/the-eldest-reborn.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Grazilaxx, Illithid Scholar",
+      "files": [
+        "engine/src/cards/pool/grazilaxx-illithid-scholar.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Drownyard Temple",
+      "files": [
+        "engine/src/cards/pool/drownyard-temple.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Flashback",
+      "files": [
+        "engine/src/cards/pool/flashback.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mikaeus, the Lunarch",
+      "files": [
+        "engine/src/cards/pool/mikaeus-the-lunarch.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Horn of Gondor",
+      "files": [
+        "engine/src/cards/pool/horn-of-gondor.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ogre Slumlord",
+      "files": [
+        "engine/src/cards/pool/ogre-slumlord.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Strength of the Harvest",
+      "files": [
+        "engine/src/cards/pool/strength-of-the-harvest.ts",
+        "engine/src/cards/pool/haven-of-the-harvest.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Virtue of Persistence",
+      "files": [
+        "engine/src/cards/pool/virtue-of-persistence.ts",
+        "engine/src/cards/pool/locthwain-scorn.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Venser's Journal",
+      "files": [
+        "engine/src/cards/pool/vensers-journal.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ravenform",
+      "files": [
+        "engine/src/cards/pool/ravenform.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Resplendent Angel",
+      "files": [
+        "engine/src/cards/pool/resplendent-angel.ts",
+        "engine/src/cards/tokens/angel-vigilance-token.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cryptbreaker",
+      "files": [
+        "engine/src/cards/pool/cryptbreaker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bootleggers' Stash",
+      "files": [
+        "engine/src/cards/pool/bootleggers-stash.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Silundi Vision",
+      "files": [
+        "engine/src/cards/pool/silundi-vision.ts",
+        "engine/src/cards/pool/silundi-isle.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Halana and Alena, Partners",
+      "files": [
+        "engine/src/cards/pool/halana-and-alena-partners.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Falkenrath Noble",
+      "files": [
+        "engine/src/cards/pool/falkenrath-noble.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Nevinyrral's Disk",
+      "files": [
+        "engine/src/cards/pool/nevinyrrals-disk.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Kederekt Parasite",
+      "files": [
+        "engine/src/cards/pool/kederekt-parasite.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Garruk's Packleader",
+      "files": [
+        "engine/src/cards/pool/garruks-packleader.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Warping Wail",
+      "files": [
+        "engine/src/cards/pool/warping-wail.ts",
+        "engine/src/cards/tokens/eldrazi-scion-token.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Angel's Grace",
+      "needs": [
+        "new:win-game"
+      ],
+      "why": "'You can't lose the game this turn', split second, and a life floor of 1."
+    },
+    {
+      "name": "Deafening Silence",
+      "needs": [
+        "new:cast-limit"
+      ],
+      "why": "'Each player can't cast more than one noncreature spell each turn'."
+    },
+    {
+      "name": "Wound Reflection",
+      "needs": [
+        "new:turn-stat-per-player-amount"
+      ],
+      "why": "Each opponent loses the life they lost this turn — an amount read per opponent."
+    },
+    {
+      "name": "Kor Spiritdancer",
+      "needs": [
+        "new:count-attached-to-affected"
+      ],
+      "why": "'+2/+2 for each Aura attached to it'."
+    },
+    {
+      "name": "Overpowering Attack",
+      "needs": [
+        "new:freerunning"
+      ],
+      "why": "Freerunning."
+    },
+    {
+      "name": "Venser, Shaper Savant",
+      "needs": [
+        "new:target-spell-or-permanent"
+      ],
+      "why": "'Return target spell or permanent' — one target that may be either."
+    },
+    {
+      "name": "Solitude",
+      "needs": [
+        "new:alt-cost-exile-card"
+      ],
+      "why": "Evoke by exiling a white card (the Incarnations, BACKLOG)."
+    },
+    {
+      "name": "Anticausal Vestige",
+      "needs": [
+        "new:hand-filter-land-count"
+      ],
+      "why": "A permanent card with mana value up to your land count from hand (BACKLOG)."
+    },
+    {
+      "name": "Hero of Bladehold",
+      "needs": [
+        "decision:trigger-order"
+      ],
+      "why": "Battle cry and the token trigger resolve in the player's order (BACKLOG)."
+    },
+    {
+      "name": "Inkmoth Nexus",
+      "needs": [
+        "new:infect"
+      ],
+      "why": "Infect."
+    },
+    {
+      "name": "Winds of Abandon",
+      "needs": [
+        "new:overload-per-controller-search"
+      ],
+      "why": "Overload, and a search for each exiled creature's controller."
+    },
+    {
+      "name": "Sheoldred // The True Scriptures",
+      "needs": [
+        "new:exile-transform-return"
+      ],
+      "why": "Its transform ability and the Saga's per-opponent targets."
+    },
+    {
+      "name": "Crystal Skull, Isu Spyglass",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "Look at the top card any time; play historic from the top."
+    },
+    {
+      "name": "Quartzwood Crasher",
+      "needs": [
+        "new:token-with-amount-pt"
+      ],
+      "why": "An X/X token where X is the damage dealt."
+    },
+    {
+      "name": "Power Depot",
+      "needs": [
+        "new:modular"
+      ],
+      "why": "Modular."
+    },
+    {
+      "name": "Thassa, God of the Sea",
+      "needs": [
+        "new:devotion-condition-type"
+      ],
+      "why": "'As long as your devotion to blue is less than five, Thassa isn't a creature'."
+    },
+    {
+      "name": "Taunt from the Rampart",
+      "needs": [
+        "new:restrict-until-your-next-turn"
+      ],
+      "why": "Can't block until your next turn (restrict lasts this turn)."
+    },
+    {
+      "name": "Gix, Yawgmoth Praetor",
+      "needs": [
+        "new:discard-x-cost"
+      ],
+      "why": "'Discard X cards' as a cost, and a may-pay-life draw per creature."
+    },
+    {
+      "name": "Magda, the Hoardmaster",
+      "needs": [
+        "new:crime",
+        "cost:sacrifice-multiple"
+      ],
+      "why": "Committing a crime, and 'Sacrifice three Treasures'."
+    },
+    {
+      "name": "Intuition",
+      "needs": [
+        "new:opponent-chooses-from-found"
+      ],
+      "why": "Target opponent chooses one of three found cards."
+    },
+    {
+      "name": "Summon: Fenrir",
+      "needs": [
+        "new:next-creature-enters-with-counter",
+        "new:greatest-power-condition"
+      ],
+      "why": "Chapter II and III."
+    },
+    {
+      "name": "Crystal Barricade",
+      "needs": [
+        "new:damage-prevented-to-filter"
+      ],
+      "why": "Prevent noncombat damage to other creatures you control."
+    },
+    {
+      "name": "Mutational Advantage",
+      "needs": [
+        "new:damage-prevented-to-filter"
+      ],
+      "why": "Prevent all damage to permanents with counters this turn."
+    },
+    {
+      "name": "Daretti, Scrap Savant",
+      "needs": [
+        "decision:discard-any-number"
+      ],
+      "why": "'Discard up to two cards, then draw that many'."
+    },
+    {
+      "name": "Righteous Valkyrie",
+      "needs": [
+        "new:life-above-starting"
+      ],
+      "why": "'At least 7 life more than your starting life total'."
+    },
+    {
+      "name": "Thirst for Knowledge",
+      "needs": [
+        "new:discard-unless-type"
+      ],
+      "why": "'Discard two cards unless you discard an artifact card'."
+    },
+    {
+      "name": "Sunforger",
+      "needs": [
+        "new:unattach-cost",
+        "effect:cast-during-resolution"
+      ],
+      "why": "Unattach as a cost, and cast a searched card free."
+    },
+    {
+      "name": "Arixmethes, Slumbering Isle",
+      "needs": [
+        "new:slumber-counters-type-change"
+      ],
+      "why": "A land while it has slumber counters."
+    },
+    {
+      "name": "Fractured Sanity",
+      "needs": [
+        "new:cycle-trigger"
+      ],
+      "why": "'When you cycle this card' (Decree of Pain's blocker)."
+    },
+    {
+      "name": "Ojer Kaslem, Deepest Growth // Temple of Cultivation",
+      "needs": [
+        "new:reveal-put-creature-and-land"
+      ],
+      "why": "Put a creature and/or land from among revealed cards; the God's return transformed."
+    },
+    {
+      "name": "Auton Soldier",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "A Clone that isn't legendary, is an artifact, and has myriad."
+    },
+    {
+      "name": "Eladamri, Korvecdal",
+      "needs": [
+        "zone:visibility-extensions"
+      ],
+      "why": "Look at the top any time; cast creatures from it; reveal from hand or top."
+    },
+    {
+      "name": "Perpetual Timepiece",
+      "needs": [
+        "new:shuffle-targets-into-library"
+      ],
+      "why": "Shuffle any number of target cards from your graveyard into your library."
+    },
+    {
+      "name": "Sakashima the Impostor",
+      "needs": [
+        "effect:copy-exceptions"
+      ],
+      "why": "A Clone keeping its name, legendary, with a granted ability."
+    }
+  ]
+}

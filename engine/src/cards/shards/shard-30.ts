@@ -89,6 +89,7 @@ import _poolGrixisCharm from "../pool/grixis-charm.js";
 import _poolHagraSharpshooter from "../pool/hagra-sharpshooter.js";
 import _poolHardenedScaleArmor from "../pool/hardened-scale-armor.js";
 import _poolHarvesterOfSouls from "../pool/harvester-of-souls.js";
+import _poolHavenOfTheHarvest from "../pool/haven-of-the-harvest.js";
 import _poolHeliodsPilgrim from "../pool/heliods-pilgrim.js";
 import _poolHexplateGolem from "../pool/hexplate-golem.js";
 import _poolHorizonScholar from "../pool/horizon-scholar.js";
@@ -121,6 +122,7 @@ import _poolMeditationPools from "../pool/meditation-pools.js";
 import _poolMessengerFalcons from "../pool/messenger-falcons.js";
 import _poolMetastaticEvangel from "../pool/metastatic-evangel.js";
 import _poolMetropolisSprite from "../pool/metropolis-sprite.js";
+import _poolMikaeusTheLunarch from "../pool/mikaeus-the-lunarch.js";
 import _poolMoaningWall from "../pool/moaning-wall.js";
 import _poolMoggRaider from "../pool/mogg-raider.js";
 import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
@@ -297,6 +299,7 @@ const shard: CardShard = {
     _poolHagraSharpshooter,
     _poolHardenedScaleArmor,
     _poolHarvesterOfSouls,
+    _poolHavenOfTheHarvest,
     _poolHeliodsPilgrim,
     _poolHexplateGolem,
     _poolHorizonScholar,
@@ -329,6 +332,7 @@ const shard: CardShard = {
     _poolMessengerFalcons,
     _poolMetastaticEvangel,
     _poolMetropolisSprite,
+    _poolMikaeusTheLunarch,
     _poolMoaningWall,
     _poolMoggRaider,
     _poolMoorishCavalry,

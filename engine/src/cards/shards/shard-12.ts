@@ -26,6 +26,7 @@ import _poolBlightsoilDruid from "../pool/blightsoil-druid.js";
 import _poolBloodMist from "../pool/blood-mist.js";
 import _poolBoggartCursecrafter from "../pool/boggart-cursecrafter.js";
 import _poolBookOfRass from "../pool/book-of-rass.js";
+import _poolBootleggersStash from "../pool/bootleggers-stash.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolCarrionFeeder from "../pool/carrion-feeder.js";
@@ -218,6 +219,7 @@ const shard: CardShard = {
     _poolBloodMist,
     _poolBoggartCursecrafter,
     _poolBookOfRass,
+    _poolBootleggersStash,
     _poolBorosCluestone,
     _poolBreathOfFire,
     _poolCarrionFeeder,

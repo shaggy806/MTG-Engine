@@ -24,6 +24,7 @@ import _poolCacklingFiend from "../pool/cackling-fiend.js";
 import _poolCarnivorousPlant from "../pool/carnivorous-plant.js";
 import _poolChainReaction from "../pool/chain-reaction.js";
 import _poolChandrasMagmutt from "../pool/chandras-magmutt.js";
+import _poolChartACourse from "../pool/chart-a-course.js";
 import _poolChromaticLantern from "../pool/chromatic-lantern.js";
 import _poolClavilenoFirstOfTheBlessed from "../pool/clavileno-first-of-the-blessed.js";
 import _poolCommonBond from "../pool/common-bond.js";
@@ -149,6 +150,7 @@ import _poolSymbioticBeast from "../pool/symbiotic-beast.js";
 import _poolTanglebloom from "../pool/tanglebloom.js";
 import _poolTanglepoolBridge from "../pool/tanglepool-bridge.js";
 import _poolTerrorOfTheFairgrounds from "../pool/terror-of-the-fairgrounds.js";
+import _poolTheEldestReborn from "../pool/the-eldest-reborn.js";
 import _poolThornwoodFalls from "../pool/thornwood-falls.js";
 import _poolThrivingGrove from "../pool/thriving-grove.js";
 import _poolTomBombadil from "../pool/tom-bombadil.js";
@@ -162,6 +164,7 @@ import _poolUndeadMinotaur from "../pool/undead-minotaur.js";
 import _poolUnholyStrength from "../pool/unholy-strength.js";
 import _poolUnstoppablePlan from "../pool/unstoppable-plan.js";
 import _poolValorousSteed from "../pool/valorous-steed.js";
+import _poolVensersJournal from "../pool/vensers-journal.js";
 import _poolVesperGhoul from "../pool/vesper-ghoul.js";
 import _poolVesselOfEphemera from "../pool/vessel-of-ephemera.js";
 import _poolVexingBauble from "../pool/vexing-bauble.js";
@@ -198,6 +201,7 @@ const shard: CardShard = {
     _poolCarnivorousPlant,
     _poolChainReaction,
     _poolChandrasMagmutt,
+    _poolChartACourse,
     _poolChromaticLantern,
     _poolClavilenoFirstOfTheBlessed,
     _poolCommonBond,
@@ -323,6 +327,7 @@ const shard: CardShard = {
     _poolTanglebloom,
     _poolTanglepoolBridge,
     _poolTerrorOfTheFairgrounds,
+    _poolTheEldestReborn,
     _poolThornwoodFalls,
     _poolThrivingGrove,
     _poolTomBombadil,
@@ -336,6 +341,7 @@ const shard: CardShard = {
     _poolUnholyStrength,
     _poolUnstoppablePlan,
     _poolValorousSteed,
+    _poolVensersJournal,
     _poolVesperGhoul,
     _poolVesselOfEphemera,
     _poolVexingBauble,

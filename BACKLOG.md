@@ -152,15 +152,21 @@ that one card is the reason the deck exists.
   nearly all by one-card features. Cheap ones: `create-token-copy` with an amount for its count
   (For the Common Good), crew (Smuggler's Copter), a free cast "once each turn" (As Foretold, One
   with the Multiverse).
+- **Top-5000 batch 14 (2026-09-29) triaged ranks 1957–2035:** 26 authored (Nevinyrral's Disk, The
+  Eldest Reborn, Warping Wail, Cryptbreaker, Resplendent Angel, Grazilaxx and 20 more —
+  `top5000-batch-14.test.ts`); 34 blocked, each in `engine/data/sweep-3/B14.json`. Across B9–B14
+  the "look at the top card of your library any time" family (`zone:visibility-extensions`) and
+  a damage replacement filtered by recipient (`new:damage-prevented-to-filter` — Losheel, Crystal
+  Barricade, Mutational Advantage) come up most among the one-feature blockers.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Then (priority since 2026-09-26): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,894 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (1,920 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 1956, nothing is triaged.
+  the batches since; past rank 2035, nothing is triaged.
 - **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
   cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
   enter attacking, with the `enter-attacking` decision where there's a choice, and delayed

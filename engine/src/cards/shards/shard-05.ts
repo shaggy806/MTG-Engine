@@ -47,6 +47,7 @@ import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
 import _poolContentiousPlan from "../pool/contentious-plan.js";
 import _poolCorpsejackMenace from "../pool/corpsejack-menace.js";
+import _poolCryptbreaker from "../pool/cryptbreaker.js";
 import _poolCustodianOfTheTrove from "../pool/custodian-of-the-trove.js";
 import _poolDarkConfidant from "../pool/dark-confidant.js";
 import _poolDawnToDusk from "../pool/dawn-to-dusk.js";
@@ -71,6 +72,7 @@ import _poolFinneasAceArcher from "../pool/finneas-ace-archer.js";
 import _poolFlawlessManeuver from "../pool/flawless-maneuver.js";
 import _poolFrenziedDevils from "../pool/frenzied-devils.js";
 import _poolGaleSwooper from "../pool/gale-swooper.js";
+import _poolGarruksPackleader from "../pool/garruks-packleader.js";
 import _poolGenjiGlove from "../pool/genji-glove.js";
 import _poolGingerbreadHunter from "../pool/gingerbread-hunter.js";
 import _poolGixianInfiltrator from "../pool/gixian-infiltrator.js";
@@ -99,12 +101,14 @@ import _poolInquisitivePuppet from "../pool/inquisitive-puppet.js";
 import _poolInspiredCharge from "../pool/inspired-charge.js";
 import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
+import _poolKederektParasite from "../pool/kederekt-parasite.js";
 import _poolLeapingMaster from "../pool/leaping-master.js";
 import _poolLeyDruid from "../pool/ley-druid.js";
 import _poolLightningStrike from "../pool/lightning-strike.js";
 import _poolLithatog from "../pool/lithatog.js";
 import _poolLlanowarCavalry from "../pool/llanowar-cavalry.js";
 import _poolLlanowarVisionary from "../pool/llanowar-visionary.js";
+import _poolLocthwainScorn from "../pool/locthwain-scorn.js";
 import _poolLoyalGuardian from "../pool/loyal-guardian.js";
 import _poolLumraBellowOfTheWoods from "../pool/lumra-bellow-of-the-woods.js";
 import _poolMalachiteGolem from "../pool/malachite-golem.js";
@@ -250,6 +254,7 @@ const shard: CardShard = {
     _poolConsulateSkygate,
     _poolContentiousPlan,
     _poolCorpsejackMenace,
+    _poolCryptbreaker,
     _poolCustodianOfTheTrove,
     _poolDarkConfidant,
     _poolDawnToDusk,
@@ -274,6 +279,7 @@ const shard: CardShard = {
     _poolFlawlessManeuver,
     _poolFrenziedDevils,
     _poolGaleSwooper,
+    _poolGarruksPackleader,
     _poolGenjiGlove,
     _poolGingerbreadHunter,
     _poolGixianInfiltrator,
@@ -302,12 +308,14 @@ const shard: CardShard = {
     _poolInspiredCharge,
     _poolInvokeTheDivine,
     _poolJasmineBoreal,
+    _poolKederektParasite,
     _poolLeapingMaster,
     _poolLeyDruid,
     _poolLightningStrike,
     _poolLithatog,
     _poolLlanowarCavalry,
     _poolLlanowarVisionary,
+    _poolLocthwainScorn,
     _poolLoyalGuardian,
     _poolLumraBellowOfTheWoods,
     _poolMalachiteGolem,

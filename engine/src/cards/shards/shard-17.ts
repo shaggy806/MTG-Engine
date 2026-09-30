@@ -140,6 +140,7 @@ import _poolSabretoothTiger from "../pool/sabretooth-tiger.js";
 import _poolScarwoodTreefolk from "../pool/scarwood-treefolk.js";
 import _poolScouredBarrens from "../pool/scoured-barrens.js";
 import _poolSeafloorDebris from "../pool/seafloor-debris.js";
+import _poolSeethingLandscape from "../pool/seething-landscape.js";
 import _poolSewnEyeDrake from "../pool/sewn-eye-drake.js";
 import _poolShieldsMight from "../pool/shields-might.js";
 import _poolShock from "../pool/shock.js";
@@ -349,6 +350,7 @@ const shard: CardShard = {
     _poolScarwoodTreefolk,
     _poolScouredBarrens,
     _poolSeafloorDebris,
+    _poolSeethingLandscape,
     _poolSewnEyeDrake,
     _poolShieldsMight,
     _poolShock,

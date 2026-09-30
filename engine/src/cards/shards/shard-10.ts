@@ -147,6 +147,7 @@ import _poolRacersRing from "../pool/racers-ring.js";
 import _poolRavenousRats from "../pool/ravenous-rats.js";
 import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.js";
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
+import _poolResplendentAngel from "../pool/resplendent-angel.js";
 import _poolRiotSpikes from "../pool/riot-spikes.js";
 import _poolRipjawRaptor from "../pool/ripjaw-raptor.js";
 import _poolRiverchurnMonument from "../pool/riverchurn-monument.js";
@@ -163,6 +164,7 @@ import _poolSepharaSkysBlade from "../pool/sephara-skys-blade.js";
 import _poolShineshadowSnarl from "../pool/shineshadow-snarl.js";
 import _poolSiegeRhino from "../pool/siege-rhino.js";
 import _poolSilentArtisan from "../pool/silent-artisan.js";
+import _poolSilundiIsle from "../pool/silundi-isle.js";
 import _poolSimplify from "../pool/simplify.js";
 import _poolSpatialContortion from "../pool/spatial-contortion.js";
 import _poolSphinxOfEnlightenment from "../pool/sphinx-of-enlightenment.js";
@@ -362,6 +364,7 @@ const shard: CardShard = {
     _poolRavenousRats,
     _poolRekiTheHistoryOfKamigawa,
     _poolRenegadesGetaway,
+    _poolResplendentAngel,
     _poolRiotSpikes,
     _poolRipjawRaptor,
     _poolRiverchurnMonument,
@@ -378,6 +381,7 @@ const shard: CardShard = {
     _poolShineshadowSnarl,
     _poolSiegeRhino,
     _poolSilentArtisan,
+    _poolSilundiIsle,
     _poolSimplify,
     _poolSpatialContortion,
     _poolSphinxOfEnlightenment,

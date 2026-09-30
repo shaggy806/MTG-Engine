@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-1894 already implemented / 3106 missing (marks refreshed 2026-09-30)
+1920 already implemented / 3080 missing (marks refreshed 2026-09-30)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1947,15 +1947,15 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1954  Dragon Fodder                            {1}{R}           Sorcery
 [x]  1955  Ob Nixilis, the Fallen                   {3}{B}{B}        Legendary Creature — Demon
 [ ]  1956  Witness Protection                       {U}              Enchantment — Aura
-[ ]  1957  Seething Landscape                       {0}              Land
+[x]  1957  Seething Landscape                       {0}              Land
 [ ]  1958  Angel's Grace                            {W}              Instant
-[ ]  1959  Hulking Raptor                           {2}{G}{G}        Creature — Dinosaur
+[x]  1959  Hulking Raptor                           {2}{G}{G}        Creature — Dinosaur
 [ ]  1960  Deafening Silence                        {W}              Enchantment
 [x]  1961  Spectral Sailor                          {U}              Creature — Spirit Pirate
 [ ]  1962  Wound Reflection                         {5}{B}           Enchantment
-[ ]  1963  Chart a Course                           {1}{U}           Sorcery
-[ ]  1964  Junk Diver                               {3}              Artifact Creature — Bird
-[ ]  1965  Shinka, the Bloodsoaked Keep             {0}              Legendary Land
+[x]  1963  Chart a Course                           {1}{U}           Sorcery
+[x]  1964  Junk Diver                               {3}              Artifact Creature — Bird
+[x]  1965  Shinka, the Bloodsoaked Keep             {0}              Legendary Land
 [ ]  1966  Kor Spiritdancer                         {1}{W}           Creature — Kor Wizard
 [x]  1967  Stormfist Crusader                       {B}{R}           Creature — Human Knight
 [x]  1968  Many Partings                            {G}              Sorcery
@@ -1963,15 +1963,15 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1970  Venser, Shaper Savant                    {2}{U}{U}        Legendary Creature — Human Wizard
 [ ]  1971  Solitude                                 {3}{W}{W}        Creature — Elemental Incarnation
 [ ]  1972  Anticausal Vestige                       {6}              Creature — Eldrazi
-[ ]  1973  The Eldest Reborn                        {4}{B}           Enchantment — Saga
+[x]  1973  The Eldest Reborn                        {4}{B}           Enchantment — Saga
 [ ]  1974  Hero of Bladehold                        {2}{W}{W}        Creature — Human Knight
-[ ]  1975  Grazilaxx, Illithid Scholar              {1}{U}{U}        Legendary Creature — Horror
-[ ]  1976  Drownyard Temple                         {0}              Land
-[ ]  1977  Flashback                                {R}              Instant
+[x]  1975  Grazilaxx, Illithid Scholar              {1}{U}{U}        Legendary Creature — Horror
+[x]  1976  Drownyard Temple                         {0}              Land
+[x]  1977  Flashback                                {R}              Instant
 [ ]  1978  Inkmoth Nexus                            {0}              Land
-[ ]  1979  Mikaeus, the Lunarch                     {X}{W}           Legendary Creature — Human Cleric
+[x]  1979  Mikaeus, the Lunarch                     {X}{W}           Legendary Creature — Human Cleric
 [ ]  1980  Winds of Abandon                         {1}{W}           Sorcery
-[ ]  1981  Horn of Gondor                           {3}              Legendary Artifact
+[x]  1981  Horn of Gondor                           {3}              Legendary Artifact
 [x]  1982  Hero's Downfall                          {1}{B}{B}        Instant
 [x]  1983  Time Warp                                {3}{U}{U}        Sorcery
 [ ]  1984  Sheoldred // The True Scriptures         {5}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
@@ -1979,52 +1979,52 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1986  Crystal Skull, Isu Spyglass              {2}{U}{U}        Legendary Artifact
 [ ]  1987  Quartzwood Crasher                       {2}{R}{R}{G}     Creature — Dinosaur Beast
 [ ]  1988  Power Depot                              {0}              Artifact Land
-[ ]  1989  Ogre Slumlord                            {3}{B}{B}        Creature — Ogre Rogue
+[x]  1989  Ogre Slumlord                            {3}{B}{B}        Creature — Ogre Rogue
 [ ]  1990  Thassa, God of the Sea                   {2}{U}           Legendary Enchantment Creature — God
-[ ]  1991  Strength of the Harvest // Haven of the Harvest {3}              Enchantment — Aura // Land
+[x]  1991  Strength of the Harvest // Haven of the Harvest {3}              Enchantment — Aura // Land
 [ ]  1992  Grist, the Hunger Tide                   {1}{B}{G}        Legendary Planeswalker — Grist
 [ ]  1993  Taunt from the Rampart                   {3}{R}{W}        Sorcery
 [x]  1994  Goldvein Pick                            {2}              Artifact — Equipment
-[ ]  1995  Virtue of Persistence // Locthwain Scorn {5}{B}{B} // {1}{B} Enchantment // Sorcery — Adventure
+[x]  1995  Virtue of Persistence // Locthwain Scorn {5}{B}{B} // {1}{B} Enchantment // Sorcery — Adventure
 [x]  1996  Summon: Titan                            {3}{G}{G}        Enchantment Creature — Saga Giant
 [x]  1997  Lord of the Accursed                     {2}{B}           Creature — Zombie
-[ ]  1998  Venser's Journal                         {5}              Artifact — Book
+[x]  1998  Venser's Journal                         {5}              Artifact — Book
 [x]  1999  Starscape Cleric                         {1}{B}           Creature — Bat Cleric
 [ ]  2000  Gix, Yawgmoth Praetor                    {1}{B}{B}        Legendary Creature — Phyrexian Praetor
 [ ]  2001  Magda, the Hoardmaster                   {1}{R}           Legendary Creature — Dwarf Berserker
-[ ]  2002  Ravenform                                {2}{U}           Sorcery
-[ ]  2003  Resplendent Angel                        {1}{W}{W}        Creature — Angel
+[x]  2002  Ravenform                                {2}{U}           Sorcery
+[x]  2003  Resplendent Angel                        {1}{W}{W}        Creature — Angel
 [x]  2004  Eureka Moment                            {2}{G}{U}        Instant
 [ ]  2005  Intuition                                {2}{U}           Instant
-[ ]  2006  Cryptbreaker                             {B}              Creature — Zombie
+[x]  2006  Cryptbreaker                             {B}              Creature — Zombie
 [ ]  2007  Summon: Fenrir                           {2}{G}           Enchantment Creature — Saga Wolf
 [ ]  2008  Crystal Barricade                        {1}{W}           Artifact Creature — Wall
 [x]  2009  Emeria Angel                             {2}{W}{W}        Creature — Angel
 [x]  2010  Lathril, Blade of the Elves              {2}{B}{G}        Legendary Creature — Elf Noble
-[ ]  2011  Bootleggers' Stash                       {5}{G}           Artifact
-[ ]  2012  Silundi Vision // Silundi Isle           {3}              Instant // Land
-[ ]  2013  Halana and Alena, Partners               {2}{R}{G}        Legendary Creature — Human Ranger
+[x]  2011  Bootleggers' Stash                       {5}{G}           Artifact
+[x]  2012  Silundi Vision // Silundi Isle           {3}              Instant // Land
+[x]  2013  Halana and Alena, Partners               {2}{R}{G}        Legendary Creature — Human Ranger
 [x]  2014  Conduit Pylons                           {0}              Land — Desert
 [ ]  2015  Mutational Advantage                     {1}{G}{U}        Instant
-[ ]  2016  Falkenrath Noble                         {3}{B}           Creature — Vampire Noble
+[x]  2016  Falkenrath Noble                         {3}{B}           Creature — Vampire Noble
 [ ]  2017  Daretti, Scrap Savant                    {3}{R}           Legendary Planeswalker — Daretti
 [ ]  2018  Righteous Valkyrie                       {2}{W}           Creature — Angel Cleric
 [ ]  2019  Thirst for Knowledge                     {2}{U}           Instant
 [x]  2020  Wooded Bastion                           {0}              Land
 [ ]  2021  Sunforger                                {3}              Artifact — Equipment
-[ ]  2022  Nevinyrral's Disk                        {4}              Artifact
+[x]  2022  Nevinyrral's Disk                        {4}              Artifact
 [x]  2023  Sangromancer                             {2}{B}{B}        Creature — Vampire Shaman
 [x]  2024  Thunderfoot Baloth                       {4}{G}{G}        Creature — Beast
-[ ]  2025  Kederekt Parasite                        {B}              Creature — Horror
+[x]  2025  Kederekt Parasite                        {B}              Creature — Horror
 [ ]  2026  Arixmethes, Slumbering Isle              {2}{G}{U}        Legendary Creature — Kraken
 [ ]  2027  Fractured Sanity                         {U}{U}{U}        Sorcery
 [ ]  2028  Ojer Kaslem, Deepest Growth // Temple of Cultivation {5}              Legendary Creature — God // Land
 [x]  2029  Triton Shorestalker                      {U}              Creature — Merfolk Rogue
-[ ]  2030  Garruk's Packleader                      {4}{G}           Creature — Beast
+[x]  2030  Garruk's Packleader                      {4}{G}           Creature — Beast
 [ ]  2031  Auton Soldier                            {4}{U}{U}        Artifact Creature — Alien Soldier
 [ ]  2032  Eladamri, Korvecdal                      {1}{G}{G}        Legendary Creature — Elf Warrior
 [ ]  2033  Perpetual Timepiece                      {2}              Artifact
-[ ]  2034  Warping Wail                             {1}{C}           Instant
+[x]  2034  Warping Wail                             {1}{C}           Instant
 [ ]  2035  Sakashima the Impostor                   {2}{U}{U}        Legendary Creature — Human Rogue
 [ ]  2036  Glint-Horn Buccaneer                     {1}{R}{R}        Creature — Minotaur Pirate
 [x]  2037  Krenko's Command                         {1}{R}           Sorcery

@@ -69,6 +69,7 @@ import _poolHall from "../pool/hall.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
 import _poolHillGiantHerdgorger from "../pool/hill-giant-herdgorger.js";
 import _poolHippoCows from "../pool/hippo-cows.js";
+import _poolHornOfGondor from "../pool/horn-of-gondor.js";
 import _poolIcetillExplorer from "../pool/icetill-explorer.js";
 import _poolIndependentTroops from "../pool/independent-troops.js";
 import _poolInfernoFist from "../pool/inferno-fist.js";
@@ -267,6 +268,7 @@ const shard: CardShard = {
     _poolHardenedTactician,
     _poolHillGiantHerdgorger,
     _poolHippoCows,
+    _poolHornOfGondor,
     _poolIcetillExplorer,
     _poolIndependentTroops,
     _poolInfernoFist,

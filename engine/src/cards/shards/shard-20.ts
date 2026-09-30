@@ -79,6 +79,7 @@ import _poolGoblinGardener from "../pool/goblin-gardener.js";
 import _poolGolgariSignet from "../pool/golgari-signet.js";
 import _poolGoliathSpider from "../pool/goliath-spider.js";
 import _poolGravedigger from "../pool/gravedigger.js";
+import _poolGrazilaxxIllithidScholar from "../pool/grazilaxx-illithid-scholar.js";
 import _poolGrimDiscovery from "../pool/grim-discovery.js";
 import _poolGrizzledOutrider from "../pool/grizzled-outrider.js";
 import _poolGuideOfSouls from "../pool/guide-of-souls.js";
@@ -271,6 +272,7 @@ const shard: CardShard = {
     _poolGolgariSignet,
     _poolGoliathSpider,
     _poolGravedigger,
+    _poolGrazilaxxIllithidScholar,
     _poolGrimDiscovery,
     _poolGrizzledOutrider,
     _poolGuideOfSouls,

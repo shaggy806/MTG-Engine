@@ -179,6 +179,7 @@ import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
 import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
 import _poolZadasCommando from "../pool/zadas-commando.js";
+import _tokensEldraziScionToken from "../tokens/eldrazi-scion-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -359,7 +360,9 @@ const shard: CardShard = {
     _poolYgraEaterOfAll,
     _poolZadasCommando,
   ],
-  tokens: [],
+  tokens: [
+    _tokensEldraziScionToken,
+  ],
 };
 
 export default shard;

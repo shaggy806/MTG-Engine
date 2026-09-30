@@ -85,6 +85,7 @@ import _poolHornOfRamos from "../pool/horn-of-ramos.js";
 import _poolHussarPatrol from "../pool/hussar-patrol.js";
 import _poolIdyllicGrange from "../pool/idyllic-grange.js";
 import _poolJungleShrine from "../pool/jungle-shrine.js";
+import _poolJunkDiver from "../pool/junk-diver.js";
 import _poolKelinoreBat from "../pool/kelinore-bat.js";
 import _poolKillMaimBurn from "../pool/kill-maim-burn.js";
 import _poolKoboldTaskmaster from "../pool/kobold-taskmaster.js";
@@ -279,6 +280,7 @@ const shard: CardShard = {
     _poolHussarPatrol,
     _poolIdyllicGrange,
     _poolJungleShrine,
+    _poolJunkDiver,
     _poolKelinoreBat,
     _poolKillMaimBurn,
     _poolKoboldTaskmaster,

@@ -184,10 +184,12 @@ import _poolVaultOfTheArchangel from "../pool/vault-of-the-archangel.js";
 import _poolVedalkenMesmerist from "../pool/vedalken-mesmerist.js";
 import _poolViashinoSlasher from "../pool/viashino-slasher.js";
 import _poolViashinoWarrior from "../pool/viashino-warrior.js";
+import _poolVirtueOfPersistence from "../pool/virtue-of-persistence.js";
 import _poolVivisurgeonsInsight from "../pool/vivisurgeons-insight.js";
 import _poolVolatileFjord from "../pool/volatile-fjord.js";
 import _poolVoltaicKey from "../pool/voltaic-key.js";
 import _poolWanderersTwig from "../pool/wanderers-twig.js";
+import _poolWarpingWail from "../pool/warping-wail.js";
 import _poolWarriorsOfWakanda from "../pool/warriors-of-wakanda.js";
 import _poolWeldingJar from "../pool/welding-jar.js";
 import _poolWingsOfHope from "../pool/wings-of-hope.js";
@@ -385,10 +387,12 @@ const shard: CardShard = {
     _poolVedalkenMesmerist,
     _poolViashinoSlasher,
     _poolViashinoWarrior,
+    _poolVirtueOfPersistence,
     _poolVivisurgeonsInsight,
     _poolVolatileFjord,
     _poolVoltaicKey,
     _poolWanderersTwig,
+    _poolWarpingWail,
     _poolWarriorsOfWakanda,
     _poolWeldingJar,
     _poolWingsOfHope,

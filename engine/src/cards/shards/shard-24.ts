@@ -119,6 +119,7 @@ import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
 import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
 import _poolObscuraStorefront from "../pool/obscura-storefront.js";
+import _poolOgreSlumlord from "../pool/ogre-slumlord.js";
 import _poolOgreWarrior from "../pool/ogre-warrior.js";
 import _poolOnTheJob from "../pool/on-the-job.js";
 import _poolParcelMyr from "../pool/parcel-myr.js";
@@ -193,6 +194,7 @@ import _poolZephyrSprite from "../pool/zephyr-sprite.js";
 import _poolZodiacGoat from "../pool/zodiac-goat.js";
 import _tokens32ShapeshifterToken from "../tokens/3-2-shapeshifter-token.js";
 import _tokensAngelToken44 from "../tokens/angel-token-4-4.js";
+import _tokensAngelVigilanceToken from "../tokens/angel-vigilance-token.js";
 import _tokensFrogLizardToken from "../tokens/frog-lizard-token.js";
 import _tokensHeroToken from "../tokens/hero-token.js";
 import _tokensPestToken from "../tokens/pest-token.js";
@@ -316,6 +318,7 @@ const shard: CardShard = {
     _poolNicolBolasTheRavager,
     _poolNinjaOfTheHand,
     _poolObscuraStorefront,
+    _poolOgreSlumlord,
     _poolOgreWarrior,
     _poolOnTheJob,
     _poolParcelMyr,
@@ -392,6 +395,7 @@ const shard: CardShard = {
   tokens: [
     _tokens32ShapeshifterToken,
     _tokensAngelToken44,
+    _tokensAngelVigilanceToken,
     _tokensFrogLizardToken,
     _tokensHeroToken,
     _tokensPestToken,

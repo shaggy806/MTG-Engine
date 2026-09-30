@@ -116,6 +116,7 @@ import _poolMountainBandit from "../pool/mountain-bandit.js";
 import _poolMysticRetrieval from "../pool/mystic-retrieval.js";
 import _poolMythicProportions from "../pool/mythic-proportions.js";
 import _poolNaturesClaim from "../pool/natures-claim.js";
+import _poolNevinyrralsDisk from "../pool/nevinyrrals-disk.js";
 import _poolNightveilPredator from "../pool/nightveil-predator.js";
 import _poolOakhameRanger from "../pool/oakhame-ranger.js";
 import _poolObeliskOfEsper from "../pool/obelisk-of-esper.js";
@@ -321,6 +322,7 @@ const shard: CardShard = {
     _poolMysticRetrieval,
     _poolMythicProportions,
     _poolNaturesClaim,
+    _poolNevinyrralsDisk,
     _poolNightveilPredator,
     _poolOakhameRanger,
     _poolObeliskOfEsper,

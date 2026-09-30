@@ -72,6 +72,7 @@ import _poolGoblinMatron from "../pool/goblin-matron.js";
 import _poolGrayMerchantOfAsphodel from "../pool/gray-merchant-of-asphodel.js";
 import _poolGreenwoodSentinel from "../pool/greenwood-sentinel.js";
 import _poolGustSkimmer from "../pool/gust-skimmer.js";
+import _poolHalanaAndAlenaPartners from "../pool/halana-and-alena-partners.js";
 import _poolHaloScarab from "../pool/halo-scarab.js";
 import _poolHavocJester from "../pool/havoc-jester.js";
 import _poolHawkeyeClintBarton from "../pool/hawkeye-clint-barton.js";
@@ -82,6 +83,7 @@ import _poolHiredBlade from "../pool/hired-blade.js";
 import _poolHobgoblinDragoon from "../pool/hobgoblin-dragoon.js";
 import _poolHorizonSeeker from "../pool/horizon-seeker.js";
 import _poolHornetQueen from "../pool/hornet-queen.js";
+import _poolHulkingRaptor from "../pool/hulking-raptor.js";
 import _poolIcatianPriest from "../pool/icatian-priest.js";
 import _poolIdyllicTutor from "../pool/idyllic-tutor.js";
 import _poolIgneousCur from "../pool/igneous-cur.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolGrayMerchantOfAsphodel,
     _poolGreenwoodSentinel,
     _poolGustSkimmer,
+    _poolHalanaAndAlenaPartners,
     _poolHaloScarab,
     _poolHavocJester,
     _poolHawkeyeClintBarton,
@@ -281,6 +284,7 @@ const shard: CardShard = {
     _poolHobgoblinDragoon,
     _poolHorizonSeeker,
     _poolHornetQueen,
+    _poolHulkingRaptor,
     _poolIcatianPriest,
     _poolIdyllicTutor,
     _poolIgneousCur,

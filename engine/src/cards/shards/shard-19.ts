@@ -42,6 +42,7 @@ import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
+import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
 import _poolFellTheMighty from "../pool/fell-the-mighty.js";
 import _poolFireLordZuko from "../pool/fire-lord-zuko.js";
 import _poolFlowstoneKavu from "../pool/flowstone-kavu.js";
@@ -238,6 +239,7 @@ const shard: CardShard = {
     _poolDrossSkullbomb,
     _poolExsanguinate,
     _poolFabledPassage,
+    _poolFalkenrathNoble,
     _poolFellTheMighty,
     _poolFireLordZuko,
     _poolFlowstoneKavu,

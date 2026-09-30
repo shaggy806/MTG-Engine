@@ -66,6 +66,7 @@ import _poolEshkiTemursRoar from "../pool/eshki-temurs-roar.js";
 import _poolEtheriumSculptor from "../pool/etherium-sculptor.js";
 import _poolEyesOfTheBeholder from "../pool/eyes-of-the-beholder.js";
 import _poolFireNationSoldier from "../pool/fire-nation-soldier.js";
+import _poolFlashback from "../pool/flashback.js";
 import _poolFlyingOctobot from "../pool/flying-octobot.js";
 import _poolFortify from "../pool/fortify.js";
 import _poolFountainOfRenewal from "../pool/fountain-of-renewal.js";
@@ -260,6 +261,7 @@ const shard: CardShard = {
     _poolEtheriumSculptor,
     _poolEyesOfTheBeholder,
     _poolFireNationSoldier,
+    _poolFlashback,
     _poolFlyingOctobot,
     _poolFortify,
     _poolFountainOfRenewal,
