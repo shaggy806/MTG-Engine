@@ -54,6 +54,9 @@ for:
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
+- **`docs/rules/MagicCompRules_20260925.txt`** — the Comprehensive Rules, effective 2026-09-25
+  (Wizards' text, unedited). Grep it for a rule's number and wording before citing one in code, a
+  comment or a commit; when a newer edition is added, replace the file and this line.
 - **`docs/plans/*.md`** — design records, each saying *why* its piece is shaped the way it is,
   with a `Status:` line at the top. `docs/plans/README.md` indexes them. Two are **in
   progress**: `bot-effect-knowledge` (the plan of record for the bots — read it before changing
