@@ -660,6 +660,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         // bots to the same rule — see `ackFrame`.
         actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
         hand={hand}
+        previousStack={shown.previousView?.zones.stack ?? null}
       />
 
       {showHistory ? (
@@ -708,6 +709,9 @@ interface TableProps {
     readonly handGrid: boolean
     readonly setHandGrid: (open: boolean) => void
   }
+  /** The stack as the board before this one had it — what `Stack` needs to
+   * animate only its new arrivals (see its `previousStack`). */
+  readonly previousStack: readonly ObjectId[] | null
 }
 
 /**
@@ -717,7 +721,7 @@ interface TableProps {
  * *not* reset per frame — the hand tray being raised — lives in `GameScreen`
  * and arrives through props.
  */
-function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
+function Table({ view, seat, opponents, game, actions, hand, previousStack }: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
@@ -3710,6 +3714,15 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
       seatClassOf={(player) => seatClassOf(view.turnOrder, player)}
       isActive={view.activePlayer === pid}
       hasPriority={view.priority.holder === pid}
+      waiting={
+        // Someone else the game is waiting on. Your own turn to act is said
+        // by the decision banner; this is for watching everyone else's.
+        pid !== seat && !view.result.over && actingPlayer(view) === pid
+          ? game.seats.find((s) => s.player === pid)?.isBot
+            ? 'bot'
+            : 'player'
+          : null
+      }
       online={onlineOf(pid)}
       seats={game.seats}
       exileSize={exileOf(pid).length}
@@ -4093,7 +4106,9 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
         <div className={`quadrant-grid ${opponents.length === 1 ? 'two-player' : ''}`}>
           {quadrantCells.map((pid, i) => (
             <div
-              className={`quadrant-cell ${pid === seat ? 'self' : ''} ${
+              className={`quadrant-cell ${seatClassOf(view.turnOrder, pid)} ${
+                pid === seat ? 'self' : ''
+              } ${
                 view.activePlayer === pid ? 'active-turn' : ''
               } ${view.players[pid]?.hasLost ? 'eliminated' : ''}`}
               key={pid}
@@ -4165,6 +4180,8 @@ function Table({ view, seat, opponents, game, actions, hand }: TableProps) {
           onTargetClick={(id) => clickPermanent([id])}
           aimed={aim}
           onFocusEntry={setStackFocus}
+          seats={game.seats}
+          previousStack={previousStack}
         />
       ) : null}
 

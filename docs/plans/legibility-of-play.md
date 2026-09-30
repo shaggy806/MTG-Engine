@@ -1,7 +1,7 @@
 # Legibility of play: animation and pacing
 
-Status: **in progress**. Planned 2026-09-30; Step 0 (the groundwork) done the same day, Steps 1–5
-not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
+Status: **in progress**. Planned 2026-09-30; Step 0 (the groundwork) and Step 1 (the stack and
+whose turn it is) done the same day, Steps 2–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
 list and settles the design questions everything else depends on.
 
 ## The problem
@@ -103,7 +103,24 @@ next.
   forever as a scrollbar came and went, so its tiles jumped between rows every frame. Not caused
   by this work (it reproduced on the code before it); fixed with `scrollbar-gutter: stable`.
 
-**Step 1: the stack and whose turn it is.** These were the loudest complaints.
+**Step 1: the stack and whose turn it is.** *Done 2026-09-30.* These were the loudest
+complaints. Notes from building it:
+- The stack pile's arrival animation replayed on every entry every frame (`Stack` renders inside
+  `Table`, which remounts per frame; the CSS comment claimed otherwise). Fixed by `usePlayback`
+  reporting the previous board, so only an entry that wasn't on its stack plays `is-new`. Needed
+  before per-object resolve-all frames, or the whole pile would have re-jumped on each one.
+- Resolve-all's frames are counted in resolutions (`spell-resolved`, `ability-resolved`,
+  `spell-countered`, `spell-fizzled` since the last published frame), not stack depth, since a
+  resolution that adds a trigger leaves the depth unchanged.
+- The stack moved in from the right edge by a rail's width (`--card-w-max` + 2.2vw + 8px).
+  Measured clear of the rail and the life totals at 1424x715, 1904x895 (a 1080p window) and
+  2544x1207 (1440p).
+- A trigger's pulse plays over the new board, so a dies trigger's source (already gone) doesn't
+  pulse; that's a BACKLOG line.
+- The whole-turn highlight already existed as a 1px gold line; it's now the active player's seat
+  colour, border and glow.
+
+Items:
 - Stack label and target text sized from `--card-w`, not 11 px. Move the stack left so it stops
   covering the bottom-right life total.
 - The controller's name on the cast spotlight and on stack entries.

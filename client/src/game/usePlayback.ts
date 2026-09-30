@@ -16,6 +16,10 @@ export interface Frame {
 
 export interface Playback {
   readonly view: PlayerView | null
+  /** The board shown before `view`, for telling what this frame brought new
+   * (the stack's arrivals) — `Table` remounts per frame, so it can't keep
+   * that itself. `null` for the first board shown. */
+  readonly previousView: PlayerView | null
   readonly actions: readonly LegalAction[]
   /** Bumps once per frame actually shown — for `Table`'s `key`, so its local
    * click-in-progress state resets in step with what the player can see
@@ -65,6 +69,7 @@ export function usePlayback(
 ): Playback {
   const [displayed, setDisplayed] = useState<Playback>({
     view: frame?.view ?? null,
+    previousView: null,
     actions: frame?.actions ?? [],
     revision: 0,
     busy: false,
@@ -175,14 +180,17 @@ export function usePlayback(
       if (watching && schedule.after.length > 0) {
         pendingAfterRef.current = { view: next.view, items: schedule.after }
       }
-      setDisplayed({
+      const revision = revisionRef.current
+      const busy = afterMs > 0 || queueRef.current.length > 0
+      setDisplayed((cur) => ({
         view: next.view,
+        previousView: cur.view,
         actions: next.actions,
-        revision: revisionRef.current,
+        revision,
         // Still busy through the second half: the board is on screen, but
         // what's happening to it isn't finished yet.
-        busy: afterMs > 0 || queueRef.current.length > 0,
-      })
+        busy,
+      }))
       if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
       else finish()
     }
@@ -222,7 +230,13 @@ export function usePlayback(
       shownEventsRef.current = 0
       lastQueuedSeqRef.current = -1
       revisionRef.current += 1
-      setDisplayed({ view: null, actions: [], revision: revisionRef.current, busy: false })
+      setDisplayed({
+        view: null,
+        previousView: null,
+        actions: [],
+        revision: revisionRef.current,
+        busy: false,
+      })
       return
     }
     // React may re-run this for the same push; frames are numbered, so a

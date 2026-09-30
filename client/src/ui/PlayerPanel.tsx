@@ -15,6 +15,9 @@ export interface PlayerPanelProps {
   readonly seatClassOf: (player: PlayerId) => SeatClass
   readonly isActive: boolean
   readonly hasPriority: boolean
+  /** The game is waiting on this seat (another player's, never your own):
+   * `'bot'` shows "thinking…", `'player'` "deciding…". */
+  readonly waiting?: 'bot' | 'player' | null
   /** Whether this seat's connection is currently live. `null` when unknown
    * (e.g. no room-level seat data yet). */
   readonly online?: boolean | null
@@ -68,6 +71,7 @@ export function PlayerPanel({
   seatClassOf,
   isActive,
   hasPriority,
+  waiting = null,
   online = null,
   seats,
   exileSize = 0,
@@ -116,6 +120,16 @@ export function PlayerPanel({
           />
         )}
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
+        {waiting !== null ? (
+          <span className="pp-waiting" role="status">
+            {waiting === 'bot' ? 'thinking' : 'deciding'}
+            <span className="pp-waiting-dots" aria-hidden="true">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          </span>
+        ) : null}
         {aimedBy !== null ? (
           <span className="pp-aimed" title={`Targeted by ${aimedBy}`}>
             <TargetedMark by={aimedBy} inline />
@@ -176,6 +190,9 @@ export function PlayerPanel({
         <button
           type="button"
           className="pp-zone-link"
+          // Read by AnimationLayer: where a spell leaving the stack for this
+          // player's graveyard flies to.
+          data-graveyard-of={info.id}
           disabled={!onOpenGraveyard}
           onClick={(e) => {
             e.stopPropagation()

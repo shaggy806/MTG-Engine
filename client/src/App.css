@@ -417,6 +417,37 @@
 .pp-name {
   font-weight: 600;
 }
+/* "thinking…" / "deciding…" on the seat the game is waiting on (someone
+   else's): who the table is waiting for, on that player's own panel. */
+.pp-waiting {
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--warn);
+  white-space: nowrap;
+}
+.pp-waiting-dots span {
+  animation: pp-waiting-dot 1.2s ease-in-out infinite;
+}
+.pp-waiting-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.pp-waiting-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes pp-waiting-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+:root[data-reduce-motion] .pp-waiting-dots span {
+  animation: none;
+  opacity: 1;
+}
 .pp-went-first {
   font-size: 13px;
 }
@@ -590,10 +621,28 @@
 .quadrant-cell.self {
   border-color: var(--accent-dim);
 }
+/* Whose turn it is, for the whole turn: the active player's quadrant is
+   framed in their seat colour, strong enough to find at a glance across a
+   four-player table (it was a 1px gold line, easy to lose once the turn
+   banner had gone). */
+.quadrant-cell.seat-a {
+  --seat: var(--seat-a);
+}
+.quadrant-cell.seat-b {
+  --seat: var(--seat-b);
+}
+.quadrant-cell.seat-c {
+  --seat: var(--seat-c);
+}
+.quadrant-cell.seat-d {
+  --seat: var(--seat-d);
+}
 .quadrant-cell.active-turn {
+  border-color: var(--seat);
   box-shadow:
-    inset 0 0 0 1px var(--gold),
-    0 0 22px -6px rgba(205, 166, 83, 0.35);
+    inset 0 0 0 1px var(--seat),
+    0 0 0 1px var(--seat),
+    0 0 26px -4px color-mix(in srgb, var(--seat) 55%, transparent);
 }
 /* An eliminated player. Their board and hand stay on screen deliberately —
    the engine leaves the permanents there, inert, the way a dead player's
@@ -1428,7 +1477,13 @@
      it is derived from the (enlarged) card rather than a fixed 230px, so
      raising --card-w here can't push the pile off the bottom. */
   top: clamp(96px, calc(50vh - var(--card-w) * 0.7), calc(100vh - var(--card-w) * 1.95));
-  right: clamp(14px, 2vw, 26px);
+  /* In from the right edge by the width of a quadrant's command/library
+     rail, so the pile covers the right end of a board (tiles fill from the
+     left, so that's usually empty) rather than the rail and the life totals
+     at the ends of the players' headers. It used to sit at the edge, over
+     the bottom-right player's life. The rail is --card-w-max wide at most,
+     plus its padding and the page's. */
+  right: calc(var(--card-w-max) + 2.2vw + 8px);
   z-index: 20;
   pointer-events: none;
 }
@@ -1478,11 +1533,11 @@
    fight `var(--st-opacity)` and strand a deep card at full brightness once
    the animation ended.
 
-   It only ever runs on a genuinely new entry: `Stack` is a sibling of
-   `<Table>` so it does not remount per frame, and React keys entries by
-   object id, so an existing card being pushed deeper keeps its DOM node and
-   transitions rather than re-animating. */
-.stack-entry {
+   It only ever runs on a genuinely new entry (`is-new`: not on the stack in
+   the board shown before this one). `Stack` renders inside `<Table>`, which
+   remounts every frame, so without that every entry replayed its arrival
+   each time anything happened -- once per object in a resolve-all. */
+.stack-entry.is-new {
   /* 0.45s rather than the 0.3s this started at, which read as a flinch: the
      point of the beat is that you notice something arrived. Deliberately a
      shade longer than the 0.38s depth transition below, so when a new card
@@ -1575,15 +1630,37 @@
   opacity: 1;
   z-index: 999;
 }
-.stack-entry-label {
-  font-size: 11px;
-  color: var(--muted);
+/* The lines above and below a stack card ("Bob · Llanowar's ability",
+   "→ Grizzly Bears") scale with the card they label -- they were a fixed
+   11px under a card half again the size of a board card, and too small to
+   read. */
+.stack-entry-label,
+.stack-targets {
+  font-size: clamp(11px, calc(var(--card-w) * 0.075), 17px);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  max-width: calc(var(--card-w) * 1.2);
+  text-align: center;
+}
+.stack-entry-label {
+  color: var(--muted);
 }
 .stack-targets {
   color: var(--warn);
-  font-size: 11px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.stack-entry-who {
+  font-weight: 600;
+}
+.stack-entry-who.seat-a {
+  color: var(--seat-a);
+}
+.stack-entry-who.seat-b {
+  color: var(--seat-b);
+}
+.stack-entry-who.seat-c {
+  color: var(--seat-c);
+}
+.stack-entry-who.seat-d {
+  color: var(--seat-d);
 }
 /* the stack is a read-only display, not an interactive board — full
    visibility regardless of the tile's own disabled/clickable state */
@@ -3088,6 +3165,35 @@
    fade this. */
 .played-card-fly .card-tile:disabled {
   opacity: 1;
+}
+/* "Bob casts" over the card, in the caster's seat colour, on a dark pill:
+   bare text over the middle of a busy board was too faint to read. */
+.played-card-caption {
+  width: fit-content;
+  margin: 0 auto 0.5em;
+  padding: 0.2em 0.9em;
+  border: 1px solid var(--seat, var(--border));
+  border-radius: 999px;
+  background: rgba(12, 16, 20, 0.88);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.9rem, calc(var(--card-w) * 0.08), 1.4rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: var(--seat, var(--text));
+}
+.played-card-caption.seat-a {
+  --seat: var(--seat-a);
+}
+.played-card-caption.seat-b {
+  --seat: var(--seat-b);
+}
+.played-card-caption.seat-c {
+  --seat: var(--seat-c);
+}
+.played-card-caption.seat-d {
+  --seat: var(--seat-d);
 }
 /* A card being drawn: a small cardback out of that player's library pile and
    into their hand — the near edge of their own cell in the table grid, which

@@ -433,10 +433,11 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md` (Step 0, the groundwork, is
-done). The problem is that a bot turn can't be followed by eye, even at the slow bot speed. Only a
-few kinds of event hold the game up for their animation (`PACED` in
-`client/src/game/animationSchedule.ts`: a card played, a combat hit, a permanent leaving, a tap).
+The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0 and 1 are done:
+the groundwork, then the stack and whose turn it is). The problem is that a bot turn can't be
+followed by eye, even at the slow bot speed. Only some kinds of event hold the game up for their
+animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat hit, a
+permanent leaving, a tap, something leaving the stack, a trigger's source lighting up).
 Everything else lands with the next board and has no animation at all. The pipeline is in
 `docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`). Each item below is
 now a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
@@ -448,19 +449,6 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
   its own. Its effects arrive in the next frame, and that frame animates only what `PACED`
   covers. So most of the fix is giving more events paced slots (the items below), not a longer
   linger.
-- **Show who cast a spell.** The cast spotlight flies from the owner's quadrant but doesn't name
-  them, and stack entries don't show a controller either. (How long it stays up is now the
-  viewer's animation-speed setting.)
-- **"Resolve all" should resolve the stack one item at a time, not jump.**
-  `requestResolveAll` passes through `autoAdvanceHumanSeat` inside `settle()`'s loop without
-  publishing a frame, so the whole stack resolves in one frame. It needs a frame and the frame
-  gate for each resolution, plus a slot for `spell-resolved`/`ability-resolved`.
-- **Stack exit animation, and move the stack left.** A resolving entry just disappears. It
-  should animate out, toward its destination for a spell. The pile (`.stack-overlay`, fixed to
-  the right edge) covers the life total of the bottom-right player.
-- **The text above and below a trigger or ability on the stack is too small to read.**
-  `.stack-entry-label` (the "X's ability" line) and `.stack-targets` (the "→ target" line) are
-  fixed at 11px, which also breaks the no-fixed-px rule. Size them from `--card-w`.
 - **Counters placed on a permanent: a short glow on the tile** (`counter-added`, `proliferated`).
 - **A buff that isn't counters should show too** (`pt-modified`, `keyword-granted`). It should
   look different from the counter glow.
@@ -485,14 +473,10 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **Arrows from source to target** when a spell or ability goes on the stack
   (`object-targeted`). Today `Table`'s `aim` marks only the target: a reticle, a frame, or a
   "Targeted" chip.
-- **The source of a trigger pulses** when its ability goes on the stack (`ability-triggered`),
-  so it's clear where the trigger came from.
 - **Floating numbers** (−3, +4) over life totals and creatures when life or damage changes,
   alongside the green and red flashes.
 - **A host control to pause the bots or step them one action at a time.** It would hold the
   room's frame gate (`server/src/room.ts`).
-- **A "thinking…" indicator** on the player panel of the seat the game is waiting on, bot or
-  human.
 - **Replay the last update's animations** on demand: re-fire the last frame's schedule against
   the view before it.
 - **Clearer attacks and blocks.** Attackers step forward or get arrows to what they attack
@@ -500,8 +484,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A dying creature flies to its owner's graveyard pile** instead of only fading out
   (`permanent-left-battlefield` to the graveyard).
 - **A discarded card flies from hand to graveyard** (`cards-discarded`).
-- **A countered or fizzled spell gets its own exit** (`spell-countered`, `spell-fizzled`), so it
-  doesn't read as having resolved.
 - **An Aura or Equipment flies onto the permanent it attaches to** (`permanent-attached`).
 - **A double-faced card flips over when it transforms** (`permanent-transformed`).
 - **The cast spotlight starts from the zone the spell was cast from** (`spell-cast`'s `from`):
@@ -509,8 +491,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A token being created looks different from a spell resolving.** The engine has no
   token-specific event: `permanent-entered-battlefield` carries only `object` and `count`, so
   the view has to say it's a token.
-- **The active player's quadrant is highlighted for the whole turn**, not just while the turn
-  banner shows.
+- **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
+  and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
+  first half, over the old board, for a source that isn't on the new one.
 - **Monarch and similar markers visibly move to their new holder** (`monarch-changed`).
   Initiative has no event yet.
 - **Clicking a history log entry highlights the cards it involved on the board** (`EventLog`).

@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react'
 import type { ObjectId, PlayerView, TargetRef, VisibleObject } from 'engine/client'
+import type { SeatStatus } from 'protocol'
 import { decisionGhostOf } from '../game/decisionSource.ts'
-import { describeTarget } from '../format.ts'
+import { describeTarget, playerLabel, seatClassOf } from '../format.ts'
 import { CardTile } from './CardTile.tsx'
 
 // Cards shift down+left with depth (mirrors a real stack of cards spreading
@@ -36,6 +37,14 @@ export interface StackProps {
   /** The pointer (or keyboard focus) is on an entry, or has left: the board
    * then marks that entry's targets rather than the top's. */
   readonly onFocusEntry?: (id: ObjectId | null) => void
+  /** For naming each entry's controller. */
+  readonly seats?: readonly SeatStatus[]
+  /** What was on the stack in the board shown before this one, so only an
+   * entry that has just arrived plays the arrival animation. `Table` (and
+   * this with it) remounts every frame, so without it every entry replayed
+   * its arrival each time anything happened. `null` when there was no
+   * earlier board: everything counts as new. */
+  readonly previousStack?: readonly ObjectId[] | null
 }
 
 /**
@@ -64,7 +73,10 @@ export function Stack({
   onTargetClick,
   aimed = null,
   onFocusEntry,
+  seats,
+  previousStack = null,
 }: StackProps) {
+  const before = previousStack === null ? null : new Set(previousStack)
   // The card that caused the decision you're being asked, when it isn't
   // already on the stack. A sacrifice or discard effect raises its prompt
   // *after* the spell that ordered it has finished resolving and gone to a
@@ -107,7 +119,9 @@ export function Stack({
       suspected: false,
     }
   }
-  const tgt = (ref: TargetRef): string => describeTarget(ref, nameOf)
+  // A player target by their display name, not their seat id ("→ alice").
+  const tgt = (ref: TargetRef): string =>
+    ref.kind === 'player' ? playerLabel(ref.player, seats) : describeTarget(ref, nameOf)
   const isTargetable = (id: ObjectId): boolean =>
     targetSlot.some((o) => o.kind === 'object' && o.object === id)
 
@@ -154,17 +168,37 @@ export function Stack({
                 ? `copy of ${obj.cardName}`
                 : null
           const targetable = !isGhost && isTargetable(id)
+          const isNew = before === null || !before.has(id)
           return (
             <div
-              className={`stack-entry${isTop ? ' is-top' : ''}${isGhost ? ' is-prompt' : ''}`}
+              className={`stack-entry${isTop ? ' is-top' : ''}${isGhost ? ' is-prompt' : ''}${
+                isNew ? ' is-new' : ''
+              }`}
               key={id}
               style={style}
+              // Read by AnimationLayer to find the entry as it leaves the
+              // stack: a spell by its own id, an ability by its source's (the
+              // only thing `ability-resolved` names).
+              data-stack-id={isGhost ? undefined : id}
+              data-stack-source={
+                !isGhost && obj.kind === 'ability' ? (obj.sourceObjectId ?? undefined) : undefined
+              }
               onMouseEnter={isGhost ? undefined : () => onFocusEntry?.(id)}
               onMouseLeave={isGhost ? undefined : () => onFocusEntry?.(null)}
               onFocus={isGhost ? undefined : () => onFocusEntry?.(id)}
               onBlur={isGhost ? undefined : () => onFocusEntry?.(null)}
             >
-              {label ? <div className="stack-entry-label">{label}</div> : null}
+              <div className="stack-entry-label">
+                {/* Whose it is, in their seat colour: the card alone doesn't
+                    say, and in a four-player game it's the first question. */}
+                {!isGhost ? (
+                  <span className={`stack-entry-who ${seatClassOf(view.turnOrder, obj.controller)}`}>
+                    {playerLabel(obj.controller, seats)}
+                  </span>
+                ) : null}
+                {!isGhost && label ? ' · ' : null}
+                {label}
+              </div>
               <CardTile
                 obj={faceOf(obj)}
                 badge={obj.isCopy ? 'copy' : undefined}

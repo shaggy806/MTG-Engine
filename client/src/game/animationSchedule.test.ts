@@ -4,7 +4,9 @@ import {
   CARD_STEP_MS,
   DEATH_STEP_MS,
   HIT_STEP_MS,
+  STACK_EXIT_MS,
   TAP_STEP_MS,
+  TRIGGER_STEP_MS,
   scheduleEvents,
 } from './animationSchedule.ts'
 
@@ -86,6 +88,22 @@ describe('scheduleEvents', () => {
     const s = scheduleEvents(Array.from({ length: 5 }, cast), 'precombat-main')
     expect(s.items).toHaveLength(3)
     expect(s.totalMs).toBe(3 * CARD_STEP_MS)
+  })
+
+  it('takes a resolving spell off the old board, then lights up the new trigger', () => {
+    const s = scheduleEvents(
+      [
+        ev({ type: 'spell-resolved', object: 's1' }),
+        ev({ type: 'ability-triggered', source: 'p1', controller: 'p1' }),
+        ev({ type: 'ability-triggered', source: 'p2', controller: 'p1' }),
+      ],
+      'precombat-main',
+    )
+    expect(types(s.items)).toEqual(['spell-resolved'])
+    expect(s.totalMs).toBe(STACK_EXIT_MS)
+    // Two triggers, one beat.
+    expect(s.after.map((i) => i.offset)).toEqual([0, 0])
+    expect(s.afterMs).toBe(TRIGGER_STEP_MS)
   })
 
   it('leaves a frame of banners and draws with nothing to wait on', () => {

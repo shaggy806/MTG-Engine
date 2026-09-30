@@ -20,7 +20,9 @@ import {
   DRAW_STEP_MS,
   PHASE_STEP_MS,
   REVEAL_STEP_MS,
+  STACK_EXIT_MS,
   TAP_STEP_MS,
+  TRIGGER_STEP_MS,
   TURN_STEP_MS,
 } from '../game/animationSchedule.ts'
 import type { AnimationBus } from '../game/animationBus.ts'
@@ -93,6 +95,11 @@ interface PlayedCard {
    * the CSS keyframes as `--fly-x`/`--fly-y`. */
   readonly originX: number
   readonly originY: number
+  /** Who played it, spelled out over the card ("Bob casts"), in their seat
+   * colour: where it flew in from says which side of the table, but not
+   * whose that is. */
+  readonly caption: string
+  readonly seatClass: SeatClass | null
 }
 
 /** The centre of `player`'s cell in the table grid, relative to the centre of
@@ -374,34 +381,212 @@ function runDeath(object: ObjectId): void {
  * tilt makes wider than the tile itself.
  */
 function flyGhost(el: HTMLElement, to: { x: number; y: number }, duration: number): void {
-  const r = el.getBoundingClientRect()
-  if (r.width === 0 && r.height === 0) return
-  const tile = el.querySelector<HTMLElement>('.mini-tile') ?? el
-  const ghost = el.cloneNode(true) as HTMLElement
-  ghost.removeAttribute('data-obj-id')
-  const box = document.createElement('div')
-  box.className = 'ghost-flight'
-  box.style.setProperty('--mini-w', `${tile.offsetWidth}px`)
-  box.style.left = `${r.left}px`
-  box.style.top = `${r.top}px`
-  box.style.width = `${r.width}px`
-  box.style.height = `${r.height}px`
-  box.appendChild(ghost)
-  document.body.appendChild(box)
-  el.style.visibility = 'hidden'
-
+  const ghost = makeGhost(el)
+  if (ghost === null) return
+  const { box, rect: r } = ghost
   const dx = to.x - (r.left + r.width / 2 - window.innerWidth / 2)
   const dy = to.y - (r.top + r.height / 2 - window.innerHeight / 2)
-  const flight = box.animate(
-    [
-      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-      { transform: `translate(${dx * 0.15}px, ${dy * 0.15}px) scale(1.08)`, opacity: 1, offset: 0.2 },
-      { transform: `translate(${dx}px, ${dy}px) scale(0.55)`, opacity: 0 },
-    ],
-    { duration, easing: 'cubic-bezier(0.3, 0, 0.35, 1)', fill: 'forwards' },
+  releaseWhenDone(
+    box,
+    box.animate(
+      [
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        {
+          transform: `translate(${dx * 0.15}px, ${dy * 0.15}px) scale(1.08)`,
+          opacity: 1,
+          offset: 0.2,
+        },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.55)`, opacity: 0 },
+      ],
+      { duration, easing: 'cubic-bezier(0.3, 0, 0.35, 1)', fill: 'forwards' },
+    ),
   )
-  flight.onfinish = () => box.remove()
-  flight.oncancel = () => box.remove()
+}
+
+/**
+ * The copy `flyGhost` and the stack exits fly: `el` cloned into its own
+ * fixed box on `<body>`, placed exactly over it, with the original hidden.
+ *
+ * The copy has left whatever sized it, so the size tokens its contents read
+ * are pinned on the box in px: `--mini-w` from a battlefield tile's own
+ * layout width (not its tilted on-screen box), `--card-w` from a card's. And
+ * it's put back into the box's flow: a stack entry is absolutely placed by
+ * its depth, and would replay its arrival animation as a new node.
+ */
+function makeGhost(el: HTMLElement): { box: HTMLElement; rect: DOMRect } | null {
+  const rect = el.getBoundingClientRect()
+  if (rect.width === 0 && rect.height === 0) return null
+  const copy = el.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-obj-id')
+  copy.removeAttribute('data-stack-id')
+  copy.removeAttribute('data-stack-source')
+  Object.assign(copy.style, {
+    position: 'relative',
+    top: '0',
+    right: '0',
+    animation: 'none',
+    transition: 'none',
+  })
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  const tile = el.querySelector<HTMLElement>('.mini-tile')
+  if (tile) box.style.setProperty('--mini-w', `${tile.offsetWidth}px`)
+  const card = el.querySelector<HTMLElement>('.card-tile')
+  if (card) box.style.setProperty('--card-w', `${card.offsetWidth}px`)
+  box.style.left = `${rect.left}px`
+  box.style.top = `${rect.top}px`
+  box.style.width = `${rect.width}px`
+  box.style.height = `${rect.height}px`
+  box.appendChild(copy)
+  document.body.appendChild(box)
+  el.style.visibility = 'hidden'
+  return { box, rect }
+}
+
+function releaseWhenDone(box: HTMLElement, animation: Animation): void {
+  animation.onfinish = () => box.remove()
+  animation.oncancel = () => box.remove()
+}
+
+/** Where on screen a player's graveyard is: the "graveyard N" link on their
+ * panel, as an offset from the viewport centre. `null` if it isn't drawn. */
+function graveyardPoint(player: PlayerId): { x: number; y: number } | null {
+  const el = document.querySelector<HTMLElement>(`[data-graveyard-of="${CSS.escape(player)}"]`)
+  if (!el) return null
+  const r = el.getBoundingClientRect()
+  return {
+    x: r.left + r.width / 2 - window.innerWidth / 2,
+    y: r.top + r.height / 2 - window.innerHeight / 2,
+  }
+}
+
+/** The stack entry an event is about, on the board still on screen. A spell
+ * is its own entry; an ability names only its source, so it's the topmost
+ * entry from that source (the one resolving — entries render top first). */
+function stackEntryFor(ev: GameEvent): HTMLElement | null {
+  if (ev.type === 'ability-resolved') {
+    return document.querySelector<HTMLElement>(
+      `.stack-entry[data-stack-source="${CSS.escape(ev.source)}"]`,
+    )
+  }
+  if (
+    ev.type === 'spell-resolved' ||
+    ev.type === 'spell-countered' ||
+    ev.type === 'spell-fizzled'
+  ) {
+    return document.querySelector<HTMLElement>(
+      `.stack-entry[data-stack-id="${CSS.escape(ev.object)}"]`,
+    )
+  }
+  return null
+}
+
+/**
+ * Something leaving the stack, over the board it's still on. A resolving
+ * permanent spell flies to its controller's side of the table, an instant or
+ * sorcery to its owner's graveyard; a countered or fizzled spell visibly
+ * breaks — a shudder, drained of colour — before dropping to the graveyard,
+ * so it can't be mistaken for having resolved; an ability dissolves where it
+ * is. Reduced motion fades the entry in place, whatever the outcome.
+ */
+function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
+  const el = stackEntryFor(ev)
+  if (!el) return
+  const duration = scaled(STACK_EXIT_MS)
+  if (motionPrefs().reduced) {
+    el.animate([{ opacity: 1 }, { opacity: 0 }], { duration, fill: 'forwards' })
+    return
+  }
+  if (ev.type === 'ability-resolved') {
+    const ghost = makeGhost(el)
+    if (ghost === null) return
+    releaseWhenDone(
+      ghost.box,
+      ghost.box.animate(
+        [
+          { transform: 'scale(1)', opacity: 1, filter: 'brightness(1)' },
+          { transform: 'scale(1.04)', opacity: 0.9, filter: 'brightness(1.4)', offset: 0.3 },
+          { transform: 'scale(0.8)', opacity: 0, filter: 'brightness(1.8) blur(2px)' },
+        ],
+        { duration, easing: 'ease-in', fill: 'forwards' },
+      ),
+    )
+    return
+  }
+  if (ev.type !== 'spell-resolved' && ev.type !== 'spell-countered' && ev.type !== 'spell-fizzled') {
+    return
+  }
+  const obj = view.objects[ev.object]
+  const owner = obj?.owner ?? null
+  const toGraveyard = owner !== null ? graveyardPoint(owner) : null
+  if (ev.type === 'spell-resolved') {
+    // Where it went is in the frame it resolved in: a permanent is on the
+    // battlefield, anything else (an instant, a sorcery) mostly in a
+    // graveyard. With no graveyard link to aim at, it heads home all the same.
+    const to =
+      obj?.zone === 'battlefield' || toGraveyard === null
+        ? flyOrigin(obj?.controller ?? owner ?? seat, seat)
+        : toGraveyard
+    flyGhost(el, to, duration)
+    return
+  }
+  const ghost = makeGhost(el)
+  if (ghost === null) return
+  const r = ghost.rect
+  const to = toGraveyard ?? { x: 0, y: window.innerHeight / 2 }
+  const dx = to.x - (r.left + r.width / 2 - window.innerWidth / 2)
+  const dy = to.y - (r.top + r.height / 2 - window.innerHeight / 2)
+  releaseWhenDone(
+    ghost.box,
+    ghost.box.animate(
+      [
+        { transform: 'translate(0, 0) rotate(0deg)', filter: 'grayscale(0)', opacity: 1 },
+        { transform: 'translate(-6px, 0) rotate(-2deg)', filter: 'grayscale(0.7)', offset: 0.12 },
+        { transform: 'translate(6px, 0) rotate(2deg)', filter: 'grayscale(1)', offset: 0.24 },
+        {
+          transform: 'translate(0, 0) rotate(0deg)',
+          filter: 'grayscale(1) brightness(0.6)',
+          opacity: 1,
+          offset: 0.4,
+        },
+        {
+          transform: `translate(${dx}px, ${dy}px) rotate(8deg) scale(0.5)`,
+          filter: 'grayscale(1) brightness(0.5)',
+          opacity: 0,
+        },
+      ],
+      { duration, easing: 'ease-in', fill: 'forwards' },
+    ),
+  )
+}
+
+/**
+ * The permanent a triggered ability came from lights up as the trigger goes
+ * on the stack, so where a trigger came from is visible on the board and not
+ * only in its stack label. Plays over the new board (its ability is on the
+ * stack there); a source that has already left, a dies trigger's, has no
+ * tile to light. Under reduced motion it glows without the swell.
+ */
+function runPulse(source: ObjectId, delay: number): void {
+  const tile = document.querySelector<HTMLElement>(
+    `[data-obj-id="${CSS.escape(source)}"] .mini-tile`,
+  )
+  if (!tile) return
+  const timing: KeyframeAnimationOptions = { duration: scaled(TRIGGER_STEP_MS), delay, easing: 'ease-out' }
+  tile.animate(
+    [
+      { boxShadow: '0 0 0 0 rgba(255, 190, 70, 0)' },
+      {
+        boxShadow: '0 0 0 3px rgba(255, 198, 86, 0.95), 0 0 20px 6px rgba(255, 160, 40, 0.7)',
+        offset: 0.35,
+      },
+      { boxShadow: '0 0 0 0 rgba(255, 190, 70, 0)' },
+    ],
+    timing,
+  )
+  if (!motionPrefs().reduced) {
+    tile.animate([{ scale: '1' }, { scale: '1.08', offset: 0.35 }, { scale: '1' }], timing)
+  }
 }
 
 /**
@@ -534,12 +719,25 @@ export function AnimationLayer({
         if (!obj) return
         const key = `card-${ev.seq}`
         const origin = handOrigin(ev.object) ?? flyOrigin(ev.player, seatRef.current)
-        setPlayedCards((cur) => [...cur, { key, obj, originX: origin.x, originY: origin.y }])
+        const who = playerLabel(ev.player, seatsRef.current)
+        const caption = `${who} ${ev.type === 'land-played' ? 'plays' : 'casts'}`
+        const seatClass = seatClassOf(view.turnOrder, ev.player)
+        setPlayedCards((cur) => [
+          ...cur,
+          { key, obj, originX: origin.x, originY: origin.y, caption, seatClass },
+        ])
         window.setTimeout(() => {
           setPlayedCards((cur) => cur.filter((c) => c.key !== key))
         }, scaled(PLAYED_CARD_DURATION_MS))
       } else if (ev.type === 'damage-dealt' && ev.combat) {
         runHit(ev.source, ev.target)
+      } else if (
+        ev.type === 'spell-resolved' ||
+        ev.type === 'ability-resolved' ||
+        ev.type === 'spell-countered' ||
+        ev.type === 'spell-fizzled'
+      ) {
+        runStackExit(ev, view, seatRef.current)
       } else if (ev.type === 'permanent-left-battlefield') {
         if (ev.toZone === 'hand') runBounce(ev.object)
         else runDeath(ev.object)
@@ -588,7 +786,7 @@ export function AnimationLayer({
           if (cue.event.type === 'permanent-tapped') runTap(cue.event.object, true, cue.delay)
           else if (cue.event.type === 'permanent-untapped') {
             runTap(cue.event.object, false, cue.delay)
-          }
+          } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
           continue
         }
         window.setTimeout(() => fire(cue.event, cue.view), cue.delay)
@@ -615,6 +813,7 @@ export function AnimationLayer({
             { '--fly-x': `${c.originX}px`, '--fly-y': `${c.originY}px` } as CSSProperties
           }
         >
+          <div className={`played-card-caption ${c.seatClass ?? ''}`}>{c.caption}</div>
           <CardTile obj={c.obj} layout="art-first" />
         </div>
       ))}

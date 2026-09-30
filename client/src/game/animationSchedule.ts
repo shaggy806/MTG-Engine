@@ -32,6 +32,14 @@ export const DRAW_STEP_MS = 520
 /** A permanent tilting to tapped, or back upright. One beat for every tap in
  * the frame (a spell's mana, an untap step), not one each. */
 export const TAP_STEP_MS = 260
+/** Something leaving the stack: a spell heading for the battlefield or its
+ * graveyard, an ability dissolving, a countered spell breaking up. Paced, so
+ * a resolve-all (one object per frame) reads as the pile coming down rather
+ * than entries blinking out. */
+export const STACK_EXIT_MS = 520
+/** The permanent a triggered ability came from lighting up as the trigger
+ * goes on the stack. One beat for every trigger in the frame. */
+export const TRIGGER_STEP_MS = 480
 /** How long a revealed card is held up for everyone to read. Longer than a
  * banner because there's a card face to actually take in, and unpaced — the
  * information is already in the History log, so nobody has to catch it. */
@@ -122,9 +130,11 @@ type SlotKind =
   | 'reveal'
   | 'tap'
   | 'untap'
+  | 'exit'
+  | 'pulse'
 
 /** The kinds that play over the new board rather than the old one. */
-const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(['tap', 'untap'])
+const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(['tap', 'untap', 'pulse'])
 
 /**
  * Which animations the game actually waits for. A card being played, a
@@ -135,10 +145,18 @@ const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(['tap', 'untap'])
  * bot played sits in the air for the length of an "End Phase" banner before
  * reaching the table.
  */
-const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>(['card', 'hit', 'death', 'tap', 'untap'])
+const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
+  'card',
+  'hit',
+  'death',
+  'tap',
+  'untap',
+  'exit',
+  'pulse',
+])
 /** Kinds where a run in one frame plays together on one beat rather than one
  * after another: a wrath's deaths, a spell's worth of lands tapping. */
-const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>(['death', 'tap', 'untap'])
+const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>(['death', 'tap', 'untap', 'pulse'])
 
 interface Slot {
   readonly event: GameEvent
@@ -159,6 +177,22 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   }
   if (ev.type === 'permanent-left-battlefield') {
     return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
+  }
+  // Leaving the stack plays over the old board, where the entry still is.
+  // Kept under reduced motion as a fade: it's the only sign the object has
+  // gone, and which way (resolved, countered).
+  if (
+    ev.type === 'spell-resolved' ||
+    ev.type === 'ability-resolved' ||
+    ev.type === 'spell-countered' ||
+    ev.type === 'spell-fizzled'
+  ) {
+    return { event: ev, kind: 'exit', duration: STACK_EXIT_MS }
+  }
+  // A trigger's source lights up over the new board, where its ability has
+  // just joined the stack. A colour cue, so reduced motion keeps it.
+  if (ev.type === 'ability-triggered') {
+    return { event: ev, kind: 'pulse', duration: TRIGGER_STEP_MS }
   }
   // Pure movement, so reduced motion leaves nothing to show: the tile is
   // simply drawn tapped, and the hand simply has one more card.
