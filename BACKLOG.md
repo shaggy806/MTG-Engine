@@ -433,7 +433,7 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-Planning only so far, since none of it can be checked without a browser. The problem is that a bot
+The build order and design are in `docs/plans/legibility-of-play.md` (planned, not started). The problem is that a bot
 turn can't be followed by eye, even at the slow bot speed. Only three kinds of event hold the game
 up for their animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat
 hit, a permanent leaving). Everything else lands with the next board and has no animation at all.
