@@ -4696,6 +4696,7 @@ import _poolShepherdOfTheLost from "./pool/shepherd-of-the-lost.js";
 import _poolShieldMate from "./pool/shield-mate.js";
 import _poolShieldWall from "./pool/shield-wall.js";
 import _poolShieldsMight from "./pool/shields-might.js";
+import _poolShikoAndNarsetUnified from "./pool/shiko-and-narset-unified.js";
 import _poolShimmerMyr from "./pool/shimmer-myr.js";
 import _poolShimmeringBarrier from "./pool/shimmering-barrier.js";
 import _poolShimmeringGrotto from "./pool/shimmering-grotto.js";
@@ -11197,6 +11198,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShieldMate,
   _poolShieldWall,
   _poolShieldsMight,
+  _poolShikoAndNarsetUnified,
   _poolShimmerMyr,
   _poolShimmeringBarrier,
   _poolShimmeringGrotto,

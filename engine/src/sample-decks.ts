@@ -542,7 +542,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Jeskai Striker",
-    commander: "Elsha, Threefold Master",
+    // The deck's two legendary leads swapped: Shiko and Narset commands it,
+    // and Elsha plays in the 99 — the same 100 cards.
+    commander: "Shiko and Narset, Unified",
     description: "Jeskai spells: cheap instants and sorceries, prowess and Monk tokens.",
     printed: [
       ["Abrade", 1],
@@ -570,6 +572,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Deep Analysis", 1],
       ["Dismantling Wave", 1],
       ["Electrodominance", 1],
+      ["Elsha, Threefold Master", 1],
       ["Evolving Wilds", 1],
       ["Exotic Orchard", 1],
       ["Expansion // Explosion", 1],
@@ -607,7 +610,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Reliquary Tower", 1],
       ["Rite of Replication", 1],
       ["Rugged Prairie", 1],
-      ["Shiko and Narset, Unified", 1],
       ["Shiny Impetus", 1],
       ["Shivan Reef", 1],
       ["Skycloud Expanse", 1],
@@ -648,7 +650,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Mangara, the Diplomat", "Aragorn, King of Gondor", "Four-mana creature: card draw, lifegain."),
       sub("Narset's Reversal", "Twincast", "Two-mana instant: spell copy."),
       sub("Ponder", "Serum Visions", "One-mana sorcery: cantrip, library manipulation."),
-      sub("Shiko and Narset, Unified", "Palace Sentinels", "Four-mana creature: card draw, card advantage."),
       sub("Sublime Epiphany", "Contradict", "Counterspell that draws a card."),
       sub("Tempest Technique", "Efficient Construction", "Four-mana enchantment: spell payoff."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),

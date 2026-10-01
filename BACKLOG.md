@@ -47,11 +47,11 @@ that one card is the reason the deck exists.
   missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
   that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
   effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
-  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 18 — 98, every
+  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 17 — 97, every
   one recorded with what it needs (`engine/data/sweep-3/TDC1.json`, `TDC2.json` and the earlier
-  sweeps). No one feature leads any more. **Next:** a copy with new targets
-  (`decision:copy-new-targets`, 4 — Adaptive Training Post and Expansion // Explosion need
-  nothing else), delve (4, only Treasure Cruise needing nothing else), "can attack as though it
+  sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai Striker
+  since 2026-09-30 (swapped with Elsha), which built a copy's new targets, so **Next:** Adaptive
+  Training Post and Expansion // Explosion, recorded as needing nothing else, then delve (4, only Treasure Cruise needing nothing else), "can attack as though it
   didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
   Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
@@ -331,8 +331,10 @@ that one card is the reason the deck exists.
   so are Fireball's "divided evenly" and Strive's cost per extra target (2026-09-28), but "N
   damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka) and "distribute
   N counters among" (Lathiel) aren't. See `neededCards-features.md`, "Unbounded targeting".
-- **A copy never chooses new targets.** Tracked as `decision:copy-new-targets`, which is
-  UI-bound.
+- **Storm's copies don't choose new targets.** Twincast and a copy trigger ask (`copy-spell`'s
+  `newTargets`, one `choose-targets` per copy); storm makes several copies at once and would
+  need to ask for each in turn (`Game.stormCopy`). It's why `decision:copy-new-targets` isn't in
+  the gaps JSON's `built` list: Storm, Force of Nature and Prismari, the Inspiration need it.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision
   (built 2026-09-26 for "untap up to N lands") is the piece it needs. See AUTHORING §15, "Partial".

@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-332 already implemented / 168 missing
+333 already implemented / 167 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -270,7 +270,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
 [ ]  265  Aloy, Savior of Meridian                        9887 decks  {3}{G}{U}        Legendary Creature — Human Warrior
 [ ]  266  Eddie Brock                                     9824 decks  {2}{B}           Legendary Creature — Human Hero Villain // Legendary Creature — Symbiote Hero Villain
-[ ]  267  Shiko and Narset, Unified                       9824 decks  {1}{U}{R}{W}     Legendary Creature — Human Spirit Dragon
+[x]  267  Shiko and Narset, Unified                       9824 decks  {1}{U}{R}{W}     Legendary Creature — Human Spirit Dragon
 [x]  268  Nicol Bolas, the Ravager                        9786 decks  {1}{U}{B}{R}     Legendary Creature — Elder Dragon // Legendary Planeswalker — Bolas
 [x]  269  Quintorius, History Chaser                      9776 decks  {2}{R}{W}        Legendary Planeswalker — Quintorius
 [x]  270  Rocco, Cabaretti Caterer                        9749 decks  {X}{R}{G}{W}     Legendary Creature — Elf Druid

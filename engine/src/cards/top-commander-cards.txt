@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2049 already implemented / 2951 missing (marks refreshed 2026-09-30)
+2049 already implemented / 2951 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
