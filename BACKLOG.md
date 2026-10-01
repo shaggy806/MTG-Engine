@@ -481,6 +481,10 @@ Follow-on ideas, approved by the user on 2026-09-30:
   little menu another permanent's activated abilities use, with "turn face up" in it when the
   card can be turned face up.
 
+- **Frostcliff Siege doesn't show which mode was chosen.** The card has no indicator of the word
+  its controller chose as it entered (Jeskai or Temur, the engine's `chosen-on-enter` condition),
+  so nobody can tell from the board which ability it has.
+
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
   art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
