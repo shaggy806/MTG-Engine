@@ -201,6 +201,19 @@ export type ClientMessage =
       readonly speed: BotSpeed;
     }
   | {
+      /** Pauses or resumes this room's bots. Host only, and only once the
+       * game is running. While paused no bot moves on (nor does a resolve-all
+       * resolve its next object) until resumed, or stepped. */
+      readonly type: "set-bots-paused";
+      readonly roomId: string;
+      readonly paused: boolean;
+    }
+  | {
+      /** While the bots are paused, lets exactly one held move go. Host only. */
+      readonly type: "step-bots";
+      readonly roomId: string;
+    }
+  | {
       readonly type: "dispatch";
       readonly roomId: string;
       readonly action: Action;
@@ -359,6 +372,9 @@ export type ServerMessage =
       /** Whether *this* connection holds the host role. */
       readonly isHost: boolean;
       readonly botSpeed: BotSpeed;
+      /** The host has paused the bots (`set-bots-paused`): shown to every
+       * seat, so nobody wonders why the table stopped. */
+      readonly botsPaused: boolean;
       /** Present when this server captures bot decisions for training
        * scenarios — a developer's server, never the public site. */
       readonly capture?: true;

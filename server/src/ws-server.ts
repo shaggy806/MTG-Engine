@@ -51,6 +51,7 @@ function broadcast(room: Room): void {
       skipManaOnly: room.isSkippingManaOnly(seat),
       isHost: room.isHost(connection),
       botSpeed: room.botSpeed,
+      botsPaused: room.botsPaused,
       ...(room.captures !== null ? { capture: true as const } : {}),
     });
   }
@@ -359,6 +360,19 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           room.setBotSpeed(message.speed);
           if (room instanceof PendingRoom) broadcastPending(room);
           else room.publish();
+          return;
+        }
+        case "set-bots-paused": {
+          const room = requireActiveRoom(manager, message.roomId);
+          requireHost(room, connection, "pause the bots");
+          room.setBotsPaused(message.paused === true);
+          room.publish();
+          return;
+        }
+        case "step-bots": {
+          const room = requireActiveRoom(manager, message.roomId);
+          requireHost(room, connection, "step the bots");
+          room.stepBots();
           return;
         }
         // Each of these settles the room, and settling publishes its own

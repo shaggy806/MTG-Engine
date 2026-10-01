@@ -119,6 +119,7 @@ function makePacedRoom(
           skipManaOnly: r.isSkippingManaOnly(seat),
           isHost: r.isHost(connection),
           botSpeed: r.botSpeed,
+          botsPaused: r.botsPaused,
         });
       }
     },
@@ -378,6 +379,66 @@ describe("Room pacing (realtime)", () => {
       const before = alice.frames.length;
       clock.advance(400);
       expect(alice.frames.length).toBeGreaterThan(before);
+    });
+  });
+
+  describe("pausing the bots", () => {
+    it("holds every bot move while paused, even once the client has caught up", () => {
+      const { room, clock, alice } = makePacedRoom(true)
+      room.addBot(BOB);
+      room.start();
+      room.setBotsPaused(true);
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(5_000);
+      expect(alice.frames.length).toBe(before);
+
+      room.setBotsPaused(false);
+      clock.advance(400);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("lets exactly one move through per step", () => {
+      const { room, clock, alice } = makePacedRoom(true)
+      room.addBot(BOB);
+      room.start();
+      room.setBotsPaused(true);
+      room.requestPassTurn(alice.connection);
+      clock.advance(1_000);
+      const held = alice.frames.length;
+
+      room.stepBots();
+      clock.advance(1_000);
+      const afterOne = alice.frames.length;
+      expect(afterOne).toBeGreaterThan(held);
+      // And then it holds again.
+      clock.advance(5_000);
+      expect(alice.frames.length).toBe(afterOne);
+    });
+
+    it("isn't released by the ack timeout of a seat that went quiet", () => {
+      const { room, clock, alice } = makePacedRoom(false);
+      room.addBot(BOB);
+      room.start();
+      room.ack(alice.connection, room.frameSeq);
+      room.setBotsPaused(true);
+      room.requestPassTurn(alice.connection);
+      const before = alice.frames.length;
+      clock.advance(30_000); // well past the ack timeout
+      expect(alice.frames.length).toBe(before);
+      // Resuming no longer waits on the quiet seat: the timeout already gave
+      // up on it.
+      room.setBotsPaused(false);
+      clock.advance(400);
+      expect(alice.frames.length).toBeGreaterThan(before);
+    });
+
+    it("does nothing on a step while not paused", () => {
+      const { room } = makePacedRoom(true);
+      room.addBot(BOB);
+      room.start();
+      expect(() => room.stepBots()).not.toThrow();
+      expect(room.botsPaused).toBe(false);
     });
   });
 

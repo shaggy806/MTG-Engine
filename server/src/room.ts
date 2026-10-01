@@ -250,6 +250,9 @@ interface FrameGate {
   timeoutHandle: unknown;
   /** The bot-speed pause, once everyone has caught up. */
   lingerHandle: unknown;
+  /** The ack timeout fired while the bots were paused: the gate no longer
+   * waits on acks, only on the pause. */
+  timedOut: boolean;
 }
 
 export class Room {
@@ -272,6 +275,10 @@ export class Room {
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
+  /** The host has paused the bots: the frame gate stays shut, whatever the
+   * clients say, until resumed — or for one move per `stepBots`. */
+  botsPaused = false;
+  private stepsAllowed = 0;
   /** Recent bot decisions, when this server captures them — see
    * `RoomOptions.capture`. */
   readonly captures: CaptureLog | null;
@@ -361,6 +368,29 @@ export class Room {
   setBotSpeed(speed: BotSpeed): void {
     this.botSpeed = speed;
     this.lastActivityAt = Date.now();
+  }
+
+  /**
+   * Pauses or resumes the bots, by holding the frame gate every bot move (and
+   * every resolve-all resolution) already waits behind. A move parked when
+   * the pause starts stays parked; resuming lets it through as soon as the
+   * clients have caught up, as if nothing had happened.
+   */
+  setBotsPaused(paused: boolean): void {
+    this.botsPaused = paused;
+    this.stepsAllowed = 0;
+    this.lastActivityAt = Date.now();
+    if (!paused) this.tryOpenGate();
+  }
+
+  /** While paused, lets the one move waiting at the gate (or the next one to
+   * arrive there) go, without waiting out the bot-speed pause. Does nothing
+   * when the bots aren't paused. */
+  stepBots(): void {
+    if (!this.botsPaused) return;
+    this.stepsAllowed = 1;
+    this.lastActivityAt = Date.now();
+    this.tryOpenGate();
   }
 
   /** Fills `player`'s seat with a searching bot instead of a human
@@ -930,6 +960,7 @@ export class Room {
       minHandle: null,
       timeoutHandle: null,
       lingerHandle: null,
+      timedOut: false,
     };
     this.gate = gate;
     gate.minHandle = this.timers.setTimeout(() => {
@@ -942,6 +973,13 @@ export class Room {
     if (this.gate === gate) {
       gate.timeoutHandle = this.timers.setTimeout(() => {
         gate.timeoutHandle = null;
+        // Paused: stop waiting on the quiet seat, but keep waiting on the
+        // pause (see tryOpenGate).
+        if (this.botsPaused) {
+          gate.timedOut = true;
+          this.tryOpenGate();
+          return;
+        }
         this.openGate();
       }, FRAME_ACK_TIMEOUT_MS);
     }
@@ -957,7 +995,15 @@ export class Room {
 
   private tryOpenGate(): void {
     const gate = this.gate;
-    if (gate === null || !gate.minElapsed || !this.everyoneCaughtUp()) return;
+    if (gate === null || !gate.minElapsed) return;
+    if (!gate.timedOut && !this.everyoneCaughtUp()) return;
+    if (this.botsPaused) {
+      if (this.stepsAllowed === 0) return;
+      // A step is the host asking for this move now: no bot-speed pause.
+      this.stepsAllowed -= 1;
+      this.openGate();
+      return;
+    }
     if (gate.lingerHandle !== null) return; // already pausing
     const linger = BOT_LINGER_MS[this.botSpeed];
     if (linger === 0) {
