@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2056 already implemented / 2944 missing (marks refreshed 2026-10-01)
+2059 already implemented / 2941 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -109,7 +109,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   110  Woodland Cemetery                        {0}              Land
 [x]   111  Cavern of Souls                          {0}              Land
 [x]   112  Sakura-Tribe Elder                       {1}{G}           Creature — Snake Shaman
-[ ]   113  Propaganda                               {2}{U}           Enchantment
+[x]   113  Propaganda                               {2}{U}           Enchantment
 [x]   114  Vampiric Tutor                           {B}              Instant
 [x]   115  Shivan Reef                              {0}              Land
 [x]   116  Mana Confluence                          {0}              Land
@@ -158,7 +158,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   159  Dimir Signet                             {2}              Artifact
 [x]   160  Mystical Tutor                           {U}              Instant
 [x]   161  Luxury Suite                             {0}              Land
-[ ]   162  Ghostly Prison                           {2}{W}           Enchantment
+[x]   162  Ghostly Prison                           {2}{W}           Enchantment
 [ ]   163  Nykthos, Shrine to Nyx                   {0}              Legendary Land
 [x]   164  Sea of Clouds                            {0}              Land
 [x]   165  Worldly Tutor                            {G}              Instant
@@ -992,7 +992,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   996  Mines of Moria                           {0}              Legendary Land
 [x]   997  Sythis, Harvest's Hand                   {G}{W}           Legendary Enchantment Creature — Nymph
 [x]   998  Cyberdrive Awakener                      {5}{U}           Artifact Creature — Construct
-[ ]   999  Windborn Muse                            {3}{W}           Creature — Spirit
+[x]   999  Windborn Muse                            {3}{W}           Creature — Spirit
 [x]  1000  Strike It Rich                           {R}              Sorcery
 [x]  1001  Destiny Spinner                          {1}{G}           Enchantment Creature — Human
 [x]  1002  Enchantress's Presence                   {2}{G}           Enchantment

@@ -192,6 +192,19 @@ export interface DecisionReadCtx {
   /** Why `cast` isn't a legal answer to the pending `cast-now` decision —
    * the whole of `whyCannotCastSpell`, which only `Game` can run. */
   readonly whyCannotCastNow: (cast: Extract<Action, { type: "cast-spell" }>) => string | null;
+  /** The generic mana one creature attacking `defender` costs (Ghostly
+   * Prison) — 0 for an untaxed player or a planeswalker. Statics only `Game`
+   * can read. */
+  readonly attackTaxOf: (defender: PlayerId | ObjectId) => number;
+  /** How much attack tax `player` can surely pay without tapping any of
+   * `attackers` — see `AttackOffer.attackTax.budget`. Runs the mana solver. */
+  readonly attackTaxBudget: (player: PlayerId, attackers: readonly ObjectId[]) => number;
+  /** Why `player` can't pay what `declarations` cost to attack (rule
+   * 508.1h–j), or `null` when they can or it's free. */
+  readonly whyCannotPayAttackTax: (
+    player: PlayerId,
+    declarations: readonly AttackerDeclaration[],
+  ) => string | null;
 }
 
 /**

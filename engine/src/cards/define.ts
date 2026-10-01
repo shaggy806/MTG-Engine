@@ -1056,6 +1056,15 @@ export interface StaticAbility {
    * `affects` is ignored. */
   readonly playerHexproof?: boolean;
   /**
+   * "Creatures can't attack you unless their controller pays {N} for each
+   * creature they control that's attacking you" (Ghostly Prison,
+   * Propaganda): a cost to attack this permanent's controller (rule
+   * 508.1h), `generic` mana per attacking creature. Only the player — a
+   * creature attacking their planeswalker pays nothing (the ruling). `affects`
+   * is ignored.
+   */
+  readonly attackTax?: { readonly generic: number };
+  /**
    * A maximum hand size, read at cleanup like `noMaxHandSize` (which wins
    * over it): `who`'s becomes `set` less the live count `minus` (a
    * `CountSpec`, from this permanent's controller's side), and `adjust`

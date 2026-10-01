@@ -125,6 +125,7 @@ import _poolPlains from "../pool/plains.js";
 import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
 import _poolPoisonTheBlade from "../pool/poison-the-blade.js";
 import _poolPondProphet from "../pool/pond-prophet.js";
+import _poolPropaganda from "../pool/propaganda.js";
 import _poolPygmyPyrosaur from "../pool/pygmy-pyrosaur.js";
 import _poolRagingMinotaur from "../pool/raging-minotaur.js";
 import _poolRakdosRagemutt from "../pool/rakdos-ragemutt.js";
@@ -326,6 +327,7 @@ const shard: CardShard = {
     _poolPoisonDartFrog,
     _poolPoisonTheBlade,
     _poolPondProphet,
+    _poolPropaganda,
     _poolPygmyPyrosaur,
     _poolRagingMinotaur,
     _poolRakdosRagemutt,

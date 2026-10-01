@@ -49,15 +49,14 @@ that one card is the reason the deck exists.
   missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
   that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
   effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
-  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 7 — 87, every
+  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 6 — 86, every
   one recorded with what it needs (`engine/data/sweep-3/TDC1.json` to `TDC4.json` and the
   earlier sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai
   Striker since 2026-09-30 (swapped with Elsha), and a copy's new targets is built, storm
-  included (TDC3: 5 Jeskai cards; TDC4: 5 more). Jeskai's 7 each need something different:
-  split cards (Expansion // Explosion), an attack tax (Ghostly Prison — and Propaganda, EDHREC
-  #113), divided damage (Magma Opus), Curses (Curse of Opulence), X targets (Curse of the
-  Swine), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
-  (Transforming Flourish). **Next:**
+  included (TDC3: 5 Jeskai cards; TDC4: 6 more). Jeskai's 6 each need something different:
+  split cards (Expansion // Explosion), divided damage (Magma Opus), Curses (Curse of
+  Opulence), X targets (Curse of the Swine), a target per opponent and a cycling trigger
+  (Dismantling Wave) and demonstrate (Transforming Flourish). **Next:**
   delve (4, only Treasure Cruise needing nothing else), "can attack as though it
   didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
   Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
@@ -219,7 +218,7 @@ that one card is the reason the deck exists.
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,056 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,059 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`

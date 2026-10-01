@@ -1924,6 +1924,14 @@ anthem, the keyword grant and the granted trigger like any other creature.
 
 **Continuous-effect fields:**
 
+`attackTax: { generic: N }` is "creatures can't attack you unless their controller pays {N}
+for each creature they control that's attacking you" (Ghostly Prison, Propaganda, Windborn
+Muse): a cost to attack this permanent's controller (rule 508.1h), not their planeswalkers (the
+ruling). Several add up. It's paid after the attackers tap (508.1f), so an attacker can't tap
+for its own tax, and a creature that must attack isn't obliged to pay it (508.1d). The
+`declare-attackers` offer carries the rates and a sure-to-pay `budget`; bots and the fuzzer cut
+their declarations to it (`withinAttackTax`), and the client shows the running cost.
+
 - `grantPt: [p, t]` — layer 7d P/T bonus.
 - `grantPtPerCount: { filter?, commanderCasts?, playerCounters?, countersOnAffected?, countersOnSource?, exiled?, inGraveyard?, colorsAmong?, pt, excludeSelf? }` — a layer 7d bonus that
   *scales* with a live count (Skycat Sovereign's "+1/+1 for each **other**

@@ -765,6 +765,22 @@ export type LegalAction =
        * one is the player's choice. `combat/attacking.ts` checks it.
        */
       readonly mustAttack: readonly ObjectId[];
+      /**
+       * What attacking costs (rule 508.1h — Ghostly Prison, Propaganda):
+       * `perCreature` is the generic mana each creature attacking that player
+       * costs, for every taxed defending player; `budget` is how much of it
+       * the attacker can surely pay — the generic mana their sources make
+       * without any creature that would tap to attack. Within the budget a
+       * declaration is always payable; past it the engine checks exactly.
+       * `tokens` is each compacted token stack's size among `eligible`, since
+       * an entry without a `count` sends all of it. Absent when no defender
+       * is taxed.
+       */
+      readonly attackTax?: {
+        readonly perCreature: Readonly<Record<PlayerId, number>>;
+        readonly budget: number;
+        readonly tokens?: Readonly<Record<ObjectId, number>>;
+      };
     }
   | {
       readonly kind: "declare-blockers";

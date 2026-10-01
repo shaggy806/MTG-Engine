@@ -2135,6 +2135,7 @@ import _poolGhostQuarter from "./pool/ghost-quarter.js";
 import _poolGhostSpectralSaboteur from "./pool/ghost-spectral-saboteur.js";
 import _poolGhostWarden from "./pool/ghost-warden.js";
 import _poolGhostlyFlicker from "./pool/ghostly-flicker.js";
+import _poolGhostlyPrison from "./pool/ghostly-prison.js";
 import _poolGhostlySentinel from "./pool/ghostly-sentinel.js";
 import _poolGhostlyVisit from "./pool/ghostly-visit.js";
 import _poolGhostsOfTheDamned from "./pool/ghosts-of-the-damned.js";
@@ -4018,6 +4019,7 @@ import _poolProfessionalFaceBreaker from "./pool/professional-face-breaker.js";
 import _poolProfessorsWarning from "./pool/professors-warning.js";
 import _poolProftsEideticMemory from "./pool/profts-eidetic-memory.js";
 import _poolPromisingVein from "./pool/promising-vein.js";
+import _poolPropaganda from "./pool/propaganda.js";
 import _poolProphetOfThePeak from "./pool/prophet-of-the-peak.js";
 import _poolPropheticPrism from "./pool/prophetic-prism.js";
 import _poolProsperTomeBound from "./pool/prosper-tome-bound.js";
@@ -6184,6 +6186,7 @@ import _poolWindDrake from "./pool/wind-drake.js";
 import _poolWindScarredCrag from "./pool/wind-scarred-crag.js";
 import _poolWindSpirit from "./pool/wind-spirit.js";
 import _poolWindStrider from "./pool/wind-strider.js";
+import _poolWindbornMuse from "./pool/windborn-muse.js";
 import _poolWindcragSiege from "./pool/windcrag-siege.js";
 import _poolWindreaderSphinx from "./pool/windreader-sphinx.js";
 import _poolWindriderEel from "./pool/windrider-eel.js";
@@ -8647,6 +8650,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGhostSpectralSaboteur,
   _poolGhostWarden,
   _poolGhostlyFlicker,
+  _poolGhostlyPrison,
   _poolGhostlySentinel,
   _poolGhostlyVisit,
   _poolGhostsOfTheDamned,
@@ -10530,6 +10534,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolProfessorsWarning,
   _poolProftsEideticMemory,
   _poolPromisingVein,
+  _poolPropaganda,
   _poolProphetOfThePeak,
   _poolPropheticPrism,
   _poolProsperTomeBound,
@@ -12696,6 +12701,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWindScarredCrag,
   _poolWindSpirit,
   _poolWindStrider,
+  _poolWindbornMuse,
   _poolWindcragSiege,
   _poolWindreaderSphinx,
   _poolWindriderEel,

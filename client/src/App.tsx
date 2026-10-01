@@ -3462,6 +3462,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     // A tile of several with some attacking: a count per defender, rather
     // than a click per creature (game/attackGroups.ts).
     const pairs = attackPairs(attackAssignments, attackPicks, defendersFor, tileOf)
+    // What attacking costs (Ghostly Prison, Propaganda): each creature sent
+    // at a taxing player, at that player's rate. Past the budget the engine
+    // checks the payment exactly, so this warns rather than blocks.
+    const taxRates = attackAction.attackTax?.perCreature as Readonly<Record<string, number>> | undefined
+    const attackTax = Object.values(attackAssignments).reduce((n, d) => n + (taxRates?.[d] ?? 0), 0)
+    const overBudget = attackTax > (attackAction.attackTax?.budget ?? 0)
     controls = (
       <div className="controls">
         <span>
@@ -3479,6 +3485,13 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
           {unmetMusts.length > 0 && enterAttackingAction === undefined
             ? ` · ${unmetMusts.map((id) => game.nameOf(id)).join(', ')} must attack`
             : ''}
+          {attackTax > 0 ? (
+            <>
+              {' '}
+              · costs <Symbols text={`{${attackTax}}`} /> to attack
+              {overBudget ? ' — more than you can surely pay' : ''}
+            </>
+          ) : null}
         </span>
         {pairs.length > 0 ? (
           <span className="stack-counts">

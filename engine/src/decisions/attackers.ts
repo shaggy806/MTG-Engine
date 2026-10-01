@@ -17,7 +17,7 @@
  */
 
 import type { Action, LegalAction } from "../actions.js";
-import { withRequiredAttackers } from "../combat/attacking.js";
+import { withinAttackTax, withRequiredAttackers } from "../combat/attacking.js";
 import type { AttackOffer } from "../combat/attacking.js";
 import {
   attackRequirementsForbid,
@@ -41,6 +41,17 @@ function attackersOffer(ctx: DecisionReadCtx, player: PlayerId): AttackOffer {
     if (legal.length > 0) defendersFor[id] = legal;
   }
   const eligible = Object.keys(defendersFor) as ObjectId[];
+  const perCreature: Record<PlayerId, number> = {};
+  for (const d of defenders) {
+    const tax = ctx.attackTaxOf(d);
+    if (tax > 0) perCreature[d as PlayerId] = tax;
+  }
+  const taxed = Object.keys(perCreature).length > 0;
+  const tokens: Record<ObjectId, number> = {};
+  for (const id of eligible) {
+    const n = ctx.state.objects[id]?.stackCount;
+    if (n !== undefined && n > 1) tokens[id] = n;
+  }
   return {
     kind: "declare-attackers",
     // The union across every attacker. NOT the list for any one of them —
@@ -49,8 +60,24 @@ function attackersOffer(ctx: DecisionReadCtx, player: PlayerId): AttackOffer {
     defenders,
     defendersFor,
     eligible,
-    // Able to attack is being eligible: a legal defender to be sent at.
-    mustAttack: eligible.filter((id) => mustAttack(ctx.state, ctx.registry, id)),
+    // Able to attack is being eligible: a legal defender to be sent at — and
+    // a creature that could only attack someone who taxes it
+    // isn't required to: paying a cost to attack is never obligatory (rule
+    // 508.1d).
+    mustAttack: eligible.filter(
+      (id) =>
+        mustAttack(ctx.state, ctx.registry, id) &&
+        (defendersFor[id] ?? []).some((d) => ctx.attackTaxOf(d) === 0),
+    ),
+    ...(taxed
+      ? {
+          attackTax: {
+            perCreature,
+            budget: ctx.attackTaxBudget(player, eligible),
+            ...(Object.keys(tokens).length > 0 ? { tokens } : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -105,12 +132,13 @@ export const attackers = defineDecision({
         (declared.get(id) ?? 0) < tokensIn(id) &&
         ctx.state.objects[id]?.controller === player &&
         mustAttack(ctx.state, ctx.registry, id) &&
-        defendersForAttacker(ctx.state, ctx.registry, player, id).length > 0,
+        // Not one it could attack only by paying for it (rule 508.1d).
+        defendersForAttacker(ctx.state, ctx.registry, player, id).some((d) => ctx.attackTaxOf(d) === 0),
     );
     if (missing.length > 0) {
       return `${missing.map((id) => nameOf(ctx, id)).join(", ")} must attack if able`;
     }
-    return null;
+    return ctx.whyCannotPayAttackTax(player, action.attackers);
   },
 
   apply: (host, action): void => {
@@ -161,14 +189,19 @@ export const attackers = defineDecision({
     // Fusing the two into one pass would interleave those draws and re-point
     // every seed, which is why this stays two passes. A creature that must
     // attack still draws its flip, and attacks whatever it came up.
-    attackers: legal.eligible
-      .filter((attacker) => rng.random() < 0.6 || legal.mustAttack.includes(attacker))
-      .flatMap((attacker) => {
-        // Per-attacker, not the union: a goaded creature may not be
-        // sent at its goader while anyone else is available.
-        const options = legal.defendersFor[attacker] ?? [];
-        if (options.length === 0) return [];
-        return [{ attacker, defender: options[rng.pickIndex(options.length)] }];
-      }),
+    // Then cut to what its attack tax surely pays (Ghostly Prison) — no
+    // draws, so a game without one replays exactly as before.
+    attackers: withinAttackTax(
+      legal.eligible
+        .filter((attacker) => rng.random() < 0.6 || legal.mustAttack.includes(attacker))
+        .flatMap((attacker) => {
+          // Per-attacker, not the union: a goaded creature may not be
+          // sent at its goader while anyone else is available.
+          const options = legal.defendersFor[attacker] ?? [];
+          if (options.length === 0) return [];
+          return [{ attacker, defender: options[rng.pickIndex(options.length)] }];
+        }),
+      legal,
+    ),
   }),
 });

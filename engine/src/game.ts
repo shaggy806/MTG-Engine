@@ -810,6 +810,15 @@ export class Game {
         return pending === null ? undefined : this.abilityTargetSource(pending);
       },
       whyCannotCastNow: (cast) => this.canDispatch(cast),
+      attackTaxOf: (defender) => this.attackTaxPerCreature(defender),
+      attackTaxBudget: (player, attackers) => this.attackTaxBudget(player, attackers),
+      whyCannotPayAttackTax: (player, declarations) => {
+        const total = this.attackTaxTotal(declarations);
+        if (total === 0) return null;
+        return this.attackTaxPayment(player, declarations, total) === null
+          ? `${player} can't pay the {${total}} it costs to attack`
+          : null;
+      },
     };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
@@ -3452,6 +3461,60 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** The generic mana one creature attacking `defender` costs: every
+   * `attackTax` static of the permanents that player controls, added up — two
+   * Ghostly Prisons are {4} a creature. A planeswalker isn't "you" (the
+   * ruling), so attacking one is free. */
+  private attackTaxPerCreature(defender: PlayerId | ObjectId): number {
+    if (this.state.players[defender as PlayerId] === undefined) return 0;
+    return this.activeStaticsOf(defender as PlayerId, (a) => a.attackTax !== undefined).reduce(
+      (n, { ability }) => n + (ability.attackTax?.generic ?? 0),
+      0,
+    );
+  }
+
+  /** What `declarations` cost to attack in all (rule 508.1h): each creature's
+   * tax for the player it attacks, a token stack's per token. */
+  private attackTaxTotal(declarations: readonly AttackerDeclaration[]): number {
+    return declarations.reduce((n, { attacker, defender, count }) => {
+      const per = this.attackTaxPerCreature(defender);
+      return per === 0 ? n : n + per * (count ?? this.state.objects[attacker]?.stackCount ?? 1);
+    }, 0);
+  }
+
+  /** How `player` would pay `total` to attack with `declarations` — with
+   * every declared attacker that taps (no vigilance) out of the mana sources,
+   * since it's tapped before the cost is paid (rule 508.1f) — or `null`. */
+  private attackTaxPayment(
+    player: PlayerId,
+    declarations: readonly AttackerDeclaration[],
+    total: number,
+  ): ManaPayment | null {
+    const tapping = new Set(
+      declarations.map((d) => d.attacker).filter((id) => !this.objHasKeyword(id, "vigilance")),
+    );
+    return this.payMana(player, parseManaCost(`{${total}}`), undefined, undefined, null, { withheld: tapping });
+  }
+
+  /** The attack tax `player` can surely pay — see `AttackOffer.attackTax`:
+   * the most generic mana their sources make with every creature in
+   * `attackers` that would tap to attack withheld. */
+  private attackTaxBudget(player: PlayerId, attackers: readonly ObjectId[]): number {
+    const tapping = new Set(attackers.filter((id) => !this.objHasKeyword(id, "vigilance")));
+    const sources = this.manaSources(player);
+    let hi =
+      sources.reduce((n, s) => n + Game.sourceCapacity(s), 0) + this.state.players[player].manaPool.length;
+    let lo = 0;
+    const pays = (n: number): boolean =>
+      this.payMana(player, parseManaCost(`{${n}}`), undefined, undefined, null, { withheld: tapping }) !== null;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (pays(mid)) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo;
+  }
+
   /** Ask about the next copy in `GameState.copyTargetsQueue` — or, when it
    * has nothing left to change to (or has left the stack), just announce its
    * targets. */
@@ -4797,6 +4860,10 @@ export class Game {
     // chose: the validator refuses one that leaves it out (rule 508.1d).
     const why = this.whyCannotDeclareAttackers(player, declarations);
     if (why !== null) throw new Error(why);
+    // What attacking costs (Ghostly Prison), locked in before anything
+    // taps (rule 508.1h) and paid once the attackers have tapped (508.1f,
+    // 508.1j) — so an attacker can't tap for its own tax.
+    const tax = this.attackTaxTotal(declarations);
 
     // The whole declaration is made before any of it is announced: it is one
     // action (rule 508.1), and abilities that trigger on it trigger once it's
@@ -4819,6 +4886,11 @@ export class Game {
         if (taps) object.tapped = true;
         declaredNow.push({ id, defender, taps });
       }
+    }
+    if (tax > 0) {
+      const payment = this.payMana(player, parseManaCost(`{${tax}}`));
+      if (payment === null) throw new Error(`${player} can't pay the {${tax}} it costs to attack`);
+      this.executePayment(player, payment);
     }
     const allAttackers = declaredNow.map((d) => d.id);
     for (const { id, defender, taps } of declaredNow) {

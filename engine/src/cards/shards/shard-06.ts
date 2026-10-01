@@ -77,6 +77,7 @@ import _poolFrostMarsh from "../pool/frost-marsh.js";
 import _poolFrozenShade from "../pool/frozen-shade.js";
 import _poolFyndhornElves from "../pool/fyndhorn-elves.js";
 import _poolGeistOfTheArchives from "../pool/geist-of-the-archives.js";
+import _poolGhostlyPrison from "../pool/ghostly-prison.js";
 import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
 import _poolGravitationalShift from "../pool/gravitational-shift.js";
@@ -276,6 +277,7 @@ const shard: CardShard = {
     _poolFrozenShade,
     _poolFyndhornElves,
     _poolGeistOfTheArchives,
+    _poolGhostlyPrison,
     _poolGoblinGangLeader,
     _poolGoblinRally,
     _poolGravitationalShift,

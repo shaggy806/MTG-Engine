@@ -46,13 +46,6 @@
         "new:split-cards"
       ],
       "why": "A split card: cast either half, characteristics combined off the stack. Its copy half needs nothing else now."
-    },
-    {
-      "name": "Ghostly Prison",
-      "needs": [
-        "new:attack-tax"
-      ],
-      "why": "'Creatures can't attack you unless their controller pays {2} for each' — a cost to attack (rule 508.1d-h) paid as attackers are declared. Propaganda (EDHREC #113) is the same."
     }
   ]
 }

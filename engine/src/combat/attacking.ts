@@ -48,8 +48,50 @@ export function withRequiredAttackers(
 ): AttackerDeclaration[] {
   const out = [...declared];
   for (const { attacker } of attackingViolations(declared, offer)) {
-    const defender = offer.defendersFor[attacker]?.[0];
+    // A defender that costs nothing to attack first: the requirement never
+    // obliges paying a cost (rule 508.1d).
+    const options = offer.defendersFor[attacker] ?? [];
+    const defender = options.find((d) => taxOn(offer, d) === 0) ?? options[0];
     if (defender !== undefined) out.push({ attacker, defender });
+  }
+  return withinAttackTax(out, offer);
+}
+
+/** What one creature attacking `defender` costs under `offer`'s attack tax. */
+function taxOn(offer: AttackOffer, defender: string): number {
+  return (offer.attackTax?.perCreature as Readonly<Record<string, number>> | undefined)?.[defender] ?? 0;
+}
+
+/**
+ * `declared`, cut down to what its attack tax budget surely pays (Ghostly
+ * Prison — see `AttackOffer.attackTax`): taxed entries are dropped from the
+ * end until the rest fits. A creature that must attack is kept if it can be
+ * sent somewhere untaxed instead, and otherwise dropped — the requirement
+ * never obliges paying (rule 508.1d). For a driver that doesn't weigh the
+ * cost itself: a bot, the fuzzer's random player, a skipped window.
+ */
+export function withinAttackTax(
+  declared: readonly AttackerDeclaration[],
+  offer: AttackOffer,
+): AttackerDeclaration[] {
+  const tax = offer.attackTax;
+  if (tax === undefined) return [...declared];
+  const tokensOf = (d: AttackerDeclaration): number => d.count ?? tax.tokens?.[d.attacker] ?? 1;
+  const costOf = (d: AttackerDeclaration): number => taxOn(offer, d.defender) * tokensOf(d);
+  const out = [...declared];
+  let total = out.reduce((n, d) => n + costOf(d), 0);
+  // The optional attackers first, latest declared first.
+  for (const required of [false, true]) {
+    for (let i = out.length - 1; i >= 0 && total > tax.budget; i -= 1) {
+      const d = out[i];
+      if (costOf(d) === 0 || offer.mustAttack.includes(d.attacker) !== required) continue;
+      total -= costOf(d);
+      const free = required
+        ? (offer.defendersFor[d.attacker] ?? []).find((x) => taxOn(offer, x) === 0)
+        : undefined;
+      if (free !== undefined) out[i] = { ...d, defender: free };
+      else out.splice(i, 1);
+    }
   }
   return out;
 }

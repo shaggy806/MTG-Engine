@@ -193,6 +193,7 @@ import _poolWaterloggedTeachings from "../pool/waterlogged-teachings.js";
 import _poolWhisperingShade from "../pool/whispering-shade.js";
 import _poolWildGriffin from "../pool/wild-griffin.js";
 import _poolWilyBandar from "../pool/wily-bandar.js";
+import _poolWindbornMuse from "../pool/windborn-muse.js";
 import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
@@ -396,6 +397,7 @@ const shard: CardShard = {
     _poolWhisperingShade,
     _poolWildGriffin,
     _poolWilyBandar,
+    _poolWindbornMuse,
     _poolWuInfantry,
     _poolWydwenTheBitingGale,
     _poolYargleAndMultani,

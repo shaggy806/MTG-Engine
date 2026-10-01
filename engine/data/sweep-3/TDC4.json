@@ -1,7 +1,7 @@
 {
   "batch": "TDC4",
   "status": "complete",
-  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution, and every player's spells uncounterable (Lier)",
+  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution, and every player's spells uncounterable (Lier), an attack tax (Ghostly Prison, Propaganda, Windborn Muse)",
   "authored": [
     {
       "name": "Sublime Epiphany",
@@ -35,6 +35,27 @@
       "name": "Lier, Disciple of the Drowned",
       "files": [
         "engine/src/cards/pool/lier-disciple-of-the-drowned.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ghostly Prison",
+      "files": [
+        "engine/src/cards/pool/ghostly-prison.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Propaganda",
+      "files": [
+        "engine/src/cards/pool/propaganda.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Windborn Muse",
+      "files": [
+        "engine/src/cards/pool/windborn-muse.ts"
       ],
       "tested": true
     }
