@@ -3167,10 +3167,16 @@
   opacity: 1;
 }
 /* "Bob casts" over the card, in the caster's seat colour, on a dark pill:
-   bare text over the middle of a busy board was too faint to read. */
+   bare text over the middle of a busy board was too faint to read. Centred on
+   the card's midline by position rather than `margin: auto`, which can't
+   centre a child wider than its parent — and "Bob casts from their
+   graveyard" is wider than the card, so it hung off to the right. */
 .played-card-caption {
-  width: fit-content;
-  margin: 0 auto 0.5em;
+  position: relative;
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  margin: 0 0 0.5em;
   padding: 0.2em 0.9em;
   border: 1px solid var(--seat, var(--border));
   border-radius: 999px;
@@ -3330,6 +3336,22 @@
 }
 .float-text.info {
   color: #9fd0ff;
+}
+
+/* A cardback peeling off a library pile as the top card is milled or exiled
+   (AnimationLayer's runMill), placed exactly over the pile. */
+.peel-card {
+  position: fixed;
+  z-index: 10001; /* with .anim-layer */
+  pointer-events: none;
+  transform-origin: center;
+  perspective: 600px;
+}
+.peel-card .card-back {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
 }
 
 /* A copy of a card moving from one place to another (AnimationLayer's

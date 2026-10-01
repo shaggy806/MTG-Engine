@@ -93,8 +93,13 @@ export function usePlayback(
    * below to publish it against the board that has now mounted. */
   const pendingAfterRef = useRef<{
     readonly view: PlayerView
+    readonly prev: PlayerView | null
     readonly items: readonly ScheduledEvent[]
   } | null>(null)
+  /** The board on screen when a frame starts playing — the one its first
+   * half runs over. Handed to every cue as `prev`, for what only the old
+   * board knows (whose a permanent that has since left was). */
+  const lastViewRef = useRef<PlayerView | null>(frame?.view ?? null)
 
   // Read through refs so the playback loop below doesn't have to be rebuilt
   // (and every in-flight timer torn down) each time a new push re-renders.
@@ -123,12 +128,14 @@ export function usePlayback(
       if (!skipped) break
       shownEventsRef.current = skipped.view.events.length
       phaseRef.current = phaseOfStep(skipped.view.turn.step)
+      lastViewRef.current = skipped.view
       onShownRef.current(skipped.seq)
     }
 
     const next = queue.shift()
     if (!next) return
     playingRef.current = true
+    const prev = lastViewRef.current
 
     const total = next.view.events.length
     // A reconnect (or a different game entirely) can hand back a shorter log
@@ -152,6 +159,7 @@ export function usePlayback(
         schedule.items.map((i) => ({
           event: i.event,
           view: next.view,
+          prev,
           delay: i.offset,
           half: 'before' as const,
         })),
@@ -177,8 +185,9 @@ export function usePlayback(
     const show = (): void => {
       timerRef.current = null
       revisionRef.current += 1
+      lastViewRef.current = next.view
       if (watching && schedule.after.length > 0) {
-        pendingAfterRef.current = { view: next.view, items: schedule.after }
+        pendingAfterRef.current = { view: next.view, prev, items: schedule.after }
       }
       const revision = revisionRef.current
       const busy = afterMs > 0 || queueRef.current.length > 0
@@ -214,6 +223,7 @@ export function usePlayback(
       pending.items.map((i) => ({
         event: i.event,
         view: pending.view,
+        prev: pending.prev,
         delay: i.offset,
         half: 'after' as const,
       })),
@@ -224,6 +234,7 @@ export function usePlayback(
     if (frame === null) {
       queueRef.current = []
       pendingAfterRef.current = null
+      lastViewRef.current = null
       if (timerRef.current !== null) window.clearTimeout(timerRef.current)
       timerRef.current = null
       playingRef.current = false

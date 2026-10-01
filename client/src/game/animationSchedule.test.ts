@@ -7,6 +7,9 @@ import {
   HIT_STEP_MS,
   HURT_STEP_MS,
   MARK_STEP_MS,
+  DISCARD_STEP_MS,
+  MILL_STEP_MS,
+  MOVE_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -166,6 +169,40 @@ describe('scheduleEvents', () => {
       ['life-changed', 0],
     ])
     expect(s.afterMs).toBe(HURT_STEP_MS)
+  })
+
+  it('snapshots a change of control over the old board, and flies it over the new', () => {
+    const s = scheduleEvents(
+      [
+        dies(),
+        ev({ type: 'control-changed', object: 'x', controller: 'p2', untilEndOfTurn: false }),
+        dies(),
+      ],
+      'precombat-main',
+    )
+    // The snapshot costs nothing and doesn't split the deaths' shared beat.
+    expect(s.items.map((i) => [i.event.type, i.offset])).toEqual([
+      ['permanent-left-battlefield', 0],
+      ['control-changed', DEATH_STEP_MS],
+      ['permanent-left-battlefield', 0],
+    ])
+    expect(s.totalMs).toBe(DEATH_STEP_MS)
+    expect(types(s.after)).toEqual(['control-changed'])
+    expect(s.afterMs).toBe(MOVE_STEP_MS)
+  })
+
+  it('shows a mill and a discard on the old board, and an exile only from a library', () => {
+    const s = scheduleEvents(
+      [
+        ev({ type: 'cards-milled', player: 'p1', objects: ['a', 'b'] }),
+        ev({ type: 'cards-discarded', player: 'p1', objects: ['c'] }),
+        ev({ type: 'cards-put-into-exile', arrivals: [{ object: 'd', from: 'graveyard' }] }),
+        ev({ type: 'cards-put-into-exile', arrivals: [{ object: 'e', from: 'library' }] }),
+      ],
+      'precombat-main',
+    )
+    expect(types(s.items)).toEqual(['cards-milled', 'cards-discarded', 'cards-put-into-exile'])
+    expect(s.totalMs).toBe(MILL_STEP_MS + DISCARD_STEP_MS + MILL_STEP_MS)
   })
 
   it('leaves a frame of banners and draws with nothing to wait on', () => {

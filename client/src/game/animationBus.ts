@@ -24,6 +24,10 @@ export interface AnimationCue {
   /** The board this event belongs to — the state the frame carrying it
    * settled into. Every object an overlay needs is looked up here. */
   readonly view: PlayerView
+  /** The board the frame started from (the one on screen when its first half
+   * plays), or `null` for the first. What only the old board knows: whose a
+   * permanent that has since left was. */
+  readonly prev: PlayerView | null
   /** Milliseconds from publication until this cue's animation should fire. */
   readonly delay: number
   /** Which board it plays over (see `Half`). An `after` cue is published

@@ -21,7 +21,11 @@ import {
   ENTER_STEP_MS,
   FLIP_STEP_MS,
   HURT_STEP_MS,
+  CROWN_STEP_MS,
+  DISCARD_STEP_MS,
   MARK_STEP_MS,
+  MILL_STEP_MS,
+  MOVE_STEP_MS,
   PHASE_STEP_MS,
   REVEAL_STEP_MS,
   STACK_EXIT_MS,
@@ -29,7 +33,7 @@ import {
   TRIGGER_STEP_MS,
   TURN_STEP_MS,
 } from '../game/animationSchedule.ts'
-import type { AnimationBus } from '../game/animationBus.ts'
+import type { AnimationBus, AnimationCue } from '../game/animationBus.ts'
 import { motionPrefs } from '../game/motionPrefs.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
@@ -63,6 +67,18 @@ const TAPPED_POSE = 'rotate(20deg) scale(0.68)'
  * `animationSchedule` reserved for them. */
 function scaled(ms: number): number {
   return ms * motionPrefs().animScale
+}
+
+/** Past this many cards leaving a library in one frame, the rest go without
+ * peeling off the pile — a big mill is a count, not a card-by-card show. */
+const MAX_PEELED_PER_FRAME = 5
+
+/** The words a cast caption adds for a spell not cast from hand. */
+const FROM_ZONE: Readonly<Record<string, string>> = {
+  graveyard: 'from their graveyard',
+  exile: 'from exile',
+  command: 'from the command zone',
+  library: 'from their library',
 }
 
 /** How far the banner queue may fall behind the game before it starts
@@ -335,41 +351,72 @@ function runHit(source: ObjectId, target: TargetRef): void {
 }
 
 /**
- * Fades a permanent off the board as it leaves, whatever the destination —
- * dying, sacrificed, bounced, exiled. Runs while the board on screen is
- * still the one that has it (see usePlayback), and the frame it belongs to
- * holds that board for `DEATH_STEP_MS`, so the tile is gone by the time the
- * fade finishes rather than blinking out of existence unannounced.
+ * A permanent leaving the board, shown where it stands — there's no graveyard
+ * or exile drawn on the table for it to travel to. Where it went decides the
+ * look, so exile can't be mistaken for dying: a permanent going to a
+ * graveyard drains of colour and sinks away; one going to exile flares
+ * white-blue and dissolves upward; anything else (a library, the command
+ * zone) just fades. Runs while the board on screen is still the one that has
+ * it (see usePlayback), and the frame holds that board for `DEATH_STEP_MS`,
+ * so the tile is gone by the time it finishes rather than blinking out.
  */
-function runDeath(object: ObjectId): void {
+function runDeath(object: ObjectId, toZone: string): void {
   const el = elementFor({ kind: 'object', object })
   if (!el) return // never drawn (entered and left inside one frame)
+  const timing: KeyframeAnimationOptions = {
+    duration: scaled(DEATH_DURATION_MS),
+    easing: 'ease-in',
+    fill: 'forwards',
+  }
   if (motionPrefs().reduced) {
-    el.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: scaled(DEATH_DURATION_MS),
-      fill: 'forwards',
-    })
+    // Still told apart by colour, without the movement.
+    const tint = toZone === 'exile' ? 'brightness(1.8) saturate(0.3)' : 'grayscale(1)'
+    el.animate([{ opacity: 1, filter: 'none' }, { opacity: 0, filter: tint }], timing)
     return
   }
   const base = srcBaseTransform(el)
-  el.animate(
-    [
-      { opacity: 1, filter: 'grayscale(0)', transform: `scale(1) ${base}`, offset: 0 },
-      {
-        opacity: 0.85,
-        filter: 'grayscale(0.6) brightness(1.3)',
-        transform: `scale(1.06) ${base}`,
-        offset: 0.25,
-      },
-      {
-        opacity: 0,
-        filter: 'grayscale(1) brightness(0.6)',
-        transform: `scale(0.72) ${base}`,
-        offset: 1,
-      },
-    ],
-    { duration: scaled(DEATH_DURATION_MS), easing: 'ease-in', fill: 'forwards' },
-  )
+  if (toZone === 'exile') {
+    el.animate(
+      [
+        { opacity: 1, filter: 'brightness(1) blur(0)', transform: `translateY(0) scale(1) ${base}` },
+        {
+          opacity: 1,
+          filter:
+            'brightness(2) saturate(0.3) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
+          transform: `translateY(0) scale(1.05) ${base}`,
+          offset: 0.3,
+        },
+        {
+          opacity: 0,
+          filter: 'brightness(2.4) saturate(0) blur(4px)',
+          transform: `translateY(-18%) scale(1.12) ${base}`,
+        },
+      ],
+      timing,
+    )
+    return
+  }
+  if (toZone === 'graveyard') {
+    el.animate(
+      [
+        { opacity: 1, filter: 'grayscale(0)', transform: `translateY(0) scale(1) ${base}` },
+        {
+          opacity: 0.9,
+          filter: 'grayscale(0.8) brightness(0.8)',
+          transform: `translateY(0) scale(0.97) ${base}`,
+          offset: 0.3,
+        },
+        {
+          opacity: 0,
+          filter: 'grayscale(1) brightness(0.4)',
+          transform: `translateY(14%) scale(0.8) ${base}`,
+        },
+      ],
+      timing,
+    )
+    return
+  }
+  el.animate([{ opacity: 1 }, { opacity: 0 }], timing)
 }
 
 /**
@@ -452,18 +499,6 @@ function releaseWhenDone(box: HTMLElement, animation: Animation): void {
   animation.oncancel = () => box.remove()
 }
 
-/** Where on screen a player's graveyard is: the "graveyard N" link on their
- * panel, as an offset from the viewport centre. `null` if it isn't drawn. */
-function graveyardPoint(player: PlayerId): { x: number; y: number } | null {
-  const el = document.querySelector<HTMLElement>(`[data-graveyard-of="${CSS.escape(player)}"]`)
-  if (!el) return null
-  const r = el.getBoundingClientRect()
-  return {
-    x: r.left + r.width / 2 - window.innerWidth / 2,
-    y: r.top + r.height / 2 - window.innerHeight / 2,
-  }
-}
-
 /** The stack entry an event is about, on the board still on screen. A spell
  * is its own entry; an ability names only its source, so it's the topmost
  * entry from that source (the one resolving — entries render top first). */
@@ -487,11 +522,12 @@ function stackEntryFor(ev: GameEvent): HTMLElement | null {
 
 /**
  * Something leaving the stack, over the board it's still on. A resolving
- * permanent spell flies to its controller's side of the table, an instant or
- * sorcery to its owner's graveyard; a countered or fizzled spell visibly
- * breaks — a shudder, drained of colour — before dropping to the graveyard,
- * so it can't be mistaken for having resolved; an ability dissolves where it
- * is. Reduced motion fades the entry in place, whatever the outcome.
+ * permanent spell flies to its controller's side of the table, where it's
+ * about to appear. Everything else ends where it is — there's no graveyard
+ * drawn to send it to: an instant or sorcery flares and lifts away, spent; an
+ * ability dissolves; a countered or fizzled spell visibly breaks — a shudder,
+ * drained of colour, then it drops and fades — so it can't be mistaken for
+ * having resolved. Reduced motion fades the entry, whatever the outcome.
  */
 function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
   const el = stackEntryFor(ev)
@@ -521,25 +557,32 @@ function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
     return
   }
   const obj = view.objects[ev.object]
-  const owner = obj?.owner ?? null
-  const toGraveyard = owner !== null ? graveyardPoint(owner) : null
-  if (ev.type === 'spell-resolved') {
-    // Where it went is in the frame it resolved in: a permanent is on the
-    // battlefield, anything else (an instant, a sorcery) mostly in a
-    // graveyard. With no graveyard link to aim at, it heads home all the same.
-    const to =
-      obj?.zone === 'battlefield' || toGraveyard === null
-        ? flyOrigin(obj?.controller ?? owner ?? seat, seat)
-        : toGraveyard
-    flyGhost(el, to, duration)
+  if (ev.type === 'spell-resolved' && obj?.zone === 'battlefield') {
+    // A permanent: to its controller's side, where it's about to appear.
+    flyGhost(el, flyOrigin(obj.controller, seat), duration)
     return
   }
   const ghost = makeGhost(el)
   if (ghost === null) return
-  const r = ghost.rect
-  const to = toGraveyard ?? { x: 0, y: window.innerHeight / 2 }
-  const dx = to.x - (r.left + r.width / 2 - window.innerWidth / 2)
-  const dy = to.y - (r.top + r.height / 2 - window.innerHeight / 2)
+  if (ev.type === 'spell-resolved') {
+    releaseWhenDone(
+      ghost.box,
+      ghost.box.animate(
+        [
+          { transform: 'translateY(0) scale(1)', opacity: 1, filter: 'brightness(1)' },
+          {
+            transform: 'translateY(0) scale(1.05)',
+            opacity: 1,
+            filter: 'brightness(1.6) drop-shadow(0 0 14px rgba(255, 200, 90, 0.9))',
+            offset: 0.3,
+          },
+          { transform: 'translateY(-12%) scale(0.95)', opacity: 0, filter: 'brightness(2) blur(3px)' },
+        ],
+        { duration, easing: 'ease-in', fill: 'forwards' },
+      ),
+    )
+    return
+  }
   releaseWhenDone(
     ghost.box,
     ghost.box.animate(
@@ -554,8 +597,8 @@ function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
           offset: 0.4,
         },
         {
-          transform: `translate(${dx}px, ${dy}px) rotate(8deg) scale(0.5)`,
-          filter: 'grayscale(1) brightness(0.5)',
+          transform: 'translate(0, 16%) rotate(6deg) scale(0.85)',
+          filter: 'grayscale(1) brightness(0.4)',
           opacity: 0,
         },
       ],
@@ -783,21 +826,252 @@ function runHurt(ev: GameEvent, delay: number): void {
 }
 
 /**
- * A permanent returned to its hand flies there — the draw flight run in
- * reverse. It heads for the hand of the board it was on, which is its
- * controller's: a stolen creature bounced back to its owner goes the wrong
- * way, which is a rare enough case to leave until control changes get their
- * own animation. Falls back to the ordinary fade where there's nothing to fly
- * (the tile or its cell can't be found) or motion is reduced.
+ * A permanent returned to its owner's hand flies there — the draw flight run
+ * in reverse — to the hand edge of its *owner's* cell, read off the old board
+ * (`prev`), so a stolen creature goes home rather than to whoever had it.
+ * Falls back to the board it was on, then to the ordinary fade where there's
+ * nothing to fly or motion is reduced.
  */
-function runBounce(object: ObjectId): void {
+function runBounce(object: ObjectId, prev: PlayerView | null): void {
   const el = elementFor({ kind: 'object', object })
-  const cell = el?.closest<HTMLElement>('.quadrant-cell')
+  const owner = prev?.objects[object]?.owner
+  const ownerCell = owner
+    ? document
+        .querySelector<HTMLElement>(`[data-player-id="${CSS.escape(owner)}"]`)
+        ?.closest<HTMLElement>('.quadrant-cell')
+    : null
+  const cell = ownerCell ?? el?.closest<HTMLElement>('.quadrant-cell')
   if (!el || !cell || motionPrefs().reduced) {
-    runDeath(object)
+    runDeath(object, 'hand')
     return
   }
   flyGhost(el, handPoint(cell), scaled(DEATH_DURATION_MS))
+}
+
+/**
+ * Cards leaving a library from the top, shown on the library pile — there's
+ * no graveyard or exile drawn to send them to. Each peels off the top as a
+ * cardback and turns over as it goes: a milled card darkening as it drops
+ * away, an exiled one flaring white-blue and dissolving upward, so the two
+ * read differently. A handful at most, one after another.
+ */
+function runMill(ev: GameEvent, view: PlayerView, prev: PlayerView | null): void {
+  let piles: { player: PlayerId; exile: boolean }[]
+  if (ev.type === 'cards-milled') {
+    piles = ev.objects.map(() => ({ player: ev.player, exile: false }))
+  } else if (ev.type === 'cards-put-into-exile') {
+    // Whose library each came from: the card's owner, face up in exile now,
+    // or — face down, hidden — the old board may still know it.
+    piles = ev.arrivals.flatMap((a) => {
+      if (a.from !== 'library') return []
+      const owner = view.objects[a.object]?.owner ?? prev?.objects[a.object]?.owner
+      return owner ? [{ player: owner, exile: true }] : []
+    })
+  } else return
+  const duration = scaled(MILL_STEP_MS)
+  const stagger = scaled(90)
+  const reduced = motionPrefs().reduced
+  piles.slice(0, MAX_PEELED_PER_FRAME).forEach(({ player, exile }, i) => {
+    const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
+    if (!pile) return
+    const r = pile.getBoundingClientRect()
+    if (r.width === 0) return
+    const card = document.createElement('div')
+    card.className = 'peel-card'
+    card.style.left = `${r.left}px`
+    card.style.top = `${r.top}px`
+    card.style.width = `${r.width}px`
+    card.style.height = `${r.height}px`
+    card.appendChild(document.createElement('div')).className = 'card-back'
+    document.body.appendChild(card)
+    const frames: Keyframe[] = reduced
+      ? [
+          { opacity: 1, filter: 'none' },
+          { opacity: 0, filter: exile ? 'brightness(1.8) saturate(0.3)' : 'grayscale(1) brightness(0.5)' },
+        ]
+      : exile
+        ? [
+            { opacity: 1, transform: 'translateY(0) rotateY(0deg)', filter: 'brightness(1)' },
+            {
+              opacity: 1,
+              transform: 'translateY(-25%) rotateY(70deg)',
+              filter: 'brightness(2) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
+              offset: 0.45,
+            },
+            {
+              opacity: 0,
+              transform: 'translateY(-55%) rotateY(90deg) scale(1.1)',
+              filter: 'brightness(2.4) saturate(0) blur(4px)',
+            },
+          ]
+        : [
+            { opacity: 1, transform: 'translate(0, 0) rotateY(0deg)', filter: 'brightness(1)' },
+            { opacity: 1, transform: 'translate(0, -30%) rotateY(70deg)', offset: 0.4 },
+            {
+              opacity: 0,
+              transform: 'translate(8%, 25%) rotateY(90deg) scale(0.85)',
+              filter: 'grayscale(1) brightness(0.4)',
+            },
+          ]
+    const a = card.animate(frames, {
+      duration,
+      delay: i * stagger,
+      easing: 'ease-in-out',
+      fill: 'both',
+    })
+    a.onfinish = () => card.remove()
+    a.oncancel = () => card.remove()
+  })
+}
+
+/**
+ * A discarded card leaving the hand, where it is. Your own card lifts out of
+ * the fan and greys away; another player's hand isn't drawn, so their "hand"
+ * link flashes red and says how many went.
+ */
+function runDiscard(ev: GameEvent, seat: PlayerId): void {
+  if (ev.type !== 'cards-discarded') return
+  const duration = scaled(DISCARD_STEP_MS)
+  if (ev.player !== seat) {
+    const link = document.querySelector<HTMLElement>(`[data-hand-of="${CSS.escape(ev.player)}"]`)
+    if (!link) return
+    glow(link, 'loss', 0, duration)
+    floatText(link, `−${ev.objects.length} discarded`, 'loss', 0, duration * 1.6)
+    return
+  }
+  for (const id of ev.objects) {
+    const el = document.querySelector<HTMLElement>(`.hand-cards [data-obj-id="${CSS.escape(id)}"]`)
+    if (!el) continue
+    if (motionPrefs().reduced) {
+      el.animate([{ opacity: 1 }, { opacity: 0 }], { duration, fill: 'forwards' })
+      continue
+    }
+    const ghost = makeGhost(el)
+    if (ghost === null) continue
+    releaseWhenDone(
+      ghost.box,
+      ghost.box.animate(
+        [
+          { transform: 'translateY(0)', opacity: 1, filter: 'grayscale(0)' },
+          { transform: 'translateY(-20%)', opacity: 1, filter: 'grayscale(0.8)', offset: 0.35 },
+          { transform: 'translateY(-10%) scale(0.85)', opacity: 0, filter: 'grayscale(1) brightness(0.5)' },
+        ],
+        { duration, easing: 'ease-in', fill: 'forwards' },
+      ),
+    )
+  }
+}
+
+/**
+ * Moves across the board (a change of control, an Aura or Equipment going to
+ * a new host, the monarch's crown) need both boards: where the thing was, on
+ * the old one, and where it is, on the new. The frame's first half snapshots
+ * the old spot the moment it starts (`captureMove`), as a hidden copy, keyed
+ * by the event; the second half flies that copy onto the thing's new place
+ * (`runMove`/`runCrown`). A snapshot nobody collects (the frame's second half
+ * was dropped at its ceiling) removes itself.
+ */
+const captured = new Map<number, { box: HTMLElement; rect: DOMRect }>()
+
+function captureMove(ev: GameEvent): void {
+  let el: HTMLElement | null = null
+  if (ev.type === 'control-changed') el = boardTileOf(ev.object)
+  else if (ev.type === 'permanent-attached') el = boardTileOf(ev.source)
+  else if (ev.type === 'monarch-changed') el = document.querySelector<HTMLElement>('.pp-monarch')
+  if (!el || motionPrefs().reduced) return
+  const rect = el.getBoundingClientRect()
+  if (rect.width === 0) return
+  const copy = el.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-obj-id')
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  const tile = el.querySelector<HTMLElement>('.mini-tile')
+  if (tile) box.style.setProperty('--mini-w', `${tile.offsetWidth}px`)
+  box.style.left = `${rect.left}px`
+  box.style.top = `${rect.top}px`
+  box.style.width = `${rect.width}px`
+  box.style.height = `${rect.height}px`
+  box.style.visibility = 'hidden'
+  box.appendChild(copy)
+  document.body.appendChild(box)
+  captured.set(ev.seq, { box, rect })
+  window.setTimeout(() => {
+    if (captured.get(ev.seq)?.box === box) captured.delete(ev.seq)
+    box.remove()
+  }, 15_000)
+}
+
+/** Flies a captured copy from its old place onto `target`'s, holding the real
+ * `target` hidden until it lands, then `after`. */
+function flyCaptured(
+  seq: number,
+  target: HTMLElement,
+  delay: number,
+  duration: number,
+  after?: () => void,
+): boolean {
+  const snap = captured.get(seq)
+  captured.delete(seq)
+  if (!snap) return false
+  const to = target.getBoundingClientRect()
+  const { box, rect: from } = snap
+  box.style.visibility = 'visible'
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2)
+  const dy = to.top + to.height / 2 - (from.top + from.height / 2)
+  const flight = box.animate(
+    [
+      { transform: 'translate(0, 0) scale(1)', offset: 0 },
+      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 24}px) scale(1.1)`, offset: 0.5 },
+      { transform: `translate(${dx}px, ${dy}px) scale(1)` },
+    ],
+    { duration, delay, easing: 'cubic-bezier(0.4, 0, 0.3, 1)', fill: 'both' },
+  )
+  target.animate([{ opacity: 0 }, { opacity: 0 }], { duration: delay + duration, fill: 'backwards' })
+  flight.onfinish = () => {
+    box.remove()
+    after?.()
+  }
+  flight.oncancel = () => box.remove()
+  return true
+}
+
+/**
+ * A permanent that changed controller slides across to its new controller's
+ * board; an Aura or Equipment that moved glides onto its new host, which then
+ * glows. Without a snapshot (it wasn't on the old board: an Aura just cast,
+ * a creature entering under someone else's control) it simply arrives.
+ */
+function runMove(ev: GameEvent, delay: number): void {
+  const duration = scaled(MOVE_STEP_MS)
+  if (ev.type === 'control-changed') {
+    const tile = boardTileOf(ev.object)
+    if (!tile) return
+    if (!flyCaptured(ev.seq, tile, delay, duration)) runEnter(ev.object, false, delay)
+    return
+  }
+  if (ev.type !== 'permanent-attached') return
+  const attachment = boardTileOf(ev.source)
+  const host = boardTileOf(ev.target)?.querySelector<HTMLElement>('.mini-tile')
+  if (host) glow(host, 'info', delay + (attachment ? duration * 0.7 : 0), duration)
+  if (attachment) flyCaptured(ev.seq, attachment, delay, duration)
+}
+
+/** The monarch's crown passing to its new holder: it flies from the old
+ * holder's panel to the new one's, or pops in if nobody had it. */
+function runCrown(ev: GameEvent, delay: number): void {
+  if (ev.type !== 'monarch-changed') return
+  const crown = document.querySelector<HTMLElement>(
+    `[data-player-id="${CSS.escape(ev.player)}"] .pp-monarch`,
+  )
+  if (!crown) return
+  const duration = scaled(CROWN_STEP_MS)
+  if (flyCaptured(ev.seq, crown, delay, duration)) return
+  crown.animate(
+    motionPrefs().reduced
+      ? [{ opacity: 0 }, { opacity: 1 }]
+      : [{ scale: '0', opacity: 0 }, { scale: '1.6', opacity: 1, offset: 0.6 }, { scale: '1', opacity: 1 }],
+    { duration, delay, easing: 'ease-out', fill: 'backwards' },
+  )
 }
 
 /**
@@ -906,14 +1180,19 @@ export function AnimationLayer({
       advanceBannerQueue()
     }
 
-    const fire = (ev: GameEvent, view: PlayerView): void => {
+    const fire = (cue: AnimationCue): void => {
+      const { event: ev, view } = cue
       if (ev.type === 'spell-cast' || ev.type === 'land-played') {
         const obj = view.objects[ev.object]
         if (!obj) return
         const key = `card-${ev.seq}`
         const origin = handOrigin(ev.object) ?? flyOrigin(ev.player, seatRef.current)
         const who = playerLabel(ev.player, seatsRef.current)
-        const caption = `${who} ${ev.type === 'land-played' ? 'plays' : 'casts'}`
+        const verb = ev.type === 'land-played' ? 'plays' : 'casts'
+        // Where it came from, when that isn't the hand: flashback, a
+        // commander, an impulse draw are worth saying.
+        const from = FROM_ZONE[ev.from] ?? ''
+        const caption = `${who} ${verb}${from ? ` ${from}` : ''}`
         const seatClass = seatClassOf(view.turnOrder, ev.player)
         setPlayedCards((cur) => [
           ...cur,
@@ -932,8 +1211,12 @@ export function AnimationLayer({
       ) {
         runStackExit(ev, view, seatRef.current)
       } else if (ev.type === 'permanent-left-battlefield') {
-        if (ev.toZone === 'hand') runBounce(ev.object)
-        else runDeath(ev.object)
+        if (ev.toZone === 'hand') runBounce(ev.object, cue.prev)
+        else runDeath(ev.object, ev.toZone)
+      } else if (ev.type === 'cards-milled' || ev.type === 'cards-put-into-exile') {
+        runMill(ev, view, cue.prev)
+      } else if (ev.type === 'cards-discarded') {
+        runDiscard(ev, seatRef.current)
       } else if (ev.type === 'cards-revealed') {
         const cards = ev.objects
           .map((id) => view.objects[id])
@@ -989,12 +1272,25 @@ export function AnimationLayer({
           ) {
             runMark(cue.event, cue.delay)
           } else if (cue.event.type === 'permanent-transformed') runFlip(cue.event.object, cue.delay)
+          else if (cue.event.type === 'control-changed' || cue.event.type === 'permanent-attached') {
+            runMove(cue.event, cue.delay)
+          } else if (cue.event.type === 'monarch-changed') runCrown(cue.event, cue.delay)
           else if (cue.event.type === 'life-changed' || cue.event.type === 'damage-dealt') {
             runHurt(cue.event, cue.delay)
           }
           continue
         }
-        window.setTimeout(() => fire(cue.event, cue.view), cue.delay)
+        // A move's snapshot is of the board as the frame starts, so it's taken
+        // now rather than at its slot.
+        if (
+          cue.event.type === 'control-changed' ||
+          cue.event.type === 'permanent-attached' ||
+          cue.event.type === 'monarch-changed'
+        ) {
+          captureMove(cue.event)
+          continue
+        }
+        window.setTimeout(() => fire(cue), cue.delay)
       }
     })
   }, [bus])

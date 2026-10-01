@@ -1,7 +1,7 @@
 # Legibility of play: animation and pacing
 
-Status: **in progress**. Planned 2026-09-30; Steps 0–2 (the groundwork, the stack and whose turn
-it is, tile effects) done the same day, Steps 3–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
+Status: **in progress**. Planned 2026-09-30; Steps 0–3 (the groundwork, the stack and whose turn
+it is, tile effects, cards leaving and moving) done the same day, Steps 4–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
 list and settles the design questions everything else depends on.
 
 ## The problem
@@ -153,7 +153,16 @@ exists.
   creature.
 - Floating numbers go with both.
 
-**Step 3: moves (ghost flights).**
+**Step 3: moves (ghost flights).** *Done 2026-09-30, reshaped by the user:* there is no
+graveyard or exile drawn on the table, so nothing flies to one. Leaving the battlefield, a stack
+exit that isn't a permanent, a mill and a discard are all shown in place — dying sinks grey,
+exile dissolves white-blue, a library peels cards off its pile, a discard greys out of the hand
+(another player's hand link flashes). Step 1's stack exits, which flew to the graveyard link,
+changed to match. Movement stays for things that go somewhere on the table: a change of control,
+an Aura or Equipment moving, the crown, a bounce (now to the *owner's* hand, via the old board
+each cue now carries as `prev`). Those take a snapshot over the old board at the frame's start
+and fly it onto the new spot. The live checks ran in Playwright's headless Chromium at 1920x1080
+(the desktop tab was hidden, which by design animates nothing). Original items:
 - Dying flies to the graveyard pile, and exile gets a distinct dissolve toward the exile anchor.
   This replaces `runDeath`'s single fade.
 - Discard goes from hand to graveyard. Mill and exile from the top of a library flip off the pile.

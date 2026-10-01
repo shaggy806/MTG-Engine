@@ -178,6 +178,9 @@ export function PlayerPanel({
         <button
           type="button"
           className="pp-zone-link"
+          // Read by AnimationLayer: flashes when this player discards, since
+          // no one else's hand is drawn.
+          data-hand-of={info.id}
           disabled={!onOpenHand}
           onClick={(e) => {
             e.stopPropagation()
@@ -190,9 +193,6 @@ export function PlayerPanel({
         <button
           type="button"
           className="pp-zone-link"
-          // Read by AnimationLayer: where a spell leaving the stack for this
-          // player's graveyard flies to.
-          data-graveyard-of={info.id}
           disabled={!onOpenGraveyard}
           onClick={(e) => {
             e.stopPropagation()

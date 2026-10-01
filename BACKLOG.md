@@ -442,8 +442,9 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0–2 are done: the
-groundwork, the stack and whose turn it is, and effects on the board's tiles and life totals). The problem is that a bot turn can't be
+The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0–3 are done: the
+groundwork, the stack and whose turn it is, effects on the board's tiles and life totals, and
+cards leaving or moving). The problem is that a bot turn can't be
 followed by eye, even at the slow bot speed. Only some kinds of event hold the game up for their
 animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat hit, a
 permanent leaving, a tap, something leaving the stack, a trigger's source lighting up, a
@@ -462,16 +463,12 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 - **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
   +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
   `pt-modified` is only a one-shot pump.
-- **Cards milled or exiled from the top of a library** (`cards-milled`, `cards-put-into-exile`
-  from a library) should leave the library pile visibly, e.g. flipping into the graveyard or
-  exile.
-- **A change of control** (`control-changed`) should move the permanent across to its new
-  controller's board (an `after` cue with `flyGhost` from the old spot). The same work should
-  send a bounced permanent to its *owner's* hand: `runBounce` flies it to the hand of the board
-  it was on, its controller's, which is wrong for a stolen creature.
-- **Exiled should look different from destroyed.** `runDeath` fades every permanent that
-  leaves, wherever it goes. Exile (`permanent-exiled`) should look distinct from dying
-  (`permanent-destroyed`, `permanent-sacrificed`).
+- **Exiling the top of a library hasn't been seen live.** `runMill`'s exile look (a cardback
+  flaring white-blue off the pile) shares its code with mill, which was checked, but no card in
+  the pool exiles from a library simply enough to test it with.
+- **The crown has only been seen popping in**, not flying between players: that needs one
+  player taking the monarchy from another (combat damage), which no dev room sets up. It uses
+  the same captured flight as a change of control, which was checked.
 
 Follow-on ideas, approved by the user on 2026-09-30:
 
@@ -484,20 +481,13 @@ Follow-on ideas, approved by the user on 2026-09-30:
   the view before it.
 - **Clearer attacks and blocks.** Attackers step forward or get arrows to what they attack
   (`attackers-declared`), and lines join blockers to their attackers (`blocker-declared`).
-- **A dying creature flies to its owner's graveyard pile** instead of only fading out
-  (`permanent-left-battlefield` to the graveyard).
-- **A discarded card flies from hand to graveyard** (`cards-discarded`).
-- **An Aura or Equipment flies onto the permanent it attaches to** (`permanent-attached`).
-- **The cast spotlight starts from the zone the spell was cast from** (`spell-cast`'s `from`):
-  the graveyard, exile or the command zone, not the owner's quadrant.
 - **Folded tokens arrive as one tile**: two Soldiers from Raise the Alarm are separate objects
   the board folds into one tile, so only the first one's `permanent-entered-battlefield` finds a
   tile to animate. Harmless, but a "×2" arriving could say so.
 - **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.
-- **Monarch and similar markers visibly move to their new holder** (`monarch-changed`).
-  Initiative has no event yet.
+- **The initiative has no animation**: unlike the monarch, it has no event to animate from.
 - **Clicking a history log entry highlights the cards it involved on the board** (`EventLog`).
 - **Optional sound effects, off by default.**
 

@@ -50,6 +50,17 @@ export const FLIP_STEP_MS = 460
 /** Life gained or lost, damage marked on a creature: a flash and a number
  * floating up off the life total or the tile. Long enough to read the number. */
 export const HURT_STEP_MS = 700
+/** A card leaving a library from the top (milled, or exiled), shown on the
+ * library pile itself: there's no graveyard or exile drawn on the table for
+ * it to travel to. One beat for the lot, the cards peeling off in turn. */
+export const MILL_STEP_MS = 560
+/** A discarded card leaving the hand, in place. */
+export const DISCARD_STEP_MS = 480
+/** A permanent moving to a new place on the board: a change of control, an
+ * Aura or Equipment moving to a new host. */
+export const MOVE_STEP_MS = 560
+/** The monarch's crown passing to its new holder. */
+export const CROWN_STEP_MS = 640
 /** How long a revealed card is held up for everyone to read. Longer than a
  * banner because there's a card face to actually take in, and unpaced — the
  * information is already in the History log, so nobody has to catch it. */
@@ -147,6 +158,11 @@ type SlotKind =
   | 'buff'
   | 'flip'
   | 'hurt'
+  | 'mill'
+  | 'discard'
+  | 'capture'
+  | 'move'
+  | 'crown'
 
 /**
  * The kinds that play over the new board rather than the old one, in the
@@ -162,10 +178,12 @@ const AFTER_ORDER: readonly SlotKind[] = [
   'untap',
   'tap',
   'enter',
+  'move',
   'flip',
   'counter',
   'buff',
   'hurt',
+  'crown',
   'pulse',
 ]
 const AFTER: ReadonlySet<SlotKind> = new Set<SlotKind>(AFTER_ORDER)
@@ -192,11 +210,17 @@ const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'buff',
   'flip',
   'hurt',
+  'mill',
+  'discard',
+  'move',
+  'crown',
 ])
 /** Kinds where a run in one frame plays together on one beat rather than one
  * after another: a wrath's deaths, a spell's worth of lands tapping. */
 const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'death',
+  'mill',
+  'discard',
   ...AFTER_ORDER,
 ])
 
@@ -219,6 +243,22 @@ function slotsFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): S
       slots.push({ event: ev, kind: 'hurt', duration: HURT_STEP_MS })
     }
     return slots
+  }
+  // Something that moves on the board is two slots: a snapshot of where it
+  // was, taken over the old board (it costs no time — `AnimationLayer` takes
+  // it the moment the frame starts), and the flight to where it now is, over
+  // the new one. Only both boards together say where it went from and to.
+  if (ev.type === 'control-changed' || ev.type === 'permanent-attached') {
+    return [
+      { event: ev, kind: 'capture', duration: 0 },
+      { event: ev, kind: 'move', duration: MOVE_STEP_MS },
+    ]
+  }
+  if (ev.type === 'monarch-changed') {
+    return [
+      { event: ev, kind: 'capture', duration: 0 },
+      { event: ev, kind: 'crown', duration: CROWN_STEP_MS },
+    ]
   }
   const slot = slotFor(ev, phase, reduced)
   return slot === null ? [] : [slot]
@@ -248,6 +288,17 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   }
   if (ev.type === 'life-changed' && ev.delta !== 0) {
     return { event: ev, kind: 'hurt', duration: HURT_STEP_MS }
+  }
+  // Leaving a library or a hand is shown where the card was, over the old
+  // board. A fade under reduced motion, so it's kept.
+  if (
+    ev.type === 'cards-milled' ||
+    (ev.type === 'cards-put-into-exile' && ev.arrivals.some((a) => a.from === 'library'))
+  ) {
+    return { event: ev, kind: 'mill', duration: MILL_STEP_MS }
+  }
+  if (ev.type === 'cards-discarded' && ev.objects.length > 0) {
+    return { event: ev, kind: 'discard', duration: DISCARD_STEP_MS }
   }
   if (ev.type === 'permanent-left-battlefield') {
     return { event: ev, kind: 'death', duration: DEATH_STEP_MS }
@@ -381,7 +432,11 @@ function layOut(
     const cost = PACED.has(slot.kind) ? slot.duration * scale : 0
     if (cumulative + cost > ceiling) break
     items.push({ event: slot.event, offset: cumulative })
-    shared = SHARED_BEAT.has(slot.kind) ? { kind: slot.kind, offset: cumulative } : null
+    // Only a paced slot breaks a run: a snapshot or a banner between two
+    // deaths doesn't make them two beats.
+    if (PACED.has(slot.kind)) {
+      shared = SHARED_BEAT.has(slot.kind) ? { kind: slot.kind, offset: cumulative } : null
+    }
     cumulative += cost
   }
   return { items, totalMs: cumulative }
