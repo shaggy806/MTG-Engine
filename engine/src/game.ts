@@ -9207,7 +9207,29 @@ export class Game {
       life: this.state.players[player].life - reserved,
       sources: arrange === undefined ? sources : arrangeManaSources(sources, arrange),
       canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
+      preferred: this.deckColors(player),
     };
+  }
+
+  /**
+   * `player`'s colours, most-played first: the colours of the cards they
+   * own, counted across every zone, kept to their commander's colour
+   * identity when they have one (an identity colour no card shows comes
+   * last). What the mana payer makes when a cost doesn't name a colour (see
+   * {@link ManaPlanningView.preferred}).
+   */
+  private deckColors(player: PlayerId): readonly Color[] {
+    return computedCacheMemo(`deckColors:${player}`, () => {
+      const counts: Record<Color, number> = { W: 0, U: 0, B: 0, R: 0, G: 0 };
+      for (const object of Object.values(this.state.objects)) {
+        if (object.owner !== player || object.kind !== "card") continue;
+        for (const c of this.registry.get(object.cardName).colors) counts[c] += 1;
+      }
+      const identity = this.state.players[player]?.commanderIdentity ?? [];
+      return COLORS.filter((c) =>
+        identity.length > 0 ? identity.includes(c) : counts[c] > 0,
+      ).sort((a, b) => counts[b] - counts[a]);
+    });
   }
 
   /** Carry out a {@link payMana} result: tap/sacrifice each planned source and

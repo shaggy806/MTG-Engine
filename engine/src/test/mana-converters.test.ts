@@ -207,4 +207,36 @@ describe("a Signet as a mana source", () => {
     const pool = poolCounts(game.state.players[A].manaPool);
     expect(Object.values(pool).reduce((n, v) => n + (v ?? 0), 0)).toBe(0);
   });
+
+  it("still counts when the lands alone would pay everything but its last mana", () => {
+    // Two lands and a Signet are three mana: one land funds the Signet, which
+    // makes two. A greedy planner that spends both lands on the cost first has
+    // nothing left to fund the Signet with, so the spell looked uncastable —
+    // and a player skipping mana-only windows was passed out of their main
+    // phase holding a castable spell.
+    const game = makeGame();
+    open(game);
+    lands(game, "Island", 2);
+    const signet = game.debugSpawn("Izzet Signet", A, "battlefield");
+    game.state.objects[signet].tapped = false;
+    expect(canCast(game, "Worn Powerstone")).toBe(true);
+    expect(canCast(game, "Aether Channeler")).toBe(true);
+    expect(game.isDeadForMana(A)).toBe(false);
+
+    const card = game.debugSpawn("Worn Powerstone", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    const untapped = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].controller === A && !game.state.objects[id].tapped,
+    );
+    expect(untapped.length).toBe(0);
+  });
+
+  it("but two lands and a Signet are still only three mana", () => {
+    const game = makeGame();
+    open(game);
+    lands(game, "Island", 2);
+    const signet = game.debugSpawn("Izzet Signet", A, "battlefield");
+    game.state.objects[signet].tapped = false;
+    expect(canCast(game, "Gilded Lotus")).toBe(false);
+  });
 });

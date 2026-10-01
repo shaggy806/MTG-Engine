@@ -94,11 +94,16 @@ export function anyUnitMakes(o: ManaOption, m: ManaType): boolean {
 }
 
 /** The type a flexible unit of `o` takes when nothing asks for a particular
- * one — generic, or surplus left floating. An unrestricted "any colour" unit
- * has always been planned as `{C}` here; a narrowed one has to be one of its
- * own types, since the card can't make anything else. */
-function defaultUnitOf(o: { readonly anyColorOf?: readonly ManaType[] }): ManaType {
-  return o.anyColorOf?.[0] ?? "C";
+ * one — generic, or surplus left floating: the first of `preferred` (the
+ * payer's deck colours, best first) the source can make. "Any colour" is one
+ * of the five colours (rule 106.1b), never `{C}`; a narrowed source has to
+ * make one of its own types, since the card can't make anything else. */
+function defaultUnitOf(
+  o: { readonly anyColorOf?: readonly ManaType[] },
+  preferred: readonly ManaType[],
+): ManaType {
+  const makes = o.anyColorOf ?? COLORS;
+  return preferred.find((m) => makes.includes(m)) ?? makes[0];
 }
 
 /** One of `player`'s permanents that can produce mana right now. `options` is
@@ -205,6 +210,13 @@ export interface ManaPlanningView {
   /** Rule 106.6b: may this unit pay for what this payment is for? Closes over
    * the purpose, so the planner never has to carry it. */
   canPay(unit: ManaUnit): boolean;
+  /**
+   * The colours to make, best first, when the cost leaves the choice open (a
+   * generic pip paid by a dual land or a Command Tower): the payer's deck
+   * colours. Without it a dual land paying `{1}` made whichever colour its
+   * card lists first — white, as often as not, in a deck with no white cards.
+   */
+  readonly preferred: readonly ManaType[];
 }
 
 /**
@@ -456,6 +468,25 @@ export function planManaPayment(
   avoid?: ObjectId,
   exclude?: ObjectId,
 ): ManaPlanStep[] | null {
+  const plan = planManaPaymentOrdered(view, cost, avoid, exclude, false);
+  if (plan !== null) return plan;
+  // Reaching for a converter last can strand it: two Islands and an Izzet
+  // Signet are three mana, but a `{3}` cost spends both Islands before it
+  // gets to the Signet, and then there's nothing left to pay the Signet's
+  // `{1}`. So a failed plan gets a second try with converters funded first.
+  // It only ever runs where the first try found nothing, so it can't change
+  // a payment that already worked.
+  const hasConverter = view.sources.some((s) => s.options.every((o) => o.genericCost > 0));
+  return hasConverter ? planManaPaymentOrdered(view, cost, avoid, exclude, true) : null;
+}
+
+function planManaPaymentOrdered(
+  view: ManaPlanningView,
+  cost: ManaCost,
+  avoid: ObjectId | undefined,
+  exclude: ObjectId | undefined,
+  convertersFirst: boolean,
+): ManaPlanStep[] | null {
   // Floating mana this payment is actually allowed to use. Restricted
   // units `view.canPay` turns down are invisible here, so the planner
   // taps as though they weren't there rather than planning around mana it
@@ -519,7 +550,9 @@ export function planManaPayment(
     avoid === undefined
       ? all
       : [...all.filter((s) => s.id !== avoid), ...all.filter((s) => s.id === avoid)];
-  const sources = [...ordered.filter((s) => !isConverter(s)), ...ordered.filter(isConverter)];
+  const sources = convertersFirst
+    ? [...ordered.filter(isConverter), ...ordered.filter((s) => !isConverter(s))]
+    : [...ordered.filter((s) => !isConverter(s)), ...ordered.filter(isConverter)];
 
   interface Tapped {
     readonly src: ManaSource;
@@ -562,11 +595,21 @@ export function planManaPayment(
       const any = free((o) => anyUnitMakes(o, want));
       if (any !== undefined) return any;
     }
+    // Among otherwise equal options, the one making the payer's colours.
+    const rank = (o: ManaOption): number =>
+      Math.min(
+        view.preferred.length,
+        ...o.fixed.map((m) => {
+          const i = view.preferred.indexOf(m);
+          return i < 0 ? view.preferred.length : i;
+        }),
+      );
     return [...src.options].sort(
       (a, b) =>
         lifeToll(a) - lifeToll(b) ||
         b.fixed.length + b.anyColor - (a.fixed.length + a.anyColor) ||
-        a.anyColor - b.anyColor,
+        a.anyColor - b.anyColor ||
+        rank(a) - rank(b),
     )[0];
   };
   const open = (src: ManaSource, want: ManaType | null): Tapped => {
@@ -639,7 +682,7 @@ export function planManaPayment(
     }
     if (t.freeAny > 0) {
       t.freeAny -= 1;
-      const m = defaultUnitOf(t);
+      const m = defaultUnitOf(t, view.preferred);
       t.produced.push(m);
       return m;
     }
@@ -717,7 +760,7 @@ export function planManaPayment(
     mana: [
       ...t.produced,
       ...t.freeFixed,
-      ...Array.from<ManaType>({ length: t.freeAny }).fill(defaultUnitOf(t)),
+      ...Array.from<ManaType>({ length: t.freeAny }).fill(defaultUnitOf(t, view.preferred)),
     ],
     ...(t.tag !== undefined ? { tag: t.tag } : {}),
     ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),

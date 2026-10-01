@@ -351,12 +351,6 @@ that one card is the reason the deck exists.
   can attack planeswalkers too; the engine currently requires
   a player. Check the rulings before fixing. The requirement lives in the `attack-requirement`
   effect, `engine/src/combat/eligibility.ts` (~line 417).
-- **Auto-paying a generic cost with an any-colour land makes white.** When a land that can tap
-  for more than one colour pays a generic cost, the auto-payer (`planManaPayment`) defaults to
-  white mana when it should make mana more suited to your deck.
-- **Izzet Signet can't be used to auto-pay.** Its ability costs mana ({1}, {T}), and
-  `Game.manaSources` leaves out mana abilities with a mana cost, so it has to be activated by
-  hand before casting.
 
 ## Bots
 

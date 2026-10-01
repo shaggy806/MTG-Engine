@@ -167,3 +167,51 @@ describe("mana derived from the opponents' lands", () => {
     expect(poolCounts(game.state.players[A].manaPool).U).toBe(1);
   });
 });
+
+describe("the colour a cost that names none is paid in", () => {
+  /** Every colour of mana A's sources made while paying. */
+  const madeBy = (game: Game, from: number): ManaType[] =>
+    game.events
+      .slice(from)
+      .flatMap((e) => (e.type === "mana-added" && e.player === A ? [e.mana] : []));
+
+  it("is the deck's colour, not the first one a dual land lists", () => {
+    // Glacial Fortress lists {W} first; a blue deck paying {2} with two of
+    // them used to make white.
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99 },
+      decks: [
+        { player: A, cards: [...Array(30).fill("Island"), ...Array(10).fill("Aether Channeler")] },
+        { player: B, cards: Array(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil(atMain);
+    for (let i = 0; i < 2; i += 1) {
+      const land = game.debugSpawn("Glacial Fortress", A, "battlefield");
+      game.state.objects[land].tapped = false;
+    }
+    const card = game.debugSpawn("Mind Stone", A, "hand");
+    const from = game.events.length;
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    expect(madeBy(game, from)).toEqual(["U", "U"]);
+  });
+
+  it("is a colour of the commander's identity for an 'any colour' source, never {C}", () => {
+    const game = mkGame(["Prosper, Tome-Bound"]);
+    game.advanceUntil(atMain);
+    // Mana Confluence makes any colour at all, so the deck is all that
+    // narrows it. (Command Tower would already be held to Prosper's two.)
+    for (let i = 0; i < 2; i += 1) {
+      const land = game.debugSpawn("Mana Confluence", A, "battlefield");
+      game.state.objects[land].tapped = false;
+    }
+    const card = game.debugSpawn("Mind Stone", A, "hand");
+    const from = game.events.length;
+    game.dispatch({ type: "cast-spell", player: A, card, targets: [] });
+    const made = madeBy(game, from);
+    expect(made).toHaveLength(2);
+    for (const m of made) expect(["B", "R"]).toContain(m);
+  });
+});
