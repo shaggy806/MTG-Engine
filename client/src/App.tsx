@@ -242,6 +242,7 @@ type MulliganAction = Extract<LegalAction, { kind: 'mulligan' }>
 type BottomAction = Extract<LegalAction, { kind: 'put-on-bottom' }>
 type CommanderChoiceAction = Extract<LegalAction, { kind: 'commander-replacement' }>
 type ShockChoiceAction = Extract<LegalAction, { kind: 'pay-life-for-untapped' }>
+type RevealChoiceAction = Extract<LegalAction, { kind: 'reveal-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type EnchantChoiceAction = Extract<LegalAction, { kind: 'choose-enchant' }>
 type LegendRuleAction = Extract<LegalAction, { kind: 'legend-rule' }>
@@ -387,6 +388,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   mulligan: 'decide on a mulligan',
   'commander-replacement': 'decide where their commander goes',
   'pay-life-for-untapped': 'decide on a shock land',
+  'reveal-for-untapped': 'decide on a reveal land',
   'choose-copy': 'choose what to copy',
   'choose-enchant': 'choose what an Aura enchants',
   'legend-rule': 'choose which legend to keep',
@@ -893,6 +895,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   const [blockAssign, setBlockAssign] = useState<Record<string, ObjectId>>({})
   const [blockFocus, setBlockFocus] = useState<ObjectId | null>(null)
   const [discardPicks, setDiscardPicks] = useState<readonly ObjectId[]>([])
+  const [revealPick, setRevealPick] = useState<ObjectId | null>(null)
   const [bottomPicks, setBottomPicks] = useState<readonly ObjectId[]>([])
   // Per-blocker combat-damage amounts (EG-4a), in the offer's order: null
   // until the player edits one, meaning the engine's standard split.
@@ -1124,6 +1127,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   const shockChoiceAction = actions.find(
     (a): a is ShockChoiceAction => a.kind === 'pay-life-for-untapped',
   )
+  const revealChoiceAction = actions.find(
+    (a): a is RevealChoiceAction => a.kind === 'reveal-for-untapped',
+  )
   const copyChoiceAction = actions.find(
     (a): a is CopyChoiceAction => a.kind === 'choose-copy',
   )
@@ -1227,6 +1233,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     | 'put-on-bottom'
     | 'commander-replacement'
     | 'pay-life-for-untapped'
+    | 'reveal-for-untapped'
     | 'choose-copy'
     | 'choose-enchant'
     | 'legend-rule'
@@ -1252,6 +1259,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
       ? 'commander-replacement'
     : shockChoiceAction
       ? 'pay-life-for-untapped'
+    : revealChoiceAction
+      ? 'reveal-for-untapped'
       : copyChoiceAction
         ? 'choose-copy'
         : enchantAction
@@ -1310,12 +1319,13 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   // height (and recomputeBoardMiniW crushing the board's mini tiles to
   // compensate) every time a decision comes up -- see renderHandStrip/the
   // .decision-banner CSS. A decision that picks cards out of the hand
-  // (discard, put-on-bottom) holds the tray open instead (`handForcedOpen`)
+  // (discard, put-on-bottom, a reveal land's reveal) holds the tray open instead (`handForcedOpen`)
   // and asks in the same bottom-right banner as every other decision: docking
   // its controls beside the hand used to pull the whole strip out of the tray
   // and squash the board for as long as it was up.
   const peekable = mode !== 'mulligan'
-  const handForcedOpen = mode === 'discard' || mode === 'put-on-bottom'
+  const handForcedOpen =
+    mode === 'discard' || mode === 'put-on-bottom' || mode === 'reveal-for-untapped'
 
   // --- dispatch helpers --------------------------------------------
   const pass = useCallback(() => {
@@ -1723,6 +1733,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
         })
         return
       }
+      if (mode === 'reveal-for-untapped') {
+        // One card, of the kinds the land names: clicking it again unpicks it.
+        if (!revealChoiceAction?.options.includes(id)) return
+        setRevealPick((cur) => (cur === id ? null : id))
+        return
+      }
       if (mode === 'put-on-bottom') {
         if (!bottomAction) return
         setBottomPicks((cur) => {
@@ -1738,7 +1754,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
       // click does nothing so the choice stays explicit.
       if (opts.length === 1) playFace(opts[0])
     },
-    [bottomAction, discardAction, mode, playFace, playFacesByCard],
+    [bottomAction, discardAction, revealChoiceAction, mode, playFace, playFacesByCard],
   )
 
   /** Which id a click on a (possibly stacked) tile should act on. */
@@ -3220,6 +3236,29 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
         </button>
       </div>
     )
+  } else if (mode === 'reveal-for-untapped' && revealChoiceAction) {
+    // Picked in the hand, as a discard is: the cards it could show are lit.
+    controls = (
+      <div className="controls">
+        <span>
+          {game.nameOf(revealChoiceAction.source)} — click a card in your hand to reveal it, and
+          it enters untapped
+        </span>
+        <button
+          type="button"
+          disabled={revealPick === null}
+          onClick={() => game.dispatch({ type: 'reveal-for-untapped', player: seat, reveal: revealPick })}
+        >
+          Reveal
+        </button>
+        <button
+          type="button"
+          onClick={() => game.dispatch({ type: 'reveal-for-untapped', player: seat, reveal: null })}
+        >
+          Enter tapped
+        </button>
+      </div>
+    )
   } else if (mode === 'put-on-bottom' && bottomAction) {
     controls = (
       <div className="controls">
@@ -4024,6 +4063,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
           } else if (mode === 'put-on-bottom') {
             highlight = bottomAction?.from.includes(id) ?? false
             selected = bottomPicks.includes(id)
+          } else if (mode === 'reveal-for-untapped') {
+            highlight = revealChoiceAction?.options.includes(id) ?? false
+            selected = revealPick === id
           } else if (mode === 'priority') {
             highlight = landByCard.has(id) || castByCard.has(id)
           }

@@ -394,6 +394,9 @@ export interface GameObject {
     readonly copyModifiers?: readonly PtModifier[];
     readonly chosen?: string;
     readonly enchant?: ObjectId | null;
+    /** The card a reveal land's controller revealed from hand, or `null`
+     * for none (it enters tapped). */
+    readonly reveal?: ObjectId | null;
   };
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
@@ -1446,6 +1449,17 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly life: number;
+    }
+  | {
+      /** A "reveal land" (Port Town: "As this land enters, you may reveal a
+       * Plains or Island card from your hand. If you don't, this land enters
+       * tapped") is about to enter; its controller picks which of `options`,
+       * the qualifying cards in their hand, to reveal, or none. Asked before
+       * it moves (`Game.askEnterChoice`, rule 614.12). */
+      readonly kind: "reveal-for-untapped";
+      readonly player: PlayerId;
+      readonly source: ObjectId;
+      readonly options: readonly ObjectId[];
     }
   | {
       /** A Clone-style permanent is about to enter; its controller chooses

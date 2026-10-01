@@ -2515,8 +2515,9 @@ clause (section 9):
   `tappedUnlessRevealFromHand: [type, type]` is the reveal-land cycle (Port
   Town, via the `revealLand` helper) — the one enters-tapped check that reads
   your **hand** rather than the battlefield, which is why it isn't a
-  `StaticCondition`. The card says "you *may* reveal" and the engine always
-  does: declining only ever hides information, which nothing here models.
+  `StaticCondition`. The "you *may* reveal" is a `reveal-for-untapped`
+  decision asked before the land moves (`askEnterChoice`), offering the
+  qualifying cards in hand or none; the card revealed is shown to everyone.
   `mayPayLife: N` is a shock land (a `pay-life-for-untapped` decision, via the
   `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
   entering untapped (Rockfall Vale).
@@ -2950,10 +2951,6 @@ Delete an entry in the same commit as the feature that retires it.
   of every match, a flicker's return, a tutor's finds, an O-Ring's exiles
   coming back — are one event already (`Game.withLeaveBatch`,
   `Game.withEnterBatch`).
-
-- **"You may reveal a card from your hand"** on the reveal-land cycle is taken
-  automatically rather than offered as a choice — see
-  `tappedUnlessRevealFromHand` above.
 
 - **Text-change** (`change-text`) only swaps one creature-type word on the type
   line, from a fixed menu. No full "the words X become Y" across a card's

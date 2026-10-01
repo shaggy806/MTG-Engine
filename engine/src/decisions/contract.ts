@@ -89,6 +89,7 @@ export const DECISION_ACTIONS = {
   mulligan: ["mulligan", "put-on-bottom"],
   "commander-replacement": ["commander-replacement"],
   "pay-life-for-untapped": ["pay-life-for-untapped"],
+  "reveal-for-untapped": ["reveal-for-untapped"],
   "choose-copy": ["choose-copy"],
   "choose-enchant": ["choose-enchant"],
   "legend-rule": ["legend-rule"],
@@ -123,6 +124,7 @@ export const DECISION_OFFERS = {
   mulligan: ["mulligan", "put-on-bottom"],
   "commander-replacement": ["commander-replacement"],
   "pay-life-for-untapped": ["pay-life-for-untapped"],
+  "reveal-for-untapped": ["reveal-for-untapped"],
   "choose-copy": ["choose-copy"],
   "choose-enchant": ["choose-enchant"],
   "legend-rule": ["legend-rule"],
@@ -204,6 +206,7 @@ export interface DecisionReadCtx {
  */
 export interface DecisionHost {
   readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
+  readonly applyRevealForUntapped: (player: PlayerId, reveal: ObjectId | null) => void;
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
   readonly applyEnchantChoice: (player: PlayerId, enchant: ObjectId) => void;
   readonly applyLegendRuleChoice: (player: PlayerId, keep: ObjectId) => void;

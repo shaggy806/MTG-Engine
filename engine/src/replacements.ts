@@ -66,10 +66,9 @@ export interface EntersBattlefieldReplacement {
    * Distinct from `tappedUnless`, which is a `StaticCondition` over the
    * *battlefield*; this one reads the hand, which no `StaticCondition` can.
    *
-   * The printed card says "you **may** reveal", and this reveals
-   * automatically whenever it can. Declining is never better except as
-   * hidden-information management, which the engine doesn't model anywhere —
-   * a deliberate simplification, recorded in AUTHORING.md §15.
+   * The "you **may** reveal" is a `reveal-for-untapped` decision, asked
+   * before it moves (`Game.askEnterChoice`). Entering some way that never
+   * asks (a token copy), it reveals whenever it can.
    */
   readonly tappedUnlessRevealFromHand?: readonly string[];
   /** If it ends up entering *untapped*, it deals this much damage to its

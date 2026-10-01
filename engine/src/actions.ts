@@ -316,6 +316,14 @@ export type Action =
       readonly pay: boolean;
     }
   | {
+      /** Answers a pending reveal-land decision: `reveal` is the card, one of
+       * the offered options, revealed from hand so the land enters untapped,
+       * or `null` to reveal nothing and have it enter tapped. */
+      readonly type: "reveal-for-untapped";
+      readonly player: PlayerId;
+      readonly reveal: ObjectId | null;
+    }
+  | {
       /** Answers a pending "choose what this Clone copies" decision (rule 707).
        * `copy` is a permanent from the offered options, or `null` to copy
        * nothing. */
@@ -842,6 +850,13 @@ export type LegalAction =
       readonly kind: "pay-life-for-untapped";
       readonly source: ObjectId;
       readonly life: number;
+    }
+  | {
+      /** A reveal land is about to enter — reveal one of `options` from hand
+       * to have it enter untapped, or nothing to have it enter tapped. */
+      readonly kind: "reveal-for-untapped";
+      readonly source: ObjectId;
+      readonly options: readonly ObjectId[];
     }
   | {
       readonly kind: "choose-copy";

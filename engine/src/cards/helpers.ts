@@ -699,8 +699,8 @@ export const shockLand = (
  *
  * Unlike a check land, the condition reads your *hand* rather than the
  * battlefield — and unlike a shock land, it isn't typed with the two basic
- * land types, so it doesn't itself turn on a check land. The engine reveals
- * automatically whenever it can; see `tappedUnlessRevealFromHand`.
+ * land types, so it doesn't itself turn on a check land. Which card to
+ * reveal, or none, is a `reveal-for-untapped` decision.
  */
 export const revealLand = (
   name: string,

@@ -122,6 +122,7 @@ import { chooseCreatureType } from "./decisions/choose-creature-type.js";
 import { proliferate } from "./decisions/proliferate.js";
 import { CHANGEABLE_CREATURE_TYPES, chooseText } from "./decisions/choose-text.js";
 import { payLifeForUntapped } from "./decisions/pay-life-for-untapped.js";
+import { revealForUntapped } from "./decisions/reveal-for-untapped.js";
 import { scry } from "./decisions/scry.js";
 import { CREATURE_TYPES } from "./creature-types.js";
 import {
@@ -810,6 +811,7 @@ export class Game {
     };
     this.decisionHost = {
       applyPayLifeForUntapped: (player, pay) => this.applyPayLifeForUntapped(player, pay),
+      applyRevealForUntapped: (player, reveal) => this.applyRevealForUntapped(player, reveal),
       applyCopyChoice: (player, copy) => this.applyCopyChoice(player, copy),
       applyEnchantChoice: (player, enchant) => this.applyEnchantChoice(player, enchant),
       applyChoosePermanents: (player, chosen) => this.applyChoosePermanents(player, chosen),
@@ -2935,6 +2937,28 @@ export class Game {
       this.emit({ type: "permanent-untapped", object: source });
       this.changeLife(player, -life);
     }
+    this.prepareForPriority(this.activePlayer);
+  }
+
+  /** Answers a pending `reveal-for-untapped` decision — raised by
+   * `askEnterChoice` as a reveal land is about to enter. The card is revealed
+   * now, to every player (rule 701.20a); the answer waits on the land, and
+   * `moveObject` has it enter untapped or tapped by it. */
+  private applyRevealForUntapped(player: PlayerId, reveal: ObjectId | null): void {
+    const why = revealForUntapped.whyCannot(
+      this.decisionCtx,
+      { type: "reveal-for-untapped", player, reveal },
+      player,
+    );
+    if (why !== null) throw new Error(why);
+    const awaiting = this.state.awaiting;
+    if (awaiting === null || awaiting.kind !== "reveal-for-untapped") {
+      throw new Error("unreachable: whyCannot should have caught this");
+    }
+    const land = this.state.objects[awaiting.source];
+    land.enterChoice = { ...land.enterChoice, reveal };
+    if (reveal !== null) this.emit({ type: "cards-revealed", player, objects: [reveal], from: "hand" });
+    this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
 
@@ -5418,6 +5442,7 @@ export class Game {
     | { readonly kind: "copy" }
     | { readonly kind: "choose"; readonly options?: readonly string[] }
     | { readonly kind: "enchant"; readonly as: CardDefinition }
+    | { readonly kind: "reveal"; readonly subtypes: readonly string[] }
     | null {
     const object = this.state.objects[id];
     const answered = object.enterChoice;
@@ -5431,6 +5456,14 @@ export class Game {
     }
     if (becoming.subtypes.includes("Aura") && answered?.enchant === undefined) {
       return { kind: "enchant", as: becoming };
+    }
+    if (answered?.reveal === undefined) {
+      for (const ability of becoming.static) {
+        const r = ability.replacement;
+        if (r?.event === "enters-battlefield" && r.tappedUnlessRevealFromHand !== undefined) {
+          return { kind: "reveal", subtypes: r.tappedUnlessRevealFromHand };
+        }
+      }
     }
     return null;
   }
@@ -5465,6 +5498,17 @@ export class Game {
           return true;
         }
         object.enterChoice = { ...object.enterChoice, enchant: null };
+        continue;
+      }
+      if (next.kind === "reveal") {
+        // A reveal land: any qualifying card in hand but the land itself,
+        // which is still there while a land play asks this.
+        const options = this.revealableFromHand(chooser, next.subtypes).filter((card) => card !== id);
+        if (options.length > 0) {
+          this.state.awaiting = { kind: "reveal-for-untapped", player: chooser, source: id, options };
+          return true;
+        }
+        object.enterChoice = { ...object.enterChoice, reveal: null };
         continue;
       }
       const options = this.copyOptions(id);
@@ -18483,15 +18527,19 @@ export class Game {
    * and `computeCharacteristics` degrades to printed values there anyway.
    */
   private canRevealFromHand(player: PlayerId, subtypes: readonly string[]): boolean {
-    for (const id of this.state.zones.perPlayer[player].hand) {
+    return this.revealableFromHand(player, subtypes).length > 0;
+  }
+
+  /** The cards in `player`'s hand with one of `subtypes` — what a reveal
+   * land offers to reveal. */
+  private revealableFromHand(player: PlayerId, subtypes: readonly string[]): ObjectId[] {
+    return this.state.zones.perPlayer[player].hand.filter((id) => {
       const object = this.state.objects[id];
-      if (object === undefined) continue;
+      if (object === undefined) return false;
       const name = printedCardName(object);
-      if (!this.registry.has(name)) continue;
-      const def = this.registry.get(name);
-      if (def.subtypes.some((subtype) => subtypes.includes(subtype))) return true;
-    }
-    return false;
+      if (!this.registry.has(name)) return false;
+      return this.registry.get(name).subtypes.some((subtype) => subtypes.includes(subtype));
+    });
   }
 
   /**
@@ -19737,8 +19785,9 @@ export class Game {
     id: ObjectId,
     effectTapped = false,
     effectTransformed = false,
+    reveal?: ObjectId | null,
   ): EnteringReplacement {
-    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed);
+    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed, reveal);
     this.enterBatch?.add(id);
     return entering;
   }
@@ -19747,6 +19796,7 @@ export class Game {
     id: ObjectId,
     effectTapped: boolean,
     effectTransformed = false,
+    reveal?: ObjectId | null,
   ): EnteringReplacement {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
@@ -19784,9 +19834,14 @@ export class Game {
       ) {
         tapped = true;
       }
+      // A reveal land: what its controller revealed as it was about to enter
+      // (`askEnterChoice`), or — entering some way that never asked, a token
+      // copy — whether they could have.
       if (
         r.tappedUnlessRevealFromHand !== undefined &&
-        !this.canRevealFromHand(object.controller, r.tappedUnlessRevealFromHand)
+        (reveal === undefined
+          ? !this.canRevealFromHand(object.controller, r.tappedUnlessRevealFromHand)
+          : reveal === null)
       ) {
         tapped = true;
       }
@@ -20629,6 +20684,7 @@ export class Game {
         id,
         enter.tapped === true,
         enter.transformed === true,
+        enterChoice?.reveal,
       );
       object.tapped = entering.tapped;
       for (const c of entering.counters) {

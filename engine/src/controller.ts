@@ -175,6 +175,16 @@ export interface PlayerController {
    */
   payLifeForUntapped(view: ControllerView, source: ObjectId, life: number): boolean;
   /**
+   * A reveal land (`source`) is about to enter — return which of `options`,
+   * the qualifying cards in hand, to reveal so it enters untapped, or `null`
+   * to reveal nothing and have it enter tapped.
+   */
+  revealForUntapped(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null;
+  /**
    * A Clone-style permanent is about to enter — return which of `options` it
    * enters as a copy of, or `null` to copy nothing (rule 707.9).
    */
@@ -476,6 +486,16 @@ export class AutomaticController implements PlayerController {
     return false;
   }
 
+  revealForUntapped(
+    _view: ControllerView,
+    _source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null {
+    // Always reveal: an untapped land is worth more than a hidden card,
+    // since nothing here plays on what an opponent knows of a hand.
+    return options[0] ?? null;
+  }
+
   chooseCopy(
     _view: ControllerView,
     _source: ObjectId,
@@ -722,7 +742,8 @@ export class ScriptedController implements PlayerController {
   commanderReplacementFn: CommanderReplacementChooser = () => true;
   payLifeForUntappedFn: (view: ControllerView, source: ObjectId, life: number) => boolean =
     () => false;
-  chooseCopyFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
+  revealForUntappedFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
+  chooseCopyFn: CopyChooser =(_view, _source, options) => options[0] ?? null;
   chooseEnchantFn: (view: ControllerView, source: ObjectId, options: readonly ObjectId[]) => ObjectId = (
     _view,
     _source,
@@ -859,6 +880,14 @@ export class ScriptedController implements PlayerController {
 
   payLifeForUntapped(view: ControllerView, source: ObjectId, life: number): boolean {
     return this.payLifeForUntappedFn(view, source, life);
+  }
+
+  revealForUntapped(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+  ): ObjectId | null {
+    return this.revealForUntappedFn(view, source, options);
   }
 
   chooseCopy(

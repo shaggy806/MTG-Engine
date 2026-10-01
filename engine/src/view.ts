@@ -608,7 +608,11 @@ function viewForUncached(
           // library: to anyone else, only that they're deciding.
           state.awaiting?.kind === "cast-now" && state.awaiting.player !== viewer
           ? (({ looked: _looked, ...rest }) => ({ ...rest, cards: [], offers: [] }))(state.awaiting)
-          : state.awaiting,
+          : // Which hand cards a reveal land could show says what they are,
+            // until one is actually revealed.
+            state.awaiting?.kind === "reveal-for-untapped" && state.awaiting.player !== viewer
+            ? { ...state.awaiting, options: [] }
+            : state.awaiting,
     decisionSource: decisionSourceFor(state),
     result: { ...state.result },
     players,

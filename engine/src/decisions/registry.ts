@@ -20,6 +20,7 @@ import type { AnyDecisionModule, DecisionKind, RandomSource } from "./contract.j
 import type { PlayerId } from "../primitives.js";
 import type { AwaitingDecision } from "../state.js";
 import { payLifeForUntapped } from "./pay-life-for-untapped.js";
+import { revealForUntapped } from "./reveal-for-untapped.js";
 import { chooseCopy } from "./choose-copy.js";
 import { chooseEnchant } from "./choose-enchant.js";
 import { choosePermanents } from "./choose-permanents.js";
@@ -46,6 +47,7 @@ export { defineDecision } from "./define.js";
 /** Every decision kind. Total — see the header. */
 export const DECISIONS: Record<DecisionKind, AnyDecisionModule> = {
   "pay-life-for-untapped": payLifeForUntapped,
+  "reveal-for-untapped": revealForUntapped,
   "choose-copy": chooseCopy,
   "choose-enchant": chooseEnchant,
   "choose-permanents": choosePermanents,

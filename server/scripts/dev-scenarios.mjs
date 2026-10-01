@@ -454,4 +454,14 @@ export default {
     },
     bots: { bob: {}, carol: {}, dave: {} },
   },
+
+  RVLND: {
+    about:
+      "2p. Reveal lands: play Port Town to be asked which of the Island and Plains in hand " +
+      "to reveal, or none (it enters tapped); Game Trail has only a Mountain to show.",
+    players: ["alice", "bob"],
+    lands: { alice: 3, bob: 3 },
+    hand: { alice: ["Port Town", "Game Trail", "Island", "Plains", "Mountain", "Grizzly Bears"] },
+    bots: { bob: {} },
+  },
 };
