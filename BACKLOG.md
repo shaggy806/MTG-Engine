@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**331 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**333 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -41,220 +41,52 @@ that one card is the reason the deck exists.
 
 ## Card backlog (top-5000 staples and the precons)
 
+What blocks each unimplemented card, batch by batch and family by family, is in
+**`docs/card-blockers.md`** (and the per-card JSON records it indexes, `engine/data/sweep-2/` and
+`sweep-3/`). Add each batch's summary there; this section keeps only what to do next.
+
 - **Now (priority since 2026-09-30): the missing cards of the Tarkir: Dragonstorm precons.**
   The five TDC decks are `SAMPLE_DECKS`, so every bot and every unclaimed seat plays them, with
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
-  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). 147 were
-  missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
-  that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
-  effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
-  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 4 — 84, every
-  one recorded with what it needs (`engine/data/sweep-3/TDC1.json` to `TDC4.json` and the
-  earlier sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai
-  Striker since 2026-09-30 (swapped with Elsha), and a copy's new targets is built, storm
-  included (TDC3: 5 Jeskai cards; TDC4: 8 more, split cards and divided damage among them).
-  Jeskai's 4 each need something different: Curses (Curse of Opulence), X targets (Curse of
-  the Swine), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
-  (Transforming Flourish). **Next:**
-  delve (4, only Treasure Cruise needing nothing else), "can attack as though it
-  didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
-  Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
+  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
+  now: Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 4 — 84,
+  every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
+  any more. **Next:** delve (4, only Treasure Cruise needing nothing else), "can attack as
+  though it didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle,
+  Walking Bulwark), then two each for a triggered ability's divided damage, hideaway, Omen and
+  "the creature it sacrificed".
+- **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,061 implemented). Work down its
+  unmarked entries in rank order: author each card the engine runs faithfully, and build the
+  engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
+  past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the
+  game" (`new:win-game`), a card's own permission to be cast from its graveyard, "can't cast more
+  than one spell each turn", the legendary sorcery restriction (205.4e), library ordering
+  (`decision:library-ordering`), "sacrifice N" costs (`cost:sacrifice-multiple`) and improvise.
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
   gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
   still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a
   `reveal-until` whose `then` is a free `cast-now`), Kellan, the Kid, Descendants' Path and
   Buster Sword. Recheck each against its Oracle text before authoring it.
+- **Cards a built feature may have unblocked.** A copy's new targets (2026-09-30) was the most
+  recorded blocker across sweep 2 and 3 (Thousand-Year Storm, Reverberate, Rings of
+  Brighthearth, Echoes of Eternity, Loki Laufeyson, …); recheck the records that cite
+  `decision:copy-new-targets` and author what needs nothing else.
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
-  carry yet (`evokeCostsOf` in `game.ts`). Fury needs damage divided among targets as well.
-- **Top-5000 batch 4 (2026-09-28) took the cards the debt fixes unblocked:** 15 authored
-  (regeneration, Strive's Twinflame, Will of the Temur, …); 10 still blocked, each named in
-  `engine/data/sweep-3/B4.json`. The two cheapest wins there: a count of a *targeted* player's
-  permanents (Will of the Mardu, Call the Coppercoats) and a "when you cycle this card" trigger
-  (Decree of Pain). Still blocked among the Warp / Offspring / Eternalize cards: Loading Zone
-  (counters a permanent *enters* with doubled too), Anticausal Vestige (a hand filter reading
-  your land count), Warren Warleader (a token entering tapped and attacking) and Vizier of Many
-  Faces (Embalm through its Clone ability).
-- **Top-5000 batch 5 (2026-09-29) triaged every open entry through rank 981:** 51 authored —
-  the Enduring cycle, the Urza's lands, Mystic Sanctuary's cycle (its other members down to
-  rank 4293), The Earth Crystal, Elspeth, Storm Slayer, Last March of the Ents and 36 more —
-  with six small engine pieces (see `neededCards-features.md`,
-  "Top-5000 batch 5"); 79 blocked, each in `engine/data/sweep-3/B5.json`. **Next**, by what
-  blocks the most of them: a free cast during resolution (`effect:cast-during-resolution`, 4 —
-  Isochron Scepter, Mizzix's Mastery, Beseech the Mirror, Buster Sword); then 3 each for
-  "Sacrifice N [things]" as a cost (`cost:sacrifice-multiple` — Sai, Peregrin Took, Grim
-  Hireling, and Mondrak and Magda before them), improvise (Kappa Cannoneer, Inspiring
-  Statuary, Archway of Innovation) and a copy's new targets. Cheaper, and wider than this
-  batch: an Aura's static that sets what the enchanted creature is (Kenrith's Transformation,
-  Imprisoned in the Moon, then Darksteel Mutation, Song of the Dryads, Frogify) and a life-gain
-  multiplier (The Wind Crystal, Alhammarret's Archive, Rhox Faithmender, Boon Reflection).
-- **Top-5000 batch 6 (2026-09-29) triaged ranks 982–1210 and the three double-faced cards
-  batch 5's list reader skipped:** 53 authored — 49 from the batch (Torbran, Annie Joins Up,
-  Mirror Entity, Stoneforge Mystic, Bloodghast, Luminous Broodmoth, Archon of Cruelty and 42
-  more) and 4 further down that its new engine pieces unblocked (Prowling Serpopard,
-  Allosaurus Shepherd, Hexing Squelcher, Batterskull — see `neededCards-features.md`,
-  "Top-5000 batch 6"); 64 blocked, each in `engine/data/sweep-3/B6.json`. **Next**, by what blocks the most of them:
-  "you win the game" (`new:win-game`, 4 here — Approach of the Second Sun, Mechanized
-  Production, Jace, Wielder of Mysteries, Revel in Riches — and 7 across every record, with
-  Thassa's Oracle, Laboratory Maniac and Hellkite Tyrant); then 3 each for a variable number
-  of targets (`decision:variable-target-count` — Agadeem's Awakening, Pest Infestation,
-  Crackle with Power), ascend (Wayward Swordtooth, Ocelot Pride, Twilight Prophet) and
-  looking at the top card of a library (`zone:visibility-extensions` — The Reality Chip,
-  Mishra's Bauble, Augur of Autumn). Ojer Taq needs only two small pieces: a token
-  multiplier limited to creature tokens, and a count of the creatures attacked with this turn.
-- **Top-5000 batch 7 (2026-09-29) triaged ranks 1211–1356:** 61 authored — 60 from the batch
-  (Dark Confidant, Past in Flames, Valakut, Ulamog, the Ceaseless Hunger, Courser of Kruphix,
-  Akroma's Memorial and 54 more) and Will of the Jeskai, which Past in Flames' mass flashback
-  unblocked (see `neededCards-features.md`, "Top-5000 batch 7"); 50 blocked, each in
-  `engine/data/sweep-3/B7.json`. **Next**, by what blocks the most of them: ordering cards
-  put back on a library (`decision:library-ordering`, 3 here — Stock Up, Halimar Depths,
-  Experimental Augury — and 8 across every record, with Ponder, Sensei's Divining Top and Dig
-  Through Time); then improvise (Whir of Invention, Organic Extinction; 5 across records) and
-  an Aura or static that sets what a creature is (Amphibian Downpour, Vraska, Betrayal's
-  Sting). Across every record the most-blocking open features are a copy's new targets
-  (`decision:copy-new-targets`, 11), mana-ability extensions (`effect:add-mana-extensions`,
-  10) and "sacrifice N" costs (`cost:sacrifice-multiple`, 9). Cascading Cataracts waits on a
-  way to choose "five mana in any combination of colors" unit by unit
-  (`new:mana-any-combination-choice`): activated by hand, that's 126 splits.
-- **Top-5000 batch 8 (2026-09-29) triaged ranks 1357–1505:** 57 authored — 56 from the batch
-  (Embercleave, Restoration Angel, Martial Coup, Rankle, Genesis Wave, Terastodon, Guide of
-  Souls and 49 more) and Training Grounds, which the new one-mana floor on activation-cost
-  reductions unblocked (see `neededCards-features.md`, "Top-5000 batch 8"); 54 blocked, each
-  in `engine/data/sweep-3/B8.json`. **Next**, by what blocks the most of them: a copy's new
-  targets (`decision:copy-new-targets`, 4 here — Thousand-Year Storm, Reverberate, Rings of
-  Brighthearth, Echoes of Eternity — 10 across the sweep-3 records and 26 counting sweep-2's
-  commanders); then 2 each for shuffling a graveyard into a library (Ulamog, the Infinite Gyre,
-  Elixir of Immortality), "sacrifice N" costs, a land with an Adventure, a card chosen as a
-  cost, damage prevented to a filter, and a variable number of targets. Across every record
-  the next are a free cast during resolution (`effect:cast-during-resolution`, 16) and
-  "sacrifice N" costs (`cost:sacrifice-multiple`, 15). Grab the Prize needs only the card
-  discarded as its cost remembered, as a sacrificed one already is (`new:cost-discarded-reference`).
-- **Top-5000 batch 9 (2026-09-29) triaged ranks 1507–1632:** 46 authored (Uro, Cryptic Command,
-  Natural Order, Hangarback Walker, Monastery Mentor, Hydroid Krasis, It That Betrays and 39
-  more, with Boon Reflection and The Wind Crystal from further down, which the new life-gain
-  doubler unblocked — see `neededCards-features.md`, "Top-5000 batch 9"); 57 blocked, each in
-  `engine/data/sweep-3/B9.json`. **Next**, by what blocks the most of them: discard (or exile
-  cards) as an activation cost (`cost:choose-cards-as-cost`, 4 here — Tortured Existence, Fomori
-  Vault, Kozilek, Chainer — and 14 across every record, with Yawgmoth, Fauna Shaman, Nezahal and
-  Solphim waiting on nothing else); then "you win / lose the game" (`new:win-game`, 11 across
-  records with Final Fortune, Felidar Sovereign and Twenty-Toed Toad). Cheap single-card
-  pieces it found: stun counters (Unstoppable Slasher), a batched leaves-battlefield trigger
-  (Dour Port-Mage), a damage replacement filtered by recipient (Losheel), the Kindred card type
-  (Eldrazi Conscription).
-- **Top-5000 batch 10 (2026-09-29) triaged ranks 1645–1722:** 31 authored (Nissa, Who Shakes the
-  World, Glen Elendra Archmage, Blast Zone, Murderous Rider, Court of Grace, Jin-Gitaxias and 25
-  more — see `neededCards-features.md`, "Top-5000 batch 10"); 29 blocked, each in
-  `engine/data/sweep-3/B10.json`, almost all by features no other card here needs. Two measured
-  surprises: a static can't choose what it affects by power or toughness (Tetsuko Umezawa — an
-  `affects` filter reading P/T matches nothing inside the layer fold), and "whenever a counter is
-  put on" is once per counter for Fathom Mage (its ruling) where `counters-put` fires per event.
-  Across every record the leaders are unchanged: a copy's new targets
-  (`decision:copy-new-targets`, 28), a free cast during resolution (18), "sacrifice N" costs (16).
-- **Top-5000 batch 11 (2026-09-29) triaged ranks 1723–1801:** 31 authored with no new engine
-  vocabulary (Mana Leak, Archmage's Charm, Death Baron, Alesha, Vaultborn Tyrant, Aurelia, the Law
-  Above, Urabrask the Hidden and 24 more — `top5000-batch-11.test.ts`); 29 blocked, each in
-  `engine/data/sweep-3/B11.json`. The copy family (`decision:copy-new-targets`, now 30 across
-  records) and Rooms, rebound, d20 rolls and "choose one that hasn't been chosen this turn"
-  (Teval's Judgment, Gala Greeters) each block two or more.
-- **Discard as an activation cost is built (2026-09-29, `ability-discard-cost.test.ts`):**
-  `AbilityCost.discard: { count, filter? }`, paid with the `discard` decision (narrowed to the
-  matching cards for "Discard a creature card"; dev-rooms `DISCD`/`DISC4`). It unblocked
-  Tortured Existence, Fomori Vault, Yawgmoth, Fauna Shaman and Solphim. Still waiting on other
-  pieces: Nezahal (a flicker returning tapped), Key to the City and Ghostly Pilferer ("whenever
-  this becomes untapped"), Kozilek (a discard matching the target's mana value), Jaxis (blitz),
-  Chainer (a one-shot graveyard cast permission); and the other half of
-  `cost:choose-cards-as-cost`, exiling cards from your graveyard as a cost (Mines of Moria,
-  Varina).
-- **Top-5000 batch 12 (2026-09-29) triaged ranks 1802–1877:** 34 authored (Casualties of War,
-  Zacama, Orim's Chant, Lyra Dawnbringer, Arwen, Springleaf Parade, Insurrection and 27 more —
-  `top5000-batch-12.test.ts`); 26 blocked, each in `engine/data/sweep-3/B12.json`. Two small
-  pieces lead what's left here and in B11: "doesn't untap during its controller's next untap
-  step" (Junk Winder, Vorinclex) and countering an activated or triggered ability (Disallow,
-  Sublime Epiphany).
-- **Top-5000 batch 13 (2026-09-29) triaged ranks 1880–1956:** 25 authored (Day of Judgment,
-  Dragonlord Dromoka, Sword of Forge and Frontier, Black Sun's Zenith, Teshar, Nighthawk Scavenger
-  and 19 more — `top5000-batch-13.test.ts`); 35 blocked, each in `engine/data/sweep-3/B13.json`,
-  nearly all by one-card features. Cheap ones: `create-token-copy` with an amount for its count
-  (For the Common Good), crew (Smuggler's Copter), a free cast "once each turn" (As Foretold, One
-  with the Multiverse).
-- **Top-5000 batch 14 (2026-09-29) triaged ranks 1957–2035:** 26 authored (Nevinyrral's Disk, The
-  Eldest Reborn, Warping Wail, Cryptbreaker, Resplendent Angel, Grazilaxx and 20 more —
-  `top5000-batch-14.test.ts`); 34 blocked, each in `engine/data/sweep-3/B14.json`. Across B9–B14
-  the "look at the top card of your library any time" family (`zone:visibility-extensions`) and
-  a damage replacement filtered by recipient (`new:damage-prevented-to-filter` — Losheel, Crystal
-  Barricade, Mutational Advantage) come up most among the one-feature blockers.
-- **Top-5000 batch 15 (2026-09-29) triaged ranks 2036–2111:** 25 authored (Birthing Pod, Garruk,
-  Primal Hunter, Paradise Druid, Goblin Warchief, Trinket Mage and 16 more, plus Vengeful
-  Ancestor, Sowing Mycospawn, Nissa, Resurgent Animist and Liesa from a recheck of its blockers —
-  `top5000-batch-15.test.ts`); 35 blocked, each in `engine/data/sweep-3/B15.json`. Generous
-  Plunderer was rechecked and waits only on a count of the defending player's permanents
-  (`new:count-of-trigger-players-permanents`), the same count Will of the Mardu and Carpet of
-  Flowers need for a target player.
-- **Top-5000 batch 16 (2026-09-29) triaged ranks 2112–2184:** 25 authored (Koma, World-Eater,
-  Master of Etherium, Mana Tithe, Trading Post, Aerith Gainsborough, Bone Miser and 19 more —
-  `top5000-batch-16.test.ts`); 35 blocked, each in `engine/data/sweep-3/B16.json`. Recurring
-  across B9–B16 and cheap: "can't cast more than one spell each turn" (Archon of Emeria,
-  Deafening Silence), infect (Plague Myr, Inkmoth Nexus) and the d20 (Delina, both Ancient
-  Dragons).
-- **Top-5000 batch 17 (2026-09-29) was a short, time-boxed pass over ranks 2185–2243:** 9
-  authored (Ondu Inversion, Scourge of Fleets, Assemble the Legion, Summon: Knights of Round,
-  Slip Through Space, and — on a recheck of its blockers — Swarmyard Massacre, Forge of Heroes,
-  Triplicate Titan, Earthbender Ascension; `top5000-batch-17.test.ts`); 31 blocked in
-  `engine/data/sweep-3/B17.json`, every one now checked closely.
-- **Top-5000 batch 18 (2026-09-30) triaged ranks 2245–2346:** 41 authored (Flickerwisp, Kokusho,
-  Survival of the Fittest, Royal Assassin, Court of Garenbrig, Manamorphose, Tome of Legends and
-  34 more — `top5000-batch-18.test.ts`); 34 blocked, each in `engine/data/sweep-3/B18.json`.
-  One engine change: a flicker can return a permanent *with* its counters (Planar Incision).
-  The blockers that recur across batches and are cheap to build: infect (Grafted Exoskeleton,
-  Tainted Strike, plus B16's Plague Myr and Inkmoth Nexus), a card's own permission to be cast
-  from its graveyard (Squee, Quilled Greatwurm, Gravecrawler), the legendary sorcery restriction
-  (rule 205.4e — Jaya's Immolating Inferno, Urza's Ruinous Blast), "shuffle it into its owner's
-  library instead" (Nexus of Fate, Darksteel Colossus at rank 2408), and offering every
-  alternative cost that applies rather than the first found (Dracogenesis, Rooftop Storm — Jodah
-  shows the gap today).
+  carry yet (`evokeCostsOf` in `game.ts`). Fury needs a triggered ability's divided damage too.
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
-- **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,061 implemented). Work
-  down its unmarked entries in rank order: author each card the engine runs faithfully, and
-  build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
-  holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
-  the batches since; past rank 2346, nothing is triaged.
-- **What's left of "enters tapped and attacking" (rule 508.4).** Built 2026-09-28: tokens,
-  cards (`look-and-choose`, `reveal-until`) and token copies (myriad, `myriad()` helper) can
-  enter attacking, with the `enter-attacking` decision where there's a choice, and delayed
-  triggers "at end of combat". `effect:enter-attacking` is in the gaps JSON's `built` list.
-  19 cards use it (dev-rooms `ENTAT`, `MYRAD`). Still blocked, by family:
-  - **Ninjutsu** (17 cards): an activated ability from hand (`ActivatedAbility.zone`) whose cost
-    returns an unblocked attacker. The ninja attacks what that creature attacked (702.49c).
-  - **Other myriad cards:** Scion of Calamity and Hammers of Moradin need a target "that player
-    controls" for the damaged or each opponent; Elturel Survivors a count of the defending
-    player's lands; Scurry of Squirrels, Battle Angels of Tyr, The Master, Multiplied and Auton
-    Soldier their other text.
-  - **Other token copies entering attacking:** Delina (a d20), Flamerush Rider (Dash),
-    Redoubled Stormsinger ("tokens that entered this turn"), Echoing Assault (a copy "except
-    it's 1/1" attacking a named player).
-  - **Ilharg, the Raze-Boar**: "when it dies or is put into exile, put it into its owner's
-    library third from the top". **Zara**: a creature from an opponent's hand under your
-    control. **Senu**: a trigger while it's in exile. **Doors of Durin**: grants "until your next
-    turn" conditioned on a Dwarf / an Elf.
-  - **Hero of Bladehold**: battle cry and the token trigger fire together, and which resolves
-    first is the player's choice (603.3b), so it waits on `decision:trigger-order`.
-  - Cards blocked by other text as well: Otharri, Ghalta and Mavren, Caesar, Ainok Strike
-    Leader, Endless Foot Assault, Andúril, Dalkovan Encampment, Zurgo Stormrender.
+- **Ninjutsu** (17 cards) and the rest of "enters tapped and attacking": `docs/card-blockers.md`.
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
   the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
-  modes", for the rest of that family's blockers.
-- **Host-trigger cards, 34 left** (the equipped/enchanted-creature triggers are built): each is
-  blocked by something shared with other cards — a static "is goaded", "return this card" after
-  its host died, per-event "deals damage", per-mode targets on a modal trigger, free casts during
-  resolution, living weapon (tokens entering tapped and attacking are built). See `neededCards-features.md`,
-  "Host triggers".
-
+  modes".
+- **Host-trigger cards, 34 left**: each blocked by something shared with other cards. See
+  `neededCards-features.md`, "Host triggers".
 - **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
   Reconfigure. Also open:
   damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
@@ -268,32 +100,17 @@ that one card is the reason the deck exists.
   "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
   `npm run card:parse-check -w engine` at zero disagreements, then `--auto-scan --all` writes
   what it unlocks to `review/` for checking.
-- **Card sweep 2 (2026-09-25).** Five cloud batches triaged the 189 best-ranked unimplemented
-  top-500 commanders (C1–C3) and the 208 best-ranked unimplemented top-2000 cards (K1–K2). Those
-  208 include most of card sweep 1's 227 skips. They authored 36 cards and recorded 361 as
-  blocked, each with its missing features, in `engine/data/sweep-2/*.json`. The keys are those of
-  `top-commanders-gaps.json`, or `new:*` described in the file.
-  - The most-needed features: `decision:copy-new-targets` (16), `effect:copy-exceptions` (14),
-    `effect:may-sacrifice-then` (12), `effect:cast-during-resolution` and
-    `condition:filter-card-property-clauses` (11 each), `effect:attach-extensions`,
-    `effect:add-mana-extensions` and `bug:as-enters-choices-any-entry` (10 each).
-  - The rest of the backlog is untriaged: 62 commanders and 1,006 cards, the lists' unmarked
-    entries past those batches. The scaffolder can't finish any of them on its own.
 - **The limitation ledger.** Protection from a filter is built (2026-09-21); what its "19 cards"
   still hides is protection *granted* by an effect with a duration (Akroma's Will, Mother of
   Runes), protection from a chosen colour, and player protection (The One Ring, Teferi's
-  Protection). Beyond it: the "put into a graveyard from anywhere" trigger, "as this enters" on a non-cast
-  permanent, and discard as an ability cost (regeneration is built, 2026-09-28). See `neededCards-features.md`, "The
-  limitation ledger", and `cards/AUTHORING.md` §15.
+  Protection). Beyond it: the "put into a graveyard from anywhere" trigger and "as this enters"
+  on a non-cast permanent. See `neededCards-features.md`, "The limitation ledger", and
+  `cards/AUTHORING.md` §15.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
   one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
   list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
   re-check each one against the engine before building for it.
-- **Precon stand-ins.** 98 cards in the five Tarkir: Dragonstorm starter decks play as
-  substitutes; authoring them is the card priority ("Card backlog" above). See
-  `docs/plans/precon-decks.md` (the substitution tables). Deleting a substitution is the whole
-  revert.
 
 ## Engine rules gaps
 
@@ -312,13 +129,8 @@ that one card is the reason the deck exists.
   AUTHORING §15 and the limitation ledger.
 - **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
   which changes how its line works. The scaffolder leaves them to author:
-  - Power-up is built, and 21 of its 37 cards are authored. Blocked: Hulk, Gamma Goliath and
-    Wonder Man (effects on other power-up abilities), Kang the Conqueror (no power-up during
-    its extra turn), Thanos, the Mad Titan (an odd-or-even choice), Iron Fist (divided damage),
-    Loki Laufeyson (a copy's new targets), Nick Fury (transforming a card it finds),
-    Quicksilver (starting in play), Immortus, Donald Blake (a creature-type change that sets
-    no P/T) and White Tiger (the Tiger God's blocking restriction). Not yet checked: Black
-    Panther, Most Dangerous, Human Torch, Jack of Hearts, Shang-Chi and Stature.
+  - Power-up is built, and 21 of its 37 cards are authored; the 16 left are in
+    `docs/card-blockers.md`.
   - Max speed (34): needs `mechanic:speed`.
   - A Case's To solve and Solved (13 each).
   - Forecast (11).

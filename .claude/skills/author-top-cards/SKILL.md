@@ -109,7 +109,8 @@ Target 30-50 cards. For each:
   `sweep-2`'s files (`batch`, `status`, `authored: [{name, files, tested}]`,
   `blocked: [{name, needs, why}]`), so the next run skips them.
 - `BACKLOG.md`: the implemented count, and the **Next** line if the ranking
-  of blockers changed; `neededCards-features.md` if a feature landed or a new
+  of blockers changed; the batch's summary (authored headliners, what blocks
+  the rest) goes in `docs/card-blockers.md`, not BACKLOG; `neededCards-features.md` if a feature landed or a new
   one now leads.
 - Any commander this batch happened to implement: `npm run cmdrs:mark -w engine`.
 
