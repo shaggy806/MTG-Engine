@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAIMBot from "../pool/a-i-m-bot.js";
+import _poolAdaptiveTrainingPost from "../pool/adaptive-training-post.js";
 import _poolAerieMystics from "../pool/aerie-mystics.js";
 import _poolAhriman from "../pool/ahriman.js";
 import _poolAkroanPhalanx from "../pool/akroan-phalanx.js";
@@ -203,6 +204,7 @@ import _tokensShrineToken from "../tokens/shrine-token.js";
 const shard: CardShard = {
   pool: [
     _poolAIMBot,
+    _poolAdaptiveTrainingPost,
     _poolAerieMystics,
     _poolAhriman,
     _poolAkroanPhalanx,

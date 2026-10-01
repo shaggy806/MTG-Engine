@@ -3,9 +3,8 @@ import { defineCard } from "../define.js";
 /**
  * ROADMAP Phase 8 — storm. The `this-cast` trigger fires the `storm` effect,
  * which copies this spell for each spell cast (by ANY player, rule 702.40a)
- * before it this turn — the count captured on the spell object at cast. Copies
- * keep the original's target; the "you may choose new targets" clause isn't
- * offered (declining it is always legal).
+ * before it this turn — the count captured on the spell object at cast. Its
+ * controller may choose new targets for each copy, asked one copy at a time.
  */
 export default defineCard({
   name: "Grapeshot",

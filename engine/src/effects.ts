@@ -2066,6 +2066,11 @@ export type EffectSpec =
       readonly withMain?: boolean;
     }
   | {
+      /** "Shuffle your library" on its own (Ponder's "You may shuffle", inside
+       * a `may`): the effect's controller shuffles (rule 701.24). */
+      readonly kind: "shuffle-library";
+    }
+  | {
       /** "You may play an additional land this turn" (Explore) — `amount`
        * more land drops for the effect's controller, this turn only. */
       readonly kind: "additional-land-drop";
@@ -3531,6 +3536,9 @@ export interface EffectApi {
   triggerSpell(): SpellSnapshot | null;
   /** Put a copy of `spell`, the trigger's spell, onto the stack. */
   copyTriggerSpell(spell: SpellSnapshot, newTargets: boolean): void;
+  /** Shuffle the controller's library — see the `shuffle-library`
+   * {@link EffectSpec}. */
+  shuffleLibrary(): void;
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(afterThisPhase?: { readonly withMain: boolean }): void;
@@ -5225,6 +5233,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "additional-land-drop":
       ctx.additionalLandDrops(spec.amount);
+      return;
+    case "shuffle-library":
+      ctx.shuffleLibrary();
       return;
     case "untap-all":
       ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx));

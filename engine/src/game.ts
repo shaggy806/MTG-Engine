@@ -3452,6 +3452,18 @@ export class Game {
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
 
+  /** Ask about the next copy in `GameState.copyTargetsQueue` — or, when it
+   * has nothing left to change to (or has left the stack), just announce its
+   * targets. */
+  private promptNextCopyTargets(): void {
+    const next = this.state.copyTargetsQueue?.shift();
+    if (this.state.copyTargetsQueue?.length === 0) delete this.state.copyTargetsQueue;
+    const copy = next === undefined ? undefined : this.state.objects[next];
+    if (copy === undefined || copy.zone !== "stack" || next === undefined) return;
+    if (this.askCopyTargets(next)) return;
+    this.announceTargeted(copy.targets ?? [], copy.controller, next, true);
+  }
+
   /**
    * Give the copy `copyId` the targets its controller chose for it (rule
    * 707.10c): `chosen[i]` for target slot `slots[i]`. Only a slot whose
@@ -3926,6 +3938,11 @@ export class Game {
       }
       if (this.state.pendingSacrificeVictims.length > 0) {
         this.drainPendingSacrificeVictims();
+        continue;
+      }
+      // Copies still waiting to be asked about their new targets (storm).
+      if ((this.state.copyTargetsQueue?.length ?? 0) > 0) {
+        this.promptNextCopyTargets();
         continue;
       }
       // Creatures put onto the battlefield attacking whose controller has a
@@ -10859,6 +10876,11 @@ export class Game {
                       ability.trigger.modal === true &&
                       event.type === "spell-cast"
                     ? (this.state.objects[event.object]?.chosenModes?.length ?? 0)
+                    : // "Draw that many cards": how many targets the spell has.
+                    ability.trigger.on === "cast-spell" &&
+                      ability.trigger.withTargets === true &&
+                      event.type === "spell-cast"
+                    ? this.spellTargetCount(event.object)
                     : // "Loses that much life" (Sanguine Bond, Exquisite Blood):
                       // how much the life total moved.
                       (ability.trigger.on === "gains-life" || ability.trigger.on === "loses-life") &&
@@ -11854,6 +11876,7 @@ export class Game {
           }
         }
         if (spec.modal === true && !this.isModalSpell(event.object)) return false;
+        if (spec.withTargets === true && this.spellTargetCount(event.object) === 0) return false;
         if (spec.sharesNoCreatureType === true && this.sharesCreatureTypeWithOwn(event.object, event.player)) {
           return false;
         }
@@ -13573,6 +13596,7 @@ export class Game {
         }
         return spell.lastOnStack?.zoneChangeCount === refs.triggerSpell ? spell.lastOnStack : null;
       },
+      shuffleLibrary: () => this.shuffleLibraryOf(controller),
       copyTriggerSpell: (spell, newTargets) => {
         if (triggerObject !== undefined) this.copySpellFrom(spell, triggerObject, controller, newTargets);
       },
@@ -15284,6 +15308,16 @@ export class Game {
     object.targets = null;
   }
 
+  /** How many targets the spell `id` has: its filled target slots, not
+   * counting one filled automatically, which isn't a target (rule 115.1). An
+   * Aura spell has its enchant target. */
+  private spellTargetCount(id: ObjectId): number {
+    const spell = this.state.objects[id];
+    if (spell === undefined) return 0;
+    const auto = new Set(spell.autoTargetSlots ?? []);
+    return (spell.targets ?? []).filter((t, i) => t !== undefined && !auto.has(i)).length;
+  }
+
   /** See {@link SpellSnapshot}: `object`'s copiable state as it is now. */
   private spellSnapshot(object: GameObject): SpellSnapshot {
     return {
@@ -15423,6 +15457,12 @@ export class Game {
       options.push([target, ...legal.filter((t) => !sameTargetRef(t, target))]);
     });
     if (options.every((o) => o.length <= 1)) return false;
+    // Another copy is being asked about (storm makes several at once): this
+    // one waits its turn, its targets unannounced until it's answered.
+    if (this.state.awaiting !== null) {
+      this.state.copyTargetsQueue = [...(this.state.copyTargetsQueue ?? []), copyId];
+      return true;
+    }
     this.state.pendingCopyTargets = { copy: copyId, slots };
     this.state.awaiting = {
       kind: "choose-targets",
@@ -15437,12 +15477,18 @@ export class Game {
   }
 
   /** Storm (rule 702.40a): copy `sourceId` for each spell cast before it this
-   * turn (by any player) — the count captured on the spell when it was cast. */
+   * turn (by any player) — the count captured on the spell when it was cast —
+   * and its controller may choose new targets for each copy. The spell as it
+   * last was on the stack if it has gone since: countering the spell doesn't
+   * stop its storm trigger (the Tempest Technique rulings). */
   private stormCopy(sourceId: ObjectId): void {
     const source = this.state.objects[sourceId];
     if (source === undefined) return;
     const n = Math.max(0, source.stormCount ?? 0);
-    for (let i = 0; i < n; i += 1) this.copyStackSpell(sourceId, source.controller);
+    const spell =
+      source.zone === "stack" && source.kind === "card" ? this.spellSnapshot(source) : source.lastOnStack;
+    if (spell === undefined) return;
+    for (let i = 0; i < n; i += 1) this.copySpellFrom(spell, sourceId, source.controller, true);
   }
 
   /** Cascade (rule 702.85a): exile off the top of `controller`'s library until
@@ -17686,6 +17732,9 @@ export class Game {
         abilityIndex: 0,
         controller: trigger.controller,
         triggerObject: event.object,
+        // Which stint of the spell on the stack "it" means: a copy of it
+        // made after it was countered copies it as it last was there.
+        lastKnownRefs: { triggerSpell: this.state.objects[event.object]?.zoneChangeCount ?? 0 },
         delayed: trigger,
       });
     }

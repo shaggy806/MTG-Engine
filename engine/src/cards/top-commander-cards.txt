@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2049 already implemented / 2951 missing (marks refreshed 2026-10-01)
+2051 already implemented / 2949 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -141,7 +141,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   142  Rejuvenating Springs                     {0}              Land
 [x]   143  Morphic Pool                             {0}              Land
 [x]   144  Abrade                                   {1}{R}           Instant
-[ ]   145  Ponder                                   {U}              Sorcery
+[x]   145  Ponder                                   {U}              Sorcery
 [x]   146  Underground River                        {0}              Land
 [x]   147  Adarkar Wastes                           {0}              Land
 [x]   148  Delighted Halfling                       {G}              Creature — Halfling Citizen
@@ -719,7 +719,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   720  Overflowing Basin                        {0}              Land
 [x]   721  Viridescent Bog                          {0}              Land
 [x]   722  Pyretic Ritual                           {1}{R}           Instant
-[ ]   723  Narset's Reversal                        {U}{U}           Instant
+[x]   723  Narset's Reversal                        {U}{U}           Instant
 [x]   724  Sheoldred, Whispering One                {5}{B}{B}        Legendary Creature — Phyrexian Praetor
 [x]   725  Tyvar's Stand                            {X}{G}           Instant
 [x]   726  Rising of the Day                        {2}{R}           Enchantment

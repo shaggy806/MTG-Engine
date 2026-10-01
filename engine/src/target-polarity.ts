@@ -241,6 +241,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "copy-spell": (n, v) => v.touch(n.target, "take", MAJOR),
   "additional-combat": none,
   "additional-land-drop": none,
+  "shuffle-library": none,
   "untap-all": (n, v) => v.touch(n.controlledByTarget, "help", MINOR),
   "tap-all": none,
   // Turn to Frog is removal; animating a land is a man-land. Only the first

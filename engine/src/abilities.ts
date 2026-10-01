@@ -926,6 +926,10 @@ export type TriggerSpec =
        * cast a modal spell". `{ triggerValue: true }` is then the number of
        * times a mode was chosen for it. */
       readonly modal?: boolean;
+      /** Only a spell with one or more targets — Voracious Bibliophile's
+       * "whenever you cast a spell with one or more targets". `{ triggerValue:
+       * true }` is then how many targets it has ("draw that many cards"). */
+      readonly withTargets?: boolean;
       /** Only a spell that shares no creature type with a creature its
        * caster controls or a creature card in their graveyard — Volo, Guide
        * to Monsters. A changeling on either side shares every type (rule

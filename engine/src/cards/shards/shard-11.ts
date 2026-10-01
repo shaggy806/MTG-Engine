@@ -198,6 +198,7 @@ import _poolTaintedWood from "../pool/tainted-wood.js";
 import _poolTalrandsInvocation from "../pool/talrands-invocation.js";
 import _poolTanglespanBridgeworks from "../pool/tanglespan-bridgeworks.js";
 import _poolTearAsunder from "../pool/tear-asunder.js";
+import _poolTempestTechnique from "../pool/tempest-technique.js";
 import _poolTerrorOfThePeaks from "../pool/terror-of-the-peaks.js";
 import _poolThaliaHereticCathar from "../pool/thalia-heretic-cathar.js";
 import _poolTheBeamtownBullies from "../pool/the-beamtown-bullies.js";
@@ -432,6 +433,7 @@ const shard: CardShard = {
     _poolTalrandsInvocation,
     _poolTanglespanBridgeworks,
     _poolTearAsunder,
+    _poolTempestTechnique,
     _poolTerrorOfThePeaks,
     _poolThaliaHereticCathar,
     _poolTheBeamtownBullies,

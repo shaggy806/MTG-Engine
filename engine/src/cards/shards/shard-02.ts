@@ -116,6 +116,7 @@ import _poolMindSpring from "../pool/mind-spring.js";
 import _poolMishrasOnslaught from "../pool/mishras-onslaught.js";
 import _poolMolderingKarok from "../pool/moldering-karok.js";
 import _poolMountain from "../pool/mountain.js";
+import _poolNarsetsReversal from "../pool/narsets-reversal.js";
 import _poolNeckSnap from "../pool/neck-snap.js";
 import _poolNicolBolasTheArisen from "../pool/nicol-bolas-the-arisen.js";
 import _poolNissasExpedition from "../pool/nissas-expedition.js";
@@ -324,6 +325,7 @@ const shard: CardShard = {
     _poolMishrasOnslaught,
     _poolMolderingKarok,
     _poolMountain,
+    _poolNarsetsReversal,
     _poolNeckSnap,
     _poolNicolBolasTheArisen,
     _poolNissasExpedition,

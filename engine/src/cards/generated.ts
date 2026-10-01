@@ -41,6 +41,7 @@ import _poolActOfTreason from "./pool/act-of-treason.js";
 import _poolActionNewsCrew from "./pool/action-news-crew.js";
 import _poolAdaptiveGemguard from "./pool/adaptive-gemguard.js";
 import _poolAdaptiveOmnitool from "./pool/adaptive-omnitool.js";
+import _poolAdaptiveTrainingPost from "./pool/adaptive-training-post.js";
 import _poolAdarkarSentinel from "./pool/adarkar-sentinel.js";
 import _poolAdarkarWastes from "./pool/adarkar-wastes.js";
 import _poolAdelineResplendentCathar from "./pool/adeline-resplendent-cathar.js";
@@ -3561,6 +3562,7 @@ import _poolNantukoShade from "./pool/nantuko-shade.js";
 import _poolNarciFableSinger from "./pool/narci-fable-singer.js";
 import _poolNarnamCobra from "./pool/narnam-cobra.js";
 import _poolNarsetEnlightenedMaster from "./pool/narset-enlightened-master.js";
+import _poolNarsetsReversal from "./pool/narsets-reversal.js";
 import _poolNarstadScrapper from "./pool/narstad-scrapper.js";
 import _poolNastyEnd from "./pool/nasty-end.js";
 import _poolNaturalConnection from "./pool/natural-connection.js";
@@ -3955,6 +3957,7 @@ import _poolPollutedDelta from "./pool/polluted-delta.js";
 import _poolPollutedMire from "./pool/polluted-mire.js";
 import _poolPollywogProdigy from "./pool/pollywog-prodigy.js";
 import _poolPondProphet from "./pool/pond-prophet.js";
+import _poolPonder from "./pool/ponder.js";
 import _poolPongify from "./pool/pongify.js";
 import _poolPorcelainLegionnaire from "./pool/porcelain-legionnaire.js";
 import _poolPortTown from "./pool/port-town.js";
@@ -5354,6 +5357,7 @@ import _poolTelimtorsDarts from "./pool/telimtors-darts.js";
 import _poolTemmetNaktamunsWill from "./pool/temmet-naktamuns-will.js";
 import _poolTempestAngler from "./pool/tempest-angler.js";
 import _poolTempestDrake from "./pool/tempest-drake.js";
+import _poolTempestTechnique from "./pool/tempest-technique.js";
 import _poolTempleAcolyte from "./pool/temple-acolyte.js";
 import _poolTempleBell from "./pool/temple-bell.js";
 import _poolTempleGarden from "./pool/temple-garden.js";
@@ -5988,6 +5992,7 @@ import _poolVoltaicKey from "./pool/voltaic-key.js";
 import _poolVoltaicServant from "./pool/voltaic-servant.js";
 import _poolVolunteerMilitia from "./pool/volunteer-militia.js";
 import _poolVonaButcherOfMagan from "./pool/vona-butcher-of-magan.js";
+import _poolVoraciousBibliophile from "./pool/voracious-bibliophile.js";
 import _poolVoraciousHydra from "./pool/voracious-hydra.js";
 import _poolVoraciousNull from "./pool/voracious-null.js";
 import _poolVoraciousVarmint from "./pool/voracious-varmint.js";
@@ -6543,6 +6548,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolActionNewsCrew,
   _poolAdaptiveGemguard,
   _poolAdaptiveOmnitool,
+  _poolAdaptiveTrainingPost,
   _poolAdarkarSentinel,
   _poolAdarkarWastes,
   _poolAdelineResplendentCathar,
@@ -10063,6 +10069,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNarciFableSinger,
   _poolNarnamCobra,
   _poolNarsetEnlightenedMaster,
+  _poolNarsetsReversal,
   _poolNarstadScrapper,
   _poolNastyEnd,
   _poolNaturalConnection,
@@ -10457,6 +10464,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPollutedMire,
   _poolPollywogProdigy,
   _poolPondProphet,
+  _poolPonder,
   _poolPongify,
   _poolPorcelainLegionnaire,
   _poolPortTown,
@@ -11856,6 +11864,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTemmetNaktamunsWill,
   _poolTempestAngler,
   _poolTempestDrake,
+  _poolTempestTechnique,
   _poolTempleAcolyte,
   _poolTempleBell,
   _poolTempleGarden,
@@ -12490,6 +12499,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVoltaicServant,
   _poolVolunteerMilitia,
   _poolVonaButcherOfMagan,
+  _poolVoraciousBibliophile,
   _poolVoraciousHydra,
   _poolVoraciousNull,
   _poolVoraciousVarmint,

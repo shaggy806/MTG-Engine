@@ -1,0 +1,65 @@
+{
+  "batch": "TDC3",
+  "status": "complete",
+  "ranks": "Jeskai Striker's missing cards: a copy's new targets (storm included), a delayed copy, counting a spell's targets, a standalone shuffle",
+  "authored": [
+    {
+      "name": "Narset's Reversal",
+      "files": [
+        "engine/src/cards/pool/narsets-reversal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Adaptive Training Post",
+      "files": [
+        "engine/src/cards/pool/adaptive-training-post.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Voracious Bibliophile",
+      "files": [
+        "engine/src/cards/pool/voracious-bibliophile.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Tempest Technique",
+      "files": [
+        "engine/src/cards/pool/tempest-technique.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ponder",
+      "files": [
+        "engine/src/cards/pool/ponder.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Expansion // Explosion",
+      "needs": [
+        "new:split-cards"
+      ],
+      "why": "A split card: cast either half, characteristics combined off the stack. Its copy half needs nothing else now."
+    },
+    {
+      "name": "Ghostly Prison",
+      "needs": [
+        "new:attack-tax"
+      ],
+      "why": "'Creatures can't attack you unless their controller pays {2} for each' — a cost to attack (rule 508.1d-h) paid as attackers are declared. Propaganda (EDHREC #113) is the same."
+    },
+    {
+      "name": "Mangara, the Diplomat",
+      "needs": [
+        "new:attack-with-intervening-if"
+      ],
+      "why": "'If two or more of those creatures are attacking you and/or planeswalkers you control' is an intervening if, rechecked on resolution (rule 603.4; the rulings: a creature removed from combat no longer counts, one that left the battlefield does). attack-with only counts as it triggers."
+    }
+  ]
+}

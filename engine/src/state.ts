@@ -2435,6 +2435,10 @@ export interface GameState {
    * answers back onto the copy's target slots. Absent when none is.
    */
   pendingCopyTargets?: { readonly copy: ObjectId; readonly slots: readonly number[] } | null;
+  /** Copies made while another decision was up — storm's several — waiting
+   * to be asked about their new targets, oldest first. Drained one at a time
+   * in the `prepareForPriority` fixpoint. Absent when empty. */
+  copyTargetsQueue?: ObjectId[];
   /** Suspended cards still to be free-cast this upkeep, after one of them
    * paused on a `choose-targets` decision. Drained by `applyChooseTargets`. */
   pendingSuspendedCasts: ObjectId[];

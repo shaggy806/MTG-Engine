@@ -21,13 +21,15 @@ that one card is the reason the deck exists.
   `zone:visibility-extensions` (+1), `zone:cast-from-library-top` (+2), `keyword:blitz` (+1),
   `keyword:mayhem` (+1), `effect:additional-upkeep-steps` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
-  `decision:copy-new-targets` (12), `effect:copy-spell-extensions` and
-  `decision:choose-permanent` (11 each). `zone:exile-face-down` (Edward Kenway) was split
+  `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each).
+  `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
+  Narset; storm asks too), leaving Storm, Force of Nature and Prismari, the Inspiration
+  needing no engine work — check their Oracle text before authoring. `zone:exile-face-down` (Edward Kenway) was split
   out of `zone:visibility-extensions` and built; Gonti and Ixhel still need
   `cost:mana-spending-rules`. Live numbers come
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
-  `effect:may-sacrifice-then` (13), `decision:copy-new-targets` (12), `decision:choose-permanent`
+  `effect:may-sacrifice-then` (13), `decision:choose-permanent`
   (11) and `effect:cast-during-resolution` (10 — partly built on 2026-09-30 as the `cast-now`
   effect; what's left is in its `top-commanders-gaps.json` description),
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
@@ -47,11 +49,14 @@ that one card is the reason the deck exists.
   missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
   that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
   effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
-  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 17 — 97, every
-  one recorded with what it needs (`engine/data/sweep-3/TDC1.json`, `TDC2.json` and the earlier
-  sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai Striker
-  since 2026-09-30 (swapped with Elsha), which built a copy's new targets, so **Next:** Adaptive
-  Training Post and Expansion // Explosion, recorded as needing nothing else, then delve (4, only Treasure Cruise needing nothing else), "can attack as though it
+  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 12 — 92, every
+  one recorded with what it needs (`engine/data/sweep-3/TDC1.json` to `TDC3.json` and the
+  earlier sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai
+  Striker since 2026-09-30 (swapped with Elsha), and a copy's new targets is built, storm
+  included (TDC3: 5 Jeskai cards). Jeskai's 12 each need something different: split cards
+  (Expansion // Explosion), an attack tax (Ghostly Prison — and Propaganda, EDHREC #113), an
+  attack trigger's intervening if rechecked (Mangara) and nine single-card needs. **Next:**
+  delve (4, only Treasure Cruise needing nothing else), "can attack as though it
   didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
   Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
@@ -212,7 +217,7 @@ that one card is the reason the deck exists.
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,049 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,051 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
@@ -331,10 +336,6 @@ that one card is the reason the deck exists.
   so are Fireball's "divided evenly" and Strive's cost per extra target (2026-09-28), but "N
   damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka) and "distribute
   N counters among" (Lathiel) aren't. See `neededCards-features.md`, "Unbounded targeting".
-- **Storm's copies don't choose new targets.** Twincast and a copy trigger ask (`copy-spell`'s
-  `newTargets`, one `choose-targets` per copy); storm makes several copies at once and would
-  need to ask for each in turn (`Game.stormCopy`). It's why `decision:copy-new-targets` isn't in
-  the gaps JSON's `built` list: Storm, Force of Nature and Prismari, the Inspiration need it.
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision
   (built 2026-09-26 for "untap up to N lands") is the piece it needs. See AUTHORING §15, "Partial".

@@ -110,6 +110,7 @@ import _poolOnyxMage from "../pool/onyx-mage.js";
 import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
 import _poolPlatedSlagwurm from "../pool/plated-slagwurm.js";
+import _poolPonder from "../pool/ponder.js";
 import _poolPrairieStream from "../pool/prairie-stream.js";
 import _poolPrescientChimera from "../pool/prescient-chimera.js";
 import _poolQilinsBlessing from "../pool/qilins-blessing.js";
@@ -293,6 +294,7 @@ const shard: CardShard = {
     _poolPetAvengers,
     _poolPhalanxVanguard,
     _poolPlatedSlagwurm,
+    _poolPonder,
     _poolPrairieStream,
     _poolPrescientChimera,
     _poolQilinsBlessing,

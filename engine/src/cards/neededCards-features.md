@@ -108,8 +108,8 @@ reviews carry a `note` there, and are listed in `BACKLOG.md`.
 1. **Build down `cmdrs:gaps`' engine-only order**, authoring each
    commander a feature unblocks in the same commit, each with an
    adversarial rules review.
-2. **Then the UI-bound features.** Ward payment, choosing new targets for a
-   copy, "may sacrifice — when you do", choosing a permanent, and entering
+2. **Then the UI-bound features.** Ward payment (choosing new targets for a
+   copy landed 2026-09-30), "may sacrifice — when you do", choosing a permanent, and entering
    attacking with a chosen defender each need a new decision the client
    renders. See also `docs/plans/token-stack-choices.md`.
 

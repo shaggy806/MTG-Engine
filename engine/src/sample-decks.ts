@@ -637,7 +637,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Young Pyromancer", 1],
     ],
     substitutions: [
-      sub("Adaptive Training Post", "Unruly Catapult", "Three-mana artifact: spell payoff."),
       sub("Compulsive Research", "Catalog", "Three-mana sorcery: looting, card draw."),
       sub("Curse of Opulence", "Sticky Fingers", "One-mana enchantment: token maker, ramp."),
       sub("Curse of the Swine", "Resculpt", "Two-mana sorcery: removal, creature removal."),
@@ -648,12 +647,8 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Lier, Disciple of the Drowned", "Archmage of Runes", "Five-mana creature: spell payoff."),
       sub("Magma Opus", "Searing Wind", "Eight-mana instant: burn."),
       sub("Mangara, the Diplomat", "Aragorn, King of Gondor", "Four-mana creature: card draw, lifegain."),
-      sub("Narset's Reversal", "Twincast", "Two-mana instant: spell copy."),
-      sub("Ponder", "Serum Visions", "One-mana sorcery: cantrip, library manipulation."),
       sub("Sublime Epiphany", "Contradict", "Counterspell that draws a card."),
-      sub("Tempest Technique", "Efficient Construction", "Four-mana enchantment: spell payoff."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
-      sub("Voracious Bibliophile", "Storyteller Pixie", "Four-mana creature: spell payoff, card draw."),
     ],
   }),
 ];

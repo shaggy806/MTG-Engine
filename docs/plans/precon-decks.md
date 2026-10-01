@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 398 of the 495
-non-commander slots are the printed cards; the other 97 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 403 of the 495
+non-commander slots are the printed cards; the other 92 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, and Shiko and Narset, Unified 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -32,7 +32,7 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 | Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 27 |
 | Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
 | Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
-| Jeskai Striker | Shiko and Narset, Unified | instants and sorceries, prowess, Monk tokens, spells copied | 17 |
+| Jeskai Striker | Shiko and Narset, Unified | instants and sorceries, prowess, Monk tokens, spells copied | 12 |
 
 All five commanders are implemented, and no missing card is missing from more than one deck.
 `server/src/decks.ts`'s `SEATS` takes the first four for its seats (and every bot's deck), so
@@ -183,14 +183,13 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Windbrisk Heights | Memorial to Glory | Land: tapped land, utility land. |
 | Within Range | Dogged Pursuit | Four-mana enchantment: drains opponents. |
 
-### Jeskai Striker — Shiko and Narset, Unified (17)
+### Jeskai Striker — Shiko and Narset, Unified (12)
 
 Shiko and Narset commands it, swapped with Elsha, Threefold Master, who plays in the 99 (the same
 100 cards).
 
 | printed card | plays as | why |
 |---|---|---|
-| Adaptive Training Post | Unruly Catapult | Three-mana artifact: spell payoff. |
 | Compulsive Research | Catalog | Three-mana sorcery: looting, card draw. |
 | Curse of Opulence | Sticky Fingers | One-mana enchantment: token maker, ramp. |
 | Curse of the Swine | Resculpt | Two-mana sorcery: removal, creature removal. |
@@ -201,9 +200,5 @@ Shiko and Narset commands it, swapped with Elsha, Threefold Master, who plays in
 | Lier, Disciple of the Drowned | Archmage of Runes | Five-mana creature: spell payoff. |
 | Magma Opus | Searing Wind | Eight-mana instant: burn. |
 | Mangara, the Diplomat | Aragorn, King of Gondor | Four-mana creature: card draw, lifegain. |
-| Narset's Reversal | Twincast | Two-mana instant: spell copy. |
-| Ponder | Serum Visions | One-mana sorcery: cantrip, library manipulation. |
 | Sublime Epiphany | Contradict | Counterspell that draws a card. |
-| Tempest Technique | Efficient Construction | Four-mana enchantment: spell payoff. |
 | Transforming Flourish | Stroke of Midnight | Three-mana instant: removal. |
-| Voracious Bibliophile | Storyteller Pixie | Four-mana creature: spell payoff, card draw. |

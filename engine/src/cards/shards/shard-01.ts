@@ -175,6 +175,7 @@ import _poolVengefulDead from "../pool/vengeful-dead.js";
 import _poolVeteranCavalier from "../pool/veteran-cavalier.js";
 import _poolVirusBeetle from "../pool/virus-beetle.js";
 import _poolVizkopaVampire from "../pool/vizkopa-vampire.js";
+import _poolVoraciousBibliophile from "../pool/voracious-bibliophile.js";
 import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
 import _poolWeatheredWayfarer from "../pool/weathered-wayfarer.js";
@@ -359,6 +360,7 @@ const shard: CardShard = {
     _poolVeteranCavalier,
     _poolVirusBeetle,
     _poolVizkopaVampire,
+    _poolVoraciousBibliophile,
     _poolWanderOff,
     _poolWastewoodVerge,
     _poolWeatheredWayfarer,
