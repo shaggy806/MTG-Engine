@@ -421,10 +421,6 @@ Beyond that plan:
   Balanced Scale (Sultai Arisen's self-mill plan), which should always mill itself rather than
   its opponents. Today a mill's target is aimed by `target-polarity.ts`'s generic rule (`mill`
   harms its target), which points it at an opponent.
-- **Lengthen the log Capture can reach back into.** A room keeps only its last 12 bot decisions
-  (`CAPTURE_KEEP` in `server/src/capture.ts`, kept small because a late four-player state is a
-  few megabytes), and a bot's misplay was followed by so many more of its actions that it had
-  dropped out before the user could capture it.
 - **Transcendent Dragon wasted with nothing to counter.** Look into bots casting it (flash; "when
   this creature enters, if you cast it, counter target spell") with no spell on the stack, so its
   trigger does nothing — it wants holding for an opponent's spell.

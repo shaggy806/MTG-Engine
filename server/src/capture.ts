@@ -38,9 +38,18 @@ import type { CaptureSummary } from "protocol";
 /** Where captures go unless told otherwise: `captures/` at the repo root. */
 export const DEFAULT_CAPTURE_DIR = fileURLToPath(new URL("../../captures/", import.meta.url));
 
-/** How many recent bot decisions a room keeps. A late four-player state is
- * a few megabytes in memory, so not many. */
-export const CAPTURE_KEEP = 12;
+/**
+ * How many recent bot decisions a room keeps, unless `CaptureConfig.keep`
+ * (the server's `--capture-keep N`) says otherwise.
+ *
+ * Measured on three four-player v2 games (2026-09-30): late in a game the
+ * bots make 15–60 real decisions a turn, so the 12 kept before this didn't
+ * always reach back one full turn; 200 reach back 5–30 turns. A late state
+ * is ~0.3 MB as JSON and ~0.4 MB in memory, so 200 hold ~80 MB per room —
+ * fine for the developer's machine this runs on (capture is never on in
+ * production).
+ */
+export const CAPTURE_KEEP = 200;
 
 /** How many of the game's latest events a bug report keeps — enough to see
  * what led up to it, without a whole long game's log. */
@@ -74,6 +83,8 @@ export interface BugReport {
 export interface CaptureConfig {
   readonly dir: string;
   readonly registry: CardRegistry;
+  /** How many decisions to keep; {@link CAPTURE_KEEP} if absent. */
+  readonly keep?: number;
 }
 
 interface Captured {
@@ -102,12 +113,14 @@ function decodeImage(dataUrl: string): { bytes: Buffer; extension: string } {
 export class CaptureLog {
   private readonly config: CaptureConfig;
   private readonly roomId: string;
+  private readonly keep: number;
   private entries: Captured[] = [];
   private nextId = 1;
 
   constructor(config: CaptureConfig, roomId: string) {
     this.config = config;
     this.roomId = roomId;
+    this.keep = Math.max(1, config.keep ?? CAPTURE_KEEP);
   }
 
   /** The state a bot is about to decide in, copied before it decides. */
@@ -118,7 +131,7 @@ export class CaptureLog {
   /** What the bot did from `state` (a copy from `before`). */
   record(player: PlayerId, state: GameState, action: Action): void {
     this.entries.push({ id: this.nextId++, player, state, action });
-    if (this.entries.length > CAPTURE_KEEP) this.entries.shift();
+    if (this.entries.length > this.keep) this.entries.shift();
   }
 
   /** The decisions kept, newest first. */
@@ -210,7 +223,7 @@ export class CaptureLog {
 
   private find(id: number): Captured {
     const entry = this.entries.find((e) => e.id === id);
-    if (entry === undefined) throw new Error(`capture ${id} is gone — only the last ${CAPTURE_KEEP} are kept`);
+    if (entry === undefined) throw new Error(`capture ${id} is gone — only the last ${this.keep} are kept`);
     return entry;
   }
 }

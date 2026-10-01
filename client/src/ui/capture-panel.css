@@ -58,8 +58,50 @@
   min-height: 0;
   overflow: hidden;
 }
+/* the decision list's column: whose decisions, then the list itself */
+.capture-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+.capture-seats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+}
+.capture-seats > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.capture-hide-passes {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.capture-seats button.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.capture-turn {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.2rem 0;
+  background: var(--panel, #161a20);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .capture-entries {
   list-style: none;
+  min-height: 0;
   margin: 0;
   padding: 0;
   display: flex;

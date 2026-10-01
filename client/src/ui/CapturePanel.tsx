@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import type { ClipboardEvent } from 'react'
+import type { PlayerId } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import { playerLabel } from '../format.ts'
 import './capture-panel.css'
@@ -37,6 +38,11 @@ export function CapturePanel({
 }) {
   const { capture, captureList, captureOptions, captureSave, captureReport, clearCapture } = game
   const [mode, setMode] = useState<'decision' | 'bug'>('decision')
+  // Whose decisions to list: a room keeps a couple of hundred, every bot's.
+  const [seat, setSeat] = useState<PlayerId | null>(null)
+  // Most kept decisions are a pass where something else was possible; the
+  // plays are easier to find without them.
+  const [hidePasses, setHidePasses] = useState(false)
   const [picked, setPicked] = useState<number | null>(null)
   const [expect, setExpect] = useState<number | 'not-this'>('not-this')
   const [note, setNote] = useState('')
@@ -81,6 +87,16 @@ export function CapturePanel({
     clearCapture()
     onClose()
   }
+  const entries = capture.entries ?? []
+  // The bots that have decisions kept, in seating order.
+  const seating = game.view?.turnOrder ?? []
+  const bots = [...new Set(entries.map((e) => e.player))].sort(
+    (a, b) => seating.indexOf(a) - seating.indexOf(b),
+  )
+  const shown = entries.filter(
+    (e) => (seat === null || e.player === seat) && !(hidePasses && e.did === 'Pass'),
+  )
+
   const pick = (id: number) => {
     setPicked(id)
     setExpect('not-this')
@@ -187,30 +203,73 @@ export function CapturePanel({
               scenario in <code>captures/</code> (local only, never committed).
             </p>
             <div className="capture-body">
-              <ol className="capture-entries" aria-label="Recent bot decisions">
-                {capture.entries === null ? (
-                  <li className="capture-empty">Loading…</li>
-                ) : capture.entries.length === 0 ? (
-                  <li className="capture-empty">No bot decisions yet.</li>
-                ) : (
-                  capture.entries.map((entry) => (
-                    <li key={entry.id}>
+              <div className="capture-list">
+                <div className="capture-seats">
+                  {bots.length > 1 ? (
+                    <div role="group" aria-label="Whose decisions">
                       <button
                         type="button"
-                        className={picked === entry.id ? 'selected' : undefined}
-                        onClick={() => pick(entry.id)}
+                        className={seat === null ? 'selected' : undefined}
+                        onClick={() => setSeat(null)}
                       >
-                        <span className="capture-when">
-                          Turn {entry.turn} · {entry.step}
-                          {entry.decision !== 'priority' ? ` · ${entry.decision}` : ''} ·{' '}
-                          {playerLabel(entry.player, game.seats)}
-                        </span>
-                        <span className="capture-did">{entry.did}</span>
+                        All
                       </button>
-                    </li>
-                  ))
-                )}
-              </ol>
+                      {bots.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          className={seat === p ? 'selected' : undefined}
+                          onClick={() => setSeat(p)}
+                        >
+                          {playerLabel(p, game.seats)}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  <label className="capture-hide-passes">
+                    <input
+                      type="checkbox"
+                      checked={hidePasses}
+                      onChange={(e) => setHidePasses(e.target.checked)}
+                    />
+                    Hide passes
+                  </label>
+                </div>
+                <ol className="capture-entries" aria-label="Recent bot decisions">
+                  {capture.entries === null ? (
+                    <li className="capture-empty">Loading…</li>
+                  ) : entries.length === 0 ? (
+                    <li className="capture-empty">No bot decisions yet.</li>
+                  ) : shown.length === 0 ? (
+                    <li className="capture-empty">None of these.</li>
+                  ) : (
+                    shown.map((entry, i) => (
+                      <Fragment key={entry.id}>
+                        {/* Newest first, under a heading for each turn. */}
+                        {i === 0 || shown[i - 1].turn !== entry.turn ? (
+                          <li className="capture-turn">
+                            {entry.turn === 0 ? 'Opening hands' : `Turn ${entry.turn}`}
+                          </li>
+                        ) : null}
+                        <li>
+                          <button
+                            type="button"
+                            className={picked === entry.id ? 'selected' : undefined}
+                            onClick={() => pick(entry.id)}
+                          >
+                            <span className="capture-when">
+                              {entry.step}
+                              {entry.decision !== 'priority' ? ` · ${entry.decision}` : ''} ·{' '}
+                              {playerLabel(entry.player, game.seats)}
+                            </span>
+                            <span className="capture-did">{entry.did}</span>
+                          </button>
+                        </li>
+                      </Fragment>
+                    ))
+                  )}
+                </ol>
+              </div>
               {picked === null ? null : options === null ? (
                 <div className="capture-answer">Loading its options…</div>
               ) : (

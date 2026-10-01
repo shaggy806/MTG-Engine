@@ -6,7 +6,7 @@ import { attachRoomServer } from "./ws-server.js";
 import { evaluateDecklist, formatCheck, parseDecklistText } from "./import-deck.js";
 import { loadOracleTagIndex } from "./oracle-tags.js";
 import { startStatusServer } from "./status.js";
-import { DEFAULT_CAPTURE_DIR } from "./capture.js";
+import { CAPTURE_KEEP, DEFAULT_CAPTURE_DIR } from "./capture.js";
 
 const port = Number(process.env.PORT ?? 4000);
 // "*" is fine for local/LAN dev; set CLIENT_ORIGIN to the real site once
@@ -19,8 +19,13 @@ const registry = createDefaultRegistry();
 // production service runs `node dist/index.js` without it, and must — a
 // capture is the whole game, every hand included.
 const capture = process.argv.includes("--capture");
-const manager = new RoomManager(capture ? { capture: { dir: DEFAULT_CAPTURE_DIR, registry } } : {});
-if (capture) console.log(`capturing bot decisions to ${DEFAULT_CAPTURE_DIR}`);
+// `--capture-keep N`: how many decisions each room keeps (`CAPTURE_KEEP`
+// otherwise). Each is a whole game state, ~0.4 MB late in a four-player game.
+const keepArg = process.argv.indexOf("--capture-keep");
+const keep = keepArg >= 0 ? Number(process.argv[keepArg + 1]) : CAPTURE_KEEP;
+if (!Number.isInteger(keep) || keep < 1) throw new Error("--capture-keep needs a whole number of decisions, at least 1");
+const manager = new RoomManager(capture ? { capture: { dir: DEFAULT_CAPTURE_DIR, registry, keep } } : {});
+if (capture) console.log(`capturing bot decisions to ${DEFAULT_CAPTURE_DIR}, the last ${keep} per room`);
 
 // An operator endpoint for `curl` over SSH, bound to loopback on a port the
 // Cloudflare tunnel does not forward. It carries room codes, which are join

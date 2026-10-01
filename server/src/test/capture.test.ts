@@ -13,7 +13,7 @@ import {
 } from "engine";
 import type { ScenarioCapture } from "engine";
 
-import { BUG_REPORT_EVENTS, CAPTURE_KEEP } from "../capture.js";
+import { BUG_REPORT_EVENTS } from "../capture.js";
 import type { BugReport } from "../capture.js";
 import { ALICE, BOB, DECKS } from "../decks.js";
 import { Room } from "../room.js";
@@ -25,6 +25,9 @@ afterEach(() => {
 });
 
 /** Two v1 bots playing each other in a room that captures, to the end. */
+/** Small, so a short game fills it: the default (`CAPTURE_KEEP`) is far more. */
+const KEEP = 12;
+
 function playedRoom(capture: boolean): { room: Room; dir: string } {
   const dir = mkdtempSync(join(tmpdir(), "mtg-capture-"));
   dirs.push(dir);
@@ -40,7 +43,7 @@ function playedRoom(capture: boolean): { room: Room; dir: string } {
   const room = new Room("CAPT1", game, {
     pacing: "immediate",
     botController: (player) => new HeuristicBotController(player, registry),
-    ...(capture ? { capture: { dir, registry } } : {}),
+    ...(capture ? { capture: { dir, registry, keep: KEEP } } : {}),
   });
   room.addBot(ALICE);
   room.addBot(BOB);
@@ -58,7 +61,7 @@ describe("capturing bot decisions", () => {
     const log = room.captures;
     if (log === null) throw new Error("no capture log");
     const entries = log.list();
-    expect(entries.length).toBe(CAPTURE_KEEP);
+    expect(entries.length).toBe(KEEP);
     // Newest first, each described.
     expect(entries[0].id).toBeGreaterThan(entries[entries.length - 1].id);
     expect(entries.every((e) => e.did.length > 0)).toBe(true);
