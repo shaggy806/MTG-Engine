@@ -478,10 +478,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   little menu another permanent's activated abilities use, with "turn face up" in it when the
   card can be turned face up.
 
-- **Frostcliff Siege doesn't show which mode was chosen.** The card has no indicator of the word
-  its controller chose as it entered (Jeskai or Temur, the engine's `chosen-on-enter` condition),
-  so nobody can tell from the board which ability it has.
-
 - **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
   eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
   art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
@@ -501,6 +497,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
   the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
 - **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
   the target-count range. This is latent: no pool card has both.
+- **Quality-of-life room options (house rules).** Options the room creator can turn on before a
+  game that are technically against the rules but make play smoother. The user's example: mana
+  that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
+  cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
+  since the engine otherwise follows the Comprehensive Rules exactly.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing

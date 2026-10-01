@@ -2188,6 +2188,9 @@
 .card-flag.holding {
   background: #9fc3e8;
 }
+.card-flag.chosen {
+  background: #e8d48f;
+}
 /* Sits in the art box's top-left corner (CardTile renders it inside .ct-art),
    scaled with the card like everything else on its face. */
 .card-badge {

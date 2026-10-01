@@ -101,6 +101,9 @@ describe("Frontier Siege", () => {
     readyForests(game, 5);
     const siege = castWith(game, "Frontier Siege", "Khans");
     expect(game.state.objects[siege].chosenOnEnter).toBe("Khans");
+    // Public, so the board can say which half it has — to every seat.
+    expect(game.viewFor(A).objects[siege].chosen).toBe("Khans");
+    expect(game.viewFor(B).objects[siege].chosen).toBe("Khans");
 
     // The Dragons half is gated off, so a flier entering does nothing.
     game.debugSpawn("Serra Angel", A, "battlefield", { announceEntry: true });

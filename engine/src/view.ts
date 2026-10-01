@@ -28,6 +28,7 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import type {
   AwaitingDecision,
   DecisionSource,
+  GameObject,
   GameResult,
   GameState,
   PlayerCounterKind,
@@ -205,6 +206,11 @@ export interface VisibleObject {
    * stays out of `objects` for a seat that can't look at it, so a client
    * draws a card back. Absent when it holds nothing. */
   readonly holding?: readonly ObjectId[];
+  /** On a permanent: what was chosen as it entered (rule 614.12) — a word
+   * (Frostcliff Siege's "Jeskai" or "Temur"), a colour letter (Heraldic
+   * Banner's `"U"`), a number, or a creature type (Urza's Incubator). Public:
+   * the choice is announced. Absent when it had nothing to choose. */
+  readonly chosen?: string;
 }
 
 export interface PlayerView {
@@ -304,6 +310,13 @@ function decisionSourceFor(state: GameState): DecisionSource | null {
   return state.decisionSource;
 }
 
+/** See `VisibleObject.chosen`. Read off a permanent only: both fields are
+ * cleared on a zone change, but a card on its way in can carry a stale one. */
+function chosenOf(object: GameObject): string | null {
+  if (object.zone !== "battlefield") return null;
+  return object.chosenOnEnter ?? object.chosenCreatureType ?? null;
+}
+
 function visible(
   state: GameState,
   registry: CardRegistry,
@@ -312,6 +325,7 @@ function visible(
   const object = state.objects[id];
   const printedName = printedCardName(object);
   const def = registry.get(printedName);
+  const chosen = chosenOf(object);
   const computed = computeCharacteristics(state, registry, id);
   // The printing this card's *owner* brought (see `PlayerState.printings`)
   // stands in for the pool's default illustration. Keyed by the card's front
@@ -409,6 +423,7 @@ function visible(
     tapped: object.tapped,
     damageMarked: object.damageMarked,
     regenerationShields: object.regenerationShields ?? 0,
+    ...(chosen !== null ? { chosen } : {}),
     counters: { ...object.counters },
     summoningSick: object.summoningSick,
     attacking: object.attacking,
