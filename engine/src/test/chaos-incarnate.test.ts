@@ -250,6 +250,38 @@ describe("Kardur, Doomscourge", () => {
     expect(offer.defendersFor[later]).toEqual([C]);
   });
 
+  // The 2021-02-05 ruling: "it must attack a player other than you if able.
+  // If the creature can't attack any of those players, or if there are no
+  // such players, it must attack you or an opposing planeswalker." A
+  // planeswalker isn't a player, so it obeys the requirement only when no
+  // other player can be attacked.
+  const kardurAttackOffer = (players: readonly PlayerId[], walkerOf: PlayerId) => {
+    const game = makeGame(players);
+    openWith(game, 0);
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    const walker = game.debugSpawn("Garruk Wildspeaker", walkerOf, "battlefield");
+    game.debugSpawn("Kardur, Doomscourge", A, "battlefield", { announceEntry: true });
+    settle(game);
+    game.advanceUntil(
+      (s) => (s.awaiting?.kind === "attackers" && s.awaiting.player === B) || s.result.over,
+    );
+    const offer = game.legalActions(B).find((o) => o.kind === "declare-attackers");
+    if (offer?.kind !== "declare-attackers") throw new Error("no attack offer");
+    return { offer, bears, walker };
+  };
+
+  it("with another player to attack, sends the creature at that player, not a planeswalker", () => {
+    const { offer, bears, walker } = kardurAttackOffer([A, B, C], C);
+    expect(offer.defenders).toContain(walker);
+    expect(offer.defendersFor[bears]).toEqual([C]);
+  });
+
+  it("with no other player, lets the creature attack you or a planeswalker", () => {
+    const { offer, bears, walker } = kardurAttackOffer([A, B], A);
+    expect(offer.mustAttack).toContain(bears);
+    expect([...offer.defendersFor[bears]].sort()).toEqual([A, walker].sort());
+  });
+
   it("drains when an attacking creature dies, using last-known attacking state", () => {
     const game = makeGame();
     openWith(game, 0);

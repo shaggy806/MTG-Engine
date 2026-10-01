@@ -165,10 +165,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   since 2026-09-28.) See `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
-- **Kardur, Doomscourge forces attacks at players only.** The rulings say the affected creatures
-  can attack planeswalkers too; the engine currently requires
-  a player. Check the rulings before fixing. The requirement lives in the `attack-requirement`
-  effect, `engine/src/combat/eligibility.ts` (~line 417).
 
 ## Bots
 
