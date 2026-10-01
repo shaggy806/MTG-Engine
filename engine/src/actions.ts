@@ -1005,6 +1005,9 @@ export type LegalAction =
       readonly cardName: string;
       readonly specs: readonly TargetSpec[];
       readonly options: readonly (readonly TargetRef[])[];
+      /** New targets for a copy of a spell (rule 707.10c): the target each
+       * slot has now, which may be kept — see the decision's `current`. */
+      readonly current?: readonly TargetRef[];
     };
 
 /** A `cast-spell` offer — what a `cast-now` decision lists as its `casts`. */

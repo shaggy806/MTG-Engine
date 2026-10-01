@@ -326,6 +326,9 @@ describe("top-5000 batch 6 — the other engine pieces", () => {
     game.dispatch({ type: "cast-spell", player: A, card: bolt, targets: [player(B)] });
     game.dispatch({ type: "cast-spell", player: A, card: inHand(game, "Twincast"), targets: [obj(bolt)] });
     game.dispatch({ type: "pass-priority", player: A });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    // Twincast's controller keeps the copy's target.
+    game.dispatch({ type: "choose-targets", player: A, targets: [player(B)] });
     game.advanceUntil(
       (s) => s.zones.shared.stack.some((id) => s.objects[id].isCopy === true) && s.priority.holder === A,
     );

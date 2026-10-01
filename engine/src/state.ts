@@ -571,6 +571,12 @@ export interface GameObject {
    * card moves on (a countered spell exiled from the graveyard was still
    * that spell). */
   lastStackManaValue?: number;
+  /** This spell as it last existed on the stack, set each time it leaves:
+   * what a copy of it copies once it has gone (rule 707.10 — Shiko and
+   * Narset, Unified copies "that spell" even after it was countered in
+   * response). Kept through later moves like `lastStackManaValue`; its
+   * `zoneChangeCount` says which stint on the stack it describes. */
+  lastOnStack?: SpellSnapshot;
   /** How much mana was actually spent to cast this spell — the `{ manaSpentOf }`
    * amount and the `manaSpent` filter clause (Prossh; The Emperor of
    * Palamecia's "if at least four mana was spent to cast it"). Set as it's
@@ -664,6 +670,32 @@ export interface GameObject {
    * replacement" — applied automatically here, with no opt-out).
    */
   isCommander: boolean;
+}
+
+/**
+ * A spell's copiable state on the stack (rule 707.10): its characteristics
+ * and every choice made as it was cast — modes, targets, {X}, the additional
+ * and alternative costs paid. What a copy of it starts from, read off the
+ * live spell or, once it has left the stack, off `GameObject.lastOnStack`.
+ */
+export interface SpellSnapshot {
+  /** The spell's `zoneChangeCount` on the stack, matched against
+   * `LastKnownRefs.triggerSpell`. */
+  readonly zoneChangeCount: number;
+  /** `printedCardName` — the face or half that was cast. */
+  readonly cardName: string;
+  readonly targets: readonly (TargetRef | undefined)[] | null;
+  readonly targetZones?: readonly (ZoneType | null)[];
+  readonly targetStints?: readonly (number | null)[];
+  readonly autoTargetSlots?: readonly number[];
+  readonly xValue: number | null;
+  readonly chosenModes?: readonly number[];
+  readonly kicked?: boolean;
+  readonly overloaded?: boolean;
+  readonly evokePaid?: boolean;
+  readonly offspringGrantPaid?: boolean;
+  /** Its copiable modifiers (a prototyped spell's — rule 718.3c). */
+  readonly modifiers: readonly PtModifier[];
 }
 
 export interface PtModifier {
@@ -1721,6 +1753,13 @@ export type AwaitingDecision =
       readonly cardName: string;
       readonly specs: readonly TargetSpec[];
       readonly options: readonly (readonly TargetRef[])[];
+      /**
+       * Choosing new targets for a copy of a spell (rule 707.10c —
+       * `GameState.pendingCopyTargets`): the target each slot has now, which
+       * is `options[i][0]` and may be kept even if it's no longer legal. Any
+       * other answer for a slot must be a legal target for it.
+       */
+      readonly current?: readonly TargetRef[];
     }
   | {
       /**
@@ -2389,6 +2428,13 @@ export interface GameState {
   pendingTargetedCast:
     | { readonly cardId: ObjectId; readonly via: CastVia; readonly grantHaste: boolean }
     | null;
+  /**
+   * A copy of a spell on the stack whose controller is choosing new targets
+   * for it (rule 707.10c — "you may choose new targets for the copy"): the
+   * `choose-targets` on `awaiting` carries `current`, and `slots` maps its
+   * answers back onto the copy's target slots. Absent when none is.
+   */
+  pendingCopyTargets?: { readonly copy: ObjectId; readonly slots: readonly number[] } | null;
   /** Suspended cards still to be free-cast this upkeep, after one of them
    * paused on a `choose-targets` decision. Drained by `applyChooseTargets`. */
   pendingSuspendedCasts: ObjectId[];

@@ -249,6 +249,7 @@ import type {
   PreventionShield,
   ReflexiveTrigger,
   PtModifier,
+  SpellSnapshot,
   TargetedBy,
   ZoneType,
 } from "./state.js";
@@ -260,6 +261,7 @@ import {
   isOptionalSpec,
   normalizeTargets,
   otherThan,
+  sameTargetRef,
   targetsFillable,
 } from "./target.js";
 import { distinctTargetCount, targetCountBounds } from "./target-count.js";
@@ -3393,7 +3395,11 @@ export class Game {
 
     const trig = this.state.pendingTargetedTrigger;
     const cast = this.state.pendingTargetedCast;
-    if (trig !== null) {
+    const copy = this.state.pendingCopyTargets;
+    if (copy != null) {
+      this.state.pendingCopyTargets = null;
+      this.retargetCopy(copy.copy, copy.slots, chosen);
+    } else if (trig !== null) {
       this.state.pendingTargetedTrigger = null;
       const queue = [...chosen];
       const last = trig.slots[trig.slots.length - 1];
@@ -3444,6 +3450,33 @@ export class Game {
       }
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+  }
+
+  /**
+   * Give the copy `copyId` the targets its controller chose for it (rule
+   * 707.10c): `chosen[i]` for target slot `slots[i]`. Only a slot whose
+   * target changed is re-recorded — a kept target that has moved since is
+   * still the object it was, and still illegal. Then each of its targets
+   * becomes the target of a spell, as it would have on the copy's creation.
+   */
+  private retargetCopy(copyId: ObjectId, slots: readonly number[], chosen: ResolvedTargets): void {
+    const copy = this.state.objects[copyId];
+    if (copy === undefined || copy.zone !== "stack") return;
+    const targets = [...(copy.targets ?? [])];
+    const zones = copy.targetZones === undefined ? undefined : [...copy.targetZones];
+    const stints = copy.targetStints === undefined ? undefined : [...copy.targetStints];
+    slots.forEach((slot, i) => {
+      const next = chosen[i];
+      const was = targets[slot];
+      if (next === undefined || was === undefined || sameTargetRef(next, was)) return;
+      targets[slot] = next;
+      if (zones !== undefined) zones[slot] = this.zonesOfTargets([next])[0] ?? null;
+      if (stints !== undefined) stints[slot] = this.stintsOfTargets([next])[0] ?? null;
+    });
+    copy.targets = targets;
+    if (zones !== undefined) copy.targetZones = zones;
+    if (stints !== undefined) copy.targetStints = stints;
+    this.announceTargeted(targets, copy.controller, copyId, true);
   }
 
   /**
@@ -10060,6 +10093,17 @@ export class Game {
     });
   }
 
+  /** The target specs a spell on the stack was cast with: a kicked spell's
+   * kicked ones (Tear Asunder), a modal spell's chosen modes', in order
+   * (rule 700.2). */
+  private spellTargetSpecs(object: GameObject): readonly TargetSpec[] {
+    const def = this.registry.get(printedCardName(object));
+    const chosenModes = def.castModal !== null ? object.chosenModes : undefined;
+    return chosenModes !== undefined
+      ? chosenModes.flatMap((mi) => def.castModal?.modes[mi]?.targets ?? [])
+      : this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true);
+  }
+
   private resolveTopObject(): void {
     const stack = this.state.zones.shared.stack;
     const id = stack[stack.length - 1];
@@ -10078,10 +10122,7 @@ export class Game {
     // (Tear Asunder), so the check uses the specs it was actually cast with,
     // and a modal spell's are its chosen modes', in order (rule 700.2).
     const chosenModes = def.castModal !== null ? object.chosenModes : undefined;
-    const castSpecs =
-      chosenModes !== undefined
-        ? chosenModes.flatMap((mi) => def.castModal?.modes[mi]?.targets ?? [])
-        : this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true);
+    const castSpecs = this.spellTargetSpecs(object);
     const legality = this.targetLegality(
       castSpecs,
       object.targets ?? [],
@@ -10091,7 +10132,7 @@ export class Game {
     );
     const targets = legality.targets;
     if (legality.fizzles) {
-      object.targets = null;
+      this.forgetSpellTargets(object);
       this.emit({
         type: "spell-fizzled",
         object: id,
@@ -10177,7 +10218,14 @@ export class Game {
     });
     this.emit({ type: "spell-resolved", object: id });
 
-    if (!object.isCopy && this.isPermanentSpell(def)) {
+    if (this.isPermanentSpell(def)) {
+      // A copy of a permanent spell becomes a token as it resolves (rule
+      // 608.3f) — one that wasn't "created" (the ruling), so nothing that
+      // watches for tokens being created sees it.
+      if (object.isCopy) {
+        object.isCopy = false;
+        object.isToken = true;
+      }
       this.enterPermanentSpell(id);
       return;
     }
@@ -10219,7 +10267,7 @@ export class Game {
       this.frontFaceDef(id).adventure &&
       (object.face ?? 0) === 1
     ) {
-      object.targets = null;
+      this.forgetSpellTargets(object);
       this.moveObject(id, "exile");
       object.onAdventure = true;
       this.emit({ type: "card-on-adventure", object: id, player: object.owner });
@@ -13512,7 +13560,22 @@ export class Game {
           refs,
           opts,
         ),
-      copySpell: (target) => this.copySpellByEffect(controller, target),
+      copySpell: (target, newTargets) => this.copySpellByEffect(controller, target, newTargets),
+      triggerSpell: () => {
+        // The spell whose casting fired this (rule 603.2), as it is if it's
+        // still on the stack and as it last was there if it has gone since
+        // (608.2h — countered in response).
+        if (triggerObject === undefined || refs.triggerSpell === undefined) return null;
+        const spell = this.state.objects[triggerObject];
+        if (spell === undefined) return null;
+        if (spell.zone === "stack" && (spell.zoneChangeCount ?? 0) === refs.triggerSpell) {
+          return this.spellSnapshot(spell);
+        }
+        return spell.lastOnStack?.zoneChangeCount === refs.triggerSpell ? spell.lastOnStack : null;
+      },
+      copyTriggerSpell: (spell, newTargets) => {
+        if (triggerObject !== undefined) this.copySpellFrom(spell, triggerObject, controller, newTargets);
+      },
       additionalCombat: (afterThisPhase) => {
         if (afterThisPhase === undefined) this.state.extraCombats += 1;
         else (this.state.combatsAfterThisCombat ??= []).push({ withMain: afterThisPhase.withMain });
@@ -15211,28 +15274,74 @@ export class Game {
 
   // --- copying spells (storm / cascade / Twincast — ROADMAP Phase 8) -------
 
-  /** Put a copy of the instant/sorcery spell `originalId` onto the stack under
-   * `controller` (rule 707.10). The copy keeps the original's targets and
-   * `{X}`; it ceases to exist rather than moving off the stack. Returns the
-   * copy's id, or `null` if `originalId` isn't a copiable spell. */
-  private copyStackSpell(originalId: ObjectId, controller: PlayerId): ObjectId | null {
+  /**
+   * A spell or ability that will never resolve now has nothing left to aim
+   * at. A spell is first remembered as it was on the stack, targets and all
+   * (`GameObject.lastOnStack`): a copy of it made afterwards still has them.
+   */
+  private forgetSpellTargets(object: GameObject): void {
+    if (object.zone === "stack" && object.kind === "card") object.lastOnStack = this.spellSnapshot(object);
+    object.targets = null;
+  }
+
+  /** See {@link SpellSnapshot}: `object`'s copiable state as it is now. */
+  private spellSnapshot(object: GameObject): SpellSnapshot {
+    return {
+      zoneChangeCount: object.zoneChangeCount ?? 0,
+      cardName: printedCardName(object),
+      targets: object.targets ? [...object.targets] : null,
+      ...(object.targetZones !== undefined ? { targetZones: [...object.targetZones] } : {}),
+      ...(object.targetStints !== undefined ? { targetStints: [...object.targetStints] } : {}),
+      ...(object.autoTargetSlots !== undefined ? { autoTargetSlots: [...object.autoTargetSlots] } : {}),
+      xValue: object.xValue ?? null,
+      ...(object.chosenModes !== undefined ? { chosenModes: [...object.chosenModes] } : {}),
+      ...(object.kicked === true ? { kicked: true } : {}),
+      ...(object.overloaded === true ? { overloaded: true } : {}),
+      ...(object.evokePaid === true ? { evokePaid: true } : {}),
+      ...(object.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
+      modifiers: object.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })),
+    };
+  }
+
+  /** Put a copy of the spell `originalId` onto the stack under `controller`
+   * (rule 707.10), or `null` if `originalId` isn't a spell on the stack. See
+   * {@link copySpellFrom}. */
+  private copyStackSpell(
+    originalId: ObjectId,
+    controller: PlayerId,
+    newTargets = false,
+  ): ObjectId | null {
     const original = this.state.objects[originalId];
-    if (
-      original === undefined ||
-      original.zone !== "stack" ||
-      original.kind !== "card"
-    ) {
+    if (original === undefined || original.zone !== "stack" || original.kind !== "card") {
       return null;
     }
-    // Permanent-spell copies become token permanents (rule 707.10a) — not
-    // modeled yet (Phase 10). Copy only instants/sorceries.
-    const def = this.registry.get(printedCardName(original));
-    if (this.isPermanentSpell(def)) return null;
+    return this.copySpellFrom(this.spellSnapshot(original), originalId, controller, newTargets);
+  }
 
+  /**
+   * Put a copy of a spell onto the stack under `controller` (rule 707.10),
+   * from `spell` — the spell as it is, or as it last was on the stack. The
+   * copy has the original's characteristics and every choice made as it was
+   * cast: modes, targets, {X}, the additional and alternative costs paid
+   * (kicker, overload, evoke). Its controller owns it (707.10). A copy of an
+   * instant or sorcery ceases to exist as it leaves the stack; a copy of a
+   * permanent spell becomes a token as it resolves (608.3f).
+   *
+   * With `newTargets` ("you may choose new targets for the copy" — rule
+   * 707.10c), its controller is asked which targets to change, if there is
+   * any other legal one to change to: the copy is on the stack meanwhile,
+   * holding the original's, and nobody gets priority before it's answered.
+   */
+  private copySpellFrom(
+    spell: SpellSnapshot,
+    originalId: ObjectId,
+    controller: PlayerId,
+    newTargets: boolean,
+  ): ObjectId {
     const id = this.mintObjectId();
     this.state.objects[id] = {
       id,
-      cardName: printedCardName(original),
+      cardName: spell.cardName,
       owner: controller,
       controller,
       zone: "stack",
@@ -15242,8 +15351,15 @@ export class Game {
       enteredBattlefieldOnTurn: null,
       summoningSick: false,
       loyaltyActivatedThisTurn: false,
-      targets: original.targets ? [...original.targets] : null,
-      ...(original.targetStints !== undefined ? { targetStints: [...original.targetStints] } : {}),
+      targets: spell.targets ? [...spell.targets] : null,
+      ...(spell.targetZones !== undefined ? { targetZones: [...spell.targetZones] } : {}),
+      ...(spell.targetStints !== undefined ? { targetStints: [...spell.targetStints] } : {}),
+      ...(spell.autoTargetSlots !== undefined ? { autoTargetSlots: [...spell.autoTargetSlots] } : {}),
+      ...(spell.chosenModes !== undefined ? { chosenModes: [...spell.chosenModes] } : {}),
+      ...(spell.kicked === true ? { kicked: true } : {}),
+      ...(spell.overloaded === true ? { overloaded: true } : {}),
+      ...(spell.evokePaid === true ? { evokePaid: true } : {}),
+      ...(spell.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
       attacking: null,
       blocking: null,
       blockedBy: [],
@@ -15253,25 +15369,71 @@ export class Game {
       sourceObjectId: null,
       abilityIndex: null,
       counters: {},
-      // A copy copies the spell's copiable values (rule 707.10): a prototyped
-      // spell's copy is prototyped too, as the permanent it becomes (718.3c).
-      modifiers: original.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })),
+      // A prototyped spell's copy is prototyped too, as the permanent it
+      // becomes (718.3c).
+      modifiers: spell.modifiers.map((m) => ({ ...m })),
       timestamp: 0,
       isToken: false,
       isCopy: true,
       attachedTo: null,
       isCommander: false,
-      xValue: original.xValue ?? null,
+      xValue: spell.xValue,
       controlEndsAtCleanup: false,
       copyOf: null,
     };
     this.state.zones.shared.stack.push(id);
     this.emit({ type: "spell-copied", original: originalId, copy: id, controller });
+    if (newTargets && this.askCopyTargets(id)) return id;
     // The copy is a new spell targeting what the original does, so each of
     // those objects becomes the target of a spell again (rule 707.10) --
     // a Twincast on a Giant Growth triggers Gargos a second time.
-    this.announceTargeted(original.targets ?? [], controller, id, true);
+    this.announceTargeted(this.state.objects[id].targets ?? [], controller, id, true);
     return id;
+  }
+
+  /**
+   * Ask the controller of the copy `copyId` which of its targets to change
+   * (rule 707.10c), as a `choose-targets` decision: each target slot offers
+   * the target it has — kept whether or not it's still legal — and every
+   * other legal target for that slot. A slot left empty stays empty (the copy
+   * has the same number of targets), and a slot filled automatically isn't a
+   * target (rule 115.1). `false`, asking nothing, when no slot has anything
+   * else it could change to.
+   */
+  private askCopyTargets(copyId: ObjectId): boolean {
+    const copy = this.state.objects[copyId];
+    const targets = copy.targets ?? [];
+    const specs = this.spellTargetSpecs(copy);
+    if (specs.length === 0) return false;
+    const auto = new Set(copy.autoTargetSlots ?? []);
+    const source = this.cardSource(this.registry.get(copy.cardName), copyId);
+    const slots: number[] = [];
+    const slotSpecs: TargetSpec[] = [];
+    const options: TargetRef[][] = [];
+    const current: TargetRef[] = [];
+    targets.forEach((target, i) => {
+      if (target === undefined || auto.has(i)) return;
+      // An "any number of" group is the last spec, standing for every
+      // target from there on.
+      const spec = specs[Math.min(i, specs.length - 1)];
+      const legal = legalTargets(this.state, this.registry, spec, copy.controller, source);
+      slots.push(i);
+      slotSpecs.push(spec);
+      current.push(target);
+      options.push([target, ...legal.filter((t) => !sameTargetRef(t, target))]);
+    });
+    if (options.every((o) => o.length <= 1)) return false;
+    this.state.pendingCopyTargets = { copy: copyId, slots };
+    this.state.awaiting = {
+      kind: "choose-targets",
+      player: copy.controller,
+      source: copyId,
+      cardName: copy.cardName,
+      specs: slotSpecs,
+      options,
+      current,
+    };
+    return true;
   }
 
   /** Storm (rule 702.40a): copy `sourceId` for each spell cast before it this
@@ -15459,10 +15621,10 @@ export class Game {
     }
   }
 
-  /** Twincast (rule 707.10): copy the instant/sorcery spell `target`. */
-  private copySpellByEffect(controller: PlayerId, target: TargetRef): void {
+  /** Twincast (rule 707.10): copy the spell `target`. */
+  private copySpellByEffect(controller: PlayerId, target: TargetRef, newTargets: boolean): void {
     if (target.kind !== "object") return;
-    this.copyStackSpell(target.object, controller);
+    this.copyStackSpell(target.object, controller, newTargets);
   }
 
   /** Attach the Aura or Equipment `source` to `target` (rule 701.3; used by
@@ -16899,7 +17061,7 @@ export class Game {
       }
       // It will never resolve now, so it has nothing left to aim at — the
       // same thing `counterObject` does on the way to the graveyard.
-      object.targets = null;
+      this.forgetSpellTargets(object);
     }
     const owner = object.owner;
     // A commander may go to the command zone instead (rule 903.9b) — asked
@@ -17016,7 +17178,7 @@ export class Game {
       return;
     }
     // It will never resolve now, so it has nothing left to aim at.
-    object.targets = null;
+    this.forgetSpellTargets(object);
     this.moveObject(id, "exile");
   }
 
@@ -18274,7 +18436,7 @@ export class Game {
       this.emit({ type: "counter-failed", object: id });
       return false;
     }
-    object.targets = null;
+    this.forgetSpellTargets(object);
     // An ability on the stack (ward counters those too) just ceases to exist
     // — one of them, where the object stands for several identical ones.
     if (object.kind === "ability") {
@@ -20457,6 +20619,11 @@ export class Game {
     // doesn't change because the card was exiled from the graveyard since.
     if (object.zone === "stack" && object.kind === "card") {
       object.lastStackManaValue = this.manaValueOnStack(object);
+      // Already taken if its targets were cleared on the way out (see
+      // `forgetSpellTargets`).
+      if (object.lastOnStack?.zoneChangeCount !== (object.zoneChangeCount ?? 0)) {
+        object.lastOnStack = this.spellSnapshot(object);
+      }
     }
     // The mana spent to cast a spell stays with the permanent it becomes (an
     // "if N mana was spent to cast it" enters trigger reads it there) and

@@ -259,6 +259,10 @@ const answerTwincastCopy = (game: Game, answer: string): ObjectId => {
   // Keep the copy's target if asked.
   for (let i = 0; i < 5 && game.state.awaiting !== null; i += 1) {
     const aw = game.state.awaiting;
+    if (aw.kind === "choose-targets" && aw.current !== undefined) {
+      game.dispatch({ type: "choose-targets", player: aw.player, targets: [...aw.current] });
+      continue;
+    }
     if (aw.kind !== "choose-modes") break;
     game.dispatch({ type: "choose-modes", player: aw.player, modes: [] });
   }

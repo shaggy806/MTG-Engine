@@ -111,6 +111,12 @@ function pass(game: Game): void {
 
 function resolveStack(game: Game): void {
   for (let i = 0; i < 200 && game.state.zones.shared.stack.length > 0; i += 1) {
+    const awaiting = game.state.awaiting;
+    // A copy's "you may choose new targets" (Twincast): keep them.
+    if (awaiting?.kind === "choose-targets" && awaiting.current !== undefined) {
+      game.dispatch({ type: "choose-targets", player: awaiting.player, targets: [...awaiting.current] });
+      continue;
+    }
     if (game.state.awaiting !== null) {
       throw new Error(`unexpected ${game.state.awaiting.kind} decision`);
     }

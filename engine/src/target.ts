@@ -269,6 +269,13 @@ export function otherThanSlots(than: OtherThan): readonly number[] {
  */
 export type ResolvedTargets = readonly (TargetRef | undefined)[];
 
+/** Whether two target references name the same player or object. */
+export function sameTargetRef(a: TargetRef, b: TargetRef): boolean {
+  return a.kind === "player"
+    ? b.kind === "player" && a.player === b.player
+    : b.kind === "object" && a.object === b.object;
+}
+
 /** Turn a dispatched action's `null` holes into `undefined` ones. */
 export function normalizeTargets(
   chosen: readonly (TargetRef | null)[] | undefined,

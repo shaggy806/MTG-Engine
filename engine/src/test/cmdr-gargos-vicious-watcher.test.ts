@@ -164,7 +164,13 @@ describe("Gargos, Vicious Watcher", () => {
     game.dispatch({ type: "cast-spell", player: A, card: twincast, targets: [obj(growth)] });
     game.dispatch({ type: "pass-priority", player: A });
     game.dispatch({ type: "pass-priority", player: B });
-    // Twincast resolved: the copy of Giant Growth targets the Bears.
+    // Twincast resolved, and its controller keeps the copy's target: the copy
+    // of Giant Growth targets the Bears.
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind).toBe("choose-targets");
+    if (awaiting?.kind === "choose-targets" && awaiting.current !== undefined) {
+      game.dispatch({ type: "choose-targets", player: A, targets: [...awaiting.current] });
+    }
     expect(
       game.state.eventLog.filter((e) => e.type === "object-targeted" && e.object === bears),
     ).toHaveLength(2);

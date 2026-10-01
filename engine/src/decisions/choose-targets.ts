@@ -24,7 +24,8 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { PlayerId } from "../primitives.js";
-import { normalizeTargets } from "../target.js";
+import { normalizeTargets, sameTargetRef } from "../target.js";
+import type { ResolvedTargets } from "../target.js";
 import { cardSource, invalidTargetReason } from "../targeting.js";
 import type { TargetSource } from "../targeting.js";
 import type { ObjectId } from "../primitives.js";
@@ -45,6 +46,45 @@ function sourceForPending(ctx: DecisionReadCtx, source: ObjectId): TargetSource 
   return ctx.pendingTriggerTargetSource();
 }
 
+type ChooseTargetsAwaiting = Extract<NonNullable<DecisionReadCtx["state"]["awaiting"]>, { kind: "choose-targets" }>;
+
+/**
+ * New targets for a copy of a spell (rule 707.10c): one answer per slot, each
+ * either the target the slot has now — kept even if it's no longer legal —
+ * or a legal target for that slot. When every target is legal the whole set
+ * is checked together, so "two target creatures" can't become the same
+ * creature twice (rule 601.2c).
+ */
+function whyNotCopyTargets(
+  ctx: DecisionReadCtx,
+  awaiting: ChooseTargetsAwaiting,
+  chosen: ResolvedTargets,
+  player: PlayerId,
+): string | null {
+  const current = awaiting.current ?? [];
+  if (chosen.length !== current.length) {
+    return `the copy has ${current.length} target(s) to keep or change, not ${chosen.length}`;
+  }
+  for (let i = 0; i < chosen.length; i += 1) {
+    const target = chosen[i];
+    if (target === undefined) return "a copy keeps the same number of targets";
+    if (!awaiting.options[i].some((o) => sameTargetRef(o, target))) {
+      return `that isn't a legal new target for slot ${i + 1}`;
+    }
+  }
+  const source = cardSource(ctx.registry.get(awaiting.cardName), awaiting.source);
+  const whole = invalidTargetReason(ctx.state, ctx.registry, awaiting.specs, chosen, player, awaiting.cardName, source);
+  // A target kept although it's no longer legal fails the whole-set check,
+  // and is still allowed: it's the one choice that needs no legality.
+  const keptStale = chosen.some(
+    (t, i) =>
+      t !== undefined &&
+      sameTargetRef(t, current[i]) &&
+      invalidTargetReason(ctx.state, ctx.registry, [awaiting.specs[i]], [t], player, awaiting.cardName, source) !== null,
+  );
+  return keptStale ? null : whole;
+}
+
 export const chooseTargets = defineDecision({
   kind: "choose-targets",
 
@@ -57,6 +97,7 @@ export const chooseTargets = defineDecision({
       cardName: awaiting.cardName,
       specs: [...awaiting.specs],
       options: awaiting.options.map((o) => [...o]),
+      ...(awaiting.current !== undefined ? { current: [...awaiting.current] } : {}),
     },
   ],
 
@@ -68,6 +109,7 @@ export const chooseTargets = defineDecision({
     if (awaiting === null || awaiting.kind !== "choose-targets" || awaiting.player !== player) {
       return `${player} is not being asked to choose targets`;
     }
+    if (awaiting.current !== undefined) return whyNotCopyTargets(ctx, awaiting, normalizeTargets(action.targets), player);
     return invalidTargetReason(
       ctx.state,
       ctx.registry,

@@ -26,6 +26,7 @@ import type {
   LeaveDestination,
   PlayerCounterKind,
   PlayerEffect,
+  SpellSnapshot,
   TurnHistoryKind,
 } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -2031,10 +2032,25 @@ export type EffectSpec =
       readonly progress?: RevealUntilProgress;
     }
   | {
-      /** Copy target instant/sorcery spell on the stack (Twincast — rule
-       * 707.10 / ROADMAP Phase 8). The copy keeps the original's targets. */
+      /**
+       * Copy a spell (rule 707.10): the one in target slot `target` (Twincast)
+       * or, with `"trigger-spell"`, the spell whose casting fired this
+       * triggered ability — as it last was on the stack if it has left since
+       * (Shiko and Narset, Unified's copy happens even after the spell was
+       * countered in response). The copy has the original's modes, targets,
+       * {X} and the costs paid for it; a copy of a permanent spell becomes a
+       * token as it resolves.
+       */
       readonly kind: "copy-spell";
-      readonly target: number;
+      readonly target: number | "trigger-spell";
+      /** "You may choose new targets for the copy" (rule 707.10c). */
+      readonly newTargets?: true;
+      /** "Copy that spell if it targets a permanent or player" — any of its
+       * targets was, when chosen. Otherwise it isn't copied. */
+      readonly ifTargets?: "permanent-or-player";
+      /** "If you don't copy a spell this way, [this]" (Shiko and Narset's
+       * "draw a card"). */
+      readonly otherwise?: EffectSpec;
     }
   | {
       /** After this (post-combat) main phase there is an additional combat
@@ -3507,8 +3523,14 @@ export interface EffectApi {
   cascade(controller: PlayerId, sourceId: ObjectId): CascadeFound | null;
   /** Cast what cascade found, or not, and put the rest on the bottom. */
   finishCascade(finish: CascadeFinish): void;
-  /** Copy the spell at `TargetRef` (an instant/sorcery on the stack). */
-  copySpell(target: TargetRef): void;
+  /** Copy the spell at `TargetRef` on the stack — see the `copy-spell`
+   * {@link EffectSpec}. */
+  copySpell(target: TargetRef, newTargets: boolean): void;
+  /** The spell whose casting fired this triggered ability, as it is on the
+   * stack or as it last was there (rule 608.2h); `null` if nothing cast one. */
+  triggerSpell(): SpellSnapshot | null;
+  /** Put a copy of `spell`, the trigger's spell, onto the stack. */
+  copyTriggerSpell(spell: SpellSnapshot, newTargets: boolean): void;
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(afterThisPhase?: { readonly withMain: boolean }): void;
@@ -4383,6 +4405,19 @@ function mayBeDone(effect: EffectSpec, ctx: ResolutionContext): boolean {
   return true;
 }
 
+/** Whether `spell` targets a permanent or a player — one of its targets was
+ * a player or on the battlefield when it was chosen. A slot filled
+ * automatically isn't a target (rule 115.1). */
+function targetsPermanentOrPlayer(spell: SpellSnapshot): boolean {
+  const auto = new Set(spell.autoTargetSlots ?? []);
+  return (spell.targets ?? []).some(
+    (t, i) =>
+      t !== undefined &&
+      !auto.has(i) &&
+      (t.kind === "player" || spell.targetZones?.[i] === "battlefield"),
+  );
+}
+
 export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
@@ -5165,8 +5200,22 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       applyRevealUntil(spec, ctx);
       return;
     case "copy-spell": {
-      const target = ctx.targets[spec.target];
-      if (target !== undefined) ctx.copySpell(target);
+      const newTargets = spec.newTargets === true;
+      let copied = false;
+      if (spec.target === "trigger-spell") {
+        const spell = ctx.triggerSpell();
+        if (spell !== null && (spec.ifTargets === undefined || targetsPermanentOrPlayer(spell))) {
+          ctx.copyTriggerSpell(spell, newTargets);
+          copied = true;
+        }
+      } else {
+        const target = ctx.targets[spec.target];
+        if (target !== undefined) {
+          ctx.copySpell(target, newTargets);
+          copied = true;
+        }
+      }
+      if (!copied && spec.otherwise !== undefined) applyEffectSpec(spec.otherwise, ctx);
       return;
     }
     case "additional-combat":

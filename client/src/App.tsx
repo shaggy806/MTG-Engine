@@ -271,6 +271,10 @@ interface Targeting {
   /** One entry per slot filled so far; `null` is an optional slot the player
    * chose to skip ("up to one target creature"). */
   readonly picked: readonly (TargetRef | null)[]
+  /** New targets for a copy of a spell (Twincast, Shiko and Narset): the
+   * target each slot has now, which a Keep button takes — it may not be on
+   * the board to click any more. */
+  readonly current?: readonly TargetRef[]
   /** Chosen modes for a targeted modal spell (Phase 11 EG-2). */
   readonly modes?: readonly number[]
   /** Chosen value for `{X}`, when casting an X spell. */
@@ -1211,10 +1215,14 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
             kind: 'choose-targets',
             source: chooseTargetsAction.source,
             abilityIndex: 0,
-            label: `Choose targets for ${chooseTargetsAction.cardName}`,
+            label:
+              chooseTargetsAction.current !== undefined
+                ? `Choose new targets for the copy of ${chooseTargetsAction.cardName}`
+                : `Choose targets for ${chooseTargetsAction.cardName}`,
             specs: chooseTargetsAction.specs,
             options: chooseTargetsAction.options,
             picked: ctPicks,
+            ...(chooseTargetsAction.current !== undefined ? { current: chooseTargetsAction.current } : {}),
           }
         : null),
     [targeting, chooseTargetsAction, ctPicks],
@@ -3292,7 +3300,18 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     const grouped = inTargetGroup(activeTargeting)
     const groupPicked = grouped ? activeTargeting.picked.length - anyNumberSlot(activeTargeting.specs) : 0
     const slotSpec = currentSpec(activeTargeting)
-    controls = allStackTargets && !grouped ? null : (
+    // A copy's target can always be kept, whether or not it's still there to
+    // click.
+    const keep = activeTargeting.current?.[activeTargeting.picked.length]
+    const keepLabel =
+      keep === undefined
+        ? ''
+        : keep.kind === 'player'
+          ? playerLabel(keep.player, game.seats)
+          : view.objects[keep.object]
+            ? game.nameOf(keep.object)
+            : 'its target'
+    controls = allStackTargets && !grouped && keep === undefined ? null : (
       <div className="controls">
         <span>
           {activeTargeting.label}: choose {slotSpec === undefined ? 'a target' : describeTargetSpec(slotSpec)}{' '}
@@ -3303,6 +3322,11 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
         {zoneTargetIds.length > 0 && zoneTargetCollapsed ? (
           <button type="button" onClick={() => setZoneTargetHidden(null)}>
             Show choices
+          </button>
+        ) : null}
+        {keep !== undefined ? (
+          <button type="button" onClick={() => pickTarget(keep)}>
+            Keep {keepLabel}
           </button>
         ) : null}
         {grouped ? (
