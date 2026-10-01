@@ -257,6 +257,28 @@ type CastNowAction = Extract<LegalAction, { kind: 'cast-now' }>
 type AssignDamageAction = Extract<LegalAction, { kind: 'assign-combat-damage' }>
 type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
 
+/** What a `choose-from-zone` popup asks: where the chosen cards go, and for
+ * cards going back on top, that the order picked is the order they go. */
+function zoneChoiceTitle(action: ZoneChoiceAction): string {
+  const n = action.max === action.min ? `${action.max}` : `up to ${action.max}`
+  const cards = action.max === 1 ? 'a card' : `${n} cards`
+  if (action.split === true) return `Choose ${cards}`
+  switch (action.destination) {
+    case 'hand':
+      return `Choose ${cards} to put into your hand`
+    case 'battlefield':
+      return `Choose ${cards} to put onto the battlefield`
+    case 'graveyard':
+      return `Choose ${cards} to put into your graveyard`
+    case 'library-top':
+      return 'Put them back on top in the order you pick: the first you pick goes on top'
+    case 'library-bottom':
+      return `Choose ${cards} to put on the bottom of your library`
+    case 'exile-playable':
+      return `Choose ${cards} you may play`
+  }
+}
+
 /** Whether one board permanent is a legal proliferate choice right now. */
 const eligibleToProliferate = (action: ProliferateAction, id: ObjectId): boolean =>
   action.eligible.some((t) => t.kind === 'object' && t.object === id)
@@ -3598,12 +3620,16 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
             ? `${view.decisionSource ? `${view.decisionSource.cardName}: ` : ''}Discard ${
                 discardAction.count
               } card${discardAction.count === 1 ? '' : 's'}`
-            : 'Discard to hand size'}{' '}
+            : 'Discard to hand size'}
+          {discardAction.orOneOf !== undefined ? ', or one land card' : ''}{' '}
           — click cards in your hand · {discardPicks.length}/{discardAction.count}
         </span>
         <button
           type="button"
-          disabled={discardPicks.length !== discardAction.count}
+          disabled={
+            discardPicks.length !== discardAction.count &&
+            !(discardPicks.length === 1 && (discardAction.orOneOf ?? []).includes(discardPicks[0]))
+          }
           onClick={confirmDiscard}
         >
           Discard
@@ -4415,7 +4441,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
 
       {mode === 'choose-from-zone' && zoneChoiceAction ? (
         <ZoneViewer
-          title="Choose from these cards"
+          title={zoneChoiceTitle(zoneChoiceAction)}
           ids={zoneChoiceAction.ids}
           resolve={(id) => view.objects[id]}
           selection={{
@@ -4423,6 +4449,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
             max: zoneChoiceAction.max,
             eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
+            ...(zoneChoiceAction.destination === 'library-top' ? { ordered: true } : {}),
           }}
           collapsed={decisionCollapsed}
           onCollapse={() => setDecisionCollapsed(true)}

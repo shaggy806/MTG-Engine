@@ -40,6 +40,8 @@ export const chooseFromZone = defineDecision({
       eligible: [...awaiting.eligible],
       min: awaiting.min,
       max: awaiting.max,
+      destination: awaiting.destination,
+      ...(awaiting.restDestination !== undefined ? { split: true } : {}),
     },
   ],
 

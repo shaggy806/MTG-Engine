@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2051 already implemented / 2949 missing (marks refreshed 2026-10-01)
+2055 already implemented / 2945 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -608,7 +608,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   609  Hydroelectric Specimen // Hydroelectric Laboratory {3}              Creature — Weird // Land
 [x]   610  Cloud Key                                {3}              Artifact
 [x]   611  Tribute to the World Tree                {G}{G}{G}        Enchantment
-[ ]   612  Mangara, the Diplomat                    {3}{W}           Legendary Creature — Human Cleric
+[x]   612  Mangara, the Diplomat                    {3}{W}           Legendary Creature — Human Cleric
 [x]   613  Carrion Feeder                           {B}              Creature — Zombie
 [x]   614  Vault of Whispers                        {0}              Artifact Land
 [x]   615  Elas il-Kor, Sadistic Pilgrim            {W}{B}           Legendary Creature — Phyrexian Kor Cleric
@@ -872,7 +872,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   876  Buster Sword                             {3}              Artifact — Equipment
 [x]   877  The Fire Crystal                         {2}{R}{R}        Legendary Artifact
 [x]   878  City on Fire                             {5}{R}{R}{R}     Enchantment
-[ ]   879  Expressive Iteration                     {U}{R}           Sorcery
+[x]   879  Expressive Iteration                     {U}{R}           Sorcery
 [x]   880  Elvish Archdruid                         {1}{G}{G}        Creature — Elf Druid
 [ ]   881  Thousand-Year Elixir                     {3}              Artifact
 [x]   882  Myr Retriever                            {2}              Artifact Creature — Myr
@@ -1696,7 +1696,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1703  Timely Ward                              {2}{W}           Enchantment — Aura
 [x]  1704  Oversold Cemetery                        {1}{B}           Enchantment
 [ ]  1705  Mirror Box                               {3}              Artifact
-[ ]  1706  Sublime Epiphany                         {4}{U}{U}        Instant
+[x]  1706  Sublime Epiphany                         {4}{U}{U}        Instant
 [x]  1707  Hornet Queen                             {4}{G}{G}{G}     Creature — Insect
 [x]  1708  Overrun                                  {2}{G}{G}{G}     Sorcery
 [x]  1709  Eldrazi Temple                           {0}              Land
@@ -4396,7 +4396,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4403  Nicol Bolas, Dragon-God                  {U}{B}{B}{B}{R}  Legendary Planeswalker — Bolas
 [ ]  4404  Jackdaw Savior                           {2}{W}           Creature — Bird Cleric
 [ ]  4405  Vicious Rumors                           {B}              Sorcery
-[ ]  4406  Compulsive Research                      {2}{U}           Sorcery
+[x]  4406  Compulsive Research                      {2}{U}           Sorcery
 [ ]  4407  Fist of Suns                             {3}              Artifact
 [ ]  4408  Joraga Warcaller                         {G}              Creature — Elf Warrior
 [ ]  4409  Crypt Incursion                          {2}{B}           Instant

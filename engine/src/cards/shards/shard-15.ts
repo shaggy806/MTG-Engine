@@ -30,6 +30,7 @@ import _poolCapashenKnight from "../pool/capashen-knight.js";
 import _poolCarrionScreecher from "../pool/carrion-screecher.js";
 import _poolChandraAcolyteOfFlame from "../pool/chandra-acolyte-of-flame.js";
 import _poolCliffsideLookout from "../pool/cliffside-lookout.js";
+import _poolCompulsiveResearch from "../pool/compulsive-research.js";
 import _poolConcentrate from "../pool/concentrate.js";
 import _poolConcentratedFire from "../pool/concentrated-fire.js";
 import _poolConjurersCloset from "../pool/conjurers-closet.js";
@@ -235,6 +236,7 @@ const shard: CardShard = {
     _poolCarrionScreecher,
     _poolChandraAcolyteOfFlame,
     _poolCliffsideLookout,
+    _poolCompulsiveResearch,
     _poolConcentrate,
     _poolConcentratedFire,
     _poolConjurersCloset,

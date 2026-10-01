@@ -64,6 +64,7 @@ import _poolEleshNornGrandCenobite from "../pool/elesh-norn-grand-cenobite.js";
 import _poolElvishVisionary from "../pool/elvish-visionary.js";
 import _poolErode from "../pool/erode.js";
 import _poolExpeditionMap from "../pool/expedition-map.js";
+import _poolExpressiveIteration from "../pool/expressive-iteration.js";
 import _poolFellTheProfane from "../pool/fell-the-profane.js";
 import _poolFeralProwler from "../pool/feral-prowler.js";
 import _poolFeralRidgewolf from "../pool/feral-ridgewolf.js";
@@ -267,6 +268,7 @@ const shard: CardShard = {
     _poolElvishVisionary,
     _poolErode,
     _poolExpeditionMap,
+    _poolExpressiveIteration,
     _poolFellTheProfane,
     _poolFeralProwler,
     _poolFeralRidgewolf,

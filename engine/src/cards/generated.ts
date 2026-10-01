@@ -1059,6 +1059,7 @@ import _poolCommonBond from "./pool/common-bond.js";
 import _poolCommonCrook from "./pool/common-crook.js";
 import _poolCompellingArgument from "./pool/compelling-argument.js";
 import _poolCompositeGolem from "./pool/composite-golem.js";
+import _poolCompulsiveResearch from "./pool/compulsive-research.js";
 import _poolConcealedCourtyard from "./pool/concealed-courtyard.js";
 import _poolConcentrate from "./pool/concentrate.js";
 import _poolConcentratedFire from "./pool/concentrated-fire.js";
@@ -1766,6 +1767,7 @@ import _poolExplosiveImpact from "./pool/explosive-impact.js";
 import _poolExplosiveShot from "./pool/explosive-shot.js";
 import _poolExplosiveVegetation from "./pool/explosive-vegetation.js";
 import _poolExposeToDaylight from "./pool/expose-to-daylight.js";
+import _poolExpressiveIteration from "./pool/expressive-iteration.js";
 import _poolExquisiteBlood from "./pool/exquisite-blood.js";
 import _poolExsanguinate from "./pool/exsanguinate.js";
 import _poolExtravagantReplication from "./pool/extravagant-replication.js";
@@ -3275,6 +3277,7 @@ import _poolManamorphose from "./pool/manamorphose.js";
 import _poolMandibleJusticiar from "./pool/mandible-justiciar.js";
 import _poolMandroidSquadron from "./pool/mandroid-squadron.js";
 import _poolManedServal from "./pool/maned-serval.js";
+import _poolMangaraTheDiplomat from "./pool/mangara-the-diplomat.js";
 import _poolManglehorn from "./pool/manglehorn.js";
 import _poolManholeCover from "./pool/manhole-cover.js";
 import _poolManicVandal from "./pool/manic-vandal.js";
@@ -5167,6 +5170,7 @@ import _poolStudentOfOjutai from "./pool/student-of-ojutai.js";
 import _poolStudy from "./pool/study.js";
 import _poolStumpStomp from "./pool/stump-stomp.js";
 import _poolSuChi from "./pool/su-chi.js";
+import _poolSublimeEpiphany from "./pool/sublime-epiphany.js";
 import _poolSubmergedBoneyard from "./pool/submerged-boneyard.js";
 import _poolSubterraneanCavern from "./pool/subterranean-cavern.js";
 import _poolSubtleStrike from "./pool/subtle-strike.js";
@@ -7566,6 +7570,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCommonCrook,
   _poolCompellingArgument,
   _poolCompositeGolem,
+  _poolCompulsiveResearch,
   _poolConcealedCourtyard,
   _poolConcentrate,
   _poolConcentratedFire,
@@ -8273,6 +8278,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolExplosiveShot,
   _poolExplosiveVegetation,
   _poolExposeToDaylight,
+  _poolExpressiveIteration,
   _poolExquisiteBlood,
   _poolExsanguinate,
   _poolExtravagantReplication,
@@ -9782,6 +9788,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMandibleJusticiar,
   _poolMandroidSquadron,
   _poolManedServal,
+  _poolMangaraTheDiplomat,
   _poolManglehorn,
   _poolManholeCover,
   _poolManicVandal,
@@ -11674,6 +11681,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStudy,
   _poolStumpStomp,
   _poolSuChi,
+  _poolSublimeEpiphany,
   _poolSubmergedBoneyard,
   _poolSubterraneanCavern,
   _poolSubtleStrike,

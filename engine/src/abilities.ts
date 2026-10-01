@@ -783,6 +783,15 @@ export type TriggerSpec =
        * opponent attacks, **if they attacked you and/or a planeswalker you
        * control**". */
       readonly attackingYou?: boolean;
+      /**
+       * The count is an intervening if in the present tense — Mangara, the
+       * Diplomat's "if two or more of those creatures **are** attacking you
+       * and/or planeswalkers you control" — so it's asked again as the
+       * ability resolves (rule 603.4): a creature removed from combat no
+       * longer counts, one that has left the battlefield counts by what it
+       * was attacking (the rulings).
+       */
+      readonly stillAttacking?: boolean;
     }
   | {
       /**

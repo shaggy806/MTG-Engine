@@ -217,6 +217,7 @@ describe("look-and-choose filter: only a Dragon card (Ureni of the Unwritten)", 
         eligible: awaiting.eligible,
         min: 0,
         max: 1,
+        destination: "battlefield",
       },
     ]);
     expect(game.legalActions(B)).toEqual([]);

@@ -1,0 +1,36 @@
+{
+  "batch": "TDC4",
+  "status": "complete",
+  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution",
+  "authored": [
+    {
+      "name": "Sublime Epiphany",
+      "files": [
+        "engine/src/cards/pool/sublime-epiphany.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Expressive Iteration",
+      "files": [
+        "engine/src/cards/pool/expressive-iteration.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Compulsive Research",
+      "files": [
+        "engine/src/cards/pool/compulsive-research.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mangara, the Diplomat",
+      "files": [
+        "engine/src/cards/pool/mangara-the-diplomat.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": []
+}

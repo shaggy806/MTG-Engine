@@ -88,6 +88,7 @@ import _poolLoxodonConvert from "../pool/loxodon-convert.js";
 import _poolLoxodonSergeant from "../pool/loxodon-sergeant.js";
 import _poolLukeCageHeroForHire from "../pool/luke-cage-hero-for-hire.js";
 import _poolLysAlanaHuntmaster from "../pool/lys-alana-huntmaster.js";
+import _poolMangaraTheDiplomat from "../pool/mangara-the-diplomat.js";
 import _poolMarwynTheNurturer from "../pool/marwyn-the-nurturer.js";
 import _poolMerfolkSecretkeeper from "../pool/merfolk-secretkeeper.js";
 import _poolMesaEnchantress from "../pool/mesa-enchantress.js";
@@ -266,6 +267,7 @@ const shard: CardShard = {
     _poolLoxodonSergeant,
     _poolLukeCageHeroForHire,
     _poolLysAlanaHuntmaster,
+    _poolMangaraTheDiplomat,
     _poolMarwynTheNurturer,
     _poolMerfolkSecretkeeper,
     _poolMesaEnchantress,

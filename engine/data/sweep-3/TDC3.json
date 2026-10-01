@@ -53,13 +53,6 @@
         "new:attack-tax"
       ],
       "why": "'Creatures can't attack you unless their controller pays {2} for each' — a cost to attack (rule 508.1d-h) paid as attackers are declared. Propaganda (EDHREC #113) is the same."
-    },
-    {
-      "name": "Mangara, the Diplomat",
-      "needs": [
-        "new:attack-with-intervening-if"
-      ],
-      "why": "'If two or more of those creatures are attacking you and/or planeswalkers you control' is an intervening if, rechecked on resolution (rule 603.4; the rulings: a creature removed from combat no longer counts, one that left the battlefield does). attack-with only counts as it triggers."
     }
   ]
 }

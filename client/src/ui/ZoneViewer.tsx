@@ -68,6 +68,9 @@ export interface ZoneViewerProps {
      * "Put none" unless the choice says otherwise (an optional target's
      * "Skip"). */
     readonly noneLabel?: string
+    /** The order picked is the answer (Ponder's "put them back in any
+     * order"): each picked card shows its place, 1 first. */
+    readonly ordered?: boolean
   }
   /** Selection mode only: hidden so the board can be seen ("View board").
    * The component stays mounted, so picks made so far survive; the owner
@@ -196,7 +199,9 @@ export function ZoneViewer({
                   highlight={(Boolean(selection) && isEligible && !isPicked) || Boolean(castHere)}
                   dimmed={Boolean(selection) && !isEligible}
                   badge={
-                    obj.suspended
+                    selection?.ordered === true && isPicked
+                      ? `${picked.indexOf(obj.id) + 1}`
+                      : obj.suspended
                       ? `⏳${obj.counters.time ?? 0}`
                       : obj.foretold
                         ? 'Foretold'

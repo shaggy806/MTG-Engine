@@ -175,6 +175,7 @@ import _poolSpittingDrake from "../pool/spitting-drake.js";
 import _poolSteadyProgress from "../pool/steady-progress.js";
 import _poolSteamSpitter from "../pool/steam-spitter.js";
 import _poolStonecoilSerpent from "../pool/stonecoil-serpent.js";
+import _poolSublimeEpiphany from "../pool/sublime-epiphany.js";
 import _poolSubtleStrike from "../pool/subtle-strike.js";
 import _poolSulfurFalls from "../pool/sulfur-falls.js";
 import _poolSunmanePegasus from "../pool/sunmane-pegasus.js";
@@ -384,6 +385,7 @@ const shard: CardShard = {
     _poolSteadyProgress,
     _poolSteamSpitter,
     _poolStonecoilSerpent,
+    _poolSublimeEpiphany,
     _poolSubtleStrike,
     _poolSulfurFalls,
     _poolSunmanePegasus,

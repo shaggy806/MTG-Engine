@@ -1613,6 +1613,9 @@ export type EffectSpec =
       /** "Discards a card at random" (Hypnotic Specter): nobody chooses —
        * the game picks, with its seeded shuffle. */
       readonly random?: boolean;
+      /** "…unless they discard a [land] card" (Compulsive Research): one card
+       * matching this is a whole answer by itself, instead of `amount`. */
+      readonly unlessOne?: CardFilter;
     }
   | {
       readonly kind: "modify-pt";
@@ -2864,7 +2867,7 @@ export type EffectSpec =
        * hand, regardless of `filter`; `"graveyard"` ("…put the rest into your
        * graveyard") into their graveyard, in the same move as the chosen
        * ones. */
-      readonly leftover: "bottom-random" | "stay" | "hand" | "graveyard";
+      readonly leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable";
       /**
        * A leftover destination that depends on how things stand once the
        * chosen cards are where they're going — Nine-Fingers Keene's "you may
@@ -2888,7 +2891,7 @@ export type EffectSpec =
         readonly filter?: ZoneChoiceFilter;
         readonly min: number;
         readonly max: EffectAmount;
-        readonly destination: "battlefield" | "hand" | "graveyard";
+        readonly destination: "battlefield" | "hand" | "graveyard" | "library-bottom";
         readonly enterTapped?: boolean;
         /** Only when the first choice took nothing — Planar Genesis's "You
          * may put a land card from among them onto the battlefield tapped.
@@ -2963,7 +2966,9 @@ export interface ZoneSecondPick {
   readonly filter?: ZoneChoiceFilter;
   readonly min: number;
   readonly max: number;
-  readonly destination: "battlefield" | "hand" | "graveyard";
+  /** `"library-bottom"`: Expressive Iteration's "put one of them on the
+   * bottom of your library". */
+  readonly destination: "battlefield" | "hand" | "graveyard" | "library-bottom";
   readonly enterTapped?: boolean;
   readonly ifNoneChosen?: boolean;
 }
@@ -3363,7 +3368,7 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
   ): boolean;
   /** `target` (a player) discards `amount` cards. */
-  discardCards(target: TargetRef, amount: number, random?: boolean): void;
+  discardCards(target: TargetRef, amount: number, random?: boolean, unlessOne?: CardFilter): void;
   modifyPt(
     target: TargetRef,
     power: number,
@@ -3721,7 +3726,7 @@ export interface EffectApi {
     min: number,
     max: number,
     destination: "battlefield" | "hand" | "library-top" | "graveyard",
-    leftover: "bottom-random" | "stay" | "hand" | "graveyard",
+    leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
     then?: EffectSpec,
@@ -4979,6 +4984,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
           target,
           amountValue(spec.amount, ctx, target.kind === "player" ? target.player : undefined),
           spec.random === true,
+          spec.unlessOne,
         );
       }
       return;

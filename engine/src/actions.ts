@@ -815,6 +815,9 @@ export type LegalAction =
   | {
       readonly kind: "discard";
       readonly count: number;
+      /** "…unless they discard a land card": any one of these alone is an
+       * answer too (Compulsive Research). */
+      readonly orOneOf?: readonly ObjectId[];
       readonly from: readonly ObjectId[];
     }
   | {
@@ -826,6 +829,13 @@ export type LegalAction =
       readonly eligible: readonly ObjectId[];
       readonly min: number;
       readonly max: number;
+      /** Where the chosen cards go — what a client tells the chooser.
+       * `"library-top"` puts them back in the order chosen, the first chosen
+       * on top (Ponder, Brainstorm). */
+      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "library-bottom" | "graveyard";
+      /** A split tutor (Cultivate): only the first chosen card goes to
+       * `destination`, the rest elsewhere. */
+      readonly split?: true;
     }
   | {
       readonly kind: "mulligan";

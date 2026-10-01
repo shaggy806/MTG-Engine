@@ -973,6 +973,15 @@ export interface LastKnownRefs {
    * simultaneous entry a batched `enters-battlefield` trigger fired on, each
    * with its battlefield stint and how many tokens it stood for (a
    * compacted stack is its tokens). */
+  /** For a trigger fired by attackers being declared (`attack-with`): each
+   * attacker, its battlefield stint and what it was attacking then — what an
+   * "if two or more of those creatures are attacking you" re-reads as it
+   * resolves (Mangara, the Diplomat — rule 603.4). */
+  readonly attackers?: readonly {
+    readonly object: ObjectId;
+    readonly zoneChangeCount: number;
+    readonly at: PlayerId | ObjectId | null;
+  }[];
   readonly enteredTogether?: readonly {
     readonly object: ObjectId;
     readonly zoneChangeCount: number;
@@ -1378,6 +1387,9 @@ export type AwaitingDecision =
        * card ("Discard a creature card": Tortured Existence). Absent, any
        * card in hand. */
       readonly eligible?: readonly ObjectId[];
+      /** "…unless they discard a land card" (Compulsive Research): any one
+       * of these on its own is an answer, instead of `count` cards. */
+      readonly orOneOf?: readonly ObjectId[];
     }
   | {
       readonly kind: "choose-from-zone";
@@ -1394,7 +1406,7 @@ export type AwaitingDecision =
       /** `"library-top"` — a tutor-to-top (Vampiric Tutor): the chosen cards
        * never leave the library, they are moved to the top after the search's
        * own shuffle. */
-      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "graveyard";
+      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "library-bottom" | "graveyard";
       /** For `destination: "exile-playable"` — the impulse permission to
        * stamp on the chosen cards, which stay in exile either way
        * (Tectonic Giant: "exile the top two, choose one of them"). */
@@ -1404,7 +1416,7 @@ export type AwaitingDecision =
        * moved just to look at it — the graveyard-search case); the whole
        * library is shuffled (a library *search* / tutor — rule 701.19); or
        * put into the chooser's hand (Genesis Ultimatum — needed-cards P19). */
-      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand" | "graveyard";
+      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand" | "graveyard" | "exile-playable";
       /** Where the rest go instead when a condition holds once the chosen
        * cards have moved — the `look-and-choose` effect's `leftoverIf`, asked
        * of `thenSource`. */
@@ -2471,6 +2483,8 @@ export interface GameState {
     /** Only cards matching this may go — see the `discard` decision's
      * `eligible`. */
     readonly filter?: CardFilter;
+    /** See the `discard` effect's `unlessOne`. */
+    readonly unlessOne?: CardFilter;
   }[];
   /**
    * Creatures put onto the battlefield attacking whose controller still owes

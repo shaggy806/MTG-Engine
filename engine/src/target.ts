@@ -88,6 +88,10 @@ export type TargetSpec =
   | "instant-or-sorcery-spell"
   /** Swan Song — the three types it can counter. */
   | "enchantment-instant-or-sorcery-spell"
+  /** An activated or triggered ability on the stack (Sublime Epiphany's
+   * "counter target activated or triggered ability"). A mana ability never
+   * is one (rule 605.3b); a Saga chapter is a triggered ability (714.2b). */
+  | "activated-or-triggered-ability"
   /** An instant or sorcery card in the targeting player's graveyard
    * (Snapcaster Mage — ROADMAP Phase 6b). */
   | "instant-or-sorcery-in-your-graveyard"

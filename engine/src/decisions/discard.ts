@@ -38,6 +38,7 @@ export const discard = defineDecision({
       // The whole hand, unless a cost names a kind of card ("Discard a
       // creature card") — then only those.
       from: [...(awaiting.eligible ?? ctx.state.zones.perPlayer[player].hand)],
+      ...(awaiting.orOneOf !== undefined ? { orOneOf: [...awaiting.orOneOf] } : {}),
     },
   ],
 
@@ -48,6 +49,8 @@ export const discard = defineDecision({
       return `${player} is not being asked to discard`;
     }
     const cards = action.cards;
+    // "Unless they discard a land card": that one card is a whole answer.
+    if (cards.length === 1 && awaiting.orOneOf?.includes(cards[0]) === true) return null;
     // Count before duplicates here, unlike `sacrifice`, which checks the
     // other way round. Preserved rather than harmonised: both orders are
     // reachable and the messages are asserted.

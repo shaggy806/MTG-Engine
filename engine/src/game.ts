@@ -4376,6 +4376,10 @@ export class Game {
       // A tutor-to-top's find is put on top *after* the search's shuffle
       // (below) — moving it now would only have it shuffled back in.
       if (to === "library-top" || to === "exile-playable") return;
+      if (to === "library-bottom") {
+        this.putOnLibrary(id, "bottom");
+        return;
+      }
       const moved = this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
       if (moved && to === "battlefield") {
         // "…onto the battlefield tapped and attacking" (rule 508.4): as it
@@ -4416,6 +4420,18 @@ export class Game {
       // "…and the rest into your graveyard" — with the chosen cards, one
       // move (this runs inside the choice's batch).
       for (const id of leftover) this.moveObject(id, "graveyard");
+    } else if (leftoverTo === "exile-playable") {
+      // Expressive Iteration's "exile one of them. You may play the exiled
+      // card this turn": exiled face up, then given the permission (a
+      // permission dies with any move, so it comes after).
+      for (const id of leftover) {
+        if (this.moveObject(id, "exile")) {
+          this.state.objects[id].impulse = {
+            player,
+            expiry: { kind: "end-of-turn", turn: this.state.turn.number },
+          };
+        }
+      }
     }
     // leftover === "stay": nothing to do — those cards were only ever looked
     // at, never removed from wherever they already were.
@@ -4572,6 +4588,9 @@ export class Game {
   private attackConditionsStillHold(ability: StackAbility, object: GameObject): boolean {
     // A delayed or reflexive trigger carries no `trigger` of its own.
     const trigger = (ability as Partial<TriggeredAbility>).trigger;
+    if (trigger?.on === "attack-with" && trigger.stillAttacking === true) {
+      return this.stillAttackingWith(trigger, object);
+    }
     if (trigger?.on !== "attacks" && trigger?.on !== "attacks-player") return true;
     if (trigger.defenderLife === "more-than-another-opponent") {
       const defender = object.lastKnownRefs?.player;
@@ -4580,6 +4599,31 @@ export class Game {
       }
     }
     return this.stillAttackingAlone(ability, object);
+  }
+
+  /**
+   * An `attack-with` trigger's `stillAttacking` count, asked again as it
+   * resolves: how many of the attackers that fired it are attacking this
+   * ability's controller or a planeswalker they control now — or, for one
+   * that has left the battlefield, were as it left (the rulings) — against
+   * `atLeast`.
+   */
+  private stillAttackingWith(
+    trigger: Extract<TriggeredAbility["trigger"], { on: "attack-with" }>,
+    object: GameObject,
+  ): boolean {
+    const you = object.controller;
+    const atYou = (at: PlayerId | ObjectId | null): boolean =>
+      at !== null && (at === you || this.state.objects[at as ObjectId]?.controller === you);
+    const counted = (object.lastKnownRefs?.attackers ?? []).filter((a) => {
+      if (!this.triggerFilterOk(trigger.filter, a.object, this.state.objects[object.sourceObjectId ?? object.id] ?? object)) {
+        return false;
+      }
+      const live = this.state.objects[a.object];
+      const stillHere = live?.zone === "battlefield" && (live.zoneChangeCount ?? 0) === a.zoneChangeCount;
+      return atYou(stillHere ? live.attacking : a.at);
+    });
+    return counted.length >= trigger.atLeast;
   }
 
   /**
@@ -11270,6 +11314,7 @@ export class Game {
     // damage, the defending player of an attack.
     let recipient: LastKnownRefs["recipient"];
     let player: PlayerId | undefined;
+    let attackers: LastKnownRefs["attackers"];
     if (event.type === "damage-dealt") {
       const target = event.target;
       if (target.kind === "player") {
@@ -11299,6 +11344,12 @@ export class Game {
       }
     } else if (event.type === "player-attacked") {
       player = event.defender;
+    } else if (event.type === "attackers-declared") {
+      attackers = event.attackers.map((id) => ({
+        object: id,
+        zoneChangeCount: this.state.objects[id]?.zoneChangeCount ?? 0,
+        at: this.state.objects[id]?.attacking ?? null,
+      }));
     } else if (event.type === "life-changed") {
       // "That player" of a life-gain or life-loss trigger — the one whose
       // life changed (Mindcrank: "that player mills that many cards").
@@ -11313,7 +11364,8 @@ export class Game {
       triggerStint === undefined &&
       triggerSpell === undefined &&
       recipient === undefined &&
-      player === undefined
+      player === undefined &&
+      attackers === undefined
     ) {
       return undefined;
     }
@@ -11324,6 +11376,7 @@ export class Game {
       ...(afterLeaving !== undefined ? { triggerObjectAfterLeaving: afterLeaving } : {}),
       ...(recipient !== undefined ? { recipient } : {}),
       ...(player !== undefined ? { player } : {}),
+      ...(attackers !== undefined ? { attackers } : {}),
     };
   }
 
@@ -13286,7 +13339,8 @@ export class Game {
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
-      discardCards: (target, amount, random) => this.discardByEffect(target, amount, random === true),
+      discardCards: (target, amount, random, unlessOne) =>
+        this.discardByEffect(target, amount, random === true, undefined, unlessOne),
       modifyPt: (target, power, toughness, duration) =>
         this.modifyPt(target, power, toughness, lasting(duration, controller)),
       modifyPtAll: (filter, power, toughness, duration, exceptSource, scopeTo) =>
@@ -13881,7 +13935,7 @@ export class Game {
     min: number,
     max: number,
     destination: "battlefield" | "hand" | "library-top" | "graveyard",
-    leftover: "bottom-random" | "stay" | "hand" | "graveyard",
+    leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
     then?: { effect: EffectSpec | undefined; source: ObjectId; x: number },
@@ -17848,21 +17902,20 @@ export class Game {
    * A library's array is drawn from index 0, and `moveObject` always appends,
    * so "bottom" is the plain move and "top" needs the card hoisted to the
    * front afterwards. A card already in that library (a tutor's find never
-   * left it) is only reordered, never moved, so nothing treats it as a zone
-   * change.
+   * left it, a looked-at card put back) is only reordered, never moved, so
+   * nothing treats it as a zone change — to the front or to the end.
    */
   private putOnLibrary(id: ObjectId, position: "top" | "bottom"): void {
     const object = this.state.objects[id];
     if (object === undefined) return;
     if (object.zone !== "library") this.moveObject(id, "library");
     if (this.state.objects[id]?.zone !== "library") return; // a replacement took it
-    if (position === "bottom") return;
     const library = this.state.zones.perPlayer[object.owner].library;
     const index = library.indexOf(id);
-    if (index > 0) {
-      library.splice(index, 1);
-      library.unshift(id);
-    }
+    if (index < 0) return;
+    library.splice(index, 1);
+    if (position === "top") library.unshift(id);
+    else library.push(id);
   }
 
   /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until
@@ -18654,7 +18707,13 @@ export class Game {
    * smaller they just discard all of it; otherwise the game waits on their
    * `discard` action (they choose which — same decision shape as the
    * cleanup-step discard, distinguished by `fromEffect`). */
-  private discardByEffect(target: TargetRef, amount: number, random = false, filter?: CardFilter): void {
+  private discardByEffect(
+    target: TargetRef,
+    amount: number,
+    random = false,
+    filter?: CardFilter,
+    unlessOne?: CardFilter,
+  ): void {
     if (target.kind !== "player") return;
     const player = target.player;
     if (this.state.players[player] === undefined || amount <= 0) return;
@@ -18674,7 +18733,7 @@ export class Game {
     // reaching its second opponent. Asking now would overwrite the first
     // player's question, so this one waits its turn — unless there's nothing
     // to ask: a hand no bigger than the count is discarded at once.
-    const trivial = this.discardCandidates(player, filter).length <= amount;
+    const trivial = !this.discardHasChoice(player, amount, filter, unlessOne);
     if (!trivial && (this.state.awaiting !== null || this.state.pendingDiscards.length > 0)) {
       const from = this.state.decisionSource;
       this.state.pendingDiscards.push({
@@ -18682,10 +18741,20 @@ export class Game {
         count: amount,
         ...(from !== null ? { source: from } : {}),
         ...(filter !== undefined ? { filter } : {}),
+        ...(unlessOne !== undefined ? { unlessOne } : {}),
       });
       return;
     }
-    this.discardNow(player, amount, filter);
+    this.discardNow(player, amount, filter, unlessOne);
+  }
+
+  /** Whether discarding `amount` cards from `player`'s hand is a real
+   * choice: more cards than that to choose among — or, with `unlessOne`, one
+   * card of that kind that could go alone in a hand of two or more. */
+  private discardHasChoice(player: PlayerId, amount: number, filter?: CardFilter, unlessOne?: CardFilter): boolean {
+    const hand = this.discardCandidates(player, filter);
+    if (hand.length > amount) return true;
+    return unlessOne !== undefined && hand.length > 1 && this.discardCandidates(player, unlessOne).length > 0;
   }
 
   /** Ask the next player queued in `pendingDiscards` (see `discardByEffect`).
@@ -18694,7 +18763,7 @@ export class Game {
   private promptNextDiscard(): void {
     const next = this.state.pendingDiscards.shift();
     if (next === undefined || this.state.players[next.player]?.hasLost === true) return;
-    this.discardNow(next.player, next.count, next.filter);
+    this.discardNow(next.player, next.count, next.filter, next.unlessOne);
     if (this.state.awaiting !== null && next.source !== undefined) {
       this.state.decisionSource = next.source;
     }
@@ -18702,9 +18771,9 @@ export class Game {
 
   /** Discard `amount` cards from `player`'s hand: the whole hand at once if
    * that's all there is, else ask which. */
-  private discardNow(player: PlayerId, amount: number, filter?: CardFilter): void {
+  private discardNow(player: PlayerId, amount: number, filter?: CardFilter, unlessOne?: CardFilter): void {
     const hand = this.discardCandidates(player, filter);
-    if (hand.length <= amount) {
+    if (!this.discardHasChoice(player, amount, filter, unlessOne)) {
       const all = [...hand];
       this.withGraveyardEnterBatch(() => {
         for (const id of all) this.moveObject(id, "graveyard");
@@ -18720,6 +18789,9 @@ export class Game {
       count: amount,
       fromEffect: true,
       ...(filter !== undefined ? { eligible: hand } : {}),
+      ...(unlessOne !== undefined
+        ? { orOneOf: hand.filter((id) => this.discardCandidates(player, unlessOne).includes(id)) }
+        : {}),
     };
   }
 
