@@ -74,6 +74,8 @@ function roomJoined(room: Room | PendingRoom, connection: Connection): ServerMes
     seats: room.seatStatuses(),
     isHost: room.isHost(connection),
     botSpeed: room.botSpeed,
+    seat: room.seatOf(connection),
+    pending: room instanceof PendingRoom,
   };
 }
 
@@ -248,6 +250,22 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           else room.publish();
           return;
         }
+        case "take-seat": {
+          const room = requirePendingRoom(manager, message.roomId);
+          try {
+            room.takeSeat(message.clientToken, connection, message.displayName, message.deck);
+          } catch (err) {
+            send(ws, {
+              type: "error",
+              message: err instanceof Error ? err.message : String(err),
+            });
+            send(ws, roomJoined(room, connection));
+            return;
+          }
+          boundRoom = room;
+          broadcastPending(room);
+          return;
+        }
         case "add-bot": {
           const room = requireRoom(manager, message.roomId);
           try {
@@ -380,6 +398,14 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         // them broadcasts on the way out.
         case "dispatch": {
           requireActiveRoom(manager, message.roomId).dispatch(connection, message.action);
+          return;
+        }
+        case "concede": {
+          requireActiveRoom(manager, message.roomId).concede(connection);
+          return;
+        }
+        case "bot-takeover": {
+          requireActiveRoom(manager, message.roomId).setBotTakeover(connection, message.on);
           return;
         }
         case "pass-turn": {

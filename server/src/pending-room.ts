@@ -262,6 +262,30 @@ export class PendingRoom {
   }
 
   /**
+   * Seats `connection` wherever there's room — what joining a waiting room
+   * does, so a device holds its own seat (un-readied) from the moment it
+   * arrives rather than only once it clicks Ready. Before that, every device
+   * that hadn't readied drew itself in the same first open seat. The token's
+   * own seat if it already holds one; else the first seat nobody holds; else,
+   * with every seat taken and the table under `SEATS.length`, a seat added for
+   * it. A full four-seat table refuses. Returns the seat taken.
+   */
+  takeSeat(clientToken: string, connection: Connection, displayName?: string, deck?: PendingDeck): PlayerId {
+    const held = this.seats.find((s) => s.clientToken === clientToken);
+    if (held !== undefined) {
+      this.claimSeat(held.player, clientToken, connection, displayName, held.ready ? undefined : deck);
+      return held.player;
+    }
+    if (deck !== undefined) assertDeckIsBuildable(deck);
+    const open = this.seats.find((s) => s.clientToken === null && !s.isBot);
+    const player = open?.player ?? (this.seats.length < SEATS.length ? this.addSeat() : null);
+    if (player === null) throw new Error("this room is full");
+    const index = this.seats.findIndex((s) => s.player === player);
+    this.claimSeat(player, clientToken, connection, displayName?.trim() || `Player ${index + 1}`, deck, false);
+    return player;
+  }
+
+  /**
    * Adds one more seat, taking the first of `SEATS` not already at the table
    * and keeping the seats in `SEATS` order afterwards — so turn order is
    * always the printed seating order however the table was assembled, and
@@ -340,10 +364,18 @@ export class PendingRoom {
     return this.seats.find((s) => s.connection === connection)?.player ?? null;
   }
 
+  /** `connection` dropping. A seat it held and had readied stays held, to be
+   * reclaimed by its token on reconnect; one it hadn't readied goes back to
+   * open, since joining takes a seat at once (`takeSeat`) and a tab opened
+   * and closed again would otherwise hold a chair nobody can remove. A
+   * reconnect that finds it still open takes it straight back. */
   disconnect(connection: Connection): void {
     this.host.drop(connection);
-    const seat = this.seats.find((s) => s.connection === connection);
-    if (seat !== undefined) seat.connection = null;
+    const index = this.seats.findIndex((s) => s.connection === connection);
+    if (index === -1) return;
+    const seat = this.seats[index];
+    if (seat.ready) seat.connection = null;
+    else this.seats[index] = emptySeat(seat.player);
   }
 
   connectedSeats(): { readonly seat: PlayerId; readonly connection: Connection }[] {

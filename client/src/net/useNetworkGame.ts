@@ -208,6 +208,15 @@ export interface NetworkGame {
    * seat's ready state as part of the same call — the "Ready" button's
    * first click claims and readies in one round trip. */
   claimSeat: (seat: PlayerId, displayName?: string, deck?: WireDeck, ready?: boolean) => void
+  /** Takes whichever seat the waiting room has free (adding one to a full
+   * table under four), un-readied — what arriving in a waiting room does. */
+  takeSeat: (displayName?: string, deck?: WireDeck) => void
+  /** Whether the joined room is still the waiting room. */
+  readonly roomPending: boolean
+  /** Concede the game (rule 104.3a): lose and leave it, and keep watching. */
+  concede: () => void
+  /** Hand my seat to a bot (`true`) or take it back (`false`). */
+  setBotTakeover: (on: boolean) => void
   /** Fills an open seat with a basic heuristic bot instead of a human.
    * Omitted `deck` falls back to that seat's positional starter deck. */
   addBot: (seat: PlayerId, deck?: WireDeck) => void
@@ -271,7 +280,7 @@ export function useNetworkGame(): NetworkGame {
   /** A seat claim sent but not yet confirmed by a `state` message. The seat is
    * only written to `sessionStorage` once confirmed, so a rejected claim never
    * poisons the auto-reclaim on the next load. */
-  const pendingClaimRef = useRef<{ seat: PlayerId; clientToken: string } | null>(null)
+  const pendingClaimRef = useRef<{ seat: PlayerId | null; clientToken: string } | null>(null)
   /** The host token sent with `create-room`, kept until `room-created` says
    * which room it belongs to. */
   const pendingHostTokenRef = useRef<string | null>(null)
@@ -289,6 +298,8 @@ export function useNetworkGame(): NetworkGame {
   const [roomId, setRoomId] = useState<string | null>(null)
   const [seats, setSeats] = useState<readonly SeatStatus[]>([])
   const [seat, setSeat] = useState<PlayerId | null>(null)
+  /** Whether the joined room is still the waiting room (no `Game` yet). */
+  const [roomPending, setRoomPending] = useState(false)
   const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
   const [autoPassPaused, setAutoPassPaused] = useState(false)
@@ -355,8 +366,20 @@ export function useNetworkGame(): NetworkGame {
           setSeats(message.seats)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
+          setRoomPending(message.pending === true)
           const pending = pendingClaimRef.current
-          if (pending) {
+          if (pending && pending.seat === null) {
+            // A `take-seat` in flight: the server names the seat it gave us.
+            // A board refresh from before it was handled has none yet.
+            const given = message.seat ?? null
+            if (given === null) return
+            pendingClaimRef.current = { seat: given, clientToken: pending.clientToken }
+            storeSeat(message.roomId, given, pending.clientToken)
+            setSeat(given)
+            setStatus('waiting-for-players')
+            return
+          }
+          if (pending && pending.seat !== null) {
             // My own claim-seat (just now, or the auto-reclaim below on an
             // earlier room-joined) evidently succeeded — an outright
             // rejection would have come back as `error` instead, not this.
@@ -371,7 +394,11 @@ export function useNetworkGame(): NetworkGame {
             return
           }
           const stored = loadStoredSeat(message.roomId)
-          if (stored) {
+          // In a waiting room the seat board takes a seat itself (`takeSeat`,
+          // which reuses the stored token, so a readied seat comes back and
+          // an un-readied one, freed when this device dropped, is taken
+          // again with the deck it had).
+          if (stored && message.pending !== true) {
             pendingClaimRef.current = {
               seat: stored.seat,
               clientToken: stored.clientToken,
@@ -393,7 +420,7 @@ export function useNetworkGame(): NetworkGame {
           // A `state` for our pending seat confirms the claim — persist it now,
           // and clear any "seat is taken" error from an earlier failed attempt.
           const pending = pendingClaimRef.current
-          if (pending && message.seat === pending.seat) {
+          if (pending && pending.seat !== null && message.seat === pending.seat) {
             storeSeat(message.roomId, pending.seat, pending.clientToken)
             pendingClaimRef.current = null
           }
@@ -546,6 +573,34 @@ export function useNetworkGame(): NetworkGame {
     [send],
   )
 
+  const takeSeat = useCallback(
+    (displayName?: string, deck?: WireDeck) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      // A token this device already holds a seat with here takes that seat
+      // back rather than a second one.
+      const token = loadStoredSeat(id)?.clientToken ?? newClientToken()
+      pendingClaimRef.current = { seat: null, clientToken: token }
+      send({ type: 'take-seat', roomId: id, clientToken: token, displayName, deck })
+    },
+    [send],
+  )
+
+  const concede = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'concede', roomId: id })
+  }, [send])
+
+  const setBotTakeover = useCallback(
+    (on: boolean) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'bot-takeover', roomId: id, on })
+    },
+    [send],
+  )
+
   const dispatch = useCallback(
     (action: Action) => {
       const id = roomIdRef.current
@@ -603,6 +658,7 @@ export function useNetworkGame(): NetworkGame {
     setRoomId(null)
     setSeats([])
     setSeat(null)
+    setRoomPending(false)
     setIsHost(false)
     setError(null)
     setStatus('no-room')
@@ -769,6 +825,10 @@ export function useNetworkGame(): NetworkGame {
     joinRoom,
     leaveRoom,
     claimSeat,
+    takeSeat,
+    roomPending,
+    concede,
+    setBotTakeover,
     addBot,
     setBotDeck,
     addSeat,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { PlayerId } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
@@ -72,9 +72,25 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   const [myDeck, setMyDeck] = useState<DeckContents | null>(() => getActiveDeck())
   const [pickerSeat, setPickerSeat] = useState<PlayerId | null>(null)
 
+  // Arriving in a waiting room takes a seat straight away, un-readied: until
+  // it did, every device that hadn't readied drew itself in the same first
+  // open seat, so two people joining both showed as Player 1. Once per
+  // mount, so a refusal (a full four-seat table) doesn't retry in a loop.
+  const tookSeat = useRef(false)
+  const { takeSeat, roomPending } = game
+  useEffect(() => {
+    if (joined || !roomPending || tookSeat.current) return
+    tookSeat.current = true
+    takeSeat(undefined, myDeck ? toWire(myDeck) : undefined)
+  }, [joined, roomPending, takeSeat, myDeck])
+
   const readyUp = () => {
     if (mySeatPlayer === null) return
-    if (!joined) {
+    if (joined && name.trim()) {
+      // Seated on arrival under a default name: a name typed since goes
+      // with the Ready.
+      game.claimSeat(mySeatPlayer, name.trim(), undefined, true)
+    } else if (!joined) {
       // First click: claims the seat and readies up in one round trip.
       game.claimSeat(
         mySeatPlayer,
@@ -190,7 +206,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                   </button>
                 ) : (
                   <>
-                    {!joined ? (
+                    {!amReady ? (
                       <input
                         className="name-input"
                         value={name}

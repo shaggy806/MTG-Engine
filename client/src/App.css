@@ -160,6 +160,21 @@
   padding: 3px 9px;
   font-size: 11px;
 }
+/* Your seat's menu (ui/SeatMenu.tsx): the animations panel's box, its
+   entries stacked. */
+.seat-menu-panel {
+  align-items: stretch;
+}
+.seat-menu-confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.ts-menu .seat-menu-panel button.seat-menu-danger {
+  border-color: var(--bad);
+  color: var(--bad);
+}
 /* A history entry can be clicked to point its cards out on the board. */
 .event-log .ev.selectable {
   cursor: pointer;

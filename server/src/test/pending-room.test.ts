@@ -236,7 +236,7 @@ describe("PendingRoom", () => {
   it("claims() only reports currently-connected claimed seats", () => {
     const room = pendingRoom();
     const conn = { send: () => {} };
-    room.claimSeat(ALICE, "alice-token", conn, "Alice");
+    room.claimSeat(ALICE, "alice-token", conn, "Alice", undefined, true);
     room.addBot(BOB);
     expect(room.claims()).toEqual([
       { player: ALICE, clientToken: "alice-token", connection: conn, displayName: "Alice" },
@@ -244,9 +244,57 @@ describe("PendingRoom", () => {
 
     room.disconnect(conn);
     expect(room.claims()).toEqual([]);
-    // Still ready — disconnecting doesn't un-claim a seat, only unbinds the
-    // live connection (same as `Room`).
+    // A readied seat stays claimed — disconnecting only unbinds the live
+    // connection (same as `Room`).
     expect(room.isReady()).toBe(true);
+  });
+
+  it("a seat not yet readied goes back to open when its device drops", () => {
+    const room = pendingRoom();
+    const conn = { send: () => {} };
+    room.claimSeat(ALICE, "alice-token", conn, "Alice");
+    room.disconnect(conn);
+    expect(room.seatStatuses()[0]).toMatchObject({ claimed: false, displayName: null, deck: null });
+  });
+
+  describe("takeSeat (joining takes a seat at once)", () => {
+    const conn = () => ({ send: () => {} });
+
+    it("gives each arrival its own seat, un-readied, named for it", () => {
+      const room = pendingRoom();
+      expect(room.takeSeat("t1", conn())).toBe(ALICE);
+      expect(room.takeSeat("t2", conn(), "Sam")).toBe(BOB);
+      expect(room.seatStatuses().map((s) => [s.claimed, s.ready, s.displayName])).toEqual([
+        [true, false, "Player 1"],
+        [true, false, "Sam"],
+      ]);
+    });
+
+    it("gives a token its own seat back rather than a second one", () => {
+      const room = pendingRoom();
+      room.takeSeat("t1", conn());
+      expect(room.takeSeat("t1", conn())).toBe(ALICE);
+      expect(room.seatStatuses()[1].claimed).toBe(false);
+    });
+
+    it("skips a bot's seat, and adds a seat to a full table, up to four", () => {
+      const room = pendingRoom();
+      room.addBot(ALICE);
+      expect(room.takeSeat("t1", conn())).toBe(BOB);
+      expect(room.takeSeat("t2", conn())).toBe(SEATS[2].id);
+      expect(room.takeSeat("t3", conn())).toBe(SEATS[3].id);
+      expect(room.seatStatuses()).toHaveLength(4);
+      expect(() => room.takeSeat("t4", conn())).toThrow(/full/);
+      expect(room.seatStatuses()).toHaveLength(4);
+    });
+
+    it("refuses an unbuildable deck without taking or adding a seat", () => {
+      const room = pendingRoom();
+      room.takeSeat("t1", conn());
+      room.takeSeat("t2", conn());
+      expect(() => room.takeSeat("t3", conn(), undefined, { cards: ["Not A Real Card"] })).toThrow();
+      expect(room.seatStatuses()).toHaveLength(2);
+    });
   });
 
   // A deck saved in a browser's localStorage outlives any card the pool later

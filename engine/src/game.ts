@@ -1128,6 +1128,53 @@ export class Game {
     return this.state.eventLog.slice(from);
   }
 
+  /**
+   * Why `player` can't concede right now, or `null` if they can. A player may
+   * concede at any time (rule 104.3a), but the engine has them answer a
+   * decision they owe first (the server answers it for them): leaving with
+   * it open would need another player to make it for them (800.4f–h), which
+   * isn't modeled. Not during the opening hands either, before the game has
+   * begun.
+   */
+  whyCannotConcede(player: PlayerId): string | null {
+    const state = this.state.players[player];
+    if (state === undefined) return `no such player: ${player}`;
+    if (this.state.result.over) return "the game is over";
+    if (state.hasLost) return `${player} has already left the game`;
+    const awaiting = this.state.awaiting;
+    if (awaiting?.kind === "mulligan") return "the game hasn't begun";
+    if (awaiting !== null && awaiting.player === player) return `${player} owes a decision`;
+    return null;
+  }
+
+  /**
+   * `player` concedes: they lose and leave the game at once (rule 104.3a),
+   * with everything leaving the game takes (800.4a, `leaveGame`). If they had
+   * priority it passes to the next player still in the game; the last one
+   * left wins.
+   */
+  concede(player: PlayerId): readonly GameEvent[] {
+    const why = this.whyCannotConcede(player);
+    if (why !== null) throw new Error(why);
+    const from = this.state.eventLog.length;
+    const playerState = this.state.players[player];
+    playerState.hasLost = true;
+    playerState.lossReason = "conceded";
+    this.emit({ type: "player-lost", player, reason: "conceded" });
+    this.leaveGame(player);
+    const priority = this.state.priority;
+    if (priority.active && priority.holder === player) {
+      priority.holder = this.nextEligibleAfter(player);
+      this.emit({ type: "priority-received", player: priority.holder });
+    }
+    this.runStateBasedActions();
+    if (this.state.result.over) {
+      priority.active = false;
+      priority.holder = null;
+    }
+    return this.state.eventLog.slice(from);
+  }
+
   /** Why `action` cannot be dispatched right now, or `null` if it can. */
   canDispatch(action: Action): string | null {
     const decision = decisionForAction(action);

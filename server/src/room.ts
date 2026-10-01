@@ -157,6 +157,11 @@ const BOT_LINGER_MS: Readonly<Record<BotSpeed, number>> = {
 };
 
 const SETTLE_BUDGET = 10_000;
+
+/** How many decisions in a row a conceding player's stand-in bot answers
+ * before giving up — a backstop against a decision loop, never reached by
+ * a real one. */
+const CONCEDE_DECISION_LIMIT = 100;
 const MAX_DISPLAY_NAME_LENGTH = 20;
 
 /** Swappable so tests can run a room's bot pacing on a fake clock. */
@@ -346,7 +351,8 @@ export class Room {
   }
 
   private humanSeats(): Seat[] {
-    return this.seats.filter((s) => !this.bots.has(s.player));
+    // A player who handed their seat to a bot is still a person at the table.
+    return this.seats.filter((s) => !this.bots.has(s.player) || s.clientToken !== null);
   }
 
   private hostConnection(): Connection | null {
@@ -446,7 +452,10 @@ export class Room {
     void deck;
     void ready;
     const seat = this.seatFor(player);
-    if (this.bots.has(player)) throw new Error(`seat ${player} is played by a bot`);
+    // A seat its player handed to a bot is still theirs to reconnect to.
+    if (this.bots.has(player) && (seat.clientToken === null || seat.clientToken !== clientToken)) {
+      throw new Error(`seat ${player} is played by a bot`);
+    }
     if (seat.clientToken !== null && seat.clientToken !== clientToken) {
       throw new Error(`seat ${player} is already claimed`);
     }
@@ -468,10 +477,63 @@ export class Room {
     return this.seats.find((s) => s.connection === connection)?.player ?? null;
   }
 
+  /**
+   * `connection`'s player concedes (rule 104.3a): they lose and leave the
+   * game at once, and stay connected to watch the rest. A decision they owe
+   * is answered first by a bot, as they might have answered it themselves
+   * before conceding — the engine doesn't model another player making a
+   * departed player's choice (800.4f–h). Not during the opening hands.
+   */
+  concede(connection: Connection): void {
+    const seat = this.seatOf(connection);
+    if (seat === null) throw new Error("claim a seat before conceding");
+    const stand = this.makeBot(seat);
+    for (let i = 0; i < CONCEDE_DECISION_LIMIT; i += 1) {
+      const awaiting = this.game.state.awaiting;
+      if (awaiting === null || awaiting.kind === "mulligan" || awaiting.player !== seat) break;
+      let legal: readonly LegalAction[] | undefined;
+      this.game.dispatch(
+        stand.act({
+          state: this.game.state,
+          player: seat,
+          legalActions: () => (legal ??= this.game.legalActions(seat)),
+        }),
+      );
+    }
+    this.game.concede(seat);
+    this.bots.delete(seat);
+    this.lastActivityAt = Date.now();
+    this.settle();
+  }
+
+  /**
+   * Hands `connection`'s seat to a bot (`on`) or takes it back. The player
+   * stays connected and keeps watching; while the bot plays, their own
+   * actions are refused.
+   */
+  setBotTakeover(connection: Connection, on: boolean): void {
+    const seat = this.seatOf(connection);
+    if (seat === null) throw new Error("claim a seat first");
+    if (this.game.state.players[seat]?.hasLost === true) throw new Error(`${seat} has left the game`);
+    if (on) {
+      if (!this.bots.has(seat)) this.bots.set(seat, this.makeBot(seat));
+    } else {
+      this.bots.delete(seat);
+    }
+    this.lastActivityAt = Date.now();
+    this.settle();
+  }
+
+  /** Whether a bot is playing `player`'s seat. */
+  isBotSeat(player: PlayerId): boolean {
+    return this.bots.has(player);
+  }
+
   /** Dispatches `action` on behalf of whichever seat `connection` claimed. */
   dispatch(connection: Connection, action: Action): void {
     const seat = this.seatOf(connection);
     if (seat === null) throw new Error("claim a seat before acting");
+    if (this.bots.has(seat)) throw new Error("a bot is playing this seat — take it back first");
     if (actionPlayer(action) !== seat) {
       throw new Error(
         `cannot dispatch an action for ${actionPlayer(action)} from ${seat}'s seat`,

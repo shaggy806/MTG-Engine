@@ -759,3 +759,41 @@ describe("Room", () => {
     });
   });
 });
+
+describe("Room: conceding and handing a seat to a bot", () => {
+  it("a concession ends a two-player game for the other player", () => {
+    const room = makeRoom();
+    const a = fakeConnection();
+    const b = fakeConnection();
+    room.claimSeat(ALICE, "a", a.connection);
+    room.claimSeat(BOB, "b", b.connection);
+    room.concede(a.connection);
+    expect(room.game.state.players[ALICE].lossReason).toBe("conceded");
+    expect(room.game.state.result).toMatchObject({ over: true, winner: BOB });
+  });
+
+  it("a bot plays a handed-over seat, the player's own moves are refused, and they can take it back", () => {
+    const room = makeRoom();
+    const a = fakeConnection();
+    const b = fakeConnection();
+    room.claimSeat(ALICE, "a", a.connection);
+    room.claimSeat(BOB, "b", b.connection);
+    const turn = room.game.state.turn.number;
+
+    room.setBotTakeover(a.connection, true);
+    expect(room.isBotSeat(ALICE)).toBe(true);
+    expect(room.seatStatuses()[0]).toMatchObject({ claimed: true, isBot: true });
+    // The bot played Alice's part until the game waits on Bob.
+    expect(
+      room.game.state.turn.number > turn || room.game.state.priority.holder !== ALICE,
+    ).toBe(true);
+    expect(() => room.dispatch(a.connection, { type: "pass-priority", player: ALICE })).toThrow(/bot/);
+    // A refresh still reconnects to the seat while the bot has it.
+    const again = fakeConnection();
+    room.claimSeat(ALICE, "a", again.connection);
+    expect(() => room.claimSeat(ALICE, "someone-else", fakeConnection().connection)).toThrow();
+
+    room.setBotTakeover(again.connection, false);
+    expect(room.isBotSeat(ALICE)).toBe(false);
+  });
+});

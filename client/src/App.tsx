@@ -67,6 +67,7 @@ import { TurnBanner } from './ui/TurnBanner.tsx'
 import { AnimationLayer } from './ui/AnimationLayer.tsx'
 import { ArrowLayer } from './ui/ArrowLayer.tsx'
 import { highlightEvent } from './ui/highlight.ts'
+import { SeatMenu } from './ui/SeatMenu.tsx'
 import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
@@ -625,6 +626,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // animations rather than racing ahead of them.
   const shown = usePlayback(game.frame, bus, game.ackFrame)
   const view = shown.view
+  const botPlaying = game.seats.find((s) => s.player === seat)?.isBot === true
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
@@ -711,9 +713,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               Capture
             </button>
           ) : null}
-          <button type="button" onClick={() => window.location.assign('/')}>
-            Leave
-          </button>
+          <SeatMenu game={game} view={view} />
         </div>
       </header>
 
@@ -740,7 +740,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         // to a board the player can't see yet, and taking one now would race
         // the animation showing how the game got there. The server holds its
         // bots to the same rule — see `ackFrame`.
-        actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
+        // And while a bot plays this seat (the seat menu's "Let a bot play
+        // for me"), whose moves the server makes and whose answers it would
+        // refuse from here.
+        actions={shown.busy || botPlaying ? EMPTY_ACTIONS : shown.actions}
         hand={hand}
         previousView={shown.previousView}
         boardDrag={boardDrag}

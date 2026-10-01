@@ -106,6 +106,32 @@ export type ClientMessage =
       readonly hostToken?: string;
     }
   | {
+      /** This connection's player concedes (rule 104.3a): they lose and
+       * leave the game, and go on watching. A decision they owe is answered
+       * by a bot first. Not during the opening hands. */
+      readonly type: "concede";
+      readonly roomId: string;
+    }
+  | {
+      /** Hands this connection's seat to a bot (`on`), or takes it back. The
+       * player keeps watching; their own actions are refused meanwhile. */
+      readonly type: "bot-takeover";
+      readonly roomId: string;
+      readonly on: boolean;
+    }
+  | {
+      /** Takes a seat in a waiting room without naming one: the token's own
+       * seat if it holds one, else the first open seat, else a seat added
+       * for it while the table has fewer than four (`PendingRoom.takeSeat`).
+       * Un-readied. The `room-joined` that follows says which seat
+       * (`seat`). What a device sends on arriving in a waiting room. */
+      readonly type: "take-seat";
+      readonly roomId: string;
+      readonly clientToken: string;
+      readonly displayName?: string;
+      readonly deck?: WireDeck;
+    }
+  | {
       readonly type: "claim-seat";
       readonly roomId: string;
       readonly seat: PlayerId;
@@ -340,6 +366,11 @@ export type ServerMessage =
        * hasn't claimed a seat, which no `SeatStatus.isHost` can say. */
       readonly isHost: boolean;
       readonly botSpeed: BotSpeed;
+      /** The seat *this* connection holds, if any — how a `take-seat` learns
+       * which seat it was given. */
+      readonly seat?: PlayerId | null;
+      /** Whether the room is still the waiting room (no `Game` yet). */
+      readonly pending?: boolean;
     }
   | {
       /** Pushed to every connected seat after a room is created/joined or any dispatch settles. */
