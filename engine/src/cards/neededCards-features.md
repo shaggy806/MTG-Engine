@@ -332,7 +332,8 @@ targets it went on the stack with. It shipped with Eerie Interlude, Brago,
 Divine Resilience, Mindbreak Trap, Court of Cunning, Riverchurn Monument,
 Singularity Rupture, Deepglow Skate and Stonespeaker Crystal. Still blocked
 among the 36: divided damage or counters as the caster chooses (Fury, Fire
-Covenant, Dragonlord Atarka, Magma Opus, Lathiel, Vorinclex's saga), phasing (Clever Concealment, Guardian of Faith), a
+Covenant, Dragonlord Atarka, Lathiel, Vorinclex's saga — a spell's divided damage landed
+2026-10-01 with Magma Opus), phasing (Clever Concealment, Guardian of Faith), a
 constraint relating the chosen cards (Ancient Brass Dragon, Rampaging Yao
 Guai, V.A.T.S.), and one-offs each needing something of their own. Since
 2026-09-28 Fireball's "divided evenly" (`damage-divided-evenly`) and a cost

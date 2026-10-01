@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2059 already implemented / 2941 missing (marks refreshed 2026-10-01)
+2061 already implemented / 2939 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -3863,7 +3863,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3870  Jegantha, the Wellspring                 {4}{R/G}         Legendary Creature — Elemental Elk
 [ ]  3871  Heartstone                               {3}              Artifact
 [ ]  3872  Karlov of the Ghost Council              {W}{B}           Legendary Creature — Spirit Advisor
-[ ]  3873  Expansion // Explosion                   {U/R}{U/R} // {X}{U}{U}{R}{R} Instant // Instant
+[x]  3873  Expansion // Explosion                   {U/R}{U/R} // {X}{U}{U}{R}{R} Instant // Instant
 [x]  3874  Reya Dawnbringer                         {6}{W}{W}{W}     Legendary Creature — Angel
 [ ]  3875  Windswift Slice                          {2}{G}           Instant
 [ ]  3876  Trash for Treasure                       {2}{R}           Sorcery
@@ -4952,7 +4952,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4959  Tempt with Mayhem                        {1}{R}{R}        Instant
 [ ]  4960  Mistcutter Hydra                         {X}{G}           Creature — Hydra
 [ ]  4961  Ensnaring Bridge                         {3}              Artifact
-[ ]  4962  Magma Opus                               {6}{U}{R}        Instant
+[x]  4962  Magma Opus                               {6}{U}{R}        Instant
 [ ]  4963  Terminus                                 {4}{W}{W}        Sorcery
 [ ]  4964  Lush Oasis                               {0}              Land — Desert
 [ ]  4965  Haystack                                 {1}{W}           Artifact

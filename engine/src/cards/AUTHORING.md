@@ -296,6 +296,8 @@ from the same link.
 | `copyOnEnter` | `{ filter: "creature" }` | Clone — enters as a copy of a chosen creature |
 | `controlEnchanted` | `boolean` | an Aura whose controller controls the enchanted permanent (Mind Control) |
 | `cantBeCountered` | `boolean` | "This spell can't be countered." |
+| `split` | `boolean` | A split card (rule 709) — on all three definitions; see §12 ("Split card"). |
+| `divided` | `{ total, slot }` | "`total` damage divided as you choose among" the `any-number` group at target slot `slot` (Magma Opus): the cast carries the split, the `damage-divided` effect deals it. |
 | `commanderTaxAsLife` | `boolean` | the commander tax is paid in life instead of mana (Liesa, Shroud of Dusk: "Rather than pay {2} for each previous time you've cast this spell from the command zone this game, pay 2 life that many times"). A cast from the command zone costs the printed cost plus 2 life per previous cast; a cast from anywhere else owes no tax at all. The life is part of the cost, so it gates castability (rule 119.4 — payable down to exactly 0, never from below) and leaves that much less life for a painland or Phyrexian pip in the same payment. The client's "+N" tax badge still reads it as mana. |
 | `exileOnResolve` | `boolean` | "Exile ~" printed on a non-permanent spell's own resolution text (Genesis Ultimatum) — goes to exile instead of the graveyard after resolving, unconditionally (however it was cast). Distinct from flashback/disturb/adventure, which only redirect a spell cast *that way*. needed-cards P19. |
 | `shuffleIntoLibraryOnResolve` | `boolean` | "Shuffle ~ into its owner's library" as the last part of resolving (White Sun's Zenith). Only on resolving: a *countered* one goes to the graveyard, because the shuffle is an instruction the spell never got to carry out. |
@@ -578,6 +580,7 @@ clause (below) chooses among them.
 | kind | fields | example |
 | --- | --- | --- |
 | `damage` | `amount`, `target` \| `who` \| `toControllerOfTarget` \| `toTriggerRecipient`, `from?` | Lightning Bolt (`target`); Breath of Malfegor (`who: "each-opponent"`); Unlicensed Disintegration — "deals 3 damage to **that creature's** controller" (`toControllerOfTarget: 0`, mirroring `create-token`'s `who: "target-controller"`). `toTriggerRecipient: true` is "deals 2 damage to **that permanent or player**" in a damage trigger (Ghyrson Starn) — whatever the triggering damage hit, not a target, and nothing once a permanent recipient has left the battlefield. `from: "trigger-object"` makes the *triggering object* the source — "**it** deals damage equal to its power" (Be'lakor's entering Demon), "**it** deals that much damage to each other opponent" (Kediss's commander): its lifelink, deathtouch and colours apply, read as it last existed on the battlefield if it has left. |
+| `damage-divided` | `from` | "N damage divided as you choose among any number of targets" (Magma Opus): each target of the group from slot `from` on is dealt its share of the spell's division. The card says `divided: { total, slot }`; the cast announces the split (`division`, at least 1 each, all of the total — rule 601.2d; left out, an even split), a copy keeps it, and a target gone illegal loses its share (608.2b). Give the group a `max` of the total. |
 | `damage-divided-evenly` | `amount`, `from` | Fireball's "X damage divided evenly, rounded down, among any number of targets": the targets from slot `from` on (an `any-number` group) each take `amount` divided by how many are still legal as it resolves, all at once; more targets than damage deals none. |
 | `damage-all` | `filter`, `amount`, `exceptSource?`, `whose?` | Pyroclasm. `exceptSource` spares the source itself — Harbinger of the Hunt's "each **other** creature with flying", which a `CardFilter` can't say (it describes the permanent matched, not its relationship to the damage source). `whose` (a `PlayerScope`) is only the permanents those players control: Balefire Dragon's "it deals that much damage to each creature **that player** controls" is `"trigger-player"`. |
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
@@ -1437,6 +1440,7 @@ relation, and may point at the same thing.
 **"Any number of target …"** is a *group*: `{ kind: "any-number", of:
 TargetSpec }` — Eerie Interlude's "exile any number of target creatures you
 control" is `targets: [{ kind: "any-number", of: "creature-you-control" }]`.
+`max: N` caps it — Magma Opus's four damage among at most four targets.
 It is always the **last** slot of its list (one per list, never in a
 `castModal` mode; `any-number-targets.test.ts` walks the pool for this),
 and the player fills it with none, one or as many distinct targets as there
@@ -2653,6 +2657,14 @@ Grep the pool for `resolve:` — there are very few.
   cycle flips it in place. `nightfall-cultist.ts`.
 - **Adventure** — `adventure: true` on both faces + `faces: [creatureName,
   adventureName]`. `emberclaw-scout.ts`.
+- **Split card** (rule 709) — three files, each with `split: true` and
+  `faces: ["Left // Right", "Left", "Right"]`. The whole card ("Left //
+  Right") is what it is in every zone but the stack: both halves' text, the
+  combined mana cost written as one (`"{U/R}{U/R}{X}{U}{U}{R}{R}"`, rule
+  709.4b — `card:verify` joins Scryfall's two), no effect, never cast. Each
+  half is an ordinary instant or sorcery, and casting offers each half on its
+  own (rule 709.3). `expansion-explosion.ts`, `expansion.ts`, `explosion.ts`.
+  Fuse isn't modelled.
 - **Saga** — `chapters: [{ at: number[], targets, effect, resolve, text }]`.
   `at` lists the lore counts that fire the chapter (`[1]`, `[2]`, `[1, 2]` for
   a shared "I, II"). `history-of-benalia.ts`. Once its final chapter ability
@@ -2859,13 +2871,13 @@ Delete an entry in the same commit as the feature that retires it.
   card to another. (A plain two-destination split — Cultivate — *is* now
   expressible, via `search-library.restDestination`.)
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
-- **Divided damage and distributed counters** — "N damage divided as you
-  choose among any number of targets" (Fury, Magma Opus), "distribute N
-  counters among" (Lathiel). "Any number of target …" itself is built (§7,
-  the `any-number` group), and so is Fireball's "divided **evenly**"
-  (`damage-divided-evenly`, no choice involved) and a cost for each target
-  beyond the first (`costPerExtraTarget` — Fireball, Strive); dividing an
-  amount **as the caster chooses** as the spell is cast is not.
+- **Divided damage and distributed counters** — a *spell's* "N damage
+  divided as you choose among any number of targets" is built (2026-10-01,
+  Magma Opus — see `divided` in §3); a triggered ability's (Fury, Dragonlord
+  Atarka), an X total (Fire Covenant) and "distribute N counters among"
+  (Lathiel) are not. Fireball's "divided **evenly**"
+  (`damage-divided-evenly`) and a cost for each target beyond the first
+  (`costPerExtraTarget` — Fireball, Strive) are built too.
 - ~~**Mana provenance / restricted spend.**~~ **Built.** The mana pool is a
   list of tagged `ManaUnit`s, so a unit remembers where it came from. An
   `add-mana` effect stamps three optional things on what it produces:

@@ -429,7 +429,9 @@ function compare(def, card) {
   const face = faceFor(card, def.name);
   const issues = [];
 
-  const theirCost = face.mana_cost ?? "";
+  // A split card's whole face is its halves' costs combined (rule 709.4b);
+  // Scryfall writes them apart, "{U/R}{U/R} // {X}{U}{U}{R}{R}".
+  const theirCost = def.split ? (face.mana_cost ?? "").replace(/\s*\/\/\s*/g, "") : (face.mana_cost ?? "");
   const ourCost = def.manaCost ?? "";
   if (theirCost.trim() !== ourCost.trim()) {
     issues.push(`manaCost: ours="${ourCost}" scryfall="${theirCost}"`);

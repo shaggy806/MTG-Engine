@@ -1,7 +1,7 @@
 {
   "batch": "TDC4",
   "status": "complete",
-  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution, and every player's spells uncounterable (Lier), an attack tax (Ghostly Prison, Propaganda, Windborn Muse)",
+  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution, and every player's spells uncounterable (Lier), an attack tax (Ghostly Prison, Propaganda, Windborn Muse), split cards and damage divided as you choose (2026-10-01)",
   "authored": [
     {
       "name": "Sublime Epiphany",
@@ -56,6 +56,22 @@
       "name": "Windborn Muse",
       "files": [
         "engine/src/cards/pool/windborn-muse.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Expansion // Explosion",
+      "files": [
+        "engine/src/cards/pool/expansion-explosion.ts",
+        "engine/src/cards/pool/expansion.ts",
+        "engine/src/cards/pool/explosion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Magma Opus",
+      "files": [
+        "engine/src/cards/pool/magma-opus.ts"
       ],
       "tested": true
     }

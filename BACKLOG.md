@@ -49,14 +49,14 @@ that one card is the reason the deck exists.
   missing at the swap; TDC batch 1 authored 41 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8
   that casting a spell as another resolves unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now`
   effect from a hand, graveyard or library top, free, with "if you do / don't"). Missing now:
-  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 6 — 86, every
+  Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 4 — 84, every
   one recorded with what it needs (`engine/data/sweep-3/TDC1.json` to `TDC4.json` and the
   earlier sweeps). No one feature leads any more. Shiko and Narset, Unified commands Jeskai
   Striker since 2026-09-30 (swapped with Elsha), and a copy's new targets is built, storm
-  included (TDC3: 5 Jeskai cards; TDC4: 6 more). Jeskai's 6 each need something different:
-  split cards (Expansion // Explosion), divided damage (Magma Opus), Curses (Curse of
-  Opulence), X targets (Curse of the Swine), a target per opponent and a cycling trigger
-  (Dismantling Wave) and demonstrate (Transforming Flourish). **Next:**
+  included (TDC3: 5 Jeskai cards; TDC4: 8 more, split cards and divided damage among them).
+  Jeskai's 4 each need something different: Curses (Curse of Opulence), X targets (Curse of
+  the Swine), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
+  (Transforming Flourish). **Next:**
   delve (4, only Treasure Cruise needing nothing else), "can attack as though it
   didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle, Walking
   Bulwark), then two each for divided damage, hideaway, Omen and "the creature it sacrificed".
@@ -218,7 +218,7 @@ that one card is the reason the deck exists.
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,059 implemented). Work
+  `top-commander-cards.txt` now lists the top 5000 by EDHREC rank (2,061 implemented). Work
   down its unmarked entries in rank order: author each card the engine runs faithfully, and
   build the engine features that block the most of the rest. `engine/data/sweep-2/K*.json`
   holds per-card blocker notes for the first 179 skipped, and `engine/data/sweep-3/B*.json`
@@ -333,10 +333,12 @@ that one card is the reason the deck exists.
   Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
-- **Dividing among targets.** "Any number of target …" is built (the `any-number` group), and
-  so are Fireball's "divided evenly" and Strive's cost per extra target (2026-09-28), but "N
-  damage divided as you choose among" them (Fury, Magma Opus, Dragonlord Atarka) and "distribute
-  N counters among" (Lathiel) aren't. See `neededCards-features.md`, "Unbounded targeting".
+- **Dividing among targets: what's left.** A *spell's* "N damage divided as you choose among
+  any number of targets" is built (2026-10-01 — Magma Opus: `CardDefinition.divided`, the
+  cast's `division`, `damage-divided`, the client's division step). Not yet: a triggered
+  ability's (Fury, Dragonlord Atarka — the `choose-targets` decision would need a division
+  too), an X total (Fire Covenant), and "distribute N counters among" (Lathiel). See
+  `neededCards-features.md`, "Unbounded targeting".
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision
   (built 2026-09-26 for "untap up to N lands") is the piece it needs. See AUTHORING §15, "Partial".
@@ -369,6 +371,10 @@ base, retire v3. One line per step still open:
   shows.
 
 Beyond that plan:
+
+- **Bots should crack fetch lands right away.** Lands that tap and sacrifice to search for a
+  land (Evolving Wilds, Terramorphic Expanse) should, in almost every situation, be used
+  immediately; the bots need to know that (`engine/src/bot/`, see the plan above).
 
 - **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
   Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a

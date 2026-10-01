@@ -677,21 +677,6 @@
       "why": "Up to one target per opponent, and a 'when you cycle this card' trigger."
     },
     {
-      "name": "Expansion // Explosion",
-      "needs": [
-        "new:split-cards",
-        "decision:copy-new-targets"
-      ],
-      "why": "A split card, and a copy with new targets."
-    },
-    {
-      "name": "Magma Opus",
-      "needs": [
-        "new:divide-damage"
-      ],
-      "why": "4 damage divided as you choose among any number of targets."
-    },
-    {
       "name": "Tempest Technique",
       "needs": [
         "effect:copy-permanent-spell"

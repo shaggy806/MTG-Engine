@@ -189,7 +189,13 @@ export type TargetSpec =
    * An effect reaches the members with `for-each-target` (one at a time,
    * each bound to the group's slot) or a `{ from }` slot list.
    */
-  | { readonly kind: "any-number"; readonly of: TargetSpec };
+  | {
+      readonly kind: "any-number";
+      readonly of: TargetSpec;
+      /** At most this many — Magma Opus's "4 damage divided as you choose
+       * among any number of targets", where each target needs at least 1. */
+      readonly max?: number;
+    };
 
 /** Where a list's "any number of target …" group is (see the `any-number`
  * {@link TargetSpec}), or -1 for a list without one. */
@@ -337,6 +343,11 @@ export function slotOptions(
     const taken = picked
       .slice(group)
       .filter((ref): ref is TargetRef => ref !== null && ref !== undefined);
+    // A group already at its `max` takes no more.
+    const spec = specs[group];
+    if (typeof spec === "object" && spec.kind === "any-number" && spec.max !== undefined && taken.length >= spec.max) {
+      return [];
+    }
     return (options[group] ?? []).filter((ref) => !taken.some((t) => sameTarget(ref, t)));
   }
   const all = options[i] ?? [];

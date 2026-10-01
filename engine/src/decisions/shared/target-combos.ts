@@ -34,7 +34,11 @@ export function targetCombos(
     // few of its answers rather than every subset: none, each candidate
     // alone, and all of them.
     if (i === group) {
-      const tails: TargetRef[][] = [[], ...options.map((ref) => [ref]), ...(options.length > 1 ? [[...options]] : [])];
+      // "All of them" up to the group's `max` (Magma Opus's four).
+      const spec = specs[group];
+      const max = typeof spec === "object" && spec.kind === "any-number" ? spec.max : undefined;
+      const all = max === undefined ? [...options] : options.slice(0, max);
+      const tails: TargetRef[][] = [[], ...options.map((ref) => [ref]), ...(all.length > 1 ? [all] : [])];
       const next: (TargetRef | null)[][] = [];
       for (const combo of combos) {
         for (const tail of tails) {

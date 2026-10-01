@@ -640,8 +640,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Curse of Opulence", "Sticky Fingers", "One-mana enchantment: token maker, ramp."),
       sub("Curse of the Swine", "Resculpt", "Two-mana sorcery: removal, creature removal."),
       sub("Dismantling Wave", "Solemn Offering", "Three-mana sorcery: artifact and enchantment removal, removal."),
-      sub("Expansion // Explosion", "Fireball", "X-damage spell."),
-      sub("Magma Opus", "Searing Wind", "Eight-mana instant: burn."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
     ],
   }),

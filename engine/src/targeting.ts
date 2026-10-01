@@ -8,7 +8,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import { concreteTargetSpecs, isOptionalSpec, otherSlotConflict } from "./target.js";
+import { anyNumberSlot, concreteTargetSpecs, isOptionalSpec, otherSlotConflict } from "./target.js";
 import type { OtherThan } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
@@ -614,6 +614,16 @@ export function invalidTargetReason(
   name: string,
   source?: TargetSource,
 ): string | null {
+  const group = anyNumberSlot(specs);
+  const groupSpec = group >= 0 ? specs[group] : undefined;
+  if (
+    typeof groupSpec === "object" &&
+    groupSpec.kind === "any-number" &&
+    groupSpec.max !== undefined &&
+    chosen.length - group > groupSpec.max
+  ) {
+    return `${name} takes at most ${groupSpec.max} of those targets`;
+  }
   specs = concreteTargetSpecs(specs, chosen.length);
   if (chosen.length !== specs.length) {
     return `${name} takes ${specs.length} target(s), got ${chosen.length}`;

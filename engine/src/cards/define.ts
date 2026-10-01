@@ -1709,6 +1709,23 @@ export interface CardDefinition {
    * adventure exiles the card (rather than graveyard) with a "you may cast the
    * creature later from exile" permission. `true` on both faces. */
   readonly adventure: boolean;
+  /**
+   * A split card (rule 709): `faces` is `[the card, left half, right half]`.
+   * Face 0 is the whole card — what it is in every zone but the stack, both
+   * halves' characteristics combined (709.4: both names, the combined mana
+   * cost, both colours and types) — and is never cast; casting picks a half,
+   * face 1 or 2, and only that half exists on the stack (709.3). `true` on
+   * all three definitions. Fuse isn't modelled.
+   */
+  readonly split: boolean;
+  /**
+   * "N damage divided as you choose among" the targets of the "any number
+   * of" group at target slot `slot` (rule 601.2d — Magma Opus): the caster
+   * announces the division as they choose targets, at least 1 to each, all
+   * `total` of it. Carried on the spell (`GameObject.division`, a copy keeps
+   * it) and dealt by a `damage-divided` effect. `null` for every other card.
+   */
+  readonly divided: { readonly total: number; readonly slot: number } | null;
   /** The partner-family ability that lets this card be one of *two*
    * commanders (rule 702.124), or `null` for a card that can only command
    * alone. A deckbuilding rule, read by `deck-validation.ts`'s
@@ -1797,6 +1814,8 @@ const PRINTED_ABILITY: {
   transform: false,
   disturb: (def) => def.disturb !== null,
   adventure: false,
+  split: false,
+  divided: false,
   pairing: (def) => def.pairing !== null,
   canBeCommander: (def) => def.canBeCommander,
 };
@@ -1928,6 +1947,8 @@ interface CardDraft {
   shuffleIntoLibraryOnResolve?: boolean;
   countersPersistAcrossZones?: boolean;
   transform?: boolean;
+  split?: boolean;
+  divided?: { readonly total: number; readonly slot: number };
   disturb?: { readonly cost: string };
   adventure?: boolean;
   pairing?: CommanderPairing;
@@ -2006,6 +2027,8 @@ export function defineCard(draft: CardDraft): CardDefinition {
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,
+    split: draft.split ?? false,
+    divided: draft.divided ?? null,
     pairing: draft.pairing ?? null,
     canBeCommander: draft.canBeCommander ?? false,
   };

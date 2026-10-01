@@ -2069,6 +2069,14 @@ export type EffectSpec =
       readonly withMain?: boolean;
     }
   | {
+      /** "N damage divided as you choose among any number of targets"
+       * (Magma Opus): each target of the group starting at slot `from` is
+       * dealt its share of the spell's `division`. A target that has become
+       * illegal is dealt nothing, and its share goes nowhere (rule 608.2b). */
+      readonly kind: "damage-divided";
+      readonly from: number;
+    }
+  | {
       /** "Shuffle your library" on its own (Ponder's "You may shuffle", inside
        * a `may`): the effect's controller shuffles (rule 701.24). */
       readonly kind: "shuffle-library";
@@ -3544,6 +3552,9 @@ export interface EffectApi {
   /** Shuffle the controller's library — see the `shuffle-library`
    * {@link EffectSpec}. */
   shuffleLibrary(): void;
+  /** The resolving spell's division of a divided amount — see
+   * `GameObject.division`. Empty outside one. */
+  readonly division: readonly number[];
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(afterThisPhase?: { readonly withMain: boolean }): void;
@@ -5242,6 +5253,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "shuffle-library":
       ctx.shuffleLibrary();
+      return;
+    case "damage-divided":
+      ctx.division.forEach((amount, i) => {
+        const target = ctx.targets[spec.from + i];
+        if (target !== undefined && amount > 0) ctx.dealDamage(target, amount);
+      });
       return;
     case "untap-all":
       ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx));

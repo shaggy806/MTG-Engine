@@ -454,6 +454,10 @@ export interface GameObject {
    * own slice of `targets`. Absent for a non-modal spell; cleared on any zone
    * change. */
   chosenModes?: readonly number[];
+  /** How a spell's divided amount was split among its group's targets as it
+   * was cast (rule 601.2d — `CardDefinition.divided`), one per target in
+   * order. Cleared on any zone change. */
+  division?: readonly number[];
   /** This spell was kicked as it was cast (rule 702.33 — needed-cards P8): its
    * kicker cost was paid, so `resolveTopOfStack` applies the kicked `effect`.
    * Absent for an unkicked or unkickable spell; cleared on any zone change. */
@@ -690,6 +694,7 @@ export interface SpellSnapshot {
   readonly autoTargetSlots?: readonly number[];
   readonly xValue: number | null;
   readonly chosenModes?: readonly number[];
+  readonly division?: readonly number[];
   readonly kicked?: boolean;
   readonly overloaded?: boolean;
   readonly evokePaid?: boolean;

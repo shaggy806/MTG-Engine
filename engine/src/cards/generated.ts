@@ -1754,6 +1754,8 @@ import _poolExecutionersHood from "./pool/executioners-hood.js";
 import _poolExemplarOfLight from "./pool/exemplar-of-light.js";
 import _poolExiledBoggart from "./pool/exiled-boggart.js";
 import _poolExoticOrchard from "./pool/exotic-orchard.js";
+import _poolExpansionExplosion from "./pool/expansion-explosion.js";
+import _poolExpansion from "./pool/expansion.js";
 import _poolExpedite from "./pool/expedite.js";
 import _poolExpeditionEnvoy from "./pool/expedition-envoy.js";
 import _poolExpeditionMap from "./pool/expedition-map.js";
@@ -1763,6 +1765,7 @@ import _poolExperimentalAviator from "./pool/experimental-aviator.js";
 import _poolExploration from "./pool/exploration.js";
 import _poolExplore from "./pool/explore.js";
 import _poolExplorersScope from "./pool/explorers-scope.js";
+import _poolExplosion from "./pool/explosion.js";
 import _poolExplosiveImpact from "./pool/explosive-impact.js";
 import _poolExplosiveShot from "./pool/explosive-shot.js";
 import _poolExplosiveVegetation from "./pool/explosive-vegetation.js";
@@ -3232,6 +3235,7 @@ import _poolMagesGuile from "./pool/mages-guile.js";
 import _poolMagetasBoon from "./pool/magetas-boon.js";
 import _poolMaggotTherapy from "./pool/maggot-therapy.js";
 import _poolMagmaJet from "./pool/magma-jet.js";
+import _poolMagmaOpus from "./pool/magma-opus.js";
 import _poolMagmaquake from "./pool/magmaquake.js";
 import _poolMagmaticForce from "./pool/magmatic-force.js";
 import _poolMagmaw from "./pool/magmaw.js";
@@ -8269,6 +8273,8 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolExemplarOfLight,
   _poolExiledBoggart,
   _poolExoticOrchard,
+  _poolExpansionExplosion,
+  _poolExpansion,
   _poolExpedite,
   _poolExpeditionEnvoy,
   _poolExpeditionMap,
@@ -8278,6 +8284,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolExploration,
   _poolExplore,
   _poolExplorersScope,
+  _poolExplosion,
   _poolExplosiveImpact,
   _poolExplosiveShot,
   _poolExplosiveVegetation,
@@ -9747,6 +9754,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMagetasBoon,
   _poolMaggotTherapy,
   _poolMagmaJet,
+  _poolMagmaOpus,
   _poolMagmaquake,
   _poolMagmaticForce,
   _poolMagmaw,

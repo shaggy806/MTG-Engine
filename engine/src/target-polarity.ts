@@ -242,6 +242,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "additional-combat": none,
   "additional-land-drop": none,
   "shuffle-library": none,
+  "damage-divided": none,
   "untap-all": (n, v) => v.touch(n.controlledByTarget, "help", MINOR),
   "tap-all": none,
   // Turn to Frog is removal; animating a land is a man-land. Only the first

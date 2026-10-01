@@ -581,6 +581,43 @@ function autoSlotsOf(slots: readonly object[]): number[] {
 /** A convoke payment with its contribution settled — see `resolveConvoke`. */
 type PaidConvoke = ConvokePayment & { readonly pays: "generic" | Color };
 
+/**
+ * The division a cast announces for its card's `divided` group (rule 601.2d):
+ * `chosen`, checked — one share per target of the group, each a whole number
+ * of at least 1, all of `total` — or, when the caster didn't say, as evenly
+ * as it goes with the earlier targets taking the remainder. No targets in the
+ * group divide nothing. A string says what's wrong.
+ */
+function spellDivision(
+  divided: { readonly total: number; readonly slot: number },
+  targets: ResolvedTargets,
+  chosen: readonly number[] | undefined,
+): readonly number[] | string {
+  const members = targets.slice(divided.slot).filter((t) => t !== undefined).length;
+  if (members === 0) return chosen === undefined || chosen.length === 0 ? [] : "no targets to divide among";
+  if (members > divided.total) return `${divided.total} can't be divided among ${members} targets`;
+  if (chosen === undefined) {
+    const base = Math.floor(divided.total / members);
+    return Array.from({ length: members }, (_unused, i) => base + (i < divided.total % members ? 1 : 0));
+  }
+  if (chosen.length !== members) return `the division names ${chosen.length} shares for ${members} targets`;
+  if (chosen.some((n) => !Number.isInteger(n) || n < 1)) return "each target must get at least 1";
+  if (chosen.reduce((a, b) => a + b, 0) !== divided.total) return `the division must total ${divided.total}`;
+  return [...chosen];
+}
+
+/**
+ * The faces of a card that may be cast or played, by index: each face of a
+ * modal multi-face card (a modal DFC, an adventurer — rule 712), each half of
+ * a split card but never the whole (rule 709.3), or `[undefined]` for a
+ * single-faced card and a transforming one, which is only ever played as its
+ * front.
+ */
+function castableFaces(def: CardDefinition): readonly (number | undefined)[] {
+  if (def.transform || def.faces === null) return [undefined];
+  return def.faces.flatMap((_n, i) => (def.split && i === 0 ? [] : [i]));
+}
+
 interface ManaSourceArrangement {
   readonly last?: ReadonlySet<ObjectId>;
   readonly withheld?: ReadonlySet<ObjectId>;
@@ -1069,6 +1106,7 @@ export class Game {
           action.prototype === true,
           action.offspring === true,
           action.evoke === true ? (action.evokeCost ?? "") : null,
+          action.division,
         );
         break;
       case "activate-ability":
@@ -1188,7 +1226,7 @@ export class Game {
       const cardFaces = ownDef.transform ? null : ownDef.faces;
       const faceList: readonly (readonly [number | undefined, string])[] =
         cardFaces !== null
-          ? cardFaces.map((n, i) => [i, n] as const)
+          ? cardFaces.flatMap((n, i) => (ownDef.split && i === 0 ? [] : [[i, n] as const]))
           : [[undefined, ownName] as const];
       for (const [face, cardName] of faceList) {
         const def = this.faceDef(card, face ?? 0);
@@ -1322,9 +1360,7 @@ export class Game {
     // double-faced card is its own option, as it is from the hand.
     for (const card of this.state.zones.perPlayer[player].graveyard) {
       const ownDef = this.registry.get(this.state.objects[card].cardName);
-      const cardFaces = ownDef.transform ? null : ownDef.faces;
-      const faceList: readonly (number | undefined)[] =
-        cardFaces !== null ? cardFaces.map((_n, i) => i) : [undefined];
+      const faceList = castableFaces(ownDef);
       for (const face of faceList) {
         const grants = this.graveyardGrantsFor(player, card, face ?? 0);
         if (grants.length === 0) continue;
@@ -1989,6 +2025,7 @@ export class Game {
         cardName,
         targetSpecs: specs,
         targetOptions: options,
+        ...(def.divided !== null ? { divide: def.divided } : {}),
         ...(via !== undefined ? { via } : {}),
         ...(graveyardGrant !== undefined ? { graveyardGrant } : {}),
         ...(face !== undefined ? { face } : {}),
@@ -5481,8 +5518,7 @@ export class Game {
    * adventurer), or `[undefined]` for a single-faced card and a transforming
    * one, which is only ever played as its front. */
   private modalFaces(cardId: ObjectId): readonly (number | undefined)[] {
-    const def = this.registry.get(this.state.objects[cardId].cardName);
-    return def.transform || def.faces === null ? [undefined] : def.faces.map((_n, i) => i);
+    return castableFaces(this.registry.get(this.state.objects[cardId].cardName));
   }
 
   /** The base land-drop limit plus any `extraLandsPerTurn` statics `player`
@@ -7455,8 +7491,7 @@ export class Game {
         const ownDef = this.registry.get(object.cardName);
         if (ownDef.types.includes("land")) continue;
         const before = offers.length;
-        const faces: readonly (number | undefined)[] =
-          !ownDef.transform && ownDef.faces !== null ? ownDef.faces.map((_n, i) => i) : [undefined];
+        const faces = castableFaces(ownDef);
         for (const face of faces) {
           const def = this.faceDef(cardId, face ?? 0);
           if (def.types.includes("land")) continue;
@@ -7552,12 +7587,13 @@ export class Game {
     prototype = false,
     offspring = false,
     evoke: string | null = null,
+    division?: readonly number[],
   ): void {
     if (prototype && !this.prototypeApplied(cardId)) {
       if (this.faceDef(cardId, face).prototype === null) throw new Error(`${this.faceDef(cardId, face).name} has no prototype`);
       this.withPrototype(cardId, () =>
         this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
-          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true, offspring, evoke),
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true, offspring, evoke, division),
       );
       return;
     }
@@ -7639,6 +7675,8 @@ export class Game {
       this.cardSource(def, cardId),
     );
     if (badTarget !== null) throw new Error(badTarget);
+    const chosenDivision = def.divided === null ? undefined : spellDivision(def.divided, targets, division);
+    if (typeof chosenDivision === "string") throw new Error(`${def.name}: ${chosenDivision}`);
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
     const taxLife = this.commanderTaxLife(player, cardId);
@@ -7770,6 +7808,7 @@ export class Game {
     if (via === "effect" && this.castNowProbe?.exileAfter === true) object.exileIfWouldGoToGraveyard = true;
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
+    if (chosenDivision !== undefined) object.division = chosenDivision;
     if (kicked) object.kicked = true;
     if (offspring) object.offspringGrantPaid = true;
     if (evoke !== null) object.evokePaid = true;
@@ -10329,7 +10368,10 @@ export class Game {
           0,
           object.targetZones,
           object.lastKnownRefs,
-          illegalTargets.length > 0 ? { illegalTargets } : {},
+          {
+            ...(illegalTargets.length > 0 ? { illegalTargets } : {}),
+            ...(object.division !== undefined ? { division: object.division } : {}),
+          },
         );
         // Overload (rule 702.126) and kicker (rule 702.33) each replace the
         // ordinary effect "instead" when chosen; overload takes priority since
@@ -12722,6 +12764,7 @@ export class Game {
       readonly readTargets?: ResolvedTargets;
       readonly illegalTargets?: readonly number[];
       readonly announcedModes?: readonly number[];
+      readonly division?: readonly number[];
     } = {},
   ): ResolutionContext {
     const refs = lastKnownRefs;
@@ -13723,6 +13766,7 @@ export class Game {
         return spell.lastOnStack?.zoneChangeCount === refs.triggerSpell ? spell.lastOnStack : null;
       },
       shuffleLibrary: () => this.shuffleLibraryOf(controller),
+      division: opts.division ?? [],
       copyTriggerSpell: (spell, newTargets) => {
         if (triggerObject !== undefined) this.copySpellFrom(spell, triggerObject, controller, newTargets);
       },
@@ -15455,6 +15499,7 @@ export class Game {
       ...(object.autoTargetSlots !== undefined ? { autoTargetSlots: [...object.autoTargetSlots] } : {}),
       xValue: object.xValue ?? null,
       ...(object.chosenModes !== undefined ? { chosenModes: [...object.chosenModes] } : {}),
+      ...(object.division !== undefined ? { division: [...object.division] } : {}),
       ...(object.kicked === true ? { kicked: true } : {}),
       ...(object.overloaded === true ? { overloaded: true } : {}),
       ...(object.evokePaid === true ? { evokePaid: true } : {}),
@@ -15516,6 +15561,7 @@ export class Game {
       ...(spell.targetStints !== undefined ? { targetStints: [...spell.targetStints] } : {}),
       ...(spell.autoTargetSlots !== undefined ? { autoTargetSlots: [...spell.autoTargetSlots] } : {}),
       ...(spell.chosenModes !== undefined ? { chosenModes: [...spell.chosenModes] } : {}),
+      ...(spell.division !== undefined ? { division: [...spell.division] } : {}),
       ...(spell.kicked === true ? { kicked: true } : {}),
       ...(spell.overloaded === true ? { overloaded: true } : {}),
       ...(spell.evokePaid === true ? { evokePaid: true } : {}),
@@ -20974,6 +21020,7 @@ export class Game {
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
+    object.division = undefined;
     object.kicked = undefined;
     object.offspringGrantPaid = undefined;
     object.evokePaid = undefined;

@@ -39,13 +39,5 @@
       "tested": true
     }
   ],
-  "blocked": [
-    {
-      "name": "Expansion // Explosion",
-      "needs": [
-        "new:split-cards"
-      ],
-      "why": "A split card: cast either half, characteristics combined off the stack. Its copy half needs nothing else now."
-    }
-  ]
+  "blocked": []
 }

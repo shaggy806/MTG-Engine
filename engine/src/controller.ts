@@ -1117,7 +1117,14 @@ export class RandomController extends AutomaticController {
       // An "any number of" group (always last): a random subset of its
       // candidates, none included.
       if (i === group) {
-        for (const ref of choices) if (this.random() < 0.5) picked.push(ref);
+        // No more than the group's `max` (Magma Opus's four); a group without
+        // one draws exactly as it always has.
+        const spec = specs[group];
+        const max = typeof spec === "object" && spec.kind === "any-number" ? spec.max : undefined;
+        for (const ref of choices) {
+          if (max !== undefined && picked.length - group >= max) break;
+          if (this.random() < 0.5) picked.push(ref);
+        }
         break;
       }
       if (choices.length === 0) picked.push(null);

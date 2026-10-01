@@ -58,6 +58,7 @@ import _poolEpicProportions from "../pool/epic-proportions.js";
 import _poolErtaiWizardAdept from "../pool/ertai-wizard-adept.js";
 import _poolEsperCharm from "../pool/esper-charm.js";
 import _poolEssenceScatter from "../pool/essence-scatter.js";
+import _poolExpansionExplosion from "../pool/expansion-explosion.js";
 import _poolExpedite from "../pool/expedite.js";
 import _poolExtremisElite from "../pool/extremis-elite.js";
 import _poolFalseDefeat from "../pool/false-defeat.js";
@@ -258,6 +259,7 @@ const shard: CardShard = {
     _poolErtaiWizardAdept,
     _poolEsperCharm,
     _poolEssenceScatter,
+    _poolExpansionExplosion,
     _poolExpedite,
     _poolExtremisElite,
     _poolFalseDefeat,

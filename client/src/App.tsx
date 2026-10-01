@@ -186,6 +186,8 @@ const castExtras = (cast: CastAction) => ({
   // Which graveyard permission pays for it, when several could.
   ...(cast.graveyardGrant !== undefined ? { graveyardGrant: cast.graveyardGrant } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
+  // "4 damage divided as you choose" (Magma Opus): asked once the targets are in.
+  ...(cast.divide !== undefined ? { divide: cast.divide } : {}),
   // Not echoed either: how many distinct targets are affordable, which the
   // targeting steps keep inside (`currentSlotOptions`).
   ...(cast.targetCount !== undefined ? { targetCount: cast.targetCount } : {}),
@@ -293,6 +295,9 @@ interface Targeting {
   /** One entry per slot filled so far; `null` is an optional slot the player
    * chose to skip ("up to one target creature"). */
   readonly picked: readonly (TargetRef | null)[]
+  /** The cast divides `total` among the targets from slot `slot` on (rule
+   * 601.2d — Magma Opus): asked once they're chosen, before it goes out. */
+  readonly divide?: { readonly total: number; readonly slot: number }
   /** New targets for a copy of a spell (Twincast, Shiko and Narset): the
    * target each slot has now, which a Keep button takes — it may not be on
    * the board to click any more. */
@@ -941,6 +946,15 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   /** A convoke spell whose targets are in, waiting on which creatures help
    * pay for it (rule 702.51) — none at all is paying with mana. The engine
    * works out what each one pays. */
+  // A cast whose targets are in, waiting on how its divided damage is split
+  // among them (Magma Opus). `shares` follows `targets`; `resume` carries the
+  // cast on from there — convoke, a tap cost, or straight out.
+  const [pendingDivision, setPendingDivision] = useState<{
+    readonly total: number
+    readonly targets: readonly TargetRef[]
+    readonly shares: readonly number[]
+    readonly resume: (division: readonly number[]) => void
+  } | null>(null)
   const [pendingConvoke, setPendingConvoke] = useState<{
     readonly action: Action
     readonly offer: ConvokeOffer
@@ -1280,6 +1294,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     | 'choose-sacrifice'
     | 'choose-tap'
     | 'choose-convoke'
+    | 'choose-division'
     | 'assign-combat-damage'
     | 'targeting'
     | 'cast-now'
@@ -1335,6 +1350,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
                       ? 'choose-tap'
                     : pendingConvoke
                       ? 'choose-convoke'
+                    : pendingDivision
+                      ? 'choose-division'
                     : activeTargeting
                       ? 'targeting'
                     // Last: once a variant is picked, its X / modes / targets
@@ -1363,7 +1380,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   }, [canPass, game, seat])
 
   const finishTargets = useCallback(
-    (
+    // Named, so the division step's `resume` can call back into it.
+    function finish(
       t: Pick<
         Targeting,
         | 'kind'
@@ -1388,9 +1406,11 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
         | 'graveyardGrant'
         | 'tapCost'
         | 'convokeOffer'
+        | 'divide'
       >,
       targets: readonly (TargetRef | null)[],
-    ) => {
+      division?: readonly number[],
+    ): void {
       const action: Action =
         t.kind === 'choose-targets'
           ? { type: 'choose-targets', player: seat, targets: [...targets] }
@@ -1415,6 +1435,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
                 ...(t.graveyardGrant !== undefined ? { graveyardGrant: t.graveyardGrant } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.escapeExile !== undefined ? { escapeExile: [...t.escapeExile] } : {}),
+                ...(division !== undefined ? { division: [...division] } : {}),
               }
             : {
                 type: 'activate-ability',
@@ -1426,6 +1447,25 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.manaColors !== undefined ? { manaColors: t.manaColors } : {}),
               }
+      // Two or more targets to divide among: ask how, then carry on from here
+      // with the answer. One takes it all, which the engine works out itself.
+      const members =
+        t.divide === undefined
+          ? []
+          : targets.slice(t.divide.slot).filter((r): r is TargetRef => r !== null)
+      if (t.kind === 'cast' && t.divide !== undefined && division === undefined && members.length >= 2) {
+        const total = t.divide.total
+        const base = Math.floor(total / members.length)
+        setPendingDivision({
+          total,
+          targets: members,
+          shares: members.map((_m, i) => base + (i < total % members.length ? 1 : 0)),
+          // Back into this with the split: everything it needs is in the
+          // arguments, so an earlier render's copy does as well.
+          resume: (chosen) => finish(t, targets, chosen),
+        })
+        return
+      }
       const convoke = t.convokeOffer
       if (convoke !== undefined && action.type === 'cast-spell') {
         setPendingConvoke({
@@ -3046,6 +3086,46 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
           Confirm
         </button>
         <button type="button" onClick={() => setPendingTap(null)}>
+          Cancel
+        </button>
+      </div>
+    )
+  } else if (mode === 'choose-division' && pendingDivision) {
+    // At least 1 each, all of it (rule 601.2d): a share can grow only by what
+    // the others can spare.
+    const { total, targets: divTargets, shares, resume } = pendingDivision
+    const sum = shares.reduce((a, b) => a + b, 0)
+    controls = (
+      <div className="controls">
+        <span>
+          Divide {total} damage — {sum}/{total}
+        </span>
+        <span className="stack-counts">
+          {divTargets.map((ref, i) => (
+            <CountStepper
+              key={ref.kind === 'player' ? ref.player : ref.object}
+              label={ref.kind === 'player' ? playerLabel(ref.player, game.seats) : game.nameOf(ref.object)}
+              count={shares[i]}
+              max={total - (divTargets.length - 1)}
+              onChange={(n) =>
+                setPendingDivision((cur) =>
+                  cur === null ? cur : { ...cur, shares: cur.shares.map((v, j) => (j === i ? Math.max(1, n) : v)) },
+                )
+              }
+            />
+          ))}
+        </span>
+        <button
+          type="button"
+          disabled={sum !== total}
+          onClick={() => {
+            setPendingDivision(null)
+            resume(shares)
+          }}
+        >
+          Cast
+        </button>
+        <button type="button" onClick={() => setPendingDivision(null)}>
           Cancel
         </button>
       </div>

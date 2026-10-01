@@ -161,6 +161,11 @@ export type Action =
       readonly player: PlayerId;
       readonly card: ObjectId;
       readonly targets?: ChosenTargets;
+      /** How a divided amount is split among the targets of the card's
+       * `divided` group (rule 601.2d — Magma Opus), one number per member in
+       * order, each at least 1, summing to the total. Absent: as evenly as it
+       * goes, the earlier targets taking the remainder. */
+      readonly division?: readonly number[];
       /** The modes chosen for a targeted modal spell (rule 700.2 — ROADMAP
        * Phase 11 EG-2): indices into `CardDefinition.castModal.modes`, distinct.
        * `targets` are then the concatenation of those modes' target slots, in
@@ -523,6 +528,9 @@ export type LegalAction =
       readonly cardName: string;
       readonly targetSpecs: readonly TargetSpec[];
       readonly targetOptions: readonly (readonly TargetRef[])[];
+      /** The card divides `total` among the targets of the group at target
+       * slot `slot` — the cast's `division` says how (Magma Opus). */
+      readonly divide?: { readonly total: number; readonly slot: number };
       /** Set for a *targeted modal* spell (rule 700.2 — ROADMAP Phase 11 EG-2):
        * the driver picks `minModes..maxModes` of `modes` (each a text label +
        * its own target specs), then targets for the chosen modes, then echoes
