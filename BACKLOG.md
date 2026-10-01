@@ -324,9 +324,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
   cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
   since the engine otherwise follows the Comprehensive Rules exactly.
-- **Permanents can't be rearranged on your battlefield.** The user wants to move permanents
-  around on their own battlefield by dragging them; the board lays them out itself. A client-only
-  layout preference, since where a permanent sits has no rules meaning.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing

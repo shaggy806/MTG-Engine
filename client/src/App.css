@@ -3842,3 +3842,46 @@
     0 0 0 2px color-mix(in srgb, var(--attack-seat) 35%, transparent),
     0 6px 14px rgba(0, 0, 0, 0.4);
 }
+
+/* Dragging your own permanents into the order you want (game/useBoardDrag.ts).
+   The dragged tile follows the pointer over everything else; the tile it
+   would land beside shows a bar on that side. */
+.board-entry.draggable {
+  touch-action: none;
+}
+/* Nor a native image drag, which would swallow the pointer moves (App.tsx's
+   onDragStart covers browsers without this property). */
+.board-entry.draggable img {
+  -webkit-user-drag: none;
+}
+.board-entry.dragging {
+  z-index: 60;
+  opacity: 0.85;
+  pointer-events: none;
+  filter: drop-shadow(0 0.4em 0.8em rgb(0 0 0 / 0.5));
+}
+.board-entry.drop-before::before,
+.board-entry.drop-after::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0.25em;
+  border-radius: 0.125em;
+  background: var(--accent);
+  z-index: 30;
+}
+.board-entry.drop-before::before {
+  left: -0.4em;
+}
+.board-entry.drop-after::after {
+  right: -0.4em;
+}
+/* No hover cards popping up under a tile being dragged across the board. */
+body.board-dragging .mini-tile-popover {
+  display: none;
+}
+body.board-dragging {
+  cursor: grabbing;
+  user-select: none;
+}

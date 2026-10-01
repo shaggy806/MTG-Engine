@@ -32,6 +32,8 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
+import { applyBoardOrder } from './game/boardOrder.ts'
+import { useBoardDrag, type BoardDragControls } from './game/useBoardDrag.ts'
 import { Symbols } from './ui/Symbols.tsx'
 import type { BoardEntry } from './game/board.ts'
 import { blockPairs, freeBlocker, leastBlocked, setPairCount } from './game/blockGroups.ts'
@@ -615,6 +617,9 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
     () => ({ handRaised, setHandRaised, handGrid, setHandGrid }),
     [handRaised, handGrid],
   )
+  // The order you've dragged your own permanents into, and the drag under
+  // way. Up here so a frame arriving mid-drag doesn't drop the tile.
+  const boardDrag = useBoardDrag(game.roomId)
   // Called unconditionally (before the loading-guard below) per the rules of
   // hooks. `ackFrame` is what lets the server pace its bots against these
   // animations rather than racing ahead of them.
@@ -738,6 +743,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
         hand={hand}
         previousView={shown.previousView}
+        boardDrag={boardDrag}
       />
 
       {showHistory ? (
@@ -795,6 +801,9 @@ interface TableProps {
   /** The board shown before this one: what `Stack` needs to animate only its
    * new arrivals, and `ArrowLayer` only its new arrows. */
   readonly previousView: PlayerView | null
+  /** Your own permanents' dragged order and the drag in progress, owned by
+   * `GameScreen` so a drag survives this component's per-frame remount. */
+  readonly boardDrag: BoardDragControls
 }
 
 /**
@@ -804,7 +813,7 @@ interface TableProps {
  * *not* reset per frame — the hand tray being raised — lives in `GameScreen`
  * and arrives through props.
  */
-function Table({ view, seat, opponents, game, actions, hand, previousView }: TableProps) {
+function Table({ view, seat, opponents, game, actions, hand, previousView, boardDrag }: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
@@ -2460,16 +2469,39 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
   }
 
   const renderBoard = (pid: PlayerId, isOpp: boolean, landsBelow: boolean) => {
-    const entries = computeBoardEntries(view, pid)
+    // Your own board is in the order you've dragged it into; everyone
+    // else's is as the board lays it out (`computeBoardEntries`).
+    const own = pid === seat
+    const entries = own
+      ? applyBoardOrder(computeBoardEntries(view, pid), boardDrag.order)
+      : computeBoardEntries(view, pid)
     const lands = entries.filter((e) => e.bucket === 'land')
     // Creatures, artifacts, and enchantments all share one area — no
     // per-type labels or sub-columns, just "everything that isn't a land".
     const permanents = entries.filter((e) => e.bucket !== 'land')
 
-    const renderEntries = (list: readonly BoardEntry[]) => (
-      <div className="board-row-cards">
-        {list.map((entry) => (
-          <div className="board-entry" key={entry.ids[0]} data-obj-ids={entry.ids.join(' ')}>
+    const { drag } = boardDrag
+    const renderEntries = (list: readonly BoardEntry[], row: 'lands' | 'permanents') => (
+      <div className="board-row-cards" data-drag-row={own ? row : undefined}>
+        {list.map((entry) => {
+          const dragged = own && drag !== null && entry.ids.includes(drag.key)
+          const dropSide =
+            own && drag?.drop && entry.ids.includes(drag.drop.key)
+              ? drag.drop.after
+                ? ' drop-after'
+                : ' drop-before'
+              : ''
+          return (
+          <div
+            className={`board-entry${own ? ' draggable' : ''}${dragged ? ' dragging' : ''}${dropSide}`}
+            key={entry.ids[0]}
+            data-obj-ids={entry.ids.join(' ')}
+            style={dragged ? { translate: `${drag.dx}px ${drag.dy}px` } : undefined}
+            onPointerDown={own ? (e) => boardDrag.start(e, entry.ids[0]) : undefined}
+            // The art is an image the browser would drag natively, which
+            // cancels the pointer stream this drag runs on.
+            onDragStart={own ? (e) => e.preventDefault() : undefined}
+          >
             {tileFor(entry.sample, pid, entry.ids, {
               // Identical permanents folded here in the client, each of which
               // may itself be one of the engine's compacted token stacks —
@@ -2498,7 +2530,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
               </div>
             ) : null}
           </div>
-        ))}
+          )
+        })}
       </div>
     )
 
@@ -2515,12 +2548,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     // mirrored the wrong way.)
     const landRow = (
       <div className="board-row" key="lands">
-        {renderEntries(lands)}
+        {renderEntries(lands, 'lands')}
       </div>
     )
     const permanentRow = (
       <div className="board-row" key="permanents">
-        {renderEntries(permanents)}
+        {renderEntries(permanents, 'permanents')}
       </div>
     )
     const rows = landsBelow ? [permanentRow, landRow] : [landRow, permanentRow]
