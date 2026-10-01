@@ -17,6 +17,8 @@ export type NameAt = (id: ObjectId, seq: number) => string
 export interface EventLogProps {
   readonly events: readonly GameEvent[]
   readonly nameAt: NameAt
+  /** Picks an entry: the caller points out on the board what it was about. */
+  readonly onSelect?: (event: GameEvent) => void
 }
 
 /**
@@ -117,7 +119,7 @@ function EventText({
  * The choice is per-session rather than persisted — it's a debugging mode,
  * and the useful default is the one you get on every fresh visit.
  */
-export function EventLog({ events, nameAt }: EventLogProps) {
+export function EventLog({ events, nameAt, onSelect }: EventLogProps) {
   const boxRef = useRef<HTMLDivElement>(null)
   const [detailed, setDetailed] = useState(false)
   const lookup = useCardData()
@@ -155,7 +157,12 @@ export function EventLog({ events, nameAt }: EventLogProps) {
       </div>
       <ul>
         {shown.map((event) => (
-          <li key={event.seq} className={`ev ev-${event.type}`}>
+          <li
+            key={event.seq}
+            className={`ev ev-${event.type}${onSelect ? ' selectable' : ''}`}
+            onClick={onSelect ? () => onSelect(event) : undefined}
+            title={onSelect ? 'Show on the board' : undefined}
+          >
             <span className="ev-seq">{event.seq}</span>
             <EventText event={event} nameAt={nameAt} lookup={lookup} />
           </li>

@@ -6,6 +6,7 @@ import {
   useMotionPrefs,
 } from '../game/motionPrefs.ts'
 import type { AnimScale, CastEntrance } from '../game/motionPrefs.ts'
+import { playSound } from '../game/sound.ts'
 
 const SPEED_LABEL: Record<AnimScale, string> = {
   0.5: 'Fast',
@@ -96,6 +97,19 @@ export function MotionControl() {
             {prefs.reduced && !prefs.reduceMotion ? (
               <span className="motion-note">(set by your system)</span>
             ) : null}
+          </label>
+          <label className="motion-row">
+            <input
+              type="checkbox"
+              checked={prefs.sound}
+              onChange={(e) => {
+                setMotionSettings({ sound: e.target.checked })
+                // A sample, which is also the click a browser wants before
+                // it will play any sound at all.
+                if (e.target.checked) playSound('cast')
+              }}
+            />
+            Sound effects
           </label>
         </div>
       ) : null}

@@ -1,7 +1,7 @@
 # Legibility of play: animation and pacing
 
-Status: **in progress**. Planned 2026-09-30; Steps 0–3 (the groundwork, the stack and whose turn
-it is, tile effects, cards leaving and moving) done the same day, Steps 4–5 not started. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
+Status: **shipped** (2026-09-30). All six steps were planned and built that day; the follow-ups
+are in `BACKLOG.md`'s "Legibility of play" section. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
 list and settles the design questions everything else depends on.
 
 ## The problem
@@ -170,13 +170,27 @@ and fly it onto the new spot. The live checks ran in Playwright's headless Chrom
 - The cast spotlight starts from the zone the spell was cast from.
 - The monarch marker moves to its new holder.
 
-**Step 4: arrows.**
+**Step 4: arrows.** *Done 2026-09-30.* As built, arrows are drawn from the board's state, not
+from events (`ui/ArrowLayer.tsx`, rendered inside `Table` and measured off each mounted board):
+the aimed stack entry's targets (the top one, or the one hovered — the same rule as `aim`), each
+attacker to what it attacks, each blocker to what it blocks. So an arrow stays up exactly as long
+as what it shows is true, and only one that wasn't on the previous board draws itself in. A
+player is pointed at by their life total, not their panel, whose middle points at nothing.
+Original items:
 - Source → target arrows on `object-targeted`, drawn on an SVG layer over the table from
   `data-obj-id` / player panel anchors. They're drawn in the after-half and stay up while the
   entry is on the stack, replacing nothing: `aim` stays for the hover case.
 - Attack arrows and block lines use the same layer.
 
-**Step 5: control and review.**
+**Step 5: control and review.** *Done 2026-09-30.* As built: the host's pause, resume and step
+(`set-bots-paused`, `step-bots`; while paused the frame gate stays shut even past the ack
+timeout, and a step opens it once without the bot-speed linger); a replay button that plays the
+last frame again over the board it started from (`usePlayback`'s `replay`, sharing `runFrame`
+with the live queue, never acking); History entries that close the log and pulse what they
+named on the board (`ui/highlight.ts`); and sound, off by default, synthesised with Web Audio
+(`game/sound.ts`) so there was nothing to license. The new top-strip controls are icons: as
+words they squeezed the phase track to four steps at 1366px, and the track now keeps the
+current step scrolled into view. Original items:
 - **Pause / step bots (host).** A protocol message (`bot-pause`, `bot-step`) and a room flag. When
   paused, `tryOpenGate` doesn't open; a step opens it once. The pause is shown to every seat. The
   gate's ack timeout must not fire while paused.

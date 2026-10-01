@@ -442,9 +442,8 @@ Beyond that plan:
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md` (Steps 0–3 are done: the
-groundwork, the stack and whose turn it is, effects on the board's tiles and life totals, and
-cards leaving or moving). The problem is that a bot turn can't be
+The build order and design are in `docs/plans/legibility-of-play.md`; every step of it has
+shipped (2026-09-30), so what's left here is follow-ups. The problem is that a bot turn can't be
 followed by eye, even at the slow bot speed. Only some kinds of event hold the game up for their
 animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat hit, a
 permanent leaving, a tap, something leaving the stack, a trigger's source lighting up, a
@@ -455,11 +454,10 @@ now a small follow-up: a `slotFor` entry (which half of the frame, paced or not,
 not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an `after` cue, or
 `flyGhost` for a move — and each must honour `motionPrefs` (speed and reduced motion).
 
-- **Bots play too fast to follow, even on "slow".** `BOT_LINGER_MS.slow` (`server/src/room.ts`)
-  is a 1.6s pause after each frame, but a bot passing priority is never published as a frame of
-  its own. Its effects arrive in the next frame, and that frame animates only what `PACED`
-  covers. So most of the fix is giving more events paced slots (the items below), not a longer
-  linger.
+- **Re-measure the bot speeds.** Most events now hold the game for their animation, and the host
+  can pause or step the bots, so `BOT_LINGER_MS` (`server/src/room.ts`: slow 1.6s, normal 0.7s,
+  after each frame) may now make "slow" too slow. Watch a 4-player bot game at each speed before
+  changing it.
 - **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
   +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
   `pt-modified` is only a one-shot pump.
@@ -472,15 +470,8 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 
 Follow-on ideas, approved by the user on 2026-09-30:
 
-- **Arrows from source to target** when a spell or ability goes on the stack
-  (`object-targeted`). Today `Table`'s `aim` marks only the target: a reticle, a frame, or a
-  "Targeted" chip.
-- **A host control to pause the bots or step them one action at a time.** It would hold the
-  room's frame gate (`server/src/room.ts`).
-- **Replay the last update's animations** on demand: re-fire the last frame's schedule against
-  the view before it.
-- **Clearer attacks and blocks.** Attackers step forward or get arrows to what they attack
-  (`attackers-declared`), and lines join blockers to their attackers (`blocker-declared`).
+- **Arrows only for the aimed stack entry.** `ArrowLayer` draws the targets of the top entry (or
+  the hovered one), like `aim`; a deep stack of targeted spells shows one set at a time.
 - **Folded tokens arrive as one tile**: two Soldiers from Raise the Alarm are separate objects
   the board folds into one tile, so only the first one's `permanent-entered-battlefield` finds a
   tile to animate. Harmless, but a "×2" arriving could say so.
@@ -488,8 +479,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.
 - **The initiative has no animation**: unlike the monarch, it has no event to animate from.
-- **Clicking a history log entry highlights the cards it involved on the board** (`EventLog`).
-- **Optional sound effects, off by default.**
+- **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
+  only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
+  open the zone the card went to instead.
+- **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
+  and download-free, but plain. Real samples could replace them cue for cue.
 
 - **A face-down exiled card drops out of its owner's exile count and list** for every seat that
   can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in

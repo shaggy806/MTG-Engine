@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { LegalAction, PlayerView } from 'engine/client'
+import type { GameEvent, LegalAction, Phase, PlayerView } from 'engine/client'
 import { phaseOfStep } from 'engine/client'
 import { scheduleEvents } from './animationSchedule.ts'
 import type { ScheduledEvent } from './animationSchedule.ts'
@@ -29,6 +29,17 @@ export interface Playback {
    * while this holds: those actions belong to a board that isn't on screen
    * yet, or one whose changes are still being shown. */
   readonly busy: boolean
+  /** There's a last update to replay (see `replay`): something happened in
+   * it, and the board before it is known. */
+  readonly replayable: boolean
+}
+
+export interface PlaybackControls {
+  /** Plays the last update's animations again, over the board it started
+   * from, then settles back on the board it ended on. Only between frames:
+   * a frame arriving meanwhile waits its turn, as it would behind any other.
+   * Nothing is acked — the server already has its ack. */
+  readonly replay: () => void
 }
 
 /**
@@ -66,14 +77,23 @@ export function usePlayback(
   frame: Frame | null,
   bus: AnimationBus,
   onShown: (seq: number) => void,
-): Playback {
+): Playback & PlaybackControls {
   const [displayed, setDisplayed] = useState<Playback>({
     view: frame?.view ?? null,
     previousView: null,
     actions: frame?.actions ?? [],
     revision: 0,
     busy: false,
+    replayable: false,
   })
+  /** The last frame that had anything in it, with what replaying it needs:
+   * the board it started from, its new events and the phase it began in. */
+  const lastPlayedRef = useRef<{
+    readonly frame: Frame
+    readonly prev: PlayerView
+    readonly events: readonly GameEvent[]
+    readonly startPhase: Phase
+  } | null>(null)
 
   const queueRef = useRef<Frame[]>([])
   const playingRef = useRef(false)
@@ -142,12 +162,35 @@ export function usePlayback(
     // than we've already shown; there's nothing sensible to animate then.
     const from = shownEventsRef.current <= total ? shownEventsRef.current : total
     shownEventsRef.current = total
+    const events = next.view.events.slice(from)
+    const startPhase = phaseRef.current
+    phaseRef.current = runFrame(next, prev, events, startPhase, () => {
+      onShownRef.current(next.seq)
+      playNext()
+    })
+    if (events.length > 0 && prev !== null) {
+      lastPlayedRef.current = { frame: next, prev, events, startPhase }
+    }
+  }, [])
+
+  /**
+   * Plays one frame out: its first half over the board on screen, then its
+   * board, then its second half; then `done`. Returns the phase it ends in.
+   * Shared by the live queue and `replay`, which differ only in what happens
+   * after (the live one acks and moves on).
+   */
+  function runFrame(
+    next: Frame,
+    prev: PlayerView | null,
+    events: readonly GameEvent[],
+    startPhase: Phase,
+    done: () => void,
+  ): Phase {
     const prefs = motionPrefs()
-    const schedule = scheduleEvents(next.view.events.slice(from), phaseRef.current, {
+    const schedule = scheduleEvents(events, startPhase, {
       scale: prefs.animScale,
       reduced: prefs.reduced,
     })
-    phaseRef.current = schedule.endPhase
     // A hidden tab has nobody watching, and the browser throttles its timers
     // to about one tick a second, so playing the frame out would only hold up
     // the server's bots for nothing. Show it at once instead.
@@ -175,8 +218,7 @@ export function usePlayback(
         const busy = queueRef.current.length > 0
         setDisplayed((cur) => (cur.busy === busy ? cur : { ...cur, busy }))
       }
-      onShownRef.current(next.seq)
-      playNext()
+      done()
     }
 
     // `totalMs` counts only the animations the game waits for (see
@@ -191,6 +233,7 @@ export function usePlayback(
       }
       const revision = revisionRef.current
       const busy = afterMs > 0 || queueRef.current.length > 0
+      const replayable = events.length > 0 && prev !== null
       setDisplayed((cur) => ({
         view: next.view,
         previousView: cur.view,
@@ -199,6 +242,7 @@ export function usePlayback(
         // Still busy through the second half: the board is on screen, but
         // what's happening to it isn't finished yet.
         busy,
+        replayable: replayable || cur.replayable,
       }))
       if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
       else finish()
@@ -210,7 +254,32 @@ export function usePlayback(
       // Returning `cur` unchanged bails the re-render out entirely.
       setDisplayed((cur) => (cur.busy ? cur : { ...cur, busy: true }))
     }
-  }, [])
+    return schedule.endPhase
+  }
+
+  const replay = useCallback((): void => {
+    const last = lastPlayedRef.current
+    if (last === null || playingRef.current || queueRef.current.length > 0) return
+    playingRef.current = true
+    revisionRef.current += 1
+    const revision = revisionRef.current
+    // Back to the board the update started from, with nothing clickable…
+    setDisplayed((cur) => ({
+      view: last.prev,
+      previousView: last.prev,
+      actions: [],
+      revision,
+      busy: true,
+      replayable: cur.replayable,
+    }))
+    // …mounted before its first half measures it, then the update again.
+    timerRef.current = window.setTimeout(() => {
+      lastViewRef.current = last.prev
+      runFrame(last.frame, last.prev, last.events, last.startPhase, () => play())
+    }, 60)
+    // `runFrame` only touches refs and setters, so the copy captured here is
+    // as good as any later render's.
+  }, [play])
 
   // The second half's cues go out once its board has mounted: a layout effect
   // of the component that renders `Table` runs after every tile is in the DOM
@@ -241,12 +310,14 @@ export function usePlayback(
       shownEventsRef.current = 0
       lastQueuedSeqRef.current = -1
       revisionRef.current += 1
+      lastPlayedRef.current = null
       setDisplayed({
         view: null,
         previousView: null,
         actions: [],
         revision: revisionRef.current,
         busy: false,
+        replayable: false,
       })
       return
     }
@@ -265,5 +336,5 @@ export function usePlayback(
     [],
   )
 
-  return displayed
+  return { ...displayed, replay }
 }

@@ -63,6 +63,8 @@ import { playerLabel, seatClassOf } from './format.ts'
 import { PhaseTrack } from './ui/PhaseTrack.tsx'
 import { TurnBanner } from './ui/TurnBanner.tsx'
 import { AnimationLayer } from './ui/AnimationLayer.tsx'
+import { ArrowLayer } from './ui/ArrowLayer.tsx'
+import { highlightEvent } from './ui/highlight.ts'
 import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
@@ -619,6 +621,48 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               onChange={game.setBotSpeed}
             />
           ) : null}
+          {/* The host can stop the bots to look at something, and let them
+              go a move at a time; everyone else sees that they're stopped.
+              Icons rather than words: the strip has no room to spare, and
+              words here squeezed the phase track down to four steps at
+              1366px. */}
+          {game.isHost && game.seats.some((s) => s.isBot) && !over ? (
+            <>
+              <button
+                type="button"
+                className={`ts-icon${game.botsPaused ? ' ts-paused' : ''}`}
+                aria-pressed={game.botsPaused}
+                aria-label={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
+                title={game.botsPaused ? 'Resume the bots' : 'Pause the bots'}
+                onClick={() => game.setBotsPaused(!game.botsPaused)}
+              >
+                {game.botsPaused ? '▶' : '⏸'}
+              </button>
+              {game.botsPaused ? (
+                <button
+                  type="button"
+                  className="ts-icon"
+                  aria-label="Let the bots make one move"
+                  title="Let the bots make one move"
+                  onClick={game.stepBots}
+                >
+                  ⏭
+                </button>
+              ) : null}
+            </>
+          ) : game.botsPaused ? (
+            <span className="ts-paused-badge">Bots paused</span>
+          ) : null}
+          <button
+            type="button"
+            className="ts-icon"
+            disabled={shown.busy || !shown.replayable}
+            onClick={shown.replay}
+            aria-label="Replay the last update"
+            title="Replay the last update's animations"
+          >
+            ↺
+          </button>
           <MotionControl />
           <button type="button" onClick={() => setShowHistory(true)}>
             History
@@ -660,7 +704,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         // bots to the same rule — see `ackFrame`.
         actions={shown.busy ? EMPTY_ACTIONS : shown.actions}
         hand={hand}
-        previousStack={shown.previousView?.zones.stack ?? null}
+        previousView={shown.previousView}
       />
 
       {showHistory ? (
@@ -680,6 +724,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
             <EventLog
               events={view.events}
               nameAt={(id, seq) => publicNameAt(view.publicStints, id, seq) ?? game.nameOf(id)}
+              onSelect={(event) => {
+                // Close the log so the board is in view, then point the
+                // entry's cards and players out on it once it's drawn.
+                setShowHistory(false)
+                window.setTimeout(() => highlightEvent(event), 50)
+              }}
             />
           </div>
         </div>
@@ -709,9 +759,9 @@ interface TableProps {
     readonly handGrid: boolean
     readonly setHandGrid: (open: boolean) => void
   }
-  /** The stack as the board before this one had it — what `Stack` needs to
-   * animate only its new arrivals (see its `previousStack`). */
-  readonly previousStack: readonly ObjectId[] | null
+  /** The board shown before this one: what `Stack` needs to animate only its
+   * new arrivals, and `ArrowLayer` only its new arrows. */
+  readonly previousView: PlayerView | null
 }
 
 /**
@@ -721,7 +771,7 @@ interface TableProps {
  * *not* reset per frame — the hand tray being raised — lives in `GameScreen`
  * and arrives through props.
  */
-function Table({ view, seat, opponents, game, actions, hand, previousStack }: TableProps) {
+function Table({ view, seat, opponents, game, actions, hand, previousView }: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
@@ -786,10 +836,14 @@ function Table({ view, seat, opponents, game, actions, hand, previousStack }: Ta
   // (Stack's `onFocusEntry`). A bot's Swords to Plowshares shows what it's
   // about to exile before anyone lets it resolve, instead of in the History.
   const [stackFocus, setStackFocus] = useState<ObjectId | null>(null)
-  const aim = useMemo(() => {
+  const aimId: ObjectId | null = useMemo(() => {
     const stack = view.zones.stack
-    const id = stackFocus !== null && stack.includes(stackFocus) ? stackFocus : stack[stack.length - 1]
-    const source = id === undefined ? undefined : view.objects[id]
+    if (stackFocus !== null && stack.includes(stackFocus)) return stackFocus
+    return stack[stack.length - 1] ?? null
+  }, [view, stackFocus])
+  const aim = useMemo(() => {
+    const id = aimId
+    const source = id === null ? undefined : view.objects[id]
     const targets = source?.targets ?? []
     if (source === undefined || targets.length === 0) return null
     const by =
@@ -801,7 +855,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousStack }: Ta
       objects: new Set(targets.flatMap((t) => (t.kind === 'object' ? [t.object] : []))),
       players: new Set(targets.flatMap((t) => (t.kind === 'player' ? [t.player] : []))),
     }
-  }, [view, stackFocus])
+  }, [view, aimId])
   // Attacker -> chosen defender. A creature that must attack (rule 508.1d)
   // and has only one defender it may attack starts out assigned to it, as a
   // click on it would; one with a choice waits for the player to make it.
@@ -4181,9 +4235,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousStack }: Ta
           aimed={aim}
           onFocusEntry={setStackFocus}
           seats={game.seats}
-          previousStack={previousStack}
+          previousStack={previousView?.zones.stack ?? null}
         />
       ) : null}
+      {/* What points at what: the aimed stack entry's targets, attackers,
+          blockers. Inside Table so it re-measures against each board. */}
+      <ArrowLayer view={view} previousView={previousView} aimId={aimId} />
 
       {/* The whole hand at full size, for a hand too big to pick out of the
           fan. Deliberately the *same* card renderer the fan uses, so every

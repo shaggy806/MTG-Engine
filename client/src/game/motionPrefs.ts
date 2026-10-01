@@ -32,6 +32,8 @@ export interface MotionSettings {
   /** The viewer's own switch, not counting the browser's preference. */
   readonly reduceMotion: boolean
   readonly castEntrance: CastEntrance
+  /** Sound effects (`game/sound.ts`). Off unless turned on. */
+  readonly sound: boolean
 }
 
 export interface MotionPrefs extends MotionSettings {
@@ -40,7 +42,12 @@ export interface MotionPrefs extends MotionSettings {
 }
 
 const STORAGE_KEY = 'mtg.motion'
-const DEFAULTS: MotionSettings = { animScale: 1, reduceMotion: false, castEntrance: 'rise' }
+const DEFAULTS: MotionSettings = {
+  animScale: 1,
+  reduceMotion: false,
+  castEntrance: 'rise',
+  sound: false,
+}
 
 function readStored(): MotionSettings {
   try {
@@ -50,7 +57,12 @@ function readStored(): MotionSettings {
     const animScale = ANIM_SCALES.find((s) => s === parsed.animScale) ?? DEFAULTS.animScale
     const castEntrance =
       CAST_ENTRANCES.find((e) => e === parsed.castEntrance) ?? DEFAULTS.castEntrance
-    return { animScale, reduceMotion: parsed.reduceMotion === true, castEntrance }
+    return {
+      animScale,
+      reduceMotion: parsed.reduceMotion === true,
+      castEntrance,
+      sound: parsed.sound === true,
+    }
   } catch {
     return DEFAULTS
   }

@@ -35,6 +35,7 @@ import {
 } from '../game/animationSchedule.ts'
 import type { AnimationBus, AnimationCue } from '../game/animationBus.ts'
 import { motionPrefs } from '../game/motionPrefs.ts'
+import { playSound } from '../game/sound.ts'
 
 /** How far an attacker visually lunges toward what it's hitting, in px — a
  * fixed jab distance rather than a fraction of the real gap between the two
@@ -636,6 +637,33 @@ function runPulse(source: ObjectId, delay: number): void {
   }
 }
 
+/** The sound an event makes, if any (and if the viewer has sound on). */
+function soundFor(ev: GameEvent): void {
+  switch (ev.type) {
+    case 'spell-cast':
+    case 'land-played':
+      playSound('cast')
+      return
+    case 'damage-dealt':
+      if (ev.combat) playSound('hit')
+      return
+    case 'permanent-left-battlefield':
+      playSound(ev.toZone === 'exile' ? 'exile' : 'death')
+      return
+    case 'life-changed':
+      playSound(ev.delta > 0 ? 'gain' : 'loss')
+      return
+    case 'turn-began':
+      playSound('turn')
+      return
+    case 'permanent-tapped':
+      playSound('tap')
+      return
+    default:
+      return
+  }
+}
+
 /** A permanent's tile on the battlefield — its outer `data-obj-id` box (the
  * hand and the stack carry the id too, so this looks only on a board). */
 function boardTileOf(object: ObjectId): HTMLElement | null {
@@ -1182,6 +1210,7 @@ export function AnimationLayer({
 
     const fire = (cue: AnimationCue): void => {
       const { event: ev, view } = cue
+      soundFor(ev)
       if (ev.type === 'spell-cast' || ev.type === 'land-played') {
         const obj = view.objects[ev.object]
         if (!obj) return
@@ -1278,6 +1307,8 @@ export function AnimationLayer({
           else if (cue.event.type === 'life-changed' || cue.event.type === 'damage-dealt') {
             runHurt(cue.event, cue.delay)
           }
+          const ev = cue.event
+          window.setTimeout(() => soundFor(ev), cue.delay)
           continue
         }
         // A move's snapshot is of the board as the frame starts, so it's taken

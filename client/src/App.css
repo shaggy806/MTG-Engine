@@ -140,6 +140,34 @@
 .motion-note {
   color: var(--muted);
 }
+/* The strip's icon buttons (pause/resume, step, replay): square, and a
+   glyph a little larger than the strip's text so it reads as a control. */
+.ts-menu button.ts-icon {
+  min-width: 2.2em;
+  padding: 1px 6px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+/* Resume while paused, and the badge non-hosts see instead. */
+.ts-menu button.ts-paused,
+.ts-paused-badge {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.ts-paused-badge {
+  border: 1px solid var(--warn);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+}
+/* A history entry can be clicked to point its cards out on the board. */
+.event-log .ev.selectable {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.event-log .ev.selectable:hover {
+  background: rgba(120, 200, 255, 0.08);
+}
 
 /* phase track — a compact pip row, meant to sit inline in .top-strip */
 .phase-steps {
@@ -3310,6 +3338,82 @@
   12%,
   80% {
     opacity: 1;
+  }
+}
+
+/* Arrows over the table (ui/ArrowLayer.tsx): a spell or ability on the stack
+   to its targets, attackers to what they attack, blockers to what they block.
+   Above the boards, under the stack pile (so an arrow leaves the card from
+   behind it) and under every popover. A new arrow draws itself in along its
+   own length (pathLength=1); one that was already there just stands. */
+.arrow-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 19;
+  pointer-events: none;
+  overflow: visible;
+}
+.arrow-layer .arrow {
+  fill: none;
+  stroke: var(--arrow, var(--warn));
+  stroke-width: clamp(2px, 0.22vw, 4px);
+  stroke-linecap: round;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.9));
+}
+.arrow-layer .arrow.target {
+  stroke-dasharray: 0.02 0.012;
+}
+.arrow-layer .arrow.block {
+  --arrow: var(--warn);
+  stroke-dasharray: 0.015 0.015;
+  opacity: 0.75;
+}
+.arrow-layer .arrow.seat-a,
+.arrow-layer .arrowhead.seat-a {
+  --arrow: var(--seat-a);
+}
+.arrow-layer .arrow.seat-b,
+.arrow-layer .arrowhead.seat-b {
+  --arrow: var(--seat-b);
+}
+.arrow-layer .arrow.seat-c,
+.arrow-layer .arrowhead.seat-c {
+  --arrow: var(--seat-c);
+}
+.arrow-layer .arrow.seat-d,
+.arrow-layer .arrowhead.seat-d {
+  --arrow: var(--seat-d);
+}
+.arrow-layer .arrowhead {
+  fill: var(--arrow, var(--warn));
+}
+.arrow-layer .arrow.is-new {
+  animation: arrow-draw calc(420ms * var(--anim-scale, 1)) ease-out both;
+}
+.arrow-layer .arrow.target.is-new,
+.arrow-layer .arrow.block.is-new {
+  /* A dashed line can't draw in by its dash offset; it fades in instead. */
+  animation-name: arrow-fade;
+}
+.arrow-layer.reduced .arrow.is-new {
+  animation-name: arrow-fade;
+}
+@keyframes arrow-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes arrow-fade {
+  from {
+    opacity: 0;
   }
 }
 

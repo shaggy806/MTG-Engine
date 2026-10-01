@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import type { PlayerView } from 'engine/client'
 
 const STEPS = [
@@ -23,8 +24,22 @@ const STEPS = [
  * redundant "Turn N — Player" block).
  */
 export function PhaseTrack({ view }: { readonly view: PlayerView }) {
+  // On a narrow strip the row scrolls sideways, and the current step mustn't
+  // be the one scrolled out of sight — late in the turn (END, CU) it was the
+  // first to go. Scrolls the row itself only, never the page.
+  const listRef = useRef<HTMLOListElement>(null)
+  useLayoutEffect(() => {
+    const list = listRef.current
+    const current = list?.querySelector<HTMLElement>('li.current')
+    if (!list || !current) return
+    const left = current.offsetLeft - list.offsetLeft
+    if (left < list.scrollLeft) list.scrollLeft = left
+    else if (left + current.offsetWidth > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = left + current.offsetWidth - list.clientWidth
+    }
+  }, [view.turn.step])
   return (
-    <ol className="phase-steps">
+    <ol className="phase-steps" ref={listRef}>
       {STEPS.map(([step, abbr]) => (
         <li key={step} className={step === view.turn.step ? 'current' : ''} title={step}>
           {abbr}

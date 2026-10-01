@@ -182,6 +182,11 @@ export interface NetworkGame {
   readonly botSpeed: BotSpeed
   /** Host only — the server refuses anyone else. */
   setBotSpeed: (speed: BotSpeed) => void
+  /** The host has paused the bots; every seat sees it. */
+  readonly botsPaused: boolean
+  /** Host only: pause or resume the bots, or let one held move go. */
+  setBotsPaused: (paused: boolean) => void
+  stepBots: () => void
   /** Changes whenever a new state arrives — a stable signature for `key`ing UI. */
   readonly revision: number
   /** Tells the server this client has finished showing frame `seq`. The room
@@ -290,6 +295,7 @@ export function useNetworkGame(): NetworkGame {
   const [skipManaOnly, setSkipManaOnly] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
+  const [botsPaused, setBotsPausedState] = useState(false)
   const [captureEnabled, setCaptureEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
   const view = frame?.view ?? null
@@ -400,6 +406,7 @@ export function useNetworkGame(): NetworkGame {
           setSkipManaOnly(message.skipManaOnly)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
+          setBotsPausedState(message.botsPaused === true)
           setCaptureEnabled(message.capture === true)
           setStatus('playing')
           return
@@ -505,6 +512,21 @@ export function useNetworkGame(): NetworkGame {
     },
     [send],
   )
+
+  const setBotsPaused = useCallback(
+    (paused: boolean) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-bots-paused', roomId: id, paused })
+    },
+    [send],
+  )
+
+  const stepBots = useCallback(() => {
+    const id = roomIdRef.current
+    if (id === null) return
+    send({ type: 'step-bots', roomId: id })
+  }, [send])
 
   const claimSeat = useCallback(
     (chosen: PlayerId, displayName?: string, deck?: WireDeck, ready?: boolean) => {
@@ -738,6 +760,9 @@ export function useNetworkGame(): NetworkGame {
     isHost,
     botSpeed,
     setBotSpeed,
+    botsPaused,
+    setBotsPaused,
+    stepBots,
     revision: frame?.seq ?? 0,
     ackFrame,
     createRoom,
