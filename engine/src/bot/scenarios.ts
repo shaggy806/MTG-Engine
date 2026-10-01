@@ -321,7 +321,7 @@ const SCENARIOS: readonly BotScenario[] = [
           {
             player: A,
             cards: Array<string>(40).fill("Forest"),
-            commander: "Azusa, Lost but Seeking",
+            commanders: ["Azusa, Lost but Seeking"],
           },
           forestDeck(B),
         ],

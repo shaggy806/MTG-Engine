@@ -58,7 +58,7 @@ describe("legalActivationsOf", () => {
       decks: SEATS.map((player, i) => ({
         player,
         cards: SAMPLE_DECKS[i].cards,
-        commander: SAMPLE_DECKS[i].commander,
+        commanders: SAMPLE_DECKS[i].commanders,
       })),
     });
     game.advanceUntil((s) => s.turn.number > 24);

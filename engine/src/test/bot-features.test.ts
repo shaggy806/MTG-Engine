@@ -28,8 +28,8 @@ const newGame = (): Game =>
     seed: 11,
     rules: COMMANDER_RULES,
     decks: [
-      { player: A, cards: SAMPLE_DECKS[0].cards, commander: SAMPLE_DECKS[0].commander },
-      { player: B, cards: SAMPLE_DECKS[1].cards, commander: SAMPLE_DECKS[1].commander },
+      { player: A, cards: SAMPLE_DECKS[0].cards, commanders: SAMPLE_DECKS[0].commanders },
+      { player: B, cards: SAMPLE_DECKS[1].cards, commanders: SAMPLE_DECKS[1].commanders },
     ],
   });
 

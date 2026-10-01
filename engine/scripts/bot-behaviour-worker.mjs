@@ -197,7 +197,7 @@ parentPort.on("message", ({ seed, players, bot, budget, weights }) => {
       controllers,
       mulligans: true,
       rules: COMMANDER_RULES,
-      decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commander: decks[i].commander })),
+      decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commanders: decks[i].commanders })),
     });
     game.advance();
     parentPort.postMessage({ seed, turns: game.state.turn.number, ms: performance.now() - started, stats });

@@ -20,8 +20,8 @@ export interface SeatDeck {
   readonly id: PlayerId;
   readonly name: string;
   readonly cards: readonly string[];
-  /** No commander configured means a plain (non-Commander) 40-card deck. */
-  readonly commander?: string;
+  /** No commanders configured means a plain (non-Commander) 40-card deck. */
+  readonly commanders?: readonly string[];
 }
 
 /** Every seat a room could have, in seating order — sliced to however many
@@ -29,7 +29,7 @@ export interface SeatDeck {
 export const SEATS: readonly SeatDeck[] = [ALICE, BOB, CAROL, DAVE].map((id, i) => ({
   id,
   name: SAMPLE_DECKS[i].name,
-  commander: SAMPLE_DECKS[i].commander,
+  commanders: SAMPLE_DECKS[i].commanders,
   cards: SAMPLE_DECKS[i].cards,
 }));
 

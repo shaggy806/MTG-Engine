@@ -21,7 +21,7 @@ const makeGame = () =>
     shuffle: false,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99 },
     decks: [
-      { player: A, cards: Array<string>(40).fill("Forest"), commander: "Atarka, World Render" },
+      { player: A, cards: Array<string>(40).fill("Forest"), commanders: ["Atarka, World Render"] },
       { player: B, cards: Array<string>(40).fill("Forest") },
     ],
   });

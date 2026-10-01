@@ -37,7 +37,7 @@ const makeGame = (commander?: string) => {
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
     controllers: { [A]: a, [B]: b },
     decks: [
-      { player: A, cards: pad([]), ...(commander !== undefined ? { commander } : {}) },
+      { player: A, cards: pad([]), ...(commander !== undefined ? { commanders: [commander] } : {}) },
       { player: B, cards: pad([]) },
     ],
   });

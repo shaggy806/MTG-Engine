@@ -213,7 +213,7 @@ export class PendingRoom {
   private fallbackDeck(player: PlayerId): PendingDeck {
     const example = SEATS.find((s) => s.id === player);
     if (example === undefined) throw new Error(`no such seat: ${player}`);
-    return { cards: example.cards, commander: example.commander, name: example.name };
+    return { cards: example.cards, commanders: example.commanders, name: example.name };
   }
 
   /** Same claim/reclaim semantics as `Room.claimSeat` — a seat already

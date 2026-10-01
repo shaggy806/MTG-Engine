@@ -10,14 +10,14 @@ describe("SAMPLE_DECKS", () => {
   for (const deck of SAMPLE_DECKS) {
     describe(deck.name, () => {
       it("is a legal 100-card Commander deck of implemented cards", () => {
-        expect(deck.commander).toBeDefined();
+        expect(deck.commanders).toHaveLength(1);
         // validateCommanderDeck only checks cards it knows, so an
         // unimplemented name has to be caught here.
-        const unimplemented = [deck.commander!, ...deck.cards].filter((n) => !reg.has(n));
+        const unimplemented = [...deck.commanders!, ...deck.cards].filter((n) => !reg.has(n));
         expect(unimplemented).toEqual([]);
 
         const result = validateCommanderDeck(
-          { commanders: [deck.commander!], cards: deck.cards, size: 100 },
+          { commanders: deck.commanders!, cards: deck.cards, size: 100 },
           reg,
         );
         expect(result.violations).toEqual([]);

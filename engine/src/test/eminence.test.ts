@@ -26,7 +26,7 @@ const mkGame = (aHand: readonly string[] = []) =>
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
     controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
     decks: [
-      { player: A, cards: [...aHand, ...Array(40).fill("Swamp")], commander: "Edgar Markov" },
+      { player: A, cards: [...aHand, ...Array(40).fill("Swamp")], commanders: ["Edgar Markov"] },
       { player: B, cards: Array(40).fill("Forest") },
     ],
   });
@@ -204,7 +204,7 @@ describe("The Ur-Dragon", () => {
       rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
       controllers: { [A]: a, [B]: b },
       decks: [
-        { player: A, cards: Array(40).fill("Mountain"), commander: "The Ur-Dragon" },
+        { player: A, cards: Array(40).fill("Mountain"), commanders: ["The Ur-Dragon"] },
         { player: B, cards: Array(40).fill("Forest") },
       ],
     });

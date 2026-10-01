@@ -39,7 +39,7 @@ function makeGame(opts: { aCards?: readonly string[]; commander?: string } = {})
       {
         player: A,
         cards: [...(opts.aCards ?? []), ...Array<string>(40).fill("Forest")],
-        ...(opts.commander !== undefined ? { commander: opts.commander } : {}),
+        ...(opts.commander !== undefined ? { commanders: [opts.commander] } : {}),
       },
       { player: B, cards: Array<string>(40).fill("Forest") },
     ],

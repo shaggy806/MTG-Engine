@@ -24,14 +24,14 @@ describe("PendingRoom", () => {
     expect(room.isReady()).toBe(true);
     const config = room.toGameConfig();
     expect(config.decks.find((d) => d.player === ALICE)?.cards).toEqual(SEATS[0].cards);
-    expect(config.decks.find((d) => d.player === ALICE)?.commanders).toEqual([SEATS[0].commander]);
+    expect(config.decks.find((d) => d.player === ALICE)?.commanders).toEqual(SEATS[0].commanders);
   });
 
   it("claiming with a custom deck uses it instead of the positional default", () => {
     const room = pendingRoom();
     room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
       cards: ["Forest", "Forest"],
-      commander: "Ureni of the Unwritten",
+      commanders: ["Ureni of the Unwritten"],
     });
     room.claimSeat(BOB, "bob-token", { send: () => {} });
     const config = room.toGameConfig();
@@ -57,21 +57,6 @@ describe("PendingRoom", () => {
     ]);
   });
 
-  // `commanders` wins over the single `commander` a client from before
-  // two-commander decks sent, so a deck carrying both is read one way only.
-  it("reads `commanders` over the legacy `commander` when a deck has both", () => {
-    const room = pendingRoom();
-    room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
-      cards: ["Forest"],
-      commander: "Ayara, First of Locthwain",
-      commanders: ["Ureni of the Unwritten"],
-    });
-    room.claimSeat(BOB, "bob-token", { send: () => {} });
-    expect(room.toGameConfig().decks.find((d) => d.player === ALICE)?.commanders).toEqual([
-      "Ureni of the Unwritten",
-    ]);
-  });
-
   it("refuses a deck naming more than two commanders", () => {
     const room = pendingRoom();
     expect(() =>
@@ -88,7 +73,7 @@ describe("PendingRoom", () => {
     const room = pendingRoom();
     room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
       cards: ["Forest", "Sol Ring"],
-      commander: "Ureni of the Unwritten",
+      commanders: ["Ureni of the Unwritten"],
       printings: { "Sol Ring": id, "Ureni of the Unwritten": id },
     });
     room.claimSeat(BOB, "bob-token", { send: () => {} });
@@ -128,7 +113,7 @@ describe("PendingRoom", () => {
     const conn1 = { send: () => {} };
     room.claimSeat(ALICE, "alice-token", conn1, undefined, {
       cards: ["Island"],
-      commander: "Ayara, First of Locthwain",
+      commanders: ["Ayara, First of Locthwain"],
     });
     const conn2 = { send: () => {} };
     room.claimSeat(ALICE, "alice-token", conn2); // reconnect, no deck resent
@@ -207,7 +192,7 @@ describe("PendingRoom", () => {
     expect(bobStatus?.isBot).toBe(true);
     expect(bobStatus?.deck).toEqual({
       name: SEATS[1].name,
-      commanders: [{ name: SEATS[1].commander, printing: null }],
+      commanders: [{ name: SEATS[1].commanders![0], printing: null }],
     });
     expect(() => room.addBot(BOB)).toThrow("already has a bot");
 
@@ -220,7 +205,7 @@ describe("PendingRoom", () => {
 
   it("addBot with a chosen deck uses it instead of the positional default", () => {
     const room = pendingRoom();
-    room.addBot(BOB, { cards: ["Forest", "Forest"], commander: "Ureni of the Unwritten", name: "My Deck" });
+    room.addBot(BOB, { cards: ["Forest", "Forest"], commanders: ["Ureni of the Unwritten"], name: "My Deck" });
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "My Deck",
       commanders: [{ name: "Ureni of the Unwritten", printing: null }],
@@ -232,7 +217,7 @@ describe("PendingRoom", () => {
   it("setBotDeck changes an already-bot-filled seat's deck, and only a bot seat's", () => {
     const room = pendingRoom();
     room.addBot(BOB);
-    room.setBotDeck(BOB, { cards: ["Island", "Island"], commander: "Ayara, First of Locthwain", name: "Mono-Black" });
+    room.setBotDeck(BOB, { cards: ["Island", "Island"], commanders: ["Ayara, First of Locthwain"], name: "Mono-Black" });
     expect(room.seatStatuses().find((s) => s.player === BOB)?.deck).toEqual({
       name: "Mono-Black",
       commanders: [{ name: "Ayara, First of Locthwain", printing: null }],
@@ -284,7 +269,7 @@ describe("PendingRoom", () => {
     expect(() =>
       room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
         cards: ["Forest", "Forest"],
-        commander: "Sarova, the Undying Current",
+        commanders: ["Sarova, the Undying Current"],
       }),
     ).toThrow(/doesn't know: Sarova, the Undying Current/);
   });
@@ -293,7 +278,7 @@ describe("PendingRoom", () => {
     const room = pendingRoom();
     room.claimSeat(ALICE, "alice-token", { send: () => {} }, undefined, {
       cards: ["Forest", "Forest"],
-      commander: "Ayara, First of Locthwain",
+      commanders: ["Ayara, First of Locthwain"],
     });
     expect(room.seatStatuses()[0].claimed).toBe(true);
   });

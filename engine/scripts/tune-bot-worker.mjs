@@ -90,7 +90,7 @@ parentPort.on("message", ({ seed, weights, opponents, players, horizon, rollout,
       decks: seats.map((player, i) => ({
         player,
         cards: decks[i].cards,
-        commander: decks[i].commander,
+        commanders: decks[i].commanders,
       })),
     });
     game.advance();

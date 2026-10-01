@@ -64,7 +64,7 @@ try {
     controllers,
     mulligans: true,
     rules: W.COMMANDER_RULES,
-    decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commander: decks[i].commander })),
+    decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commanders: decks[i].commanders })),
   });
   game.advance();
   parentPort.postMessage({ type: "done", decisions, diffs, turn: game.state.turn.number });

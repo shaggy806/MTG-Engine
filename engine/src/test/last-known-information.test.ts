@@ -551,7 +551,7 @@ describe("a resolving ability reads a departed permanent as it last existed (608
         {
           player: A,
           cards: Array<string>(40).fill("Swamp"),
-          commander: "Juri, Master of the Revue",
+          commanders: ["Juri, Master of the Revue"],
         },
         { player: B, cards: Array<string>(40).fill("Forest") },
       ],

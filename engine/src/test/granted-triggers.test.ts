@@ -29,7 +29,7 @@ const makeGame = (players = [A, B]) =>
     decks: players.map((player) => ({
       player,
       cards: Array<string>(40).fill("Mountain"),
-      ...(player === A ? { commander: "Atarka, World Render" } : {}),
+      ...(player === A ? { commanders: ["Atarka, World Render"] } : {}),
     })),
   });
 

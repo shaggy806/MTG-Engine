@@ -91,7 +91,7 @@ function mkGame(aliceCards: readonly string[] = []): Game {
     registry,
     rules: { maxLandsPerTurn: 99 },
     decks: [
-      { player: A, cards: pad(aliceCards), commander: "Test Commander" },
+      { player: A, cards: pad(aliceCards), commanders: ["Test Commander"] },
       { player: B, cards: pad([]) },
     ],
   });
@@ -206,7 +206,7 @@ describe("commander replacement choice (903.9a)", () => {
       rules: { maxLandsPerTurn: 99 },
       controllers: { [A]: controller },
       decks: [
-        { player: A, cards: pad(["Lightning Bolt", "Mountain"]), commander: "Test Commander" },
+        { player: A, cards: pad(["Lightning Bolt", "Mountain"]), commanders: ["Test Commander"] },
         { player: B, cards: pad([]) },
       ],
     });
@@ -288,7 +288,7 @@ describe("903.9a comes after the death — leaves-battlefield and dies triggers"
         {
           player: A,
           cards: pad(["Lightning Bolt", "Mountain"]),
-          commander: "Test Commander (Triggers)",
+          commanders: ["Test Commander (Triggers)"],
         },
         { player: B, cards: pad([]) },
       ],

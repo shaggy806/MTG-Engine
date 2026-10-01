@@ -44,7 +44,7 @@ const makeGame = (opts: { commander?: boolean } = {}) => {
       {
         player: A,
         cards: pad([]),
-        ...(opts.commander === true ? { commander: SIDAR } : {}),
+        ...(opts.commander === true ? { commanders: [SIDAR] } : {}),
       },
       { player: B, cards: pad([]) },
     ],

@@ -133,12 +133,10 @@ describe("two commanders (Partner, rule 702.124c)", () => {
 });
 
 describe("commandersOf", () => {
-  it("reads `commanders` first, then the single `commander`, then nothing", () => {
-    expect(commandersOf({ commanders: ["A", "B"], commander: "C" })).toEqual(["A", "B"]);
-    expect(commandersOf({ commander: "C" })).toEqual(["C"]);
+  it("reads `commanders`, or nothing for a deck without", () => {
+    expect(commandersOf({ commanders: ["A", "B"] })).toEqual(["A", "B"]);
     expect(commandersOf({})).toEqual([]);
-    // An empty list is a deck with no commander, not a missing field.
-    expect(commandersOf({ commanders: [], commander: "C" })).toEqual([]);
+    expect(commandersOf({ commanders: [] })).toEqual([]);
   });
 });
 

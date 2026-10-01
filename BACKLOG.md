@@ -349,11 +349,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   not "all instances" across the card's text. Either build real layer-3 text changing (every
   creature-type word in a card's abilities, every creature type offered, spells as targets) or
   remove the effect and the decision kind.
-- **Two ways to name a deck's commanders.** `DeckList` and `WireDeck` carry a lone
-  `commander` beside `commanders`, and `commandersOf` reads either. `WireDeck`'s doc calls the
-  lone field a shim for clients from before Partner pairs, but `SAMPLE_DECKS`, the server's
-  `SEATS` and `PendingRoom`'s fallback deck still use it, as do ten test files. Move them all
-  onto `commanders`, then drop the lone field.
 - **Saved-deck migrations.** `client/src/deck-builder/decks.ts` rewrites two old shapes every
   time it reads saved decks: a lone `commander` (from before Partner pairs) and Princess Sarah's
   old name (renamed on 2026-09-16). Neither rewrite is saved, so an old deck needs them until

@@ -89,7 +89,7 @@ function makeGame(opts: { aCards?: readonly string[]; commander?: string } = {})
       {
         player: A,
         cards: pad(opts.aCards ?? []),
-        ...(opts.commander !== undefined ? { commander: opts.commander } : {}),
+        ...(opts.commander !== undefined ? { commanders: [opts.commander] } : {}),
       },
       { player: B, cards: pad([]) },
     ],

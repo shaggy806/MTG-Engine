@@ -111,7 +111,7 @@ function buildGame(scenario) {
     decks: players.map((player) => ({
       player,
       cards: basics(60),
-      commander: scenario.commanders?.[player] ?? COMMANDERS[player],
+      commanders: [scenario.commanders?.[player] ?? COMMANDERS[player]],
     })),
   });
   const start = scenario.start ?? "precombat-main";

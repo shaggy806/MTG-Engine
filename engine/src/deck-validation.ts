@@ -49,17 +49,9 @@ export const BASIC_LANDS: ReadonlySet<string> = new Set([
   "Snow-Covered Forest",
 ]);
 
-/**
- * A deck's commanders, whichever field names them: `commanders` if set, else
- * the lone `commander`. The precedence `DeckList` documents, and the one a
- * wire deck from a client that predates two-commander decks relies on.
- */
-export function commandersOf(deck: {
-  readonly commanders?: readonly string[];
-  readonly commander?: string;
-}): readonly string[] {
-  if (deck.commanders !== undefined) return deck.commanders;
-  return deck.commander === undefined ? [] : [deck.commander];
+/** A deck's commanders: none for a deck that isn't a Commander deck. */
+export function commandersOf(deck: { readonly commanders?: readonly string[] }): readonly string[] {
+  return deck.commanders ?? [];
 }
 
 /**

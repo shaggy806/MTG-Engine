@@ -137,7 +137,7 @@ function deckFor(player, index, rng, forced) {
   const basics = Array.from({ length: BASICS }, (_, i) =>
     colors.length === 0 ? "Wastes" : BASIC_OF[colors[i % colors.length]],
   );
-  return { player, commander: commander.name, cards: [...chosen, ...basics] };
+  return { player, commanders: [commander.name], cards: [...chosen, ...basics] };
 }
 
 /** Every seat's deck for `seed`, in seating order. */
@@ -152,7 +152,7 @@ export function coverage(seeds, players) {
   const seen = new Set();
   for (const seed of seeds) {
     for (const seat of seatsFor(seed, players)) {
-      seen.add(seat.commander);
+      for (const n of seat.commanders) seen.add(n);
       for (const n of seat.cards) seen.add(n);
     }
   }

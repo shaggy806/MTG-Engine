@@ -69,8 +69,8 @@ type StoredDeck = Omit<SavedDeck, 'commanders'> & {
 }
 
 function fromStorage(stored: StoredDeck): SavedDeck {
-  const { commander: _legacy, ...rest } = stored
-  return { ...rest, commanders: commandersOf(stored) }
+  const { commander: legacy, ...rest } = stored
+  return { ...rest, commanders: stored.commanders ?? (legacy === undefined ? [] : [legacy]) }
 }
 
 /** Cards the pool once registered under another name — a deck saved before

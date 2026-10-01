@@ -19,11 +19,8 @@ import type { Action, LegalAction, PlayerId, PlayerView } from "engine";
 export interface WireDeck {
   readonly cards: readonly string[];
   /** One or two commanders: two for a Partner pair, or a commander and its
-   * Background (rule 903.3c). Takes precedence over `commander`. */
+   * Background (rule 903.3c). */
   readonly commanders?: readonly string[];
-  /** The single commander a client from before two-commander decks sends.
-   * Read only when `commanders` is absent — `engine`'s `commandersOf`. */
-  readonly commander?: string;
   readonly name?: string;
   /** Which printing of each card this deck brings, keyed by card name — a
    * Scryfall card id (or any reference `CardDefinition.art` accepts). Purely

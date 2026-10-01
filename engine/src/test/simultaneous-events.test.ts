@@ -47,7 +47,7 @@ const setUp = (
       {
         player: A,
         cards: [...(opts.aHand ?? []), ...Array<string>(40).fill("Swamp")],
-        ...(opts.commander !== undefined ? { commander: opts.commander } : {}),
+        ...(opts.commander !== undefined ? { commanders: [opts.commander] } : {}),
       },
       { player: B, cards: Array<string>(40).fill("Forest") },
     ],

@@ -90,7 +90,7 @@ if (from !== null) {
     controllers: controllersFor(seats),
     mulligans: true,
     rules: COMMANDER_RULES,
-    decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commander: decks[i].commander })),
+    decks: seats.map((player, i) => ({ player, cards: decks[i].cards, commanders: decks[i].commanders })),
   });
 }
 

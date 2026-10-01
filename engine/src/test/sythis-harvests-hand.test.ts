@@ -40,7 +40,7 @@ const mkGame = (
       {
         player: A,
         cards: [...aHand, ...Array<string>(40).fill("Plains")],
-        ...(aCommander === undefined ? {} : { commander: aCommander }),
+        ...(aCommander === undefined ? {} : { commanders: [aCommander] }),
       },
       { player: B, cards: [...bHand, ...Array<string>(40).fill("Forest")] },
     ],

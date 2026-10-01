@@ -43,7 +43,7 @@ const makeGame = () => {
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
     controllers,
     decks: [
-      { player: A, cards: Array<string>(40).fill("Plains"), commander: LIESA },
+      { player: A, cards: Array<string>(40).fill("Plains"), commanders: [LIESA] },
       { player: B, cards: Array<string>(40).fill("Plains") },
     ],
   });
@@ -250,7 +250,7 @@ describe("Liesa, Shroud of Dusk", () => {
         rules: { skipFirstDraw: false },
         controllers: { [A]: new HeuristicBotController(A) },
         decks: [
-          { player: A, cards: Array<string>(40).fill("Island"), commander: LIESA },
+          { player: A, cards: Array<string>(40).fill("Island"), commanders: [LIESA] },
           { player: B, cards: Array<string>(40).fill("Island") },
         ],
       });

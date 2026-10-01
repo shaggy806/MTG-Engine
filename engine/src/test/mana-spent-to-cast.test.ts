@@ -40,7 +40,7 @@ const setUp = (aHand: readonly string[], commander?: string) => {
       {
         player: A,
         cards: [...aHand, ...Array<string>(40).fill("Forest")],
-        ...(commander !== undefined ? { commander } : {}),
+        ...(commander !== undefined ? { commanders: [commander] } : {}),
       },
       { player: B, cards: Array<string>(40).fill("Forest") },
     ],

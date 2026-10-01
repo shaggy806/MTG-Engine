@@ -28,7 +28,7 @@ function table(commander?: string): Game {
     shuffle: false,
     rules: { maxLandsPerTurn: 99 },
     decks: [
-      { player: A, cards: Array(60).fill("Mountain"), ...(commander ? { commander } : {}) },
+      { player: A, cards: Array(60).fill("Mountain"), ...(commander ? { commanders: [commander] } : {}) },
       { player: B, cards: Array(60).fill("Mountain") },
     ],
   });

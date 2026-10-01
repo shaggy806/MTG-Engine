@@ -287,11 +287,10 @@ import type { PlayerView, ViewOptions } from "./view.js";
 export interface DeckList {
   readonly player: PlayerId;
   readonly cards: readonly string[];
-  /** Name of a card to start in the command zone instead of the library
-   * (rule 903.4). Not one of `cards` — an extra card on top of the deck. */
-  readonly commander?: string;
-  /** One or two commanders (Partner / "Choose a Background" — rule 702.124 /
-   * ROADMAP Phase 9). Takes precedence over `commander` when set. */
+  /** The cards that start in the command zone instead of the library (rule
+   * 903.4): one commander, or two (Partner / "Choose a Background" — rule
+   * 702.124 / ROADMAP Phase 9). Not among `cards` — extra cards on top of the
+   * deck. Absent or empty, it isn't a Commander deck. */
   readonly commanders?: readonly string[];
   /**
    * Which printing this player's copy of each card is, keyed by card name —
@@ -2639,8 +2638,8 @@ export class Game {
     shuffleLibrary: boolean,
     mulligans: boolean,
   ): void {
-    for (const { player, cards, commander, commanders, printings } of decks) {
-      const commanderNames = commanders ?? (commander !== undefined ? [commander] : []);
+    for (const { player, cards, commanders, printings } of decks) {
+      const commanderNames = commanders ?? [];
       this.state.players[player] = createPlayerState(player, this.state.rules);
       // Copied, not aliased: `GameState` has to stay a self-contained,
       // `structuredClone`-able tree, and a caller's object is neither.

@@ -34,7 +34,7 @@ export interface PreconSubstitution {
 
 export interface SampleDeck {
   readonly name: string;
-  readonly commander?: string;
+  readonly commanders?: readonly string[];
   /** What the deck plays: `printed` with `substitutions` applied. */
   readonly cards: readonly string[];
   /** One line on what the deck does. */
@@ -69,7 +69,7 @@ function precon(deck: {
   }
   return {
     name: deck.name,
-    commander: deck.commander,
+    commanders: [deck.commander],
     description: deck.description,
     printed,
     substitutions: deck.substitutions,

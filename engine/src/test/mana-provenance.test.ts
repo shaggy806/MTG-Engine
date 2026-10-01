@@ -42,7 +42,7 @@ const mkGame = (
     startingPlayer: A,
     rules: { maxLandsPerTurn: 99, skipFirstDraw: false, maxHandSize: 99 },
     decks: [
-      { player: A, cards: pad(aCards), ...(commander !== undefined ? { commander } : {}) },
+      { player: A, cards: pad(aCards), ...(commander !== undefined ? { commanders: [commander] } : {}) },
       { player: B, cards: pad(bCards) },
     ],
   });

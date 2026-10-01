@@ -152,7 +152,7 @@ describe("destroy-all — Wrath of God (rule 700-style mass destroy)", () => {
       rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
       controllers: { [A]: a, [B]: new ScriptedController(B) },
       decks: [
-        { player: A, cards: pad(["Wrath of God"]), commander: "Edict Test Commander" },
+        { player: A, cards: pad(["Wrath of God"]), commanders: ["Edict Test Commander"] },
         { player: B, cards: pad([]) },
       ],
     });
