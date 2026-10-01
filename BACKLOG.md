@@ -532,9 +532,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
   two-player seeds for 87%, roughly double the fuzz time), or start each run at a different
   seed so that successive runs sweep the whole pool.
-- **Four-player fuzzer seed 10 times out (found 2026-09-30).** `random-demo.mjs --players 4
-  --seed 10` runs past its 30 s limit on `main` too (a4a31a48), so it isn't from the reveal-land work that
-  found it. Replay it (`replay-seed`) to see whether it's a slow game or a stuck one.
 
 ## Code health
 
@@ -564,7 +561,7 @@ Follow-on ideas, approved by the user on 2026-09-30:
   seed 27 (as the pool stood on 2026-09-29) is a 182-turn game of land-heavy boards that ends
   in deck-outs and takes ~32 s, past the local 30 s default (CI's four-player pass allows
   120 s), with `abilitiesProhibited`/`prohibitionsOn` ~10% of its profile and registry lookups
-  another 10%.
+  another 10%. Four-player seed 10 (2026-09-30) is another: 176 turns, ~31 s.
 - **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
   (430 files, 3,979 tests, about 100 s) and check what it actually guards. Unscoped: what the
   audit looks for and what it produces.
