@@ -180,10 +180,6 @@ base, retire v3. One line per step still open:
 
 Beyond that plan:
 
-- **Bots should crack fetch lands right away.** Lands that tap and sacrifice to search for a
-  land (Evolving Wilds, Terramorphic Expanse) should, in almost every situation, be used
-  immediately; the bots need to know that (`engine/src/bot/`, see the plan above).
-
 - **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
   Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a
   Grizzly Bears (worth 4.6 to counter, largely `threat`). If live games show it holding one
@@ -275,8 +271,6 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 
 Follow-on ideas, approved by the user on 2026-09-30:
 
-- **Arrows only for the aimed stack entry.** `ArrowLayer` draws the targets of the top entry (or
-  the hovered one), like `aim`; a deep stack of targeted spells shows one set at a time.
 - **Tokens merged into an engine stack arrive unanimated**: a second Raise the Alarm's Soldiers
   are folded by the engine into the first two's stack (`stackCount`), so the object their
   `permanent-entered-battlefield` names is gone from the view and nothing plays. The stack's tile

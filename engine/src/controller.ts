@@ -1299,6 +1299,10 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
  * never passes priority hangs the game it's in. */
 const MAX_ACTIVATIONS_PER_TURN = 4;
 
+/** A fetch that pays life (Polluted Delta) isn't cracked at this much life or
+ * less above its payment — see `isFreeFetch`. */
+const FETCH_LIFE_FLOOR = 4;
+
 /** The life an effect makes its controller lose outright — a ward payment's
  * "Pay N life" part, which is a `lose-life` of `"you"` inside its mode. */
 function lifePaidBy(effect: EffectSpec | undefined): number {
@@ -1501,6 +1505,33 @@ export class HeuristicBotController extends AutomaticController {
    */
   protected isManaOnlyAbility(legal: ActivateAbilityLegal): boolean {
     return legal.manaAbility === true;
+  }
+
+  /**
+   * A fetch: a land that makes no mana itself sacrificing itself to put a
+   * land onto the battlefield (Evolving Wilds, Fabled Passage, Polluted
+   * Delta). Holding one gains nothing — it can't pay for anything — so it's
+   * cracked the moment it can be, which the evaluation alone never chose:
+   * a land traded for a tapped land scores as a wash. A land that also taps
+   * for mana (Bountiful Landscape) is a real choice and isn't one of these;
+   * nor is one that costs mana to crack, nor one whose life payment would
+   * leave the bot nearly dead.
+   */
+  protected isFreeFetch(state: GameState, source: ObjectId, abilityIndex: number): boolean {
+    const object = state.objects[source];
+    if (object === undefined || object.zone !== "battlefield" || !this.registry.has(object.cardName)) {
+      return false;
+    }
+    const def = this.registry.get(object.cardName);
+    if (!def.types.includes("land")) return false;
+    const abilities = def.activated ?? [];
+    const ability = abilities[abilityIndex];
+    if (ability === undefined || ability.cost.sacrifice !== "self" || ability.cost.mana !== null) return false;
+    const payLife = ability.cost.payLife ?? 0;
+    if (payLife > 0 && (state.players[this.playerId]?.life ?? 0) <= payLife + FETCH_LIFE_FLOOR) return false;
+    if (abilities.some((a) => JSON.stringify(a.effect ?? null).includes('"add-mana"'))) return false;
+    const effect = JSON.stringify(ability.effect ?? null);
+    return effect.includes('"search-library"') && effect.includes('"destination":"battlefield"');
   }
 
   /**
@@ -2012,6 +2043,12 @@ export class HeuristicBotController extends AutomaticController {
 
     const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
     if (lands.length > 0) return this.toPlayLand(this.bestLand(view.state, lands));
+
+    const fetch = options.find(
+      (o): o is ActivateAbilityLegal =>
+        o.kind === "activate-ability" && this.isFreeFetch(view.state, o.source, o.abilityIndex),
+    );
+    if (fetch !== undefined) return this.toActivateAbility(view.state, fetch);
 
     const spells = options.filter(
       (o): o is CastSpellLegal =>

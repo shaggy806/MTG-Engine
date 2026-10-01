@@ -610,6 +610,20 @@ export class EvalBotController extends HeuristicBotController {
     // side means giving up a spell, which is exactly the trade the search is
     // for.
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
+    // **Nor is cracking a fetch** (`isFreeFetch`): it makes no mana, so
+    // holding it gains nothing, and the evaluation scores a land traded for a
+    // tapped land as a wash and passed. Which land to find is still searched,
+    // as the decision the search raises. After a land drop, which comes first.
+    const fetch =
+      lands.length === 0
+        ? candidates.find(
+            (a) => a.type === "activate-ability" && this.isFreeFetch(view.state, a.source, a.abilityIndex),
+          )
+        : undefined;
+    if (fetch !== undefined) {
+      this.lastDecision = audit("priority", null);
+      return fetch;
+    }
     if (lands.length === 1) {
       this.lastDecision = audit("priority", null);
       return lands[0];
