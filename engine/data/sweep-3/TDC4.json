@@ -1,7 +1,7 @@
 {
   "batch": "TDC4",
   "status": "complete",
-  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution",
+  "ranks": "Jeskai Striker's missing cards: counter target activated or triggered ability, a three-way look (hand / bottom / exile playable), discard two unless a land, an attack-with count rechecked on resolution, and every player's spells uncounterable (Lier)",
   "authored": [
     {
       "name": "Sublime Epiphany",
@@ -30,7 +30,30 @@
         "engine/src/cards/pool/mangara-the-diplomat.ts"
       ],
       "tested": true
+    },
+    {
+      "name": "Lier, Disciple of the Drowned",
+      "files": [
+        "engine/src/cards/pool/lier-disciple-of-the-drowned.ts"
+      ],
+      "tested": true
     }
   ],
-  "blocked": []
+  "blocked": [
+    {
+      "name": "Dismantling Wave",
+      "needs": [
+        "new:target-per-opponent",
+        "new:this-cycled-trigger"
+      ],
+      "why": "'For each opponent, … up to one target … that player controls': target options are filtered by a pure function with no state (slotOptions), so one-per-opponent needs plumbing through the offer, validation, client and bots. And 'when you cycle this card' needs the cycled card in the trigger scan."
+    },
+    {
+      "name": "Curse of the Swine",
+      "needs": [
+        "new:x-targets"
+      ],
+      "why": "'Exile X target creatures': the target count must equal the X chosen — cast validation, the client's targeting flow and the bots' enumeration."
+    }
+  ]
 }

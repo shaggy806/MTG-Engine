@@ -2022,7 +2022,8 @@ anthem, the keyword grant and the granted trigger like any other creature.
   granted `this-cast` trigger fires as the spell is cast, like a printed one.
   `cantBeCountered: true` is "[filter] spells you control can't be countered"
   (Prowling Serpopard: `{ filter: { type: "creature" }, cantBeCountered: true }`;
-  Hexing Squelcher's "spells you control" has no filter): read as the counter
+  Hexing Squelcher's "spells you control" has no filter; `allSpells: true` reaches every
+  player's spells — Lier, Disciple of the Drowned's "Spells can't be countered"): read as the counter
   would happen, for every spell its controller controls — a copy, or one cast
   from anywhere — while the permanent is there. A countering spell's other
   effects still happen (Strix Serenade's Bird).

@@ -642,7 +642,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Dismantling Wave", "Solemn Offering", "Three-mana sorcery: artifact and enchantment removal, removal."),
       sub("Expansion // Explosion", "Fireball", "X-damage spell."),
       sub("Ghostly Prison", "Aura of Silence", "Three-mana white enchantment that taxes opponents."),
-      sub("Lier, Disciple of the Drowned", "Archmage of Runes", "Five-mana creature: spell payoff."),
       sub("Magma Opus", "Searing Wind", "Eight-mana instant: burn."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
     ],

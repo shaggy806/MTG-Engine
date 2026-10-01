@@ -221,3 +221,30 @@ describe("Mangara, the Diplomat", () => {
     expect(handSize(game, B)).toBe(before + 1);
   });
 });
+
+describe("Lier, Disciple of the Drowned", () => {
+  it("makes every player's spells uncounterable", () => {
+    const game = setUp();
+    game.debugSpawn("Lier, Disciple of the Drowned", B, "battlefield");
+    // A's own spell, under B's Lier: still can't be countered.
+    const shock = cast(game, "Shock", [player(B)]);
+    cast(game, "Counterspell", [obj(shock)]);
+    game.advanceUntil(quiet);
+    expect(game.state.players[B].life).toBe(18);
+  });
+
+  it("gives instants and sorceries in your graveyard flashback for their mana cost", () => {
+    const game = setUp();
+    game.debugSpawn("Lier, Disciple of the Drowned", A, "battlefield");
+    const shock = game.debugSpawn("Shock", A, "graveyard");
+    const theirs = game.debugSpawn("Shock", B, "graveyard");
+    const offers = game.legalActions(A).filter((a) => a.kind === "cast-spell");
+    expect(offers.some((a) => a.kind === "cast-spell" && a.card === shock && a.via === "flashback")).toBe(true);
+    // Only your own graveyard.
+    expect(offers.some((a) => a.kind === "cast-spell" && a.card === theirs)).toBe(false);
+    game.dispatch({ type: "cast-spell", player: A, card: shock, targets: [player(B)], via: "flashback" });
+    game.advanceUntil(quiet);
+    expect(game.state.players[B].life).toBe(18);
+    expect(game.state.objects[shock].zone).toBe("exile");
+  });
+});

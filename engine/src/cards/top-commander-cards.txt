@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2055 already implemented / 2945 missing (marks refreshed 2026-10-01)
+2056 already implemented / 2944 missing (marks refreshed 2026-10-01)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2171,7 +2171,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2178  Contaminated Aquifer                     {0}              Land — Island Swamp
 [x]  2179  Verdant Sun's Avatar                     {5}{G}{G}        Creature — Dinosaur Avatar
 [x]  2180  Primeval Bounty                          {5}{G}           Enchantment
-[ ]  2181  Lier, Disciple of the Drowned            {3}{U}{U}        Legendary Creature — Human Wizard
+[x]  2181  Lier, Disciple of the Drowned            {3}{U}{U}        Legendary Creature — Human Wizard
 [x]  2182  Desolate Lighthouse                      {0}              Land
 [ ]  2183  Jidoor, Aristocratic Capital // Overture {4}{U}{U}        Land — Town // Sorcery — Adventure
 [x]  2184  Aura of Silence                          {1}{W}{W}        Enchantment

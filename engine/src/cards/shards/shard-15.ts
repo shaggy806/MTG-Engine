@@ -107,6 +107,7 @@ import _poolLawlessBroker from "../pool/lawless-broker.js";
 import _poolLazotepReaver from "../pool/lazotep-reaver.js";
 import _poolLegionStronghold from "../pool/legion-stronghold.js";
 import _poolLeoninWarleader from "../pool/leonin-warleader.js";
+import _poolLierDiscipleOfTheDrowned from "../pool/lier-disciple-of-the-drowned.js";
 import _poolLightningRigCrew from "../pool/lightning-rig-crew.js";
 import _poolLoranOfTheThirdPath from "../pool/loran-of-the-third-path.js";
 import _poolLoreholdPledgemage from "../pool/lorehold-pledgemage.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolLazotepReaver,
     _poolLegionStronghold,
     _poolLeoninWarleader,
+    _poolLierDiscipleOfTheDrowned,
     _poolLightningRigCrew,
     _poolLoranOfTheThirdPath,
     _poolLoreholdPledgemage,

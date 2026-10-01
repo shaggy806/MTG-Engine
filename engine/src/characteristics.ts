@@ -895,7 +895,8 @@ export function spellGrantReaches(
   const grant = ability.grantsToSpells;
   if (grant === undefined || spell.zone !== "stack" || spell.kind !== "card") return false;
   if (source.zone !== "battlefield" || hasLostAbilities(source)) return false;
-  if (state.players[source.controller]?.hasLost === true || spell.controller !== source.controller) return false;
+  if (state.players[source.controller]?.hasLost === true) return false;
+  if (grant.allSpells !== true && spell.controller !== source.controller) return false;
   if (grant.castFrom !== undefined && (spell.castFrom === undefined || !grant.castFrom.includes(spell.castFrom))) {
     return false;
   }

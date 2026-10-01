@@ -1040,6 +1040,9 @@ export interface StaticAbility {
      * Every spell its controller controls counts, a copy too, and not only
      * ones cast from the hand. */
     readonly cantBeCountered?: boolean;
+    /** Every player's spells, not just this permanent's controller's —
+     * Lier, Disciple of the Drowned's "**Spells** can't be countered". */
+    readonly allSpells?: boolean;
   };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so

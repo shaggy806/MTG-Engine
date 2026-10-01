@@ -3085,6 +3085,7 @@ import _poolLeylineProwler from "./pool/leyline-prowler.js";
 import _poolLibraryLarcenist from "./pool/library-larcenist.js";
 import _poolLibrary from "./pool/library.js";
 import _poolLichsCaress from "./pool/lichs-caress.js";
+import _poolLierDiscipleOfTheDrowned from "./pool/lier-disciple-of-the-drowned.js";
 import _poolLiesaForgottenArchangel from "./pool/liesa-forgotten-archangel.js";
 import _poolLiesaShroudOfDusk from "./pool/liesa-shroud-of-dusk.js";
 import _poolLifecraftersBestiary from "./pool/lifecrafters-bestiary.js";
@@ -9596,6 +9597,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLibraryLarcenist,
   _poolLibrary,
   _poolLichsCaress,
+  _poolLierDiscipleOfTheDrowned,
   _poolLiesaForgottenArchangel,
   _poolLiesaShroudOfDusk,
   _poolLifecraftersBestiary,
