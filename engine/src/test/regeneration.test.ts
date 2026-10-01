@@ -59,6 +59,15 @@ const cast = (game: Game, name: string, target?: ObjectId): void => {
 };
 
 describe("Regeneration — Mortivore", () => {
+  it("every seat's view shows the shields, which are public", () => {
+    const { game, mortivore } = setUp([]);
+    expect(game.viewFor(B).objects[mortivore]?.regenerationShields).toBe(0);
+    regenerate(game, mortivore);
+    regenerate(game, mortivore);
+    expect(game.viewFor(A).objects[mortivore]?.regenerationShields).toBe(2);
+    expect(game.viewFor(B).objects[mortivore]?.regenerationShields).toBe(2);
+  });
+
   it("a shield replaces a destroy effect: tapped, still on the battlefield", () => {
     const { game, mortivore } = setUp(["Murder"]);
     regenerate(game, mortivore);

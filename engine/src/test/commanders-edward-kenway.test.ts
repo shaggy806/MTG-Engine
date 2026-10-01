@@ -69,6 +69,8 @@ describe("Edward Kenway — a Vehicle's combat damage", () => {
     // Rule 406.3: its owner can't look at it; the player who did may go on.
     expect(game.viewFor(B).objects[bears]).toBeUndefined();
     expect(game.viewFor(B).zones.exile).toContain(bears);
+    // Whose card it is stays public: it still counts in Bob's exile.
+    expect(game.viewFor(B).zones.exileOwners[bears]).toBe(B);
     expect(game.viewFor(A).objects[bears]?.cardName).toBe("Grizzly Bears");
     // Nobody but Alice ever knew what it was: the history names it nowhere.
     const stints = game.state.publicStints ?? {};

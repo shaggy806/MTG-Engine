@@ -667,7 +667,45 @@ function soundFor(ev: GameEvent): void {
 /** A permanent's tile on the battlefield — its outer `data-obj-id` box (the
  * hand and the stack carry the id too, so this looks only on a board). */
 function boardTileOf(object: ObjectId): HTMLElement | null {
-  return document.querySelector<HTMLElement>(`.board [data-obj-id="${CSS.escape(object)}"]`)
+  const id = CSS.escape(object)
+  // A permanent the board folded into another's tile (two Soldiers from
+  // Raise the Alarm) is drawn by that tile, which lists it in `data-obj-ids`.
+  return (
+    document.querySelector<HTMLElement>(`.board [data-obj-id="${id}"]`) ??
+    document.querySelector<HTMLElement>(`.board [data-obj-ids~="${id}"] [data-obj-id]`)
+  )
+}
+
+/**
+ * Arrivals in one frame, one animation per tile: identical permanents fold
+ * into one tile, so several can arrive on it at once. A tile that's new grows
+ * in once and says "×N"; one already on the board that some joined just
+ * glows and says "+N" rather than arriving again.
+ */
+function runEnters(
+  cues: readonly { readonly object: ObjectId; readonly isToken: boolean; readonly delay: number }[],
+): void {
+  const arriving = new Set(cues.map((c) => c.object))
+  const byTile = new Map<HTMLElement, { first: (typeof cues)[number]; count: number }>()
+  for (const cue of cues) {
+    const wrap = boardTileOf(cue.object)
+    if (!wrap) continue
+    const seen = byTile.get(wrap)
+    if (seen) seen.count += 1
+    else byTile.set(wrap, { first: cue, count: 1 })
+  }
+  for (const [wrap, { first, count }] of byTile) {
+    const shown = wrap.dataset.objId as ObjectId | undefined
+    const duration = scaled(ENTER_STEP_MS)
+    if (shown === undefined || arriving.has(shown)) {
+      runEnter(first.object, first.isToken, first.delay)
+      if (count > 1) floatText(wrap, `×${count}`, 'info', first.delay, duration * 1.5)
+    } else {
+      const tile = wrap.querySelector<HTMLElement>('.mini-tile')
+      if (tile) glow(tile, 'gain', first.delay, duration)
+      floatText(wrap, `+${count}`, 'gain', first.delay, duration * 1.5)
+    }
+  }
 }
 
 type Tone = 'gain' | 'loss' | 'info'
@@ -888,11 +926,11 @@ function runMill(ev: GameEvent, view: PlayerView, prev: PlayerView | null): void
   if (ev.type === 'cards-milled') {
     piles = ev.objects.map(() => ({ player: ev.player, exile: false }))
   } else if (ev.type === 'cards-put-into-exile') {
-    // Whose library each came from: the card's owner, face up in exile now,
-    // or — face down, hidden — the old board may still know it.
+    // Whose library each came from: the card's owner, which the view lists
+    // for every exiled card, face down or not.
     piles = ev.arrivals.flatMap((a) => {
       if (a.from !== 'library') return []
-      const owner = view.objects[a.object]?.owner ?? prev?.objects[a.object]?.owner
+      const owner = view.zones.exileOwners[a.object] ?? prev?.objects[a.object]?.owner
       return owner ? [{ player: owner, exile: true }] : []
     })
   } else return
@@ -1283,6 +1321,8 @@ export function AnimationLayer({
     }
 
     return bus.subscribe((cues) => {
+      // Arrivals are gathered and played per tile after the loop (`runEnters`).
+      const enters: { object: ObjectId; isToken: boolean; delay: number }[] = []
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -1293,7 +1333,12 @@ export function AnimationLayer({
             runTap(cue.event.object, false, cue.delay)
           } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
           else if (cue.event.type === 'permanent-entered-battlefield') {
-            runEnter(cue.event.object, cue.view.objects[cue.event.object]?.isToken ?? false, cue.delay)
+            const object = cue.event.object
+            // One sound per tile, as one animation: a folded member is silent.
+            const tile = boardTileOf(object)
+            const folded = tile !== null && enters.some((e) => boardTileOf(e.object) === tile)
+            enters.push({ object, isToken: cue.view.objects[object]?.isToken ?? false, delay: cue.delay })
+            if (folded) continue
           } else if (
             cue.event.type === 'counter-added' ||
             cue.event.type === 'pt-modified' ||
@@ -1323,6 +1368,7 @@ export function AnimationLayer({
         }
         window.setTimeout(() => fire(cue), cue.delay)
       }
+      runEnters(enters)
     })
   }, [bus])
 

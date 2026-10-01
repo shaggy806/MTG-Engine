@@ -2399,7 +2399,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     const renderEntries = (list: readonly BoardEntry[]) => (
       <div className="board-row-cards">
         {list.map((entry) => (
-          <div className="board-entry" key={entry.ids[0]}>
+          <div className="board-entry" key={entry.ids[0]} data-obj-ids={entry.ids.join(' ')}>
             {tileFor(entry.sample, pid, entry.ids, {
               // Identical permanents folded here in the client, each of which
               // may itself be one of the engine's compacted token stacks —
@@ -2747,8 +2747,10 @@ function Table({ view, seat, opponents, game, actions, hand, previousView }: Tab
     game.seats.find((s) => s.player === pid)?.online ?? null
   // Exile is one shared zone (not per-player) — split it by each object's
   // owner so it can be shown/browsed per player-panel like the graveyard is.
+  // By the view's owner list, which a face-down card is on too: it has no
+  // object here for any seat that can't look at it.
   const exileOf = (pid: PlayerId): readonly ObjectId[] =>
-    view.zones.exile.filter((id) => view.objects[id]?.owner === pid)
+    view.zones.exile.filter((id) => view.zones.exileOwners[id] === pid)
   const openZone = (title: string, ids: readonly ObjectId[]) =>
     setZoneView({ title, ids })
 

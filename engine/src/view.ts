@@ -150,6 +150,9 @@ export interface VisibleObject {
   readonly colors: readonly Color[];
   readonly tapped: boolean;
   readonly damageMarked: number;
+  /** Regeneration shields waiting to replace its next destruction this turn
+   * (rule 701.19) — public, like the damage they'd answer. */
+  readonly regenerationShields: number;
   readonly counters: Readonly<Record<string, number>>;
   readonly summoningSick: boolean;
   /** A player, or an opponent's planeswalker (an `ObjectId`), or `null`. */
@@ -234,6 +237,10 @@ export interface PlayerView {
     readonly stack: readonly ObjectId[];
     /** Single shared zones — each object's `owner` says whose card it is. */
     readonly exile: readonly ObjectId[];
+    /** Whose card each exiled id is, for every one of them: whose a
+     * face-down card is stays public (rule 406.3 hides only its face), and
+     * a hidden one has no entry in `objects` to say so. */
+    readonly exileOwners: Readonly<Record<ObjectId, PlayerId>>;
     readonly command: readonly ObjectId[];
     /** Every hand's ids are here regardless of whose it is (so an opponent's
      * hand can render as N face-down cards) — but `objects` below only
@@ -401,6 +408,7 @@ function visible(
     colors: [...computed.colors],
     tapped: object.tapped,
     damageMarked: object.damageMarked,
+    regenerationShields: object.regenerationShields ?? 0,
     counters: { ...object.counters },
     summoningSick: object.summoningSick,
     attacking: object.attacking,
@@ -621,6 +629,12 @@ function viewForUncached(
       battlefield: [...state.zones.shared.battlefield],
       stack: [...state.zones.shared.stack],
       exile: [...state.zones.shared.exile],
+      exileOwners: Object.fromEntries(
+        state.zones.shared.exile.flatMap((id) => {
+          const owner = state.objects[id]?.owner;
+          return owner === undefined ? [] : [[id, owner]];
+        }),
+      ),
       command: [...state.zones.shared.command],
       hands,
       graveyards,

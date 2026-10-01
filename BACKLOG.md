@@ -463,9 +463,10 @@ Follow-on ideas, approved by the user on 2026-09-30:
 
 - **Arrows only for the aimed stack entry.** `ArrowLayer` draws the targets of the top entry (or
   the hovered one), like `aim`; a deep stack of targeted spells shows one set at a time.
-- **Folded tokens arrive as one tile**: two Soldiers from Raise the Alarm are separate objects
-  the board folds into one tile, so only the first one's `permanent-entered-battlefield` finds a
-  tile to animate. Harmless, but a "×2" arriving could say so.
+- **Tokens merged into an engine stack arrive unanimated**: a second Raise the Alarm's Soldiers
+  are folded by the engine into the first two's stack (`stackCount`), so the object their
+  `permanent-entered-battlefield` names is gone from the view and nothing plays. The stack's tile
+  could glow and say "+2", as a tile the board folded them into already does (`runEnters`).
 - **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.
@@ -475,12 +476,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   open the zone the card went to instead.
 - **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
   and download-free, but plain. Real samples could replace them cue for cue.
-
-- **A face-down exiled card drops out of its owner's exile count and list** for every seat that
-  can't look at it (a foretold card, one exiled face down — Edward Kenway): `exileOf` in
-  `App.tsx` groups exile by `view.objects[id].owner`, and a hidden card has no object. The
-  owner is public (rule 406.3 hides the face, not whose card it is), so the view could carry
-  owners for hidden exile ids.
 
 - **Face-down permanents should sit on their controller's board, and turning one face up should
   work like any other activated ability** (the user's ask): a click on the card opens the same
@@ -498,11 +493,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   fallback, repeated in `CardTile`, `MiniTile`, `CommanderTile`, `CommanderDamageChip` and
   `CommanderArt`. Extract one `ArtCrop` component; and `PrintingPicker`'s raw `<img>` could be a
   `CardImage`.
-
-- **Show regeneration shields on the card.** A permanent's shields (`GameObject
-  .regenerationShields`) are public, but the view doesn't carry them and a tile shows nothing;
-  only the log line says one was made. Add them to `VisibleObject` and a small badge beside
-  the damage marker; check it live.
 
 - **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
   own menu entry only while the list stays small (two colours up to X = 22). Past that it

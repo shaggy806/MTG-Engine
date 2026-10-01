@@ -2473,6 +2473,11 @@
   color: #ff8f8f;
   border-color: rgba(255, 143, 143, 0.45);
 }
+/* regeneration shields: not a counter, so not a counter's green */
+.mt-counter.regen {
+  color: #8fd0ff;
+  border-color: rgba(143, 208, 255, 0.55);
+}
 .mt-counter-glyph,
 .mt-counter-letter {
   width: calc(var(--ctr-size) * 0.8);

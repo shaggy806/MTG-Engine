@@ -44,6 +44,9 @@ const COUNTER_GLYPH: Readonly<Record<string, string>> = {
   vortex: '',
 }
 
+/** ms-ability-regenerate, for a permanent's regeneration shields. */
+const REGENERATE_GLYPH = ''
+
 function glyphFor(kind: string): string | null {
   return COUNTER_GLYPH[kind] ?? (KEYWORD_GLYPH as Readonly<Record<string, string>>)[kind] ?? null
 }
@@ -68,7 +71,8 @@ function visibleCounters(obj: VisibleObject): [string, number][] {
  */
 export function CounterChips({ obj }: { readonly obj: VisibleObject }) {
   const counters = visibleCounters(obj)
-  if (counters.length === 0) return null
+  const shields = obj.regenerationShields
+  if (counters.length === 0 && shields <= 0) return null
   const aboveStat = obj.power !== null || obj.loyalty !== null
   return (
     <span className={`mt-counters${aboveStat ? ' above-stat' : ''}`}>
@@ -94,6 +98,21 @@ export function CounterChips({ obj }: { readonly obj: VisibleObject }) {
           </span>
         )
       })}
+      {/* Regeneration shields (rule 701.19) aren't counters, but read the
+          same way: how many, on the tile. The Mana font's regenerate icon
+          and their own colour, so they can't be taken for a shield counter,
+          a pump or a flip. */}
+      {shields > 0 ? (
+        <span
+          className="mt-counter regen"
+          title={`${shields} regeneration shield${shields === 1 ? '' : 's'}`}
+        >
+          <span className="mt-counter-glyph" aria-hidden="true">
+            {REGENERATE_GLYPH}
+          </span>
+          <span className="mt-counter-n">{shields}</span>
+        </span>
+      ) : null}
     </span>
   )
 }

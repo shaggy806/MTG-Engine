@@ -301,13 +301,19 @@ export function CardTile({
             <Symbols text={displayText} />
           </span>
         ) : null}
-        {counters.length > 0 ? (
+        {counters.length > 0 || obj.regenerationShields > 0 ? (
           <span className="ct-counters">
             {counters.map(([k, n]) => (
               <span key={k}>
                 {n}× {k}
               </span>
             ))}
+            {obj.regenerationShields > 0 ? (
+              <span>
+                {obj.regenerationShields} regeneration shield
+                {obj.regenerationShields === 1 ? '' : 's'}
+              </span>
+            ) : null}
           </span>
         ) : null}
       </span>
