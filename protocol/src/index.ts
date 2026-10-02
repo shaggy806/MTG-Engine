@@ -12,6 +12,7 @@
  */
 
 export type {
+  PassSettings,
   BotSpeed,
   CaptureSummary,
   ClientMessage,

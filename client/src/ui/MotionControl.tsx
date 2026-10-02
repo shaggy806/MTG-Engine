@@ -7,6 +7,7 @@ import {
 } from '../game/motionPrefs.ts'
 import type { AnimScale, CastEntrance } from '../game/motionPrefs.ts'
 import { playSound } from '../game/sound.ts'
+import { STEPS, setPassSettings, usePassSettings } from '../game/passSettings.ts'
 
 const SPEED_LABEL: Record<AnimScale, string> = {
   0.5: 'Fast',
@@ -22,14 +23,18 @@ const ENTRANCE_LABEL: Record<CastEntrance, string> = {
 }
 
 /**
- * This viewer's animation settings (see `motionPrefs.ts`): how long every
- * animation lasts on this screen, and whether movement is turned off. The one
- * pacing control each player owns — bot speed is the host's — so it sits in
- * everyone's top strip, as a button that opens a small panel rather than two
- * more rows of options in a strip that has no room for them.
+ * This viewer's own settings, in one "Settings" button in the top strip that
+ * opens a small panel — the strip has no room for more. Two sections:
+ *
+ * - **Animations** (`motionPrefs.ts`): how long every animation lasts on this
+ *   screen, and whether movement is turned off. Bot speed is the host's.
+ * - **Priority** (`passSettings.ts`): "pass to main" and "pass through
+ *   combat", and the stops flagged on the phase track (`PhaseTrack`), listed
+ *   here for both kinds of turn since the track shows only the current one.
  */
 export function MotionControl() {
   const prefs = useMotionPrefs()
+  const pass = usePassSettings()
   const [open, setOpen] = useState(false)
   const boxRef = useRef<HTMLDivElement>(null)
 
@@ -53,10 +58,41 @@ export function MotionControl() {
   return (
     <div className="motion-control" ref={boxRef}>
       <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        Animations
+        Settings
       </button>
       {open ? (
-        <div className="motion-panel" role="dialog" aria-label="Animation settings">
+        <div className="motion-panel" role="dialog" aria-label="Settings">
+          <div className="motion-heading">Priority</div>
+          <label className="motion-row">
+            <input
+              type="checkbox"
+              checked={pass.passToMain}
+              onChange={(e) => setPassSettings({ passToMain: e.target.checked })}
+            />
+            Pass to main — on my turn, pass upkeep and draw
+          </label>
+          <label className="motion-row">
+            <input
+              type="checkbox"
+              checked={pass.passThroughCombat}
+              onChange={(e) => setPassSettings({ passThroughCombat: e.target.checked })}
+            />
+            Pass through combat — still asked to attack and block
+          </label>
+          <div className="motion-note motion-wrap">
+            Neither passes with something on the stack. Click a step in the bar above to make it a
+            stop, where you keep priority whatever would pass it.
+          </div>
+          <StopList label="Stops on my turns" steps={pass.stops.mine} />
+          <StopList label="Stops on others' turns" steps={pass.stops.theirs} />
+          {pass.stops.mine.length + pass.stops.theirs.length > 0 ? (
+            <div className="motion-row">
+              <button type="button" onClick={() => setPassSettings({ stops: { mine: [], theirs: [] } })}>
+                Clear stops
+              </button>
+            </div>
+          ) : null}
+          <div className="motion-heading">Animations</div>
           <div className="motion-row" role="group" aria-label="Animation speed">
             <span className="motion-label">Speed</span>
             {ANIM_SCALES.map((s) => (
@@ -113,6 +149,17 @@ export function MotionControl() {
           </label>
         </div>
       ) : null}
+    </div>
+  )
+}
+
+/** One kind of turn's stops, by name, in turn order. */
+function StopList({ label, steps }: { readonly label: string; readonly steps: readonly string[] }) {
+  const names = STEPS.filter(([step]) => steps.includes(step)).map(([, abbr]) => abbr)
+  return (
+    <div className="motion-row">
+      <span className="motion-label">{label}</span>
+      <span>{names.length > 0 ? names.join(', ') : 'none'}</span>
     </div>
   )
 }

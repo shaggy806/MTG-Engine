@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine/client'
 import type { Frame } from '../game/usePlayback.ts'
 import { realId } from '../game/stackMembers.ts'
-import type { BotSpeed, CaptureSummary, ClientMessage, SeatStatus, ServerMessage, WireDeck } from 'protocol'
+import type { BotSpeed, CaptureSummary, ClientMessage, PassSettings, SeatStatus, ServerMessage, WireDeck } from 'protocol'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -217,6 +217,9 @@ export interface NetworkGame {
   concede: () => void
   /** Hand my seat to a bot (`true`) or take it back (`false`). */
   setBotTakeover: (on: boolean) => void
+  /** Send my priority-passing preferences to the server, which does the
+   * passing (`game/passSettings.ts`). */
+  sendPassSettings: (settings: PassSettings) => void
   /** Fills an open seat with a basic heuristic bot instead of a human.
    * Omitted `deck` falls back to that seat's positional starter deck. */
   addBot: (seat: PlayerId, deck?: WireDeck) => void
@@ -592,6 +595,15 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'concede', roomId: id })
   }, [send])
 
+  const sendPassSettings = useCallback(
+    (settings: PassSettings) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-pass-settings', roomId: id, settings })
+    },
+    [send],
+  )
+
   const setBotTakeover = useCallback(
     (on: boolean) => {
       const id = roomIdRef.current
@@ -829,6 +841,7 @@ export function useNetworkGame(): NetworkGame {
     roomPending,
     concede,
     setBotTakeover,
+    sendPassSettings,
     addBot,
     setBotDeck,
     addSeat,

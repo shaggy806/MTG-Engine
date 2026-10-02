@@ -400,6 +400,10 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           requireActiveRoom(manager, message.roomId).dispatch(connection, message.action);
           return;
         }
+        case "set-pass-settings": {
+          requireActiveRoom(manager, message.roomId).setPassSettings(connection, message.settings);
+          return;
+        }
         case "concede": {
           requireActiveRoom(manager, message.roomId).concede(connection);
           return;

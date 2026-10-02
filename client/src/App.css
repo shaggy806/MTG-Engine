@@ -140,6 +140,27 @@
 .motion-note {
   color: var(--muted);
 }
+/* The settings panel's section headings, and a note that wraps rather than
+   stretching the nowrap panel. */
+.motion-heading {
+  color: var(--text);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+}
+.motion-heading + .motion-row {
+  margin-top: -2px;
+}
+.motion-panel .motion-heading:not(:first-child) {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.motion-wrap {
+  white-space: normal;
+  max-width: 30em;
+}
 /* The strip's icon buttons (pause/resume, step, replay): square, and a
    glyph a little larger than the strip's text so it reads as a control. */
 .ts-menu button.ts-icon {
@@ -196,19 +217,43 @@
   overflow-x: auto;
 }
 .phase-steps li {
+  display: flex;
+}
+/* Each pip is a button: clicking one flags its step as a stop (PhaseTrack). */
+.phase-steps .phase-pip {
   padding: 2px 6px;
+  border: 1px solid transparent;
   border-radius: 5px;
   background: var(--border-soft);
   color: var(--muted-dim);
+  font: inherit;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  cursor: pointer;
 }
-.phase-steps li.current {
+.phase-steps .phase-pip:disabled {
+  cursor: default;
+}
+.phase-steps .phase-pip:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--muted-dim);
+}
+.phase-steps li.current .phase-pip {
   background: var(--accent);
   color: #0c0f12;
   font-weight: 700;
   box-shadow: 0 0 8px var(--accent);
+}
+/* A flagged stop: amber, the strip's colour for "held" (the bots' pause). */
+.phase-steps li.stop .phase-pip {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.phase-steps li.stop.current .phase-pip {
+  color: #0c0f12;
+  border-color: var(--warn);
+  box-shadow: 0 0 0 1px var(--warn), 0 0 8px var(--accent);
 }
 
 /* whose turn + full phase name, spelled out — lives inline in .top-strip now,

@@ -10,7 +10,25 @@
  * with, and both workspaces already depend on `engine`.
  */
 
-import type { Action, LegalAction, PlayerId, PlayerView } from "engine";
+import type { Action, LegalAction, PlayerId, PlayerView, Step } from "engine";
+
+/**
+ * A player's standing priority-passing preferences — their own, kept on
+ * their device and sent whenever they change (`set-pass-settings`). The
+ * server does the passing (`Room.autoAdvanceHumanSeat`); none of them passes
+ * a window with something on the stack, or answers a decision.
+ */
+export interface PassSettings {
+  /** On your own turn, pass the upkeep and draw steps' windows. */
+  readonly passToMain: boolean;
+  /** Pass every combat step's window, on any turn. Declaring attackers and
+   * blockers is still asked. */
+  readonly passThroughCombat: boolean;
+  /** Steps whose first priority window you keep whatever passes it
+   * otherwise (these settings, Auto-pass, Pass Turn) — on your own turns
+   * (`mine`) and on everyone else's (`theirs`). */
+  readonly stops: { readonly mine: readonly Step[]; readonly theirs: readonly Step[] };
+}
 
 /** A deck as it travels over the wire — `claim-seat`, `add-bot`, and
  * `set-bot-deck` all carry one of these. `name` is a display label only (the
@@ -104,6 +122,12 @@ export type ClientMessage =
       /** The token from this room's `create-room`, if this client created it
        * — binds this connection as the host. */
       readonly hostToken?: string;
+    }
+  | {
+      /** This seat's priority-passing preferences (`PassSettings`). */
+      readonly type: "set-pass-settings";
+      readonly roomId: string;
+      readonly settings: PassSettings;
     }
   | {
       /** This connection's player concedes (rule 104.3a): they lose and

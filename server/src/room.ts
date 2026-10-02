@@ -41,9 +41,10 @@ import type {
   ObjectId,
   PlayerController,
   PlayerId,
+  Step,
 } from "engine";
 import { HostRole } from "./host.js";
-import type { BotSpeed, SeatStatus, ServerMessage, WireDeck } from "protocol";
+import type { BotSpeed, PassSettings, SeatStatus, ServerMessage, WireDeck } from "protocol";
 
 export interface Connection {
   readonly send: (message: ServerMessage) => void;
@@ -90,6 +91,17 @@ interface Seat {
    * an instant — this is opt-in for players who don't care about that.
    */
   skipManaOnly: boolean;
+  /** The player's standing passing preferences (`PassSettings`), as their
+   * device last sent them. */
+  pass: PassSettings;
+  /**
+   * The `turn:step` whose stop this seat has already been held at, so a stop
+   * holds only the first window of its step: once the player passes there,
+   * the rest of the step passes as it would have. Also set to the step a
+   * Pass Turn or Auto-pass is armed in, so a stop on the step you're already
+   * in doesn't hold the pass you just asked for.
+   */
+  stoppedAt: string | null;
   /**
    * A one-shot "resolve all": pass this seat's priority until the stack has
    * drained. Unlike {@link autoPassUntil} it remembers nothing past the
@@ -157,6 +169,40 @@ const BOT_LINGER_MS: Readonly<Record<BotSpeed, number>> = {
 };
 
 const SETTLE_BUDGET = 10_000;
+
+/** A seat's passing preferences until its device sends its own. */
+const NO_PASS_SETTINGS: PassSettings = {
+  passToMain: false,
+  passThroughCombat: false,
+  stops: { mine: [], theirs: [] },
+};
+
+/** The steps a stop can be put on: every one a player gets priority in
+ * (not untap, nor cleanup, which gives none unless something triggers). */
+const STOPPABLE_STEPS: ReadonlySet<Step> = new Set<Step>([
+  "upkeep",
+  "draw",
+  "precombat-main",
+  "begin-combat",
+  "declare-attackers",
+  "declare-blockers",
+  "combat-damage",
+  "end-combat",
+  "postcombat-main",
+  "end",
+]);
+
+/** The steps of a combat phase (rule 506.1), for "pass through combat". */
+const COMBAT_STEPS: ReadonlySet<Step> = new Set<Step>([
+  "begin-combat",
+  "declare-attackers",
+  "declare-blockers",
+  "combat-damage",
+  "end-combat",
+]);
+
+/** One step of one turn, for `Seat.stoppedAt`. */
+const stepKey = (state: GameState): string => `${state.turn.number}:${state.turn.step}`;
 
 /** How many decisions in a row a conceding player's stand-in bot answers
  * before giving up — a backstop against a decision loop, never reached by
@@ -306,6 +352,8 @@ export class Room {
       autoPassFrom: null,
       autoPassPausedAt: null,
       skipManaOnly: false,
+      pass: NO_PASS_SETTINGS,
+      stoppedAt: null,
       resolveAllFrom: null,
       displayName: null,
       ackedSeq: 0,
@@ -573,6 +621,7 @@ export class Room {
     seat.autoPassUntil = { kind: "rest-of-turn" };
     seat.autoPassFrom = this.game.events.length;
     seat.autoPassPausedAt = null;
+    seat.stoppedAt = stepKey(this.game.state);
     this.settle();
   }
 
@@ -593,6 +642,7 @@ export class Room {
       : { kind: "next-own-turn", afterTurn: this.game.state.turn.number };
     seat.autoPassFrom = cancelling ? null : this.game.events.length;
     seat.autoPassPausedAt = null;
+    if (!cancelling) seat.stoppedAt = stepKey(this.game.state);
     this.settle();
   }
 
@@ -622,6 +672,45 @@ export class Room {
 
   isSkippingManaOnly(player: PlayerId): boolean {
     return this.seatFor(player).skipManaOnly;
+  }
+
+  /** `connection`'s seat's passing preferences (`PassSettings`), checked
+   * field by field since they come straight off the wire. */
+  setPassSettings(connection: Connection, settings: PassSettings): void {
+    const player = this.seatOf(connection);
+    if (player === null) throw new Error("claim a seat before acting");
+    const steps = (list: unknown): Step[] =>
+      Array.isArray(list) ? list.filter((s): s is Step => STOPPABLE_STEPS.has(s as Step)) : [];
+    this.seatFor(player).pass = {
+      passToMain: settings?.passToMain === true,
+      passThroughCombat: settings?.passThroughCombat === true,
+      stops: { mine: steps(settings?.stops?.mine), theirs: steps(settings?.stops?.theirs) },
+    };
+    this.settle();
+  }
+
+  /** Whether `seat` should keep the window it's in for a stop it flagged —
+   * the first window of a flagged step only (see `Seat.stoppedAt`). Marks the
+   * step as held, so ask only where the answer is acted on. */
+  private holdsForStop(seat: Seat, state: GameState): boolean {
+    const own = activePlayerOf(state) === seat.player;
+    const flagged = (own ? seat.pass.stops.mine : seat.pass.stops.theirs).includes(state.turn.step);
+    const key = stepKey(state);
+    if (!flagged || seat.stoppedAt === key) return false;
+    seat.stoppedAt = key;
+    return true;
+  }
+
+  /** Whether `seat`'s standing preferences pass this window: an empty stack,
+   * and either its own upkeep or draw under "pass to main", or a combat step
+   * under "pass through combat". */
+  private passesByPreference(seat: Seat, state: GameState): boolean {
+    if (state.zones.shared.stack.length > 0) return false;
+    const step = state.turn.step;
+    if (seat.pass.passToMain && activePlayerOf(state) === seat.player && (step === "upkeep" || step === "draw")) {
+      return true;
+    }
+    return seat.pass.passThroughCombat && COMBAT_STEPS.has(step);
   }
 
   /**
@@ -854,8 +943,9 @@ export class Room {
       // Whether this seat's auto-pass is still running is room policy; what
       // a skippable decision's answer *is* belongs to the decision, so the
       // room asks rather than restating it. Only `attackers` answers.
+      // A stop on this step (declare attackers, say) keeps the decision too.
       const skip =
-        wasActive && !justCleared
+        wasActive && !justCleared && !this.holdsForStop(seat, s)
           ? autoAnswerFor(s.awaiting, seat.player, this.game.legalActions(seat.player))
           : null;
       if (skip !== null) {
@@ -907,10 +997,14 @@ export class Room {
       }
     }
 
+    // A stop holds this window against auto-pass and the preferences — not
+    // against a window with nothing to do in it, nor a resolve-all.
+    const held = !forcedPass && !manaOnlyAndSkipping && !resolvingStack && this.holdsForStop(seat, s);
     if (
       forcedPass ||
       manaOnlyAndSkipping ||
       resolvingStack ||
+      (!held && this.passesByPreference(seat, s)) ||
       // `interrupted` guards this disjunct **and only this one**, which is the
       // non-obvious part. A window whose only legal action is passing — or,
       // for a seat that opted in, tapping for mana — has nothing to respond
@@ -918,7 +1012,7 @@ export class Room {
       // turn every opponent spell into a dead click. Being interrupted still
       // pauses auto-pass above; it just doesn't hold up a window that was
       // going to pass itself anyway.
-      (wasActive && !justCleared && !interrupted)
+      (wasActive && !justCleared && !interrupted && !held)
     ) {
       this.game.dispatch({ type: "pass-priority", player: holder });
       return true;

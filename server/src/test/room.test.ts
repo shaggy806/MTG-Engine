@@ -797,3 +797,98 @@ describe("Room: conceding and handing a seat to a bot", () => {
     expect(room.isBotSeat(ALICE)).toBe(false);
   });
 });
+
+describe("Room: passing preferences and stops", () => {
+  const NONE = { passToMain: false, passThroughCombat: false, stops: { mine: [], theirs: [] } } as const;
+
+  /** A sparse room, both seats claimed, each with an untapped Forest — so
+   * every window has something in it (tapping for mana) and isn't passed for
+   * want of a choice. */
+  const table = () => {
+    const room = makeSparseRoom();
+    const alice = fakeConnection().connection;
+    const bob = fakeConnection().connection;
+    room.claimSeat(ALICE, "a", alice);
+    room.claimSeat(BOB, "b", bob);
+    for (const p of [ALICE, BOB]) room.game.state.objects[room.game.debugSpawn("Forest", p)].tapped = false;
+    const active = room.game.activePlayer;
+    return {
+      room,
+      active,
+      activeConn: active === ALICE ? alice : bob,
+      other: active === ALICE ? BOB : ALICE,
+      otherConn: active === ALICE ? bob : alice,
+    };
+  };
+  const at = (room: Room) => ({
+    holder: room.game.state.priority.holder,
+    step: room.game.state.turn.step,
+    active: room.game.activePlayer,
+  });
+
+  it("pass to main carries the player's own turn through upkeep and draw to their first main phase", () => {
+    const { room, activeConn, other, otherConn } = table();
+    room.setPassSettings(otherConn, { ...NONE, passToMain: true });
+    room.requestAutoPass(otherConn);
+    // Auto-pass rather than Pass Turn, so the active player passes the
+    // windows they get in the other player's upkeep and draw too.
+    room.requestAutoPass(activeConn);
+    expect(at(room)).toEqual({ holder: other, step: "precombat-main", active: other });
+  });
+
+  it("without it, the player stops in their own upkeep", () => {
+    const { room, activeConn, other, otherConn } = table();
+    room.requestAutoPass(otherConn);
+    room.requestAutoPass(activeConn);
+    expect(at(room)).toEqual({ holder: other, step: "upkeep", active: other });
+  });
+
+  it("pass through combat passes the combat windows", () => {
+    const { room, active, activeConn, otherConn } = table();
+    room.requestAutoPass(otherConn);
+    expect(room.game.state.turn.step).toBe("precombat-main");
+    room.dispatch(activeConn, { type: "pass-priority", player: active });
+    expect(at(room)).toMatchObject({ holder: active, step: "begin-combat" });
+
+    const second = table();
+    second.room.requestAutoPass(second.otherConn);
+    second.room.setPassSettings(second.activeConn, { ...NONE, passThroughCombat: true });
+    second.room.dispatch(second.activeConn, { type: "pass-priority", player: second.active });
+    expect(at(second.room)).toMatchObject({ holder: second.active, step: "postcombat-main" });
+  });
+
+  it("a stop holds the first window of its step against Pass Turn, then lets it go on", () => {
+    const { room, active, activeConn, otherConn } = table();
+    room.requestAutoPass(otherConn);
+    room.setPassSettings(activeConn, { ...NONE, stops: { mine: ["end"], theirs: [] } });
+    room.requestPassTurn(activeConn);
+    expect(at(room)).toEqual({ holder: active, step: "end", active });
+    // Passing there goes on as asked, rather than stopping again in the same step.
+    room.dispatch(activeConn, { type: "pass-priority", player: active });
+    expect(room.game.activePlayer).not.toBe(active);
+  });
+
+  it("a stop on the step Pass Turn is pressed in doesn't hold it", () => {
+    const { room, active, activeConn, otherConn } = table();
+    room.requestAutoPass(otherConn);
+    room.setPassSettings(activeConn, { ...NONE, stops: { mine: ["precombat-main"], theirs: [] } });
+    expect(at(room)).toMatchObject({ holder: active, step: "precombat-main" });
+    room.requestPassTurn(activeConn);
+    expect(room.game.activePlayer).not.toBe(active);
+  });
+
+  it("stops are kept apart for your own turns and others'", () => {
+    const { room, activeConn, other, otherConn } = table();
+    // Only a stop for *their own* turns: Auto-pass carries them through this one.
+    room.setPassSettings(otherConn, { ...NONE, stops: { mine: ["end"], theirs: [] } });
+    room.requestAutoPass(otherConn);
+    room.requestPassTurn(activeConn);
+    expect(at(room)).toMatchObject({ holder: other, step: "upkeep", active: other });
+
+    const second = table();
+    second.room.setPassSettings(second.otherConn, { ...NONE, stops: { mine: [], theirs: ["end"] } });
+    second.room.requestAutoPass(second.otherConn);
+    second.room.requestPassTurn(second.activeConn);
+    expect(at(second.room)).toMatchObject({ holder: second.other, step: "end", active: second.active });
+  });
+});

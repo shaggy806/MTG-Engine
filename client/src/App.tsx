@@ -68,6 +68,7 @@ import { AnimationLayer } from './ui/AnimationLayer.tsx'
 import { ArrowLayer } from './ui/ArrowLayer.tsx'
 import { highlightEvent } from './ui/highlight.ts'
 import { SeatMenu } from './ui/SeatMenu.tsx'
+import { usePassSettings } from './game/passSettings.ts'
 import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
@@ -627,6 +628,13 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const shown = usePlayback(game.frame, bus, game.ackFrame)
   const view = shown.view
   const botPlaying = game.seats.find((s) => s.player === seat)?.isBot === true
+  // My passing preferences live on this device and the server does the
+  // passing: sent when the game screen opens and whenever they change.
+  const passSettings = usePassSettings()
+  const { sendPassSettings, status } = game
+  useEffect(() => {
+    if (status === 'playing') sendPassSettings(passSettings)
+  }, [passSettings, sendPassSettings, status])
   if (view === null || seat === null || opponents.length === 0) {
     return <CenteredScreen title="Loading…" />
   }
@@ -643,7 +651,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       <header className="top-strip">
         <span className="ts-room">room {game.roomId}</span>
         <TurnBanner view={view} seats={game.seats} />
-        <PhaseTrack view={view} />
+        <PhaseTrack view={view} seat={seat} />
         <span className="ts-acting">
           {over
             ? 'Game over'
