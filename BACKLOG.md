@@ -341,6 +341,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
   no loyalty shown on its tile, only once it's on the battlefield (counter chips,
   `client/src/ui/CounterChips.tsx`); the hand tile (`client/src/ui/CardTile.tsx`) should show
   the printed starting loyalty.
+- **Repeated choice triggers should offer "same for all".** When several triggers that each ask
+  the same choice are on the stack, the player answers each one separately. Give the option to
+  select the same option for all of those triggers on the stack at once.
 
 ## Tooling / docs
 
