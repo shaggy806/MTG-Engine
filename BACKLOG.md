@@ -114,6 +114,10 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 
 ## Engine rules gaps
 
+- **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
+  (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
+  pay together, and its offer's convoke proof and delve ranges are each worked out without the
+  other. Needs a joint plan: convoke the creatures, delve the rest of the generic.
 - **A smarter default trigger order.** A player who orders their own triggers is asked (the
   `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
   included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order
