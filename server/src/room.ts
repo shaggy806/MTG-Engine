@@ -681,11 +681,16 @@ export class Room {
     if (player === null) throw new Error("claim a seat before acting");
     const steps = (list: unknown): Step[] =>
       Array.isArray(list) ? list.filter((s): s is Step => STOPPABLE_STEPS.has(s as Step)) : [];
+    const orderTriggers = settings?.orderTriggers === true;
     this.seatFor(player).pass = {
       passToMain: settings?.passToMain === true,
       passThroughCombat: settings?.passThroughCombat === true,
+      orderTriggers,
       stops: { mine: steps(settings?.stops?.mine), theirs: steps(settings?.stops?.theirs) },
     };
+    // The engine asks; a bot standing in for the seat answers with the
+    // engine's own order.
+    this.game.setOrdersOwnTriggers(player, orderTriggers);
     this.settle();
   }
 

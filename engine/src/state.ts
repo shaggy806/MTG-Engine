@@ -1055,6 +1055,10 @@ export interface PendingTrigger {
   readonly controller: PlayerId;
   /** Its ability's `stackFirst`: placed before its controller's others. */
   readonly stackFirst?: boolean;
+  /** Its controller has chosen where it goes among their simultaneous
+   * triggers (the `order-triggers` decision): placed as it stands in
+   * `pendingTriggers`, not re-sorted, and not asked about again. */
+  readonly ordered?: boolean;
   /** A target the triggering *event* determines (not chosen) — e.g. the
    * player a saboteur just dealt combat damage to. Fills the ability's target
    * slots in order, ahead of any `chooseTargets` prompt. */
@@ -1133,6 +1137,17 @@ export interface PendingTrigger {
  * own targets and effect, as a {@link DelayedTrigger} does; its source and
  * controller are the resolving spell's or ability's.
  */
+/** One of the triggered abilities an `order-triggers` decision orders. */
+export interface TriggerOrderEntry {
+  /** The object whose ability it is. */
+  readonly source: ObjectId;
+  readonly cardName: string;
+  /** The ability's text, to tell two abilities of one card apart. */
+  readonly text: string;
+  /** How many identical copies it stands for (`PendingTrigger.copies`). */
+  readonly copies: number;
+}
+
 export interface ReflexiveTrigger {
   readonly targets: readonly TargetSpec[];
   readonly effect: EffectSpec;
@@ -1542,6 +1557,17 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly name: string;
       readonly options: readonly ObjectId[];
+    }
+  | {
+      /** Rule 603.3b: `player` puts their simultaneous triggered abilities
+       * on the stack in any order they choose. Asked only of a player who
+       * orders their own (`GameState.ordersOwnTriggers`), and only when two
+       * or more of theirs are waiting and they aren't all the same ability;
+       * otherwise the engine's own order stands. `triggers` is that order,
+       * the one that would resolve first first. */
+      readonly kind: "order-triggers";
+      readonly player: PlayerId;
+      readonly triggers: readonly TriggerOrderEntry[];
     }
   | {
       /**
@@ -2627,6 +2653,11 @@ export interface GameState {
    * state-based check under way (the `legend-rule` decision); spent once that
    * check performs its moves. */
   legendRuleKeeps?: ObjectId[];
+  /** Players who order their own simultaneous triggered abilities (rule
+   * 603.3b, the `order-triggers` decision) rather than leave it to the
+   * engine — a preference set from outside (`Game.setOrdersOwnTriggers`),
+   * off for everyone by default. */
+  ordersOwnTriggers?: PlayerId[];
   /**
    * The `eventSeq` the spell or ability now resolving began at — what "this
    * way" reads (the `thisWay` amount and the `this-way` condition): every

@@ -46,6 +46,7 @@ const STORAGE_KEY = 'mtg.pass'
 const DEFAULTS: PassSettings = {
   passToMain: false,
   passThroughCombat: false,
+  orderTriggers: false,
   stops: { mine: [], theirs: [] },
 }
 
@@ -59,6 +60,7 @@ function readStored(): PassSettings {
     return {
       passToMain: parsed.passToMain === true,
       passThroughCombat: parsed.passThroughCombat === true,
+      orderTriggers: parsed.orderTriggers === true,
       stops: { mine: steps(parsed.stops?.mine), theirs: steps(parsed.stops?.theirs) },
     }
   } catch {

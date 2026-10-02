@@ -35,9 +35,12 @@ that one card is the reason the deck exists.
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
-- **Commanders authored and then dropped by their reviews.** Tifa Lockhart and Yarok need the
-  player to order simultaneous triggers (`decision:trigger-order`), and so does Hero of Bladehold. Aragorn, the Uniter needs
-  scry to let the player order the kept cards (`decision:library-ordering`).
+- **Commanders authored and then dropped by their reviews.** Tifa Lockhart, Yarok and Hero of
+  Bladehold were dropped for want of the player ordering simultaneous triggers
+  (`decision:trigger-order`), built 2026-10-01 as an opt-in setting: re-author them, rechecking
+  each review's note (Yarok's doubled triggers are copies of one ability, which isn't asked).
+  Aragorn, the Uniter needs scry to let the player order the kept cards
+  (`decision:library-ordering`).
 
 ## Card backlog (top-5000 staples and the precons)
 
@@ -114,12 +117,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 
 ## Engine rules gaps
 
-- **Explore auto-determining the best trigger stacking order.** Simultaneous triggers a player
-  controls go on the stack in detection order (`placePendingTriggers` in `game.ts`), never the
-  player's choice (603.3b). Explore whether the engine could pick the best order itself, as an
-  alternative to (or default for) the `decision:trigger-order` decision that blocks Tifa,
-  Yarok, Hero of Bladehold and evoke creatures with order-dependent ETBs. Evoke's sacrifice
-  already uses a hard-coded stand-in (`TriggeredAbility.stackFirst`: resolve after the ETBs).
+- **A smarter default trigger order.** A player who orders their own triggers is asked (the
+  `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
+  included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order
+  (`triggerPlacement` in `game.ts`). A heuristic could do better — card draw before a discard,
+  pumps before the attack they matter for — built from cases that come up in real games.
 - **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
   "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
   the Ring lands), banding, Companion,

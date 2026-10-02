@@ -35,7 +35,7 @@ import {
 } from "./effect-worth.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import type { EnterAttackingChoice, GameObject, GameState } from "./state.js";
+import type { EnterAttackingChoice, GameObject, GameState, TriggerOrderEntry } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
@@ -205,6 +205,13 @@ export interface PlayerController {
    * longest first) to keep; the rest go to the graveyard.
    */
   chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId;
+  /**
+   * Rule 603.3b: order your simultaneous triggered abilities — return every
+   * index of `triggers` once, the one to resolve first first. `triggers` is
+   * the engine's own order. Asked only of a player who orders their own
+   * (`Game.setOrdersOwnTriggers`).
+   */
+  orderTriggers(view: ControllerView, triggers: readonly TriggerOrderEntry[]): number[];
   /**
    * A text-changing spell is resolving (Artificial Evolution — layer 3):
    * return `[from, to]` — the creature-type word to replace and its
@@ -514,6 +521,11 @@ export class AutomaticController implements PlayerController {
     return options[0];
   }
 
+  /** The engine's own order, as offered. */
+  orderTriggers(_view: ControllerView, triggers: readonly TriggerOrderEntry[]): number[] {
+    return triggers.map((_, i) => i);
+  }
+
   chooseText(
     _view: ControllerView,
     fromOptions: readonly string[],
@@ -754,6 +766,8 @@ export class ScriptedController implements PlayerController {
     _name,
     options,
   ) => options[0];
+  orderTriggersFn: (view: ControllerView, triggers: readonly TriggerOrderEntry[]) => number[] = (_view, triggers) =>
+    triggers.map((_, i) => i);
   chooseTextFn: TextChooser = (_view, fromOptions, toOptions) => [
     fromOptions[0],
     toOptions[0],
@@ -904,6 +918,10 @@ export class ScriptedController implements PlayerController {
 
   chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId {
     return this.chooseLegendToKeepFn(view, name, options);
+  }
+
+  orderTriggers(view: ControllerView, triggers: readonly TriggerOrderEntry[]): number[] {
+    return this.orderTriggersFn(view, triggers);
   }
 
   chooseText(

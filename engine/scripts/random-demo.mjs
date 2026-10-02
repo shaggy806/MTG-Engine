@@ -10,6 +10,7 @@
 //   npm run play:random -w engine -- --timeout 60 # per-game limit, seconds (default 30)
 //   npm run play:random -w engine -- --with "Card Name"  # in every seat's deck
 //   npm run play:random -w engine -- --games 100 --coverage  # how much of the pool the decks reach
+//   MTG_ORDER_TRIGGERS=1 node scripts/random-demo.mjs  # every seat orders its own triggers
 //
 // Every seed deals each seat its own 100-card Commander deck from the whole
 // pool (`fuzz-decks.mjs`), so a new card needs no edit here to be fuzzed.

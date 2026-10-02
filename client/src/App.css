@@ -140,6 +140,42 @@
 .motion-note {
   color: var(--muted);
 }
+/* The order-triggers decision (ui/TriggerOrder.tsx): the triggers in the
+   order they'll resolve, each with a move up / move down pair. */
+.controls.trigger-order {
+  flex-direction: column;
+  align-items: stretch;
+}
+.trigger-order-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.trigger-order-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.trigger-order-list li:first-child {
+  border-color: var(--accent);
+}
+.trigger-order-ability {
+  color: var(--muted);
+}
+.trigger-order-moves {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
 /* The settings panel's section headings, and a note that wraps rather than
    stretching the nowrap panel. */
 .motion-heading {

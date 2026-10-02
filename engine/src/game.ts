@@ -111,6 +111,7 @@ import { chooseEnchant } from "./decisions/choose-enchant.js";
 import { choosePermanents } from "./decisions/choose-permanents.js";
 import { enterAttacking } from "./decisions/enter-attacking.js";
 import { legendRule } from "./decisions/legend-rule.js";
+import { orderTriggers as orderTriggersDecision } from "./decisions/order-triggers.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
@@ -244,6 +245,7 @@ import type {
   TurnHistory,
   PendingEntry,
   PendingTrigger,
+  TriggerOrderEntry,
   PublicStint,
   PlayerCounterKind,
   PreventionShield,
@@ -864,6 +866,7 @@ export class Game {
       applyChoosePermanents: (player, chosen) => this.applyChoosePermanents(player, chosen),
       applyEnterAttacking: (player, assignments) => this.applyEnterAttacking(player, assignments),
       applyLegendRuleChoice: (player, keep) => this.applyLegendRuleChoice(player, keep),
+      applyTriggerOrder: (player, order) => this.applyTriggerOrder(player, order),
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
@@ -1145,6 +1148,17 @@ export class Game {
     if (awaiting?.kind === "mulligan") return "the game hasn't begun";
     if (awaiting !== null && awaiting.player === player) return `${player} owes a decision`;
     return null;
+  }
+
+  /**
+   * Whether `player` orders their own simultaneous triggered abilities (rule
+   * 603.3b — the `order-triggers` decision) or leaves it to the engine, which
+   * is the default. A preference from outside the rules (the client's "order
+   * my triggers" setting), so it lives on `GameState.ordersOwnTriggers`.
+   */
+  setOrdersOwnTriggers(player: PlayerId, on: boolean): void {
+    const now = (this.state.ordersOwnTriggers ?? []).filter((p) => p !== player);
+    this.state.ordersOwnTriggers = on ? [...now, player] : now;
   }
 
   /**
@@ -12342,7 +12356,9 @@ export class Game {
       : undefined;
   }
 
-  /** Put every waiting trigger on the stack (APNAP). Returns whether any were. */
+  /** Put every waiting trigger on the stack (APNAP). Returns whether any
+   * were — or, when a player who orders their own is asked to first
+   * (`order-triggers`), that the decision was raised. */
   private placePendingTriggers(): boolean {
     if (this.state.pendingTriggers.length === 0) return false;
     const pending = this.state.pendingTriggers;
@@ -12356,15 +12372,25 @@ export class Game {
       ...this.state.turnOrder.slice(activeIndex),
       ...this.state.turnOrder.slice(0, activeIndex),
     ];
+    // A player who orders their own triggers is asked before any of the
+    // batch goes on the stack, so APNAP still holds once they've answered:
+    // the active player first, each order then placed as chosen.
+    for (const player of rotated) {
+      const theirs = pending.filter((t) => t.controller === player);
+      if (this.asksTriggerOrder(player, theirs)) {
+        this.state.pendingTriggers = [...pending, ...this.state.pendingTriggers];
+        this.state.awaiting = {
+          kind: "order-triggers",
+          player,
+          triggers: [...this.triggerPlacement(theirs)].reverse().map((t) => this.describeTrigger(t)),
+        };
+        return true;
+      }
+    }
     // A modal trigger's copies each announce their own modes (rule 603.3c),
     // so they go on the stack one at a time rather than as one stack.
-    // Within one player's, a `stackFirst` ability goes first (see
-    // `TriggeredAbility.stackFirst`), the rest in the order they triggered.
     const ordered = rotated
-      .flatMap((player) => {
-        const theirs = pending.filter((t) => t.controller === player);
-        return [...theirs.filter((t) => t.stackFirst === true), ...theirs.filter((t) => t.stackFirst !== true)];
-      })
+      .flatMap((player) => this.triggerPlacement(pending.filter((t) => t.controller === player)))
       .flatMap((t) =>
         (t.copies ?? 1) > 1 && this.announcedModal(t) !== undefined
           ? Array.from({ length: t.copies ?? 1 }, () => ({ ...t, copies: 1 }))
@@ -12380,6 +12406,77 @@ export class Game {
       }
     }
     return true;
+  }
+
+  /**
+   * One player's waiting triggers in the order they go on the stack — the
+   * first placed resolves last. As they stand when the player has ordered
+   * them (`PendingTrigger.ordered`); otherwise the engine's own order, a
+   * `stackFirst` ability first (see `TriggeredAbility.stackFirst`) and the
+   * rest in the order they triggered.
+   */
+  private triggerPlacement(theirs: readonly PendingTrigger[]): PendingTrigger[] {
+    if (theirs.length > 0 && theirs.every((t) => t.ordered === true)) return [...theirs];
+    return [...theirs.filter((t) => t.stackFirst === true), ...theirs.filter((t) => t.stackFirst !== true)];
+  }
+
+  /**
+   * Whether `player` is to be asked to order `theirs` (rule 603.3b): they
+   * order their own (`GameState.ordersOwnTriggers`), two or more are waiting
+   * that they haven't ordered yet, and they aren't all the same ability —
+   * copies of one ability (five Soul Wardens' triggers) go in any order to
+   * the same effect.
+   */
+  private asksTriggerOrder(player: PlayerId, theirs: readonly PendingTrigger[]): boolean {
+    if (!(this.state.ordersOwnTriggers ?? []).includes(player)) return false;
+    if (this.state.players[player]?.hasLost !== false) return false;
+    if (theirs.length < 2 || theirs.every((t) => t.ordered === true)) return false;
+    const abilityOf = (t: PendingTrigger): string =>
+      t.delayed !== undefined
+        ? `delayed:${t.delayed.source}:${JSON.stringify(t.delayed.effect ?? null)}`
+        : t.reflexive !== undefined
+          ? `reflexive:${t.reflexive.text}`
+          : `${t.cardName}:${t.chapter === true ? "chapter" : "ability"}:${t.abilityIndex}:${JSON.stringify(t.grantedAbility ?? null)}`;
+    return new Set(theirs.map(abilityOf)).size > 1;
+  }
+
+  /** What the `order-triggers` decision shows of one waiting trigger. */
+  private describeTrigger(t: PendingTrigger): TriggerOrderEntry {
+    if (t.delayed !== undefined) {
+      return {
+        source: t.delayed.source,
+        cardName: t.delayed.sourceName,
+        text: "A delayed triggered ability",
+        copies: t.copies ?? 1,
+      };
+    }
+    const def = this.registry.has(t.cardName) ? this.registry.get(t.cardName) : undefined;
+    const ability: { readonly text?: string } | undefined =
+      t.reflexive ??
+      (t.grantedAbility !== undefined
+        ? (this.abilityFromRef(t.grantedAbility) as { readonly text?: string } | undefined)
+        : t.chapter === true
+          ? def?.chapters?.[t.abilityIndex]
+          : (this.triggeredOfSource(t.sourceObjectId, t.lastKnownRefs?.source)?.[t.abilityIndex] ??
+            def?.triggered[t.abilityIndex]));
+    return { source: t.sourceObjectId, cardName: t.cardName, text: ability?.text ?? "", copies: t.copies ?? 1 };
+  }
+
+  /**
+   * Answers a pending `order-triggers` decision (rule 603.3b): `order` lists
+   * the player's waiting triggers, as offered, in the order they're to
+   * resolve. They go on the stack in reverse, marked ordered so they're
+   * placed as they stand, and the placing resumes.
+   */
+  private applyTriggerOrder(player: PlayerId, order: readonly number[]): void {
+    const why = orderTriggersDecision.whyCannot(this.decisionCtx, { type: "order-triggers", player, order }, player);
+    if (why !== null) throw new Error(why);
+    const theirs = this.state.pendingTriggers.filter((t) => t.controller === player);
+    const resolving = [...this.triggerPlacement(theirs)].reverse();
+    const placement = order.map((i) => resolving[i]).reverse().map((t) => ({ ...t, ordered: true }));
+    this.state.pendingTriggers = [...this.state.pendingTriggers.filter((t) => t.controller !== player), ...placement];
+    this.state.awaiting = null;
+    this.prepareForPriority(this.activePlayer);
   }
 
   /**

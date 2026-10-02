@@ -93,6 +93,7 @@ export const DECISION_ACTIONS = {
   "choose-copy": ["choose-copy"],
   "choose-enchant": ["choose-enchant"],
   "legend-rule": ["legend-rule"],
+  "order-triggers": ["order-triggers"],
   "choose-text": ["choose-text"],
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
@@ -128,6 +129,7 @@ export const DECISION_OFFERS = {
   "choose-copy": ["choose-copy"],
   "choose-enchant": ["choose-enchant"],
   "legend-rule": ["legend-rule"],
+  "order-triggers": ["order-triggers"],
   "choose-text": ["choose-text"],
   "choose-creature-type": ["choose-creature-type"],
   "choose-modes": ["choose-modes"],
@@ -223,6 +225,7 @@ export interface DecisionHost {
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
   readonly applyEnchantChoice: (player: PlayerId, enchant: ObjectId) => void;
   readonly applyLegendRuleChoice: (player: PlayerId, keep: ObjectId) => void;
+  readonly applyTriggerOrder: (player: PlayerId, order: readonly number[]) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;
   readonly applyProliferate: (player: PlayerId, chosen: readonly TargetRef[]) => void;
   readonly applyChoosePermanents: (player: PlayerId, chosen: readonly ObjectId[]) => void;

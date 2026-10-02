@@ -11,6 +11,7 @@ import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import type { TargetCountRange } from "./target-count.js";
+import type { TriggerOrderEntry } from "./state.js";
 
 /** One creature tapped to help pay a convoke cost (rule 702.51a): it pays
  * for `{1}` (`"generic"`) or one mana of one of its own colors — the
@@ -349,6 +350,14 @@ export type Action =
       readonly type: "legend-rule";
       readonly player: PlayerId;
       readonly keep: ObjectId;
+    }
+  | {
+      /** Answers a pending `order-triggers` decision (rule 603.3b): the
+       * offered triggers by index, in the order they're to resolve — the
+       * first resolves first, so it goes on the stack last. */
+      readonly type: "order-triggers";
+      readonly player: PlayerId;
+      readonly order: readonly number[];
     }
   | {
       /** Answers a pending text-change decision (Artificial Evolution — layer
@@ -912,6 +921,13 @@ export type LegalAction =
       readonly kind: "legend-rule";
       readonly name: string;
       readonly options: readonly ObjectId[];
+    }
+  | {
+      /** Order your simultaneous triggers (rule 603.3b): answer with every
+       * index of `triggers` once, the one to resolve first first.
+       * `triggers` is listed in the engine's own order. */
+      readonly kind: "order-triggers";
+      readonly triggers: readonly TriggerOrderEntry[];
     }
   | {
       readonly kind: "choose-text";

@@ -79,8 +79,16 @@ export function MotionControl() {
             />
             Pass through combat — still asked to attack and block
           </label>
+          <label className="motion-row">
+            <input
+              type="checkbox"
+              checked={pass.orderTriggers === true}
+              onChange={(e) => setPassSettings({ orderTriggers: e.target.checked })}
+            />
+            Order my own triggers — asked when different ones trigger together
+          </label>
           <div className="motion-note motion-wrap">
-            Neither passes with something on the stack. Click a step in the bar above to make it a
+            Neither pass setting passes with something on the stack. Click a step in the bar above to make it a
             stop, where you keep priority whatever would pass it.
           </div>
           <StopList label="Stops on my turns" steps={pass.stops.mine} />

@@ -68,6 +68,7 @@ import { AnimationLayer } from './ui/AnimationLayer.tsx'
 import { ArrowLayer } from './ui/ArrowLayer.tsx'
 import { highlightEvent } from './ui/highlight.ts'
 import { SeatMenu } from './ui/SeatMenu.tsx'
+import { TriggerOrder } from './ui/TriggerOrder.tsx'
 import { usePassSettings } from './game/passSettings.ts'
 import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
@@ -252,6 +253,7 @@ type RevealChoiceAction = Extract<LegalAction, { kind: 'reveal-for-untapped' }>
 type CopyChoiceAction = Extract<LegalAction, { kind: 'choose-copy' }>
 type EnchantChoiceAction = Extract<LegalAction, { kind: 'choose-enchant' }>
 type LegendRuleAction = Extract<LegalAction, { kind: 'legend-rule' }>
+type TriggerOrderAction = Extract<LegalAction, { kind: 'order-triggers' }>
 type TextChoiceAction = Extract<LegalAction, { kind: 'choose-text' }>
 type CreatureTypeChoiceAction = Extract<LegalAction, { kind: 'choose-creature-type' }>
 type ModesChoiceAction = Extract<LegalAction, { kind: 'choose-modes' }>
@@ -427,6 +429,7 @@ const AWAITING_LABEL: Record<NonNullable<PlayerView['awaiting']>['kind'], string
   'choose-copy': 'choose what to copy',
   'choose-enchant': 'choose what an Aura enchants',
   'legend-rule': 'choose which legend to keep',
+  'order-triggers': 'order their triggers',
   'choose-text': 'choose a text change',
   'choose-creature-type': 'choose a creature type',
   'choose-modes': 'choose a mode',
@@ -1197,6 +1200,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     (a): a is EnchantChoiceAction => a.kind === 'choose-enchant',
   )
   const legendAction = actions.find((a): a is LegendRuleAction => a.kind === 'legend-rule')
+  const triggerOrderAction = actions.find((a): a is TriggerOrderAction => a.kind === 'order-triggers')
   const textChoiceAction = actions.find(
     (a): a is TextChoiceAction => a.kind === 'choose-text',
   )
@@ -1301,6 +1305,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     | 'choose-copy'
     | 'choose-enchant'
     | 'legend-rule'
+    | 'order-triggers'
     | 'choose-text'
     | 'choose-creature-type'
     | 'choose-modes'
@@ -1332,6 +1337,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           ? 'choose-enchant'
         : legendAction
           ? 'legend-rule'
+        : triggerOrderAction
+          ? 'order-triggers'
         : textChoiceAction
           ? 'choose-text'
         : creatureTypeChoiceAction
@@ -2888,6 +2895,13 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           battlefield — click what it enchants.
         </span>
       </div>
+    )
+  } else if (mode === 'order-triggers' && triggerOrderAction) {
+    controls = (
+      <TriggerOrder
+        triggers={triggerOrderAction.triggers}
+        onConfirm={(order) => game.dispatch({ type: 'order-triggers', player: seat, order })}
+      />
     )
   } else if (mode === 'legend-rule' && legendAction) {
     // Copies of one legend share a name, so buttons couldn't tell them apart:

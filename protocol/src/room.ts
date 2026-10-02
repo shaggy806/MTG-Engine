@@ -24,6 +24,10 @@ export interface PassSettings {
   /** Pass every combat step's window, on any turn. Declaring attackers and
    * blockers is still asked. */
   readonly passThroughCombat: boolean;
+  /** Order your own simultaneous triggers (rule 603.3b, the engine's
+   * `order-triggers` decision) rather than leave it to the engine. Absent
+   * from a client older than the setting: off. */
+  readonly orderTriggers?: boolean;
   /** Steps whose first priority window you keep whatever passes it
    * otherwise (these settings, Auto-pass, Pass Turn) — on your own turns
    * (`mine`) and on everyone else's (`theirs`). */

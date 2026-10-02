@@ -15,6 +15,10 @@ import { Game, RandomController, createRng, setComputedCacheCheck } from "../dis
 // deep-compare that throws on divergence — the empirical verification that
 // every mutation inside a cache region invalidates (see characteristics.ts).
 if (process.env.MTG_CACHE_CHECK) setComputedCacheCheck(true);
+// MTG_ORDER_TRIGGERS=1 has every seat order its own simultaneous triggers, so
+// the `order-triggers` decision is fuzzed too (off, the engine orders them and
+// nobody is asked). Changes every seed's trajectory, so it's opt-in.
+const orderTriggers = Boolean(process.env.MTG_ORDER_TRIGGERS);
 
 // Each game's decks come with its seed: they're built per seed (fuzz-decks.mjs).
 parentPort.on("message", ({ seed, seats }) => {
@@ -30,6 +34,7 @@ parentPort.on("message", ({ seed, seats }) => {
       ),
       decks: seats,
     });
+    if (orderTriggers) for (const { player } of seats) game.setOrdersOwnTriggers(player, true);
     game.advance();
     parentPort.postMessage({
       seed,
