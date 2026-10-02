@@ -47,6 +47,7 @@
     "bot:fit": "node scripts/fit-weights.mjs",
     "bot:scenarios": "node scripts/check-scenarios.mjs",
     "bot:fit-scenarios": "node scripts/fit-scenarios.mjs",
+    "bot:captures": "node scripts/captures-cli.mjs",
     "bot:audit": "node scripts/audit-evaluation.mjs",
     "bot:behaviour": "node scripts/bot-behaviour.mjs",
     "bot:ab": "node scripts/bot-ab.mjs",

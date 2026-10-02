@@ -1335,6 +1335,10 @@ const MAX_ACTIVATIONS_PER_TURN = 4;
  * it back and forth (`isPointlessReattach`). */
 const REATTACH_MARGIN = 3;
 
+/** Lands past which ramping by sacrificing a creature stops being worth its
+ * body (`isCreatureFetchDue`). */
+const LANDS_BEFORE_FLOOD = 7;
+
 /** A fetch that pays life (Polluted Delta) isn't cracked at this much life or
  * less above its payment — see `isFreeFetch`. */
 const FETCH_LIFE_FLOOR = 4;
@@ -1588,6 +1592,38 @@ export class HeuristicBotController extends AutomaticController {
     if (abilities.some((a) => JSON.stringify(a.effect ?? null).includes('"add-mana"'))) return false;
     const effect = JSON.stringify(ability.effect ?? null);
     return effect.includes('"search-library"') && effect.includes('"destination":"battlefield"');
+  }
+
+  /**
+   * A creature that sacrifices itself to put a land onto the battlefield
+   * (Sakura-Tribe Elder), at the moment to do it: the end step of the player
+   * whose turn comes right before ours, nothing on the stack, while we have
+   * fewer than `LANDS_BEFORE_FLOOD` lands. Its body has blocked all it can
+   * this round and the land untaps for our turn. The evaluation alone kept the
+   * 0/2 (scored a shade above a tapped land) and never ramped — a live
+   * capture ("bob, turn 11 end: not Pass", two lands on turn 11).
+   */
+  protected isCreatureFetchDue(state: GameState, source: ObjectId, abilityIndex: number): boolean {
+    const object = state.objects[source];
+    if (object === undefined || object.zone !== "battlefield" || !this.registry.has(object.cardName)) {
+      return false;
+    }
+    const def = this.registry.get(object.cardName);
+    if (!def.types.includes("creature") || def.types.includes("land")) return false;
+    const ability = def.activated?.[abilityIndex];
+    if (ability === undefined || ability.cost.sacrifice !== "self" || ability.cost.mana !== null) return false;
+    const effect = JSON.stringify(ability.effect ?? null);
+    if (!effect.includes('"search-library"') || !effect.includes('"destination":"battlefield"')) return false;
+    if (state.zones.shared.stack.length > 0 || state.turn.step !== "end") return false;
+    const living = state.turnOrder.filter((p) => !state.players[p].hasLost);
+    const mine = living.indexOf(this.playerId);
+    const before = living[(mine - 1 + living.length) % living.length];
+    if (before === this.playerId || activePlayerOf(state) !== before) return false;
+    const lands = state.zones.shared.battlefield.filter((id) => {
+      const o = state.objects[id];
+      return o?.controller === this.playerId && computeCharacteristics(state, this.registry, id).types.includes("land");
+    }).length;
+    return lands < LANDS_BEFORE_FLOOD;
   }
 
   /**

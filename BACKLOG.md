@@ -182,7 +182,8 @@ base, retire v3. One line per step still open:
   `bot/scenarios.ts`), so there is nothing to fit against. New ones come from live games: the
   in-game Capture button (`--capture`) saves a position to `captures/`, which `bot:scenarios`
   and `bot:fit-scenarios` read as training scenarios, as does each blunder `bot:behaviour`
-  shows.
+  shows. `npm run bot:captures -w engine` lists them with v2's answer today; once one is fixed,
+  `-- resolve` moves it to `captures/resolved/`, where it gates.
 
 Beyond that plan:
 

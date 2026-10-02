@@ -1126,6 +1126,42 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  ...(
+    [
+      ["cracks Sakura-Tribe Elder at the end of the turn before its own", D, true],
+      ["keeps Sakura-Tribe Elder as a blocker earlier in the round", B, false],
+    ] as const
+  ).map(([name, active, crack]) =>
+    asked({
+      name,
+      rule: "A creature that fetches a land by sacrificing itself does it at the end of the turn before ours.",
+      position(registry) {
+        // From a live capture ("bob, turn 11 end: not Pass"): two lands on turn
+        // 11, and the search kept the 0/2 over the land every window. At the
+        // end of the turn before ours its body has blocked all it can this
+        // round, and the land untaps for our turn; earlier, it still blocks.
+        const game = table(registry, [A, B, C, D], active);
+        lands(game, "Forest", A, 2);
+        const elder = onBoard(game, "Sakura-Tribe Elder", A);
+        game.advanceUntil(
+          (s) =>
+            (s.turn.step === "end" && s.priority.holder === A && s.zones.shared.stack.length === 0) ||
+            s.result.over,
+        );
+        if (game.state.turn.step !== "end" || game.state.priority.holder !== A) {
+          return { passed: false, detail: "never reached the end step with priority" };
+        }
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "activate-ability" && action.source === elder) === crack,
+            detail: `chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
   asked({
     name: "fetches the colour it can't make yet",
     rule: "A land search takes a land of a missing colour over another of one it has.",

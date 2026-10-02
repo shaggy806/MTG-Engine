@@ -640,10 +640,16 @@ export class EvalBotController extends HeuristicBotController {
     // holding it gains nothing, and the evaluation scores a land traded for a
     // tapped land as a wash and passed. Which land to find is still searched,
     // as the decision the search raises. After a land drop, which comes first.
+    // A creature that fetches by sacrificing itself (Sakura-Tribe Elder) joins
+    // them at the end of the turn before ours (`isCreatureFetchDue`): the
+    // evaluation kept the 0/2 over the land and never ramped.
     const fetch =
       lands.length === 0
         ? candidates.find(
-            (a) => a.type === "activate-ability" && this.isFreeFetch(view.state, a.source, a.abilityIndex),
+            (a) =>
+              a.type === "activate-ability" &&
+              (this.isFreeFetch(view.state, a.source, a.abilityIndex) ||
+                this.isCreatureFetchDue(view.state, a.source, a.abilityIndex)),
           )
         : undefined;
     if (fetch !== undefined) {

@@ -10,7 +10,9 @@
  * what it did". The server writes that as a {@link ScenarioCapture} to the
  * git-ignored `captures/` folder at the repo root, and `bot:scenarios` and
  * `bot:fit-scenarios` read every file there as a training scenario
- * (`scenarioFromCapture`) beside the hand-built ones.
+ * (`scenarioFromCapture`) beside the hand-built ones. Once the bot gets one
+ * right, `bot:captures -- resolve` stamps it (`resolved`) and moves it to
+ * `captures/resolved/`, where it's read as a gate scenario instead.
  *
  * The state is the whole game, every hand and library included — fine for a
  * developer's own bot table, which is the only place capture is switched on.
@@ -49,6 +51,20 @@ export interface ScenarioCapture {
     | { readonly kind: "not-this" };
   /** ISO time it was saved. */
   readonly savedAt: string;
+  /** Set once the bot gets it right and the file has moved to
+   * `captures/resolved/` (`npm run bot:captures -- resolve`). */
+  readonly resolved?: CaptureResolution;
+}
+
+/** How a capture was resolved. A resolved capture is a gate scenario: the
+ * bot must keep getting it right. */
+export interface CaptureResolution {
+  /** ISO time it was marked resolved. */
+  readonly at: string;
+  /** The commit the bot first got it right at (`git rev-parse --short HEAD`). */
+  readonly commit: string;
+  /** What fixed it, in a line. */
+  readonly note: string;
 }
 
 /** A capture option: a move the player could have made, and how to say it. */
@@ -129,6 +145,14 @@ export function describeMove(state: GameState, action: Action, registry?: CardRe
     }
     case "choose-targets":
       return `Target${targetsText(state, action.targets)}`;
+    case "commander-replacement": {
+      // Rule 903.9: which zone the commander goes to, the one it was headed
+      // for or the command zone.
+      const awaiting = state.awaiting;
+      const name = awaiting?.kind === "commander-replacement" ? nameOf(state, awaiting.commander) : "commander";
+      const intended = awaiting?.kind === "commander-replacement" ? awaiting.intendedZone : "its zone";
+      return action.toCommandZone ? `Put ${name} in the command zone` : `Let ${name} go to the ${intended}`;
+    }
     case "sacrifice":
       return `Sacrifice ${action.permanents.map((id) => nameOf(state, id)).join(", ")}`;
     case "discard":
@@ -201,18 +225,20 @@ export function captureOptions(
   return options;
 }
 
-/** A capture as a training scenario, asked with one `act` like the
- * hand-built positions, so `bot:fit-scenarios` can replay it too. */
+/** A capture as a scenario, asked with one `act` like the hand-built
+ * positions, so `bot:fit-scenarios` can replay it too: a training scenario
+ * while it's open, a gate one once resolved — a fixed blunder must stay
+ * fixed. */
 export function scenarioFromCapture(capture: ScenarioCapture): BotScenario {
-  const judge = (action: Action): ScenarioResult => {
-    const chose = describeMove(capture.state, action);
+  const judgeWith = (registry?: CardRegistry) => (action: Action): ScenarioResult => {
+    const chose = describeMove(capture.state, action, registry);
     if (capture.expect.kind === "action") {
-      const want = describeMove(capture.state, capture.expect.action);
+      const want = describeMove(capture.state, capture.expect.action, registry);
       return sameMove(action, capture.expect.action)
         ? { passed: true, detail: `chose ${chose}` }
         : { passed: false, detail: `chose ${chose}, not ${want}` };
     }
-    const did = describeMove(capture.state, capture.did);
+    const did = describeMove(capture.state, capture.did, registry);
     return sameMove(action, capture.did)
       ? { passed: false, detail: `chose ${did} again` }
       : { passed: true, detail: `chose ${chose}, not ${did}` };
@@ -220,16 +246,16 @@ export function scenarioFromCapture(capture: ScenarioCapture): BotScenario {
   const position = (registry: CardRegistry) => ({
     game: Game.fromSnapshot(capture.state, { registry }),
     player: capture.player,
-    judge,
+    judge: judgeWith(registry),
   });
   return {
-    name: `capture: ${capture.name}`,
+    name: `${capture.resolved === undefined ? "capture" : "resolved capture"}: ${capture.name}`,
     rule: capture.note === "" ? "A position captured from a live game." : capture.note,
-    kind: "training",
+    kind: capture.resolved === undefined ? "training" : "gate",
     position,
     run(weights, registry, makeBot) {
       const { game, player } = position(registry);
-      return judge(makeBot(player, registry, weights).act(game.controllerView(player)));
+      return judgeWith(registry)(makeBot(player, registry, weights).act(game.controllerView(player)));
     },
   };
 }

@@ -14,6 +14,7 @@
 import { readFileSync } from "node:fs";
 
 import {
+  BOT_SCENARIOS,
   DEFAULT_WEIGHTS,
   EvalBotController,
   TRAINING_SCENARIOS,
@@ -21,7 +22,7 @@ import {
   createDefaultRegistry,
   runScenarios,
 } from "../dist/index.js";
-import { loadCaptureScenarios } from "./captures.mjs";
+import { loadCaptureScenarios, loadResolvedCaptureScenarios } from "./captures.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -46,7 +47,12 @@ const makeBot = (player, registry, w) => new EvalBotController(player, registry,
 console.log(`scenarios: ${label}`);
 
 const registry = createDefaultRegistry();
-const reports = runScenarios(weights, registry, makeBot);
+// Resolved captures (`captures/resolved/`, git-ignored) gate beside the
+// hand-built ones: a blunder fixed once must stay fixed.
+const reports = runScenarios(weights, registry, makeBot, [
+  ...BOT_SCENARIOS,
+  ...loadResolvedCaptureScenarios(),
+]);
 // Training scenarios are right answers the shipped weights may still get
 // wrong — reported, never gated on (`src/bot/scenarios.ts`, "Two kinds").
 // Positions captured from live games join them (`captures/`, git-ignored).
