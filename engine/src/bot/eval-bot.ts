@@ -629,9 +629,17 @@ export class EvalBotController extends HeuristicBotController {
       return lands[0];
     }
     if (lands.length > 1) {
-      let bestLand = lands[0];
+      // v1's pick goes first, so it wins every tie: the rollouts pass our own
+      // seat for the rest of the turn, so a land that lets us cast a spell now
+      // scores no better than one that doesn't, and every basic ties. v1
+      // weighs exactly that (`bestLand`).
+      const order = [
+        ...lands.filter((l) => sameLand(l, inherited)),
+        ...lands.filter((l) => !sameLand(l, inherited)),
+      ];
+      let bestLand = order[0];
       let bestLandScore = -Infinity;
-      for (const land of lands) {
+      for (const land of order) {
         if (spent(budget)) break;
         budget.left -= 1;
         const score = this.score(view, land, budget);
@@ -1383,4 +1391,14 @@ export class EvalBotController extends HeuristicBotController {
     if (mustKill !== undefined && after.players[mustKill]?.hasLost !== true) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }
+}
+
+/** Whether a land-drop candidate is the one `inherited` plays. */
+function sameLand(candidate: Action, inherited: Action): boolean {
+  return (
+    candidate.type === "play-land" &&
+    inherited.type === "play-land" &&
+    candidate.card === inherited.card &&
+    candidate.face === inherited.face
+  );
 }

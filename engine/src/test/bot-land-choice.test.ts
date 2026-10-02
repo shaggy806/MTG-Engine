@@ -14,6 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 
+import { EvalBotController } from "../bot/eval-bot.js";
 import { HeuristicBotController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
@@ -34,14 +35,8 @@ const newGame = (): Game =>
   });
 
 /** What the bot chooses to do right now. */
-const decide = (game: Game) => {
-  const bot = new HeuristicBotController(A, game.registry);
-  return bot.act({
-    state: game.state,
-    player: A,
-    legalActions: () => game.legalActions(A),
-  });
-};
+const decide = (game: Game, bot: HeuristicBotController = new HeuristicBotController(A, game.registry)) =>
+  bot.act(game.controllerView(A));
 
 const nameOf = (game: Game, id: ObjectId): string => game.state.objects[id].cardName;
 
@@ -77,4 +72,35 @@ describe("the bot's land choice", () => {
     if (action.type !== "play-land") return;
     expect(nameOf(game, action.card)).toBe("Forest");
   });
+
+  // Reported from a live game: a bot played an Island with a Mountain in
+  // hand, and so couldn't afford any spell in its hand, where the Mountain
+  // would have let it cast one. Counting pips alone gets this wrong — the
+  // Island adds a colour (blue) the hand wants and the Mountain doesn't — but
+  // blue buys nothing this turn, and the second red casts Pyre Charger.
+  const strandedRed = (): Game => {
+    const game = newGame();
+    game.state.zones.perPlayer[A].hand = [];
+    game.debugSpawn("Island", A, "hand");
+    game.debugSpawn("Mountain", A, "hand");
+    game.debugSpawn("Pyre Charger", A, "hand");
+    game.debugSpawn("Counterspell", A, "hand");
+    game.debugSpawn("Mountain", A);
+    game.advanceUntil((s) => s.turn.step === "precombat-main" && s.priority.holder === A);
+    return game;
+  };
+
+  for (const [name, bot] of [
+    ["v1", (game: Game) => new HeuristicBotController(A, game.registry)],
+    // As the live rooms seat it (`server/src/room.ts`), bar the time budget.
+    ["v2", (game: Game) => new EvalBotController(A, game.registry)],
+  ] as const) {
+    it(`${name} plays the land that lets it cast a spell this turn`, () => {
+      const game = strandedRed();
+      const action = decide(game, bot(game));
+      expect(action.type).toBe("play-land");
+      if (action.type !== "play-land") return;
+      expect(nameOf(game, action.card)).toBe("Mountain");
+    });
+  }
 });

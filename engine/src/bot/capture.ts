@@ -20,7 +20,6 @@
 import type { Action, LegalAction } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
 import { withComputedCache } from "../characteristics.js";
-import type { ControllerView } from "../controller.js";
 import { Game } from "../game.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
@@ -230,12 +229,7 @@ export function scenarioFromCapture(capture: ScenarioCapture): BotScenario {
     position,
     run(weights, registry, makeBot) {
       const { game, player } = position(registry);
-      const view: ControllerView = {
-        state: game.state,
-        player,
-        legalActions: () => game.legalActions(player),
-      };
-      return judge(makeBot(player, registry, weights).act(view));
+      return judge(makeBot(player, registry, weights).act(game.controllerView(player)));
     },
   };
 }

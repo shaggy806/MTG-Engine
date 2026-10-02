@@ -1695,7 +1695,9 @@ export class Game {
     });
   }
 
-  private controllerView(player: PlayerId): ControllerView {
+  /** What a controller sees when asked to act: the live rooms' view, also
+   * used by the bot tools and tests so they decide exactly as a room does. */
+  controllerView(player: PlayerId): ControllerView {
     // One question about one board: a controller and the decision's own
     // `ask` both read the offer (attackers: the creatures that must attack),
     // so it's worked out once. Nothing changes the state while it's asked.
@@ -1704,6 +1706,17 @@ export class Game {
       state: this.state,
       player,
       legalActions: () => (legal ??= this.legalActions(player)),
+      legalActionsAfter: (action) => {
+        // A throwaway copy, so the real game is never touched. A refusal
+        // means "nothing learned", not an error.
+        try {
+          const copy = Game.fromSnapshot({ ...this.state, eventLog: [] }, { registry: this.registry });
+          copy.dispatch(action);
+          return copy.legalActions(player);
+        } catch {
+          return null;
+        }
+      },
     };
   }
 

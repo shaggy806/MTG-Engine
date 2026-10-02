@@ -77,11 +77,7 @@ export function recordScenario(
     trace: (action, after) => seen.push({ action, after }),
   });
   const exact = game.state.awaiting === null;
-  const chosen = bot.act({
-    state: game.state,
-    player,
-    legalActions: () => game.legalActions(player),
-  });
+  const chosen = bot.act(game.controllerView(player));
   return {
     name: scenario.name,
     kind: scenario.kind ?? "gate",

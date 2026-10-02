@@ -99,11 +99,7 @@ const D = asPlayerId("dave");
 
 const forestDeck = (player: PlayerId) => ({ player, cards: Array<string>(40).fill("Forest") });
 
-const viewOf = (game: Game, player: PlayerId): ControllerView => ({
-  state: game.state,
-  player,
-  legalActions: () => game.legalActions(player),
-});
+const viewOf = (game: Game, player: PlayerId): ControllerView => game.controllerView(player);
 
 /**
  * A two-player game paused at Alice's precombat main with `setup`'s board in

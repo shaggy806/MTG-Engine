@@ -58,6 +58,13 @@ export interface ControllerView {
   readonly player: PlayerId;
   /** Everything this player may legally do right now. */
   legalActions(): readonly LegalAction[];
+  /**
+   * What this player could legally do if `action` were dispatched now,
+   * asked of a throwaway copy of the game — `null` if the engine refused it.
+   * Optional: a view built outside a `Game` (a test, a tool) may not offer
+   * it, and a controller must still decide without.
+   */
+  legalActionsAfter?(action: Action): readonly LegalAction[] | null;
 }
 
 /**
@@ -1381,13 +1388,18 @@ export class HeuristicBotController extends AutomaticController {
    * availability*, so every land scores alike and the tie-break picks the
    * first again.
    *
-   * So the choice is made here, on the one thing that actually distinguishes
-   * them: how many coloured pips in hand a land unlocks that no land already
-   * on the battlefield can pay. Ties keep enumeration order, which keeps the
-   * bot deterministic.
+   * So the choice is made here, first on what each land lets us cast *this
+   * turn* (`castableAfter`), and then, among lands that unlock the same
+   * number of spells, on how many coloured pips in hand a land unlocks that
+   * no land already on the battlefield can pay. Pips alone get it wrong: with
+   * a Mountain down and {R}{R} and {U}{U} spells in hand, an Island adds a
+   * colour the hand wants, but buys nothing now, and a second Mountain casts
+   * the red spell (reported from a live game). Ties keep enumeration order,
+   * which keeps the bot deterministic.
    */
-  private bestLand(state: GameState, lands: readonly PlayLandLegal[]): PlayLandLegal {
+  private bestLand(view: ControllerView, lands: readonly PlayLandLegal[]): PlayLandLegal {
     if (lands.length === 1) return lands[0];
+    const state = view.state;
     const me = this.playerId;
 
     const have = new Set<Color>();
@@ -1412,8 +1424,10 @@ export class HeuristicBotController extends AutomaticController {
     }
 
     let best = lands[0];
+    let bestCastable = -1;
     let bestScore = -1;
     for (const land of lands) {
+      const castable = this.castableAfter(view, land);
       let score = 0;
       for (const color of new Set(this.colorsProducedBy(land.cardName))) {
         const wanted = want.get(color) ?? 0;
@@ -1422,12 +1436,25 @@ export class HeuristicBotController extends AutomaticController {
         // nothing — a second source still helps cast {G}{G}.
         score += have.has(color) ? wanted : wanted * 10 + 100;
       }
-      if (score > bestScore) {
+      if (castable > bestCastable || (castable === bestCastable && score > bestScore)) {
+        bestCastable = castable;
         bestScore = score;
         best = land;
       }
     }
     return best;
+  }
+
+  /**
+   * How many different spells we could cast right after playing `land` — the
+   * engine's own answer, so cost reductions, alternative costs and lands that
+   * enter tapped all count as they would. 0 when the view can't say, which
+   * leaves the choice to the pip count.
+   */
+  private castableAfter(view: ControllerView, land: PlayLandLegal): number {
+    const after = view.legalActionsAfter?.(this.toPlayLand(land));
+    if (after === null || after === undefined) return 0;
+    return new Set(after.flatMap((a) => (a.kind === "cast-spell" ? [a.card] : []))).size;
   }
 
   private toPlayLand(legal: PlayLandLegal): Action {
@@ -2060,7 +2087,7 @@ export class HeuristicBotController extends AutomaticController {
     const options = view.legalActions();
 
     const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
-    if (lands.length > 0) return this.toPlayLand(this.bestLand(view.state, lands));
+    if (lands.length > 0) return this.toPlayLand(this.bestLand(view, lands));
 
     const fetch = options.find(
       (o): o is ActivateAbilityLegal =>
