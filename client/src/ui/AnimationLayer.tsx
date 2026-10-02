@@ -469,7 +469,6 @@ function makeGhost(el: HTMLElement): { box: HTMLElement; rect: DOMRect } | null 
   const copy = el.cloneNode(true) as HTMLElement
   copy.removeAttribute('data-obj-id')
   copy.removeAttribute('data-stack-id')
-  copy.removeAttribute('data-stack-source')
   Object.assign(copy.style, {
     position: 'relative',
     top: '0',
@@ -498,16 +497,14 @@ function releaseWhenDone(box: HTMLElement, animation: Animation): void {
   animation.oncancel = () => box.remove()
 }
 
-/** The stack entry an event is about, on the board still on screen. A spell
- * is its own entry; an ability names only its source, so it's the topmost
- * entry from that source (the one resolving — entries render top first). */
+/** The stack entry an event is about, on the board still on screen: the
+ * spell or ability by its own id. Never another entry standing in for it —
+ * an ability put on the stack and resolved within one frame was never drawn,
+ * and finding it by its source instead dissolved an older ability of the
+ * same permanent, further down, which then came back on the next board. */
 function stackEntryFor(ev: GameEvent): HTMLElement | null {
-  if (ev.type === 'ability-resolved') {
-    return document.querySelector<HTMLElement>(
-      `.stack-entry[data-stack-source="${CSS.escape(ev.source)}"]`,
-    )
-  }
   if (
+    ev.type === 'ability-resolved' ||
     ev.type === 'spell-resolved' ||
     ev.type === 'spell-countered' ||
     ev.type === 'spell-fizzled'

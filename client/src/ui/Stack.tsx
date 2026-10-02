@@ -19,6 +19,24 @@ const OPACITY_STEP = 0.12
 const MIN_OPACITY = 0.55
 const MAX_OFFSET_DEPTH = 7
 
+/** A permanent drawn on the stack as its card: none of its state on the
+ * battlefield — tapped, damage, counters, combat, attachments — which is
+ * about the board, not about what's resolving. */
+function asCardFace(obj: VisibleObject): VisibleObject {
+  return {
+    ...obj,
+    tapped: false,
+    damageMarked: 0,
+    counters: {},
+    summoningSick: false,
+    attacking: null,
+    blocking: null,
+    attachedTo: null,
+    goadedBy: [],
+    suspected: false,
+  }
+}
+
 export interface StackProps {
   readonly view: PlayerView
   /** The current target slot's legal options (e.g. from a Counterspell's
@@ -96,7 +114,7 @@ export function Stack({
   const faceOf = (obj: VisibleObject): VisibleObject => {
     const source = obj.kind === 'ability' && obj.sourceObjectId ? view.objects[obj.sourceObjectId] : undefined
     if (source === undefined || source.zone !== 'battlefield') return obj
-    return {
+    return asCardFace({
       ...source,
       id: obj.id,
       kind: obj.kind,
@@ -108,16 +126,7 @@ export function Stack({
       xValue: obj.xValue,
       stackCount: obj.stackCount,
       isCopy: obj.isCopy,
-      tapped: false,
-      damageMarked: 0,
-      counters: {},
-      summoningSick: false,
-      attacking: null,
-      blocking: null,
-      attachedTo: null,
-      goadedBy: [],
-      suspected: false,
-    }
+    })
   }
   // A player target by their display name, not their seat id ("→ alice").
   const tgt = (ref: TargetRef): string =>
@@ -177,12 +186,8 @@ export function Stack({
               key={id}
               style={style}
               // Read by AnimationLayer to find the entry as it leaves the
-              // stack: a spell by its own id, an ability by its source's (the
-              // only thing `ability-resolved` names).
+              // stack, by the id its resolving event names.
               data-stack-id={isGhost ? undefined : id}
-              data-stack-source={
-                !isGhost && obj.kind === 'ability' ? (obj.sourceObjectId ?? undefined) : undefined
-              }
               onMouseEnter={isGhost ? undefined : () => onFocusEntry?.(id)}
               onMouseLeave={isGhost ? undefined : () => onFocusEntry?.(null)}
               onFocus={isGhost ? undefined : () => onFocusEntry?.(id)}
@@ -200,7 +205,10 @@ export function Stack({
                 {label}
               </div>
               <CardTile
-                obj={faceOf(obj)}
+                // The decision's cause is a card, not an object on the board
+                // here: a creature that tapped to activate the ability asking
+                // you something is drawn untapped, as an ability's entry is.
+                obj={isGhost ? asCardFace(obj) : faceOf(obj)}
                 badge={obj.isCopy ? 'copy' : undefined}
                 highlight={targetable}
                 selected={!isGhost && (pickedIds?.has(id) ?? false)}

@@ -11012,7 +11012,7 @@ export class Game {
       const final = chapters[object.abilityIndex ?? 0]?.at.includes(last) === true;
       this.emit({ type: "chapter-resolved", saga: source, final });
     }
-    this.emit({ type: "ability-resolved", source });
+    this.emit({ type: "ability-resolved", source, object: id });
     this.removeOneAbilityCopy(id);
   }
 

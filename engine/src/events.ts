@@ -348,7 +348,13 @@ export type GameEvent =
       readonly stackObject: ObjectId;
       readonly bySpell: boolean;
     })
-  | (Base & { readonly type: "ability-resolved"; readonly source: ObjectId })
+  | (Base & {
+      readonly type: "ability-resolved";
+      readonly source: ObjectId;
+      /** The ability on the stack that resolved — what a client finds its
+       * entry by. Several abilities of one source can be on the stack at once. */
+      readonly object: ObjectId;
+    })
   | (Base & {
       readonly type: "ability-triggered";
       readonly source: ObjectId;
