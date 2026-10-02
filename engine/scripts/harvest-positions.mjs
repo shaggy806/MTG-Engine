@@ -48,6 +48,8 @@
 
 import os from "node:os";
 import { Worker } from "node:worker_threads";
+
+import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { fileURLToPath } from "node:url";
 import { createWriteStream, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -122,7 +124,7 @@ await new Promise((resolve) => {
   };
 
   const spawn = () => {
-    const worker = new Worker(WORKER);
+    const worker = new Worker(WORKER, { resourceLimits: WORKER_LIMITS });
     let timer = null;
     let seed = null;
 

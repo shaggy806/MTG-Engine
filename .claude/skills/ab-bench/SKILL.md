@@ -21,6 +21,9 @@ others, seeded and seated exactly as `bot:bench` seats them.
   v1 change needs a v2 bench too.
 - Nothing else heavy running (`dev-down` if unsure): count budgets are CPU,
   and the user wants the cores used — 18 workers is right for this machine.
+  Each worker's heap is capped (`scripts/worker-limits.mjs`, 768 MB): uncapped,
+  a worker grew to ~1 GB of garbage and 18 of them ran the machine out of
+  memory (2026-10-02). Capped, 18 workers come to about 8 GB.
 
 ## Run
 

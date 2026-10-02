@@ -50,6 +50,8 @@
 
 import os from "node:os";
 import { Worker } from "node:worker_threads";
+
+import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { fileURLToPath } from "node:url";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 
@@ -155,7 +157,7 @@ function runMatch(weights, opponents, seedOffset = 0, count = games, { skip, onR
     };
 
     const spawn = () => {
-      const worker = new Worker(WORKER);
+      const worker = new Worker(WORKER, { resourceLimits: WORKER_LIMITS });
       let timer = null;
       let seed = null;
 

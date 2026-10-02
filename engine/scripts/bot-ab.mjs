@@ -18,6 +18,8 @@ import os from "node:os";
 import { join, dirname } from "node:path";
 import { Worker } from "node:worker_threads";
 
+import { WORKER_LIMITS } from "./worker-limits.mjs";
+
 import { ROOT, baselineDist, workingDist } from "./baseline-build.mjs";
 
 const args = process.argv.slice(2);
@@ -79,7 +81,10 @@ function next() {
   }
   const seed = queue.shift();
   active += 1;
-  const worker = new Worker(url, { workerData: { working: working.dist, baseline: baseline.dist, bot, players } });
+  const worker = new Worker(url, {
+    workerData: { working: working.dist, baseline: baseline.dist, bot, players },
+    resourceLimits: WORKER_LIMITS,
+  });
   const record = (row) => {
     appendFileSync(out, JSON.stringify(row) + "\n");
     finished += 1;

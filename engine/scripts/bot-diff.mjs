@@ -17,6 +17,8 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path";
 import { Worker } from "node:worker_threads";
 
+import { WORKER_LIMITS } from "./worker-limits.mjs";
+
 import { ROOT, baselineDist, workingDist } from "./baseline-build.mjs";
 
 const args = process.argv.slice(2);
@@ -64,7 +66,10 @@ function next() {
   }
   const seed = queue.shift();
   active += 1;
-  const worker = new Worker(url, { workerData: { working: working.dist, baseline: baseline.dist, bot, players, seed } });
+  const worker = new Worker(url, {
+    workerData: { working: working.dist, baseline: baseline.dist, bot, players, seed },
+    resourceLimits: WORKER_LIMITS,
+  });
   worker.on("message", (m) => {
     if (m.type === "diff") appendFileSync(out, JSON.stringify(m.row) + "\n");
     else if (m.type === "done") {

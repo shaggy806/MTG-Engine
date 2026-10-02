@@ -37,6 +37,8 @@
 // --json PATH (every game's raw counts).
 
 import { Worker } from "node:worker_threads";
+
+import { WORKER_LIMITS } from "./worker-limits.mjs";
 import { writeFileSync } from "node:fs";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
@@ -78,7 +80,7 @@ console.log(
 if (weights !== null) console.log(`weights: ${weightsFlag}`);
 
 function spawn() {
-  const worker = new Worker(WORKER);
+  const worker = new Worker(WORKER, { resourceLimits: WORKER_LIMITS });
   let timer = null;
   let seed = null;
   running += 1;
