@@ -261,6 +261,9 @@ Beyond that plan:
 - **Reanalyze the bot full-swinging into one opponent when it could kill two.** The user saw a
   bot send everything at one opponent when it had the damage to kill both opponents at once.
   The lethal split is planned by `killWith` in `engine/src/bot/eval-bot.ts`.
+- **Check how the bot decides when to scry a card to the bottom.** Review what makes the bot keep
+  a card on top or send it to the bottom. Scry choices go through the decision search in
+  `engine/src/bot/eval-bot.ts` (v1's never-bottom default is in `engine/src/bot/decisions.ts`).
 
 ## Client / UI
 
