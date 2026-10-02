@@ -76,10 +76,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
-- **Harrow puts its lands onto the battlefield tapped**; the real card has them enter untapped
-  (`engine/src/cards/pool/harrow.ts`). Fix the card, then the user wants to discuss why this
-  authoring mistake slipped past our checks (`card:verify`, the card text audit) and what would
-  catch the next one.
 - **Ninjutsu** (17 cards) and the rest of "enters tapped and attacking": `docs/card-blockers.md`.
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
@@ -243,6 +239,10 @@ Beyond that plan:
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
   gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
+- **Yahenni doesn't save itself from a board wipe.** In a live game with the Mardu Surge precon,
+  the bot let a wrath destroy Yahenni, Undying Partisan instead of sacrificing another creature
+  to give it indestructible until end of turn in response. Look into why v2 doesn't see that
+  activation as an answer to the wipe on the stack.
 - **Skullclamp on a 1/1 token.** v2 passes on it (training scenario "Skullclamps a 1/1 token
   for two cards"): two cards score just under a 1/1 body and its point of attack, since every
   creature counts `creatures` 2.5 whatever its size. `bot:fit-scenarios` finds `creatures` 2.5 → 2
@@ -334,10 +334,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
   fraction of the size. The game page loads no definitions up front. **Add a progress
   indicator while the library loads** (`client/src/library/LibraryPage.tsx`): the user wants one
   shown while those shards come in.
-- **Planeswalkers don't show their starting loyalty in hand.** A planeswalker card in hand has
-  no loyalty shown on its tile, only once it's on the battlefield (counter chips,
-  `client/src/ui/CounterChips.tsx`); the hand tile (`client/src/ui/CardTile.tsx`) should show
-  the printed starting loyalty.
+- **A bot's seat shows the red "disconnected" dot.** Replace it with a robot emoji when a bot
+  is playing that seat (`client/src/ui/PlayerPanel.tsx`, the `online` dot titled
+  connected/disconnected).
 - **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
   `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses

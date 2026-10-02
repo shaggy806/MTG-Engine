@@ -140,7 +140,8 @@ export interface VisibleObject {
   /** Computed power/toughness; `null` for objects that are not creatures. */
   readonly power: number | null;
   readonly toughness: number | null;
-  /** Current loyalty (`counters.loyalty`) for a planeswalker; `null` otherwise. */
+  /** A planeswalker's loyalty — its `counters.loyalty` on the battlefield,
+   * its printed loyalty anywhere else — or `null` for anything else. */
   readonly loyalty: number | null;
   readonly keywords: readonly Keyword[];
   /** Combat restrictions from static abilities (`"cant-attack"` from a
@@ -414,8 +415,12 @@ function visible(
     subtypes: withoutTypeMarkers(computed.subtypes),
     power: isCreature ? computed.power : null,
     toughness: isCreature ? computed.toughness : null,
+    // On the battlefield, its loyalty counters; anywhere else, the loyalty
+    // printed on the card (rule 306.5a), as the card shows it in a hand.
     loyalty: computed.types.includes("planeswalker")
-      ? (object.counters.loyalty ?? 0)
+      ? object.zone === "battlefield"
+        ? (object.counters.loyalty ?? 0)
+        : def.loyalty
       : null,
     keywords: [...computed.keywords],
     // Including a turn-wide "can't block this turn" rule it falls under.
