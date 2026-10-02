@@ -10,7 +10,7 @@ export default defineCard({
   toughness: 6,
   keywords: ["trample"],
   text:
-    "Trample\nLandfall — Whenever a land you control enters, you may create a 4/4 green Beast creature token.",
+    "Trample\nLandfall — Whenever a land you control enters, create a 4/4 green Beast creature token.",
   triggered: [
     {
       trigger: {

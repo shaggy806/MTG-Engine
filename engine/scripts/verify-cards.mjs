@@ -10,7 +10,10 @@
 // to its closest sentence in ours, and anything with no close counterpart is
 // reported as MISSING (a clause the pool dropped — Essence Flux's "If it's a
 // Spirit, put a +1/+1 counter on it" was found this way) or EXTRA (a clause
-// ours has that the real card doesn't).
+// ours has that the real card doesn't). A clause that matches is still
+// reported (PARTIAL) when either side has a content word the other lacks:
+// dropped from ours, or added to ours — Harrow's lands entered "tapped",
+// Tranquil Thicket's mana ability read "Sacrifice", neither in the real card.
 //
 // This is a **review list, not a pass/fail gate**, and it can't be otherwise:
 // the pool paraphrases freely, drops reminder text, and deliberately omits
@@ -338,27 +341,52 @@ function isImpliedLandManaAbility(clause, def) {
  * Words whose absence from our clause says nothing -- articles, prepositions
  * and the connective tissue a paraphrase drops freely. Everything else counts
  * as content: a noun, a number, a mana symbol, a zone, a qualifier.
+ *
+ * Not filler, though short: "may" (Temur Ascendancy's draw was authored as a
+ * forced one, and its missing "may" went unreported while it was filler),
+ * "target", "each", "all", "other", "up", "if", "one" -- each changes what the
+ * card does. Measured on the pool (2026-10-02) they add one report, that one.
  */
 const FILLER = new Set([
   "a", "an", "the", "of", "to", "for", "with", "and", "or", "then", "that",
   "this", "is", "are", "be", "been", "as", "at", "by", "on", "in", "into",
-  "from", "up", "may", "you", "your", "its", "their", "it", "them", "if",
-  "when", "whenever", "each", "all", "one", "target", "s", "other",
+  "from", "you", "your", "its", "their", "it", "them",
+  "when", "whenever", "s",
 ]);
 
+/** Words our clause may add without saying anything: filler, and
+ * "battlefield" -- the pool's older "enters the battlefield" for Oracle's
+ * "enters". */
+const ADDED_FILLER = new Set([...FILLER, "battlefield", "under"]);
+
 /**
- * The content words the real clause has that ours doesn't.
- *
- * Deliberately asymmetric: extra words on our side are a paraphrase being
- * wordier, which is harmless, while missing ones are behaviour the card does
- * not have. "your" and "any" are filler on their own, but "commander" and
- * "identity" are not -- which is what catches Command Tower.
+ * The content words the real clause has that ours doesn't. "your" and "any"
+ * are filler on their own, but "commander" and "identity" are not -- which is
+ * what catches Command Tower. The other direction is {@link significantAdded}.
  */
 function significantDropped(theirTokens, ourTokens) {
   const ours = new Set(ourTokens);
   const out = [];
   for (const w of new Set(theirTokens)) {
     if (!ours.has(w) && !FILLER.has(w)) out.push(w);
+  }
+  return out;
+}
+
+/**
+ * The content words our clause has that the real one doesn't. This used to
+ * go unchecked, on the view that a wordier paraphrase is harmless -- but a
+ * word ours adds can be behaviour the real card doesn't have: Harrow's
+ * fetched lands entered "tapped". Measured on the pool (2026-10-02), with
+ * "battlefield" set aside, it reported five clauses: Harrow and Tranquil
+ * Thicket (both wrong), White Knight, Lord of Extinction and Temur
+ * Ascendancy's "under your control" (rewordings).
+ */
+function significantAdded(ourTokens, theirTokens) {
+  const theirs = new Set(theirTokens);
+  const out = [];
+  for (const w of new Set(ourTokens)) {
+    if (!theirs.has(w) && !ADDED_FILLER.has(w)) out.push(w);
   }
   return out;
 }
@@ -405,7 +433,10 @@ function compareText(def, face) {
       // about, made visible.
       if (at >= 0) {
         const dropped = significantDropped(theirTokens[i], ourTokens[at]);
-        if (dropped.length > 0) partial.push({ clause, best: ours[at], score, dropped });
+        const added = significantAdded(ourTokens[at], theirTokens[i]);
+        if (dropped.length > 0 || added.length > 0) {
+          partial.push({ clause, best: ours[at], score, dropped, added });
+        }
       }
       return;
     }
@@ -500,7 +531,8 @@ function reportText(reports, checked) {
     for (const p of r.partial) {
       console.log(`  PARTIAL  ${trim(p.clause)}`);
       console.log(`           ours: ${trim(p.best ?? "")}`);
-      console.log(`           dropped: ${p.dropped.join(", ")}`);
+      if (p.dropped.length > 0) console.log(`           dropped: ${p.dropped.join(", ")}`);
+      if (p.added.length > 0) console.log(`           added:   ${p.added.join(", ")}`);
     }
     for (const e of r.extra) console.log(`  EXTRA    ${trim(e.clause)}`);
     if (showSimilar) {
@@ -515,7 +547,7 @@ function reportText(reports, checked) {
   const extra = sorted.reduce((n, r) => n + r.extra.length, 0);
   const partial = sorted.reduce((n, r) => n + r.partial.length, 0);
   console.log(`${missing} clause(s) the real card has and ours doesn't, ${extra} the other way round.`);
-  console.log(`${partial} clause(s) matched but dropped content words (PARTIAL) -- read every one.`);
+  console.log(`${partial} clause(s) matched but dropped or added content words (PARTIAL) -- read every one.`);
   console.log("Expect false positives: the pool paraphrases, and omits unmodeled abilities on purpose.");
 }
 

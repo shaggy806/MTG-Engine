@@ -147,7 +147,7 @@ describe("additional cost — sacrifice a land (Harrow, Crop Rotation)", () => {
 
     expect(game.state.objects[forest].zone).toBe("graveyard");
     // One land sacrificed, one searched up: back to a single land, untapped
-    // (Crop Rotation, unlike Harrow, doesn't tap what it finds).
+    // (Crop Rotation doesn't tap what it finds either).
     const lands = landsOf(game, A);
     expect(lands).toHaveLength(1);
     expect(lands[0]).not.toBe(forest);
@@ -184,7 +184,7 @@ describe("additional cost — sacrifice a land (Harrow, Crop Rotation)", () => {
     expect(landsOf(game, A)).toHaveLength(3);
   });
 
-  it("Harrow fetches two basics tapped", () => {
+  it("Harrow fetches two basics untapped", () => {
     const { game, a } = mkGame(["Harrow"], ["Mountain", "Swamp"]);
     game.advanceUntil(toPrecombat);
     for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
@@ -201,12 +201,14 @@ describe("additional cost — sacrifice a land (Harrow, Crop Rotation)", () => {
     game.advanceUntil(quiet);
 
     // 4 lands - 1 sacrificed + 2 searched up = 5, and both new ones entered
-    // tapped (the pre-existing ones are tapped too, but from paying {2}{G}).
+    // untapped — the Oracle text says "put them onto the battlefield", not
+    // "tapped" — ready to pay for something else this turn. (The three
+    // Forests are tapped, from paying {2}{G}.)
     const lands = landsOf(game, A);
     expect(lands).toHaveLength(5);
     const fetched = lands.filter((id) => !before.has(id));
     expect(fetched).toHaveLength(2);
-    for (const id of fetched) expect(game.state.objects[id].tapped).toBe(true);
+    for (const id of fetched) expect(game.state.objects[id].tapped).toBe(false);
   });
 });
 

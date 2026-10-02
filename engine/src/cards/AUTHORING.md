@@ -3099,6 +3099,14 @@ error — two 1/1s where the card makes two half-size copies — sat inside a
 clause the matcher scored as close enough. **`card:text` catches a dropped
 clause; nothing catches a wrong one but reading the card.**
 
+Since 2026-10-02 it reads both ways inside a matched clause: a content word
+ours *adds* is reported too ("added:"), not only one it drops. Harrow's lands
+entered "tapped" and Tranquil Thicket's mana ability read "Sacrifice", both
+words the real card doesn't have, and the one-way audit passed both; and
+"may" is no longer filler (Temur Ascendancy's optional draw was forced). It
+still only reads `text`: a card whose text is right and whose effect isn't
+is invisible to it.
+
 ---
 
 ## 16. Testing a new card
@@ -3106,6 +3114,9 @@ clause; nothing catches a wrong one but reading the card.**
 - **Read the Oracle text beside the finished file**, clause by clause, and
   confirm each one is expressed. This is the only check that catches a clause
   that's present but *wrong* (§0, §15) — every tool below is blind to it.
+- **Write the test from the Oracle text, not from the file.** A test that
+  asserts what our card does locks a mistake in: Harrow's test said "fetches
+  two basics tapped" because the card did, and kept passing.
 - **Fuzz it.** `npm run play:random -w engine -- --games 100 --with "Card
   Name"` puts it in every seat's deck (the fuzzer's decks are built per seed
   from the whole pool, so it's already in the rotation without this; `--with`

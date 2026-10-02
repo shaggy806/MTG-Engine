@@ -1,13 +1,15 @@
 import { defineCard } from "../define.js";
 
+// The draw is a "may" (Oracle text): the controller can decline it, which
+// matters with a library running low.
+const DRAW_TEXT = "Whenever a creature you control with power 4 or greater enters, you may draw a card.";
+
 export default defineCard({
   name: "Temur Ascendancy",
   manaCost: "{G}{U}{R}",
   colors: ["G", "U", "R"],
   types: ["enchantment"],
-  text:
-    "Creatures you control have haste.\n" +
-    "Whenever a creature with power 4 or greater enters the battlefield under your control, draw a card.",
+  text: `Creatures you control have haste.\n${DRAW_TEXT}`,
   static: [
     {
       affects: { scope: "creatures-you-control" },
@@ -23,9 +25,9 @@ export default defineCard({
         filter: { type: "creature", power: { op: "gte", n: 4 } },
       },
       targets: [],
-      effect: { kind: "draw", amount: 1 },
+      effect: { kind: "may", prompt: "Draw a card?", effect: { kind: "draw", amount: 1 } },
       resolve: null,
-      text: "Whenever a creature with power 4 or greater enters the battlefield under your control, draw a card.",
+      text: DRAW_TEXT,
     },
   ],
 });

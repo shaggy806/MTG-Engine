@@ -6,8 +6,8 @@ export default defineCard({
   types: ["land"],
   cycling: { cost: "{G}" },
   text:
-    "Tranquil Thicket enters the battlefield tapped.\n" +
-    "{T}, Sacrifice Tranquil Thicket: Add {G}.\n" +
+    "Tranquil Thicket enters tapped.\n" +
+    "{T}: Add {G}.\n" +
     "Cycling {G}",
   activated: [
     addManaAbility({ mana: "G", text: "{T}: Add {G}." }),

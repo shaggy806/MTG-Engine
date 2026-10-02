@@ -8,7 +8,7 @@ export default defineCard({
   subtypes: ["Elemental"],
   power: 0,
   toughness: 0,
-  text: "Lord of Extinction's power and toughness are each equal to the total number of cards in all graveyards.",
+  text: "Lord of Extinction's power and toughness are each equal to the number of cards in all graveyards.",
   static: [
     {
       affects: { scope: "self" },
@@ -17,7 +17,7 @@ export default defineCard({
         plusPower: 0,
         plusToughness: 0,
       },
-      text: "Lord of Extinction's power and toughness are each equal to the total number of cards in all graveyards.",
+      text: "Lord of Extinction's power and toughness are each equal to the number of cards in all graveyards.",
     },
   ],
 });

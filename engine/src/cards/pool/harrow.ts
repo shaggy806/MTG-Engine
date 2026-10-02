@@ -2,7 +2,8 @@ import { defineCard } from "../define.js";
 
 // needed-cards P8 — an additional cost (rule 601.2f): the land is sacrificed as
 // Harrow is *cast*, so it's gone even if Harrow is countered. The two basics
-// enter tapped, so this is mana-neutral-but-fixing, not ramp.
+// enter untapped: sacrifice one land, get two ready to tap, so it's ramp at
+// instant speed. They aren't land drops (2004-10-04 ruling).
 export default defineCard({
   name: "Harrow",
   manaCost: "{2}{G}",
@@ -11,7 +12,7 @@ export default defineCard({
   text:
     "As an additional cost to cast this spell, sacrifice a land.\n" +
     "Search your library for up to two basic land cards, put them onto the " +
-    "battlefield tapped, then shuffle.",
+    "battlefield, then shuffle.",
   additionalCost: { sacrifice: { type: "land" } },
   effect: {
     kind: "search-library",
@@ -19,6 +20,5 @@ export default defineCard({
     destination: "battlefield",
     min: 0,
     max: 2,
-    enterTapped: true,
   },
 });
