@@ -12,7 +12,7 @@
  * starter deck as-is shouldn't require duplicating it into "my decks" first.
  */
 
-import { SAMPLE_DECKS, commandersOf } from 'engine/client'
+import { SAMPLE_DECKS, commandersOf, nameForFlavorName } from 'engine/client'
 import type { SeatCommander } from 'protocol'
 
 export interface SavedDeck {
@@ -73,20 +73,17 @@ function fromStorage(stored: StoredDeck): SavedDeck {
   return { ...rest, commanders: stored.commanders ?? (legacy === undefined ? [] : [legacy]) }
 }
 
-/** Cards the pool once registered under another name — a deck saved before
- * the rename would otherwise hold a name the server no longer knows, and be
- * refused when brought to a table. */
-const RENAMED_CARDS: Readonly<Record<string, string>> = {
-  // Its Final Fantasy flavor name; decklists use the Oracle name.
-  'Princess Sarah': 'Azusa, Lost but Seeking',
-}
-
+/** A deck saved holding a card under a name the server doesn't know — its
+ * flavor name (the pool once registered Azusa, Lost but Seeking as "Princess
+ * Sarah") — has it renamed to the card's own, or it would be refused when
+ * brought to a table. */
 function renameCards(deck: SavedDeck): SavedDeck {
-  const renamed = (name: string) => RENAMED_CARDS[name] ?? name
+  const renamed = (name: string) => nameForFlavorName(name) ?? name
+  const differs = (name: string) => renamed(name) !== name
   const touched =
-    deck.cards.some((n) => n in RENAMED_CARDS) ||
-    deck.commanders.some((n) => n in RENAMED_CARDS) ||
-    Object.keys(deck.printings ?? {}).some((n) => n in RENAMED_CARDS)
+    deck.cards.some(differs) ||
+    deck.commanders.some(differs) ||
+    Object.keys(deck.printings ?? {}).some(differs)
   if (!touched) return deck
   return {
     ...deck,

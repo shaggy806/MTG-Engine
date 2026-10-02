@@ -5,6 +5,7 @@ import type { CardDefinition, CardType, Color } from 'engine/client'
 import {
   canCommandAlone,
   edhrecRankOf,
+  flavorNamesOf,
   isCardFront,
   isTokenCard,
   manaValue,
@@ -152,7 +153,8 @@ function buildEntry(def: CardDefinition): Entry {
     // back-face image.
     flippable: other !== null && !def.adventure,
     isToken: isTokenCard(def),
-    haystack: [def.name, typeLineOf(def), def.text, other?.name, other?.text]
+    // The names it's printed under too ("Princess Sarah" finds Azusa).
+    haystack: [def.name, ...flavorNamesOf(def.name), typeLineOf(def), def.text, other?.name, other?.text]
       .filter(Boolean)
       .join(' \n ')
       .toLowerCase(),

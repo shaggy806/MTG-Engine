@@ -4,6 +4,7 @@ import type { CardDefinition } from 'engine/client'
 import {
   canCommandAlone,
   canPairCommanders,
+  flavorNamesOf,
   hasPartner,
   isDeckableCard,
   validateCommanderDeck,
@@ -124,6 +125,8 @@ export function DeckEditor({
       if (!q) return true
       return (
         c.name.toLowerCase().includes(q) ||
+        // The names it's printed under too ("Princess Sarah" finds Azusa).
+        flavorNamesOf(c.name).some((n) => n.toLowerCase().includes(q)) ||
         c.text.toLowerCase().includes(q) ||
         c.subtypes.some((s) => s.toLowerCase().includes(q))
       )

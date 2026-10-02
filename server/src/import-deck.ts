@@ -23,6 +23,7 @@ import {
   canPairCommanders,
   colorIdentityOf,
   isBackground,
+  nameForFlavorName,
   validateCommanderDeck,
 } from "engine";
 import type {
@@ -135,7 +136,12 @@ export function parseDecklistText(text: string): ParsedDecklist {
       endBlock();
       continue;
     }
-    const { name, printing } = splitPrintingSuffix(match[2].trim());
+    const { name: written, printing } = splitPrintingSuffix(match[2].trim());
+    // A card printed under another name ("Princess Sarah") is read as the
+    // card it is (Azusa, Lost but Seeking), here, so every lookup after this
+    // one — the pool, Scryfall, oracle tags, the format check — sees its
+    // Oracle name. The printing it named is still that card's.
+    const name = nameForFlavorName(written) ?? written;
     counts.set(name, (counts.get(name) ?? 0) + Number(match[1]));
     if (printing !== undefined && !printings.has(name)) printings.set(name, printing);
     if (inCommanderSection) commanders.push(name);

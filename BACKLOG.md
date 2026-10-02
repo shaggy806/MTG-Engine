@@ -370,8 +370,8 @@ Follow-on ideas, approved by the user on 2026-09-30:
   creature-type word in a card's abilities, every creature type offered, spells as targets) or
   remove the effect and the decision kind.
 - **Saved-deck migrations.** `client/src/deck-builder/decks.ts` rewrites two old shapes every
-  time it reads saved decks: a lone `commander` (from before Partner pairs) and Princess Sarah's
-  old name (renamed on 2026-09-16). Neither rewrite is saved, so an old deck needs them until
+  time it reads saved decks: a lone `commander` (from before Partner pairs) and a card held under
+  its flavor name (Princess Sarah, renamed 2026-09-16; `nameForFlavorName`). Neither rewrite is saved, so an old deck needs them until
   it's next edited. Write each migrated deck back once, then drop both.
 - **Vocabulary built ahead of any card.** About twenty effect, trigger, condition, filter and
   replacement pieces, plus a few dozen optional fields, have no card using them yet, and five

@@ -182,6 +182,27 @@ function stubCollection(cards: Record<string, Record<string, unknown>>) {
   return fetchMock;
 }
 
+describe("parseDecklistText — alternate names", () => {
+  it("reads a flavor name as the card it's printed on, any case, with its printing", () => {
+    const parsed = parseDecklistText(
+      ["Commander", "1 Princess Sarah (FCA) 12", "", "1 Sol Ring", "1 european swallow", "1 Birds of Paradise"].join("\n"),
+    );
+    expect(parsed.commanders).toEqual(["Azusa, Lost but Seeking"]);
+    expect(parsed.entries).toContainEqual({
+      name: "Azusa, Lost but Seeking",
+      count: 1,
+      printing: { set: "fca", collectorNumber: "12" },
+    });
+    // The flavor name and the Oracle name are one card: their counts merge.
+    expect(parsed.entries).toContainEqual({ name: "Birds of Paradise", count: 2 });
+    expect(parsed.entries.map((e) => e.name)).not.toContain("Princess Sarah");
+  });
+
+  it("leaves a name that isn't one alone", () => {
+    expect(parseDecklistText("1 Sol Ring").entries).toEqual([{ name: "Sol Ring", count: 1 }]);
+  });
+});
+
 describe("evaluateDecklist", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -246,6 +267,16 @@ describe("evaluateDecklist", () => {
     const firsts = cards.map((c) => c.suggestedReplacement).filter((n) => n !== null);
     expect(new Set(firsts).size).toBe(firsts.length);
     expect(byName.get("Unauthored Tracker")!.replacements.length).toBeGreaterThan(0);
+  });
+
+  it("reports a card imported under its flavor name as the implemented card", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    const { entries } = parseDecklistText("1 Princess Sarah");
+    const [result] = await evaluateDecklist(entries, registry);
+    expect(result.name).toBe("Azusa, Lost but Seeking");
+    expect(result.implemented).toBe(true);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("reports an implemented card straight from the local registry, no network call", async () => {

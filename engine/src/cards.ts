@@ -24,6 +24,7 @@ export * from "./cards/helpers.js";
 export * from "./cards/registry.js";
 export * from "./cards/classify.js";
 export * from "./cards/edhrec-rank.js";
+export * from "./cards/flavor-names.js";
 export { BUILTIN_CARDS, POOL_CARDS, TOKEN_CARDS } from "./cards/generated.js";
 export * from "./cards/card-shards.js";
 export { PINNED_ART, TOKEN_NAMES } from "./cards/generated-index.js";

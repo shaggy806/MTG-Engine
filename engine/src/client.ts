@@ -30,6 +30,7 @@ export * from "./deck-validation.js";
 export * from "./sample-decks.js";
 export * from "./cards/classify.js";
 export * from "./cards/edhrec-rank.js";
+export * from "./cards/flavor-names.js";
 export * from "./cards/card-shards.js";
 export { CardRegistry } from "./cards/card-registry.js";
 export { PINNED_ART, TOKEN_NAMES } from "./cards/generated-index.js";
