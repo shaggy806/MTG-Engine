@@ -244,7 +244,10 @@ Beyond that plan:
 - **Skullclamp on a 1/1 token.** v2 passes on it (training scenario "Skullclamps a 1/1 token
   for two cards"): two cards score just under a 1/1 body and its point of attack, since every
   creature counts `creatures` 2.5 whatever its size. `bot:fit-scenarios` finds `creatures` 2.5 → 2
-  breaks no gate scenario; a weight that basic wants a `bot:diff` read before it ships.
+  breaks no gate scenario. Tried 2026-10-02: `bot:diff` over six four-player games changed 12
+  of 11,553 decisions, mostly more token blocks and removal ahead of creatures, Sakura-Tribe
+  Elder's land taken (right) and a 1/1 Rat token chump-blocking a 3/3 at 25 life (wrong) — not
+  shipped. Likelier fix: a feature for Skullclamp-style "dies, draw" Equipment, not a weight.
 
 ## Client / UI
 
