@@ -251,6 +251,10 @@ Beyond that plan:
   (`combatDamageByToughness`, read by `engine/src/combat/damage.ts`) makes its controller's
   creatures assign combat damage equal to toughness: check the bots' attack, block and evaluation
   read that rather than power (`engine/src/bot/`).
+- **Make bots value lands that produce colored mana over ones that produce colorless.** When
+  picking a land to play (and wherever else they weigh lands), bots should prefer a land that
+  makes colored mana over a colorless one (v1's `bestLand` in `engine/src/controller.ts`, v2's
+  land choice in `engine/src/bot/eval-bot.ts`).
 
 ## Client / UI
 
