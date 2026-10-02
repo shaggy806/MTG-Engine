@@ -254,7 +254,9 @@ Beyond that plan:
 - **Make bots value lands that produce colored mana over ones that produce colorless.** When
   picking a land to play (and wherever else they weigh lands), bots should prefer a land that
   makes colored mana over a colorless one (v1's `bestLand` in `engine/src/controller.ts`, v2's
-  land choice in `engine/src/bot/eval-bot.ts`).
+  land choice in `engine/src/bot/eval-bot.ts`). Seen live: a bot played an Island with a
+  Mountain in hand, and so couldn't afford any spell in its hand, where the Mountain would have
+  let it cast one. The choice should weigh what each land lets it cast this turn.
 
 ## Client / UI
 
@@ -299,6 +301,8 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
   only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
   open the zone the card went to instead.
+- **The history tab doesn't accurately show player names.** Seen live: entries in the history
+  tab (`client/src/ui/EventLog.tsx`) name players wrongly.
 - **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
   and download-free, but plain. Real samples could replace them cue for cue.
 
