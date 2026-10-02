@@ -1493,6 +1493,13 @@ export interface CardDefinition {
    */
   readonly convoke: boolean;
   /**
+   * Delve (rule 702.66 — Treasure Cruise): "For each generic mana in this
+   * spell's total cost, you may exile a card from your graveyard rather than
+   * pay that mana." Like convoke, a payment choice made as the spell is cast
+   * (`Action.delve`), applied once the total cost is determined (702.66b).
+   */
+  readonly delve: boolean;
+  /**
    * A cost reduction printed on the spell itself, gated on a board-state
    * condition (rule 601.2f — Ferocious: "if you control a creature with
    * power 4 or greater, this spell costs {2} less to cast"). Unlike
@@ -1781,6 +1788,7 @@ const PRINTED_ABILITY: {
   freeCastIf: (def) => def.freeCastIf !== null,
   alternativeCost: (def) => def.alternativeCost !== null,
   convoke: (def) => def.convoke,
+  delve: (def) => def.delve,
   selfCostReduction: (def) => def.selfCostReduction !== null,
   costPerExtraTarget: (def) => def.costPerExtraTarget !== null,
   effect: (def) => def.effect !== null,
@@ -1909,6 +1917,7 @@ interface CardDraft {
     readonly tapCreatures: { readonly count: number; readonly filter: CardFilter };
   };
   convoke?: boolean;
+  delve?: boolean;
   selfCostReduction?: {
     readonly condition: StaticCondition;
     readonly reduceGeneric: CostReductionAmount;
@@ -1994,6 +2003,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     freeCastIf: draft.freeCastIf ?? null,
     alternativeCost: draft.alternativeCost ?? null,
     convoke: draft.convoke ?? false,
+    delve: draft.delve ?? false,
     selfCostReduction: draft.selfCostReduction ?? null,
     costPerExtraTarget: draft.costPerExtraTarget ?? null,
     effect: draft.effect ?? null,

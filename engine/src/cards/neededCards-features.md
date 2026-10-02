@@ -652,6 +652,11 @@ in `git log`.
   stack only once its parked steps are done (608.2n), `counter` can exile, and a cast trigger's
   "that spell's mana value" reads a spell countered in response as it was on the stack
   (`LastKnownRefs.triggerSpell`). 8 cards; TDC2.json re-triages Transforming Flourish.
+- **Tarkir: Dragonstorm precons batch 5** (2026-10-02, `precon-tdc-batch-5.test.ts`,
+  `delve.test.ts`) — delve (rule 702.66, `keyword:delve`: `CardDefinition.delve`,
+  `Action.delve`), and the `attack-despite-defender` and `damage-by-toughness` effects until end
+  of turn (the first also turn-wide, over a filter). 4 cards: Treasure Cruise, Assault Formation,
+  Wakestone Gargoyle, Walking Bulwark.
 - **Card-property filter clauses** (`condition:filter-card-property-clauses`)
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,

@@ -73,6 +73,12 @@ export function randomCast(
     ...(sac !== undefined && sac.choices.length > 0 ? { sacrifice: sac.choices[rng.pickIndex(sac.choices.length)] } : {}),
     ...(legal.tapCost !== undefined ? { tap } : {}),
     ...(convoke.length > 0 ? { convoke } : {}),
+    // Delve: only the fewest it needs, newest first — the other end from the
+    // bots' most-and-oldest, so the fuzzer walks both. No random draw, so
+    // seeds without a delve card replay unchanged.
+    ...(legal.delve !== undefined && legal.delve.minCards > 0
+      ? { delve: legal.delve.choices.slice(legal.delve.choices.length - legal.delve.minCards) }
+      : {}),
     ...(legal.escapeExile !== undefined
       ? { escapeExile: legal.escapeExile.choices.slice(legal.escapeExile.choices.length - legal.escapeExile.count) }
       : {}),

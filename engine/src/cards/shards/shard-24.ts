@@ -187,6 +187,7 @@ import _poolVeteranArmorer from "../pool/veteran-armorer.js";
 import _poolViridianClaw from "../pool/viridian-claw.js";
 import _poolVraskasFall from "../pool/vraskas-fall.js";
 import _poolWakandanShieldGuard from "../pool/wakandan-shield-guard.js";
+import _poolWalkingBulwark from "../pool/walking-bulwark.js";
 import _poolWallOfSpears from "../pool/wall-of-spears.js";
 import _poolWarlordsFury from "../pool/warlords-fury.js";
 import _poolWeaselbackRedcap from "../pool/weaselback-redcap.js";
@@ -391,6 +392,7 @@ const shard: CardShard = {
     _poolViridianClaw,
     _poolVraskasFall,
     _poolWakandanShieldGuard,
+    _poolWalkingBulwark,
     _poolWallOfSpears,
     _poolWarlordsFury,
     _poolWeaselbackRedcap,

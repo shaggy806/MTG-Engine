@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B18) and the TDC precons (TDC1–TDC4).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B18) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -17,21 +17,25 @@ activation cost (2026-09-29), split cards and a spell's divided damage (2026-10-
 taxes (2026-10-01) are built, so lines below that rank them as next are history. When a batch
 lands, add its summary here, not to `BACKLOG.md`.
 
-## The Tarkir: Dragonstorm precons (TDC1–TDC4)
+## The Tarkir: Dragonstorm precons (TDC1–TDC5)
 
 147 were missing at the swap to the TDC decks (2026-09-30). TDC batch 1 authored 41
 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8 that casting a spell as another resolves
 unblocked (`precon-tdc-batch-2.test.ts`: the `cast-now` effect from a hand, graveyard or library
 top, free, with "if you do / don't"). Shiko and Narset, Unified commands Jeskai Striker since
 2026-09-30 (swapped with Elsha), and a copy's new targets is built, storm included (TDC3: 5
-Jeskai cards; TDC4: 8 more, split cards and divided damage among them).
+Jeskai cards; TDC4: 8 more, split cards and divided damage among them). TDC5 (2026-10-02) built
+delve (Treasure Cruise) and, until end of turn, "can attack as though it didn't have defender" and
+"assigns combat damage equal to its toughness" (Assault Formation, Wakestone Gargoyle, Walking
+Bulwark).
 
 Jeskai's last 4 each need something different: Curses (Curse of Opulence), X targets (Curse of
 the Swine), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
-(Transforming Flourish). Across all five decks, by what blocks most: delve (4, only Treasure
-Cruise needing nothing else), "can attack as though it didn't have defender" until end of turn
-(3: Assault Formation, Wakestone Gargoyle, Walking Bulwark), then two each for divided damage
-(a triggered ability's), hideaway, Omen and "the creature it sacrificed".
+(Transforming Flourish). Across all five decks no feature blocks more than two: divided damage
+(a triggered ability's), hideaway, Omen and "the creature it sacrificed". The other three delve
+cards each need one more thing: a target in each player's graveyard (Afterlife from the Loam),
+"exile X cards from your graveyard" as a cost (Necropolis Fiend), and a card an opponent
+chooses (Tasigur, the Golden Fang).
 
 ## Top-5000 batches (sweep 3)
 

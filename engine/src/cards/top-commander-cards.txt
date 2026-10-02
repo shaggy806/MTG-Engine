@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2061 already implemented / 2939 missing (marks refreshed 2026-10-01)
+2064 already implemented / 2936 missing (marks refreshed 2026-10-02)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -633,7 +633,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   634  Wizard Class                             {U}              Enchantment — Class
 [x]   635  Greater Good                             {2}{G}{G}        Enchantment
 [x]   636  Ophiomancer                              {2}{B}           Creature — Human Shaman
-[ ]   637  Treasure Cruise                          {7}{U}           Sorcery
+[x]   637  Treasure Cruise                          {7}{U}           Sorcery
 [x]   638  Open the Armory                          {1}{W}           Sorcery
 [ ]   639  Plaguecrafter                            {2}{B}           Creature — Human Shaman
 [x]   640  Altar of Dementia                        {2}              Artifact
@@ -2525,7 +2525,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2532  Kogla and Yidaro                         {2}{R}{R}{G}{G}  Legendary Creature — Ape Dinosaur Turtle
 [ ]  2533  Doc Aurlock, Grizzled Genius             {G}{U}           Legendary Creature — Bear Druid
 [ ]  2534  Armored Skyhunter                        {3}{W}           Creature — Cat Knight
-[ ]  2535  Assault Formation                        {1}{G}           Enchantment
+[x]  2535  Assault Formation                        {1}{G}           Enchantment
 [ ]  2536  Protean Hulk                             {5}{G}{G}        Creature — Beast
 [ ]  2537  Fangs of Kalonia                         {1}{G}           Sorcery
 [x]  2538  Rip Apart                                {R}{W}           Sorcery
@@ -4431,7 +4431,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4438  Desert of the Glorified                  {0}              Land — Desert
 [ ]  4439  Queen Brahne                             {2}{R}           Legendary Creature — Human Noble
 [ ]  4440  Urza, Prince of Kroog                    {2}{W}{U}        Legendary Creature — Human Artificer
-[ ]  4441  Walking Bulwark                          {1}              Artifact Creature — Golem
+[x]  4441  Walking Bulwark                          {1}              Artifact Creature — Golem
 [ ]  4442  Pawpatch Formation                       {1}{G}           Instant
 [x]  4443  Brute Force                              {R}              Instant
 [ ]  4444  Matoya, Archon Elder                     {2}{U}           Legendary Creature — Human Warlock

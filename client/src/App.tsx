@@ -210,6 +210,8 @@ const castExtras = (cast: CastAction) => ({
 interface CastPicks {
   readonly sacrifice?: ObjectId
   readonly escapeExile?: readonly ObjectId[]
+  /** The graveyard cards delve exiles (rule 702.66a), each paying {1}. */
+  readonly delve?: readonly ObjectId[]
 }
 
 /** Every permanent a tap-cost offer stands for, a stack's id once per token
@@ -318,6 +320,9 @@ interface Targeting {
    * from the variant's `escapeExile` offer before any of this — see
    * `pendingEscape`. */
   readonly escapeExile?: readonly ObjectId[]
+  /** The graveyard cards delve exiles (rule 702.66a), picked from the
+   * variant's `delve` offer — see `pendingDelve`. */
+  readonly delve?: readonly ObjectId[]
   /** Alternative casting permission (Phase 6) — flashback / escape / foretell. */
   readonly via?: CastVia
   /** Which face of a multi-face card is being cast (Phase 10). */
@@ -887,6 +892,16 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       } & Pick<CastPicks, 'sacrifice'>)
     | null
   >(null)
+  /** A delve cast waiting on which graveyard cards it exiles (rule 702.66a),
+   * asked in a `ZoneViewer` after any escape choice and before modes / X /
+   * targets, carrying the costs already picked. */
+  const [pendingDelve, setPendingDelve] = useState<
+    | ({
+        readonly cast: CastAction
+        readonly offer: NonNullable<CastAction['delve']>
+      } & Omit<CastPicks, 'delve'>)
+    | null
+  >(null)
   const [selectedSource, setSelectedSource] = useState<ObjectId | null>(null)
   // What a spell or ability on the stack is aimed at, marked on the board:
   // the top of the stack's targets, or those of the entry the pointer is on
@@ -1317,6 +1332,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     | 'choose-x'
     | 'choose-cast-modes'
     | 'choose-escape-exile'
+    | 'choose-delve'
     | 'choose-sacrifice'
     | 'choose-tap'
     | 'choose-convoke'
@@ -1368,6 +1384,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                 ? 'choose-from-zone'
                 : pendingEscape
                   ? 'choose-escape-exile'
+                : pendingDelve
+                  ? 'choose-delve'
                 : pendingModes
                   ? 'choose-cast-modes'
                 : pendingX
@@ -1418,6 +1436,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         | 'xValue'
         | 'sacrifice'
         | 'escapeExile'
+        | 'delve'
         | 'via'
         | 'face'
         | 'modes'
@@ -1463,6 +1482,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                 ...(t.graveyardGrant !== undefined ? { graveyardGrant: t.graveyardGrant } : {}),
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.escapeExile !== undefined ? { escapeExile: [...t.escapeExile] } : {}),
+                ...(t.delve !== undefined && t.delve.length > 0 ? { delve: [...t.delve] } : {}),
                 ...(division !== undefined ? { division: [...division] } : {}),
               }
             : {
@@ -1555,7 +1575,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         })
         return
       }
-      const picks: CastPicks = {
+      const paid: Omit<CastPicks, 'delve'> = {
         ...(chosen.sacrifice !== undefined ? { sacrifice: chosen.sacrifice } : {}),
         ...(chosen.escapeExile !== undefined
           ? { escapeExile: chosen.escapeExile }
@@ -1563,6 +1583,20 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             ? { escapeExile: escape.choices }
             : {}),
       }
+      // Delve (rule 702.66a): which graveyard cards pay generic mana, and how
+      // many. Asked next, unless there's no choice: every card it may exile,
+      // all of them needed.
+      const delve = cast.delve
+      const noDelveChoice =
+        delve !== undefined &&
+        delve.minCards === delve.maxCards &&
+        delve.choices.length === delve.maxCards
+      if (delve !== undefined && chosen.delve === undefined && !noDelveChoice) {
+        setPendingDelve({ cast, offer: delve, ...paid })
+        return
+      }
+      const delved = chosen.delve ?? (noDelveChoice ? delve?.choices : undefined)
+      const picks: CastPicks = { ...paid, ...(delved !== undefined ? { delve: delved } : {}) }
       if (cast.castModal) {
         setPendingModes({ cast, picked: [], ...picks })
         return
@@ -1583,6 +1617,17 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       })
     },
     [beginTargeting],
+  )
+
+  /** The delve choice's Confirm: carry on casting with those cards. */
+  const confirmDelve = useCallback(
+    (delve: readonly ObjectId[]) => {
+      if (!pendingDelve) return
+      const { cast, offer: _offer, ...picks } = pendingDelve
+      setPendingDelve(null)
+      startCast(cast, { ...picks, delve })
+    },
+    [pendingDelve, startCast],
   )
 
   /** The escape choice's Confirm: carry on casting with those cards. */
@@ -3569,6 +3614,21 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         </button>
       </div>
     )
+  } else if (mode === 'choose-delve' && pendingDelve) {
+    // The choice itself is the ZoneViewer popup below.
+    const { minCards, maxCards } = pendingDelve.offer
+    controls = (
+      <div className="controls">
+        <span className="muted">
+          Delve {pendingDelve.cast.cardName} — exile{' '}
+          {minCards === maxCards ? maxCards : `${minCards}–${maxCards}`} card
+          {maxCards === 1 ? '' : 's'} from your graveyard, each paying <Symbols text="{1}" />
+        </span>
+        <button type="button" onClick={() => setPendingDelve(null)}>
+          Cancel
+        </button>
+      </div>
+    )
   } else if (mode === 'choose-x' && pendingX) {
     const pxMax = pendingX.action.xCost?.maxX ?? 0
     const pxMin = pendingX.action.kind === 'activate-ability' ? (pendingX.action.xCost?.minX ?? 0) : 0
@@ -4677,6 +4737,25 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             onConfirm: confirmEscapeExile,
             // Nothing is committed yet: backing out just drops the cast.
             onCancel: () => setPendingEscape(null),
+          }}
+        />
+      ) : null}
+
+      {mode === 'choose-delve' && pendingDelve ? (
+        <ZoneViewer
+          title={`Delve ${pendingDelve.cast.cardName}: exile up to ${pendingDelve.offer.maxCards}${
+            pendingDelve.offer.minCards > 0 ? ` (at least ${pendingDelve.offer.minCards})` : ''
+          }, each paying one generic mana`}
+          ids={pendingDelve.offer.choices}
+          resolve={(id) => view.objects[id]}
+          selection={{
+            min: pendingDelve.offer.minCards,
+            max: pendingDelve.offer.maxCards,
+            eligible: pendingDelve.offer.choices,
+            onConfirm: confirmDelve,
+            // Nothing exiled: mana pays it all.
+            noneLabel: 'Exile none',
+            onCancel: () => setPendingDelve(null),
           }}
         />
       ) : null}

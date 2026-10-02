@@ -1071,6 +1071,7 @@ function castExtras(
   costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
+  delve?: ObjectId[];
   prototype?: boolean;
 } {
   const sac = legal.sacrifice;
@@ -1094,6 +1095,8 @@ function castExtras(
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),
+    // Delve as much as the cost allows, oldest cards first.
+    ...(legal.delve !== undefined ? { delve: legal.delve.choices.slice(0, legal.delve.maxCards) } : {}),
     // Echo back the allocation `legalActions` proved castable rather than
     // inventing one. A convoke-only-affordable spell is offered on the
     // strength of that specific allocation, which may pay coloured pips with

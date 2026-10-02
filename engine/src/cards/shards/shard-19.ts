@@ -8,6 +8,7 @@ import _poolAccessTunnel from "../pool/access-tunnel.js";
 import _poolAmphinMutineer from "../pool/amphin-mutineer.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
+import _poolAssaultFormation from "../pool/assault-formation.js";
 import _poolAvatarEnthusiasts from "../pool/avatar-enthusiasts.js";
 import _poolAwakenTheWoods from "../pool/awaken-the-woods.js";
 import _poolBarbarianHorde from "../pool/barbarian-horde.js";
@@ -213,6 +214,7 @@ const shard: CardShard = {
     _poolAmphinMutineer,
     _poolAncientTomb,
     _poolArashinCleric,
+    _poolAssaultFormation,
     _poolAvatarEnthusiasts,
     _poolAwakenTheWoods,
     _poolBarbarianHorde,

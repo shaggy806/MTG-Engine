@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 411 of the 495
-non-commander slots are the printed cards; the other 84 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 415 of the 495
+non-commander slots are the printed cards; the other 80 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -109,7 +109,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (27)
+### Sultai Arisen — Teval, the Balanced Scale (26)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -137,15 +137,13 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Steward of the Harvest | Cemetery Reaper | Four-mana creature. |
 | Tasigur, the Golden Fang | Barrow Witches | Six-mana creature: regrowth, recursion. |
 | Teval's Judgment | Black Market Connections | Three-mana enchantment: Treasure maker, modal. |
-| Treasure Cruise | Last March of the Ents | Eight-mana sorcery: card draw, card advantage. |
 | Welcome the Dead | Deep Analysis | Four-mana sorcery: card draw for life, card draw. |
 | Wonder | Pixie Queen | Four-mana creature: gives flying, evasion. |
 
-### Abzan Armor — Felothar the Steadfast (18)
+### Abzan Armor — Felothar the Steadfast (15)
 
 | printed card | plays as | why |
 |---|---|---|
-| Assault Formation | Doran, the Siege Tower | Creatures deal combat damage equal to their toughness. |
 | Baldin, Century Herdmaster | Syr Alin, the Lion's Claw | Six-mana creature: team pump, attack trigger. |
 | Behind the Scenes | History of Benalia | Three-mana enchantment: team pump. |
 | Canopy Gargantuan | Old Gnawbone | Seven-mana green Dragon. |
@@ -158,8 +156,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Slaughter the Strong | Citywide Bust | Three-mana sorcery: sweeper, creature removal. |
 | Tip the Scales | Toxic Deluge | Three-mana sorcery: removal, sweeper. |
 | Tree of Redemption | Ancient Lumberknot | Four-mana creature that deals damage by toughness. |
-| Wakestone Gargoyle | Wall of Swords | Four-mana creature: evasive creature. |
-| Walking Bulwark | Steel Wall | One-mana artifact wall. |
 | Wall of Roots | Vine Trellis | Two-mana creature: mana creature, ramp. |
 | Weathered Sentinels | Guardians of Meletis | Three-mana artifact defender with high toughness. |
 | Will of the Abzan | Breath of Life | Four-mana sorcery: reanimation, recursion. |

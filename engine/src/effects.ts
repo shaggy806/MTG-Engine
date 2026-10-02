@@ -1870,6 +1870,28 @@ export type EffectSpec =
       readonly restrictions: readonly CombatRestriction[];
     }
   | {
+      /**
+       * "Can attack this turn as though it didn't have defender" (rule
+       * 702.3b): `target` until end of turn, as a modifier (Assault
+       * Formation); or with `filter`, a rule for the rest of the turn over
+       * every permanent matching it from the controller's side, one that
+       * comes under their control later too (Wakestone Gargoyle's ruling).
+       * Not an ability the creature gains, so losing its abilities doesn't
+       * end it. The static form is `StaticAbility.canAttackAsThoughNoDefender`.
+       */
+      readonly kind: "attack-despite-defender";
+      readonly target?: EffectTargetRef;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /** `target` assigns combat damage equal to its toughness rather than
+       * its power until end of turn (rule 510.1a — Walking Bulwark). Its
+       * power is unchanged for everything else. The static form is
+       * `StaticAbility.combatDamageByToughness`. */
+      readonly kind: "damage-by-toughness";
+      readonly target: EffectTargetRef;
+    }
+  | {
       /** `target` (an instant/sorcery card in a graveyard, via the
        * `"instant-or-sorcery-in-your-graveyard"` target spec) gains flashback
        * until end of turn for a cost equal to its mana cost — Snapcaster Mage
@@ -3476,6 +3498,10 @@ export interface EffectApi {
     filter: CardFilter | undefined,
     restrictions: readonly CombatRestriction[],
   ): void;
+  /** See the `"attack-despite-defender"` {@link EffectSpec}. */
+  attackDespiteDefender(target: TargetRef | undefined, filter: CardFilter | undefined): void;
+  /** See the `"damage-by-toughness"` {@link EffectSpec}. */
+  damageByToughness(target: TargetRef): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
@@ -5164,6 +5190,20 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.restrict(target, undefined, spec.restrictions);
+      return;
+    }
+    case "attack-despite-defender": {
+      if (spec.filter !== undefined) {
+        ctx.attackDespiteDefender(undefined, spec.filter);
+        return;
+      }
+      const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.attackDespiteDefender(target, undefined);
+      return;
+    }
+    case "damage-by-toughness": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.damageByToughness(target);
       return;
     }
     case "grant-triggered": {

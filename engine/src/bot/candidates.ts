@@ -44,6 +44,7 @@ function castExtras(legal: CastSpellLegal): {
   costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
+  delve?: ObjectId[];
   prototype?: boolean;
 } {
   const sacrifice = legal.sacrifice;
@@ -65,6 +66,9 @@ function castExtras(legal: CastSpellLegal): {
     ...(sacrifice !== undefined && sacrifice.choices.length > 0
       ? { sacrifice: sacrifice.choices[sacrifice.choices.length - 1] }
       : {}),
+    // Delve as much as the cost allows: the mana saved buys another play,
+    // and the oldest cards in the graveyard go first.
+    ...(legal.delve !== undefined ? { delve: legal.delve.choices.slice(0, legal.delve.maxCards) } : {}),
     // Tap as many creatures as the generic portion allows. Convoke is only
     // ever offered when it might be *needed* to afford the spell, so paying
     // the maximum is the filling most likely to be legal.

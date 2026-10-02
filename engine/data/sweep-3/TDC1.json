@@ -407,10 +407,9 @@
     {
       "name": "Afterlife from the Loam",
       "needs": [
-        "keyword:delve",
         "new:target-per-player-graveyard"
       ],
-      "why": "Delve, and up to one target creature card from each player's graveyard."
+      "why": "Up to one target creature card from each player's graveyard. (Delve is built, 2026-10-02.)"
     },
     {
       "name": "Diviner of Mist",
@@ -459,10 +458,9 @@
     {
       "name": "Necropolis Fiend",
       "needs": [
-        "keyword:delve",
         "new:exile-x-cards-cost"
       ],
-      "why": "Delve, and 'Exile X cards from your graveyard' as a cost."
+      "why": "'Exile X cards from your graveyard' as a cost. (Delve is built, 2026-10-02.)"
     },
     {
       "name": "River Kelpie",
@@ -481,10 +479,9 @@
     {
       "name": "Tasigur, the Golden Fang",
       "needs": [
-        "keyword:delve",
         "decision:opponent-chooses-card"
       ],
-      "why": "Delve, and a nonland card of an opponent's choice returned."
+      "why": "A nonland card of an opponent's choice returned. (Delve is built, 2026-10-02.)"
     },
     {
       "name": "Welcome the Dead",
@@ -492,13 +489,6 @@
         "new:turn-stat-cards-to-graveyard"
       ],
       "why": "X is the cards put into your graveyard from your hand or library this turn."
-    },
-    {
-      "name": "Assault Formation",
-      "needs": [
-        "new:attack-despite-defender-eot"
-      ],
-      "why": "'Target creature with defender can attack this turn as though it didn't have defender' — only a static grants that."
     },
     {
       "name": "Baldin, Century Herdmaster",
@@ -572,21 +562,6 @@
         "new:exchange-life-toughness"
       ],
       "why": "Exchange your life total with its toughness."
-    },
-    {
-      "name": "Wakestone Gargoyle",
-      "needs": [
-        "new:attack-despite-defender-eot"
-      ],
-      "why": "Defenders you control can attack this turn as though they didn't have defender."
-    },
-    {
-      "name": "Walking Bulwark",
-      "needs": [
-        "new:attack-despite-defender-eot",
-        "new:damage-by-toughness-eot"
-      ],
-      "why": "Until end of turn a defender attacks despite defender and deals damage by toughness."
     },
     {
       "name": "Wall of Roots",

@@ -22,6 +22,7 @@ import {
   hasLostAbilities,
   objHasKeyword,
   restrictionsOf,
+  canAttackDespiteDefender,
   staticConditionMet,
   staticReaches,
 } from "../characteristics.js";
@@ -172,7 +173,7 @@ export function whyCannotAttack(
   // didn't have defender" (Arcades, the Strategist) — which lifts only this.
   if (
     objHasKeyword(state, registry, creatureId, "defender") &&
-    !computeCharacteristics(state, registry, creatureId).canAttackAsThoughNoDefender
+    !canAttackDespiteDefender(state, registry, creatureId)
   ) {
     return `${def.name} has defender and cannot attack`;
   }

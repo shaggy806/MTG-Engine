@@ -2412,6 +2412,10 @@ function computeCharacteristicsUncached(
     // A granted "This creature can't be sacrificed" is an ability, and goes
     // with a later loss like a granted keyword.
     if (granted && modifier.cantBeSacrificed === true) cantBeSacrificed = true;
+    // Rules about it rather than abilities it has: no loss of abilities
+    // ends them.
+    if (modifier.canAttackAsThoughNoDefender === true) canAttackAsThoughNoDefender = true;
+    if (modifier.combatDamageByToughness === true) byToughness = "always";
   }
   for (const keyword of keywordCountersOn(object)) {
     if (grantOutlastsLoss(lostAt, keywordCounterTimestamp(object, keyword))) keywords.add(keyword);
@@ -2602,6 +2606,22 @@ export function restrictionsOf(
     for (const r of rule.restrictions) out.add(r);
   }
   return out ?? own;
+}
+
+/** Whether `id` may attack as though it didn't have defender (rule 702.3b):
+ * by a static (Arcades, the Strategist) or an effect on it (its
+ * characteristics), or a turn-wide `attack-despite-defender` rule it
+ * matches (`GameState.turnDefenderAttacks`), matched here as
+ * `restrictionsOf` matches turn-wide restrictions. */
+export function canAttackDespiteDefender(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+): boolean {
+  if (computeCharacteristics(state, registry, id).canAttackAsThoughNoDefender) return true;
+  return (state.turnDefenderAttacks ?? []).some((rule) =>
+    matchesFilter(state, registry, id, rule.filter, { you: rule.you }),
+  );
 }
 
 /** Whether `id` currently has `keyword`, counting every layer-6 grant and

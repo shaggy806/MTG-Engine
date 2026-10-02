@@ -766,6 +766,14 @@ export interface PtModifier {
   /** "For as long as it has a [kind] counter on it" (rule 611.2b): it ends
    * as the last one is removed, and a new one doesn't bring it back. */
   whileCounter?: string;
+  /** It can attack as though it didn't have defender (the
+   * `attack-despite-defender` effect). A rule about it, not an ability it
+   * has, so a loss of abilities doesn't end it. */
+  canAttackAsThoughNoDefender?: true;
+  /** It assigns combat damage equal to its toughness rather than its power
+   * (the `damage-by-toughness` effect, rule 510.1a). Like the above, not an
+   * ability. */
+  combatDamageByToughness?: true;
   /** Layer 6 — it gains "This creature can't be sacrificed" (the
    * `"cant-be-sacrificed"` effect). The static equivalent is
    * `StaticAbility.cantBeSacrificed`. */
@@ -2737,6 +2745,12 @@ export interface GameState {
     readonly you: PlayerId;
     readonly restrictions: readonly CombatRestriction[];
   }[];
+  /** "Creatures you control with defender can attack this turn as though
+   * they didn't have defender" (the `attack-despite-defender` effect's
+   * `filter` form — Wakestone Gargoyle): every permanent matching `filter`
+   * from `you`'s side, including ones that arrive later. Read through
+   * `canAttackDespiteDefender`. Turn-scoped. */
+  turnDefenderAttacks?: { readonly filter: CardFilter; readonly you: PlayerId }[];
   /** Attack requirements imposed as a rule of the game until a player's next
    * turn — the `attack-requirement` effect (Kardur, Doomscourge). See
    * {@link AttackRequirementRule}. Absent when there are none. */

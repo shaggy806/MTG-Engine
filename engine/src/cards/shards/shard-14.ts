@@ -193,6 +193,7 @@ import _poolUrzasCave from "../pool/urzas-cave.js";
 import _poolUrzasIncubator from "../pool/urzas-incubator.js";
 import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
 import _poolVeteranArmorsmith from "../pool/veteran-armorsmith.js";
+import _poolWakestoneGargoyle from "../pool/wakestone-gargoyle.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
 import _poolWeakness from "../pool/weakness.js";
 import _poolWhirlerRogue from "../pool/whirler-rogue.js";
@@ -402,6 +403,7 @@ const shard: CardShard = {
     _poolUrzasIncubator,
     _poolVampireNighthawk,
     _poolVeteranArmorsmith,
+    _poolWakestoneGargoyle,
     _poolWalkingBallista,
     _poolWeakness,
     _poolWhirlerRogue,

@@ -173,6 +173,10 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "gain-control-all": none,
   "rotate-control": none,
   "cant-be-sacrificed": (n, v) => v.touch(n.target, "help", MINOR),
+  "attack-despite-defender": (n, v) => {
+    if (n.target !== undefined) v.touch(n.target, "help", MINOR);
+  },
+  "damage-by-toughness": (n, v) => v.touch(n.target, "help", MINOR),
   mill: (n, v) => v.touch(n.target, "harm", MINOR),
   "exile-from-library": (n, v) => v.touch(n.whose, "harm", MINOR),
   "return-from-graveyard": none,

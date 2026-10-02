@@ -226,6 +226,11 @@ export type Action =
        * with its chosen contribution. Only meaningful for a card with
        * `CardDefinition.convoke`. */
       readonly convoke?: readonly ConvokePayment[];
+      /** Cards in the caster's graveyard exiled for delve (rule 702.66a),
+       * each paying {1} of the total cost's generic mana, picked from the
+       * variant's `delve` offer. Only for a card with `CardDefinition.delve`;
+       * omitted, nothing is exiled. */
+      readonly delve?: readonly ObjectId[];
       /** What an `altCost` cast taps (Sephara's "tap four untapped creatures
        * you control with flying"), picked from the variant's `tapCost` offer.
        * Omitted, the engine picks for a driver that doesn't choose. */
@@ -651,6 +656,16 @@ export type LegalAction =
       readonly escapeExile?: {
         readonly count: number;
         readonly choices: readonly ObjectId[];
+      };
+      /** Set on a variant of a card with delve (rule 702.66a): the cards in
+       * the caster's graveyard it could exile (`choices`, oldest first), and
+       * how many — at most `maxCards`, one per generic mana of the total
+       * cost; at least `minCards`, the fewest that leave the rest payable
+       * with mana. The driver sends its picks as the action's `delve`. */
+      readonly delve?: {
+        readonly choices: readonly ObjectId[];
+        readonly minCards: number;
+        readonly maxCards: number;
       };
       /** One branch of a choice of additional costs (Bitter Triumph's
        * "discard a card or pay 3 life"). The card is enumerated once per

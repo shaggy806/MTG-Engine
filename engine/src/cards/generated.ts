@@ -311,6 +311,7 @@ import _poolAspectOfGorgon from "./pool/aspect-of-gorgon.js";
 import _poolAspectOfLamprey from "./pool/aspect-of-lamprey.js";
 import _poolAspiringAeronaut from "./pool/aspiring-aeronaut.js";
 import _poolAssassinsTrophy from "./pool/assassins-trophy.js";
+import _poolAssaultFormation from "./pool/assault-formation.js";
 import _poolAssaultGriffin from "./pool/assault-griffin.js";
 import _poolAssaultStrobe from "./pool/assault-strobe.js";
 import _poolAssaultZeppelid from "./pool/assault-zeppelid.js";
@@ -5661,6 +5662,7 @@ import _poolTravelingMinister from "./pool/traveling-minister.js";
 import _poolTravelingPhilosopher from "./pool/traveling-philosopher.js";
 import _poolTraverseTheOutlands from "./pool/traverse-the-outlands.js";
 import _poolTreasonousOgre from "./pool/treasonous-ogre.js";
+import _poolTreasureCruise from "./pool/treasure-cruise.js";
 import _poolTreasureDredger from "./pool/treasure-dredger.js";
 import _poolTreasureHunter from "./pool/treasure-hunter.js";
 import _poolTreasureTrove from "./pool/treasure-trove.js";
@@ -6023,8 +6025,10 @@ import _poolVulshokSorcerer from "./pool/vulshok-sorcerer.js";
 import _poolWailingGhoul from "./pool/wailing-ghoul.js";
 import _poolWakandanDroneFlock from "./pool/wakandan-drone-flock.js";
 import _poolWakandanShieldGuard from "./pool/wakandan-shield-guard.js";
+import _poolWakestoneGargoyle from "./pool/wakestone-gargoyle.js";
 import _poolWakingNightmare from "./pool/waking-nightmare.js";
 import _poolWalkingBallista from "./pool/walking-ballista.js";
+import _poolWalkingBulwark from "./pool/walking-bulwark.js";
 import _poolWalkingCorpse from "./pool/walking-corpse.js";
 import _poolWallOfAir from "./pool/wall-of-air.js";
 import _poolWallOfBlood from "./pool/wall-of-blood.js";
@@ -6830,6 +6834,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAspectOfLamprey,
   _poolAspiringAeronaut,
   _poolAssassinsTrophy,
+  _poolAssaultFormation,
   _poolAssaultGriffin,
   _poolAssaultStrobe,
   _poolAssaultZeppelid,
@@ -12180,6 +12185,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTravelingPhilosopher,
   _poolTraverseTheOutlands,
   _poolTreasonousOgre,
+  _poolTreasureCruise,
   _poolTreasureDredger,
   _poolTreasureHunter,
   _poolTreasureTrove,
@@ -12542,8 +12548,10 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWailingGhoul,
   _poolWakandanDroneFlock,
   _poolWakandanShieldGuard,
+  _poolWakestoneGargoyle,
   _poolWakingNightmare,
   _poolWalkingBallista,
+  _poolWalkingBulwark,
   _poolWalkingCorpse,
   _poolWallOfAir,
   _poolWallOfBlood,

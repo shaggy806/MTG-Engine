@@ -53,14 +53,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 21, Sultai Arisen 27, Abzan Armor 18, Mardu Surge 14, Jeskai Striker 4 — 84,
+  now: Temur Roar 21, Sultai Arisen 26, Abzan Armor 15, Mardu Surge 14, Jeskai Striker 4 — 80,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
-  any more. **Next:** delve (4, only Treasure Cruise needing nothing else), "can attack as
-  though it didn't have defender" until end of turn (3: Assault Formation, Wakestone Gargoyle,
-  Walking Bulwark), then two each for a triggered ability's divided damage, hideaway, Omen and
-  "the creature it sacrificed".
+  any more. **Next:** two each for a triggered ability's divided damage, hideaway, Omen and
+  "the creature it sacrificed" (`docs/card-blockers.md`).
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,061 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,064 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the

@@ -1,0 +1,36 @@
+{
+  "batch": "TDC5",
+  "status": "complete",
+  "ranks": "Delve (rule 702.66), and until end of turn \"can attack as though it didn't have defender\" and \"assigns combat damage equal to its toughness\"",
+  "authored": [
+    {
+      "name": "Treasure Cruise",
+      "files": [
+        "engine/src/cards/pool/treasure-cruise.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Assault Formation",
+      "files": [
+        "engine/src/cards/pool/assault-formation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wakestone Gargoyle",
+      "files": [
+        "engine/src/cards/pool/wakestone-gargoyle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Walking Bulwark",
+      "files": [
+        "engine/src/cards/pool/walking-bulwark.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": []
+}

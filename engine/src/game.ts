@@ -1128,6 +1128,7 @@ export class Game {
           action.offspring === true,
           action.evoke === true ? (action.evokeCost ?? "") : null,
           action.division,
+          action.delve,
         );
         break;
       case "activate-ability":
@@ -1295,6 +1296,7 @@ export class Game {
           action.prototype === true,
           action.offspring === true,
           action.evoke === true ? (action.evokeCost ?? "") : null,
+          action.delve,
         );
       case "activate-ability":
         return this.whyCannotActivateAbility(
@@ -1978,6 +1980,51 @@ export class Game {
         prototype === true && def.prototype !== null && costString === def.manaCost ? def.prototype.cost : costString;
       /** Whether this variant can be cast with `targetCount` distinct
        * targets, and whether mana alone pays for it. */
+      // Delve (rule 702.66a): the cards it could exile  any in the caster's
+      // graveyard but itself.
+      const delvePool = def.delve
+        ? this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card)
+        : [];
+      /** Whether this variant can be cast with `targetCount` distinct
+       * targets and `delve` exiled, mana paying the rest. */
+      const castsWith = (targetCount: number, delve?: readonly ObjectId[]): boolean =>
+        this.whyCannotCastSpell(
+          player,
+          card,
+          via,
+          face ?? 0,
+          undefined,
+          kicked,
+          undefined,
+          overload,
+          free,
+          undefined,
+          altCost === true,
+          costOption,
+          undefined,
+          graveyardGrant,
+          0,
+          targetCount,
+          undefined,
+          false,
+          offspring === true,
+          evoke ?? null,
+          delve,
+        ) === null;
+      /** The fewest cards delve must exile for this variant to be castable
+       * with `targetCount` targets, or `null` if no number of them does. */
+      const fewestDelved = (targetCount: number): number | null => {
+        const generic = this.withFace(card, face ?? 0, () =>
+          this.castingCostOf(player, card, def, 0, variantCost, targetCount),
+        ).generic;
+        const most = Math.min(delvePool.length, generic);
+        if (most === 0 || !castsWith(targetCount, delvePool.slice(0, most))) return null;
+        let fewest = most;
+        while (fewest > 1 && castsWith(targetCount, delvePool.slice(0, fewest - 1))) fewest -= 1;
+        return fewest;
+      };
+      /** Whether this variant can be cast with `targetCount` distinct
+       * targets, and whether mana alone pays for it. */
       const castableAt = (targetCount: number): { castable: boolean; manaAffordable: boolean } => {
         let castable =
           this.whyCannotCastSpell(
@@ -2059,6 +2106,8 @@ export class Game {
             castable = true;
           }
         }
+        // Delve: castable if exiling enough of the graveyard pays the rest.
+        if (!castable && delvePool.length > 0 && fewestDelved(targetCount) !== null) castable = true;
         return { castable, manaAffordable };
       };
       // A "for each target" cost modification (Hinata, Dawn-Crowned) makes
@@ -2198,6 +2247,17 @@ export class Game {
                       choices: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card),
                     },
                   };
+            })()
+          : {}),
+        // Delve (rule 702.66a): which graveyard cards pay generic mana is the
+        // caster's choice, between the fewest mana needs and one per generic.
+        ...(delvePool.length > 0
+          ? (() => {
+              const generic = this.castingCostOf(player, card, def, 0, cost, pricedAt).generic;
+              const maxCards = Math.min(delvePool.length, generic);
+              if (maxCards === 0) return {};
+              const minCards = manaAffordable ? 0 : (fewestDelved(pricedAt) ?? maxCards);
+              return { delve: { choices: delvePool, minCards, maxCards } };
             })()
           : {}),
         ...(def.convoke
@@ -3964,6 +4024,7 @@ export class Game {
     this.state.extraCombats = 0;
     this.state.spellsCastThisTurn = 0;
     delete this.state.turnRestrictions;
+    delete this.state.turnDefenderAttacks;
     delete this.state.turnProhibitions;
     delete this.state.combatsAfterThisCombat;
     delete this.state.extraMainPhases;
@@ -7189,6 +7250,7 @@ export class Game {
     prototype = false,
     offspring = false,
     evoke: string | null = null,
+    delve?: readonly ObjectId[],
   ): string | null {
     // Prototyped (rule 718): judged as the prototyped spell it would be —
     // its prototype cost, colors and size (the rulings) — so asked again
@@ -7197,7 +7259,7 @@ export class Game {
       if (this.faceDef(cardId, face).prototype === null) return `${this.faceDef(cardId, face).name} has no prototype`;
       return this.withPrototype(cardId, () =>
         this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
-          altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true, offspring, evoke),
+          altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, true, offspring, evoke, delve),
       );
     }
     // Cast because a resolving spell or ability says so: no priority needed,
@@ -7462,16 +7524,23 @@ export class Game {
     const baseCost = this.withFace(cardId, face, () =>
       this.castingCostOf(player, cardId, def, Math.max(0, Math.floor(xValue)), costString, targetCount),
     );
+    // Delve (rule 702.66): each card exiled pays {1} of the total cost.
+    if (delve !== undefined && delve.length > 0) {
+      if (!def.delve) return `${def.name} does not have delve`;
+      const wrong = this.whyDelveIsWrong(player, cardId, def.name, delve, baseCost);
+      if (wrong !== null) return wrong;
+    }
+    const delved = this.reduceCostByDelve(baseCost, delve);
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
       if (!def.convoke) return `${def.name} does not have convoke`;
-      const resolved = this.resolveConvoke(convoke, baseCost);
+      const resolved = this.resolveConvoke(convoke, delved);
       if (typeof resolved === "string") return resolved;
-      const convokeError = this.whyCannotConvoke(player, resolved, baseCost);
+      const convokeError = this.whyCannotConvoke(player, resolved, delved);
       if (convokeError !== null) return convokeError;
       convoked = resolved;
     }
-    const cost = convoked.length > 0 ? this.reduceCostByConvoke(baseCost, convoked) : baseCost;
+    const cost = convoked.length > 0 ? this.reduceCostByConvoke(delved, convoked) : delved;
     const purpose: ManaPurpose = { kind: "cast", card: cardId };
     const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
     if (alternativeTaps !== undefined) {
@@ -7745,12 +7814,13 @@ export class Game {
     offspring = false,
     evoke: string | null = null,
     division?: readonly number[],
+    delve?: readonly ObjectId[],
   ): void {
     if (prototype && !this.prototypeApplied(cardId)) {
       if (this.faceDef(cardId, face).prototype === null) throw new Error(`${this.faceDef(cardId, face).name} has no prototype`);
       this.withPrototype(cardId, () =>
         this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
-          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true, offspring, evoke, division),
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, true, offspring, evoke, division, delve),
       );
       return;
     }
@@ -7778,6 +7848,7 @@ export class Game {
       false,
       offspring,
       evoke,
+      delve,
     );
     if (why !== null) throw new Error(why);
 
@@ -7847,7 +7918,10 @@ export class Game {
     if (targetingLife > 0 && this.state.players[player].life < taxLife + targetingLife) {
       throw new Error(`${player} has too little life to pay the ${targetingLife} life targeting costs`);
     }
-    const fullCost = this.castingCostOf(player, cardId, def, chosenX, costString, targetCount);
+    const fullCost = this.reduceCostByDelve(
+      this.castingCostOf(player, cardId, def, chosenX, costString, targetCount),
+      delve,
+    );
     let convoked: PaidConvoke[] = [];
     if (convoke !== undefined && convoke.length > 0) {
       const resolved = this.resolveConvoke(convoke, fullCost);
@@ -7910,6 +7984,14 @@ export class Game {
         for (const id of exiled) this.moveObject(id, "exile");
       });
       this.emit({ type: "escape-cost-paid", object: cardId, exiled: [...exiled] });
+    }
+
+    // Delve (rule 702.66a): the chosen cards are exiled as the cost is paid,
+    // one graveyard leave like escape's.
+    if (delve !== undefined && delve.length > 0) {
+      this.withGraveyardLeaveBatch(() => {
+        for (const id of delve) this.moveObject(id, "exile");
+      });
     }
 
     // Storm (rule 702.40a) counts spells cast *before* this one, by any player.
@@ -13909,6 +13991,14 @@ export class Game {
         this.grantKeyword(target, keyword, lasting(duration, controller)),
       restrict: (target, filter, restrictions) =>
         this.restrict(controller, target, filter, restrictions),
+      attackDespiteDefender: (target, filter) => {
+        if (filter !== undefined) {
+          (this.state.turnDefenderAttacks ??= []).push({ filter, you: controller });
+          return;
+        }
+        this.markUntilEndOfTurn(target, { canAttackAsThoughNoDefender: true });
+      },
+      damageByToughness: (target) => this.markUntilEndOfTurn(target, { combatDamageByToughness: true }),
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
       addPlayerEffect: (effect) => {
         (this.state.playerEffects ??= []).push(effect);
@@ -15333,6 +15423,39 @@ export class Game {
     return null;
   }
 
+  /** Why `delve` can't pay toward `cost` (rule 702.66a): distinct cards
+   * in `player`'s graveyard other than the spell itself, no more of them
+   * than the total cost has generic mana. */
+  private whyDelveIsWrong(
+    player: PlayerId,
+    cardId: ObjectId,
+    name: string,
+    delve: readonly ObjectId[],
+    cost: ManaCost,
+  ): string | null {
+    if (new Set(delve).size !== delve.length) return `${name}'s delve can't exile the same card twice`;
+    if (delve.length > cost.generic) {
+      return `${name}'s delve can exile at most ${cost.generic} cards, one per generic mana`;
+    }
+    const graveyard = this.state.zones.perPlayer[player].graveyard;
+    for (const id of delve) {
+      if (id === cardId) return `${name} can't exile itself for its own delve`;
+      if (!graveyard.includes(id)) {
+        const object = this.state.objects[id];
+        return object === undefined
+          ? `there is no card ${id} to exile for ${name}'s delve`
+          : `${printedCardName(object)} is not in ${player}'s graveyard`;
+      }
+    }
+    return null;
+  }
+
+  /** `cost` less one generic mana per card exiled for delve. */
+  private reduceCostByDelve(cost: ManaCost, delve: readonly ObjectId[] | undefined): ManaCost {
+    const n = delve?.length ?? 0;
+    return n === 0 ? cost : { ...cost, generic: Math.max(0, cost.generic - n) };
+  }
+
   /**
    * What a tap cost taps, one id per permanent (a stack's once per token):
    * `tap` as the driver chose it, or for a driver that didn't choose, the
@@ -16365,6 +16488,20 @@ export class Game {
   /** See the `"restrict"` {@link EffectSpec}: `target`'s combat restrictions
    * until end of turn (a modifier, one token peeled off a stack), or with
    * `filter` a rule over everything matching it for the rest of the turn. */
+  /** A rule about `target` until end of turn, as a modifier carrying
+   * `fields`  a token stack splits off the one meant first. */
+  private markUntilEndOfTurn(
+    target: TargetRef | undefined,
+    fields: Pick<PtModifier, "canAttackAsThoughNoDefender" | "combatDamageByToughness">,
+  ): void {
+    if (target?.kind !== "object") return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    object.modifiers.push({ power: 0, toughness: 0, keywords: [], ...fields, untilEndOfTurn: true });
+    invalidateComputedCache();
+  }
+
   private restrict(
     controller: PlayerId,
     target: TargetRef | undefined,
