@@ -180,6 +180,26 @@ function landfallMill(
   return game;
 }
 
+/** Take `game` from Alice's first main phase to her second, attacking with
+ * nothing; a failure if it doesn't get there. */
+function toSecondMain(game: Game): ScenarioResult | null {
+  game.advanceUntil(
+    (s) =>
+      s.awaiting?.kind === "attackers" ||
+      (s.turn.step === "postcombat-main" && s.priority.holder === A) ||
+      s.result.over,
+  );
+  if (game.state.awaiting?.kind === "attackers") {
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [] });
+    game.advanceUntil(
+      (s) => (s.turn.step === "postcombat-main" && s.priority.holder === A) || s.result.over,
+    );
+  }
+  return game.state.turn.step === "postcombat-main" && game.state.priority.holder === A
+    ? null
+    : { passed: false, detail: "never reached the second main phase" };
+}
+
 const evalBotFactory: BotFactory = (player, registry, weights) =>
   new EvalBotController(player, registry, { weights });
 
@@ -389,6 +409,53 @@ const SCENARIOS: readonly BotScenario[] = [
       return {
         passed: attackers.length === 3,
         detail: `attacked with ${attackers.length} of 3`,
+      };
+    },
+  },
+  {
+    name: "swings walls for lethal under Felothar",
+    rule: "Under Felothar, combat damage is toughness: three 0-power walls are 13 damage.",
+    run(weights, registry, makeBot) {
+      // Felothar the Steadfast's creatures assign combat damage equal to their
+      // toughness and attack despite defender, so a board of 0-power walls is
+      // a real attack — read as power, it's nothing at all.
+      const game = mainPhase((g) => {
+        g.debugSpawn("Felothar the Steadfast", A, "battlefield", { summoningSick: false });
+        for (let i = 0; i < 2; i += 1) {
+          g.debugSpawn("Wall of Omens", A, "battlefield", { summoningSick: false });
+        }
+        g.state.players[B].life = 13;
+      }, registry);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.length === 3,
+        detail: `attacked with ${attackers.length} of 3`,
+      };
+    },
+  },
+  {
+    name: "splits its attack to kill two opponents",
+    rule: "Lethal for two is spent so both die: 3+2 and 3+2, not 3+3 and a short 2+2.",
+    run(weights, registry, makeBot) {
+      // The kill planner took the biggest attackers until one opponent was
+      // dead, leaving too little for the other — the user saw a bot send
+      // everything at one opponent with the damage to kill both.
+      const game = table(registry, [A, B, C], A);
+      for (const name of ["Hill Giant", "Hill Giant", "Grizzly Bears", "Grizzly Bears"]) {
+        onBoard(game, name, A);
+      }
+      game.state.players[B].life = 5;
+      game.state.players[C].life = 5;
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      const at = (p: PlayerId): number =>
+        attackers
+          .filter((d) => d.defender === p)
+          .reduce((sum, d) => sum + (game.state.objects[d.attacker]?.cardName === "Hill Giant" ? 3 : 2), 0);
+      return {
+        passed: at(B) >= 5 && at(C) >= 5,
+        detail: `${at(B)} at bob, ${at(C)} at carol`,
       };
     },
   },
@@ -829,6 +896,10 @@ const SCENARIOS: readonly BotScenario[] = [
         for (const creature of mine) onBoard(game, creature, A);
         for (const creature of theirs) onBoard(game, creature, B);
         game.debugSpawn("Wrath of God", A, "hand");
+        // Asked after combat: before it, a wrath that would take our own
+        // attackers waits ("saves the wrath until after combat").
+        const reached = toSecondMain(game);
+        if (reached !== null) return reached;
         return {
           game,
           player: A,
@@ -840,6 +911,28 @@ const SCENARIOS: readonly BotScenario[] = [
       },
     }),
   ),
+  asked({
+    name: "saves the wrath until after combat",
+    rule: "A wipe that takes our own attackers waits for the second main phase.",
+    position(registry) {
+      // Cast first, the Wurm's attack is lost with it; cast after, Bob takes
+      // six and the wipe does the same. v2's rollouts never cast the held
+      // wrath later in the turn, so the search alone cast it now.
+      const game = table(registry, [A, B], A);
+      lands(game, "Plains", A, 4);
+      onBoard(game, "Craw Wurm", A);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Craw Wurm", B, true);
+      const wrath = game.debugSpawn("Wrath of God", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && action.card === wrath),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
   ...(
     [
       ["bolts a creature before a healthy face", 40, "creature"],
@@ -949,6 +1042,81 @@ const SCENARIOS: readonly BotScenario[] = [
             detail: `chose ${describeAction(action)}`,
           };
         },
+      };
+    },
+  }),
+  asked({
+    name: "fetches the colour it can't make yet",
+    rule: "A land search takes a land of a missing colour over another of one it has.",
+    position(registry) {
+      // A blue-green deck with only Forests out: Rampant Growth's basic land
+      // should be the Island. Both bots took the first land offered, and the
+      // evaluation counts lands, not their colours, so v2's search tied.
+      const game = table(registry, [A, B], A);
+      game.state.players[A].commanderIdentity = ["U", "G"];
+      lands(game, "Forest", A, 3);
+      const library = game.state.zones.perPlayer[A].library;
+      const island = game.debugSpawn("Island", A, "library");
+      // To the bottom: library order is the order a search offers cards in.
+      library.splice(library.indexOf(island), 1);
+      library.push(island);
+      const growth = game.debugSpawn("Rampant Growth", A, "hand");
+      game.dispatch({ type: "cast-spell", player: A, card: growth, targets: [] });
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-from-zone") {
+        return { passed: false, detail: "Rampant Growth never asked for a land" };
+      }
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const chosen = action.type === "choose-from-zone" ? action.chosen : [];
+          return {
+            passed: chosen.length === 1 && chosen[0] === island,
+            detail: `took ${chosen.map((id) => cardOf(game, id)).join(", ") || "nothing"}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "holds Transcendent Dragon with nothing to counter",
+    rule: "A creature that counters a spell as it enters waits for an opponent's spell.",
+    position(registry) {
+      // Cast into an empty stack its trigger has no target and is removed
+      // (rule 603.3d): a six-mana 4/3 flyer, where held it's a Counterspell
+      // with a body. The body alone outscores the card in hand, so v2 cast it.
+      const game = table(registry, [A, B], A);
+      lands(game, "Island", A, 6);
+      const dragon = game.debugSpawn("Transcendent Dragon", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && action.card === dragon),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "flashes in Transcendent Dragon to counter an opponent's spell",
+    rule: "The held Dragon comes down in answer to a spell worth countering.",
+    position(registry) {
+      // The other half of holding it: an opponent's Craw Wurm on the stack is
+      // what the Dragon was kept for.
+      const game = table(registry, [A, B], B);
+      lands(game, "Island", A, 6);
+      lands(game, "Forest", B, 6);
+      const dragon = game.debugSpawn("Transcendent Dragon", A, "hand");
+      castAndPassTo(game, B, game.debugSpawn("Craw Wurm", B, "hand"), A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === dragon,
+          detail: `chose ${describeAction(action)}`,
+        }),
       };
     },
   }),

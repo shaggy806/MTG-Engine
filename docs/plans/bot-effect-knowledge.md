@@ -501,3 +501,16 @@ and a few decks want the opposite: Teval, the Balanced Scale's self-mill deck ai
 Crab at an opponent. `deck-bias.ts` keys a correction by commander — effect kinds the deck
 aims the other way, and weights for its own features only — read off the game state by every
 bot and rollout. Design record: `docs/plans/deck-biases.md`.
+
+**After the plan: five BACKLOG items (2026-10-02).** Each pinned by a gate scenario that fails
+without its fix. *Transcendent Dragon* (and Mystic Snake, Frilled Mystic: `entersToCounter`)
+waits for an opponent's spell (`holdsForASpell`) and counts toward `answers`. *A board wipe that
+would take our own would-be attackers* waits for the second main phase (`holdsWipeForCombat`).
+*A land search* takes a colour the bot can't make yet first (`land-colors.ts`). *Felothar's
+toughness damage* was already read everywhere but `creatureValue`'s move ranking, now fixed.
+*The kill planner* (`alphaStrike`'s `killWith`) took the biggest attackers until one opponent
+died, so 3+3 at one opponent at 5 left 2+2 short of the other; when the attackers' total damage
+covers every killable opponent's life, it tries every subset (up to 10 attackers) for the kill
+that spends the least. `bot:diff` against `de252b11`: v1 495 of 74,890 decisions, 365 of them the
+Dragon no longer cast into an empty stack, the rest wipes held and land picks; v2 41 of 11,308,
+the same kinds.

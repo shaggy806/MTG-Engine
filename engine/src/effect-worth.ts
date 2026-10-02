@@ -30,6 +30,7 @@
  * may both use it.
  */
 
+import type { CardDefinition } from "./cards/define.js";
 import { polarityBias } from "./deck-bias.js";
 import type { EffectAmount, EffectSpec, EffectTargetRef, PlayerScope } from "./effects.js";
 import { manaValue, parseManaCost } from "./mana.js";
@@ -336,4 +337,36 @@ export function temporaryEffectCanMatter(state: GameState, me: PlayerId): boolea
   if (state.zones.shared.stack.length > 0) return true;
   if (COMBAT_STEPS.has(state.turn.step)) return true;
   return state.turn.step === "precombat-main" && activePlayerOf(state) === me;
+}
+
+/** Does this effect counter a spell? Anywhere in the tree. */
+function countersASpell(effect: unknown): boolean {
+  if (effect === null || typeof effect !== "object") return false;
+  if (Array.isArray(effect)) return effect.some(countersASpell);
+  if ((effect as { readonly kind?: unknown }).kind === "counter") return true;
+  return Object.values(effect).some((value) => value !== null && typeof value === "object" && countersASpell(value));
+}
+
+const entersToCounterMemo = new WeakMap<CardDefinition, boolean>();
+
+/**
+ * Whether `def` is a permanent whose own "enters" trigger counters a target
+ * spell — Transcendent Dragon, Mystic Snake, Frilled Mystic. Cast with
+ * nothing to counter, the trigger has no target and is removed (rule
+ * 603.3d), so the card is a counterspell with a body, held for an
+ * opponent's spell like one.
+ */
+export function entersToCounter(def: CardDefinition): boolean {
+  let found = entersToCounterMemo.get(def);
+  if (found === undefined) {
+    found = def.triggered.some(
+      (t) =>
+        t.trigger.on === "enters-battlefield" &&
+        t.trigger.who === "self" &&
+        t.targets.some((spec) => spec === "spell" || (typeof spec === "object" && spec.kind === "spell")) &&
+        countersASpell(t.effect),
+    );
+    entersToCounterMemo.set(def, found);
+  }
+  return found;
 }

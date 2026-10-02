@@ -33,6 +33,7 @@ import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import { computeCharacteristics, withComputedCache } from "../characteristics.js";
 import { polarityBias } from "../deck-bias.js";
+import { newColorsFirst } from "../land-colors.js";
 import { onlyUntilEndOfTurn } from "../effect-worth.js";
 import { goadersOf } from "../goad.js";
 import {
@@ -236,9 +237,16 @@ const MOVES_PER_ROUND = 8;
 const TIE = 1e-9;
 
 /** What a creature is worth to the evaluation, roughly: its creature, power
- * and toughness terms. Only used to rank moves, never to choose one. */
+ * and toughness terms. Only used to rank moves, never to choose one. The
+ * `power` term counts combat damage (`features.ts`), so this does too: under
+ * Felothar the Steadfast a 0/5 wall is worth its 5. */
 const creatureValue = (c: CombatCreature, w: EvalWeights): number =>
-  w.creatures + w.power * Math.max(0, c.power) + w.toughness * Math.max(0, c.toughness);
+  w.creatures + w.power * Math.max(0, c.damage) + w.toughness * Math.max(0, c.toughness);
+
+/** Up to this many attackers able to hit one opponent, `alphaStrike` tries
+ * every subset for the cheapest kill (2^10 lethality checks); past it, a
+ * greedy pick. */
+const EXACT_KILL_POOL = 10;
 
 /** Every order of `items` — few: the opponents at one table. */
 function permutations<T>(items: readonly T[]): T[][] {
@@ -331,7 +339,7 @@ function bestDecision(
       : decisionCandidates(
           withComputedCache(() => aimOffer(view.state, cards, me, legal)),
           me,
-          (ids) => byManaValue(view.state, cards, ids),
+          (ids) => byManaValue(view.state, cards, ids, me),
           (id) => view.state.objects[id]?.controller,
           (player) => view.state.players[player]?.counters.poison ?? 0,
         );
@@ -426,15 +434,23 @@ export function aimOffer(
 }
 
 /** Highest mana value first — the order a capped tutor or discard search
- * tries cards in, so the cap cuts the least likely picks. */
-function byManaValue(state: GameState, cards: CardRegistry, ids: readonly ObjectId[]): ObjectId[] {
+ * tries cards in, so the cap cuts the least likely picks. A choice among
+ * lands alone (all mana value 0) puts a colour we can't make yet first
+ * (`land-colors.ts`), as v1 does. */
+function byManaValue(
+  state: GameState,
+  cards: CardRegistry,
+  ids: readonly ObjectId[],
+  me: PlayerId,
+): ObjectId[] {
+  const ranked = newColorsFirst(state, cards, me, ids);
   const mv = (id: ObjectId): number => {
     const name = state.objects[id]?.cardName;
     return name !== undefined && cards.has(name)
       ? manaValue(parseManaCost(cards.get(name).manaCost))
       : 0;
   };
-  return [...ids].sort((a, b) => mv(b) - mv(a));
+  return ranked.sort((a, b) => mv(b) - mv(a));
 }
 
 /**
@@ -575,6 +591,13 @@ export class EvalBotController extends HeuristicBotController {
         // rollout plays our own seat passively, so mana it would have cast
         // spells with looks free to spend, and v2 pumped away its upkeep.
         if (this.wastedNow(view.state, legal)) continue;
+        // A creature that counters a spell as it enters, with no opponent's
+        // spell to counter (`holdsForASpell`): the body alone outscores the
+        // card in hand, so the search would cast it and waste the counter.
+        if (this.holdsForASpell(view.state, legal)) continue;
+        // A board wipe that would take our own would-be attackers, before
+        // combat (`holdsWipeForCombat`): cast after the attack instead.
+        if (this.holdsWipeForCombat(view.state, legal)) continue;
         // Mana our own main phase could cast a spell with, spent in our upkeep
         // (`holdsManaForMain`): the rollouts never show that spell.
         if (this.holdsManaForMain(view.state, legal)) continue;
@@ -1239,17 +1262,37 @@ export class EvalBotController extends HeuristicBotController {
     );
     const canAttack = (c: CombatCreature, defender: PlayerId): boolean =>
       (legal.defendersFor[c.id] ?? []).includes(defender);
-    // The fewest of `pool` that kill `defender` through their best blocks:
-    // the biggest first until it's lethal, then each one dropped, smallest
-    // first, that it stays lethal without. `null` when all of them don't.
+    // The attackers of `pool` that kill `defender` through their best blocks
+    // spending the least damage, so as much as possible is left for the next
+    // opponent: 3+3 on one opponent at 5 leaves 2+2 short of the other, where
+    // 3+2 and 3+2 kill both. With `exact`, every subset of a small pool is
+    // tried; otherwise it takes the biggest first until it's lethal, then
+    // drops each one, smallest first, that it stays lethal without. `null`
+    // when all of them don't.
     const killWith = (
       defender: PlayerId,
       pool: readonly CombatCreature[],
+      exact = false,
     ): CombatCreature[] | null => {
       const blockers = blockersOf.get(defender) ?? [];
       const lethal = (attackers: readonly CombatCreature[]): boolean =>
         isLethal(state, defender, damageThrough(attackers, blockers));
       const able = pool.filter((c) => canAttack(c, defender)).sort((a, b) => b.damage - a.damage);
+      if (exact && able.length <= EXACT_KILL_POOL) {
+        let best: { readonly set: CombatCreature[]; readonly damage: number } | null = null;
+        for (let mask = 1; mask < 1 << able.length; mask += 1) {
+          const set = able.filter((_, i) => (mask & (1 << i)) !== 0);
+          const damage = set.reduce((sum, c) => sum + c.damage, 0);
+          if (
+            best !== null &&
+            (damage > best.damage || (damage === best.damage && set.length >= best.set.length))
+          ) {
+            continue;
+          }
+          if (lethal(set)) best = { set, damage };
+        }
+        return best?.set ?? null;
+      }
       const chosen: CombatCreature[] = [];
       for (const c of able) {
         chosen.push(c);
@@ -1267,6 +1310,15 @@ export class EvalBotController extends HeuristicBotController {
       (p) => legal.defenders.includes(p) && killWith(p, mine) !== null,
     );
     if (killable.length === 0) return null;
+    // The subset search only matters when more than one kill could fit: the
+    // attackers' damage covers the life of every opponent they could kill
+    // alone. Short of that, no split kills two, and the greedy pick stands.
+    const totalDamage = mine.reduce(
+      (sum, c) => sum + c.damage * (c.keywords.has("double-strike") ? 2 : 1),
+      0,
+    );
+    const killableLife = killable.reduce((sum, p) => sum + state.players[p].life, 0);
+    const exact = killable.length > 1 && totalDamage >= killableLife;
 
     interface Plan {
       readonly kills: number;
@@ -1289,7 +1341,7 @@ export class EvalBotController extends HeuristicBotController {
       const killed: PlayerId[] = [];
       const declaration: AttackerDeclaration[] = [];
       for (const defender of order) {
-        const set = killWith(defender, pool);
+        const set = killWith(defender, pool, exact);
         if (set === null) continue;
         killed.push(defender);
         for (const c of set) declaration.push({ attacker: c.id, defender });

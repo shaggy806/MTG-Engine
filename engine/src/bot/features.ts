@@ -42,6 +42,7 @@ import { combatDamageOf, computeCharacteristics, withComputedCache } from "../ch
 import type { Characteristics } from "../characteristics.js";
 import type { CardRegistry } from "../cards.js";
 import type { CardDefinition, Keyword } from "../cards/define.js";
+import { entersToCounter } from "../effect-worth.js";
 import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { PlayerId } from "../primitives.js";
@@ -283,11 +284,12 @@ function counters(effect: unknown): boolean {
 const answerMemo = new WeakMap<CardDefinition, boolean>();
 
 /** A card held to counter something: its spell (or one of its modes) counters
- * a spell. Counterspell, Negate, Cryptic Command. */
+ * a spell, or it's a creature that counters one as it enters. Counterspell,
+ * Negate, Cryptic Command, Transcendent Dragon. */
 function isAnswer(def: CardDefinition): boolean {
   let found = answerMemo.get(def);
   if (found === undefined) {
-    found = counters(def.effect) || counters(def.castModal);
+    found = counters(def.effect) || counters(def.castModal) || entersToCounter(def);
     answerMemo.set(def, found);
   }
   return found;

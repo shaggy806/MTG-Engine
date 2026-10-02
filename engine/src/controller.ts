@@ -18,19 +18,23 @@ import type {
 } from "./actions.js";
 import { convokeProofFor } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
+import { whyCannotAttack } from "./combat/eligibility.js";
 import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
 import { polarityBias } from "./deck-bias.js";
+import { matchesFilter } from "./filter.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
+import { newColorsFirst } from "./land-colors.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { EffectSpec } from "./effects.js";
 import {
   costWorth,
   effectWorth,
+  entersToCounter,
   onlyUntilEndOfTurn,
   temporaryEffectCanMatter,
 } from "./effect-worth.js";
@@ -1659,6 +1663,57 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /**
+   * Whether `offer` casts a creature that counters a spell as it enters
+   * (`entersToCounter` — Transcendent Dragon, Mystic Snake) with no
+   * opponent's spell on the stack: its trigger would have nothing to aim at
+   * but our own spell, and the card is worth holding as an answer. v1 and
+   * v2's search alike leave it in hand until an opponent casts something.
+   */
+  protected holdsForASpell(state: GameState, offer: LegalAction): boolean {
+    if (offer.kind !== "cast-spell" || !this.registry.has(offer.cardName)) return false;
+    if (!entersToCounter(this.registry.get(offer.cardName))) return false;
+    return !state.zones.shared.stack.some((id) => {
+      const object = state.objects[id];
+      return object !== undefined && object.kind === "card" && object.controller !== this.playerId;
+    });
+  }
+
+  /**
+   * Whether `offer` is a board wipe to save for after combat: our own first
+   * main phase, nothing on the stack, and among what it would take is a
+   * creature of ours that could attack this turn. Cast now, that creature's
+   * attack is lost; cast in the second main phase, it gets its attack in and
+   * the wipe does the same afterwards. A one-sided wipe ("creatures you
+   * don't control"), or one our attackers survive, is left alone: clearing
+   * blockers first is the point of it. The search can't see this — its
+   * rollouts never cast the held wipe later in the turn.
+   */
+  protected holdsWipeForCombat(state: GameState, offer: LegalAction): boolean {
+    if (offer.kind !== "cast-spell") return false;
+    if (state.zones.shared.stack.length > 0) return false;
+    if (state.turn.step !== "precombat-main" || activePlayerOf(state) !== this.playerId) return false;
+    const effect = this.offerEffect(offer);
+    const sweeps = sweepsOf(effect);
+    if (sweeps.length === 0) return false;
+    const me = this.playerId;
+    const opponents = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
+    return state.zones.shared.battlefield.some((id) => {
+      if (state.objects[id]?.controller !== me) return false;
+      if (!opponents.some((p) => whyCannotAttack(state, this.registry, me, id, p) === null)) return false;
+      const c = computeCharacteristics(state, this.registry, id);
+      return sweeps.some((sweep) => {
+        if (!matchesFilter(state, this.registry, id, sweep.filter, { you: me })) return false;
+        if (sweep.kind === "destroy-all") return !c.keywords.has("indestructible");
+        if (sweep.kind === "damage-all") {
+          if (sweep.whose !== undefined && sweep.whose !== "each-player") return false;
+          return typeof sweep.amount !== "number" || sweep.amount >= c.toughness - (state.objects[id]?.damageMarked ?? 0);
+        }
+        return true;
+      });
+    });
+  }
+
+  /**
    * Whether `offer` would spend mana in this bot's own upkeep or draw step,
    * with nothing on the stack — mana its main phase could have cast a spell
    * with. The search can't see that: its rollouts pass at every window, so
@@ -1937,12 +1992,14 @@ export class HeuristicBotController extends AutomaticController {
    * on the bottom and sacrificing are all their own decisions.)
    */
   chooseFromZone(
-    _view: ControllerView,
+    view: ControllerView,
     eligible: readonly ObjectId[],
     min: number,
     max: number,
   ): readonly ObjectId[] {
-    return eligible.slice(0, Math.max(min, Math.min(max, eligible.length)));
+    // A land search takes a colour we can't make yet first (`land-colors.ts`).
+    const ranked = newColorsFirst(view.state, this.registry, this.playerId, eligible);
+    return ranked.slice(0, Math.max(min, Math.min(max, ranked.length)));
   }
 
   /**
@@ -2102,6 +2159,8 @@ export class HeuristicBotController extends AutomaticController {
         !this.taxWouldKill(view.state, o) &&
         !this.aimsOnlyAtWrongSide(view.state, o) &&
         !this.wastedNow(view.state, o) &&
+        !this.holdsForASpell(view.state, o) &&
+        !this.holdsWipeForCombat(view.state, o) &&
         !this.holdsManaForMain(view.state, o),
     );
     if (spells.length > 0) {
@@ -2290,5 +2349,29 @@ export class HeuristicBotController extends AutomaticController {
         blocks.filter((x) => x.attacker === b.attacker).length >= 2,
     );
     return obeyingLure(blocks, legal);
+  }
+}
+
+type Sweep = Extract<
+  EffectSpec,
+  { readonly kind: "destroy-all" | "damage-all" | "exile-all" | "return-to-hand-all" }
+>;
+
+/** The mass removal in `effect` — destroy, damage, exile or bounce "all"
+ * — through sequences and "may"s. */
+function sweepsOf(effect: EffectSpec | null | undefined): Sweep[] {
+  if (effect === null || effect === undefined) return [];
+  switch (effect.kind) {
+    case "destroy-all":
+    case "damage-all":
+    case "exile-all":
+    case "return-to-hand-all":
+      return [effect];
+    case "sequence":
+      return effect.effects.flatMap(sweepsOf);
+    case "may":
+      return sweepsOf(effect.effect);
+    default:
+      return [];
   }
 }

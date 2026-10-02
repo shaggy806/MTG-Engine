@@ -200,10 +200,6 @@ Beyond that plan:
   Since `drawEngines` 4 (same day) Cleansing Nova's artifact-and-enchantment mode and removal
   go after opponents' draw engines too, and one edict took the bot's own commander (Emmara)
   over Mentor of the Meek, a judgment call worth capturing if it recurs.
-- **Cast a board wipe in the second main phase, after attacking.** If a bot is going to cast a
-  board wipe, usually it should do so in the second main phase, after it has attacked, so its
-  creatures get their attack in before the wipe. v2 decides when to cast in `EvalBotController`
-  (`engine/src/bot/eval-bot.ts`), where pumps already wait for combat (`wastedNow`).
 - **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
   (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
   attacks someone else, and then with help that ends at end of turn, on a creature goaded by
@@ -245,22 +241,9 @@ Beyond that plan:
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
   gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **Transcendent Dragon wasted with nothing to counter.** Look into bots casting it (flash; "when
-  this creature enters, if you cast it, counter target spell") with no spell on the stack, so its
-  trigger does nothing — it wants holding for an opponent's spell.
 - **Explore incentivizing bots to equip equipment.** Whether the bots equip their Equipment
   often enough, and how to make them want to (v1's activation choice and `isPointlessReattach` in
   `engine/src/controller.ts`, v2's search in `engine/src/bot/eval-bot.ts`).
-- **Check that bots understand Felothar's toughness damage assignment.** Felothar the Steadfast
-  (`combatDamageByToughness`, read by `engine/src/combat/damage.ts`) makes its controller's
-  creatures assign combat damage equal to toughness: check the bots' attack, block and evaluation
-  read that rather than power (`engine/src/bot/`).
-- **Fetch lands should fetch the colors the bot can't yet make.** When a bot cracks a fetch land
-  it should search for a land that gives it access to a color it has no way to produce yet. The
-  library-search pick is in the bots' decision search (`engine/src/bot/decisions.ts`).
-- **Reanalyze the bot full-swinging into one opponent when it could kill two.** The user saw a
-  bot send everything at one opponent when it had the damage to kill both opponents at once.
-  The lethal split is planned by `killWith` in `engine/src/bot/eval-bot.ts`.
 - **Check how the bot decides when to scry a card to the bottom.** Review what makes the bot keep
   a card on top or send it to the bottom. Scry choices go through the decision search in
   `engine/src/bot/eval-bot.ts` (v1's never-bottom default is in `engine/src/bot/decisions.ts`).
