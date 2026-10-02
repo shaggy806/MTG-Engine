@@ -12,7 +12,10 @@
 // a few dozen self-play games:
 //
 // - **Wrong-side targets**: harm aimed at its own side, help at an opponent's,
-//   judged by `target-polarity.ts` — and whether a right-side target was legal.
+//   judged by `target-polarity.ts` with each seat's deck bias (`deck-bias.ts`:
+//   Teval milling itself isn't a misaim) — and whether a right-side target was
+//   legal. Harm at its own permanent with a "when this dies" trigger (a Dragon
+//   Egg) is tallied apart, as a play rather than a misaim.
 //   Found 22% for v1 and 11% for v2 before the aiming work
 //   (`docs/plans/bot-effect-knowledge.md`).
 // - **Idle turns**: its own last main phase passed with a sorcery-speed spell
@@ -149,6 +152,7 @@ function report() {
     simulations: {},
     idleCards: {},
     wrongCards: {},
+    onPurpose: {},
     ownTurns: 0,
     idleTurns: 0,
     landSkips: 0,
@@ -161,7 +165,7 @@ function report() {
   };
   for (const r of ok) {
     const s = r.stats;
-    for (const key of ["windows", "ms", "overBudget", "simulations", "idleCards", "wrongCards"]) add(sum[key], s[key]);
+    for (const key of ["windows", "ms", "overBudget", "simulations", "idleCards", "wrongCards", "onPurpose"]) add(sum[key], s[key] ?? {});
     for (const [k, v] of Object.entries(s.maxMs)) sum.maxMs[k] = Math.max(sum.maxMs[k] ?? 0, v);
     for (const key of ["ownTurns", "idleTurns", "landSkips", "targeted", "wrongSide", "avoidable"]) sum[key] += s[key];
   }
@@ -202,6 +206,10 @@ function report() {
     `\ntargets: ${sum.targeted} aimed where the side matters, ${sum.wrongSide} (${pct(sum.wrongSide, sum.targeted)}) at the wrong side, ${sum.avoidable} of those with a right-side target legal`,
   );
   for (const [key, n] of top(sum.wrongCards, 12)) console.log(`  ${String(n).padStart(4)}x ${key}`);
+  const onPurpose = top(sum.onPurpose, 8);
+  if (onPurpose.length > 0) {
+    console.log(`  not counted — harm at its own permanent that pays when it dies: ${onPurpose.map(([name, n]) => `${name} ${n}`).join(", ")}`);
+  }
 
   console.log(
     `\nown turns: ${sum.ownTurns}; ended with a sorcery-speed spell castable and unplayed: ${sum.idleTurns} (${pct(sum.idleTurns, sum.ownTurns)}); land drops skipped: ${sum.landSkips}`,

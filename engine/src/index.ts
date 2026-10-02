@@ -48,4 +48,5 @@ export { damageAssignmentViolations, standardAssignment } from "./combat/damage.
 export type { DamageAssignmentOffer } from "./combat/damage.js";
 export * from "./auto-settle.js";
 export * from "./target-polarity.js";
+export * from "./deck-bias.js";
 export * from "./bot/index.js";

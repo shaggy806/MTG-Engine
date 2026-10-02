@@ -15,6 +15,7 @@ import {
   modalPolarities,
   offerPolarities,
   pendingTargetPolarities,
+  polarityBias,
   sideOf,
   specSide,
 } from "../dist/index.js";
@@ -40,6 +41,7 @@ function newStats() {
     wrongSide: 0,
     avoidable: 0,
     wrongCards: {},
+    onPurpose: {},
   };
 }
 
@@ -58,7 +60,7 @@ const sorcerySpeed = (legal) => {
  * its spec and its legal options — or `[]` when the source can't be read (a
  * granted ability, a card the registry doesn't know).
  */
-function slotsOf(state, action, legal) {
+function slotsOf(state, me, action, legal) {
   const slot = (polarity, spec, options) => ({ polarity: polarity ?? "either", spec, options: options ?? [] });
   if (action.type === "cast-spell") {
     const offer = legal.find(
@@ -66,7 +68,7 @@ function slotsOf(state, action, legal) {
     );
     if (offer === undefined) return [];
     if (action.modes !== undefined && offer.castModal !== undefined) {
-      const byMode = modalPolarities(registry, offer);
+      const byMode = modalPolarities(registry, offer, polarityBias(state, me));
       if (byMode === null) return [];
       return action.modes.flatMap((m) =>
         offer.castModal.modes[m].targetSpecs.map((spec, i) =>
@@ -74,7 +76,7 @@ function slotsOf(state, action, legal) {
         ),
       );
     }
-    const polarities = offerPolarities(registry, offer);
+    const polarities = offerPolarities(registry, offer, polarityBias(state, me));
     if (polarities === null) return [];
     return offer.targetSpecs.map((spec, i) => slot(polarities[i], spec, offer.targetOptions[i]));
   }
@@ -82,24 +84,32 @@ function slotsOf(state, action, legal) {
     const offer = legal.find(
       (l) => l.kind === "activate-ability" && l.source === action.source && l.abilityIndex === action.abilityIndex,
     );
-    const polarities = offer === undefined ? null : offerPolarities(registry, offer);
+    const polarities = offer === undefined ? null : offerPolarities(registry, offer, polarityBias(state, me));
     if (polarities === null) return [];
     return offer.targetSpecs.map((spec, i) => slot(polarities[i], spec, offer.targetOptions[i]));
   }
   if (action.type === "choose-targets") {
     const offer = legal.find((l) => l.kind === "choose-targets");
-    const polarities = offer === undefined ? null : pendingTargetPolarities(state, registry);
+    const polarities = offer === undefined ? null : pendingTargetPolarities(state, registry, polarityBias(state, me));
     if (polarities === null) return [];
     return offer.specs.map((spec, i) => slot(polarities[i], spec, offer.options[i]));
   }
   return [];
 }
 
+/** Our own permanent with a "when this dies" trigger of its own. */
+function diesForValue(state, target) {
+  if (target.kind !== "object") return false;
+  const object = state.objects[target.object];
+  if (object === undefined || object.zone !== "battlefield" || !registry.has(object.cardName)) return false;
+  return (registry.get(object.cardName).triggered ?? []).some((t) => t.trigger.on === "dies" && t.trigger.who === "self");
+}
+
 /** Count what `action` aims where. Only a slot whose spec leaves the side
  * open and whose effect has a side counts: "target creature you control" is
  * the card choosing. */
 function countTargets(stats, state, me, action, legal) {
-  const slots = slotsOf(state, action, legal);
+  const slots = slotsOf(state, me, action, legal);
   if (slots.length === 0) return;
   (action.targets ?? []).forEach((target, i) => {
     if (target === null || target === undefined) return;
@@ -112,13 +122,20 @@ function countTargets(stats, state, me, action, legal) {
     stats.targeted += 1;
     const want = polarity === "harm" ? "opponent" : "own";
     if (side === want) return;
-    stats.wrongSide += 1;
-    const avoidable = options.some((o) => sideOf(state, o, me) === want);
-    if (avoidable) stats.avoidable += 1;
     const name =
       action.type === "choose-targets"
         ? `${state.pendingTargetedTrigger?.cardName ?? "?"} (trigger)`
         : state.objects[action.card ?? action.source]?.cardName ?? "?";
+    // Harm at our own permanent that pays us when it dies — Dragon Tempest
+    // killing our Dragon Egg for a 2/2 flyer, which triggers it again — is a
+    // play, not a misaim. Tallied apart, so it stays visible.
+    if (polarity === "harm" && diesForValue(state, target)) {
+      stats.onPurpose[name] = (stats.onPurpose[name] ?? 0) + 1;
+      return;
+    }
+    stats.wrongSide += 1;
+    const avoidable = options.some((o) => sideOf(state, o, me) === want);
+    if (avoidable) stats.avoidable += 1;
     const key = `${name} — ${polarity === "harm" ? "harm at its own side" : "help at an opponent"}${
       avoidable ? "" : " (nothing else legal)"
     }`;
