@@ -79,24 +79,33 @@ export function describeTarget(ref: TargetRef, nameOf: NameOf): string {
   return ref.kind === 'player' ? ref.player : nameOf(ref.object)
 }
 
-export function describeEvent(event: GameEvent, nameOf: NameOf): string {
+/**
+ * One event as a sentence. Players go by their display names from `seats`
+ * (`playerLabel`), never their seat ids; without `seats`, by the
+ * capitalised seat id.
+ */
+export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly SeatStatus[] = []): string {
   const name = nameOf
-  const tgt = (ref: TargetRef): string => describeTarget(ref, nameOf)
+  const who = (id: PlayerId): string => playerLabel(id, seats)
+  const tgt = (ref: TargetRef): string => (ref.kind === 'player' ? who(ref.player) : name(ref.object))
+  // An attack's defender is a player or a planeswalker/battle.
+  const defender = (id: PlayerId | ObjectId): string =>
+    seats.some((s) => s.player === id) ? who(id as PlayerId) : name(id as ObjectId)
   const signed = (n: number): string => (n >= 0 ? `+${n}` : `${n}`)
 
   switch (event.type) {
     case 'game-started':
-      return `${event.players.join(' vs ')} · ${event.startingPlayer} first · seed ${event.seed}`
+      return `${event.players.map(who).join(' vs ')} · ${who(event.startingPlayer)} first · seed ${event.seed}`
     case 'turn-began':
-      return `Turn ${event.turn} — ${event.activePlayer}${event.extra ? ' (extra turn)' : ''}`
+      return `Turn ${event.turn} — ${who(event.activePlayer)}${event.extra ? ' (extra turn)' : ''}`
     case 'extra-turn-queued':
-      return `${event.player} takes an extra turn after this one`
+      return `${who(event.player)} takes an extra turn after this one`
     case 'additional-combat-queued':
-      return `${event.player} gets an additional combat phase`
+      return `${who(event.player)} gets an additional combat phase`
     case 'additional-combat-phase':
       return `additional combat phase`
     case 'spell-copied':
-      return `${event.controller} copies ${name(event.original)}`
+      return `${who(event.controller)} copies ${name(event.original)}`
     case 'lore-counter-added':
       return `${name(event.object)} — lore counter ${event.lore}`
     case 'saga-completed':
@@ -111,62 +120,62 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
       return `${name(event.object)} can't be countered`
     case 'monarch-changed':
       return event.via === 'monarch-left'
-        ? `${event.player} becomes the monarch (the monarch left the game)`
-        : `${event.player} becomes the monarch (${event.via})`
+        ? `${who(event.player)} becomes the monarch (the monarch left the game)`
+        : `${who(event.player)} becomes the monarch (${event.via})`
     case 'energy-changed':
-      return `${event.player} ${event.delta >= 0 ? '+' : ''}${event.delta} energy (now ${event.energy})`
+      return `${who(event.player)} ${event.delta >= 0 ? '+' : ''}${event.delta} energy (now ${event.energy})`
     case 'player-counters-changed':
-      return `${playerLabel(event.player)} ${event.delta >= 0 ? 'gets' : 'loses'} ${Math.abs(
+      return `${who(event.player)} ${event.delta >= 0 ? 'gets' : 'loses'} ${Math.abs(
         event.delta,
       )} ${event.counter} counter${Math.abs(event.delta) === 1 ? '' : 's'} (now ${event.total})`
     case 'emblem-created':
-      return `${event.player} gets an emblem — "${event.text}"`
+      return `${who(event.player)} gets an emblem — "${event.text}"`
     case 'card-on-adventure':
       return `${name(event.object)} goes on an adventure (exiled)`
     case 'cascade-revealed':
       return event.cast
-        ? `${event.player} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`
-        : `${event.player} cascades — nothing to cast (${event.exiled.length} exiled)`
+        ? `${who(event.player)} cascades into ${name(event.cast)} (${event.exiled.length} exiled)`
+        : `${who(event.player)} cascades — nothing to cast (${event.exiled.length} exiled)`
     case 'step-began':
       return `[${event.phase}] ${event.step}`
     case 'priority-received':
-      return `→ ${event.player}`
+      return `→ ${who(event.player)}`
     case 'priority-passed':
-      return `${event.player} passes`
+      return `${who(event.player)} passes`
     case 'permanent-untapped':
       return `${name(event.object)} untaps`
     case 'permanent-tapped':
       return `${name(event.object)} taps`
     case 'mana-added':
-      return `${event.player} adds ${event.amount}{${event.mana}}`
+      return `${who(event.player)} adds ${event.amount}{${event.mana}}`
     case 'card-drawn':
-      return `${event.player} draws ${name(event.object)}`
+      return `${who(event.player)} draws ${name(event.object)}`
     case 'draw-from-empty-library':
-      return `${event.player} draws from an empty library!`
+      return `${who(event.player)} draws from an empty library!`
     case 'cards-discarded':
-      return `${event.player} discards ${event.objects.map(name).join(', ')}`
+      return `${who(event.player)} discards ${event.objects.map(name).join(', ')}`
     case 'cards-revealed':
-      return `${event.player} reveals ${event.objects.map(name).join(', ')} from their ${event.from}`
+      return `${who(event.player)} reveals ${event.objects.map(name).join(', ')} from their ${event.from}`
     case 'cards-chosen-from-zone':
       return event.objects.length > 0
-        ? `${event.player} takes ${event.objects.map(name).join(', ')}`
-        : `${event.player} takes nothing`
+        ? `${who(event.player)} takes ${event.objects.map(name).join(', ')}`
+        : `${who(event.player)} takes nothing`
     case 'library-shuffled':
-      return `${event.player} shuffles their library`
+      return `${who(event.player)} shuffles their library`
     case 'scried':
-      return `${event.player} ${event.mode}s ${event.looked} (${event.movedAway} ${
+      return `${who(event.player)} ${event.mode}s ${event.looked} (${event.movedAway} ${
         event.mode === 'surveil' ? 'to graveyard' : 'to bottom'
       })`
     case 'proliferated':
       return event.count > 0
-        ? `${playerLabel(event.player)} proliferates (${event.count})`
-        : `${playerLabel(event.player)} proliferates nothing`
+        ? `${who(event.player)} proliferates (${event.count})`
+        : `${who(event.player)} proliferates nothing`
     case 'damage-cleared':
       return `damage cleared from ${event.objects.length} permanent(s)`
     case 'land-played':
-      return `${event.player} plays ${name(event.object)}${fromZone(event.from)}`
+      return `${who(event.player)} plays ${name(event.object)}${fromZone(event.from)}`
     case 'spell-cast':
-      return `${event.player} casts ${name(event.object)}${fromZone(event.from)}${
+      return `${who(event.player)} casts ${name(event.object)}${fromZone(event.from)}${
         event.via ? ` (${event.via})` : ''
       }${event.x != null ? ` (X=${event.x})` : ''}${
         event.targets.length ? ` at ${event.targets.map(tgt).join(', ')}` : ''
@@ -176,19 +185,19 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'flashback-granted':
       return `${name(event.object)} gains flashback ${event.cost}`
     case 'graveyard-cast-granted':
-      return `${event.player} may cast ${name(event.object)} from the graveyard this turn`
+      return `${who(event.player)} may cast ${name(event.object)} from the graveyard this turn`
     case 'flashback-grant-expired':
       return `${name(event.object)}'s flashback grant expires`
     case 'card-suspended':
-      return `${event.player} suspends ${name(event.object)} (${event.timeCounters} time counter${
+      return `${who(event.player)} suspends ${name(event.object)} (${event.timeCounters} time counter${
         event.timeCounters === 1 ? '' : 's'
       })`
     case 'time-counter-removed':
       return `${name(event.object)} — time counter removed (${event.remaining} left)`
     case 'card-foretold':
-      return `${event.player} foretells a card`
+      return `${who(event.player)} foretells a card`
     case 'card-cycled':
-      return `${event.player} cycles ${name(event.object)}`
+      return `${who(event.player)} cycles ${name(event.object)}`
     case 'escape-cost-paid':
       return `${name(event.object)} escapes (exiling ${event.exiled.length} cards)`
     case 'spell-fizzled':
@@ -198,11 +207,11 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'spell-exiled':
       return `${name(event.object)} is exiled from the stack`
     case 'ward-paid':
-      return `${event.player} pays ward for ${name(event.object)}`
+      return `${who(event.player)} pays ward for ${name(event.object)}`
     case 'ward-unpaid':
-      return `${event.player} doesn't pay ward for ${name(event.object)}`
+      return `${who(event.player)} doesn't pay ward for ${name(event.object)}`
     case 'control-changed':
-      return `${event.controller} gains control of ${name(event.object)}${
+      return `${who(event.controller)} gains control of ${name(event.object)}${
         event.untilEndOfTurn ? ' until EOT' : ''
       }`
     case 'permanent-copied':
@@ -212,7 +221,7 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'creature-type-chosen':
       return `${name(event.object)} chooses ${event.creatureType}`
     case 'ability-activated':
-      return `${event.player} activates ${name(event.source)}${
+      return `${who(event.player)} activates ${name(event.source)}${
         event.onStack ? '' : ' (mana)'
       }`
     case 'ability-resolved':
@@ -220,7 +229,7 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'object-targeted':
       return `${name(event.object)} becomes the target of ${name(event.source)} (${event.by})`
     case 'ability-triggered':
-      return `${name(event.source)}'s trigger goes on the stack (${event.controller})`
+      return `${name(event.source)}'s trigger goes on the stack (${who(event.controller)})`
     case 'trigger-removed':
       return `${name(event.source)}'s trigger removed — ${event.reason}`
     case 'pt-modified':
@@ -241,12 +250,12 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
         .join(' or ')
       return event.object !== undefined
         ? `${name(event.object)}'s activated abilities can't be activated this turn`
-        : `${event.players.map((p) => playerLabel(p)).join(', ')} can't ${what} this turn`
+        : `${event.players.map((p) => who(p)).join(', ')} can't ${what} this turn`
     }
     case 'restrictions-imposed': {
       const what = event.restrictions.map((r) => RESTRICTION_TEXT[r]).join(' and ')
       return event.object === undefined
-        ? `${playerLabel(event.player)}: for the rest of the turn, affected creatures ${what}`
+        ? `${who(event.player)}: for the rest of the turn, affected creatures ${what}`
         : `${name(event.object)} ${what} this turn`
     }
     case 'pt-modifier-expired':
@@ -262,21 +271,21 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'text-changed':
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
     case 'attacker-declared':
-      return `${name(event.attacker)} attacks ${name(event.defender as ObjectId)}`
+      return `${name(event.attacker)} attacks ${defender(event.defender)}`
     case 'entered-attacking':
-      return `${name(event.object)} enters attacking ${name(event.defender as ObjectId)}`
+      return `${name(event.object)} enters attacking ${defender(event.defender)}`
     case 'attackers-declared':
-      return `${event.player} attacks with ${event.attackers.length}`
+      return `${who(event.player)} attacks with ${event.attackers.length}`
     case 'attacked-alone':
       return `${name(event.attacker)} attacked alone`
     case 'cards-put-into-graveyard':
       return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into a graveyard`
     case 'coin-flipped':
-      return `${playerLabel(event.player)} ${event.won ? 'wins' : 'loses'} a coin flip`
+      return `${who(event.player)} ${event.won ? 'wins' : 'loses'} a coin flip`
     case 'cards-put-into-exile':
       return `${event.arrivals.map((a) => name(a.object)).join(', ')} put into exile`
     case 'player-attacked':
-      return `${event.player} attacks ${event.defender} with ${event.attackers.length}`
+      return `${who(event.player)} attacks ${who(event.defender)} with ${event.attackers.length}`
     case 'loyalty-changed':
       return `${name(event.object)} ${signed(event.delta)} loyalty (now ${event.loyalty})`
     case 'blocker-declared':
@@ -292,7 +301,7 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'damage-dealt':
       return `${name(event.source)} deals ${event.amount} to ${tgt(event.target)}`
     case 'life-changed':
-      return `${event.player} ${signed(event.delta)} life (now ${event.life})`
+      return `${who(event.player)} ${signed(event.delta)} life (now ${event.life})`
     case 'permanent-destroyed':
       return `${name(event.object)} destroyed — ${event.reason}`
     case 'permanent-destroy-prevented':
@@ -310,23 +319,21 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
     case 'prevention-shield-created':
       return `a shield prevents the next ${event.amount} damage to ${tgt(event.target)}`
     case 'draw-redirected':
-      return `${playerLabel(event.from)}'s draw is redirected — ${playerLabel(
-        event.to,
-      )} draws instead`
+      return `${who(event.from)}'s draw is redirected — ${who(event.to)} draws instead`
     case 'modes-chosen': {
-      const who = event.player === undefined ? '' : `${playerLabel(event.player)} `
+      const chooser = event.player === undefined ? '' : `${who(event.player)} `
       return event.modes.length > 0
-        ? `${name(event.source)} — ${who}chose mode(s) ${event.modes.map((m) => m + 1).join(', ')}`
-        : `${name(event.source)} — ${who}declined`
+        ? `${name(event.source)} — ${chooser}chose mode(s) ${event.modes.map((m) => m + 1).join(', ')}`
+        : `${name(event.source)} — ${chooser}declined`
     }
     case 'permanent-returned-to-hand':
-      return `${name(event.object)} returns to ${event.owner}'s hand`
+      return `${name(event.object)} returns to ${who(event.owner)}'s hand`
     case 'permanent-exiled':
       return `${name(event.object)} is exiled`
     case 'permanent-sacrificed':
-      return `${event.player} sacrifices ${name(event.object)}`
+      return `${who(event.player)} sacrifices ${name(event.object)}`
     case 'cards-milled':
-      return `${event.player} mills ${event.objects.map(name).join(', ')}`
+      return `${who(event.player)} mills ${event.objects.map(name).join(', ')}`
     case 'cards-left-graveyard':
       // A count, not names: some of these cards may have gone somewhere
       // this seat can't see (an opponent's hand), and an unknown id has no
@@ -335,19 +342,19 @@ export function describeEvent(event: GameEvent, nameOf: NameOf): string {
         ? 'a card leaves a graveyard'
         : `${event.objects.length} cards leave a graveyard`
     case 'player-lost':
-      return `${event.player} loses: ${event.reason}`
+      return `${who(event.player)} loses: ${event.reason}`
     case 'game-ended':
       return event.winner
-        ? `${event.winner} wins — ${event.reason}`
+        ? `${who(event.winner)} wins — ${event.reason}`
         : `draw — ${event.reason}`
     case 'mulligan-taken':
-      return `${event.player} mulligans (#${event.count})`
+      return `${who(event.player)} mulligans (#${event.count})`
     case 'hand-kept':
       return event.mulligans > 0
-        ? `${event.player} keeps, after ${event.mulligans} mulligan(s)`
-        : `${event.player} keeps their opening hand`
+        ? `${who(event.player)} keeps, after ${event.mulligans} mulligan(s)`
+        : `${who(event.player)} keeps their opening hand`
     case 'cards-put-on-bottom':
-      return `${event.player} puts ${event.objects.map(name).join(', ')} on the bottom of their library`
+      return `${who(event.player)} puts ${event.objects.map(name).join(', ')} on the bottom of their library`
     case 'commander-zone-decision': {
       // A graveyard or exile it's already in (rule 903.9a); a hand or library
       // it hasn't reached (903.9b).

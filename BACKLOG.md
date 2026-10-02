@@ -295,8 +295,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
   only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
   open the zone the card went to instead.
-- **The history tab doesn't accurately show player names.** Seen live: entries in the history
-  tab (`client/src/ui/EventLog.tsx`) name players wrongly.
 - **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
   and download-free, but plain. Real samples could replace them cue for cue.
 

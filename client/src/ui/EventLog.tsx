@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { CardDefinition, GameEvent, ObjectId } from 'engine/client'
+import type { SeatStatus } from 'protocol'
 import { describeEvent, isDetailOnlyEvent } from '../format.ts'
 import { requestCards, useCardData } from '../cards/cardData.ts'
 import { CardTile } from './CardTile.tsx'
@@ -17,6 +18,8 @@ export type NameAt = (id: ObjectId, seq: number) => string
 export interface EventLogProps {
   readonly events: readonly GameEvent[]
   readonly nameAt: NameAt
+  /** The room's seats, for the players' display names. */
+  readonly seats: readonly SeatStatus[]
   /** Picks an entry: the caller points out on the board what it was about. */
   readonly onSelect?: (event: GameEvent) => void
 }
@@ -78,13 +81,15 @@ function LogCardName({ name, lookup }: { readonly name: string; readonly lookup:
 function EventText({
   event,
   nameAt,
+  seats,
   lookup,
 }: {
   readonly event: GameEvent
   readonly nameAt: NameAt
+  readonly seats: readonly SeatStatus[]
   readonly lookup: CardLookup
 }) {
-  const marked = describeEvent(event, (id) => `${MARK_START}${nameAt(id, event.seq)}${MARK_END}`)
+  const marked = describeEvent(event, (id) => `${MARK_START}${nameAt(id, event.seq)}${MARK_END}`, seats)
   // Odd indices are the marked names — `split` on a single-char delimiter
   // pair alternates plain/marked as long as marks never nest, which they
   // can't: the name is a leaf substitution.
@@ -119,7 +124,7 @@ function EventText({
  * The choice is per-session rather than persisted — it's a debugging mode,
  * and the useful default is the one you get on every fresh visit.
  */
-export function EventLog({ events, nameAt, onSelect }: EventLogProps) {
+export function EventLog({ events, nameAt, seats, onSelect }: EventLogProps) {
   const boxRef = useRef<HTMLDivElement>(null)
   const [detailed, setDetailed] = useState(false)
   const lookup = useCardData()
@@ -164,7 +169,7 @@ export function EventLog({ events, nameAt, onSelect }: EventLogProps) {
             title={onSelect ? 'Show on the board' : undefined}
           >
             <span className="ev-seq">{event.seq}</span>
-            <EventText event={event} nameAt={nameAt} lookup={lookup} />
+            <EventText event={event} nameAt={nameAt} seats={seats} lookup={lookup} />
           </li>
         ))}
       </ul>

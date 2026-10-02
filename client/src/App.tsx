@@ -777,6 +777,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
             <EventLog
               events={view.events}
               nameAt={(id, seq) => publicNameAt(view.publicStints, id, seq) ?? game.nameOf(id)}
+              seats={game.seats}
               onSelect={(event) => {
                 // Close the log so the board is in view, then point the
                 // entry's cards and players out on it once it's drawn.
