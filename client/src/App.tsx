@@ -3094,7 +3094,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         <span>
           {game.nameOf(source)} —{' '}
           {optional
-            ? modeTexts[0]
+            ? <Symbols text={modeTexts[0]} />
             : single
               ? 'choose one'
               : `choose ${minModes === maxModes ? minModes : `${minModes}–${maxModes}`}`}
@@ -3147,7 +3147,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
               type="button"
               onClick={() => game.dispatch({ type: 'choose-modes', player: seat, modes: [i] })}
             >
-              {t}
+              <Symbols text={t} />
             </button>
           ))
         ) : (
@@ -3159,7 +3159,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                 className={modePicks.includes(i) ? 'selected' : undefined}
                 onClick={() => toggle(i)}
               >
-                {t}
+                <Symbols text={t} />
               </button>
             ))}
             <button
@@ -3464,7 +3464,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           <button key={i} type="button" onClick={() => beginCast(c)}>
             Cast {c.cardName}
             {c.kicked ? <> ({c.kickerKeyword ?? 'kicked'} <Symbols text={c.kickerCost ?? ''} />)</> : null}
-            {c.costOptionText ? ` (${c.costOptionText})` : ''}
+            {c.costOptionText ? <> (<Symbols text={c.costOptionText} />)</> : null}
             {c.free ? ' (free)' : ''}
             {c.prototype ? <> (prototype <Symbols text={c.prototypeCost ?? ''} />)</> : null}
             {c.offspring ? <> (offspring <Symbols text={c.offspringCost ?? ''} />)</> : null}
@@ -4415,9 +4415,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                         <> (prototype <Symbols text={a.prototypeCost ?? ''} />)</>
                       ) : null}
                       {a.kind === 'cast-spell' && a.altCost ? ' (alternative cost)' : ''}
-                      {a.kind === 'cast-spell' && a.costOptionText
-                        ? ` (${a.costOptionText})`
-                        : ''}
+                      {a.kind === 'cast-spell' && a.costOptionText ? (
+                        <> (<Symbols text={a.costOptionText} />)</>
+                      ) : null}
                     </button>
                   ))
                 : null}
@@ -4426,7 +4426,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                   type="button"
                   onClick={() => game.dispatch({ type: 'suspend', player: seat, card: id })}
                 >
-                  Suspend {suspend.cost}
+                  Suspend <Symbols text={suspend.cost} />
                 </button>
               ) : null}
               {foretell ? (
@@ -4442,7 +4442,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                   type="button"
                   onClick={() => game.dispatch({ type: 'cycle', player: seat, card: id })}
                 >
-                  Cycle {cycle.cost}
+                  Cycle <Symbols text={cycle.cost} />
                 </button>
               ) : null}
             </div>

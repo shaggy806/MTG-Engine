@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import type { VisibleObject } from 'engine/client'
-import { LoyaltyCounter, Symbols } from './Symbols.tsx'
+import { CostSymbols, LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import { TargetedMark } from './TargetedMark.tsx'
@@ -232,7 +232,7 @@ export function CardTile({
         obj.effectiveManaCost !== undefined ? `Printed cost ${obj.manaCost}` : undefined
       }
     >
-      <Symbols text={shownCost ?? ''} />
+      <CostSymbols shown={shownCost ?? ''} printed={obj.manaCost} />
       {extraGenericCost > 0 ? (
         <span className="ct-tax" title="Commander tax">
           +{extraGenericCost}

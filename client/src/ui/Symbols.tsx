@@ -13,23 +13,50 @@ import './symbols.css'
  * becomes the printed loyalty badge — see `LoyaltyBadge`.
  */
 export function Symbols({ text }: { readonly text: string | null }) {
+  return <>{parseSymbols(text).map((c, i) => symbolNode(c, i))}</>
+}
+
+/** One parsed chunk, drawn — `extra` adds a class to a symbol's pip. */
+function symbolNode(c: ReturnType<typeof parseSymbols>[number], key: number, extra = '') {
+  if (c.loyalty) return <LoyaltyBadge key={key} cost={c.loyalty} />
+  if (c.symbol === null) return <span key={key}>{c.text}</span>
+  const url = manaSymbolUrl(c.symbol)
+  if (url !== null) {
+    return <img key={key} className={`pip pip-img${extra}`} src={url} alt={`{${c.symbol}}`} />
+  }
+  return (
+    <span key={key} className={`pip ${pipClass(c.symbol)}${extra}`}>
+      {SYMBOL_GLYPH[c.symbol] ?? c.symbol}
+    </span>
+  )
+}
+
+/** The generic mana in a cost: its number symbols, summed. */
+const genericOf = (cost: string): number =>
+  [...cost.matchAll(/\{(\d+)\}/g)].reduce((n, m) => n + Number(m[1]), 0)
+
+/**
+ * A card's mana cost as it is now (`shown`), against its `printed` cost:
+ * a generic number the cost has come down to is green, one it has gone up
+ * to red, so the change reads off the symbol itself (Blasphemous Act's {8}
+ * at {3} with five creatures out). A generic part reduced away entirely
+ * leaves no number to tint; the tile marks the cost as changed regardless.
+ */
+export function CostSymbols({
+  shown,
+  printed,
+}: {
+  readonly shown: string
+  readonly printed: string
+}) {
+  const now = genericOf(shown)
+  const was = genericOf(printed)
+  const extra = now < was ? ' pip-cheaper' : now > was ? ' pip-dearer' : ''
   return (
     <>
-      {parseSymbols(text).map((c, i) => {
-        if (c.loyalty) return <LoyaltyBadge key={i} cost={c.loyalty} />
-        if (c.symbol === null) return <span key={i}>{c.text}</span>
-        const url = manaSymbolUrl(c.symbol)
-        if (url !== null) {
-          return (
-            <img key={i} className="pip pip-img" src={url} alt={`{${c.symbol}}`} />
-          )
-        }
-        return (
-          <span key={i} className={`pip ${pipClass(c.symbol)}`}>
-            {SYMBOL_GLYPH[c.symbol] ?? c.symbol}
-          </span>
-        )
-      })}
+      {parseSymbols(shown).map((c, i) =>
+        symbolNode(c, i, c.symbol !== null && /^\d+$/.test(c.symbol) ? extra : ''),
+      )}
     </>
   )
 }

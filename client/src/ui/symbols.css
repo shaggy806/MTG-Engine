@@ -45,3 +45,13 @@
 .loyalty-start .loyalty-num {
   translate: 0 0.06em;
 }
+
+/* A generic cost the card's cost has come down to (a cost reduction) is green,
+   one it has gone up to (Thalia's tax) red: the symbol's own grey, recoloured, so
+   it still reads as the same pip (`CostSymbols`). */
+.pip.pip-cheaper {
+  filter: sepia(1) saturate(2.5) hue-rotate(62deg) brightness(0.95);
+}
+.pip.pip-dearer {
+  filter: sepia(1) saturate(2.5) hue-rotate(-38deg) brightness(0.95);
+}

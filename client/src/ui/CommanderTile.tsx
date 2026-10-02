@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import type { VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
-import { Symbols } from './Symbols.tsx'
+import { CostSymbols } from './Symbols.tsx'
 import { useHoverPopover } from './useHoverPopover.ts'
 import { cardTint } from './symbols.ts'
 import {
@@ -88,8 +88,14 @@ export function CommanderTile({
             <img src={artSrc} alt="" loading="lazy" onError={() => recordArtFailure(artSrc)} />
           ) : null}
         </span>
-        <span className="cmdt-cost">
-          <Symbols text={obj.manaCost} />
+        {/* What it costs now, as in the hand (`CardTile`): a cost
+            reduction shows here too, the printed cost on the tooltip. The
+            tax stays its own "+N". */}
+        <span
+          className={`cmdt-cost${obj.effectiveManaCost !== undefined ? ' reduced' : ''}`}
+          title={obj.effectiveManaCost !== undefined ? `Printed cost ${obj.manaCost}` : undefined}
+        >
+          <CostSymbols shown={obj.effectiveManaCost ?? obj.manaCost ?? ''} printed={obj.manaCost ?? ''} />
           {extraGenericCost > 0 ? (
             <span className="ct-tax" title="commander tax">
               +{extraGenericCost}

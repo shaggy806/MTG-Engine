@@ -1983,7 +1983,8 @@
    static like Blasphemous Act's, or a tax like Thalia's. Marked rather than
    left silent, so a number that disagrees with the printed card reads as
    deliberate; the printed cost is in the tooltip. */
-.ct-cost.reduced {
+.ct-cost.reduced,
+.cmdt-cost.reduced {
   border-radius: 4px;
   outline: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
   outline-offset: 1px;

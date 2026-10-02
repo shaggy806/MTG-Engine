@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { CardDefinition, ObjectId, VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
+import { Symbols } from './Symbols.tsx'
 import { defToVisible } from './defToVisible.ts'
 import { requestCards, useCardData } from '../cards/cardData.ts'
 
@@ -229,13 +230,14 @@ export function ZoneViewer({
                 {castHere && variants.length > 1
                   ? variants.map((v, i) => (
                       <button key={i} type="button" onClick={v.onChoose}>
-                        {v.label}
+                        {/* A way to cast can name its cost ("Cast kicked {R}"). */}
+                        <Symbols text={v.label} />
                       </button>
                     ))
                   : null}
                 {castHere && variants.length <= 1 ? (
                   <button type="button" onClick={() => castHere.onCast(obj.id)}>
-                    {castHere.label(obj.id)}
+                    <Symbols text={castHere.label(obj.id)} />
                   </button>
                 ) : null}
               </div>
