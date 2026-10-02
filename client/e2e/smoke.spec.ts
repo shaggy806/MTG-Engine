@@ -76,6 +76,11 @@ test('passing priority walks into combat and the attack declaration', async ({
 }) => {
   await resetRoom(request, 'TWOAA')
   const errors = pageErrors(page)
+  // "Skip mana stops" (on by default) would pass the beginning of combat,
+  // where there's nothing to do but tap for mana; turn it off to see it.
+  await page.addInitScript(() =>
+    window.localStorage.setItem('mtg.pass', JSON.stringify({ skipManaOnly: false })),
+  )
   await takeSeat(page, 'TWOAA')
   const pass = page.getByRole('button', { name: 'Pass (space)' })
   // Bots and animations are paced, so each step change gets some room.
