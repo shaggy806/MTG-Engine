@@ -255,6 +255,9 @@ Beyond that plan:
   (`combatDamageByToughness`, read by `engine/src/combat/damage.ts`) makes its controller's
   creatures assign combat damage equal to toughness: check the bots' attack, block and evaluation
   read that rather than power (`engine/src/bot/`).
+- **Fetch lands should fetch the colors the bot can't yet make.** When a bot cracks a fetch land
+  it should search for a land that gives it access to a color it has no way to produce yet. The
+  library-search pick is in the bots' decision search (`engine/src/bot/decisions.ts`).
 
 ## Client / UI
 
