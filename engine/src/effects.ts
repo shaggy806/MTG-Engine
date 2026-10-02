@@ -1991,8 +1991,13 @@ export type EffectSpec =
   | {
       /** Storm (rule 702.40 — ROADMAP Phase 8): put a copy of the spell this
        * ability is on onto the stack for each other spell its controller cast
-       * before it this turn. Copies keep the original's targets. */
+       * before it this turn. Copies keep the original's targets. With
+       * `of: "trigger-object"`, the spell is the trigger's instead: a
+       * delayed "the next instant or sorcery spell you cast this turn has
+       * storm" (Storm, Force of Nature), which triggers on that spell's cast
+       * as its own storm would. */
       readonly kind: "storm";
+      readonly of?: "trigger-object";
     }
   | {
       /** Cascade (rule 702.85 — ROADMAP Phase 8): exile cards off the top of
@@ -5239,9 +5244,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.takeExtraTurn(target?.kind === "player" ? target.player : ctx.controller);
       return;
     }
-    case "storm":
-      ctx.storm(ctx.source);
+    case "storm": {
+      const spell = spec.of === "trigger-object" ? ctx.triggerObject : ctx.source;
+      if (spell !== undefined) ctx.storm(spell);
       return;
+    }
     case "cascade": {
       if (spec.finish !== undefined) {
         ctx.finishCascade(spec.finish);

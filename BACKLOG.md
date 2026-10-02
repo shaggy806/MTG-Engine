@@ -6,13 +6,12 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**335 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**338 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, by the gaps JSON: Storm, Force of Nature, Prismari, the Inspiration and
-  Teval, Arbiter of Virtue** — leads, not verdicts: check each one's Oracle text first (Tifa
-  Lockhart and Yarok landed 2026-10-02 on `decision:trigger-order`).
+- **Ready to author, no engine work: none left** (2026-10-02: Tifa Lockhart, Yarok, Storm,
+  Force of Nature, Prismari and Teval, Arbiter of Virtue were the last).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
@@ -24,8 +23,7 @@ that one card is the reason the deck exists.
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each).
   `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
-  Narset; storm asks too), leaving Storm, Force of Nature and Prismari, the Inspiration
-  needing no engine work — check their Oracle text before authoring. `zone:exile-face-down` (Edward Kenway) was split
+  Narset; storm asks too). `zone:exile-face-down` (Edward Kenway) was split
   out of `zone:visibility-extensions` and built; Gonti and Ixhel still need
   `cost:mana-spending-rules`. Live numbers come
   from `cmdrs:gaps`.

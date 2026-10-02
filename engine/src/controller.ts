@@ -16,7 +16,7 @@ import type {
   LegalAction,
   TapCostOffer,
 } from "./actions.js";
-import { convokeProofFor } from "./actions.js";
+import { convokeProofFor, delvePicks } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { whyCannotAttack } from "./combat/eligibility.js";
 import { standardAssignment } from "./combat/damage.js";
@@ -1095,8 +1095,11 @@ function castExtras(
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),
-    // Delve as much as the cost allows, oldest cards first.
-    ...(legal.delve !== undefined ? { delve: legal.delve.choices.slice(0, legal.delve.maxCards) } : {}),
+    // Delve as much as the cost at this X allows, oldest cards first.
+    ...(() => {
+      const delve = legal.delve === undefined ? undefined : delvePicks(legal.delve, xValue, "most");
+      return delve !== undefined ? { delve } : {};
+    })(),
     // Echo back the allocation `legalActions` proved castable rather than
     // inventing one. A convoke-only-affordable spell is offered on the
     // strength of that specific allocation, which may pay coloured pips with

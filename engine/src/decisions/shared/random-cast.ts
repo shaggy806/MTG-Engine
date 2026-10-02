@@ -7,7 +7,7 @@
  */
 
 import type { Action, CastSpellOffer } from "../../actions.js";
-import { convokeProofFor } from "../../actions.js";
+import { convokeProofFor, delvePicks } from "../../actions.js";
 import type { ObjectId, PlayerId } from "../../primitives.js";
 import type { TargetRef, TargetSpec } from "../../target.js";
 import { fitTargetCount, maxXForTargets } from "../../target-count.js";
@@ -76,9 +76,10 @@ export function randomCast(
     // Delve: only the fewest it needs, newest first — the other end from the
     // bots' most-and-oldest, so the fuzzer walks both. No random draw, so
     // seeds without a delve card replay unchanged.
-    ...(legal.delve !== undefined && legal.delve.minCards > 0
-      ? { delve: legal.delve.choices.slice(legal.delve.choices.length - legal.delve.minCards) }
-      : {}),
+    ...(() => {
+      const delve = legal.delve === undefined ? undefined : delvePicks(legal.delve, xValue ?? 0, "fewest");
+      return delve !== undefined ? { delve } : {};
+    })(),
     ...(legal.escapeExile !== undefined
       ? { escapeExile: legal.escapeExile.choices.slice(legal.escapeExile.choices.length - legal.escapeExile.count) }
       : {}),

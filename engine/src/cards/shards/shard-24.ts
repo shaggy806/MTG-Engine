@@ -165,6 +165,7 @@ import _poolSteelWall from "../pool/steel-wall.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
+import _poolTevalArbiterOfVirtue from "../pool/teval-arbiter-of-virtue.js";
 import _poolTheFabulousFrogMan from "../pool/the-fabulous-frog-man.js";
 import _poolTheFairBasilica from "../pool/the-fair-basilica.js";
 import _poolTheWorldTree from "../pool/the-world-tree.js";
@@ -370,6 +371,7 @@ const shard: CardShard = {
     _poolSunbladeAngel,
     _poolTangledVale,
     _poolTeferisProtege,
+    _poolTevalArbiterOfVirtue,
     _poolTheFabulousFrogMan,
     _poolTheFairBasilica,
     _poolTheWorldTree,

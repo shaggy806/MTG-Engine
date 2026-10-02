@@ -13,7 +13,7 @@
  */
 
 import type { Action, ConvokePayment, LegalAction } from "../actions.js";
-import { convokeProofFor } from "../actions.js";
+import { convokeProofFor, delvePicks } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { subsetsBetween } from "../decisions/shared/subsets.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
@@ -44,7 +44,6 @@ function castExtras(legal: CastSpellLegal): {
   costOption?: number;
   sacrifice?: ObjectId;
   convoke?: ConvokePayment[];
-  delve?: ObjectId[];
   prototype?: boolean;
 } {
   const sacrifice = legal.sacrifice;
@@ -66,9 +65,6 @@ function castExtras(legal: CastSpellLegal): {
     ...(sacrifice !== undefined && sacrifice.choices.length > 0
       ? { sacrifice: sacrifice.choices[sacrifice.choices.length - 1] }
       : {}),
-    // Delve as much as the cost allows: the mana saved buys another play,
-    // and the oldest cards in the graveyard go first.
-    ...(legal.delve !== undefined ? { delve: legal.delve.choices.slice(0, legal.delve.maxCards) } : {}),
     // Tap as many creatures as the generic portion allows. Convoke is only
     // ever offered when it might be *needed* to afford the spell, so paying
     // the maximum is the filling most likely to be legal.
@@ -96,8 +92,14 @@ function castExtras(legal: CastSpellLegal): {
  * used to be cast without one. The largest with `targets`, where more
  * targets leave less for X (Fireball).
  */
-function xValueOf(legal: CastSpellLegal, targets: readonly (TargetRef | null)[]): { xValue?: number } {
-  return legal.xCost !== undefined ? { xValue: maxXForTargets(legal.xCost, legal.targetCount, targets) } : {};
+function xValueOf(
+  legal: CastSpellLegal,
+  targets: readonly (TargetRef | null)[],
+): { xValue?: number; delve?: ObjectId[] } {
+  const xValue = legal.xCost !== undefined ? maxXForTargets(legal.xCost, legal.targetCount, targets) : undefined;
+  // Delve as much as the cost at that X allows (`delvePicks`).
+  const delve = legal.delve === undefined ? undefined : delvePicks(legal.delve, xValue ?? 0, "most");
+  return { ...(xValue !== undefined ? { xValue } : {}), ...(delve !== undefined ? { delve } : {}) };
 }
 
 function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {

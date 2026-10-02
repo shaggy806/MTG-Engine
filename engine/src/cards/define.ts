@@ -896,6 +896,10 @@ export interface StaticAbility {
    * with the rest when the permanent loses its abilities.
    */
   readonly cantBeSacrificed?: boolean;
+  /** "Spells you cast have delve" (Teval, Arbiter of Virtue): every spell
+   * this permanent's controller casts, from anywhere, has delve (rule
+   * 702.66) as it's cast, as if printed (`CardDefinition.delve`). */
+  readonly spellsHaveDelve?: boolean;
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
   /** Activated abilities this static grants to every object it `affects`

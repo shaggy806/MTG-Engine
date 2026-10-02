@@ -899,6 +899,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     | ({
         readonly cast: CastAction
         readonly offer: NonNullable<CastAction['delve']>
+        /** An {X} spell's X, chosen first: its range is the offer's
+         * `byX` at that X, and targeting carries on from here. */
+        readonly xValue?: number
       } & Omit<CastPicks, 'delve'>)
     | null
   >(null)
@@ -1591,11 +1594,13 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         delve !== undefined &&
         delve.minCards === delve.maxCards &&
         delve.choices.length === delve.maxCards
-      if (delve !== undefined && chosen.delve === undefined && !noDelveChoice) {
+      // An {X} spell asks after X, whose range it depends on (`confirmX`).
+      const delveAfterX = delve?.byX !== undefined
+      if (delve !== undefined && chosen.delve === undefined && !noDelveChoice && !delveAfterX) {
         setPendingDelve({ cast, offer: delve, ...paid })
         return
       }
-      const delved = chosen.delve ?? (noDelveChoice ? delve?.choices : undefined)
+      const delved = chosen.delve ?? (noDelveChoice && !delveAfterX ? delve?.choices : undefined)
       const picks: CastPicks = { ...paid, ...(delved !== undefined ? { delve: delved } : {}) }
       if (cast.castModal) {
         setPendingModes({ cast, picked: [], ...picks })
@@ -1619,15 +1624,39 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     [beginTargeting],
   )
 
+  /** A cast's targeting, at the X chosen, with the costs picked so far. */
+  const castAtX = useCallback(
+    (action: CastAction, value: number, picks: CastPicks) => {
+      // Where X and the number of targets trade off (Fireball's "{1} more
+      // for each target beyond the first"), the X chosen leaves only some
+      // counts payable.
+      const atX = action.targetCount === undefined ? null : targetCountAtX(action.targetCount, action.xCost, value)
+      beginTargeting({
+        kind: 'cast',
+        source: action.card,
+        abilityIndex: 0,
+        label: `Cast ${action.cardName}`,
+        specs: action.targetSpecs,
+        options: action.targetOptions,
+        xValue: value,
+        ...castExtras(action),
+        ...(atX !== null ? { targetCount: atX } : {}),
+        ...picks,
+      })
+    },
+    [beginTargeting],
+  )
+
   /** The delve choice's Confirm: carry on casting with those cards. */
   const confirmDelve = useCallback(
     (delve: readonly ObjectId[]) => {
       if (!pendingDelve) return
-      const { cast, offer: _offer, ...picks } = pendingDelve
+      const { cast, offer: _offer, xValue, ...picks } = pendingDelve
       setPendingDelve(null)
-      startCast(cast, { ...picks, delve })
+      if (xValue !== undefined) castAtX(cast, xValue, { ...picks, delve })
+      else startCast(cast, { ...picks, delve })
     },
-    [pendingDelve, startCast],
+    [pendingDelve, startCast, castAtX],
   )
 
   /** The escape choice's Confirm: carry on casting with those cards. */
@@ -1722,23 +1751,24 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       startAbilityAtX(action, value)
       return
     }
-    // Where X and the number of targets trade off (Fireball's "{1} more for
-    // each target beyond the first"), the X chosen leaves only some counts
-    // payable.
-    const atX = action.targetCount === undefined ? null : targetCountAtX(action.targetCount, action.xCost, value)
-    beginTargeting({
-      kind: 'cast',
-      source: action.card,
-      abilityIndex: 0,
-      label: `Cast ${action.cardName}`,
-      specs: action.targetSpecs,
-      options: action.targetOptions,
-      xValue: value,
-      ...castExtras(action),
-      ...(atX !== null ? { targetCount: atX } : {}),
-      ...picks,
-    })
-  }, [beginTargeting, pendingX, startAbilityAtX])
+    // Delve on an {X} spell (rule 702.66a): its range at this X, asked now.
+    const range = action.delve?.byX?.[value]
+    if (action.delve !== undefined && range !== undefined && picks.delve === undefined && range.maxCards > 0) {
+      const { choices } = action.delve
+      if (range.minCards === range.maxCards && choices.length === range.maxCards) {
+        castAtX(action, value, { ...picks, delve: choices })
+        return
+      }
+      setPendingDelve({
+        cast: action,
+        offer: { choices, minCards: range.minCards, maxCards: range.maxCards },
+        xValue: value,
+        ...picks,
+      })
+      return
+    }
+    castAtX(action, value, picks)
+  }, [castAtX, pendingX, startAbilityAtX])
 
   const startAbility = useCallback(
     (ab: AbilityAction, sacrifice?: ObjectId) => {

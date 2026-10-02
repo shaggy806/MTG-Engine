@@ -4011,6 +4011,7 @@ import _poolPrimordialWurm from "./pool/primordial-wurm.js";
 import _poolPrincessLucrezia from "./pool/princess-lucrezia.js";
 import _poolPrismariCampus from "./pool/prismari-campus.js";
 import _poolPrismariCommand from "./pool/prismari-command.js";
+import _poolPrismariTheInspiration from "./pool/prismari-the-inspiration.js";
 import _poolPrismaticLens from "./pool/prismatic-lens.js";
 import _poolPrismaticVista from "./pool/prismatic-vista.js";
 import _poolPrismite from "./pool/prismite.js";
@@ -5138,6 +5139,7 @@ import _poolStoneworkPuma from "./pool/stonework-puma.js";
 import _poolStonyVoicedGoblins from "./pool/stony-voiced-goblins.js";
 import _poolStormCrow from "./pool/storm-crow.js";
 import _poolStormFleetSprinter from "./pool/storm-fleet-sprinter.js";
+import _poolStormForceOfNature from "./pool/storm-force-of-nature.js";
 import _poolStormHerd from "./pool/storm-herd.js";
 import _poolStormKilnArtist from "./pool/storm-kiln-artist.js";
 import _poolStormShaman from "./pool/storm-shaman.js";
@@ -5418,6 +5420,7 @@ import _poolTerrorOfMountVelus from "./pool/terror-of-mount-velus.js";
 import _poolTerrorOfTheFairgrounds from "./pool/terror-of-the-fairgrounds.js";
 import _poolTerrorOfThePeaks from "./pool/terror-of-the-peaks.js";
 import _poolTesharAncestorsApostle from "./pool/teshar-ancestors-apostle.js";
+import _poolTevalArbiterOfVirtue from "./pool/teval-arbiter-of-virtue.js";
 import _poolTevalTheBalancedScale from "./pool/teval-the-balanced-scale.js";
 import _poolTeyosLightshield from "./pool/teyos-lightshield.js";
 import _poolTeysaKarlov from "./pool/teysa-karlov.js";
@@ -10537,6 +10540,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPrincessLucrezia,
   _poolPrismariCampus,
   _poolPrismariCommand,
+  _poolPrismariTheInspiration,
   _poolPrismaticLens,
   _poolPrismaticVista,
   _poolPrismite,
@@ -11664,6 +11668,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStonyVoicedGoblins,
   _poolStormCrow,
   _poolStormFleetSprinter,
+  _poolStormForceOfNature,
   _poolStormHerd,
   _poolStormKilnArtist,
   _poolStormShaman,
@@ -11944,6 +11949,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerrorOfTheFairgrounds,
   _poolTerrorOfThePeaks,
   _poolTesharAncestorsApostle,
+  _poolTevalArbiterOfVirtue,
   _poolTevalTheBalancedScale,
   _poolTeyosLightshield,
   _poolTeysaKarlov,

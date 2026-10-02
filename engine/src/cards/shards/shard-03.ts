@@ -102,6 +102,7 @@ import _poolOracleOfMulDaya from "../pool/oracle-of-mul-daya.js";
 import _poolOrazcaFrillback from "../pool/orazca-frillback.js";
 import _poolPersist from "../pool/persist.js";
 import _poolPiggyBank from "../pool/piggy-bank.js";
+import _poolPrismariTheInspiration from "../pool/prismari-the-inspiration.js";
 import _poolProsshSkyraiderOfKher from "../pool/prossh-skyraider-of-kher.js";
 import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
 import _poolPsionicPulse from "../pool/psionic-pulse.js";
@@ -289,6 +290,7 @@ const shard: CardShard = {
     _poolOrazcaFrillback,
     _poolPersist,
     _poolPiggyBank,
+    _poolPrismariTheInspiration,
     _poolProsshSkyraiderOfKher,
     _poolProwlingSerpopard,
     _poolPsionicPulse,

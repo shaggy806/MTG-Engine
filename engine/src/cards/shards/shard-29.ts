@@ -152,6 +152,7 @@ import _poolSteadfastness from "../pool/steadfastness.js";
 import _poolStingingBarrier from "../pool/stinging-barrier.js";
 import _poolStolenGrain from "../pool/stolen-grain.js";
 import _poolStormFleetSprinter from "../pool/storm-fleet-sprinter.js";
+import _poolStormForceOfNature from "../pool/storm-force-of-nature.js";
 import _poolStormfrontPegasus from "../pool/stormfront-pegasus.js";
 import _poolSunscorchedDivide from "../pool/sunscorched-divide.js";
 import _poolSurveyTheWreckage from "../pool/survey-the-wreckage.js";
@@ -336,6 +337,7 @@ const shard: CardShard = {
     _poolStingingBarrier,
     _poolStolenGrain,
     _poolStormFleetSprinter,
+    _poolStormForceOfNature,
     _poolStormfrontPegasus,
     _poolSunscorchedDivide,
     _poolSurveyTheWreckage,

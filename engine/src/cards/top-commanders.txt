@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-335 already implemented / 165 missing
+338 already implemented / 162 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -126,7 +126,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  120  Mendicant Core, Guidelight                     16880 decks  {W}{U}           Legendary Artifact Creature — Robot
 [x]  121  Galadriel, Light of Valinor                    16855 decks  {2}{G}{W}{U}     Legendary Creature — Elf Noble
 [x]  122  Jin Sakai, Ghost of Tsushima                   16513 decks  {1}{W}{U}{B}     Legendary Creature — Human Samurai
-[ ]  123  Storm, Force of Nature                         16444 decks  {1}{G}{U}{R}     Legendary Creature — Mutant Hero
+[x]  123  Storm, Force of Nature                         16444 decks  {1}{G}{U}{R}     Legendary Creature — Mutant Hero
 [x]  124  Yoshimaru, Ever Faithful                       16385 decks  {W}              Legendary Creature — Dog
 [x]  125  Morophon, the Boundless                        16181 decks  {7}              Legendary Creature — Shapeshifter
 [x]  126  Fynn, the Fangbearer                           16177 decks  {1}{G}           Legendary Creature — Human Warrior
@@ -247,7 +247,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  241  Infinite Guideline Station                     10457 decks  {W}{U}{B}{R}{G}  Legendary Artifact — Spacecraft
 [ ]  242  Niko, Light of Hope                            10448 decks  {2}{W}{U}        Legendary Creature — Human Wizard
 [x]  243  Ketramose, the New Dawn                        10444 decks  {1}{W}{B}        Legendary Creature — God
-[ ]  244  Prismari, the Inspiration                      10435 decks  {5}{U}{R}        Legendary Creature — Elder Dragon
+[x]  244  Prismari, the Inspiration                      10435 decks  {5}{U}{R}        Legendary Creature — Elder Dragon
 [x]  245  Ojer Axonil, Deepest Might                     10413 decks  {2}{R}{R}        Legendary Creature — God // Land
 [ ]  246  Trostani, Selesnya's Voice                     10377 decks  {G}{G}{W}{W}     Legendary Creature — Dryad
 [ ]  247  Volo, Guide to Monsters                        10359 decks  {2}{G}{U}        Legendary Creature — Human Wizard
@@ -483,7 +483,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [x]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
 [x]  479  Minn, Wily Illusionist                          6397 decks  {1}{U}{U}        Legendary Creature — Gnome Wizard
-[ ]  480  Teval, Arbiter of Virtue                        6377 decks  {2}{B}{G}{U}     Legendary Creature — Spirit Dragon
+[x]  480  Teval, Arbiter of Virtue                        6377 decks  {2}{B}{G}{U}     Legendary Creature — Spirit Dragon
 [ ]  481  Anhelo, the Painter                             6362 decks  {U}{B}{R}        Legendary Creature — Vampire Assassin
 [ ]  482  Selvala, Heart of the Wilds                     6362 decks  {1}{G}{G}        Legendary Creature — Elf Scout
 [x]  483  Wilson, Refined Grizzly                         6353 decks  {1}{G}           Legendary Creature — Bear Warrior

@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2067 already implemented / 2933 missing (marks refreshed 2026-10-02)
+2068 already implemented / 2932 missing (marks refreshed 2026-10-02)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -4268,7 +4268,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4275  Baeloth Barrityl, Entertainer            {4}{R}           Legendary Creature — Elf Shaman
 [ ]  4276  Tavern Brawler                           {2}{R}           Legendary Enchantment — Background
 [ ]  4277  Kheru Goldkeeper                         {1}{B}{G}{U}     Creature — Dragon
-[ ]  4278  Prismari, the Inspiration                {5}{U}{R}        Legendary Creature — Elder Dragon
+[x]  4278  Prismari, the Inspiration                {5}{U}{R}        Legendary Creature — Elder Dragon
 [ ]  4279  Blue Sun's Twilight                      {X}{U}{U}        Sorcery
 [ ]  4280  Highway Robbery                          {1}{R}           Sorcery
 [ ]  4281  Angel of Finality                        {3}{W}           Creature — Angel
