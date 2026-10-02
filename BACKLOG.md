@@ -200,6 +200,10 @@ Beyond that plan:
   Since `drawEngines` 4 (same day) Cleansing Nova's artifact-and-enchantment mode and removal
   go after opponents' draw engines too, and one edict took the bot's own commander (Emmara)
   over Mentor of the Meek, a judgment call worth capturing if it recurs.
+- **Cast a board wipe in the second main phase, after attacking.** If a bot is going to cast a
+  board wipe, usually it should do so in the second main phase, after it has attacked, so its
+  creatures get their attack in before the wipe. v2 decides when to cast in `EvalBotController`
+  (`engine/src/bot/eval-bot.ts`), where pumps already wait for combat (`wastedNow`).
 - **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
   (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
   attacks someone else, and then with help that ends at end of turn, on a creature goaded by
