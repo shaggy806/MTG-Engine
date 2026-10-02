@@ -4,7 +4,7 @@ import { defineCard } from "../define.js";
 // landfall trigger, so it needs its own token card rather than a plain Bird.
 export default defineCard({
   name: "Chocobo Bird Token",
-  art: "https://scryfall.com/card/tfin/12/bird",
+  art: "1fbc471d-5948-47fc-b7cc-81cc13a4cd15",
   colors: ["G"],
   types: ["creature"],
   subtypes: ["Bird"],

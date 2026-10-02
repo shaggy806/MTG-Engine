@@ -4,7 +4,7 @@ import { defineCard } from "../define.js";
 // Distinct from the plain `Soldier Token`; the engine keys tokens by name.
 export default defineCard({
   name: "Lifelink Soldier Token",
-  art: "https://scryfall.com/card/tgrn/2/soldier",
+  art: "45907b16-af17-4237-ab38-9d7537fd30e8",
   colors: ["W"],
   types: ["creature"],
   subtypes: ["Soldier"],

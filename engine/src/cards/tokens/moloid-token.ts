@@ -3,7 +3,7 @@ import { defineCard } from "../define.js";
 /** 1/1 green Minion made by Mole Man, Moloid Master (needed-cards P16). */
 export default defineCard({
   name: "Moloid",
-  art: "https://scryfall.com/card/tmsh/13/moloid",
+  art: "57bcf5f4-da1e-4b6a-85ef-aad91d2276cf",
   colors: ["G"],
   types: ["creature"],
   subtypes: ["Minion"],

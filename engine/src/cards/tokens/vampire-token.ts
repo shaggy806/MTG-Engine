@@ -3,7 +3,7 @@ import { defineCard } from "../define.js";
 // A 2/2 black Vampire with flying — Bloodline Keeper's token.
 export default defineCard({
   name: "Vampire Token",
-  art: "https://scryfall.com/card/tisd/6/vampire",
+  art: "5f68c2ab-5131-4620-920f-7ba99522ccf0",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Vampire"],

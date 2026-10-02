@@ -6,7 +6,7 @@ export default defineCard({
   // Tokens have no reliable by-name Scryfall entry — pin the printing (the
   // Dominaria Knight token History of Benalia mints). Any Scryfall link form
   // works; this is a card-page URL (see `client/src/ui/art.ts`).
-  art: "https://scryfall.com/card/tdom/1/knight",
+  art: "e0bce908-fc95-40c6-a04a-752d56aca836",
   colors: ["W"],
   types: ["creature"],
   subtypes: ["Knight"],

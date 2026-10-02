@@ -5,7 +5,7 @@ import { defineCard } from "../define.js";
 // amass names ("amass Zombies N") is added by the effect, not printed here.
 export default defineCard({
   name: "Army Token",
-  art: "https://scryfall.com/card/twar/7/zombie-army",
+  art: "2f4b7c63-8430-4ca4-baee-dc958d5bd22f",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Army"],

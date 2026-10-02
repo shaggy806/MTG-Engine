@@ -3,7 +3,7 @@ import { defineCard } from "../define.js";
 // A 2/2 black Zombie — Cemetery Reaper's token.
 export default defineCard({
   name: "Zombie Token",
-  art: "https://scryfall.com/card/tm14/5/zombie",
+  art: "07d82a8d-4c57-401f-92c3-8fd9ba20174a",
   colors: ["B"],
   types: ["creature"],
   subtypes: ["Zombie"],

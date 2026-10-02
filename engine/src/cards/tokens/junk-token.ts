@@ -3,7 +3,7 @@ import { defineCard } from "../define.js";
 /** Junk — Dogmeat, Ever Loyal's artifact token (PIP). */
 export default defineCard({
   name: "Junk Token",
-  art: "https://scryfall.com/card/tpip/15/junk",
+  art: "62c4a6f6-6425-4c0c-b35a-880fcab42aad",
   types: ["artifact"],
   subtypes: ["Junk"],
   text:

@@ -5,7 +5,7 @@ import { defineCard } from "../define.js";
 // different body needs a different name.)
 export default defineCard({
   name: "2/2 Blue Bird Token",
-  art: "https://scryfall.com/card/tths/4/bird",
+  art: "ca72703f-d45b-4c80-98a8-55fad1fcf431",
   colors: ["U"],
   types: ["creature"],
   subtypes: ["Bird"],
