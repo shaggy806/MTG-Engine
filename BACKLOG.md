@@ -258,6 +258,9 @@ Beyond that plan:
 - **Fetch lands should fetch the colors the bot can't yet make.** When a bot cracks a fetch land
   it should search for a land that gives it access to a color it has no way to produce yet. The
   library-search pick is in the bots' decision search (`engine/src/bot/decisions.ts`).
+- **Reanalyze the bot full-swinging into one opponent when it could kill two.** The user saw a
+  bot send everything at one opponent when it had the damage to kill both opponents at once.
+  The lethal split is planned by `killWith` in `engine/src/bot/eval-bot.ts`.
 
 ## Client / UI
 
@@ -349,6 +352,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **Repeated choice triggers should offer "same for all".** When several triggers that each ask
   the same choice are on the stack, the player answers each one separately. Give the option to
   select the same option for all of those triggers on the stack at once.
+- **Spells and abilities should point their arrows at their targets as they resolve.** Draw the
+  target arrows (`client/src/ui/ArrowLayer.tsx`, kind `target`) from a resolving spell or
+  ability to what it targets.
 
 ## Tooling / docs
 
