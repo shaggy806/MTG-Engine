@@ -9,17 +9,15 @@
 //
 // Flags: --base REF (default origin/main), --bot v1|v2 (default v2),
 // --games N (default 6 for v2, 40 for v1), --first SEED (default 1),
-// --players 2-4 (default 4), --parallel N (default 6 — each game holds two
-// card pools and two searching bots; more at once has run out of memory),
+// --players 2-4 (default 4), --parallel N (default 6 — each worker holds two
+// card pools and two searching bots, its heap capped by `worker-limits.mjs`),
 // --out FILE (NDJSON of every disagreement).
 
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { Worker } from "node:worker_threads";
-
-import { WORKER_LIMITS } from "./worker-limits.mjs";
 
 import { ROOT, baselineDist, workingDist } from "./baseline-build.mjs";
+import { runPool } from "./worker-pool.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -40,7 +38,6 @@ const working = workingDist();
 console.log(`bot:diff — ${bot}, working build vs ${base} (${baseline.sha}), ${players}p, seeds ${first}-${first + games - 1}`);
 
 const queue = Array.from({ length: games }, (_, i) => first + i);
-let active = 0;
 let decisions = 0;
 const url = new URL("./bot-diff-worker.mjs", import.meta.url);
 
@@ -59,28 +56,19 @@ function report() {
   console.log(`every disagreement, with its turn and targets: ${out}`);
 }
 
-function next() {
-  if (queue.length === 0) {
-    if (active === 0) report();
-    return;
-  }
-  const seed = queue.shift();
-  active += 1;
-  const worker = new Worker(url, {
-    workerData: { working: working.dist, baseline: baseline.dist, bot, players, seed },
-    resourceLimits: WORKER_LIMITS,
-  });
-  worker.on("message", (m) => {
+runPool({
+  url,
+  workerData: { working: working.dist, baseline: baseline.dist, bot, players },
+  jobs: queue,
+  workers: parallel,
+  isFinal: (m) => m.type === "done" || m.type === "error",
+  onMessage: (m, seed) => {
     if (m.type === "diff") appendFileSync(out, JSON.stringify(m.row) + "\n");
     else if (m.type === "done") {
       decisions += m.decisions;
       process.stderr.write(`  seed ${seed}: ${m.diffs} of ${m.decisions} decisions differ, game ended turn ${m.turn}\n`);
     } else if (m.type === "error") appendFileSync(out, JSON.stringify({ seed, error: m.error }) + "\n");
-  });
-  worker.once("error", (error) => appendFileSync(out, JSON.stringify({ seed, error: String(error?.message ?? error) }) + "\n"));
-  worker.once("exit", () => {
-    active -= 1;
-    next();
-  });
-}
-for (let i = 0; i < parallel; i += 1) next();
+  },
+  onLost: (seed, reason) => appendFileSync(out, JSON.stringify({ seed, error: reason }) + "\n"),
+  onDone: report,
+});

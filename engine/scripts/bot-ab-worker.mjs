@@ -1,4 +1,5 @@
-// One game of `bot-ab.mjs`: the measured seat on the working build, every
+// Games of `bot-ab.mjs`, one per seed it is sent (`worker-pool.mjs`): the
+// builds are imported once. Each game: the measured seat on the working build, every
 // other seat on the baseline, the game itself run by the working build.
 
 import { parentPort, workerData } from "node:worker_threads";
@@ -15,7 +16,7 @@ const regB = B.createDefaultRegistry();
 const make = (lib, registry, seat) =>
   bot === "v1" ? new lib.HeuristicBotController(seat, registry) : new lib.EvalBotController(seat, registry, {});
 
-parentPort.once("message", (seed) => {
+parentPort.on("message", (seed) => {
   const { seats, measuredSeat, decks } = tableFor(seed, players);
   const controllers = {};
   for (const seat of seats) {

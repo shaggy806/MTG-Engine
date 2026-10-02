@@ -16,11 +16,9 @@
 import { existsSync, readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import os from "node:os";
 import { join, dirname } from "node:path";
-import { Worker } from "node:worker_threads";
-
-import { WORKER_LIMITS } from "./worker-limits.mjs";
 
 import { ROOT, baselineDist, workingDist } from "./baseline-build.mjs";
+import { runPool } from "./worker-pool.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -71,42 +69,22 @@ function summary() {
   console.log(`results: ${out}`);
 }
 
-let active = 0;
 let finished = done.size;
-const url = new URL("./bot-ab-worker.mjs", import.meta.url);
-function next() {
-  if (queue.length === 0) {
-    if (active === 0) summary();
-    return;
-  }
-  const seed = queue.shift();
-  active += 1;
-  const worker = new Worker(url, {
-    workerData: { working: working.dist, baseline: baseline.dist, bot, players },
-    resourceLimits: WORKER_LIMITS,
-  });
-  const record = (row) => {
-    appendFileSync(out, JSON.stringify(row) + "\n");
-    finished += 1;
-    if (finished % 20 === 0) process.stderr.write(`  ${finished}/${games}\n`);
-  };
-  const timer = setTimeout(() => {
-    record({ seed, outcome: "timeout" });
-    void worker.terminate();
-  }, timeoutMs);
-  worker.once("message", (row) => {
-    clearTimeout(timer);
-    record(row);
-    void worker.terminate();
-  });
-  worker.once("error", (error) => {
-    clearTimeout(timer);
-    record({ seed, outcome: "error", error: String(error?.message ?? error) });
-  });
-  worker.once("exit", () => {
-    active -= 1;
-    next();
-  });
-  worker.postMessage(seed);
-}
-for (let i = 0; i < workers; i += 1) next();
+const record = (row) => {
+  appendFileSync(out, JSON.stringify(row) + "\n");
+  finished += 1;
+  if (finished % 20 === 0) process.stderr.write(`  ${finished}/${games}\n`);
+};
+runPool({
+  url: new URL("./bot-ab-worker.mjs", import.meta.url),
+  workerData: { working: working.dist, baseline: baseline.dist, bot, players },
+  jobs: queue,
+  workers,
+  timeoutMs,
+  onMessage: (row) => record(row),
+  onLost: (seed, reason) =>
+    record(reason === "timeout" ? { seed, outcome: "timeout" } : { seed, outcome: "error", error: reason }),
+  onDone: () => {
+    if (finished > 0) summary();
+  },
+});
