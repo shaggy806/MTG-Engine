@@ -329,6 +329,10 @@ Follow-on ideas, approved by the user on 2026-09-30:
   with the pool. They read only printed fields, each ability's text (colour identity) and the
   tokens a card makes. A generated catalog of just those, sharded the same way, would be a
   fraction of the size. The game page loads no definitions up front.
+- **Planeswalkers don't show their starting loyalty in hand.** A planeswalker card in hand has
+  no loyalty shown on its tile, only once it's on the battlefield (counter chips,
+  `client/src/ui/CounterChips.tsx`); the hand tile (`client/src/ui/CardTile.tsx`) should show
+  the printed starting loyalty.
 
 ## Tooling / docs
 
