@@ -495,3 +495,9 @@ from 13.1 s to 10.5 s, with no decision changed. Two more ideas were built, meas
 dropped: deferring conditional trigger grants in the trigger scan (the lazy type read had already
 taken their cost), and sharing casting's mana scan (0.3% of an ordinary game). What's left is in
 BACKLOG.
+
+**After the plan: deck biases (2026-10-02).** Target polarity and the evaluation are generic,
+and a few decks want the opposite: Teval, the Balanced Scale's self-mill deck aimed Hedron
+Crab at an opponent. `deck-bias.ts` keys a correction by commander — effect kinds the deck
+aims the other way, and weights for its own features only — read off the game state by every
+bot and rollout. Design record: `docs/plans/deck-biases.md`.

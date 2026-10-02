@@ -20,6 +20,7 @@ import { convokeProofFor } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { standardAssignment } from "./combat/damage.js";
 import type { DamageAssignmentOffer } from "./combat/damage.js";
+import { polarityBias } from "./deck-bias.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./characteristics.js";
@@ -1477,7 +1478,7 @@ export class HeuristicBotController extends AutomaticController {
       sacrificeChoices.indexOf(this.cheapestPermanents(state, sacrificeChoices, 1)[0]);
     if (legal.castModal !== undefined) {
       const cm = legal.castModal;
-      const byMode = modalPolarities(this.registry, legal);
+      const byMode = modalPolarities(this.registry, legal, polarityBias(state, this.playerId));
       const modes = this.usableModes(state, legal);
       if (modes === null) return passFor(player);
       const targets = fitCastTargets(
@@ -1512,7 +1513,7 @@ export class HeuristicBotController extends AutomaticController {
         state,
         legal.targetOptions,
         legal.targetSpecs,
-        offerPolarities(this.registry, legal),
+        offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
       ),
       legal.targetOptions,
       legal.targetSpecs,
@@ -1605,7 +1606,7 @@ export class HeuristicBotController extends AutomaticController {
         state,
         legal.targetOptions,
         legal.targetSpecs,
-        offerPolarities(this.registry, legal),
+        offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
       ),
       ...(sac !== undefined && sac.choices.length > 0
         ? { sacrifice: this.cheapestPermanents(state, sac.choices, 1)[0] }
@@ -1723,7 +1724,7 @@ export class HeuristicBotController extends AutomaticController {
       state,
       legal.targetOptions,
       legal.targetSpecs,
-      offerPolarities(this.registry, legal),
+      offerPolarities(this.registry, legal, polarityBias(state, this.playerId)),
     );
     let worth = effectWorth(ability.effect, {
       state,
@@ -1804,7 +1805,7 @@ export class HeuristicBotController extends AutomaticController {
       return this.aimableModes(state, offer).length < offer.castModal.minModes;
     }
     if (offer.targetOptions.length === 0) return false;
-    const polarities = offerPolarities(this.registry, offer);
+    const polarities = offerPolarities(this.registry, offer, polarityBias(state, this.playerId));
     if (polarities === null) return false;
     return offer.targetOptions.some(
       (options, i) =>
@@ -1819,7 +1820,7 @@ export class HeuristicBotController extends AutomaticController {
   private aimableModes(state: GameState, legal: CastSpellLegal): number[] {
     const cm = legal.castModal;
     if (cm === undefined) return [];
-    const byMode = modalPolarities(this.registry, legal);
+    const byMode = modalPolarities(this.registry, legal, polarityBias(state, this.playerId));
     return cm.modes
       .map((_mode, i) => i)
       .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0))
@@ -1880,7 +1881,7 @@ export class HeuristicBotController extends AutomaticController {
       view.state,
       legalOptions,
       specs,
-      pendingTargetPolarities(view.state, this.registry),
+      pendingTargetPolarities(view.state, this.registry, polarityBias(view.state, this.playerId)),
     );
   }
 

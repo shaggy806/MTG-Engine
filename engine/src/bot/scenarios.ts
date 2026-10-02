@@ -151,6 +151,35 @@ function castAndPassTo(game: Game, player: PlayerId, card: ObjectId, responder: 
   game.advanceUntil((s) => s.priority.holder === responder);
 }
 
+/**
+ * Alice, with Teval, the Balanced Scale as her commander on the battlefield and
+ * a Hedron Crab, plays a Forest at a table of `players` (2-4): paused at the
+ * Crab's landfall trigger asking whom to mill. `library` trims her library to
+ * that many cards. A failure when the trigger never asked.
+ */
+function landfallMill(
+  registry: CardRegistry,
+  players: number,
+  library?: number,
+): Game | ScenarioResult {
+  const game = table(registry, [A, B, C, D].slice(0, players), A);
+  // Before anything asks: a deck's bias is read once per objects table.
+  const teval = onBoard(game, "Teval, the Balanced Scale", A);
+  game.state.objects[teval].isCommander = true;
+  onBoard(game, "Hedron Crab", A);
+  if (library !== undefined) {
+    const zones = game.state.zones.perPlayer[A];
+    zones.library = zones.library.slice(0, library);
+  }
+  const forest = game.debugSpawn("Forest", A, "hand");
+  game.dispatch({ type: "play-land", player: A, card: forest });
+  game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || s.result.over);
+  if (game.state.awaiting?.kind !== "choose-targets") {
+    return { passed: false, detail: "the landfall trigger never asked for a target" };
+  }
+  return game;
+}
+
 const evalBotFactory: BotFactory = (player, registry, weights) =>
   new EvalBotController(player, registry, { weights });
 
@@ -917,6 +946,50 @@ const SCENARIOS: readonly BotScenario[] = [
           const target = action.type === "choose-targets" ? action.targets[0] : undefined;
           return {
             passed: target?.kind === "player" && target.player === B,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "Teval mills itself, not an opponent",
+    rule: "A self-mill commander's deck aims a mill at its own library (deck-bias.ts).",
+    position(registry) {
+      // The mirror of the scenario above, and the first deck bias: Sultai
+      // Arisen wants its own graveyard full. Without the bias, Hedron Crab's
+      // landfall trigger goes at an opponent like anyone else's.
+      const game = landfallMill(registry, 3);
+      if (!(game instanceof Game)) return game;
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const target = action.type === "choose-targets" ? action.targets[0] : undefined;
+          return {
+            passed: target?.kind === "player" && target.player === A,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "Teval stops milling itself near an empty library",
+    rule: "A self-mill bias never mills its own deck out: at 12 cards, the Crab hits an opponent.",
+    position(registry) {
+      // The bias's `libraryDanger`: the polarity alone says "mill yourself"
+      // whatever is left, and v1 does; v2's own-feature weights price the
+      // last fifteen cards of the library.
+      const game = landfallMill(registry, 3, 12);
+      if (!(game instanceof Game)) return game;
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const target = action.type === "choose-targets" ? action.targets[0] : undefined;
+          return {
+            passed: target?.kind === "player" && target.player !== A,
             detail: `chose ${describeAction(action)}`,
           };
         },

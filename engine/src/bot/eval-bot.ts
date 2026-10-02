@@ -32,6 +32,7 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import { computeCharacteristics, withComputedCache } from "../characteristics.js";
+import { polarityBias } from "../deck-bias.js";
 import { onlyUntilEndOfTurn } from "../effect-worth.js";
 import { goadersOf } from "../goad.js";
 import {
@@ -384,12 +385,14 @@ export function aimOffer(
   me: PlayerId,
   legal: LegalAction,
 ): LegalAction {
+  // Each slot's side as this deck reads it (`deck-bias.ts`).
+  const bias = polarityBias(state, me);
   // Ranked, then twins cut to as many as there are slots (`bot/twins.ts`):
   // seven identical Scute Swarms are one option, not seven simulations.
   const aim = (options: readonly TargetRef[], polarity: Polarity | undefined, slots: number) =>
     collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either"), slots);
   if (legal.kind === "choose-targets") {
-    const polarities = pendingTargetPolarities(state, cards);
+    const polarities = pendingTargetPolarities(state, cards, bias);
     return {
       ...legal,
       options: legal.options.map((options, i) => aim(options, polarities?.[i], legal.options.length)),
@@ -399,7 +402,7 @@ export function aimOffer(
   if (legal.kind === "cast-spell" && legal.castModal !== undefined) {
     // A targeted modal spell's modes carry targets of their own.
     const modal = legal.castModal;
-    const byMode = modalPolarities(cards, legal);
+    const byMode = modalPolarities(cards, legal, bias);
     const slots = modal.modes.reduce((n, mode) => n + mode.targetOptions.length, 0);
     return {
       ...legal,
@@ -413,7 +416,7 @@ export function aimOffer(
     };
   }
   if (legal.targetOptions.length === 0) return legal;
-  const polarities = offerPolarities(cards, legal);
+  const polarities = offerPolarities(cards, legal, bias);
   return {
     ...legal,
     targetOptions: legal.targetOptions.map((options, i) =>
@@ -936,7 +939,7 @@ export class EvalBotController extends HeuristicBotController {
     if (fresh.targetOptions.some((options, i) => options.length === 0 && offer.targetOptions[i].length > 0)) {
       return null;
     }
-    const polarities = offerPolarities(this.cards, offer);
+    const polarities = offerPolarities(this.cards, offer, polarityBias(state, this.playerId));
     const aimed = withComputedCache(() => aimOffer(state, this.cards, this.playerId, fresh));
     const [following] = candidateActions(aimed, this.playerId);
     if (following === undefined || following.type !== "activate-ability") return null;
@@ -1346,7 +1349,7 @@ export class EvalBotController extends HeuristicBotController {
     if (legal.kind !== "cast-spell" && legal.kind !== "activate-ability") return "ok";
     if (legal.kind === "cast-spell" && legal.castModal !== undefined) return "ok";
     if (action.type !== "cast-spell" && action.type !== "activate-ability") return "ok";
-    const polarities = offerPolarities(this.cards, legal);
+    const polarities = offerPolarities(this.cards, legal, polarityBias(state, this.playerId));
     if (polarities === null) return "ok";
     const me = this.playerId;
     let kills: PlayerId | null = null;

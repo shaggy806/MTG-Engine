@@ -33,6 +33,7 @@
  */
 
 import type { CardRegistry } from "../cards.js";
+import { deckBias } from "../deck-bias.js";
 import type { PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
 import { FEATURE_KEYS, featureSign, playerFeatures } from "./features.js";
@@ -374,6 +375,9 @@ export interface EvalOutcome {
   readonly decided?: number;
   /** `null` once `me` has lost in a game that goes on without them. */
   readonly mine: PlayerFeatures | null;
+  /** Weights `me`'s deck scores its own features with instead of the shared
+   * ones (`deck-bias.ts`): Teval's graveyard is worth more to Teval. */
+  readonly ownWeights?: Readonly<Partial<EvalWeights>>;
   /** Every opponent still in the game. */
   readonly theirs: readonly PlayerFeatures[];
 }
@@ -394,13 +398,34 @@ export function outcomeOf(
   const theirs = state.turnOrder
     .filter((player) => player !== me && !state.players[player].hasLost)
     .map((player) => playerFeatures(state, registry, player, false, landCap));
-  return { mine, theirs };
+  const ownWeights = deckBias(state, me)?.ownWeights;
+  return ownWeights === undefined ? { mine, theirs } : { mine, theirs, ownWeights };
+}
+
+const withOwn = new WeakMap<EvalWeights, WeakMap<object, EvalWeights>>();
+
+/** `weights` with a deck's own-feature weights laid over them, made once per
+ * pair. */
+function ownWeightsOf(weights: EvalWeights, own: Readonly<Partial<EvalWeights>> | undefined): EvalWeights {
+  if (own === undefined) return weights;
+  let byOwn = withOwn.get(weights);
+  if (byOwn === undefined) {
+    byOwn = new WeakMap();
+    withOwn.set(weights, byOwn);
+  }
+  let found = byOwn.get(own);
+  if (found === undefined) {
+    found = { ...weights, ...own };
+    byOwn.set(own, found);
+  }
+  return found;
 }
 
 /**
  * Score an {@link EvalOutcome} from `me`'s seat: my position, minus my
  * strongest opponent's, minus a smaller share of the average of everyone else
- * still in the game.
+ * still in the game. My position is scored with my deck's own weights, if it
+ * has any (`deck-bias.ts`); everyone else's with the shared ones.
  *
  * Only the strongest opponent used to count, which made a four-player bot
  * indifferent to everyone but the leader — happy to feed the second-best
@@ -408,7 +433,8 @@ export function outcomeOf(
  */
 export function scoreOutcome(outcome: EvalOutcome, weights: EvalWeights): number {
   if (outcome.decided !== undefined) return outcome.decided;
-  const mine = outcome.mine === null ? DEAD : scoreFeatures(outcome.mine, weights);
+  const mine =
+    outcome.mine === null ? DEAD : scoreFeatures(outcome.mine, ownWeightsOf(weights, outcome.ownWeights));
   const theirs = outcome.theirs.map((f) => scoreFeatures(f, weights)).sort((a, b) => b - a);
   if (theirs.length === 0) return mine;
 

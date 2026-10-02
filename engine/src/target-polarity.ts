@@ -44,6 +44,14 @@ import type { TargetRef, TargetSpec } from "./target.js";
 
 export type Polarity = "harm" | "help" | "take" | "either";
 
+/**
+ * A deck's own reading of some effect kinds, overriding the table below for
+ * every slot those kinds touch — a self-mill deck's `mill: "help"`. The
+ * table says which side an effect belongs on for a deck with no plan for it;
+ * `deck-bias.ts` holds the decks that have one.
+ */
+export type PolarityBias = Readonly<Partial<Record<EffectSpec["kind"], Polarity>>>;
+
 /** How much one effect says about a slot — see the module comment. */
 const MINOR = 0;
 const MAJOR = 1;
@@ -338,8 +346,9 @@ function resolveSlot(touches: readonly Touch[]): Polarity {
 export function slotPolarities(
   effect: EffectSpec | null | undefined,
   count: number,
+  bias?: PolarityBias,
 ): readonly Polarity[] {
-  return slotTouches(effect, count).map(resolveSlot);
+  return slotTouches(effect, count, bias).map(resolveSlot);
 }
 
 /** How much a slot's deciding effect weighs: 0 minor (a tap, two life), 1
@@ -354,8 +363,9 @@ export type SlotStrength = 0 | 1 | 2;
 export function slotStrengths(
   effect: EffectSpec | null | undefined,
   count: number,
+  bias?: PolarityBias,
 ): readonly ({ readonly polarity: Polarity; readonly weight: SlotStrength } | null)[] {
-  return slotTouches(effect, count).map((touches) =>
+  return slotTouches(effect, count, bias).map((touches) =>
     touches.length === 0
       ? null
       : {
@@ -365,20 +375,32 @@ export function slotStrengths(
   );
 }
 
-function slotTouches(effect: EffectSpec | null | undefined, count: number): Touch[][] {
+function slotTouches(
+  effect: EffectSpec | null | undefined,
+  count: number,
+  bias?: PolarityBias,
+): Touch[][] {
   const touches: Touch[][] = Array.from({ length: count }, () => []);
+  // The kind whose rule is touching right now, for `bias`. A child's walk
+  // sets its own and puts this one back.
+  let kind: Kind | null = null;
   const visit: Visit = {
     touch(ref, polarity, weight) {
+      const side = (kind !== null ? bias?.[kind] : undefined) ?? polarity;
       for (const slot of slotsOf(ref)) {
-        if (slot >= 0 && slot < count) touches[slot].push({ polarity, weight });
+        if (slot >= 0 && slot < count) touches[slot].push({ polarity: side, weight });
       }
     },
     child(nested) {
       if (nested !== null && nested !== undefined) walk(nested);
     },
   };
-  const walk = (node: EffectSpec): void =>
+  const walk = (node: EffectSpec): void => {
+    const outer = kind;
+    kind = node.kind;
     (RULES[node.kind] as (n: EffectSpec, v: Visit) => void)(node, visit);
+    kind = outer;
+  };
   if (effect !== null && effect !== undefined && count > 0) walk(effect);
   return touches;
 }
@@ -420,19 +442,37 @@ export function auraPolarity(def: CardDefinition): Polarity {
   return harm === help ? "either" : harm ? "harm" : "help";
 }
 
-const castMemo = new WeakMap<CardDefinition, readonly Polarity[]>();
-const abilityMemo = new WeakMap<object, readonly Polarity[]>();
+/** Memos for one bias (or none): every definition reads the same under it,
+ * and the biases are a fixed table, so there are only ever a handful. */
+interface Memos {
+  readonly cast: WeakMap<CardDefinition, readonly Polarity[]>;
+  readonly ability: WeakMap<object, readonly Polarity[]>;
+  readonly mode: WeakMap<object, readonly Polarity[]>;
+}
+
+const UNBIASED: PolarityBias = {};
+const memosByBias = new WeakMap<PolarityBias, Memos>();
+
+function memosFor(bias: PolarityBias = UNBIASED): Memos {
+  let memos = memosByBias.get(bias);
+  if (memos === undefined) {
+    memos = { cast: new WeakMap(), ability: new WeakMap(), mode: new WeakMap() };
+    memosByBias.set(bias, memos);
+  }
+  return memos;
+}
 
 /** The polarity of each target slot of casting `def` — an Aura's slot 0
  * from its statics, the rest from its effect. */
-export function castPolarities(def: CardDefinition): readonly Polarity[] {
-  let found = castMemo.get(def);
+export function castPolarities(def: CardDefinition, bias?: PolarityBias): readonly Polarity[] {
+  const memo = memosFor(bias).cast;
+  let found = memo.get(def);
   if (found === undefined) {
-    const slots = slotPolarities(def.effect, def.targets.length);
+    const slots = slotPolarities(def.effect, def.targets.length, bias);
     found = (def.subtypes ?? []).includes("Aura") && slots.length > 0
       ? [auraPolarity(def), ...slots.slice(1)]
       : slots;
-    castMemo.set(def, found);
+    memo.set(def, found);
   }
   return found;
 }
@@ -440,11 +480,13 @@ export function castPolarities(def: CardDefinition): readonly Polarity[] {
 /** The polarity of each target slot of an activated or triggered ability. */
 export function abilityPolarities(
   ability: Pick<ActivatedAbility | TriggeredAbility, "targets" | "effect">,
+  bias?: PolarityBias,
 ): readonly Polarity[] {
-  let found = abilityMemo.get(ability);
+  const memo = memosFor(bias).ability;
+  let found = memo.get(ability);
   if (found === undefined) {
-    found = slotPolarities(ability.effect, ability.targets.length);
-    abilityMemo.set(ability, found);
+    found = slotPolarities(ability.effect, ability.targets.length, bias);
+    memo.set(ability, found);
   }
   return found;
 }
@@ -462,22 +504,21 @@ type ActivateOffer = Extract<LegalAction, { kind: "activate-ability" }>;
 export function offerPolarities(
   registry: CardRegistry,
   offer: CastOffer | ActivateOffer,
+  bias?: PolarityBias,
 ): readonly Polarity[] | null {
   if (!registry.has(offer.cardName)) return null;
   const def = registry.get(offer.cardName);
   if (offer.kind === "activate-ability") {
     const ability = def.activated[offer.abilityIndex];
-    return ability === undefined ? null : abilityPolarities(ability);
+    return ability === undefined ? null : abilityPolarities(ability, bias);
   }
   if (offer.castModal !== undefined) return null;
   const face = offer.face !== undefined ? def.faces?.[offer.face] : undefined;
   if (face !== undefined && face !== def.name) {
-    return registry.has(face) ? castPolarities(registry.get(face)) : null;
+    return registry.has(face) ? castPolarities(registry.get(face), bias) : null;
   }
-  return castPolarities(def);
+  return castPolarities(def, bias);
 }
-
-const modeMemo = new WeakMap<object, readonly Polarity[]>();
 
 /**
  * For a targeted modal spell `legalActions` offered (`castModal` — "choose one
@@ -488,6 +529,7 @@ const modeMemo = new WeakMap<object, readonly Polarity[]>();
 export function modalPolarities(
   registry: CardRegistry,
   offer: CastOffer,
+  bias?: PolarityBias,
 ): readonly (readonly Polarity[])[] | null {
   if (offer.castModal === undefined || !registry.has(offer.cardName)) return null;
   let def = registry.get(offer.cardName);
@@ -498,11 +540,12 @@ export function modalPolarities(
   }
   const modes = def.castModal?.modes;
   if (modes === undefined || modes.length !== offer.castModal.modes.length) return null;
+  const memo = memosFor(bias).mode;
   return modes.map((mode) => {
-    let found = modeMemo.get(mode);
+    let found = memo.get(mode);
     if (found === undefined) {
-      found = slotPolarities(mode.effect, mode.targets?.length ?? 0);
-      modeMemo.set(mode, found);
+      found = slotPolarities(mode.effect, mode.targets?.length ?? 0, bias);
+      memo.set(mode, found);
     }
     return found;
   });
@@ -517,22 +560,23 @@ export function modalPolarities(
 export function pendingTargetPolarities(
   state: GameState,
   registry: CardRegistry,
+  bias?: PolarityBias,
 ): readonly Polarity[] | null {
   const cast = state.pendingTargetedCast;
   if (cast !== null) {
     const name = state.objects[cast.cardId]?.cardName;
-    return name !== undefined && registry.has(name) ? castPolarities(registry.get(name)) : null;
+    return name !== undefined && registry.has(name) ? castPolarities(registry.get(name), bias) : null;
   }
   const pending = state.pendingTargetedTrigger;
   if (pending === null) return null;
   let all: readonly Polarity[] | null = null;
   if (pending.reflexive !== undefined) {
-    all = slotPolarities(pending.reflexive.effect, pending.reflexive.targets.length);
+    all = slotPolarities(pending.reflexive.effect, pending.reflexive.targets.length, bias);
   } else if (pending.grantedAbility === undefined && registry.has(pending.cardName)) {
     const def = registry.get(pending.cardName);
     if (pending.abilityKind === "chapter") {
       const chapter = def.chapters?.[pending.abilityIndex];
-      all = chapter === undefined ? null : slotPolarities(chapter.effect, chapter.targets.length);
+      all = chapter === undefined ? null : slotPolarities(chapter.effect, chapter.targets.length, bias);
     } else {
       const ability = def.triggered[pending.abilityIndex];
       const modal = ability?.effect?.kind === "modal" ? ability.effect : null;
@@ -541,10 +585,10 @@ export function pendingTargetPolarities(
         // in the order the modes are listed (rules 603.3c, 700.2b).
         all = pending.modes.flatMap((index) => {
           const mode = modal.modes[index];
-          return mode === undefined ? [] : [...slotPolarities(mode.effect, mode.targets?.length ?? 0)];
+          return mode === undefined ? [] : [...slotPolarities(mode.effect, mode.targets?.length ?? 0, bias)];
         });
       } else if (ability !== undefined) {
-        all = abilityPolarities(ability);
+        all = abilityPolarities(ability, bias);
       }
     }
   }

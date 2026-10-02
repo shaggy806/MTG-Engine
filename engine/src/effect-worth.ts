@@ -30,6 +30,7 @@
  * may both use it.
  */
 
+import { polarityBias } from "./deck-bias.js";
 import type { EffectAmount, EffectSpec, EffectTargetRef, PlayerScope } from "./effects.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -151,7 +152,8 @@ function onObjectRef(ref: EffectTargetRef, worth: number, ctx: WorthContext): nu
 /** The worth of the effect's targets as chosen: each slot's deciding effect
  * done to whichever side its target is on. */
 function targetsWorth(effect: EffectSpec, ctx: WorthContext): number {
-  const strengths = slotStrengths(effect, ctx.targets.length);
+  // Read with `me`'s deck bias: to a self-mill deck, milling itself is help.
+  const strengths = slotStrengths(effect, ctx.targets.length, polarityBias(ctx.state, ctx.me));
   const opponents = Math.max(1, opponentsOf(ctx.state, ctx.me).length);
   let total = 0;
   strengths.forEach((strength, slot) => {
