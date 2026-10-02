@@ -189,10 +189,13 @@ export function PlayerPanel({
         >
           hand {info.handSize}
         </button>
-        <span>library {info.librarySize}</span>
+        {/* The three counts a mill or an exile from the top moves: read by
+            AnimationLayer, which runs them in step with the cards leaving. */}
+        <span data-library-count-of={info.id}>library {info.librarySize}</span>
         <button
           type="button"
           className="pp-zone-link"
+          data-graveyard-count-of={info.id}
           disabled={!onOpenGraveyard}
           onClick={(e) => {
             e.stopPropagation()
@@ -204,6 +207,7 @@ export function PlayerPanel({
         <button
           type="button"
           className="pp-zone-link"
+          data-exile-count-of={info.id}
           disabled={!onOpenExile}
           onClick={(e) => {
             e.stopPropagation()

@@ -8,6 +8,8 @@ import {
   HURT_STEP_MS,
   MARK_STEP_MS,
   DISCARD_STEP_MS,
+  MAX_PEELED,
+  MILL_STAGGER_MS,
   MILL_STEP_MS,
   MOVE_STEP_MS,
   STACK_EXIT_MS,
@@ -202,7 +204,20 @@ describe('scheduleEvents', () => {
       'precombat-main',
     )
     expect(types(s.items)).toEqual(['cards-milled', 'cards-discarded', 'cards-put-into-exile'])
-    expect(s.totalMs).toBe(MILL_STEP_MS + DISCARD_STEP_MS + MILL_STEP_MS)
+    // Two milled peel off one after the other; one exiled is a single peel.
+    expect(s.totalMs).toBe(MILL_STEP_MS + MILL_STAGGER_MS + DISCARD_STEP_MS + MILL_STEP_MS)
+  })
+
+  it('gives a mill a beat per card, up to the most it shows', () => {
+    const mill = (n: number) =>
+      scheduleEvents(
+        [ev({ type: 'cards-milled', player: 'p1', objects: Array.from({ length: n }, (_, i) => `c${i}`) })],
+        'precombat-main',
+      ).totalMs
+    expect(mill(1)).toBe(MILL_STEP_MS)
+    expect(mill(3)).toBe(MILL_STEP_MS + 2 * MILL_STAGGER_MS)
+    expect(mill(MAX_PEELED)).toBe(MILL_STEP_MS + (MAX_PEELED - 1) * MILL_STAGGER_MS)
+    expect(mill(30)).toBe(mill(MAX_PEELED))
   })
 
   it('leaves a frame of banners and draws with nothing to wait on', () => {

@@ -3526,7 +3526,9 @@
    React; the colour says which way it went. */
 .float-text {
   position: fixed;
-  z-index: 10001; /* with .anim-layer */
+  /* Above the rest of the animation layer: the number is what's read, so a
+     card peeling off a library ("−8 milled") or flying past never covers it. */
+  z-index: 10002;
   pointer-events: none;
   white-space: nowrap;
   font-weight: 800;

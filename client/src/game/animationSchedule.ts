@@ -50,10 +50,30 @@ export const FLIP_STEP_MS = 460
 /** Life gained or lost, damage marked on a creature: a flash and a number
  * floating up off the life total or the tile. Long enough to read the number. */
 export const HURT_STEP_MS = 700
-/** A card leaving a library from the top (milled, or exiled), shown on the
+/** One card leaving a library from the top (milled, or exiled), shown on the
  * library pile itself: there's no graveyard or exile drawn on the table for
- * it to travel to. One beat for the lot, the cards peeling off in turn. */
+ * it to travel to. The cards peel off one after another, `MILL_STAGGER_MS`
+ * apart, so a mill of three looks like three — see {@link millDurationMs}. */
 export const MILL_STEP_MS = 560
+/** How long after one card starts peeling off the next one does. */
+export const MILL_STAGGER_MS = 150
+/** At most this many cards peel off one by one; past it the pile's count
+ * still runs all the way down, a few cards to a step. */
+export const MAX_PEELED = 8
+
+/** How many cards an event takes off the top of libraries: every milled
+ * card, or every card exiled from a library. */
+export function cardsOffLibraries(ev: GameEvent): number {
+  if (ev.type === 'cards-milled') return ev.objects.length
+  if (ev.type === 'cards-put-into-exile') return ev.arrivals.filter((a) => a.from === 'library').length
+  return 0
+}
+
+/** The time a library losing `count` cards takes: one peel, then one stagger
+ * for each further card shown peeling. */
+export function millDurationMs(count: number): number {
+  return MILL_STEP_MS + Math.max(0, Math.min(count, MAX_PEELED) - 1) * MILL_STAGGER_MS
+}
 /** A discarded card leaving the hand, in place. */
 export const DISCARD_STEP_MS = 480
 /** A permanent moving to a new place on the board: a change of control, an
@@ -295,7 +315,7 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
     ev.type === 'cards-milled' ||
     (ev.type === 'cards-put-into-exile' && ev.arrivals.some((a) => a.from === 'library'))
   ) {
-    return { event: ev, kind: 'mill', duration: MILL_STEP_MS }
+    return { event: ev, kind: 'mill', duration: millDurationMs(cardsOffLibraries(ev)) }
   }
   if (ev.type === 'cards-discarded' && ev.objects.length > 0) {
     return { event: ev, kind: 'discard', duration: DISCARD_STEP_MS }

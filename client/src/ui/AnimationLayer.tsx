@@ -24,6 +24,8 @@ import {
   CROWN_STEP_MS,
   DISCARD_STEP_MS,
   MARK_STEP_MS,
+  MAX_PEELED,
+  MILL_STAGGER_MS,
   MILL_STEP_MS,
   MOVE_STEP_MS,
   PHASE_STEP_MS,
@@ -69,10 +71,6 @@ const TAPPED_POSE = 'rotate(20deg) scale(0.68)'
 function scaled(ms: number): number {
   return ms * motionPrefs().animScale
 }
-
-/** Past this many cards leaving a library in one frame, the rest go without
- * peeling off the pile — a big mill is a count, not a card-by-card show. */
-const MAX_PEELED_PER_FRAME = 5
 
 /** The words a cast caption adds for a spell not cast from hand. */
 const FROM_ZONE: Readonly<Record<string, string>> = {
@@ -919,29 +917,77 @@ function runBounce(object: ObjectId, prev: PlayerView | null): void {
  * no graveyard or exile drawn to send them to. Each peels off the top as a
  * cardback and turns over as it goes: a milled card darkening as it drops
  * away, an exiled one flaring white-blue and dissolving upward, so the two
- * read differently. A handful at most, one after another.
+ * read differently.
+ *
+ * So the number reads: the cards go one after another (`MILL_STAGGER_MS`
+ * apart, up to `MAX_PEELED` of them), the pile's count ticks down as each
+ * one leaves — this is the old board, so it would otherwise sit on the old
+ * number and then jump — and the total floats off the pile ("−3 milled").
  */
 function runMill(ev: GameEvent, view: PlayerView, prev: PlayerView | null): void {
-  let piles: { player: PlayerId; exile: boolean }[]
+  // How many leave each library: a mill is one player's; an exile from the
+  // top may take from several (each card's owner, which the view lists for
+  // every exiled card, face down or not).
+  const counts = new Map<PlayerId, number>()
+  let exile: boolean
   if (ev.type === 'cards-milled') {
-    piles = ev.objects.map(() => ({ player: ev.player, exile: false }))
+    counts.set(ev.player, ev.objects.length)
+    exile = false
   } else if (ev.type === 'cards-put-into-exile') {
-    // Whose library each came from: the card's owner, which the view lists
-    // for every exiled card, face down or not.
-    piles = ev.arrivals.flatMap((a) => {
-      if (a.from !== 'library') return []
+    for (const a of ev.arrivals) {
+      if (a.from !== 'library') continue
       const owner = view.zones.exileOwners[a.object] ?? prev?.objects[a.object]?.owner
-      return owner ? [{ player: owner, exile: true }] : []
-    })
+      if (owner) counts.set(owner, (counts.get(owner) ?? 0) + 1)
+    }
+    exile = true
   } else return
+  for (const [player, count] of counts) millFrom(player, count, exile)
+}
+
+/** `count` cards peeling off the top of `player`'s library — see
+ * {@link runMill}. */
+function millFrom(player: PlayerId, count: number, exile: boolean): void {
+  const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
+  if (!pile || count <= 0) return
   const duration = scaled(MILL_STEP_MS)
-  const stagger = scaled(90)
+  const stagger = scaled(MILL_STAGGER_MS)
   const reduced = motionPrefs().reduced
-  piles.slice(0, MAX_PEELED_PER_FRAME).forEach(({ player, exile }, i) => {
-    const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
-    if (!pile) return
-    const r = pile.getBoundingClientRect()
-    if (r.width === 0) return
+  const shown = Math.min(count, MAX_PEELED)
+  const total = duration + (shown - 1) * stagger
+  floatText(pile, `−${count} ${exile ? 'exiled' : 'milled'}`, 'loss', 0, total)
+
+  // The counts on the old board, run in step: the library's down — "Library
+  // (53)" over the pile, the number on its cardback when the top isn't
+  // revealed, "library 53" in the player's panel — and the graveyard's (or
+  // exile's) up, by an even share of the cards for each one shown leaving,
+  // as it lifts clear of the pile.
+  const who = CSS.escape(player)
+  const counters: { el: HTMLElement; sign: -1 | 1 }[] = [
+    pile.parentElement?.querySelector<HTMLElement>('.side-zone-label'),
+    pile.querySelector<HTMLElement>('.card-back-count'),
+    document.querySelector<HTMLElement>(`[data-library-count-of="${who}"]`),
+  ]
+    .filter((el): el is HTMLElement => el != null)
+    .map((el) => ({ el, sign: -1 as const }))
+  const into = document.querySelector<HTMLElement>(
+    exile ? `[data-exile-count-of="${who}"]` : `[data-graveyard-count-of="${who}"]`,
+  )
+  if (into) counters.push({ el: into, sign: 1 })
+  for (const { el, sign } of counters) {
+    const start = Number(/\d+/.exec(el.textContent ?? '')?.[0] ?? NaN)
+    if (!Number.isFinite(start)) continue
+    for (let i = 0; i < shown; i += 1) {
+      const moved = Math.ceil((count * (i + 1)) / shown)
+      const value = Math.max(0, start + sign * moved)
+      window.setTimeout(() => {
+        el.textContent = el.textContent?.replace(/\d+/, String(value)) ?? null
+      }, i * stagger + duration * 0.35)
+    }
+  }
+
+  const r = pile.getBoundingClientRect()
+  if (r.width === 0) return
+  for (let i = 0; i < shown; i += 1) {
     const card = document.createElement('div')
     card.className = 'peel-card'
     card.style.left = `${r.left}px`
@@ -987,7 +1033,7 @@ function runMill(ev: GameEvent, view: PlayerView, prev: PlayerView | null): void
     })
     a.onfinish = () => card.remove()
     a.oncancel = () => card.remove()
-  })
+  }
 }
 
 /**
