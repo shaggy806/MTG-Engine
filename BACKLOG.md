@@ -241,12 +241,10 @@ Beyond that plan:
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
   gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **Explore incentivizing bots to equip equipment.** Whether the bots equip their Equipment
-  often enough, and how to make them want to (v1's activation choice and `isPointlessReattach` in
-  `engine/src/controller.ts`, v2's search in `engine/src/bot/eval-bot.ts`).
-- **Check how the bot decides when to scry a card to the bottom.** Review what makes the bot keep
-  a card on top or send it to the bottom. Scry choices go through the decision search in
-  `engine/src/bot/eval-bot.ts` (v1's never-bottom default is in `engine/src/bot/decisions.ts`).
+- **Skullclamp on a 1/1 token.** v2 passes on it (training scenario "Skullclamps a 1/1 token
+  for two cards"): two cards score just under a 1/1 body and its point of attack, since every
+  creature counts `creatures` 2.5 whatever its size. `bot:fit-scenarios` finds `creatures` 2.5 → 2
+  breaks no gate scenario; a weight that basic wants a `bot:diff` read before it ships.
 
 ## Client / UI
 

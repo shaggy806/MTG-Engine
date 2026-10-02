@@ -1045,6 +1045,87 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  ...(
+    [
+      ["scries a flood land to the bottom", 8, 0, true],
+      ["keeps a land on top when short of lands", 2, 0, false],
+      ["counts the lands in hand before keeping another", 3, 4, true],
+    ] as const
+  ).map(([name, out, inHand, bottom]) =>
+    asked({
+      name,
+      rule: "A scry sends away the land a flooded board doesn't need, and keeps one it does.",
+      position(registry) {
+        // A scry changes the next draw, which a rollout to the end of the turn
+        // rarely reaches, so v2 tied every answer and kept everything —
+        // v1's old answer. `scry-pick.ts` makes the call.
+        const game = table(registry, [A, B], A);
+        lands(game, "Forest", A, out);
+        for (let i = 0; i < inHand; i += 1) game.debugSpawn("Forest", A, "hand");
+        const top = game.debugSpawn("Forest", A, "library");
+        const temple = game.debugSpawn("Temple of Malady", A, "hand");
+        game.dispatch({ type: "play-land", player: A, card: temple });
+        game.advanceUntil((s) => s.awaiting?.kind === "scry" || s.result.over);
+        if (game.state.awaiting?.kind !== "scry") {
+          return { passed: false, detail: "the Temple never asked to scry" };
+        }
+        return {
+          game,
+          player: A,
+          judge(action) {
+            const away = action.type === "scry" ? action.away : [];
+            return {
+              passed: away.includes(top) === bottom,
+              detail: away.includes(top) ? "bottomed the Forest" : "kept the Forest",
+            };
+          },
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "moves Lightning Greaves to the creature just cast",
+    rule: "Equipment goes where it does most: Greaves gives the new Craw Wurm haste.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      const bears = onBoard(game, "Grizzly Bears", A);
+      const greaves = onBoard(game, "Lightning Greaves", A);
+      game.state.objects[greaves].attachedTo = bears;
+      const wurm = game.debugSpawn("Craw Wurm", A, "battlefield", { summoningSick: true });
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const target = action.type === "activate-ability" ? action.targets?.[0] : undefined;
+          return {
+            passed: action.type === "activate-ability" && action.source === greaves &&
+              target?.kind === "object" && target.object === wurm,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "equips Blade of Selves at a four-player table",
+    rule: "Myriad copies swing at every other opponent: worth the equip at four players.",
+    position(registry) {
+      // Myriad's "you may create a token copy" read as worth nothing, so the
+      // rollout declined every copy and the equip looked like a wasted {4}.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Mountain", A, 5);
+      onBoard(game, "Craw Wurm", A);
+      const blade = onBoard(game, "Blade of Selves", A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === blade,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
   asked({
     name: "fetches the colour it can't make yet",
     rule: "A land search takes a land of a missing colour over another of one it has.",
@@ -1365,6 +1446,28 @@ const SCENARIOS: readonly BotScenario[] = [
   }),
 
   // --- training: right answers the shipped weights get wrong ----------------
+  asked({
+    name: "Skullclamps a 1/1 token for two cards",
+    rule: "Equipping Skullclamp to a 1/1 token kills it for two cards: a card up.",
+    kind: "training",
+    position(registry) {
+      // Two cards (+4) against the token's body and its one point of attack:
+      // every creature counts `creatures` 2.5 whatever its size, so the body
+      // scores about as much as the cards, and the attack tips it to passing.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 2);
+      onBoard(game, "Soldier Token", A);
+      const clamp = onBoard(game, "Skullclamp", A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === clamp,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
 ];
 
 /** The gate: every vector that ships passes all of these. */

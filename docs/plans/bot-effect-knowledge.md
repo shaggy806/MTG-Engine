@@ -514,3 +514,14 @@ covers every killable opponent's life, it tries every subset (up to 10 attackers
 that spends the least. `bot:diff` against `de252b11`: v1 495 of 74,890 decisions, 365 of them the
 Dragon no longer cast into an empty stack, the rest wipes held and land picks; v2 41 of 11,308,
 the same kinds.
+
+**After the plan: scry and Equipment (2026-10-02).** *Scry and surveil*: v1 kept every card on
+top, and v2 almost always tied to it, since a scry changes the next draw and a rollout to the end
+of the turn rarely reaches it. `scry-pick.ts` now makes the call by rule — flood lands (seven or
+more counting the hand) and spells far out of reach go, a land fixing a missing colour stays,
+surveil bins flashback cards. *Equipment*: probed with both bots across the precons' five, they
+already equipped in the plain cases. Three gaps, fixed: myriad's "you may create a token copy"
+read as worth 0, so the rollouts declined every copy and Blade of Selves was never equipped at
+four players (`effect-worth.ts` values a token copy of our own now); v1 never moved Equipment
+(now: to a creature ranking `REATTACH_MARGIN` above the host); and Skullclamp on a 1/1 token,
+which is the evaluation's — a training scenario, with `creatures` 2.5 → 2 as the fitter's lever.

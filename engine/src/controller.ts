@@ -29,6 +29,7 @@ import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { newColorsFirst } from "./land-colors.js";
+import { scryAway } from "./scry-pick.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { EffectSpec } from "./effects.js";
 import {
@@ -1329,6 +1330,11 @@ type DeclareBlockersLegal = Extract<LegalAction, { kind: "declare-blockers" }>;
  * never passes priority hangs the game it's in. */
 const MAX_ACTIVATIONS_PER_TURN = 4;
 
+/** How far above its host a creature must rank (`targetValue`) before v1
+ * moves equipment onto it: about a 2/2's worth, so near-equals never trade
+ * it back and forth (`isPointlessReattach`). */
+const REATTACH_MARGIN = 3;
+
 /** A fetch that pays life (Polluted Delta) isn't cracked at this much life or
  * less above its payment — see `isFreeFetch`. */
 const FETCH_LIFE_FLOOR = 4;
@@ -1585,17 +1591,27 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /**
-   * Equipment that's already on one of this bot's creatures: moving it to
-   * another gains nothing this policy can see, and with Equip {0} (Lightning
-   * Greaves) it's free, so the bot shuffled it between two creatures forever
-   * and the game never left that main phase.
+   * Equipment that's already on one of this bot's creatures, unless the
+   * creature it would move to ranks clearly above its host (`targetValue`,
+   * by `REATTACH_MARGIN`): Lightning Greaves onto the six-drop just cast,
+   * not back and forth. Moving it whenever it could, with Equip {0} free,
+   * shuffled it between two creatures forever and the game never left that
+   * main phase; the margin, and the host keeping the equipment's own boost
+   * in its value, keep a move from ever undoing itself.
    */
   private isPointlessReattach(state: GameState, legal: ActivateAbilityLegal): boolean {
     if (!this.registry.has(legal.cardName)) return false;
     const ability = this.registry.get(legal.cardName).activated?.[legal.abilityIndex];
     if (ability?.effect?.kind !== "attach") return false;
     const on = state.objects[legal.source]?.attachedTo;
-    return on !== null && on !== undefined;
+    if (on === null || on === undefined) return false;
+    const options = (legal.targetOptions[0] ?? []).filter(
+      (ref) => !(ref.kind === "object" && ref.object === on),
+    );
+    const best = rankTargets(state, this.registry, this.playerId, options, "help")[0];
+    if (best === undefined) return true;
+    const host = targetValue(state, this.registry, { kind: "object", object: on });
+    return targetValue(state, this.registry, best) <= host + REATTACH_MARGIN;
   }
 
   private toActivateAbility(state: GameState, legal: ActivateAbilityLegal): Action {
@@ -1980,6 +1996,17 @@ export class HeuristicBotController extends AutomaticController {
       "take",
     )[0];
     return best?.kind === "object" ? best.object : null;
+  }
+
+  /** What to scry or surveil away: flood lands and spells far out of reach
+   * (`scry-pick.ts`). v2's search can rarely see past the next draw, so its
+   * ties come here too. */
+  chooseScry(
+    view: ControllerView,
+    cards: readonly ObjectId[],
+    mode: "scry" | "surveil",
+  ): readonly ObjectId[] {
+    return scryAway(view.state, this.registry, this.playerId, cards, mode);
   }
 
   /**

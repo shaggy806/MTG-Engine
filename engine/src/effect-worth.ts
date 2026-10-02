@@ -237,6 +237,14 @@ function untargetedWorth(effect: EffectSpec, ctx: WorthContext): number {
       const players = playersIn(effect.who ?? "you", ctx);
       return onPlayers(players, 1.5 * sizeOf(effect.count), ctx);
     }
+    case "create-token-copy":
+      // A token copy that's ours — of our own source, or one that enters under
+      // us — is a token's worth like any other: a myriad copy attacking another
+      // opponent included, which v1 declined while this read as 0, so the
+      // copies never swung at the rest of the table. A copy that enters under
+      // the copied permanent's controller isn't read.
+      if (effect.who !== "you" && effect.of !== "source") return 0;
+      return onPlayers(you, 1.5 * sizeOf(effect.count), ctx);
     case "search-library":
       if (effect.who !== undefined) return 0;
       return onPlayers(you, effect.destination === "graveyard" ? 0.5 : CARD, ctx);
