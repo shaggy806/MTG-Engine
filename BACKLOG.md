@@ -241,6 +241,10 @@ Beyond that plan:
 - **Explore incentivizing bots to equip equipment.** Whether the bots equip their Equipment
   often enough, and how to make them want to (v1's activation choice and `isPointlessReattach` in
   `engine/src/controller.ts`, v2's search in `engine/src/bot/eval-bot.ts`).
+- **Check that bots understand Felothar's toughness damage assignment.** Felothar the Steadfast
+  (`combatDamageByToughness`, read by `engine/src/combat/damage.ts`) makes its controller's
+  creatures assign combat damage equal to toughness: check the bots' attack, block and evaluation
+  read that rather than power (`engine/src/bot/`).
 
 ## Client / UI
 
