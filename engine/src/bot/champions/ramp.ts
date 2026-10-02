@@ -53,6 +53,8 @@ export const RAMP: Champion = {
     extraTokens: 1,
     threat: 0,
     answers: 0,
+    // Scored as `otherPermanents` was before one-shot tokens got their own term.
+    resourceTokens: 1,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.75,

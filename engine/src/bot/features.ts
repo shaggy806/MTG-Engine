@@ -88,6 +88,7 @@ export const FEATURE_KEYS = [
   "extraTokens",
   "threat",
   "answers",
+  "resourceTokens",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -168,6 +169,24 @@ const MAX_THREAT_SCALE = 10;
 export const TOKEN_CAP = 4;
 
 export const featureSign = (key: FeatureKey): number => (SUBTRACTED.has(key) ? -1 : 1);
+
+const resourceMemo = new Map<string, boolean>();
+
+/**
+ * A token that's spent by sacrificing itself: Treasure, Clue, Food, Blood,
+ * Gold. One use and it's gone, so it's `resourceTokens`, not a permanent
+ * counted like a Sol Ring — counted as one, "spend a Treasure to cast Sol
+ * Ring" scored as giving up a card for nothing, and v2 held its Sol Ring for
+ * three turns with the spells it would have cast stuck in hand (seed 20).
+ */
+function isResourceToken(registry: CardRegistry, name: string): boolean {
+  let found = resourceMemo.get(name);
+  if (found === undefined) {
+    found = registry.has(name) && (registry.get(name).activated ?? []).some((a) => a.cost.sacrifice === "self");
+    resourceMemo.set(name, found);
+  }
+  return found;
+}
 
 const EVASION: readonly Keyword[] = [
   "flying",
@@ -449,8 +468,9 @@ function playerFeaturesUncached(
   const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost).length;
   let commanderOnBoard = 0;
   let idlePower = 0;
-  /** Noncreature tokens by name — see `TOKEN_CAP`. */
-  const tokenPiles = new Map<string, number>();
+  /** Noncreature tokens by name — see `TOKEN_CAP` — and whether they're
+   * one-shot resources (`isResourceToken`). */
+  const tokenPiles = new Map<string, { count: number; resource: boolean }>();
 
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
@@ -487,7 +507,8 @@ function playerFeaturesUncached(
     if (!isLand && !isCreature) {
       if (object.isToken) {
         const name = printedCardName(object);
-        tokenPiles.set(name, (tokenPiles.get(name) ?? 0) + n);
+        const pile = tokenPiles.get(name) ?? { count: 0, resource: isResourceToken(registry, name) };
+        tokenPiles.set(name, { ...pile, count: pile.count + n });
       } else {
         otherPermanents += n;
       }
@@ -572,9 +593,11 @@ function playerFeaturesUncached(
 
   const cap = Math.max(0, landCap);
   let extraTokens = 0;
-  for (const pile of tokenPiles.values()) {
-    otherPermanents += Math.min(pile, TOKEN_CAP);
-    extraTokens += Math.max(0, pile - TOKEN_CAP);
+  let resourceTokens = 0;
+  for (const { count, resource } of tokenPiles.values()) {
+    if (resource) resourceTokens += Math.min(count, TOKEN_CAP);
+    else otherPermanents += Math.min(count, TOKEN_CAP);
+    extraTokens += Math.max(0, count - TOKEN_CAP);
   }
 
   return {
@@ -618,5 +641,6 @@ function playerFeaturesUncached(
     extraTokens,
     threat,
     answers,
+    resourceTokens,
   };
 }

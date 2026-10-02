@@ -1481,7 +1481,36 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
 
+  asked({
+    name: "spends a Treasure on Sol Ring",
+    rule: "A one-shot Treasure for a Sol Ring is a trade up: two mana every turn after.",
+    position(registry) {
+      // From the behaviour sweep (seed 20): lands tapped, a Treasure the only
+      // mana, and v2 held Sol Ring three turns running with Rorix Bladewing
+      // stuck in hand. A Treasure counted as a full permanent, like the Ring.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 4);
+      for (const id of game.state.zones.shared.battlefield) {
+        if (game.state.objects[id]?.controller === A) game.state.objects[id].tapped = true;
+      }
+      // A token, as one made in play is: `debugSpawn` makes a card.
+      game.state.objects[onBoard(game, "Treasure Token", A)].isToken = true;
+      const ring = game.debugSpawn("Sol Ring", A, "hand");
+      game.debugSpawn("Rorix Bladewing", A, "hand");
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === ring,
+          detail: `chose ${describeAction(action)}`,
+        }),
+
   // --- training: right answers the shipped weights get wrong ----------------
+      };
+    },
+  }),
   asked({
     name: "Skullclamps a 1/1 token for two cards",
     rule: "Equipping Skullclamp to a 1/1 token kills it for two cards: a card up.",

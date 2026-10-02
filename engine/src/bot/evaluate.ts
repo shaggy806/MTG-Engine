@@ -145,6 +145,10 @@ export interface EvalWeights {
   /** Counterspells in our hand (`features.ts`): what one could still answer,
    * on top of the card `hand` counts it as. */
   readonly answers: number;
+  /** Noncreature tokens spent by sacrificing themselves — Treasure, Clue,
+   * Food — up to `TOKEN_CAP` of a kind; past it they're `extraTokens`. One
+   * use each, so worth less than a permanent that stays. */
+  readonly resourceTokens: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -252,12 +256,15 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   monarch: 3,
   emblems: 3,
   commanderTax: 0.5,
-  // Zero, and measured so: at 1 and 2 (with `commanderOnBoard` 2 and
-  // `idlePower` 0.5) they benched 26.0% [21.9, 30.5] against three of the
-  // vector without them, four players, 400 games — nothing a weight should
-  // ship on (`docs/plans/bot-effect-knowledge.md`, step 5). The terms stay for
-  // a sweep that finds their peak, if one exists.
-  nonlandMana: 0,
+  // At 1 and 2 (with `commanderOnBoard` 2 and `idlePower` 0.5) it benched
+  // 26.0% [21.9, 30.5] against three of the vector without it, four players,
+  // 400 games — level (`docs/plans/bot-effect-knowledge.md`, step 5), so it sat
+  // at 0. 0.5 since 2026-10-02: at 0 a mana rock's ongoing mana counted for
+  // nothing, and the behaviour sweep found Sol Ring, Signets, Fellwar Stone
+  // and Talismans held at the end of the bot's own turn — Sol Ring three turns
+  // running with the spells it would have cast stuck in hand ("spends a
+  // Treasure on Sol Ring", with `resourceTokens` below).
+  nonlandMana: 0.5,
   // A card a round at 4 — about two cards, a couple of turns of Phyrexian
   // Arena — so an opponent's Rhystic Study is worth a Counterspell's reserve
   // (`answers`): at 0, countering one scored 1.4, below a Divination. Priced
@@ -299,6 +306,11 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // a threat", which no weight on the old terms could fix without also
   // stopping the bot casting its rocks and draw spells.
   answers: 3,
+  // A Treasure, Clue or Food: one use, then gone — about a mana, which
+  // `effect-worth.ts` prices at a quarter of a card. Counted in
+  // `otherPermanents` (2) before 2026-10-02, a Treasure was worth as much as
+  // the Sol Ring it could pay for, and v2 wouldn't trade one for the other.
+  resourceTokens: 0.5,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25
