@@ -2528,6 +2528,7 @@ import _poolHerdHeirloom from "./pool/herd-heirloom.js";
 import _poolHeritageDruid from "./pool/heritage-druid.js";
 import _poolHermitDruid from "./pool/hermit-druid.js";
 import _poolHermiticNautilus from "./pool/hermitic-nautilus.js";
+import _poolHeroOfBladehold from "./pool/hero-of-bladehold.js";
 import _poolHeroicIntervention from "./pool/heroic-intervention.js";
 import _poolHerosDownfall from "./pool/heros-downfall.js";
 import _poolHerosResolve from "./pool/heros-resolve.js";
@@ -5556,6 +5557,7 @@ import _poolTidepoolTurtle from "./pool/tidepool-turtle.js";
 import _poolTidespoutTyrant from "./pool/tidespout-tyrant.js";
 import _poolTidings from "./pool/tidings.js";
 import _poolTidusBlitzballStar from "./pool/tidus-blitzball-star.js";
+import _poolTifaLockhart from "./pool/tifa-lockhart.js";
 import _poolTifaMartialArtist from "./pool/tifa-martial-artist.js";
 import _poolTigerClaws from "./pool/tiger-claws.js";
 import _poolTigereyeCameo from "./pool/tigereye-cameo.js";
@@ -6286,6 +6288,7 @@ import _poolXyrisTheWrithingStorm from "./pool/xyris-the-writhing-storm.js";
 import _poolYahenniUndyingPartisan from "./pool/yahenni-undying-partisan.js";
 import _poolYargleAndMultani from "./pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "./pool/yargle-glutton-of-urborg.js";
+import _poolYarokTheDesecrated from "./pool/yarok-the-desecrated.js";
 import _poolYavimayaAncients from "./pool/yavimaya-ancients.js";
 import _poolYavimayaCoast from "./pool/yavimaya-coast.js";
 import _poolYavimayaCradleOfGrowth from "./pool/yavimaya-cradle-of-growth.js";
@@ -9051,6 +9054,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHeritageDruid,
   _poolHermitDruid,
   _poolHermiticNautilus,
+  _poolHeroOfBladehold,
   _poolHeroicIntervention,
   _poolHerosDownfall,
   _poolHerosResolve,
@@ -12079,6 +12083,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTidespoutTyrant,
   _poolTidings,
   _poolTidusBlitzballStar,
+  _poolTifaLockhart,
   _poolTifaMartialArtist,
   _poolTigerClaws,
   _poolTigereyeCameo,
@@ -12809,6 +12814,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolYahenniUndyingPartisan,
   _poolYargleAndMultani,
   _poolYargleGluttonOfUrborg,
+  _poolYarokTheDesecrated,
   _poolYavimayaAncients,
   _poolYavimayaCoast,
   _poolYavimayaCradleOfGrowth,

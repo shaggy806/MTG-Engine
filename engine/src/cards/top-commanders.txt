@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-333 already implemented / 167 missing
+335 already implemented / 165 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -137,7 +137,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  131  Niv-Mizzet, Parun                              15769 decks  {U}{U}{U}{R}{R}{R} Legendary Creature — Dragon Wizard
 [ ]  132  Zada, Hedron Grinder                           15692 decks  {3}{R}           Legendary Creature — Goblin Ally
 [x]  133  Be'lakor, the Dark Master                      15648 decks  {3}{U}{B}{R}     Legendary Creature — Demon Noble
-[ ]  134  Tifa Lockhart                                  15467 decks  {1}{G}           Legendary Creature — Human Monk
+[x]  134  Tifa Lockhart                                  15467 decks  {1}{G}           Legendary Creature — Human Monk
 [x]  135  Leonardo, the Balance                          15298 decks  {3}{W}           Legendary Creature — Mutant Ninja Turtle
 [ ]  136  Marina Vendrell                                15239 decks  {W}{U}{B}{R}{G}  Legendary Creature — Human Warlock
 [x]  137  Éowyn, Shieldmaiden                            15206 decks  {2}{U}{R}{W}     Legendary Creature — Human Knight
@@ -178,7 +178,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  172  Fire Lord Zuko                                 13329 decks  {R}{W}{B}        Legendary Creature — Human Noble Ally
 [x]  173  Rendmaw, Creaking Nest                         13317 decks  {3}{B}{G}        Legendary Artifact Creature — Scarecrow
 [x]  174  Omo, Queen of Vesuva                           13314 decks  {2}{G/U}         Legendary Creature — Shapeshifter Noble
-[ ]  175  Yarok, the Desecrated                          13233 decks  {2}{B}{G}{U}     Legendary Creature — Elemental Horror
+[x]  175  Yarok, the Desecrated                          13233 decks  {2}{B}{G}{U}     Legendary Creature — Elemental Horror
 [x]  176  Edward Kenway                                  13083 decks  {2}{U}{B}{R}     Legendary Creature — Human Assassin Pirate
 [x]  177  Doran, Besieged by Time                        13058 decks  {1}{W}{B}{G}     Legendary Creature — Treefolk Druid
 [x]  178  Liesa, Shroud of Dusk                          13056 decks  {2}{W}{W}{B}     Legendary Creature — Angel

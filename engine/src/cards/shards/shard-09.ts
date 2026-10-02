@@ -82,6 +82,7 @@ import _poolGoldveinHydra from "../pool/goldvein-hydra.js";
 import _poolGoreclawTerrorOfQalSisma from "../pool/goreclaw-terror-of-qal-sisma.js";
 import _poolHauntedRidge from "../pool/haunted-ridge.js";
 import _poolHeavyInfantry from "../pool/heavy-infantry.js";
+import _poolHeroOfBladehold from "../pool/hero-of-bladehold.js";
 import _poolHyenaPack from "../pool/hyena-pack.js";
 import _poolIceStorm from "../pool/ice-storm.js";
 import _poolIllegitimateBusiness from "../pool/illegitimate-business.js";
@@ -287,6 +288,7 @@ const shard: CardShard = {
     _poolGoreclawTerrorOfQalSisma,
     _poolHauntedRidge,
     _poolHeavyInfantry,
+    _poolHeroOfBladehold,
     _poolHyenaPack,
     _poolIceStorm,
     _poolIllegitimateBusiness,

@@ -525,7 +525,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Eliminate the Competition", "Lich's Caress", "Five-mana sorcery: removal, creature removal."),
       sub("Gix, Yawgmoth Praetor", "Midnight Reaper", "Three-mana creature: card draw for life, card draw."),
       sub("Grenzo, Havoc Raiser", "Killian, Decisive Mentor", "Two-mana creature: card advantage."),
-      sub("Hero of Bladehold", "Leonin Warleader", "Four-mana white creature that makes attacking tokens."),
       sub("Kaya, Geist Hunter", "Ajani, Caller of the Pride", "Three-mana planeswalker."),
       sub("Legion Warboss", "Krenko, Tin Street Kingpin", "Three-mana creature: token maker, attack trigger."),
       sub("Myr Battlesphere", "Threefold Thunderhulk", "Seven-mana artifact creature that makes an army."),

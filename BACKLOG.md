@@ -6,12 +6,13 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**333 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**335 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
-- **Ready to author, no engine work: none left** (2026-09-28: Astarion, Wolverine, Tannuk,
-  both Zurgos, and Zinnia with `static:grant-offspring-to-spells`, were the last).
+- **Ready to author, by the gaps JSON: Storm, Force of Nature, Prismari, the Inspiration and
+  Teval, Arbiter of Virtue** — leads, not verdicts: check each one's Oracle text first (Tifa
+  Lockhart and Yarok landed 2026-10-02 on `decision:trigger-order`).
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
@@ -35,12 +36,8 @@ that one card is the reason the deck exists.
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
-- **Commanders authored and then dropped by their reviews.** Tifa Lockhart, Yarok and Hero of
-  Bladehold were dropped for want of the player ordering simultaneous triggers
-  (`decision:trigger-order`), built 2026-10-01 as an opt-in setting: re-author them, rechecking
-  each review's note (Yarok's doubled triggers are copies of one ability, which isn't asked).
-  Aragorn, the Uniter needs scry to let the player order the kept cards
-  (`decision:library-ordering`).
+- **A commander dropped by its review.** Aragorn, the Uniter needs scry to let the player order
+  the kept cards (`decision:library-ordering`).
 
 ## Card backlog (top-5000 staples and the precons)
 
@@ -53,12 +50,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 21, Sultai Arisen 26, Abzan Armor 15, Mardu Surge 14, Jeskai Striker 4 — 80,
+  now: Temur Roar 21, Sultai Arisen 26, Abzan Armor 15, Mardu Surge 13, Jeskai Striker 4 — 79,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
   any more. **Next:** two each for a triggered ability's divided damage, hideaway, Omen and
   "the creature it sacrificed" (`docs/card-blockers.md`).
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,064 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,067 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the

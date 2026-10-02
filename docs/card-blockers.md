@@ -206,8 +206,6 @@ Still blocked, by family:
   third from the top". **Zara**: a creature from an opponent's hand under your control.
   **Senu**: a trigger while it's in exile. **Doors of Durin**: grants "until your next turn"
   conditioned on a Dwarf / an Elf.
-- **Hero of Bladehold**: battle cry and the token trigger fire together, and which resolves
-  first is the player's choice (603.3b), so it waits on `decision:trigger-order`.
 - Blocked by other text as well: Otharri, Ghalta and Mavren, Caesar, Ainok Strike Leader,
   Endless Foot Assault, Andúril, Dalkovan Encampment, Zurgo Stormrender.
 

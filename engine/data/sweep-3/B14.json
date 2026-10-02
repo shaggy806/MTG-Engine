@@ -249,13 +249,6 @@
       "why": "A permanent card with mana value up to your land count from hand (BACKLOG)."
     },
     {
-      "name": "Hero of Bladehold",
-      "needs": [
-        "decision:trigger-order"
-      ],
-      "why": "Battle cry and the token trigger resolve in the player's order (BACKLOG)."
-    },
-    {
       "name": "Inkmoth Nexus",
       "needs": [
         "new:infect"

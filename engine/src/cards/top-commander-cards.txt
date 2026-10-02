@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2064 already implemented / 2936 missing (marks refreshed 2026-10-02)
+2067 already implemented / 2933 missing (marks refreshed 2026-10-02)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1964,7 +1964,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1971  Solitude                                 {3}{W}{W}        Creature — Elemental Incarnation
 [ ]  1972  Anticausal Vestige                       {6}              Creature — Eldrazi
 [x]  1973  The Eldest Reborn                        {4}{B}           Enchantment — Saga
-[ ]  1974  Hero of Bladehold                        {2}{W}{W}        Creature — Human Knight
+[x]  1974  Hero of Bladehold                        {2}{W}{W}        Creature — Human Knight
 [x]  1975  Grazilaxx, Illithid Scholar              {1}{U}{U}        Legendary Creature — Horror
 [x]  1976  Drownyard Temple                         {0}              Land
 [x]  1977  Flashback                                {R}              Instant
@@ -2449,7 +2449,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2456  Pyrohemia                                {2}{R}{R}        Enchantment
 [ ]  2457  Runic Armasaur                           {1}{G}{G}        Creature — Dinosaur
 [ ]  2458  Pantlaza, Sun-Favored                    {2}{R}{G}{W}     Legendary Creature — Dinosaur
-[ ]  2459  Yarok, the Desecrated                    {2}{B}{G}{U}     Legendary Creature — Elemental Horror
+[x]  2459  Yarok, the Desecrated                    {2}{B}{G}{U}     Legendary Creature — Elemental Horror
 [x]  2460  Atraxa, Praetors' Voice                  {G}{W}{U}{B}     Legendary Creature — Phyrexian Angel Horror
 [ ]  2461  Mirrodin Besieged                        {2}{U}           Enchantment
 [x]  2462  Erebor Flamesmith                        {1}{R}           Creature — Dwarf Artificer
@@ -2671,7 +2671,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2678  Queen Marchesa                           {1}{R}{W}{B}     Legendary Creature — Human Assassin
 [ ]  2679  Brazen Borrower // Petty Theft           {1}{U}{U} // {1}{U} Creature — Faerie Rogue // Instant — Adventure
 [ ]  2680  Archfiend of Despair                     {6}{B}{B}        Creature — Demon
-[ ]  2681  Tifa Lockhart                            {1}{G}           Legendary Creature — Human Monk
+[x]  2681  Tifa Lockhart                            {1}{G}           Legendary Creature — Human Monk
 [ ]  2682  Freyalise, Llanowar's Fury               {3}{G}{G}        Legendary Planeswalker — Freyalise
 [ ]  2683  Gilded Drake                             {1}{U}           Creature — Drake
 [ ]  2684  Jwari Disruption // Jwari Ruins          {2}              Instant // Land

@@ -75,13 +75,6 @@
       "why": "A cast trigger gated on the spell targeting only Zada, and one copy of it per other creature with each copy's target fixed."
     },
     {
-      "name": "Tifa Lockhart",
-      "needs": [
-        "decision:trigger-order"
-      ],
-      "why": "Doubling power is order-sensitive against other pump triggers from the same land drop, and the engine picks the order of simultaneous triggers for their controller (the earlier review dropped it over this)."
-    },
-    {
       "name": "Marina Vendrell",
       "needs": [
         "mechanic:rooms"
@@ -239,13 +232,6 @@
         "keyword:changeling"
       ],
       "why": "Everything counters make a land every land type and a creature every creature type."
-    },
-    {
-      "name": "Yarok, the Desecrated",
-      "needs": [
-        "decision:trigger-order"
-      ],
-      "why": "Doubled ETB triggers go on the stack in an engine-chosen order (the earlier review dropped it over this)."
     },
     {
       "name": "Edward Kenway",

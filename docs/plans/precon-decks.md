@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 415 of the 495
-non-commander slots are the printed cards; the other 80 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 416 of the 495
+non-commander slots are the printed cards; the other 79 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -160,7 +160,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Weathered Sentinels | Guardians of Meletis | Three-mana artifact defender with high toughness. |
 | Will of the Abzan | Breath of Life | Four-mana sorcery: reanimation, recursion. |
 
-### Mardu Surge — Zurgo Stormrender (14)
+### Mardu Surge — Zurgo Stormrender (13)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -169,7 +169,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Eliminate the Competition | Lich's Caress | Five-mana sorcery: removal, creature removal. |
 | Gix, Yawgmoth Praetor | Midnight Reaper | Three-mana creature: card draw for life, card draw. |
 | Grenzo, Havoc Raiser | Killian, Decisive Mentor | Two-mana creature: card advantage. |
-| Hero of Bladehold | Leonin Warleader | Four-mana white creature that makes attacking tokens. |
 | Kaya, Geist Hunter | Ajani, Caller of the Pride | Three-mana planeswalker. |
 | Legion Warboss | Krenko, Tin Street Kingpin | Three-mana creature: token maker, attack trigger. |
 | Myr Battlesphere | Threefold Thunderhulk | Seven-mana artifact creature that makes an army. |
