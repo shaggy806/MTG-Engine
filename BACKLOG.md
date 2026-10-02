@@ -83,6 +83,10 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
+- **Harrow puts its lands onto the battlefield tapped**; the real card has them enter untapped
+  (`engine/src/cards/pool/harrow.ts`). Fix the card, then the user wants to discuss why this
+  authoring mistake slipped past our checks (`card:verify`, the card text audit) and what would
+  catch the next one.
 - **Ninjutsu** (17 cards) and the rest of "enters tapped and attacking": `docs/card-blockers.md`.
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
