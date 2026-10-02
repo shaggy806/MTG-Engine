@@ -228,7 +228,11 @@ Beyond that plan:
   answers (116 hits in 58,000 — a region lasts one event), deferring conditional trigger grants
   in the scan (under 2% once filters read types lazily), and a shared mana scan for casting
   (0.3% of an ordinary game). Live rooms stop at 300 ms, so this is the bench's time limit and a
-  thinner search, not a hang.
+  thinner search, not a hang. A second shape, deep stacks rather than wide boards: seed 313 of
+  the 2026-10-02 A/B bench timed out on Jeskai's spell engine (Veyran doubling triggers,
+  Archmage Emeritus, copies of its own spells) — 73 items on the stack and ~110 permanents on
+  turn 42, each decision 5-30 s because every simulation resolves the whole stack. All seats
+  there were the old build, but nothing since makes the new one cheaper on it.
 - **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
   five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
   simple to play against. Add decks across a range of power levels for bots to bring. The same
