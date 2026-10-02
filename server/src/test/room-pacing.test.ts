@@ -455,6 +455,9 @@ describe("Room pacing (realtime)", () => {
       game.debugSpawn("Forest", ALICE, "battlefield");
       game.debugSpawn("Fog", ALICE, "hand");
       for (let i = 0; i < depth; i += 1) game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      // The stack as the players have seen it: in a game it got there
+      // through frames, so none of it is news to show before resolving.
+      paced.room.publish();
       return paced;
     }
 
@@ -471,6 +474,54 @@ describe("Room pacing (realtime)", () => {
       expect(stack()).toBe(1);
       clock.advance(400);
       expect(stack()).toBe(0);
+    });
+
+    it("shows a spell arriving on the stack before it resolves, without the bot-speed pause", () => {
+      const paced = makePacedRoom(true, "slow");
+      paced.room.addBot(BOB);
+      paced.room.start();
+      const game = paced.room.game;
+      game.debugSpawn("Forest", ALICE, "battlefield");
+      game.debugSpawn("Fog", ALICE, "hand");
+      // Put there without a frame: what a trigger nobody can answer is.
+      game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      const frames = paced.alice.frames.length;
+      paced.room.requestResolveAll(paced.alice.connection);
+      // A frame with it still on the stack, held there.
+      expect(paced.alice.frames.length).toBe(frames + 1);
+      expect(game.state.zones.shared.stack).toHaveLength(1);
+      // Held for the clients and the think floor only — not slow speed's
+      // 1.6 s pause after a move — then it resolves.
+      paced.clock.advance(400);
+      expect(game.state.zones.shared.stack).toHaveLength(0);
+    });
+
+    it("doesn't hold for an arrival with the option off", () => {
+      const clock = fakeClock();
+      const forests = Array<string>(40).fill("Forest");
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        decks: [
+          { player: ALICE, cards: forests },
+          { player: BOB, cards: forests },
+        ],
+      });
+      autoSettle(game);
+      const room = new Room("PACE3", game, {
+        timers: clock.timers,
+        showStackArrivals: false,
+        botController: (player) => new HeuristicBotController(player),
+      });
+      const { connection } = watcher(() => room, true);
+      room.claimSeat(ALICE, "alice-token", connection);
+      room.addBot(BOB);
+      room.start();
+      game.debugSpawn("Forest", ALICE, "battlefield");
+      game.debugSpawn("Fog", ALICE, "hand");
+      game.debugSpawn("Ambition's Cost", ALICE, "stack");
+      room.requestResolveAll(connection);
+      expect(game.state.zones.shared.stack).toHaveLength(0);
     });
 
     it("resolves it all at once for a room that doesn't pace", () => {

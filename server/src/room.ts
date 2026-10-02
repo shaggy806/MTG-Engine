@@ -233,6 +233,10 @@ export interface RoomOptions {
    * single push at the end, which is what tests and scripts want.
    */
   readonly pacing?: "realtime" | "immediate";
+  /** Show every object that goes on the stack in a frame of its own before
+   * it resolves, in `"realtime"` pacing — see `stackArrivalUnshown`. On
+   * unless turned off. */
+  readonly showStackArrivals?: boolean;
   readonly timers?: RoomTimers;
   /** The waiting room's host role, carried across promotion. */
   readonly host?: HostRole;
@@ -288,6 +292,9 @@ const DEFAULT_BOT = (player: PlayerId): PlayerController =>
  * will act on. */
 interface FrameGate {
   readonly run: () => void;
+  /** Whether the bot-speed pause follows once everyone has caught up — not
+   * for a frame that only shows something arriving on the stack. */
+  readonly linger: boolean;
   /** The `BOT_MIN_THINK_MS` floor has elapsed. */
   minElapsed: boolean;
   minHandle: unknown;
@@ -316,6 +323,9 @@ export class Room {
    * `settle()` can tell a resolve-all's resolution apart from what the last
    * frame already showed. */
   private eventsAtPublish = 0;
+  /** The stack as the last frame showed it — see `stackArrivalUnshown`. */
+  private stackAtPublish: readonly ObjectId[] = [];
+  private readonly showStackArrivals: boolean;
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
@@ -334,6 +344,7 @@ export class Room {
     this.botSpeed = options.botSpeed ?? "normal";
     this.onUpdate = options.onUpdate ?? (() => {});
     this.pacing = options.pacing ?? "realtime";
+    this.showStackArrivals = options.showStackArrivals ?? true;
     this.timers = options.timers ?? realTimers;
     this.makeBot = options.botController ?? DEFAULT_BOT;
     this.captures = options.capture !== undefined ? new CaptureLog(options.capture, id) : null;
@@ -1037,6 +1048,14 @@ export class Room {
         this.holdForClients(() => this.settle());
         return;
       }
+      // Something went on the stack since the last frame: show it there
+      // before anyone passes it into resolving. Held for its animation, not
+      // the bot-speed pause — it's what's about to happen, not a move.
+      if (this.pacing !== "immediate" && this.stackArrivalUnshown()) {
+        this.publish();
+        this.holdForClients(() => this.settle(), false);
+        return;
+      }
 
       const bot = this.currentBotActor();
       if (bot !== null) {
@@ -1096,9 +1115,10 @@ export class Room {
    * frame and the bot think-time floor has elapsed, whichever is later —
    * with `FRAME_ACK_TIMEOUT_MS` as a backstop for a seat that has gone
    * quiet. */
-  private holdForClients(run: () => void): void {
+  private holdForClients(run: () => void, linger = true): void {
     const gate: FrameGate = {
       run,
+      linger,
       minElapsed: false,
       minHandle: null,
       timeoutHandle: null,
@@ -1148,7 +1168,7 @@ export class Room {
       return;
     }
     if (gate.lingerHandle !== null) return; // already pausing
-    const linger = BOT_LINGER_MS[this.botSpeed];
+    const linger = gate.linger ? BOT_LINGER_MS[this.botSpeed] : 0;
     if (linger === 0) {
       this.openGate();
       return;
@@ -1181,6 +1201,7 @@ export class Room {
   publish(): void {
     this.seq += 1;
     this.eventsAtPublish = this.game.events.length;
+    this.stackAtPublish = [...this.game.state.zones.shared.stack];
     this.onUpdate(this);
   }
 
@@ -1192,6 +1213,20 @@ export class Room {
    * single frame. Counted in resolutions rather than stack depth: a spell
    * whose resolving puts a trigger on the stack leaves the depth unchanged.
    */
+  /**
+   * Something has gone on the stack since the last frame showed it. Without
+   * a frame of its own, an object put on the stack and passed into resolving
+   * inside one `settle()` — a trigger nobody had a response to — was never
+   * drawn there: it appeared and resolved in one frame, so its leaving had
+   * no entry to animate. Measured on seeded precon games, these frames cost
+   * about 1-4% more watching time, once they skip the bot-speed pause.
+   */
+  private stackArrivalUnshown(): boolean {
+    if (!this.showStackArrivals) return false;
+    const shown = new Set(this.stackAtPublish);
+    return this.game.state.zones.shared.stack.some((id) => !shown.has(id));
+  }
+
   private resolvedUnshown(): boolean {
     if (!this.seats.some((seat) => seat.resolveAllFrom !== null)) return false;
     const events = this.game.events;
