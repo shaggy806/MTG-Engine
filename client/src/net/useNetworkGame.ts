@@ -173,8 +173,6 @@ export interface NetworkGame {
   /** Whether that auto-pass is paused while something I'd want to respond
    * to plays out. It resumes by itself once the stack is clear. */
   readonly autoPassPaused: boolean
-  /** Whether *my* seat is currently skipping mana-only priority windows. */
-  readonly skipManaOnly: boolean
   /** Whether this client runs the room: sizes the table, fills bot seats,
    * starts the game, sets bot speed. The room's creator, or a stand-in while
    * they're away. */
@@ -244,10 +242,6 @@ export interface NetworkGame {
   /** Toggles auto-passing my priority windows clean through an opponent's
    * turn too, stopping only once it's my own turn again. */
   autoPass: () => void
-  /** Toggles a standing preference: skip my own priority windows where the
-   * only legal thing to do is tap for mana. Off by default (manually passing
-   * with mana up is how you bluff having an instant). */
-  toggleManaSkip: () => void
   /** One-shot: pass my priority until the stack has drained. Stops as soon
    * as anything real happens — a decision for me, an opponent acting, or
    * something of mine being targeted or leaving the battlefield. */
@@ -306,7 +300,6 @@ export function useNetworkGame(): NetworkGame {
   const [frame, setFrame] = useState<Frame | null>(null)
   const [autoPassing, setAutoPassing] = useState(false)
   const [autoPassPaused, setAutoPassPaused] = useState(false)
-  const [skipManaOnly, setSkipManaOnly] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
   const [botsPaused, setBotsPausedState] = useState(false)
@@ -433,7 +426,6 @@ export function useNetworkGame(): NetworkGame {
           setFrame({ seq: message.seq, view: message.view, actions: message.actions })
           setAutoPassing(message.autoPassing)
           setAutoPassPaused(message.autoPassPaused)
-          setSkipManaOnly(message.skipManaOnly)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
           setBotsPausedState(message.botsPaused === true)
@@ -718,12 +710,6 @@ export function useNetworkGame(): NetworkGame {
     send({ type: 'auto-pass', roomId: id })
   }, [send])
 
-  const toggleManaSkip = useCallback(() => {
-    const id = roomIdRef.current
-    if (id === null) return
-    send({ type: 'toggle-mana-skip', roomId: id })
-  }, [send])
-
   const resolveAll = useCallback(() => {
     const id = roomIdRef.current
     if (id === null) return
@@ -824,7 +810,6 @@ export function useNetworkGame(): NetworkGame {
     actions,
     autoPassing,
     autoPassPaused,
-    skipManaOnly,
     isHost,
     botSpeed,
     setBotSpeed,
@@ -851,7 +836,6 @@ export function useNetworkGame(): NetworkGame {
     dispatch,
     passTurn,
     autoPass,
-    toggleManaSkip,
     resolveAll,
     captureEnabled,
     capture,

@@ -48,7 +48,6 @@ function broadcast(room: Room): void {
       seats,
       autoPassing: room.isAutoPassing(seat),
       autoPassPaused: room.isAutoPassPaused(seat),
-      skipManaOnly: room.isSkippingManaOnly(seat),
       isHost: room.isHost(connection),
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
@@ -418,10 +417,6 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
         }
         case "auto-pass": {
           requireActiveRoom(manager, message.roomId).requestAutoPass(connection);
-          return;
-        }
-        case "toggle-mana-skip": {
-          requireActiveRoom(manager, message.roomId).toggleSkipManaOnly(connection);
           return;
         }
         case "resolve-all": {

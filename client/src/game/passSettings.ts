@@ -4,7 +4,7 @@ import type { PassSettings } from 'protocol'
 
 /**
  * The viewer's own priority-passing preferences (`PassSettings`): "pass to
- * main", "pass through combat", and the steps they've flagged as stops on the
+ * main", "pass through combat", "skip mana stops" (on by default), and the steps they've flagged as stops on the
  * phase track. Per device, in `localStorage`, like the animation settings;
  * the server does the passing, so `GameScreen` sends them whenever they change
  * and whenever a game screen opens.
@@ -47,6 +47,7 @@ const DEFAULTS: PassSettings = {
   passToMain: false,
   passThroughCombat: false,
   orderTriggers: false,
+  skipManaOnly: true,
   stops: { mine: [], theirs: [] },
 }
 
@@ -61,6 +62,9 @@ function readStored(): PassSettings {
       passToMain: parsed.passToMain === true,
       passThroughCombat: parsed.passThroughCombat === true,
       orderTriggers: parsed.orderTriggers === true,
+      // On unless turned off, so a device that saved its settings before
+      // this one existed gets it too.
+      skipManaOnly: parsed.skipManaOnly !== false,
       stops: { mine: steps(parsed.stops?.mine), theirs: steps(parsed.stops?.theirs) },
     }
   } catch {

@@ -83,14 +83,6 @@ interface Seat {
    * attack had its window). `null` whenever auto-pass is running or off.
    */
   autoPassPausedAt: number | null;
-  /**
-   * A standing preference (not a one-shot fast-forward): when set, this
-   * seat's priority windows where the only thing to do is tap for mana are
-   * skipped automatically, same as a window with no options at all. Off by
-   * default so a player can still hold priority with mana up to bluff having
-   * an instant — this is opt-in for players who don't care about that.
-   */
-  skipManaOnly: boolean;
   /** The player's standing passing preferences (`PassSettings`), as their
    * device last sent them. */
   pass: PassSettings;
@@ -105,7 +97,7 @@ interface Seat {
   /**
    * A one-shot "resolve all": pass this seat's priority until the stack has
    * drained. Unlike {@link autoPassUntil} it remembers nothing past the
-   * stack it was armed for, and unlike {@link skipManaOnly} it isn't a
+   * stack it was armed for, and unlike `PassSettings.skipManaOnly` it isn't a
    * preference — it is a single request that disarms itself.
    *
    * Holds the event-log length at the moment it was armed, which is the
@@ -174,6 +166,7 @@ const SETTLE_BUDGET = 10_000;
 const NO_PASS_SETTINGS: PassSettings = {
   passToMain: false,
   passThroughCombat: false,
+  skipManaOnly: false,
   stops: { mine: [], theirs: [] },
 };
 
@@ -351,7 +344,6 @@ export class Room {
       autoPassUntil: null,
       autoPassFrom: null,
       autoPassPausedAt: null,
-      skipManaOnly: false,
       pass: NO_PASS_SETTINGS,
       stoppedAt: null,
       resolveAllFrom: null,
@@ -657,21 +649,10 @@ export class Room {
     return this.seatFor(player).autoPassPausedAt !== null;
   }
 
-  /**
-   * Toggles `connection`'s seat auto-passing its own priority windows where
-   * the only legal thing to do is tap for mana. A standing preference, not
-   * a one-shot — stays in effect until toggled off again.
-   */
-  toggleSkipManaOnly(connection: Connection): void {
-    const player = this.seatOf(connection);
-    if (player === null) throw new Error("claim a seat before acting");
-    const seat = this.seatFor(player);
-    seat.skipManaOnly = !seat.skipManaOnly;
-    this.settle();
-  }
-
+  /** Whether `player`'s seat skips its mana-only priority windows
+   * (`PassSettings.skipManaOnly`). */
   isSkippingManaOnly(player: PlayerId): boolean {
-    return this.seatFor(player).skipManaOnly;
+    return this.seatFor(player).pass.skipManaOnly !== false;
   }
 
   /** `connection`'s seat's passing preferences (`PassSettings`), checked
@@ -686,6 +667,7 @@ export class Room {
       passToMain: settings?.passToMain === true,
       passThroughCombat: settings?.passThroughCombat === true,
       orderTriggers,
+      skipManaOnly: settings?.skipManaOnly !== false,
       stops: { mine: steps(settings?.stops?.mine), theirs: steps(settings?.stops?.theirs) },
     };
     // The engine asks; a bot standing in for the seat answers with the
@@ -973,7 +955,7 @@ export class Room {
 
     const legal = this.game.legalActions(holder);
     const forcedPass = legal.length === 1 && legal[0].kind === "pass-priority";
-    const manaOnlyAndSkipping = seat.skipManaOnly && this.game.isDeadForMana(holder);
+    const manaOnlyAndSkipping = seat.pass.skipManaOnly !== false && this.game.isDeadForMana(holder);
 
     // A one-shot resolve-all: keep passing while the stack drains, and
     // disarm the moment anything real happens (including the stack running

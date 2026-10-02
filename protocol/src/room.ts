@@ -28,6 +28,11 @@ export interface PassSettings {
    * `order-triggers` decision) rather than leave it to the engine. Absent
    * from a client older than the setting: off. */
   readonly orderTriggers?: boolean;
+  /** Skip your own priority windows where the only legal thing to do is tap
+   * for mana, same as one with no options at all. On unless turned off —
+   * absent (a client older than the setting) is on too. Off is for a player
+   * who wants to hold priority with mana up, to bluff an instant. */
+  readonly skipManaOnly?: boolean;
   /** Steps whose first priority window you keep whatever passes it
    * otherwise (these settings, Auto-pass, Pass Turn) — on your own turns
    * (`mine`) and on everyone else's (`theirs`). */
@@ -289,16 +294,6 @@ export type ClientMessage =
       readonly roomId: string;
     }
   | {
-      /**
-       * Toggles a standing preference: skip this seat's own priority windows
-       * where the only legal thing to do is tap for mana, same as one with
-       * no options at all. Off by default, since holding priority with mana
-       * up (and passing manually) is how a player bluffs having an instant.
-       */
-      readonly type: "toggle-mana-skip";
-      readonly roomId: string;
-    }
-  | {
        /**
         * Pass this seat's priority repeatedly until the stack has drained —
         * a trigger-heavy turn otherwise asks for priority between every
@@ -423,8 +418,6 @@ export type ServerMessage =
        * respond to happened, so its windows are its own until the stack is
        * clear again, when auto-pass resumes by itself. */
       readonly autoPassPaused: boolean;
-      /** Whether *this* seat is currently skipping mana-only priority windows. */
-      readonly skipManaOnly: boolean;
       /** Whether *this* connection holds the host role. */
       readonly isHost: boolean;
       readonly botSpeed: BotSpeed;

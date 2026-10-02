@@ -116,7 +116,6 @@ function makePacedRoom(
           seats: r.seatStatuses(),
           autoPassing: r.isAutoPassing(seat),
           autoPassPaused: r.isAutoPassPaused(seat),
-          skipManaOnly: r.isSkippingManaOnly(seat),
           isHost: r.isHost(connection),
           botSpeed: r.botSpeed,
           botsPaused: r.botsPaused,

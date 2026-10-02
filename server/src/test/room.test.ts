@@ -49,6 +49,17 @@ function fakeConnection(): { received: ServerMessage[]; connection: { send: (m: 
   return { received, connection: { send: (m) => received.push(m) } };
 }
 
+/** Sends `connection`'s seat pass settings with mana-only windows skipped or
+ * not, and nothing else passed. */
+function skipManaStops(room: Room, connection: { send: (m: ServerMessage) => void }, on: boolean): void {
+  room.setPassSettings(connection, {
+    passToMain: false,
+    passThroughCombat: false,
+    skipManaOnly: on,
+    stops: { mine: [], theirs: [] },
+  });
+}
+
 describe("Room", () => {
   it("starts with both seats unclaimed and offline", () => {
     const room = makeRoom();
@@ -267,25 +278,29 @@ describe("Room", () => {
     expect(room.isAutoPassing(waiting)).toBe(false);
   });
 
-  it("rejects toggling mana-skip for a connection that hasn't claimed a seat", () => {
+  it("rejects setting mana-skip for a connection that hasn't claimed a seat", () => {
     const room = makeRoom();
     const { connection } = fakeConnection();
-    expect(() => room.toggleSkipManaOnly(connection)).toThrow(/claim a seat/);
+    expect(() => skipManaStops(room, connection, true)).toThrow(/claim a seat/);
   });
 
-  it("toggles mana-skip on and off, and leaves it off by default", () => {
+  it("sets mana-skip from the seat's pass settings: on unless turned off, off until a device says", () => {
     const room = makeRoom();
     const { connection } = fakeConnection();
     room.claimSeat(ALICE, "token", connection);
 
+    // No device has sent its settings yet: nothing is passed for the seat.
     expect(room.isSkippingManaOnly(ALICE)).toBe(false);
-    room.toggleSkipManaOnly(connection);
+    skipManaStops(room, connection, true);
     expect(room.isSkippingManaOnly(ALICE)).toBe(true);
-    room.toggleSkipManaOnly(connection);
+    skipManaStops(room, connection, false);
     expect(room.isSkippingManaOnly(ALICE)).toBe(false);
+    // A client older than the setting doesn't send it: on.
+    room.setPassSettings(connection, { passToMain: false, passThroughCombat: false, stops: { mine: [], theirs: [] } });
+    expect(room.isSkippingManaOnly(ALICE)).toBe(true);
   });
 
-  it("leaves a mana-only window alone by default, but skips it once opted in", () => {
+  it("leaves a mana-only window alone until the seat's settings skip it", () => {
     const room = makeSparseRoom();
     const { connection: aliceConn } = fakeConnection();
     const { connection: bobConn } = fakeConnection();
@@ -302,7 +317,7 @@ describe("Room", () => {
     expect(room.game.state.turn.step).toBe("precombat-main");
 
     const startTurn = room.game.state.turn.number;
-    room.toggleSkipManaOnly(aliceConn);
+    skipManaStops(room, aliceConn, true);
 
     // Opting in carries her straight through it — and, since an all-Forest
     // board has no eligible attacker or blocker either, straight through the
@@ -411,7 +426,7 @@ describe("Room", () => {
 
       // The control: a settle that isn't a resolve-all leaves the stack
       // alone, because these seats have real choices and don't auto-pass.
-      room.toggleSkipManaOnly(conn);
+      skipManaStops(room, conn, true);
       expect(room.game.state.zones.shared.stack).toHaveLength(3);
 
       room.requestResolveAll(conn);
@@ -432,7 +447,7 @@ describe("Room", () => {
       // A fresh stack, and a settle that is not a resolve-all: the flag
       // disarmed when the first stack emptied, so this one stays put.
       room.game.debugSpawn("Ambition's Cost", ALICE, "stack");
-      room.toggleSkipManaOnly(conn);
+      skipManaStops(room, conn, true);
       expect(room.game.state.zones.shared.stack).toHaveLength(1);
     });
   });
@@ -571,7 +586,7 @@ describe("Room", () => {
       const { room, aliceConn, bobConn } = interruptibleRoom("bob");
       const fog = giveAliceAnInstant(room);
 
-      room.toggleSkipManaOnly(bobConn);
+      skipManaStops(room, bobConn, true);
       room.requestAutoPass(bobConn);
       room.dispatch(aliceConn, { type: "cast-spell", player: ALICE, card: fog });
 
@@ -642,7 +657,7 @@ describe("Room", () => {
       // here Alice changing a setting. The stack is already empty, so only
       // "not the window it paused in" keeps that from resuming auto-pass and
       // passing the very window the attack earned.
-      room.toggleSkipManaOnly(aliceConn);
+      skipManaStops(room, aliceConn, true);
       expect(room.isAutoPassPaused(BOB)).toBe(true);
       expect(room.game.state.priority.holder).toBe(BOB);
       expect(room.game.state.turn.step).toBe("declare-attackers");
@@ -799,7 +814,14 @@ describe("Room: conceding and handing a seat to a bot", () => {
 });
 
 describe("Room: passing preferences and stops", () => {
-  const NONE = { passToMain: false, passThroughCombat: false, stops: { mine: [], theirs: [] } } as const;
+  // Mana-only windows held too: the tables below count on tapping for mana
+  // being something to do.
+  const NONE = {
+    passToMain: false,
+    passThroughCombat: false,
+    skipManaOnly: false,
+    stops: { mine: [], theirs: [] },
+  } as const;
 
   /** A sparse room, both seats claimed, each with an untapped Forest — so
    * every window has something in it (tapping for mana) and isn't passed for

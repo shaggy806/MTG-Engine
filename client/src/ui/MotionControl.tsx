@@ -28,8 +28,8 @@ const ENTRANCE_LABEL: Record<CastEntrance, string> = {
  *
  * - **Animations** (`motionPrefs.ts`): how long every animation lasts on this
  *   screen, and whether movement is turned off. Bot speed is the host's.
- * - **Priority** (`passSettings.ts`): "pass to main" and "pass through
- *   combat", and the stops flagged on the phase track (`PhaseTrack`), listed
+ * - **Priority** (`passSettings.ts`): "pass to main", "pass through
+ *   combat" and "skip mana stops", and the stops flagged on the phase track (`PhaseTrack`), listed
  *   here for both kinds of turn since the track shows only the current one.
  */
 export function MotionControl() {
@@ -82,13 +82,21 @@ export function MotionControl() {
           <label className="motion-row">
             <input
               type="checkbox"
+              checked={pass.skipManaOnly !== false}
+              onChange={(e) => setPassSettings({ skipManaOnly: e.target.checked })}
+            />
+            Skip mana stops — pass when tapping for mana is all I could do
+          </label>
+          <label className="motion-row">
+            <input
+              type="checkbox"
               checked={pass.orderTriggers === true}
               onChange={(e) => setPassSettings({ orderTriggers: e.target.checked })}
             />
             Order my own triggers — asked when different ones trigger together
           </label>
           <div className="motion-note motion-wrap">
-            Neither pass setting passes with something on the stack. Click a step in the bar above to make it a
+            Pass to main and pass through combat never pass with something on the stack. Click a step in the bar above to make it a
             stop, where you keep priority whatever would pass it.
           </div>
           <StopList label="Stops on my turns" steps={pass.stops.mine} />

@@ -3984,17 +3984,6 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
               auto-pass" while the game waits on you looks like it broke. */}
           {game.autoPassPaused ? 'Auto-pass paused' : game.autoPassing ? 'Stop auto-pass' : 'Auto-pass'}
         </button>
-        <button
-          type="button"
-          onClick={game.toggleManaSkip}
-          title={
-            game.skipManaOnly
-              ? 'Stop at priority windows where the only thing to do is tap for mana'
-              : 'Skip priority windows where the only thing to do is tap for mana'
-          }
-        >
-          {game.skipManaOnly ? 'Show mana stops' : 'Skip mana stops'}
-        </button>
       </div>
     )
   }
