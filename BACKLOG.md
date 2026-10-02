@@ -336,7 +336,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing
   with the pool. They read only printed fields, each ability's text (colour identity) and the
   tokens a card makes. A generated catalog of just those, sharded the same way, would be a
-  fraction of the size. The game page loads no definitions up front.
+  fraction of the size. The game page loads no definitions up front. **Add a progress
+  indicator while the library loads** (`client/src/library/LibraryPage.tsx`): the user wants one
+  shown while those shards come in.
 - **Planeswalkers don't show their starting loyalty in hand.** A planeswalker card in hand has
   no loyalty shown on its tile, only once it's on the battlefield (counter chips,
   `client/src/ui/CounterChips.tsx`); the hand tile (`client/src/ui/CardTile.tsx`) should show
