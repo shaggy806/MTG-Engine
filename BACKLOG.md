@@ -238,6 +238,9 @@ Beyond that plan:
 - **Transcendent Dragon wasted with nothing to counter.** Look into bots casting it (flash; "when
   this creature enters, if you cast it, counter target spell") with no spell on the stack, so its
   trigger does nothing — it wants holding for an opponent's spell.
+- **Explore incentivizing bots to equip equipment.** Whether the bots equip their Equipment
+  often enough, and how to make them want to (v1's activation choice and `isPointlessReattach` in
+  `engine/src/controller.ts`, v2's search in `engine/src/bot/eval-bot.ts`).
 
 ## Client / UI
 
