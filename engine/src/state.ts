@@ -1782,6 +1782,21 @@ export type AwaitingDecision =
        * modes — one needing a target it can't have can't be chosen (rule
        * 603.3c): which of its own modes each offered one is. */
       readonly announcedFrom?: readonly number[];
+      /**
+       * A triggered ability's "you may" being asked as it resolves: the
+       * ability object, what makes another trigger the *same* one
+       * (`Game.triggerSignature`), and the identical triggers still on the
+       * stack under it — `alikeCount` counts each copy a stack object stands
+       * for (`stackCount`). With any there, the chooser may answer for all of
+       * them at once (`choose-modes`' `forAll` — a shortcut, rule 732.2a).
+       * Absent for a spell, a ward payment, or a choice among several modes.
+       */
+      readonly trigger?: {
+        readonly object: ObjectId;
+        readonly signature: string;
+        readonly alike: readonly ObjectId[];
+        readonly alikeCount: number;
+      };
     }
   | {
       /** A triggered ability (or a suspended spell coming off suspend) needs
@@ -2189,6 +2204,20 @@ export interface ParkedSteps {
 }
 
 
+/** See {@link GameState.standingModeAnswers}. */
+export interface StandingModeAnswer {
+  readonly player: PlayerId;
+  readonly signature: string;
+  /** The identical triggers it answers for. */
+  readonly objects: readonly ObjectId[];
+  /** The stack as it was answered. */
+  readonly stack: readonly ObjectId[];
+  /** The question it answered, which a later one must match. */
+  readonly modeTexts: readonly string[];
+  readonly modes: readonly number[];
+  readonly xValue?: number;
+}
+
 /** A one-shot damage-prevention shield (Healing Salve — ROADMAP Phase 11 EG-6). */
 export interface PreventionShield {
   /** The player or object it protects. */
@@ -2386,6 +2415,16 @@ export interface GameState {
    * cleared as a turn begins.
    */
   modesChosenThisTurn?: Record<string, number[]>;
+  /**
+   * "The same for all of them": a player's answer to one trigger's "you
+   * may", standing for the identical triggers that were under it on the
+   * stack (`choose-modes`' `forAll`). Each is answered with it as it
+   * resolves, so long as nothing new has gone on the stack since (`stack`
+   * is the stack as it was answered: anything added — a response, a new
+   * trigger — ends the shortcut, rule 732.2b) and the question is still the
+   * same one. Dropped once none of its triggers is left. Never in a view.
+   */
+  standingModeAnswers?: StandingModeAnswer[];
   /** A declaration the engine is waiting for, or `null`. */
   awaiting: AwaitingDecision | null;
   /**

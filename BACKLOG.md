@@ -341,9 +341,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
   no loyalty shown on its tile, only once it's on the battlefield (counter chips,
   `client/src/ui/CounterChips.tsx`); the hand tile (`client/src/ui/CardTile.tsx`) should show
   the printed starting loyalty.
-- **Repeated choice triggers should offer "same for all".** When several triggers that each ask
-  the same choice are on the stack, the player answers each one separately. Give the option to
-  select the same option for all of those triggers on the stack at once.
+- **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
+  `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
+  "you may" asked after another decision in the same resolution (it parks, and loses
+  `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
+  granted (`grantedAbility` kind `modifier`, which has no signature).
 - **Spells and abilities should point their arrows at their targets as they resolve.** Draw the
   target arrows (`client/src/ui/ArrowLayer.tsx`, kind `target`) from a resolving spell or
   ability to what it targets.

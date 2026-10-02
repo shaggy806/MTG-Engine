@@ -386,6 +386,10 @@ export type Action =
       /** The value chosen for `{X}` when the decision's own cost contains one
        * — Flameblast Dragon's "you may pay {X}{R}". Ignored otherwise. */
       readonly xValue?: number;
+      /** Give the same answer to every identical trigger still on the stack
+       * under this one (the offer's `sameForAll`), each as it resolves —
+       * see `GameState.standingModeAnswers`. Ignored when none is offered. */
+      readonly forAll?: boolean;
     }
   | {
       /** Answers a pending `choose-targets` decision (a triggered ability, or a
@@ -972,6 +976,11 @@ export type LegalAction =
       /** Rules text of each mode, in order — index into this is what the
        * `choose-modes` action submits. */
       readonly modeTexts: readonly string[];
+      /** A triggered ability's "you may" with identical triggers still on
+       * the stack under it: how many. The answer's `forAll` gives each of
+       * them the same answer. Their targets were chosen as each went on the
+       * stack, so only the yes-or-no is shared. */
+      readonly sameForAll?: number;
       /** A ward payment (rule 702.21a): mode 0 pays the ward cost of
        * `source`, and choosing none lets `spell` — the chooser's own spell or
        * ability that targeted it — be countered. */

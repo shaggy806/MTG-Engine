@@ -249,6 +249,7 @@ import type {
   PublicStint,
   PlayerCounterKind,
   PreventionShield,
+  StandingModeAnswer,
   ReflexiveTrigger,
   PtModifier,
   SpellSnapshot,
@@ -729,6 +730,13 @@ export class Game {
    * ability on the stack from a new object with the same id (rule 400.7).
    * Not game state: it only spans that ability's resolution. */
   private resolvingSourceTimestamp: number | null = null;
+  /** The triggered ability resolving right now, if one is, and its
+   * `triggerSignature` — what a "you may" it asks offers to answer for the
+   * identical triggers under it. Not game state: it only spans that
+   * ability's resolution, so a "you may" after a decision that parked the
+   * rest of it isn't offered that. */
+  private resolvingTrigger: { readonly object: ObjectId; readonly signature: string } | null =
+    null;
 
   /** What simultaneous damage owes once it has all been dealt (see {@link
    * withDamageBatch}): lifelink life gain per source, and the "whenever this
@@ -870,7 +878,8 @@ export class Game {
       applyTextChoice: (player, from, to) => this.applyTextChoice(player, from, to),
       applyProliferate: (player, chosen) => this.applyProliferate(player, chosen),
       applyCreatureTypeChoice: (player, t) => this.applyCreatureTypeChoice(player, t),
-      applyModesChoice: (player, modes, x) => this.applyModesChoice(player, modes, x),
+      applyModesChoice: (player, modes, x, forAll) =>
+        this.applyModesChoice(player, modes, x, forAll),
       applyChooseFromZone: (player, chosen) => this.applyChooseFromZone(player, chosen),
       applySacrifice: (player, ps) => this.applySacrifice(player, ps),
       applyDiscard: (player, cards) => this.applyDiscard(player, cards),
@@ -1062,13 +1071,23 @@ export class Game {
 
   dispatch(action: Action): readonly GameEvent[] {
     const from = this.state.eventLog.length;
+    this.dispatchOne(action);
+    // A trigger's "you may" a player already answered "the same for all"
+    // answers itself — see `GameState.standingModeAnswers`.
+    for (let standing = this.standingAnswer(); standing !== null; standing = this.standingAnswer()) {
+      this.dispatchOne(standing);
+    }
+    return this.state.eventLog.slice(from);
+  }
+
+  private dispatchOne(action: Action): void {
     // A decision applies through its module, which calls the same `apply*`
     // this switch used to call directly. What is left below is the seven
     // priority actions — the things a player does when nothing is pending.
     const decision = decisionForAction(action);
     if (decision !== undefined) {
       decision.apply(this.decisionHost, action);
-      return this.state.eventLog.slice(from);
+      return;
     }
     switch (action.type) {
       case "pass-priority":
@@ -1128,7 +1147,47 @@ export class Game {
           `unhandled action: ${(action as { type: string }).type}`,
         );
     }
-    return this.state.eventLog.slice(from);
+  }
+
+  /**
+   * The answer a standing "same for all" gives the trigger's "you may" now
+   * pending, or `null` — see `GameState.standingModeAnswers`. Drops each one
+   * whose triggers have all left the stack, or that something new on the
+   * stack has ended.
+   */
+  private standingAnswer(): Action | null {
+    const answers = this.state.standingModeAnswers;
+    if (answers === undefined) return null;
+    const stack = this.state.zones.shared.stack;
+    const unchanged = (answer: StandingModeAnswer): boolean =>
+      stack.every((id) => answer.stack.includes(id));
+    const awaiting = this.state.awaiting;
+    const trigger = awaiting?.kind === "choose-modes" ? awaiting.trigger : undefined;
+    const match =
+      awaiting?.kind !== "choose-modes" || trigger === undefined
+        ? undefined
+        : answers.find(
+            (answer) =>
+              answer.player === awaiting.player &&
+              answer.signature === trigger.signature &&
+              answer.objects.includes(trigger.object) &&
+              unchanged(answer) &&
+              answer.modeTexts.length === awaiting.modes.length &&
+              answer.modeTexts.every((text, i) => awaiting.modes[i].text === text),
+          );
+    const kept = answers.filter(
+      (answer) => unchanged(answer) && answer.objects.some((id) => stack.includes(id)),
+    );
+    if (kept.length > 0) this.state.standingModeAnswers = kept;
+    else delete this.state.standingModeAnswers;
+    if (match === undefined || awaiting === null) return null;
+    if (this.whyCannotChooseModes(match.player, match.modes) !== null) return null;
+    return {
+      type: "choose-modes",
+      player: match.player,
+      modes: match.modes,
+      ...(match.xValue !== undefined ? { xValue: match.xValue } : {}),
+    };
   }
 
   /**
@@ -3315,6 +3374,13 @@ export class Game {
       decline();
       return;
     }
+    // A resolving trigger's "you may": the same question for identical
+    // triggers under it can be answered along with this one.
+    const resolving = this.resolvingTrigger;
+    const trigger =
+      resolving !== null && minModes === 0 && maxModes === 1 && offered.length === 1
+        ? { ...resolving, ...this.identicalTriggers(resolving.signature, resolving.object) }
+        : undefined;
     this.state.awaiting = {
       kind: "choose-modes",
       player: controller,
@@ -3344,6 +3410,7 @@ export class Game {
         ? { modesController: ability.modesController }
         : {}),
       ...(ability.sourceLost === true ? { sourceLost: true } : {}),
+      ...(trigger !== undefined ? { trigger } : {}),
     };
   }
 
@@ -3360,6 +3427,7 @@ export class Game {
     player: PlayerId,
     modeIndices: readonly number[],
     xValue?: number,
+    forAll = false,
   ): void {
     const why = this.whyCannotChooseModes(player, modeIndices);
     if (why !== null) throw new Error(why);
@@ -3394,6 +3462,22 @@ export class Game {
     const lastKnownRefs = awaiting.lastKnownRefs;
     const targetZones = awaiting.targetZones ?? [];
     this.state.awaiting = null;
+
+    // "The same for all of them": the identical triggers under this one get
+    // this answer as each resolves (a shortcut, rule 732.2a). Only the
+    // yes-or-no — each chose its own targets as it went on the stack.
+    const trigger = awaiting.trigger;
+    if (forAll && trigger !== undefined && trigger.alikeCount > 0) {
+      (this.state.standingModeAnswers ??= []).push({
+        player,
+        signature: trigger.signature,
+        objects: trigger.alike,
+        stack: [...this.state.zones.shared.stack],
+        modeTexts: modes.map((m) => m.text),
+        modes: [...modeIndices],
+        ...(xValue !== undefined ? { xValue } : {}),
+      });
+    }
 
     // Pay for the choice before applying it. The cost was checked as
     // affordable when the decision was raised, but the board can have moved
@@ -10751,6 +10835,9 @@ export class Game {
     };
     const outerSourceTimestamp = this.resolvingSourceTimestamp;
     this.resolvingSourceTimestamp = object.sourceTimestamp ?? null;
+    const outerTrigger = this.resolvingTrigger;
+    const signature = this.triggerSignature(object);
+    this.resolvingTrigger = signature === null ? null : { object: id, signature };
     try {
       this.withDecisionSource(source, () => {
         if (ability.resolve !== null) {
@@ -10761,6 +10848,7 @@ export class Game {
       });
     } finally {
       this.resolvingSourceTimestamp = outerSourceTimestamp;
+      this.resolvingTrigger = outerTrigger;
     }
     if (object.abilityKind === "chapter") {
       const chapters = this.registry.get(printedCardName(object)).chapters ?? [];
@@ -10770,6 +10858,45 @@ export class Game {
     }
     this.emit({ type: "ability-resolved", source });
     this.removeOneAbilityCopy(id);
+  }
+
+  /**
+   * What makes two triggered abilities the *same* trigger, for answering
+   * their "you may"s together (`GameState.standingModeAnswers`): the same
+   * controller, and the same ability of a card with the same name — or the
+   * same ability granted by the same static. `null` for anything else: an
+   * activated ability, a chapter, a delayed or reflexive trigger, or one a
+   * resolved effect granted.
+   */
+  private triggerSignature(object: GameObject): string | null {
+    if (object.kind !== "ability" || object.abilityKind !== "triggered") return null;
+    if (object.delayedTrigger !== undefined || object.reflexiveTrigger !== undefined) return null;
+    const granted = object.grantedAbility;
+    if (granted !== undefined && granted.kind !== "static") return null;
+    const which =
+      granted === undefined
+        ? `${printedCardName(object)}:${object.abilityIndex ?? 0}`
+        : `static:${granted.cardName}:${granted.staticIndex}:${granted.list}:${granted.index}`;
+    return `${object.controller}|${which}`;
+  }
+
+  /** The triggers on the stack with `signature` other than `except` (one copy
+   * of which is resolving), and how many triggers they stand for. */
+  private identicalTriggers(
+    signature: string,
+    except: ObjectId,
+  ): { readonly alike: ObjectId[]; readonly alikeCount: number } {
+    const alike: ObjectId[] = [];
+    let alikeCount = 0;
+    for (const id of this.state.zones.shared.stack) {
+      const o = this.state.objects[id];
+      if (o === undefined || this.triggerSignature(o) !== signature) continue;
+      const copies = (o.stackCount ?? 1) - (id === except ? 1 : 0);
+      if (copies <= 0) continue;
+      alike.push(id);
+      alikeCount += copies;
+    }
+    return { alike, alikeCount };
   }
 
   /**
@@ -18735,7 +18862,9 @@ export class Game {
     );
     const awaiting = this.state.awaiting;
     if (awaiting?.kind === "choose-modes" && awaiting.player === payer) {
-      this.state.awaiting = { ...awaiting, ward: { warded, spell: targetedBy.object } };
+      // Each ward trigger is about its own spell, so never "the same for all".
+      const { trigger: _ownSpell, ...asked } = awaiting;
+      this.state.awaiting = { ...asked, ward: { warded, spell: targetedBy.object } };
     }
   }
 

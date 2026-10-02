@@ -3003,7 +3003,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       </div>
     )
   } else if (mode === 'choose-modes' && modesChoiceAction) {
-    const { minModes, maxModes, modeTexts, source, ward, about } = modesChoiceAction
+    const { minModes, maxModes, modeTexts, source, ward, about, sameForAll } = modesChoiceAction
     const optional = minModes === 0 && maxModes === 1
     const single = minModes === 1 && maxModes === 1
     const toggle = (i: number) =>
@@ -3040,6 +3040,30 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             >
               {ward ? `Don't pay` : 'No'}
             </button>
+            {/* Identical triggers still on the stack under this one: answer
+                them all now. Each still resolves on its own. */}
+            {sameForAll !== undefined && (
+              <>
+                <button
+                  type="button"
+                  title={`The same answer for this trigger and the ${sameForAll} identical ${sameForAll === 1 ? 'one' : 'ones'} under it on the stack`}
+                  onClick={() =>
+                    game.dispatch({ type: 'choose-modes', player: seat, modes: [0], forAll: true })
+                  }
+                >
+                  Yes to all {sameForAll + 1}
+                </button>
+                <button
+                  type="button"
+                  title={`The same answer for this trigger and the ${sameForAll} identical ${sameForAll === 1 ? 'one' : 'ones'} under it on the stack`}
+                  onClick={() =>
+                    game.dispatch({ type: 'choose-modes', player: seat, modes: [], forAll: true })
+                  }
+                >
+                  No to all {sameForAll + 1}
+                </button>
+              </>
+            )}
           </>
         ) : single ? (
           modeTexts.map((t, i) => (

@@ -36,6 +36,9 @@ export const chooseModes = defineDecision({
       ...(awaiting.cost !== undefined && parseManaCost(awaiting.cost).x > 0
         ? { xCost: { maxX: ctx.maxAffordableAbilityX(awaiting.player, awaiting.cost) } }
         : {}),
+      ...(awaiting.trigger !== undefined && awaiting.trigger.alikeCount > 0
+        ? { sameForAll: awaiting.trigger.alikeCount }
+        : {}),
     },
   ],
 
@@ -66,7 +69,7 @@ export const chooseModes = defineDecision({
 
   apply: (host, action): void => {
     if (action.type !== "choose-modes") return;
-    host.applyModesChoice(action.player, action.modes, action.xValue);
+    host.applyModesChoice(action.player, action.modes, action.xValue, action.forAll === true);
   },
 
   ask: (controller, view, awaiting, player): Action => ({
