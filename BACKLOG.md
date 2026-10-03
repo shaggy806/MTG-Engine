@@ -464,6 +464,11 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 - **A face-up exile from a library peels as a cardback**, like a mill: the cards never show their
   faces, so what a cascade or an impulse draw took is only in the exile viewer and the History.
   The peel could turn over to the face as it goes, for a card exiled face up.
+- **A permanent exiled from the battlefield animates filters that don't interpolate**: `runDeath`'s
+  exile keyframes go `brightness blur` → `brightness saturate drop-shadow` → `brightness saturate
+  blur`, lists that differ, so the filter steps discretely. The mill peel's did the same and
+  Chromium painted its last filter from the start (black cards); give every keyframe one list, as
+  `peelCards` now does, and look at it live.
 - **The crown has only been seen popping in**, not flying between players: that needs one
   player taking the monarchy from another (combat damage), which no dev room sets up. It uses
   the same captured flight as a change of control, which was checked.

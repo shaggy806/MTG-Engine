@@ -728,16 +728,24 @@ const TONE_RGB: Record<Tone, string> = {
  * "+1/+1" off a creature, "Flying" off one that just gained it. Made outside
  * React, like the ghosts, and gone when it's done. Waits out `delay` hidden
  * (`fill: 'both'`), since after-half cues are all started at once. Under
- * reduced motion it fades where it is instead of rising.
+ * reduced motion it fades where it is instead of rising. Starts from the
+ * middle of the element, or `down` (a fraction of its height) from its top.
  */
-function floatText(from: Element, text: string, tone: Tone, delay: number, duration: number): void {
+function floatText(
+  from: Element,
+  text: string,
+  tone: Tone,
+  delay: number,
+  duration: number,
+  down = 0.5,
+): void {
   const r = from.getBoundingClientRect()
   if (r.width === 0 && r.height === 0) return
   const el = document.createElement('div')
   el.className = `float-text ${tone}`
   el.textContent = text
   el.style.left = `${r.left + r.width / 2}px`
-  el.style.top = `${r.top + r.height / 2}px`
+  el.style.top = `${r.top + r.height * down}px`
   document.body.appendChild(el)
   const rise = motionPrefs().reduced ? 0 : 1
   const animation = el.animate(
@@ -937,6 +945,9 @@ function runBounce(object: ObjectId, prev: PlayerView | null): void {
  * apart, up to `MAX_PEELED` of them), the pile's count ticks down as each
  * one leaves — this is the old board, so it would otherwise sit on the old
  * number and then jump — and the total floats off the pile ("−3 exiled").
+ * The cards still to go sit on the pile, the next to go on top, each with
+ * the number the pile's cardback shows while it's the top card, so the
+ * count on the pile itself is seen running down too.
  */
 function runMill(events: readonly GameEvent[]): void {
   for (const { player, parts } of libraryPeels(events)) peelFrom(player, parts)
@@ -978,6 +989,19 @@ function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
     }, at)
   }
 
+  // The number on the pile's cardback (none when its top card is revealed).
+  const pileCount = pile.querySelector<HTMLElement>('.card-back-count')
+  const pileStart = pileCount === null ? undefined : startOf.get(pileCount)
+  // Each card goes in under the one before it, so the card peeling is on top
+  // of the ones still waiting their turn — all of them sit on the pile from
+  // the start, and a later one on top would hide the peel under itself.
+  let above: HTMLElement | null = null
+  const place = (card: HTMLElement): void => {
+    if (above === null) document.body.appendChild(card)
+    else above.before(card)
+    above = card
+  }
+
   let left = 0
   const landed = { graveyard: 0, exile: 0 }
   for (const part of parts) {
@@ -985,12 +1009,15 @@ function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
     const begin = part.startStep * stagger
     const into = part.exile ? exile : graveyard
     const intoKey = part.exile ? 'exile' : 'graveyard'
+    // Off the top of the card, rising away from the number in its middle,
+    // which is counting down the while.
     floatText(
       top,
       `−${part.count} ${part.exile ? 'exiled' : 'milled'}`,
       'loss',
       begin,
       duration + (shown - 1) * stagger,
+      0.22,
     )
     for (let i = 0; i < shown; i += 1) {
       const moved = Math.ceil((part.count * (i + 1)) / shown)
@@ -998,15 +1025,31 @@ function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
       for (const el of library) tick(el, (startOf.get(el) ?? 0) - left - moved, at)
       if (into) tick(into, (startOf.get(into) ?? 0) + landed[intoKey] + moved, at)
     }
+    // The pile's number as each card is its top card: the cards waiting
+    // cover the pile's own cardback, so they carry its count down with them.
+    const numbers =
+      pileStart === undefined
+        ? null
+        : Array.from({ length: shown }, (_, i) =>
+            Math.max(0, pileStart - left - Math.ceil((part.count * i) / shown)),
+          )
     left += part.count
     landed[intoKey] += part.count
-    peelCards(top, shown, part.exile, begin)
+    peelCards(top, shown, part.exile, begin, numbers, place)
   }
 }
 
 /** `shown` cardbacks peeling off `top` (a library pile's card),
- * `MILL_STAGGER_MS` apart from `begin` — see {@link runMill}. */
-function peelCards(top: HTMLElement, shown: number, exile: boolean, begin: number): void {
+ * `MILL_STAGGER_MS` apart from `begin`, each showing its entry in `numbers`
+ * if there are any, each put on the page by `place` — see {@link runMill}. */
+function peelCards(
+  top: HTMLElement,
+  shown: number,
+  exile: boolean,
+  begin: number,
+  numbers: readonly number[] | null,
+  place: (card: HTMLElement) => void,
+): void {
   const duration = scaled(MILL_STEP_MS)
   const stagger = scaled(MILL_STAGGER_MS)
   const reduced = motionPrefs().reduced
@@ -1021,30 +1064,50 @@ function peelCards(top: HTMLElement, shown: number, exile: boolean, begin: numbe
     card.style.top = `${r.top}px`
     card.style.width = `${r.width}px`
     card.style.height = `${height}px`
-    card.appendChild(document.createElement('div')).className = 'card-back'
-    document.body.appendChild(card)
+    const back = card.appendChild(document.createElement('div'))
+    back.className = 'card-back'
+    const number = numbers?.[i]
+    if (number !== undefined) {
+      const count = back.appendChild(document.createElement('span'))
+      count.className = 'card-back-count'
+      count.textContent = String(number)
+    }
+    place(card)
+    // Each animation's filters are one list of functions, so they
+    // interpolate: two lists that differ animate discretely, and Chromium
+    // painted a mill's last filter from the start — its cards waiting their
+    // turn came out black, though their computed style said otherwise.
     const frames: Keyframe[] = reduced
-      ? [
-          { opacity: 1, filter: 'none' },
-          { opacity: 0, filter: exile ? 'brightness(1.8) saturate(0.3)' : 'grayscale(1) brightness(0.5)' },
-        ]
+      ? exile
+        ? [
+            { opacity: 1, filter: 'brightness(1) saturate(1)' },
+            { opacity: 0, filter: 'brightness(1.8) saturate(0.3)' },
+          ]
+        : [
+            { opacity: 1, filter: 'grayscale(0) brightness(1)' },
+            { opacity: 0, filter: 'grayscale(1) brightness(0.5)' },
+          ]
       : exile
         ? [
-            { opacity: 1, transform: 'translateY(0) rotateY(0deg)', filter: 'brightness(1)' },
+            {
+              opacity: 1,
+              transform: 'translateY(0) rotateY(0deg)',
+              filter: 'brightness(1) saturate(1) blur(0px) drop-shadow(0 0 0px rgba(150, 220, 255, 0))',
+            },
             {
               opacity: 1,
               transform: 'translateY(-25%) rotateY(70deg)',
-              filter: 'brightness(2) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
+              filter: 'brightness(2) saturate(1) blur(0px) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
               offset: 0.45,
             },
             {
               opacity: 0,
               transform: 'translateY(-55%) rotateY(90deg) scale(1.1)',
-              filter: 'brightness(2.4) saturate(0) blur(4px)',
+              filter: 'brightness(2.4) saturate(0) blur(4px) drop-shadow(0 0 12px rgba(150, 220, 255, 0))',
             },
           ]
         : [
-            { opacity: 1, transform: 'translate(0, 0) rotateY(0deg)', filter: 'brightness(1)' },
+            { opacity: 1, transform: 'translate(0, 0) rotateY(0deg)', filter: 'grayscale(0) brightness(1)' },
             { opacity: 1, transform: 'translate(0, -30%) rotateY(70deg)', offset: 0.4 },
             {
               opacity: 0,

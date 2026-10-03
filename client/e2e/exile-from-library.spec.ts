@@ -24,17 +24,20 @@ function pageErrors(page: Page): string[] {
 }
 
 /** What the peels put on screen, sampled every animation frame: each
- * floating word, the most cards peeling at once, and every value each
- * player's "library N" count showed, in order. */
+ * floating word, the most cards peeling at once (and those cards, bottom
+ * to top, as they first sat on the pile: when each starts peeling and the
+ * number on its cardback), and every value each player's "library N" count
+ * showed, in order. */
 interface PeelRecord {
   floats: string[]
   maxPeeling: number
+  stack: { delay: number; number: string }[]
   libraryCounts: Record<string, string[]>
 }
 
 async function recordPeels(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const record: PeelRecord = { floats: [], maxPeeling: 0, libraryCounts: {} }
+    const record: PeelRecord = { floats: [], maxPeeling: 0, stack: [], libraryCounts: {} }
     ;(window as unknown as { peels: PeelRecord }).peels = record
     // Watching the document itself: an init script runs before it has any
     // element, `documentElement` included.
@@ -48,7 +51,15 @@ async function recordPeels(page: Page): Promise<void> {
       }
     }).observe(document, { childList: true, subtree: true })
     const sample = (): void => {
-      record.maxPeeling = Math.max(record.maxPeeling, document.querySelectorAll('.peel-card').length)
+      const peeling = [...document.querySelectorAll<HTMLElement>('.peel-card')]
+      if (peeling.length > record.maxPeeling) {
+        record.maxPeeling = peeling.length
+        // Document order is paint order: they share one z-index.
+        record.stack = peeling.map((el) => ({
+          delay: Number(el.getAnimations()[0]?.effect?.getTiming().delay ?? NaN),
+          number: el.textContent ?? '',
+        }))
+      }
       for (const el of document.querySelectorAll('[data-library-count-of]')) {
         const who = el.getAttribute('data-library-count-of') ?? ''
         const seen = (record.libraryCounts[who] ??= [])
@@ -69,6 +80,7 @@ const clearPeels = (page: Page): Promise<void> =>
     const record = (window as unknown as { peels: PeelRecord }).peels
     record.floats = []
     record.maxPeeling = 0
+    record.stack = []
     record.libraryCounts = {}
   })
 
@@ -186,6 +198,14 @@ test("exiling the top twenty, and each player's top card, at four players", asyn
   expect(exiledFloats(seen)).toEqual(['−1 exiled', '−1 exiled', '−1 exiled', '−1 exiled', '−20 exiled'])
   // Twenty cards, at most eight of them shown peeling.
   expect(seen.maxPeeling).toBe(8)
+  // All eight sit on bob's pile from the start, the next to go on top — so
+  // each peels off the top rather than out from under the rest — each with
+  // the number the pile shows while it's the top card: 52 on top, and the
+  // count running down a few cards a step under it (32 once all have gone).
+  const delays = seen.stack.map((c) => c.delay)
+  expect(delays, String(delays)).toEqual([...delays].sort((a, b) => b - a))
+  expect(delays.at(-1)).toBe(0)
+  expect(seen.stack.map((c) => c.number)).toEqual(['34', '37', '39', '42', '44', '47', '49', '52'])
   for (const player of ['alice', 'carol', 'dave']) {
     expect(seen.libraryCounts[player]?.length, player).toBeGreaterThanOrEqual(2)
   }

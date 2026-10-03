@@ -3722,9 +3722,11 @@ How to use it:
   Tomorrow and hide a card; attack bob with Ulamog and Pako. Try Settings at half and double speed
   and with reduced motion, and at 1366x768 and 2560x1440.
 - **Check:** Each exile peels cardbacks off that library's pile one after another, flaring
-  white-blue (a mill drops away darkening), while "library N" counts down card by card and "exile
-  N" up, with one "−N exiled" floating off the pile's card. The cascade's five one-card exiles
-  read as one run of five, not five cards at once. Ulamog's twenty peel eight cards with bob's
+  white-blue (a mill drops away darkening, and its waiting cards stay purple, not black), each off
+  the top of the ones still waiting, while "library N" counts down card by card and "exile N" up —
+  and so does the number on the pile itself, rather than vanishing under the peels and jumping —
+  with one "−N exiled" floating up off the top of the pile's card, clear of that number. The
+  cascade's five one-card exiles read as one run of five, not five cards at once. Ulamog's twenty peel eight cards with bob's
   count running 52 → 32; Pako peels every library's top card side by side. The peel is
   card-shaped at every size, over the revealed top card where Mystic Forge shows it. Reduced
   motion fades the cards in place.
