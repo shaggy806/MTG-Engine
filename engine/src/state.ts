@@ -1450,6 +1450,10 @@ export interface PlayerState {
    * "Activate only if you created a token this turn"). Set in
    * `mintTokenBatch`, which every token-making path goes through. */
   createdTokenThisTurn: boolean;
+  /** The last turn this player declared a commander — anyone's — as an
+   * attacker: "during any turn you attacked with a commander" (Neriv,
+   * Crackling Vanguard). */
+  attackedWithCommanderOnTurn?: number;
   /** This player cast a spell from a graveyard, or activated an ability of a
    * card in a graveyard, this turn (Laboratory Drudge). */
   usedGraveyardThisTurn: boolean;
@@ -1689,6 +1693,10 @@ export type AwaitingDecision =
   | {
       readonly kind: "choose-from-zone";
       readonly player: PlayerId;
+      /** Whose the cards are when `player` chooses for someone else — an
+       * opponent picking the card from your graveyard that goes to your hand
+       * (Tasigur, the Golden Fang). Only what the chooser is told. */
+      readonly forPlayer?: PlayerId;
       /** Candidates already revealed to `player`, in their original zone order. */
       readonly ids: readonly ObjectId[];
       /** The subset of `ids` that may actually be chosen — narrower than

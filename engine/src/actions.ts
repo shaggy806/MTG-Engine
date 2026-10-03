@@ -1012,6 +1012,10 @@ export type LegalAction =
       /** A rule the chosen cards must obey as a set (Myriad Landscape's
        * "that share a land type"): `fitsTogether` says whether a pick does. */
       readonly together?: ZoneChoiceTogether;
+      /** The player the chosen cards go to, when it isn't the chooser —
+       * an opponent picking the card for your hand (Tasigur, the Golden
+       * Fang). */
+      readonly forPlayer?: PlayerId;
     }
   | {
       readonly kind: "mulligan";

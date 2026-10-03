@@ -131,6 +131,7 @@ import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
 import _poolMoorlandHaunt from "../pool/moorland-haunt.js";
 import _poolMossMonster from "../pool/moss-monster.js";
+import _poolNerivCracklingVanguard from "../pool/neriv-crackling-vanguard.js";
 import _poolNetworkDisruptor from "../pool/network-disruptor.js";
 import _poolNobleHierarch from "../pool/noble-hierarch.js";
 import _poolNorinTheWary from "../pool/norin-the-wary.js";
@@ -356,6 +357,7 @@ const shard: CardShard = {
     _poolMoonwingMoth,
     _poolMoorlandHaunt,
     _poolMossMonster,
+    _poolNerivCracklingVanguard,
     _poolNetworkDisruptor,
     _poolNobleHierarch,
     _poolNorinTheWary,

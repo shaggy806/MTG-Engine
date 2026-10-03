@@ -492,7 +492,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Gix, Yawgmoth Praetor", "Midnight Reaper", "Three-mana creature: card draw for life, card draw."),
-      sub("Neriv, Crackling Vanguard", "Bonehoard Dracosaur", "Five-mana creature: impulse draw, card advantage."),
     ],
   }),
   precon({

@@ -662,6 +662,10 @@ export type StaticCondition =
     }
   /** The source's controller created a token this turn (Idol of Oblivion). */
   | { readonly kind: "created-token-this-turn" }
+  /** The source's controller attacked with a commander this turn — declared
+   * one an attacker, any player's (Neriv, Crackling Vanguard's "during any
+   * turn you attacked with a commander, you may play those cards"). */
+  | { readonly kind: "attacked-with-commander-this-turn" }
   /** The source's controller cast a spell from a graveyard or activated an
    * ability of a card in a graveyard this turn (Laboratory Drudge). */
   | { readonly kind: "used-graveyard-this-turn" }

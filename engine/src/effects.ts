@@ -444,6 +444,13 @@ export type EffectAmount =
    * color among other legendary permanents you control" (Sisay, Weatherlight
    * Captain). `excludeSelf` leaves the effect's own source out ("other"). */
   | { readonly colorsAmong: CardFilter; readonly excludeSelf?: boolean }
+  /** How many **differently named** tokens among the battlefield permanents
+   * matching a filter — Neriv, Crackling Vanguard's "the number of
+   * differently named tokens you control" (`{ token: true, controlledBy:
+   * "you" }`): each name once. A token's name is the one the effect that
+   * made it gave it, or its subtypes plus "Token" (rule 111.4) — "Elf
+   * Token" — whatever its registry key; a copy's is what it copies. */
+  | { readonly distinctTokenNames: CardFilter }
   /** How many card types there are among cards in graveyards matching a
    * filter — each type once, however many cards have it, and a card with two
    * types gives both (Tarmogoyf's "card types among cards in all graveyards"
@@ -3867,6 +3874,8 @@ export interface EffectApi {
   colorsOf(target: TargetRef): readonly Color[];
   /** See the `{ colorsAmong }` {@link EffectAmount}. */
   colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
+  /** See the `{ distinctTokenNames }` {@link EffectAmount}. */
+  distinctTokenNames(filter: CardFilter): number;
   /** The permanents matching `filter` (from the effect's controller's
    * side), each with how many tokens it stands for — a token stack is one
    * object for every token in it. */
@@ -5113,6 +5122,7 @@ function signedAmountValue(
   if ("colorsAmong" in amount) {
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
+  if ("distinctTokenNames" in amount) return ctx.distinctTokenNames(amount.distinctTokenNames);
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
   if ("opponentsAttacked" in amount) return ctx.opponentsAttacked();
   if ("attackingPlayer" in amount) return ctx.creaturesAttacking(each ?? ctx.controller);

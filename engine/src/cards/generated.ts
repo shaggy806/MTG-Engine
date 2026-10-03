@@ -3821,6 +3821,7 @@ import _poolNemaSiltlurker from "./pool/nema-siltlurker.js";
 import _poolNephaliaDrownyard from "./pool/nephalia-drownyard.js";
 import _poolNephaliaMoondrakes from "./pool/nephalia-moondrakes.js";
 import _poolNephaliaSeakite from "./pool/nephalia-seakite.js";
+import _poolNerivCracklingVanguard from "./pool/neriv-crackling-vanguard.js";
 import _poolNerivHeartOfTheStorm from "./pool/neriv-heart-of-the-storm.js";
 import _poolNessianCourser from "./pool/nessian-courser.js";
 import _poolNestRobber from "./pool/nest-robber.js";
@@ -10752,6 +10753,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNephaliaDrownyard,
   _poolNephaliaMoondrakes,
   _poolNephaliaSeakite,
+  _poolNerivCracklingVanguard,
   _poolNerivHeartOfTheStorm,
   _poolNessianCourser,
   _poolNestRobber,

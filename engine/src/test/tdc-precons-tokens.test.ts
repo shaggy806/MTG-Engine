@@ -743,6 +743,9 @@ describe("Tasigur, the Golden Fang", () => {
     expect(awaiting?.player).toBe(B);
     // The milled Islands are lands: only the two creature cards are offered.
     expect(awaiting?.kind === "choose-from-zone" ? [...awaiting.eligible].sort() : []).toEqual([giant, bears].sort());
+    // Bob is told whose hand the card goes to.
+    const offer = game.legalActions(B).find((o) => o.kind === "choose-from-zone");
+    expect(offer?.kind === "choose-from-zone" ? offer.forPlayer : undefined).toBe(A);
     game.dispatch({ type: "choose-from-zone", player: B, chosen: [bears] });
     game.advanceUntil(quiet);
     expect(game.state.objects[bears].zone).toBe("hand");
@@ -811,6 +814,55 @@ describe("Colossal Grave-Reaver", () => {
     game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: reaver, defender: B }] });
     game.advanceUntil(quiet);
     expect(game.state.zones.perPlayer[A].graveyard.length).toBe(5);
+  });
+});
+
+describe("Neriv, Crackling Vanguard", () => {
+  const exiledByNeriv = (game: Game): ObjectId[] =>
+    game.state.zones.shared.exile.filter((id) => game.state.objects[id].impulse?.player === A);
+  const playable = (game: Game, id: ObjectId): boolean =>
+    game.legalActions(A).some((o) => (o.kind === "play-land" || o.kind === "cast-spell") && o.card === id);
+
+  it("makes two Goblins, and exiles one card per differently named token you control as it attacks", () => {
+    const game = setUp();
+    const neriv = game.debugSpawn("Neriv, Crackling Vanguard", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(count(game, named(game, "Goblin Token"))).toBe(2);
+    game.debugApplyEffect(A, { kind: "create-token", token: "Treasure Token", count: 1 });
+    // Two Angel Tokens, by their names, though defined apart.
+    game.debugApplyEffect(A, { kind: "create-token", token: "4/4 Vigilant Angel Token", count: 1 });
+    game.debugApplyEffect(A, { kind: "create-token", token: "4/4 Angel Token", count: 1 });
+    // Not yours.
+    game.debugApplyEffect(B, { kind: "create-token", token: "Food Token", count: 1 });
+    game.state.objects[neriv].summoningSick = false;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: neriv, defender: B }] });
+    game.advanceUntil(quiet);
+    // Goblin, Treasure and Angel Tokens: three.
+    expect(exiledByNeriv(game)).toHaveLength(3);
+    // Not a turn Alice attacked with a commander: none playable.
+    for (const id of exiledByNeriv(game)) expect(playable(game, id)).toBe(false);
+  });
+
+  it("lets you play them during a turn you attacked with a commander, and for as long as they stay exiled", () => {
+    const game = setUp();
+    const neriv = ready(game, "Neriv, Crackling Vanguard");
+    game.state.objects[neriv].isCommander = true;
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 1 });
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: neriv, defender: B }] });
+    game.advanceUntil((s) => s.turn.step === "postcombat-main" && quiet(s));
+    const [card] = exiledByNeriv(game);
+    expect(card).toBeDefined();
+    expect(playable(game, card)).toBe(true);
+    // Next turn of Alice's, without attacking: not now…
+    game.advanceUntil((s) => s.turn.number === 3 && s.priority.holder === A && s.turn.step === "precombat-main");
+    expect(playable(game, card)).toBe(false);
+    // …but after she attacks with her commander again, yes.
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: neriv, defender: B }] });
+    game.advanceUntil((s) => s.turn.step === "postcombat-main" && quiet(s));
+    expect(playable(game, card)).toBe(true);
   });
 });
 

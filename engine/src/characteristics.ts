@@ -705,6 +705,8 @@ function evalStaticCondition(
       return state.creaturesDiedThisTurn > 0;
     case "created-token-this-turn":
       return state.players[you]?.createdTokenThisTurn === true;
+    case "attacked-with-commander-this-turn":
+      return state.players[you]?.attackedWithCommanderOnTurn === state.turn.number;
     case "used-graveyard-this-turn":
       return state.players[you]?.usedGraveyardThisTurn === true;
     case "exiled-with-source": {

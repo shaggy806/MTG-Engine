@@ -602,6 +602,11 @@ Ramos, Dragon Engine's "for each of **that spell's** colors"; as it last
 existed if it has left, colourless 0), `{ colorsAmong: CardFilter,
 excludeSelf? }` (colours among battlefield permanents, each once — Sisay's
 "each color among other legendary permanents you control"),
+`{ distinctTokenNames: CardFilter }` (how many differently named tokens among
+the matching permanents — Neriv, Crackling Vanguard's "the number of
+differently named tokens you control" is `{ token: true, controlledBy: "you"
+}`; a token's name is the one its maker gave it, what it copies, or its
+subtypes plus "Token" — rule 111.4 — never its registry key),
 `{ cardTypesInGraveyard: CardFilter }` (card types among cards in graveyards,
 each type once and a two-typed card giving both — Tarmogoyf is `{}`, delirium's
 "in your graveyard" `{ ownedBy: "you" }`), and the arithmetic that composes
@@ -3091,6 +3096,10 @@ clause (section 9):
 - `{ kind: "created-token-this-turn" }` — the source's controller made a token
   this turn (Idol of Oblivion). Set in `mintTokenBatch`, the funnel every
   token-making path goes through, so a token *copy* counts too.
+- `{ kind: "attacked-with-commander-this-turn" }` — the source's controller
+  declared a commander (anyone's) an attacker this turn: Neriv, Crackling
+  Vanguard's "during any turn you attacked with a commander, you may play
+  those cards", an `impulse-exile`'s `gate` with `duration: "while-exiled"`.
 - `{ kind: "used-graveyard-this-turn" }` — the source's controller cast a spell
   from a graveyard (flashback, escape, disturb, a graveyard permission) or
   activated an ability of a card in one this turn (Laboratory Drudge).

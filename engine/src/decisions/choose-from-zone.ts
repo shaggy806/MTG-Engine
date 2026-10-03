@@ -45,6 +45,7 @@ export const chooseFromZone = defineDecision({
       ...(awaiting.restDestination !== undefined ? { split: true } : {}),
       ...(awaiting.together !== undefined ? { together: awaiting.together } : {}),
       ...(awaiting.order === true ? { order: true } : {}),
+      ...(awaiting.forPlayer !== undefined ? { forPlayer: awaiting.forPlayer } : {}),
     },
   ],
 

@@ -276,7 +276,7 @@ type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
 
 /** What a `choose-from-zone` popup asks: where the chosen cards go, and for
  * cards going back on top, that the order picked is the order they go. */
-function zoneChoiceTitle(action: ZoneChoiceAction): string {
+function zoneChoiceTitle(action: ZoneChoiceAction, nameOf: (player: PlayerId) => string): string {
   const n = action.max === action.min ? `${action.max}` : `up to ${action.max}`
   const together = action.together
   // A rule over the set says what to pick: "up to 2 cards that share a land
@@ -286,9 +286,11 @@ function zoneChoiceTitle(action: ZoneChoiceAction): string {
       ? together.text
       : `${action.max === 1 ? 'a card' : `${n} cards`}${together ? ` ${together.text}` : ''}`
   if (action.split === true) return `Choose ${cards}`
+  // Choosing for someone else (Tasigur: an opponent picks for its controller).
+  const whose = action.forPlayer === undefined ? 'your' : `${nameOf(action.forPlayer)}'s`
   switch (action.destination) {
     case 'hand':
-      return `Choose ${cards} to put into your hand`
+      return `Choose ${cards} to put into ${whose} hand`
     case 'battlefield':
       return `Choose ${cards} to put onto the battlefield`
     case 'graveyard':
@@ -4810,7 +4812,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
 
       {mode === 'choose-from-zone' && zoneChoiceAction ? (
         <ZoneViewer
-          title={zoneChoiceTitle(zoneChoiceAction)}
+          title={zoneChoiceTitle(zoneChoiceAction, (p) => playerLabel(p, game.seats))}
           ids={zoneChoiceAction.ids}
           resolve={(id) => view.objects[id]}
           selection={{

@@ -5909,6 +5909,8 @@ export class Game {
           combat: { turn: this.state.turn.number, phase: this.state.turn.combatPhases ?? 1 },
           player: this.state.players[defender as PlayerId] !== undefined ? (defender as PlayerId) : null,
         };
+        // "During any turn you attacked with a commander" (Neriv).
+        if (object.isCommander) this.state.players[player].attackedWithCommanderOnTurn = this.state.turn.number;
         const taps = !this.objHasKeyword(id, "vigilance");
         if (taps) object.tapped = true;
         declaredNow.push({ id, defender, taps, first });
@@ -16286,6 +16288,24 @@ export class Game {
       },
       colorsAmong: (filter, except) =>
         colorsAmongPermanents(this.state, this.registry, controller, filter, except),
+      distinctTokenNames: (filter) => {
+        // A token's name (rule 111.4): what its maker named it or what it
+        // copies (`nameOf` reads both), else its subtypes plus "Token" — not
+        // the registry key, which can carry a size ("4/4 Vigilant Angel
+        // Token" is an Angel Token).
+        const names = new Set<string>();
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          const object = this.state.objects[id];
+          if (!object.isToken) continue;
+          const named = nameOf(object);
+          names.add(
+            object.copyOf !== null || named !== object.cardName
+              ? named
+              : `${this.registry.get(object.cardName).subtypes.join(" ")} Token`,
+          );
+        }
+        return names.size;
+      },
       becomeCopy: (target, of, exceptions) =>
         this.becomeCopyUntilEndOfTurn(target, of, exceptions, lastKnownOf({ kind: "object", object: of })),
       attackRandomOpponent: (target, notAttackedLastCombat) =>
@@ -17772,6 +17792,7 @@ export class Game {
     this.state.awaiting = {
       kind: "choose-from-zone",
       player: picker ?? player,
+      ...(picker !== undefined && picker !== player ? { forPlayer: player } : {}),
       ids,
       eligible,
       min: Math.min(min, eligible.length),
