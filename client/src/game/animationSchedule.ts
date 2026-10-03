@@ -1,4 +1,4 @@
-import type { GameEvent, Phase, PlayerId } from 'engine/client'
+import type { GameEvent, ObjectId, Phase, PlayerId } from 'engine/client'
 
 /**
  * How long each kind of animation is on screen, at the viewer's normal speed.
@@ -233,6 +233,69 @@ export interface EventSchedule {
    * Phase" banner/slot right after a turn starts) carries across frames —
    * pass this back in as the next call's `startPhase`. */
   readonly endPhase: Phase
+  /** Each spell or ability that resolves over the old board, with when its
+   * target arrows are up (see {@link ResolveAim}), in the order they
+   * resolve. */
+  readonly aims: readonly ResolveAim[]
+}
+
+/**
+ * A resolving spell or ability pointing at what it targets, over the board
+ * the first half plays on, where it is still on the stack (`ArrowLayer`).
+ *
+ * The arrows go up with the first animated event of its resolution, not with
+ * its own exit beat: the engine logs what a spell does before it logs the
+ * spell leaving the stack (`spell-resolved` comes last), so a creature it
+ * destroys fades out before that beat — pointed at only from the start. They
+ * come down as the exit beat ends, the object gone from the stack.
+ */
+export interface ResolveAim {
+  /** The resolving spell or ability: its id on the stack. */
+  readonly object: ObjectId
+  /** Milliseconds from the start of the first half. */
+  readonly from: number
+  readonly until: number
+}
+
+/** Something leaving the stack having resolved — the only exits that point
+ * at their targets. A countered or fizzled spell doesn't resolve (rules
+ * 701.6a, 608.2b), so it hit nothing. */
+function resolvedObject(ev: GameEvent): ObjectId | null {
+  return ev.type === 'spell-resolved' || ev.type === 'ability-resolved' ? ev.object : null
+}
+
+/**
+ * When each resolution in the first half has its arrows up. A resolution
+ * begins with the priority pass that let it happen — every player passing
+ * in succession is what resolves the top of the stack (rule 117.4) — or with
+ * the object before it finishing resolving; one whose start is in an earlier
+ * frame (it stopped for a decision partway) begins with this one. Its arrows
+ * go up with the first animated event after that start and come down when
+ * its exit beat ends. A resolution with no exit slot (past the frame's
+ * ceiling) gets none.
+ */
+function resolveAims(
+  events: readonly GameEvent[],
+  items: readonly ScheduledEvent[],
+  exitMs: number,
+): ResolveAim[] {
+  const aims: ResolveAim[] = []
+  for (const exit of items) {
+    const object = resolvedObject(exit.event)
+    if (object === null) continue
+    const seq = exit.event.seq
+    let start = -Infinity
+    for (const e of events) {
+      if (e.seq >= seq) break
+      if (e.type === 'priority-passed' || resolvedObject(e) !== null) start = e.seq
+    }
+    let from = exit.offset
+    for (const item of items) {
+      if (item.event.seq > start && item.event.seq <= seq) from = Math.min(from, item.offset)
+    }
+    aims.push({ object, from, until: exit.offset + exitMs })
+  }
+  return aims
 }
 
 type SlotKind =
@@ -487,6 +550,7 @@ export function scheduleEvents(
     after: after.items,
     afterMs: after.totalMs,
     endPhase: phase.current,
+    aims: resolveAims(events, before.items, STACK_EXIT_MS * scale),
   }
 }
 

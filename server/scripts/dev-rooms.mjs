@@ -69,7 +69,11 @@ class ScriptedBot extends HeuristicBotController {
       if (cast) {
         this.casts.shift();
         const options = cast.targetOptions?.[0] ?? [];
-        const chosen = options.find((o) => o.kind === "player" && o.player === target) ?? options[0];
+        // A player by id, or a permanent by name.
+        const chosen =
+          options.find((o) => o.kind === "player" && o.player === target) ??
+          options.find((o) => o.kind === "object" && s.objects[o.object]?.cardName === target) ??
+          options[0];
         return { type: "cast-spell", player: this.playerId, card: cast.card, targets: chosen ? [chosen] : [] };
       }
     }

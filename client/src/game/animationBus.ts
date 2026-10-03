@@ -1,5 +1,6 @@
 import type { GameEvent, PlayerView } from 'engine/client'
 import type { Half } from './animationSchedule.ts'
+import { ResolveAims } from './resolveAims.ts'
 
 /**
  * The one channel between "what the board is currently playing out"
@@ -40,6 +41,11 @@ type Listener = (cues: readonly AnimationCue[]) => void
 export class AnimationBus {
   /** Only ever one subscriber (`AnimationLayer`); a second one replaces it. */
   private listener: Listener | null = null
+  /** The other thing that travels sideways: which spell or ability is
+   * resolving over the board on screen, for `ArrowLayer` to point from. Not a
+   * cue but state with a lifetime — up from its resolution's first beat to
+   * the end of its exit — so it's kept rather than sent (see `ResolveAims`). */
+  readonly aims = new ResolveAims()
 
   subscribe(fn: Listener): () => void {
     this.listener = fn

@@ -551,9 +551,11 @@ Follow-on ideas, approved by the user on 2026-09-30:
   "you may" asked after another decision in the same resolution (it parks, and loses
   `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
   granted (`grantedAbility` kind `modifier`, which has no signature).
-- **Spells and abilities should point their arrows at their targets as they resolve.** Draw the
-  target arrows (`client/src/ui/ArrowLayer.tsx`, kind `target`) from a resolving spell or
-  ability to what it targets.
+- **A new attack arrow's head lands before its line.** An attack arrow draws itself in along
+  its length (`arrow-draw`, `client/src/ui/ArrowLayer.tsx`), but its head is a marker on the
+  same path, drawn whole from the first frame, so it sits on the defender before the line gets
+  there. Resolving arrows put the head on a sliver path of its own that waits for the line
+  (`.arrow-tip`); attack arrows could do the same.
 
 ## Tooling / docs
 

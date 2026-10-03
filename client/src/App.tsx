@@ -39,6 +39,8 @@ import { stackShowsSomething } from './game/decisionSource.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
 import { useBoardDrag, type BoardDragControls } from './game/useBoardDrag.ts'
+import { aimedEntry, useResolveState } from './game/resolveAims.ts'
+import type { ResolveAims } from './game/resolveAims.ts'
 import { Symbols } from './ui/Symbols.tsx'
 import type { BoardEntry } from './game/board.ts'
 import { blockPairs, freeBlocker, leastBlocked, setPairCount } from './game/blockGroups.ts'
@@ -816,6 +818,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         hand={hand}
         previousView={shown.previousView}
         boardDrag={boardDrag}
+        aims={bus.aims}
       />
 
       {showHistory ? (
@@ -877,6 +880,10 @@ interface TableProps {
   /** Your own permanents' dragged order and the drag in progress, owned by
    * `GameScreen` so a drag survives this component's per-frame remount. */
   readonly boardDrag: BoardDragControls
+  /** What is resolving over this board while a frame's first half plays on
+   * it, for the targeted marks (`aim`) and `ArrowLayer` (owned by the
+   * animation bus, which outlives this component's per-frame remount). */
+  readonly aims: ResolveAims
 }
 
 /**
@@ -886,7 +893,17 @@ interface TableProps {
  * *not* reset per frame — the hand tray being raised — lives in `GameScreen`
  * and arrives through props.
  */
-function Table({ view, seat, opponents, game, actions, hand, previousView, boardDrag }: TableProps) {
+function Table({
+  view,
+  seat,
+  opponents,
+  game,
+  actions,
+  hand,
+  previousView,
+  boardDrag,
+  aims,
+}: TableProps) {
 
   const [targeting, setTargeting] = useState<Targeting | null>(null)
   // Whether the collapsed hand tray (priority mode only -- see .hand-strip's
@@ -963,12 +980,15 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
   // the top of the stack's targets, or those of the entry the pointer is on
   // (Stack's `onFocusEntry`). A bot's Swords to Plowshares shows what it's
   // about to exile before anyone lets it resolve, instead of in the History.
+  // While a frame plays out over this board, whatever resolves in it is
+  // marked instead, and an entry that has resolved is marked no more
+  // (`aimedEntry`; the bus's `aims`, played by usePlayback).
   const [stackFocus, setStackFocus] = useState<ObjectId | null>(null)
-  const aimId: ObjectId | null = useMemo(() => {
-    const stack = view.zones.stack
-    if (stackFocus !== null && stack.includes(stackFocus)) return stackFocus
-    return stack[stack.length - 1] ?? null
-  }, [view, stackFocus])
+  const resolve = useResolveState(aims)
+  const aimId: ObjectId | null = useMemo(
+    () => aimedEntry(view.zones.stack, stackFocus, resolve),
+    [view, stackFocus, resolve],
+  )
   const aim = useMemo(() => {
     const id = aimId
     const source = id === null ? undefined : view.objects[id]
@@ -4702,9 +4722,10 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           previousStack={previousView?.zones.stack ?? null}
         />
       ) : null}
-      {/* What points at what: the aimed stack entry's targets, attackers,
-          blockers. Inside Table so it re-measures against each board. */}
-      <ArrowLayer view={view} previousView={previousView} aimId={aimId} />
+      {/* What points at what: the aimed stack entry's targets (or what's
+          resolving's, as it does), attackers, blockers. Inside Table so it
+          re-measures against each board. */}
+      <ArrowLayer view={view} previousView={previousView} aimId={aimId} resolve={resolve} />
 
       {/* The whole hand at full size, for a hand too big to pick out of the
           fan. Deliberately the *same* card renderer the fan uses, so every

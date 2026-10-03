@@ -20,7 +20,8 @@
 //               that can), `block` ({ attacker, with }: block that attacker
 //               with every untapped creature of that name, or of any name in a
 //               list), `casts` ([{ name, target }]: cast on its own precombat
-//               main, one per turn)
+//               main, one per turn; `target` a player id, or the name of a
+//               permanent to aim at)
 
 export const COMMANDERS = {
   alice: "Krenko, Mob Boss",
@@ -44,6 +45,16 @@ const EXILE_BOARD = {
       game.debugSpawn(name, "alice", "library");
     }
   },
+};
+
+/** A `setup` that puts `player`'s opening hand of basics back into their
+ * library, leaving only the scenario's cards in hand: few enough to pass the
+ * turn without discarding to hand size first. */
+const handOfSpellsOnly = (player) => (game) => {
+  const basics = ["Plains", "Island", "Swamp", "Mountain", "Forest"];
+  for (const id of [...game.state.zones.perPlayer[player].hand]) {
+    if (basics.includes(game.state.objects[id].cardName)) game.moveObject(id, "library");
+  }
 };
 
 export default {
@@ -501,6 +512,49 @@ export default {
       }
     },
     bots: { bob: {}, carol: {}, dave: {} },
+  },
+
+  ARRWS: {
+    about:
+      "2p. Arrows as things resolve: Lightning Bolt (a creature or bob), Murder, Prey Upon " +
+      "(two targets: the Dreadmaw fights one of bob's creatures) and Prodigal Pyromancer's " +
+      "ping, each pointing at what it hits as it leaves the stack. Pass the turn and bob " +
+      "Bolts the Pyromancer.",
+    players: ["alice", "bob"],
+    lands: { alice: 10, bob: 5 },
+    battlefield: {
+      alice: ["Prodigal Pyromancer", "Colossal Dreadmaw"],
+      bob: ["Grizzly Bears", "Hill Giant", "Serra Angel", "Craw Wurm"],
+    },
+    hand: { alice: ["Lightning Bolt", "Murder", "Prey Upon"], bob: ["Lightning Bolt"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: { casts: [{ name: "Lightning Bolt", target: "Prodigal Pyromancer" }] } },
+  },
+
+  ARRW4: {
+    about:
+      "4p. ARRWS's arrows in the quadrant layout: alice has Lightning Bolt and the " +
+      "Pyromancer; pass the turn and bob Murders carol's Serra Angel, then Bolts alice.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 6, bob: 10, carol: 3, dave: 3 },
+    battlefield: {
+      alice: ["Prodigal Pyromancer", "Colossal Dreadmaw"],
+      bob: ["Grizzly Bears"],
+      carol: ["Serra Angel", "Hill Giant"],
+      dave: ["Craw Wurm", "Grizzly Bears"],
+    },
+    hand: { alice: ["Lightning Bolt"], bob: ["Murder", "Lightning Bolt"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: {
+      bob: {
+        casts: [
+          { name: "Murder", target: "Serra Angel" },
+          { name: "Lightning Bolt", target: "alice" },
+        ],
+      },
+      carol: {},
+      dave: {},
+    },
   },
 
   RVLND: {

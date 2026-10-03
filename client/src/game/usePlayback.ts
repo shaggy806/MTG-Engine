@@ -207,6 +207,9 @@ export function usePlayback(
           half: 'before' as const,
         })),
       )
+      // What resolves over the old board points at its targets while it does
+      // (`ArrowLayer`), on the same clock as the cues.
+      busRef.current.aims.play(schedule.aims)
     }
 
     const finish = (): void => {
@@ -226,6 +229,9 @@ export function usePlayback(
     // lands at once and the banners play over the board that follows it.
     const show = (): void => {
       timerRef.current = null
+      // Every resolution has left the stack by now; the new board's arrows
+      // are its own.
+      busRef.current.aims.clear()
       revisionRef.current += 1
       lastViewRef.current = next.view
       if (watching && schedule.after.length > 0) {
@@ -304,6 +310,7 @@ export function usePlayback(
       queueRef.current = []
       pendingAfterRef.current = null
       lastViewRef.current = null
+      busRef.current.aims.clear()
       if (timerRef.current !== null) window.clearTimeout(timerRef.current)
       timerRef.current = null
       playingRef.current = false
@@ -332,6 +339,7 @@ export function usePlayback(
   useEffect(
     () => () => {
       if (timerRef.current !== null) window.clearTimeout(timerRef.current)
+      busRef.current.aims.clear()
     },
     [],
   )

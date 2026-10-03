@@ -1626,7 +1626,9 @@
      the bottom-right player's life. The rail is --card-w-max wide at most,
      plus its padding and the page's. */
   right: calc(var(--card-w-max) + 2.2vw + 8px);
-  z-index: 20;
+  /* Above a board tile's 20 and the arrows' 21 (.arrow-layer), so an arrow
+     leaves the card from behind it. */
+  z-index: 22;
   pointer-events: none;
 }
 /* every entry is positioned absolutely, anchored from the pile's top-RIGHT
@@ -3468,13 +3470,17 @@
    to its targets, attackers to what they attack, blockers to what they block.
    Above the boards, under the stack pile (so an arrow leaves the card from
    behind it) and under every popover. A new arrow draws itself in along its
-   own length (pathLength=1); one that was already there just stands. */
+   own length (pathLength=1); one that was already there just stands.
+   "Above the boards" means above a tile's own z-index 20 (.board-entry >
+   .mini-tile-wrap, which lifts a host over its attachments): at 19 every
+   tile a line crossed hid that stretch of it, and the tile it pointed at hid
+   its head. */
 .arrow-layer {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 19;
+  z-index: 21;
   pointer-events: none;
   overflow: visible;
 }
@@ -3495,19 +3501,23 @@
   opacity: 0.75;
 }
 .arrow-layer .arrow.seat-a,
-.arrow-layer .arrowhead.seat-a {
+.arrow-layer .arrowhead.seat-a,
+.arrow-layer .arrow-impact.seat-a {
   --arrow: var(--seat-a);
 }
 .arrow-layer .arrow.seat-b,
-.arrow-layer .arrowhead.seat-b {
+.arrow-layer .arrowhead.seat-b,
+.arrow-layer .arrow-impact.seat-b {
   --arrow: var(--seat-b);
 }
 .arrow-layer .arrow.seat-c,
-.arrow-layer .arrowhead.seat-c {
+.arrow-layer .arrowhead.seat-c,
+.arrow-layer .arrow-impact.seat-c {
   --arrow: var(--seat-c);
 }
 .arrow-layer .arrow.seat-d,
-.arrow-layer .arrowhead.seat-d {
+.arrow-layer .arrowhead.seat-d,
+.arrow-layer .arrow-impact.seat-d {
   --arrow: var(--seat-d);
 }
 .arrow-layer .arrowhead {
@@ -3521,8 +3531,71 @@
   /* A dashed line can't draw in by its dash offset; it fades in instead. */
   animation-name: arrow-fade;
 }
+/* A spell or ability resolving (ArrowLayer's `resolve` kind, up only while
+   it does): solid, heavier and glowing in its controller's colour, shooting
+   from its stack entry to each target faster than a waiting arrow fades in —
+   the exit beat it rides on is short — with a ring flaring where it lands.
+   Under reduced motion the line fades in and the ring only fades. */
+.arrow-layer .arrow.resolve,
+.arrow-layer .arrow-tip {
+  stroke-width: clamp(3px, 0.34vw, 6px);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--arrow, var(--warn))) drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+}
+.arrow-layer .arrow.resolve.is-new {
+  animation-duration: calc(240ms * var(--anim-scale, 1));
+}
+/* The head, on a sliver of its own (its stroke-width sizes the marker as the
+   line's would), shown once the line has nearly reached it. */
+.arrow-layer .arrow-tip {
+  fill: none;
+  stroke: transparent;
+  opacity: 0;
+  animation: arrow-tip-in 1ms linear calc(200ms * var(--anim-scale, 1)) forwards;
+}
+@keyframes arrow-tip-in {
+  to {
+    opacity: 1;
+  }
+}
+.arrow-layer .arrow-impact {
+  fill: none;
+  stroke: var(--arrow, var(--warn));
+  stroke-width: clamp(2px, 0.22vw, 4px);
+  r: clamp(10px, 1.1vw, 22px);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: arrow-impact calc(340ms * var(--anim-scale, 1)) ease-out
+    calc(180ms * var(--anim-scale, 1)) forwards;
+}
+@keyframes arrow-impact {
+  from {
+    opacity: 0.95;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+@keyframes arrow-impact-fade {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0;
+  }
+}
 .arrow-layer.reduced .arrow.is-new {
   animation-name: arrow-fade;
+}
+.arrow-layer.reduced .arrow-impact {
+  animation-name: arrow-impact-fade;
+}
+.arrow-layer.reduced .arrow-tip {
+  animation: none;
+  opacity: 1;
 }
 @keyframes arrow-draw {
   from {

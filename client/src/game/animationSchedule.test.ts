@@ -331,3 +331,116 @@ describe('scheduleEvents', () => {
     expect(s.afterMs).toBe(0)
   })
 })
+
+describe('scheduleEvents: what points at its targets as it resolves', () => {
+  const passes = () => [
+    ev({ type: 'priority-passed', player: 'p1' }),
+    ev({ type: 'priority-passed', player: 'p2' }),
+  ]
+  const resolved = (object: string) => ev({ type: 'spell-resolved', object })
+  const killed = (object: string) =>
+    ev({ type: 'permanent-left-battlefield', object, toZone: 'graveyard' })
+
+  it('points for the length of a spell leaving the stack', () => {
+    const s = scheduleEvents([...passes(), resolved('bolt')], 'precombat-main')
+    expect(s.aims).toEqual([{ object: 'bolt', from: 0, until: STACK_EXIT_MS }])
+  })
+
+  it('points from its first effect, so what it destroys is pointed at as it goes', () => {
+    // The engine logs a spell's effects before the spell leaving the stack.
+    const s = scheduleEvents([...passes(), killed('bear'), resolved('murder')], 'precombat-main')
+    expect(types(s.items)).toEqual(['permanent-left-battlefield', 'spell-resolved'])
+    expect(s.aims).toEqual([{ object: 'murder', from: 0, until: DEATH_STEP_MS + STACK_EXIT_MS }])
+  })
+
+  it('starts at the priority pass that resolved it, not at whatever came before', () => {
+    const s = scheduleEvents(
+      [
+        cast(),
+        ev({ type: 'cards-discarded', player: 'p1', objects: ['c'] }),
+        ...passes(),
+        killed('bear'),
+        resolved('murder'),
+      ],
+      'precombat-main',
+    )
+    // The cast and the discard before it are someone else's business.
+    const start = CARD_STEP_MS + DISCARD_STEP_MS
+    expect(s.aims).toEqual([
+      { object: 'murder', from: start, until: start + DEATH_STEP_MS + STACK_EXIT_MS },
+    ])
+  })
+
+  it('points from each of several resolving in one frame, in turn', () => {
+    const s = scheduleEvents(
+      [
+        ...passes(),
+        ev({ type: 'ability-resolved', source: 'pyro', object: 'ping' }),
+        // State-based actions after the first resolution: its target dies.
+        killed('elf'),
+        ...passes(),
+        killed('bear'),
+        resolved('murder'),
+      ],
+      'precombat-main',
+    )
+    // The two deaths share a beat, which is where the second resolution's
+    // own effect plays.
+    expect(s.aims).toEqual([
+      { object: 'ping', from: 0, until: STACK_EXIT_MS },
+      {
+        object: 'murder',
+        from: STACK_EXIT_MS,
+        until: STACK_EXIT_MS + DEATH_STEP_MS + STACK_EXIT_MS,
+      },
+    ])
+  })
+
+  it("points from a resolution resumed after a decision from the frame's start", () => {
+    // No priority pass in this frame: it began in an earlier one.
+    const s = scheduleEvents(
+      [ev({ type: 'cards-discarded', player: 'p2', objects: ['c'] }), resolved('mind-rot')],
+      'precombat-main',
+    )
+    expect(s.aims).toEqual([
+      { object: 'mind-rot', from: 0, until: DISCARD_STEP_MS + STACK_EXIT_MS },
+    ])
+  })
+
+  it('does not point from a countered or fizzled spell, but does from the counterspell', () => {
+    const s = scheduleEvents(
+      [
+        ...passes(),
+        ev({ type: 'spell-countered', object: 'bolt' }),
+        resolved('counterspell'),
+        ...passes(),
+        ev({ type: 'spell-fizzled', object: 'murder', reason: 'all targets are illegal' }),
+      ],
+      'precombat-main',
+    )
+    // The counterspell's arrow is up while the spell it counters breaks.
+    expect(s.aims).toEqual([{ object: 'counterspell', from: 0, until: 2 * STACK_EXIT_MS }])
+  })
+
+  it("scales with the viewer's speed", () => {
+    const s = scheduleEvents([...passes(), killed('bear'), resolved('murder')], 'precombat-main', {
+      scale: 2,
+      reduced: false,
+    })
+    expect(s.aims).toEqual([
+      { object: 'murder', from: 0, until: 2 * (DEATH_STEP_MS + STACK_EXIT_MS) },
+    ])
+  })
+
+  it("does not point from a resolution past the frame's ceiling", () => {
+    // Three casts and a death fit under the 6 s ceiling; the exit after them
+    // isn't animated, so its effect played with nothing pointing at it.
+    const s = scheduleEvents(
+      [cast(), cast(), cast(), ...passes(), killed('bear'), resolved('late')],
+      'precombat-main',
+    )
+    expect(types(s.items)).toContain('permanent-left-battlefield')
+    expect(types(s.items)).not.toContain('spell-resolved')
+    expect(s.aims).toEqual([])
+  })
+})
