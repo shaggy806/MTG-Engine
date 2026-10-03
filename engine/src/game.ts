@@ -10396,6 +10396,10 @@ export class Game {
               : "oneOf" in mana
                 ? mana.oneOf
                 : this.manaOneOf(mana, player, sourceId);
+          // A list naming nothing makes nothing (rule 106.5), and it was
+          // offered with no pick for it (`standaloneManaVariants`): none is
+          // used up, so a later pick still lines up.
+          if (allowed.length === 0) return;
           const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
           // "Any color" is any *one* colour however much is made (Gilded
           // Lotus), so the first pick names it for all — as it does for "X
@@ -11217,7 +11221,9 @@ export class Game {
     const ownFixed = option.fixed.slice(0, option.fixed.length - extraFixed);
     const extraAny = extras.length - extraFixed;
     const ownAny = option.anyColor - extraAny;
-    // "…for {C}": an option that makes none doesn't set it off.
+    // An option that makes no mana of its own sets off no "tapped for mana"
+    // trigger (rule 106.12a); nor does one making no {C} a "…for {C}" one.
+    if (ownFixed.length === 0 && ownAny <= 0) return [option];
     if (extra.producing !== undefined && !ownFixed.includes(extra.producing)) return [option];
     // The extra units are the triggered ability's source's (see `ManaOrigin`).
     const plus = (type: ManaType): ManaOption => ({
@@ -11424,6 +11430,11 @@ export class Game {
       | { readonly holder: ObjectId; readonly units: readonly ManaType[] }
       | { readonly holder: ObjectId; readonly amount: number; readonly choices: readonly ManaType[] }
     )[] = [];
+    // "Whenever … is tapped for mana" triggers only as the mana ability
+    // resolves and produces mana (rule 106.12a): one that made none — a
+    // Reflecting Pool with nothing to reflect, a Chrome Mox with nothing
+    // imprinted — sets none of them off.
+    if (produced.length === 0) return out;
     for (const extra of this.tappedForManaExtras(tapped)) {
       if (extra.producing !== undefined && !produced.includes(extra.producing)) continue;
       const fixed = (types: readonly ManaType[]): void => {
@@ -11457,7 +11468,7 @@ export class Game {
    */
   private tappedForManaExtras(tapped: GameObject): ManaExtra[] {
     const out: ManaExtra[] = [];
-    // Only the permanents with such a trigger are worth a look  read once
+    // Only the permanents with such a trigger are worth a look — read once
     // per cache region, since every mana source and hand-activation offer
     // asks.
     const holders = computedCacheMemo("tappedForManaHolders", () =>

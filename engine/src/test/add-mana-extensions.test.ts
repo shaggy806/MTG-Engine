@@ -259,6 +259,27 @@ describe("a triggered mana ability's choice, tapped by hand", () => {
     expect(pool(game)).toMatchObject({ G: 1, R: 1 });
   });
 
+  it("isn't set off by a land tapped for no mana at all (rule 106.12a)", () => {
+    const game = mkGame();
+    // A lone Reflecting Pool reflects nothing: Wild Growth's {G} doesn't come.
+    const reflecting = spawn(game, "Reflecting Pool");
+    const growth = game.debugSpawn("Wild Growth", A, "battlefield");
+    game.state.objects[growth].attachedTo = reflecting;
+    const options = offers(game, reflecting);
+    expect(options.map((a) => a.manaColors)).toEqual([[]]);
+    expect(options[0].text).toContain("(add no mana)");
+    tap(game, reflecting, 0, []);
+    expect(game.state.players[A].manaPool).toHaveLength(0);
+    // Nor Fertile Ground's colour, off The Grey Havens with no legendary
+    // creature card in the graveyard.
+    const havens = spawn(game, "The Grey Havens");
+    const ground = game.debugSpawn("Fertile Ground", A, "battlefield");
+    game.state.objects[ground].attachedTo = havens;
+    expect(picks(game, havens, 1)).toEqual([[]]);
+    tap(game, havens, 1, []);
+    expect(game.state.players[A].manaPool).toHaveLength(0);
+  });
+
   it("carries none of the tapped land's restriction when the auto-payer taps it", () => {
     const game = mkGame();
     spawn(game, "Mirari's Wake");
