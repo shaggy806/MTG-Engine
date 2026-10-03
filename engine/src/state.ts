@@ -19,6 +19,7 @@ import type {
 } from "./cards.js";
 import type {
   EffectSpec,
+  EnterTypes,
   LookAndChooseLeftoverIf,
   ResolvedEnterAttacking,
   ZoneSecondPick,
@@ -238,6 +239,26 @@ export interface GameObject {
    * ability nor a copiable value (701.60b); a zone change ends it (701.60a).
    */
   suspectedAt?: number;
+  /**
+   * The permanent is **monstrous** (rule 701.37b): a designation the
+   * `monstrosity` effect gives it, which the monstrosity action reads ("if
+   * this permanent isn't monstrous") and a `becomes-monstrous` trigger
+   * watches for. Neither an ability nor a copiable value, so losing its
+   * abilities or a copy effect leaves it be; it lasts until the permanent
+   * leaves the battlefield (`moveObject` clears it).
+   */
+  monstrous?: true;
+  /**
+   * Exerted (rule 701.43a): it won't untap during this player's next untap
+   * step — the player who exerted it, whoever controls it then (a creature
+   * borrowed until end of turn and exerted still untaps in its owner's untap
+   * step, the ruling). Cleared as that untap step happens, whether or not it
+   * was tapped, and by any change of zone.
+   */
+  exertedBy?: PlayerId;
+  /** The turn it was last exerted — Combat Celebrant's "if this creature
+   * hasn't been exerted this turn". Gone with any change of zone. */
+  exertedOnTurn?: number;
   /** This creature must attack this specific player if able — Encore's
    * "create a token copy that attacks that opponent this turn if able". */
   mustAttackPlayer?: PlayerId;
@@ -448,6 +469,8 @@ export interface GameObject {
     /** The card a reveal land's controller revealed from hand, or `null`
      * for none (it enters tapped). */
     readonly reveal?: ObjectId | null;
+    /** Riot's choice (rule 702.136a): an additional +1/+1 counter, or haste. */
+    readonly riot?: "counter" | "haste";
   };
   /** The faces of a multi-face card (rule 712 — ROADMAP Phase 10), by name,
    * front first — copied from `CardDefinition.faces` when the object is
@@ -1598,6 +1621,12 @@ export type AwaitingDecision =
        * Kaalia of the Vast, Winota. Only meaningful with `destination:
        * "battlefield"`. */
       readonly enterAttacking?: ResolvedEnterAttacking;
+      /** Battlefield-bound cards enter under this player's control — a
+       * `look-and-choose` over every graveyard (Necromantic Selection). */
+      readonly enterUnder?: PlayerId;
+      /** …with these types and colours in addition to their own, in place as
+       * they enter (a `look-and-choose`'s `enterAs`). */
+      readonly enterAs?: EnterTypes;
       /** Counters each card put onto the battlefield enters with — a
        * `return-from-graveyard`'s `withCounters`. */
       readonly enterWithCounters?: { readonly kind: string; readonly amount: number };
@@ -1739,6 +1768,10 @@ export type AwaitingDecision =
       readonly source: ObjectId;
       readonly options: readonly string[];
       readonly catalog: boolean;
+      /** Riot's "+1/+1 counter or haste" as `source` is about to enter (rule
+       * 702.136a): the answer is recorded as its riot choice rather than as
+       * a chosen word. */
+      readonly riot?: true;
       readonly then?: EffectSpec;
       readonly targets?: ResolvedTargets;
       readonly x?: number;
@@ -1971,6 +2004,11 @@ export type AwaitingDecision =
        * other answer for a slot must be a legal target for it.
        */
       readonly current?: readonly TargetRef[];
+      /** A triggered ability that divides an amount among the targets of its
+       * `divided` group (rule 603.3d — Dragonlord Atarka): `total` shared by
+       * the answer's targets from `slot` on (an index into the answer, not
+       * the ability's own slots), split as the answer's `division` says. */
+      readonly divide?: { readonly total: number; readonly slot: number };
     }
   | {
       /**
@@ -2718,6 +2756,15 @@ export interface GameState {
     readonly unlessOne?: CardFilter;
   }[];
   /**
+   * Attackers just declared whose "you may exert this creature as it
+   * attacks" (rule 701.43d, an optional cost to attack — 508.1g) is still to
+   * be asked: queued by the declaration and asked one at a time, as a
+   * `choose-modes`, by `promptNextExert` in the `prepareForPriority`
+   * fixpoint — before anything that triggered on the attack goes on the
+   * stack. Optional so a snapshot saved before it existed still loads.
+   */
+  pendingExerts?: ObjectId[];
+  /**
    * Creatures put onto the battlefield attacking whose controller still owes
    * the choice of what each attacks (rule 508.4) — queued as they enter and
    * asked, one batch per player, by `promptNextEnterAttacking` in the
@@ -3146,6 +3193,9 @@ export function tokenFoldKey(o: GameObject): string {
     o.goadedBy ?? [],
     o.goadedForGameBy ?? [],
     o.suspectedAt ?? null,
+    o.monstrous ?? false,
+    o.exertedBy ?? null,
+    o.exertedOnTurn ?? null,
     o.mustAttackPlayer ?? null,
     o.controlEffects ?? null,
     o.controlEndsAtCleanup,

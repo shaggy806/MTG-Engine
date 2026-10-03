@@ -45,7 +45,8 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import type { EnterAttackingChoice, GameObject, GameState, TriggerOrderEntry } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
 import { anyNumberSlot, groupBounds, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
-import type { TargetRef, TargetSpec } from "./target.js";
+import type { TargetFacts, TargetRef, TargetSpec } from "./target.js";
+import { stateTargetFacts } from "./targeting.js";
 import { fitTargetCount, maxXForTargets, minXForTargets } from "./target-count.js";
 import {
   auraPolarity,
@@ -65,6 +66,11 @@ export interface ControllerView {
   readonly player: PlayerId;
   /** Everything this player may legally do right now. */
   legalActions(): readonly LegalAction[];
+  /** Who controls a target and its power, for a relation among targets
+   * ("controlled by different players", "total power 10 or less") — see
+   * {@link TargetFacts}. Optional: a view built outside a `Game` may not
+   * have them, and a chooser then narrows by those relations not at all. */
+  readonly targetFacts?: TargetFacts;
   /**
    * What this player could legally do if `action` were dispatched now,
    * asked of a throwaway copy of the game — `null` if the engine refused it.
@@ -362,19 +368,23 @@ const fillableOptions = (
   options: readonly (readonly TargetRef[])[],
   i: number,
   picked: readonly (TargetRef | null)[],
+  facts?: TargetFacts,
 ): readonly TargetRef[] =>
-  slotOptions(specs, options, i, picked).filter((ref) => targetsFillable(specs, options, [...picked, ref]));
+  slotOptions(specs, options, i, picked, facts).filter((ref) =>
+    targetsFillable(specs, options, [...picked, ref], picked.length + 1, facts),
+  );
 
 const firstOfEach = (
   legalOptions: readonly (readonly TargetRef[])[],
   specs: readonly TargetSpec[] = [],
+  facts?: TargetFacts,
 ): ChosenTargets => {
   // Slot by slot, so an "another target" slot skips what an earlier one took
   // — and never takes what a later one is left needing.
   const picked: (TargetRef | null)[] = [];
   const group = anyNumberSlot(specs);
   for (let i = 0; i < legalOptions.length; i += 1) {
-    const first = fillableOptions(specs, legalOptions, i, picked)[0];
+    const first = fillableOptions(specs, legalOptions, i, picked, facts)[0];
     // An "any number of" group (always last) takes one member, or none —
     // never a hole, which would be a member with no target.
     if (i === group) {
@@ -451,12 +461,12 @@ export class AutomaticController implements PlayerController {
   }
 
   chooseTargets(
-    _view: ControllerView,
+    view: ControllerView,
     _sourceName: string,
     specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets {
-    return firstOfEach(legalOptions, specs);
+    return firstOfEach(legalOptions, specs, view.targetFacts);
   }
 
   /** Declines; the controllers that cast things override it. */
@@ -763,8 +773,8 @@ export class ScriptedController implements PlayerController {
     discardFromFront(hand, count);
   declareBlockersFn: BlockChooser = () => [];
   assignCombatDamageFn: DamageAssigner = (_view, a) => standardDamageAssignment(a);
-  chooseTargetsFn: TargetChooser = (_view, _source, specs, legalOptions) =>
-    firstOfEach(legalOptions, specs);
+  chooseTargetsFn: TargetChooser = (view, _source, specs, legalOptions) =>
+    firstOfEach(legalOptions, specs, view.targetFacts);
   chooseFromZoneFn: ZoneChooser = (_view, eligible, min, _max) => eligible.slice(0, min);
   mulliganFn: MulliganChooser = () => false;
   chooseBottomOfLibraryFn: BottomChooser = (hand, count) => discardFromFront(hand, count);
@@ -1136,10 +1146,15 @@ export class RandomController extends AutomaticController {
   }
 
   act(view: ControllerView): Action {
+    // What a relation among targets reads, for `pickTargets` below.
+    this.facts = view.targetFacts;
     const options = view.legalActions();
     if (options.length === 0) return passFor(this.playerId);
     return this.toAction(options[this.pickIndex(options.length)]);
   }
+
+  /** The facts of the view being acted on — see `ControllerView.targetFacts`. */
+  private facts: TargetFacts | undefined;
 
   private pickIndex(length: number): number {
     return Math.min(length - 1, Math.floor(this.random() * length));
@@ -1156,17 +1171,28 @@ export class RandomController extends AutomaticController {
     const group = anyNumberSlot(specs);
     for (let i = 0; i < options.length; i += 1) {
       // Narrowed by an "another target" relation to an earlier slot's pick.
-      const choices = fillableOptions(specs, options, i, picked);
+      const choices = fillableOptions(specs, options, i, picked, this.facts);
       // An "any number of" group (always last): a random subset of its
       // candidates, none included.
       if (i === group) {
         // No more than the group's `max` (Magma Opus's four); a group without
         // one draws exactly as it always has.
         const spec = specs[group];
-        const { max } = groupBounds(spec ?? "creature");
+        const { min, max } = groupBounds(spec ?? "creature");
+        // Each still fitting what's been taken (Reunion of the House's "total
+        // power 10 or less") — drawn for first, so the draws don't change.
+        const fits = (ref: TargetRef): boolean =>
+          slotOptions(specs, options, picked.length, picked, this.facts).includes(ref);
         for (const ref of choices) {
           if (picked.length - group >= max) break;
-          if (this.random() < 0.5) picked.push(ref);
+          if (this.random() < 0.5 && fits(ref)) picked.push(ref);
+        }
+        // No fewer than its `min` (Inferno Titan's "one, two, or three
+        // targets"): topped up in order, with no more draws, so a group
+        // without one draws exactly as it always has.
+        for (const ref of choices) {
+          if (picked.length - group >= min) break;
+          if (!picked.includes(ref) && fits(ref)) picked.push(ref);
         }
         break;
       }
@@ -1973,12 +1999,12 @@ export class HeuristicBotController extends AutomaticController {
     specs: readonly TargetSpec[],
     polarities: readonly Polarity[] | null,
   ): ChosenTargets {
-    if (polarities === null) return firstOfEach(legalOptions, specs);
+    if (polarities === null) return firstOfEach(legalOptions, specs, stateTargetFacts(state, this.registry));
     const picked: (TargetRef | null)[] = [];
     const group = anyNumberSlot(specs);
     for (let i = 0; i < legalOptions.length; i += 1) {
       const polarity = polarities[i] ?? "either";
-      const fillable = fillableOptions(specs, legalOptions, i, picked);
+      const fillable = fillableOptions(specs, legalOptions, i, picked, stateTargetFacts(state, this.registry));
       const best = rankTargets(state, this.registry, this.playerId, fillable, polarity)[0];
       // An "any number of" group (always last) takes one member, or none,
       // as `firstOfEach` does.

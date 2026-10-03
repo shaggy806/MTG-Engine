@@ -45,6 +45,7 @@ import _poolCanopyVista from "../pool/canopy-vista.js";
 import _poolChainDevil from "../pool/chain-devil.js";
 import _poolChakramSlinger from "../pool/chakram-slinger.js";
 import _poolCobblebrute from "../pool/cobblebrute.js";
+import _poolCoilAndCatch from "../pool/coil-and-catch.js";
 import _poolCoiledTinviper from "../pool/coiled-tinviper.js";
 import _poolColosYearling from "../pool/colos-yearling.js";
 import _poolContagionClasp from "../pool/contagion-clasp.js";
@@ -107,6 +108,7 @@ import _poolManagorgerHydra from "../pool/managorger-hydra.js";
 import _poolMarshFlats from "../pool/marsh-flats.js";
 import _poolMassProduction from "../pool/mass-production.js";
 import _poolMerfolkTraders from "../pool/merfolk-traders.js";
+import _poolMillikin from "../pool/millikin.js";
 import _poolMirriCatWarrior from "../pool/mirri-cat-warrior.js";
 import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
@@ -250,6 +252,7 @@ const shard: CardShard = {
     _poolChainDevil,
     _poolChakramSlinger,
     _poolCobblebrute,
+    _poolCoilAndCatch,
     _poolCoiledTinviper,
     _poolColosYearling,
     _poolContagionClasp,
@@ -312,6 +315,7 @@ const shard: CardShard = {
     _poolMarshFlats,
     _poolMassProduction,
     _poolMerfolkTraders,
+    _poolMillikin,
     _poolMirriCatWarrior,
     _poolMoltenTributary,
     _poolMoltensteelDragon,

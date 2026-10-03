@@ -166,6 +166,7 @@ import _poolStaggeringInsight from "../pool/staggering-insight.js";
 import _poolStarwinder from "../pool/starwinder.js";
 import _poolSteelHellkite from "../pool/steel-hellkite.js";
 import _poolSteelWall from "../pool/steel-wall.js";
+import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
@@ -379,6 +380,7 @@ const shard: CardShard = {
     _poolStarwinder,
     _poolSteelHellkite,
     _poolSteelWall,
+    _poolStormshriekFeral,
     _poolSunbladeAngel,
     _poolTangledVale,
     _poolTeferisProtege,

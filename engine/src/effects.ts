@@ -391,8 +391,12 @@ export type EffectAmount =
   | { readonly difference: readonly [EffectAmount, EffectAmount]; readonly absolute?: boolean }
   /** How many cards are in the hands of the players a scope names, summed —
    * "the number of cards in **defending player's** hand" is `{ cardsInHand:
-   * "trigger-player" }` in an attack trigger. */
-  | { readonly cardsInHand: PlayerScope }
+   * "trigger-player" }` in an attack trigger. `"each"` is the hand of the
+   * player a per-player effect is acting on: Stormbreath Dragon's "deals
+   * damage to each opponent equal to the number of cards in **that player's**
+   * hand" is a `damage` to `who: "each-opponent"` of `{ cardsInHand: "each"
+   * }`. */
+  | { readonly cardsInHand: PlayerScope | "each" }
   /** How many cards are in a library or graveyard — yours, or with
    * `"each"` the player a per-player effect is acting on: "any number of
    * target players each mill half **their** library" (Singularity Rupture)
@@ -1882,6 +1886,19 @@ export type EffectSpec =
     }
   | {
       /**
+       * Monstrosity N (rule 701.37a): "If this permanent isn't monstrous, put
+       * N +1/+1 counters on it and it becomes monstrous." Always about the
+       * ability's own source ("this permanent"), and only while it's the same
+       * object on the battlefield (rule 400.7): one that has left, or that is
+       * monstrous already, has nothing happen to it, and fires no
+       * `becomes-monstrous` trigger (the rulings). `amount` may be `"x"` for
+       * "Monstrosity X" (701.37c).
+       */
+      readonly kind: "monstrosity";
+      readonly amount: EffectAmount;
+    }
+  | {
+      /**
        * Proliferate (rule 701.27): choose any number of permanents and/or
        * players with counters on them, then give each another counter of each
        * kind already there. Raises a `proliferate` decision — the choice is
@@ -2299,6 +2316,24 @@ export type EffectSpec =
       /** As on `modify-pt-all` — "untap them" after pumping a targeted
        * player's creatures (Great Oak Guardian). */
       readonly controlledByTarget?: number;
+      /** "Untap all **other** creatures you control" (Combat Celebrant):
+       * the effect's own source stays as it is. */
+      readonly exceptSource?: boolean;
+    }
+  | {
+      /**
+       * Exert a permanent (rule 701.43a): it won't untap during its exerter's
+       * next untap step — this effect's controller's. It can be exerted
+       * tapped or untapped, or exerted again (701.43b), but only on the
+       * battlefield (701.43c). Emits `permanent-exerted`, which an `exerted`
+       * trigger watches. `asItAttacks` marks the exert a creature's own "you
+       * may exert this creature as it attacks" made — set by the engine as
+       * it asks, and what that ability's linked "when you do" reads (rule
+       * 607.2h).
+       */
+      readonly kind: "exert";
+      readonly target: EffectTargetRef;
+      readonly asItAttacks?: true;
     }
   | {
       /** Tap every battlefield permanent matching `filter` — Thundermaw
@@ -3080,8 +3115,13 @@ export type EffectSpec =
       /** `"hand"` is the "you may put a land card **from your hand** onto the
        * battlefield" family (Growth Spiral, Ghalta) — nothing is revealed
        * there, the chooser is looking at their own hand, and `leftover` is
-       * always `"stay"` because the cards not chosen simply stay in it. */
-      readonly zone: "library" | "graveyard" | "hand";
+       * always `"stay"` because the cards not chosen simply stay in it.
+       * `"graveyards"` is every player's graveyard (all public), in turn
+       * order: a card from another player's that goes to the battlefield goes
+       * under the chooser's control — Necromantic Selection's "return a
+       * creature card put into a graveyard this way to the battlefield under
+       * your control". */
+      readonly zone: "library" | "graveyard" | "hand" | "graveyards";
       /** How deep into a library to look. An amount, so it can be read at
        * resolution: Gishath, Sun's Avatar's "reveal **that many** cards" is
        * `{ triggerValue: true }`, the combat damage it dealt. */
@@ -3109,6 +3149,11 @@ export type EffectSpec =
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
+      /** …and with these types and colours in addition to their own, in
+       * place as they enter (as `put-onto-battlefield`'s are — rule 614.12):
+       * Necromantic Selection's "It's a black Zombie in addition to its other
+       * colors and types". */
+      readonly enterAs?: EnterTypes;
       /** …and **attacking** (rule 508.4) — Kaalia of the Vast's "onto the
        * battlefield tapped and attacking that opponent", Winota's. See
        * {@link EnterAttacking}. */
@@ -3172,6 +3217,10 @@ export type EffectSpec =
 export interface EnterTypes {
   readonly setTypes?: readonly CardType[];
   readonly addSubtypes?: readonly string[];
+  /** Colours in addition to its own (Necromantic Selection's "It's a black
+   * Zombie in addition to its other colors and types" — a colourless card
+   * is then simply black, its ruling). */
+  readonly addColors?: readonly Color[];
 }
 
 /**
@@ -3782,6 +3831,8 @@ export interface EffectApi {
   populate(): void;
   /** See the `"amass"` {@link EffectSpec}. */
   amass(amount: number, creatureType: string): void;
+  /** See the `"monstrosity"` {@link EffectSpec}. */
+  monstrosity(amount: number): void;
   /** See the `"add-counter-all"` {@link EffectSpec}. */
   addCounterAll(
     filter: CardFilter,
@@ -3868,7 +3919,9 @@ export interface EffectApi {
   /** See the `additional-land-drop` {@link EffectSpec}. */
   additionalLandDrops(amount: number): void;
   /** Untap every battlefield permanent matching `filter`. */
-  untapAll(filter: CardFilter, scopeTo?: PlayerId): void;
+  untapAll(filter: CardFilter, scopeTo?: PlayerId, exceptSource?: boolean): void;
+  /** See the `"exert"` {@link EffectSpec}. */
+  exert(target: TargetRef, asItAttacks: boolean): void;
   tapAll(filter: CardFilter): void;
   /** `target` becomes a creature — see the `"animate"` {@link EffectSpec}. */
   animate(
@@ -4048,7 +4101,7 @@ export interface EffectApi {
   removeCounter(target: TargetRef, counter: string, amount: number): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
-    zone: "library" | "graveyard" | "hand",
+    zone: "library" | "graveyard" | "hand" | "graveyards",
     count: number | undefined,
     min: number,
     max: number,
@@ -4061,6 +4114,7 @@ export interface EffectApi {
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
+    enterAs?: EnterTypes,
   ): void;
 }
 
@@ -4433,6 +4487,7 @@ function signedAmountValue(
     return ctx.graveyardSizeOf(amount.graveyardSize === "each" ? (each ?? ctx.controller) : ctx.controller);
   }
   if ("cardsInHand" in amount) {
+    if (amount.cardsInHand === "each") return ctx.handSizeOf(each ?? ctx.controller);
     return ctx.playersInScope(amount.cardsInHand).reduce((n, p) => n + ctx.handSizeOf(p), 0);
   }
   if ("colorsOf" in amount) {
@@ -4748,6 +4803,7 @@ function readsEachPlayer(amount: EffectAmount): boolean {
   if ("lifeTotal" in amount) return amount.lifeTotal === "each";
   if ("librarySize" in amount) return amount.librarySize === "each";
   if ("graveyardSize" in amount) return amount.graveyardSize === "each";
+  if ("cardsInHand" in amount) return amount.cardsInHand === "each";
   if ("thisWay" in amount) return amount.who === "each";
   if ("half" in amount) return readsEachPlayer(amount.half);
   if ("product" in amount) return amount.product.some(readsEachPlayer);
@@ -5402,6 +5458,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "amass":
       ctx.amass(amountValue(spec.amount, ctx), spec.creatureType);
       return;
+    case "monstrosity":
+      ctx.monstrosity(amountValue(spec.amount, ctx));
+      return;
     case "add-counter-all":
       ctx.addCounterAll(
         spec.filter,
@@ -5672,8 +5731,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       });
       return;
     case "untap-all":
-      ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx));
+      ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx), spec.exceptSource === true);
       return;
+    case "exert": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.exert(target, spec.asItAttacks === true);
+      return;
+    }
     case "tap-all":
       ctx.tapAll(spec.filter);
       return;
@@ -6074,6 +6138,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               ...(spec.secondPick.ifNoneChosen === true ? { ifNoneChosen: true } : {}),
             },
         resolveEnterAttacking(spec.attacking, ctx),
+        spec.enterAs,
       );
       return;
     default:

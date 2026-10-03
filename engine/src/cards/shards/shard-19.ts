@@ -19,6 +19,7 @@ import _poolBhaalsInvoker from "../pool/bhaals-invoker.js";
 import _poolBirninZanaPlaza from "../pool/birnin-zana-plaza.js";
 import _poolBitterReunion from "../pool/bitter-reunion.js";
 import _poolBlastingStation from "../pool/blasting-station.js";
+import _poolBloomvineRegent from "../pool/bloomvine-regent.js";
 import _poolBogNaughty from "../pool/bog-naughty.js";
 import _poolBotanicalSanctum from "../pool/botanical-sanctum.js";
 import _poolBrimstoneDragon from "../pool/brimstone-dragon.js";
@@ -174,6 +175,7 @@ import _poolSpellPierce from "../pool/spell-pierce.js";
 import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
+import _poolStormbreathDragon from "../pool/stormbreath-dragon.js";
 import _poolSummonKnightsOfRound from "../pool/summon-knights-of-round.js";
 import _poolSunbillowVerge from "../pool/sunbillow-verge.js";
 import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
@@ -232,6 +234,7 @@ const shard: CardShard = {
     _poolBirninZanaPlaza,
     _poolBitterReunion,
     _poolBlastingStation,
+    _poolBloomvineRegent,
     _poolBogNaughty,
     _poolBotanicalSanctum,
     _poolBrimstoneDragon,
@@ -387,6 +390,7 @@ const shard: CardShard = {
     _poolSramSeniorEdificer,
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
+    _poolStormbreathDragon,
     _poolSummonKnightsOfRound,
     _poolSunbillowVerge,
     _poolSunbladeSamurai,

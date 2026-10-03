@@ -252,7 +252,11 @@ export interface DecisionHost {
   readonly applyAssignCombatDamage: (player: PlayerId, assignment: readonly number[]) => void;
   readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
   readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
-  readonly applyChooseTargets: (player: PlayerId, targets: ResolvedTargets) => void;
+  readonly applyChooseTargets: (
+    player: PlayerId,
+    targets: ResolvedTargets,
+    division?: readonly number[],
+  ) => void;
   readonly applyCastNow: (
     player: PlayerId,
     cast: Extract<Action, { type: "cast-spell" }> | Extract<Action, { type: "play-land" }> | null,

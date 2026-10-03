@@ -34,6 +34,7 @@ import _poolChiefOfTheEdge from "../pool/chief-of-the-edge.js";
 import _poolCinderGlade from "../pool/cinder-glade.js";
 import _poolCliffhavenVampire from "../pool/cliffhaven-vampire.js";
 import _poolCloudCrusader from "../pool/cloud-crusader.js";
+import _poolCombatCelebrant from "../pool/combat-celebrant.js";
 import _poolContaminatedLandscape from "../pool/contaminated-landscape.js";
 import _poolCrudeBentBlade from "../pool/crude-bent-blade.js";
 import _poolCruelEdict from "../pool/cruel-edict.js";
@@ -70,6 +71,7 @@ import _poolFirebrandArcher from "../pool/firebrand-archer.js";
 import _poolFlameSlash from "../pool/flame-slash.js";
 import _poolFleetingDistraction from "../pool/fleeting-distraction.js";
 import _poolFlowstoneInfusion from "../pool/flowstone-infusion.js";
+import _poolFlushOut from "../pool/flush-out.js";
 import _poolFontOfFortunes from "../pool/font-of-fortunes.js";
 import _poolFoundryOfTheConsuls from "../pool/foundry-of-the-consuls.js";
 import _poolFugitiveWizard from "../pool/fugitive-wizard.js";
@@ -148,6 +150,7 @@ import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
 import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
+import _poolRiseOfTheEldrazi from "../pool/rise-of-the-eldrazi.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
@@ -247,6 +250,7 @@ const shard: CardShard = {
     _poolCinderGlade,
     _poolCliffhavenVampire,
     _poolCloudCrusader,
+    _poolCombatCelebrant,
     _poolContaminatedLandscape,
     _poolCrudeBentBlade,
     _poolCruelEdict,
@@ -283,6 +287,7 @@ const shard: CardShard = {
     _poolFlameSlash,
     _poolFleetingDistraction,
     _poolFlowstoneInfusion,
+    _poolFlushOut,
     _poolFontOfFortunes,
     _poolFoundryOfTheConsuls,
     _poolFugitiveWizard,
@@ -361,6 +366,7 @@ const shard: CardShard = {
     _poolReflectionsOfLittjara,
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
+    _poolRiseOfTheEldrazi,
     _poolRiveteersInitiate,
     _poolRockfallVale,
     _poolRograkhSonOfRohgahh,

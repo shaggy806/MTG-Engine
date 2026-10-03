@@ -102,6 +102,7 @@ import _poolLockeCole from "../pool/locke-cole.js";
 import _poolLordOfLineage from "../pool/lord-of-lineage.js";
 import _poolLordOfTheAccursed from "../pool/lord-of-the-accursed.js";
 import _poolLoseHope from "../pool/lose-hope.js";
+import _poolMarangRiverRegent from "../pool/marang-river-regent.js";
 import _poolMaskOfAvacyn from "../pool/mask-of-avacyn.js";
 import _poolMazirekKraulDeathPriest from "../pool/mazirek-kraul-death-priest.js";
 import _poolMindscourDragon from "../pool/mindscour-dragon.js";
@@ -140,6 +141,7 @@ import _poolRishkarsExpertise from "../pool/rishkars-expertise.js";
 import _poolRosethornAcolyte from "../pool/rosethorn-acolyte.js";
 import _poolRubblebackRhino from "../pool/rubbleback-rhino.js";
 import _poolRubblebeltMaverick from "../pool/rubblebelt-maverick.js";
+import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
@@ -317,6 +319,7 @@ const shard: CardShard = {
     _poolLordOfLineage,
     _poolLordOfTheAccursed,
     _poolLoseHope,
+    _poolMarangRiverRegent,
     _poolMaskOfAvacyn,
     _poolMazirekKraulDeathPriest,
     _poolMindscourDragon,
@@ -355,6 +358,7 @@ const shard: CardShard = {
     _poolRosethornAcolyte,
     _poolRubblebackRhino,
     _poolRubblebeltMaverick,
+    _poolRunAwayTogether,
     _poolRustedSentinel,
     _poolScarecrone,
     _poolScavengingScarab,

@@ -283,6 +283,10 @@ export type Action =
        * never carries this. Omitting it keeps the old fixed default (white, or
        * the first listed colour). */
       readonly manaColors?: readonly ManaType[];
+      /** How the ability's divided amount is split among the targets of its
+       * `divided` group (rules 602.2b, 601.2d — Skarrgan Hellkite), as for a
+       * cast's `division`. Absent: as evenly as it goes. */
+      readonly division?: readonly number[];
     }
   | {
       readonly type: "declare-attackers";
@@ -413,6 +417,12 @@ export type Action =
       readonly type: "choose-targets";
       readonly player: PlayerId;
       readonly targets: ChosenTargets;
+      /** How a triggered ability's divided amount is split among the targets
+       * of the offer's `divide` group (rule 603.3d — Dragonlord Atarka), one
+       * number per member in order, each at least 1, summing to the total.
+       * Absent: as evenly as it goes, the earlier targets taking the
+       * remainder. */
+      readonly division?: readonly number[];
     }
   | {
       /** Answers a pending `cast-now` decision: the cast, built from one of
@@ -815,6 +825,10 @@ export type LegalAction =
        * has a legal set of targets, with `minX` = `maxX` = that X and
        * `targetOptions` for it. */
       readonly xCost?: { readonly maxX: number; readonly minX?: number };
+      /** The ability divides `total` among the targets of the group at target
+       * slot `slot` — the activation's `division` says how (Skarrgan
+       * Hellkite). */
+      readonly divide?: { readonly total: number; readonly slot: number };
     }
   | {
       readonly kind: "declare-attackers";
@@ -1138,6 +1152,10 @@ export type LegalAction =
       /** New targets for a copy of a spell (rule 707.10c): the target each
        * slot has now, which may be kept — see the decision's `current`. */
       readonly current?: readonly TargetRef[];
+      /** The ability divides `total` among the targets of the group at
+       * answer slot `slot` — the answer's `division` says how (Dragonlord
+       * Atarka). */
+      readonly divide?: { readonly total: number; readonly slot: number };
     };
 
 /** A `cast-spell` offer — what a `cast-now` decision lists as its `casts`. */

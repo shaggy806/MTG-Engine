@@ -15,6 +15,7 @@ import _poolArchaeomender from "../pool/archaeomender.js";
 import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
 import _poolBarbaryApes from "../pool/barbary-apes.js";
+import _poolBehindTheScenes from "../pool/behind-the-scenes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
 import _poolBladeSplicer from "../pool/blade-splicer.js";
 import _poolBlaze from "../pool/blaze.js";
@@ -180,6 +181,7 @@ import _poolShamblingStrider from "../pool/shambling-strider.js";
 import _poolShiningAerosaur from "../pool/shining-aerosaur.js";
 import _poolShoreUp from "../pool/shore-up.js";
 import _poolShowOfValor from "../pool/show-of-valor.js";
+import _poolSidarKondoOfJamuraa from "../pool/sidar-kondo-of-jamuraa.js";
 import _poolSiegeMastodon from "../pool/siege-mastodon.js";
 import _poolSiegeVeteran from "../pool/siege-veteran.js";
 import _poolSigilOfSleep from "../pool/sigil-of-sleep.js";
@@ -261,6 +263,7 @@ const shard: CardShard = {
     _poolArmsDealer,
     _poolAttrition,
     _poolBarbaryApes,
+    _poolBehindTheScenes,
     _poolBerserkersOfBloodRidge,
     _poolBladeSplicer,
     _poolBlaze,
@@ -426,6 +429,7 @@ const shard: CardShard = {
     _poolShiningAerosaur,
     _poolShoreUp,
     _poolShowOfValor,
+    _poolSidarKondoOfJamuraa,
     _poolSiegeMastodon,
     _poolSiegeVeteran,
     _poolSigilOfSleep,

@@ -11,6 +11,7 @@ import type {
   PlayerView,
   TapCostOffer,
   TargetCountRange,
+  TargetFacts,
   TargetRef,
   TargetSpec,
   VisibleObject,
@@ -24,6 +25,7 @@ import {
   distinctTargetCount,
   fitsTogether,
   groupBounds,
+  groupPowerExceeded,
   isOptionalSpec,
   publicNameAt,
   slotOptions,
@@ -316,13 +318,18 @@ interface Targeting {
   /** One entry per slot filled so far; `null` is an optional slot the player
    * chose to skip ("up to one target creature"). */
   readonly picked: readonly (TargetRef | null)[]
-  /** The cast divides `total` among the targets from slot `slot` on (rule
-   * 601.2d — Magma Opus): asked once they're chosen, before it goes out. */
+  /** The cast or ability divides `total` among the targets from slot `slot`
+   * on (rules 601.2d, 603.3d — Magma Opus, Dragonlord Atarka): asked once
+   * they're chosen, before it goes out. */
   readonly divide?: { readonly total: number; readonly slot: number }
   /** New targets for a copy of a spell (Twincast, Shiko and Narset): the
    * target each slot has now, which a Keep button takes — it may not be on
    * the board to click any more. */
   readonly current?: readonly TargetRef[]
+  /** What a relation among the targets reads — who controls one, its power
+   * ("controlled by different players", "total power 10 or less") — off the
+   * view the choice began on (`viewTargetFacts`). */
+  readonly facts?: TargetFacts
   /** Chosen modes for a targeted modal spell (Phase 11 EG-2). */
   readonly modes?: readonly number[]
   /** Chosen value for `{X}`, when casting an X spell. */
@@ -392,7 +399,7 @@ interface Targeting {
  */
 function currentSlotOptions(t: Targeting): readonly TargetRef[] {
   const i = t.picked.length
-  const options = slotOptions(t.specs, t.options, i, t.picked)
+  const options = slotOptions(t.specs, t.options, i, t.picked, t.facts)
   const range = t.targetCount
   if (range === undefined) return options
   // Inside an "any number of" group, the fewest is Done's to check
@@ -406,6 +413,13 @@ function currentSlotOptions(t: Targeting): readonly TargetRef[] {
     return n <= range.max && n + later >= range.min
   })
 }
+
+/** Who controls an object and its power, as the view shows them — a
+ * creature card's in a graveyard too — for a relation among targets. */
+const viewTargetFacts = (view: PlayerView): TargetFacts => ({
+  controllerOf: (ref) => (ref.kind === 'object' ? view.objects[ref.object]?.controller : undefined),
+  powerOf: (ref) => (ref.kind === 'object' ? (view.objects[ref.object]?.power ?? 0) : 0),
+})
 
 /** Whether the next pick is another member of an "any number of target …"
  * group — always the last slot, and every pick past its start. */
@@ -1333,9 +1347,11 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             options: chooseTargetsAction.options,
             picked: ctPicks,
             ...(chooseTargetsAction.current !== undefined ? { current: chooseTargetsAction.current } : {}),
+            ...(chooseTargetsAction.divide !== undefined ? { divide: chooseTargetsAction.divide } : {}),
+            facts: viewTargetFacts(view),
           }
         : null),
-    [targeting, chooseTargetsAction, ctPicks],
+    [targeting, chooseTargetsAction, ctPicks, view],
   )
   const canPass = actions.some((a) => a.kind === 'pass-priority')
   // Only the active player may skip the rest of their own turn — a defender
@@ -1495,7 +1511,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     ): void {
       const action: Action =
         t.kind === 'choose-targets'
-          ? { type: 'choose-targets', player: seat, targets: [...targets] }
+          ? {
+              type: 'choose-targets',
+              player: seat,
+              targets: [...targets],
+              ...(division !== undefined ? { division: [...division] } : {}),
+            }
           : t.kind === 'cast'
             ? {
                 type: 'cast-spell',
@@ -1530,6 +1551,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.xValue !== undefined ? { xValue: t.xValue } : {}),
                 ...(t.manaColors !== undefined ? { manaColors: t.manaColors } : {}),
+                ...(division !== undefined ? { division: [...division] } : {}),
               }
       // Two or more targets to divide among: ask how, then carry on from here
       // with the answer. One takes it all, which the engine works out itself.
@@ -1537,7 +1559,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         t.divide === undefined
           ? []
           : targets.slice(t.divide.slot).filter((r): r is TargetRef => r !== null)
-      if (t.kind === 'cast' && t.divide !== undefined && division === undefined && members.length >= 2) {
+      if (t.divide !== undefined && division === undefined && members.length >= 2) {
         const total = t.divide.total
         const base = Math.floor(total / members.length)
         setPendingDivision({
@@ -1584,9 +1606,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         finishTargets(t, [])
         return
       }
-      setTargeting({ ...t, picked: [] })
+      setTargeting({ ...t, picked: [], facts: viewTargetFacts(view) })
     },
-    [finishTargets],
+    [finishTargets, view],
   )
 
   /** Cast, past the additional-cost step — `chosen` holds the costs picked so
@@ -1777,6 +1799,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         options: action.targetOptions,
         xValue: value,
         ...(action.tapCost !== undefined ? { tapCost: action.tapCost } : {}),
+        ...(action.divide !== undefined ? { divide: action.divide } : {}),
       })
     },
     [beginTargeting],
@@ -1821,6 +1844,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         ...(sacrifice !== undefined ? { sacrifice } : {}),
         ...(ab.manaColors !== undefined ? { manaColors: ab.manaColors } : {}),
         ...(ab.tapCost !== undefined ? { tapCost: ab.tapCost } : {}),
+        ...(ab.divide !== undefined ? { divide: ab.divide } : {}),
       })
     },
     [beginTargeting],
@@ -1880,7 +1904,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         }
         const picked = [...t.picked, ref]
         // Every candidate taken leaves nothing to add.
-        if (slotOptions(t.specs, t.options, picked.length, picked).length === 0) finish(picked)
+        if (slotOptions(t.specs, t.options, picked.length, picked, t.facts).length === 0) finish(picked)
         else commit(picked)
         return
       }
@@ -3695,8 +3719,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     controls = (
       <div className="controls">
         <span className="muted">
-          Escape {pendingEscape.cast.cardName} — choose {n} other card{n === 1 ? '' : 's'} to
-          exile
+          {pendingEscape.cast.via === 'escape' ? 'Escape' : 'Cast'} {pendingEscape.cast.cardName} — choose{' '}
+          {n} other card{n === 1 ? '' : 's'} to exile
         </span>
         <button type="button" onClick={() => setPendingEscape(null)}>
           Cancel
@@ -4796,6 +4820,14 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                   noneLabel: 'Choose none',
                   onConfirm: (chosen) =>
                     pickTargetGroup(chosen.map((object) => ({ kind: 'object', object }))),
+                  // "With total power 10 or less" (Reunion of the House):
+                  // Confirm waits until the picks obey it.
+                  fits: (chosen: readonly ObjectId[]) =>
+                    !groupPowerExceeded(
+                      activeTargeting.specs,
+                      [...activeTargeting.picked, ...chosen.map((object) => ({ kind: 'object' as const, object }))],
+                      activeTargeting.facts,
+                    ),
                   ...(activeTargeting.kind === 'choose-targets'
                     ? {}
                     : { onCancel: () => setTargeting(null) }),
@@ -4824,7 +4856,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         <ZoneViewer
           title={`Exile ${pendingEscape.offer.count} other card${
             pendingEscape.offer.count === 1 ? '' : 's'
-          } to escape ${pendingEscape.cast.cardName}`}
+          } to ${pendingEscape.cast.via === 'escape' ? 'escape' : 'cast'} ${pendingEscape.cast.cardName}`}
           ids={pendingEscape.offer.choices}
           resolve={(id) => view.objects[id]}
           selection={{

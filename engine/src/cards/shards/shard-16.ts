@@ -169,6 +169,7 @@ import _poolSenateCourier from "../pool/senate-courier.js";
 import _poolShatteredSanctum from "../pool/shattered-sanctum.js";
 import _poolShipwreckMarsh from "../pool/shipwreck-marsh.js";
 import _poolShrink from "../pool/shrink.js";
+import _poolSkarrganHellkite from "../pool/skarrgan-hellkite.js";
 import _poolSkybladeOfTheLegion from "../pool/skyblade-of-the-legion.js";
 import _poolSkyshroudFalcon from "../pool/skyshroud-falcon.js";
 import _poolSleddingOtterPenguin from "../pool/sledding-otter-penguin.js";
@@ -413,6 +414,7 @@ const shard: CardShard = {
     _poolShatteredSanctum,
     _poolShipwreckMarsh,
     _poolShrink,
+    _poolSkarrganHellkite,
     _poolSkybladeOfTheLegion,
     _poolSkyshroudFalcon,
     _poolSleddingOtterPenguin,

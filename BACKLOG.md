@@ -58,8 +58,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
   now: Temur Roar 16, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 11, Jeskai Striker 3 — 70,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
-  any more. **Next:** two each for a triggered ability's divided damage, Omen and
-  "the creature it sacrificed" (`docs/card-blockers.md`).
+  any more. **Next:** two for "the creature it sacrificed" (`docs/card-blockers.md`), and
+  harmonize for Zenith Festival (Nature's Rhythm on the top-5000 list too): a cast that taps up
+  to one creature to cut its cost by that creature's power, which the cast offer can't price yet
+  — each creature it could tap is its own variant, through X planning and affordability, with a
+  client label naming the creature.
 - **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
   `SAMPLE_DECKS`): 68 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
@@ -183,9 +186,10 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   it's exiled instead).
 - **Dividing among targets: what's left.** A *spell's* "N damage divided as you choose among
   any number of targets" is built (2026-10-01 — Magma Opus: `CardDefinition.divided`, the
-  cast's `division`, `damage-divided`, the client's division step). Not yet: a triggered
-  ability's (Fury, Dragonlord Atarka — the `choose-targets` decision would need a division
-  too), an X total (Fire Covenant), and "distribute N counters among" (Lathiel). See
+  cast's `division`, `damage-divided`, the client's division step), and so is an activated or
+  triggered ability's (2026-10-03 — `divided` on the ability, the activation's or the
+  `choose-targets` answer's `division`: Skarrgan Hellkite, Dragonlord Atarka, Inferno Titan).
+  Not yet: an X total (Fire Covenant), and "distribute N counters among" (Lathiel). See
   `neededCards-features.md`, "Unbounded targeting".
 - **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
   is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision

@@ -37,6 +37,10 @@ export const makeFormatter = (game) => {
         return `${name(e.saga)}'s ${e.final ? "final " : ""}chapter ability resolves`;
       case "permanent-transformed":
         return `${name(e.object)} transforms (now ${e.front ? "front" : "back"} face)`;
+      case "became-monstrous":
+        return `${name(e.object)} becomes monstrous`;
+      case "permanent-exerted":
+        return `${e.player} exerts ${name(e.object)}`;
       case "day-night-changed":
         return `it becomes ${e.value}`;
       case "counter-failed":

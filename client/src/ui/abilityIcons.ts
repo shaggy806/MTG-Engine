@@ -52,6 +52,11 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   unblockable: '', // ms-ability-duels-unblockable
   fear: '', // ms-ability-duels-fear
   intimidate: '', // ms-ability-duels-intimidate
+  skulk: '', // ms-ability-skulk
+  // No flanking icon anywhere in the font; it's a block trigger, so the
+  // combat-condition one.
+  flanking: '', // ms-ability-combat-condition
+  riot: '', // ms-ability-riot
   // Landwalk: Arena's own icons for the five basic types. Desert has none
   // anywhere in the font, and landwalk is conditional unblockability, so
   // desertwalk borrows the Duels icon for that.

@@ -40,10 +40,14 @@ export function targetCombos(
     // only ever cast for X of 1.
     if (i === group) {
       const spec = specs[group];
-      const { max } = groupBounds(spec ?? "creature");
+      const { min, max } = groupBounds(spec ?? "creature");
       const most = Number.isFinite(max) ? Math.min(max, options.length) : options.length;
       const prefixes = Array.from({ length: most }, (_, k) => options.slice(0, k + 1));
-      const tails: TargetRef[][] = [[], ...prefixes, ...options.slice(1).map((ref) => [ref])];
+      // None of them only where none is a number the group allows (not
+      // Inferno Titan's "one, two, or three targets").
+      const tails: TargetRef[][] = [[], ...prefixes, ...options.slice(1).map((ref) => [ref])].filter(
+        (tail) => tail.length >= min,
+      );
       const next: (TargetRef | null)[][] = [];
       for (const combo of combos) {
         for (const tail of tails) {

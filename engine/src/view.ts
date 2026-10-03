@@ -342,8 +342,9 @@ function visible(
   // never true there. The client needs this to ask Scryfall for the right
   // side of a chosen printing (`face=back`), which a card id alone can't
   // say; it can't work it out itself without the card registry.
-  // A split card's halves share its one image too.
-  const faceIsBack = (object.faces === undefined ? 0 : (object.face ?? 0)) > 0 && !def.adventure && !def.split;
+  // A split card's halves share its one image too, and an omen card's.
+  const faceIsBack =
+    (object.faces === undefined ? 0 : (object.face ?? 0)) > 0 && !def.adventure && !def.omen && !def.split;
   // Computed, not printed — a man-land currently animated (layer 4) is a
   // creature and should carry a P/T; a land again next turn and it won't.
   const isCreature = computed.types.includes("creature");

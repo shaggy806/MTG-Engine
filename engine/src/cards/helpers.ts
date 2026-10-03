@@ -116,6 +116,21 @@ export const melee = (): TriggeredAbility => ({
 });
 
 /**
+ * Flanking (rule 702.25a): "Whenever this creature becomes blocked by a
+ * creature without flanking, the blocking creature gets -1/-1 until end of
+ * turn" — once per such blocker, each instance on its own (702.25b). Put
+ * `"flanking"` in the card's `keywords` as well: the keyword is what another
+ * creature's flanking asks about.
+ */
+export const flanking = (): TriggeredAbility => ({
+  trigger: { on: "blocked-by", who: "self", blocker: { notKeyword: "flanking" } },
+  targets: [],
+  effect: { kind: "modify-pt", target: "trigger-object", power: -1, toughness: -1, duration: "end-of-turn" },
+  resolve: null,
+  text: "Flanking",
+});
+
+/**
  * Annihilator N (rule 702.86): "Whenever this creature attacks, defending
  * player sacrifices N permanents." The defending player is the one it
  * attacks, or the controller of the planeswalker it attacks. A triggered

@@ -26,6 +26,7 @@ import _poolCacklingImp from "../pool/cackling-imp.js";
 import _poolCatapultMaster from "../pool/catapult-master.js";
 import _poolCetaDisciple from "../pool/ceta-disciple.js";
 import _poolCinderStorm from "../pool/cinder-storm.js";
+import _poolClaimTerritory from "../pool/claim-territory.js";
 import _poolClarionCathars from "../pool/clarion-cathars.js";
 import _poolClementTheWorrywort from "../pool/clement-the-worrywort.js";
 import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
@@ -186,6 +187,7 @@ import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
 import _poolWeatheredWayfarer from "../pool/weathered-wayfarer.js";
 import _poolWestvaleAbbey from "../pool/westvale-abbey.js";
+import _poolWhirlwingStormbrood from "../pool/whirlwing-stormbrood.js";
 import _poolWrennsResolve from "../pool/wrenns-resolve.js";
 import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
@@ -218,6 +220,7 @@ const shard: CardShard = {
     _poolCatapultMaster,
     _poolCetaDisciple,
     _poolCinderStorm,
+    _poolClaimTerritory,
     _poolClarionCathars,
     _poolClementTheWorrywort,
     _poolCloudheathDrake,
@@ -378,6 +381,7 @@ const shard: CardShard = {
     _poolWastewoodVerge,
     _poolWeatheredWayfarer,
     _poolWestvaleAbbey,
+    _poolWhirlwingStormbrood,
     _poolWrennsResolve,
     _poolXandersLounge,
     _poolYavimayaHollow,

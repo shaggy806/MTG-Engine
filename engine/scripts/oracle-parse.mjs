@@ -83,7 +83,7 @@ export const KEYWORDS = {
   flying: "flying", reach: "reach", haste: "haste", vigilance: "vigilance", defender: "defender",
   "first strike": "first-strike", "double strike": "double-strike", trample: "trample",
   deathtouch: "deathtouch", lifelink: "lifelink", menace: "menace", indestructible: "indestructible",
-  hexproof: "hexproof", shroud: "shroud", flash: "flash", fear: "fear", intimidate: "intimidate",
+  hexproof: "hexproof", shroud: "shroud", flash: "flash", fear: "fear", intimidate: "intimidate", skulk: "skulk", riot: "riot",
   plainswalk: "plainswalk", islandwalk: "islandwalk", swampwalk: "swampwalk",
   mountainwalk: "mountainwalk", forestwalk: "forestwalk", desertwalk: "desertwalk",
   changeling: "changeling", daybound: "daybound", nightbound: "nightbound",

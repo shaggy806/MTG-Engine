@@ -181,7 +181,19 @@ export type TargetSpec =
    * of: "creature-you-control" }`. Nests either way round with `optional`
    * ("up to one other target creature").
    */
-  | { readonly kind: "other"; readonly of: TargetSpec; readonly than?: OtherThan }
+  | {
+      readonly kind: "other";
+      readonly of: TargetSpec;
+      readonly than?: OtherThan;
+      /** "…controlled by different players" (Protector of the Wastes): not
+       * only another object than the earlier slots `than` names, but one
+       * whose controller is none of theirs. Only with a slot relation. As
+       * the spell or ability resolves, two such targets controlled by one
+       * player are both illegal — one already illegal still lends its
+       * controller, as it last existed, to that check (the Run Away Together
+       * rulings). Needs {@link TargetFacts}. */
+      readonly differentController?: true;
+    }
   /**
    * "Any number of target …" (rule 601.2c: none, one, or as many distinct
    * ones as there are) — Eerie Interlude's "exile any number of target
@@ -208,7 +220,39 @@ export type TargetSpec =
       /** At least this many: `"x"` with `max: "x"` is exactly X — Curse of
        * the Swine's "exile **X** target creatures". */
       readonly min?: number | "x";
+      /** "…with total power N or less" (Reunion of the House): the members'
+       * powers, as they are where they're targeted, add up to at most this.
+       * Checked as they're chosen and again as the spell resolves, when a
+       * total over it makes every member illegal (the ruling). Needs
+       * {@link TargetFacts}. */
+      readonly maxTotalPower?: number;
     };
+
+/**
+ * What a relation among targets needs to know about one that the reference
+ * alone can't say — who controls it, its power — supplied by whoever holds
+ * the board: the engine from the state, a client from its view. A chooser
+ * without them narrows nothing by these relations (the engine still refuses
+ * a choice that breaks one).
+ */
+export interface TargetFacts {
+  readonly controllerOf: (ref: TargetRef) => PlayerId | undefined;
+  readonly powerOf: (ref: TargetRef) => number;
+}
+
+/** Is slot `spec` "…controlled by different players" from the slots its
+ * relation names? Looked for through an `optional` wrapper. */
+export function differentControllerOf(spec: TargetSpec): boolean {
+  if (typeof spec !== "object") return false;
+  if (spec.kind === "other") return spec.differentController === true;
+  if (spec.kind === "optional") return differentControllerOf(spec.of);
+  return false;
+}
+
+/** A group's "total power N or less", if it has one. */
+export function groupMaxTotalPower(spec: TargetSpec | undefined): number | undefined {
+  return typeof spec === "object" && spec.kind === "any-number" ? spec.maxTotalPower : undefined;
+}
 
 /** Does this list have an "any number of target …" group whose size is tied
  * to the spell's X (`min` or `max` of `"x"`)? */
@@ -323,6 +367,35 @@ export function otherThanSlots(than: OtherThan): readonly number[] {
  */
 export type ResolvedTargets = readonly (TargetRef | undefined)[];
 
+/**
+ * An amount "divided as you choose" among the targets of a group (rule
+ * 601.2d, for a spell; 602.2b for an activated ability, 603.3d for a
+ * triggered one): the targets from `divided.slot` on share `divided.total`.
+ * Announced as the spell or ability goes on the stack — `chosen`, checked:
+ * one share per target of the group, each a whole number of at least 1, all
+ * of `total` — or, when its controller didn't say, as evenly as it goes with
+ * the earlier targets taking the remainder (the only split there is when the
+ * total leaves no choice: 2 among two targets). No targets in the group
+ * divide nothing. A string says what's wrong.
+ */
+export function divisionOf(
+  divided: { readonly total: number; readonly slot: number },
+  targets: ResolvedTargets,
+  chosen: readonly number[] | undefined,
+): readonly number[] | string {
+  const members = targets.slice(divided.slot).filter((t) => t !== undefined).length;
+  if (members === 0) return chosen === undefined || chosen.length === 0 ? [] : "no targets to divide among";
+  if (members > divided.total) return `${divided.total} can't be divided among ${members} targets`;
+  if (chosen === undefined) {
+    const base = Math.floor(divided.total / members);
+    return Array.from({ length: members }, (_unused, i) => base + (i < divided.total % members ? 1 : 0));
+  }
+  if (chosen.length !== members) return `the division names ${chosen.length} shares for ${members} targets`;
+  if (chosen.some((n) => !Number.isInteger(n) || n < 1)) return "each target must get at least 1";
+  if (chosen.reduce((a, b) => a + b, 0) !== divided.total) return `the division must total ${divided.total}`;
+  return [...chosen];
+}
+
 /** Whether two target references name the same player or object. */
 export function sameTargetRef(a: TargetRef, b: TargetRef): boolean {
   return a.kind === "player"
@@ -379,6 +452,7 @@ export function slotOptions(
   options: readonly (readonly TargetRef[])[],
   i: number,
   picked: readonly (TargetRef | null | undefined)[],
+  facts?: TargetFacts,
 ): readonly TargetRef[] {
   // Past an "any number of target …" group's start, every pick is another
   // member of that one group: its options, less what it has already named.
@@ -392,7 +466,12 @@ export function slotOptions(
     if (taken.length >= groupBounds(spec).max) {
       return [];
     }
-    return (options[group] ?? []).filter((ref) => !taken.some((t) => sameTarget(ref, t)));
+    const left = (options[group] ?? []).filter((ref) => !taken.some((t) => sameTarget(ref, t)));
+    // "With total power 10 or less": only what still fits.
+    const most = groupMaxTotalPower(spec);
+    if (most === undefined || facts === undefined) return left;
+    const budget = most - taken.reduce((n, t) => n + facts.powerOf(t), 0);
+    return left.filter((ref) => facts.powerOf(ref) <= budget);
   }
   const all = options[i] ?? [];
   const than = specs[i] === undefined ? undefined : otherThan(specs[i]);
@@ -400,7 +479,12 @@ export function slotOptions(
   const earlier = otherThanSlots(than)
     .map((slot) => picked[slot])
     .filter((ref): ref is TargetRef => ref !== null && ref !== undefined);
-  return earlier.length === 0 ? all : all.filter((ref) => !earlier.some((e) => sameTarget(ref, e)));
+  if (earlier.length === 0) return all;
+  const distinct = all.filter((ref) => !earlier.some((e) => sameTarget(ref, e)));
+  // "…controlled by different players": none whose controller is taken.
+  if (facts === undefined || specs[i] === undefined || !differentControllerOf(specs[i])) return distinct;
+  const controllers = new Set(earlier.map((e) => facts.controllerOf(e)));
+  return distinct.filter((ref) => !controllers.has(facts.controllerOf(ref)));
 }
 
 /**
@@ -419,6 +503,7 @@ export function targetsFillable(
   options: readonly (readonly TargetRef[])[],
   picked: readonly (TargetRef | null)[] = [],
   from = picked.length,
+  facts?: TargetFacts,
 ): boolean {
   if (from >= options.length) return true;
   // The cheap answers first: a required slot with nothing at all, or no
@@ -428,10 +513,12 @@ export function targetsFillable(
   }
   if (!specs.some((s, i) => i >= from && typeof otherThan(s) === "object")) return true;
   const chosen = [...picked.slice(0, from)];
-  for (const ref of slotOptions(specs, options, from, chosen)) {
-    if (targetsFillable(specs, options, [...chosen, ref], from + 1)) return true;
+  for (const ref of slotOptions(specs, options, from, chosen, facts)) {
+    if (targetsFillable(specs, options, [...chosen, ref], from + 1, facts)) return true;
   }
-  return isOptionalSpec(specs[from] ?? "creature") && targetsFillable(specs, options, [...chosen, null], from + 1);
+  return (
+    isOptionalSpec(specs[from] ?? "creature") && targetsFillable(specs, options, [...chosen, null], from + 1, facts)
+  );
 }
 
 /** The first pair of slots whose "other than slot n" relation `chosen`
@@ -439,18 +526,40 @@ export function targetsFillable(
 export function otherSlotConflict(
   specs: readonly TargetSpec[],
   chosen: readonly (TargetRef | null | undefined)[],
+  facts?: TargetFacts,
 ): { readonly slot: number; readonly than: number } | null {
   for (let i = 0; i < specs.length; i += 1) {
     const than = otherThan(specs[i]);
     if (than === undefined) continue;
     const mine = chosen[i];
     if (mine === null || mine === undefined) continue;
+    const byController = facts !== undefined && differentControllerOf(specs[i]);
     for (const slot of otherThanSlots(than)) {
       const theirs = chosen[slot];
-      if (theirs !== null && theirs !== undefined && sameTarget(mine, theirs)) return { slot: i, than: slot };
+      if (theirs === null || theirs === undefined) continue;
+      if (sameTarget(mine, theirs)) return { slot: i, than: slot };
+      // "…controlled by different players" (Protector of the Wastes).
+      if (byController && facts.controllerOf(mine) === facts.controllerOf(theirs)) return { slot: i, than: slot };
     }
   }
   return null;
+}
+
+/** Whether `chosen`'s "any number of target …" group breaks its "total
+ * power N or less" (Reunion of the House) — always `false` without one, or
+ * without the facts to tell. */
+export function groupPowerExceeded(
+  specs: readonly TargetSpec[],
+  chosen: readonly (TargetRef | null | undefined)[],
+  facts?: TargetFacts,
+): boolean {
+  const group = anyNumberSlot(specs);
+  const most = group < 0 ? undefined : groupMaxTotalPower(specs[group]);
+  if (most === undefined || facts === undefined) return false;
+  const total = chosen
+    .slice(group)
+    .reduce((n, ref) => (ref === null || ref === undefined ? n : n + facts.powerOf(ref)), 0);
+  return total > most;
 }
 
 /**

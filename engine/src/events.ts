@@ -97,6 +97,14 @@ export type GameEvent =
       readonly front: boolean;
     })
   | (Base & {
+      /** A permanent became monstrous (rule 701.37a — the `monstrosity`
+       * effect), its `amount` +1/+1 counters already put on it. Not emitted
+       * for one already monstrous, which nothing happens to. */
+      readonly type: "became-monstrous";
+      readonly object: ObjectId;
+      readonly amount: number;
+    })
+  | (Base & {
       /** The game became day or night (rule 726 — ROADMAP Phase 10b). */
       readonly type: "day-night-changed";
       readonly value: "day" | "night";
@@ -163,6 +171,16 @@ export type GameEvent =
   | (Base & { readonly type: "priority-received"; readonly player: PlayerId })
   | (Base & { readonly type: "priority-passed"; readonly player: PlayerId })
   | (Base & { readonly type: "permanent-untapped"; readonly object: ObjectId })
+  | (Base & {
+      /** A permanent was exerted (rule 701.43a — the `exert` effect): it
+       * won't untap during `player`'s next untap step. `asItAttacks` when its
+       * own "you may exert this creature as it attacks" did it — what that
+       * ability's linked "when you do" watches (rule 607.2h). */
+      readonly type: "permanent-exerted";
+      readonly object: ObjectId;
+      readonly player: PlayerId;
+      readonly asItAttacks: boolean;
+    })
   | (Base & {
       readonly type: "card-drawn";
       readonly player: PlayerId;

@@ -137,6 +137,19 @@ export type Keyword =
   /** Intimidate (rule 702.13) — blockable only by artifact creatures and/or
    * creatures sharing a colour with it (Vela the Night-Clad). */
   | "intimidate"
+  /** Skulk (rule 702.118) — can't be blocked by creatures with greater power,
+   * compared as blockers are declared (Behind the Scenes). */
+  | "skulk"
+  /** Flanking (rule 702.25) — a triggered ability: the keyword is what a
+   * "creature without flanking" asks about, and the `flanking()` card helper
+   * is the trigger itself, so a card lists both (Sidar Kondo of Jamuraa). */
+  | "flanking"
+  /** Riot (rule 702.136a) — "you may have this permanent enter with an
+   * additional +1/+1 counter on it; if you don't, it gains haste". Asked as
+   * it's about to enter (`Game.askEnterChoice`) when it's printed or copied;
+   * a static granting it to others (Rhythm of the Wild) isn't read as they
+   * enter (AUTHORING §15). */
+  | "riot"
   /** Landwalk (rule 702.14) — can't be blocked as long as the defending
    * player controls a land of that type. One keyword per land type a card
    * prints: the five basic types, and Desert (Hazezon, Shaper of Sand). The
@@ -1128,6 +1141,13 @@ export interface StaticAbility {
      * mana, so the land may tap for the spell first (rule 601.2g–h). Not
      * offered for a card with a sacrifice cost of its own. */
     readonly sacrifice?: CardFilter;
+    /** An additional cost of exiling this many *other* cards from the
+     * graveyard — Kotis, Sibsig Champion's "by exiling three other cards
+     * from your graveyard in addition to paying its other costs". Picked by
+     * the caster as escape's are (the offer's `escapeExile`, the action's
+     * `escapeExile`) and paid as the spell is cast; not offered with too few.
+     * The spell isn't escaped (`castVia` stays `"graveyard-permission"`). */
+    readonly exileOthers?: number;
   };
   /**
    * Keywords this permanent gives cards in its controller's **graveyard**
@@ -1275,6 +1295,16 @@ export interface StaticAbility {
    * it during another player's (Seedborn Muse) still does. `affects` is
    * ignored — it is always the permanent carrying it. */
   readonly doesntUntap?: boolean;
+  /**
+   * "You may exert this creature as it attacks" (rule 701.43d — Glorybringer):
+   * an optional cost to attack (508.1g), asked of its controller once its
+   * attack has been declared, before anything triggers on it, as a
+   * `choose-modes` of one mode (exerting it) or none. The linked "when you
+   * do" is an `exerted` trigger with `asItAttacks`. `unlessExertedThisTurn`
+   * is Combat Celebrant's "if this creature hasn't been exerted this turn".
+   * `affects` is ignored — it is always the permanent carrying it.
+   */
+  readonly exertAsItAttacks?: { readonly unlessExertedThisTurn?: true };
   /**
    * "Spells your opponents cast that target this creature cost an additional
    * 3 life to cast" (Terror of the Peaks): an additional cost of the spell,
@@ -2028,6 +2058,13 @@ export interface CardDefinition {
    * adventure exiles the card (rather than graveyard) with a "you may cast the
    * creature later from exile" permission. `true` on both faces. */
   readonly adventure: boolean;
+  /** An omen card (rule 720): a creature card with an instant or sorcery
+   * Omen as its second `faces` entry, cast as either (720.3). An Omen spell
+   * resolving is shuffled into its owner's library instead of going to the
+   * graveyard (720.3d) — a copy of one ceases to exist, its owner still
+   * shuffling (the ruling); countered, or fizzling, it goes to the graveyard
+   * as any spell does. `true` on both faces. */
+  readonly omen: boolean;
   /**
    * A split card (rule 709): `faces` is `[the card, left half, right half]`.
    * Face 0 is the whole card — what it is in every zone but the stack, both
@@ -2138,6 +2175,7 @@ const PRINTED_ABILITY: {
   transform: false,
   disturb: (def) => def.disturb !== null,
   adventure: false,
+  omen: false,
   split: false,
   divided: false,
   pairing: (def) => def.pairing !== null,
@@ -2289,6 +2327,7 @@ interface CardDraft {
   divided?: { readonly total: number; readonly slot: number };
   disturb?: { readonly cost: string };
   adventure?: boolean;
+  omen?: boolean;
   pairing?: CommanderPairing;
   canBeCommander?: boolean;
 }
@@ -2370,6 +2409,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     transform: draft.transform ?? false,
     disturb: draft.disturb ?? null,
     adventure: draft.adventure ?? false,
+    omen: draft.omen ?? false,
     split: draft.split ?? false,
     divided: draft.divided ?? null,
     pairing: draft.pairing ?? null,

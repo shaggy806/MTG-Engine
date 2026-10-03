@@ -31,12 +31,32 @@ Bulwark).
 
 Jeskai's last 3 each need something different (Curse of the Swine's X targets were built on
 2026-10-02): Curses (Curse of Opulence), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
-(Transforming Flourish). Across all five decks no feature blocks more than two: divided damage
-(a triggered ability's), Omen and "the creature it sacrificed" (hideaway, the fourth, was built
-2026-10-02 — Mosswort Bridge, Windbrisk Heights and the other hideaway cards). The other three delve
+(Transforming Flourish). Across all five decks no feature blocks more than two: "the creature it
+sacrificed" (hideaway was built 2026-10-02 — Mosswort Bridge, Windbrisk Heights and the other
+hideaway cards; an ability's divided damage and Omen on 2026-10-03, below). The other three delve
 cards each need one more thing: a target in each player's graveyard (Afterlife from the Loam),
 "exile X cards from your graveyard" as a cost (Necropolis Fiend), and a card an opponent
 chooses (Tasigur, the Golden Fang).
+
+### The one-off keywords pass (2026-10-03)
+
+Fourteen TDC cards, each behind a small keyword or one-off of its own
+(`tdc-oneoffs-features.test.ts`): monstrosity and "becomes monstrous" (Stormbreath Dragon,
+Protector of the Wastes), Omen (Stormshriek Feral, Whirlwing Stormbrood), exert as it attacks
+with its linked "when you do" (Glorybringer), riot and an activated ability's divided damage
+(Skarrgan Hellkite), a triggered ability's (Dragonlord Atarka), skulk (Behind the Scenes),
+flanking and a block restriction by power (Sidar Kondo of Jamuraa), milling as a cost (Millikin),
+entering from a graveyard — `enteredFrom` was there already (River Kelpie) — a graveyard
+permission that exiles three other cards (Kotis, Sibsig Champion), a `look-and-choose` over every
+graveyard returning under your control as a black Zombie (Necromantic Selection), and targets
+capped by total power (Reunion of the House); "exile ~" as it resolves was built already
+(`exileOnResolve`). Targets controlled by different players came with Protector. Off the
+top-5000 list the same features took Giggling Skitterspike, Rise of the Eldrazi, Combat
+Celebrant and Inferno Titan (their recorded blockers), and Marang River Regent, Bloomvine Regent,
+Run Away Together and Hydra Broodmaster. Still blocked: Zenith Festival and Nature's Rhythm
+(harmonize — see `BACKLOG.md`), Rhythm of the Wild and Spider-Punk (riot *granted* as a creature
+enters, rule 614.12), Fury (an evoke cost that exiles a card from hand), Arena of Glory (exerting a
+land as a mana cost, and haste for a creature spell its mana paid for).
 
 ## Other precons and shared staples (PC-*, 2026-10-02)
 

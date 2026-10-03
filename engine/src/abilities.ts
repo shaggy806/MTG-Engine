@@ -172,6 +172,12 @@ export interface AbilityCost {
   /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
    * like `payLife`). */
   readonly payEnergy?: number;
+  /** Mill this many cards as part of the cost (Millikin: "{T}, Mill a card:
+   * Add {C}"). Can't be paid with fewer cards than that in the library (rule
+   * 701.17b), and a cost that moves a card from a library keeps an ability
+   * that adds mana from being a mana ability (rule 605.1a), so it uses the
+   * stack. Automatic, like `payLife`. */
+  readonly mill?: number;
   /** Exile the source itself as part of the cost (Hanged Executioner:
    * "{3}{W}, Exile this creature: Exile target creature"). Distinct from
    * `sacrifice: "self"` — the source doesn't reach a graveyard, so nothing
@@ -313,6 +319,12 @@ export interface ActivatedAbility {
    * "Sacrifice X artifacts: … X can't be 0." Absent: 0. The offer's
    * `xCost.minX` says it, and an activation below it is refused. */
   readonly minX?: number;
+  /** "N damage divided as you choose among one or two targets" (Skarrgan
+   * Hellkite): the targets from `slot` on — an `any-number` group — share
+   * `total`, split as the ability is activated (rules 602.2b, 601.2d: the
+   * `activate-ability` action's `division`, at least 1 each) and dealt by a
+   * `damage-divided` effect. A target gone illegal loses its share. */
+  readonly divided?: { readonly total: number; readonly slot: number };
 }
 
 /**
@@ -686,6 +698,27 @@ export type TriggerSpec =
       readonly filter?: CardFilter;
     }
   | {
+      /** A permanent became monstrous (rule 701.37 — the `monstrosity`
+       * effect): "when this creature becomes monstrous" is `who: "self"`.
+       * Never fires for a permanent that was monstrous already, or that left
+       * the battlefield before its monstrosity ability resolved (the
+       * rulings). The permanent is the trigger object, and `{ triggerValue:
+       * true }` the N it became monstrous with (701.37c's X). */
+      readonly on: "becomes-monstrous";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /** A permanent was exerted (rule 701.43). `asItAttacks` is the "when
+       * you do" linked to a creature's own "you may exert this creature as it
+       * attacks" (rule 607.2h — Glorybringer, Combat Celebrant): only that
+       * exert fires it, not one some other effect makes. The permanent is the
+       * trigger object. */
+      readonly on: "exerted";
+      readonly who: TriggerWho;
+      readonly asItAttacks?: boolean;
+    }
+  | {
       /**
        * A permanent was tapped for mana — its mana ability with `{T}` in the
        * cost resolved (Roxanne, Starfall Savant's "whenever you tap an
@@ -796,6 +829,21 @@ export type TriggerSpec =
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
       readonly otherOnly?: boolean;
+    }
+  | {
+      /**
+       * An attacking creature became blocked **by a creature** — once per
+       * blocker, as the declaration completes, off `blocker-declared`
+       * (flanking, rule 702.25a: "whenever this creature becomes blocked by a
+       * creature without flanking, the blocking creature gets -1/-1 until end
+       * of turn" — the `flanking()` helper). `who` / `filter` are about the
+       * attacker, `blocker` about the blocking creature, asked as the block
+       * is declared; the blocker is the trigger object.
+       */
+      readonly on: "blocked-by";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+      readonly blocker?: CardFilter;
     }
   | {
       /**
@@ -1169,6 +1217,13 @@ export interface TriggeredAbility {
    * permanent that leaves and returns is a new object that may trigger again.
    */
   readonly oncePerTurn?: boolean;
+  /** "N damage divided as you choose among any number of target …"
+   * (Dragonlord Atarka, Inferno Titan): the targets from `slot` on — an
+   * `any-number` group — share `total`, split as the ability is put on the
+   * stack (rule 603.3d: the `choose-targets` answer's `division`, at least 1
+   * each) and dealt by a `damage-divided` effect. A target gone illegal loses
+   * its share. */
+  readonly divided?: { readonly total: number; readonly slot: number };
   readonly text: string;
 }
 
@@ -1189,6 +1244,9 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     // Mana abilities are battlefield-only here: an ability activated from a
     // hand, graveyard or the command zone always uses the stack.
     ability.zone === undefined &&
+    // Rule 605.1a: a cost that moves a card from a library (Millikin's "Mill
+    // a card") makes it an ordinary activated ability, on the stack.
+    ability.cost.mill === undefined &&
     // Whatever it costs (rule 605.1a says nothing about costs): a sacrifice
     // of itself (Treasure) or of a chosen permanent (Kykar's "Sacrifice a
     // Spirit"), life, counters removed (Ramos), energy. Which of those the

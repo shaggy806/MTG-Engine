@@ -317,13 +317,11 @@ function scaffoldCard(name, { autoOnly = false, ignoreScaffolded = false } = {})
   const multi = entry.faces !== undefined && ["transform", "modal_dfc", "adventure"].includes(entry.layout);
   // Scryfall files an Omen (Tarkir: Dragonstorm) under the adventure layout,
   // but an Omen spell is shuffled into its owner's library as it resolves
-  // rather than exiled to be cast later, which the engine doesn't do.
+  // rather than exiled to be cast later: the engine's `omen` flag, not
+  // `adventure`.
   const omen = faces.some((f) => /\bOmen\b/.test(f.type_line ?? ""));
-  const layoutNote = omen
-    ? "an Omen (shuffled into its owner's library as it resolves) isn't modeled; it isn't an adventure"
-    : SUPPORTED_LAYOUTS.has(entry.layout) || multi
-      ? null
-      : `layout "${entry.layout}" isn't modeled`;
+  const layoutNote =
+    SUPPORTED_LAYOUTS.has(entry.layout) || multi ? null : `layout "${entry.layout}" isn't modeled`;
 
   // The tokens it makes, matched to ours or given a skeleton.
   const tokenNotes = [];
@@ -371,7 +369,7 @@ function scaffoldCard(name, { autoOnly = false, ignoreScaffolded = false } = {})
       colors: entry.colors,
       art: multi && i > 0 ? backArt(entry.printing) : undefined,
       faces: multi ? faces.map((f) => f.name) : undefined,
-      flag: multi ? LAYOUT_FLAG[entry.layout] : undefined,
+      flag: multi ? (omen ? "omen" : LAYOUT_FLAG[entry.layout]) : undefined,
       layoutNote,
       rulings: i === 0 ? (entry.rulings ?? []) : [],
       headerNotes: [

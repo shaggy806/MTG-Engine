@@ -8,8 +8,15 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import { anyNumberSlot, concreteTargetSpecs, groupBounds, isOptionalSpec, otherSlotConflict } from "./target.js";
-import type { OtherThan } from "./target.js";
+import {
+  anyNumberSlot,
+  concreteTargetSpecs,
+  groupBounds,
+  groupPowerExceeded,
+  isOptionalSpec,
+  otherSlotConflict,
+} from "./target.js";
+import type { OtherThan, TargetFacts } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
 /** The colour/type identity of whatever is targeting / damaging / blocking —
@@ -620,6 +627,7 @@ export function invalidTargetReason(
   name: string,
   source?: TargetSource,
 ): string | null {
+  const declared = specs;
   const group = anyNumberSlot(specs);
   if (group >= 0) {
     // A group tied to X is judged at the X chosen (`specsAtX`) — by then its
@@ -643,9 +651,29 @@ export function invalidTargetReason(
       return `illegal target for ${name}`;
     }
   }
-  const conflict = otherSlotConflict(specs, chosen);
+  const facts = stateTargetFacts(state, registry);
+  const conflict = otherSlotConflict(specs, chosen, facts);
   if (conflict !== null) {
     return `${name}'s target ${conflict.slot + 1} must be another than its target ${conflict.than + 1}`;
   }
+  // The group's "total power N or less" — judged on the spec list as
+  // declared, whose group carries it.
+  if (groupPowerExceeded(declared, chosen, facts)) return `${name}'s targets have too much total power`;
   return null;
+}
+
+/**
+ * The {@link TargetFacts} the board answers: who controls an object now
+ * (a card off the battlefield, its owner), and its power where it is — a
+ * creature card in a graveyard "as it exists in your graveyard" (Reunion of
+ * the House's ruling), counting a characteristic-defining ability.
+ */
+export function stateTargetFacts(state: GameState, registry: CardRegistry): TargetFacts {
+  return {
+    controllerOf: (ref) => (ref.kind === "object" ? state.objects[ref.object]?.controller : undefined),
+    powerOf: (ref) =>
+      ref.kind === "object" && state.objects[ref.object] !== undefined
+        ? computeCharacteristics(state, registry, ref.object).power
+        : 0,
+  };
 }

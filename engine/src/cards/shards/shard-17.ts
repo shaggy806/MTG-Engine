@@ -144,6 +144,7 @@ import _poolRecruiterOfTheGuard from "../pool/recruiter-of-the-guard.js";
 import _poolResoluteWatchdog from "../pool/resolute-watchdog.js";
 import _poolRishadanDockhand from "../pool/rishadan-dockhand.js";
 import _poolRiverBear from "../pool/river-bear.js";
+import _poolRiverKelpie from "../pool/river-kelpie.js";
 import _poolRootOut from "../pool/root-out.js";
 import _poolRustMonster from "../pool/rust-monster.js";
 import _poolSabertoothWyvern from "../pool/sabertooth-wyvern.js";
@@ -366,6 +367,7 @@ const shard: CardShard = {
     _poolResoluteWatchdog,
     _poolRishadanDockhand,
     _poolRiverBear,
+    _poolRiverKelpie,
     _poolRootOut,
     _poolRustMonster,
     _poolSabertoothWyvern,

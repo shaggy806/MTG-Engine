@@ -332,9 +332,9 @@ of a choice expands the group from the number of targets actually chosen
 targets it went on the stack with. It shipped with Eerie Interlude, Brago,
 Divine Resilience, Mindbreak Trap, Court of Cunning, Riverchurn Monument,
 Singularity Rupture, Deepglow Skate and Stonespeaker Crystal. Still blocked
-among the 36: divided damage or counters as the caster chooses (Fury, Fire
-Covenant, Dragonlord Atarka, Lathiel, Vorinclex's saga — a spell's divided damage landed
-2026-10-01 with Magma Opus), phasing (Clever Concealment, Guardian of Faith), a
+among the 36: divided damage or counters as the caster chooses (Fire Covenant, Lathiel,
+Vorinclex's saga; Fury now only for its evoke cost — a spell's divided damage landed
+2026-10-01 with Magma Opus, an ability's 2026-10-03 with Dragonlord Atarka), phasing (Clever Concealment, Guardian of Faith), a
 constraint relating the chosen cards (Ancient Brass Dragon, Rampaging Yao
 Guai, V.A.T.S.), and one-offs each needing something of their own. Since
 2026-09-28 Fireball's "divided evenly" (`damage-divided-evenly`) and a cost
@@ -396,7 +396,7 @@ nothing in the repo distinguished them.
 | ~~multikicker~~ *(built 2026-10-02 — Everflowing Chalice)* | 2 | 254 | 0 | 1 |
 | plays-a-land trigger | 1 | 899 | 0 | 0 |
 | Bestow / ~~Eternalize~~ *(built 2026-09-28)* / Coven / Raid | 1 each | 697+ | 0 | 0 |
-| retrace / riot / Prototype | **0** | — | 0 | 0 |
+| retrace / ~~riot~~ *(built 2026-10-03, printed riot — Skarrgan Hellkite)* / Prototype | **0** | — | 0 | 0 |
 
 Retrace, riot and Prototype gate **nothing** in the top 2000 — they are in §15
 because a card in the pool wanted them, not because the backlog does. Leave

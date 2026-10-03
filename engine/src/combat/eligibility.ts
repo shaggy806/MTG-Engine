@@ -302,6 +302,15 @@ export function whyCannotBlock(
       return `${blockerDef.name} can't block ${attackerDef.name} (${fear ? "fear" : "intimidate"})`;
     }
   }
+  // Skulk (rule 702.118b): not by a creature with greater power, compared as
+  // the block is declared — a change afterwards undoes nothing (the ruling).
+  if (
+    objHasKeyword(state, registry, attackerId, "skulk") &&
+    computeCharacteristics(state, registry, blockerId).power > computeCharacteristics(state, registry, attackerId).power
+  ) {
+    const attackerDef = registry.get(printedCardName(attacker));
+    return `${blockerDef.name} can't block ${attackerDef.name} (skulk)`;
+  }
   // Landwalk (rule 702.14c): unblockable as long as the defending player —
   // the one declaring this block — controls a land of that type.
   const walked = LANDWALK.filter(([keyword]) => objHasKeyword(state, registry, attackerId, keyword));

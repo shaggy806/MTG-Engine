@@ -48,6 +48,7 @@ import _poolDeathcapMarionette from "../pool/deathcap-marionette.js";
 import _poolDefyGravity from "../pool/defy-gravity.js";
 import _poolDesertOfTheMindful from "../pool/desert-of-the-mindful.js";
 import _poolDiabolicEdict from "../pool/diabolic-edict.js";
+import _poolDragonlordAtarka from "../pool/dragonlord-atarka.js";
 import _poolDriftingMeadow from "../pool/drifting-meadow.js";
 import _poolDualSunAdepts from "../pool/dual-sun-adepts.js";
 import _poolDuskanaTheRageMother from "../pool/duskana-the-rage-mother.js";
@@ -101,6 +102,7 @@ import _poolKiboUktabiPrince from "../pool/kibo-uktabi-prince.js";
 import _poolKiorasFollower from "../pool/kioras-follower.js";
 import _poolKitesailScout from "../pool/kitesail-scout.js";
 import _poolKnightOfMeadowgrain from "../pool/knight-of-meadowgrain.js";
+import _poolKotisSibsigChampion from "../pool/kotis-sibsig-champion.js";
 import _poolKrakenHatchling from "../pool/kraken-hatchling.js";
 import _poolKranioceros from "../pool/kranioceros.js";
 import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
@@ -255,6 +257,7 @@ const shard: CardShard = {
     _poolDefyGravity,
     _poolDesertOfTheMindful,
     _poolDiabolicEdict,
+    _poolDragonlordAtarka,
     _poolDriftingMeadow,
     _poolDualSunAdepts,
     _poolDuskanaTheRageMother,
@@ -308,6 +311,7 @@ const shard: CardShard = {
     _poolKiorasFollower,
     _poolKitesailScout,
     _poolKnightOfMeadowgrain,
+    _poolKotisSibsigChampion,
     _poolKrakenHatchling,
     _poolKranioceros,
     _poolKutzilMalametExemplar,

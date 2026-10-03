@@ -114,6 +114,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       return `${name(event.saga)}'s ${event.final ? 'final ' : ''}chapter ability resolves`
     case 'permanent-transformed':
       return `${name(event.object)} transforms (now ${event.front ? 'front' : 'back'} face)`
+    case 'became-monstrous':
+      return `${name(event.object)} becomes monstrous`
+    case 'permanent-exerted':
+      return `${who(event.player)} exerts ${name(event.object)}`
     case 'day-night-changed':
       return `it becomes ${event.value}`
     case 'counter-failed':

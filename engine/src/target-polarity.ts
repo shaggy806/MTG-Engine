@@ -220,6 +220,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "grant-player-hexproof": none,
   populate: none,
   amass: none,
+  monstrosity: none,
+  // It won't untap: a cost when it's your own, a drawback on someone else's.
+  exert: (n, v) => v.touch(n.target, "harm", MINOR),
   proliferate: (n, v) => v.child(n.then),
   "grant-keyword": (n, v) =>
     n.keyword === "defender"

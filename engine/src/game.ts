@@ -275,7 +275,11 @@ import { EVERY_CREATURE_TYPE, LAND_TYPES, hasSubtype, isCreatureType } from "./s
 import {
   anyNumberSlot,
   concreteTargetSpecs,
+  differentControllerOf,
+  divisionOf as spellDivision,
+  groupPowerExceeded,
   groupReadsX,
+  otherThanSlots,
   specsAtX,
   describeTargetSpec,
   isOptionalSpec,
@@ -296,6 +300,7 @@ import {
   legalTargets,
   permanentSource,
   protectionBlocks,
+  stateTargetFacts,
   targetSpecReadsX,
 } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
@@ -449,6 +454,10 @@ interface EnterOptions {
   /** Subtypes it has in addition to its own, the same way — Portal to
    * Phyrexia's "It's a Phyrexian in addition to its other types." */
   readonly addSubtypes?: readonly string[];
+  /** Colours it has in addition to its own, the same way (layer 5) —
+   * Necromantic Selection's "It's a black Zombie in addition to its other
+   * colors and types." */
+  readonly addColors?: readonly Color[];
 }
 
 /** Everything the enters-battlefield replacements decided about one entry
@@ -459,7 +468,15 @@ interface EnteringReplacement {
   readonly counters: readonly { readonly kind: string; readonly amount: number }[];
   readonly painIfUntapped: number;
   readonly mayPayLife: number;
+  /** Riot (rule 702.136a) gives it haste: its controller didn't have it
+   * enter with the +1/+1 counter. */
+  readonly riotHaste: boolean;
 }
+
+/** Riot's two answers (rule 702.136a), as its `choose-creature-type` menu
+ * offers them — see `Game.askEnterChoice`. */
+const RIOT_COUNTER = "+1/+1 counter";
+const RIOT_OPTIONS: readonly string[] = [RIOT_COUNTER, "Haste"];
 
 /**
  * What a condition about a spell's or ability's source is asked of once that
@@ -603,31 +620,6 @@ function autoSlotsOf(slots: readonly object[]): number[] {
  */
 /** A convoke payment with its contribution settled — see `resolveConvoke`. */
 type PaidConvoke = ConvokePayment & { readonly pays: "generic" | Color };
-
-/**
- * The division a cast announces for its card's `divided` group (rule 601.2d):
- * `chosen`, checked — one share per target of the group, each a whole number
- * of at least 1, all of `total` — or, when the caster didn't say, as evenly
- * as it goes with the earlier targets taking the remainder. No targets in the
- * group divide nothing. A string says what's wrong.
- */
-function spellDivision(
-  divided: { readonly total: number; readonly slot: number },
-  targets: ResolvedTargets,
-  chosen: readonly number[] | undefined,
-): readonly number[] | string {
-  const members = targets.slice(divided.slot).filter((t) => t !== undefined).length;
-  if (members === 0) return chosen === undefined || chosen.length === 0 ? [] : "no targets to divide among";
-  if (members > divided.total) return `${divided.total} can't be divided among ${members} targets`;
-  if (chosen === undefined) {
-    const base = Math.floor(divided.total / members);
-    return Array.from({ length: members }, (_unused, i) => base + (i < divided.total % members ? 1 : 0));
-  }
-  if (chosen.length !== members) return `the division names ${chosen.length} shares for ${members} targets`;
-  if (chosen.some((n) => !Number.isInteger(n) || n < 1)) return "each target must get at least 1";
-  if (chosen.reduce((a, b) => a + b, 0) !== divided.total) return `the division must total ${divided.total}`;
-  return [...chosen];
-}
 
 /**
  * The faces of a card that may be cast or played, by index: each face of a
@@ -914,7 +906,7 @@ export class Game {
       applyAssignCombatDamage: (p, a) => this.applyAssignCombatDamage(p, a),
       applyAttackerDeclarations: (p, d) => this.applyAttackerDeclarations(p, d),
       applyBlockerDeclarations: (p, b) => this.applyBlockerDeclarations(p, b),
-      applyChooseTargets: (p, t) => this.applyChooseTargets(p, t),
+      applyChooseTargets: (p, t, d) => this.applyChooseTargets(p, t, d),
       applyCastNow: (p, cast) => this.applyCastNow(p, cast),
       applyScry: (player, away) => this.applyScry(player, away),
     };
@@ -1172,6 +1164,7 @@ export class Game {
           action.xValue ?? 0,
           action.manaColors,
           action.tap,
+          action.division,
         );
         break;
       default:
@@ -1701,6 +1694,7 @@ export class Game {
           ...(ability.loyaltyCost !== undefined ? { loyalty: ability.loyaltyCost } : {}),
           ...(isManaAbility(ability) ? { manaAbility: true as const } : {}),
           ...(xCost !== undefined ? { xCost } : {}),
+          ...(ability.divided !== undefined ? { divide: ability.divided } : {}),
         });
       };
       if (maxX !== undefined && ability.targets.some(targetSpecReadsX)) {
@@ -1709,7 +1703,9 @@ export class Game {
         // targets, each with that X fixed and that X's options.
         for (let x = minX; x <= maxX; x += 1) {
           const options = this.targetOptionsFor(ability.targets, player, this.permanentSource(source, x));
-          if (targetsFillable(ability.targets, options)) push(options, { minX: x, maxX: x });
+          if (targetsFillable(ability.targets, options, [], 0, stateTargetFacts(this.state, this.registry))) {
+            push(options, { minX: x, maxX: x });
+          }
         }
         return;
       }
@@ -1827,6 +1823,7 @@ export class Game {
       state: this.state,
       player,
       legalActions: () => (legal ??= this.legalActions(player)),
+      targetFacts: stateTargetFacts(this.state, this.registry),
       legalActionsAfter: (action) => {
         // A throwaway copy, so the real game is never touched. A refusal
         // means "nothing learned", not an error.
@@ -2308,7 +2305,7 @@ export class Game {
       if (
         def.castModal === null &&
         perX === null &&
-        !targetsFillable(specs, options)
+        !targetsFillable(specs, options, [], 0, stateTargetFacts(this.state, this.registry))
       ) {
         continue;
       }
@@ -2412,6 +2409,21 @@ export class Game {
           : {}),
         ...(costOption !== undefined && costOptions !== undefined
           ? { costOption, costOptionText: costOptions[costOption].text }
+          : {}),
+        // A graveyard permission's "by exiling three other cards from your
+        // graveyard" (Kotis, Sibsig Champion) is chosen the same way.
+        ...(via === "graveyard-permission"
+          ? (() => {
+              const count = this.findGraveyardGrant(player, card, face ?? 0, graveyardGrant)?.permission?.exileOthers;
+              return count === undefined
+                ? {}
+                : {
+                    escapeExile: {
+                      count,
+                      choices: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== card),
+                    },
+                  };
+            })()
           : {}),
         // Escape (rule 702.139a): which other graveyard cards pay the exile
         // half of the cost is the caster's choice, made as costs are paid.
@@ -3642,7 +3654,10 @@ export class Game {
       // cost check) and the general "as this enters, choose …" (Heraldic
       // Banner, Frontier Siege).
       const source = this.state.objects[awaiting.source];
-      source.enterChoice = { ...source.enterChoice, chosen: creatureType };
+      source.enterChoice =
+        awaiting.riot === true
+          ? { ...source.enterChoice, riot: creatureType === RIOT_COUNTER ? "counter" : "haste" }
+          : { ...source.enterChoice, chosen: creatureType };
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
@@ -3968,9 +3983,14 @@ export class Game {
   /** Answers a pending `choose-targets` decision (ROADMAP Phase 11 EG-1) — a
    * triggered ability, or a suspended spell coming off suspend. Mints the
    * ability / commits the free cast with the chosen targets, then resumes. */
-  private applyChooseTargets(player: PlayerId, chosen: ResolvedTargets): void {
-    const why = this.whyCannotChooseTargets(player, chosen);
+  private applyChooseTargets(player: PlayerId, chosen: ResolvedTargets, division?: readonly number[]): void {
+    const why = this.whyCannotChooseTargets(player, chosen, division);
     if (why !== null) throw new Error(why);
+    // A triggered ability's divided amount, split as it goes on the stack
+    // (rule 603.3d) — the answer's, or an even one.
+    const awaitingNow = this.state.awaiting;
+    const divide = awaitingNow?.kind === "choose-targets" ? awaitingNow.divide : undefined;
+    const shares = divide === undefined ? undefined : spellDivision(divide, chosen, division);
     this.state.awaiting = null;
 
     const trig = this.state.pendingTargetedTrigger;
@@ -4010,6 +4030,7 @@ export class Game {
         trig.reflexive,
       );
       if (trig.modes !== undefined) this.state.objects[abilityId].chosenModes = [...trig.modes];
+      if (shares !== undefined && typeof shares !== "string") this.state.objects[abilityId].division = shares;
     } else if (cast !== null) {
       this.state.pendingTargetedCast = null;
       if (!this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen])) {
@@ -4159,12 +4180,18 @@ export class Game {
   private whyCannotChooseTargets(
     player: PlayerId,
     chosen: ResolvedTargets,
+    division?: readonly number[],
   ): string | null {
     return chooseTargets.whyCannot(
       this.decisionCtx,
       // `chosen` is already normalised; `normalizeTargets` is idempotent, so
       // handing the module the action shape it expects costs nothing.
-      { type: "choose-targets", player, targets: chosen.map((ref) => ref ?? null) },
+      {
+        type: "choose-targets",
+        player,
+        targets: chosen.map((ref) => ref ?? null),
+        ...(division !== undefined ? { division } : {}),
+      },
       player,
     );
   }
@@ -4587,6 +4614,13 @@ export class Game {
         this.promptNextCopyTargets();
         continue;
       }
+      // Attackers whose "you may exert this creature as it attacks" is still
+      // to be asked (rule 508.1g) — before their attack triggers go on the
+      // stack.
+      if ((this.state.pendingExerts?.length ?? 0) > 0) {
+        this.promptNextExert();
+        continue;
+      }
       // Creatures put onto the battlefield attacking whose controller has a
       // choice of what each attacks (rule 508.4).
       if ((this.state.pendingEnterAttacking?.length ?? 0) > 0) {
@@ -4761,7 +4795,13 @@ export class Game {
       object.graveyardCastTypesUsedThisTurn = undefined;
       object.combatDamagedPlayersThisTurn = [];
       object.attackedThisTurn = false;
-      if (object.tapped && !this.hasOwnStatic(object, (a) => a.doesntUntap === true)) {
+      // Exerted (rule 701.43a): not during its exerter's next untap step —
+      // this one, if that's who's active.
+      if (
+        object.tapped &&
+        object.exertedBy !== active &&
+        !this.hasOwnStatic(object, (a) => a.doesntUntap === true)
+      ) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
       }
@@ -4772,10 +4812,16 @@ export class Game {
       const object = this.state.objects[id];
       if (object === undefined || object.controller === active || !object.tapped) continue;
       if (this.state.players[object.controller]?.hasLost === true) continue;
-      if (this.untapsDuringOthersUntap(object)) {
+      if (object.exertedBy !== active && this.untapsDuringOthersUntap(object)) {
         object.tapped = false;
         this.emit({ type: "permanent-untapped", object: id });
       }
+    }
+    // That was their next untap step: whatever they exerted has served its
+    // time, untapped or not (the rulings).
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object?.exertedBy === active) delete object.exertedBy;
     }
   }
 
@@ -5063,7 +5109,22 @@ export class Game {
         this.putOnLibrary(id, "bottom");
         return;
       }
-      const moved = this.moveObject(id, to, { tapped: awaiting.enterTapped === true });
+      const under = to === "battlefield" ? awaiting.enterUnder : undefined;
+      const enterAs = to === "battlefield" ? awaiting.enterAs : undefined;
+      const moved = this.moveObject(id, to, {
+        tapped: awaiting.enterTapped === true,
+        ...(under !== undefined ? { under } : {}),
+        ...(enterAs?.setTypes !== undefined ? { setTypes: enterAs.setTypes } : {}),
+        ...(enterAs?.addSubtypes !== undefined ? { addSubtypes: enterAs.addSubtypes } : {}),
+        ...(enterAs?.addColors !== undefined ? { addColors: enterAs.addColors } : {}),
+      });
+      // Kept there by a control effect, as a reanimation "under your
+      // control" is (see `putOntoBattlefieldByEffect`).
+      const entered = this.state.objects[id];
+      if (moved && under !== undefined && entered?.zone === "battlefield" && entered.controller !== under) {
+        this.gainControlByEffect(under, { kind: "object", object: id }, false, true);
+        entered.summoningSick = true;
+      }
       if (moved && to === "battlefield") {
         // "…onto the battlefield tapped and attacking" (rule 508.4): as it
         // enters, before anything sees it arrive.
@@ -5430,11 +5491,17 @@ export class Game {
     const attackers = this.currentAttackers();
     while (this.state.pendingBlockerDeclarations.length > 0) {
       const defender = this.state.pendingBlockerDeclarations[0];
-      const hasEligibleBlocker = this.state.zones.shared.battlefield.some(
-        (id) =>
-          this.state.objects[id].controller === defender &&
-          attackers.some((attacker) => this.whyCannotBlock(defender, id, attacker) === null),
-      );
+      // A defending player who has left the game since the attack (rule
+      // 800.4a — an attack trigger dealt them lethal damage) declares
+      // nothing: what they had left the game with them, though the engine
+      // leaves it where it was (`inGame`).
+      const hasEligibleBlocker =
+        this.state.players[defender]?.hasLost !== true &&
+        this.state.zones.shared.battlefield.some(
+          (id) =>
+            this.state.objects[id].controller === defender &&
+            attackers.some((attacker) => this.whyCannotBlock(defender, id, attacker) === null),
+        );
       if (hasEligibleBlocker) {
         this.state.awaiting = { kind: "blockers", player: defender };
         return;
@@ -5566,9 +5633,55 @@ export class Game {
         }
       }
     }
+    // "You may exert this creature as it attacks" (rule 701.43d): an
+    // optional cost to attack (508.1g), asked of each such attacker before
+    // anything that triggered on the attack goes on the stack.
+    const exertable = allAttackers.filter((id) => this.mayExertAsItAttacks(id));
+    if (exertable.length > 0) this.state.pendingExerts = exertable;
 
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
+  }
+
+  /** May `id`, attacking, be exerted by its own "you may exert this creature
+   * as it attacks" (rule 701.43d) — and, for Combat Celebrant's "if this
+   * creature hasn't been exerted this turn", not been exerted yet? */
+  private mayExertAsItAttacks(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield" || object.attacking === null) return false;
+    return this.hasOwnStatic(
+      object,
+      (a) =>
+        a.exertAsItAttacks !== undefined &&
+        (a.exertAsItAttacks.unlessExertedThisTurn !== true || object.exertedOnTurn !== this.state.turn.number),
+    );
+  }
+
+  /** Ask the next queued attacker's "you may exert this creature as it
+   * attacks" (see `GameState.pendingExerts`): a `choose-modes` of one mode,
+   * exerting it, or none. */
+  private promptNextExert(): void {
+    const [id, ...rest] = this.state.pendingExerts ?? [];
+    if (rest.length > 0) this.state.pendingExerts = rest;
+    else delete this.state.pendingExerts;
+    if (id === undefined || !this.mayExertAsItAttacks(id)) return;
+    const object = this.state.objects[id];
+    const name = this.registry.get(printedCardName(object)).name;
+    this.state.awaiting = {
+      kind: "choose-modes",
+      player: object.controller,
+      source: id,
+      minModes: 0,
+      maxModes: 1,
+      modes: [
+        {
+          text: `Exert ${name} as it attacks (it won't untap during your next untap step)`,
+          effect: { kind: "exert", target: "source", asItAttacks: true },
+        },
+      ],
+      x: 0,
+      targets: [],
+    };
   }
 
   private applyBlockerDeclarations(
@@ -6363,6 +6476,7 @@ export class Game {
     | { readonly kind: "choose"; readonly options?: readonly string[] }
     | { readonly kind: "enchant"; readonly as: CardDefinition }
     | { readonly kind: "reveal"; readonly subtypes: readonly string[] }
+    | { readonly kind: "riot" }
     | null {
     const object = this.state.objects[id];
     const answered = object.enterChoice;
@@ -6374,6 +6488,10 @@ export class Game {
       if (becoming.chooseCreatureTypeOnEnter) return { kind: "choose" };
       if (becoming.chooseOnEnter !== null) return { kind: "choose", options: becoming.chooseOnEnter };
     }
+    // Riot (rule 702.136a): "you may have this permanent enter with an
+    // additional +1/+1 counter on it" — a printed (or copied) riot. One
+    // granted by another permanent isn't asked (AUTHORING §15).
+    if (answered?.riot === undefined && becoming.keywords.includes("riot")) return { kind: "riot" };
     if (becoming.subtypes.includes("Aura") && answered?.enchant === undefined) {
       return { kind: "enchant", as: becoming };
     }
@@ -6407,6 +6525,17 @@ export class Game {
     for (let next = this.nextEnterChoice(id); next !== null; next = this.nextEnterChoice(id)) {
       if (next.kind === "choose") {
         this.beginCreatureTypeChoice(id, chooser, next.options);
+        return true;
+      }
+      if (next.kind === "riot") {
+        this.state.awaiting = {
+          kind: "choose-creature-type",
+          player: chooser,
+          source: id,
+          options: RIOT_OPTIONS,
+          catalog: false,
+          riot: true,
+        };
         return true;
       }
       if (next.kind === "enchant") {
@@ -7973,8 +8102,20 @@ export class Game {
         return `${player} may not cast ${def.name} from the top of their library`;
       }
     } else if (via === "graveyard-permission") {
-      if (this.findGraveyardGrant(player, cardId, face, graveyardGrant) === null) {
+      const found = this.findGraveyardGrant(player, cardId, face, graveyardGrant);
+      if (found === null) {
         return `${player} has no permission to cast ${def.name} from their graveyard`;
+      }
+      // "By exiling three other cards from your graveyard in addition to
+      // paying its other costs" (Kotis, Sibsig Champion): the caster's pick,
+      // as escape's is.
+      const exileOthers = found.permission?.exileOthers;
+      if (exileOthers !== undefined && escapeExile !== undefined) {
+        const wrong = this.whyEscapeExileIsWrong(player, cardId, def.name, exileOthers, escapeExile);
+        if (wrong !== null) return wrong;
+      }
+      if (exileOthers === undefined && escapeExile !== undefined) {
+        return `that permission exiles nothing from ${player}'s graveyard`;
       }
     } else if (via === "effect") {
       // Wherever the card is — the offer is the permission (checked above).
@@ -8014,8 +8155,8 @@ export class Game {
     ) {
       return "a graveyard permission only names a graveyard-permission, escape or flashback cast";
     }
-    if (escapeExile !== undefined && via !== "escape") {
-      return "only an escape cast exiles cards from the graveyard to pay for it";
+    if (escapeExile !== undefined && via !== "escape" && via !== "graveyard-permission") {
+      return "only an escape cast, or a graveyard permission's, exiles cards from the graveyard to pay for it";
     }
     if (def.types.includes("land")) return "lands are played, not cast";
     // Instant-speed if it's an instant, has flash (rule 702.8) or may be cast
@@ -8025,7 +8166,9 @@ export class Game {
       via !== "effect" &&
       !def.types.includes("instant") &&
       !def.keywords.includes("flash") &&
-      !this.castsAsThoughFlash(player, cardId)
+      // Judged as the spell it would be — an Omen or an adventure is its
+      // instant or sorcery half (rules 715.3, 720.3a).
+      !this.withFace(cardId, face ?? 0, () => this.castsAsThoughFlash(player, cardId))
     ) {
       const timing = this.whyNotSorcerySpeed(player, `cast ${def.name}`);
       if (timing !== null) return timing;
@@ -8135,9 +8278,9 @@ export class Game {
         return `${def.name} has no legal ${describeTargetSpec(spec)} target`;
       }
     }
-    // Every slot has something, but "another target" may still leave no way
-    // to fill them all at once.
-    if (!targetsFillable(castSpecs, castOptions)) {
+    // Every slot has something, but "another target" — or "controlled by
+    // different players" — may still leave no way to fill them all at once.
+    if (!targetsFillable(castSpecs, castOptions, [], 0, stateTargetFacts(this.state, this.registry))) {
       return `${def.name} has no legal combination of targets`;
     }
     // Liesa's life-paid commander tax. Rule 119.4: life can be paid only
@@ -8828,6 +8971,17 @@ export class Game {
     // to paying their other costs").
     if (graveyardPermission?.payLife !== undefined) {
       this.changeLife(player, -graveyardPermission.payLife);
+    }
+    // Its other extra cost, "by exiling three other cards from your graveyard"
+    // (Kotis, Sibsig Champion): the ones the caster chose, or for a driver
+    // that doesn't choose the oldest — one move, as escape's is.
+    const permissionExile = graveyardPermission?.exileOthers;
+    if (permissionExile !== undefined) {
+      const others = this.state.zones.perPlayer[player].graveyard.filter((id) => id !== cardId);
+      const exiled = escapeExile !== undefined ? [...escapeExile] : others.slice(0, permissionExile);
+      this.withGraveyardLeaveBatch(() => {
+        for (const id of exiled) this.moveObject(id, "exile");
+      });
     }
     // The additional sacrifice (rule 601.2f/h) is paid *after* mana, so the
     // land being sacrificed can still be tapped for the spell's own cost first
@@ -9861,7 +10015,7 @@ export class Game {
       }
       // Every slot has something, but "another target" may still leave no way
       // to fill them all at once (Wayta with no other creature out).
-      if (!targetsFillable(ability.targets, abilityOptions)) {
+      if (!targetsFillable(ability.targets, abilityOptions, [], 0, stateTargetFacts(this.state, this.registry))) {
         return `${def.name}'s ability has no legal combination of targets`;
       }
     }
@@ -9935,6 +10089,11 @@ export class Game {
     ) {
       return `${player} does not have {E}×${ability.cost.payEnergy} to pay`;
     }
+    // Rule 701.17b: a cost that mills more cards than the library holds
+    // can't be paid.
+    if (ability.cost.mill !== undefined && this.state.zones.perPlayer[player].library.length < ability.cost.mill) {
+      return `${player} has too few cards in their library to mill for ${def.name}'s cost`;
+    }
     return null;
   }
 
@@ -9947,6 +10106,7 @@ export class Game {
     xValue = 0,
     manaColors?: readonly ManaType[],
     tap?: readonly ObjectId[],
+    division?: readonly number[],
   ): void {
     // Checking and planning share one cache region, so the board's mana
     // sources are worked out once: `whyCannotActivateAbility` plans the
@@ -9978,6 +10138,12 @@ export class Game {
         this.permanentSource(sourceId, xValue),
       );
       if (badTarget !== null) throw new Error(badTarget);
+      // A divided amount, split as it's activated (rules 602.2b, 601.2d).
+      const shares = ability.divided === undefined ? undefined : spellDivision(ability.divided, targets, division);
+      if (typeof shares === "string") throw new Error(`${def.name}'s ability: ${shares}`);
+      if (ability.divided === undefined && division !== undefined && division.length > 0) {
+        throw new Error(`${def.name}'s ability divides nothing`);
+      }
 
       // Resolve which permanent the sacrifice cost (if any) will consume. A
       // cost of several is chosen once the ability is on the stack, below.
@@ -10053,12 +10219,12 @@ export class Game {
       }
       return {
         source, def, ability, grantedAbility, sourceStint,
-        sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment,
+        sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment, shares,
       };
     });
     const {
       source, def, ability, grantedAbility, sourceStint,
-      sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment,
+      sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment, shares,
     } = planned;
     let sacrificedRef: LastKnownRefs["sacrificed"];
 
@@ -10088,6 +10254,9 @@ export class Game {
     if (ability.cost.payEnergy !== undefined) {
       this.changeEnergy(player, -ability.cost.payEnergy);
     }
+    // "Mill a card" as a cost (Millikin): paid now, and stands even if the
+    // ability is countered.
+    if (ability.cost.mill !== undefined) this.millByEffect({ kind: "player", player }, ability.cost.mill);
     // Paid *before* the ability resolves, which is what makes Slate of
     // Ancestry's "discard your hand, then draw a card for each creature"
     // work out as a refill rather than a discard of what it drew.
@@ -10254,6 +10423,7 @@ export class Game {
       chosen,
     );
     if (chosenX > 0) this.state.objects[abilityId].xValue = chosenX;
+    if (shares !== undefined) this.state.objects[abilityId].division = shares;
     if (grantedAbility !== undefined) this.state.objects[abilityId].grantedAbility = grantedAbility;
     if (sourceStint !== undefined || sacrificedRef !== undefined || tappedRef !== undefined) {
       this.state.objects[abilityId].lastKnownRefs = {
@@ -11913,9 +12083,15 @@ export class Game {
   private leaveStackAfterResolving(id: ObjectId): void {
     const object = this.state.objects[id];
     if (object === undefined || object.zone !== "stack") return;
+    // An Omen spell (rule 720.3d) — the omen card cast as its Omen, or a
+    // copy of one (720.3c) — is shuffled into its owner's library as it
+    // resolves.
+    const omen = this.frontFaceDef(id).omen && (object.face ?? 0) === 1;
     // A copy of a spell (rule 707.10c) ceases to exist instead of moving to
-    // any zone other than the stack.
+    // any zone other than the stack — a copy of an Omen too, though its
+    // owner still shuffles their library (the ruling).
     if (object.isCopy) {
+      if (omen) this.shuffleLibraryOf(object.owner);
       const stack = this.state.zones.shared.stack;
       const stackIndex = stack.indexOf(id);
       if (stackIndex >= 0) stack.splice(stackIndex, 1);
@@ -11970,6 +12146,10 @@ export class Game {
       this.moveObject(id, "exile");
       object.onAdventure = true;
       this.emit({ type: "card-on-adventure", object: id, player: object.owner });
+    } else if (omen) {
+      this.moveObject(id, "library");
+      this.shuffleLibraryOf(object.owner);
+      object.targets = null;
     } else {
       // "Exile ~" printed on the spell's own resolution text (Genesis
       // Ultimatum — needed-cards P19), unconditional and independent of how
@@ -12235,6 +12415,8 @@ export class Game {
         ...(transformSince !== undefined ? { transformSince } : {}),
         ...(readTargets !== undefined ? { readTargets } : {}),
         ...(illegalTargets.length > 0 ? { illegalTargets } : {}),
+        // A divided amount, split as it went on the stack.
+        ...(object.division !== undefined ? { division: object.division } : {}),
         ...(object.chosenModes !== undefined && object.chosenModes !== null
           ? { announcedModes: object.chosenModes }
           : {}),
@@ -12587,7 +12769,9 @@ export class Game {
             event.type === "permanent-destroyed" ||
             event.type === "permanent-left-battlefield" ||
             event.type === "permanent-sacrificed" ||
-            event.type === "permanent-transformed"
+            event.type === "permanent-transformed" ||
+            event.type === "became-monstrous" ||
+            event.type === "permanent-exerted"
               ? event.object
               : event.type === "chapter-resolved"
                 ? event.saga
@@ -12657,6 +12841,9 @@ export class Game {
                     ? this.discardedMatching(ability.trigger, event.objects, object).length
                     : // "Deals that much damage": how many counters were put.
                     ability.trigger.on === "counters-put" && event.type === "counter-added"
+                    ? event.amount
+                    : // The N it became monstrous with (rule 701.37c's X).
+                    ability.trigger.on === "becomes-monstrous" && event.type === "became-monstrous"
                     ? event.amount
                     : // "The number of times you chose a mode for that spell".
                     ability.trigger.on === "cast-spell" &&
@@ -13469,6 +13656,18 @@ export class Game {
           this.matchesWho(spec.who, event.saga, self) &&
           this.triggerFilterOk(spec.filter, event.saga, self)
         );
+      case "exerted":
+        return (
+          event.type === "permanent-exerted" &&
+          (spec.asItAttacks !== true || event.asItAttacks) &&
+          this.matchesWho(spec.who, event.object, self)
+        );
+      case "becomes-monstrous":
+        return (
+          event.type === "became-monstrous" &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
       case "transforms":
         return (
           event.type === "permanent-transformed" &&
@@ -13522,6 +13721,15 @@ export class Game {
           this.matchesWho(spec.who, event.blocker, self) &&
           !(spec.otherOnly === true && event.blocker === self.id) &&
           this.triggerFilterOk(spec.filter, event.blocker, self)
+        );
+      case "blocked-by":
+        // Once per blocker (flanking — rule 702.25a), the blocker asked about
+        // as the block is declared.
+        return (
+          event.type === "blocker-declared" &&
+          this.matchesWho(spec.who, event.attacker, self) &&
+          this.triggerFilterOk(spec.filter, event.attacker, self) &&
+          this.triggerFilterOk(spec.blocker, event.blocker, self)
         );
       case "becomes-blocked":
         return (
@@ -14297,6 +14505,13 @@ export class Game {
       );
       if ((trigger.copies ?? 1) > 1) this.state.objects[abilityId].stackCount = trigger.copies;
       if (trigger.modes !== undefined) this.state.objects[abilityId].chosenModes = [...trigger.modes];
+      // A divided amount with nothing to choose (rule 603.3d): all of it on
+      // the one target, or nothing among none.
+      const dividedNow = (ability as TriggeredAbility).divided;
+      if (dividedNow !== undefined) {
+        const shares = spellDivision(dividedNow, targets, undefined);
+        if (typeof shares !== "string") this.state.objects[abilityId].division = shares;
+      }
       return "done";
     }
 
@@ -14322,6 +14537,11 @@ export class Game {
       ...(reflexive !== undefined ? { reflexive } : {}),
       ...(trigger.modes !== undefined ? { modes: trigger.modes } : {}),
     };
+    // A divided amount (rule 603.3d): its group is the last slot, so in the
+    // answer it starts after the chooser's other slots.
+    const divided = (ability as TriggeredAbility).divided;
+    const group = anyNumberSlot(specs);
+    const answerSlot = group < 0 ? -1 : slots.slice(0, group).filter((s) => "spec" in s).length;
     this.state.awaiting = {
       kind: "choose-targets",
       player: trigger.controller,
@@ -14329,6 +14549,7 @@ export class Game {
       cardName: trigger.cardName,
       specs: chooserSlots.map((s) => s.spec),
       options: chooserSlots.map((s) => [...s.options]),
+      ...(divided !== undefined && answerSlot >= 0 ? { divide: { total: divided.total, slot: answerSlot } } : {}),
     };
     return "paused";
   }
@@ -14450,22 +14671,52 @@ export class Game {
   ): { readonly fizzles: boolean; readonly illegal: readonly number[]; readonly targets: ResolvedTargets } {
     // An "any number of target …" group has as many slots as it went on the
     // stack with — never as many as the board would allow now.
+    const declared = specs;
     specs = concreteTargetSpecs(specs, chosen.length);
     const targets = [...now];
     const illegal: number[] = [];
     let anyChosen = false;
-    let anyLegal = false;
     specs.forEach((spec, i) => {
       if (chosen[i] === undefined || autoSlots.includes(i)) return;
       anyChosen = true;
       const ref = now[i];
-      if (ref !== undefined && isLegalTarget(this.state, this.registry, spec, ref, forPlayer, source)) {
-        anyLegal = true;
-        return;
-      }
+      if (ref !== undefined && isLegalTarget(this.state, this.registry, spec, ref, forPlayer, source)) return;
       illegal.push(i);
       targets[i] = undefined;
     });
+    const drop = (i: number): void => {
+      if (targets[i] === undefined) return;
+      illegal.push(i);
+      targets[i] = undefined;
+    };
+    // "…controlled by different players" (rule 608.2b — the Run Away Together
+    // rulings): two such targets one player controls now are both illegal;
+    // one already illegal still lends its controller, as it last existed.
+    const controllerNow = (ref: TargetRef | undefined): PlayerId | undefined => {
+      if (ref?.kind !== "object") return undefined;
+      const object = this.state.objects[ref.object];
+      if (object === undefined) return undefined;
+      return object.zone === "battlefield" ? object.controller : (object.lastKnown?.controller ?? object.controller);
+    };
+    specs.forEach((spec, i) => {
+      if (!differentControllerOf(spec) || chosen[i] === undefined) return;
+      const than = otherThan(spec);
+      for (const slot of than === undefined ? [] : otherThanSlots(than)) {
+        if (chosen[slot] === undefined) continue;
+        const mine = controllerNow(now[i] ?? chosen[i]);
+        if (mine !== undefined && mine === controllerNow(now[slot] ?? chosen[slot])) {
+          drop(i);
+          drop(slot);
+        }
+      }
+    });
+    // A group's "total power N or less" broken now makes every one of its
+    // targets illegal (Reunion of the House's ruling).
+    const group = anyNumberSlot(declared);
+    if (group >= 0 && groupPowerExceeded(declared, targets, stateTargetFacts(this.state, this.registry))) {
+      for (let i = group; i < targets.length; i += 1) drop(i);
+    }
+    const anyLegal = targets.some((t, i) => t !== undefined && chosen[i] !== undefined && !autoSlots.includes(i));
     return { fizzles: anyChosen && !anyLegal, illegal, targets };
   }
 
@@ -15320,6 +15571,28 @@ export class Game {
       addCounter: (target, counter, amount, by) =>
         this.addCounter(target, counter, amount, true, by ?? controller),
       amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
+      exert: (target, asItAttacks) => {
+        // Rule 701.43: only a permanent can be exerted (701.43c), tapped or
+        // not, and again (701.43b); it skips its exerter's next untap step.
+        if (target.kind !== "object") return;
+        const object = this.state.objects[target.object];
+        if (object === undefined || object.zone !== "battlefield") return;
+        object.exertedBy = controller;
+        object.exertedOnTurn = this.state.turn.number;
+        this.emit({ type: "permanent-exerted", object: target.object, player: controller, asItAttacks });
+      },
+      monstrosity: (amount) => {
+        // Rule 701.37a: "if this permanent isn't monstrous" — its own source,
+        // still the same permanent (rule 400.7). One that has left, or is
+        // monstrous already, has nothing happen to it and fires nothing.
+        const object = this.state.objects[source];
+        if (opts.sourceLost === true || object === undefined || object.zone !== "battlefield") return;
+        if (refs.source !== undefined && (object.zoneChangeCount ?? 0) !== refs.source) return;
+        if (object.monstrous === true) return;
+        this.addCounter({ kind: "object", object: source }, "+1/+1", amount, false, controller);
+        object.monstrous = true;
+        this.emit({ type: "became-monstrous", object: source, amount });
+      },
       populate: () => this.populate(controller),
       encore: () => this.encore(controller, source),
       chosenColorOfSource: () => {
@@ -15698,8 +15971,9 @@ export class Game {
         const seat = this.state.players[controller];
         seat.extraLandsThisTurn = (seat.extraLandsThisTurn ?? 0) + amount;
       },
-      untapAll: (filter, scopeTo) => {
+      untapAll: (filter, scopeTo, exceptSource) => {
         for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {
+          if (exceptSource === true && id === source) continue;
           const object = this.state.objects[id];
           if (object.tapped) {
             object.tapped = false;
@@ -15932,7 +16206,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking) => {
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking, enterAs) => {
         // "Exile one of them face down" (hideaway): linked to the source, in
         // the stint this ability refers to (rule 607.2a).
         const sourceObject = this.state.objects[source];
@@ -15959,6 +16233,7 @@ export class Game {
           attacking,
           source,
           exileLink,
+          enterAs,
         );
       },
     };
@@ -15985,7 +16260,7 @@ export class Game {
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   private beginZoneChoice(
     player: PlayerId,
-    zone: "library" | "graveyard" | "hand",
+    zone: "library" | "graveyard" | "hand" | "graveyards",
     count: number | undefined,
     min: number,
     max: number,
@@ -16000,8 +16275,13 @@ export class Game {
     attacking?: ResolvedEnterAttacking,
     source?: ObjectId,
     exileLink?: { readonly source: ObjectId; readonly zoneChangeCount: number },
+    enterAs?: EnterTypes,
   ): void {
-    const zoneCards = this.state.zones.perPlayer[player][zone];
+    // Every graveyard, in turn order — all public (Necromantic Selection).
+    const zoneCards =
+      zone === "graveyards"
+        ? this.state.turnOrder.flatMap((p) => this.state.zones.perPlayer[p].graveyard)
+        : this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
@@ -16022,6 +16302,10 @@ export class Game {
       leftover,
       ...(enterTapped && destination === "battlefield" ? { enterTapped: true } : {}),
       ...(attacking !== undefined && destination === "battlefield" ? { enterAttacking: attacking } : {}),
+      // A card from another player's graveyard enters under the chooser's
+      // control ("to the battlefield under your control").
+      ...(zone === "graveyards" && destination === "battlefield" ? { enterUnder: player } : {}),
+      ...(enterAs !== undefined && destination === "battlefield" ? { enterAs } : {}),
       ...(then?.effect !== undefined ? { then: then.effect } : {}),
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
       ...(leftoverIf !== undefined ? { leftoverIf } : {}),
@@ -16686,7 +16970,20 @@ export class Game {
         ) {
           continue;
         }
-        if (!matchesFilter(this.state, this.registry, card, permission.filter, { you: player })) {
+        // Nor can a cost exile more other cards than the graveyard holds.
+        if (
+          permission.exileOthers !== undefined &&
+          this.state.zones.perPlayer[player].graveyard.length - 1 < permission.exileOthers
+        ) {
+          continue;
+        }
+        // Judged as the spell it would be (rule 601.3e): "a creature spell"
+        // isn't an omen card's Omen or an adventurer's Adventure.
+        if (
+          !this.withFace(card, face, () =>
+            matchesFilter(this.state, this.registry, card, permission.filter, { you: player }),
+          )
+        ) {
           continue;
         }
         // A permission that sacrifices (Exploration Broodship) isn't offered
@@ -17503,6 +17800,7 @@ export class Game {
       this.state.objects[id].counters[c.kind] =
         (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
     }
+    if (entering.riotHaste) this.gainRiotHaste(id);
     if (!skipBattlefield) {
       this.state.timestampSeq += 1;
       this.state.objects[id].timestamp = this.state.timestampSeq;
@@ -18555,8 +18853,8 @@ export class Game {
     const front = this.frontFaceDef(id);
     if (front.transform) return true;
     // Since the 2025 rules change a modal DFC turns over too, to a face that
-    // is a permanent — never an adventure's spell half.
-    if (front.adventure) return false;
+    // is a permanent — never an adventure's or an Omen's spell half.
+    if (front.adventure || front.omen) return false;
     const other = this.registry.get(object.faces[(object.face ?? 0) === 0 ? 1 : 0]);
     return other.types.some((type) => PERMANENT_TYPES.has(type));
   }
@@ -18667,6 +18965,19 @@ export class Game {
       { type: "choose-text", player, from, to },
       player,
     );
+  }
+
+  /** Riot's "if you don't, it gains haste" (rule 702.136a): an effect, not
+   * an ability of its own, lasting as long as the permanent does — through a
+   * change of control (the ruling) and with no duration to run out. */
+  private gainRiotHaste(id: ObjectId): void {
+    this.state.objects[id].modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: ["haste"],
+      untilEndOfTurn: false,
+      timestamp: this.freshTimestamp(),
+    });
   }
 
   /** A fresh timestamp (rule 613.7b) — for a continuous effect as it's
@@ -19602,6 +19913,7 @@ export class Game {
       ...(transformed ? { transformed: true } : {}),
       ...(types?.setTypes !== undefined ? { setTypes: types.setTypes } : {}),
       ...(types?.addSubtypes !== undefined ? { addSubtypes: types.addSubtypes } : {}),
+      ...(types?.addColors !== undefined ? { addColors: types.addColors } : {}),
     });
     const entered = this.state.objects[target.object];
     if (entered === undefined || entered.zone !== "battlefield") return false;
@@ -22541,8 +22853,9 @@ export class Game {
     effectTransformed = false,
     reveal?: ObjectId | null,
     copyEnter?: NonNullable<GameObject["enterChoice"]>["copyEnter"],
+    riot?: "counter" | "haste",
   ): EnteringReplacement {
-    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed, reveal, copyEnter);
+    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed, reveal, copyEnter, riot);
     this.enterBatch?.add(id);
     return entering;
   }
@@ -22553,6 +22866,7 @@ export class Game {
     effectTransformed = false,
     reveal?: ObjectId | null,
     copyEnter?: NonNullable<GameObject["enterChoice"]>["copyEnter"],
+    riot?: "counter" | "haste",
   ): EnteringReplacement {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
@@ -22625,6 +22939,15 @@ export class Game {
         );
       }
     }
+    // Riot (rule 702.136a): the +1/+1 counter its controller chose as it was
+    // about to enter (`askEnterChoice`), or else haste. Entering some way
+    // that never asked (a token copy), nobody had it enter with the counter,
+    // so it gains haste.
+    let riotHaste = false;
+    if (def.keywords.includes("riot")) {
+      if (riot === "counter") addCounters("+1/+1", 1);
+      else riotHaste = true;
+    }
     // Other permanents' replacements (rule 614.12). Never its own — a
     // permanent's ability over a general set of permanents doesn't modify how
     // that permanent itself enters — and never one entering alongside it,
@@ -22663,6 +22986,7 @@ export class Game {
       counters,
       painIfUntapped: tapped ? 0 : painIfUntapped,
       mayPayLife: tapped || untapped ? 0 : mayPayLife,
+      riotHaste,
     };
   }
 
@@ -23342,6 +23666,11 @@ export class Game {
     delete object.goadedBy;
     delete object.goadedForGameBy;
     delete object.suspectedAt;
+    // Monstrous lasts until the permanent leaves the battlefield (701.37b);
+    // being exerted, until it's a new object.
+    delete object.monstrous;
+    delete object.exertedBy;
+    delete object.exertedOnTurn;
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;
@@ -23473,7 +23802,7 @@ export class Game {
       object.summoningSick = true;
       this.state.timestampSeq += 1;
       object.timestamp = this.state.timestampSeq;
-      if (enter.setTypes !== undefined || enter.addSubtypes !== undefined) {
+      if (enter.setTypes !== undefined || enter.addSubtypes !== undefined || enter.addColors !== undefined) {
         object.modifiers.push({
           timestamp: object.timestamp,
           power: 0,
@@ -23481,6 +23810,7 @@ export class Game {
           keywords: [],
           ...(enter.setTypes !== undefined ? { setTypes: [...enter.setTypes] } : {}),
           ...(enter.addSubtypes !== undefined ? { addSubtypes: [...enter.addSubtypes] } : {}),
+          ...(enter.addColors !== undefined ? { addColors: [...enter.addColors] } : {}),
           untilEndOfTurn: false,
         });
       }
@@ -23513,11 +23843,13 @@ export class Game {
         enter.transformed === true,
         enterChoice?.reveal,
         enterChoice?.copyOf !== undefined && enterChoice.copyOf !== null ? enterChoice.copyEnter : undefined,
+        enterChoice?.riot,
       );
       object.tapped = entering.tapped;
       for (const c of entering.counters) {
         object.counters[c.kind] = (object.counters[c.kind] ?? 0) + c.amount;
       }
+      if (entering.riotHaste) this.gainRiotHaste(id);
       if (entering.painIfUntapped > 0) {
         this.dealDamage(
           id,

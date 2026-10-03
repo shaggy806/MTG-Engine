@@ -78,6 +78,7 @@ import _poolHeartwoodGiant from "../pool/heartwood-giant.js";
 import _poolHerculesPrinceOfPower from "../pool/hercules-prince-of-power.js";
 import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
 import _poolHighlandLake from "../pool/highland-lake.js";
+import _poolHydraBroodmaster from "../pool/hydra-broodmaster.js";
 import _poolIdyllicBeachfront from "../pool/idyllic-beachfront.js";
 import _poolInnocentBlood from "../pool/innocent-blood.js";
 import _poolInordinateRage from "../pool/inordinate-rage.js";
@@ -298,6 +299,7 @@ const shard: CardShard = {
     _poolHerculesPrinceOfPower,
     _poolHermiticNautilus,
     _poolHighlandLake,
+    _poolHydraBroodmaster,
     _poolIdyllicBeachfront,
     _poolInnocentBlood,
     _poolInordinateRage,

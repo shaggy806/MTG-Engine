@@ -16,7 +16,7 @@ function otherFaceOf(
 ): VisibleObject | null {
   if (!obj.faces || obj.faces.length < 2) return null
   const front = lookup(obj.faces[0])
-  if (front === undefined || front?.adventure) return null
+  if (front === undefined || front?.adventure || front?.omen) return null
   const current = obj.faceName ?? obj.cardName
   const otherName = obj.faces.find((name) => name !== current)
   const other = otherName === undefined ? null : lookup(otherName)

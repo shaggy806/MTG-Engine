@@ -117,6 +117,7 @@ import _poolMyrConvert from "../pool/myr-convert.js";
 import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
 import _poolNarciFableSinger from "../pool/narci-fable-singer.js";
+import _poolNecromanticSelection from "../pool/necromantic-selection.js";
 import _poolNightscapeFamiliar from "../pool/nightscape-familiar.js";
 import _poolNyxbornMarauder from "../pool/nyxborn-marauder.js";
 import _poolOphidianEye from "../pool/ophidian-eye.js";
@@ -323,6 +324,7 @@ const shard: CardShard = {
     _poolMyrKinsmith,
     _poolNantukoHusk,
     _poolNarciFableSinger,
+    _poolNecromanticSelection,
     _poolNightscapeFamiliar,
     _poolNyxbornMarauder,
     _poolOphidianEye,

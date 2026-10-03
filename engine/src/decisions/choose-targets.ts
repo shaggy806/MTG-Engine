@@ -24,7 +24,7 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { PlayerId } from "../primitives.js";
-import { normalizeTargets, sameTargetRef } from "../target.js";
+import { divisionOf, normalizeTargets, sameTargetRef } from "../target.js";
 import type { ResolvedTargets } from "../target.js";
 import { cardSource, invalidTargetReason } from "../targeting.js";
 import type { TargetSource } from "../targeting.js";
@@ -98,6 +98,7 @@ export const chooseTargets = defineDecision({
       specs: [...awaiting.specs],
       options: awaiting.options.map((o) => [...o]),
       ...(awaiting.current !== undefined ? { current: [...awaiting.current] } : {}),
+      ...(awaiting.divide !== undefined ? { divide: awaiting.divide } : {}),
     },
   ],
 
@@ -110,6 +111,14 @@ export const chooseTargets = defineDecision({
       return `${player} is not being asked to choose targets`;
     }
     if (awaiting.current !== undefined) return whyNotCopyTargets(ctx, awaiting, normalizeTargets(action.targets), player);
+    // A divided amount (rule 603.3d): one share per target of the group, at
+    // least 1 each, all of it — or none said, and an even split.
+    if (awaiting.divide === undefined) {
+      if (action.division !== undefined && action.division.length > 0) return "this ability divides nothing";
+    } else {
+      const division = divisionOf(awaiting.divide, normalizeTargets(action.targets), action.division);
+      if (typeof division === "string") return division;
+    }
     return invalidTargetReason(
       ctx.state,
       ctx.registry,
@@ -124,7 +133,7 @@ export const chooseTargets = defineDecision({
 
   apply: (host, action): void => {
     if (action.type !== "choose-targets") return;
-    host.applyChooseTargets(action.player, normalizeTargets(action.targets));
+    host.applyChooseTargets(action.player, normalizeTargets(action.targets), action.division);
   },
 
   ask: (controller, view, awaiting, player): Action => ({

@@ -78,6 +78,7 @@ import _poolGarruksCompanion from "../pool/garruks-companion.js";
 import _poolGeistOfTheMoors from "../pool/geist-of-the-moors.js";
 import _poolGloomhunter from "../pool/gloomhunter.js";
 import _poolGloomlakeVerge from "../pool/gloomlake-verge.js";
+import _poolGlorybringer from "../pool/glorybringer.js";
 import _poolGoblinWarDrums from "../pool/goblin-war-drums.js";
 import _poolGoldmawChampion from "../pool/goldmaw-champion.js";
 import _poolGoldveinHydra from "../pool/goldvein-hydra.js";
@@ -291,6 +292,7 @@ const shard: CardShard = {
     _poolGeistOfTheMoors,
     _poolGloomhunter,
     _poolGloomlakeVerge,
+    _poolGlorybringer,
     _poolGoblinWarDrums,
     _poolGoldmawChampion,
     _poolGoldveinHydra,

@@ -151,7 +151,7 @@ function buildEntry(def: CardDefinition): Entry {
     // An adventure's two halves share one printed face, so there's nothing to
     // flip *to* — unlike a transforming DFC or an MDFC, which have a real
     // back-face image.
-    flippable: other !== null && !def.adventure,
+    flippable: other !== null && !def.adventure && !def.omen,
     isToken: isTokenCard(def),
     // The names it's printed under too ("Princess Sarah" finds Azusa).
     haystack: [def.name, ...flavorNamesOf(def.name), typeLineOf(def), def.text, other?.name, other?.text]
@@ -624,7 +624,7 @@ function CardOverlay({
           {entry.other ? (
             <>
               <div className="lib-face-divider">
-                <span>{entry.def.adventure ? 'Adventure' : 'Back face'}</span>
+                <span>{entry.def.adventure ? 'Adventure' : entry.def.omen ? 'Omen' : 'Back face'}</span>
               </div>
               <div className="lib-overlay-title">
                 <h2>{entry.other.name}</h2>
@@ -780,6 +780,7 @@ function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonl
   if (def.disturb) chips.push(`disturb ${def.disturb.cost}`)
   if (def.convoke) chips.push('convoke')
   if (def.adventure) chips.push('adventure')
+  else if (def.omen) chips.push('omen')
   else if (def.transform) chips.push('transforms')
   else if (def.faces && def.faces.length > 1) chips.push('modal double-faced')
   if (def.chapters) chips.push(`saga — ${def.chapters.length} chapters`)

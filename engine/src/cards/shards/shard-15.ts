@@ -50,6 +50,7 @@ import _poolDreamstoneHedron from "../pool/dreamstone-hedron.js";
 import _poolDromarsAttendant from "../pool/dromars-attendant.js";
 import _poolDrownInShapelessness from "../pool/drown-in-shapelessness.js";
 import _poolDryadOfTheIlysianGrove from "../pool/dryad-of-the-ilysian-grove.js";
+import _poolDynamicSoar from "../pool/dynamic-soar.js";
 import _poolEliminateTheCompetition from "../pool/eliminate-the-competition.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
@@ -143,6 +144,7 @@ import _poolRayOfDistortion from "../pool/ray-of-distortion.js";
 import _poolRazakethsRite from "../pool/razakeths-rite.js";
 import _poolReapTheSeagraf from "../pool/reap-the-seagraf.js";
 import _poolRescind from "../pool/rescind.js";
+import _poolReunionOfTheHouse from "../pool/reunion-of-the-house.js";
 import _poolSangromancer from "../pool/sangromancer.js";
 import _poolSarkhansCatharsis from "../pool/sarkhans-catharsis.js";
 import _poolSavageHunger from "../pool/savage-hunger.js";
@@ -262,6 +264,7 @@ const shard: CardShard = {
     _poolDromarsAttendant,
     _poolDrownInShapelessness,
     _poolDryadOfTheIlysianGrove,
+    _poolDynamicSoar,
     _poolEliminateTheCompetition,
     _poolElvishMystic,
     _poolErinisGloomStalker,
@@ -355,6 +358,7 @@ const shard: CardShard = {
     _poolRazakethsRite,
     _poolReapTheSeagraf,
     _poolRescind,
+    _poolReunionOfTheHouse,
     _poolSangromancer,
     _poolSarkhansCatharsis,
     _poolSavageHunger,

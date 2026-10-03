@@ -60,6 +60,7 @@ import _poolFrogTongue from "../pool/frog-tongue.js";
 import _poolGelectrode from "../pool/gelectrode.js";
 import _poolGenerousVisitor from "../pool/generous-visitor.js";
 import _poolGhostlySentinel from "../pool/ghostly-sentinel.js";
+import _poolGigglingSkitterspike from "../pool/giggling-skitterspike.js";
 import _poolGleamingGeardrake from "../pool/gleaming-geardrake.js";
 import _poolGlimmeringAngel from "../pool/glimmering-angel.js";
 import _poolGoblinOffensive from "../pool/goblin-offensive.js";
@@ -248,6 +249,7 @@ const shard: CardShard = {
     _poolGelectrode,
     _poolGenerousVisitor,
     _poolGhostlySentinel,
+    _poolGigglingSkitterspike,
     _poolGleamingGeardrake,
     _poolGlimmeringAngel,
     _poolGoblinOffensive,

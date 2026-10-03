@@ -297,6 +297,7 @@ from the same link.
 | `disturb` | `{ cost }` | cast the back face from the graveyard (front face's def) |
 | `adventure` | `boolean` | an Adventure card (with `faces: [creature, adventure]`) |
 | `copyOnEnter` | `CopyOnEnter` — `{ filter, except?, tapped?, counters?, untilEndOfTurn? }` | "You may have this enter as a copy of …" (rule 707.9), asked before it moves however it enters (§15). `filter` is a `CardFilter` over permanents already on the battlefield, from the side of the player it enters under: Clone's "any creature" `{ type: "creature" }`, Sakashima's "another creature you control" `{ type: "creature", controlledBy: "you" }`, Phyrexian Metamorph's `{ typesAnyOf: ["artifact", "creature"] }`, Vesuva's `{ type: "land" }`, Deceptive Frostkite's `power: { op: "gte", n: 4 }`; an `{ amount }` operand reads the entering permanent (Mockingbird: `manaValue: { op: "lte", n: { amount: { manaSpentOf: "source" } } }`). Never itself. `except` is a `CopyExceptions` (the `create-token-copy` row, §6): copiable values, so a copy of the copy has them (Phantasmal Image's `triggered`, Spark Double's `notLegendary`, Sakashima's `legendRuleOff`). A creature subtype added in addition doesn't stick to a copy that isn't a creature (rule 205.3d — Glasspool Mimic's ruling). `tapped` is Vesuva's "enter **tapped** as a copy"; `counters: [{ kind, amount: number \| "x", ifType? }]` is "it enters with an additional counter if it's a creature" (Spark Double) or "X additional counters" (Altered Ego) — both happen only when it copies something, judged by what it became (rules 707.9e–f), and aren't copied by a later copy. `untilEndOfTurn` is Cursed Mirror's "become a copy … until end of turn": it's itself again in the cleanup step, and a copy of it made meanwhile keeps being the creature. Not yet: a copy of a card in a graveyard or exile (The Mimeoplasm, Echoing Deeps). |
+| `omen` | `boolean` | an omen card (rule 720 — Stormshriek Feral // Flush Out): `faces: [creature, Omen]` on both faces, the Omen face a `sorcery`/`instant` with subtype `Omen`. Cast as either; the Omen resolving is shuffled into its owner's library (720.3d) — a copy of one ceases to exist, its owner still shuffling — and countered or fizzled it goes to the graveyard. Scryfall files these under the adventure layout; the scaffold writes `omen`. |
 | `controlEnchanted` | `boolean` | an Aura whose controller controls the enchanted permanent (Mind Control) |
 | `cantBeCountered` | `boolean` | "This spell can't be countered." |
 | `split` | `boolean` | A split card (rule 709) — on all three definitions; see §12 ("Split card"). |
@@ -363,7 +364,19 @@ kills), `unblockable` (evasion — Invisible Stalker).
 **Evasion:** `fear` (rule 702.36 — blockable only by artifact and/or black
 creatures) and `intimidate` (702.13 — artifact creatures and/or creatures
 sharing a colour with it; a colourless attacker with intimidate is blockable
-only by artifact creatures).
+only by artifact creatures), and `skulk` (702.118 — can't be blocked by a
+creature with greater power, compared as blockers are declared; grant it with
+a static's `grantKeywords`, as Behind the Scenes does).
+
+**Riot** (rule 702.136): `riot` — the engine asks "+1/+1 counter or haste" as
+the permanent is about to enter (a fixed-menu `choose-creature-type` with
+`riot`), puts the counter on as it enters or gives it haste for as long as it
+stays (an effect, not its own ability: a change of control keeps it).
+Printed or copied only — see §15.
+
+**Flanking** (rule 702.25): `flanking` in `keywords` *and* the `flanking()`
+helper in `triggered` — the keyword is what "a creature without flanking"
+asks, the helper the trigger (`blocked-by`, §9).
 
 **Landwalk** (rule 702.14): `plainswalk`, `islandwalk`, `swampwalk`,
 `mountainwalk`, `forestwalk`, `desertwalk` — can't be blocked as long as the
@@ -546,9 +559,12 @@ of that kind the scope's players have, summed, default `"you"` — Ezuri, Claw
 of Progress's "where X is the number of experience counters you have"),
 `{ opponentsControllingFewer: CardFilter }` (Voice of Many — a comparison per
 player, which no single filter can express),
-`{ cardsInHand: PlayerScope }` (the hand sizes of the scope's players, summed —
+`{ cardsInHand: PlayerScope | "each" }` (the hand sizes of the scope's players, summed —
 "the number of cards in **defending player's** hand" is `"trigger-player"` in
-an attack trigger), `{ colorsOf: ref }` (how many colours one object has —
+an attack trigger; `"each"` is the player a per-player effect is acting on —
+Stormbreath Dragon's "damage to each opponent equal to the number of cards in
+that player's hand" is a `damage` to `who: "each-opponent"` of `{ cardsInHand:
+"each" }`), `{ colorsOf: ref }` (how many colours one object has —
 Ramos, Dragon Engine's "for each of **that spell's** colors"; as it last
 existed if it has left, colourless 0), `{ colorsAmong: CardFilter,
 excludeSelf? }` (colours among battlefield permanents, each once — Sisay's
@@ -622,7 +638,7 @@ clause (below) chooses among them.
 | kind | fields | example |
 | --- | --- | --- |
 | `damage` | `amount`, `target` \| `who` \| `toControllerOfTarget` \| `toTriggerRecipient`, `from?` | Lightning Bolt (`target`); Breath of Malfegor (`who: "each-opponent"`); Unlicensed Disintegration — "deals 3 damage to **that creature's** controller" (`toControllerOfTarget: 0`, mirroring `create-token`'s `who: "target-controller"`). `toTriggerRecipient: true` is "deals 2 damage to **that permanent or player**" in a damage trigger (Ghyrson Starn) — whatever the triggering damage hit, not a target, and nothing once a permanent recipient has left the battlefield. `from: "trigger-object"` makes the *triggering object* the source — "**it** deals damage equal to its power" (Be'lakor's entering Demon), "**it** deals that much damage to each other opponent" (Kediss's commander): its lifelink, deathtouch and colours apply, read as it last existed on the battlefield if it has left. |
-| `damage-divided` | `from` | "N damage divided as you choose among any number of targets" (Magma Opus): each target of the group from slot `from` on is dealt its share of the spell's division. The card says `divided: { total, slot }`; the cast announces the split (`division`, at least 1 each, all of the total — rule 601.2d; left out, an even split), a copy keeps it, and a target gone illegal loses its share (608.2b). Give the group a `max` of the total. |
+| `damage-divided` | `from` | "N damage divided as you choose among any number of targets" (Magma Opus): each target of the group from slot `from` on is dealt its share of the spell's division. The card says `divided: { total, slot }`; the cast announces the split (`division`, at least 1 each, all of the total — rule 601.2d; left out, an even split), a copy keeps it, and a target gone illegal loses its share (608.2b). Give the group a `max` of the total. **An ability divides too**: `divided: { total, slot }` on an activated ability (Skarrgan Hellkite's "2 damage divided as you choose among one or two targets" — the activation's `division`, rule 602.2b) or a triggered one (Dragonlord Atarka, Inferno Titan — the `choose-targets` answer's `division`, 603.3d; the offer's `divide` names the group's place in the answer, and the client asks the split as it does a cast's). Not `damage-divided-evenly`, which re-divides among the targets left: a two-target split whose one target goes still deals the other only its share (the Skarrgan ruling). |
 | `damage-divided-evenly` | `amount`, `from` | Fireball's "X damage divided evenly, rounded down, among any number of targets": the targets from slot `from` on (an `any-number` group) each take `amount` divided by how many are still legal as it resolves, all at once; more targets than damage deals none. |
 | `damage-all` | `filter`, `amount`, `exceptSource?`, `whose?` | Pyroclasm. `exceptSource` spares the source itself — Harbinger of the Hunt's "each **other** creature with flying", which a `CardFilter` can't say (it describes the permanent matched, not its relationship to the damage source). `whose` (a `PlayerScope`) is only the permanents those players control: Balefire Dragon's "it deals that much damage to each creature **that player** controls" is `"trigger-player"`. |
 | `creatures-damage-controllers` | `filter`, `amount` | Rakdos Charm — "each creature deals 1 damage to its controller"; the reverse direction from `damage-all` (each matching permanent is its own source, hitting its own controller, not the caster). needed-cards P20 |
@@ -803,6 +819,8 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
 | `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). |
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
+| `monstrosity` | `amount` | Monstrosity N (rule 701.37a): "if this permanent isn't monstrous, put N +1/+1 counters on it and it becomes monstrous" — always its own source, and only while that's the same permanent (400.7): one that left and came back, or is monstrous already, gets nothing and fires no `becomes-monstrous` trigger (the rulings). `GameObject.monstrous` is a designation, not an ability: losing abilities keeps it, leaving the battlefield ends it. `amount: "x"` is "Monstrosity X" off `{X}` in the cost (Hydra Broodmaster), and the trigger's `{ triggerValue: true }` is that X (701.37c). |
+| `exert` | `target`, `asItAttacks?` | Exert a permanent (rule 701.43): it won't untap during its exerter's next untap step — the effect controller's, whoever controls it by then (a borrowed creature exerted still untaps in its owner's), and the mark is gone after that untap step whether it untapped or not. Tapped or untapped, again or not (701.43b); only on the battlefield (701.43c). You rarely write it: a creature's "you may exert this creature as it attacks" is the static `exertAsItAttacks` (§10), which asks and exerts with `asItAttacks`. |
 | `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. A changeling is an Army creature too. Picks the first Army rather than asking — see §15 "Partial". |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
 | `double-counters` | `target` | Deepglow Skate's "double the number of each kind of counter on" one permanent: another of each kind for each one there, put as `add-counter` puts them (Doubling Season applies). |
@@ -855,12 +873,12 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `surveil` | `amount`, `then?` | Consider. `amount` may be live, as `scry`'s. |
 | `allow-cast-from-exile` | `target`, `free?`, `laterTurns?` | "Until end of turn, you may cast that card [without paying its mana cost]" — a card in exile, usually a `reveal-until`'s find (Codie). Cast only, this turn, by the effect's controller; `free` permits only the free cast. `laterTurns` is warp's instead: the card's owner, from the next turn on, for as long as it stays exiled. |
 | `cast-now` | `target?` or `from?`, `spell?`, `free?`, `play?`, `exileAfter?`, `then?`, `else?`, `rest?` | "You may cast [a card]" **while this resolves** (rule 608.2g): the effect's controller is offered every ordinary cast of the card — modes, X, kicker, targets, costs — with timing ignored, or declines; nothing is asked when nothing can be cast. The card is `target` (Chandra, Acolyte of Flame's −2: a `card-in-graveyard` target; the card a `reveal-until` found, as its `then`'s 0 — Breaching Dragonstorm; the spell a `counter` with `into: "exile"` just exiled — Transcendent Dragon), or with `from` whichever card the player picks: `"hand"` ("you may cast a spell with mana value 4 or less from your hand" — Baral's Expertise, Electrodominance), `"graveyard"` (Diviner of Mist), or `{ libraryTop: 7 }` — "look at the top seven cards … cast … from among them", shown to that player alone (Velomachus Lorehold), with `rest: "bottom-random"` for "put the rest on the bottom in a random order". `spell` is what the spell must be, judged as the spell it would be (rule 601.3e — the face cast, an adventure, its prototype) at X = 0, so a mana-value clause goes with `free`: `{ typesAnyOf: ["instant", "sorcery"], manaValue: { op: "lte", n: { amount: { powerOf: "source" } } } }`, bound as the effect applies; `sharesCardTypeWith: "trigger-object"` with a `manaValueOf: "trigger-object"` compare is Baral and Kari Zev's "lesser mana value that shares a card type with it". `from: "exiled-with-source"` is "the exiled card" of a linked ability (rule 607.2a — hideaway's; see `hideaway` in §5), and `play: true` makes it "you may **play**": a land card is offered too, played on its controller's own turn with a land play left, which it uses (rules 305.2a, 305.2b, 305.3) — the decision's `lands`, answered with a `play-land`. `free` is "without paying its mana cost" — the only way offered; an alternative cost, so X is 0 and no other alternative cost goes with it, but kicker may be paid on top (rules 107.3b, 118.9a, 118.9d). `exileAfter` is "if that spell would be put into your graveyard, exile it instead". `then` / `else` are "if you do" / "if you don't" (declined or nothing castable): Conduit of Worlds' `prohibit`, Breaching Dragonstorm's `return-to-hand` from exile, Baral and Kari Zev's token. A `sequence` step after it waits for the answer, and an instant or sorcery casting one stays on the stack until it's cast (608.2n). |
-| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand"`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard" \| "exile-playable"`, `leftoverIf?`, `filter?`, `enterTapped?`, `attacking?` (as `create-token`'s: Kaalia's "onto the battlefield tapped and attacking that opponent", Winota) | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste").; `leftoverIf: { condition, leftover }` is a leftover destination decided once the chosen cards have moved — Nine-Fingers Keene's "you may put a Gate card from among them onto the battlefield. Then if you control nine or more Gates, put the rest into your graveyard. Otherwise, put the rest on the bottom of your library in a random order" is `leftover: "bottom-random"` with `leftoverIf: { condition: { kind: "controls", filter: { subtype: "Gate" }, atLeast: 9 }, leftover: "graveyard" }`, and the Gate just put onto the battlefield counts `max` may be live, read as it applies, as `count` may. `secondPick?: { filter?, min, max, destination, enterTapped? }` is a second choice over the looked-at cards the first left, asked once the first's cards have moved; `leftover` waits for it and takes the rest in the same move as the second's cards — Choco, Seeker of Paradise's "You may put one of them into your hand. Then put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard." With nothing the second could take, the rest go at once. Expressive Iteration is a hand pick, a `secondPick` with `destination: "library-bottom"`, and `leftover: "exile-playable"` — the rest exiled face up, playable (a land too) this turn. `destination: "library-top"` puts the chosen cards back in the order picked, the first on top (Ponder, Brainstorm), and the client numbers the picks. `destination: "exile-face-down"` is hideaway's "exile one of them face down" (rule 702.75a): the chosen card is exiled face down, seen only by the chooser, and linked to the source (607.2a) — use the `hideaway(n, …)` helper. `secondPick.ifNoneChosen` asks it only when the first took nothing — Planar Genesis's "You may put a land card from among them onto the battlefield tapped. **If you don't**, put a card from among them into your hand." `reveal: true` shows every looked-at card (Gishath's "reveal that many cards"); `reveal: "chosen"` shows only the cards taken, as they're taken — "look at the top five cards … You may **reveal** a historic card from among them and put it into your hand" (Monumental Henge, Adaptive Omnitool). |
+| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand" \| "graveyards"`, `enterAs?`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard" \| "exile-playable"`, `leftoverIf?`, `filter?`, `enterTapped?`, `attacking?` (as `create-token`'s: Kaalia's "onto the battlefield tapped and attacking that opponent", Winota) | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste").; `leftoverIf: { condition, leftover }` is a leftover destination decided once the chosen cards have moved — Nine-Fingers Keene's "you may put a Gate card from among them onto the battlefield. Then if you control nine or more Gates, put the rest into your graveyard. Otherwise, put the rest on the bottom of your library in a random order" is `leftover: "bottom-random"` with `leftoverIf: { condition: { kind: "controls", filter: { subtype: "Gate" }, atLeast: 9 }, leftover: "graveyard" }`, and the Gate just put onto the battlefield counts `max` may be live, read as it applies, as `count` may. `secondPick?: { filter?, min, max, destination, enterTapped? }` is a second choice over the looked-at cards the first left, asked once the first's cards have moved; `leftover` waits for it and takes the rest in the same move as the second's cards — Choco, Seeker of Paradise's "You may put one of them into your hand. Then put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard." With nothing the second could take, the rest go at once. Expressive Iteration is a hand pick, a `secondPick` with `destination: "library-bottom"`, and `leftover: "exile-playable"` — the rest exiled face up, playable (a land too) this turn. `destination: "library-top"` puts the chosen cards back in the order picked, the first on top (Ponder, Brainstorm), and the client numbers the picks. `destination: "exile-face-down"` is hideaway's "exile one of them face down" (rule 702.75a): the chosen card is exiled face down, seen only by the chooser, and linked to the source (607.2a) — use the `hideaway(n, …)` helper. `secondPick.ifNoneChosen` asks it only when the first took nothing — Planar Genesis's "You may put a land card from among them onto the battlefield tapped. **If you don't**, put a card from among them into your hand." `reveal: true` shows every looked-at card (Gishath's "reveal that many cards"); `reveal: "chosen"` shows only the cards taken, as they're taken — "look at the top five cards … You may **reveal** a historic card from among them and put it into your hand" (Monumental Henge, Adaptive Omnitool). **`zone: "graveyards"`** is every player's graveyard (public, in turn order): a card from someone else's that goes to the battlefield goes under the chooser's control, kept there by a control effect — Necromantic Selection's "return a creature card put into a graveyard this way to the battlefield under your control" (`filter: { type: "creature", token: false, thisWay: "died" }`, `min: 1, max: 1`). **`enterAs: { setTypes?, addSubtypes?, addColors? }`** is "It's a black Zombie in addition to its other colors and types": in place as the cards enter (rule 614.12), as `put-onto-battlefield`'s types are. |
 
 ### Turn structure / cast-triggered
 
 `take-extra-turn { target? }` (the effect's controller, or with `target` the player in that slot — Time Warp's "target player takes an extra turn"; taken directly after this turn, the most recently created first, and the rotation then carries on from the turn it followed — rule 500.7), `additional-combat { afterThisPhase?, withMain? }`, `additional-upkeep-steps { amount }` (below), `additional-land-drop { amount }` (Explore's "You may
-play an additional land this turn"), `untap-all { filter, controlledByTarget? }`, `storm { of? }`
+play an additional land this turn"), `untap-all { filter, controlledByTarget?, exceptSource? }` (`exceptSource`: Combat Celebrant's "untap all **other** creatures you control"), `storm { of? }`
 (`of: "trigger-object"` copies the trigger's spell rather than the source: a `nextSpell`
 delayed trigger's "the next instant or sorcery spell you cast this turn has storm" — Storm, Force
 of Nature),
@@ -1573,7 +1591,21 @@ relation, and may point at the same thing.
 **"Any number of target …"** is a *group*: `{ kind: "any-number", of:
 TargetSpec }` — Eerie Interlude's "exile any number of target creatures you
 control" is `targets: [{ kind: "any-number", of: "creature-you-control" }]`.
-`max: N` caps it — Magma Opus's four damage among at most four targets.
+`max: N` caps it — Magma Opus's four damage among at most four targets — and
+`min: N` floors it (Inferno Titan's "one, two, or three targets" is `min: 1,
+max: 3`). `maxTotalPower: N` is "with total power N or less" (Reunion of the
+House): the members' powers where they're targeted add up to at most N, as
+they're chosen (the offer's choosers narrow by it through `TargetFacts`) and
+again as it resolves, when a total gone over makes every member illegal (its
+ruling).
+
+**"…controlled by different players"** is `differentController: true` on an
+`other` slot with a slot relation: Run Away Together is `["creature", { kind:
+"other", of: "creature", than: { slot: 0 }, differentController: true }]`,
+Protector of the Wastes the same over two `optional` slots. As it resolves,
+two such targets one player controls are both illegal; one gone illegal still
+lends its controller (as it last existed) to that check (the Run Away
+Together rulings).
 On a spell with `{X}`, `max: "x"` is "up to X target …" (Pest Infestation) and
 `min: "x", max: "x"` is "X target …" (Curse of the Swine): X is announced
 before the targets (rule 601.2b–c), so a choice is judged at the X cast
@@ -1667,7 +1699,13 @@ activated: [
 ```
 
 **`AbilityCost`** (`abilities.ts`): `{ mana?, tap?, sacrifice?, payLife?,
-removeCounter?, payEnergy?, discardHand?, discard?, tapOthers? }`.
+removeCounter?, payEnergy?, mill?, discardHand?, discard?, tapOthers? }`.
+
+- `mill: N` — "Mill a card" as a cost (Millikin's "{T}, Mill a card: Add
+  {C}"): paid automatically as it's activated, never with fewer than N cards
+  in the library (rule 701.17b). A cost that moves a card from a library makes
+  an ability that adds mana an ordinary one (rule 605.1a; Millikin's ruling):
+  it goes on the stack, and the mana arrives as it resolves.
 
 - `mana`: a cost string (`"{2}"`) or `null`. May contain `{X}`.
 - `tap: true` adds `{T}`.
@@ -1913,6 +1951,9 @@ triggered: [
 | `discards` | `who`, `filter?`, `perCard?` | "whenever you discard one or more cards" — once per discard event, `{ triggerValue: true }` how many matched `filter` (the cards as they are in the graveyard). `perCard` is "whenever an opponent discards a card" (Sangromancer) — once per card, the card its trigger object, followed to the graveyard and no further: Tergrid, God of Fright's "…discards a permanent card, you may put that card onto the battlefield under your control" is a `filter` of the permanent types and a `put-onto-battlefield` of `"trigger-object"` with `underYourControl`. |
 | `leaves-graveyard` | `who`, `filter?`, `perCard?` | **batched** — "whenever one or more cards leave your graveyard" (Teval, the Balanced Scale; Insidious Roots: `filter: { type: "creature" }`). Fires **once per simultaneous move**, however many cards: a whole graveyard exiled, a "return all", the cards one choice takes, an escape cost's exile, a `simultaneous` sequence. A move of its own — a card cast or played from the graveyard, one card returned, a graveyard ability exiling its card as a cost — is its own trigger, so an escape cast is two (the card to the stack, then the cost). `who` is whose graveyard; `filter` is matched against each card as it was **in the graveyard** (rule 603.10a) — a multi-face card by its front face, even when it left as its back (rule 712.8a) — and a move with nothing matching doesn't fire. `{ triggerValue: true }` is how many cards counted. A permanent that was itself one of the cards (a reanimated Teval) doesn't see them leave. Tokens aren't cards and never count. `perCard: true` is the per-card form — "whenever a creature card leaves your graveyard" (Syr Konrad, the Grim): once per matching card, however many left together, each card the trigger object. |
 | `deals-damage-batch` | `who`, `filter?`, `to?`, `combat?`, `once?` | **batched** — "whenever one or more creatures you control deal combat damage to a player" (Goro-Goro and Satoru, Alela, Anowon): **once per player** dealt damage by at least one matching source in one simultaneous damage event, however many dealt it, settled with that event like enrage. First-strike and regular damage are two events. `who` / `filter` are about the sources (Goro-Goro's "creatures you control that entered this turn" is `{ who: "you-control", filter: { enteredThisTurn: true } }`), `to: "opponent"` narrows the players, `combat: true` is "combat damage" (leave it off for any damage). The player is the `"trigger-player"` ("that player") and `{ triggerValue: true }` the total those sources dealt them. `once: "per-event"` fires once for the whole event instead, `{ triggerValue: true }` then being how many players were dealt damage and there being no trigger player — Malcolm, Keen-Eyed Navigator's "you create a Treasure token for each opponent dealt damage". The per-creature form is `deals-combat-damage-to-player`. |
+| `blocked-by` | `who`, `filter?`, `blocker?` | an attacking creature became blocked **by a creature** — once per blocker, the blocker the trigger object, `blocker` a filter on it asked as the block is declared. Flanking (rule 702.25a) is this — use the `flanking()` helper, and put `"flanking"` in `keywords` too: the keyword is what another creature's "without flanking" asks. |
+| `becomes-monstrous` | `who`, `filter?` | a permanent became monstrous (the `monstrosity` effect) — "when this creature becomes monstrous" is `who: "self"`. The permanent is the trigger object, `{ triggerValue: true }` its N (701.37c's X). Never for one already monstrous, nor one gone before the ability resolved. |
+| `exerted` | `who`, `asItAttacks?` | a permanent was exerted (rule 701.43). `asItAttacks: true` is the "when you do" linked to its own "you may exert this creature as it attacks" (rule 607.2h — Glorybringer, Combat Celebrant), which no other exert fires. |
 | `blocks` | `who`, `filter?`, `otherOnly?` | the mirror of `attacks` (Kangee, Sky Warden), once per blocker, which is the trigger object — Doran, Besieged by Time's "whenever a creature you control attacks or blocks, **it** gets +X/+X" is an `attacks` and a `blocks` trigger reading `"trigger-object"`. |
 | `becomes-blocked` | `who`, `filter?`, `otherOnly?` | an attacking creature became blocked (rules 509.1h, 509.3c — Anzrag, the Quake-Mole). **Once per attacker**, however many creatures block it, as its defending player's blocks are declared; an unblocked attacker never fires it. The attacker is the trigger object and its defending player (who blocked it) the `"trigger-player"`. |
 | `dealt-damage` | `who`, `filter?`, `combat?` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest, enrage). Combat and non-combat alike unless `combat` says which; `filter` narrows the permanent dealt damage (Sonic the Hedgehog: "a creature you control **with flash or haste**" — read as the damage is dealt, before SBAs). `{ triggerValue: true }` is how much; the permanent is the trigger object and the `"trigger-player"` is its controller. Damage dealt all at once is one event however many sources dealt it — a creature blocked by two is dealt its combat damage once — so it triggers once, for the total; a token stack dealt damage is that many permanents, so a watcher of *other* permanents fires once per token. |
@@ -2160,6 +2201,16 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   "your creatures have hexproof" half is a separate static.
 - `doesntUntap: true` — "This artifact doesn't untap during your untap step"
   (Mana Vault, Basalt Monolith). Only its controller's own untap step.
+- `exertAsItAttacks: { unlessExertedThisTurn? }` — "You may exert this
+  creature as it attacks" (rule 701.43d, an optional cost to attack — 508.1g;
+  Glorybringer). Asked of each such attacker once the attack is declared and
+  before anything that triggered on it goes on the stack, as a `choose-modes`
+  of one mode (exert it) or none (`GameState.pendingExerts`). A creature put
+  onto the battlefield attacking is never asked. The linked "When you do, …"
+  (607.2h) is a triggered ability on `{ on: "exerted", who: "self",
+  asItAttacks: true }` (§9) — its targets are chosen then, and with none it's
+  just removed (the ruling). `unlessExertedThisTurn` is Combat Celebrant's "if
+  this creature hasn't been exerted this turn".
 - `targetedBySpellsCost: { payLife }` — "Spells your opponents cast that
   target this creature cost an additional 3 life to cast" (Terror of the
   Peaks): paid as part of the spell's cost (rule 601.2f), once per spell
@@ -2197,6 +2248,14 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
     `additionalCost.sacrifice` (`sacrifice.choices` on the offer), after the
     mana, so the land may tap for the spell first. Not offered for a card with
     a sacrifice cost of its own.
+  - `exileOthers: N` — Kotis, Sibsig Champion's "by exiling three other cards
+    from your graveyard in addition to paying its other costs": picked as
+    escape's are (the offer's `escapeExile`, the action's `escapeExile`) and
+    paid as it's cast; not offered with fewer than N others. The spell isn't
+    escaped.
+  - `filter` is judged against the spell as it would be cast (rule 601.3e):
+    "a creature spell" never lets an omen card's Omen or an adventurer's
+    Adventure be cast.
 - `grantsToGraveyard: { filter, flashback?: { cost }, escape?: { cost,
   exileCount } }` — cards in your graveyard matching `filter` **have**
   flashback or escape (rule 604.1): Iroh, Grand Lotus's "during your turn,
@@ -3191,8 +3250,9 @@ Delete an entry in the same commit as the feature that retires it.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 - **Divided damage and distributed counters** — a *spell's* "N damage
   divided as you choose among any number of targets" is built (2026-10-01,
-  Magma Opus — see `divided` in §3); a triggered ability's (Fury, Dragonlord
-  Atarka), an X total (Fire Covenant) and "distribute N counters among"
+  Magma Opus — see `divided` in §3), and an activated or triggered ability's
+  (2026-10-03 — Skarrgan Hellkite, Dragonlord Atarka; see `damage-divided`
+  in §6); an X total (Fire Covenant) and "distribute N counters among"
   (Lathiel) are not. Fireball's "divided **evenly**"
   (`damage-divided-evenly`) and a cost for each target beyond the first
   (`costPerExtraTarget` — Fireball, Strive) are built too.
@@ -3287,16 +3347,26 @@ Delete an entry in the same commit as the feature that retires it.
   source to read the choice off, and "is the chosen type in addition to its
   other types" isn't modeled.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Embalm** (rule 702.128
-  — Vizier of Many Faces, whose Clone ability has to carry it), **retrace**
-  (rule 702.81 — Six), **riot**
-  (rule 702.136 — Rhythm of the Wild) are unmodeled alt-cast / ETB-choice
-  mechanics (needed-cards P18). **Blitz** (rule 702.152 — Henzie "Toolbox"
-  Torre) and **speed** / Max speed (rules 702.178, 702.179 — Mendicant Core,
-  Vnwxt, the Raceways) wait on client work: blitz is an alternative cost the
-  client has no label or echo for (each cast variant is spelled out in its
-  `castExtras` and buttons), and speed is a player value the player panel
-  doesn't show, raised by an inherent triggered ability with no source,
-  which the stack can't draw.
+  — Vizier of Many Faces, whose Clone ability has to carry it) and **retrace**
+  (rule 702.81 — Six) are unmodeled alt-cast mechanics (needed-cards P18).
+  **Riot** (rule 702.136) is built for a permanent that has it printed or
+  copied (Skarrgan Hellkite — asked before it moves, like any "as this
+  enters" choice), not for one a static *grants* it to as it enters (Rhythm of
+  the Wild, Spider-Punk): that would need the entering permanent's
+  characteristics as it will exist (rule 614.12) before it has moved. A token
+  copy of a riot card isn't asked, with the other as-enters choices above,
+  and gets haste (its "if you don't"). **Blitz** (rule 702.152 — Henzie
+  "Toolbox" Torre) and **speed** / Max speed (rules 702.178, 702.179 —
+  Mendicant Core, Vnwxt, the Raceways) wait on client work: blitz is an
+  alternative cost the client has no label or echo for (each cast variant is
+  spelled out in its `castExtras` and buttons), and speed is a player value
+  the player panel doesn't show, raised by an inherent triggered ability with
+  no source, which the stack can't draw.
+- **Harmonize** (rule 702.180 — Zenith Festival, Nature's Rhythm): a cast
+  from the graveyard tapping up to one creature to cut the cost by its power.
+  The cast offer can't price it yet: each creature it could tap is its own
+  variant, through `{X}` planning and affordability, and the client's
+  graveyard menu would have to name the creature.
 
 **Partial:**
 

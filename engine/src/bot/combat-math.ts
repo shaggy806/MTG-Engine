@@ -11,8 +11,8 @@
  * crackback" in `docs/plans/smarter-bots.md`.
  *
  * Blocking legality mirrors `Game.whyCannotBlock`: tapped, "can't block",
- * unblockable, protection, fear, intimidate, flying/reach, and menace's two
- * blockers. What it deliberately ignores — instant-speed tricks, haste
+ * unblockable, protection, fear, intimidate, skulk, flying/reach, and
+ * menace's two blockers. What it deliberately ignores — instant-speed tricks, haste
  * creatures still in hand, removal on blockers — is covered by a flat life
  * margin instead (`EvalWeights.crackbackMargin`).
  */
@@ -123,6 +123,8 @@ export function canBlock(blocker: CombatCreature, attacker: CombatCreature): boo
   if (a.has("flying") && !blocker.keywords.has("flying") && !blocker.keywords.has("reach")) {
     return false;
   }
+  // Skulk (rule 702.118b): no blocker with greater power.
+  if (a.has("skulk") && blocker.power > attacker.power) return false;
   for (const [keyword, landType] of LANDWALK) {
     if (a.has(keyword) && blocker.controllerLands.has(landType)) return false;
   }
