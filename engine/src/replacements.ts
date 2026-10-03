@@ -80,8 +80,11 @@ export interface EntersBattlefieldReplacement {
    * as a `pay-life-for-untapped` decision. */
   readonly mayPayLife?: number;
   /** It enters with these counters already on it. `amount: "x"` reads the
-   * `{X}` chosen when it was cast (Walking Ballista). */
-  readonly counters?: { readonly kind: string; readonly amount: EffectAmount };
+   * `{X}` chosen when it was cast (Walking Ballista); `"times-kicked"` the
+   * number of times its multikicker was paid (Everflowing Chalice's "a
+   * charge counter on it for each time it was kicked" — rule 702.33c), 0
+   * when it wasn't cast. */
+  readonly counters?: { readonly kind: string; readonly amount: EffectAmount | "times-kicked" };
   /** It enters transformed — a transforming DFC that says "enters the
    * battlefield transformed" unconditionally (rule 712.10 — ROADMAP Phase
    * 10b). Daybound's conditional "if it's night" is handled by the engine,

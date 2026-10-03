@@ -8,7 +8,7 @@
  * untouched.
  */
 
-import { anyNumberSlot, isOptionalSpec, otherSlotConflict } from "../../target.js";
+import { anyNumberSlot, groupBounds, isOptionalSpec, otherSlotConflict } from "../../target.js";
 import type { TargetRef, TargetSpec } from "../../target.js";
 
 /**
@@ -36,8 +36,8 @@ export function targetCombos(
     if (i === group) {
       // "All of them" up to the group's `max` (Magma Opus's four).
       const spec = specs[group];
-      const max = typeof spec === "object" && spec.kind === "any-number" ? spec.max : undefined;
-      const all = max === undefined ? [...options] : options.slice(0, max);
+      const { max } = groupBounds(spec ?? "creature");
+      const all = Number.isFinite(max) ? options.slice(0, max) : [...options];
       const tails: TargetRef[][] = [[], ...options.map((ref) => [ref]), ...(all.length > 1 ? [all] : [])];
       const next: (TargetRef | null)[][] = [];
       for (const combo of combos) {

@@ -23,9 +23,11 @@ import {
   describeTargetSpec,
   distinctTargetCount,
   fitsTogether,
+  groupBounds,
   isOptionalSpec,
   publicNameAt,
   slotOptions,
+  specsAtX,
   standardAssignment,
   targetCountAtX,
 } from 'engine/client'
@@ -166,6 +168,7 @@ function graveyardVariantLabel(
   if (a.kind === 'cast-spell') {
     if (a.via !== undefined && a.via !== 'graveyard-permission') parts.push(a.via)
     if (a.kicked) parts.push(`${a.kickerKeyword ?? 'kicked'} ${a.kickerCost ?? ''}`.trim())
+    if (a.xCost?.minX !== undefined && a.xCost.minX === a.xCost.maxX) parts.push(`X=${a.xCost.maxX}`)
     if (a.prototype) parts.push(`prototype ${a.prototypeCost ?? ''}`.trim())
     if (a.offspring) parts.push(`offspring ${a.offspringCost ?? ''}`.trim())
     if (a.evoke) parts.push(`evoke ${a.evokeCost ?? ''}`.trim())
@@ -179,6 +182,7 @@ const castExtras = (cast: CastAction) => ({
   ...(cast.via !== undefined ? { via: cast.via } : {}),
   ...(cast.face !== undefined ? { face: cast.face } : {}),
   ...(cast.kicked === true ? { kicked: true } : {}),
+  ...(cast.kickCount !== undefined ? { kickCount: cast.kickCount } : {}),
   ...(cast.prototype === true ? { prototype: true } : {}),
   ...(cast.offspring === true ? { offspring: true } : {}),
   ...(cast.evoke === true ? { evoke: true, evokeCost: cast.evokeCost } : {}),
@@ -338,6 +342,8 @@ interface Targeting {
    * kicked and unkicked as separate `cast-spell` actions; this just echoes
    * which one the player picked. */
   readonly kicked?: boolean
+  /** How many times a multikicker is paid (rule 702.33c) — echoed like `kicked`. */
+  readonly kickCount?: number
   /** A prototyped cast (rule 718) — echoed back like `kicked`. */
   readonly prototype?: boolean
   /** Paying a granted offspring cost too (Zinnia) — echoed back like `kicked`. */
@@ -387,6 +393,11 @@ function currentSlotOptions(t: Targeting): readonly TargetRef[] {
   const options = slotOptions(t.specs, t.options, i, t.picked)
   const range = t.targetCount
   if (range === undefined) return options
+  // Inside an "any number of" group, the fewest is Done's to check
+  // (`mayFinishGroup`): another member never takes the count away from it.
+  if (inTargetGroup(t)) {
+    return options.filter((ref) => distinctTargetCount([...t.picked, ref], range.copies) <= range.max)
+  }
   const later = t.specs.length - i - 1
   return options.filter((ref) => {
     const n = distinctTargetCount([...t.picked, ref], range.copies)
@@ -399,6 +410,17 @@ function currentSlotOptions(t: Targeting): readonly TargetRef[] {
 function inTargetGroup(t: Pick<Targeting, 'specs' | 'picked'>): boolean {
   const group = anyNumberSlot(t.specs)
   return group >= 0 && t.picked.length >= group
+}
+
+/** Whether an "any number of" group may end with what's picked: at least
+ * its fewest ("exile X target creatures" — Curse of the Swine, its specs
+ * fixed at the X chosen), and the fewest distinct targets the cast allows. */
+function mayFinishGroup(t: Pick<Targeting, 'specs' | 'picked' | 'targetCount'>): boolean {
+  const group = anyNumberSlot(t.specs)
+  if (group < 0) return true
+  if (t.picked.length - group < groupBounds(t.specs[group]).min) return false
+  const range = t.targetCount
+  return range === undefined || distinctTargetCount(t.picked, range.copies) >= range.min
 }
 
 /** The spec the next pick fills: the group's, once inside it. */
@@ -1451,6 +1473,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         | 'face'
         | 'modes'
         | 'kicked'
+        | 'kickCount'
         | 'prototype'
         | 'offspring'
         | 'evoke'
@@ -1482,6 +1505,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                 ...(t.via !== undefined ? { via: t.via } : {}),
                 ...(t.face !== undefined ? { face: t.face } : {}),
                 ...(t.kicked === true ? { kicked: true } : {}),
+                ...(t.kickCount !== undefined ? { kickCount: t.kickCount } : {}),
                 ...(t.prototype === true ? { prototype: true } : {}),
                 ...(t.offspring === true ? { offspring: true } : {}),
                 ...(t.evoke === true ? { evoke: true, evokeCost: t.evokeCost } : {}),
@@ -1554,7 +1578,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     (t: Omit<Targeting, 'picked'>) => {
       // Nothing to choose — no slots, or only an "any number of" group with
       // no candidates, whose empty choice is the only one.
-      if (t.specs.length === 0 || (anyNumberSlot(t.specs) === 0 && (t.options[0] ?? []).length === 0)) {
+      if (t.specs.length === 0 || (anyNumberSlot(t.specs) === 0 && slotOptions(t.specs, t.options, 0, []).length === 0)) {
         finishTargets(t, [])
         return
       }
@@ -1613,7 +1637,11 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         setPendingModes({ cast, picked: [], ...picks })
         return
       }
-      if (cast.xCost) {
+      // An offer whose targets fix X (Stolen by the Fae's "mana value X")
+      // has nothing to ask.
+      const fixedX =
+        cast.xCost?.minX !== undefined && cast.xCost.minX === cast.xCost.maxX ? cast.xCost.maxX : undefined
+      if (cast.xCost && fixedX === undefined) {
         setPendingX({ action: cast, value: cast.xCost.maxX, ...picks })
         return
       }
@@ -1624,6 +1652,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         label: `Cast ${cast.cardName}`,
         specs: cast.targetSpecs,
         options: cast.targetOptions,
+        ...(fixedX !== undefined ? { xValue: fixedX } : {}),
         ...castExtras(cast),
         ...picks,
       })
@@ -1643,7 +1672,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         source: action.card,
         abilityIndex: 0,
         label: `Cast ${action.cardName}`,
-        specs: action.targetSpecs,
+        // A target count tied to X (Curse of the Swine) is fixed by it.
+        specs: specsAtX(action.targetSpecs, value),
         options: action.targetOptions,
         xValue: value,
         ...castExtras(action),
@@ -1842,6 +1872,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       if (inTargetGroup(t)) {
         // Another member of an "any number of" group — or `null`, Done.
         if (ref === null) {
+          if (!mayFinishGroup(t)) return
           finish(t.picked)
           return
         }
@@ -3597,7 +3628,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           </button>
         ) : null}
         {grouped ? (
-          <button type="button" onClick={() => pickTarget(null)}>
+          <button type="button" disabled={!mayFinishGroup(activeTargeting)} onClick={() => pickTarget(null)}>
             Done
           </button>
         ) : slotSpec !== undefined && isOptionalSpec(slotSpec) ? (
@@ -3668,7 +3699,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     )
   } else if (mode === 'choose-x' && pendingX) {
     const pxMax = pendingX.action.xCost?.maxX ?? 0
-    const pxMin = pendingX.action.kind === 'activate-ability' ? (pendingX.action.xCost?.minX ?? 0) : 0
+    const pxMin = pendingX.action.xCost?.minX ?? 0
     const pxVerb = pendingX.action.kind === 'activate-ability' ? 'Activate' : 'Cast'
     controls = (
       <div className="controls">
@@ -4412,6 +4443,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                         <> (overload <Symbols text={a.overloadCost ?? ''} />)</>
                       ) : null}
                       {a.kind === 'cast-spell' && a.free ? ' (free)' : ''}
+                      {a.kind === 'cast-spell' && a.xCost?.minX !== undefined && a.xCost.minX === a.xCost.maxX
+                        ? ` (X=${a.xCost.maxX})`
+                        : ''}
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
                       {a.kind === 'cast-spell' && a.offspring ? (
                         <> (offspring <Symbols text={a.offspringCost ?? ''} />)</>

@@ -1054,6 +1054,7 @@ import _poolColdEyedSelkie from "./pool/cold-eyed-selkie.js";
 import _poolColdWaterSnapper from "./pool/cold-water-snapper.js";
 import _poolColdsteelHeart from "./pool/coldsteel-heart.js";
 import _poolCollectiveBlessing from "./pool/collective-blessing.js";
+import _poolCollectiveResistance from "./pool/collective-resistance.js";
 import _poolCollectiveUnconscious from "./pool/collective-unconscious.js";
 import _poolCollectorsVault from "./pool/collectors-vault.js";
 import _poolColorfulFeiyiSparrow from "./pool/colorful-feiyi-sparrow.js";
@@ -1210,6 +1211,7 @@ import _poolCuriosityCrafter from "./pool/curiosity-crafter.js";
 import _poolCuriosity from "./pool/curiosity.js";
 import _poolCuriousAltisaur from "./pool/curious-altisaur.js";
 import _poolCuriousPair from "./pool/curious-pair.js";
+import _poolCurseOfTheSwine from "./pool/curse-of-the-swine.js";
 import _poolCursebreak from "./pool/cursebreak.js";
 import _poolCursedFlesh from "./pool/cursed-flesh.js";
 import _poolCursedMinotaur from "./pool/cursed-minotaur.js";
@@ -1761,6 +1763,7 @@ import _poolEvendoBrushrazer from "./pool/evendo-brushrazer.js";
 import _poolEvendoWakingHaven from "./pool/evendo-waking-haven.js";
 import _poolEverWatchingThreshold from "./pool/ever-watching-threshold.js";
 import _poolEverethViceroyOfPlunder from "./pool/evereth-viceroy-of-plunder.js";
+import _poolEverflowingChalice from "./pool/everflowing-chalice.js";
 import _poolEviscerate from "./pool/eviscerate.js";
 import _poolEvolutionCharm from "./pool/evolution-charm.js";
 import _poolEvolutionSage from "./pool/evolution-sage.js";
@@ -1785,6 +1788,7 @@ import _poolExpeditionMap from "./pool/expedition-map.js";
 import _poolExpelTheInterlopers from "./pool/expel-the-interlopers.js";
 import _poolExperimentalArmor from "./pool/experimental-armor.js";
 import _poolExperimentalAviator from "./pool/experimental-aviator.js";
+import _poolExplorationBroodship from "./pool/exploration-broodship.js";
 import _poolExploration from "./pool/exploration.js";
 import _poolExplore from "./pool/explore.js";
 import _poolExplorersScope from "./pool/explorers-scope.js";
@@ -3918,6 +3922,7 @@ import _poolPerimeterPatrol from "./pool/perimeter-patrol.js";
 import _poolPerplexingTest from "./pool/perplexing-test.js";
 import _poolPersist from "./pool/persist.js";
 import _poolPersonalTutor from "./pool/personal-tutor.js";
+import _poolPestInfestation from "./pool/pest-infestation.js";
 import _poolPestMascot from "./pool/pest-mascot.js";
 import _poolPestilentKathari from "./pool/pestilent-kathari.js";
 import _poolPestilentWolf from "./pool/pestilent-wolf.js";
@@ -5172,6 +5177,7 @@ import _poolStirge from "./pool/stirge.js";
 import _poolStitchTogether from "./pool/stitch-together.js";
 import _poolStitchersSupplier from "./pool/stitchers-supplier.js";
 import _poolStoicBuilder from "./pool/stoic-builder.js";
+import _poolStolenByTheFae from "./pool/stolen-by-the-fae.js";
 import _poolStolenGrain from "./pool/stolen-grain.js";
 import _poolStomperCub from "./pool/stomper-cub.js";
 import _poolStompingGround from "./pool/stomping-ground.js";
@@ -6139,6 +6145,7 @@ import _poolWanderingTombshell from "./pool/wandering-tombshell.js";
 import _poolWarChariot from "./pool/war-chariot.js";
 import _poolWarMammoth from "./pool/war-mammoth.js";
 import _poolWarPriestOfThune from "./pool/war-priest-of-thune.js";
+import _poolWarRoom from "./pool/war-room.js";
 import _poolWarScreecher from "./pool/war-screecher.js";
 import _poolWarclampMastiff from "./pool/warclamp-mastiff.js";
 import _poolWardenOfEvosIsle from "./pool/warden-of-evos-isle.js";
@@ -6467,6 +6474,7 @@ import _tokensBlackDeathtouchSnakeToken from "./tokens/black-deathtouch-snake-to
 import _tokensBlueBirdToken from "./tokens/blue-bird-token.js";
 import _tokensBlueBlackFaerieToken from "./tokens/blue-black-faerie-token.js";
 import _tokensBlueRedElementalToken44 from "./tokens/blue-red-elemental-token-4-4.js";
+import _tokensBoarToken from "./tokens/boar-token.js";
 import _tokensCatBeastToken from "./tokens/cat-beast-token.js";
 import _tokensCatBirdToken from "./tokens/cat-bird-token.js";
 import _tokensCatToken from "./tokens/cat-token.js";
@@ -7660,6 +7668,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolColdWaterSnapper,
   _poolColdsteelHeart,
   _poolCollectiveBlessing,
+  _poolCollectiveResistance,
   _poolCollectiveUnconscious,
   _poolCollectorsVault,
   _poolColorfulFeiyiSparrow,
@@ -7816,6 +7825,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCuriosity,
   _poolCuriousAltisaur,
   _poolCuriousPair,
+  _poolCurseOfTheSwine,
   _poolCursebreak,
   _poolCursedFlesh,
   _poolCursedMinotaur,
@@ -8367,6 +8377,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEvendoWakingHaven,
   _poolEverWatchingThreshold,
   _poolEverethViceroyOfPlunder,
+  _poolEverflowingChalice,
   _poolEviscerate,
   _poolEvolutionCharm,
   _poolEvolutionSage,
@@ -8391,6 +8402,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolExpelTheInterlopers,
   _poolExperimentalArmor,
   _poolExperimentalAviator,
+  _poolExplorationBroodship,
   _poolExploration,
   _poolExplore,
   _poolExplorersScope,
@@ -10524,6 +10536,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPerplexingTest,
   _poolPersist,
   _poolPersonalTutor,
+  _poolPestInfestation,
   _poolPestMascot,
   _poolPestilentKathari,
   _poolPestilentWolf,
@@ -11778,6 +11791,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStitchTogether,
   _poolStitchersSupplier,
   _poolStoicBuilder,
+  _poolStolenByTheFae,
   _poolStolenGrain,
   _poolStomperCub,
   _poolStompingGround,
@@ -12745,6 +12759,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWarChariot,
   _poolWarMammoth,
   _poolWarPriestOfThune,
+  _poolWarRoom,
   _poolWarScreecher,
   _poolWarclampMastiff,
   _poolWardenOfEvosIsle,
@@ -13079,6 +13094,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensBlueBirdToken,
   _tokensBlueBlackFaerieToken,
   _tokensBlueRedElementalToken44,
+  _tokensBoarToken,
   _tokensCatBeastToken,
   _tokensCatBirdToken,
   _tokensCatToken,

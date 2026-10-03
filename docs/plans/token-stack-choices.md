@@ -48,6 +48,7 @@ Found by the review of the counting fix (a sweep by code and by card):
 | ~~Convoke (`convokeCandidates`)~~ | **Built.** A stack was one candidate, so it could pay for one pip. Hour of Reckoning convoked by a player with 14 Soldier tokens got one. |
 | ~~"Tap N untapped creatures" costs (`tapOthersCandidates`): Gravespawn Sovereign, Selesnya Evangel, Sephara's alternative cost~~ | **Built.** They were counted and tapped as objects, and picked for the player (`.slice(0, count)`), which was also an AUTHORING §0 problem. |
 | Proliferate (`proliferateTargets`) | A stack is one entry and gets the counter on every member. Harmless for the player, since you'd normally want all of them, but not a choice. |
+| Distinct targets (`otherSlotConflict`, `slotOptions`): "two target creatures", an `any-number` group — Terastodon, Curse of the Swine, Pest Infestation | An "another target" relation names a stack once, so two tokens of one stack can't both be chosen. `lockInTargets` already gives each slot naming a stack its own token; the relation checks and the client's group picker would have to allow the repeat. Found 2026-10-02. |
 
 ## Proposal
 

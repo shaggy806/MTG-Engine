@@ -10,7 +10,7 @@ import type { Action, CastSpellOffer } from "../../actions.js";
 import { convokeProofFor, delvePicks } from "../../actions.js";
 import type { ObjectId, PlayerId } from "../../primitives.js";
 import type { TargetRef, TargetSpec } from "../../target.js";
-import { fitTargetCount, maxXForTargets } from "../../target-count.js";
+import { fitTargetCount, maxXForTargets, minXForTargets } from "../../target-count.js";
 import type { RandomSource } from "../contract.js";
 
 export function randomCast(
@@ -39,7 +39,13 @@ export function randomCast(
   const picked = rng.pickTargets(options, specs);
   const targets = legal.targetCount === undefined ? picked : fitTargetCount(picked, options, specs, legal.targetCount);
   if (targets === null) return null;
-  const xValue = legal.xCost === undefined ? undefined : rng.pickIndex(maxXForTargets(legal.xCost, legal.targetCount, targets) + 1);
+  // Anywhere from the least X these targets allow (a count tied to X) to
+  // the most that's payable.
+  const minX = legal.xCost === undefined ? 0 : minXForTargets(legal.xCost, legal.targetCount, targets);
+  const xValue =
+    legal.xCost === undefined
+      ? undefined
+      : minX + rng.pickIndex(Math.max(0, maxXForTargets(legal.xCost, legal.targetCount, targets) - minX) + 1);
   const sac = legal.sacrifice;
   const tap: ObjectId[] = [];
   if (legal.tapCost !== undefined) {
@@ -63,6 +69,7 @@ export function randomCast(
     ...(legal.face !== undefined ? { face: legal.face } : {}),
     ...(legal.graveyardGrant !== undefined ? { graveyardGrant: legal.graveyardGrant } : {}),
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.kickCount !== undefined ? { kickCount: legal.kickCount } : {}),
     ...(legal.offspring === true ? { offspring: true } : {}),
     ...(legal.evoke === true ? { evoke: true, evokeCost: legal.evokeCost } : {}),
     ...(legal.prototype === true ? { prototype: true } : {}),

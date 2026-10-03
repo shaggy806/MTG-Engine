@@ -194,6 +194,7 @@ import _poolWelderAutomaton from "../pool/welder-automaton.js";
 import _poolWildernessReclamation from "../pool/wilderness-reclamation.js";
 import _poolWitchBlessedMeadow from "../pool/witch-blessed-meadow.js";
 import _poolWretchedDoll from "../pool/wretched-doll.js";
+import _tokensBoarToken from "../tokens/boar-token.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
@@ -396,6 +397,7 @@ const shard: CardShard = {
     _poolWretchedDoll,
   ],
   tokens: [
+    _tokensBoarToken,
     _tokensChocoboBirdToken,
     _tokensDragonIllusionToken,
     _tokensElementalToken55,

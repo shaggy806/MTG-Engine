@@ -78,6 +78,7 @@ import _poolElvishScrapper from "../pool/elvish-scrapper.js";
 import _poolEvendoBrushrazer from "../pool/evendo-brushrazer.js";
 import _poolEvolvingWilds from "../pool/evolving-wilds.js";
 import _poolExcavationMole from "../pool/excavation-mole.js";
+import _poolExplorationBroodship from "../pool/exploration-broodship.js";
 import _poolExplosiveImpact from "../pool/explosive-impact.js";
 import _poolFaerieFormation from "../pool/faerie-formation.js";
 import _poolFeatherbrainedFilcher from "../pool/featherbrained-filcher.js";
@@ -291,6 +292,7 @@ const shard: CardShard = {
     _poolEvendoBrushrazer,
     _poolEvolvingWilds,
     _poolExcavationMole,
+    _poolExplorationBroodship,
     _poolExplosiveImpact,
     _poolFaerieFormation,
     _poolFeatherbrainedFilcher,

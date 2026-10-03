@@ -393,7 +393,7 @@ nothing in the repo distinguished them.
 | ~~Warp~~ *(built 2026-09-28)* | 3 | 1387 | 0 | 0 |
 | phasing | 3 | 575 | 0 | 0 |
 | snow sources | 3 | 445 | 0 | 1 |
-| multikicker | 2 | 254 | 0 | 1 |
+| ~~multikicker~~ *(built 2026-10-02 — Everflowing Chalice)* | 2 | 254 | 0 | 1 |
 | plays-a-land trigger | 1 | 899 | 0 | 0 |
 | Bestow / ~~Eternalize~~ *(built 2026-09-28)* / Coven / Raid | 1 each | 697+ | 0 | 0 |
 | retrace / riot / Prototype | **0** | — | 0 | 0 |

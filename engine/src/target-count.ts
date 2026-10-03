@@ -187,7 +187,9 @@ export function fitTargetCount(
  * `LegalAction` cast-spell's `xCost.maxXByTargetCount`. */
 export interface XCostOffer {
   readonly maxX: number;
+  readonly minX?: number;
   readonly maxXByTargetCount?: readonly number[];
+  readonly minXByTargetCount?: readonly number[];
 }
 
 /** The largest X payable with `targets` chosen, when the cost depends on how
@@ -202,9 +204,23 @@ export function maxXForTargets(
   return byCount[distinctTargetCount(targets, range.copies) - range.min] ?? 0;
 }
 
+/** The least X allowed with `targets` chosen: a target count tied to X
+ * ("up to X target …" — Pest Infestation) needs X at least that count;
+ * `xCost.minX` (or 0) otherwise. */
+export function minXForTargets(
+  xCost: XCostOffer,
+  range: TargetCountRange | undefined,
+  targets: readonly (TargetRef | null)[],
+): number {
+  const byCount = xCost.minXByTargetCount;
+  if (byCount === undefined || range === undefined) return xCost.minX ?? 0;
+  return byCount[distinctTargetCount(targets, range.copies) - range.min] ?? 0;
+}
+
 /** The part of `range` still payable once X is `x`: the target counts whose
- * ceiling reaches it. `range` itself when X doesn't trade off against the
- * count; `null` when no count affords that X. */
+ * ceiling reaches it, and whose floor (a count tied to X) it reaches.
+ * `range` itself when X doesn't trade off against the count; `null` when no
+ * count allows that X. */
 export function targetCountAtX(
   range: TargetCountRange,
   xCost: XCostOffer | undefined,
@@ -212,7 +228,10 @@ export function targetCountAtX(
 ): TargetCountRange | null {
   const byCount = xCost?.maxXByTargetCount;
   if (byCount === undefined) return range;
-  const counts = byCount.flatMap((ceiling, i) => (ceiling >= x ? [range.min + i] : []));
+  const floors = xCost?.minXByTargetCount;
+  const counts = byCount.flatMap((ceiling, i) =>
+    ceiling >= x && (floors?.[i] ?? 0) <= x ? [range.min + i] : [],
+  );
   if (counts.length === 0) return null;
   return { ...range, min: counts[0], max: counts[counts.length - 1] };
 }

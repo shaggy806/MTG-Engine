@@ -32,6 +32,7 @@ import _poolConclaveTribunal from "../pool/conclave-tribunal.js";
 import _poolConviction from "../pool/conviction.js";
 import _poolCouriersCapsule from "../pool/couriers-capsule.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
+import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
 import _poolDarkNourishment from "../pool/dark-nourishment.js";
 import _poolDeathgreeter from "../pool/deathgreeter.js";
@@ -211,6 +212,7 @@ const shard: CardShard = {
     _poolConviction,
     _poolCouriersCapsule,
     _poolCravenGiant,
+    _poolCurseOfTheSwine,
     _poolDaggerfangDuo,
     _poolDarkNourishment,
     _poolDeathgreeter,

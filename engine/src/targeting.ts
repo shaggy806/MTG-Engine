@@ -8,7 +8,7 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
 import type { GameState } from "./state.js";
-import { anyNumberSlot, concreteTargetSpecs, isOptionalSpec, otherSlotConflict } from "./target.js";
+import { anyNumberSlot, concreteTargetSpecs, groupBounds, isOptionalSpec, otherSlotConflict } from "./target.js";
 import type { OtherThan } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
@@ -621,14 +621,13 @@ export function invalidTargetReason(
   source?: TargetSource,
 ): string | null {
   const group = anyNumberSlot(specs);
-  const groupSpec = group >= 0 ? specs[group] : undefined;
-  if (
-    typeof groupSpec === "object" &&
-    groupSpec.kind === "any-number" &&
-    groupSpec.max !== undefined &&
-    chosen.length - group > groupSpec.max
-  ) {
-    return `${name} takes at most ${groupSpec.max} of those targets`;
+  if (group >= 0) {
+    // A group tied to X is judged at the X chosen (`specsAtX`) — by then its
+    // bounds are numbers.
+    const { min, max } = groupBounds(specs[group]);
+    const members = Math.max(0, chosen.length - group);
+    if (members > max) return `${name} takes at most ${max} of those targets`;
+    if (members < min) return `${name} takes at least ${min} of those targets`;
   }
   specs = concreteTargetSpecs(specs, chosen.length);
   if (chosen.length !== specs.length) {

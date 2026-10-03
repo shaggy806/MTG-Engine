@@ -8,7 +8,7 @@
  * and destroy creatures with lethal damage or non-positive toughness. No combat.
  */
 
-import { isManaAbility } from "./abilities.js";
+import { abilityLifeCost, isManaAbility } from "./abilities.js";
 import type {
   ActivatedAbility,
   CostReductionAmount,
@@ -263,6 +263,8 @@ import { EVERY_CREATURE_TYPE, LAND_TYPES, hasSubtype, isCreatureType } from "./s
 import {
   anyNumberSlot,
   concreteTargetSpecs,
+  groupReadsX,
+  specsAtX,
   describeTargetSpec,
   isOptionalSpec,
   normalizeTargets,
@@ -1123,7 +1125,7 @@ export class Game {
           action.via,
           action.face ?? 0,
           action.modes,
-          action.kicked === true,
+          action.kicked === true ? (action.kickCount ?? true) : false,
           action.sacrifice,
           action.overload === true,
           action.free === true,
@@ -1290,7 +1292,7 @@ export class Game {
           action.via,
           action.face ?? 0,
           action.modes,
-          action.kicked === true,
+          action.kicked === true ? (action.kickCount ?? true) : false,
           action.sacrifice,
           action.overload === true,
           action.free === true,
@@ -1799,14 +1801,19 @@ export class Game {
   }
 
   /** The colour/type identity of a card (its printed values). */
-  private cardSource(def: CardDefinition, object?: ObjectId): TargetSource {
+  private cardSource(def: CardDefinition, object?: ObjectId, x?: number): TargetSource {
     const base = cardSource(def, object);
     const card = object !== undefined ? this.state.objects[object] : undefined;
     if (object === undefined || card === undefined) return base;
+    // A spell's own {X} (rule 107.3) — the X it's being cast for while it's
+    // cast (`x`), the X it was cast for once it's on the stack, and zero
+    // until it's been chosen. A target filter's `n: "x"` (Stolen by the
+    // Fae's "with mana value X") reads it too.
+    const spellX = x ?? (card.zone === "stack" ? card.xValue ?? undefined : undefined);
     return {
       ...base,
-      // A spell's own {X} (rule 107.3) — zero until it's been chosen.
-      amount: this.filterAmounts({ source: object, controller: card.controller, x: card.xValue ?? 0 }),
+      ...(spellX !== undefined ? { x: spellX } : {}),
+      amount: this.filterAmounts({ source: object, controller: card.controller, x: spellX ?? card.xValue ?? 0 }),
     };
   }
 
@@ -1854,12 +1861,14 @@ export class Game {
     def: CardDefinition,
     player: PlayerId,
     card: ObjectId,
+    /** Fewer modes than the card allows: as many as escalate can pay for. */
+    affordableMaxModes?: number,
   ): Pick<Extract<LegalAction, { kind: "cast-spell" }>, "castModal"> {
     if (def.castModal === null) return {};
     return {
       castModal: {
         minModes: def.castModal.minModes,
-        maxModes: this.castModalMaxModes(def.castModal, card),
+        maxModes: affordableMaxModes ?? this.castModalMaxModes(def.castModal, card),
         modes: def.castModal.modes.map((m) => ({
           text: m.text,
           targetSpecs: [...(m.targets ?? [])],
@@ -1907,12 +1916,32 @@ export class Game {
       offspring?: boolean;
       /** The evoke cost this variant pays (see `evokeCostsOf`). */
       evoke?: string;
+      /** A multikicker variant's number of times kicked (rule 702.33c). */
+      kickCount?: number;
     }[] = [{ kicked: false, overload: false, free: false }];
+    // Multikicker (rule 702.33c — Everflowing Chalice): one variant per
+    // number of times, up to as many as the player's mana could pay for at
+    // all; the loop below drops each count it can't afford, and skips the
+    // counts above one that failed.
+    const kickedVariants = (free: boolean) => {
+      if (def.kicker?.multi !== true) return [{ kicked: true, overload: false, free }];
+      const per = Math.max(1, manaValue(parseManaCost(def.kicker.cost)));
+      const manaCap =
+        this.manaSources(player).reduce((n, s) => n + Game.sourceCapacity(s), 0) +
+        this.state.players[player].manaPool.length;
+      return Array.from({ length: Math.max(1, Math.floor(manaCap / per)) }, (_v, i) => ({
+        kicked: true,
+        overload: false,
+        free,
+        kickCount: i + 1,
+      }));
+    };
+    const kickFailed = new Set<string>();
     // An impulse permission only to cast it free (Narset): no paid variant.
     const impulseFree = via === "impulse" ? this.impulseFreeCast(card) : null;
     if (impulseFree === "only") variants.length = 0;
     if (def.kicker !== null && impulseFree !== "only") {
-      variants.push({ kicked: true, overload: false, free: false });
+      variants.push(...kickedVariants(false));
     }
     // Overload (rule 702.126) and a conditional free-cast permission (Fierce
     // Guardianship) are each an alternative cast, mutually exclusive with
@@ -1938,7 +1967,7 @@ export class Game {
     if (via === "effect" && this.castNowOffer(player, card)?.free === true) {
       variants.length = 0;
       variants.push({ kicked: false, overload: false, free: true });
-      if (def.kicker !== null) variants.push({ kicked: true, overload: false, free: true });
+      if (def.kicker !== null) variants.push(...kickedVariants(true));
     }
     // Prototype (rule 718) isn't an alternative cost: every way to cast it
     // may be done prototyped too.
@@ -1980,7 +2009,12 @@ export class Game {
       const payingManaCost = variants.filter((v) => !v.free && !v.overload && v.altCost !== true && v.prototype !== true);
       for (const evokeCost of evokeCosts) variants.push(...payingManaCost.map((v) => ({ ...v, evoke: evokeCost })));
     }
-    for (const { kicked, overload, free, altCost, costOption, prototype, offspring, evoke } of variants) {
+    for (const { kicked: kickedFlag, kickCount, overload, free, altCost, costOption, prototype, offspring, evoke } of variants) {
+      // A multikicker variant passes its count where `kicked` goes.
+      const kicked: boolean | number = kickCount ?? kickedFlag;
+      const kickKey = `${free}|${altCost}|${costOption}|${prototype}|${offspring}|${evoke}`;
+      if (kickCount !== undefined && kickCount > 1 && kickFailed.has(kickKey)) continue;
+      const offeredBefore = out.length;
       // A prototyped variant is worked out as the prototyped spell it is: its
       // prototype cost, colors and size (rule 718 — the rulings).
       const undoPrototype = prototype === true ? this.applyPrototype(card) : () => {};
@@ -2142,6 +2176,9 @@ export class Game {
         offspring === true,
         evoke ?? null,
       );
+      const xFilter =
+        def.castModal === null && this.effectiveTargetSpecs(def, undefined, kicked, overload).some(targetSpecReadsX);
+      let perX: readonly number[] | null = null;
       if (this.withFace(card, face ?? 0, () => this.costDependsOnTargets(player, card, def, variantCost))) {
         const bounds = this.withFace(card, face ?? 0, () =>
           this.targetCountBoundsFor(def, player, card, kicked, overload),
@@ -2161,11 +2198,44 @@ export class Game {
           cheapestManaAmount(this.withFace(card, face ?? 0, () => this.castingCostOf(player, card, def, 0, variantCost, k)));
         pricedAt = weight(targetCount.max) > weight(targetCount.min) ? targetCount.max : targetCount.min;
         manaAffordable = castableAt(pricedAt).manaAffordable;
+      } else if (xFilter) {
+        // "Target creature with mana value X" (Stolen by the Fae): what may
+        // be targeted depends on X, so the spell is offered once per X that
+        // is payable and has a legal set of targets, each with that X fixed
+        // and that X's options (as for Rydia's ability). Mana alone pays.
+        const most =
+          variantCost !== null && parseManaCost(variantCost).x > 0
+            ? this.xPlanFor(player, card, def, variantCost, face ?? 0, 0).maxX
+            : 0;
+        const xs: number[] = [];
+        for (let x = 0; x <= most; x += 1) if (castsWith(0, undefined, x)) xs.push(x);
+        if (xs.length === 0) continue;
+        perX = xs;
+        manaAffordable = true;
       } else {
         const at = castableAt(0);
         if (!at.castable) continue;
         manaAffordable = at.manaAffordable;
       }
+      // Escalate (rule 702.120a): the most modes this variant can pay for —
+      // each one beyond the first adds its cost. Judged on mana alone.
+      const escalatedMaxModes = (): number | undefined => {
+        const modal = def.castModal;
+        if (modal === null || modal.costPerExtraMode === undefined) return undefined;
+        const most = this.castModalMaxModes(modal, card);
+        for (let k = most; k > Math.max(1, modal.minModes); k -= 1) {
+          const withModes = this.withFace(card, face ?? 0, () =>
+            this.castCostString(card, via, face, kicked, overload, free, altCost === true, costOption, player,
+              graveyardGrant, offspring === true, evoke ?? null, k - 1),
+          );
+          if (withModes === null) continue;
+          const total = this.withFace(card, face ?? 0, () =>
+            this.castingCostOf(player, card, def, 0, withModes, pricedAt),
+          );
+          if (this.payMana(player, total, undefined, undefined, { kind: "cast", card }) !== null) return k;
+        }
+        return Math.max(1, modal.minModes);
+      };
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
       const options = this.affordableTargetOptions(
         player,
@@ -2178,6 +2248,7 @@ export class Game {
       // is gated by `castModalDescriptor` instead.
       if (
         def.castModal === null &&
+        perX === null &&
         !targetsFillable(specs, options)
       ) {
         continue;
@@ -2187,15 +2258,20 @@ export class Game {
       const cost = alternative !== null
         ? alternative.mana
         : free
-        ? kicked && def.kicker !== null ? "{0}" + def.kicker.cost : "{0}"
+        ? kicked && def.kicker !== null ? "{0}" + def.kicker.cost.repeat(kickCount ?? 1) : "{0}"
         : overload && def.overload !== null
           ? def.overload.cost
           : kicked && def.kicker !== null && paidBase !== null
-            ? paidBase + def.kicker.cost + (offspring === true ? (offspringCost ?? "") : "")
+            ? paidBase + def.kicker.cost.repeat(kickCount ?? 1) + (offspring === true ? (offspringCost ?? "") : "")
             : paidBase !== null && offspring === true
               ? paidBase + (offspringCost ?? "")
               : paidBase;
-      const sacrifices = this.additionalCostSacrifices(player, def, costOption);
+      const sacrifices = this.additionalCostSacrifices(
+        player,
+        def,
+        costOption,
+        this.graveyardPermissionSacrifice(player, card, face ?? 0, via, graveyardGrant),
+      );
       const xPlan =
         parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
       // X and the number of targets trade off when both are paid for
@@ -2209,22 +2285,31 @@ export class Game {
                 ? xPlan.maxX
                 : Math.max(0, this.xPlanFor(player, card, def, cost, face ?? 0, targetCount.min + i).maxX),
             );
-      out.push({
+      // "Up to X target …" / "X target …" (Pest Infestation, Curse of the
+      // Swine): the number of targets and X bound each other.
+      const xGroup =
+        xPlan !== null && targetCount === undefined && groupReadsX(specs)
+          ? this.xGroupOffer(specs, options, xPlan.maxX)
+          : null;
+      const offer: Extract<LegalAction, { kind: "cast-spell" }> = {
         kind: "cast-spell",
         card,
         cardName,
-        targetSpecs: specs,
+        // Cast with no {X} to pay — free, say — X is 0 (rule 107.3b), and a
+        // group tied to it is fixed there.
+        targetSpecs: xPlan === null ? specsAtX(specs, 0) : specs,
         targetOptions: options,
         ...(def.divided !== null ? { divide: def.divided } : {}),
         ...(via !== undefined ? { via } : {}),
         ...(graveyardGrant !== undefined ? { graveyardGrant } : {}),
         ...(face !== undefined ? { face } : {}),
-        ...this.castModalDescriptor(def, player, card),
+        ...this.castModalDescriptor(def, player, card, escalatedMaxModes()),
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
         ...(kicked && def.kicker !== null
           ? {
               kicked: true,
-              kickerCost: def.kicker.cost,
+              kickerCost: def.kicker.cost.repeat(kickCount ?? 1),
+              ...(kickCount !== undefined ? { kickCount } : {}),
               ...(def.kicker.keyword !== undefined ? { kickerKeyword: def.kicker.keyword } : {}),
             }
           : {}),
@@ -2324,10 +2409,17 @@ export class Game {
             })()
           : {}),
         ...(targetCount !== undefined ? { targetCount } : {}),
+        ...(xGroup !== null ? { targetCount: xGroup.targetCount } : {}),
         ...(xPlan !== null
           ? {
               xCost:
-                maxXByTargetCount === undefined
+                xGroup !== null
+                  ? {
+                      maxX: Math.max(...xGroup.maxXByTargetCount),
+                      maxXByTargetCount: xGroup.maxXByTargetCount,
+                      minXByTargetCount: xGroup.minXByTargetCount,
+                    }
+                  : maxXByTargetCount === undefined
                   ? { maxX: xPlan.maxX }
                   : { maxX: Math.max(...maxXByTargetCount), maxXByTargetCount },
             }
@@ -2339,12 +2431,62 @@ export class Game {
         ...(prototype === true && def.prototype !== null
           ? { prototype: true, prototypeCost: def.prototype.cost }
           : {}),
-      });
+      };
+      if (perX === null) {
+        out.push(offer);
+      } else {
+        for (const x of perX) {
+          out.push({
+            ...offer,
+            targetOptions: this.affordableTargetOptions(
+              player,
+              this.targetOptionsFor(specs, player, this.cardSource(def, card, x)),
+            ),
+            xCost: { maxX: x, minX: x },
+          });
+        }
+      }
       } finally {
         undoPrototype();
+        if (kickCount !== undefined && out.length === offeredBefore) kickFailed.add(kickKey);
       }
     }
     return out;
+  }
+
+  /**
+   * The offer for a spell whose "any number of target …" group is tied to
+   * its X (`groupReadsX` — rule 601.2b–c: X is announced, then the targets):
+   * the counts of targets it can be cast with and, for each, the least and
+   * most X that count allows. "Up to X" (Pest Infestation) needs X at least
+   * the count; "X target …" (Curse of the Swine) exactly it. `payableX` is
+   * the most X the caster can pay. The group is the spell's only slot.
+   */
+  private xGroupOffer(
+    specs: readonly TargetSpec[],
+    options: readonly (readonly TargetRef[])[],
+    payableX: number,
+  ): {
+    targetCount: TargetCountRange;
+    minXByTargetCount: number[];
+    maxXByTargetCount: number[];
+  } {
+    const group = anyNumberSlot(specs);
+    const spec = specs[group];
+    const upTo = typeof spec === "object" && spec.kind === "any-number" && spec.max === "x";
+    const atLeast = typeof spec === "object" && spec.kind === "any-number" && spec.min === "x";
+    const candidates = options[group] ?? [];
+    const copies = this.targetCopies(candidates);
+    // Each member is another than the ones before it (`concreteTargetSpecs`),
+    // so a candidate — a token stack too — is named once.
+    const members = candidates.length;
+    const most = upTo ? Math.min(members, payableX) : members;
+    const counts = Array.from({ length: most + 1 }, (_v, k) => k);
+    return {
+      targetCount: { min: 0, max: most, ...(Object.keys(copies).length > 0 ? { copies } : {}) },
+      minXByTargetCount: counts.map((k) => (upTo ? k : 0)),
+      maxXByTargetCount: counts.map((k) => (atLeast ? Math.min(k, payableX) : payableX)),
+    };
   }
 
   /** Every untapped creature `player` controls — the full candidate pool for
@@ -6557,7 +6699,7 @@ export class Game {
     def: CardDefinition,
     player: PlayerId,
     card: ObjectId,
-    kicked: boolean,
+    kicked: boolean | number,
     overload: boolean,
   ): TargetCountRange | null {
     const source = this.cardSource(def, card);
@@ -7162,7 +7304,7 @@ export class Game {
     cardId: ObjectId,
     via: CastVia | undefined,
     face = 0,
-    kicked = false,
+    kicked: boolean | number = false,
     overload = false,
     free = false,
     altCost = false,
@@ -7177,14 +7319,20 @@ export class Game {
     /** Cast for an evoke cost (rule 702.74) rather than its mana cost —
      * which one (`""` for the first it has); `null` when not evoked. */
     evoke: string | null = null,
+    /** Modes chosen beyond the first, for escalate (rule 702.120a). */
+    extraModes = 0,
   ): string | null {
     const def = this.faceDef(cardId, face);
+    // Escalate (rule 702.120a) is an additional cost: added to whatever is
+    // paid, an alternative cost or a free cast included (118.9d).
+    const escalateCost = def.castModal?.costPerExtraMode;
+    const escalate = escalateCost === undefined || extraModes <= 0 ? "" : escalateCost.repeat(extraModes);
     // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
     // like overload and a free-cast permission — the creature-tapping half
     // is paid separately in `castSpell`.
     if (altCost) {
       const alternative = this.alternativeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner);
-      if (alternative !== null) return alternative.mana;
+      if (alternative !== null) return alternative.mana + escalate;
     }
     // A free-cast permission — conditional (Fierce Guardianship), a static's
     // (Omniscience), an impulse's, or a resolving effect's "without paying
@@ -7232,8 +7380,12 @@ export class Game {
     const withOption = base === null || optionMana === undefined ? base : base + optionMana;
     // Kicker (rule 702.33) is an additional cost, so it just concatenates onto
     // whatever cost is being paid — `parseManaCost` is order-independent.
-    const withKicker =
-      !kicked || def.kicker === null || withOption === null ? withOption : withOption + def.kicker.cost;
+    // Multikicker (rule 702.33c) pays it as many times as it was kicked.
+    const kickedCost =
+      !kicked || def.kicker === null || withOption === null
+        ? withOption
+        : withOption + def.kicker.cost.repeat(kicked === true ? 1 : kicked);
+    const withKicker = kickedCost === null ? null : kickedCost + escalate;
     // Granted offspring (Zinnia) is an additional cost of its own beside any
     // kicker or printed offspring (rule 702.175b), so it concatenates too.
     if (!offspring || withKicker === null) return withKicker;
@@ -7248,7 +7400,7 @@ export class Game {
   private effectiveTargetSpecs(
     def: CardDefinition,
     modes: readonly number[] | undefined,
-    kicked = false,
+    kicked: boolean | number = false,
     overload = false,
   ): readonly TargetSpec[] {
     // Overload (rule 702.126a): "you can't choose targets for it".
@@ -7274,12 +7426,32 @@ export class Game {
     player: PlayerId,
     def: CardDefinition,
     costOption?: number,
+    /** A graveyard permission's own sacrifice (Exploration Broodship) —
+     * see `graveyardPermissionSacrifice`. Never beside the card's own:
+     * `graveyardGrantsFor` doesn't offer that pair. */
+    permissionSacrifice?: CardFilter,
   ): ObjectId[] {
     const filter =
       def.additionalCost?.sacrifice ??
-      (costOption === undefined ? undefined : def.additionalCost?.options?.[costOption]?.sacrifice);
+      (costOption === undefined ? undefined : def.additionalCost?.options?.[costOption]?.sacrifice) ??
+      permissionSacrifice;
     if (filter === undefined) return [];
     return this.eligibleSacrifices(player, filter);
+  }
+
+  /** What a cast under a graveyard permission sacrifices on top of its other
+   * costs — Exploration Broodship's "by sacrificing a land in addition to
+   * paying its other costs" (`castFromGraveyard.sacrifice`); `undefined` for
+   * any other cast. */
+  private graveyardPermissionSacrifice(
+    player: PlayerId,
+    card: ObjectId,
+    face: number,
+    via: CastVia | undefined,
+    grant: GraveyardGrant | undefined,
+  ): CardFilter | undefined {
+    if (via !== "graveyard-permission") return undefined;
+    return this.findGraveyardGrant(player, card, face, grant)?.permission?.sacrifice;
   }
 
   /** The most modes `card` may be cast with: its `maxModesIf`'s count while
@@ -7318,7 +7490,7 @@ export class Game {
     via?: CastVia,
     face = 0,
     modes?: readonly number[],
-    kicked = false,
+    kicked: boolean | number = false,
     sacrifice?: ObjectId,
     overload = false,
     free = false,
@@ -7514,7 +7686,15 @@ export class Game {
     } else if (costOption !== undefined) {
       return `${def.name} has no choice of additional cost`;
     }
+    // A number is how many times a multikicker is paid (rule 702.33c); 0 is
+    // not kicked at all.
+    if (typeof kicked === "number" && (!Number.isInteger(kicked) || kicked < 0)) {
+      return `${def.name} can't be kicked ${kicked} times`;
+    }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
+    if (typeof kicked === "number" && kicked > 1 && def.kicker?.multi !== true) {
+      return `${def.name}'s kicker can be paid only once`;
+    }
     if (offspring && (free || overload || altCost || this.grantedOffspringCost(cardId, player) === null)) {
       return `${def.name} has no offspring to pay for this way`;
     }
@@ -7540,6 +7720,14 @@ export class Game {
     }
     // An additional sacrifice cost (rule 601.2f) must be payable, and — once
     // the driver has named one — that permanent must actually qualify.
+    const permissionSacrifice = this.graveyardPermissionSacrifice(player, cardId, face, via, graveyardGrant);
+    if (permissionSacrifice !== undefined) {
+      const candidates = this.additionalCostSacrifices(player, def, costOption, permissionSacrifice);
+      if (candidates.length === 0) return `${player} has nothing to sacrifice to cast ${def.name} this way`;
+      if (sacrifice !== undefined && !candidates.includes(sacrifice)) {
+        return `that permanent cannot pay for casting ${def.name} this way`;
+      }
+    }
     if (def.additionalCost !== null) {
       const sacrificesInCost =
         def.additionalCost.sacrifice !== undefined ||
@@ -7571,9 +7759,9 @@ export class Game {
     // A non-modal spell's target legality is checked up front; a modal spell's
     // is checked per chosen mode (only once `modes` is known — at enumeration
     // time the driver hasn't picked yet).
-    const castSpecs = this.effectiveTargetSpecs(def, modes, kicked, overload);
+    const castSpecs = specsAtX(this.effectiveTargetSpecs(def, modes, kicked, overload), xValue);
     const castOptions = castSpecs.map((spec) =>
-      legalTargets(this.state, this.registry, spec, player, this.cardSource(def, cardId)),
+      legalTargets(this.state, this.registry, spec, player, this.cardSource(def, cardId, xValue)),
     );
     for (const [i, spec] of castSpecs.entries()) {
       // An *optional* slot with nothing to point at is simply left empty, so
@@ -7599,7 +7787,8 @@ export class Game {
     // (118.6a), each of which names a cost of its own (Ancestral Vision is
     // only ever suspended).
     const costString = this.withFace(cardId, face, () =>
-      this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke),
+      this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke,
+        modes === undefined ? 0 : modes.length - 1),
     );
     if (costString === null) return `${def.name} has no mana cost to pay (rule 118.6)`;
     // At the X being cast for: convoking creatures can pay for X (Chord of
@@ -7858,7 +8047,7 @@ export class Game {
         cast.via,
         cast.face ?? 0,
         cast.modes,
-        cast.kicked === true,
+        cast.kicked === true ? (cast.kickCount ?? true) : false,
         cast.sacrifice,
         cast.overload === true,
         cast.free === true,
@@ -7883,7 +8072,7 @@ export class Game {
     via?: CastVia,
     face = 0,
     modes?: readonly number[],
-    kicked = false,
+    kicked: boolean | number = false,
     sacrifice?: ObjectId,
     overload = false,
     free = false,
@@ -7961,6 +8150,7 @@ export class Game {
       graveyardGrant,
       offspring,
       evoke,
+      modes === undefined ? 0 : modes.length - 1,
     );
     const hasX =
       parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
@@ -7971,10 +8161,17 @@ export class Game {
     }
     const sortedModes =
       def.castModal !== null ? [...(modes ?? [])].sort((a, b) => a - b) : undefined;
-    const targetSpecs = this.effectiveTargetSpecs(def, sortedModes, kicked, overload);
+    // X is announced before targets are chosen (rule 601.2b–c): a group tied
+    // to X, and a filter reading it, are judged at the X chosen.
+    const targetSpecs = specsAtX(this.effectiveTargetSpecs(def, sortedModes, kicked, overload), chosenX);
     // An additional sacrifice cost the driver didn't name (only one candidate,
     // or a driver that doesn't care): take the first eligible permanent.
-    const sacrificeCandidates = this.additionalCostSacrifices(player, def, costOption);
+    const sacrificeCandidates = this.additionalCostSacrifices(
+      player,
+      def,
+      costOption,
+      this.graveyardPermissionSacrifice(player, cardId, face, via, graveyardGrant),
+    );
     const sacrificeVictim =
       sacrificeCandidates.length === 0 ? undefined : (sacrifice ?? sacrificeCandidates[0]);
 
@@ -7983,7 +8180,7 @@ export class Game {
       targets,
       player,
       def.name,
-      this.cardSource(def, cardId),
+      this.cardSource(def, cardId, chosenX),
     );
     if (badTarget !== null) throw new Error(badTarget);
     const chosenDivision = def.divided === null ? undefined : spellDivision(def.divided, targets, division);
@@ -8131,7 +8328,12 @@ export class Game {
     object.stormCount = stormCount;
     if (sortedModes !== undefined) object.chosenModes = sortedModes;
     if (chosenDivision !== undefined) object.division = chosenDivision;
-    if (kicked) object.kicked = true;
+    if (kicked) {
+      object.kicked = true;
+      // Multikicker: how many times (rule 702.33c), for "for each time it was
+      // kicked".
+      if (def.kicker?.multi === true) object.timesKicked = kicked === true ? 1 : kicked;
+    }
     if (offspring) object.offspringGrantPaid = true;
     if (evoke !== null) object.evokePaid = true;
     if (overload) object.overloaded = true;
@@ -8891,11 +9093,13 @@ export class Game {
     ) {
       return `${player} has nothing to sacrifice for ${def.name}'s ability`;
     }
-    if (
-      ability.cost.payLife !== undefined &&
-      this.state.players[player].life < ability.cost.payLife
-    ) {
-      return `${player} does not have ${ability.cost.payLife} life to pay`;
+    if (ability.cost.payLife !== undefined) {
+      // War Room: no commander, no way to pay (its ruling).
+      const life = abilityLifeCost(this.state, player, ability.cost);
+      if (life === null) return `${player} has no commander to pay ${def.name}'s life cost by`;
+      if (this.state.players[player].life < life) {
+        return `${player} does not have ${life} life to pay`;
+      }
     }
     if (ability.cost.discard !== undefined) {
       const { count, filter } = ability.cost.discard;
@@ -9045,9 +9249,8 @@ export class Game {
         ? { object: tapped[0], zoneChangeCount: this.state.objects[tapped[0]].zoneChangeCount ?? 0 }
         : undefined;
     this.executePayment(player, payment);
-    if (ability.cost.payLife !== undefined) {
-      this.changeLife(player, -ability.cost.payLife);
-    }
+    const lifeCost = abilityLifeCost(this.state, player, ability.cost) ?? 0;
+    if (lifeCost > 0) this.changeLife(player, -lifeCost);
     if (ability.cost.removeCounter !== undefined) {
       const { kind, count } = ability.cost.removeCounter;
       source.counters[kind] = (source.counters[kind] ?? 0) - count;
@@ -9507,7 +9710,8 @@ export class Game {
           return;
         }
         const pain = ability.effect.painToController ?? 0;
-        const lifeCost = ability.cost.payLife ?? 0;
+        const lifeCost = abilityLifeCost(this.state, player, ability.cost);
+        if (lifeCost === null) return;
         // "Add one mana of the chosen color" resolves to whatever this
         // permanent's controller named as it entered; before that choice is
         // answered it produces nothing.
@@ -10607,7 +10811,10 @@ export class Game {
     const chosenModes = def.castModal !== null ? object.chosenModes : undefined;
     return chosenModes !== undefined
       ? chosenModes.flatMap((mi) => def.castModal?.modes[mi]?.targets ?? [])
-      : this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true);
+      : specsAtX(
+          this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true),
+          object.xValue ?? 0,
+        );
   }
 
   private resolveTopObject(): void {
@@ -15319,6 +15526,16 @@ export class Game {
         if (!matchesFilter(this.state, this.registry, card, permission.filter, { you: player })) {
           continue;
         }
+        // A permission that sacrifices (Exploration Broodship) isn't offered
+        // for a card with a sacrifice cost of its own: one cast has only one
+        // `sacrifice` to name.
+        if (
+          permission.sacrifice !== undefined &&
+          (def.additionalCost?.sacrifice !== undefined ||
+            def.additionalCost?.options?.some((o) => o.sacrifice !== undefined) === true)
+        ) {
+          continue;
+        }
         if (permission.perType !== undefined) {
           const spent = grantor.graveyardCastTypesUsedThisTurn ?? [];
           for (const type of permission.perType) {
@@ -16169,6 +16386,7 @@ export class Game {
       ...(object.chosenModes !== undefined ? { chosenModes: [...object.chosenModes] } : {}),
       ...(object.division !== undefined ? { division: [...object.division] } : {}),
       ...(object.kicked === true ? { kicked: true } : {}),
+      ...(object.timesKicked !== undefined ? { timesKicked: object.timesKicked } : {}),
       ...(object.overloaded === true ? { overloaded: true } : {}),
       ...(object.evokePaid === true ? { evokePaid: true } : {}),
       ...(object.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
@@ -16231,6 +16449,7 @@ export class Game {
       ...(spell.chosenModes !== undefined ? { chosenModes: [...spell.chosenModes] } : {}),
       ...(spell.division !== undefined ? { division: [...spell.division] } : {}),
       ...(spell.kicked === true ? { kicked: true } : {}),
+      ...(spell.timesKicked !== undefined ? { timesKicked: spell.timesKicked } : {}),
       ...(spell.overloaded === true ? { overloaded: true } : {}),
       ...(spell.evokePaid === true ? { evokePaid: true } : {}),
       ...(spell.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
@@ -20963,7 +21182,9 @@ export class Game {
           r.counters.kind,
           r.counters.amount === "x"
             ? (object.xValue ?? 0)
-            : this.enteringCounterAmount(id, object.controller, id, r.counters.amount),
+            : r.counters.amount === "times-kicked"
+              ? (object.enteredTimesKicked ?? 0)
+              : this.enteringCounterAmount(id, object.controller, id, r.counters.amount),
         );
       }
     }
@@ -21548,6 +21769,7 @@ export class Game {
     // already here (Verix Bladewing). Cleared like any other zone-scoped
     // flag on the *next* move, so a Verix that dies and returns is unkicked.
     const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
+    const enteringTimesKicked = enteringKicked ? object.timesKicked : undefined;
     // A prototyped spell's characteristics stay with the permanent it
     // becomes; any other move drops them (rule 718.3b).
     const keptPrototype =
@@ -21724,6 +21946,7 @@ export class Game {
     object.chosenModes = undefined;
     object.division = undefined;
     object.kicked = undefined;
+    object.timesKicked = undefined;
     object.offspringGrantPaid = undefined;
     object.evokePaid = undefined;
     // "That spell can't be countered" was about this casting, so it ends when
@@ -21732,6 +21955,7 @@ export class Game {
     object.uncounterable = undefined;
     object.lastKnownRefs = undefined;
     object.enteredKicked = enteringKicked;
+    object.enteredTimesKicked = enteringTimesKicked;
     object.entry = entry;
     object.castFrom = undefined;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves

@@ -12,7 +12,8 @@
 import type { StaticCondition, TurnStat } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
-import type { PlayerCounterKind, ZoneType } from "./state.js";
+import type { GameState, PlayerCounterKind, ZoneType } from "./state.js";
+import type { PlayerId } from "./primitives.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
@@ -29,6 +30,43 @@ export type SacrificeCost =
    * a Forest"). needed-cards P6. */
   | { readonly filter: CardFilter };
 
+/**
+ * How much life an activated ability's cost pays: a fixed number, or
+ * `"commander-identity-colors"` — "Pay life equal to the number of colors in
+ * your commanders' color identity" (War Room), read off
+ * `PlayerState.commanderIdentity` (rule 903.4: fixed before the game begins,
+ * both commanders' for a pair). A player with no commander can't pay it at
+ * all (War Room's ruling), while a colourless commander makes it 0.
+ */
+export type AbilityLifeCost = number | "commander-identity-colors";
+
+/**
+ * The life `cost` pays when `player` activates it now: `0` for none, `null`
+ * when it can't be paid at all (a commander-identity cost with no commander).
+ * Rule 118.4's "can't pay more life than you have" is the caller's check.
+ */
+export function abilityLifeCost(
+  state: GameState,
+  player: PlayerId,
+  cost: AbilityCost,
+): number | null {
+  const life = cost.payLife;
+  if (life === undefined) return 0;
+  if (typeof life === "number") return life;
+  const hasCommander = Object.values(state.objects).some(
+    (o) => o.isCommander && o.owner === player,
+  );
+  if (!hasCommander) return null;
+  return state.players[player]?.commanderIdentity?.length ?? 0;
+}
+
+/** The printed form of an ability's life cost ("Pay 2 life"). */
+export function abilityLifeCostText(life: AbilityLifeCost): string {
+  return typeof life === "number"
+    ? `Pay ${life} life`
+    : "Pay life equal to the number of colors in your commanders' color identity";
+}
+
 export interface AbilityCost {
   /** Mana portion of the cost, e.g. `"{2}"`; `null` for no mana. */
   readonly mana: string | null;
@@ -37,8 +75,10 @@ export interface AbilityCost {
   /** A sacrifice that is part of the cost, or `undefined` for none. */
   readonly sacrifice?: SacrificeCost;
   /** Life to pay as part of the cost (Greed: "Pay 2 life"). Rule 118.4 — a
-   * player can't pay more life than they have. */
-  readonly payLife?: number;
+   * player can't pay more life than they have. An {@link AbilityLifeCost}
+   * other than a number is read as the ability is activated — always through
+   * {@link abilityLifeCost}, never directly. */
+  readonly payLife?: AbilityLifeCost;
   /** Counters to remove from the source as part of the cost (Walking
    * Ballista: "Remove a +1/+1 counter from ~"). */
   readonly removeCounter?: { readonly kind: string; readonly count: number };

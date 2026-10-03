@@ -31,6 +31,7 @@ import _poolCatharticReunion from "../pool/cathartic-reunion.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
 import _poolCoalGolem from "../pool/coal-golem.js";
 import _poolColdsteelHeart from "../pool/coldsteel-heart.js";
+import _poolCollectiveResistance from "../pool/collective-resistance.js";
 import _poolColossadactyl from "../pool/colossadactyl.js";
 import _poolCouncilOfAdvisors from "../pool/council-of-advisors.js";
 import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
@@ -242,6 +243,7 @@ const shard: CardShard = {
     _poolChokedEstuary,
     _poolCoalGolem,
     _poolColdsteelHeart,
+    _poolCollectiveResistance,
     _poolColossadactyl,
     _poolCouncilOfAdvisors,
     _poolCracklingPerimeter,

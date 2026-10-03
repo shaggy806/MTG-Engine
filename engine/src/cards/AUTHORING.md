@@ -268,11 +268,11 @@ from the same link.
 | field | shape | what it does |
 | --- | --- | --- |
 | `loyalty` | `number` | planeswalker starting loyalty — §8, §12 |
-| `castModal` | `{ minModes, maxModes, maxModesIf?, modes: ModeOption[] }` | a modal **spell** ("Choose one —" and bullets) — its modes are chosen as it's cast (rules 601.2b, 700.2a), whether or not they target (Farewell's have no targets). The `modal` *effect* is for a choice made on resolution instead — §6. `maxModesIf: { condition, maxModes }` raises the most while a condition holds as it's cast: Will of the Sultai's "If you control a commander as you cast this spell, you may choose both instead" is `{ condition: { kind: "controls", filter: { isCommander: true }, atLeast: 1 }, maxModes: 2 }`. |
+| `castModal` | `{ minModes, maxModes, maxModesIf?, modes: ModeOption[] }` | a modal **spell** ("Choose one —" and bullets) — its modes are chosen as it's cast (rules 601.2b, 700.2a), whether or not they target (Farewell's have no targets). The `modal` *effect* is for a choice made on resolution instead — §6. `maxModesIf: { condition, maxModes }` raises the most while a condition holds as it's cast: Will of the Sultai's "If you control a commander as you cast this spell, you may choose both instead" is `{ condition: { kind: "controls", filter: { isCommander: true }, atLeast: 1 }, maxModes: 2 }`. `costPerExtraMode: "{G}"` is **escalate** (rule 702.120a — Collective Resistance): that mana once per mode beyond the first, an additional cost paid on top of an alternative cost or a free cast too (118.9d); the offer's `maxModes` is capped at what the caster can pay. Mana escalate only — a discard (Collective Brutality) or tap (Collective Effort) escalate isn't expressible. |
 | `costPerExtraTarget` | mana string | "This spell costs {1} more to cast for each target beyond the first" (Fireball; Strive — Twinflame's `"{2}{R}"`): a cost increase once per distinct target after the first (rule 601.2f), on top of whatever cost is paid. The offer's `targetCount` lists the counts the caster can afford, and an `{X}` spell's `xCost.maxXByTargetCount` the largest X at each. |
 | `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
 | `additionalCost.options` | `AdditionalCostOption[]` | a **choice** of whole costs, exactly one paid (Bitter Triumph: "discard a card or pay 3 life"; Demand Answers: "sacrifice an artifact or discard a card"). Each option takes a `text` label plus any of `discard` / `payLife` / `sacrifice` / `mana`, and is enumerated as its own castable variant — so the caster chooses by picking a `cast-spell`, not by answering a decision. **Not for a cost whose *filter* spans two types**: Deadly Dispute's "sacrifice an artifact or creature" is one cost with `typesAnyOf` and needs none of this. |
-| `kicker` | `{ cost, targets?, effect? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. `keyword: "offspring"` is the same optional additional cost under Offspring's name (rule 702.175) — pair it with `offspringTrigger()` (below). |
+| `kicker` | `{ cost, targets?, effect?, keyword?, multi? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. `multi: true` is **multikicker** (702.33c — Everflowing Chalice): offered once per number of times the caster can pay it (`kickCount`, with `kickerCost` that many times over), and "for each time it was kicked" is an `enters-battlefield` replacement's `counters: { kind, amount: "times-kicked" }` (0 when it wasn't cast). `keyword: "offspring"` is the same optional additional cost under Offspring's name (rule 702.175) — pair it with `offspringTrigger()` (below). |
 | `overload` | `{ cost, effect }` | **Overload** (rule 702.126 — Cyclonic Rift). An alternative cost that *replaces* the mana cost entirely (unlike kicker's additive cost) and takes **no targets** — `effect` is the whole "each ..." version of the card (typically a `-all` `EffectSpec`, e.g. `return-to-hand-all`/`destroy-all`), applied with the printed `targets`/`effect` untouched for the ordinary cast. `legalActions` offers the card twice. |
 | `alternativeCost` | `{ mana, tapCreatures: { count, filter } }` | an alternative cost that replaces the mana cost *and* taps permanents (rule 601.2b — Sephara's "pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost"). Offered as a second `cast-spell` variant (`altCost: true`), the same shape `kicked`/`overload`/`free` use; the caster picks what it taps, as for `tapOthers`. |
 | `castOnlyIf` | `StaticCondition` | "You can't cast this spell unless …" — checked from whatever zone it's cast, the command zone included (Rakdos, Lord of Riots' "unless an opponent lost life this turn" is `{ kind: "turn-stat", stat: "life-lost", who: "opponent", atLeast: 1 }`). An instruction to cast it doesn't get past it. |
@@ -1150,8 +1150,12 @@ nonland permanent with mana value X"; Chord of Calling's `search-library`: "a cr
 with mana value X or less"). An **activated ability's target** filter may read
 it too (Rydia, Summoner of Mist: "target Saga card with mana value X"): such an
 ability is offered once per X that has a legal set of targets, each offer with
-that X fixed (`xCost: { minX, maxX }` equal). A *spell's* target filter can't
-yet — nothing offers a spell per X. `destroy-all` also takes
+that X fixed (`xCost: { minX, maxX }` equal). A **spell's** target filter may
+read it the same way (Stolen by the Fae: "return target creature with mana value
+X"): X is announced before targets (rule 601.2b–c), so the spell is offered once
+per X that is payable and has a legal set of targets, its `targetOptions` at
+that X, and the target is checked at that X as it's cast and as it resolves.
+Mana alone pays such an offer (no convoke or delve). `destroy-all` also takes
 `onlyControllersDamagedBySource`, narrowing to permanents whose *controller*
 this effect's source dealt combat damage to this turn — a fact about the
 source, so it isn't a `CardFilter` clause.
@@ -1486,6 +1490,12 @@ relation, and may point at the same thing.
 TargetSpec }` — Eerie Interlude's "exile any number of target creatures you
 control" is `targets: [{ kind: "any-number", of: "creature-you-control" }]`.
 `max: N` caps it — Magma Opus's four damage among at most four targets.
+On a spell with `{X}`, `max: "x"` is "up to X target …" (Pest Infestation) and
+`min: "x", max: "x"` is "X target …" (Curse of the Swine): X is announced
+before the targets (rule 601.2b–c), so a choice is judged at the X cast
+(`specsAtX`), and the offer's `targetCount` with `xCost.minXByTargetCount` /
+`maxXByTargetCount` say which X each number of targets allows. Only for a
+spell whose group is its only slot.
 It is always the **last** slot of its list (one per list, never in a
 `castModal` mode; `any-number-targets.test.ts` walks the pool for this),
 and the player fills it with none, one or as many distinct targets as there
@@ -1584,6 +1594,10 @@ removeCounter?, payEnergy?, discardHand?, discard?, tapOthers? }`.
   sacrificed creature's power" is `{ powerOf: "sacrificed" }` (§6,
   "Last-known information"). A spell's `additionalCost.sacrifice` works the
   same way.
+- `payLife: "commander-identity-colors"` is War Room's "Pay life equal to the
+  number of colors in your commanders' color identity" (`AbilityLifeCost`, read
+  off `PlayerState.commanderIdentity` as it's activated): 0 for a colourless
+  commander, and not activatable at all without a commander (the rulings).
 - `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }`,
   `discardHand: true`, `exileSelf: true` — all paid automatically (no
   decision). `exileSelf` is Hanged Executioner's "Exile this creature",
@@ -2037,7 +2051,7 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   permanent you control matching it (Seedborn Muse `{}`, Unwinding Clock
   `{ type: "artifact" }`).
 - `castFromGraveyard: { filter, oncePerTurn?, yourTurnOnly?, perType?,
-  exileAfterwards?, payLife? }` — a permission to cast spells from your
+  exileAfterwards?, payLife?, sacrifice? }` — a permission to cast spells from your
   graveyard for their normal cost (Gisa and Geralf: "Once during each of your
   turns, you may cast a Zombie creature spell from your graveyard" — both
   gates). Offered as `via: "graveyard-permission"`, **one variant per
@@ -2057,6 +2071,11 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
     way would be put into your graveyard, exile it instead".
   - `payLife: N` — an extra cost on top of the spell's own ("by paying 3 life
     in addition to paying their other costs"); it also gates the offer.
+  - `sacrifice: CardFilter` — Exploration Broodship's "by sacrificing a land
+    in addition to paying its other costs": offered and paid like a spell's own
+    `additionalCost.sacrifice` (`sacrifice.choices` on the offer), after the
+    mana, so the land may tap for the spell first. Not offered for a card with
+    a sacrifice cost of its own.
 - `grantsToGraveyard: { filter, flashback?: { cost }, escape?: { cost,
   exileCount } }` — cards in your graveyard matching `filter` **have**
   flashback or escape (rule 604.1): Iroh, Grand Lotus's "during your turn,
@@ -3043,9 +3062,8 @@ Delete an entry in the same commit as the feature that retires it.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Embalm** (rule 702.128
   — Vizier of Many Faces, whose Clone ability has to carry it), **retrace**
   (rule 702.83 — Six), **riot**
-  (rule 702.152 — Rhythm of the Wild), **Hideaway** (rule 702.104 — Mosswort
-  Bridge), and **Station** (rule 702.171 — Exploration Broodship and others)
-  are unmodeled alt-cast / ETB-choice mechanics (needed-cards P18).
+  (rule 702.152 — Rhythm of the Wild) and **Hideaway** (rule 702.104 — Mosswort
+  Bridge) are unmodeled alt-cast / ETB-choice mechanics (needed-cards P18).
 
 **Partial:**
 
@@ -3117,7 +3135,7 @@ Delete an entry in the same commit as the feature that retires it.
   *choice* between two of them ("discard a card **or** pay 3 life" — Bitter
   Triumph), an "exile a card from your graveyard" form, or a cost whose
   amount the caster picks ("pay X life" — Toxic Deluge). **Kicker** is a
-  single optional cost (no multikicker, no two different kickers on one card).
+  single optional cost or a multikicker (no two different kickers on one card).
 
 **Not modeled at all:** phasing, Battles, dungeons / the Initiative / the Ring,
 banding, "day/night"-independent double-faced tokens, a static ability that

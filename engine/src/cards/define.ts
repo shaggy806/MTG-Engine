@@ -978,6 +978,13 @@ export interface StaticAbility {
     readonly perType?: readonly CardType[];
     readonly exileAfterwards?: boolean;
     readonly payLife?: number;
+    /** An additional sacrifice for a cast this way — Exploration
+     * Broodship's "by sacrificing a land in addition to paying its other
+     * costs". Offered and paid like a spell's own `additionalCost.sacrifice`
+     * (the offer's `sacrifice.choices`, the action's `sacrifice`), after the
+     * mana, so the land may tap for the spell first (rule 601.2g–h). Not
+     * offered for a card with a sacrifice cost of its own. */
+    readonly sacrifice?: CardFilter;
   };
   /**
    * Keywords this permanent gives cards in its controller's **graveyard**
@@ -1358,6 +1365,16 @@ export interface CastModalSpec {
    * control a commander as you cast this spell, you may choose both
    * instead." Asked of the card being cast, so `controls` reads its caster. */
   readonly maxModesIf?: { readonly condition: StaticCondition; readonly maxModes: number };
+  /**
+   * Escalate (rule 702.120a): "For each mode you choose beyond the first as
+   * you cast this spell, you pay an additional [cost]." This mana, once per
+   * mode chosen beyond the first — an additional cost, so it's paid on top of
+   * an alternative cost or a free cast too (rule 118.9d; Collective
+   * Resistance's ruling). The offer's `castModal.maxModes` is capped at the
+   * most modes the caster can pay for. Mana only: escalate costs that discard
+   * (Collective Brutality) or tap (Collective Effort) aren't modelled.
+   */
+  readonly costPerExtraMode?: string;
   readonly modes: readonly ModeOption[];
 }
 
@@ -1478,6 +1495,15 @@ export interface CardDefinition {
      * spell cast this way is not a *kicked* spell to anything else.
      */
     readonly keyword?: "offspring";
+    /**
+     * Multikicker (rule 702.33c): "you may pay an additional [cost] any
+     * number of times as you cast this spell". The spell is offered once per
+     * affordable number of times (`LegalAction.kickCount`), and a spell
+     * kicked at least once is kicked (702.33d); how many times is
+     * `GameObject.timesKicked`, read by an `enters-battlefield` replacement's
+     * `counters.amount: "times-kicked"` (Everflowing Chalice).
+     */
+    readonly multi?: boolean;
   } | null;
   /**
    * Overload (rule 702.126 — Cyclonic Rift): an alternative cost that
@@ -1944,6 +1970,7 @@ interface CardDraft {
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
     readonly keyword?: "offspring";
+    readonly multi?: boolean;
   };
   overload?: {
     readonly cost: string;

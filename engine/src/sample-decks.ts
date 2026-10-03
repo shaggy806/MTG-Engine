@@ -631,7 +631,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Curse of Opulence", "Sticky Fingers", "One-mana enchantment: token maker, ramp."),
-      sub("Curse of the Swine", "Resculpt", "Two-mana sorcery: removal, creature removal."),
       sub("Dismantling Wave", "Solemn Offering", "Three-mana sorcery: artifact and enchantment removal, removal."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
     ],

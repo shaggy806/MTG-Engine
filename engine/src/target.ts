@@ -199,9 +199,47 @@ export type TargetSpec =
       readonly kind: "any-number";
       readonly of: TargetSpec;
       /** At most this many — Magma Opus's "4 damage divided as you choose
-       * among any number of targets", where each target needs at least 1. */
-      readonly max?: number;
+       * among any number of targets", where each target needs at least 1.
+       * `"x"` is the spell's own X: "destroy **up to X** target artifacts"
+       * (Pest Infestation). X is announced before targets are chosen (rule
+       * 601.2b–c), so a choice is judged at the X it was cast with — see
+       * {@link specsAtX}. Only on a spell whose group is its only slot. */
+      readonly max?: number | "x";
+      /** At least this many: `"x"` with `max: "x"` is exactly X — Curse of
+       * the Swine's "exile **X** target creatures". */
+      readonly min?: number | "x";
     };
+
+/** Does this list have an "any number of target …" group whose size is tied
+ * to the spell's X (`min` or `max` of `"x"`)? */
+export function groupReadsX(specs: readonly TargetSpec[]): boolean {
+  const spec = specs[anyNumberSlot(specs)];
+  return typeof spec === "object" && spec.kind === "any-number" && (spec.max === "x" || spec.min === "x");
+}
+
+/** `specs` with an "any number of target …" group's `"x"` bounds fixed at
+ * `x` — what a choice made at that X is judged against (rule 601.2c). */
+export function specsAtX(specs: readonly TargetSpec[], x: number): readonly TargetSpec[] {
+  if (!groupReadsX(specs)) return specs;
+  return specs.map((spec) =>
+    typeof spec === "object" && spec.kind === "any-number"
+      ? {
+          ...spec,
+          ...(spec.max === "x" ? { max: x } : {}),
+          ...(spec.min === "x" ? { min: x } : {}),
+        }
+      : spec,
+  );
+}
+
+/** A group's numeric bounds; an unfixed `"x"` bounds nothing. */
+export function groupBounds(spec: TargetSpec): { readonly min: number; readonly max: number } {
+  if (typeof spec !== "object" || spec.kind !== "any-number") return { min: 0, max: Number.POSITIVE_INFINITY };
+  return {
+    min: typeof spec.min === "number" ? spec.min : 0,
+    max: typeof spec.max === "number" ? spec.max : Number.POSITIVE_INFINITY,
+  };
+}
 
 /** Where a list's "any number of target …" group is (see the `any-number`
  * {@link TargetSpec}), or -1 for a list without one. */
@@ -351,7 +389,7 @@ export function slotOptions(
       .filter((ref): ref is TargetRef => ref !== null && ref !== undefined);
     // A group already at its `max` takes no more.
     const spec = specs[group];
-    if (typeof spec === "object" && spec.kind === "any-number" && spec.max !== undefined && taken.length >= spec.max) {
+    if (taken.length >= groupBounds(spec).max) {
       return [];
     }
     return (options[group] ?? []).filter((ref) => !taken.some((t) => sameTarget(ref, t)));
@@ -426,7 +464,9 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
   if (spec.kind === "optional") return `${describeTargetSpec(spec.of)} (optional)`;
   if (spec.kind === "any-number") {
     // Fireball's "any number of targets", not "any number of any target".
-    return spec.of === "any-target" ? "any number of targets" : `any number of ${describeTargetSpec(spec.of)}`;
+    const many =
+      spec.max === "x" ? (spec.min === "x" ? "X" : "up to X") : "any number of";
+    return spec.of === "any-target" ? `${many} targets` : `${many} ${describeTargetSpec(spec.of)}`;
   }
   if (spec.kind === "other") {
     const than = spec.than ?? "source";

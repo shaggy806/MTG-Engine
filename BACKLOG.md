@@ -165,6 +165,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Proliferate over a token stack.** A stack is one proliferate entry and every member gets the
   counter; choosing some of them isn't built. (Splitting a stack across attackers or blockers is,
   since 2026-09-28.) See `docs/plans/token-stack-choices.md`.
+- **Distinct targets in one token stack.** An "another target" relation (`distinctTargets`, an
+  `any-number` group) names a stack once (`otherSlotConflict`, `slotOptions`), so "two target
+  creatures", Terastodon's three, Curse of the Swine's X or Pest Infestation's up to X can't take
+  two tokens of one stack (five Treasures in one stack are one target). Needs the relation checks
+  to allow a repeat up to `stackCount` and a client control for picking a stack more than once.
+  See `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
 

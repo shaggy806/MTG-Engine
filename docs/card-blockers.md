@@ -29,8 +29,8 @@ delve (Treasure Cruise) and, until end of turn, "can attack as though it didn't 
 "assigns combat damage equal to its toughness" (Assault Formation, Wakestone Gargoyle, Walking
 Bulwark).
 
-Jeskai's last 4 each need something different: Curses (Curse of Opulence), X targets (Curse of
-the Swine), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
+Jeskai's last 3 each need something different (Curse of the Swine's X targets were built on
+2026-10-02): Curses (Curse of Opulence), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
 (Transforming Flourish). Across all five decks no feature blocks more than two: divided damage
 (a triggered ability's), hideaway, Omen and "the creature it sacrificed". The other three delve
 cards each need one more thing: a target in each player's graveyard (Afterlife from the Loam),

@@ -156,6 +156,7 @@ import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
 import _poolSpitefulBanditry from "../pool/spiteful-banditry.js";
 import _poolSquirrelanoids from "../pool/squirrelanoids.js";
 import _poolStoicBuilder from "../pool/stoic-builder.js";
+import _poolStolenByTheFae from "../pool/stolen-by-the-fae.js";
 import _poolStoneRain from "../pool/stone-rain.js";
 import _poolStonehornChanter from "../pool/stonehorn-chanter.js";
 import _poolStormShaman from "../pool/storm-shaman.js";
@@ -357,6 +358,7 @@ const shard: CardShard = {
     _poolSpitefulBanditry,
     _poolSquirrelanoids,
     _poolStoicBuilder,
+    _poolStolenByTheFae,
     _poolStoneRain,
     _poolStonehornChanter,
     _poolStormShaman,

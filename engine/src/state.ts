@@ -61,6 +61,11 @@ export interface GameObject {
    * rider is an ETB trigger (Verix Bladewing). See `moveObject`.
    */
   enteredKicked?: boolean;
+  /** How many times its spell was kicked, for a multikicker spell (rule
+   * 702.33c) — `timesKicked` carried across the stack-to-battlefield move
+   * the way `enteredKicked` is, for "enters with a charge counter on it for
+   * each time it was kicked" (Everflowing Chalice). */
+  enteredTimesKicked?: number;
   /** How it came onto the battlefield, this stint — see {@link EntryRecord}.
    * Set by the move onto the battlefield, gone with its next move. */
   entry?: EntryRecord;
@@ -463,6 +468,10 @@ export interface GameObject {
    * kicker cost was paid, so `resolveTopOfStack` applies the kicked `effect`.
    * Absent for an unkicked or unkickable spell; cleared on any zone change. */
   kicked?: boolean;
+  /** How many times a multikicker cost was paid as this spell was cast
+   * (rule 702.33c–d) — set with `kicked` on a multikicker spell, cleared
+   * with it. */
+  timesKicked?: number;
   /** A granted offspring cost was paid as this spell was cast (Zinnia): the
    * permanent it becomes gets offspring's trigger as it enters. Cleared on
    * any zone change after that. */
@@ -702,6 +711,7 @@ export interface SpellSnapshot {
   readonly chosenModes?: readonly number[];
   readonly division?: readonly number[];
   readonly kicked?: boolean;
+  readonly timesKicked?: number;
   readonly overloaded?: boolean;
   readonly evokePaid?: boolean;
   readonly offspringGrantPaid?: boolean;

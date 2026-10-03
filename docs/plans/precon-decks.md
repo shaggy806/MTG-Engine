@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 418 of the 495
-non-commander slots are the printed cards; the other 77 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 419 of the 495
+non-commander slots are the printed cards; the other 76 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1, Chaos Warp 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1, Chaos Warp 1, Curse of the Swine 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -32,7 +32,7 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 | Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 27 |
 | Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
 | Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
-| Jeskai Striker | Shiko and Narset, Unified | instants and sorceries, prowess, Monk tokens, spells copied | 4 |
+| Jeskai Striker | Shiko and Narset, Unified | instants and sorceries, prowess, Monk tokens, spells copied | 3 |
 
 All five commanders are implemented, and no missing card is missing from more than one deck.
 `server/src/decks.ts`'s `SEATS` takes the first four for its seats (and every bot's deck), so
@@ -176,7 +176,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Windbrisk Heights | Memorial to Glory | Land: tapped land, utility land. |
 | Within Range | Dogged Pursuit | Four-mana enchantment: drains opponents. |
 
-### Jeskai Striker — Shiko and Narset, Unified (4)
+### Jeskai Striker — Shiko and Narset, Unified (3)
 
 Shiko and Narset commands it, swapped with Elsha, Threefold Master, who plays in the 99 (the same
 100 cards).
@@ -184,6 +184,5 @@ Shiko and Narset commands it, swapped with Elsha, Threefold Master, who plays in
 | printed card | plays as | why |
 |---|---|---|
 | Curse of Opulence | Sticky Fingers | One-mana enchantment: token maker, ramp. |
-| Curse of the Swine | Resculpt | Two-mana sorcery: removal, creature removal. |
 | Dismantling Wave | Solemn Offering | Three-mana sorcery: artifact and enchantment removal, removal. |
 | Transforming Flourish | Stroke of Midnight | Three-mana instant: removal. |

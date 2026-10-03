@@ -192,6 +192,9 @@ export type Action =
        * cast and *before* targets are chosen — it can change the target specs.
        * Only meaningful for a card with `CardDefinition.kicker`. P8. */
       readonly kicked?: boolean;
+      /** With `kicked`, for a multikicker card (rule 702.33c): how many times
+       * the kicker cost is paid. 1 when absent. Echoed from the offer. */
+      readonly kickCount?: number;
       /** Pay a granted offspring cost too (`grantsOffspringToSpells` — Zinnia,
        * Valley's Voice): its own additional cost beside any kicker (rule
        * 702.175b). Echoed from the offer's `offspring`. */
@@ -574,8 +577,22 @@ export type LegalAction =
        * more for each target beyond the first"), X and that number trade off:
        * `maxXByTargetCount[i]` is the largest X payable with `targetCount.min
        * + i` distinct targets, and `maxX` is the largest of them. See
-       * `maxXForTargets` / `targetCountAtX`. */
-      readonly xCost?: { readonly maxX: number; readonly maxXByTargetCount?: readonly number[] };
+       * `maxXForTargets` / `targetCountAtX`.
+       *
+       * A spell whose targets are tied to its X (rule 601.2b–c: X is chosen
+       * first) narrows it the other way too. "Up to X target …" (Pest
+       * Infestation) and "X target …" (Curse of the Swine) set
+       * `minXByTargetCount` — the least X that many targets allow — beside
+       * `maxXByTargetCount` (`minXForTargets`). A target filter that reads
+       * X ("target creature with mana value X" — Stolen by the Fae) is
+       * offered once per X with a legal set of targets, `minX` = `maxX` =
+       * that X and `targetOptions` for it. */
+      readonly xCost?: {
+        readonly maxX: number;
+        readonly minX?: number;
+        readonly maxXByTargetCount?: readonly number[];
+        readonly minXByTargetCount?: readonly number[];
+      };
       /** Set when what the spell costs depends on how many targets it has — a
        * "for each target" cost modification reaches it (Hinata,
        * Dawn-Crowned). The spell is affordable only with a number of
@@ -611,6 +628,11 @@ export type LegalAction =
       readonly kicked?: boolean;
       /** The kicker cost this variant pays, for labelling. Set with `kicked`. */
       readonly kickerCost?: string;
+      /** A multikicker spell (rule 702.33c) is enumerated once per number of
+       * times its kicker is affordable, each with `kicked: true`, this count,
+       * and `kickerCost` the cost paid that many times over. The driver
+       * echoes it back as the action's `kickCount`. */
+      readonly kickCount?: number;
       /** The keyword that optional cost goes by when it isn't kicker —
        * `"offspring"` (rule 702.175) — for labelling. */
       readonly kickerKeyword?: "offspring";

@@ -16,6 +16,7 @@ import type {
   LegalAction,
   TapCostOffer,
 } from "./actions.js";
+import { abilityLifeCost } from "./abilities.js";
 import { convokeProofFor, delvePicks } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { whyCannotAttack } from "./combat/eligibility.js";
@@ -43,9 +44,9 @@ import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { EnterAttackingChoice, GameObject, GameState, TriggerOrderEntry } from "./state.js";
 import { activePlayerOf, printedCardName } from "./state.js";
-import { anyNumberSlot, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
+import { anyNumberSlot, groupBounds, isOptionalSpec, slotOptions, targetsFillable } from "./target.js";
 import type { TargetRef, TargetSpec } from "./target.js";
-import { fitTargetCount, maxXForTargets } from "./target-count.js";
+import { fitTargetCount, maxXForTargets, minXForTargets } from "./target-count.js";
 import {
   auraPolarity,
   modalPolarities,
@@ -1065,6 +1066,7 @@ function castExtras(
   xValue = 0,
 ): {
   kicked?: boolean;
+  kickCount?: number;
   overload?: boolean;
   free?: boolean;
   altCost?: boolean;
@@ -1078,6 +1080,7 @@ function castExtras(
   const convokeInfo = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.kickCount !== undefined ? { kickCount: legal.kickCount } : {}),
     ...(legal.offspring === true ? { offspring: true } : {}),
     ...(legal.evoke === true ? { evoke: true, evokeCost: legal.evokeCost } : {}),
     // Prototyped is a variant of its own, like kicked: echoed back.
@@ -1157,9 +1160,9 @@ export class RandomController extends AutomaticController {
         // No more than the group's `max` (Magma Opus's four); a group without
         // one draws exactly as it always has.
         const spec = specs[group];
-        const max = typeof spec === "object" && spec.kind === "any-number" ? spec.max : undefined;
+        const { max } = groupBounds(spec ?? "creature");
         for (const ref of choices) {
-          if (max !== undefined && picked.length - group >= max) break;
+          if (picked.length - group >= max) break;
           if (this.random() < 0.5) picked.push(ref);
         }
         break;
@@ -1256,9 +1259,10 @@ export class RandomController extends AutomaticController {
           legal.targetSpecs,
         );
         if (targets === null) return passFor(player);
+        const minX = legal.xCost === undefined ? 0 : minXForTargets(legal.xCost, legal.targetCount, targets);
         const xValue =
           legal.xCost !== undefined
-            ? this.pickIndex(maxXForTargets(legal.xCost, legal.targetCount, targets) + 1)
+            ? minX + this.pickIndex(Math.max(0, maxXForTargets(legal.xCost, legal.targetCount, targets) - minX) + 1)
             : undefined;
         return {
           type: "cast-spell",
@@ -1593,7 +1597,7 @@ export class HeuristicBotController extends AutomaticController {
     const abilities = def.activated ?? [];
     const ability = abilities[abilityIndex];
     if (ability === undefined || ability.cost.sacrifice !== "self" || ability.cost.mana !== null) return false;
-    const payLife = ability.cost.payLife ?? 0;
+    const payLife = abilityLifeCost(state, this.playerId, ability.cost) ?? 0;
     if (payLife > 0 && (state.players[this.playerId]?.life ?? 0) <= payLife + FETCH_LIFE_FLOOR) return false;
     if (abilities.some((a) => JSON.stringify(a.effect ?? null).includes('"add-mana"'))) return false;
     const effect = JSON.stringify(ability.effect ?? null);
@@ -1899,8 +1903,9 @@ export class HeuristicBotController extends AutomaticController {
     });
     if (legal.sacrifice !== undefined) worth -= 2;
     if (ability.cost.payLife !== undefined) {
-      if (ability.cost.payLife >= state.players[this.playerId].life) return null;
-      worth += costWorth(state, this.playerId, { life: ability.cost.payLife });
+      const life = abilityLifeCost(state, this.playerId, ability.cost);
+      if (life === null || life >= state.players[this.playerId].life) return null;
+      if (life > 0) worth += costWorth(state, this.playerId, { life });
     }
     return worth < 0 ? null : worth;
   }

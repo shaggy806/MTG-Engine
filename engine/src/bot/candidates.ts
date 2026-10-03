@@ -38,6 +38,7 @@ export const MAX_TARGET_COMBOS = 8;
  */
 function castExtras(legal: CastSpellLegal): {
   kicked?: boolean;
+  kickCount?: number;
   overload?: boolean;
   free?: boolean;
   altCost?: boolean;
@@ -50,6 +51,7 @@ function castExtras(legal: CastSpellLegal): {
   const convoke = legal.convoke;
   return {
     ...(legal.kicked === true ? { kicked: true } : {}),
+    ...(legal.kickCount !== undefined ? { kickCount: legal.kickCount } : {}),
     ...(legal.offspring === true ? { offspring: true } : {}),
     ...(legal.evoke === true ? { evoke: true, evokeCost: legal.evokeCost } : {}),
     ...(legal.prototype === true ? { prototype: true } : {}),
