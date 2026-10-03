@@ -794,7 +794,9 @@ export interface GameObject {
    * (destroy-all, damage-all, untap-all, or the stack lapsing as a whole —
    * rule 707/111 apply the same to every member) mutates or removes the
    * whole object directly, no split needed. Absent/`1` = an ordinary single
-   * permanent — the overwhelmingly common case, entirely unaffected.
+   * permanent — the overwhelmingly common case, entirely unaffected. A token
+   * split off goes back into a stack once nothing tells it apart any more
+   * (`Game.refoldSplitTokens`, `Game.recompactTokens`).
    *
    * On an ability on the stack it means the same thing: `stackCount`
    * identical copies of a triggered ability that chooses no targets, put on
@@ -803,6 +805,17 @@ export interface GameObject {
    * or ability that targets one of them (Stifle) splits it off first.
    */
   stackCount?: number;
+  /**
+   * This single token was part of a token stack and was split off it
+   * (`Game.splitOneFromStack`) — or was the last of one, the rest split off.
+   * Bookkeeping, not a characteristic: it marks the tokens worth folding back
+   * together once they're identical again, during the turn as soon as nothing
+   * is waiting (`Game.refoldSplitTokens`), and at cleanup even when fewer than
+   * a fresh batch's stacking threshold (`Game.recompactTokens`). Cleared as
+   * the token absorbs others into a stack; left out of every comparison
+   * (`tokenFoldKey`, `exactTokenShape`).
+   */
+  splitFromStack?: true;
   /** True for a copy of a spell on the stack (rule 707.10 — storm, Twincast).
    * `cardName` is the copied spell's name; the copy ceases to exist instead of
    * moving to any zone other than the stack. ROADMAP Phase 8. */

@@ -4,7 +4,7 @@
 select multiple creatures out of a token stack, can we get a menu to do so?
 Similar to how we activate abilities". **Sacrifice is built**, engine and
 client, and checked live in the browser, and so are **tap costs**,
-**convoke**, and **attack and block splitting** (2026-09-28); only proliferate is left. The counting and whole-stack fixes it builds on are done (see below).
+**convoke**, and **attack and block splitting** (2026-09-28); only proliferate is left. The counting and whole-stack fixes it builds on are done (see below), and so is folding split-off tokens back together once they're identical again (2026-10-03, "Folding back").
 
 ## Background
 
@@ -25,10 +25,11 @@ stack as **all** its tokens, or singles **one** out, is now right:
   indestructible to another, and Act of Treason stole one, untapped a second
   and hasted a third. Now the target names a single real object from the
   start, so a copy of the spell targets the same token, an opponent can
-  answer by targeting it, and the spell fizzles if it's gone. At cleanup it
-  folds back into its stack once nothing tells it apart (`tokenFoldKey`),
+  answer by targeting it, and the spell fizzles if it's gone. It folds back
+  into a stack once nothing tells it apart — as soon as nothing is waiting
+  if it's the same in everything, at cleanup otherwise (`tokenFoldKey`) —
   unless a delayed trigger or prevention shield still names it
-  (`pinnedTokenIds`).
+  (`pinnedTokenIds`). See "Folding back" below.
 - **Tokens granted an activated ability** (Cryptolith Rite) are woken into
   separate objects, since each has to pay its own `{T}`.
 
@@ -163,3 +164,73 @@ a count. `materializeStack` wakes exactly that many. The client expands a stack 
 id per token while a declaration is built (`game/stackMembers.ts`), so its per-tile click and
 count-row logic (`game/attackGroups.ts`, `game/blockGroups.ts`) covers engine stacks and
 board-folded tokens alike, and folds the members back into counted entries on Confirm.
+
+## Folding back
+
+Found by the user (2026-10-03): "putting a counter on each token in a stack splits the entire
+stack apart even though the tokens are still effectively identical."
+
+**What split, and what didn't.** Reproduced with real cards before changing anything
+(`token-stack-refold.test.ts`). The uniform effects never split a stack: Basri's Solidarity
+and Cathars' Crusade (`add-counter-all`), proliferate choosing a stack, Black Sun's Zenith's
+-1/-1 counters, Kalonian Hydra's doubling, damage to each creature, tapping or untapping all.
+Each changes the stack object as a whole. What split it was a trigger that fires **once per
+token** and does something to "it": Tribute to the World Tree's two +1/+1 counters on each
+creature entering. Ten Warriors entering as one stack fire it ten times, each copy peels one
+Warrior off (`splitOneFromStack`) and puts the counters on it, and the last copy reaches the
+stack's own last token. Every Warrior ends up the same, as ten objects and ten board tiles
+(the board folds identical tokens only without counters). The end-of-turn fold put ten back
+together, but not three: three Warriors joining a stack of ten were three objects for good,
+since `recompactTokens` only folds a group of eight or more or one holding a stack. Two
+Battlegrowths on two tokens of one stack did the same.
+
+**The fix: fold back as soon as nothing is waiting.** Splitting is right — each copy must
+reach a token still without its counters, and Tribute reads "its power" off the trigger
+object — so the fix folds afterwards rather than splitting less:
+
+- `splitOneFromStack` marks the token it peels off, and a stack drained to its last token,
+  `splitFromStack`.
+- `refoldSplitTokens` runs in `prepareForPriority` just before priority is granted, only
+  with an empty stack and no trigger, decision or suspended resolution waiting — so every
+  copy of the splitting trigger has resolved. A cheap scan first: almost always no marked
+  token is on the battlefield, at rest, and it returns.
+- It folds tokens only when they're the same in **everything** (`token-fold.ts`'s
+  `exactTokenShape`), not just what `tokenFoldKey` compares. The end-of-turn fold can ignore
+  what happened to a token this turn; mid-turn, "attacked this turn" or "dealt damage by this
+  creature this turn" still tells two tokens apart. Only a group holding a marked token folds;
+  anything else waits for cleanup. Tokens peeled off one stack share its timestamp, so they
+  can match; separate batches never do mid-turn.
+- **A token the rest of the state names is never folded away.** Thalisse, Reverent Medium
+  counts the tokens that entered this turn by matching the objects `turnHistory.entered`
+  names; folding the stack that entered into a peeled-off token made her count zero. The fold
+  keeps a named token and folds the others into it (`referencedObjectIds`, a walk over the
+  whole state). Pinned tokens (`pinnedTokenIds`: an Aura's host, a delayed trigger's or a
+  shield's object) still never fold at all. The walk leaves out what nothing will look up any
+  more: the zone lists, the event log, snapshots of things that left a zone (`lastOnStack`,
+  which named every token a spell had targeted and so kept the two Battlegrowth tokens apart;
+  `lastKnown`; `ceasedTokens`; `departedAbilities`), library cards, and the history kept only
+  to be counted (`turnHistory.attackers`, `damageDealt`). It runs only when a group could fold
+  (~1.5 ms on a four-player board), so a board that can't fold costs a scan of the
+  battlefield.
+- `recompactTokens` at cleanup also folds a group holding a marked token however small.
+
+Combat changed with it: a stack's woken attackers that come out of combat the same (tapped,
+having attacked and dealt their damage) fold back in the second main phase instead of at
+cleanup.
+
+**Per-token triggers.** Counters put on a whole stack were put on every token in it (rule
+111.1: each is its own permanent), so a `counters-put` watcher now fires once per token —
+Simic Ascendancy grows by ten when Basri's Solidarity or proliferate reaches a stack of ten,
+Hapatra makes a Snake for each token Black Sun's Zenith hits. Tokens entering with counters
+(Dragonstorm Globe) announced them once for a fresh stack and not at all for a batch joining
+one; a fresh stack now has its `stackCount` before they're announced, and a joining batch
+announces them with `counter-added`'s `count`.
+
+**What stays apart until cleanup.** A per-token trigger that grants an effect rather than a
+counter (Rapid Augmenter's haste) gives each token a modifier with its own timestamp (rule
+613.7b), so the tokens aren't the same in everything until the effect ends; they fold at
+cleanup. So do damaged tokens (`isRestingToken`).
+
+**Checked live** in dev-rooms `TREES` (2p: three Warriors joining a stack of ten end up one ×3
+tile with two +1/+1 counters beside the untouched ×10) and `TREE4` (4p: Secure the Wastes for
+ten under Tribute ends as one ×10 tile with its counters), in `client/e2e/token-stack-counters.spec.ts`.

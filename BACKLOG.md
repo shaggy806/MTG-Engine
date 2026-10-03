@@ -310,9 +310,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
   trigger by the stack's `stackCount` (Mesmeric Orb, 2026-10-03); `permanent-tapped` doesn't,
   so a tap-all over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
-- **Putting a counter on each token in a stack splits the whole stack apart**, even though the
-  tokens are still effectively identical afterwards (the user, 2026-10-03). They should stay one
-  stack. Splitting goes through `splitOneFromStack` (`docs/plans/token-stack-choices.md`).
+- **Creatures leave combat as the end of combat step begins, not as it ends** (rule 511.3: "As
+  soon as the end of combat step ends, all creatures … are removed from combat"). `enterStep`
+  runs `endCombatStep` as that step's turn-based action, so in its priority window nothing is
+  attacking or blocking any more: an "at end of combat" trigger (511.2) that asks whether its
+  creature is attacking finds it isn't. Found 2026-10-03 while measuring when a stack's woken
+  attackers fold back (`token-stacking.test.ts`).
 - **Library-ordering and cost leftovers** (2026-10-03, `library-ordering.test.ts`,
   `graveyard-exile-cost.test.ts`): Kozilek, the Great Distortion needs an ability's X
   announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value
@@ -479,6 +482,16 @@ Follow-on ideas, approved by the user on 2026-09-30:
   are folded by the engine into the first two's stack (`stackCount`), so the object their
   `permanent-entered-battlefield` names is gone from the view and nothing plays. The stack's tile
   could glow and say "+2", as a tile the board folded them into already does (`runEnters`).
+  Likewise counters put on tokens peeled off a stack and folded back before the frame is drawn
+  (`refoldSplitTokens`, Tribute to the World Tree): only the `counter-added` naming the
+  surviving stack floats its "+1/+1 ×2"; the rest name objects gone from the view.
+- **The board folds identical tokens only when they carry no counters** (`board.ts`'s
+  `stackable` needs empty `counters`, though `tileKey` already compares them). Tokens that were
+  never one engine stack — three Warriors made below the stacking threshold, then grown alike by
+  Cathars' Crusade — stay a tile each. Dropping the condition needs every decision that picks
+  from a folded tile to take a fresh member per click first: proliferate's toggle acts on
+  `ids[0]` (`pickIdForClick` has no proliferate case), so a folded tile of three could only ever
+  give one of them a counter. Found 2026-10-03 (`docs/plans/token-stack-choices.md`).
 - **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.

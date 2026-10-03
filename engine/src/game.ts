@@ -322,6 +322,7 @@ import {
   targetSpecReadsX,
 } from "./targeting.js";
 import type { TargetSource } from "./targeting.js";
+import { exactTokenShape, referencedObjectIds } from "./token-fold.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
 import { COMMANDER_DAMAGE_LETHAL, artManifest, viewFor } from "./view.js";
@@ -2913,6 +2914,11 @@ export class Game {
       invalidateComputedCache();
       return newId;
     }
+    // Marked as split off, both it and a stack drained to its last token, so
+    // they fold back together once nothing tells them apart any more
+    // (`refoldSplitTokens`, `recompactTokens`).
+    this.state.objects[newId].splitFromStack = true;
+    if (remaining <= 1) stack.splitFromStack = true;
     this.state.zones.shared.battlefield.push(newId);
     // A new permanent on the battlefield: anything memoized about the board
     // (a count, a static's reach) is stale.
@@ -3058,23 +3064,7 @@ export class Game {
     const groups = new Map<string, ObjectId[]>();
     for (const id of this.state.zones.shared.battlefield) {
       const o = this.state.objects[id];
-      if (
-        !o.isToken ||
-        pinned.has(id) ||
-        !this.isRestingToken(o) ||
-        // Stolen tokens keep their own layer-2 history; never fold them.
-        o.controlEffects !== undefined ||
-        !this.isStackableTokenName(printedCardName(o)) ||
-        // A vanilla token that's been *granted* an activated ability
-        // (Cryptolith Rite) has to be tapped one at a time — until there are
-        // more of them than MAX_MATERIALIZED, where resource safety wins and
-        // they fold back like any other (a Scute Swarm under Cryptolith Rite
-        // otherwise grew the board past 290 objects and crawled).
-        (this.effectiveActivated(id).length > 0 &&
-          this.separateTokenCount(o) <= Game.MAX_WOKEN_TOKENS)
-      ) {
-        continue;
-      }
+      if (!this.isFoldableToken(id, pinned)) continue;
       // The same key `findMergeableStack` compares a new batch on.
       const shape = this.tokenFoldKey(o);
       const group = groups.get(shape);
@@ -3084,22 +3074,141 @@ export class Game {
     const merged: ObjectId[] = [];
     for (const group of groups.values()) {
       if (group.length < 2) continue;
+      // A token split off a stack goes back into one, however few there are:
+      // the threshold is for whether a fresh batch starts a stack, and these
+      // were one already.
       const worthIt =
         group.length >= Game.STACK_ORIGIN_THRESHOLD ||
-        group.some((id) => (this.state.objects[id].stackCount ?? 1) > 1);
+        group.some((id) => (this.state.objects[id].stackCount ?? 1) > 1) ||
+        group.some((id) => this.state.objects[id].splitFromStack === true);
       if (!worthIt) continue;
-      const into = this.state.objects[group[0]];
-      for (const id of group.slice(1)) {
-        into.stackCount = (into.stackCount ?? 1) + (this.state.objects[id].stackCount ?? 1);
-        merged.push(id);
-      }
+      merged.push(...this.foldTokensInto(group[0], group.slice(1)));
     }
+    this.dropFoldedTokens(merged);
+  }
+
+  /**
+   * Whether a battlefield token may be folded into a stack at all, by either
+   * fold (`recompactTokens` at cleanup, `refoldSplitTokens` during the turn):
+   * a token that's eligible to stack (`isStackableTokenName`), at rest (out of
+   * combat, nothing attached to it, no damage), its own controller's, and not
+   * singled out by anything that names it (`pinnedTokenIds`).
+   */
+  private isFoldableToken(id: ObjectId, pinned: ReadonlySet<ObjectId>): boolean {
+    const o = this.state.objects[id];
+    return !(
+      !o.isToken ||
+      pinned.has(id) ||
+      !this.isRestingToken(o) ||
+      // Stolen tokens keep their own layer-2 history; never fold them.
+      o.controlEffects !== undefined ||
+      !this.isStackableTokenName(printedCardName(o)) ||
+      // A vanilla token that's been *granted* an activated ability
+      // (Cryptolith Rite) has to be tapped one at a time — until there are
+      // more of them than MAX_MATERIALIZED, where resource safety wins and
+      // they fold back like any other (a Scute Swarm under Cryptolith Rite
+      // otherwise grew the board past 290 objects and crawled).
+      (this.effectiveActivated(id).length > 0 &&
+        this.separateTokenCount(o) <= Game.MAX_WOKEN_TOKENS)
+    );
+  }
+
+  /** Fold `others` into the token `into`, adding up their counts. Returns the
+   * ids folded away, for `dropFoldedTokens`. */
+  private foldTokensInto(into: ObjectId, others: readonly ObjectId[]): ObjectId[] {
+    const survivor = this.state.objects[into];
+    for (const id of others) {
+      survivor.stackCount = (survivor.stackCount ?? 1) + (this.state.objects[id].stackCount ?? 1);
+    }
+    // A stack again, so no longer a token split off one.
+    if ((survivor.stackCount ?? 1) > 1) delete survivor.splitFromStack;
+    return [...others];
+  }
+
+  /** Remove tokens folded into another from the battlefield and the game. */
+  private dropFoldedTokens(merged: readonly ObjectId[]): void {
     if (merged.length === 0) return;
     const gone = new Set(merged);
     this.state.zones.shared.battlefield = this.state.zones.shared.battlefield.filter(
       (id) => !gone.has(id),
     );
     for (const id of merged) delete this.state.objects[id];
+    // Fewer objects on the battlefield: a memoized scan of it is stale.
+    invalidateComputedCache();
+  }
+
+  /**
+   * Fold tokens split off a stack back together as soon as nothing tells them
+   * apart, rather than at the end of the turn — run each time a player is
+   * about to get priority with nothing waiting (`prepareForPriority`).
+   *
+   * A trigger that fires once per token of a stack and does something to "it"
+   * (Tribute to the World Tree's two +1/+1 counters) splits each token off in
+   * turn, and once the last has resolved every token is the same again. Two
+   * Battlegrowths on two tokens of one stack leave those two the same. Without
+   * this they stayed one object per token until cleanup — and for good when
+   * there were fewer than `STACK_ORIGIN_THRESHOLD` of them, since nothing
+   * folded small groups back.
+   *
+   * Two tokens fold here only when they're the same in **everything**
+   * (`exactTokenShape`), not just what `tokenFoldKey` compares: mid-turn,
+   * what happened to a token this turn still matters (it attacked, it was
+   * dealt damage by something, an ability of it was used). Only a group
+   * holding a token split off a stack folds; anything else waits for
+   * `recompactTokens`. It runs only with an empty stack and no trigger or
+   * decision waiting, so the triggers that split a stack token by token have
+   * all resolved first: each must reach a token still without its counters.
+   *
+   * A token the rest of the game names by id (`referencedObjectIds` — the
+   * turn's history of what entered, say) is never folded away; the others
+   * fold into it. Pure engine resource safety and tidiness, not a rule — the
+   * tokens are interchangeable, and no game result changes.
+   */
+  private refoldSplitTokens(): void {
+    if (
+      this.state.awaiting !== null ||
+      this.state.zones.shared.stack.length > 0 ||
+      this.state.pendingTriggers.length > 0 ||
+      this.state.suspendedResolutions.length > 0
+    ) {
+      return;
+    }
+    const battlefield = this.state.zones.shared.battlefield;
+    // Cheap first: is there a lone token split off a stack, out of combat and
+    // undamaged, at all? Almost always not.
+    const kinds = new Set<string>();
+    for (const id of battlefield) {
+      const o = this.state.objects[id];
+      if (o.splitFromStack === true && (o.stackCount ?? 1) <= 1 && this.isRestingToken(o)) {
+        kinds.add(`${o.controller}\u0001${o.cardName}`);
+      }
+    }
+    if (kinds.size === 0) return;
+    const pinned = this.pinnedTokenIds();
+    const groups = new Map<string, ObjectId[]>();
+    for (const id of battlefield) {
+      const o = this.state.objects[id];
+      if (!o.isToken || !kinds.has(`${o.controller}\u0001${o.cardName}`)) continue;
+      if (!this.isFoldableToken(id, pinned)) continue;
+      const shape = exactTokenShape(o);
+      const group = groups.get(shape);
+      if (group === undefined) groups.set(shape, [id]);
+      else group.push(id);
+    }
+    let referenced: Set<ObjectId> | undefined;
+    const merged: ObjectId[] = [];
+    for (const group of groups.values()) {
+      if (group.length < 2 || !group.some((id) => this.state.objects[id].splitFromStack === true)) continue;
+      referenced ??= referencedObjectIds(this.state);
+      const named = group.filter((id) => referenced?.has(id) === true);
+      // Into the first one something names (the stack that entered, which the
+      // turn's history counts), or else the first on the battlefield; the
+      // rest of the named ones stay as they are.
+      const into = named[0] ?? group[0];
+      const others = group.filter((id) => id !== into && referenced?.has(id) !== true);
+      if (others.length > 0) merged.push(...this.foldTokensInto(into, others));
+    }
+    this.dropFoldedTokens(merged);
   }
 
   /** If `ref` names a compacted stack, split one member off and return a ref
@@ -4767,6 +4876,8 @@ export class Game {
     // Nothing is waiting on anyone, so whatever resolved last is no longer
     // the reason for anything — see `GameState.decisionSource`.
     this.state.decisionSource = null;
+    // Tokens split off a stack that are the same again go back into one.
+    this.refoldSplitTokens();
     this.grantPriority(player);
   }
 
@@ -14200,6 +14311,16 @@ export class Game {
             event.type === "permanent-untapped" && event.object !== id
               ? (this.state.objects[event.object]?.stackCount ?? 1)
               : 1;
+          // Counters put on a token stack were put on every token in it
+          // (Basri's Solidarity, proliferate, Black Sun's Zenith), each its
+          // own permanent: "whenever one or more counters are put on a
+          // creature" fires once per token — Simic Ascendancy grows by ten
+          // for a stack of ten, Hapatra makes ten Snakes. A batch entering
+          // with counters into a stack already there names how many it was.
+          const countered =
+            ability.trigger.on === "counters-put" && event.type === "counter-added" && event.object !== id
+              ? (event.count ?? this.state.objects[event.object]?.stackCount ?? 1)
+              : 1;
           // "Triggers only once each turn": this firing is the one, whatever
           // the stack size or batch count would otherwise multiply it to.
           if (ability.oncePerTurn === true) {
@@ -14217,6 +14338,7 @@ export class Game {
               : departed *
                 recipients *
                 untapped *
+                countered *
                 (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1)) *
             (1 + entryDoublers);
           // Damage dealt all at once is dealt to a permanent once, however
@@ -19552,6 +19674,8 @@ export class Game {
       goadedForGameBy,
     );
     const existing = this.findMergeableStack(repId, controller);
+    // The counters each new token enters with (Dragonstorm Globe's +1/+1).
+    const entering = Object.entries(this.state.objects[repId].counters).filter(([, n]) => n > 0);
     delete this.state.objects[repId]; // the representative never really "exists" on its own
     if (existing === null && total < Game.STACK_ORIGIN_THRESHOLD) return mintIndividually();
     let finalId: ObjectId;
@@ -19559,8 +19683,13 @@ export class Game {
       const stack = this.state.objects[existing];
       stack.stackCount = (stack.stackCount ?? 1) + total;
       finalId = existing;
+      // Entering with counters is having them put on it (rule 122.6), each
+      // of the `total` new tokens — not the ones already in the stack.
+      for (const [counter, amount] of entering) {
+        this.emit({ type: "counter-added", object: existing, counter, amount, by: controller, count: total });
+      }
     } else {
-      const id = this.mintFreshTokenObject(
+      finalId = this.mintFreshTokenObject(
         controller,
         cardName,
         copyOf,
@@ -19571,9 +19700,8 @@ export class Game {
         tapped,
         sacrificeAtEndStep,
         goadedForGameBy,
+        total,
       );
-      this.state.objects[id].stackCount = total;
-      finalId = id;
     }
     if (copied) this.emit({ type: "permanent-copied", object: finalId, copyOf: printedName });
     this.emit({ type: "permanent-entered-battlefield", object: finalId, count: total });
@@ -19597,6 +19725,10 @@ export class Game {
     /** It's goaded by this player for the rest of the game from the start —
      * part of making it, so it folds only into a stack goaded the same way. */
     goadedForGameBy?: PlayerId,
+    /** How many tokens it stands for: a fresh stack's `stackCount`, set
+     * before the counters it enters with are announced, so a "whenever
+     * counters are put on" watcher sees every token get them. */
+    count = 1,
   ): ObjectId {
     const id = this.mintObjectId();
     this.state.objects[id] = {
@@ -19651,6 +19783,7 @@ export class Game {
         (this.state.objects[id].counters[c.kind] ?? 0) + c.amount;
     }
     if (entering.riotHaste) this.gainRiotHaste(id);
+    if (count > 1) this.state.objects[id].stackCount = count;
     if (!skipBattlefield) {
       this.state.timestampSeq += 1;
       this.state.objects[id].timestamp = this.state.timestampSeq;

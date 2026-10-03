@@ -436,11 +436,17 @@ export type GameEvent =
       readonly type: "counter-added";
       readonly object: ObjectId;
       readonly counter: string;
+      /** How many were put on each token, for a token stack (`stackCount`):
+       * a "whenever counters are put on" watcher fires once per token. */
       readonly amount: number;
       /** Who put them (Hapatra's "whenever **you** put …"): the controller of
        * the effect, or the permanent's own controller for counters it
        * entered with. */
       readonly by?: PlayerId;
+      /** How many tokens of `object`'s stack got them, when it isn't all of
+       * them: a batch that entered with counters and folded into a stack
+       * already there. Absent, every token the object stands for did. */
+      readonly count?: number;
     })
   | (Base & {
       /** Counters removed (from a `removeCounter` ability cost — Walking

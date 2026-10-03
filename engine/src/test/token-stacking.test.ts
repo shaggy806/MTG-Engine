@@ -208,13 +208,20 @@ describe("token stacking — combat stays bounded", () => {
     expect(totalScutes(game)).toBe(5000); // nothing was lost, only left home
   });
 
-  it("recompacts the woken-up individuals in cleanup, so they don't accumulate", () => {
+  it("folds the woken-up individuals back together once combat is over, so they don't accumulate", () => {
     const { game } = bigStackAtTurn3(5000);
-    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "combat-damage");
     const duringCombat = game.battlefield.length;
 
-    // Past this turn's cleanup the 100 individuals have folded back together —
-    // into their own (tapped) stack, distinct from the untapped remainder.
+    // Out of combat the 100 individuals are the same in everything — tapped,
+    // each having attacked and dealt its damage — so they fold back together
+    // as soon as nothing is waiting (`refoldSplitTokens`): into their own
+    // (tapped) stack, distinct from the untapped remainder.
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "postcombat-main");
+    expect(game.battlefield.length).toBeLessThan(duringCombat - 90);
+    expect(totalScutes(game)).toBe(5000);
+
+    // And past this turn's cleanup they're still folded.
     game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
     expect(game.battlefield.length).toBeLessThan(duringCombat - 90);
     expect(totalScutes(game)).toBe(5000);
