@@ -2483,6 +2483,55 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  asked({
+    name: "sacrifices a 1/1 token to Deadly Dispute",
+    rule: "A 1/1 token for two cards and a Treasure is a card up and more.",
+    kind: "training",
+    position(registry) {
+      // The Skullclamp scenario's root from the other side (probed
+      // 2026-10-03): v2 casts Deadly Dispute on a Treasure, or a mobilize
+      // token due to die, but not on a Soldier token — the token's flat
+      // `creatures` 2.5 outweighs two cards and a Treasure.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Swamp", A, 3);
+      const token = onBoard(game, "Soldier Token", A);
+      game.state.objects[token].isToken = true;
+      const dispute = game.debugSpawn("Deadly Dispute", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === dispute,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "holds Swords to Plowshares for more than a wall",
+    rule: "Cheap removal isn't spent on a defender while three opponents have threats to come.",
+    kind: "training",
+    position(registry) {
+      // The deck autopsies' seed 116: Jeskai Striker spent Swords on a Wall
+      // of Reverence on its second turn and had no answer to Lathliss later.
+      // Killing the 1/6 defender scores 6.0 against a Grizzly Bears' 3.7,
+      // mostly its `toughness`; a flat reserve for removal in hand
+      // (`answers`) still fired at it and held Murder from the table's only
+      // creature (`docs/plans/deck-autopsies.md`).
+      const game = table(registry, [A, B, C, D], A);
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 3);
+      game.debugSpawn("Swords to Plowshares", A, "hand");
+      const wall = onBoard(game, "Wall of Reverence", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && firstTarget(action) === wall),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
 ];
 
 /** The gate: every vector that ships passes all of these. */
