@@ -20,24 +20,45 @@ const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 
 const KETRAMOSE = "Test New Dawn";
-const registry = createDefaultRegistry().register(
-  defineCard({
-    name: KETRAMOSE,
-    manaCost: "{0}",
-    types: ["enchantment"],
-    text: KETRAMOSE,
-    triggered: [
-      {
-        trigger: { on: "put-into-exile", who: "any", from: ["graveyard", "battlefield"] },
-        condition: { kind: "your-turn" },
-        targets: [],
-        effect: { kind: "gain-life", amount: { triggerValue: true } },
-        resolve: null,
-        text: KETRAMOSE,
-      },
-    ],
-  }),
-);
+/** "Whenever one or more cards are put into exile from libraries, gain that
+ * much life" — Laelia, the Blade Reforged's trigger, counted. */
+const LIBRARY_WATCH = "Test Library Watch";
+const registry = createDefaultRegistry()
+  .register(
+    defineCard({
+      name: KETRAMOSE,
+      manaCost: "{0}",
+      types: ["enchantment"],
+      text: KETRAMOSE,
+      triggered: [
+        {
+          trigger: { on: "put-into-exile", who: "any", from: ["graveyard", "battlefield"] },
+          condition: { kind: "your-turn" },
+          targets: [],
+          effect: { kind: "gain-life", amount: { triggerValue: true } },
+          resolve: null,
+          text: KETRAMOSE,
+        },
+      ],
+    }),
+  )
+  .register(
+    defineCard({
+      name: LIBRARY_WATCH,
+      manaCost: "{0}",
+      types: ["enchantment"],
+      text: LIBRARY_WATCH,
+      triggered: [
+        {
+          trigger: { on: "put-into-exile", who: "any", from: ["library"] },
+          targets: [],
+          effect: { kind: "gain-life", amount: { triggerValue: true } },
+          resolve: null,
+          text: LIBRARY_WATCH,
+        },
+      ],
+    }),
+  );
 
 const setUp = () => {
   const game = Game.create({
@@ -106,5 +127,48 @@ describe("one or more cards put into exile", () => {
     const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
     run(game, { kind: "exile", target: 0 }, [bears]);
     expect(fired(game, watcher)).toBe(0);
+  });
+});
+
+describe("exiled from the top of a library", () => {
+  const movesSince = (game: Game, since: number) =>
+    game.eventsOfType("cards-put-into-exile").filter((e) => e.seq >= since);
+
+  it("the top three cards are one move, each arrival naming its owner (Ulamog's attack)", () => {
+    const game = setUp();
+    const watcher = game.debugSpawn(LIBRARY_WATCH, A, "battlefield");
+    const top = game.state.zones.perPlayer[B].library.slice(0, 3);
+    const since = game.state.eventSeq;
+    run(game, { kind: "exile-from-library", whose: 0, amount: 3 }, [B]);
+    const moves = movesSince(game, since);
+    expect(moves).toHaveLength(1);
+    expect(moves[0].arrivals).toEqual(top.map((object) => ({ object, from: "library", owner: B })));
+    expect(fired(game, watcher)).toBe(1);
+    expect(game.state.players[A].life).toBe(23);
+  });
+
+  it("the top card of each player's library is one move too (Pako)", () => {
+    const game = setUp();
+    const watcher = game.debugSpawn(LIBRARY_WATCH, A, "battlefield");
+    const since = game.state.eventSeq;
+    run(game, { kind: "exile-from-library", whose: "each-player", amount: 1 });
+    const moves = movesSince(game, since);
+    expect(moves).toHaveLength(1);
+    expect(moves[0].arrivals.map((a) => a.owner).sort()).toEqual([A, B].sort());
+    expect(fired(game, watcher)).toBe(1);
+  });
+
+  it("a face-down exile from an opponent's library still names whose cards they are", () => {
+    const game = setUp();
+    const since = game.state.eventSeq;
+    run(
+      game,
+      { kind: "impulse-exile", amount: 2, whose: 0, duration: "while-exiled", faceDown: true },
+      [B],
+    );
+    const moves = movesSince(game, since);
+    expect(moves).toHaveLength(1);
+    expect(moves[0].arrivals).toHaveLength(2);
+    expect(moves[0].arrivals.every((a) => a.from === "library" && a.owner === B)).toBe(true);
   });
 });

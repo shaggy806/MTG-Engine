@@ -6358,9 +6358,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "exile-from-library": {
-      for (const target of scopedOrTargetedPlayers(spec.whose ?? "you", ctx)) {
-        ctx.exileFromLibrary(
-          target,
+      // One instruction, so one move: "exile the top three cards" — or the
+      // top card of each player's library (Pako) — puts them all into exile
+      // at once, a single event for "whenever one or more cards are put into
+      // exile" (rule 603.2c). Each count is read before anything moves.
+      const plan = scopedOrTargetedPlayers(spec.whose ?? "you", ctx).map((target) => ({
+        target,
+        count:
           spec.allBut !== undefined
             ? { allBut: spec.allBut }
             : {
@@ -6370,9 +6374,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
                   target.kind === "player" ? target.player : undefined,
                 ),
               },
-          spec.withCounters,
-        );
-      }
+      }));
+      ctx.simultaneously(() => {
+        for (const { target, count } of plan) ctx.exileFromLibrary(target, count, spec.withCounters);
+      });
       return;
     }
     case "delayed-trigger": {

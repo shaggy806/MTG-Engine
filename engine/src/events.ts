@@ -748,9 +748,17 @@ export type GameEvent =
   | (Base & {
       /** Cards were put into exile **at the same time** — the exile-side
        * twin of `cards-put-into-graveyard`: one per simultaneous move, each
-       * card with the zone it came from. Tokens aren't cards. */
+       * card with the zone it came from and its `owner`. Exile is one shared
+       * zone, so it's the owner that says whose library (or graveyard) a
+       * card left — public even for a card exiled face down (rule 406.3
+       * hides only its face), and still known once the card has gone back
+       * (cascade's misses, rule 702.85a). Tokens aren't cards. */
       readonly type: "cards-put-into-exile";
-      readonly arrivals: readonly { readonly object: ObjectId; readonly from: ZoneType }[];
+      readonly arrivals: readonly {
+        readonly object: ObjectId;
+        readonly from: ZoneType;
+        readonly owner: PlayerId;
+      }[];
     })
   | (Base & {
       /** Prohibitions for the rest of the turn (the `prohibit` effect):

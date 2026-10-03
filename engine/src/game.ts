@@ -865,7 +865,7 @@ export class Game {
   private graveyardEnterBatch: { object: ObjectId; from: ZoneType }[] | null = null;
   /** The same for cards put into exile, collected alongside — see
    * `withGraveyardEnterBatch`. */
-  private exileEnterBatch: { object: ObjectId; from: ZoneType }[] | null = null;
+  private exileEnterBatch: { object: ObjectId; from: ZoneType; owner: PlayerId }[] | null = null;
   /** While a `cards-left-graveyard` event is being announced, each of its
    * cards as it was in the graveyard — what a `leaves-graveyard` trigger's
    * filter is matched against (rule 603.10a). `null` the rest of the time. */
@@ -26451,7 +26451,7 @@ export class Game {
       return;
     }
     const batch: { object: ObjectId; from: ZoneType }[] = [];
-    const exiled: { object: ObjectId; from: ZoneType }[] = [];
+    const exiled: { object: ObjectId; from: ZoneType; owner: PlayerId }[] = [];
     this.graveyardEnterBatch = batch;
     this.exileEnterBatch = exiled;
     try {
@@ -26465,12 +26465,14 @@ export class Game {
   }
 
   /** Card `id` was put into exile from `from` — `noteGraveyardArrival`'s
-   * twin, announced with the rest of the move under way, or on its own. */
+   * twin, announced with the rest of the move under way, or on its own.
+   * Exile is one shared zone, so each arrival names whose card it is. */
   private noteExileArrival(id: ObjectId, from: ZoneType): void {
+    const arrival = { object: id, from, owner: this.state.objects[id].owner };
     if (this.exileEnterBatch !== null) {
-      this.exileEnterBatch.push({ object: id, from });
+      this.exileEnterBatch.push(arrival);
     } else {
-      this.emit({ type: "cards-put-into-exile", arrivals: [{ object: id, from }] });
+      this.emit({ type: "cards-put-into-exile", arrivals: [arrival] });
     }
   }
 
