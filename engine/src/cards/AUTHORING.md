@@ -3072,7 +3072,10 @@ Grep the pool for `resolve:` — there are very few.
   faces. Only ever cast/played as the front; a `transform` effect / day-night
   cycle flips it in place. `nightfall-cultist.ts`.
 - **Adventure** — `adventure: true` on both faces + `faces: [creatureName,
-  adventureName]`. `emberclaw-scout.ts`.
+  adventureName]`. `emberclaw-scout.ts`. Each face's `colors` are its own
+  mana cost's — Frolicking Familiar is blue, Blow Off Steam red — though
+  Scryfall gives the card only the creature's (`card:verify` and the scaffold
+  read the spell half's off its cost). An Omen face (`omen`) likewise.
 - **Split card** (rule 709) — three files, each with `split: true` and
   `faces: ["Left // Right", "Left", "Right"]`. The whole card ("Left //
   Right") is what it is in every zone but the stack: both halves' text, the

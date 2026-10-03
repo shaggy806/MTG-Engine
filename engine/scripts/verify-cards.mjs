@@ -468,7 +468,15 @@ function compare(def, card) {
     issues.push(`manaCost: ours="${ourCost}" scryfall="${theirCost}"`);
   }
 
-  const theirColors = face.colors ?? card.colors ?? [];
+  // An adventure-layout card's second face (an Adventure, or an Omen) carries
+  // no colours of its own on Scryfall, and the card's are its first face's:
+  // the spell half's colour is its own mana cost's (rules 105.2, 720.3b) —
+  // Whirlwing Stormbrood is blue, its Omen Dynamic Soar green.
+  const spellHalf =
+    card.layout === "adventure" && face !== card && face !== card.card_faces?.[0] && face.colors === undefined;
+  const theirColors = spellHalf
+    ? [...new Set((face.mana_cost ?? "").match(/[WUBRG]/g) ?? [])]
+    : (face.colors ?? card.colors ?? []);
   // A colourless permanent's own `colors` is legitimately absent on a face
   // that inherits colour from the front (rare) — only flag a real mismatch.
   if (!sameSet(def.colors ?? [], theirColors)) {

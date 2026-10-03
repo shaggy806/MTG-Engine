@@ -366,7 +366,13 @@ function scaffoldCard(name, { autoOnly = false, ignoreScaffolded = false } = {})
     face,
     ...faceSource(face, {
       tokenFor,
-      colors: entry.colors,
+      // An Adventure's or an Omen's spell half has no colours of its own on
+      // Scryfall, whose card colours are the creature's: the half is the
+      // colour of its own mana cost (rules 105.2, 715.3, 720.3b).
+      colors:
+        entry.layout === "adventure" && i > 0 && face.colors === undefined
+          ? [...new Set((face.mana_cost ?? "").match(/[WUBRG]/g) ?? [])]
+          : entry.colors,
       art: multi && i > 0 ? backArt(entry.printing) : undefined,
       faces: multi ? faces.map((f) => f.name) : undefined,
       flag: multi ? (omen ? "omen" : LAYOUT_FLAG[entry.layout]) : undefined,
