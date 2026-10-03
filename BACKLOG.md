@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**338 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**339 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -52,11 +52,18 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
   any more. **Next:** two each for a triggered ability's divided damage, Omen and
   "the creature it sacrificed" (`docs/card-blockers.md`).
+- **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
+  Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
+  `SAMPLE_DECKS`): 71 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
+  the TDC decks for authoring.
+- **Deck win rates under identical bots (the user's next test).** Seat the same bot on every
+  `SAMPLE_DECKS` deck, measure each deck's win rate, and flag `bench` on the decks that hold
+  their own, so no deck that loses every game skews a bot benchmark.
 - **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,067 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,125 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the

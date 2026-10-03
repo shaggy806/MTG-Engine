@@ -50,6 +50,23 @@ each opponent's graveyard, emblems with triggers). Hit the Mother Lode showed di
 expressible from `reveal-until` and `cast-now`; Return to Dust's main-phase rider from a
 `conditional` on the step.
 
+### The features pass (2026-10-02)
+
+Five engine features in parallel, each with the cards it unblocked (33): rules over a search's
+finds as a set (Myriad Landscape's shared land type, Krosan Verge's one-each) and `ofChosenType`
+in a look-and-choose (Herald's Horn); amounts and conditions (commander casts, converge, the
+greatest per player, a sum of power, "controls the greatest", a block filter reading its source,
+ravenous: Study Hall, Painful Truths, Windfall, Reign of the Pit, Thickest in the Thicket, Champion
+of Lambholt, Jacked Rabbit, Cartographer's Hawk, Heirloom Blade); costs and X targets (a life
+cost from commander colours, multikicker, escalate, a graveyard cast that sacrifices a land,
+spells whose target count or filter reads X: War Room, Everflowing Chalice, Collective
+Resistance, Exploration Broodship, Curse of the Swine, Pest Infestation, Stolen by the Fae);
+effects (shuffle into a library, remove a counter, a static that sets creature types, an
+attacking-that-player target: Chaos Warp, Unbreathing Horde, Braids, Goddric, Echoing Assault);
+and hideaway (rule 702.75: Mosswort Bridge, Spinerock Knoll, Windbrisk Heights and six more).
+What still blocks the PC slices is in their records: SCD's leftovers are mostly hard (curses, a
+planeswalker that becomes a creature, a target per opponent's graveyard, emblems with triggers).
+
 ## Top-5000 batches (sweep 3)
 
 - **Batch 4 (2026-09-28)** took the cards the debt fixes unblocked: 15 authored (regeneration,

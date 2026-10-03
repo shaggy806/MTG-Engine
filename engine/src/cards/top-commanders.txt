@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-338 already implemented / 162 missing
+339 already implemented / 161 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -333,7 +333,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  327  Kess, Dissident Mage                            8649 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  328  Xenagos, God of Revels                          8608 decks  {3}{R}{G}        Legendary Enchantment Creature — God
 [x]  329  Cloud, Midgar Mercenary                         8526 decks  {W}{W}           Legendary Creature — Human Soldier Mercenary
-[ ]  330  Braids, Arisen Nightmare                        8469 decks  {1}{B}{B}        Legendary Creature — Nightmare
+[x]  330  Braids, Arisen Nightmare                        8469 decks  {1}{B}{B}        Legendary Creature — Nightmare
 [ ]  331  Haldan, Avid Arcanist                           8466 decks  {2}{U}           Legendary Creature — Human Wizard
 [x]  332  Pako, Arcane Retriever                          8466 decks  {3}{R}{G}        Legendary Creature — Elemental Dog
 [x]  333  Clement, the Worrywort                          8335 decks  {1}{G}{U}        Legendary Creature — Frog Druid

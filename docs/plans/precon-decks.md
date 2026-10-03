@@ -55,6 +55,21 @@ that can't be authored faithfully keeps its stand-in, and its slot is left for t
 that unblocks it — never silently approximated. `card:verify` covers the
 structural half; the behavioural half is on review.
 
+## The other nine (2026-10-02)
+
+`SAMPLE_DECKS` also holds nine more precons, as starter decks for players and bot seats, not
+for the bot benchmarks (only decks flagged `bench`, the five above, are in `BENCH_DECKS`, which
+the bot tooling seats). They were picked by ranking MTGJSON's 199 Commander decks (175 once
+reprints are folded) by how many cards the pool already had: the five 2022 Starter Commander
+Decks (Draconic Destruction 3 stand-ins, Token Triumph 1, First Flight 4, Grave Danger 6, Chaos
+Incarnate 14 — their old stand-ins, from when they were the defaults) and the four nearest
+complete after them (Tramplesaurus Rex 9, Family Matters 11, Reign of Dragons 11, World Shaper
+12). The new decks' stand-ins were chosen by role, card type and mana value from cards a precon
+would run, not the format's top staples (a Demonic Tutor or Rhystic Study would make a deck
+stronger than it is), so a deck's win rate under identical bots says something about the
+printed deck. The substitution tables are in `sample-decks.ts` itself; what blocks each
+original is in `engine/data/sweep-3/PC-*.json`.
+
 ## Substitutions
 
 **How it's recorded.** Each deck in `sample-decks.ts` keeps its `printed` list exactly as printed,
