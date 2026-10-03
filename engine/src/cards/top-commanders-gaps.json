@@ -167,7 +167,8 @@
   "condition:cast-spell-targets",
   "replacement:spell-exiled-as-it-resolves",
   "static:legend-rule-exemptions",
-  "effect:lose-game"
+  "effect:lose-game",
+  "effect:add-mana-extensions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

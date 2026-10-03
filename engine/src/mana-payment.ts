@@ -14,7 +14,7 @@
  */
 
 import type { ActivatedAbility } from "./abilities.js";
-import type { EffectSpec } from "./effects.js";
+import type { BoardManaList, EffectSpec } from "./effects.js";
 import { COLORS, poolCounts, poolTotal } from "./mana.js";
 import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit, SpendAs } from "./mana.js";
 import type { ObjectId } from "./primitives.js";
@@ -81,10 +81,20 @@ export interface ManaOption {
   /** What else the mana ability does — `add-mana`'s `also` — applied when
    * the payment uses it. */
   readonly rider?: EffectSpec;
-  /** Who made the extra mana triggered mana abilities add as this source is
-   * tapped (rule 605.1b), one id per extra unit — those units are theirs,
-   * not this source's (see `ManaOrigin`). */
-  readonly extraFrom?: readonly ObjectId[];
+  /** The extra mana triggered mana abilities add as this source is tapped
+   * (rule 605.1b), one entry per unit — those units are theirs, not this
+   * source's (see `ManaOrigin`), and carry none of its `tag` (Mirari's Wake's
+   * and Kinnan's rulings: the source's restrictions and riders don't apply
+   * to them). A unit with a `type` is one of the last entries of `fixed`, in
+   * order; one without is one of the `anyColor` units. */
+  readonly extras?: readonly ManaExtraUnit[];
+}
+
+/** One unit of a {@link ManaOption.extras}: whose it is, and its type when
+ * that's fixed. */
+export interface ManaExtraUnit {
+  readonly from: ObjectId;
+  readonly type?: ManaType;
 }
 
 /** Whether one of `o`'s flexible units can be `m`. */
@@ -149,8 +159,9 @@ export interface ManaPlanStep {
   readonly oncePerTurn?: number;
   /** See {@link ManaOption.rider}. */
   readonly rider?: EffectSpec;
-  /** See {@link ManaOption.extraFrom}: the last `extraFrom.length` units of
-   * `mana` are theirs. */
+  /** Whose the extra units are (see {@link ManaOption.extras}): the last
+   * `extraFrom.length` units of `mana` are theirs, one id per unit, and
+   * carry no `tag`. */
   readonly extraFrom?: readonly ObjectId[];
 }
 
@@ -283,9 +294,9 @@ export function costAsSpendable(cost: ManaCost, spendAs: SpendAs | undefined): M
  */
 export function standaloneManaChoices(
   ability: ActivatedAbility,
-  /** The concrete colours a `oneOf`/`producedBy` names right now — resolved
-   * by the caller, which has the board; see `Game.manaOneOf`. */
-  oneOf: (mana: { oneOf?: readonly ManaType[]; producedBy?: string }) => readonly ManaType[],
+  /** The concrete colours a `oneOf` or a list read off the board names right
+   * now — resolved by the caller, which has the board; see `Game.manaOneOf`. */
+  oneOf: (mana: { readonly oneOf: readonly ManaType[] } | BoardManaList) => readonly ManaType[],
   /** How much a *live* amount (Vivi Ornitier's power) comes to right now —
    * `null` when the caller can't size it, which offers the ability once
    * with the engine's default colour, as before live amounts existed. */
@@ -295,8 +306,9 @@ export function standaloneManaChoices(
   if (effect === null || effect.kind !== "add-mana") return null;
   const mana = effect.mana;
   if (mana !== "any-color" && typeof mana !== "object") return null;
-  // "Add {W}{U}" has one outcome, so it's offered once.
-  if (typeof mana === "object" && "all" in mana) return null;
+  // "Add {W}{U}" has one outcome, so it's offered once — and so has "for
+  // each color among permanents you control, add one mana of that color".
+  if (typeof mana === "object" && ("all" in mana || "eachColorAmong" in mana)) return null;
   if (typeof effect.amount !== "number") {
     const amount = liveAmount?.() ?? null;
     if (amount === null || amount < 1) return null;
@@ -305,7 +317,7 @@ export function standaloneManaChoices(
     const colors = oneOf(mana);
     if (colors.length === 0) return null;
     // "X {G} or X {W}": all of one of them.
-    if ("oneOf" in mana && mana.same === true) return colors.map((c) => Array<ManaType>(amount).fill(c));
+    if ("same" in mana && mana.same === true) return colors.map((c) => Array<ManaType>(amount).fill(c));
     // A live amount can be large, and every split of it is a separate menu
     // entry of `amount` units. Which split to float is the player's choice
     // (a 20-power Vivi floating ten of each), so every one is offered while
@@ -321,11 +333,39 @@ export function standaloneManaChoices(
   if (mana === "any-color") {
     return COLORS.map((c) => Array<ManaType>(effect.amount as number).fill(c));
   }
-  if ("oneOf" in mana && mana.same === true) {
+  if ("same" in mana && mana.same === true) {
     return oneOf(mana).map((c) => Array<ManaType>(effect.amount as number).fill(c));
   }
   return manaCombinations(oneOf(mana), effect.amount);
 }
+
+/**
+ * `option` as a mana replacement makes it — "if you tap a permanent for mana,
+ * it produces twice as much of that mana instead" (Mana Reflection), `times`
+ * being every such multiplier together. Each unit becomes `times` units of
+ * its own type (rule 106.6a: whatever the mana carries, all of it does), so
+ * an "any colour" unit becomes `times` of **one** colour: an option per
+ * colour, or per split of several such units. Enumerating those splits is
+ * kept small — past {@link MAX_MULTIPLIED_SPLITS} the option is left out of
+ * the auto-payer, and the ability is activated by hand. Called before any
+ * triggered mana ability's extras are added: they aren't multiplied (the
+ * ruling).
+ */
+export function multipliedManaOption(option: ManaOption, times: number): ManaOption[] {
+  const scale = (types: readonly ManaType[]): ManaType[] => types.flatMap((t) => Array<ManaType>(times).fill(t));
+  if (option.anyColor === 0) return [{ ...option, fixed: scale(option.fixed) }];
+  const colors = option.anyColorOf ?? COLORS;
+  if (splitCount(colors.length, option.anyColor) > MAX_MULTIPLIED_SPLITS) return [];
+  const { anyColorOf: _flexible, ...rest } = option;
+  return manaCombinations(colors, option.anyColor).map((split) => ({
+    ...rest,
+    fixed: scale([...option.fixed, ...split]),
+    anyColor: 0,
+  }));
+}
+
+/** See {@link multipliedManaOption}. */
+const MAX_MULTIPLIED_SPLITS = 70;
 
 /** The most mana units, summed over every "any combination of" split of a
  * live amount, offered as separate standalone activations — see
@@ -612,8 +652,15 @@ function planManaPaymentOrdered(
   interface Tapped {
     readonly src: ManaSource;
     readonly produced: ManaType[];
+    /** Parallel to `produced`: whose each unit is, when it's an extra unit a
+     * triggered mana ability added (`ManaOption.extras`). */
+    readonly producedExtra: (ObjectId | undefined)[];
     readonly freeFixed: ManaType[];
+    /** Parallel to `freeFixed`, as `producedExtra` is. */
+    readonly freeFixedExtra: (ObjectId | undefined)[];
     freeAny: number;
+    /** Whose the extra units among `freeAny` are — taken last. */
+    readonly freeAnyExtra: ObjectId[];
     readonly pain: number;
     readonly lifeCost: number;
     readonly genericCost: number;
@@ -625,7 +672,6 @@ function planManaPaymentOrdered(
     readonly untapped?: true;
     readonly oncePerTurn?: number;
     readonly rider?: EffectSpec;
-    readonly extraFrom?: readonly ObjectId[];
   }
   // Colours this cost still wants, for `coverGenericFrom`'s preference.
   const wantedColors = new Set<ManaType>(
@@ -669,11 +715,17 @@ function planManaPaymentOrdered(
   };
   const open = (src: ManaSource, want: ManaType | null): Tapped => {
     const opt = chooseOption(src, want);
+    // The extras' fixed units are the last of `fixed`, in order.
+    const extraFixed = (opt.extras ?? []).filter((e) => e.type !== undefined);
+    const ownFixed = opt.fixed.length - extraFixed.length;
     const t: Tapped = {
       src,
       produced: [],
+      producedExtra: [],
       freeFixed: [...opt.fixed],
+      freeFixedExtra: opt.fixed.map((_, i) => (i < ownFixed ? undefined : extraFixed[i - ownFixed].from)),
       freeAny: opt.anyColor,
+      freeAnyExtra: (opt.extras ?? []).filter((e) => e.type === undefined).map((e) => e.from),
       pain: opt.pain,
       lifeCost: opt.lifeCost,
       genericCost: opt.genericCost,
@@ -683,7 +735,6 @@ function planManaPaymentOrdered(
       ...(opt.untapped !== undefined ? { untapped: opt.untapped } : {}),
       ...(opt.oncePerTurn !== undefined ? { oncePerTurn: opt.oncePerTurn } : {}),
       ...(opt.rider !== undefined ? { rider: opt.rider } : {}),
-      ...(opt.extraFrom !== undefined ? { extraFrom: opt.extraFrom } : {}),
     };
     tapped.push(t);
     return t;
@@ -711,17 +762,29 @@ function planManaPaymentOrdered(
     }
     return t;
   };
+  /** Take one of `t`'s flexible units as `m` — its own before an extra one. */
+  const takeAny = (t: Tapped, m: ManaType): void => {
+    t.freeAny -= 1;
+    t.produced.push(m);
+    t.producedExtra.push(t.freeAny < t.freeAnyExtra.length ? t.freeAnyExtra.shift() : undefined);
+  };
+  /** Take `t`'s fixed unit at `i`. */
+  const takeFixed = (t: Tapped, i: number): ManaType => {
+    const [m] = t.freeFixed.splice(i, 1);
+    const [extra] = t.freeFixedExtra.splice(i, 1);
+    t.produced.push(m);
+    t.producedExtra.push(extra);
+    return m;
+  };
   const takeSpecific = (t: Tapped, m: ManaType): boolean => {
     const i = t.freeFixed.indexOf(m);
     if (i >= 0) {
-      t.freeFixed.splice(i, 1);
-      t.produced.push(m);
+      takeFixed(t, i);
       return true;
     }
     const makes = t.anyColorOf === undefined ? m !== "C" : t.anyColorOf.includes(m);
     if (makes && t.freeAny > 0) {
-      t.freeAny -= 1;
-      t.produced.push(m);
+      takeAny(t, m);
       return true;
     }
     return false;
@@ -730,15 +793,10 @@ function planManaPaymentOrdered(
    * to be — a converter has to spend exactly that back, not "one generic",
    * or it can eat a colour the cost still needs. */
   const takeGeneric = (t: Tapped): ManaType | null => {
-    if (t.freeFixed.length > 0) {
-      const m = t.freeFixed.shift() as ManaType;
-      t.produced.push(m);
-      return m;
-    }
+    if (t.freeFixed.length > 0) return takeFixed(t, 0);
     if (t.freeAny > 0) {
-      t.freeAny -= 1;
       const m = defaultUnitOf(t, view.preferred);
-      t.produced.push(m);
+      takeAny(t, m);
       return m;
     }
     return null;
@@ -806,23 +864,34 @@ function planManaPaymentOrdered(
   // is an ordinary source, so putting them after the rest is enough to
   // guarantee the mana is there when `useManaSource` runs.
   const steps = [...tapped].sort((a, b) => a.spends.length - b.spends.length);
-  return steps.map((t) => ({
-    source: t.src.id,
-    sacrifice: t.src.sacrificeSelf,
-    pain: t.pain,
-    lifeCost: t.lifeCost,
-    spends: [...t.spends],
-    mana: [
-      ...t.produced,
-      ...t.freeFixed,
-      ...Array.from<ManaType>({ length: t.freeAny }).fill(defaultUnitOf(t, view.preferred)),
-    ],
-    ...(t.tag !== undefined ? { tag: t.tag } : {}),
-    ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),
-    ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
-    ...(t.rider !== undefined ? { rider: t.rider } : {}),
-    ...(t.extraFrom !== undefined ? { extraFrom: t.extraFrom } : {}),
-  }));
+  return steps.map((t) => {
+    // Everything it makes, used or left floating — its own units first, then
+    // the extra ones, which are `extraFrom`'s.
+    const leftAny = defaultUnitOf(t, view.preferred);
+    const ownAny = t.freeAny - t.freeAnyExtra.length;
+    const units: readonly { readonly m: ManaType; readonly extra: ObjectId | undefined }[] = [
+      ...t.produced.map((m, i) => ({ m, extra: t.producedExtra[i] })),
+      ...t.freeFixed.map((m, i) => ({ m, extra: t.freeFixedExtra[i] })),
+      ...Array.from({ length: t.freeAny }, (_, i) => ({
+        m: leftAny,
+        extra: i < ownAny ? undefined : t.freeAnyExtra[i - ownAny],
+      })),
+    ];
+    const extra = units.filter((u) => u.extra !== undefined);
+    return {
+      source: t.src.id,
+      sacrifice: t.src.sacrificeSelf,
+      pain: t.pain,
+      lifeCost: t.lifeCost,
+      spends: [...t.spends],
+      mana: [...units.filter((u) => u.extra === undefined).map((u) => u.m), ...extra.map((u) => u.m)],
+      ...(t.tag !== undefined ? { tag: t.tag } : {}),
+      ...(t.untapped !== undefined ? { untapped: t.untapped } : {}),
+      ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
+      ...(t.rider !== undefined ? { rider: t.rider } : {}),
+      ...(extra.length > 0 ? { extraFrom: extra.map((u) => u.extra as ObjectId) } : {}),
+    };
+  });
 }
 
 /**

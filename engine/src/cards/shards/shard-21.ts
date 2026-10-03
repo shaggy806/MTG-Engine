@@ -70,6 +70,7 @@ import _poolGutShot from "../pool/gut-shot.js";
 import _poolHappyHoganDauntlessDriver from "../pool/happy-hogan-dauntless-driver.js";
 import _poolHardWonJitte from "../pool/hard-won-jitte.js";
 import _poolHeadwaterSentries from "../pool/headwater-sentries.js";
+import _poolHeartbeatOfSpring from "../pool/heartbeat-of-spring.js";
 import _poolHellkitePunisher from "../pool/hellkite-punisher.js";
 import _poolHengegatePathway from "../pool/hengegate-pathway.js";
 import _poolHighPriestOfPenance from "../pool/high-priest-of-penance.js";
@@ -259,6 +260,7 @@ const shard: CardShard = {
     _poolHappyHoganDauntlessDriver,
     _poolHardWonJitte,
     _poolHeadwaterSentries,
+    _poolHeartbeatOfSpring,
     _poolHellkitePunisher,
     _poolHengegatePathway,
     _poolHighPriestOfPenance,

@@ -90,6 +90,7 @@ import _poolGrafMole from "../pool/graf-mole.js";
 import _poolGravePact from "../pool/grave-pact.js";
 import _poolGreaterForgeling from "../pool/greater-forgeling.js";
 import _poolGrixisCharm from "../pool/grixis-charm.js";
+import _poolGwennaEyesOfGaea from "../pool/gwenna-eyes-of-gaea.js";
 import _poolHagraSharpshooter from "../pool/hagra-sharpshooter.js";
 import _poolHardenedScaleArmor from "../pool/hardened-scale-armor.js";
 import _poolHarvesterOfSouls from "../pool/harvester-of-souls.js";
@@ -147,6 +148,7 @@ import _poolOverprotect from "../pool/overprotect.js";
 import _poolPanharmonicon from "../pool/panharmonicon.js";
 import _poolPantherWarriors from "../pool/panther-warriors.js";
 import _poolPiousWayfarer from "../pool/pious-wayfarer.js";
+import _poolPlazaOfHeroes from "../pool/plaza-of-heroes.js";
 import _poolPollutedDead from "../pool/polluted-dead.js";
 import _poolPrakhataPillarBug from "../pool/prakhata-pillar-bug.js";
 import _poolPurpleCrystalCrab from "../pool/purple-crystal-crab.js";
@@ -311,6 +313,7 @@ const shard: CardShard = {
     _poolGravePact,
     _poolGreaterForgeling,
     _poolGrixisCharm,
+    _poolGwennaEyesOfGaea,
     _poolHagraSharpshooter,
     _poolHardenedScaleArmor,
     _poolHarvesterOfSouls,
@@ -368,6 +371,7 @@ const shard: CardShard = {
     _poolPanharmonicon,
     _poolPantherWarriors,
     _poolPiousWayfarer,
+    _poolPlazaOfHeroes,
     _poolPollutedDead,
     _poolPrakhataPillarBug,
     _poolPurpleCrystalCrab,

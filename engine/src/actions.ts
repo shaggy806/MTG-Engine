@@ -278,10 +278,13 @@ export type Action =
       readonly xValue?: number;
       /** The colour(s) chosen for a mana ability that produces "one mana of
        * any color" / "N mana in any combination of …" — one entry per mana
-       * produced. Only meaningful when activating such an ability on its own;
-       * a mana ability activated *to pay a cost* is planned by the engine and
-       * never carries this. Omitting it keeps the old fixed default (white, or
-       * the first listed colour). */
+       * produced — followed by one per triggered mana ability that adds mana
+       * with a choice in it as the permanent is tapped (Mirari's Wake's "any
+       * type that land produced" off a land that made two). Only meaningful
+       * when activating such an ability on its own; a mana ability
+       * activated *to pay a cost* is planned by the engine and never carries
+       * this. Omitting it keeps the old fixed default (white, or the first
+       * listed colour). */
       readonly manaColors?: readonly ManaType[];
       /** How the ability's divided amount is split among the targets of its
        * `divided` group (rules 602.2b, 601.2d — Skarrgan Hellkite), as for a
@@ -945,6 +948,7 @@ export type LegalAction =
         | "hand"
         | "exile-playable"
         | "exile-face-down"
+        | "exile"
         | "library-top"
         | "library-bottom"
         | "graveyard";

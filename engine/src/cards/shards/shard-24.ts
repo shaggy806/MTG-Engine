@@ -98,6 +98,7 @@ import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
 import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
+import _poolKinnanBonderProdigy from "../pool/kinnan-bonder-prodigy.js";
 import _poolKoglaTheTitanApe from "../pool/kogla-the-titan-ape.js";
 import _poolKrosanVerge from "../pool/krosan-verge.js";
 import _poolKyoshiVillage from "../pool/kyoshi-village.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,
     _poolKasimirTheLoneWolf,
+    _poolKinnanBonderProdigy,
     _poolKoglaTheTitanApe,
     _poolKrosanVerge,
     _poolKyoshiVillage,

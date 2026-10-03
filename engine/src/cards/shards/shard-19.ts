@@ -30,6 +30,7 @@ import _poolCartographer from "../pool/cartographer.js";
 import _poolCatharsCrusade from "../pool/cathars-crusade.js";
 import _poolCausticRain from "../pool/caustic-rain.js";
 import _poolChargingMonstrosaur from "../pool/charging-monstrosaur.js";
+import _poolChromeMox from "../pool/chrome-mox.js";
 import _poolCloakedSiren from "../pool/cloaked-siren.js";
 import _poolCoastalPeak from "../pool/coastal-peak.js";
 import _poolContractKilling from "../pool/contract-killing.js";
@@ -117,6 +118,7 @@ import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
 import _poolMindbladeRender from "../pool/mindblade-render.js";
 import _poolMineshaftSpider from "../pool/mineshaft-spider.js";
+import _poolMirarisWake from "../pool/miraris-wake.js";
 import _poolMiresGrasp from "../pool/mires-grasp.js";
 import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
 import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
@@ -248,6 +250,7 @@ const shard: CardShard = {
     _poolCatharsCrusade,
     _poolCausticRain,
     _poolChargingMonstrosaur,
+    _poolChromeMox,
     _poolCloakedSiren,
     _poolCoastalPeak,
     _poolContractKilling,
@@ -335,6 +338,7 @@ const shard: CardShard = {
     _poolMeticulousArchive,
     _poolMindbladeRender,
     _poolMineshaftSpider,
+    _poolMirarisWake,
     _poolMiresGrasp,
     _poolMoldervineReclamation,
     _poolMorophonTheBoundless,

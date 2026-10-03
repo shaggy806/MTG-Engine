@@ -21,10 +21,12 @@ import _poolBarrierOfBones from "../pool/barrier-of-bones.js";
 import _poolBazaarTrademage from "../pool/bazaar-trademage.js";
 import _poolBeeSting from "../pool/bee-sting.js";
 import _poolBenalishHeralds from "../pool/benalish-heralds.js";
+import _poolBloomTender from "../pool/bloom-tender.js";
 import _poolBogInitiate from "../pool/bog-initiate.js";
 import _poolBrainFreeze from "../pool/brain-freeze.js";
 import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
+import _poolBurntOffering from "../pool/burnt-offering.js";
 import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCartographersHawk from "../pool/cartographers-hawk.js";
@@ -39,6 +41,7 @@ import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
 import _poolCrimsonManticore from "../pool/crimson-manticore.js";
 import _poolCrookedCustodian from "../pool/crooked-custodian.js";
+import _poolCullingRitual from "../pool/culling-ritual.js";
 import _poolCursedMirror from "../pool/cursed-mirror.js";
 import _poolDeadlyTempest from "../pool/deadly-tempest.js";
 import _poolDeathGrasp from "../pool/death-grasp.js";
@@ -240,10 +243,12 @@ const shard: CardShard = {
     _poolBazaarTrademage,
     _poolBeeSting,
     _poolBenalishHeralds,
+    _poolBloomTender,
     _poolBogInitiate,
     _poolBrainFreeze,
     _poolBroodcallerScourge,
     _poolBuriedRuin,
+    _poolBurntOffering,
     _poolCalamityOfCinders,
     _poolCanalMonitor,
     _poolCartographersHawk,
@@ -258,6 +263,7 @@ const shard: CardShard = {
     _poolCradleOfTheAccursed,
     _poolCrimsonManticore,
     _poolCrookedCustodian,
+    _poolCullingRitual,
     _poolCursedMirror,
     _poolDeadlyTempest,
     _poolDeathGrasp,

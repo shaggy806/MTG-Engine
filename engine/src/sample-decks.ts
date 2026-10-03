@@ -417,7 +417,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Baldin, Century Herdmaster", "Syr Alin, the Lion's Claw", "Six-mana creature: team pump, attack trigger."),
       sub("Canopy Gargantuan", "Old Gnawbone", "Seven-mana green Dragon."),
       sub("Colfenor's Urn", "Resurrection Orb", "Three-mana artifact: protection."),
-      sub("Faeburrow Elder", "Fyndhorn Elder", "Three-mana creature: mana creature, ramp."),
       sub("Shadrix Silverquill", "Archangel of Thune", "Five-mana white flier that grows the team."),
       sub("Slaughter the Strong", "Citywide Bust", "Three-mana sorcery: sweeper, creature removal."),
       sub("Tip the Scales", "Toxic Deluge", "Three-mana sorcery: removal, sweeper."),

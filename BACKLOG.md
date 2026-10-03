@@ -150,6 +150,14 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 
 ## Engine rules gaps
 
+- **A mana restriction reads the spell before it's cast.** `ManaRestriction.spell` is matched
+  against the card in its pre-cast zone, so an ability a static grants a spell as it's cast
+  (Abaddon the Despoiler's cascade) is missed: Jasmine Boreal of the Seven's "only to cast
+  creature spells with no abilities" (her ruling) would wrongly pay for it. She waits on it.
+- **A targeted exile can't be linked to its source.** `exile` has no `exiledWith` link (only
+  `look-and-choose`'s `"exile"` / `"exile-face-down"` destinations do), so Pit of Offerings'
+  "exile up to three target cards from graveyards … any of the exiled cards' colors" (an
+  `add-mana` `colorAmong` with `zone: "exiled-with-source"`) waits on it.
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the

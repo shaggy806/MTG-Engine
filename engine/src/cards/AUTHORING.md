@@ -519,7 +519,10 @@ with, Chasm Skulker), `{ countInGraveyard }`, `{ manaValueOf }`, `{ powerOf }`, 
 cost, station's — see "Last-known information" below), `{ lifeTotal: "you" }`
 (Storm Herd), `{ devotionTo: Color }` (rule 700.5 — Gray Merchant of
 Asphodel; a hybrid pip counts for each colour it contains, `{X}` and generic
-for nothing), `{ creaturesDiedThisTurn: true }`
+for nothing; `"that-color"` is the colour an `"any-color"` `add-mana` is
+making — Nykthos, Shrine to Nyx), `{ greatestCommanderManaValue: true }`
+(the greatest mana value among your commanders, wherever they are — Cactus
+Preserve's X/X), `{ creaturesDiedThisTurn: true }`
 (per *player*, unlike `GameState`'s global counter — Liliana's Standard
 Bearer; with `anyController: true`, the global one — Spymaster's Vault's
 "the number of creatures that died this turn"), `{ countPlayers: PlayerScope }` (Inspired Sphinx; counts living
@@ -877,7 +880,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `surveil` | `amount`, `then?` | Consider. `amount` may be live, as `scry`'s. |
 | `allow-cast-from-exile` | `target`, `free?`, `laterTurns?` | "Until end of turn, you may cast that card [without paying its mana cost]" — a card in exile, usually a `reveal-until`'s find (Codie). Cast only, this turn, by the effect's controller; `free` permits only the free cast. `laterTurns` is warp's instead: the card's owner, from the next turn on, for as long as it stays exiled. |
 | `cast-now` | `target?` or `from?`, `spell?`, `free?`, `play?`, `exileAfter?`, `then?`, `else?`, `rest?` | "You may cast [a card]" **while this resolves** (rule 608.2g): the effect's controller is offered every ordinary cast of the card — modes, X, kicker, targets, costs — with timing ignored, or declines; nothing is asked when nothing can be cast. The card is `target` (Chandra, Acolyte of Flame's −2: a `card-in-graveyard` target; the card a `reveal-until` found, as its `then`'s 0 — Breaching Dragonstorm; the spell a `counter` with `into: "exile"` just exiled — Transcendent Dragon), or with `from` whichever card the player picks: `"hand"` ("you may cast a spell with mana value 4 or less from your hand" — Baral's Expertise, Electrodominance), `"graveyard"` (Diviner of Mist), or `{ libraryTop: 7 }` — "look at the top seven cards … cast … from among them", shown to that player alone (Velomachus Lorehold), with `rest: "bottom-random"` for "put the rest on the bottom in a random order". `spell` is what the spell must be, judged as the spell it would be (rule 601.3e — the face cast, an adventure, its prototype) at X = 0, so a mana-value clause goes with `free`: `{ typesAnyOf: ["instant", "sorcery"], manaValue: { op: "lte", n: { amount: { powerOf: "source" } } } }`, bound as the effect applies; `sharesCardTypeWith: "trigger-object"` with a `manaValueOf: "trigger-object"` compare is Baral and Kari Zev's "lesser mana value that shares a card type with it". `from: "exiled-with-source"` is "the exiled card" of a linked ability (rule 607.2a — hideaway's; see `hideaway` in §5), and `play: true` makes it "you may **play**": a land card is offered too, played on its controller's own turn with a land play left, which it uses (rules 305.2a, 305.2b, 305.3) — the decision's `lands`, answered with a `play-land`. `free` is "without paying its mana cost" — the only way offered; an alternative cost, so X is 0 and no other alternative cost goes with it, but kicker may be paid on top (rules 107.3b, 118.9a, 118.9d). `exileAfter` is "if that spell would be put into your graveyard, exile it instead". `then` / `else` are "if you do" / "if you don't" (declined or nothing castable): Conduit of Worlds' `prohibit`, Breaching Dragonstorm's `return-to-hand` from exile, Baral and Kari Zev's token. A `sequence` step after it waits for the answer, and an instant or sorcery casting one stays on the stack until it's cast (608.2n). |
-| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand" \| "graveyards"`, `enterAs?`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard" \| "exile-playable"`, `leftoverIf?`, `filter?`, `enterTapped?`, `attacking?` (as `create-token`'s: Kaalia's "onto the battlefield tapped and attacking that opponent", Winota) | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste").; `leftoverIf: { condition, leftover }` is a leftover destination decided once the chosen cards have moved — Nine-Fingers Keene's "you may put a Gate card from among them onto the battlefield. Then if you control nine or more Gates, put the rest into your graveyard. Otherwise, put the rest on the bottom of your library in a random order" is `leftover: "bottom-random"` with `leftoverIf: { condition: { kind: "controls", filter: { subtype: "Gate" }, atLeast: 9 }, leftover: "graveyard" }`, and the Gate just put onto the battlefield counts `max` may be live, read as it applies, as `count` may. `secondPick?: { filter?, min, max, destination, enterTapped? }` is a second choice over the looked-at cards the first left, asked once the first's cards have moved; `leftover` waits for it and takes the rest in the same move as the second's cards — Choco, Seeker of Paradise's "You may put one of them into your hand. Then put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard." With nothing the second could take, the rest go at once. Expressive Iteration is a hand pick, a `secondPick` with `destination: "library-bottom"`, and `leftover: "exile-playable"` — the rest exiled face up, playable (a land too) this turn. `destination: "library-top"` puts the chosen cards back in the order picked, the first on top (Ponder, Brainstorm), and the client numbers the picks. `destination: "exile-face-down"` is hideaway's "exile one of them face down" (rule 702.75a): the chosen card is exiled face down, seen only by the chooser, and linked to the source (607.2a) — use the `hideaway(n, …)` helper. `secondPick.ifNoneChosen` asks it only when the first took nothing — Planar Genesis's "You may put a land card from among them onto the battlefield tapped. **If you don't**, put a card from among them into your hand." `reveal: true` shows every looked-at card (Gishath's "reveal that many cards"); `reveal: "chosen"` shows only the cards taken, as they're taken — "look at the top five cards … You may **reveal** a historic card from among them and put it into your hand" (Monumental Henge, Adaptive Omnitool) — a `secondPick`'s too. `player: "that-player"` inside a `for-each-player` makes it that player's zone, look and choice, the cards theirs: Explore the Vastlands' "each player looks at the top five cards of their library and may reveal a land card and/or an instant or sorcery card from among them" is a `for-each-player` (`"each-player"`, the active player first) of a land pick with an instant-or-sorcery `secondPick`, both to hand, `reveal: "chosen"`, `leftover: "bottom-random"`. **`zone: "graveyards"`** is every player's graveyard (public, in turn order): a card from someone else's that goes to the battlefield goes under the chooser's control, kept there by a control effect — Necromantic Selection's "return a creature card put into a graveyard this way to the battlefield under your control" (`filter: { type: "creature", token: false, thisWay: "died" }`, `min: 1, max: 1`). **`enterAs: { setTypes?, addSubtypes?, addColors? }`** is "It's a black Zombie in addition to its other colors and types": in place as the cards enter (rule 614.12), as `put-onto-battlefield`'s types are. |
+| `look-and-choose` | `zone: "library" \| "graveyard" \| "hand" \| "graveyards"`, `enterAs?`, `count?`, `min`, `max`, `destination`, `leftover: "bottom-random" \| "stay" \| "hand" \| "graveyard" \| "exile-playable"`, `leftoverIf?`, `filter?`, `enterTapped?`, `attacking?` (as `create-token`'s: Kaalia's "onto the battlefield tapped and attacking that opponent", Winota) | Ureni of the Unwritten; Genesis Ultimatum uses `leftover: "hand"` — every non-chosen looked-at card goes to hand, regardless of `filter` (needed-cards P19); `"graveyard"` is "…and the rest into your graveyard", in the same move as the chosen cards. **`zone: "hand"`** is the "you may put a land card from your hand onto the battlefield" family (Growth Spiral, Ghalta, Terrain Generator): `min: 0` is the "you may", `leftover: "stay"` leaves the rest of the hand alone, and it bypasses the land-drop rule because putting a land onto the battlefield is not *playing* one. **`then`** is applied once the choice is answered, with the **chosen cards as its targets** — the only way to say anything about a card that was chosen rather than targeted (Sneak Attack's "that creature gains haste").; `leftoverIf: { condition, leftover }` is a leftover destination decided once the chosen cards have moved — Nine-Fingers Keene's "you may put a Gate card from among them onto the battlefield. Then if you control nine or more Gates, put the rest into your graveyard. Otherwise, put the rest on the bottom of your library in a random order" is `leftover: "bottom-random"` with `leftoverIf: { condition: { kind: "controls", filter: { subtype: "Gate" }, atLeast: 9 }, leftover: "graveyard" }`, and the Gate just put onto the battlefield counts `max` may be live, read as it applies, as `count` may. `secondPick?: { filter?, min, max, destination, enterTapped? }` is a second choice over the looked-at cards the first left, asked once the first's cards have moved; `leftover` waits for it and takes the rest in the same move as the second's cards — Choco, Seeker of Paradise's "You may put one of them into your hand. Then put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard." With nothing the second could take, the rest go at once. Expressive Iteration is a hand pick, a `secondPick` with `destination: "library-bottom"`, and `leftover: "exile-playable"` — the rest exiled face up, playable (a land too) this turn. `destination: "library-top"` puts the chosen cards back in the order picked, the first on top (Ponder, Brainstorm), and the client numbers the picks. `destination: "exile-face-down"` is hideaway's "exile one of them face down" (rule 702.75a): the chosen card is exiled face down, seen only by the chooser, and linked to the source (607.2a) — use the `hideaway(n, …)` helper. `destination: "exile"` is the same link, face up — imprint's "you may exile a nonartifact, nonland card from your hand" (Chrome Mox: `zone: "hand"`, `min: 0`, `leftover: "stay"`), read back by an `add-mana` `colorAmong` with `zone: "exiled-with-source"`. `secondPick.ifNoneChosen` asks it only when the first took nothing — Planar Genesis's "You may put a land card from among them onto the battlefield tapped. **If you don't**, put a card from among them into your hand." `reveal: true` shows every looked-at card (Gishath's "reveal that many cards"); `reveal: "chosen"` shows only the cards taken, as they're taken — "look at the top five cards … You may **reveal** a historic card from among them and put it into your hand" (Monumental Henge, Adaptive Omnitool) — a `secondPick`'s too. `player: "that-player"` inside a `for-each-player` makes it that player's zone, look and choice, the cards theirs: Explore the Vastlands' "each player looks at the top five cards of their library and may reveal a land card and/or an instant or sorcery card from among them" is a `for-each-player` (`"each-player"`, the active player first) of a land pick with an instant-or-sorcery `secondPick`, both to hand, `reveal: "chosen"`, `leftover: "bottom-random"`. **`zone: "graveyards"`** is every player's graveyard (public, in turn order): a card from someone else's that goes to the battlefield goes under the chooser's control, kept there by a control effect — Necromantic Selection's "return a creature card put into a graveyard this way to the battlefield under your control" (`filter: { type: "creature", token: false, thisWay: "died" }`, `min: 1, max: 1`). **`enterAs: { setTypes?, addSubtypes?, addColors? }`** is "It's a black Zombie in addition to its other colors and types": in place as the cards enter (rule 614.12), as `put-onto-battlefield`'s types are. |
 
 ### Turn structure / cast-triggered
 
@@ -1860,10 +1863,17 @@ colours, and no mana at all for a player with no commander or a colourless
 one), or
 `{ oneOf: ManaType[] }` (`amount` mana in any combination of the listed
 colours, each unit independently chosen — Orcish Lumberjack: `{ oneOf: ["R",
-"G"] }`, `amount: 3`, needed-cards P20). A standalone activation (not part of
-paying a cost) defaults to white for `"any-color"`, or `oneOf[0]` repeated for
-`{ oneOf }` — during actual cost payment the auto-payer resolves the colour(s)
-that fit. "Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
+"G"] }`, `amount: 3`, needed-cards P20). Who picks the colour depends on where
+the mana is made: paying a cost, the auto-payer makes what fits; a mana
+ability activated by hand is offered once per outcome (the action's
+`manaColors`); and **a spell or an ability on the stack asks as it resolves**
+(rule 608.2d) — "one mana of any color" as a `choose-modes` over the five, "N
+mana in any combination of" as one choice of split while there are at most 35
+of them (Culling Ritual's "{B} or {G} for each", Burnt Offering), otherwise
+each unit's colour in turn (Klauth's X over five colours). So a triggered or
+targeted ability that adds "one mana of any color" is just that `add-mana`
+(Deathrite Shaman, Klauth) — no hand-built `modal` over the colours needed.
+"Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
 `amount: 1`: one of each, `amount` times over (Ramos's
 "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}" is all five with `amount: 2`). **Not**
 `{ oneOf }` × 2, which could make {W}{W}. `{ oneOf, same: true }` is all
@@ -1872,6 +1882,40 @@ that fit. "Add {W}{U}" (a Signet, a Karoo land) is `{ all: ["W", "U"] }` with
 (Gilded Lotus's "three mana of any one color"; Helga, Skittish Seer's live "X
 mana of any one color"): the payer and a hand activation are offered one
 option per type, and a hand activation makes every unit its first pick.
+
+**Lists read off the board** (`BoardManaList`) — what they name shrinks and
+grows with the board, and one naming nothing makes no mana (rule 106.5; the
+ability can still be activated, for nothing):
+
+- `{ producedBy: "opponents-lands" | "your-lands", filter?, anyType?, same? }`
+  — "any color that a land an opponent controls could produce" (Exotic
+  Orchard), "…a land **you** control" (Reflecting Pool), "…a **Gate** you
+  control" (Gond Gate: `filter: { subtype: "Gate" }`). `anyType` is "any
+  **type**" — colorless too (Reflecting Pool, Horizon of Progress). "Could
+  produce" is rule 106.7: every type a land's mana abilities (printed,
+  intrinsic or granted) would make if they resolved now, costs and legality
+  ignored (a tapped land counts), read through other such lands without
+  looping (two Reflecting Pools alone make nothing — the ruling). `same` is
+  "`amount` mana of that one type" (Incubation Druid's "three mana of that
+  type").
+- `{ colorAmong: CardFilter, zone?: "graveyard" | "exiled-with-source", same? }`
+  — "one mana of any color among legendary creatures and planeswalkers you
+  control" (Mox Amber: put `controlledBy: "you"` in the filter), "…among
+  legendary creature cards in your graveyard" (The Grey Havens), "…of the
+  exiled card's colors" (Chrome Mox — the cards linked to this permanent,
+  rule 607.2a). Colours only, never {C}.
+- `{ eachColorAmong: CardFilter }` — "for each color among permanents you
+  control, add one mana of that color" (Bloom Tender, Faeburrow Elder): one
+  of each, at most five.
+
+**"Choose a color. Add an amount of mana of that color equal to your devotion
+to that color"** (Nykthos, Shrine to Nyx; Nyx Lotus) is `mana: "any-color"`
+with `amount: { devotionTo: "that-color" }` — the amount read for the colour
+being made. By hand, one offer per colour with what it makes (every colour
+that makes none is one offer); the auto-payer gets an option per colour.
+Three Tree City's "…equal to the number of creatures you control of the
+chosen type" is plain `"any-color"` with a `countOf` whose filter has
+`ofChosenType` — a count reads its source's chosen type now.
 
 **A mana ability's `amount` may be a live `EffectAmount`** (Marwyn, the
 Nurturer: `{ powerOf: "source" }`; Kydele: `{ turnStat: "cards-drawn" }`).
@@ -1912,6 +1956,12 @@ oneOf: ["R", "G"] }, amount: 1, also: { kind: "gain-life", amount: 2 } }`.
 Applied right after the mana, off the stack, whether it's activated by hand or
 the auto-payer uses it to pay a cost.
 
+`add-mana`'s `who` (a `PlayerScope`) is "**each player** adds {B}{R}{G}"
+(Yurlok of Scorch Thrash) — for mana with no choice in it. In a mana ability,
+keep the controller's own part unscoped (that is what the auto-payer counts)
+and put the others' on `also` with `who: "each-opponent"`; an ability whose
+own `add-mana` is scoped to someone else is never an auto-payer source.
+
 **Triggered mana abilities** (rule 605.1b) are the `tapped-for-mana` trigger
 (§9) with an `add-mana` effect: Crypt Ghast's "whenever you tap a Swamp for
 mana, add an additional {B}" is `trigger: { on: "tapped-for-mana", who:
@@ -1920,6 +1970,23 @@ mana: "B", amount: 1 }`; Roxanne, Starfall Savant's "…add one mana of any type
 that artifact token produced" is `mana: "produced"` (meaningless anywhere
 else). They never go on the stack: the extra mana is made with the rest, and
 the auto-payer counts it — a Swamp under Crypt Ghast is a `{B}{B}` source.
+The extra mana is the trigger's source's and carries **none** of the tapped
+permanent's restrictions or riders (the Mirari's Wake, Kinnan and Mana Flare
+rulings) — the auto-payer included. A choice in it is the player's: "any type
+that land produced" off a land that made two types (a Karoo under Mirari's
+Wake), "an additional one mana of any color" (Fertile Ground), tapped by hand,
+is one more pick in the activation's `manaColors` — each outcome its own
+offer; "…of the chosen color" (Utopia Sprawl) reads the colour the Aura named
+as it entered (`chooseOnEnter`). "Whenever a player taps a land" is `who:
+"any"`, and the mana goes to whoever tapped it (Mana Flare).
+
+**"If you tap a permanent for mana, it produces twice as much of that mana
+instead"** (Mana Reflection; three times — Nyxbloom Ancient) is the static
+replacement `{ event: "tap-for-mana", multiplier }` (rule 106.12b): only a
+`{T}` mana ability its controller activates, only its own mana (never a
+triggered mana ability's extra — the ruling), every unit with what it
+carries; several compound. An "any colour" unit becomes `multiplier` of
+**one** colour.
 
 - `sorcerySpeed: true` — the ability works only when you could cast a sorcery
   (Equip). An Equipment is `types: ["artifact"], subtypes: ["Equipment"]` with
@@ -3029,6 +3096,9 @@ clause (section 9):
   (a token batch, a mass reanimation, a flicker's return, a tutor's finds are
   each one simultaneous entry).
 - `{ event: "would-create-token", multiplier }` — Doubling Season.
+- `{ event: "tap-for-mana", multiplier }` — "if you tap a permanent for mana,
+  it produces twice as much of that mana instead" (Mana Reflection, Nyxbloom
+  Ancient): see "Triggered mana abilities" in §8.
 - `{ event: "would-add-counter", multiplier, counterKind?, filter? }` — Doubling
   Season. `filter` narrows which of your permanents it covers (Branching
   Evolution: `{ type: "creature" }`). Only multipliers: "that many **plus

@@ -114,6 +114,7 @@ import _poolNahiriForgedInFury from "../pool/nahiri-forged-in-fury.js";
 import _poolNantukoDisciple from "../pool/nantuko-disciple.js";
 import _poolNerivHeartOfTheStorm from "../pool/neriv-heart-of-the-storm.js";
 import _poolNineTailWhiteFox from "../pool/nine-tail-white-fox.js";
+import _poolNykthosShrineToNyx from "../pool/nykthos-shrine-to-nyx.js";
 import _poolOakgnarlWarrior from "../pool/oakgnarl-warrior.js";
 import _poolOtawaraSoaringCity from "../pool/otawara-soaring-city.js";
 import _poolPatchworkAutomaton from "../pool/patchwork-automaton.js";
@@ -324,6 +325,7 @@ const shard: CardShard = {
     _poolNantukoDisciple,
     _poolNerivHeartOfTheStorm,
     _poolNineTailWhiteFox,
+    _poolNykthosShrineToNyx,
     _poolOakgnarlWarrior,
     _poolOtawaraSoaringCity,
     _poolPatchworkAutomaton,

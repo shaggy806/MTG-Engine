@@ -173,6 +173,7 @@ import _poolSurrakTheHuntCaller from "../pool/surrak-the-hunt-caller.js";
 import _poolTalonrend from "../pool/talonrend.js";
 import _poolTempleOfAbandon from "../pool/temple-of-abandon.js";
 import _poolTerritorialBaloth from "../pool/territorial-baloth.js";
+import _poolTheGreyHavens from "../pool/the-grey-havens.js";
 import _poolTheLordOfPain from "../pool/the-lord-of-pain.js";
 import _poolTheScarabGod from "../pool/the-scarab-god.js";
 import _poolThievingMagpie from "../pool/thieving-magpie.js";
@@ -380,6 +381,7 @@ const shard: CardShard = {
     _poolTalonrend,
     _poolTempleOfAbandon,
     _poolTerritorialBaloth,
+    _poolTheGreyHavens,
     _poolTheLordOfPain,
     _poolTheScarabGod,
     _poolThievingMagpie,

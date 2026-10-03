@@ -129,6 +129,7 @@ import _poolManaformHellkite from "../pool/manaform-hellkite.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
+import _poolMoxAmber from "../pool/mox-amber.js";
 import _poolMundasVanguard from "../pool/mundas-vanguard.js";
 import _poolMyrTurbine from "../pool/myr-turbine.js";
 import _poolNajeelaTheBladeBlossom from "../pool/najeela-the-blade-blossom.js";
@@ -156,6 +157,7 @@ import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
 import _poolRagingBull from "../pool/raging-bull.js";
 import _poolRazorkinNeedlehead from "../pool/razorkin-needlehead.js";
+import _poolReflectingPool from "../pool/reflecting-pool.js";
 import _poolRegalUnicorn from "../pool/regal-unicorn.js";
 import _poolRelicSloth from "../pool/relic-sloth.js";
 import _poolRemand from "../pool/remand.js";
@@ -377,6 +379,7 @@ const shard: CardShard = {
     _poolMerfolkSkydiver,
     _poolMikaeusTheUnhallowed,
     _poolMillstone,
+    _poolMoxAmber,
     _poolMundasVanguard,
     _poolMyrTurbine,
     _poolNajeelaTheBladeBlossom,
@@ -404,6 +407,7 @@ const shard: CardShard = {
     _poolRabanastreRoyalCity,
     _poolRagingBull,
     _poolRazorkinNeedlehead,
+    _poolReflectingPool,
     _poolRegalUnicorn,
     _poolRelicSloth,
     _poolRemand,

@@ -102,6 +102,7 @@ import _poolLounge from "../pool/lounge.js";
 import _poolLure from "../pool/lure.js";
 import _poolMakindiGriffin from "../pool/makindi-griffin.js";
 import _poolManOWar from "../pool/man-o-war.js";
+import _poolManaReflection from "../pool/mana-reflection.js";
 import _poolManedServal from "../pool/maned-serval.js";
 import _poolMaraudingBlightPriest from "../pool/marauding-blight-priest.js";
 import _poolMarshThreader from "../pool/marsh-threader.js";
@@ -324,6 +325,7 @@ const shard: CardShard = {
     _poolLure,
     _poolMakindiGriffin,
     _poolManOWar,
+    _poolManaReflection,
     _poolManedServal,
     _poolMaraudingBlightPriest,
     _poolMarshThreader,

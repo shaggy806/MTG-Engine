@@ -78,6 +78,7 @@ import {
   computeCharacteristics,
   computedCacheMemo,
   effectiveColors,
+  greatestCommanderManaValue,
   objHasKeyword,
   effectiveSubtypes,
   effectiveTypes,
@@ -148,6 +149,7 @@ import {
   wardCostText,
 } from "./effects.js";
 import type {
+  BoardManaList,
   CascadeFinish,
   CascadeFound,
   CastNowOptions,
@@ -213,7 +215,13 @@ import type {
   ManaUnit,
   SpendAs,
 } from "./mana.js";
-import { manaCombinations, planPayment, standaloneManaChoices, widerSpendAs } from "./mana-payment.js";
+import {
+  manaCombinations,
+  multipliedManaOption,
+  planPayment,
+  standaloneManaChoices,
+  widerSpendAs,
+} from "./mana-payment.js";
 import type {
   ManaOption,
   ManaPayment,
@@ -1644,6 +1652,9 @@ export class Game {
       ability: ActivatedAbility,
       index: number,
       manaColors?: readonly ManaType[],
+      /** Everything this variant of a mana ability makes, for its label —
+       * `manaColors` when that's all of it. */
+      makes: readonly ManaType[] | undefined = manaColors,
     ): void => {
       if (this.whyCannotActivateAbility(player, source, index) !== null) return;
       const manaX =
@@ -1672,9 +1683,11 @@ export class Game {
         xCost?: { readonly maxX: number; readonly minX?: number },
       ): void => {
         const label =
-          manaColors === undefined
+          manaColors === undefined || makes === undefined
             ? ability.text
-            : `${ability.text} (add ${manaColors.map((m) => `{${m}}`).join("")})`;
+            : makes.length === 0
+              ? `${ability.text} (add no mana)`
+              : `${ability.text} (add ${makes.map((m) => `{${m}}`).join("")})`;
         out.push({
           kind: "activate-ability",
           source,
@@ -1739,20 +1752,13 @@ export class Game {
           if (identity === null) return;
           offered = { ...ability, effect: { ...ability.effect, mana: identity } };
         }
-        const choices = standaloneManaChoices(
-          offered,
-          (m) => this.manaOneOf(m as Parameters<typeof this.manaOneOf>[0], player),
-          () =>
-            ability.effect?.kind === "add-mana" && typeof ability.effect.amount !== "number"
-              ? this.liveManaAmount(source, player, ability.effect.amount)
-              : null,
-        );
-        if (choices === null) {
+        const variants = this.standaloneManaVariants(source, offered, player);
+        if (variants === null) {
           pushActivateAbility(source, printedCardName(object), ability, index);
           return;
         }
-        for (const choice of choices) {
-          pushActivateAbility(source, printedCardName(object), ability, index, choice);
+        for (const variant of variants) {
+          pushActivateAbility(source, printedCardName(object), ability, index, variant.manaColors, variant.makes);
         }
       });
     }
@@ -5118,6 +5124,14 @@ export class Game {
           object.exiledFaceDown = { lookers: [player] };
           if (awaiting.exileLink !== undefined) object.exiledWith = awaiting.exileLink;
           this.forgetStints([id], since);
+        }
+        return;
+      }
+      if (to === "exile") {
+        // Imprint's "exile a card from your hand": face up, linked to the
+        // permanent whose ability exiled it (rule 607.2a).
+        if (this.moveObject(id, "exile") && awaiting.exileLink !== undefined) {
+          this.state.objects[id].exiledWith = awaiting.exileLink;
         }
         return;
       }
@@ -10349,82 +10363,87 @@ export class Game {
     if (isManaAbility(ability)) {
       // Mana abilities resolve immediately and never use the stack.
       const base = this.makeResolutionContext(sourceId, player, [], chosenX);
-      // The colour(s) the activating player picked for an "any color" / "any
-      // combination of" ability — see `standaloneManaChoices`. Only the
-      // unfixed part of the output is redirected, so a source that makes a
-      // concrete mana alongside a choice still makes its concrete mana.
-      const context: ResolutionContext =
-        manaColors === undefined
-          ? base
-          : {
-              ...base,
-              addMana: (p, mana, amount, spec): void => {
-                if (mana !== "any-color" && typeof mana !== "object") {
-                  base.addMana(p, mana, amount, spec);
-                  return;
-                }
-                // The effect's own amount is what gets made, one unit per
-                // pick; a pick the ability can't make (or a missing one —
-                // the action is a client's word) falls back to the default
-                // colour, so a hand-built `manaColors` can't mint extra
-                // mana or a colour the card doesn't offer. `spec` rides
-                // along so a restricted source (Cavern of Souls) still
-                // stamps its restriction on mana floated by hand.
-                const allowed: readonly ManaType[] =
-                  mana === "any-color"
-                    ? COLORS
-                    : "oneOf" in mana
-                      ? mana.oneOf
-                      : this.manaOneOf(mana, player);
-                const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
-                for (let i = 0; i < units; i += 1) {
-                  // "Any color" is any *one* colour however much is made
-                  // (Gilded Lotus), so the first pick names it for all — as
-                  // it does for "X {G} or X {W}" (`same`).
-                  const oneType = mana === "any-color" || ("oneOf" in mana && mana.same === true);
-                  const pick = oneType ? manaColors[0] : manaColors[i];
-                  base.addMana(
-                    p,
-                    pick !== undefined && allowed.includes(pick) ? pick : mana,
-                    1,
-                    spec,
-                  );
-                }
-              },
-            };
-      const poolBefore = this.state.players[player].manaPool.length;
-      if (ability.effect !== null) applyEffectSpec(ability.effect, context);
-      // Tapped for mana: triggered mana abilities (rule 605.1b) add theirs
-      // at once, "of any type that permanent produced" read off what it just
-      // made.
-      if (ability.cost.tap) {
-        const produced = this.state.players[player].manaPool
-          .slice(poolBefore)
-          .map((unit) => unit.type);
-        for (const extra of this.tappedForManaExtras(source)) {
-          if (extra.producing !== undefined && !produced.includes(extra.producing)) continue;
-          if (extra.mana === "produced") {
-            if (produced.length > 0) {
-              this.addMana(player, produced[0], extra.amount, undefined, this.manaOriginOf(extra.holder));
-            }
-          } else if (typeof extra.mana === "object" && "all" in extra.mana) {
-            for (const type of extra.mana.all) {
-              this.addMana(player, type, extra.amount, undefined, this.manaOriginOf(extra.holder));
-            }
-          } else if (extra.mana === "commander-identity") {
-            const identity = this.commanderIdentityMana(player);
-            if (identity !== null) {
-              this.addMana(player, identity, extra.amount, undefined, this.manaOriginOf(extra.holder));
-            }
-          } else if (extra.mana !== "chosen") {
-            this.addMana(
-              player,
-              typeof extra.mana === "object" ? { oneOf: this.manaOneOf(extra.mana, player) } : extra.mana,
-              extra.amount,
-              undefined,
-              this.manaOriginOf(extra.holder),
-            );
+      // The colour(s) the activating player picked, one per unit whose type
+      // was theirs to pick: an "any color" / "any combination of" ability's
+      // own units first (see `standaloneManaChoices`), then one per
+      // triggered mana ability's extra mana with a choice in it (below).
+      // Only the unfixed part of the output is redirected, so a source that
+      // makes a concrete mana alongside a choice still makes its concrete
+      // mana. "Choose a color" (Nykthos) is the first pick, which is also
+      // the colour an amount read for "that color" is read for.
+      const effect = ability.effect;
+      const manaColor =
+        effect?.kind === "add-mana" && effect.mana === "any-color" ? manaColors?.[0] : undefined;
+      let picked = 0;
+      const context: ResolutionContext = {
+        ...base,
+        manaAbility: true,
+        ...(manaColor !== undefined ? { manaColor } : {}),
+        addMana: (p, mana, amount, spec): void => {
+          if (manaColors === undefined || (mana !== "any-color" && typeof mana !== "object")) {
+            base.addMana(p, mana, amount, spec);
+            return;
           }
+          // The effect's own amount is what gets made, one unit per pick; a
+          // pick the ability can't make (or a missing one — the action is a
+          // client's word) falls back to the default colour, so a hand-built
+          // `manaColors` can't mint extra mana or a colour the card doesn't
+          // offer. `spec` rides along so a restricted source (Cavern of
+          // Souls) still stamps its restriction on mana floated by hand.
+          const allowed: readonly ManaType[] =
+            mana === "any-color"
+              ? COLORS
+              : "oneOf" in mana
+                ? mana.oneOf
+                : this.manaOneOf(mana, player, sourceId);
+          const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
+          // "Any color" is any *one* colour however much is made (Gilded
+          // Lotus), so the first pick names it for all — as it does for "X
+          // {G} or X {W}" (`same`).
+          const oneType = mana === "any-color" || ("same" in mana && mana.same === true);
+          const first = picked;
+          for (let i = 0; i < units; i += 1) {
+            const pick = oneType ? manaColors[first] : manaColors[first + i];
+            base.addMana(p, pick !== undefined && allowed.includes(pick) ? pick : mana, 1, spec);
+          }
+          picked += units;
+        },
+      };
+      const pool = this.state.players[player].manaPool;
+      const poolBefore = pool.length;
+      if (effect !== null) applyEffectSpec(effect, context);
+      if (ability.cost.tap) {
+        // "If you tap a permanent for mana, it produces twice as much of that
+        // mana instead" (Mana Reflection): its own mana, each unit with all
+        // it carries (rule 106.6a).
+        const multiplier = this.tapManaMultiplier(player);
+        if (multiplier > 1) {
+          const made = pool.slice(poolBefore);
+          for (const unit of made) {
+            for (let k = 1; k < multiplier && pool.length < poolBefore + Game.MAX_EFFECT_INSTANCES; k += 1) {
+              pool.push({ ...unit });
+            }
+          }
+          for (const type of MANA_TYPES) {
+            const n = made.filter((u) => u.type === type).length * (multiplier - 1);
+            if (n > 0) this.emit({ type: "mana-added", player, mana: type, amount: n });
+          }
+        }
+        // Tapped for mana: triggered mana abilities (rule 605.1b) add theirs
+        // at once, "of any type that permanent produced" read off what it
+        // just made — a choice among several the player's, with the rest of
+        // the picks.
+        const produced = pool.slice(poolBefore).map((unit) => unit.type);
+        for (const out of this.extraManaOutputs(source, produced, player)) {
+          const origin = this.manaOriginOf(out.holder);
+          if ("units" in out) {
+            for (const type of out.units) this.addMana(player, type, 1, undefined, origin);
+            continue;
+          }
+          const pick = manaColors?.[picked];
+          picked += 1;
+          const type = pick !== undefined && out.choices.includes(pick) ? pick : out.choices[0];
+          this.addMana(player, type, out.amount, undefined, origin);
         }
       }
       this.emit({
@@ -10659,6 +10678,7 @@ export class Game {
       const key = (o: ManaOption): string =>
         `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.anyColorOf?.join(",") ?? ""}` +
         `|${o.pain}|${o.lifeCost}|${o.genericCost}|${o.untapped ?? ""}|${o.oncePerTurn ?? ""}` +
+        `|${(o.extras ?? []).map((e) => `${e.from}:${e.type ?? "*"}`).join(",")}` +
         // Two options that make the same mana are still different options if
         // one of them is restricted.
         `|${o.tag === undefined ? "" : JSON.stringify(o.tag)}`;
@@ -10742,6 +10762,8 @@ export class Game {
         ) {
           return;
         }
+        // Mana for someone else isn't the payer's to spend.
+        if (ability.effect.who !== undefined && ability.effect.who !== "you") return;
         const pain = ability.effect.painToController ?? 0;
         const lifeCost = abilityLifeCost(this.state, player, ability.cost);
         if (lifeCost === null) return;
@@ -10749,13 +10771,28 @@ export class Game {
         // permanent's controller named as it entered; before that choice is
         // answered it produces nothing.
         const chosen = object.chosenOnEnter;
+        const printedMana = ability.effect.mana;
+        // A list read off the board (Exotic Orchard, Mox Amber, Bloom Tender)
+        // is what it names now.
         const mana =
-          ability.effect.mana === "chosen"
+          printedMana === "chosen"
             ? (MANA_TYPES.includes(chosen as ManaType) ? (chosen as ManaType) : null)
-            : ability.effect.mana === "commander-identity"
+            : printedMana === "commander-identity"
               ? this.commanderIdentityMana(player)
-              : ability.effect.mana;
+              : typeof printedMana === "object" && "eachColorAmong" in printedMana
+                ? { all: this.manaOneOf(printedMana, player, id) }
+                : typeof printedMana === "object" && !("oneOf" in printedMana) && !("all" in printedMana)
+                  ? {
+                      oneOf: this.manaOneOf(printedMana, player, id),
+                      ...("same" in printedMana && printedMana.same === true ? { same: true as const } : {}),
+                    }
+                  : printedMana;
         if (mana === null || mana === "produced") return;
+        // "Choose a color. Add an amount of mana of that color equal to your
+        // devotion to that color" (Nykthos): an option per colour, each its
+        // own amount.
+        const effectAmount = ability.effect.amount;
+        const perColor = mana === "any-color" && Game.amountReadsManaColor(effectAmount);
         // A live amount (Marwyn's power, Kydele's cards drawn this turn) is
         // sized now, against the board as it stands — see `liveManaAmount`.
         // It is what the ability would make if activated this instant, and
@@ -10763,7 +10800,9 @@ export class Game {
         const manaAmount =
           typeof ability.effect.amount === "number"
             ? ability.effect.amount
-            : this.liveManaAmount(id, player, ability.effect.amount);
+            : perColor
+              ? Math.max(...COLORS.map((c) => this.liveManaAmount(id, player, effectAmount, c)))
+              : this.liveManaAmount(id, player, ability.effect.amount);
         // A converter that doesn't produce more than it costs is never worth
         // offering, and admitting one would let the planner loop — and a
         // live amount of 0 makes nothing at all.
@@ -10778,9 +10817,16 @@ export class Game {
           ...(ability.oncePerTurn === true ? { oncePerTurn: abilityIndex } : {}),
           ...(ability.effect.also !== undefined ? { rider: ability.effect.also } : {}),
         };
-        const oneOf = typeof mana === "object" && !("all" in mana) ? this.manaOneOf(mana, player) : [];
+        const oneOf = typeof mana === "object" && "oneOf" in mana ? mana.oneOf : [];
         const candidates: ManaOption[] =
-          mana === "any-color"
+          perColor
+            ? COLORS.flatMap((c) => {
+                const n = this.liveManaAmount(id, player, effectAmount, c);
+                return n <= genericCost
+                  ? []
+                  : [{ fixed: Array<ManaType>(n).fill(c), anyColor: 0, pain, lifeCost, genericCost, ...tag }];
+              })
+            : mana === "any-color"
             ? manaAmount === 1
               ? [{ fixed: [], anyColor: 1, pain, lifeCost, genericCost, ...tag }]
               : // "Add three mana of any one color" (Gilded Lotus) is all
@@ -10850,13 +10896,19 @@ export class Game {
                     ...tag,
                   },
                 ];
+        // "If you tap a permanent for mana, it produces twice as much of
+        // that mana instead" (Mana Reflection) — its own mana, not what
+        // triggered mana abilities add.
+        const multiplier = ability.cost.tap ? this.tapManaMultiplier(player) : 1;
+        const multiplied =
+          multiplier === 1 ? candidates : candidates.flatMap((option) => multipliedManaOption(option, multiplier));
         // Triggered mana abilities (rule 605.1b) — the extra mana tapping
         // this permanent for mana makes — are part of what it's worth to a
         // payment, and `useManaSource` makes them along with the rest.
         const extras = ability.cost.tap ? this.tappedForManaExtras(object) : [];
         const withExtras = extras.reduce(
           (options, extra) => options.flatMap((option) => this.withManaExtra(option, extra, player)),
-          candidates,
+          multiplied,
         );
         for (const option of withExtras) {
           if (!options.some((o) => key(o) === key(option))) options.push(option);
@@ -10908,9 +10960,29 @@ export class Game {
    * memoized inside a computed-cache region. Capped where `addMana` caps
    * what it will actually put in the pool.
    */
-  private liveManaAmount(source: ObjectId, player: PlayerId, amount: EffectAmount): number {
-    const n = amountValue(amount, this.makeResolutionContext(source, player, []));
-    return Math.max(0, Math.min(n, Game.MAX_EFFECT_INSTANCES));
+  private liveManaAmount(
+    source: ObjectId,
+    player: PlayerId,
+    amount: EffectAmount,
+    /** The colour being made, for an amount read for "that color"
+     * (`{ devotionTo: "that-color" }` — Nykthos). */
+    manaColor?: ManaType,
+  ): number {
+    // Asked for every mana source, every offer and every "could produce"
+    // read, and a resolution context is dear to build: once per cache region.
+    return computedCacheMemo(`liveMana:${source}:${player}:${manaColor ?? ""}:${JSON.stringify(amount)}`, () => {
+      const ctx = computedCacheMemo(`liveManaCtx:${source}:${player}`, () =>
+        this.makeResolutionContext(source, player, []),
+      );
+      const n = amountValue(amount, manaColor === undefined ? ctx : { ...ctx, manaColor });
+      return Math.max(0, Math.min(n, Game.MAX_EFFECT_INSTANCES));
+    });
+  }
+
+  /** Whether an `add-mana` amount is read for the colour being made — a
+   * `{ devotionTo: "that-color" }` anywhere in it. */
+  private static amountReadsManaColor(amount: EffectAmount): boolean {
+    return JSON.stringify(amount).includes('"that-color"');
   }
 
   /** The most mana one activation of `s` can put in the pool (used only as a
@@ -11092,7 +11164,9 @@ export class Game {
     // — the plan orders its funding sources ahead of it, and names the exact
     // units they contributed.
     for (const m of step.spends) this.removeMana(player, m);
-    // The last units are what triggered mana abilities added, and theirs.
+    // The last units are what triggered mana abilities added, and theirs:
+    // none of this source's restrictions or riders ride on them (the Mirari's
+    // Wake and Kinnan rulings).
     const extraFrom = step.extraFrom ?? [];
     const own = step.mana.length - extraFrom.length;
     const origins = new Map<ObjectId, ManaOrigin | undefined>();
@@ -11101,7 +11175,9 @@ export class Game {
       return origins.get(id);
     };
     step.mana.forEach((m, i) =>
-      this.addMana(player, m, 1, step.tag, originOf(i < own ? step.source : extraFrom[i - own])),
+      i < own
+        ? this.addMana(player, m, 1, step.tag, originOf(step.source))
+        : this.addMana(player, m, 1, undefined, originOf(extraFrom[i - own])),
     );
     if (step.oncePerTurn !== undefined) {
       object.abilitiesUsedThisTurn = [...(object.abilitiesUsedThisTurn ?? []), step.oncePerTurn];
@@ -11134,30 +11210,46 @@ export class Game {
    * units and the extra come out as one colour).
    */
   private withManaExtra(option: ManaOption, extra: ManaExtra, player: PlayerId): ManaOption[] {
+    // What the source itself makes, apart from extras already added — the
+    // extras' fixed units are the last of `fixed` (`ManaOption.extras`).
+    const extras = option.extras ?? [];
+    const extraFixed = extras.filter((e) => e.type !== undefined).length;
+    const ownFixed = option.fixed.slice(0, option.fixed.length - extraFixed);
+    const extraAny = extras.length - extraFixed;
+    const ownAny = option.anyColor - extraAny;
     // "…for {C}": an option that makes none doesn't set it off.
-    if (extra.producing !== undefined && !option.fixed.includes(extra.producing)) return [option];
+    if (extra.producing !== undefined && !ownFixed.includes(extra.producing)) return [option];
     // The extra units are the triggered ability's source's (see `ManaOrigin`).
-    const extraFrom = [...(option.extraFrom ?? []), ...Array<ObjectId>(extra.amount).fill(extra.holder)];
-    const plus = (type: ManaType, anyColor = option.anyColor): ManaOption => ({
+    const plus = (type: ManaType): ManaOption => ({
       ...option,
       fixed: [...option.fixed, ...Array<ManaType>(extra.amount).fill(type)],
-      anyColor,
-      extraFrom,
+      extras: [...extras, ...Array.from({ length: extra.amount }, () => ({ from: extra.holder, type }))],
     });
     const mana = extra.mana;
-    if (mana === "chosen") return [option];
+    if (mana === "chosen") {
+      // "…an additional one mana of the chosen color": the holder's choice.
+      const chosen = this.state.objects[extra.holder]?.chosenOnEnter;
+      return MANA_TYPES.includes(chosen as ManaType) ? [plus(chosen as ManaType)] : [option];
+    }
     if (mana === "any-color") {
       return option.anyColorOf === undefined
-        ? [{ ...option, anyColor: option.anyColor + extra.amount, extraFrom }]
+        ? [
+            {
+              ...option,
+              anyColor: option.anyColor + extra.amount,
+              extras: [...extras, ...Array.from({ length: extra.amount }, () => ({ from: extra.holder }))],
+            },
+          ]
         : COLORS.map((c) => plus(c));
     }
-    if (typeof mana === "object" && "all" in mana) {
-      const made = Array.from({ length: extra.amount }, () => mana.all).flat();
+    if (typeof mana === "object" && ("all" in mana || "eachColorAmong" in mana)) {
+      const each = "all" in mana ? mana.all : this.manaOneOf(mana, player, extra.holder);
+      const made = Array.from({ length: extra.amount }, () => each).flat();
       return [
         {
           ...option,
           fixed: [...option.fixed, ...made],
-          extraFrom: [...(option.extraFrom ?? []), ...Array<ObjectId>(made.length).fill(extra.holder)],
+          extras: [...extras, ...made.map((type) => ({ from: extra.holder, type }))],
         },
       ];
     }
@@ -11165,19 +11257,194 @@ export class Game {
       const identity = this.commanderIdentityMana(player);
       return identity === null ? [option] : identity.oneOf.map((t) => plus(t));
     }
-    if (typeof mana === "object") return this.manaOneOf(mana, player).map((t) => plus(t));
+    if (typeof mana === "object") return this.manaOneOf(mana, player, extra.holder).map((t) => plus(t));
     if (mana !== "produced") return [plus(mana)];
-    const out = [...new Set(option.fixed)].map((t) => plus(t));
-    if (option.anyColor > 0) {
+    // "One mana of any type that permanent produced": a type the source's own
+    // ability made, never one an earlier extra added.
+    const out = [...new Set(ownFixed)].map((t) => plus(t));
+    if (ownAny > 0) {
+      // Its "any colour" units could be any of them, so they and the extra
+      // come out as one colour — placed before the extras already there.
       for (const c of option.anyColorOf ?? COLORS) {
         const { anyColorOf: _restricted, ...rest } = option;
+        const extraTypes = extras.filter((e) => e.type !== undefined).map((e) => e.type as ManaType);
         out.push({
           ...rest,
-          fixed: [...option.fixed, ...Array<ManaType>(option.anyColor + extra.amount).fill(c)],
-          anyColor: 0,
-          extraFrom,
+          fixed: [
+            ...ownFixed,
+            ...Array<ManaType>(ownAny).fill(c),
+            ...extraTypes,
+            ...Array<ManaType>(extra.amount).fill(c),
+          ],
+          // Earlier "any colour" extras stay flexible.
+          anyColor: extraAny,
+          extras: [
+            ...extras.filter((e) => e.type !== undefined),
+            ...Array.from({ length: extra.amount }, () => ({ from: extra.holder, type: c })),
+            ...extras.filter((e) => e.type === undefined),
+          ],
         });
       }
+    }
+    return out;
+  }
+
+  /**
+   * The ways of activating mana ability `ability` of `sourceId` on its own
+   * (by hand, not to pay a cost) that end differently, one per outcome the
+   * player picks between — or `null` when there's only the one, which is
+   * offered once. Each is the action's `manaColors` (a pick per unit whose
+   * type is the player's: the ability's own, then each triggered mana
+   * ability's that has a choice in it — see `activateAbility`) and what it
+   * makes, every unit, for its label.
+   *
+   * "Any color" / "any combination of" is `standaloneManaChoices`'s list;
+   * "Choose a color. Add an amount of mana of that color equal to your
+   * devotion to that color" (Nykthos) is one entry per colour, with every
+   * colour that would make nothing one entry. A `tap-for-mana` multiplier
+   * (Mana Reflection) makes more of the same, and the extra mana tapping it
+   * adds (Mirari's Wake's "one mana of any type that land produced", off a
+   * land that made two types) is a further pick per outcome.
+   */
+  private standaloneManaVariants(
+    sourceId: ObjectId,
+    ability: ActivatedAbility,
+    player: PlayerId,
+  ): { readonly manaColors: readonly ManaType[]; readonly makes: readonly ManaType[] }[] | null {
+    const effect = ability.effect;
+    // Anything else goes on the stack and asks as it resolves (rule 608.2d).
+    if (effect === null || !isManaAbility(ability)) return null;
+    let own: { readonly picks: readonly ManaType[]; readonly makes: readonly ManaType[] }[] | null;
+    if (effect.kind === "add-mana" && effect.mana === "any-color" && Game.amountReadsManaColor(effect.amount)) {
+      own = [];
+      let none = false;
+      for (const c of COLORS) {
+        const n = this.liveManaAmount(sourceId, player, effect.amount, c);
+        if (n > 0) own.push({ picks: Array<ManaType>(n).fill(c), makes: Array<ManaType>(n).fill(c) });
+        else none = true;
+      }
+      if (none) own.push({ picks: [], makes: [] });
+    } else {
+      const choices = standaloneManaChoices(
+        ability,
+        (m) => this.manaOneOf(m, player, sourceId),
+        () =>
+          effect.kind === "add-mana" && typeof effect.amount !== "number"
+            ? this.liveManaAmount(sourceId, player, effect.amount)
+            : null,
+      );
+      // A list naming no type now (Mox Amber with no legendary permanent,
+      // Exotic Orchard with no coloured land opposite) can still be
+      // activated — it just adds no mana (the Mox Amber ruling).
+      own = choices === null ? null : choices.length === 0 ? [{ picks: [], makes: [] }] : choices.map((c) => ({ picks: c, makes: c }));
+    }
+    const asIs = own === null ? null : own.map((v) => ({ manaColors: v.picks, makes: v.makes }));
+    const object = this.state.objects[sourceId];
+    if (!ability.cost.tap || object === undefined) return asIs;
+    const extras = this.tappedForManaExtras(object);
+    const multiplier = this.tapManaMultiplier(player);
+    if (extras.length === 0 && multiplier === 1) return asIs;
+    let base = own;
+    if (base === null) {
+      const fixed = this.fixedManaOutput(effect, sourceId, player);
+      if (fixed === null) return asIs;
+      base = [{ picks: [], makes: fixed }];
+    }
+    const out: { manaColors: readonly ManaType[]; makes: readonly ManaType[] }[] = [];
+    for (const variant of base) {
+      const made = variant.makes.flatMap((t) => Array<ManaType>(multiplier).fill(t));
+      let combos: { manaColors: readonly ManaType[]; makes: readonly ManaType[] }[] = [
+        { manaColors: variant.picks, makes: made },
+      ];
+      for (const extra of this.extraManaOutputs(object, made, player)) {
+        combos =
+          "units" in extra
+            ? combos.map((c) => ({ manaColors: c.manaColors, makes: [...c.makes, ...extra.units] }))
+            : combos.flatMap((c) =>
+                extra.choices.map((t) => ({
+                  manaColors: [...c.manaColors, t],
+                  makes: [...c.makes, ...Array<ManaType>(extra.amount).fill(t)],
+                })),
+              );
+      }
+      out.push(...combos);
+    }
+    // Nothing anywhere to pick: offered once, as ever.
+    if (own === null && out.length === 1 && out[0].manaColors.length === 0) return null;
+    return out;
+  }
+
+  /** Everything `effect` — a mana ability's — makes when nothing in it is
+   * the player's to choose, or `null` when something is. */
+  private fixedManaOutput(effect: EffectSpec, sourceId: ObjectId, player: PlayerId): ManaType[] | null {
+    if (effect.kind === "sequence") {
+      const parts = effect.effects.map((step) => this.fixedManaOutput(step, sourceId, player));
+      return parts.some((p) => p === null) ? null : parts.flatMap((p) => p ?? []);
+    }
+    if (effect.kind !== "add-mana") return [];
+    const n =
+      typeof effect.amount === "number" ? effect.amount : this.liveManaAmount(sourceId, player, effect.amount);
+    const m = effect.mana;
+    let types: readonly ManaType[] | null;
+    if (m === "any-color") types = null;
+    else if (m === "produced") types = [];
+    else if (m === "chosen") {
+      const chosen = this.state.objects[sourceId]?.chosenOnEnter;
+      types = MANA_TYPES.includes(chosen as ManaType) ? [chosen as ManaType] : [];
+    } else if (m === "commander-identity") {
+      const identity = this.commanderIdentityMana(player)?.oneOf ?? [];
+      types = identity.length <= 1 ? identity : null;
+    } else if (typeof m === "string") types = [m];
+    else if ("all" in m) types = m.all;
+    else if ("eachColorAmong" in m) types = this.manaOneOf(m, player, sourceId);
+    else {
+      const list = "oneOf" in m ? m.oneOf : this.manaOneOf(m, player, sourceId);
+      types = list.length <= 1 ? list : null;
+    }
+    return types === null ? null : Array.from({ length: Math.max(0, n) }, () => types).flat();
+  }
+
+  /**
+   * What the triggered mana abilities (rule 605.1b) add as `tapped` is
+   * tapped for mana by hand, given the types its own ability `produced`:
+   * each either fixed `units`, or `amount` mana of one of `choices` — the
+   * player's pick ("one mana of any type that land produced" off a land that
+   * made two types: Mirari's Wake's ruling). A list naming one type is
+   * fixed; one naming none adds nothing (rule 106.5).
+   */
+  private extraManaOutputs(
+    tapped: GameObject,
+    produced: readonly ManaType[],
+    player: PlayerId,
+  ): (
+    | { readonly holder: ObjectId; readonly units: readonly ManaType[] }
+    | { readonly holder: ObjectId; readonly amount: number; readonly choices: readonly ManaType[] }
+  )[] {
+    const out: (
+      | { readonly holder: ObjectId; readonly units: readonly ManaType[] }
+      | { readonly holder: ObjectId; readonly amount: number; readonly choices: readonly ManaType[] }
+    )[] = [];
+    for (const extra of this.tappedForManaExtras(tapped)) {
+      if (extra.producing !== undefined && !produced.includes(extra.producing)) continue;
+      const fixed = (types: readonly ManaType[]): void => {
+        const units = Array.from({ length: extra.amount }, () => types).flat();
+        if (units.length > 0) out.push({ holder: extra.holder, units });
+      };
+      const choose = (choices: readonly ManaType[]): void => {
+        if (choices.length === 1) fixed(choices);
+        else if (choices.length > 1) out.push({ holder: extra.holder, amount: extra.amount, choices });
+      };
+      const m = extra.mana;
+      if (m === "produced") choose(MANA_TYPES.filter((t) => produced.includes(t)));
+      else if (m === "chosen") {
+        const chosen = this.state.objects[extra.holder]?.chosenOnEnter;
+        if (MANA_TYPES.includes(chosen as ManaType)) fixed([chosen as ManaType]);
+      } else if (m === "any-color") choose(COLORS);
+      else if (m === "commander-identity") choose(this.commanderIdentityMana(player)?.oneOf ?? []);
+      else if (typeof m === "string") fixed([m]);
+      else if ("all" in m) fixed(m.all);
+      else if ("eachColorAmong" in m) fixed(this.manaOneOf(m, player, extra.holder));
+      else choose(this.manaOneOf(m, player, extra.holder));
     }
     return out;
   }
@@ -11190,7 +11457,19 @@ export class Game {
    */
   private tappedForManaExtras(tapped: GameObject): ManaExtra[] {
     const out: ManaExtra[] = [];
-    for (const id of this.state.zones.shared.battlefield) {
+    // Only the permanents with such a trigger are worth a look  read once
+    // per cache region, since every mana source and hand-activation offer
+    // asks.
+    const holders = computedCacheMemo("tappedForManaHolders", () =>
+      this.state.zones.shared.battlefield.filter((id) => {
+        const object = this.state.objects[id];
+        return (
+          object !== undefined &&
+          this.registry.get(printedCardName(object)).triggered.some((t) => t.trigger.on === "tapped-for-mana")
+        );
+      }),
+    );
+    for (const id of holders) {
       const holder = this.state.objects[id];
       if (holder === undefined || hasLostAbilities(holder)) continue;
       if (this.state.players[holder.controller]?.hasLost === true) continue;
@@ -11278,11 +11557,16 @@ export class Game {
   ): void {
     // A standalone "add one mana of any colour"/"any combination of [...]"
     // (not paying a cost) just makes white / all of the first listed colour —
-    // the planner resolves the colour(s) itself when it's a payment (P20).
-    const concrete: ManaType =
+    // the planner resolves the colour(s) itself when it's a payment (P20), a
+    // hand activation names them (`manaColors`), and a spell or an ability
+    // on the stack asks (`add-mana` in `effects.ts`). An empty list names no
+    // type, and no mana is made (rule 106.5).
+    const concrete: ManaType | undefined =
       mana === "any-color" ? "W" : typeof mana === "object" ? mana.oneOf[0] : mana;
+    if (concrete === undefined) return;
     const pool = this.state.players[player].manaPool;
-    const units = Math.min(amount, Game.MAX_EFFECT_INSTANCES);
+    const units = Math.max(0, Math.min(amount, Game.MAX_EFFECT_INSTANCES));
+    if (units === 0) return;
     for (let i = 0; i < units; i += 1) {
       pool.push({ type: concrete, ...tag, ...(origin !== undefined ? { from: origin } : {}) });
     }
@@ -12262,32 +12546,175 @@ export class Game {
     return colors.length === 0 ? null : { oneOf: colors };
   }
 
+  /**
+   * The concrete types an `add-mana` `oneOf` names, or a list read off the
+   * board instead of printed ({@link BoardManaList}: Exotic Orchard's "any
+   * color that a land an opponent controls could produce", Mox Amber's "any
+   * color among legendary creatures and planeswalkers you control") — which
+   * has to be resolved wherever the spec is read: the payment planner, the
+   * standalone-activation menu and `addMana` itself. `player` is whose
+   * ability it is; `source` the permanent it's on, for a list that reads its
+   * linked cards or mustn't count itself.
+   */
   private manaOneOf(
-    mana: { readonly oneOf: readonly ManaType[] } | { readonly producedBy: "opponents-lands" },
+    mana: { readonly oneOf: readonly ManaType[] } | BoardManaList,
     player: PlayerId,
+    source?: ObjectId,
+    /** The lands already being asked what they could produce, further up a
+     * chain of "could produce" lands (rule 106.7) — never asked again. */
+    visiting: ReadonlySet<ObjectId> = new Set(),
   ): readonly ManaType[] {
     if ("oneOf" in mana) return mana.oneOf;
-    const colors = new Set<ManaType>();
-    for (const id of this.state.zones.shared.battlefield) {
-      const object = this.state.objects[id];
-      if (object === undefined || object.controller === player) continue;
-      const def = this.registry.get(printedCardName(object));
-      if (!def.types.includes("land")) continue;
-      // What it could produce, read off its own mana abilities — so a dual
-      // land offers both of its colours and a Wastes offers none.
-      for (const ability of def.activated) {
-        const effect = ability.effect;
-        if (effect === null || effect.kind !== "add-mana") continue;
-        const m = effect.mana;
-        if (m === "any-color") for (const c of COLORS) colors.add(c);
-        else if (m === "commander-identity") {
-          for (const c of this.state.players[object.controller]?.commanderIdentity ?? []) colors.add(c);
-        } else if (typeof m === "string" && m !== "chosen" && m !== "produced" && m !== "C") colors.add(m);
-        else if (typeof m === "object" && "oneOf" in m) for (const c of m.oneOf) colors.add(c);
-        else if (typeof m === "object" && "all" in m) for (const c of m.all) if (c !== "C") colors.add(c);
-      }
+    // Read off the whole board, and asked for every offer and payment plan:
+    // once per cache region for a list asked from the top.
+    if (visiting.size === 0) {
+      return computedCacheMemo(`manaOneOf:${player}:${source ?? ""}:${JSON.stringify(mana)}`, () =>
+        this.manaListTypes(mana, player, source, visiting),
+      );
     }
-    return [...colors];
+    return this.manaListTypes(mana, player, source, visiting);
+  }
+
+  /** {@link manaOneOf} for a {@link BoardManaList}, worked out. */
+  private manaListTypes(
+    mana: BoardManaList,
+    player: PlayerId,
+    source: ObjectId | undefined,
+    visiting: ReadonlySet<ObjectId>,
+  ): readonly ManaType[] {
+    const types = new Set<ManaType>();
+    if ("producedBy" in mana) {
+      const asking = source === undefined ? visiting : new Set([...visiting, source]);
+      for (const id of this.state.zones.shared.battlefield) {
+        const object = this.state.objects[id];
+        if (object === undefined || asking.has(id)) continue;
+        if ((object.controller === player) !== (mana.producedBy === "your-lands")) continue;
+        if (!effectiveTypes(this.state, this.registry, object).includes("land")) continue;
+        if (
+          mana.filter !== undefined &&
+          !matchesFilter(this.state, this.registry, id, mana.filter, { you: player })
+        ) {
+          continue;
+        }
+        for (const type of this.couldProduce(id, asking)) types.add(type);
+      }
+      if (mana.anyType !== true) types.delete("C");
+      return MANA_TYPES.filter((t) => types.has(t));
+    }
+    // "Any color among …" / "for each color among …": colourless is no
+    // colour, so nothing of it is ever made.
+    const filter = "colorAmong" in mana ? mana.colorAmong : mana.eachColorAmong;
+    const zone = "colorAmong" in mana ? mana.zone : undefined;
+    let ids: readonly ObjectId[];
+    if (zone === "graveyard") {
+      ids = (this.state.zones.perPlayer[player]?.graveyard ?? []).filter((id) =>
+        matchesFilter(this.state, this.registry, id, filter, { you: player }),
+      );
+    } else if (zone === "exiled-with-source") {
+      // The cards linked to this permanent, in the stint it's in now (rule
+      // 607.2a) — a mana ability resolves at once, from the battlefield.
+      const object = source === undefined ? undefined : this.state.objects[source];
+      const stint = object?.zone === "battlefield" ? (object.zoneChangeCount ?? 0) : undefined;
+      ids =
+        stint === undefined
+          ? []
+          : this.state.zones.shared.exile.filter((id) => {
+              const link = this.state.objects[id]?.exiledWith;
+              return (
+                link !== undefined &&
+                link.source === source &&
+                link.zoneChangeCount === stint &&
+                matchesFilter(this.state, this.registry, id, filter, { you: player })
+              );
+            });
+    } else {
+      ids = this.state.zones.shared.battlefield.filter((id) =>
+        matchesFilter(this.state, this.registry, id, filter, { you: player }),
+      );
+    }
+    for (const id of ids) {
+      const object = this.state.objects[id];
+      if (object !== undefined) for (const color of effectiveColors(this.registry, object)) types.add(color);
+    }
+    return COLORS.filter((c) => types.has(c));
+  }
+
+  /**
+   * Every type of mana the permanent `id` could produce (rule 106.7): any
+   * type one of its mana abilities would make if it resolved now — its costs
+   * and timing ignored (the Reflecting Pool and Horizon of Progress rulings:
+   * a tapped land counts, so does a Vivid land with no counters), an amount
+   * that would make nothing making no type. A "could produce" land asks
+   * through to the lands it reads, never back to one already asking
+   * (`visiting`): two Reflecting Pools alone produce nothing.
+   */
+  private couldProduce(id: ObjectId, visiting: ReadonlySet<ObjectId>): readonly ManaType[] {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return [];
+    const printedLost = hasLostAbilities(object)
+      ? this.registry.get(printedCardName(object)).activated.length
+      : 0;
+    const abilities = this.effectiveActivated(id).filter(
+      (_, index) => index >= printedLost && !inactiveStandIn(this.state, this.registry, object, index),
+    );
+    // A land that reads no other land answers the same whoever asks: once
+    // per cache region.
+    const readsLands = abilities.some((ability) => JSON.stringify(ability.effect).includes('"producedBy"'));
+    return readsLands
+      ? this.couldProduceUncached(id, object, abilities, visiting)
+      : computedCacheMemo(`couldProduce:${id}`, () => this.couldProduceUncached(id, object, abilities, visiting));
+  }
+
+  private couldProduceUncached(
+    id: ObjectId,
+    object: GameObject,
+    abilities: readonly ActivatedAbility[],
+    visiting: ReadonlySet<ObjectId>,
+  ): readonly ManaType[] {
+    const types = new Set<ManaType>();
+    const asking = new Set([...visiting, id]);
+    const player = object.controller;
+    // Whether the amount makes any mana — read only when a type it would add
+    // isn't already known, since a live amount is dear to read.
+    const makes = (amount: EffectAmount, color?: ManaType): boolean =>
+      typeof amount === "number"
+        ? amount > 0
+        : amount === "x" || this.liveManaAmount(id, player, amount, color) > 0;
+    const addAll = (candidates: readonly ManaType[], amount: EffectAmount): void => {
+      const fresh = candidates.filter((t) => !types.has(t));
+      if (fresh.length > 0 && makes(amount)) for (const t of fresh) types.add(t);
+    };
+    const addFrom = (effect: EffectSpec | null): void => {
+      if (effect === null) return;
+      if (effect.kind === "sequence") {
+        for (const step of effect.effects) addFrom(step);
+        return;
+      }
+      if (effect.kind !== "add-mana") return;
+      const m = effect.mana;
+      if (m === "any-color") {
+        // An amount read for the colour (Nykthos) is asked colour by colour.
+        if (typeof effect.amount !== "number" && Game.amountReadsManaColor(effect.amount)) {
+          for (const c of COLORS) if (!types.has(c) && makes(effect.amount, c)) types.add(c);
+        } else addAll(COLORS, effect.amount);
+        return;
+      }
+      if (m === "produced") return;
+      if (m === "chosen") {
+        const chosen = object.chosenOnEnter;
+        if (MANA_TYPES.includes(chosen as ManaType)) addAll([chosen as ManaType], effect.amount);
+      } else if (m === "commander-identity") {
+        addAll(this.state.players[player]?.commanderIdentity ?? [], effect.amount);
+      } else if (typeof m === "string") {
+        addAll([m], effect.amount);
+      } else if ("all" in m) {
+        addAll(m.all, effect.amount);
+      } else {
+        addAll(this.manaOneOf(m, player, id, asking), effect.amount);
+      }
+    };
+    for (const ability of abilities) addFrom(ability.effect);
+    return [...types];
   }
 
   /**
@@ -15235,11 +15662,12 @@ export class Game {
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
       loseLife: (player, amount) => this.changeLife(player, -amount),
+      manaTypesOf: (mana) => this.manaOneOf(mana, controller, source),
       addMana: (player, mana, amount, spec) =>
         this.addMana(
           player,
-          typeof mana === "object" && "producedBy" in mana
-            ? { oneOf: this.manaOneOf(mana, player) }
+          typeof mana === "object" && !("oneOf" in mana)
+            ? { oneOf: this.manaOneOf(mana, player, source) }
             : mana,
           amount,
           // The source is the permanent whose ability this is, which is what
@@ -15649,7 +16077,7 @@ export class Game {
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count, withCounters) =>
         this.exileFromLibraryByEffect(target, count, controller, withCounters),
-      countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except),
+      countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except, source),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
@@ -16172,6 +16600,7 @@ export class Game {
           ? ref.player
           : (lastKnownOf(ref)?.controller ?? this.state.objects[ref.object]?.controller),
       devotionTo: (color) => this.devotionTo(controller, color),
+      greatestCommanderManaValue: () => greatestCommanderManaValue(this.state, this.registry, controller),
       opponentsControllingFewer: (filter) => {
         const mine = this.countBattlefieldMatching(controller, filter);
         return this.state.turnOrder.filter(
@@ -16326,7 +16755,9 @@ export class Game {
         const stint =
           refs.source ?? (sourceObject?.zone === "battlefield" ? (sourceObject.zoneChangeCount ?? 0) : undefined);
         const exileLink =
-          destination === "exile-face-down" && stint !== undefined ? { source, zoneChangeCount: stint } : undefined;
+          (destination === "exile-face-down" || destination === "exile") && stint !== undefined
+            ? { source, zoneChangeCount: stint }
+            : undefined;
         this.beginZoneChoice(
           // "Each player looks at … their library" — that player's own.
           chooser ?? controller,
@@ -16378,7 +16809,7 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down" | "exile",
     leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
@@ -18835,14 +19266,22 @@ export class Game {
     you: PlayerId,
     filter: CardFilter,
     except: readonly ObjectId[] = [],
+    /** The permanent whose ability is counting — what a clause about it
+     * reads: Three Tree City's "creatures you control **of the chosen
+     * type**" (`ofChosenType`). */
+    source?: ObjectId,
   ): number {
+    const ctx = { you, ...(source !== undefined ? { source } : {}) };
     if (except.length === 0) {
-      return permanentCount(this.state, this.battlefieldMatching(you, filter));
+      return permanentCount(
+        this.state,
+        this.state.zones.shared.battlefield.filter((id) => matchesFilter(this.state, this.registry, id, filter, ctx)),
+      );
     }
     return weightedMatches(
       this.state,
       this.state.zones.shared.battlefield,
-      (id) => matchesFilter(this.state, this.registry, id, filter, { you }),
+      (id) => matchesFilter(this.state, this.registry, id, filter, ctx),
       except,
     ).reduce((n, m) => n + m.weight, 0);
   }
@@ -23405,6 +23844,28 @@ export class Game {
       colorsAmong: (filter, except = []) => ctx.colorsAmong(filter, [...except, ...notYet]),
     });
     return Math.max(0, n);
+  }
+
+  /** Product of every `tap-for-mana` multiplier (rules 106.12b, 614.1a) on
+   * a battlefield permanent `player` controls — "if you tap a permanent for
+   * mana, it produces twice as much of that mana instead" (Mana Reflection;
+   * three times, Nyxbloom Ancient), which compound (the ruling: two Mana
+   * Reflections make four times as much). `1` when there are none. */
+  private tapManaMultiplier(player: PlayerId): number {
+    return computedCacheMemo(`tapManaMultiplier:${player}`, () => this.tapManaMultiplierUncached(player));
+  }
+
+  private tapManaMultiplierUncached(player: PlayerId): number {
+    let mult = 1;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controller !== player || hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (r?.event === "tap-for-mana" && this.staticActive(object, ability)) mult *= r.multiplier;
+      }
+    }
+    return Math.min(mult, Game.MAX_EFFECT_INSTANCES);
   }
 
   /** Product of every `would-create-token` multiplier (rule 614) on a

@@ -53,6 +53,7 @@ import _poolEtheriumAstrolabe from "../pool/etherium-astrolabe.js";
 import _poolEyeOfRamos from "../pool/eye-of-ramos.js";
 import _poolFadeIntoAntiquity from "../pool/fade-into-antiquity.js";
 import _poolFairgroundsPatrol from "../pool/fairgrounds-patrol.js";
+import _poolFertileGround from "../pool/fertile-ground.js";
 import _poolFiendlash from "../pool/fiendlash.js";
 import _poolFinalDeath from "../pool/final-death.js";
 import _poolFlightOfFancy from "../pool/flight-of-fancy.js";
@@ -244,6 +245,7 @@ const shard: CardShard = {
     _poolEyeOfRamos,
     _poolFadeIntoAntiquity,
     _poolFairgroundsPatrol,
+    _poolFertileGround,
     _poolFiendlash,
     _poolFinalDeath,
     _poolFlightOfFancy,

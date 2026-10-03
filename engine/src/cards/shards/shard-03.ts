@@ -98,6 +98,7 @@ import _poolMossViper from "../pool/moss-viper.js";
 import _poolNettleSwine from "../pool/nettle-swine.js";
 import _poolNimbusWings from "../pool/nimbus-wings.js";
 import _poolNoblePanther from "../pool/noble-panther.js";
+import _poolNyxbloomAncient from "../pool/nyxbloom-ancient.js";
 import _poolNyxbornBrute from "../pool/nyxborn-brute.js";
 import _poolOgreResister from "../pool/ogre-resister.js";
 import _poolOracleOfMulDaya from "../pool/oracle-of-mul-daya.js";
@@ -291,6 +292,7 @@ const shard: CardShard = {
     _poolNettleSwine,
     _poolNimbusWings,
     _poolNoblePanther,
+    _poolNyxbloomAncient,
     _poolNyxbornBrute,
     _poolOgreResister,
     _poolOracleOfMulDaya,

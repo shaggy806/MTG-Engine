@@ -47,6 +47,7 @@ import _poolDarksteelRelic from "../pool/darksteel-relic.js";
 import _poolDawnhartRejuvenator from "../pool/dawnhart-rejuvenator.js";
 import _poolDazzlingLights from "../pool/dazzling-lights.js";
 import _poolDeadlyPlot from "../pool/deadly-plot.js";
+import _poolDeathriteShaman from "../pool/deathrite-shaman.js";
 import _poolDemolitionField from "../pool/demolition-field.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
@@ -121,6 +122,7 @@ import _poolMoxOpal from "../pool/mox-opal.js";
 import _poolMysticPeak from "../pool/mystic-peak.js";
 import _poolNantukoElder from "../pool/nantuko-elder.js";
 import _poolNarnamCobra from "../pool/narnam-cobra.js";
+import _poolNyxLotus from "../pool/nyx-lotus.js";
 import _poolOhranFrostfang from "../pool/ohran-frostfang.js";
 import _poolOvergrownFarmland from "../pool/overgrown-farmland.js";
 import _poolPainfulQuandary from "../pool/painful-quandary.js";
@@ -260,6 +262,7 @@ const shard: CardShard = {
     _poolDawnhartRejuvenator,
     _poolDazzlingLights,
     _poolDeadlyPlot,
+    _poolDeathriteShaman,
     _poolDemolitionField,
     _poolEarthOriginYak,
     _poolEiganjoSeatOfTheEmpire,
@@ -334,6 +337,7 @@ const shard: CardShard = {
     _poolMysticPeak,
     _poolNantukoElder,
     _poolNarnamCobra,
+    _poolNyxLotus,
     _poolOhranFrostfang,
     _poolOvergrownFarmland,
     _poolPainfulQuandary,

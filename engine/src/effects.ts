@@ -323,8 +323,18 @@ export type EffectAmount =
   /** Your **devotion** to a colour (rule 700.5): every mana symbol of that
    * colour in the mana costs of permanents you control, hybrid pips included.
    * Gray Merchant of Asphodel's "each opponent loses X life, where X is your
-   * devotion to black". */
-  | { readonly devotionTo: Color }
+   * devotion to black".
+   *
+   * `"that-color"` is the colour an `add-mana` of `"any-color"` is making —
+   * Nykthos, Shrine to Nyx's "Choose a color. Add an amount of mana of that
+   * color equal to your devotion to that color": the colour is chosen first,
+   * then the amount read for it. 0 anywhere else. */
+  | { readonly devotionTo: Color | "that-color" }
+  /** The greatest mana value among the effect's controller's commanders,
+   * wherever each one is, as it is now (Cactus Preserve's "an X/X … where X
+   * is the greatest mana value among your commanders" — its ruling); 0 with
+   * none. `characteristics.ts`'s `greatestCommanderManaValue`. */
+  | { readonly greatestCommanderManaValue: true }
   /** How many creatures died under the effect controller's control this turn
    * — Liliana's Standard Bearer. Reads `PlayerState.creaturesDiedThisTurn`.
    * `anyController`: every creature that died this turn, whoever controlled
@@ -758,6 +768,60 @@ export interface CastNowProgress {
   readonly followed?: boolean;
 }
 
+/**
+ * The `add-mana` lists read off the board rather than printed — what they
+ * name shrinks and grows with the board, and an empty one makes no mana at
+ * all (rule 106.5). The engine resolves one wherever the spec is read: the
+ * payment planner, the hand-activation menu and the mana being added
+ * (`EffectApi.manaTypesOf`).
+ */
+export type BoardManaList =
+  /**
+   * "…of any color that a land an opponent controls could produce" (Exotic
+   * Orchard, Fellwar Stone): a `oneOf` over those colours.
+   *
+   * `"your-lands"` is "…that a land **you** control could produce"
+   * (Reflecting Pool), `filter` narrows which lands (Gond Gate's "a Gate you
+   * control"), and `anyType` is "any **type**" rather than "any color" —
+   * colorless included (rule 106.1b). What a land could produce is rule
+   * 106.7's: every type one of its mana abilities would make if it resolved
+   * now, its costs ignored (a tapped land counts), read through other "could
+   * produce" lands without looping (two Reflecting Pools don't help each
+   * other — the ruling).
+   */
+  | {
+      readonly producedBy: "opponents-lands" | "your-lands";
+      readonly filter?: CardFilter;
+      readonly anyType?: true;
+      /** `amount` mana all of **one** of the types — Incubation Druid's "add
+       * three mana of that type instead" — as `oneOf`'s `same`. */
+      readonly same?: true;
+    }
+  /**
+   * "One mana of any color among legendary creatures and planeswalkers you
+   * control" (Mox Amber): a `oneOf` over the colours of the objects matching
+   * `colorAmong`, read as the mana is made — battlefield permanents, from
+   * the controller's side (put `controlledBy: "you"` in the filter for "you
+   * control"); with `zone: "graveyard"` the cards in the controller's
+   * graveyard (The Grey Havens' "legendary creature cards in your
+   * graveyard"); with `"exiled-with-source"` the cards linked to this
+   * permanent (rule 607.2a — Chrome Mox's "the exiled card's colors").
+   * Colourless isn't a colour, so none of them coloured makes no mana (the
+   * Mox Amber ruling).
+   */
+  | {
+      readonly colorAmong: CardFilter;
+      readonly zone?: "graveyard" | "exiled-with-source";
+      readonly same?: true;
+    }
+  /**
+   * "For each color among permanents you control, add one mana of that
+   * color" (Bloom Tender, Faeburrow Elder): an `all` over the colours among
+   * the battlefield permanents matching the filter, each colour once however
+   * many have it (the rulings) — `amount` times over.
+   */
+  | { readonly eachColorAmong: CardFilter };
+
 export type EffectSpec =
   | {
       /** Apply several effects in order, sharing the same targets and X.
@@ -921,14 +985,7 @@ export type EffectSpec =
          * `amount: 1`. Not a `oneOf` × 2, which could make {W}{W}.
          */
         | { readonly all: readonly ManaType[] }
-        /**
-         * "…of any color that a land an opponent controls could produce"
-         * (Exotic Orchard, Fellwar Stone). A `oneOf` whose list is read off
-         * the board rather than printed, so it shrinks and grows with what
-         * the opponents actually have out — and is empty, producing nothing
-         * at all, when they have no coloured lands.
-         */
-        | { readonly producedBy: "opponents-lands" };
+        | BoardManaList;
       /** An `EffectAmount` so a ritual can scale off the board — Mana Geyser's
        * "{R} for each tapped land your opponents control" — and a mana
        * ability can make a live amount (Marwyn's power, Kydele's cards drawn
@@ -971,6 +1028,13 @@ export type EffectSpec =
        * without using the stack; the auto-payer applies it too when it uses
        * the ability to pay a cost. */
       readonly also?: EffectSpec;
+      /** Who adds it, when that isn't the effect's controller — "each
+       * player adds {B}{R}{G}" (Yurlok of Scorch Thrash). For mana with no
+       * choice in it only (a choice is its controller's to make). A mana
+       * ability's own part for its controller stays unscoped — that is what
+       * the auto-payer counts — and the rest rides on `also` with
+       * `who: "each-opponent"`. */
+      readonly who?: PlayerScope;
     }
   | {
       readonly kind: "draw";
@@ -3245,8 +3309,12 @@ export type EffectSpec =
        * (rule 702.75a): the chosen cards are exiled face down (rule 406.3),
        * linked to this effect's source as "the exiled card" of its other
        * abilities (rule 607.2a — `GameObject.exiledWith`), and only the
-       * chooser — and whoever controls that source — may look at them. */
-      readonly destination: "battlefield" | "hand" | "library-top" | "exile-face-down";
+       * chooser — and whoever controls that source — may look at them.
+       *
+       * `"exile"` is the same link, face up — imprint's "you may exile a
+       * nonartifact, nonland card from your hand" (Chrome Mox), whose "the
+       * exiled card" is every player's to see. */
+      readonly destination: "battlefield" | "hand" | "library-top" | "exile-face-down" | "exile";
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
@@ -3510,6 +3578,8 @@ export interface EffectApi {
   controllerOf(ref: TargetRef): PlayerId | undefined;
   /** See the `{ devotionTo }` {@link EffectAmount}. */
   devotionTo(color: Color): number;
+  /** See the `{ greatestCommanderManaValue }` {@link EffectAmount}. */
+  greatestCommanderManaValue(): number;
   /** See the `{ opponentsControllingFewer }` {@link EffectAmount}. */
   opponentsControllingFewer(filter: CardFilter): number;
   /** See the `{ creaturesDiedThisTurn }` {@link EffectAmount}. */
@@ -3535,13 +3605,16 @@ export interface EffectApi {
   loseLife(player: PlayerId, amount: number): void;
   /** Change life for a whole scope (`gain-life` / `lose-life` with `who`). */
   changeLifeScoped(who: PlayerScope, delta: number): void;
+  /** The concrete types a {@link BoardManaList} names right now, read from
+   * this effect's source and controller. */
+  manaTypesOf(mana: BoardManaList): readonly ManaType[];
   addMana(
     player: PlayerId,
     mana:
       | ManaType
       | "any-color"
       | { readonly oneOf: readonly ManaType[]; readonly same?: true }
-      | { readonly producedBy: "opponents-lands" },
+      | Exclude<BoardManaList, { readonly eachColorAmong: CardFilter }>,
     amount: number,
     /** The whole `add-mana` spec, so the engine can stamp this mana's
      * provenance (a spend restriction, a spend rider, a "doesn't empty"
@@ -4224,7 +4297,7 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down" | "exile",
     leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
@@ -4297,6 +4370,15 @@ export interface ResolutionContext extends EffectApi {
    * first time — for `StaticCondition` `resolved-this-turn`. `0` for a spell,
    * which is not an ability. */
   readonly resolutionCount?: number;
+  /** Set while a **mana ability** resolves (rule 605.3b — one activated by
+   * hand): its colour choices were made as it was activated (the action's
+   * `manaColors`), so an `add-mana` with a choice in it makes what was
+   * picked rather than asking. Absent for a spell or an ability on the
+   * stack, where the choice is asked as the mana is added (rule 608.2d). */
+  readonly manaAbility?: true;
+  /** The colour an `add-mana` of `"any-color"` is making in this mana
+   * ability — what `{ devotionTo: "that-color" }` reads. */
+  readonly manaColor?: ManaType;
   /** The ability's source stayed in a non-battlefield zone while it was on
    * the stack (`ActivatedAbility.zone: "command"`, or `staysInZone`) and has
    * changed zones since: it's a new object (rule 400.7), so an effect naming
@@ -4694,7 +4776,13 @@ function signedAmountValue(
   if ("opponentsControllingFewer" in amount) {
     return ctx.opponentsControllingFewer(amount.opponentsControllingFewer);
   }
-  if ("devotionTo" in amount) return ctx.devotionTo(amount.devotionTo);
+  if ("devotionTo" in amount) {
+    // "Your devotion to that color" — the colour the `add-mana` reading it
+    // is making (Nykthos); with none chosen there's no colour to be devoted to.
+    const color = amount.devotionTo === "that-color" ? ctx.manaColor : amount.devotionTo;
+    return color === undefined || color === "C" ? 0 : ctx.devotionTo(color);
+  }
+  if ("greatestCommanderManaValue" in amount) return ctx.greatestCommanderManaValue();
   if ("creaturesDiedThisTurn" in amount) return ctx.creaturesDiedThisTurn(amount.anyController === true);
   if ("powerOf" in amount) {
     const ref = resolveAmountRef(amount.powerOf, ctx);
@@ -5002,6 +5090,130 @@ function targetsPermanentOrPlayer(spell: SpellSnapshot): boolean {
   );
 }
 
+/** The most splits of "N mana in any combination of …" offered as the modes
+ * of one choice; past it, each unit's colour is asked in turn. */
+const MAX_MANA_SPLIT_MODES = 35;
+
+/**
+ * An `add-mana` with a choice in it, as a spell or an ability on the stack
+ * adds it (rule 608.2d): the choice as `modal` decisions over concrete
+ * `add-mana`s, or `null` when there's nothing to choose — a fixed type, one
+ * of each (`all`), or a list that names a single type or none.
+ *
+ * "One mana of any color" and "N mana of any one color" are one choice of
+ * colour, for every unit; "N mana in any combination of …" is one choice of
+ * split when there are few enough of them (`MAX_MANA_SPLIT_MODES` — a
+ * Culling Ritual's ten units over {B} and {G} are eleven; two of any colour
+ * are fifteen), and otherwise each
+ * unit's colour in turn. An amount read for "that color" (`{ devotionTo:
+ * "that-color" }`) is read for each colour on offer. What the mana carries
+ * (a spend restriction, a rider, `persists`) rides on every mode; the rest of
+ * the instruction — damage to its controller, `also` — follows once.
+ */
+function addManaChoice(spec: Extract<EffectSpec, { kind: "add-mana" }>, ctx: ResolutionContext): EffectSpec | null {
+  const mana = spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana;
+  let colors: readonly ManaType[];
+  let same: boolean;
+  if (mana === "any-color") {
+    colors = MANA_COLORS;
+    same = true;
+  } else if (mana === "commander-identity") {
+    colors = ctx.commanderColors();
+    same = false;
+  } else if (typeof mana !== "object" || "all" in mana || "eachColorAmong" in mana) {
+    return null;
+  } else if ("oneOf" in mana) {
+    colors = mana.oneOf;
+    same = mana.same === true;
+  } else {
+    colors = ctx.manaTypesOf(mana);
+    same = mana.same === true;
+  }
+  if (colors.length < 2) return null;
+  const { kind: _kind, painToController, also, mana: _mana, amount: _amount, ...carried } = spec;
+  const symbols = (types: readonly ManaType[]): string =>
+    types.length === 0 ? "no mana" : types.map((t) => `{${t}}`).join("");
+  const steps: EffectSpec[] = [];
+  if (same) {
+    const amounts = colors.map((color) => Math.max(0, amountValue(spec.amount, { ...ctx, manaColor: color })));
+    // No mana whichever is chosen: nothing to ask.
+    if (amounts.every((n) => n === 0)) return null;
+    const modes = colors.map((color, i): ModeOption => {
+      const n = amounts[i];
+      return {
+        text: `Add ${n > 8 ? `${n} {${color}}` : symbols(Array<ManaType>(n).fill(color))}.`,
+        effect: { kind: "add-mana", ...carried, mana: color, amount: n },
+      };
+    });
+    steps.push({ kind: "modal", minModes: 1, maxModes: 1, modes });
+  } else {
+    const n = Math.max(0, amountValue(spec.amount, ctx));
+    if (n === 0) return null;
+    const splits = splitCountAtMost(colors.length, n, MAX_MANA_SPLIT_MODES + 1);
+    if (splits <= MAX_MANA_SPLIT_MODES) {
+      const modes = manaSplits(colors, n).map(
+        (split): ModeOption => ({
+          text: `Add ${symbols(split)}.`,
+          effect: { kind: "add-mana", ...carried, mana: { all: split }, amount: 1 },
+        }),
+      );
+      steps.push({ kind: "modal", minModes: 1, maxModes: 1, modes });
+    } else {
+      const modes = colors.map(
+        (color): ModeOption => ({
+          text: `Add {${color}}.`,
+          effect: { kind: "add-mana", ...carried, mana: color, amount: 1 },
+        }),
+      );
+      const units = Math.min(n, MAX_ASKED_MANA_UNITS);
+      for (let i = 0; i < units; i += 1) steps.push({ kind: "modal", minModes: 1, maxModes: 1, modes });
+    }
+  }
+  if ((painToController ?? 0) > 0 || also !== undefined) {
+    // The rest of the instruction, once: no mana of its own.
+    steps.push({
+      kind: "add-mana",
+      mana: "C",
+      amount: 0,
+      ...(painToController !== undefined ? { painToController } : {}),
+      ...(also !== undefined ? { also } : {}),
+    });
+  }
+  return steps.length === 1 ? steps[0] : { kind: "sequence", effects: steps };
+}
+
+/** The most units of "N mana in any combination" asked one at a time —
+ * `Game.MAX_EFFECT_INSTANCES`, which caps what any one effect mints. */
+const MAX_ASKED_MANA_UNITS = 1000;
+
+const MANA_COLORS: readonly ManaType[] = ["W", "U", "B", "R", "G"];
+
+/** How many multisets of `amount` units over `kinds` types there are,
+ * stopping at `cap`. */
+function splitCountAtMost(kinds: number, amount: number, cap: number): number {
+  let n = 1;
+  for (let i = 1; i < kinds; i += 1) {
+    n = (n * (amount + i)) / i;
+    if (n >= cap) return cap;
+  }
+  return Math.round(n);
+}
+
+/** Every multiset of `amount` units drawn from `types`, the first type's
+ * share largest first — "three mana in any combination of {R} and/or {G}":
+ * RRR, RRG, RGG, GGG. */
+function manaSplits(types: readonly ManaType[], amount: number): ManaType[][] {
+  if (amount === 0) return [[]];
+  const [first, ...rest] = types;
+  if (first === undefined) return [];
+  if (rest.length === 0) return [Array<ManaType>(amount).fill(first)];
+  const out: ManaType[][] = [];
+  for (let take = amount; take >= 0; take -= 1) {
+    for (const tail of manaSplits(rest, amount - take)) out.push([...Array<ManaType>(take).fill(first), ...tail]);
+  }
+  return out;
+}
+
 export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
   // A player won mid-resolution (Laboratory Maniac's draw, Thassa's Oracle):
   // the game is over (rule 104.1), and the rest of the instructions with it.
@@ -5120,27 +5332,44 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     }
-    case "add-mana":
+    case "add-mana": {
       // What a permanent tapped for mana produced is known only to the
       // triggered mana ability the engine applies there (`tapped-for-mana`).
       if (spec.mana === "produced") return;
-      // "Any color in your commander's color identity" — nothing at all with
-      // no colour there (no commander, or a colourless one).
-      if (spec.mana === "commander-identity") {
-        const colors = ctx.commanderColors();
-        if (colors.length > 0) ctx.addMana(ctx.controller, { oneOf: colors }, amountValue(spec.amount, ctx), spec);
-      } else if (typeof spec.mana === "object" && "all" in spec.mana) {
-        const times = amountValue(spec.amount, ctx);
-        for (const type of spec.mana.all) ctx.addMana(ctx.controller, type, times, spec);
-      } else ctx.addMana(
-        ctx.controller,
-        // "The chosen color" — resolved against the source permanent; falls
-        // back to the payer's choice if the label isn't a colour (it always
-        // is on the cards that use this).
-        spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana,
-        amountValue(spec.amount, ctx),
-        spec,
-      );
+      // A spell or an ability on the stack adding mana with a choice in it
+      // asks as the mana is added (rule 608.2d); a mana ability's choice came
+      // with its activation (`ResolutionContext.manaAbility`).
+      if (ctx.manaAbility !== true) {
+        const asked = addManaChoice(spec, ctx);
+        if (asked !== null) {
+          applyEffectSpec(asked, ctx);
+          return;
+        }
+      }
+      // "Each player adds …" (`who`) — the controller otherwise.
+      for (const player of spec.who === undefined ? [ctx.controller] : ctx.playersInScope(spec.who)) {
+        // "Any color in your commander's color identity" — nothing at all
+        // with no colour there (no commander, or a colourless one).
+        if (spec.mana === "commander-identity") {
+          const colors = ctx.commanderColors();
+          if (colors.length > 0) ctx.addMana(player, { oneOf: colors }, amountValue(spec.amount, ctx), spec);
+        } else if (typeof spec.mana === "object" && "all" in spec.mana) {
+          const times = amountValue(spec.amount, ctx);
+          for (const type of spec.mana.all) ctx.addMana(player, type, times, spec);
+        } else if (typeof spec.mana === "object" && "eachColorAmong" in spec.mana) {
+          // One of each colour among them, `amount` times over.
+          const times = amountValue(spec.amount, ctx);
+          for (const type of ctx.manaTypesOf(spec.mana)) ctx.addMana(player, type, times, spec);
+        } else ctx.addMana(
+          player,
+          // "The chosen color" — resolved against the source permanent; falls
+          // back to the payer's choice if the label isn't a colour (it always
+          // is on the cards that use this).
+          spec.mana === "chosen" ? (ctx.chosenColorOfSource() ?? "any-color") : spec.mana,
+          amountValue(spec.amount, ctx),
+          spec,
+        );
+      }
       if (spec.painToController !== undefined && spec.painToController > 0) {
         ctx.dealDamage(
           { kind: "player", player: ctx.controller },
@@ -5149,6 +5378,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       if (spec.also !== undefined) applyEffectSpec(spec.also, ctx);
       return;
+    }
     case "draw": {
       if (spec.target !== undefined) {
         const ref = ctx.targets[spec.target];

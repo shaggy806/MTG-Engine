@@ -62,6 +62,7 @@ import _poolEternalSkylord from "../pool/eternal-skylord.js";
 import _poolExoticOrchard from "../pool/exotic-orchard.js";
 import _poolExplore from "../pool/explore.js";
 import _poolExplosiveShot from "../pool/explosive-shot.js";
+import _poolFaeburrowElder from "../pool/faeburrow-elder.js";
 import _poolFaunaShaman from "../pool/fauna-shaman.js";
 import _poolFelidarCub from "../pool/felidar-cub.js";
 import _poolFlubsTheFool from "../pool/flubs-the-fool.js";
@@ -176,6 +177,7 @@ import _poolTerritorialRoc from "../pool/territorial-roc.js";
 import _poolTeysaKarlov from "../pool/teysa-karlov.js";
 import _poolThanosDeathsConsort from "../pool/thanos-deaths-consort.js";
 import _poolTheUnbeatableSquirrelGirl from "../pool/the-unbeatable-squirrel-girl.js";
+import _poolThreeTreeCity from "../pool/three-tree-city.js";
 import _poolThreefoldThunderhulk from "../pool/threefold-thunderhulk.js";
 import _poolThunderclapWyvern from "../pool/thunderclap-wyvern.js";
 import _poolThundermawHellkite from "../pool/thundermaw-hellkite.js";
@@ -268,6 +270,7 @@ const shard: CardShard = {
     _poolExoticOrchard,
     _poolExplore,
     _poolExplosiveShot,
+    _poolFaeburrowElder,
     _poolFaunaShaman,
     _poolFelidarCub,
     _poolFlubsTheFool,
@@ -382,6 +385,7 @@ const shard: CardShard = {
     _poolTeysaKarlov,
     _poolThanosDeathsConsort,
     _poolTheUnbeatableSquirrelGirl,
+    _poolThreeTreeCity,
     _poolThreefoldThunderhulk,
     _poolThunderclapWyvern,
     _poolThundermawHellkite,

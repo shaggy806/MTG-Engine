@@ -22,6 +22,7 @@ import _poolBogSmugglers from "../pool/bog-smugglers.js";
 import _poolBoldImpaler from "../pool/bold-impaler.js";
 import _poolBorealShelf from "../pool/boreal-shelf.js";
 import _poolBreakneckBerserker from "../pool/breakneck-berserker.js";
+import _poolCactusPreserve from "../pool/cactus-preserve.js";
 import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
@@ -188,6 +189,7 @@ import _poolTirelessTracker from "../pool/tireless-tracker.js";
 import _poolTreasureHunter from "../pool/treasure-hunter.js";
 import _poolTritonShorestalker from "../pool/triton-shorestalker.js";
 import _poolUktabiOrangutan from "../pool/uktabi-orangutan.js";
+import _poolUtopiaSprawl from "../pool/utopia-sprawl.js";
 import _poolVaultOfTheArchangel from "../pool/vault-of-the-archangel.js";
 import _poolVedalkenMesmerist from "../pool/vedalken-mesmerist.js";
 import _poolViashinoSlasher from "../pool/viashino-slasher.js";
@@ -233,6 +235,7 @@ const shard: CardShard = {
     _poolBoldImpaler,
     _poolBorealShelf,
     _poolBreakneckBerserker,
+    _poolCactusPreserve,
     _poolCallToTheFeast,
     _poolCanyonJerboa,
     _poolChaplainsBlessing,
@@ -399,6 +402,7 @@ const shard: CardShard = {
     _poolTreasureHunter,
     _poolTritonShorestalker,
     _poolUktabiOrangutan,
+    _poolUtopiaSprawl,
     _poolVaultOfTheArchangel,
     _poolVedalkenMesmerist,
     _poolViashinoSlasher,

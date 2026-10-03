@@ -103,6 +103,7 @@ import _poolHerdHeirloom from "../pool/herd-heirloom.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
+import _poolIncubationDruid from "../pool/incubation-druid.js";
 import _poolInfernalTribute from "../pool/infernal-tribute.js";
 import _poolInquisitivePuppet from "../pool/inquisitive-puppet.js";
 import _poolInspiredCharge from "../pool/inspired-charge.js";
@@ -325,6 +326,7 @@ const shard: CardShard = {
     _poolHorseshoeCrab,
     _poolHowlingGolem,
     _poolHumblingElder,
+    _poolIncubationDruid,
     _poolInfernalTribute,
     _poolInquisitivePuppet,
     _poolInspiredCharge,

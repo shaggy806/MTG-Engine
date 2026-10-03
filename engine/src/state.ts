@@ -1601,12 +1601,13 @@ export type AwaitingDecision =
         | "hand"
         | "exile-playable"
         | "exile-face-down"
+        | "exile"
         | "library-top"
         | "library-bottom"
         | "graveyard";
-      /** For `destination: "exile-face-down"` (hideaway — rule 702.75a): the
-       * permanent, in the stint it's in, the chosen cards are exiled with
-       * (rule 607.2a — `GameObject.exiledWith`). */
+      /** For `destination: "exile-face-down"` (hideaway — rule 702.75a) and
+       * `"exile"` (imprint, face up): the permanent, in the stint it's in,
+       * the chosen cards are exiled with (rule 607.2a — `GameObject.exiledWith`). */
       readonly exileLink?: { readonly source: ObjectId; readonly zoneChangeCount: number };
       /** For `destination: "exile-playable"` — the impulse permission to
        * stamp on the chosen cards, which stay in exile either way

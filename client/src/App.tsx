@@ -301,6 +301,8 @@ function zoneChoiceTitle(action: ZoneChoiceAction): string {
       return `Choose ${cards} you may play`
     case 'exile-face-down':
       return `Choose ${cards} to exile face down`
+    case 'exile':
+      return `Choose ${cards} to exile`
   }
 }
 

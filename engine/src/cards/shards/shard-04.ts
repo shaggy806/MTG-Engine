@@ -82,6 +82,7 @@ import _poolGoblinAnarchomancer from "../pool/goblin-anarchomancer.js";
 import _poolGoblinDeathraiders from "../pool/goblin-deathraiders.js";
 import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
 import _poolGohnTownOfRuin from "../pool/gohn-town-of-ruin.js";
+import _poolGondGate from "../pool/gond-gate.js";
 import _poolGratefulApparition from "../pool/grateful-apparition.js";
 import _poolGriffinSentinel from "../pool/griffin-sentinel.js";
 import _poolGrimHireling from "../pool/grim-hireling.js";
@@ -91,6 +92,7 @@ import _poolHealerOfThePride from "../pool/healer-of-the-pride.js";
 import _poolHeartwoodTreefolk from "../pool/heartwood-treefolk.js";
 import _poolHerdGnarr from "../pool/herd-gnarr.js";
 import _poolHerosDownfall from "../pool/heros-downfall.js";
+import _poolHorizonOfProgress from "../pool/horizon-of-progress.js";
 import _poolHornOfGreed from "../pool/horn-of-greed.js";
 import _poolHornetCobra from "../pool/hornet-cobra.js";
 import _poolHulkingGoblin from "../pool/hulking-goblin.js";
@@ -105,6 +107,7 @@ import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
 import _poolKarumonixTheRatKing from "../pool/karumonix-the-rat-king.js";
 import _poolKeenSense from "../pool/keen-sense.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
+import _poolKlauthUnrivaledAncient from "../pool/klauth-unrivaled-ancient.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
 import _poolKokushoTheEveningStar from "../pool/kokusho-the-evening-star.js";
 import _poolKorvoldFaeCursedKing from "../pool/korvold-fae-cursed-king.js";
@@ -312,6 +315,7 @@ const shard: CardShard = {
     _poolGoblinDeathraiders,
     _poolGoblinSpelunkers,
     _poolGohnTownOfRuin,
+    _poolGondGate,
     _poolGratefulApparition,
     _poolGriffinSentinel,
     _poolGrimHireling,
@@ -321,6 +325,7 @@ const shard: CardShard = {
     _poolHeartwoodTreefolk,
     _poolHerdGnarr,
     _poolHerosDownfall,
+    _poolHorizonOfProgress,
     _poolHornOfGreed,
     _poolHornetCobra,
     _poolHulkingGoblin,
@@ -335,6 +340,7 @@ const shard: CardShard = {
     _poolKarumonixTheRatKing,
     _poolKeenSense,
     _poolKingCheetah,
+    _poolKlauthUnrivaledAncient,
     _poolKnightErrant,
     _poolKokushoTheEveningStar,
     _poolKorvoldFaeCursedKing,

@@ -44,7 +44,24 @@ export type ReplacementSpec =
   | DrawRedirectReplacement
   | DamageMultiplierReplacement
   | MillMultiplierReplacement
-  | LifeGainReplacement;
+  | LifeGainReplacement
+  | TapManaMultiplierReplacement;
+
+/**
+ * "If you tap a permanent for mana, it produces twice as much of that mana
+ * instead" (Mana Reflection; Nyxbloom Ancient's three times) — a replacement
+ * that modifies the mana production event (rule 106.12b) of a mana ability
+ * with `{T}` in its cost (rule 106.12), activated by this permanent's
+ * controller. Several multiply (the ruling). Only the tapped permanent's own
+ * mana is multiplied, never what a triggered mana ability adds as it's tapped
+ * (the ruling), and whatever the mana carries — a restriction, a rider — all
+ * of it carries (rule 106.6a). Applied by a hand activation and by the
+ * auto-payer's options (`multipliedManaOption`).
+ */
+export interface TapManaMultiplierReplacement {
+  readonly event: "tap-for-mana";
+  readonly multiplier: number;
+}
 
 /** As the source permanent enters the battlefield (rule 614.1c). A self-
  * replacement — printed on the card, applies only to it. */

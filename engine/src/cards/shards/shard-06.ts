@@ -199,6 +199,7 @@ import _poolWindfall from "../pool/windfall.js";
 import _poolWingedCoatl from "../pool/winged-coatl.js";
 import _poolWingedWords from "../pool/winged-words.js";
 import _poolWoodlandMystic from "../pool/woodland-mystic.js";
+import _poolZendikarResurgent from "../pool/zendikar-resurgent.js";
 import _poolZhalfirinVoid from "../pool/zhalfirin-void.js";
 import _poolZodiacMonkey from "../pool/zodiac-monkey.js";
 import _tokensBeastToken33 from "../tokens/beast-token-3-3.js";
@@ -410,6 +411,7 @@ const shard: CardShard = {
     _poolWingedCoatl,
     _poolWingedWords,
     _poolWoodlandMystic,
+    _poolZendikarResurgent,
     _poolZhalfirinVoid,
     _poolZodiacMonkey,
   ],
