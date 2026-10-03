@@ -72,6 +72,7 @@ import _poolGreedyFreebooter from "../pool/greedy-freebooter.js";
 import _poolHall from "../pool/hall.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
 import _poolHauntedCloak from "../pool/haunted-cloak.js";
+import _poolHeraldsHorn from "../pool/heralds-horn.js";
 import _poolHillGiantHerdgorger from "../pool/hill-giant-herdgorger.js";
 import _poolHippoCows from "../pool/hippo-cows.js";
 import _poolHornOfGondor from "../pool/horn-of-gondor.js";
@@ -279,6 +280,7 @@ const shard: CardShard = {
     _poolHall,
     _poolHardenedTactician,
     _poolHauntedCloak,
+    _poolHeraldsHorn,
     _poolHillGiantHerdgorger,
     _poolHippoCows,
     _poolHornOfGondor,

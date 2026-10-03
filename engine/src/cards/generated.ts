@@ -2545,6 +2545,7 @@ import _poolHeraldOfSecretStreams from "./pool/herald-of-secret-streams.js";
 import _poolHeraldOfTheFair from "./pool/herald-of-the-fair.js";
 import _poolHeraldOfThePantheon from "./pool/herald-of-the-pantheon.js";
 import _poolHeraldicBanner from "./pool/heraldic-banner.js";
+import _poolHeraldsHorn from "./pool/heralds-horn.js";
 import _poolHerculesPrinceOfPower from "./pool/hercules-prince-of-power.js";
 import _poolHerdGnarr from "./pool/herd-gnarr.js";
 import _poolHerdHeirloom from "./pool/herd-heirloom.js";
@@ -3030,6 +3031,7 @@ import _poolKrenkoTinStreetKingpin from "./pool/krenko-tin-street-kingpin.js";
 import _poolKrenkosCommand from "./pool/krenkos-command.js";
 import _poolKrenkosEnforcer from "./pool/krenkos-enforcer.js";
 import _poolKrosanGrip from "./pool/krosan-grip.js";
+import _poolKrosanVerge from "./pool/krosan-verge.js";
 import _poolKrovikanScoundrel from "./pool/krovikan-scoundrel.js";
 import _poolKudoKingAmongBears from "./pool/kudo-king-among-bears.js";
 import _poolKujaGenomeSorcerer from "./pool/kuja-genome-sorcerer.js";
@@ -3578,6 +3580,7 @@ import _poolMyrRetriever from "./pool/myr-retriever.js";
 import _poolMyrScrapling from "./pool/myr-scrapling.js";
 import _poolMyrTurbine from "./pool/myr-turbine.js";
 import _poolMyrelShieldOfArgive from "./pool/myrel-shield-of-argive.js";
+import _poolMyriadLandscape from "./pool/myriad-landscape.js";
 import _poolMyrkulLordOfBones from "./pool/myrkul-lord-of-bones.js";
 import _poolMysteriosPhantasm from "./pool/mysterios-phantasm.js";
 import _poolMysticArchaeologist from "./pool/mystic-archaeologist.js";
@@ -9143,6 +9146,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHeraldOfTheFair,
   _poolHeraldOfThePantheon,
   _poolHeraldicBanner,
+  _poolHeraldsHorn,
   _poolHerculesPrinceOfPower,
   _poolHerdGnarr,
   _poolHerdHeirloom,
@@ -9628,6 +9632,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKrenkosCommand,
   _poolKrenkosEnforcer,
   _poolKrosanGrip,
+  _poolKrosanVerge,
   _poolKrovikanScoundrel,
   _poolKudoKingAmongBears,
   _poolKujaGenomeSorcerer,
@@ -10176,6 +10181,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMyrScrapling,
   _poolMyrTurbine,
   _poolMyrelShieldOfArgive,
+  _poolMyriadLandscape,
   _poolMyrkulLordOfBones,
   _poolMysteriosPhantasm,
   _poolMysticArchaeologist,

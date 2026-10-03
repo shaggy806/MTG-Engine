@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 416 of the 495
-non-commander slots are the printed cards; the other 79 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 417 of the 495
+non-commander slots are the printed cards; the other 78 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -109,7 +109,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (26)
+### Sultai Arisen — Teval, the Balanced Scale (25)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -129,7 +129,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Lord of the Forsaken | Mindscour Dragon | Six-mana creature: mill, self-mill. |
 | Millikin | Hedron Crawler | Two-mana creature: mana creature, ramp. |
 | Multani, Yavimaya's Avatar | Lumra, Bellow of the Woods | Six-mana creature: recursion. |
-| Myriad Landscape | Blighted Woodland | Land: land fetcher. |
 | Necromantic Selection | Blood Money | Seven-mana sorcery: sweeper, removal. |
 | Necropolis Fiend | Black Dragon | Nine-mana creature: removal, evasive creature. |
 | River Kelpie | Drelnoch | Five-mana creature: card draw, card advantage. |

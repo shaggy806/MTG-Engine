@@ -105,6 +105,7 @@ import _poolMikokoroCenterOfTheSea from "../pool/mikokoro-center-of-the-sea.js";
 import _poolMirkoObsessiveTheorist from "../pool/mirko-obsessive-theorist.js";
 import _poolMoggSentry from "../pool/mogg-sentry.js";
 import _poolMrFoxglove from "../pool/mr-foxglove.js";
+import _poolMyriadLandscape from "../pool/myriad-landscape.js";
 import _poolNaturalConnection from "../pool/natural-connection.js";
 import _poolNeedlepeakSpider from "../pool/needlepeak-spider.js";
 import _poolNightshadeDryad from "../pool/nightshade-dryad.js";
@@ -308,6 +309,7 @@ const shard: CardShard = {
     _poolMirkoObsessiveTheorist,
     _poolMoggSentry,
     _poolMrFoxglove,
+    _poolMyriadLandscape,
     _poolNaturalConnection,
     _poolNeedlepeakSpider,
     _poolNightshadeDryad,

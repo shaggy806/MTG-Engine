@@ -306,7 +306,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Lord of the Forsaken", "Mindscour Dragon", "Six-mana creature: mill, self-mill."),
       sub("Millikin", "Hedron Crawler", "Two-mana creature: mana creature, ramp."),
       sub("Multani, Yavimaya's Avatar", "Lumra, Bellow of the Woods", "Six-mana creature: recursion."),
-      sub("Myriad Landscape", "Blighted Woodland", "Land: land fetcher."),
       sub("Necromantic Selection", "Blood Money", "Seven-mana sorcery: sweeper, removal."),
       sub("Necropolis Fiend", "Black Dragon", "Nine-mana creature: removal, evasive creature."),
       sub("River Kelpie", "Drelnoch", "Five-mana creature: card draw, card advantage."),
