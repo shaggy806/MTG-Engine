@@ -1670,7 +1670,10 @@ members two ways:
   is `{ kind: "for-each-target", from: 0, effect: { kind: "exile", target: 0 },
   simultaneous: true }`. A member found illegal is skipped. `simultaneous`
   makes them one instruction ("any number of target players **each** mill two
-  cards" mills them at once — Riverchurn Monument).
+  cards" mills them at once — Riverchurn Monument). A group of *players* goes
+  in APNAP order whatever order they were targeted in (rule 101.4), so "any
+  number of target players each … sacrifice a creature" (Priest of Forgotten
+  Gods) asks the active player first, then the rest in turn order.
 - a `flicker`'s `target: { from: n }` — every member exiled together and
   returned together (Eerie Interlude, Brago, King Eternal).
 

@@ -4978,12 +4978,31 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // One step per member still there, each binding it to slot `from` —
       // as steps of a `sequence`, so a member's effect that stops to ask
       // something holds the rest until it's answered.
-      const steps: EffectSpec[] = [];
+      const members: number[] = [];
       for (let index = spec.from; index < ctx.targets.length; index += 1) {
-        if (ctx.targets[index] === undefined) continue;
-        steps.push({ kind: "for-target", from: spec.from, index, effect: spec.effect });
+        if (ctx.targets[index] !== undefined) members.push(index);
       }
-      if (steps.length === 0) return;
+      if (members.length === 0) return;
+      // Target players each told to do the same thing act — and make their
+      // choices — in APNAP order, whatever order they were targeted in (rule
+      // 101.4): Priest of Forgotten Gods' "any number of target players each
+      // … sacrifice a creature" asks the active player first, then the
+      // rest in turn order.
+      if (members.every((index) => ctx.targets[index]?.kind === "player")) {
+        const order = ctx.playersInScope("each-player");
+        const rank = (index: number): number => {
+          const target = ctx.targets[index];
+          const at = target?.kind === "player" ? order.indexOf(target.player) : -1;
+          return at < 0 ? order.length : at;
+        };
+        members.sort((a, b) => rank(a) - rank(b));
+      }
+      const steps: EffectSpec[] = members.map((index) => ({
+        kind: "for-target",
+        from: spec.from,
+        index,
+        effect: spec.effect,
+      }));
       applyEffectSpec(
         { kind: "sequence", effects: steps, ...(spec.simultaneous === true ? { simultaneous: true } : {}) },
         ctx,

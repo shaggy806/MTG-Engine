@@ -120,7 +120,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
-### Sultai Arisen — Teval, the Balanced Scale (25)
+### Sultai Arisen — Teval, the Balanced Scale (24)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -132,7 +132,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Disciple of Bolas | Thallid Soothsayer | Turns a sacrificed creature into cards. |
 | Essence Anchor | Rune-Sealed Wall | Three-mana artifact: self-mill, library manipulation. |
 | Gravecrawler | Bloodghast | Cheap black creature that keeps coming back from the graveyard. |
-| Jarad, Golgari Lich Lord | Nantuko Husk | Sacrifice outlet that turns creatures into damage. |
 | Kotis, Sibsig Champion | Doomed Necromancer | Three-mana creature: reanimation, recursion. |
 | Lethal Scheme | Hero's Downfall | Instant-speed creature or planeswalker removal. |
 | Life from the Loam | Grim Discovery | Two-mana sorcery: land recursion, regrowth. |
@@ -170,13 +169,12 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Weathered Sentinels | Guardians of Meletis | Three-mana artifact defender with high toughness. |
 | Will of the Abzan | Breath of Life | Four-mana sorcery: reanimation, recursion. |
 
-### Mardu Surge — Zurgo Stormrender (12)
+### Mardu Surge — Zurgo Stormrender (11)
 
 | printed card | plays as | why |
 |---|---|---|
 | Ainok Strike Leader | Hanweir Garrison | Attacks and brings attacking tokens with it. |
 | Divine Visitation | Anointed Procession | Five-mana enchantment: token payoff. |
-| Eliminate the Competition | Lich's Caress | Five-mana sorcery: removal, creature removal. |
 | Gix, Yawgmoth Praetor | Midnight Reaper | Three-mana creature: card draw for life, card draw. |
 | Kaya, Geist Hunter | Ajani, Caller of the Pride | Three-mana planeswalker. |
 | Legion Warboss | Krenko, Tin Street Kingpin | Three-mana creature: token maker, attack trigger. |

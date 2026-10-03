@@ -153,6 +153,25 @@ describe("a sacrifice cost of several permanents", () => {
     expect(zone(game, ring)).toBe("battlefield");
   });
 
+  it("takes a whole stack without asking when it's exactly what's owed, every token dying", () => {
+    const game = setUp();
+    const abbey = spawn(game, "Westvale Abbey");
+    for (let i = 0; i < 5; i += 1) spawn(game, "Wastes");
+    spawn(game, "Bastion of Remembrance");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Human Cleric Token", count: 8 });
+    const [stack] = named(game, "Human Cleric Token");
+    // Five tokens in one object: exactly "Sacrifice five creatures".
+    game.state.objects[stack].stackCount = 5;
+    const life = game.state.players[B].life;
+    game.dispatch({ type: "activate-ability", player: A, source: abbey, abilityIndex: 2 });
+    expect(game.state.awaiting?.kind).not.toBe("sacrifice");
+    expect(named(game, "Human Cleric Token")).toEqual([]);
+    game.advanceUntil(quiet);
+    // Bastion of Remembrance saw five creatures die, not one.
+    expect(game.state.players[B].life).toBe(life - 5);
+    expect(game.state.objects[abbey].face).toBe(1);
+  });
+
   it("checks no state-based action until the cost is paid", () => {
     const game = setUp();
     const sai = spawn(game, "Sai, Master Thopterist");
@@ -169,6 +188,36 @@ describe("a sacrifice cost of several permanents", () => {
     const [first, second] = sacrificeOffer(game)?.eligible ?? [];
     game.dispatch({ type: "sacrifice", player: A, permanents: [first, second] });
     expect(zone(game, bears)).toBe("graveyard");
+  });
+
+  it("sacrifices them as one event: each one's dies trigger sees the others (rule 603.10a)", () => {
+    const game = setUp();
+    const zopandrel = spawn(game, "Zopandrel, Hunger Dominus");
+    spawn(game, "Forest");
+    spawn(game, "Forest");
+    // Named first, so one at a time it would be gone before the Bears died.
+    const cutthroat = spawn(game, "Zulaport Cutthroat");
+    const bears = spawn(game, "Grizzly Bears");
+    const life = game.state.players[B].life;
+    game.dispatch({ type: "activate-ability", player: A, source: zopandrel, abilityIndex: 0 });
+    expect([cutthroat, bears].map((id) => zone(game, id))).toEqual(["graveyard", "graveyard"]);
+    game.advanceUntil(quiet);
+    expect(game.state.players[B].life).toBe(life - 2);
+  });
+
+  it("hands priority back to the activating player once it's paid", () => {
+    const game = setUp();
+    const sai = spawn(game, "Sai, Master Thopterist");
+    spawn(game, "Island");
+    spawn(game, "Island");
+    const [ring, stone] = [spawn(game, "Sol Ring"), spawn(game, "Mind Stone"), spawn(game, "Ornithopter")];
+    game.dispatch({ type: "activate-ability", player: A, source: sai, abilityIndex: 0 });
+    expect(game.state.pendingCostSacrifice).toBeDefined();
+    game.dispatch({ type: "sacrifice", player: A, permanents: [ring, stone] });
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.pendingCostSacrifice).toBeUndefined();
+    expect(game.state.priority.holder).toBe(A);
+    expect(game.state.zones.shared.stack).toHaveLength(1);
   });
 });
 
@@ -310,5 +359,30 @@ describe("a spell's sacrifice of several", () => {
     game.advanceUntil(quiet);
     expect(zone(game, giant)).toBe("battlefield");
     expect(zone(game, dread)).toBe("exile");
+  });
+
+  it("a flashback granted for mana is its own cost: it sacrifices nothing", () => {
+    const game = setUp();
+    const dread = game.debugSpawn("Dread Return", A, "graveyard");
+    const giant = game.debugSpawn("Hill Giant", A, "graveyard");
+    for (let i = 0; i < 4; i += 1) spawn(game, "Swamp");
+    // Snapcaster Mage's kind of flashback, for its mana cost: no creature to
+    // sacrifice is needed for it, and none is taken.
+    const granter = spawn(game, "Grizzly Bears");
+    game.state.objects[dread].grantedFlashback = { cost: "{2}{B}{B}", untilEndOfTurn: true, by: granter };
+    const flashbacks = castOffers(game, dread).filter((o) => o.via === "flashback");
+    expect(flashbacks.map((o) => o.graveyardGrant)).toEqual([{ source: granter }]);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: dread,
+      via: "flashback",
+      graveyardGrant: { source: granter },
+      targets: [{ kind: "object", object: giant }],
+    });
+    expect(game.state.awaiting?.kind).not.toBe("sacrifice");
+    expect(zone(game, granter)).toBe("battlefield");
+    game.advanceUntil(quiet);
+    expect(zone(game, giant)).toBe("battlefield");
   });
 });

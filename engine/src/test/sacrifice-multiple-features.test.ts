@@ -309,6 +309,46 @@ describe("Priest of Forgotten Gods", () => {
     expect(game.state.players[A].manaPool.filter((u) => u.type === "B")).toHaveLength(2);
   });
 
+  it("with two targets, each loses 2 and chooses a creature of their own to sacrifice", () => {
+    const C = asPlayerId("carol");
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      startingPlayer: A,
+      rules: { skipFirstDraw: true, maxLandsPerTurn: 99, maxHandSize: 99, openingHandSize: 0 },
+      controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B), [C]: new ScriptedController(C) },
+      decks: [A, B, C].map((player) => ({ player, cards: Array<string>(40).fill("Wastes") })),
+    });
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+    const priest = spawn(game, "Priest of Forgotten Gods");
+    const fodder = [spawn(game, "Grizzly Bears"), spawn(game, "Hill Giant"), spawn(game, "Serra Angel")];
+    const theirs = [B, B, C, C].map((p, i) => spawn(game, i % 2 === 0 ? "Grizzly Bears" : "Hill Giant", p));
+    // Named out of turn order: the choosing still goes in it.
+    activate(game, priest, 0, {
+      targets: [
+        { kind: "player", player: C },
+        { kind: "player", player: B },
+      ],
+    });
+    // Three others: the Priest's controller chooses two.
+    game.dispatch({ type: "sacrifice", player: A, permanents: [fodder[0], fodder[1]] });
+    expect(zone(game, fodder[2])).toBe("battlefield");
+    const asked: PlayerId[] = [];
+    for (let i = 0; i < 20 && !quiet(game.state); i += 1) {
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind === "sacrifice") {
+        asked.push(awaiting.player);
+        game.dispatch({ type: "sacrifice", player: awaiting.player, permanents: [awaiting.eligible[0]] });
+      } else if (game.state.priority.holder !== null) {
+        game.dispatch({ type: "pass-priority", player: game.state.priority.holder });
+      }
+    }
+    // Each target chooses from their own creatures, in turn order (rule 101.4).
+    expect(asked).toEqual([B, C]);
+    expect([game.state.players[B].life, game.state.players[C].life]).toEqual([18, 18]);
+    expect(theirs.map((id) => zone(game, id))).toEqual(["graveyard", "battlefield", "graveyard", "battlefield"]);
+  });
+
   it("may target no one and still adds {B}{B} and draws (the ruling)", () => {
     const game = setUp();
     const priest = spawn(game, "Priest of Forgotten Gods");

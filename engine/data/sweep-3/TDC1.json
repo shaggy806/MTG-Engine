@@ -579,14 +579,6 @@
       "why": "Attacks players who attacked you last turn as though it didn't have defender."
     },
     {
-      "name": "Eliminate the Competition",
-      "needs": [
-        "new:x-targets",
-        "cost:sacrifice-x"
-      ],
-      "why": "Sacrifice X creatures, destroy X targets."
-    },
-    {
       "name": "Kaya, Geist Hunter",
       "needs": [
         "new:temporary-token-doubling"
