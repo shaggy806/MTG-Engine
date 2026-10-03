@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { createDefaultRegistry } from "../cards.js";
-import { computeCharacteristics } from "../characteristics.js";
+import { defineCard } from "../cards/define.js";
+import { computeCharacteristics, turnStatOf } from "../characteristics.js";
+import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
 import { asPlayerId } from "../primitives.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
@@ -265,5 +267,115 @@ describe("counters put on a whole stack are put on each token in it", () => {
     // Ten Warriors and Hapatra herself each got one: eleven creatures.
     expect(game.state.objects[hapatra].counters["-1/-1"]).toBe(1);
     expect(tokenCount(objectsNamed(game, "Deathtouch Snake Token"))).toBe(11);
+  });
+
+  it("a stack's own 'counters put on this' fires for the tokens that got them: a joining batch's, not the stack's", () => {
+    // No stackable token in the pool watches its own counters, so a test
+    // enchantment grants one to every creature: "Whenever one or more +1/+1
+    // counters are put on this creature, you gain 1 life."
+    const local = createDefaultRegistry();
+    local.register(
+      defineCard({
+        name: "Test Counter Watcher Grantor",
+        manaCost: "{1}",
+        colors: [],
+        types: ["enchantment"],
+        text: "Creatures you control have \"Whenever one or more +1/+1 counters are put on this creature, you gain 1 life.\"",
+        static: [
+          {
+            affects: { scope: "creatures-you-control" },
+            grantsTriggered: [
+              {
+                trigger: { on: "counters-put", who: "self", counter: "+1/+1" },
+                targets: [],
+                effect: { kind: "gain-life", amount: 1 },
+                resolve: null,
+                text: "Whenever one or more +1/+1 counters are put on this creature, you gain 1 life.",
+              },
+            ],
+            text: "Creatures you control have the ability.",
+          },
+        ],
+      }),
+    );
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry: local,
+      rules: { maxHandSize: 99 },
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(60).fill("Island") })),
+    });
+    game.advanceUntil((s) => s.turn.step === "precombat-main" && s.priority.holder === A);
+    game.debugSpawn("Dragonstorm Globe", A, "battlefield");
+    game.debugSpawn("Test Counter Watcher Grantor", A, "battlefield");
+    const settle = (): void => {
+      for (let i = 0; i < 50 && (game.state.zones.shared.stack.length > 0 || game.state.pendingTriggers.length > 0); i += 1) {
+        pass(game);
+      }
+    };
+    const life = game.state.players[A].life;
+
+    // Ten Dragons, one new stack, each entering with a counter: ten.
+    game.debugApplyEffect(A, { kind: "create-token", token: "Dragon Token", count: 10 });
+    settle();
+    expect(game.state.players[A].life).toBe(life + 10);
+
+    // Three more fold into it, each with its counter: three, not thirteen.
+    game.debugApplyEffect(A, { kind: "create-token", token: "Dragon Token", count: 3 });
+    settle();
+    expect(game.state.objects[stackOf(game, "Dragon Token")].stackCount).toBe(13);
+    expect(game.state.players[A].life).toBe(life + 13);
+  });
+});
+
+describe("a token that attacked waits for cleanup to fold back", () => {
+  it("two Warriors attacking in both of two combats are two creatures that attacked, not three", () => {
+    // Windbrisk Heights' "if you attacked with three or more creatures this
+    // turn" counts each creature once over the turn (the `attackers` turn
+    // stat, kept by object). Folded back together after the first combat,
+    // the two would attack in the second as one object and a fresh token
+    // split off it — a third creature as far as the count could tell.
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      rules: { maxHandSize: 99 },
+      controllers: { [A]: new ScriptedController(A), [B]: new ScriptedController(B) },
+      decks: [A, B].map((player) => ({ player, cards: Array<string>(60).fill("Mountain") })),
+    });
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "precombat-main");
+    game.debugApplyEffect(A, { kind: "create-token", token: WARRIOR, count: 10 });
+    const stack = stackOf(game, WARRIOR);
+    game.advanceUntil((s) => s.turn.number === 3 && s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: stack, defender: B, count: 2 }] });
+    game.advanceUntil(
+      (s) =>
+        s.turn.number === 3 &&
+        s.turn.step === "postcombat-main" &&
+        s.priority.holder === A &&
+        s.zones.shared.stack.length === 0,
+    );
+    expect(turnStatOf(game.state, A, "attackers")).toBe(2);
+    // Still two objects, each named by the turn's attackers.
+    expect(objectsNamed(game, WARRIOR).filter((o) => o.attackedThisTurn === true)).toHaveLength(2);
+
+    // Relentless Assault: untap them, and a second combat.
+    lands(game, A, "Mountain", 4);
+    cast(game, A, "Relentless Assault");
+    game.advanceUntil((s) => s.turn.number === 3 && s.awaiting?.kind === "attackers");
+    const attacked = objectsNamed(game, WARRIOR).filter((o) => o.attackedThisTurn === true);
+    expect(tokenCount(attacked)).toBe(2);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: attacked.map((o) => ({ attacker: o.id, defender: B })),
+    });
+    expect(turnStatOf(game.state, A, "attackers")).toBe(2);
+
+    // At cleanup they fold back, into a stack of their own beside the eight.
+    game.advanceUntil((s) => s.turn.number === 4 && s.turn.step === "upkeep");
+    const warriors = objectsNamed(game, WARRIOR);
+    expect(tokenCount(warriors)).toBe(10);
+    expect(warriors).toHaveLength(2);
   });
 });

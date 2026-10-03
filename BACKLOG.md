@@ -316,6 +316,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   attacking or blocking any more: an "at end of combat" trigger (511.2) that asks whether its
   creature is attacking finds it isn't. Found 2026-10-03 while measuring when a stack's woken
   attackers fold back (`token-stacking.test.ts`).
+- **Tokens that attacked stay split off their stack until cleanup**, even when they come out of
+  combat identical, or all get the same counter from an attack trigger: ten such Warriors are
+  ten objects (and, with counters, ten board tiles) through the second main phase.
+  `refoldSplitTokens` skips them because `turnHistory.attackers` counts each creature once by
+  object, and a stack folded mid-turn would attack in a second combat as itself plus fresh
+  tokens split off it, counted again (Windbrisk Heights, `token-stack-refold.test.ts`). Folding
+  them needs the history to know a split-off token's stack already attacked — say, count only
+  attackers that hadn't attacked yet this turn (`attackedThisTurn` before the declaration).
+  Not a rules gap: nothing plays differently. Found in review, 2026-10-03.
 - **Library-ordering and cost leftovers** (2026-10-03, `library-ordering.test.ts`,
   `graveyard-exile-cost.test.ts`): Kozilek, the Great Distortion needs an ability's X
   announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value

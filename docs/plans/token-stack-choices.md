@@ -209,14 +209,17 @@ object — so the fix folds afterwards rather than splitting less:
   more: the zone lists, the event log, snapshots of things that left a zone (`lastOnStack`,
   which named every token a spell had targeted and so kept the two Battlegrowth tokens apart;
   `lastKnown`; `ceasedTokens`; `departedAbilities`), library cards, and the history kept only
-  to be counted (`turnHistory.attackers`, `damageDealt`). It runs only when a group could fold
+  to be counted (`turnHistory.damageDealt`). It runs only when a group could fold
   (~1.5 ms on a four-player board), so a board that can't fold costs a scan of the
   battlefield.
+- **A token that attacked this turn waits for cleanup.** `turnHistory.attackers` holds each
+  creature that attacked once, by object, so a creature declared again in a second combat
+  isn't counted twice. Folded back together after the first combat, two tokens would attack
+  in the second as the folded one and a fresh token split off it, and Windbrisk Heights would
+  count three creatures for two (found in review; `token-stack-refold.test.ts`). So the
+  walk names the attackers, and the fold skips any token that attacked: a stack's woken
+  attackers fold back at cleanup, as they did before this pass.
 - `recompactTokens` at cleanup also folds a group holding a marked token however small.
-
-Combat changed with it: a stack's woken attackers that come out of combat the same (tapped,
-having attacked and dealt their damage) fold back in the second main phase instead of at
-cleanup.
 
 **Per-token triggers.** Counters put on a whole stack were put on every token in it (rule
 111.1: each is its own permanent), so a `counters-put` watcher now fires once per token —
@@ -224,12 +227,15 @@ Simic Ascendancy grows by ten when Basri's Solidarity or proliferate reaches a s
 Hapatra makes a Snake for each token Black Sun's Zenith hits. Tokens entering with counters
 (Dragonstorm Globe) announced them once for a fresh stack and not at all for a batch joining
 one; a fresh stack now has its `stackCount` before they're announced, and a joining batch
-announces them with `counter-added`'s `count`.
+announces them with `counter-added`'s `count` — which the stack's own "whenever counters are
+put on this" reads too, firing for the new tokens only, not the whole stack.
 
 **What stays apart until cleanup.** A per-token trigger that grants an effect rather than a
 counter (Rapid Augmenter's haste) gives each token a modifier with its own timestamp (rule
 613.7b), so the tokens aren't the same in everything until the effect ends; they fold at
-cleanup. So do damaged tokens (`isRestingToken`).
+cleanup. So do damaged tokens (`isRestingToken`) and tokens that attacked (above): ten
+attackers each given a counter by an attack trigger stay ten objects through the second main
+phase.
 
 **Checked live** in dev-rooms `TREES` (2p: three Warriors joining a stack of ten end up one ×3
 tile with two +1/+1 counters beside the untouched ×10) and `TREE4` (4p: Secure the Wastes for

@@ -3174,12 +3174,20 @@ export class Game {
       return;
     }
     const battlefield = this.state.zones.shared.battlefield;
+    // A token that attacked this turn waits for cleanup: the turn's attackers
+    // name it (`turnHistory.attackers`, each creature once by object), so it
+    // can't fold away, and folding another into it would let a second
+    // combat's attack count a fresh split-off token as one more creature
+    // that attacked (Windbrisk Heights). `referencedObjectIds` keeps them
+    // apart anyway; skipping them here saves the walk on every priority
+    // pass after a combat that woke a stack.
+    const waits = (o: GameObject): boolean => o.attackedThisTurn === true;
     // Cheap first: is there a lone token split off a stack, out of combat and
     // undamaged, at all? Almost always not.
     const kinds = new Set<string>();
     for (const id of battlefield) {
       const o = this.state.objects[id];
-      if (o.splitFromStack === true && (o.stackCount ?? 1) <= 1 && this.isRestingToken(o)) {
+      if (o.splitFromStack === true && (o.stackCount ?? 1) <= 1 && this.isRestingToken(o) && !waits(o)) {
         kinds.add(`${o.controller}\u0001${o.cardName}`);
       }
     }
@@ -3188,7 +3196,7 @@ export class Game {
     const groups = new Map<string, ObjectId[]>();
     for (const id of battlefield) {
       const o = this.state.objects[id];
-      if (!o.isToken || !kinds.has(`${o.controller}\u0001${o.cardName}`)) continue;
+      if (!o.isToken || waits(o) || !kinds.has(`${o.controller}\u0001${o.cardName}`)) continue;
       if (!this.isFoldableToken(id, pinned)) continue;
       const shape = exactTokenShape(o);
       const group = groups.get(shape);
@@ -14331,8 +14339,19 @@ export class Game {
           const batchedEntry =
             ability.trigger.on === "enters-battlefield" && ability.trigger.batched === true;
           if (batchedEntry) this.enterBatchFired?.add(`${id}#${index}`);
+          // Each token of the watcher's own stack has the ability, and each
+          // triggers (rule 603.2) — except for counters a batch entering
+          // with them brought onto it: those were put on the new tokens only
+          // (`counter-added`'s `count`), not on the ones already there.
+          const watchers =
+            ability.trigger.on === "counters-put" &&
+            event.type === "counter-added" &&
+            event.object === id &&
+            event.count !== undefined
+              ? event.count
+              : (object.stackCount ?? 1);
           const multiplier =
-            (object.stackCount ?? 1) *
+            watchers *
             (ability.oncePerTurn === true || batchedEntry
               ? 1
               : departed *

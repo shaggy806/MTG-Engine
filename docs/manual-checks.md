@@ -3753,5 +3753,8 @@ stack count once per token)
   per tile. At the end step Thalisse makes one Spirit per token you created this turn.
 - **Known limits:** While the triggers resolve the stack splits a Warrior at a time; it folds back
   only once nothing is waiting. A per-token trigger that grants an effect instead (Rapid Augmenter's
-  haste) keeps the tokens apart until cleanup, each grant having its own timestamp. Counters landing
+  haste) keeps the tokens apart until cleanup, each grant having its own timestamp, and so does
+  attacking: Warriors that attacked stay separate objects until cleanup (a tile each once they carry
+  counters), so that a second
+  combat doesn't count them again as new attackers (`BACKLOG.md`). Counters landing
   on tokens that fold away in the same frame don't float their "+1/+1 ×2" (`BACKLOG.md`).

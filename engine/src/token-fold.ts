@@ -58,17 +58,22 @@ const SNAPSHOT_STATE_FIELDS: ReadonlySet<string> = new Set(["ceasedTokens", "dep
 const SNAPSHOT_OBJECT_FIELDS: ReadonlySet<string> = new Set(["lastOnStack", "lastKnown", "earlierLastKnown"]);
 
 /** `TurnHistory` lists kept only to be counted, whose ids nothing looks up:
- * how many creatures attacked (`attackers`), how much damage sources dealt
- * (`damageDealt`, read by amount and colour). Every attacking token of a
- * stack is in `attackers`; naming them would keep them apart all turn. */
-const COUNT_ONLY_HISTORY: ReadonlySet<string> = new Set(["attackers", "damageDealt"]);
+ * how much damage sources dealt (`damageDealt`, read by amount and colour).
+ * Not `attackers`: it holds each creature that attacked this turn once, by
+ * object, so a second combat's declaration is told from a first one's —
+ * two tokens that attacked folded into one would attack again as that one
+ * and a fresh token split off it, and Windbrisk Heights would count three
+ * creatures for two. Every token that attacked stays its own object until
+ * cleanup. */
+const COUNT_ONLY_HISTORY: ReadonlySet<string> = new Set(["damageDealt"]);
 
 /**
  * Every object id the rest of the game state names: other objects' fields
  * (an Aura's host, an exiled card's exiler, a modifier's source), delayed
  * triggers, prevention shields, anything waiting, and the turn's history of
- * what entered, died, was sacrificed or exiled (`PlayerState.turnHistory`,
- * read by matching each entry's object). Left out: the zone lists (where
+ * what entered, attacked, died, was sacrificed or exiled
+ * (`PlayerState.turnHistory`, read by matching each entry's object). Left
+ * out: the zone lists (where
  * things are, not what refers to them), the event log (what has already
  * happened), each object's own `id`, the snapshots of things that left a
  * zone, the history kept only to count (`COUNT_ONLY_HISTORY`), and cards in
