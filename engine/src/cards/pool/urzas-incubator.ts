@@ -16,7 +16,7 @@ export default defineCard({
     {
       affects: { scope: "self" },
       costModification: {
-        applies: { type: "creature", controlledBy: "you" },
+        applies: { type: "creature" },
         reduceGeneric: 2,
         matchesChosenCreatureType: true,
       },

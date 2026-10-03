@@ -214,6 +214,32 @@ describe("cost reduction keyed to a chosen creature type — Urza's Incubator", 
       game.battlefield.some((id) => game.state.objects[id].cardName === "Grizzly Bears"),
     ).toBe(true);
   });
+
+  it("reduces an opponent's creature spell of the chosen type too", () => {
+    // "Creature spells of the chosen type" — every player's, not just yours.
+    const { game } = mkGame(["Urza's Incubator"]);
+    game.advanceUntil(toPrecombat);
+    for (let i = 0; i < 3; i += 1) spawn(game, "Forest", A);
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Urza's Incubator"),
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-creature-type");
+    game.dispatch({ type: "choose-creature-type", player: A, creatureType: "Bear" });
+    game.advanceUntil(settled);
+
+    const bears = game.debugSpawn("Grizzly Bears", B, "hand");
+    spawn(game, "Forest", B);
+    game.advanceUntil(
+      (s) => s.turnOrder[s.turn.activePlayerIndex] === B &&
+        s.turn.step === "precombat-main" &&
+        s.priority.holder === B &&
+        s.zones.shared.stack.length === 0,
+    );
+    // {1}{G} less {2}: one Forest pays it.
+    expect(game.canDispatch({ type: "cast-spell", player: B, card: bears })).toBeNull();
+  });
 });
 
 // needed-cards P16 — caught while generalizing costModification for Temur
