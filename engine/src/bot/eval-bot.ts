@@ -836,7 +836,11 @@ export class EvalBotController extends HeuristicBotController {
       state.turn.number === acted.turn &&
       stack.length === acted.stack.length + 1 &&
       acted.stack.every((id, i) => stack[i] === id) &&
-      state.objects[stack[stack.length - 1]]?.controller === this.playerId
+      state.objects[stack[stack.length - 1]]?.controller === this.playerId &&
+      // Unless it's our own wipe taking a creature of ours: the cast was
+      // scored with nothing done in answer to it, and something may save
+      // the creature (Yahenni sacrificing into its indestructibility).
+      !this.ownWipeOnStack(state)
     ) {
       return { type: "pass-priority", player: this.playerId };
     }

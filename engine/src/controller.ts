@@ -1750,14 +1750,40 @@ export class HeuristicBotController extends AutomaticController {
     if (offer.kind !== "cast-spell") return false;
     if (state.zones.shared.stack.length > 0) return false;
     if (state.turn.step !== "precombat-main" || activePlayerOf(state) !== this.playerId) return false;
-    const effect = this.offerEffect(offer);
+    const me = this.playerId;
+    const opponents = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
+    return this.sweepTakesOurs(state, this.offerEffect(offer), (id) =>
+      opponents.some((p) => whyCannotAttack(state, this.registry, me, id, p) === null),
+    );
+  }
+
+  /**
+   * Whether the spell on top of the stack is our own board wipe, about to
+   * take a creature of ours — a window worth searching even though we just
+   * cast it (`EvalBotController.holdPass`), since the creature may have a
+   * way out: Yahenni, Undying Partisan sacrificing another creature to turn
+   * indestructible.
+   */
+  protected ownWipeOnStack(state: GameState): boolean {
+    const stack = state.zones.shared.stack;
+    const top = state.objects[stack[stack.length - 1]];
+    if (top === undefined || top.kind !== "card" || top.controller !== this.playerId) return false;
+    if (!this.registry.has(top.cardName)) return false;
+    return this.sweepTakesOurs(state, this.registry.get(top.cardName).effect, () => true);
+  }
+
+  /** Whether `effect` sweeps away a creature of ours that `counts`. */
+  private sweepTakesOurs(
+    state: GameState,
+    effect: EffectSpec | null | undefined,
+    counts: (id: ObjectId) => boolean,
+  ): boolean {
     const sweeps = sweepsOf(effect);
     if (sweeps.length === 0) return false;
     const me = this.playerId;
-    const opponents = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
     return state.zones.shared.battlefield.some((id) => {
       if (state.objects[id]?.controller !== me) return false;
-      if (!opponents.some((p) => whyCannotAttack(state, this.registry, me, id, p) === null)) return false;
+      if (!counts(id)) return false;
       const c = computeCharacteristics(state, this.registry, id);
       return sweeps.some((sweep) => {
         if (!matchesFilter(state, this.registry, id, sweep.filter, { you: me })) return false;
