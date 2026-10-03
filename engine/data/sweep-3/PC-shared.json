@@ -2,29 +2,169 @@
   "batch": "PC-shared",
   "status": "complete",
   "authored": [
-    { "name": "Rupture Spire", "files": ["engine/src/cards/pool/rupture-spire.ts"], "tested": true },
-    { "name": "Vivid Grove", "files": ["engine/src/cards/pool/vivid-grove.ts"], "tested": true },
-    { "name": "Vivid Creek", "files": ["engine/src/cards/pool/vivid-creek.ts"], "tested": false },
-    { "name": "Yavimaya Elder", "files": ["engine/src/cards/pool/yavimaya-elder.ts"], "tested": true },
-    { "name": "Armillary Sphere", "files": ["engine/src/cards/pool/armillary-sphere.ts"], "tested": false },
-    { "name": "Return to Dust", "files": ["engine/src/cards/pool/return-to-dust.ts"], "tested": true }
+    {
+      "name": "Rupture Spire",
+      "files": [
+        "engine/src/cards/pool/rupture-spire.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vivid Grove",
+      "files": [
+        "engine/src/cards/pool/vivid-grove.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vivid Creek",
+      "files": [
+        "engine/src/cards/pool/vivid-creek.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Yavimaya Elder",
+      "files": [
+        "engine/src/cards/pool/yavimaya-elder.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Armillary Sphere",
+      "files": [
+        "engine/src/cards/pool/armillary-sphere.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Return to Dust",
+      "files": [
+        "engine/src/cards/pool/return-to-dust.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Krosan Verge",
+      "files": [
+        "engine/src/cards/pool/krosan-verge.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Study Hall",
+      "files": [
+        "engine/src/cards/pool/study-hall.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Everflowing Chalice",
+      "files": [
+        "engine/src/cards/pool/everflowing-chalice.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Curse of the Swine",
+      "files": [
+        "engine/src/cards/pool/curse-of-the-swine.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Windfall",
+      "files": [
+        "engine/src/cards/pool/windfall.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Heirloom Blade",
+      "files": [
+        "engine/src/cards/pool/heirloom-blade.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Painful Truths",
+      "files": [
+        "engine/src/cards/pool/painful-truths.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    }
   ],
   "blocked": [
-    { "name": "Krosan Verge", "needs": ["decision:choose-from-zone-extensions"], "why": "'Search your library for a Forest card and a Plains card' — one search, two finds each meeting a different filter, entering together; two search-library steps would be two entry events, and a sequence can't stay simultaneous across a decision." },
-    { "name": "Opal Palace", "needs": ["new:commander-cast-count-amount", "new:mana-spent-replacement"], "why": "No EffectAmount for how many times a given commander was cast from the command zone; and 'if you spend this mana … it enters with counters' is a replacement, not a triggered ability, while whenSpent riders fire as triggers that can be responded to or countered." },
-    { "name": "Study Hall", "needs": ["new:commander-cast-count-amount"], "why": "whenSpent with an isCommander spell filter and a scry is there, but there is no amount for 'the number of times it's been cast from the command zone' (that commander's commanderCastCounts entry)." },
-    { "name": "Everflowing Chalice", "needs": ["keyword:multikicker"], "why": "Multikicker isn't modeled (kicker is a single optional cost)." },
-    { "name": "Fact or Fiction", "needs": ["new:separate-into-piles"], "why": "An opponent separates the revealed cards into two piles and you choose one — no pile decision." },
-    { "name": "Myr Battlesphere", "needs": ["new:tap-x-then"], "why": "'You may tap X untapped Myr you control. If you do, +X/+0 and X damage' — no resolution-time 'tap any number of' choice whose count feeds an amount." },
-    { "name": "Reality Shift", "needs": ["mechanic:face-down"], "why": "Manifest (a face-down 2/2) isn't modeled." },
-    { "name": "Forgotten Ancient", "needs": ["effect:move-counter"], "why": "'Move any number of +1/+1 counters from this creature onto other creatures' — no counter-moving effect, let alone a player-chosen distribution." },
-    { "name": "Curse of the Swine", "needs": ["new:x-targets"], "why": "'Exile X target creatures': the target count must equal X; the any-number target group has no tie to X." },
-    { "name": "Windbrisk Heights", "needs": ["new:hideaway"], "why": "Hideaway (rule 702.75) is listed as unmodeled in AUTHORING §15." },
-    { "name": "Etali, Primal Storm", "needs": ["new:cast-any-number-from-exiled"], "why": "impulse-exile can exile each player's top card, but cast-now casts one card; 'cast any number of spells from among those cards' during resolution needs a repeated cast-now over the cards exiled this way." },
-    { "name": "Windfall", "needs": ["new:max-over-players-amount"], "why": "'Draws cards equal to the greatest number of cards a player discarded this way' — thisWay amounts sum over players; no per-player maximum." },
-    { "name": "Heirloom Blade", "needs": ["new:shares-creature-type-filter"], "why": "reveal-until exists, but no CardFilter clause for 'shares a creature type with' the dead creature as it last existed (only sharesCardTypeWith)." },
-    { "name": "Promise of Loyalty", "needs": ["new:vow-counters"], "why": "Each player puts a vow counter on exactly one creature and sacrifices the rest (sacrifice-all-but keeps up to N, no counter), plus a counter-gated 'can't attack you or your planeswalkers' restriction tied to the caster." },
-    { "name": "Painful Truths", "needs": ["new:converge"], "why": "Converge — the number of colors of mana spent; manaSpentFrom records each unit's source but not its color, and no amount reads it." },
-    { "name": "Crib Swap", "needs": ["new:kindred-type"], "why": "Kindred card type isn't modeled (AUTHORING §15: CardType has no 'kindred'), so a Kindred Instant — Shapeshifter with changeling can't be expressed." }
+    {
+      "name": "Opal Palace",
+      "needs": [
+        "new:commander-cast-count-amount",
+        "new:mana-spent-replacement"
+      ],
+      "why": "No EffectAmount for how many times a given commander was cast from the command zone; and 'if you spend this mana … it enters with counters' is a replacement, not a triggered ability, while whenSpent riders fire as triggers that can be responded to or countered."
+    },
+    {
+      "name": "Fact or Fiction",
+      "needs": [
+        "new:separate-into-piles"
+      ],
+      "why": "An opponent separates the revealed cards into two piles and you choose one — no pile decision."
+    },
+    {
+      "name": "Myr Battlesphere",
+      "needs": [
+        "new:tap-x-then"
+      ],
+      "why": "'You may tap X untapped Myr you control. If you do, +X/+0 and X damage' — no resolution-time 'tap any number of' choice whose count feeds an amount."
+    },
+    {
+      "name": "Reality Shift",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "Manifest (a face-down 2/2) isn't modeled."
+    },
+    {
+      "name": "Forgotten Ancient",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "'Move any number of +1/+1 counters from this creature onto other creatures' — no counter-moving effect, let alone a player-chosen distribution."
+    },
+    {
+      "name": "Windbrisk Heights",
+      "needs": [
+        "new:hideaway"
+      ],
+      "why": "Hideaway (rule 702.75) is listed as unmodeled in AUTHORING §15."
+    },
+    {
+      "name": "Etali, Primal Storm",
+      "needs": [
+        "new:cast-any-number-from-exiled"
+      ],
+      "why": "impulse-exile can exile each player's top card, but cast-now casts one card; 'cast any number of spells from among those cards' during resolution needs a repeated cast-now over the cards exiled this way."
+    },
+    {
+      "name": "Promise of Loyalty",
+      "needs": [
+        "new:vow-counters"
+      ],
+      "why": "Each player puts a vow counter on exactly one creature and sacrifices the rest (sacrifice-all-but keeps up to N, no counter), plus a counter-gated 'can't attack you or your planeswalkers' restriction tied to the caster."
+    },
+    {
+      "name": "Crib Swap",
+      "needs": [
+        "new:kindred-type"
+      ],
+      "why": "Kindred card type isn't modeled (AUTHORING §15: CardType has no 'kindred'), so a Kindred Instant — Shapeshifter with changeling can't be expressed."
+    }
   ]
 }

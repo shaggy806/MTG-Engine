@@ -6,9 +6,10 @@
 // over a block every deck in the pairing is played from every position:
 // neither the decks' relative strength nor the play/draw advantage is baked
 // into the result. Each block takes the next seating from a fixed shuffle of
-// every ordering of `players` distinct decks drawn from `SAMPLE_DECKS`.
+// every ordering of `players` distinct decks drawn from `BENCH_DECKS` (the
+// starter decks flagged `bench` — see `sample-decks.ts`).
 
-import { SAMPLE_DECKS, asPlayerId } from "../dist/index.js";
+import { BENCH_DECKS, asPlayerId } from "../dist/index.js";
 
 export const SEATS = ["alice", "bob", "carol", "dave"].map(asPlayerId);
 
@@ -44,7 +45,7 @@ const seatingsByPlayers = new Map();
 function seatingFor(players, block) {
   let seatings = seatingsByPlayers.get(players);
   if (seatings === undefined) {
-    seatings = shuffled(permutations(SAMPLE_DECKS.length, players), 0x5ea7 + players);
+    seatings = shuffled(permutations(BENCH_DECKS.length, players), 0x5ea7 + players);
     seatingsByPlayers.set(players, seatings);
   }
   return seatings[block % seatings.length];
@@ -64,6 +65,6 @@ export function tableFor(seed, players) {
     seats,
     block,
     measuredSeat: seats[game0 % players],
-    decks: seats.map((_, i) => SAMPLE_DECKS[seating[i]]),
+    decks: seats.map((_, i) => BENCH_DECKS[seating[i]]),
   };
 }

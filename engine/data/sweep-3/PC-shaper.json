@@ -81,6 +81,30 @@
         "engine/src/cards/pool/uurg-spawn-of-turg.ts"
       ],
       "tested": true
+    },
+    {
+      "name": "Exploration Broodship",
+      "files": [
+        "engine/src/cards/pool/exploration-broodship.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Braids, Arisen Nightmare",
+      "files": [
+        "engine/src/cards/pool/braids-arisen-nightmare.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Pest Infestation",
+      "files": [
+        "engine/src/cards/pool/pest-infestation.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
     }
   ],
   "blocked": [
@@ -97,20 +121,6 @@
         "new:stun-counters"
       ],
       "why": "Enters tapped with six stun counters (rule 122.1d): the engine has no stun-counter untap replacement."
-    },
-    {
-      "name": "Exploration Broodship",
-      "needs": [
-        "new:graveyard-cast-sacrifice-land"
-      ],
-      "why": "Station and its bands exist, but StaticAbility.castFromGraveyard has no additional sacrifice cost (only payLife): \"cast a permanent spell from your graveyard by sacrificing a land in addition to paying its other costs\"."
-    },
-    {
-      "name": "Braids, Arisen Nightmare",
-      "needs": [
-        "effect:may-sacrifice-then"
-      ],
-      "why": "CardFilter.sharesCardTypeWith \"sacrificed\" exists, but only a cost or a sacrifice-source step binds the \"sacrificed\" ref; the chosen \"you may sacrifice an artifact, creature, enchantment, land, or planeswalker\" inside an effect does not."
     },
     {
       "name": "God-Eternal Bontu",
@@ -157,13 +167,6 @@
         "new:return-lands-cost"
       ],
       "why": "\"Return two lands you control to their owner's hand\" as an activation cost; AbilityCost has no bounce cost."
-    },
-    {
-      "name": "Pest Infestation",
-      "needs": [
-        "decision:variable-target-count"
-      ],
-      "why": "\"Destroy up to X target artifacts and/or enchantments\": an any-number group's max is a fixed number, not the spell's X."
     },
     {
       "name": "Soul of Windgrace",

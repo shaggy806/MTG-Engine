@@ -3,82 +3,178 @@
   "status": "complete",
   "ranks": "Tramplesaurus Rex precon (FDC, commander Ghalta, Primal Hunger): its 24 missing cards, existing vocabulary only",
   "authored": [
-    { "name": "Dungrove Elder", "files": ["engine/src/cards/pool/dungrove-elder.ts"], "tested": true },
-    { "name": "Regal Imperiosaur", "files": ["engine/src/cards/pool/regal-imperiosaur.ts"], "tested": true },
-    { "name": "Rhonas the Indomitable", "files": ["engine/src/cards/pool/rhonas-the-indomitable.ts"], "tested": true },
-    { "name": "Rishkar's Expertise", "files": ["engine/src/cards/pool/rishkars-expertise.ts"], "tested": true },
-    { "name": "Steel Leaf Champion", "files": ["engine/src/cards/pool/steel-leaf-champion.ts"], "tested": false },
-    { "name": "Surrak, the Hunt Caller", "files": ["engine/src/cards/pool/surrak-the-hunt-caller.ts"], "tested": true },
-    { "name": "Whiptongue Hydra", "files": ["engine/src/cards/pool/whiptongue-hydra.ts"], "tested": true },
-    { "name": "Yeva, Nature's Herald", "files": ["engine/src/cards/pool/yeva-natures-herald.ts"], "tested": true },
-    { "name": "Bite Down", "files": ["engine/src/cards/pool/bite-down.ts"], "tested": false },
-    { "name": "Clifftop Lookout", "files": ["engine/src/cards/pool/clifftop-lookout.ts"], "tested": true },
-    { "name": "Whisperer of the Wilds", "files": ["engine/src/cards/pool/whisperer-of-the-wilds.ts"], "tested": false }
+    {
+      "name": "Dungrove Elder",
+      "files": [
+        "engine/src/cards/pool/dungrove-elder.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Regal Imperiosaur",
+      "files": [
+        "engine/src/cards/pool/regal-imperiosaur.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rhonas the Indomitable",
+      "files": [
+        "engine/src/cards/pool/rhonas-the-indomitable.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rishkar's Expertise",
+      "files": [
+        "engine/src/cards/pool/rishkars-expertise.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Steel Leaf Champion",
+      "files": [
+        "engine/src/cards/pool/steel-leaf-champion.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Surrak, the Hunt Caller",
+      "files": [
+        "engine/src/cards/pool/surrak-the-hunt-caller.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Whiptongue Hydra",
+      "files": [
+        "engine/src/cards/pool/whiptongue-hydra.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Yeva, Nature's Herald",
+      "files": [
+        "engine/src/cards/pool/yeva-natures-herald.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bite Down",
+      "files": [
+        "engine/src/cards/pool/bite-down.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Clifftop Lookout",
+      "files": [
+        "engine/src/cards/pool/clifftop-lookout.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Whisperer of the Wilds",
+      "files": [
+        "engine/src/cards/pool/whisperer-of-the-wilds.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Thickest in the Thicket",
+      "files": [
+        "engine/src/cards/pool/thickest-in-the-thicket.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "War Room",
+      "files": [
+        "engine/src/cards/pool/war-room.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Collective Resistance",
+      "files": [
+        "engine/src/cards/pool/collective-resistance.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    }
   ],
   "blocked": [
     {
       "name": "Arachnogenesis",
-      "needs": ["new:count-attacking-you", "new:prevent-combat-damage-by-filter"],
+      "needs": [
+        "new:count-attacking-you",
+        "new:prevent-combat-damage-by-filter"
+      ],
       "why": "X is 'the number of creatures attacking you' (no filter clause names the defender), and 'prevent all combat damage that would be dealt this turn by non-Spider creatures' — prevent-all-combat-damage takes no source filter."
     },
     {
       "name": "Ezuri's Predation",
-      "needs": ["new:token-per-object-fights"],
+      "needs": [
+        "new:token-per-object-fights"
+      ],
       "why": "One 4/4 token per creature your opponents control, each fighting a different one of those creatures, simultaneously — nothing pairs created tokens with the objects they were made for."
     },
     {
       "name": "Pugnacious Hammerskull",
-      "needs": ["new:stun-counters"],
+      "needs": [
+        "new:stun-counters"
+      ],
       "why": "Stun counters (rule 122.1d) aren't modeled: nothing replaces untapping with removing one (AUTHORING §15)."
     },
     {
       "name": "Scrapshooter",
-      "needs": ["new:gift"],
+      "needs": [
+        "new:gift"
+      ],
       "why": "Gift a card (rule 702.174): an optional additional cost naming an opponent, a gift given on entering, and 'if the gift was promised' — no vocabulary for any of it."
     },
     {
       "name": "Tangleweave Armor",
-      "needs": ["new:static-pt-from-commander-mana-value"],
+      "needs": [
+        "new:static-pt-from-commander-mana-value"
+      ],
       "why": "'Equipped creature gets +X/+X, where X is the greatest mana value among your commanders' — grantPtPerCount counts permanents/cards; nothing reads the commanders' mana value wherever they are."
     },
     {
-      "name": "Thickest in the Thicket",
-      "needs": ["new:condition-control-greatest-power"],
-      "why": "'Draw two cards if you control the creature with the greatest power or tied' — source-greatest reads the source's own power (an enchantment), and an opponent-controls filter with an { amount } compare fails closed in a condition."
-    },
-    {
       "name": "Mosswort Bridge",
-      "needs": ["new:hideaway"],
+      "needs": [
+        "new:hideaway"
+      ],
       "why": "Hideaway (rule 702.104) isn't modeled (AUTHORING §15)."
     },
     {
-      "name": "War Room",
-      "needs": ["new:dynamic-life-cost"],
-      "why": "'Pay life equal to the number of colors in your commanders' color identity': an activation cost's payLife is a fixed number."
-    },
-    {
       "name": "Challenger Troll",
-      "needs": ["new:cant-be-blocked-by-more-than-one"],
+      "needs": [
+        "new:cant-be-blocked-by-more-than-one"
+      ],
       "why": "'Each creature you control with power 4 or greater can't be blocked by more than one creature' — no such CombatRestriction (and its scope reads power)."
     },
     {
-      "name": "Collective Resistance",
-      "needs": ["new:escalate"],
-      "why": "Escalate {G} (rule 702.120): a cost for each mode chosen beyond the first — castModal has no per-extra-mode cost."
-    },
-    {
       "name": "Kenrith's Transformation",
-      "needs": ["new:static-set-characteristics"],
+      "needs": [
+        "new:static-set-characteristics"
+      ],
       "why": "The enchanted creature loses all abilities and is a green Elk creature (only) with base 3/3: a static can add types and set base P/T, but not set colour, set types/subtypes, or remove abilities (the animate effect can, but only as a one-shot)."
     },
     {
       "name": "Monstrous Onslaught",
-      "needs": ["new:divided-dynamic-total"],
+      "needs": [
+        "new:divided-dynamic-total"
+      ],
       "why": "'X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you cast this spell' — divided.total is a fixed number."
     },
     {
       "name": "Ram Through",
-      "needs": ["new:excess-damage-to-controller"],
+      "needs": [
+        "new:excess-damage-to-controller"
+      ],
       "why": "'If the creature you control has trample, excess damage is dealt to that creature's controller instead' — a one-sided fight has no excess-damage clause."
     }
   ]

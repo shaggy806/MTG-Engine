@@ -30,6 +30,54 @@
         "engine/src/cards/pool/deadly-tempest.ts"
       ],
       "tested": true
+    },
+    {
+      "name": "Champion of Lambholt",
+      "files": [
+        "engine/src/cards/pool/champion-of-lambholt.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Cartographer's Hawk",
+      "files": [
+        "engine/src/cards/pool/cartographers-hawk.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Unbreathing Horde",
+      "files": [
+        "engine/src/cards/pool/unbreathing-horde.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Reign of the Pit",
+      "files": [
+        "engine/src/cards/pool/reign-of-the-pit.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Chaos Warp",
+      "files": [
+        "engine/src/cards/pool/chaos-warp.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Myriad Landscape",
+      "files": [
+        "engine/src/cards/pool/myriad-landscape.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
     }
   ],
   "blocked": [
@@ -57,13 +105,6 @@
       "why": "'Target player shuffles any number of target cards from their graveyard into their library': no shuffle-cards-into-library effect, and no any-number card-in-graveyard group tied to the targeted player's graveyard."
     },
     {
-      "name": "Champion of Lambholt",
-      "needs": [
-        "new:dynamic-compare-in-static-filters"
-      ],
-      "why": "'Creatures with power less than this creature's power can't block creatures you control': cantBeBlockedBy is matched with only { you } (combat/eligibility.ts blockFilters), so { amount: { powerOf: 'source' } } fails closed."
-    },
-    {
       "name": "Curse of Bounty",
       "needs": [
         "mechanic:curses"
@@ -76,13 +117,6 @@
         "mechanic:curses"
       ],
       "why": "Enchant player and 'whenever enchanted player is attacked, … each opponent attacking that player does the same' — none modeled."
-    },
-    {
-      "name": "Cartographer's Hawk",
-      "needs": [
-        "new:trigger-player-controls-more"
-      ],
-      "why": "'Deals combat damage to a player who controls more lands than you': opponent-controls-more compares any opponent (or the active player), never the player dealt damage."
     },
     {
       "name": "Gideon Jura",
@@ -136,13 +170,6 @@
       "why": "Cast from your graveyard by paying {B}{B} and sacrificing two creatures rather than its mana cost — no graveyard alternative cost with a sacrifice."
     },
     {
-      "name": "Unbreathing Horde",
-      "needs": [
-        "new:remove-counter-effect"
-      ],
-      "why": "'Prevent that damage and remove a +1/+1 counter from it': the would-deal-damage prevent replacement takes a then, but no effect removes a counter."
-    },
-    {
       "name": "Havengul Lich",
       "needs": [
         "static:gain-abilities-from-graveyard",
@@ -180,13 +207,6 @@
       "why": "'Up to X target creatures gain fear' (a target count of X in a castModal mode) and 'creature card with mana value X or less' in a spell's target filter (AUTHORING §6: a spell's target filter can't read X)."
     },
     {
-      "name": "Reign of the Pit",
-      "needs": [
-        "new:this-way-aggregate"
-      ],
-      "why": "X/X Demon 'where X is the total power of the creatures sacrificed this way' — thisWay counts objects; nothing sums their last-known power."
-    },
-    {
       "name": "Scythe Specter",
       "needs": [
         "new:this-way-aggregate",
@@ -207,14 +227,6 @@
         "new:sacrifice-greatest-among"
       ],
       "why": "Each opponent sacrifices one with the greatest mana value among their own creatures and planeswalkers — a per-player maximum a sacrifice filter can't bind."
-    },
-    {
-      "name": "Chaos Warp",
-      "needs": [
-        "new:shuffle-into-library",
-        "new:reveal-top-any-library"
-      ],
-      "why": "Owner shuffles target permanent into their library, then reveals their top card and puts it onto the battlefield if it's a permanent card."
     },
     {
       "name": "Combustible Gearhulk",
@@ -274,13 +286,6 @@
         "new:remove-x-counters-cost"
       ],
       "why": "'{1}, Remove X storage counters from this land: Add X mana in any combination of {B} and/or {R}' — removeCounter.count is a fixed number."
-    },
-    {
-      "name": "Myriad Landscape",
-      "needs": [
-        "decision:choose-from-zone-extensions"
-      ],
-      "why": "'Up to two basic land cards that share a land type' relates the two finds to each other (AUTHORING §15)."
     }
   ]
 }

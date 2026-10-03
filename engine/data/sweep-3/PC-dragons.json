@@ -79,6 +79,22 @@
         "engine/src/cards/pool/hit-the-mother-lode.ts"
       ],
       "tested": true
+    },
+    {
+      "name": "Goddric, Cloaked Reveler",
+      "files": [
+        "engine/src/cards/pool/goddric-cloaked-reveler.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
+    },
+    {
+      "name": "Herald's Horn",
+      "files": [
+        "engine/src/cards/pool/heralds-horn.ts"
+      ],
+      "tested": true,
+      "note": "authored in the features pass, 2026-10-02"
     }
   ],
   "blocked": [
@@ -111,13 +127,6 @@
         "new:discard-any-number-draw-that-many"
       ],
       "why": "Read ahead (choose a starting chapter as the Saga enters) is unmodeled; chapter II's 'discard any number of cards, then draw that many' has no vocabulary either."
-    },
-    {
-      "name": "Goddric, Cloaked Reveler",
-      "needs": [
-        "new:static-set-creature-types"
-      ],
-      "why": "Celebration is expressible (turn-history entered, nonland, atLeast 2) and so are base P/T, flying and the granted ability, but 'is a Dragon … (He loses all other creature types)' needs a static that replaces creature types; StaticAbility only has addSubtypes (setSubtypes exists only on animate effects)."
     },
     {
       "name": "Leyline Tyrant",
@@ -176,13 +185,6 @@
         "new:when-spent-grant"
       ],
       "why": "'If that mana is spent on a Dragon creature spell, it gains haste until end of turn': whenSpent fires a triggered ability above the spell; nothing grants a characteristic to the spell/permanent the mana paid for."
-    },
-    {
-      "name": "Herald's Horn",
-      "needs": [
-        "new:chosen-type-in-zone-choice"
-      ],
-      "why": "The cost reduction is expressible (matchesChosenCreatureType), but the upkeep 'if it's a creature card of the chosen type' look-and-choose filter can't read the chosen type: Game.matchesZoneChoiceFilter calls matchesFilter with only { you }, no `source`, so ofChosenType never matches."
     }
   ]
 }
