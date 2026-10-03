@@ -67,6 +67,38 @@ and hideaway (rule 702.75: Mosswort Bridge, Spinerock Knoll, Windbrisk Heights a
 What still blocks the PC slices is in their records: SCD's leftovers are mostly hard (curses, a
 planeswalker that becomes a creature, a target per opponent's graveyard, emblems with triggers).
 
+### The engine passes (2026-10-03)
+
+Four engine passes built in parallel worktrees, each reviewed adversarially before it merged —
+79 cards:
+
+- **What a spell targets, copies aimed by their effect, a spell exiled as it resolves** (16):
+  Zada, Hedron Grinder; Feather, the Redeemed; Krark, the Thumbless; Alania, Divergent Storm;
+  Kalamax, the Stormsire; Imodane, the Pyrohammer; Ivy, Gleeful Spellthief; Volo, Guide to
+  Monsters; Stella Lee, Wild Card; Fire Lord Azula; Season of Growth; Rebuff the Wicked; Dawn
+  Charm; Pearl-Ear, Imperial Advisor; Sevinne's Reclamation; Reflections of Littjara. Still
+  blocked: Orvar, the All-Form (a choice among the spell's targets, a discard's cause), Mendicant
+  Core (speed), Ulalek (copying abilities, colourless hybrid), Vesuvan Duplimancy (a token copy
+  of the trigger spell's target from last-known information).
+- **Mana spent as any colour, playing from exile, casting from the top** (21): the family below.
+- **Toxic, casualty, additional upkeep steps** (16): Karumonix, the Rat King; Obeka, Splitter of
+  Seconds; Silverquill, the Disputant; Anhelo, the Painter; Bilious Skulldweller; Bloated
+  Contaminator; Blightbelly Rat; Myr Convert; Tyrranax Rex; Venerated Rotpriest; White Sun's
+  Twilight; Mirrex; Contaminant Grafter; Bloodroot Apothecary; Cut Your Losses. Still blocked:
+  blitz (Henzie "Toolbox" Torre — UI), speed (Mendicant Core, Vnwxt, the Raceways), toxic gained
+  until end of turn or read by a static's scope (Skrelv, Defector Mite; Skrelv's Hive), and Ixhel,
+  Jaxis, Star Athlete, Howlsquad Heavy and Paradox Haze for other features.
+- **Copy-on-enter options, legend-rule exemptions, mana-value aggregates** (26): Sakashima of a
+  Thousand Faces; Aeve, Progenitor Ooze; Spark Double; Phyrexian Metamorph; Sculpting Steel;
+  Mockingbird; Mirrormade; Clever Impersonator; Phantasmal Image; Masterwork of Ingenuity; Copy
+  Enchantment; Copy Artifact; Stunt Double; Altered Ego; Malleable Impostor; Vesuva; Auton
+  Soldier; Sakashima the Impostor; Estrid's Invocation; Glasspool Mimic; Ghalta and Mavren;
+  Prime Speaker Zegana; One with the Machine; and three precon stand-ins' originals, Deceptive
+  Frostkite, Cursed Mirror and Tangleweave Armor. Still blocked: The Mimeoplasm and Echoing
+  Deeps (a copy of a card in a graveyard), and Karn, Legacy Reforged, Aloy, Coram, Selvala,
+  Mirror Box, Machine God's Effigy, Imposter Mech, Sakashima's Student, Flesh Duplicate,
+  Chameleon, Vizier of Many Faces and Naga Fleshcrafter for other features.
+
 ## Top-5000 batches (sweep 3)
 
 - **Batch 4 (2026-09-28)** took the cards the debt fixes unblocked: 15 authored (regeneration,
