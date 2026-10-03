@@ -2401,11 +2401,18 @@ export class HeuristicBotController extends AutomaticController {
     // either applies.
     // Combat damage, not power: a 0/4 wall under Arcades, the Strategist
     // deals 4.
-    return legal.eligible
-      .filter((id) => assignedCombatDamage(state, this.registry, id) > 0)
+    const able = legal.eligible.filter((id) => assignedCombatDamage(state, this.registry, id) > 0);
+    // Going wide for lethal: everything at a player whose blockers can't stop
+    // enough of it, though each creature alone would die attacking. v1 sent
+    // nothing with six 1/1s against two 2/2s and the player at 4 (the deck
+    // autopsies) — and as v2's model of every opponent, it never saw that
+    // swing coming at v2 either.
+    const lethal = this.wideLethal(state, legal, able);
+    return able
       .flatMap((attacker) => {
         const options = [...(legal.defendersFor[attacker] ?? [])].sort(byValue);
         if (options.length === 0) return [];
+        if (lethal !== null && options.includes(lethal)) return [{ attacker, defender: lethal }];
         // Prefer a defender who can't eat this creature for free. Sorting on
         // life alone sent a 2/2 commander headlong into an untapped 6/4 while
         // an opponent with an empty board sat next to it — reported from a
@@ -2417,6 +2424,53 @@ export class HeuristicBotController extends AutomaticController {
         // so this one stays home — v1 used to swing regardless.
         return [];
       });
+  }
+
+  /**
+   * A player that attacking with everything able to reach them kills
+   * however they block, or `null`. Each untapped creature of theirs that
+   * can block takes one attacker — the biggest it could stop — and what's
+   * left must cover their life. Deliberately cautious: menace and trample
+   * are ignored (both only let more through), and a flyer counts as
+   * blockable if they have any creature with flying or reach. A token stack
+   * attacks token by token, each one blockable alone.
+   */
+  private wideLethal(
+    state: GameState,
+    legal: DeclareAttackersLegal,
+    able: readonly ObjectId[],
+  ): PlayerId | null {
+    const players = legal.defenders.filter((d): d is PlayerId => state.players[d as PlayerId] !== undefined);
+    for (const player of [...players].sort((a, b) => state.players[a].life - state.players[b].life)) {
+      const blockers = state.zones.shared.battlefield.filter((id) => {
+        const object = state.objects[id];
+        if (object === undefined || object.controller !== player || object.tapped) return false;
+        const it = computeCharacteristics(state, this.registry, id);
+        return it.types.includes("creature") && !it.restrictions.has("cant-block");
+      });
+      const blockerCount = blockers.reduce((n, id) => n + (state.objects[id].stackCount ?? 1), 0);
+      const skyBlockers = blockers.some((id) => {
+        const it = computeCharacteristics(state, this.registry, id);
+        return it.keywords.has("flying") || it.keywords.has("reach");
+      });
+      let unblockable = 0;
+      const blockable: number[] = [];
+      for (const attacker of able) {
+        if (!(legal.defendersFor[attacker] ?? []).includes(player)) continue;
+        const it = computeCharacteristics(state, this.registry, attacker);
+        const damage = assignedCombatDamage(state, this.registry, attacker);
+        for (let n = state.objects[attacker].stackCount ?? 1; n > 0; n -= 1) {
+          if (it.keywords.has("unblockable") || (it.keywords.has("flying") && !skyBlockers)) unblockable += damage;
+          else blockable.push(damage);
+        }
+      }
+      const through = blockable
+        .sort((a, b) => a - b)
+        .slice(0, Math.max(0, blockable.length - blockerCount))
+        .reduce((sum, d) => sum + d, unblockable);
+      if (through >= state.players[player].life && through > 0) return player;
+    }
+    return null;
   }
 
   /**

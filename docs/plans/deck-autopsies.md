@@ -113,7 +113,17 @@ doesn't grow the threat, at 6 going to 1 every creature is still lethal (crediti
 stopped a chump at 6, `bot:diff` found) — and commander damage counts squared over 21: 21 is
 still 21, a first hit of 3 costs 0.4. Gate scenarios "takes a Craw Wurm's hit at 35 rather than
 chump" and "takes a commander's first small hit at 35 rather than chump"; a commander Craw Wurm's
-first 6 is still chumped, a defensible trade.
+first 6 is still chumped, a defensible trade. Benched level after shipping: 24.3% [20.3, 28.7] over
+400 four-player games.
+
+Then going wide: with six 1/1 tokens against two Grizzly Bears and the player at 4, v2's
+`alphaStrike` sent everything — four get through, lethal — but v1 attacked with nothing, each
+token being one a Bear would kill. v1 plays the opponents in v2's rollouts, so v2 underrated a
+wide board's swing at it too. v1 now checks first whether everything at one player kills
+through their blockers (`wideLethal`: each untapped blocker stops the biggest attacker it could;
+menace and trample ignored, so it only claims a sure kill) and sends it all there. `bot:diff`,
+v1 over 40 games: 45 of 76,651 decisions, all whole-board swings at one player, the next attack
+in the same game going at someone else.
 
 ### Left
 
@@ -128,7 +138,6 @@ first 6 is still chumped, a defensible trade.
   `hand`'s 2 a card). The same root as BACKLOG's Skullclamp item. A smaller flat value for small
   creatures would fix both, but makes tokens cheaper to chump with again — measure it against
   "takes a Craw Wurm's hit at 35 rather than chump" before shipping.
-- **Neither bot goes wide** into a board of blockers with many small creatures.
 - **Premium removal fired early** at weak targets. A flat reserve — cheap instant removal
   counted in `answers` at 3, like a counterspell — was tried 2026-10-03 and dropped: it held
   Swords to Plowshares from a Llanowar Elves but still fired it at a Wall of Reverence, which

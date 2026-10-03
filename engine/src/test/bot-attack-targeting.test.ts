@@ -84,3 +84,47 @@ describe("who the bot attacks", () => {
     expect(attacks).toHaveLength(1);
   });
 });
+
+describe("going wide for lethal (v1)", () => {
+  /** Alice has six 1/1 tokens; bob two untapped 2/2s and `life`. */
+  const wide = (players: readonly PlayerId[], life: number): Game => {
+    const game = Game.create({
+      seed: 4,
+      shuffle: false,
+      startingPlayer: A,
+      rules: { startingLife: 40 },
+      decks: players.map((player) => ({ player, cards: Array(40).fill("Forest") })),
+    });
+    for (let i = 0; i < 6; i += 1) {
+      const token = game.debugSpawn("Soldier Token", A);
+      game.state.objects[token].summoningSick = false;
+      game.state.objects[token].isToken = true;
+    }
+    for (let i = 0; i < 2; i += 1) {
+      const bears = game.debugSpawn("Grizzly Bears", B);
+      game.state.objects[bears].summoningSick = false;
+    }
+    game.state.players[B].life = life;
+    game.advanceUntil(
+      (s) => s.turn.step === "declare-attackers" && s.awaiting?.kind === "attackers",
+    );
+    return game;
+  };
+
+  it("sends everything when the blockers can't stop enough of it", () => {
+    // Two Bears block two tokens; the other four deal 4, and bob is at 4.
+    const attacks = attacksOf(wide([A, B], 4), new HeuristicBotController(A));
+    expect(attacks).toHaveLength(6);
+    expect(attacks.every((a) => a.defender === B)).toBe(true);
+  });
+
+  it("goes for the kill over an open player", () => {
+    const attacks = attacksOf(wide([A, B, C], 4), new HeuristicBotController(A));
+    expect(attacks.filter((a) => a.defender === B)).toHaveLength(6);
+  });
+
+  it("holds the tokens back when it isn't lethal", () => {
+    // Each 1/1 alone would die to a Bear, and 4 of bob's 5 isn't a kill.
+    expect(attacksOf(wide([A, B], 5), new HeuristicBotController(A))).toHaveLength(0);
+  });
+});

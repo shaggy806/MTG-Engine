@@ -69,8 +69,8 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   on it. Candidates that held their own under v2: Tramplesaurus Rex, Chaos Incarnate, Reign of
   Dragons, Token Triumph, Draconic Destruction.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
-  invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield); going wide
-  into blockers; premium removal fired early; Sultai's and Mardu's plan-gutting stand-ins.
+  invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
+  premium removal fired at weak targets; Sultai's and Mardu's plan-gutting stand-ins.
 - **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
