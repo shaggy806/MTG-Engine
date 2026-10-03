@@ -1349,10 +1349,29 @@ export class EvalBotController extends HeuristicBotController {
     budget: SearchBudget,
   ): AttackerDeclaration[] | null {
     const me = this.playerId;
-    const mine = combatCreatures(state, this.cards, me, false).filter(
-      (c, i, all) =>
-        all.findIndex((m) => m.id === c.id) === i && c.damage > 0 && legal.eligible.includes(c.id),
-    );
+    // Every token of a compacted stack is its own attacker here, cloned so
+    // the sets below tell the copies apart (`combatCreatures` lists one
+    // object once per token): deduped by id, a stack of ten 1/1s was one
+    // 1/1, and the Mardu autopsy saw ten tokens sent at a player on 40 while
+    // the one on 8 had nothing to block with.
+    const mine = combatCreatures(state, this.cards, me, false)
+      .filter((c) => c.damage > 0 && legal.eligible.includes(c.id))
+      .map((c) => ({ ...c }));
+    const stackSize = (id: ObjectId): number => state.objects[id]?.stackCount ?? 1;
+    // Units sent at defenders, as declarations: one entry per stack and
+    // defender, with a `count` unless it's every token of the stack.
+    const declare = (units: readonly { readonly c: CombatCreature; readonly defender: PlayerId }[]): AttackerDeclaration[] => {
+      const groups = new Map<string, { attacker: ObjectId; defender: PlayerId; count: number }>();
+      for (const { c, defender } of units) {
+        const key = `${c.id}>${defender}`;
+        const group = groups.get(key) ?? { attacker: c.id, defender, count: 0 };
+        group.count += 1;
+        groups.set(key, group);
+      }
+      return [...groups.values()].map(({ attacker, defender, count }) =>
+        count >= stackSize(attacker) ? { attacker, defender } : { attacker, defender, count },
+      );
+    };
     const living = state.turnOrder.filter((p) => p !== me && !state.players[p].hasLost);
     const blockersOf = new Map(
       living.map((p) => [p, combatCreatures(state, this.cards, p, true)] as const),
@@ -1426,7 +1445,7 @@ export class EvalBotController extends HeuristicBotController {
     const seen = new Set<string>();
     const add = (declaration: AttackerDeclaration[], kills: number, used: number): void => {
       const key = declaration
-        .map((d) => `${d.attacker}>${d.defender}`)
+        .map((d) => `${d.attacker}>${d.defender}x${d.count ?? "all"}`)
         .sort()
         .join(",");
       if (seen.has(key)) return;
@@ -1436,21 +1455,21 @@ export class EvalBotController extends HeuristicBotController {
     for (const order of permutations(killable)) {
       let pool = [...mine];
       const killed: PlayerId[] = [];
-      const declaration: AttackerDeclaration[] = [];
+      const units: { c: CombatCreature; defender: PlayerId }[] = [];
       for (const defender of order) {
         const set = killWith(defender, pool, exact);
         if (set === null) continue;
         killed.push(defender);
-        for (const c of set) declaration.push({ attacker: c.id, defender });
+        for (const c of set) units.push({ c, defender });
         pool = pool.filter((c) => !set.includes(c));
       }
-      const piled = [...declaration];
+      const piled = [...units];
       for (const c of pool) {
         const target = killed.find((p) => canAttack(c, p));
-        if (target !== undefined) piled.push({ attacker: c.id, defender: target });
+        if (target !== undefined) piled.push({ c, defender: target });
       }
-      add(piled, killed.length, declaration.length);
-      add(declaration, killed.length, declaration.length);
+      add(declare(piled), killed.length, units.length);
+      add(declare(units), killed.length, units.length);
     }
     // Most kills first; among equals, the fewest attackers the kills need,
     // then the piled-on plan before the lean one (the order they were added).

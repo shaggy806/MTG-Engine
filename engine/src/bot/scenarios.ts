@@ -2159,6 +2159,29 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   {
+    name: "kills a player with a stack of tokens",
+    rule: "Ten stacked 1/1s are ten attackers: enough of them at the player on 8 kills him.",
+    run(weights, registry, makeBot) {
+      // From the Mardu Surge autopsy: the kill planner read a stack of ten
+      // 1/1 tokens as one 1/1 and sent it at a player on 40.
+      const game = table(registry, [A, B, C, D], A);
+      for (const p of [A, C, D]) game.state.players[p].life = 40;
+      game.state.players[B].life = 8;
+      const stack = onBoard(game, "Soldier Token", A);
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 10;
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      const atBob = attackers
+        .filter((d) => d.defender === B)
+        .reduce((n, d) => n + (d.count ?? game.state.objects[d.attacker]?.stackCount ?? 1), 0);
+      return {
+        passed: atBob >= 8,
+        detail: `sent ${atBob} at bob (${attackers.map((d) => `${d.count ?? "all"}→${String(d.defender)}`).join(", ") || "nothing"})`,
+      };
+    },
+  },
+  {
     name: "does not send its commander into a gang block",
     rule: "Two blockers that kill the commander together are a block a defender makes; attack the open players instead.",
     run(weights, registry, makeBot) {

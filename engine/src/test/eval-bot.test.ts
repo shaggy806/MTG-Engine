@@ -382,6 +382,36 @@ describe("evaluateState features", () => {
     expect(delta({ combatKeywords: 1 }, (g) => void g.debugSpawn("Typhoid Rats", A))).toBe(1);
   });
 
+  it("doesn't count a creature that's gone at the next end step", () => {
+    expect(delta({ creatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(1);
+    expect(
+      delta({ creatures: 1 }, (g) => {
+        const warrior = g.debugSpawn("Grizzly Bears", A);
+        g.state.objects[warrior].sacrificeAtEndStep = true;
+      }),
+    ).toBe(0);
+  });
+
+  it("counts a counterspell in hand only while the mana to cast it is open", () => {
+    const withIslands = (tapped: boolean) =>
+      delta({ answers: 1 }, (g) => {
+        g.debugSpawn("Island", A, "battlefield", { tapped });
+        g.debugSpawn("Island", A, "battlefield", { tapped });
+        g.debugSpawn("Counterspell", A, "hand");
+      });
+    expect(withIslands(false)).toBe(1);
+    expect(withIslands(true)).toBe(0);
+    // Two in hand, mana for one: one answer.
+    expect(
+      delta({ answers: 1 }, (g) => {
+        g.debugSpawn("Island", A, "battlefield");
+        g.debugSpawn("Island", A, "battlefield");
+        g.debugSpawn("Counterspell", A, "hand");
+        g.debugSpawn("Counterspell", A, "hand");
+      }),
+    ).toBe(1);
+  });
+
   it("counts our untapped creatures as blockers only where they'd hold an attack off", () => {
     // Bob's attacker is tapped so his own untapped count stays out of it: it
     // untaps for his turn all the same.

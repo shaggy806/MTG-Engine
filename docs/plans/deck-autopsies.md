@@ -1,7 +1,8 @@
 # Deck win rates and autopsies
 
-Status: **first pass done** (2026-10-02): the run, four autopsies, the general bot fixes they
-found, and Sultai Arisen off the bench. What's left is listed at the end and in `BACKLOG.md`.
+Status: **first pass done** (2026-10-02, a second set of fixes 2026-10-03): the run, four
+autopsies, the general bot fixes they found, and Sultai Arisen off the bench. What's left is
+listed at the end and in `BACKLOG.md`.
 
 ## Why
 
@@ -82,23 +83,39 @@ replaying its deck's losses and probing the scores of the bot's candidates.
 - Engine: two count-scaled bonuses that count each other (two Zinnias) recursed forever in
   `computeCharacteristics` (`countInProgress`).
 
+### Fixed (2026-10-03)
+
+A second set, benched level against the first (26.4% [22.3, 30.9] over 400 four-player games,
+even 25%), each pinned by a test or a gate scenario:
+
+- `answers` counts a counterspell only while the untapped mana could cast it, cheapest first,
+  so tapping out costs the reserve.
+- A creature that's gone at the next end step (mobilize's Warriors, blitz, unearth) isn't
+  counted as a body: its attack shows in life totals, and past this turn it's worth nothing.
+- `alphaStrike` plans with every token of a stack, and can split a stack between defenders
+  ("kills a player with a stack of tokens").
+- Engine: a player who lost during their own turn kept receiving priority, recasting a spell
+  that could go nowhere forever (a v1 run's seed 617); the turn now goes on without an active
+  player (rule 800.4j) — no draw, attackers or cleanup discard for them.
+
 ### Left
 
-- **Counterspells are credited while tapped out** (`answers` counts a counterspell in hand
-  whatever mana is open), so tapping out looks free and they rot in hand.
 - **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
   first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
   `"acting"` rollout for decks whose commander has a cast trigger.
-- **Token stacks in attack planning**: `alphaStrike` dedupes a stack to one creature, and no
-  attack splits a stack between defenders.
 - **Chump blocks at high life**: `threat` measured at the end of the simulated combat makes each
   point of life worth ~20×power/life²; commander damage is linear. A patch (life scale from the
   starting state, a curve for commander damage) removed visible chumps but changed nothing
   measurable in 18 games.
 - **Token payoffs and engines undervalued**: Deadly Dispute, Krenko, Hero of Bladehold cast far
   less by v2 than v1; attack triggers and "leaves the battlefield" payoffs aren't valued.
-- **A token that's sacrificed at end step** (mobilize) counts as a full creature in combat.
 - **Neither bot goes wide** into a board of blockers with many small creatures.
-- **Premium removal fired early** at weak targets; no reserve like Counterspell's.
+- **Premium removal fired early** at weak targets. A flat reserve — cheap instant removal
+  counted in `answers` at 3, like a counterspell — was tried 2026-10-03 and dropped: it held
+  Swords to Plowshares from a Llanowar Elves but still fired it at a Wall of Reverence, which
+  the evaluation prices at 6.0 to kill against a Grizzly Bears' 3.7 (mostly `toughness`), and
+  it held Murder from a trailing player's Craw Wurm, the table's only creature (the gate's
+  "kills a trailing player's threat"). The fix is in what a creature is worth to *kill* — its
+  threat to us rather than its board value — or a reserve scaled by the threats still to come.
 - **Stand-ins that gut a plan**: Sultai's Barrow Witches (vanilla without Knights) and Black
   Market Connections; Mardu's anthem and token-doubling cards.

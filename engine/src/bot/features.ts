@@ -511,6 +511,11 @@ function playerFeaturesUncached(
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
     if (object === undefined || object.controller !== player) continue;
+    // Gone at the next end step (mobilize's Warriors, blitz, unearth): what
+    // it does in a simulated combat shows in life totals, and as a body it's
+    // worth nothing past this turn — counted, Zurgo's attack scored +5.5
+    // where it's worth about +2 (the Mardu autopsy).
+    if (object.sacrificeAtEndStep === true || object.exileAtEndStep === true) continue;
     // One object can stand in for many token copies — see "Token stacking" in
     // docs/architecture/engine.md. A stack of twenty Saprolings is twenty creatures, not one.
     const n = object.stackCount ?? 1;
@@ -612,14 +617,25 @@ function playerFeaturesUncached(
   // prices like any card. v2 countered bob's Arcane Signet with its only
   // Counterspell ("saves Counterspell for a threat"), and every weight that
   // would have held it also stopped the bot casting its rocks and draw spells.
+  // Only those the mana left untapped could cast, cheapest first: the deck
+  // autopsies (2026-10-02) found counterspells credited in full while the bot
+  // tapped out, so tapping out looked free and they rotted in hand (Grave
+  // Danger cast two in 53 games and ended 18 holding one).
   let answers = 0;
   if (isMe) {
+    const answerCosts: number[] = [];
     for (const id of zones.hand) {
       const object = state.objects[id];
       if (object === undefined || !registry.has(object.cardName)) continue;
       const def = registry.get(object.cardName);
       if (!def.types.includes("land")) handManaValue += manaValueOf(registry, def.name);
-      if (isAnswer(def)) answers += 1;
+      if (isAnswer(def)) answerCosts.push(manaValueOf(registry, def.name));
+    }
+    let open = untappedMana;
+    for (const cost of answerCosts.sort((x, y) => x - y)) {
+      if (cost > open) break;
+      open -= cost;
+      answers += 1;
     }
   }
 
