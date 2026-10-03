@@ -88,8 +88,8 @@ export class RoomManager {
     // Bot seats go on last, and each one settles the room as it lands — by
     // which point every human claim is already bound, so the opening frame
     // (and any bot mulligan behind it) reaches everybody.
-    for (const player of pending.botSeats()) {
-      room.addBot(player);
+    for (const { player, displayName } of pending.botSeats()) {
+      room.addBot(player, undefined, displayName ?? undefined);
     }
     room.start();
     return room;

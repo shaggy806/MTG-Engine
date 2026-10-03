@@ -200,7 +200,7 @@ describe("PendingRoom", () => {
     expect(() => room.addBot(ALICE)).toThrow("already claimed");
 
     expect(room.isReady()).toBe(true);
-    expect(room.botSeats()).toEqual([BOB]);
+    expect(room.botSeats()).toEqual([{ player: BOB, displayName: bobStatus?.displayName }]);
   });
 
   it("addBot with a chosen deck uses it instead of the positional default", () => {
@@ -212,6 +212,17 @@ describe("PendingRoom", () => {
     });
     room.claimSeat(ALICE, "alice-token", { send: () => {} });
     expect(room.toGameConfig().decks.find((d) => d.player === BOB)?.cards).toEqual(["Forest", "Forest"]);
+  });
+
+  it("names a bot after a character of its deck's colours, and renames it when its deck changes colour", () => {
+    const room = pendingRoom();
+    room.addBot(BOB, { cards: ["Forest"], commanders: ["Ureni of the Unwritten"], name: "Temur" });
+    const nameOf = () => room.seatStatuses().find((s) => s.player === BOB)?.displayName;
+    expect(["Surrak", "Yasova", "Animar"]).toContain(nameOf());
+    room.setBotDeck(BOB, { cards: ["Island"], commanders: ["Ureni of the Unwritten"], name: "Temur again" });
+    expect(["Surrak", "Yasova", "Animar"]).toContain(nameOf());
+    room.setBotDeck(BOB, { cards: ["Swamp"], commanders: ["Ayara, First of Locthwain"], name: "Mono-Black" });
+    expect(["Liliana", "Yawgmoth", "Sheoldred", "Ob Nixilis"]).toContain(nameOf());
   });
 
   it("setBotDeck changes an already-bot-filled seat's deck, and only a bot seat's", () => {

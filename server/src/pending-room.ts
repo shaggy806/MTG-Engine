@@ -16,8 +16,9 @@
  * null-checks through `Room`'s entire API for no benefit.
  */
 
-import { commandersOf, createDefaultRegistry } from "engine";
-import type { DeckList, GameConfig, PlayerId } from "engine";
+import { colorIdentityOf, commandersOf, createDefaultRegistry } from "engine";
+import type { Color, DeckList, GameConfig, PlayerId } from "engine";
+import { botNameFits, botNameFor } from "./bot-names.js";
 import type { Connection } from "./room.js";
 import { HostRole } from "./host.js";
 import type { BotSpeed, SeatStatus, WireDeck } from "protocol";
@@ -52,6 +53,18 @@ const REGISTRY = createDefaultRegistry();
 /** The maximum distinct unknown names worth naming back to the client — a
  * decklist built against an older pool could have dozens. */
 const MAX_REPORTED_UNKNOWN = 5;
+
+/** A deck's colours, for naming the bot that plays it: its commanders'
+ * colour identity (rule 903.4), or, without a commander, every card's. */
+function deckIdentity(deck: PendingDeck): Set<Color> {
+  const commanders = commandersOf(deck);
+  const identity = new Set<Color>();
+  for (const name of commanders.length > 0 ? commanders : deck.cards) {
+    if (!REGISTRY.has(name)) continue;
+    for (const c of colorIdentityOf(REGISTRY.get(name), REGISTRY)) identity.add(c);
+  }
+  return identity;
+}
 
 /**
  * A claimed deck has to be buildable *before* it is stored, because nothing
@@ -216,6 +229,16 @@ export class PendingRoom {
     return { cards: example.cards, commanders: example.commanders, name: example.name };
   }
 
+  /** A name for the bot playing `deck` in `player`'s seat, unlike any other
+   * seat's ({@link botNameFor}). */
+  private botName(player: PlayerId, deck: PendingDeck): string {
+    const taken = new Set<string>();
+    for (const s of this.seats) {
+      if (s.player !== player && s.displayName !== null) taken.add(s.displayName);
+    }
+    return botNameFor(deckIdentity(deck), taken);
+  }
+
   /** Same claim/reclaim semantics as `Room.claimSeat` — a seat already
    * claimed by a *different* token is rejected even while offline; the same
    * token reclaims it, which is also how the seat-picker updates an
@@ -335,6 +358,7 @@ export class PendingRoom {
     if (deck !== undefined) assertDeckIsBuildable(deck);
     seat.isBot = true;
     seat.deck = deck ?? this.fallbackDeck(player);
+    seat.displayName = this.botName(player, seat.deck);
     this.lastActivityAt = Date.now();
   }
 
@@ -346,6 +370,9 @@ export class PendingRoom {
     if (!seat.isBot) throw new Error(`seat ${player} isn't played by a bot`);
     assertDeckIsBuildable(deck);
     seat.deck = deck;
+    if (seat.displayName === null || !botNameFits(seat.displayName, deckIdentity(deck))) {
+      seat.displayName = this.botName(player, deck);
+    }
     this.lastActivityAt = Date.now();
   }
 
@@ -449,9 +476,9 @@ export class PendingRoom {
     return out;
   }
 
-  /** Bot seats, so a freshly-promoted `Room` can have them filled the same
-   * way without re-running `addBot`'s own guards. */
-  botSeats(): readonly PlayerId[] {
-    return this.seats.filter((s) => s.isBot).map((s) => s.player);
+  /** Bot seats and their names, so a freshly-promoted `Room` can have them
+   * filled the same way without re-running `addBot`'s own guards. */
+  botSeats(): readonly { readonly player: PlayerId; readonly displayName: string | null }[] {
+    return this.seats.filter((s) => s.isBot).map((s) => ({ player: s.player, displayName: s.displayName }));
   }
 }

@@ -456,12 +456,14 @@ export class Room {
    * up to act (e.g. the mulligan phase, before any human has joined).
    * `deck` is accepted only for call-site symmetry with `PendingRoom.addBot`
    * (the seat-picker's deck choice) — an active `Room`'s decks are already
-   * dealt, so it's ignored here. */
-  addBot(player: PlayerId, deck?: WireDeck): void {
+   * dealt, so it's ignored here. `displayName`, when given, is the bot's name
+   * (the one `PendingRoom` gave it, carried over at promotion). */
+  addBot(player: PlayerId, deck?: WireDeck, displayName?: string): void {
     void deck;
     const seat = this.seatFor(player);
     if (seat.clientToken !== null) throw new Error(`seat ${player} is already claimed`);
     if (this.bots.has(player)) throw new Error(`seat ${player} already has a bot`);
+    if (displayName !== undefined) seat.displayName = displayName;
     this.bots.set(player, this.makeBot(player));
     this.lastActivityAt = Date.now();
     this.settle();

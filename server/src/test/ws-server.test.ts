@@ -465,7 +465,7 @@ describe("room server (end to end over WebSocket)", () => {
       player: BOB,
       claimed: false,
       online: false,
-      displayName: null,
+      displayName: expect.any(String),
       isBot: true,
       deck: { name: SEATS[1].name, commanders: [{ name: SEATS[1].commanders![0], printing: null }] },
       ready: true,
