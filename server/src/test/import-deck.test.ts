@@ -211,8 +211,10 @@ describe("evaluateDecklist", () => {
   it("chooses stand-ins for this deck: its identity, no repeats, a commander for the commander", async () => {
     // Names no other test looks up — the Scryfall cache is process-wide.
     stubCollection({
-      "Trostani Discordant": {
-        name: "Trostani Discordant",
+      // Made up, like the tracker below: this was Trostani Discordant until
+      // the pool authored it.
+      "Unauthored Matriarch": {
+        name: "Unauthored Matriarch",
         mana_cost: "{3}{G}{W}",
         type_line: "Legendary Creature — Dryad",
         power: "1",
@@ -241,14 +243,14 @@ describe("evaluateDecklist", () => {
 
     const cards = await evaluateDecklist(
       [
-        { name: "Trostani Discordant", count: 1 },
+        { name: "Unauthored Matriarch", count: 1 },
         { name: "Llanowar Elves", count: 1 },
         { name: "Unauthored Tracker", count: 1 },
         { name: "Wood Elves", count: 1 },
       ],
       registry,
       undefined,
-      { commanders: ["Trostani Discordant"] },
+      { commanders: ["Unauthored Matriarch"] },
     );
     const byName = new Map(cards.map((c) => [c.name, c]));
 
@@ -260,7 +262,7 @@ describe("evaluateDecklist", () => {
         expect(option.name).not.toBe("Llanowar Elves");
       }
     }
-    const commanderPick = registry.get(byName.get("Trostani Discordant")!.suggestedReplacement!);
+    const commanderPick = registry.get(byName.get("Unauthored Matriarch")!.suggestedReplacement!);
     expect(commanderPick.supertypes).toContain("legendary");
 
     // Two same-shaped cards never get the same first choice.
