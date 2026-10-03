@@ -173,7 +173,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zenith Festival", 1],
     ],
     substitutions: [
-      sub("Chaos Warp", "Regress", "Three-mana instant: removal."),
       sub("Deceptive Frostkite", "Sprite Dragon", "Two-mana blue flying Dragon."),
       sub("Dragonlord Atarka", "Drakuseth, Maw of Flames", "Seven-mana legendary Dragon that burns as it attacks."),
       sub("Glorybringer", "Terror of the Peaks", "Five-mana red flying Dragon that removes creatures."),

@@ -23,6 +23,7 @@ import _poolBlueSunsZenith from "../pool/blue-suns-zenith.js";
 import _poolBoomerang from "../pool/boomerang.js";
 import _poolBorderPatrol from "../pool/border-patrol.js";
 import _poolBorosGuildmage from "../pool/boros-guildmage.js";
+import _poolBraidsArisenNightmare from "../pool/braids-arisen-nightmare.js";
 import _poolBreedingPool from "../pool/breeding-pool.js";
 import _poolBrittleEffigy from "../pool/brittle-effigy.js";
 import _poolCabalRitual from "../pool/cabal-ritual.js";
@@ -73,6 +74,7 @@ import _poolGiftOfTheViper from "../pool/gift-of-the-viper.js";
 import _poolGildedGoose from "../pool/gilded-goose.js";
 import _poolGoShintaiOfLifesOrigin from "../pool/go-shintai-of-lifes-origin.js";
 import _poolGoblinChieftain from "../pool/goblin-chieftain.js";
+import _poolGoddricCloakedReveler from "../pool/goddric-cloaked-reveler.js";
 import _poolGolbezCrystalCollector from "../pool/golbez-crystal-collector.js";
 import _poolGoliathSphinx from "../pool/goliath-sphinx.js";
 import _poolGorillaWarrior from "../pool/gorilla-warrior.js";
@@ -261,6 +263,7 @@ const shard: CardShard = {
     _poolBoomerang,
     _poolBorderPatrol,
     _poolBorosGuildmage,
+    _poolBraidsArisenNightmare,
     _poolBreedingPool,
     _poolBrittleEffigy,
     _poolCabalRitual,
@@ -311,6 +314,7 @@ const shard: CardShard = {
     _poolGildedGoose,
     _poolGoShintaiOfLifesOrigin,
     _poolGoblinChieftain,
+    _poolGoddricCloakedReveler,
     _poolGolbezCrystalCollector,
     _poolGoliathSphinx,
     _poolGorillaWarrior,

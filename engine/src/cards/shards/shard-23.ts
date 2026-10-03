@@ -36,6 +36,7 @@ import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
 import _poolCatapultSquad from "../pool/catapult-squad.js";
 import _poolCephalidScout from "../pool/cephalid-scout.js";
+import _poolChaosWarp from "../pool/chaos-warp.js";
 import _poolChatterOfTheSquirrel from "../pool/chatter-of-the-squirrel.js";
 import _poolCoordinatedCharge from "../pool/coordinated-charge.js";
 import _poolCrossbowAmbush from "../pool/crossbow-ambush.js";
@@ -244,6 +245,7 @@ const shard: CardShard = {
     _poolCatacombCrocodile,
     _poolCatapultSquad,
     _poolCephalidScout,
+    _poolChaosWarp,
     _poolChatterOfTheSquirrel,
     _poolCoordinatedCharge,
     _poolCrossbowAmbush,

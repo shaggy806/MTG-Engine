@@ -713,6 +713,7 @@ import _poolBountifulLandscape from "./pool/bountiful-landscape.js";
 import _poolBountifulPromenade from "./pool/bountiful-promenade.js";
 import _poolBountyOfMight from "./pool/bounty-of-might.js";
 import _poolBragoKingEternal from "./pool/brago-king-eternal.js";
+import _poolBraidsArisenNightmare from "./pool/braids-arisen-nightmare.js";
 import _poolBraidwoodCup from "./pool/braidwood-cup.js";
 import _poolBrainWeevil from "./pool/brain-weevil.js";
 import _poolBraingeyser from "./pool/braingeyser.js";
@@ -939,6 +940,7 @@ import _poolChandrasMagmutt from "./pool/chandras-magmutt.js";
 import _poolChangelingOutcast from "./pool/changeling-outcast.js";
 import _poolChannelTheSuns from "./pool/channel-the-suns.js";
 import _poolChantOfTheSkifsang from "./pool/chant-of-the-skifsang.js";
+import _poolChaosWarp from "./pool/chaos-warp.js";
 import _poolChapelGeist from "./pool/chapel-geist.js";
 import _poolChaplainsBlessing from "./pool/chaplains-blessing.js";
 import _poolCharcoalDiamond from "./pool/charcoal-diamond.js";
@@ -1603,6 +1605,7 @@ import _poolEatToExtinction from "./pool/eat-to-extinction.js";
 import _poolEbonStronghold from "./pool/ebon-stronghold.js";
 import _poolEbonyRhino from "./pool/ebony-rhino.js";
 import _poolEbonyTreefolk from "./pool/ebony-treefolk.js";
+import _poolEchoingAssault from "./pool/echoing-assault.js";
 import _poolEcologistsTerrarium from "./pool/ecologists-terrarium.js";
 import _poolEdgarMarkov from "./pool/edgar-markov.js";
 import _poolEdwardKenway from "./pool/edward-kenway.js";
@@ -2286,6 +2289,7 @@ import _poolGoblinTrailblazer from "./pool/goblin-trailblazer.js";
 import _poolGoblinWarDrums from "./pool/goblin-war-drums.js";
 import _poolGoblinWarPaint from "./pool/goblin-war-paint.js";
 import _poolGoblinWarchief from "./pool/goblin-warchief.js";
+import _poolGoddricCloakedReveler from "./pool/goddric-cloaked-reveler.js";
 import _poolGodlessShrine from "./pool/godless-shrine.js";
 import _poolGohnTownOfRuin from "./pool/gohn-town-of-ruin.js";
 import _poolGolbezCrystalCollector from "./pool/golbez-crystal-collector.js";
@@ -5813,6 +5817,7 @@ import _poolUmbralExpanse from "./pool/umbral-expanse.js";
 import _poolUmbrisFearManifest from "./pool/umbris-fear-manifest.js";
 import _poolUmezawasCharm from "./pool/umezawas-charm.js";
 import _poolUnauthorizedExit from "./pool/unauthorized-exit.js";
+import _poolUnbreathingHorde from "./pool/unbreathing-horde.js";
 import _poolUnburden from "./pool/unburden.js";
 import _poolUnburialRites from "./pool/unburial-rites.js";
 import _poolUnburiedEarthcarver from "./pool/unburied-earthcarver.js";
@@ -7314,6 +7319,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBountifulPromenade,
   _poolBountyOfMight,
   _poolBragoKingEternal,
+  _poolBraidsArisenNightmare,
   _poolBraidwoodCup,
   _poolBrainWeevil,
   _poolBraingeyser,
@@ -7540,6 +7546,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChangelingOutcast,
   _poolChannelTheSuns,
   _poolChantOfTheSkifsang,
+  _poolChaosWarp,
   _poolChapelGeist,
   _poolChaplainsBlessing,
   _poolCharcoalDiamond,
@@ -8204,6 +8211,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEbonStronghold,
   _poolEbonyRhino,
   _poolEbonyTreefolk,
+  _poolEchoingAssault,
   _poolEcologistsTerrarium,
   _poolEdgarMarkov,
   _poolEdwardKenway,
@@ -8887,6 +8895,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGoblinWarDrums,
   _poolGoblinWarPaint,
   _poolGoblinWarchief,
+  _poolGoddricCloakedReveler,
   _poolGodlessShrine,
   _poolGohnTownOfRuin,
   _poolGolbezCrystalCollector,
@@ -12414,6 +12423,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolUmbrisFearManifest,
   _poolUmezawasCharm,
   _poolUnauthorizedExit,
+  _poolUnbreathingHorde,
   _poolUnburden,
   _poolUnburialRites,
   _poolUnburiedEarthcarver,

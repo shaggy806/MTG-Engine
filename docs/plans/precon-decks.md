@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 417 of the 495
-non-commander slots are the printed cards; the other 78 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 418 of the 495
+non-commander slots are the printed cards; the other 77 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1, Chaos Warp 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -28,7 +28,7 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 
 | deck | commander | plan | cards left to author |
 |---|---|---|---|
-| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 21 |
+| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 20 |
 | Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 27 |
 | Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
 | Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
@@ -83,11 +83,10 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (21)
+### Temur Roar — Ureni of the Unwritten (20)
 
 | printed card | plays as | why |
 |---|---|---|
-| Chaos Warp | Regress | Three-mana instant: removal. |
 | Deceptive Frostkite | Sprite Dragon | Two-mana blue flying Dragon. |
 | Dragonlord Atarka | Drakuseth, Maw of Flames | Seven-mana legendary Dragon that burns as it attacks. |
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |

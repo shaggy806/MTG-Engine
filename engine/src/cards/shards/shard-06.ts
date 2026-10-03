@@ -179,6 +179,7 @@ import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
 import _poolTreeMonkey from "../pool/tree-monkey.js";
 import _poolTurntimberGrove from "../pool/turntimber-grove.js";
 import _poolTyrantsFamiliar from "../pool/tyrants-familiar.js";
+import _poolUnbreathingHorde from "../pool/unbreathing-horde.js";
 import _poolUnnerve from "../pool/unnerve.js";
 import _poolUnrulyMob from "../pool/unruly-mob.js";
 import _poolUpdraftElemental from "../pool/updraft-elemental.js";
@@ -383,6 +384,7 @@ const shard: CardShard = {
     _poolTreeMonkey,
     _poolTurntimberGrove,
     _poolTyrantsFamiliar,
+    _poolUnbreathingHorde,
     _poolUnnerve,
     _poolUnrulyMob,
     _poolUpdraftElemental,
