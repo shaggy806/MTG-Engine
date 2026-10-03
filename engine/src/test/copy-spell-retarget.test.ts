@@ -363,4 +363,18 @@ describe("the first spell of a kind this turn — Alania, Divergent Storm", () =
     answer(game, true);
     expect(game.eventsOfType("spell-copied")).toHaveLength(1);
   });
+
+  it("still copies the first Otter when Alania has left before the ability resolves", () => {
+    // The "if" is asked again as it resolves (rule 603.4), and Alania's own
+    // cast earlier this turn is still left out with Alania exiled.
+    const game = setUp();
+    const alania = cast(game, A, "Alania, Divergent Storm");
+    game.advanceUntil(quiet);
+    cast(game, A, "Kindlespark Duo");
+    game.advanceUntil((s) => s.zones.shared.stack.length === 2 && s.pendingTriggers.length === 0 && s.awaiting === null);
+    cast(game, A, "Swords to Plowshares", [objectRef(alania)]);
+    answer(game, true);
+    expect(game.state.objects[alania].zone).toBe("exile");
+    expect(game.eventsOfType("spell-copied")).toHaveLength(1);
+  });
 });

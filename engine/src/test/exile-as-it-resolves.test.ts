@@ -99,6 +99,19 @@ describe("Feather, the Redeemed", () => {
     expect(game.state.objects[growth].zone).toBe("hand");
   });
 
+  it("still returns the card when Feather leaves after the spell resolved", () => {
+    // The delayed trigger is the return's, not Feather's to lose.
+    const { game, featherId, bear } = setUp();
+    const growth = cast(game, "Giant Growth", [objectRef(bear)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[growth].zone).toBe("exile");
+    cast(game, "Unsummon", [objectRef(featherId as ObjectId)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[featherId as ObjectId].zone).toBe("hand");
+    game.advanceUntil(afterEndStep);
+    expect(game.state.objects[growth].zone).toBe("hand");
+  });
+
   it("asks which replacement applies first beside flashback — Feather's first returns it", () => {
     const { game, bear } = setUp();
     const gravity = cast(game, "Defy Gravity", [objectRef(bear)], { via: "flashback" }, "graveyard");
