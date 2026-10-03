@@ -29,6 +29,7 @@ import type {
   ConvokePayment,
   GraveyardGrant,
   LegalAction,
+  PlayLandOffer,
   TapCostOffer,
 } from "./actions.js";
 import {
@@ -861,6 +862,7 @@ export class Game {
         return pending === null ? undefined : this.abilityTargetSource(pending);
       },
       whyCannotCastNow: (cast) => this.canDispatch(cast),
+      whyCannotPlayLandNow: (land) => this.whyCannotPlayLandNow(land.player, land.card, land.face ?? 0),
       attackTaxOf: (defender) => this.attackTaxPerCreature(defender),
       attackTaxBudget: (player, attackers) => this.attackTaxBudget(player, attackers),
       whyCannotPayAttackTax: (player, declarations) => {
@@ -4861,6 +4863,20 @@ export class Game {
       // A tutor-to-top's find is put on top *after* the search's shuffle
       // (below) — moving it now would only have it shuffled back in.
       if (to === "library-top" || to === "exile-playable") return;
+      if (to === "exile-face-down") {
+        // Hideaway (rule 702.75a): exiled face down (406.3), so nobody but
+        // the chooser knows what it is — its owner's other opponents never
+        // learn it from where it went — and linked to the permanent whose
+        // ability exiled it (607.2a), whose controller may look at it.
+        const since = this.state.eventSeq;
+        if (this.moveObject(id, "exile")) {
+          const object = this.state.objects[id];
+          object.exiledFaceDown = { lookers: [player] };
+          if (awaiting.exileLink !== undefined) object.exiledWith = awaiting.exileLink;
+          this.forgetStints([id], since);
+        }
+        return;
+      }
       if (to === "library-bottom") {
         this.putOnLibrary(id, "bottom");
         return;
@@ -7981,18 +7997,31 @@ export class Game {
       ...(options.spell !== undefined ? { spell: options.spell } : {}),
     };
     const offers: CastSpellOffer[] = [];
+    const lands: PlayLandOffer[] = [];
     const offered: ObjectId[] = [];
     try {
       for (const cardId of cards) {
         const object = this.state.objects[cardId];
         if (object === undefined || object.zone === "stack" || object.zone === "battlefield") continue;
         const ownDef = this.registry.get(object.cardName);
-        if (ownDef.types.includes("land")) continue;
-        const before = offers.length;
+        const before = offers.length + lands.length;
         const faces = castableFaces(ownDef);
         for (const face of faces) {
           const def = this.faceDef(cardId, face ?? 0);
-          if (def.types.includes("land")) continue;
+          // A land is played, never cast (rule 305.9) — and only by an
+          // effect that says "play" (hideaway), on its player's own turn
+          // with a land play left (305.2b, 305.3).
+          if (def.types.includes("land")) {
+            if (options.play === true && this.whyCannotPlayLandNow(player, cardId, face ?? 0) === null) {
+              lands.push({
+                kind: "play-land",
+                card: cardId,
+                cardName: def.name,
+                ...(face !== undefined ? { face } : {}),
+              });
+            }
+            continue;
+          }
           for (const legal of this.castSpellActions(player, cardId, def.name, def, {
             ...(face !== undefined ? { face } : {}),
             via: "effect",
@@ -8001,12 +8030,12 @@ export class Game {
             if (legal.kind === "cast-spell") offers.push(legal);
           }
         }
-        if (offers.length > before) offered.push(cardId);
+        if (offers.length + lands.length > before) offered.push(cardId);
       }
     } finally {
       this.castNowProbe = null;
     }
-    if (offers.length === 0) return;
+    if (offers.length === 0 && lands.length === 0) return;
     this.state.awaiting = {
       kind: "cast-now",
       player,
@@ -8014,21 +8043,61 @@ export class Game {
       cards: offered,
       ...(options.looked !== undefined ? { looked: [...options.looked] } : {}),
       offers,
+      ...(lands.length > 0 ? { lands } : {}),
       free: options.free,
       ...(options.spell !== undefined ? { spell: options.spell } : {}),
       exileAfter: options.exileAfter,
     };
   }
 
-  /** Answer a pending `cast-now` decision: cast the card as `cast` says, or
-   * decline. The resolution that asked carries on after it. */
-  private applyCastNow(player: PlayerId, cast: Extract<Action, { type: "cast-spell" }> | null): void {
+  /**
+   * Why `player` can't play `cardId` as `face` as part of a resolution
+   * ("you may play the exiled card" — hideaway): timing is ignored, but not
+   * whose turn it is (rule 305.3) or how many lands they may play (305.2b),
+   * and a land play this way counts as one (305.2a). The card must still be
+   * a land card in exile.
+   */
+  private whyCannotPlayLandNow(player: PlayerId, cardId: ObjectId, face: number): string | null {
+    if (this.activePlayer !== player) return `${player} can't play a land during another player's turn`;
+    const landDrop = this.landDropReason(player);
+    if (landDrop !== null) return landDrop;
+    const object = this.state.objects[cardId];
+    if (object === undefined || object.zone !== "exile") return "that card is no longer in exile";
+    const def = this.faceDef(cardId, face);
+    return def.types.includes("land") ? null : `${def.name} is not a land`;
+  }
+
+  /** Answer a pending `cast-now` decision: cast the card as `cast` says,
+   * play it if it's a land the decision lets its player play, or decline.
+   * The resolution that asked carries on after it. */
+  private applyCastNow(
+    player: PlayerId,
+    cast: Extract<Action, { type: "cast-spell" }> | Extract<Action, { type: "play-land" }> | null,
+  ): void {
     const awaiting = this.state.awaiting;
     if (awaiting === null || awaiting.kind !== "cast-now" || awaiting.player !== player) {
       throw new Error(`${player} is not being asked to cast a card`);
     }
     if (cast === null) {
       this.state.awaiting = null;
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
+    if (cast.type === "play-land") {
+      const face = cast.face ?? 0;
+      if (!(awaiting.lands ?? []).some((offer) => offer.card === cast.card && (offer.face ?? 0) === face)) {
+        throw new Error("that isn't a land on offer to play");
+      }
+      const why = this.whyCannotPlayLandNow(player, cast.card, face);
+      if (why !== null) throw new Error(why);
+      this.state.awaiting = null;
+      // Played as part of the resolution (rule 608.2g): a special action's
+      // land play all the same — it counts (305.2a), it's turned face up as
+      // it leaves exile (406.3a), and it enters as any land played does.
+      const from = this.state.objects[cast.card].zone;
+      this.state.objects[cast.card].face = face;
+      this.state.players[player].landsPlayedThisTurn += 1;
+      this.finishLandPlay({ kind: "land", object: cast.card, player, from });
       this.prepareForPriority(this.activePlayer);
       return;
     }
@@ -14495,12 +14564,25 @@ export class Game {
       castSince: (cards, since) =>
         eventLogSince(this.state, since).some(
           (event) =>
-            event.type === "spell-cast" &&
+            ((event.type === "spell-cast" && event.via === "effect") ||
+              // "You may play it" — a land played off the offer.
+              event.type === "land-played") &&
             event.player === controller &&
-            event.via === "effect" &&
             cards.includes(event.object),
         ),
       cardsIn: (player, zone) => [...(this.state.zones.perPlayer[player]?.[zone] ?? [])],
+      cardsExiledWithSource: () => {
+        // The stint the resolving spell or ability refers to (rule 607.2a):
+        // the one it came from, though the source may have left since.
+        const object = this.state.objects[source];
+        const stint =
+          refs.source ?? (object?.zone === "battlefield" ? (object.zoneChangeCount ?? 0) : undefined);
+        if (stint === undefined) return [];
+        return this.state.zones.shared.exile.filter((id) => {
+          const link = this.state.objects[id]?.exiledWith;
+          return link !== undefined && link.source === source && link.zoneChangeCount === stint;
+        });
+      },
       libraryTop: (player, count) =>
         (this.state.zones.perPlayer[player]?.library ?? []).slice(0, Math.max(0, count)),
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
@@ -14782,7 +14864,14 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking) =>
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking) => {
+        // "Exile one of them face down" (hideaway): linked to the source, in
+        // the stint this ability refers to (rule 607.2a).
+        const sourceObject = this.state.objects[source];
+        const stint =
+          refs.source ?? (sourceObject?.zone === "battlefield" ? (sourceObject.zoneChangeCount ?? 0) : undefined);
+        const exileLink =
+          destination === "exile-face-down" && stint !== undefined ? { source, zoneChangeCount: stint } : undefined;
         this.beginZoneChoice(
           controller,
           zone,
@@ -14801,7 +14890,9 @@ export class Game {
           secondPick,
           attacking,
           source,
-        ),
+          exileLink,
+        );
+      },
     };
   }
 
@@ -14830,7 +14921,7 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down",
     leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
@@ -14840,6 +14931,7 @@ export class Game {
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
     source?: ObjectId,
+    exileLink?: { readonly source: ObjectId; readonly zoneChangeCount: number },
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -14866,6 +14958,7 @@ export class Game {
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
       ...(leftoverIf !== undefined ? { leftoverIf } : {}),
       ...(secondPick !== undefined ? { secondPick } : {}),
+      ...(exileLink !== undefined ? { exileLink } : {}),
       // "You may reveal a historic card from among them and put it into your
       // hand": only what's taken is shown, as it's taken.
       ...(reveal === "chosen" && zone === "library" ? { reveal: true } : {}),
@@ -18900,7 +18993,16 @@ export class Game {
       }
       case "attackers-declared": {
         const history = historyOf(event.player);
-        if (history !== undefined) history.attacked = true;
+        if (history === undefined) return;
+        history.attacked = true;
+        // Each creature once, however many attack phases it's declared in.
+        const attackers = (history.attackers ??= []);
+        for (const id of event.attackers) {
+          const zoneChangeCount = this.state.objects[id]?.zoneChangeCount ?? 0;
+          if (!attackers.some((a) => a.object === id && a.zoneChangeCount === zoneChangeCount)) {
+            attackers.push({ object: id, zoneChangeCount });
+          }
+        }
         return;
       }
       default:
@@ -21539,6 +21641,27 @@ export class Game {
    * was never real — nobody saw the card — so it goes, rather than naming
    * the card over the events in between (the move's own enter batch, the
    * foretell payment). */
+  /**
+   * A permanent changed control: its new controller may look at the cards
+   * it exiled face down with hideaway (rule 702.75a — "the player who
+   * controls the permanent that exiled this card may look at this card"),
+   * and, having been allowed to, may go on looking (rule 406.3) — so any
+   * player who has controlled it since may (the hideaway rulings).
+   */
+  private shareLinkedLooks(permanent: ObjectId, controller: PlayerId): void {
+    const stint = this.state.objects[permanent]?.zoneChangeCount ?? 0;
+    for (const id of this.state.zones.shared.exile) {
+      const card = this.state.objects[id];
+      const link = card?.exiledWith;
+      const faceDown = card?.exiledFaceDown;
+      if (link === undefined || faceDown === undefined) continue;
+      if (link.source !== permanent || link.zoneChangeCount !== stint) continue;
+      if (!faceDown.lookers.includes(controller)) {
+        card.exiledFaceDown = { lookers: [...faceDown.lookers, controller] };
+      }
+    }
+  }
+
   private forgetStints(ids: readonly ObjectId[], since?: number): void {
     for (const id of ids) {
       const open = this.openStintOf(id);
@@ -21941,6 +22064,7 @@ export class Game {
     object.foretold = false;
     object.foretoldOnTurn = null;
     object.exiledFaceDown = undefined;
+    object.exiledWith = undefined;
     // Modes chosen for a targeted modal spell (Phase 11 EG-2) and a kicker
     // paid as it was cast (P8) both end with the stack.
     object.chosenModes = undefined;
@@ -22377,6 +22501,7 @@ export class Game {
     // "For as long as it has a [kind] counter on it" ends with the last one
     // (rule 611.2b), whatever removed it.
     if (full.type === "counter-removed") this.endCounterDurations(full.object);
+    if (full.type === "control-changed") this.shareLinkedLooks(full.object, full.controller);
     // Every consequential state change announces itself here, so this is the
     // broad safety net for the computed-value cache: whatever just changed,
     // `detectTriggers` and everything after it read fresh values.

@@ -194,6 +194,9 @@ export interface DecisionReadCtx {
   /** Why `cast` isn't a legal answer to the pending `cast-now` decision —
    * the whole of `whyCannotCastSpell`, which only `Game` can run. */
   readonly whyCannotCastNow: (cast: Extract<Action, { type: "cast-spell" }>) => string | null;
+  /** Why playing `land` (one of the pending `cast-now` decision's `lands`)
+   * isn't legal right now (rules 305.2b, 305.3). */
+  readonly whyCannotPlayLandNow: (land: Extract<Action, { type: "play-land" }>) => string | null;
   /** The generic mana one creature attacking `defender` costs (Ghostly
    * Prison) — 0 for an untaxed player or a planeswalker. Statics only `Game`
    * can read. */
@@ -250,7 +253,10 @@ export interface DecisionHost {
   readonly applyAttackerDeclarations: (player: PlayerId, declarations: readonly AttackerDeclaration[]) => void;
   readonly applyBlockerDeclarations: (player: PlayerId, blocks: readonly BlockerDeclaration[]) => void;
   readonly applyChooseTargets: (player: PlayerId, targets: ResolvedTargets) => void;
-  readonly applyCastNow: (player: PlayerId, cast: Extract<Action, { type: "cast-spell" }> | null) => void;
+  readonly applyCastNow: (
+    player: PlayerId,
+    cast: Extract<Action, { type: "cast-spell" }> | Extract<Action, { type: "play-land" }> | null,
+  ) => void;
   readonly applyScry: (player: PlayerId, away: readonly ObjectId[]) => void;
 }
 

@@ -388,7 +388,7 @@ nothing in the repo distinguished them.
 | discard-a-card as an ability cost | 5 | 834 | 0 | 0 |
 | ~~damage doubling (a replacement)~~ *(built — `would-deal-damage`; Wolverine's `fromSelf` 2026-09-28)* | 4 | 794 | 0 | 0 |
 | another player's graveyard → hand | 4 | 620 | 0 | 0 |
-| Hideaway | 3 | 195 | 0 | 1 |
+| ~~Hideaway~~ *(built 2026-10-02 — Mosswort Bridge, Spinerock Knoll, Windbrisk Heights and six more)* | 3 | 195 | 0 | 1 |
 | ~~Offspring~~ *(built 2026-09-28)* | 3 | 793 | 0 | 0 |
 | ~~Warp~~ *(built 2026-09-28)* | 3 | 1387 | 0 | 0 |
 | phasing | 3 | 575 | 0 | 0 |

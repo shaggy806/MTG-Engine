@@ -431,6 +431,58 @@ export const livingWeapon = (): TriggeredAbility => ({
   text: "Living weapon (When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.)",
 });
 
+const HIDEAWAY_COUNT_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
+/**
+ * Hideaway N (rule 702.75a): "When this permanent enters, look at the top N
+ * cards of your library. Exile one of them face down and put the rest on the
+ * bottom of your library in a random order." The card is exiled face down
+ * (rule 406.3) and linked to this object (607.2a — `GameObject.exiledWith`):
+ * its controller may look at it, and so may anyone who controls the
+ * permanent later; its other abilities reach it through
+ * {@link playHideawayCard} (or `return-exiled-by-source { linked: "hand" }`).
+ * The choice of card is the controller's, a `choose-from-zone` decision
+ * (`look-and-choose` with `destination: "exile-face-down"`); one is always
+ * exiled, unless the library is empty.
+ *
+ * `permanent` is the reminder text's word ("land", "enchantment",
+ * "creature"). Since the 2022 rules change, hideaway no longer makes the
+ * permanent enter tapped: the older cards carry a separate "This land enters
+ * tapped." (702.75b) — put that on the card too.
+ */
+export const hideaway = (n: number, permanent: string): TriggeredAbility => ({
+  trigger: { on: "enters-battlefield", who: "self" },
+  targets: [],
+  effect: {
+    kind: "look-and-choose",
+    zone: "library",
+    count: n,
+    min: 1,
+    max: 1,
+    destination: "exile-face-down",
+    leftover: "bottom-random",
+  },
+  resolve: null,
+  text:
+    `Hideaway ${n} (When this ${permanent} enters, look at the top ${HIDEAWAY_COUNT_WORDS[n] ?? n} cards of your ` +
+    "library, exile one face down, then put the rest on the bottom in a random order.)",
+});
+
+/**
+ * Hideaway's payoff: "you may play the exiled card without paying its mana
+ * cost" — the card {@link hideaway} exiled with this object (rule 607.2a),
+ * cast for free (an alternative cost, rule 118.9) or, a land, played on its
+ * controller's own turn with a land play left (rules 305.2a, 305.3). Wrap it
+ * in a `conditional` for the card's "if …" — checked as the ability
+ * resolves.
+ */
+export const playHideawayCard = (): EffectSpec => ({
+  kind: "cast-now",
+  from: "exiled-with-source",
+  play: true,
+  free: true,
+});
+
 /**
  * Outlast (rule 702.107a): "[cost], {T}: Put a +1/+1 counter on this
  * permanent. Activate only as a sorcery." Put the printed "Outlast {cost}"

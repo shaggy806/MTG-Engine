@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 419 of the 495
-non-commander slots are the printed cards; the other 76 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 421 of the 495
+non-commander slots are the printed cards; the other 74 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, Myriad Landscape 1, Chaos Warp 1, Curse of the Swine 1). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -28,10 +28,10 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 
 | deck | commander | plan | cards left to author |
 |---|---|---|---|
-| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 20 |
-| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 27 |
-| Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 18 |
-| Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 14 |
+| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 19 |
+| Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 25 |
+| Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 15 |
+| Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 12 |
 | Jeskai Striker | Shiko and Narset, Unified | instants and sorceries, prowess, Monk tokens, spells copied | 3 |
 
 All five commanders are implemented, and no missing card is missing from more than one deck.
@@ -92,7 +92,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |
 | Hellkite Courser | Rorix Bladewing | Six-mana red flying Dragon with haste. |
 | Leyline Tyrant | Archwing Dragon | Four-mana red flying Dragon. |
-| Mosswort Bridge | Khalni Garden | Land: tapped land, utility land. |
 | Opportunistic Dragon | Skyship Stalker | Four-mana red flying Dragon. |
 | Reality Shift | Resculpt | Two-mana instant: removal, creature removal. |
 | Reflections of Littjara | Crucible of Fire | Enchantment that rewards a deck of Dragons. |
@@ -158,7 +157,7 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Weathered Sentinels | Guardians of Meletis | Three-mana artifact defender with high toughness. |
 | Will of the Abzan | Breath of Life | Four-mana sorcery: reanimation, recursion. |
 
-### Mardu Surge — Zurgo Stormrender (13)
+### Mardu Surge — Zurgo Stormrender (12)
 
 | printed card | plays as | why |
 |---|---|---|
@@ -173,7 +172,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Neriv, Crackling Vanguard | Bonehoard Dracosaur | Five-mana creature: impulse draw, card advantage. |
 | Redoubled Stormsinger | Zurgo, Thunder's Decree | Three-mana creature: token payoff, token maker. |
 | Will of the Mardu | Bombard | Three-mana instant: burn, removal. |
-| Windbrisk Heights | Memorial to Glory | Land: tapped land, utility land. |
 | Within Range | Dogged Pursuit | Four-mana enchantment: drains opponents. |
 
 ### Jeskai Striker — Shiko and Narset, Unified (3)

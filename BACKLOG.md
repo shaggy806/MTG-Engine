@@ -48,9 +48,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 21, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 13, Jeskai Striker 4 — 78,
+  now: Temur Roar 19, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 12, Jeskai Striker 3 — 74,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
-  any more. **Next:** two each for a triggered ability's divided damage, hideaway, Omen and
+  any more. **Next:** two each for a triggered ability's divided damage, Omen and
   "the creature it sacrificed" (`docs/card-blockers.md`).
 - **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library

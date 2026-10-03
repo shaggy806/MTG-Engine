@@ -297,6 +297,8 @@ function zoneChoiceTitle(action: ZoneChoiceAction): string {
       return `Choose ${cards} to put on the bottom of your library`
     case 'exile-playable':
       return `Choose ${cards} you may play`
+    case 'exile-face-down':
+      return `Choose ${cards} to exile face down`
   }
 }
 
@@ -3481,6 +3483,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     // several cards on offer the card is picked in the popup first.
     const card = castNowPicking ? castNowPick : (castNowAction.cards[0] ?? null)
     const ways = card === null ? [] : castNowAction.casts.filter((c) => c.card === card)
+    // "You may play the exiled card" (hideaway): a land is played, not cast.
+    const landWays = card === null ? [] : (castNowAction.lands ?? []).filter((l) => l.card === card)
+    const verb = landWays.length > 0 ? 'Play' : 'Cast'
     controls = card === null ? (
       <div className="controls">
         <span className="muted">
@@ -3495,9 +3500,24 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     ) : (
       <div className="controls">
         <span>
-          Cast {ways[0]?.cardName ?? game.nameOf(card)}
-          {castNowAction.free ? ' without paying its mana cost' : ' now'}?
+          {verb} {ways[0]?.cardName ?? landWays[0]?.cardName ?? game.nameOf(card)}
+          {castNowAction.free && ways.length > 0 ? ' without paying its mana cost' : ' now'}?
         </span>
+        {landWays.map((l, i) => (
+          <button
+            key={`land-${i}`}
+            type="button"
+            onClick={() =>
+              game.dispatch({
+                type: 'cast-now',
+                player: seat,
+                cast: { type: 'play-land', player: seat, card: l.card, ...(l.face !== undefined ? { face: l.face } : {}) },
+              })
+            }
+          >
+            Play {l.cardName}
+          </button>
+        ))}
         {ways.map((c, i) => (
           <button key={i} type="button" onClick={() => beginCast(c)}>
             Cast {c.cardName}
@@ -3515,7 +3535,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           </button>
         ) : null}
         <button type="button" onClick={() => game.dispatch({ type: 'cast-now', player: seat, cast: null })}>
-          Don't cast
+          {verb === 'Play' ? "Don't play" : "Don't cast"}
         </button>
       </div>
     )
@@ -4727,7 +4747,8 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
               // One way to cast it goes straight into the cast steps; more
               // (kicked or not, a face) are offered as buttons.
               const ways = castNowAction.casts.filter((c) => c.card === card)
-              if (ways.length === 1) beginCast(ways[0])
+              const lands = (castNowAction.lands ?? []).filter((l) => l.card === card)
+              if (ways.length === 1 && lands.length === 0) beginCast(ways[0])
               else setCastNowPick(card)
             },
           }}

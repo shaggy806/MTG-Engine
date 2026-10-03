@@ -272,7 +272,13 @@ export type TurnStat =
   | "damage-taken"
   | "combat-damage-taken"
   /** 1 once the player has declared an attacker this turn (raid). */
-  | "attacked";
+  | "attacked"
+  /** How many different creatures the player has declared as attackers
+   * this turn — Windbrisk Heights' "if you attacked with three or more
+   * creatures this turn" (its ruling): one declared in two attack phases
+   * counts once, one put onto the battlefield attacking never (rule 508.4 —
+   * it was never declared). */
+  | "attackers";
 
 /**
  * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated
@@ -427,7 +433,24 @@ export type StaticCondition =
   | { readonly kind: "monarch"; readonly who: "you" | "opponent" }
   /** How many cards are in your hand, inclusive bounds (Flubs, the Fool: "if
    * you have no cards in hand" is `atMost: 0`; hellbent the same). */
-  | { readonly kind: "hand-size"; readonly atMost?: number; readonly atLeast?: number }
+  | {
+      readonly kind: "hand-size";
+      readonly atMost?: number;
+      readonly atLeast?: number;
+      /** `"each-player"`: every player still in the game has a hand in
+       * bounds — Howltooth Hollow's "if each player has no cards in hand".
+       * Your own hand when absent. */
+      readonly who?: "you" | "each-player";
+    }
+  /** How many cards are in a library, inclusive bounds: yours, or — with
+   * `"any-player"` — some one player's still in the game, yours included
+   * (Shelldock Isle: "if **a library** has twenty or fewer cards in it"). */
+  | {
+      readonly kind: "library-size";
+      readonly who: "you" | "any-player";
+      readonly atMost?: number;
+      readonly atLeast?: number;
+    }
   /**
    * A life total, inclusive bounds: Bilbo, Birthday Celebrant's "activate
    * only if you have 111 or more life" is `atLeast: 111`; "if you have at

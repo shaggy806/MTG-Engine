@@ -150,6 +150,7 @@ import _poolPrimevalBounty from "../pool/primeval-bounty.js";
 import _poolPrismite from "../pool/prismite.js";
 import _poolProfessionalFaceBreaker from "../pool/professional-face-breaker.js";
 import _poolProwlingCaracal from "../pool/prowling-caracal.js";
+import _poolRabbleRousing from "../pool/rabble-rousing.js";
 import _poolRakdosCharm from "../pool/rakdos-charm.js";
 import _poolRegress from "../pool/regress.js";
 import _poolRemoteIsle from "../pool/remote-isle.js";
@@ -364,6 +365,7 @@ const shard: CardShard = {
     _poolPrismite,
     _poolProfessionalFaceBreaker,
     _poolProwlingCaracal,
+    _poolRabbleRousing,
     _poolRakdosCharm,
     _poolRegress,
     _poolRemoteIsle,

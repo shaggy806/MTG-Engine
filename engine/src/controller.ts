@@ -145,9 +145,11 @@ export interface PlayerController {
   /**
    * "You may cast that card" during a resolution (the `cast-now` decision):
    * one of `offer.casts` built into a `cast-spell` action (modes, X,
-   * targets, costs — as from priority), or `null` to decline.
+   * targets, costs — as from priority), or `null` to decline. An offer
+   * that lets its player *play* the card (hideaway) may be answered with
+   * one of `offer.lands` as a `play-land`.
    */
-  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null;
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | PlayLandAction | null;
   /**
    * Choose between `min` and `max` cards from `eligible` (the choosable
    * subset of a `"look-and-choose"` effect's revealed candidates — narrower
@@ -458,7 +460,7 @@ export class AutomaticController implements PlayerController {
   }
 
   /** Declines; the controllers that cast things override it. */
-  chooseCastNow(_view: ControllerView, _offer: CastNowOffer): CastSpellAction | null {
+  chooseCastNow(_view: ControllerView, _offer: CastNowOffer): CastSpellAction | PlayLandAction | null {
     return null;
   }
 
@@ -753,7 +755,8 @@ export class ScriptedController implements PlayerController {
 
   declareAttackersFn: AttackChooser = () => [];
   /** "You may cast that card" — declines by default. */
-  chooseCastNowFn: (view: ControllerView, offer: CastNowOffer) => CastSpellAction | null = () => null;
+  chooseCastNowFn: (view: ControllerView, offer: CastNowOffer) => CastSpellAction | PlayLandAction | null = () =>
+    null;
   /** Which cards to discard — a cost's or an effect's. The front of the hand
    * by default. */
   chooseDiscardsFn: (hand: readonly GameObject[], count: number) => readonly ObjectId[] = (hand, count) =>
@@ -874,7 +877,7 @@ export class ScriptedController implements PlayerController {
     return this.chooseTargetsFn(view, sourceName, specs, legalOptions);
   }
 
-  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null {
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | PlayLandAction | null {
     return this.chooseCastNowFn(view, offer);
   }
 
@@ -1314,6 +1317,7 @@ export class RandomController extends AutomaticController {
 type CastSpellLegal = Extract<LegalAction, { kind: "cast-spell" }>;
 type CastNowOffer = Extract<LegalAction, { kind: "cast-now" }>;
 type CastSpellAction = Extract<Action, { type: "cast-spell" }>;
+type PlayLandAction = Extract<Action, { type: "play-land" }>;
 type PlayLandLegal = Extract<LegalAction, { kind: "play-land" }>;
 type ActivateAbilityLegal = Extract<LegalAction, { kind: "activate-ability" }>;
 type DeclareAttackersLegal = Extract<LegalAction, { kind: "declare-attackers" }>;
@@ -2030,11 +2034,21 @@ export class HeuristicBotController extends AutomaticController {
    * value, which a free cast gets the most for — as the first of its
    * variants that builds into a cast, the same way this bot casts from
    * priority. */
-  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | null {
+  chooseCastNow(view: ControllerView, offer: CastNowOffer): CastSpellAction | PlayLandAction | null {
     const worth = (legal: CastSpellLegal): number => this.manaValueOf(legal.cardName);
     for (const legal of [...offer.casts].sort((a, b) => worth(b) - worth(a))) {
       const action = this.toCastSpell(view.state, legal);
       if (action.type === "cast-spell") return action;
+    }
+    // "You may play the exiled card": a land is a land drop, as from hand.
+    const land = offer.lands?.[0];
+    if (land !== undefined) {
+      return {
+        type: "play-land",
+        player: this.playerId,
+        card: land.card,
+        ...(land.face !== undefined ? { face: land.face } : {}),
+      };
     }
     return null;
   }

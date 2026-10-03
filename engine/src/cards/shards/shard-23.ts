@@ -199,6 +199,7 @@ import _poolWardenOfGeometries from "../pool/warden-of-geometries.js";
 import _poolWardscaleCrocodile from "../pool/wardscale-crocodile.js";
 import _poolWarpathGhoul from "../pool/warpath-ghoul.js";
 import _poolWarpedLandscape from "../pool/warped-landscape.js";
+import _poolWatcherForTomorrow from "../pool/watcher-for-tomorrow.js";
 import _poolWebWarriors from "../pool/web-warriors.js";
 import _poolWindriderEel from "../pool/windrider-eel.js";
 import _poolWindurstFederationCenter from "../pool/windurst-federation-center.js";
@@ -408,6 +409,7 @@ const shard: CardShard = {
     _poolWardscaleCrocodile,
     _poolWarpathGhoul,
     _poolWarpedLandscape,
+    _poolWatcherForTomorrow,
     _poolWebWarriors,
     _poolWindriderEel,
     _poolWindurstFederationCenter,

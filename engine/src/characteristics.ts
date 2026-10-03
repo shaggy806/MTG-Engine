@@ -455,11 +455,23 @@ function evalStaticCondition(
       return n >= condition.atLeast;
     }
     case "hand-size": {
-      const n = state.zones.perPlayer[you].hand.length;
-      return (
+      const inBounds = (n: number): boolean =>
         (condition.atMost === undefined || n <= condition.atMost) &&
-        (condition.atLeast === undefined || n >= condition.atLeast)
-      );
+        (condition.atLeast === undefined || n >= condition.atLeast);
+      if (condition.who === "each-player") {
+        return state.turnOrder
+          .filter((p) => state.players[p]?.hasLost !== true)
+          .every((p) => inBounds(state.zones.perPlayer[p]?.hand.length ?? 0));
+      }
+      return inBounds(state.zones.perPlayer[you].hand.length);
+    }
+    case "library-size": {
+      const inBounds = (n: number): boolean =>
+        (condition.atMost === undefined || n <= condition.atMost) &&
+        (condition.atLeast === undefined || n >= condition.atLeast);
+      const seats =
+        condition.who === "you" ? [you] : state.turnOrder.filter((p) => state.players[p]?.hasLost !== true);
+      return seats.some((p) => inBounds(state.zones.perPlayer[p]?.library.length ?? 0));
     }
     case "threshold":
       return state.zones.perPlayer[you].graveyard.length >= 7;
@@ -839,6 +851,8 @@ export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): 
       return seat.turnHistory?.combatDamageTaken ?? 0;
     case "attacked":
       return seat.turnHistory?.attacked === true ? 1 : 0;
+    case "attackers":
+      return seat.turnHistory?.attackers?.length ?? 0;
   }
 }
 

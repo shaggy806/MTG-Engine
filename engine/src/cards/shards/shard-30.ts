@@ -36,6 +36,7 @@ import _poolBurrogBanemaker from "../pool/burrog-banemaker.js";
 import _poolCameraLauncher from "../pool/camera-launcher.js";
 import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
+import _poolCemeteryTampering from "../pool/cemetery-tampering.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
 import _poolCloudOfFaeries from "../pool/cloud-of-faeries.js";
@@ -97,6 +98,7 @@ import _poolHeliodsPilgrim from "../pool/heliods-pilgrim.js";
 import _poolHexplateGolem from "../pool/hexplate-golem.js";
 import _poolHorizonScholar from "../pool/horizon-scholar.js";
 import _poolHorridVigor from "../pool/horrid-vigor.js";
+import _poolHowltoothHollow from "../pool/howltooth-hollow.js";
 import _poolHuatlisRaptor from "../pool/huatlis-raptor.js";
 import _poolHurlerCyclops from "../pool/hurler-cyclops.js";
 import _poolIfritWardenOfInferno from "../pool/ifrit-warden-of-inferno.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolCameraLauncher,
     _poolCaveSense,
     _poolCelestialForce,
+    _poolCemeteryTampering,
     _poolChainToMemory,
     _poolClockOfOmens,
     _poolCloudOfFaeries,
@@ -313,6 +316,7 @@ const shard: CardShard = {
     _poolHexplateGolem,
     _poolHorizonScholar,
     _poolHorridVigor,
+    _poolHowltoothHollow,
     _poolHuatlisRaptor,
     _poolHurlerCyclops,
     _poolIfritWardenOfInferno,

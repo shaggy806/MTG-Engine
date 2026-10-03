@@ -6,7 +6,7 @@
  * instance and is the only thing that writes to it; everything else reads.
  */
 
-import type { CastSpellOffer, CastVia } from "./actions.js";
+import type { CastSpellOffer, CastVia, PlayLandOffer } from "./actions.js";
 import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
 import type {
@@ -538,6 +538,16 @@ export interface GameObject {
    * unless named. Cleared on any zone change: it's turned face up as it
    * leaves exile. */
   exiledFaceDown?: { readonly lookers: readonly PlayerId[] };
+  /**
+   * The permanent this card was exiled with, in the battlefield stint it was
+   * in then — what a linked ability of that object means by "the exiled
+   * card" (rule 607.2a — hideaway, rule 702.75). Only that object's abilities
+   * reach it: the permanent back from a blink is a new object (rule 400.7).
+   * While the card stays exiled face down, whoever controls that permanent
+   * may look at it (702.75a), and goes on being able to (406.3). Cleared on
+   * any zone change.
+   */
+  exiledWith?: { readonly source: ObjectId; readonly zoneChangeCount: number };
   /** True while this adventure card sits in exile after its adventure resolved
    * (rule 715.3 — ROADMAP Phase 10): its owner may cast the creature half from
    * exile. Cleared on any zone change. */
@@ -1456,7 +1466,18 @@ export type AwaitingDecision =
       /** `"library-top"` — a tutor-to-top (Vampiric Tutor): the chosen cards
        * never leave the library, they are moved to the top after the search's
        * own shuffle. */
-      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "library-bottom" | "graveyard";
+      readonly destination:
+        | "battlefield"
+        | "hand"
+        | "exile-playable"
+        | "exile-face-down"
+        | "library-top"
+        | "library-bottom"
+        | "graveyard";
+      /** For `destination: "exile-face-down"` (hideaway — rule 702.75a): the
+       * permanent, in the stint it's in, the chosen cards are exiled with
+       * (rule 607.2a — `GameObject.exiledWith`). */
+      readonly exileLink?: { readonly source: ObjectId; readonly zoneChangeCount: number };
       /** For `destination: "exile-playable"` — the impulse permission to
        * stamp on the chosen cards, which stay in exile either way
        * (Tectonic Giant: "exile the top two, choose one of them"). */
@@ -1872,6 +1893,10 @@ export type AwaitingDecision =
        * (Velomachus Lorehold) — castable or not; revealed to them alone. */
       readonly looked?: readonly ObjectId[];
       readonly offers: readonly CastSpellOffer[];
+      /** "You may **play**": the land cards on offer, each as the face it'd
+       * be played as (rules 305.2a, 305.3) — see the `cast-now` effect's
+       * `play`. */
+      readonly lands?: readonly PlayLandOffer[];
       /** "Without paying its mana cost" — the only way it's offered. */
       readonly free: boolean;
       /** What the spell must be, matched as it's cast — see the effect's
@@ -1976,6 +2001,10 @@ export interface TurnHistory {
   }[];
   /** This player declared one or more attackers (raid). */
   attacked?: boolean;
+  /** Each creature this player declared as an attacker, once — in the
+   * battlefield stint it was in (a creature that left and came back is a
+   * different one, rule 400.7). */
+  attackers?: { readonly object: ObjectId; readonly zoneChangeCount: number }[];
 }
 
 /** Where a permanent can go when it leaves the battlefield. */

@@ -14,6 +14,11 @@
  * checks it with `whyCannotCastSpell` (which holds it to the offer's terms:
  * free, and a spell its filter matches) and casts it; the resolution that
  * asked picks up after.
+ *
+ * "You may **play** the exiled card" (hideaway — rule 702.75) offers a land
+ * card too, as a `play-land` in `lands`: played during the resolution, only
+ * on its player's own turn and with a land play left, which it uses (rules
+ * 305.2a, 305.2b, 305.3).
  */
 
 import type { Action, LegalAction } from "../actions.js";
@@ -35,6 +40,17 @@ export const castNow = defineDecision({
       return `${player} is not being asked to cast a card`;
     }
     if (action.cast === null) return null;
+    if (action.cast.type === "play-land") {
+      const land = action.cast;
+      const face = land.face ?? 0;
+      if (
+        land.player !== player ||
+        !(awaiting.lands ?? []).some((offer) => offer.card === land.card && (offer.face ?? 0) === face)
+      ) {
+        return "that isn't a land on offer to play";
+      }
+      return ctx.whyCannotPlayLandNow(land);
+    }
     if (action.cast.player !== player || !awaiting.cards.includes(action.cast.card) || action.cast.via !== "effect") {
       return "that isn't a cast of a card on offer";
     }
@@ -52,9 +68,19 @@ export const castNow = defineDecision({
     cast: controller.chooseCastNow(view, offerOf(awaiting)),
   }),
 
-  /** Decline, or one of the ways to cast it, uniformly — built at random. */
+  /** Decline, or one of the ways to cast or play it, uniformly — a cast
+   * built at random. */
   randomAnswer: (legal, player, rng): Action => {
-    const pick = rng.pickIndex(legal.casts.length + 1);
+    const lands = legal.lands ?? [];
+    const pick = rng.pickIndex(legal.casts.length + lands.length + 1);
+    if (pick > legal.casts.length) {
+      const land = lands[pick - legal.casts.length - 1];
+      return {
+        type: "cast-now",
+        player,
+        cast: { type: "play-land", player, card: land.card, ...(land.face !== undefined ? { face: land.face } : {}) },
+      };
+    }
     return { type: "cast-now", player, cast: pick === 0 ? null : randomCast(legal.casts[pick - 1], player, rng) };
   },
 
@@ -73,5 +99,6 @@ function offerOf(awaiting: Extract<AwaitingDecision, { kind: "cast-now" }>): Ext
     ...(awaiting.looked !== undefined ? { looked: [...awaiting.looked] } : {}),
     free: awaiting.free,
     casts: [...awaiting.offers],
+    ...(awaiting.lands !== undefined ? { lands: [...awaiting.lands] } : {}),
   };
 }

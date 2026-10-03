@@ -724,6 +724,9 @@ export interface CastNowOptions {
   /** The library cards the player looks at to choose among, shown to them
    * castable or not. */
   readonly looked?: readonly ObjectId[];
+  /** "You may **play**": a land card on offer may be played, too — see the
+   * `cast-now` effect's `play`. */
+  readonly play?: boolean;
 }
 
 /** A `cast-now` parked across its decision: the event it asked at and the
@@ -1225,6 +1228,12 @@ export type EffectSpec =
        * `exile { untilSourceLeaves }`, to the battlefield under its owner's
        * control. The other half of an O-Ring. */
       readonly kind: "return-exiled-by-source";
+      /** `"hand"`: instead, put the cards linked to this source (rule
+       * 607.2a — hideaway's, `GameObject.exiledWith`) into their owners'
+       * hands — Watcher for Tomorrow's "When this creature leaves the
+       * battlefield, put the exiled card into its owner's hand", which
+       * reaches the cards exiled by the stint that left. */
+      readonly linked?: "hand";
     }
   | {
       /**
@@ -1544,8 +1553,24 @@ export type EffectSpec =
        * graveyard" — Diviner of Mist), or "from among" the top `libraryTop`
        * cards of their library, which they look at (Velomachus Lorehold's top
        * seven — see `rest`).
+       *
+       * `"exiled-with-source"` is "the exiled card" of a linked ability
+       * (rule 607.2a): the cards in exile this effect's source exiled, in
+       * the battlefield stint the resolving ability refers to — hideaway's
+       * (rule 702.75, `GameObject.exiledWith`). The source needn't still be
+       * on the battlefield (the ability exists independently of it, rule
+       * 113.7a), but a source that has left and come back is a new object
+       * whose abilities never reach them (rule 400.7).
        */
-      readonly from?: "hand" | "graveyard" | { readonly libraryTop: number };
+      readonly from?: "hand" | "graveyard" | "exiled-with-source" | { readonly libraryTop: number };
+      /**
+       * "You may **play** the card", not only cast it: a land card on offer
+       * may be played as part of the resolution — only during its player's
+       * own turn and with a land play left, which it uses up (rules 305.2a,
+       * 305.2b, 305.3); it ignores timing otherwise. A land is never cast
+       * (rule 305.9). Without `play` a land card is never offered.
+       */
+      readonly play?: boolean;
       /**
        * What the spell cast must be — "an instant or sorcery spell with mana
        * value 4 or less", "if that spell's mana value is 8 or less" —
@@ -2982,8 +3007,14 @@ export type EffectSpec =
       readonly max: EffectAmount;
       /** `"library-top"` with `zone: "hand"` is Brainstorm's "put two cards
        * from your hand on top of your library" — the chosen cards go back on
-       * the deck rather than anywhere visible. */
-      readonly destination: "battlefield" | "hand" | "library-top";
+       * the deck rather than anywhere visible.
+       *
+       * `"exile-face-down"` is hideaway's "exile one of them face down"
+       * (rule 702.75a): the chosen cards are exiled face down (rule 406.3),
+       * linked to this effect's source as "the exiled card" of its other
+       * abilities (rule 607.2a — `GameObject.exiledWith`), and only the
+       * chooser — and whoever controls that source — may look at them. */
+      readonly destination: "battlefield" | "hand" | "library-top" | "exile-face-down";
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
@@ -3369,11 +3400,15 @@ export interface EffectApi {
    * controller the cast of one of `cards`, as a `cast-now` decision — or
    * nothing, when none of them can be cast. */
   castNow(cards: readonly ObjectId[], options: CastNowOptions): void;
-  /** Whether the effect's controller has cast one of `cards` at a
-   * `cast-now`'s offer since event `since`. */
+  /** Whether the effect's controller has cast (or played, a land) one of
+   * `cards` at a `cast-now`'s offer since event `since`. */
   castSince(cards: readonly ObjectId[], since: number): boolean;
   /** The cards in `player`'s hand or graveyard. */
   cardsIn(player: PlayerId, zone: "hand" | "graveyard"): readonly ObjectId[];
+  /** The cards in exile linked to this effect's source (rule 607.2a — see
+   * `GameObject.exiledWith`), in the battlefield stint the resolving spell
+   * or ability refers to. */
+  cardsExiledWithSource(): readonly ObjectId[];
   /** The top `count` cards of `player`'s library, top first. */
   libraryTop(player: PlayerId, count: number): readonly ObjectId[];
   /** See the `"choose-creature-type"` {@link EffectSpec}. */
@@ -3886,7 +3921,7 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard",
+    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down",
     leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
@@ -4127,6 +4162,8 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
     if (from === undefined) {
       const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
       cards = target?.kind === "object" ? [target.object] : [];
+    } else if (from === "exiled-with-source") {
+      cards = ctx.cardsExiledWithSource();
     } else {
       cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
     }
@@ -4137,6 +4174,7 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       ctx.castNow(cards, {
         free: spec.free === true,
         exileAfter: spec.exileAfter === true,
+        ...(spec.play === true ? { play: true } : {}),
         ...(spec.spell !== undefined ? { spell: spec.spell } : {}),
         ...(looked.length > 0 ? { looked } : {}),
       });
@@ -4934,6 +4972,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "return-exiled-by-source": {
+      if (spec.linked === "hand") {
+        for (const card of ctx.cardsExiledWithSource()) ctx.returnToHand({ kind: "object", object: card }, "exile");
+        return;
+      }
       // Each case below that puts something onto the battlefield may stop
       // first to ask an "as this enters" choice (a Clone's copy — rule
       // 614.12); it moved nothing, and runs again once that's answered.

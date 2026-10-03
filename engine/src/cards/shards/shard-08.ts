@@ -116,6 +116,7 @@ import _poolMidnightReaper from "../pool/midnight-reaper.js";
 import _poolMindStone from "../pool/mind-stone.js";
 import _poolMorskaUnderseaSleuth from "../pool/morska-undersea-sleuth.js";
 import _poolMossbornHydra from "../pool/mossborn-hydra.js";
+import _poolMosswortBridge from "../pool/mosswort-bridge.js";
 import _poolMountainBandit from "../pool/mountain-bandit.js";
 import _poolMysticRetrieval from "../pool/mystic-retrieval.js";
 import _poolMythicProportions from "../pool/mythic-proportions.js";
@@ -326,6 +327,7 @@ const shard: CardShard = {
     _poolMindStone,
     _poolMorskaUnderseaSleuth,
     _poolMossbornHydra,
+    _poolMosswortBridge,
     _poolMountainBandit,
     _poolMysticRetrieval,
     _poolMythicProportions,

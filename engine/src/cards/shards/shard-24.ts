@@ -197,6 +197,7 @@ import _poolWarRoom from "../pool/war-room.js";
 import _poolWarlordsFury from "../pool/warlords-fury.js";
 import _poolWeaselbackRedcap from "../pool/weaselback-redcap.js";
 import _poolWillowWind from "../pool/willow-wind.js";
+import _poolWindbriskHeights from "../pool/windbrisk-heights.js";
 import _poolWirewoodElf from "../pool/wirewood-elf.js";
 import _poolWitherbloomPledgemage from "../pool/witherbloom-pledgemage.js";
 import _poolWorldShaper from "../pool/world-shaper.js";
@@ -408,6 +409,7 @@ const shard: CardShard = {
     _poolWarlordsFury,
     _poolWeaselbackRedcap,
     _poolWillowWind,
+    _poolWindbriskHeights,
     _poolWirewoodElf,
     _poolWitherbloomPledgemage,
     _poolWorldShaper,

@@ -411,10 +411,12 @@ export type Action =
   | {
       /** Answers a pending `cast-now` decision: the cast, built from one of
        * the offer's `casts` exactly as a `cast-spell` from priority is (it
-       * has `via: "effect"`), or `null` to decline ("you *may* cast"). */
+       * has `via: "effect"`), or `null` to decline ("you *may* cast"). A
+       * decision that lets its player *play* the card answers one of its
+       * `lands` as a `play-land` (rule 305.2a — it uses a land play). */
       readonly type: "cast-now";
       readonly player: PlayerId;
-      readonly cast: Extract<Action, { type: "cast-spell" }> | null;
+      readonly cast: Extract<Action, { type: "cast-spell" }> | Extract<Action, { type: "play-land" }> | null;
     }
   | {
       /** Answers a pending `assign-combat-damage` decision (rule 510.1c —
@@ -911,7 +913,14 @@ export type LegalAction =
       /** Where the chosen cards go — what a client tells the chooser.
        * `"library-top"` puts them back in the order chosen, the first chosen
        * on top (Ponder, Brainstorm). */
-      readonly destination: "battlefield" | "hand" | "exile-playable" | "library-top" | "library-bottom" | "graveyard";
+      readonly destination:
+        | "battlefield"
+        | "hand"
+        | "exile-playable"
+        | "exile-face-down"
+        | "library-top"
+        | "library-bottom"
+        | "graveyard";
       /** A split tutor (Cultivate): only the first chosen card goes to
        * `destination`, the rest elsewhere. */
       readonly split?: true;
@@ -1100,6 +1109,10 @@ export type LegalAction =
       /** "Without paying its mana cost": every cast on offer is free. */
       readonly free: boolean;
       readonly casts: readonly CastSpellOffer[];
+      /** "You may **play**" (hideaway): each land card on offer, as the face
+       * it'd be played as — played during the resolution, it uses a land
+       * play (rule 305.2a). Answered with a `play-land` as the `cast`. */
+      readonly lands?: readonly PlayLandOffer[];
     }
   | {
       /** A triggered ability / suspended spell needs targets — one per
@@ -1116,6 +1129,9 @@ export type LegalAction =
 
 /** A `cast-spell` offer — what a `cast-now` decision lists as its `casts`. */
 export type CastSpellOffer = Extract<LegalAction, { kind: "cast-spell" }>;
+/** A `play-land` offer — what a `cast-now` decision that lets its player
+ * *play* the card lists as its `lands`. */
+export type PlayLandOffer = Extract<LegalAction, { kind: "play-land" }>;
 
 /**
  * A driver's delve picks from a cast offer's `delve` (rule 702.66a), at the
