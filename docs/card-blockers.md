@@ -119,7 +119,7 @@ Four engine passes built in parallel worktrees, each reviewed adversarially befo
   Mirror Box, Machine God's Effigy, Imposter Mech, Sakashima's Student, Flesh Duplicate,
   Chameleon, Vizier of Many Faces and Naga Fleshcrafter for other features.
 
-A second round the same morning, 52 more:
+A second round the same morning, 74 more:
 
 - **Sacrifice costs of several permanents** (12): Sai, Master Thopterist; Jarad, Golgari Lich
   Lord; Westvale Abbey // Ormendahl, Profane Prince; Eliminate the Competition; Magda, Brazen
@@ -146,6 +146,18 @@ A second round the same morning, 52 more:
   Strionic Resonator, Peter Parker's Camera, Molten Echoes, Flameshadow Conjuring and Increasing
   Vengeance on its own copy-ability feature; that branch wasn't merged, and those five are
   re-authorable on the one that was.
+- **Winning and losing the game** (22, merged after the others): "you win the game", "you lose
+  the game", "can't lose / can't win" (a static and a turn's effect), Laboratory Maniac's draw
+  replacement, a damage life floor, "can't lose life" (rule 119.8 — every life payment refused),
+  hand-size effects in timestamp order (613.11), "Nth from the top" and a game-long record of
+  spells cast by name — Thassa's Oracle, Laboratory Maniac, Jace, Wielder of Mysteries, Platinum
+  Angel, Herald of Eternal Dawn, Angel's Grace, Everybody Lives!, Felidar Sovereign, Test of
+  Endurance, Revel in Riches, Triskaidekaphile, Knuckles the Echidna, Simic Ascendancy, Helix
+  Pinnacle, Hellkite Tyrant, Twenty-Toed Toad, Approach of the Second Sun, Pact of Negation,
+  Summoner's Pact, Vorpal Sword, Summon: Primal Odin, Mirrodin Besieged. Still blocked: Mechanized
+  Production and Liliana's Contract (tokens' rule-111.4 names), Final Fortune and Last Chance (a
+  trigger tied to one extra turn), Halo Fountain (untapping as a cost), Darksteel Reactor (a state
+  trigger), The Golden Throne (a would-lose replacement), Out of the Tombs, Maze's End.
 
 ## Top-5000 batches (sweep 3)
 
