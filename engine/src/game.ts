@@ -10,6 +10,7 @@
 
 import {
   abilityLifeCost,
+  costAnnouncesX,
   isManaAbility,
   sacrificeCostFilters,
   sacrificeCostParts,
@@ -1682,7 +1683,12 @@ export class Game {
         ability.cost.exileFromGraveyard?.count === "x"
           ? this.graveyardCostCandidates(player, ability.cost.exileFromGraveyard.filter, source).length
           : undefined;
-      const caps = [manaX, sacrificeX, exileX].filter((n): n is number => n !== undefined);
+      // "Discard X cards": as many as there are to discard.
+      const discardX =
+        ability.cost.discard?.count === "x"
+          ? this.discardCandidates(player, ability.cost.discard.filter, source).length
+          : undefined;
+      const caps = [manaX, sacrificeX, exileX, discardX].filter((n): n is number => n !== undefined);
       const maxX = caps.length === 0 ? undefined : Math.min(...caps);
       // "X can't be 0" (Ruthless Technomancer).
       const minX = ability.minX ?? 0;
@@ -10233,8 +10239,9 @@ export class Game {
     xValue = 0,
   ): { cost: ManaCost; chosenX: number } {
     const parsed = parseManaCost(ability.cost.mana);
-    // "Sacrifice X Treasures" announces an X the mana cost needn't have.
-    const hasX = parsed.x > 0 || sacrificeCostReadsX(ability.cost);
+    // "Sacrifice X Treasures", "Discard X cards" announce an X the mana cost
+    // needn't have.
+    const hasX = parsed.x > 0 || costAnnouncesX(ability.cost);
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
     const mod = this.abilityCostModificationFor(sourceId, isManaAbility(ability));
     // Increases first, then the reductions (rule 601.2f).
@@ -10536,7 +10543,8 @@ export class Game {
     }
     if (ability.cost.discard !== undefined) {
       const { count, filter } = ability.cost.discard;
-      if (this.discardCandidates(player, filter, sourceId).length < count) {
+      const n = count === "x" ? (x ?? ability.minX ?? 0) : count;
+      if (this.discardCandidates(player, filter, sourceId).length < n) {
         return `${player} has too few cards in hand to pay ${def.name}'s cost`;
       }
     }
@@ -10960,8 +10968,9 @@ export class Game {
     // discard is, before anyone gets priority (rule 602.2b).
     const costDiscard = ability.cost.discard;
     if (costDiscard !== undefined) {
+      const n = costDiscard.count === "x" ? chosenX : costDiscard.count;
       this.withDecisionSource(sourceId, () => {
-        this.discardByEffect({ kind: "player", player }, costDiscard.count, false, costDiscard.filter);
+        this.discardByEffect({ kind: "player", player }, n, false, costDiscard.filter);
       });
       this.costDiscardPriorityTo(player);
     }
@@ -14840,6 +14849,7 @@ export class Game {
           this.matchesWho(spec.who, event.source, self) &&
           !(spec.otherOnly === true && event.source === self.id) &&
           this.triggerFilterOk(spec.filter, event.source, self) &&
+          (spec.toOpponent !== true || event.target.player !== self.controller) &&
           (spec.toPlayerControlsMore === undefined ||
             this.countBattlefieldMatching(event.target.player, { ...spec.toPlayerControlsMore, controlledBy: "you" }) >
               this.countBattlefieldMatching(self.controller, { ...spec.toPlayerControlsMore, controlledBy: "you" }))
@@ -17369,6 +17379,11 @@ export class Game {
             cards.includes(event.object),
         ),
       cardsIn: (player, zone) => [...(this.state.zones.perPlayer[player]?.[zone] ?? [])],
+      cardsExiledThisWay: () =>
+        thisWayEntries(this.state, "exiled", since)
+          .filter((e) => !e.departed)
+          .map((e) => e.object)
+          .filter((id) => this.state.objects[id]?.zone === "exile"),
       cardsExiledWithSource: () => {
         // The stint the resolving spell or ability refers to (rule 607.2a):
         // the one it came from, though the source may have left since.

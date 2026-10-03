@@ -489,7 +489,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Yahenni, Undying Partisan", 1],
     ],
     substitutions: [
-      sub("Gix, Yawgmoth Praetor", "Midnight Reaper", "Three-mana creature: card draw for life, card draw."),
     ],
   }),
   precon({

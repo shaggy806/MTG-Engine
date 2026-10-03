@@ -2293,6 +2293,7 @@ import _poolGingerbreadCabin from "./pool/gingerbread-cabin.js";
 import _poolGingerbreadHunter from "./pool/gingerbread-hunter.js";
 import _poolGisaAndGeralf from "./pool/gisa-and-geralf.js";
 import _poolGishathSunsAvatar from "./pool/gishath-suns-avatar.js";
+import _poolGixYawgmothPraetor from "./pool/gix-yawgmoth-praetor.js";
 import _poolGixianInfiltrator from "./pool/gixian-infiltrator.js";
 import _poolGlacialFloodplain from "./pool/glacial-floodplain.js";
 import _poolGlacialFortress from "./pool/glacial-fortress.js";
@@ -9227,6 +9228,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGingerbreadHunter,
   _poolGisaAndGeralf,
   _poolGishathSunsAvatar,
+  _poolGixYawgmothPraetor,
   _poolGixianInfiltrator,
   _poolGlacialFloodplain,
   _poolGlacialFortress,

@@ -86,6 +86,7 @@ import _poolFuelTheFlames from "../pool/fuel-the-flames.js";
 import _poolFurtiveAnalyst from "../pool/furtive-analyst.js";
 import _poolGaladhrimGuide from "../pool/galadhrim-guide.js";
 import _poolGarrukPrimalHunter from "../pool/garruk-primal-hunter.js";
+import _poolGixYawgmothPraetor from "../pool/gix-yawgmoth-praetor.js";
 import _poolGoreSwine from "../pool/gore-swine.js";
 import _poolGoringCeratops from "../pool/goring-ceratops.js";
 import _poolGrafMole from "../pool/graf-mole.js";
@@ -314,6 +315,7 @@ const shard: CardShard = {
     _poolFurtiveAnalyst,
     _poolGaladhrimGuide,
     _poolGarrukPrimalHunter,
+    _poolGixYawgmothPraetor,
     _poolGoreSwine,
     _poolGoringCeratops,
     _poolGrafMole,

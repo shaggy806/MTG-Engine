@@ -955,6 +955,96 @@ describe("Shigeki, Jukai Visionary", () => {
   });
 });
 
+describe("Gix, Yawgmoth Praetor", () => {
+  it("lets a creature's controller pay 1 life to draw when it deals combat damage to one of Gix's controller's opponents", () => {
+    const game = setUp([A, B, C]);
+    ready(game, "Gix, Yawgmoth Praetor");
+    const bears = ready(game, "Grizzly Bears");
+    const hand = game.state.zones.perPlayer[A].hand.length;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: bears, defender: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    expect(game.state.awaiting?.player).toBe(A);
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    expect(game.state.players[A].life).toBe(19);
+    expect(game.state.zones.perPlayer[A].hand.length).toBe(hand + 1);
+  });
+
+  it("asks an opponent's creature's controller when it hits another opponent, but not when it hits you", () => {
+    const game = setUp([A, B, C]);
+    ready(game, "Gix, Yawgmoth Praetor");
+    const theirs = ready(game, "Grizzly Bears", B);
+    game.advanceUntil((s) => s.turn.number === 2 && s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: B, attackers: [{ attacker: theirs, defender: C }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    expect(game.state.awaiting?.player).toBe(B);
+    game.dispatch({ type: "choose-modes", player: B, modes: [] });
+    game.advanceUntil(quiet);
+    game.advanceUntil((s) => s.turn.number === 5 && s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: B, attackers: [{ attacker: theirs, defender: A }] });
+    game.advanceUntil((s) => s.turn.step === "end" || s.awaiting?.kind === "choose-modes");
+    expect(game.state.awaiting?.kind).not.toBe("choose-modes");
+  });
+
+  it("discards X to exile X of an opponent's library, and plays any of them free as it resolves", () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 1, maxHandSize: 99 },
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Island") },
+        {
+          player: B,
+          cards: [...Array<string>(7).fill("Island"), "Grizzly Bears", "Forest", "Hill Giant", ...Array<string>(30).fill("Island")],
+        },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (let i = 0; i < 7; i += 1) game.state.objects[game.debugSpawn("Swamp", A, "battlefield")].tapped = false;
+    const gix = ready(game, "Gix, Yawgmoth Praetor");
+    const hand = game.state.zones.perPlayer[A].hand.length;
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: gix,
+      abilityIndex: 0,
+      targets: [{ kind: "player", player: B }],
+      xValue: 3,
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "discard");
+    const discards = game.state.zones.perPlayer[A].hand.slice(0, 3);
+    game.dispatch({ type: "discard", player: A, cards: discards });
+    expect(game.state.zones.perPlayer[A].hand.length).toBe(hand - 3);
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now");
+    const exiled = game.state.zones.shared.exile.filter((id) => game.state.objects[id].owner === B);
+    expect(exiled.map((id) => game.state.objects[id].cardName).sort()).toEqual(["Forest", "Grizzly Bears", "Hill Giant"]);
+    const offerOf = () => game.legalActions(A).find((o) => o.kind === "cast-now");
+    const castOf = (name: string) => {
+      const offer = offerOf();
+      return offer?.kind === "cast-now" ? offer.casts.find((c) => c.cardName === name) : undefined;
+    };
+    const bears = castOf("Grizzly Bears");
+    expect(bears?.free).toBe(true);
+    game.dispatch({ type: "cast-now", player: A, cast: { type: "cast-spell", player: A, card: bears!.card, targets: [], via: "effect", free: true } });
+    // Offered again: the land too, as Alice's land play.
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now");
+    const offer = offerOf();
+    const forest = offer?.kind === "cast-now" ? offer.lands?.find((l) => l.cardName === "Forest") : undefined;
+    expect(forest).toBeDefined();
+    game.dispatch({ type: "cast-now", player: A, cast: { type: "play-land", player: A, card: forest!.card } });
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now");
+    // Declining ends it: the Hill Giant stays in exile.
+    game.dispatch({ type: "cast-now", player: A, cast: null });
+    game.advanceUntil(quiet);
+    const byName = (name: string) => exiled.find((id) => game.state.objects[id].cardName === name)!;
+    expect(game.state.objects[byName("Grizzly Bears")].zone).toBe("battlefield");
+    expect(game.state.objects[byName("Grizzly Bears")].controller).toBe(A);
+    expect(game.state.objects[byName("Forest")].zone).toBe("battlefield");
+    expect(game.state.objects[byName("Hill Giant")].zone).toBe("exile");
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

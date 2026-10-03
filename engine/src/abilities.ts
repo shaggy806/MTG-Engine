@@ -75,6 +75,15 @@ export function sacrificeCostReadsX(cost: { readonly sacrifice?: SacrificeCost }
   return typeof sacrifice === "object" && "filter" in sacrifice && sacrifice.count === "x";
 }
 
+/** Does any part of this cost besides its mana take X — so X is announced
+ * though the mana cost needn't have `{X}` (Grim Hireling's "Sacrifice X
+ * Treasures", Gix, Yawgmoth Praetor's "Discard X cards")? */
+export function costAnnouncesX(cost: AbilityCost): boolean {
+  return (
+    sacrificeCostReadsX(cost) || cost.discard?.count === "x" || cost.exileFromGraveyard?.count === "x"
+  );
+}
+
 /**
  * Can every part be paid at once, each with its own permanents? `eligible` is
  * what may pay a part, `capacity` how many each permanent can give (a token
@@ -213,9 +222,11 @@ export interface AbilityCost {
    * card" (Fauna Shaman, Tortured Existence). The player picks which, with
    * the ordinary `discard` decision, as the ability goes on the stack (the
    * way a spell's `additionalCost.discard` is paid); the source itself never
-   * counts. Gates activation on having enough such cards in hand.
+   * counts. Gates activation on having enough such cards in hand. `count:
+   * "x"` is Gix, Yawgmoth Praetor's "Discard X cards": X announced as it's
+   * activated, capped by the cards there are to discard.
    */
-  readonly discard?: { readonly count: number; readonly filter?: CardFilter };
+  readonly discard?: { readonly count: number | "x"; readonly filter?: CardFilter };
   /**
    * Exile `count` cards from your graveyard, matching `filter` if given, as
    * part of the cost — "{2}, Exile two cards from your graveyard" (Varina,
@@ -836,6 +847,10 @@ export type TriggerSpec =
        * dealt. Part of the trigger event, not an intervening-if (rule 603.4):
        * it isn't asked again as the ability resolves. */
       readonly toPlayerControlsMore?: CardFilter;
+      /** "…deals combat damage to **one of your opponents**" (Gix, Yawgmoth
+       * Praetor, with `who: "any"`): the player dealt damage is an opponent
+       * of this permanent's controller, whoever's creature dealt it. */
+      readonly toOpponent?: boolean;
     }
   | {
       /**

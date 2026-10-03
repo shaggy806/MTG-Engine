@@ -1808,7 +1808,22 @@ export type EffectSpec =
        * 113.7a), but a source that has left and come back is a new object
        * whose abilities never reach them (rule 400.7).
        */
-      readonly from?: "hand" | "graveyard" | "exiled-with-source" | { readonly libraryTop: number };
+      readonly from?:
+        | "hand"
+        | "graveyard"
+        | "exiled-with-source"
+        | "exiled-this-way"
+        | { readonly libraryTop: number };
+      /**
+       * "You may play lands and cast spells **from among** cards exiled this
+       * way" — any number of them, one after another while this resolves
+       * (Gix, Yawgmoth Praetor: "you must play the cards as you resolve the
+       * last ability", its ruling): after each one cast or played, the rest
+       * are offered again, until the player declines or none is left. With
+       * `from: "exiled-this-way"` — the cards this resolution exiled, still
+       * in exile. Not with `then`, `else` or `rest`.
+       */
+      readonly repeat?: boolean;
       /**
        * "You may **play** the card", not only cast it: a land card on offer
        * may be played as part of the resolution — only during its player's
@@ -4105,6 +4120,9 @@ export interface EffectApi {
   castSince(cards: readonly ObjectId[], since: number): boolean;
   /** The cards in `player`'s hand or graveyard. */
   cardsIn(player: PlayerId, zone: "hand" | "graveyard"): readonly ObjectId[];
+  /** The cards this resolution has exiled so far from a library, a hand or
+   * a graveyard, still in exile — a `cast-now`'s `"exiled-this-way"`. */
+  cardsExiledThisWay(): readonly ObjectId[];
   /** The cards in exile linked to this effect's source (rule 607.2a — see
    * `GameObject.exiledWith`), in the battlefield stint the resolving spell
    * or ability refers to. */
@@ -4969,6 +4987,8 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       cards = target?.kind === "object" ? [target.object] : [];
     } else if (from === "exiled-with-source") {
       cards = ctx.cardsExiledWithSource();
+    } else if (from === "exiled-this-way") {
+      cards = ctx.cardsExiledThisWay();
     } else {
       cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
     }
@@ -4985,11 +5005,17 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       });
     }
     if (!pendingBefore && ctx.decisionPending()) {
-      if (spec.then !== undefined || spec.else !== undefined || spec.rest !== undefined) {
+      if (spec.then !== undefined || spec.else !== undefined || spec.rest !== undefined || spec.repeat === true) {
         ctx.resumeAfterDecisions({ ...spec, progress }, parked);
       }
       return;
     }
+    if (spec.repeat === true) return;
+  }
+  // "Any number of them": one cast or played, the rest offered again.
+  if (spec.repeat === true) {
+    if (ctx.castSince(progress.cards, progress.since)) applyEffectSpec({ ...spec, progress: undefined }, ctx);
+    return;
   }
   if (progress.followed !== true) {
     const followUp = ctx.castSince(progress.cards, progress.since) ? spec.then : spec.else;
