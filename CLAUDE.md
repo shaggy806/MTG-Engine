@@ -54,6 +54,9 @@ for:
   tables in `engine/src/sample-decks.ts` (and `docs/plans/precon-decks.md`). The pool is
   ~5,400 real cards (`npm run card:verify -w engine` prints the current count of definitions,
   which is a little higher: each face of a double-faced card is its own).
+- **`docs/manual-checks.md`** — the cards worth checking by hand in a live game: a new player
+  decision or a careful rules call, each with a setup, what to do and what to look for. Each
+  authoring pass adds entries for what it introduces; an entry is deleted once it checks out.
 - **`docs/card-blockers.md`** — reference, not a to-do list: what blocks the unimplemented cards,
   batch by batch (top-5000 batches, the TDC precons, card sweep 2) and by family, indexing the
   per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`. Batch summaries go here.

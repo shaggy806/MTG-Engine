@@ -329,7 +329,9 @@ Beyond that plan:
   no game triggers happening while building; then switch to game mode to play cards and see how
   they interact, how the bots react, or whether the engine works properly. Today the closest thing
   is `dev-rooms` (`server/scripts/dev-scenarios.mjs`, boards written in code, and the 4099 command
-  port's `spawn`/`move`/`life`), which has no UI and needs a scenario authored per board.
+  port's `spawn`/`move`/`life`), which has no UI and needs a scenario authored per board. Its first
+  workload is `docs/manual-checks.md`: the cards worth playing by hand (new decisions, careful rules
+  calls), each with a setup to build and what to check.
 - **A creature's total toxic value isn't in the player view.** `Characteristics.toxic` (rule
   702.164b) isn't a `Keyword`, so `VisibleObject.keywords` leaves it out: a Rat that
   Karumonix, the Rat King gives toxic 1 shows nothing, and only a printed "Toxic N" is readable,
