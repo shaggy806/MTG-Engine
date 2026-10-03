@@ -122,6 +122,18 @@ const layer4InProgress = new Set<ObjectId>();
  */
 const grantedAbilitiesInProgress = new Set<ObjectId>();
 
+/**
+ * Sources whose count-scaled bonus (`grantPtPerCount`) is counting the
+ * battlefield. Counting matches the filter against each permanent, which
+ * folds its characteristics — and if one of those carries the same kind of
+ * bonus counting back (two Zinnia, Valley's Voice, each +1/+0 for every other
+ * creature with base power 1), the fold re-enters this source's count. A
+ * re-entered count answers 0: conservative, like the guards above, and
+ * likewise never cached. Found by a deck autopsy's crash ("Maximum call stack
+ * size exceeded", a copied Zinnia). Transient scaffolding.
+ */
+const countInProgress = new Set<ObjectId>();
+
 /** Whether a value computed now may be the re-entrancy guards' conservative
  * answer rather than the true one — and so must neither be served from nor
  * stored in the computed cache. */
@@ -131,7 +143,8 @@ function guardActive(): boolean {
     cdaInProgress.size > 0 ||
     layer4InProgress.size > 0 ||
     ownStackInProgress.size > 0 ||
-    grantedAbilitiesInProgress.size > 0
+    grantedAbilitiesInProgress.size > 0 ||
+    countInProgress.size > 0
   );
 }
 
@@ -2192,6 +2205,28 @@ function collectStaticEffects(
     if (ability.grantPtPerCount !== undefined) {
       const per = ability.grantPtPerCount;
       const filter = per.filter;
+      // The permanents on the battlefield matching `f` — see `countInProgress`.
+      const battlefieldMatching = (f: CardFilter): number => {
+        if (countInProgress.has(source.id)) return 0;
+        countInProgress.add(source.id);
+        try {
+          // Skipping the source before `matchesFilter` is what keeps Skycat
+          // Sovereign ("each *other* creature with flying") from folding its
+          // own characteristics to answer its own bonus.
+          return (
+            permanentCount(
+              state,
+              state.zones.shared.battlefield.filter(
+                (id) =>
+                  !(per.excludeSelf === true && id === source.id) &&
+                  matchesFilter(state, registry, id, f, { you: source.controller }),
+              ),
+            ) + (per.excludeSelf === true ? othersInOwnStack(state, registry, source, f) : 0)
+          );
+        } finally {
+          countInProgress.delete(source.id);
+        }
+      };
       const n =
         per.commanderCasts === true
           ? Object.values(state.players[source.controller]?.commanderCastCounts ?? {}).reduce(
@@ -2218,17 +2253,7 @@ function collectStaticEffects(
               )
             : filter === undefined
             ? 0
-            : // Skipping the source before `matchesFilter` is what keeps
-              // Skycat Sovereign ("each *other* creature with flying") from
-              // folding its own characteristics to answer its own bonus.
-              permanentCount(
-                state,
-                state.zones.shared.battlefield.filter(
-                  (id) =>
-                    !(per.excludeSelf === true && id === source.id) &&
-                    matchesFilter(state, registry, id, filter, { you: source.controller }),
-                ),
-              ) + (per.excludeSelf === true ? othersInOwnStack(state, registry, source, filter) : 0);
+            : battlefieldMatching(filter);
       scaledPower = n * per.pt[0];
       scaledToughness = n * per.pt[1];
     }
