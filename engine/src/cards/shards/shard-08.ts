@@ -203,6 +203,7 @@ import _poolWitherbloomApprentice from "../pool/witherbloom-apprentice.js";
 import _poolWorldlyTutor from "../pool/worldly-tutor.js";
 import _poolWreckingCrew from "../pool/wrecking-crew.js";
 import _poolYavimayaCoast from "../pool/yavimaya-coast.js";
+import _poolYouFindSomePrisoners from "../pool/you-find-some-prisoners.js";
 import _poolZodiacOx from "../pool/zodiac-ox.js";
 import _poolZoralineCosmosCaller from "../pool/zoraline-cosmos-caller.js";
 import _poolZuranOrb from "../pool/zuran-orb.js";
@@ -414,6 +415,7 @@ const shard: CardShard = {
     _poolWorldlyTutor,
     _poolWreckingCrew,
     _poolYavimayaCoast,
+    _poolYouFindSomePrisoners,
     _poolZodiacOx,
     _poolZoralineCosmosCaller,
     _poolZuranOrb,

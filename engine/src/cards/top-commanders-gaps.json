@@ -2,6 +2,9 @@
  "generated": "2026-09-22",
  "source": "Per-commander triage of every unimplemented top-commanders.txt entry (AI agents reading Oracle text + rulings against the engine), normalized onto one feature vocabulary. See neededCards-features.md, 'The commander gap'.",
  "built": [
+  "cost:mana-spending-rules",
+  "zone:play-from-exile-with-counter",
+  "zone:cast-from-library-top",
   "keyword:multikicker",
   "keyword:delve",
   "decision:copy-new-targets",
@@ -1409,7 +1412,7 @@
   "zone:visibility-extensions": {
    "size": "medium",
    "ui": false,
-   "description": "Who can see what, in viewFor and revealedThisTurn: 'plays with their hand revealed' (Sen Triplets), 'look at the top card of your library any time' (owner only — Glarb, Sigarda), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card'). A card exiled face down is split out as zone:exile-face-down (built)."
+   "description": "Who can see what, in viewFor and revealedThisTurn: 'plays with their hand revealed' (Sen Triplets), 'look at the top card of your library any time' (owner only — Glarb, Sigarda), and effects that reveal cards to every player (look-and-choose's 'reveal', 'you may reveal that card'). A card exiled face down is split out as zone:exile-face-down (built). Built so far: 'look at the top card of your library any time' (the card's looksAtOwnLibraryTop — its controller's own view only, rule 401.5), with zone:cast-from-library-top."
   },
   "zone:exile-face-down": {
    "size": "small",

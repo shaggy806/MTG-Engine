@@ -75,6 +75,7 @@ import _poolGoblinStriker from "../pool/goblin-striker.js";
 import _poolGoldveinPick from "../pool/goldvein-pick.js";
 import _poolGuadosalamFarplaneGateway from "../pool/guadosalam-farplane-gateway.js";
 import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
+import _poolHakodaSelflessCommander from "../pool/hakoda-selfless-commander.js";
 import _poolHeavyBallista from "../pool/heavy-ballista.js";
 import _poolHeirloomBlade from "../pool/heirloom-blade.js";
 import _poolHighlandGame from "../pool/highland-game.js";
@@ -181,6 +182,7 @@ import _poolThornling from "../pool/thornling.js";
 import _poolThrillOfPossibility from "../pool/thrill-of-possibility.js";
 import _poolThunderingGiant from "../pool/thundering-giant.js";
 import _poolTimberGorge from "../pool/timber-gorge.js";
+import _poolTinybonesBaubleBurglar from "../pool/tinybones-bauble-burglar.js";
 import _poolTormentedAngel from "../pool/tormented-angel.js";
 import _poolTowerOfMurmurs from "../pool/tower-of-murmurs.js";
 import _poolToweringThunderfist from "../pool/towering-thunderfist.js";
@@ -287,6 +289,7 @@ const shard: CardShard = {
     _poolGoldveinPick,
     _poolGuadosalamFarplaneGateway,
     _poolGuardianOfPilgrims,
+    _poolHakodaSelflessCommander,
     _poolHeavyBallista,
     _poolHeirloomBlade,
     _poolHighlandGame,
@@ -393,6 +396,7 @@ const shard: CardShard = {
     _poolThrillOfPossibility,
     _poolThunderingGiant,
     _poolTimberGorge,
+    _poolTinybonesBaubleBurglar,
     _poolTormentedAngel,
     _poolTowerOfMurmurs,
     _poolToweringThunderfist,

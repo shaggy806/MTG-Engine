@@ -30,9 +30,16 @@ export const poolTotal = (pool: ManaPool): number =>
  * Both clauses are optional and at least one must be set; a unit whose
  * restriction permits neither the spell nor the ability in front of it simply
  * can't pay for it. `text` is for the log and the mana display, and is the
- * card's own wording.
+ * card's own wording. `notSpell` is the other shape, a deny-list, and is set
+ * alone.
  */
 export interface ManaRestriction {
+  /** "This mana can't be spent to cast nonartifact spells" (Karn, Legacy
+   * Reforged; a Powerstone): a deny-list rather than an allow-list. The
+   * mana pays for anything but casting a spell that matches — an artifact
+   * spell, any ability, a ward cost, a cost paid as something resolves
+   * (Karn's ruling). Set alone, without `spell` / `abilityOf`. */
+  readonly notSpell?: CardFilter;
   /** Spells this mana may be cast with (Ancient Ziggurat: any creature
    * spell). Matched against the card being cast, which is still in its
    * pre-cast zone at payment time — so this reads printed characteristics,
@@ -51,6 +58,16 @@ export interface ManaRestriction {
   readonly abilityOfAnyZone?: true;
   readonly text: string;
 }
+
+/**
+ * How freely a payment may spend mana (rules 118.14, 609.4b): `"any-color"`
+ * is "spend mana as though it were mana of any color" — any unit pays a
+ * coloured pip, but a `{C}` pip still wants colourless mana; `"any-type"` is
+ * "mana of any type can be spent" — any unit pays any pip, `{C}` included.
+ * It changes how a cost may be paid, never the cost or what was spent. See
+ * `mana-payment.ts`'s `costAsSpendable`.
+ */
+export type SpendAs = "any-color" | "any-type";
 
 /**
  * One unit of mana sitting in a player's pool (rule 106.4).

@@ -153,6 +153,7 @@ import _poolPriestOfUrabrask from "../pool/priest-of-urabrask.js";
 import _poolPunkFrogs from "../pool/punk-frogs.js";
 import _poolRacersRing from "../pool/racers-ring.js";
 import _poolRavenousRats from "../pool/ravenous-rats.js";
+import _poolRealmwalker from "../pool/realmwalker.js";
 import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.js";
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
 import _poolResplendentAngel from "../pool/resplendent-angel.js";
@@ -383,6 +384,7 @@ const shard: CardShard = {
     _poolPunkFrogs,
     _poolRacersRing,
     _poolRavenousRats,
+    _poolRealmwalker,
     _poolRekiTheHistoryOfKamigawa,
     _poolRenegadesGetaway,
     _poolResplendentAngel,

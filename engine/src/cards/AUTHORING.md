@@ -304,6 +304,7 @@ from the same link.
 | `shuffleIntoLibraryOnResolve` | `boolean` | "Shuffle ~ into its owner's library" as the last part of resolving (White Sun's Zenith). Only on resolving: a *countered* one goes to the graveyard, because the shuffle is an instruction the spell never got to carry out. |
 | `countersPersistAcrossZones` | `boolean` | "Counters remain on ~ as it moves to any zone other than a player's hand or library" (Skullbriar, the Walking Grave). `moveObject` keeps `counters` on every other move (graveyard, exile, command zone, stack, and back onto the battlefield, where enters-with-counters adds to them); everything else rule 400.7 resets still resets. Read off the object as it leaves, so a copy of the card keeps them and a permanent that has lost its abilities doesn't. Counters apply to P/T in every zone (layer 7c), so a grown card is that size in the graveyard too. |
 | `revealsOwnLibraryTop` | `boolean` | play with your top card revealed (Oracle of Mul Daya) |
+| `looksAtOwnLibraryTop` | `boolean` | "You may look at the top card of your library any time" (Glarb, Calamity's Augur; rule 401.5): while this permanent is on the battlefield with its abilities, `viewFor` shows its controller their own top card — in their view only, where `revealsOwnLibraryTop` shows it to everyone. Goes with a `castFromLibraryTop` / `playFromLibraryTop` static (§10), which is what lets them do something with it. |
 | `pairing` | `CommanderPairing` | the partner-family ability that lets this card be one of **two** commanders (rule 702.124) — §12. Never inferred from `text`. |
 | `canBeCommander` | `boolean` | "~ can be your commander." (rule 903.3a) — how a legendary card that isn't a creature, Vehicle or Spacecraft with P/T (a planeswalker) commands a deck — §12. Never inferred from `text`; `pool.test.ts` checks the two agree. |
 
@@ -645,7 +646,7 @@ them.
 | `regenerate-all` | `filter` | "Regenerate each creature you control" (Wrap in Vigor). |
 | `put-on-bottom-of-library` | `target` | Condemn — buries a permanent under its **owner's** library. Not a shuffle and not a bounce, which is why it isn't a `return-to-hand` variant. |
 | `destroy-all` | `filter`, `cantBeRegenerated?` | Wrath of God (`cantBeRegenerated: true` — "They can't be regenerated"). |
-| `exile` | `target`, `untilSourceLeaves?`, `withCounters?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch), and on a **spell**: it leaves the stack without being countered, so one that can't be countered goes too (Mindbreak Trap), and a copy ceases to exist (rule 707.10c). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. `target` may be `"trigger-object"`: a dies trigger's "you may exile it" (Brenard, Ginger Sculptor; Myrkul, Lord of Bones), which acts only while it's still the card that died (rule 400.7 — reanimated in response, it's a new object and stays put); follow it with a `this-way` `"exiled"` `conditional` for "if you do". `withCounters: { kind, amount }` is "exile it **with a croak counter on it**": counters the card gets in exile, only if this effect put it there (whatever it had on the battlefield is gone, rule 400.7). |
+| `exile` | `target`, `untilSourceLeaves?`, `withCounters?`, `mayCast?` | Angelic Edict. Works on a card in a **graveyard** as well as a permanent (Withered Wretch), and on a **spell**: it leaves the stack without being countered, so one that can't be countered goes too (Mindbreak Trap), and a copy ceases to exist (rule 707.10c). `untilSourceLeaves` is an "O-Ring" (Banishing Light, Conclave Tribunal) — see below. `target` may be `"trigger-object"`: a dies trigger's "you may exile it" (Brenard, Ginger Sculptor; Myrkul, Lord of Bones), which acts only while it's still the card that died (rule 400.7 — reanimated in response, it's a new object and stays put); follow it with a `this-way` `"exiled"` `conditional` for "if you do". `withCounters: { kind, amount }` is "exile it **with a croak counter on it**": counters the card gets in exile, only if this effect put it there (whatever it had on the battlefield is gone, rule 400.7). `mayCast: { duration: "while-exiled" | "end-of-turn", spendAs? }` gives the controller an impulse permission to *cast* the card this exiled ("you may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell"); a token exiled has ceased to exist. Not for an O-Ring that lets you cast what it took (Hostage Taker): the engine returns an O-Ring's card with a trigger, and in that window the permission would still be live, where rule 610.3 returns it at once. The effect's controller is recorded as having exiled the card (`exiledByPlayer` — Haldan's "cards you exiled"). |
 | `return-exiled-by-source` | `linked?: "hand"` | The other half of an O-Ring: returns everything this source exiled, to the battlefield under its **owner's** control. `linked: "hand"` instead puts the cards **linked** to this source (hideaway's, rule 607.2a — `GameObject.exiledWith`) into their owners' hands, unrevealed: Watcher for Tomorrow's "When this creature leaves the battlefield, put the exiled card into its owner's hand" — the leaves trigger reaches the card the stint that left exiled, so one that left before its hideaway resolved finds nothing (the ruling). |
 | `put-onto-battlefield` | `target` (an `EffectTargetRef`, so `"trigger-object"` works — Undying returns *itself*), `underYourControl?`, `under?`, `enterTapped?`, `withCounters?`, `exileIfItWouldLeave?`, `transformed?`, `setTypes?`, `addSubtypes?` | Reanimation that names one card, from anyone's graveyard — as opposed to `return-from-graveyard`'s filter over your own. `underYourControl` makes controller diverge from owner, so the card still goes back to its **owner's** graveyard when it dies. `under` (an `EffectPlayerRef`) is someone else's control instead — The Beamtown Bullies' "target opponent … puts target … card from your graveyard onto the battlefield under their control" (`under: { target: 0 }`); an illegal target, either one, moves nothing (rule 608.2b). `transformed` is "…onto the battlefield transformed" (Ojer Axonil's "return it to the battlefield tapped and transformed"): a transforming double-faced card enters back face up; anything else just enters. `setTypes` replaces its card types for as long as it stays: the Enduring cycle's "return it to the battlefield under its owner's control. It's an enchantment. (It's not a creature.)" is `setTypes: ["enchantment"]` (the `enduringReturn(name)` helper writes the whole trigger). It's in place as the card enters (rule 614.12), so it enters *as* an enchantment — a "whenever a creature enters" never sees it, an enchantment's enters trigger does — and the subtypes that went only with the lost types go too (rule 205.1a); supertypes stay. `addSubtypes` is the same for "in addition to its other types": Portal to Phyrexia's "put target creature card from a graveyard onto the battlefield under your control. It's a Phyrexian in addition to its other types" is `addSubtypes: ["Phyrexian"]`, in place as it enters. |
 | `exile-graveyard` | `target` (a player slot, `"you"`, `"each-player"` or `"each-opponent"`) | Bojuka Bog — exiles that player's whole graveyard at once (rule 406; the cards in it are never individually targeted). `"each-opponent"` is Soul-Guide Lantern's "exile each opponent's graveyard", all of them in one move. |
@@ -1034,7 +1035,7 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn?, faceDown? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn?, faceDown?, spendAs? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
@@ -1075,6 +1076,11 @@ exist (rule 111.7), so neither comes back.
   controller may look at the card (rule 406.3) — every other seat's view,
   its owner's included, shows a face-down card in exile, and the history
   never names it. It's turned face up as it leaves exile, cast or not.
+  `spendAs: "any-type"` is "…and mana of any type can be spent to cast that
+  spell" (Gonti, Canny Acquisitor), `"any-color"` "…you may spend mana as
+  though it were mana of any color to cast that spell" (Grenzo, Havoc
+  Raiser) — for a spell cast under this permission and no other (rule
+  118.14); see `spendManaAs` (§10).
   `castOnly` is "cast **spells** from among them" (no lands) rather than "play
   them". `filter` narrows which of them the permission covers, and `free` is
   "without paying their mana costs" — for all of them, or those matching its
@@ -2431,7 +2437,60 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   matches (Oracle of Mul Daya: `{ type: "land" }`). `affects` is ignored.
   Still costs the land drop / sorcery timing; `legalActions` enumerates the
   play. Distinct from `revealsOwnLibraryTop` (the "play with the top card
-  revealed" half, which only affects `viewFor`).
+  revealed" half, which only affects `viewFor`). It plays **lands** only; a
+  spell from the top is `castFromLibraryTop`'s.
+- `castFromLibraryTop: { filter, gainsHaste? }` — while this permanent is on
+  the battlefield its controller may *cast* the top card of their library if
+  the spell it would be matches `filter` (rule 601.3, judged as in 601.3e):
+  Sigarda, Font of Blessings' "Angel spells and Human spells" is `{ subtypes:
+  ["Angel", "Human"] }`, Mystic Forge's "artifact spells and colorless
+  spells" an `anyOf`. Offered as `via: "library-top"`, paying every cost
+  (alternative costs included) at the spell's own timing. The filter is
+  matched as the face cast, and a mana-value clause counts `{X}` at the X
+  announced (`FilterContext.castX`): Glarb, Calamity's Augur's "spells with
+  mana value 4 or greater" on Stonecoil Serpent is offered with `xCost.minX`
+  4, and refused below it (its ruling). The filter's "you" is the
+  controller and its source this permanent, so `ofChosenType` reads this
+  permanent's chosen creature type (Realmwalker). `gainsHaste` is "if you
+  cast a creature spell this way, it gains haste until end of turn"
+  (Thundermane Dragon) — a `castRider` modifier the permanent keeps (rule
+  400.7a). Pair it with the card's `looksAtOwnLibraryTop` for "you may look
+  at the top card of your library any time", and with `playFromLibraryTop`
+  for the lands of "play lands and cast spells" (Glarb). `affects` is
+  ignored. `cast-from-library-top.test.ts`.
+- `playFromExile: { filter, exiledByYou?, spells?, castOnly?, yourTurnOnly?,
+  spendAs? }` — while this permanent is on the battlefield its controller
+  may play lands and cast spells from among the cards in exile matching
+  `filter` (from their side): Grolnok, the Omnivore's "cards you own in
+  exile with croak counters on them" is `{ ownedBy: "you", counters: {
+  kind: "croak", compare: { op: "gte", n: 1 } } }`. A static ability of
+  the permanent, so it reaches cards exiled before it arrived and lapses
+  when it leaves (Haldan's ruling) — unlike `impulse-exile`'s permission,
+  which rides on the card. Offered as `via: "impulse"` casts and as land
+  plays, each the ordinary way (the land drop, sorcery timing); a face-down
+  card only to a player who may look at it (rule 601.3f). `exiledByYou` is
+  "cards **you exiled**" (Haldan, Avid Arcanist): only cards an `exile` or
+  `exile-from-library` effect of this player's put there
+  (`GameObject.exiledByPlayer` — Pako, Arcane Retriever's fetch counters).
+  `spells` narrows which spells, matched as the face cast (Haldan's
+  "noncreature spells" takes an adventurer's Adventure); `castOnly` drops
+  the lands; `yourTurnOnly` is "during your turn" (Tinybones, Bauble
+  Burglar); `spendAs` is the spending rule below, for those casts alone.
+  `affects` is ignored. `play-from-exile-permission.test.ts`.
+- `spendManaAs: { as: "any-color" | "any-type", spell? }` — how this
+  permanent's controller may spend mana (rules 118.14, 609.4b):
+  `"any-color"` is "you may spend mana as though it were mana of any
+  color" (Chromatic Orrery) — any unit pays a coloured pip, but a `{C}` pip
+  still wants colourless mana; `"any-type"` is "mana of any type can be
+  spent", `{C}` included. Without `spell` it covers every mana cost they
+  pay (Orrery); with it, only casting a spell that matches (Vizier of the
+  Menagerie's "creature spells", from anywhere — its ruling). It changes how
+  a cost may be paid, never the cost: the spell's mana value, converge's
+  colours spent and "mana from a Treasure" all read the mana actually
+  spent. A *permission's* own spending rule rides on it instead —
+  `impulse-exile`'s `spendAs`, `exile`'s `mayCast.spendAs`, `playFromExile.spendAs` — and
+  applies only to a spell cast under that permission (rule 118.14).
+  `mana-spending-rules.test.ts`.
 - `extraLandsPerTurn: number` — additional land drops per turn for this
   permanent's controller (Oracle of Mul Daya, Azusa, Lost but Seeking — needed-cards
   P16). `affects` is ignored. With `extraLandsForEachPlayer: true` it reaches
@@ -3063,6 +3122,11 @@ Delete an entry in the same commit as the feature that retires it.
     card in the hand or a graveyard can be, rule 109.2a);
     `uncounterable` is Cavern's "and that spell can't be countered", which
     is a property of the spell the mana paid for rather than of the land.
+    `notSpell` is the deny-list shape, set alone: "this mana can't be spent
+    to cast nonartifact spells" (Karn, Legacy Reforged; a Powerstone) is `{
+    notSpell: { notTypes: ["artifact"] } }` — it pays for anything but
+    casting a matching spell, an ability, a ward cost and a cost paid as
+    something resolves included (Karn's ruling).
   - `whenSpent: { spell?, effect, text }` — "When that mana is spent to cast
     …" (Path of Ancestry). `spell: "shares-type-with-commander"` resolves
     against the controller's commanders at activation time. It fires as a

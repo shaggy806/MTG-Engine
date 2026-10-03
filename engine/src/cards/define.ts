@@ -15,7 +15,7 @@
 import type { ActivatedAbility, CostReductionAmount, TriggeredAbility } from "../abilities.js";
 import type { EffectSpec, ModeOption, PlayerScope, SpellResolver, ThisWayKind } from "../effects.js";
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
-import type { Color } from "../mana.js";
+import type { Color, SpendAs } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
 import type { PlayerCounterKind, TurnHistoryKind, ZoneType } from "../state.js";
 import type { TargetSpec } from "../target.js";
@@ -1190,6 +1190,60 @@ export interface StaticAbility {
    * characteristic. Still costs the land drop / sorcery timing. Distinct from
    * `revealsOwnLibraryTop` (the "play with the top card revealed" half). */
   readonly playFromLibraryTop?: CardFilter;
+  /**
+   * A permission (rule 601.3) — while this permanent is on the battlefield
+   * its controller may *cast* the top card of their library if it's a spell
+   * matching `filter`, judged as the spell it would be (rule 601.3e): the
+   * face cast, and with `{X}` counted at the X announced for it (202.3e) —
+   * Glarb, Calamity's Augur's "spells with mana value 4 or greater" reaches
+   * an X spell only at an X that gets it there (its ruling). Cast as
+   * `via: "library-top"`, paying every cost and keeping every timing rule.
+   * Lands are `playFromLibraryTop`'s; "look at the top card of your library
+   * any time" is the card's `looksAtOwnLibraryTop`. `gainsHaste` is
+   * "if you cast a creature spell this way, it gains haste until end of
+   * turn" (Thundermane Dragon). `affects` is ignored.
+   */
+  readonly castFromLibraryTop?: { readonly filter: CardFilter; readonly gainsHaste?: boolean };
+  /**
+   * A permission (rule 601.3) — while this permanent is on the battlefield
+   * its controller may play lands and cast spells from among the cards in
+   * exile matching `filter`, from their side (the counter on them, who owns
+   * them): Grolnok, the Omnivore's "cards you own in exile with croak
+   * counters on them" is `{ ownedBy: "you", counters: { kind: "croak", … } }`.
+   * Cast as `via: "impulse"`, paying every cost and keeping every timing
+   * rule (a land still takes the land drop); it lapses the moment this
+   * permanent leaves (Haldan's ruling) — unlike an impulse permission riding
+   * on the card.
+   * - `exiledByYou` — "cards **you exiled**" (Haldan, Avid Arcanist): only
+   *   those an effect of this player's put there (`GameObject.exiledByPlayer`).
+   * - `spells` — which spells it lets you cast, matched as the face cast
+   *   (Haldan's "cast **noncreature** spells" reaches an adventurer's
+   *   Adventure); lands are still played.
+   * - `castOnly` — "cast spells from among" them, no lands.
+   * - `yourTurnOnly` — "during your turn" (Tinybones, Bauble Burglar).
+   * - `spendAs` — "and you may spend mana as though it were mana of any
+   *   color" / "mana of any type can be spent to cast those spells" (rule
+   *   118.14 — only to cast them this way).
+   * `affects` is ignored.
+   */
+  readonly playFromExile?: {
+    readonly filter: CardFilter;
+    readonly exiledByYou?: boolean;
+    readonly spells?: CardFilter;
+    readonly castOnly?: boolean;
+    readonly yourTurnOnly?: boolean;
+    readonly spendAs?: SpendAs;
+  };
+  /**
+   * "You may spend mana as though it were mana of any color" (Chromatic
+   * Orrery, `as: "any-color"`) / "you can spend mana of any type to cast
+   * creature spells" (Vizier of the Menagerie, `as: "any-type"` with `spell:
+   * { type: "creature" }`): how this permanent's controller may pay (rules
+   * 118.14, 609.4b) — every mana cost they pay, or with `spell` only to cast
+   * a spell matching it. Changes how a cost may be paid, never the cost or
+   * what mana was spent. `affects` is ignored.
+   */
+  readonly spendManaAs?: { readonly as: SpendAs; readonly spell?: CardFilter };
   /** Protection (rule 702.16) — the affected object can't be targeted,
    * blocked, enchanted/equipped, or damaged by a source whose colour or type
    * matches (White Knight: `{ colors: ["B"] }`).
@@ -1640,6 +1694,12 @@ export interface CardDefinition {
    * the top card of your library revealed") — a zone-visibility effect, not
    * a characteristic, so it lives outside the `static` (layers 6/7) vocab. */
   readonly revealsOwnLibraryTop: boolean;
+  /** While this permanent is on the battlefield, its controller "may look at
+   * the top card of [their] library any time" (Glarb, Calamity's Augur;
+   * rule 401.5): the card is shown to them alone — `viewFor` hands it to its
+   * owner's view only, where `revealsOwnLibraryTop` shows it to every
+   * player. Not while the permanent has lost its abilities. */
+  readonly looksAtOwnLibraryTop: boolean;
   /** An Aura whose controller controls the enchanted permanent for as long as
    * it stays attached (Mind Control — rule 613.1b, layer 2). */
   readonly controlEnchanted: boolean;
@@ -1897,6 +1957,7 @@ const PRINTED_ABILITY: {
   triggered: (def) => def.triggered.length > 0,
   static: (def) => def.static.length > 0,
   revealsOwnLibraryTop: (def) => def.revealsOwnLibraryTop,
+  looksAtOwnLibraryTop: (def) => def.looksAtOwnLibraryTop,
   controlEnchanted: (def) => def.controlEnchanted,
   castOnlyIf: (def) => def.castOnlyIf !== null,
   splitSecond: (def) => def.splitSecond,
@@ -2032,6 +2093,7 @@ interface CardDraft {
   triggered?: readonly TriggeredAbility[];
   static?: readonly StaticAbility[];
   revealsOwnLibraryTop?: boolean;
+  looksAtOwnLibraryTop?: boolean;
   controlEnchanted?: boolean;
   castOnlyIf?: StaticCondition;
   splitSecond?: boolean;
@@ -2116,6 +2178,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     triggered: draft.triggered ?? [],
     static: [...(draft.static ?? []), ...loyaltyStatic],
     revealsOwnLibraryTop: draft.revealsOwnLibraryTop ?? false,
+    looksAtOwnLibraryTop: draft.looksAtOwnLibraryTop ?? false,
     controlEnchanted: draft.controlEnchanted ?? false,
     castOnlyIf: draft.castOnlyIf ?? null,
     splitSecond: draft.splitSecond ?? false,

@@ -149,6 +149,7 @@ import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
 import _poolSetessanChampion from "../pool/setessan-champion.js";
 import _poolSidarJabariOfZhalfir from "../pool/sidar-jabari-of-zhalfir.js";
 import _poolSiegecraft from "../pool/siegecraft.js";
+import _poolSigardaFontOfBlessings from "../pool/sigarda-font-of-blessings.js";
 import _poolSilentObserver from "../pool/silent-observer.js";
 import _poolSilverquillCampus from "../pool/silverquill-campus.js";
 import _poolSizzle from "../pool/sizzle.js";
@@ -354,6 +355,7 @@ const shard: CardShard = {
     _poolSetessanChampion,
     _poolSidarJabariOfZhalfir,
     _poolSiegecraft,
+    _poolSigardaFontOfBlessings,
     _poolSilentObserver,
     _poolSilverquillCampus,
     _poolSizzle,

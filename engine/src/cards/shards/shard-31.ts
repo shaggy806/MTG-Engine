@@ -107,6 +107,7 @@ import _poolKiteShield from "../pool/kite-shield.js";
 import _poolKitesail from "../pool/kitesail.js";
 import _poolKjeldoranOutrider from "../pool/kjeldoran-outrider.js";
 import _poolKodamaOfTheEastTree from "../pool/kodama-of-the-east-tree.js";
+import _poolKorlessaScaleSinger from "../pool/korlessa-scale-singer.js";
 import _poolKrarkClanIronworks from "../pool/krark-clan-ironworks.js";
 import _poolKrosanGrip from "../pool/krosan-grip.js";
 import _poolLizardWarrior from "../pool/lizard-warrior.js";
@@ -308,6 +309,7 @@ const shard: CardShard = {
     _poolKitesail,
     _poolKjeldoranOutrider,
     _poolKodamaOfTheEastTree,
+    _poolKorlessaScaleSinger,
     _poolKrarkClanIronworks,
     _poolKrosanGrip,
     _poolLizardWarrior,

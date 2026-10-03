@@ -198,6 +198,7 @@ import _poolVedalkenArchmage from "../pool/vedalken-archmage.js";
 import _poolVensersSliver from "../pool/vensers-sliver.js";
 import _poolVerdantAutomaton from "../pool/verdant-automaton.js";
 import _poolVeyranVoiceOfDuality from "../pool/veyran-voice-of-duality.js";
+import _poolVizierOfTheMenagerie from "../pool/vizier-of-the-menagerie.js";
 import _poolVojaJawsOfTheConclave from "../pool/voja-jaws-of-the-conclave.js";
 import _poolVolcanicRambler from "../pool/volcanic-rambler.js";
 import _poolWallOfDistortion from "../pool/wall-of-distortion.js";
@@ -409,6 +410,7 @@ const shard: CardShard = {
     _poolVensersSliver,
     _poolVerdantAutomaton,
     _poolVeyranVoiceOfDuality,
+    _poolVizierOfTheMenagerie,
     _poolVojaJawsOfTheConclave,
     _poolVolcanicRambler,
     _poolWallOfDistortion,

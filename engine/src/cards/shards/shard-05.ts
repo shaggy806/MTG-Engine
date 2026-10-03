@@ -65,6 +65,7 @@ import _poolDragonsPresence from "../pool/dragons-presence.js";
 import _poolDryadsFavor from "../pool/dryads-favor.js";
 import _poolDuskdaleWurm from "../pool/duskdale-wurm.js";
 import _poolElfhamePalace from "../pool/elfhame-palace.js";
+import _poolElvenChorus from "../pool/elven-chorus.js";
 import _poolEmeraldOryx from "../pool/emerald-oryx.js";
 import _poolEnormousBaloth from "../pool/enormous-baloth.js";
 import _poolEternalWitness from "../pool/eternal-witness.js";
@@ -283,6 +284,7 @@ const shard: CardShard = {
     _poolDryadsFavor,
     _poolDuskdaleWurm,
     _poolElfhamePalace,
+    _poolElvenChorus,
     _poolEmeraldOryx,
     _poolEnormousBaloth,
     _poolEternalWitness,

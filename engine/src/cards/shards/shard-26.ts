@@ -24,6 +24,7 @@ import _poolBreakneckBerserker from "../pool/breakneck-berserker.js";
 import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
+import _poolChromaticOrrery from "../pool/chromatic-orrery.js";
 import _poolCityOfBrass from "../pool/city-of-brass.js";
 import _poolCoastalPiracy from "../pool/coastal-piracy.js";
 import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
@@ -232,6 +233,7 @@ const shard: CardShard = {
     _poolCallToTheFeast,
     _poolCanyonJerboa,
     _poolChaplainsBlessing,
+    _poolChromaticOrrery,
     _poolCityOfBrass,
     _poolCoastalPiracy,
     _poolCogworkersPuzzleknot,

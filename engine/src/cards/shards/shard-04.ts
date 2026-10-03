@@ -108,6 +108,7 @@ import _poolKudoKingAmongBears from "../pool/kudo-king-among-bears.js";
 import _poolLampadOfDeathsVigil from "../pool/lampad-of-deaths-vigil.js";
 import _poolLance from "../pool/lance.js";
 import _poolLathrilBladeOfTheElves from "../pool/lathril-blade-of-the-elves.js";
+import _poolLaughingJasperFlint from "../pool/laughing-jasper-flint.js";
 import _poolLightningElemental from "../pool/lightning-elemental.js";
 import _poolLordWindgrace from "../pool/lord-windgrace.js";
 import _poolLoyalSubordinate from "../pool/loyal-subordinate.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolLampadOfDeathsVigil,
     _poolLance,
     _poolLathrilBladeOfTheElves,
+    _poolLaughingJasperFlint,
     _poolLightningElemental,
     _poolLordWindgrace,
     _poolLoyalSubordinate,

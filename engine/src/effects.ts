@@ -18,7 +18,7 @@ import type {
   TurnStat,
 } from "./cards.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
-import type { Color, ManaType } from "./mana.js";
+import type { Color, ManaType, SpendAs } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { EVERY_CREATURE_TYPE, isCreatureType } from "./subtypes.js";
 import type { ThisWayEntry } from "./this-way.js";
@@ -104,6 +104,10 @@ export type PtDuration =
  */
 export interface ManaSpendOnly {
   readonly spell?: CardFilter;
+  /** "This mana can't be spent to cast [these] spells" — Karn, Legacy
+   * Reforged's `{ notTypes: ["artifact"] }`: anything else may use it,
+   * abilities and ward costs included. Set alone. See `ManaRestriction`. */
+  readonly notSpell?: CardFilter;
   /** "…or activate abilities of [X]": abilities of permanents on the
    * battlefield matching this — "abilities of creatures" means creature
    * permanents (rule 109.2; Castle Garenbrig's ruling). */
@@ -1207,6 +1211,16 @@ export type EffectSpec =
        * the exiled card moves on to somewhere else, nothing comes back.
        */
       readonly untilSourceLeaves?: boolean;
+      /**
+       * "You may cast that card for as long as it remains exiled, and mana of
+       * any type can be spent to cast that spell" (Hostage Taker): the
+       * effect's controller gets an impulse permission to *cast* the card
+       * this put into exile (a land stays put) — `"while-exiled"`, or
+       * `"end-of-turn"` for "this turn" — with `spendAs` for that cast
+       * alone (rule 118.14). A token exiled ceases to exist (rule 111.7),
+       * so there's nothing to cast.
+       */
+      readonly mayCast?: { readonly duration: "end-of-turn" | "while-exiled"; readonly spendAs?: SpendAs };
     }
   | {
       /**
@@ -2924,6 +2938,12 @@ export type EffectSpec =
        * **face down**" (Edward Kenway): the cards are exiled face down
        * (rule 406.3), and only the controller may look at them. */
       readonly faceDown?: boolean;
+      /** "…and mana of any type can be spent to cast that spell" (Gonti,
+       * Canny Acquisitor: `"any-type"`) / "…you may spend mana as though it
+       * were mana of any color to cast that spell" (Grenzo, Havoc Raiser:
+       * `"any-color"`) — only for a spell cast under this permission (rule
+       * 118.14). */
+      readonly spendAs?: SpendAs;
     }
   | {
       /** Scry `amount` (rule 701.18) — look at the top N, put any number on
@@ -3418,6 +3438,7 @@ export interface EffectApi {
     target: TargetRef,
     untilSourceLeaves?: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
+    mayCast?: { readonly duration: "end-of-turn" | "while-exiled"; readonly spendAs?: SpendAs },
   ): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}.
    * Returns `true` when it stopped to ask an "as this enters" choice first
@@ -3675,6 +3696,7 @@ export interface EffectApi {
       readonly oncePerTurn?: boolean;
       /** Exiled face down, for the controller's eyes only (rule 406.3). */
       readonly faceDown?: boolean;
+      readonly spendAs?: SpendAs;
     },
   ): void;
   /** See the `"ward"` {@link EffectSpec}. */
@@ -5042,7 +5064,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "exile": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true, spec.withCounters);
+      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true, spec.withCounters, spec.mayCast);
       return;
     }
     case "return-exiled-by-source": {
@@ -5921,6 +5943,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         gate: spec.gate,
         ...(spec.filter !== undefined ? { filter: spec.filter } : {}),
         ...(spec.free !== undefined ? { free: spec.free } : {}),
+        ...(spec.spendAs !== undefined ? { spendAs: spec.spendAs } : {}),
       });
       return;
     case "unless":

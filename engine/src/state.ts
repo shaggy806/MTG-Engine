@@ -16,7 +16,7 @@ import type {
   ZoneSecondPick,
 } from "./effects.js";
 import type { CardFilter } from "./filter.js";
-import type { Color, ManaOrigin, ManaUnit } from "./mana.js";
+import type { Color, ManaOrigin, ManaUnit, SpendAs } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -80,6 +80,14 @@ export interface GameObject {
    * `moveObject` clears zone-scoped state on the way.
    */
   exiledBy?: ObjectId;
+  /**
+   * The player whose effect put this card into exile — what "cards **you
+   * exiled**" means (Haldan, Avid Arcanist's `playFromExile.exiledByYou`).
+   * Set by an `exile` or `exile-from-library` effect after its move, and
+   * cleared by `moveObject` like `exiledBy`, so a card that leaves exile is
+   * no longer one anybody exiled.
+   */
+  exiledByPlayer?: PlayerId;
   /**
    * This card is in exile because of a `flicker` whose return is delayed
    * (Norin the Wary), and this names that particular exile — the key its
@@ -311,6 +319,11 @@ export interface GameObject {
     /** "Once each turn": one cast a turn among every card `source` gave this
      * permission, counted on `source` (`GameObject.impulseCastOnTurn`). */
     readonly oncePerTurn?: boolean;
+    /** "…and mana of any type can be spent to cast that spell" (Gonti, Canny
+     * Acquisitor) / "…as though it were mana of any color" (Grenzo, Havoc
+     * Raiser): how freely mana may pay for a spell cast under this permission
+     * — and only one cast this way (rule 118.14). */
+    readonly spendAs?: SpendAs;
   };
   /** The turn a `oncePerTurn` impulse permission this permanent gave was
    * last used (Maralen, Fae Ascendant). Cleared on any zone change: the
@@ -832,6 +845,11 @@ export interface PtModifier {
   /** The prototype characteristics of a spell cast prototyped (rule 718):
    * kept from the stack onto the battlefield, gone on any other move. */
   prototype?: true;
+  /** An effect the spell got for how it was cast, which goes on applying to
+   * the permanent it becomes (rules 400.7a-b, 400.7h) — Thundermane Dragon's
+   * "if you cast a creature spell this way, it gains haste until end of
+   * turn". Kept from the stack onto the battlefield like `prototype`. */
+  castRider?: true;
   untilEndOfTurn: boolean;
   /**
    * `GameState.timestampSeq` when the modifier was applied, for ordering its

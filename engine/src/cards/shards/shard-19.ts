@@ -35,6 +35,7 @@ import _poolContractKilling from "../pool/contract-killing.js";
 import _poolCourierGriffin from "../pool/courier-griffin.js";
 import _poolCowlProwler from "../pool/cowl-prowler.js";
 import _poolCryptolithRite from "../pool/cryptolith-rite.js";
+import _poolCrystalSkullIsuSpyglass from "../pool/crystal-skull-isu-spyglass.js";
 import _poolDaringApprentice from "../pool/daring-apprentice.js";
 import _poolDarkRemedy from "../pool/dark-remedy.js";
 import _poolDarkwaterCatacombs from "../pool/darkwater-catacombs.js";
@@ -68,6 +69,7 @@ import _poolGreatHart from "../pool/great-hart.js";
 import _poolGreelsCaress from "../pool/greels-caress.js";
 import _poolGriffinDreamfinder from "../pool/griffin-dreamfinder.js";
 import _poolGrimBauble from "../pool/grim-bauble.js";
+import _poolGrolnokTheOmnivore from "../pool/grolnok-the-omnivore.js";
 import _poolGuardianProject from "../pool/guardian-project.js";
 import _poolGuardiansOfMeletis from "../pool/guardians-of-meletis.js";
 import _poolHallowedFountain from "../pool/hallowed-fountain.js";
@@ -244,6 +246,7 @@ const shard: CardShard = {
     _poolCourierGriffin,
     _poolCowlProwler,
     _poolCryptolithRite,
+    _poolCrystalSkullIsuSpyglass,
     _poolDaringApprentice,
     _poolDarkRemedy,
     _poolDarkwaterCatacombs,
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolGreelsCaress,
     _poolGriffinDreamfinder,
     _poolGrimBauble,
+    _poolGrolnokTheOmnivore,
     _poolGuardianProject,
     _poolGuardiansOfMeletis,
     _poolHallowedFountain,

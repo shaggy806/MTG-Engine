@@ -44,8 +44,14 @@ export type CastVia =
   | "suspend"
   | "cascade"
   /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
-   * card exiled face-up with permission to play it, for its normal cost. */
+   * card exiled face-up with permission to play it, for its normal cost —
+   * or one a `playFromExile` static lets its controller play (Grolnok, the
+   * Omnivore's croak counters). */
   | "impulse"
+  /** From the top of the caster's library, under a `castFromLibraryTop`
+   * static (Glarb, Calamity's Augur; Sigarda, Font of Blessings), paying
+   * every cost and keeping every timing rule. */
+  | "library-top"
   /** Cast now, from wherever it is, because a resolving spell or ability
    * says "you may cast it" (the `cast-now` decision — Chandra, Acolyte of
    * Flame): timing is ignored (rule 608.2g). Only as that decision's answer. */

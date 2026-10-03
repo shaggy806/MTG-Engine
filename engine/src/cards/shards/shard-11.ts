@@ -129,6 +129,7 @@ import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
 import _poolMoriokReaver from "../pool/moriok-reaver.js";
 import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
+import _poolMysticForge from "../pool/mystic-forge.js";
 import _poolMysticGate from "../pool/mystic-gate.js";
 import _poolNessianCourser from "../pool/nessian-courser.js";
 import _poolNighthaze from "../pool/nighthaze.js";
@@ -371,6 +372,7 @@ const shard: CardShard = {
     _poolMoriokReaver,
     _poolMossDiamond,
     _poolMossdog,
+    _poolMysticForge,
     _poolMysticGate,
     _poolNessianCourser,
     _poolNighthaze,

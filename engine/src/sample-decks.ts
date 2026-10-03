@@ -203,7 +203,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Stormshriek Feral", "Demanding Dragon", "Five-mana red flying Dragon."),
       sub("Temple of the Dragon Queen", "Game Trail", "Land that makes the deck's colours."),
       sub("Territorial Hellkite", "Young Red Dragon", "Four-mana red Dragon."),
-      sub("Thundermane Dragon", "Draconic Muralists", "Four-mana green Dragon."),
       sub("Whirlwing Stormbrood", "Ganax, Astral Hunter", "Five-mana red Dragon that makes Treasure as Dragons enter."),
       sub("Zenith Festival", "Reckless Impulse", "Two-mana sorcery: impulse draw, card advantage."),
     ],
@@ -540,7 +539,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Divine Visitation", "Anointed Procession", "Five-mana enchantment: token payoff."),
       sub("Eliminate the Competition", "Lich's Caress", "Five-mana sorcery: removal, creature removal."),
       sub("Gix, Yawgmoth Praetor", "Midnight Reaper", "Three-mana creature: card draw for life, card draw."),
-      sub("Grenzo, Havoc Raiser", "Killian, Decisive Mentor", "Two-mana creature: card advantage."),
       sub("Kaya, Geist Hunter", "Ajani, Caller of the Pride", "Three-mana planeswalker."),
       sub("Legion Warboss", "Krenko, Tin Street Kingpin", "Three-mana creature: token maker, attack trigger."),
       sub("Myr Battlesphere", "Threefold Thunderhulk", "Seven-mana artifact creature that makes an army."),
@@ -1370,7 +1368,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Sarkhan, Dragon Ascendant", "Reckless Fireweaver", "Two-mana red creature."),
       sub("Scourge of the Throne", "Rorix Bladewing", "Six-mana red flying Dragon with haste."),
       sub("The Elder Dragon War", "Enduring Courage", "Red enchantment that pumps and hastes the deck's creatures."),
-      sub("Thundermane Dragon", "Skyship Stalker", "Four-mana red flying Dragon."),
     ],
   }),
   precon({

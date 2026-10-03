@@ -16,7 +16,7 @@
 import type { ActivatedAbility } from "./abilities.js";
 import type { EffectSpec } from "./effects.js";
 import { COLORS, poolCounts, poolTotal } from "./mana.js";
-import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit } from "./mana.js";
+import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit, SpendAs } from "./mana.js";
 import type { ObjectId } from "./primitives.js";
 
 /** One possible output of a single mana-ability activation: `fixed` is the
@@ -226,6 +226,43 @@ export interface ManaPlanningView {
    * card lists first — white, as often as not, in a deck with no white cards.
    */
   readonly preferred: readonly ManaType[];
+  /**
+   * An effect lets this payment spend mana "as though it were mana of any
+   * color" (`"any-color"` — Haldan, Avid Arcanist, Chromatic Orrery) or
+   * "mana of any type" (`"any-type"` — Gonti, Canny Acquisitor; rule
+   * 118.14: any colour *or* colourless). See {@link costAsSpendable}.
+   */
+  readonly spendAs?: SpendAs;
+}
+
+/** The more generous of two spending permissions (either may be absent):
+ * `"any-type"` covers everything `"any-color"` does. */
+export function widerSpendAs(a: SpendAs | undefined, b: SpendAs | undefined): SpendAs | undefined {
+  if (a === "any-type" || b === "any-type") return "any-type";
+  return a ?? b;
+}
+
+/**
+ * `cost` as a payment allowed `spendAs` sees it: the pips any unit may pay
+ * folded into generic — every coloured pip, and with `"any-type"` every
+ * `{C}` pip too. Rule 609.4b: this changes only *how* the cost may be paid,
+ * not the cost and not what mana is actually spent, so it's applied at
+ * planning and spending only (the spell keeps its real mana cost, and
+ * `manaSpentColors` still records the units that paid). Hybrid pips are
+ * left alone — {@link resolveHybridCost} lowers them first, to a coloured
+ * pip this then folds the same way.
+ */
+export function costAsSpendable(cost: ManaCost, spendAs: SpendAs | undefined): ManaCost {
+  if (spendAs === undefined) return cost;
+  const colored = COLORS.reduce((n, c) => n + cost.colored[c], 0);
+  const colorless = spendAs === "any-type" ? cost.colorless : 0;
+  if (colored === 0 && colorless === 0) return cost;
+  return {
+    ...cost,
+    generic: cost.generic + colored + colorless,
+    colored: { W: 0, U: 0, B: 0, R: 0, G: 0 },
+    colorless: cost.colorless - colorless,
+  };
 }
 
 /**
@@ -473,10 +510,13 @@ export function resolveHybridCost(
  */
 export function planManaPayment(
   view: ManaPlanningView,
-  cost: ManaCost,
+  rawCost: ManaCost,
   avoid?: ObjectId,
   exclude?: ObjectId,
 ): ManaPlanStep[] | null {
+  // Mana that may be spent as though it were any colour (or type) pays a
+  // coloured pip as freely as a generic one (rule 609.4b).
+  const cost = costAsSpendable(rawCost, view.spendAs);
   const plan = planManaPaymentOrdered(view, cost, avoid, exclude, false);
   if (plan !== null) return plan;
   // Reaching for a converter last can strand it: two Islands and an Izzet
@@ -802,6 +842,9 @@ export function planPayment(
   if (resolved === null) return null;
   const steps = planManaPayment(view, resolved.concrete, avoid, exclude);
   if (steps === null) return null;
-  return { steps, life: resolved.life, resolved: resolved.concrete, purpose };
+  // What `spendFromPool` takes: the cost as this payment may pay it, so a
+  // unit spent "as though it were mana of any color" isn't asked to be the
+  // colour it isn't. Same total, so the mana spent counts the same.
+  return { steps, life: resolved.life, resolved: costAsSpendable(resolved.concrete, view.spendAs), purpose };
 }
 

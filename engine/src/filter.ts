@@ -548,6 +548,15 @@ export interface FilterContext {
    * `NumCompare` written as `{ n: "x" }`. Defaults to 0. */
   readonly x?: number;
   /**
+   * Judge a card that isn't on the stack as the spell it would be with its
+   * `{X}` announced as this (rules 601.3e, 202.3e): its mana value counts
+   * this X, as it would on the stack. A cast permission's filter reads it
+   * — Glarb, Calamity's Augur's "spells with mana value 4 or greater" on an
+   * X spell (its ruling). Ignored for an object on the stack, which has its
+   * own X.
+   */
+  readonly castX?: number;
+  /**
    * Read an object that has just left the battlefield as it last existed
    * there (rule 603.10a) — for a trigger filter matched against the permanent
    * whose leaving fired it, as the event happens. Every clause then reads its
@@ -661,10 +670,12 @@ export function coloredManaSymbolsIn(cost: ManaCost): number {
 
 /** An object's mana value. On the stack, {X} counts as the value chosen for
  * it (rule 202.3e) — a Fireball cast for 5 is a mana value 6 spell.
- * Everywhere else it's 0. */
-function manaValueOfObject(registry: CardRegistry, object: GameObject): number {
+ * Everywhere else it's 0, unless the card is being judged as the spell it
+ * would be with X announced as `castX` (`FilterContext.castX`). */
+function manaValueOfObject(registry: CardRegistry, object: GameObject, castX?: number): number {
   const cost = parseManaCost(printedManaCost(registry, object));
-  return manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
+  const x = object.zone === "stack" ? (object.xValue ?? 0) : (castX ?? 0);
+  return manaValue(cost) + cost.x * Math.max(0, x);
 }
 
 /** Does object `id` satisfy every clause of `filter`?
@@ -859,7 +870,7 @@ export function matchesFilter(
       }
     | undefined = lki;
   const manaValueNow = (): number =>
-    live !== undefined ? manaValueOfObject(registry, live) : lki!.manaValue;
+    live !== undefined ? manaValueOfObject(registry, live, ctx.castX) : lki!.manaValue;
   const dynamic = (operand: DynamicOperand): number | undefined => {
     if ("amount" in operand) return ctx.amount?.(operand.amount);
     if (operand.own === "manaValue") return manaValueNow();

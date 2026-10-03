@@ -179,6 +179,7 @@ import _poolThaumatog from "../pool/thaumatog.js";
 import _poolThermalNavigator from "../pool/thermal-navigator.js";
 import _poolThoseWhoServe from "../pool/those-who-serve.js";
 import _poolThrivingIsle from "../pool/thriving-isle.js";
+import _poolThundermaneDragon from "../pool/thundermane-dragon.js";
 import _poolTitaniasBoon from "../pool/titanias-boon.js";
 import _poolTocasiasWelcome from "../pool/tocasias-welcome.js";
 import _poolTorporDust from "../pool/torpor-dust.js";
@@ -389,6 +390,7 @@ const shard: CardShard = {
     _poolThermalNavigator,
     _poolThoseWhoServe,
     _poolThrivingIsle,
+    _poolThundermaneDragon,
     _poolTitaniasBoon,
     _poolTocasiasWelcome,
     _poolTorporDust,

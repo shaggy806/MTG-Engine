@@ -43,6 +43,7 @@ import _poolDisruptDecorum from "../pool/disrupt-decorum.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
 import _poolElvishDoomsayer from "../pool/elvish-doomsayer.js";
 import _poolEmmessiTome from "../pool/emmessi-tome.js";
+import _poolEmperorMihailIi from "../pool/emperor-mihail-ii.js";
 import _poolErase from "../pool/erase.js";
 import _poolFalseSummoning from "../pool/false-summoning.js";
 import _poolFarewell from "../pool/farewell.js";
@@ -55,6 +56,7 @@ import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
 import _poolFrostwindInvoker from "../pool/frostwind-invoker.js";
 import _poolGevScaledScorch from "../pool/gev-scaled-scorch.js";
 import _poolGiganticBigBear from "../pool/gigantic-big-bear.js";
+import _poolGlarbCalamitysAugur from "../pool/glarb-calamitys-augur.js";
 import _poolGliderKids from "../pool/glider-kids.js";
 import _poolGloriousCharge from "../pool/glorious-charge.js";
 import _poolGoblinSurprise from "../pool/goblin-surprise.js";
@@ -223,6 +225,7 @@ const shard: CardShard = {
     _poolDranasChosen,
     _poolElvishDoomsayer,
     _poolEmmessiTome,
+    _poolEmperorMihailIi,
     _poolErase,
     _poolFalseSummoning,
     _poolFarewell,
@@ -235,6 +238,7 @@ const shard: CardShard = {
     _poolFrostwindInvoker,
     _poolGevScaledScorch,
     _poolGiganticBigBear,
+    _poolGlarbCalamitysAugur,
     _poolGliderKids,
     _poolGloriousCharge,
     _poolGoblinSurprise,

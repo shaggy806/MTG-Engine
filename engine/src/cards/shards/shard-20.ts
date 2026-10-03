@@ -86,6 +86,7 @@ import _poolGrimDiscovery from "../pool/grim-discovery.js";
 import _poolGrizzledOutrider from "../pool/grizzled-outrider.js";
 import _poolGuideOfSouls from "../pool/guide-of-souls.js";
 import _poolHairStrungKoto from "../pool/hair-strung-koto.js";
+import _poolHaldanAvidArcanist from "../pool/haldan-avid-arcanist.js";
 import _poolHarrow from "../pool/harrow.js";
 import _poolHateMirage from "../pool/hate-mirage.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
@@ -289,6 +290,7 @@ const shard: CardShard = {
     _poolGrizzledOutrider,
     _poolGuideOfSouls,
     _poolHairStrungKoto,
+    _poolHaldanAvidArcanist,
     _poolHarrow,
     _poolHateMirage,
     _poolHowlingMine,

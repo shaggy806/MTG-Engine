@@ -15,6 +15,7 @@ import {
   abilitiesLostAt,
   computeCharacteristics,
   extraIntrinsicManaColors,
+  hasLostAbilities,
   inactiveStandIn,
   intrinsicManaColors,
   modifierGrantApplies,
@@ -257,7 +258,9 @@ export interface PlayerView {
     readonly graveyards: Readonly<Record<PlayerId, readonly ObjectId[]>>;
   };
   /** Each player's top library card, if some permanent they control makes it
-   * public knowledge (e.g. Oracle of Mul Daya) — `null` otherwise. */
+   * public knowledge (e.g. Oracle of Mul Daya) — `null` otherwise. The
+   * viewer's own also when a permanent of theirs lets them look at it any
+   * time (Glarb, Calamity's Augur), which no one else's view shows. */
   readonly revealedLibraryTop: Readonly<Record<PlayerId, ObjectId | null>>;
   /** The day/night designation (rule 726 — ROADMAP Phase 10b), or `null` until
    * a card first makes it day or night. */
@@ -620,7 +623,19 @@ function viewForUncached(
       const object = state.objects[id];
       return object.controller === player && registry.get(printedCardName(object)).revealsOwnLibraryTop;
     });
-    const topCard = revealsTop ? (zones.library[0] ?? null) : null;
+    // "You may look at the top card of your library any time" (Glarb,
+    // Calamity's Augur — rule 401.5): shown in its owner's own view only.
+    const looksAtTop =
+      player === viewer &&
+      state.zones.shared.battlefield.some((id) => {
+        const object = state.objects[id];
+        return (
+          object.controller === player &&
+          !hasLostAbilities(object) &&
+          registry.get(printedCardName(object)).looksAtOwnLibraryTop
+        );
+      });
+    const topCard = revealsTop || looksAtTop ? (zones.library[0] ?? null) : null;
     revealedLibraryTop[player] = topCard;
     if (topCard !== null) visibleIds.push(topCard);
 

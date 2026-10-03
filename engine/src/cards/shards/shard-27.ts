@@ -157,6 +157,7 @@ import _poolSteadfastGuard from "../pool/steadfast-guard.js";
 import _poolSteelLeafChampion from "../pool/steel-leaf-champion.js";
 import _poolSteepleRoc from "../pool/steeple-roc.js";
 import _poolStitchersSupplier from "../pool/stitchers-supplier.js";
+import _poolStolenStrategy from "../pool/stolen-strategy.js";
 import _poolStormOfSouls from "../pool/storm-of-souls.js";
 import _poolStormSpirit from "../pool/storm-spirit.js";
 import _poolStrengthOfThePack from "../pool/strength-of-the-pack.js";
@@ -365,6 +366,7 @@ const shard: CardShard = {
     _poolSteelLeafChampion,
     _poolSteepleRoc,
     _poolStitchersSupplier,
+    _poolStolenStrategy,
     _poolStormOfSouls,
     _poolStormSpirit,
     _poolStrengthOfThePack,
