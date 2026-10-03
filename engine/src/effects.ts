@@ -92,7 +92,12 @@ export type PtDuration =
   | "end-of-turn"
   | "permanent"
   | "until-your-next-turn"
-  | { readonly whileCounter: string };
+  | { readonly whileCounter: string }
+  /** "For as long as [this] remains on the battlefield" — the effect's own
+   * source, in the stint the resolving ability refers to (Opportunistic
+   * Dragon): it ends as that leaves, and does nothing if it already has
+   * (rule 611.2b). */
+  | "while-source";
 
 /**
  * A "spend this mana only to …" clause on a mana ability (rule 106.6b).
@@ -1658,6 +1663,11 @@ export type EffectSpec =
       readonly target: EffectTargetRef;
       readonly untilEndOfTurn: boolean;
       readonly who?: EffectPlayerRef;
+      /** "**For as long as this creature remains on the battlefield**, gain
+       * control of that permanent" (Opportunistic Dragon): the control
+       * effect ends as the effect's source leaves — nothing at all if it
+       * already has (rule 611.2b). Not with `untilEndOfTurn`. */
+      readonly whileSource?: boolean;
     }
   | {
       /** Every battlefield permanent matching `filter` (read from the
@@ -2340,6 +2350,10 @@ export type EffectSpec =
       readonly target?: EffectTargetRef;
       readonly filter?: CardFilter;
       readonly restrictions: readonly CombatRestriction[];
+      /** How long a `target`'s restrictions last — this turn when omitted;
+       * `"while-source"` is Opportunistic Dragon's "for as long as this
+       * creature remains on the battlefield, … it can't attack or block". */
+      readonly duration?: PtDuration;
     }
   | {
       /**
@@ -4273,7 +4287,7 @@ export interface EffectApi {
   counterSpell(target: TargetRef, into?: "hand" | "exile"): void;
   /** `player` gains control of `target` — see the `"gain-control"`
    * {@link EffectSpec}. */
-  gainControl(target: TargetRef, untilEndOfTurn: boolean, player: PlayerId): void;
+  gainControl(target: TargetRef, untilEndOfTurn: boolean, player: PlayerId, whileSource?: boolean): void;
   /** See the `"gain-control-all"` {@link EffectSpec}: `who` a player, or
    * each permanent's own owner; `controlledBy` keeps only what that player
    * controls. */
@@ -4418,6 +4432,8 @@ export interface EffectApi {
     target: TargetRef | undefined,
     filter: CardFilter | undefined,
     restrictions: readonly CombatRestriction[],
+    /** A `target`'s: this turn when omitted. */
+    duration?: PtDuration,
   ): void;
   /** See the `"attack-despite-defender"` {@link EffectSpec}. */
   attackDespiteDefender(target: TargetRef | undefined, filter: CardFilter | undefined): void;
@@ -6056,7 +6072,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const target = resolveEffectTarget(spec.target, ctx);
       if (target === undefined || illegalSlot(spec.target, ctx)) return;
       const player = effectPlayer(spec.who ?? "you", ctx);
-      if (player !== undefined) ctx.gainControl(target, spec.untilEndOfTurn, player);
+      if (player !== undefined) ctx.gainControl(target, spec.untilEndOfTurn, player, spec.whileSource === true);
       return;
     }
     case "gain-control-all": {
@@ -6598,7 +6614,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         return;
       }
       const target = spec.target === undefined ? undefined : resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.restrict(target, undefined, spec.restrictions);
+      if (target !== undefined) ctx.restrict(target, undefined, spec.restrictions, spec.duration);
       return;
     }
     case "attack-despite-defender": {

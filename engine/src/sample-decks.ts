@@ -192,7 +192,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
-      sub("Opportunistic Dragon", "Skyship Stalker", "Four-mana red flying Dragon."),
       sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
       sub("Zenith Festival", "Reckless Impulse", "Two-mana sorcery: impulse draw, card advantage."),
     ],

@@ -4000,6 +4000,7 @@ import _poolOpenTheArmory from "./pool/open-the-armory.js";
 import _poolOpenTheGraves from "./pool/open-the-graves.js";
 import _poolOphidianEye from "./pool/ophidian-eye.js";
 import _poolOphiomancer from "./pool/ophiomancer.js";
+import _poolOpportunisticDragon from "./pool/opportunistic-dragon.js";
 import _poolOpportunity from "./pool/opportunity.js";
 import _poolOpt from "./pool/opt.js";
 import _poolOpulentPalace from "./pool/opulent-palace.js";
@@ -10937,6 +10938,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolOpenTheGraves,
   _poolOphidianEye,
   _poolOphiomancer,
+  _poolOpportunisticDragon,
   _poolOpportunity,
   _poolOpt,
   _poolOpulentPalace,

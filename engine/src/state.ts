@@ -52,6 +52,10 @@ export interface ControlEffect {
    * player leaves the game — an effect giving them control ends, but a
    * permanent they control by default is exiled (rule 800.4a). */
   readonly entered?: boolean;
+  /** "For as long as [that permanent] remains on the battlefield"
+   * (Opportunistic Dragon): it ends as that permanent, in that stint,
+   * leaves. */
+  readonly whileSource?: { readonly id: ObjectId; readonly zoneChangeCount: number };
 }
 
 /** An instance of a card (or token) somewhere in the game. */
@@ -910,6 +914,11 @@ export interface PtModifier {
   /** "For as long as it has a [kind] counter on it" (rule 611.2b): it ends
    * as the last one is removed, and a new one doesn't bring it back. */
   whileCounter?: string;
+  /** "For as long as [that permanent] remains on the battlefield"
+   * (Opportunistic Dragon): it ends as that permanent, in that stint,
+   * leaves — once everything leaving with it has left, so what it took away
+   * stays away for that event's look back (rule 603.10a). */
+  whileSource?: { readonly id: ObjectId; readonly zoneChangeCount: number };
   /** It can attack as though it didn't have defender (the
    * `attack-despite-defender` effect). A rule about it, not an ability it
    * has, so a loss of abilities doesn't end it. */
@@ -3190,6 +3199,10 @@ export interface GameState {
     }[];
     permanents: { readonly object: ObjectId; readonly zoneChangeCount: number }[];
   };
+  /** The permanents some effect lasts "for as long as [it] remains on the
+   * battlefield" for (a modifier's or control effect's `whileSource`) — so a
+   * permanent leaving looks for effects to end only when it's one of these. */
+  whileSourceIds?: ObjectId[];
   /** Combat restrictions imposed as a rule for the rest of the turn — "creatures
    * your opponents control can't block this turn" (the `restrict` effect's
    * `filter` form): every permanent matching `filter`, from `you`'s side,

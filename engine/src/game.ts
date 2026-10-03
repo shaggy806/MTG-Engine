@@ -730,16 +730,26 @@ interface CastNowAsk {
 
 /** `duration` as an effect `you` control keeps it: "until your next turn"
  * is yours. */
-function lasting(duration: PtDuration, you: PlayerId): EffectDuration {
+function lasting(
+  duration: PtDuration,
+  you: PlayerId,
+  /** The effect's source as it is now, for `"while-source"`: `null` when it
+   * isn't on the battlefield as the stint the effect refers to. */
+  source: { readonly id: ObjectId; readonly zoneChangeCount: number } | null = null,
+): EffectDuration {
+  if (duration === "while-source") return { whileSource: source };
   return duration === "until-your-next-turn" ? { untilTurnOf: you } : duration;
 }
 
 /** A modifier's duration fields for `duration`. */
 function durationFields(
   duration: EffectDuration,
-): Pick<PtModifier, "untilEndOfTurn" | "untilTurnOf" | "whileCounter"> {
+): Pick<PtModifier, "untilEndOfTurn" | "untilTurnOf" | "whileCounter" | "whileSource"> {
   if (duration === "end-of-turn") return { untilEndOfTurn: true };
   if (duration === "permanent") return { untilEndOfTurn: false };
+  if ("whileSource" in duration) {
+    return duration.whileSource === null ? { untilEndOfTurn: false } : { untilEndOfTurn: false, whileSource: duration.whileSource };
+  }
   return "untilTurnOf" in duration
     ? { untilEndOfTurn: false, untilTurnOf: duration.untilTurnOf }
     : { untilEndOfTurn: false, whileCounter: duration.whileCounter };
@@ -747,9 +757,12 @@ function durationFields(
 
 /** Whether an effect lasting `duration` on `object` begins at all: one
  * "for as long as it has a [kind] counter on it" does nothing if it has none
- * as it would begin (rule 611.2b). */
+ * as it would begin, and one "for as long as [its source] remains on the
+ * battlefield" nothing once that has left (rule 611.2b). */
 function durationBegins(object: GameObject, duration: EffectDuration): boolean {
-  return typeof duration !== "object" || !("whileCounter" in duration) || (object.counters[duration.whileCounter] ?? 0) > 0;
+  if (typeof duration !== "object") return true;
+  if ("whileSource" in duration) return duration.whileSource !== null;
+  return !("whileCounter" in duration) || (object.counters[duration.whileCounter] ?? 0) > 0;
 }
 
 export class Game {
@@ -805,6 +818,9 @@ export class Game {
     /** The event's victims as they were before any of them moved — see
      * {@link snapshotLeaving}. */
     readonly snapshots: Map<ObjectId, LastKnownInfo>;
+    /** Sources of "for as long as" effects that left in it, ended once it's
+     * done (`endWhileSourceEffects`). */
+    readonly endsWhileSource: ObjectId[];
   } | null = null;
 
   /** The permanents that have entered the battlefield so far in the one
@@ -14574,6 +14590,7 @@ export class Game {
       }),
       deferred: [] as ObjectId[],
       snapshots: new Map<ObjectId, LastKnownInfo>(),
+      endsWhileSource: [] as ObjectId[],
     };
     this.leaveBatch = batch;
     try {
@@ -14582,6 +14599,7 @@ export class Game {
     } finally {
       this.leaveBatch = null;
     }
+    this.endWhileSourceEffects(batch.endsWhileSource);
     if (batch.deferred.length === 0 || batch.left.length + batch.deferred.length < 2) return;
     // The other deferred commanders too: whichever of them is answered
     // later still left with the ones answered first (the seed drops any
@@ -16027,6 +16045,20 @@ export class Game {
     };
     const departedSource = (): LastKnownInfo | undefined =>
       refs.source === undefined ? undefined : this.lastKnownOfStint(source, refs.source);
+    // "For as long as [this] remains on the battlefield": the source in the
+    // stint this refers to, or nothing if it has left (rule 611.2b).
+    const lastingHere = (duration: PtDuration): EffectDuration => {
+      let here: { readonly id: ObjectId; readonly zoneChangeCount: number } | null = null;
+      if (duration === "while-source") {
+        const object = this.state.objects[source];
+        const stint = object?.zoneChangeCount ?? 0;
+        if (object?.zone === "battlefield" && (refs.source === undefined || refs.source === stint)) {
+          here = { id: source, zoneChangeCount: stint };
+          this.noteWhileSource(source);
+        }
+      }
+      return lasting(duration, controller, here);
+    };
     const triggerLastKnown = (): LastKnownInfo | undefined =>
       triggerObject === undefined
         ? undefined
@@ -16988,8 +17020,17 @@ export class Game {
       },
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
-      gainControl: (target, untilEndOfTurn, player) =>
-        this.gainControlByEffect(player, target, untilEndOfTurn),
+      gainControl: (target, untilEndOfTurn, player, whileSource) => {
+        if (whileSource !== true) {
+          this.gainControlByEffect(player, target, untilEndOfTurn);
+          return;
+        }
+        // "For as long as this creature remains on the battlefield": nothing
+        // if it already hasn't (rule 611.2b).
+        const kept = lastingHere("while-source");
+        if (typeof kept !== "object" || !("whileSource" in kept) || kept.whileSource === null) return;
+        this.gainControlByEffect(player, target, false, false, { whileSource: kept.whileSource });
+      },
       gainControlAll: (filter, untilEndOfTurn, who, exceptSource, controlledBy) =>
         this.gainControlAllByEffect(
           controller,
@@ -17002,7 +17043,7 @@ export class Game {
       rotateControl: (filter, direction, exceptSource) =>
         this.rotateControlByEffect(controller, filter, direction, exceptSource ? source : undefined),
       grantCantBeSacrificed: (target, duration) =>
-        this.grantCantBeSacrificed(target, lasting(duration, controller)),
+        this.grantCantBeSacrificed(target, lastingHere(duration)),
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count, withCounters) =>
         this.exileFromLibraryByEffect(target, count, controller, withCounters),
@@ -17013,14 +17054,14 @@ export class Game {
       discardCards: (target, amount, random, unlessOne) =>
         this.discardByEffect(target, amount, random === true, undefined, unlessOne),
       modifyPt: (target, power, toughness, duration) =>
-        this.modifyPt(target, power, toughness, lasting(duration, controller)),
+        this.modifyPt(target, power, toughness, lastingHere(duration)),
       modifyPtAll: (filter, power, toughness, duration, exceptSource, scopeTo) =>
         this.modifyPtAll(
           scopeTo ?? controller,
           filter,
           power,
           toughness,
-          lasting(duration, controller),
+          lastingHere(duration),
           exceptSource === true ? source : undefined,
         ),
       grantKeywordAll: (filter, keyword, duration, exceptSource) =>
@@ -17028,10 +17069,10 @@ export class Game {
           controller,
           filter,
           keyword,
-          lasting(duration, controller),
+          lastingHere(duration),
           exceptSource === true ? source : undefined,
         ),
-      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, lasting(duration, controller)),
+      doublePtAll: (filter, duration) => this.doublePtAll(controller, filter, lastingHere(duration)),
       doubleCountersAll: (filter, counterKind) =>
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount, by) =>
@@ -17219,9 +17260,9 @@ export class Game {
       choosePermanents: (filter, min, max, then, prompt) =>
         this.beginChoosePermanents(source, controller, x, filter, min, max, then, prompt),
       grantKeyword: (target, keyword, duration) =>
-        this.grantKeyword(target, keyword, lasting(duration, controller)),
-      restrict: (target, filter, restrictions) =>
-        this.restrict(controller, target, filter, restrictions),
+        this.grantKeyword(target, keyword, lastingHere(duration)),
+      restrict: (target, filter, restrictions, duration) =>
+        this.restrict(controller, target, filter, restrictions, lastingHere(duration ?? "end-of-turn")),
       attackDespiteDefender: (target, filter) => {
         if (filter !== undefined) {
           (this.state.turnDefenderAttacks ??= []).push({ filter, you: controller });
@@ -17250,10 +17291,10 @@ export class Game {
         return won;
       },
       grantTriggered: (target, ability, duration) =>
-        this.grantTriggered(target, ability, lasting(duration, controller)),
+        this.grantTriggered(target, ability, lastingHere(duration)),
       grantTriggeredAll: (filter, ability, duration) => {
         const timestamp = this.freshTimestamp();
-        const kept = lasting(duration, controller);
+        const kept = lastingHere(duration);
         for (const id of this.battlefieldMatching(controller, filter)) {
           const object = this.state.objects[id];
           if (object === undefined || !durationBegins(object, kept)) continue;
@@ -17271,7 +17312,7 @@ export class Game {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
-        const kept = lasting(duration, controller);
+        const kept = lastingHere(duration);
         if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, kept)) return;
         object.modifiers.push({
           timestamp: this.freshTimestamp(),
@@ -17285,7 +17326,7 @@ export class Game {
       grantActivatedAll: (filter, ability, duration) => {
         // One effect, one timestamp (rule 613.7b), however many it reaches.
         const timestamp = this.freshTimestamp();
-        const kept = lasting(duration, controller);
+        const kept = lastingHere(duration);
         for (const id of this.battlefieldMatching(controller, filter)) {
           const object = this.state.objects[id];
           if (object === undefined || !durationBegins(object, kept)) continue;
@@ -17303,7 +17344,7 @@ export class Game {
         if (target.kind !== "object") return;
         const id = this.splitOneFromStack(target.object);
         const object = this.state.objects[id];
-        const kept = lasting(opts.duration, controller);
+        const kept = lastingHere(opts.duration);
         if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, kept)) return;
         object.modifiers.push({
           // What it has after the loss is granted by the same effect, so it
@@ -17568,15 +17609,15 @@ export class Game {
           }
         }
       },
-      animate: (target, opts) => this.animate(target, { ...opts, duration: lasting(opts.duration, controller) }),
+      animate: (target, opts) => this.animate(target, { ...opts, duration: lastingHere(opts.duration) }),
       addTypes: (target, types, subtypes, duration) =>
-        this.addTypes(target, types, subtypes, lasting(duration, controller)),
+        this.addTypes(target, types, subtypes, lastingHere(duration)),
       animateAll: (filter, opts) => {
         // Every match is fixed before the first one changes (a Treasure made
         // a creature mustn't change what the filter matches mid-loop), and a
         // token stack is animated whole, like any mass effect's.
         const timestamp = this.freshTimestamp();
-        const kept = { ...opts, duration: lasting(opts.duration, controller) };
+        const kept = { ...opts, duration: lastingHere(opts.duration) };
         for (const id of this.battlefieldMatching(controller, filter)) {
           this.animate({ kind: "object", object: id }, kept, false, timestamp);
         }
@@ -20418,6 +20459,7 @@ export class Game {
     target: TargetRef | undefined,
     filter: CardFilter | undefined,
     restrictions: readonly CombatRestriction[],
+    duration: EffectDuration = "end-of-turn",
   ): void {
     if (restrictions.length === 0) return;
     if (filter !== undefined) {
@@ -20428,15 +20470,21 @@ export class Game {
     if (target?.kind !== "object") return;
     const id = this.splitOneFromStack(target.object);
     const object = this.state.objects[id];
-    if (object === undefined || object.zone !== "battlefield") return;
+    if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, duration)) return;
     object.modifiers.push({
       power: 0,
       toughness: 0,
       keywords: [],
       restrictions: [...restrictions],
-      untilEndOfTurn: true,
+      ...durationFields(duration),
     });
-    this.emit({ type: "restrictions-imposed", object: id, player: controller, restrictions: [...restrictions] });
+    this.emit({
+      type: "restrictions-imposed",
+      object: id,
+      player: controller,
+      restrictions: [...restrictions],
+      ...(duration === "end-of-turn" ? {} : { duration }),
+    });
   }
 
   /**
@@ -22889,7 +22937,12 @@ export class Game {
     /** "Put it onto the battlefield under your control" — see
      * `ControlEffect.entered`. */
     entered = false,
-    opts: { readonly split?: boolean; readonly timestamp?: number } = {},
+    opts: {
+      readonly split?: boolean;
+      readonly timestamp?: number;
+      /** "For as long as [that permanent] remains on the battlefield". */
+      readonly whileSource?: { readonly id: ObjectId; readonly zoneChangeCount: number };
+    } = {},
   ): void {
     if (target.kind !== "object") return;
     if (this.state.players[player]?.hasLost !== false) return;
@@ -22901,11 +22954,22 @@ export class Game {
       this.state.timestampSeq += 1;
       timestamp = this.state.timestampSeq;
     }
+    const whileSource = opts.whileSource;
     const effect: ControlEffect = {
       controller: player,
       timestamp,
       untilEndOfTurn,
       ...(entered ? { entered: true } : {}),
+      ...(whileSource !== undefined ? { whileSource } : {}),
+    };
+    // What ends no later than this one, for the same player, is dropped:
+    // anything when this one lasts for good; another until end of turn when
+    // this is one; another for as long as the same permanent remains. One
+    // that might outlast it stays, to apply again once this ends.
+    const endsNoLater = (e: ControlEffect): boolean => {
+      if (!untilEndOfTurn && whileSource === undefined) return true;
+      if (untilEndOfTurn) return e.untilEndOfTurn;
+      return e.whileSource !== undefined && e.whileSource.id === whileSource!.id;
     };
     // An older effect applies again only once every newer one has ended. One
     // giving this same player control ends no later than this one — a lasting
@@ -22920,7 +22984,7 @@ export class Game {
     // control", rule 110.2) isn't an effect that ends at all.
     object.controlEffects = [
       ...(object.controlEffects ?? []).filter(
-        (e) => e.entered === true || e.controller !== player || (!e.untilEndOfTurn && untilEndOfTurn),
+        (e) => e.entered === true || e.controller !== player || !endsNoLater(e),
       ),
       effect,
     ];
@@ -26178,6 +26242,12 @@ export class Game {
     ) {
       this.leaveBatch?.left.push(id);
       this.emit({ type: "permanent-left-battlefield", object: id, toZone: to });
+      // "For as long as [this] remains on the battlefield" ends — once what
+      // leaves with it has left, in a simultaneous event.
+      if (this.state.whileSourceIds?.includes(id) === true) {
+        if (this.leaveBatch !== null) this.leaveBatch.endsWhileSource.push(id);
+        else this.endWhileSourceEffects([id]);
+      }
     }
     if (leftGraveyard !== undefined) this.noteGraveyardDeparture(id, leftGraveyard);
     // A card put into a graveyard (tokens aren't cards — rule 111.1).
@@ -26403,6 +26473,45 @@ export class Game {
       return this.state.zones.perPlayer[owner][zone];
     }
     return this.state.zones.shared[zone];
+  }
+
+  /** Remember that some effect lasts for as long as `id` remains on the
+   * battlefield, so its leaving ends it (`endWhileSourceEffects`). */
+  private noteWhileSource(id: ObjectId): void {
+    const ids = (this.state.whileSourceIds ??= []);
+    if (!ids.includes(id)) ids.push(id);
+  }
+
+  /** `ids` have left the battlefield: end every modifier and control effect
+   * that lasted "for as long as" one of them remained (rule 611.2b). Called
+   * once everything leaving with them has left, so the event's look back
+   * (rule 603.10a) still sees what the effects took away. */
+  private endWhileSourceEffects(ids: readonly ObjectId[]): void {
+    const tracked = this.state.whileSourceIds;
+    if (tracked === undefined || ids.length === 0) return;
+    const ending = new Set(ids.filter((id) => tracked.includes(id) && this.state.objects[id]?.zone !== "battlefield"));
+    if (ending.size === 0) return;
+    this.state.whileSourceIds = tracked.filter((id) => !ending.has(id));
+    if (this.state.whileSourceIds.length === 0) delete this.state.whileSourceIds;
+    const expired: ObjectId[] = [];
+    let controlEnded = false;
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.modifiers.some((m) => m.whileSource !== undefined && ending.has(m.whileSource.id))) {
+        object.modifiers = object.modifiers.filter((m) => m.whileSource === undefined || !ending.has(m.whileSource.id));
+        expired.push(id);
+      }
+      if (object.controlEffects?.some((e) => e.whileSource !== undefined && ending.has(e.whileSource.id))) {
+        const left = object.controlEffects.filter((e) => e.whileSource === undefined || !ending.has(e.whileSource.id));
+        if (left.length > 0) object.controlEffects = left;
+        else delete object.controlEffects;
+        controlEnded = true;
+      }
+    }
+    if (expired.length === 0 && !controlEnded) return;
+    invalidateComputedCache();
+    if (expired.length > 0) this.emit({ type: "pt-modifier-expired", objects: expired });
+    if (controlEnded) this.recomputeControl();
   }
 
   /** Drop `id`'s modifiers that lasted "for as long as it has a [kind]

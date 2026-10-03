@@ -1153,6 +1153,62 @@ describe("Steward of the Harvest", () => {
   });
 });
 
+describe("Opportunistic Dragon (for as long as it remains on the battlefield)", () => {
+  const enter = (game: Game, target: ObjectId): ObjectId => {
+    const dragon = game.debugSpawn("Opportunistic Dragon", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || quiet(s));
+    if (game.state.awaiting?.kind === "choose-targets") {
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(target)] });
+    }
+    return dragon;
+  };
+
+  it("takes a Human or artifact, without its abilities and unable to attack or block, until it leaves", () => {
+    const game = setUp();
+    // Syr Konrad (a Human) pings each opponent whenever another creature
+    // dies, whoever controls him — so only his missing ability keeps him
+    // from seeing the Dragon's death below.
+    const konrad = ready(game, "Syr Konrad, the Grim", B);
+    const dragon = enter(game, konrad);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[konrad].controller).toBe(A);
+    expect(game.state.objects[konrad].modifiers.some((m) => m.loseAbilities === true)).toBe(true);
+    expect(restrictionsOf(game.state, game.registry, konrad).has("cant-attack")).toBe(true);
+    // Still so next turn: it lasts as long as the Dragon does.
+    game.advanceUntil((s) => s.turn.number === 3 && s.priority.holder === A && s.turn.step === "precombat-main");
+    expect(game.state.objects[konrad].controller).toBe(A);
+    expect(restrictionsOf(game.state, game.registry, konrad).has("cant-block")).toBe(true);
+    // The Dragon dies: it all ends — and Konrad, ability-less as the Dragon
+    // died, doesn't see that death (rule 603.10a).
+    const lives = [game.state.players[A].life, game.state.players[B].life];
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(dragon)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[konrad].controller).toBe(B);
+    expect(game.state.objects[konrad].modifiers.some((m) => m.loseAbilities === true)).toBe(false);
+    expect(restrictionsOf(game.state, game.registry, konrad).has("cant-attack")).toBe(false);
+    expect([game.state.players[A].life, game.state.players[B].life]).toEqual(lives);
+    // His ability is back: the next death pings.
+    const bears = ready(game, "Grizzly Bears");
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(bears)]);
+    game.advanceUntil(quiet);
+    expect(game.state.players[A].life).toBe(lives[0] - 1);
+  });
+
+  it("does nothing if it has left before the ability resolves", () => {
+    const game = setUp();
+    const ring = ready(game, "Sol Ring", B);
+    const dragon = game.debugSpawn("Opportunistic Dragon", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || s.zones.shared.stack.length > 0);
+    if (game.state.awaiting?.kind === "choose-targets") {
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(ring)] });
+    }
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(dragon)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[ring].controller).toBe(B);
+    expect(game.state.whileSourceIds ?? []).toEqual([]);
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

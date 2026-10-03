@@ -129,6 +129,7 @@ import _poolNorwoodArchers from "../pool/norwood-archers.js";
 import _poolNyxbornSeaguard from "../pool/nyxborn-seaguard.js";
 import _poolOldGrowthGrove from "../pool/old-growth-grove.js";
 import _poolOmashuCity from "../pool/omashu-city.js";
+import _poolOpportunisticDragon from "../pool/opportunistic-dragon.js";
 import _poolOrnithopter from "../pool/ornithopter.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
 import _poolPhyrexianAltar from "../pool/phyrexian-altar.js";
@@ -349,6 +350,7 @@ const shard: CardShard = {
     _poolNyxbornSeaguard,
     _poolOldGrowthGrove,
     _poolOmashuCity,
+    _poolOpportunisticDragon,
     _poolOrnithopter,
     _poolOscorpResearchTeam,
     _poolPhyrexianAltar,

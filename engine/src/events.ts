@@ -22,7 +22,11 @@ export type EffectDuration =
   | "end-of-turn"
   | "permanent"
   | { readonly untilTurnOf: PlayerId }
-  | { readonly whileCounter: string };
+  | { readonly whileCounter: string }
+  /** For as long as that permanent — the effect's source, in that stint —
+   * remains on the battlefield; `null` when it had already left as the
+   * effect would begin, so the effect doesn't (rule 611.2b). */
+  | { readonly whileSource: { readonly id: ObjectId; readonly zoneChangeCount: number } | null };
 
 interface Base {
   /** Monotonic sequence number, assigned when the event is appended. */
@@ -758,13 +762,15 @@ export type GameEvent =
       readonly abilities: boolean;
     })
   | (Base & {
-      /** Combat restrictions until end of turn (the `restrict` effect): on
-       * `object`, or — with no object — as a rule over every permanent
-       * matching the effect's filter. */
+      /** Combat restrictions (the `restrict` effect): on `object`, or —
+       * with no object — as a rule over every permanent matching the
+       * effect's filter, until end of turn. */
       readonly type: "restrictions-imposed";
       readonly object?: ObjectId;
       readonly player: PlayerId;
       readonly restrictions: readonly CombatRestriction[];
+      /** How long `object`'s last; absent means until end of turn. */
+      readonly duration?: EffectDuration;
     })
   | (Base & {
       /** A modal spell/ability's controller (or a "you may" clause) chose
