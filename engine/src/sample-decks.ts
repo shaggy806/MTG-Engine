@@ -195,7 +195,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Opportunistic Dragon", "Skyship Stalker", "Four-mana red flying Dragon."),
       sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
-      sub("Reflections of Littjara", "Crucible of Fire", "Enchantment that rewards a deck of Dragons."),
       sub("Sarkhan, Soul Aflame", "Goreclaw, Terror of Qal Sisma", "Makes the deck's big creatures cheaper."),
       sub("Scourge of the Throne", "Savage Ventmaw", "Six-mana red-green flying Dragon that rewards attacking."),
       sub("Selvala's Stampede", "Kodama of the East Tree", "Six-mana sorcery: puts creatures onto the battlefield, ramp."),

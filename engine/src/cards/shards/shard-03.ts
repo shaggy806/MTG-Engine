@@ -71,6 +71,7 @@ import _poolInfiniteGuidelineStation from "../pool/infinite-guideline-station.js
 import _poolInsomniaCrownCity from "../pool/insomnia-crown-city.js";
 import _poolIrrigationDitch from "../pool/irrigation-ditch.js";
 import _poolIsshinTwoHeavensAsOne from "../pool/isshin-two-heavens-as-one.js";
+import _poolIvyGleefulSpellthief from "../pool/ivy-gleeful-spellthief.js";
 import _poolJandorsSaddlebags from "../pool/jandors-saddlebags.js";
 import _poolKamiOfTwistedReflection from "../pool/kami-of-twisted-reflection.js";
 import _poolKoalaSheep from "../pool/koala-sheep.js";
@@ -259,6 +260,7 @@ const shard: CardShard = {
     _poolInsomniaCrownCity,
     _poolIrrigationDitch,
     _poolIsshinTwoHeavensAsOne,
+    _poolIvyGleefulSpellthief,
     _poolJandorsSaddlebags,
     _poolKamiOfTwistedReflection,
     _poolKoalaSheep,

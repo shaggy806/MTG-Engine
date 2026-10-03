@@ -10702,7 +10702,12 @@ export class Game {
         this.finishEntry(next.enter);
         this.holdResolutionOpen(parked);
       }
-      if (next?.leaveStack !== undefined) this.leaveStackAfterResolving(next.leaveStack);
+      if (next?.leaveStack !== undefined) {
+        // Leaving may itself ask something (Feather's rule 616.1 choice).
+        const parked = this.state.suspendedResolutions.length;
+        this.leaveStackAfterResolving(next.leaveStack);
+        this.holdResolutionOpen(parked);
+      }
       this.endResolutionIfDone();
       return;
     }
@@ -10900,13 +10905,27 @@ export class Game {
    * kicked ones (Tear Asunder), a modal spell's chosen modes', in order
    * (rule 700.2). */
   private spellTargetSpecs(object: GameObject): readonly TargetSpec[] {
-    const def = this.registry.get(printedCardName(object));
-    const chosenModes = def.castModal !== null ? object.chosenModes : undefined;
+    return this.castTargetSpecs(printedCardName(object), object);
+  }
+
+  /** The target specs a spell named `cardName` was cast with, given the
+   * choices made for it — a live spell's, or a {@link SpellSnapshot}'s. */
+  private castTargetSpecs(
+    cardName: string,
+    cast: {
+      readonly chosenModes?: readonly number[];
+      readonly kicked?: boolean;
+      readonly overloaded?: boolean;
+      readonly xValue?: number | null;
+    },
+  ): readonly TargetSpec[] {
+    const def = this.registry.get(cardName);
+    const chosenModes = def.castModal !== null ? cast.chosenModes : undefined;
     return chosenModes !== undefined
       ? chosenModes.flatMap((mi) => def.castModal?.modes[mi]?.targets ?? [])
       : specsAtX(
-          this.effectiveTargetSpecs(def, undefined, object.kicked === true, object.overloaded === true),
-          object.xValue ?? 0,
+          this.effectiveTargetSpecs(def, undefined, cast.kicked === true, cast.overloaded === true),
+          cast.xValue ?? 0,
         );
   }
 
@@ -11069,13 +11088,49 @@ export class Game {
       return;
     }
     const def = this.registry.get(printedCardName(object));
+    // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
+    // the card with a "you may cast the creature later" permission, instead
+    // of going to the graveyard.
+    const adventure = this.frontFaceDef(id).adventure && (object.face ?? 0) === 1;
+    // Feather, the Redeemed's "exile that card instead of putting it into
+    // your graveyard as it resolves" (rule 614.1a): only for a card its owner
+    // would put into their own graveyard, and not one whose own text sends
+    // it elsewhere (the rulings). Another replacement that would exile it
+    // too leaves its owner the choice of which applies first (rule 616.1) —
+    // asked here, the spell waiting on the stack for the answer.
+    const mark = object.exileAsItResolves;
     if (
-      // Adventure (rule 715.3) — the adventure half (face 1) resolving exiles
-      // the card with a "you may cast the creature later" permission, instead
-      // of going to the graveyard.
-      this.frontFaceDef(id).adventure &&
-      (object.face ?? 0) === 1
+      mark !== undefined &&
+      object.owner === mark.player &&
+      (adventure || (!def.shuffleIntoLibraryOnResolve && !def.exileOnResolve))
     ) {
+      const competing =
+        adventure ||
+        object.castVia === "flashback" ||
+        object.castVia === "disturb" ||
+        object.exileIfWouldGoToGraveyard === true ||
+        this.graveyardIsReplacedWithExile(id, false);
+      if (!competing) {
+        object.exileAsItResolves = undefined;
+        this.exileAsItResolved(id, mark);
+        return;
+      }
+      const name = this.state.objects[mark.source] ? printedCardName(this.state.objects[mark.source]) : "Feather";
+      this.beginModesChoice(id, mark.player, 0, 1, 1, [
+        {
+          text: `Apply ${name}'s replacement first: exile it${
+            mark.returnAtNextEndStep === true ? " and return it to your hand at the beginning of the next end step" : ""
+          }`,
+          effect: { kind: "exile-spell-as-it-resolves", applyFirst: { spell: id, feather: true } },
+        },
+        {
+          text: adventure ? "Exile it on an adventure instead" : "Apply the other replacement first: exile it",
+          effect: { kind: "exile-spell-as-it-resolves", applyFirst: { spell: id, feather: false } },
+        },
+      ]);
+      return;
+    }
+    if (adventure) {
       this.forgetSpellTargets(object);
       this.moveObject(id, "exile");
       object.onAdventure = true;
@@ -11092,6 +11147,44 @@ export class Game {
       }
       object.targets = null;
     }
+  }
+
+  /**
+   * Feather, the Redeemed's replacement applied to the resolved spell `id`:
+   * exiled instead of put into its owner's graveyard, and — "if you do" —
+   * returned to their hand at the beginning of the next end step, by a
+   * delayed triggered ability (rule 603.7a) that finds nothing once the card
+   * has left exile (400.7). It works even if Feather has left (the ruling).
+   */
+  private exileAsItResolved(id: ObjectId, mark: NonNullable<GameObject["exileAsItResolves"]>): void {
+    const object = this.state.objects[id];
+    const before = object.zoneChangeCount ?? 0;
+    this.moveObject(id, "exile");
+    object.targets = null;
+    if (object.zone !== "exile" || (object.zoneChangeCount ?? 0) === before) return;
+    this.emit({ type: "graveyard-replaced-with-exile", object: id });
+    if (mark.returnAtNextEndStep !== true) return;
+    this.createDelayedTrigger(
+      mark.source,
+      mark.player,
+      "next-end-step",
+      { kind: "return-to-hand", target: 0, from: "exile" },
+      "Return it to your hand at the beginning of the next end step.",
+      [{ kind: "object", object: id }],
+      ["exile"],
+    );
+  }
+
+  /** The answer to the rule 616.1 choice `leaveStackAfterResolving` raised:
+   * Feather's replacement first (`feather`), or the other — after which
+   * Feather's no longer applies, as the card isn't going to the graveyard. */
+  private finishExiledAsItResolves(id: ObjectId, feather: boolean): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "stack") return;
+    const mark = object.exileAsItResolves;
+    object.exileAsItResolves = undefined;
+    if (feather && mark !== undefined) this.exileAsItResolved(id, mark);
+    else this.leaveStackAfterResolving(id);
   }
 
   /**
@@ -11229,6 +11322,7 @@ export class Game {
           object.triggerObject,
           // The X it snapshotted as it triggered (`triggerCastX`), or 0.
           object.xValue ?? 0,
+          object.lastKnownRefs?.triggerSpell,
         ) ||
         !this.attackConditionsStillHold(ability, object)
       ) {
@@ -11586,9 +11680,20 @@ export class Game {
             undefined,
             lastSeen,
             // The entering permanent, for "if you control five other
-            // Mountains" — what `triggerObject` below also names.
-            event.type === "permanent-entered-battlefield" ? event.object : undefined,
+            // Mountains" — what `triggerObject` below also names — or the
+            // spell just cast, for "if it's the first instant spell …".
+            this.conditionTriggerObject(ability.trigger, event),
             // Ravenous's "if X is 5 or more": the X it was cast with, or 0.
+            this.triggerCastX(ability.trigger, event, object) ?? 0,
+          ) &&
+          // "Whenever … while …" — part of the trigger condition, asked only
+          // now (rule 603.1), never again as it resolves.
+          this.interveningIfMet(
+            ability.whileCondition,
+            object,
+            undefined,
+            lastSeen,
+            this.conditionTriggerObject(ability.trigger, event),
             this.triggerCastX(ability.trigger, event, object) ?? 0,
           ) &&
           // Elesh Norn, Mother of Machines / Torpor Orb: an entering
@@ -12750,6 +12855,9 @@ export class Game {
     triggerObject?: ObjectId,
     /** The X it was put on the stack with — see `ConditionOptions.x`. */
     x?: number,
+    /** Which stint on the stack the spell that fired it was — see
+     * `ConditionOptions.triggerSpellStint`. */
+    triggerSpellStint?: number,
   ): boolean {
     if (condition === undefined) return true;
     return staticConditionMet(this.state, this.registry, source, condition, {
@@ -12758,7 +12866,18 @@ export class Game {
       ...(sourceLastKnown !== undefined ? { sourceLastKnown } : {}),
       ...(triggerObject !== undefined ? { triggerObject } : {}),
       ...(x !== undefined ? { x } : {}),
+      ...(triggerSpellStint !== undefined ? { triggerSpellStint } : {}),
     });
+  }
+
+  /** The object an intervening-if asks about as the ability triggers (see
+   * `ConditionOptions.triggerObject`): the permanent entering, or the spell
+   * whose casting fired a cast trigger. What it is on resolution is the
+   * ability's own `triggerObject`, the same object. */
+  private conditionTriggerObject(trigger: TriggerSpec, event: GameEvent): ObjectId | undefined {
+    if (event.type === "permanent-entered-battlefield") return event.object;
+    if (trigger.on === "cast-spell" && event.type === "spell-cast") return event.object;
+    return undefined;
   }
 
   /**
@@ -14094,8 +14213,21 @@ export class Game {
         this.moveObject(id, "graveyard");
         this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
       },
-      returnToHand: (target, from) =>
-        this.returnToHandByEffect(target, true, from ?? "battlefield", source),
+      returnToHand: (target, from) => {
+        // "Return that spell to its owner's hand" (Krark, the Thumbless): the
+        // spell whose casting fired this, only while it's still that spell
+        // on the stack — not the same card cast again since (rule 400.7).
+        if (
+          from === "stack" &&
+          target.kind === "object" &&
+          target.object === triggerObject &&
+          refs.triggerSpell !== undefined &&
+          (this.state.objects[target.object]?.zoneChangeCount ?? 0) !== refs.triggerSpell
+        ) {
+          return;
+        }
+        this.returnToHandByEffect(target, true, from ?? "battlefield", source);
+      },
       exileObject: (target, untilSourceLeaves, withCounters) => {
         if (untilSourceLeaves === true) {
           // Rule 610.3c: exiled "until" something that has already happened
@@ -14642,9 +14774,42 @@ export class Game {
       },
       shuffleLibrary: () => this.shuffleLibraryOf(controller),
       division: opts.division ?? [],
-      copyTriggerSpell: (spell, newTargets) => {
-        if (triggerObject !== undefined) this.copySpellFrom(spell, triggerObject, controller, newTargets);
+      copyTriggerSpell: (spell, copyOpts) => {
+        const original = copyOpts.original ?? triggerObject;
+        if (original === undefined) return false;
+        let copy = spell;
+        if (copyOpts.retargetTo !== undefined) {
+          const aimed = this.retargetedSnapshot(spell, copyOpts.retargetTo, controller, original);
+          if (aimed === null) return false;
+          copy = aimed;
+        }
+        this.copySpellFrom(copy, original, controller, copyOpts.newTargets);
+        return true;
       },
+      copyTriggerSpellForEach: (spell, each) => {
+        if (triggerObject !== undefined) this.copySpellForEachItCouldTarget(spell, triggerObject, controller, source, each);
+      },
+      exileTriggerSpellAsItResolves: (returnAtNextEndStep) => {
+        // "That card" — the spell that fired this, still that spell on the
+        // stack (rule 400.7).
+        if (triggerObject === undefined || refs.triggerSpell === undefined) return;
+        const spell = this.state.objects[triggerObject];
+        if (
+          spell === undefined ||
+          spell.zone !== "stack" ||
+          spell.kind !== "card" ||
+          spell.isCopy ||
+          (spell.zoneChangeCount ?? 0) !== refs.triggerSpell
+        ) {
+          return;
+        }
+        spell.exileAsItResolves = {
+          player: controller,
+          source,
+          ...(returnAtNextEndStep ? { returnAtNextEndStep: true as const } : {}),
+        };
+      },
+      finishExiledAsItResolves: (spell, feather) => this.finishExiledAsItResolves(spell, feather),
       additionalCombat: (afterThisPhase) => {
         if (afterThisPhase === undefined) this.state.extraCombats += 1;
         else (this.state.combatsAfterThisCombat ??= []).push({ withMain: afterThisPhase.withMain });
@@ -16599,6 +16764,97 @@ export class Game {
     // a Twincast on a Giant Growth triggers Gargos a second time.
     this.announceTargeted(this.state.objects[id].targets ?? [], controller, id, true);
     return id;
+  }
+
+  /**
+   * `spell` with every one of its targets `to` instead (rules 707.10d–e: "the
+   * copy targets Ivy", "each copy targets a different one of those
+   * creatures") — or `null` when `to` isn't a legal target for each of them,
+   * chosen by `controller` for a copy of the spell, in which case no copy is
+   * created. A slot its own rules filled isn't a target (rule 115.1) and
+   * keeps what it had; a spell with no targets has nothing to aim.
+   */
+  private retargetedSnapshot(
+    spell: SpellSnapshot,
+    to: TargetRef,
+    controller: PlayerId,
+    original: ObjectId,
+  ): SpellSnapshot | null {
+    const targets = [...(spell.targets ?? [])];
+    const auto = new Set(spell.autoTargetSlots ?? []);
+    const slots = targets.flatMap((t, i) => (t !== undefined && !auto.has(i) ? [i] : []));
+    if (slots.length === 0) return null;
+    const specs = this.castTargetSpecs(spell.cardName, spell);
+    if (specs.length === 0) return null;
+    const source = this.cardSource(this.registry.get(spell.cardName), original);
+    for (const i of slots) {
+      // An "any number of" group is the last spec, standing for every target
+      // from there on.
+      const spec = specs[Math.min(i, specs.length - 1)];
+      if (!isLegalTarget(this.state, this.registry, spec, to, controller, source)) return null;
+    }
+    const zones = [...(spell.targetZones ?? targets.map(() => null))];
+    const stints = [...(spell.targetStints ?? targets.map(() => null))];
+    const zone = this.zonesOfTargets([to])[0] ?? null;
+    const stint = this.stintsOfTargets([to])[0] ?? null;
+    for (const i of slots) {
+      targets[i] = to;
+      zones[i] = zone;
+      stints[i] = stint;
+    }
+    return { ...spell, targets, targetZones: zones, targetStints: stints };
+  }
+
+  /**
+   * Copy `spell` once for each permanent it could target (rule 707.10d —
+   * Zada, Hedron Grinder): each battlefield permanent matching `each.filter`
+   * from `controller`'s side (less `source`, with `other`) that is a legal
+   * target for every one of its targets, each copy targeting a different one.
+   * A token stack is that many permanents, each split off to be its own
+   * target. With two or more, their controller chooses the order the copies
+   * go on the stack — a `choose-permanents` naming every one, the copy for
+   * the first named put on the stack first (so it resolves last).
+   */
+  private copySpellForEachItCouldTarget(
+    spell: SpellSnapshot,
+    original: ObjectId,
+    controller: PlayerId,
+    source: ObjectId,
+    each: { readonly filter: CardFilter; readonly other?: true },
+  ): void {
+    const aims: ObjectId[] = [];
+    for (const id of this.battlefieldMatching(controller, each.filter)) {
+      if (each.other === true && id === source) continue;
+      if (this.retargetedSnapshot(spell, { kind: "object", object: id }, controller, original) === null) continue;
+      aims.push(id);
+      let more = (this.state.objects[id]?.stackCount ?? 1) - 1;
+      while (more > 0 && aims.length < Game.MAX_EFFECT_INSTANCES) {
+        aims.push(this.splitOneFromStack(id));
+        more -= 1;
+      }
+      if (aims.length >= Game.MAX_EFFECT_INSTANCES) break;
+    }
+    if (aims.length === 0) return;
+    if (aims.length === 1) {
+      const aimed = this.retargetedSnapshot(spell, { kind: "object", object: aims[0] }, controller, original);
+      if (aimed !== null) this.copySpellFrom(aimed, original, controller, false);
+      return;
+    }
+    // Each answer is copied with that permanent as target 0 — the spell
+    // captured here, since the decision is answered outside this ability.
+    this.state.awaiting = {
+      kind: "choose-permanents",
+      player: controller,
+      eligible: aims,
+      min: aims.length,
+      max: aims.length,
+      prompt:
+        `Order the copies of ${spell.cardName}: pick each target in turn — the copy for the first ` +
+        "goes on the stack first, and resolves last",
+      then: { kind: "copy-spell", target: "trigger-spell", retargetTo: 0, spell: { snapshot: spell, original } },
+      source,
+      x: 0,
+    };
   }
 
   /**
@@ -22136,6 +22392,7 @@ export class Game {
     object.graveyardCastUsedThisTurn = undefined;
     object.graveyardCastTypesUsedThisTurn = undefined;
     object.exileIfWouldGoToGraveyard = undefined;
+    object.exileAsItResolves = undefined;
     // Its "exile it if it would leave" replacement was about the permanent
     // that just left (rule 400.7).
     object.exileIfItWouldLeave = undefined;

@@ -47,6 +47,7 @@ import _poolCourtOfGarenbrig from "../pool/court-of-garenbrig.js";
 import _poolCraterize from "../pool/craterize.js";
 import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
+import _poolDawnCharm from "../pool/dawn-charm.js";
 import _poolDazzlingRamparts from "../pool/dazzling-ramparts.js";
 import _poolDeepwoodTantiv from "../pool/deepwood-tantiv.js";
 import _poolDelightedHalfling from "../pool/delighted-halfling.js";
@@ -288,6 +289,7 @@ const shard: CardShard = {
     _poolCraterize,
     _poolCruxOfFate,
     _poolCunningSparkmage,
+    _poolDawnCharm,
     _poolDazzlingRamparts,
     _poolDeepwoodTantiv,
     _poolDelightedHalfling,

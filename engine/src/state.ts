@@ -111,6 +111,16 @@ export interface GameObject {
    * .exileAfterwards`). Consulted by `moveObject` for the move off the
    * stack, and cleared by any move after that. */
   exileIfWouldGoToGraveyard?: boolean;
+  /** This spell is to be exiled instead of put into `player`'s graveyard as
+   * it resolves, and, with `returnAtNextEndStep`, returned to their hand at
+   * the beginning of the next end step — Feather, the Redeemed (`source`),
+   * the `exile-spell-as-it-resolves` effect. Read only as the spell
+   * resolves (`Game.leaveStackAfterResolving`); cleared by any move. */
+  exileAsItResolves?: {
+    readonly player: PlayerId;
+    readonly source: ObjectId;
+    readonly returnAtNextEndStep?: true;
+  };
   /** True once dealt damage by a deathtouch source this turn (rule 704.5h). Cleared with `damageMarked`. */
   markedByDeathtouch: boolean;
   /**

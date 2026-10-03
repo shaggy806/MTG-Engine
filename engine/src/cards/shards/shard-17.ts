@@ -92,6 +92,7 @@ import _poolHornedTurtle from "../pool/horned-turtle.js";
 import _poolHornetNest from "../pool/hornet-nest.js";
 import _poolHushwoodVerge from "../pool/hushwood-verge.js";
 import _poolHydroidKrasis from "../pool/hydroid-krasis.js";
+import _poolImodaneThePyrohammer from "../pool/imodane-the-pyrohammer.js";
 import _poolIndulgentTormentor from "../pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "../pool/infernal-grasp.js";
 import _poolIronTuskElephant from "../pool/iron-tusk-elephant.js";
@@ -310,6 +311,7 @@ const shard: CardShard = {
     _poolHornetNest,
     _poolHushwoodVerge,
     _poolHydroidKrasis,
+    _poolImodaneThePyrohammer,
     _poolIndulgentTormentor,
     _poolInfernalGrasp,
     _poolIronTuskElephant,

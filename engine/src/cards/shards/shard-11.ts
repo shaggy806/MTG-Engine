@@ -142,6 +142,7 @@ import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolOuroboroid from "../pool/ouroboroid.js";
 import _poolParadiseMantle from "../pool/paradise-mantle.js";
+import _poolPearlEarImperialAdvisor from "../pool/pearl-ear-imperial-advisor.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
 import _poolPestInfestation from "../pool/pest-infestation.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
@@ -383,6 +384,7 @@ const shard: CardShard = {
     _poolOrzhovBasilica,
     _poolOuroboroid,
     _poolParadiseMantle,
+    _poolPearlEarImperialAdvisor,
     _poolPelakkaWurm,
     _poolPestInfestation,
     _poolPestilentKathari,

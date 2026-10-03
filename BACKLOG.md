@@ -21,9 +21,13 @@ that one card is the reason the deck exists.
   `zone:visibility-extensions` (+1), `zone:cast-from-library-top` (+2), `keyword:blitz` (+1),
   `keyword:mayhem` (+1), `effect:additional-upkeep-steps` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
-  `effect:copy-spell-extensions` and `decision:choose-permanent` (11 each).
+  `decision:choose-permanent` (11).
   `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
-  Narset; storm asks too). `zone:exile-face-down` (Edward Kenway) was split
+  Narset; storm asks too); `effect:copy-spell-extensions`, `condition:cast-spell-targets` and
+  `replacement:spell-exiled-as-it-resolves` on 2026-10-03 (Zada, Feather, Krark, Ivy, Kalamax,
+  Volo, Stella Lee, Fire Lord Azula, Alania, Imodane). Orvar still needs
+  `decision:choose-permanent` and `trigger:discards-extensions`, Mendicant Core
+  `mechanic:speed`, Ulalek `effect:copy-ability` and colourless hybrid. `zone:exile-face-down` (Edward Kenway) was split
   out of `zone:visibility-extensions` and built; Gonti and Ixhel still need
   `cost:mana-spending-rules`. Live numbers come
   from `cmdrs:gaps`.
@@ -149,8 +153,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   - Forecast (11).
   - Companion (10).
   Exhaust and Boast are read, as the ability flags the engine already has.
-- **Replacement ordering.** There is no `choose-replacement-order` (rule 616.1) and no damage
-  redirection to a third object.
+- **Replacement ordering.** There is no general `choose-replacement-order` (rule 616.1) — only
+  Feather's exile beside another exiling replacement asks — and no damage redirection to a
+  third object.
 - **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
   timestamp order only.
 - **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`), and so is

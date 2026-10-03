@@ -331,6 +331,13 @@ export interface ConditionOptions {
    */
   readonly triggerObject?: ObjectId;
   /**
+   * Which stint on the stack of `triggerObject` — a spell whose casting fired
+   * the ability — it means (`LastKnownRefs.triggerSpell`), for a
+   * `trigger-spell-first` condition asked as it resolves. As it triggers, the
+   * spell is on the stack, and its stint is the one there.
+   */
+  readonly triggerSpellStint?: number;
+  /**
    * The X the triggered ability asking was put on the stack with — a
    * permanent's own enters trigger's (rule 107.3m) or a cast trigger's — for
    * an `x` condition: ravenous's "if X is 5 or more" (rule 702.156a). Passed
@@ -431,6 +438,32 @@ function evalStaticCondition(
         }
       }
       return n >= (condition.atLeast ?? 1) && (condition.atMost === undefined || n <= condition.atMost);
+    }
+    case "trigger-spell-first": {
+      // Its own record — which cast of that card, by its stint on the stack —
+      // and every spell its caster cast before it this turn, each as it was
+      // cast.
+      const id = opts.triggerObject;
+      if (id === undefined) return false;
+      const spell = state.objects[id];
+      const stint =
+        opts.triggerSpellStint ?? (spell?.zone === "stack" ? (spell.zoneChangeCount ?? 0) : undefined);
+      if (stint === undefined) return false;
+      for (const p of state.turnOrder) {
+        const records = state.players[p]?.spellsCastThisTurnAs ?? [];
+        const at = records.findIndex((r) => r.id === id && r.spell.zoneChangeCount === stint);
+        if (at < 0) continue;
+        const matches = (r: (typeof records)[number], filter: CardFilter): boolean =>
+          matchesFilter(state, registry, r.id, filter, { you, snapshot: r.spell });
+        return condition.anyOf.some(
+          ({ filter, otherThanSource }) =>
+            matches(records[at], filter) &&
+            !records
+              .slice(0, at)
+              .some((r) => !(otherThanSource === true && r.id === source.id) && matches(r, filter)),
+        );
+      }
+      return false;
     }
     case "monarch":
       return condition.who === "you"

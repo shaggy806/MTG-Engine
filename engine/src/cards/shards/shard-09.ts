@@ -63,6 +63,7 @@ import _poolFathomFleetFirebrand from "../pool/fathom-fleet-firebrand.js";
 import _poolFeedTheSerpent from "../pool/feed-the-serpent.js";
 import _poolFeralShadow from "../pool/feral-shadow.js";
 import _poolFertileFootsteps from "../pool/fertile-footsteps.js";
+import _poolFireLordAzula from "../pool/fire-lord-azula.js";
 import _poolFireSnake from "../pool/fire-snake.js";
 import _poolFishliverOil from "../pool/fishliver-oil.js";
 import _poolFlatten from "../pool/flatten.js";
@@ -137,6 +138,7 @@ import _poolRainSlickedCopse from "../pool/rain-slicked-copse.js";
 import _poolRallyThePeasants from "../pool/rally-the-peasants.js";
 import _poolRayOfRevelation from "../pool/ray-of-revelation.js";
 import _poolReaperOfTheWilds from "../pool/reaper-of-the-wilds.js";
+import _poolRebuffTheWicked from "../pool/rebuff-the-wicked.js";
 import _poolRecklessFireweaver from "../pool/reckless-fireweaver.js";
 import _poolRestorationGearsmith from "../pool/restoration-gearsmith.js";
 import _poolRidgetopRaptor from "../pool/ridgetop-raptor.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolFeedTheSerpent,
     _poolFeralShadow,
     _poolFertileFootsteps,
+    _poolFireLordAzula,
     _poolFireSnake,
     _poolFishliverOil,
     _poolFlatten,
@@ -345,6 +348,7 @@ const shard: CardShard = {
     _poolRallyThePeasants,
     _poolRayOfRevelation,
     _poolReaperOfTheWilds,
+    _poolRebuffTheWicked,
     _poolRecklessFireweaver,
     _poolRestorationGearsmith,
     _poolRidgetopRaptor,

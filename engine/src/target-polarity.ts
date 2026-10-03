@@ -253,8 +253,13 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   cascade: none,
   // Its `then` sees the card found as target 0, not the enclosing slot 0.
   "reveal-until": (n, v) => v.touch(n.whose, "harm", MINOR),
-  // The copy is yours whoever cast the original.
-  "copy-spell": (n, v) => v.touch(n.target, "take", MAJOR),
+  // The copy is yours whoever cast the original. A copy aimed at a target
+  // slot (Zada's order) aims it at your own permanent.
+  "copy-spell": (n, v) => {
+    v.touch(n.target, "take", MAJOR);
+    if (typeof n.retargetTo === "number") v.touch(n.retargetTo, "help", MAJOR);
+  },
+  "exile-spell-as-it-resolves": none,
   "additional-combat": none,
   "additional-land-drop": none,
   "shuffle-library": none,

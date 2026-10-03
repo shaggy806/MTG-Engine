@@ -141,6 +141,7 @@ import _poolRubyMedallion from "../pool/ruby-medallion.js";
 import _poolSazhsChocobo from "../pool/sazhs-chocobo.js";
 import _poolScarecrowGuide from "../pool/scarecrow-guide.js";
 import _poolSearingFlesh from "../pool/searing-flesh.js";
+import _poolSevinnesReclamation from "../pool/sevinnes-reclamation.js";
 import _poolShalaiAndHallar from "../pool/shalai-and-hallar.js";
 import _poolShamanicRevelation from "../pool/shamanic-revelation.js";
 import _poolSheoldredsEdict from "../pool/sheoldreds-edict.js";
@@ -343,6 +344,7 @@ const shard: CardShard = {
     _poolSazhsChocobo,
     _poolScarecrowGuide,
     _poolSearingFlesh,
+    _poolSevinnesReclamation,
     _poolShalaiAndHallar,
     _poolShamanicRevelation,
     _poolSheoldredsEdict,

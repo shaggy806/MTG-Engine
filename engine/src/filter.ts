@@ -33,6 +33,7 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, manaCostOverride, nameOf, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, ZoneType } from "./state.js";
 import { hasSubtype } from "./subtypes.js";
+import type { TargetRef } from "./target.js";
 import { thisWayEntries } from "./this-way.js";
 
 /**
@@ -400,6 +401,14 @@ export interface CardFilter {
    * `FilterContext.source`; without one, nothing was. */
   readonly putThereBySource?: boolean;
   /**
+   * What a **spell** targets — see {@link SpellTargetsFilter}: Feather, the
+   * Redeemed's "an instant or sorcery spell that targets a creature you
+   * control", Zada, Hedron Grinder's "that targets only Zada", Rebuff the
+   * Wicked's "target spell that targets a permanent you control". Matches
+   * only a spell on the stack; anything else has no targets to ask about.
+   */
+  readonly targets?: SpellTargetsFilter;
+  /**
    * Shares at least one card type with the permanent sacrificed to pay for
    * (or earlier in) the spell or ability applying this filter — "a permanent
    * that shares a card type with it" (Braids, Arisen Nightmare), read from
@@ -443,6 +452,93 @@ export interface CardFilter {
    * legendary, or Saga"), "enchanted or equipped", "black and/or red".
    */
   readonly anyOf?: readonly CardFilter[];
+}
+
+/**
+ * A clause on a spell's targets (rule 115.1) — the objects and players it
+ * targets as it is on the stack, the slots its own rules filled
+ * automatically left out (those aren't targets, 115.1). A spell with none
+ * never matches.
+ *
+ * Each target is asked whether it's **such a one**: a player (`player`), or a
+ * permanent — an object on the battlefield, since "a creature" or "a
+ * permanent" with no "card" or "spell" means one there (rule 109.2) —
+ * matching `permanent` from the filter's side, and being or not being the
+ * permanent applying the filter (`source`). Without `only`, one such target
+ * is enough ("a spell that targets a creature you control"; the spell may
+ * target other things too — Feather's ruling). With `only`, every target
+ * must be one ("targets only Zada" — the same object in two slots still
+ * counts, the Zada ruling). `single` adds that its targets are all one and
+ * the same object or player ("a spell that targets only a single creature
+ * other than Ivy" — two slots aimed at the same creature count, the Ivy
+ * ruling).
+ */
+export interface SpellTargetsFilter {
+  readonly only?: boolean;
+  readonly single?: boolean;
+  /** A target is a permanent matching this ("a creature you control"). */
+  readonly permanent?: CardFilter;
+  /** A target is (`true`) or isn't (`false`) the permanent applying the
+   * filter (`FilterContext.source`) — "only Zada", "other than Ivy". A
+   * target that isn't a permanent is neither. */
+  readonly source?: boolean;
+  /** A target is a player: `"you"`, the filter's side — "a spell that
+   * targets you" (Dawn Charm). */
+  readonly player?: "you" | "any";
+}
+
+/** Whether the spell `spell` meets `clause` (see {@link SpellTargetsFilter}):
+ * its targets as it is on the stack now. */
+function spellTargetsMatch(
+  state: GameState,
+  registry: CardRegistry,
+  spell: GameObject,
+  clause: SpellTargetsFilter,
+  ctx: FilterContext,
+): boolean {
+  if (spell.zone !== "stack" || spell.kind !== "card") return false;
+  const auto = new Set(spell.autoTargetSlots ?? []);
+  // A target that has changed zones since it was targeted is a new object
+  // (rule 400.7) the spell doesn't target — the Rebuff the Wicked ruling.
+  const gone = (i: number): boolean => {
+    const t = spell.targets?.[i];
+    const stint = spell.targetStints?.[i];
+    if (t?.kind !== "object" || stint === undefined || stint === null) return false;
+    return (state.objects[t.object]?.zoneChangeCount ?? 0) !== stint;
+  };
+  type Aimed = TargetRef | { readonly kind: "gone" };
+  const targets = (spell.targets ?? []).flatMap((t, i): Aimed[] =>
+    t === undefined || t === null || auto.has(i) ? [] : gone(i) ? [{ kind: "gone" }] : [t],
+  );
+  if (targets.length === 0) return false;
+  if (clause.single === true) {
+    const first = targets[0];
+    const same = targets.every((t) =>
+      t.kind === "player"
+        ? first.kind === "player" && first.player === t.player
+        : t.kind === "object" && first.kind === "object" && first.object === t.object,
+    );
+    if (!same) return false;
+  }
+  const inner: FilterContext = {
+    you: ctx.you,
+    ...(ctx.x !== undefined ? { x: ctx.x } : {}),
+    ...(ctx.amount !== undefined ? { amount: ctx.amount } : {}),
+    ...(ctx.source !== undefined ? { source: ctx.source } : {}),
+  };
+  const suchAOne = (t: (typeof targets)[number]): boolean => {
+    if (t.kind === "gone") return false;
+    if (t.kind === "player") {
+      if (clause.player === undefined || clause.permanent !== undefined || clause.source === true) return false;
+      return clause.player === "any" || t.player === ctx.you;
+    }
+    if (clause.player !== undefined) return false;
+    const object = state.objects[t.object];
+    if (object === undefined || object.zone !== "battlefield") return false;
+    if (clause.source !== undefined && (t.object === ctx.source) !== clause.source) return false;
+    return clause.permanent === undefined || matchesFilter(state, registry, t.object, clause.permanent, inner);
+  };
+  return clause.only === true ? targets.every(suchAOne) : targets.some(suchAOne);
 }
 
 export interface FilterContext {
@@ -867,6 +963,11 @@ export function matchesFilter(
       const byIt = by !== undefined && asker !== undefined && by.source === asker.id && by.timestamp === asker.timestamp;
       if (byIt !== filter.putThereBySource) return false;
     }
+  }
+  // A spell's targets, as it is on the stack: a snapshot is of a permanent,
+  // which has none.
+  if (filter.targets !== undefined && (live === undefined || !spellTargetsMatch(state, registry, live, filter.targets, ctx))) {
+    return false;
   }
   if (
     filter.damagedThisTurnBy !== undefined ||

@@ -2164,7 +2164,11 @@ export type EffectSpec =
        * token as it resolves.
        */
       readonly kind: "copy-spell";
-      readonly target: number | "trigger-spell";
+      /** A target slot, `"trigger-spell"`, or `"source"`: this spell, while
+       * it resolves — Sevinne's Reclamation's "you may copy this spell and
+       * may choose a new target for the copy". The copy goes on the stack
+       * above it; one that is itself a copy was never cast. */
+      readonly target: number | "trigger-spell" | "source";
       /** "You may choose new targets for the copy" (rule 707.10c). */
       readonly newTargets?: true;
       /** "Copy that spell if it targets a permanent or player" — any of its
@@ -2173,6 +2177,58 @@ export type EffectSpec =
       /** "If you don't copy a spell this way, [this]" (Shiko and Narset's
        * "draw a card"). */
       readonly otherwise?: EffectSpec;
+      /**
+       * "The copy targets Ivy" (rule 707.10e — Ivy, Gleeful Spellthief): each
+       * of the copy's targets is this one instead of the original's —
+       * `"source"`, the effect's own permanent, or the object in this target
+       * slot of the effect. A slot the spell's own rules filled isn't a
+       * target, and keeps what it had. If that one isn't a legal target for
+       * each of them, as the copy's controller would choose it, the copy
+       * isn't created (and `otherwise` applies). With `"trigger-spell"` only.
+       */
+      readonly retargetTo?: "source" | number;
+      /**
+       * "Copy that spell for each other creature you control that the spell
+       * could target. Each copy targets a different one of those creatures"
+       * (rule 707.10d — Zada, Hedron Grinder): one copy per battlefield
+       * permanent matching `filter` from the effect's side (`other` leaves
+       * the effect's own permanent out) that is a legal target for each of
+       * the spell's targets, every target of a copy being that one. A token
+       * stack is that many permanents, each its own copy. With two or more,
+       * their controller puts them on the stack in the order they choose — a
+       * `choose-permanents` decision naming them all, in order. With
+       * `"trigger-spell"` only.
+       */
+      readonly forEachItCouldTarget?: { readonly filter: CardFilter; readonly other?: true };
+      /** The spell to copy, captured: only the engine sets this, on the copy
+       * that a `forEachItCouldTarget` hands its `choose-permanents` decision
+       * (which applies it once per permanent chosen, with that one as target
+       * 0, outside the triggered ability that knew the spell). */
+      readonly spell?: { readonly snapshot: SpellSnapshot; readonly original: ObjectId };
+    }
+  | {
+      /**
+       * "Exile that card instead of putting it into your graveyard as it
+       * resolves. If you do, return it to your hand at the beginning of the
+       * next end step" (Feather, the Redeemed). Marks the spell whose casting
+       * fired this triggered ability, as long as it's still that spell on
+       * the stack (`GameObject.exileAsItResolves`). The replacement waits on
+       * the spell: only resolving puts it to use (a spell countered or
+       * fizzling goes to the graveyard as usual), only a card its owner — this
+       * effect's controller — would put into their own graveyard (a spell
+       * you don't own, a copy, and one whose own text moves it never do), and
+       * it applies even if this effect's source has left by then (the
+       * rulings). Another replacement that would exile it instead (flashback,
+       * Rest in Peace, an Adventure) leaves its owner the choice of which
+       * applies first (rule 616.1); only Feather's brings it back.
+       */
+      readonly kind: "exile-spell-as-it-resolves";
+      /** "Return it to your hand at the beginning of the next end step." */
+      readonly returnAtNextEndStep?: true;
+      /** Only the engine sets this: the answer to that rule 616.1 choice,
+       * applied to the spell `spell` that has just resolved — `true` to
+       * apply this replacement first, `false` to let the other. */
+      readonly applyFirst?: { readonly spell: ObjectId; readonly feather: boolean };
     }
   | {
       /** After this (post-combat) main phase there is an additional combat
@@ -3723,8 +3779,26 @@ export interface EffectApi {
   /** The spell whose casting fired this triggered ability, as it is on the
    * stack or as it last was there (rule 608.2h); `null` if nothing cast one. */
   triggerSpell(): SpellSnapshot | null;
-  /** Put a copy of `spell`, the trigger's spell, onto the stack. */
-  copyTriggerSpell(spell: SpellSnapshot, newTargets: boolean): void;
+  /** Put a copy of `spell`, the trigger's spell (or `original`, when the
+   * engine captured it — see `copy-spell`'s `spell`), onto the stack —
+   * every target of it `retargetTo` if given (rule 707.10e). `false` when
+   * nothing was copied: `retargetTo` isn't a legal target for each of its
+   * targets. */
+  copyTriggerSpell(
+    spell: SpellSnapshot,
+    opts: { readonly newTargets: boolean; readonly retargetTo?: TargetRef; readonly original?: ObjectId },
+  ): boolean;
+  /** See `copy-spell`'s `forEachItCouldTarget`: copy `spell` once for each
+   * permanent it could target, in the order its controller chooses. */
+  copyTriggerSpellForEach(
+    spell: SpellSnapshot,
+    each: { readonly filter: CardFilter; readonly other?: true },
+  ): void;
+  /** See the `exile-spell-as-it-resolves` {@link EffectSpec}: mark the
+   * trigger's spell. */
+  exileTriggerSpellAsItResolves(returnAtNextEndStep: boolean): void;
+  /** The answer to its rule 616.1 choice — see `applyFirst` there. */
+  finishExiledAsItResolves(spell: ObjectId, feather: boolean): void;
   /** Shuffle the controller's library — see the `shuffle-library`
    * {@link EffectSpec}. */
   shuffleLibrary(): void;
@@ -5482,17 +5556,36 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "reveal-until":
       applyRevealUntil(spec, ctx);
       return;
+    case "exile-spell-as-it-resolves":
+      if (spec.applyFirst !== undefined) ctx.finishExiledAsItResolves(spec.applyFirst.spell, spec.applyFirst.feather);
+      else ctx.exileTriggerSpellAsItResolves(spec.returnAtNextEndStep === true);
+      return;
     case "copy-spell": {
       const newTargets = spec.newTargets === true;
       let copied = false;
-      if (spec.target === "trigger-spell") {
-        const spell = ctx.triggerSpell();
+      if (spec.target === "trigger-spell" || spec.spell !== undefined) {
+        const spell = spec.spell?.snapshot ?? ctx.triggerSpell();
         if (spell !== null && (spec.ifTargets === undefined || targetsPermanentOrPlayer(spell))) {
-          ctx.copyTriggerSpell(spell, newTargets);
-          copied = true;
+          if (spec.forEachItCouldTarget !== undefined) {
+            ctx.copyTriggerSpellForEach(spell, spec.forEachItCouldTarget);
+            copied = true;
+          } else {
+            const retargetTo = spec.retargetTo === undefined ? undefined : resolveEffectTarget(spec.retargetTo, ctx);
+            // A slot whose target has gone, or a source that has left, has
+            // nothing to aim the copy at.
+            if (spec.retargetTo === undefined || retargetTo !== undefined) {
+              copied = ctx.copyTriggerSpell(spell, {
+                newTargets,
+                ...(retargetTo !== undefined ? { retargetTo } : {}),
+                ...(spec.spell !== undefined ? { original: spec.spell.original } : {}),
+              });
+            }
+          }
         }
       } else {
-        const target = ctx.targets[spec.target];
+        // "Copy this spell" — the spell now resolving, still on the stack.
+        const target =
+          spec.target === "source" ? ({ kind: "object", object: ctx.source } as const) : ctx.targets[spec.target];
         if (target !== undefined) {
           ctx.copySpell(target, newTargets);
           copied = true;

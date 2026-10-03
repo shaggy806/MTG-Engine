@@ -123,6 +123,7 @@ import _poolJinGitaxiasCoreAugur from "../pool/jin-gitaxias-core-augur.js";
 import _poolJoustingDummy from "../pool/jousting-dummy.js";
 import _poolKeenBuccaneer from "../pool/keen-buccaneer.js";
 import _poolKonaRescueBeastie from "../pool/kona-rescue-beastie.js";
+import _poolKrarkTheThumbless from "../pool/krark-the-thumbless.js";
 import _poolLingeringSouls from "../pool/lingering-souls.js";
 import _poolLlanowarElves from "../pool/llanowar-elves.js";
 import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
@@ -338,6 +339,7 @@ const shard: CardShard = {
     _poolJoustingDummy,
     _poolKeenBuccaneer,
     _poolKonaRescueBeastie,
+    _poolKrarkTheThumbless,
     _poolLingeringSouls,
     _poolLlanowarElves,
     _poolLoxodonStalwart,

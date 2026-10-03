@@ -176,6 +176,7 @@ import _poolSparringMummy from "../pool/sparring-mummy.js";
 import _poolSpitFlame from "../pool/spit-flame.js";
 import _poolSpringleafDrum from "../pool/springleaf-drum.js";
 import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
+import _poolStellaLeeWildCard from "../pool/stella-lee-wild-card.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSummonBahamut from "../pool/summon-bahamut.js";
 import _poolSuntailHawk from "../pool/suntail-hawk.js";
@@ -398,6 +399,7 @@ const shard: CardShard = {
     _poolSpitFlame,
     _poolSpringleafDrum,
     _poolSproutingThrinax,
+    _poolStellaLeeWildCard,
     _poolSultaiSkullkeeper,
     _poolSummonBahamut,
     _poolSuntailHawk,

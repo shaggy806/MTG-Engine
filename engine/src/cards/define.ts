@@ -578,6 +578,21 @@ export type StaticCondition =
       readonly atLeast?: number;
       readonly atMost?: number;
     }
+  /**
+   * The spell whose casting fired this triggered ability is its caster's
+   * **first** spell this turn matching one of `anyOf` — Alania, Divergent
+   * Storm's "if it's the first instant spell, the first sorcery spell, or
+   * the first Otter spell other than Alania you've cast this turn". Each
+   * spell is read as it was cast (`PlayerState.spellsCastThisTurnAs`), so a
+   * later spell cast in response doesn't change the answer on resolution.
+   * `otherThanSource` leaves the ability's own card out of the count of
+   * earlier ones ("other than Alania"). Only a cast trigger's intervening-if
+   * can answer it; anywhere else it's false.
+   */
+  | {
+      readonly kind: "trigger-spell-first";
+      readonly anyOf: readonly { readonly filter: CardFilter; readonly otherThanSource?: boolean }[];
+    }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }

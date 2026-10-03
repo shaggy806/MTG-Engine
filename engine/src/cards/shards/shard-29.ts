@@ -172,6 +172,7 @@ import _poolUroTitanOfNaturesWrath from "../pool/uro-titan-of-natures-wrath.js";
 import _poolViciousConquistador from "../pool/vicious-conquistador.js";
 import _poolVictimize from "../pool/victimize.js";
 import _poolVoicelessSpirit from "../pool/voiceless-spirit.js";
+import _poolVoloGuideToMonsters from "../pool/volo-guide-to-monsters.js";
 import _poolWallOfIce from "../pool/wall-of-ice.js";
 import _poolWaterServant from "../pool/water-servant.js";
 import _poolWeaponizeTheMonsters from "../pool/weaponize-the-monsters.js";
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _poolViciousConquistador,
     _poolVictimize,
     _poolVoicelessSpirit,
+    _poolVoloGuideToMonsters,
     _poolWallOfIce,
     _poolWaterServant,
     _poolWeaponizeTheMonsters,

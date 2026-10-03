@@ -847,17 +847,45 @@ play an additional land this turn"), `untap-all { filter, controlledByTarget? }`
 (`of: "trigger-object"` copies the trigger's spell rather than the source: a `nextSpell`
 delayed trigger's "the next instant or sorcery spell you cast this turn has storm" — Storm, Force
 of Nature),
-`cascade`, `copy-spell { target, newTargets?, ifTargets?, otherwise? }`, `shuffle-library` (the
-effect's controller shuffles — Ponder's "You may shuffle" inside a `may`).
+`cascade`, `copy-spell { target, newTargets?, ifTargets?, otherwise?, retargetTo?,
+forEachItCouldTarget? }`, `exile-spell-as-it-resolves { returnAtNextEndStep? }`,
+`shuffle-library` (the effect's controller shuffles — Ponder's "You may shuffle" inside a `may`).
 
 `copy-spell` copies a spell with every choice made for it (modes, X, targets, kicker and the
 other costs paid — rule 707.10); a copy of a permanent spell becomes a token as it resolves.
-`target` is a target slot (Twincast, Narset's Reversal) or `"trigger-spell"`: the spell whose
+`target` is a target slot (Twincast, Narset's Reversal), `"source"` — "copy this spell", the
+spell now resolving (Sevinne's Reclamation) — or `"trigger-spell"`: the spell whose
 casting fired this trigger, as it last was on the stack if it has gone since (Shiko and Narset,
 Unified; a `delayed-trigger` at `nextSpell` — Adaptive Training Post). `newTargets: true` is
 "you may choose new targets for the copy" (rule 707.10c), asked as a `choose-targets` decision;
 storm always asks, one copy at a time. `ifTargets: "permanent-or-player"` copies only a spell
-that targets one, and `otherwise` is "if you don't copy a spell this way, …".
+that targets one, and `otherwise` is "if you don't copy a spell this way, …". With
+`"trigger-spell"`, two more aim the copy themselves:
+
+- `retargetTo: "source" | slot` — "the copy targets Ivy" (rule 707.10e — Ivy, Gleeful
+  Spellthief): every target of the copy is that one instead, and if it isn't a legal target
+  for each of them (as the copy's controller would choose it), no copy is made and `otherwise`
+  applies. A slot the spell's own rules filled isn't a target and keeps what it had. Wrap it in
+  a `may` for "you may copy that spell".
+- `forEachItCouldTarget: { filter, other? }` — "copy that spell for each other creature you
+  control that the spell could target. Each copy targets a different one of those creatures"
+  (rule 707.10d — Zada, Hedron Grinder: `{ filter: { type: "creature", controlledBy: "you" },
+  other: true }`). One copy per battlefield permanent matching `filter` that is a legal target
+  for every one of the spell's targets — a token stack counting as each of its tokens, each
+  split off — and with two or more, their controller orders them: a `choose-permanents`
+  naming every one, the copy for the first named going on the stack first (so resolving
+  last).
+
+`exile-spell-as-it-resolves` is Feather, the Redeemed's "exile that card instead of putting it
+into your graveyard as it resolves. If you do, return it to your hand at the beginning of the
+next end step" (`returnAtNextEndStep: true`), on a cast trigger: it marks the trigger's spell
+(`GameObject.exileAsItResolves`), which then waits on the spell. Only resolving uses it — a
+spell countered or fizzling goes to the graveyard as usual — and only for a card its owner (the
+effect's controller) would put into their own graveyard: never a copy, a spell they don't own,
+or one whose own text moves it (`exileOnResolve`, `shuffleIntoLibraryOnResolve`). It holds
+after the trigger's source has left. When another replacement would exile it too (flashback,
+a Kess-style permission, Rest in Peace, an Adventure), its owner chooses which applies first
+(rule 616.1) — a `choose-modes` decision; only Feather's brings the card back.
 
 `additional-combat` alone is Aggravated Assault's "after this main phase,
 there is an additional combat phase followed by an additional main phase":
@@ -1175,8 +1203,25 @@ enteredThisTurn, attackedThisTurn, damagedThisTurnBy, excessDamageThisTurn,
 dealtDamageToCreatureThisTurn, cast, castBy, castFrom, castVia, enteredFrom,
 putThereBySource, sharesCardTypeWith, thisWay, attacking, blocking, goaded, suspected, hasManaAbility, hasAbilities,
 xInManaCost, manaCost, coloredManaSymbols, cardTypeCount, nameDiffersFromEach,
-nameUnlike, ofChosenType }`,
-every present clause ANDed. `manaCost: ["{0}", "{1}"]` is an exact printed
+nameUnlike, ofChosenType, targets }`,
+every present clause ANDed. `targets: { only?, single?, permanent?, source?, player? }`
+asks what a **spell** on the stack targets (anything else has no targets and never
+matches): a target that is a player (`player: "you" | "any"` — Dawn Charm's "counter target
+spell that targets you"), or a permanent on the battlefield (rule 109.2) matching
+`permanent` from the filter's side and being (`source: true`) or not being (`false`) the
+permanent applying the filter. One such target is enough — Feather, the Redeemed's "a spell
+that targets a creature you control" is `{ permanent: { type: "creature", controlledBy:
+"you" } }`, the spell free to target other things too; `only: true` needs every target to
+be one — Zada, Hedron Grinder's "targets only Zada" is `{ only: true, source: true }` (two
+slots on Zada still count) — and `single: true` that they're all one and the same — Ivy,
+Gleeful Spellthief's "targets only a single creature other than Ivy" is `{ only: true,
+single: true, permanent: { type: "creature" }, source: false }`. A target that has changed
+zones since it was targeted is a new object the spell no longer targets (rule 400.7 — the
+Rebuff the Wicked ruling). It works in a cast trigger's `filter`, a `deals-damage`
+trigger's source `filter` (Imodane, the Pyrohammer: an instant or sorcery spell "that
+targets only a single creature" dealing damage `toItsTarget`), and a `spell` target spec
+(Rebuff the Wicked: `{ kind: "spell", filter: { targets: { permanent: { controlledBy: "you"
+} } } }`). `manaCost: ["{0}", "{1}"]` is an exact printed
 mana cost (Urza's Saga's "an artifact card with mana cost {0} or {1}" — not
 {U}, {X} or none). `nameUnlike: { others?, graveyard? }` is Guardian
 Project's "if it doesn't have the same name as another creature you control
@@ -1819,7 +1864,7 @@ triggered: [
 | `deals-damage` | `who`, `filter?`, `otherOnly?`, `to?`, `toFilter?`, `combat?`, `exactly?`, `toItsTarget?` | the dealing end, for any recipient — Niv-Mizzet, Visionary's "whenever a source you control deals noncombat damage to an opponent" (`{ who: "you-control", to: "opponent", combat: false }`), Ghyrson Starn's "another source you control deals **exactly 1** damage to a permanent or player" (`otherOnly`, `exactly: 1`), Kediss's "a commander you control deals combat damage to an opponent" (`filter: { isCommander: true }`). `who` / `filter` are about the **source** — a spell, a permanent, an ability's source — judged as it last existed on the battlefield if it had left; `to` is `"player" \| "opponent" \| "you" \| "permanent" \| "creature" \| "planeswalker"` (`"you"` is this permanent's controller — Mikaeus, the Unhallowed's "whenever a Human deals damage to you") and `toFilter` narrows a permanent recipient; `toItsTarget` is "a spell deals damage to a permanent or player **it targets**". Once **per recipient** per damage event (a `damage-all` for 1 fires it once per creature, and a token stack counts once per token — each firing that hits "that permanent" peels one token off it), for the amount actually **dealt** — after doubling and prevention, so fully prevented damage fires nothing and 2 prevented to 1 is "exactly 1". `{ triggerValue: true }` is the amount, the source is the trigger object (`damage.from: "trigger-object"`), the recipient is `damage.toTriggerRecipient`, and a player recipient (or a permanent's controller) is the `"trigger-player"`. |
 | `attack-with` | `who`, `atLeast`, `filter?`, `attackingYou?`, `stillAttacking?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. `stillAttacking` makes the count an intervening if asked again on resolution — Mangara, the Diplomat's "if two or more of those creatures **are** attacking you": one removed from combat no longer counts, one that left the battlefield counts by what it was attacking. |
 | `deals-combat-damage-to-player` | `who`, `filter?`, `otherOnly?`, `toPlayerControlsMore?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player"; `otherOnly` is "**another** creature you control". `toPlayerControlsMore: CardFilter` is "…to a player **who controls more lands than you**" (Cartographer's Hawk: `{ type: "land" }`) — part of the event, counted as the damage is dealt, and not asked again as it resolves (an intervening-if would be). Its target slots are the controller's choice — Mindscour Dragon's "target player mills four cards" may name anyone; "that player" is the `"trigger-player"` scope, never a target (Xyris's `draw` `who`, Captain N'ghathrod's `mill` `target`). The creature is the trigger object — Ikra Shidiqi's "you gain life equal to **that creature's** toughness" is `{ toughnessOf: "trigger-object" }`, read as it last existed on the battlefield if the same combat damage killed it — the damaged player is the `"trigger-player"`, and `{ triggerValue: true }` is the damage dealt. |
-| `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `nthEachTurn?`, `filter?`, `from?`, `notFrom?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `withTargets: true` narrows to a spell with one or more targets, `{ triggerValue: true }` then how many (Voracious Bibliophile's "draw that many cards"); `modal: true` narrows to a modal spell (one cast with modes chosen — a `castModal` card), with `{ triggerValue: true }` then the number of times a mode was chosen for it (Riku of Many Paths); `sharesNoCreatureType: true` to a spell sharing no creature type with a creature its caster controls or a creature card in their graveyard, changeling on either side sharing every one (Volo, Guide to Monsters). `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value, and `"x"` is its X, read as it was cast (Zaxara, the Exemplary's "put X +1/+1 counters" — a spell countered before the trigger resolves still gave its X). `firstEachTurn` / `nthEachTurn: N` is the caster's first / Nth spell this turn — and **with a `filter`, their first / Nth *matching* spell** (Tuvasa's "your first enchantment spell each turn", which can be your third spell). `from` / `notFrom` are the **zone it was cast from** (the `spell-cast` event records it before the spell moves to the stack): `from: "exile"` is "whenever you cast a spell from exile", `notFrom: "hand"` is "from anywhere other than your hand". A spell cast via foretell, suspend, cascade, an adventure or an impulse exile comes from `"exile"`; flashback / escape from `"graveyard"`; a commander from `"command"`. |
+| `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `nthEachTurn?`, `filter?`, `from?`, `notFrom?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `withTargets: true` narrows to a spell with one or more targets, `{ triggerValue: true }` then how many (Voracious Bibliophile's "draw that many cards"); `modal: true` narrows to a modal spell (one cast with modes chosen — a `castModal` card), with `{ triggerValue: true }` then the number of times a mode was chosen for it (Riku of Many Paths); `sharesNoCreatureType: true` to a spell sharing no creature type with a creature its caster controls or a creature card in their graveyard, changeling on either side sharing every one (Volo, Guide to Monsters). `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value, and `"x"` is its X, read as it was cast (Zaxara, the Exemplary's "put X +1/+1 counters" — a spell countered before the trigger resolves still gave its X). `firstEachTurn` / `nthEachTurn: N` is the caster's first / Nth spell this turn — and **with a `filter`, their first / Nth *matching* spell** (Tuvasa's "your first enchantment spell each turn", which can be your third spell). `from` / `notFrom` are the **zone it was cast from** (the `spell-cast` event records it before the spell moves to the stack): `from: "exile"` is "whenever you cast a spell from exile", `notFrom: "hand"` is "from anywhere other than your hand". A spell cast via foretell, suspend, cascade, an adventure or an impulse exile comes from `"exile"`; flashback / escape from `"graveyard"`; a commander from `"command"`. A `filter` with a `targets` clause asks what the spell targets as it's cast (the `CardFilter` list in §6): Season of Growth's "a spell that targets a creature you control", Zada's "that targets only Zada", Ivy's "that targets only a single creature other than Ivy". |
 | `cast-spell` + `orCopy: true` | | Magecraft — "whenever you cast **or copy** an instant or sorcery spell" (Archmage Emeritus). A copy isn't cast (rule 707.10), so plain `cast-spell` never sees one; with `orCopy` a `spell-copied` event matches too, `who` being the copy's controller, `filter` asking about the copy, the copy the trigger object. The cast-only narrowings (`from`, `firstEachTurn`, …) never match a copy. `copyOnly: true` matches **only** the copies — Kalamax, the Stormsire's "whenever you copy an instant spell". |
 | `counters-put` | `who`, `counter?`, `filter?`, `byYou?` | one or more counters were put on a permanent — including the ones it **entered with** (rule 122.6). Once per permanent per event, so two creatures at once is two triggers; `{ triggerValue: true }` is how many, and the permanent is the trigger object. `who` / `filter` are about the permanent; `byYou` is "whenever **you** put …" (Hapatra). Shalai and Hallar: `{ who: "you-control", counter: "+1/+1", filter: { type: "creature" } }`. |
 | `draws` | `who`, `nthEachTurn?`, `exceptFirstInDrawStep?` | a player draws a card, once per card (Nekusar). `nthEachTurn: 2` is "your second card each turn"; `exceptFirstInDrawStep` is Xyris's "except the first one they draw in each of their draw steps" (only their own draw step's first card is exempt). |
@@ -1902,6 +1947,19 @@ does nothing, logged as a fizzle). Unlike a static's condition it counts the
 source permanent itself. Put the "if" clause here, never inside the effect: a
 `conditional` effect would still trigger and still resolve, which is a
 different (and wrong) thing.
+
+**`whileCondition?`** (the same union) is a condition that's part of the
+**trigger condition** — "whenever you cast a spell **while Fire Lord Azula is
+attacking**" (rule 603.1). It's checked only as the event happens: only an "if"
+right after the trigger event is an intervening "if" (603.4), so it isn't asked
+again as the ability resolves, and Azula being removed from combat in response
+doesn't stop the copy. On a cast trigger, `condition` can also ask about the
+spell's place in the turn: `{ kind: "trigger-spell-first", anyOf: [{ filter,
+otherThanSource? }] }` is "if it's the first [filter] spell you've cast this
+turn" for any of them — Alania, Divergent Storm's first instant, first sorcery,
+or first Otter spell other than Alania (`otherThanSource` leaves Alania's own
+card out of the count). Each spell is read as it was cast, so one cast in
+response doesn't change it on resolution.
 
 **`fromGraveyard: true`** is an ability that works while its card is in a
 graveyard, and only there (rule 113.6k: an ability that moves its own card out
@@ -2529,6 +2587,10 @@ clause (section 9):
   of these under `all`, `{ filter: { type: "creature" } }` and `{ filter: {
   notTypes: ["creature"] } }` — an Adventure cast as its instant or sorcery
   half was a noncreature spell, though a creature card sits in exile after.
+- `{ kind: "trigger-spell-first", anyOf: [{ filter, otherThanSource? }] }` — a
+  cast trigger's spell is its caster's first spell this turn matching one of
+  the filters (Alania, Divergent Storm — see `whileCondition` in §9). Only a
+  cast trigger's `condition` can answer it.
   The cast trigger's `firstEachTurn`/`nthEachTurn` with a filter, and a
   `costModification`'s `firstEachTurn`, count the same records.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
@@ -3104,8 +3166,11 @@ Delete an entry in the same commit as the feature that retires it.
   more creatures with different powers) and Raid (you attacked this turn) are
   the two the EDH backlog currently wants.
 - **Replacement ordering** — if two replacements would apply to one event
-  there's no `choose-replacement-order`; the pool has no such case. No damage
-  **redirection** to a third object (Harm's Way).
+  there's no general `choose-replacement-order`. One case asks by itself:
+  Feather, the Redeemed's exile beside another replacement
+  that would exile the same resolving spell (flashback, Rest in Peace, an
+  Adventure), as a `choose-modes` decision (`exile-spell-as-it-resolves`, §6).
+  No damage **redirection** to a third object (Harm's Way).
 - **Modal abilities** — a modal *activated* ability would choose its modes
   as it resolves, not as it's activated (rule 700.2b); the pool has none. A
   modal *triggered* ability announces them as it goes on the stack

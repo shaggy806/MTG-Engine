@@ -145,6 +145,7 @@ import _poolRampartArchitect from "../pool/rampart-architect.js";
 import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
+import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
@@ -355,6 +356,7 @@ const shard: CardShard = {
     _poolRaphaelToughTurtle,
     _poolRebelliousStrike,
     _poolRecklessBarbarian,
+    _poolReflectionsOfLittjara,
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
     _poolRiveteersInitiate,

@@ -155,7 +155,10 @@
   "stat:object-damage-history",
   "effect:modal-ability-targeted-modes",
   "zone:exile-face-down",
-  "decision:trigger-order"
+  "decision:trigger-order",
+  "effect:copy-spell-extensions",
+  "condition:cast-spell-targets",
+  "replacement:spell-exiled-as-it-resolves"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

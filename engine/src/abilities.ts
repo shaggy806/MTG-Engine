@@ -1056,6 +1056,15 @@ export interface TriggeredAbility {
    */
   readonly condition?: StaticCondition;
   /**
+   * A condition that is part of the **trigger condition** — "whenever you
+   * cast a spell **while Fire Lord Azula is attacking**" (rule 603.1). Checked
+   * only as the event happens: unlike an intervening "if" (`condition`, rule
+   * 603.4, which only an "if" right after the trigger event is), it isn't
+   * asked again as the ability resolves, so Azula leaving combat in response
+   * doesn't stop the copy. Evaluated like `condition`, counting the source.
+   */
+  readonly whileCondition?: StaticCondition;
+  /**
    * "This ability triggers only once each turn" (rule 603.2 — Morbid
    * Opportunist, Welcoming Vampire). Once it has triggered this turn, further
    * events don't trigger it, whoever's turn it is. That also makes "whenever
