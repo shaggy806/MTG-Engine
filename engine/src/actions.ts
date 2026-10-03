@@ -594,7 +594,14 @@ export type LegalAction =
        * `maxXByTargetCount` (`minXForTargets`). A target filter that reads
        * X ("target creature with mana value X" — Stolen by the Fae) is
        * offered once per X with a legal set of targets, `minX` = `maxX` =
-       * that X and `targetOptions` for it. */
+       * that X and `targetOptions` for it.
+       *
+       * A cast permission whose filter reads the spell's mana value (Glarb,
+       * Calamity's Augur's "mana value 4 or greater" from the top of the
+       * library — `via: "library-top"`) allows no X below the least one that
+       * gets there: `minX` is that floor, and with `minXByTargetCount` no
+       * count's entry is below it either (counts that can't reach it are
+       * left off `targetCount`). */
       readonly xCost?: {
         readonly maxX: number;
         readonly minX?: number;

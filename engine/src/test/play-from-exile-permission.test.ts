@@ -130,6 +130,18 @@ describe("Haldan's fetch counters — cards you exiled, noncreature spells, any 
     expect(offers(game, bobs)).toHaveLength(0);
   });
 
+  it("the noncreature back face of a modal card, its any-colour spending read as that face", () => {
+    const { game } = mkGame();
+    game.debugSpawn("Haldan, Avid Arcanist", A, "battlefield");
+    for (let i = 0; i < 5; i += 1) game.debugSpawn("Mountain", A, "battlefield");
+    // Esika, God of the Tree {1}{G}{G} (a creature) // The Prismatic Bridge
+    // {W}{U}{B}{R}{G} (an enchantment): only the Bridge, off five Mountains.
+    const esika = exileWithCounter(game, A, B, "Esika, God of the Tree", "fetch");
+    expect(offers(game, esika).map((a) => (a.kind === "cast-spell" ? (a.face ?? 0) : -1))).toEqual([1]);
+    game.dispatch({ type: "cast-spell", player: A, card: esika, face: 1, targets: [], via: "impulse" });
+    expect(game.state.objects[esika].zone).toBe("stack");
+  });
+
   it("who exiled a card is forgotten once it leaves exile", () => {
     const { game } = mkGame();
     const card = exileWithCounter(game, A, B, "Divination", "fetch");

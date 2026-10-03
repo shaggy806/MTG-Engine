@@ -2317,8 +2317,10 @@ export class Game {
       // Swine): the number of targets and X bound each other.
       const xGroup =
         xPlan !== null && targetCount === undefined && groupReadsX(specs)
-          ? this.xGroupOffer(specs, options, xPlan.maxX)
+          ? this.xGroupOffer(specs, options, xPlan.maxX, xFloor)
           : null;
+      // No number of targets leaves room for an X at or above the floor.
+      if (xGroup === "none") continue;
       const offer: Extract<LegalAction, { kind: "cast-spell" }> = {
         kind: "cast-spell",
         card,
@@ -2391,6 +2393,12 @@ export class Game {
                   delvePool.length,
                   this.castingCostOf(player, card, def, x, cost, pricedAt).generic,
                 );
+                // Below a permission's least X (Glarb) nothing is castable:
+                // that X isn't on offer, so it mustn't raise the count.
+                if (x < xFloor) {
+                  byX.push({ minCards: Math.min(fewest, most), maxCards: most });
+                  continue;
+                }
                 while (fewest < most && !castsWith(pricedAt, delvePool.slice(0, fewest), x)) fewest += 1;
                 byX.push({ minCards: Math.min(fewest, most), maxCards: most });
               }
@@ -2449,7 +2457,9 @@ export class Game {
                     }
                   : maxXByTargetCount === undefined
                   ? { maxX: xPlan.maxX, ...(xFloor > 0 ? { minX: xFloor } : {}) }
-                  : { maxX: Math.max(...maxXByTargetCount), maxXByTargetCount },
+                  : // Each count on offer was found castable at `xFloor`
+                    // (`castableAt`), so its largest X is at least that.
+                    { maxX: Math.max(...maxXByTargetCount), maxXByTargetCount, ...(xFloor > 0 ? { minX: xFloor } : {}) },
             }
           : def.additionalCost?.payLifeX === true
             ? // "Pay X life" — the ceiling is what you have, not what your
@@ -2494,11 +2504,14 @@ export class Game {
     specs: readonly TargetSpec[],
     options: readonly (readonly TargetRef[])[],
     payableX: number,
-  ): {
-    targetCount: TargetCountRange;
-    minXByTargetCount: number[];
-    maxXByTargetCount: number[];
-  } {
+    leastX = 0,
+  ):
+    | {
+        targetCount: TargetCountRange;
+        minXByTargetCount: number[];
+        maxXByTargetCount: number[];
+      }
+    | "none" {
     const group = anyNumberSlot(specs);
     const spec = specs[group];
     const upTo = typeof spec === "object" && spec.kind === "any-number" && spec.max === "x";
@@ -2510,10 +2523,20 @@ export class Game {
     const members = candidates.length;
     const most = upTo ? Math.min(members, payableX) : members;
     const counts = Array.from({ length: most + 1 }, (_v, k) => k);
+    // `leastX`: an X below it isn't allowed at all — a cast permission that
+    // reads the spell's mana value (Glarb, Calamity's Augur's ruling) — so no
+    // count's least X is lower, and a count whose X can't reach it is off
+    // the offer. Those left are a run: each bound moves one way with k.
+    const minX = counts.map((k) => Math.max(upTo ? k : 0, leastX));
+    const maxX = counts.map((k) => (atLeast ? Math.min(k, payableX) : payableX));
+    const open = counts.filter((k) => minX[k] <= maxX[k]);
+    if (open.length === 0) return "none";
+    const lo = open[0];
+    const hi = open[open.length - 1];
     return {
-      targetCount: { min: 0, max: most, ...(Object.keys(copies).length > 0 ? { copies } : {}) },
-      minXByTargetCount: counts.map((k) => (upTo ? k : 0)),
-      maxXByTargetCount: counts.map((k) => (atLeast ? Math.min(k, payableX) : payableX)),
+      targetCount: { min: lo, max: hi, ...(Object.keys(copies).length > 0 ? { copies } : {}) },
+      minXByTargetCount: minX.slice(lo, hi + 1),
+      maxXByTargetCount: maxX.slice(lo, hi + 1),
     };
   }
 
@@ -8568,7 +8591,8 @@ export class Game {
     object.castVia = via ?? null;
     // Thundermane Dragon: "if you cast a creature spell this way, it gains
     // haste until end of turn" — the spell this permission let be cast
-    // (rule 400.7h), and so the permanent it becomes (400.7a; the modifier
+    // (rule 400.7h), and so the permanent it becomes, for as long as the
+    // effect says even once Thundermane is gone (400.7b, 611.3d; the modifier
     // is a `castRider`, which `moveObject` carries onto the battlefield).
     if (hasteFromTop && effectiveTypes(this.state, this.registry, object).includes("creature")) {
       object.modifiers.push({
@@ -10250,20 +10274,30 @@ export class Game {
       }
       return found;
     });
+    // The face being cast, as it will be on the stack (rule 715.3 — an
+    // Adventure is an instant or sorcery, not the creature card it's on): what
+    // Vizier's "creature spells" and a permission's `spells` filter read.
+    const spellCard = purpose?.kind === "cast" ? purpose.card : undefined;
+    const castFace =
+      purpose?.kind === "cast" ? (purpose.face ?? this.state.objects[purpose.card]?.face ?? 0) : 0;
     for (const rule of rules) {
-      if (rule.spell !== undefined) {
-        if (purpose?.kind !== "cast") continue;
-        if (!matchesFilter(this.state, this.registry, purpose.card, rule.spell, { you: player })) continue;
+      const spell = rule.spell;
+      if (spell !== undefined) {
+        if (spellCard === undefined) continue;
+        const fits = this.withFace(spellCard, castFace, () =>
+          matchesFilter(this.state, this.registry, spellCard, spell, { you: player }),
+        );
+        if (!fits) continue;
       }
       out = widerSpendAs(out, rule.as);
     }
-    if (purpose?.kind === "cast") {
-      const card = this.state.objects[purpose.card];
+    if (spellCard !== undefined) {
+      const card = this.state.objects[spellCard];
       if (card?.zone === "exile") {
-        if (card.impulse?.spendAs !== undefined && this.impulsePlayable(player, purpose.card)) {
+        if (card.impulse?.spendAs !== undefined && this.impulsePlayable(player, spellCard)) {
           out = widerSpendAs(out, card.impulse.spendAs);
         }
-        for (const permission of this.exilePermissionsFor(player, purpose.card, card.face ?? 0)) {
+        for (const permission of this.exilePermissionsFor(player, spellCard, castFace)) {
           out = widerSpendAs(out, permission.spendAs);
         }
       }
@@ -10712,11 +10746,13 @@ export class Game {
     // A deny-list ("can't be spent to cast nonartifact spells" — Karn,
     // Legacy Reforged): everything but casting a matching spell, a ward
     // cost or an ability included (Karn's ruling).
-    if (restriction.notSpell !== undefined) {
-      return (
-        purpose?.kind !== "cast" ||
-        !matchesFilter(this.state, this.registry, purpose.card, restriction.notSpell, { you: player })
-      );
+    const denied = restriction.notSpell;
+    if (denied !== undefined) {
+      if (purpose?.kind !== "cast") return true;
+      // The face being cast (see `ManaPurpose`), as below.
+      const card = purpose.card;
+      const face = purpose.face ?? this.state.objects[card]?.face ?? 0;
+      return !this.withFace(card, face, () => matchesFilter(this.state, this.registry, card, denied, { you: player }));
     }
     if (purpose === null) return false;
     const [filter, subject] =
@@ -22461,7 +22497,7 @@ export class Game {
     const enteringTimesKicked = enteringKicked ? object.timesKicked : undefined;
     // A prototyped spell's characteristics stay with the permanent it
     // becomes; any other move drops them (rule 718.3b). So does what the
-    // spell got for how it was cast (`castRider` — rule 400.7a).
+    // spell got for how it was cast (`castRider` — rules 400.7b, 611.3d).
     const keptPrototype =
       object.zone === "stack" && to === "battlefield"
         ? object.modifiers.filter((m) => m.prototype === true || m.castRider === true)

@@ -98,6 +98,25 @@ describe("a spendManaAs static", () => {
     expect(castable(game, game.debugSpawn("Glaring Fleshraker", A, "hand"))).toBe(true);
     expect(castable(game, game.debugSpawn("Divination", A, "hand"))).toBe(false);
   });
+
+  it("Vizier reads the face being cast: an Adventure is no creature spell (rule 715.3)", () => {
+    const { game } = mkGame();
+    game.debugSpawn("Vizier of the Menagerie", A, "battlefield");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const bears = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    // Murderous Rider {1}{B}{B}; its Adventure, Swift End {1}{B}{B}, an instant.
+    const rider = game.debugSpawn("Murderous Rider", A, "hand");
+    const faces = game
+      .legalActions(A)
+      .filter((a) => a.kind === "cast-spell" && a.card === rider)
+      .map((a) => (a.kind === "cast-spell" ? (a.face ?? 0) : -1));
+    expect(faces).toEqual([0]);
+    const swiftEnd = { type: "cast-spell", player: A, card: rider, face: 1, targets: [{ kind: "object", object: bears }] } as const;
+    expect(game.canDispatch(swiftEnd)).not.toBeNull();
+    expect(() => game.dispatch(swiftEnd)).toThrow();
+    game.dispatch({ type: "cast-spell", player: A, card: rider, targets: [] });
+    expect(game.state.objects[rider].zone).toBe("stack");
+  });
 });
 
 describe("deny-list mana — \"can't be spent to cast nonartifact spells\" (spendOnly.notSpell)", () => {

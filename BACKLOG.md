@@ -131,6 +131,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the
   other. Needs a joint plan: convoke the creatures, delve the rest of the generic.
+- **The least X a top-of-library cast allows is searched only up to the mana a player can make**
+  (`libraryTopMinX`, ceiling `manaCapacity`): an {X} spell that convoke or delve could pay up to
+  Glarb, Calamity's Augur's mana value 4 isn't offered from the top.
 - **A smarter default trigger order.** A player who orders their own triggers is asked (the
   `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
   included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order

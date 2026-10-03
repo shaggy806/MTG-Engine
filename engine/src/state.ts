@@ -846,7 +846,7 @@ export interface PtModifier {
    * kept from the stack onto the battlefield, gone on any other move. */
   prototype?: true;
   /** An effect the spell got for how it was cast, which goes on applying to
-   * the permanent it becomes (rules 400.7a-b, 400.7h) — Thundermane Dragon's
+   * the permanent it becomes (rules 400.7b, 400.7h, 611.3d) — Thundermane Dragon's
    * "if you cast a creature spell this way, it gains haste until end of
    * turn". Kept from the stack onto the battlefield like `prototype`. */
   castRider?: true;

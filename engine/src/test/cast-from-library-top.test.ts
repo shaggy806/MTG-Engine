@@ -97,6 +97,43 @@ describe("Glarb — lands and mana value 4 or greater from the top", () => {
     expect(game.state.objects[serpent].zone).toBe("battlefield");
   });
 
+  it("an X spell whose targets are tied to X: no count offered below the X floor", () => {
+    const { game } = mkGame();
+    game.debugSpawn("Glarb, Calamity's Augur", A, "battlefield");
+    lands(game, "Island", 8);
+    const bears = [0, 1, 2].map(() => game.debugSpawn("Grizzly Bears", B, "battlefield"));
+    // Curse of the Swine {X}{U}{U}, "X target creatures": mana value X + 2, so X ≥ 2.
+    const curse = game.debugSpawn("Curse of the Swine", A, "library");
+    const offer = offers(game, curse)[0];
+    if (offer?.kind !== "cast-spell") throw new Error("expected a cast");
+    expect(offer.targetCount?.min).toBe(2);
+    expect(offer.xCost?.minXByTargetCount?.every((x) => x >= 2)).toBe(true);
+    const at = (n: number) => bears.slice(0, n).map((object) => ({ kind: "object" as const, object }));
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: curse, targets: at(1), via: "library-top", xValue: 1 }),
+    ).toThrow();
+    game.dispatch({ type: "cast-spell", player: A, card: curse, targets: at(2), via: "library-top", xValue: 2 });
+    expect(game.state.objects[curse].zone).toBe("stack");
+  });
+
+  it("\"up to X\" targets and a cost that grows with targets get the floor too", () => {
+    const { game } = mkGame();
+    game.debugSpawn("Glarb, Calamity's Augur", A, "battlefield");
+    lands(game, "Forest", 4);
+    lands(game, "Mountain", 4);
+    // Pest Infestation {X}{G}{G}: "up to X target artifacts and/or enchantments".
+    const pest = game.debugSpawn("Pest Infestation", A, "library");
+    const pestOffer = offers(game, pest)[0];
+    if (pestOffer?.kind !== "cast-spell") throw new Error("expected a cast");
+    expect(pestOffer.xCost?.minXByTargetCount?.every((x) => x >= 2)).toBe(true);
+    game.debugSpawn("Island", A, "library");
+    // Fireball {X}{R}, {1} more per target beyond the first: X ≥ 3.
+    const fireball = game.debugSpawn("Fireball", A, "library");
+    const fireOffer = offers(game, fireball)[0];
+    if (fireOffer?.kind !== "cast-spell") throw new Error("expected a cast");
+    expect(fireOffer.xCost?.minX).toBe(3);
+  });
+
   it("the top card is in Alice's view and not in Bob's (rule 401.5)", () => {
     const { game } = mkGame();
     const top = game.debugSpawn("Grizzly Bears", A, "library");
@@ -126,7 +163,7 @@ describe("Sigarda — Angel and Human spells", () => {
 describe("Thundermane Dragon — power 4 or greater, and haste", () => {
   it("a creature cast this way has haste on the battlefield; one cast from the hand doesn't", () => {
     const { game } = mkGame();
-    game.debugSpawn("Thundermane Dragon", A, "battlefield");
+    const thundermane = game.debugSpawn("Thundermane Dragon", A, "battlefield");
     lands(game, "Forest", 12);
     const fromTop = game.debugSpawn("Colossal Dreadmaw", A, "library");
     game.dispatch({ type: "cast-spell", player: A, card: fromTop, targets: [], via: "library-top" });
@@ -138,6 +175,9 @@ describe("Thundermane Dragon — power 4 or greater, and haste", () => {
       game.state.objects[id].zone === "battlefield" && game.characteristics(id).keywords.has("haste");
     expect(hasty(fromTop)).toBe(true);
     expect(hasty(fromHand)).toBe(false);
+    // The haste lasts as long as the effect says, Thundermane or no (rule 611.3d).
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [{ kind: "object", object: thundermane }]);
+    expect(hasty(fromTop)).toBe(true);
     // Until end of turn only.
     game.advanceUntil((s) => s.turn.number === 2 && s.priority.holder !== null);
     expect(game.characteristics(fromTop).keywords.has("haste")).toBe(false);

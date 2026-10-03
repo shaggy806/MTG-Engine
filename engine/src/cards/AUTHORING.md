@@ -2453,8 +2453,8 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   controller and its source this permanent, so `ofChosenType` reads this
   permanent's chosen creature type (Realmwalker). `gainsHaste` is "if you
   cast a creature spell this way, it gains haste until end of turn"
-  (Thundermane Dragon) — a `castRider` modifier the permanent keeps (rule
-  400.7a). Pair it with the card's `looksAtOwnLibraryTop` for "you may look
+  (Thundermane Dragon) — a `castRider` modifier the permanent keeps until
+  end of turn, Thundermane or no (rules 400.7b, 611.3d). Pair it with the card's `looksAtOwnLibraryTop` for "you may look
   at the top card of your library any time", and with `playFromLibraryTop`
   for the lands of "play lands and cast spells" (Glarb). `affects` is
   ignored. `cast-from-library-top.test.ts`.
