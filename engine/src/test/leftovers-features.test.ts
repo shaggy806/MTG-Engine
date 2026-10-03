@@ -136,6 +136,26 @@ describe("Strionic Resonator", () => {
     expect(count(game, "Knight Token")).toBe(2);
   });
 
+  it("a copied linked ability is linked too: Banishing Light returns both cards", () => {
+    const game = setUp();
+    const resonator = spawn(game, "Strionic Resonator");
+    const bears = spawn(game, "Grizzly Bears", B);
+    const elves = spawn(game, "Llanowar Elves", B);
+    const light = game.debugSpawn("Banishing Light", A, "battlefield", { announceEntry: true });
+    placeTriggers(game);
+    expect(game.state.awaiting?.kind).toBe("choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(bears)] });
+    activate(game, resonator, [obj(abilitiesOnStack(game)[0])]);
+    game.advanceUntil(settle);
+    expect(game.state.awaiting?.kind).toBe("choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(elves)] });
+    game.advanceUntil(quiet);
+    expect([zoneOf(game, bears), zoneOf(game, elves)]).toEqual(["exile", "exile"]);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(light)]);
+    game.advanceUntil(quiet);
+    expect(count(game, "Grizzly Bears", B) + count(game, "Llanowar Elves", B)).toBe(2);
+  });
+
   it("can't copy an opponent's triggered ability", () => {
     const game = setUp();
     const resonator = spawn(game, "Strionic Resonator");
@@ -349,6 +369,17 @@ describe("Increasing Vengeance", () => {
     expect(life(game, B)).toBe(17);
   });
 
+  it("a copy of one cast by flashback was never cast: it copies once", () => {
+    const game = setUp();
+    const bolt = cast(game, A, "Lightning Bolt", [player(B)]);
+    const vengeance = game.debugSpawn("Increasing Vengeance", A, "graveyard");
+    game.dispatch({ type: "cast-spell", player: A, card: vengeance, targets: [obj(bolt)], via: "flashback" });
+    cast(game, A, "Reverberate", [obj(vengeance)]);
+    settleKeeping(game);
+    // The Bolt, two copies from the flashback cast, one from its copy.
+    expect(life(game, B)).toBe(20 - 4 * 3);
+  });
+
   it("copies an instant cast as an Adventure — an instant spell on the stack (rule 715.3b)", () => {
     const game = setUp();
     const familiar = game.debugSpawn("Frolicking Familiar", A, "hand");
@@ -499,12 +530,15 @@ describe("Ixhel, Scion of Atraxa", () => {
     expect(life(game, B)).toBe(17);
   });
 
-  it("an opponent with fewer than three exiles nothing", () => {
+  it("an opponent with fewer than three exiles nothing — nor do you, however poisoned", () => {
     const game = setUp();
     spawn(game, "Ixhel, Scion of Atraxa");
     game.debugApplyEffect(A, { kind: "add-player-counters", counter: "poison", amount: 2, target: 0 }, [player(B)]);
+    game.debugApplyEffect(A, { kind: "add-player-counters", counter: "poison", amount: 5, target: 0 }, [player(A)]);
     const top = game.debugSpawn("Lightning Bolt", B, "library");
+    const yours = game.debugSpawn("Lightning Bolt", A, "library");
     game.advanceUntil((s) => s.turn.number === 2);
     expect(zoneOf(game, top)).toBe("library");
+    expect(zoneOf(game, yours)).toBe("library");
   });
 });

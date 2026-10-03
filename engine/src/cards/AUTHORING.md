@@ -813,6 +813,7 @@ For the common "create a token, then get rid of it at end of turn" shape, use
 `create-token` / `create-token-copy`'s `sacrificeAtEndStep` (Kiki-Jiki,
 Chandra, Acolyte of Flame) or `exileAtEndStep` (Miirym) instead — the delayed
 ability would have no way to name a token that didn't exist when it was set up.
+Neither goes on the stack yet (§15, "Partial").
 
 ### P/T, counters, keywords
 
@@ -3625,6 +3626,15 @@ Delete an entry in the same commit as the feature that retires it.
   searches, for landcycling) as the cost is paid. So nothing can respond to or
   copy it, and "whenever you activate an ability" (Rings of Brighthearth —
   `activates-ability` offers only `"attached"`) would miss it.
+- **End-step token removal doesn't use the stack.** "Exile it (sacrifice
+  it) at the beginning of the next end step" is a delayed triggered ability
+  (rule 603.7), but `exileAtEndStep` and `sacrificeAtEndStep` (§6 — Flameshadow
+  Conjuring, Molten Echoes, Kiki-Jiki, mobilize, encore) are a flag on the
+  token that `Game.endStepActions` acts on as the step begins. Nothing can
+  respond to it, counter it (Sublime Epiphany; Flameshadow Conjuring's ruling
+  "perhaps because the delayed triggered ability is countered" can't happen)
+  or copy it (Strionic Resonator). `exileAtEndOfCombat` is a real delayed
+  trigger already.
 - **Text-change** (`change-text`) only swaps one creature-type word on the type
   line, from a fixed menu. No full "the words X become Y" across a card's
   abilities — which is why Artificial Evolution was removed; no card uses it.

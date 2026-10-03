@@ -221,6 +221,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   paid, so nobody can respond to it, counter it or copy it. Blocks Rings of Brighthearth
   ("whenever you activate an ability"). Needs a cycling ability object on the stack the client
   can draw and the bots can price.
+- **End-step token removal resolves without the stack.** "Exile it (sacrifice it) at the
+  beginning of the next end step" is a delayed triggered ability (rule 603.7), but
+  `create-token` / `create-token-copy`'s `exileAtEndStep` and `sacrificeAtEndStep` (Flameshadow
+  Conjuring, Molten Echoes, Twinflame, Kiki-Jiki, mobilize, encore …) are a flag on the token
+  that `Game.endStepActions` acts on as the step begins. So nobody can respond to it, counter it
+  (Sublime Epiphany — Flameshadow Conjuring's ruling: a countered one leaves the token for good)
+  or copy it (Strionic Resonator). `exileAtEndOfCombat` (myriad) already sets up a real delayed
+  trigger over the tokens it made; these need the same, kept out of token stacks, and the
+  sacrifice made by the token's controller then (rule 701.21a).
 - **Replacement ordering.** There is no general `choose-replacement-order` (rule 616.1) — only
   Feather's exile beside another exiling replacement asks — and no damage redirection to a
   third object.

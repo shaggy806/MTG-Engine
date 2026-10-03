@@ -11,8 +11,8 @@ const CORRUPTED_TEXT =
 // controller may look at them (rule 406.3), and goes on being able to play
 // them — a land with their land drop, a spell at its normal timing, paying
 // its costs — after Ixhel leaves, where another player who gains control of
-// Ixhel can't. The any-colour spending is only for those spells (rule
-// 118.14).
+// Ixhel can't. The any-colour spending is only for those spells (rules
+// 609.4b, 118.14).
 export default defineCard({
   name: "Ixhel, Scion of Atraxa",
   manaCost: "{1}{W}{B}{G}",
