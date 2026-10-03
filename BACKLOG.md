@@ -164,6 +164,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   resolves doing nothing, and an optional additional cost is never offered — not kicker, and not
   a gift (rule 702.174a's "you may promise"). Route them through the `cast-now` decision's free
   cast, which offers every variant, keeping cascade's tail and suspend's haste.
+- **"Search your library for a card" may fail to find.** Rule 701.23d: a search for a quantity
+  ("a card", no quality) must find that many while the library has them. Twelve tutors author it
+  `search-library` with `filter: {}` and `min: 0` (Demonic Tutor, Vampiric Tutor, Imperial Seal,
+  Grim Tutor, Razaketh …); it's `min: 1`, as Entomb and Insatiable Avarice have it — the search
+  already clamps `min` to what's there.
+- **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
+  `markedByDeathtouch` lasts until cleanup (`recordDamage`'s excess-damage reading uses it too),
+  so a creature that survived deathtouch damage while indestructible is destroyed if it loses
+  indestructible later that turn. Needs a flag the SBA check clears after each pass.
 - **Changing a spell or ability's target** (rule 115.7 — Return the Favor's "change the target
   of target spell or ability with a single target"), and a target slot that takes an instant or
   sorcery spell *or* an activated or triggered ability (its first mode). Return the Favor waits

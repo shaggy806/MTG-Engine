@@ -4124,8 +4124,6 @@ export interface EffectApi {
   /** See the `"grant-activated"` {@link EffectSpec}. */
   grantActivated(target: TargetRef, ability: ActivatedAbility, duration: PtDuration): void;
   /** See the `"lose-abilities"` {@link EffectSpec}. */
-  /** See the `"lose-abilities-all"` {@link EffectSpec}. */
-  loseAbilitiesAll(filter: CardFilter, duration: PtDuration): void;
   loseAbilities(
     target: TargetRef,
     opts: {
@@ -4134,6 +4132,8 @@ export interface EffectApi {
       readonly duration: PtDuration;
     },
   ): void;
+  /** See the `"lose-abilities-all"` {@link EffectSpec}. */
+  loseAbilitiesAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-activated-all"` {@link EffectSpec}. */
   grantActivatedAll(filter: CardFilter, ability: ActivatedAbility, duration: PtDuration): void;
   /** `player` takes an extra turn after this one (Time Warp). */

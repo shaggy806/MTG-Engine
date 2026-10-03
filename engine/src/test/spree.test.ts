@@ -145,6 +145,8 @@ describe("spree — casting", () => {
     game.dispatch({ type: "cast-spell", player: A, card: avarice, modes: [0, 1], targets: [player(A)] });
     game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || quiet(s));
     expect(game.state.awaiting?.kind).toBe("choose-from-zone");
+    // "A card" is a quantity: the search has to find one (rule 701.23d).
+    expect(game.state.awaiting?.kind === "choose-from-zone" ? game.state.awaiting.min : undefined).toBe(1);
     game.dispatch({ type: "choose-from-zone", player: A, chosen: [seeker] });
     game.advanceUntil(quiet);
     // Searched for, shuffled, put on top, then drawn — the same card.

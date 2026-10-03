@@ -23164,9 +23164,10 @@ export class Game {
   /**
    * Whether `source` deals damage with `keyword` — infect or wither, which
    * work from whatever zone the source deals damage from (rules 702.80c,
-   * 702.90e): the spell or permanent as it is, or, given its last-known
-   * information, as it last existed (702.80b, 702.90d). Unlike
-   * `sourceHasKeyword`, not only a creature's.
+   * 702.90e): the spell, permanent or card as it is, or, given its
+   * last-known information, as it last existed (702.80b, 702.90d). Unlike
+   * `sourceHasKeyword`, not only a creature's, nor only on the battlefield
+   * or the stack.
    */
   private sourceHasDamageKeyword(
     source: ObjectId,
@@ -23176,7 +23177,6 @@ export class Game {
     if (sourceLastKnown !== undefined) return sourceLastKnown.keywords.includes(keyword);
     const object = this.state.objects[source];
     if (object === undefined || object.kind !== "card") return false;
-    if (object.zone !== "battlefield" && object.zone !== "stack") return false;
     return this.objHasKeyword(source, keyword);
   }
 

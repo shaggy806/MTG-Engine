@@ -184,6 +184,17 @@ describe("infect", () => {
     expect(game.state.players[B].life).toBe(20);
   });
 
+  it("works from any zone: a card in the graveyard deals its damage as poison (rule 702.90e)", () => {
+    const { game } = setUp();
+    const stinger = game.debugSpawn("Plague Stinger", A, "graveyard");
+    game.debugApplyEffect(A, { kind: "damage", target: 0, amount: 2 }, [{ kind: "player", player: B }], {
+      source: stinger,
+    });
+    settle(game);
+    expect(poisonOf(game, B)).toBe(2);
+    expect(game.state.players[B].life).toBe(20);
+  });
+
   it("ten poison counters lose the game", () => {
     const { game, a } = setUp();
     game.debugApplyEffect(A, { kind: "add-player-counters", counter: "poison", amount: 9, who: "each-opponent" });
