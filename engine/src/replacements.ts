@@ -19,7 +19,7 @@
  * not a static (rule 614 calls it a replacement, but there's no permanent to
  * hang it on). See ROADMAP.md Phase 1.
  *
- * **Phase 11 EG-6** adds `would-draw` (Notion Thief-lite) and an optional
+ * **Phase 11 EG-6** adds `would-draw` (Notion Thief) and an optional
  * `CardFilter` on `would-be-put-into-graveyard` (Anafenza). One-shot
  * damage-prevention shields (Healing Salve) live on `GameState.preventionShields`
  * rather than here (no permanent to hang them on, like Fog). Still not modeled:
@@ -218,17 +218,23 @@ export interface GraveyardExileReplacement {
 }
 
 /** "If a player [who] would draw a card, [this permanent's controller] draws a
- * card instead" (Notion Thief-lite — ROADMAP Phase 11 EG-6). Applied in
+ * card instead" (Notion Thief — ROADMAP Phase 11 EG-6). Applied in
  * `Game.drawCard`. */
 export interface DrawRedirectReplacement {
   readonly event: "would-draw";
   /** Whose draw is replaced, relative to this permanent's controller. */
   readonly who: "opponent" | "you";
   /** The replacement: the source's controller draws instead (Notion Thief —
-   * `who: "opponent"`), or that player draws `draws` cards instead ("if you
-   * would draw a card, draw two cards instead" — gate it with the static's
-   * `condition`). Neither replacement applies again to the draws it makes
-   * (rule 614.5).
+   * `who: "opponent"`: "instead that player skips that draw and you draw a
+   * card"), or that player draws `draws` cards instead ("if you would draw a
+   * card, draw two cards instead" — gate it with the static's `condition`).
+   * Neither replacement applies again to the draws it makes (rule 614.5).
+   *
+   * Several `"you-draw"` redirects pass one draw along between them, each
+   * applying once (the Notion Thief rulings): the draw an opponent's Thief
+   * hands its controller can be handed on by a Thief of one of *their*
+   * opponents, so two players each with one in a duel leave the draw where it
+   * began. A token stack of them is that many effects.
    *
    * `"win-game"` is Laboratory Maniac's and Jace, Wielder of Mysteries's
    * "if you would draw a card while your library has no cards in it, you
@@ -239,6 +245,11 @@ export interface DrawRedirectReplacement {
   readonly instead: "you-draw" | { readonly draws: number } | "win-game";
   /** Only a draw while the drawing player's library has no cards in it. */
   readonly whileLibraryEmpty?: boolean;
+  /** "…except the first one they draw in each of their draw steps" (Notion
+   * Thief): not the first card a player draws during their own turn's draw
+   * step, the turn-based draw or not — if that one was skipped, the next
+   * card they draw in the step is the first. */
+  readonly exceptFirstInDrawStep?: boolean;
 }
 
 /**

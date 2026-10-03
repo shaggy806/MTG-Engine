@@ -15,6 +15,7 @@ import _poolArchaeomender from "../pool/archaeomender.js";
 import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
 import _poolBarbaryApes from "../pool/barbary-apes.js";
+import _poolBattlemagesBracers from "../pool/battlemages-bracers.js";
 import _poolBehindTheScenes from "../pool/behind-the-scenes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
 import _poolBladeSplicer from "../pool/blade-splicer.js";
@@ -265,6 +266,7 @@ const shard: CardShard = {
     _poolArmsDealer,
     _poolAttrition,
     _poolBarbaryApes,
+    _poolBattlemagesBracers,
     _poolBehindTheScenes,
     _poolBerserkersOfBloodRidge,
     _poolBladeSplicer,

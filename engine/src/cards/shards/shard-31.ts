@@ -68,6 +68,7 @@ import _poolFesteringGoblin from "../pool/festering-goblin.js";
 import _poolFetidHeath from "../pool/fetid-heath.js";
 import _poolFlameJavelin from "../pool/flame-javelin.js";
 import _poolFlameRift from "../pool/flame-rift.js";
+import _poolFlameshadowConjuring from "../pool/flameshadow-conjuring.js";
 import _poolFloralEvoker from "../pool/floral-evoker.js";
 import _poolFog from "../pool/fog.js";
 import _poolFontOfMythos from "../pool/font-of-mythos.js";
@@ -118,6 +119,7 @@ import _poolMagmaquake from "../pool/magmaquake.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
 import _poolMoanOfTheUnhallowed from "../pool/moan-of-the-unhallowed.js";
+import _poolMoltenEchoes from "../pool/molten-echoes.js";
 import _poolNimReplica from "../pool/nim-replica.js";
 import _poolNoxiousGearhulk from "../pool/noxious-gearhulk.js";
 import _poolOkaunEyeOfChaos from "../pool/okaun-eye-of-chaos.js";
@@ -274,6 +276,7 @@ const shard: CardShard = {
     _poolFetidHeath,
     _poolFlameJavelin,
     _poolFlameRift,
+    _poolFlameshadowConjuring,
     _poolFloralEvoker,
     _poolFog,
     _poolFontOfMythos,
@@ -324,6 +327,7 @@ const shard: CardShard = {
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
     _poolMoanOfTheUnhallowed,
+    _poolMoltenEchoes,
     _poolNimReplica,
     _poolNoxiousGearhulk,
     _poolOkaunEyeOfChaos,

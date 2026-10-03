@@ -95,9 +95,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   for Approach of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu,
   Ilharg, Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
   Necrodominance. Recheck each against its Oracle text; most need something else too.
-- **Notion Thief drops a clause.** It redirects every opponent draw, where the card spares "the
-  first one they draw in each of their draw steps" (rule-zero defect, `notion-thief.ts`;
-  `replacement-v2.test.ts` asserts the lite behaviour).
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
   gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
   still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a
@@ -227,6 +224,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Replacement ordering.** There is no general `choose-replacement-order` (rule 616.1) — only
   Feather's exile beside another exiling replacement asks — and no damage redirection to a
   third object.
+- **Two opponents' Notion Thieves aren't ordered by the drawing player.** At a table of three
+  or more, when Thieves controlled by different opponents could each take a draw, the drawing
+  player chooses which applies first (the ruling), which decides who ends up drawing;
+  `Game.drawRedirectFor` takes the opponent first in turn order. Asking needs a draw that can
+  stop mid-effect for a decision (`drawCard` is synchronous at every call site).
 - **A cast's discard cost hands priority to the active player.** A spell with an additional
   discard cost (`additionalCost.discard`, a `discard` cost option) raises the discard once it's
   on the stack, and `applyDiscard` then gives priority to the active player rather than the

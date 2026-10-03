@@ -474,6 +474,9 @@ function evalStaticCondition(
     case "player-counters": {
       const has = (p: PlayerId): boolean =>
         (state.players[p]?.counters[condition.counter] ?? 0) >= condition.atLeast;
+      // "That player" is known only to a resolution (`Game`'s resolution
+      // context answers it); a static has nobody it's about.
+      if (condition.who === "that-player") return false;
       return condition.who === "you"
         ? has(you)
         : state.turnOrder.some((p) => p !== you && state.players[p]?.hasLost !== true && has(p));

@@ -115,6 +115,7 @@ import _poolOgreTaskmaster from "../pool/ogre-taskmaster.js";
 import _poolOwlinShieldmage from "../pool/owlin-shieldmage.js";
 import _poolPanickedAltisaur from "../pool/panicked-altisaur.js";
 import _poolPegasusCharger from "../pool/pegasus-charger.js";
+import _poolPeterParkersCamera from "../pool/peter-parkers-camera.js";
 import _poolPharikasLibation from "../pool/pharikas-libation.js";
 import _poolPillardropWarden from "../pool/pillardrop-warden.js";
 import _poolPlanarPortal from "../pool/planar-portal.js";
@@ -312,6 +313,7 @@ const shard: CardShard = {
     _poolOwlinShieldmage,
     _poolPanickedAltisaur,
     _poolPegasusCharger,
+    _poolPeterParkersCamera,
     _poolPharikasLibation,
     _poolPillardropWarden,
     _poolPlanarPortal,

@@ -479,6 +479,7 @@ import _poolBattlefieldRaptor from "./pool/battlefield-raptor.js";
 import _poolBattleflySwarm from "./pool/battlefly-swarm.js";
 import _poolBattlegroundGeist from "./pool/battleground-geist.js";
 import _poolBattlegrowth from "./pool/battlegrowth.js";
+import _poolBattlemagesBracers from "./pool/battlemages-bracers.js";
 import _poolBattlewandOak from "./pool/battlewand-oak.js";
 import _poolBattlewiseValor from "./pool/battlewise-valor.js";
 import _poolBayFalcon from "./pool/bay-falcon.js";
@@ -2021,6 +2022,7 @@ import _poolFlamebornViron from "./pool/flameborn-viron.js";
 import _poolFlamekinBrawler from "./pool/flamekin-brawler.js";
 import _poolFlamekinGildweaver from "./pool/flamekin-gildweaver.js";
 import _poolFlamekinSpitfire from "./pool/flamekin-spitfire.js";
+import _poolFlameshadowConjuring from "./pool/flameshadow-conjuring.js";
 import _poolFlamewaveInvoker from "./pool/flamewave-invoker.js";
 import _poolFlamingSword from "./pool/flaming-sword.js";
 import _poolFlankingTroops from "./pool/flanking-troops.js";
@@ -2812,6 +2814,7 @@ import _poolImprovisedWeaponry from "./pool/improvised-weaponry.js";
 import _poolImpulsivePilferer from "./pool/impulsive-pilferer.js";
 import _poolInGarruksWake from "./pool/in-garruks-wake.js";
 import _poolInallaArchmageRitualist from "./pool/inalla-archmage-ritualist.js";
+import _poolIncreasingVengeance from "./pool/increasing-vengeance.js";
 import _poolIncubationDruid from "./pool/incubation-druid.js";
 import _poolIncurableOgre from "./pool/incurable-ogre.js";
 import _poolIndathaCrystal from "./pool/indatha-crystal.js";
@@ -2909,6 +2912,7 @@ import _poolIthilienKingfisher from "./pool/ithilien-kingfisher.js";
 import _poolItlimocCradleOfTheSun from "./pool/itlimoc-cradle-of-the-sun.js";
 import _poolIvyDancer from "./pool/ivy-dancer.js";
 import _poolIvyGleefulSpellthief from "./pool/ivy-gleeful-spellthief.js";
+import _poolIxhelScionOfAtraxa from "./pool/ixhel-scion-of-atraxa.js";
 import _poolIzzetBoilerworks from "./pool/izzet-boilerworks.js";
 import _poolIzzetCharm from "./pool/izzet-charm.js";
 import _poolIzzetChronarch from "./pool/izzet-chronarch.js";
@@ -3634,6 +3638,7 @@ import _poolMoleManMoloidMaster from "./pool/mole-man-moloid-master.js";
 import _poolMollyHayesRunaway from "./pool/molly-hayes-runaway.js";
 import _poolMoltenBlast from "./pool/molten-blast.js";
 import _poolMoltenDuplication from "./pool/molten-duplication.js";
+import _poolMoltenEchoes from "./pool/molten-echoes.js";
 import _poolMoltenGatekeeper from "./pool/molten-gatekeeper.js";
 import _poolMoltenRavager from "./pool/molten-ravager.js";
 import _poolMoltenTributary from "./pool/molten-tributary.js";
@@ -4079,6 +4084,7 @@ import _poolPestMascot from "./pool/pest-mascot.js";
 import _poolPestilentKathari from "./pool/pestilent-kathari.js";
 import _poolPestilentWolf from "./pool/pestilent-wolf.js";
 import _poolPetAvengers from "./pool/pet-avengers.js";
+import _poolPeterParkersCamera from "./pool/peter-parkers-camera.js";
 import _poolPetrifiedField from "./pool/petrified-field.js";
 import _poolPhalanxVanguard from "./pool/phalanx-vanguard.js";
 import _poolPhantasmalImage from "./pool/phantasmal-image.js";
@@ -5433,6 +5439,7 @@ import _poolStrengthOfTheHarvest from "./pool/strength-of-the-harvest.js";
 import _poolStrengthOfThePack from "./pool/strength-of-the-pack.js";
 import _poolStriderHarness from "./pool/strider-harness.js";
 import _poolStrikeItRich from "./pool/strike-it-rich.js";
+import _poolStrionicResonator from "./pool/strionic-resonator.js";
 import _poolStripMine from "./pool/strip-mine.js";
 import _poolStripedBears from "./pool/striped-bears.js";
 import _poolStripedRiverwinder from "./pool/striped-riverwinder.js";
@@ -7347,6 +7354,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBattleflySwarm,
   _poolBattlegroundGeist,
   _poolBattlegrowth,
+  _poolBattlemagesBracers,
   _poolBattlewandOak,
   _poolBattlewiseValor,
   _poolBayFalcon,
@@ -8889,6 +8897,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFlamekinBrawler,
   _poolFlamekinGildweaver,
   _poolFlamekinSpitfire,
+  _poolFlameshadowConjuring,
   _poolFlamewaveInvoker,
   _poolFlamingSword,
   _poolFlankingTroops,
@@ -9680,6 +9689,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolImpulsivePilferer,
   _poolInGarruksWake,
   _poolInallaArchmageRitualist,
+  _poolIncreasingVengeance,
   _poolIncubationDruid,
   _poolIncurableOgre,
   _poolIndathaCrystal,
@@ -9777,6 +9787,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolItlimocCradleOfTheSun,
   _poolIvyDancer,
   _poolIvyGleefulSpellthief,
+  _poolIxhelScionOfAtraxa,
   _poolIzzetBoilerworks,
   _poolIzzetCharm,
   _poolIzzetChronarch,
@@ -10502,6 +10513,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMollyHayesRunaway,
   _poolMoltenBlast,
   _poolMoltenDuplication,
+  _poolMoltenEchoes,
   _poolMoltenGatekeeper,
   _poolMoltenRavager,
   _poolMoltenTributary,
@@ -10947,6 +10959,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPestilentKathari,
   _poolPestilentWolf,
   _poolPetAvengers,
+  _poolPeterParkersCamera,
   _poolPetrifiedField,
   _poolPhalanxVanguard,
   _poolPhantasmalImage,
@@ -12301,6 +12314,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStrengthOfThePack,
   _poolStriderHarness,
   _poolStrikeItRich,
+  _poolStrionicResonator,
   _poolStripMine,
   _poolStripedBears,
   _poolStripedRiverwinder,

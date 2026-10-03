@@ -715,7 +715,8 @@ export type GameEvent =
     })
   | (Base & {
       /** A player's draw was replaced by another player drawing instead
-       * (Notion Thief-lite — rule 614 / ROADMAP Phase 11 EG-6). */
+       * (Notion Thief — rule 614 / ROADMAP Phase 11 EG-6). One per
+       * redirect: a draw handed on twice is two of these. */
       readonly type: "draw-redirected";
       readonly from: PlayerId;
       readonly to: PlayerId;

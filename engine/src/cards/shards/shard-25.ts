@@ -179,6 +179,7 @@ import _poolSpireOfIndustry from "../pool/spire-of-industry.js";
 import _poolStaunchDefenders from "../pool/staunch-defenders.js";
 import _poolStormCrow from "../pool/storm-crow.js";
 import _poolStorySeeker from "../pool/story-seeker.js";
+import _poolStrionicResonator from "../pool/strionic-resonator.js";
 import _poolSultaiDevotee from "../pool/sultai-devotee.js";
 import _poolTaintedPeak from "../pool/tainted-peak.js";
 import _poolTarSnare from "../pool/tar-snare.js";
@@ -397,6 +398,7 @@ const shard: CardShard = {
     _poolStaunchDefenders,
     _poolStormCrow,
     _poolStorySeeker,
+    _poolStrionicResonator,
     _poolSultaiDevotee,
     _poolTaintedPeak,
     _poolTarSnare,

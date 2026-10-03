@@ -510,11 +510,15 @@ export type StaticCondition =
    * A player has at least `atLeast` counters of a kind (rule 122.1) — you,
    * or *some one* opponent counted on their own: corrupted's "as long as an
    * opponent has three or more poison counters". See `PlayerState.counters`.
+   * `"that-player"` is the player a resolving effect is about (the
+   * `"that-player"` scope): impulse-exile's `whoseIf` — Ixhel, Scion of
+   * Atraxa's "each opponent **who has three or more poison counters**". Only
+   * a resolution knows that player; anywhere else it's false.
    */
   | {
       readonly kind: "player-counters";
       readonly counter: PlayerCounterKind;
-      readonly who: "you" | "opponent";
+      readonly who: "you" | "opponent" | "that-player";
       readonly atLeast: number;
     }
   /** Who is the monarch (rule 720): you, or any opponent (Queen Marchesa's

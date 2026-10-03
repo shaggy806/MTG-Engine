@@ -3167,6 +3167,13 @@ export type EffectSpec =
        * its caster's, and so is the permanent it becomes (rule 601.2a,
        * 608.3a). */
       readonly whose?: number | PlayerScope;
+      /** Only those of `whose`'s players this holds for, each asked about
+       * as `"that-player"` as the effect applies — Ixhel, Scion of Atraxa's
+       * "each opponent **who has three or more poison counters** exiles the
+       * top card of their library face down" (`{ kind: "player-counters",
+       * counter: "poison", who: "that-player", atLeast: 3 }`). The rest
+       * exile nothing; those it holds for still exile at once. */
+      readonly whoseIf?: StaticCondition;
       /** "Each player may play the card they exiled this way": the
        * permission goes to each card's owner, not to the controller. */
       readonly playedBy?: "owner";
@@ -6566,13 +6573,19 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "attack-requirement":
       ctx.addAttackRequirement(spec.filter, spec.otherThanYou);
       return;
-    case "impulse-exile":
+    case "impulse-exile": {
+      const whoseIf = spec.whoseIf;
+      const players =
+        spec.whose !== undefined && spec.whose !== "you"
+          ? scopedOrTargetedPlayers(spec.whose, ctx).flatMap((ref) => (ref?.kind === "player" ? [ref.player] : []))
+          : whoseIf !== undefined
+            ? [ctx.controller]
+            : undefined;
       ctx.impulseExile(amountValue(spec.amount, ctx), spec.duration, spec.castOnly === true, {
-        ...(spec.whose !== undefined && spec.whose !== "you"
+        ...(players !== undefined
           ? {
-              players: scopedOrTargetedPlayers(spec.whose, ctx).flatMap((ref) =>
-                ref?.kind === "player" ? [ref.player] : [],
-              ),
+              players:
+                whoseIf === undefined ? players : players.filter((p) => ctx.aboutPlayer(p).conditionMet(whoseIf)),
             }
           : {}),
         ...(spec.whileSource === true ? { whileSource: true } : {}),
@@ -6587,6 +6600,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ...(spec.spendAs !== undefined ? { spendAs: spec.spendAs } : {}),
       });
       return;
+    }
     case "unless":
       ctx.unless(
         spec.chooser,

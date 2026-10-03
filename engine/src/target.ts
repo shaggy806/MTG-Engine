@@ -181,7 +181,8 @@ export type TargetSpec =
    * An activated or triggered ability on the stack, narrowed — the general
    * form of `"activated-or-triggered-ability"`: "target activated or
    * triggered ability **you control**" (Lithoform Engine, Vantress Visions),
-   * "… you control **from an enchantment source**" (Weaver of Harmony). A
+   * "… you control **from an enchantment source**" (Weaver of Harmony),
+   * "target **triggered** ability you control" (Strionic Resonator). A
    * mana ability never is one (rule 605.3b); a Saga chapter is a triggered
    * ability (714.2b).
    */
@@ -189,6 +190,11 @@ export type TargetSpec =
       readonly kind: "ability";
       /** Whose ability: its controller. Defaults to `"any"`. */
       readonly whose?: "any" | "you";
+      /** Only an activated or only a triggered ability — a Saga's chapter
+       * ability, a delayed or reflexive trigger and a ward trigger are all
+       * triggered (rules 714.2b, 603.7, 603.12, 702.21a). Either when
+       * absent. */
+      readonly abilityKind?: "activated" | "triggered";
       /** Its source has one of these card types — as it is, or as it last
        * existed on the battlefield if it has left there since the ability
        * went on the stack; a card in another zone (a channel ability's) by
@@ -630,7 +636,8 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
   }
   if (spec.kind === "ability") {
     const from = spec.sourceTypes === undefined ? "" : ` from ${spec.sourceTypes.join(" or ")} source`;
-    return `activated or triggered ability${spec.whose === "you" ? " you control" : ""}${from}`;
+    const noun = spec.abilityKind === undefined ? "activated or triggered" : spec.abilityKind;
+    return `${noun} ability${spec.whose === "you" ? " you control" : ""}${from}`;
   }
   if (spec.kind === "spell") {
     const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";

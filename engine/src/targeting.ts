@@ -312,6 +312,11 @@ export function isLegalTarget(
     const ability = state.objects[ref.object];
     if (ability === undefined || ability.zone !== "stack" || ability.kind !== "ability") return false;
     if (spec.whose === "you" && ability.controller !== forPlayer) return false;
+    // A chapter ability is a triggered ability (rule 714.2b).
+    if (spec.abilityKind !== undefined) {
+      const kind = ability.abilityKind === "chapter" ? "triggered" : ability.abilityKind;
+      if (kind !== spec.abilityKind) return false;
+    }
     if (spec.sourceTypes !== undefined) {
       const types = abilitySourceTypes(state, registry, ability);
       if (!spec.sourceTypes.some((t) => types.includes(t))) return false;
@@ -501,26 +506,29 @@ export function isLegalTarget(
     }
     case "spell":
       return ref.kind === "object" && isSpellOnStack(state, ref.object);
+    // A spell's types are those of the face on the stack (`printedCardName`):
+    // an Adventure cast as its instant half is an instant spell, not a
+    // creature spell (rule 715.3b), a copy of a spell what it copies.
     case "creature-spell":
       return (
         ref.kind === "object" &&
         isSpellOnStack(state, ref.object) &&
-        registry.get(state.objects[ref.object].cardName).types.includes("creature")
+        registry.get(printedCardName(state.objects[ref.object])).types.includes("creature")
       );
     case "noncreature-spell":
       return (
         ref.kind === "object" &&
         isSpellOnStack(state, ref.object) &&
-        !registry.get(state.objects[ref.object].cardName).types.includes("creature")
+        !registry.get(printedCardName(state.objects[ref.object])).types.includes("creature")
       );
     case "instant-or-sorcery-spell": {
       if (ref.kind !== "object" || !isSpellOnStack(state, ref.object)) return false;
-      const t = registry.get(state.objects[ref.object].cardName).types;
+      const t = registry.get(printedCardName(state.objects[ref.object])).types;
       return t.includes("instant") || t.includes("sorcery");
     }
     case "enchantment-instant-or-sorcery-spell": {
       if (ref.kind !== "object" || !isSpellOnStack(state, ref.object)) return false;
-      const t = registry.get(state.objects[ref.object].cardName).types;
+      const t = registry.get(printedCardName(state.objects[ref.object])).types;
       return t.includes("enchantment") || t.includes("instant") || t.includes("sorcery");
     }
     case "activated-or-triggered-ability":

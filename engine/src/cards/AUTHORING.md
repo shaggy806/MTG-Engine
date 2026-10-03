@@ -954,7 +954,9 @@ under the effect's controller; choices made as it resolves are made again (a
 "you may pay"), and it isn't activated. `newTargets: true` asks for new
 targets as `copy-spell`'s does, judged from the ability's source for the
 copy's controller. A delayed trigger's captured objects ("that creature",
-carried in its target slots) aren't targets, and stay.
+carried in its target slots) aren't targets, and stay. Neither copy is ever
+offered itself as a new target (rule 115.5) — a copy of Lithoform Engine's
+ability, or of Increasing Vengeance, could otherwise aim at itself.
 
 `exile-spell-as-it-resolves` is Feather, the Redeemed's "exile that card instead of putting it
 into your graveyard as it resolves. If you do, return it to your hand at the beginning of the
@@ -1158,7 +1160,7 @@ exist (rule 111.7), so neither comes back.
   step. One effect because the loop, the per-opponent attack requirement and
   the sacrifice are one instruction — and it copies a card in **exile**, which
   the Encore cost put there (`zone: "graveyard"`).
-- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, playedBy?, whileSource?, oncePerTurn?, faceDown?, spendAs? }`**
+- **`impulse-exile { amount, duration, castOnly?, filter?, free?, choose?, yourTurnOnly?, gate?, whose?, whoseIf?, playedBy?, whileSource?, oncePerTurn?, faceDown?, spendAs? }`**
   — "impulse draw": exile the top N cards face-up and let yourself play them
   (Dream Pillager, Tectonic Giant, Theater of Horrors). `duration` is
   `"end-of-turn"`, `"your-next-turn"` (counted down as *that player's* turns
@@ -1175,8 +1177,14 @@ exist (rule 111.7), so neither comes back.
   "owner"` gives each card's permission to its owner: Rocco's "each
   player exiles the top card of their library. Until your next end step, each
   player may play the card they exiled this way" is `{ amount: 1, duration:
-  "your-next-end-step", whose: "each-player", playedBy: "owner" }`. Without
-  `playedBy` the permission is the controller's whoever owns the cards: a
+  "your-next-end-step", whose: "each-player", playedBy: "owner" }`.
+  `whoseIf` keeps only the players of `whose` a condition holds for, each
+  asked about as `"that-player"` as the effect applies — the rest exile
+  nothing, those left still exile at once: Ixhel, Scion of Atraxa's "each
+  opponent **who has three or more poison counters** exiles the top card of
+  their library face down" is `whose: "each-opponent", whoseIf: { kind:
+  "player-counters", counter: "poison", who: "that-player", atLeast: 3 }`.
+  Without `playedBy` the permission is the controller's whoever owns the cards: a
   spell cast from one is the caster's (rule 601.2a), the permanent it becomes
   enters under them (608.3a), a land played from one is theirs, and each
   goes to its owner's zones after that. `whileSource: true` makes it
@@ -1756,10 +1764,13 @@ stopped covering:
   on the stack — printed colours and types, and a mana value that counts its
   chosen {X} (rule 202.3e). The unfiltered shapes stay string literals
   (`"spell"`, `"creature-spell"`, …).
-- `{ kind: "ability", whose?: "any" | "you", sourceTypes?: CardType[] }` — an
+- `{ kind: "ability", whose?: "any" | "you", abilityKind?: "activated" | "triggered", sourceTypes?: CardType[] }` — an
   activated or triggered ability on the stack (never a mana ability, rule
   605.3b), by its controller — "target activated or triggered ability **you
-  control**" (Lithoform Engine, Vantress Visions) — and by its source's card
+  control**" (Lithoform Engine, Vantress Visions) — by its kind: "target
+  **triggered** ability you control" (Strionic Resonator: `abilityKind:
+  "triggered"`, which takes a Saga's chapter ability, a delayed or reflexive
+  trigger and a ward trigger too — rule 714.2b) — and by its source's card
   types: "… **from an enchantment source**" (Weaver of Harmony:
   `sourceTypes: ["enchantment"]`), the source as it is while it's still the
   object it was as the ability went on the stack, else as it last existed on
@@ -2141,7 +2152,7 @@ triggered: [
 | `plays-land` | `who`, `otherOnly?` | a player **plays** a land — the special action (rule 305.1; Burgeoning, Fastbond), not a land put onto the battlefield (that's an `enters-battlefield` filtered to lands). `otherOnly` is City of Traitors' "when you play **another** land": its own play doesn't count, though it's on the battlefield by the time that play is announced. |
 | `plays-card` | `who`, `from?`, `filter?` | a player **plays a card** — plays a land *or* casts a spell, since "play" covers both (Prosper, Tome-Bound's "whenever you play a card **from exile**" is `{ on: "plays-card", who: "you", from: "exile" }`, which a land played off an impulse exile fires as well as a foretold card cast from there). `from` is the zone recorded on the `land-played` / `spell-cast` event. `filter` asks about the card played, as the land on the battlefield or the spell on the stack (Rendmaw, Creaking Nest's "a card with two or more card types" is `{ cardTypeCount: { op: "gte", n: 2 } }`). For lands alone, `plays-land`. |
 | `this-cast` | — | the spell carrying this ability is cast (cascade, storm) |
-| `activates-ability` | `who: "attached"` | an ability of the Equipment's or Aura's host is activated onto the stack — never a mana ability, which doesn't use it (rule 605.3b) — the host still attached once the costs are paid, so one sacrificed to pay them isn't (Illusionist's Bracers' rulings). The trigger object is the ability on the stack: `copy-ability`'s `"trigger-ability"` copies it, as it last was there if it's been countered. "Whenever **you** activate an ability" (Rings of Brighthearth) isn't offered: the engine resolves cycling's draw without the stack (rule 702.29a says it uses it), so a cycling activation would be missed. |
+| `activates-ability` | `who: "attached"` | an ability of the Equipment's or Aura's host is activated onto the stack — never a mana ability, which doesn't use it (rule 605.3b) — the host still attached once the costs are paid, so one sacrificed to pay them isn't (Illusionist's Bracers' rulings). The trigger object is the ability on the stack: `copy-ability`'s `"trigger-ability"` copies it, as it last was there if it's been countered (Battlemage's Bracers puts that in a `may` with `cost: "{1}"`). "Whenever **you** activate an ability" (Rings of Brighthearth) isn't offered: the engine resolves cycling's draw without the stack (rule 702.29a says it uses it), so a cycling activation would be missed. |
 | `predicate` | `match: (event) => boolean` | escape hatch — match the raw `GameEvent` |
 
 **`who: TriggerWho`** = `"self"` (this permanent) / `"you-control"` / `"you"`
@@ -2905,10 +2916,13 @@ clause (section 9):
   opponents control eight or more lands" — plural "opponents" sums, unlike
   `opponent-controls`'s singular "an opponent").
 - `{ kind: "your-turn" }`
-- `{ kind: "player-counters", counter, who: "you" | "opponent", atLeast }` —
+- `{ kind: "player-counters", counter, who: "you" | "opponent" | "that-player", atLeast }` —
   a player has at least that many counters of a kind; `"opponent"` is *one*
   opponent on their own. Corrupted ("as long as an opponent has three or more
   poison counters") is `{ counter: "poison", who: "opponent", atLeast: 3 }`.
+  `"that-player"` is the player a resolving effect is about — impulse-exile's
+  `whoseIf` (Ixhel's "each opponent who has three or more poison counters",
+  §6); a static has no such player, and reads it as false.
 - `{ kind: "threshold" }` — 7+ cards in your graveyard.
 - `{ kind: "hand-size", atMost?, atLeast?, who? }` — cards in your hand,
   inclusive (Flubs, the Fool); `who: "each-player"` is every player still in
@@ -3148,8 +3162,17 @@ clause (section 9):
   else" follows one object, not a static — `put-onto-battlefield
   { exileIfItWouldLeave: true }` (Whip of Erebos). It catches a bounce or a
   tuck as well as a death, and ends when the permanent leaves.
-- `{ event: "would-draw", who: "opponent", instead: "you-draw" }` — Notion
-  Thief. `{ event: "would-draw", who: "you", instead: { draws: N } }` is "if
+- `{ event: "would-draw", who: "opponent", instead: "you-draw",
+  exceptFirstInDrawStep: true }` — Notion Thief's "if an opponent would draw a
+  card except the first one they draw in each of their draw steps, instead
+  that player skips that draw and you draw a card". `exceptFirstInDrawStep`
+  spares the first card a player draws in their own draw step (the
+  turn-based draw, or the next one if that was skipped). Only the draw is
+  replaced: "draw a card, then discard a card" still discards (the ruling).
+  The draw it hands its controller can be handed on by a Thief of one of
+  *their* opponents, each effect applying to the draw once (rule 614.5, the
+  rulings' procedure): with a Thief on each side of a duel the draw stays put,
+  and two against one leaves it with the two. `{ event: "would-draw", who: "you", instead: { draws: N } }` is "if
   you would draw a card, draw N cards instead" (gate it with the static's
   `condition`); neither applies again to the draws it makes (rule 614.5).
   `{ event: "would-draw", who: "you", instead: "win-game", whileLibraryEmpty:
@@ -3621,8 +3644,14 @@ Delete an entry in the same commit as the feature that retires it.
   Laboratory Maniac (or Jace, Wielder of Mysteries) and an opponent's Notion
   Thief doesn't: the win is applied first, which is the drawing player's pick
   whenever they can win; when they can't (an opponent's Platinum Angel),
-  letting the Notion Thief's controller draw instead isn't offered. No damage
-  **redirection** to a third object (Harm's Way).
+  letting the Notion Thief's controller draw instead isn't offered. Nor is
+  which Notion Thief goes first when Thieves of **two different opponents**
+  could take a draw (a game of three or more): the drawing player would
+  choose (the Notion Thief ruling), and which one they pick decides which
+  opponent ends up drawing; the engine takes the one first in turn order
+  after them. (Against one opponent, however many Thieves they have, there's
+  nothing to choose.) No damage **redirection** to a third object (Harm's
+  Way).
 - **Modal abilities** — a modal *activated* ability would choose its modes
   as it resolves, not as it's activated (rule 700.2b); the pool has none. A
   modal *triggered* ability announces them as it goes on the stack

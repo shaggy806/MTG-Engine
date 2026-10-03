@@ -158,7 +158,7 @@ describe("EG-6 — filtered graveyard exile (Anafenza, the Foremost)", () => {
 });
 
 describe("EG-6 — would-draw redirect (Notion Thief)", () => {
-  it("an opponent's draw becomes your draw; your own draws are untouched", () => {
+  it("an opponent's draw becomes your draw — but not the first in their draw step; yours are untouched", () => {
     const { game } = mkGame([]);
     game.advanceUntil(toPrecombat);
     mana(game);
@@ -167,14 +167,24 @@ describe("EG-6 — would-draw redirect (Notion Thief)", () => {
     const aHand0 = game.handOf(A).length;
     const bHand0 = game.handOf(B).length;
 
-    // Roll to bob's draw step.
-    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
-    expect(game.handOf(B).length).toBe(bHand0); // bob drew nothing
-    expect(game.handOf(A).length).toBe(aHand0 + 1); // alice drew instead
-    expect(game.eventsOfType("draw-redirected").length).toBeGreaterThan(0);
+    // Bob draws on Alice's turn: Alice draws instead.
+    game.debugApplyEffect(B, { kind: "draw", amount: 1 });
+    expect(game.handOf(B).length).toBe(bHand0);
+    expect(game.handOf(A).length).toBe(aHand0 + 1);
+    expect(game.eventsOfType("draw-redirected")).toHaveLength(1);
+
+    // Bob's turn-based draw is the first he draws in his draw step: his.
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "draw" && s.priority.holder === B);
+    expect(game.handOf(B).length).toBe(bHand0 + 1);
+    expect(game.handOf(A).length).toBe(aHand0 + 1);
+    // A second card in the same draw step isn't the first: Alice's.
+    game.debugApplyEffect(B, { kind: "draw", amount: 1 });
+    expect(game.handOf(B).length).toBe(bHand0 + 1);
+    expect(game.handOf(A).length).toBe(aHand0 + 2);
+    expect(game.eventsOfType("draw-redirected")).toHaveLength(2);
 
     // Alice's own turn-3 draw is a normal draw.
     game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "precombat-main");
-    expect(game.handOf(A).length).toBe(aHand0 + 2);
+    expect(game.handOf(A).length).toBe(aHand0 + 3);
   });
 });

@@ -88,6 +88,7 @@ import _poolHaughtyDjinn from "../pool/haughty-djinn.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
 import _poolImperialOutrider from "../pool/imperial-outrider.js";
 import _poolInGarruksWake from "../pool/in-garruks-wake.js";
+import _poolIncreasingVengeance from "../pool/increasing-vengeance.js";
 import _poolIronLance from "../pool/iron-lance.js";
 import _poolIvyDancer from "../pool/ivy-dancer.js";
 import _poolJacesIngenuity from "../pool/jaces-ingenuity.js";
@@ -313,6 +314,7 @@ const shard: CardShard = {
     _poolHornetHarasser,
     _poolImperialOutrider,
     _poolInGarruksWake,
+    _poolIncreasingVengeance,
     _poolIronLance,
     _poolIvyDancer,
     _poolJacesIngenuity,

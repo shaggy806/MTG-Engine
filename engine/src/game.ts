@@ -15786,6 +15786,17 @@ export class Game {
         return sacrificed !== undefined && matchesKnown(sacrificed.object, condition.filter);
       }
       if (condition.kind === "resolved-this-turn") return resolutionCount === condition.n;
+      // "Each opponent who has three or more poison counters" (Ixhel): the
+      // player this effect is about (`"that-player"`), which only the
+      // resolution knows.
+      if (condition.kind === "player-counters" && condition.who === "that-player") {
+        const that = refs.player;
+        return (
+          that !== undefined &&
+          this.state.players[that]?.hasLost === false &&
+          (this.state.players[that].counters[condition.counter] ?? 0) >= condition.atLeast
+        );
+      }
       // "If X is 10 or more" — the X the resolving spell was cast with.
       if (condition.kind === "x") return compareNum(x, condition.compare, x);
       // "If ~ is still on the battlefield" — as the same object.
@@ -15921,7 +15932,7 @@ export class Game {
           // effect is the same failed draw again (rule 704.5b only needs one).
           // Stopping keeps "draw a card for each creature" over a big token
           // stack from emitting millions of identical events.
-          const from = this.drawRedirectFor(player) ?? player;
+          const from = this.eventualDrawer(player);
           const empty = this.state.zones.perPlayer[from].library.length === 0;
           this.drawCard(player);
           // A draw replaced by a win (Laboratory Maniac) ended the game.
@@ -19109,7 +19120,11 @@ export class Game {
       // An "any number of" group is the last spec, standing for every
       // target from there on.
       const spec = specs[Math.min(i, specs.length - 1)];
-      const legal = legalTargets(this.state, this.registry, spec, copy.controller, source);
+      // Never the copy itself: a spell or ability on the stack is an illegal
+      // target for itself (rule 115.5).
+      const legal = legalTargets(this.state, this.registry, spec, copy.controller, source).filter(
+        (t) => t.kind !== "object" || t.object !== copyId,
+      );
       slots.push(i);
       slotSpecs.push(spec);
       current.push(target);
@@ -24036,15 +24051,29 @@ export class Game {
     // rulings). Applied before an opponent's redirect (Notion Thief), the
     // order the drawing player would pick (rule 616.1) whenever they can win.
     if (this.drawWonInstead(player)) return;
-    // would-draw replacement (Notion Thief-lite — rule 614 / ROADMAP Phase 11
-    // EG-6): an opponent's draw is replaced by the replacement source's
-    // controller drawing instead. Applied once — the redirected draw itself
-    // isn't re-redirected — but the draw it becomes is theirs, which their
-    // own Laboratory Maniac can still replace (rule 616.2).
-    const redirectTo = this.drawRedirectFor(player);
-    if (redirectTo !== null) {
-      this.emit({ type: "draw-redirected", from: player, to: redirectTo });
-      if (!this.drawWonInstead(redirectTo)) this.drawCardRaw(redirectTo);
+    // would-draw redirect (Notion Thief — rule 614 / ROADMAP Phase 11 EG-6):
+    // "If an opponent would draw a card except the first one they draw in
+    // each of their draw steps, instead that player skips that draw and you
+    // draw a card." The draw it becomes is its controller's, which a Thief of
+    // one of *their* opponents may hand on again — each effect applying to
+    // the draw once (rule 614.5; the rulings' procedure), so in a duel where
+    // both players have one the draw stays where it began. A player it
+    // reaches whose Laboratory Maniac would win instead does that first
+    // (rule 616.2: the draw is theirs now).
+    let drawer = player;
+    let redirected = false;
+    const applied = new Map<ObjectId, number>();
+    for (;;) {
+      const next = this.drawRedirectFor(drawer, applied);
+      if (next === null) break;
+      applied.set(next.source, (applied.get(next.source) ?? 0) + 1);
+      this.emit({ type: "draw-redirected", from: drawer, to: next.to });
+      redirected = true;
+      drawer = next.to;
+      if (this.drawWonInstead(drawer)) return;
+    }
+    if (redirected) {
+      this.drawCardRaw(drawer);
       return;
     }
     // "If you would draw a card, draw N cards instead" — those N aren't
@@ -24123,24 +24152,56 @@ export class Game {
     return null;
   }
 
-  /** Whose draw replaces `player`'s (a `would-draw` static an opponent
-   * controls), or `null`. */
-  private drawRedirectFor(player: PlayerId): PlayerId | null {
+  /** Who draws if `player` would draw a card now, once every `would-draw`
+   * redirect (Notion Thief) has handed it on — `drawCard`'s chain, without
+   * drawing. */
+  private eventualDrawer(player: PlayerId): PlayerId {
+    let drawer = player;
+    const applied = new Map<ObjectId, number>();
+    for (;;) {
+      const next = this.drawRedirectFor(drawer, applied);
+      if (next === null) return drawer;
+      applied.set(next.source, (applied.get(next.source) ?? 0) + 1);
+      drawer = next.to;
+    }
+  }
+
+  /**
+   * The next `would-draw` redirect (Notion Thief) to apply to a draw
+   * `player` would make: one of an opponent's, not yet `applied` to this
+   * draw (a token stack is that many effects, counted by `applied`), whose
+   * "except the first one they draw in each of their draw steps" doesn't
+   * spare this one — or `null` when none is left.
+   *
+   * When Thieves of two different opponents could apply, the drawing player
+   * would choose which (rule 616.1, and the Notion Thief ruling): that isn't
+   * asked — the opponent first in turn order after them goes first
+   * (AUTHORING §15, "Replacement ordering").
+   */
+  private drawRedirectFor(
+    player: PlayerId,
+    applied: ReadonlyMap<ObjectId, number>,
+  ): { readonly source: ObjectId; readonly to: PlayerId } | null {
+    const seat = this.state.players[player];
+    const firstInDrawStep =
+      this.state.turn.step === "draw" && player === this.activePlayer && seat?.drewInDrawStepThisTurn !== true;
+    const order = this.state.turnOrder;
+    const after = (p: PlayerId): number =>
+      (order.indexOf(p) - order.indexOf(player) + order.length) % order.length;
+    let best: { readonly source: ObjectId; readonly to: PlayerId } | null = null;
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
       if (hasLostAbilities(source) || source.controller === player) continue;
+      if ((applied.get(id) ?? 0) >= (source.stackCount ?? 1)) continue;
       for (const ability of this.registry.get(printedCardName(source)).static) {
         const r = ability.replacement;
-        if (
-          r?.event === "would-draw" &&
-          r.who === "opponent" &&
-          this.staticActive(source, ability)
-        ) {
-          return source.controller;
-        }
+        if (r?.event !== "would-draw" || r.who !== "opponent" || r.instead !== "you-draw") continue;
+        if (r.exceptFirstInDrawStep === true && firstInDrawStep) continue;
+        if (!this.staticActive(source, ability)) continue;
+        if (best === null || after(source.controller) < after(best.to)) best = { source: id, to: source.controller };
       }
     }
-    return null;
+    return best;
   }
 
   private drawCardRaw(player: PlayerId): void {
