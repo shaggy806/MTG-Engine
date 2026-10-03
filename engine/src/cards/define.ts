@@ -2012,6 +2012,18 @@ export interface CardDefinition {
      * Chosen as the cost is paid, as `additionalCost.sacrificeCount`'s are. */
     readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   } | null;
+  /**
+   * "You may cast this card from your graveyard as long as [condition]"
+   * (Gravecrawler: "as long as you control a Zombie") — an ability that
+   * modifies where the card may be cast from, so it functions there (rule
+   * 113.6f): while the condition holds
+   * for its owner, the card may be cast from their graveyard for its normal
+   * costs, under the usual timing (its ruling). Checked as it's cast, never
+   * again (the other ruling: losing the Zombie afterwards changes nothing).
+   * Offered like any graveyard permission (`via: "graveyard-permission"`,
+   * the card itself the grant's source), and it spends nothing.
+   */
+  readonly castFromGraveyardIf?: StaticCondition;
   /** Foretell (rule 702.144 — ROADMAP Phase 6b) — during your turn you may pay
    * `{2}` to exile this card from your hand face-down; on a later turn you may
    * cast it from exile for `cost`. `null` for a card without foretell. */
@@ -2254,6 +2266,7 @@ const PRINTED_ABILITY: {
   escape: (def) => def.escape !== null,
   suspend: (def) => def.suspend !== null,
   cycling: (def) => def.cycling !== null,
+  castFromGraveyardIf: (def) => def.castFromGraveyardIf !== undefined,
   chapters: (def) => def.chapters !== null && def.chapters.length > 0,
   faces: false,
   cantBeCountered: (def) => def.cantBeCountered,
@@ -2393,6 +2406,7 @@ interface CardDraft {
     readonly payLife?: number;
     readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   };
+  castFromGraveyardIf?: StaticCondition;
   foretell?: { readonly cost: string };
   warp?: { readonly cost: string };
   evoke?: { readonly cost: string };
@@ -2487,6 +2501,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     prototype: draft.prototype ?? null,
     suspend: draft.suspend ?? null,
     cycling: draft.cycling ?? null,
+    ...(draft.castFromGraveyardIf !== undefined ? { castFromGraveyardIf: draft.castFromGraveyardIf } : {}),
     escape: draft.escape ?? null,
     chapters: draft.chapters ?? null,
     faces: draft.faces ?? null,

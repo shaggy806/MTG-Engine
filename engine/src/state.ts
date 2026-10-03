@@ -2637,6 +2637,11 @@ export interface PlayerEffect {
    * a player already below it loses life to damage as normal (the ruling).
    * The damage itself is still dealt in full. */
   readonly damageLifeFloor?: { readonly players: readonly PlayerId[]; readonly floor: number };
+  /** "If one or more tokens would be created under your control, twice that
+   * many of those tokens are created instead" for a while (Kaya, Geist
+   * Hunter's −2): multiplies every token creation under `owner`'s control,
+   * alongside a Doubling Season's (rule 614 — they compound). */
+  readonly tokenMultiplier?: number;
 }
 
 /**

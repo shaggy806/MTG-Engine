@@ -56,6 +56,7 @@ import _poolFlameOfAnor from "../pool/flame-of-anor.js";
 import _poolFleetingEffigy from "../pool/fleeting-effigy.js";
 import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
 import _poolFrostwindInvoker from "../pool/frostwind-invoker.js";
+import _poolGalaGreeters from "../pool/gala-greeters.js";
 import _poolGevScaledScorch from "../pool/gev-scaled-scorch.js";
 import _poolGiganticBigBear from "../pool/gigantic-big-bear.js";
 import _poolGlarbCalamitysAugur from "../pool/glarb-calamitys-augur.js";
@@ -83,6 +84,7 @@ import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
 import _poolJaradGolgariLichLord from "../pool/jarad-golgari-lich-lord.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
 import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
+import _poolKayaGeistHunter from "../pool/kaya-geist-hunter.js";
 import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
 import _poolKeeperOfTheNineGales from "../pool/keeper-of-the-nine-gales.js";
 import _poolKiorasDambreaker from "../pool/kioras-dambreaker.js";
@@ -248,6 +250,7 @@ const shard: CardShard = {
     _poolFleetingEffigy,
     _poolFrontierBivouac,
     _poolFrostwindInvoker,
+    _poolGalaGreeters,
     _poolGevScaledScorch,
     _poolGiganticBigBear,
     _poolGlarbCalamitysAugur,
@@ -275,6 +278,7 @@ const shard: CardShard = {
     _poolJaradGolgariLichLord,
     _poolJasperaSentinel,
     _poolJetmirNexusOfRevels,
+    _poolKayaGeistHunter,
     _poolKeeperOfTheAccord,
     _poolKeeperOfTheNineGales,
     _poolKiorasDambreaker,

@@ -246,6 +246,7 @@ function castableFromGraveyard(registry: CardRegistry, object: GameObject): bool
     def.flashback !== null ||
     def.escape !== null ||
     def.disturb !== null ||
+    def.castFromGraveyardIf !== undefined ||
     (def.activated ?? []).some((a) => a.zone === "graveyard")
   );
 }

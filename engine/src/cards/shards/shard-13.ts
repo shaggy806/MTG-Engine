@@ -183,6 +183,7 @@ import _poolSyrGwynHeroOfAshvale from "../pool/syr-gwyn-hero-of-ashvale.js";
 import _poolTarPitcher from "../pool/tar-pitcher.js";
 import _poolTectonicGiant from "../pool/tectonic-giant.js";
 import _poolTempleGarden from "../pool/temple-garden.js";
+import _poolTevalsJudgment from "../pool/tevals-judgment.js";
 import _poolTheDrossPits from "../pool/the-dross-pits.js";
 import _poolTheJollyBalloonMan from "../pool/the-jolly-balloon-man.js";
 import _poolThornwindFaeries from "../pool/thornwind-faeries.js";
@@ -400,6 +401,7 @@ const shard: CardShard = {
     _poolTarPitcher,
     _poolTectonicGiant,
     _poolTempleGarden,
+    _poolTevalsJudgment,
     _poolTheDrossPits,
     _poolTheJollyBalloonMan,
     _poolThornwindFaeries,

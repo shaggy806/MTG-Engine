@@ -241,6 +241,7 @@ import _poolWhiptongueHydra from "../pool/whiptongue-hydra.js";
 import _poolWieldingTheGreenDragon from "../pool/wielding-the-green-dragon.js";
 import _poolWildJhovall from "../pool/wild-jhovall.js";
 import _poolWishcoinCrab from "../pool/wishcoin-crab.js";
+import _poolWithinRange from "../pool/within-range.js";
 import _poolYevaNaturesHerald from "../pool/yeva-natures-herald.js";
 import _poolZetalpaPrimalDawn from "../pool/zetalpa-primal-dawn.js";
 import _poolZombieMaster from "../pool/zombie-master.js";
@@ -492,6 +493,7 @@ const shard: CardShard = {
     _poolWieldingTheGreenDragon,
     _poolWildJhovall,
     _poolWishcoinCrab,
+    _poolWithinRange,
     _poolYevaNaturesHerald,
     _poolZetalpaPrimalDawn,
     _poolZombieMaster,

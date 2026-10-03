@@ -220,6 +220,12 @@ export type EffectAmount =
       /** Leave out whatever target slot `excludeTarget` names — "for each
        * creature you control **other than that creature**". */
       readonly excludeTarget?: number;
+      /** Read the filter from the side of the player in this target slot
+       * rather than the effect's controller's — "the number of creatures
+       * **target player** controls" (Will of the Mardu) is `{ countOf: {
+       * type: "creature", controlledBy: "you" }, forTarget: 0 }`. 0 when the
+       * slot holds no player, or one gone illegal. */
+      readonly forTarget?: number;
     }
   /** A sum or maximum over matching battlefield permanents — "X is the
    * **total power** of creatures you control", "the **greatest mana value**
@@ -469,6 +475,12 @@ export type EffectAmount =
    * this combat" (rule 702.121). A planeswalker attacked isn't its
    * controller. */
   | { readonly opponentsAttacked: true }
+  /** How many creatures are attacking the player a per-player effect is
+   * acting on — that player, not a planeswalker of theirs (rule 506.3):
+   * Within Range's "each opponent loses life equal to the number of
+   * creatures attacking **them**" is a `lose-life` to `"each-opponent"` of
+   * this. Read as it resolves; a token stack counts as every token in it. */
+  | { readonly attackingPlayer: "each" }
   /** How much damage sources the scope's players controlled dealt this turn
    * — see the `damage-dealt-this-turn` condition. */
   | {
@@ -2099,6 +2111,10 @@ export type EffectSpec =
       readonly cantWinGame?: PlayerScope;
       readonly cantLoseLife?: PlayerScope;
       readonly damageLifeFloor?: { readonly who: PlayerScope; readonly floor: number };
+      /** "Until end of turn, if one or more tokens would be created under
+       * your control, twice that many of those tokens are created instead"
+       * (Kaya, Geist Hunter's −2) — `2`. Compounds with a Doubling Season. */
+      readonly tokenMultiplier?: number;
     }
   | {
       /**
@@ -3697,6 +3713,9 @@ export interface EffectApi {
   lifeLostThisWay(players?: readonly PlayerId[]): number;
   /** See the `{ opponentsAttacked }` {@link EffectAmount}. */
   opponentsAttacked(): number;
+  /** See the `{ attackingPlayer }` {@link EffectAmount}: creatures
+   * attacking `player` (not their planeswalkers), a stack as its tokens. */
+  creaturesAttacking(player: PlayerId): number;
   /** See the `{ damageDealtThisTurn }` {@link EffectAmount}. */
   damageDealtThisTurn(players: readonly PlayerId[], combat?: boolean, colors?: readonly Color[]): number;
   /** See the `{ turnHistory }` {@link EffectAmount}. */
@@ -4015,8 +4034,9 @@ export interface EffectApi {
     withCounters?: { readonly kind: string; readonly amount: number },
   ): void;
   /** Number of battlefield permanents matching `filter`, evaluated with the
-   * effect's controller as "you" (for an `EffectAmount` `{ countOf }`). */
-  countMatching(filter: CardFilter, except?: readonly ObjectId[]): number;
+   * effect's controller as "you" (for an `EffectAmount` `{ countOf }`) —
+   * or `you`, given one (a `countOf`'s `forTarget`). */
+  countMatching(filter: CardFilter, except?: readonly ObjectId[], you?: PlayerId): number;
   /** See the aggregate {@link EffectAmount}: the raw sum or maximum, with
    * `except` left out one permanent apiece. */
   aggregate(spec: AggregateSpec, except: readonly ObjectId[]): number;
@@ -4879,6 +4899,7 @@ function signedAmountValue(
   }
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
   if ("opponentsAttacked" in amount) return ctx.opponentsAttacked();
+  if ("attackingPlayer" in amount) return ctx.creaturesAttacking(each ?? ctx.controller);
   if ("damageDealtThisTurn" in amount) {
     return ctx.damageDealtThisTurn(ctx.playersInScope(amount.who ?? "you"), amount.combat, amount.colors);
   }
@@ -4980,6 +5001,11 @@ function signedAmountValue(
   if (amount.excludeTarget !== undefined) {
     const ref = ctx.targets[amount.excludeTarget];
     if (ref?.kind === "object") except.push(ref.object);
+  }
+  if (amount.forTarget !== undefined) {
+    const ref = ctx.targets[amount.forTarget];
+    if (ref?.kind !== "player" || illegalSlot(amount.forTarget, ctx)) return 0;
+    return ctx.countMatching(amount.countOf, except, ref.player) * (amount.times ?? 1);
   }
   return ctx.countMatching(amount.countOf, except) * (amount.times ?? 1);
 }
@@ -5191,6 +5217,7 @@ function readsEachPlayer(amount: EffectAmount): boolean {
   if ("librarySize" in amount) return amount.librarySize === "each";
   if ("graveyardSize" in amount) return amount.graveyardSize === "each";
   if ("cardsInHand" in amount) return amount.cardsInHand === "each";
+  if ("attackingPlayer" in amount) return true;
   if ("thisWay" in amount) return amount.who === "each";
   if ("half" in amount) return readsEachPlayer(amount.half);
   if ("product" in amount) return amount.product.some(readsEachPlayer);
@@ -6127,6 +6154,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               },
             }
           : {}),
+        ...(spec.tokenMultiplier !== undefined ? { tokenMultiplier: spec.tokenMultiplier } : {}),
       });
       return;
     case "win-game":

@@ -102,6 +102,7 @@ import _poolGoldfuryStrider from "../pool/goldfury-strider.js";
 import _poolGoldspanDragon from "../pool/goldspan-dragon.js";
 import _poolGrandAbolisher from "../pool/grand-abolisher.js";
 import _poolGrappleWithDeath from "../pool/grapple-with-death.js";
+import _poolGravecrawler from "../pool/gravecrawler.js";
 import _poolGreataxe from "../pool/greataxe.js";
 import _poolGruulGuildgate from "../pool/gruul-guildgate.js";
 import _poolHagraCrocodile from "../pool/hagra-crocodile.js";
@@ -323,6 +324,7 @@ const shard: CardShard = {
     _poolGoldspanDragon,
     _poolGrandAbolisher,
     _poolGrappleWithDeath,
+    _poolGravecrawler,
     _poolGreataxe,
     _poolGruulGuildgate,
     _poolHagraCrocodile,

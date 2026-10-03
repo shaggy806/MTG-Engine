@@ -950,3 +950,219 @@ describe("The Balrog of Moria", () => {
     expect(game.state.objects[bobs].zone).toBe("battlefield");
   });
 });
+
+describe("Teval's Judgment", () => {
+  it("chooses a mode not chosen this turn each time cards leave your graveyard", () => {
+    const game = setUp();
+    game.debugSpawn("Teval's Judgment", A, "battlefield");
+    const leave = () => {
+      const card = game.debugSpawn("Grizzly Bears", A, "graveyard");
+      game.debugApplyEffect(A, { kind: "return-to-hand", target: 0, from: "graveyard" }, [obj(card)]);
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-modes" || quiet(s));
+    };
+    const offered = (): string[] => {
+      const awaiting = game.state.awaiting;
+      return awaiting?.kind === "choose-modes" ? awaiting.modes.map((m) => m.text) : [];
+    };
+    leave();
+    expect(offered()).toHaveLength(3);
+    game.dispatch({ type: "choose-modes", player: A, modes: [2] });
+    game.advanceUntil(quiet);
+    expect(zombies(game)).toHaveLength(1);
+    leave();
+    expect(offered()).toEqual(["Draw a card.", "Create a Treasure token."]);
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    leave();
+    expect(offered()).toEqual(["Create a Treasure token."]);
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    // Every mode chosen this turn: the fourth is removed.
+    leave();
+    expect(game.state.awaiting).toBeNull();
+  });
+});
+
+describe("Gravecrawler", () => {
+  const graveyardOffer = (game: Game, card: ObjectId) =>
+    game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === card);
+
+  it("casts from your graveyard only while you control a Zombie", () => {
+    const game = setUp();
+    const crawler = game.debugSpawn("Gravecrawler", A, "graveyard");
+    expect(graveyardOffer(game, crawler)).toBeUndefined();
+    // An opponent's Zombie isn't yours.
+    game.debugApplyEffect(B, { kind: "create-token", token: "Zombie Druid Token", count: 1 }, []);
+    expect(graveyardOffer(game, crawler)).toBeUndefined();
+    game.debugApplyEffect(A, { kind: "create-token", token: "Zombie Druid Token", count: 1 }, []);
+    expect(graveyardOffer(game, crawler)).toBeDefined();
+    game.dispatch({ type: "cast-spell", player: A, card: crawler, targets: [], via: "graveyard-permission" });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[crawler].zone).toBe("battlefield");
+  });
+
+  it("can't block", () => {
+    const game = setUp();
+    const crawler = ready(game, "Gravecrawler");
+    expect(game.characteristics(crawler).restrictions.has("cant-block")).toBe(true);
+  });
+});
+
+describe("Kaya, Geist Hunter", () => {
+  const tokensNamed = (game: Game, name: string): number =>
+    game.state.zones.shared.battlefield
+      .filter((id) => game.state.objects[id].cardName === name && game.state.objects[id].controller === A)
+      .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+
+  it("+1: deathtouch for your creatures, and a counter on up to one creature token of yours", () => {
+    const game = setUp();
+    const kaya = game.debugSpawn("Kaya, Geist Hunter", A, "battlefield");
+    const bears = ready(game, "Grizzly Bears");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Spirit Token", count: 1 }, []);
+    const spirit = game.state.zones.shared.battlefield.find((id) => game.state.objects[id].cardName === "Spirit Token")!;
+    // A nontoken creature isn't a legal target.
+    expect(() => activate(game, kaya, 0, [obj(bears)])).toThrow();
+    activate(game, kaya, 0, [obj(spirit)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[spirit].counters["+1/+1"]).toBe(1);
+    expect(game.characteristics(bears).keywords.has("deathtouch")).toBe(true);
+    expect(game.state.objects[kaya].counters.loyalty).toBe(4);
+  });
+
+  it("−2: doubles the tokens you create this turn, and no longer", () => {
+    const game = setUp();
+    const kaya = game.debugSpawn("Kaya, Geist Hunter", A, "battlefield");
+    activate(game, kaya, 1);
+    game.advanceUntil(quiet);
+    game.debugApplyEffect(A, { kind: "create-token", token: "Spirit Token", count: 2 }, []);
+    expect(tokensNamed(game, "Spirit Token")).toBe(4);
+    // An opponent's tokens aren't doubled.
+    game.debugApplyEffect(B, { kind: "create-token", token: "Spirit Token", count: 1 }, []);
+    const theirs = game.state.zones.shared.battlefield
+      .filter((id) => game.state.objects[id].cardName === "Spirit Token" && game.state.objects[id].controller === B)
+      .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+    expect(theirs).toBe(1);
+    game.advanceUntil((s) => activePlayerOf(s) === B && s.turn.step === "precombat-main");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Spirit Token", count: 1 }, []);
+    expect(tokensNamed(game, "Spirit Token")).toBe(5);
+  });
+
+  it("−6: exiles every graveyard and makes a Spirit for each card exiled", () => {
+    const game = setUp();
+    const kaya = game.debugSpawn("Kaya, Geist Hunter", A, "battlefield");
+    // 7, so she survives the cost (at 0 she'd die first and be exiled too).
+    game.state.objects[kaya].counters.loyalty = 7;
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Grizzly Bears", A, "graveyard");
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Island", B, "graveyard");
+    activate(game, kaya, 2);
+    game.advanceUntil(quiet);
+    expect(game.state.zones.perPlayer[A].graveyard).toHaveLength(0);
+    expect(game.state.zones.perPlayer[B].graveyard).toHaveLength(0);
+    expect(tokensNamed(game, "Spirit Token")).toBe(5);
+  });
+});
+
+describe("Will of the Mardu", () => {
+  const redWarriors = (game: Game): number =>
+    game.state.zones.shared.battlefield
+      .filter((id) => game.state.objects[id].cardName === "Red Warrior Token" && game.state.objects[id].controller === A)
+      .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+
+  it("makes a Warrior for each creature target player controls", () => {
+    const game = setUp();
+    for (let i = 0; i < 3; i += 1) ready(game, "Grizzly Bears", B);
+    ready(game, "Grizzly Bears");
+    cast(game, "Will of the Mardu", [{ kind: "player", player: B }], { modes: [0] });
+    game.advanceUntil(quiet);
+    expect(redWarriors(game)).toBe(3);
+  });
+
+  it("with a commander, both: the Warriors count toward the damage", () => {
+    const game = setUp();
+    const commander = ready(game, "Grizzly Bears");
+    game.state.objects[commander].isCommander = true;
+    for (let i = 0; i < 2; i += 1) ready(game, "Grizzly Bears", B);
+    const wurm = ready(game, "Craw Wurm", B); // 6/4
+    cast(game, "Will of the Mardu", [{ kind: "player", player: B }, obj(wurm)], { modes: [0, 1] });
+    game.advanceUntil(quiet);
+    // Three Warriors (Bob's three creatures), then 1 + 3 = 4 damage.
+    expect(redWarriors(game)).toBe(3);
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
+  });
+});
+
+describe("Gala Greeters", () => {
+  it("offers only the modes not yet chosen this turn as creatures enter", () => {
+    const game = setUp();
+    const greeters = ready(game, "Gala Greeters");
+    const enter = () => {
+      game.debugSpawn("Grizzly Bears", A, "battlefield", { announceEntry: true });
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-modes" || quiet(s));
+      const awaiting = game.state.awaiting;
+      return awaiting?.kind === "choose-modes" ? awaiting.modes.map((m) => m.text) : [];
+    };
+    expect(enter()).toHaveLength(3);
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[greeters].counters["+1/+1"]).toBe(1);
+    expect(enter()).toEqual(["Create a tapped Treasure token.", "You gain 2 life."]);
+    game.dispatch({ type: "choose-modes", player: A, modes: [1] });
+    game.advanceUntil(quiet);
+    expect(life(game)).toBe(22);
+  });
+});
+
+describe("Within Range", () => {
+  it("makes two Warriors, then drains each opponent by the creatures attacking them", () => {
+    const game = threeWay();
+    const range = game.debugSpawn("Within Range", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    const warriors = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Red Warrior Token",
+    );
+    expect(warriors.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(2);
+    expect(range).toBeDefined();
+    const [a, b, c, d] = ["Grizzly Bears", "Grizzly Bears", "Grizzly Bears", "Grizzly Bears"].map((n) => ready(game, n));
+    const walker = game.debugSpawn("Ajani, Caller of the Pride", C, "battlefield");
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" && activePlayerOf(s) === A);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: a, defender: B },
+        { attacker: b, defender: B },
+        { attacker: c, defender: C },
+        // At Carol's planeswalker: not attacking her.
+        { attacker: d, defender: walker },
+      ],
+    });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.pendingTriggers.length === 0 && s.awaiting === null);
+    expect(life(game, B)).toBe(18);
+    expect(life(game, C)).toBe(19);
+    expect(life(game)).toBe(20);
+  });
+});
+
+describe("Faeburrow Elder", () => {
+  it("grows and taps for one mana of each color among your permanents", () => {
+    const game = bare();
+    const elder = ready(game, "Faeburrow Elder");
+    expect(game.characteristics(elder).power).toBe(2);
+    game.debugSpawn("Hypnotic Specter", A, "battlefield");
+    game.debugSpawn("Raging Goblin", A, "battlefield");
+    // An opponent's colours don't count.
+    game.debugSpawn("Serra Angel", B, "battlefield");
+    expect(game.characteristics(elder).toughness).toBe(4);
+    activate(game, elder);
+    expect(pool(game)).toEqual(["W", "B", "R", "G"]);
+  });
+
+  it("pays a cost through the auto-payer", () => {
+    const game = bare();
+    ready(game, "Faeburrow Elder");
+    game.debugSpawn("Hypnotic Specter", A, "battlefield");
+    const doran = cast(game, "Doran, the Siege Tower");
+    game.advanceUntil(quiet);
+    expect(game.state.objects[doran].zone).toBe("battlefield");
+  });
+});

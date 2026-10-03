@@ -201,6 +201,7 @@ import _poolWerebear from "../pool/werebear.js";
 import _poolWetlandSambar from "../pool/wetland-sambar.js";
 import _poolWhiteSunsZenith from "../pool/white-suns-zenith.js";
 import _poolWillOfTheJeskai from "../pool/will-of-the-jeskai.js";
+import _poolWillOfTheMardu from "../pool/will-of-the-mardu.js";
 import _poolWiltLeafCavaliers from "../pool/wilt-leaf-cavaliers.js";
 import _poolWirewoodSavage from "../pool/wirewood-savage.js";
 import _poolWrathOfGod from "../pool/wrath-of-god.js";
@@ -417,6 +418,7 @@ const shard: CardShard = {
     _poolWetlandSambar,
     _poolWhiteSunsZenith,
     _poolWillOfTheJeskai,
+    _poolWillOfTheMardu,
     _poolWiltLeafCavaliers,
     _poolWirewoodSavage,
     _poolWrathOfGod,

@@ -2176,6 +2176,7 @@ import _poolGaeasCradle from "./pool/gaeas-cradle.js";
 import _poolGaeasGift from "./pool/gaeas-gift.js";
 import _poolGaeasSkyfolk from "./pool/gaeas-skyfolk.js";
 import _poolGaiusVanBaelsar from "./pool/gaius-van-baelsar.js";
+import _poolGalaGreeters from "./pool/gala-greeters.js";
 import _poolGaladhrimGuide from "./pool/galadhrim-guide.js";
 import _poolGaladrielLightOfValinor from "./pool/galadriel-light-of-valinor.js";
 import _poolGaleSwooper from "./pool/gale-swooper.js";
@@ -2443,6 +2444,7 @@ import _poolGratefulApparition from "./pool/grateful-apparition.js";
 import _poolGratuitousViolence from "./pool/gratuitous-violence.js";
 import _poolGravePact from "./pool/grave-pact.js";
 import _poolGraveTitan from "./pool/grave-titan.js";
+import _poolGravecrawler from "./pool/gravecrawler.js";
 import _poolGravedigger from "./pool/gravedigger.js";
 import _poolGravelHideGoblin from "./pool/gravel-hide-goblin.js";
 import _poolGravenCairns from "./pool/graven-cairns.js";
@@ -3037,6 +3039,7 @@ import _poolKataraHeroicHealer from "./pool/katara-heroic-healer.js";
 import _poolKataraTheFearless from "./pool/katara-the-fearless.js";
 import _poolKavuClimber from "./pool/kavu-climber.js";
 import _poolKavuGlider from "./pool/kavu-glider.js";
+import _poolKayaGeistHunter from "./pool/kaya-geist-hunter.js";
 import _poolKayasGhostform from "./pool/kayas-ghostform.js";
 import _poolKazanduMammoth from "./pool/kazandu-mammoth.js";
 import _poolKazanduNectarpot from "./pool/kazandu-nectarpot.js";
@@ -5720,6 +5723,7 @@ import _poolTesharAncestorsApostle from "./pool/teshar-ancestors-apostle.js";
 import _poolTestOfEndurance from "./pool/test-of-endurance.js";
 import _poolTevalArbiterOfVirtue from "./pool/teval-arbiter-of-virtue.js";
 import _poolTevalTheBalancedScale from "./pool/teval-the-balanced-scale.js";
+import _poolTevalsJudgment from "./pool/tevals-judgment.js";
 import _poolTeyosLightshield from "./pool/teyos-lightshield.js";
 import _poolTeysaKarlov from "./pool/teysa-karlov.js";
 import _poolTezzeretsGambit from "./pool/tezzerets-gambit.js";
@@ -6529,6 +6533,7 @@ import _poolWildfire from "./pool/wildfire.js";
 import _poolWildwoodPatrol from "./pool/wildwood-patrol.js";
 import _poolWildwoodRebirth from "./pool/wildwood-rebirth.js";
 import _poolWillOfTheJeskai from "./pool/will-of-the-jeskai.js";
+import _poolWillOfTheMardu from "./pool/will-of-the-mardu.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
 import _poolWillOfTheTemur from "./pool/will-of-the-temur.js";
 import _poolWillowDryad from "./pool/willow-dryad.js";
@@ -6592,6 +6597,7 @@ import _poolWitherbloomPledgemage from "./pool/witherbloom-pledgemage.js";
 import _poolWitherbloomTheBalancer from "./pool/witherbloom-the-balancer.js";
 import _poolWitheredWretch from "./pool/withered-wretch.js";
 import _poolWitheringTorment from "./pool/withering-torment.js";
+import _poolWithinRange from "./pool/within-range.js";
 import _poolWithoutWeakness from "./pool/without-weakness.js";
 import _poolWithstandDeath from "./pool/withstand-death.js";
 import _poolWitnessOfTomorrows from "./pool/witness-of-tomorrows.js";
@@ -9074,6 +9080,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGaeasGift,
   _poolGaeasSkyfolk,
   _poolGaiusVanBaelsar,
+  _poolGalaGreeters,
   _poolGaladhrimGuide,
   _poolGaladrielLightOfValinor,
   _poolGaleSwooper,
@@ -9341,6 +9348,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolGratuitousViolence,
   _poolGravePact,
   _poolGraveTitan,
+  _poolGravecrawler,
   _poolGravedigger,
   _poolGravelHideGoblin,
   _poolGravenCairns,
@@ -9935,6 +9943,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolKataraTheFearless,
   _poolKavuClimber,
   _poolKavuGlider,
+  _poolKayaGeistHunter,
   _poolKayasGhostform,
   _poolKazanduMammoth,
   _poolKazanduNectarpot,
@@ -12618,6 +12627,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTestOfEndurance,
   _poolTevalArbiterOfVirtue,
   _poolTevalTheBalancedScale,
+  _poolTevalsJudgment,
   _poolTeyosLightshield,
   _poolTeysaKarlov,
   _poolTezzeretsGambit,
@@ -13427,6 +13437,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWildwoodPatrol,
   _poolWildwoodRebirth,
   _poolWillOfTheJeskai,
+  _poolWillOfTheMardu,
   _poolWillOfTheSultai,
   _poolWillOfTheTemur,
   _poolWillowDryad,
@@ -13490,6 +13501,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWitherbloomTheBalancer,
   _poolWitheredWretch,
   _poolWitheringTorment,
+  _poolWithinRange,
   _poolWithoutWeakness,
   _poolWithstandDeath,
   _poolWitnessOfTomorrows,

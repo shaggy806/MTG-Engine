@@ -16128,6 +16128,11 @@ export class Game {
         }
         return attacked.size;
       },
+      creaturesAttacking: (player) =>
+        permanentCount(
+          this.state,
+          this.state.zones.shared.battlefield.filter((id) => this.state.objects[id]?.attacking === player),
+        ),
       turnHistoryCount: (what, players, filter) =>
         turnHistoryCount(this.state, this.registry, players, what, filter, controller),
       cardTypesAmong: (objects) => {
@@ -16584,7 +16589,7 @@ export class Game {
       mill: (target, amount) => this.millByEffect(target, amount),
       exileFromLibrary: (target, count, withCounters) =>
         this.exileFromLibraryByEffect(target, count, controller, withCounters),
-      countMatching: (filter, except) => this.countBattlefieldMatching(controller, filter, except, source),
+      countMatching: (filter, except, you) => this.countBattlefieldMatching(you ?? controller, filter, except, source),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
       returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
         this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
@@ -18077,11 +18082,14 @@ export class Game {
     const isLand = def.types.includes("land");
     const out: GraveyardGrantOption[] = [];
     const own = object.graveyardCastPermission;
+    // The card's own "you may cast this card from your graveyard as long as
+    // …" (Gravecrawler — rule 113.6f), asked of its owner as it's cast.
+    const ownIf = this.registry.get(printedCardName(object)).castFromGraveyardIf;
     if (
       !isLand &&
-      own !== undefined &&
-      own.player === player &&
-      own.turn === this.state.turn.number
+      ((own !== undefined && own.player === player && own.turn === this.state.turn.number) ||
+        (ownIf !== undefined &&
+          staticConditionMet(this.state, this.registry, object, ownIf, { includeSelf: true })))
     ) {
       out.push({ grant: { source: card }, permission: null });
     }
@@ -24595,7 +24603,7 @@ export class Game {
         ctx.countInGraveyard(filter) +
         fromGraveyard.filter((id) => matchesFilter(this.state, this.registry, id, filter, { you: controller }))
           .length,
-      countMatching: (filter, except = []) => ctx.countMatching(filter, [...except, ...notYet]),
+      countMatching: (filter, except = [], you) => ctx.countMatching(filter, [...except, ...notYet], you),
       aggregate: (spec, except = []) => ctx.aggregate(spec, [...except, ...notYet]),
       colorsAmong: (filter, except = []) => ctx.colorsAmong(filter, [...except, ...notYet]),
     });
@@ -24638,6 +24646,10 @@ export class Game {
           mult *= r.multiplier;
         }
       }
+    }
+    // A doubler for a while (Kaya, Geist Hunter's −2).
+    for (const effect of this.state.playerEffects ?? []) {
+      if (effect.owner === controller && effect.tokenMultiplier !== undefined) mult *= effect.tokenMultiplier;
     }
     return mult;
   }
