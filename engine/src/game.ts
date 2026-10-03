@@ -3481,7 +3481,7 @@ export class Game {
     const object = this.state.objects[source];
     if (pay && object !== undefined && object.zone === "battlefield" && this.canPayLife(player, life)) {
       object.tapped = false;
-      this.emit({ type: "permanent-untapped", object: source });
+      this.emit({ type: "permanent-untapped", object: source, asItEntered: true });
       this.changeLife(player, -life);
     }
     this.prepareForPriority(this.activePlayer);
@@ -4948,6 +4948,9 @@ export class Game {
     if (why !== null) throw new Error(why);
 
     const fromEffect = this.state.awaiting?.kind === "discard" && this.state.awaiting.fromEffect === true;
+    // A cost's discard: priority goes back to whoever cast or activated
+    // (rule 117.3c), whoever's turn it is.
+    const priorityTo = this.state.awaiting?.kind === "discard" ? this.state.awaiting.priorityTo : undefined;
 
     this.withGraveyardEnterBatch(() => {
       for (const id of cards) this.moveObject(id, "graveyard");
@@ -4957,7 +4960,7 @@ export class Game {
 
     if (fromEffect) {
       // A spell/ability caused this (Mind Rot) — just resume the game.
-      this.prepareForPriority(this.activePlayer);
+      this.prepareForPriority(priorityTo ?? this.activePlayer);
       return;
     }
 
@@ -5009,7 +5012,9 @@ export class Game {
     }
 
     this.finishZoneChoice({ kind: "zone-choice", awaiting, player, chosen });
-    this.prepareForPriority(this.activePlayer);
+    // A cost's choice hands priority back to whoever activated (rule
+    // 117.3c); a resolution's goes on as the resolution does.
+    this.prepareForPriority(awaiting.priorityTo ?? this.activePlayer);
   }
 
   /**
@@ -5034,10 +5039,22 @@ export class Game {
     const leftover = awaiting.ids.filter((id) => !chosenSet.has(id));
     // The chosen cards move together, so the ones a choice takes out of a
     // graveyard leave it as one move ("return up to two cards").
-    this.withGraveyardLeaveBatch(() => this.moveChosenFromZone(awaiting, player, chosen, leftover));
+    let toOrder: readonly ObjectId[] = [];
+    this.withGraveyardLeaveBatch(() => {
+      toOrder = this.moveChosenFromZone(awaiting, player, chosen, leftover);
+    });
 
-    this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
+    // An order takes nothing: it only says where each card goes.
+    if (awaiting.order !== true) this.emit({ type: "cards-chosen-from-zone", player, objects: [...chosen] });
     this.state.awaiting = null;
+    // "…and the rest on the bottom of your library in any order": asked
+    // now, before `then` — the instruction that put them there comes first.
+    this.beginLibraryOrder(player, toOrder, "bottom");
+    // A scry that keeps some cards and bottoms others orders the second
+    // group once the first is placed (rule 701.22a).
+    if (awaiting.thenOrder !== undefined && this.state.awaiting === null) {
+      this.beginLibraryOrder(player, awaiting.thenOrder.cards, awaiting.thenOrder.position);
+    }
     this.applyChooseFromZoneThen(awaiting, player, chosen);
     // "Then put any number of land cards from among them onto the
     // battlefield tapped and the rest into your graveyard": a second choice
@@ -5072,7 +5089,62 @@ export class Game {
       this.state.awaiting = next;
       return;
     }
-    this.withGraveyardLeaveBatch(() => this.moveChosenFromZone(next, player, [], leftover));
+    let rest: readonly ObjectId[] = [];
+    this.withGraveyardLeaveBatch(() => {
+      rest = this.moveChosenFromZone(next, player, [], leftover);
+    });
+    this.beginLibraryOrder(player, rest, "bottom");
+  }
+
+  /**
+   * Ask `player` what order `cards` go on the top or bottom of their library
+   * in (rule 401.4: the owner arranges cards put into a library at the same
+   * time) — "the rest on the bottom of your library in any order", a scry's
+   * or surveil's cards kept on top "in any order" (rules 701.22a, 701.25a).
+   * It's a `choose-from-zone` over every one of them (`order`), whose picks
+   * are the order, the first picked nearest the top; `thenOrder` is a second
+   * group, with a choice in it, to ask about once this one is placed.
+   *
+   * Nothing is asked when there's nothing to choose between — fewer than
+   * two cards, or copies of one card — and the cards are placed as they
+   * stand: on the bottom in their current order, or, for `"top"` (cards
+   * that are on top already), left where they are. Returns whether it asked.
+   */
+  private beginLibraryOrder(
+    player: PlayerId,
+    cards: readonly ObjectId[],
+    position: "top" | "bottom",
+    thenOrder?: { readonly cards: readonly ObjectId[]; readonly position: "top" | "bottom" },
+  ): boolean {
+    if (!this.libraryOrderMatters(cards)) {
+      if (position === "bottom") for (const id of cards) this.putOnLibrary(id, "bottom");
+      return false;
+    }
+    this.state.awaiting = {
+      kind: "choose-from-zone",
+      player,
+      ids: [...cards],
+      eligible: [...cards],
+      min: cards.length,
+      max: cards.length,
+      destination: position === "top" ? "library-top" : "library-bottom",
+      leftover: "stay",
+      order: true,
+      ...(thenOrder !== undefined ? { thenOrder } : {}),
+    };
+    return true;
+  }
+
+  /** Whether the order `cards` go into a library in is a choice at all: two
+   * or more cards, not all copies of one card (which nothing can tell
+   * apart there). */
+  private libraryOrderMatters(cards: readonly ObjectId[]): boolean {
+    if (cards.length < 2) return false;
+    const names = new Set(cards.map((id) => {
+      const object = this.state.objects[id];
+      return object === undefined ? id : printedCardName(object);
+    }));
+    return names.size > 1;
   }
 
   /** Where a `choose-from-zone` answer sends its `index`th chosen card: a
@@ -5088,13 +5160,19 @@ export class Game {
   }
 
   /** The moves half of {@link applyChooseFromZone}: the chosen cards to where
-   * the choice sends them, and the ones left over. */
+   * the choice sends them, and the ones left over. Returns the leftover cards
+   * still to be ordered onto the bottom of the library (`"bottom-any-order"`
+   * — see `beginLibraryOrder`), which haven't moved yet. */
   private moveChosenFromZone(
     awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
     player: PlayerId,
     chosen: readonly ObjectId[],
     leftover: readonly ObjectId[],
-  ): void {
+  ): readonly ObjectId[] {
+    // Cards a choice puts from a hand on the bottom of a library (Valakut
+    // Awakening), announced together once they're there — what "that many"
+    // counts (the `"put-on-bottom"` this-way kind).
+    const bottomedFromHand: ObjectId[] = [];
     // A split tutor (Cultivate) sends the first find to `destination` and the
     // rest to `restDestination`; with no `restDestination` they all go to the
     // same place, which is every other tutor. Whatever goes onto the
@@ -5128,15 +5206,19 @@ export class Game {
         return;
       }
       if (to === "exile") {
-        // Imprint's "exile a card from your hand": face up, linked to the
-        // permanent whose ability exiled it (rule 607.2a).
+        // Face up. Imprint's "exile a card from your hand" links it to the
+        // permanent whose ability exiled it (rule 607.2a); a cost's "exile
+        // two cards from your graveyard" links it to nothing.
         if (this.moveObject(id, "exile") && awaiting.exileLink !== undefined) {
           this.state.objects[id].exiledWith = awaiting.exileLink;
         }
         return;
       }
       if (to === "library-bottom") {
+        // In the order chosen: each goes under the one before it.
+        const fromHand = this.state.objects[id]?.zone === "hand";
         this.putOnLibrary(id, "bottom");
+        if (fromHand && this.state.objects[id]?.zone === "library") bottomedFromHand.push(id);
         return;
       }
       const under = to === "battlefield" ? awaiting.enterUnder : undefined;
@@ -5163,6 +5245,10 @@ export class Game {
         this.emit({ type: "permanent-entered-battlefield", object: id });
       }
     }));
+    if (bottomedFromHand.length > 0) {
+      this.emit({ type: "cards-put-on-bottom", player, objects: bottomedFromHand });
+    }
+    let toOrder: readonly ObjectId[] = [];
 
     // "Then if you control nine or more Gates, put the rest into your
     // graveyard. Otherwise, …" — asked now the chosen cards have moved.
@@ -5184,6 +5270,10 @@ export class Game {
       // card on the bottom, in shuffle order.
       for (const id of shuffle(leftover, this.rng)) this.moveObject(id, "library");
       this.state.rngState = this.rng.seed;
+    } else if (leftoverTo === "bottom-any-order") {
+      // In the order the chooser picks next — the caller asks, once this
+      // choice is done (`beginLibraryOrder`).
+      toOrder = leftover;
     } else if (leftoverTo === "shuffle") {
       // A library search — shuffle the whole library afterwards (rule 701.19j).
       this.shuffleLibraryOf(player);
@@ -5216,6 +5306,7 @@ export class Game {
     if (awaiting.destination === "library-top") {
       for (const id of [...chosen].reverse()) this.putOnLibrary(id, "top");
     }
+    return toOrder;
   }
 
   /** The rest of {@link applyChooseFromZone}, once the cards have moved and
@@ -5230,15 +5321,16 @@ export class Game {
     // chosen means nothing to say it about.
     const then = awaiting.then;
     if (then !== undefined && chosen.length > 0) {
-      applyEffectSpec(
-        then,
-        this.makeResolutionContext(
-          awaiting.thenSource ?? asObjectId("choose-from-zone-source"),
-          player,
-          chosen.map((id) => ({ kind: "object", object: id }) as const),
-          awaiting.thenX ?? 0,
-        ),
+      const ctx = this.makeResolutionContext(
+        awaiting.thenSource ?? asObjectId("choose-from-zone-source"),
+        player,
+        chosen.map((id) => ({ kind: "object", object: id }) as const),
+        awaiting.thenX ?? 0,
       );
+      // The rest still to be ordered onto the bottom: `then` comes after
+      // that, as any step after a decision waits for it.
+      if (this.state.awaiting !== null) ctx.resumeAfterDecisions(then);
+      else applyEffectSpec(then, ctx);
     }
   }
 
@@ -9107,6 +9199,7 @@ export class Game {
       this.withDecisionSource(cardId, () => {
         this.discardByEffect({ kind: "player", player }, chosenOption.discard as number);
       });
+      this.costDiscardPriorityTo(via === "effect" ? this.activePlayer : player);
     }
     const costDiscard = def.additionalCost?.discard;
     if (costDiscard !== undefined) {
@@ -9117,6 +9210,7 @@ export class Game {
       this.withDecisionSource(cardId, () => {
         this.discardByEffect({ kind: "player", player }, costDiscard);
       });
+      this.costDiscardPriorityTo(via === "effect" ? this.activePlayer : player);
     }
     // Cast during a resolution: once that resolution finishes, the active
     // player gets priority (rule 117.3b), not necessarily the caster.
@@ -10119,6 +10213,18 @@ export class Game {
         return `${player} has too few cards in hand to pay ${def.name}'s cost`;
       }
     }
+    if (ability.cost.exileFromGraveyard !== undefined) {
+      // Paid with a decision once the ability is on the stack, which a mana
+      // ability never is; and one cost asks one thing at a time.
+      if (isManaAbility(ability)) return `${def.name}'s mana ability can't exile cards from a graveyard yet`;
+      if (ability.cost.discard !== undefined || sacrificeParts !== null) {
+        return `${def.name}'s ability can't ask for two cost choices at once yet`;
+      }
+      const { count, filter } = ability.cost.exileFromGraveyard;
+      if (this.graveyardCostCandidates(player, filter, sourceId).length < count) {
+        return `${player} has too few cards in their graveyard to pay ${def.name}'s cost`;
+      }
+    }
     if (ability.cost.removeCounter !== undefined) {
       const { kind, count } = ability.cost.removeCounter;
       if ((source.counters[kind] ?? 0) < count) {
@@ -10510,8 +10616,70 @@ export class Game {
       this.withDecisionSource(sourceId, () => {
         this.discardByEffect({ kind: "player", player }, costDiscard.count, false, costDiscard.filter);
       });
+      this.costDiscardPriorityTo(player);
+    }
+    // "Exile two cards from your graveyard" likewise.
+    const costExile = ability.cost.exileFromGraveyard;
+    if (costExile !== undefined) {
+      this.withDecisionSource(sourceId, () => this.payGraveyardExileCost(player, sourceId, costExile));
     }
     this.afterPlayerAction(player);
+  }
+
+  /** A discard just asked for as a cost — a spell's or an activated
+   * ability's — hands priority, once answered, to `player`: who cast or
+   * activated (rule 117.3c), not whoever's turn it is. */
+  private costDiscardPriorityTo(player: PlayerId): void {
+    const awaiting = this.state.awaiting;
+    if (awaiting?.kind === "discard" && awaiting.fromEffect === true) {
+      this.state.awaiting = { ...awaiting, priorityTo: player };
+    }
+  }
+
+  /** The cards in `player`'s graveyard an "exile N cards from your
+   * graveyard" cost may take: those matching `filter`, never `except` (the
+   * ability's own source, a card in the graveyard paying for itself). */
+  private graveyardCostCandidates(player: PlayerId, filter: CardFilter | undefined, except: ObjectId): ObjectId[] {
+    return this.state.zones.perPlayer[player].graveyard.filter(
+      (id) =>
+        id !== except &&
+        (filter === undefined || matchesFilter(this.state, this.registry, id, filter, { you: player })),
+    );
+  }
+
+  /**
+   * Pay an activated ability's "exile N [kind of] cards from your graveyard"
+   * (`AbilityCost.exileFromGraveyard`) as it goes on the stack (rule 602.2b,
+   * paid as 601.2h): the player picks which with a `choose-from-zone` over
+   * their graveyard (`destination: "exile"`), and gets priority back once
+   * it's paid (117.3c). No more matching cards than that is no choice: they
+   * are all exiled at once. Either way they leave as one move.
+   */
+  private payGraveyardExileCost(
+    player: PlayerId,
+    source: ObjectId,
+    cost: { readonly count: number; readonly filter?: CardFilter },
+  ): void {
+    const eligible = this.graveyardCostCandidates(player, cost.filter, source);
+    if (eligible.length <= cost.count) {
+      this.withGraveyardLeaveBatch(() => {
+        for (const id of eligible) this.moveObject(id, "exile");
+      });
+      return;
+    }
+    this.state.awaiting = {
+      kind: "choose-from-zone",
+      player,
+      // The whole graveyard is on show (it's public); only the matching
+      // cards may be picked.
+      ids: this.state.zones.perPlayer[player].graveyard.filter((id) => id !== source),
+      eligible,
+      min: cost.count,
+      max: cost.count,
+      destination: "exile",
+      leftover: "stay",
+      priorityTo: player,
+    };
   }
 
   /**
@@ -13297,7 +13465,11 @@ export class Game {
                         // "that player" of a `draws` trigger.
                         event.type === "card-drawn" || event.type === "counter-added"
                         ? event.object
-                        : undefined;
+                        : // The permanent that untapped: "that permanent's
+                          // controller" (Mesmeric Orb).
+                          event.type === "permanent-untapped"
+                          ? event.object
+                          : undefined;
           const powerOfId =
             event.type === "permanent-entered-battlefield"
               ? event.object
@@ -13453,6 +13625,12 @@ export class Game {
             event.target.object !== id
               ? (this.state.objects[event.target.object]?.stackCount ?? 1)
               : 1;
+          // A compacted stack untapping is every token in it untapping, each
+          // its own permanent: Mesmeric Orb mills once per token.
+          const untapped =
+            event.type === "permanent-untapped" && event.object !== id
+              ? (this.state.objects[event.object]?.stackCount ?? 1)
+              : 1;
           // "Triggers only once each turn": this firing is the one, whatever
           // the stack size or batch count would otherwise multiply it to.
           if (ability.oncePerTurn === true) {
@@ -13469,6 +13647,7 @@ export class Game {
               ? 1
               : departed *
                 recipients *
+                untapped *
                 (event.type === "permanent-entered-battlefield" ? (event.count ?? 1) : 1)) *
             (1 + entryDoublers);
           // Damage dealt all at once is dealt to a permanent once, however
@@ -14310,6 +14489,13 @@ export class Game {
       case "becomes-tapped":
         return (
           event.type === "permanent-tapped" &&
+          this.matchesWho(spec.who, event.object, self) &&
+          this.triggerFilterOk(spec.filter, event.object, self)
+        );
+      case "becomes-untapped":
+        return (
+          event.type === "permanent-untapped" &&
+          event.asItEntered !== true &&
           this.matchesWho(spec.who, event.object, self) &&
           this.triggerFilterOk(spec.filter, event.object, self)
         );
@@ -15979,12 +16165,13 @@ export class Game {
       simultaneously: (fn) =>
         this.withLeaveBatch(() => this.withGraveyardLeaveBatch(() => this.withEnterBatch(fn))),
       flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
-      returnFlickered: (link, thenCounters, underYourControl, transformed) =>
+      returnFlickered: (link, thenCounters, underYourControl, transformed, tapped) =>
         this.returnFlickeredByEffect(
           link,
           thenCounters,
           underYourControl ? controller : undefined,
           transformed,
+          tapped,
         ),
       grantFlashback: (target) => this.grantFlashbackByEffect(target, source),
       grantFlashbackAll: (filter) => {
@@ -16820,8 +17007,8 @@ export class Game {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down" | "exile",
-    leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
+    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile",
+    leftover: "bottom-random" | "bottom-any-order" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped = false,
     then?: { effect: EffectSpec | undefined; source: ObjectId; x: number },
@@ -17003,10 +17190,24 @@ export class Game {
       movedAway: awayOrdered.length,
     });
 
+    // "…and the rest on top of your library **in any order**" (rules
+    // 701.22a, 701.25a), and a scry's cards on the bottom in any order too:
+    // the player orders each group that has a choice in it, the kept cards
+    // first. Anything that triggers on the scry waits for all of it
+    // (701.22d): nothing goes on the stack mid-resolution.
+    const groups = [
+      { cards: stay, position: "top" as const },
+      ...(mode === "scry" ? [{ cards: awayOrdered, position: "bottom" as const }] : []),
+    ].filter((group) => this.libraryOrderMatters(group.cards));
+    const ordering = groups.length > 0 && this.beginLibraryOrder(player, groups[0].cards, groups[0].position, groups[1]);
+
     if (then !== null) {
-      applyEffectSpec(then, this.makeResolutionContext(source, player, [], x));
+      const ctx = this.makeResolutionContext(source, player, [], x);
+      // Preordain's "then draw a card" draws once the cards are in order.
+      if (ordering) ctx.resumeAfterDecisions(then);
+      else applyEffectSpec(then, ctx);
     }
-    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+    if (this.state.awaiting === null || ordering) this.prepareForPriority(this.activePlayer);
   }
 
   /** Kept because `applyScry` validates before applying and throws; the
@@ -20720,9 +20921,16 @@ export class Game {
           ...(options.thenCounters !== undefined ? { thenCounters: options.thenCounters } : {}),
           ...(returnUnder !== undefined ? { underYourControl: true } : {}),
           ...(options.transformed === true ? { transformed: true } : {}),
+          ...(options.tapped === true ? { tapped: true } : {}),
         };
       }
-      this.completeFlickerReturn(exiled, options.thenCounters, returnUnder, options.transformed === true);
+      this.completeFlickerReturn(
+        exiled,
+        options.thenCounters,
+        returnUnder,
+        options.transformed === true,
+        options.tapped === true,
+      );
       return null;
     }
     // No link means nothing was exiled (or is waiting to be): no return.
@@ -20737,6 +20945,7 @@ export class Game {
         ...(options.thenCounters !== undefined ? { thenCounters: options.thenCounters } : {}),
         ...(returnUnder !== undefined ? { underYourControl: true } : {}),
         ...(options.transformed === true ? { transformed: true } : {}),
+        ...(options.tapped === true ? { tapped: true } : {}),
       },
       options.returnText ?? "Return the exiled card to the battlefield.",
       [],
@@ -20752,6 +20961,7 @@ export class Game {
     counters: FlickerCounters | undefined,
     returnUnder: PlayerId | undefined,
     transformed = false,
+    tapped = false,
   ): boolean {
     const linked = this.state.zones.shared.exile.filter(
       (id) => this.state.objects[id]?.flickerLink === link,
@@ -20763,7 +20973,7 @@ export class Game {
       return true;
     }
     for (const id of linked) this.state.objects[id].flickerLink = undefined;
-    this.completeFlickerReturn(returning, counters, returnUnder, transformed);
+    this.completeFlickerReturn(returning, counters, returnUnder, transformed, tapped);
     return false;
   }
 
@@ -20771,12 +20981,13 @@ export class Game {
    * having already confirmed that's where they are. Shared by the immediate
    * path, the delayed one, and the one that had to wait on a commander's
    * 903.9a choice. `returnUnder` is who controls them when it isn't their
-   * owners (`underYourControl`). */
+   * owners (`underYourControl`); `tapped`, that they enter tapped. */
   private completeFlickerReturn(
     ids: readonly ObjectId[],
     counters?: FlickerCounters,
     returnUnder?: PlayerId,
     transformed = false,
+    tapped = false,
   ): void {
     const entered: ObjectId[] = [];
     this.withEnterBatch(() => {
@@ -20790,6 +21001,7 @@ export class Game {
         this.moveObject(id, "battlefield", {
           ...(returnUnder !== undefined ? { under: returnUnder } : {}),
           ...(transformed ? { transformed: true } : {}),
+          ...(tapped ? { tapped: true } : {}),
         });
         const object = this.state.objects[id];
         if (object?.zone !== "battlefield") continue;

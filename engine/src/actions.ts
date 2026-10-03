@@ -942,10 +942,14 @@ export type LegalAction =
       readonly max: number;
       /** Where the chosen cards go — what a client tells the chooser.
        * `"library-top"` puts them back in the order chosen, the first chosen
-       * on top (Ponder, Brainstorm). */
+       * on top (Ponder, Brainstorm); `"library-bottom"` on the bottom in the
+       * order chosen, the first chosen highest and the last on the very
+       * bottom (Valakut Awakening). `"exile"` exiles them face up — a cost's
+       * "exile two cards from your graveyard" (Varina, Lich Queen). */
       readonly destination:
         | "battlefield"
         | "hand"
+        | "exile"
         | "exile-playable"
         | "exile-face-down"
         | "exile"
@@ -955,6 +959,11 @@ export type LegalAction =
       /** A split tutor (Cultivate): only the first chosen card goes to
        * `destination`, the rest elsewhere. */
       readonly split?: true;
+      /** Only an **order** is being asked (rule 401.4 — "the rest on the
+       * bottom of your library in any order", a scry's kept cards): every
+       * card in `ids` is picked (`min` = `max` = all of them), and the order
+       * they're picked in is where each goes, per `destination`. */
+      readonly order?: true;
       /** A rule the chosen cards must obey as a set (Myriad Landscape's
        * "that share a land type"): `fitsTogether` says whether a pick does. */
       readonly together?: ZoneChoiceTogether;

@@ -99,6 +99,7 @@ import _poolMangaraTheDiplomat from "../pool/mangara-the-diplomat.js";
 import _poolMarwynTheNurturer from "../pool/marwyn-the-nurturer.js";
 import _poolMerfolkSecretkeeper from "../pool/merfolk-secretkeeper.js";
 import _poolMesaEnchantress from "../pool/mesa-enchantress.js";
+import _poolMesmericOrb from "../pool/mesmeric-orb.js";
 import _poolMessengerDrake from "../pool/messenger-drake.js";
 import _poolMirrorEntity from "../pool/mirror-entity.js";
 import _poolMisguidedRage from "../pool/misguided-rage.js";
@@ -108,6 +109,7 @@ import _poolMsBumbleflower from "../pool/ms-bumbleflower.js";
 import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
 import _poolMyrRetriever from "../pool/myr-retriever.js";
 import _poolNagaEternal from "../pool/naga-eternal.js";
+import _poolNezahalPrimalTide from "../pool/nezahal-primal-tide.js";
 import _poolNoxiousRevival from "../pool/noxious-revival.js";
 import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
 import _poolOrazcaRaptor from "../pool/orazca-raptor.js";
@@ -289,6 +291,7 @@ const shard: CardShard = {
     _poolMarwynTheNurturer,
     _poolMerfolkSecretkeeper,
     _poolMesaEnchantress,
+    _poolMesmericOrb,
     _poolMessengerDrake,
     _poolMirrorEntity,
     _poolMisguidedRage,
@@ -298,6 +301,7 @@ const shard: CardShard = {
     _poolMurmuringPhantasm,
     _poolMyrRetriever,
     _poolNagaEternal,
+    _poolNezahalPrimalTide,
     _poolNoxiousRevival,
     _poolObeliskOfGrixis,
     _poolOrazcaRaptor,

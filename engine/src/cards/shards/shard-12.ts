@@ -110,6 +110,7 @@ import _poolManaTithe from "../pool/mana-tithe.js";
 import _poolMarbleDiamond from "../pool/marble-diamond.js";
 import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
+import _poolMinesOfMoria from "../pool/mines-of-moria.js";
 import _poolMireTriton from "../pool/mire-triton.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
 import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
@@ -318,6 +319,7 @@ const shard: CardShard = {
     _poolMarbleDiamond,
     _poolMigratoryRoute,
     _poolMindSculpt,
+    _poolMinesOfMoria,
     _poolMireTriton,
     _poolMoltenBlast,
     _poolMurmuringMystic,

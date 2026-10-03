@@ -1580,6 +1580,11 @@ export type AwaitingDecision =
       /** "…unless they discard a land card" (Compulsive Research): any one
        * of these on its own is an answer, instead of `count` cards. */
       readonly orOneOf?: readonly ObjectId[];
+      /** A cost's discard (a spell's additional cost, an activated
+       * ability's): who gets priority once it's answered — who cast or
+       * activated (rule 117.3c), whoever's turn it is. Absent: the active
+       * player, as after a resolution's discard. */
+      readonly priorityTo?: PlayerId;
     }
   | {
       readonly kind: "choose-from-zone";
@@ -1595,16 +1600,39 @@ export type AwaitingDecision =
       readonly max: number;
       /** `"library-top"` — a tutor-to-top (Vampiric Tutor): the chosen cards
        * never leave the library, they are moved to the top after the search's
-       * own shuffle. */
+       * own shuffle. `"library-top"` and `"library-bottom"` both place the
+       * chosen cards in the order chosen, the first chosen nearest the top
+       * (rule 401.4). `"exile"`: exiled face up — an activated ability's
+       * "Exile two cards from your graveyard" cost (`AbilityCost.exileFromGraveyard`). */
       readonly destination:
         | "battlefield"
         | "hand"
+        | "exile"
         | "exile-playable"
         | "exile-face-down"
         | "exile"
         | "library-top"
         | "library-bottom"
         | "graveyard";
+      /**
+       * Only an **order** is asked: every card in `ids` is picked, and the
+       * order picked is where each goes (rule 401.4 — the owner arranges
+       * cards put into a library at the same time). Raised by
+       * `Game.beginLibraryOrder` for "the rest on the bottom of your library
+       * in any order" (a `look-and-choose`'s `"bottom-any-order"`) and a
+       * scry's or surveil's cards kept on top or put on the bottom (rules
+       * 701.22a, 701.25a). Nothing is taken, so no `cards-chosen-from-zone`.
+       */
+      readonly order?: true;
+      /** Cards to ask the order of once this choice is carried out — a scry
+       * that both keeps cards on top and puts cards on the bottom orders the
+       * two groups one after the other (rule 701.22a). */
+      readonly thenOrder?: { readonly cards: readonly ObjectId[]; readonly position: "top" | "bottom" };
+      /** A cost's choice (`AbilityCost.exileFromGraveyard`): who gets
+       * priority once it's paid — the player who activated the ability (rule
+       * 117.3c), whoever's turn it is. Absent: the active player, as after a
+       * resolution's choice. */
+      readonly priorityTo?: PlayerId;
       /** For `destination: "exile-face-down"` (hideaway — rule 702.75a) and
        * `"exile"` (imprint, face up): the permanent, in the stint it's in,
        * the chosen cards are exiled with (rule 607.2a — `GameObject.exiledWith`). */
@@ -1617,8 +1645,17 @@ export type AwaitingDecision =
        * the library; left exactly where it already was (nothing was ever
        * moved just to look at it — the graveyard-search case); the whole
        * library is shuffled (a library *search* / tutor — rule 701.19); or
-       * put into the chooser's hand (Genesis Ultimatum — needed-cards P19). */
-      readonly leftover: "bottom-random" | "stay" | "shuffle" | "hand" | "graveyard" | "exile-playable";
+       * put into the chooser's hand (Genesis Ultimatum — needed-cards P19).
+       * `"bottom-any-order"`: on the bottom in an order the chooser picks
+       * next (`Game.beginLibraryOrder`). */
+      readonly leftover:
+        | "bottom-random"
+        | "bottom-any-order"
+        | "stay"
+        | "shuffle"
+        | "hand"
+        | "graveyard"
+        | "exile-playable";
       /** Where the rest go instead when a condition holds once the chosen
        * cards have moved — the `look-and-choose` effect's `leftoverIf`, asked
        * of `thenSource`. */

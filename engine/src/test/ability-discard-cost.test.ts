@@ -129,4 +129,19 @@ describe("discard as an activation cost", () => {
     expect(game.handOf(A)).toHaveLength(0);
     expect(game.state.objects[solphim].counters.indestructible).toBe(1);
   });
+
+  it("hands priority back to the player who activated, on another player's turn (rule 117.3c)", () => {
+    const game = setUp();
+    const frog = spawn(game, "Psychic Frog");
+    const giant = toHand(game, "Hill Giant");
+    toHand(game, "Craw Wurm");
+    game.advanceUntil(
+      (s) => s.turnOrder[s.turn.activePlayerIndex] === B && s.turn.step === "upkeep" && s.priority.holder === A,
+    );
+    game.dispatch({ type: "activate-ability", player: A, source: frog, abilityIndex: 0 });
+    expect(game.state.awaiting?.kind).toBe("discard");
+    game.dispatch({ type: "discard", player: A, cards: [giant] });
+    expect(game.state.priority.holder).toBe(A);
+    expect(game.state.zones.shared.stack).toHaveLength(1);
+  });
 });

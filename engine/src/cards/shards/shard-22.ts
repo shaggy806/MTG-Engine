@@ -61,6 +61,7 @@ import _poolEject from "../pool/eject.js";
 import _poolEndTheFestivities from "../pool/end-the-festivities.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
+import _poolExperimentalAugury from "../pool/experimental-augury.js";
 import _poolExquisiteBlood from "../pool/exquisite-blood.js";
 import _poolFailedInspection from "../pool/failed-inspection.js";
 import _poolFallenAngel from "../pool/fallen-angel.js";
@@ -283,6 +284,7 @@ const shard: CardShard = {
     _poolEndTheFestivities,
     _poolEtherswornAdjudicator,
     _poolExemplarOfLight,
+    _poolExperimentalAugury,
     _poolExquisiteBlood,
     _poolFailedInspection,
     _poolFallenAngel,

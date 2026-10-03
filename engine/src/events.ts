@@ -181,7 +181,14 @@ export type GameEvent =
     })
   | (Base & { readonly type: "priority-received"; readonly player: PlayerId })
   | (Base & { readonly type: "priority-passed"; readonly player: PlayerId })
-  | (Base & { readonly type: "permanent-untapped"; readonly object: ObjectId })
+  | (Base & {
+      readonly type: "permanent-untapped";
+      readonly object: ObjectId;
+      /** A shock land whose life was paid: it entered untapped (rule 614.1c),
+       * turned upright only now that it's there — no untapping for a
+       * "becomes untapped" trigger to see. */
+      readonly asItEntered?: true;
+    })
   | (Base & {
       /** A permanent was exerted (rule 701.43a — the `exert` effect): it
        * won't untap during `player`'s next untap step. `asItAttacks` when its

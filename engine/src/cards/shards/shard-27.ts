@@ -46,6 +46,7 @@ import _poolDeconstruct from "../pool/deconstruct.js";
 import _poolDeepAnalysis from "../pool/deep-analysis.js";
 import _poolDereviEmpyrialTactician from "../pool/derevi-empyrial-tactician.js";
 import _poolDevoutMonk from "../pool/devout-monk.js";
+import _poolDigThroughTime from "../pool/dig-through-time.js";
 import _poolDocksideChef from "../pool/dockside-chef.js";
 import _poolDrumhunter from "../pool/drumhunter.js";
 import _poolDukharaPeafowl from "../pool/dukhara-peafowl.js";
@@ -258,6 +259,7 @@ const shard: CardShard = {
     _poolDeepAnalysis,
     _poolDereviEmpyrialTactician,
     _poolDevoutMonk,
+    _poolDigThroughTime,
     _poolDocksideChef,
     _poolDrumhunter,
     _poolDukharaPeafowl,

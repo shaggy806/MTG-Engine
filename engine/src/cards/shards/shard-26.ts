@@ -173,6 +173,7 @@ import _poolSpringmaneCervin from "../pool/springmane-cervin.js";
 import _poolSquiresDevotion from "../pool/squires-devotion.js";
 import _poolStaffOfDomination from "../pool/staff-of-domination.js";
 import _poolStaffOfTitania from "../pool/staff-of-titania.js";
+import _poolStockUp from "../pool/stock-up.js";
 import _poolStrokeOfMidnight from "../pool/stroke-of-midnight.js";
 import _poolSummitSentinel from "../pool/summit-sentinel.js";
 import _poolTajuruBlightblade from "../pool/tajuru-blightblade.js";
@@ -190,6 +191,7 @@ import _poolTreasureHunter from "../pool/treasure-hunter.js";
 import _poolTritonShorestalker from "../pool/triton-shorestalker.js";
 import _poolUktabiOrangutan from "../pool/uktabi-orangutan.js";
 import _poolUtopiaSprawl from "../pool/utopia-sprawl.js";
+import _poolVarinaLichQueen from "../pool/varina-lich-queen.js";
 import _poolVaultOfTheArchangel from "../pool/vault-of-the-archangel.js";
 import _poolVedalkenMesmerist from "../pool/vedalken-mesmerist.js";
 import _poolViashinoSlasher from "../pool/viashino-slasher.js";
@@ -386,6 +388,7 @@ const shard: CardShard = {
     _poolSquiresDevotion,
     _poolStaffOfDomination,
     _poolStaffOfTitania,
+    _poolStockUp,
     _poolStrokeOfMidnight,
     _poolSummitSentinel,
     _poolTajuruBlightblade,
@@ -403,6 +406,7 @@ const shard: CardShard = {
     _poolTritonShorestalker,
     _poolUktabiOrangutan,
     _poolUtopiaSprawl,
+    _poolVarinaLichQueen,
     _poolVaultOfTheArchangel,
     _poolVedalkenMesmerist,
     _poolViashinoSlasher,

@@ -154,6 +154,11 @@ export function thisWayEntries(
           }
         }
         break;
+      case "put-on-bottom":
+        // From a hand, by a choice the resolution asked (`cards-put-on-bottom`
+        // — the mulligan's bottoming never happens during a resolution).
+        if (event.type === "cards-put-on-bottom") for (const id of event.objects) add(id, event.player, false);
+        break;
       case "put-onto-battlefield":
         // Moved there from a zone — not a token created, nor a permanent
         // spell resolving.

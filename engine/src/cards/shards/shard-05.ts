@@ -129,6 +129,7 @@ import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
 import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
+import _poolMoorlandHaunt from "../pool/moorland-haunt.js";
 import _poolMossMonster from "../pool/moss-monster.js";
 import _poolNetworkDisruptor from "../pool/network-disruptor.js";
 import _poolNobleHierarch from "../pool/noble-hierarch.js";
@@ -185,6 +186,7 @@ import _poolSupremeVerdict from "../pool/supreme-verdict.js";
 import _poolSwanSong from "../pool/swan-song.js";
 import _poolSwiftfootBoots from "../pool/swiftfoot-boots.js";
 import _poolTarmogoyf from "../pool/tarmogoyf.js";
+import _poolTeferisPuzzleBox from "../pool/teferis-puzzle-box.js";
 import _poolTempleBell from "../pool/temple-bell.js";
 import _poolTempleOfDeceit from "../pool/temple-of-deceit.js";
 import _poolTempleOfMalady from "../pool/temple-of-malady.js";
@@ -352,6 +354,7 @@ const shard: CardShard = {
     _poolMightOfOaks,
     _poolMishraEminentOne,
     _poolMoonwingMoth,
+    _poolMoorlandHaunt,
     _poolMossMonster,
     _poolNetworkDisruptor,
     _poolNobleHierarch,
@@ -408,6 +411,7 @@ const shard: CardShard = {
     _poolSwanSong,
     _poolSwiftfootBoots,
     _poolTarmogoyf,
+    _poolTeferisPuzzleBox,
     _poolTempleBell,
     _poolTempleOfDeceit,
     _poolTempleOfMalady,

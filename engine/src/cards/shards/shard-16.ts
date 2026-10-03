@@ -82,6 +82,7 @@ import _poolFrilledOculus from "../pool/frilled-oculus.js";
 import _poolFrilledSandwalla from "../pool/frilled-sandwalla.js";
 import _poolFurycalmSnarl from "../pool/furycalm-snarl.js";
 import _poolFutureFlight from "../pool/future-flight.js";
+import _poolGhostlyPilferer from "../pool/ghostly-pilferer.js";
 import _poolGlacialWall from "../pool/glacial-wall.js";
 import _poolGlimmerBairn from "../pool/glimmer-bairn.js";
 import _poolGlissaTheTraitor from "../pool/glissa-the-traitor.js";
@@ -332,6 +333,7 @@ const shard: CardShard = {
     _poolFrilledSandwalla,
     _poolFurycalmSnarl,
     _poolFutureFlight,
+    _poolGhostlyPilferer,
     _poolGlacialWall,
     _poolGlimmerBairn,
     _poolGlissaTheTraitor,

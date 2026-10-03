@@ -188,6 +188,8 @@ export interface FlickerOptions {
   readonly underYourControl?: boolean;
   /** It returns transformed (Clive, Ifrit's Dominant). */
   readonly transformed?: boolean;
+  /** It returns tapped (Nezahal, Primal Tide). */
+  readonly tapped?: boolean;
   readonly returnAt?: DelayedTriggerTiming;
   readonly returnText?: string;
   /** The effect named its own source (`target: "source"`). */
@@ -657,7 +659,12 @@ export type ThisWayKind =
   | "put-into-graveyard"
   | "put-onto-battlefield"
   /** Tokens it created (a compacted stack as each of its tokens). */
-  | "created";
+  | "created"
+  /** Cards it had a player put from their hand on the bottom of their
+   * library — Valakut Awakening's "then draw **that many** cards plus one",
+   * Teferi's Puzzle Box's "then draws that many cards". Counted by the
+   * player whose hand they left. */
+  | "put-on-bottom";
 
 export type PlayerScope =
   | "each-player"
@@ -1429,6 +1436,9 @@ export type EffectSpec =
        * Dominant) — a transforming double-faced card comes back with its
        * back face up (rule 712.14); anything else returns as usual. */
       readonly transformed?: boolean;
+      /** "Return it to the battlefield **tapped**" (Nezahal, Primal Tide):
+       * it enters tapped, as it enters (rule 614.1c). */
+      readonly tapped?: boolean;
       /** The delayed return's text, for the log and the stack. */
       readonly returnText?: string;
     }
@@ -1444,6 +1454,7 @@ export type EffectSpec =
       readonly thenCounters?: FlickerCounters;
       readonly underYourControl?: boolean;
       readonly transformed?: boolean;
+      readonly tapped?: boolean;
     }
   | {
       /** Counter a target spell on the stack — it moves to its owner's
@@ -3298,12 +3309,24 @@ export type EffectSpec =
        * among them and put it into your hand" (Monumental Henge, Adaptive
        * Omnitool): the rest are seen by the chooser alone. */
       readonly reveal?: boolean | "chosen";
-      readonly min: number;
+      /** At least this many; a live amount is read as the effect applies —
+       * Teferi's Puzzle Box's "puts **the cards in their hand**" is every
+       * one, `{ cardsInHand: "that-player" }`. */
+      readonly min: EffectAmount;
       /** At most this many; a live amount is read as the effect applies. */
       readonly max: EffectAmount;
       /** `"library-top"` with `zone: "hand"` is Brainstorm's "put two cards
        * from your hand on top of your library" — the chosen cards go back on
-       * the deck rather than anywhere visible.
+       * the deck rather than anywhere visible. Either way the chosen cards
+       * go on top in the order they're picked, the first on top: Ponder's
+       * "put them back in any order" is every looked-at card taken.
+       *
+       * `"library-bottom"` puts the chosen cards on the bottom, in the order
+       * picked — the first highest, the last on the very bottom: Valakut
+       * Awakening's "put any number of cards from your hand on the bottom of
+       * your library" (rule 401.4: the owner arranges cards put into a
+       * library together, and doesn't reveal the order). Moved from a hand,
+       * they're `"put-on-bottom"` this way.
        *
        * `"exile-face-down"` is hideaway's "exile one of them face down"
        * (rule 702.75a): the chosen cards are exiled face down (rule 406.3),
@@ -3314,7 +3337,7 @@ export type EffectSpec =
        * `"exile"` is the same link, face up — imprint's "you may exile a
        * nonartifact, nonland card from your hand" (Chrome Mox), whose "the
        * exiled card" is every player's to see. */
-      readonly destination: "battlefield" | "hand" | "library-top" | "exile-face-down" | "exile";
+      readonly destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "exile-face-down" | "exile";
       /** Chosen cards bound for the battlefield enter **tapped** (Terrain
        * Generator). */
       readonly enterTapped?: boolean;
@@ -3331,8 +3354,16 @@ export type EffectSpec =
        * your hand") puts every non-chosen looked-at card into the chooser's
        * hand, regardless of `filter`; `"graveyard"` ("…put the rest into your
        * graveyard") into their graveyard, in the same move as the chosen
-       * ones. */
-      readonly leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable";
+       * ones.
+       *
+       * `"bottom-any-order"` is "…and the rest on the bottom of your library
+       * **in any order**" (Stock Up, Dig Through Time): once the chosen cards
+       * have moved, the chooser orders the rest — a second `choose-from-zone`
+       * over every one of them, whose picks are the order (see
+       * `"library-bottom"` above), asked only when there are two or more
+       * cards that aren't all the same card. `"bottom-random"` is "in a
+       * random order". */
+      readonly leftover: "bottom-random" | "bottom-any-order" | "stay" | "hand" | "graveyard" | "exile-playable";
       /**
        * A leftover destination that depends on how things stand once the
        * chosen cards are where they're going — Nine-Fingers Keene's "you may
@@ -3820,6 +3851,7 @@ export interface EffectApi {
     thenCounters: FlickerCounters | undefined,
     underYourControl: boolean,
     transformed: boolean,
+    tapped: boolean,
   ): boolean;
   /** Grant flashback to `target` (an instant/sorcery card in a graveyard) for
    * the rest of the turn, at a flashback cost equal to its mana cost
@@ -4297,8 +4329,8 @@ export interface EffectApi {
     count: number | undefined,
     min: number,
     max: number,
-    destination: "battlefield" | "hand" | "library-top" | "graveyard" | "exile-face-down" | "exile",
-    leftover: "bottom-random" | "stay" | "hand" | "graveyard" | "exile-playable",
+    destination: "battlefield" | "hand" | "library-top" | "library-bottom" | "graveyard" | "exile-face-down" | "exile",
+    leftover: "bottom-random" | "bottom-any-order" | "stay" | "hand" | "graveyard" | "exile-playable",
     filter: ZoneChoiceFilter | undefined,
     enterTapped?: boolean,
     then?: EffectSpec,
@@ -5639,6 +5671,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         ...(spec.returnAt !== undefined ? { returnAt: spec.returnAt } : {}),
         ...(spec.returnText !== undefined ? { returnText: spec.returnText } : {}),
         ...(spec.transformed === true ? { transformed: true } : {}),
+        ...(spec.tapped === true ? { tapped: true } : {}),
         ...(spec.target === "source" ? { fromSource: true } : {}),
       });
       if (returning !== null) ctx.resumeAfterDecisions(returning, parked);
@@ -5651,6 +5684,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.thenCounters,
         spec.underYourControl === true,
         spec.transformed === true,
+        spec.tapped === true,
       );
       if (asked) ctx.resumeAfterDecisions(spec, parked);
       return;
@@ -6558,7 +6592,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.lookAndChoose(
         spec.zone,
         spec.count === undefined ? undefined : amountValue(spec.count, ctx),
-        spec.min,
+        amountValue(spec.min, ctx),
         amountValue(spec.max, ctx),
         spec.destination,
         spec.leftover,

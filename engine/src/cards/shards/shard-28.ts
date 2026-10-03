@@ -192,6 +192,7 @@ import _poolUndergroundRiver from "../pool/underground-river.js";
 import _poolUnderworldBreach from "../pool/underworld-breach.js";
 import _poolUniversalAutomaton from "../pool/universal-automaton.js";
 import _poolUrsapine from "../pool/ursapine.js";
+import _poolValakutAwakening from "../pool/valakut-awakening.js";
 import _poolVampireRevenant from "../pool/vampire-revenant.js";
 import _poolViashinoSandscout from "../pool/viashino-sandscout.js";
 import _poolVodalianSoldiers from "../pool/vodalian-soldiers.js";
@@ -400,6 +401,7 @@ const shard: CardShard = {
     _poolUnderworldBreach,
     _poolUniversalAutomaton,
     _poolUrsapine,
+    _poolValakutAwakening,
     _poolVampireRevenant,
     _poolViashinoSandscout,
     _poolVodalianSoldiers,

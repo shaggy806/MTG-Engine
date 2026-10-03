@@ -885,7 +885,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Diluvian Primordial", "Steel Hellkite", "Large flying finisher."),
       sub("Gideon Jura", "Ajani, Caller of the Pride", "White planeswalker; its -3 grants flying."),
       sub("Jubilant Skybonder", "Thieving Magpie", "Blue flier that draws cards."),
-      sub("Moorland Haunt", "Blinkmoth Nexus", "Utility land that makes a flier."),
     ],
   }),
   precon({

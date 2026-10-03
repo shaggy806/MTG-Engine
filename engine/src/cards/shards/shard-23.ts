@@ -7,6 +7,7 @@ import _poolAgonyWarp from "../pool/agony-warp.js";
 import _poolAmbitionsCost from "../pool/ambitions-cost.js";
 import _poolAngelOfLight from "../pool/angel-of-light.js";
 import _poolAngrathsRampage from "../pool/angraths-rampage.js";
+import _poolAragornTheUniter from "../pool/aragorn-the-uniter.js";
 import _poolArastaOfTheEndlessWeb from "../pool/arasta-of-the-endless-web.js";
 import _poolArcRunner from "../pool/arc-runner.js";
 import _poolArchaeologicalDig from "../pool/archaeological-dig.js";
@@ -49,6 +50,7 @@ import _poolDazzlingLights from "../pool/dazzling-lights.js";
 import _poolDeadlyPlot from "../pool/deadly-plot.js";
 import _poolDeathriteShaman from "../pool/deathrite-shaman.js";
 import _poolDemolitionField from "../pool/demolition-field.js";
+import _poolDrivnodCarnageDominus from "../pool/drivnod-carnage-dominus.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
 import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
@@ -222,6 +224,7 @@ const shard: CardShard = {
     _poolAmbitionsCost,
     _poolAngelOfLight,
     _poolAngrathsRampage,
+    _poolAragornTheUniter,
     _poolArastaOfTheEndlessWeb,
     _poolArcRunner,
     _poolArchaeologicalDig,
@@ -264,6 +267,7 @@ const shard: CardShard = {
     _poolDeadlyPlot,
     _poolDeathriteShaman,
     _poolDemolitionField,
+    _poolDrivnodCarnageDominus,
     _poolEarthOriginYak,
     _poolEiganjoSeatOfTheEmpire,
     _poolEncampmentKeeper,

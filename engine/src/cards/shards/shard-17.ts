@@ -99,10 +99,12 @@ import _poolIndulgentTormentor from "../pool/indulgent-tormentor.js";
 import _poolInfernalGrasp from "../pool/infernal-grasp.js";
 import _poolIronTuskElephant from "../pool/iron-tusk-elephant.js";
 import _poolIronWill from "../pool/iron-will.js";
+import _poolItlimocCradleOfTheSun from "../pool/itlimoc-cradle-of-the-sun.js";
 import _poolIzzetGuildgate from "../pool/izzet-guildgate.js";
 import _poolJhovallRider from "../pool/jhovall-rider.js";
 import _poolKamahlPitFighter from "../pool/kamahl-pit-fighter.js";
 import _poolKambalProfiteeringMayor from "../pool/kambal-profiteering-mayor.js";
+import _poolKeyToTheCity from "../pool/key-to-the-city.js";
 import _poolKilnFiend from "../pool/kiln-fiend.js";
 import _poolKishlaSkimmer from "../pool/kishla-skimmer.js";
 import _poolKratosStoicFather from "../pool/kratos-stoic-father.js";
@@ -324,10 +326,12 @@ const shard: CardShard = {
     _poolInfernalGrasp,
     _poolIronTuskElephant,
     _poolIronWill,
+    _poolItlimocCradleOfTheSun,
     _poolIzzetGuildgate,
     _poolJhovallRider,
     _poolKamahlPitFighter,
     _poolKambalProfiteeringMayor,
+    _poolKeyToTheCity,
     _poolKilnFiend,
     _poolKishlaSkimmer,
     _poolKratosStoicFather,

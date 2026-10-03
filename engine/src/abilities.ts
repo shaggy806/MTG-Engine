@@ -198,6 +198,21 @@ export interface AbilityCost {
    */
   readonly discard?: { readonly count: number; readonly filter?: CardFilter };
   /**
+   * Exile `count` cards from your graveyard, matching `filter` if given, as
+   * part of the cost — "{2}, Exile two cards from your graveyard" (Varina,
+   * Lich Queen), "Exile a creature card from your graveyard" (Moorland
+   * Haunt). The player picks which as the ability goes on the stack (rule
+   * 602.2b, paying costs as 601.2h does) — a `choose-from-zone` decision
+   * with `destination: "exile"`, the way `discard` is paid with the
+   * `discard` decision — and gets priority back once it's paid (rule
+   * 117.3c). With no more matching cards than that, they're all exiled
+   * without asking. Either way they leave the graveyard as one move. The
+   * source never counts, wherever it is. Gates activation on having enough
+   * such cards; not on a mana ability (there's nowhere for it to wait), nor
+   * beside a `discard` or a sacrifice of several, which ask too.
+   */
+  readonly exileFromGraveyard?: { readonly count: number; readonly filter?: CardFilter };
+  /**
    * Tap *other* permanents you control as part of the cost — Gravespawn
    * Sovereign's "Tap five untapped Zombies you control". Distinct from
    * `tap`, which taps the source itself.
@@ -1062,6 +1077,17 @@ export type TriggerSpec =
        * opponent's tap effect — which is why this can't be a `painToController`
        * mana ability instead: that only charges the mana-ability path. */
       readonly on: "becomes-tapped";
+      readonly who: TriggerWho;
+      readonly filter?: CardFilter;
+    }
+  | {
+      /** A permanent became untapped (rule 701.26b) — Key to the City's
+       * "whenever this artifact becomes untapped": in an untap step or by
+       * any effect. Not a shock land whose life was paid as it entered: that
+       * one enters untapped (rule 614.1c), which untaps nothing, though the
+       * engine turns it upright after it has arrived (`permanent-untapped`'s
+       * `asItEntered`). */
+      readonly on: "becomes-untapped";
       readonly who: TriggerWho;
       readonly filter?: CardFilter;
     }

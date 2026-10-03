@@ -44,6 +44,7 @@ export const chooseFromZone = defineDecision({
       destination: awaiting.destination,
       ...(awaiting.restDestination !== undefined ? { split: true } : {}),
       ...(awaiting.together !== undefined ? { together: awaiting.together } : {}),
+      ...(awaiting.order === true ? { order: true } : {}),
     },
   ],
 
@@ -107,12 +108,16 @@ export const chooseFromZone = defineDecision({
   candidates: (legal, player, limit, helpers): Action[] => {
     if (legal.kind !== "choose-from-zone") return [];
     const together = legal.together;
+    // What a cost exiles is given up, so the least valuable go first, as a
+    // sacrifice's and a discard's do.
+    const ranked =
+      legal.destination === "exile" ? [...helpers.order(legal.eligible)].reverse() : helpers.order(legal.eligible);
     // A set rule drops the subsets that break it before the cap, so all the
     // cap keeps are legal.
     const subsets =
       together === undefined
-        ? subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, limit)
-        : subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, Math.max(limit, 10_000))
+        ? subsetsBetween(ranked, legal.min, legal.max, limit)
+        : subsetsBetween(ranked, legal.min, legal.max, Math.max(limit, 10_000))
             .filter((chosen) => fitsTogether(together, chosen))
             .slice(0, limit);
     return subsets.map((chosen) => ({ type: "choose-from-zone", player, chosen }));

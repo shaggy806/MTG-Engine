@@ -138,6 +138,7 @@ import _poolSavaiTriome from "../pool/savai-triome.js";
 import _poolScarlandThrinax from "../pool/scarland-thrinax.js";
 import _poolScatterArc from "../pool/scatter-arc.js";
 import _poolSeaSpirit from "../pool/sea-spirit.js";
+import _poolSenseisDiviningTop from "../pool/senseis-divining-top.js";
 import _poolSerpentSpecialist from "../pool/serpent-specialist.js";
 import _poolShadowcloakVampire from "../pool/shadowcloak-vampire.js";
 import _poolShockingSharpshooter from "../pool/shocking-sharpshooter.js";
@@ -330,6 +331,7 @@ const shard: CardShard = {
     _poolScarlandThrinax,
     _poolScatterArc,
     _poolSeaSpirit,
+    _poolSenseisDiviningTop,
     _poolSerpentSpecialist,
     _poolShadowcloakVampire,
     _poolShockingSharpshooter,

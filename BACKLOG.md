@@ -244,6 +244,21 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   See `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
+- **A commander put from a hand into a library isn't offered the command zone** (rule 903.9b:
+  "from anywhere"). `moveObject`'s 903.9b deferral covers a move to a hand from elsewhere and
+  a move off the battlefield, not hand → library: Brainstorm, Valakut Awakening and Teferi's
+  Puzzle Box put a commander in hand into the library without asking.
+- **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
+  trigger by the stack's `stackCount` (Mesmeric Orb, 2026-10-03); `permanent-tapped` doesn't,
+  so a tap-all over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
+- **Library-ordering and cost leftovers** (2026-10-03, `library-ordering.test.ts`,
+  `graveyard-exile-cost.test.ts`): Kozilek, the Great Distortion needs an ability's X
+  announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value
+  X") and its target ("spell with mana value X"); Scroll Rack needs "put that many cards from
+  the top of your library into your hand" (not a draw) and an effect that puts several
+  targeted cards on top in an order the player picks (`beginLibraryOrder` would ask it); a
+  spell's additional "exile a card from your graveyard" cost isn't built (an activated
+  ability's is `exileFromGraveyard`).
 
 ## Bots
 

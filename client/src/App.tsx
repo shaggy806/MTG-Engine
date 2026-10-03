@@ -296,7 +296,13 @@ function zoneChoiceTitle(action: ZoneChoiceAction): string {
     case 'library-top':
       return 'Put them back on top in the order you pick: the first you pick goes on top'
     case 'library-bottom':
-      return `Choose ${cards} to put on the bottom of your library`
+      // The order picked is the order they go: the last one picked ends up
+      // on the very bottom.
+      return action.order === true
+        ? 'Put them on the bottom in the order you pick: the last you pick goes on the very bottom'
+        : `Choose ${cards} to put on the bottom of your library, in order: the last you pick goes on the very bottom`
+    case 'exile':
+      return `Choose ${cards} to exile`
     case 'exile-playable':
       return `Choose ${cards} you may play`
     case 'exile-face-down':
@@ -4797,7 +4803,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             ...(zoneChoiceAction.together
               ? { fits: (picked: readonly ObjectId[]) => fitsTogether(zoneChoiceAction.together!, picked) }
               : {}),
-            ...(zoneChoiceAction.destination === 'library-top' ? { ordered: true } : {}),
+            ...(zoneChoiceAction.destination === 'library-top' || zoneChoiceAction.destination === 'library-bottom'
+              ? { ordered: true }
+              : {}),
           }}
           collapsed={decisionCollapsed}
           onCollapse={() => setDecisionCollapsed(true)}

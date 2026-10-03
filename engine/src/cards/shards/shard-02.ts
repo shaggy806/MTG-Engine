@@ -138,6 +138,7 @@ import _poolPlasmaElemental from "../pool/plasma-elemental.js";
 import _poolPrimordialSage from "../pool/primordial-sage.js";
 import _poolPrizedGriffin from "../pool/prized-griffin.js";
 import _poolPsychicCorrosion from "../pool/psychic-corrosion.js";
+import _poolPsychicFrog from "../pool/psychic-frog.js";
 import _poolPulseTracker from "../pool/pulse-tracker.js";
 import _poolRampagingBaloths from "../pool/rampaging-baloths.js";
 import _poolRavenousBaloth from "../pool/ravenous-baloth.js";
@@ -352,6 +353,7 @@ const shard: CardShard = {
     _poolPrimordialSage,
     _poolPrizedGriffin,
     _poolPsychicCorrosion,
+    _poolPsychicFrog,
     _poolPulseTracker,
     _poolRampagingBaloths,
     _poolRavenousBaloth,

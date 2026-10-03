@@ -59,6 +59,7 @@ import _poolGoldmeadowHarrier from "../pool/goldmeadow-harrier.js";
 import _poolGontiCannyAcquisitor from "../pool/gonti-canny-acquisitor.js";
 import _poolGorgonsHead from "../pool/gorgons-head.js";
 import _poolGuardianKirin from "../pool/guardian-kirin.js";
+import _poolHalimarDepths from "../pool/halimar-depths.js";
 import _poolHaplessResearcher from "../pool/hapless-researcher.js";
 import _poolHarrierNaga from "../pool/harrier-naga.js";
 import _poolHarvestSeason from "../pool/harvest-season.js";
@@ -177,6 +178,7 @@ import _poolTurnToFrog from "../pool/turn-to-frog.js";
 import _poolUndercityDireRat from "../pool/undercity-dire-rat.js";
 import _poolUrbanDaggertooth from "../pool/urban-daggertooth.js";
 import _poolUtopiaTree from "../pool/utopia-tree.js";
+import _poolValakutStoneforge from "../pool/valakut-stoneforge.js";
 import _poolVeneratedRotpriest from "../pool/venerated-rotpriest.js";
 import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
@@ -253,6 +255,7 @@ const shard: CardShard = {
     _poolGontiCannyAcquisitor,
     _poolGorgonsHead,
     _poolGuardianKirin,
+    _poolHalimarDepths,
     _poolHaplessResearcher,
     _poolHarrierNaga,
     _poolHarvestSeason,
@@ -371,6 +374,7 @@ const shard: CardShard = {
     _poolUndercityDireRat,
     _poolUrbanDaggertooth,
     _poolUtopiaTree,
+    _poolValakutStoneforge,
     _poolVeneratedRotpriest,
     _poolVonaButcherOfMagan,
     _poolVraskasContempt,
