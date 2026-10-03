@@ -120,8 +120,14 @@ first 6 is still chumped, a defensible trade.
 - **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
   first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
   `"acting"` rollout for decks whose commander has a cast trigger.
-- **Token payoffs beyond engines**: what a token engine keeps making is priced now (below), but
-  Deadly Dispute-style sacrifice outlets and "leaves the battlefield" payoffs still aren't.
+- **Token payoffs beyond engines**: what a token engine keeps making is priced now (above), but
+  sacrifice outlets and "leaves the battlefield" payoffs aren't. Probed 2026-10-03: v2 casts
+  Deadly Dispute sacrificing a Treasure (+1.85 over passing) or a mobilize token due to die
+  (+2.2), but not a 1/1 Soldier token (−1.3) — two cards and a Treasure score below a 1/1 token,
+  because every creature counts `creatures` 2.5 whatever its size (about 4.3 for a 1/1 against
+  `hand`'s 2 a card). The same root as BACKLOG's Skullclamp item. A smaller flat value for small
+  creatures would fix both, but makes tokens cheaper to chump with again — measure it against
+  "takes a Craw Wurm's hit at 35 rather than chump" before shipping.
 - **Neither bot goes wide** into a board of blockers with many small creatures.
 - **Premium removal fired early** at weak targets. A flat reserve — cheap instant removal
   counted in `answers` at 3, like a counterspell — was tried 2026-10-03 and dropped: it held

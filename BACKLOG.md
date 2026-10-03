@@ -281,13 +281,15 @@ Beyond that plan:
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
   gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **Skullclamp on a 1/1 token.** v2 passes on it (training scenario "Skullclamps a 1/1 token
-  for two cards"): two cards score just under a 1/1 body and its point of attack, since every
-  creature counts `creatures` 2.5 whatever its size. `bot:fit-scenarios` finds `creatures` 2.5 → 2
-  breaks no gate scenario. Tried 2026-10-02: `bot:diff` over six four-player games changed 12
-  of 11,553 decisions, mostly more token blocks and removal ahead of creatures, Sakura-Tribe
-  Elder's land taken (right) and a 1/1 Rat token chump-blocking a 3/3 at 25 life (wrong) — not
-  shipped. Likelier fix: a feature for Skullclamp-style "dies, draw" Equipment, not a weight.
+- **Skullclamp and Deadly Dispute on a 1/1 token.** v2 passes on both (training scenario
+  "Skullclamps a 1/1 token for two cards"; Deadly Dispute probed 2026-10-03, cast on a Treasure
+  but not a Soldier token, `docs/plans/deck-autopsies.md`): two cards score just under a 1/1 body
+  and its point of attack, since every creature counts `creatures` 2.5 whatever its size.
+  `bot:fit-scenarios` finds `creatures` 2.5 → 2 breaks no gate scenario. Tried 2026-10-02:
+  `bot:diff` over six four-player games changed 12 of 11,553 decisions, mostly more token blocks
+  and removal ahead of creatures, Sakura-Tribe Elder's land taken (right) and a 1/1 Rat token
+  chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than Skullclamp: a small creature's flat value is the
+  question, weighed against the chump blocks it would bring back.
 
 ## Client / UI
 
