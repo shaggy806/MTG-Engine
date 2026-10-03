@@ -1,10 +1,12 @@
-import { useLayoutEffect, useState } from 'react'
+import { Fragment, useLayoutEffect, useState } from 'react'
 import type { ObjectId, PlayerView, TargetRef } from 'engine/client'
 import { seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import { useMotionPrefs } from '../game/motionPrefs.ts'
 import { arrowSources, shownTargets } from '../game/resolveAims.ts'
 import type { ResolveState } from '../game/resolveAims.ts'
+import { between, stackLoop } from './arrowGeometry.ts'
+import type { Course } from './arrowGeometry.ts'
 
 /** One line to draw: what it joins, by key, and how it should look. */
 interface ArrowSpec {
@@ -22,6 +24,8 @@ interface ArrowSpec {
   /** How far out from the target's middle the line ends, as a fraction of
    * the way to its edge (see `edgePoint`). */
   readonly reach?: number
+  /** It joins two stack entries (see `stackLoop`). */
+  readonly loop?: boolean
 }
 
 /** How far into a card a resolving arrow reaches: well inside, so the ring
@@ -30,12 +34,8 @@ interface ArrowSpec {
  * like any other arrow, so the number stays readable under the head. */
 const STRIKE_REACH = 0.55
 
-/** A line as measured: endpoints in viewport px. */
-interface Drawn extends ArrowSpec {
-  readonly x1: number
-  readonly y1: number
-  readonly x2: number
-  readonly y2: number
+/** A line as measured: its course in viewport px. */
+interface Drawn extends ArrowSpec, Course {
   readonly isNew: boolean
 }
 
@@ -83,6 +83,7 @@ function arrowsFor(
         to: targetSel(view, t),
         seat: seatClassOf(view.turnOrder, entry.controller),
         ...(kind === 'resolve' && t.kind === 'object' ? { reach: STRIKE_REACH } : {}),
+        ...(t.kind === 'object' && view.zones.stack.includes(t.object) ? { loop: true } : {}),
       })
     }
   }
@@ -116,25 +117,6 @@ function arrowsFor(
     }
   }
   return out
-}
-
-/** The point on `r`'s edge facing `toward` (`reach` of the way out from its
- * middle), so a line leaves a card from its side rather than from under its
- * middle. */
-function edgePoint(
-  r: DOMRect,
-  toward: { x: number; y: number },
-  reach = 0.92,
-): { x: number; y: number } {
-  const cx = r.left + r.width / 2
-  const cy = r.top + r.height / 2
-  const dx = toward.x - cx
-  const dy = toward.y - cy
-  if (dx === 0 && dy === 0) return { x: cx, y: cy }
-  const sx = dx !== 0 ? r.width / 2 / Math.abs(dx) : Infinity
-  const sy = dy !== 0 ? r.height / 2 / Math.abs(dy) : Infinity
-  const s = Math.min(sx, sy) * reach
-  return { x: cx + dx * s, y: cy + dy * s }
 }
 
 /**
@@ -196,11 +178,10 @@ export function ArrowLayer({
         const ra = a.getBoundingClientRect()
         const rb = b.getBoundingClientRect()
         if (ra.width === 0 || rb.width === 0) continue
-        const cb = { x: rb.left + rb.width / 2, y: rb.top + rb.height / 2 }
-        const ca = { x: ra.left + ra.width / 2, y: ra.top + ra.height / 2 }
-        const p1 = edgePoint(ra, cb)
-        const p2 = edgePoint(rb, ca, s.reach)
-        next.push({ ...s, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, isNew: !before.has(s.key) })
+        // Between two stack entries the usual course would end under the
+        // entry it leaves, so it goes round the pile instead (and over it).
+        const course = s.loop ? stackLoop(ra, rb) : between(ra, rb, s.reach)
+        next.push({ ...s, ...course, isNew: !before.has(s.key) })
       }
       setDrawn(next)
     }
@@ -219,72 +200,75 @@ export function ArrowLayer({
   }, [view, previousView, aimId, resolve])
 
   if (drawn.length === 0) return null
+  const draw = (d: Drawn) => {
+    const { cx, cy } = d
+    const seat = d.seat?.replace('seat-', '') ?? 'x'
+    const head = `url(#arrowhead-${seat})`
+    const path = (
+      <path
+        key={d.key}
+        className={`arrow ${d.kind} ${d.seat ?? ''}${d.isNew ? ' is-new' : ''}`}
+        d={`M ${d.x1} ${d.y1} Q ${cx} ${cy} ${d.x2} ${d.y2}`}
+        pathLength={1}
+        markerEnd={d.kind === 'block' || d.kind === 'resolve' ? undefined : head}
+        data-arrow={d.key}
+      />
+    )
+    if (d.kind !== 'resolve') return path
+    // A resolving arrow's head rides on a sliver of its own at the line's
+    // end, pointing the way the curve arrives, so it can wait for the line to
+    // get there: on the line itself, a marker is drawn whole from the first
+    // frame, and the head sat on the target before the shot.
+    const tx = d.x2 - cx
+    const ty = d.y2 - cy
+    const tl = Math.hypot(tx, ty) || 1
+    // Where it lands, a ring flaring out as the line arrives: what the spell
+    // hit, said once more than the line itself says it. Keyed as a whole, so
+    // the three stay the same elements, their animations running on, however
+    // the arrows around them come and go.
+    return (
+      <Fragment key={d.key}>
+        {path}
+        <path
+          className={`arrow-tip resolve ${d.seat ?? ''}`}
+          d={`M ${d.x2 - tx / tl} ${d.y2 - ty / tl} L ${d.x2} ${d.y2}`}
+          markerEnd={head}
+        />
+        <circle className={`arrow-impact ${d.seat ?? ''}`} cx={d.x2} cy={d.y2} r={10} />
+      </Fragment>
+    )
+  }
+  const reducedClass = reduced ? ' reduced' : ''
+  // From one stack entry to another (`stackLoop`) goes over the pile, in a
+  // layer of its own; everything else under it, so a line leaves its stack
+  // card from behind. The heads are defined once, in the first layer.
+  const overPile = drawn.filter((d) => d.loop)
   return (
-    <svg className={`arrow-layer${reduced ? ' reduced' : ''}`} aria-hidden="true">
-      <defs>
-        {(['a', 'b', 'c', 'd', 'x'] as const).map((s) => (
-          <marker
-            key={s}
-            id={`arrowhead-${s}`}
-            viewBox="0 0 10 10"
-            refX="8"
-            refY="5"
-            markerWidth="5"
-            markerHeight="5"
-            orient="auto-start-reverse"
-          >
-            <path d="M 0 0 L 10 5 L 0 10 z" className={`arrowhead seat-${s}`} />
-          </marker>
-        ))}
-      </defs>
-      {drawn.map((d) => {
-        // A gentle bow, so lines that share an end don't lie on top of each
-        // other, and so a line reads as an arrow rather than a rule.
-        const mx = (d.x1 + d.x2) / 2
-        const my = (d.y1 + d.y2) / 2
-        const len = Math.hypot(d.x2 - d.x1, d.y2 - d.y1) || 1
-        const bow = Math.min(60, len * 0.15)
-        const cx = mx + ((d.y2 - d.y1) / len) * bow
-        const cy = my - ((d.x2 - d.x1) / len) * bow
-        const seat = d.seat?.replace('seat-', '') ?? 'x'
-        const head = `url(#arrowhead-${seat})`
-        const path = (
-          <path
-            key={d.key}
-            className={`arrow ${d.kind} ${d.seat ?? ''}${d.isNew ? ' is-new' : ''}`}
-            d={`M ${d.x1} ${d.y1} Q ${cx} ${cy} ${d.x2} ${d.y2}`}
-            pathLength={1}
-            markerEnd={d.kind === 'block' || d.kind === 'resolve' ? undefined : head}
-            data-arrow={d.key}
-          />
-        )
-        if (d.kind !== 'resolve') return path
-        // A resolving arrow's head rides on a sliver of its own at the line's
-        // end, pointing the way the curve arrives, so it can wait for the
-        // line to get there: on the line itself, a marker is drawn whole from
-        // the first frame, and the head sat on the target before the shot.
-        const tx = d.x2 - cx
-        const ty = d.y2 - cy
-        const tl = Math.hypot(tx, ty) || 1
-        // Where it lands, a ring flaring out as the line arrives: what the
-        // spell hit, said once more than the line itself says it.
-        return [
-          path,
-          <path
-            key={`${d.key}:head`}
-            className={`arrow-tip resolve ${d.seat ?? ''}`}
-            d={`M ${d.x2 - tx / tl} ${d.y2 - ty / tl} L ${d.x2} ${d.y2}`}
-            markerEnd={head}
-          />,
-          <circle
-            key={`${d.key}:hit`}
-            className={`arrow-impact ${d.seat ?? ''}`}
-            cx={d.x2}
-            cy={d.y2}
-            r={10}
-          />,
-        ]
-      })}
-    </svg>
+    <>
+      <svg className={`arrow-layer${reducedClass}`} aria-hidden="true">
+        <defs>
+          {(['a', 'b', 'c', 'd', 'x'] as const).map((s) => (
+            <marker
+              key={s}
+              id={`arrowhead-${s}`}
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5"
+              markerHeight="5"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" className={`arrowhead seat-${s}`} />
+            </marker>
+          ))}
+        </defs>
+        {drawn.filter((d) => !d.loop).map(draw)}
+      </svg>
+      {overPile.length > 0 ? (
+        <svg className={`arrow-layer over-pile${reducedClass}`} aria-hidden="true">
+          {overPile.map(draw)}
+        </svg>
+      ) : null}
+    </>
   )
 }

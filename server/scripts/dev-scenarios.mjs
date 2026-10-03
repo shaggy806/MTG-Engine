@@ -518,15 +518,16 @@ export default {
     about:
       "2p. Arrows as things resolve: Lightning Bolt (a creature or bob), Murder, Prey Upon " +
       "(two targets: the Dreadmaw fights one of bob's creatures) and Prodigal Pyromancer's " +
-      "ping, each pointing at what it hits as it leaves the stack. Pass the turn and bob " +
-      "Bolts the Pyromancer.",
+      "ping, each pointing at what it hits as it leaves the stack, and Counterspell (cast " +
+      "the Bolt, then counter it: the arrow loops round the pile to the Bolt beneath). Pass " +
+      "the turn and bob Bolts the Pyromancer.",
     players: ["alice", "bob"],
     lands: { alice: 10, bob: 5 },
     battlefield: {
       alice: ["Prodigal Pyromancer", "Colossal Dreadmaw"],
       bob: ["Grizzly Bears", "Hill Giant", "Serra Angel", "Craw Wurm"],
     },
-    hand: { alice: ["Lightning Bolt", "Murder", "Prey Upon"], bob: ["Lightning Bolt"] },
+    hand: { alice: ["Lightning Bolt", "Murder", "Prey Upon", "Counterspell"], bob: ["Lightning Bolt"] },
     setup: handOfSpellsOnly("alice"),
     bots: { bob: { casts: [{ name: "Lightning Bolt", target: "Prodigal Pyromancer" }] } },
   },

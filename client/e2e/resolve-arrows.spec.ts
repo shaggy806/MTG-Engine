@@ -93,6 +93,11 @@ interface Seen {
   /** The board marks the target as targeted, and nothing else. */
   readonly marked: boolean
   readonly strayMarks: readonly string[]
+  /** It can be seen: drawn under the stack pile, as most arrows are, its
+   * head isn't under a card of the pile (but the target's own), nor more than
+   * half its line; drawn over it (`over-pile`), nothing covers it. */
+  readonly clear: boolean
+  readonly overPile: boolean
 }
 
 /** What every resolving arrow should be. */
@@ -102,6 +107,7 @@ const POINTING = {
   waitingGone: true,
   marked: true,
   strayMarks: [],
+  clear: true,
 } as const
 
 /**
@@ -136,15 +142,39 @@ async function resolving(page: Page, spell: string, targets: readonly Ref[]): Pr
             : (document.querySelector(`.board [data-obj-id="${CSS.escape(t.id)}"]`) ??
               document.querySelector(`.stack-entry[data-stack-id="${CSS.escape(t.id)}"] .card-tile`))
         if (!target) return null
-        const n = (path.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)?.map(Number) ?? []
+        // "M x1 y1 Q cx cy x2 y2"
+        const n = (path.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?(e-?\d+)?/g)?.map(Number) ?? []
+        const onStack = target.closest('.stack-entry') !== null
+        // Whatever of the line lies under a card of the stack pile, which is
+        // drawn over the arrows' usual layer.
+        const overPile = path.closest('.over-pile') !== null
+        const cards = [...document.querySelectorAll('.stack-entry .card-tile')]
+        const covered = (x: number, y: number, except: Element | null): boolean =>
+          !overPile &&
+          cards.some((c) => {
+            const r = c.getBoundingClientRect()
+            return c !== except && x > r.left && x < r.right && y > r.top && y < r.bottom
+          })
+        let hidden = 0
+        for (let i = 0; i <= 20; i += 1) {
+          const u = 1 - i / 20
+          const v = i / 20
+          const x = u * u * n[0] + 2 * u * v * n[2] + v * v * n[4]
+          const y = u * u * n[1] + 2 * u * v * n[3] + v * v * n[5]
+          if (covered(x, y, null)) hidden += 1
+        }
         out.push({
           key,
           fromEntry: inside(n[0], n[1], entry.getBoundingClientRect()),
           onTarget: inside(n[n.length - 2], n[n.length - 1], target.getBoundingClientRect()),
           waitingGone: document.querySelector(`path.arrow.target[data-arrow^="t:${CSS.escape(spell)}->"]`) === null,
           animation: getComputedStyle(path).animationName,
-          marked: marked.has(t.key),
+          // A spell on the stack has no mark of its own: its arrow and the
+          // stack's "→ Lightning Bolt" caption say it.
+          marked: onStack || marked.has(t.key),
           strayMarks: [...marked].filter((m) => !targets.some((x) => x.key === m)),
+          clear: hidden <= 10 && !covered(n[4], n[5], target),
+          overPile,
         })
       }
       return out
@@ -282,6 +312,36 @@ test('2p: a spell with two targets points at both', async ({ page, request }) =>
   await cast(page, prey, [dreadmaw, angel])
   await passAndSee(page, prey, [dreadmaw, angel], '2p-two-targets')
 })
+
+for (const size of SIZES) {
+  test(`2p at ${size.width}: a spell at a spell on the stack loops round the pile to it`, async ({
+    page,
+    request,
+  }) => {
+    await page.setViewportSize(size)
+    const state = await openRoom(page, request, 'ARRWS')
+    const bolt = idOf(state, 'alice', 'Lightning Bolt')
+    const counterspell = idOf(state, 'alice', 'Counterspell')
+    await cast(page, bolt, [{ player: 'bob' }])
+    // A spell that can only target spells is aimed on the stack itself, with
+    // no banner: the priority buttons simply give way.
+    await expect(async () => {
+      await ready(page)
+      await page.locator(`.hand-card[data-obj-id="${counterspell}"] .card-tile`).dispatchEvent('click')
+      await expect(page.getByRole('button', { name: 'Pass (space)' })).toBeHidden({ timeout: 2000 })
+    }).toPass(paced)
+    await page.locator(`.stack-entry[data-stack-id="${bolt}"] .card-tile`).click()
+    await expect(page.locator(`.stack-entry[data-stack-id="${counterspell}"]`)).toBeVisible(paced)
+    // Off the pile, so the pointer lifts no entry out of it.
+    await page.mouse.move(2, 2)
+    // Waiting, it already goes round, over the pile.
+    await expect(
+      page.locator(`.over-pile path.arrow.target[data-arrow="t:${counterspell}->o:${bolt}"]`),
+    ).toHaveCount(1)
+    const [arrow] = await passAndSee(page, counterspell, [{ object: bolt }], `2p-${size.width}-counterspell`)
+    expect(arrow.overPile).toBe(true)
+  })
+}
 
 test('2p: two resolving in one update point in turn, though only the top one was aimed', async ({
   page,

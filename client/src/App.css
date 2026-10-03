@@ -1627,7 +1627,8 @@
      plus its padding and the page's. */
   right: calc(var(--card-w-max) + 2.2vw + 8px);
   /* Above a board tile's 20 and the arrows' 21 (.arrow-layer), so an arrow
-     leaves the card from behind it. */
+     leaves the card from behind it; under the 23 of an arrow from one entry
+     to another (.arrow-layer.over-pile). */
   z-index: 22;
   pointer-events: none;
 }
@@ -3484,6 +3485,12 @@
   pointer-events: none;
   overflow: visible;
 }
+/* From one stack entry to another (a Counterspell to the spell it counters,
+   arrowGeometry's stackLoop): over the pile, since under it both ends of the
+   line are hidden by the cards around them. */
+.arrow-layer.over-pile {
+  z-index: 23;
+}
 .arrow-layer .arrow {
   fill: none;
   stroke: var(--arrow, var(--warn));
@@ -3502,21 +3509,25 @@
 }
 .arrow-layer .arrow.seat-a,
 .arrow-layer .arrowhead.seat-a,
+.arrow-layer .arrow-tip.seat-a,
 .arrow-layer .arrow-impact.seat-a {
   --arrow: var(--seat-a);
 }
 .arrow-layer .arrow.seat-b,
 .arrow-layer .arrowhead.seat-b,
+.arrow-layer .arrow-tip.seat-b,
 .arrow-layer .arrow-impact.seat-b {
   --arrow: var(--seat-b);
 }
 .arrow-layer .arrow.seat-c,
 .arrow-layer .arrowhead.seat-c,
+.arrow-layer .arrow-tip.seat-c,
 .arrow-layer .arrow-impact.seat-c {
   --arrow: var(--seat-c);
 }
 .arrow-layer .arrow.seat-d,
 .arrow-layer .arrowhead.seat-d,
+.arrow-layer .arrow-tip.seat-d,
 .arrow-layer .arrow-impact.seat-d {
   --arrow: var(--seat-d);
 }
