@@ -2117,7 +2117,7 @@ export interface CardDefinition {
   readonly cycling: {
     readonly cost: string;
     /**
-     * **Landcycling / typecycling** (rule 702.29f — Migratory Route's "Basic
+     * **Landcycling / typecycling** (rules 702.29e–f — Migratory Route's "Basic
      * landcycling {2}"): instead of drawing, search your library for a card
      * matching this filter, reveal it and put it into your hand.
      *

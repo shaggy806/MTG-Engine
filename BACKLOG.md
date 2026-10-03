@@ -194,6 +194,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   either. Wall of Roots taken to 0 toughness by its own -0/-1 counter sits on the battlefield
   until the next cast or resolution (`tdc-precons-features.test.ts`); a Treasure's "whenever you
   sacrifice" trigger likewise waits to be put on the stack.
+- **Counters put as a cost skip counter replacements and prohibitions.** `putCostCounters`
+  (Wall of Roots' -0/-1, Devoted Druid's -1/-1) puts them straight on. Right for "if an effect
+  would put counters" (Doubling Season), wrong for one that isn't worded so (Vizier of Remedies)
+  and for "counters can't be put on" (Solemnity, top 5000), which makes the cost unpayable
+  (Devoted Druid's rulings). Nothing in the pool reaches those kinds yet; authoring one needs it.
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the

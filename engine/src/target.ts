@@ -373,26 +373,6 @@ export function concreteTargetSpecs(specs: readonly TargetSpec[], count: number)
   return out;
 }
 
-/**
- * What an `other` slot must differ from:
- * - `"source"` (the default) — the spell's or ability's own source, the
- *   usual "another target …" (Brash Taunter's "fights another target
- *   creature").
- * - `"trigger-object"` — the object whose event fired the trigger ("target
- *   creature other than that creature").
- * - `"trigger-player"` — the player the triggering event names (The Lord of
- *   Pain's "another target player": other than the one who cast the spell).
- * - `{ slot }` — the target chosen for an earlier slot of the same spell or
- *   ability (Ulvenwald Tracker's "target creature you control fights
- *   **another** target creature"). A relation between two slots, so each
- *   slot's options still list everything and the pair is checked together;
- *   choosers narrow a slot's options by what they already picked
- *   (`slotOptions`). Not for a trigger whose slots the event fills.
- * - `{ slots }` — every one of several earlier slots. "Two target lands" is
- *   one instance of the word "target", and the same object can be chosen
- *   only once for it (rule 601.2c): each slot after the first differs from
- *   all the slots before it. The `distinctTargets` card helper builds them.
- */
 /** A target slot bound to one player by where they sit — see
  * {@link playerAtSeat}. */
 export interface TargetSeat {
@@ -424,6 +404,26 @@ function seatWords(seat: number, possessive: boolean): string {
   return possessive ? `${who}'s` : who;
 }
 
+/**
+ * What an `other` slot must differ from:
+ * - `"source"` (the default) — the spell's or ability's own source, the
+ *   usual "another target …" (Brash Taunter's "fights another target
+ *   creature").
+ * - `"trigger-object"` — the object whose event fired the trigger ("target
+ *   creature other than that creature").
+ * - `"trigger-player"` — the player the triggering event names (The Lord of
+ *   Pain's "another target player": other than the one who cast the spell).
+ * - `{ slot }` — the target chosen for an earlier slot of the same spell or
+ *   ability (Ulvenwald Tracker's "target creature you control fights
+ *   **another** target creature"). A relation between two slots, so each
+ *   slot's options still list everything and the pair is checked together;
+ *   choosers narrow a slot's options by what they already picked
+ *   (`slotOptions`). Not for a trigger whose slots the event fills.
+ * - `{ slots }` — every one of several earlier slots. "Two target lands" is
+ *   one instance of the word "target", and the same object can be chosen
+ *   only once for it (rule 601.2c): each slot after the first differs from
+ *   all the slots before it. The `distinctTargets` card helper builds them.
+ */
 export type OtherThan =
   | "source"
   | "trigger-object"

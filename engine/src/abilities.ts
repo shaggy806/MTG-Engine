@@ -187,7 +187,10 @@ export interface AbilityCost {
    * effect, so one worded "if an effect would put counters" (Doubling
    * Season) never doubles it, as it never doubles a loyalty cost (its
    * ruling); the pool's others are +1/+1-only (Branching Evolution), which
-   * no such cost puts yet — one that did would need them applied. A mana
+   * no such cost puts yet — one that did would need them applied, as a
+   * -1/-1 one (Vizier of Remedies) would; and a "counters can't be put on
+   * it" (Solemnity, none in the pool) would make the cost unpayable (Devoted
+   * Druid's rulings). A mana
    * ability with it and no `{T}` (once each turn) is one the auto-payer may
    * use, as a last resort, like a Treasure: the counter stays.
    */
@@ -1247,9 +1250,9 @@ export type TriggerSpec =
        * of `"trigger-ability"` copies.
        *
        * Only a permanent's abilities, for now: "whenever you activate an
-       * ability" (Rings of Brighthearth) would have to see cycling, whose
-       * draw the engine gives without using the stack (rule 702.29a says it
-       * should), so there'd be nothing to copy.
+       * ability" (Rings of Brighthearth) would also have to see one
+       * activated from a hand — cycling's (rule 702.29a), an ability on the
+       * stack sourced from the cycled card.
        */
       readonly on: "activates-ability";
       readonly who: "attached";
@@ -1261,8 +1264,9 @@ export type TriggerSpec =
       readonly on: "this-cast";
     }
   | {
-      /** "When you cycle this card" (rule 702.29d: "when you discard it to
-       * pay a cycling cost") — Dismantling Wave. It triggers from whatever
+      /** "When you cycle this card" (rule 702.29c: "when you discard this
+       * card to pay an activation cost of a cycling ability") — Dismantling
+       * Wave. It triggers from whatever
        * zone the card ends up in, usually the graveyard, and only for this
        * card, and goes on the stack above the cycling ability — so it
        * resolves before the draw (the rulings). */

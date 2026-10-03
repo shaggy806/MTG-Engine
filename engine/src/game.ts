@@ -7062,6 +7062,21 @@ export class Game {
     }
     const def = this.registry.get(this.state.objects[cardId].cardName);
     if (def.cycling === null) return `${def.name} does not have cycling`;
+    // Cycling is an activated ability that isn't a mana ability (rule
+    // 702.29a), so a split-second spell on the stack stops it (702.61a), and
+    // so does a "can't activate abilities" prohibition on its player. Not one
+    // on abilities "of artifacts, creatures, or enchantments": those are
+    // permanents (rule 109.2), and a card in a hand isn't one (Grand
+    // Abolisher's ruling).
+    for (const id of this.state.zones.shared.stack) {
+      const spell = this.state.objects[id];
+      if (spell !== undefined && spellHasSplitSecond(this.state, this.registry, spell)) {
+        return `${printedCardName(spell)} has split second`;
+      }
+    }
+    if (this.abilitiesProhibited(player, this.state.objects[cardId])) {
+      return `${player} can't activate ${def.name}'s abilities`;
+    }
     if (this.payMana(player, parseManaCost(def.cycling.cost)) === null) {
       return `${player} cannot pay the cycling cost of ${def.name}`;
     }
@@ -7070,7 +7085,7 @@ export class Game {
 
   /** A card's cycling ability as it resolves (rule 702.29a): "Draw a card",
    * or landcycling's search — reveal the card found and put it into your
-   * hand (702.29f). Its cost was paid as it was activated. */
+   * hand (702.29e). Its cost was paid as it was activated. */
   private cyclingAbilityOf(cardName: string): ActivatedAbility | undefined {
     if (!this.registry.has(cardName)) return undefined;
     const cycling = this.registry.get(cardName).cycling;
@@ -7092,7 +7107,7 @@ export class Game {
    * cost and discard the card as it's activated, then the draw (or
    * landcycling's search) goes on the stack, sourced from the cycled card. A
    * "when you cycle this card" trigger goes on above it and resolves first
-   * (rule 702.29d and the rulings — Dismantling Wave). */
+   * (rule 702.29c and the rulings — Dismantling Wave). */
   private cycleCard(player: PlayerId, cardId: ObjectId): void {
     const why = this.whyCannotCycle(player, cardId);
     if (why !== null) throw new Error(why);
@@ -11346,8 +11361,9 @@ export class Game {
         } else if (ability.oncePerTurn !== true) {
           // Without `{T}` or a once-a-turn limit an ability could be
           // activated any number of times in one payment, which the planner
-          // (one activation per source) can't represent. Nothing in the pool
-          // prints a free, unlimited mana ability; one with a mana cost is a
+          // (one activation per source) can't represent: Lord of the
+          // Forsaken's "Pay 1 life: Add {C}" is activated by hand. Nothing in
+          // the pool prints a free, unlimited one; one with a mana cost is a
           // converter the tap-based sources already cover when it taps.
           return;
         }
@@ -13799,7 +13815,7 @@ export class Game {
       event.type === "permanent-left-battlefield" ||
       // A spell's own `this-cast` trigger (cascade, storm) lives on the card
       // on the stack, not a permanent; a cycled card's `this-cycled` one on
-      // the card wherever cycling put it (rule 702.29d).
+      // the card wherever cycling put it (rule 702.29c).
       event.type === "spell-cast" ||
       event.type === "card-cycled"
         ? event.object
@@ -16551,7 +16567,7 @@ export class Game {
           this.sacrificeByEffect(controller, { player }, filter, count, exceptId);
         }
       },
-      sacrificeSource: () => this.sacrificeSourceByEffect(source),
+      sacrificeSource: () => this.sacrificeSourceByEffect(source, controller, refs.source),
       aboutPlayer: (player) =>
         this.makeResolutionContext(
           source,
@@ -21563,11 +21579,20 @@ export class Game {
    * opposed to the choice-raising {@link sacrificeByEffect}. Immediate, like a
    * sacrifice paid as a cost — there's nothing to choose (rule 701.17).
    * Returns whether it happened: `false` if the source already left the
-   * battlefield, which is what gates an "if you do" tail. needed-cards P7.
+   * battlefield (or is back as a new object), or `by` — the ability's
+   * controller — no longer controls it, which is what gates an "if you do"
+   * tail. needed-cards P7.
    */
-  private sacrificeSourceByEffect(source: ObjectId): boolean {
+  private sacrificeSourceByEffect(source: ObjectId, by: PlayerId, stint?: number): boolean {
     const object = this.state.objects[source];
     if (object === undefined || object.zone !== "battlefield") return false;
+    // Only the permanent the ability refers to (rule 400.7): one that has
+    // left and come back is a new object.
+    if (stint !== undefined && (object.zoneChangeCount ?? 0) !== stint) return false;
+    // Only by the player the ability tells to: a player can't sacrifice a
+    // permanent they don't control (rule 701.21a), so once another player has
+    // taken it, "if you do" didn't happen (Colfenor's Urn's ruling).
+    if (object.controller !== by) return false;
     // One that can't be sacrificed stays, and "if you do" didn't happen.
     if (!this.canBeSacrificed(source)) return false;
     // Its controller sacrifices it (rule 701.21a) — read before the move

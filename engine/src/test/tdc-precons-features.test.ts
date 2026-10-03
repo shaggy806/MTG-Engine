@@ -104,9 +104,17 @@ describe("Baldin, Century Herdmaster", () => {
   it("refuses a hundred and first target", () => {
     const game = setUp();
     const baldin = ready(game, "Baldin, Century Herdmaster");
-    const spec = game.registry.get("Baldin, Century Herdmaster").triggered[0].targets[0];
-    expect(spec).toEqual({ kind: "any-number", of: "creature", max: 100 });
-    expect(baldin).toBeDefined();
+    const herd = Array.from({ length: 100 }, () => ready(game, "Grizzly Bears"));
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: baldin, defender: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    expect(() =>
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(baldin), ...herd.map(obj)] }),
+    ).toThrow();
+    game.dispatch({ type: "choose-targets", player: A, targets: herd.map(obj) });
+    game.advanceUntil((s) => s.zones.shared.stack.length === 0 && s.pendingTriggers.length === 0);
+    expect(game.characteristics(herd[99]).toughness).toBe(2 + handSize(game));
+    expect(game.characteristics(baldin).toughness).toBe(7);
   });
 });
 
@@ -516,6 +524,21 @@ describe("Colfenor's Urn", () => {
     expect(game.state.objects[spider].zone).toBe("hand");
   });
 
+  it("isn't sacrificed, and returns nothing, once another player has taken it (its ruling)", () => {
+    const game = setUp();
+    const urn = game.debugSpawn("Colfenor's Urn", A, "battlefield");
+    const ids = ["Giant Spider", "Serra Angel", "Craw Wurm"].map((n) => ready(game, n));
+    for (const id of ids) kill(game, id);
+    // Its end-step ability is on the stack; Bob takes the Urn in response.
+    game.advanceUntil((s) => s.turn.step === "end" && s.zones.shared.stack.length > 0);
+    game.debugApplyEffect(B, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(urn)]);
+    game.advanceUntil((s) => s.turn.step === "end" && quiet(s));
+    // Alice can't sacrifice what she doesn't control (rule 701.21a).
+    expect(game.state.objects[urn].zone).toBe("battlefield");
+    expect(game.state.objects[urn].controller).toBe(B);
+    for (const id of ids) expect(game.state.objects[id].zone).toBe("exile");
+  });
+
   it("returns nothing when it has left before the end step", () => {
     const game = setUp();
     const urn = game.debugSpawn("Colfenor's Urn", A, "battlefield");
@@ -817,6 +840,19 @@ describe("cycling on the stack, and 'when you cycle this card'", () => {
     expect(game.state.objects[think].zone).toBe("graveyard");
     expect(game.state.awaiting?.kind).toBe("choose-from-zone");
     expect(handSize(game)).toBe(hand + 1);
+  });
+
+  it("can't be cycled while a split-second spell is on the stack (rule 702.61a)", () => {
+    const game = setUp();
+    const sanity = game.debugSpawn("Fractured Sanity", A, "hand");
+    const offered = () => game.legalActions(A).some((a) => a.kind === "cycle" && a.card === sanity);
+    expect(offered()).toBe(true);
+    cast(game, "Angel's Grace");
+    expect(game.state.zones.shared.stack).toHaveLength(1);
+    expect(offered()).toBe(false);
+    expect(() => game.dispatch({ type: "cycle", player: A, card: sanity })).toThrow(/split second/);
+    game.advanceUntil(quiet);
+    expect(offered()).toBe(true);
   });
 
   it("Fractured Sanity cast mills each opponent fourteen", () => {
