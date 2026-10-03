@@ -1677,14 +1677,20 @@ export class Game {
       const sacrificeX = sacrificeCostReadsX(ability.cost)
         ? this.costSacrificeCapacity(player, source, ability)
         : undefined;
-      const maxX =
-        manaX === undefined ? sacrificeX : sacrificeX === undefined ? manaX : Math.min(manaX, sacrificeX);
+      // "Exile X cards from your graveyard": as many as there are.
+      const exileX =
+        ability.cost.exileFromGraveyard?.count === "x"
+          ? this.graveyardCostCandidates(player, ability.cost.exileFromGraveyard.filter, source).length
+          : undefined;
+      const caps = [manaX, sacrificeX, exileX].filter((n): n is number => n !== undefined);
+      const maxX = caps.length === 0 ? undefined : Math.min(...caps);
       // "X can't be 0" (Ruthless Technomancer).
       const minX = ability.minX ?? 0;
       if (maxX !== undefined && maxX < minX) return;
       const push = (
         targetOptions: readonly (readonly TargetRef[])[],
         xCost?: { readonly maxX: number; readonly minX?: number },
+        targetSpecs: readonly TargetSpec[] = ability.targets,
       ): void => {
         const label =
           manaColors === undefined || makes === undefined
@@ -1699,7 +1705,7 @@ export class Game {
           cardName,
           text: xCost?.minX !== undefined && xCost.minX === xCost.maxX ? `${label} (X=${xCost.minX})` : label,
           ...(manaColors !== undefined ? { manaColors } : {}),
-          targetSpecs: ability.targets,
+          targetSpecs,
           targetOptions,
           // One permanent, named on the action. A cost of several is chosen
           // as it's paid, with a `sacrifice` decision — nothing to offer here.
@@ -1718,14 +1724,16 @@ export class Game {
           ...(ability.divided !== undefined ? { divide: ability.divided } : {}),
         });
       };
-      if (maxX !== undefined && ability.targets.some(targetSpecReadsX)) {
+      if (maxX !== undefined && (ability.targets.some(targetSpecReadsX) || groupReadsX(ability.targets))) {
         // "Target Saga card with mana value X": what may be targeted depends
         // on X, so the ability is offered once per X that has a legal set of
-        // targets, each with that X fixed and that X's options.
+        // targets, each with that X fixed and that X's options. So is "X
+        // target cards" (Shigeki's channel): the group is X big at each.
         for (let x = minX; x <= maxX; x += 1) {
-          const options = this.targetOptionsFor(ability.targets, player, this.permanentSource(source, x));
-          if (targetsFillable(ability.targets, options, [], 0, stateTargetFacts(this.state, this.registry))) {
-            push(options, { minX: x, maxX: x });
+          const specs = specsAtX(ability.targets, x);
+          const options = this.targetOptionsFor(specs, player, this.permanentSource(source, x));
+          if (targetsFillable(specs, options, [], 0, stateTargetFacts(this.state, this.registry))) {
+            push(options, { minX: x, maxX: x }, specs);
           }
         }
         return;
@@ -10457,10 +10465,12 @@ export class Game {
     // `otherOnly` is about the sacrifice cost alone: "Sacrifice another
     // creature: … target creature" may target its own source (Dina).
     if (x !== undefined || !ability.targets.some(targetSpecReadsX)) {
-      const abilityOptions = ability.targets.map((spec) =>
+      // "X target cards": the group is X big once X is known.
+      const specs = x === undefined ? ability.targets : specsAtX(ability.targets, x);
+      const abilityOptions = specs.map((spec) =>
         legalTargets(this.state, this.registry, spec, player, this.permanentSource(sourceId, x)),
       );
-      for (const [i, spec] of ability.targets.entries()) {
+      for (const [i, spec] of specs.entries()) {
         if (isOptionalSpec(spec)) continue;
         if (abilityOptions[i].length === 0) {
           return `${def.name}'s ability has no legal ${describeTargetSpec(spec)} target`;
@@ -10468,7 +10478,7 @@ export class Game {
       }
       // Every slot has something, but "another target" may still leave no way
       // to fill them all at once (Wayta with no other creature out).
-      if (!targetsFillable(ability.targets, abilityOptions, [], 0, stateTargetFacts(this.state, this.registry))) {
+      if (!targetsFillable(specs, abilityOptions, [], 0, stateTargetFacts(this.state, this.registry))) {
         return `${def.name}'s ability has no legal combination of targets`;
       }
     }
@@ -10534,11 +10544,12 @@ export class Game {
       // Paid with a decision once the ability is on the stack, which a mana
       // ability never is; and one cost asks one thing at a time.
       if (isManaAbility(ability)) return `${def.name}'s mana ability can't exile cards from a graveyard yet`;
-      if (ability.cost.discard !== undefined || sacrificeParts !== null) {
+      if (ability.cost.discard !== undefined || ability.cost.returnToHand !== undefined || sacrificeParts !== null) {
         return `${def.name}'s ability can't ask for two cost choices at once yet`;
       }
       const { count, filter } = ability.cost.exileFromGraveyard;
-      if (this.graveyardCostCandidates(player, filter, sourceId).length < count) {
+      const n = count === "x" ? (x ?? ability.minX ?? 0) : count;
+      if (this.graveyardCostCandidates(player, filter, sourceId).length < n) {
         return `${player} has too few cards in their graveyard to pay ${def.name}'s cost`;
       }
     }
@@ -10607,7 +10618,8 @@ export class Game {
         source.zone === "battlefield" ? (source.zoneChangeCount ?? 0) : undefined;
 
       const badTarget = this.whyTargetsInvalid(
-        ability.targets,
+        // "X target cards" (Shigeki's channel): exactly the X it's activated with.
+        groupReadsX(ability.targets) ? specsAtX(ability.targets, xValue ?? 0) : ability.targets,
         targets,
         player,
         `${def.name}'s ability`,
@@ -10742,6 +10754,10 @@ export class Game {
       // dies-trigger elsewhere doesn't fire.
       this.moveObject(sourceId, "exile");
       this.emit({ type: "permanent-exiled", object: sourceId });
+    }
+    if (ability.cost.returnSelfToHand === true) {
+      // "Return Shigeki to its owner's hand" — the cost itself, paid now.
+      this.returnToHandByEffect({ kind: "object", object: sourceId }, false);
     }
     if (ability.oncePerTurn === true || ability.boast === true) {
       // Rule 602.5g — recorded per ability index, so a permanent with two
@@ -10949,10 +10965,14 @@ export class Game {
       });
       this.costDiscardPriorityTo(player);
     }
-    // "Exile two cards from your graveyard" likewise.
+    // "Exile two cards from your graveyard" likewise ("exile X": the X
+    // chosen).
     const costExile = ability.cost.exileFromGraveyard;
     if (costExile !== undefined) {
-      this.withDecisionSource(sourceId, () => this.payGraveyardExileCost(player, sourceId, costExile));
+      const count = costExile.count === "x" ? chosenX : costExile.count;
+      this.withDecisionSource(sourceId, () =>
+        this.payGraveyardExileCost(player, sourceId, { count, ...(costExile.filter !== undefined ? { filter: costExile.filter } : {}) }),
+      );
     }
     // "Return a Forest you control to its owner's hand": which, asked now
     // too (rules 602.2b, 601.2h).
@@ -10995,6 +11015,7 @@ export class Game {
     source: ObjectId,
     cost: { readonly count: number; readonly filter?: CardFilter },
   ): void {
+    if (cost.count <= 0) return;
     const eligible = this.graveyardCostCandidates(player, cost.filter, source);
     if (eligible.length <= cost.count) {
       this.withGraveyardLeaveBatch(() => {
@@ -11275,6 +11296,8 @@ export class Game {
           ability.cost.discardHand === true ||
           ability.cost.discard !== undefined ||
           ability.cost.returnToHand !== undefined ||
+          ability.cost.exileFromGraveyard !== undefined ||
+          ability.cost.returnSelfToHand === true ||
           ability.exhaust === true ||
           ability.powerUp === true
         ) {

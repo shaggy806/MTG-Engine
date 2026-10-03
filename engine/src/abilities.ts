@@ -197,6 +197,11 @@ export interface AbilityCost {
    * `sacrifice: "self"` — the source doesn't reach a graveyard, so nothing
    * that watches for a death sees one. */
   readonly exileSelf?: boolean;
+  /** Return the source itself to its owner's hand as part of the cost
+   * (Shigeki, Jukai Visionary's "{1}{G}, {T}, Return Shigeki to its owner's
+   * hand: …"). Paid as the ability is activated, so nothing can answer it;
+   * the ability resolves without its source, read as it last existed. */
+  readonly returnSelfToHand?: boolean;
   /** Discard your whole hand as part of the cost (Slate of Ancestry: "{4},
    * {T}, Discard your hand: Draw a card for each creature you control").
    * Nothing to choose, so it's automatic like `payLife` — the empty hand is
@@ -223,9 +228,11 @@ export interface AbilityCost {
    * without asking. Either way they leave the graveyard as one move. The
    * source never counts, wherever it is. Gates activation on having enough
    * such cards; not on a mana ability (there's nowhere for it to wait), nor
-   * beside a `discard` or a sacrifice of several, which ask too.
+   * beside a `discard`, a `returnToHand` or a sacrifice of several, which ask
+   * too. `count: "x"` is Necropolis Fiend's "{X}, {T}, Exile X cards from your
+   * graveyard": the same X as the mana's, capped at the cards there.
    */
-  readonly exileFromGraveyard?: { readonly count: number; readonly filter?: CardFilter };
+  readonly exileFromGraveyard?: { readonly count: number | "x"; readonly filter?: CardFilter };
   /**
    * Tap *other* permanents you control as part of the cost — Gravespawn
    * Sovereign's "Tap five untapped Zombies you control". Distinct from

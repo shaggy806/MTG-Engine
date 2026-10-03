@@ -144,6 +144,7 @@ import _poolSeethingSong from "../pool/seething-song.js";
 import _poolSelesnyaLocket from "../pool/selesnya-locket.js";
 import _poolSeparatistVoidmage from "../pool/separatist-voidmage.js";
 import _poolShieldMate from "../pool/shield-mate.js";
+import _poolShigekiJukaiVisionary from "../pool/shigeki-jukai-visionary.js";
 import _poolShinenOfFlightsWings from "../pool/shinen-of-flights-wings.js";
 import _poolSilentAttendant from "../pool/silent-attendant.js";
 import _poolSkyRuinDrake from "../pool/sky-ruin-drake.js";
@@ -338,6 +339,7 @@ const shard: CardShard = {
     _poolSelesnyaLocket,
     _poolSeparatistVoidmage,
     _poolShieldMate,
+    _poolShigekiJukaiVisionary,
     _poolShinenOfFlightsWings,
     _poolSilentAttendant,
     _poolSkyRuinDrake,

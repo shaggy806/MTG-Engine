@@ -129,6 +129,7 @@ import _poolMysteriosPhantasm from "../pool/mysterios-phantasm.js";
 import _poolNaturalEnd from "../pool/natural-end.js";
 import _poolNearheathChaplain from "../pool/nearheath-chaplain.js";
 import _poolNebelgastBeguiler from "../pool/nebelgast-beguiler.js";
+import _poolNecropolisFiend from "../pool/necropolis-fiend.js";
 import _poolNiblisOfTheUrn from "../pool/niblis-of-the-urn.js";
 import _poolNimbusOfTheIsles from "../pool/nimbus-of-the-isles.js";
 import _poolNourish from "../pool/nourish.js";
@@ -343,6 +344,7 @@ const shard: CardShard = {
     _poolNaturalEnd,
     _poolNearheathChaplain,
     _poolNebelgastBeguiler,
+    _poolNecropolisFiend,
     _poolNiblisOfTheUrn,
     _poolNimbusOfTheIsles,
     _poolNourish,

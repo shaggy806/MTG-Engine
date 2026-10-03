@@ -1747,7 +1747,10 @@ On a spell with `{X}`, `max: "x"` is "up to X target …" (Pest Infestation) and
 before the targets (rule 601.2b–c), so a choice is judged at the X cast
 (`specsAtX`), and the offer's `targetCount` with `xCost.minXByTargetCount` /
 `maxXByTargetCount` say which X each number of targets allows. Only for a
-spell whose group is its only slot.
+spell whose group is its only slot — or an activated ability's: Shigeki,
+Jukai Visionary's channel "{X}{X}{G}{G}, Discard this card: Return X target
+nonlegendary cards from your graveyard to your hand" is offered once per X,
+the group that big at each, and checked at the X activated with.
 It is always the **last** slot of its list (one per list, never in a
 `castModal` mode; `any-number-targets.test.ts` walks the pool for this),
 and the player fills it with none, one or as many distinct targets as there
@@ -1915,8 +1918,9 @@ tapOthers? }`.
   off `PlayerState.commanderIdentity` as it's activated): 0 for a colourless
   commander, and not activatable at all without a commander (the rulings).
 - `payLife: 2`, `payEnergy: 3`, `removeCounter: { kind: "+1/+1", count: 1 }`,
-  `discardHand: true`, `exileSelf: true` — all paid automatically (no
-  decision). `exileSelf` is Hanged Executioner's "Exile this creature",
+  `discardHand: true`, `exileSelf: true`, `returnSelfToHand: true` — all paid
+  automatically (no decision). `returnSelfToHand` is Shigeki, Jukai
+  Visionary's "Return Shigeki to its owner's hand". `exileSelf` is Hanged Executioner's "Exile this creature",
   distinct from `sacrifice: "self"`: the source never reaches a graveyard, so
   nothing watching for a death sees one. `discardHand` is
   Slate of Ancestry's "Discard your hand"; being a *cost* is what makes its
@@ -1940,8 +1944,10 @@ tapOthers? }`.
   turn it is; no more matching cards than that are exiled without asking.
   Either way they leave the graveyard as one move. Gates activation on having
   `count` such cards besides the source. Not on a mana ability, nor beside a
-  `discard` or a sacrifice of several (each asks; one at a time isn't built).
-  `graveyard-exile-cost.test.ts`.
+  `discard`, a `returnToHand` or a sacrifice of several (each asks; one at a
+  time isn't built). `count: "x"` is Necropolis Fiend's "{X}, {T}, Exile X
+  cards from your graveyard": the same X as the mana's, capped by the cards
+  there (`xCost.maxX`). `graveyard-exile-cost.test.ts`.
 - `tapOthers: { count, filter, includeSelf? }` — tap *other* permanents you
   control (Gravespawn Sovereign's "Tap five untapped Zombies you control"), as
   opposed to `tap`, which taps the source. `includeSelf` lets the source be

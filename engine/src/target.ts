@@ -263,7 +263,8 @@ export type TargetSpec =
        * `"x"` is the spell's own X: "destroy **up to X** target artifacts"
        * (Pest Infestation). X is announced before targets are chosen (rule
        * 601.2b–c), so a choice is judged at the X it was cast with — see
-       * {@link specsAtX}. Only on a spell whose group is its only slot. */
+       * {@link specsAtX}. Only on a spell or activated ability whose group
+       * is its only slot (Shigeki, Jukai Visionary's channel). */
       readonly max?: number | "x";
       /** At least this many: `"x"` with `max: "x"` is exactly X — Curse of
        * the Swine's "exile **X** target creatures". */
@@ -589,6 +590,13 @@ export function targetsFillable(
   // relation between slots to get in the way.
   for (let i = from; i < options.length; i += 1) {
     if (options[i].length === 0 && !isOptionalSpec(specs[i] ?? "creature")) return false;
+  }
+  // An "any number of" group with a floor — "X target cards" at a fixed X,
+  // "one, two, or three targets" — needs that many distinct to pick from.
+  const group = anyNumberSlot(specs);
+  if (group >= from && group < options.length) {
+    const spec = specs[group];
+    if (spec !== undefined && options[group].length < groupBounds(spec).min) return false;
   }
   if (!specs.some((s, i) => i >= from && typeof otherThan(s) === "object")) return true;
   const chosen = [...picked.slice(0, from)];

@@ -3807,6 +3807,7 @@ import _poolNecroblossomSnarl from "./pool/necroblossom-snarl.js";
 import _poolNecrogenSpellbomb from "./pool/necrogen-spellbomb.js";
 import _poolNecromancersAssistant from "./pool/necromancers-assistant.js";
 import _poolNecromanticSelection from "./pool/necromantic-selection.js";
+import _poolNecropolisFiend from "./pool/necropolis-fiend.js";
 import _poolNecroskitter from "./pool/necroskitter.js";
 import _poolNecroticHex from "./pool/necrotic-hex.js";
 import _poolNeedForSpeed from "./pool/need-for-speed.js";
@@ -5000,6 +5001,7 @@ import _poolShepherdOfTheLost from "./pool/shepherd-of-the-lost.js";
 import _poolShieldMate from "./pool/shield-mate.js";
 import _poolShieldWall from "./pool/shield-wall.js";
 import _poolShieldsMight from "./pool/shields-might.js";
+import _poolShigekiJukaiVisionary from "./pool/shigeki-jukai-visionary.js";
 import _poolShikoAndNarsetUnified from "./pool/shiko-and-narset-unified.js";
 import _poolShimmerMyr from "./pool/shimmer-myr.js";
 import _poolShimmeringBarrier from "./pool/shimmering-barrier.js";
@@ -10739,6 +10741,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNecrogenSpellbomb,
   _poolNecromancersAssistant,
   _poolNecromanticSelection,
+  _poolNecropolisFiend,
   _poolNecroskitter,
   _poolNecroticHex,
   _poolNeedForSpeed,
@@ -11932,6 +11935,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolShieldMate,
   _poolShieldWall,
   _poolShieldsMight,
+  _poolShigekiJukaiVisionary,
   _poolShikoAndNarsetUnified,
   _poolShimmerMyr,
   _poolShimmeringBarrier,

@@ -866,6 +866,95 @@ describe("Neriv, Crackling Vanguard", () => {
   });
 });
 
+describe("Necropolis Fiend", () => {
+  const swamps = (game: Game, n: number) => {
+    for (let i = 0; i < n; i += 1) game.state.objects[game.debugSpawn("Swamp", A, "battlefield")].tapped = false;
+  };
+
+  it("exiles X chosen cards from your graveyard as it's activated, and gives -X/-X", () => {
+    const game = setUp();
+    const fiend = ready(game, "Necropolis Fiend");
+    swamps(game, 2);
+    const cards = ["Grizzly Bears", "Hill Giant", "Island"].map((n) => game.debugSpawn(n, A, "graveyard"));
+    const angel = ready(game, "Serra Angel", B);
+    // X can't be more than the cards to exile.
+    const offer = game.legalActions(A).find((o) => o.kind === "activate-ability" && o.source === fiend);
+    expect(offer?.kind === "activate-ability" ? offer.xCost?.maxX : undefined).toBe(2);
+    game.dispatch({ type: "activate-ability", player: A, source: fiend, abilityIndex: 0, targets: [obj(angel)], xValue: 2 });
+    expect(game.state.awaiting?.kind).toBe("choose-from-zone");
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [cards[0], cards[2]] });
+    expect(game.state.objects[cards[0]].zone).toBe("exile");
+    expect(game.state.objects[cards[2]].zone).toBe("exile");
+    expect(game.state.objects[cards[1]].zone).toBe("graveyard");
+    expect(game.state.priority.holder).toBe(A);
+    game.advanceUntil(quiet);
+    const c = game.characteristics(angel);
+    expect([c.power, c.toughness]).toEqual([2, 2]);
+  });
+
+  it("can't be activated for more X than there are cards in your graveyard", () => {
+    const game = setUp();
+    const fiend = ready(game, "Necropolis Fiend");
+    swamps(game, 3);
+    game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const angel = ready(game, "Serra Angel", B);
+    expect(() =>
+      game.dispatch({ type: "activate-ability", player: A, source: fiend, abilityIndex: 0, targets: [obj(angel)], xValue: 2 }),
+    ).toThrow(/graveyard/);
+  });
+});
+
+describe("Shigeki, Jukai Visionary", () => {
+  const forests = (game: Game, n: number) => {
+    for (let i = 0; i < n; i += 1) game.state.objects[game.debugSpawn("Forest", A, "battlefield")].tapped = false;
+  };
+
+  it("returns itself to hand as a cost, and reveals four, a land onto the battlefield tapped, the rest to the graveyard", () => {
+    const game = setUp();
+    const shigeki = ready(game, "Shigeki, Jukai Visionary");
+    forests(game, 2);
+    const library = game.state.zones.perPlayer[A].library.length;
+    game.dispatch({ type: "activate-ability", player: A, source: shigeki, abilityIndex: 0, targets: [] });
+    expect(game.state.objects[shigeki].zone).toBe("hand");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    const awaiting = game.state.awaiting;
+    const [land] = awaiting?.kind === "choose-from-zone" ? awaiting.eligible : [];
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [land] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[land].zone).toBe("battlefield");
+    expect(game.state.objects[land].tapped).toBe(true);
+    expect(game.state.zones.perPlayer[A].library.length).toBe(library - 4);
+    expect(game.state.zones.perPlayer[A].graveyard.length).toBe(3);
+  });
+
+  it("channels for X: exactly X target nonlegendary cards from your graveyard back to hand", () => {
+    const game = setUp();
+    // Mana enough for X = 4; only two cards it could take.
+    forests(game, 10);
+    const shigeki = game.debugSpawn("Shigeki, Jukai Visionary", A, "hand");
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const giant = game.debugSpawn("Hill Giant", A, "graveyard");
+    const legend = game.debugSpawn("Baldin, Century Herdmaster", A, "graveyard");
+    // Offered once per X, with the group that big.
+    const offers = game.legalActions(A).filter(
+      (o): o is Extract<LegalAction, { kind: "activate-ability" }> => o.kind === "activate-ability" && o.source === shigeki,
+    );
+    expect(offers.map((o) => o.xCost?.maxX).sort()).toEqual([0, 1, 2]);
+    expect(() =>
+      game.dispatch({ type: "activate-ability", player: A, source: shigeki, abilityIndex: 1, targets: [obj(bears)], xValue: 2 }),
+    ).toThrow();
+    expect(() =>
+      game.dispatch({ type: "activate-ability", player: A, source: shigeki, abilityIndex: 1, targets: [obj(bears), obj(legend)], xValue: 2 }),
+    ).toThrow();
+    game.dispatch({ type: "activate-ability", player: A, source: shigeki, abilityIndex: 1, targets: [obj(bears), obj(giant)], xValue: 2 });
+    expect(game.state.objects[shigeki].zone).toBe("graveyard");
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].zone).toBe("hand");
+    expect(game.state.objects[giant].zone).toBe("hand");
+    expect(game.state.objects[legend].zone).toBe("graveyard");
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 
