@@ -1159,6 +1159,19 @@ export interface StaticAbility {
    * them so printed-ability indices stay stable. */
   readonly grantsActivated?: readonly ActivatedAbility[];
   /**
+   * The activated abilities of every card exiled **with this permanent**
+   * (an `exile { linked }` — rule 607.2a), granted to every object it
+   * `affects` like `grantsActivated` — Steward of the Harvest's "creatures
+   * you control have all activated abilities of all land cards exiled with
+   * this creature". Read live: a card that leaves exile takes its abilities
+   * with it. Only abilities that work on the battlefield (none with a
+   * `zone`); a typed land's printed mana ability is its intrinsic one (rule
+   * 305.6), so a Forest card gives "{T}: Add {G}". An ability naming its card
+   * means the permanent that has it (the ruling) — `sacrifice: "self"`
+   * sacrifices the creature.
+   */
+  readonly grantsActivatedOfLinkedExile?: true;
+  /**
    * Triggered abilities this static grants to every object it `affects` —
    * Tyrant's Familiar's Lieutenant clause, "… and has 'Whenever this creature
    * attacks, it deals 7 damage to target creature defending player

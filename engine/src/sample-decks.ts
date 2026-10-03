@@ -295,7 +295,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Life from the Loam", "Grim Discovery", "Two-mana sorcery: land recursion, regrowth."),
-      sub("Steward of the Harvest", "Cemetery Reaper", "Four-mana creature."),
     ],
   }),
   precon({

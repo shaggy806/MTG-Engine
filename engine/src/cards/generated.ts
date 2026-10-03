@@ -5421,6 +5421,7 @@ import _poolSteppeLynx from "./pool/steppe-lynx.js";
 import _poolSterlingGrove from "./pool/sterling-grove.js";
 import _poolSterlingHound from "./pool/sterling-hound.js";
 import _poolSternProctor from "./pool/stern-proctor.js";
+import _poolStewardOfTheHarvest from "./pool/steward-of-the-harvest.js";
 import _poolStewardOfValeron from "./pool/steward-of-valeron.js";
 import _poolStickyFingers from "./pool/sticky-fingers.js";
 import _poolStingingBarrier from "./pool/stinging-barrier.js";
@@ -12357,6 +12358,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSterlingGrove,
   _poolSterlingHound,
   _poolSternProctor,
+  _poolStewardOfTheHarvest,
   _poolStewardOfValeron,
   _poolStickyFingers,
   _poolStingingBarrier,

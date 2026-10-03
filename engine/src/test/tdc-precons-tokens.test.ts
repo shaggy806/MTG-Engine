@@ -1102,6 +1102,57 @@ describe("Selvala's Stampede (a vote)", () => {
   });
 });
 
+describe("Steward of the Harvest", () => {
+  const offersOf = (game: Game, source: ObjectId) =>
+    game.legalActions(A).filter(
+      (o): o is Extract<LegalAction, { kind: "activate-ability" }> => o.kind === "activate-ability" && o.source === source,
+    );
+
+  it("gives your creatures the activated abilities of the land cards exiled with it, while it stays", () => {
+    const game = setUp();
+    const forest = game.debugSpawn("Forest", A, "graveyard");
+    const wilds = game.debugSpawn("Evolving Wilds", A, "graveyard");
+    game.debugSpawn("Island", A, "graveyard");
+    const bears = ready(game, "Grizzly Bears");
+    const sick = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const steward = game.debugSpawn("Steward of the Harvest", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(forest), obj(wilds)] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[forest].zone).toBe("exile");
+    expect(game.state.objects[wilds].zone).toBe("exile");
+    // The Forest's "{T}: Add {G}" and Evolving Wilds' search.
+    const texts = offersOf(game, bears).map((o) => o.text);
+    expect(texts.some((t) => t.includes("Add {G}"))).toBe(true);
+    expect(texts.some((t) => t.includes("Sacrifice"))).toBe(true);
+    // Not opponents' creatures; and a summoning-sick one can't use {T}.
+    expect(offersOf(game, sick)).toHaveLength(0);
+    const tapForG = offersOf(game, bears).find((o) => o.text.includes("Add {G}"))!;
+    game.dispatch({ type: "activate-ability", player: A, source: bears, abilityIndex: tapForG.abilityIndex, targets: [] });
+    expect(game.state.players[A].manaPool.map((u) => u.type)).toEqual(["G"]);
+    // Gone with Steward.
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(steward)]);
+    game.advanceUntil(quiet);
+    game.state.objects[bears].tapped = false;
+    expect(offersOf(game, bears)).toHaveLength(0);
+  });
+
+  it("an ability naming its land means the creature: Evolving Wilds' sacrifices the creature", () => {
+    const game = setUp();
+    const wilds = game.debugSpawn("Evolving Wilds", A, "graveyard");
+    const bears = ready(game, "Grizzly Bears");
+    game.debugSpawn("Steward of the Harvest", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || quiet(s));
+    if (game.state.awaiting?.kind === "choose-targets") {
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(wilds)] });
+    }
+    game.advanceUntil(quiet);
+    const search = offersOf(game, bears).find((o) => o.text.includes("Sacrifice"))!;
+    game.dispatch({ type: "activate-ability", player: A, source: bears, abilityIndex: search.abilityIndex, targets: [] });
+    expect(game.state.objects[bears].zone).toBe("graveyard");
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

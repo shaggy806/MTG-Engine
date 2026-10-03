@@ -1003,7 +1003,11 @@ export type GrantedAbilityRef =
   /** A card's cycling ability (rule 702.29a: "[Cost], Discard this card:
    * Draw a card", or landcycling's search), on the stack once it's been
    * cycled — `cyclingAbility` of the card named. */
-  | { readonly kind: "cycling"; readonly cardName: string };
+  | { readonly kind: "cycling"; readonly cardName: string }
+  /** Another card's own printed activated ability, at `index` — granted by
+   * a `grantsActivatedOfLinkedExile` static (Steward of the Harvest gives a
+   * creature an exiled land card's abilities). */
+  | { readonly kind: "card-activated"; readonly cardName: string; readonly index: number };
 
 /**
  * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):

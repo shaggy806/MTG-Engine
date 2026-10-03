@@ -387,6 +387,9 @@ interface GrantSource {
   /** `ability`'s index in the source's printed `static` list. */
   readonly staticIndex: number;
   readonly abilities: readonly ActivatedAbility[];
+  /** Where each of `abilities` comes from, when not the static's own list —
+   * a linked exiled card's (`grantsActivatedOfLinkedExile`). */
+  readonly refs?: readonly GrantedAbilityRef[];
 }
 
 /** The `grantsTriggered` counterpart of {@link GrantSource}. */
@@ -10113,6 +10116,26 @@ export class Game {
         if (ability.grantsActivated !== undefined) {
           out.push({ source, ability, staticIndex, abilities: ability.grantsActivated });
         }
+        if (ability.grantsActivatedOfLinkedExile === true) {
+          // "All activated abilities of all land cards exiled with this
+          // creature" (Steward of the Harvest): the cards exiled with this
+          // stint (rule 607.2a), still there, read live.
+          const stint = source.zoneChangeCount ?? 0;
+          const abilities: ActivatedAbility[] = [];
+          const refs: GrantedAbilityRef[] = [];
+          for (const cardId of this.state.zones.shared.exile) {
+            const card = this.state.objects[cardId];
+            const link = card?.exiledWith;
+            if (link === undefined || link.source !== id || link.zoneChangeCount !== stint) continue;
+            const cardName = printedCardName(card);
+            this.registry.get(cardName).activated.forEach((granted, index) => {
+              if (granted.zone !== undefined) return;
+              abilities.push(granted);
+              refs.push({ kind: "card-activated", cardName, index });
+            });
+          }
+          if (abilities.length > 0) out.push({ source, ability, staticIndex, abilities, refs });
+        }
       });
     }
     return out;
@@ -10155,7 +10178,7 @@ export class Game {
       ts: number;
       entries: { ability: ActivatedAbility; ref: GrantedAbilityRef }[];
     }[] = [];
-    for (const { source, ability, staticIndex, abilities } of sources) {
+    for (const { source, ability, staticIndex, abilities, refs } of sources) {
       if (!grantOutlastsLoss(lostAt, source.timestamp)) continue;
       const keywords = (): ReadonlySet<Keyword> => this.characteristics(target.id).keywords;
       if (!staticReaches(this.state, this.registry, source, ability, target, { keywords })) continue;
@@ -10165,7 +10188,7 @@ export class Game {
         ts: source.timestamp,
         entries: abilities.map((grantedAbility, index) => ({
           ability: grantedAbility,
-          ref: { kind: "static", cardName, staticIndex, list: "activated", index },
+          ref: refs?.[index] ?? { kind: "static", cardName, staticIndex, list: "activated", index },
         })),
       });
     }
@@ -10193,6 +10216,9 @@ export class Game {
     if (ref.kind === "modifier" || ref.kind === "modifier-activated") return ref.ability;
     if (ref.kind === "intrinsic") return intrinsicManaAbility(ref.color);
     if (ref.kind === "cycling") return this.cyclingAbilityOf(ref.cardName);
+    if (ref.kind === "card-activated") {
+      return this.registry.has(ref.cardName) ? this.registry.get(ref.cardName).activated[ref.index] : undefined;
+    }
     if (!this.registry.has(ref.cardName)) return undefined;
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
     return ref.list === "activated"

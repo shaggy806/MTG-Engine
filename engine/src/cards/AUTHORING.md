@@ -2702,6 +2702,13 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   control have toxic 1" — see §5).
 - `grantsActivated: [...]` — give the affected permanents these activated
   abilities (Chromatic Lantern, Cryptolith Rite).
+- `grantsActivatedOfLinkedExile: true` — give them the activated abilities of
+  every card exiled **with this permanent** (an `exile { linked: true }`,
+  rule 607.2a), read live: Steward of the Harvest's "creatures you control have
+  all activated abilities of all land cards exiled with this creature". Only
+  abilities that work on the battlefield (none with a `zone`); a typed land's
+  printed mana ability is its intrinsic one, so a Forest card gives "{T}: Add
+  {G}"; `sacrifice: "self"` sacrifices the creature that has it (the ruling).
 - `grantsTriggered: [...]` — the same in layer 6 for *triggered* abilities
   (Tyrant's Familiar's Lieutenant clause). Appended after the permanent's
   printed `triggered`, so a printed ability's index — which the pending

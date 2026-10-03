@@ -163,6 +163,7 @@ import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
 import _poolStarfallInvocation from "../pool/starfall-invocation.js";
 import _poolStarstorm from "../pool/starstorm.js";
+import _poolStewardOfTheHarvest from "../pool/steward-of-the-harvest.js";
 import _poolSusurSecundiVoidAltar from "../pool/susur-secundi-void-altar.js";
 import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
@@ -381,6 +382,7 @@ const shard: CardShard = {
     _poolStandingTroops,
     _poolStarfallInvocation,
     _poolStarstorm,
+    _poolStewardOfTheHarvest,
     _poolSusurSecundiVoidAltar,
     _poolSuturePriest,
     _poolSymbioteSpawn,
