@@ -39,8 +39,10 @@ and rendered once both are in; the game's own download holds no card definitions
   one. A failed shard rejects `loadCardPool`, and `PoolLoadBoundary` swaps the bar for a reload
   offer; a shard that never answers leaves the bar still, so after 15 s without a new shard it
   says "This is taking longer than usual" with a Reload button, hung below the bar so the bar
-  doesn't move. The bar's fill follows `motionPrefs` (`--anim-scale`, no transition under
-  `[data-reduce-motion]`); `cards/cardData.test.ts` covers the accounting and
+  doesn't move, inside a `role="status"` region that's there (empty) from the start so a screen
+  reader announces it. The bar's fill and the screen's fade-in follow `motionPrefs`
+  (`--anim-scale`; neither moves under `[data-reduce-motion]`, set by the viewer's own setting or
+  the browser's); `cards/cardData.test.ts` covers the accounting and
   `e2e/pool-progress.spec.ts` the page, holding the shard responses to read the bar part-way
   (`E2E_SHOTS_DIR` saves screenshots). `engine/client` doesn't export `BUILTIN_CARDS`,
   `POOL_CARDS`, `TOKEN_CARDS` or `createDefaultRegistry`, and must not start to: any of them puts

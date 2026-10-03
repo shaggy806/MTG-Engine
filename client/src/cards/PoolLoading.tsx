@@ -57,14 +57,19 @@ export function PoolLoading() {
         >
           <div className="pool-progress-fill" style={{ transform: `scaleX(${pct / 100})` }} />
         </div>
-        {stalled ? (
-          <div className="pool-progress-stalled" role="status">
-            <p>This is taking longer than usual.</p>
-            <button type="button" onClick={() => window.location.reload()}>
-              Reload
-            </button>
-          </div>
-        ) : null}
+        {/* The live region is there from the start and only its contents
+            come and go: a screen reader announces a change inside a region
+            it already knows, not one that arrives together with its text. */}
+        <div className="pool-progress-stalled" role="status">
+          {stalled ? (
+            <>
+              <p>This is taking longer than usual.</p>
+              <button type="button" onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   )

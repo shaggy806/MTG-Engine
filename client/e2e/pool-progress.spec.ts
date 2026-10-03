@@ -140,11 +140,17 @@ test('a shard that never answers brings up a reload offer after a while', async 
   await expect(bar).toHaveAttribute('aria-valuenow', '31', { timeout: 30_000 })
   const hint = page.getByText('This is taking longer than usual.')
   await expect(hint).toHaveCount(0)
+  // The hint's live region is already there, empty, so a screen reader
+  // announces the hint when it's filled in.
+  const region = page.getByRole('status')
+  await expect(region).toHaveCount(1)
+  await expect(region).toBeEmpty()
   const before = await bar.boundingBox()
 
   await page.clock.fastForward(16_000)
   await expect(hint).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Reload' })).toBeVisible()
+  await expect(region).toContainText('This is taking longer than usual.')
+  await expect(region.getByRole('button', { name: 'Reload' })).toBeVisible()
   // The hint appears under the bar without moving it.
   expect(await bar.boundingBox()).toEqual(before)
   await shotAtEverySize(page, 'deck-builder-stalled')
@@ -157,27 +163,42 @@ test('a shard that never answers brings up a reload offer after a while', async 
 })
 
 test("the bar's movement follows the viewer's motion settings", async ({ page }) => {
-  const fillTransition = () =>
-    page.locator('.pool-progress-fill').evaluate((el) => getComputedStyle(el).transitionDuration)
+  // The fill's step and the whole screen's fade-in.
+  const motion = () =>
+    page.evaluate(() => ({
+      fill: getComputedStyle(document.querySelector('.pool-progress-fill')!).transitionDuration,
+      fade: (() => {
+        const style = getComputedStyle(document.querySelector('.pool-status-loading')!)
+        return style.animationName === 'none' ? 'none' : style.animationDuration
+      })(),
+    }))
+  const loadWith = async (settings: object) => {
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+    // Init scripts run in the order they were added, so the latest wins.
+    await page.addInitScript(
+      (s) => window.localStorage.setItem('mtg.motion', s),
+      JSON.stringify(settings),
+    )
+    const shards = await holdShards(page)
+    await page.goto('/library')
+    await shards.requested()
+    const seen = await motion()
+    await shards.release(32)
+    await expect(page.getByRole('heading', { name: 'Card Library' })).toBeVisible({
+      timeout: 30_000,
+    })
+    return seen
+  }
 
   // Animation speed: twice as slow, twice as long.
-  await page.addInitScript(() =>
-    window.localStorage.setItem('mtg.motion', JSON.stringify({ animScale: 2 })),
-  )
-  let shards = await holdShards(page)
-  await page.goto('/library')
-  await shards.requested()
-  expect(await fillTransition()).toBe('0.32s')
-  await shards.release(32)
-  await expect(page.getByRole('heading', { name: 'Card Library' })).toBeVisible({ timeout: 30_000 })
+  expect(await loadWith({ animScale: 2 })).toEqual({ fill: '0.32s', fade: '0.6s' })
 
   // Reduced motion, from the browser: no movement at all.
-  await page.unrouteAll({ behavior: 'ignoreErrors' })
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  shards = await holdShards(page)
-  await page.reload()
-  await shards.requested()
-  expect(await fillTransition()).toBe('0s')
-  await shards.release(32)
-  await expect(page.getByRole('heading', { name: 'Card Library' })).toBeVisible({ timeout: 30_000 })
+  expect(await loadWith({ animScale: 2 })).toEqual({ fill: '0s', fade: 'none' })
+
+  // Reduced motion, from the viewer's own setting with the browser saying
+  // nothing: the same.
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  expect(await loadWith({ reduceMotion: true })).toEqual({ fill: '0s', fade: 'none' })
 })

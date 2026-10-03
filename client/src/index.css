@@ -161,8 +161,11 @@ h3 {
      the rest of the site's 14px would leave a speck in the middle. */
   font-size: clamp(1.1rem, 0.75vw, 1.4rem);
 }
+/* The fade follows the viewer's animation speed (--anim-scale, from
+   game/motionPrefs.ts); the delay before it doesn't, since its job is only
+   to keep a cached load from flashing. */
 .pool-status-loading {
-  animation: pool-status-in 0.3s ease 0.25s both;
+  animation: pool-status-in calc(0.3s * var(--anim-scale, 1)) ease 0.25s both;
 }
 .pool-status p {
   margin: 0;
