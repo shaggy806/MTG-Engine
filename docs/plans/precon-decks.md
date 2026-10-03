@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 421 of the 495
-non-commander slots are the printed cards; the other 74 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 423 of the 495
+non-commander slots are the printed cards; the other 72 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands, then the 2026-10-03 mana-and-exile pass 2 — Thundermane Dragon's cast from the top and Grenzo, Havoc Raiser's any-colour spending). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),
@@ -118,7 +118,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Stormshriek Feral | Demanding Dragon | Five-mana red flying Dragon. |
 | Temple of the Dragon Queen | Game Trail | Land that makes the deck's colours. |
 | Territorial Hellkite | Young Red Dragon | Four-mana red Dragon. |
-| Thundermane Dragon | Draconic Muralists | Four-mana green Dragon. |
 | Whirlwing Stormbrood | Ganax, Astral Hunter | Five-mana red Dragon that makes Treasure as Dragons enter. |
 | Zenith Festival | Reckless Impulse | Two-mana sorcery: impulse draw, card advantage. |
 
@@ -180,7 +179,6 @@ The tables below mirror `sample-decks.ts` at the time of the swap; the code is a
 | Divine Visitation | Anointed Procession | Five-mana enchantment: token payoff. |
 | Eliminate the Competition | Lich's Caress | Five-mana sorcery: removal, creature removal. |
 | Gix, Yawgmoth Praetor | Midnight Reaper | Three-mana creature: card draw for life, card draw. |
-| Grenzo, Havoc Raiser | Killian, Decisive Mentor | Two-mana creature: card advantage. |
 | Kaya, Geist Hunter | Ajani, Caller of the Pride | Three-mana planeswalker. |
 | Legion Warboss | Krenko, Tin Street Kingpin | Three-mana creature: token maker, attack trigger. |
 | Myr Battlesphere | Threefold Thunderhulk | Seven-mana artifact creature that makes an army. |

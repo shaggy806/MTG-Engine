@@ -15,11 +15,10 @@ that one card is the reason the deck exists.
 - **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
-  ten, engine-only, with the commanders each fully unblocks:
-  `cost:mana-spending-rules` (+2), `effect:amount-aggregate` (+1), `keyword:toxic` (+1),
-  `zone:play-from-exile-with-counter` (+2), `trigger:discards-extensions` (+1),
-  `zone:visibility-extensions` (+1), `zone:cast-from-library-top` (+2), `keyword:blitz` (+1),
-  `keyword:mayhem` (+1), `effect:additional-upkeep-steps` (+1).
+  ones, engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+1 —
+  Karn, Legacy Reforged, whose deny-list mana is built), `keyword:toxic` (+1 — Ixhel),
+  `zone:visibility-extensions` (+1), `keyword:blitz` (+1), `keyword:mayhem` (+1),
+  `effect:additional-upkeep-steps` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `decision:choose-permanent` (11).
   `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
@@ -27,9 +26,9 @@ that one card is the reason the deck exists.
   `replacement:spell-exiled-as-it-resolves` on 2026-10-03 (Zada, Feather, Krark, Ivy, Kalamax,
   Volo, Stella Lee, Fire Lord Azula, Alania, Imodane). Orvar still needs
   `decision:choose-permanent` and `trigger:discards-extensions`, Mendicant Core
-  `mechanic:speed`, Ulalek `effect:copy-ability` and colourless hybrid. `zone:exile-face-down` (Edward Kenway) was split
-  out of `zone:visibility-extensions` and built; Gonti and Ixhel still need
-  `cost:mana-spending-rules`. Live numbers come
+  `mechanic:speed`, Ulalek `effect:copy-ability` and colourless hybrid. `zone:exile-face-down`
+  (Edward Kenway) was split out of `zone:visibility-extensions` and built, and so was its "look
+  at the top card any time" (2026-10-03, with casting from the top). Live numbers come
   from `cmdrs:gaps`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:may-sacrifice-then` (13), `decision:choose-permanent`
@@ -52,13 +51,13 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 19, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 12, Jeskai Striker 3 — 74,
+  now: Temur Roar 18, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 11, Jeskai Striker 3 — 72,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
   any more. **Next:** two each for a triggered ability's divided damage, Omen and
   "the creature it sacrificed" (`docs/card-blockers.md`).
 - **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
-  `SAMPLE_DECKS`): 71 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
+  `SAMPLE_DECKS`): 70 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
   the TDC decks for authoring.
 - **Re-run deck win rates after the autopsy fixes and pick the bench** (`npm run bot:decks -w
   engine`; `docs/plans/deck-autopsies.md`). Sultai Arisen is off the bench; four decks are left

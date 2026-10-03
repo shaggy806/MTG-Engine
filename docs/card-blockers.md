@@ -249,6 +249,34 @@ creature-type change that sets no P/T) and White Tiger (the Tiger God's blocking
 Loki Laufeyson waited on a copy's new targets, since built. Not yet checked: Black Panther, Most
 Dangerous, Human Torch, Jack of Hearts, Shang-Chi and Stature.
 
+### Mana spent as any colour, playing from exile, casting from the top (2026-10-03)
+
+`cost:mana-spending-rules` (`spendManaAs`, a permission's `spendAs`, deny-list mana),
+`zone:play-from-exile-with-counter` (`playFromExile`) and `zone:cast-from-library-top`
+(`castFromLibraryTop`, `looksAtOwnLibraryTop`) are built, with 21 cards: Gonti, Canny
+Acquisitor; Laughing Jasper Flint; Grolnok, the Omnivore; Haldan, Avid Arcanist; Tinybones,
+Bauble Burglar; Glarb, Calamity's Augur; Sigarda, Font of Blessings; Thundermane Dragon; Grenzo,
+Havoc Raiser; Korlessa, Scale Singer; Vizier of the Menagerie; Elven Chorus; Mystic Forge; Crystal
+Skull, Isu Spyglass; Emperor Mihail II; Hakoda, Selfless Commander; Realmwalker; Stolen Strategy;
+Outrageous Robbery; Chromatic Orrery; You Find Some Prisoners. Still blocked, with what else each
+needs:
+
+- **Another player's library in a look-and-choose** (look at the top N of an opponent's library,
+  exile one face down): Gonti, Lord of Luxury; Thief of Sanity; Siphon Insight.
+- **An O-Ring that lets you cast what it took** (Hostage Taker): the engine returns an O-Ring's
+  card with a trigger, so the cast permission would still be live in that window — rule 610.3
+  returns it at once.
+- **"Its owner" as a player** (Brainstealer Dragon's "they lose life"), **an attack on your
+  planeswalkers** as well as on you (Cunning Rhetoric), **"if that spell would be put into a
+  graveyard, exile it instead" on an impulse cast** (Dire Fleet Daredevil), **"tap it" on its own
+  source** (Rakdos, the Muscle), **a once-each-turn top-of-library cast** (Assemble the Players),
+  **"a spell from anywhere other than your hand" as a mana restriction** (Mm'menon, the Right
+  Hand), a free cast from among an enchantment's exiled cards (Court of Locthwain), a cast-now
+  with any-type spending (Tinybones, the Pickpocket), a hand-or-top reveal (Eladamri, Korvecdal),
+  a CDA aggregate (Karn, Legacy Reforged), toxic (Ixhel, Scion of Atraxa), coven (Augur of
+  Autumn), trigger doubling (Traveling Chocobo), a Case or Class (Case of the Locked Hothouse,
+  Fortune Teller's Talent) and reconfigure (The Reality Chip).
+
 ### Elsewhere
 
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
