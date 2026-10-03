@@ -8,8 +8,9 @@ const RETURN_MODE = "Return target creature card from your graveyard to the batt
 
 // "Any number of target opponents": up to one slot per opponent, each a
 // different one — a game seats at most four, so three. (An any-number group
-// can't sit in a mode.) Their sacrifices are one edict: each chooses among
-// their own tied creatures in turn order, and they go together. "Choose
+// can't sit in a mode.) Their sacrifices are one edict (`simultaneous`):
+// each chooses among their own tied creatures in turn order, knowing the
+// choices before theirs, and they all go together (rule 101.4). "Choose
 // both" while you control a commander — anyone's (the ruling) — is
 // `maxModesIf`, asked once as the modes are chosen.
 const opponents: TargetSpec[] = [
@@ -46,6 +47,7 @@ export default defineCard({
                 filter: { type: "creature", greatestAmongItsController: { of: "power", among: { type: "creature" } } },
                 count: 1,
               },
+              simultaneous: true,
             },
             {
               kind: "for-each-target",

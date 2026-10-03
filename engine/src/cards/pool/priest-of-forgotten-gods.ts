@@ -7,8 +7,8 @@ const PRIEST_TEXT =
 // several, `otherOnly` keeping the Priest out of it. It may target no players
 // at all and still add {B}{B} and draw (the ruling); having targets, it's no
 // mana ability and uses the stack. A targeted player with no creature still
-// loses the 2 life (the ruling). The targets' sacrifices are one edict:
-// each chooses in turn, and they go together (rule 101.4).
+// loses the 2 life (the ruling). The targets' sacrifices are one edict
+// (`simultaneous`): each chooses in turn, and they go together (rule 101.4).
 export default defineCard({
   name: "Priest of Forgotten Gods",
   manaCost: "{1}{B}",
@@ -36,6 +36,7 @@ export default defineCard({
             kind: "for-each-target",
             from: 0,
             effect: { kind: "sacrifice", who: "target", filter: { type: "creature" }, count: 1 },
+            simultaneous: true,
           },
           { kind: "add-mana", mana: "B", amount: 2 },
           { kind: "draw", amount: 1 },

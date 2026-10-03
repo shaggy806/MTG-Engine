@@ -334,17 +334,25 @@ describe("Priest of Forgotten Gods", () => {
     game.dispatch({ type: "sacrifice", player: A, permanents: [fodder[0], fodder[1]] });
     expect(zone(game, fodder[2])).toBe("battlefield");
     const asked: PlayerId[] = [];
+    const chosen: ObjectId[] = [];
+    // Where each earlier choice is as the next player chooses.
+    const earlierAsAsked: (string | undefined)[] = [];
     for (let i = 0; i < 20 && !quiet(game.state); i += 1) {
       const awaiting = game.state.awaiting;
       if (awaiting?.kind === "sacrifice") {
         asked.push(awaiting.player);
+        earlierAsAsked.push(...chosen.map((id) => zone(game, id)));
+        chosen.push(awaiting.eligible[0]);
         game.dispatch({ type: "sacrifice", player: awaiting.player, permanents: [awaiting.eligible[0]] });
       } else if (game.state.priority.holder !== null) {
         game.dispatch({ type: "pass-priority", player: game.state.priority.holder });
       }
     }
-    // Each target chooses from their own creatures, in turn order (rule 101.4).
+    // Each target chooses from their own creatures, in turn order, and then
+    // they're all sacrificed at once (rule 101.4): Bob's is still there as
+    // Carol chooses.
     expect(asked).toEqual([B, C]);
+    expect(earlierAsAsked).toEqual(["battlefield"]);
     expect([game.state.players[B].life, game.state.players[C].life]).toEqual([18, 18]);
     expect(theirs.map((id) => zone(game, id))).toEqual(["graveyard", "battlefield", "graveyard", "battlefield"]);
   });

@@ -145,6 +145,29 @@ describe("modal spells", () => {
   });
 });
 
+describe("statics that work from the graveyard", () => {
+  // Rule 113.6b: `fromGraveyard` makes a static work only while its card is
+  // in a graveyard. Only the layer fold's grants to permanents
+  // (`contributingStaticSources`) look in graveyards for one and pass it by
+  // on the battlefield; any other part — a replacement, a type change, a
+  // cost change, a granted ability — would still work from the battlefield
+  // and never from the graveyard, so a card that needs one waits for the
+  // engine.
+  it("carry only what the layer fold reads from a graveyard", () => {
+    const folded = new Set([
+      "affects", "condition", "fromGraveyard", "text",
+      "grantPt", "grantPtPerCount", "grantKeywords", "grantToxic", "restrictions",
+      "combatDamageByToughness", "canAttackAsThoughNoDefender", "cantBeSacrificed", "protection", "setBasePt",
+    ]);
+    const stray = POOL_CARDS.flatMap((def) =>
+      def.static
+        .filter((ability) => ability.fromGraveyard === true)
+        .flatMap((ability) => Object.keys(ability).filter((key) => !folded.has(key)).map((key) => `${def.name}: ${key}`)),
+    );
+    expect(stray).toEqual([]);
+  });
+});
+
 describe("deckbuilding flags", () => {
   // Rule 903.3a: a card that says it "can be your commander" is the only
   // way a planeswalker commands. `deck-validation.ts` reads the declarative

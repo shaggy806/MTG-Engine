@@ -1094,6 +1094,32 @@ describe("from the command zone (Command Beacon, Hellkite Courser)", () => {
     game.advanceUntil((s) => activePlayerOf(s) === B);
     expect(game.state.objects[wurm].zone).toBe("hand");
   });
+
+  it("Hellkite Courser's return leaves a commander that has been blinked: a new object (rule 400.7)", () => {
+    const game = setUp();
+    const wurm = commander(game);
+    cast(game, "Hellkite Courser");
+    settle(game, wurm);
+    game.debugApplyEffect(A, { kind: "flicker", target: 0 }, [obj(wurm)]);
+    settle(game);
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
+    // The haste went with the object it was given to.
+    expect(game.characteristics(wurm).keywords.has("haste")).toBe(false);
+    game.advanceUntil((s) => activePlayerOf(s) === B);
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
+  });
+
+  it("Hellkite Courser's return still happens once Courser itself has died", () => {
+    const game = setUp();
+    const wurm = commander(game);
+    const courser = cast(game, "Hellkite Courser");
+    settle(game, wurm);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(courser)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[courser].zone).toBe("graveyard");
+    game.advanceUntil((s) => activePlayerOf(s) === B);
+    expect(game.state.objects[wurm].zone).toBe("command");
+  });
 });
 
 describe("a sacrifice of the greatest among its controller's (Crackling Doom, Soul Shatter, Will of the Abzan)", () => {
@@ -1173,6 +1199,36 @@ describe("a sacrifice of the greatest among its controller's (Crackling Doom, So
     expect(game.state.objects[dead].zone).toBe("battlefield");
     expect(game.state.objects[dead].controller).toBe(A);
   });
+
+  it("Will of the Abzan: two opponents each choose before either sacrifices, then both lose 3", () => {
+    const game = threeWay();
+    const [b1, b2] = [ready(game, "Craw Wurm", B), ready(game, "Craw Wurm", B)];
+    const [c1, c2] = [ready(game, "Craw Wurm", C), ready(game, "Craw Wurm", C)];
+    const will = game.debugSpawn("Will of the Abzan", A, "hand");
+    game.dispatch({
+      type: "cast-spell", player: A, card: will, modes: [0],
+      targets: [{ kind: "player", player: C }, { kind: "player", player: B }, null],
+    });
+    // Where Bob's choice is as Carol makes hers: one edict, so still there
+    // (rule 101.4).
+    const asked: PlayerId[] = [];
+    let bobsAsCarolChooses: string | undefined;
+    for (let i = 0; i < 6; i += 1) {
+      game.advanceUntil((s) => s.awaiting?.kind === "sacrifice" || quiet(s));
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind !== "sacrifice") break;
+      asked.push(awaiting.player);
+      if (awaiting.player === C) bobsAsCarolChooses = game.state.objects[b1].zone;
+      game.dispatch({ type: "sacrifice", player: awaiting.player, permanents: [awaiting.player === B ? b1 : c1] });
+    }
+    game.advanceUntil(quiet);
+    expect(asked).toEqual([B, C]);
+    expect(bobsAsCarolChooses).toBe("battlefield");
+    expect([b1, b2, c1, c2].map((id) => game.state.objects[id].zone)).toEqual([
+      "graveyard", "battlefield", "graveyard", "battlefield",
+    ]);
+    expect([life(game, B), life(game, C)]).toEqual([17, 17]);
+  });
 });
 
 describe("Temple of the Dragon Queen", () => {
@@ -1250,6 +1306,33 @@ describe("statics that work from the graveyard (Wonder, Anger)", () => {
     game.advanceUntil((s) => s.awaiting?.kind === "attackers");
     const legal = game.legalActions(A).find((a) => a.kind === "declare-attackers");
     expect(legal?.kind === "declare-attackers" ? legal.eligible : []).toContain(goblin);
+  });
+
+  // Layer 6 in timestamp order (rule 613.7), the card's timestamp the one it
+  // got entering the graveyard (rule 613.7d, Anger's ruling).
+  it("Wonder reaching the graveyard after a Turn to Frog still gives that creature flying", () => {
+    const game = setUp();
+    const bears = ready(game, "Grizzly Bears");
+    const wonder = ready(game, "Wonder");
+    cast(game, "Turn to Frog", [obj(bears)]);
+    game.advanceUntil(quiet);
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(false);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(wonder)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[wonder].zone).toBe("graveyard");
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(true);
+  });
+
+  it("a Turn to Frog after Wonder reached the graveyard takes the flying away", () => {
+    const game = setUp();
+    const bears = ready(game, "Grizzly Bears");
+    const wonder = ready(game, "Wonder");
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(wonder)]);
+    game.advanceUntil(quiet);
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(true);
+    cast(game, "Turn to Frog", [obj(bears)]);
+    game.advanceUntil(quiet);
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(false);
   });
 });
 
@@ -1379,6 +1462,21 @@ describe("Gala Greeters", () => {
     game.dispatch({ type: "choose-modes", player: A, modes: [1] });
     game.advanceUntil(quiet);
     expect(life(game)).toBe(22);
+  });
+
+  it("gives creatures entering together different modes (the ruling)", () => {
+    const game = setUp();
+    ready(game, "Gala Greeters");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Spirit Token", count: 2, separate: true }, []);
+    const offered: number[] = [];
+    for (let i = 0; i < 4; i += 1) {
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-modes" || quiet(s));
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind !== "choose-modes") break;
+      offered.push(awaiting.modes.length);
+      game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    }
+    expect(offered).toEqual([3, 2]);
   });
 });
 

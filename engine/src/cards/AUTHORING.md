@@ -2796,7 +2796,9 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   graveyard (rule 613.7d; Anger's ruling). The rest of the "as long as" is
   an ordinary `condition`. Only what folds into characteristics reaches that
   far (a keyword, a P/T bonus, a restriction): a granted ability from the
-  graveyard (Riftstone Portal's mana ability for lands) doesn't yet.
+  graveyard (Riftstone Portal's mana ability for lands) doesn't yet, and
+  any other part — a replacement, a type change — would work from the
+  battlefield instead, so `pool.test.ts` refuses one.
 - `canAttackAsThoughNoDefender: true` — the affected creatures "can attack as
   though they didn't have defender" (Arcades, Felothar, High Alert). Lifts
   defender's "can't attack" and nothing else: summoning sickness and

@@ -26219,13 +26219,6 @@ export class Game {
       object.face = 0;
     }
 
-    // A card entering a graveyard gets a timestamp there too (rule 613.7d):
-    // a static that works from the graveyard (Wonder, Anger) is ordered by it
-    // (Anger's ruling).
-    if (to === "graveyard") {
-      this.state.timestampSeq += 1;
-      object.timestamp = this.state.timestampSeq;
-    }
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
       object.summoningSick = true;
@@ -26339,7 +26332,11 @@ export class Game {
       object.damageMarked = 0;
       object.enteredBattlefieldOnTurn = null;
       object.summoningSick = false;
-      object.timestamp = 0;
+      // A card entering a graveyard gets a timestamp there (rule 613.7d): a
+      // static that works from the graveyard (Wonder, Anger) is ordered by it
+      // in layer 6 — after a loss of all abilities that came before it, and
+      // lost to one that comes after (Anger's ruling). Elsewhere none is read.
+      object.timestamp = to === "graveyard" ? this.freshTimestamp() : 0;
       // The `{X}` a spell was cast for ends when it changes zones (rule 112.7 /
       // 608.2h) — so a Walking Ballista that dies and returns re-enters as a
       // fresh 0/0 with X=0, not its old size.

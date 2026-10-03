@@ -189,9 +189,11 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     v.touch(n.target, "either", MINOR);
     v.child(n.else);
   },
+  // A commander a delayed trigger takes home (Hellkite Courser): the
+  // controller's own, sent back as the card says, never a choice to weigh.
+  "put-in-command-zone": (n, v) => v.touch(n.target, "either", MINOR),
   // Its own source in print (Tree of Redemption); which way it cuts turns
   // on the numbers, not the side of the table.
-  "put-in-command-zone": (n, v) => v.touch(n.target, "either", MINOR),
   "exchange-life-toughness": (n, v) => {
     v.touch(n.target, "either", MINOR);
     // Tree of Perdition's target opponent: a life total of 13 is a cut
