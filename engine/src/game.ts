@@ -4640,6 +4640,7 @@ export class Game {
 
   private drawStep(): void {
     const active = this.activePlayer;
+    if (this.activeHasLeft()) return;
     const firstTurnForStarter =
       this.state.turn.number === 1 && active === this.state.startingPlayer;
     if (this.state.rules.skipFirstDraw && firstTurnForStarter) return;
@@ -4684,10 +4685,21 @@ export class Game {
     return Math.max(0, size + adjust);
   }
 
+  /**
+   * Whether the player whose turn it is has left the game. The turn goes on
+   * to its end without an active player (rule 800.4j), so the turn-based
+   * actions that are theirs don't happen: no draw, no attackers declared, no
+   * discard to hand size.
+   */
+  private activeHasLeft(): boolean {
+    return this.state.players[this.activePlayer]?.hasLost === true;
+  }
+
   private cleanupStep(): void {
     const active = this.activePlayer;
     const hand = this.state.zones.perPlayer[active].hand;
-    const excess = this.hasNoMaxHandSize(active) ? 0 : hand.length - this.maxHandSizeOf(active);
+    const excess =
+      this.activeHasLeft() || this.hasNoMaxHandSize(active) ? 0 : hand.length - this.maxHandSizeOf(active);
     if (excess > 0) {
       // Ask for the discard; finishCleanup runs once it is dispatched.
       this.state.awaiting = { kind: "discard", player: active, count: excess };
@@ -5189,6 +5201,7 @@ export class Game {
    * exactly as an explicit empty declaration would.
    */
   private declareAttackersStep(): void {
+    if (this.activeHasLeft()) return;
     const defenders = this.legalDefenders(this.activePlayer);
     const hasEligibleAttacker = this.state.zones.shared.battlefield.some((id) =>
       defenders.some((defender) => this.whyCannotAttack(this.activePlayer, id, defender) === null),
@@ -10532,6 +10545,12 @@ export class Game {
   // --- priority -------------------------------------------------
 
   private grantPriority(player: PlayerId): void {
+    // A player who has left the game never receives priority (rule 800.4a):
+    // it goes to the next player still in it — the turn of a player who lost
+    // during it continues without them (800.4j). Handed back to its caster
+    // after a cast, a player who'd lost kept casting a spell that could go
+    // nowhere, forever (a v1 deck run's seed 617).
+    if (this.state.players[player]?.hasLost === true) player = this.nextEligibleAfter(player);
     this.state.priority.active = true;
     this.state.priority.holder = player;
     this.state.priority.passed = [];
@@ -20641,6 +20660,14 @@ export class Game {
           // They leave the game at once (rule 800.4a), not as a state-based
           // action — though losing is one.
           this.leaveGame(player);
+          // With priority, it passes to the next player still in the game
+          // (800.4a), as when they concede.
+          const priority = this.state.priority;
+          if (priority.active && priority.holder === player) {
+            priority.holder = this.nextEligibleAfter(player);
+            priority.passed = [];
+            this.emit({ type: "priority-received", player: priority.holder });
+          }
           changed = true;
         }
       }
