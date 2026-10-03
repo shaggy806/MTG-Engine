@@ -175,8 +175,8 @@ export interface GameObject {
   /**
    * Indices of this permanent's activated abilities marked
    * `oncePerTurn` that have already been used this turn (rule 602.5g —
-   * "Activate only once each turn", Steel Hellkite). Reset in the
-   * controller's untap step alongside `loyaltyActivatedThisTurn`.
+   * "Activate only once each turn", Steel Hellkite). Reset as every turn
+   * begins, whoever's it is (an untap step's first act).
    */
   abilitiesUsedThisTurn?: number[];
   /** Indices of this object's exhaust abilities already activated — once
@@ -626,6 +626,15 @@ export interface GameObject {
    * any zone change.
    */
   exiledWith?: { readonly source: ObjectId; readonly zoneChangeCount: number };
+  /**
+   * How many cards have been exiled *with* this permanent (an `exile {
+   * linked }` — rule 607.2a) in its battlefield stint `stint`, ever — a card
+   * that has left exile since still counts (the Colfenor's Urn ruling: "over
+   * the course of the entire game"). A different stint is a different
+   * object (rule 400.7) with none. Read by the `exiled-with-source`
+   * condition.
+   */
+  exiledWithCount?: { readonly stint: number; readonly count: number };
   /** True while this adventure card sits in exile after its adventure resolved
    * (rule 715.3 — ROADMAP Phase 10): its owner may cast the creature half from
    * exile. Cleared on any zone change. */
@@ -856,6 +865,11 @@ export interface PtModifier {
    * it. Applied after a CDA, before counters (7c) and +N/+N bonuses (7d);
    * the latest such modifier wins. */
   setPt?: [number, number];
+  /** Layer 7b — sets base toughness alone, ordered with `setPt` by
+   * timestamp: an exchange of a life total with a toughness (rule 701.12g —
+   * Tree of Redemption's "exchange your life total with this creature's
+   * toughness"), which leaves its power as it was. */
+  setToughness?: number;
   /** Layer 6 — triggered abilities this modifier grants, for a one-shot
    * "gains '[trigger]' until end of turn" (Hunter's Prowess, Hunter's
    * Insight). The ongoing, static equivalent is
@@ -1432,6 +1446,19 @@ export interface PlayerState {
    * any more. Absent until someone attacks.
    */
   lastAttackedBy?: Partial<Record<PlayerId, number>>;
+  /**
+   * The last turn each player declared a creature attacking **this player**
+   * — the player, not a planeswalker of theirs, and never a creature put
+   * onto the battlefield attacking (the O-Kagachi, Vengeful Kami ruling on
+   * "attacked you"). With `lastTurnTaken`, what "players who attacked you
+   * during their last turn" reads (Weathered Sentinels — see
+   * `attackedYouDuringTheirLastTurn`). Absent until someone does.
+   */
+  attackedByOnTurn?: Partial<Record<PlayerId, number>>;
+  /** The number of the most recent turn this player took, the one under way
+   * included — "their last turn". Set as each of their turns begins, and as
+   * they declare attackers (so a first turn counts). */
+  lastTurnTaken?: number;
   /**
    * Which printing of each card this player brought, keyed by card name — a
    * Scryfall reference in the same shapes {@link CardDefinition.art} accepts
@@ -2214,6 +2241,15 @@ export interface TurnHistory {
   /** Permanent cards put into this player's graveyard from anywhere — each
    * is this player "descending". */
   descended?: TurnHistoryEntry[];
+  /** Cards put into this player's graveyard from their hand or library —
+   * discarded, milled, surveilled, cycled — Welcome the Dead's "the number
+   * of cards that were put into your graveyard from your hand or library
+   * this turn" (`TurnStat` `"cards-to-graveyard-from-hand-or-library"`). */
+  toGraveyardFromHandOrLibrary?: number;
+  /** Cards that left this player's graveyard, for anywhere — Essence
+   * Anchor's "if a card left your graveyard this turn" (`TurnStat`
+   * `"cards-left-graveyard"`). */
+  leftGraveyard?: number;
   /** Damage dealt to this player, and the part of it that was combat damage. */
   damageTaken?: number;
   combatDamageTaken?: number;
@@ -3307,6 +3343,18 @@ export const permanentCount = (state: GameState, ids: readonly ObjectId[]): numb
 
 export const activePlayerOf = (state: GameState): PlayerId =>
   state.turnOrder[state.turn.activePlayerIndex];
+
+/**
+ * Whether `them` attacked `you` during their last turn — the most recent
+ * turn they took (Weathered Sentinels' "players who attacked you during
+ * their last turn"): declared a creature attacking `you` then, not only a
+ * planeswalker of yours (the O-Kagachi, Vengeful Kami ruling). See
+ * `PlayerState.attackedByOnTurn`.
+ */
+export function attackedYouDuringTheirLastTurn(state: GameState, you: PlayerId, them: PlayerId): boolean {
+  const last = state.players[them]?.lastTurnTaken;
+  return last !== undefined && state.players[you]?.attackedByOnTurn?.[them] === last;
+}
 
 /**
  * Everything two tokens must share to be folded into one stack, as one

@@ -18,6 +18,7 @@ import _poolBehemothSledge from "../pool/behemoth-sledge.js";
 import _poolBellowingAegisaur from "../pool/bellowing-aegisaur.js";
 import _poolBlightedCataract from "../pool/blighted-cataract.js";
 import _poolBrotherhoodPatriarch from "../pool/brotherhood-patriarch.js";
+import _poolCanopyGargantuan from "../pool/canopy-gargantuan.js";
 import _poolCaptainOfUmbar from "../pool/captain-of-umbar.js";
 import _poolCarvenCaryatid from "../pool/carven-caryatid.js";
 import _poolCavesOfKoilos from "../pool/caves-of-koilos.js";
@@ -184,6 +185,7 @@ import _poolValakutStoneforge from "../pool/valakut-stoneforge.js";
 import _poolVeneratedRotpriest from "../pool/venerated-rotpriest.js";
 import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
+import _poolWallOfRoots from "../pool/wall-of-roots.js";
 import _poolWanderingArchaic from "../pool/wandering-archaic.js";
 import _poolWhiteKnight from "../pool/white-knight.js";
 import _poolWittyRoastmaster from "../pool/witty-roastmaster.js";
@@ -216,6 +218,7 @@ const shard: CardShard = {
     _poolBellowingAegisaur,
     _poolBlightedCataract,
     _poolBrotherhoodPatriarch,
+    _poolCanopyGargantuan,
     _poolCaptainOfUmbar,
     _poolCarvenCaryatid,
     _poolCavesOfKoilos,
@@ -382,6 +385,7 @@ const shard: CardShard = {
     _poolVeneratedRotpriest,
     _poolVonaButcherOfMagan,
     _poolVraskasContempt,
+    _poolWallOfRoots,
     _poolWanderingArchaic,
     _poolWhiteKnight,
     _poolWittyRoastmaster,

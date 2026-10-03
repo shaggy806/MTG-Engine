@@ -171,10 +171,11 @@ export function whyCannotAttack(
   }
   if (object.tapped && asOf.nextTurn !== true) return `${def.name} is tapped and cannot attack`;
   // Defender (rule 702.3b), unless something lets it "attack as though it
-  // didn't have defender" (Arcades, the Strategist) — which lifts only this.
+  // didn't have defender" (Arcades, the Strategist) — which lifts only this
+  // — perhaps against this defender alone (Weathered Sentinels).
   if (
     objHasKeyword(state, registry, creatureId, "defender") &&
-    !canAttackDespiteDefender(state, registry, creatureId)
+    !canAttackDespiteDefender(state, registry, creatureId, target)
   ) {
     return `${def.name} has defender and cannot attack`;
   }

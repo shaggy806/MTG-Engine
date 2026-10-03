@@ -201,6 +201,7 @@ import _poolTerminate from "../pool/terminate.js";
 import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
 import _poolThrorsMap from "../pool/thrors-map.js";
 import _poolTigerClaws from "../pool/tiger-claws.js";
+import _poolTipTheScales from "../pool/tip-the-scales.js";
 import _poolTobiasAndrion from "../pool/tobias-andrion.js";
 import _poolTorturedExistence from "../pool/tortured-existence.js";
 import _poolToweringTitan from "../pool/towering-titan.js";
@@ -434,6 +435,7 @@ const shard: CardShard = {
     _poolThirdPathIconoclast,
     _poolThrorsMap,
     _poolTigerClaws,
+    _poolTipTheScales,
     _poolTobiasAndrion,
     _poolTorturedExistence,
     _poolToweringTitan,

@@ -367,7 +367,15 @@ export type TurnStat =
    * creatures this turn" (its ruling): one declared in two attack phases
    * counts once, one put onto the battlefield attacking never (rule 508.4 —
    * it was never declared). */
-  | "attackers";
+  | "attackers"
+  /** Cards put into the player's graveyard from their hand or library this
+   * turn — Welcome the Dead's X (discarded, milled, surveilled or cycled
+   * away, whatever put them there). */
+  | "cards-to-graveyard-from-hand-or-library"
+  /** Cards that left the player's graveyard this turn, for anywhere — cast
+   * or played from it, returned, exiled (Essence Anchor's "if a card left
+   * your graveyard this turn"). */
+  | "cards-left-graveyard";
 
 /**
  * A condition gating a static ability (rule 604.3 — "as long as …"). Evaluated
@@ -654,6 +662,13 @@ export type StaticCondition =
   /** The source's controller cast a spell from a graveyard or activated an
    * ability of a card in a graveyard this turn (Laboratory Drudge). */
   | { readonly kind: "used-graveyard-this-turn" }
+  /** At least `atLeast` cards have been exiled with the source (an `exile {
+   * linked }` — rule 607.2a) in the battlefield stint it's in, ever, though
+   * they've left exile since — Colfenor's Urn's "if three or more cards have
+   * been exiled with this artifact" (its ruling: "over the course of the
+   * entire game"). False for a source not on the battlefield. See
+   * `GameObject.exiledWithCount`. */
+  | { readonly kind: "exiled-with-source"; readonly atLeast: number }
   /** The negation of another condition — Titan Hunter's "**if no creatures
    * died this turn**". Cheaper than a `no-` variant of every condition, and
    * it composes. */
@@ -1061,8 +1076,15 @@ export interface StaticAbility {
    * defender for anything that asks. Only consulted when a creature is
    * declared as an attacker — once attacking, it stays attacking if the
    * permission ends mid-combat (Arcades' ruling).
+   *
+   * `"players-who-attacked-you"` lifts it against some defenders only:
+   * Weathered Sentinels' "can attack **players who attacked you during
+   * their last turn** as though it didn't have defender" — a player (never a
+   * planeswalker) who declared a creature attacking the creature's
+   * controller during their own most recent turn
+   * (`attackedYouDuringTheirLastTurn`).
    */
-  readonly canAttackAsThoughNoDefender?: boolean;
+  readonly canAttackAsThoughNoDefender?: boolean | "players-who-attacked-you";
   /**
    * The affected permanents can't be sacrificed — Alexios, Deimos of
    * Kosmos's "~ can't be sacrificed" (`"self"`), Zurgo, Thunder's Decree's

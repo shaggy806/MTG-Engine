@@ -34,6 +34,7 @@ import _poolCircleOfTheLandDruid from "../pool/circle-of-the-land-druid.js";
 import _poolClear from "../pool/clear.js";
 import _poolClone from "../pool/clone.js";
 import _poolCloudMidgarMercenary from "../pool/cloud-midgar-mercenary.js";
+import _poolColfenorsUrn from "../pool/colfenors-urn.js";
 import _poolCollectorsVault from "../pool/collectors-vault.js";
 import _poolConscriptedInfantry from "../pool/conscripted-infantry.js";
 import _poolCopperHostCrusher from "../pool/copper-host-crusher.js";
@@ -249,6 +250,7 @@ const shard: CardShard = {
     _poolClear,
     _poolClone,
     _poolCloudMidgarMercenary,
+    _poolColfenorsUrn,
     _poolCollectorsVault,
     _poolConscriptedInfantry,
     _poolCopperHostCrusher,

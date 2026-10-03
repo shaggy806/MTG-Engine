@@ -169,6 +169,20 @@ export interface AbilityCost {
   /** Counters to remove from the source as part of the cost (Walking
    * Ballista: "Remove a +1/+1 counter from ~"). */
   readonly removeCounter?: { readonly kind: string; readonly count: number };
+  /**
+   * Counters to put on the source as part of the cost — Wall of Roots' "Put
+   * a -0/-1 counter on this creature: Add {G}", Devoted Druid's "Put a -1/-1
+   * counter on this creature: Untap this creature". Put on directly as the
+   * cost is paid (announced as `counter-added`, so a "whenever counters are
+   * put" trigger sees them), with no counter replacement: a cost isn't an
+   * effect, so one worded "if an effect would put counters" (Doubling
+   * Season) never doubles it, as it never doubles a loyalty cost (its
+   * ruling); the pool's others are +1/+1-only (Branching Evolution), which
+   * no such cost puts yet — one that did would need them applied. A mana
+   * ability with it and no `{T}` (once each turn) is one the auto-payer may
+   * use, as a last resort, like a Treasure: the counter stays.
+   */
+  readonly addCounter?: { readonly kind: string; readonly count: number };
   /** Energy counters to pay ({E} — rule 122 / ROADMAP Phase 10; automatic,
    * like `payLife`). */
   readonly payEnergy?: number;

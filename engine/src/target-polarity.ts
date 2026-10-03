@@ -178,6 +178,14 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     if (n.target !== undefined) v.touch(n.target, "help", MINOR);
   },
   "damage-by-toughness": (n, v) => v.touch(n.target, "help", MINOR),
+  // Its own source in print (Tree of Redemption); which way it cuts turns
+  // on the numbers, not the side of the table.
+  "exchange-life-toughness": (n, v) => {
+    v.touch(n.target, "either", MINOR);
+    // Tree of Perdition's target opponent: a life total of 13 is a cut
+    // from 40 and a gift at 5.
+    if (n.player !== undefined && typeof n.player === "object") v.touch(n.player, "either", MAJOR);
+  },
   mill: (n, v) => v.touch(n.target, "harm", MINOR),
   "exile-from-library": (n, v) => v.touch(n.whose, "harm", MINOR),
   "return-from-graveyard": none,

@@ -194,6 +194,7 @@ import _poolVenomcrawler from "../pool/venomcrawler.js";
 import _poolVolcanicHammer from "../pool/volcanic-hammer.js";
 import _poolWallOfBlood from "../pool/wall-of-blood.js";
 import _poolWallOfOmens from "../pool/wall-of-omens.js";
+import _poolWelcomeTheDead from "../pool/welcome-the-dead.js";
 import _poolWhipSergeant from "../pool/whip-sergeant.js";
 import _poolWindDrake from "../pool/wind-drake.js";
 import _poolWindfall from "../pool/windfall.js";
@@ -407,6 +408,7 @@ const shard: CardShard = {
     _poolVolcanicHammer,
     _poolWallOfBlood,
     _poolWallOfOmens,
+    _poolWelcomeTheDead,
     _poolWhipSergeant,
     _poolWindDrake,
     _poolWindfall,

@@ -88,6 +88,10 @@ export interface ManaOption {
    * to them). A unit with a `type` is one of the last entries of `fixed`, in
    * order; one without is one of the `anyColor` units. */
   readonly extras?: readonly ManaExtraUnit[];
+  /** Counters the activation puts on the source as its cost (Wall of Roots'
+   * "Put a -0/-1 counter on this creature") — `AbilityCost.addCounter`, put
+   * on when the payment uses it. */
+  readonly counterCost?: { readonly kind: string; readonly count: number };
 }
 
 /** One unit of a {@link ManaOption.extras}: whose it is, and its type when
@@ -163,6 +167,8 @@ export interface ManaPlanStep {
    * `extraFrom.length` units of `mana` are theirs, one id per unit, and
    * carry no `tag`. */
   readonly extraFrom?: readonly ObjectId[];
+  /** See {@link ManaOption.counterCost}. */
+  readonly counterCost?: { readonly kind: string; readonly count: number };
 }
 
 /** A fully-worked-out way to pay a cost: which sources to tap ({@link
@@ -672,6 +678,7 @@ function planManaPaymentOrdered(
     readonly untapped?: true;
     readonly oncePerTurn?: number;
     readonly rider?: EffectSpec;
+    readonly counterCost?: { readonly kind: string; readonly count: number };
   }
   // Colours this cost still wants, for `coverGenericFrom`'s preference.
   const wantedColors = new Set<ManaType>(
@@ -735,6 +742,7 @@ function planManaPaymentOrdered(
       ...(opt.untapped !== undefined ? { untapped: opt.untapped } : {}),
       ...(opt.oncePerTurn !== undefined ? { oncePerTurn: opt.oncePerTurn } : {}),
       ...(opt.rider !== undefined ? { rider: opt.rider } : {}),
+      ...(opt.counterCost !== undefined ? { counterCost: opt.counterCost } : {}),
     };
     tapped.push(t);
     return t;
@@ -890,6 +898,7 @@ function planManaPaymentOrdered(
       ...(t.oncePerTurn !== undefined ? { oncePerTurn: t.oncePerTurn } : {}),
       ...(t.rider !== undefined ? { rider: t.rider } : {}),
       ...(extra.length > 0 ? { extraFrom: extra.map((u) => u.extra as ObjectId) } : {}),
+      ...(t.counterCost !== undefined ? { counterCost: t.counterCost } : {}),
     };
   });
 }

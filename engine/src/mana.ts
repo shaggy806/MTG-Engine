@@ -56,6 +56,10 @@ export interface ManaRestriction {
    * creature **source**" (Secluded Courtyard) names a source, not a
    * permanent (rule 109.2a). */
   readonly abilityOfAnyZone?: true;
+  /** "Spend this mana only to cast a spell from your graveyard" (Lord of the
+   * Forsaken): any spell, cast from its owner's graveyard — the player
+   * spending it. Set alone. */
+  readonly fromYourGraveyard?: true;
   readonly text: string;
 }
 

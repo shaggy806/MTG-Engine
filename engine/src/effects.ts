@@ -122,6 +122,9 @@ export interface ManaSpendOnly {
   /** "…and that spell can't be countered" (Cavern of Souls, Delighted
    * Halfling). A property of the spell this mana pays for, not of the land. */
   readonly uncounterable?: boolean;
+  /** "Spend this mana only to cast a spell from your graveyard" (Lord of the
+   * Forsaken). Set alone. See `ManaRestriction.fromYourGraveyard`. */
+  readonly fromYourGraveyard?: true;
   /** The card's own wording, for the log and the mana display. */
   readonly text: string;
 }
@@ -490,11 +493,12 @@ export type EffectAmount =
       readonly perPlayer?: "greatest";
       /** Add up this characteristic of the objects instead of counting them
        * — Reign of the Pit's "X is the **total power** of the creatures
-       * sacrificed this way". A permanent that left doing it is read as it
-       * last existed on the battlefield (its ruling: a negative power counts
-       * as negative), and a token stack that went whole counts once per
+       * sacrificed this way", Tip the Scales' "the sacrificed creature's
+       * **toughness**". A permanent that left doing it is read as it last
+       * existed on the battlefield (its ruling: a negative power counts as
+       * negative), and a token stack that went whole counts once per
        * token. */
-      readonly sumOf?: "power";
+      readonly sumOf?: "power" | "toughness";
     }
   /**
    * One amount or another, by a condition read as the amount is — Urza's
@@ -1315,6 +1319,16 @@ export type EffectSpec =
        * so there's nothing to cast.
        */
       readonly mayCast?: { readonly duration: "end-of-turn" | "while-exiled"; readonly spendAs?: SpendAs };
+      /**
+       * Exile it **with this source** (rule 607.2a): the card is linked to the
+       * source's battlefield stint (`GameObject.exiledWith`), so a later
+       * ability of that object reaches "the cards exiled with" it — Colfenor's
+       * Urn's "return those cards" (`return-exiled-by-source`'s `linked`) —
+       * and the source counts it for good (`exiled-with-source`), even once it
+       * has left exile again. Nothing is linked when the source isn't a
+       * permanent.
+       */
+      readonly linked?: boolean;
     }
   | {
       /**
@@ -1340,8 +1354,12 @@ export type EffectSpec =
        * 607.2a — hideaway's, `GameObject.exiledWith`) into their owners'
        * hands — Watcher for Tomorrow's "When this creature leaves the
        * battlefield, put the exiled card into its owner's hand", which
-       * reaches the cards exiled by the stint that left. */
-      readonly linked?: "hand";
+       * reaches the cards exiled by the stint that left. `"battlefield"`: put
+       * those linked cards onto the battlefield under their owners' control,
+       * together — Colfenor's Urn's "return those cards to the battlefield",
+       * the cards its `exile { linked }` put there, found though the Urn has
+       * just been sacrificed. */
+      readonly linked?: "hand" | "battlefield";
     }
   | {
       /**
@@ -1775,6 +1793,18 @@ export type EffectSpec =
       readonly targets: readonly TargetSpec[];
       readonly effect: EffectSpec;
       readonly text: string;
+      /**
+       * A number the creating resolution knows and the reflexive ability
+       * needs — read as it triggers, and `{ triggerValue: true }` in
+       * `effect`. Tip the Scales: "Sacrifice a creature. When you do, all
+       * creatures get -X/-X until end of turn, where X is the sacrificed
+       * creature's toughness" — the sacrifice is the spell's, not the
+       * ability's, so only the spell's resolution can say what it was
+       * (`{ thisWay: "sacrificed", sumOf: "toughness" }`), and players
+       * respond to the ability knowing X (its ruling). Without it the
+       * reflexive ability carries the creating one's own trigger value.
+       */
+      readonly value?: EffectAmount;
     }
   | {
       /**
@@ -1948,7 +1978,12 @@ export type EffectSpec =
       readonly kind: "add-counter-all";
       readonly filter: CardFilter;
       readonly counter: string;
-      readonly amount: EffectAmount;
+      /** `"own-toughness"`: each permanent gets as many as its own
+       * toughness — Canopy Gargantuan's "a number of +1/+1 counters on each
+       * other creature you control equal to **that creature's** toughness".
+       * Every permanent's toughness is read before any counter goes on, so
+       * none is sized by another's new counters. */
+      readonly amount: EffectAmount | "own-toughness";
       /** Spare the effect's own source — "put a +1/+1 counter on each
        * **other** creature you control" (Finneas, Ace Archer). */
       readonly exceptSource?: boolean;
@@ -2165,6 +2200,26 @@ export type EffectSpec =
        * `StaticAbility.combatDamageByToughness`. */
       readonly kind: "damage-by-toughness";
       readonly target: EffectTargetRef;
+    }
+  | {
+      /**
+       * "Exchange your life total with this creature's toughness" (Tree of
+       * Redemption — rule 701.12g): the permanent's toughness becomes the
+       * effect controller's life total, a layer-7b effect with no end
+       * (`PtModifier.setToughness` — counters and bonuses still apply on top,
+       * the ruling), and the player gains or loses the life it takes to
+       * reach the toughness it had, so a life-gain replacement or a "whenever
+       * you gain life" trigger sees it (701.12c). If either half can't
+       * happen — the permanent isn't there as the same object any more (the
+       * ruling), or the player can't gain, or can't lose, the life it would
+       * take (rules 119.7–8) — none of it does (701.12a).
+       */
+      readonly kind: "exchange-life-toughness";
+      readonly target: EffectTargetRef;
+      /** Whose life total — the effect's controller's by default; Tree of
+       * Perdition's "exchange **target opponent's** life total" is `{ target:
+       * 0 }`. Naming nobody (an illegal or empty slot), nothing happens. */
+      readonly player?: EffectPlayerRef;
     }
   | {
       /** `target` (an instant/sorcery card in a graveyard, via the
@@ -3652,10 +3707,11 @@ export interface EffectApi {
   cardTypesAmong(
     objects: readonly { readonly object: ObjectId; readonly departed: boolean }[],
   ): number;
-  /** The total power of `entries`, signed — each as it last existed on the
-   * battlefield if `departed`, else as it is now, a stack that went whole
-   * once per token. See the `thisWay` amount's `sumOf`. */
-  powerAmong(entries: readonly ThisWayEntry[]): number;
+  /** The total power (or `of` toughness) of `entries`, signed — each as it
+   * last existed on the battlefield if `departed`, else as it is now, a
+   * stack that went whole once per token. See the `thisWay` amount's
+   * `sumOf`. */
+  powerAmong(entries: readonly ThisWayEntry[], of?: "power" | "toughness"): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -3789,12 +3845,13 @@ export interface EffectApi {
     untilSourceLeaves?: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
     mayCast?: { readonly duration: "end-of-turn" | "while-exiled"; readonly spendAs?: SpendAs },
+    linked?: boolean,
   ): void;
   /** See the `"return-exiled-by-source"` {@link EffectSpec}.
    * Returns `true` when it stopped to ask an "as this enters" choice first
    * (rule 614.12 — a Clone's copy): nothing has moved, and the step runs
    * again once it's answered. */
-  returnExiledBySource(): boolean;
+  returnExiledBySource(linked?: boolean): boolean;
   /** Sacrifice one named permanent — see the `"sacrifice-target"`
    * {@link EffectSpec}. */
   sacrificeTarget(target: TargetRef): void;
@@ -3842,7 +3899,9 @@ export interface EffectApi {
   chooseCreatureType(then: EffectSpec): void;
   /** Trigger a reflexive ability — see the `"reflexive-trigger"`
    * {@link EffectSpec}. */
-  reflexiveTrigger(targets: readonly TargetSpec[], effect: EffectSpec, text: string): void;
+  /** `value`: the reflexive ability's trigger value, when the spec sets one
+   * (see its `value`). */
+  reflexiveTrigger(targets: readonly TargetSpec[], effect: EffectSpec, text: string, value?: number): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog), as
    * one move. */
   exileGraveyard(target: TargetRef): void;
@@ -4079,6 +4138,8 @@ export interface EffectApi {
   attackDespiteDefender(target: TargetRef | undefined, filter: CardFilter | undefined): void;
   /** See the `"damage-by-toughness"` {@link EffectSpec}. */
   damageByToughness(target: TargetRef): void;
+  /** See the `"exchange-life-toughness"` {@link EffectSpec}. */
+  exchangeLifeToughness(target: TargetRef, player: PlayerId): void;
   /** See the `"unless"` {@link EffectSpec}. */
   unless(
     chooser: Extract<EffectSpec, { kind: "unless" }>["chooser"],
@@ -4108,7 +4169,7 @@ export interface EffectApi {
   addCounterAll(
     filter: CardFilter,
     counter: string,
-    amount: number,
+    amount: number | "own-toughness",
     exceptSource?: boolean,
     /** Whose side `filter` is read from — see `controlledByTarget`. */
     scopeTo?: PlayerId,
@@ -4834,7 +4895,7 @@ function signedAmountValue(
     const done = ctx.thisWay(amount.thisWay, players, amount.filter);
     if (amount.cardTypes === true) return ctx.cardTypesAmong(done);
     const valueOf = (entry: ThisWayEntry): number =>
-      amount.sumOf === "power" ? ctx.powerAmong([entry]) : entry.count;
+      amount.sumOf === undefined ? entry.count : ctx.powerAmong([entry], amount.sumOf);
     if (amount.perPlayer === "greatest") {
       const byPlayer = new Map<PlayerId, number>();
       for (const entry of done) byPlayer.set(entry.player, (byPlayer.get(entry.player) ?? 0) + valueOf(entry));
@@ -5651,7 +5712,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "exile": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true, spec.withCounters, spec.mayCast);
+      if (target !== undefined) ctx.exileObject(target, spec.untilSourceLeaves === true, spec.withCounters, spec.mayCast, spec.linked === true);
       return;
     }
     case "return-exiled-by-source": {
@@ -5663,7 +5724,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // first to ask an "as this enters" choice (a Clone's copy — rule
       // 614.12); it moved nothing, and runs again once that's answered.
       const parked = ctx.parkedCount();
-      if (ctx.returnExiledBySource()) ctx.resumeAfterDecisions(spec, parked);
+      if (ctx.returnExiledBySource(spec.linked === "battlefield")) ctx.resumeAfterDecisions(spec, parked);
       return;
     }
     case "choose-creature-type":
@@ -5965,7 +6026,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.addCounterAll(
         spec.filter,
         spec.counter,
-        amountValue(spec.amount, ctx),
+        spec.amount === "own-toughness" ? spec.amount : amountValue(spec.amount, ctx),
         spec.exceptSource === true,
         scopeTo,
       );
@@ -6135,6 +6196,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "damage-by-toughness": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.damageByToughness(target);
+      return;
+    }
+    case "exchange-life-toughness": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      const player = effectPlayer(spec.player ?? "you", ctx);
+      if (target !== undefined && player !== undefined) ctx.exchangeLifeToughness(target, player);
       return;
     }
     case "grant-triggered": {
@@ -6617,7 +6684,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       applyEachPlayerMay(spec, ctx);
       return;
     case "reflexive-trigger":
-      ctx.reflexiveTrigger(spec.targets, spec.effect, spec.text);
+      ctx.reflexiveTrigger(
+        spec.targets,
+        spec.effect,
+        spec.text,
+        spec.value === undefined ? undefined : amountValue(spec.value, ctx),
+      );
       return;
     case "ward":
       ctx.ward(spec.cost);

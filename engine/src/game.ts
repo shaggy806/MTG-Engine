@@ -4508,6 +4508,8 @@ export class Game {
     // "Until your next turn" effects end as that turn begins (the active
     // player is the new one by now).
     beginningFor.push(this.activePlayer);
+    // "Their last turn" is this one now (see `PlayerState.lastTurnTaken`).
+    this.state.players[this.activePlayer].lastTurnTaken = this.state.turn.number;
     if (this.state.playerEffects !== undefined) {
       this.state.playerEffects = this.state.playerEffects.filter(
         (e) => !(e.expires.kind === "your-next-turn" && beginningFor.includes(e.owner)),
@@ -4864,13 +4866,15 @@ export class Game {
     const active = this.activePlayer;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
+      // "Activate only once each turn" (rule 602.5b) is each turn, anyone's:
+      // Wall of Roots used on its controller's turn makes mana again on the
+      // next player's.
+      object.abilitiesUsedThisTurn = [];
       if (object.controller !== active) continue;
       // Summoning sickness wears off as the controller's turn begins.
       object.summoningSick = false;
-      // A loyalty ability may be activated again (rule 606.3), and so may a
-      // once-each-turn ability (602.5g).
+      // A loyalty ability may be activated again (rule 606.3).
       object.loyaltyActivatedThisTurn = false;
-      object.abilitiesUsedThisTurn = [];
       object.graveyardCastUsedThisTurn = false;
       object.graveyardCastTypesUsedThisTurn = undefined;
       object.combatDamagedPlayersThisTurn = [];
@@ -7185,6 +7189,9 @@ export class Game {
     const targetingLife = this.targetingLifeCost(owner, chosen);
     if (!this.canPayLife(owner, targetingLife)) return false;
     this.moveObject(cardId, "stack");
+    // Where it's cast from, known as its costs are paid — mana that may only
+    // pay for a spell cast from a graveyard asks (Lord of the Forsaken).
+    object.castFrom = castFrom;
     this.executePayment(owner, payment);
     if (targetingLife > 0) this.changeLife(owner, -targetingLife);
     // Nothing to pay, so a target in a token stack is peeled off at once.
@@ -9148,6 +9155,9 @@ export class Game {
     // The player who casts a spell controls it (rule 601.2a) — a card cast
     // from an opponent's exile or library (Maralen) too.
     object.controller = player;
+    // Where it's cast from, known as its costs are paid — mana that may only
+    // pay for a spell cast from a graveyard asks (Lord of the Forsaken).
+    object.castFrom = castFrom;
     if (impulseUsed?.oncePerTurn === true && impulseUsed.source !== undefined) {
       const linked = this.state.objects[impulseUsed.source.id];
       if (linked !== undefined) linked.impulseCastOnTurn = this.state.turn.number;
@@ -10611,6 +10621,9 @@ export class Game {
     if (ability.exhaust === true || ability.powerUp === true) {
       source.exhaustedAbilities = [...(source.exhaustedAbilities ?? []), abilityIndex];
     }
+    if (ability.cost.addCounter !== undefined) {
+      this.putCostCounters(sourceId, ability.cost.addCounter.kind, ability.cost.addCounter.count, player);
+    }
     if (ability.loyaltyCost !== undefined) {
       source.counters.loyalty = (source.counters.loyalty ?? 0) + ability.loyaltyCost;
       source.loyaltyActivatedThisTurn = true;
@@ -11036,6 +11049,7 @@ export class Game {
         `${[...o.fixed].sort().join(",")}|${o.anyColor}|${o.anyColorOf?.join(",") ?? ""}` +
         `|${o.pain}|${o.lifeCost}|${o.genericCost}|${o.untapped ?? ""}|${o.oncePerTurn ?? ""}` +
         `|${(o.extras ?? []).map((e) => `${e.from}:${e.type ?? "*"}`).join(",")}` +
+        `|${o.counterCost === undefined ? "" : `${o.counterCost.count}${o.counterCost.kind}`}` +
         // Two options that make the same mana are still different options if
         // one of them is restricted.
         `|${o.tag === undefined ? "" : JSON.stringify(o.tag)}`;
@@ -11078,6 +11092,10 @@ export class Game {
         if (ability.cost.tapOthers !== undefined) return;
         // A Treasure that can't be sacrificed can't pay its own cost.
         if (ability.cost.sacrifice === "self" && !this.canBeSacrificed(id)) return;
+        // A counter put on the source as the cost (Wall of Roots) is paid by
+        // `useManaSource`, but only on an untapped once-a-turn ability — the
+        // shape every such card prints.
+        if (ability.cost.addCounter !== undefined && (ability.cost.tap || ability.oncePerTurn !== true)) return;
         if (
           (ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self") ||
           ability.cost.removeCounter !== undefined ||
@@ -11173,6 +11191,7 @@ export class Game {
           ...(ability.cost.tap ? {} : { untapped: true as const }),
           ...(ability.oncePerTurn === true ? { oncePerTurn: abilityIndex } : {}),
           ...(ability.effect.also !== undefined ? { rider: ability.effect.also } : {}),
+          ...(ability.cost.addCounter !== undefined ? { counterCost: ability.cost.addCounter } : {}),
         };
         const oneOf = typeof mana === "object" && "oneOf" in mana ? mana.oneOf : [];
         const candidates: ManaOption[] =
@@ -11292,9 +11311,13 @@ export class Game {
     const keys = new Map<ObjectId, { costly: boolean; flex: number }>(
       out.map((s) => [s.id, { costly: onlyCostlyColour(s), flex: flexibility(s) }]),
     );
+    // A source that's used up or marked by using it — a Treasure, or Wall of
+    // Roots' -0/-1 counter — comes last of all.
+    const lastResort = (s: ManaSource): boolean =>
+      s.sacrificeSelf || s.options.some((o) => o.counterCost !== undefined);
     out.sort((a, b) => {
       if (a.isLand !== b.isLand) return a.isLand ? -1 : 1;
-      if (a.sacrificeSelf !== b.sacrificeSelf) return a.sacrificeSelf ? 1 : -1;
+      if (lastResort(a) !== lastResort(b)) return lastResort(a) ? 1 : -1;
       const ka = keys.get(a.id);
       const kb = keys.get(b.id);
       if (ka === undefined || kb === undefined) return 0;
@@ -11514,6 +11537,20 @@ export class Game {
 
   /** Carry out one {@link ManaPlanStep}: tap (or sacrifice) the source, add its
    * mana to the controller's pool, and deal any painland damage. */
+  /**
+   * Pay an `AbilityCost.addCounter` — "Put a -0/-1 counter on this
+   * creature" (Wall of Roots): the counters go straight on, announced like
+   * any other, with no "if an effect would put counters" replacement
+   * (a cost isn't an effect — see `AbilityCost.addCounter`).
+   */
+  private putCostCounters(id: ObjectId, kind: string, count: number, by: PlayerId): void {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield" || count <= 0) return;
+    object.counters[kind] = (object.counters[kind] ?? 0) + count;
+    invalidateComputedCache();
+    this.emit({ type: "counter-added", object: id, counter: kind, amount: count, by });
+  }
+
   private useManaSource(step: ManaPlanStep): void {
     const object = this.state.objects[step.source];
     const player = object.controller;
@@ -11541,6 +11578,9 @@ export class Game {
       // Not an event of its own, so nothing else is going to tell a cache
       // region that this source has stopped being one.
       invalidateComputedCache();
+    }
+    if (step.counterCost !== undefined) {
+      this.putCostCounters(step.source, step.counterCost.kind, step.counterCost.count, player);
     }
     if (step.sacrifice) {
       this.moveObject(step.source, "graveyard");
@@ -12096,6 +12136,7 @@ export class Game {
         ...(abilityOf !== undefined ? { abilityOf } : {}),
         ...(spendOnly.abilityOfAnyZone === true ? { abilityOfAnyZone: true } : {}),
         ...(spendOnly.notSpell !== undefined ? { notSpell: spendOnly.notSpell } : {}),
+        ...(spendOnly.fromYourGraveyard === true ? { fromYourGraveyard: true } : {}),
         text: spendOnly.text,
       };
       if (spendOnly.uncounterable === true) tag.uncounterable = true;
@@ -12153,6 +12194,18 @@ export class Game {
       const card = purpose.card;
       const face = purpose.face ?? this.state.objects[card]?.face ?? 0;
       return !this.withFace(card, face, () => matchesFilter(this.state, this.registry, card, denied, { you: player }));
+    }
+    // "Spend this mana only to cast a spell from your graveyard" (Lord of
+    // the Forsaken): any spell, cast from its owner's graveyard — this
+    // player's. The card is still there as its cost is paid.
+    if (restriction.fromYourGraveyard === true) {
+      if (purpose?.kind !== "cast") return false;
+      const card = this.state.objects[purpose.card];
+      return (
+        card !== undefined &&
+        card.owner === player &&
+        (card.zone === "graveyard" || (card.zone === "stack" && card.castFrom === "graveyard"))
+      );
     }
     if (purpose === null) return false;
     const [filter, subject] =
@@ -15987,18 +16040,18 @@ export class Game {
       // cast of one partner and two of the other is three).
       commanderCastsBy: (player) =>
         Object.values(this.state.players[player]?.commanderCastCounts ?? {}).reduce((n, c) => n + c, 0),
-      powerAmong: (entries) =>
+      powerAmong: (entries, of = "power") =>
         entries.reduce((n, { object: id, departed, count }) => {
           const object = this.state.objects[id];
-          const power =
+          const value =
             object === undefined
-              ? (this.state.ceasedTokens?.[id]?.power ?? 0)
+              ? (this.state.ceasedTokens?.[id]?.[of] ?? 0)
               : departed && object.lastKnown !== undefined
-                ? object.lastKnown.power
+                ? object.lastKnown[of]
                 : object.zone === "battlefield"
-                  ? computeCharacteristics(this.state, this.registry, id).power
+                  ? computeCharacteristics(this.state, this.registry, id)[of]
                   : 0;
-          return n + power * count;
+          return n + value * count;
         }, 0),
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       turnStatOf: (player, stat) => turnStatOf(this.state, player, stat),
@@ -16261,7 +16314,7 @@ export class Game {
         }
         this.returnToHandByEffect(target, true, from ?? "battlefield", source);
       },
-      exileObject: (target, untilSourceLeaves, withCounters, mayCast) => {
+      exileObject: (target, untilSourceLeaves, withCounters, mayCast, linked) => {
         if (untilSourceLeaves === true) {
           // Rule 610.3c: exiled "until" something that has already happened
           // — its source gone, or back as a new object (400.7) — it isn't
@@ -16308,10 +16361,22 @@ export class Game {
             ...(mayCast.spendAs !== undefined ? { spendAs: mayCast.spendAs } : {}),
           };
         }
+        // "Exile it with this" (rule 607.2a): linked to the stint the
+        // resolving ability refers to, and counted by it for good (the
+        // Colfenor's Urn ruling: "over the course of the entire game").
+        if (linked === true && exiled?.zone === "exile" && exiled.zoneChangeCount !== before && !exiled.isToken) {
+          const src = this.state.objects[source];
+          const stint = refs.source ?? (src?.zone === "battlefield" ? (src.zoneChangeCount ?? 0) : undefined);
+          if (src !== undefined && stint !== undefined) {
+            exiled.exiledWith = { source, zoneChangeCount: stint };
+            const sofar = src.exiledWithCount?.stint === stint ? src.exiledWithCount.count : 0;
+            src.exiledWithCount = { stint, count: sofar + 1 };
+          }
+        }
       },
       chooseCreatureType: (then) =>
         this.beginCreatureTypeChoice(source, controller, undefined, { then, targets, x }),
-      reflexiveTrigger: (specs, effect, text) => {
+      reflexiveTrigger: (specs, effect, text, value) => {
         // Rule 603.12: it triggers now and waits, like any trigger, to be put
         // on the stack the next time a player would receive priority.
         const object = this.state.objects[source];
@@ -16326,21 +16391,31 @@ export class Game {
           abilityIndex: 0,
           controller,
           ...(x !== 0 ? { x } : {}),
-          ...(triggerValue !== 0 ? { triggerValue } : {}),
+          // Its own value, when the spec reads one (Tip the Scales' X), else
+          // the creating ability's.
+          ...((value ?? triggerValue) !== 0 ? { triggerValue: value ?? triggerValue } : {}),
           ...(triggerObject !== undefined ? { triggerObject } : {}),
           ...(Object.keys(refs).length > 0 ? { lastKnownRefs: refs } : {}),
           reflexive: { targets: [...specs], effect, text },
         });
       },
-      returnExiledBySource: () => {
+      returnExiledBySource: (linked) => {
         // A token exiled this way ceased to exist (rule 111.7) and never
         // comes back; anything that moved on from exile in the meantime is
         // no longer linked, because `moveObject` cleared the mark. They all
         // return at once — once each has made its "as this enters" choices
-        // (rule 614.12), asked one at a time before any moves.
+        // (rule 614.12), asked one at a time before any moves. `linked`: the
+        // cards exiled *with* the stint the ability refers to (rule 607.2a),
+        // though the source has just left (Colfenor's Urn, sacrificed).
+        const sourceObject = this.state.objects[source];
+        const stint =
+          refs.source ?? (sourceObject?.zone === "battlefield" ? (sourceObject.zoneChangeCount ?? 0) : undefined);
         const returning = this.state.zones.shared.exile.filter((id) => {
           const object = this.state.objects[id];
-          return object?.exiledBy === source && !object.isToken;
+          if (object === undefined || object.isToken) return false;
+          if (linked !== true) return object.exiledBy === source;
+          const link = object.exiledWith;
+          return stint !== undefined && link !== undefined && link.source === source && link.zoneChangeCount === stint;
         });
         if (returning.some((id) => this.askEnterChoice(id, this.state.objects[id].owner))) return true;
         this.withEnterBatch(() => {
@@ -16684,10 +16759,17 @@ export class Game {
       },
       addCounterAll: (filter, counter, amount, exceptSource, scopeTo) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
-        // and mutate the battlefield array underneath the loop.
-        for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {
-          if (exceptSource === true && id === source) continue;
-          this.addCounter({ kind: "object", object: id }, counter, amount, false, controller);
+        // and mutate the battlefield array underneath the loop. With
+        // "equal to that creature's toughness", every count is read before
+        // any counter goes on.
+        const each = this.battlefieldMatching(scopeTo ?? controller, filter)
+          .filter((id) => exceptSource !== true || id !== source)
+          .map((id) => ({
+            id,
+            n: amount === "own-toughness" ? this.characteristics(id).toughness : amount,
+          }));
+        for (const { id, n } of each) {
+          this.addCounter({ kind: "object", object: id }, counter, n, false, controller);
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
@@ -16705,6 +16787,7 @@ export class Game {
         this.markUntilEndOfTurn(target, { canAttackAsThoughNoDefender: true });
       },
       damageByToughness: (target) => this.markUntilEndOfTurn(target, { combatDamageByToughness: true }),
+      exchangeLifeToughness: (target, player) => this.exchangeLifeToughness(player, target),
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
       addPlayerEffect: (effect) => {
         (this.state.playerEffects ??= []).push(effect);
@@ -19662,6 +19745,48 @@ export class Game {
    * `filter` a rule over everything matching it for the rest of the turn. */
   /** A rule about `target` until end of turn, as a modifier carrying
    * `fields`  a token stack splits off the one meant first. */
+  /**
+   * See the `"exchange-life-toughness"` effect (rule 701.12g): `player`'s
+   * life total and `target`'s toughness each become the other's previous
+   * value — the toughness by a layer-7b effect with no end, the life by
+   * gaining or losing the difference — or, if either can't, neither does
+   * (701.12a).
+   */
+  private exchangeLifeToughness(player: PlayerId, target: TargetRef): void {
+    if (target.kind !== "object") return;
+    const seat = this.state.players[player];
+    if (seat === undefined || seat.hasLost) return;
+    const id = this.splitOneFromStack(target.object);
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return;
+    const life = seat.life;
+    const delta = this.characteristics(id).toughness - life;
+    // A player who can't gain life can't be given a higher life total this
+    // way, nor one who can't lose life a lower one (rules 119.7–8).
+    if (delta > 0 && this.playerCantGainLife(player)) return;
+    if (delta < 0 && playerCantLoseLife(this.state, player)) return;
+    object.modifiers.push({
+      timestamp: this.freshTimestamp(),
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      setToughness: life,
+      untilEndOfTurn: false,
+    });
+    invalidateComputedCache();
+    if (delta !== 0) this.changeLife(player, delta);
+  }
+
+  /** Whether a "can't gain life" effect stops `player` gaining any — a
+   * `would-gain-life` replacement that prevents it ("your opponents can't
+   * gain life"). Asked before an exchange, which can't happen at all then
+   * (rule 701.12a). */
+  private playerCantGainLife(player: PlayerId): boolean {
+    return this.playerEventReplacements(player).some(
+      (r) => r.event === "would-gain-life" && (r as LifeGainReplacement).prevent === true,
+    );
+  }
+
   private markUntilEndOfTurn(
     target: TargetRef | undefined,
     fields: Pick<PtModifier, "canAttackAsThoughNoDefender" | "combatDamageByToughness">,
@@ -21694,10 +21819,23 @@ export class Game {
         if (history !== undefined) (history.sacrificed ??= []).push({ object: event.object, count: 1 });
         return;
       }
+      case "cards-left-graveyard": {
+        for (const id of event.objects) {
+          const history = historyOf(this.state.objects[id]?.owner);
+          if (history !== undefined) history.leftGraveyard = (history.leftGraveyard ?? 0) + 1;
+        }
+        return;
+      }
       case "cards-put-into-graveyard": {
-        for (const { object: id } of event.arrivals) {
+        for (const { object: id, from } of event.arrivals) {
           const card = this.state.objects[id];
           if (card === undefined) continue;
+          if (from === "hand" || from === "library") {
+            const history = historyOf(card.owner);
+            if (history !== undefined) {
+              history.toGraveyardFromHandOrLibrary = (history.toGraveyardFromHandOrLibrary ?? 0) + 1;
+            }
+          }
           const permanent = effectiveTypes(this.state, this.registry, card).some((t) =>
             PERMANENT_TYPES.has(t),
           );
@@ -21743,6 +21881,17 @@ export class Game {
         return;
       }
       case "attackers-declared": {
+        // "Attacked you": a creature declared attacking that player (not a
+        // planeswalker of theirs) — see `PlayerState.attackedByOnTurn`.
+        const attackerSeat = this.state.players[event.player];
+        if (attackerSeat !== undefined) attackerSeat.lastTurnTaken = this.state.turn.number;
+        for (const id of event.attackers) {
+          const attacked = this.state.objects[id]?.attacking;
+          const defender = typeof attacked === "string" ? this.state.players[attacked as PlayerId] : undefined;
+          if (defender !== undefined) {
+            defender.attackedByOnTurn = { ...defender.attackedByOnTurn, [event.player]: this.state.turn.number };
+          }
+        }
         const history = historyOf(event.player);
         if (history === undefined) return;
         history.attacked = true;

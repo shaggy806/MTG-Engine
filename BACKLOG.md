@@ -188,6 +188,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **A set rule on a graveyard choice**: "up to two creature cards with total mana value 4 or
   less" (Lively Dirge's second mode). `together` exists only on a library search
   (`zone-choice-together.ts` takes a new rule cheaply, and the clients already read it).
+- **No state-based actions after a mana ability activated by hand.** Rule 117.3c gives its
+  player priority again, so 117.5 checks SBAs; `activateAbility` returns without
+  `afterPlayerAction` for a mana ability, and a pass to the next player doesn't check them
+  either. Wall of Roots taken to 0 toughness by its own -0/-1 counter sits on the battlefield
+  until the next cast or resolution (`tdc-precons-features.test.ts`); a Treasure's "whenever you
+  sacrifice" trigger likewise waits to be put on the stack.
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the

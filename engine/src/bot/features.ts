@@ -225,6 +225,9 @@ const UNSCORED_COUNTERS: ReadonlySet<string> = new Set([
   "time",
 ]);
 
+/** A +X/+Y or -X/-Y counter (rule 122.1a), which the P/T already counts. */
+const PT_COUNTER = /^[+-]\d+\/[+-]\d+$/;
+
 function manaValueOf(registry: CardRegistry, name: string): number {
   return registry.has(name) ? manaValue(parseManaCost(registry.get(name).manaCost)) : 0;
 }
@@ -648,7 +651,8 @@ function playerFeaturesUncached(
     if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;
     if (c.types.includes("planeswalker")) loyalty += (object.counters.loyalty ?? 0) * n;
     for (const [kind, amount] of Object.entries(object.counters)) {
-      if (!UNSCORED_COUNTERS.has(kind)) counters += amount * n;
+      // A P/T counter of any size (Wall of Roots' -0/-1) is in the P/T already.
+      if (!UNSCORED_COUNTERS.has(kind) && !PT_COUNTER.test(kind)) counters += amount * n;
     }
   }
 

@@ -19,6 +19,7 @@ import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
 import _poolAuraOfSilence from "../pool/aura-of-silence.js";
 import _poolAuramancer from "../pool/auramancer.js";
 import _poolAvenArcher from "../pool/aven-archer.js";
+import _poolBaldinCenturyHerdmaster from "../pool/baldin-century-herdmaster.js";
 import _poolBattleRageBlessing from "../pool/battle-rage-blessing.js";
 import _poolBayFalcon from "../pool/bay-falcon.js";
 import _poolBeastKinRanger from "../pool/beast-kin-ranger.js";
@@ -209,6 +210,7 @@ import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
 import _poolTradingPost from "../pool/trading-post.js";
+import _poolTreeOfPerdition from "../pool/tree-of-perdition.js";
 import _poolTriplicateTitan from "../pool/triplicate-titan.js";
 import _poolTukatongueThallid from "../pool/tukatongue-thallid.js";
 import _poolTunnelingGeopede from "../pool/tunneling-geopede.js";
@@ -271,6 +273,7 @@ const shard: CardShard = {
     _poolAuraOfSilence,
     _poolAuramancer,
     _poolAvenArcher,
+    _poolBaldinCenturyHerdmaster,
     _poolBattleRageBlessing,
     _poolBayFalcon,
     _poolBeastKinRanger,
@@ -461,6 +464,7 @@ const shard: CardShard = {
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,
     _poolTradingPost,
+    _poolTreeOfPerdition,
     _poolTriplicateTitan,
     _poolTukatongueThallid,
     _poolTunnelingGeopede,

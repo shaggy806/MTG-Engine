@@ -42,7 +42,9 @@ import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
+import _poolDevotedDruid from "../pool/devoted-druid.js";
 import _poolDevoutChaplain from "../pool/devout-chaplain.js";
+import _poolDiscipleOfBolas from "../pool/disciple-of-bolas.js";
 import _poolDoomedNecromancer from "../pool/doomed-necromancer.js";
 import _poolDragonBlood from "../pool/dragon-blood.js";
 import _poolDragonlordsServant from "../pool/dragonlords-servant.js";
@@ -256,7 +258,9 @@ const shard: CardShard = {
     _poolCrucibleOfWorlds,
     _poolDeeprootChampion,
     _poolDesperateCharge,
+    _poolDevotedDruid,
     _poolDevoutChaplain,
+    _poolDiscipleOfBolas,
     _poolDoomedNecromancer,
     _poolDragonBlood,
     _poolDragonlordsServant,

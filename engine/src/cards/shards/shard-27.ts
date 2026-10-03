@@ -102,6 +102,7 @@ import _poolLeatherbackBaloth from "../pool/leatherback-baloth.js";
 import _poolLeatherheadIronGator from "../pool/leatherhead-iron-gator.js";
 import _poolLeoninSunStandard from "../pool/leonin-sun-standard.js";
 import _poolLlanowarStalker from "../pool/llanowar-stalker.js";
+import _poolLordOfTheForsaken from "../pool/lord-of-the-forsaken.js";
 import _poolLumengridWarden from "../pool/lumengrid-warden.js";
 import _poolMagmaw from "../pool/magmaw.js";
 import _poolMalleableImpostor from "../pool/malleable-impostor.js";
@@ -204,6 +205,7 @@ import _poolVolcanicFissure from "../pool/volcanic-fissure.js";
 import _poolWallOfStone from "../pool/wall-of-stone.js";
 import _poolWarriorsHonor from "../pool/warriors-honor.js";
 import _poolWaywardServant from "../pool/wayward-servant.js";
+import _poolWeatheredSentinels from "../pool/weathered-sentinels.js";
 import _poolWitheringTorment from "../pool/withering-torment.js";
 import _poolWoodlandCemetery from "../pool/woodland-cemetery.js";
 import _poolWorldBreaker from "../pool/world-breaker.js";
@@ -316,6 +318,7 @@ const shard: CardShard = {
     _poolLeatherheadIronGator,
     _poolLeoninSunStandard,
     _poolLlanowarStalker,
+    _poolLordOfTheForsaken,
     _poolLumengridWarden,
     _poolMagmaw,
     _poolMalleableImpostor,
@@ -418,6 +421,7 @@ const shard: CardShard = {
     _poolWallOfStone,
     _poolWarriorsHonor,
     _poolWaywardServant,
+    _poolWeatheredSentinels,
     _poolWitheringTorment,
     _poolWoodlandCemetery,
     _poolWorldBreaker,

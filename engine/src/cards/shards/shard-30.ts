@@ -70,6 +70,7 @@ import _poolEmeraldMedallion from "../pool/emerald-medallion.js";
 import _poolEnergizer from "../pool/energizer.js";
 import _poolEnhancedAwareness from "../pool/enhanced-awareness.js";
 import _poolEreborFlamesmith from "../pool/erebor-flamesmith.js";
+import _poolEssenceAnchor from "../pool/essence-anchor.js";
 import _poolExecutionersHood from "../pool/executioners-hood.js";
 import _poolFangOfShigeki from "../pool/fang-of-shigeki.js";
 import _poolFencingAce from "../pool/fencing-ace.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolEnergizer,
     _poolEnhancedAwareness,
     _poolEreborFlamesmith,
+    _poolEssenceAnchor,
     _poolExecutionersHood,
     _poolFangOfShigeki,
     _poolFencingAce,

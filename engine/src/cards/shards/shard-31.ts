@@ -187,6 +187,7 @@ import _poolTowerOfChampions from "../pool/tower-of-champions.js";
 import _poolToweringIndrik from "../pool/towering-indrik.js";
 import _poolToxinAnalysis from "../pool/toxin-analysis.js";
 import _poolTreasureDredger from "../pool/treasure-dredger.js";
+import _poolTreeOfRedemption from "../pool/tree-of-redemption.js";
 import _poolTuvasaTheSunlit from "../pool/tuvasa-the-sunlit.js";
 import _poolUndercityShade from "../pool/undercity-shade.js";
 import _poolValorSinger from "../pool/valor-singer.js";
@@ -395,6 +396,7 @@ const shard: CardShard = {
     _poolToweringIndrik,
     _poolToxinAnalysis,
     _poolTreasureDredger,
+    _poolTreeOfRedemption,
     _poolTuvasaTheSunlit,
     _poolUndercityShade,
     _poolValorSinger,

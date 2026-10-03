@@ -48,7 +48,7 @@ import type { CardFilter } from "./filter.js";
 import { manaValue, parseManaCost } from "./mana.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
-import { activePlayerOf, permanentCount, printedCardName } from "./state.js";
+import { activePlayerOf, attackedYouDuringTheirLastTurn, permanentCount, printedCardName } from "./state.js";
 import type { GameObject, GameState, LastKnownInfo, PtModifier, TurnHistoryKind } from "./state.js";
 import {
   BASIC_LAND_TYPE_COLORS,
@@ -707,6 +707,12 @@ function evalStaticCondition(
       return state.players[you]?.createdTokenThisTurn === true;
     case "used-graveyard-this-turn":
       return state.players[you]?.usedGraveyardThisTurn === true;
+    case "exiled-with-source": {
+      const stint = source.zoneChangeCount ?? 0;
+      const record = source.exiledWithCount;
+      const n = source.zone === "battlefield" && record?.stint === stint ? record.count : 0;
+      return n >= condition.atLeast;
+    }
     case "not":
       // `evalStaticCondition`, not `staticConditionMet`: the re-entrancy guard
       // keys on `source.id`, and this is still the *same* source — routing
@@ -846,6 +852,11 @@ export interface Characteristics {
   /** It "can attack as though it didn't have defender" (a
    * `canAttackAsThoughNoDefender` static — Arcades, the Strategist). */
   readonly canAttackAsThoughNoDefender: boolean;
+  /** It can attack *players who attacked its controller during their last
+   * turn* as though it didn't have defender (a `canAttackAsThoughNoDefender:
+   * "players-who-attacked-you"` static — Weathered Sentinels). Read through
+   * {@link canAttackDespiteDefender} with the defender. */
+  readonly canAttackAttackersDespiteDefender: boolean;
   /** It can't be sacrificed (a `cantBeSacrificed` static, or the ability
    * granted by the `"cant-be-sacrificed"` effect) — rule 701.21a. Read it
    * through {@link cantBeSacrificed}, which skips the fold on the boards
@@ -924,6 +935,10 @@ export function turnStatOf(state: GameState, player: PlayerId, stat: TurnStat): 
       return seat.turnHistory?.attacked === true ? 1 : 0;
     case "attackers":
       return seat.turnHistory?.attackers?.length ?? 0;
+    case "cards-to-graveyard-from-hand-or-library":
+      return seat.turnHistory?.toGraveyardFromHandOrLibrary ?? 0;
+    case "cards-left-graveyard":
+      return seat.turnHistory?.leftGraveyard ?? 0;
   }
 }
 
@@ -1688,10 +1703,16 @@ export function countValue(
   }
 }
 
+/** What one counter named `counter` adds to power and toughness: a +X/+Y or
+ * -X/-Y counter (rule 122.1a) — "+1/+1", "-1/-1", Wall of Roots' "-0/-1",
+ * "+1/+0" — and nothing for any other kind. */
 function counterPtBonus(counter: string): { power: number; toughness: number } {
   if (counter === "+1/+1") return { power: 1, toughness: 1 };
   if (counter === "-1/-1") return { power: -1, toughness: -1 };
-  return { power: 0, toughness: 0 };
+  const pt = /^([+-]\d+)\/([+-]\d+)$/.exec(counter);
+  if (pt === null) return { power: 0, toughness: 0 };
+  // `|| 0`: "-0" is no change, not a negative zero.
+  return { power: Number(pt[1]) || 0, toughness: Number(pt[2]) || 0 };
 }
 
 /** Whether a filter reads keywords anywhere in it — a scope that has to
@@ -2236,6 +2257,7 @@ interface AppliedEffect {
   readonly restrictions: readonly CombatRestriction[];
   readonly combatDamageByToughness: StaticAbility["combatDamageByToughness"];
   readonly canAttackAsThoughNoDefender: boolean;
+  readonly canAttackAttackersDespiteDefender: boolean;
   readonly cantBeSacrificed: boolean;
   readonly protection: {
     colors?: readonly Color[];
@@ -2257,7 +2279,7 @@ function contributesToCharacteristics(ability: StaticAbility): boolean {
     ability.grantToxic !== undefined ||
     ability.restrictions !== undefined ||
     ability.combatDamageByToughness !== undefined ||
-    ability.canAttackAsThoughNoDefender === true ||
+    (ability.canAttackAsThoughNoDefender !== undefined && ability.canAttackAsThoughNoDefender !== false) ||
     ability.cantBeSacrificed === true ||
     ability.protection !== undefined ||
     ability.setBasePt !== undefined
@@ -2435,6 +2457,7 @@ function collectStaticEffects(
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
+      canAttackAttackersDespiteDefender: ability.canAttackAsThoughNoDefender === "players-who-attacked-you",
       cantBeSacrificed: ability.cantBeSacrificed === true,
       protection: ability.protection ?? null,
       setBase: ability.setBasePt ?? null,
@@ -2482,6 +2505,7 @@ function collectStaticEffects(
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
+      canAttackAttackersDespiteDefender: ability.canAttackAsThoughNoDefender === "players-who-attacked-you",
       cantBeSacrificed: ability.cantBeSacrificed === true,
       protection: ability.protection ?? null,
       setBase: null,
@@ -2571,6 +2595,7 @@ function assertSameCharacteristics(
       restrictions: [...c.restrictions].sort(),
       damageByToughness: c.damageByToughness,
       canAttackAsThoughNoDefender: c.canAttackAsThoughNoDefender,
+      canAttackAttackersDespiteDefender: c.canAttackAttackersDespiteDefender,
       cantBeSacrificed: c.cantBeSacrificed,
       protColors: [...c.protectionFrom.colors].sort(),
       protTypes: [...c.protectionFrom.types].sort(),
@@ -2640,6 +2665,7 @@ function computeCharacteristicsUncached(
   const protFilters: CardFilter[] = [];
   let byToughness: StaticAbility["combatDamageByToughness"];
   let canAttackAsThoughNoDefender = false;
+  let canAttackAttackersDespiteDefender = false;
   let cantBeSacrificed = false;
   // What another permanent's static or an effect grants it in layer 6 goes
   // with a loss of all its abilities that came after (rule 613.7); what they
@@ -2657,6 +2683,7 @@ function computeCharacteristicsUncached(
       byToughness = effect.combatDamageByToughness;
     }
     if (effect.canAttackAsThoughNoDefender) canAttackAsThoughNoDefender = true;
+    if (effect.canAttackAttackersDespiteDefender) canAttackAttackersDespiteDefender = true;
     if (effect.cantBeSacrificed) cantBeSacrificed = true;
     if (effect.protection && granted) {
       for (const c of effect.protection.colors ?? []) protColors.add(c);
@@ -2734,6 +2761,10 @@ function computeCharacteristicsUncached(
       if (modifier.setPt) {
         sets.push({ key: modifierKey(modifier), power: modifier.setPt[0], toughness: modifier.setPt[1] });
       }
+      // Toughness alone (an exchange with a life total — rule 701.12g).
+      if (modifier.setToughness !== undefined) {
+        sets.push({ key: modifierKey(modifier), toughness: modifier.setToughness });
+      }
     }
     sets.sort((a, b) => a.key - b.key);
     for (const set of sets) {
@@ -2789,6 +2820,7 @@ function computeCharacteristicsUncached(
     restrictions,
     damageByToughness,
     canAttackAsThoughNoDefender,
+    canAttackAttackersDespiteDefender,
     cantBeSacrificed,
     protectionFrom: { colors: protColors, types: protTypes, filters: protFilters },
   };
@@ -2911,13 +2943,26 @@ export function restrictionsOf(
  * by a static (Arcades, the Strategist) or an effect on it (its
  * characteristics), or a turn-wide `attack-despite-defender` rule it
  * matches (`GameState.turnDefenderAttacks`), matched here as
- * `restrictionsOf` matches turn-wide restrictions. */
+ * `restrictionsOf` matches turn-wide restrictions. Given `defender` — what
+ * it would attack — also a permission that names only some defenders:
+ * Weathered Sentinels' "players who attacked you during their last turn".
+ * Without one, only a permission that holds against every defender. */
 export function canAttackDespiteDefender(
   state: GameState,
   registry: CardRegistry,
   id: ObjectId,
+  defender?: PlayerId | ObjectId,
 ): boolean {
-  if (computeCharacteristics(state, registry, id).canAttackAsThoughNoDefender) return true;
+  const c = computeCharacteristics(state, registry, id);
+  if (c.canAttackAsThoughNoDefender) return true;
+  if (
+    c.canAttackAttackersDespiteDefender &&
+    defender !== undefined &&
+    state.players[defender as PlayerId] !== undefined &&
+    attackedYouDuringTheirLastTurn(state, c.controller, defender as PlayerId)
+  ) {
+    return true;
+  }
   return (state.turnDefenderAttacks ?? []).some((rule) =>
     matchesFilter(state, registry, id, rule.filter, { you: rule.you }),
   );
