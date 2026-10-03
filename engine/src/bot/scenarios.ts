@@ -1838,6 +1838,227 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  ...(
+    [
+      ["casts Expressive Iteration with nothing better to do", ["Island", "Mountain"], "Expressive Iteration"],
+      ["casts Compulsive Research at itself", ["Island", "Island", "Island"], "Compulsive Research"],
+    ] as const
+  ).map(([name, mana, card]) =>
+    asked({
+      name,
+      rule: "Card selection that replaces itself is cast on an empty turn, aimed at ourselves.",
+      position(registry) {
+        // From the Jeskai Striker autopsy (2026-10-02): stuck on three lands,
+        // Expressive Iteration scored a hair under passing and sat in hand —
+        // a look that puts a card into hand never counted as a cantrip.
+        const game = table(registry, [A, B], A);
+        for (const land of mana) onBoard(game, land, A);
+        const spell = game.debugSpawn(card, A, "hand");
+        return {
+          game,
+          player: A,
+          judge(action) {
+            const aimed = action.type === "cast-spell" ? (action.targets ?? []) : [];
+            return {
+              passed:
+                action.type === "cast-spell" &&
+                action.card === spell &&
+                aimed.every((t) => t === null || t.kind !== "player" || t.player === A),
+              detail: `chose ${describeAction(action)}`,
+            };
+          },
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "holds Faithless Looting with nothing to discard for",
+    rule: "Draw two, discard two is a card down: no cantrip, nothing to gain.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Mountain", A);
+      const looting = game.debugSpawn("Faithless Looting", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && action.card === looting),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "suspends Ancestral Vision",
+    rule: "A suspend for one mana is three cards later; the evaluation can't see them, the rule can.",
+    position(registry) {
+      // The autopsy: offered every turn, scored as discarding a card.
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Island", A);
+      const vision = game.debugSpawn("Ancestral Vision", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "suspend" && action.card === vision,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "flashes in Transcendent Dragon at the end of the turn before its own",
+    rule: "A held counter-creature is cast for its body once the mana would go unused.",
+    position(registry) {
+      // The autopsy: in hand 40 turn starts over six games, never cast — the
+      // bot tapped out on its own turns and never had six open for a spell.
+      const game = table(registry, [A, B], B);
+      lands(game, "Island", A, 6);
+      const dragon = game.debugSpawn("Transcendent Dragon", A, "hand");
+      game.advanceUntil(
+        (s) => (s.turn.step === "end" && s.priority.holder === A && s.zones.shared.stack.length === 0) || s.result.over,
+      );
+      if (game.state.turn.step !== "end") return { passed: false, detail: "never reached bob's end step" };
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === dragon,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "casts Curse of the Swine for several on a wide board",
+    rule: "X targets offered as the best one, two, three…: a wide board is answered for X of 3 or more.",
+    position(registry) {
+      // The autopsy: offered as none, each alone and all of them, capped at
+      // eight, seven creatures cut "all of them" off and the Curse was only
+      // ever cast for X of 1.
+      const game = table(registry, [A, B], A);
+      lands(game, "Island", A, 6);
+      for (const name of ["Craw Wurm", "Craw Wurm", "Serra Angel", "Centaur Courser", "Hill Giant", "Grizzly Bears", "Grizzly Bears", "Llanowar Elves"]) {
+        onBoard(game, name, B);
+      }
+      const curse = game.debugSpawn("Curse of the Swine", A, "hand");
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hits = action.type === "cast-spell" ? (action.targets ?? []).filter((t) => t !== null) : [];
+          return {
+            passed:
+              action.type === "cast-spell" &&
+              action.card === curse &&
+              hits.length >= 3 &&
+              hits.every((t) => t !== null && t.kind === "object" && game.state.objects[t.object]?.controller === B),
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+
+  {
+    name: "keeps the mana for a wrath held until after combat",
+    rule: "A wipe saved for the second main phase isn't starved by a creature cast before combat.",
+    run(weights, registry, makeBot) {
+      // From the Sultai Arisen autopsy: held before combat, the wipe was left
+      // out of the candidates, something else spent the mana, and Blood Money
+      // sat in hand 61 turn starts while Avenger of Zendikar's eight Plants
+      // (none of which block a flier) took the mana. Seven lands: the Avenger
+      // (7) or the wrath (4), not both.
+      const game = table(registry, [A, B], A);
+      lands(game, "Plains", A, 4);
+      lands(game, "Forest", A, 3);
+      onBoard(game, "Grizzly Bears", A);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Serra Angel", B);
+      game.state.players[A].life = 12;
+      const wrath = game.debugSpawn("Wrath of God", A, "hand");
+      const wurm = game.debugSpawn("Avenger of Zendikar", A, "hand");
+      const bot = makeBot(A, registry, weights);
+      const first = bot.act(viewOf(game, A));
+      if (first.type === "cast-spell" && first.card === wurm) {
+        return { passed: false, detail: "cast Avenger of Zendikar before combat, leaving too little for the wrath" };
+      }
+      if (first.type === "cast-spell" && first.card === wrath) {
+        return { passed: false, detail: "cast the wrath before combat" };
+      }
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const second = bot.act(viewOf(game, A));
+      return {
+        passed: second.type === "cast-spell" && second.card === wrath,
+        detail: `before combat ${describeAction(first)}; after it ${describeAction(second)}`,
+      };
+    },
+  },
+  asked({
+    name: "lets its own trigger resolve before spending mana",
+    rule: "In our main phase, with only our own trigger on the stack, the mana waits for the sorcery-speed play.",
+    position(registry) {
+      // From the Sultai Arisen autopsy: 57 times in 34 games an instant or an
+      // activation answered the bot's own landfall or main-phase trigger, and
+      // the creature it would have cast after went uncast.
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 2);
+      onBoard(game, "Island", A);
+      onBoard(game, "Scute Swarm", A);
+      game.debugSpawn("Think Twice", A, "hand");
+      game.debugSpawn("Centaur Courser", A, "hand");
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.dispatch({ type: "play-land", player: A, card: forest });
+      game.advanceUntil((s) => (s.priority.holder === A && s.zones.shared.stack.length > 0) || s.result.over);
+      if (game.state.zones.shared.stack.length === 0) {
+        return { passed: false, detail: "the landfall trigger never went on the stack" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "pass-priority",
+          detail: `with its own landfall trigger on the stack, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "fetches the colour its hand needs",
+    rule: "Two colours missing: a fetch takes the one the spells in hand want and no land in hand makes.",
+    position(registry) {
+      // From the Sultai Arisen autopsy (seed 73): Foreboding Landscape took a
+      // Swamp with Sunken Hollow (black) in hand and five green spells
+      // waiting; the deck sat six turns with no green source.
+      const game = table(registry, [A, B], A);
+      game.state.players[A].commanderIdentity = ["B", "G", "U"];
+      onBoard(game, "Island", A);
+      const landscape = onBoard(game, "Foreboding Landscape", A);
+      game.debugSpawn("Sunken Hollow", A, "hand");
+      game.debugSpawn("Farseek", A, "hand");
+      game.debugSpawn("Scute Swarm", A, "hand");
+      // The Swamp comes first in the library: order alone would take it.
+      game.debugSpawn("Forest", A, "library");
+      game.debugSpawn("Swamp", A, "library");
+      game.dispatch({ type: "activate-ability", player: A, source: landscape, abilityIndex: 1, targets: [] });
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-from-zone") {
+        return { passed: false, detail: "the search never asked" };
+      }
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const picked = action.type === "choose-from-zone" ? action.chosen : [];
+          const names = picked.map((id) => game.state.objects[id]?.cardName);
+          return {
+            passed: names.length === 1 && names[0] === "Forest",
+            detail: `fetched ${names.join(", ") || "nothing"}`,
+          };
+        },
+      };
+    },
+  }),
 
   // --- attacks ---------------------------------------------------------------
   {
@@ -1872,6 +2093,89 @@ const SCENARIOS: readonly BotScenario[] = [
       return {
         passed: attackers.length === 1 && attackers[0].defender === C,
         detail: `attacked ${attackers.map((d) => d.defender).join(", ") || "nobody"}`,
+      };
+    },
+  },
+  asked({
+    name: "does not cycle a land in its own upkeep",
+    rule: "Cycling costs mana the main phase wants; the land is better played.",
+    position(registry) {
+      // From the Mardu Surge autopsy: a land cycled in the upkeep, and the
+      // turn's spell never came (4 times in 25 games).
+      const game = Game.create({ seed: 3, registry, decks: [A, B, C, D].map(forestDeck) });
+      game.advanceUntil(
+        (s) =>
+          s.turn.number > 4 &&
+          s.turnOrder[s.turn.activePlayerIndex] === A &&
+          s.turn.step === "upkeep" &&
+          s.priority.holder === A,
+      );
+      if (game.state.turn.step !== "upkeep") return { passed: false, detail: "never reached alice's upkeep" };
+      game.state.zones.perPlayer[A].hand = [];
+      for (const land of ["Mountain", "Plains", "Swamp"]) onBoard(game, land, A);
+      const landscape = game.debugSpawn("Shattered Landscape", A, "hand");
+      game.debugSpawn("Hero of Bladehold", A, "hand");
+      // A spell on top, so a cycle would draw something.
+      const top = game.debugSpawn("Lightning Greaves", A, "library");
+      const library = game.state.zones.perPlayer[A].library;
+      game.state.zones.perPlayer[A].library = [top, ...library.filter((id) => id !== top)];
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cycle" && action.card === landscape),
+          detail: `in its upkeep chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "chumps with one token of a stack, not the stack",
+    rule: "A chump block against lethal takes one token; the rest of a stack stays home.",
+    position(registry) {
+      // From the Mardu Surge autopsy: a lethal attacker chumped with a whole
+      // stack of nine Soldiers — every token in it blocks when no count is
+      // named.
+      const game = table(registry, [A, B], B);
+      const stack = onBoard(game, "Soldier Token", A);
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 9;
+      const wurm = onBoard(game, "Craw Wurm", B);
+      game.state.objects[wurm].counters["+1/+1"] = 6;
+      game.state.players[A].life = 5;
+      const failed = bobAttacks(game, [wurm]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const blocks = action.type === "declare-blockers" ? action.blocks : [];
+          return {
+            passed: blocks.length === 1 && blocks[0].blocker === stack && blocks[0].count === 1,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  {
+    name: "does not send its commander into a gang block",
+    rule: "Two blockers that kill the commander together are a block a defender makes; attack the open players instead.",
+    run(weights, registry, makeBot) {
+      // From the Grave Danger autopsy: v2's attack planner predicted blocks
+      // with v1's, which never ganged up, while v2's defenders did — Gisa
+      // died on 32 of her 120 attacks and was recast at +2 tax each time.
+      const game = table(registry, [A, B, C, D], A);
+      for (const p of [A, B, C, D]) game.state.players[p].life = 40;
+      const gisa = onBoard(game, "Gisa and Geralf", A);
+      game.state.objects[gisa].isCommander = true;
+      onBoard(game, "Centaur Courser", B);
+      onBoard(game, "Grizzly Bears", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.every((d) => d.defender !== B),
+        detail: `attacked ${attackers.map((d) => String(d.defender)).join(", ") || "nobody"}`,
       };
     },
   },

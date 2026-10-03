@@ -227,6 +227,13 @@ const MAX_MENACE_PAIRS = 6;
  * `declareBlockers`. */
 const MAX_GANG_PAIRS = 6;
 
+/** Whether every player `action` targets is `player` (no player targets
+ * counts) — a cantrip aimed at its caster. */
+function aimedOnlyAt(action: Action, player: PlayerId): boolean {
+  const targets = action.type === "cast-spell" ? (action.targets ?? []) : [];
+  return targets.every((t) => t === null || t.kind !== "player" || t.player === player);
+}
+
 /**
  * Moves simulated per round of a combat climb. A combat simulation is far
  * dearer than a priority one — it runs blocks, damage and every trigger on
@@ -542,6 +549,10 @@ export class EvalBotController extends HeuristicBotController {
    * search's best was to pass (a due cantrip — `isCantripDue`), so a replay
    * of its scores can do the same (`scenario-fit.ts`). Written, never read. */
   lastPassFallback: Action | null = null;
+  /** The wipes the last priority search held for after combat
+   * (`holdsWipeForCombat`): scored like any candidate, but one that scores
+   * best is played as a pass. For `scenario-fit.ts`'s replay. */
+  lastHeldForCombat: readonly Action[] = [];
 
   constructor(
     playerId: PlayerId,
@@ -565,6 +576,7 @@ export class EvalBotController extends HeuristicBotController {
   act(view: ControllerView): Action {
     this.lastDecision = null;
     this.lastPassFallback = null;
+    this.lastHeldForCombat = [];
     const continued = this.continueBatch(view) ?? this.holdPass(view);
     this.passedOn = null;
     this.actedOn = null;
@@ -588,6 +600,8 @@ export class EvalBotController extends HeuristicBotController {
     const mustKill = new Map<Action, PlayerId>();
     // A cantrip due now (`isCantripDue`), played if the search would pass.
     let cantrip: Action | null = null;
+    // Wipes held for after combat: chosen, they mean "pass to combat".
+    const heldForCombat = new Set<Action>();
     // A read-only region: ranking targets folds every option's
     // characteristics, and nothing changes the state until the simulations
     // below, which run outside it.
@@ -607,17 +621,24 @@ export class EvalBotController extends HeuristicBotController {
         // card in hand, so the search would cast it and waste the counter.
         if (this.holdsForASpell(view.state, legal)) continue;
         // A board wipe that would take our own would-be attackers, before
-        // combat (`holdsWipeForCombat`): cast after the attack instead.
-        if (this.holdsWipeForCombat(view.state, legal)) continue;
+        // combat (`holdsWipeForCombat`): cast after the attack instead. It
+        // stays a candidate, so that if it's the best play the bot passes to
+        // combat with its mana intact — left out, something cheaper spent the
+        // mana and the wipe was never affordable after combat (the Sultai
+        // autopsy: Blood Money in hand 61 turn starts, never cast).
+        const heldWipe = this.holdsWipeForCombat(view.state, legal);
         // Mana our own main phase could cast a spell with, spent in our upkeep
         // (`holdsManaForMain`): the rollouts never show that spell.
         if (this.holdsManaForMain(view.state, legal)) continue;
-        const due = this.isCantripDue(view.state, legal);
+        const due = this.isCantripDue(view.state, legal) || this.isSuspendDue(legal);
         for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
-          if (due) cantrip ??= action;
+          // A draw aimed at a player is a cantrip aimed at us (Compulsive
+          // Research's "target player draws three").
+          if (due && cantrip === null && aimedOnlyAt(action, player)) cantrip = action;
           const verdict = this.opponentPump(view.state, legal, action);
           if (verdict === "drop") continue;
           if (verdict !== "ok") mustKill.set(action, verdict.kills);
+          if (heldWipe) heldForCombat.add(action);
           candidates.push(action);
         }
       }
@@ -805,7 +826,15 @@ export class EvalBotController extends HeuristicBotController {
         stack: base + 1,
       };
     }
-    // A cantrip scores a wash against passing — see `isCantripDue`.
+    // A cantrip or a suspend scores a wash against passing — see
+    // `isCantripDue` and `isSuspendDue`.
+    // A held wipe that scored best waits for the second main phase, and
+    // nothing else spends its mana now (not even a cantrip).
+    this.lastHeldForCombat = [...heldForCombat];
+    if (heldForCombat.has(best)) {
+      best = pass;
+      cantrip = null;
+    }
     this.lastPassFallback = cantrip;
     if (best.type === "pass-priority" && cantrip !== null) best = cantrip;
     this.lastDecision = audit("priority", budget);
@@ -1235,7 +1264,8 @@ export class EvalBotController extends HeuristicBotController {
       for (const entry of free) {
         for (const attacker of entry.canBlock) {
           if (legal.menaceAttackers.includes(attacker)) continue;
-          const move = [{ blocker: entry.blocker, attacker }];
+          // One token of a stack per move (see v1's `declareBlockers`).
+          const move = [{ blocker: entry.blocker, attacker, ...((entry.copies ?? 1) > 1 ? { count: 1 } : {}) }];
           out.push({ next: [...current, ...move], estimate: estimate(move) });
         }
       }

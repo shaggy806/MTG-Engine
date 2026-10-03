@@ -83,14 +83,19 @@ describe("concreteTargetSpecs", () => {
     expect(slotOptions(specs, options, 3, [player(B), obj("x" as ObjectId), obj("y" as ObjectId)])).toEqual([]);
   });
 
-  it("gives a bot none, each candidate alone, and all of them", () => {
+  it("gives a bot none, the best one, two, three… (a prefix of the ranked options), then each of the rest alone", () => {
     const group: TargetSpec[] = [{ kind: "any-number", of: "player" }];
     expect(targetCombos([[player(A), player(B)]], 10, group)).toEqual([
       [],
       [player(A)],
-      [player(B)],
       [player(A), player(B)],
+      [player(B)],
     ]);
+    // Under the cap the larger sets survive: eight options, a cap of four,
+    // still reaches the best three together.
+    const many = ["alice", "bob", "carol", "dave", "alice", "bob", "carol", "dave"].map((p) => player(asPlayerId(p)));
+    const combos = targetCombos([many], 4, group);
+    expect(combos.map((c) => c.length)).toEqual([0, 1, 2, 3]);
   });
 
   it("leaves a list without a group alone", () => {

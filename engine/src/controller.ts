@@ -1638,6 +1638,18 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /**
+   * A suspend when the search would pass (`isCantripDue`'s fallback): every
+   * suspend card in the pool is pure upside to suspend — Ancestral Vision's
+   * three cards (it can only be suspended), Rift Bolt's 3 damage, Search for
+   * Tomorrow's land — and the evaluation can't price a card exiled with time
+   * counters, so suspending scored as throwing a card away. Offered only when
+   * suspending is legal, which is when casting would be.
+   */
+  protected isSuspendDue(legal: LegalAction): boolean {
+    return legal.kind === "suspend";
+  }
+
+  /**
    * A creature that sacrifices itself to put a land onto the battlefield
    * (Sakura-Tribe Elder), at the moment to do it: the end step of the player
    * whose turn comes right before ours, nothing on the stack, while we have
@@ -1763,6 +1775,11 @@ export class HeuristicBotController extends AutomaticController {
   protected holdsForASpell(state: GameState, offer: LegalAction): boolean {
     if (offer.kind !== "cast-spell" || !this.registry.has(offer.cardName)) return false;
     if (!entersToCounter(this.registry.get(offer.cardName))) return false;
+    // Held for a spell to counter until the end of the turn before ours, then
+    // cast for its body: the mana goes unused otherwise, and a bot that taps
+    // out on its own turn never has it open when the spell comes — the
+    // autopsy found Transcendent Dragon in hand 40 turn starts, never cast.
+    if (this.isEndOfTurnBeforeOurs(state)) return false;
     return !state.zones.shared.stack.some((id) => {
       const object = state.objects[id];
       return object !== undefined && object.kind === "card" && object.controller !== this.playerId;
@@ -1839,12 +1856,30 @@ export class HeuristicBotController extends AutomaticController {
    * and cast nothing after. Mana spent on an opponent's turn untaps on ours,
    * so this is about our own turn only; an ability with an activation
    * condition (it may only be usable now) is left alone.
+   *
+   * The same holds in our own main phase while only our own abilities are on
+   * the stack — a landfall trigger, Black Market Connections' "at the
+   * beginning of your precombat main phase": the main phase's sorcery-speed
+   * plays come once they resolve, and spent now on an instant, the mana
+   * isn't there for them (the Sultai autopsy: 57 times in 34 games, Teval
+   * waiting a turn behind a Reassembling Skeleton).
    */
   protected holdsManaForMain(state: GameState, offer: LegalAction): boolean {
-    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability") return false;
-    if (state.zones.shared.stack.length > 0) return false;
-    if (state.turn.step !== "upkeep" && state.turn.step !== "draw") return false;
+    if (offer.kind !== "cast-spell" && offer.kind !== "activate-ability" && offer.kind !== "cycle") return false;
     if (activePlayerOf(state) !== this.playerId) return false;
+    const stack = state.zones.shared.stack;
+    const window =
+      stack.length === 0
+        ? state.turn.step === "upkeep" || state.turn.step === "draw"
+        : (state.turn.step === "precombat-main" || state.turn.step === "postcombat-main") &&
+          stack.every((id) => {
+            const object = state.objects[id];
+            return object !== undefined && object.kind === "ability" && object.controller === this.playerId;
+          });
+    if (!window) return false;
+    // Cycling costs mana too (the Mardu autopsy: a land cycled in its own
+    // upkeep, and the turn's two-drop never came).
+    if (offer.kind === "cycle") return offer.cost !== "" && offer.cost !== "{0}";
     if (offer.kind === "activate-ability" && offer.manaAbility === true) return false;
     if (!this.registry.has(offer.cardName)) return false;
     const def = this.registry.get(offer.cardName);
@@ -2401,13 +2436,17 @@ export class HeuristicBotController extends AutomaticController {
     defender: PlayerId | ObjectId,
   ): boolean {
     const me = computeCharacteristics(state, this.registry, attacker);
+    if (me.keywords.has("unblockable")) return false;
     // A planeswalker doesn't block; its controller's creatures do.
     const defendingPlayer =
       state.players[defender as PlayerId] !== undefined
         ? (defender as PlayerId)
         : state.objects[defender as ObjectId]?.controller;
     if (defendingPlayer === undefined) return false;
-    return state.zones.shared.battlefield.some((id) => {
+    // The untapped creatures that could block it: a flyer only by flying or
+    // reach (v1's dragon decks used to stay home behind any big ground
+    // creature, and v2's rollouts with them).
+    const blockers = state.zones.shared.battlefield.filter((id) => {
       const object = state.objects[id];
       if (object === undefined || object.controller !== defendingPlayer || object.tapped) {
         return false;
@@ -2415,8 +2454,25 @@ export class HeuristicBotController extends AutomaticController {
       const it = computeCharacteristics(state, this.registry, id);
       if (!it.types.includes("creature")) return false;
       if (it.restrictions.has("cant-block")) return false;
-      return combatDamageOf(it) >= me.toughness || it.keywords.has("deathtouch");
+      return !me.keywords.has("flying") || it.keywords.has("flying") || it.keywords.has("reach");
     });
+    const deals = (id: ObjectId) => combatDamageOf(computeCharacteristics(state, this.registry, id));
+    const deathtouch = (id: ObjectId) => computeCharacteristics(state, this.registry, id).keywords.has("deathtouch");
+    if (blockers.some((id) => deals(id) >= me.toughness || deathtouch(id))) return true;
+    // A gang block `declareBlockers` would make: two that kill it together,
+    // for less than it's worth.
+    const damage = combatDamageOf(me);
+    for (let i = 0; i < blockers.length; i += 1) {
+      for (let j = i + 1; j < blockers.length; j += 1) {
+        const x = blockers[i];
+        const y = blockers[j];
+        if (deals(x) + deals(y) < me.toughness) continue;
+        if (blockWorth(state, this.registry, attacker) > gangLoss(state, this.registry, damage, me.keywords.has("deathtouch"), x, y) + 1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
@@ -2451,12 +2507,76 @@ export class HeuristicBotController extends AutomaticController {
     // a correctness bug (the engine still resolves the real combat math).
     for (const entry of legal.eligible) {
       if (used.has(entry.blocker)) continue;
+      // Not a deathtouch attacker (it kills any blocker it touches, unless a
+      // first striker kills it first), nor one already blocked — the Mardu
+      // autopsy found v2 attacking with a deathtouch Snake expecting this
+      // block, at −1.9 against −32.6 once real blockers answered.
+      const taken = new Set(chosen.values());
+      const firstStrike = computeCharacteristics(state, this.registry, entry.blocker).keywords.has("first-strike");
       const favorable = entry.canBlock.find(
-        (a) => power(entry.blocker) >= toughness(a) && toughness(entry.blocker) > power(a),
+        (a) =>
+          !taken.has(a) &&
+          power(entry.blocker) >= toughness(a) &&
+          toughness(entry.blocker) > power(a) &&
+          (firstStrike || !computeCharacteristics(state, this.registry, a).keywords.has("deathtouch")),
       );
       if (favorable !== undefined) {
         chosen.set(entry.blocker, favorable);
         used.add(entry.blocker);
+      }
+    }
+
+    // Trades and gang blocks worth taking (the Grave Danger autopsy,
+    // 2026-10-02). v2's attack planner predicts every defender with these
+    // blocks (`simulateCombat`), and v2's own defenders make both — so while
+    // v1 took neither, v2 sent its commander into blocks it never saw
+    // coming: Gisa died on 32 of her 120 attacks, each time recast at +2 tax.
+    // A creature's worth is `blockWorth`.
+    const worth = (id: ObjectId): number => blockWorth(state, this.registry, id);
+    const deathtouch = (id: ObjectId) => computeCharacteristics(state, this.registry, id).keywords.has("deathtouch");
+    const kills = (x: ObjectId, y: ObjectId) => power(x) >= toughness(y) || deathtouch(x);
+    const blocked = () => new Set(chosen.values());
+    // A blocker that kills the attacker and dies to it, for an attacker
+    // worth clearly more.
+    for (const entry of legal.eligible) {
+      if (used.has(entry.blocker)) continue;
+      const taken = blocked();
+      const trade = entry.canBlock
+        .filter(
+          (a) =>
+            !taken.has(a) &&
+            !legal.menaceAttackers.includes(a) &&
+            kills(entry.blocker, a) &&
+            worth(a) >= worth(entry.blocker) + 2,
+        )
+        .sort((a, b) => worth(b) - worth(a))[0];
+      if (trade !== undefined) {
+        chosen.set(entry.blocker, trade);
+        used.add(entry.blocker);
+      }
+    }
+    // Two blockers that kill together what neither kills alone, when the
+    // attacker is worth more than what its damage can take back (it kills
+    // the most it can — the defender's worst case).
+    for (const attacker of [...new Set(legal.eligible.flatMap((e) => e.canBlock))]) {
+      if (blocked().has(attacker)) continue;
+      const able = legal.eligible.filter((e) => !used.has(e.blocker) && e.canBlock.includes(attacker));
+      if (able.some((e) => kills(e.blocker, attacker))) continue;
+      let best: { pair: readonly [ObjectId, ObjectId]; loss: number } | null = null;
+      for (let i = 0; i < able.length; i += 1) {
+        for (let j = i + 1; j < able.length; j += 1) {
+          const x = able[i].blocker;
+          const y = able[j].blocker;
+          if (power(x) + power(y) < toughness(attacker)) continue;
+          const loss = gangLoss(state, this.registry, power(attacker), deathtouch(attacker), x, y);
+          if (worth(attacker) > loss + 1 && (best === null || loss < best.loss)) best = { pair: [x, y], loss };
+        }
+      }
+      if (best !== null) {
+        for (const b of best.pair) {
+          chosen.set(b, attacker);
+          used.add(b);
+        }
       }
     }
 
@@ -2477,9 +2597,14 @@ export class HeuristicBotController extends AutomaticController {
       remaining -= power(attacker);
     }
 
+    // One token of a compacted stack per block, never the whole stack (the
+    // Mardu autopsy: a lethal attacker chumped with all nine Soldiers) — but
+    // a Lure block takes every token able to block (rule 509.1c).
+    const stackOf = new Map(legal.eligible.map((e) => [e.blocker, e.copies ?? 1]));
     let blocks: BlockerDeclaration[] = [...chosen].map(([blocker, attacker]) => ({
       blocker,
       attacker,
+      ...((stackOf.get(blocker) ?? 1) > 1 && !legal.mustBlock.includes(attacker) ? { count: 1 } : {}),
     }));
     // A menace attacker must be blocked by 0 or 2+ creatures.
     blocks = blocks.filter(
@@ -2491,31 +2616,86 @@ export class HeuristicBotController extends AutomaticController {
   }
 }
 
+/** What a creature is worth to v1's blocks and attacks — v2's evaluation in
+ * small (`creatures` 2.5, `power` and `toughness` 0.5 each, doubled): five
+ * for the body, plus the damage it deals and its toughness, and a commander
+ * six more (the recast it would cost). Two Grizzly Bears are worth more than
+ * a Craw Wurm, so they don't gang-block it to die together. */
+function blockWorth(state: GameState, registry: CardRegistry, id: ObjectId): number {
+  const c = computeCharacteristics(state, registry, id);
+  return 5 + combatDamageOf(c) + c.toughness + (state.objects[id]?.isCommander === true ? 6 : 0);
+}
+
+/** What an attacker dealing `damage` takes back from the gang block of `x`
+ * and `y`: the most it can kill of them — the defender's worst case. */
+function gangLoss(
+  state: GameState,
+  registry: CardRegistry,
+  damage: number,
+  deathtouch: boolean,
+  x: ObjectId,
+  y: ObjectId,
+): number {
+  const needs = (b: ObjectId) => (deathtouch ? 1 : computeCharacteristics(state, registry, b).toughness);
+  const worth = (b: ObjectId) => blockWorth(state, registry, b);
+  return needs(x) + needs(y) <= damage
+    ? worth(x) + worth(y)
+    : Math.max(needs(x) <= damage ? worth(x) : 0, needs(y) <= damage ? worth(y) : 0);
+}
+
 type Sweep = Extract<
   EffectSpec,
   { readonly kind: "destroy-all" | "damage-all" | "exile-all" | "return-to-hand-all" }
 >;
 
-/** Whether `effect` only draws and filters our own cards — draws, scries,
- * surveils, and looks that keep or put back — and draws at least one. */
+/**
+ * Whether `effect` only draws and filters our own cards — draws, scries,
+ * surveils, looks that keep or put back, a discard after a draw — and leaves
+ * us at least a card up for the spell spent on it: cards drawn or put into
+ * hand, less cards discarded or put back, one or more. Opt and Ponder (+1),
+ * Brainstorm (3 - 2), Compulsive Research (3 - 2, at worst), Expressive
+ * Iteration (one into hand) qualify; Faithless Looting (2 - 2) doesn't — a
+ * card down outside a graveyard deck. A draw aimed at a player counts only
+ * when the bot aims it at itself (`aimedOnlyAt` in `bot/eval-bot.ts`).
+ */
 function isCardFlow(effect: EffectSpec | null | undefined): boolean {
-  let draws = false;
+  let gained = 0;
+  const count = (a: unknown): number | null => (typeof a === "number" ? a : null);
   const walk = (e: EffectSpec | null | undefined): boolean => {
     if (e === null || e === undefined) return true;
     switch (e.kind) {
-      case "draw":
-        if (e.who !== undefined || e.target !== undefined) return false;
-        draws = true;
+      case "draw": {
+        if (e.who !== undefined) return false;
+        const n = count(e.amount);
+        if (n === null) return false;
+        gained += n;
         return true;
+      }
+      case "discard": {
+        // Ours: "you", or the slot a draw aimed at us.
+        if (e.target !== "you" && typeof e.target !== "number") return false;
+        const n = count(e.amount);
+        if (n === null || e.random === true) return false;
+        gained -= n;
+        return true;
+      }
       case "scry":
       case "surveil":
         return walk(e.then);
-      case "look-and-choose":
-        return (
-          (e.zone === "library" || e.zone === "hand") &&
-          (e.destination === "hand" || e.destination === "library-top") &&
-          e.then === undefined
-        );
+      case "look-and-choose": {
+        if (e.then !== undefined) return false;
+        const n = count(e.max);
+        if (n === null) return false;
+        if (e.zone === "library" && e.destination === "hand") gained += n;
+        else if (e.zone === "hand" && e.destination === "library-top") gained -= n;
+        else if (!(e.zone === "library" && e.destination === "library-top")) return false;
+        // A second pick back into the library (Expressive Iteration's "one on
+        // the bottom") moves no card into or out of a hand.
+        if (e.secondPick !== undefined && e.secondPick.destination !== "library-bottom" && e.secondPick.destination !== "graveyard") {
+          return false;
+        }
+        return e.leftover !== "hand";
+      }
       case "sequence":
         return e.effects.every(walk);
       case "may":
@@ -2526,7 +2706,7 @@ function isCardFlow(effect: EffectSpec | null | undefined): boolean {
         return false;
     }
   };
-  return walk(effect) && draws;
+  return walk(effect) && gained >= 1;
 }
 
 /** The mass removal in `effect` — destroy, damage, exile or bounce "all"

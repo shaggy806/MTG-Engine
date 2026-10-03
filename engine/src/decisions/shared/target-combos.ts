@@ -31,14 +31,19 @@ export function targetCombos(
   const group = anyNumberSlot(specs);
   optionLists.forEach((options, i) => {
     // An "any number of" group (always last) ends each combination with a
-    // few of its answers rather than every subset: none, each candidate
-    // alone, and all of them.
+    // few of its answers rather than every subset: none, the best one, two,
+    // three… (a prefix of the options, which the bots rank best first —
+    // `aimOffer`) up to the group's `max` (Magma Opus's four), then each of
+    // the rest alone. Prefixes come first because the cap bites: offered as
+    // none, each alone and all of them, a seven-creature board cut "all of
+    // them" off, and Curse of the Swine ("exile X target creatures") was
+    // only ever cast for X of 1.
     if (i === group) {
-      // "All of them" up to the group's `max` (Magma Opus's four).
       const spec = specs[group];
       const { max } = groupBounds(spec ?? "creature");
-      const all = Number.isFinite(max) ? options.slice(0, max) : [...options];
-      const tails: TargetRef[][] = [[], ...options.map((ref) => [ref]), ...(all.length > 1 ? [all] : [])];
+      const most = Number.isFinite(max) ? Math.min(max, options.length) : options.length;
+      const prefixes = Array.from({ length: most }, (_, k) => options.slice(0, k + 1));
+      const tails: TargetRef[][] = [[], ...prefixes, ...options.slice(1).map((ref) => [ref])];
       const next: (TargetRef | null)[][] = [];
       for (const combo of combos) {
         for (const tail of tails) {

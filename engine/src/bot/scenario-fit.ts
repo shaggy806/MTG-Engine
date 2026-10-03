@@ -58,6 +58,9 @@ export interface ScenarioRecord {
   /** What the bot plays instead when its best answer is to pass — a due
    * cantrip (`EvalBotController.lastPassFallback`). */
   readonly passFallback?: Action | null;
+  /** Candidates the bot plays as a pass if one scores best — wipes held for
+   * after combat (`EvalBotController.lastHeldForCombat`). */
+  readonly heldAsPass?: readonly Action[];
 }
 
 /**
@@ -93,6 +96,7 @@ export function recordScenario(
     chosenRight: position.judge(chosen).passed,
     exact,
     passFallback: bot.lastPassFallback,
+    heldAsPass: bot.lastHeldForCombat,
   };
 }
 
@@ -110,6 +114,14 @@ export function replayChoice(record: ScenarioRecord, weights: EvalWeights): numb
       bestScore = score;
     }
   });
+  // A held wipe that scored best is played as a pass, and then no cantrip
+  // spends its mana (`EvalBotController`'s priority search).
+  const held = new Set((record.heldAsPass ?? []).map((a) => JSON.stringify(a)));
+  const heldBest = held.has(JSON.stringify(record.answers[best]?.action));
+  if (heldBest) {
+    const pass = record.answers.findIndex((a) => a.action.type === "pass-priority");
+    if (pass !== -1) return pass;
+  }
   const fallback = record.passFallback;
   if (fallback != null && record.answers[best]?.action.type === "pass-priority") {
     const key = JSON.stringify(fallback);

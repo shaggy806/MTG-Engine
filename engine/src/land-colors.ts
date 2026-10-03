@@ -86,10 +86,44 @@ export function missingColors(state: GameState, registry: CardRegistry, me: Play
 }
 
 /**
+ * How much each missing colour is wanted: one, plus a point for each of its
+ * mana symbols among the spells in hand and the commanders waiting in the
+ * command zone — and a quarter of that when a land in hand already makes it.
+ * The Sultai autopsy (seed 73): two colours missing, a fetch took a Swamp
+ * with Sunken Hollow in hand and five green spells waiting, and the deck sat
+ * six turns with no green source.
+ */
+function colorWants(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  missing: ReadonlySet<Color>,
+  identity: readonly Color[],
+): Map<Color, number> {
+  const want = new Map<Color, number>([...missing].map((c) => [c, 1]));
+  const inHand = new Set<Color>();
+  const zones = state.zones.perPlayer[me];
+  const waiting = state.zones.shared.command.filter((id) => state.objects[id]?.owner === me);
+  for (const id of [...(zones?.hand ?? []), ...waiting]) {
+    const name = state.objects[id]?.cardName;
+    if (name === undefined || !registry.has(name)) continue;
+    const def = registry.get(name);
+    if (def.types.includes("land")) {
+      for (const c of colorsOf(state, registry, id, identity)) inHand.add(c);
+      continue;
+    }
+    const cost = parseManaCost(def.manaCost);
+    for (const c of missing) want.set(c, (want.get(c) ?? 1) + cost.colored[c]);
+  }
+  for (const c of inHand) if (want.has(c)) want.set(c, (want.get(c) ?? 1) / 4);
+  return want;
+}
+
+/**
  * `ids` — cards a search or a "look at" may take — with the lands that make
- * the most missing colours first; otherwise in the order given (stable). Only
- * reorders a choice among lands alone: a tutor that could take anything is
- * left to whatever ranks it.
+ * the most wanted missing colours first (`colorWants`); otherwise in the
+ * order given (stable). Only reorders a choice among lands alone: a tutor
+ * that could take anything is left to whatever ranks it.
  */
 export function newColorsFirst(
   state: GameState,
@@ -105,10 +139,11 @@ export function newColorsFirst(
   const missing = missingColors(state, registry, me);
   if (missing.size === 0) return [...ids];
   const identity = state.players[me]?.commanderIdentity ?? [];
+  const want = colorWants(state, registry, me, missing, identity);
   const gain = new Map<ObjectId, number>();
   for (const id of ids) {
     let n = 0;
-    for (const c of colorsOf(state, registry, id, identity)) if (missing.has(c)) n += 1;
+    for (const c of colorsOf(state, registry, id, identity)) n += want.get(c) ?? 0;
     gain.set(id, n);
   }
   return [...ids].sort((a, b) => (gain.get(b) ?? 0) - (gain.get(a) ?? 0));
