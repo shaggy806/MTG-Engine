@@ -47,6 +47,24 @@ describe("threat", () => {
     expect(threatTo(game)).toBeCloseTo(8);
   });
 
+  it("credits this turn's damage back to the life it's weighed against, as far as the life above 20", () => {
+    const game = table();
+    game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });
+    const at = (life: number, lostThisTurn: number): number => {
+      game.state.players[A].life = life;
+      game.state.players[A].lifeLostThisTurn = lostThisTurn;
+      return threatTo(game);
+    };
+    // At 35 a combat that takes 6 doesn't also grow the Wurm's threat...
+    expect(at(29, 6)).toBeCloseTo(at(35, 0));
+    // ...but no more than the life above 20: at 25 after taking 6, five come
+    // back; at 16, none...
+    expect(at(25, 6)).toBeCloseTo(at(30, 0));
+    expect(at(16, 6)).toBeCloseTo(at(16, 0));
+    // ...and at 1 every creature is as lethal as it looks.
+    expect(at(1, 5)).toBeCloseTo(at(1, 0));
+  });
+
   it("counts only what could attack us next turn", () => {
     const game = table();
     const wurm = game.debugSpawn("Craw Wurm", C, "battlefield", { summoningSick: false });

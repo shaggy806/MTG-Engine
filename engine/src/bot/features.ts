@@ -152,6 +152,10 @@ export function lifeCost(
  */
 const LIBRARY_DANGER_AT = 15;
 
+/** `commanderDamage` from the worst damage taken: `d²/21`, so 21 is still
+ * 21 and a hit weighs more the nearer the loss. */
+const commanderDamageCurve = (taken: number): number => (taken * taken) / COMMANDER_DAMAGE_LETHAL;
+
 /** `threat` weighs damage against what's left to lose: at this much life a
  * point counts as one, at twice it as a half. */
 const THREAT_LIFE = 20;
@@ -681,9 +685,17 @@ function playerFeaturesUncached(
       const commanderLeft = object.isCommander
         ? COMMANDER_DAMAGE_LETHAL - (p.commanderDamageTaken[id] ?? 0)
         : Infinity;
+      // What this turn has taken is credited back, as far as the life above
+      // `THREAT_LIFE`: at high life the damage a simulated combat deals
+      // doesn't also grow the threat of what dealt it — measured after the
+      // combat, each point taken at 35 cost about 20×power/life² on top of
+      // `life`, and v2 chump-blocked a Craw Wurm with a Soldier token at 35
+      // (the Mardu autopsy) — while at 6 going to 1 every creature on the
+      // table is still lethal.
+      const life = p.life + Math.min(p.lifeLostThisTurn, Math.max(0, p.life - THREAT_LIFE));
       const scale = Math.min(
         MAX_THREAT_SCALE,
-        THREAT_LIFE / Math.max(1, Math.min(p.life, commanderLeft)),
+        THREAT_LIFE / Math.max(1, Math.min(life, commanderLeft)),
       );
       threat += combatDamageOf(c) * (object.stackCount ?? 1) * share * scale;
     }
@@ -737,10 +749,16 @@ function playerFeaturesUncached(
     // The nearest loss that isn't life: the worst commander's damage, or
     // poison on the same scale (10 counters lose as 21 damage does). Folded
     // into one term, so the fitted weight reads poison too without a refit.
-    commanderDamage: Math.max(
-      0,
-      ...Object.values(p.commanderDamageTaken),
-      ((p.counters.poison ?? 0) * COMMANDER_DAMAGE_LETHAL) / POISON_LETHAL,
+    // Squared over 21 — 21 still counts 21, but a hit counts more the nearer
+    // it brings the loss: a commander's first 3 points cost 0.4 rather than
+    // 3, its last 3 cost 5.6. Linear, the first hit of a 3-power commander
+    // was worth chump-blocking with a token at 35 life.
+    commanderDamage: commanderDamageCurve(
+      Math.max(
+        0,
+        ...Object.values(p.commanderDamageTaken),
+        ((p.counters.poison ?? 0) * COMMANDER_DAMAGE_LETHAL) / POISON_LETHAL,
+      ),
     ),
     hand: zones.hand.length,
     handManaValue,

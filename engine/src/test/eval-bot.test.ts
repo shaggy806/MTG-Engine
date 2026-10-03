@@ -302,12 +302,14 @@ describe("evaluateState features", () => {
     return evaluateState(game.state, registry, A, w) - before;
   };
 
-  it("subtracts the most damage taken from any one commander", () => {
-    expect(
+  it("subtracts the most damage taken from any one commander, squared over 21", () => {
+    const taken = (damage: Record<string, number>) =>
       delta({ commanderDamage: 1 }, (g) => {
-        g.state.players[A].commanderDamageTaken = { x: 7, y: 3 } as never;
-      }),
-    ).toBe(-7);
+        g.state.players[A].commanderDamageTaken = damage as never;
+      });
+    expect(taken({ x: 7, y: 3 })).toBeCloseTo(-49 / 21);
+    // 21 still counts 21: the curve bends what comes before it.
+    expect(taken({ x: 21 })).toBeCloseTo(-21);
   });
 
   it("counts the mana a turn nonland permanents make, net of what tapping them costs", () => {

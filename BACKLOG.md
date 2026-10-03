@@ -69,7 +69,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   on it. Candidates that held their own under v2: Tramplesaurus Rex, Chaos Incarnate, Reign of
   Dragons, Token Triumph, Draconic Destruction.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
-  invisible to the search; chump blocks at high life; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield); going wide
+  invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield); going wide
   into blockers; premium removal fired early; Sultai's and Mardu's plan-gutting stand-ins.
 - **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
@@ -269,14 +269,13 @@ Beyond that plan:
   Archmage Emeritus, copies of its own spells) — 73 items on the stack and ~110 permanents on
   turn 42, each decision 5-30 s because every simulation resolves the whole stack. All seats
   there were the old build, but nothing since makes the new one cheaper on it.
-- **A wider pool of bot decks (later — raised 2026-09-26).** A bot seat falls back to one of the
-  five 2022 starter precons (`SAMPLE_DECKS`, via `server/src/decks.ts`), which the user finds too
-  simple to play against. Add decks across a range of power levels for bots to bring. The same
-  decks should widen the bench, which today measures every bot on those five midrange precons
-  only — a result there isn't a result about the decks people bring. None of the five plays a
-  counterspell, so `bot:diff` and the bench can't see the `answers` reserve at all. Unscoped: where the decks
-  come from (curated lists, or built from the pool around a commander), how a host picks a power
-  level, and how the bench samples them.
+- **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
+  since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
+  `docs/plans/precon-decks.md`), four flagged `bench`. A bot seat still falls back to the first
+  four by seat (`server/src/decks.ts`): Temur Roar, Sultai Arisen, Abzan Armor, Mardu Surge — so
+  bob's bot brings Sultai Arisen, which the deck run found the bots can't pilot (off the bench since
+  2026-10-02). For the user: whether a bot's fallback should come from the bench decks. Still
+  unscoped: decks across a range of power levels for bots to bring, and how a host picks one.
 - **More deck biases.** `engine/src/deck-bias.ts` (2026-10-02, `docs/plans/deck-biases.md`)
   lets a commander's deck aim effects the other way and value its own board differently; Teval
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a

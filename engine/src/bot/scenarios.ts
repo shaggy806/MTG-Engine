@@ -2183,6 +2183,43 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  ...(
+    [
+      ["takes a Craw Wurm's hit at 35 rather than chump", "Craw Wurm", false],
+      ["takes a commander's first small hit at 35 rather than chump", "Centaur Courser", true],
+    ] as const
+  ).map(([name, attacker, commander]) =>
+    asked({
+      name,
+      rule: commander
+        ? "Three commander damage of 21 isn't worth a creature, even a token."
+        : "Six of 35 life isn't worth a creature, even a token.",
+      position(registry) {
+        // From the Mardu Surge autopsy: at 35 life v2 threw Soldier tokens
+        // under attackers. `threat`, measured after the simulated combat,
+        // grew with the damage taken, and commander damage counted 2 a point
+        // from the first.
+        const game = table(registry, [A, B, C, D], B);
+        for (let i = 0; i < 2; i += 1) {
+          const token = onBoard(game, "Soldier Token", A);
+          game.state.objects[token].isToken = true;
+        }
+        game.state.players[A].life = 35;
+        const hitter = onBoard(game, attacker, B);
+        if (commander) game.state.objects[hitter].isCommander = true;
+        const failed = bobAttacks(game, [hitter]);
+        if (failed !== null) return failed;
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (blocksOf(action) ?? []).length === 0,
+            detail: `chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
   {
     name: "kills a player with a stack of tokens",
     rule: "Ten stacked 1/1s are ten attackers: enough of them at the player on 8 kills him.",

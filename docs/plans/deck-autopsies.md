@@ -104,15 +104,22 @@ like `drawEngines` and priced at 2 a token. Mardu Surge runs fourteen such engin
 eleven; at 0 Hero of Bladehold was a 3/4, and removal took a vanilla 4/4 over it ("removal takes
 the token engine"). Benched level: 24.5% [20.5, 28.9] over 400 four-player games.
 
+Then the chump blocks at high life: `threat` took its life scale from the end of the simulated
+combat, so each point taken also grew the threat of what dealt it (~20×power/life² on top of
+`life`), and commander damage counted 2 a point from the first. At 35 life v2 threw a Soldier
+token under a Craw Wurm and under a commander Centaur Courser. Now this turn's damage is
+credited back to the scale as far as the life above 20 (`lifeLostThisTurn`) — at 35 a combat
+doesn't grow the threat, at 6 going to 1 every creature is still lethal (crediting it all back
+stopped a chump at 6, `bot:diff` found) — and commander damage counts squared over 21: 21 is
+still 21, a first hit of 3 costs 0.4. Gate scenarios "takes a Craw Wurm's hit at 35 rather than
+chump" and "takes a commander's first small hit at 35 rather than chump"; a commander Craw Wurm's
+first 6 is still chumped, a defensible trade.
+
 ### Left
 
 - **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
   first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
   `"acting"` rollout for decks whose commander has a cast trigger.
-- **Chump blocks at high life**: `threat` measured at the end of the simulated combat makes each
-  point of life worth ~20×power/life²; commander damage is linear. A patch (life scale from the
-  starting state, a curve for commander damage) removed visible chumps but changed nothing
-  measurable in 18 games.
 - **Token payoffs beyond engines**: what a token engine keeps making is priced now (below), but
   Deadly Dispute-style sacrifice outlets and "leaves the battlefield" payoffs still aren't.
 - **Neither bot goes wide** into a board of blockers with many small creatures.

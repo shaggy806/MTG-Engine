@@ -40,7 +40,8 @@ describe("poison and the bots", () => {
     const game = setUp();
     expect(playerFeatures(game.state, registry, B, false, 7).commanderDamage).toBe(0);
     game.state.players[B].counters.poison = 5;
-    expect(playerFeatures(game.state, registry, B, false, 7).commanderDamage).toBeCloseTo(10.5);
+    // Five poison is 10.5 on the 21 scale, squared over 21.
+    expect(playerFeatures(game.state, registry, B, false, 7).commanderDamage).toBeCloseTo(5.25);
   });
 
   it("proliferate's candidates include a counter on a poisoned opponent", () => {
