@@ -70,6 +70,21 @@ describe("Chandra's Ignition", () => {
     expect(game.state.players[A].life).toBe(life + 8);
   });
 
+  it("deals it all as one event: a lifelink creature's controller gains life once (rule 702.15e)", () => {
+    const game = setUp();
+    const nighthawk = ready(game, "Vampire Nighthawk");
+    ready(game, "Serra Angel", B);
+    lands(game, "Mountain", 5);
+    const ignition = inHand(game, "Chandra's Ignition");
+    const since = game.state.eventSeq;
+    game.dispatch({ type: "cast-spell", player: A, card: ignition, targets: [obj(nighthawk)] });
+    game.advanceUntil(quiet);
+    const gains = game.state.eventLog.filter(
+      (e) => e.seq > since && e.type === "life-changed" && e.player === A && e.delta > 0,
+    );
+    expect(gains.map((e) => (e.type === "life-changed" ? e.delta : 0))).toEqual([4]);
+  });
+
   it("does nothing once its target is gone", () => {
     const game = setUp();
     const bears = ready(game, "Grizzly Bears");
@@ -137,6 +152,23 @@ describe("Junk Winder", () => {
     expect(game.state.objects[bears].tapped).toBe(false);
   });
 
+  it("triggers once per token in a stack that enters together", () => {
+    const game = setUp();
+    ready(game, "Junk Winder");
+    const theirs = [ready(game, "Grizzly Bears", B), ready(game, "Hill Giant", B), ready(game, "Serra Angel", B)];
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 3 });
+    let asked = 0;
+    for (let i = 0; i < 5; i += 1) {
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || quiet(s));
+      if (game.state.awaiting?.kind !== "choose-targets") break;
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(theirs[asked])] });
+      asked += 1;
+    }
+    game.advanceUntil(quiet);
+    expect(asked).toBe(3);
+    for (const id of theirs) expect(game.state.objects[id].tapped).toBe(true);
+  });
+
   it("costs {1} less for each token you control", () => {
     const game = setUp();
     game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 3 });
@@ -176,6 +208,16 @@ describe("Stun counters", () => {
     expect(game.state.objects[beasts[0]].tapped).toBe(true);
   });
 
+  it("Baloth Prime sacrificed together with lands still sees each of them go (its ruling)", () => {
+    const game = setUp();
+    game.debugSpawn("Baloth Prime", A, "battlefield");
+    lands(game, "Forest", 2);
+    game.debugApplyEffect(A, { kind: "sacrifice-all", who: "you", filter: { typesAnyOf: ["land", "creature"] } });
+    game.advanceUntil(quiet);
+    const beasts = game.state.zones.shared.battlefield.filter((id) => game.state.objects[id].cardName === "Beast Token");
+    expect(beasts.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(2);
+  });
+
   it("an untapped permanent keeps its stun counter when told to untap", () => {
     const game = setUp();
     const bears = ready(game, "Grizzly Bears");
@@ -201,6 +243,17 @@ describe("Stun counters", () => {
     toMain(game, 3);
     expect(game.state.objects[skull].tapped).toBe(true);
     expect(game.state.objects[skull].counters.stun).toBeUndefined();
+  });
+
+  it("…and a Dinosaur arriving before the ability resolves doesn't stop it (its ruling)", () => {
+    const game = setUp();
+    const skull = ready(game, "Pugnacious Hammerskull");
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: skull, defender: B }] });
+    game.advanceUntil((s) => s.zones.shared.stack.length > 0 || s.pendingTriggers.length > 0);
+    ready(game, "Ancient Brontodon");
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    expect(game.state.objects[skull].counters.stun).toBe(1);
   });
 
   it("…and none with another Dinosaur", () => {

@@ -1043,6 +1043,51 @@ describe("Gix, Yawgmoth Praetor", () => {
     expect(game.state.objects[byName("Forest")].zone).toBe("battlefield");
     expect(game.state.objects[byName("Hill Giant")].zone).toBe("exile");
   });
+
+  it("offers again only the cards it exiled — not one a replacement exiled as a cost of casting one", () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 1, maxHandSize: 99 },
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Island") },
+        {
+          player: B,
+          cards: [...Array<string>(7).fill("Island"), "Thrill of Possibility", "Hill Giant", ...Array<string>(30).fill("Island")],
+        },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (let i = 0; i < 7; i += 1) game.state.objects[game.debugSpawn("Swamp", A, "battlefield")].tapped = false;
+    ready(game, "Rest in Peace");
+    const gix = ready(game, "Gix, Yawgmoth Praetor");
+    const bears = game.debugSpawn("Grizzly Bears", A, "hand");
+    game.dispatch({
+      type: "activate-ability",
+      player: A,
+      source: gix,
+      abilityIndex: 0,
+      targets: [{ kind: "player", player: B }],
+      xValue: 2,
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "discard");
+    game.dispatch({ type: "discard", player: A, cards: game.state.zones.perPlayer[A].hand.filter((id) => id !== bears).slice(0, 2) });
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now");
+    const offer = game.legalActions(A).find((o) => o.kind === "cast-now");
+    const thrill = offer?.kind === "cast-now" ? offer.casts.find((c) => c.cardName === "Thrill of Possibility") : undefined;
+    game.dispatch({
+      type: "cast-now",
+      player: A,
+      cast: { type: "cast-spell", player: A, card: thrill!.card, targets: [], via: "effect", free: true },
+    });
+    // Thrill's discard, exiled by Rest in Peace as it's paid.
+    game.advanceUntil((s) => s.awaiting?.kind === "discard");
+    game.dispatch({ type: "discard", player: A, cards: [bears] });
+    expect(game.state.objects[bears].zone).toBe("exile");
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now" || quiet(s));
+    const again = game.legalActions(A).find((o) => o.kind === "cast-now");
+    expect(again?.kind === "cast-now" ? again.casts.map((c) => c.cardName) : []).toEqual(["Hill Giant"]);
+  });
 });
 
 describe("Selvala's Stampede (a vote)", () => {
@@ -1206,6 +1251,30 @@ describe("Opportunistic Dragon (for as long as it remains on the battlefield)", 
     game.advanceUntil(quiet);
     expect(game.state.objects[ring].controller).toBe(B);
     expect(game.state.whileSourceIds ?? []).toEqual([]);
+  });
+
+  it("ends as it leaves even when it's back before the event is over — a new object (rule 400.7)", () => {
+    const game = setUp();
+    const konrad = ready(game, "Syr Konrad, the Grim", B);
+    const dragon = enter(game, konrad);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[konrad].controller).toBe(A);
+    const ring = ready(game, "Sol Ring", B);
+    // Exiled and returned within one simultaneous instruction.
+    game.debugApplyEffect(A, { kind: "sequence", simultaneous: true, effects: [{ kind: "flicker", target: 0 }] }, [obj(dragon)]);
+    expect(game.state.objects[dragon].zone).toBe("battlefield");
+    expect(game.state.objects[konrad].controller).toBe(B);
+    expect(game.state.objects[konrad].modifiers.some((m) => m.loseAbilities === true)).toBe(false);
+    // Its new enters trigger takes something else, for its new stint.
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || quiet(s));
+    if (game.state.awaiting?.kind === "choose-targets") {
+      game.dispatch({ type: "choose-targets", player: A, targets: [obj(ring)] });
+    }
+    game.advanceUntil(quiet);
+    expect(game.state.objects[ring].controller).toBe(A);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(dragon)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[ring].controller).toBe(B);
   });
 });
 

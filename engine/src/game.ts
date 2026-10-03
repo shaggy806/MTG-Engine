@@ -16942,8 +16942,13 @@ export class Game {
         });
         return false;
       },
+      // Damage too: Chandra's Ignition's creature deals it to each other
+      // creature and each opponent as one event, so its lifelink is one life
+      // gain (rule 702.15e).
       simultaneously: (fn) =>
-        this.withLeaveBatch(() => this.withGraveyardLeaveBatch(() => this.withEnterBatch(fn))),
+        this.withLeaveBatch(() =>
+          this.withGraveyardLeaveBatch(() => this.withEnterBatch(() => this.withDamageBatch(fn))),
+        ),
       flicker: (flickered, options) => this.flickerByEffect(source, controller, flickered, options),
       returnFlickered: (link, thenCounters, underYourControl, transformed, tapped) =>
         this.returnFlickeredByEffect(
@@ -26571,24 +26576,34 @@ export class Game {
   /** `ids` have left the battlefield: end every modifier and control effect
    * that lasted "for as long as" one of them remained (rule 611.2b). Called
    * once everything leaving with them has left, so the event's look back
-   * (rule 603.10a) still sees what the effects took away. */
+   * (rule 603.10a) still sees what the effects took away. A source already
+   * back by then (blinked within one simultaneous event) is a new object
+   * (rule 400.7): what lasted for its old stint ends all the same. */
   private endWhileSourceEffects(ids: readonly ObjectId[]): void {
     const tracked = this.state.whileSourceIds;
     if (tracked === undefined || ids.length === 0) return;
-    const ending = new Set(ids.filter((id) => tracked.includes(id) && this.state.objects[id]?.zone !== "battlefield"));
+    const ending = new Set(ids.filter((id) => tracked.includes(id)));
     if (ending.size === 0) return;
-    this.state.whileSourceIds = tracked.filter((id) => !ending.has(id));
+    const over = (stint: { readonly id: ObjectId; readonly zoneChangeCount: number } | undefined): boolean => {
+      if (stint === undefined || !ending.has(stint.id)) return false;
+      const source = this.state.objects[stint.id];
+      return source?.zone !== "battlefield" || (source.zoneChangeCount ?? 0) !== stint.zoneChangeCount;
+    };
+    // One back on the battlefield stays listed, for its new stint's effects.
+    this.state.whileSourceIds = tracked.filter(
+      (id) => !ending.has(id) || this.state.objects[id]?.zone === "battlefield",
+    );
     if (this.state.whileSourceIds.length === 0) delete this.state.whileSourceIds;
     const expired: ObjectId[] = [];
     let controlEnded = false;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
-      if (object.modifiers.some((m) => m.whileSource !== undefined && ending.has(m.whileSource.id))) {
-        object.modifiers = object.modifiers.filter((m) => m.whileSource === undefined || !ending.has(m.whileSource.id));
+      if (object.modifiers.some((m) => over(m.whileSource))) {
+        object.modifiers = object.modifiers.filter((m) => !over(m.whileSource));
         expired.push(id);
       }
-      if (object.controlEffects?.some((e) => e.whileSource !== undefined && ending.has(e.whileSource.id))) {
-        const left = object.controlEffects.filter((e) => e.whileSource === undefined || !ending.has(e.whileSource.id));
+      if (object.controlEffects?.some((e) => over(e.whileSource))) {
+        const left = object.controlEffects.filter((e) => !over(e.whileSource));
         if (left.length > 0) object.controlEffects = left;
         else delete object.controlEffects;
         controlEnded = true;

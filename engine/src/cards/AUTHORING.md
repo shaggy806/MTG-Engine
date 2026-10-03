@@ -1092,8 +1092,11 @@ exist (rule 111.7), so neither comes back.
   `simultaneous: true` marks the steps as **one instruction** written one step
   per target slot — Victimize's "return the chosen cards to the battlefield
   tapped" — so what they move moves at once: cards taken out of a graveyard
-  leave together (one `leaves-graveyard` trigger, not one per card), and
-  permanents taken off the battlefield leave together (rule 603.10a). Leave
+  leave together (one `leaves-graveyard` trigger, not one per card),
+  permanents taken off the battlefield leave together (rule 603.10a), and
+  damage its steps deal is one damage event — Chandra's Ignition's creature
+  dealing it to each other creature and each opponent gains its lifelink
+  controller life once (rule 702.15e). Leave
   it off a sequence of separate sentences, which really are separate events
   (rule 608.2c). A step that stops to ask someone something — a discard, an
   edict, a search, a `may`, a mode — is answered, by everyone it asks, before

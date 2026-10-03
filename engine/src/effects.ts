@@ -904,9 +904,11 @@ export type EffectSpec =
        * one event). Cards they take out of graveyards leave together, which
        * a "whenever one or more cards leave your graveyard" trigger sees as
        * one move; permanents they take off the battlefield leave together too
-       * (rule 603.10a), and permanents they put onto the battlefield enter
+       * (rule 603.10a), permanents they put onto the battlefield enter
        * together, each seeing the others enter (rule 603.6a — the Elas il-Kor
-       * ruling). Leave it off a sequence of separate sentences
+       * ruling), and the damage they deal is one damage event, a lifelink
+       * source's one life gain (rule 702.15e — Chandra's Ignition). Leave it
+       * off a sequence of separate sentences
        * ("Destroy target creature. Return target card from your graveyard to
        * your hand."), which really are separate events.
        */
@@ -1891,9 +1893,11 @@ export type EffectSpec =
        * way" — any number of them, one after another while this resolves
        * (Gix, Yawgmoth Praetor: "you must play the cards as you resolve the
        * last ability", its ruling): after each one cast or played, the rest
-       * are offered again, until the player declines or none is left. With
-       * `from: "exiled-this-way"` — the cards this resolution exiled, still
-       * in exile — or `"targets"`. Not with `then`, `else` or `rest`.
+       * of the cards first offered are offered again, until the player
+       * declines or none is left. With `from: "exiled-this-way"` — the cards
+       * this resolution exiled before the first offer, still in exile (not
+       * one exiled later, as a cost of casting one was paid) — or
+       * `"targets"`. Not with `then`, `else` or `rest`.
        */
       readonly repeat?: boolean;
       /**
@@ -5110,6 +5114,32 @@ function applyRevealUntil(
  * decision parks the rest as a copy carrying its `progress`, and a follow-up
  * that stops to ask something parks `rest` beneath whatever it parked.
  */
+/** Offer a `cast-now`'s `progress.cards`, parking the rest of `spec` across
+ * the decision when anything follows it. Whether a decision is now up. */
+function offerCastNow(
+  spec: Extract<EffectSpec, { kind: "cast-now" }>,
+  progress: CastNowProgress,
+  ctx: ResolutionContext,
+): boolean {
+  const { cards, looked } = progress;
+  const parked = ctx.parkedCount();
+  const pendingBefore = ctx.decisionPending();
+  if (cards.length > 0) {
+    ctx.castNow(cards, {
+      free: spec.free === true,
+      exileAfter: spec.exileAfter === true,
+      ...(spec.play === true ? { play: true } : {}),
+      ...(spec.spell !== undefined ? { spell: spec.spell } : {}),
+      ...(looked.length > 0 ? { looked } : {}),
+    });
+  }
+  if (pendingBefore || !ctx.decisionPending()) return false;
+  if (spec.then !== undefined || spec.else !== undefined || spec.rest !== undefined || spec.repeat === true) {
+    ctx.resumeAfterDecisions({ ...spec, progress }, parked);
+  }
+  return true;
+}
+
 function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: ResolutionContext): void {
   let progress = spec.progress;
   if (progress === undefined) {
@@ -5131,28 +5161,19 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
     }
     progress = { since: ctx.nextEventSeq(), cards, looked };
-    const parked = ctx.parkedCount();
-    const pendingBefore = ctx.decisionPending();
-    if (cards.length > 0) {
-      ctx.castNow(cards, {
-        free: spec.free === true,
-        exileAfter: spec.exileAfter === true,
-        ...(spec.play === true ? { play: true } : {}),
-        ...(spec.spell !== undefined ? { spell: spec.spell } : {}),
-        ...(looked.length > 0 ? { looked } : {}),
-      });
-    }
-    if (!pendingBefore && ctx.decisionPending()) {
-      if (spec.then !== undefined || spec.else !== undefined || spec.rest !== undefined || spec.repeat === true) {
-        ctx.resumeAfterDecisions({ ...spec, progress }, parked);
-      }
-      return;
-    }
+    if (offerCastNow(spec, progress, ctx)) return;
     if (spec.repeat === true) return;
   }
-  // "Any number of them": one cast or played, the rest offered again.
+  // "Any number of them": one cast or played, the rest offered again — the
+  // cards first offered, less what's on the stack or the battlefield now
+  // (`castNow` passes those over). Not whatever else this resolution has
+  // exiled since: a card a replacement exiled as a cost of casting one was
+  // paid (Rest in Peace and Thrill of Possibility's discard) wasn't exiled
+  // "this way".
   if (spec.repeat === true) {
-    if (ctx.castSince(progress.cards, progress.since)) applyEffectSpec({ ...spec, progress: undefined }, ctx);
+    if (ctx.castSince(progress.cards, progress.since)) {
+      offerCastNow(spec, { since: ctx.nextEventSeq(), cards: progress.cards, looked: progress.looked }, ctx);
+    }
     return;
   }
   if (progress.followed !== true) {
