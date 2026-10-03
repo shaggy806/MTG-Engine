@@ -67,10 +67,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
   `SAMPLE_DECKS`): 65 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
   the TDC decks for authoring.
-- **Pick the bench (the user's call).** Re-run 2026-10-03 (`docs/plans/deck-autopsies.md`, "The
-  re-run"): the bench holds both ends of the table — Temur Roar 71%, Mardu Surge 12.5% — while
-  Tramplesaurus Rex, Draconic Destruction, Token Triumph and Reign of Dragons sit near 25%. Mardu
-  stays weak with its token fixes in, and Token Triumph would keep a token deck on the bench.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets; Sultai's and Mardu's plan-gutting stand-ins.

@@ -74,6 +74,10 @@ Temur Roar wins seven games in ten, and Mardu Surge, its token engines priced an
 is flat at one in eight. Run with `node engine/scripts/deck-winrates.mjs --rounds 12 --out …`;
 the rows are in `.scratch/deck-winrates-v2-4p-2026-10-03.ndjson`.
 
+On that the user took Temur Roar and Mardu Surge off the bench (both stay starter decks), and
+Reign of Dragons and Token Triumph, near 25%, took their places — a Dragon deck and a token deck,
+as before. The bench is now Abzan Armor, Jeskai Striker, Reign of Dragons and Token Triumph.
+
 ## What the autopsies found
 
 Four read-only autopsies (Grave Danger, Jeskai Striker, Sultai Arisen, Mardu Surge), each

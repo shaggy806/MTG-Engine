@@ -1,7 +1,7 @@
 /**
  * The starter decks: real, format-legal 100-card Commander precons. First the
  * five Tarkir: Dragonstorm Commander decks (2025, MTGJSON set code `TDC`),
- * the bots' defaults since 2026-09-30, four of them flagged `bench`; then
+ * the bots' defaults since 2026-09-30, two of them flagged `bench`; then
  * (2026-10-02) the five 2022 Starter Commander Decks (`SCD`) they replaced and
  * four more picked as nearest complete among WotC's Commander precons:
  * Tramplesaurus Rex and Reign of Dragons (`FDC`), Family Matters (`BLC`) and
@@ -12,6 +12,10 @@
  * run to the next; the rest are starter decks for players and bot seats. Flag
  * a deck once a deck-against-deck run shows it holds its own when identical
  * bots play it — a deck that loses every game measures nothing about a bot.
+ * Since 2026-10-03 (the user's call, after `docs/plans/deck-autopsies.md`'s
+ * re-run): Abzan Armor, Jeskai Striker, Reign of Dragons and Token Triumph.
+ * Temur Roar (71%) and Mardu Surge (12.5%) stay starter decks but off the
+ * bench; the two in their place keep a Dragon deck and a token deck on it.
  *
  * Two consumers: `server/src/decks.ts`'s `SEATS` (a room's fallback deck for
  * a seat nobody brought their own deck to, and every bot's deck) and the
@@ -94,7 +98,6 @@ function precon(deck: {
 export const SAMPLE_DECKS: readonly SampleDeck[] = [
   precon({
     name: "Temur Roar",
-    bench: true,
     commander: "Ureni of the Unwritten",
     description: "Temur Dragons: ramp, then Ureni digs Dragons out of the library onto the battlefield.",
     printed: [
@@ -426,7 +429,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Mardu Surge",
-    bench: true,
     commander: "Zurgo Stormrender",
     description: "Mardu tokens: attack wide with tokens and cash them in as they leave.",
     printed: [
@@ -720,6 +722,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Token Triumph",
+    bench: true,
     commander: "Emmara, Soul of the Accord",
     description: "Green-white tokens: go wide, then pump the team.",
     // 2022 Starter Commander Deck (MTGJSON `SCD`).
@@ -1263,6 +1266,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Reign of Dragons",
+    bench: true,
     commander: "Lathliss, Dragon Queen",
     description: "Mono-red Dragons: Lathliss makes more of them and pumps them.",
     // Foundations Commander (MTGJSON `FDC`).
