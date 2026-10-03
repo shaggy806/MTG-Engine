@@ -12098,8 +12098,10 @@ export class Game {
     if (object === undefined || object.zone !== "stack") return;
     // An Omen spell (rule 720.3d) — the omen card cast as its Omen, or a
     // copy of one (720.3c) — is shuffled into its owner's library as it
-    // resolves.
-    const omen = this.frontFaceDef(id).omen && (object.face ?? 0) === 1;
+    // resolves. Judged by what it is on the stack (720.3b): a copy carries
+    // the Omen's name alone, with no faces or face index of its own.
+    const spellDef = this.registry.get(printedCardName(object));
+    const omen = spellDef.omen && spellDef.faces !== null && spellDef.faces[0] !== spellDef.name;
     // A copy of a spell (rule 707.10c) ceases to exist instead of moving to
     // any zone other than the stack — a copy of an Omen too, though its
     // owner still shuffles their library (the ruling).
@@ -17558,7 +17560,8 @@ export class Game {
             ]),
         ...untilEndOfTurnKeywords(gainUntilEndOfTurn),
         // "An X/X token": what the effect made it (rule 111.3 — its copiable
-        // values), under every other effect that sets its P/T.
+        // values, 707.2: a copy of it is X/X too), under every other effect
+        // that sets its P/T.
         ...(basePt === undefined
           ? []
           : [
@@ -17568,6 +17571,7 @@ export class Game {
                 keywords: [],
                 setPt: [basePt[0], basePt[1]] as [number, number],
                 untilEndOfTurn: false,
+                copiable: true as const,
                 timestamp: -1,
               },
             ]),

@@ -1274,9 +1274,10 @@ export function isManaAbility(ability: ActivatedAbility): boolean {
     // Rule 605.1a: a cost that moves a card from a library (Millikin's "Mill
     // a card") makes it an ordinary activated ability, on the stack.
     ability.cost.mill === undefined &&
-    // Whatever it costs (rule 605.1a says nothing about costs): a sacrifice
-    // of itself (Treasure) or of a chosen permanent (Kykar's "Sacrifice a
-    // Spirit"), life, counters removed (Ramos), energy. Which of those the
+    // Whatever else it costs (605.1a asks of a cost only that it move no
+    // card to or from a library): a sacrifice of itself (Treasure) or of a
+    // chosen permanent (Kykar's "Sacrifice a Spirit"), life, counters
+    // removed (Ramos), energy. Which of those the
     // auto-payer can pay by itself is `Game.manaSources`' business; the
     // rest are activated by hand, and still never use the stack.
     ability.targets.length === 0 &&

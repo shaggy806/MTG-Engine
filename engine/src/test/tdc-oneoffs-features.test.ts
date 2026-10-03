@@ -717,6 +717,20 @@ describe("Hydra Broodmaster", () => {
       expect(game.characteristics(id).toughness).toBe(2);
     }
   });
+
+  it("makes Hydras whose X/X is copied with them (rules 111.3, 707.2)", () => {
+    const game = setUp();
+    const hydra = ready(game, "Hydra Broodmaster");
+    const before = new Set(game.state.zones.shared.battlefield);
+    game.dispatch({ type: "activate-ability", player: A, source: hydra, abilityIndex: 0, targets: [], xValue: 2 });
+    game.advanceUntil(quiet);
+    // Populate: a token copy of one of them is a 2/2 Hydra too, not a 0/0.
+    game.debugApplyEffect(A, { kind: "populate" });
+    game.advanceUntil(quiet);
+    const hydras = game.state.zones.shared.battlefield.filter((id) => !before.has(id) && id !== hydra);
+    expect(hydras.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(3);
+    for (const id of hydras) expect(game.characteristics(id).power).toBe(2);
+  });
 });
 
 describe("Marang River Regent", () => {
@@ -798,6 +812,26 @@ describe("omen cards", () => {
     expect(inLibrary(game, card)).toBe(true);
     // The Island discarded, two drawn (the omen card itself left the hand).
     expect(handSize(game)).toBe(before - 1 + 2);
+  });
+
+  it("has a copy of an Omen cease to exist, its owner still shuffling (Coil and Catch)", () => {
+    const game = setUp();
+    const card = cast(game, "Marang River Regent", [], { face: 1 });
+    game.debugApplyEffect(A, { kind: "copy-spell", target: 0 }, [obj(card)]);
+    const copy = game.state.zones.shared.stack.find((id) => id !== card);
+    expect(copy).toBeDefined();
+    const from = game.state.eventLog.length;
+    // Resolve the copy alone: draw three, discard one.
+    game.advanceUntil((s) => s.awaiting?.kind === "discard" || !s.zones.shared.stack.includes(copy!));
+    if (game.state.awaiting?.kind === "discard") {
+      game.dispatch({ type: "discard", player: A, cards: [game.state.zones.perPlayer[A].hand[0]] });
+    }
+    game.advanceUntil((s) => s.awaiting !== null || !s.zones.shared.stack.includes(copy!));
+    expect(game.state.objects[copy!]).toBeUndefined();
+    const shuffles = game.state.eventLog.slice(from).filter((e) => e.type === "library-shuffled");
+    expect(shuffles).toEqual([expect.objectContaining({ player: A })]);
+    // The original is still waiting on the stack.
+    expect(game.state.zones.shared.stack).toContain(card);
   });
 
   it("casts the creature half as a creature", () => {
