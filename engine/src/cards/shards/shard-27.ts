@@ -121,6 +121,7 @@ import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
 import _poolPriestOfTitania from "../pool/priest-of-titania.js";
 import _poolPrimordialWurm from "../pool/primordial-wurm.js";
+import _poolQuirionRanger from "../pool/quirion-ranger.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
 import _poolRamirezDepietro from "../pool/ramirez-depietro.js";
@@ -337,6 +338,7 @@ const shard: CardShard = {
     _poolPreyUpon,
     _poolPriestOfTitania,
     _poolPrimordialWurm,
+    _poolQuirionRanger,
     _poolRageThrower,
     _poolRakdosCluestone,
     _poolRamirezDepietro,

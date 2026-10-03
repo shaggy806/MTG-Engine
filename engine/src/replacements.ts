@@ -169,10 +169,22 @@ export interface OthersEnterReplacement {
 /** "If one or more tokens would be created under your control, twice that many
  * are created instead" (Doubling Season, Parallel Lives, Anointed Procession).
  * Applies to tokens whose controller is this permanent's controller. Multiple
- * such replacements multiply (order-independent). */
+ * such replacements multiply (order-independent).
+ *
+ * `creatureTokensInstead` is Divine Visitation's "if one or more **creature**
+ * tokens would be created under your control, that many 4/4 white Angel
+ * creature tokens with flying and vigilance are created instead": the token
+ * made instead, by name. Only a token that would be created a creature —
+ * not one an effect makes a creature as it enters (the ruling). Its
+ * characteristics replace the old token's entirely, copy exceptions and an
+ * X/X's size included; everything else the effect said — tapped,
+ * attacking, "it gains haste", sacrificed or exiled later, counters put on
+ * it — still happens (the ruling). In either order with a multiplier, the
+ * result is the same. */
 export interface TokenMultiplierReplacement {
   readonly event: "would-create-token";
-  readonly multiplier: number;
+  readonly multiplier?: number;
+  readonly creatureTokensInstead?: string;
 }
 
 /** "If one or more counters would be put on a permanent you control, twice that

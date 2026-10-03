@@ -41,6 +41,7 @@ import _poolCharmingPrince from "../pool/charming-prince.js";
 import _poolChulane from "../pool/chulane.js";
 import _poolCitanulDruid from "../pool/citanul-druid.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
+import _poolConsumingAberration from "../pool/consuming-aberration.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
 import _poolCourtOfCunning from "../pool/court-of-cunning.js";
 import _poolCovertOperative from "../pool/covert-operative.js";
@@ -108,6 +109,7 @@ import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
 import _poolManaLeak from "../pool/mana-leak.js";
 import _poolMerfolkPupil from "../pool/merfolk-pupil.js";
+import _poolMinaAndDennWildborn from "../pool/mina-and-denn-wildborn.js";
 import _poolMistralCharger from "../pool/mistral-charger.js";
 import _poolMonasterySwiftspear from "../pool/monastery-swiftspear.js";
 import _poolMoonSprite from "../pool/moon-sprite.js";
@@ -257,6 +259,7 @@ const shard: CardShard = {
     _poolChulane,
     _poolCitanulDruid,
     _poolClingingDarkness,
+    _poolConsumingAberration,
     _poolCorruptedConviction,
     _poolCourtOfCunning,
     _poolCovertOperative,
@@ -324,6 +327,7 @@ const shard: CardShard = {
     _poolManaGeyser,
     _poolManaLeak,
     _poolMerfolkPupil,
+    _poolMinaAndDennWildborn,
     _poolMistralCharger,
     _poolMonasterySwiftspear,
     _poolMoonSprite,

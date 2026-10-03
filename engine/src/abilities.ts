@@ -244,6 +244,19 @@ export interface AbilityCost {
      * `{T}` of its own to conflict with. */
     readonly includeSelf?: boolean;
   };
+  /**
+   * Return `count` permanents you control matching `filter` to their
+   * owner's hand as part of the cost — Quirion Ranger's "Return a Forest you
+   * control to its owner's hand", Multani, Yavimaya's Avatar's "Return two
+   * lands you control to their owner's hand". Which ones is chosen as the
+   * cost is paid (rules 602.2b, 601.2h), once the ability is on the stack
+   * and before anyone gets priority, with the `choose-permanents` decision —
+   * asked only when there's a choice. Lands tapped for the ability's own
+   * mana may be among them. Gates activation on controlling that many. Not
+   * on a mana ability, nor beside a sacrifice or discard cost (each asks its
+   * own question, and only one can wait at a time).
+   */
+  readonly returnToHand?: { readonly count: number; readonly filter: CardFilter };
 }
 
 export interface ActivatedAbility {
@@ -997,6 +1010,11 @@ export type TriggerSpec =
       readonly who: TriggerWho;
       readonly atLeast: number;
       readonly filter?: CardFilter;
+      /** Count only this permanent and your commanders — "whenever you
+       * attack with this creature **and/or your commander**" (Ainok Strike
+       * Leader). Your commander is one you own (rule 903.3), whoever's
+       * creature it was before. */
+      readonly thisOrYourCommander?: boolean;
       /** Only count attackers aimed at *this* permanent's controller or a
        * planeswalker they control — Ever-Watching Threshold's "whenever an
        * opponent attacks, **if they attacked you and/or a planeswalker you

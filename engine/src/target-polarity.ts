@@ -300,6 +300,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "create-token-copy": (n, v) => v.touch(n.of, n.who === "you" ? "take" : "help", MAJOR),
   attach: (n, v) => v.touch(n.target, "help", MINOR),
   transform: (n, v) => v.touch(n.target, "either", MINOR),
+  "become-copy": (n, v) => v.touch(n.target, "either", MINOR),
   "day-night": none,
   "become-monarch": none,
   "add-player-counters": (n, v) =>

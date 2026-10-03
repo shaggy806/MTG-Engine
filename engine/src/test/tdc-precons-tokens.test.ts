@@ -1,0 +1,533 @@
+/**
+ * The Mardu Surge stand-ins that make and shape tokens: Legion Warboss (a
+ * token that attacks this combat if able — "until end of combat", rule
+ * 500.5a — and mentor), Ainok Strike Leader ("whenever you attack with this
+ * creature and/or your commander"), Redoubled Stormsinger (a copy of each
+ * creature token that entered this turn) and Divine Visitation (creature
+ * tokens made as Angels instead — rule 614.1a).
+ */
+
+import { describe, expect, it } from "vitest";
+
+import type { LegalAction } from "../actions.js";
+import { restrictionsOf } from "../characteristics.js";
+import { supertypesOf } from "../filter.js";
+import { Game } from "../game.js";
+import { asPlayerId } from "../primitives.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
+import { nameOf, printedCardName } from "../state.js";
+import type { GameState } from "../state.js";
+import type { TargetRef } from "../target.js";
+
+const A = asPlayerId("alice");
+const B = asPlayerId("bob");
+const C = asPlayerId("carol");
+
+type AttackOffer = Extract<LegalAction, { kind: "declare-attackers" }>;
+
+const obj = (object: ObjectId): TargetRef => ({ kind: "object", object });
+const quiet = (s: GameState): boolean =>
+  s.zones.shared.stack.length === 0 && s.awaiting === null && s.pendingTriggers.length === 0;
+
+const setUp = (players: readonly PlayerId[] = [A, B]) => {
+  const game = Game.create({
+    seed: 1,
+    shuffle: false,
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+    decks: players.map((p) => ({ player: p, cards: Array<string>(40).fill("Island") })),
+  });
+  game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+  return game;
+};
+const ready = (game: Game, name: string, who: PlayerId = A): ObjectId => {
+  const id = game.debugSpawn(name, who, "battlefield");
+  game.state.objects[id].summoningSick = false;
+  return id;
+};
+const named = (game: Game, name: string, who: PlayerId = A): ObjectId[] =>
+  game.state.zones.shared.battlefield.filter(
+    (id) => game.state.objects[id].cardName === name && game.state.objects[id].controller === who,
+  );
+const tokensOf = (game: Game, who: PlayerId = A): ObjectId[] =>
+  game.state.zones.shared.battlefield.filter(
+    (id) => game.state.objects[id].isToken && game.state.objects[id].controller === who,
+  );
+const count = (game: Game, ids: readonly ObjectId[]): number =>
+  ids.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
+const attackOffer = (game: Game, p: PlayerId = A): AttackOffer => {
+  const offer = game.legalActions(p).find((o): o is AttackOffer => o.kind === "declare-attackers");
+  if (offer === undefined) throw new Error("no attack offer");
+  return offer;
+};
+const toAttackers = (game: Game) => game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+
+describe("Legion Warboss", () => {
+  it("makes a hasty Goblin at the beginning of combat that must attack this combat, and only this combat", () => {
+    const game = setUp();
+    ready(game, "Legion Warboss");
+    toAttackers(game);
+    const [goblin] = named(game, "Goblin Token");
+    expect(goblin).toBeDefined();
+    expect(game.characteristics(goblin).keywords.has("haste")).toBe(true);
+    expect(attackOffer(game).mustAttack).toContain(goblin);
+    expect(() => game.dispatch({ type: "declare-attackers", player: A, attackers: [] })).toThrow(/must attack/);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: goblin, defender: B }] });
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    // The combat is over: the requirement went with it; the haste lasts the turn.
+    expect(restrictionsOf(game.state, game.registry, goblin).has("must-attack")).toBe(false);
+    expect(game.characteristics(goblin).keywords.has("haste")).toBe(true);
+  });
+
+  it("doesn't make a Goblin at the beginning of an opponent's combat", () => {
+    const game = setUp();
+    ready(game, "Legion Warboss");
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "postcombat-main");
+    expect(named(game, "Goblin Token")).toHaveLength(1);
+  });
+
+  it("mentors an attacking creature with lesser power, never one as big", () => {
+    const game = setUp();
+    const warboss = ready(game, "Legion Warboss");
+    const bears = ready(game, "Grizzly Bears");
+    const raging = ready(game, "Raging Goblin");
+    toAttackers(game);
+    const [goblin] = named(game, "Goblin Token");
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: warboss, defender: B },
+        { attacker: goblin, defender: B },
+        { attacker: bears, defender: B },
+        { attacker: raging, defender: B },
+      ],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    // Grizzly Bears' 2 power isn't less than Legion Warboss's 2.
+    expect(() => game.dispatch({ type: "choose-targets", player: A, targets: [obj(bears)] })).toThrow();
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(raging)] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[raging].counters["+1/+1"]).toBe(1);
+    expect(game.state.objects[bears].counters["+1/+1"] ?? 0).toBe(0);
+    expect(game.state.objects[goblin].counters["+1/+1"] ?? 0).toBe(0);
+  });
+});
+
+describe("Ainok Strike Leader", () => {
+  it("attacking with it makes a tapped Goblin attacking each opponent", () => {
+    const game = setUp([A, B, C]);
+    const ainok = ready(game, "Ainok Strike Leader");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: ainok, defender: B }] });
+    game.advanceUntil(quiet);
+    const goblins = named(game, "Goblin Token");
+    expect(goblins).toHaveLength(2);
+    expect(goblins.map((id) => game.state.objects[id].attacking).sort()).toEqual([B, C].sort());
+    for (const id of goblins) expect(game.state.objects[id].tapped).toBe(true);
+  });
+
+  it("triggers on your commander attacking without it, and not on another creature", () => {
+    const game = setUp();
+    ready(game, "Ainok Strike Leader");
+    const commander = ready(game, "Grizzly Bears");
+    game.state.objects[commander].isCommander = true;
+    const other = ready(game, "Grizzly Bears");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: other, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(named(game, "Goblin Token")).toHaveLength(0);
+
+    game.advanceUntil((s) => s.turn.number === 3 && s.awaiting?.kind === "attackers");
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: commander, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(named(game, "Goblin Token")).toHaveLength(1);
+  });
+
+  it("isn't triggered by an opponent's commander you attack with", () => {
+    const game = setUp();
+    ready(game, "Ainok Strike Leader");
+    const theirs = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    game.state.objects[theirs].isCommander = true;
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0 }, [obj(theirs)]);
+    game.state.objects[theirs].summoningSick = false;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: theirs, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(named(game, "Goblin Token")).toHaveLength(0);
+  });
+
+  it("sacrifices itself to make creature tokens you control indestructible", () => {
+    const game = setUp();
+    const ainok = ready(game, "Ainok Strike Leader");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 1 });
+    const [goblin] = named(game, "Goblin Token");
+    const bears = ready(game, "Grizzly Bears");
+    game.dispatch({ type: "activate-ability", player: A, source: ainok, abilityIndex: 0, targets: [] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[ainok].zone).toBe("graveyard");
+    expect(game.characteristics(goblin).keywords.has("indestructible")).toBe(true);
+    expect(game.characteristics(bears).keywords.has("indestructible")).toBe(false);
+  });
+});
+
+describe("Redoubled Stormsinger", () => {
+  it("copies each creature token that entered this turn, tapped and attacking, and sacrifices them at end step", () => {
+    const game = setUp();
+    const singer = ready(game, "Redoubled Stormsinger");
+    const old = ready(game, "Goblin Token");
+    game.state.objects[old].enteredBattlefieldOnTurn = 0;
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 2 });
+    game.debugApplyEffect(A, { kind: "create-token", token: "Treasure Token", count: 1 });
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: singer, defender: B }] });
+    game.advanceUntil(quiet);
+    const copies = named(game, "Goblin Token").filter((id) => game.state.objects[id].attacking === B);
+    expect(copies).toHaveLength(2);
+    for (const id of copies) expect(game.state.objects[id].tapped).toBe(true);
+    expect(count(game, named(game, "Goblin Token"))).toBe(5);
+    game.advanceUntil((s) => s.turn.step === "cleanup" || s.turn.number > 1);
+    expect(count(game, named(game, "Goblin Token"))).toBe(3);
+  });
+
+  it("copies a stack of tokens made today once per token, and none made on an earlier turn", () => {
+    const game = setUp();
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 10 });
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main");
+    // Still summoning-sick, both batches — but made on different turns, so
+    // the second doesn't fold into the first's stack.
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 8 });
+    expect(named(game, "Goblin Token")).toHaveLength(2);
+    game.advanceUntil((s) => s.turn.number === 3 && s.priority.holder === A && s.turn.step === "precombat-main");
+    const singer = ready(game, "Redoubled Stormsinger");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 9 });
+    expect(named(game, "Goblin Token")).toHaveLength(3);
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: singer, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(count(game, named(game, "Goblin Token"))).toBe(10 + 8 + 9 + 9);
+  });
+});
+
+describe("returning permanents you control as a cost (Quirion Ranger, Mina and Denn, Multani)", () => {
+  const land = (game: Game, name: string, who: PlayerId = A): ObjectId => {
+    const id = game.debugSpawn(name, who, "battlefield");
+    game.state.objects[id].tapped = false;
+    return id;
+  };
+
+  it("Quirion Ranger returns its one Forest without asking, untaps the target, and only once each turn", () => {
+    const game = setUp();
+    const ranger = ready(game, "Quirion Ranger");
+    const forest = land(game, "Forest");
+    land(game, "Mountain");
+    const bears = ready(game, "Grizzly Bears");
+    game.state.objects[bears].tapped = true;
+    game.dispatch({ type: "activate-ability", player: A, source: ranger, abilityIndex: 0, targets: [obj(bears)] });
+    // Paid as it was activated, before anything could answer.
+    expect(game.state.objects[forest].zone).toBe("hand");
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].tapped).toBe(false);
+    land(game, "Forest");
+    expect(() =>
+      game.dispatch({ type: "activate-ability", player: A, source: ranger, abilityIndex: 0, targets: [obj(bears)] }),
+    ).toThrow();
+  });
+
+  it("can't be activated without a Forest", () => {
+    const game = setUp();
+    const ranger = ready(game, "Quirion Ranger");
+    land(game, "Mountain");
+    const offers = game.legalActions(A).filter((o) => o.kind === "activate-ability" && o.source === ranger);
+    expect(offers).toHaveLength(0);
+  });
+
+  it("asks which Forest when there's a choice, then hands priority back to whoever activated it", () => {
+    const game = setUp();
+    const ranger = ready(game, "Quirion Ranger", B);
+    const [f1, f2] = [land(game, "Forest", B), land(game, "Forest", B)];
+    const bears = ready(game, "Grizzly Bears", B);
+    game.state.objects[bears].tapped = true;
+    // Alice passes; Bob activates on her turn.
+    game.dispatch({ type: "pass-priority", player: A });
+    expect(game.state.priority.holder).toBe(B);
+    game.dispatch({ type: "activate-ability", player: B, source: ranger, abilityIndex: 0, targets: [obj(bears)] });
+    expect(game.state.awaiting?.kind).toBe("choose-permanents");
+    game.dispatch({ type: "choose-permanents", player: B, permanents: [f2] });
+    expect(game.state.objects[f2].zone).toBe("hand");
+    expect(game.state.objects[f1].zone).toBe("battlefield");
+    expect(game.state.priority.holder).toBe(B);
+    expect(game.state.zones.shared.stack).toHaveLength(1);
+  });
+
+  it("Mina and Denn may return a land tapped for its own mana, and grants trample", () => {
+    const game = setUp();
+    const mina = ready(game, "Mina and Denn, Wildborn");
+    const mountain = land(game, "Mountain");
+    const forest = land(game, "Forest");
+    const bears = ready(game, "Grizzly Bears");
+    game.dispatch({ type: "activate-ability", player: A, source: mina, abilityIndex: 0, targets: [obj(bears)] });
+    expect(game.state.awaiting?.kind).toBe("choose-permanents");
+    game.dispatch({ type: "choose-permanents", player: A, permanents: [mountain] });
+    expect(game.state.objects[mountain].zone).toBe("hand");
+    expect(game.state.objects[forest].tapped).toBe(true);
+    game.advanceUntil(quiet);
+    expect(game.characteristics(bears).keywords.has("trample")).toBe(true);
+  });
+
+  it("Multani counts lands you control and land cards in your graveyard, and returns itself to hand for two lands", () => {
+    const game = setUp();
+    const lands = [land(game, "Forest"), land(game, "Forest"), land(game, "Island")];
+    game.debugSpawn("Mountain", A, "graveyard");
+    game.debugSpawn("Mountain", B, "graveyard");
+    const multani = ready(game, "Multani, Yavimaya's Avatar");
+    expect([game.characteristics(multani).power, game.characteristics(multani).toughness]).toEqual([4, 4]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(multani)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[multani].zone).toBe("graveyard");
+    game.dispatch({ type: "activate-ability", player: A, source: multani, abilityIndex: 0, targets: [] });
+    expect(game.state.awaiting?.kind).toBe("choose-permanents");
+    game.dispatch({ type: "choose-permanents", player: A, permanents: [lands[0], lands[2]] });
+    expect(game.state.objects[lands[0]].zone).toBe("hand");
+    expect(game.state.objects[lands[2]].zone).toBe("hand");
+    game.advanceUntil(quiet);
+    expect(game.state.objects[multani].zone).toBe("hand");
+  });
+
+  it("Multani can't come back with fewer than two lands to return", () => {
+    const game = setUp();
+    land(game, "Forest");
+    land(game, "Forest");
+    const multani = game.debugSpawn("Multani, Yavimaya's Avatar", A, "graveyard");
+    // {1}{G} taps both Forests, and both may still be returned.
+    expect(game.legalActions(A).some((o) => o.kind === "activate-ability" && o.source === multani)).toBe(true);
+    const other = setUp();
+    land(other, "Forest");
+    const lone = other.debugSpawn("Multani, Yavimaya's Avatar", A, "graveyard");
+    expect(other.legalActions(A).some((o) => o.kind === "activate-ability" && o.source === lone)).toBe(false);
+  });
+});
+
+describe("Consuming Aberration", () => {
+  it("has each opponent reveal until a land and put all of it into their graveyard, and grows by it", () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Island") },
+        // The first seven are the opening hand.
+        {
+          player: B,
+          cards: [...Array<string>(7).fill("Island"), "Grizzly Bears", "Grizzly Bears", "Swamp", ...Array<string>(40).fill("Island")],
+        },
+        { player: C, cards: Array<string>(10).fill("Grizzly Bears") },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    // A card in an opponent's graveyard to start with — and one in Alice's,
+    // which doesn't count — so it isn't a 0/0.
+    game.debugSpawn("Island", B, "graveyard");
+    game.debugSpawn("Island", A, "graveyard");
+    const aberration = ready(game, "Consuming Aberration");
+    expect(game.characteristics(aberration).power).toBe(1);
+    const graveyard = (p: PlayerId) => game.state.zones.perPlayer[p].graveyard.length;
+    const cLibrary = game.state.zones.perPlayer[C].library.length;
+    const thopter = game.debugSpawn("Ornithopter", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: thopter, targets: [] });
+    game.advanceUntil(quiet);
+    // Bob: Bears, Bears, then the Swamp. Carol has no land: her whole library.
+    expect(graveyard(B)).toBe(1 + 3);
+    expect(graveyard(C)).toBe(cLibrary);
+    expect(game.state.zones.perPlayer[B].graveyard.map((id) => game.state.objects[id].cardName)).toContain("Swamp");
+    expect(graveyard(A)).toBe(1);
+    const c = game.characteristics(aberration);
+    expect([c.power, c.toughness]).toEqual([4 + cLibrary, 4 + cLibrary]);
+  });
+});
+
+describe("Myr Battlesphere", () => {
+  it("makes four Myr, then taps X of them as it attacks for +X/+0 and X damage to the player it's attacking", () => {
+    const game = setUp();
+    const sphere = game.debugSpawn("Myr Battlesphere", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    const myr = named(game, "Myr Token");
+    expect(count(game, myr)).toBe(4);
+    game.state.objects[sphere].summoningSick = false;
+    for (const id of myr) game.state.objects[id].summoningSick = false;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: sphere, defender: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-permanents");
+    game.dispatch({ type: "choose-permanents", player: A, permanents: myr.slice(0, 3) });
+    game.advanceUntil(quiet);
+    expect(myr.filter((id) => game.state.objects[id].tapped)).toHaveLength(3);
+    expect(game.characteristics(sphere).power).toBe(7);
+    expect(game.state.players[B].life).toBe(17);
+  });
+
+  it("tapping none does nothing", () => {
+    const game = setUp();
+    const sphere = ready(game, "Myr Battlesphere");
+    ready(game, "Myr Token");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: sphere, defender: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-permanents");
+    game.dispatch({ type: "choose-permanents", player: A, permanents: [] });
+    game.advanceUntil(quiet);
+    expect(game.characteristics(sphere).power).toBe(4);
+    expect(game.state.players[B].life).toBe(20);
+  });
+});
+
+describe("Sarkhan, Soul Aflame", () => {
+  const answer = (game: Game, yes: boolean) => {
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes" || quiet(s));
+    expect(game.state.awaiting?.kind).toBe("choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: yes ? [0] : [] });
+    game.advanceUntil(quiet);
+  };
+
+  it("becomes a copy of an entering Dragon until end of turn, keeping its name, legendary, and its counters", () => {
+    const game = setUp();
+    const sarkhan = ready(game, "Sarkhan, Soul Aflame");
+    game.debugApplyEffect(A, { kind: "add-counter", target: 0, counter: "+1/+1", amount: 1 }, [obj(sarkhan)]);
+    const dragon = game.debugSpawn("Shivan Dragon", A, "battlefield", { announceEntry: true });
+    expect(dragon).toBeDefined();
+    answer(game, true);
+    const s = game.state.objects[sarkhan];
+    const c = game.characteristics(sarkhan);
+    expect([c.power, c.toughness]).toEqual([6, 6]);
+    expect(c.keywords.has("flying")).toBe(true);
+    expect(c.subtypes).toEqual(["Dragon"]);
+    expect(nameOf(s)).toBe("Sarkhan, Soul Aflame");
+    expect(supertypesOf(game.registry, s)).toContain("legendary");
+    // A Shivan Dragon: its firebreathing, not Sarkhan's own abilities.
+    expect(game.registry.get(printedCardName(s)).name).toBe("Shivan Dragon");
+    game.advanceUntil((s2) => s2.turn.number === 2);
+    const after = game.characteristics(sarkhan);
+    expect([after.power, after.toughness]).toEqual([3, 5]);
+    expect(after.subtypes).toEqual(["Human", "Shaman"]);
+    expect(game.state.objects[sarkhan].copyOf).toBeNull();
+  });
+
+  it("copies a legendary Dragon without either going to the legend rule", () => {
+    const game = setUp();
+    const sarkhan = ready(game, "Sarkhan, Soul Aflame");
+    const lathliss = game.debugSpawn("Lathliss, Dragon Queen", A, "battlefield", { announceEntry: true });
+    answer(game, true);
+    expect(game.state.objects[sarkhan].zone).toBe("battlefield");
+    expect(game.state.objects[lathliss].zone).toBe("battlefield");
+    expect(game.characteristics(sarkhan).power).toBe(6);
+  });
+
+  it("may decline, and doesn't trigger on an opponent's Dragon", () => {
+    const game = setUp();
+    const sarkhan = ready(game, "Sarkhan, Soul Aflame");
+    game.debugSpawn("Shivan Dragon", A, "battlefield", { announceEntry: true });
+    answer(game, false);
+    expect(game.state.objects[sarkhan].copyOf).toBeNull();
+    game.debugSpawn("Shivan Dragon", B, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[sarkhan].copyOf).toBeNull();
+  });
+
+  it("copies the Dragon as it last existed if it left before the ability resolved", () => {
+    const game = setUp();
+    const sarkhan = ready(game, "Sarkhan, Soul Aflame");
+    const dragon = game.debugSpawn("Skyship Stalker", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.zones.shared.stack.length > 0);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(dragon)]);
+    answer(game, true);
+    expect(game.state.objects[dragon].zone).toBe("graveyard");
+    expect(game.characteristics(sarkhan).power).toBe(3);
+    expect(game.characteristics(sarkhan).subtypes).toEqual(["Cat", "Dragon"]);
+  });
+
+  it("makes Dragon spells cost {1} less", () => {
+    const game = setUp();
+    ready(game, "Sarkhan, Soul Aflame");
+    for (let i = 0; i < 5; i += 1) game.state.objects[game.debugSpawn("Mountain", A, "battlefield")].tapped = false;
+    const dragon = game.debugSpawn("Shivan Dragon", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: dragon, targets: [] });
+    expect(game.state.objects[dragon].zone).toBe("stack");
+  });
+});
+
+describe("Divine Visitation", () => {
+  const angel = "4/4 Vigilant Angel Token";
+
+  it("makes creature tokens as 4/4 flying, vigilant Angels — and only creature tokens, and only yours", () => {
+    const game = setUp();
+    ready(game, "Divine Visitation");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 2 });
+    game.debugApplyEffect(A, { kind: "create-token", token: "Treasure Token", count: 1 });
+    game.debugApplyEffect(B, { kind: "create-token", token: "Goblin Token", count: 1 });
+    expect(count(game, named(game, angel))).toBe(2);
+    expect(named(game, "Goblin Token")).toHaveLength(0);
+    expect(named(game, "Treasure Token")).toHaveLength(1);
+    expect(named(game, "Goblin Token", B)).toHaveLength(1);
+    const [one] = named(game, angel);
+    const c = game.characteristics(one);
+    expect([c.power, c.toughness]).toEqual([4, 4]);
+    expect(c.keywords.has("flying") && c.keywords.has("vigilance")).toBe(true);
+  });
+
+  it("keeps the rest of what the effect does: tapped and attacking, haste, counters, a doubler", () => {
+    const game = setUp();
+    ready(game, "Divine Visitation");
+    ready(game, "Anointed Procession");
+    const ainok = ready(game, "Ainok Strike Leader");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: ainok, defender: B }] });
+    game.advanceUntil(quiet);
+    const angels = named(game, angel);
+    expect(count(game, angels)).toBe(2);
+    for (const id of angels) {
+      expect(game.state.objects[id].tapped).toBe(true);
+      expect(game.state.objects[id].attacking).toBe(B);
+    }
+    game.debugApplyEffect(A, {
+      kind: "create-token",
+      token: "Goblin Token",
+      count: 1,
+      gainUntilEndOfTurn: ["haste"],
+      thenCounters: { kind: "+1/+1", amount: 2 },
+    });
+    const hasty = named(game, angel).filter((id) => game.characteristics(id).keywords.has("haste"));
+    expect(count(game, hasty)).toBe(2);
+    for (const id of hasty) expect(game.characteristics(id).power).toBe(6);
+  });
+
+  it("replaces a token copy too, dropping its copy exceptions", () => {
+    const game = setUp();
+    ready(game, "Divine Visitation");
+    const bears = ready(game, "Grizzly Bears");
+    game.debugApplyEffect(A, { kind: "create-token-copy", of: 0, count: 1, gainsHaste: true }, [obj(bears)]);
+    const [copy] = named(game, angel);
+    expect(copy).toBeDefined();
+    expect(game.characteristics(copy).keywords.has("haste")).toBe(false);
+    expect(game.characteristics(copy).power).toBe(4);
+    expect(named(game, "Grizzly Bears")).toEqual([bears]);
+  });
+
+  it("an encore copy made as an Angel still gains haste and must attack its opponent", () => {
+    const game = setUp();
+    ready(game, "Divine Visitation");
+    const card = game.debugSpawn("Rakshasa Debaser", A, "exile");
+    game.debugApplyEffect(A, { kind: "encore" }, [], { source: card });
+    const [copy] = named(game, angel);
+    expect(copy).toBeDefined();
+    expect(game.characteristics(copy).keywords.has("haste")).toBe(true);
+    expect(game.state.objects[copy].mustAttackPlayer).toBe(B);
+    expect(game.state.objects[copy].sacrificeAtEndStep).toBe(true);
+  });
+
+  it("amass: the Angel made instead isn't an Army, so it gets no counters", () => {
+    const game = setUp();
+    ready(game, "Divine Visitation");
+    game.debugApplyEffect(A, { kind: "amass", amount: 2, creatureType: "Zombie" });
+    const [made] = named(game, angel);
+    expect(made).toBeDefined();
+    expect(game.state.objects[made].counters["+1/+1"] ?? 0).toBe(0);
+    expect(game.characteristics(made).subtypes).not.toContain("Zombie");
+  });
+});

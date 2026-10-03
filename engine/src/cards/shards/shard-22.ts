@@ -114,6 +114,7 @@ import _poolMindscourDragon from "../pool/mindscour-dragon.js";
 import _poolMinotaurWarrior from "../pool/minotaur-warrior.js";
 import _poolMintstrosity from "../pool/mintstrosity.js";
 import _poolMistyRainforest from "../pool/misty-rainforest.js";
+import _poolMyrBattlesphere from "../pool/myr-battlesphere.js";
 import _poolNadiersNightblade from "../pool/nadiers-nightblade.js";
 import _poolNagaOracle from "../pool/naga-oracle.js";
 import _poolNeedlethornDrake from "../pool/needlethorn-drake.js";
@@ -338,6 +339,7 @@ const shard: CardShard = {
     _poolMinotaurWarrior,
     _poolMintstrosity,
     _poolMistyRainforest,
+    _poolMyrBattlesphere,
     _poolNadiersNightblade,
     _poolNagaOracle,
     _poolNeedlethornDrake,

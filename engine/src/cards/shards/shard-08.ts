@@ -104,6 +104,7 @@ import _poolKomodoRhino from "../pool/komodo-rhino.js";
 import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
 import _poolKyrenNegotiations from "../pool/kyren-negotiations.js";
 import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
+import _poolLegionWarboss from "../pool/legion-warboss.js";
 import _poolLlanowarEnvoy from "../pool/llanowar-envoy.js";
 import _poolLongBodiedGreyDog from "../pool/long-bodied-grey-dog.js";
 import _poolLotusField from "../pool/lotus-field.js";
@@ -318,6 +319,7 @@ const shard: CardShard = {
     _poolKwainItinerantMeddler,
     _poolKyrenNegotiations,
     _poolLeaveInTheDust,
+    _poolLegionWarboss,
     _poolLlanowarEnvoy,
     _poolLongBodiedGreyDog,
     _poolLotusField,

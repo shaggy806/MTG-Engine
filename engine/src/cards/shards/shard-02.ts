@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAdrixAndNev from "../pool/adrix-and-nev.js";
 import _poolAdvancedHoverguard from "../pool/advanced-hoverguard.js";
+import _poolAinokStrikeLeader from "../pool/ainok-strike-leader.js";
 import _poolAlexisCloak from "../pool/alexis-cloak.js";
 import _poolAngelicWall from "../pool/angelic-wall.js";
 import _poolApexAltisaur from "../pool/apex-altisaur.js";
@@ -57,6 +58,7 @@ import _poolDireFleetHoarder from "../pool/dire-fleet-hoarder.js";
 import _poolDiseaseCarriers from "../pool/disease-carriers.js";
 import _poolDisentomb from "../pool/disentomb.js";
 import _poolDivineFavor from "../pool/divine-favor.js";
+import _poolDivineVisitation from "../pool/divine-visitation.js";
 import _poolDoranTheSiegeTower from "../pool/doran-the-siege-tower.js";
 import _poolDragonbornLooter from "../pool/dragonborn-looter.js";
 import _poolDragonsHoard from "../pool/dragons-hoard.js";
@@ -221,6 +223,7 @@ const shard: CardShard = {
   pool: [
     _poolAdrixAndNev,
     _poolAdvancedHoverguard,
+    _poolAinokStrikeLeader,
     _poolAlexisCloak,
     _poolAngelicWall,
     _poolApexAltisaur,
@@ -273,6 +276,7 @@ const shard: CardShard = {
     _poolDiseaseCarriers,
     _poolDisentomb,
     _poolDivineFavor,
+    _poolDivineVisitation,
     _poolDoranTheSiegeTower,
     _poolDragonbornLooter,
     _poolDragonsHoard,

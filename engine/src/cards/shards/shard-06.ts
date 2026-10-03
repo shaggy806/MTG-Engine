@@ -141,6 +141,7 @@ import _poolRagingGoblin from "../pool/raging-goblin.js";
 import _poolRainOfThorns from "../pool/rain-of-thorns.js";
 import _poolRamunapRuins from "../pool/ramunap-ruins.js";
 import _poolRankleMasterOfPranks from "../pool/rankle-master-of-pranks.js";
+import _poolRedoubledStormsinger from "../pool/redoubled-stormsinger.js";
 import _poolRiotGear from "../pool/riot-gear.js";
 import _poolRiptideCrab from "../pool/riptide-crab.js";
 import _poolRousingRead from "../pool/rousing-read.js";
@@ -356,6 +357,7 @@ const shard: CardShard = {
     _poolRainOfThorns,
     _poolRamunapRuins,
     _poolRankleMasterOfPranks,
+    _poolRedoubledStormsinger,
     _poolRiotGear,
     _poolRiptideCrab,
     _poolRousingRead,

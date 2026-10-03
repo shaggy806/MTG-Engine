@@ -17,6 +17,7 @@ import {
   sacrificePartsFillable,
 } from "./abilities.js";
 import type {
+  AbilityCost,
   ActivatedAbility,
   CostReductionAmount,
   DefenderLife,
@@ -4598,6 +4599,8 @@ export class Game {
         this.state.players[player].manaPool = kept;
       }
     }
+    // "Until end of combat" effects end with the combat phase (rule 500.5a).
+    if (!stillCombat) this.expireUntilEndOfCombat();
     this.state.priority.active = false;
     this.state.priority.holder = null;
     this.state.priority.passed = [];
@@ -5450,6 +5453,21 @@ export class Game {
     );
   }
 
+  /** End every modifier that lasts "until end of combat" (rule 500.5a) —
+   * Legion Warboss's token's "attacks this combat if able". */
+  private expireUntilEndOfCombat(): void {
+    const expired: ObjectId[] = [];
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (!object.modifiers.some((m) => m.untilEndOfCombat === true)) continue;
+      object.modifiers = object.modifiers.filter((m) => m.untilEndOfCombat !== true);
+      expired.push(id);
+    }
+    if (expired.length === 0) return;
+    invalidateComputedCache();
+    this.emit({ type: "pt-modifier-expired", objects: expired });
+  }
+
   private finishCleanup(): void {
     // Impulse-draw permissions age here, alongside every other
     // "until end of turn" effect — see `GameObject.impulse`.
@@ -5494,7 +5512,9 @@ export class Game {
       // A copy "until end of turn" (Cursed Mirror) ends (rule 514.2): it's
       // itself again where it is, so nothing enters or leaves.
       if (copyEnds) {
-        object.copyOf = null;
+        // What it was before a `become-copy` (Sarkhan, Soul Aflame), else
+        // itself again.
+        object.copyOf = object.copyRestore?.copyOf ?? null;
         delete object.copyEndsAtCleanup;
       }
       if (object.modifiers.some((m) => m.untilEndOfTurn)) {
@@ -5502,6 +5522,10 @@ export class Game {
         expired.push(id);
       } else if (copyEnds) {
         expired.push(id);
+      }
+      if (copyEnds && object.copyRestore !== undefined) {
+        object.modifiers = [...object.copyRestore.modifiers, ...object.modifiers];
+        delete object.copyRestore;
       }
     }
     if (expired.length > 0) invalidateComputedCache();
@@ -10451,6 +10475,17 @@ export class Game {
     if (ability.cost.mill !== undefined && this.state.zones.perPlayer[player].library.length < ability.cost.mill) {
       return `${player} has too few cards in their library to mill for ${def.name}'s cost`;
     }
+    const costReturn = ability.cost.returnToHand;
+    if (costReturn !== undefined) {
+      // The choice waits on the stack (see `activateAbility`): a mana ability
+      // has nowhere to wait, and a sacrifice or discard asks its own.
+      if (isManaAbility(ability) || sacrificeParts !== null || ability.cost.discard !== undefined) {
+        return `${def.name}'s ability can't return permanents as part of that cost`;
+      }
+      if (this.countBattlefieldMatching(player, { ...costReturn.filter, controlledBy: "you" }) < costReturn.count) {
+        return `${player} controls too few permanents to return for ${def.name}'s cost`;
+      }
+    }
     return null;
   }
 
@@ -10835,6 +10870,10 @@ export class Game {
     if (costExile !== undefined) {
       this.withDecisionSource(sourceId, () => this.payGraveyardExileCost(player, sourceId, costExile));
     }
+    // "Return a Forest you control to its owner's hand": which, asked now
+    // too (rules 602.2b, 601.2h).
+    const costReturn = ability.cost.returnToHand;
+    if (costReturn !== undefined) this.payReturnToHandCost(player, sourceId, costReturn);
     this.afterPlayerAction(player);
   }
 
@@ -10892,6 +10931,40 @@ export class Game {
       leftover: "stay",
       priorityTo: player,
     };
+  }
+
+  /** Pay an activated ability's `returnToHand` cost: every permanent that
+   * can pay it when that's no more than it takes, else the ones `player`
+   * chooses with the `choose-permanents` decision, after which they get
+   * priority again (rule 117.3c). */
+  private payReturnToHandCost(
+    player: PlayerId,
+    source: ObjectId,
+    cost: NonNullable<AbilityCost["returnToHand"]>,
+  ): void {
+    const filter: CardFilter = { ...cost.filter, controlledBy: "you" };
+    const eligible = this.battlefieldMatching(player, filter);
+    if (permanentCount(this.state, eligible) <= cost.count) {
+      for (const id of eligible) {
+        const n = this.state.objects[id]?.stackCount ?? 1;
+        for (let i = 0; i < n; i += 1) this.returnToHandByEffect({ kind: "object", object: id });
+      }
+      return;
+    }
+    this.beginChoosePermanents(
+      source,
+      player,
+      0,
+      filter,
+      cost.count,
+      cost.count,
+      { kind: "return-to-hand", target: 0 },
+      cost.count === 1 ? "Choose one to return to its owner's hand" : `Choose ${cost.count} to return to their owner's hand`,
+    );
+    const awaiting = this.state.awaiting;
+    if (awaiting?.kind === "choose-permanents" && awaiting.player === player) {
+      this.state.awaiting = { ...awaiting, priorityTo: player };
+    }
   }
 
   /**
@@ -11117,6 +11190,7 @@ export class Game {
           ability.cost.exileSelf === true ||
           ability.cost.discardHand === true ||
           ability.cost.discard !== undefined ||
+          ability.cost.returnToHand !== undefined ||
           ability.exhaust === true ||
           ability.powerUp === true
         ) {
@@ -14750,6 +14824,10 @@ export class Game {
         if (spec.who === "opponent" && event.player === self.controller) return false;
         const counted = event.attackers.filter((id) => {
           if (!this.triggerFilterOk(spec.filter, id, self)) return false;
+          if (spec.thisOrYourCommander === true && id !== self.id) {
+            const attacker = this.state.objects[id];
+            if (attacker?.isCommander !== true || attacker.owner !== self.controller) return false;
+          }
           if (spec.attackingYou !== true) return true;
           const at = this.state.objects[id]?.attacking;
           if (at === null || at === undefined) return false;
@@ -16113,6 +16191,13 @@ export class Game {
       },
       colorsAmong: (filter, except) =>
         colorsAmongPermanents(this.state, this.registry, controller, filter, except),
+      becomeCopy: (target, of, exceptions) =>
+        this.becomeCopyUntilEndOfTurn(target, of, exceptions, lastKnownOf({ kind: "object", object: of })),
+      permanentsMatching: (filter) =>
+        this.battlefieldMatching(controller, filter).map((object) => ({
+          object,
+          count: this.state.objects[object].stackCount ?? 1,
+        })),
       cardTypesInGraveyard: (filter) =>
         cardTypesInGraveyards(this.state, this.registry, controller, filter),
       thisWay: thisWayDone,
@@ -17129,7 +17214,7 @@ export class Game {
         }
       },
       changeText: (target) => this.beginTextChoice(controller, source, target),
-      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate, exileAtEndStep) => {
+      createToken: (token, count, who, tapped, sacrificeAtEndStep, gainUntilEndOfTurn, goadedForGame, thenCounters, basePt, attacking, separate, exileAtEndStep, attacksThisCombat) => {
         // "The tokens are goaded for the rest of the game": by this effect's
         // controller, whoever creates them (Rendmaw, Creaking Nest).
         const goadedBy = goadedForGame === true ? controller : undefined;
@@ -17147,6 +17232,7 @@ export class Game {
             thenCounters !== undefined || separate === true,
             basePt,
             exileAtEndStep === true,
+            attacksThisCombat === true,
           );
           if (thenCounters !== undefined && thenCounters.amount > 0) {
             for (const id of made) {
@@ -17639,7 +17725,18 @@ export class Game {
     if (army === undefined) {
       const before = new Set(this.state.zones.shared.battlefield);
       this.createTokens(controller, "Army Token", 1);
-      army = this.state.zones.shared.battlefield.find((id) => !before.has(id));
+      // "Choose an Army creature you control" (rule 701.47a): the token made,
+      // if it is one — Divine Visitation's Angel made instead isn't.
+      army = this.state.zones.shared.battlefield.find((id) => {
+        if (before.has(id)) return false;
+        const object = this.state.objects[id];
+        return (
+          object !== undefined &&
+          object.controller === controller &&
+          effectiveTypes(this.state, this.registry, object).includes("creature") &&
+          hasSubtype(effectiveSubtypes(this.state, this.registry, object), "Army")
+        );
+      });
       if (army === undefined) return;
       // An Army entering as a stacked batch would share one object with
       // others; amass always makes exactly one, so peel it off to be safe.
@@ -18287,8 +18384,12 @@ export class Game {
   private encore(controller: PlayerId, source: ObjectId): void {
     for (const opponent of this.scopedPlayers(controller, "each-opponent")) {
       const before = new Set(this.state.zones.shared.battlefield);
+      // "The tokens gain haste" (rule 702.141a): an effect on them, not a
+      // copy exception — a copy of one doesn't have it, and Divine
+      // Visitation's Angel still does.
       this.createTokenCopy(source, 1, {
-        gainsHaste: true,
+        gainsHaste: false,
+        gainKeywords: ["haste"],
         exileAtEndStep: false,
         notLegendary: false,
         under: controller,
@@ -18606,10 +18707,21 @@ export class Game {
     basePt?: readonly [number, number],
     /** Exiled at the beginning of the next end step (Manaform Hellkite). */
     exileAtEndStep = false,
+    /** They attack this combat if able (Legion Warboss) — until end of
+     * combat, part of making them like `gainUntilEndOfTurn`. */
+    attacksThisCombat = false,
   ): readonly ObjectId[] {
-    const def = this.registry.get(tokenName); // validate the token is a known definition
+    let def = this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
+    // Divine Visitation (rule 614.1a): creature tokens are made as its
+    // Angels instead — what the token was, an X/X's size too, is gone.
+    const instead = def.types.includes("creature") ? this.creatureTokenSubstitute(controller) : undefined;
+    if (instead !== undefined) {
+      tokenName = instead;
+      def = this.registry.get(instead);
+      basePt = undefined;
+    }
     return this.mintTokenBatch(
       controller,
       tokenName,
@@ -18632,6 +18744,18 @@ export class Game {
               },
             ]),
         ...untilEndOfTurnKeywords(gainUntilEndOfTurn),
+        ...(attacksThisCombat
+          ? [
+              {
+                power: 0,
+                toughness: 0,
+                keywords: [],
+                restrictions: ["must-attack" as const],
+                untilEndOfTurn: true,
+                untilEndOfCombat: true as const,
+              },
+            ]
+          : []),
         // "An X/X token": what the effect made it (rule 111.3 — its copiable
         // values, 707.2: a copy of it is X/X too), under every other effect
         // that sets its P/T.
@@ -18677,6 +18801,9 @@ export class Game {
       basePt?: readonly [number, number];
       under?: PlayerId;
       gainUntilEndOfTurn?: readonly Keyword[];
+      /** Keywords they gain with no end — encore's "the tokens gain haste":
+       * an effect on them, not a copy exception, so not copiable. */
+      gainKeywords?: readonly Keyword[];
       exceptions?: CopyExceptions;
       asCard?: boolean;
       tapped?: boolean;
@@ -18737,19 +18864,47 @@ export class Game {
         : []),
       ...(opts.exceptions !== undefined ? [copyExceptionModifier(opts.exceptions)] : []),
       ...untilEndOfTurnKeywords(opts.gainUntilEndOfTurn ?? []),
+      ...(opts.gainKeywords !== undefined && opts.gainKeywords.length > 0
+        ? [{ power: 0, toughness: 0, keywords: [...opts.gainKeywords], untilEndOfTurn: false }]
+        : []),
     ];
-    const made = this.mintTokenBatch(
-      controller,
-      copyName,
-      copyName,
-      total,
-      modifiers,
-      opts.exileAtEndStep,
-      opts.notLegendary || (departed !== undefined ? departed.notLegendary === true : of!.notLegendary === true),
-      true,
-      opts.tapped === true,
-      opts.sacrificeAtEndStep === true,
-    );
+    // Divine Visitation (rule 614.1a): a copy that would be created a
+    // creature — by what it copies or a copy exception — is made as its
+    // Angel instead, none of the copy's values kept; "they gain haste" and
+    // the rest of what the effect does to them still apply (the ruling).
+    let copiedTypes: readonly CardType[] = this.registry.get(copyName).types;
+    for (const m of modifiers) {
+      if (m.copiable !== true) continue;
+      if (m.setTypes !== undefined) copiedTypes = m.setTypes;
+      if (m.addTypes !== undefined) copiedTypes = [...copiedTypes, ...m.addTypes];
+    }
+    const instead = copiedTypes.includes("creature") ? this.creatureTokenSubstitute(controller) : undefined;
+    const made =
+      instead !== undefined
+        ? this.mintTokenBatch(
+            controller,
+            instead,
+            null,
+            total,
+            modifiers.filter((m) => m.copiable !== true),
+            opts.exileAtEndStep,
+            false,
+            false,
+            opts.tapped === true,
+            opts.sacrificeAtEndStep === true,
+          )
+        : this.mintTokenBatch(
+            controller,
+            copyName,
+            copyName,
+            total,
+            modifiers,
+            opts.exileAtEndStep,
+            opts.notLegendary || (departed !== undefined ? departed.notLegendary === true : of!.notLegendary === true),
+            true,
+            opts.tapped === true,
+            opts.sacrificeAtEndStep === true,
+          );
     // "…that's tapped and attacking" (rule 508.4).
     if (opts.attacking !== undefined) this.putIntoAttack(made, controller, opts.attacking);
     // "Exile the tokens at end of combat": one delayed triggered ability over
@@ -18770,6 +18925,49 @@ export class Game {
         made.map((id) => ({ kind: "object", object: id })),
       );
     }
+  }
+
+  /**
+   * The `become-copy` effect: permanent `id` becomes a copy of `ofId` until
+   * end of turn, with `exceptions` (rule 707.2 — Sarkhan, Soul Aflame). It
+   * copies `ofId`'s copiable values — its printed card, or what it copies,
+   * and the copy exceptions that made it so (rule 707.9b) — read off
+   * `departed` if it has left the battlefield (rule 608.2h). Its own status,
+   * counters and the non-copy effects on it stay (rule 707.2). The copiable
+   * values it had are set aside in `copyRestore` until the cleanup step
+   * (rule 514.2); one that a copy until end of turn had already changed goes
+   * back to what was under that, as both end then.
+   */
+  private becomeCopyUntilEndOfTurn(
+    id: ObjectId,
+    ofId: ObjectId,
+    exceptions: CopyExceptions | undefined,
+    departed: LastKnownInfo | undefined,
+  ): void {
+    const object = this.state.objects[id];
+    const of = this.state.objects[ofId];
+    if (object === undefined || object.zone !== "battlefield") return;
+    if (departed === undefined && of?.zone !== "battlefield") return;
+    const copyName = departed !== undefined ? departed.name : printedCardName(of!);
+    this.registry.get(copyName); // validate it's a known definition
+    const copied: PtModifier[] = [
+      // A copy's duration isn't copiable (Cursed Mirror's ruling).
+      ...(departed !== undefined ? (departed.copiable ?? []) : of!.modifiers)
+        .filter((m) => m.copiable === true)
+        .map((m) => ({ ...m, timestamp: -2, untilEndOfTurn: true })),
+      ...((departed !== undefined ? departed.notLegendary === true : of!.notLegendary === true)
+        ? [{ ...copyExceptionModifier({ notLegendary: true }), untilEndOfTurn: true }]
+        : []),
+      ...(exceptions !== undefined ? [{ ...copyExceptionModifier(exceptions), untilEndOfTurn: true }] : []),
+    ];
+    object.copyRestore ??= object.copyEndsAtCleanup === true
+      ? { copyOf: null, modifiers: object.modifiers.filter((m) => m.copiable === true && !m.untilEndOfTurn) }
+      : { copyOf: object.copyOf, modifiers: object.modifiers.filter((m) => m.copiable === true) };
+    object.modifiers = [...object.modifiers.filter((m) => m.copiable !== true), ...copied];
+    object.copyOf = copyName;
+    object.copyEndsAtCleanup = true;
+    invalidateComputedCache();
+    this.emit({ type: "permanent-copied", object: id, copyOf: copyName });
   }
 
   /** Below this, a *fresh* batch (no existing pristine match to fold into)
@@ -20577,14 +20775,14 @@ export class Game {
       this.applyCasualty(player, chosen, awaiting.casualty);
       return;
     }
-    const { then, source, x } = awaiting;
+    const { then, source, x, priorityTo } = awaiting;
     this.state.awaiting = null;
     for (const id of chosen) {
       // Re-checked rather than trusted: something may have left since.
       if (this.state.objects[id]?.zone !== "battlefield") continue;
       applyEffectSpec(then, this.makeResolutionContext(source, player, [{ kind: "object", object: id }], x));
     }
-    if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
+    if (this.state.awaiting === null) this.prepareForPriority(priorityTo ?? this.activePlayer);
   }
 
   /** Kept because `applyProliferate` validates before applying and throws;
@@ -24654,7 +24852,7 @@ export class Game {
       if (object.controller !== controller || hasLostAbilities(object)) continue;
       for (const ability of this.registry.get(printedCardName(object)).static) {
         const r = ability.replacement;
-        if (r?.event === "would-create-token" && this.staticActive(object, ability)) {
+        if (r?.event === "would-create-token" && r.multiplier !== undefined && this.staticActive(object, ability)) {
           mult *= r.multiplier;
         }
       }
@@ -24664,6 +24862,28 @@ export class Game {
       if (effect.owner === controller && effect.tokenMultiplier !== undefined) mult *= effect.tokenMultiplier;
     }
     return mult;
+  }
+
+  /** The token a `would-create-token` `creatureTokensInstead` makes in place
+   * of creature tokens that would be created under `controller`'s control
+   * (Divine Visitation), or `undefined`. Two of them make the same Angels
+   * whichever applies last, so the first found is the answer. */
+  private creatureTokenSubstitute(controller: PlayerId): string | undefined {
+    for (const id of this.state.zones.shared.battlefield) {
+      const object = this.state.objects[id];
+      if (object.controller !== controller || hasLostAbilities(object)) continue;
+      for (const ability of this.registry.get(printedCardName(object)).static) {
+        const r = ability.replacement;
+        if (
+          r?.event === "would-create-token" &&
+          r.creatureTokensInstead !== undefined &&
+          this.staticActive(object, ability)
+        ) {
+          return r.creatureTokensInstead;
+        }
+      }
+    }
+    return undefined;
   }
 
   /** Product of every `would-add-counter` multiplier (rule 614) that applies
@@ -25315,6 +25535,7 @@ export class Game {
     // that dies and returns is a Clone again.
     object.copyOf = null;
     delete object.copyEndsAtCleanup;
+    delete object.copyRestore;
     // An ETB "choose a creature type" choice ends when the object changes
     // zones — a fresh entry chooses again (Urza's Incubator — P14). So does
     // any other "as this enters" choice (a Heraldic Banner that comes back

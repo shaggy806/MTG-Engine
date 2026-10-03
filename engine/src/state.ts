@@ -423,6 +423,12 @@ export interface GameObject {
    * the cleanup step clears `copyOf` along with the copy's exceptions, which
    * were made until-end-of-turn modifiers. Cleared on any zone change. */
   copyEndsAtCleanup?: true;
+  /** What it was before a `become-copy` until end of turn made it a copy
+   * (Sarkhan, Soul Aflame): its `copyOf` and the copiable modifiers that
+   * copy set aside (a copy's copiable values replace them all — rule
+   * 707.2). The cleanup step puts them back with `copyEndsAtCleanup`.
+   * Cleared on any zone change. */
+  copyRestore?: { readonly copyOf: string | null; readonly modifiers: PtModifier[] };
   /** The creature type chosen as this permanent entered (Urza's Incubator —
    * needed-cards P14, rule 601.2f-adjacent — an ETB choice, not a cast-time
    * one). Absent for a permanent with no such choice; cleared on any zone
@@ -883,6 +889,11 @@ export interface PtModifier {
   /** "Until your next turn": it ends as this player's next turn begins, or
    * as it would have begun once they've left the game (rule 800.4m). */
   untilTurnOf?: PlayerId;
+  /** "Until end of combat" / "this combat" (rules 500.5a, 511.2): it ends as
+   * the combat phase does — Legion Warboss's token "attacks this combat if
+   * able", which a later combat that turn doesn't bind. Set with
+   * `untilEndOfTurn` too, so a turn with no combat after it still ends it. */
+  untilEndOfCombat?: true;
   /** "For as long as it has a [kind] counter on it" (rule 611.2b): it ends
    * as the last one is removed, and a new one doesn't bring it back. */
   whileCounter?: string;
@@ -1992,6 +2003,10 @@ export type AwaitingDecision =
        * cast, rather than an effect resolving — see {@link CasualtyAsk}.
        * `then` is unused. */
       readonly casualty?: CasualtyAsk;
+      /** Set when the choice pays an activated ability's cost (its
+       * `returnToHand`), not an effect resolving: the player who activated
+       * it, who gets priority once it's made (rule 117.3c). */
+      readonly priorityTo?: PlayerId;
     }
   | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
@@ -3373,16 +3388,21 @@ export function attackedYouDuringTheirLastTurn(state: GameState, you: PlayerId, 
  * here — whose it is (owner as well as controller: a token someone stole for
  * good isn't one of the thief's own), its state, what's been done to it
  * (counters, modifiers, a goad, a control effect, a transformed face, a choice
- * made as it entered) and what's still due to happen to it.
+ * made as it entered), what's still due to happen to it, and the turn it
+ * entered — "each creature token you control that entered this turn"
+ * (Redoubled Stormsinger) tells tokens made today from yesterday's twins.
  */
 export function tokenFoldKey(o: GameObject): string {
   return JSON.stringify([
     o.cardName,
     o.copyOf,
+    o.copyEndsAtCleanup ?? false,
+    o.copyRestore ?? null,
     o.owner,
     o.controller,
     o.tapped,
     o.summoningSick,
+    o.enteredBattlefieldOnTurn,
     o.face ?? 0,
     o.exileAtEndStep ?? false,
     o.sacrificeAtEndStep ?? false,

@@ -159,6 +159,16 @@ export function thisWayEntries(
         // — the mulligan's bottoming never happens during a resolution).
         if (event.type === "cards-put-on-bottom") for (const id of event.objects) add(id, event.player, false);
         break;
+      case "tapped":
+        // A stack tapped whole is every token in it.
+        if (event.type === "permanent-tapped" && !seen.has(event.object)) {
+          const object = state.objects[event.object];
+          if (object !== undefined) {
+            seen.add(event.object);
+            out.push({ object: event.object, player: object.controller, departed: false, count: object.stackCount ?? 1 });
+          }
+        }
+        break;
       case "put-onto-battlefield":
         // Moved there from a zone — not a token created, nor a permanent
         // spell resolving.

@@ -689,7 +689,12 @@ export type ThisWayKind =
    * library — Valakut Awakening's "then draw **that many** cards plus one",
    * Teferi's Puzzle Box's "then draws that many cards". Counted by the
    * player whose hand they left. */
-  | "put-on-bottom";
+  | "put-on-bottom"
+  /** Permanents it tapped — Myr Battlesphere's "you may tap X untapped Myr
+   * you control. If you do, this creature gets +X/+0": a `choose-permanents`
+   * tapping them, then this. One already tapped isn't tapped again, and so
+   * isn't counted. */
+  | "tapped";
 
 export type PlayerScope =
   | "each-player"
@@ -2408,9 +2413,11 @@ export type EffectSpec =
        * of them are "the rest".
        */
       readonly kind: "reveal-until";
-      /** Whose library: the effect's controller's (default), or the player
-       * in this target slot. */
-      readonly whose?: number;
+      /** Whose library: the effect's controller's (default), the player in
+       * this target slot, or `"that-player"` — each one a `for-each-player`
+       * names (Consuming Aberration's "each opponent reveals cards from the
+       * top of their library until they reveal a land card"). */
+      readonly whose?: number | "that-player";
       /** What stops it, matched against each card as it's revealed — an `{
        * amount }` compare is bound as the effect applies ("a nonland card
        * with lesser mana value"). */
@@ -2767,6 +2774,12 @@ export type EffectSpec =
        * destroy all **other** creatures" (`notThisWay: "created"`), where a
        * stack of Soldiers the new ones joined would be spared with them. */
       readonly separate?: boolean;
+      /** "That token gains haste until end of turn and **attacks this combat
+       * if able**" (Legion Warboss): a requirement on the tokens made (rule
+       * 508.1d) that ends with this combat (rule 500.5a), not the turn — a
+       * later combat phase doesn't bind them. With `gainUntilEndOfTurn:
+       * ["haste"]` for the haste. */
+      readonly attacksThisCombat?: boolean;
     }
   | {
       /**
@@ -2797,8 +2810,11 @@ export type EffectSpec =
       readonly kind: "create-token-copy";
       /** `"entered-together"` is "for each of them": a copy (`count`) of
        * each permanent of the entry a batched `enters-battlefield` trigger
-       * fired on — Kambal, Profiteering Mayor. */
-      readonly of: "source" | "trigger-object" | "entered-together" | number;
+       * fired on — Kambal, Profiteering Mayor. `{ each }` is a copy of each
+       * permanent matching the filter as this resolves, a token stack once
+       * per token in it — Redoubled Stormsinger's "for each creature token
+       * you control that entered this turn, create … a copy of that token". */
+      readonly of: "source" | "trigger-object" | "entered-together" | number | { readonly each: CardFilter };
       readonly count: number;
       /** The token copies have haste — a copy exception ("except it has
        * haste" — Kiki-Jiki), which lasts as long as they do. */
@@ -2869,6 +2885,25 @@ export type EffectSpec =
        * the ability's own permanent (a werewolf, "sacrifice …: transform ~"). */
       readonly kind: "transform";
       readonly target: EffectTargetRef;
+    }
+  | {
+      /**
+       * `target` becomes a copy of `of` until end of turn (rules 707.2,
+       * 611.2a), with `exceptions` — Sarkhan, Soul Aflame's "you may have
+       * Sarkhan become a copy of it until end of turn, except its name is
+       * Sarkhan, Soul Aflame and it's legendary in addition to its other
+       * types". It copies `of`'s copiable values as they are now — what
+       * that is copying, if anything — or as it last existed if it has left
+       * the battlefield (rule 608.2h); not its counters, tapped state or
+       * other effects on it. `target` keeps its own status and counters
+       * (rule 707.2). In the cleanup step (rule 514.2) it is what it was
+       * before again — a copy of whatever it copied, if it was one.
+       */
+      readonly kind: "become-copy";
+      readonly target: EffectTargetRef;
+      readonly of: EffectTargetRef;
+      readonly until: "end-of-turn";
+      readonly exceptions?: CopyExceptions;
     }
   | {
       /** The game becomes day or night (rule 726 — ROADMAP Phase 10b). All
@@ -3710,6 +3745,10 @@ export interface EffectApi {
   colorsOf(target: TargetRef): readonly Color[];
   /** See the `{ colorsAmong }` {@link EffectAmount}. */
   colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
+  /** The permanents matching `filter` (from the effect's controller's
+   * side), each with how many tokens it stands for — a token stack is one
+   * object for every token in it. */
+  permanentsMatching(filter: CardFilter): readonly { readonly object: ObjectId; readonly count: number }[];
   /** See the `{ cardTypesInGraveyard }` {@link EffectAmount}. */
   cardTypesInGraveyard(filter: CardFilter): number;
   /** What this resolution has done `what` to so far, whose it was among
@@ -4371,6 +4410,8 @@ export interface EffectApi {
     separate?: boolean,
     /** Exile them at the beginning of the next end step. */
     exileAtEndStep?: boolean,
+    /** They attack this combat if able (until end of combat). */
+    attacksThisCombat?: boolean,
   ): void;
   /** Create `count` token(s) that are copies of the permanent `of` — see the
    * `"create-token-copy"` {@link EffectSpec}. */
@@ -4406,6 +4447,9 @@ export interface EffectApi {
   /** Transform `target` (a transforming DFC permanent) — see the `"transform"`
    * {@link EffectSpec}. */
   transform(target: TargetRef): void;
+  /** The permanent `target` becomes a copy of `of` until end of turn — see
+   * the `"become-copy"` {@link EffectSpec}. */
+  becomeCopy(target: ObjectId, of: ObjectId, exceptions?: CopyExceptions): void;
   /** The game becomes day or night (rule 726). */
   setDayNight(value: "day" | "night"): void;
   /** `who` becomes the monarch (rule 720). */
@@ -4708,7 +4752,11 @@ function applyRevealUntil(
   let progress = spec.progress;
   if (progress === undefined) {
     let owner: PlayerId = ctx.controller;
-    if (spec.whose !== undefined) {
+    if (spec.whose === "that-player") {
+      const player = effectPlayer("that-player", ctx);
+      if (player === undefined) return;
+      owner = player;
+    } else if (spec.whose !== undefined) {
       const ref = ctx.targets[spec.whose];
       if (ref === undefined || ref.kind !== "player") return;
       owner = ref.player;
@@ -6468,6 +6516,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               resolveEnterAttacking(spec.attacking, ctx.aboutPlayer(player)),
               spec.separate === true,
               spec.exileAtEndStep === true,
+              spec.attacksThisCombat === true,
             );
         }
         return;
@@ -6489,6 +6538,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         resolveEnterAttacking(spec.attacking, ctx),
         spec.separate === true,
         spec.exileAtEndStep === true,
+        spec.attacksThisCombat === true,
       );
       return;
     case "for-each-player": {
@@ -6529,6 +6579,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         for (const { object, count } of ctx.enteredTogether ?? []) copy(object, spec.count * count);
         return;
       }
+      if (typeof spec.of === "object") {
+        // Which permanents, fixed before the first copy enters (rule 608.2h):
+        // a copy made here doesn't count itself.
+        for (const { object, count } of ctx.permanentsMatching(spec.of.each)) copy(object, spec.count * count);
+        return;
+      }
       let of: ObjectId | undefined;
       if (spec.of === "source") of = ctx.source;
       else if (spec.of === "trigger-object") of = ctx.triggerObject;
@@ -6558,6 +6614,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "transform": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.transform(target);
+      return;
+    }
+    case "become-copy": {
+      // Acting on `target` needs it to be the same object still (rule
+      // 400.7); `of` is only read, so one that has left is read as it last
+      // existed (rule 608.2h).
+      const target = resolveEffectTarget(spec.target, ctx);
+      const of = resolveAmountRef(spec.of, ctx);
+      if (target?.kind === "object" && of?.kind === "object") ctx.becomeCopy(target.object, of.object, spec.exceptions);
       return;
     }
     case "day-night":

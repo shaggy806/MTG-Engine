@@ -160,6 +160,7 @@ import _poolRumblingSlum from "../pool/rumbling-slum.js";
 import _poolSalvageScout from "../pool/salvage-scout.js";
 import _poolSamLoyalAttendant from "../pool/sam-loyal-attendant.js";
 import _poolSanctumGargoyle from "../pool/sanctum-gargoyle.js";
+import _poolSarkhanSoulAflame from "../pool/sarkhan-soul-aflame.js";
 import _poolSatyrHedonist from "../pool/satyr-hedonist.js";
 import _poolScaldingDevil from "../pool/scalding-devil.js";
 import _poolScreechingBuzzard from "../pool/screeching-buzzard.js";
@@ -387,6 +388,7 @@ const shard: CardShard = {
     _poolSalvageScout,
     _poolSamLoyalAttendant,
     _poolSanctumGargoyle,
+    _poolSarkhanSoulAflame,
     _poolSatyrHedonist,
     _poolScaldingDevil,
     _poolScreechingBuzzard,
