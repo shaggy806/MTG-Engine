@@ -5,7 +5,7 @@ export default defineCard({
   manaCost: "{1}{W}",
   colors: ["W"],
   types: ["instant"],
-  text: "Destroy target permanent.",
-  targets: ["permanent"],
+  text: "Destroy target artifact or enchantment.",
+  targets: ["artifact-or-enchantment"],
   effect: { kind: "destroy", target: 0 },
 });

@@ -152,11 +152,12 @@ describe("creating tokens", () => {
       "Plains",
       "Plains",
       "Plains",
+      "Plains",
       "Raise the Alarm",
-      "Disenchant",
+      "Generous Gift",
     ]);
     game.advanceUntil(atFirstMain);
-    playLands(game, A, 4);
+    playLands(game, A, 5);
     game.dispatch({
       type: "cast-spell",
       player: A,
@@ -170,7 +171,7 @@ describe("creating tokens", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Disenchant"),
+      card: named(game, game.handOf(A), "Generous Gift"),
       targets: [{ kind: "object", object: soldier1 }],
     });
     game.advanceUntil(stackEmpty);

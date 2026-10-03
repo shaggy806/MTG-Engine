@@ -111,12 +111,13 @@ describe("Auras", () => {
       "Plains",
       "Plains",
       "Plains",
+      "Plains",
       "Holy Strength",
-      "Disenchant",
+      "Generous Gift",
     ]);
     const bear = spawn(game, "Grizzly Bears", A);
     game.advanceUntil(atFirstMain);
-    playLands(game, A, 3);
+    playLands(game, A, 4);
     game.dispatch({
       type: "cast-spell",
       player: A,
@@ -129,7 +130,7 @@ describe("Auras", () => {
     game.dispatch({
       type: "cast-spell",
       player: A,
-      card: named(game, game.handOf(A), "Disenchant"),
+      card: named(game, game.handOf(A), "Generous Gift"),
       targets: [{ kind: "object", object: bear }],
     });
     game.advanceUntil(stackEmpty);
