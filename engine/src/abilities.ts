@@ -600,6 +600,12 @@ export type TriggerSpec =
       /** "Whenever **another** creature you control deals combat damage to
        * a player". */
       readonly otherOnly?: boolean;
+      /** "…to a player **who controls more lands than you**" (Cartographer's
+       * Hawk): the player dealt damage controls more permanents matching
+       * this than this permanent's controller does, counted as the damage is
+       * dealt. Part of the trigger event, not an intervening-if (rule 603.4):
+       * it isn't asked again as the ability resolves. */
+      readonly toPlayerControlsMore?: CardFilter;
     }
   | {
       /**

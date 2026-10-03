@@ -10059,6 +10059,8 @@ export class Game {
       const spell = this.state.objects[purpose.card];
       if (spell !== undefined) {
         spell.manaSpentFrom = spent.flatMap((u) => (u.from === undefined ? [] : [u.from]));
+        // Converge's "colors of mana spent" — colourless isn't one (rule 105.1).
+        spell.manaSpentColors = COLORS.filter((c) => spent.some((u) => u.type === c));
       }
     }
     for (const unit of spent) this.fireManaSpendRider(player, unit, purpose);
@@ -10906,7 +10908,15 @@ export class Game {
       const sourceLastKnown =
         stint === undefined ? undefined : this.lastKnownOfStint(source, stint);
       if (
-        !this.interveningIfMet(condition, sourceObject, object.sourceTimestamp, sourceLastKnown, object.triggerObject) ||
+        !this.interveningIfMet(
+          condition,
+          sourceObject,
+          object.sourceTimestamp,
+          sourceLastKnown,
+          object.triggerObject,
+          // The X it snapshotted as it triggered (`triggerCastX`), or 0.
+          object.xValue ?? 0,
+        ) ||
         !this.attackConditionsStillHold(ability, object)
       ) {
         this.removeOneAbilityCopy(id);
@@ -11265,6 +11275,8 @@ export class Game {
             // The entering permanent, for "if you control five other
             // Mountains" — what `triggerObject` below also names.
             event.type === "permanent-entered-battlefield" ? event.object : undefined,
+            // Ravenous's "if X is 5 or more": the X it was cast with, or 0.
+            this.triggerCastX(ability.trigger, event, object) ?? 0,
           ) &&
           // Elesh Norn, Mother of Machines / Torpor Orb: an entering
           // permanent causes none of this controller's triggers.
@@ -11407,29 +11419,9 @@ export class Game {
                         event.type === "life-changed"
                       ? Math.abs(event.delta)
                       : undefined;
-          // Rule 107.3m: an enters-the-battlefield ability of a permanent that
-          // was cast with X uses that X. Snapshotted now, off the entering
-          // object itself, because the ability is its own object from here on:
-          // the permanent dying to state-based actions (a 0/0 that entered with
-          // X=0 counters) or being flickered before this resolves doesn't change
-          // the X the ability already has. Another permanent's entry trigger
-          // reads nothing — it's that object's ETB, not this one's.
-          //
-          // A cast trigger's X is the X of the spell that was cast (Zaxara,
-          // the Exemplary's "a spell with {X} in its mana cost … put X +1/+1
-          // counters"): chosen as it was cast (rule 601.2b) and fixed from
-          // then on, so it's read now — the spell may be countered first.
-          // The same for the spell's own "when you cast this spell" (Hydroid
-          // Krasis's "half X").
-          const castX =
-            ability.trigger.on === "enters-battlefield" &&
-            event.type === "permanent-entered-battlefield" &&
-            event.object === id
-              ? (object.xValue ?? undefined)
-              : (ability.trigger.on === "cast-spell" || ability.trigger.on === "this-cast") &&
-                  event.type === "spell-cast"
-                ? (this.state.objects[event.object]?.xValue ?? undefined)
-                : undefined;
+          // Rule 107.3m: an enters ability of a permanent cast with X, or a
+          // cast trigger, snapshots that X now (`triggerCastX`).
+          const castX = this.triggerCastX(ability.trigger, event, object);
           // Which stint on the battlefield the source and the triggering
           // object were in — what the ability means by "it" and "that
           // creature" if either has left by the time it resolves (608.2h).
@@ -12231,7 +12223,10 @@ export class Game {
           event.target.kind === "player" &&
           this.matchesWho(spec.who, event.source, self) &&
           !(spec.otherOnly === true && event.source === self.id) &&
-          this.triggerFilterOk(spec.filter, event.source, self)
+          this.triggerFilterOk(spec.filter, event.source, self) &&
+          (spec.toPlayerControlsMore === undefined ||
+            this.countBattlefieldMatching(event.target.player, { ...spec.toPlayerControlsMore, controlledBy: "you" }) >
+              this.countBattlefieldMatching(self.controller, { ...spec.toPlayerControlsMore, controlledBy: "you" }))
         );
       case "dealt-damage":
         return (
@@ -12440,6 +12435,8 @@ export class Game {
     sourceLastKnown?: LastKnownInfo,
     /** The object whose event fired it — see `ConditionOptions.triggerObject`. */
     triggerObject?: ObjectId,
+    /** The X it was put on the stack with — see `ConditionOptions.x`. */
+    x?: number,
   ): boolean {
     if (condition === undefined) return true;
     return staticConditionMet(this.state, this.registry, source, condition, {
@@ -12447,7 +12444,33 @@ export class Game {
       ...(sourceTimestamp !== undefined ? { sourceTimestamp } : {}),
       ...(sourceLastKnown !== undefined ? { sourceLastKnown } : {}),
       ...(triggerObject !== undefined ? { triggerObject } : {}),
+      ...(x !== undefined ? { x } : {}),
     });
+  }
+
+  /**
+   * The X a triggered ability of `source` gets from the event firing it, or
+   * `undefined` for none. Rule 107.3m: a permanent's own enters-the-battlefield
+   * ability uses the X its spell was cast with — read off the entering object
+   * itself, as it triggers, since the ability is its own object from then on
+   * (the permanent dying to state-based actions as a 0/0, or being flickered
+   * before the ability resolves, doesn't change it). Another permanent's
+   * entry trigger reads nothing: it's that object's ETB, not this one's.
+   *
+   * A cast trigger's X is the X of the spell that was cast (Zaxara, the
+   * Exemplary's "a spell with {X} in its mana cost … put X +1/+1 counters"):
+   * chosen as it was cast (rule 601.2b) and fixed from then on, so it's read
+   * now — the spell may be countered first. The same for the spell's own
+   * "when you cast this spell" (Hydroid Krasis's "half X").
+   */
+  private triggerCastX(trigger: TriggerSpec, event: GameEvent, source: GameObject): number | undefined {
+    if (trigger.on === "enters-battlefield" && event.type === "permanent-entered-battlefield") {
+      return event.object === source.id ? (source.xValue ?? undefined) : undefined;
+    }
+    if ((trigger.on === "cast-spell" || trigger.on === "this-cast") && event.type === "spell-cast") {
+      return this.state.objects[event.object]?.xValue ?? undefined;
+    }
+    return undefined;
   }
 
   /** A trigger's optional `CardFilter` on the object that fired it. Evaluated
@@ -13485,6 +13508,34 @@ export class Game {
           ? (lki.manaSpent ?? 0)
           : (this.state.objects[target.object]?.manaSpent ?? 0);
       },
+      colorsSpentOf: (target) => {
+        if (target.kind !== "object") return 0;
+        const lki = lastKnownOf(target);
+        return (
+          (lki !== undefined ? lki.manaSpentColors : this.state.objects[target.object]?.manaSpentColors)?.length ?? 0
+        );
+      },
+      // Rule 903.8: only a commander's owner casts it from the command zone,
+      // and the count is kept under that player, by name.
+      commanderCastsOf: (target) => {
+        if (target.kind !== "object") return 0;
+        const object = this.state.objects[target.object];
+        if (object === undefined) return 0;
+        return this.state.players[object.owner]?.commanderCastCounts[object.cardName] ?? 0;
+      },
+      powerAmong: (entries) =>
+        entries.reduce((n, { object: id, departed, count }) => {
+          const object = this.state.objects[id];
+          const power =
+            object === undefined
+              ? (this.state.ceasedTokens?.[id]?.power ?? 0)
+              : departed && object.lastKnown !== undefined
+                ? object.lastKnown.power
+                : object.zone === "battlefield"
+                  ? computeCharacteristics(this.state, this.registry, id).power
+                  : 0;
+          return n + power * count;
+        }, 0),
       lifeTotalOf: (player) => this.state.players[player]?.life ?? 0,
       turnStatOf: (player, stat) => turnStatOf(this.state, player, stat),
       castThisTurnOf: (player, filter, greatest) => {
@@ -13709,6 +13760,13 @@ export class Game {
         return this.state.objects[target.object] === undefined
           ? []
           : computeCharacteristics(this.state, this.registry, target.object).types;
+      },
+      subtypesOf: (target) => {
+        if (target.kind !== "object") return [];
+        const lki = lastKnownOf(target);
+        if (lki !== undefined) return lki.subtypes;
+        const object = this.state.objects[target.object];
+        return object === undefined ? [] : effectiveSubtypes(this.state, this.registry, object);
       },
       sacrificeTarget: (target) => {
         if (target.kind !== "object") return;
@@ -21032,6 +21090,7 @@ export class Game {
       manaValue: manaValue(parseManaCost(printedManaCost(this.registry, object))),
       ...(object.manaSpent !== undefined ? { manaSpent: object.manaSpent } : {}),
       ...(object.manaSpentFrom !== undefined ? { manaSpentFrom: [...object.manaSpentFrom] } : {}),
+      ...(object.manaSpentColors !== undefined ? { manaSpentColors: [...object.manaSpentColors] } : {}),
       isToken: object.isToken,
       isCommander: object.isCommander,
       tapped: object.tapped,
@@ -21402,6 +21461,7 @@ export class Game {
     if (!(object.zone === "stack" && to === "battlefield")) {
       object.manaSpent = undefined;
       object.manaSpentFrom = undefined;
+      object.manaSpentColors = undefined;
     }
 
     // Rule 400.7: wherever it goes, it arrives as a new object, and only a

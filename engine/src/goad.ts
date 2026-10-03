@@ -68,10 +68,12 @@ function goadingStatics(state: GameState, registry: CardRegistry): readonly Goad
  * What a static goad's `filter` scope may compare against: its own source's
  * power, toughness or mana value, read as they are now — Baeloth's "power
  * less than Baeloth Barrityl's power" is `{ amount: { powerOf: "source" } }`.
+ * A static's block filter reads its source the same way (Champion of
+ * Lambholt — `combat/eligibility.ts`).
  * Nothing else can be answered in a static, and `NaN` makes any comparison
  * with it false (fails closed, as a static's `{ amount }` does everywhere).
  */
-function sourceAmount(
+export function sourceAmount(
   state: GameState,
   registry: CardRegistry,
   source: GameObject,

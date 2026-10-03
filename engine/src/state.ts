@@ -591,6 +591,11 @@ export interface GameObject {
    * spent — the `manaFrom` filter clause ("if mana from an artifact was
    * spent to cast it"). Kept and cleared with `manaSpent`. */
   manaSpentFrom?: ManaOrigin[];
+  /** The colours of the mana spent to cast this spell, each once, in WUBRG
+   * order — converge's "the number of colors of mana spent to cast this
+   * spell" (the `{ colorsSpentOf }` amount). Colourless isn't a colour. Kept
+   * and cleared with `manaSpent`. */
+  manaSpentColors?: Color[];
   /** For a triggered ability object: the target slots its triggering event
    * filled rather than its controller choosing — a saboteur's "that player"
    * (Hypnotic Specter's discard). Those aren't targets (rule 115.1), so
@@ -888,6 +893,8 @@ export interface LastKnownInfo {
   readonly manaSpent?: number;
   /** Where that mana came from (`GameObject.manaSpentFrom`). */
   readonly manaSpentFrom?: readonly ManaOrigin[];
+  /** Its colours (`GameObject.manaSpentColors`). */
+  readonly manaSpentColors?: readonly Color[];
   readonly isToken: boolean;
   readonly isCommander: boolean;
   readonly tapped: boolean;

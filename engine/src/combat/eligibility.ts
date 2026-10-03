@@ -27,10 +27,11 @@ import {
   staticReaches,
 } from "../characteristics.js";
 import type { StaticAbility } from "../cards.js";
+import type { EffectAmount } from "../effects.js";
 import type { CardFilter } from "../filter.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { matchesFilter } from "../filter.js";
-import { goadersOf } from "../goad.js";
+import { goadersOf, sourceAmount } from "../goad.js";
 import { printedCardName } from "../state.js";
 import type { AttackRequirementRule, GameObject, GameState } from "../state.js";
 import { permanentSource, protectionBlocks } from "../targeting.js";
@@ -270,11 +271,11 @@ export function whyCannotBlock(
   // "Can't be blocked by [filter]" on the attacker (Delney, Streetwise
   // Lookout), "can block only [filter]" on the blocker.
   if (
-    blockFilters(state, registry, attacker, "cantBeBlockedBy").some(({ filter, you }) =>
-      matchesFilter(state, registry, blockerId, filter, { you }),
+    blockFilters(state, registry, attacker, "cantBeBlockedBy").some(({ filter, you, amount }) =>
+      matchesFilter(state, registry, blockerId, filter, { you, amount }),
     ) ||
     blockFilters(state, registry, blocker, "canBlockOnly").some(
-      ({ filter, you }) => !matchesFilter(state, registry, attackerId, filter, { you }),
+      ({ filter, you, amount }) => !matchesFilter(state, registry, attackerId, filter, { you, amount }),
     )
   ) {
     const attackerDef = registry.get(printedCardName(attacker));
@@ -400,8 +401,8 @@ function blockFilters(
   registry: CardRegistry,
   object: GameObject,
   field: "cantBeBlockedBy" | "canBlockOnly",
-): { readonly filter: CardFilter; readonly you: PlayerId }[] {
-  const out: { filter: CardFilter; you: PlayerId }[] = [];
+): BlockFilter[] {
+  const out: BlockFilter[] = [];
   for (const { source, ability } of blockFilterSources(state, registry)) {
     const filter = ability[field];
     if (filter === undefined) continue;
@@ -409,9 +410,20 @@ function blockFilters(
     if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
       continue;
     }
-    out.push({ filter, you: source.controller });
+    // "Creatures with power less than this creature's power" (Champion of
+    // Lambholt): the static's own source answers `{ powerOf: "source" }`,
+    // read as blockers are declared (its ruling, rule 509.1b).
+    out.push({ filter, you: source.controller, amount: sourceAmount(state, registry, source) });
   }
   return out;
+}
+
+/** One of {@link blockFilters}: the filter, whose side it's read from, and
+ * what its `{ amount }` operands read off its source. */
+interface BlockFilter {
+  readonly filter: CardFilter;
+  readonly you: PlayerId;
+  readonly amount: (amount: EffectAmount) => number;
 }
 
 /**

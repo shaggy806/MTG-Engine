@@ -41,6 +41,7 @@ import _poolCavernCrawler from "../pool/cavern-crawler.js";
 import _poolCemeteryReaper from "../pool/cemetery-reaper.js";
 import _poolCephalidColiseum from "../pool/cephalid-coliseum.js";
 import _poolCerodonYearling from "../pool/cerodon-yearling.js";
+import _poolChampionOfLambholt from "../pool/champion-of-lambholt.js";
 import _poolChampionOfThePerished from "../pool/champion-of-the-perished.js";
 import _poolClawsOfGix from "../pool/claws-of-gix.js";
 import _poolCliffThreader from "../pool/cliff-threader.js";
@@ -249,6 +250,7 @@ const shard: CardShard = {
     _poolCemeteryReaper,
     _poolCephalidColiseum,
     _poolCerodonYearling,
+    _poolChampionOfLambholt,
     _poolChampionOfThePerished,
     _poolClawsOfGix,
     _poolCliffThreader,

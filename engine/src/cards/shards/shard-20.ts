@@ -199,6 +199,7 @@ import _poolZephyrNet from "../pool/zephyr-net.js";
 import _tokensFaerieToken from "../tokens/faerie-token.js";
 import _tokensIllusionTokenMinn from "../tokens/illusion-token-minn.js";
 import _tokensInsectTokenBlackGreen from "../tokens/insect-token-black-green.js";
+import _tokensRabbitToken from "../tokens/rabbit-token.js";
 import _tokensTarmogoyfToken from "../tokens/tarmogoyf-token.js";
 
 const shard: CardShard = {
@@ -401,6 +402,7 @@ const shard: CardShard = {
     _tokensFaerieToken,
     _tokensIllusionTokenMinn,
     _tokensInsectTokenBlackGreen,
+    _tokensRabbitToken,
     _tokensTarmogoyfToken,
   ],
 };

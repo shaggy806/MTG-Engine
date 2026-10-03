@@ -317,6 +317,13 @@ export interface ConditionOptions {
    * intervening-if checks, as it triggers and as it resolves.
    */
   readonly triggerObject?: ObjectId;
+  /**
+   * The X the triggered ability asking was put on the stack with — a
+   * permanent's own enters trigger's (rule 107.3m) or a cast trigger's — for
+   * an `x` condition: ravenous's "if X is 5 or more" (rule 702.156a). Passed
+   * by the intervening-if checks only.
+   */
+  readonly x?: number;
 }
 
 /**
@@ -531,6 +538,18 @@ function evalStaticCondition(
         return condition.strict === true ? mine > theirs : mine >= theirs;
       });
     }
+    case "controls-greatest": {
+      // "The creature with the greatest power or tied for it": the best of
+      // yours is no worse than the best of all of them.
+      let best = Number.NEGATIVE_INFINITY;
+      let mine = Number.NEGATIVE_INFINITY;
+      for (const m of matchesWhere((id) => matchesFilter(state, registry, id, condition.filter, { you }))) {
+        const value = aggregateValueOf(state, registry, m.id, condition.of);
+        best = Math.max(best, value);
+        if (state.objects[m.id].controller === you) mine = Math.max(mine, value);
+      }
+      return mine !== Number.NEGATIVE_INFINITY && mine >= best;
+    }
     case "opponent-controls":
       // "an opponent controls three or more creatures" — one opponent must
       // meet the count on their own, so count per player and take the best.
@@ -695,12 +714,16 @@ function evalStaticCondition(
           : (held[condition.counter] ?? 0);
       return compareNum(n, condition.compare);
     }
+    case "x":
+      // An intervening-if's "if X is 5 or more" (ravenous, rule 702.156a):
+      // the X a permanent was cast with, which its own enters trigger knows
+      // (rule 107.3m) and passes in. Anywhere else there is no X to read.
+      return opts.x !== undefined && compareNum(opts.x, condition.compare);
     case "target":
     case "target-chosen":
     case "trigger-object":
     case "sacrificed":
     case "resolved-this-turn":
-    case "x":
     case "this-way":
     case "source-on-battlefield":
       // A static ability has no triggering object, no chosen targets and no

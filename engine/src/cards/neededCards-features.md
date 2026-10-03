@@ -150,7 +150,7 @@ Chaos Warp (29), Myriad Landscape (31), Skullclamp (41), Fabled Passage (46), De
 (74), Urborg, Tomb of Yawgmoth (75), Yavimaya, Cradle of Growth (77), Esper Sentinel (78), The One
 Ring (95), Mystic Remora (99), Jeska's Will (104), Teferi's Protection (109), Propaganda (113),
 Urza's Saga (117), Black Market Connections (130), Roaming Throne (133), War Room (140), Ponder
-(145), Chrome Mox (151), Herald's Horn (153), Windfall (158), Ghostly Prison (162), Nykthos,
+(145), Chrome Mox (151), Herald's Horn (153), Ghostly Prison (162), Nykthos,
 Shrine to Nyx (163), Sink into Stupor // Soporific Springs (167), Reflecting Pool (168), Mystic
 Sanctuary (174), Three Tree City (177), Gemstone Caverns (179), Command Beacon (183), Hardened
 Scales (185), Akroma's Will (189), Force of Will (194), Mosswort Bridge (196), Fell the Profane //
@@ -187,7 +187,7 @@ Mindbreak Trap (544), Maze of Ith (548), Graven Cairns (552), Laboratory Maniac 
 Lightning (555), Brotherhood Regalia (558), Conduit of Worlds (559), Nesting Grounds (560), Second
 Harvest (561), Unbreakable Formation (562), Springleaf Drum (564), Clever Concealment (569),
 Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun (571), Talon Gates of Madara (572),
-Champion of Lambholt (575), Opposition Agent (578), Thespian's Stage (580), Curiosity (583),
+Opposition Agent (578), Thespian's Stage (580), Curiosity (583),
 Culling Ritual (585), Darksteel Mutation (586), Six (587), Return the Favor (588), Teferi's
 Ageless Insight (589), Ghostly Flicker (590), Tibalt's Trickery (595), Mulldrifter (596),
 Puresteel Paladin (597), Strionic Resonator (598), Hexing Squelcher (606), Realmwalker (607),
@@ -309,7 +309,7 @@ triggers, most of it shared with other cards:
   counters** (Mjölnir), a **dynamic "pay X life"** (Mask of Griselbrand), an
   **attached host condition** (Combat Research's "as long as enchanted
   creature is legendary"), and one-offs (Sword of Hearth and Home, Songbirds'
-  Blessing, Heirloom Blade, Infiltration Lens, Thran Power Suit, Pain for All,
+  Blessing, Infiltration Lens, Thran Power Suit, Pain for All,
   Ordeal of Nylea, The Aetherspark, Fertile Ground's any-colour extra on a
   hand-tapped land, Vorpal Sword).
 

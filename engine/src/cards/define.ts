@@ -353,6 +353,20 @@ export type StaticCondition =
       readonly filter: CardFilter;
       readonly strict?: boolean;
     }
+  /**
+   * You control **the** permanent matching `filter` with the greatest power
+   * / toughness / mana value, **or one tied for it** — Thickest in the
+   * Thicket's "if you control the creature with the greatest power or tied
+   * for the greatest power": among every matching permanent on the
+   * battlefield, whoever controls it, one of yours has a value no other
+   * beats. False when you control none. `filter` is asked from your side
+   * (`controlledBy` in it would narrow both halves — leave it out).
+   */
+  | {
+      readonly kind: "controls-greatest";
+      readonly of: AggregateOf;
+      readonly filter: CardFilter;
+    }
   /** *Some one* opponent controls at least `atLeast` permanents matching
    * `filter` (Defense of the Heart — "if an opponent controls three or more
    * creatures"). Each opponent is counted separately — three creatures spread

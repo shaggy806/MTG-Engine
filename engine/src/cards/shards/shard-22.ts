@@ -26,6 +26,7 @@ import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
 import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
+import _poolCartographersHawk from "../pool/cartographers-hawk.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
 import _poolCoalGolem from "../pool/coal-golem.js";
@@ -74,6 +75,7 @@ import _poolGoldveinPick from "../pool/goldvein-pick.js";
 import _poolGuadosalamFarplaneGateway from "../pool/guadosalam-farplane-gateway.js";
 import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
 import _poolHeavyBallista from "../pool/heavy-ballista.js";
+import _poolHeirloomBlade from "../pool/heirloom-blade.js";
 import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
@@ -116,6 +118,7 @@ import _poolOggyarBattleSeer from "../pool/oggyar-battle-seer.js";
 import _poolOgresCleaver from "../pool/ogres-cleaver.js";
 import _poolOrcishBloodpainter from "../pool/orcish-bloodpainter.js";
 import _poolOvergrownEstate from "../pool/overgrown-estate.js";
+import _poolPainfulTruths from "../pool/painful-truths.js";
 import _poolPillarfieldOx from "../pool/pillarfield-ox.js";
 import _poolPlatedWurm from "../pool/plated-wurm.js";
 import _poolPlumeveil from "../pool/plumeveil.js";
@@ -234,6 +237,7 @@ const shard: CardShard = {
     _poolBuriedRuin,
     _poolCalamityOfCinders,
     _poolCanalMonitor,
+    _poolCartographersHawk,
     _poolCatharticReunion,
     _poolChokedEstuary,
     _poolCoalGolem,
@@ -282,6 +286,7 @@ const shard: CardShard = {
     _poolGuadosalamFarplaneGateway,
     _poolGuardianOfPilgrims,
     _poolHeavyBallista,
+    _poolHeirloomBlade,
     _poolHighlandGame,
     _poolHomunculusHorde,
     _poolHonorGuard,
@@ -324,6 +329,7 @@ const shard: CardShard = {
     _poolOgresCleaver,
     _poolOrcishBloodpainter,
     _poolOvergrownEstate,
+    _poolPainfulTruths,
     _poolPillarfieldOx,
     _poolPlatedWurm,
     _poolPlumeveil,

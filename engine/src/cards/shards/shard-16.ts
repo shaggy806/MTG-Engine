@@ -240,6 +240,7 @@ import _tokensLifelinkVampireToken from "../tokens/lifelink-vampire-token.js";
 import _tokensPhyrexianWurmLifelink from "../tokens/phyrexian-wurm-lifelink.js";
 import _tokensShapeshifterToken from "../tokens/shapeshifter-token.js";
 import _tokensSoldierArtifactToken from "../tokens/soldier-artifact-token.js";
+import _tokensXXDemonTokenFlying from "../tokens/x-x-demon-token-flying.js";
 
 const shard: CardShard = {
   pool: [
@@ -482,6 +483,7 @@ const shard: CardShard = {
     _tokensPhyrexianWurmLifelink,
     _tokensShapeshifterToken,
     _tokensSoldierArtifactToken,
+    _tokensXXDemonTokenFlying,
   ],
 };
 

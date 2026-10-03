@@ -411,6 +411,17 @@ export interface CardFilter {
    */
   readonly sharesCardTypeWith?: "sacrificed" | "trigger-object";
   /**
+   * Shares at least one **creature type** with the trigger object, as it last
+   * existed on the battlefield if it has left — Heirloom Blade's "a creature
+   * card that shares a creature type with it" (its rulings: the dead creature
+   * as it last existed, and one with no creature type shares none). Bound to
+   * a plain `subtypes` of its creature types as the effect applies
+   * (`bindDynamicCompares`), so a changeling on either side shares one with
+   * anything that has a creature type (`hasSubtype`). Unbound, it matches
+   * nothing.
+   */
+  readonly sharesCreatureTypeWith?: "trigger-object";
+  /**
    * One of the objects the spell or ability now resolving has done this to
    * (see `ThisWayKind`) — choosing among the cards just moved: "you may put
    * a creature card milled this way into your hand", "put a permanent card
@@ -607,7 +618,7 @@ export function matchesFilter(
   // is bound to plain types by the effect applying it
   // (`bindDynamicCompares`); left unbound — anywhere nothing could answer
   // it — it matches nothing.
-  if (filter.sharesCardTypeWith !== undefined) return false;
+  if (filter.sharesCardTypeWith !== undefined || filter.sharesCreatureTypeWith !== undefined) return false;
   if (filter.thisWay !== undefined && !thisWayEntries(state, filter.thisWay).some((e) => e.object === id)) {
     return false;
   }

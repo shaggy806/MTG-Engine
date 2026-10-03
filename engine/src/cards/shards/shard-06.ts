@@ -187,6 +187,7 @@ import _poolWallOfBlood from "../pool/wall-of-blood.js";
 import _poolWallOfOmens from "../pool/wall-of-omens.js";
 import _poolWhipSergeant from "../pool/whip-sergeant.js";
 import _poolWindDrake from "../pool/wind-drake.js";
+import _poolWindfall from "../pool/windfall.js";
 import _poolWingedCoatl from "../pool/winged-coatl.js";
 import _poolWingedWords from "../pool/winged-words.js";
 import _poolWoodlandMystic from "../pool/woodland-mystic.js";
@@ -389,6 +390,7 @@ const shard: CardShard = {
     _poolWallOfOmens,
     _poolWhipSergeant,
     _poolWindDrake,
+    _poolWindfall,
     _poolWingedCoatl,
     _poolWingedWords,
     _poolWoodlandMystic,

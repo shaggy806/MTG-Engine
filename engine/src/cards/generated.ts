@@ -872,6 +872,7 @@ import _poolCarrionFeeder from "./pool/carrion-feeder.js";
 import _poolCarrionHowler from "./pool/carrion-howler.js";
 import _poolCarrionScreecher from "./pool/carrion-screecher.js";
 import _poolCartographer from "./pool/cartographer.js";
+import _poolCartographersHawk from "./pool/cartographers-hawk.js";
 import _poolCartoucheOfKnowledge from "./pool/cartouche-of-knowledge.js";
 import _poolCarvenCaryatid from "./pool/carven-caryatid.js";
 import _poolCascadeBluffs from "./pool/cascade-bluffs.js";
@@ -930,6 +931,7 @@ import _poolChainersEdict from "./pool/chainers-edict.js";
 import _poolChakramSlinger from "./pool/chakram-slinger.js";
 import _poolChamberedNautilus from "./pool/chambered-nautilus.js";
 import _poolChampionOfArashin from "./pool/champion-of-arashin.js";
+import _poolChampionOfLambholt from "./pool/champion-of-lambholt.js";
 import _poolChampionOfTheParish from "./pool/champion-of-the-parish.js";
 import _poolChampionOfThePerished from "./pool/champion-of-the-perished.js";
 import _poolChandraAcolyteOfFlame from "./pool/chandra-acolyte-of-flame.js";
@@ -2525,6 +2527,7 @@ import _poolHedronCrawler from "./pool/hedron-crawler.js";
 import _poolHedronRover from "./pool/hedron-rover.js";
 import _poolHedronScrabbler from "./pool/hedron-scrabbler.js";
 import _poolHeiBaiForestGuardian from "./pool/hei-bai-forest-guardian.js";
+import _poolHeirloomBlade from "./pool/heirloom-blade.js";
 import _poolHelgaSkittishSeer from "./pool/helga-skittish-seer.js";
 import _poolHeliodsPilgrim from "./pool/heliods-pilgrim.js";
 import _poolHelionaut from "./pool/helionaut.js";
@@ -2809,6 +2812,7 @@ import _poolIzzetLocket from "./pool/izzet-locket.js";
 import _poolIzzetSignet from "./pool/izzet-signet.js";
 import _poolJacesIngenuity from "./pool/jaces-ingenuity.js";
 import _poolJacesScrutiny from "./pool/jaces-scrutiny.js";
+import _poolJackedRabbit from "./pool/jacked-rabbit.js";
 import _poolJackhammer from "./pool/jackhammer.js";
 import _poolJaddiOffshoot from "./pool/jaddi-offshoot.js";
 import _poolJadeMage from "./pool/jade-mage.js";
@@ -3859,6 +3863,7 @@ import _poolOxiddaScrapmelter from "./pool/oxidda-scrapmelter.js";
 import _poolPacificationArray from "./pool/pacification-array.js";
 import _poolPacifism from "./pool/pacifism.js";
 import _poolPainfulQuandary from "./pool/painful-quandary.js";
+import _poolPainfulTruths from "./pool/painful-truths.js";
 import _poolPaintedBluffs from "./pool/painted-bluffs.js";
 import _poolPakoArcaneRetriever from "./pool/pako-arcane-retriever.js";
 import _poolPalaceFamiliar from "./pool/palace-familiar.js";
@@ -4254,6 +4259,7 @@ import _poolRegalUnicorn from "./pool/regal-unicorn.js";
 import _poolRegathanFirecat from "./pool/regathan-firecat.js";
 import _poolRegress from "./pool/regress.js";
 import _poolRegrowth from "./pool/regrowth.js";
+import _poolReignOfThePit from "./pool/reign-of-the-pit.js";
 import _poolReinforcedRonin from "./pool/reinforced-ronin.js";
 import _poolRejuvenate from "./pool/rejuvenate.js";
 import _poolRejuvenatingSprings from "./pool/rejuvenating-springs.js";
@@ -5220,6 +5226,7 @@ import _poolStrongarmThug from "./pool/strongarm-thug.js";
 import _poolStrongholdAssassin from "./pool/stronghold-assassin.js";
 import _poolStubbornDenial from "./pool/stubborn-denial.js";
 import _poolStudentOfOjutai from "./pool/student-of-ojutai.js";
+import _poolStudyHall from "./pool/study-hall.js";
 import _poolStudy from "./pool/study.js";
 import _poolStumpStomp from "./pool/stump-stomp.js";
 import _poolSuChi from "./pool/su-chi.js";
@@ -5527,6 +5534,7 @@ import _poolTheaterOfHorrors from "./pool/theater-of-horrors.js";
 import _poolThermalNavigator from "./pool/thermal-navigator.js";
 import _poolThermoAlchemist from "./pool/thermo-alchemist.js";
 import _poolTheyWentThisWay from "./pool/they-went-this-way.js";
+import _poolThickestInTheThicket from "./pool/thickest-in-the-thicket.js";
 import _poolThievingMagpie from "./pool/thieving-magpie.js";
 import _poolThinkTank from "./pool/think-tank.js";
 import _poolThinkTwice from "./pool/think-twice.js";
@@ -6252,6 +6260,7 @@ import _poolWindSpirit from "./pool/wind-spirit.js";
 import _poolWindStrider from "./pool/wind-strider.js";
 import _poolWindbornMuse from "./pool/windborn-muse.js";
 import _poolWindcragSiege from "./pool/windcrag-siege.js";
+import _poolWindfall from "./pool/windfall.js";
 import _poolWindreaderSphinx from "./pool/windreader-sphinx.js";
 import _poolWindriderEel from "./pool/windrider-eel.js";
 import _poolWindriderPatrol from "./pool/windrider-patrol.js";
@@ -6539,6 +6548,7 @@ import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.j
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensPlainKnightToken from "./tokens/plain-knight-token.js";
 import _tokensPlantToken from "./tokens/plant-token.js";
+import _tokensRabbitToken from "./tokens/rabbit-token.js";
 import _tokensRatTokenCantBlock from "./tokens/rat-token-cant-block.js";
 import _tokensRatTokenVren from "./tokens/rat-token-vren.js";
 import _tokensRatToken from "./tokens/rat-token.js";
@@ -6583,6 +6593,7 @@ import _tokensWizardTokenKuja from "./tokens/wizard-token-kuja.js";
 import _tokensWolfToken from "./tokens/wolf-token.js";
 import _tokensWraithToken from "./tokens/wraith-token.js";
 import _tokensWurmToken66 from "./tokens/wurm-token-6-6.js";
+import _tokensXXDemonTokenFlying from "./tokens/x-x-demon-token-flying.js";
 import _tokensXXElementalTokenFlyingHaste from "./tokens/x-x-elemental-token-flying-haste.js";
 import _tokensZombieDruidToken from "./tokens/zombie-druid-token.js";
 import _tokensZombieKnightToken from "./tokens/zombie-knight-token.js";
@@ -7459,6 +7470,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCarrionHowler,
   _poolCarrionScreecher,
   _poolCartographer,
+  _poolCartographersHawk,
   _poolCartoucheOfKnowledge,
   _poolCarvenCaryatid,
   _poolCascadeBluffs,
@@ -7517,6 +7529,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolChakramSlinger,
   _poolChamberedNautilus,
   _poolChampionOfArashin,
+  _poolChampionOfLambholt,
   _poolChampionOfTheParish,
   _poolChampionOfThePerished,
   _poolChandraAcolyteOfFlame,
@@ -9112,6 +9125,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHedronRover,
   _poolHedronScrabbler,
   _poolHeiBaiForestGuardian,
+  _poolHeirloomBlade,
   _poolHelgaSkittishSeer,
   _poolHeliodsPilgrim,
   _poolHelionaut,
@@ -9396,6 +9410,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIzzetSignet,
   _poolJacesIngenuity,
   _poolJacesScrutiny,
+  _poolJackedRabbit,
   _poolJackhammer,
   _poolJaddiOffshoot,
   _poolJadeMage,
@@ -10446,6 +10461,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolPacificationArray,
   _poolPacifism,
   _poolPainfulQuandary,
+  _poolPainfulTruths,
   _poolPaintedBluffs,
   _poolPakoArcaneRetriever,
   _poolPalaceFamiliar,
@@ -10841,6 +10857,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRegathanFirecat,
   _poolRegress,
   _poolRegrowth,
+  _poolReignOfThePit,
   _poolReinforcedRonin,
   _poolRejuvenate,
   _poolRejuvenatingSprings,
@@ -11807,6 +11824,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStrongholdAssassin,
   _poolStubbornDenial,
   _poolStudentOfOjutai,
+  _poolStudyHall,
   _poolStudy,
   _poolStumpStomp,
   _poolSuChi,
@@ -12114,6 +12132,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolThermalNavigator,
   _poolThermoAlchemist,
   _poolTheyWentThisWay,
+  _poolThickestInTheThicket,
   _poolThievingMagpie,
   _poolThinkTank,
   _poolThinkTwice,
@@ -12839,6 +12858,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWindStrider,
   _poolWindbornMuse,
   _poolWindcragSiege,
+  _poolWindfall,
   _poolWindreaderSphinx,
   _poolWindriderEel,
   _poolWindriderPatrol,
@@ -13132,6 +13152,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPhyrexianWurmLifelink,
   _tokensPlainKnightToken,
   _tokensPlantToken,
+  _tokensRabbitToken,
   _tokensRatTokenCantBlock,
   _tokensRatTokenVren,
   _tokensRatToken,
@@ -13176,6 +13197,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensWolfToken,
   _tokensWraithToken,
   _tokensWurmToken66,
+  _tokensXXDemonTokenFlying,
   _tokensXXElementalTokenFlyingHaste,
   _tokensZombieDruidToken,
   _tokensZombieKnightToken,

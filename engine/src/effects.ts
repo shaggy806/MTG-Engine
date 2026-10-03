@@ -20,6 +20,7 @@ import type {
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { Color, ManaType } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
+import { EVERY_CREATURE_TYPE, isCreatureType } from "./subtypes.js";
 import type { ThisWayEntry } from "./this-way.js";
 import type {
   DelayedTriggerTiming,
@@ -227,6 +228,25 @@ export type EffectAmount =
    * anything that wasn't cast.
    */
   | { readonly manaSpentOf: AmountRef }
+  /**
+   * How many **colours** of mana were spent to cast the object — converge
+   * (an ability word, rule 207.2c: Painful Truths' "where X is the number of
+   * colors of mana spent to cast this spell"). Colourless isn't a colour, so
+   * at most 5; mana spent on additional costs and cost increases counts. A
+   * copy of a spell wasn't cast and reads 0, as does a free cast (the
+   * converge rulings). Kept by the permanent a spell becomes, like
+   * `manaSpentOf`; `0` for anything that wasn't cast.
+   */
+  | { readonly colorsSpentOf: AmountRef }
+  /**
+   * How many times the commander behind an {@link AmountRef} has been cast
+   * from the command zone this game (rule 903.8's count — the same one the
+   * commander tax reads), by its owner. Study Hall's "scry X, where X is the
+   * number of times it's been cast from the command zone this game", in a
+   * `whenSpent` rider whose slot 0 is the spell: that cast already counts. `0`
+   * for anything that isn't a card.
+   */
+  | { readonly commanderCastsOf: AmountRef }
   /** A current life total: the effect controller's (`"you"` — Ajani, Caller
    * of the Pride's ultimate: "create X 2/2 white Cat creature tokens, where X
    * is your life total"), or `"each"`, the life of **each player the effect
@@ -413,6 +433,18 @@ export type EffectAmount =
       readonly who?: PlayerScope | "each";
       readonly filter?: CardFilter;
       readonly cardTypes?: boolean;
+      /** The **greatest** of the players' own counts rather than their sum
+       * — Windfall's "draws cards equal to the greatest number of cards **a
+       * player** discarded this way" (each player's entries summed, then the
+       * largest; 0 with none). */
+      readonly perPlayer?: "greatest";
+      /** Add up this characteristic of the objects instead of counting them
+       * — Reign of the Pit's "X is the **total power** of the creatures
+       * sacrificed this way". A permanent that left doing it is read as it
+       * last existed on the battlefield (its ruling: a negative power counts
+       * as negative), and a token stack that went whole counts once per
+       * token. */
+      readonly sumOf?: "power";
     }
   /**
    * One amount or another, by a condition read as the amount is — Urza's
@@ -3050,6 +3082,10 @@ export interface EffectApi {
   manaValueOf(target: TargetRef): number;
   /** See the `{ manaSpentOf }` {@link EffectAmount}. */
   manaSpentOf(target: TargetRef): number;
+  /** See the `{ colorsSpentOf }` {@link EffectAmount}. */
+  colorsSpentOf(target: TargetRef): number;
+  /** See the `{ commanderCastsOf }` {@link EffectAmount}. */
+  commanderCastsOf(target: TargetRef): number;
   /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
   lifeTotalOf(player: PlayerId): number;
   /** One player's running total for `stat` this turn — see the `turnStat`
@@ -3102,6 +3138,10 @@ export interface EffectApi {
   cardTypesAmong(
     objects: readonly { readonly object: ObjectId; readonly departed: boolean }[],
   ): number;
+  /** The total power of `entries`, signed — each as it last existed on the
+   * battlefield if `departed`, else as it is now, a stack that went whole
+   * once per token. See the `thisWay` amount's `sumOf`. */
+  powerAmong(entries: readonly ThisWayEntry[]): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -3216,6 +3256,10 @@ export interface EffectApi {
    * battlefield if it has left since the effect referred to it. For binding
    * `CardFilter.sharesCardTypeWith`. */
   cardTypesOf(target: TargetRef): readonly CardType[];
+  /** The subtypes of what `target` points at, the same way — a changeling's
+   * with its every-creature-type marker. For binding
+   * `CardFilter.sharesCreatureTypeWith`. */
+  subtypesOf(target: TargetRef): readonly string[];
   /** See the `"return-to-hand"` {@link EffectSpec} — `from` defaults to the
    * battlefield. */
   returnToHand(target: TargetRef, from?: ReturnToHandZone): void;
@@ -4164,9 +4208,15 @@ function signedAmountValue(
           ? [each ?? ctx.controller]
           : ctx.playersInScope(amount.who);
     const done = ctx.thisWay(amount.thisWay, players, amount.filter);
-    return amount.cardTypes === true
-      ? ctx.cardTypesAmong(done)
-      : done.reduce((n, entry) => n + entry.count, 0);
+    if (amount.cardTypes === true) return ctx.cardTypesAmong(done);
+    const valueOf = (entry: ThisWayEntry): number =>
+      amount.sumOf === "power" ? ctx.powerAmong([entry]) : entry.count;
+    if (amount.perPlayer === "greatest") {
+      const byPlayer = new Map<PlayerId, number>();
+      for (const entry of done) byPlayer.set(entry.player, (byPlayer.get(entry.player) ?? 0) + valueOf(entry));
+      return Math.max(0, ...byPlayer.values());
+    }
+    return done.reduce((n, entry) => n + valueOf(entry), 0);
   }
   if ("countPlayers" in amount) return ctx.playersInScope(amount.countPlayers).length;
   if ("lifeLostThisWay" in amount) {
@@ -4221,6 +4271,14 @@ function signedAmountValue(
   if ("manaSpentOf" in amount) {
     const ref = resolveAmountRef(amount.manaSpentOf, ctx);
     return ref === undefined ? 0 : ctx.manaSpentOf(ref);
+  }
+  if ("colorsSpentOf" in amount) {
+    const ref = resolveAmountRef(amount.colorsSpentOf, ctx);
+    return ref === undefined ? 0 : ctx.colorsSpentOf(ref);
+  }
+  if ("commanderCastsOf" in amount) {
+    const ref = resolveAmountRef(amount.commanderCastsOf, ctx);
+    return ref === undefined ? 0 : ctx.commanderCastsOf(ref);
   }
   if ("aggregate" in amount) {
     return Math.max(0, ctx.aggregate(amount, amount.excludeSelf === true ? [ctx.source] : []));
@@ -4351,6 +4409,7 @@ function containsDynamicCompare(value: unknown): boolean {
     ? value.some(containsDynamicCompare)
     : isAmountCompare(value as Record<string, unknown>) ||
       "sharesCardTypeWith" in value ||
+      "sharesCreatureTypeWith" in value ||
       Object.entries(value).some(
         ([key, v]) => !NESTED_EFFECT_KEYS.has(key) && containsDynamicCompare(v),
       );
@@ -4395,10 +4454,28 @@ export function bindDynamicCompares(spec: EffectSpec, ctx: ResolutionContext): E
         NESTED_EFFECT_KEYS.has(key) || (liveFilter && key === "filter") ? v : walk(v),
       ]),
     );
+    if ("sharesCreatureTypeWith" in walked) {
+      // "Shares a creature type with it" (Heirloom Blade): the trigger
+      // object's creature types as it last existed — the changeling marker
+      // included, which `hasSubtype` reads as "any creature type" — ANDed
+      // with whatever `anyOf` the filter already had. None: nothing shares.
+      const { sharesCreatureTypeWith: _with, anyOf, ...rest } = walked as CardFilter;
+      const subtypes =
+        ctx.triggerObject === undefined
+          ? []
+          : ctx
+              .subtypesOf({ kind: "object", object: ctx.triggerObject })
+              .filter((s) => s === EVERY_CREATURE_TYPE || isCreatureType(s));
+      const shares: CardFilter = { subtypes, ...(anyOf !== undefined ? { anyOf } : {}) };
+      return bindShares({ ...rest, anyOf: [shares] });
+    }
+    return bindShares(walked);
+  };
+  // "Shares a card type with it": the sacrificed permanent's types as it
+  // last existed, or the trigger object's — the spell whose casting fired
+  // the trigger — ANDed with whatever `anyOf` the filter already had.
+  const bindShares = (walked: Record<string, unknown>): unknown => {
     if (!("sharesCardTypeWith" in walked)) return walked;
-    // "Shares a card type with it": the sacrificed permanent's types as it
-    // last existed, or the trigger object's — the spell whose casting fired
-    // the trigger — ANDed with whatever `anyOf` the filter already had.
     const { sharesCardTypeWith: withWhat, anyOf, ...rest } = walked as CardFilter;
     const other = withWhat === "trigger-object" ? ctx.triggerObject : ctx.sacrificed;
     const types = other === undefined ? [] : ctx.cardTypesOf({ kind: "object", object: other });

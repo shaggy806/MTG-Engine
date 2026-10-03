@@ -417,6 +417,16 @@ the way the card says (rule 107.1a);
 or trigger object (Prossh: "X is the amount of mana spent to cast it";
 commander tax and {X} count, a free cast is 0, convoked creatures aren't
 mana);
+`{ colorsSpentOf: ref }` — how many **colours** of mana were spent to cast it,
+converge (rule 207.2c — Painful Truths: `{ colorsSpentOf: "source" }`):
+colourless isn't one, mana for cost increases and additional costs counts,
+a copy or a free cast is 0 (the converge rulings), kept by the permanent a
+spell becomes;
+`{ commanderCastsOf: ref }` — how many times that commander has been cast
+from the command zone this game, by its owner (rule 903.8's count, the one
+the tax reads) — Study Hall's `whenSpent` "scry X, where X is the number of
+times it's been cast from the command zone" is `{ commanderCastsOf: 0 }`
+(slot 0 is the spell), which counts the cast it rides on;
 `{ manaValueOf: ref }` — the mana value of whatever a target slot (or
 `"source"` / `"trigger-object"` / `"sacrificed"`) points at, as it last
 existed on the battlefield if it has left since (rule 608.2h, last known
@@ -569,7 +579,13 @@ destroyed this way, its controller creates a 3/3 Beast" is `{ kind:
 thisWay: "destroyed", who: "each" } }`. `filter` narrows them — a permanent
 that left doing it as it last existed, a card as it is now (in the graveyard a
 discard put it in); `cardTypes: true` counts the card types among them
-instead (Kefka, Court Mage). The `this-way` condition (§10) asks the same
+instead (Kefka, Court Mage). `perPlayer: "greatest"` sums each player's
+own and takes the largest — Windfall's "draws cards equal to the greatest
+number of cards **a player** discarded this way". `sumOf: "power"` adds up
+their power instead of counting them, a permanent that left doing it as it
+last existed (signed: a -2 counts as -2) and a whole stack once per token —
+Reign of the Pit's "X is the total power of the creatures sacrificed this
+way" (`{ thisWay: "sacrificed", sumOf: "power" }`). The `this-way` condition (§10) asks the same
 question as an "if" — Hakbal's "you may put a land card from your hand onto
 the battlefield. If you don't, draw a card" is a `look-and-choose` from the
 hand, then a `conditional` on `{ kind: "this-way", what:
@@ -783,6 +799,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | myriad | `myriad()` in `triggered` (or a static's `grantsTriggered` — Legion Loyalty, Blade of Selves) — rule 702.116a: for each opponent other than the defending player, "you may" (asked per opponent, naming them) create a tapped, attacking token copy, exiled at end of combat. |
 | mobilize | `mobilize(n)` in `triggered` — rule 702.181a: `n` (an `EffectAmount`: Avenger of the Fallen's `{ countInGraveyard: … }`, Infantry Shield's granted `{ powerOf: "source" }`) 1/1 red Warriors (`Red Warrior Token`), tapped and attacking, sacrificed at the next end step. |
 | offspring | `kicker: { cost, keyword: "offspring" }` plus `offspringTrigger()` in `triggered` — rule 702.175a, "When this permanent enters, if its offspring cost was paid, create a token that's a copy of it, except it's 1/1." The copy is made even if the creature has left by then (as it last existed), and isn't cast, so it has no offspring of its own. |
+| ravenous | `ravenous()` from `helpers.ts` — rule 702.156a: spread its `static` (enters with X +1/+1 counters) into `static` and its `triggered` ("when it enters, if X is 5 or more, draw a card" — an intervening-if on the X it was cast with, so it never triggers below 5) into `triggered`; put the "Ravenous (…)" line in `text` (Jacked Rabbit). Entering without being cast — a token copy included — X is 0. |
 | eternalize | `eternalizeAbility(cost, text)` in `activated` — rule 702.129a: from the graveyard, exiling the card, as a sorcery; a token copy of the card, a 4/4 black Zombie with no mana cost (the `noManaCost` copy exception). |
 | regenerate | `regenerateSelfAbility(cost, text)` in `activated` — "{B}: Regenerate this creature" (rule 701.15; the `regenerate` effect, §6). |
 | living weapon | `livingWeapon()` from `helpers.ts` — rule 702.92a, "When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it" (Nettlecyst, Batterskull): the Germ is equipped before state-based actions see a 0/0; with two made (Doubling Season) one is equipped and the other dies (the rulings); an Equipment that has left, or come back as a new object, attaches to nothing. Put it in `triggered`, and the printed line in `text`. |
@@ -1177,7 +1194,12 @@ spell or ability sacrificed, as it last existed (Braids, Arisen Nightmare);
 `"trigger-object"` is the trigger object's instead — "a spell … that shares a
 card type with it", the spell whose casting fired the trigger (Baral and Kari
 Zev). An effect's filter is bound to its types as the effect applies, and
-anywhere there's nothing to share with it matches nothing. `enteredThisTurn` /
+anywhere there's nothing to share with it matches nothing.
+`sharesCreatureTypeWith: "trigger-object"` is the same for **creature types**
+— Heirloom Blade's "a creature card that shares a creature type with it",
+the dead creature as it last existed (its rulings): bound to a `subtypes` of
+its creature types, so a changeling on either side shares one with anything
+that has one, and a creature with none shares nothing. `enteredThisTurn` /
 `attackedThisTurn` are a permanent's history this turn — "creatures that
 entered this turn", Kratos, God of War's "creatures that player controls that
 **didn't attack** this turn" (`attackedThisTurn: false`). A permanent that
@@ -1756,7 +1778,7 @@ triggered: [
 | `dealt-damage` | `who`, `filter?`, `combat?` | the receiving end — "whenever this creature **is dealt damage**" (Brash Taunter, Hornet Nest, enrage). Combat and non-combat alike unless `combat` says which; `filter` narrows the permanent dealt damage (Sonic the Hedgehog: "a creature you control **with flash or haste**" — read as the damage is dealt, before SBAs). `{ triggerValue: true }` is how much; the permanent is the trigger object and the `"trigger-player"` is its controller. Damage dealt all at once is one event however many sources dealt it — a creature blocked by two is dealt its combat damage once — so it triggers once, for the total; a token stack dealt damage is that many permanents, so a watcher of *other* permanents fires once per token. |
 | `deals-damage` | `who`, `filter?`, `otherOnly?`, `to?`, `toFilter?`, `combat?`, `exactly?`, `toItsTarget?` | the dealing end, for any recipient — Niv-Mizzet, Visionary's "whenever a source you control deals noncombat damage to an opponent" (`{ who: "you-control", to: "opponent", combat: false }`), Ghyrson Starn's "another source you control deals **exactly 1** damage to a permanent or player" (`otherOnly`, `exactly: 1`), Kediss's "a commander you control deals combat damage to an opponent" (`filter: { isCommander: true }`). `who` / `filter` are about the **source** — a spell, a permanent, an ability's source — judged as it last existed on the battlefield if it had left; `to` is `"player" \| "opponent" \| "you" \| "permanent" \| "creature" \| "planeswalker"` (`"you"` is this permanent's controller — Mikaeus, the Unhallowed's "whenever a Human deals damage to you") and `toFilter` narrows a permanent recipient; `toItsTarget` is "a spell deals damage to a permanent or player **it targets**". Once **per recipient** per damage event (a `damage-all` for 1 fires it once per creature, and a token stack counts once per token — each firing that hits "that permanent" peels one token off it), for the amount actually **dealt** — after doubling and prevention, so fully prevented damage fires nothing and 2 prevented to 1 is "exactly 1". `{ triggerValue: true }` is the amount, the source is the trigger object (`damage.from: "trigger-object"`), the recipient is `damage.toTriggerRecipient`, and a player recipient (or a permanent's controller) is the `"trigger-player"`. |
 | `attack-with` | `who`, `atLeast`, `filter?`, `attackingYou?`, `stillAttacking?` | "whenever you attack with three or more creatures" (Overwhelming Instinct, Tide Skimmer). Fires once per declaration, off the whole attacker list — an `attacks` trigger fires per attacker and can't count them. `stillAttacking` makes the count an intervening if asked again on resolution — Mangara, the Diplomat's "if two or more of those creatures **are** attacking you": one removed from combat no longer counts, one that left the battlefield counts by what it was attacking. |
-| `deals-combat-damage-to-player` | `who`, `filter?`, `otherOnly?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player"; `otherOnly` is "**another** creature you control". Its target slots are the controller's choice — Mindscour Dragon's "target player mills four cards" may name anyone; "that player" is the `"trigger-player"` scope, never a target (Xyris's `draw` `who`, Captain N'ghathrod's `mill` `target`). The creature is the trigger object — Ikra Shidiqi's "you gain life equal to **that creature's** toughness" is `{ toughnessOf: "trigger-object" }`, read as it last existed on the battlefield if the same combat damage killed it — the damaged player is the `"trigger-player"`, and `{ triggerValue: true }` is the damage dealt. |
+| `deals-combat-damage-to-player` | `who`, `filter?`, `otherOnly?`, `toPlayerControlsMore?` | `filter` narrows on the *damaging creature* — Sharding Sphinx's "whenever an **artifact** creature you control deals combat damage to a player"; `otherOnly` is "**another** creature you control". `toPlayerControlsMore: CardFilter` is "…to a player **who controls more lands than you**" (Cartographer's Hawk: `{ type: "land" }`) — part of the event, counted as the damage is dealt, and not asked again as it resolves (an intervening-if would be). Its target slots are the controller's choice — Mindscour Dragon's "target player mills four cards" may name anyone; "that player" is the `"trigger-player"` scope, never a target (Xyris's `draw` `who`, Captain N'ghathrod's `mill` `target`). The creature is the trigger object — Ikra Shidiqi's "you gain life equal to **that creature's** toughness" is `{ toughnessOf: "trigger-object" }`, read as it last existed on the battlefield if the same combat damage killed it — the damaged player is the `"trigger-player"`, and `{ triggerValue: true }` is the damage dealt. |
 | `cast-spell` | `who`, `noncreatureOnly?`, `firstEachTurn?`, `nthEachTurn?`, `filter?`, `from?`, `notFrom?` | a spell is cast. `who: "opponent"` is anyone but this permanent's controller (Kaervek the Merciless); `filter` narrows on the *spell* — `{ typesAnyOf: ["instant", "sorcery"] }` for Guttersnipe. `noncreatureOnly` predates `filter` and stays, because prowess is printed as its own word. `withTargets: true` narrows to a spell with one or more targets, `{ triggerValue: true }` then how many (Voracious Bibliophile's "draw that many cards"); `modal: true` narrows to a modal spell (one cast with modes chosen — a `castModal` card), with `{ triggerValue: true }` then the number of times a mode was chosen for it (Riku of Many Paths); `sharesNoCreatureType: true` to a spell sharing no creature type with a creature its caster controls or a creature card in their graveyard, changeling on either side sharing every one (Volo, Guide to Monsters). `trigger-object` is the spell, so `{ manaValueOf: "trigger-object" }` reads its mana value, and `"x"` is its X, read as it was cast (Zaxara, the Exemplary's "put X +1/+1 counters" — a spell countered before the trigger resolves still gave its X). `firstEachTurn` / `nthEachTurn: N` is the caster's first / Nth spell this turn — and **with a `filter`, their first / Nth *matching* spell** (Tuvasa's "your first enchantment spell each turn", which can be your third spell). `from` / `notFrom` are the **zone it was cast from** (the `spell-cast` event records it before the spell moves to the stack): `from: "exile"` is "whenever you cast a spell from exile", `notFrom: "hand"` is "from anywhere other than your hand". A spell cast via foretell, suspend, cascade, an adventure or an impulse exile comes from `"exile"`; flashback / escape from `"graveyard"`; a commander from `"command"`. |
 | `cast-spell` + `orCopy: true` | | Magecraft — "whenever you cast **or copy** an instant or sorcery spell" (Archmage Emeritus). A copy isn't cast (rule 707.10), so plain `cast-spell` never sees one; with `orCopy` a `spell-copied` event matches too, `who` being the copy's controller, `filter` asking about the copy, the copy the trigger object. The cast-only narrowings (`from`, `firstEachTurn`, …) never match a copy. `copyOnly: true` matches **only** the copies — Kalamax, the Stormsire's "whenever you copy an instant spell". |
 | `counters-put` | `who`, `counter?`, `filter?`, `byYou?` | one or more counters were put on a permanent — including the ones it **entered with** (rule 122.6). Once per permanent per event, so two creatures at once is two triggers; `{ triggerValue: true }` is how many, and the permanent is the trigger object. `who` / `filter` are about the permanent; `byYou` is "whenever **you** put …" (Hapatra). Shalai and Hallar: `{ who: "you-control", counter: "+1/+1", filter: { type: "creature" } }`. |
@@ -2105,7 +2127,11 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   the creature still needs flying or reach to block a flyer at all). The
   other creature is matched from this permanent's controller's side. Read
   when a block is checked rather than folded into characteristics, so the
-  scope may ask about power and toughness.
+  scope may ask about power and toughness. The filter may compare against
+  this permanent's own power, toughness or mana value, read as blockers are
+  declared — Champion of Lambholt's "creatures with power less than this
+  creature's power can't block creatures you control" is `cantBeBlockedBy: {
+  power: { op: "lt", n: { amount: { powerOf: "source" } } } }`.
 - `attackOnlyNearestOpponent: true` — with `chooseOnEnter: ["left",
   "right"]`, Pramikon, Sky Rampart's "each player may attack only the nearest
   opponent in the chosen direction and planeswalkers controlled by that
@@ -2363,6 +2389,11 @@ clause (section 9):
   creature with the same value. On a static, the source's own value is read
   with that static switched off, so a static whose own P/T bonus changes the
   answer isn't modeled.
+- `{ kind: "controls-greatest", of, filter }` — you control **the** permanent
+  matching `filter` with the greatest power / toughness / mana value, or one
+  tied for it, among every matching permanent whoever controls it (Thickest
+  in the Thicket: `{ of: "power", filter: { type: "creature" } }`). False
+  when you control none; leave `controlledBy` out of `filter`.
 - `{ kind: "opponent-controls", filter: CardFilter, atLeast: number }` — *one*
   opponent must meet the count on their own (Defense of the Heart: "if an
   opponent controls three or more creatures").
@@ -2517,7 +2548,11 @@ clause (section 9):
   answer it.
 - `{ kind: "x", compare }` — "if X is 10 or more" (Finale of Devastation:
   `{ op: "gte", n: 10 }`): the X the resolving spell or ability was cast or
-  activated with. Only a resolution can answer it.
+  activated with. A resolution answers it, and so does a triggered ability's
+  intervening-if when it's a permanent's own enters trigger or a cast trigger
+  — the X it snapshots (rule 107.3m), 0 for a permanent that wasn't cast —
+  both as it triggers and as it resolves: ravenous's "if X is 5 or more"
+  (`ravenous()`, §6). Anywhere else it's false.
 - `{ kind: "this-way", what, who?, filter?, atLeast?, atMost? }` — a question
   about what the resolving spell or ability has done so far: "if a land card
   is discarded **this way**" (Lord Windgrace: `{ what: "discarded", filter: {

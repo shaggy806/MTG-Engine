@@ -173,6 +173,7 @@ import _poolSpitefulBully from "../pool/spiteful-bully.js";
 import _poolStealerOfSecrets from "../pool/stealer-of-secrets.js";
 import _poolStonespeakerCrystal from "../pool/stonespeaker-crystal.js";
 import _poolStorytellerPixie from "../pool/storyteller-pixie.js";
+import _poolStudyHall from "../pool/study-hall.js";
 import _poolSuburbanSanctuary from "../pool/suburban-sanctuary.js";
 import _poolSugarRush from "../pool/sugar-rush.js";
 import _poolSupplyRunners from "../pool/supply-runners.js";
@@ -390,6 +391,7 @@ const shard: CardShard = {
     _poolStealerOfSecrets,
     _poolStonespeakerCrystal,
     _poolStorytellerPixie,
+    _poolStudyHall,
     _poolSuburbanSanctuary,
     _poolSugarRush,
     _poolSupplyRunners,

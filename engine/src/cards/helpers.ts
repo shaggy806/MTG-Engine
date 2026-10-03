@@ -506,6 +506,32 @@ export const offspringTrigger = (): TriggeredAbility => ({
 });
 
 /**
+ * Ravenous (rule 702.156a — Jacked Rabbit): "This permanent enters with X
+ * +1/+1 counters on it" and "When this permanent enters, if X is 5 or more,
+ * draw a card." Both read the X its spell was cast with (rule 107.3m), even
+ * where a replacement changed how many counters it got (the ruling); entering
+ * any other way — a token copy included — X is 0, so no counters and no
+ * draw. The draw is an intervening-if (rule 603.4), so it never triggers
+ * below 5. Spread `static` into the card's `static` and `triggered` into its
+ * `triggered`, and put the "Ravenous (…)" line in the card's `text`.
+ */
+export const ravenous = (): { readonly static: StaticAbility; readonly triggered: TriggeredAbility } => ({
+  static: {
+    affects: { scope: "self" },
+    replacement: { event: "enters-battlefield", counters: { kind: "+1/+1", amount: "x" } },
+    text: "This creature enters with X +1/+1 counters on it.",
+  },
+  triggered: {
+    trigger: { on: "enters-battlefield", who: "self" },
+    condition: { kind: "x", compare: { op: "gte", n: 5 } },
+    targets: [],
+    effect: { kind: "draw", amount: 1 },
+    resolve: null,
+    text: "If X is 5 or more, draw a card when it enters.",
+  },
+});
+
+/**
  * Eternalize (rule 702.129a — Fanatic of Rhonas): "[Cost], Exile this card
  * from your graveyard: Create a token that's a copy of it, except it's a 4/4
  * black Zombie [its other creature types] with no mana cost. Eternalize only
