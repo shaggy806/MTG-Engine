@@ -28,7 +28,7 @@ Tarkir: Dragonstorm decks to replace the 2022 Starter Commander Decks as the bot
 
 | deck | commander | plan | cards left to author |
 |---|---|---|---|
-| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 19 |
+| Temur Roar | Ureni of the Unwritten | Dragons, dug out of the library by Ureni | 18 |
 | Sultai Arisen | Teval, the Balanced Scale | self-mill, lands and creatures back from the graveyard | 25 |
 | Abzan Armor | Felothar the Steadfast | walls and toughness, dealing damage by toughness | 15 |
 | Mardu Surge | Zurgo Stormrender | attacking tokens, cashed in as they leave | 12 |
@@ -98,11 +98,10 @@ it fails for any substitution whose original is now registered, and checks every
 
 The tables below mirror `sample-decks.ts` at the time of the swap; the code is authoritative.
 
-### Temur Roar — Ureni of the Unwritten (20)
+### Temur Roar — Ureni of the Unwritten (18)
 
 | printed card | plays as | why |
 |---|---|---|
-| Deceptive Frostkite | Sprite Dragon | Two-mana blue flying Dragon. |
 | Dragonlord Atarka | Drakuseth, Maw of Flames | Seven-mana legendary Dragon that burns as it attacks. |
 | Glorybringer | Terror of the Peaks | Five-mana red flying Dragon that removes creatures. |
 | Hellkite Courser | Rorix Bladewing | Six-mana red flying Dragon with haste. |

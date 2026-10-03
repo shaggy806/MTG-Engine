@@ -21947,7 +21947,6 @@ export class Game {
       if (moving.has(id)) continue;
       const object = this.state.objects[id];
       if (!supertypesOf(this.registry, object).includes("legendary")) continue;
-      if (exemptFromLegendRule(this.state, this.registry, id)) continue;
       // The name it has — a copy exception's, if one renamed it.
       const key = `${object.controller} ${nameOf(object)}`;
       const group = legendaryGroups.get(key);
@@ -21957,7 +21956,11 @@ export class Game {
     const keeps = new Set(this.state.legendRuleKeeps ?? []);
     const order = this.apnapOrder();
     let legend: { player: PlayerId; name: string; options: ObjectId[] } | null = null;
-    for (const group of legendaryGroups.values()) {
+    for (const named of legendaryGroups.values()) {
+      if (named.length <= 1) continue;
+      // The exemption is asked only of a name shared — this runs at every
+      // state-based check, and a lone legend has nothing to be exempt from.
+      const group = named.filter((id) => !exemptFromLegendRule(this.state, this.registry, id));
       if (group.length <= 1) continue;
       const kept = group.find((id) => keeps.has(id));
       if (kept === undefined) {

@@ -263,3 +263,59 @@ describe("a copy until end of turn (Cursed Mirror)", () => {
     expect(chars(s.game, clone).keywords.has("haste")).toBe(true);
   });
 });
+
+describe("edges of the copy choice", () => {
+  it("Mockingbird put onto the battlefield without being cast had no mana spent: mana value 0 only", () => {
+    const s = setUp();
+    spawn(s.game, "Swamp");
+    const memnite = spawn(s.game, "Memnite");
+    spawn(s.game, "Grizzly Bears");
+    const bird = s.game.debugSpawn("Mockingbird", A, "graveyard");
+    cast(s.game, "Reanimate", [{ kind: "object", object: bird }]);
+    expect(s.offered).toEqual([[memnite]]);
+    expect(s.game.state.objects[bird].copyOf).toBe("Memnite");
+  });
+
+  it("Glasspool Mimic played as Glasspool Shore asks nothing and enters tapped", () => {
+    const s = setUp();
+    spawn(s.game, "Grizzly Bears");
+    const card = s.game.debugSpawn("Glasspool Mimic", A, "hand");
+    s.game.dispatch({ type: "play-land", player: A, card, face: 1 });
+    settle(s.game);
+    expect(s.offered).toEqual([]);
+    expect(s.game.state.objects[card].tapped).toBe(true);
+    expect(chars(s.game, card).types).toEqual(["land"]);
+  });
+
+  it("Spark Double's extra counter is one it enters with, so Doubling Season doubles it", () => {
+    const s = setUp();
+    lands(s.game, "Island", 4);
+    spawn(s.game, "Doubling Season");
+    spawn(s.game, "Grizzly Bears");
+    const double = cast(s.game, "Spark Double");
+    expect(s.game.state.objects[double].counters["+1/+1"]).toBe(2);
+  });
+
+  it("a token copy's 'isn't legendary' is copied too, and a later 'legendary in addition' wins (rule 707.9b)", () => {
+    const s = setUp();
+    lands(s.game, "Island", 8);
+    const krenko = spawn(s.game, "Krenko, Mob Boss");
+    s.game.debugApplyEffect(A, { kind: "create-token-copy", of: 0, count: 1, notLegendary: true }, [
+      { kind: "object", object: krenko },
+    ]);
+    settle(s.game);
+    const token = s.game.battlefield.find((id) => s.game.state.objects[id].isToken === true)!;
+    s.a.chooseCopyFn = () => token;
+    const clone = cast(s.game, "Clone");
+    expect(s.game.state.objects[clone].copyOf).toBe("Krenko, Mob Boss");
+    expect(supertypesOf(registry, s.game.state.objects[clone])).not.toContain("legendary");
+    expect([krenko, token, clone].map((id) => s.game.state.objects[id].zone)).toEqual([
+      "battlefield",
+      "battlefield",
+      "battlefield",
+    ]);
+    s.a.chooseCopyFn = () => clone;
+    const impostor = cast(s.game, "Sakashima the Impostor");
+    expect(supertypesOf(registry, s.game.state.objects[impostor])).toContain("legendary");
+  });
+});

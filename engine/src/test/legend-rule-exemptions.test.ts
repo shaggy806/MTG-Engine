@@ -180,3 +180,25 @@ describe("a copy 'except it isn't legendary' (Spark Double)", () => {
     ]);
   });
 });
+
+describe("the copy-exception form of the legend-rule static", () => {
+  it("stops the moment the copy loses its abilities: the rule applies again at once", () => {
+    const { game, a } = setUp();
+    lands(game, "Island", 4);
+    const krenko = spawn(game, "Krenko, Mob Boss");
+    a.chooseCopyFn = () => krenko;
+    const sakashima = cast(game, "Sakashima of a Thousand Faces");
+    checkBoard(game);
+    expect([krenko, sakashima].map((id) => game.state.objects[id].zone)).toEqual(["battlefield", "battlefield"]);
+    game.state.objects[sakashima].modifiers.push({
+      power: 0,
+      toughness: 0,
+      keywords: [],
+      loseAbilities: true,
+      untilEndOfTurn: true,
+      timestamp: game.state.timestampSeq + 1,
+    });
+    checkBoard(game);
+    expect(onField(game, "Krenko, Mob Boss")).toHaveLength(1);
+  });
+});

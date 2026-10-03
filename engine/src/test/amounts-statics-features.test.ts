@@ -328,3 +328,27 @@ describe("Tangleweave Armor — +X/+X, X the greatest mana value among your comm
     expect(germ(s.game)).toBeUndefined();
   });
 });
+
+describe("greatest-value amounts over nothing, or nothing positive", () => {
+  it("Zegana beside only a 0-power creature enters with no counters and draws one", () => {
+    const s = setUp();
+    lands(s.game, "Forest", 3);
+    lands(s.game, "Island", 3);
+    spawn(s.game, "Wall of Denial");
+    const before = s.game.handOf(A).length;
+    const zegana = cast(s.game, "Prime Speaker Zegana");
+    // Not its own power of 1: "other creatures".
+    expect(s.game.state.objects[zegana].counters["+1/+1"] ?? 0).toBe(0);
+    expect(s.game.handOf(A).length - before).toBe(1);
+  });
+
+  it("Ghalta and Mavren attacking alone makes a 0/0 Dinosaur, which dies", () => {
+    const s = setUp();
+    const ghalta = spawn(s.game, "Ghalta and Mavren");
+    s.a.chooseModesFn = () => [0];
+    s.a.declareAttackersFn = () => [{ attacker: ghalta, defender: B }];
+    s.game.advanceUntil((st) => st.turn.step === "declare-attackers" && st.priority.holder === A && quiet(st));
+    const dinos = s.game.battlefield.filter((id) => s.game.state.objects[id].cardName === "X/X Dinosaur Token (Trample)");
+    expect(dinos).toHaveLength(0);
+  });
+});

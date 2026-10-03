@@ -3039,11 +3039,12 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
       </div>
     )
   } else if (mode === 'choose-copy' && copyChoiceAction) {
-    // Picked on the board, where each creature shows what it is: two copies
+    // Picked on the board, where each permanent shows what it is (Clone's
+    // options are creatures, Vesuva's lands, Sculpting Steel's artifacts): two copies
     // of one card are two buttons with the same name.
     controls = (
       <div className="controls">
-        <span>{game.nameOf(copyChoiceAction.source)} — click the creature to copy</span>
+        <span>{game.nameOf(copyChoiceAction.source)} — click the permanent to copy</span>
         <button
           type="button"
           onClick={() => game.dispatch({ type: 'choose-copy', player: seat, copy: null })}
