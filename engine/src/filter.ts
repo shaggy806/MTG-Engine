@@ -242,6 +242,18 @@ export interface CardFilter {
    * Nelly Borca's "goad all suspected creatures". One that has left the
    * battlefield is asked as it last was. */
   readonly suspected?: boolean;
+  /**
+   * It has the greatest `of` among the battlefield permanents **its
+   * controller** controls that match `among` — ties all count: "each
+   * opponent sacrifices a creature with the greatest power among creatures
+   * that player controls" (Crackling Doom, Will of the Abzan) is a
+   * `sacrifice` of `{ type: "creature", greatestAmongItsController: { of:
+   * "power", among: { type: "creature" } } }`, the controller choosing among
+   * the tied. A per-player maximum, so it's asked of each permanent against
+   * its own controller's, live; an object that isn't on the battlefield
+   * never matches.
+   */
+  readonly greatestAmongItsController?: { readonly of: AggregateOf; readonly among: CardFilter };
   readonly power?: NumCompare;
   readonly toughness?: NumCompare;
   /**
@@ -1179,7 +1191,8 @@ export function matchesFilter(
         filter.power !== undefined ||
         filter.toughness !== undefined ||
         filter.basePower !== undefined ||
-        filter.baseToughness !== undefined
+        filter.baseToughness !== undefined ||
+        filter.greatestAmongItsController !== undefined
       ) {
         return false;
       }
@@ -1224,6 +1237,20 @@ export function matchesFilter(
     }
     if (filter.keyword !== undefined && !c.keywords.has(filter.keyword)) return false;
     if (filter.notKeyword !== undefined && c.keywords.has(filter.notKeyword)) return false;
+  }
+
+  // "With the greatest power among creatures that player controls": none of
+  // its controller's other matching permanents has more.
+  const greatest = filter.greatestAmongItsController;
+  if (greatest !== undefined) {
+    // Not inside the layer fold, which can't read other permanents' P/T.
+    if (layered !== undefined || live === undefined || live.zone !== "battlefield") return false;
+    const mine = aggregateValueOf(state, registry, id, greatest.of);
+    for (const other of state.zones.shared.battlefield) {
+      if (other === id || state.objects[other]?.controller !== live.controller) continue;
+      if (!matchesFilter(state, registry, other, greatest.among, { you: live.controller })) continue;
+      if (aggregateValueOf(state, registry, other, greatest.of) > mine) return false;
+    }
   }
 
   return true;

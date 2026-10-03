@@ -85,6 +85,7 @@ import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHannaShipsNavigator from "../pool/hanna-ships-navigator.js";
 import _poolHaughtyDjinn from "../pool/haughty-djinn.js";
+import _poolHellkiteCourser from "../pool/hellkite-courser.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
 import _poolImperialOutrider from "../pool/imperial-outrider.js";
 import _poolInGarruksWake from "../pool/in-garruks-wake.js";
@@ -311,6 +312,7 @@ const shard: CardShard = {
     _poolGyreSage,
     _poolHannaShipsNavigator,
     _poolHaughtyDjinn,
+    _poolHellkiteCourser,
     _poolHornetHarasser,
     _poolImperialOutrider,
     _poolInGarruksWake,

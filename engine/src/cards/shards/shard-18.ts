@@ -36,6 +36,7 @@ import _poolCodsworthHandyHelper from "../pool/codsworth-handy-helper.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
 import _poolColossalMajesty from "../pool/colossal-majesty.js";
+import _poolCommandBeacon from "../pool/command-beacon.js";
 import _poolCommodoreGuff from "../pool/commodore-guff.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
@@ -253,6 +254,7 @@ const shard: CardShard = {
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
     _poolColossalMajesty,
+    _poolCommandBeacon,
     _poolCommodoreGuff,
     _poolCopperlineGorge,
     _poolCourserOfKruphix,

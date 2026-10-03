@@ -191,7 +191,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zenith Festival", 1],
     ],
     substitutions: [
-      sub("Hellkite Courser", "Rorix Bladewing", "Six-mana red flying Dragon with haste."),
       sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Opportunistic Dragon", "Skyship Stalker", "Four-mana red flying Dragon."),
       sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
@@ -301,7 +300,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Colossal Grave-Reaver", "Archon of Cruelty", "Eight-mana creature: attack trigger, evasive creature."),
-      sub("Command Beacon", "Path of Ancestry", "Land: commander payoff, utility land."),
       sub("Consuming Aberration", "Umbris, Fear Manifest", "Five-mana creature: mill."),
       sub("Dauthi Voidwalker", "Scavenging Ooze", "Two-mana creature: graveyard hate."),
       sub("Lethal Scheme", "Hero's Downfall", "Instant-speed creature or planeswalker removal."),
@@ -312,7 +310,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Shigeki, Jukai Visionary", "Coiling Oracle", "Two-mana creature: extra land, ramp."),
       sub("Steward of the Harvest", "Cemetery Reaper", "Four-mana creature."),
       sub("Tasigur, the Golden Fang", "Barrow Witches", "Six-mana creature: regrowth, recursion."),
-      sub("Wonder", "Pixie Queen", "Four-mana creature: gives flying, evasion."),
     ],
   }),
   precon({
@@ -409,7 +406,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     substitutions: [
       sub("Shadrix Silverquill", "Archangel of Thune", "Five-mana white flier that grows the team."),
       sub("Slaughter the Strong", "Citywide Bust", "Three-mana sorcery: sweeper, creature removal."),
-      sub("Will of the Abzan", "Breath of Life", "Four-mana sorcery: reanimation, recursion."),
     ],
   }),
   precon({
@@ -1044,7 +1040,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Profane Command", "Kolaghan's Command", "Modal black-red Command with a recursion mode."),
       sub("Scythe Specter", "Hypnotic Specter", "Flying Specter that makes opponents discard."),
       sub("Sepulchral Primordial", "Overseer of the Damned", "Seven-mana black top-end with an enters-the-battlefield payoff."),
-      sub("Soul Shatter", "Diabolic Edict", "Instant-speed edict."),
       sub("Sunbird's Invocation", "Phyrexian Arena", "Card-advantage enchantment."),
       sub("Wild Ricochet", "Act of Treason", "Uses an opponent's resources against them."),
       sub("Wildfire Devils", "Cinder Elemental", "Four-mana red creature that turns into damage."),
@@ -1320,7 +1315,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Warstorm Surge", 1],
     ],
     substitutions: [
-      sub("Anger", "Fervor", "Gives the deck's creatures haste."),
       sub("Carnelian Orb of Dragonkind", "Ruby Medallion", "Red artifact that makes the deck's spells cheaper."),
       sub("Chandra's Ignition", "Slagstorm", "Red sweeper that can hit opponents instead."),
       sub("Dragonhawk, Fate's Tempest", "Demanding Dragon", "Five-mana red flying Dragon."),

@@ -26,6 +26,7 @@ import _poolBogImp from "../pool/bog-imp.js";
 import _poolBoggartBrute from "../pool/boggart-brute.js";
 import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
 import _poolBoneDevourer from "../pool/bone-devourer.js";
+import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
@@ -244,6 +245,7 @@ const shard: CardShard = {
     _poolBoggartBrute,
     _poolBoilingRockPrison,
     _poolBoneDevourer,
+    _poolBrawn,
     _poolBreathstealer,
     _poolCanopyGorger,
     _poolCarrionAnts,

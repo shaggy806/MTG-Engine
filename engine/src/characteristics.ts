@@ -2327,11 +2327,29 @@ function contributingStaticSources(
     if (state.players[source.controller]?.hasLost === true) continue;
     for (const ability of registry.get(printedCardName(source)).static) {
       if (lost && !hasLayerFourPart(ability)) continue;
+      // "As long as this card is in your graveyard": not from here.
+      if (ability.fromGraveyard === true) continue;
       // Only P/T-bonus / keyword-grant / restriction statics contribute here.
       // A static that is purely a replacement (rule 614 — "enters tapped") or
       // a CDA (`setBasePtFromCount`, handled in its own pass) modifies nothing.
       if (!contributesToCharacteristics(ability)) continue;
       out.push({ source, ability });
+    }
+  }
+  // A card's static that functions from its owner's graveyard (rule 113.6b
+  // — Wonder's "as long as this card is in your graveyard and you control an
+  // Island, creatures you control have flying"), "you" its owner, ordered
+  // after the battlefield's by the timestamp it got going there (Anger's
+  // ruling).
+  for (const player of state.turnOrder) {
+    if (state.players[player]?.hasLost === true) continue;
+    for (const sourceId of state.zones.perPlayer[player]?.graveyard ?? []) {
+      const source = state.objects[sourceId];
+      if (source === undefined || !registry.has(printedCardName(source))) continue;
+      for (const ability of registry.get(printedCardName(source)).static) {
+        if (ability.fromGraveyard !== true || !contributesToCharacteristics(ability)) continue;
+        out.push({ source, ability });
+      }
     }
   }
   if (activeCache !== null) activeCache.staticSources = out;

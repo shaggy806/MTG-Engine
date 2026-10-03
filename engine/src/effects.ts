@@ -2219,6 +2219,17 @@ export type EffectSpec =
     }
   | {
       /**
+       * "Return it to the command zone" (Hellkite Courser's delayed
+       * trigger): a commander still on the battlefield as the same object
+       * (rule 400.7 — its ruling: "only if it's still on the battlefield")
+       * goes to the command zone, leaving the battlefield as any permanent
+       * does. Anything that isn't a commander stays put.
+       */
+      readonly kind: "put-in-command-zone";
+      readonly target: EffectTargetRef;
+    }
+  | {
+      /**
        * "Exchange your life total with this creature's toughness" (Tree of
        * Redemption — rule 701.12g): the permanent's toughness becomes the
        * effect controller's life total, a layer-7b effect with no end
@@ -3418,8 +3429,12 @@ export type EffectSpec =
        * order: a card from another player's that goes to the battlefield goes
        * under the chooser's control — Necromantic Selection's "return a
        * creature card put into a graveyard this way to the battlefield under
-       * your control". */
-      readonly zone: "library" | "graveyard" | "hand" | "graveyards";
+       * your control". `"command"` is the chooser's own commanders in the
+       * command zone — Command Beacon's "put your commander into your hand
+       * from the command zone" (one of their choice with two — its ruling),
+       * Hellkite Courser's "you may put a commander you own from the command
+       * zone onto the battlefield". */
+      readonly zone: "library" | "graveyard" | "hand" | "graveyards" | "command";
       /** How deep into a library to look. An amount, so it can be read at
        * resolution: Gishath, Sun's Avatar's "reveal **that many** cards" is
        * `{ triggerValue: true }`, the combat damage it dealt. */
@@ -4158,6 +4173,8 @@ export interface EffectApi {
   attackDespiteDefender(target: TargetRef | undefined, filter: CardFilter | undefined): void;
   /** See the `"damage-by-toughness"` {@link EffectSpec}. */
   damageByToughness(target: TargetRef): void;
+  /** See the `"put-in-command-zone"` {@link EffectSpec}. */
+  putInCommandZone(target: TargetRef): void;
   /** See the `"exchange-life-toughness"` {@link EffectSpec}. */
   exchangeLifeToughness(target: TargetRef, player: PlayerId): void;
   /** See the `"unless"` {@link EffectSpec}. */
@@ -4472,7 +4489,7 @@ export interface EffectApi {
   removeCounter(target: TargetRef, counter: string, amount: number): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
-    zone: "library" | "graveyard" | "hand" | "graveyards",
+    zone: "library" | "graveyard" | "hand" | "graveyards" | "command",
     count: number | undefined,
     min: number,
     max: number,
@@ -6224,6 +6241,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "damage-by-toughness": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.damageByToughness(target);
+      return;
+    }
+    case "put-in-command-zone": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.putInCommandZone(target);
       return;
     }
     case "exchange-life-toughness": {

@@ -203,6 +203,7 @@ import _poolAngelicPage from "./pool/angelic-page.js";
 import _poolAngelicWall from "./pool/angelic-wall.js";
 import _poolAngelsGrace from "./pool/angels-grace.js";
 import _poolAngelsMercy from "./pool/angels-mercy.js";
+import _poolAnger from "./pool/anger.js";
 import _poolAnglerDrake from "./pool/angler-drake.js";
 import _poolAnglerTurtle from "./pool/angler-turtle.js";
 import _poolAngrathsRampage from "./pool/angraths-rampage.js";
@@ -752,6 +753,7 @@ import _poolBraveBrawler from "./pool/brave-brawler.js";
 import _poolBraveKinDuo from "./pool/brave-kin-duo.js";
 import _poolBrawlersPlate from "./pool/brawlers-plate.js";
 import _poolBrawnAmadeusCho from "./pool/brawn-amadeus-cho.js";
+import _poolBrawn from "./pool/brawn.js";
 import _poolBrazenFreebooter from "./pool/brazen-freebooter.js";
 import _poolBrazenScourge from "./pool/brazen-scourge.js";
 import _poolBreachingDragonstorm from "./pool/breaching-dragonstorm.js";
@@ -1099,6 +1101,7 @@ import _poolColossapede from "./pool/colossapede.js";
 import _poolColossodonYearling from "./pool/colossodon-yearling.js";
 import _poolCombatCelebrant from "./pool/combat-celebrant.js";
 import _poolCombatThresher from "./pool/combat-thresher.js";
+import _poolCommandBeacon from "./pool/command-beacon.js";
 import _poolCommandTheStorm from "./pool/command-the-storm.js";
 import _poolCommandTower from "./pool/command-tower.js";
 import _poolCommandersInsignia from "./pool/commanders-insignia.js";
@@ -1180,6 +1183,7 @@ import _poolCowlProwler from "./pool/cowl-prowler.js";
 import _poolCrackOpen from "./pool/crack-open.js";
 import _poolCrackTheEarth from "./pool/crack-the-earth.js";
 import _poolCracklingCyclops from "./pool/crackling-cyclops.js";
+import _poolCracklingDoom from "./pool/crackling-doom.js";
 import _poolCracklingPerimeter from "./pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "./pool/cradle-of-the-accursed.js";
 import _poolCragcrownPathway from "./pool/cragcrown-pathway.js";
@@ -1984,6 +1988,7 @@ import _poolFiligreeCrawler from "./pool/filigree-crawler.js";
 import _poolFiligreeFamiliar from "./pool/filigree-familiar.js";
 import _poolFiligreeSages from "./pool/filigree-sages.js";
 import _poolFillWithFright from "./pool/fill-with-fright.js";
+import _poolFilth from "./pool/filth.js";
 import _poolFinalDeath from "./pool/final-death.js";
 import _poolFinalReward from "./pool/final-reward.js";
 import _poolFinalShowdown from "./pool/final-showdown.js";
@@ -2635,6 +2640,7 @@ import _poolHeliodsPilgrim from "./pool/heliods-pilgrim.js";
 import _poolHelionaut from "./pool/helionaut.js";
 import _poolHelixPinnacle from "./pool/helix-pinnacle.js";
 import _poolHellkiteCharger from "./pool/hellkite-charger.js";
+import _poolHellkiteCourser from "./pool/hellkite-courser.js";
 import _poolHellkitePunisher from "./pool/hellkite-punisher.js";
 import _poolHellkiteTyrant from "./pool/hellkite-tyrant.js";
 import _poolHellsKitchen from "./pool/hells-kitchen.js";
@@ -5238,6 +5244,7 @@ import _poolSoulManipulation from "./pool/soul-manipulation.js";
 import _poolSoulOfTheHarvest from "./pool/soul-of-the-harvest.js";
 import _poolSoulOfTheRapids from "./pool/soul-of-the-rapids.js";
 import _poolSoulOfZendikar from "./pool/soul-of-zendikar.js";
+import _poolSoulShatter from "./pool/soul-shatter.js";
 import _poolSoulShred from "./pool/soul-shred.js";
 import _poolSoulSnare from "./pool/soul-snare.js";
 import _poolSoulWarden from "./pool/soul-warden.js";
@@ -6532,6 +6539,7 @@ import _poolWildernessReclamation from "./pool/wilderness-reclamation.js";
 import _poolWildfire from "./pool/wildfire.js";
 import _poolWildwoodPatrol from "./pool/wildwood-patrol.js";
 import _poolWildwoodRebirth from "./pool/wildwood-rebirth.js";
+import _poolWillOfTheAbzan from "./pool/will-of-the-abzan.js";
 import _poolWillOfTheJeskai from "./pool/will-of-the-jeskai.js";
 import _poolWillOfTheMardu from "./pool/will-of-the-mardu.js";
 import _poolWillOfTheSultai from "./pool/will-of-the-sultai.js";
@@ -6611,6 +6619,7 @@ import _poolWolfCoveVillager from "./pool/wolf-cove-villager.js";
 import _poolWolfsbaneHighlandHero from "./pool/wolfsbane-highland-hero.js";
 import _poolWolfwillowHaven from "./pool/wolfwillow-haven.js";
 import _poolWolverineBestThereIs from "./pool/wolverine-best-there-is.js";
+import _poolWonder from "./pool/wonder.js";
 import _poolWoodElves from "./pool/wood-elves.js";
 import _poolWoodedBastion from "./pool/wooded-bastion.js";
 import _poolWoodedFoothills from "./pool/wooded-foothills.js";
@@ -7107,6 +7116,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolAngelicWall,
   _poolAngelsGrace,
   _poolAngelsMercy,
+  _poolAnger,
   _poolAnglerDrake,
   _poolAnglerTurtle,
   _poolAngrathsRampage,
@@ -7656,6 +7666,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolBraveKinDuo,
   _poolBrawlersPlate,
   _poolBrawnAmadeusCho,
+  _poolBrawn,
   _poolBrazenFreebooter,
   _poolBrazenScourge,
   _poolBreachingDragonstorm,
@@ -8003,6 +8014,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolColossodonYearling,
   _poolCombatCelebrant,
   _poolCombatThresher,
+  _poolCommandBeacon,
   _poolCommandTheStorm,
   _poolCommandTower,
   _poolCommandersInsignia,
@@ -8084,6 +8096,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCrackOpen,
   _poolCrackTheEarth,
   _poolCracklingCyclops,
+  _poolCracklingDoom,
   _poolCracklingPerimeter,
   _poolCradleOfTheAccursed,
   _poolCragcrownPathway,
@@ -8888,6 +8901,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolFiligreeFamiliar,
   _poolFiligreeSages,
   _poolFillWithFright,
+  _poolFilth,
   _poolFinalDeath,
   _poolFinalReward,
   _poolFinalShowdown,
@@ -9539,6 +9553,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHelionaut,
   _poolHelixPinnacle,
   _poolHellkiteCharger,
+  _poolHellkiteCourser,
   _poolHellkitePunisher,
   _poolHellkiteTyrant,
   _poolHellsKitchen,
@@ -12142,6 +12157,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSoulOfTheHarvest,
   _poolSoulOfTheRapids,
   _poolSoulOfZendikar,
+  _poolSoulShatter,
   _poolSoulShred,
   _poolSoulSnare,
   _poolSoulWarden,
@@ -13436,6 +13452,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWildfire,
   _poolWildwoodPatrol,
   _poolWildwoodRebirth,
+  _poolWillOfTheAbzan,
   _poolWillOfTheJeskai,
   _poolWillOfTheMardu,
   _poolWillOfTheSultai,
@@ -13515,6 +13532,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolWolfsbaneHighlandHero,
   _poolWolfwillowHaven,
   _poolWolverineBestThereIs,
+  _poolWonder,
   _poolWoodElves,
   _poolWoodedBastion,
   _poolWoodedFoothills,

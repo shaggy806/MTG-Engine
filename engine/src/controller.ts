@@ -1283,7 +1283,9 @@ export class RandomController extends AutomaticController {
             }
           }
           modes.sort((a, b) => a - b);
-          const picked = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
+          // Each mode's own relations ("another target opponent" — Will of
+          // the Abzan) narrow its slots as they're picked.
+          const picked = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions, cm.modes[i].targetSpecs));
           const targets = fitCastTargets(
             legal,
             picked,

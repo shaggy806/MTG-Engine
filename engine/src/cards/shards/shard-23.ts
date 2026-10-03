@@ -163,6 +163,7 @@ import _poolSoddenVerdure from "../pool/sodden-verdure.js";
 import _poolSolemnSimulacrum from "../pool/solemn-simulacrum.js";
 import _poolSolveTheEquation from "../pool/solve-the-equation.js";
 import _poolSorinOfHouseMarkov from "../pool/sorin-of-house-markov.js";
+import _poolSoulShatter from "../pool/soul-shatter.js";
 import _poolSouldrinker from "../pool/souldrinker.js";
 import _poolSpiderwigBoggart from "../pool/spiderwig-boggart.js";
 import _poolSporecapSpider from "../pool/sporecap-spider.js";
@@ -380,6 +381,7 @@ const shard: CardShard = {
     _poolSolemnSimulacrum,
     _poolSolveTheEquation,
     _poolSorinOfHouseMarkov,
+    _poolSoulShatter,
     _poolSouldrinker,
     _poolSpiderwigBoggart,
     _poolSporecapSpider,

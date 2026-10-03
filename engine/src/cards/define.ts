@@ -886,6 +886,14 @@ export interface StaticAbility {
    * present and false, the static contributes nothing. Re-evaluated on every
    * characteristics read, so it's live. ROADMAP Phase 11 EG-3. */
   readonly condition?: StaticCondition;
+  /**
+   * "As long as this card is in your graveyard, …" (Wonder, Anger, Brawn,
+   * Valor, Filth): the static functions only while its card is in its
+   * owner's graveyard (rule 113.6b), never on the battlefield, "you" being
+   * its owner. Only a grant to permanents reaches that far yet — a keyword,
+   * a P/T bonus, a restriction (`contributingStaticSources`).
+   */
+  readonly fromGraveyard?: true;
   /** A replacement effect (rule 614) — see `replacements.ts`. `affects` is
    * irrelevant to one: each `ReplacementSpec` names what it reaches itself
    * (`scope: "self"` is the convention). */

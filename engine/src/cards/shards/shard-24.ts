@@ -72,6 +72,7 @@ import _poolFeralProwler from "../pool/feral-prowler.js";
 import _poolFeralRidgewolf from "../pool/feral-ridgewolf.js";
 import _poolFerrousLake from "../pool/ferrous-lake.js";
 import _poolFierceGuardianship from "../pool/fierce-guardianship.js";
+import _poolFilth from "../pool/filth.js";
 import _poolFinalShowdown from "../pool/final-showdown.js";
 import _poolFireElemental from "../pool/fire-elemental.js";
 import _poolFireball from "../pool/fireball.js";
@@ -290,6 +291,7 @@ const shard: CardShard = {
     _poolFeralRidgewolf,
     _poolFerrousLake,
     _poolFierceGuardianship,
+    _poolFilth,
     _poolFinalShowdown,
     _poolFireElemental,
     _poolFireball,

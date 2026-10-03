@@ -227,6 +227,7 @@ import _poolWelcomingVampire from "../pool/welcoming-vampire.js";
 import _poolWildwoodRebirth from "../pool/wildwood-rebirth.js";
 import _poolWillowElf from "../pool/willow-elf.js";
 import _poolWindDancer from "../pool/wind-dancer.js";
+import _poolWonder from "../pool/wonder.js";
 import _poolYarokTheDesecrated from "../pool/yarok-the-desecrated.js";
 import _poolYokedPlowbeast from "../pool/yoked-plowbeast.js";
 import _poolZadaHedronGrinder from "../pool/zada-hedron-grinder.js";
@@ -463,6 +464,7 @@ const shard: CardShard = {
     _poolWildwoodRebirth,
     _poolWillowElf,
     _poolWindDancer,
+    _poolWonder,
     _poolYarokTheDesecrated,
     _poolYokedPlowbeast,
     _poolZadaHedronGrinder,

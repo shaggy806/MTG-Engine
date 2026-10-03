@@ -983,6 +983,194 @@ describe("Teval's Judgment", () => {
   });
 });
 
+describe("from the command zone (Command Beacon, Hellkite Courser)", () => {
+  /** A commander of A's waiting in the command zone. */
+  const commander = (game: Game, name = "Craw Wurm"): ObjectId => {
+    const id = game.debugSpawn(name, A, "command");
+    game.state.objects[id].isCommander = true;
+    return id;
+  };
+  /** Answer whatever asks along the way: the choice of commander, and the
+   * commander's own "put it in the command zone instead?" (rule 903.9b) —
+   * no. */
+  const settle = (game: Game, pick?: ObjectId) => {
+    for (let i = 0; i < 6; i += 1) {
+      game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+      const awaiting = game.state.awaiting;
+      if (awaiting === null) return;
+      if (awaiting.kind === "choose-from-zone") {
+        game.dispatch({ type: "choose-from-zone", player: A, chosen: pick === undefined ? [] : [pick] });
+      } else if (awaiting.kind === "commander-replacement") {
+        game.dispatch({ type: "commander-replacement", player: A, toCommandZone: false });
+      } else return;
+    }
+  };
+
+  it("Command Beacon puts your commander into your hand, one of your choice of two", () => {
+    const game = setUp();
+    const wurm = commander(game);
+    const bears = commander(game, "Grizzly Bears");
+    // An opponent's commander isn't yours.
+    const theirs = game.debugSpawn("Serra Angel", B, "command");
+    game.state.objects[theirs].isCommander = true;
+    const beacon = ready(game, "Command Beacon");
+    activate(game, beacon, 1);
+    game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "choose-from-zone" ? [...awaiting.eligible].sort() : []).toEqual([wurm, bears].sort());
+    settle(game, bears);
+    expect(game.state.objects[beacon].zone).toBe("graveyard");
+    expect(game.state.objects[bears].zone).toBe("hand");
+    expect(game.state.objects[wurm].zone).toBe("command");
+  });
+
+  it("Command Beacon does nothing with no commander there", () => {
+    const game = setUp();
+    const beacon = ready(game, "Command Beacon");
+    const hand = handSize(game);
+    activate(game, beacon, 1);
+    settle(game);
+    expect(game.state.objects[beacon].zone).toBe("graveyard");
+    expect(handSize(game)).toBe(hand);
+  });
+
+  it("Hellkite Courser puts a commander onto the battlefield with haste, back to the command zone at the end step", () => {
+    const game = setUp();
+    const wurm = commander(game);
+    cast(game, "Hellkite Courser");
+    settle(game, wurm);
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
+    expect(game.characteristics(wurm).keywords.has("haste")).toBe(true);
+    // Put, not cast: no tax.
+    expect(game.state.players[A].commanderCastCounts["Craw Wurm"] ?? 0).toBe(0);
+    game.advanceUntil((s) => s.turn.step === "cleanup" || (s.turn.step === "end" && quiet(s) && s.zones.shared.stack.length === 0 && game.state.objects[wurm].zone !== "battlefield"));
+    expect(game.state.objects[wurm].zone).toBe("command");
+  });
+
+  it("Hellkite Courser's return finds nothing once the commander has left", () => {
+    const game = setUp();
+    const wurm = commander(game);
+    cast(game, "Hellkite Courser");
+    settle(game, wurm);
+    game.debugApplyEffect(A, { kind: "return-to-hand", target: 0 }, [obj(wurm)]);
+    settle(game);
+    expect(game.state.objects[wurm].zone).toBe("hand");
+    game.advanceUntil((s) => activePlayerOf(s) === B);
+    expect(game.state.objects[wurm].zone).toBe("hand");
+  });
+});
+
+describe("a sacrifice of the greatest among its controller's (Crackling Doom, Soul Shatter, Will of the Abzan)", () => {
+  /** Answer each sacrifice decision with the first permanent offered,
+   * recording what each player was offered. */
+  const answerSacrifices = (game: Game): Record<string, ObjectId[]> => {
+    const offered: Record<string, ObjectId[]> = {};
+    for (let i = 0; i < 8; i += 1) {
+      game.advanceUntil((s) => s.awaiting?.kind === "sacrifice" || quiet(s));
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind !== "sacrifice") break;
+      const legal = game.legalActions(awaiting.player).find((a) => a.kind === "sacrifice");
+      const eligible = legal?.kind === "sacrifice" ? [...legal.eligible] : [];
+      offered[awaiting.player] = eligible;
+      game.dispatch({ type: "sacrifice", player: awaiting.player, permanents: [eligible[0]] });
+    }
+    game.advanceUntil(quiet);
+    return offered;
+  };
+
+  it("Crackling Doom: each opponent sacrifices one with the greatest power, choosing among ties", () => {
+    const game = threeWay();
+    for (const land of ["Mountain", "Mountain"] as const) {
+      game.state.objects[game.debugSpawn(land, A, "battlefield")].tapped = false;
+    }
+    const wurm = ready(game, "Craw Wurm", B);
+    const bobsBears = ready(game, "Grizzly Bears", B);
+    const [c1, c2] = [ready(game, "Grizzly Bears", C), ready(game, "Grizzly Bears", C)];
+    const mine = ready(game, "Craw Wurm");
+    cast(game, "Crackling Doom");
+    const offered = answerSacrifices(game);
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
+    expect(game.state.objects[bobsBears].zone).toBe("battlefield");
+    expect(offered[C]?.sort()).toEqual([c1, c2].sort());
+    expect([c1, c2].filter((id) => game.state.objects[id].zone === "graveyard")).toHaveLength(1);
+    expect(game.state.objects[mine].zone).toBe("battlefield");
+    expect(life(game, B)).toBe(18);
+    expect(life(game, C)).toBe(18);
+  });
+
+  it("Soul Shatter takes the creature or planeswalker with the greatest mana value", () => {
+    const game = setUp();
+    const ajani = game.debugSpawn("Ajani, Caller of the Pride", B, "battlefield"); // MV 3
+    const bears = ready(game, "Grizzly Bears", B); // MV 2
+    cast(game, "Soul Shatter");
+    answerSacrifices(game);
+    expect(game.state.objects[ajani].zone).toBe("graveyard");
+    expect(game.state.objects[bears].zone).toBe("battlefield");
+  });
+
+  it("Will of the Abzan: the targeted opponents each sacrifice their greatest and lose 3; both modes with a commander", () => {
+    const game = threeWay();
+    const commander = ready(game, "Grizzly Bears");
+    game.state.objects[commander].isCommander = true;
+    const bWurm = ready(game, "Craw Wurm", B);
+    const bBears = ready(game, "Grizzly Bears", B);
+    const cWurm = ready(game, "Craw Wurm", C);
+    const dead = game.debugSpawn("Serra Angel", A, "graveyard");
+    // Not the same opponent twice.
+    const twice = game.debugSpawn("Will of the Abzan", A, "hand");
+    expect(() =>
+      game.dispatch({
+        type: "cast-spell", player: A, card: twice, modes: [0],
+        targets: [{ kind: "player", player: B }, { kind: "player", player: B }, null],
+      }),
+    ).toThrow();
+    game.dispatch({
+      type: "cast-spell", player: A, card: twice, modes: [0, 1],
+      targets: [{ kind: "player", player: B }, null, null, obj(dead)],
+    });
+    answerSacrifices(game);
+    expect(game.state.objects[bWurm].zone).toBe("graveyard");
+    expect(game.state.objects[bBears].zone).toBe("battlefield");
+    expect(game.state.objects[cWurm].zone).toBe("battlefield");
+    expect(life(game, B)).toBe(17);
+    expect(life(game, C)).toBe(20);
+    expect(game.state.objects[dead].zone).toBe("battlefield");
+    expect(game.state.objects[dead].controller).toBe(A);
+  });
+});
+
+describe("statics that work from the graveyard (Wonder, Anger)", () => {
+  it("Wonder gives your creatures flying from your graveyard while you control an Island", () => {
+    const game = bare();
+    const bears = ready(game, "Grizzly Bears");
+    const theirs = ready(game, "Grizzly Bears", B);
+    game.debugSpawn("Wonder", A, "graveyard");
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(false);
+    game.debugSpawn("Island", A, "battlefield");
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(true);
+    expect(game.characteristics(theirs).keywords.has("flying")).toBe(false);
+  });
+
+  it("Wonder on the battlefield grants nothing", () => {
+    const game = bare();
+    game.debugSpawn("Island", A, "battlefield");
+    const bears = ready(game, "Grizzly Bears");
+    const wonder = ready(game, "Wonder");
+    expect(game.characteristics(wonder).keywords.has("flying")).toBe(true);
+    expect(game.characteristics(bears).keywords.has("flying")).toBe(false);
+  });
+
+  it("Anger lets a creature you control attack the turn it arrives", () => {
+    const game = setUp();
+    game.debugSpawn("Anger", A, "graveyard");
+    const goblin = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    expect(game.characteristics(goblin).keywords.has("haste")).toBe(true);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers");
+    const legal = game.legalActions(A).find((a) => a.kind === "declare-attackers");
+    expect(legal?.kind === "declare-attackers" ? legal.eligible : []).toContain(goblin);
+  });
+});
+
 describe("Gravecrawler", () => {
   const graveyardOffer = (game: Game, card: ObjectId) =>
     game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === card);

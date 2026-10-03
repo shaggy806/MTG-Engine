@@ -180,6 +180,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "damage-by-toughness": (n, v) => v.touch(n.target, "help", MINOR),
   // Its own source in print (Tree of Redemption); which way it cuts turns
   // on the numbers, not the side of the table.
+  "put-in-command-zone": (n, v) => v.touch(n.target, "either", MINOR),
   "exchange-life-toughness": (n, v) => {
     v.touch(n.target, "either", MINOR);
     // Tree of Perdition's target opponent: a life total of 13 is a cut

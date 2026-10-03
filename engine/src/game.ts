@@ -16814,6 +16814,14 @@ export class Game {
       },
       damageByToughness: (target) => this.markUntilEndOfTurn(target, { combatDamageByToughness: true }),
       exchangeLifeToughness: (target, player) => this.exchangeLifeToughness(player, target),
+      putInCommandZone: (target) => {
+        // A commander still here as the same object (rule 400.7 — the
+        // target slot's stint is checked as it resolves).
+        if (target.kind !== "object") return;
+        const object = this.state.objects[target.object];
+        if (object === undefined || object.zone !== "battlefield" || object.isCommander !== true) return;
+        this.moveObject(target.object, "command");
+      },
       prohibit: (players, object, spells, abilities) => this.prohibit(players, object, spells, abilities),
       addPlayerEffect: (effect) => {
         (this.state.playerEffects ??= []).push(effect);
@@ -17381,7 +17389,7 @@ export class Game {
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   private beginZoneChoice(
     player: PlayerId,
-    zone: "library" | "graveyard" | "hand" | "graveyards",
+    zone: "library" | "graveyard" | "hand" | "graveyards" | "command",
     count: number | undefined,
     min: number,
     max: number,
@@ -17402,7 +17410,13 @@ export class Game {
     const zoneCards =
       zone === "graveyards"
         ? this.state.turnOrder.flatMap((p) => this.state.zones.perPlayer[p].graveyard)
-        : this.state.zones.perPlayer[player][zone];
+        : zone === "command"
+          ? // The chooser's own commanders there (Command Beacon).
+            this.state.zones.shared.command.filter((id) => {
+              const object = this.state.objects[id];
+              return object?.owner === player && object.isCommander === true;
+            })
+          : this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
     // hand is the chooser's own, so both offer everything in them.
     const ids = zone === "library" ? zoneCards.slice(0, count ?? 0) : [...zoneCards];
@@ -25410,6 +25424,13 @@ export class Game {
       object.face = 0;
     }
 
+    // A card entering a graveyard gets a timestamp there too (rule 613.7d):
+    // a static that works from the graveyard (Wonder, Anger) is ordered by it
+    // (Anger's ruling).
+    if (to === "graveyard") {
+      this.state.timestampSeq += 1;
+      object.timestamp = this.state.timestampSeq;
+    }
     if (to === "battlefield") {
       object.enteredBattlefieldOnTurn = this.state.turn.number;
       object.summoningSick = true;
