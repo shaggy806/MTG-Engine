@@ -150,6 +150,7 @@ import _poolShoreSnapper from "../pool/shore-snapper.js";
 import _poolSignpostScarecrow from "../pool/signpost-scarecrow.js";
 import _poolSkycrash from "../pool/skycrash.js";
 import _poolSnowCoveredSwamp from "../pool/snow-covered-swamp.js";
+import _poolSoulOfWindgrace from "../pool/soul-of-windgrace.js";
 import _poolSoulOfZendikar from "../pool/soul-of-zendikar.js";
 import _poolSpectralRider from "../pool/spectral-rider.js";
 import _poolSpewFlame from "../pool/spew-flame.js";
@@ -349,6 +350,7 @@ const shard: CardShard = {
     _poolSignpostScarecrow,
     _poolSkycrash,
     _poolSnowCoveredSwamp,
+    _poolSoulOfWindgrace,
     _poolSoulOfZendikar,
     _poolSpectralRider,
     _poolSpewFlame,

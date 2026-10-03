@@ -54,6 +54,7 @@ import _poolDeerDog from "../pool/deer-dog.js";
 import _poolDefiantStrike from "../pool/defiant-strike.js";
 import _poolDesertOfTheTrue from "../pool/desert-of-the-true.js";
 import _poolDevotedHero from "../pool/devoted-hero.js";
+import _poolDiluvianPrimordial from "../pool/diluvian-primordial.js";
 import _poolDireFleetHoarder from "../pool/dire-fleet-hoarder.js";
 import _poolDiseaseCarriers from "../pool/disease-carriers.js";
 import _poolDisentomb from "../pool/disentomb.js";
@@ -272,6 +273,7 @@ const shard: CardShard = {
     _poolDefiantStrike,
     _poolDesertOfTheTrue,
     _poolDevotedHero,
+    _poolDiluvianPrimordial,
     _poolDireFleetHoarder,
     _poolDiseaseCarriers,
     _poolDisentomb,

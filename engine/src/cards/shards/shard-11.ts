@@ -179,6 +179,7 @@ import _poolScourgeOfTheThrone from "../pool/scourge-of-the-throne.js";
 import _poolScrawlingCrawler from "../pool/scrawling-crawler.js";
 import _poolSearchlightGeist from "../pool/searchlight-geist.js";
 import _poolSejiriRefuge from "../pool/sejiri-refuge.js";
+import _poolSepulchralPrimordial from "../pool/sepulchral-primordial.js";
 import _poolSerpentineKavu from "../pool/serpentine-kavu.js";
 import _poolShamblingStrider from "../pool/shambling-strider.js";
 import _poolShiningAerosaur from "../pool/shining-aerosaur.js";
@@ -432,6 +433,7 @@ const shard: CardShard = {
     _poolScrawlingCrawler,
     _poolSearchlightGeist,
     _poolSejiriRefuge,
+    _poolSepulchralPrimordial,
     _poolSerpentineKavu,
     _poolShamblingStrider,
     _poolShiningAerosaur,

@@ -117,6 +117,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   damage: (n, v) => {
     v.touch(n.target, "harm", MAJOR);
     v.touch(n.toControllerOfTarget, "harm", MINOR);
+    // "Target creature you control deals damage" — the dealer is yours.
+    v.touch(n.from, "help", MINOR);
   },
   "damage-divided-evenly": (n, v) => v.touch(n.from, "harm", MAJOR),
   "add-mana": none,
@@ -135,7 +137,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "destroy-all": none,
   regenerate: (n, v) => v.touch(n.target, "help", MINOR),
   "regenerate-all": none,
-  "damage-all": none,
+  "damage-all": (n, v) => v.touch(n.from, "help", MINOR),
   "creatures-damage-controllers": none,
   // An edict: the targeted player picks what goes, so it is major rather
   // than decisive — nothing in particular is removed.
@@ -204,7 +206,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "enters-with-counters": (n, v) => v.touch(n.target, "help", MINOR),
   "allow-cast-from-exile": (n, v) => v.touch(n.target, "take", MAJOR),
   "cast-now": (n, v) => {
-    v.touch(n.target, "take", MAJOR);
+    v.touch(n.from === "targets" ? EVERY_SLOT : n.target, "take", MAJOR);
     v.child(n.then);
     v.child(n.else);
   },
@@ -364,8 +366,16 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   // "Its controller may search their library for a basic land" (Path to
   // Exile) — a consolation, like the life of Swords to Plowshares.
   "search-library": (n, v) => v.touch(n.who?.controllerOfTarget, "help", MINOR),
-  "look-and-choose": none,
+  // Choosing among its own targets (Sepulchral Primordial's cards from
+  // opponents' graveyards, put onto the battlefield under your control).
+  "look-and-choose": (n, v) => {
+    if (n.zone === "targets") v.touch(EVERY_SLOT, "take", MAJOR);
+  },
 };
+
+/** Every target slot an effect over "its targets" can name — more than any
+ * card has. */
+const EVERY_SLOT: readonly number[] = Array.from({ length: 8 }, (_, i) => i);
 
 /** The target slots `ref` names: a slot index, several, an "any number of"
  * group's first slot, a player slot (`{ target }`), or an edict's

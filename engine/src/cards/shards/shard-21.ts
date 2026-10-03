@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAangAtTheCrossroads from "../pool/aang-at-the-crossroads.js";
 import _poolAlpineWatchdog from "../pool/alpine-watchdog.js";
+import _poolArachnogenesis from "../pool/arachnogenesis.js";
 import _poolArchwingDragon from "../pool/archwing-dragon.js";
 import _poolArmoredWhirlTurtle from "../pool/armored-whirl-turtle.js";
 import _poolAronBenaliasRuin from "../pool/aron-benalias-ruin.js";
@@ -28,6 +29,7 @@ import _poolChandrasMagmutt from "../pool/chandras-magmutt.js";
 import _poolChartACourse from "../pool/chart-a-course.js";
 import _poolChromaticLantern from "../pool/chromatic-lantern.js";
 import _poolClavilenoFirstOfTheBlessed from "../pool/clavileno-first-of-the-blessed.js";
+import _poolCombustibleGearhulk from "../pool/combustible-gearhulk.js";
 import _poolCommonBond from "../pool/common-bond.js";
 import _poolConclaveTribunal from "../pool/conclave-tribunal.js";
 import _poolConviction from "../pool/conviction.js";
@@ -200,6 +202,7 @@ const shard: CardShard = {
   pool: [
     _poolAangAtTheCrossroads,
     _poolAlpineWatchdog,
+    _poolArachnogenesis,
     _poolArchwingDragon,
     _poolArmoredWhirlTurtle,
     _poolAronBenaliasRuin,
@@ -223,6 +226,7 @@ const shard: CardShard = {
     _poolChartACourse,
     _poolChromaticLantern,
     _poolClavilenoFirstOfTheBlessed,
+    _poolCombustibleGearhulk,
     _poolCommonBond,
     _poolConclaveTribunal,
     _poolConviction,

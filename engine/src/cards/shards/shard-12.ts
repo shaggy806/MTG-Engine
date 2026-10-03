@@ -133,6 +133,7 @@ import _poolPortalToPhyrexia from "../pool/portal-to-phyrexia.js";
 import _poolPretendingPoxbearers from "../pool/pretending-poxbearers.js";
 import _poolProphetOfThePeak from "../pool/prophet-of-the-peak.js";
 import _poolProsperity from "../pool/prosperity.js";
+import _poolPugnaciousHammerskull from "../pool/pugnacious-hammerskull.js";
 import _poolPullUnder from "../pool/pull-under.js";
 import _poolPyroceratops from "../pool/pyroceratops.js";
 import _poolRamosDragonEngine from "../pool/ramos-dragon-engine.js";
@@ -343,6 +344,7 @@ const shard: CardShard = {
     _poolPretendingPoxbearers,
     _poolProphetOfThePeak,
     _poolProsperity,
+    _poolPugnaciousHammerskull,
     _poolPullUnder,
     _poolPyroceratops,
     _poolRamosDragonEngine,

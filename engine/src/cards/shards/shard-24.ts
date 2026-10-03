@@ -97,6 +97,7 @@ import _poolHiddenGrotto from "../pool/hidden-grotto.js";
 import _poolHotDogCart from "../pool/hot-dog-cart.js";
 import _poolHuntersProwess from "../pool/hunters-prowess.js";
 import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
+import _poolJunkWinder from "../pool/junk-winder.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
 import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
@@ -316,6 +317,7 @@ const shard: CardShard = {
     _poolHotDogCart,
     _poolHuntersProwess,
     _poolImpoliteEntrance,
+    _poolJunkWinder,
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,
     _poolKasimirTheLoneWolf,

@@ -276,6 +276,17 @@ export interface GameObject {
   /** The turn it was last exerted — Combat Celebrant's "if this creature
    * hasn't been exerted this turn". Gone with any change of zone. */
   exertedOnTurn?: number;
+  /**
+   * "It doesn't untap during its controller's next untap step" (Junk
+   * Winder; the `tap` effect's `doesntUntapNext`): the next untap step of
+   * whoever controls it then passes it by. The effect tracks the permanent,
+   * not its controller (the rulings — Icy Blast, Grip of the Roil): one that
+   * changes hands first stays tapped through its new controller's next untap
+   * step instead. Another player's untap step it untaps in (Seedborn Muse)
+   * isn't its controller's. Cleared as that untap step happens, whether or
+   * not it was tapped, and by any change of zone.
+   */
+  skipsNextUntap?: true;
   /** This creature must attack this specific player if able — Encore's
    * "create a token copy that attacks that opponent this turn if able". */
   mustAttackPlayer?: PlayerId;
@@ -3246,6 +3257,12 @@ export interface GameState {
    * Set by the `prevent-all-combat-damage` effect, cleared at the start of the
    * next turn. */
   preventAllCombatDamage: boolean;
+  /** The same for only some sources — a `prevent-all-combat-damage` with
+   * `by` (Arachnogenesis: "by non-Spider creatures"): combat damage a source
+   * matching one of these filters would deal is prevented, each matched as
+   * the damage would be dealt from `you`'s side. Cleared with
+   * `preventAllCombatDamage`; absent when there are none. */
+  combatDamagePreventedBy?: { readonly filter: CardFilter; readonly you: PlayerId }[];
   /**
    * Players with hexproof until end of turn (Lazotep Plating: "**You** and
    * permanents you control gain hexproof"). Turn-scoped rather than a
@@ -3468,6 +3485,7 @@ export function tokenFoldKey(o: GameObject): string {
     o.monstrous ?? false,
     o.exertedBy ?? null,
     o.exertedOnTurn ?? null,
+    o.skipsNextUntap ?? false,
     o.mustAttackPlayer ?? null,
     o.controlEffects ?? null,
     o.controlEndsAtCleanup,

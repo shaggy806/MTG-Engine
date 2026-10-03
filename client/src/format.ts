@@ -321,7 +321,9 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
     case 'regeneration-shield-created':
       return `${name(event.object)} will regenerate the next time it would be destroyed this turn`
     case 'combat-damage-prevention-set':
-      return `all combat damage is prevented this turn`
+      return event.partialBy !== undefined
+        ? `${name(event.partialBy)}: some combat damage is prevented this turn`
+        : `all combat damage is prevented this turn`
     case 'damage-prevented':
       return `${name(event.source)}'s ${event.amount} damage to ${tgt(event.target)} is prevented`
     case 'graveyard-replaced-with-exile':

@@ -695,6 +695,9 @@ export type GameEvent =
       /** A Fog-style effect resolved — all combat damage is prevented for the
        * rest of the turn (rule 614 replacement, turn-scoped). */
       readonly type: "combat-damage-prevention-set";
+      /** Only some sources' — the effect's source, which says whose
+       * (Arachnogenesis's "by non-Spider creatures"). */
+      readonly partialBy?: ObjectId;
     })
   | (Base & {
       /** Damage was prevented by a replacement effect (Fog) — the event fires

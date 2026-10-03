@@ -525,8 +525,10 @@ export type EffectAmount =
        * **toughness**". A permanent that left doing it is read as it last
        * existed on the battlefield (its ruling: a negative power counts as
        * negative), and a token stack that went whole counts once per
-       * token. */
-      readonly sumOf?: "power" | "toughness";
+       * token. `"mana-value"` is Combustible Gearhulk's "the **total mana
+       * value** of those cards" (milled): a card read where it went, if
+       * that's a public zone (rule 701.17c), {X} counting 0 (rule 202.3e). */
+      readonly sumOf?: "power" | "toughness" | "mana-value";
     }
   /**
    * One amount or another, by a condition read as the amount is — Urza's
@@ -687,6 +689,18 @@ export type GiftKind = "food" | "card" | "tapped-fish" | "extra-turn" | "treasur
  * {@link EffectAmount} counts them, the `this-way` condition asks about them
  * and the `thisWay` filter clause picks among them.
  */
+/**
+ * What deals an effect's damage when it isn't the effect's own source:
+ * `"trigger-object"`, the object that fired the trigger, or `{ target }`, a
+ * target slot's permanent — Chandra's Ignition's "**target creature you
+ * control** deals damage equal to its power to each other creature and each
+ * opponent" (that creature is the source, not the spell: its colours count
+ * for protection, its lifelink and deathtouch apply — the rulings). Read as
+ * it last existed on the battlefield if it has left (rule 608.2h); a blank
+ * slot (an illegal target, rule 608.2b) deals nothing.
+ */
+export type DamageFrom = "trigger-object" | { readonly target: number };
+
 export type ThisWayKind =
   | "discarded"
   | "drawn"
@@ -1025,8 +1039,9 @@ export type EffectSpec =
        * entering Demon), "**it** deals that much damage to each other
        * opponent" (Kediss: the commander that dealt combat damage). Its
        * lifelink, deathtouch and colours (for protection) apply, as it last
-       * existed on the battlefield if it has left (rule 608.2h). */
-      readonly from?: "trigger-object";
+       * existed on the battlefield if it has left (rule 608.2h). See
+       * {@link DamageFrom} for a target slot. */
+      readonly from?: DamageFrom;
       /**
        * Damage aimed at the *controller* of whatever a target slot points at
        * — Unlicensed Disintegration's "deals 3 damage to **that creature's**
@@ -1193,6 +1208,10 @@ export type EffectSpec =
        * creature"), only while it's still that object (rule 400.7). */
       readonly kind: "tap";
       readonly target: EffectTargetRef;
+      /** "**It doesn't untap during its controller's next untap step**"
+       * (Junk Winder) — whoever controls it then; tapped by this or already
+       * (`GameObject.skipsNextUntap`). */
+      readonly doesntUntapNext?: boolean;
     }
   | {
       /** `target` accepts `"trigger-object"` for an untargeted "untap it"
@@ -1267,8 +1286,12 @@ export type EffectSpec =
       /** Spare the effect's own source — "each **other** creature with
        * flying" (Harbinger of the Hunt). A `CardFilter` can't say this: it
        * describes the permanent being matched, not its relationship to the
-       * thing dealing the damage. */
+       * thing dealing the damage. With `from`, it spares what deals it
+       * instead (Chandra's Ignition's "each **other** creature"). */
       readonly exceptSource?: boolean;
+      /** Who deals it, when that isn't the effect's own source — see
+       * {@link DamageFrom}. */
+      readonly from?: DamageFrom;
     }
   | {
       /** Every permanent matching `filter` deals `amount` damage to its own
@@ -1757,6 +1780,17 @@ export type EffectSpec =
       /** …"with a finality counter on it" (Shilgengar, Sire of Famine) —
        * counters each battlefield-bound card enters with. */
       readonly withCounters?: { readonly kind: string; readonly amount: number };
+      /** Every player's graveyard, not only the controller's — Grimoire of
+       * the Dead's "put all creature cards from **all graveyards** onto the
+       * battlefield under your control": a card someone else owns enters
+       * under the effect's controller's control, kept there by a control
+       * effect (rule 110.2; it's exiled if they leave the game, 800.4a).
+       * With `count: "all"` and `destination: "battlefield"` only. */
+      readonly from?: "all-graveyards";
+      /** …with these types and colours in addition to their own, in place
+       * as they enter (rule 614.12) — Grimoire of the Dead's "They're black
+       * Zombies in addition to their other colors and types". */
+      readonly enterAs?: EnterTypes;
     }
   | {
       /**
@@ -1838,12 +1872,19 @@ export type EffectSpec =
        * on the battlefield (the ability exists independently of it, rule
        * 113.7a), but a source that has left and come back is a new object
        * whose abilities never reach them (rule 400.7).
+       *
+       * `"targets"` is the resolving spell's or ability's own target cards
+       * still legal — with `repeat`, Diluvian Primordial's "for each
+       * opponent, you may cast up to one target instant or sorcery card from
+       * that player's graveyard": one at a time, in the order the player
+       * chooses, each a "may" of its own (its rulings).
        */
       readonly from?:
         | "hand"
         | "graveyard"
         | "exiled-with-source"
         | "exiled-this-way"
+        | "targets"
         | { readonly libraryTop: number };
       /**
        * "You may play lands and cast spells **from among** cards exiled this
@@ -1852,7 +1893,7 @@ export type EffectSpec =
        * last ability", its ruling): after each one cast or played, the rest
        * are offered again, until the player declines or none is left. With
        * `from: "exiled-this-way"` — the cards this resolution exiled, still
-       * in exile. Not with `then`, `else` or `rest`.
+       * in exile — or `"targets"`. Not with `then`, `else` or `rest`.
        */
       readonly repeat?: boolean;
       /**
@@ -3125,6 +3166,15 @@ export type EffectSpec =
       /** Prevent all combat damage that would be dealt this turn (Fog). A
        * rule-614 replacement, tracked as a turn-scoped `GameState` flag. */
       readonly kind: "prevent-all-combat-damage";
+      /** Only the combat damage sources matching this would deal —
+       * Arachnogenesis's "prevent all combat damage that would be dealt this
+       * turn **by non-Spider creatures**" (`{ type: "creature", notSubtypes:
+       * ["Spider"] }`). Asked of each source as its damage would be dealt —
+       * prevention isn't locked in ahead of time (rule 615.1), so a creature
+       * that becomes a Spider later in the turn isn't stopped — from the
+       * effect's controller's side. A rule for the turn
+       * (`GameState.combatDamagePreventedBy`). */
+      readonly by?: CardFilter;
     }
   | {
       /** "Prevent the next `amount` damage that would be dealt to `target`
@@ -3653,8 +3703,17 @@ export type EffectSpec =
        * command zone — Command Beacon's "put your commander into your hand
        * from the command zone" (one of their choice with two — its ruling),
        * Hellkite Courser's "you may put a commander you own from the command
-       * zone onto the battlefield". */
-      readonly zone: "library" | "graveyard" | "hand" | "graveyards" | "command";
+       * zone onto the battlefield".
+       *
+       * `"targets"` is the resolving spell's or ability's own target cards
+       * still legal (a graveyard's, all public): which of them the effect
+       * does it to is chosen as it resolves, and they all go at once —
+       * Sepulchral Primordial's "for each opponent, you may put up to one
+       * target creature card from that player's graveyard onto the
+       * battlefield under your control" (they enter simultaneously, its
+       * ruling). Ones from another player's graveyard enter under the
+       * chooser's control, as `"graveyards"`' do. */
+      readonly zone: "library" | "graveyard" | "hand" | "graveyards" | "command" | "targets";
       /** How deep into a library to look. An amount, so it can be read at
        * resolution: Gishath, Sun's Avatar's "reveal **that many** cards" is
        * `{ triggerValue: true }`, the combat damage it dealt. */
@@ -3875,9 +3934,9 @@ export interface ModeOption {
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
 export interface EffectApi {
-  /** `from: "trigger-object"`: the triggering object deals it, not the
-   * effect's source — see the `damage` {@link EffectSpec}'s `from`. */
-  dealDamage(target: TargetRef, amount: number, from?: "trigger-object"): void;
+  /** `from`: the triggering object, or a target, deals it, not the effect's
+   * source — see {@link DamageFrom}. */
+  dealDamage(target: TargetRef, amount: number, from?: DamageFrom): void;
   /** Deal damage to a whole scope of players, untargeted (Sabotender /
    * Tannuk: "deals 1 damage to each opponent" — needed-cards P16), all at
    * once. `amountFor` is asked per player, for a per-player amount. */
@@ -3886,7 +3945,7 @@ export interface EffectApi {
   dealDamageScoped(
     who: PlayerScope,
     amountFor: (player: PlayerId) => number,
-    from?: "trigger-object",
+    from?: DamageFrom,
   ): void;
   /** What the triggering event was aimed at, if it still is what it was —
    * see `LastKnownRefs.recipient`. `undefined` outside such a trigger, for a
@@ -3980,11 +4039,11 @@ export interface EffectApi {
   cardTypesAmong(
     objects: readonly { readonly object: ObjectId; readonly departed: boolean }[],
   ): number;
-  /** The total power (or `of` toughness) of `entries`, signed — each as it
-   * last existed on the battlefield if `departed`, else as it is now, a
-   * stack that went whole once per token. See the `thisWay` amount's
-   * `sumOf`. */
-  powerAmong(entries: readonly ThisWayEntry[], of?: "power" | "toughness"): number;
+  /** The total power (or `of` toughness, or mana value) of `entries`,
+   * signed — each as it last existed on the battlefield if `departed`, else
+   * as it is now, a stack that went whole once per token. See the `thisWay`
+   * amount's `sumOf`. */
+  powerAmong(entries: readonly ThisWayEntry[], of?: "power" | "toughness" | "mana-value"): number;
   /**
    * Who controls what `ref` points at — the player itself for a player ref,
    * else the object's controller.
@@ -4043,7 +4102,8 @@ export interface EffectApi {
      * and that is exactly where an untagged pool loses the restriction. */
     spec?: Extract<EffectSpec, { kind: "add-mana" }>,
   ): void;
-  tapPermanent(target: TargetRef): void;
+  /** `doesntUntapNext`: see the `tap` {@link EffectSpec}. */
+  tapPermanent(target: TargetRef, doesntUntapNext?: boolean): void;
   untapPermanent(target: TargetRef): void;
   /** `cantBeRegenerated`: rule 701.15c. */
   destroyPermanent(target: TargetRef, cantBeRegenerated?: boolean): void;
@@ -4064,7 +4124,13 @@ export interface EffectApi {
   /** Exile every battlefield permanent matching `filter` — see `exile-all`. */
   exileAll(filter: CardFilter): void;
   /** Deal `amount` damage to every battlefield permanent matching `filter`. */
-  damageAll(filter: CardFilter, amount: number, exceptSource?: boolean, whose?: readonly PlayerId[]): void;
+  damageAll(
+    filter: CardFilter,
+    amount: number,
+    exceptSource?: boolean,
+    whose?: readonly PlayerId[],
+    from?: DamageFrom,
+  ): void;
   /** Every battlefield permanent matching `filter` deals `amount` damage to
    * its own controller — see the `"creatures-damage-controllers"`
    * {@link EffectSpec}. */
@@ -4330,6 +4396,9 @@ export interface EffectApi {
     count: number | "all",
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
+    /** Every graveyard, and how the cards enter — the spec's `from` and
+     * `enterAs`. */
+    opts?: { readonly allGraveyards?: boolean; readonly enterAs?: EnterTypes },
   ): boolean;
   /** `target` (a player) discards `amount` cards. */
   discardCards(target: TargetRef, amount: number, random?: boolean, unlessOne?: CardFilter): void;
@@ -4695,8 +4764,9 @@ export interface EffectApi {
   playerCountersOf(player: PlayerId, counter: PlayerCounterKind): number;
   /** The effect's controller gets an emblem (rule 114). */
   createEmblem(text: string, staticAbility: StaticAbility | undefined): void;
-  /** Prevent all combat damage this turn (Fog). */
-  preventAllCombatDamage(): void;
+  /** Prevent all combat damage this turn (Fog) — or only what sources
+   * matching `by` would deal. */
+  preventAllCombatDamage(by?: CardFilter): void;
   /** Add a one-shot damage-prevention shield on `target` (a player or object)
    * for `amount` damage this turn — Healing Salve (ROADMAP Phase 11 EG-6). */
   preventDamage(target: TargetRef, amount: number, combatOnly: boolean): void;
@@ -4764,7 +4834,8 @@ export interface EffectApi {
   removeCounter(target: TargetRef, counter: string, amount: number): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
-    zone: "library" | "graveyard" | "hand" | "graveyards" | "command",
+    /** `{ cards }` — the look-and-choose's `"targets"`, already resolved. */
+    zone: "library" | "graveyard" | "hand" | "graveyards" | "command" | { readonly cards: readonly ObjectId[] },
     count: number | undefined,
     min: number,
     max: number,
@@ -5052,6 +5123,10 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
       cards = ctx.cardsExiledWithSource();
     } else if (from === "exiled-this-way") {
       cards = ctx.cardsExiledThisWay();
+    } else if (from === "targets") {
+      // An illegal target's slot is blank (rule 608.2b); one already cast
+      // is on the stack now, which the offer passes over.
+      cards = ctx.targets.flatMap((t) => (t?.kind === "object" ? [t.object] : []));
     } else {
       cards = typeof from === "object" ? looked : ctx.cardsIn(ctx.controller, from);
     }
@@ -5983,7 +6058,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "tap": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target !== undefined) ctx.tapPermanent(target);
+      if (target !== undefined) ctx.tapPermanent(target, spec.doesntUntapNext === true);
       return;
     }
     case "untap": {
@@ -6027,6 +6102,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         amountValue(spec.amount, ctx),
         spec.exceptSource === true,
         spec.whose === undefined ? undefined : ctx.playersInScope(spec.whose),
+        spec.from,
       );
       return;
     case "creatures-damage-controllers":
@@ -6395,6 +6471,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.count,
         spec.enterTapped ?? false,
         spec.withCounters,
+        {
+          ...(spec.from === "all-graveyards" ? { allGraveyards: true } : {}),
+          ...(spec.enterAs !== undefined ? { enterAs: spec.enterAs } : {}),
+        },
       );
       if (asked) ctx.resumeAfterDecisions(spec, parked);
       return;
@@ -6997,7 +7077,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.createEmblem(spec.text, spec.static);
       return;
     case "prevent-all-combat-damage":
-      ctx.preventAllCombatDamage();
+      ctx.preventAllCombatDamage(spec.by);
       return;
     case "prevent-damage": {
       const ref = ctx.targets[spec.target];
@@ -7209,8 +7289,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // "…of an opponent's choice" (Tasigur): they pick from your zone.
       const picker = spec.chooser === "that-player" ? ctx.playersInScope("that-player")[0] : undefined;
       if (spec.chooser === "that-player" && picker === undefined) return;
+      // "Up to one target card … for each opponent": the targets still legal
+      // (an illegal one's slot is blank — rule 608.2b).
+      const zone =
+        spec.zone === "targets"
+          ? { cards: ctx.targets.flatMap((t) => (t?.kind === "object" ? [t.object] : [])) }
+          : spec.zone;
       ctx.lookAndChoose(
-        spec.zone,
+        zone,
         spec.count === undefined ? undefined : amountValue(spec.count, ctx),
         amountValue(spec.min, ctx),
         amountValue(spec.max, ctx),

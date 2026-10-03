@@ -157,6 +157,7 @@ import type {
   CascadeFinish,
   CascadeFound,
   CastNowOptions,
+  DamageFrom,
   DelayedNextSpell,
   EffectAmount,
   EffectSpec,
@@ -4451,6 +4452,7 @@ export class Game {
     // Fog's "prevent all combat damage this turn" shield and any one-shot
     // prevention shields lapse; a fresh turn owes no extra combats yet.
     this.state.preventAllCombatDamage = false;
+    delete this.state.combatDamagePreventedBy;
     this.state.hexproofPlayers = [];
     this.state.creaturesDiedThisTurn = 0;
     // A reveal is public knowledge for as long as anyone could have acted on
@@ -4925,14 +4927,15 @@ export class Game {
       object.combatDamagedPlayersThisTurn = [];
       object.attackedThisTurn = false;
       // Exerted (rule 701.43a): not during its exerter's next untap step —
-      // this one, if that's who's active.
+      // this one, if that's who's active. Nor one an effect said doesn't
+      // untap during this player's next untap step.
       if (
         object.tapped &&
         object.exertedBy !== active &&
+        object.skipsNextUntap !== true &&
         !this.hasOwnStatic(object, (a) => a.doesntUntap === true)
       ) {
-        object.tapped = false;
-        this.emit({ type: "permanent-untapped", object: id });
+        this.untapUnlessStunned(id);
       }
     }
     // Seedborn Muse, Unwinding Clock, Bender's Waterskin: other players'
@@ -4942,16 +4945,40 @@ export class Game {
       if (object === undefined || object.controller === active || !object.tapped) continue;
       if (this.state.players[object.controller]?.hasLost === true) continue;
       if (object.exertedBy !== active && this.untapsDuringOthersUntap(object)) {
-        object.tapped = false;
-        this.emit({ type: "permanent-untapped", object: id });
+        this.untapUnlessStunned(id);
       }
     }
     // That was their next untap step: whatever they exerted has served its
-    // time, untapped or not (the rulings).
+    // time, untapped or not (the rulings) — and so has a "doesn't untap
+    // during its controller's next untap step".
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object?.exertedBy === active) delete object.exertedBy;
+      if (object?.controller === active) delete object.skipsNextUntap;
     }
+  }
+
+  /**
+   * Untap a tapped permanent — unless it has a stun counter, when one is
+   * removed from it instead (rule 122.1d: "If a permanent with a stun counter
+   * on it would become untapped, instead remove a stun counter from it"). An
+   * untapped one isn't "becoming untapped", so it keeps its counters. A
+   * token stack untaps, or loses a counter, as a whole. Returns whether it
+   * untapped.
+   */
+  private untapUnlessStunned(id: ObjectId): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || !object.tapped) return false;
+    if ((object.counters.stun ?? 0) > 0) {
+      object.counters.stun -= 1;
+      if (object.counters.stun <= 0) delete object.counters.stun;
+      invalidateComputedCache();
+      this.emit({ type: "counter-removed", object: id, counter: "stun", amount: 1 });
+      return false;
+    }
+    object.tapped = false;
+    this.emit({ type: "permanent-untapped", object: id });
+    return true;
   }
 
   /** Does `object` carry an active static of its own matching `test`? */
@@ -16066,14 +16093,20 @@ export class Game {
     const scoped = (who: PlayerScope): PlayerId[] =>
       this.scopedPlayers(controller, who, triggerObject, triggerLastKnown(), refs.player);
     // Who deals an effect's damage: its own source, or — "it deals damage"
-    // — the object that fired the trigger, each as it last existed on the
-    // battlefield if it has left.
+    // — the object that fired the trigger, or a target ("target creature
+    // you control deals damage"), each as it last existed on the battlefield
+    // if it has left. Nobody, for a blank target slot.
     const damageSource = (
-      from: "trigger-object" | undefined,
-    ): { readonly id: ObjectId; readonly lastKnown: LastKnownInfo | undefined } =>
-      from === "trigger-object" && triggerObject !== undefined
+      from: DamageFrom | undefined,
+    ): { readonly id: ObjectId; readonly lastKnown: LastKnownInfo | undefined } | undefined => {
+      if (from !== undefined && from !== "trigger-object") {
+        const ref = targets[from.target];
+        return ref?.kind === "object" ? { id: ref.object, lastKnown: lastKnownOf(ref) } : undefined;
+      }
+      return from === "trigger-object" && triggerObject !== undefined
         ? { id: triggerObject, lastKnown: triggerLastKnown() }
         : { id: source, lastKnown: departedSource() };
+    };
     const matchesKnown = (id: ObjectId, filter: CardFilter): boolean => {
       const snapshot = lastKnownOf({ kind: "object", object: id });
       return matchesFilter(this.state, this.registry, id, filter, {
@@ -16235,6 +16268,7 @@ export class Game {
       // existed there: its colours, lifelink, deathtouch and controller.
       dealDamage: (target, amount, from) => {
         const by = damageSource(from);
+        if (by === undefined) return;
         this.dealDamage(by.id, this.splitTargetRef(target), amount, false, by.lastKnown);
       },
       dealDamageToEach: (targets, amount) =>
@@ -16245,6 +16279,7 @@ export class Game {
         }),
       dealDamageScoped: (who, amountFor, from) => {
         const by = damageSource(from);
+        if (by === undefined) return;
         this.withDamageBatch(() => {
           for (const p of scoped(who)) {
             this.dealDamage(by.id, { kind: "player", player: p }, amountFor(p), false, by.lastKnown);
@@ -16330,6 +16365,14 @@ export class Game {
       powerAmong: (entries, of = "power") =>
         entries.reduce((n, { object: id, departed, count }) => {
           const object = this.state.objects[id];
+          if (of === "mana-value") {
+            // "The total mana value of those cards": each found where it
+            // went, if that's a public zone (rule 701.17c), {X} as 0.
+            const known = object === undefined ? this.state.ceasedTokens?.[id] : departed ? object.lastKnown : undefined;
+            if (known !== undefined) return n + known.manaValue * count;
+            if (object === undefined || object.zone === "library" || object.zone === "hand") return n;
+            return n + this.manaValueOfTarget({ kind: "object", object: id }) * count;
+          }
           const value =
             object === undefined
               ? (this.state.ceasedTokens?.[id]?.[of] ?? 0)
@@ -16458,7 +16501,19 @@ export class Game {
           spec === undefined ? undefined : this.manaTagFor(this.state.objects[source], spec),
           this.manaOriginOf(source),
         ),
-      tapPermanent: (target) => this.setTapped(target, true),
+      tapPermanent: (target, doesntUntapNext) => {
+        if (doesntUntapNext !== true || target.kind !== "object") {
+          this.setTapped(target, true);
+          return;
+        }
+        if (this.state.objects[target.object]?.zone !== "battlefield") return;
+        // Tapped or not already, its controller's next untap step passes it
+        // by — one token of a stack, not the rest.
+        const id = this.splitOneFromStack(target.object);
+        this.setTapped({ kind: "object", object: id }, true);
+        const object = this.state.objects[id];
+        object.skipsNextUntap = true;
+      },
       untapPermanent: (target) => this.setTapped(target, false),
       destroyPermanent: (target, cantBeRegenerated) =>
         this.destroyByEffect(target, true, cantBeRegenerated === true),
@@ -16478,16 +16533,11 @@ export class Game {
       },
       returnToHandAll: (filter) => this.returnToHandAllByEffect(controller, filter),
       exileAll: (filter) => this.exileAllByEffect(controller, filter),
-      damageAll: (filter, amount, exceptSource, whose) =>
-        this.damageAllByEffect(
-          source,
-          controller,
-          filter,
-          amount,
-          exceptSource === true,
-          departedSource(),
-          whose,
-        ),
+      damageAll: (filter, amount, exceptSource, whose, from) => {
+        const by = damageSource(from);
+        if (by === undefined) return;
+        this.damageAllByEffect(by.id, controller, filter, amount, exceptSource === true, by.lastKnown, whose);
+      },
       creaturesDamageControllers: (filter, amount) =>
         this.creaturesDamageControllersByEffect(controller, filter, amount),
       sacrificePermanents: (who, filter, count, exceptId) => {
@@ -17049,8 +17099,8 @@ export class Game {
         this.exileFromLibraryByEffect(target, count, controller, withCounters),
       countMatching: (filter, except, you) => this.countBattlefieldMatching(you ?? controller, filter, except, source),
       aggregate: (spec, except) => this.aggregateBattlefield(controller, spec, except),
-      returnFromGraveyard: (filter, destination, count, enterTapped, withCounters) =>
-        this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters),
+      returnFromGraveyard: (filter, destination, count, enterTapped, withCounters, opts) =>
+        this.returnFromGraveyardByEffect(controller, filter, destination, count, enterTapped, withCounters, opts),
       discardCards: (target, amount, random, unlessOne) =>
         this.discardByEffect(target, amount, random === true, undefined, unlessOne),
       modifyPt: (target, power, toughness, duration) =>
@@ -17593,11 +17643,7 @@ export class Game {
       untapAll: (filter, scopeTo, exceptSource) => {
         for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {
           if (exceptSource === true && id === source) continue;
-          const object = this.state.objects[id];
-          if (object.tapped) {
-            object.tapped = false;
-            this.emit({ type: "permanent-untapped", object: id });
-          }
+          this.untapUnlessStunned(id);
         }
       },
       tapAll: (filter) => {
@@ -17745,7 +17791,12 @@ export class Game {
         const from = this.state.objects[source];
         this.createEmblem(controller, text, staticAbility ?? null, from === undefined ? undefined : nameOf(from));
       },
-      preventAllCombatDamage: () => {
+      preventAllCombatDamage: (by) => {
+        if (by !== undefined) {
+          (this.state.combatDamagePreventedBy ??= []).push({ filter: by, you: controller });
+          this.emit({ type: "combat-damage-prevention-set", partialBy: source });
+          return;
+        }
         this.state.preventAllCombatDamage = true;
         this.emit({ type: "combat-damage-prevention-set" });
       },
@@ -17885,7 +17936,7 @@ export class Game {
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   private beginZoneChoice(
     player: PlayerId,
-    zone: "library" | "graveyard" | "hand" | "graveyards" | "command",
+    zone: "library" | "graveyard" | "hand" | "graveyards" | "command" | { readonly cards: readonly ObjectId[] },
     count: number | undefined,
     min: number,
     max: number,
@@ -17906,8 +17957,13 @@ export class Game {
     picker?: PlayerId,
   ): void {
     // Every graveyard, in turn order — all public (Necromantic Selection).
+    // Or the resolving ability's own target cards, still in a graveyard
+    // (Sepulchral Primordial).
+    const fromAnyGraveyard = zone === "graveyards" || typeof zone === "object";
     const zoneCards =
-      zone === "graveyards"
+      typeof zone === "object"
+        ? zone.cards.filter((id) => this.state.objects[id]?.zone === "graveyard")
+        : zone === "graveyards"
         ? this.state.turnOrder.flatMap((p) => this.state.zones.perPlayer[p].graveyard)
         : zone === "command"
           ? // The chooser's own commanders there (Command Beacon).
@@ -17939,7 +17995,7 @@ export class Game {
       ...(attacking !== undefined && destination === "battlefield" ? { enterAttacking: attacking } : {}),
       // A card from another player's graveyard enters under the chooser's
       // control ("to the battlefield under your control").
-      ...(zone === "graveyards" && destination === "battlefield" ? { enterUnder: player } : {}),
+      ...(fromAnyGraveyard && destination === "battlefield" ? { enterUnder: player } : {}),
       ...(enterAs !== undefined && destination === "battlefield" ? { enterAs } : {}),
       ...(then?.effect !== undefined ? { then: then.effect } : {}),
       ...(then !== undefined ? { thenSource: then.source, thenX: then.x } : {}),
@@ -21228,13 +21284,12 @@ export class Game {
     // effect, which mutates a stack directly and never reaches here) singles
     // it out from the rest of a compacted stack.
     const id = this.splitOneFromStack(target.object);
-    const object = this.state.objects[id];
-    object.tapped = tapped;
-    this.emit(
-      tapped
-        ? { type: "permanent-tapped", object: id }
-        : { type: "permanent-untapped", object: id },
-    );
+    if (!tapped) {
+      this.untapUnlessStunned(id);
+      return;
+    }
+    this.state.objects[id].tapped = true;
+    this.emit({ type: "permanent-tapped", object: id });
   }
 
   /** `split: false` (destroy-*all* draining `pendingDestruction`) hits the
@@ -23365,9 +23420,10 @@ export class Game {
   }
 
   /** See the `"return-from-graveyard"` {@link EffectSpec}. Returns cards from
-   * `player`'s graveyard. `count: "all"` (or fewer matches than `count`) moves
-   * every match straight away; otherwise it raises a `choose-from-zone`
-   * decision, the unchosen matches staying in the graveyard. */
+   * `player`'s graveyard — or, with `opts.allGraveyards`, every graveyard in
+   * turn order. `count: "all"` (or fewer matches than `count`) moves every
+   * match straight away; otherwise it raises a `choose-from-zone` decision,
+   * the unchosen matches staying in the graveyard. */
   private returnFromGraveyardByEffect(
     player: PlayerId,
     filter: CardFilter,
@@ -23375,11 +23431,15 @@ export class Game {
     count: number | "all",
     enterTapped: boolean,
     withCounters?: { readonly kind: string; readonly amount: number },
+    opts: { readonly allGraveyards?: boolean; readonly enterAs?: EnterTypes } = {},
   ): boolean {
-    const eligible = this.state.zones.perPlayer[player].graveyard.filter((id) =>
-      matchesFilter(this.state, this.registry, id, filter, { you: player }),
-    );
+    const graveyards =
+      opts.allGraveyards === true
+        ? this.state.turnOrder.flatMap((p) => this.state.zones.perPlayer[p].graveyard)
+        : this.state.zones.perPlayer[player].graveyard;
+    const eligible = graveyards.filter((id) => matchesFilter(this.state, this.registry, id, filter, { you: player }));
     if (eligible.length === 0) return false;
+    const enterAs = destination === "battlefield" ? opts.enterAs : undefined;
     if (count === "all" || eligible.length <= count) {
       // Their "as this enters" choices first (rule 614.12), one at a time:
       // nothing moves until they are all made, and this runs again with each.
@@ -23391,7 +23451,22 @@ export class Game {
       this.withGraveyardLeaveBatch(() => {
         this.withEnterBatch(() => {
           for (const id of eligible) {
-            const moved = this.moveObject(id, destination, { tapped: enterTapped });
+            // A card someone else owns enters under this player's control
+            // ("under your control"), kept there by a control effect as a
+            // reanimation's is (`putOntoBattlefieldByEffect`).
+            const under = destination === "battlefield" && this.state.objects[id]?.owner !== player ? player : undefined;
+            const moved = this.moveObject(id, destination, {
+              tapped: enterTapped,
+              ...(under !== undefined ? { under } : {}),
+              ...(enterAs?.setTypes !== undefined ? { setTypes: enterAs.setTypes } : {}),
+              ...(enterAs?.addSubtypes !== undefined ? { addSubtypes: enterAs.addSubtypes } : {}),
+              ...(enterAs?.addColors !== undefined ? { addColors: enterAs.addColors } : {}),
+            });
+            const entered = this.state.objects[id];
+            if (moved && under !== undefined && entered?.zone === "battlefield" && entered.controller !== under) {
+              this.gainControlByEffect(under, { kind: "object", object: id }, false, true);
+              entered.summoningSick = true;
+            }
             if (moved && destination === "battlefield") {
               this.enterWithCounters(id, withCounters, player);
               this.emit({ type: "permanent-entered-battlefield", object: id });
@@ -23414,6 +23489,8 @@ export class Game {
       ...(withCounters !== undefined && destination === "battlefield"
         ? { enterWithCounters: withCounters }
         : {}),
+      ...(opts.allGraveyards === true && destination === "battlefield" ? { enterUnder: player } : {}),
+      ...(enterAs !== undefined ? { enterAs } : {}),
     };
     return false;
   }
@@ -23887,8 +23964,16 @@ export class Game {
   ): number {
     if (amount <= 0) return 0;
 
-    // Fog (rule 614): a turn-scoped shield prevents all combat damage.
-    if (combat && this.state.preventAllCombatDamage) {
+    // Fog (rule 614): a turn-scoped shield prevents all combat damage — or
+    // what sources matching a filter would deal, matched now (rule 615.1).
+    if (
+      combat &&
+      (this.state.preventAllCombatDamage ||
+        (this.state.combatDamagePreventedBy?.some(({ filter, you }) =>
+          matchesFilter(this.state, this.registry, source, filter, { you }),
+        ) ??
+          false))
+    ) {
       this.emit({ type: "damage-prevented", source, target, amount });
       return 0;
     }
@@ -25970,6 +26055,7 @@ export class Game {
     delete object.monstrous;
     delete object.exertedBy;
     delete object.exertedOnTurn;
+    delete object.skipsNextUntap;
     object.blocking = null;
     object.blockedBy = [];
     object.blocked = false;
