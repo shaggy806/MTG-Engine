@@ -2757,6 +2757,28 @@ export interface GameState {
    */
   pendingSacrificeVictims: { readonly player: PlayerId; readonly object: ObjectId }[];
   /**
+   * A sacrifice *cost* of several permanents being paid (rules 601.2h, 602.2b
+   * — Sai, Master Thopterist's "Sacrifice two artifacts", Jarad, Golgari Lich
+   * Lord's "a Swamp and a Forest"): the ability is on the stack and the rest
+   * of its cost paid. `parts` are still to be chosen, a `sacrifice` decision
+   * each (none when there's no choice), and `picked` holds what's chosen so
+   * far — still on the battlefield, a token named out of a stack already
+   * split off it — all sacrificed together once the last part is chosen.
+   * Nobody gets priority and no state-based action is checked until then
+   * (rule 704.3). Optional so a snapshot saved before it existed still loads.
+   */
+  pendingCostSacrifice?: {
+    readonly player: PlayerId;
+    /** The card whose cost it is, named in the prompt. */
+    readonly source: ObjectId;
+    readonly parts: readonly { readonly filter: CardFilter; readonly count: number }[];
+    /** "Sacrifice two **other** creatures": the source can't pay. */
+    readonly except?: ObjectId;
+    readonly picked: readonly ObjectId[];
+    /** Who gets priority once it's paid: the player who activated it. */
+    readonly priorityTo: PlayerId;
+  };
+  /**
    * The commander whose owner is being asked whether to put it into the
    * command zone (rule 903.9), or `null`. Either it's in the graveyard or
    * exile it was put into, and this is the state-based action of 903.9a; or

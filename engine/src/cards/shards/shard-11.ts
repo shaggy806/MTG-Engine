@@ -123,6 +123,7 @@ import _poolManaCylix from "../pool/mana-cylix.js";
 import _poolMercilessEnforcers from "../pool/merciless-enforcers.js";
 import _poolMistyPalmsOasis from "../pool/misty-palms-oasis.js";
 import _poolMmmenonUthrosExile from "../pool/mmmenon-uthros-exile.js";
+import _poolMondrakGloryDominus from "../pool/mondrak-glory-dominus.js";
 import _poolMonologueTax from "../pool/monologue-tax.js";
 import _poolMonssGoblinRaiders from "../pool/monss-goblin-raiders.js";
 import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
@@ -141,6 +142,7 @@ import _poolOkosAccomplices from "../pool/okos-accomplices.js";
 import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
 import _poolOneWithTheMachine from "../pool/one-with-the-machine.js";
 import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
+import _poolOrmendahlProfanePrince from "../pool/ormendahl-profane-prince.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolOuroboroid from "../pool/ouroboroid.js";
 import _poolParadiseMantle from "../pool/paradise-mantle.js";
@@ -367,6 +369,7 @@ const shard: CardShard = {
     _poolMercilessEnforcers,
     _poolMistyPalmsOasis,
     _poolMmmenonUthrosExile,
+    _poolMondrakGloryDominus,
     _poolMonologueTax,
     _poolMonssGoblinRaiders,
     _poolMoonriseCleric,
@@ -385,6 +388,7 @@ const shard: CardShard = {
     _poolOmoQueenOfVesuva,
     _poolOneWithTheMachine,
     _poolOpalineUnicorn,
+    _poolOrmendahlProfanePrince,
     _poolOrzhovBasilica,
     _poolOuroboroid,
     _poolParadiseMantle,

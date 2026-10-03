@@ -108,6 +108,7 @@ import _poolMantleOfWebs from "../pool/mantle-of-webs.js";
 import _poolMaraudersAxe from "../pool/marauders-axe.js";
 import _poolMarisisTwinclaws from "../pool/marisis-twinclaws.js";
 import _poolMarrowGnawer from "../pool/marrow-gnawer.js";
+import _poolMetalworkColossus from "../pool/metalwork-colossus.js";
 import _poolMistCloakedHerald from "../pool/mist-cloaked-herald.js";
 import _poolMoorlandInquisitor from "../pool/moorland-inquisitor.js";
 import _poolMossfireValley from "../pool/mossfire-valley.js";
@@ -318,6 +319,7 @@ const shard: CardShard = {
     _poolMaraudersAxe,
     _poolMarisisTwinclaws,
     _poolMarrowGnawer,
+    _poolMetalworkColossus,
     _poolMistCloakedHerald,
     _poolMoorlandInquisitor,
     _poolMossfireValley,

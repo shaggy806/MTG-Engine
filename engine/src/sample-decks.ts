@@ -311,7 +311,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Disciple of Bolas", "Thallid Soothsayer", "Turns a sacrificed creature into cards."),
       sub("Essence Anchor", "Rune-Sealed Wall", "Three-mana artifact: self-mill, library manipulation."),
       sub("Gravecrawler", "Bloodghast", "Cheap black creature that keeps coming back from the graveyard."),
-      sub("Jarad, Golgari Lich Lord", "Nantuko Husk", "Sacrifice outlet that turns creatures into damage."),
       sub("Kotis, Sibsig Champion", "Doomed Necromancer", "Three-mana creature: reanimation, recursion."),
       sub("Lethal Scheme", "Hero's Downfall", "Instant-speed creature or planeswalker removal."),
       sub("Life from the Loam", "Grim Discovery", "Two-mana sorcery: land recursion, regrowth."),
@@ -536,7 +535,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     substitutions: [
       sub("Ainok Strike Leader", "Hanweir Garrison", "Attacks and brings attacking tokens with it."),
       sub("Divine Visitation", "Anointed Procession", "Five-mana enchantment: token payoff."),
-      sub("Eliminate the Competition", "Lich's Caress", "Five-mana sorcery: removal, creature removal."),
       sub("Gix, Yawgmoth Praetor", "Midnight Reaper", "Three-mana creature: card draw for life, card draw."),
       sub("Kaya, Geist Hunter", "Ajani, Caller of the Pride", "Three-mana planeswalker."),
       sub("Legion Warboss", "Krenko, Tin Street Kingpin", "Three-mana creature: token maker, attack trigger."),

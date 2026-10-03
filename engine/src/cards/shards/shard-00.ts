@@ -133,6 +133,7 @@ import _poolPhyrexianBroodlings from "../pool/phyrexian-broodlings.js";
 import _poolPipBoy3000 from "../pool/pip-boy-3000.js";
 import _poolPlunderingPirate from "../pool/plundering-pirate.js";
 import _poolPowerFist from "../pool/power-fist.js";
+import _poolPriestOfForgottenGods from "../pool/priest-of-forgotten-gods.js";
 import _poolPrimalVisitation from "../pool/primal-visitation.js";
 import _poolPryingEyes from "../pool/prying-eyes.js";
 import _poolQuakestriderCeratops from "../pool/quakestrider-ceratops.js";
@@ -354,6 +355,7 @@ const shard: CardShard = {
     _poolPipBoy3000,
     _poolPlunderingPirate,
     _poolPowerFist,
+    _poolPriestOfForgottenGods,
     _poolPrimalVisitation,
     _poolPryingEyes,
     _poolQuakestriderCeratops,

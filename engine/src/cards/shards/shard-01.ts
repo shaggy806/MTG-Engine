@@ -185,6 +185,7 @@ import _poolVoraciousBibliophile from "../pool/voracious-bibliophile.js";
 import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
 import _poolWeatheredWayfarer from "../pool/weathered-wayfarer.js";
+import _poolWestvaleAbbey from "../pool/westvale-abbey.js";
 import _poolWrennsResolve from "../pool/wrenns-resolve.js";
 import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
@@ -376,6 +377,7 @@ const shard: CardShard = {
     _poolWanderOff,
     _poolWastewoodVerge,
     _poolWeatheredWayfarer,
+    _poolWestvaleAbbey,
     _poolWrennsResolve,
     _poolXandersLounge,
     _poolYavimayaHollow,

@@ -13,7 +13,7 @@ import type { StaticCondition, TurnStat } from "./cards/define.js";
 import type { EffectSpec, SpellResolver } from "./effects.js";
 import type { GameEvent } from "./events.js";
 import type { GameState, PlayerCounterKind, ZoneType } from "./state.js";
-import type { PlayerId } from "./primitives.js";
+import type { ObjectId, PlayerId } from "./primitives.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
 import type { TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
@@ -27,8 +27,95 @@ export type SacrificeCost =
   | "creature-you-control"
   /** Sacrifice a permanent the activating player controls matching `filter`
    * (their choice — Zuran Orb "Sacrifice a land", Orcish Lumberjack "Sacrifice
-   * a Forest"). needed-cards P6. */
-  | { readonly filter: CardFilter };
+   * a Forest"). needed-cards P6.
+   *
+   * With `count`, several of them: "Sacrifice two artifacts" (Sai, Master
+   * Thopterist) is `count: 2`, "Sacrifice X Treasures" (Grim Hireling) is
+   * `count: "x"` — the X announced for the activation (rules 107.3a, 602.2b),
+   * which `"x"` in the effect then reads. Which ones is chosen as the cost is
+   * paid (rule 601.2h), with the ordinary `sacrifice` decision, after the
+   * ability is on the stack and its mana paid — never for the player — and a
+   * compacted token stack counts as every token in it. All of them are
+   * sacrificed at once. Without `count` it's one permanent, named on the
+   * `activate-ability` action as before. */
+  | { readonly filter: CardFilter; readonly count?: number | "x" }
+  /** One permanent for each filter, every one a different permanent —
+   * Jarad, Golgari Lich Lord's "Sacrifice a Swamp and a Forest" (a land that
+   * is both still pays only one of them: its ruling). Asked one filter at a
+   * time, each offering only what leaves the rest payable. */
+  | { readonly each: readonly CardFilter[] };
+
+/** One kind of permanent a sacrifice cost takes, and how many of it. */
+export interface SacrificeCostPart {
+  readonly filter: CardFilter;
+  readonly count: number;
+}
+
+/**
+ * The parts of a sacrifice cost that is chosen as it's paid rather than on
+ * the action — a `count` or an `each` (see {@link SacrificeCost}) — with an
+ * `"x"` count read at `x`. `null` for a cost that names its one permanent on
+ * the action (`"self"`, `"creature-you-control"`, a bare `{ filter }`) or no
+ * sacrifice at all.
+ */
+export function sacrificeCostParts(
+  sacrifice: SacrificeCost | undefined,
+  x: number,
+): readonly SacrificeCostPart[] | null {
+  if (sacrifice === undefined || typeof sacrifice === "string") return null;
+  if ("each" in sacrifice) return sacrifice.each.map((filter) => ({ filter, count: 1 }));
+  if (sacrifice.count === undefined) return null;
+  return [{ filter: sacrifice.filter, count: sacrifice.count === "x" ? Math.max(0, Math.floor(x)) : sacrifice.count }];
+}
+
+/** Does this cost sacrifice X permanents — an `{X}` the mana cost needn't
+ * have (Grim Hireling's "{B}, Sacrifice X Treasures")? */
+export function sacrificeCostReadsX(cost: { readonly sacrifice?: SacrificeCost }): boolean {
+  const sacrifice = cost.sacrifice;
+  return typeof sacrifice === "object" && "filter" in sacrifice && sacrifice.count === "x";
+}
+
+/**
+ * Can every part be paid at once, each with its own permanents? `eligible` is
+ * what may pay a part, `capacity` how many each permanent can give (a token
+ * stack as many as it has tokens; anything absent gives none). One permanent
+ * never pays two parts — Jarad's Swamp that is also a Forest pays one of
+ * "a Swamp and a Forest", not both. A search, but over a cost's few parts.
+ */
+export function sacrificePartsFillable(
+  parts: readonly { readonly eligible: readonly ObjectId[]; readonly count: number }[],
+  capacity: ReadonlyMap<ObjectId, number>,
+): boolean {
+  const left = new Map(capacity);
+  const fill = (part: number, need: number, from: number): boolean => {
+    if (part === parts.length) return true;
+    const { eligible } = parts[part];
+    if (need === 0) return fill(part + 1, parts[part + 1]?.count ?? 0, 0);
+    // The last part has no one after it to leave anything for.
+    if (part === parts.length - 1) {
+      let n = 0;
+      for (const id of eligible.slice(from)) n += left.get(id) ?? 0;
+      return n >= need;
+    }
+    for (let i = from; i < eligible.length; i += 1) {
+      const id = eligible[i];
+      const has = left.get(id) ?? 0;
+      if (has <= 0) continue;
+      left.set(id, has - 1);
+      const ok = fill(part, need - 1, i);
+      left.set(id, has);
+      if (ok) return true;
+    }
+    return false;
+  };
+  return fill(0, parts[0]?.count ?? 0, 0);
+}
+
+/** Every filter a sacrifice cost's choice can be made from — one for the
+ * forms that have one, each of an `each`'s. */
+export function sacrificeCostFilters(sacrifice: Exclude<SacrificeCost, "self" | "creature-you-control">): readonly CardFilter[] {
+  return "each" in sacrifice ? sacrifice.each : [sacrifice.filter];
+}
 
 /**
  * How much life an activated ability's cost pays: a fixed number, or
@@ -222,6 +309,10 @@ export interface ActivatedAbility {
   readonly costReduction?: {
     readonly reduceGeneric: CostReductionAmount;
   };
+  /** The least X the ability may be activated with — Ruthless Technomancer's
+   * "Sacrifice X artifacts: … X can't be 0." Absent: 0. The offer's
+   * `xCost.minX` says it, and an activation below it is refused. */
+  readonly minX?: number;
 }
 
 /**

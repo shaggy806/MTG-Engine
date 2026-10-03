@@ -52,6 +52,7 @@ import _poolDrMadisonLi from "../pool/dr-madison-li.js";
 import _poolDragonMoose from "../pool/dragon-moose.js";
 import _poolDragonlairSpider from "../pool/dragonlair-spider.js";
 import _poolDragonspeakerShaman from "../pool/dragonspeaker-shaman.js";
+import _poolDreadReturn from "../pool/dread-return.js";
 import _poolEastWindAvatar from "../pool/east-wind-avatar.js";
 import _poolEerieInterlude from "../pool/eerie-interlude.js";
 import _poolElegantParlor from "../pool/elegant-parlor.js";
@@ -254,6 +255,7 @@ const shard: CardShard = {
     _poolDragonMoose,
     _poolDragonlairSpider,
     _poolDragonspeakerShaman,
+    _poolDreadReturn,
     _poolEastWindAvatar,
     _poolEerieInterlude,
     _poolElegantParlor,

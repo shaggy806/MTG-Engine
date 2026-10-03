@@ -79,6 +79,7 @@ import _poolHoneyMammoth from "../pool/honey-mammoth.js";
 import _poolIlysianCaryatid from "../pool/ilysian-caryatid.js";
 import _poolImperialRecruiter from "../pool/imperial-recruiter.js";
 import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
+import _poolJaradGolgariLichLord from "../pool/jarad-golgari-lich-lord.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
 import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
 import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
@@ -265,6 +266,7 @@ const shard: CardShard = {
     _poolIlysianCaryatid,
     _poolImperialRecruiter,
     _poolIridescentBlademaster,
+    _poolJaradGolgariLichLord,
     _poolJasperaSentinel,
     _poolJetmirNexusOfRevels,
     _poolKeeperOfTheAccord,

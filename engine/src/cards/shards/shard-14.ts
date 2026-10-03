@@ -210,6 +210,7 @@ import _poolWingedShepherd from "../pool/winged-shepherd.js";
 import _poolWitchHunter from "../pool/witch-hunter.js";
 import _poolWitchsClinic from "../pool/witchs-clinic.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
+import _poolZopandrelHungerDominus from "../pool/zopandrel-hunger-dominus.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
 import _tokensFishToken from "../tokens/fish-token.js";
@@ -426,6 +427,7 @@ const shard: CardShard = {
     _poolWitchHunter,
     _poolWitchsClinic,
     _poolZealousLorecaster,
+    _poolZopandrelHungerDominus,
     _poolZukosOffense,
   ],
   tokens: [

@@ -81,7 +81,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the
   game" (`new:win-game`), a card's own permission to be cast from its graveyard, "can't cast more
   than one spell each turn", the legendary sorcery restriction (205.4e), library ordering
-  (`decision:library-ordering`), "sacrifice N" costs (`cost:sacrifice-multiple`) and improvise.
+  (`decision:library-ordering`), "sacrifice any number" as a spell's additional cost
+  (`cost:sacrifice-multiple`'s remainder — Dargo, Plumb the Forbidden; "sacrifice N" and "X"
+  costs landed 2026-10-03) and improvise.
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
   gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
   still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a

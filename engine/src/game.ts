@@ -8,12 +8,20 @@
  * and destroy creatures with lethal damage or non-positive toughness. No combat.
  */
 
-import { abilityLifeCost, isManaAbility } from "./abilities.js";
+import {
+  abilityLifeCost,
+  isManaAbility,
+  sacrificeCostFilters,
+  sacrificeCostParts,
+  sacrificeCostReadsX,
+  sacrificePartsFillable,
+} from "./abilities.js";
 import type {
   ActivatedAbility,
   CostReductionAmount,
   DefenderLife,
   SacrificeCost,
+  SacrificeCostPart,
   StackAbility,
   TriggeredAbility,
   TriggerSpec,
@@ -671,6 +679,9 @@ type FlashbackOption = {
   /** Life paid alongside the mana — only a printed flashback's (Deep
    * Analysis). */
   readonly payLife?: number;
+  /** Permanents sacrificed for it — only a printed flashback's (Dread
+   * Return's "Flashback—Sacrifice three creatures"). */
+  readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   /** What gave it: the effect's source (Past in Flames) or the permanent
    * whose static grants it. Absent for the card's own. */
   readonly grantor?: ObjectId;
@@ -1638,7 +1649,7 @@ export class Game {
       manaColors?: readonly ManaType[],
     ): void => {
       if (this.whyCannotActivateAbility(player, source, index) !== null) return;
-      const maxX =
+      const manaX =
         parseManaCost(ability.cost.mana).x > 0
           ? // Mirrors activateAbility's own payMana call exactly — see
             // maxAffordableAbilityX.
@@ -1649,6 +1660,16 @@ export class Game {
               ability.cost.tap ? source : undefined,
             )
           : undefined;
+      // "Sacrifice X Treasures": as many as there are to sacrifice once the
+      // mana is paid.
+      const sacrificeX = sacrificeCostReadsX(ability.cost)
+        ? this.costSacrificeCapacity(player, source, ability)
+        : undefined;
+      const maxX =
+        manaX === undefined ? sacrificeX : sacrificeX === undefined ? manaX : Math.min(manaX, sacrificeX);
+      // "X can't be 0" (Ruthless Technomancer).
+      const minX = ability.minX ?? 0;
+      if (maxX !== undefined && maxX < minX) return;
       const push = (
         targetOptions: readonly (readonly TargetRef[])[],
         xCost?: { readonly maxX: number; readonly minX?: number },
@@ -1662,11 +1683,15 @@ export class Game {
           source,
           abilityIndex: index,
           cardName,
-          text: xCost?.minX !== undefined ? `${label} (X=${xCost.minX})` : label,
+          text: xCost?.minX !== undefined && xCost.minX === xCost.maxX ? `${label} (X=${xCost.minX})` : label,
           ...(manaColors !== undefined ? { manaColors } : {}),
           targetSpecs: ability.targets,
           targetOptions,
-          ...(ability.cost.sacrifice !== undefined && ability.cost.sacrifice !== "self"
+          // One permanent, named on the action. A cost of several is chosen
+          // as it's paid, with a `sacrifice` decision — nothing to offer here.
+          ...(ability.cost.sacrifice !== undefined &&
+          ability.cost.sacrifice !== "self" &&
+          sacrificeCostParts(ability.cost.sacrifice, 0) === null
             ? { sacrifice: { choices: this.sacrificeCandidates(player, source, ability) } }
             : {}),
           ...(() => {
@@ -1682,7 +1707,7 @@ export class Game {
         // "Target Saga card with mana value X": what may be targeted depends
         // on X, so the ability is offered once per X that has a legal set of
         // targets, each with that X fixed and that X's options.
-        for (let x = 0; x <= maxX; x += 1) {
+        for (let x = minX; x <= maxX; x += 1) {
           const options = this.targetOptionsFor(ability.targets, player, this.permanentSource(source, x));
           if (targetsFillable(ability.targets, options)) push(options, { minX: x, maxX: x });
         }
@@ -1690,7 +1715,7 @@ export class Game {
       }
       push(
         this.targetOptionsFor(ability.targets, player, this.permanentSource(source)),
-        maxX !== undefined ? { maxX } : undefined,
+        maxX !== undefined ? { maxX, ...(minX > 0 ? { minX } : {}) } : undefined,
       );
     };
 
@@ -2308,6 +2333,29 @@ export class Game {
       );
       const xPlan =
         parseManaCost(cost).x > 0 ? this.xPlanFor(player, card, def, cost, face ?? 0, pricedAt) : null;
+      // "Sacrifice X creatures" (Eliminate the Competition): an X the mana
+      // cost needn't have, as many as there are to sacrifice once the mana is
+      // paid.
+      const sacrificeXFilter =
+        def.additionalCost?.sacrificeCount === "x" ? def.additionalCost.sacrifice : undefined;
+      const sacrificeX =
+        xPlan === null && sacrificeXFilter !== undefined
+          ? (() => {
+              const candidates = this.costSacrificeCandidates(player, [{ filter: sacrificeXFilter }], undefined);
+              const plan = this.payMana(
+                player,
+                this.withFace(card, face ?? 0, () => this.castingCostOf(player, card, def, 0, cost, pricedAt)),
+                undefined,
+                undefined,
+                { kind: "cast", card, face: face ?? 0 },
+                { last: candidates },
+              );
+              if (plan === null) return 0;
+              let n = 0;
+              for (const left of this.costSacrificeLeftAfter(candidates, plan).values()) n += left;
+              return n;
+            })()
+          : undefined;
       // X and the number of targets trade off when both are paid for
       // (Fireball): the largest X at each count on offer, so neither is
       // capped by the dearest end of the other.
@@ -2321,9 +2369,10 @@ export class Game {
             );
       // "Up to X target …" / "X target …" (Pest Infestation, Curse of the
       // Swine): the number of targets and X bound each other.
+      const payableX = xPlan?.maxX ?? sacrificeX;
       const xGroup =
-        xPlan !== null && targetCount === undefined && groupReadsX(specs)
-          ? this.xGroupOffer(specs, options, xPlan.maxX, xFloor)
+        payableX !== undefined && targetCount === undefined && groupReadsX(specs)
+          ? this.xGroupOffer(specs, options, payableX, xFloor)
           : null;
       // No number of targets leaves room for an X at or above the floor.
       if (xGroup === "none") continue;
@@ -2333,7 +2382,7 @@ export class Game {
         cardName,
         // Cast with no {X} to pay — free, say — X is 0 (rule 107.3b), and a
         // group tied to it is fixed there.
-        targetSpecs: xPlan === null ? specsAtX(specs, 0) : specs,
+        targetSpecs: payableX === undefined ? specsAtX(specs, 0) : specs,
         targetOptions: options,
         ...(def.divided !== null ? { divide: def.divided } : {}),
         ...(via !== undefined ? { via } : {}),
@@ -2471,7 +2520,18 @@ export class Game {
             ? // "Pay X life" — the ceiling is what you have, not what your
               // lands can make (rule 118.4: any amount of life you have).
               { xCost: { maxX: this.state.players[player].life } }
-            : {}),
+            : sacrificeX !== undefined
+              ? {
+                  xCost:
+                    xGroup !== null
+                      ? {
+                          maxX: Math.max(...xGroup.maxXByTargetCount),
+                          maxXByTargetCount: xGroup.maxXByTargetCount,
+                          minXByTargetCount: xGroup.minXByTargetCount,
+                        }
+                      : { maxX: sacrificeX },
+                }
+              : {}),
         ...(prototype === true && def.prototype !== null
           ? { prototype: true, prototypeCost: def.prototype.cost }
           : {}),
@@ -7725,8 +7785,10 @@ export class Game {
      * `graveyardGrantsFor` doesn't offer that pair. */
     permissionSacrifice?: CardFilter,
   ): ObjectId[] {
+    // A sacrifice of several ("sacrifice X creatures") isn't named on the
+    // action — see `spellSacrificeParts`.
     const filter =
-      def.additionalCost?.sacrifice ??
+      (def.additionalCost?.sacrificeCount === undefined ? def.additionalCost?.sacrifice : undefined) ??
       (costOption === undefined ? undefined : def.additionalCost?.options?.[costOption]?.sacrifice) ??
       permissionSacrifice;
     if (filter === undefined) return [];
@@ -8031,7 +8093,7 @@ export class Game {
     }
     if (def.additionalCost !== null) {
       const sacrificesInCost =
-        def.additionalCost.sacrifice !== undefined ||
+        (def.additionalCost.sacrifice !== undefined && def.additionalCost.sacrificeCount === undefined) ||
         (costOption !== undefined && def.additionalCost.options?.[costOption]?.sacrifice !== undefined);
       if (sacrificesInCost) {
         const candidates = this.additionalCostSacrifices(player, def, costOption);
@@ -8133,11 +8195,32 @@ export class Game {
       }
       return tap === undefined ? null : this.whyTapChoiceIsWrong(def.name, offer, tap);
     }
-    // A creature tapped to convoke is no longer untapped to tap for mana.
-    const convokers =
-      convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : undefined;
-    if (this.payMana(player, cost, undefined, undefined, purpose, convokers) === null) {
-      return `${player} cannot pay the cost of ${def.name}`;
+    // A creature tapped to convoke is no longer untapped to tap for mana. A
+    // sacrifice of several needs what it takes still there once the mana is
+    // paid — what could pay it is tried last (`costSacrificeRemaining`).
+    const sacrificeParts = this.spellSacrificeParts(cardId, def, via, graveyardGrant, xValue);
+    const sacrificeCandidates =
+      sacrificeParts === null ? undefined : this.costSacrificeCandidates(player, sacrificeParts, undefined);
+    const arrangement: ManaSourceArrangement | undefined =
+      convoked.length === 0 && sacrificeCandidates === undefined
+        ? undefined
+        : {
+            ...(convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : {}),
+            ...(sacrificeCandidates !== undefined ? { last: sacrificeCandidates } : {}),
+          };
+    const plan = this.payMana(player, cost, undefined, undefined, purpose, arrangement);
+    if (plan === null) return `${player} cannot pay the cost of ${def.name}`;
+    if (
+      sacrificeParts !== null &&
+      sacrificeCandidates !== undefined &&
+      !this.costSacrificeFillable(
+        player,
+        sacrificeParts,
+        undefined,
+        this.costSacrificeLeftAfter(sacrificeCandidates, plan),
+      )
+    ) {
+      return `${player} has too few permanents to sacrifice to cast ${def.name}`;
     }
     return null;
   }
@@ -8507,8 +8590,13 @@ export class Game {
       modes === undefined ? 0 : modes.length - 1,
     );
     const hasX =
-      parseManaCost(costString).x > 0 || def.additionalCost?.payLifeX === true;
+      parseManaCost(costString).x > 0 ||
+      def.additionalCost?.payLifeX === true ||
+      def.additionalCost?.sacrificeCount === "x";
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
+    // "Sacrifice X creatures", "Flashback—Sacrifice three creatures": chosen
+    // once the spell is on the stack, below.
+    const severalSacrificed = this.spellSacrificeParts(cardId, def, via, graveyardGrant, chosenX);
 
     if (def.castModal !== null && modes === undefined) {
       throw new Error(`${def.name} is a modal spell — choose modes to cast it`);
@@ -8582,6 +8670,13 @@ export class Game {
       manaArrangement = {
         last: new Set(this.tapOthersCandidates(player, cardId, spec)),
         withheld: new Set(tapPicked),
+      };
+    } else if (severalSacrificed !== null) {
+      // The mana from everything else first, as `whyCannotCastSpell` planned
+      // it, so what the sacrifice wants is still there for it.
+      manaArrangement = {
+        ...(manaArrangement ?? {}),
+        last: this.costSacrificeCandidates(player, severalSacrificed, undefined),
       };
     }
     const payment = this.payMana(
@@ -8792,6 +8887,12 @@ export class Game {
     if (targetingLife > 0) this.changeLife(player, -targetingLife);
     if (def.additionalCost?.payLifeX === true && chosenX > 0) {
       this.changeLife(player, -chosenX);
+    }
+    // "Sacrifice X creatures", "Flashback—Sacrifice three creatures": which
+    // ones is chosen now, as the cost is paid (rule 601.2h), the spell on the
+    // stack and its mana paid.
+    if (severalSacrificed !== null) {
+      this.beginCostSacrifice(player, cardId, severalSacrificed, undefined, via === "effect" ? this.activePlayer : player);
     }
     // The chosen branch of a choice of additional costs, paid here with the
     // fixed ones — after the announcement, so the log reads "casts X,
@@ -9059,11 +9160,166 @@ export class Game {
           effectiveTypes(this.state, this.registry, object).includes("creature") && this.canBeSacrificed(id)
         );
       }
-      // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest".
+      // { filter } — Zuran Orb "a land", Orcish Lumberjack "a Forest" — and
+      // every filter of an `each` ("a Swamp and a Forest").
       return (
-        matchesFilter(this.state, this.registry, id, sac.filter, { you: player }) && this.canBeSacrificed(id)
+        sacrificeCostFilters(sac).some((filter) =>
+          matchesFilter(this.state, this.registry, id, filter, { you: player }),
+        ) && this.canBeSacrificed(id)
       );
     });
+  }
+
+  /** The permanents `player` could sacrifice for one part of a cost of
+   * several (see `sacrificeCostParts`): theirs, matching `filter`, not the
+   * source when the cost says "another", and able to be sacrificed (rule
+   * 701.21a). */
+  private costSacrificeEligible(
+    player: PlayerId,
+    filter: CardFilter,
+    except: ObjectId | undefined,
+  ): ObjectId[] {
+    return this.state.zones.shared.battlefield.filter((id) => {
+      const object = this.state.objects[id];
+      return (
+        object !== undefined &&
+        object.controller === player &&
+        id !== except &&
+        matchesFilter(this.state, this.registry, id, filter, { you: player }) &&
+        this.canBeSacrificed(id)
+      );
+    });
+  }
+
+  /**
+   * What each permanent that could pay `ability`'s sacrifice of several can
+   * still give once the ability's mana is paid — a compacted token stack as
+   * many as it has tokens. The mana is planned the way `activateAbility`
+   * plans it, every such permanent tried last, and a Treasure the plan has
+   * to sacrifice for mana is gone (rule 601.2g: mana abilities are activated
+   * before the costs are paid, so one permanent can't pay twice). Tapping
+   * one for mana takes nothing away: a tapped permanent can be sacrificed.
+   * `null` when the mana can't be paid at all.
+   */
+  private costSacrificeRemaining(
+    player: PlayerId,
+    sourceId: ObjectId,
+    ability: ActivatedAbility,
+    x: number,
+  ): Map<ObjectId, number> | null {
+    const sacrifice = ability.cost.sacrifice;
+    if (sacrifice === undefined || typeof sacrifice === "string") return new Map();
+    const except = ability.otherOnly === true ? sourceId : undefined;
+    const candidates = this.costSacrificeCandidates(
+      player,
+      sacrificeCostFilters(sacrifice).map((filter) => ({ filter })),
+      except,
+    );
+    const plan = this.payMana(
+      player,
+      this.activatedAbilityManaCost(player, sourceId, ability, x).cost,
+      ability.cost.tap || ability.zone !== undefined ? undefined : sourceId,
+      ability.cost.tap ? sourceId : undefined,
+      { kind: "ability", source: sourceId },
+      { last: candidates },
+    );
+    return plan === null ? null : this.costSacrificeLeftAfter(candidates, plan);
+  }
+
+  /** Every permanent `player` could sacrifice for one of `parts`. */
+  private costSacrificeCandidates(
+    player: PlayerId,
+    parts: readonly { readonly filter: CardFilter }[],
+    except: ObjectId | undefined,
+  ): Set<ObjectId> {
+    const candidates = new Set<ObjectId>();
+    for (const { filter } of parts) {
+      for (const id of this.costSacrificeEligible(player, filter, except)) candidates.add(id);
+    }
+    return candidates;
+  }
+
+  /** How many each of `candidates` can give once `plan` is paid: a token
+   * stack every token in it, less whatever the plan sacrifices for mana. */
+  private costSacrificeLeftAfter(candidates: ReadonlySet<ObjectId>, plan: ManaPayment): Map<ObjectId, number> {
+    const remaining = new Map<ObjectId, number>();
+    for (const id of candidates) remaining.set(id, this.state.objects[id].stackCount ?? 1);
+    for (const step of plan.steps) {
+      if (!step.sacrifice || !remaining.has(step.source)) continue;
+      remaining.set(step.source, Math.max(0, (remaining.get(step.source) ?? 0) - 1));
+    }
+    return remaining;
+  }
+
+  /** Can every one of `parts` be paid out of `remaining` at once? */
+  private costSacrificeFillable(
+    player: PlayerId,
+    parts: readonly SacrificeCostPart[],
+    except: ObjectId | undefined,
+    remaining: ReadonlyMap<ObjectId, number>,
+  ): boolean {
+    return sacrificePartsFillable(
+      parts.map((part) => ({
+        eligible: this.costSacrificeEligible(player, part.filter, except).filter((id) => remaining.has(id)),
+        count: part.count,
+      })),
+      remaining,
+    );
+  }
+
+  /** {@link costSacrificeRemaining}, or `null` when `parts` can't all be
+   * paid out of it — the check an activation of a sacrifice of several has
+   * to pass. */
+  private costSacrificePool(
+    player: PlayerId,
+    sourceId: ObjectId,
+    ability: ActivatedAbility,
+    parts: readonly SacrificeCostPart[],
+    x = 0,
+  ): Map<ObjectId, number> | null {
+    const remaining = this.costSacrificeRemaining(player, sourceId, ability, x);
+    if (remaining === null) return null;
+    const except = ability.otherOnly === true ? sourceId : undefined;
+    return this.costSacrificeFillable(player, parts, except, remaining) ? remaining : null;
+  }
+
+  /**
+   * The sacrifice of several a spell's cost takes, chosen as it's paid (see
+   * `GameState.pendingCostSacrifice`): its `additionalCost.sacrificeCount`'s
+   * — "sacrifice X creatures" (Eliminate the Competition), at `x` — and,
+   * cast with flashback, that flashback's (Dread Return's "Flashback—
+   * Sacrifice three creatures"). `null` for none.
+   */
+  private spellSacrificeParts(
+    cardId: ObjectId,
+    def: CardDefinition,
+    via: CastVia | undefined,
+    grant: GraveyardGrant | undefined,
+    x: number,
+  ): SacrificeCostPart[] | null {
+    const parts: SacrificeCostPart[] = [];
+    const extra = def.additionalCost;
+    if (extra?.sacrifice !== undefined && extra.sacrificeCount !== undefined) {
+      parts.push({
+        filter: extra.sacrifice,
+        count: extra.sacrificeCount === "x" ? Math.max(0, Math.floor(x)) : extra.sacrificeCount,
+      });
+    }
+    if (via === "flashback") {
+      const flashback = this.flashbackOf(cardId, grant)?.sacrifice;
+      if (flashback !== undefined) parts.push({ filter: flashback.filter, count: flashback.count });
+    }
+    return parts.length === 0 ? null : parts;
+  }
+
+  /** The most an "X" sacrifice cost can take once the ability's mana is paid
+   * — Grim Hireling's Treasures. */
+  private costSacrificeCapacity(player: PlayerId, sourceId: ObjectId, ability: ActivatedAbility): number {
+    const remaining = this.costSacrificeRemaining(player, sourceId, ability, 0);
+    if (remaining === null) return 0;
+    let n = 0;
+    for (const left of remaining.values()) n += left;
+    return n;
   }
 
   /**
@@ -9362,7 +9618,8 @@ export class Game {
     xValue = 0,
   ): { cost: ManaCost; chosenX: number } {
     const parsed = parseManaCost(ability.cost.mana);
-    const hasX = parsed.x > 0;
+    // "Sacrifice X Treasures" announces an X the mana cost needn't have.
+    const hasX = parsed.x > 0 || sacrificeCostReadsX(ability.cost);
     const chosenX = hasX ? Math.max(0, Math.floor(xValue)) : 0;
     const mod = this.abilityCostModificationFor(sourceId, isManaAbility(ability));
     // Increases first, then the reductions (rule 601.2f).
@@ -9632,7 +9889,21 @@ export class Game {
     ) {
       return `${player} cannot pay for ${def.name}'s ability`;
     }
-    if (
+    // A cost of several permanents ("Sacrifice two artifacts", "Sacrifice X
+    // Treasures") needs that many left once the mana is paid; at no X yet,
+    // the least X it may have.
+    const sacrificeParts = sacrificeCostParts(ability.cost.sacrifice, x ?? ability.minX ?? 0);
+    if (x !== undefined && x < (ability.minX ?? 0)) {
+      return `${def.name}'s ability can't be activated with X less than ${ability.minX ?? 0}`;
+    }
+    if (sacrificeParts !== null) {
+      // A mana ability never uses the stack, so there's nowhere for it to wait
+      // while the player chooses; none in the pool has such a cost.
+      if (isManaAbility(ability)) return `${def.name}'s mana ability can't sacrifice several permanents yet`;
+      if (this.costSacrificePool(player, sourceId, ability, sacrificeParts, x ?? 0) === null) {
+        return `${player} has too few permanents to sacrifice for ${def.name}'s ability`;
+      }
+    } else if (
       ability.cost.sacrifice !== undefined &&
       this.sacrificeCandidates(player, sourceId, ability).length === 0
     ) {
@@ -9708,9 +9979,11 @@ export class Game {
       );
       if (badTarget !== null) throw new Error(badTarget);
 
-      // Resolve which permanent the sacrifice cost (if any) will consume.
+      // Resolve which permanent the sacrifice cost (if any) will consume. A
+      // cost of several is chosen once the ability is on the stack, below.
+      const sacrificeParts = sacrificeCostParts(ability.cost.sacrifice, xValue);
       let sacrificeVictim: ObjectId | null = null;
-      if (ability.cost.sacrifice !== undefined) {
+      if (ability.cost.sacrifice !== undefined && sacrificeParts === null) {
         const candidates = this.sacrificeCandidates(player, sourceId, ability);
         if (ability.cost.sacrifice === "self") {
           sacrificeVictim = sourceId;
@@ -9756,6 +10029,16 @@ export class Game {
           last: new Set(this.tapOthersCandidates(player, sourceId, ability.cost.tapOthers)),
           withheld: new Set(tapPicked),
         };
+      } else if (sacrificeParts !== null && typeof ability.cost.sacrifice === "object") {
+        // "Sacrifice two artifacts": the mana is paid from everything else
+        // first, as `whyCannotActivateAbility` planned it, so the Treasures
+        // the cost wants are still there for it.
+        const except = ability.otherOnly === true ? sourceId : undefined;
+        const last = new Set<ObjectId>();
+        for (const filter of sacrificeCostFilters(ability.cost.sacrifice)) {
+          for (const id of this.costSacrificeEligible(player, filter, except)) last.add(id);
+        }
+        manaArrangement = { last };
       }
       const payment = this.payMana(
         player,
@@ -9770,12 +10053,12 @@ export class Game {
       }
       return {
         source, def, ability, grantedAbility, sourceStint,
-        sacrificeVictim, chosenX, tapPicked, payment,
+        sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment,
       };
     });
     const {
       source, def, ability, grantedAbility, sourceStint,
-      sacrificeVictim, chosenX, tapPicked, payment,
+      sacrificeVictim, sacrificeParts, chosenX, tapPicked, payment,
     } = planned;
     let sacrificedRef: LastKnownRefs["sacrificed"];
 
@@ -9992,6 +10275,12 @@ export class Game {
       onStack: true,
     });
     this.announceTargeted(chosen, player, sourceId, false, abilityId);
+    // "Sacrifice two artifacts": which ones is chosen now, as the cost is paid
+    // (rules 602.2b, 601.2h) — the ability is on the stack and its mana paid,
+    // and nobody gets priority until it's done.
+    if (sacrificeParts !== null) {
+      this.beginCostSacrifice(player, sourceId, sacrificeParts, ability.otherOnly === true ? sourceId : undefined, player);
+    }
     // "Discard a card" in the cost: asked now, as a spell's additional
     // discard is, before anyone gets priority (rule 602.2b).
     const costDiscard = ability.cost.discard;
@@ -19064,11 +19353,121 @@ export class Game {
     });
   }
 
+  /**
+   * Start paying a sacrifice cost of several permanents (see
+   * `GameState.pendingCostSacrifice`): ask for each part in turn, or take it
+   * whole where there's no choice, then sacrifice everything chosen at once.
+   * Leaves a `sacrifice` decision up when there is a choice.
+   */
+  private beginCostSacrifice(
+    player: PlayerId,
+    source: ObjectId,
+    parts: readonly SacrificeCostPart[],
+    except: ObjectId | undefined,
+    priorityTo: PlayerId,
+  ): void {
+    this.state.pendingCostSacrifice = {
+      player,
+      source,
+      parts: [...parts],
+      ...(except !== undefined ? { except } : {}),
+      picked: [],
+      priorityTo,
+    };
+    this.continueCostSacrifice();
+  }
+
+  /** The next part of `pendingCostSacrifice`: what may pay it is what's
+   * eligible, not already picked, and leaves the parts after it payable (one
+   * permanent never pays two). Asked if that's more than the part takes. */
+  private continueCostSacrifice(): void {
+    for (;;) {
+      const pending = this.state.pendingCostSacrifice;
+      if (pending === undefined) return;
+      if (pending.parts.length === 0) {
+        this.finishCostSacrifice();
+        return;
+      }
+      const [part, ...rest] = pending.parts;
+      const picked = new Set(pending.picked);
+      const capacity = new Map<ObjectId, number>();
+      const eligibleFor = (filter: CardFilter): ObjectId[] =>
+        this.costSacrificeEligible(pending.player, filter, pending.except).filter((id) => !picked.has(id));
+      for (const filter of [part.filter, ...rest.map((p) => p.filter)]) {
+        for (const id of eligibleFor(filter)) capacity.set(id, this.state.objects[id].stackCount ?? 1);
+      }
+      const restParts = rest.map((p) => ({ eligible: eligibleFor(p.filter), count: p.count }));
+      // With parts after it, a permanent is offered only if one of it can go
+      // and leave them payable; with one part (or one permanent each), this
+      // is exact.
+      const eligible =
+        rest.length === 0
+          ? eligibleFor(part.filter)
+          : eligibleFor(part.filter).filter((id) => {
+              const left = new Map(capacity);
+              left.set(id, (left.get(id) ?? 1) - 1);
+              return sacrificePartsFillable(restParts, left);
+            });
+      let total = 0;
+      for (const id of eligible) total += capacity.get(id) ?? 1;
+      if (part.count <= 0 || total <= part.count) {
+        // No choice: all of it. (Never less than the part takes — the
+        // activation was checked to be payable — but a shortfall still takes
+        // what there is rather than stalling.)
+        this.state.pendingCostSacrifice = {
+          ...pending,
+          parts: rest,
+          picked: part.count <= 0 ? pending.picked : [...pending.picked, ...eligible],
+        };
+        continue;
+      }
+      this.state.awaiting = { kind: "sacrifice", player: pending.player, count: part.count, eligible };
+      const object = this.state.objects[pending.source];
+      this.state.decisionSource =
+        object === undefined ? null : { object: pending.source, cardName: printedCardName(object) };
+      return;
+    }
+  }
+
+  /** Sacrifice everything a cost of several picked, as one event (rule
+   * 603.10a — each one's dies trigger sees the others go). */
+  private finishCostSacrifice(): void {
+    const pending = this.state.pendingCostSacrifice;
+    if (pending === undefined) return;
+    delete this.state.pendingCostSacrifice;
+    const victims = pending.picked.filter((id) => this.state.objects[id]?.zone === "battlefield");
+    if (victims.length === 0) return;
+    this.withLeaveBatch(() => {
+      this.snapshotLeaving(victims);
+      for (const id of victims) {
+        // Its controller sacrifices it (rule 701.21a) — read before the move
+        // hands it back to its owner.
+        const sacrificer = this.state.objects[id].controller;
+        this.moveObject(id, "graveyard");
+        this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
+      }
+    });
+  }
+
   /** Answers a pending `sacrifice` decision. */
   private applySacrifice(player: PlayerId, permanents: readonly ObjectId[]): void {
     const why = this.whyCannotSacrifice(player, permanents);
     if (why !== null) throw new Error(why);
     this.state.awaiting = null;
+    const cost = this.state.pendingCostSacrifice;
+    if (cost !== undefined) {
+      // A part of a sacrifice cost: each pick singles out one permanent — a
+      // token named out of a stack is split off it now, so the next part
+      // can't name it again.
+      this.state.pendingCostSacrifice = {
+        ...cost,
+        parts: cost.parts.slice(1),
+        picked: [...cost.picked, ...permanents.map((id) => this.splitOneFromStack(id))],
+      };
+      this.continueCostSacrifice();
+      this.prepareForPriority(cost.priorityTo);
+      return;
+    }
     for (const id of permanents) {
       // A specific chosen sacrifice singles out one — split it off a
       // compacted stack (the "sacrifice everything eligible, no choice" path
@@ -19948,11 +20347,19 @@ export class Game {
     if (object === undefined) return [];
     const out: FlashbackOption[] = [];
     const add = (option: FlashbackOption): void => {
-      if (out.some((f) => f.cost === option.cost && f.payLife === option.payLife)) return;
+      if (
+        out.some(
+          (f) => f.cost === option.cost && f.payLife === option.payLife && f.sacrifice === option.sacrifice,
+        )
+      ) {
+        return;
+      }
       out.push(option);
     };
     const printed = this.registry.get(object.cardName).flashback;
-    if (printed !== null) add(printed.payLife === undefined ? { cost: printed.cost } : { ...printed });
+    if (printed !== null) {
+      add(printed.payLife === undefined && printed.sacrifice === undefined ? { cost: printed.cost } : { ...printed });
+    }
     const granted = object.grantedFlashback;
     if (granted != null) add({ cost: granted.cost, ...(granted.by !== undefined ? { grantor: granted.by } : {}) });
     if (object.zone !== "graveyard") return out;

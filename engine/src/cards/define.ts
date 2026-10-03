@@ -1668,10 +1668,19 @@ export interface CardDefinition {
    * their lands can pay, `ctx.x` reads the chosen value as usual, and the
    * life is paid as the spell is cast.
    *
+   * `sacrificeCount`: the `sacrifice` takes several permanents — "sacrifice
+   * **X** creatures" (Eliminate the Competition) is `"x"`, which makes it an
+   * `{X}` spell the way `payLifeX` does, X capped by what there is to
+   * sacrifice once the mana is paid. Which ones is chosen as the cost is paid
+   * (rule 601.2h), with the ordinary `sacrifice` decision once the spell is on
+   * the stack — not on the action — exactly as an ability's sacrifice of
+   * several (`AbilityCost.sacrifice`'s `count`).
+   *
    * More than one may be set, and all of them are paid.
    */
   readonly additionalCost: {
     readonly sacrifice?: CardFilter;
+    readonly sacrificeCount?: number | "x";
     readonly discard?: number;
     readonly payLife?: number;
     readonly payLifeX?: boolean;
@@ -1881,6 +1890,10 @@ export interface CardDefinition {
      * 3 life". Part of the cost, so it's paid as the spell is cast and stands
      * even if the spell is countered. */
     readonly payLife?: number;
+    /** Permanents sacrificed as (or with) the flashback cost — Dread
+     * Return's "Flashback—Sacrifice three creatures", whose `cost` is `""`.
+     * Chosen as the cost is paid, as `additionalCost.sacrificeCount`'s are. */
+    readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   } | null;
   /** Foretell (rule 702.144 — ROADMAP Phase 6b) — during your turn you may pay
    * `{2}` to exile this card from your hand face-down; on a later turn you may
@@ -2203,6 +2216,7 @@ interface CardDraft {
   castModal?: CastModalSpec;
   additionalCost?: {
     readonly sacrifice?: CardFilter;
+    readonly sacrificeCount?: number | "x";
     readonly discard?: number;
     readonly payLife?: number;
     readonly payLifeX?: boolean;
@@ -2247,7 +2261,11 @@ interface CardDraft {
   chooseCreatureTypeOnEnter?: boolean;
   chooseOnEnter?: readonly string[];
   loyalty?: number;
-  flashback?: { readonly cost: string; readonly payLife?: number };
+  flashback?: {
+    readonly cost: string;
+    readonly payLife?: number;
+    readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
+  };
   foretell?: { readonly cost: string };
   warp?: { readonly cost: string };
   evoke?: { readonly cost: string };

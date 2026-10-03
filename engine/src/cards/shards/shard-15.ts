@@ -50,6 +50,7 @@ import _poolDreamstoneHedron from "../pool/dreamstone-hedron.js";
 import _poolDromarsAttendant from "../pool/dromars-attendant.js";
 import _poolDrownInShapelessness from "../pool/drown-in-shapelessness.js";
 import _poolDryadOfTheIlysianGrove from "../pool/dryad-of-the-ilysian-grove.js";
+import _poolEliminateTheCompetition from "../pool/eliminate-the-competition.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
 import _poolExaltedSunborn from "../pool/exalted-sunborn.js";
@@ -205,6 +206,7 @@ import _poolZuranSpellcaster from "../pool/zuran-spellcaster.js";
 import _tokensDragonToken55 from "../tokens/dragon-token-5-5.js";
 import _tokensGoatToken from "../tokens/goat-token.js";
 import _tokensGoblinToken from "../tokens/goblin-token.js";
+import _tokensHumanClericToken from "../tokens/human-cleric-token.js";
 import _tokensMonkToken from "../tokens/monk-token.js";
 import _tokensRedWarriorToken from "../tokens/red-warrior-token.js";
 import _tokensSlugToken from "../tokens/slug-token.js";
@@ -260,6 +262,7 @@ const shard: CardShard = {
     _poolDromarsAttendant,
     _poolDrownInShapelessness,
     _poolDryadOfTheIlysianGrove,
+    _poolEliminateTheCompetition,
     _poolElvishMystic,
     _poolErinisGloomStalker,
     _poolExaltedSunborn,
@@ -417,6 +420,7 @@ const shard: CardShard = {
     _tokensDragonToken55,
     _tokensGoatToken,
     _tokensGoblinToken,
+    _tokensHumanClericToken,
     _tokensMonkToken,
     _tokensRedWarriorToken,
     _tokensSlugToken,

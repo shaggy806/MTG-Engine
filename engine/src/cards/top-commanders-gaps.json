@@ -411,7 +411,7 @@
   "cost:sacrifice-multiple": {
    "size": "medium",
    "ui": true,
-   "description": "Sacrifice N permanents, or any number of them, as a cost with a filter and a chosen set. Covers 'sacrifice six Blood tokens' and 'you may sacrifice any number of creatures; each reduces the cost by {2}'."
+   "description": "Sacrifice N permanents, or any number of them, as a cost with a filter and a chosen set. Covers 'sacrifice six Blood tokens' and 'you may sacrifice any number of creatures; each reduces the cost by {2}'. Built so far (2026-10-03): N, X ('Sacrifice X Treasures') and one-of-each ('a Swamp and a Forest') as an activation cost, a spell's additional cost (sacrificeCount) and a flashback cost, chosen as the cost is paid with the ordinary sacrifice decision (Sai, Magda, Mondrak, Jarad, Eliminate the Competition, Dread Return). What remains: 'any number' sacrificed as an optional additional cost whose count is announced as the spell is cast and changes its cost (Dargo, Awaken the Blood Avatar) or copies it (Plumb the Forbidden)."
   },
   "cost:unattach-equipment": {
    "size": "small",

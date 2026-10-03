@@ -151,6 +151,7 @@ import _poolRivendell from "../pool/rivendell.js";
 import _poolRocksteadyMutantMarauder from "../pool/rocksteady-mutant-marauder.js";
 import _poolRootwaterCommando from "../pool/rootwater-commando.js";
 import _poolRumorGatherer from "../pool/rumor-gatherer.js";
+import _poolRuthlessTechnomancer from "../pool/ruthless-technomancer.js";
 import _poolSagesRowSavant from "../pool/sages-row-savant.js";
 import _poolSandstoneWarrior from "../pool/sandstone-warrior.js";
 import _poolSapphireMedallion from "../pool/sapphire-medallion.js";
@@ -363,6 +364,7 @@ const shard: CardShard = {
     _poolRocksteadyMutantMarauder,
     _poolRootwaterCommando,
     _poolRumorGatherer,
+    _poolRuthlessTechnomancer,
     _poolSagesRowSavant,
     _poolSandstoneWarrior,
     _poolSapphireMedallion,

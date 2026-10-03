@@ -83,6 +83,7 @@ import _poolGoblinSpelunkers from "../pool/goblin-spelunkers.js";
 import _poolGohnTownOfRuin from "../pool/gohn-town-of-ruin.js";
 import _poolGratefulApparition from "../pool/grateful-apparition.js";
 import _poolGriffinSentinel from "../pool/griffin-sentinel.js";
+import _poolGrimHireling from "../pool/grim-hireling.js";
 import _poolGrislyTransformation from "../pool/grisly-transformation.js";
 import _poolHammerheadMaggiaBoss from "../pool/hammerhead-maggia-boss.js";
 import _poolHealerOfThePride from "../pool/healer-of-the-pride.js";
@@ -159,6 +160,7 @@ import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
 import _poolRubyDaringTracker from "../pool/ruby-daring-tracker.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
+import _poolSaiMasterThopterist from "../pool/sai-master-thopterist.js";
 import _poolSanctify from "../pool/sanctify.js";
 import _poolSarkhansTriumph from "../pool/sarkhans-triumph.js";
 import _poolScarbladeScout from "../pool/scarblade-scout.js";
@@ -310,6 +312,7 @@ const shard: CardShard = {
     _poolGohnTownOfRuin,
     _poolGratefulApparition,
     _poolGriffinSentinel,
+    _poolGrimHireling,
     _poolGrislyTransformation,
     _poolHammerheadMaggiaBoss,
     _poolHealerOfThePride,
@@ -386,6 +389,7 @@ const shard: CardShard = {
     _poolRidgeRannet,
     _poolRubyDaringTracker,
     _poolRuneSealedWall,
+    _poolSaiMasterThopterist,
     _poolSanctify,
     _poolSarkhansTriumph,
     _poolScarbladeScout,
