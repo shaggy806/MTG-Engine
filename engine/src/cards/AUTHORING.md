@@ -3187,6 +3187,10 @@ clause (section 9):
   `StaticCondition`. The "you *may* reveal" is a `reveal-for-untapped`
   decision asked before the land moves (`askEnterChoice`), offering the
   qualifying cards in hand or none; the card revealed is shown to everyone.
+  With a `tappedUnless` too, each one failed taps it — unless
+  `revealOrCondition: true`, when either spares it: Temple of the Dragon
+  Queen's "enters tapped unless you revealed a Dragon card this way **or**
+  you control a Dragon".
   `mayPayLife: N` is a shock land (a `pay-life-for-untapped` decision, via the
   `shockLand` helper); `painIfUntapped: N` deals damage if it *did* end up
   entering untapped (Rockfall Vale).

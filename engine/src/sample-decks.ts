@@ -197,7 +197,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Sarkhan, Soul Aflame", "Goreclaw, Terror of Qal Sisma", "Makes the deck's big creatures cheaper."),
       sub("Scourge of the Throne", "Savage Ventmaw", "Six-mana red-green flying Dragon that rewards attacking."),
       sub("Selvala's Stampede", "Kodama of the East Tree", "Six-mana sorcery: puts creatures onto the battlefield, ramp."),
-      sub("Temple of the Dragon Queen", "Game Trail", "Land that makes the deck's colours."),
       sub("Territorial Hellkite", "Young Red Dragon", "Four-mana red Dragon."),
       sub("Zenith Festival", "Reckless Impulse", "Two-mana sorcery: impulse draw, card advantage."),
     ],

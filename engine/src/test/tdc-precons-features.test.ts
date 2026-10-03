@@ -1139,6 +1139,52 @@ describe("a sacrifice of the greatest among its controller's (Crackling Doom, So
   });
 });
 
+describe("Temple of the Dragon Queen", () => {
+  /** Play it from A's hand, answering the colour (blue) and — with
+   * `reveal` — the reveal. */
+  const play = (game: Game, reveal: ObjectId | null): ObjectId => {
+    const temple = game.debugSpawn("Temple of the Dragon Queen", A, "hand");
+    game.dispatch({ type: "play-land", player: A, card: temple });
+    for (let i = 0; i < 4; i += 1) {
+      const awaiting = game.state.awaiting;
+      if (awaiting?.kind === "choose-creature-type") {
+        game.dispatch({ type: "choose-creature-type", player: A, creatureType: "U" });
+      } else if (awaiting?.kind === "reveal-for-untapped") {
+        game.dispatch({ type: "reveal-for-untapped", player: A, reveal });
+      } else break;
+    }
+    return temple;
+  };
+
+  it("enters tapped with neither a Dragon revealed nor one on the battlefield", () => {
+    const game = bare();
+    const temple = play(game, null);
+    expect(game.state.objects[temple].zone).toBe("battlefield");
+    expect(game.state.objects[temple].tapped).toBe(true);
+    expect(game.state.objects[temple].chosenOnEnter).toBe("U");
+  });
+
+  it("enters untapped revealing a Dragon card, or controlling a Dragon", () => {
+    const game = bare();
+    const dragon = game.debugSpawn("Shivan Dragon", A, "hand");
+    const temple = play(game, dragon);
+    expect(game.state.objects[temple].tapped).toBe(false);
+    activate(game, temple);
+    expect(pool(game)).toEqual(["U"]);
+    const other = bare();
+    other.debugSpawn("Shivan Dragon", A, "battlefield");
+    const second = play(other, null);
+    expect(other.state.objects[second].tapped).toBe(false);
+  });
+
+  it("enters tapped if a Dragon card is held back", () => {
+    const game = bare();
+    game.debugSpawn("Shivan Dragon", A, "hand");
+    const temple = play(game, null);
+    expect(game.state.objects[temple].tapped).toBe(true);
+  });
+});
+
 describe("statics that work from the graveyard (Wonder, Anger)", () => {
   it("Wonder gives your creatures flying from your graveyard while you control an Island", () => {
     const game = bare();

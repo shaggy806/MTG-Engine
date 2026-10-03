@@ -88,6 +88,11 @@ export interface EntersBattlefieldReplacement {
    * asks (a token copy), it reveals whenever it can.
    */
   readonly tappedUnlessRevealFromHand?: readonly string[];
+  /** With both `tappedUnless` and `tappedUnlessRevealFromHand`: either one
+   * spares it — Temple of the Dragon Queen's "enters tapped unless you
+   * revealed a Dragon card this way **or** you control a Dragon". Without
+   * it, each one it fails taps it. */
+  readonly revealOrCondition?: true;
   /** If it ends up entering *untapped*, it deals this much damage to its
    * controller (Rockfall Vale: "When Rockfall Vale enters untapped, it deals
    * 1 damage to you"). */

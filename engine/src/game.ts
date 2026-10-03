@@ -24494,7 +24494,7 @@ export class Game {
       if (r.tapped) tapped = true;
       // What it counts is what's already there: a land entering alongside it
       // isn't yet (rule 614.12 — the check-land rulings).
-      if (
+      const failsCondition =
         r.tappedUnless !== undefined &&
         !staticConditionMet(
           this.state,
@@ -24502,19 +24502,17 @@ export class Game {
           object,
           r.tappedUnless,
           this.enterBatch !== null ? { notYetHere: this.enterBatch } : {},
-        )
-      ) {
-        tapped = true;
-      }
+        );
       // A reveal land: what its controller revealed as it was about to enter
       // (`askEnterChoice`), or — entering some way that never asked, a token
       // copy — whether they could have.
-      if (
+      const failsReveal =
         r.tappedUnlessRevealFromHand !== undefined &&
         (reveal === undefined
           ? !this.canRevealFromHand(object.controller, r.tappedUnlessRevealFromHand)
-          : reveal === null)
-      ) {
+          : reveal === null);
+      // Either sparing it (Temple of the Dragon Queen), or each needed.
+      if (r.revealOrCondition === true ? failsCondition && failsReveal : failsCondition || failsReveal) {
         tapped = true;
       }
       if (r.painIfUntapped !== undefined) painIfUntapped = r.painIfUntapped;

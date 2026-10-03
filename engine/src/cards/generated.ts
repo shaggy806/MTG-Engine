@@ -5693,6 +5693,7 @@ import _poolTempleOfMystery from "./pool/temple-of-mystery.js";
 import _poolTempleOfPlenty from "./pool/temple-of-plenty.js";
 import _poolTempleOfPower from "./pool/temple-of-power.js";
 import _poolTempleOfSilence from "./pool/temple-of-silence.js";
+import _poolTempleOfTheDragonQueen from "./pool/temple-of-the-dragon-queen.js";
 import _poolTempleOfTheFalseGod from "./pool/temple-of-the-false-god.js";
 import _poolTempleOfTriumph from "./pool/temple-of-triumph.js";
 import _poolTemporalAdept from "./pool/temporal-adept.js";
@@ -12606,6 +12607,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTempleOfPlenty,
   _poolTempleOfPower,
   _poolTempleOfSilence,
+  _poolTempleOfTheDragonQueen,
   _poolTempleOfTheFalseGod,
   _poolTempleOfTriumph,
   _poolTemporalAdept,
