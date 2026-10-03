@@ -456,10 +456,14 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 - **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
   +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
   `pt-modified` is only a one-shot pump.
-- **Exiling from the top of a library should flow like milling, with an animation for each card
-  exiled** (the user, 2026-10-03). `runMill`'s exile look (a cardback flaring white-blue off the
-  pile) shares its code with mill, which was checked, but it hasn't been seen live: no card in the
-  pool exiled from a library simply enough to test it with.
+- **Cards exiled from a library and put back in the same resolution aren't animated going back**:
+  cascade's and discover's misses (and an "exile until" whose rest go to the bottom) peel off the
+  pile and the counts run down, then jump back when the board lands. A reverse peel onto the pile
+  would close it, once the move back announces itself: `finishCascade` and `placeRevealed` move
+  the cards with no event (`cards-put-on-bottom` is only a hand's).
+- **A face-up exile from a library peels as a cardback**, like a mill: the cards never show their
+  faces, so what a cascade or an impulse draw took is only in the exile viewer and the History.
+  The peel could turn over to the face as it goes, for a card exiled face up.
 - **The crown has only been seen popping in**, not flying between players: that needs one
   player taking the monarchy from another (combat damage), which no dev room sets up. It uses
   the same captured flight as a change of control, which was checked.

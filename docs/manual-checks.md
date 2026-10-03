@@ -187,6 +187,7 @@ How to use it:
 | [Baloth Prime, Pugnacious Hammerskull, Junk Winder](#baloth-prime-pugnacious-hammerskull-junk-winder) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 | [Neriv, Crackling Vanguard](#neriv-crackling-vanguard) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 | [Living Death](#living-death) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Reckless Impulse, Bloodbraid Elf, Ulamog, the Ceaseless Hunger, Pako, Arcane Retriever](#reckless-impulse-bloodbraid-elf-ulamog-the-ceaseless-hunger-pako-arcane-retriever) | animation | Exiling from the top of a library |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3705,3 +3706,27 @@ How to use it:
   Giant, exiled by Rest in Peace as it was sacrificed, stays in exile. Only cards the first
   instruction exiled come back (ruling).
 - **Known limits:** None documented.
+
+## Exiling from the top of a library (2026-10-03, animation)
+
+### Reckless Impulse, Bloodbraid Elf, Ulamog, the Ceaseless Hunger, Pako, Arcane Retriever
+
+*Animation* — exile-anim (cards leaving a library peel like a mill)
+
+- **Setup:** `npm run dev-rooms -w server`, then room `EXILE` (2 players) or `EXIL4` (4). Alice
+  has Reckless Impulse, Bloodbraid Elf, Outrageous Robbery and Watcher for Tomorrow in hand, Mystic
+  Forge, Ulamog and Pako on the battlefield, and 15 lands; her library is stacked so a cascade exiles
+  a few lands before it finds Divination.
+- **Do:** Cast Reckless Impulse; activate Mystic Forge; cast Bloodbraid Elf (a fresh room, so the
+  cascade runs through five cards); cast Outrageous Robbery with X=3 at bob; cast Watcher for
+  Tomorrow and hide a card; attack bob with Ulamog and Pako. Try Settings at half and double speed
+  and with reduced motion, and at 1366x768 and 2560x1440.
+- **Check:** Each exile peels cardbacks off that library's pile one after another, flaring
+  white-blue (a mill drops away darkening), while "library N" counts down card by card and "exile
+  N" up, with one "−N exiled" floating off the pile's card. The cascade's five one-card exiles
+  read as one run of five, not five cards at once. Ulamog's twenty peel eight cards with bob's
+  count running 52 → 32; Pako peels every library's top card side by side. The peel is
+  card-shaped at every size, over the revealed top card where Mystic Forge shows it. Reduced
+  motion fades the cards in place.
+- **Known limits:** Cascade's misses going back to the bottom aren't animated: the counts that ran
+  down jump back when the board lands (`BACKLOG.md`, Legibility of play).

@@ -34,7 +34,10 @@ import {
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
   TURN_STEP_MS,
+  cardsOffLibraries,
+  libraryPeels,
 } from '../game/animationSchedule.ts'
+import type { PeelPart } from '../game/animationSchedule.ts'
 import type { AnimationBus, AnimationCue } from '../game/animationBus.ts'
 import { motionPrefs } from '../game/motionPrefs.ts'
 import { playSound } from '../game/sound.ts'
@@ -189,9 +192,7 @@ interface DrawnCard {
 function drawFlight(
   player: PlayerId,
 ): { fromX: number; fromY: number; toX: number; toY: number } | null {
-  const pile = document.querySelector<HTMLElement>(
-    `[data-library-of="${CSS.escape(player)}"]`,
-  )
+  const pile = libraryCardOf(player)
   const panel = document.querySelector<HTMLElement>(`[data-player-id="${CSS.escape(player)}"]`)
   const cell = panel?.closest<HTMLElement>('.quadrant-cell')
   if (!pile || !cell) return null
@@ -204,6 +205,16 @@ function drawFlight(
     toX: to.x,
     toY: to.y,
   }
+}
+
+/** The card `player`'s library pile shows — its cardback, or the top card
+ * when that's revealed — or the pile itself once it's empty. The pile's own
+ * box (`data-library-of`) stretches to the rail's height, 150×428 at
+ * 2560×1440 round a 150×210 card, so a draw or a peel starting from the box
+ * started below the card, or came out a tall slab. */
+function libraryCardOf(player: PlayerId): HTMLElement | null {
+  const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
+  return pile?.querySelector<HTMLElement>('.card-back, .card-tile') ?? pile
 }
 
 /** Where a seat's hand is, for a card flying into it: the middle of the near
@@ -910,87 +921,106 @@ function runBounce(object: ObjectId, prev: PlayerView | null): void {
 }
 
 /**
- * Cards leaving a library from the top, shown on the library pile — there's
+ * Cards leaving libraries from the top, shown on each library pile — there's
  * no graveyard or exile drawn to send them to. Each peels off the top as a
  * cardback and turns over as it goes: a milled card darkening as it drops
  * away, an exiled one flaring white-blue and dissolving upward, so the two
  * read differently.
  *
+ * Takes a whole run of mill and exile events at once (the ones sharing a
+ * beat — see `libraryPeels`): a cascade or an "exile until" announces each
+ * card as its own move, and those have to peel one after another off one
+ * pile, with one count running down, rather than all at once on top of
+ * each other.
+ *
  * So the number reads: the cards go one after another (`MILL_STAGGER_MS`
  * apart, up to `MAX_PEELED` of them), the pile's count ticks down as each
  * one leaves — this is the old board, so it would otherwise sit on the old
- * number and then jump — and the total floats off the pile ("−3 milled").
+ * number and then jump — and the total floats off the pile ("−3 exiled").
  */
-function runMill(ev: GameEvent, view: PlayerView, prev: PlayerView | null): void {
-  // How many leave each library: a mill is one player's; an exile from the
-  // top may take from several (each card's owner, which the view lists for
-  // every exiled card, face down or not).
-  const counts = new Map<PlayerId, number>()
-  let exile: boolean
-  if (ev.type === 'cards-milled') {
-    counts.set(ev.player, ev.objects.length)
-    exile = false
-  } else if (ev.type === 'cards-put-into-exile') {
-    for (const a of ev.arrivals) {
-      if (a.from !== 'library') continue
-      const owner = view.zones.exileOwners[a.object] ?? prev?.objects[a.object]?.owner
-      if (owner) counts.set(owner, (counts.get(owner) ?? 0) + 1)
-    }
-    exile = true
-  } else return
-  for (const [player, count] of counts) millFrom(player, count, exile)
+function runMill(events: readonly GameEvent[]): void {
+  for (const { player, parts } of libraryPeels(events)) peelFrom(player, parts)
 }
 
-/** `count` cards peeling off the top of `player`'s library — see
- * {@link runMill}. */
-function millFrom(player: PlayerId, count: number, exile: boolean): void {
+/** The cards of one library's `parts` peeling off the top of `player`'s
+ * pile, each part where the one before it left off — see {@link runMill}. */
+function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
   const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
-  if (!pile || count <= 0) return
+  // What peels, and what the total floats off: the card the pile shows.
+  const top = libraryCardOf(player)
+  if (!pile || !top) return
   const duration = scaled(MILL_STEP_MS)
   const stagger = scaled(MILL_STAGGER_MS)
-  const reduced = motionPrefs().reduced
-  const shown = Math.min(count, MAX_PEELED)
-  const total = duration + (shown - 1) * stagger
-  floatText(pile, `−${count} ${exile ? 'exiled' : 'milled'}`, 'loss', 0, total)
+  const who = CSS.escape(player)
 
   // The counts on the old board, run in step: the library's down — "Library
   // (53)" over the pile, the number on its cardback when the top isn't
   // revealed, "library 53" in the player's panel — and the graveyard's (or
   // exile's) up, by an even share of the cards for each one shown leaving,
-  // as it lifts clear of the pile.
-  const who = CSS.escape(player)
-  const counters: { el: HTMLElement; sign: -1 | 1 }[] = [
+  // as it lifts clear of the pile. Each count is read once, before any of
+  // it moves, and every later step counts on from there.
+  const library = [
     pile.parentElement?.querySelector<HTMLElement>('.side-zone-label'),
     pile.querySelector<HTMLElement>('.card-back-count'),
     document.querySelector<HTMLElement>(`[data-library-count-of="${who}"]`),
-  ]
-    .filter((el): el is HTMLElement => el != null)
-    .map((el) => ({ el, sign: -1 as const }))
-  const into = document.querySelector<HTMLElement>(
-    exile ? `[data-exile-count-of="${who}"]` : `[data-graveyard-count-of="${who}"]`,
-  )
-  if (into) counters.push({ el: into, sign: 1 })
-  for (const { el, sign } of counters) {
-    const start = Number(/\d+/.exec(el.textContent ?? '')?.[0] ?? NaN)
-    if (!Number.isFinite(start)) continue
-    for (let i = 0; i < shown; i += 1) {
-      const moved = Math.ceil((count * (i + 1)) / shown)
-      const value = Math.max(0, start + sign * moved)
-      window.setTimeout(() => {
-        el.textContent = el.textContent?.replace(/\d+/, String(value)) ?? null
-      }, i * stagger + duration * 0.35)
-    }
+  ].filter((el): el is HTMLElement => el != null)
+  const graveyard = document.querySelector<HTMLElement>(`[data-graveyard-count-of="${who}"]`)
+  const exile = document.querySelector<HTMLElement>(`[data-exile-count-of="${who}"]`)
+  const startOf = new Map<HTMLElement, number>()
+  for (const el of [...library, graveyard, exile]) {
+    const start = Number(/\d+/.exec(el?.textContent ?? '')?.[0] ?? NaN)
+    if (el && Number.isFinite(start)) startOf.set(el, start)
+  }
+  const tick = (el: HTMLElement | null, value: number, at: number): void => {
+    if (!el || !startOf.has(el)) return
+    window.setTimeout(() => {
+      el.textContent = el.textContent?.replace(/\d+/, String(Math.max(0, value))) ?? null
+    }, at)
   }
 
-  const r = pile.getBoundingClientRect()
+  let left = 0
+  const landed = { graveyard: 0, exile: 0 }
+  for (const part of parts) {
+    const shown = Math.min(part.count, MAX_PEELED)
+    const begin = part.startStep * stagger
+    const into = part.exile ? exile : graveyard
+    const intoKey = part.exile ? 'exile' : 'graveyard'
+    floatText(
+      top,
+      `−${part.count} ${part.exile ? 'exiled' : 'milled'}`,
+      'loss',
+      begin,
+      duration + (shown - 1) * stagger,
+    )
+    for (let i = 0; i < shown; i += 1) {
+      const moved = Math.ceil((part.count * (i + 1)) / shown)
+      const at = begin + i * stagger + duration * 0.35
+      for (const el of library) tick(el, (startOf.get(el) ?? 0) - left - moved, at)
+      if (into) tick(into, (startOf.get(into) ?? 0) + landed[intoKey] + moved, at)
+    }
+    left += part.count
+    landed[intoKey] += part.count
+    peelCards(top, shown, part.exile, begin)
+  }
+}
+
+/** `shown` cardbacks peeling off `top` (a library pile's card),
+ * `MILL_STAGGER_MS` apart from `begin` — see {@link runMill}. */
+function peelCards(top: HTMLElement, shown: number, exile: boolean, begin: number): void {
+  const duration = scaled(MILL_STEP_MS)
+  const stagger = scaled(MILL_STAGGER_MS)
+  const reduced = motionPrefs().reduced
+  const r = top.getBoundingClientRect()
   if (r.width === 0) return
+  // Card-shaped, even off a pile with no card left to measure.
+  const height = Math.min(r.height, r.width * 1.4)
   for (let i = 0; i < shown; i += 1) {
     const card = document.createElement('div')
     card.className = 'peel-card'
     card.style.left = `${r.left}px`
     card.style.top = `${r.top}px`
     card.style.width = `${r.width}px`
-    card.style.height = `${r.height}px`
+    card.style.height = `${height}px`
     card.appendChild(document.createElement('div')).className = 'card-back'
     document.body.appendChild(card)
     const frames: Keyframe[] = reduced
@@ -1024,7 +1054,7 @@ function millFrom(player: PlayerId, count: number, exile: boolean): void {
           ]
     const a = card.animate(frames, {
       duration,
-      delay: i * stagger,
+      delay: begin + i * stagger,
       easing: 'ease-in-out',
       fill: 'both',
     })
@@ -1323,8 +1353,6 @@ export function AnimationLayer({
       } else if (ev.type === 'permanent-left-battlefield') {
         if (ev.toZone === 'hand') runBounce(ev.object, cue.prev)
         else runDeath(ev.object, ev.toZone)
-      } else if (ev.type === 'cards-milled' || ev.type === 'cards-put-into-exile') {
-        runMill(ev, view, cue.prev)
       } else if (ev.type === 'cards-discarded') {
         runDiscard(ev, seatRef.current)
       } else if (ev.type === 'cards-revealed') {
@@ -1366,6 +1394,10 @@ export function AnimationLayer({
     return bus.subscribe((cues) => {
       // Arrivals are gathered and played per tile after the loop (`runEnters`).
       const enters: { object: ObjectId; isToken: boolean; delay: number }[] = []
+      // So are cards leaving libraries: a run of them shares one beat (one
+      // delay), and plays as one, each library's cards in one sequence
+      // (`runMill`).
+      const mills = new Map<number, GameEvent[]>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -1409,9 +1441,16 @@ export function AnimationLayer({
           captureMove(cue.event)
           continue
         }
+        if (cardsOffLibraries(cue.event) > 0) {
+          const run = mills.get(cue.delay) ?? []
+          run.push(cue.event)
+          mills.set(cue.delay, run)
+          continue
+        }
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
+      for (const [delay, run] of mills) window.setTimeout(() => runMill(run), delay)
     })
   }, [bus])
 

@@ -1,4 +1,4 @@
-import type { GameEvent, Phase } from 'engine/client'
+import type { GameEvent, Phase, PlayerId } from 'engine/client'
 
 /**
  * How long each kind of animation is on screen, at the viewer's normal speed.
@@ -73,6 +73,80 @@ export function cardsOffLibraries(ev: GameEvent): number {
  * for each further card shown peeling. */
 export function millDurationMs(count: number): number {
   return MILL_STEP_MS + Math.max(0, Math.min(count, MAX_PEELED) - 1) * MILL_STAGGER_MS
+}
+
+/** One stretch of a library's cards leaving in a run (see
+ * {@link libraryPeels}): all milled or all exiled. */
+export interface PeelPart {
+  /** Exiled from the top, rather than milled. */
+  readonly exile: boolean
+  /** How many cards. At most `MAX_PEELED` of them are shown peeling. */
+  readonly count: number
+  /** How many `MILL_STAGGER_MS` steps after the run starts this part's
+   * first card starts peeling: after the cards shown leaving this library
+   * earlier in the run. */
+  readonly startStep: number
+}
+
+/** One library's cards leaving in a run of mills and exiles. */
+export interface LibraryPeel {
+  readonly player: PlayerId
+  readonly parts: readonly PeelPart[]
+}
+
+/**
+ * What a run of mills and exiles from the top takes off each library,
+ * merged — a run being the mill slots that share a beat (see `layOut`).
+ *
+ * The engine exiles one card at a time where the rules say "until": cascade
+ * (rule 702.85a), discover (701.57a) and every "exile cards from the top of
+ * your library until …" announce each card as its own move. A cascade
+ * through five cards is five events, and it has to look like one library
+ * losing five cards one after another, as a mill of five does — not five
+ * cards peeling off together on top of each other. So one library's cards
+ * of one kind add up across the run, and a library milled and then exiled
+ * from peels the second stretch after the first. Different libraries peel
+ * side by side, as "each player mills three" always has.
+ */
+export function libraryPeels(events: readonly GameEvent[]): LibraryPeel[] {
+  const byPlayer = new Map<PlayerId, { exile: boolean; count: number }[]>()
+  const add = (player: PlayerId, exile: boolean, count: number): void => {
+    const parts = byPlayer.get(player) ?? []
+    const last = parts.at(-1)
+    if (last !== undefined && last.exile === exile) last.count += count
+    else parts.push({ exile, count })
+    byPlayer.set(player, parts)
+  }
+  for (const ev of events) {
+    if (ev.type === 'cards-milled') {
+      if (ev.objects.length > 0) add(ev.player, false, ev.objects.length)
+    } else if (ev.type === 'cards-put-into-exile') {
+      // Exile is one shared zone: each arrival names whose library it left.
+      for (const a of ev.arrivals) if (a.from === 'library') add(a.owner, true, 1)
+    }
+  }
+  return [...byPlayer].map(([player, parts]) => {
+    let step = 0
+    return {
+      player,
+      parts: parts.map((part) => {
+        const startStep = step
+        step += Math.min(part.count, MAX_PEELED)
+        return { ...part, startStep }
+      }),
+    }
+  })
+}
+
+/** How long a run's peels take: its busiest library's, one peel and then a
+ * stagger for each further card shown peeling off it. */
+export function peelDurationMs(peels: readonly LibraryPeel[]): number {
+  let steps = 0
+  for (const { parts } of peels) {
+    const last = parts.at(-1)
+    if (last !== undefined) steps = Math.max(steps, last.startStep + Math.min(last.count, MAX_PEELED))
+  }
+  return steps === 0 ? 0 : MILL_STEP_MS + (steps - 1) * MILL_STAGGER_MS
 }
 /** A discarded card leaving the hand, in place. */
 export const DISCARD_STEP_MS = 480
@@ -416,6 +490,22 @@ export function scheduleEvents(
   }
 }
 
+/** How long the beat that `slots[index]` starts lasts: its own slot — or,
+ * for cards leaving libraries, the whole run's, every library's cards
+ * merged (see {@link libraryPeels}), since the run's later events share the
+ * beat and peel on after the first's. The run is the mill slots up to the
+ * next paced slot of another kind, as `layOut` shares the beat. */
+function beatDuration(slots: readonly Slot[], index: number): number {
+  const first = slots[index]
+  if (first.kind !== 'mill') return first.duration
+  const run: GameEvent[] = []
+  for (const slot of slots.slice(index)) {
+    if (slot.kind === 'mill') run.push(slot.event)
+    else if (PACED.has(slot.kind)) break
+  }
+  return peelDurationMs(libraryPeels(run))
+}
+
 /** One half's slots, laid end to end. The first paced slot that won't fit
  * under `ceiling` ends the half: it and everything after it are simply not
  * animated (the phase tracking has still been advanced, so the next frame's
@@ -433,12 +523,14 @@ function layOut(
   // once, because they did.
   let shared: { kind: SlotKind; offset: number } | null = null
   let drawsSoFar = 0
-  for (const slot of slots) {
-    if (cumulative >= ceiling) break
+  for (const [index, slot] of slots.entries()) {
+    // Before the ceiling: a run's later members cost nothing, the beat they
+    // share is already paid for — and a run of mills is timed as a whole.
     if (shared !== null && shared.kind === slot.kind) {
       items.push({ event: slot.event, offset: shared.offset })
       continue
     }
+    if (cumulative >= ceiling) break
     if (slot.kind === 'draw') {
       // Dealt out one after another without the game waiting on any of them.
       if (drawsSoFar >= MAX_DRAWN_PER_FRAME) continue
@@ -449,7 +541,7 @@ function layOut(
       drawsSoFar += 1
       continue
     }
-    const cost = PACED.has(slot.kind) ? slot.duration * scale : 0
+    const cost = PACED.has(slot.kind) ? beatDuration(slots, index) * scale : 0
     if (cumulative + cost > ceiling) break
     items.push({ event: slot.event, offset: cumulative })
     // Only a paced slot breaks a run: a snapshot or a banner between two
