@@ -1638,14 +1638,15 @@ export type AwaitingDecision =
        * own shuffle. `"library-top"` and `"library-bottom"` both place the
        * chosen cards in the order chosen, the first chosen nearest the top
        * (rule 401.4). `"exile"`: exiled face up — an activated ability's
-       * "Exile two cards from your graveyard" cost (`AbilityCost.exileFromGraveyard`). */
+       * "Exile two cards from your graveyard" cost (`AbilityCost.exileFromGraveyard`),
+       * or imprint's "exile a card from your hand" (Chrome Mox), linked to its
+       * source through `exileLink`. */
       readonly destination:
         | "battlefield"
         | "hand"
         | "exile"
         | "exile-playable"
         | "exile-face-down"
-        | "exile"
         | "library-top"
         | "library-bottom"
         | "graveyard";

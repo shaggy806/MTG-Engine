@@ -238,11 +238,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   player chooses which applies first (the ruling), which decides who ends up drawing;
   `Game.drawRedirectFor` takes the opponent first in turn order. Asking needs a draw that can
   stop mid-effect for a decision (`drawCard` is synchronous at every call site).
-- **A cast's discard cost hands priority to the active player.** A spell with an additional
-  discard cost (`additionalCost.discard`, a `discard` cost option) raises the discard once it's
-  on the stack, and `applyDiscard` then gives priority to the active player rather than the
-  caster (rule 117.3c) — wrong for an instant cast on someone else's turn. Casualty's ask
-  carries its `priorityTo`; the discard needs the same.
 - **Toxic's last two shapes.** "Gains toxic N until end of turn" (no modifier carries toxic —
   Skrelv, Defector Mite, which also needs hexproof from a colour) and a static scoped to
   "creatures with toxic" (Skrelv's Hive: toxic is folded in the layer such a scope would have

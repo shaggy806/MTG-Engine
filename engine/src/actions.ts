@@ -990,14 +990,14 @@ export type LegalAction =
        * on top (Ponder, Brainstorm); `"library-bottom"` on the bottom in the
        * order chosen, the first chosen highest and the last on the very
        * bottom (Valakut Awakening). `"exile"` exiles them face up — a cost's
-       * "exile two cards from your graveyard" (Varina, Lich Queen). */
+       * "exile two cards from your graveyard" (Varina, Lich Queen), or
+       * imprint's "exile a card from your hand" (Chrome Mox). */
       readonly destination:
         | "battlefield"
         | "hand"
         | "exile"
         | "exile-playable"
         | "exile-face-down"
-        | "exile"
         | "library-top"
         | "library-bottom"
         | "graveyard";
