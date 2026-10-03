@@ -292,6 +292,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
   trigger by the stack's `stackCount` (Mesmeric Orb, 2026-10-03); `permanent-tapped` doesn't,
   so a tap-all over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
+- **Putting a counter on each token in a stack splits the whole stack apart**, even though the
+  tokens are still effectively identical afterwards (the user, 2026-10-03). They should stay one
+  stack. Splitting goes through `splitOneFromStack` (`docs/plans/token-stack-choices.md`).
 - **Library-ordering and cost leftovers** (2026-10-03, `library-ordering.test.ts`,
   `graveyard-exile-cost.test.ts`): Kozilek, the Great Distortion needs an ability's X
   announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value
@@ -426,9 +429,10 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
 - **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
   +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
   `pt-modified` is only a one-shot pump.
-- **Exiling the top of a library hasn't been seen live.** `runMill`'s exile look (a cardback
-  flaring white-blue off the pile) shares its code with mill, which was checked, but no card in
-  the pool exiles from a library simply enough to test it with.
+- **Exiling from the top of a library should flow like milling, with an animation for each card
+  exiled** (the user, 2026-10-03). `runMill`'s exile look (a cardback flaring white-blue off the
+  pile) shares its code with mill, which was checked, but it hasn't been seen live: no card in the
+  pool exiled from a library simply enough to test it with.
 - **The crown has only been seen popping in**, not flying between players: that needs one
   player taking the monarchy from another (combat damage), which no dev room sets up. It uses
   the same captured flight as a change of control, which was checked.
