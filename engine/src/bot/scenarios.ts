@@ -146,9 +146,42 @@ const lands = (game: Game, name: string, player: PlayerId, count: number): void 
 
 /** Cast `card` from `player`'s hand, then pass priority round until
  * `responder` holds it with the spell still on the stack. */
-function castAndPassTo(game: Game, player: PlayerId, card: ObjectId, responder: PlayerId): void {
-  game.dispatch({ type: "cast-spell", player, card, targets: [] });
+function castAndPassTo(
+  game: Game,
+  player: PlayerId,
+  card: ObjectId,
+  responder: PlayerId,
+  targets: readonly TargetRef[] = [],
+): void {
+  game.dispatch({ type: "cast-spell", player, card, targets });
   game.advanceUntil((s) => s.priority.holder === responder);
+}
+
+/** Bob, the active player, attacks Alice with `attackers`; paused at Alice's
+ * blockers decision, or a failure if it never came. */
+function bobAttacks(game: Game, attackers: readonly ObjectId[]): ScenarioResult | null {
+  game.advanceUntil(
+    (s) => (s.awaiting?.kind === "attackers" && s.awaiting.player === B) || s.result.over,
+  );
+  if (game.state.awaiting?.kind !== "attackers") {
+    return { passed: false, detail: "bob was never asked to attack" };
+  }
+  game.dispatch({
+    type: "declare-attackers",
+    player: B,
+    attackers: attackers.map((attacker) => ({ attacker, defender: A })),
+  });
+  const askedToBlock = (s: Game["state"]): boolean =>
+    s.awaiting?.kind === "blockers" && s.awaiting.player === A;
+  game.advanceUntil((s) => askedToBlock(s) || s.result.over);
+  return askedToBlock(game.state)
+    ? null
+    : { passed: false, detail: "alice was never asked to block" };
+}
+
+/** The blocks in a `declare-blockers` answer, or null for any other action. */
+function blocksOf(action: Action): readonly { blocker: ObjectId; attacker: ObjectId }[] | null {
+  return action.type === "declare-blockers" ? action.blocks : null;
 }
 
 /**
@@ -1511,6 +1544,320 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   }),
+  // --- blocks ----------------------------------------------------------------
+  asked({
+    name: "makes a free block",
+    rule: "A blocker that kills its attacker and survives blocks it.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      const courser = onBoard(game, "Centaur Courser", A);
+      const bears = onBoard(game, "Grizzly Bears", B);
+      const failed = bobAttacks(game, [bears]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: blocksOf(action)?.some((b) => b.blocker === courser && b.attacker === bears) === true,
+          detail: `facing a 2/2 with a 3/3, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "blocks the attacker it can kill",
+    rule: "One blocker against a 2/2 and a 6/4, at a healthy life total, eats the 2/2.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      const courser = onBoard(game, "Centaur Courser", A);
+      const bears = onBoard(game, "Grizzly Bears", B);
+      const wurm = onBoard(game, "Craw Wurm", B);
+      const failed = bobAttacks(game, [bears, wurm]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const blocks = blocksOf(action);
+          return {
+            passed: blocks?.length === 1 && blocks[0].blocker === courser && blocks[0].attacker === bears,
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "does not block a deathtouch attacker with its best creature",
+    rule: "A 6/4 isn't traded for a 1/1 deathtouch Rat to save one life at 40.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      onBoard(game, "Craw Wurm", A);
+      const rats = onBoard(game, "Typhoid Rats", B);
+      const failed = bobAttacks(game, [rats]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: blocksOf(action)?.length === 0,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "blocks a big attacker with a deathtouch creature",
+    rule: "A 1/1 deathtouch Rat trades up for an attacking 6/4.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      const rats = onBoard(game, "Typhoid Rats", A);
+      const wurm = onBoard(game, "Craw Wurm", B);
+      const failed = bobAttacks(game, [wurm]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: blocksOf(action)?.some((b) => b.blocker === rats && b.attacker === wurm) === true,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
+  // --- attacks ---------------------------------------------------------------
+  {
+    name: "does not attack into a bigger untapped blocker",
+    rule: "A 2/2 swung into an untapped 3/3 just dies.",
+    run(weights, registry, makeBot) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Centaur Courser", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return { passed: attackers.length === 0, detail: `attacked with ${attackers.length}` };
+    },
+  },
+  {
+    name: "attacks the open player, not one with a blocker",
+    rule: "At a four-player table, a 2/2 goes at the opponent who can't block it.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // v2 attacks with nothing, here and with no creature anywhere but its
+      // own, at three players as at four. The leading opponent counts in
+      // full and the rest at `otherOpponents` over their average, so two
+      // damage to one of three opponents at 20 is worth about a quarter
+      // point, and tapping the 2/2 costs `untappedCreatures` 0.5 — a
+      // blocker kept home against no attacker at all.
+      const game = table(registry, [A, B, C, D], A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Centaur Courser", B);
+      onBoard(game, "Centaur Courser", D);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.length === 1 && attackers[0].defender === C,
+        detail: `attacked ${attackers.map((d) => d.defender).join(", ") || "nobody"}`,
+      };
+    },
+  },
+  {
+    name: "flies over a ground blocker",
+    rule: "A flier attacks past a bigger creature that can't block it.",
+    run(weights, registry, makeBot) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Serra Angel", A);
+      onBoard(game, "Craw Wurm", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return { passed: attackers.length === 1, detail: `attacked with ${attackers.length}` };
+    },
+  },
+
+  // --- answering on the stack ------------------------------------------------
+  asked({
+    name: "saves its creature from Lightning Bolt with Giant Growth",
+    rule: "A pump in response to burn keeps the creature.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      onBoard(game, "Forest", A);
+      onBoard(game, "Mountain", B);
+      const courser = onBoard(game, "Centaur Courser", A);
+      game.debugSpawn("Giant Growth", A, "hand");
+      const bolt = game.debugSpawn("Lightning Bolt", B, "hand");
+      castAndPassTo(game, B, bolt, A, [{ kind: "object", object: courser }]);
+      if (game.state.zones.shared.stack.length === 0) {
+        return { passed: false, detail: "the Bolt never went on the stack" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === courser,
+          detail: `with Bolt aimed at its 3/3, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  ...(
+    [
+      ["counters the wrath that would take its board", "Counterspell", "Island"],
+      ["casts Heroic Intervention against a wrath", "Heroic Intervention", "Forest"],
+    ] as const
+  ).map(([name, answer, land]) =>
+    asked({
+      name,
+      rule: "A board worth more than the opponent's is saved from a wrath when it can be.",
+      position(registry) {
+        const game = table(registry, [A, B], B);
+        lands(game, land, A, 2);
+        lands(game, "Plains", B, 4);
+        onBoard(game, "Craw Wurm", A);
+        onBoard(game, "Craw Wurm", A);
+        const saving = game.debugSpawn(answer, A, "hand");
+        const wrath = game.debugSpawn("Wrath of God", B, "hand");
+        castAndPassTo(game, B, wrath, A);
+        if (game.state.zones.shared.stack.length === 0) {
+          return { passed: false, detail: "the wrath never went on the stack" };
+        }
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: action.type === "cast-spell" && action.card === saving,
+            detail: `with Wrath of God on the stack, chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "Yahenni sacrifices to survive a wrath",
+    rule: "With a wrath on the stack, a creature that dies anyway buys Yahenni indestructible.",
+    position(registry) {
+      // From a live game (Mardu Surge): the bot let a wrath take Yahenni,
+      // Undying Partisan with another creature there to sacrifice.
+      const game = table(registry, [A, B], B);
+      lands(game, "Plains", B, 4);
+      const yahenni = onBoard(game, "Yahenni, Undying Partisan", A);
+      onBoard(game, "Grizzly Bears", A);
+      onBoard(game, "Craw Wurm", B);
+      const wrath = game.debugSpawn("Wrath of God", B, "hand");
+      castAndPassTo(game, B, wrath, A);
+      if (game.state.zones.shared.stack.length === 0) {
+        return { passed: false, detail: "the wrath never went on the stack" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === yahenni,
+          detail: `with Wrath of God on the stack, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  {
+    name: "Yahenni sacrifices to survive its own wrath",
+    rule: "Having cast a wrath, Yahenni's controller sacrifices into it before it resolves.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // The live game's likelier shape (Mardu Surge runs Blasphemous Act).
+      // One bot plays both windows: `holdPass` passes on a spell the bot
+      // just cast, since the cast was scored as everyone passing until it
+      // resolved — a score that never includes a response of our own.
+      const game = table(registry, [A, B], A);
+      lands(game, "Mountain", A, 8);
+      const yahenni = onBoard(game, "Yahenni, Undying Partisan", A);
+      onBoard(game, "Grizzly Bears", A);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Craw Wurm", B);
+      const wipe = game.debugSpawn("Blasphemous Act", A, "hand");
+      const reached = toSecondMain(game);
+      if (reached !== null) return reached;
+      const bot = makeBot(A, registry, weights);
+      const cast = bot.act(viewOf(game, A));
+      if (cast.type !== "cast-spell" || cast.card !== wipe) {
+        return { passed: false, detail: `never cast the wipe: ${describeAction(cast)}` };
+      }
+      game.dispatch(cast);
+      if (game.state.priority.holder !== A) return { passed: false, detail: "lost priority after casting" };
+      const response = bot.act(viewOf(game, A));
+      return {
+        passed: response.type === "activate-ability" && response.source === yahenni,
+        detail: `with its own Blasphemous Act on the stack, chose ${describeAction(response)}`,
+      };
+    },
+  },
+  asked({
+    name: "Fogs a lethal attack",
+    rule: "Facing lethal combat damage with a Fog in hand, cast the Fog.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      onBoard(game, "Forest", A);
+      const wurm = onBoard(game, "Craw Wurm", B);
+      game.debugSpawn("Fog", A, "hand");
+      game.state.players[A].life = 5;
+      // With no creature, Alice is never asked to block: she's asked at the
+      // first window after the attack.
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === B);
+      game.dispatch({
+        type: "declare-attackers",
+        player: B,
+        attackers: [{ attacker: wurm, defender: A }],
+      });
+      game.advanceUntil((s) => s.priority.holder === A || s.result.over);
+      if (game.state.turn.step !== "declare-attackers" && game.state.turn.step !== "declare-blockers") {
+        return { passed: false, detail: `reached ${game.state.turn.step}, not the attack` };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell",
+          detail: `at 5 life with a 6/4 unblocked, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
+  // --- sequencing ------------------------------------------------------------
+  asked({
+    name: "casts the spell that uses all its mana",
+    rule: "On three lands with a two-drop and a three-drop, the three-drop comes down.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 3);
+      game.debugSpawn("Grizzly Bears", A, "hand");
+      const courser = game.debugSpawn("Centaur Courser", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === courser,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "draws cards with nothing else to do",
+    rule: "Harmonize on an empty turn is three cards for mana that would go unused.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 4);
+      const harmonize = game.debugSpawn("Harmonize", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === harmonize,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
   asked({
     name: "Skullclamps a 1/1 token for two cards",
     rule: "Equipping Skullclamp to a 1/1 token kills it for two cards: a card up.",

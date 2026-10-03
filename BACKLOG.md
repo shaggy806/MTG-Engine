@@ -170,13 +170,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **More training scenarios.** Every hand-built scenario the weights got wrong has since been
-  fixed and moved into the gate (41 there, none left in training — `kind: "training"` in
-  `bot/scenarios.ts`), so there is nothing to fit against. New ones come from live games: the
-  in-game Capture button (`--capture`) saves a position to `captures/`, which `bot:scenarios`
-  and `bot:fit-scenarios` read as training scenarios, as does each blunder `bot:behaviour`
-  shows. `npm run bot:captures -w engine` lists them with v2's answer today; once one is fixed,
-  `-- resolve` moves it to `captures/resolved/`, where it gates.
+- **More training scenarios.** 57 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
+  added blocks, attack targets, answers on the stack (a pump against burn, Counterspell and
+  Heroic Intervention against a wrath, Fog against lethal) and sequencing, all passing but
+  two, now in training (below). More come from live games: the in-game Capture button
+  (`--capture`) saves a position to `captures/`, which `bot:scenarios` and `bot:fit-scenarios`
+  read as training scenarios, as does each blunder `bot:behaviour` shows. `npm run
+  bot:captures -w engine` lists them with v2's answer today; once one is fixed, `-- resolve`
+  moves it to `captures/resolved/`, where it gates. Not yet covered: mulligans (they have
+  their own `mulligan-policy.test.ts`), planeswalkers, and multi-blocker combat.
 
 Beyond that plan:
 
@@ -239,10 +241,19 @@ Beyond that plan:
   is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
   gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **Yahenni doesn't save itself from a board wipe.** In a live game with the Mardu Surge precon,
-  the bot let a wrath destroy Yahenni, Undying Partisan instead of sacrificing another creature
-  to give it indestructible until end of turn in response. Look into why v2 doesn't see that
-  activation as an answer to the wipe on the stack.
+- **No response to its own spell (Yahenni and its own wrath).** Against an opponent's wrath v2
+  sacrifices into Yahenni, Undying Partisan (gate scenario). After casting its *own* Blasphemous
+  Act it passes (training scenario "Yahenni sacrifices to survive its own wrath"): `holdPass`
+  passes on a spell the bot just cast, since the cast was scored as everyone passing until it
+  resolved, and that score never includes a response of ours. The fix is to search that window
+  when we hold a non-mana response, or to score the cast with one; mind `holdPass`'s reason
+  (a second full search per cast on big boards).
+- **No chip damage at three or four players.** v2 won't attack with a lone 2/2 even when no
+  opponent has a creature (training scenario "attacks the open player, not one with a
+  blocker"): the leading opponent counts in full and the rest at `otherOpponents` over their
+  average, so 2 damage to one of three equal opponents is worth about 0.25, under the
+  `untappedCreatures` 0.5 the tapped attacker costs — a blocker kept home against nothing.
+  Two-player it attacks. Likely shape: `untappedCreatures` priced by what could attack us.
 - **Skullclamp on a 1/1 token.** v2 passes on it (training scenario "Skullclamps a 1/1 token
   for two cards"): two cards score just under a 1/1 body and its point of attack, since every
   creature counts `creatures` 2.5 whatever its size. `bot:fit-scenarios` finds `creatures` 2.5 → 2
