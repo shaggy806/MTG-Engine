@@ -671,6 +671,19 @@ in `git log`.
   to permanents' abilities. 18 cards (Thousand-Year Storm, Lithoform Engine, Illusionist's
   Bracers, …); what blocks the other 10 is in
   `docs/card-blockers.md`, "Ready now".
+- **Winning and losing** (2026-10-03, `new:win-game` and `effect:lose-game`;
+  `win-game.test.ts`, `win-game-features.test.ts`) — `win-game`, `lose-game`,
+  "can't lose / can't win" (a static and a turn's `player-effect`), Laboratory
+  Maniac's draw replacement, a damage life floor and "can't lose life" (rule
+  119.8, every life cost refused), the hand-size fold in timestamp order (rule
+  613.11), "Nth from the top", a game-long record of spells cast by name, and
+  `gain-control-all`'s `controlledBy: "trigger-player"`. 22 cards: Thassa's
+  Oracle, Laboratory Maniac, Jace, Wielder of Mysteries, Platinum Angel, Herald
+  of Eternal Dawn, Angel's Grace, Everybody Lives!, Felidar Sovereign, Test of
+  Endurance, Revel in Riches, Triskaidekaphile, Knuckles the Echidna, Simic
+  Ascendancy, Helix Pinnacle, Hellkite Tyrant, Twenty-Toed Toad, Approach of the
+  Second Sun, Pact of Negation, Summoner's Pact, Vorpal Sword, Summon: Primal
+  Odin, Mirrodin Besieged. `BACKLOG.md` lists the ones still blocked.
 
 
 ## Completed: `neededCards.txt` passes (P0-P20)

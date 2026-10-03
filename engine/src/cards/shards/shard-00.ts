@@ -96,6 +96,7 @@ import _poolJukaiMessenger from "../pool/jukai-messenger.js";
 import _poolJuniperOrderDruid from "../pool/juniper-order-druid.js";
 import _poolKabiraCrossroads from "../pool/kabira-crossroads.js";
 import _poolKessigWolfRun from "../pool/kessig-wolf-run.js";
+import _poolKnucklesTheEchidna from "../pool/knuckles-the-echidna.js";
 import _poolLaceWithMoonglove from "../pool/lace-with-moonglove.js";
 import _poolLanternSpirit from "../pool/lantern-spirit.js";
 import _poolLatchSeeker from "../pool/latch-seeker.js";
@@ -148,6 +149,7 @@ import _poolRecklessReveler from "../pool/reckless-reveler.js";
 import _poolReleaseTheDogs from "../pool/release-the-dogs.js";
 import _poolReliquaryMonk from "../pool/reliquary-monk.js";
 import _poolReliquaryTower from "../pool/reliquary-tower.js";
+import _poolRevelInRiches from "../pool/revel-in-riches.js";
 import _poolRiotPiker from "../pool/riot-piker.js";
 import _poolRocOfKherRidges from "../pool/roc-of-kher-ridges.js";
 import _poolRoxanneStarfallSavant from "../pool/roxanne-starfall-savant.js";
@@ -318,6 +320,7 @@ const shard: CardShard = {
     _poolJuniperOrderDruid,
     _poolKabiraCrossroads,
     _poolKessigWolfRun,
+    _poolKnucklesTheEchidna,
     _poolLaceWithMoonglove,
     _poolLanternSpirit,
     _poolLatchSeeker,
@@ -370,6 +373,7 @@ const shard: CardShard = {
     _poolReleaseTheDogs,
     _poolReliquaryMonk,
     _poolReliquaryTower,
+    _poolRevelInRiches,
     _poolRiotPiker,
     _poolRocOfKherRidges,
     _poolRoxanneStarfallSavant,

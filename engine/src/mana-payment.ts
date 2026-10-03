@@ -214,6 +214,11 @@ export interface ManaPlanningView {
    * Phyrexian pip is allowed to cost them — less any life the same cost
    * already spends outside the mana (Liesa's commander tax), so it can be 0. */
   readonly life: number;
+  /** The payer can't pay life at all (rule 119.8 — "players can't lose life
+   * this turn"): no Phyrexian pip is paid with life and no `Pay N life` mana
+   * option is taken. A painland's damage is still fine — it's dealt, and
+   * simply changes nothing. */
+  readonly cantPayLife?: boolean;
   /** Every permanent that could produce mana right now. */
   readonly sources: readonly ManaSource[];
   /** Rule 106.6b: may this unit pay for what this payment is for? Closes over
@@ -414,7 +419,7 @@ function resolveReducedTwobrid(
         continue;
       }
     }
-    if (pip.some((o) => o.kind === "phyrexian") && view.life - life - 2 >= 1) {
+    if (pip.some((o) => o.kind === "phyrexian") && view.cantPayLife !== true && view.life - life - 2 >= 1) {
       life += 2;
       continue;
     }
@@ -489,7 +494,7 @@ export function resolveHybridCost(
       concrete = chosen;
       continue;
     }
-    if (pip.some((o) => o.kind === "phyrexian") && startingLife - life - 2 >= 1) {
+    if (pip.some((o) => o.kind === "phyrexian") && view.cantPayLife !== true && startingLife - life - 2 >= 1) {
       life += 2;
       continue;
     }
@@ -568,6 +573,7 @@ function planManaPaymentOrdered(
   const affordableOptions = (s: ManaSource): ManaSource => ({
     ...s,
     options: s.options.filter((o) => {
+      if (o.lifeCost > 0 && view.cantPayLife === true) return false;
       const toll = o.pain + o.lifeCost;
       return toll === 0 || toll < currentLife;
     }),

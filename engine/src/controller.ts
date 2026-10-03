@@ -1137,6 +1137,28 @@ function castExtras(
  * and as a fuzz test: a random-vs-random game that runs to completion exercises
  * every action path the engine claims is legal.
  */
+/**
+ * An `{X}` ability that can only be activated for X = 0 right now, while an
+ * activation of it is already on the stack — Helix Pinnacle's "{X}: Put X
+ * tower counters on this enchantment" with no mana open. Activating it is
+ * free and legal any number of times, so a controller choosing uniformly
+ * among its options stacks it without end (each copy hands priority back to
+ * it); `RandomController` leaves it until the one on the stack resolves.
+ * Not a rule — a fuzzing guard.
+ */
+function idleRepeat(state: GameState, offer: LegalAction): boolean {
+  if (offer.kind !== "activate-ability" || offer.xCost === undefined || offer.xCost.maxX > 0) return false;
+  return state.zones.shared.stack.some((id) => {
+    const object = state.objects[id];
+    return (
+      object?.kind === "ability" &&
+      object.sourceObjectId === offer.source &&
+      object.abilityIndex === offer.abilityIndex &&
+      object.abilityKind === "activated"
+    );
+  });
+}
+
 export class RandomController extends AutomaticController {
   private readonly random: () => number;
 
@@ -1148,7 +1170,7 @@ export class RandomController extends AutomaticController {
   act(view: ControllerView): Action {
     // What a relation among targets reads, for `pickTargets` below.
     this.facts = view.targetFacts;
-    const options = view.legalActions();
+    const options = view.legalActions().filter((o) => !idleRepeat(view.state, o));
     if (options.length === 0) return passFor(this.playerId);
     return this.toAction(options[this.pickIndex(options.length)]);
   }

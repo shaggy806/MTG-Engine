@@ -196,6 +196,7 @@ import _poolVerdantSunsAvatar from "../pool/verdant-suns-avatar.js";
 import _poolViridianAcolyte from "../pool/viridian-acolyte.js";
 import _poolViridianZealot from "../pool/viridian-zealot.js";
 import _poolVoraciousHydra from "../pool/voracious-hydra.js";
+import _poolVorpalSword from "../pool/vorpal-sword.js";
 import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
 import _poolVulshokBerserker from "../pool/vulshok-berserker.js";
 import _poolWaytaTrainerProdigy from "../pool/wayta-trainer-prodigy.js";
@@ -404,6 +405,7 @@ const shard: CardShard = {
     _poolViridianAcolyte,
     _poolViridianZealot,
     _poolVoraciousHydra,
+    _poolVorpalSword,
     _poolVoyagingSatyr,
     _poolVulshokBerserker,
     _poolWaytaTrainerProdigy,

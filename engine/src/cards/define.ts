@@ -521,12 +521,18 @@ export type StaticCondition =
     }
   /** How many cards are in a library, inclusive bounds: yours, or — with
    * `"any-player"` — some one player's still in the game, yours included
-   * (Shelldock Isle: "if **a library** has twenty or fewer cards in it"). */
+   * (Shelldock Isle: "if **a library** has twenty or fewer cards in it").
+   * `compare` is a bound read as it applies, in a `conditional` effect:
+   * Thassa's Oracle's "if X is greater than or equal to the number of cards
+   * in your library" is `{ op: "lte", n: { amount: { devotionTo: "U" } } }`
+   * (an `{ amount }` operand is bound by the resolution, and fails closed
+   * anywhere else). */
   | {
       readonly kind: "library-size";
       readonly who: "you" | "any-player";
       readonly atMost?: number;
       readonly atLeast?: number;
+      readonly compare?: NumCompare;
     }
   /**
    * A life total, inclusive bounds: Bilbo, Birthday Celebrant's "activate
@@ -670,6 +676,14 @@ export type StaticCondition =
       readonly kind: "trigger-spell-first";
       readonly anyOf: readonly { readonly filter: CardFilter; readonly otherThanSource?: boolean }[];
     }
+  /**
+   * You've cast at least `atLeast` spells named `named` this game
+   * (`PlayerState.spellNamesCastThisGame` — a copy isn't cast). Approach of
+   * the Second Sun's "you've cast **another** spell named Approach of the
+   * Second Sun this game", asked as it resolves alongside "if this spell was
+   * cast", is `atLeast: 2`: the spell resolving was one of them.
+   */
+  | { readonly kind: "spells-cast-this-game"; readonly named: string; readonly atLeast: number }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
    * "Khans" / "Dragons" halves. */
   | { readonly kind: "chosen-on-enter"; readonly value: string }
@@ -1266,6 +1280,24 @@ export interface StaticAbility {
    * `affects` is ignored. */
   readonly playerHexproof?: boolean;
   /**
+   * "**You can't lose the game**" (Platinum Angel, Herald of Eternal Dawn):
+   * no state-based action and no effect that says so makes this permanent's
+   * controller lose — 0 life, ten poison counters, a draw from an empty
+   * library, 21 commander damage, "you lose the game" — for as long as they
+   * control it; a loss it held off happens at the next check once it's gone,
+   * if the cause is still there. Conceding still loses (rule 104.3a, the
+   * ruling). Like `playerHexproof`, a property of the player, read off the
+   * battlefield (`playerCantLoseGame`); `affects` is ignored.
+   */
+  readonly cantLoseGame?: boolean;
+  /**
+   * "**Your opponents can't win the game**" (Platinum Angel): an effect that
+   * says one of this permanent's controller's opponents wins does nothing
+   * (`playerCantWinGame`). Being the last player left still wins (rule
+   * 104.2a). `affects` is ignored.
+   */
+  readonly opponentsCantWinGame?: boolean;
+  /**
    * "Creatures can't attack you unless their controller pays {N} for each
    * creature they control that's attacking you" (Ghostly Prison,
    * Propaganda): a cost to attack this permanent's controller (rule
@@ -1275,14 +1307,16 @@ export interface StaticAbility {
    */
   readonly attackTax?: { readonly generic: number };
   /**
-   * A maximum hand size, read at cleanup like `noMaxHandSize` (which wins
-   * over it): `who`'s becomes `set` less the live count `minus` (a
-   * `CountSpec`, from this permanent's controller's side), and `adjust`
-   * changes it by that much. "Your maximum hand size is eleven" is `{ who:
-   * "you", set: 11 }`; Winter, Misanthropic Guide's "each opponent's maximum
-   * hand size is equal to seven minus the number of those card types" is `{
-   * who: "opponents", set: 7, minus: { cardTypesInGraveyard: { ownedBy:
-   * "you" } } }` behind its delirium `condition`. Never below 0.
+   * A maximum hand size, read at cleanup like `noMaxHandSize`: `who`'s
+   * becomes `set` less the live count `minus` (a `CountSpec`, from this
+   * permanent's controller's side), and `adjust` changes it by that much.
+   * "Your maximum hand size is eleven" is `{ who: "you", set: 11 }`; Winter,
+   * Misanthropic Guide's "each opponent's maximum hand size is equal to seven
+   * minus the number of those card types" is `{ who: "opponents", set: 7,
+   * minus: { cardTypesInGraveyard: { ownedBy: "you" } } }` behind its
+   * delirium `condition`. These and every `noMaxHandSize` apply in timestamp
+   * order (rule 613.11): a "twenty" newer than a "no maximum" wins, and the
+   * other way round (Twenty-Toed Toad). Never below 0.
    */
   readonly maxHandSize?: {
     readonly who: "you" | "opponents";

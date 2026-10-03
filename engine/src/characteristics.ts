@@ -513,10 +513,13 @@ function evalStaticCondition(
       }
       return inBounds(state.zones.perPlayer[you].hand.length);
     }
+    case "spells-cast-this-game":
+      return (state.players[you]?.spellNamesCastThisGame?.[condition.named] ?? 0) >= condition.atLeast;
     case "library-size": {
       const inBounds = (n: number): boolean =>
         (condition.atMost === undefined || n <= condition.atMost) &&
-        (condition.atLeast === undefined || n >= condition.atLeast);
+        (condition.atLeast === undefined || n >= condition.atLeast) &&
+        (condition.compare === undefined || compareNum(n, condition.compare));
       const seats =
         condition.who === "you" ? [you] : state.turnOrder.filter((p) => state.players[p]?.hasLost !== true);
       return seats.some((p) => inBounds(state.zones.perPlayer[p]?.library.length ?? 0));
@@ -1075,6 +1078,58 @@ export function playerHasHexproof(state: GameState, registry: CardRegistry, play
     }
   }
   return false;
+}
+
+/** Whether some active static of a permanent on the battlefield, controlled
+ * by a player still in the game, answers `test` with `true` for its
+ * controller. A permanent that has lost its abilities has none of these. */
+function playerStaticHolds(
+  state: GameState,
+  registry: CardRegistry,
+  test: (ability: StaticAbility, controller: PlayerId) => boolean,
+): boolean {
+  for (const id of state.zones.shared.battlefield) {
+    const source = state.objects[id];
+    if (source === undefined || hasLostAbilities(source)) continue;
+    if (state.players[source.controller]?.hasLost !== false) continue;
+    for (const ability of registry.get(printedCardName(source)).static) {
+      if (
+        test(ability, source.controller) &&
+        (ability.condition === undefined || staticConditionMet(state, registry, source, ability.condition))
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Whether `player` can't lose the game right now (rule 104.3 — Platinum
+ * Angel's "you can't lose the game", Angel's Grace's "this turn"): a
+ * `cantLoseGame` static of a permanent they control, or a `player-effect`
+ * that names them. Conceding isn't stopped by it (rule 104.3a). */
+export function playerCantLoseGame(state: GameState, registry: CardRegistry, player: PlayerId): boolean {
+  if ((state.playerEffects ?? []).some((e) => e.cantLoseGame?.includes(player) === true)) return true;
+  return playerStaticHolds(state, registry, (ability, controller) => ability.cantLoseGame === true && controller === player);
+}
+
+/** Whether `player` can't win the game right now: an opponent of theirs
+ * controls an `opponentsCantWinGame` static (Platinum Angel), or a
+ * `player-effect` names them ("your opponents can't win the game this
+ * turn"). Being the last player left still wins (rule 104.2a). */
+export function playerCantWinGame(state: GameState, registry: CardRegistry, player: PlayerId): boolean {
+  if ((state.playerEffects ?? []).some((e) => e.cantWinGame?.includes(player) === true)) return true;
+  return playerStaticHolds(
+    state,
+    registry,
+    (ability, controller) => ability.opponentsCantWinGame === true && controller !== player,
+  );
+}
+
+/** Whether `player` can't lose life (rule 119.8 — Everybody Lives!'s "players
+ * can't lose life this turn"): a `player-effect` names them. */
+export function playerCantLoseLife(state: GameState, player: PlayerId): boolean {
+  return (state.playerEffects ?? []).some((e) => e.cantLoseLife?.includes(player) === true);
 }
 
 /** The keywords `grantsToSpells` statics on the battlefield give `spell`. */

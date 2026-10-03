@@ -68,7 +68,9 @@ import _poolEmeriaTheSkyRuin from "../pool/emeria-the-sky-ruin.js";
 import _poolEmpyreanEagle from "../pool/empyrean-eagle.js";
 import _poolEshkiTemursRoar from "../pool/eshki-temurs-roar.js";
 import _poolEtheriumSculptor from "../pool/etherium-sculptor.js";
+import _poolEverybodyLives from "../pool/everybody-lives.js";
 import _poolEyesOfTheBeholder from "../pool/eyes-of-the-beholder.js";
+import _poolFelidarSovereign from "../pool/felidar-sovereign.js";
 import _poolFireNationSoldier from "../pool/fire-nation-soldier.js";
 import _poolFlashback from "../pool/flashback.js";
 import _poolFlyingOctobot from "../pool/flying-octobot.js";
@@ -277,7 +279,9 @@ const shard: CardShard = {
     _poolEmpyreanEagle,
     _poolEshkiTemursRoar,
     _poolEtheriumSculptor,
+    _poolEverybodyLives,
     _poolEyesOfTheBeholder,
+    _poolFelidarSovereign,
     _poolFireNationSoldier,
     _poolFlashback,
     _poolFlyingOctobot,

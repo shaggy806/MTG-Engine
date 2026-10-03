@@ -108,6 +108,7 @@ import _poolInventorsFair from "../pool/inventors-fair.js";
 import _poolInvisibleStalker from "../pool/invisible-stalker.js";
 import _poolIpnuRivulet from "../pool/ipnu-rivulet.js";
 import _poolItThatHeraldsTheEnd from "../pool/it-that-heralds-the-end.js";
+import _poolJaceWielderOfMysteries from "../pool/jace-wielder-of-mysteries.js";
 import _poolJungleWeaver from "../pool/jungle-weaver.js";
 import _poolKataraHeroicHealer from "../pool/katara-heroic-healer.js";
 import _poolKazanduValley from "../pool/kazandu-valley.js";
@@ -150,6 +151,7 @@ import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
 import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolPiratesPillage from "../pool/pirates-pillage.js";
+import _poolPlatinumAngel from "../pool/platinum-angel.js";
 import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
 import _poolRagingBull from "../pool/raging-bull.js";
@@ -354,6 +356,7 @@ const shard: CardShard = {
     _poolInvisibleStalker,
     _poolIpnuRivulet,
     _poolItThatHeraldsTheEnd,
+    _poolJaceWielderOfMysteries,
     _poolJungleWeaver,
     _poolKataraHeroicHealer,
     _poolKazanduValley,
@@ -396,6 +399,7 @@ const shard: CardShard = {
     _poolPhantomWarrior,
     _poolPhyrexianDefiler,
     _poolPiratesPillage,
+    _poolPlatinumAngel,
     _poolProwcatcherSpecialist,
     _poolRabanastreRoyalCity,
     _poolRagingBull,

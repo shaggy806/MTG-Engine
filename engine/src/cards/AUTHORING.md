@@ -692,7 +692,7 @@ them.
 | `exile-all` | `filter` | Farewell's "Exile all artifacts" — the mass `exile`, one event (each one's leaves trigger sees the rest go), a token stack exiled whole |
 | `return-from-graveyard` | `filter`, `destination: "battlefield" \| "hand"`, `count: number \| "all"`, `enterTapped?`, `withCounters?` | Splendid Reclamation (from *your* graveyard; a `number` less than the match count raises a `choose-from-zone`). **Untargeted only** — "return a creature card", chosen as it resolves (Dogmeat, Takenuma). "Return **target** … card" is a `card-in-graveyard` target with `return-to-hand`/`put-onto-battlefield` (Regrowth, Eternal Witness): the target is chosen on the stack, and with none there's no casting it and no trigger (rule 603.3d). `withCounters: { kind: "finality", amount: 1 }` is "…with a finality counter on it" (Shilgengar, Sire of Famine) — put on each card that enters, before its entry is announced, whether everything returns at once or the player chooses. |
 | `search-library` … `reveal?` | — | "…, **reveal it**, …" (Enlightened Tutor, Mystical Tutor): shows the find to every player, rule 701.16. Off by default — a plain "search your library for a card" (Vampiric Tutor) reveals nothing, and the difference is printed on the cards. |
-| `put-on-library` | `target`, `position: "top" \| "bottom"` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. `target: "trigger-object"` is Murderous Rider's "when this creature dies, put it on the bottom of its owner's library" — the card, found only in the graveyard it went to. |
+| `put-on-library` | `target`, `position: "top" \| "bottom" \| { fromTop: n }` | Academy Ruins, Mortuary Mire — puts one **targeted** card on its owner's deck. Pair it with a `card-in-graveyard` target for the graveyard-recursion lands; unlike `return-from-graveyard` it is target-driven, so it reaches any graveyard. `target: "trigger-object"` is Murderous Rider's "when this creature dies, put it on the bottom of its owner's library" — the card, found only in the graveyard it went to. `target: "source"` is a spell putting itself there as it resolves (a copy of a spell can't, and ceases to exist — rule 707.10a). `{ fromTop: 7 }` is "seventh from the top" (Approach of the Second Sun): under the top six, or on the bottom of a library with fewer. |
 | `delayed-trigger` | `at`, `effect`, `text`, `controller?`, `about?` | Whip of Erebos's "exile it at the beginning of the next end step", Arcane Denial's upkeep draws; `about` (a `ThisWayKind`) makes its targets what this resolution did that to so far, in place of the creating ability's own — `about: "created"` is "sacrifice **that token**" off a token the same resolution made (Satya, Aetherflux Genius), and nothing is set up when there's none; with `at: { leaves, to, thisTurn? }`, Kelsien, the Plague's "when that creature dies this turn"; with `at: { nextSpell }`, "when you next cast a creature spell this turn" (Yuna); with `at: { dealsCombatDamage: slot }`, "whenever that creature deals combat damage to a player this turn" (Captain Howler, Sea Scourge) — each time, double strike twice, that permanent its trigger object, lapsing with the turn. Rule 603.7 — see below. |
 | `enters-with-counters` | `target`, `counter`, `amount` | "That creature enters with two additional +1/+1 counters on it" — a spell on the stack (Yuna's `nextSpell` trigger object) enters with them as it resolves. |
 | `reflexive-trigger` | `targets: TargetSpec[]`, `effect`, `text` | "**When you do**, …" — a reflexive triggered ability (rule 603.12): Terra, Herald of Hope's "you may pay {2}. When you do, return target creature card with power 3 or less from your graveyard to the battlefield tapped" is a `may` with `cost: "{2}"` and this as its `effect`. Applying it triggers an ability that goes on the stack once the creating spell or ability has finished resolving, choosing `targets` then — so it *can* target, unlike a `may`'s `then`, and players can respond to it. `effect` reads its own targets by slot; `"source"`, X (including an X paid for the `may`) and the triggering event are the creator's. With no legal target it's removed as it would go on the stack. Put it only where the action has certainly happened: a `may`'s `effect`, a `sacrifice-source`'s `then`. |
@@ -702,7 +702,7 @@ them.
 | `sacrifice-source` | `then?` | Defense of the Heart — "Sacrifice ~. **If you do,** …"; no choice, and `then` only applies if the source was still there to sacrifice |
 | `fight` | `a`, `b`, `oneSided?` | Prey Upon / Rabid Bite. With `oneSided`, `b` may be a planeswalker (Stump Stomp's "deals damage equal to its power to target creature or planeswalker you don't control"). |
 | `gain-control` | `target` (an `EffectTargetRef`), `untilEndOfTurn`, `who?` | Act of Treason; `untilEndOfTurn: false` is "lasts indefinitely" (Sliver Overlord). A timestamped layer-2 effect: the latest control effect on a permanent wins, Aura or not (rule 613.7), and when one ends the next-latest takes over — including when the player it gave control to leaves the game (rule 800.4a), so it goes back to the player still in the game who most recently had it. `who` (an `EffectPlayerRef`) is who gains control, the effect's controller by default: a player slot — Zedruu the Greathearted's "target opponent gains control of target permanent you control" is `targets: ["opponent", { kind: "permanent", whose: "you", filter: {} }]` with `target: 1, who: { target: 0 }` — or a player the event names, like Alexios, Deimos of Kosmos's "that player gains control of Alexios" (`target: "source", who: "active-player"`). If either the permanent or the player has become an illegal target by resolution, it does nothing (rule 608.2b — `ResolutionContext.illegalTargets`). A player who has left the game gains control of nothing (800.4b). |
-| `gain-control-all` | `filter`, `untilEndOfTurn`, `who?`, `exceptSource?` | Every permanent matching `filter` changes control at once, as one effect with one timestamp (rule 613.7b): "gain control of all nonland permanents until end of turn" (Dihada, Binder of Wills), "gain control of all commanders" (Tevesh Szat). `who` as `gain-control`'s, or `"owner"`: "each player gains control of all creatures they own" (Homeward Path). A token stack changes hands whole. |
+| `gain-control-all` | `filter`, `untilEndOfTurn`, `who?`, `exceptSource?` | Every permanent matching `filter` changes control at once, as one effect with one timestamp (rule 613.7b): "gain control of all nonland permanents until end of turn" (Dihada, Binder of Wills), "gain control of all commanders" (Tevesh Szat). `who` as `gain-control`'s, or `"owner"`: "each player gains control of all creatures they own" (Homeward Path). A token stack changes hands whole. `controlledBy: "trigger-player"` keeps only what the player the trigger names controls — Hellkite Tyrant's "gain control of all artifacts that player controls" — and does nothing once they've left. |
 | `rotate-control` | `direction: "left" \| "right"`, `filter`, `exceptSource?` | "Each player gains control of all [filter] controlled by the next player in the chosen direction" (Aminatou, the Fateshifter's −6): left is the next player in turn order (rule 101.4), right the one before, skipping anyone who has left the game. Every share is worked out first and changes hands at once, as one lasting effect. "Choose left or right" as it resolves is a `modal` with one `rotate-control` per mode. |
 | `cant-be-sacrificed` | `target`, `duration` | "It gains 'This creature can't be sacrificed'" (Jon Irenicus, Shattered One) — `"end-of-turn"` or `"permanent"` (while it stays on the battlefield). The static form, and what it stops, is §10's `cantBeSacrificed`. |
 
@@ -804,7 +804,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `modify-pt` | `target`, `power`, `toughness`, `duration` | `duration` is any `PtDuration`, as it is for every effect below that takes one: `"end-of-turn"`; `"permanent"` (while it stays on the battlefield); `"until-your-next-turn"` — the effect's controller's, ending as that turn begins, or as it would have begun once they've left the game (rule 800.4m); or `{ whileCounter: kind }`, "for as long as it has a [kind] counter on it" (rule 611.2b), which does nothing if it has none as it would begin, ends as the last one is removed, and isn't brought back by a new one. |
 | `modify-pt-all` | `filter`, `power`, `toughness`, `duration`, `exceptSource?`, `controlledByTarget?` | Overrun. `exceptSource` spares the source ("**other** attacking creatures you control with flying" — Steel-Plume Marshal, itself one). `controlledByTarget` scopes to a *targeted seat* (Great Oak Guardian), which a `CardFilter`'s `controlledBy` can't name — it only knows "you" and "opponent". |
 | `grant-keyword` | `target`, `keyword`, `duration` | A permanent — or a spell on the stack: Judith, Carnage Connoisseur's "whenever you cast an instant or sorcery spell, … that spell gains deathtouch and lifelink" is two of these on `"trigger-object"`, lasting while it's on the stack. A spell's lifelink and deathtouch apply to the damage it deals. |
-| `player-effect` | `duration: "end-of-turn" \| "until-your-next-turn"`, `reduceSpells?`, `castFromHandFree?`, `damageTo?` | A continuous effect for the controller that expires — an emblem with a clock (`GameState.playerEffects`): `reduceSpells: { applies, reduceGeneric }` is Rowan, Scion of War's "spells you cast this turn that are black and/or red cost {X} less to cast, where X is the amount of life you lost this turn" (`applies: { anyOf: [{ colors: ["B"] }, { colors: ["R"] }] }`, `reduceGeneric: { turnStat: "life-lost", who: "you" }` — read as it resolves and fixed, rule 611.2b); `castFromHandFree: { filter? }` is Yusri's "you may cast spells from your hand this turn without paying their mana costs" (offered as a `free` cast); `damageTo: { who, multiplier, permanentsToo? }` is "until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead" (the players fixed as it resolves). |
+| `player-effect` | `duration: "end-of-turn" \| "until-your-next-turn"`, `reduceSpells?`, `castFromHandFree?`, `damageTo?` | A continuous effect for the controller that expires — an emblem with a clock (`GameState.playerEffects`): `reduceSpells: { applies, reduceGeneric }` is Rowan, Scion of War's "spells you cast this turn that are black and/or red cost {X} less to cast, where X is the amount of life you lost this turn" (`applies: { anyOf: [{ colors: ["B"] }, { colors: ["R"] }] }`, `reduceGeneric: { turnStat: "life-lost", who: "you" }` — read as it resolves and fixed, rule 611.2b); `castFromHandFree: { filter? }` is Yusri's "you may cast spells from your hand this turn without paying their mana costs" (offered as a `free` cast); `damageTo: { who, multiplier, permanentsToo? }` is "until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead" (the players fixed as it resolves). The game-outcome locks, each a `PlayerScope` fixed as it resolves: `cantLoseGame` / `cantWinGame` (Angel's Grace's "you can't lose the game this turn and your opponents can't win the game this turn" — `"you"`, `"each-opponent"`; see *Winning and losing*), `cantLoseLife` (Everybody Lives!'s "players can't lose life this turn", rule 119.8: damage and "lose life" change nothing, and no cost that pays more than 0 life can be paid — not a Phyrexian pip, a `Pay N life` mana option, a shock land's offer, a ward, Toxic Deluge's X), `damageLifeFloor: { who, floor }` (Angel's Grace's "damage that would reduce your life total to less than 1 reduces it to 1 instead" — the damage is still dealt in full, a total already below the floor drops as normal, and life *lost* isn't stopped). |
 | `flip-coin` | `won?`, `lost?`, `untilLose?` | "Flip a coin. If you win the flip, …; if you lose the flip, …" (rule 705): the controller flips on the game's seeded random stream (so a seed replays), then `won` or `lost` applies as their effect. `untilLose: true` is "flip a coin until you lose a flip" (Okaun, Eye of Chaos; Zndrsplt, Eye of Wisdom) — `won` once per win. Each flip is a `coin-flipped` event, which the `wins-coin-flip` trigger reads. |
 | `prohibit` | `who` (a target slot or a `PlayerScope`, default you) with `spells` / `abilities`, or `target` (a permanent) | Prohibitions until end of turn: Sen Triplets' "this turn, that player can't cast spells or activate abilities" (`who: 0, spells: true, abilities: true`); `spells` may instead be `{ filter, label }` for only some spells — Ranger-Captain of Eos's "your opponents can't cast noncreature spells this turn" is `{ who: "each-opponent", spells: { filter: { notTypes: ["creature"] }, label: "noncreature spells" } }`, the filter matched against the card as it would be cast and `label` naming them in the log; Koma, Cosmos Serpent's "its activated abilities can't be activated this turn" (`target: 0` — that permanent this stint; flickered, it's a new object). Mana abilities are activated abilities, so they're barred too. `GameState.turnProhibitions`. |
 | `restrict` | `target` or `filter`, `restrictions` | Combat restrictions (§5's `CombatRestriction`s) until end of turn: "target creature can't block this turn" (`restrictions: ["cant-block"]`), Anzrag, the Quake-Mole's "~ must be blocked each combat this turn if able" (`target: "source"`, `["must-be-blocked-if-able"]`). On `target` it's a modifier, like a keyword grant; with `filter` instead it's a rule for the rest of the turn over everything matching it from your side — "creatures your opponents control can't block this turn" binds a creature that enters later too (rule 611.2c; `GameState.turnRestrictions`). |
@@ -989,6 +989,38 @@ it as the two halves the rule describes — an `enters-battlefield` trigger with
 `moveObject` clears on any zone change: a card that leaves exile some other way
 is no longer the one this permanent took, and a token that was exiled ceased to
 exist (rule 111.7), so neither comes back.
+
+### Winning and losing
+
+- **`win-game`** — "you win the game" (rule 104.2b): the game ends at once
+  with the effect's controller the winner (104.1), in a multiplayer game too
+  (nobody else "loses": the game is simply over, and the rest of the
+  resolution doesn't happen). Nothing happens for a player who can't win (an
+  opponent's Platinum Angel, a `player-effect`'s `cantWinGame`). Put the
+  card's "if" on the trigger as an intervening-if — Felidar Sovereign's
+  `step-begins` upkeep trigger with `condition: { kind: "life-total",
+  atLeast: 40 }` — or in a `conditional` asked as it resolves (Thassa's
+  Oracle's `library-size` `compare`, Jace's −8 `atMost: 0`). "Or" is
+  `not(all(not …, not …))` (Twenty-Toed Toad).
+- **`lose-game { who?, target? }`** — "you lose the game" (default `"you"`),
+  "that player loses the game" (`who: "trigger-player"` — Vorpal Sword's
+  granted trigger, Summon: Primal Odin), "target opponent loses the game"
+  (`target: 0` — Mirrodin Besieged). The players lose and leave at once
+  (104.5, 800.4a), all of a scope together, the last one left winning
+  (104.2a) and nobody left a draw (104.4a). A player who can't lose doesn't.
+  A pact is a `delayed-trigger` at `"your-next-upkeep"` of an `unless` with
+  `chooser: "you"`, a mana option and `otherwise: { kind: "lose-game" }`
+  (Pact of Negation, Summoner's Pact).
+- **"You can't lose the game and your opponents can't win the game"** is a
+  static (§10, `cantLoseGame` / `opponentsCantWinGame` — Platinum Angel);
+  "this turn" is a `player-effect`'s `cantLoseGame` / `cantWinGame` (Angel's
+  Grace). Either holds off every state-based loss (0 life, poison, a draw from
+  an empty library, commander damage) and every `lose-game`, until it ends —
+  the loss then comes at the next check if its cause is still there (a draw
+  attempt belongs to the check after it, and is gone). Conceding still loses
+  (rule 104.3a), and the last player left still wins (104.2a).
+- "If you would draw a card while your library has no cards in it, you win the
+  game instead" is a `would-draw` replacement (§10 — Laboratory Maniac).
 
 ### Combinators
 
@@ -2230,16 +2262,23 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   Armor's "+X/+X, where X is the greatest mana value among your commanders" —
   `pt: [1, 1]` on an `attached` scope), a commander on the stack with its {X}.
 - `maxHandSize: { who, set?, minus?, adjust? }` — a maximum hand size, read
-  at cleanup (`noMaxHandSize` wins over it): "your maximum hand size is
-  eleven" is `{ who: "you", set: 11 }`; Winter, Misanthropic Guide's "each
-  opponent's maximum hand size is equal to seven minus the number of those
-  card types" is `{ who: "opponents", set: 7, minus: { cardTypesInGraveyard:
-  { ownedBy: "you" } } }` (a `CountSpec`) behind its delirium `condition`;
-  `adjust` adds to it. Never below 0.
+  at cleanup: "your maximum hand size is eleven" is `{ who: "you", set: 11 }`;
+  Winter, Misanthropic Guide's "each opponent's maximum hand size is equal to
+  seven minus the number of those card types" is `{ who: "opponents", set: 7,
+  minus: { cardTypesInGraveyard: { ownedBy: "you" } } }` (a `CountSpec`)
+  behind its delirium `condition`; `adjust` adds to it. Never below 0.
 - `noMaxHandSize: true` — "You have no maximum hand size" (Thought Vessel).
   A fact about the *controller* rather than about anything the ability
   affects, so it's read straight off the battlefield at cleanup instead of
   going through the layer system; pair it with `affects: { scope: "self" }`.
+  It and every `maxHandSize` apply in timestamp order (rule 613.11 — each
+  its permanent's timestamp): a Twenty-Toed Toad newer than a Reliquary
+  Tower makes it twenty, an older one leaves no maximum.
+- `cantLoseGame: true` / `opponentsCantWinGame: true` — "You can't lose the
+  game and your opponents can't win the game" (Platinum Angel, Herald of
+  Eternal Dawn): facts about players, read off the battlefield
+  (`playerCantLoseGame` / `playerCantWinGame`); `affects` is ignored. See §6
+  *Winning and losing* for what they stop and what they don't.
 - `playerHexproof: true` — "**You** have hexproof" (Shalai, Voice of Plenty;
   rule 702.11d): its controller can't be the target of spells or abilities an
   opponent controls, read as a target is checked (`playerHasHexproof`, which
@@ -2778,10 +2817,19 @@ clause (section 9):
   inclusive (Flubs, the Fool); `who: "each-player"` is every player still in
   the game — Howltooth Hollow's "if each player has no cards in hand" is
   `{ who: "each-player", atMost: 0 }`.
-- `{ kind: "library-size", who, atMost?, atLeast? }` — cards in a library,
-  inclusive: yours (`"you"`), or some one library of a player still in the
-  game, yours included (`"any-player"` — Shelldock Isle's "if a library has
-  twenty or fewer cards in it").
+- `{ kind: "library-size", who, atMost?, atLeast?, compare? }` — cards in a
+  library, inclusive: yours (`"you"`), or some one library of a player still
+  in the game, yours included (`"any-player"` — Shelldock Isle's "if a library
+  has twenty or fewer cards in it"). `compare` takes an `{ amount }` bound as a
+  `conditional` applies: Thassa's Oracle's "if X is greater than or equal to
+  the number of cards in your library" is `{ op: "lte", n: { amount: {
+  devotionTo: "U" } } }` (it fails closed anywhere nothing binds it).
+- `{ kind: "spells-cast-this-game", named, atLeast }` — you've cast at least
+  `atLeast` spells named `named` this game (`PlayerState
+  .spellNamesCastThisGame`; a copy isn't cast). Approach of the Second Sun's
+  "you've cast another spell named ~ this game", asked as it resolves beside
+  `{ kind: "source", filter: { castFrom: "hand" } }`, is `atLeast: 2` — the
+  resolving spell is one of them.
 - `{ kind: "cards-in-graveyard", atLeast, filter? }` — `atLeast` cards in your
   graveyard matching `filter` (Oversold Cemetery: four creature cards).
 - `{ kind: "life-total", who?, atLeast?, atMost? }` — a life total, inclusive:
@@ -3004,6 +3052,14 @@ clause (section 9):
   Thief. `{ event: "would-draw", who: "you", instead: { draws: N } }` is "if
   you would draw a card, draw N cards instead" (gate it with the static's
   `condition`); neither applies again to the draws it makes (rule 614.5).
+  `{ event: "would-draw", who: "you", instead: "win-game", whileLibraryEmpty:
+  true }` is Laboratory Maniac's "if you would draw a card while your library
+  has no cards in it, you win the game instead" (rule 614.11: it applies
+  though there's no card to draw). It replaces the draw even for a player who
+  can't win, who then neither wins nor loses for it (the rulings), and it's
+  applied before an opponent's Notion Thief — the order the drawing player
+  would pick whenever they can win (rule 616.1; when they can't, the choice
+  isn't offered, see §15's replacement ordering).
 - `{ event: "would-mill", who, multiplier?, plus? }` — Bruvac the
   Grandiloquent's "if an opponent would mill one or more cards, they mill
   twice that many cards instead" (`who: "opponent"`, `multiplier: 2`), The
@@ -3452,11 +3508,15 @@ Delete an entry in the same commit as the feature that retires it.
   more creatures with different powers) and Raid (you attacked this turn) are
   the two the EDH backlog currently wants.
 - **Replacement ordering** — if two replacements would apply to one event
-  there's no general `choose-replacement-order`. One case asks by itself:
-  Feather, the Redeemed's exile beside another replacement
-  that would exile the same resolving spell (flashback, Rest in Peace, an
-  Adventure), as a `choose-modes` decision (`exile-spell-as-it-resolves`, §6).
-  No damage **redirection** to a third object (Harm's Way).
+  there's no general `choose-replacement-order`. Feather, the Redeemed's
+  exile beside another replacement that would exile the same resolving spell
+  (flashback, Rest in Peace, an Adventure) asks, as a `choose-modes` decision
+  (`exile-spell-as-it-resolves`, §6). A draw from an empty library under
+  Laboratory Maniac (or Jace, Wielder of Mysteries) and an opponent's Notion
+  Thief doesn't: the win is applied first, which is the drawing player's pick
+  whenever they can win; when they can't (an opponent's Platinum Angel),
+  letting the Notion Thief's controller draw instead isn't offered. No damage
+  **redirection** to a third object (Harm's Way).
 - **Modal abilities** — a modal *activated* ability would choose its modes
   as it resolves, not as it's activated (rule 700.2b); the pool has none. A
   modal *triggered* ability announces them as it goes on the stack

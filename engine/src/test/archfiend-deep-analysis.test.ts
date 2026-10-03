@@ -116,12 +116,14 @@ describe("flashback with a life cost", () => {
       game.state.objects[id].tapped = false;
     }
     game.debugSpawn("Deep Analysis", A, "graveyard");
-    game.state.players[A].life = 3; // "Pay 3 life" needs more than 3
-
-    const legal = game
-      .legalActions(A)
-      .find((a) => a.kind === "cast-spell" && a.via === "flashback");
-    expect(legal).toBeUndefined();
+    // Rule 119.4: life can be paid only with at least that much — exactly 3
+    // pays "Pay 3 life" (down to 0), 2 doesn't.
+    const flashback = () =>
+      game.legalActions(A).find((a) => a.kind === "cast-spell" && a.via === "flashback");
+    game.state.players[A].life = 3;
+    expect(flashback()).toBeDefined();
+    game.state.players[A].life = 2;
+    expect(flashback()).toBeUndefined();
   });
 
   it("pays the life as the spell is cast", () => {

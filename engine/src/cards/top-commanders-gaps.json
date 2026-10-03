@@ -166,7 +166,8 @@
   "effect:copy-spell-extensions",
   "condition:cast-spell-targets",
   "replacement:spell-exiled-as-it-resolves",
-  "static:legend-rule-exemptions"
+  "static:legend-rule-exemptions",
+  "effect:lose-game"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

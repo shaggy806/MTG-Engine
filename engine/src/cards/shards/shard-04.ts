@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbzanAscendancy from "../pool/abzan-ascendancy.js";
 import _poolAetherHelix from "../pool/aether-helix.js";
 import _poolAlelaCunningConqueror from "../pool/alela-cunning-conqueror.js";
+import _poolAngelsGrace from "../pool/angels-grace.js";
 import _poolAnheloThePainter from "../pool/anhelo-the-painter.js";
 import _poolAnkleBiter from "../pool/ankle-biter.js";
 import _poolAshlingTheLimitless from "../pool/ashling-the-limitless.js";
@@ -235,6 +236,7 @@ const shard: CardShard = {
     _poolAbzanAscendancy,
     _poolAetherHelix,
     _poolAlelaCunningConqueror,
+    _poolAngelsGrace,
     _poolAnheloThePainter,
     _poolAnkleBiter,
     _poolAshlingTheLimitless,

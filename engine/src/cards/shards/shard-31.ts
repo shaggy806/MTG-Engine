@@ -87,6 +87,7 @@ import _poolHammerheadTyrant from "../pool/hammerhead-tyrant.js";
 import _poolHanaKami from "../pool/hana-kami.js";
 import _poolHedronArchive from "../pool/hedron-archive.js";
 import _poolHellkiteCharger from "../pool/hellkite-charger.js";
+import _poolHellkiteTyrant from "../pool/hellkite-tyrant.js";
 import _poolHerosResolve from "../pool/heros-resolve.js";
 import _poolHideousVisage from "../pool/hideous-visage.js";
 import _poolHoldoutSettlement from "../pool/holdout-settlement.js";
@@ -290,6 +291,7 @@ const shard: CardShard = {
     _poolHanaKami,
     _poolHedronArchive,
     _poolHellkiteCharger,
+    _poolHellkiteTyrant,
     _poolHerosResolve,
     _poolHideousVisage,
     _poolHoldoutSettlement,

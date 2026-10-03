@@ -7,6 +7,7 @@ import _poolAIMSynthoids from "../pool/a-i-m-synthoids.js";
 import _poolAdaptiveGemguard from "../pool/adaptive-gemguard.js";
 import _poolAffaProtector from "../pool/affa-protector.js";
 import _poolAllosaurusShepherd from "../pool/allosaurus-shepherd.js";
+import _poolApproachOfTheSecondSun from "../pool/approach-of-the-second-sun.js";
 import _poolArdbert from "../pool/ardbert.js";
 import _poolArgentumArmor from "../pool/argentum-armor.js";
 import _poolAttendedKnight from "../pool/attended-knight.js";
@@ -157,6 +158,7 @@ import _poolStolenGrain from "../pool/stolen-grain.js";
 import _poolStormFleetSprinter from "../pool/storm-fleet-sprinter.js";
 import _poolStormForceOfNature from "../pool/storm-force-of-nature.js";
 import _poolStormfrontPegasus from "../pool/stormfront-pegasus.js";
+import _poolSummonersPact from "../pool/summoners-pact.js";
 import _poolSunscorchedDivide from "../pool/sunscorched-divide.js";
 import _poolSurveyTheWreckage from "../pool/survey-the-wreckage.js";
 import _poolSylvanCaryatid from "../pool/sylvan-caryatid.js";
@@ -196,6 +198,7 @@ const shard: CardShard = {
     _poolAdaptiveGemguard,
     _poolAffaProtector,
     _poolAllosaurusShepherd,
+    _poolApproachOfTheSecondSun,
     _poolArdbert,
     _poolArgentumArmor,
     _poolAttendedKnight,
@@ -346,6 +349,7 @@ const shard: CardShard = {
     _poolStormFleetSprinter,
     _poolStormForceOfNature,
     _poolStormfrontPegasus,
+    _poolSummonersPact,
     _poolSunscorchedDivide,
     _poolSurveyTheWreckage,
     _poolSylvanCaryatid,

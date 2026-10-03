@@ -81,12 +81,27 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,230 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
-  past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the
-  game" (`new:win-game`), a card's own permission to be cast from its graveyard, "can't cast more
+  past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more
   than one spell each turn", the legendary sorcery restriction (205.4e), library ordering
   (`decision:library-ordering`), "sacrifice any number" as a spell's additional cost
   (`cost:sacrifice-multiple`'s remainder — Dargo, Plumb the Forbidden; "sacrifice N" and "X"
   costs landed 2026-10-03) and improvise.
+- **The win-game cards still blocked** (winning and losing landed 2026-10-03,
+  `win-game.test.ts`): Mechanized Production and Liliana's Contract count artifacts or Demons
+  "with the same name" / "with different names", but tokens are keyed by disambiguated registry
+  names, not their rule-111.4 names (two Golem tokens from different cards share a name), and
+  Mechanized Production also copies "enchanted artifact" as it last existed; Final Fortune and
+  Last Chance lose at "that turn's end step" (a delayed trigger tied to one extra turn); Halo
+  Fountain untaps creatures as a cost; Darksteel Reactor is a state trigger (603.8); The Golden
+  Throne replaces losing the game; Out of the Tombs replaces an empty-library draw with a choice
+  from the graveyard; Maze's End returns itself to hand as a cost.
+- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (2026-10-03, built
+  for Approach of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu,
+  Ilharg, Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
+  Necrodominance. Recheck each against its Oracle text; most need something else too.
+- **Notion Thief drops a clause.** It redirects every opponent draw, where the card spares "the
+  first one they draw in each of their draw steps" (rule-zero defect, `notion-thief.ts`;
+  `replacement-v2.test.ts` asserts the lite behaviour).
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
   gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
   still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a

@@ -229,6 +229,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
       ? v.touch(n.target, "harm", MINOR)
       : v.touch(n.target, "help", MAJOR),
   "player-effect": none,
+  // "You win" has no target; "target opponent loses the game" harms it.
+  "win-game": none,
+  "lose-game": (n, v) => v.touch(n.target, "harm", MAJOR),
   "flip-coin": (n, v) => {
     v.child(n.won);
     v.child(n.lost);

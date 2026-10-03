@@ -1434,12 +1434,18 @@ export type EffectSpec =
        * commanders" (Tevesh Szat, Doom of Fools). `who` is `gain-control`'s,
        * plus `"owner"` — "each player gains control of all creatures they
        * own" (Homeward Path). A token stack changes hands whole.
-       * `exceptSource` spares the effect's own source. */
+       * `exceptSource` spares the effect's own source. `controlledBy:
+       * "trigger-player"` keeps only the permanents the player the trigger
+       * names controls — Hellkite Tyrant's "gain control of all artifacts
+       * **that player** controls" — and does nothing once they've left the
+       * game. (A `CardFilter`'s own `controlledBy` can't name one seat at a
+       * 3-4 player table.) */
       readonly kind: "gain-control-all";
       readonly filter: CardFilter;
       readonly untilEndOfTurn: boolean;
       readonly who?: EffectPlayerRef | "owner";
       readonly exceptSource?: boolean;
+      readonly controlledBy?: "trigger-player";
     }
   | {
       /** "Each player gains control of all [`filter`] controlled by the next
@@ -1700,9 +1706,15 @@ export type EffectSpec =
       readonly kind: "put-on-library";
       /** A target slot, or `"trigger-object"` — Murderous Rider's "when this
        * creature dies, put it on the bottom of its owner's library", found in
-       * the graveyard it went to and only there (rule 400.7). */
+       * the graveyard it went to and only there (rule 400.7) — or
+       * `"source"`, a spell putting itself there as it resolves (Approach of
+       * the Second Sun); a copy of a spell can't go, and ceases to exist as
+       * it leaves the stack (rule 707.10a). */
       readonly target: EffectTargetRef;
-      readonly position: "top" | "bottom";
+      /** `{ fromTop: 7 }` is "seventh from the top": under the top six, or
+       * on the bottom of a library with fewer than six (the Approach of the
+       * Second Sun ruling). */
+      readonly position: "top" | "bottom" | { readonly fromTop: number };
     }
   | {
       /** Target player discards `amount` cards (their choice, unless it's the
@@ -1940,6 +1952,14 @@ export type EffectSpec =
        * instead" (`who: "trigger-player"`, `multiplier: 2`, `permanentsToo`)
        * — the players fixed as it resolves; the effect is still the
        * controller's, and ends with it.
+       *
+       * The game-outcome locks, each over the players a scope names as it
+       * resolves: `cantLoseGame` ("you can't lose the game this turn"),
+       * `cantWinGame` ("your opponents can't win the game this turn" —
+       * `"each-opponent"`), `cantLoseLife` ("players can't lose life this
+       * turn", rule 119.8), and `damageLifeFloor` ("until end of turn, damage
+       * that would reduce your life total to less than 1 reduces it to 1
+       * instead" — `floor: 1`). Angel's Grace, Everybody Lives!.
        */
       readonly kind: "player-effect";
       readonly duration: "end-of-turn" | "until-your-next-turn";
@@ -1950,6 +1970,38 @@ export type EffectSpec =
         readonly multiplier: number;
         readonly permanentsToo?: boolean;
       };
+      readonly cantLoseGame?: PlayerScope;
+      readonly cantWinGame?: PlayerScope;
+      readonly cantLoseLife?: PlayerScope;
+      readonly damageLifeFloor?: { readonly who: PlayerScope; readonly floor: number };
+    }
+  | {
+      /**
+       * "You win the game" (rule 104.2b): the effect's controller wins, and
+       * the game ends at once (104.1) — unless they can't win
+       * (`playerCantWinGame`: Platinum Angel's "your opponents can't win the
+       * game"), when nothing happens. Wrap it in a `conditional` for the
+       * card's "if …" (Thassa's Oracle, Jace's −8), or put that on the
+       * trigger as an intervening-if (Felidar Sovereign's upkeep). The
+       * draw-from-an-empty-library form (Laboratory Maniac) is a `would-draw`
+       * replacement, not this.
+       */
+      readonly kind: "win-game";
+    }
+  | {
+      /**
+       * "You lose the game" / "that player loses the game" (rule 104.3e):
+       * each player `who` names (default `"you"`) loses and leaves the game
+       * at once (104.5, 800.4a) — unless they can't lose
+       * (`playerCantLoseGame`). Players a scope names lose at the same time;
+       * if that leaves one player, they win (104.2a), and if it leaves none,
+       * the game is a draw (104.4a). `target` is the player in that slot
+       * instead — Mirrodin Besieged's "target opponent loses the game" —
+       * and nobody, once that target has become illegal.
+       */
+      readonly kind: "lose-game";
+      readonly who?: PlayerScope;
+      readonly target?: number;
     }
   | {
       /**
@@ -3582,9 +3634,9 @@ export interface EffectApi {
   /** Sacrifice one named permanent — see the `"sacrifice-target"`
    * {@link EffectSpec}. */
   sacrificeTarget(target: TargetRef): void;
-  /** Put `target` on top of / on the bottom of its owner's library — see the
-   * `"put-on-library"` {@link EffectSpec}. */
-  putOnLibrary(target: TargetRef, position: "top" | "bottom"): void;
+  /** Put `target` on top of / on the bottom of / Nth from the top of its
+   * owner's library — see the `"put-on-library"` {@link EffectSpec}. */
+  putOnLibrary(target: TargetRef, position: "top" | "bottom" | { readonly fromTop: number }): void;
   /** Set up a delayed triggered ability — see the `"delayed-trigger"`
    * {@link EffectSpec}. `controller` is who will control it when it fires. */
   delayTrigger(
@@ -3715,12 +3767,14 @@ export interface EffectApi {
    * {@link EffectSpec}. */
   gainControl(target: TargetRef, untilEndOfTurn: boolean, player: PlayerId): void;
   /** See the `"gain-control-all"` {@link EffectSpec}: `who` a player, or
-   * each permanent's own owner. */
+   * each permanent's own owner; `controlledBy` keeps only what that player
+   * controls. */
   gainControlAll(
     filter: CardFilter,
     untilEndOfTurn: boolean,
     who: PlayerId | "owner",
     exceptSource: boolean,
+    controlledBy?: PlayerId,
   ): void;
   /** See the `"rotate-control"` {@link EffectSpec}. */
   rotateControl(filter: CardFilter, direction: "left" | "right", exceptSource: boolean): void;
@@ -3922,6 +3976,15 @@ export interface EffectApi {
   grantActivatedAll(filter: CardFilter, ability: ActivatedAbility, duration: PtDuration): void;
   /** `player` takes an extra turn after this one (Time Warp). */
   takeExtraTurn(player: PlayerId): void;
+  /** `player` wins the game, unless they can't — see the `"win-game"`
+   * {@link EffectSpec}. */
+  winGame(player: PlayerId): void;
+  /** Each of `players` loses the game, at once, unless they can't — see the
+   * `"lose-game"` {@link EffectSpec}. */
+  loseGame(players: readonly PlayerId[]): void;
+  /** Whether the game has ended — once it has, nothing more of a resolution
+   * happens (rule 104.1). */
+  gameOver(): boolean;
   /** Storm — copy the spell `sourceId` for each earlier spell its controller
    * cast this turn. */
   storm(sourceId: ObjectId): void;
@@ -4940,6 +5003,10 @@ function targetsPermanentOrPlayer(spell: SpellSnapshot): boolean {
 }
 
 export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): void {
+  // A player won mid-resolution (Laboratory Maniac's draw, Thassa's Oracle):
+  // the game is over (rule 104.1), and the rest of the instructions with it.
+  // (Optional only for the bare contexts some tests hand in.)
+  if (ctx.gameOver?.() === true) return;
   const spec = bindDynamicCompares(unbound, ctx);
   switch (spec.kind) {
     case "sequence": {
@@ -5231,9 +5298,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "gain-control-all": {
       const who = spec.who === "owner" ? "owner" : effectPlayer(spec.who ?? "you", ctx);
-      if (who !== undefined) {
-        ctx.gainControlAll(spec.filter, spec.untilEndOfTurn, who, spec.exceptSource === true);
+      if (who === undefined) return;
+      if (spec.controlledBy !== undefined) {
+        const from = ctx.playersInScope(spec.controlledBy)[0];
+        if (from === undefined) return;
+        ctx.gainControlAll(spec.filter, spec.untilEndOfTurn, who, spec.exceptSource === true, from);
+        return;
       }
+      ctx.gainControlAll(spec.filter, spec.untilEndOfTurn, who, spec.exceptSource === true);
       return;
     }
     case "rotate-control":
@@ -5649,8 +5721,31 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               },
             }
           : {}),
+        ...(spec.cantLoseGame !== undefined ? { cantLoseGame: ctx.playersInScope(spec.cantLoseGame) } : {}),
+        ...(spec.cantWinGame !== undefined ? { cantWinGame: ctx.playersInScope(spec.cantWinGame) } : {}),
+        ...(spec.cantLoseLife !== undefined ? { cantLoseLife: ctx.playersInScope(spec.cantLoseLife) } : {}),
+        ...(spec.damageLifeFloor !== undefined
+          ? {
+              damageLifeFloor: {
+                players: ctx.playersInScope(spec.damageLifeFloor.who),
+                floor: spec.damageLifeFloor.floor,
+              },
+            }
+          : {}),
       });
       return;
+    case "win-game":
+      ctx.winGame(ctx.controller);
+      return;
+    case "lose-game": {
+      if (spec.target !== undefined) {
+        const target = ctx.targets[spec.target];
+        if (target?.kind === "player") ctx.loseGame([target.player]);
+        return;
+      }
+      ctx.loseGame(ctx.playersInScope(spec.who ?? "you"));
+      return;
+    }
     case "flip-coin": {
       // One flip, or flips until one is lost — each flip's branch applied as
       // it lands, since what a win does can matter to the next.

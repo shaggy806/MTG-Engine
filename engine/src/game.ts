@@ -95,6 +95,9 @@ import {
   intrinsicManaAbility,
   spellHasSplitSecond,
   spellCantBeCountered,
+  playerCantLoseGame,
+  playerCantLoseLife,
+  playerCantWinGame,
   invalidateComputedCache,
   staticConditionMet,
   spellGrantReaches,
@@ -2531,8 +2534,9 @@ export class Game {
             }
           : def.additionalCost?.payLifeX === true
             ? // "Pay X life" — the ceiling is what you have, not what your
-              // lands can make (rule 118.4: any amount of life you have).
-              { xCost: { maxX: this.state.players[player].life } }
+              // lands can make (rule 118.4: any amount of life you have);
+              // nothing but 0 while they can't lose life (119.8).
+              { xCost: { maxX: playerCantLoseLife(this.state, player) ? 0 : Math.max(0, this.state.players[player].life) } }
             : sacrificeX !== undefined
               ? {
                   xCost:
@@ -3432,7 +3436,7 @@ export class Game {
       if (land?.zone !== "battlefield" || land.controller !== offer.player || !land.tapped) {
         continue;
       }
-      if (state.players[offer.player].life < offer.life) continue;
+      if (!this.canPayLife(offer.player, offer.life)) continue;
       state.awaiting = { kind: "pay-life-for-untapped", ...offer };
       return;
     }
@@ -3469,7 +3473,7 @@ export class Game {
     const { source, life } = awaiting;
     this.state.awaiting = null;
     const object = this.state.objects[source];
-    if (pay && object !== undefined && object.zone === "battlefield") {
+    if (pay && object !== undefined && object.zone === "battlefield" && this.canPayLife(player, life)) {
       object.tapped = false;
       this.emit({ type: "permanent-untapped", object: source });
       this.changeLife(player, -life);
@@ -3808,10 +3812,11 @@ export class Game {
   }
 
   /** Can `player` pay `life` life (rule 119.4: only with at least that much;
-   * paying 0 always) and `energy` energy? */
+   * paying 0 always; never while they can't lose life, 119.8) and `energy`
+   * energy? */
   private canPayLifeAndEnergy(player: PlayerId, life: number, energy: number): boolean {
     const ps = this.state.players[player];
-    return (life <= 0 || ps.life >= life) && (energy <= 0 || ps.energy >= energy);
+    return this.canPayLife(player, life) && (energy <= 0 || ps.energy >= energy);
   }
 
   /** Answers a pending `choose-modes` decision. Applies the chosen modes'
@@ -4866,42 +4871,48 @@ export class Game {
     this.drawCard(active);
   }
 
-  /** Does `player` control something saying they have no maximum hand size
-   * (Thought Vessel)? Read directly off the battlefield: it's a fact about the
-   * player, so there's no affected object for the layer system to hang it on. */
-  private hasNoMaxHandSize(player: PlayerId): boolean {
-    return this.state.zones.shared.battlefield.some((id) => {
-      const object = this.state.objects[id];
-      if (object.controller !== player || hasLostAbilities(object)) return false;
-      return this.registry
-        .get(printedCardName(object))
-        .static.some((ability) => ability.noMaxHandSize === true);
-    });
-  }
-
-  /** `player`'s maximum hand size as the statics on the battlefield have it
-   * (`maxHandSize`): each `set` (less its `minus` count) in battlefield
-   * order, then every `adjust`, never below 0. */
+  /**
+   * `player`'s maximum hand size (rule 402.2): the game's, as the effects that
+   * change it leave it — applied in timestamp order, as every effect on the
+   * rules of the game is (rule 613.11), each static ability's timestamp its
+   * permanent's (613.7a). "You have no maximum hand size" (Thought Vessel —
+   * `noMaxHandSize`, read off the battlefield: a fact about the player, with
+   * no object for the layer system to hang it on) makes it `Infinity`; a
+   * `maxHandSize` sets it (`set`, less its `minus` count) and/or changes it by
+   * `adjust`. So a "your maximum hand size is twenty" newer than a "no
+   * maximum" wins, and the other way round (the Twenty-Toed Toad ruling).
+   * Never below 0.
+   */
   private maxHandSizeOf(player: PlayerId): number {
-    let size = this.state.players[player].maxHandSize;
-    let adjust = 0;
+    const changes: { readonly timestamp: number; readonly apply: (size: number) => number }[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
-      if (hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) continue;
+      if (source === undefined || hasLostAbilities(source) || this.state.players[source.controller]?.hasLost === true) {
+        continue;
+      }
       for (const ability of this.registry.get(printedCardName(source)).static) {
+        if (ability.noMaxHandSize === true && source.controller === player && this.staticActive(source, ability)) {
+          changes.push({ timestamp: source.timestamp, apply: () => Infinity });
+        }
         const rule = ability.maxHandSize;
         if (rule === undefined) continue;
         const reaches = rule.who === "you" ? player === source.controller : player !== source.controller;
         if (!reaches || !this.staticActive(source, ability)) continue;
-        if (rule.set !== undefined) {
-          const minus =
-            rule.minus === undefined ? 0 : countValue(rule.minus, this.state, this.registry, source.controller);
-          size = rule.set - minus;
-        }
-        adjust += rule.adjust ?? 0;
+        changes.push({
+          timestamp: source.timestamp,
+          apply: (size) => {
+            const minus =
+              rule.minus === undefined ? 0 : countValue(rule.minus, this.state, this.registry, source.controller);
+            return (rule.set === undefined ? size : rule.set - minus) + (rule.adjust ?? 0);
+          },
+        });
       }
     }
-    return Math.max(0, size + adjust);
+    // A stable sort: one permanent's abilities apply in printed order.
+    changes.sort((x, y) => x.timestamp - y.timestamp);
+    let size = this.state.players[player].maxHandSize;
+    for (const change of changes) size = change.apply(size);
+    return Math.max(0, size);
   }
 
   /**
@@ -4917,8 +4928,7 @@ export class Game {
   private cleanupStep(): void {
     const active = this.activePlayer;
     const hand = this.state.zones.perPlayer[active].hand;
-    const excess =
-      this.activeHasLeft() || this.hasNoMaxHandSize(active) ? 0 : hand.length - this.maxHandSizeOf(active);
+    const excess = this.activeHasLeft() ? 0 : hand.length - this.maxHandSizeOf(active);
     if (excess > 0) {
       // Ask for the discard; finishCleanup runs once it is dispatched.
       this.state.awaiting = { kind: "discard", player: active, count: excess };
@@ -5238,6 +5248,9 @@ export class Game {
     if (this.state.playerEffects !== undefined) {
       this.state.playerEffects = this.state.playerEffects.filter((e) => e.expires.kind !== "end-of-turn");
     }
+    // "You gain hexproof until end of turn" ends here too (rule 514.2), not
+    // as the next turn begins: a trigger in this cleanup step can target.
+    this.state.hexproofPlayers = [];
     // "Until end of turn" control effects (Act of Treason) end — control
     // falls to whichever control effect is now the latest (rule 613.7), else
     // the owner, and the creature is summoning-sick for them again.
@@ -6963,7 +6976,7 @@ export class Game {
     if (payment === null) return false;
     // Terror of the Peaks' extra life is no mana cost: a free cast pays it too.
     const targetingLife = this.targetingLifeCost(owner, chosen);
-    if (this.state.players[owner].life < targetingLife) return false;
+    if (!this.canPayLife(owner, targetingLife)) return false;
     this.moveObject(cardId, "stack");
     this.executePayment(owner, payment);
     if (targetingLife > 0) this.changeLife(owner, -targetingLife);
@@ -6981,6 +6994,7 @@ export class Game {
     if (grantHaste) object.hastyUntilItLeaves = true;
     this.state.players[owner].spellsCastThisTurn += 1;
     (this.state.players[owner].spellsCastThisTurnAs ??= []).push(this.castRecordOf(cardId));
+    this.recordCastName(owner, cardId);
     this.state.spellsCastThisTurn += 1;
     object.castFrom = castFrom;
     this.emit({
@@ -8050,7 +8064,7 @@ export class Game {
       // "Flashback—{1}{U}, Pay 3 life" (Deep Analysis) — part of the cost, so
       // it gates castability the same way the mana does.
       const life = flashback.payLife;
-      if (life !== undefined && this.state.players[player].life <= life) {
+      if (life !== undefined && !this.canPayLife(player, life)) {
         return `${player} cannot pay ${life} life for ${def.name}'s flashback`;
       }
     } else if (via === "escape") {
@@ -8264,8 +8278,13 @@ export class Game {
       }
       const payLife = def.additionalCost.payLife;
       // Rule 118.4 — a player may pay any life they have, down to 0.
-      if (payLife !== undefined && this.state.players[player].life < payLife) {
+      if (payLife !== undefined && !this.canPayLife(player, payLife)) {
         return `${player} has too little life to cast ${def.name}`;
+      }
+      // "Pay X life" (Toxic Deluge): any X up to their life — only 0 while
+      // they can't lose life (rule 119.8, 119.4b).
+      if (def.additionalCost.payLifeX === true && !this.canPayLife(player, xValue)) {
+        return `${player} can't pay ${xValue} life to cast ${def.name}`;
       }
     }
     // A non-modal spell's target legality is checked up front; a modal spell's
@@ -8291,7 +8310,7 @@ export class Game {
     }
     // Liesa's life-paid commander tax. Rule 119.4: life can be paid only
     // while the total is at least the payment — down to exactly 0 is fine.
-    if (this.state.players[player].life < this.commanderTaxLife(player, cardId)) {
+    if (!this.canPayLife(player, this.commanderTaxLife(player, cardId))) {
       return `${player} has too little life to pay ${def.name}'s commander tax`;
     }
     // Rule 118.6: a card with no mana cost has an unpayable one, so it can't
@@ -8779,14 +8798,14 @@ export class Game {
 
     const castingFromCommand = this.isCastableCommander(player, cardId);
     const taxLife = this.commanderTaxLife(player, cardId);
-    if (this.state.players[player].life < taxLife) {
+    if (!this.canPayLife(player, taxLife)) {
       throw new Error(`${player} has too little life to pay ${def.name}'s commander tax`);
     }
     // Terror of the Peaks: "spells your opponents cast that target this
     // creature cost an additional 3 life to cast" — part of the total cost
     // (rule 601.2f), which can't be paid with less life than it asks (119.4).
     const targetingLife = this.targetingLifeCost(player, targets);
-    if (targetingLife > 0 && this.state.players[player].life < taxLife + targetingLife) {
+    if (targetingLife > 0 && !this.canPayLife(player, taxLife + targetingLife)) {
       throw new Error(`${player} has too little life to pay the ${targetingLife} life targeting costs`);
     }
     const fullCost = this.reduceCostByDelve(
@@ -9019,6 +9038,7 @@ export class Game {
     }
     this.state.players[player].spellsCastThisTurn += 1;
     (this.state.players[player].spellsCastThisTurnAs ??= []).push(this.castRecordOf(cardId));
+    this.recordCastName(player, cardId);
     this.state.spellsCastThisTurn += 1;
     object.castFrom = castFrom;
 
@@ -9279,7 +9299,7 @@ export class Game {
     }
     // Rule 118.4 — a player may pay any life they have, down to 0, so this
     // only refuses paying *more* life than they hold.
-    if (option.payLife !== undefined && this.state.players[player].life < option.payLife) {
+    if (option.payLife !== undefined && !this.canPayLife(player, option.payLife)) {
       return `${player} has too little life to ${option.text.toLowerCase()} for ${def.name}`;
     }
     if (option.sacrifice !== undefined) {
@@ -10073,7 +10093,7 @@ export class Game {
       // War Room: no commander, no way to pay (its ruling).
       const life = abilityLifeCost(this.state, player, ability.cost);
       if (life === null) return `${player} has no commander to pay ${def.name}'s life cost by`;
-      if (this.state.players[player].life < life) {
+      if (!this.canPayLife(player, life)) {
         return `${player} does not have ${life} life to pay`;
       }
     }
@@ -10967,6 +10987,7 @@ export class Game {
     return {
       pool: this.state.players[player].manaPool,
       life: this.state.players[player].life - reserved,
+      ...(playerCantLoseLife(this.state, player) ? { cantPayLife: true } : {}),
       sources: arrange === undefined ? sources : arrangeManaSources(sources, arrange),
       canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
       preferred: this.deckColors(player),
@@ -11216,24 +11237,28 @@ export class Game {
 
   /**
    * Devotion to `color` (rule 700.5): every mana symbol of that colour in the
-   * mana costs of permanents `player` controls. A hybrid pip counts for each
-   * colour it contains, and `{X}` / generic count for nothing.
+   * mana costs of permanents `player` controls. A hybrid or Phyrexian pip
+   * counts for each colour it contains, and `{X}` / generic count for nothing.
    *
-   * Read off the *printed* mana cost — that's what the rule says, and a
-   * permanent on the battlefield has no cost to modify anyway.
+   * Read off each permanent's mana cost as copy effects leave it (700.5a) —
+   * the up face's own (a transformed back face has none), a prototype's
+   * (718.3b), none for an embalmed token — and once for each token in a
+   * stack.
    */
   private devotionTo(player: PlayerId, color: Color): number {
     let total = 0;
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (object.controller !== player) continue;
-      const def = this.registry.get(printedCardName(object));
-      if (def.manaCost === null) continue;
-      const cost = parseManaCost(def.manaCost);
-      total += cost.colored[color];
+      const override = manaCostOverride(object);
+      const manaCost = override !== undefined ? override : this.registry.get(printedCardName(object)).manaCost;
+      if (manaCost === null) continue;
+      const cost = parseManaCost(manaCost);
+      let symbols = cost.colored[color];
       for (const pip of cost.hybrid) {
-        if (pip.some((o) => o.kind === "color" && o.color === color)) total += 1;
+        if (pip.some((o) => o.kind === "color" && o.color === color)) symbols += 1;
       }
+      total += symbols * (object.stackCount ?? 1);
     }
     return total;
   }
@@ -15071,7 +15096,8 @@ export class Game {
           const from = this.drawRedirectFor(player) ?? player;
           const empty = this.state.zones.perPlayer[from].library.length === 0;
           this.drawCard(player);
-          if (empty) break;
+          // A draw replaced by a win (Laboratory Maniac) ended the game.
+          if (empty || this.state.result.over) break;
         }
       },
       playersInScope: (who) => scoped(who),
@@ -15605,8 +15631,15 @@ export class Game {
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
       gainControl: (target, untilEndOfTurn, player) =>
         this.gainControlByEffect(player, target, untilEndOfTurn),
-      gainControlAll: (filter, untilEndOfTurn, who, exceptSource) =>
-        this.gainControlAllByEffect(controller, filter, untilEndOfTurn, who, exceptSource ? source : undefined),
+      gainControlAll: (filter, untilEndOfTurn, who, exceptSource, controlledBy) =>
+        this.gainControlAllByEffect(
+          controller,
+          filter,
+          untilEndOfTurn,
+          who,
+          exceptSource ? source : undefined,
+          controlledBy,
+        ),
       rotateControl: (filter, direction, exceptSource) =>
         this.rotateControlByEffect(controller, filter, direction, exceptSource ? source : undefined),
       grantCantBeSacrificed: (target, duration) =>
@@ -15924,6 +15957,9 @@ export class Game {
         this.state.extraTurns.push(player);
         this.emit({ type: "extra-turn-queued", player });
       },
+      winGame: (player) => this.winGame(player, `won the game with ${this.effectSourceName(source)}`),
+      loseGame: (players) => this.loseGame(players, `lost the game to ${this.effectSourceName(source)}`),
+      gameOver: () => this.state.result.over,
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       finishCascade: (finish) => this.finishCascade(finish),
@@ -16713,7 +16749,7 @@ export class Game {
   ): { readonly modes: ModeOption[]; readonly cost?: string } | null {
     const available = options.filter((option) => {
       if ("pay" in option) return this.payMana(player, parseManaCost(option.pay)) !== null;
-      if ("payLife" in option) return this.state.players[player].life >= option.payLife;
+      if ("payLife" in option) return this.canPayLife(player, option.payLife);
       if ("discard" in option) {
         return this.state.zones.perPlayer[player].hand.length >= option.discard;
       }
@@ -17040,10 +17076,7 @@ export class Game {
           continue;
         }
         // Rule 119.4: life can be paid only up to what you have.
-        if (
-          permission.payLife !== undefined &&
-          this.state.players[player].life < permission.payLife
-        ) {
+        if (permission.payLife !== undefined && !this.canPayLife(player, permission.payLife)) {
           continue;
         }
         // Nor can a cost exile more other cards than the graveyard holds.
@@ -20803,9 +20836,12 @@ export class Game {
    * left it, a looked-at card put back) is only reordered, never moved, so
    * nothing treats it as a zone change — to the front or to the end.
    */
-  private putOnLibrary(id: ObjectId, position: "top" | "bottom"): void {
+  private putOnLibrary(id: ObjectId, position: "top" | "bottom" | { readonly fromTop: number }): void {
     const object = this.state.objects[id];
     if (object === undefined) return;
+    // A copy of a spell ceases to exist instead of going anywhere but the
+    // stack (rule 707.10a) — `leaveStackAfterResolving` removes it.
+    if (object.isCopy === true && object.zone === "stack") return;
     if (object.zone !== "library") this.moveObject(id, "library");
     if (this.state.objects[id]?.zone !== "library") return; // a replacement took it
     const library = this.state.zones.perPlayer[object.owner].library;
@@ -20813,7 +20849,10 @@ export class Game {
     if (index < 0) return;
     library.splice(index, 1);
     if (position === "top") library.unshift(id);
-    else library.push(id);
+    else if (position === "bottom") library.push(id);
+    // "Seventh from the top": under the top six, or on the bottom of a
+    // library with fewer.
+    else library.splice(Math.min(Math.max(0, position.fromTop - 1), library.length), 0, id);
   }
 
   /** Snapcaster Mage — grant flashback to a graveyard instant/sorcery until
@@ -21208,8 +21247,12 @@ export class Game {
     untilEndOfTurn: boolean,
     who: PlayerId | "owner",
     except?: ObjectId,
+    /** Only what this player controls ("all artifacts that player controls"). */
+    controlledBy?: PlayerId,
   ): void {
-    const matched = this.battlefieldMatching(you, filter).filter((id) => id !== except);
+    const matched = this.battlefieldMatching(you, filter).filter(
+      (id) => id !== except && (controlledBy === undefined || this.state.objects[id]?.controller === controlledBy),
+    );
     if (matched.length === 0) return;
     this.state.timestampSeq += 1;
     const timestamp = this.state.timestampSeq;
@@ -21400,7 +21443,9 @@ export class Game {
         if (step.sacrifice) spent.set(step.source, (spent.get(step.source) ?? 0) + 1);
       }
     }
-    if (cost.payLife !== undefined && lifeLeft < cost.payLife) return false;
+    if (cost.payLife !== undefined && (lifeLeft < cost.payLife || !this.canPayLife(player, cost.payLife))) {
+      return false;
+    }
     if (cost.sacrifice !== undefined) {
       const eligible = this.eligibleSacrifices(player, cost.sacrifice.filter).reduce(
         (n, id) =>
@@ -21790,6 +21835,16 @@ export class Game {
     return manaValue(parseManaCost(printedManaCost(this.registry, object)));
   }
 
+  /** Count the spell `id` `player` just cast under the name it has on the
+   * stack — `PlayerState.spellNamesCastThisGame`. */
+  private recordCastName(player: PlayerId, id: ObjectId): void {
+    const object = this.state.objects[id];
+    if (object === undefined) return;
+    const counts = (this.state.players[player].spellNamesCastThisGame ??= {});
+    const name = nameOf(object);
+    counts[name] = (counts[name] ?? 0) + 1;
+  }
+
   /** The spell `id` as it was cast, for `PlayerState.spellsCastThisTurnAs`:
    * a snapshot of it on the stack, its mana value counting its {X}. */
   private castRecordOf(id: ObjectId): CastSpellRecord {
@@ -22094,7 +22149,10 @@ export class Game {
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return 0;
       this.emit({ type: "damage-dealt", source, target, amount, combat });
-      this.changeLife(target.player, -amount);
+      // The damage is dealt in full — lifelink, commander damage and "is
+      // dealt damage" all see it — whatever it does to the life total.
+      const loss = this.lifeLossFromDamage(target.player, amount);
+      if (loss > 0) this.changeLife(target.player, -loss);
       this.applyLifelink(source, amount, sourceLastKnown);
       // Toxic (rules 120.3g, 702.164c): combat damage dealt to a player by a
       // creature with toxic also has its controller give that player its
@@ -22253,7 +22311,37 @@ export class Game {
     for (const { controller, amount } of batch.lifelink.values()) this.changeLife(controller, amount);
   }
 
+  /**
+   * How much life `amount` damage costs `player` (rule 120.3a): all of it,
+   * unless a `damageLifeFloor` effect holds them at its floor — Angel's
+   * Grace's "damage that would reduce your life total to less than 1 reduces
+   * it to 1 instead". A life total already below the floor drops as normal
+   * (the ruling). The highest floor among several applies.
+   */
+  private lifeLossFromDamage(player: PlayerId, amount: number): number {
+    let floor: number | null = null;
+    for (const effect of this.state.playerEffects ?? []) {
+      const held = effect.damageLifeFloor;
+      if (held !== undefined && held.players.includes(player)) floor = Math.max(floor ?? held.floor, held.floor);
+    }
+    const life = this.state.players[player].life;
+    if (floor === null || life < floor) return amount;
+    return Math.min(amount, life - floor);
+  }
+
+  /** Whether `player` can pay `amount` life (rule 119.4): 0 always (119.4b);
+   * more only with at least that much life, and not while they can't lose
+   * life (119.8 — Everybody Lives!). */
+  private canPayLife(player: PlayerId, amount: number): boolean {
+    if (amount <= 0) return true;
+    const state = this.state.players[player];
+    return state !== undefined && state.life >= amount && !playerCantLoseLife(this.state, player);
+  }
+
   private changeLife(player: PlayerId, delta: number): void {
+    // "Players can't lose life this turn" (rule 119.8): a loss, from damage
+    // or an effect, doesn't happen.
+    if (delta < 0 && playerCantLoseLife(this.state, player)) return;
     // Gaining life, changed: "…that much life plus 1 instead" (Bilbo),
     // "…twice that much life instead" (Rhox Faithmender), or not at all
     // ("your opponents can't gain life"). Rule 616.1 lets the player gaining
@@ -22438,21 +22526,12 @@ export class Game {
             reason = `took ${COMMANDER_DAMAGE_THRESHOLD}+ combat damage from commander ${name}`;
           }
         }
-        if (reason !== null) {
-          playerState.hasLost = true;
-          playerState.lossReason = reason;
-          this.emit({ type: "player-lost", player, reason });
-          // They leave the game at once (rule 800.4a), not as a state-based
-          // action — though losing is one.
-          this.leaveGame(player);
-          // With priority, it passes to the next player still in the game
-          // (800.4a), as when they concede.
-          const priority = this.state.priority;
-          if (priority.active && priority.holder === player) {
-            priority.holder = this.nextEligibleAfter(player);
-            priority.passed = [];
-            this.emit({ type: "priority-received", player: priority.holder });
-          }
+        // "You can't lose the game" (Platinum Angel) holds every one of these
+        // off for as long as it lasts; the cause, if it's still there, makes
+        // them lose at the first check after it ends. The "tried to draw"
+        // flag is cleared below all the same: that loss was this check's.
+        if (reason !== null && !playerCantLoseGame(this.state, this.registry, player)) {
+          this.eliminate(player, reason);
           changed = true;
         }
       }
@@ -22567,19 +22646,91 @@ export class Game {
     }
 
     if (this.state.result.over) return;
-    const remaining = this.state.turnOrder.filter(
-      (player) => !this.state.players[player].hasLost,
-    );
-    if (remaining.length <= 1) {
-      const winner = remaining.length === 1 ? remaining[0] : null;
-      const reason =
-        winner !== null ? "last player remaining" : "all players have lost";
-      this.state.result = { over: true, winner, reason };
-      this.emit({ type: "game-ended", winner, reason });
-      return;
-    }
+    if (this.endIfOnePlayerLeft()) return;
     // The 903.9a choices this check found, now that the rest of it is done.
     this.raiseNextCommanderChoice();
+  }
+
+  /**
+   * `player` loses the game (rule 104.3) and leaves it at once (104.5,
+   * 800.4a — not as a state-based action, though losing may be one). If they
+   * held priority it passes to the next player still in the game (800.4a),
+   * as when they concede. Whether they *can* lose is the caller's question.
+   */
+  private eliminate(player: PlayerId, reason: string): void {
+    const playerState = this.state.players[player];
+    playerState.hasLost = true;
+    playerState.lossReason = reason;
+    this.emit({ type: "player-lost", player, reason });
+    this.leaveGame(player);
+    const priority = this.state.priority;
+    if (priority.active && priority.holder === player) {
+      priority.holder = this.nextEligibleAfter(player);
+      priority.passed = [];
+      this.emit({ type: "priority-received", player: priority.holder });
+    }
+  }
+
+  /**
+   * End the game if at most one player is left in it: the last one wins
+   * (rule 104.2a — whatever would stop them winning), and with none left
+   * it's a draw (104.4a: they all lost at once). Returns whether it ended.
+   */
+  private endIfOnePlayerLeft(): boolean {
+    if (this.state.result.over) return true;
+    const remaining = this.state.turnOrder.filter((player) => !this.state.players[player].hasLost);
+    if (remaining.length > 1) return false;
+    const winner = remaining.length === 1 ? remaining[0] : null;
+    this.endGame(winner, winner !== null ? "last player remaining" : "all players have lost");
+    return true;
+  }
+
+  /** What the log calls an effect's source: its card's name, or "an effect"
+   * once nothing of it is left (a token that has ceased to exist). */
+  private effectSourceName(source: ObjectId): string {
+    const object = this.state.objects[source];
+    return object === undefined ? "an effect" : printedCardName(object);
+  }
+
+  /** The game ends at once (rule 104.1): nobody gets priority again. */
+  private endGame(winner: PlayerId | null, reason: string): void {
+    this.state.result = { over: true, winner, reason };
+    this.emit({ type: "game-ended", winner, reason });
+    this.state.priority.active = false;
+    this.state.priority.holder = null;
+    this.state.priority.passed = [];
+  }
+
+  /**
+   * "You win the game" (rule 104.2b): the game ends at once with `player`
+   * the winner (104.1) — in a multiplayer game too, where every other player
+   * is still in it (the limited range of influence option, 104.3h, isn't
+   * played). Nothing happens if they can't win (`playerCantWinGame` —
+   * Platinum Angel's "your opponents can't win the game") or have left.
+   */
+  private winGame(player: PlayerId, reason: string): void {
+    if (this.state.result.over || this.state.players[player]?.hasLost !== false) return;
+    if (playerCantWinGame(this.state, this.registry, player)) return;
+    this.endGame(player, reason);
+  }
+
+  /**
+   * "[They] lose the game" (rule 104.3e): each of `players` still in the
+   * game who can lose (`playerCantLoseGame`) loses, all at once — every one
+   * is asked before any of them leaves. If that leaves one player, they win
+   * at once (104.2a); if it leaves none, the game is a draw (104.4a).
+   */
+  private loseGame(players: readonly PlayerId[], reason: string): void {
+    if (this.state.result.over) return;
+    const losing = players.filter(
+      (player, i) =>
+        players.indexOf(player) === i &&
+        this.state.players[player]?.hasLost === false &&
+        !playerCantLoseGame(this.state, this.registry, player),
+    );
+    if (losing.length === 0) return;
+    for (const player of losing) this.eliminate(player, reason);
+    this.endIfOnePlayerLeft();
   }
 
   /**
@@ -22911,6 +23062,18 @@ export class Game {
   // --- zones -------------------------------------------------
 
   private drawCard(player: PlayerId): void {
+    if (this.state.result.over) return;
+    // "If you would draw a card while your library has no cards in it, you
+    // win the game instead" (Laboratory Maniac — rule 614.11: it applies
+    // though there's no card to draw). The draw is replaced whether or not
+    // they can win, so a player who can't neither wins nor loses for it (the
+    // rulings). Applied before an opponent's redirect (Notion Thief), the
+    // order the drawing player would pick (rule 616.1) whenever they can win.
+    const winSource = this.drawWinSourceFor(player);
+    if (winSource !== null) {
+      this.winGame(player, `won the game with ${printedCardName(winSource)}`);
+      return;
+    }
     // would-draw replacement (Notion Thief-lite — rule 614 / ROADMAP Phase 11
     // EG-6): an opponent's draw is replaced by the replacement source's
     // controller drawing instead. Applied once — the redirected draw itself
@@ -22965,6 +23128,23 @@ export class Game {
       }
     }
     return out;
+  }
+
+  /** The permanent whose "you win the game instead" replaces `player`'s draw
+   * right now — a `would-draw` `"win-game"` static of theirs, `whileLibraryEmpty`
+   * and their library empty (Laboratory Maniac) — or `null`. */
+  private drawWinSourceFor(player: PlayerId): GameObject | null {
+    if (this.state.zones.perPlayer[player]?.library.length !== 0) return null;
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined || source.controller !== player || hasLostAbilities(source)) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const r = ability.replacement;
+        if (r?.event !== "would-draw" || r.instead !== "win-game" || r.who !== "you") continue;
+        if (r.whileLibraryEmpty === true && this.staticActive(source, ability)) return source;
+      }
+    }
+    return null;
   }
 
   /** Whose draw replaces `player`'s (a `would-draw` static an opponent
@@ -24051,7 +24231,7 @@ export class Game {
       // this land — the offer waits its turn in `pendingPayLifeForUntapped`.
       if (entering.mayPayLife > 0) {
         object.tapped = true;
-        if (this.state.players[enteringController].life >= entering.mayPayLife) {
+        if (this.canPayLife(enteringController, entering.mayPayLife)) {
           const offer = { player: enteringController, source: id, life: entering.mayPayLife };
           if (this.state.awaiting === null) {
             this.state.awaiting = { kind: "pay-life-for-untapped", ...offer };

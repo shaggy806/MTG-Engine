@@ -159,6 +159,7 @@ import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
 import _poolShardingSphinx from "../pool/sharding-sphinx.js";
 import _poolShikoAndNarsetUnified from "../pool/shiko-and-narset-unified.js";
 import _poolShizoDeathsStorehouse from "../pool/shizo-deaths-storehouse.js";
+import _poolSimicAscendancy from "../pool/simic-ascendancy.js";
 import _poolSkyclaveBasilica from "../pool/skyclave-basilica.js";
 import _poolSkyspearCavalry from "../pool/skyspear-cavalry.js";
 import _poolSlimefootTheStowaway from "../pool/slimefoot-the-stowaway.js";
@@ -373,6 +374,7 @@ const shard: CardShard = {
     _poolShardingSphinx,
     _poolShikoAndNarsetUnified,
     _poolShizoDeathsStorehouse,
+    _poolSimicAscendancy,
     _poolSkyclaveBasilica,
     _poolSkyspearCavalry,
     _poolSlimefootTheStowaway,

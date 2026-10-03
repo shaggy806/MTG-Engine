@@ -1372,6 +1372,13 @@ export interface PlayerState {
    * Dragonclaw, the `cast-this-turn` condition) read. Reset in
    * `beginTurn`. */
   spellsCastThisTurnAs?: CastSpellRecord[];
+  /** How many spells this player has cast this game, by the name each had as
+   * it was cast — Approach of the Second Sun's "you've cast another spell
+   * named Approach of the Second Sun this game" (the `spells-cast-this-game`
+   * condition). Only casts count: a copy of a spell isn't cast (rule 707.10).
+   * Never reset; absent until their first spell. Kept on the player rather
+   * than read off the event log, which a simulation starts empty. */
+  spellNamesCastThisGame?: Record<string, number>;
   /** How many creatures died **under this player's control** this turn —
    * Liliana's Standard Bearer's "draw X cards, where X is the number of
    * creatures that died under your control this turn". The per-player
@@ -2484,6 +2491,26 @@ export interface PlayerEffect {
     readonly multiplier: number;
     readonly permanentsToo?: boolean;
   };
+  /** These players can't lose the game (Angel's Grace: "you can't lose the
+   * game this turn") — no state-based action and no effect that says they
+   * lose makes them lose; conceding still does (rule 104.3a). See
+   * `playerCantLoseGame`. */
+  readonly cantLoseGame?: readonly PlayerId[];
+  /** These players can't win the game ("your opponents can't win the game
+   * this turn") — an effect that says they win does nothing. Being the last
+   * player left still wins (rule 104.2a). See `playerCantWinGame`. */
+  readonly cantWinGame?: readonly PlayerId[];
+  /** These players can't lose life (rule 119.8 — Everybody Lives!): damage
+   * dealt to them is still dealt but changes nothing, an effect that says
+   * they lose life does nothing, and a cost that has them pay life (more
+   * than 0, rule 119.4b) can't be paid. See `playerCantLoseLife`. */
+  readonly cantLoseLife?: readonly PlayerId[];
+  /** "Damage that would reduce your life total to less than `floor` reduces
+   * it to `floor` instead" (Angel's Grace, `floor: 1`) — for damage dealt to
+   * one of `players`. Only damage, and only a total at or above the floor:
+   * a player already below it loses life to damage as normal (the ruling).
+   * The damage itself is still dealt in full. */
+  readonly damageLifeFloor?: { readonly players: readonly PlayerId[]; readonly floor: number };
 }
 
 /**

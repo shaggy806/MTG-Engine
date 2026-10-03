@@ -211,8 +211,17 @@ export interface DrawRedirectReplacement {
    * `who: "opponent"`), or that player draws `draws` cards instead ("if you
    * would draw a card, draw two cards instead" — gate it with the static's
    * `condition`). Neither replacement applies again to the draws it makes
-   * (rule 614.5). */
-  readonly instead: "you-draw" | { readonly draws: number };
+   * (rule 614.5).
+   *
+   * `"win-game"` is Laboratory Maniac's and Jace, Wielder of Mysteries's
+   * "if you would draw a card while your library has no cards in it, you
+   * win the game instead": `who: "you"` with `whileLibraryEmpty`. It applies
+   * even though no card could be drawn (rule 614.11), and replaces the draw
+   * whether or not the player can win — one who can't (an opponent's
+   * Platinum Angel) neither wins nor loses for it (the rulings). */
+  readonly instead: "you-draw" | { readonly draws: number } | "win-game";
+  /** Only a draw while the drawing player's library has no cards in it. */
+  readonly whileLibraryEmpty?: boolean;
 }
 
 /**

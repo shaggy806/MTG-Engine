@@ -97,6 +97,7 @@ import _poolGuardianLions from "../pool/guardian-lions.js";
 import _poolHangarbackWalker from "../pool/hangarback-walker.js";
 import _poolHauntedMire from "../pool/haunted-mire.js";
 import _poolHedronCrawler from "../pool/hedron-crawler.js";
+import _poolHelixPinnacle from "../pool/helix-pinnacle.js";
 import _poolHelpfulHunter from "../pool/helpful-hunter.js";
 import _poolHerdHeirloom from "../pool/herd-heirloom.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
@@ -133,6 +134,7 @@ import _poolNobleHierarch from "../pool/noble-hierarch.js";
 import _poolNorinTheWary from "../pool/norin-the-wary.js";
 import _poolObsidianGiant from "../pool/obsidian-giant.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
+import _poolPactOfNegation from "../pool/pact-of-negation.js";
 import _poolPlaguemawBeast from "../pool/plaguemaw-beast.js";
 import _poolProtomatterPowder from "../pool/protomatter-powder.js";
 import _poolPuresteelPaladin from "../pool/puresteel-paladin.js";
@@ -191,6 +193,7 @@ import _poolThinkTank from "../pool/think-tank.js";
 import _poolTillerEngine from "../pool/tiller-engine.js";
 import _poolTinderFarm from "../pool/tinder-farm.js";
 import _poolTomeRaider from "../pool/tome-raider.js";
+import _poolTwentyToedToad from "../pool/twenty-toed-toad.js";
 import _poolTwoHeadedHellkite from "../pool/two-headed-hellkite.js";
 import _poolUndergrowthRecon from "../pool/undergrowth-recon.js";
 import _poolUndergrowthStadium from "../pool/undergrowth-stadium.js";
@@ -316,6 +319,7 @@ const shard: CardShard = {
     _poolHangarbackWalker,
     _poolHauntedMire,
     _poolHedronCrawler,
+    _poolHelixPinnacle,
     _poolHelpfulHunter,
     _poolHerdHeirloom,
     _poolHorseshoeCrab,
@@ -352,6 +356,7 @@ const shard: CardShard = {
     _poolNorinTheWary,
     _poolObsidianGiant,
     _poolOverwhelmingStampede,
+    _poolPactOfNegation,
     _poolPlaguemawBeast,
     _poolProtomatterPowder,
     _poolPuresteelPaladin,
@@ -410,6 +415,7 @@ const shard: CardShard = {
     _poolTillerEngine,
     _poolTinderFarm,
     _poolTomeRaider,
+    _poolTwentyToedToad,
     _poolTwoHeadedHellkite,
     _poolUndergrowthRecon,
     _poolUndergrowthStadium,

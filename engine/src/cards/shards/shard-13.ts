@@ -81,6 +81,7 @@ import _poolGoblinBalloonBrigade from "../pool/goblin-balloon-brigade.js";
 import _poolGoblinPiker from "../pool/goblin-piker.js";
 import _poolGreatHornKrushok from "../pool/great-horn-krushok.js";
 import _poolGroveRumbler from "../pool/grove-rumbler.js";
+import _poolHeraldOfEternalDawn from "../pool/herald-of-eternal-dawn.js";
 import _poolHinataDawnCrowned from "../pool/hinata-dawn-crowned.js";
 import _poolHuatlisSnubhorn from "../pool/huatlis-snubhorn.js";
 import _poolHullcarver from "../pool/hullcarver.js";
@@ -291,6 +292,7 @@ const shard: CardShard = {
     _poolGoblinPiker,
     _poolGreatHornKrushok,
     _poolGroveRumbler,
+    _poolHeraldOfEternalDawn,
     _poolHinataDawnCrowned,
     _poolHuatlisSnubhorn,
     _poolHullcarver,

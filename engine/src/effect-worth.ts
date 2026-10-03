@@ -277,6 +277,15 @@ function untargetedWorth(effect: EffectSpec, ctx: WorthContext): number {
     }
     case "take-extra-turn":
       return effect.target === undefined ? onPlayers(you, 3 * CARD, ctx) : 0;
+    // The game's outcome outweighs everything else here, as decking does: a
+    // win ends the game for every seat (an opponent's is ours lost), and a
+    // pact left unpaid loses it.
+    case "win-game":
+      return ctx.controller === ctx.me ? 100 : -100;
+    case "lose-game":
+      // A targeted one is read through its slot, with the other targets.
+      if (effect.target !== undefined) return 0;
+      return onPlayers(playersIn(effect.who ?? "you", ctx), -100, ctx);
     case "cascade":
       // Taking cascade's free spell: about a card, like a tutor to hand.
       return effect.finish?.cast === true ? onPlayers(you, CARD, ctx) : 0;

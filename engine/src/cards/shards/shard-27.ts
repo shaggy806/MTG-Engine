@@ -169,6 +169,7 @@ import _poolTalismanOfIndulgence from "../pool/talisman-of-indulgence.js";
 import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
 import _poolTenderWildguide from "../pool/tender-wildguide.js";
+import _poolTestOfEndurance from "../pool/test-of-endurance.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
 import _poolTheWanderingMinstrel from "../pool/the-wandering-minstrel.js";
 import _poolThreeTreeRootweaver from "../pool/three-tree-rootweaver.js";
@@ -179,6 +180,7 @@ import _poolToweringViewpoint from "../pool/towering-viewpoint.js";
 import _poolTragicSlip from "../pool/tragic-slip.js";
 import _poolTranscendentDragon from "../pool/transcendent-dragon.js";
 import _poolTreeOfTales from "../pool/tree-of-tales.js";
+import _poolTriskaidekaphile from "../pool/triskaidekaphile.js";
 import _poolTrophyMage from "../pool/trophy-mage.js";
 import _poolTrueConviction from "../pool/true-conviction.js";
 import _poolTrustyMachete from "../pool/trusty-machete.js";
@@ -379,6 +381,7 @@ const shard: CardShard = {
     _poolTempleOfEnlightenment,
     _poolTempleOfPlenty,
     _poolTenderWildguide,
+    _poolTestOfEndurance,
     _poolThantisTheWarweaver,
     _poolTheWanderingMinstrel,
     _poolThreeTreeRootweaver,
@@ -389,6 +392,7 @@ const shard: CardShard = {
     _poolTragicSlip,
     _poolTranscendentDragon,
     _poolTreeOfTales,
+    _poolTriskaidekaphile,
     _poolTrophyMage,
     _poolTrueConviction,
     _poolTrustyMachete,

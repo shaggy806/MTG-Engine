@@ -99,6 +99,7 @@ import _poolKelsienThePlague from "../pool/kelsien-the-plague.js";
 import _poolKillerWhale from "../pool/killer-whale.js";
 import _poolKnightOfTheKeep from "../pool/knight-of-the-keep.js";
 import _poolKykarWindsFury from "../pool/kykar-winds-fury.js";
+import _poolLaboratoryManiac from "../pool/laboratory-maniac.js";
 import _poolLashOfMalice from "../pool/lash-of-malice.js";
 import _poolLayWaste from "../pool/lay-waste.js";
 import _poolLeap from "../pool/leap.js";
@@ -316,6 +317,7 @@ const shard: CardShard = {
     _poolKillerWhale,
     _poolKnightOfTheKeep,
     _poolKykarWindsFury,
+    _poolLaboratoryManiac,
     _poolLashOfMalice,
     _poolLayWaste,
     _poolLeap,
