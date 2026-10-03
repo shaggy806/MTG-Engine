@@ -22,6 +22,7 @@ import {
   damageAssignmentViolations,
   describeTargetSpec,
   distinctTargetCount,
+  fitsTogether,
   isOptionalSpec,
   publicNameAt,
   slotOptions,
@@ -271,7 +272,13 @@ type ChooseTargetsAction = Extract<LegalAction, { kind: 'choose-targets' }>
  * cards going back on top, that the order picked is the order they go. */
 function zoneChoiceTitle(action: ZoneChoiceAction): string {
   const n = action.max === action.min ? `${action.max}` : `up to ${action.max}`
-  const cards = action.max === 1 ? 'a card' : `${n} cards`
+  const together = action.together
+  // A rule over the set says what to pick: "up to 2 cards that share a land
+  // type", "a Forest card and a Plains card".
+  const cards =
+    together?.rule === 'one-each'
+      ? together.text
+      : `${action.max === 1 ? 'a card' : `${n} cards`}${together ? ` ${together.text}` : ''}`
   if (action.split === true) return `Choose ${cards}`
   switch (action.destination) {
     case 'hand':
@@ -4705,6 +4712,9 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             max: zoneChoiceAction.max,
             eligible: zoneChoiceAction.eligible,
             onConfirm: confirmZoneChoice,
+            ...(zoneChoiceAction.together
+              ? { fits: (picked: readonly ObjectId[]) => fitsTogether(zoneChoiceAction.together!, picked) }
+              : {}),
             ...(zoneChoiceAction.destination === 'library-top' ? { ordered: true } : {}),
           }}
           collapsed={decisionCollapsed}

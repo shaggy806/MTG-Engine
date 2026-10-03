@@ -154,10 +154,12 @@ import type {
   ResolutionContext,
   ResolvedEnterAttacking,
   ReturnToHandZone,
+  SearchTogether,
   SearchZones,
   ThisWayKind,
   ZoneChoiceFilter,
 } from "./effects.js";
+import type { ZoneChoiceTogether } from "./zone-choice-together.js";
 import {
   aggregateOver,
   attachmentsOf,
@@ -256,7 +258,7 @@ import type {
   TargetedBy,
   ZoneType,
 } from "./state.js";
-import { EVERY_CREATURE_TYPE, hasSubtype, isCreatureType } from "./subtypes.js";
+import { EVERY_CREATURE_TYPE, LAND_TYPES, hasSubtype, isCreatureType } from "./subtypes.js";
 import {
   anyNumberSlot,
   concreteTargetSpecs,
@@ -4656,7 +4658,7 @@ export class Game {
     const skipped = second.ifNoneChosen === true && chosen.length > 0;
     const eligible = skipped
       ? []
-      : leftover.filter((id) => this.matchesZoneChoiceFilter(id, second.filter, player));
+      : leftover.filter((id) => this.matchesZoneChoiceFilter(id, second.filter, player, awaiting.thenSource));
     const next: Extract<AwaitingDecision, { kind: "choose-from-zone" }> = {
       kind: "choose-from-zone",
       player,
@@ -14488,6 +14490,7 @@ export class Game {
         restDestination,
         reveal,
         zones,
+        together,
       ) =>
         this.beginLibrarySearch(
           player ?? controller,
@@ -14500,6 +14503,7 @@ export class Game {
           reveal === true,
           x,
           zones,
+          together,
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
@@ -14538,20 +14542,27 @@ export class Game {
           leftoverIf,
           secondPick,
           attacking,
+          source,
         ),
     };
   }
 
   /** Does `id` satisfy a `"look-and-choose"` effect's optional filter? Always
    * true when there's no filter — the effect just doesn't restrict the choice.
-   * `you` is the searching player, for the filter's `controlledBy`/`ownedBy`. */
+   * `you` is the searching player, for the filter's `controlledBy`/`ownedBy`;
+   * `source` the object whose effect it is, for `ofChosenType` (Herald's
+   * Horn: "if it's a creature card **of the chosen type**"). */
   private matchesZoneChoiceFilter(
     id: ObjectId,
     filter: ZoneChoiceFilter | undefined,
     you: PlayerId,
+    source?: ObjectId,
   ): boolean {
     if (filter === undefined) return true;
-    return matchesFilter(this.state, this.registry, id, filter, { you });
+    return matchesFilter(this.state, this.registry, id, filter, {
+      you,
+      ...(source !== undefined ? { source } : {}),
+    });
   }
 
   /** See the `"look-and-choose"` {@link EffectSpec}. */
@@ -14570,6 +14581,7 @@ export class Game {
     leftoverIf?: LookAndChooseLeftoverIf,
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
+    source?: ObjectId,
   ): void {
     const zoneCards = this.state.zones.perPlayer[player][zone];
     // Only a library is looked at `count` deep; a graveyard is public and a
@@ -14580,7 +14592,7 @@ export class Game {
     // what's *revealed* — the player still looks at everything either way,
     // and naturally ends up unable to choose anything if nothing matches
     // (min/max clamp to 0 along with it), same as the real card whiffing.
-    const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter, player));
+    const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter, player, source));
     this.state.awaiting = {
       kind: "choose-from-zone",
       player,
@@ -14617,6 +14629,7 @@ export class Game {
     reveal = false,
     x = 0,
     zones: SearchZones = "library",
+    together?: SearchTogether,
   ): void {
     // `x` is the searching spell's X, for "mana value X or less" (Chord of
     // Calling).
@@ -14630,13 +14643,17 @@ export class Game {
     // Only a hidden zone lets a search fail to find (rule 701.19b): a match
     // in the graveyard, which everyone can see, must be found.
     const least = inGraveyard.length > 0 ? Math.max(min, 1) : min;
+    const set = together === undefined ? undefined : this.searchTogether(together, eligible, player, x);
+    // "A Forest card and a Plains card" finds one card per slot at most.
+    const most = together !== undefined && "oneEach" in together ? Math.min(max, together.oneEach.length) : max;
     this.state.awaiting = {
       kind: "choose-from-zone",
       player,
       ids: eligible,
       eligible,
-      min: Math.min(least, max, eligible.length),
-      max: Math.min(max, eligible.length),
+      min: Math.min(least, most, eligible.length),
+      max: Math.min(most, eligible.length),
+      ...(set !== undefined ? { together: set } : {}),
       destination,
       // "If you search your library this way, shuffle."
       leftover: library ? "shuffle" : "stay",
@@ -14644,6 +14661,32 @@ export class Game {
       ...(restDestination !== undefined ? { restDestination } : {}),
       ...(reveal ? { reveal: true } : {}),
     };
+  }
+
+  /** A search's `together` as the decision carries it: each eligible card's
+   * tags worked out now — its land types (rule 205.3i), or the slots whose
+   * filter it matches — so checking a chosen set needs no registry. */
+  private searchTogether(
+    together: SearchTogether,
+    eligible: readonly ObjectId[],
+    player: PlayerId,
+    x: number,
+  ): ZoneChoiceTogether {
+    const tags: Record<string, readonly string[]> = {};
+    if ("share" in together) {
+      for (const id of eligible) {
+        const subtypes = effectiveSubtypes(this.state, this.registry, this.state.objects[id]);
+        // `hasSubtype`, so a card that is every land type has each of them.
+        tags[id] = LAND_TYPES.filter((type) => hasSubtype(subtypes, type));
+      }
+      return { rule: "share", tags, text: "that share a land type" };
+    }
+    for (const id of eligible) {
+      tags[id] = together.oneEach.flatMap((slot, index) =>
+        matchesFilter(this.state, this.registry, id, slot.filter, { you: player, x }) ? [String(index)] : [],
+      );
+    }
+    return { rule: "one-each", tags, text: together.oneEach.map((slot) => slot.label).join(" and ") };
   }
 
   /** See the `"scry"` / `"surveil"` {@link EffectSpec}. Looks at the top N of
@@ -21095,6 +21138,7 @@ export class Game {
       isCommander: object.isCommander,
       tapped: object.tapped,
       ...(object.enteredKicked === true ? { enteredKicked: true } : {}),
+      ...(object.chosenCreatureType != null ? { chosenCreatureType: object.chosenCreatureType } : {}),
       ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
       ...(object.entry !== undefined ? { entry: object.entry } : {}),
       ...(object.attackedThisTurn === true ? { attackedOnTurn: this.state.turn.number } : {}),

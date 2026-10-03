@@ -820,7 +820,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 | kind | fields | example |
 | --- | --- | --- |
-| `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `zones?: "library" | "graveyard" | "library-and-graveyard"` is what's searched (default the library): "search your library **and/or graveyard**" (Finale of Devastation) is a resolution-time `modal` over the three, so the player picks; only a search that includes the library shuffles it, and a match in the graveyard — a public zone — must be found (failing to find is for hidden zones, rule 701.19b). `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). |
+| `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `zones?: "library" | "graveyard" | "library-and-graveyard"` is what's searched (default the library): "search your library **and/or graveyard**" (Finale of Devastation) is a resolution-time `modal` over the three, so the player picks; only a search that includes the library shuffles it, and a match in the graveyard — a public zone — must be found (failing to find is for hidden zones, rule 701.19b). `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). `together?` is a rule over the finds *as a set*, which `filter` (one card at a time) can't say: `{ share: "land-type" }` is Myriad Landscape's "up to two basic land cards **that share a land type**" (one card alone always passes); `{ oneEach: [{ label, filter }, …] }` is Krosan Verge's "a Forest card **and** a Plains card" — one find per slot, each matching its slot's filter, a card that fits both filling either, any slot missable (rule 701.19b). With `oneEach`, `filter` should admit exactly what some slot does (`{ subtypes: ["Forest", "Plains"] }`) and `max` be the slot count. The decision offers every card `filter` admits and rejects a set that breaks the rule; the bots' picks are turned into legal ones (`zone-choice-together.ts`), and the client greys out Confirm. |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`). `amount` may be live, read as it applies (The Scarab God's "scry X, where X is the number of Zombies you control"). |
 | `reveal-top` | `then` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. |
 | `reveal-until` | `whose?`, `filter`, `exile?`, `put?: "battlefield" \| "hand" \| "graveyard"`, `tapped?`, `attacking?` (as `create-token`'s — Raph & Mikey), `then?`, `rest: "bottom-random" \| "graveyard" \| "shuffle" \| "stay"`, `keepFound?` | A generalised cascade: reveal cards from the top of a library — the controller's, or the player in target slot `whose` — until one matches `filter` (an `{ amount }` compare is bound as it applies: "a nonland card with lesser mana value"). The Prismatic Bridge's "…until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order" is `{ filter: { typesAnyOf: ["creature", "planeswalker"] }, put: "battlefield", rest: "bottom-random" }`; Umbris's "target opponent exiles cards from the top of their library until they exile a land card" is `{ whose: 0, filter: { type: "land" }, exile: true, rest: "stay" }` (`exile` exiles each card face up as it goes). `then` is applied with **the card found as target 0** after `put` — "you may put that card onto the battlefield. Then shuffle" is a `then` of `{ kind: "may", effect: { kind: "put-onto-battlefield", target: 0 } }` with `rest: "shuffle"`, and the rest wait for its answer. `rest` places every revealed card still where it was revealed — the card found too, if nothing moved it, unless `keepFound` ("put each **other** card exiled this way on the bottom" — it stays in exile to be cast); with nothing matching, that's all of them. |
@@ -1245,8 +1245,11 @@ every creature-type clause, `notSubtypes` included (it *is* a Zombie).
 `ofChosenType: true` is "of the chosen type": the creature type chosen for the
 permanent applying the filter (`chooseCreatureTypeOnEnter`) — Morophon's "other
 creatures you control of the chosen type". It's answered where the filter
-knows its source, a static's `filter` scope and a trigger's filter; with
-nothing chosen, nothing matches. Numeric fields take
+knows its source, a static's `filter` scope, a trigger's filter and a
+`look-and-choose`'s `filter` (Herald's Horn: "if it's a creature card of the
+chosen type"); with nothing chosen, nothing matches. A source that has left
+the battlefield before its ability resolves is read for the type it had
+(rule 608.2h). Numeric fields take
 `{ op: "eq"|"ne"|"lt"|"lte"|"gt"|"gte", n }`.
 
 Clauses about the card's own properties:
@@ -2909,11 +2912,12 @@ Delete an entry in the same commit as the feature that retires it.
   a scope — `"each-opponent"` — as well as a target slot; `draw` takes both a
   `who` scope and a `target` slot, and `discard-hand` takes a scope — see §6.)
 - Reordering the cards you keep on top after a scry.
-- Tutors whose finds must **share a characteristic with each other** (Myriad
-  Landscape: "up to two basic land cards that share a land type"). A
-  `CardFilter` constrains each card independently; nothing relates one chosen
-  card to another. (A plain two-destination split — Cultivate — *is* now
-  expressible, via `search-library.restDestination`.)
+- A set rule (`together`) on anything but a library search: a
+  `look-and-choose` with one (Atraxa, Grand Unifier: "for each card type, you
+  may put a card that has that card type … into your hand") or a rule beyond
+  a shared land type and one-per-slot ("that each have different names" —
+  Tiamat). The machinery takes a new rule cheaply (`zone-choice-together.ts`);
+  nothing asks for one yet.
 - `spellsCastThisTurn` triggers beyond `cast-spell` / `this-cast`.
 - **Divided damage and distributed counters** — a *spell's* "N damage
   divided as you choose among any number of targets" is built (2026-10-01,

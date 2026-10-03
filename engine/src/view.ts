@@ -675,7 +675,13 @@ function viewForUncached(
             // until one is actually revealed.
             state.awaiting?.kind === "reveal-for-untapped" && state.awaiting.player !== viewer
             ? { ...state.awaiting, options: [] }
-            : state.awaiting,
+            : // A search's set rule tags each library card with its land
+              // types: only the searcher sees them.
+              state.awaiting?.kind === "choose-from-zone" &&
+                state.awaiting.together !== undefined &&
+                state.awaiting.player !== viewer
+              ? { ...state.awaiting, together: { ...state.awaiting.together, tags: {} } }
+              : state.awaiting,
     decisionSource: decisionSourceFor(state),
     result: { ...state.result },
     players,

@@ -21,6 +21,7 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import type { GameEvent } from "./events.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 import type { Step } from "./turn.js";
+import type { ZoneChoiceTogether } from "./zone-choice-together.js";
 
 export type PrivateZone = "library" | "hand" | "graveyard";
 export type SharedZone = "battlefield" | "stack" | "exile" | "command";
@@ -945,6 +946,10 @@ export interface LastKnownInfo {
    * creature"). Absent when it had none. */
   readonly copiable?: readonly PtModifier[];
   readonly notLegendary?: true;
+  /** The creature type chosen as it entered, if one was — what an ability
+   * of it that resolves after it left reads for "of the chosen type" (rule
+   * 608.2h: Herald's Horn's upkeep look). */
+  readonly chosenCreatureType?: string;
   /** The triggered abilities it had been *granted* — by another permanent's
    * static or a one-shot modifier — in the order `effectiveTriggered` lists
    * them after its printed ones; with `lostAbilities`, only those granted
@@ -1486,6 +1491,9 @@ export type AwaitingDecision =
        * goes to `destination`. Distinct from `leftover`, which is about cards
        * that were **not** chosen. */
       readonly restDestination?: "battlefield" | "hand";
+      /** A rule the chosen cards must obey as a set — a `search-library`'s
+       * `together` (Myriad Landscape's "that share a land type"). */
+      readonly together?: ZoneChoiceTogether;
     }
   | {
       /**

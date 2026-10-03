@@ -39,6 +39,26 @@ export type EffectTargetRef = number | "source" | "trigger-object";
 /** What a `search-library` searches — see its `zones`. */
 export type SearchZones = "library" | "graveyard" | "library-and-graveyard";
 /**
+ * What a `search-library`'s finds must be *together* — see its `together`.
+ *
+ * - `{ share: "land-type" }`: "…that **share a land type**" (Myriad
+ *   Landscape): every find has a land type (rule 205.3i) in common with every
+ *   other.
+ * - `{ oneEach }`: "a Forest card **and** a Plains card" (Krosan Verge): one
+ *   find per slot, each matching its slot's filter. The effect's own `filter`
+ *   should admit exactly the cards some slot does, and its `max` be the
+ *   number of slots.
+ */
+export type SearchTogether =
+  | { readonly share: "land-type" }
+  | {
+      readonly oneEach: readonly {
+        /** How the client names the slot: "a Forest card". */
+        readonly label: string;
+        readonly filter: CardFilter;
+      }[];
+    };
+/**
  * What an amount that reads an object (`powerOf`, `toughnessOf`,
  * `manaValueOf`, `manaSpentOf`) may point at: anything an
  * {@link EffectTargetRef} can, plus `"sacrificed"` — the permanent sacrificed
@@ -2889,6 +2909,11 @@ export type EffectSpec =
        * allowed only in a hidden zone (rule 701.19b).
        */
       readonly zones?: SearchZones;
+      /** A rule over the finds as a set, which `filter` (one card at a
+       * time) can't express — Myriad Landscape's "that share a land type",
+       * Krosan Verge's "a Forest card and a Plains card". The search offers
+       * every card `filter` admits and accepts only a set that obeys this. */
+      readonly together?: SearchTogether;
     }
   | {
       /** Reveal `count` cards from the top of the controller's library (or
@@ -3802,6 +3827,7 @@ export interface EffectApi {
     restDestination?: "hand" | "battlefield",
     reveal?: boolean,
     zones?: SearchZones,
+    together?: SearchTogether,
   ): void;
   /** See the `"reveal-top"` {@link EffectSpec}. */
   revealTop(then: EffectSpec): void;
@@ -5746,6 +5772,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.restDestination,
         spec.reveal === true,
         spec.zones,
+        spec.together,
       );
       return;
     }

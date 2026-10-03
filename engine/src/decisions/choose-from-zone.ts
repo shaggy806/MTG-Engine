@@ -24,6 +24,7 @@ import type { ObjectId } from "../primitives.js";
 import { defineDecision } from "./define.js";
 import { noDuplicates, subsetOf, withinRange } from "./shared/picks.js";
 import { subsetsBetween } from "./shared/subsets.js";
+import { completeTogether, fitsTogether, togetherViolation } from "../zone-choice-together.js";
 
 export const chooseFromZone = defineDecision({
   kind: "choose-from-zone",
@@ -42,6 +43,7 @@ export const chooseFromZone = defineDecision({
       max: awaiting.max,
       destination: awaiting.destination,
       ...(awaiting.restDestination !== undefined ? { split: true } : {}),
+      ...(awaiting.together !== undefined ? { together: awaiting.together } : {}),
     },
   ],
 
@@ -71,7 +73,9 @@ export const chooseFromZone = defineDecision({
         chosen,
         awaiting.eligible,
         (id) => `${player} chose ${id}, not an eligible candidate`,
-      )
+      ) ??
+      // "…that share a land type": a rule over the set, not each card.
+      (awaiting.together === undefined ? null : togetherViolation(awaiting.together, chosen))
     );
   },
 
@@ -80,11 +84,16 @@ export const chooseFromZone = defineDecision({
     host.applyChooseFromZone(action.player, action.chosen);
   },
 
-  ask: (controller, view, awaiting, player): Action => ({
-    type: "choose-from-zone",
-    player,
-    chosen: controller.chooseFromZone(view, awaiting.eligible, awaiting.min, awaiting.max),
-  }),
+  ask: (controller, view, awaiting, player): Action => {
+    const picked = controller.chooseFromZone(view, awaiting.eligible, awaiting.min, awaiting.max);
+    // A controller ranks cards one at a time; a set rule ("that share a land
+    // type") turns its pick into the nearest one that obeys it.
+    const chosen =
+      awaiting.together === undefined
+        ? picked
+        : completeTogether(awaiting.together, picked, awaiting.eligible, awaiting.min, awaiting.max);
+    return { type: "choose-from-zone", player, chosen };
+  },
 
   /**
    * Every legal-sized subset, smallest first, with the eligible cards ranked
@@ -97,9 +106,16 @@ export const chooseFromZone = defineDecision({
    */
   candidates: (legal, player, limit, helpers): Action[] => {
     if (legal.kind !== "choose-from-zone") return [];
-    return subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, limit).map(
-      (chosen) => ({ type: "choose-from-zone", player, chosen }),
-    );
+    const together = legal.together;
+    // A set rule drops the subsets that break it before the cap, so all the
+    // cap keeps are legal.
+    const subsets =
+      together === undefined
+        ? subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, limit)
+        : subsetsBetween(helpers.order(legal.eligible), legal.min, legal.max, Math.max(limit, 10_000))
+            .filter((chosen) => fitsTogether(together, chosen))
+            .slice(0, limit);
+    return subsets.map((chosen) => ({ type: "choose-from-zone", player, chosen }));
   },
 
   randomAnswer: (legal, player, rng): Action => {
@@ -112,6 +128,13 @@ export const chooseFromZone = defineDecision({
     for (let i = 0; i < n && pool.length > 0; i += 1) {
       chosen.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
     }
-    return { type: "choose-from-zone", player, chosen };
+    return {
+      type: "choose-from-zone",
+      player,
+      chosen:
+        legal.together === undefined
+          ? chosen
+          : completeTogether(legal.together, chosen, legal.eligible, legal.min, legal.max),
+    };
   },
 });

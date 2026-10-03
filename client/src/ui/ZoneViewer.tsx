@@ -72,6 +72,9 @@ export interface ZoneViewerProps {
     /** The order picked is the answer (Ponder's "put them back in any
      * order"): each picked card shows its place, 1 first. */
     readonly ordered?: boolean
+    /** A rule over the picks as a set (Myriad Landscape's "that share a
+     * land type"): Confirm waits until the picks obey it. */
+    readonly fits?: (picked: readonly ObjectId[]) => boolean
   }
   /** Selection mode only: hidden so the board can be seen ("View board").
    * The component stays mounted, so picks made so far survive; the owner
@@ -137,7 +140,10 @@ export function ZoneViewer({
   }
 
   const canConfirm =
-    selection !== undefined && picked.length >= selection.min && picked.length <= selection.max
+    selection !== undefined &&
+    picked.length >= selection.min &&
+    picked.length <= selection.max &&
+    (selection.fits?.(picked) ?? true)
 
   if (selection && collapsed) return null
 

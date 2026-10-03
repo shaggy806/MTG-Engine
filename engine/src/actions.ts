@@ -12,6 +12,7 @@ import type { ObjectId, PlayerId } from "./primitives.js";
 import type { TargetRef, TargetSpec } from "./target.js";
 import type { TargetCountRange } from "./target-count.js";
 import type { TriggerOrderEntry } from "./state.js";
+import type { ZoneChoiceTogether } from "./zone-choice-together.js";
 
 /** One creature tapped to help pay a convoke cost (rule 702.51a): it pays
  * for `{1}` (`"generic"`) or one mana of one of its own colors — the
@@ -892,6 +893,9 @@ export type LegalAction =
       /** A split tutor (Cultivate): only the first chosen card goes to
        * `destination`, the rest elsewhere. */
       readonly split?: true;
+      /** A rule the chosen cards must obey as a set (Myriad Landscape's
+       * "that share a land type"): `fitsTogether` says whether a pick does. */
+      readonly together?: ZoneChoiceTogether;
     }
   | {
       readonly kind: "mulligan";

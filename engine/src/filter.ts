@@ -680,7 +680,11 @@ export function matchesFilter(
       return false;
     }
     if (filter.ofChosenType === true) {
-      const chosen = ctx.source === undefined ? null : state.objects[ctx.source]?.chosenCreatureType;
+      // A source that has left the battlefield lost its choice as it moved:
+      // what its ability reads now is the type it had (rule 608.2h).
+      const from = ctx.source === undefined ? undefined : state.objects[ctx.source];
+      const chosen =
+        from?.chosenCreatureType ?? (from?.zone === "battlefield" ? null : from?.lastKnown?.chosenCreatureType);
       if (chosen == null || !hasSubtype(subtypes, chosen)) return false;
     }
   }

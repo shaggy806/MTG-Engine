@@ -37,3 +37,5 @@ export { PINNED_ART, TOKEN_NAMES } from "./cards/generated-index.js";
 export { attackingViolations } from "./combat/attacking.js";
 export { blockingViolations } from "./combat/blocking.js";
 export { damageAssignmentViolations, standardAssignment } from "./combat/damage.js";
+export { fitsTogether } from "./zone-choice-together.js";
+export type { ZoneChoiceTogether } from "./zone-choice-together.js";
