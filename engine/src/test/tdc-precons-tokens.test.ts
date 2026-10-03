@@ -1045,6 +1045,63 @@ describe("Gix, Yawgmoth Praetor", () => {
   });
 });
 
+describe("Selvala's Stampede (a vote)", () => {
+  const vote = (game: Game, player: PlayerId, option: number) => {
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    expect(game.state.awaiting?.player).toBe(player);
+    game.dispatch({ type: "choose-modes", player, modes: [option] });
+  };
+
+  it("each player votes, starting with its caster; a creature card for each wild vote, a permanent from hand for each free one", () => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: [
+        {
+          player: A,
+          // The first seven are the opening hand; the next the turn's draw.
+          cards: [...Array<string>(8).fill("Island"), "Island", "Grizzly Bears", "Island", "Hill Giant", "Craw Wurm", ...Array<string>(30).fill("Island")],
+        },
+        { player: B, cards: Array<string>(40).fill("Island") },
+        { player: C, cards: Array<string>(40).fill("Island") },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (let i = 0; i < 6; i += 1) game.state.objects[game.debugSpawn("Forest", A, "battlefield")].tapped = false;
+    const inHand = game.debugSpawn("Serra Angel", A, "hand");
+    const spell = game.debugSpawn("Selvala's Stampede", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: spell, targets: [] });
+    vote(game, A, 0);
+    vote(game, B, 1);
+    vote(game, C, 0);
+    // Two wild votes: the Bears and the Hill Giant; one free: the Angel.
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [inHand] });
+    game.advanceUntil(quiet);
+    expect(named(game, "Grizzly Bears")).toHaveLength(1);
+    expect(named(game, "Hill Giant")).toHaveLength(1);
+    expect(named(game, "Craw Wurm")).toHaveLength(0);
+    expect(game.state.objects[inHand].zone).toBe("battlefield");
+  });
+
+  it("starts with the effect's controller, not the active player", () => {
+    const game = setUp([A, B, C]);
+    game.debugApplyEffect(B, {
+      kind: "each-player-may",
+      who: "each-player",
+      startingWithYou: true,
+      choices: [
+        { text: "Vote for wild", effect: { kind: "sequence", effects: [] } },
+        { text: "Vote for free", effect: { kind: "sequence", effects: [] } },
+      ],
+    });
+    vote(game, B, 0);
+    vote(game, C, 0);
+    vote(game, A, 1);
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

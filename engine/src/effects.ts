@@ -451,6 +451,10 @@ export type EffectAmount =
    * made it gave it, or its subtypes plus "Token" (rule 111.4) — "Elf
    * Token" — whatever its registry key; a copy's is what it copies. */
   | { readonly distinctTokenNames: CardFilter }
+  /** How many votes the option at this index got in this resolution — a
+   * vote is an `each-player-may` with `choices` and `startingWithYou` (rule
+   * 701.38): Selvala's Stampede's "a creature card for each wild vote". */
+  | { readonly votesFor: number }
   /** How many card types there are among cards in graveyards matching a
    * filter — each type once, however many cards have it, and a card with two
    * types gives both (Tarmogoyf's "card types among cards in all graveyards"
@@ -1511,6 +1515,23 @@ export type EffectSpec =
       readonly kind: "sacrifice-all";
       readonly who: PlayerScope;
       readonly filter: CardFilter;
+    }
+  | {
+      /** Reveal cards from the top of the controller's library until
+       * `count` cards matching `filter` are revealed — all of it if there
+       * aren't that many — put those onto the battlefield together under
+       * their owner's control, and the rest where `rest` says: Selvala's
+       * Stampede's "reveal cards from the top of your library until you
+       * reveal a creature card for each wild vote. Put those creature cards
+       * onto the battlefield, then shuffle the rest into your library".
+       * Nothing is revealed for a count of 0. Each card's "as this enters"
+       * choices are asked first (rule 614.12). */
+      readonly kind: "reveal-until-count";
+      readonly filter: CardFilter;
+      readonly count: EffectAmount;
+      readonly rest: "shuffle" | "bottom-random";
+      /** Set only on the copy parked across an "as this enters" choice. */
+      readonly progress?: { readonly revealed: readonly ObjectId[]; readonly found: readonly ObjectId[] };
     }
   | {
       /** Put `count` of the cards a batched `put-into-graveyard` trigger
@@ -3279,6 +3300,12 @@ export type EffectSpec =
        * apply — everyone chooses.
        */
       readonly choices?: readonly ModeOption[];
+      /** Ask them in turn order **starting with the effect's controller**
+       * rather than the active player — a vote's "starting with you, each
+       * player votes for wild or free" (rule 701.38a; Selvala's Stampede),
+       * a `choices` each of them must make, read back with the `{ votesFor }`
+       * amount. */
+      readonly startingWithYou?: boolean;
       readonly ifDid?: EffectSpec;
       readonly ifDidnt?: EffectSpec;
       readonly resultsFor?: PlayerScope;
@@ -3891,6 +3918,19 @@ export interface EffectApi {
   colorsAmong(filter: CardFilter, except: readonly ObjectId[]): number;
   /** See the `{ distinctTokenNames }` {@link EffectAmount}. */
   distinctTokenNames(filter: CardFilter): number;
+  /** See the `{ votesFor }` {@link EffectAmount}. */
+  votesFor(option: number): number;
+  /** Reveal from the top of `owner`'s library until `count` cards matching
+   * `filter` are revealed — see `"reveal-until-count"`. */
+  revealUntilCount(
+    owner: PlayerId,
+    filter: CardFilter,
+    count: number,
+  ): { readonly revealed: readonly ObjectId[]; readonly found: readonly ObjectId[] };
+  /** Put these cards onto the battlefield together, each under its owner's
+   * control. `true` when it stopped first to ask an "as this enters"
+   * choice (nothing has moved; do it again once that's answered). */
+  putOntoBattlefieldTogether(cards: readonly ObjectId[]): boolean;
   /** The permanents matching `filter` (from the effect's controller's
    * side), each with how many tokens it stands for — a token stack is one
    * object for every token in it. */
@@ -4850,8 +4890,15 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
 function eachPlayerMayAsks(
   who: Extract<EffectSpec, { kind: "each-player-may" }>["who"],
   ctx: ResolutionContext,
+  startingWithYou = false,
 ): readonly PlayerId[] {
-  if (typeof who === "string") return ctx.playersInScope(who);
+  if (typeof who === "string") {
+    const players = ctx.playersInScope(who);
+    // "Starting with you, each player votes …" (rule 701.38a): in turn
+    // order from the effect's controller, not the active player.
+    const at = startingWithYou ? players.indexOf(ctx.controller) : -1;
+    return at <= 0 ? players : [...players.slice(at), ...players.slice(0, at)];
+  }
   const ref = ctx.targets[who.controllerOfTarget];
   const player = ref === undefined ? undefined : ctx.controllerOf(ref);
   return player === undefined || !ctx.playersInScope("each-player").includes(player) ? [] : [player];
@@ -4869,7 +4916,7 @@ function applyEachPlayerMay(
 ): void {
   const since = spec.progress?.since ?? ctx.nextEventSeq();
   let asked = spec.progress?.asked ?? [];
-  let toAsk = spec.progress?.toAsk ?? eachPlayerMayAsks(spec.who, ctx);
+  let toAsk = spec.progress?.toAsk ?? eachPlayerMayAsks(spec.who, ctx, spec.startingWithYou === true);
   const park = (progress: EachPlayerMayProgress, below: number): void =>
     ctx.resumeAfterDecisions({ ...spec, progress }, below);
   // One question at a time, each answered before the next is asked (rule
@@ -5149,6 +5196,7 @@ function signedAmountValue(
     return ctx.colorsAmong(amount.colorsAmong, amount.excludeSelf === true ? [ctx.source] : []);
   }
   if ("distinctTokenNames" in amount) return ctx.distinctTokenNames(amount.distinctTokenNames);
+  if ("votesFor" in amount) return ctx.votesFor(amount.votesFor);
   if ("cardTypesInGraveyard" in amount) return ctx.cardTypesInGraveyard(amount.cardTypesInGraveyard);
   if ("opponentsAttacked" in amount) return ctx.opponentsAttacked();
   if ("attackingPlayer" in amount) return ctx.creaturesAttacking(each ?? ctx.controller);
@@ -6115,6 +6163,27 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "put-arrived-onto-battlefield": {
       const parked = ctx.parkedCount();
       if (ctx.putArrivedOntoBattlefield(spec.count)) ctx.resumeAfterDecisions(spec, parked);
+      return;
+    }
+    case "reveal-until-count": {
+      let progress = spec.progress;
+      if (progress === undefined) {
+        const n = amountValue(spec.count, ctx);
+        if (n <= 0) return;
+        progress = ctx.revealUntilCount(ctx.controller, spec.filter, n);
+      }
+      const parked = ctx.parkedCount();
+      if (ctx.putOntoBattlefieldTogether(progress.found)) {
+        ctx.resumeAfterDecisions({ ...spec, progress }, parked);
+        return;
+      }
+      const found = new Set(progress.found);
+      ctx.placeRevealed(
+        ctx.controller,
+        progress.revealed.filter((id) => !found.has(id)),
+        spec.rest,
+        false,
+      );
       return;
     }
     case "flicker": {

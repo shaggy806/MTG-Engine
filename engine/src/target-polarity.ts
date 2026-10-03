@@ -350,6 +350,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "choose-exiled-to-play": none,
   "put-exiled-this-way-onto-battlefield": none,
   "put-arrived-onto-battlefield": none,
+  "reveal-until-count": none,
   encore: none,
   goad: (n, v) => v.touch(n.target, "harm", MINOR),
   // Menace and can't block: a drawback on a blocker, a boon on an attacker.

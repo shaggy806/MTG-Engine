@@ -17401,6 +17401,37 @@ export class Game {
       revealUntil: (owner, spec) => this.revealUntil(owner, controller, spec),
       placeFound: (hit, put, tapped, attacking) => this.placeFound(hit, put, tapped, attacking),
       placeRevealed: (owner, revealed, rest, exiled) => this.placeRevealed(owner, revealed, rest, exiled),
+      votesFor: (option) => {
+        // The votes cast in this resolution (rule 701.38): each player's
+        // answer to its `choices`, as `modes-chosen` for this source.
+        let votes = 0;
+        for (const event of this.eventsSince(since)) {
+          if (event.type === "modes-chosen" && event.source === source && event.modes.includes(option)) votes += 1;
+        }
+        return votes;
+      },
+      revealUntilCount: (owner, filter, count) => {
+        const library = this.state.zones.perPlayer[owner]?.library ?? [];
+        const revealed: ObjectId[] = [];
+        const found: ObjectId[] = [];
+        for (const id of library) {
+          if (found.length >= count) break;
+          revealed.push(id);
+          if (matchesFilter(this.state, this.registry, id, filter, { you: controller })) found.push(id);
+        }
+        if (revealed.length > 0) this.revealCards(owner, revealed, "library");
+        return { revealed, found };
+      },
+      putOntoBattlefieldTogether: (cards) => {
+        const still = cards.filter((id) => this.state.objects[id] !== undefined);
+        if (still.some((id) => this.askEnterChoice(id, this.state.objects[id].owner))) return true;
+        this.withEnterBatch(() => {
+          for (const id of still) {
+            if (this.moveObject(id, "battlefield")) this.emit({ type: "permanent-entered-battlefield", object: id });
+          }
+        });
+        return false;
+      },
       withTargets: (newTargets) =>
         this.makeResolutionContext(
           source,

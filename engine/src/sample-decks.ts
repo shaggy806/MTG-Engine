@@ -194,7 +194,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Opportunistic Dragon", "Skyship Stalker", "Four-mana red flying Dragon."),
       sub("Reality Shift", "Resculpt", "Two-mana instant: removal, creature removal."),
-      sub("Selvala's Stampede", "Kodama of the East Tree", "Six-mana sorcery: puts creatures onto the battlefield, ramp."),
       sub("Zenith Festival", "Reckless Impulse", "Two-mana sorcery: impulse draw, card advantage."),
     ],
   }),

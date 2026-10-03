@@ -153,6 +153,7 @@ import _poolScarletWitchWandaMaximoff from "../pool/scarlet-witch-wanda-maximoff
 import _poolScrollThief from "../pool/scroll-thief.js";
 import _poolSeasonOfGrowth from "../pool/season-of-growth.js";
 import _poolSedgeScorpion from "../pool/sedge-scorpion.js";
+import _poolSelvalasStampede from "../pool/selvalas-stampede.js";
 import _poolShelteredByGhosts from "../pool/sheltered-by-ghosts.js";
 import _poolShelteringBoughs from "../pool/sheltering-boughs.js";
 import _poolShockingGrasp from "../pool/shocking-grasp.js";
@@ -362,6 +363,7 @@ const shard: CardShard = {
     _poolScrollThief,
     _poolSeasonOfGrowth,
     _poolSedgeScorpion,
+    _poolSelvalasStampede,
     _poolShelteredByGhosts,
     _poolShelteringBoughs,
     _poolShockingGrasp,

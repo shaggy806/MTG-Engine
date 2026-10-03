@@ -4918,6 +4918,7 @@ import _poolSelesnyaSignet from "./pool/selesnya-signet.js";
 import _poolSelflessCathar from "./pool/selfless-cathar.js";
 import _poolSelflessSpirit from "./pool/selfless-spirit.js";
 import _poolSellerOfSongbirds from "./pool/seller-of-songbirds.js";
+import _poolSelvalasStampede from "./pool/selvalas-stampede.js";
 import _poolSenateCourier from "./pool/senate-courier.js";
 import _poolSenateGriffin from "./pool/senate-griffin.js";
 import _poolSenateGuildmage from "./pool/senate-guildmage.js";
@@ -11853,6 +11854,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolSelflessCathar,
   _poolSelflessSpirit,
   _poolSellerOfSongbirds,
+  _poolSelvalasStampede,
   _poolSenateCourier,
   _poolSenateGriffin,
   _poolSenateGuildmage,
