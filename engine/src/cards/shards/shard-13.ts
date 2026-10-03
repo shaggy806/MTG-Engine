@@ -19,6 +19,7 @@ import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
 import _poolAxegrinderGiant from "../pool/axegrinder-giant.js";
 import _poolBardHeirOfGirion from "../pool/bard-heir-of-girion.js";
 import _poolBarrowWitches from "../pool/barrow-witches.js";
+import _poolBiteDown from "../pool/bite-down.js";
 import _poolBlazemireVerge from "../pool/blazemire-verge.js";
 import _poolBogImp from "../pool/bog-imp.js";
 import _poolBoggartBrute from "../pool/boggart-brute.js";
@@ -224,6 +225,7 @@ const shard: CardShard = {
     _poolAxegrinderGiant,
     _poolBardHeirOfGirion,
     _poolBarrowWitches,
+    _poolBiteDown,
     _poolBlazemireVerge,
     _poolBogImp,
     _poolBoggartBrute,

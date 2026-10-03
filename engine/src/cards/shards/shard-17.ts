@@ -116,6 +116,7 @@ import _poolMistgatePathway from "../pool/mistgate-pathway.js";
 import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
 import _poolMomentOfTriumph from "../pool/moment-of-triumph.js";
 import _poolMonkIdealist from "../pool/monk-idealist.js";
+import _poolMountainValley from "../pool/mountain-valley.js";
 import _poolNemaSiltlurker from "../pool/nema-siltlurker.js";
 import _poolNestRobber from "../pool/nest-robber.js";
 import _poolNightOfTheSweetsRevenge from "../pool/night-of-the-sweets-revenge.js";
@@ -332,6 +333,7 @@ const shard: CardShard = {
     _poolMollyHayesRunaway,
     _poolMomentOfTriumph,
     _poolMonkIdealist,
+    _poolMountainValley,
     _poolNemaSiltlurker,
     _poolNestRobber,
     _poolNightOfTheSweetsRevenge,

@@ -85,12 +85,14 @@ import _poolHalberdier from "../pool/halberdier.js";
 import _poolHammerheadTyrant from "../pool/hammerhead-tyrant.js";
 import _poolHanaKami from "../pool/hana-kami.js";
 import _poolHedronArchive from "../pool/hedron-archive.js";
+import _poolHellkiteCharger from "../pool/hellkite-charger.js";
 import _poolHerosResolve from "../pool/heros-resolve.js";
 import _poolHideousVisage from "../pool/hideous-visage.js";
 import _poolHoldoutSettlement from "../pool/holdout-settlement.js";
 import _poolHorizonExplorer from "../pool/horizon-explorer.js";
 import _poolHulkingDevil from "../pool/hulking-devil.js";
 import _poolIcewindElemental from "../pool/icewind-elemental.js";
+import _poolIllusoryAmbusher from "../pool/illusory-ambusher.js";
 import _poolIntoTheMawOfHell from "../pool/into-the-maw-of-hell.js";
 import _poolIronBully from "../pool/iron-bully.js";
 import _poolIshaiOjutaiDragonspeaker from "../pool/ishai-ojutai-dragonspeaker.js";
@@ -284,12 +286,14 @@ const shard: CardShard = {
     _poolHammerheadTyrant,
     _poolHanaKami,
     _poolHedronArchive,
+    _poolHellkiteCharger,
     _poolHerosResolve,
     _poolHideousVisage,
     _poolHoldoutSettlement,
     _poolHorizonExplorer,
     _poolHulkingDevil,
     _poolIcewindElemental,
+    _poolIllusoryAmbusher,
     _poolIntoTheMawOfHell,
     _poolIronBully,
     _poolIshaiOjutaiDragonspeaker,

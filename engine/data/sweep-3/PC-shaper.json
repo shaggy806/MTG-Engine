@@ -1,0 +1,197 @@
+{
+  "batch": "PC-shaper",
+  "status": "complete",
+  "authored": [
+    {
+      "name": "Evendo Brushrazer",
+      "files": [
+        "engine/src/cards/pool/evendo-brushrazer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Planetary Annihilation",
+      "files": [
+        "engine/src/cards/pool/planetary-annihilation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Scouring Swarm",
+      "files": [
+        "engine/src/cards/pool/scouring-swarm.ts",
+        "engine/src/cards/tokens/insect-token-black-flying.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Eumidian Hatchery",
+      "files": [
+        "engine/src/cards/pool/eumidian-hatchery.ts",
+        "engine/src/cards/tokens/insect-token-black-flying.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hammer of Purphoros",
+      "files": [
+        "engine/src/cards/pool/hammer-of-purphoros.ts",
+        "engine/src/cards/tokens/golem-enchantment-artifact-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Centaur Vinecrasher",
+      "files": [
+        "engine/src/cards/pool/centaur-vinecrasher.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "World Breaker",
+      "files": [
+        "engine/src/cards/pool/world-breaker.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mountain Valley",
+      "files": [
+        "engine/src/cards/pool/mountain-valley.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rocky Tar Pit",
+      "files": [
+        "engine/src/cards/pool/rocky-tar-pit.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sprouting Goblin",
+      "files": [
+        "engine/src/cards/pool/sprouting-goblin.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Uurg, Spawn of Turg",
+      "files": [
+        "engine/src/cards/pool/uurg-spawn-of-turg.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Eumidian Wastewaker",
+      "needs": [
+        "new:discard-or-sacrifice-choice"
+      ],
+      "why": "\"You and defending player each discard a card or sacrifice a permanent\": a forced per-player choice between a discard and a sacrifice (only the possible one offered), you then the defending player, done together, then counted for land cards. each-player-may's options are optional and its villainous choices offer impossible options; there is no \"you and trigger-player\" scope. Encore itself exists."
+    },
+    {
+      "name": "Baloth Prime",
+      "needs": [
+        "new:stun-counters"
+      ],
+      "why": "Enters tapped with six stun counters (rule 122.1d): the engine has no stun-counter untap replacement."
+    },
+    {
+      "name": "Exploration Broodship",
+      "needs": [
+        "new:graveyard-cast-sacrifice-land"
+      ],
+      "why": "Station and its bands exist, but StaticAbility.castFromGraveyard has no additional sacrifice cost (only payLife): \"cast a permanent spell from your graveyard by sacrificing a land in addition to paying its other costs\"."
+    },
+    {
+      "name": "Braids, Arisen Nightmare",
+      "needs": [
+        "effect:may-sacrifice-then"
+      ],
+      "why": "CardFilter.sharesCardTypeWith \"sacrificed\" exists, but only a cost or a sacrifice-source step binds the \"sacrificed\" ref; the chosen \"you may sacrifice an artifact, creature, enchantment, land, or planeswalker\" inside an effect does not."
+    },
+    {
+      "name": "God-Eternal Bontu",
+      "needs": [
+        "new:sacrifice-any-number",
+        "new:put-nth-from-top"
+      ],
+      "why": "\"Sacrifice any number of other permanents, then draw that many\" needs a chosen any-number sacrifice made as one event (choose-permanents applies its then one permanent at a time); and put-on-library has only top/bottom, not \"third from the top\"."
+    },
+    {
+      "name": "Moraug, Fury of Akoum",
+      "needs": [
+        "new:attack-count-this-turn",
+        "new:additional-combat-after-main"
+      ],
+      "why": "+1/+0 for each time each creature has attacked this turn (GameObject.attackedThisTurn is a boolean), and an additional combat straight after a main phase (no extra main) with an untap at the beginning of that combat."
+    },
+    {
+      "name": "Augur of Autumn",
+      "needs": [
+        "zone:visibility-extensions",
+        "new:coven-condition"
+      ],
+      "why": "\"You may look at the top card of your library any time\" is private (revealsOwnLibraryTop reveals it to every player), and Coven (three or more creatures with different powers) isn't a StaticCondition."
+    },
+    {
+      "name": "Formless Genesis",
+      "needs": [
+        "new:kindred-type",
+        "keyword:retrace"
+      ],
+      "why": "A Kindred Sorcery with changeling (the Kindred card type isn't modeled) and retrace (rule 702.81), which isn't built."
+    },
+    {
+      "name": "Loamcrafter Faun",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "\"You may discard one or more land cards. When you do, return up to that many target nonland permanent cards\": a discard of any number of land cards, and a reflexive trigger whose target count is that number."
+    },
+    {
+      "name": "Multani, Yavimaya's Avatar",
+      "needs": [
+        "new:return-lands-cost"
+      ],
+      "why": "\"Return two lands you control to their owner's hand\" as an activation cost; AbilityCost has no bounce cost."
+    },
+    {
+      "name": "Pest Infestation",
+      "needs": [
+        "decision:variable-target-count"
+      ],
+      "why": "\"Destroy up to X target artifacts and/or enchantments\": an any-number group's max is a fixed number, not the spell's X."
+    },
+    {
+      "name": "Soul of Windgrace",
+      "needs": [
+        "new:choose-from-any-graveyard"
+      ],
+      "why": "\"Put a land card from a graveyard onto the battlefield tapped under your control\" is untargeted and reaches every graveyard; return-from-graveyard and look-and-choose only reach your own."
+    },
+    {
+      "name": "Windgrace's Judgment",
+      "needs": [
+        "new:target-per-opponent"
+      ],
+      "why": "\"For any number of opponents, destroy target nonland permanent that player controls\": at most one target per opponent, which no target spec relates."
+    },
+    {
+      "name": "Worldsoul's Rage",
+      "needs": [
+        "new:choose-from-hand-and-graveyard"
+      ],
+      "why": "\"Put up to X land cards from your hand and/or graveyard onto the battlefield tapped\" is one choice across two zones and one simultaneous entry; look-and-choose reads one zone."
+    },
+    {
+      "name": "Dakmor Salvage",
+      "needs": [
+        "keyword:dredge"
+      ],
+      "why": "Dredge 2 (rule 702.52) isn't built."
+    }
+  ]
+}

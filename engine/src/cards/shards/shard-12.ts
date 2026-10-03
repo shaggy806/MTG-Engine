@@ -135,6 +135,7 @@ import _poolRazorfootGriffin from "../pool/razorfoot-griffin.js";
 import _poolRevitalize from "../pool/revitalize.js";
 import _poolRiseAgain from "../pool/rise-again.js";
 import _poolRorixBladewing from "../pool/rorix-bladewing.js";
+import _poolRoseRoomTreasurer from "../pool/rose-room-treasurer.js";
 import _poolRottingLegion from "../pool/rotting-legion.js";
 import _poolRottingRegisaur from "../pool/rotting-regisaur.js";
 import _poolRuricThar from "../pool/ruric-thar.js";
@@ -163,6 +164,7 @@ import _poolSternProctor from "../pool/stern-proctor.js";
 import _poolStrixLookout from "../pool/strix-lookout.js";
 import _poolSunbakedCanyon from "../pool/sunbaked-canyon.js";
 import _poolSupernaturalStamina from "../pool/supernatural-stamina.js";
+import _poolSurrakTheHuntCaller from "../pool/surrak-the-hunt-caller.js";
 import _poolTalonrend from "../pool/talonrend.js";
 import _poolTempleOfAbandon from "../pool/temple-of-abandon.js";
 import _poolTerritorialBaloth from "../pool/territorial-baloth.js";
@@ -195,6 +197,7 @@ import _poolWretchedDoll from "../pool/wretched-doll.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
+import _tokensPhyrexianGolemToken from "../tokens/phyrexian-golem-token.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
 import _tokensWurmToken66 from "../tokens/wurm-token-6-6.js";
 
@@ -332,6 +335,7 @@ const shard: CardShard = {
     _poolRevitalize,
     _poolRiseAgain,
     _poolRorixBladewing,
+    _poolRoseRoomTreasurer,
     _poolRottingLegion,
     _poolRottingRegisaur,
     _poolRuricThar,
@@ -360,6 +364,7 @@ const shard: CardShard = {
     _poolStrixLookout,
     _poolSunbakedCanyon,
     _poolSupernaturalStamina,
+    _poolSurrakTheHuntCaller,
     _poolTalonrend,
     _poolTempleOfAbandon,
     _poolTerritorialBaloth,
@@ -394,6 +399,7 @@ const shard: CardShard = {
     _tokensChocoboBirdToken,
     _tokensDragonIllusionToken,
     _tokensElementalToken55,
+    _tokensPhyrexianGolemToken,
     _tokensVampireToken,
     _tokensWurmToken66,
   ],

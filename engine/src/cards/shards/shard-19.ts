@@ -8,6 +8,7 @@ import _poolAccessTunnel from "../pool/access-tunnel.js";
 import _poolAmphinMutineer from "../pool/amphin-mutineer.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
+import _poolArmillarySphere from "../pool/armillary-sphere.js";
 import _poolAssaultFormation from "../pool/assault-formation.js";
 import _poolAvatarEnthusiasts from "../pool/avatar-enthusiasts.js";
 import _poolAwakenTheWoods from "../pool/awaken-the-woods.js";
@@ -16,6 +17,7 @@ import _poolBenalishTrapper from "../pool/benalish-trapper.js";
 import _poolBewilder from "../pool/bewilder.js";
 import _poolBhaalsInvoker from "../pool/bhaals-invoker.js";
 import _poolBirninZanaPlaza from "../pool/birnin-zana-plaza.js";
+import _poolBitterReunion from "../pool/bitter-reunion.js";
 import _poolBlastingStation from "../pool/blasting-station.js";
 import _poolBogNaughty from "../pool/bog-naughty.js";
 import _poolBotanicalSanctum from "../pool/botanical-sanctum.js";
@@ -42,6 +44,7 @@ import _poolDevilthornFox from "../pool/devilthorn-fox.js";
 import _poolDimensionX from "../pool/dimension-x.js";
 import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
+import _poolDungroveElder from "../pool/dungrove-elder.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
 import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
@@ -214,6 +217,7 @@ const shard: CardShard = {
     _poolAmphinMutineer,
     _poolAncientTomb,
     _poolArashinCleric,
+    _poolArmillarySphere,
     _poolAssaultFormation,
     _poolAvatarEnthusiasts,
     _poolAwakenTheWoods,
@@ -222,6 +226,7 @@ const shard: CardShard = {
     _poolBewilder,
     _poolBhaalsInvoker,
     _poolBirninZanaPlaza,
+    _poolBitterReunion,
     _poolBlastingStation,
     _poolBogNaughty,
     _poolBotanicalSanctum,
@@ -248,6 +253,7 @@ const shard: CardShard = {
     _poolDimensionX,
     _poolDismiss,
     _poolDrossSkullbomb,
+    _poolDungroveElder,
     _poolExsanguinate,
     _poolFabledPassage,
     _poolFalkenrathNoble,

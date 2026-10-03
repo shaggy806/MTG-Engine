@@ -186,6 +186,7 @@ import _poolSummonTitan from "../pool/summon-titan.js";
 import _poolSurveillingSprite from "../pool/surveilling-sprite.js";
 import _poolSustenance from "../pool/sustenance.js";
 import _poolSwordOfTruthAndJustice from "../pool/sword-of-truth-and-justice.js";
+import _poolSyphonFlesh from "../pool/syphon-flesh.js";
 import _poolTalasMerchant from "../pool/talas-merchant.js";
 import _poolTalruumMinotaur from "../pool/talruum-minotaur.js";
 import _poolTamiyosSafekeeping from "../pool/tamiyos-safekeeping.js";
@@ -413,6 +414,7 @@ const shard: CardShard = {
     _poolSurveillingSprite,
     _poolSustenance,
     _poolSwordOfTruthAndJustice,
+    _poolSyphonFlesh,
     _poolTalasMerchant,
     _poolTalruumMinotaur,
     _poolTamiyosSafekeeping,

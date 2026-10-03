@@ -28,6 +28,7 @@ import _poolCityOfBrass from "../pool/city-of-brass.js";
 import _poolCoastalPiracy from "../pool/coastal-piracy.js";
 import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
 import _poolCorpseKnight from "../pool/corpse-knight.js";
+import _poolCountOnLuck from "../pool/count-on-luck.js";
 import _poolCrenellatedWall from "../pool/crenellated-wall.js";
 import _poolDinaEssenceBrewer from "../pool/dina-essence-brewer.js";
 import _poolDrEggman from "../pool/dr-eggman.js";
@@ -73,6 +74,7 @@ import _poolGriffinProtector from "../pool/griffin-protector.js";
 import _poolGutterSkulk from "../pool/gutter-skulk.js";
 import _poolHarbingerOfTheHunt from "../pool/harbinger-of-the-hunt.js";
 import _poolHeapGate from "../pool/heap-gate.js";
+import _poolHitTheMotherLode from "../pool/hit-the-mother-lode.js";
 import _poolHostileMinotaur from "../pool/hostile-minotaur.js";
 import _poolHumbleDefector from "../pool/humble-defector.js";
 import _poolHungryMegasloth from "../pool/hungry-megasloth.js";
@@ -108,6 +110,7 @@ import _poolMistCloakedHerald from "../pool/mist-cloaked-herald.js";
 import _poolMoorlandInquisitor from "../pool/moorland-inquisitor.js";
 import _poolMossfireValley from "../pool/mossfire-valley.js";
 import _poolMurder from "../pool/murder.js";
+import _poolMurmuration from "../pool/murmuration.js";
 import _poolMuseDrake from "../pool/muse-drake.js";
 import _poolMyrScrapling from "../pool/myr-scrapling.js";
 import _poolMysticSanctuary from "../pool/mystic-sanctuary.js";
@@ -233,6 +236,7 @@ const shard: CardShard = {
     _poolCoastalPiracy,
     _poolCogworkersPuzzleknot,
     _poolCorpseKnight,
+    _poolCountOnLuck,
     _poolCrenellatedWall,
     _poolDinaEssenceBrewer,
     _poolDrEggman,
@@ -278,6 +282,7 @@ const shard: CardShard = {
     _poolGutterSkulk,
     _poolHarbingerOfTheHunt,
     _poolHeapGate,
+    _poolHitTheMotherLode,
     _poolHostileMinotaur,
     _poolHumbleDefector,
     _poolHungryMegasloth,
@@ -313,6 +318,7 @@ const shard: CardShard = {
     _poolMoorlandInquisitor,
     _poolMossfireValley,
     _poolMurder,
+    _poolMurmuration,
     _poolMuseDrake,
     _poolMyrScrapling,
     _poolMysticSanctuary,

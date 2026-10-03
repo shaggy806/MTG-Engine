@@ -195,6 +195,7 @@ import _poolTwistedLandscape from "../pool/twisted-landscape.js";
 import _poolUnspeakableSymbol from "../pool/unspeakable-symbol.js";
 import _poolUnstableObelisk from "../pool/unstable-obelisk.js";
 import _poolUreniOfTheUnwritten from "../pool/ureni-of-the-unwritten.js";
+import _poolUurgSpawnOfTurg from "../pool/uurg-spawn-of-turg.js";
 import _poolValorInAkros from "../pool/valor-in-akros.js";
 import _poolVigilantDrake from "../pool/vigilant-drake.js";
 import _poolVihaanGoldwaker from "../pool/vihaan-goldwaker.js";
@@ -413,6 +414,7 @@ const shard: CardShard = {
     _poolUnspeakableSymbol,
     _poolUnstableObelisk,
     _poolUreniOfTheUnwritten,
+    _poolUurgSpawnOfTurg,
     _poolValorInAkros,
     _poolVigilantDrake,
     _poolVihaanGoldwaker,

@@ -130,6 +130,7 @@ import _poolSavannahSage from "../pool/savannah-sage.js";
 import _poolScionOfTheSwarm from "../pool/scion-of-the-swarm.js";
 import _poolScrapyardSteelbreaker from "../pool/scrapyard-steelbreaker.js";
 import _poolSerraAscendant from "../pool/serra-ascendant.js";
+import _poolShivanDevastator from "../pool/shivan-devastator.js";
 import _poolShivanOasis from "../pool/shivan-oasis.js";
 import _poolSilverShroudCostume from "../pool/silver-shroud-costume.js";
 import _poolSilverbackElder from "../pool/silverback-elder.js";
@@ -150,8 +151,10 @@ import _poolSpurredWolverine from "../pool/spurred-wolverine.js";
 import _poolStalkerHag from "../pool/stalker-hag.js";
 import _poolStaunchShieldmate from "../pool/staunch-shieldmate.js";
 import _poolSteadfastGuard from "../pool/steadfast-guard.js";
+import _poolSteelLeafChampion from "../pool/steel-leaf-champion.js";
 import _poolSteepleRoc from "../pool/steeple-roc.js";
 import _poolStitchersSupplier from "../pool/stitchers-supplier.js";
+import _poolStormOfSouls from "../pool/storm-of-souls.js";
 import _poolStormSpirit from "../pool/storm-spirit.js";
 import _poolStrengthOfThePack from "../pool/strength-of-the-pack.js";
 import _poolSwornGuardian from "../pool/sworn-guardian.js";
@@ -194,6 +197,7 @@ import _poolWarriorsHonor from "../pool/warriors-honor.js";
 import _poolWaywardServant from "../pool/wayward-servant.js";
 import _poolWitheringTorment from "../pool/withering-torment.js";
 import _poolWoodlandCemetery from "../pool/woodland-cemetery.js";
+import _poolWorldBreaker from "../pool/world-breaker.js";
 import _poolWrapInVigor from "../pool/wrap-in-vigor.js";
 import _poolYotianMedic from "../pool/yotian-medic.js";
 import _poolZendikarsRoil from "../pool/zendikars-roil.js";
@@ -331,6 +335,7 @@ const shard: CardShard = {
     _poolScionOfTheSwarm,
     _poolScrapyardSteelbreaker,
     _poolSerraAscendant,
+    _poolShivanDevastator,
     _poolShivanOasis,
     _poolSilverShroudCostume,
     _poolSilverbackElder,
@@ -351,8 +356,10 @@ const shard: CardShard = {
     _poolStalkerHag,
     _poolStaunchShieldmate,
     _poolSteadfastGuard,
+    _poolSteelLeafChampion,
     _poolSteepleRoc,
     _poolStitchersSupplier,
+    _poolStormOfSouls,
     _poolStormSpirit,
     _poolStrengthOfThePack,
     _poolSwornGuardian,
@@ -395,6 +402,7 @@ const shard: CardShard = {
     _poolWaywardServant,
     _poolWitheringTorment,
     _poolWoodlandCemetery,
+    _poolWorldBreaker,
     _poolWrapInVigor,
     _poolYotianMedic,
     _poolZendikarsRoil,

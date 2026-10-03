@@ -148,6 +148,7 @@ import _poolSavageKnuckleblade from "../pool/savage-knuckleblade.js";
 import _poolSavaiCrystal from "../pool/savai-crystal.js";
 import _poolScourForScrap from "../pool/scour-for-scrap.js";
 import _poolScourFromExistence from "../pool/scour-from-existence.js";
+import _poolScouringSwarm from "../pool/scouring-swarm.js";
 import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
 import _poolShardingSphinx from "../pool/sharding-sphinx.js";
 import _poolShikoAndNarsetUnified from "../pool/shiko-and-narset-unified.js";
@@ -354,6 +355,7 @@ const shard: CardShard = {
     _poolSavaiCrystal,
     _poolScourForScrap,
     _poolScourFromExistence,
+    _poolScouringSwarm,
     _poolSeraphOfDawn,
     _poolShardingSphinx,
     _poolShikoAndNarsetUnified,

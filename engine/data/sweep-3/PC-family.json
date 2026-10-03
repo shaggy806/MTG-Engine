@@ -1,0 +1,89 @@
+{
+  "batch": "PC-family",
+  "status": "complete",
+  "authored": [
+    { "name": "Blade Splicer", "files": ["engine/src/cards/pool/blade-splicer.ts", "engine/src/cards/tokens/phyrexian-golem-token.ts"], "tested": true },
+    { "name": "Thopter Engineer", "files": ["engine/src/cards/pool/thopter-engineer.ts"], "tested": true },
+    { "name": "Jazal Goldmane", "files": ["engine/src/cards/pool/jazal-goldmane.ts"], "tested": true },
+    { "name": "Storm of Souls", "files": ["engine/src/cards/pool/storm-of-souls.ts"], "tested": true },
+    { "name": "Murmuration", "files": ["engine/src/cards/pool/murmuration.ts", "engine/src/cards/tokens/storm-crow-token.ts"], "tested": true },
+    { "name": "Devilish Valet", "files": ["engine/src/cards/pool/devilish-valet.ts"], "tested": true },
+    { "name": "Calamity of Cinders", "files": ["engine/src/cards/pool/calamity-of-cinders.ts"], "tested": true },
+    { "name": "Illusory Ambusher", "files": ["engine/src/cards/pool/illusory-ambusher.ts"], "tested": true },
+    { "name": "Rose Room Treasurer", "files": ["engine/src/cards/pool/rose-room-treasurer.ts"], "tested": true },
+    { "name": "Rapid Augmenter", "files": ["engine/src/cards/pool/rapid-augmenter.ts"], "tested": true },
+    { "name": "Boss's Chauffeur", "files": ["engine/src/cards/pool/bosss-chauffeur.ts"], "tested": true }
+  ],
+  "blocked": [
+    {
+      "name": "Arthur, Marigold Knight",
+      "needs": ["new:attacks-with-another-trigger"],
+      "why": "'Whenever Arthur and at least one other creature attack': no trigger for this creature being declared in a declaration of two or more attackers. A `controls attacking >= 2` intervening-if would be rechecked as it resolves, which the printed trigger isn't."
+    },
+    {
+      "name": "Jacked Rabbit",
+      "needs": ["new:ravenous"],
+      "why": "Ravenous's draw is an intervening-if on X (rule 702.156a: 'if X is 5 or more'). A trigger's `condition` goes through the static evaluator, which answers the `x` kind false, so it would never trigger; a `conditional` in the effect would put a do-nothing trigger on the stack whenever X < 5."
+    },
+    {
+      "name": "Skyclave Apparition",
+      "needs": ["new:linked-exiled-card"],
+      "why": "The leaves ability reads 'the exiled card' (its owner and mana value) of a permanent exile: no amount or player ref reaches a card a source exiled for good."
+    },
+    {
+      "name": "Dusk // Dawn",
+      "needs": ["new:aftermath"],
+      "why": "Split cards are built, aftermath isn't: Dawn must be castable only from the graveyard and exiled however it leaves the stack (rule 702.127)."
+    },
+    {
+      "name": "Fortune Teller's Talent",
+      "needs": ["new:class"],
+      "why": "A Class (levels as sorcery-speed activated abilities, abilities gained per level) isn't modeled (AUTHORING §15); level 1 also needs 'look at the top card of your library any time'."
+    },
+    {
+      "name": "Shield Broker",
+      "needs": ["new:shield-counters"],
+      "why": "No shield counter (prevent damage / replace destruction by removing one, rule 122.1c), and no control duration 'for as long as it has a shield counter on it'."
+    },
+    {
+      "name": "Stolen by the Fae",
+      "needs": ["new:spell-x-target-filter"],
+      "why": "'Target creature with mana value X': a spell's target filter can't read its own X (AUTHORING §6 — only an activated ability is offered per X); casting at X=2 at a 2-drop is refused as having no legal target."
+    },
+    {
+      "name": "Echoing Assault",
+      "needs": ["new:attacking-that-player-filter"],
+      "why": "'Target nontoken creature that's attacking that player': no filter clause or target spec for the player (or planeswalker controller) an attacker is attacking."
+    },
+    {
+      "name": "Combat Celebrant",
+      "needs": ["new:exert"],
+      "why": "Exert as it attacks (an optional choice at declaration, with 'won't untap during your next untap step') and a 'when you do' trigger."
+    },
+    {
+      "name": "Inferno Titan",
+      "needs": ["new:divided-damage-trigger"],
+      "why": "'3 damage divided as you choose among one, two, or three targets' on a triggered ability: division is built for spells only (AUTHORING §15)."
+    },
+    {
+      "name": "Helm of the Host",
+      "needs": ["new:attached-object-refs", "new:noncopiable-token-haste"],
+      "why": "`create-token-copy.of` can't name the equipped creature; and 'that token gains haste' isn't copiable (ruling), while `gainsHaste` is a copy exception that copies of the token inherit."
+    },
+    {
+      "name": "Rowdy Research",
+      "needs": ["new:creatures-attacked-this-turn-count"],
+      "why": "'{1} less for each creature that attacked this turn': no cost-reduction amount counts attackers this turn, including ones no longer on the battlefield (the `attacked` turn stat is only 0/1)."
+    },
+    {
+      "name": "Junk Winder",
+      "needs": ["new:doesnt-untap-next-untap-step"],
+      "why": "'It doesn't untap during its controller's next untap step'. (Affinity for tokens itself is expressible as a `countOf` self cost reduction.)"
+    },
+    {
+      "name": "Tetsuko Umezawa, Fugitive",
+      "needs": ["new:pt-filtered-static"],
+      "why": "A static affecting 'creatures you control with power or toughness 1 or less': an affects filter can't read P/T inside the layer fold (AUTHORING §15)."
+    }
+  ]
+}

@@ -162,6 +162,7 @@ import _poolSokenzanCrucibleOfDefiance from "../pool/sokenzan-crucible-of-defian
 import _poolSoulGuideLantern from "../pool/soul-guide-lantern.js";
 import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
+import _poolSproutingGoblin from "../pool/sprouting-goblin.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
 import _poolStripedBears from "../pool/striped-bears.js";
 import _poolSulfurousSprings from "../pool/sulfurous-springs.js";
@@ -370,6 +371,7 @@ const shard: CardShard = {
     _poolSoulGuideLantern,
     _poolSoulWarden,
     _poolSpellscornCoven,
+    _poolSproutingGoblin,
     _poolStormriderSpirit,
     _poolStripedBears,
     _poolSulfurousSprings,

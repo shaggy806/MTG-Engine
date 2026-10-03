@@ -114,6 +114,7 @@ import _poolObeliskOfBant from "../pool/obelisk-of-bant.js";
 import _poolObsessiveStitcher from "../pool/obsessive-stitcher.js";
 import _poolOminousAsylum from "../pool/ominous-asylum.js";
 import _poolOracleOfNectars from "../pool/oracle-of-nectars.js";
+import _poolOutpostSiege from "../pool/outpost-siege.js";
 import _poolOvikaEnigmaGoliath from "../pool/ovika-enigma-goliath.js";
 import _poolPaladinOfTheBloodstained from "../pool/paladin-of-the-bloodstained.js";
 import _poolPardicWanderer from "../pool/pardic-wanderer.js";
@@ -166,6 +167,7 @@ import _poolSwordOfLightAndShadow from "../pool/sword-of-light-and-shadow.js";
 import _poolTakenumaAbandonedMire from "../pool/takenuma-abandoned-mire.js";
 import _poolTeeterpeakAmbusher from "../pool/teeterpeak-ambusher.js";
 import _poolTelimtorsDarts from "../pool/telimtors-darts.js";
+import _poolThopterEngineer from "../pool/thopter-engineer.js";
 import _poolThrabenValiant from "../pool/thraben-valiant.js";
 import _poolThreaten from "../pool/threaten.js";
 import _poolThunderSpirit from "../pool/thunder-spirit.js";
@@ -314,6 +316,7 @@ const shard: CardShard = {
     _poolObsessiveStitcher,
     _poolOminousAsylum,
     _poolOracleOfNectars,
+    _poolOutpostSiege,
     _poolOvikaEnigmaGoliath,
     _poolPaladinOfTheBloodstained,
     _poolPardicWanderer,
@@ -366,6 +369,7 @@ const shard: CardShard = {
     _poolTakenumaAbandonedMire,
     _poolTeeterpeakAmbusher,
     _poolTelimtorsDarts,
+    _poolThopterEngineer,
     _poolThrabenValiant,
     _poolThreaten,
     _poolThunderSpirit,

@@ -24,6 +24,7 @@ import _poolBenalishHeralds from "../pool/benalish-heralds.js";
 import _poolBogInitiate from "../pool/bog-initiate.js";
 import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
+import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
@@ -35,6 +36,7 @@ import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
 import _poolCrimsonManticore from "../pool/crimson-manticore.js";
 import _poolCrookedCustodian from "../pool/crooked-custodian.js";
+import _poolDeadlyTempest from "../pool/deadly-tempest.js";
 import _poolDeathGrasp from "../pool/death-grasp.js";
 import _poolDeathbloomGardener from "../pool/deathbloom-gardener.js";
 import _poolDeathcapGlade from "../pool/deathcap-glade.js";
@@ -128,6 +130,7 @@ import _poolReinforcedRonin from "../pool/reinforced-ronin.js";
 import _poolRelearn from "../pool/relearn.js";
 import _poolResurrection from "../pool/resurrection.js";
 import _poolRiotDevils from "../pool/riot-devils.js";
+import _poolRishkarsExpertise from "../pool/rishkars-expertise.js";
 import _poolRosethornAcolyte from "../pool/rosethorn-acolyte.js";
 import _poolRubblebackRhino from "../pool/rubbleback-rhino.js";
 import _poolRubblebeltMaverick from "../pool/rubblebelt-maverick.js";
@@ -198,6 +201,7 @@ import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
 import _poolYargleGluttonOfUrborg from "../pool/yargle-glutton-of-urborg.js";
+import _poolYavimayaElder from "../pool/yavimaya-elder.js";
 import _poolYawgmothThranPhysician from "../pool/yawgmoth-thran-physician.js";
 import _tokensDragonEggToken from "../tokens/dragon-egg-token.js";
 import _tokensDwarfToken from "../tokens/dwarf-token.js";
@@ -228,6 +232,7 @@ const shard: CardShard = {
     _poolBogInitiate,
     _poolBroodcallerScourge,
     _poolBuriedRuin,
+    _poolCalamityOfCinders,
     _poolCanalMonitor,
     _poolCatharticReunion,
     _poolChokedEstuary,
@@ -239,6 +244,7 @@ const shard: CardShard = {
     _poolCradleOfTheAccursed,
     _poolCrimsonManticore,
     _poolCrookedCustodian,
+    _poolDeadlyTempest,
     _poolDeathGrasp,
     _poolDeathbloomGardener,
     _poolDeathcapGlade,
@@ -332,6 +338,7 @@ const shard: CardShard = {
     _poolRelearn,
     _poolResurrection,
     _poolRiotDevils,
+    _poolRishkarsExpertise,
     _poolRosethornAcolyte,
     _poolRubblebackRhino,
     _poolRubblebeltMaverick,
@@ -402,6 +409,7 @@ const shard: CardShard = {
     _poolWydwenTheBitingGale,
     _poolYargleAndMultani,
     _poolYargleGluttonOfUrborg,
+    _poolYavimayaElder,
     _poolYawgmothThranPhysician,
   ],
   tokens: [

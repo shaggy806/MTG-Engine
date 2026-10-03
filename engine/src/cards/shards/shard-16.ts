@@ -9,6 +9,7 @@ import _poolAkroanJailer from "../pool/akroan-jailer.js";
 import _poolAlmightyBrushwagg from "../pool/almighty-brushwagg.js";
 import _poolAncientLumberknot from "../pool/ancient-lumberknot.js";
 import _poolAncientZiggurat from "../pool/ancient-ziggurat.js";
+import _poolAnglerTurtle from "../pool/angler-turtle.js";
 import _poolAqueousForm from "../pool/aqueous-form.js";
 import _poolArborElf from "../pool/arbor-elf.js";
 import _poolArtfulTakedown from "../pool/artful-takedown.js";
@@ -64,6 +65,7 @@ import _poolExtravagantReplication from "../pool/extravagant-replication.js";
 import _poolFaerieSeer from "../pool/faerie-seer.js";
 import _poolFavorableWinds from "../pool/favorable-winds.js";
 import _poolFeralFerocity from "../pool/feral-ferocity.js";
+import _poolFirespitterWhelp from "../pool/firespitter-whelp.js";
 import _poolFistsOfTheAnvil from "../pool/fists-of-the-anvil.js";
 import _poolFlamebornHellion from "../pool/flameborn-hellion.js";
 import _poolFledglingGriffin from "../pool/fledgling-griffin.js";
@@ -137,6 +139,7 @@ import _poolOctoprophet from "../pool/octoprophet.js";
 import _poolOmegaMyr from "../pool/omega-myr.js";
 import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
 import _poolOnulet from "../pool/onulet.js";
+import _poolOrbOfDragonkind from "../pool/orb-of-dragonkind.js";
 import _poolOvergrowth from "../pool/overgrowth.js";
 import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
@@ -150,6 +153,7 @@ import _poolRazorkinNeedlehead from "../pool/razorkin-needlehead.js";
 import _poolRegalUnicorn from "../pool/regal-unicorn.js";
 import _poolRelicSloth from "../pool/relic-sloth.js";
 import _poolRemand from "../pool/remand.js";
+import _poolReturnToDust from "../pool/return-to-dust.js";
 import _poolRhysticStudy from "../pool/rhystic-study.js";
 import _poolRiverglidePathway from "../pool/riverglide-pathway.js";
 import _poolRonomUnicorn from "../pool/ronom-unicorn.js";
@@ -214,6 +218,7 @@ import _poolViashinoFangtail from "../pool/viashino-fangtail.js";
 import _poolVictorysEnvoy from "../pool/victorys-envoy.js";
 import _poolVillageRites from "../pool/village-rites.js";
 import _poolViridianEmissary from "../pool/viridian-emissary.js";
+import _poolVividGrove from "../pool/vivid-grove.js";
 import _poolWallOfGranite from "../pool/wall-of-granite.js";
 import _poolWallOfHeat from "../pool/wall-of-heat.js";
 import _poolWallOfLava from "../pool/wall-of-lava.js";
@@ -244,6 +249,7 @@ const shard: CardShard = {
     _poolAlmightyBrushwagg,
     _poolAncientLumberknot,
     _poolAncientZiggurat,
+    _poolAnglerTurtle,
     _poolAqueousForm,
     _poolArborElf,
     _poolArtfulTakedown,
@@ -299,6 +305,7 @@ const shard: CardShard = {
     _poolFaerieSeer,
     _poolFavorableWinds,
     _poolFeralFerocity,
+    _poolFirespitterWhelp,
     _poolFistsOfTheAnvil,
     _poolFlamebornHellion,
     _poolFledglingGriffin,
@@ -372,6 +379,7 @@ const shard: CardShard = {
     _poolOmegaMyr,
     _poolOneWithTheWind,
     _poolOnulet,
+    _poolOrbOfDragonkind,
     _poolOvergrowth,
     _poolPalladiumMyr,
     _poolPardicCollaborator,
@@ -385,6 +393,7 @@ const shard: CardShard = {
     _poolRegalUnicorn,
     _poolRelicSloth,
     _poolRemand,
+    _poolReturnToDust,
     _poolRhysticStudy,
     _poolRiverglidePathway,
     _poolRonomUnicorn,
@@ -449,6 +458,7 @@ const shard: CardShard = {
     _poolVictorysEnvoy,
     _poolVillageRites,
     _poolViridianEmissary,
+    _poolVividGrove,
     _poolWallOfGranite,
     _poolWallOfHeat,
     _poolWallOfLava,

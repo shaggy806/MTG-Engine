@@ -44,6 +44,7 @@ import _poolDauntlessVeteran from "../pool/dauntless-veteran.js";
 import _poolDeadWeight from "../pool/dead-weight.js";
 import _poolDeathlessAngel from "../pool/deathless-angel.js";
 import _poolDemandingDragon from "../pool/demanding-dragon.js";
+import _poolDevilishValet from "../pool/devilish-valet.js";
 import _poolDictateOfKruphix from "../pool/dictate-of-kruphix.js";
 import _poolDoggedPursuit from "../pool/dogged-pursuit.js";
 import _poolDonAndresTheRenegade from "../pool/don-andres-the-renegade.js";
@@ -144,6 +145,7 @@ import _poolRampartArchitect from "../pool/rampart-architect.js";
 import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
+import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolDeadWeight,
     _poolDeathlessAngel,
     _poolDemandingDragon,
+    _poolDevilishValet,
     _poolDictateOfKruphix,
     _poolDoggedPursuit,
     _poolDonAndresTheRenegade,
@@ -352,6 +355,7 @@ const shard: CardShard = {
     _poolRaphaelToughTurtle,
     _poolRebelliousStrike,
     _poolRecklessBarbarian,
+    _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
     _poolRiveteersInitiate,
     _poolRockfallVale,

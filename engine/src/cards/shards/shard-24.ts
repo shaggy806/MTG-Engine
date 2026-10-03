@@ -82,6 +82,7 @@ import _poolGloriousSunrise from "../pool/glorious-sunrise.js";
 import _poolGoForth from "../pool/go-forth.js";
 import _poolGoblinAssailant from "../pool/goblin-assailant.js";
 import _poolGruulLocket from "../pool/gruul-locket.js";
+import _poolHammerOfPurphoros from "../pool/hammer-of-purphoros.js";
 import _poolHanweirGarrison from "../pool/hanweir-garrison.js";
 import _poolHeartWarden from "../pool/heart-warden.js";
 import _poolHelgaSkittishSeer from "../pool/helga-skittish-seer.js";
@@ -206,6 +207,7 @@ import _tokensFrogLizardToken from "../tokens/frog-lizard-token.js";
 import _tokensHeroToken from "../tokens/hero-token.js";
 import _tokensPestToken from "../tokens/pest-token.js";
 import _tokensSquidToken from "../tokens/squid-token.js";
+import _tokensStormCrowToken from "../tokens/storm-crow-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -288,6 +290,7 @@ const shard: CardShard = {
     _poolGoForth,
     _poolGoblinAssailant,
     _poolGruulLocket,
+    _poolHammerOfPurphoros,
     _poolHanweirGarrison,
     _poolHeartWarden,
     _poolHelgaSkittishSeer,
@@ -414,6 +417,7 @@ const shard: CardShard = {
     _tokensHeroToken,
     _tokensPestToken,
     _tokensSquidToken,
+    _tokensStormCrowToken,
   ],
 };
 

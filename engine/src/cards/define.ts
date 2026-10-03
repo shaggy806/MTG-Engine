@@ -1342,6 +1342,14 @@ export interface CastModalSpec {
 export interface CardDefinition {
   readonly name: string;
   /**
+   * A token's name in the game, where it isn't `name`: the registry is keyed
+   * by name, so a token named after a real card (Murmuration's "named Storm
+   * Crow") is defined under a " Token" key and gets its real name from this
+   * as it's created — a copiable value of the token (rule 111.3), read by
+   * every "named …" and "same name" check (`nameOf`).
+   */
+  readonly tokenName?: string;
+  /**
    * A Scryfall link pinning this card's art to a specific printing, or `null`
    * to fall back to the by-name art lookup. Accepts any of:
    *   - a card page URL — `https://scryfall.com/card/dmu/120/...`
@@ -1774,6 +1782,7 @@ const PRINTED_ABILITY: {
   readonly [K in keyof CardDefinition]-?: false | ((def: CardDefinition) => boolean);
 } = {
   name: false,
+  tokenName: false,
   art: false,
   manaCost: false,
   colors: false,
@@ -1884,6 +1893,8 @@ export interface SagaChapter {
 
 interface CardDraft {
   name: string;
+  /** See {@link CardDefinition.tokenName}. */
+  tokenName?: string;
   /** A Scryfall link (page / API / image URL, or a bare card UUID) pinning
    * this card's art to a specific printing. See {@link CardDefinition.art}. */
   art?: string;
@@ -1989,6 +2000,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
         ];
   return {
     name: draft.name,
+    ...(draft.tokenName !== undefined ? { tokenName: draft.tokenName } : {}),
     art: draft.art ?? null,
     manaCost: draft.manaCost ?? null,
     colors: draft.colors ?? [],

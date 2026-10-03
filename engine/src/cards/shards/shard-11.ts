@@ -16,6 +16,7 @@ import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
 import _poolBarbaryApes from "../pool/barbary-apes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
+import _poolBladeSplicer from "../pool/blade-splicer.js";
 import _poolBlaze from "../pool/blaze.js";
 import _poolBloodVassal from "../pool/blood-vassal.js";
 import _poolBlueSunsZenith from "../pool/blue-suns-zenith.js";
@@ -223,9 +224,11 @@ import _poolVodalianHypnotist from "../pool/vodalian-hypnotist.js";
 import _poolWatcherOfTheWayside from "../pool/watcher-of-the-wayside.js";
 import _poolWaterfallAerialist from "../pool/waterfall-aerialist.js";
 import _poolWaywardGiant from "../pool/wayward-giant.js";
+import _poolWhiptongueHydra from "../pool/whiptongue-hydra.js";
 import _poolWieldingTheGreenDragon from "../pool/wielding-the-green-dragon.js";
 import _poolWildJhovall from "../pool/wild-jhovall.js";
 import _poolWishcoinCrab from "../pool/wishcoin-crab.js";
+import _poolYevaNaturesHerald from "../pool/yeva-natures-herald.js";
 import _poolZetalpaPrimalDawn from "../pool/zetalpa-primal-dawn.js";
 import _poolZombieMaster from "../pool/zombie-master.js";
 import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
@@ -251,6 +254,7 @@ const shard: CardShard = {
     _poolAttrition,
     _poolBarbaryApes,
     _poolBerserkersOfBloodRidge,
+    _poolBladeSplicer,
     _poolBlaze,
     _poolBloodVassal,
     _poolBlueSunsZenith,
@@ -458,9 +462,11 @@ const shard: CardShard = {
     _poolWatcherOfTheWayside,
     _poolWaterfallAerialist,
     _poolWaywardGiant,
+    _poolWhiptongueHydra,
     _poolWieldingTheGreenDragon,
     _poolWildJhovall,
     _poolWishcoinCrab,
+    _poolYevaNaturesHerald,
     _poolZetalpaPrimalDawn,
     _poolZombieMaster,
   ],

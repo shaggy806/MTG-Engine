@@ -1,0 +1,286 @@
+{
+  "batch": "PC-scd",
+  "status": "complete",
+  "ranks": "The 2022 Starter Commander Decks (SCD) leftovers: 38 cards, 4 authored",
+  "authored": [
+    {
+      "name": "Trostani Discordant",
+      "files": [
+        "engine/src/cards/pool/trostani-discordant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Angler Turtle",
+      "files": [
+        "engine/src/cards/pool/angler-turtle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Syphon Flesh",
+      "files": [
+        "engine/src/cards/pool/syphon-flesh.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Deadly Tempest",
+      "files": [
+        "engine/src/cards/pool/deadly-tempest.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Sarkhan, the Dragonspeaker",
+      "needs": [
+        "new:planeswalker-becomes-creature",
+        "effect:emblem-triggered-abilities"
+      ],
+      "why": "+1 makes the planeswalker a 4/4 Dragon creature (not modeled, AUTHORING §15), and the -6 emblem carries two triggered abilities; emblems hold only statics."
+    },
+    {
+      "name": "Foe-Razer Regent",
+      "needs": [
+        "new:fights-trigger"
+      ],
+      "why": "'Whenever a creature you control fights' — no trigger on a fight; no TriggerSpec matches the fight effect."
+    },
+    {
+      "name": "Loaming Shaman",
+      "needs": [
+        "new:shuffle-graveyard-into-library",
+        "effect:target-spec-additions"
+      ],
+      "why": "'Target player shuffles any number of target cards from their graveyard into their library': no shuffle-cards-into-library effect, and no any-number card-in-graveyard group tied to the targeted player's graveyard."
+    },
+    {
+      "name": "Champion of Lambholt",
+      "needs": [
+        "new:dynamic-compare-in-static-filters"
+      ],
+      "why": "'Creatures with power less than this creature's power can't block creatures you control': cantBeBlockedBy is matched with only { you } (combat/eligibility.ts blockFilters), so { amount: { powerOf: 'source' } } fails closed."
+    },
+    {
+      "name": "Curse of Bounty",
+      "needs": [
+        "mechanic:curses"
+      ],
+      "why": "Enchant player (an Aura attached to a player), 'whenever enchanted player is attacked' and 'each opponent attacking that player' — none modeled."
+    },
+    {
+      "name": "Curse of Disturbance",
+      "needs": [
+        "mechanic:curses"
+      ],
+      "why": "Enchant player and 'whenever enchanted player is attacked, … each opponent attacking that player does the same' — none modeled."
+    },
+    {
+      "name": "Cartographer's Hawk",
+      "needs": [
+        "new:trigger-player-controls-more"
+      ],
+      "why": "'Deals combat damage to a player who controls more lands than you': opponent-controls-more compares any opponent (or the active player), never the player dealt damage."
+    },
+    {
+      "name": "Gideon Jura",
+      "needs": [
+        "new:planeswalker-becomes-creature",
+        "new:must-attack-planeswalker"
+      ],
+      "why": "0: becomes a 6/6 creature that's still a planeswalker (not modeled); +2: target opponent's creatures attack Gideon if able during their next turn."
+    },
+    {
+      "name": "Diluvian Primordial",
+      "needs": [
+        "new:target-per-opponent",
+        "new:cast-now-target-group"
+      ],
+      "why": "'For each opponent, … up to one target instant or sorcery card from that player's graveyard' — no per-opponent target slots — then casting each free, exiled after."
+    },
+    {
+      "name": "Moorland Haunt",
+      "needs": [
+        "cost:choose-cards-as-cost"
+      ],
+      "why": "'Exile a creature card from your graveyard' as an activation cost — AbilityCost has no graveyard-exile part."
+    },
+    {
+      "name": "Jubilant Skybonder",
+      "needs": [
+        "new:targeted-by-spells-mana-tax"
+      ],
+      "why": "Grants fliers 'spells your opponents cast that target this creature cost {2} more': targetedBySpellsCost is payLife only and only on its own permanent."
+    },
+    {
+      "name": "Liliana, Untouched by Death",
+      "needs": [
+        "new:player-effect-cast-from-graveyard"
+      ],
+      "why": "-3: 'You may cast Zombie spells from your graveyard this turn' — no turn-scoped graveyard-cast permission for a player (player-effect has none; grant-graveyard-cast is one card)."
+    },
+    {
+      "name": "Necromantic Selection",
+      "needs": [
+        "new:choose-from-this-way"
+      ],
+      "why": "Return one of the creature cards put into any graveyard this way, under your control, as a black Zombie — return-from-graveyard reaches only your own graveyard. (exileOnResolve has since landed.)"
+    },
+    {
+      "name": "Scourge of Nel Toth",
+      "needs": [
+        "new:cast-self-from-graveyard"
+      ],
+      "why": "Cast from your graveyard by paying {B}{B} and sacrificing two creatures rather than its mana cost — no graveyard alternative cost with a sacrifice."
+    },
+    {
+      "name": "Unbreathing Horde",
+      "needs": [
+        "new:remove-counter-effect"
+      ],
+      "why": "'Prevent that damage and remove a +1/+1 counter from it': the would-deal-damage prevent replacement takes a then, but no effect removes a counter."
+    },
+    {
+      "name": "Havengul Lich",
+      "needs": [
+        "static:gain-abilities-from-graveyard",
+        "zone:graveyard-cast-permissions"
+      ],
+      "why": "Cast target creature card in any graveyard this turn, then gain all its activated abilities until end of turn."
+    },
+    {
+      "name": "Grimoire of the Dead",
+      "needs": [
+        "new:mass-graveyard-to-battlefield"
+      ],
+      "why": "'Put all creature cards from all graveyards onto the battlefield under your control. They're black Zombies' — return-from-graveyard reaches only your graveyard and can't add a colour."
+    },
+    {
+      "name": "Dredge the Mire",
+      "needs": [
+        "new:opponent-chooses-from-graveyard"
+      ],
+      "why": "'Each opponent chooses a creature card in their graveyard' — no choice of a graveyard card made by another player."
+    },
+    {
+      "name": "Ob Nixilis Reignited",
+      "needs": [
+        "effect:emblem-triggered-abilities"
+      ],
+      "why": "-8: target opponent gets an emblem with 'Whenever a player draws a card, you lose 2 life' — emblems hold only statics, and only the effect controller's."
+    },
+    {
+      "name": "Profane Command",
+      "needs": [
+        "new:x-targets",
+        "new:spell-target-filter-reads-x"
+      ],
+      "why": "'Up to X target creatures gain fear' (a target count of X in a castModal mode) and 'creature card with mana value X or less' in a spell's target filter (AUTHORING §6: a spell's target filter can't read X)."
+    },
+    {
+      "name": "Reign of the Pit",
+      "needs": [
+        "new:this-way-aggregate"
+      ],
+      "why": "X/X Demon 'where X is the total power of the creatures sacrificed this way' — thisWay counts objects; nothing sums their last-known power."
+    },
+    {
+      "name": "Scythe Specter",
+      "needs": [
+        "new:this-way-aggregate",
+        "new:greatest-among-discarded"
+      ],
+      "why": "Each player who discarded a card with the greatest mana value among cards discarded this way loses life equal to it."
+    },
+    {
+      "name": "Sepulchral Primordial",
+      "needs": [
+        "new:target-per-opponent"
+      ],
+      "why": "'For each opponent, … up to one target creature card from that player's graveyard' — no per-opponent target slots."
+    },
+    {
+      "name": "Soul Shatter",
+      "needs": [
+        "new:sacrifice-greatest-among"
+      ],
+      "why": "Each opponent sacrifices one with the greatest mana value among their own creatures and planeswalkers — a per-player maximum a sacrifice filter can't bind."
+    },
+    {
+      "name": "Chaos Warp",
+      "needs": [
+        "new:shuffle-into-library",
+        "new:reveal-top-any-library"
+      ],
+      "why": "Owner shuffles target permanent into their library, then reveals their top card and puts it onto the battlefield if it's a permanent card."
+    },
+    {
+      "name": "Combustible Gearhulk",
+      "needs": [
+        "new:target-opponent-chooses",
+        "new:this-way-aggregate"
+      ],
+      "why": "Target opponent chooses between you drawing three and you milling three, then damage equal to the milled cards' total mana value."
+    },
+    {
+      "name": "Fiery Confluence",
+      "needs": [
+        "new:modal-repeat-modes"
+      ],
+      "why": "'Choose three. You may choose the same mode more than once.'"
+    },
+    {
+      "name": "Sunbird's Invocation",
+      "needs": [
+        "new:cast-now-library-top-amount"
+      ],
+      "why": "cast-now's { libraryTop } is a fixed number, looked at privately; this reveals the top X, X the triggering spell's mana value."
+    },
+    {
+      "name": "Wild Ricochet",
+      "needs": [
+        "new:change-targets"
+      ],
+      "why": "'You may choose new targets for target instant or sorcery spell' — no change-targets effect (copy-spell's newTargets is for the copy only)."
+    },
+    {
+      "name": "Wildfire Devils",
+      "needs": [
+        "effect:random-choice",
+        "new:copy-card-and-cast"
+      ],
+      "why": "Choose a player at random; that player exiles an instant or sorcery card from their graveyard; copy that card and cast the copy free."
+    },
+    {
+      "name": "Coveted Jewel",
+      "needs": [
+        "new:unblocked-attackers-trigger"
+      ],
+      "why": "'Whenever one or more creatures an opponent controls attack you and aren't blocked, that player draws three cards and gains control of this artifact. Untap it.'"
+    },
+    {
+      "name": "Explosion of Riches",
+      "needs": [
+        "effect:random-choice",
+        "new:drawn-this-way-trigger"
+      ],
+      "why": "'Whenever a card is drawn this way', 5 damage to an opponent chosen at random."
+    },
+    {
+      "name": "Molten Slagheap",
+      "needs": [
+        "new:remove-x-counters-cost"
+      ],
+      "why": "'{1}, Remove X storage counters from this land: Add X mana in any combination of {B} and/or {R}' — removeCounter.count is a fixed number."
+    },
+    {
+      "name": "Myriad Landscape",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "'Up to two basic land cards that share a land type' relates the two finds to each other (AUTHORING §15)."
+    }
+  ]
+}

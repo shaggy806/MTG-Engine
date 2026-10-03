@@ -128,6 +128,7 @@ import _poolPsychosisCrawler from "../pool/psychosis-crawler.js";
 import _poolPutrefy from "../pool/putrefy.js";
 import _poolQuandrixPledgemage from "../pool/quandrix-pledgemage.js";
 import _poolQuirionSentinel from "../pool/quirion-sentinel.js";
+import _poolRegalImperiosaur from "../pool/regal-imperiosaur.js";
 import _poolResoluteRider from "../pool/resolute-rider.js";
 import _poolRipApart from "../pool/rip-apart.js";
 import _poolRunewing from "../pool/runewing.js";
@@ -334,6 +335,7 @@ const shard: CardShard = {
     _poolPutrefy,
     _poolQuandrixPledgemage,
     _poolQuirionSentinel,
+    _poolRegalImperiosaur,
     _poolResoluteRider,
     _poolRipApart,
     _poolRunewing,

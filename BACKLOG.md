@@ -52,6 +52,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
   any more. **Next:** two each for a triggered ability's divided damage, hideaway, Omen and
   "the creature it sacrificed" (`docs/card-blockers.md`).
+- **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
+  `may` around it (Primal Druid), so declining still searches and shuffles, which a library
+  ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,067 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
@@ -250,6 +253,13 @@ Beyond that plan:
   shipped. Likelier fix: a feature for Skullclamp-style "dies, draw" Equipment, not a weight.
 
 ## Client / UI
+
+- **Next priority (the user, 2026-10-02): a scenario builder for testing cards and interactions.**
+  Build a game state from scratch, searching cards from the card library and placing them, with
+  no game triggers happening while building; then switch to game mode to play cards and see how
+  they interact, how the bots react, or whether the engine works properly. Today the closest thing
+  is `dev-rooms` (`server/scripts/dev-scenarios.mjs`, boards written in code, and the 4099 command
+  port's `spawn`/`move`/`life`), which has no UI and needs a scenario authored per board.
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 

@@ -54,6 +54,7 @@ import _poolEnfeeblement from "../pool/enfeeblement.js";
 import _poolEnthusiasticMechanaut from "../pool/enthusiastic-mechanaut.js";
 import _poolErtaiTheCorrupted from "../pool/ertai-the-corrupted.js";
 import _poolEtherealGuidance from "../pool/ethereal-guidance.js";
+import _poolEumidianHatchery from "../pool/eumidian-hatchery.js";
 import _poolEvendoWakingHaven from "../pool/evendo-waking-haven.js";
 import _poolExclusionMage from "../pool/exclusion-mage.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
@@ -148,6 +149,7 @@ import _poolShelteringLandscape from "../pool/sheltering-landscape.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolShinyImpetus from "../pool/shiny-impetus.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
+import _poolSkylineDespot from "../pool/skyline-despot.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
 import _poolSmash from "../pool/smash.js";
 import _poolSoddenVerdure from "../pool/sodden-verdure.js";
@@ -189,6 +191,7 @@ import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
+import _poolVividCreek from "../pool/vivid-creek.js";
 import _poolVolcanicVillain from "../pool/volcanic-villain.js";
 import _poolWallOfRunes from "../pool/wall-of-runes.js";
 import _poolWardenOfGeometries from "../pool/warden-of-geometries.js";
@@ -259,6 +262,7 @@ const shard: CardShard = {
     _poolEnthusiasticMechanaut,
     _poolErtaiTheCorrupted,
     _poolEtherealGuidance,
+    _poolEumidianHatchery,
     _poolEvendoWakingHaven,
     _poolExclusionMage,
     _poolFiligreeFamiliar,
@@ -353,6 +357,7 @@ const shard: CardShard = {
     _poolShimmeringGrotto,
     _poolShinyImpetus,
     _poolSkycloudExpanse,
+    _poolSkylineDespot,
     _poolSlobadGoblinTinkerer,
     _poolSmash,
     _poolSoddenVerdure,
@@ -394,6 +399,7 @@ const shard: CardShard = {
     _poolVandalize,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,
+    _poolVividCreek,
     _poolVolcanicVillain,
     _poolWallOfRunes,
     _poolWardenOfGeometries,

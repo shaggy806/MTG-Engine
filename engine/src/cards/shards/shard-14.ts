@@ -75,6 +75,7 @@ import _poolDuskImp from "../pool/dusk-imp.js";
 import _poolEdgarMarkov from "../pool/edgar-markov.js";
 import _poolElephantRat from "../pool/elephant-rat.js";
 import _poolElvishScrapper from "../pool/elvish-scrapper.js";
+import _poolEvendoBrushrazer from "../pool/evendo-brushrazer.js";
 import _poolEvolvingWilds from "../pool/evolving-wilds.js";
 import _poolExcavationMole from "../pool/excavation-mole.js";
 import _poolExplosiveImpact from "../pool/explosive-impact.js";
@@ -208,6 +209,7 @@ import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
 import _tokensApeToken from "../tokens/ape-token.js";
 import _tokensFishToken from "../tokens/fish-token.js";
+import _tokensGolemEnchantmentArtifactToken from "../tokens/golem-enchantment-artifact-token.js";
 import _tokensGolemVigilanceToken from "../tokens/golem-vigilance-token.js";
 import _tokensKrakenToken from "../tokens/kraken-token.js";
 
@@ -285,6 +287,7 @@ const shard: CardShard = {
     _poolEdgarMarkov,
     _poolElephantRat,
     _poolElvishScrapper,
+    _poolEvendoBrushrazer,
     _poolEvolvingWilds,
     _poolExcavationMole,
     _poolExplosiveImpact,
@@ -420,6 +423,7 @@ const shard: CardShard = {
   tokens: [
     _tokensApeToken,
     _tokensFishToken,
+    _tokensGolemEnchantmentArtifactToken,
     _tokensGolemVigilanceToken,
     _tokensKrakenToken,
   ],

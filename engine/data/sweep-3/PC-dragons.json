@@ -1,0 +1,188 @@
+{
+  "batch": "PC-dragons",
+  "status": "complete",
+  "ranks": "Reign of Dragons precon (FDC, Lathliss, Dragon Queen)",
+  "authored": [
+    {
+      "name": "Breath Weapon",
+      "files": [
+        "engine/src/cards/pool/breath-weapon.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Shivan Devastator",
+      "files": [
+        "engine/src/cards/pool/shivan-devastator.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Count on Luck",
+      "files": [
+        "engine/src/cards/pool/count-on-luck.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Firespitter Whelp",
+      "files": [
+        "engine/src/cards/pool/firespitter-whelp.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Skyline Despot",
+      "files": [
+        "engine/src/cards/pool/skyline-despot.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Dragonstorm Globe",
+      "files": [
+        "engine/src/cards/pool/dragonstorm-globe.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Outpost Siege",
+      "files": [
+        "engine/src/cards/pool/outpost-siege.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Bitter Reunion",
+      "files": [
+        "engine/src/cards/pool/bitter-reunion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Orb of Dragonkind",
+      "files": [
+        "engine/src/cards/pool/orb-of-dragonkind.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hellkite Charger",
+      "files": [
+        "engine/src/cards/pool/hellkite-charger.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hit the Mother Lode",
+      "files": [
+        "engine/src/cards/pool/hit-the-mother-lode.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Chandra's Ignition",
+      "needs": [
+        "new:damage-from-target"
+      ],
+      "why": "The targeted creature is the source of the damage to each other creature and each opponent; damage/damage-all deal damage only from the resolving spell or a trigger object (`from: \"trigger-object\"`), never from a target slot."
+    },
+    {
+      "name": "Cursed Mirror",
+      "needs": [
+        "new:copy-on-enter-duration",
+        "effect:copy-exceptions"
+      ],
+      "why": "'As this artifact enters, you may have it become a copy of any creature on the battlefield until end of turn, except it has haste': copyOnEnter is a permanent copy, with no until-end-of-turn duration and no haste exception."
+    },
+    {
+      "name": "Dragonhawk, Fate's Tempest",
+      "needs": [
+        "new:delayed-count-still-exiled"
+      ],
+      "why": "At your next end step, 2 damage to each opponent for each card exiled this way that is still exiled; a delayed trigger's `about: \"exiled\"` targets exist but no amount counts how many of them are still in exile."
+    },
+    {
+      "name": "The Elder Dragon War",
+      "needs": [
+        "new:read-ahead",
+        "new:discard-any-number-draw-that-many"
+      ],
+      "why": "Read ahead (choose a starting chapter as the Saga enters) is unmodeled; chapter II's 'discard any number of cards, then draw that many' has no vocabulary either."
+    },
+    {
+      "name": "Goddric, Cloaked Reveler",
+      "needs": [
+        "new:static-set-creature-types"
+      ],
+      "why": "Celebration is expressible (turn-history entered, nonland, atLeast 2) and so are base P/T, flying and the granted ability, but 'is a Dragon … (He loses all other creature types)' needs a static that replaces creature types; StaticAbility only has addSubtypes (setSubtypes exists only on animate effects)."
+    },
+    {
+      "name": "Leyline Tyrant",
+      "needs": [
+        "new:mana-persists-static",
+        "new:pay-any-amount-reflexive"
+      ],
+      "why": "'You don't lose unspent red mana as steps and phases end' as a static (persists exists only on the add-mana that makes it), and 'pay any amount of {R}. When you do, it deals that much damage'."
+    },
+    {
+      "name": "Minion of the Mighty",
+      "needs": [
+        "new:pack-tactics"
+      ],
+      "why": "Pack tactics needs the total power attacked with this combat as a recorded fact; an attacking:true aggregate at resolution drifts from the declaration (AUTHORING §15)."
+    },
+    {
+      "name": "Sarkhan, Dragon Ascendant",
+      "needs": [
+        "new:behold"
+      ],
+      "why": "Behold a Dragon (choose a Dragon you control or reveal a Dragon card from your hand) has no vocabulary; skipping the reveal would hide information the card shows."
+    },
+    {
+      "name": "Scourge of the Throne",
+      "needs": [
+        "new:first-attack-each-turn"
+      ],
+      "why": "'Whenever this creature attacks for the first time each turn, if …': oncePerTurn doesn't match (a first attack whose intervening-if failed would still leave a later attack able to trigger), and attackedThisTurn is already true as the trigger is checked."
+    },
+    {
+      "name": "Thundermane Dragon",
+      "needs": [
+        "zone:visibility-extensions",
+        "new:cast-from-library-top-haste"
+      ],
+      "why": "Look at the top card any time (a private look, not revealsOwnLibraryTop), and 'if you cast a creature spell this way, it gains haste' — playFromLibraryTop has the filter but no rider on what was cast through it."
+    },
+    {
+      "name": "Spinerock Knoll",
+      "needs": [
+        "new:hideaway"
+      ],
+      "why": "Hideaway 4 (AUTHORING §15)."
+    },
+    {
+      "name": "Anger",
+      "needs": [
+        "new:graveyard-static"
+      ],
+      "why": "'As long as this card is in your graveyard and you control a Mountain, creatures you control have haste': statics work only from the battlefield (and the command zone for cost modification)."
+    },
+    {
+      "name": "Carnelian Orb of Dragonkind",
+      "needs": [
+        "new:when-spent-grant"
+      ],
+      "why": "'If that mana is spent on a Dragon creature spell, it gains haste until end of turn': whenSpent fires a triggered ability above the spell; nothing grants a characteristic to the spell/permanent the mana paid for."
+    },
+    {
+      "name": "Herald's Horn",
+      "needs": [
+        "new:chosen-type-in-zone-choice"
+      ],
+      "why": "The cost reduction is expressible (matchesChosenCreatureType), but the upkeep 'if it's a creature card of the chosen type' look-and-choose filter can't read the chosen type: Game.matchesZoneChoiceFilter calls matchesFilter with only { you }, no `source`, so ofChosenType never matches."
+    }
+  ]
+}

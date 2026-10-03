@@ -37,6 +37,18 @@ cards each need one more thing: a target in each player's graveyard (Afterlife f
 "exile X cards from your graveyard" as a cost (Necropolis Fiend), and a card an opponent
 chooses (Tasigur, the Golden Fang).
 
+## Other precons and shared staples (PC-*, 2026-10-02)
+
+The precon ranking (MTGJSON's 199 Commander decks, 175 once reprints are folded) picked four
+near-complete 2022 Starter Commander decks (SCD), four new decks about 25 cards short
+(Tramplesaurus Rex and Reign of Dragons from FDC, Family Matters from BLC, World Shaper from EOC)
+and the cards missing from 8+ precons. Six slices, 160 cards: 54 authored (`precon-<slice>-batch-1`
+tests), the rest recorded in `engine/data/sweep-3/PC-{scd,rex,family,dragons,shaper,shared}.json`.
+SCD's last stand-ins are mostly hard (curses, a planeswalker that becomes a creature, a target in
+each opponent's graveyard, emblems with triggers). Hit the Mother Lode showed discover 10 is
+expressible from `reveal-until` and `cast-now`; Return to Dust's main-phase rider from a
+`conditional` on the step.
+
 ## Top-5000 batches (sweep 3)
 
 - **Batch 4 (2026-09-28)** took the cards the debt fixes unblocked: 15 authored (regeneration,

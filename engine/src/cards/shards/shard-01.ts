@@ -16,6 +16,8 @@ import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
 import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
+import _poolBosssChauffeur from "../pool/bosss-chauffeur.js";
+import _poolBreathWeapon from "../pool/breath-weapon.js";
 import _poolBrokenBond from "../pool/broken-bond.js";
 import _poolBrokersHideout from "../pool/brokers-hideout.js";
 import _poolBurnwillowClearing from "../pool/burnwillow-clearing.js";
@@ -111,6 +113,7 @@ import _poolPegasusCharger from "../pool/pegasus-charger.js";
 import _poolPharikasLibation from "../pool/pharikas-libation.js";
 import _poolPillardropWarden from "../pool/pillardrop-warden.js";
 import _poolPlanarPortal from "../pool/planar-portal.js";
+import _poolPlanetaryAnnihilation from "../pool/planetary-annihilation.js";
 import _poolPrincessLucrezia from "../pool/princess-lucrezia.js";
 import _poolPrismaticLens from "../pool/prismatic-lens.js";
 import _poolPrizefighterConstruct from "../pool/prizefighter-construct.js";
@@ -123,6 +126,7 @@ import _poolRedwoodTreefolk from "../pool/redwood-treefolk.js";
 import _poolRemnantElemental from "../pool/remnant-elemental.js";
 import _poolRepulse from "../pool/repulse.js";
 import _poolRiddlemasterSphinx from "../pool/riddlemaster-sphinx.js";
+import _poolRockyTarPit from "../pool/rocky-tar-pit.js";
 import _poolRottingFensnake from "../pool/rotting-fensnake.js";
 import _poolRummagingWizard from "../pool/rummaging-wizard.js";
 import _poolRuthlessDeathfang from "../pool/ruthless-deathfang.js";
@@ -201,6 +205,8 @@ const shard: CardShard = {
     _poolBattleHymn,
     _poolBeastWhisperer,
     _poolBellowsLizard,
+    _poolBosssChauffeur,
+    _poolBreathWeapon,
     _poolBrokenBond,
     _poolBrokersHideout,
     _poolBurnwillowClearing,
@@ -296,6 +302,7 @@ const shard: CardShard = {
     _poolPharikasLibation,
     _poolPillardropWarden,
     _poolPlanarPortal,
+    _poolPlanetaryAnnihilation,
     _poolPrincessLucrezia,
     _poolPrismaticLens,
     _poolPrizefighterConstruct,
@@ -308,6 +315,7 @@ const shard: CardShard = {
     _poolRemnantElemental,
     _poolRepulse,
     _poolRiddlemasterSphinx,
+    _poolRockyTarPit,
     _poolRottingFensnake,
     _poolRummagingWizard,
     _poolRuthlessDeathfang,

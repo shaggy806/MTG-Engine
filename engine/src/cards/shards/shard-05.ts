@@ -35,6 +35,7 @@ import _poolBushwhack from "../pool/bushwhack.js";
 import _poolCanyonWildcat from "../pool/canyon-wildcat.js";
 import _poolCaravanHurda from "../pool/caravan-hurda.js";
 import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
+import _poolCentaurVinecrasher from "../pool/centaur-vinecrasher.js";
 import _poolChampionOfTheParish from "../pool/champion-of-the-parish.js";
 import _poolCharismaticVanguard from "../pool/charismatic-vanguard.js";
 import _poolChitteringWitch from "../pool/chittering-witch.js";
@@ -44,6 +45,7 @@ import _poolChronomaton from "../pool/chronomaton.js";
 import _poolCitywatchSphinx from "../pool/citywatch-sphinx.js";
 import _poolCleaverRiot from "../pool/cleaver-riot.js";
 import _poolCliffhavenSellSword from "../pool/cliffhaven-sell-sword.js";
+import _poolClifftopLookout from "../pool/clifftop-lookout.js";
 import _poolCloudManta from "../pool/cloud-manta.js";
 import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
@@ -136,6 +138,7 @@ import _poolPuresteelPaladin from "../pool/puresteel-paladin.js";
 import _poolQuicksilverPietroMaximoff from "../pool/quicksilver-pietro-maximoff.js";
 import _poolRaccoonRallier from "../pool/raccoon-rallier.js";
 import _poolRakdosShredFreak from "../pool/rakdos-shred-freak.js";
+import _poolRapidAugmenter from "../pool/rapid-augmenter.js";
 import _poolRavenousIntruder from "../pool/ravenous-intruder.js";
 import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
 import _poolRhonassMonument from "../pool/rhonass-monument.js";
@@ -147,6 +150,7 @@ import _poolRoothaMasteringTheMoment from "../pool/rootha-mastering-the-moment.j
 import _poolRuggedHighlands from "../pool/rugged-highlands.js";
 import _poolRuinationWurm from "../pool/ruination-wurm.js";
 import _poolRuinsRecluse from "../pool/ruins-recluse.js";
+import _poolRuptureSpire from "../pool/rupture-spire.js";
 import _poolScoriaElemental from "../pool/scoria-elemental.js";
 import _poolSeekerOfSkybreak from "../pool/seeker-of-skybreak.js";
 import _poolSelesnyaEvangel from "../pool/selesnya-evangel.js";
@@ -197,6 +201,7 @@ import _poolVoraciousVarmint from "../pool/voracious-varmint.js";
 import _poolWastelandScorpion from "../pool/wasteland-scorpion.js";
 import _poolWatercourser from "../pool/watercourser.js";
 import _poolWestfoldRider from "../pool/westfold-rider.js";
+import _poolWhispererOfTheWilds from "../pool/whisperer-of-the-wilds.js";
 import _poolWilt from "../pool/wilt.js";
 import _poolWindriderPatrol from "../pool/windrider-patrol.js";
 import _poolWinterMisanthropicGuide from "../pool/winter-misanthropic-guide.js";
@@ -247,6 +252,7 @@ const shard: CardShard = {
     _poolCanyonWildcat,
     _poolCaravanHurda,
     _poolCastleArdenvale,
+    _poolCentaurVinecrasher,
     _poolChampionOfTheParish,
     _poolCharismaticVanguard,
     _poolChitteringWitch,
@@ -256,6 +262,7 @@ const shard: CardShard = {
     _poolCitywatchSphinx,
     _poolCleaverRiot,
     _poolCliffhavenSellSword,
+    _poolClifftopLookout,
     _poolCloudManta,
     _poolConquerorsFlail,
     _poolConsulateSkygate,
@@ -348,6 +355,7 @@ const shard: CardShard = {
     _poolQuicksilverPietroMaximoff,
     _poolRaccoonRallier,
     _poolRakdosShredFreak,
+    _poolRapidAugmenter,
     _poolRavenousIntruder,
     _poolRememberTheFallen,
     _poolRhonassMonument,
@@ -359,6 +367,7 @@ const shard: CardShard = {
     _poolRuggedHighlands,
     _poolRuinationWurm,
     _poolRuinsRecluse,
+    _poolRuptureSpire,
     _poolScoriaElemental,
     _poolSeekerOfSkybreak,
     _poolSelesnyaEvangel,
@@ -409,6 +418,7 @@ const shard: CardShard = {
     _poolWastelandScorpion,
     _poolWatercourser,
     _poolWestfoldRider,
+    _poolWhispererOfTheWilds,
     _poolWilt,
     _poolWindriderPatrol,
     _poolWinterMisanthropicGuide,

@@ -15629,7 +15629,7 @@ export class Game {
     /** Exiled at the beginning of the next end step (Manaform Hellkite). */
     exileAtEndStep = false,
   ): readonly ObjectId[] {
-    this.registry.get(tokenName); // validate the token is a known definition
+    const def = this.registry.get(tokenName); // validate the token is a known definition
     // Doubling Season / Parallel Lives (rule 614): "twice that many instead".
     const total = count * this.tokenCreationMultiplier(controller);
     return this.mintTokenBatch(
@@ -15638,6 +15638,21 @@ export class Game {
       null,
       total,
       [
+        // A token named after a real card carries its name as a copiable
+        // value (`CardDefinition.tokenName`, rule 111.3).
+        ...(def.tokenName === undefined
+          ? []
+          : [
+              {
+                power: 0,
+                toughness: 0,
+                keywords: [],
+                copiable: true as const,
+                setName: def.tokenName,
+                untilEndOfTurn: false,
+                timestamp: -1,
+              },
+            ]),
         ...untilEndOfTurnKeywords(gainUntilEndOfTurn),
         // "An X/X token": what the effect made it (rule 111.3 — its copiable
         // values), under every other effect that sets its P/T.
