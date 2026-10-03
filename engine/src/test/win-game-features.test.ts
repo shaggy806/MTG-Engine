@@ -356,6 +356,25 @@ describe("the pacts", () => {
     expect(game.state.result.winner).toBe(B);
   });
 
+  it("at a table of three, the unpaid pact's controller leaves during their own upkeep and the game goes on", () => {
+    const { game } = setUp(["Grizzly Bears", "Pact of Negation"], [A, B, C]);
+    lands(game, A, "Forest", 2);
+    const bears = inHand(game, A, "Grizzly Bears");
+    game.dispatch({ type: "cast-spell", player: A, card: bears });
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: inHand(game, A, "Pact of Negation"),
+      targets: [{ kind: "object", object: bears }],
+    });
+    game.advanceUntil(quiet);
+    // Alice's next turn is the fourth; she can't pay, loses, and play passes on.
+    game.advanceUntil((s) => s.result.over || s.turn.number === 6);
+    expect(game.state.players[A].lossReason).toBe("lost the game to Pact of Negation");
+    expect(game.state.result.over).toBe(false);
+    expect(game.state.turn.number).toBe(6);
+  });
+
   it("Pact of Negation's payment, made, keeps you in the game", () => {
     const { game, a } = setUp(["Grizzly Bears", "Pact of Negation"]);
     lands(game, A, "Forest", 2);

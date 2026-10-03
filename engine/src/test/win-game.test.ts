@@ -102,7 +102,7 @@ describe("lose-game", () => {
     expect(game.state.result).toMatchObject({ over: true, winner: B, reason: "last player remaining" });
   });
 
-  it("in multiplayer the game goes on without them", () => {
+  it("players a scope names lose together, the one left winning", () => {
     const game = makeGame([A, B, C]);
     game.debugApplyEffect(A, { kind: "lose-game", who: "each-opponent" });
     expect(game.state.players[B].hasLost).toBe(true);
