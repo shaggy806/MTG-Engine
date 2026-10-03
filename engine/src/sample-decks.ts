@@ -300,7 +300,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Woodland Cemetery", 1],
     ],
     substitutions: [
-      sub("Afterlife from the Loam", "Reanimate", "Reanimates a creature from any graveyard."),
       sub("Colossal Grave-Reaver", "Archon of Cruelty", "Eight-mana creature: attack trigger, evasive creature."),
       sub("Command Beacon", "Path of Ancestry", "Land: commander payoff, utility land."),
       sub("Consuming Aberration", "Umbris, Fear Manifest", "Five-mana creature: mill."),
@@ -620,7 +619,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
     ],
     substitutions: [
       sub("Curse of Opulence", "Sticky Fingers", "One-mana enchantment: token maker, ramp."),
-      sub("Dismantling Wave", "Solemn Offering", "Three-mana sorcery: artifact and enchantment removal, removal."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
     ],
   }),
@@ -1442,7 +1440,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Moraug, Fury of Akoum", "Lumra, Bellow of the Woods", "Six-mana creature that pays off lands."),
       sub("Multani, Yavimaya's Avatar", "Ancient Greenwarden", "Green top-end creature that pays off lands."),
       sub("Soul of Windgrace", "Lord Windgrace", "Black-red-green Windgrace that returns lands from the graveyard."),
-      sub("Windgrace's Judgment", "Decimate", "Black-red-green spell that destroys several permanents."),
       sub("Worldsoul's Rage", "Fireball", "Red X damage spell."),
     ],
   }),

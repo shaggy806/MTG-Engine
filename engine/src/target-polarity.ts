@@ -646,6 +646,9 @@ export function specSide(spec: TargetSpec): SpecSide {
       case "any-number":
         return specSide(spec.of);
       case "permanent":
+        // A seat-bound slot (Dismantling Wave): seat 0 is you, the rest
+        // opponents.
+        if (typeof spec.whose === "object") return spec.whose.seat === 0 ? "you" : "opponent";
         return spec.whose === "you"
           ? "you"
           : spec.whose === "opponent" || spec.whose === "trigger-player" || spec.whose === "defending-player"
@@ -658,6 +661,7 @@ export function specSide(spec: TargetSpec): SpecSide {
       case "spell-or-permanent":
         return spec.whose === "you" ? "you" : spec.whose === "opponent" ? "opponent" : "any";
       case "card-in-graveyard":
+        if (typeof spec.whose === "object") return spec.whose.seat === 0 ? "you" : "opponent";
         return spec.whose === "you" ? "you" : spec.whose === "opponent" || spec.whose === "defending-player" ? "opponent" : "any";
     }
   }

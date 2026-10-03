@@ -213,6 +213,7 @@ import _poolWallOfTanglecord from "../pool/wall-of-tanglecord.js";
 import _poolWanderingOnes from "../pool/wandering-ones.js";
 import _poolWeaveFate from "../pool/weave-fate.js";
 import _poolWindcragSiege from "../pool/windcrag-siege.js";
+import _poolWindgracesJudgment from "../pool/windgraces-judgment.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
 import _poolWoodedBastion from "../pool/wooded-bastion.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
@@ -432,6 +433,7 @@ const shard: CardShard = {
     _poolWanderingOnes,
     _poolWeaveFate,
     _poolWindcragSiege,
+    _poolWindgracesJudgment,
     _poolWintersGrasp,
     _poolWoodedBastion,
   ],

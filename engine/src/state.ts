@@ -975,7 +975,11 @@ export type GrantedAbilityRef =
   | { readonly kind: "modifier-activated"; readonly ability: ActivatedAbility }
   /** A land's intrinsic mana ability from a basic land type it wasn't
    * printed with (rule 305.6 — `intrinsicManaColors`). */
-  | { readonly kind: "intrinsic"; readonly color: Color };
+  | { readonly kind: "intrinsic"; readonly color: Color }
+  /** A card's cycling ability (rule 702.29a: "[Cost], Discard this card:
+   * Draw a card", or landcycling's search), on the stack once it's been
+   * cycled — `cyclingAbility` of the card named. */
+  | { readonly kind: "cycling"; readonly cardName: string };
 
 /**
  * A permanent as it last existed on the battlefield (rules 603.10a, 608.2h):

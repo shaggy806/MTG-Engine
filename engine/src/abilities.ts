@@ -1208,6 +1208,14 @@ export type TriggerSpec =
        * storm — rules 702.85 / 702.40). ROADMAP Phase 8. */
       readonly on: "this-cast";
     }
+  | {
+      /** "When you cycle this card" (rule 702.29d: "when you discard it to
+       * pay a cycling cost") — Dismantling Wave. It triggers from whatever
+       * zone the card ends up in, usually the graveyard, and only for this
+       * card, and goes on the stack above the cycling ability — so it
+       * resolves before the draw (the rulings). */
+      readonly on: "this-cycled";
+    }
   /** Escape hatch: match the raw event yourself. */
   | { readonly on: "predicate"; readonly match: (event: GameEvent) => boolean };
 

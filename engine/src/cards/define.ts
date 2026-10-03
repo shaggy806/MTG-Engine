@@ -2066,21 +2066,23 @@ export interface CardDefinition {
    * off at each of your upkeeps, and at zero it's cast for free (with haste if
    * it's a creature). `null` for a card without suspend. */
   readonly suspend: { readonly n: number; readonly cost: string } | null;
-  /** Cycling (rule 702.29) — `cost`, Discard this card: Draw a card. Any time
-   * you could cast an instant. Modeled as an immediate special action (pay,
-   * discard, draw), not a stack-using ability — no "respond to cycling"
-   * window, no "when you cycle" triggers. The discard is a real one, seen by
-   * every `discards` trigger (Archfiend of Ifnir's "whenever you cycle or
-   * discard another card"). `null` for a card without cycling. */
+  /** Cycling (rule 702.29a) — "`cost`, Discard this card: Draw a card", an
+   * activated ability from the hand, any time you could cast an instant: the
+   * cost paid and the card discarded as it's activated (a real discard, seen
+   * by every `discards` trigger — Archfiend of Ifnir's "whenever you cycle or
+   * discard another card"), the draw on the stack (`cyclingAbility`), where a
+   * "when you cycle this card" trigger (`this-cycled` — Dismantling Wave)
+   * goes on above it and resolves first (the rulings). `null` for a card
+   * without cycling. */
   readonly cycling: {
     readonly cost: string;
     /**
      * **Landcycling / typecycling** (rule 702.29f — Migratory Route's "Basic
      * landcycling {2}"): instead of drawing, search your library for a card
-     * matching this filter and put it into your hand.
+     * matching this filter, reveal it and put it into your hand.
      *
-     * Same special action as ordinary cycling — pay, discard, then this
-     * instead of the draw.
+     * Same ability as ordinary cycling — pay, discard, then this instead of
+     * the draw as it resolves.
      */
     readonly search?: CardFilter;
   } | null;

@@ -7,6 +7,7 @@ import _poolAbbeyGriffin from "../pool/abbey-griffin.js";
 import _poolAccordersShield from "../pool/accorders-shield.js";
 import _poolAerialDoombot from "../pool/aerial-doombot.js";
 import _poolAerialResponder from "../pool/aerial-responder.js";
+import _poolAfterlifeFromTheLoam from "../pool/afterlife-from-the-loam.js";
 import _poolAgentOfKotis from "../pool/agent-of-kotis.js";
 import _poolAkroanMastiff from "../pool/akroan-mastiff.js";
 import _poolAltarsLight from "../pool/altars-light.js";
@@ -110,6 +111,7 @@ import _poolKranioceros from "../pool/kranioceros.js";
 import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
 import _poolLegionLoyalty from "../pool/legion-loyalty.js";
 import _poolLuminousBroodmoth from "../pool/luminous-broodmoth.js";
+import _poolMagmakinArtillerist from "../pool/magmakin-artillerist.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
 import _poolMassacreWurm from "../pool/massacre-wurm.js";
 import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
@@ -184,6 +186,7 @@ import _poolTempleGarden from "../pool/temple-garden.js";
 import _poolTheDrossPits from "../pool/the-dross-pits.js";
 import _poolTheJollyBalloonMan from "../pool/the-jolly-balloon-man.js";
 import _poolThornwindFaeries from "../pool/thornwind-faeries.js";
+import _poolTitanothRex from "../pool/titanoth-rex.js";
 import _poolTomeOfLegends from "../pool/tome-of-legends.js";
 import _poolTouchstone from "../pool/touchstone.js";
 import _poolTriumphOfTheHordes from "../pool/triumph-of-the-hordes.js";
@@ -221,6 +224,7 @@ const shard: CardShard = {
     _poolAccordersShield,
     _poolAerialDoombot,
     _poolAerialResponder,
+    _poolAfterlifeFromTheLoam,
     _poolAgentOfKotis,
     _poolAkroanMastiff,
     _poolAltarsLight,
@@ -324,6 +328,7 @@ const shard: CardShard = {
     _poolKutzilMalametExemplar,
     _poolLegionLoyalty,
     _poolLuminousBroodmoth,
+    _poolMagmakinArtillerist,
     _poolMagusOfTheBazaar,
     _poolMassacreWurm,
     _poolMerfolkOfTheDepths,
@@ -398,6 +403,7 @@ const shard: CardShard = {
     _poolTheDrossPits,
     _poolTheJollyBalloonMan,
     _poolThornwindFaeries,
+    _poolTitanothRex,
     _poolTomeOfLegends,
     _poolTouchstone,
     _poolTriumphOfTheHordes,

@@ -168,6 +168,9 @@ describe("PlayerView.decisionSource", () => {
       const route = handCard(game, A, "Migratory Route");
 
       game.dispatch({ type: "cycle", player: A, card: route });
+      // The cycling ability is on the stack (rule 702.29a); its search asks
+      // as it resolves.
+      game.advanceUntil((s) => s.awaiting !== null);
       expect(game.state.awaiting?.kind).toBe("choose-from-zone");
 
       // Cycling discards the card as part of its cost, so — as with the edict

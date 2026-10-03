@@ -113,10 +113,16 @@ export type TargetSpec =
    * `"defending-player"` is the player the ability's source is attacking, as
    * for `"creature-defending-player-controls"` (Kogla, the Titan Ape's
    * "target artifact or enchantment defending player controls").
+   * `{ seat }` is one player, `seat` places after the spell's or ability's
+   * controller in turn order (see {@link playerAtSeat}) — a slot bound to
+   * "that player": Dismantling Wave's "for each opponent, destroy up to one
+   * target artifact or enchantment that player controls" is one optional
+   * slot per seat 1–3. A target that has come under anyone else's control
+   * since is illegal as it resolves, as it is for the printed card.
    */
   | {
       readonly kind: "permanent";
-      readonly whose?: "any" | "you" | "opponent" | "trigger-player" | "defending-player";
+      readonly whose?: "any" | "you" | "opponent" | "trigger-player" | "defending-player" | TargetSeat;
       readonly filter: CardFilter;
       /** "…that's **attacking that player**" (Echoing Assault's "target
        * nontoken creature that's attacking that player", the player a
@@ -145,8 +151,11 @@ export type TargetSpec =
       /** `"defending-player"` reads the graveyard of whoever the ability's
        * source is currently attacking (Rakshasa Debaser), and so needs
        * `TargetSource.object` — the same way
-       * `"creature-defending-player-controls"` does. */
-      readonly whose?: "any" | "you" | "opponent" | "defending-player";
+       * `"creature-defending-player-controls"` does. `{ seat }` is one
+       * player's graveyard, as for `permanent` — Afterlife from the Loam's
+       * "for each player, choose up to one target creature card in that
+       * player's graveyard" is one optional slot per seat 0–3. */
+      readonly whose?: "any" | "you" | "opponent" | "defending-player" | TargetSeat;
       readonly filter?: CardFilter;
     }
   /**
@@ -383,6 +392,37 @@ export function concreteTargetSpecs(specs: readonly TargetSpec[], count: number)
  *   only once for it (rule 601.2c): each slot after the first differs from
  *   all the slots before it. The `distinctTargets` card helper builds them.
  */
+/** A target slot bound to one player by where they sit — see
+ * {@link playerAtSeat}. */
+export interface TargetSeat {
+  readonly seat: number;
+}
+
+/**
+ * The player `seat` places after `player` in turn order — 0 is `player`
+ * themself, 1 the next player, and so on — or `undefined` past the table.
+ * What a `{ seat }` target spec is bound to. Turn order keeps a player who
+ * has left the game in it, so the others' seats don't shift (a departed
+ * player has nothing left to target). A game seats at most four, so seats
+ * 1–3 are every opponent and 0–3 every player.
+ */
+export function playerAtSeat(
+  turnOrder: readonly PlayerId[],
+  player: PlayerId,
+  seat: number,
+): PlayerId | undefined {
+  const at = turnOrder.indexOf(player);
+  if (at < 0 || seat < 0 || seat >= turnOrder.length) return undefined;
+  return turnOrder[(at + seat) % turnOrder.length];
+}
+
+/** How a `{ seat }` spec names its player in a prompt. */
+function seatWords(seat: number, possessive: boolean): string {
+  if (seat === 0) return possessive ? "your" : "you";
+  const who = seat === 1 ? "the next opponent" : `the opponent ${seat} seats on`;
+  return possessive ? `${who}'s` : who;
+}
+
 export type OtherThan =
   | "source"
   | "trigger-object"
@@ -647,18 +687,24 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
     return `${colour}${type}spell${withMv}`;
   }
   if (spec.kind === "permanent") {
-    const noun = spec.filter.type ?? spec.filter.subtype ?? "permanent";
+    const noun =
+      spec.filter.type ?? spec.filter.subtype ?? spec.filter.typesAnyOf?.join(" or ") ?? "permanent";
+    if (typeof spec.whose === "object") {
+      return spec.whose.seat === 0 ? `${noun} you control` : `${noun} ${seatWords(spec.whose.seat, false)} controls`;
+    }
     if (spec.whose === "you") return `${noun} you control`;
     if (spec.whose === "opponent") return `${noun} an opponent controls`;
     if (spec.whose === "defending-player") return `${noun} defending player controls`;
     return noun;
   }
   const whose =
-    spec.whose === "you"
-      ? "your graveyard"
-      : spec.whose === "opponent"
-        ? "an opponent's graveyard"
-        : "a graveyard";
+    typeof spec.whose === "object"
+      ? `${seatWords(spec.whose.seat, true)} graveyard`
+      : spec.whose === "you"
+        ? "your graveyard"
+        : spec.whose === "opponent"
+          ? "an opponent's graveyard"
+          : "a graveyard";
   const what = spec.filter?.type ?? "card";
   return `${what} in ${whose}`;
 }

@@ -43,6 +43,10 @@ describe("basic landcycling", () => {
     const handBefore = game.state.zones.perPlayer[A].hand.length;
 
     game.dispatch({ type: "cycle", player: A, card });
+    // Discarded as the cost; the search is the ability on the stack.
+    expect(game.state.objects[card].zone).toBe("graveyard");
+    expect(game.state.zones.shared.stack).toHaveLength(1);
+    game.advanceUntil((s) => s.awaiting !== null);
 
     // A library search raises a choice rather than resolving immediately.
     const awaiting = game.state.awaiting;

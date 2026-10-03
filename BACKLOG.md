@@ -222,11 +222,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   - Forecast (11).
   - Companion (10).
   Exhaust and Boast are read, as the ability flags the engine already has.
-- **Cycling resolves without the stack.** Rule 702.29a makes it an activated ability ("[Cost],
-  Discard this card: Draw a card"); `cycleCard` draws (or landcycling searches) as the cost is
-  paid, so nobody can respond to it, counter it or copy it. Blocks Rings of Brighthearth
-  ("whenever you activate an ability"). Needs a cycling ability object on the stack the client
-  can draw and the bots can price.
+- **"Whenever you activate an ability" (Rings of Brighthearth).** `activates-ability` offers
+  only `who: "attached"`. Cycling's draw is on the stack now (an ability object sourced from the
+  cycled card), so a cycling activation would be one more for it to see.
+- **An O-Ring's return is a triggered ability, not rule 610.3's one-shot effect.** "Exile …
+  until ~ leaves the battlefield" returns the card "immediately after" (610.3; Grasp of Fate's
+  ruling: "Nothing happens between the two events, including state-based actions"), but the
+  engine's O-Rings (Banishing Light and kin, AUTHORING's "An O-Ring") return it with a
+  `leaves-battlefield` trigger that uses the stack and can be responded to. Grasp of Fate stays
+  out on it (its per-opponent targets are built — `{ seat }`).
 - **End-step token removal resolves without the stack.** "Exile it (sacrifice it) at the
   beginning of the next end step" is a delayed triggered ability (rule 603.7), but
   `create-token` / `create-token-copy`'s `exileAtEndStep` and `sacrificeAtEndStep` (Flameshadow

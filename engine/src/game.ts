@@ -6905,8 +6905,31 @@ export class Game {
     return null;
   }
 
-  /** Cycling (rule 702.29) — modeled as an immediate special action: pay the
-   * cost, discard the card, draw one. No stack, no "when you cycle" window. */
+  /** A card's cycling ability as it resolves (rule 702.29a): "Draw a card",
+   * or landcycling's search — reveal the card found and put it into your
+   * hand (702.29f). Its cost was paid as it was activated. */
+  private cyclingAbilityOf(cardName: string): ActivatedAbility | undefined {
+    if (!this.registry.has(cardName)) return undefined;
+    const cycling = this.registry.get(cardName).cycling;
+    if (cycling === null) return undefined;
+    return {
+      cost: { mana: cycling.cost, tap: false },
+      targets: [],
+      effect:
+        cycling.search === undefined
+          ? { kind: "draw", amount: 1 }
+          : { kind: "search-library", filter: cycling.search, destination: "hand", min: 0, max: 1, reveal: true },
+      resolve: null,
+      zone: "hand",
+      text: `${cycling.search === undefined ? "Cycling" : "Landcycling"} ${cycling.cost}`,
+    };
+  }
+
+  /** Cycling (rule 702.29a) — an activated ability from the hand: pay the
+   * cost and discard the card as it's activated, then the draw (or
+   * landcycling's search) goes on the stack, sourced from the cycled card. A
+   * "when you cycle this card" trigger goes on above it and resolves first
+   * (rule 702.29d and the rulings — Dismantling Wave). */
   private cycleCard(player: PlayerId, cardId: ObjectId): void {
     const why = this.whyCannotCycle(player, cardId);
     if (why !== null) throw new Error(why);
@@ -6923,24 +6946,14 @@ export class Game {
     // of Ifnir's "whenever you cycle or discard another card", Waste Not.
     this.emit({ type: "cards-discarded", player, objects: [cardId] });
     this.emit({ type: "card-cycled", player, object: cardId });
-    const cyclingSearch = cycling.search;
-    if (cyclingSearch !== undefined) {
-      // Landcycling / typecycling (702.29f): a library search instead of the
-      // draw. `min: 0` so an empty library isn't a hard failure, matching
-      // every other tutor in the pool.
-      //
-      // Attributed to the cycled card, which is already in the graveyard by
-      // now — `withDecisionSource` still resolves its name from the object,
-      // which is exactly why `DecisionSource` carries `cardName` rather than
-      // leaving the client to look the object up.
-      // Typecycling reveals what it finds (rule 702.29e: "search your library
-      // for a [type] card, reveal it, put it into your hand").
-      this.withDecisionSource(cardId, () => {
-        this.beginLibrarySearch(player, cyclingSearch, "hand", 0, 1, false, undefined, true);
-      });
-    } else {
-      this.drawCard(player);
-    }
+    // The ability itself, its costs paid (rule 602.2): the draw — or
+    // landcycling's search, `min: 0` so an empty library isn't a hard
+    // failure, revealing what it finds (702.29e) — happens as it resolves,
+    // under any "when you cycle" trigger. Its source is the cycled card,
+    // wherever the discard put it, which a search's prompt names.
+    const abilityId = this.mintAbilityObject(cardId, def.name, player, "activated", 0, []);
+    this.state.objects[abilityId].grantedAbility = { kind: "cycling", cardName: def.name };
+    this.emit({ type: "ability-activated", source: cardId, player, onStack: true, ability: abilityId });
     this.afterPlayerAction(player);
   }
 
@@ -10057,6 +10070,7 @@ export class Game {
   ): ActivatedAbility | TriggeredAbility | undefined {
     if (ref.kind === "modifier" || ref.kind === "modifier-activated") return ref.ability;
     if (ref.kind === "intrinsic") return intrinsicManaAbility(ref.color);
+    if (ref.kind === "cycling") return this.cyclingAbilityOf(ref.cardName);
     if (!this.registry.has(ref.cardName)) return undefined;
     const granting = this.registry.get(ref.cardName).static[ref.staticIndex];
     return ref.list === "activated"
@@ -13525,8 +13539,10 @@ export class Game {
       event.type === "permanent-destroyed" ||
       event.type === "permanent-left-battlefield" ||
       // A spell's own `this-cast` trigger (cascade, storm) lives on the card
-      // on the stack, not a permanent.
-      event.type === "spell-cast"
+      // on the stack, not a permanent; a cycled card's `this-cycled` one on
+      // the card wherever cycling put it (rule 702.29d).
+      event.type === "spell-cast" ||
+      event.type === "card-cycled"
         ? event.object
         : null;
     if (subject !== null) {
@@ -13588,6 +13604,8 @@ export class Game {
       // legendary casting, and Ms. Bumbleflower off hers.
       const onlyThisCast =
         event.type === "spell-cast" && id === event.object && object.zone === "stack";
+      // The card just cycled: only its own "when you cycle this card".
+      const onlyThisCycled = event.type === "card-cycled" && id === event.object;
       // An eliminated player's permanents are left on the board to be seen,
       // not to keep playing: their triggers stop firing. They leave play rather
       // than view — see the note in `matchesFilter`.
@@ -13602,6 +13620,7 @@ export class Game {
         if (onlyEminence && ability.fromCommandZone !== true) return;
         if ((ability.fromGraveyard === true) !== graveyardOnly.has(id)) return;
         if (onlyThisCast && ability.trigger.on !== "this-cast") return;
+        if (onlyThisCycled && ability.trigger.on !== "this-cycled") return;
         if (onlyLookBack && !LOOK_BACK_TRIGGERS.has(ability.trigger.on)) return;
         if (
           this.triggerMatches(ability.trigger, event, object) &&
@@ -14841,6 +14860,8 @@ export class Game {
       }
       case "this-cast":
         return event.type === "spell-cast" && event.object === self.id;
+      case "this-cycled":
+        return event.type === "card-cycled" && event.object === self.id;
       default:
         return false;
     }

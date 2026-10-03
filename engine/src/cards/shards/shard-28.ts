@@ -49,6 +49,7 @@ import _poolDawningAngel from "../pool/dawning-angel.js";
 import _poolDawnsTruce from "../pool/dawns-truce.js";
 import _poolDeepglowSkate from "../pool/deepglow-skate.js";
 import _poolDiregrafGhoul from "../pool/diregraf-ghoul.js";
+import _poolDismantlingWave from "../pool/dismantling-wave.js";
 import _poolDispersalTechnician from "../pool/dispersal-technician.js";
 import _poolDreamPillager from "../pool/dream-pillager.js";
 import _poolDregRecycler from "../pool/dreg-recycler.js";
@@ -261,6 +262,7 @@ const shard: CardShard = {
     _poolDawnsTruce,
     _poolDeepglowSkate,
     _poolDiregrafGhoul,
+    _poolDismantlingWave,
     _poolDispersalTechnician,
     _poolDreamPillager,
     _poolDregRecycler,

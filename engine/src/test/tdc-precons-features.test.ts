@@ -653,3 +653,300 @@ describe("Lord of the Forsaken", () => {
     expect(game.state.objects[twice].zone).toBe("exile");
   });
 });
+
+/** A three-player game, A's main phase, A with lands of every colour. */
+const C = asPlayerId("carol");
+const threeWay = () => {
+  const game = Game.create({
+    seed: 1,
+    shuffle: false,
+    rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+    decks: [A, B, C].map((p) => ({ player: p, cards: Array<string>(40).fill("Island") })),
+  });
+  game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+  for (const land of ["Plains", "Swamp"] as const) {
+    for (let i = 0; i < 9; i += 1) game.state.objects[game.debugSpawn(land, A, "battlefield")].tapped = false;
+  }
+  return game;
+};
+
+describe("Dismantling Wave", () => {
+  it("destroys up to one artifact or enchantment of each opponent's", () => {
+    const game = threeWay();
+    const mine = game.debugSpawn("Sol Ring", A, "battlefield");
+    const bRing = game.debugSpawn("Sol Ring", B, "battlefield");
+    const bStone = game.debugSpawn("Mind Stone", B, "battlefield");
+    const cPrison = game.debugSpawn("Ghostly Prison", C, "battlefield");
+    const wave = game.debugSpawn("Dismantling Wave", A, "hand");
+    const offer = game.legalActions(A).find((a) => a.kind === "cast-spell" && a.card === wave);
+    expect(offer).toBeDefined();
+    // Each slot is one opponent's: Bob's next, then Carol's, then nobody's.
+    if (offer?.kind === "cast-spell") {
+      const options = offer.targetOptions ?? [];
+      expect(options[0]?.map((t) => (t.kind === "object" ? t.object : null)).sort()).toEqual([bRing, bStone].sort());
+      expect(options[1]?.map((t) => (t.kind === "object" ? t.object : null))).toEqual([cPrison]);
+      expect(options[2] ?? []).toEqual([]);
+    }
+    // Two of Bob's is not one per opponent.
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: wave, targets: [obj(bRing), obj(bStone), null] }),
+    ).toThrow();
+    game.dispatch({ type: "cast-spell", player: A, card: wave, targets: [obj(bRing), obj(cPrison), null] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bRing].zone).toBe("graveyard");
+    expect(game.state.objects[cPrison].zone).toBe("graveyard");
+    expect(game.state.objects[bStone].zone).toBe("battlefield");
+    expect(game.state.objects[mine].zone).toBe("battlefield");
+  });
+
+  it("spares a target that's no longer that player's", () => {
+    const game = threeWay();
+    const bRing = game.debugSpawn("Sol Ring", B, "battlefield");
+    const cPrison = game.debugSpawn("Ghostly Prison", C, "battlefield");
+    cast(game, "Dismantling Wave", [obj(bRing), obj(cPrison), null] as TargetRef[]);
+    // Carol takes Bob's Sol Ring in response: still an opponent's, but not
+    // Bob's — the player it was chosen for.
+    game.debugApplyEffect(C, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [obj(bRing)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bRing].zone).toBe("battlefield");
+    expect(game.state.objects[cPrison].zone).toBe("graveyard");
+  });
+
+  it("when cycled, destroys every artifact and enchantment before the cycling draw", () => {
+    const game = threeWay();
+    const mine = game.debugSpawn("Sol Ring", A, "battlefield");
+    const theirs = game.debugSpawn("Ghostly Prison", C, "battlefield");
+    const wave = game.debugSpawn("Dismantling Wave", A, "hand");
+    const hand = handSize(game);
+    game.dispatch({ type: "cycle", player: A, card: wave });
+    expect(game.state.objects[wave].zone).toBe("graveyard");
+    // The trigger above the cycling ability: it resolves first.
+    expect(game.state.zones.shared.stack).toHaveLength(2);
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "pass-priority", player: B });
+    game.dispatch({ type: "pass-priority", player: C });
+    expect(game.state.objects[mine].zone).toBe("graveyard");
+    expect(game.state.objects[theirs].zone).toBe("graveyard");
+    expect(handSize(game)).toBe(hand - 1);
+    game.advanceUntil(quiet);
+    expect(handSize(game)).toBe(hand);
+  });
+});
+
+describe("Afterlife from the Loam", () => {
+  it("returns up to one creature card from each player's graveyard under your control, as Zombies", () => {
+    const game = threeWay();
+    const mine = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const bobs = game.debugSpawn("Craw Wurm", B, "graveyard");
+    const bobsOther = game.debugSpawn("Serra Angel", B, "graveyard");
+    const carols = game.debugSpawn("Giant Spider", C, "graveyard");
+    // Two of Bob's is two from one graveyard.
+    const loam = game.debugSpawn("Afterlife from the Loam", A, "hand");
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: loam, targets: [obj(mine), obj(bobs), obj(bobsOther), null] }),
+    ).toThrow();
+    game.dispatch({ type: "cast-spell", player: A, card: loam, targets: [obj(mine), obj(bobs), obj(carols), null] });
+    game.advanceUntil(quiet);
+    for (const id of [mine, bobs, carols]) {
+      expect(game.state.objects[id].zone).toBe("battlefield");
+      expect(game.state.objects[id].controller).toBe(A);
+      expect(game.characteristics(id).subtypes).toContain("Zombie");
+    }
+    expect(game.state.objects[bobsOther].zone).toBe("graveyard");
+  });
+});
+
+describe("Windgrace's Judgment", () => {
+  it("destroys a nonland permanent of each opponent's it targets", () => {
+    const game = threeWay();
+    for (const land of ["Forest", "Forest"] as const) {
+      game.state.objects[game.debugSpawn(land, A, "battlefield")].tapped = false;
+    }
+    const bobs = ready(game, "Craw Wurm", B);
+    const carols = game.debugSpawn("Ghostly Prison", C, "battlefield");
+    const carolsLand = game.debugSpawn("Island", C, "battlefield");
+    const judgment = game.debugSpawn("Windgrace's Judgment", A, "hand");
+    // Not a land; not Bob's in Carol's slot.
+    expect(() =>
+      game.dispatch({ type: "cast-spell", player: A, card: judgment, targets: [obj(bobs), obj(carolsLand), null] }),
+    ).toThrow();
+    game.dispatch({ type: "cast-spell", player: A, card: judgment, targets: [obj(bobs), obj(carols), null] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bobs].zone).toBe("graveyard");
+    expect(game.state.objects[carols].zone).toBe("graveyard");
+    expect(game.state.objects[carolsLand].zone).toBe("battlefield");
+  });
+});
+
+describe("cycling on the stack, and 'when you cycle this card'", () => {
+  /** Cycle `name` from A's hand: the ability and any trigger above it. */
+  const cycle = (game: Game, name: string): ObjectId => {
+    const card = game.debugSpawn(name, A, "hand");
+    game.dispatch({ type: "cycle", player: A, card });
+    return card;
+  };
+  const library = (game: Game, who: PlayerId) => game.state.zones.perPlayer[who].library.length;
+
+  it("draws as the cycling ability resolves, under its trigger (Fractured Sanity)", () => {
+    const game = setUp();
+    const hand = handSize(game);
+    const before = library(game, B);
+    const sanity = cycle(game, "Fractured Sanity");
+    expect(game.state.objects[sanity].zone).toBe("graveyard");
+    expect(game.state.zones.shared.stack).toHaveLength(2);
+    expect(handSize(game)).toBe(hand);
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "pass-priority", player: B });
+    // The trigger first: Bob mills four, and A hasn't drawn yet.
+    expect(library(game, B)).toBe(before - 4);
+    expect(handSize(game)).toBe(hand);
+    game.advanceUntil(quiet);
+    expect(handSize(game)).toBe(hand + 1);
+  });
+
+  it("can be responded to: the card is drawn after a spell cast in response", () => {
+    const game = setUp();
+    const hand = handSize(game);
+    const card = game.debugSpawn("Migratory Route", A, "hand");
+    game.dispatch({ type: "cycle", player: A, card });
+    expect(game.state.zones.shared.stack).toHaveLength(1);
+    const think = cast(game, "Think Twice");
+    expect(game.state.zones.shared.stack).toHaveLength(2);
+    game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+    // Think Twice resolved first; the landcycling search asks next.
+    expect(game.state.objects[think].zone).toBe("graveyard");
+    expect(game.state.awaiting?.kind).toBe("choose-from-zone");
+    expect(handSize(game)).toBe(hand + 1);
+  });
+
+  it("Fractured Sanity cast mills each opponent fourteen", () => {
+    const game = setUp();
+    const before = library(game, B);
+    cast(game, "Fractured Sanity");
+    game.advanceUntil(quiet);
+    expect(library(game, B)).toBe(before - 14);
+  });
+
+  it("Decree of Pain destroys every creature and draws for each one destroyed; cycled, shrinks them all", () => {
+    const game = setUp();
+    ready(game, "Grizzly Bears");
+    ready(game, "Craw Wurm", B);
+    const myr = ready(game, "Darksteel Myr", B);
+    const decree = cast(game, "Decree of Pain");
+    const hand = handSize(game);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[myr].zone).toBe("battlefield");
+    expect(handSize(game)).toBe(hand + 2);
+    expect(game.state.objects[decree].zone).toBe("graveyard");
+    const angel = ready(game, "Serra Angel", B);
+    cycle(game, "Decree of Pain");
+    game.advanceUntil(quiet);
+    expect(game.state.objects[myr].zone).toBe("graveyard");
+    expect(game.characteristics(angel).toughness).toBe(2);
+  });
+
+  it("Agonasaur Rex's trigger pumps up to one target, or none", () => {
+    const game = setUp();
+    const bears = ready(game, "Grizzly Bears");
+    cycle(game, "Agonasaur Rex");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(bears)] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].counters["+1/+1"]).toBe(2);
+    expect(game.characteristics(bears).keywords.has("trample")).toBe(true);
+    expect(game.characteristics(bears).keywords.has("indestructible")).toBe(true);
+    const hand = handSize(game);
+    cycle(game, "Agonasaur Rex");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [null] });
+    game.advanceUntil(quiet);
+    // The Rex spawned into the hand and cycled away, and the draw.
+    expect(handSize(game)).toBe(hand + 1);
+  });
+
+  it("Magmakin Artillerist burns each opponent for each discard, and for 1 when cycled", () => {
+    const game = setUp();
+    ready(game, "Magmakin Artillerist");
+    game.debugApplyEffect(A, { kind: "discard", target: "you", amount: 2, random: true }, []);
+    game.advanceUntil(quiet);
+    expect(life(game, B)).toBe(18);
+    expect(life(game)).toBe(20);
+    cycle(game, "Magmakin Artillerist");
+    game.advanceUntil(quiet);
+    // The cycled one's own 1, and the one on the battlefield's 1 for the
+    // discard.
+    expect(life(game, B)).toBe(16);
+  });
+
+  it("Vizier of Tumbling Sands untaps another permanent, or any when cycled", () => {
+    const game = setUp();
+    const vizier = ready(game, "Vizier of Tumbling Sands");
+    const land = game.debugSpawn("Island", A, "battlefield");
+    game.state.objects[land].tapped = true;
+    expect(() => activate(game, vizier, 0, [obj(vizier)])).toThrow();
+    activate(game, vizier, 0, [obj(land)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[land].tapped).toBe(false);
+    expect(game.state.objects[vizier].tapped).toBe(true);
+    cycle(game, "Vizier of Tumbling Sands");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(vizier)] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[vizier].tapped).toBe(false);
+  });
+
+  it("Titanoth Rex puts a trample counter on a creature you control", () => {
+    const game = setUp();
+    const bears = ready(game, "Grizzly Bears");
+    cycle(game, "Titanoth Rex");
+    // The only creature you control: the target is chosen for you.
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].counters.trample).toBe(1);
+    expect(game.characteristics(bears).keywords.has("trample")).toBe(true);
+  });
+
+  it("The Balrog of Moria makes two Treasures when cycled", () => {
+    const game = setUp();
+    cycle(game, "The Balrog of Moria");
+    game.advanceUntil(quiet);
+    const treasures = game.state.zones.shared.battlefield.filter(
+      (id) => game.state.objects[id].cardName === "Treasure Token" && game.state.objects[id].controller === A,
+    );
+    expect(treasures.reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0)).toBe(2);
+  });
+});
+
+describe("The Balrog of Moria", () => {
+  it("exiled as it dies, exiles up to one creature of each opponent's", () => {
+    const game = threeWay();
+    const balrog = ready(game, "The Balrog of Moria");
+    const bobs = ready(game, "Craw Wurm", B);
+    const bobsOther = ready(game, "Grizzly Bears", B);
+    const carols = ready(game, "Serra Angel", C);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(balrog)]);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets");
+    expect(game.state.objects[balrog].zone).toBe("exile");
+    // Two opponents: the third seat's slot has nothing, and isn't asked.
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind === "choose-targets" ? awaiting.specs.length : 0).toBe(2);
+    game.dispatch({ type: "choose-targets", player: A, targets: [obj(bobs), obj(carols)] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bobs].zone).toBe("exile");
+    expect(game.state.objects[carols].zone).toBe("exile");
+    expect(game.state.objects[bobsOther].zone).toBe("battlefield");
+  });
+
+  it("exiles nothing if it isn't exiled", () => {
+    const game = threeWay();
+    const balrog = ready(game, "The Balrog of Moria");
+    const bobs = ready(game, "Craw Wurm", B);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(balrog)]);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: [] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[balrog].zone).toBe("graveyard");
+    expect(game.state.objects[bobs].zone).toBe("battlefield");
+  });
+});

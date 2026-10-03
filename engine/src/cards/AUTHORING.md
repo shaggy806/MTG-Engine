@@ -290,7 +290,7 @@ from the same link.
 | `evoke` | `{ cost }` | **Evoke** (rule 702.74 — Mulldrifter): an alternative cost, offered as the cast's `evoke` variant (echoed back with its `evokeCost`) wherever the card may be cast for its mana cost — the hand, the command zone, an impulse or graveyard permission — beside kicker or an additional cost's branch, never beside overload, a free cast or another alternative cost (118.9a). Paid, the permanent it becomes gets "when this permanent enters, its controller sacrifices it" as it enters. That trigger goes on the stack before its controller's other triggers of the moment (`TriggeredAbility.stackFirst`), so the creature's own enters abilities resolve first, while it's still there — the order the rulings describe; the engine doesn't yet ask (`decision:trigger-order`), so don't author an evoke card whose enters ability would want the other order. Mana costs only: the Incarnations' "Evoke—Exile a green card from your hand" isn't expressible. Put the printed evoke line in `text`. |
 | `escape` | `{ cost, exileCount }` | cast from graveyard + exile N other graveyard cards |
 | `suspend` | `{ n, cost }` | exile with N time counters; cast free at 0 with haste |
-| `cycling` | `{ cost, search? }` | pay `cost`, discard this card, draw a card (rule 702.29). The discard is a real one: every `discards` trigger sees it (Archfiend of Ifnir's "whenever you cycle or discard another card"). With `search` it's **landcycling / typecycling** (702.29f — Migratory Route's "Basic landcycling {2}"): the same special action, but a library search into your hand instead of the draw. |
+| `cycling` | `{ cost, search? }` | "`cost`, Discard this card: Draw a card" (rule 702.29a) — an activated ability from the hand: the cost paid and the card discarded as it's activated, the draw on the stack, so it can be responded to, countered or copied. The discard is a real one: every `discards` trigger sees it (Archfiend of Ifnir's "whenever you cycle or discard another card"). With `search` it's **landcycling / typecycling** (702.29f — Migratory Route's "Basic landcycling {2}"): the same ability, a library search into your hand (the card revealed) instead of the draw. "When you cycle this card" is a `this-cycled` trigger (§9 — Dismantling Wave): it goes on the stack above the cycling ability and resolves first (the rulings). |
 | `chapters` | `SagaChapter[]` | a Saga — §12 |
 | `faces` | `string[]` | a multi-face card (front first) — §12 |
 | `transform` | `boolean` | a *transforming* DFC (set on both faces) — §12 |
@@ -1767,7 +1767,14 @@ stopped covering:
   `attacking: "trigger-player"` is "target creature **that's attacking that
   player**" (Echoing Assault, on an `attacks-player` trigger): attacking that
   player itself — a creature attacking a planeswalker they control isn't
-  (rules 506.3, 509.1a). **Prefer a string
+  (rules 506.3, 509.1a). `whose: { seat: n }` binds the slot to one player —
+  the one `n` places after you in turn order (0 is you; `playerAtSeat`):
+  "**for each opponent**, destroy up to one target artifact or enchantment
+  **that player** controls" (Dismantling Wave) is three `optional` slots,
+  seats 1–3, since a game seats at most four. Exactly the printed card: a
+  target that has come under anyone else's control is illegal as it
+  resolves, as "that player's" would be (unlike `differentController`, which
+  only asks the targets' controllers to differ). **Prefer a string
   literal when one fits** — it reads better and most of the pool uses them;
   reach for this when spelling the shape as a literal wouldn't be reused.
 - `{ kind: "spell", whose?: "any" | "you" | "opponent", filter: CardFilter }` — a spell
@@ -1792,7 +1799,10 @@ stopped covering:
 - `{ kind: "card-in-graveyard", whose?: "any" | "you" | "opponent" | "defending-player", filter?: CardFilter }`
   — a card in a graveyard (Withered Wretch, Cemetery Reaper, Return to
   Nature's third mode). Graveyard targeting varies on both *whose* graveyard
-  and an arbitrary card filter, which wouldn't converge as literals. `whose` defaults to `"any"`, and
+  and an arbitrary card filter, which wouldn't converge as literals. `whose:
+  { seat: n }` is one player's graveyard, as for `permanent` — Afterlife
+  from the Loam's "**for each player**, choose up to one target creature card
+  in **that player's** graveyard" is four `optional` slots, seats 0–3. `whose` defaults to `"any"`, and
 `filter` matches printed characteristics (layer effects don't reach a
 graveyard). `describeTargetSpec(spec)` renders any spec as a UI label.
 
@@ -2177,7 +2187,8 @@ triggered: [
 | `plays-land` | `who`, `otherOnly?` | a player **plays** a land — the special action (rule 305.1; Burgeoning, Fastbond), not a land put onto the battlefield (that's an `enters-battlefield` filtered to lands). `otherOnly` is City of Traitors' "when you play **another** land": its own play doesn't count, though it's on the battlefield by the time that play is announced. |
 | `plays-card` | `who`, `from?`, `filter?` | a player **plays a card** — plays a land *or* casts a spell, since "play" covers both (Prosper, Tome-Bound's "whenever you play a card **from exile**" is `{ on: "plays-card", who: "you", from: "exile" }`, which a land played off an impulse exile fires as well as a foretold card cast from there). `from` is the zone recorded on the `land-played` / `spell-cast` event. `filter` asks about the card played, as the land on the battlefield or the spell on the stack (Rendmaw, Creaking Nest's "a card with two or more card types" is `{ cardTypeCount: { op: "gte", n: 2 } }`). For lands alone, `plays-land`. |
 | `this-cast` | — | the spell carrying this ability is cast (cascade, storm) |
-| `activates-ability` | `who: "attached"` | an ability of the Equipment's or Aura's host is activated onto the stack — never a mana ability, which doesn't use it (rule 605.3b) — the host still attached once the costs are paid, so one sacrificed to pay them isn't (Illusionist's Bracers' rulings). The trigger object is the ability on the stack: `copy-ability`'s `"trigger-ability"` copies it, as it last was there if it's been countered (Battlemage's Bracers puts that in a `may` with `cost: "{1}"`). "Whenever **you** activate an ability" (Rings of Brighthearth) isn't offered: the engine resolves cycling's draw without the stack (rule 702.29a says it uses it), so a cycling activation would be missed. |
+| `activates-ability` | `who: "attached"` | an ability of the Equipment's or Aura's host is activated onto the stack — never a mana ability, which doesn't use it (rule 605.3b) — the host still attached once the costs are paid, so one sacrificed to pay them isn't (Illusionist's Bracers' rulings). The trigger object is the ability on the stack: `copy-ability`'s `"trigger-ability"` copies it, as it last was there if it's been countered (Battlemage's Bracers puts that in a `may` with `cost: "{1}"`). "Whenever **you** activate an ability" (Rings of Brighthearth) isn't offered yet; a cycling activation is one now (its draw uses the stack). |
+| `this-cycled` | — | "When you cycle this card" (rule 702.29d: "when you discard it to pay a cycling cost") — Dismantling Wave's "destroy all artifacts and enchantments". Triggers from wherever the card ended up, for this card only, and goes on the stack above the cycling ability, so it resolves before the draw (the rulings). |
 | `predicate` | `match: (event) => boolean` | escape hatch — match the raw `GameEvent` |
 
 **`who: TriggerWho`** = `"self"` (this permanent) / `"you-control"` / `"you"`
@@ -3660,11 +3671,6 @@ Delete an entry in the same commit as the feature that retires it.
   spree spell) cast that way has no modes and does nothing, and kicker or a
   gift is never offered (BACKLOG, "Engine rules gaps"). Cast any other way —
   from a hand, a graveyard permission, a `cast-now` — they're whole.
-- **Cycling doesn't use the stack.** Rule 702.29a makes cycling an activated
-  ability ("[Cost], Discard this card: Draw a card"), but the engine draws (or
-  searches, for landcycling) as the cost is paid. So nothing can respond to or
-  copy it, and "whenever you activate an ability" (Rings of Brighthearth —
-  `activates-ability` offers only `"attached"`) would miss it.
 - **End-step token removal doesn't use the stack.** "Exile it (sacrifice
   it) at the beginning of the next end step" is a delayed triggered ability
   (rule 603.7), but `exileAtEndStep` and `sacrificeAtEndStep` (§6 — Flameshadow

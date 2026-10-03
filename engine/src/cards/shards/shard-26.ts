@@ -33,6 +33,7 @@ import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
 import _poolCorpseKnight from "../pool/corpse-knight.js";
 import _poolCountOnLuck from "../pool/count-on-luck.js";
 import _poolCrenellatedWall from "../pool/crenellated-wall.js";
+import _poolDecreeOfPain from "../pool/decree-of-pain.js";
 import _poolDinaEssenceBrewer from "../pool/dina-essence-brewer.js";
 import _poolDrEggman from "../pool/dr-eggman.js";
 import _poolDragonFodder from "../pool/dragon-fodder.js";
@@ -249,6 +250,7 @@ const shard: CardShard = {
     _poolCorpseKnight,
     _poolCountOnLuck,
     _poolCrenellatedWall,
+    _poolDecreeOfPain,
     _poolDinaEssenceBrewer,
     _poolDrEggman,
     _poolDragonFodder,

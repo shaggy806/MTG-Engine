@@ -15,6 +15,7 @@ import {
   groupPowerExceeded,
   isOptionalSpec,
   otherSlotConflict,
+  playerAtSeat,
 } from "./target.js";
 import type { OtherThan, TargetFacts } from "./target.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
@@ -269,6 +270,11 @@ export function isLegalTarget(
     const object = state.objects[ref.object];
     if (object === undefined || object.zone !== "battlefield") return false;
     const whose = spec.whose ?? "any";
+    // "…that player controls", for one player by seat (Dismantling Wave).
+    if (typeof whose === "object") {
+      const seated = playerAtSeat(state.turnOrder, forPlayer, whose.seat);
+      if (seated === undefined || object.controller !== seated) return false;
+    }
     if (whose === "you" && object.controller !== forPlayer) return false;
     if (whose === "opponent" && object.controller === forPlayer) return false;
     if (whose === "trigger-player" && (source?.triggerPlayer === undefined || object.controller !== source.triggerPlayer)) {
@@ -331,6 +337,12 @@ export function isLegalTarget(
       return false;
     }
     const whose = spec.whose ?? "any";
+    // "…in that player's graveyard", for one player by seat (Afterlife from
+    // the Loam).
+    if (typeof whose === "object") {
+      const seated = playerAtSeat(state.turnOrder, forPlayer, whose.seat);
+      if (seated === undefined || object.owner !== seated) return false;
+    }
     if (whose === "you" && object.owner !== forPlayer) return false;
     if (whose === "opponent" && object.owner === forPlayer) return false;
     if (whose === "defending-player" && object.owner !== defendingPlayerOf(state, source)) return false;
@@ -633,7 +645,9 @@ export function legalTargets(
     // is enumerated on every `legalActions` call, and late in a game each
     // graveyard holds dozens of cards.
     const whose = spec.whose ?? "any";
+    const seated = typeof whose === "object" ? playerAtSeat(state.turnOrder, forPlayer, whose.seat) : undefined;
     for (const player of state.turnOrder) {
+      if (typeof whose === "object" && player !== seated) continue;
       if (whose === "you" && player !== forPlayer) continue;
       if (whose === "opponent" && player === forPlayer) continue;
       for (const id of state.zones.perPlayer[player].graveyard) {
