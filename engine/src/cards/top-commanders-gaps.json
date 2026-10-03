@@ -164,7 +164,8 @@
   "decision:trigger-order",
   "effect:copy-spell-extensions",
   "condition:cast-spell-targets",
-  "replacement:spell-exiled-as-it-resolves"
+  "replacement:spell-exiled-as-it-resolves",
+  "static:legend-rule-exemptions"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {
@@ -510,7 +511,7 @@
   "effect:amount-aggregate": {
    "size": "small",
    "ui": false,
-   "description": "Aggregates in CDAs (a layer-7b base P/T set from a sum or max, e.g. Karn, Legacy Reforged) and in static P/T bonuses, a greatest value over an attack batch or any non-battlefield set, and a static ability's aggregate condition that counts its own source. Built so far: sum and max of power, toughness, mana value or the counters of one kind (Tom Bombadil's lore counters among Sagas) over filtered battlefield permanents (a token stack counts N times in a sum; 0 over nothing) as an EffectAmount, as the StaticConditions aggregate and source-greatest ('greater than each other creature's power', strict or not), and as a cost reduction (Ghalta's shape)."
+   "description": "Aggregates in CDAs (a layer-7b base P/T set from a sum or max, e.g. Karn, Legacy Reforged) and in static P/T bonuses, a greatest value over an attack batch or any non-battlefield set, and a static ability's aggregate condition that counts its own source. Built so far: sum and max of power, toughness, mana value or the counters of one kind (Tom Bombadil's lore counters among Sagas) over filtered battlefield permanents (a token stack counts N times in a sum; 0 over nothing) as an EffectAmount, as the StaticConditions aggregate and source-greatest ('greater than each other creature's power', strict or not), and as a cost reduction (Ghalta's shape); a CDA from the greatest mana value among permanents (CountSpec greatestManaValueOf — Karn's P/T, which still needs cost:mana-spending-rules for its upkeep mana); a static P/T bonus from the greatest mana value among your commanders wherever they are (grantPtPerCount.commanderManaValue — Tangleweave Armor). A resolution-time 'among other attacking creatures' needs no batch (Ghalta and Mavren's ruling: X is read as it resolves). Left: a CDA or static bonus from other permanents' power or toughness (layer dependency), an aggregate over the attack batch itself ('the greatest power among them' — Aloy), and over graveyard or exile cards (Coram, Ulamog the Defiler)."
   },
   "effect:amount-counters-on-object": {
    "size": "small",
@@ -1095,7 +1096,7 @@
   "replacement:copy-on-enter-options": {
    "size": "small",
    "ui": false,
-   "description": "Widen copyOnEnter: a filter narrower than any creature ('another creature you control'), and entering as a copy of a card in exile or a graveyard."
+   "description": "Widen copyOnEnter: a filter narrower than any creature ('another creature you control'), and entering as a copy of a card in exile or a graveyard. Built so far: CopyOnEnter's CardFilter over battlefield permanents from the entering player's side (any type, 'you control', 'an opponent controls', power, an amount operand — Mockingbird's mana spent), its CopyExceptions (now with triggered abilities, notLegendary, addSupertypes and the legend-rule static — Sakashima), entering tapped (Vesuva), extra counters judged by what it became (Spark Double, Altered Ego) and a copy until end of turn (Cursed Mirror). Left: a copy of a card in a graveyard or exile (The Mimeoplasm, which also needs a two-card choice from any graveyards; Echoing Deeps), and its client choice over cards off the battlefield."
   },
   "replacement:damage-modification": {
    "size": "medium",

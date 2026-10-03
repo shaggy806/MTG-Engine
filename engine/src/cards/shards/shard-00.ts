@@ -174,6 +174,7 @@ import _poolStoneworkPuma from "../pool/stonework-puma.js";
 import _poolStrixSerenade from "../pool/strix-serenade.js";
 import _poolStrongarmThug from "../pool/strongarm-thug.js";
 import _poolStrongholdAssassin from "../pool/stronghold-assassin.js";
+import _poolStuntDouble from "../pool/stunt-double.js";
 import _poolSunhomeFortressOfTheLegion from "../pool/sunhome-fortress-of-the-legion.js";
 import _poolSunpetalGrove from "../pool/sunpetal-grove.js";
 import _poolSunscorchRegent from "../pool/sunscorch-regent.js";
@@ -394,6 +395,7 @@ const shard: CardShard = {
     _poolStrixSerenade,
     _poolStrongarmThug,
     _poolStrongholdAssassin,
+    _poolStuntDouble,
     _poolSunhomeFortressOfTheLegion,
     _poolSunpetalGrove,
     _poolSunscorchRegent,

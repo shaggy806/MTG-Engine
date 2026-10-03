@@ -13,7 +13,14 @@
  */
 
 import type { ActivatedAbility, CostReductionAmount, TriggeredAbility } from "../abilities.js";
-import type { EffectSpec, ModeOption, PlayerScope, SpellResolver, ThisWayKind } from "../effects.js";
+import type {
+  CopyExceptions,
+  EffectSpec,
+  ModeOption,
+  PlayerScope,
+  SpellResolver,
+  ThisWayKind,
+} from "../effects.js";
 import type { AggregateOf, AggregateSpec, CardFilter, NumCompare } from "../filter.js";
 import type { Color, SpendAs } from "../mana.js";
 import type { ReplacementSpec } from "../replacements.js";
@@ -32,6 +39,54 @@ export type CardType =
   | "battle";
 
 export type Supertype = "basic" | "legendary" | "snow" | "world";
+
+/**
+ * "You may have this [permanent] enter as a copy of …" (rule 707.9) — Clone
+ * and its kin, asked before it moves however it enters (rule 614.12a —
+ * `Game.askEnterChoice`). Declining, or having nothing to copy, it enters as
+ * itself.
+ */
+export interface CopyOnEnter {
+  /**
+   * What it may copy: a permanent already on the battlefield matching this,
+   * read from the side of the player it's entering under — Clone's "any
+   * creature" is `{ type: "creature" }`, Sakashima's "another creature you
+   * control" adds `controlledBy: "you"`, Phyrexian Metamorph's "any artifact
+   * or creature" is a `typesAnyOf`, Vesuva's "any land" `{ type: "land" }`.
+   * Never itself, and never one entering at the same time (the rulings). An
+   * `{ amount }` operand is read for the entering permanent: Mockingbird's
+   * "mana value less than or equal to the amount of mana spent to cast this
+   * creature" is `manaValue: { op: "lte", n: { amount: { manaSpentOf:
+   * "source" } } }`.
+   */
+  readonly filter: CardFilter;
+  /** The copy effect's exceptions (rule 707.9a–b) — part of its copiable
+   * values, so anything that copies it later copies them too. */
+  readonly except?: CopyExceptions;
+  /** "Enter **tapped** as a copy" (Vesuva): an additional effect of copying
+   * (rule 707.9e), so it enters tapped only if it copies something. */
+  readonly tapped?: true;
+  /**
+   * "…except it enters with an additional +1/+1 counter on it if it's a
+   * creature" (Spark Double), "with X additional +1/+1 counters" (Altered
+   * Ego, `amount: "x"` — the X it was cast with). An additional effect of
+   * copying (rule 707.9e), not a copiable value: it happens only as this
+   * permanent enters as a copy, and a later copy of it doesn't get them.
+   * `ifType` is judged by what it is as it enters, copy and all (rule
+   * 707.9f). Counters it enters with, so a counter doubler doubles them.
+   */
+  readonly counters?: readonly {
+    readonly kind: string;
+    readonly amount: number | "x";
+    readonly ifType?: CardType;
+  }[];
+  /** "…become a copy of any creature on the battlefield **until end of
+   * turn**" (Cursed Mirror): the copy effect, exceptions and all, ends in the
+   * cleanup step (rule 514.2) and it's itself again. Its duration isn't a
+   * copiable value: something that copies it meanwhile stays a copy (its
+   * ruling). */
+  readonly untilEndOfTurn?: true;
+}
 
 /**
  * One branch of a choice of additional costs (rule 601.2b) — see
@@ -236,7 +291,16 @@ export type CountSpec =
    * filter — Tarmogoyf's "power is equal to the number of card types among
    * cards in all graveyards" is `{ cardTypesInGraveyard: {} }` with
    * `plusToughness: 1`. See the `EffectAmount` of the same name. */
-  | { readonly cardTypesInGraveyard: CardFilter };
+  | { readonly cardTypesInGraveyard: CardFilter }
+  /** The greatest mana value among battlefield permanents matching a
+   * filter, 0 with none — Karn, Legacy Reforged's "power and toughness are
+   * each equal to the greatest mana value among artifacts you control" is
+   * `{ greatestManaValueOf: { type: "artifact", controlledBy: "you" } }`
+   * (itself among them, when it matches). `{X}` is 0 on the battlefield
+   * (rule 202.3e). A mana value isn't a characteristic the layer fold
+   * computes, so a CDA can read other permanents' without the dependency
+   * problem a greatest *power* would have (AUTHORING §15). */
+  | { readonly greatestManaValueOf: CardFilter };
 
 /**
  * A per-player running total the engine keeps for the current turn, readable
@@ -837,6 +901,17 @@ export interface StaticAbility {
      * Sisay, Weatherlight Captain's "+1/+1 for each color among other
      * legendary permanents you control" (with `excludeSelf`). */
     readonly colorsAmong?: CardFilter;
+    /**
+     * The greatest mana value among this permanent's controller's
+     * commanders, wherever they are — Tangleweave Armor's "+X/+X, where X is
+     * the greatest mana value among your commanders" (its ruling: in the
+     * command zone, a library or on the battlefield alike, read as it is
+     * now, so a commander that's become a copy of something counts as that;
+     * on the stack its {X} counts, rule 202.3e). 0 with none. A mana value
+     * is no layer-7 characteristic, so reading it inside the layer fold
+     * depends on nothing the fold computes.
+     */
+    readonly commanderManaValue?: "greatest";
     readonly pt: readonly [number, number];
     readonly excludeSelf?: boolean;
   };
@@ -957,6 +1032,29 @@ export interface StaticAbility {
    * with the rest when the permanent loses its abilities.
    */
   readonly cantBeSacrificed?: boolean;
+  /**
+   * "The 'legend rule' doesn't apply to [the affected permanents]" (rule
+   * 704.5j): Sakashima of a Thousand Faces' "to permanents you control" is
+   * `affects: { scope: "filter", filter: { controlledBy: "you" } }`, The
+   * Master, Multiplied's "to creature tokens you control" adds `type` and
+   * `token`, Mirror Gallery's "doesn't apply" an empty filter. A permanent it
+   * reaches isn't one of the legendary permanents the rule counts, so it
+   * neither goes nor makes another go. A rule change, not a characteristic:
+   * nothing becomes nonlegendary, and it stops the moment this permanent
+   * leaves or loses its abilities — when the rule applies again at once (the
+   * Sakashima ruling). Read by `exemptFromLegendRule`.
+   */
+  readonly legendRuleOff?: true;
+  /**
+   * "[This] isn't legendary if it's a token" (Aeve, Progenitor Ooze): a
+   * type-changing effect on itself (layer 4), so while this permanent is a
+   * token on the battlefield it has no legendary supertype — not for the
+   * legend rule, not for "legendary" filters. A storm copy is a token once
+   * it resolves (rule 707.10f); the spell copy on the stack isn't one yet.
+   * Applied before a layer-6 loss of abilities could take it away. Read
+   * through `supertypesOf`; `affects` is irrelevant.
+   */
+  readonly notLegendaryIfToken?: true;
   /** "Spells you cast have delve" (Teval, Arbiter of Virtue): every spell
    * this permanent's controller casts, from anywhere, has delve (rule
    * 702.66) as it's cast, as if printed (`CardDefinition.delve`). */
@@ -1754,10 +1852,10 @@ export interface CardDefinition {
    * players can't cast other spells or activate abilities that aren't mana
    * abilities. Triggered abilities still trigger. */
   readonly splitSecond: boolean;
-  /** This permanent enters as a copy of another permanent its controller
-   * chooses (Clone — rule 707); `filter` narrows what may be copied. `null`
-   * for a normal card. */
-  readonly copyOnEnter: { readonly filter: "creature" } | null;
+  /** This permanent may enter as a copy of another permanent its controller
+   * chooses (Clone — rule 707.9) — see {@link CopyOnEnter}. `null` for a
+   * normal card. */
+  readonly copyOnEnter: CopyOnEnter | null;
   /** "As this enters, choose a creature type" (Urza's Incubator — needed-cards
    * P14). The permanent's `chosenCreatureType` is set once its controller
    * answers; a `costModification.matchesChosenCreatureType` reads it back. */
@@ -2145,7 +2243,7 @@ interface CardDraft {
   controlEnchanted?: boolean;
   castOnlyIf?: StaticCondition;
   splitSecond?: boolean;
-  copyOnEnter?: { readonly filter: "creature" };
+  copyOnEnter?: CopyOnEnter;
   chooseCreatureTypeOnEnter?: boolean;
   chooseOnEnter?: readonly string[];
   loyalty?: number;

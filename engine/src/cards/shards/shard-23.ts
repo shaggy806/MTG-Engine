@@ -127,6 +127,7 @@ import _poolPainfulQuandary from "../pool/painful-quandary.js";
 import _poolPlasmancer from "../pool/plasmancer.js";
 import _poolPollutedMire from "../pool/polluted-mire.js";
 import _poolPongify from "../pool/pongify.js";
+import _poolPrimeSpeakerZegana from "../pool/prime-speaker-zegana.js";
 import _poolPrimevalHerald from "../pool/primeval-herald.js";
 import _poolProdigiousGrowth from "../pool/prodigious-growth.js";
 import _poolProtectorOfGondor from "../pool/protector-of-gondor.js";
@@ -338,6 +339,7 @@ const shard: CardShard = {
     _poolPlasmancer,
     _poolPollutedMire,
     _poolPongify,
+    _poolPrimeSpeakerZegana,
     _poolPrimevalHerald,
     _poolProdigiousGrowth,
     _poolProtectorOfGondor,

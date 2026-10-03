@@ -37,6 +37,7 @@ import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
 import _poolDarkNourishment from "../pool/dark-nourishment.js";
 import _poolDeathgreeter from "../pool/deathgreeter.js";
+import _poolDeceptiveFrostkite from "../pool/deceptive-frostkite.js";
 import _poolDeduce from "../pool/deduce.js";
 import _poolDegaDisciple from "../pool/dega-disciple.js";
 import _poolDesperateBloodseeker from "../pool/desperate-bloodseeker.js";
@@ -112,6 +113,7 @@ import _poolOrzhovSignet from "../pool/orzhov-signet.js";
 import _poolParallelLives from "../pool/parallel-lives.js";
 import _poolParapetThrasher from "../pool/parapet-thrasher.js";
 import _poolPathOfAngersFlame from "../pool/path-of-angers-flame.js";
+import _poolPhantasmalImage from "../pool/phantasmal-image.js";
 import _poolPheresBandCentaurs from "../pool/pheres-band-centaurs.js";
 import _poolPhyrexianHulk from "../pool/phyrexian-hulk.js";
 import _poolPhyrexianWalker from "../pool/phyrexian-walker.js";
@@ -130,6 +132,7 @@ import _poolRoilingRegrowth from "../pool/roiling-regrowth.js";
 import _poolRustwingFalcon from "../pool/rustwing-falcon.js";
 import _poolSceneOfTheCrime from "../pool/scene-of-the-crime.js";
 import _poolScrubland from "../pool/scrubland.js";
+import _poolSculptingSteel from "../pool/sculpting-steel.js";
 import _poolSeethingSong from "../pool/seething-song.js";
 import _poolSelesnyaLocket from "../pool/selesnya-locket.js";
 import _poolSeparatistVoidmage from "../pool/separatist-voidmage.js";
@@ -220,6 +223,7 @@ const shard: CardShard = {
     _poolDaggerfangDuo,
     _poolDarkNourishment,
     _poolDeathgreeter,
+    _poolDeceptiveFrostkite,
     _poolDeduce,
     _poolDegaDisciple,
     _poolDesperateBloodseeker,
@@ -295,6 +299,7 @@ const shard: CardShard = {
     _poolParallelLives,
     _poolParapetThrasher,
     _poolPathOfAngersFlame,
+    _poolPhantasmalImage,
     _poolPheresBandCentaurs,
     _poolPhyrexianHulk,
     _poolPhyrexianWalker,
@@ -313,6 +318,7 @@ const shard: CardShard = {
     _poolRustwingFalcon,
     _poolSceneOfTheCrime,
     _poolScrubland,
+    _poolSculptingSteel,
     _poolSeethingSong,
     _poolSelesnyaLocket,
     _poolSeparatistVoidmage,

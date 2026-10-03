@@ -73,6 +73,7 @@ import {
   objHasKeyword,
   effectiveSubtypes,
   effectiveTypes,
+  exemptFromLegendRule,
   hasAnyAbility,
   hasLostAbilities,
   hasLayerFourPart,
@@ -391,6 +392,10 @@ function copyExceptionModifier(exceptions: CopyExceptions): PtModifier {
     ...(exceptions.setSubtypes !== undefined ? { setSubtypes: [...exceptions.setSubtypes] } : {}),
     ...(exceptions.addTypes !== undefined ? { addTypes: [...exceptions.addTypes] } : {}),
     ...(exceptions.activated !== undefined ? { grantsActivated: [...exceptions.activated] } : {}),
+    ...(exceptions.triggered !== undefined ? { grantsTriggered: [...exceptions.triggered] } : {}),
+    ...(exceptions.notLegendary === true ? { notLegendary: true as const } : {}),
+    ...(exceptions.addSupertypes !== undefined ? { addSupertypes: [...exceptions.addSupertypes] } : {}),
+    ...(exceptions.legendRuleOff !== undefined ? { legendRuleOff: exceptions.legendRuleOff } : {}),
     ...(exceptions.addSubtypes !== undefined ? { addSubtypes: [...exceptions.addSubtypes] } : {}),
     ...(exceptions.setColors !== undefined ? { setColors: [...exceptions.setColors] } : {}),
     ...(exceptions.addColors !== undefined ? { addColors: [...exceptions.addColors] } : {}),
@@ -3438,11 +3443,44 @@ export class Game {
     // through; `moveObject` makes it the copy as it enters.
     const clone = this.state.objects[awaiting.source];
     const copied = copy === null ? undefined : this.state.objects[copy];
+    const spec = this.registry.get(printedCardName(clone)).copyOnEnter;
     clone.enterChoice = {
       ...clone.enterChoice,
       copyOf: copied === undefined ? null : printedCardName(copied),
-      // Its copy exceptions are part of what's copied (rule 707.9b).
-      copyModifiers: copied === undefined ? [] : copied.modifiers.filter((m) => m.copiable === true),
+      // Its copy exceptions are part of what's copied (rule 707.9b) — a token
+      // copy's "isn't legendary" among them — and then this copy effect's
+      // own, which win where they differ.
+      copyModifiers:
+        copied === undefined
+          ? []
+          : [
+              // A duration isn't copiable (Cursed Mirror's ruling): what
+              // copies a copy that lasts until end of turn keeps it.
+              ...copied.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m, untilEndOfTurn: false })),
+              ...(copied.notLegendary === true ? [copyExceptionModifier({ notLegendary: true })] : []),
+              ...(spec?.except !== undefined ? [copyExceptionModifier(spec.except)] : []),
+            ],
+      // What copying adds to how it enters (rule 707.9e) — only if it copies.
+      ...(copied !== undefined &&
+      spec !== null &&
+      (spec.tapped === true || spec.counters !== undefined || spec.untilEndOfTurn === true)
+        ? {
+            copyEnter: {
+              ...(spec.tapped === true ? { tapped: true as const } : {}),
+              ...(spec.untilEndOfTurn === true ? { untilEndOfTurn: true as const } : {}),
+              ...(spec.counters !== undefined
+                ? {
+                    counters: spec.counters.map((c) => ({
+                      kind: c.kind,
+                      // "X additional counters": the X it was cast with.
+                      amount: c.amount === "x" ? (clone.xValue ?? 0) : c.amount,
+                      ...(c.ifType !== undefined ? { ifType: c.ifType } : {}),
+                    })),
+                  }
+                : {}),
+            },
+          }
+        : {}),
     };
     // A copy is announced as it enters; declining, now.
     if (copy === null) this.emit({ type: "permanent-copied", object: awaiting.source, copyOf: null });
@@ -5103,11 +5141,21 @@ export class Game {
     const expired: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
+      const copyEnds = object.copyEndsAtCleanup === true;
+      // A copy "until end of turn" (Cursed Mirror) ends (rule 514.2): it's
+      // itself again where it is, so nothing enters or leaves.
+      if (copyEnds) {
+        object.copyOf = null;
+        delete object.copyEndsAtCleanup;
+      }
       if (object.modifiers.some((m) => m.untilEndOfTurn)) {
         object.modifiers = object.modifiers.filter((m) => !m.untilEndOfTurn);
         expired.push(id);
+      } else if (copyEnds) {
+        expired.push(id);
       }
     }
+    if (expired.length > 0) invalidateComputedCache();
     if (expired.length > 0) {
       this.emit({ type: "pt-modifier-expired", objects: expired });
     }
@@ -6323,7 +6371,7 @@ export class Game {
         object.enterChoice = { ...object.enterChoice, reveal: null };
         continue;
       }
-      const options = this.copyOptions(id);
+      const options = this.copyOptions(id, chooser);
       if (options.length > 0) {
         this.state.awaiting = { kind: "choose-copy", player: chooser, source: id, options };
         return true;
@@ -6372,14 +6420,31 @@ export class Game {
     return !protectionBlocks(this.state, this.registry, host, this.permanentSource(equipment));
   }
 
-  /** What a Clone entering may copy: a creature on the battlefield (rule
-   * 707.9 — "any creature on the battlefield"), bar itself and anything out
-   * of the game. */
-  private copyOptions(cloneId: ObjectId): ObjectId[] {
+  /** What a Clone entering under `chooser` may copy (rule 707.9): a
+   * permanent on the battlefield matching its `CopyOnEnter.filter` from
+   * `chooser`'s side — "any creature", "another creature you control", "any
+   * artifact or creature" — bar itself and anything out of the game. An
+   * `{ amount }` operand is read for the entering permanent (Mockingbird's
+   * "the amount of mana spent to cast this creature"). Never one that entered
+   * in the same event — only what's already on the battlefield (the Clone
+   * rulings). */
+  private copyOptions(cloneId: ObjectId, chooser: PlayerId): ObjectId[] {
+    const clone = this.state.objects[cloneId];
+    const spec = this.registry.get(printedCardName(clone)).copyOnEnter;
+    if (spec === null) return [];
+    const ctx = this.makeResolutionContext(cloneId, chooser, [], clone.xValue ?? 0, 0);
     return this.state.zones.shared.battlefield.filter((id) => {
-      if (id === cloneId) return false;
+      if (id === cloneId || this.enterBatch?.has(id) === true) return false;
       const object = this.state.objects[id];
-      return this.inGame(object) && computeCharacteristics(this.state, this.registry, id).types.includes("creature");
+      return (
+        this.inGame(object) &&
+        matchesFilter(this.state, this.registry, id, spec.filter, {
+          you: chooser,
+          source: cloneId,
+          x: clone.xValue ?? 0,
+          amount: (amount) => amountValue(amount, ctx),
+        })
+      );
     });
   }
 
@@ -16904,7 +16969,8 @@ export class Game {
     // Zombie is a Zombie), then this copy's, which win where they differ.
     const inherited: PtModifier[] = (departed !== undefined ? (departed.copiable ?? []) : of!.modifiers)
       .filter((m) => m.copiable === true)
-      .map((m) => ({ ...m, timestamp: -2 }));
+      // A copy's duration isn't copiable (Cursed Mirror's ruling).
+      .map((m) => ({ ...m, timestamp: -2, untilEndOfTurn: false }));
     const modifiers: PtModifier[] = [
       ...inherited,
       ...(opts.gainsHaste
@@ -21872,12 +21938,16 @@ export class Game {
     // one that's staying. The name is the one the permanent has now: a Clone
     // of Krenko is a second Krenko (rule 707.2), not a Clone, and a
     // transformed card has its back face's name.
+    // A permanent that isn't legendary now (a copy "except it isn't
+    // legendary", Aeve as a token) isn't one of them, and neither is one a
+    // "the 'legend rule' doesn't apply" static reaches (Sakashima of a
+    // Thousand Faces, Mirror Gallery).
     const legendaryGroups = new Map<string, ObjectId[]>();
     for (const id of battlefield) {
       if (moving.has(id)) continue;
       const object = this.state.objects[id];
-      if (object.notLegendary === true) continue; // Miirym's copies (P5b)
-      if (!this.registry.get(printedCardName(object)).supertypes.includes("legendary")) continue;
+      if (!supertypesOf(this.registry, object).includes("legendary")) continue;
+      if (exemptFromLegendRule(this.state, this.registry, id)) continue;
       // The name it has — a copy exception's, if one renamed it.
       const key = `${object.controller} ${nameOf(object)}`;
       const group = legendaryGroups.get(key);
@@ -22060,8 +22130,9 @@ export class Game {
     effectTapped = false,
     effectTransformed = false,
     reveal?: ObjectId | null,
+    copyEnter?: NonNullable<GameObject["enterChoice"]>["copyEnter"],
   ): EnteringReplacement {
-    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed, reveal);
+    const entering = this.enteringReplacementOf(id, effectTapped, effectTransformed, reveal, copyEnter);
     this.enterBatch?.add(id);
     return entering;
   }
@@ -22071,10 +22142,12 @@ export class Game {
     effectTapped: boolean,
     effectTransformed = false,
     reveal?: ObjectId | null,
+    copyEnter?: NonNullable<GameObject["enterChoice"]>["copyEnter"],
   ): EnteringReplacement {
     const object = this.state.objects[id];
     const def = this.registry.get(printedCardName(object));
-    let tapped = effectTapped;
+    // Vesuva's "enter tapped as a copy" (rule 707.9e).
+    let tapped = effectTapped || copyEnter?.tapped === true;
     let untapped = false;
     let transformed = effectTransformed;
     let painIfUntapped = 0;
@@ -22089,6 +22162,12 @@ export class Game {
       if (same !== undefined) same.amount += amount;
       else counters.push({ kind, amount });
     };
+    // A copy's "enters with an additional counter if it's a creature" (Spark
+    // Double): judged by what it is as it enters, copy and all (rule 707.9f).
+    for (const c of copyEnter?.counters ?? []) {
+      if (c.ifType !== undefined && !effectiveTypes(this.state, this.registry, object).includes(c.ifType)) continue;
+      addCounters(c.kind, c.amount);
+    }
     for (const ability of def.static) {
       const r = ability.replacement;
       if (r === undefined || r.event !== "enters-battlefield") continue;
@@ -22873,6 +22952,7 @@ export class Game {
     // A copy effect ends when the object changes zones (rule 707.2) — a Clone
     // that dies and returns is a Clone again.
     object.copyOf = null;
+    delete object.copyEndsAtCleanup;
     // An ETB "choose a creature type" choice ends when the object changes
     // zones — a fresh entry chooses again (Urza's Incubator — P14). So does
     // any other "as this enters" choice (a Heraldic Banner that comes back
@@ -22889,7 +22969,13 @@ export class Game {
     if (to === "battlefield" && enterChoice !== undefined) {
       if (enterChoice.copyOf !== undefined && enterChoice.copyOf !== null) {
         object.copyOf = enterChoice.copyOf;
-        for (const m of enterChoice.copyModifiers ?? []) object.modifiers.push({ ...m, timestamp: -2 });
+        // A copy "until end of turn" (Cursed Mirror): its exceptions end with
+        // it in the cleanup step (rule 514.2), which clears `copyOf` too.
+        const untilEndOfTurn = enterChoice.copyEnter?.untilEndOfTurn === true;
+        if (untilEndOfTurn) object.copyEndsAtCleanup = true;
+        for (const m of enterChoice.copyModifiers ?? []) {
+          object.modifiers.push({ ...m, timestamp: -2, ...(untilEndOfTurn ? { untilEndOfTurn: true } : {}) });
+        }
         this.emit({ type: "permanent-copied", object: id, copyOf: enterChoice.copyOf });
       }
       if (enterChoice.chosen !== undefined) {
@@ -23016,6 +23102,7 @@ export class Game {
         enter.tapped === true,
         enter.transformed === true,
         enterChoice?.reveal,
+        enterChoice?.copyOf !== undefined && enterChoice.copyOf !== null ? enterChoice.copyEnter : undefined,
       );
       object.tapped = entering.tapped;
       for (const c of entering.counters) {

@@ -161,6 +161,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Wolf Token",
   "Wraith Token",
   "X/X Demon Token (Flying)",
+  "X/X Dinosaur Token (Trample)",
   "X/X Elemental Token (Flying, Haste)",
   "Zombie Druid Token",
   "Zombie Knight Token",

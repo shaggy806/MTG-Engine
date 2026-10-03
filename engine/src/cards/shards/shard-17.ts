@@ -113,6 +113,7 @@ import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
 import _poolMagmaJet from "../pool/magma-jet.js";
 import _poolMagmaOpus from "../pool/magma-opus.js";
 import _poolManamorphose from "../pool/manamorphose.js";
+import _poolMasterworkOfIngenuity from "../pool/masterwork-of-ingenuity.js";
 import _poolMinnWilyIllusionist from "../pool/minn-wily-illusionist.js";
 import _poolMistgatePathway from "../pool/mistgate-pathway.js";
 import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolMagmaJet,
     _poolMagmaOpus,
     _poolManamorphose,
+    _poolMasterworkOfIngenuity,
     _poolMinnWilyIllusionist,
     _poolMistgatePathway,
     _poolMollyHayesRunaway,

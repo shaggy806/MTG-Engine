@@ -12,6 +12,7 @@ import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
+import _poolAutonSoldier from "../pool/auton-soldier.js";
 import _poolAyulaQueenAmongBears from "../pool/ayula-queen-among-bears.js";
 import _poolAzamiLadyOfScrolls from "../pool/azami-lady-of-scrolls.js";
 import _poolBaralAndKariZev from "../pool/baral-and-kari-zev.js";
@@ -221,6 +222,7 @@ const shard: CardShard = {
     _poolApexDevastator,
     _poolAshcoatBear,
     _poolAtomize,
+    _poolAutonSoldier,
     _poolAyulaQueenAmongBears,
     _poolAzamiLadyOfScrolls,
     _poolBaralAndKariZev,

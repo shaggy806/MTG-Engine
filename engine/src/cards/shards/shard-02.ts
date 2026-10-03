@@ -68,6 +68,7 @@ import _poolEidolonOfBlossoms from "../pool/eidolon-of-blossoms.js";
 import _poolEliteCatWarrior from "../pool/elite-cat-warrior.js";
 import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
+import _poolEstridsInvocation from "../pool/estrids-invocation.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFarfinder from "../pool/farfinder.js";
 import _poolFistsOfFlame from "../pool/fists-of-flame.js";
@@ -279,6 +280,7 @@ const shard: CardShard = {
     _poolEliteCatWarrior,
     _poolEliteVanguard,
     _poolEnatuGolem,
+    _poolEstridsInvocation,
     _poolExiledBoggart,
     _poolFarfinder,
     _poolFistsOfFlame,

@@ -188,7 +188,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zenith Festival", 1],
     ],
     substitutions: [
-      sub("Deceptive Frostkite", "Sprite Dragon", "Two-mana blue flying Dragon."),
       sub("Dragonlord Atarka", "Drakuseth, Maw of Flames", "Seven-mana legendary Dragon that burns as it attacks."),
       sub("Glorybringer", "Terror of the Peaks", "Five-mana red flying Dragon that removes creatures."),
       sub("Hellkite Courser", "Rorix Bladewing", "Six-mana red flying Dragon with haste."),
@@ -1169,7 +1168,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Pugnacious Hammerskull", "Topiary Stomper", "Three-mana green Dinosaur, big for its cost."),
       sub("Ram Through", "Rabid Bite", "Cheap one-sided fight."),
       sub("Scrapshooter", "Reclamation Sage", "Three-mana green creature that destroys an artifact or enchantment as it enters."),
-      sub("Tangleweave Armor", "Hammer of Nazahn", "Four-mana Equipment that makes a creature bigger."),
     ],
   }),
   precon({
@@ -1361,7 +1359,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Anger", "Fervor", "Gives the deck's creatures haste."),
       sub("Carnelian Orb of Dragonkind", "Ruby Medallion", "Red artifact that makes the deck's spells cheaper."),
       sub("Chandra's Ignition", "Slagstorm", "Red sweeper that can hit opponents instead."),
-      sub("Cursed Mirror", "Worn Powerstone", "Three-mana mana rock."),
       sub("Dragonhawk, Fate's Tempest", "Demanding Dragon", "Five-mana red flying Dragon."),
       sub("Leyline Tyrant", "Archwing Dragon", "Four-mana red flying Dragon."),
       sub("Minion of the Mighty", "Dragonkin Berserker", "Cheap red creature that pays off Dragons."),

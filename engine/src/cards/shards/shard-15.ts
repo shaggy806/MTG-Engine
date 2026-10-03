@@ -117,6 +117,7 @@ import _poolMakeshiftMunitions from "../pool/makeshift-munitions.js";
 import _poolMarshLurker from "../pool/marsh-lurker.js";
 import _poolMeanderingRiver from "../pool/meandering-river.js";
 import _poolMindbreakTrap from "../pool/mindbreak-trap.js";
+import _poolMirrormade from "../pool/mirrormade.js";
 import _poolMisshapenFiend from "../pool/misshapen-fiend.js";
 import _poolMoaningSpirit from "../pool/moaning-spirit.js";
 import _poolMortuaryMire from "../pool/mortuary-mire.js";
@@ -326,6 +327,7 @@ const shard: CardShard = {
     _poolMarshLurker,
     _poolMeanderingRiver,
     _poolMindbreakTrap,
+    _poolMirrormade,
     _poolMisshapenFiend,
     _poolMoaningSpirit,
     _poolMortuaryMire,

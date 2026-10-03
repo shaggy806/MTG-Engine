@@ -7,6 +7,7 @@ import _poolActionNewsCrew from "../pool/action-news-crew.js";
 import _poolAdvanceScout from "../pool/advance-scout.js";
 import _poolAjanisMantra from "../pool/ajanis-mantra.js";
 import _poolAlterFate from "../pool/alter-fate.js";
+import _poolAlteredEgo from "../pool/altered-ego.js";
 import _poolAmbushGigapede from "../pool/ambush-gigapede.js";
 import _poolAntagonize from "../pool/antagonize.js";
 import _poolArchonOfFallingStars from "../pool/archon-of-falling-stars.js";
@@ -226,6 +227,7 @@ const shard: CardShard = {
     _poolAdvanceScout,
     _poolAjanisMantra,
     _poolAlterFate,
+    _poolAlteredEgo,
     _poolAmbushGigapede,
     _poolAntagonize,
     _poolArchonOfFallingStars,

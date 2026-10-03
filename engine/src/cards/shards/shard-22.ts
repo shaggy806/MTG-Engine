@@ -38,6 +38,7 @@ import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
 import _poolCrimsonManticore from "../pool/crimson-manticore.js";
 import _poolCrookedCustodian from "../pool/crooked-custodian.js";
+import _poolCursedMirror from "../pool/cursed-mirror.js";
 import _poolDeadlyTempest from "../pool/deadly-tempest.js";
 import _poolDeathGrasp from "../pool/death-grasp.js";
 import _poolDeathbloomGardener from "../pool/deathbloom-gardener.js";
@@ -252,6 +253,7 @@ const shard: CardShard = {
     _poolCradleOfTheAccursed,
     _poolCrimsonManticore,
     _poolCrookedCustodian,
+    _poolCursedMirror,
     _poolDeadlyTempest,
     _poolDeathGrasp,
     _poolDeathbloomGardener,

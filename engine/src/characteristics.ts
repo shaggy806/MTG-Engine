@@ -40,10 +40,12 @@ import {
   aggregateValueOf,
   compareNum,
   matchesFilter,
+  printedManaCost,
   weightedMatches,
 } from "./filter.js";
 import type { EffectAmount } from "./effects.js";
 import type { CardFilter } from "./filter.js";
+import { manaValue, parseManaCost } from "./mana.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { activePlayerOf, permanentCount, printedCardName } from "./state.js";
@@ -1241,7 +1243,16 @@ function applyModifierTypes(
   }
   if (modifier.loseLandTypes) st = st.filter((s) => s !== EVERY_LAND_TYPE && !isLandType(s));
   if (modifier.addTypes && modifier.addTypes.length > 0) t = union(t, modifier.addTypes);
-  if (modifier.addSubtypes && modifier.addSubtypes.length > 0) st = union(st, modifier.addSubtypes);
+  if (modifier.addSubtypes && modifier.addSubtypes.length > 0) {
+    // A copy exception's subtypes are fixed with the copiable values (rule
+    // 707.9b), and an object can't gain a subtype that doesn't go with one of
+    // its types (205.3d): a Glasspool Mimic that copied something that's
+    // only temporarily a creature isn't a Shapeshifter Rogue, even once it
+    // becomes a creature later (its ruling).
+    const added =
+      modifier.copiable === true ? modifier.addSubtypes.filter((s) => subtypeFitsTypes(s, t)) : modifier.addSubtypes;
+    if (added.length > 0) st = union(st, added);
+  }
   return { types: t, subtypes: st };
 }
 
@@ -1489,6 +1500,27 @@ export function effectiveColors(
 }
 
 /**
+ * The greatest mana value among `player`'s commanders, wherever each one is
+ * (Tangleweave Armor's ruling — the command zone, a hand, the battlefield):
+ * as it is now, a copy effect's included, and on the stack with its {X}
+ * (rule 202.3e); `{X}` is 0 everywhere else. 0 for a player with none. The
+ * `grantPtPerCount.commanderManaValue` count. Memoized per cache region.
+ */
+export function greatestCommanderManaValue(state: GameState, registry: CardRegistry, player: PlayerId): number {
+  return computedCacheMemo(`commander-mana-value:${player}`, () => {
+    let best = 0;
+    for (const object of Object.values(state.objects)) {
+      if (object.isCommander !== true || object.owner !== player || object.kind !== "card") continue;
+      if (!registry.has(printedCardName(object))) continue;
+      const cost = parseManaCost(printedManaCost(registry, object));
+      const value = manaValue(cost) + (object.zone === "stack" ? cost.x * Math.max(0, object.xValue ?? 0) : 0);
+      if (value > best) best = value;
+    }
+    return best;
+  });
+}
+
+/**
  * How many colours there are among the battlefield permanents matching
  * `filter` from `you`'s perspective, each colour once — the `colorsAmong`
  * amount and P/T count. `except` leaves one permanent apiece out, as
@@ -1561,6 +1593,14 @@ export function countValue(
     }
     if ("playerCounters" in spec) {
       return state.players[controller]?.counters[spec.playerCounters] ?? 0;
+    }
+    if ("greatestManaValueOf" in spec) {
+      let best = 0;
+      for (const id of state.zones.shared.battlefield) {
+        if (!matchesFilter(state, registry, id, spec.greatestManaValueOf, { you: controller })) continue;
+        best = Math.max(best, aggregateValueOf(state, registry, id, "mana-value"));
+      }
+      return best;
     }
     if ("cardTypesInGraveyard" in spec) {
       return cardTypesInGraveyards(state, registry, controller, spec.cardTypesInGraveyard);
@@ -2301,6 +2341,8 @@ function collectStaticEffects(
             ? exiledMatching(per.exiled)
             : per.inGraveyard !== undefined
             ? graveyardMatching(per.inGraveyard)
+            : per.commanderManaValue === "greatest"
+            ? greatestCommanderManaValue(state, registry, source.controller)
             : per.colorsAmong !== undefined
             ? colorsAmongPermanents(
                 state,
@@ -2706,6 +2748,41 @@ export function cantBeSacrificed(state: GameState, registry: CardRegistry, id: O
     return false;
   }
   return computeCharacteristics(state, registry, id).cantBeSacrificed;
+}
+
+/**
+ * Whether the legend rule (704.5j) passes over the permanent `id`: some
+ * permanent on the battlefield has "the 'legend rule' doesn't apply to …"
+ * and it reaches `id` — printed (`StaticAbility.legendRuleOff`, scoped by its
+ * `affects` from that permanent's controller's side, gated by its condition)
+ * or as a copy exception (`PtModifier.legendRuleOff` — Sakashima of a
+ * Thousand Faces copying something). Read live: the rule applies again the
+ * moment the last such permanent leaves or loses its abilities (layer 6,
+ * timestamp order for a granted one), as Sakashima's ruling says. An
+ * eliminated player's permanents affect nothing (see `matchesFilter`).
+ */
+export function exemptFromLegendRule(state: GameState, registry: CardRegistry, id: ObjectId): boolean {
+  const target = state.objects[id];
+  if (target === undefined || target.zone !== "battlefield") return false;
+  for (const sourceId of state.zones.shared.battlefield) {
+    const source = state.objects[sourceId];
+    if (source === undefined || state.players[source.controller]?.hasLost === true) continue;
+    const lostAt = abilitiesLostAt(source);
+    if (lostAt === null) {
+      for (const ability of registry.get(printedCardName(source)).static) {
+        if (ability.legendRuleOff !== true) continue;
+        if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
+          continue;
+        }
+        if (staticAffects(state, registry, ability.affects, source, target)) return true;
+      }
+    }
+    for (const modifier of source.modifiers) {
+      if (modifier.legendRuleOff === undefined || !modifierGrantApplies(modifier, lostAt)) continue;
+      if (staticAffects(state, registry, modifier.legendRuleOff, source, target)) return true;
+    }
+  }
+  return false;
 }
 
 /**

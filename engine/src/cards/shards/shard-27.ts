@@ -103,6 +103,7 @@ import _poolLeoninSunStandard from "../pool/leonin-sun-standard.js";
 import _poolLlanowarStalker from "../pool/llanowar-stalker.js";
 import _poolLumengridWarden from "../pool/lumengrid-warden.js";
 import _poolMagmaw from "../pool/magmaw.js";
+import _poolMalleableImpostor from "../pool/malleable-impostor.js";
 import _poolMasterDecoy from "../pool/master-decoy.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
@@ -312,6 +313,7 @@ const shard: CardShard = {
     _poolLlanowarStalker,
     _poolLumengridWarden,
     _poolMagmaw,
+    _poolMalleableImpostor,
     _poolMasterDecoy,
     _poolMidnightHaunting,
     _poolMoltenGatekeeper,

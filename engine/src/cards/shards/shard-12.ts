@@ -205,6 +205,7 @@ import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
 import _tokensPhyrexianGolemToken from "../tokens/phyrexian-golem-token.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
 import _tokensWurmToken66 from "../tokens/wurm-token-6-6.js";
+import _tokensXXDinosaurTokenTrample from "../tokens/x-x-dinosaur-token-trample.js";
 
 const shard: CardShard = {
   pool: [
@@ -412,6 +413,7 @@ const shard: CardShard = {
     _tokensPhyrexianGolemToken,
     _tokensVampireToken,
     _tokensWurmToken66,
+    _tokensXXDinosaurTokenTrample,
   ],
 };
 

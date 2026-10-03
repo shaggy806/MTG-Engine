@@ -78,6 +78,7 @@ import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
 import _poolGadrakTheCrownScourge from "../pool/gadrak-the-crown-scourge.js";
 import _poolGlaringAegis from "../pool/glaring-aegis.js";
+import _poolGlasspoolShore from "../pool/glasspool-shore.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
 import _poolGolgariRotwurm from "../pool/golgari-rotwurm.js";
 import _poolGraniticTitan from "../pool/granitic-titan.js";
@@ -290,6 +291,7 @@ const shard: CardShard = {
     _poolFrostOgre,
     _poolGadrakTheCrownScourge,
     _poolGlaringAegis,
+    _poolGlasspoolShore,
     _poolGoldenTailDisciple,
     _poolGolgariRotwurm,
     _poolGraniticTitan,

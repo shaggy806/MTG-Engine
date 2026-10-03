@@ -70,6 +70,7 @@ import _poolFusionElemental from "../pool/fusion-elemental.js";
 import _poolGallantCavalry from "../pool/gallant-cavalry.js";
 import _poolGhostLitStalker from "../pool/ghost-lit-stalker.js";
 import _poolGildedPinions from "../pool/gilded-pinions.js";
+import _poolGlasspoolMimic from "../pool/glasspool-mimic.js";
 import _poolGlasswingGrace from "../pool/glasswing-grace.js";
 import _poolGlidediveDuo from "../pool/glidedive-duo.js";
 import _poolGoblinWarPaint from "../pool/goblin-war-paint.js";
@@ -120,6 +121,7 @@ import _poolPacificationArray from "../pool/pacification-array.js";
 import _poolPaintedBluffs from "../pool/painted-bluffs.js";
 import _poolPalaceFamiliar from "../pool/palace-familiar.js";
 import _poolPalaceSentinels from "../pool/palace-sentinels.js";
+import _poolPhyrexianMetamorph from "../pool/phyrexian-metamorph.js";
 import _poolPillarvergePathway from "../pool/pillarverge-pathway.js";
 import _poolPlains from "../pool/plains.js";
 import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
@@ -272,6 +274,7 @@ const shard: CardShard = {
     _poolGallantCavalry,
     _poolGhostLitStalker,
     _poolGildedPinions,
+    _poolGlasspoolMimic,
     _poolGlasswingGrace,
     _poolGlidediveDuo,
     _poolGoblinWarPaint,
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolPaintedBluffs,
     _poolPalaceFamiliar,
     _poolPalaceSentinels,
+    _poolPhyrexianMetamorph,
     _poolPillarvergePathway,
     _poolPlains,
     _poolPoisonDartFrog,

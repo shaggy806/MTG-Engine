@@ -26,6 +26,7 @@ import _poolCavernThoctar from "../pool/cavern-thoctar.js";
 import _poolCelestialAncient from "../pool/celestial-ancient.js";
 import _poolChargingBadger from "../pool/charging-badger.js";
 import _poolCinderElemental from "../pool/cinder-elemental.js";
+import _poolCleverImpersonator from "../pool/clever-impersonator.js";
 import _poolCodieVociferousCodex from "../pool/codie-vociferous-codex.js";
 import _poolColorfulFeiyiSparrow from "../pool/colorful-feiyi-sparrow.js";
 import _poolCoralBarrier from "../pool/coral-barrier.js";
@@ -213,6 +214,7 @@ const shard: CardShard = {
     _poolCelestialAncient,
     _poolChargingBadger,
     _poolCinderElemental,
+    _poolCleverImpersonator,
     _poolCodieVociferousCodex,
     _poolColorfulFeiyiSparrow,
     _poolCoralBarrier,

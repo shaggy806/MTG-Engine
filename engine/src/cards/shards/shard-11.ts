@@ -139,6 +139,7 @@ import _poolNullElementalBlast from "../pool/null-elemental-blast.js";
 import _poolOakenform from "../pool/oakenform.js";
 import _poolOkosAccomplices from "../pool/okos-accomplices.js";
 import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
+import _poolOneWithTheMachine from "../pool/one-with-the-machine.js";
 import _poolOpalineUnicorn from "../pool/opaline-unicorn.js";
 import _poolOrzhovBasilica from "../pool/orzhov-basilica.js";
 import _poolOuroboroid from "../pool/ouroboroid.js";
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _poolOakenform,
     _poolOkosAccomplices,
     _poolOmoQueenOfVesuva,
+    _poolOneWithTheMachine,
     _poolOpalineUnicorn,
     _poolOrzhovBasilica,
     _poolOuroboroid,

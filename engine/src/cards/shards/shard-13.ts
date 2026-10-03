@@ -35,6 +35,7 @@ import _poolCelestialUnicorn from "../pool/celestial-unicorn.js";
 import _poolCloudreaderSphinx from "../pool/cloudreader-sphinx.js";
 import _poolCoastalTower from "../pool/coastal-tower.js";
 import _poolCommandersInsignia from "../pool/commanders-insignia.js";
+import _poolCopyEnchantment from "../pool/copy-enchantment.js";
 import _poolCoruscationMage from "../pool/coruscation-mage.js";
 import _poolCragcrownPathway from "../pool/cragcrown-pathway.js";
 import _poolCrawWurm from "../pool/craw-wurm.js";
@@ -241,6 +242,7 @@ const shard: CardShard = {
     _poolCloudreaderSphinx,
     _poolCoastalTower,
     _poolCommandersInsignia,
+    _poolCopyEnchantment,
     _poolCoruscationMage,
     _poolCragcrownPathway,
     _poolCrawWurm,

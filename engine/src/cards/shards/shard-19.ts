@@ -181,6 +181,7 @@ import _poolSupportiveParents from "../pool/supportive-parents.js";
 import _poolSurrakarMarauder from "../pool/surrakar-marauder.js";
 import _poolSwordOfSinewAndSteel from "../pool/sword-of-sinew-and-steel.js";
 import _poolTajuruSnarecaster from "../pool/tajuru-snarecaster.js";
+import _poolTangleweaveArmor from "../pool/tangleweave-armor.js";
 import _poolTarnishedCitadel from "../pool/tarnished-citadel.js";
 import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
@@ -393,6 +394,7 @@ const shard: CardShard = {
     _poolSurrakarMarauder,
     _poolSwordOfSinewAndSteel,
     _poolTajuruSnarecaster,
+    _poolTangleweaveArmor,
     _poolTarnishedCitadel,
     _poolTomakulHonorGuard,
     _poolTopanAscetic,

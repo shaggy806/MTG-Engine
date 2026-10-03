@@ -9,5 +9,5 @@ export default defineCard({
   power: 0,
   toughness: 0,
   text: "You may have Clone enter the battlefield as a copy of any creature on the battlefield.",
-  copyOnEnter: { filter: "creature" },
+  copyOnEnter: { filter: { type: "creature" } },
 });

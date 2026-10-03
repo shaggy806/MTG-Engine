@@ -8,7 +8,15 @@
 
 import type { CastSpellOffer, CastVia, PlayLandOffer } from "./actions.js";
 import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
-import type { CardType, CombatRestriction, Keyword, StaticAbility, StaticCondition, Supertype } from "./cards.js";
+import type {
+  AffectSpec,
+  CardType,
+  CombatRestriction,
+  Keyword,
+  StaticAbility,
+  StaticCondition,
+  Supertype,
+} from "./cards.js";
 import type {
   EffectSpec,
   LookAndChooseLeftoverIf,
@@ -390,6 +398,10 @@ export interface GameObject {
    * `printedCardName`, which returns this when set. Cleared on any zone change
    * (a Clone that dies and returns is a Clone again). */
   copyOf: string | null;
+  /** Its copy effect lasts until end of turn (Cursed Mirror — rule 514.2):
+   * the cleanup step clears `copyOf` along with the copy's exceptions, which
+   * were made until-end-of-turn modifiers. Cleared on any zone change. */
+  copyEndsAtCleanup?: true;
   /** The creature type chosen as this permanent entered (Urza's Incubator —
    * needed-cards P14, rule 601.2f-adjacent — an ETB choice, not a cast-time
    * one). Absent for a permanent with no such choice; cleared on any zone
@@ -419,8 +431,18 @@ export interface GameObject {
   enterChoice?: {
     readonly copyOf?: string | null;
     /** The copied permanent's copy exceptions (its `copiable` modifiers),
-     * which the copy takes too (rule 707.9b). */
+     * which the copy takes too (rule 707.9b), then this copy effect's own
+     * (`CopyOnEnter.except`). */
     readonly copyModifiers?: readonly PtModifier[];
+    /** What copying adds to how it enters, beyond what it copies (rule
+     * 707.9e — `CopyOnEnter.tapped` / `counters`): tapped, and counters,
+     * each `ifType` judged once it's the copy. */
+    readonly copyEnter?: {
+      readonly tapped?: true;
+      readonly counters?: readonly { readonly kind: string; readonly amount: number; readonly ifType?: CardType }[];
+      /** The copy lasts until end of turn (`CopyOnEnter.untilEndOfTurn`). */
+      readonly untilEndOfTurn?: true;
+    };
     readonly chosen?: string;
     readonly enchant?: ObjectId | null;
     /** The card a reveal land's controller revealed from hand, or `null`
@@ -835,6 +857,19 @@ export interface PtModifier {
   /** Its name — a copy exception's "except its name is Mishra's Warform".
    * Read through {@link nameOf}. */
   setName?: string;
+  /** It isn't legendary — a copy exception's "and it isn't legendary"
+   * (Spark Double). Read through `supertypesOf`. */
+  notLegendary?: true;
+  /** Supertypes it has in addition — a copy exception's "it's legendary in
+   * addition to its other types" (Sakashima the Impostor). Read through
+   * `supertypesOf`. */
+  addSupertypes?: Supertype[];
+  /** Layer 6 — it has "the 'legend rule' doesn't apply to [these
+   * permanents]", scoped from its own side: a copy exception's "it has
+   * Sakashima's other abilities" (Sakashima of a Thousand Faces). The static
+   * form is `StaticAbility.legendRuleOff`; both are read by
+   * `exemptFromLegendRule`. */
+  legendRuleOff?: AffectSpec;
   /** It has no mana cost — eternalize's and embalm's "a copy of it, except
    * … with no mana cost" (rules 702.128a, 702.129a): mana value 0. Read
    * through {@link manaCostOverride}. */

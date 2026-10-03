@@ -81,6 +81,7 @@ import _poolGavonyUnhallowed from "../pool/gavony-unhallowed.js";
 import _poolGenerousStray from "../pool/generous-stray.js";
 import _poolGenesisWave from "../pool/genesis-wave.js";
 import _poolGeyserfieldStalker from "../pool/geyserfield-stalker.js";
+import _poolGhaltaAndMavren from "../pool/ghalta-and-mavren.js";
 import _poolGiantWarthog from "../pool/giant-warthog.js";
 import _poolGiftOfGranite from "../pool/gift-of-granite.js";
 import _poolGlittermonger from "../pool/glittermonger.js";
@@ -130,6 +131,7 @@ import _poolMarduHateblade from "../pool/mardu-hateblade.js";
 import _poolMerfolkMesmerist from "../pool/merfolk-mesmerist.js";
 import _poolMerfolkSkyscout from "../pool/merfolk-skyscout.js";
 import _poolMigrationPath from "../pool/migration-path.js";
+import _poolMockingbird from "../pool/mockingbird.js";
 import _poolMoonHeron from "../pool/moon-heron.js";
 import _poolMoonsilverKey from "../pool/moonsilver-key.js";
 import _poolMoorFiend from "../pool/moor-fiend.js";
@@ -313,6 +315,7 @@ const shard: CardShard = {
     _poolGenerousStray,
     _poolGenesisWave,
     _poolGeyserfieldStalker,
+    _poolGhaltaAndMavren,
     _poolGiantWarthog,
     _poolGiftOfGranite,
     _poolGlittermonger,
@@ -362,6 +365,7 @@ const shard: CardShard = {
     _poolMerfolkMesmerist,
     _poolMerfolkSkyscout,
     _poolMigrationPath,
+    _poolMockingbird,
     _poolMoonHeron,
     _poolMoonsilverKey,
     _poolMoorFiend,

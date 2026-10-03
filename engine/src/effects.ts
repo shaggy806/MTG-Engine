@@ -10,11 +10,13 @@
 
 import type { ActivatedAbility, TriggeredAbility } from "./abilities.js";
 import type {
+  AffectSpec,
   CardType,
   CombatRestriction,
   Keyword,
   StaticAbility,
   StaticCondition,
+  Supertype,
   TurnStat,
 } from "./cards.js";
 import type { AggregateSpec, CardFilter } from "./filter.js";
@@ -3201,6 +3203,24 @@ export interface CopyExceptions {
   /** Activated abilities it has — "and it has '{2}, {T}, Sacrifice this
    * token: You gain 3 life.'" (Brenard, Ginger Sculptor). */
   readonly activated?: readonly ActivatedAbility[];
+  /** Triggered abilities it has — Phantasmal Image's "and it has 'When this
+   * creature becomes the target of a spell or ability, sacrifice it.'" (rule
+   * 707.9a: a copiable value, so a copy of the copy has it too). */
+  readonly triggered?: readonly TriggeredAbility[];
+  /** "…and it isn't legendary" (Spark Double, Auton Soldier) — copiable, so
+   * a later copy of it isn't either (Spark Double's ruling). Read through
+   * `supertypesOf`. */
+  readonly notLegendary?: true;
+  /** Supertypes it has in addition to its own — Sakashima the Impostor's
+   * "it's legendary in addition to its other types". */
+  readonly addSupertypes?: readonly Supertype[];
+  /** "The 'legend rule' doesn't apply to [these permanents]" as an ability
+   * it has — Sakashima of a Thousand Faces' "except it has Sakashima's other
+   * abilities", which are that static and partner (a deck-construction
+   * ability that does nothing once the game has begun — rule 702.124a). The
+   * scope is read from the copy's own side, as the static's `affects` is
+   * (see `StaticAbility.legendRuleOff`). */
+  readonly legendRuleOff?: AffectSpec;
 }
 
 /** See the `look-and-choose` effect's `leftoverIf`. */

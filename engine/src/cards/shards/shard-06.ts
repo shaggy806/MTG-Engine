@@ -42,6 +42,7 @@ import _poolChordOfCalling from "../pool/chord-of-calling.js";
 import _poolClanDefiance from "../pool/clan-defiance.js";
 import _poolCloudchaserEagle from "../pool/cloudchaser-eagle.js";
 import _poolConsider from "../pool/consider.js";
+import _poolCopyArtifact from "../pool/copy-artifact.js";
 import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
 import _poolCrypticCommand from "../pool/cryptic-command.js";
@@ -248,6 +249,7 @@ const shard: CardShard = {
     _poolClanDefiance,
     _poolCloudchaserEagle,
     _poolConsider,
+    _poolCopyArtifact,
     _poolCorruptCourtOfficial,
     _poolCrackTheEarth,
     _poolCrypticCommand,

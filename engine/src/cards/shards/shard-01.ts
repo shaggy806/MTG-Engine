@@ -131,6 +131,7 @@ import _poolRockyTarPit from "../pool/rocky-tar-pit.js";
 import _poolRottingFensnake from "../pool/rotting-fensnake.js";
 import _poolRummagingWizard from "../pool/rummaging-wizard.js";
 import _poolRuthlessDeathfang from "../pool/ruthless-deathfang.js";
+import _poolSakashimaOfAThousandFaces from "../pool/sakashima-of-a-thousand-faces.js";
 import _poolSavageMansion from "../pool/savage-mansion.js";
 import _poolSavannah from "../pool/savannah.js";
 import _poolScaldingTarn from "../pool/scalding-tarn.js";
@@ -321,6 +322,7 @@ const shard: CardShard = {
     _poolRottingFensnake,
     _poolRummagingWizard,
     _poolRuthlessDeathfang,
+    _poolSakashimaOfAThousandFaces,
     _poolSavageMansion,
     _poolSavannah,
     _poolScaldingTarn,

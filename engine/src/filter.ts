@@ -135,14 +135,38 @@ export function compareNum(
 }
 
 /**
- * An object's supertypes: its card's, less "legendary" for a copy made
- * "except it isn't legendary" (Miirym, Irenicus's Vile Duplication) — part of
- * what the copy is (rule 707.9b), so no filter, snapshot or mana origin sees
- * it as legendary either, not only the legend rule.
+ * An object's supertypes: its card's, as its copy exceptions change them —
+ * "it's legendary in addition to its other types" (Sakashima the Impostor),
+ * "it isn't legendary" (Spark Double; a token copy's `notLegendary` —
+ * Miirym, Irenicus's Vile Duplication), both part of what the copy is (rule
+ * 707.9b) — and less "legendary" for a token on the battlefield with "this
+ * isn't legendary if it's a token" (Aeve, Progenitor Ooze: layer 4, so a
+ * later loss of its abilities doesn't undo it). No filter, snapshot, mana
+ * origin or legend rule sees past this.
  */
 export function supertypesOf(registry: CardRegistry, object: GameObject): readonly Supertype[] {
-  const printed = registry.get(printedCardName(object)).supertypes;
-  return object.notLegendary === true ? printed.filter((s) => s !== "legendary") : printed;
+  const def = registry.get(printedCardName(object));
+  let out: readonly Supertype[] = def.supertypes;
+  const withoutLegendary = (): void => {
+    if (out.includes("legendary")) out = out.filter((s) => s !== "legendary");
+  };
+  // The copy exceptions in the order they were applied (rule 707.9b): a copy
+  // of a copy made "not legendary" that says "legendary in addition" is.
+  for (const m of object.modifiers) {
+    if (m.copiable !== true) continue;
+    for (const s of m.addSupertypes ?? []) if (!out.includes(s)) out = [...out, s];
+    if (m.notLegendary === true) withoutLegendary();
+  }
+  // A token copy's own "except it isn't legendary", over what it copied.
+  if (object.notLegendary === true) withoutLegendary();
+  if (
+    object.isToken === true &&
+    object.zone === "battlefield" &&
+    def.static.some((ability) => ability.notLegendaryIfToken === true)
+  ) {
+    withoutLegendary();
+  }
+  return out;
 }
 
 export interface CardFilter {
