@@ -8847,10 +8847,12 @@ export class Game {
       spell?.zone === "stack" &&
       this.casualtyCandidates(player, amount).includes(victim)
     ) {
+      const stackSize = this.state.objects[victim].stackCount ?? 1;
       const id = this.splitOneFromStack(victim);
       const sacrificer = this.state.objects[id].controller;
       this.moveObject(id, "graveyard");
       this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
+      this.dropCastTriggersOf(victim, stackSize, ask.spell);
       const text = `Casualty ${amount} — copy ${nameOf(spell)}. You may choose new targets for the copy.`;
       this.state.pendingTriggers.push({
         sourceObjectId: ask.spell,
@@ -8877,6 +8879,53 @@ export class Game {
     }
     if (rest.length > 0) (this.state.pendingCasualty ??= []).unshift({ ...ask, amounts: rest });
     this.prepareForPriority(ask.priorityTo);
+  }
+
+  /**
+   * A creature sacrificed for casualty left the battlefield as the spell was
+   * being cast (rule 601.2h), before the spell became cast (601.2i) — when
+   * "whenever you cast" abilities trigger — so none of its own abilities saw
+   * the cast: a Young Pyromancer paid as the cost makes no Elemental. The
+   * engine asks the cost once the cast is announced, by which time those
+   * triggers were detected, so they're taken back here: every one the cast
+   * fired from `source`, or, for a token taken off a stack of `stackSize`,
+   * that token's share of each of the stack's. A delayed trigger it made
+   * earlier ("when you next cast a spell") is its own (rule 603.7c) and stays.
+   */
+  private dropCastTriggersOf(source: ObjectId, stackSize: number, spell: ObjectId): void {
+    const fromCast = (t: PendingTrigger): boolean =>
+      t.sourceObjectId === source && t.triggerObject === spell && t.delayed === undefined && t.reflexive === undefined;
+    if (stackSize <= 1) {
+      this.state.pendingTriggers = this.state.pendingTriggers.filter((t) => !fromCast(t));
+      return;
+    }
+    const instances = (t: PendingTrigger): number => t.multiplier ?? t.copies ?? 1;
+    const keyOf = (t: PendingTrigger): string => `${t.abilityIndex}|${JSON.stringify(t.grantedAbility ?? null)}`;
+    const totals = new Map<string, number>();
+    for (const t of this.state.pendingTriggers) {
+      if (fromCast(t)) totals.set(keyOf(t), (totals.get(keyOf(t)) ?? 0) + instances(t));
+    }
+    const owed = new Map([...totals].map(([key, n]) => [key, Math.max(1, Math.round(n / stackSize))]));
+    // From the latest back, so the stack's other firings keep their order.
+    const kept: PendingTrigger[] = [];
+    for (let i = this.state.pendingTriggers.length - 1; i >= 0; i -= 1) {
+      const t = this.state.pendingTriggers[i];
+      const left = fromCast(t) ? (owed.get(keyOf(t)) ?? 0) : 0;
+      if (left === 0) {
+        kept.unshift(t);
+        continue;
+      }
+      const has = instances(t);
+      const taken = Math.min(has, left);
+      owed.set(keyOf(t), left - taken);
+      if (taken === has) continue;
+      kept.unshift(
+        t.multiplier !== undefined
+          ? { ...t, multiplier: has - taken }
+          : { ...t, copies: has - taken },
+      );
+    }
+    this.state.pendingTriggers = kept;
   }
 
   /**

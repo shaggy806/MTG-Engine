@@ -13,6 +13,7 @@
 
 import { describe, expect, it } from "vitest";
 
+import { defineCard } from "../cards/define.js";
 import { createDefaultRegistry } from "../cards/registry.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
@@ -23,13 +24,37 @@ import type { GameState } from "../state.js";
 const A = asPlayerId("alice");
 const B = asPlayerId("bob");
 
+/** A token with Young Pyromancer's cast trigger — one that token stacks
+ * compact, since its trigger only makes tokens. */
+const PYRO_TOKEN = "Test Pyromancer Token";
+const PYRO_TEXT = "Whenever you cast an instant or sorcery spell, create a 1/1 red Elemental creature token.";
+const registry = createDefaultRegistry().register(
+  defineCard({
+    name: PYRO_TOKEN,
+    types: ["creature"],
+    subtypes: ["Human", "Shaman"],
+    power: 1,
+    toughness: 1,
+    text: PYRO_TEXT,
+    triggered: [
+      {
+        trigger: { on: "cast-spell", who: "you", filter: { typesAnyOf: ["instant", "sorcery"] } },
+        targets: [],
+        effect: { kind: "create-token", token: "1/1 Red Elemental Token", count: 1 },
+        resolve: null,
+        text: PYRO_TEXT,
+      },
+    ],
+  }),
+);
+
 const setUp = (aHand: readonly string[]) => {
   const a = new ScriptedController(A);
   const b = new ScriptedController(B);
   const game = Game.create({
     seed: 1,
     shuffle: false,
-    registry: createDefaultRegistry(),
+    registry,
     rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
     controllers: { [A]: a, [B]: b },
     decks: [
@@ -66,6 +91,11 @@ const bolt = (game: Game): void => {
 };
 const graveyardNamed = (game: Game, player: PlayerId, name: string): number =>
   game.graveyardOf(player).filter((id) => game.state.objects[id].cardName === name).length;
+/** How many of `name` are on the battlefield, a token stack counted as every token in it. */
+const tokensNamed = (game: Game, name: string): number =>
+  game.battlefield
+    .filter((id) => game.state.objects[id].cardName === name)
+    .reduce((n, id) => n + (game.state.objects[id].stackCount ?? 1), 0);
 
 describe("casualty", () => {
   it("paid: the creature is sacrificed as the spell is cast, and the spell is copied (Cut Your Losses)", () => {
@@ -221,5 +251,111 @@ describe("casualty", () => {
     expect(asked).toBe(2);
     expect(graveyardNamed(game, A, "Grizzly Bears")).toBe(2);
     expect(game.state.players[B].life).toBe(life - 9);
+  });
+
+  it("the creature sacrificed for it is gone before the spell becomes cast: its own cast triggers don't fire (rule 601.2h-i)", () => {
+    const { game, a } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 1);
+    game.debugSpawn("Silverquill, the Disputant", A, "battlefield");
+    const sacrificed = game.debugSpawn("Young Pyromancer", A, "battlefield");
+    game.debugSpawn("Young Pyromancer", A, "battlefield");
+    a.choosePermanentsFn = () => [sacrificed];
+    bolt(game);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[sacrificed].zone).toBe("graveyard");
+    // Only the Young Pyromancer still there as the Bolt became cast makes an
+    // Elemental (the copy isn't cast at all).
+    expect(tokensNamed(game, "1/1 Red Elemental Token")).toBe(1);
+  });
+
+  it("a token taken off a stack to pay it takes only its own share of the stack's cast triggers", () => {
+    const { game, a } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 1);
+    game.debugSpawn("Silverquill, the Disputant", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: PYRO_TOKEN, count: 10 });
+    const stack = game.state.zones.shared.battlefield.find((id) => game.state.objects[id].stackCount === 10);
+    if (stack === undefined) throw new Error("no stack of ten tokens");
+    a.choosePermanentsFn = () => [stack];
+    bolt(game);
+    game.advanceUntil(quiet);
+    // Nine of them were there as the Bolt became cast: nine Elementals.
+    expect(tokensNamed(game, PYRO_TOKEN)).toBe(9);
+    expect(tokensNamed(game, "1/1 Red Elemental Token")).toBe(9);
+  });
+
+  it("an instant cast on another player's turn: once its casualty is answered, its caster gets priority (rule 117.3c)", () => {
+    const { game, a } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 1);
+    game.debugSpawn("Silverquill, the Disputant", A, "battlefield");
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    game.advanceUntil((s) => s.turn.number === 2 && s.turn.step === "precombat-main" && s.priority.holder === A);
+    bolt(game);
+    expect(game.state.awaiting).toMatchObject({ kind: "choose-permanents", player: A });
+    a.choosePermanentsFn = () => [bears];
+    game.dispatch({ type: "choose-permanents", player: A, permanents: [bears] });
+    // Bob is the active player, but Alice cast the spell.
+    expect(game.state.awaiting).toBeNull();
+    expect(game.state.priority.holder).toBe(A);
+  });
+
+  it("paid from a token stack, one token of it is sacrificed", () => {
+    const { game, a } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 1);
+    game.debugSpawn("Silverquill, the Disputant", A, "battlefield");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 10 });
+    const stack = game.state.zones.shared.battlefield.find((id) => game.state.objects[id].stackCount === 10);
+    if (stack === undefined) throw new Error("no stack of ten Goblins");
+    a.choosePermanentsFn = () => [stack];
+    const life = game.state.players[B].life;
+    bolt(game);
+    game.advanceUntil(quiet);
+    expect(tokensNamed(game, "Goblin Token")).toBe(9);
+    expect(game.state.players[B].life).toBe(life - 6);
+  });
+
+  it("the copy is still made if the spell is countered before its casualty trigger resolves", () => {
+    const { game, a } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 1);
+    game.debugSpawn("Island", B, "battlefield");
+    game.debugSpawn("Island", B, "battlefield");
+    const counterspell = game.debugSpawn("Counterspell", B, "hand");
+    game.debugSpawn("Silverquill, the Disputant", A, "battlefield");
+    const bears = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    a.choosePermanentsFn = () => [bears];
+    const life = game.state.players[B].life;
+    const spell = inHand(game, A, "Lightning Bolt");
+    bolt(game);
+    game.advanceUntil((s) => s.awaiting === null && s.priority.holder === B);
+    game.dispatch({ type: "cast-spell", player: B, card: counterspell, targets: [{ kind: "object", object: spell }] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[spell].zone).toBe("graveyard");
+    // The copy, made from the spell as it last was on the stack.
+    expect(game.state.players[B].life).toBe(life - 3);
+  });
+
+  it("Anhelo: the same card cast again after a Remand isn't the first instant any more (rule 400.7)", () => {
+    const { game, a, b } = setUp(["Lightning Bolt"]);
+    lands(game, "Mountain", 2);
+    game.debugSpawn("Island", B, "battlefield");
+    game.debugSpawn("Island", B, "battlefield");
+    const remand = game.debugSpawn("Remand", B, "hand");
+    game.debugSpawn("Anhelo, the Painter", A, "battlefield");
+    game.debugSpawn("Grizzly Bears", A, "battlefield");
+    let asked = 0;
+    a.choosePermanentsFn = () => {
+      asked += 1;
+      return [];
+    };
+    b.choosePermanentsFn = () => [];
+    const spell = inHand(game, A, "Lightning Bolt");
+    bolt(game);
+    game.advanceUntil((s) => s.awaiting === null && s.priority.holder === B);
+    expect(asked).toBe(1);
+    game.dispatch({ type: "cast-spell", player: B, card: remand, targets: [{ kind: "object", object: spell }] });
+    game.advanceUntil(quiet);
+    expect(game.handOf(A)).toContain(spell);
+    bolt(game);
+    game.advanceUntil(quiet);
+    expect(asked).toBe(1);
   });
 });

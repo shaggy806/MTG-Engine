@@ -135,6 +135,18 @@ describe("toxic", () => {
     expect(poisonOf(game, B)).toBe(0);
   });
 
+  it("double strike: each combat damage step's damage gives poison again (rule 510.4)", () => {
+    const { game, a } = setUp();
+    const rat = game.debugSpawn("Blightbelly Rat", A, "battlefield", { summoningSick: false });
+    game.debugApplyEffect(
+      A,
+      { kind: "grant-keyword", target: 0, keyword: "double-strike", duration: "end-of-turn" },
+      [{ kind: "object", object: rat }],
+    );
+    attackWith(game, a, [rat]);
+    expect(poisonOf(game, B)).toBe(2);
+  });
+
   it("ten poison from toxic loses the game", () => {
     const { game, a } = setUp();
     game.debugApplyEffect(A, { kind: "add-player-counters", counter: "poison", amount: 6, who: "each-opponent" });

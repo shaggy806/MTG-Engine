@@ -127,6 +127,24 @@ describe("additional upkeep steps (Obeka, Splitter of Seconds)", () => {
     expect(stepsSince(game, from)).not.toContain("upkeep");
   });
 
+  it("suspend's 'at the beginning of your upkeep' removes a time counter in an additional upkeep (rule 702.62a)", () => {
+    const { game, a } = setUp();
+    game.debugSpawn("Mountain", A, "battlefield");
+    const riftBolt = game.debugSpawn("Rift Bolt", A, "hand");
+    a.chooseTargetsFn = () => [{ kind: "player", player: B }];
+    game.dispatch({ type: "suspend", player: A, card: riftBolt });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[riftBolt].counters.time).toBe(1);
+    const obeka = game.debugSpawn("Obeka, Splitter of Seconds", A, "battlefield", { summoningSick: false });
+    a.declareAttackersFn = () => [{ attacker: obeka, defender: B }];
+    const life = game.state.players[B].life;
+    game.advanceUntil((s) => s.turn.step === "postcombat-main" && quiet(s));
+    // Obeka's two damage, then Rift Bolt's last counter comes off in the
+    // first additional upkeep and it's cast: three more.
+    expect(game.state.turn.number).toBe(1);
+    expect(game.state.players[B].life).toBe(life - 2 - 3);
+  });
+
   it("a delayed 'at the beginning of the next upkeep' made this turn waits for the additional one", () => {
     const { game } = setUp();
     game.debugApplyEffect(A, {
