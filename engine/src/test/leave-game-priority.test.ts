@@ -45,3 +45,34 @@ describe("a player who leaves the game during their own turn", () => {
     expect(game.state.turnOrder[game.state.turn.activePlayerIndex]).toBe(B);
   });
 });
+
+describe("what a player who has left the game leaves behind", () => {
+  // Seed 5 of a four-player fuzz run: Boseiju, Who Endures's channel targeted
+  // a land of a player who had lost, and its "that player may search" then
+  // waited on them while the game went on.
+  it("can't be targeted (rule 800.4a)", () => {
+    const game = Game.create({
+      seed: 1,
+      registry,
+      decks: [A, B, C].map((player) => ({ player, cards: Array<string>(40).fill("Forest") })),
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    const boseiju = game.debugSpawn("Boseiju, Who Endures", A, "hand");
+    for (let i = 0; i < 2; i += 1) game.debugSpawn("Forest", A, "battlefield");
+    const carolsLand = game.debugSpawn("Tarnished Citadel", C, "battlefield");
+    const bobsLand = game.debugSpawn("Tarnished Citadel", B, "battlefield");
+    const channelTargets = () =>
+      game
+        .legalActions(A)
+        .flatMap((a) => (a.kind === "activate-ability" && a.source === boseiju ? a.targetOptions.flat() : []))
+        .map((t) => (t.kind === "object" ? t.object : t.player));
+    expect(channelTargets()).toContain(carolsLand);
+    // An action, after which the state-based actions see carol's 0 life.
+    const land = game.debugSpawn("Forest", A, "hand");
+    game.state.players[C].life = 0;
+    game.dispatch({ type: "play-land", player: A, card: land });
+    expect(game.state.players[C].hasLost).toBe(true);
+    expect(channelTargets()).toContain(bobsLand);
+    expect(channelTargets()).not.toContain(carolsLand);
+  });
+});

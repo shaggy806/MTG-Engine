@@ -225,6 +225,18 @@ export function isLegalTarget(
   } = {},
 ): boolean {
   const targeted = opts.notTargeted !== true;
+  // A player who has left the game took everything they own, and everything
+  // they control, with them (rule 800.4a). The engine leaves those objects
+  // where they are, to be seen, but none of them is in the game to target.
+  if (ref.kind === "object") {
+    const object = state.objects[ref.object];
+    if (
+      object !== undefined &&
+      (state.players[object.owner]?.hasLost === true || state.players[object.controller]?.hasLost === true)
+    ) {
+      return false;
+    }
+  }
   // Hexproof (rule 702.11): a permanent with hexproof can't be the target of
   // spells or abilities an opponent of its controller controls. Shroud (rule
   // 702.18 — needed-cards P15) is the same, but blocks *everyone*, including
