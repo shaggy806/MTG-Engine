@@ -103,6 +103,90 @@ How to use it:
 | [Twenty-Toed Toad, Reliquary Tower](#twenty-toed-toad-reliquary-tower) | rules call | Copying abilities, and winning and losing the game |
 | [Approach of the Second Sun, Reverberate](#approach-of-the-second-sun-reverberate) | rules call | Copying abilities, and winning and losing the game |
 | [Vorpal Sword, Summon: Primal Odin, Platinum Angel](#vorpal-sword-summon-primal-odin-platinum-angel) | rules call | Copying abilities, and winning and losing the game |
+| [Nykthos, Shrine to Nyx, Nyx Lotus](#nykthos-shrine-to-nyx-nyx-lotus) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Three Tree City](#three-tree-city) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Mox Amber, The Grey Havens, Plaza of Heroes, Bloom Tender, Faeburrow Elder](#mox-amber-the-grey-havens-plaza-of-heroes-bloom-tender-faeburrow-elder) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Chrome Mox](#chrome-mox) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Mirari's Wake, Zendikar Resurgent, Fertile Ground, Utopia Sprawl](#miraris-wake-zendikar-resurgent-fertile-ground-utopia-sprawl) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Kinnan, Bonder Prodigy](#kinnan-bonder-prodigy) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Deathrite Shaman](#deathrite-shaman) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Culling Ritual, Burnt Offering](#culling-ritual-burnt-offering) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Klauth, Unrivaled Ancient](#klauth-unrivaled-ancient) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Gwenna, Eyes of Gaea](#gwenna-eyes-of-gaea) | new decision | Mana abilities: colours chosen, lands' types, doubling |
+| [Reflecting Pool, Horizon of Progress, Incubation Druid, Gond Gate, Cactus Preserve](#reflecting-pool-horizon-of-progress-incubation-druid-gond-gate-cactus-preserve) | rules call | Mana abilities: colours chosen, lands' types, doubling |
+| [Reflecting Pool, The Grey Havens, Chrome Mox, Mox Amber, Wild Growth, Fertile Ground, Kinnan, Bonder Prodigy, Mirari's Wake](#reflecting-pool-the-grey-havens-chrome-mox-mox-amber-wild-growth-fertile-ground-kinnan-bonder-prodigy-miraris-wake) | rules call | Mana abilities: colours chosen, lands' types, doubling |
+| [Mana Flare, Heartbeat of Spring](#mana-flare-heartbeat-of-spring) | rules call | Mana abilities: colours chosen, lands' types, doubling |
+| [Mana Reflection, Nyxbloom Ancient](#mana-reflection-nyxbloom-ancient) | rules call | Mana abilities: colours chosen, lands' types, doubling |
+| [Aragorn, the Uniter, Preordain, Opt, Consider](#aragorn-the-uniter-preordain-opt-consider) | new decision | Library ordering and cards chosen as a cost |
+| [Stock Up, Dig Through Time, Experimental Augury, Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun](#stock-up-dig-through-time-experimental-augury-growing-rites-of-itlimoc--itlimoc-cradle-of-the-sun) | new decision | Library ordering and cards chosen as a cost |
+| [Halimar Depths, Sensei's Divining Top](#halimar-depths-senseis-divining-top) | new decision | Library ordering and cards chosen as a cost |
+| [Valakut Awakening // Valakut Stoneforge](#valakut-awakening--valakut-stoneforge) | new decision | Library ordering and cards chosen as a cost |
+| [Teferi's Puzzle Box](#teferis-puzzle-box) | new decision | Library ordering and cards chosen as a cost |
+| [Valakut Awakening, Teferi's Puzzle Box, Brainstorm](#valakut-awakening-teferis-puzzle-box-brainstorm) | new decision | Library ordering and cards chosen as a cost |
+| [Moorland Haunt, Mines of Moria, Varina, Lich Queen, Psychic Frog, Drivnod, Carnage Dominus](#moorland-haunt-mines-of-moria-varina-lich-queen-psychic-frog-drivnod-carnage-dominus) | new decision | Library ordering and cards chosen as a cost |
+| [Key to the City, Ghostly Pilferer](#key-to-the-city-ghostly-pilferer) | new decision | Library ordering and cards chosen as a cost |
+| [Sensei's Divining Top](#senseis-divining-top) | rules call | Library ordering and cards chosen as a cost |
+| [Psychic Frog, Moorland Haunt, Thrill of Possibility, Nezahal, Primal Tide](#psychic-frog-moorland-haunt-thrill-of-possibility-nezahal-primal-tide) | rules call | Library ordering and cards chosen as a cost |
+| [Mesmeric Orb](#mesmeric-orb) | rules call | Library ordering and cards chosen as a cost |
+| [Aragorn, the Uniter](#aragorn-the-uniter) | rules call | Library ordering and cards chosen as a cost |
+| [Varina, Lich Queen](#varina-lich-queen) | rules call | Library ordering and cards chosen as a cost |
+| [Drivnod, Carnage Dominus](#drivnod-carnage-dominus) | rules call | Library ordering and cards chosen as a cost |
+| [Nezahal, Primal Tide, Ghostly Pilferer](#nezahal-primal-tide-ghostly-pilferer) | rules call | Library ordering and cards chosen as a cost |
+| [Three Steps Ahead](#three-steps-ahead) | new decision | Infect, wither, spree and gift |
+| [Insatiable Avarice](#insatiable-avarice) | new decision | Infect, wither, spree and gift |
+| [Smuggler's Surprise](#smugglers-surprise) | new decision | Infect, wither, spree and gift |
+| [Requisition Raid](#requisition-raid) | new decision | Infect, wither, spree and gift |
+| [Dawn's Truce](#dawns-truce) | new decision | Infect, wither, spree and gift |
+| [Into the Flood Maw, Long River's Pull, Wear Down, Peerless Recycling, Sazacap's Brew](#into-the-flood-maw-long-rivers-pull-wear-down-peerless-recycling-sazacaps-brew) | new decision | Infect, wither, spree and gift |
+| [Octomancer](#octomancer) | new decision | Infect, wither, spree and gift |
+| [Final Showdown](#final-showdown) | rules call | Infect, wither, spree and gift |
+| [Parting Gust](#parting-gust) | rules call | Infect, wither, spree and gift |
+| [Starfall Invocation, Coiling Rebirth](#starfall-invocation-coiling-rebirth) | rules call | Infect, wither, spree and gift |
+| [Scrapshooter](#scrapshooter) | rules call | Infect, wither, spree and gift |
+| [Blighted Agent, Plague Myr, Ichorclaw Myr, Inkmoth Nexus](#blighted-agent-plague-myr-ichorclaw-myr-inkmoth-nexus) | rules call | Infect, wither, spree and gift |
+| [Phyresis, Tainted Strike, Triumph of the Hordes](#phyresis-tainted-strike-triumph-of-the-hordes) | rules call | Infect, wither, spree and gift |
+| [Skithiryx, the Blight Dragon](#skithiryx-the-blight-dragon) | rules call | Infect, wither, spree and gift |
+| [Massacre Girl, Known Killer, Necroskitter, Midnight Banshee, Hapatra, Vizier of Poisons](#massacre-girl-known-killer-necroskitter-midnight-banshee-hapatra-vizier-of-poisons) | rules call | Infect, wither, spree and gift |
+| [Phyrexian Swarmlord, Ichor Rats](#phyrexian-swarmlord-ichor-rats) | rules call | Infect, wither, spree and gift |
+| [Strionic Resonator](#strionic-resonator) | new decision | Notion Thief, copied abilities, a departed player's permanents |
+| [Peter Parker's Camera, Lithoform Engine](#peter-parkers-camera-lithoform-engine) | new decision | Notion Thief, copied abilities, a departed player's permanents |
+| [Battlemage's Bracers](#battlemages-bracers) | new decision | Notion Thief, copied abilities, a departed player's permanents |
+| [Increasing Vengeance, Reverberate, Essence Scatter, Frolicking Familiar, Fling](#increasing-vengeance-reverberate-essence-scatter-frolicking-familiar-fling) | new decision | Notion Thief, copied abilities, a departed player's permanents |
+| [Ixhel, Scion of Atraxa](#ixhel-scion-of-atraxa) | new decision | Notion Thief, copied abilities, a departed player's permanents |
+| [Notion Thief](#notion-thief) | rules call | Notion Thief, copied abilities, a departed player's permanents |
+| [Molten Echoes, Flameshadow Conjuring](#molten-echoes-flameshadow-conjuring) | rules call | Notion Thief, copied abilities, a departed player's permanents |
+| [Boseiju, Who Endures, (a player who has left the game)](#boseiju-who-endures-a-player-who-has-left-the-game) | rules call | Notion Thief, copied abilities, a departed player's permanents |
+| [Dismantling Wave, Windgrace's Judgment, Afterlife from the Loam, The Balrog of Moria (dies trigger)](#dismantling-wave-windgraces-judgment-afterlife-from-the-loam-the-balrog-of-moria-dies-trigger) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Fractured Sanity, Decree of Pain, Agonasaur Rex, Titanoth Rex, Vizier of Tumbling Sands, Magmakin Artillerist, The Balrog of Moria (cycling), Dismantling Wave (cycling)](#fractured-sanity-decree-of-pain-agonasaur-rex-titanoth-rex-vizier-of-tumbling-sands-magmakin-artillerist-the-balrog-of-moria-cycling-dismantling-wave-cycling) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Command Beacon, Hellkite Courser](#command-beacon-hellkite-courser) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Will of the Abzan, Priest of Forgotten Gods, Crackling Doom, Soul Shatter, Will of the Mardu](#will-of-the-abzan-priest-of-forgotten-gods-crackling-doom-soul-shatter-will-of-the-mardu) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Temple of the Dragon Queen](#temple-of-the-dragon-queen) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Quirion Ranger, Mina and Denn, Wildborn, Multani, Yavimaya's Avatar](#quirion-ranger-mina-and-denn-wildborn-multani-yavimayas-avatar) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Myr Battlesphere](#myr-battlesphere) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Lord of the Forsaken, Welcome the Dead, Teval's Judgment, Essence Anchor, Gravecrawler](#lord-of-the-forsaken-welcome-the-dead-tevals-judgment-essence-anchor-gravecrawler) | new decision | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Wonder, Anger, Brawn, Filth](#wonder-anger-brawn-filth) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Legion Warboss, Ainok Strike Leader, Within Range](#legion-warboss-ainok-strike-leader-within-range) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Divine Visitation, Redoubled Stormsinger, Legion Warboss, Ainok Strike Leader, The Balrog of Moria (cycling, for Treasures)](#divine-visitation-redoubled-stormsinger-legion-warboss-ainok-strike-leader-the-balrog-of-moria-cycling-for-treasures) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Sarkhan, Soul Aflame](#sarkhan-soul-aflame) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Colfenor's Urn, Decree of Pain](#colfenors-urn-decree-of-pain) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Wall of Roots, Devoted Druid, Tree of Redemption, Tree of Perdition](#wall-of-roots-devoted-druid-tree-of-redemption-tree-of-perdition) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Weathered Sentinels](#weathered-sentinels) | rules call | The Tarkir precons, first half: costs, cycling, graveyard statics, edicts |
+| [Tasigur, the Golden Fang, Colossal Grave-Reaver](#tasigur-the-golden-fang-colossal-grave-reaver) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Selvala's Stampede](#selvalas-stampede) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Gix, Yawgmoth Praetor](#gix-yawgmoth-praetor) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Lethal Scheme](#lethal-scheme) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Necropolis Fiend, Moorland Haunt](#necropolis-fiend-moorland-haunt) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Shigeki, Jukai Visionary](#shigeki-jukai-visionary) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Steward of the Harvest](#steward-of-the-harvest) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Sepulchral Primordial, Diluvian Primordial](#sepulchral-primordial-diluvian-primordial) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Combustible Gearhulk](#combustible-gearhulk) | new decision | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Dauthi Voidwalker](#dauthi-voidwalker) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Territorial Hellkite, Scourge of the Throne](#territorial-hellkite-scourge-of-the-throne) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Opportunistic Dragon](#opportunistic-dragon) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Chandra's Ignition, Arachnogenesis](#chandras-ignition-arachnogenesis) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Baloth Prime, Pugnacious Hammerskull, Junk Winder](#baloth-prime-pugnacious-hammerskull-junk-winder) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Neriv, Crackling Vanguard](#neriv-crackling-vanguard) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
+| [Living Death](#living-death) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -1766,3 +1850,1858 @@ How to use it:
   deathtouch. The grant lasts only that turn. Odin's trigger, once on the stack, still makes B lose
   after Odin is gone (ruling). With Platinum Angel, B doesn't lose.
 - **Known limits:** Nothing recorded.
+
+## Mana abilities: colours chosen, lands' types, doubling (2026-10-03, third round)
+
+### Nykthos, Shrine to Nyx, Nyx Lotus
+
+*New decision* — 971565cd (add-mana extensions: devotionTo "that-color")
+
+- **Setup:** Your precombat main, 2-player. Your battlefield, all untapped and not summoning sick:
+  Nykthos, Shrine to Nyx; Gray Merchant of Asphodel ({3}{B}{B}); Deathrite Shaman ({B/G}); Kinnan,
+  Bonder Prodigy ({G}{U}); 3 Islands. Separately (or afterwards) Nyx Lotus, untapped. In hand: a
+  second Gray Merchant of Asphodel. Optional extension: Mana Reflection and/or Mirari's Wake on your
+  battlefield.
+- **Do:** 1) Click Nykthos and read its ability menu. 2) Pick the black entry. 3) Undo/reset, then
+  with only 3 Islands untapped look at whether the Gray Merchant in hand is offered for casting, and
+  cast it. 4) Cast or put another devotion permanent onto the battlefield and re-open Nykthos's
+  menu. 5) Tap Nyx Lotus by hand. 6) With Mana Reflection (and then also Mirari's Wake) out, tap
+  Nykthos for black again.
+- **Check:** (1) Nykthos lists its plain '{T}: Add {C}.' plus ONE entry per colour that has
+  devotion, in WUBRG order, then ONE '(add no mana)' entry for all the zero-devotion colours (W and
+  R here): '...(add {U})', '...(add {B}{B}{B})', '...(add {G}{G})', '...(add no mana)'. The hybrid
+  {B/G} on Deathrite counts once for black AND once for green (rule 700.5 / Nykthos ruling). Nykthos
+  has no mana cost so adds no devotion of its own. (2) The {2} is paid by two Islands (Nykthos is
+  tapped as part of the cost, never paying itself), pool shows {B}{B}{B}, no stack (it's a mana
+  ability per the ruling). (3) The second Gray Merchant IS castable from 3 Islands + Nykthos: two
+  Islands pay Nykthos's {2} for black (devotion 3 -> {B}{B}{B}), the third Island pays the rest. (4)
+  The menu's numbers update straight away for the new board (they are cached per region — a stale
+  count is a bug). (5) Nyx Lotus enters tapped if cast; tapped by hand it shows the same per-colour
+  menu with no {2} cost; its own {4} adds no devotion. (6) Mana Reflection doubles Nykthos's
+  devotion mana ({B}x6 for devotion 3; rule 106.12b — it's a {T} mana ability); Mirari's Wake adds
+  one more {B} on top that is NOT doubled (Nykthos is a land; the Mana Reflection ruling excludes
+  triggered mana abilities).
+- **Known limits:** The floating-pool pips show type and count only. Colours with zero devotion are
+  deliberately collapsed into one '(add no mana)' entry rather than five.
+
+### Three Tree City
+
+*New decision* — 971565cd (ofChosenType count, any-color amount)
+
+- **Setup:** Your precombat main. Three Tree City in hand (so its 'as it enters, choose a creature
+  type' prompt fires; if the scenario builder places it directly, make sure a type is set).
+  Battlefield: two Grizzly Bears, one Llanowar Elves, two untapped Swamps.
+- **Do:** Play Three Tree City, choose Bear. Next turn (or untap it), click it and pick the red
+  entry of its second ability.
+- **Check:** Creature-type prompt appears on entry. The menu shows '{T}: Add {C}.' plus FIVE entries
+  for the {2},{T} ability, each making two of one colour ('(add {W}{W})' ... '(add {G}{G})') — the
+  colour is free, not tied to the Bears' colour; the Elf isn't counted. Picking red taps the two
+  Swamps for the {2} and adds {R}{R}. With no creature of the chosen type, the ability should offer
+  only '(add no mana)'.
+
+### Mox Amber, The Grey Havens, Plaza of Heroes, Bloom Tender, Faeburrow Elder
+
+*New decision* — 971565cd (colorAmong / eachColorAmong)
+
+- **Setup:** Your precombat main. Battlefield (yours): Mox Amber, The Grey Havens, Plaza of Heroes,
+  Bloom Tender, Faeburrow Elder (both untapped, not summoning sick), Llanowar Elves, Grizzly Bears.
+  Opponent: Teysa Karlov, Savannah Lions. Your graveyard: Grizzly Bears, then later Teysa Karlov.
+  Opponent's graveyard: Kinnan, Bonder Prodigy. Spells in hand: a legendary creature and a
+  nonlegendary spell.
+- **Do:** Read each menu, then put Teysa Karlov (W/B legendary) onto YOUR battlefield and a Teysa
+  card into your graveyard and read again. Tap Bloom Tender and Faeburrow Elder. Tap Plaza's
+  'legendary spell' ability and try to spend the mana on each spell.
+- **Check:** Before Teysa: Mox Amber '(add no mana)' (Elves/Bears aren't legendary, the opponent's
+  Teysa isn't yours); Grey Havens' coloured ability '(add no mana)' (opponent's graveyard Kinnan
+  doesn't count). After: Mox Amber and Plaza's 'among legendary permanents' each offer {W} and {B} —
+  ONE mana of one of those colours, not one of each (Mox Amber ruling). Grey Havens offers {W}/{B}.
+  Faeburrow Elder alone is 2/2 (its own G and W) and becomes 3/3 with Teysa; Bloom Tender and Elder
+  tap with NO prompt for {W}{B}{G} — one per colour, lands colourless and never {C} (Bloom Tender
+  rulings); Bloom Tender alone makes just {G}. Plaza's restricted mana pays only the legendary
+  spell.
+- **Known limits:** Faeburrow Elder is in the Abzan Armor precon (its stand-in was removed), so it
+  appears in bot games. The pool display does not show Plaza's spend restriction — test it by trying
+  to spend.
+
+### Chrome Mox
+
+*New decision* — 971565cd (look-and-choose destination "exile", imprint link rule 607.2a)
+
+- **Setup:** Your precombat main. Hand: Chrome Mox, Izzet Charm (U/R instant), Sol Ring (artifact),
+  a Forest (land), Kozilek's Channeler (colourless, nonartifact), Boomerang; an Island untapped for
+  Boomerang (plus {U}).
+- **Do:** Cast Chrome Mox; on the imprint trigger exile Izzet Charm; tap the Mox. Then Boomerang the
+  Mox, recast it and this time exile Kozilek's Channeler (or decline).
+- **Check:** The prompt is titled 'Choose a card to exile' and offers ONLY Izzet Charm and Kozilek's
+  Channeler (no Sol Ring, no Forest), and it can be declined (min 0). The Charm goes to exile FACE
+  UP. The Mox's menu offers {U} or {R} (one of the exiled card's colours, your pick each tap —
+  ruling), never {C}. After bouncing and recasting, the Mox is a new object (rule 400.7): the old
+  Charm stays exiled but is no longer linked; with Channeler imprinted (colourless) or nothing
+  imprinted the Mox shows '(add no mana)' (2025 rulings: a colourless card gives no mana, never
+  {C}).
+
+### Mirari's Wake, Zendikar Resurgent, Fertile Ground, Utopia Sprawl
+
+*New decision* — 971565cd (triggered mana ability picks, extras carry no restriction)
+
+- **Setup:** Your precombat main. Battlefield: Mirari's Wake, Azorius Chancery (untapped), Forest,
+  Ancient Ziggurat, Grizzly Bears. In hand: Savannah Lions, Swords to Plowshares, Fertile Ground,
+  Utopia Sprawl, and lands to cast them. Later swap Mirari's Wake for Zendikar Resurgent and keep a
+  creature spell in hand.
+- **Do:** Click Azorius Chancery and read the menu, pick the second entry. Cast Savannah Lions using
+  only Ancient Ziggurat (let the auto-payer pay), then look at the pool and cast Swords to
+  Plowshares. Cast Fertile Ground on the Forest and tap the Forest by hand. Cast Utopia Sprawl (try
+  to target a non-Forest), name blue, tap its Forest. With Zendikar Resurgent, cast a creature
+  spell.
+- **Check:** Chancery shows two entries, '(add {W}{U}{W})' and '(add {W}{U}{U})' — which type the
+  extra is, is your pick (Mirari's Wake ruling); picking the second leaves {W}{U}{U}. Bears are 3/3
+  under the Wake. Casting Lions off Ziggurat leaves one floating mana (the Wake's) that is NOT
+  creature-only (ruling: restrictions/riders don't carry) — Swords to Plowshares can be cast with
+  it. Fertile Ground on Forest: five entries, one per extra colour, and the pool gets {G} + the
+  chosen colour. Utopia Sprawl can only target a Forest, asks for a colour as it enters, and the
+  Forest then adds {G}{U} with no further prompt — for the auto-payer too (a lone enchanted Forest
+  pays {1}{U}). Zendikar Resurgent doubles a Forest to {G}{G} and draws a card when you cast a
+  creature spell.
+- **Known limits:** The pool pips don't show restrictions; test by spending. Fertile Ground on a
+  land that already has a choice (City of Brass) lists one entry per combination — expect a long
+  menu.
+
+### Kinnan, Bonder Prodigy
+
+*New decision* — 971565cd (nonland tapped-for-mana extra, 'produced' pick)
+
+- **Setup:** Your precombat main (Commander or 2-player). Battlefield: Kinnan (untapped), Azorius
+  Signet, Swamp, a Treasure token, Birds of Paradise (not summoning sick), Sol Ring, Forest, Chrome
+  Mox with nothing imprinted. 7 lands total including a Forest and an Island for the {5}{G}{U}.
+  Library top five: include Grizzly Bears (non-Human) and a Human creature.
+- **Do:** Tap each mana source by hand and read its menu. Then activate Kinnan's {5}{G}{U}.
+- **Check:** Forest: just {G} (Kinnan ignores lands). Signet: two entries, three mana each (Signet's
+  {W}{U} + an extra {W} or {U}); the Swamp pays the {1}. Treasure: five entries, sacrificed, two of
+  the chosen colour. Birds: five entries each '(add {X}{X})'. Sol Ring: {C}{C}{C}. Chrome Mox with
+  nothing: no mana and no Kinnan extra (rule 106.12a). The look ability shows the top five, offers
+  only non-Human creature cards (may choose none), puts the pick onto the battlefield and the rest
+  on the bottom in random order. Kinnan + Llanowar Elves alone casts Grizzly Bears (auto-payer
+  counts the extra). The extra mana has no restriction of the tapped permanent (ruling).
+
+### Deathrite Shaman
+
+*New decision* — 971565cd (mana chosen as a stack ability resolves, rule 608.2d)
+
+- **Setup:** Precombat main, 2-player. You: Deathrite Shaman (not summoning sick), Swamp, Forest, a
+  Grizzly Bears card in hand ({1}{G}) and only one other land untapped. Opponent's graveyard: one
+  Forest card, one Lightning Bolt, one creature card. Opponent also controls a Deathrite Shaman (for
+  the response).
+- **Do:** Activate the first ability targeting the land card; let the opponent respond with their
+  Deathrite targeting the same land card; then do it again uncontested and pick red. Also try
+  casting Grizzly Bears and see whether Deathrite is tapped for it. Use the {B} and {G} abilities.
+- **Check:** Activation offers NO colour (not a mana ability — it targets, rule 605.5a); it goes on
+  the stack. Uncontested: on resolution a prompt 'Deathrite Shaman — choose one' with five buttons
+  'Add {W}.' ... 'Add {G}.'; picking red exiles the land and adds {R}. Contested: the opponent's
+  resolves first, yours then has an illegal target and does NOTHING — no colour prompt, no mana
+  (ruling). The auto-payer never taps Deathrite to pay for Bears. {B} ability: exiles the instant,
+  each opponent loses 2; {G}: exiles the creature, you gain 2.
+
+### Culling Ritual, Burnt Offering
+
+*New decision* — 971565cd ("in any combination" split asked on resolution)
+
+- **Setup:** Precombat main. You: Swamp, Forest, two more lands, Llanowar Elves, Darksteel Relic
+  (indestructible, MV 0), Gray Merchant of Asphodel; Culling Ritual and Burnt Offering in hand.
+  Opponent: Grizzly Bears, two Soldier tokens (Raise the Alarm), Gray Merchant of Asphodel, a land.
+- **Do:** Cast Culling Ritual, pick a split. Reset; cast Burnt Offering sacrificing your Gray
+  Merchant (MV 5) and pick a split; cast it again sacrificing a token.
+- **Check:** Culling Ritual destroys Elves, Bears and both tokens (4) but not Relic, either
+  Merchant, or lands; then ONE prompt with five buttons 'Add {B}{B}{B}{B}.' ... 'Add {G}{G}{G}{G}.'
+  — mixing allowed (ruling). The mana can be spent this main phase. Burnt Offering: the sacrifice is
+  chosen as you cast it; on resolution six buttons from 'Add {B}{B}{B}{B}{B}.' to 'Add
+  {R}{R}{R}{R}{R}.' (MV read from the sacrificed creature as it last existed). A token (MV 0) gives
+  no prompt and no mana.
+- **Known limits:** Up to 35 splits are shown as one choice (so about 34 destroyed permanents is a
+  row of 35 buttons); beyond that each unit's colour is asked one at a time. Selvala and Cascading
+  Cataracts remain unimplemented for this reason.
+
+### Klauth, Unrivaled Ancient
+
+*New decision* — 971565cd (per-unit colour prompts, spendOnly spells, persists)
+
+- **Setup:** Your precombat main, 2-player. Klauth on the battlefield (haste), Grizzly Bears (not
+  summoning sick), an untapped Mountain and Lightning Bolt in hand, Mind Stone, and a cheap spell in
+  hand for the second main phase.
+- **Do:** Attack with Klauth and Bears. With the trigger on the stack, Bolt your own Bears. Answer
+  the colour prompts. Move on to postcombat main; try Mind Stone's draw ability using only the
+  floating mana, then cast the spell. Pass to the end step and the next turn.
+- **Check:** The trigger goes on the stack (not a mana ability — ruling) and X is read on
+  resolution: after the Bolt it's 4 (Klauth only), not 6. Four sequential 'Klauth, Unrivaled Ancient
+  — choose one' prompts of five buttons each (70 splits is too many to list), producing exactly what
+  you picked. The mana stays through combat into postcombat main, can cast a spell, can't pay an
+  ability (Mind Stone's draw isn't payable with it), and is gone by the next turn.
+- **Known limits:** The prompt for each unit looks the same and may not show how many remain. The
+  pool pips don't show the spells-only restriction.
+
+### Gwenna, Eyes of Gaea
+
+*New decision* — 971565cd (two mana in any combination, by hand; creature-source restriction)
+
+- **Setup:** Precombat main. Gwenna (untapped, not summoning sick), Deathrite Shaman (not summoning
+  sick), Nykthos, five other lands including two Forests; opponent graveyard holds an instant card.
+  Hand: Alpha Tyrranax (6/5, {4}{G}{G}), Gray Merchant of Asphodel, a noncreature spell.
+- **Do:** Open Gwenna's menu and pick {B}{G}; try to spend it on the noncreature spell, on Nykthos's
+  {2}, and on Deathrite's {B},{T} ability. Then cast Gray Merchant, and later Alpha Tyrranax using
+  Gwenna's mana.
+- **Check:** The menu lists 15 entries (each two-mana combination), and is readable. The mana can't
+  pay the noncreature spell or Nykthos's {2}, but CAN pay Deathrite's {B} ability (a creature
+  source, rule 109.2a). Casting Gray Merchant (power 2) does nothing; casting Alpha Tyrranax (power
+  6) puts a +1/+1 counter on Gwenna and untaps her.
+- **Known limits:** The pool pips don't show the restriction.
+
+### Reflecting Pool, Horizon of Progress, Incubation Druid, Gond Gate, Cactus Preserve
+
+*Rules call* — 971565cd (producedBy your-lands / anyType, rule 106.7)
+
+- **Setup:** Your precombat main. Step A: Reflecting Pool (untapped), a TAPPED Forest, Reliquary
+  Tower; opponent controls a Mountain. Step B: add a second Reflecting Pool, then remove the Forest
+  and Tower so only the two Pools remain. Step C: add Exotic Orchard; opponent controls a Swamp.
+  Step D: Incubation Druid + Spire of Industry with NO artifact you control + Vivid Grove with 0
+  charge counters; Druid untapped, not summoning sick; 5 lands for adapt. Step E: Gond Gate + a
+  Forest; Azorius Guildgate in hand. Optional (Commander game with Klauth, Unrivaled Ancient as
+  commander in the command zone): Cactus Preserve + 3 lands; Horizon of Progress + Forest +
+  Reliquary Tower.
+- **Do:** Open each permanent's ability menu at each step. Tap Reflecting Pool for {C} in step A. In
+  D, read the Druid's menu, activate adapt ({3}{G}{G}), read the menu again. In E, play Azorius
+  Guildgate. Optional: activate Cactus Preserve's {3}; tap Horizon of Progress for mana.
+- **Check:** A: Pool offers exactly {G} and {C} — a tapped land counts, colorless is a type (rule
+  106.1b), the opponent's Mountain gives nothing. B: two Pools alone offer one '(add no mana)' entry
+  and can still be tapped for nothing (ruling: multiple Reflecting Pools won't help each other). C:
+  Pool now offers {B} (it reads through Exotic Orchard, which reads the opponent's Swamp). D: Druid
+  offers all five colours — Spire's 'activate only if you control an artifact' and Vivid Grove's
+  counter cost are ignored (Incubation Druid / Reflecting Pool rulings: costs and legality aren't
+  checked); after adapt (three +1/+1 counters) each entry makes THREE of ONE type ('(add
+  {G}{G}{G})'), never a mix; adapt with counters already on does nothing. E: Gond Gate's colour
+  ability is '(add no mana)' with only a Forest (it reads Gates, not its own colours); Azorius
+  Guildgate enters UNTAPPED, then Gond offers {W}/{U}. Optional: Cactus Preserve becomes a 7/7 green
+  Plant land creature with reach (Klauth's MV 7, read from the command zone); Horizon of Progress
+  costs 1 life per mana tap and offers {G} and {C}. None of these carry the other land's
+  restrictions or riders.
+- **Known limits:** Two Reflecting Pools alone making nothing is intentional (the 2008 ruling), not
+  a bug.
+
+### Reflecting Pool, The Grey Havens, Chrome Mox, Mox Amber, Wild Growth, Fertile Ground, Kinnan, Bonder Prodigy, Mirari's Wake
+
+*Rules call* — fbeec5f8 (review: tapped for no mana sets off no 'tapped for mana' trigger)
+
+- **Setup:** Your precombat main. A lone Reflecting Pool (no other lands) with Wild Growth attached;
+  The Grey Havens with Fertile Ground attached and no legendary creature card in your graveyard;
+  Mirari's Wake on the battlefield. Separately: Kinnan, Bonder Prodigy and a Chrome Mox with nothing
+  imprinted, and Mox Amber with no legendary creature or planeswalker.
+- **Do:** Click each of Reflecting Pool, The Grey Havens (its coloured ability), Chrome Mox and Mox
+  Amber; read the menu; activate the no-mana entry.
+- **Check:** Each shows a single '(add no mana)' entry for that ability (no five-colour list from
+  Fertile Ground, no Wild Growth {G}, no Mirari's Wake / Kinnan extra), the permanent taps, and the
+  pool stays EMPTY. Rule 106.12a: 'whenever ... is tapped for mana' triggers only when the mana
+  ability actually produces mana. The Grey Havens' plain {T}: Add {C} still works normally and does
+  set off Fertile Ground (then a colour is offered).
+- **Known limits:** Before this fix, tapping a no-mana list by hand still produced the Aura's extra
+  mana — report any recurrence.
+
+### Mana Flare, Heartbeat of Spring
+
+*Rules call* — 971565cd (tapped-for-mana who: any, extra to whoever tapped)
+
+- **Setup:** 2-player (both seats driven by you). Opponent controls Mana Flare (or Heartbeat of
+  Spring). You: Forest, Azorius Chancery, Cavern of Souls (naming a type), Grizzly Bears in hand.
+  Opponent: a Mountain and a 2-mana red spell in hand.
+- **Do:** On your turn tap the Forest by hand; tap the Chancery; cast Grizzly Bears off one Forest
+  only. On the opponent's turn, have them tap their Mountain and cast their spell from one land.
+- **Check:** Your Forest gives YOU {G}{G} even though the enchantment is the opponent's; the
+  opponent's pool is untouched. Chancery shows two entries ({W}{U} + a {W} or {U} of your pick —
+  ruling: if the land made more than one type you choose one). One Forest pays {1}{G} for the Bears
+  (the auto-payer counts the extra). The opponent's Mountain gives them {R}{R}. Cavern's extra mana
+  has no type restriction and doesn't make a spell uncounterable (ruling). Heartbeat of Spring
+  behaves identically.
+
+### Mana Reflection, Nyxbloom Ancient
+
+*Rules call* — 971565cd (tap-for-mana multiplier, rule 106.12b)
+
+- **Setup:** Your precombat main. Battlefield: Mana Reflection; a Forest with Wild Growth attached;
+  Birds of Paradise (not summoning sick); Gilded Lotus; Ancient Ziggurat; a plain Forest. In hand:
+  Plated Seastrider ({U}{U}), Expressive Iteration ({U}{R}), a noncreature spell. Later add a second
+  Mana Reflection and Nyxbloom Ancient. Opponent controls their own Mana Reflection in a second
+  setup.
+- **Do:** Tap the Wild-Growth Forest; open Birds' menu; tap Gilded Lotus; tap Ancient Ziggurat by
+  hand and try to spend the result on the noncreature spell; check what one Birds can cast. Add the
+  second Reflection + Nyxbloom and tap the plain Forest. Second setup: only the OPPONENT has Mana
+  Reflection; tap your Forest.
+- **Check:** Wild-Growth Forest: {G}{G}{G} — the Forest's own {G} doubled, Wild Growth's not
+  (ruling: triggered mana abilities aren't affected). Birds: five entries each '(add {G}{G})' style
+  — two of ONE colour, never a mix. Gilded Lotus: six of one colour. Ziggurat: two mana, BOTH
+  creature-only (ruling: restrictions apply to all mana produced). One Birds can pay Plated
+  Seastrider but not Expressive Iteration. Two Reflections + Nyxbloom: one Forest = 12 {G} (they
+  compound: 2x2x3). The opponent's Mana Reflection does nothing for your Forest.
+- **Known limits:** Large amounts show as a count plus one pip in the pool (e.g. '12{G}').
+
+## Library ordering and cards chosen as a cost (2026-10-03, third round)
+
+### Aragorn, the Uniter, Preordain, Opt, Consider
+
+*New decision* — ac416172 (library ordering: every scry/surveil now orders its cards — previously 'keep them as they are')
+
+- **Setup:** Your turn, precombat main. Your battlefield: Aragorn, the Uniter, 2-3 Islands. Hand:
+  Preordain, Opt, Consider. Library top (top first): four different cards, e.g. Grizzly Bears, Hill
+  Giant, Craw Wurm, Llanowar Elves. Then put two copies of one card (e.g. two Grizzly Bears) on top
+  for the last step.
+- **Do:** 1) Cast Opt: Aragorn's blue trigger (scry 2) goes on the stack above Opt and resolves
+  first. In the scry prompt keep both on top. 2) Cast Preordain, send both cards to the bottom. 3)
+  Cast Preordain/scry again sending one to the bottom and keeping one. 4) Cast Consider (surveil 1)
+  / any surveil 2+ keeping two. 5) With two copies of one card on top, scry 2 keeping both.
+- **Check:** Step 1: after the scry prompt a second popup titled 'Put them back on top in the order
+  you pick: the first you pick goes on top' appears, picks are numbered, you must pick both (rule
+  701.22a); the first pick ends on top. Then Opt's own scry 1 asks no order. Step 2: a popup titled
+  'Put them on the bottom in the order you pick: the last you pick goes on the very bottom' — the
+  last pick is the very bottom card. If cards go both ways, the top order is asked first, then the
+  bottom order. Preordain's 'then draw' waits until the order is answered and draws the card you
+  picked first for the top. Step 3: one card each way asks no order at all. Step 4: surveil's kept
+  cards are ordered the same way (rule 701.25a); cards sent to the graveyard just go there. Step 5:
+  copies of one card (same name) ask no order.
+- **Known limits:** The order is skipped on purpose for fewer than two cards or cards that all share
+  one name. Scroll Rack is not authored (BACKLOG).
+
+### Stock Up, Dig Through Time, Experimental Augury, Growing Rites of Itlimoc // Itlimoc, Cradle of the Sun
+
+*New decision* — ac416172 (look-and-choose leftover 'bottom-any-order')
+
+- **Setup:** Your turn, precombat main, plenty of Islands and Forests untapped. Graveyard: 6+ cards
+  (for delve). A creature of yours with a +1/+1 counter (for proliferate). Hand: Stock Up, Dig
+  Through Time, Experimental Augury, Growing Rites of Itlimoc. Before each cast, set the library top
+  to distinct cards, mixing creatures and noncreatures (e.g. Island, Grizzly Bears, Craw Wurm,
+  Lightning Bolt, Opt, Hill Giant, Llanowar Elves). Also have 3 other creatures on your battlefield
+  before your end step.
+- **Do:** Cast Stock Up (take 2 of 5); Dig Through Time delving 6 (take 2 of 7); Experimental Augury
+  (take 1 of 3, then proliferate); Growing Rites (ETB: look at 4, take a creature or none). Then
+  reach your end step with Growing Rites and 4 creatures; next turn tap Itlimoc for its second
+  ability.
+- **Check:** Each spell first asks the pick for your hand (popup not numbered), then a second popup
+  'Put them on the bottom in the order you pick: the last you pick goes on the very bottom',
+  numbered, requiring every leftover card; the library bottom matches your pick order (rule 401.4).
+  Dig: the 6 delved cards are exiled at cast and only 5 are ordered. Augury: the proliferate prompt
+  comes only after the order is answered. Growing Rites: only creature cards are selectable in the
+  first pick (others shown but not pickable), taking none is allowed and then all 4 are ordered; the
+  taken creature is revealed to the opponent (log), the rest are not. With only one leftover, or
+  leftovers that are all copies of one card, no order is asked. End step: with 4+ creatures as the
+  step begins it transforms into Itlimoc, Cradle of the Sun (a land); with 3 it doesn't trigger, and
+  if you drop below 4 before it resolves it does nothing (intervening-if, rule 603.4 and its
+  ruling). Itlimoc's second ability adds {G} per creature you control.
+- **Known limits:** 'In a random order' cards still use bottom-random (no prompt) — only 'in any
+  order' asks.
+
+### Halimar Depths, Sensei's Divining Top
+
+*New decision* — ac416172
+
+- **Setup:** Your turn, main phase. Hand: Halimar Depths. Battlefield: Sensei's Divining Top, one
+  untapped land. Library top: three different cards (e.g. Grizzly Bears, Hill Giant, Craw Wurm).
+- **Do:** Play Halimar Depths. Then activate Top's {1} ability. Then activate Top's {T} ability.
+- **Check:** Halimar Depths enters tapped; its ETB opens 'Put them back on top in the order you
+  pick: the first you pick goes on top' with all three cards, numbered, all three required; the
+  library top then matches your pick order. Top's {1} does the same. Top's {T}: you draw the current
+  top card, then the Top goes onto your library as the new top card (draw first, then Top on top —
+  Oracle order); the card you'd put second is now under it.
+- **Known limits:** These two always ask even if the three cards are identical (the 'copies of one
+  card' skip only applies to scry/surveil and 'the rest on the bottom' orders) — not a bug.
+
+### Valakut Awakening // Valakut Stoneforge
+
+*New decision* — ac416172 (look-and-choose destination 'library-bottom' from a hand)
+
+- **Setup:** Your turn, main phase, 3 Mountains. Hand: Valakut Awakening plus three distinct cards
+  (e.g. Grizzly Bears, Hill Giant, Craw Wurm). A second Valakut Awakening in hand for the land test.
+- **Do:** Cast Valakut Awakening and pick two of the three hand cards. Cast again picking none. Then
+  play the second copy as its land face, Valakut Stoneforge.
+- **Check:** As it resolves (not on cast — its ruling) a popup 'Choose ... to put on the bottom of
+  your library, in order: the last you pick goes on the very bottom' offers 0 to all hand cards,
+  picks numbered; the bottom of the library matches the pick order. Two put there: you draw three
+  (that many plus one). None put there: you draw one (its ruling). The land face can be played from
+  hand as a land, enters tapped, taps for {R}.
+
+### Teferi's Puzzle Box
+
+*New decision* — ac416172 + c43ff463 (two Boxes tested)
+
+- **Setup:** Two-player game. Your battlefield: Teferi's Puzzle Box (later add a second one).
+  Opponent's hand: 2 distinct cards. Start on your turn and pass to the opponent's turn.
+- **Do:** Let the opponent reach their draw step. As the opponent, answer the prompt. Then repeat
+  with two Puzzle Boxes on the battlefield. Also let it trigger in your own draw step.
+- **Check:** The opponent first makes their normal draw (its ruling), then is asked to put every
+  card in hand (3) on the bottom in pick order — the popup must require all of them, picks numbered,
+  title '... in order: the last you pick goes on the very bottom'; then they draw 3. The library
+  bottom matches their pick order. Your seat only sees that the opponent is choosing ('look at
+  cards') and never sees their hand cards. It triggers for each player's draw step, yours included.
+  With two Boxes, it happens twice, separately (its ruling).
+- **Known limits:** 'That many' is the number of cards actually put on the bottom: a commander sent
+  to the command zone instead (see the 903.9b entry) is not counted, so one fewer card is drawn.
+
+### Valakut Awakening, Teferi's Puzzle Box, Brainstorm
+
+*New decision* — c43ff463 (review: a commander put from a hand into a library is offered the command zone, rule 903.9b)
+
+- **Setup:** Commander game. Your commander is in your hand (not the command zone) with one other
+  card, e.g. Hill Giant. 3 Mountains and an Island untapped. Hand also: Valakut Awakening,
+  Brainstorm. For the Puzzle Box part: Puzzle Box on your battlefield and the opponent's commander
+  in their hand with one other card.
+- **Do:** 1) Cast Valakut Awakening, pick Hill Giant and your commander; answer 'Command zone'. 2)
+  Repeat, answering 'Put into library'. 3) Cast Brainstorm, put back Hill Giant and the commander
+  (both answers). 4) Let the opponent's draw step come with Puzzle Box out.
+- **Check:** After you confirm the picks and before anything moves (both cards still in hand), a
+  prompt '<commander> would go to your library — move it to the command zone instead?' with buttons
+  'Command zone' / 'Put into library' (rule 903.9b). 1) Commander goes to the command zone, Hill
+  Giant to the bottom, you draw 2 (one put there + 1). 2) Both go to the bottom in pick order and
+  you draw 3. 3) Brainstorm: kept for the library it goes back on top where you picked it; to the
+  command zone, Hill Giant alone is put on top. 4) The opponent (not you) gets the prompt for their
+  commander; choosing the command zone, they redraw one fewer card.
+- **Known limits:** BACKLOG: a commander put into a library from a graveyard, exile or the stack
+  (e.g. Noxious Revival on a commander left in a graveyard) still isn't offered the command zone.
+
+### Moorland Haunt, Mines of Moria, Varina, Lich Queen, Psychic Frog, Drivnod, Carnage Dominus
+
+*New decision* — ac416172 (cost: exile N cards from your graveyard, exileFromGraveyard)
+
+- **Setup:** Your turn, main phase. Battlefield: Moorland Haunt + Plains + Island; Mines of Moria +
+  4 Mountains; Varina, Lich Queen + 2 lands; Psychic Frog; Drivnod, Carnage Dominus + 2 Swamps.
+  Graveyard: a Wastes, Grizzly Bears, Hill Giant, Craw Wurm and 3 more noncreature cards. For the
+  Mines entry test, have Mines of Moria in hand and test once with no legendary creature and once
+  with Varina out.
+- **Do:** Activate Moorland Haunt's Spirit ability; Mines' Treasure ability; Varina's Zombie
+  ability; Frog's flying ability; Drivnod's counter ability (pay one {B/P} with life). Also try
+  Moorland Haunt with only one creature card in the graveyard, and with none. Play Mines of Moria
+  from hand with and without a legendary creature.
+- **Check:** The ability goes on the stack, then a popup 'Choose N card(s) to exile' shows your
+  whole graveyard but only matching cards are pickable (Haunt and Drivnod: creature cards only; the
+  Wastes visible but not pickable); exactly the count is required. The cards are exiled right away,
+  before the ability resolves (rule 602.2b), all at once. With exactly as many matching cards as the
+  cost, they're exiled without asking; with too few the ability isn't offered. Results: Spirit 1/1
+  flier; two Treasures; a TAPPED 2/2 Zombie; Frog gains flying until end of turn; an indestructible
+  counter on Drivnod. Opponent sees you're choosing but can't answer. Mines enters tapped without a
+  legendary creature already on the battlefield, untapped with Varina out (one entering at the same
+  time doesn't count — its ruling); a second Mines triggers the legend rule.
+- **Known limits:** AUTHORING: exileFromGraveyard isn't supported on a mana ability or beside a
+  discard / multi-sacrifice cost; a SPELL's additional 'exile a card from your graveyard' cost isn't
+  built.
+
+### Key to the City, Ghostly Pilferer
+
+*New decision* — ac416172 + c43ff463 (becomes-untapped trigger, rule 701.26b)
+
+- **Setup:** Your turn. Battlefield: Key to the City, Ghostly Pilferer (not summoning sick), Grizzly
+  Bears, 4 lands, Voltaic Key. Hand: 3 cards. Optional: an 'at the beginning of your upkeep' trigger
+  card and Settings → 'Order my own triggers' on.
+- **Do:** 1) Activate Key ({T}, discard) targeting Grizzly Bears; activate again later with 'Skip'
+  for no target. 2) Attack with Pilferer to tap it. 3) Pass to your next turn. 4) Mid-turn, tap Key
+  and untap it with Voltaic Key. 5) Activate Pilferer's 'Discard a card'.
+- **Check:** 1) Key's target step has a Skip button (up to one target — its ruling); Bears can't be
+  blocked this turn. 3) Both untap in your untap step, but the triggers go on the stack only in the
+  upkeep, together with upkeep triggers (rule 502.4; their rulings) — with the ordering setting on
+  you can order them among the upkeep triggers. Each asks 'Pay {2} to draw a card?' Yes/No; Yes is
+  only offered if you can pay {2}, paying once draws exactly one. 4) Untapping by an effect fires it
+  too. 5) Pilferer becomes unblockable this turn (activating after it's blocked doesn't unblock it).
+- **Known limits:** Trigger ordering is only asked with Settings → 'Order my own triggers' on;
+  otherwise the engine's order is used.
+
+### Sensei's Divining Top
+
+*Rules call* — ac416172
+
+- **Setup:** Your turn, main phase. Battlefield: Sensei's Divining Top (untapped), one untapped
+  land. Opponent: a bounce spell (e.g. Unsummon) and a blue source. Library: distinct cards on top.
+- **Do:** A) Activate Top's {1}; with it on the stack, activate {T} in response. Let both resolve.
+  B) Activate {T}; the opponent responds by bouncing the Top to your hand with Unsummon.
+- **Check:** A) {T} resolves first: you draw, Top goes on top of the library; then the {1} resolves
+  and the Top itself is among the three cards you look at and order (its ruling). B) You still draw
+  a card, and the Top stays in your hand — it is not put on the library (its ruling; rule 400.7,
+  it's a new object).
+
+### Psychic Frog, Moorland Haunt, Thrill of Possibility, Nezahal, Primal Tide
+
+*Rules call* — ac416172 + c43ff463 (rule 117.3c: a cost's choice hands priority back to whoever activated/cast)
+
+- **Setup:** Opponent's turn (their upkeep or combat). Your battlefield: Psychic Frog, Moorland
+  Haunt + Plains + Island, two Mountains. Your hand: 3+ cards including Thrill of Possibility.
+  Graveyard: two creature cards.
+- **Do:** When you get priority on the opponent's turn: activate Frog's 'Discard a card' and pick
+  the card. Then activate Moorland Haunt and pick the creature card. Then cast Thrill of Possibility
+  and pick its additional discard.
+- **Check:** After each cost choice you still hold priority (your Pass/act controls shown, the
+  opponent is not prompted) with the ability/spell on the stack (rule 117.3c) — e.g. you can
+  activate Frog a second time before anything resolves. Previously the discard cost handed priority
+  to the active player.
+
+### Mesmeric Orb
+
+*Rules call* — ac416172 + c43ff463
+
+- **Setup:** Two-player. Your battlefield: Mesmeric Orb. Opponent: 3 tapped lands and a tapped stack
+  of 5 Soldier tokens at the end of your turn; Steam Vents in their hand. Also give yourself a
+  creature you stole from the opponent (gain control) and a tapped Grizzly Bears.
+- **Do:** 1) Pass to the opponent's turn. 2) On their turn they play Steam Vents paying 2 life. 3)
+  Untap one token out of a tapped stack with an untap effect. 4) Untap your stolen creature with an
+  effect and bounce it to its owner's hand before the Orb trigger resolves.
+- **Check:** 1) In their upkeep (not untap step), 8 Orb triggers resolve and the opponent mills 8 —
+  3 lands + 1 per token in the stack (each token is its own permanent); you mill nothing. 2) Steam
+  Vents entered untapped — no mill (rule 614.1c; it never untapped). 3) One token untapped = one
+  mill. 4) The mill goes to whoever controlled it as it last was on the battlefield (you), not its
+  owner.
+- **Known limits:** BACKLOG: the mirror case — a token stack becoming TAPPED fires 'becomes-tapped'
+  only once (e.g. Magda) — is still open; not this card.
+
+### Aragorn, the Uniter
+
+*Rules call* — ac416172
+
+- **Setup:** Your turn, main phase. Battlefield: Aragorn, the Uniter, Grizzly Bears, Mountains,
+  Plains, Forests. Hand: Lightning Bolt, Giant Growth, Boros Charm, Swords to Plowshares. Optional:
+  a 3-4 player game and Settings → 'Order my own triggers' on.
+- **Do:** Cast Lightning Bolt at an opponent; Giant Growth on Bears; Boros Charm (4 damage mode) at
+  an opponent.
+- **Check:** Bolt: Aragorn deals 3 to target opponent (in multiplayer you choose which opponent;
+  can't target yourself) on top of the Bolt's 3. Giant Growth: Aragorn's green trigger asks a target
+  creature; Bears ends 2+3+4 = 9 power. Boros Charm (red and white): two triggers — a 1/1 Human
+  Soldier token and 3 damage — and with the ordering setting on you choose their order (its ruling).
+  Each trigger resolves before the spell.
+- **Known limits:** Order of several Aragorn triggers is only asked with 'Order my own triggers' on.
+
+### Varina, Lich Queen
+
+*Rules call* — ac416172
+
+- **Setup:** Your turn, precombat main. Battlefield: Varina, Lich Queen, Cemetery Reaper (a Zombie),
+  Grizzly Bears — none summoning sick. Hand: 1 card. Life known.
+- **Do:** Attack with all three. Answer the discard prompt. Optionally, remove one attacking Zombie
+  from combat before the trigger resolves.
+- **Check:** One trigger for the declaration (not one per Zombie): draw 2, then discard 2 (you
+  choose which), gain 2 life — Bears doesn't count, Varina does. A Zombie that left combat before
+  resolution still counts, and the discard and life gain equal the number of Zombies even if you
+  drew fewer (its rulings).
+
+### Drivnod, Carnage Dominus
+
+*Rules call* — ac416172
+
+- **Setup:** Your turn. Battlefield: Drivnod, Zulaport Cutthroat, Blood Artist, Lightless Evangel,
+  Viscera Seer, Grizzly Bears. Opponent at known life.
+- **Do:** Sacrifice Grizzly Bears to Viscera Seer.
+- **Check:** Zulaport Cutthroat and Blood Artist (death triggers) each trigger twice: opponent loses
+  4, you gain 4. Lightless Evangel ('whenever you sacrifice') triggers only once (+1 counter) — it's
+  caused by the sacrifice, not the death (its ruling). Viscera Seer's scry 1 happens once (it's a
+  cost's ability, not a trigger). Each doubled instance makes its own choices.
+
+### Nezahal, Primal Tide, Ghostly Pilferer
+
+*Rules call* — ac416172
+
+- **Setup:** Commander game, opponent's turn, main phase. Your battlefield: Nezahal, Primal Tide
+  (with a +1/+1 counter), Ghostly Pilferer. Your hand: 4 cards. Opponent: lands, Lightning Bolt in
+  hand, Faithless Looting in graveyard, their commander in the command zone.
+- **Do:** Opponent casts: Lightning Bolt from hand; Faithless Looting by flashback; their commander
+  from the command zone. Later, on your own turn's main phase, activate Nezahal (discard three — you
+  choose which of the four); separately, activate it during an end step.
+- **Check:** Bolt (noncreature, from hand): Nezahal draws, Pilferer doesn't. Looting by flashback:
+  both draw. Commander from the command zone (creature, not from hand): Pilferer draws, Nezahal
+  doesn't. Each draw trigger resolves before the spell, even if it's countered (rulings). Nezahal's
+  blink: exiled at once, back at the beginning of the next end step TAPPED, a new object without the
+  +1/+1 counter (its ruling; rule 400.7); activated during an end step, it returns at the next
+  turn's end step.
+
+## Infect, wither, spree and gift (2026-10-03, third round)
+
+### Three Steps Ahead
+
+*New decision* — 2cd2d704 (spree)
+
+- **Setup:** 2-player, opponent's turn, their main phase. You: 3 Islands + 3 Swamps untapped, plus
+  Grizzly Bears with one +1/+1 counter, tapped. Your hand: Three Steps Ahead and 2 other cards.
+  Library: 5+ cards. Opponent: 2 Islands untapped and Divination in hand. Second variant: swap your
+  lands for 1 Island + 5 Swamps.
+- **Do:** (a) Before the opponent casts anything, open Three Steps Ahead's cast and look at the mode
+  chooser, then Cancel. (b) The opponent casts Divination. With priority, cast Three Steps Ahead,
+  choose counter + draw, and target Divination. Discard one card when asked. (c) On a later cast,
+  choose only the copy mode and target your tapped Bears. (d) With the 1 Island + 5 Swamps lands,
+  put a spell on the stack and open the chooser again.
+- **Check:** The chooser reads 'Three Steps Ahead — choose 1–N', where N is the largest set you can
+  pay for. Each mode button shows its cost with mana symbols. (a) With nothing on the stack,
+  'Counter target spell' is greyed out (no legal target, per the ruling); copy + draw together is
+  allowed ({U}+{3}+{2}=6). (b) With a spell on the stack and 6 lands: after you pick one mode, the
+  other two stay open. After you pick two, the third greys out, because all three cost 9. Confirm
+  stays disabled until the picks are a set you can pay for. 5 lands tap, Divination is countered,
+  you draw 2 and only then get a discard prompt (modes resolve in printed order, per the ruling).
+  (c) The token is an untapped 2/2 Bears with no counter (707.2: copiable values only). (d) Counter
+  needs {U}+{1}{U}, two blue, so it is greyed out with one Island even though you have 6 mana.
+- **Known limits:** Cascade and suspend cast a spree spell with no modes, so it resolves doing
+  nothing (BACKLOG 'Cascade and suspend cast with no modes and no kicker'; AUTHORING §15). Don't
+  test it through cascade.
+
+### Insatiable Avarice
+
+*New decision* — 2cd2d704 + review 6017786f (must find a card)
+
+- **Setup:** 2-player, your main phase. You: 5 Swamps (BBB is needed), life 20. Library: 10+
+  distinct, recognisable cards. Hand: 2 copies of Insatiable Avarice. Opponent: life 20. Watch the
+  opponent's seat on a second screen if you can.
+- **Do:** Cast the first copy with both modes ({B}+{2}+{B}{B}=5) and target yourself for the draw.
+  Pick a card from the middle of the library. Next turn, cast the second copy with only the second
+  mode and target the opponent.
+- **Check:** The library search lists every card in your library. You must pick exactly one: there
+  is no 'find nothing' option and Confirm needs a card (rule 701.23d, from the review). The library
+  shuffles, the chosen card goes on top, and then the draw of three includes it (modes in printed
+  order). Your life goes to 17. The opponent's seat and log should not reveal which card you chose.
+  Second cast: the opponent draws 3 and goes to 17 life, and your library is untouched. If you cast
+  only the first mode, the card ends up on top of your library, not in your hand.
+- **Known limits:** Twelve other 'search for a card' tutors (Demonic Tutor, Vampiric Tutor, etc.)
+  still let the search find nothing (BACKLOG). Insatiable Avarice is fixed. Cascade and suspend cast
+  it with no modes (BACKLOG).
+
+### Smuggler's Surprise
+
+*New decision* — 2cd2d704 (spree)
+
+- **Setup:** 2-player, your turn. You: 9 lands including 2+ Forests. Top 4 of library: Craw Wurm,
+  Forest, Sol Ring, Grizzly Bears. Graveyard: an older creature card, e.g. Hill Giant. Hand:
+  Smuggler's Surprise and Serra Angel. Battlefield: Grizzly Bears.
+- **Do:** Cast it with all three modes ({G}+{2}+{4}{G}+{1}=9). From the milled cards, take Craw Wurm
+  and Forest. When mode 2 asks, put Craw Wurm and Serra Angel from your hand onto the battlefield.
+- **Check:** The mill pick offers only the creature and land cards milled this way: Craw Wurm,
+  Forest and Bears. It does not offer Sol Ring or the older Hill Giant. It allows 0–2 picks. Mode
+  2's hand prompt offers only creature cards, including the Craw Wurm mode 1 just returned (modes in
+  order). It allows 0–2. Mode 3 gives hexproof and indestructible to the newly entered Craw Wurm
+  (6/4) and Serra Angel (4/4), per the ruling. Your 2/2 Bears gets nothing. Any enters triggers wait
+  until the spell finishes resolving.
+- **Known limits:** Cascade and suspend free casts pick no modes (BACKLOG).
+
+### Requisition Raid
+
+*New decision* — 2cd2d704 (spree, add-counter-all controlledByTarget)
+
+- **Setup:** 3-player, your main phase. You: 4 Plains and two creatures. Opponent B: Sol Ring and a
+  creature. Opponent C: Pacifism on one of your creatures, and two creatures of their own.
+- **Do:** Cast it with all three modes: target Sol Ring, Pacifism, and yourself as the player.
+  Recast (or replay) with only mode 3 targeting C.
+- **Check:** The cost is {W}+{1}x3 = 4. Target prompts come in mode order: artifact, then
+  enchantment, then player. Any player can be targeted, you included. +1/+1 counters go only on the
+  targeted player's creatures. Sol Ring and Pacifism are destroyed.
+- **Known limits:** Cascade and suspend free casts pick no modes (BACKLOG).
+
+### Dawn's Truce
+
+*New decision* — 2cd2d704 (gift)
+
+- **Setup:** 4-player game: you plus B, C, D in turn order. Your main phase. You: 4 Plains, Grizzly
+  Bears, Sol Ring. Hand: 3 copies of Dawn's Truce. B: Counterspell and UU open. Also repeat in a
+  2-player game, and in a 4-player game where one opponent has already lost.
+- **Do:** Open the cast options for Dawn's Truce. Cast the gift version: answer No for B and No for
+  C. Let it resolve. Cast a second copy promised, answer Yes for B, and have B counter it. Cast a
+  third copy unpromised.
+- **Check:** There are two cast buttons: 'Cast Dawn's Truce' and 'Cast Dawn's Truce (gift)'. The
+  gift button shows no mana symbol, because a gift costs nothing. The promised cast asks 'Dawn's
+  Truce — Promise the gift to this opponent? — B' with Yes/No, in turn order from your left. After
+  No to B and C, D gets it with no third question. The log reads 'You promise Dawn's Truce's gift to
+  D'. On resolution D draws first (702.174j). Then you have hexproof, and every permanent you
+  control (lands and Sol Ring too) has hexproof and indestructible until end of turn. Countered: no
+  gift card is drawn (ruling). Unpromised: hexproof only and nobody draws. In 2-player there is no
+  question at all. An opponent who has lost is never offered, and a promised opponent who leaves
+  before resolution gets nothing.
+- **Known limits:** Asking about one opponent at a time is a known UI gap. BACKLOG (Client/UI) wants
+  a single prompt naming every opponent, so don't report the sequence as a bug. Cascade and suspend
+  never offer the gift (BACKLOG).
+
+### Into the Flood Maw, Long River's Pull, Wear Down, Peerless Recycling, Sazacap's Brew
+
+*New decision* — 2cd2d704 (gift, promised targets 702.174m)
+
+- **Setup:** 2-player. You: 2 Islands, 2 Forests, 2 Mountains. Battlefield: Grizzly Bears.
+  Graveyard: Grizzly Bears, Sol Ring, Lightning Bolt. Hand: all five cards plus one spare card.
+  Opponent: Sol Ring and Rhystic Study, no creatures, and Divination in hand with mana open.
+- **Do:** Look at each card's cast options and target lists, then cast each promised. Long River's
+  Pull: cast it in response to the opponent's Divination. Wear Down: also try it after one of the
+  two targets is gone. Sazacap's Brew: cast it once unpromised with no creature target, and once
+  promised targeting a player and your Bears.
+- **Check:** Into the Flood Maw: with no opposing creature, only the '(gift)' cast is offered. It
+  targets Sol Ring or Rhystic Study, never a land. The opponent gets a tapped 1/1 blue Fish first,
+  then the permanent returns to its owner's hand. Long River's Pull: only the gift version can
+  target the noncreature Divination. Wear Down: promised needs two different artifacts/enchantments,
+  so it isn't offered with only one. With two, both are destroyed together after the opponent draws.
+  Peerless Recycling: targets only permanent cards (never the Bolt), and promised takes two
+  different ones. Sazacap's Brew: unpromised targets only a player, with no creature needed.
+  Promised targets a player plus a creature you control (+2/+0). The discard cost is asked as a
+  prompt after you cast. Brew shouldn't be castable when it's your only card in hand (601.2a/h), but
+  that case isn't in the tests.
+- **Known limits:** Cascade and suspend never offer a gift (BACKLOG). The gift opponent prompt goes
+  one opponent at a time in multiplayer (BACKLOG Client/UI).
+
+### Octomancer
+
+*New decision* — 2cd2d704 (gift an Octopus)
+
+- **Setup:** 2-player, your main phase. You: 3 Forests + 2 Islands. Hand: Octomancer. Opponent:
+  Raise the Alarm with mana open for their next turn.
+- **Do:** Cast Octomancer promised. Go to your end step. On the opponent's turn, have them cast
+  Raise the Alarm, then go to their end step. On a turn when no creature token entered, go to the
+  end step.
+- **Check:** As it enters, the opponent gets an 8/8 blue Octopus token. At your end step, the
+  trigger targets 'creature token that entered this turn' and offers the opponent's Octopus. You get
+  an untapped 8/8 Octopus copy with no counters (707.2). It triggers at every player's end step: on
+  the opponent's turn you can target one of their new Soldiers. On a turn with no new creature
+  token, the trigger has no target and does nothing.
+- **Known limits:** None documented for this card.
+
+### Final Showdown
+
+*Rules call* — 2cd2d704 (spree, lose-abilities-all)
+
+- **Setup:** 2-player, your main phase. You: 8 Plains. Battlefield: Grizzly Bears and Doomed
+  Traveler. Opponent: Darksteel Myr (indestructible) and Doomed Traveler. Hand: 2 copies of Final
+  Showdown.
+- **Do:** Cast it with all three modes ({W}+{1}+{1}+{3}{W}{W}=8). When asked, choose your Grizzly
+  Bears. Next turn, cast the second copy with only the first mode.
+- **Check:** The second mode asks 'Choose a creature you control to gain indestructible until end of
+  turn' during resolution, as a choice rather than a target (per the ruling). It offers only your
+  creatures. Bears survives: indestructible granted after the 'lose all abilities' effect is kept
+  (613.7, the ruling). Darksteel Myr is destroyed because it lost indestructible. Neither Doomed
+  Traveler makes a Spirit: they had no abilities when they died (603.10a look-back). That last point
+  follows from the rules but isn't in this pass's tests. With mode 1 alone, the Myr shows no
+  indestructible icon until end of turn and has it again next turn.
+- **Known limits:** None documented for this card. Cascade and suspend free casts pick no modes
+  (BACKLOG).
+
+### Parting Gust
+
+*Rules call* — 2cd2d704 (gift)
+
+- **Setup:** 2-player, your main phase 1. You: 4 Plains and Wall of Omens. Hand: 2 copies of Parting
+  Gust. Opponent: Serra Angel enchanted with your Pacifism, Hill Giant, and a Soldier token (from
+  Raise the Alarm).
+- **Do:** Cast it unpromised on the opponent's Serra Angel, then pass to your end step. Separately,
+  cast it unpromised on your own Wall of Omens. Cast the second copy promised on Hill Giant.
+- **Check:** The Soldier token is never a legal target (nontoken creature). Unpromised: the Angel is
+  exiled and Pacifism goes to the graveyard. At the beginning of the next end step, the Angel
+  returns under its owner's (the opponent's) control with a +1/+1 counter. It is a new object
+  (400.7), unpacified. Wall of Omens returns at the end step and its enters-draw triggers again.
+  Promised: the opponent gets a tapped 1/1 Fish, Hill Giant stays in exile for good, and no end-step
+  return happens.
+- **Known limits:** None documented for this card.
+
+### Starfall Invocation, Coiling Rebirth
+
+*Rules call* — 2cd2d704 (gift)
+
+- **Setup:** 2-player, your main phase. You: 5 Plains + 5 Swamps. Battlefield: Hill Giant, Wall of
+  Omens, a Soldier token. Graveyard: Serra Angel already there, and Skithiryx, the Blight Dragon.
+  Opponent: Grizzly Bears and Doomed Traveler. Hand: Starfall Invocation and 2 copies of Coiling
+  Rebirth.
+- **Do:** Cast Starfall Invocation promised. Then cast Coiling Rebirth promised targeting a returned
+  creature card (e.g. Hill Giant if you didn't pick it). Then cast Coiling Rebirth promised
+  targeting Skithiryx.
+- **Check:** Starfall: the opponent draws first, and every creature is destroyed. A graveyard choice
+  then offers only Hill Giant and Wall of Omens, the creature cards put into your graveyard this
+  way. It doesn't offer the Serra Angel that was already there, the opponent's cards, or the token.
+  You must take one (min 1, per the ruling). It returns under your control, and its enters trigger
+  (Wall's draw) goes on the stack after the spell finishes. The opponent gets a Doomed Traveler
+  Spirit. Coiling Rebirth: the opponent draws, the creature returns, and you get a 1/1 token copy of
+  it. Enters triggers from both wait until the spell has resolved (ruling). Targeting legendary
+  Skithiryx: it returns but no token is made at all. Unpromised: it only returns the creature.
+- **Known limits:** None documented for these cards.
+
+### Scrapshooter
+
+*Rules call* — 2cd2d704 (gift on a permanent)
+
+- **Setup:** 2-player, your main phase. You: 3 Forests (6 for a second cast). Hand: 2 copies of
+  Scrapshooter. Opponent: Sol Ring and Rhystic Study, plus Swords to Plowshares with W open. A
+  second scenario where the opponent has no artifact or enchantment.
+- **Do:** Cast it promised. When it enters, order the triggers and pick a target. On another cast
+  promised, have the opponent Swords it with both enters triggers on the stack. Cast it promised
+  where the opponent has no artifact or enchantment, and cast it unpromised.
+- **Check:** Promised: two enters triggers, the gift (opponent draws a card) and 'destroy target
+  artifact or enchantment an opponent controls'. You order them. The target list holds only the
+  opponent's artifacts and enchantments. If Scrapshooter is exiled before the gift trigger resolves,
+  the opponent still draws (the gift is given as it last existed). It can be cast promised with
+  nothing to destroy (ruling): the opponent draws and the destroy trigger simply doesn't happen.
+  Unpromised: neither trigger happens.
+- **Known limits:** None documented for this card.
+
+### Blighted Agent, Plague Myr, Ichorclaw Myr, Inkmoth Nexus
+
+*Rules call* — 2cd2d704 (infect)
+
+- **Setup:** 2-player, your turn, main 1. You: Blighted Agent, Plague Myr and Ichorclaw Myr, none
+  summoning sick. One Inkmoth Nexus controlled since the turn began, a second Inkmoth Nexus played
+  this turn, and 3 other lands. Opponent: life 20, poison 0. Their creatures: Wall of Wood (0/3) and
+  Hill Giant with one +1/+1 counter (4/4). Ajani, Caller of the Pride on the battlefield.
+- **Do:** Activate {1} on both Nexuses. Try to attack with, or tap for mana, the Nexus played this
+  turn. Attack: Agent and the older Nexus at the player, Plague Myr at Ajani, Ichorclaw Myr at the
+  player. The opponent double-blocks Ichorclaw with Wall of Wood and Hill Giant. Pass into the next
+  turn.
+- **Check:** The Nexus played this turn and animated can't attack or tap for {C} (ruling). Both
+  animated Nexuses are 1/1 flying, infect artifact creature lands with the infect icon. Ichorclaw
+  triggers +2/+2 only once despite two blockers (ruling). The player panel shows poison as '☠ n/10'
+  and life stays 20. Ajani loses loyalty, not -1/-1 counters (ruling). Damage to the blockers
+  becomes -1/-1 counters, not marked damage. Hill Giant's +1/+1 counter and one -1/-1 counter cancel
+  out (704.5q). The counters are still there next turn (120.3d).
+- **Known limits:** None documented for these cards.
+
+### Phyresis, Tainted Strike, Triumph of the Hordes
+
+*Rules call* — 2cd2d704 (infect granted, noncombat)
+
+- **Setup:** 2-player, your turn. You: Prodigal Pyromancer (not summoning sick) and Grizzly Bears,
+  plus Swamps, Forests and Mountains (8+). Basilisk Collar on the battlefield. Hand: Phyresis,
+  Tainted Strike, Triumph of the Hordes, Fling. Opponent: 6 poison, Llanowar Elves and Hill Giant.
+- **Do:** Cast Phyresis on the Pyromancer and equip the Collar to it. Ping Hill Giant, then the
+  opponent. Fling a creature at the opponent. Cast Tainted Strike on the Bears, then Triumph of the
+  Hordes, then attack.
+- **Check:** The pinged Hill Giant gets one -1/-1 counter and is destroyed by deathtouch even though
+  no damage is marked (704.5h). Pinging the opponent gives +1 poison, not life loss, and you gain 1
+  life from lifelink (ruling: infect damage is still damage). Fling's damage is normal life loss:
+  its source is Fling, which has no infect. Tainted Strike makes the Bears 3/2 with infect. Triumph
+  gives +1/+1, trample and infect only to creatures you control as it resolves (611.2c), never the
+  opponent's. Combat damage is poison. At 10 poison the opponent loses at the state-based check
+  (704.5c), and the game-over reason mentions poison.
+- **Known limits:** 704.5h reads 'dealt deathtouch damage this turn', not 'since the last check'
+  (BACKLOG). A creature that survived deathtouch while indestructible dies if it loses
+  indestructible later that turn.
+
+### Skithiryx, the Blight Dragon
+
+*Rules call* — 2cd2d704 (infect)
+
+- **Setup:** Commander game, 2+ players. Skithiryx is your commander, cast this turn, with 4+ Swamps
+  open. Opponent A: 0 poison and 17 combat damage already taken from Skithiryx (or build it up over
+  turns). Opponent B: Craw Wurm (6/4).
+- **Do:** Activate {B} for haste and attack A. On a later turn, activate {B}{B} to regenerate and
+  attack B, letting the Craw Wurm block.
+- **Check:** Skithiryx's 4 damage to A is 4 poison with no life change, and it still counts as
+  commander damage. A reaches 21 and loses by commander damage (903.10a counts combat damage from
+  the commander whatever it does). Against the Craw Wurm, Skithiryx puts 4 -1/-1 counters on it and
+  it dies (6/0). Skithiryx takes lethal damage and is regenerated instead: tapped, removed from
+  combat, damage removed. Haste lasts until end of turn.
+- **Known limits:** None documented for this card.
+
+### Massacre Girl, Known Killer, Necroskitter, Midnight Banshee, Hapatra, Vizier of Poisons
+
+*Rules call* — 2cd2d704 (wither)
+
+- **Setup:** 2-player, your turn. You: Massacre Girl, Known Killer; Necroskitter; Hapatra, Vizier of
+  Poisons; Prodigal Pyromancer (not summoning sick); Grizzly Bears. Opponent: life 20, Llanowar
+  Elves, Hill Giant (3/3), a Soldier token, Grizzly Bears. Optionally, Midnight Banshee in play for
+  your next upkeep.
+- **Do:** Ping the opponent's Elves with the Pyromancer. Ping the opponent's face. Attack with your
+  Bears into Hill Giant (it blocks). Give the Soldier token a -1/-1 counter (ping it) so it dies.
+  Destroy an opponent's creature that has no counters with a spell. Go to your next upkeep with
+  Banshee in play.
+- **Check:** Elves get a -1/-1 counter (wither via Massacre Girl) and die at 0/0. Then Massacre Girl
+  draws a card (toughness < 1 as it last existed), Hapatra makes a deathtouch Snake (you put the
+  counters, 120.3d), and Necroskitter asks 'Return that card to the battlefield under your control?'
+  On Yes, the Elves come back under your control with no counter. The face ping is ordinary life
+  loss (wither only affects creatures). Hill Giant takes 2 counters and survives as 1/1, and your
+  Bears dies of marked damage. The Soldier token dying gives you nothing back (a token can't
+  return). A counterless creature destroyed gives no draw and no Necroskitter trigger. Banshee's
+  upkeep puts -1/-1 on each nonblack creature, yours included, and none on Massacre Girl,
+  Necroskitter or Banshee.
+- **Known limits:** None documented for these cards.
+
+### Phyrexian Swarmlord, Ichor Rats
+
+*Rules call* — 2cd2d704 (infect)
+
+- **Setup:** (a) 4-player. You control Phyrexian Swarmlord and have 2 poison. Opponents' poison: B
+  3, C 2, D 0. Start at the end of the turn before yours. (b) 2-player, your main phase. You and the
+  opponent both at 9 poison. You have 3 Swamps and Ichor Rats in hand.
+- **Do:** (a) Go into your upkeep, then attack with the new tokens next turn. (b) Cast Ichor Rats.
+- **Check:** (a) Swarmlord makes 5 green 1/1 Phyrexian Insect tokens with infect: every opponent's
+  poison summed, never yours. They appear as one token stack, each can attack or block on its own,
+  and each has the infect icon. (b) Both players reach 10 poison at once and the game is a draw
+  (104.4a, the card's ruling). This draw outcome is in the card's comment but not in the commit's
+  tests.
+- **Known limits:** None documented for these cards.
+
+## Notion Thief, copied abilities, a departed player's permanents (2026-10-03, third round)
+
+### Strionic Resonator
+
+*New decision* — 8cb3444f + b446d1b5 (the ability target's abilityKind: "triggered"; a copied linked trigger stays linked)
+
+- **Setup:** 2 players, your precombat main, 10+ mana of mixed colours. You (A): three untapped
+  Strionic Resonators (each taps, so one per activation), Prodigal Sorcerer (not summoning sick) on
+  the battlefield. In hand: Elvish Visionary, Banishing Light, History of Benalia. Optional:
+  Flameshadow Conjuring on the battlefield and Grizzly Bears in hand. Opponent (B): Grizzly Bears
+  and Llanowar Elves on the battlefield, Elvish Visionary in hand, Naturalize with G open.
+- **Do:** (1) Activate Prodigal Sorcerer at B. While its ability is on the stack, try to activate a
+  Resonator. (2) Cast Elvish Visionary. With its enters trigger on the stack, activate a Resonator
+  targeting the trigger. (3) Cast Banishing Light and target B's Grizzly Bears. With the trigger on
+  the stack, Resonate it and choose B's Llanowar Elves as the copy's new target. Later, B casts
+  Naturalize on Banishing Light. (4) Cast History of Benalia and Resonate its chapter I ability. (5)
+  Pass to B's turn. B casts Elvish Visionary: try to Resonate B's trigger. (6) Optional: cast
+  Grizzly Bears with Flameshadow out and Resonate Flameshadow's trigger.
+- **Check:** (1) The Resonator isn't offered: an activated ability isn't a legal target. (2) The
+  stack entry can be picked as the target. No new-targets prompt appears because the trigger has no
+  targets, and you draw 2 cards in total. (3) The copy asks for new targets. Both Bears and Elves
+  end up exiled, and when Naturalize destroys Banishing Light both return. A copied linked ability
+  is linked too (ruling). (4) A chapter ability is a triggered ability (rule 714.2b): two Knight
+  tokens. (5) B's trigger isn't offered ('you control'). (6) The copy asks 'Pay {R}…?' again on its
+  own. Choices and payments made on resolution are made again for the copy (ruling), and if you pay
+  both you get two token Bears.
+- **Known limits:** The end-step exile of Flameshadow, Molten Echoes, Kiki-Jiki and similar tokens
+  isn't a trigger on the stack, so the Resonator can't copy it (BACKLOG 'End-step token removal
+  resolves without the stack'). A modal triggered ability's copy keeps its modes, as the ruling
+  says.
+
+### Peter Parker's Camera, Lithoform Engine
+
+*New decision* — 8cb3444f + b446d1b5 (Camera on the copy-ability vocabulary; a copy never offered itself as a new target, rule 115.5)
+
+- **Setup:** 2 players, your precombat main, 10+ mana. You (A): Peter Parker's Camera in hand. On
+  the battlefield: Prodigal Sorcerer (not sick) and Lithoform Engine (untapped). In hand: Elvish
+  Visionary. Opponent (B): Llanowar Elves.
+- **Do:** (1) Cast the Camera. (2) Activate Prodigal Sorcerer targeting B. In response, activate the
+  Camera the same turn ({2}, {T}, remove a film counter) targeting the Sorcerer's ability, and
+  choose B's Llanowar Elves as the copy's new target. (3) Next turn, cast Elvish Visionary. With its
+  trigger on the stack, activate Lithoform Engine's {2} ability targeting the trigger. Then activate
+  the Camera targeting Lithoform's ability, and look closely at the new-targets prompt for the
+  Camera's copy. (4) Use the Camera's third and last counter on a later turn, then try to activate
+  it with 0 film counters.
+- **Check:** (1) It enters with 3 film counters, shown on the card. (2) You can tap it the turn it
+  arrives (it's not a creature). Paying takes it to 2 counters. Because of the copy, the Elves die,
+  and B goes to 19 from the original. (3) The prompt offers the Visionary trigger and Lithoform's
+  ability, but never the Camera's copy itself (rule 115.5). Resolved, the copies stack up and you
+  draw extra cards. (4) With 0 film counters the Camera isn't offered. A mana ability (tapping a
+  land or Elves) is never a target, since it doesn't use the stack.
+- **Known limits:** Nothing recorded for the Camera itself. A copy's division of damage can't
+  change, only the targets (ruling). The tests don't cover a divided ability, so if you copy one,
+  check that its numbers stay.
+
+### Battlemage's Bracers
+
+*New decision* — 8cb3444f + b446d1b5 (activates-ability with a 'may pay {1}' copy)
+
+- **Setup:** 2 players, your precombat main, about 6 untapped mana. You (A): Battlemage's Bracers on
+  the battlefield, unattached. Prodigal Sorcerer in hand. Llanowar Elves (not sick) on the
+  battlefield. Optional: Walking Ballista with counters. Opponent (B): Llanowar Elves, at 20 life.
+- **Do:** (1) Cast Prodigal Sorcerer, then equip the Bracers to it ({2}). (2) Activate the Sorcerer
+  at B. When the Bracers trigger resolves, answer 'Pay {1} to copy that ability?' with yes and give
+  the copy B's Elves. (3) Untap next turn (or use a second Sorcerer) and decline the payment. (4)
+  Tap all your other mana so you can't pay {1}, then activate the Sorcerer again. (5) Move the
+  Bracers to your Llanowar Elves (equip) and tap the Elves for mana.
+- **Check:** (1) The summoning-sick Sorcerer can use its {T} ability right away, because the Bracers
+  give it haste. (2) The prompt reads clearly and {1} is actually spent. The copy asks for new
+  targets. B's Elves die and B goes to 19. (3) Declined, nothing is copied and nothing is spent. (4)
+  The pay option isn't offered when you can't pay (a 'may' with a cost is offered only when
+  payable). (5) The equip activation doesn't trigger the Bracers (it's the Equipment's ability, not
+  the creature's). Tapping the Elves for mana doesn't either, since mana abilities don't use the
+  stack (rule 605.3b).
+- **Known limits:** 'Whenever you activate an ability' (Rings of Brighthearth) isn't built because
+  cycling resolves without the stack. That doesn't affect the Bracers. An ability whose cost
+  sacrifices the equipped creature isn't copied: once its costs are paid, the Bracers equip nothing
+  (same as Illusionist's Bracers, already in manual-checks).
+
+### Increasing Vengeance, Reverberate, Essence Scatter, Frolicking Familiar, Fling
+
+*New decision* — 8cb3444f + b446d1b5 (copy-spell count 1 or 2 by castFrom graveyard; spell-type targets read the face on the stack, rule 715.3b)
+
+- **Setup:** 2 players, your precombat main, 10+ Mountains plus {U}{U}{U}. You (A): in hand
+  Lightning Bolt ×2, Increasing Vengeance, Frolicking Familiar, Reverberate, Fling, Grizzly Bears,
+  and a second copy of Grizzly Bears on the battlefield. Opponent (B): Grizzly Bears and Llanowar
+  Elves on the battlefield, Essence Scatter in hand with {1}{U} open, at 20 life.
+- **Do:** (1) Bolt B, then cast Increasing Vengeance from your hand targeting the Bolt, and redirect
+  the copy to B's Llanowar Elves. (2) Bolt B again and flash back Increasing Vengeance from the
+  graveyard ({3}{R}{R}) on it. Give each copy a different new target (B's Bears, and B). (3) Cast
+  Blow Off Steam (Frolicking Familiar's Adventure) at B. B tries Essence Scatter on it. Then copy it
+  with Increasing Vengeance or Reverberate. (4) Cast Grizzly Bears so it's on the stack and try to
+  target it with Increasing Vengeance. On B's turn, try to target B's Bolt. (5) Flash back
+  Increasing Vengeance targeting a Bolt, then Reverberate the Increasing Vengeance. (6) Fling,
+  sacrificing your battlefield Grizzly Bears (power 2), at B, then copy it with Increasing Vengeance
+  or Reverberate.
+- **Check:** (1) Exactly one new-targets prompt. The Elves die and B takes 3. Increasing Vengeance
+  goes to the graveyard. (2) Two separate new-targets prompts, one per copy. All three Bolts
+  resolve. Increasing Vengeance is exiled (flashback). (3) Essence Scatter isn't allowed, because
+  the Adventure on the stack is an instant spell, not a creature spell (rule 715.3b). The copy
+  works: B takes 2 in total. (4) Neither the creature spell nor B's spell is a legal target. (5) The
+  Reverberate copy of a flashback-cast Increasing Vengeance makes only one copy, because a copy was
+  never cast (rulings). (6) Per the Increasing Vengeance ruling (the Fling example), the copy should
+  also deal 2: costs paid for the original count for the copy.
+- **Known limits:** Step 6 may well fail: report it if the copy deals 0. Nothing in BACKLOG covers
+  it, but copySpellFrom/SpellSnapshot in game.ts doesn't carry the spell's lastKnownRefs.sacrificed,
+  which is what Fling's 'sacrificed creature's power' reads. Ability copies do carry it
+  (copyStackAbility clones it). No test covers copying Fling.
+
+### Ixhel, Scion of Atraxa
+
+*New decision* — 8cb3444f + b446d1b5 (impulse-exile whoseIf with player-counters who: "that-player", face down, spend as any colour)
+
+- **Setup:** 3 players: you (A), B and C, your precombat main. You: Ixhel on the battlefield (not
+  sick), and only Plains for mana (6+). Optional: 5 poison counters on yourself. B: 3 poison
+  counters, Lightning Bolt on top of their library with a Mountain under it. C: 2 poison counters,
+  Grizzly Bears on top of their library. No blockers that can stop a flyer.
+- **Do:** (1) Go straight to your end step without attacking. Look at B's exile from all three
+  seats. (2) Next turn, cast the exiled Lightning Bolt paying only Plains. Attack C with Ixhel
+  (unblocked). Go to your end step with B's Mountain and C's Bears now on top. (3) Kill Ixhel (B or
+  C casts removal, or use the builder). Then in later turns try to play the exiled Mountain as your
+  land drop, and to cast the exiled Grizzly Bears at instant speed and then in your main phase with
+  an empty stack. From B's seat, try to cast B's own exiled card.
+- **Check:** (1) The trigger goes on the stack every end step (no intervening 'if'). Only B, with 3
+  poison, exiles a card. C (2) and you (however poisoned) exile nothing. Your seat can see the
+  Bolt's face in B's exile and is offered it, while B's and C's seats see only a face-down card back
+  (rule 406.3). (2) The Bolt can be paid with white mana (rule 609.4b). Ixhel's combat damage gives
+  C 2 poison (toxic 2, now 4) as well as 2 life lost. At the end step B and C exile at once, as one
+  exile. (3) After Ixhel has left you can still look at and play the cards (ruling). The Mountain
+  uses your land drop, and the Bears follow normal timing (sorcery speed only, ruling). B can never
+  cast their own exiled card.
+- **Known limits:** Nothing recorded for Ixhel. The any-colour spending applies only to casting
+  those cards, not to other costs.
+
+### Notion Thief
+
+*Rules call* — 8cb3444f + b446d1b5 (Notion Thief made exact: exceptFirstInDrawStep, redirects handed on each once)
+
+- **Setup:** 2 players. You (A): Notion Thief on the battlefield, plus a second Notion Thief in your
+  library or hand for part (c). Opponent (B): Howling Mine (untapped) and Phyrexian Arena on the
+  battlefield; in hand Faithless Looting with a red source open, and Divination with {2}{U} open.
+  Know both libraries' top cards. Start at the end of your turn so B's turn comes next. Optional:
+  Wheel of Fortune in B's hand with {2}{R}. For part (d), a 3-player game where B and C each control
+  a Notion Thief.
+- **Do:** (a) Pass to B's turn and watch B's upkeep, then B's draw step. (b) In B's main phase B
+  casts Faithless Looting. (c) Give B a Notion Thief of their own (one each, a duel) and have B cast
+  Divination, then repeat with you controlling two Thieves against B's one. (d) Optional: B casts
+  Wheel of Fortune with only your Thief out. (e) On your own turn, draw normally.
+- **Check:** (a) Upkeep: Phyrexian Arena's draw goes to you (it isn't in B's draw step) and B still
+  loses 1. Draw step: B keeps the turn-based draw (the first card they draw in their draw step is
+  spared), and Howling Mine's extra card for B goes to you. (b) You draw 2 and B still has to
+  discard 2. Only the draw is replaced (ruling 2018-03-16). (c) One Thief each: B draws both cards.
+  Each Thief applies to a draw once, so the draw goes B to A and back to B ('it really will be that
+  player who draws', ruling). The log should show two redirects per card. With your two Thieves
+  against B's one, it goes B to A, back to B, then to A again: you draw both, with three redirects
+  per card. (d) B discards their hand and draws nothing. All 7 of B's cards go to you, on top of
+  your own 7. (e) Your own Thief never touches your draws, and Howling Mine gives you your extra
+  card normally.
+- **Known limits:** With Thieves controlled by two different opponents (3+ players), the drawing
+  player should choose which one applies first (ruling). The engine takes the opponent first in turn
+  order after the drawer and doesn't ask (BACKLOG; AUTHORING §15). With Laboratory Maniac and an
+  opponent's Thief, the win is applied first and no replacement order is offered (§15). The older
+  docs/manual-checks.md entry (Laboratory Maniac … Notion Thief) still lists 'redirects every
+  opponent draw' as a known limit. That's out of date now that this pass fixed it.
+
+### Molten Echoes, Flameshadow Conjuring
+
+*Rules call* — 8cb3444f + b446d1b5 (create-token-copy with gained haste, exileAtEndStep)
+
+- **Setup:** 2 players, your precombat main, plenty of mana including several red. You (A):
+  Flameshadow Conjuring on the battlefield. In hand: Molten Echoes, Elvish Visionary, Llanowar
+  Elves, Grizzly Bears, Briarpack Alpha (flash). Opponent (B): anything.
+- **Do:** (1) Cast Molten Echoes and choose Elf at the creature-type prompt. (2) Cast Elvish
+  Visionary. Both enchantments trigger, so order them, and pay {R} for Flameshadow's. (3) Cast
+  Grizzly Bears, then tap out and cast Llanowar Elves with no red left. (4) Attack with the tokens,
+  then go to your end step. (5) On B's turn, in B's end step, flash in Briarpack Alpha and pay {R}
+  for Flameshadow's copy. Then let turns pass to your own end step.
+- **Check:** (1) The prompt offers real creature types only (ruling). (2) You get two hasty token
+  Visionaries, each drawing a card from its own enters trigger. The token entering doesn't trigger
+  either enchantment (nontoken only). (3) A non-Elf triggers only Flameshadow. With no red available
+  Flameshadow offers no payment, and Molten Echoes still copies the Elf. (4) The tokens can attack
+  this turn (haste). At the start of your end step every such token is exiled. (5) A token made
+  during an end step survives that end step and is exiled at the next one, which is your turn's
+  (Flameshadow ruling), whoever controls it then. The real creatures stay.
+- **Known limits:** The exile happens silently as the end step begins. It isn't a delayed trigger on
+  the stack, so it can't be responded to, countered (Sublime Epiphany) or copied (Strionic
+  Resonator) (BACKLOG and AUTHORING §15 'End-step token removal doesn't use the stack'). Don't
+  report the missing stack entry. A token copy is never asked an 'as this enters' choice (§15).
+
+### Boseiju, Who Endures, (a player who has left the game)
+
+*Rules call* — 2ccf8c61 (nothing a departed player leaves behind can be targeted, rule 800.4a)
+
+- **Setup:** 3 players (A, B, C), A's precombat main. A: Boseiju, Who Endures and Lightning Bolt ×2
+  in hand, with Forest ×2 and Mountain ×2 untapped. Optional: Scavenging Ooze (not sick) with {G}
+  spare. B: Tarnished Citadel and a creature. C: at 3 life, with Tarnished Citadel, Grizzly Bears,
+  and a card in their graveyard. Optional: C controls B's creature via Mind Control.
+- **Do:** (1) Start activating Boseiju's channel from your hand to see C's Citadel offered, then
+  cancel. (2) Activate the channel targeting C's Tarnished Citadel. With it on the stack, Bolt C to
+  0. (3) After C is out, activate the channel again and try every target. Also try to Bolt C's
+  Grizzly Bears and to point Scavenging Ooze at a card in C's graveyard. Optional: target the
+  creature C was controlling with Mind Control.
+- **Check:** (1) C's land is a legal target while C is in. (2) The Bolt resolves and C loses at
+  once. The channel then doesn't resolve, because its only target is gone with C (rules 800.4a,
+  608.2b). Nobody is asked to search, and the game doesn't freeze waiting on C. (3) Only B's Citadel
+  is offered. None of C's permanents, graveyard cards or other objects show up as targets, though
+  they stay visible on C's side. B's creature that C had stolen is back under B's control (C's
+  control effect ended, 800.4a) and is targetable normally.
+- **Known limits:** By design, a departed player's objects stay where they are, visible but out of
+  the game. That is not a bug. Not built yet (BACKLOG 'The rest of leaving the game'): a decision
+  the departed player would have made isn't handed to another player (800.4g–h), and a permanent
+  whose control effect ends with its default controller gone isn't exiled (800.4c).
+
+## The Tarkir precons, first half: costs, cycling, graveyard statics, edicts (2026-10-03, third round)
+
+### Dismantling Wave, Windgrace's Judgment, Afterlife from the Loam, The Balrog of Moria (dies trigger)
+
+*New decision* — f6771193 (targets bound to a seat), reviewed in 44dbcd86
+
+- **Setup:** A 4-player game. Turn order: you, B (next), C, D. Your precombat main phase, with
+  plenty of untapped W, B and G mana (8+ of each). Your battlefield: Sol Ring, The Balrog of Moria.
+  B's battlefield: Sol Ring, Mind Stone, Grizzly Bears. C's battlefield: Ghostly Prison, an Island,
+  Serra Angel. D's battlefield: Craw Wurm, and no artifacts or enchantments. Graveyards: yours has
+  Grizzly Bears plus 4 or more other cards to delve. B's has Craw Wurm and Serra Angel. C's has
+  Giant Spider. D's is empty. Your hand: Dismantling Wave, Windgrace's Judgment, Afterlife from the
+  Loam, and some removal for your own Balrog (any destroy spell).
+- **Do:** 1) Cast Dismantling Wave. Work through each target slot, try to pick two of B's artifacts,
+  and skip D's slot. 2) Cast Windgrace's Judgment, aiming at B's Grizzly Bears and C's Ghostly
+  Prison or Serra Angel, and try to pick C's Island. 3) Cast Afterlife from the Loam (delve some
+  cards). Pick your Grizzly Bears, B's Craw Wurm and C's Giant Spider, and try to take both of B's
+  cards. 4) Destroy your own Balrog. Say yes to 'Exile The Balrog of Moria?' and pick one creature
+  for each opponent. Repeat with a second Balrog and say no. 5) Optional: have B concede, then cast
+  another seat-bound spell.
+- **Check:** Each slot is tied to one opponent by seat, and its prompt reads 'choose artifact or
+  enchantment the next opponent controls', then '...the opponent 2 seats on controls', then '...the
+  opponent 3 seats on controls'. A slot offers only that player's legal permanents: B's slot offers
+  Sol Ring and Mind Stone only, C's offers Ghostly Prison only, and D's has nothing, so you must be
+  able to skip it without the cast getting stuck. Two picks from one player are refused. Every
+  chosen target is destroyed at the same time, and your own Sol Ring survives. Windgrace's Judgment
+  never offers lands. Afterlife from the Loam has four slots (your graveyard, then each opponent's
+  in seat order), offers only creature cards, and puts the chosen cards onto the battlefield
+  together under your control, each showing the Zombie type next to its others. For the Balrog: on
+  yes it goes from your graveyard to exile, then a reflexive 'when you do' trigger asks for one
+  creature per opponent (rule 603.12) and exiles them together. On no it stays in the graveyard and
+  nothing is exiled. Once B has left, the other players keep their seat numbers: C is still 'the
+  opponent 2 seats on' and B's slot has nothing to offer.
+- **Known limits:** Prompts name a slot by seat ('the next opponent', 'the opponent 2 seats on'),
+  not by the player's name. That's the engine's wording, but report it if it's hard to tell who is
+  meant. A game seats at most four, so three opponent slots is the maximum. Grasp of Fate (same
+  target shape) is deliberately not authored: see BACKLOG.
+
+### Fractured Sanity, Decree of Pain, Agonasaur Rex, Titanoth Rex, Vizier of Tumbling Sands, Magmakin Artillerist, The Balrog of Moria (cycling), Dismantling Wave (cycling)
+
+*New decision* — f6771193 (cycling on the stack), fixed in 44dbcd86 (split second)
+
+- **Setup:** 2-player game (3-player also works for the each-opponent mills). Your precombat main
+  phase with lots of untapped mana of every colour. Your battlefield: Magmakin Artillerist, Grizzly
+  Bears, a tapped Island. Your hand: Fractured Sanity, Decree of Pain, Agonasaur Rex, Titanoth Rex,
+  Vizier of Tumbling Sands, a second Magmakin Artillerist, The Balrog of Moria, Migratory Route
+  (basic landcycling), Think Twice. Opponent's battlefield: Serra Angel, Grand Abolisher. Opponent's
+  hand: Angel's Grace and Krosan Grip, with mana for them. The opponent's library has 20+ cards.
+- **Do:** 1) Cycle Fractured Sanity with the Cycle button. Pass priority one step at a time. 2)
+  Cycle Magmakin Artillerist from hand while the other one is on the battlefield. 3) Cycle Agonasaur
+  Rex and target Grizzly Bears, then cycle another copy (or redo) and skip the target. 4) Cycle
+  Titanoth Rex. 5) Cycle Vizier of Tumbling Sands and target the tapped Island. 6) Cycle Decree of
+  Pain. 7) Cycle Migratory Route, then cast Think Twice in response. 8) Have the opponent cast
+  Krosan Grip (or Angel's Grace), and look for a Cycle button while it's on the stack. 9) Pass to
+  the opponent's turn (Grand Abolisher's controller) and try cycling a creature card there. 10)
+  Cycle The Balrog of Moria.
+- **Check:** The card goes to the graveyard and the cost is paid as soon as you cycle. The stack
+  shows a cycling ability sourced from that card, with its 'when you cycle this card' trigger above
+  it (rule 702.29c). The trigger resolves first: for Fractured Sanity the opponent mills 4 and only
+  then do you draw. Two Magmakins deal 2 damage in total (the cycled card's own 1, plus 1 for the
+  discard from the one on the battlefield), both before the draw (Magmakin's ruling). Agonasaur
+  Rex's target prompt (creature or Vehicle) can be skipped: with a target it gets two +1/+1
+  counters, trample and indestructible. Titanoth Rex puts a trample counter on a creature you
+  control, chosen automatically if you control only one. Vizier's cycle trigger can untap any
+  permanent, but its tap ability can't target Vizier itself. Cycled Decree of Pain gives every
+  creature -2/-2 until end of turn. The landcycling search waits on the stack: Think Twice resolves
+  first, then the search prompt appears. Under split second (rule 702.61a) no Cycle button is shown
+  and a cycle attempt is refused, and it comes back once that spell resolves. Under Grand Abolisher
+  you can still cycle on its controller's turn (its ruling: a card in hand isn't a permanent).
+  Cycling the Balrog makes two Treasures. Cycling Dismantling Wave ({6}{W}{W}) destroys every
+  artifact and enchantment, yours too, before the draw.
+- **Known limits:** 'Whenever you activate an ability' (Rings of Brighthearth) doesn't see cycling
+  yet, but no such card is in the pool (BACKLOG).
+
+### Command Beacon, Hellkite Courser
+
+*New decision* — 7f0bc8b0 (the command zone), with tests added in 04066f66
+
+- **Setup:** 2-player Commander game. Your commander is in the command zone and hasn't been cast yet
+  (commander tax 0). If the builder allows partners, put a second commander there to test choosing.
+  Your battlefield: Command Beacon (untapped) and enough lands to cast Hellkite Courser ({4}{R}{R})
+  plus your commander. Your hand: Hellkite Courser and some removal. Opponent's commander is in
+  their own command zone. Your precombat main phase.
+- **Do:** 1) Cast Hellkite Courser. When its ETB asks, choose your commander, and on a replay
+  decline instead. 2) Attack with the commander this turn. 3) Let the turn reach the end step. 4)
+  Replay: after the commander is on the battlefield, kill it before the end step (or blink it if you
+  have a flicker effect). 5) On a later turn with the commander back in the command zone, activate
+  Command Beacon ({T}, sacrifice it) and choose the commander. Cast it from your hand, then later
+  cast it from the command zone again. 6) Activate a second Beacon while your commander is not in
+  the command zone.
+- **Check:** Courser's prompt lists only commanders you own that are in the command zone (never the
+  opponent's) and can be declined. The chosen commander enters with haste and can attack straight
+  away. The commander tax doesn't go up, since it was put onto the battlefield, not cast (ruling).
+  At the beginning of the end step a delayed trigger puts it back in the command zone with no
+  'command zone instead?' prompt. If the commander died first, the usual rule 903.9b prompt appears
+  when it dies, and the end-step trigger does nothing. If it was blinked, it is a new object (rule
+  400.7): it stays on the battlefield and has lost the haste. If Courser itself dies, the return
+  still happens. Command Beacon puts the commander into your hand (with two commanders it asks you
+  to choose one, per the ruling). Cast from hand, it costs only its mana cost with no tax, and
+  casting it that way adds no tax for the next command-zone cast (ruling). With no commander in the
+  command zone, the Beacon is still sacrificed and nothing else happens.
+- **Known limits:** Ask about this rather than reporting it as a bug: the popup title comes from the
+  generic zone-choice wording ('Choose a card to put onto the battlefield') and doesn't mention the
+  command zone or that the choice is optional.
+
+### Will of the Abzan, Priest of Forgotten Gods, Crackling Doom, Soul Shatter, Will of the Mardu
+
+*New decision* — 7f0bc8b0 (per-player edicts, greatest among its controller's), fixed in 04066f66 (one simultaneous edict); Will of the Mardu from 20b3fdad
+
+- **Setup:** 4-player Commander game. Turn order: you, B, C, D. Your battlefield: your commander
+  (any creature), Priest of Forgotten Gods (not summoning sick) and two spare creatures, lots of
+  R/W/B mana. Your graveyard: Serra Angel. B's battlefield: Craw Wurm (6/4) and Grizzly Bears. C's
+  battlefield: two Craw Wurms (a tie for greatest power). D's battlefield: Serra Angel, and a
+  planeswalker with mana value 3 (e.g. Ajani, Caller of the Pride) next to a Grizzly Bears. Your
+  hand: Will of the Abzan, Crackling Doom, Soul Shatter, Will of the Mardu. Everyone at 20 life.
+- **Do:** 1) Cast Will of the Abzan choosing BOTH modes (allowed because you control a commander).
+  Target C and B but not D (picking C first), and target your Serra Angel. Each opponent then picks
+  what to sacrifice. 2) Try targeting the same opponent twice. 3) Without your commander on the
+  battlefield (or with an opponent's commander you've stolen), check how many modes you may choose.
+  4) Activate Priest: sacrifice two other creatures, target B and D (and on a replay, no players).
+  5) Cast Crackling Doom. 6) Cast Soul Shatter. 7) Cast Will of the Mardu with both modes: Warriors
+  for target player B, damage to a creature.
+- **Check:** Will of the Abzan: a second slot can't be the opponent already chosen. The sacrifice
+  prompts go in turn order (B first, then C), whatever order you targeted them in. Each player is
+  offered only their own greatest-power creature: B gets only Craw Wurm, while C chooses between the
+  two tied Wurms. B's Wurm is still on the battlefield while C chooses, and both leave together (one
+  edict, rule 101.4). Then B and C lose 3 each, D is untouched, and Serra Angel returns under your
+  control. 'Choose both' depends only on controlling some commander, anyone's, checked when you
+  choose modes (ruling). Priest: the two sacrifices are chosen as part of the cost. Each targeted
+  player loses 2, then they choose and sacrifice together. You add {B}{B} and draw even with zero
+  targets (ruling). Crackling Doom: 2 damage to each opponent, and each sacrifices their
+  greatest-power creature, choosing among ties; your own creatures are safe. Soul Shatter: D must
+  sacrifice the planeswalker (mana value 3), not the Bears (mana value 2). Will of the Mardu:
+  Warriors equal to the creatures B controls, then damage equal to the creatures you control,
+  counting the new Warriors (both modes resolve in printed order).
+- **Known limits:** 'Any number of target opponents' is three optional slots, enough for any table
+  of four or fewer.
+
+### Temple of the Dragon Queen
+
+*New decision* — 0790d746 (a reveal land spared by either way in)
+
+- **Setup:** 2-player game, your precombat main phase with no land played. Case A: your hand has
+  Temple of the Dragon Queen and Shivan Dragon, and you control no Dragon. Case B: hand has the
+  Temple only, and you control a Dragon (e.g. Shivan Dragon on the battlefield). Case C: hand has
+  the Temple and Shivan Dragon, no Dragon on the battlefield, and you decline to reveal.
+- **Do:** Play the Temple in each case. Answer the colour prompt (pick blue, say), then the reveal
+  prompt if it appears. Tap the Temple for mana afterwards.
+- **Check:** The colour is asked first and offers exactly the five colours, not creature types, even
+  though it uses the creature-type decision internally. Then 'you may reveal a Dragon card' offers
+  only the Dragon cards in your hand (never a card that just has 'Dragon' in its name, like the
+  Temple itself, per the ruling) plus a decline option. Both questions come before the land moves
+  (rule 614.12). Case A (revealed): enters untapped, the revealed card is shown to the opponent and
+  in the log. Case B (no reveal, but you control a Dragon): untapped. Case C (Dragon held back, none
+  on the battlefield): tapped. Tapping it adds one mana of the chosen colour.
+
+### Quirion Ranger, Mina and Denn, Wildborn, Multani, Yavimaya's Avatar
+
+*New decision* — 1b77c914 (bounce costs)
+
+- **Setup:** 2-player game, your precombat main phase. Your battlefield: Quirion Ranger, Mina and
+  Denn, Wildborn, a tapped Grizzly Bears, one untapped Forest, one untapped Mountain. Your
+  graveyard: Multani, Yavimaya's Avatar and one land card (e.g. a Mountain). The opponent has a land
+  card in their graveyard. For the second Quirion check, give the opponent a Quirion Ranger, two
+  Forests and a tapped creature of their own.
+- **Do:** 1) Activate Quirion Ranger targeting the Bears. 2) Try to activate it again the same turn
+  after replaying the Forest. 3) Activate Mina and Denn: pay {R}{G} by tapping both lands, target
+  the Bears, then return the Mountain you just tapped. Replay a returned land (Mina and Denn gives
+  an extra land drop). 4) With exactly 2 lands, then with 3, look at whether Multani's graveyard
+  ability is offered; activate it with 3 lands. 5) Before step 4, check Multani's P/T while it's on
+  the battlefield (put it there or note it). 6) On your turn, pass priority and have the opponent
+  activate their Ranger with two Forests.
+- **Check:** With one Forest, Quirion returns it immediately without asking. The Mountain is never
+  offered, since it isn't a Forest. The target untaps, and a second activation that turn is refused
+  ('Activate only once each turn'). With two or more choices, the ability appears on the stack and a
+  'Choose one to return to its owner's hand' prompt lists only qualifying lands you control. After
+  choosing, priority goes back to whoever activated it, even on another player's turn (rule 117.3c).
+  Mina and Denn may return the land tapped to pay for it, and the target gains trample until end of
+  turn. You can play two lands this turn. Multani on the battlefield is +1/+1 for each land you
+  control and each land card in YOUR graveyard (not the opponent's). In the graveyard its ability
+  isn't offered with fewer than two lands, and with two lands both may be tapped for {1}{G} and then
+  returned. Activating it returns the two lands you chose and puts Multani into your hand.
+- **Known limits:** The lands to return are chosen after the ability is already on the stack (the
+  engine pays this cost then). Nobody gets priority in between, so this is the intended rendering of
+  rule 602.2b, not a bug.
+
+### Myr Battlesphere
+
+*New decision* — 1b77c914 ('tapped' this-way kind)
+
+- **Setup:** 2-player game. Your hand: Myr Battlesphere, with 7 mana. Or start it on the
+  battlefield, not summoning sick, with four Myr tokens. The opponent controls a planeswalker. Your
+  precombat main phase.
+- **Do:** 1) Cast Battlesphere and watch the ETB. 2) Next turn, or right away if set up not
+  summoning sick, attack the opponent with Battlesphere alone. When asked to 'Tap any number of
+  untapped Myr you control', tap 3. 3) Replay attacking the planeswalker. 4) Replay tapping none.
+- **Check:** The ETB makes four 1/1 colourless Myr artifact creature tokens. The attack prompt
+  offers only untapped Myr you control, including tokens that are still summoning sick (tapping for
+  an effect isn't a {T} cost, per the ruling), and allows choosing zero. Tapping 3 taps exactly
+  those three, makes Battlesphere 7/7 until end of turn, and deals 3 damage right away to the player
+  (or the planeswalker, which loses 3 loyalty) it's attacking, before combat damage. Tapping none
+  gives no bonus and no damage.
+
+### Lord of the Forsaken, Welcome the Dead, Teval's Judgment, Essence Anchor, Gravecrawler
+
+*New decision* — a6258cda (spend-only-from-graveyard mana, graveyard turn stats), 20b3fdad (Teval's Judgment, Gravecrawler)
+
+- **Setup:** 2-player game, your precombat main phase, you at 20 life. Your battlefield: Lord of the
+  Forsaken, Teval's Judgment, Essence Anchor (untapped), 3 untapped Swamps. Your graveyard: Welcome
+  the Dead, Gravecrawler. Your hand: Fractured Sanity, a cheap spell (e.g. Sol Ring), a few other
+  cards. Library: 10+ cards. You control no Zombie.
+- **Do:** 1) Check whether Gravecrawler can be cast from your graveyard and whether Essence Anchor's
+  ability is offered. 2) Cycle Fractured Sanity ({1}{U}; add an Island) so a card goes from hand to
+  graveyard this turn. 3) Activate Lord's 'Pay 1 life: Add {C}' by hand five times, and try to spend
+  that {C} on Sol Ring from hand. 4) Flash back Welcome the Dead ({5}{B}) using the five {C} and a
+  Swamp. Answer Teval's Judgment's mode prompt (choose the Zombie). Resolve Welcome the Dead: draw
+  2, discard 1. 5) Cast Gravecrawler from the graveyard with a Swamp and answer Teval's again. 6)
+  Activate Essence Anchor. 7) Make a card leave your graveyard a fourth time this turn. 8) At your
+  next upkeep, answer Anchor's surveil.
+- **Check:** Before anything leaves your graveyard, Gravecrawler isn't castable from there (no
+  Zombie you control; an opponent's Zombie wouldn't count either), and Anchor isn't offered. Lord's
+  mana must be activated by hand. Each activation costs 1 life, and the {C} it floats can't pay for
+  a spell from your hand but does pay flashback's generic cost. Casting Welcome the Dead triggers
+  Teval's Judgment, offering all three modes, and it resolves above the spell. Welcome the Dead: you
+  lose 2 life and make X tapped 2/2 Zombie Druids, where X counts every card put into your graveyard
+  from hand or library this turn: the cycled Fractured Sanity plus the discard, so 2 here. It
+  doesn't count itself going from stack to graveyard. Then Welcome the Dead is exiled. Gravecrawler
+  is now castable from the graveyard, at sorcery speed, and Teval's offers only the two unchosen
+  modes. After a card has left your graveyard this turn, Anchor makes a 2/2 Zombie Druid, but only
+  during your turn. The fourth leave in a turn gives no prompt at all: every mode has been used, so
+  the trigger is removed.
+- **Known limits:** The auto-payer never uses Lord's unlimited mana ability, so you activate it by
+  hand. A known BACKLOG gap: the engine doesn't check state-based actions after a mana ability you
+  activate by hand, so if you pay your life to 0 with Lord you won't lose until the next spell or
+  ability is cast or resolves.
+
+### Wonder, Anger, Brawn, Filth
+
+*Rules call* — 7f0bc8b0 (statics that work from the graveyard), fixed in 04066f66 (graveyard timestamps that stick)
+
+- **Setup:** 2-player game, your precombat main phase. Your battlefield: Grizzly Bears (just put
+  there, summoning sick), a second Grizzly Bears, a Mountain, a Forest, a Swamp, but no Island yet.
+  Your graveyard: Anger, Brawn, Filth. Island and Wonder in hand (or Wonder on the battlefield). The
+  opponent controls a Swamp and Grizzly Bears. You have Turn to Frog plus blue mana, and a removal
+  spell that can kill your own Wonder.
+- **Do:** 1) Look at your creatures' keywords. 2) Play the Island, with Wonder still not in the
+  graveyard. 3) Put Wonder on the battlefield and look at the Bears. 4) Attack with the
+  summoning-sick Bears. 5) Timestamp check A: with Wonder on the battlefield, cast Turn to Frog on a
+  Bears, THEN kill Wonder. 6) Timestamp check B (replay): kill Wonder first, THEN cast Turn to Frog
+  on a Bears.
+- **Check:** From your graveyard: Anger gives your creatures haste (you control a Mountain), so the
+  just-arrived Bears can attack. Brawn gives trample (Forest). Filth gives swampwalk (Swamp), so
+  your attackers can't be blocked by an opponent who controls a Swamp. The opponent's creatures get
+  none of these. Wonder on the battlefield has flying itself but grants nothing. Its graveyard
+  static needs it in your graveyard and an Island under your control. A: the Frog'd Bears HAS
+  flying, because Wonder's timestamp is the moment it reached the graveyard (rule 613.7d, Anger's
+  ruling), which is later than Turn to Frog's. B: the Frog'd Bears has NO flying, because Turn to
+  Frog is newer. Granted keywords should show on the creature cards in the client.
+
+### Legion Warboss, Ainok Strike Leader, Within Range
+
+*Rules call* — 1b77c914 (tokens that attack this combat, this and/or your commander); Within Range from 20b3fdad
+
+- **Setup:** 3- or 4-player Commander game (you, B, C, and optionally D). Your battlefield, none
+  summoning sick: Legion Warboss, Ainok Strike Leader, your commander (a creature), Within Range
+  (already on the battlefield, or cast it in main phase 1 to see its two 1/1 red Warriors).
+  Opponents have no flying blockers to worry about. All at 20 life. Your precombat main phase.
+  Optional variant: give B, and later both B and C, a Ghostly Prison.
+- **Do:** 1) Go to combat and watch the beginning-of-combat trigger. 2) At declare attackers, try
+  leaving the Goblin token home. 3) Attack B with Warboss, the Goblin and Ainok. Point mentor at the
+  Goblin. When the triggers are put on the stack, order them so Ainok's resolves before Within
+  Range's. 4) Replay with Within Range resolving first. 5) Next turn, attack with only your
+  commander, then (replay) with only some other creature. 6) Ghostly Prison variant: under B only,
+  then under B and C.
+- **Check:** At the beginning of combat on your turn only, Warboss makes a 1/1 red Goblin with haste
+  that must attack this combat. Declaring without it is refused. Mentor can target only an attacking
+  creature with power less than 2, so the Goblin is legal and Ainok (power 2) isn't. Ainok makes one
+  tapped Goblin per opponent, each attacking that opponent, even opponents you didn't attack. Never
+  declared, they trigger nothing. Within Range counts the creatures attacking each opponent when it
+  resolves (not their planeswalkers). With Ainok first, B loses 4 and C (and D) lose 1 each. With
+  Within Range first, B loses 3 and the others 0. Ainok triggers when your commander attacks alone,
+  but not for some other creature or for an opponent's commander you control. After combat the
+  Goblin's must-attack is gone, but its haste lasts the turn. Ghostly Prison: Warboss's ruling says
+  it never has to pay an attack cost, so with Prison under B only the Goblin must still attack C
+  (the untaxed option, rule 508.1d), and with Prison under both it may stay home.
+
+### Divine Visitation, Redoubled Stormsinger, Legion Warboss, Ainok Strike Leader, The Balrog of Moria (cycling, for Treasures)
+
+*Rules call* — 1b77c914 (Angels instead, copies of each token entered this turn, token stacks keyed by entry turn)
+
+- **Setup:** 3-player game (you, B, C). Your battlefield, none summoning sick: Divine Visitation,
+  Legion Warboss, Ainok Strike Leader, Redoubled Stormsinger. One older Goblin token made on an
+  earlier turn. Hand: The Balrog of Moria plus {3}{R}. B controls a Legion Warboss of their own.
+  Your precombat main phase.
+- **Do:** 1) Cycle the Balrog. 2) Go to combat. 3) Attack B with the Warboss's token, Ainok and
+  Stormsinger. Order the triggers so Ainok's resolves before Stormsinger's. Answer the prompt asking
+  what each copy attacks, sending some at C. 4) Replay with Stormsinger's trigger resolving first.
+  5) Go to the end step. 6) On B's turn, watch B's Warboss.
+- **Check:** The Balrog's Treasures stay Treasures: only creature tokens are replaced. Warboss's
+  token comes out as a 4/4 white flying, vigilant Angel that still has haste and still must attack
+  this combat ('anything else specified still applies', Divine Visitation's ruling). Ainok's tokens
+  are Angels too, each tapped and attacking its own opponent. Stormsinger copies each creature token
+  you control that entered this turn, once per token even inside a stack. With Ainok first that's 3
+  copies, with Stormsinger first only 1, and never the older Goblin from an earlier turn. Under
+  Divine Visitation each copy is also an Angel. Each copy enters tapped and attacking whichever
+  player or planeswalker you pick for it (enter-attacking prompt). They were never declared, so no
+  'whenever attacks' trigger fires for them. At the beginning of the next end step the copies are
+  sacrificed and the originals stay. Tokens from different turns show as separate stacks. B's
+  Warboss makes a normal Goblin, since Divine Visitation affects only your tokens.
+- **Known limits:** Token copies made as Angels lose all their copy exceptions (e.g. a copy's 'gains
+  haste' exception). That's intended, per Divine Visitation's ruling.
+
+### Sarkhan, Soul Aflame
+
+*Rules call* — 1b77c914 (becoming a copy until end of turn)
+
+- **Setup:** 2-player game, your precombat main phase. Your battlefield: Sarkhan, Soul Aflame with
+  one +1/+1 counter (3/5), exactly 5 untapped Mountains (+1 more for a later Dragon). Hand: Shivan
+  Dragon, Lathliss, Dragon Queen, another Dragon. The opponent has a Dragon to put onto the
+  battlefield on their turn (or flash one in).
+- **Do:** 1) Cast Shivan Dragon with only 5 lands. 2) Say yes to 'Have Sarkhan become a copy of that
+  Dragon until end of turn?'. 3) Use the copy's firebreathing ({R}: +1/+0). Try casting another
+  Dragon and see what it costs. 4) Pass to the cleanup step. 5) Replays: copy Lathliss (legendary);
+  decline the prompt; kill the Dragon in response to the trigger and then say yes; have the
+  opponent's Dragon enter.
+- **Check:** Shivan Dragon ({4}{R}{R}) costs {3}{R}{R}: the reduction is generic only. As a copy,
+  Sarkhan is a 6/6 flying Dragon (Shivan's 5/5 plus his own counter) with firebreathing. He is still
+  named Sarkhan, Soul Aflame and is legendary, and he stays tapped or untapped as he was. He has
+  only Shivan's abilities, so while he's a copy, Dragon spells cost their full price and another
+  Dragon entering gives no copy trigger (rule 707.2). The board and card display should show the
+  copy clearly. In the cleanup step he's a 3/5 Human Shaman again (rule 514.2). Copying Lathliss:
+  both stay, with no legend rule, because their names differ (ruling). Killed in response: he copies
+  the Dragon as it last existed. The opponent's Dragon doesn't trigger him.
+
+### Colfenor's Urn, Decree of Pain
+
+*Rules call* — a6258cda (exiled with a source), fixed in 44dbcd86 (an Urn taken isn't sacrificed)
+
+- **Setup:** 2-player game, your precombat main phase, 8+ mana including {B}{B} (plus {G} for Giant
+  Growth). Your battlefield: Colfenor's Urn, Serra Angel (4/4), Craw Wurm (6/4), Giant Spider (2/4),
+  Grizzly Bears. Opponent's battlefield: Serra Angel, Darksteel Myr. Your hand: Giant Growth, Decree
+  of Pain. A 4/4 creature token too if available (e.g. one made earlier).
+- **Do:** 1) Giant Growth the Bears (now 5/5). 2) Cast Decree of Pain. Answer each 'Exile it with
+  Colfenor's Urn?' prompt: yes for the Angel, Wurm and Spider, and try declining one on a replay. 3)
+  Go to your end step. 4) Replay with only two exiled, then let a third be exiled on the opponent's
+  turn and watch their end step.
+- **Check:** Decree destroys every creature except the indestructible Darksteel Myr, can't be
+  regenerated, and draws a card for each creature destroyed (not the Myr). The Urn asks about each
+  creature of yours with toughness 4 or more as it last existed, including the Giant-Growthed Bears.
+  It doesn't ask about the opponent's Serra Angel (not your graveyard). A token can trigger it, but
+  it has ceased to exist, so it exiles nothing (ruling). Declining leaves the card in the graveyard.
+  With three exiled, at the beginning of the end step (any player's end step) the Urn is sacrificed
+  and all three return to the battlefield under their owner's control as new, summoning-sick
+  creatures. With only two, nothing happens until a third arrives, and then it happens at the next
+  end step, even on the opponent's turn. It counts every card ever exiled with it, but returns only
+  those still in exile.
+- **Known limits:** The case where another player takes control of the Urn in response to its
+  end-step trigger (it isn't sacrificed and nothing returns, per its ruling, rule 701.21a) is
+  covered by automated tests. It needs an instant-speed artifact steal to try by hand.
+
+### Wall of Roots, Devoted Druid, Tree of Redemption, Tree of Perdition
+
+*Rules call* — a6258cda (a counter as a cost, exchanging a life total with toughness)
+
+- **Setup:** 2-player game, your precombat main phase. Your battlefield: Wall of Roots (may be
+  tapped or summoning sick), Devoted Druid (not sick), Tree of Redemption with two +1/+1 counters
+  (2/15, not sick), Tree of Perdition (not sick), one untapped Forest. Your life: 7. Opponent's
+  life: 31. Hand: Grizzly Bears, Llanowar Elves. Separate replay: the opponent controls The Lord of
+  Pain (your life can't go up).
+- **Do:** 1) Activate Wall of Roots by hand, then try again. 2) Cast Grizzly Bears with only the
+  Forest plus the Wall available. Replay with two Forests. 3) On the opponent's upkeep, when you get
+  priority, activate the Wall again. 4) Devoted Druid: tap for {G}, untap it with a -1/-1 counter,
+  and repeat until the counter would make its toughness 0. 5) Activate Tree of Redemption. 6)
+  Activate Tree of Perdition targeting the opponent. 7) Lord of Pain replay: Tree of Redemption at 5
+  life, then at 30 life.
+- **Check:** Wall: adds {G} and gets a -0/-1 counter (0/4), works while tapped or summoning sick,
+  and only once each turn, but again on the next player's turn (0/3). The auto-payer uses it only
+  when the lands can't pay. Druid: the untap goes on the stack. The second counter makes it -2/0, so
+  it dies before the untap resolves (ruling). Tree of Redemption: you go to 15 life, its former
+  toughness counting the counters, and it becomes 2/9: toughness set to 7, with the counters applied
+  on top (Lunarch Mantle ruling, rule 701.12g). The change is permanent, not until end of turn. Tree
+  of Perdition: the opponent goes to 13 and the Tree becomes 0/31. Opponent-only target. Under The
+  Lord of Pain at 5 life nothing happens at all, neither half (rule 701.12a). At 30 life the
+  exchange works: you lose down to 13 and the Tree becomes 0/30.
+- **Known limits:** Known BACKLOG gap: there are no state-based actions after a mana ability you
+  activate by hand, so a Wall of Roots taken to toughness 0 by its own counter stays on the
+  battlefield until the next spell or ability is cast or resolves. Also, counters put on as a cost
+  skip counter replacements and prohibitions (Vizier of Remedies, Solemnity), though no such card is
+  in the pool yet.
+
+### Weathered Sentinels
+
+*Rules call* — a6258cda (defender lifted against players who attacked you)
+
+- **Setup:** 3-player game (you, B, C in that turn order). Your battlefield: Weathered Sentinels
+  (not summoning sick), a planeswalker (e.g. Ajani, Caller of the Pride), a Grizzly Bears. B and C
+  each have a Grizzly Bears that can attack. Start on your turn 1.
+- **Do:** 1) On your turn, look at Sentinels' attack options, then attack with nothing. 2) On B's
+  turn, B attacks your planeswalker. 3) On C's turn, C attacks you. 4) On your turn, look at
+  Sentinels' attack options and attack. 5) Let B and C each take a turn without attacking you, then
+  look again.
+- **Check:** Turn 1: Sentinels can't attack anyone (defender). After those turns, only C is offered
+  as a defender for Sentinels. B attacked your planeswalker, not you, and planeswalkers are never
+  offered. When it attacks it gets +3/+3 and indestructible until end of turn (5/8), and keeps
+  defender, reach, vigilance and trample. Once B and C have each had a turn without attacking you,
+  nobody is offered: it reads each player's most recent turn.
+- **Known limits:** Creatures put onto the battlefield attacking (not declared) don't count as
+  attacking you. That's intended (the O-Kagachi ruling on the same wording).
+
+## The Tarkir precons, second half: void counters, votes, X costs, "as long as" (2026-10-03, third round)
+
+### Tasigur, the Golden Fang, Colossal Grave-Reaver
+
+*New decision* — 61e6bf33 (choose-opponent, an opponent's choice, Grave-Reaver's put-arrived); 41672c92 (forPlayer: the opponent's popup names whose hand); 7754b772 (BACKLOG notes)
+
+- **Setup:** 3 players (A = you, B and C opponents), B and C human-seated so their prompts can be
+  seen. Your main phase. You: Tasigur on the battlefield, plus Forest, Forest, Island, Island
+  untapped. Your graveyard: Hill Giant, Grizzly Bears and an Island. Library top two: Serra Angel,
+  then a Forest. Run 2 adds Colossal Grave-Reaver on your battlefield, with two creature cards on
+  top of your library (Serra Angel, then Craw Wurm).
+- **Do:** Run 1: activate Tasigur's {2}{G/U}{G/U}. When asked, pick C as the opponent. As C, pick a
+  card. Run 1b: the same in a 2-player game. Run 2 (with Grave-Reaver): activate Tasigur. As the
+  chosen opponent, take Serra Angel (just milled) for your hand. Then let Grave-Reaver's trigger
+  resolve.
+- **Check:** Nothing is targeted when you activate. As it resolves, you mill two first. Then you (A)
+  get a choose-modes listing the opponents, and the one you pick gets a popup titled 'Choose a card
+  to put into <A's name>'s hand'. It offers every nonland card in A's graveyard, including the card
+  just milled and the older Hill Giant and Grizzly Bears, but no lands (rulings: any nonland card,
+  not only the milled ones; you choose the opponent, then they choose). The card goes to A's hand
+  and stays owned by A. In 2-player no opponent question is asked. Run 2: the mill of two creature
+  cards triggers Grave-Reaver once (rule 603.2 batching; its ruling). When that trigger resolves, it
+  offers only the creature card still in the graveyard (Craw Wurm), because the one returned to hand
+  is gone. With only one card left it is put onto the battlefield without a prompt.
+- **Known limits:** BACKLOG (Client/UI): the 'choose an opponent' modes read 'Choose Bob', the
+  capitalised seat id, not the player's display name. BACKLOG (bots): a bot asked to pick a card for
+  an opponent picks as if for itself, so it hands Tasigur's controller its best card. Use human
+  opponents to judge the prompt.
+
+### Selvala's Stampede
+
+*New decision* — 3d0370a3 (council's dilemma vote; reveal-until-count; votesFor)
+
+- **Setup:** 3 players, all human-seated. Your main phase. You: 6 Forests untapped; Selvala's
+  Stampede and Serra Angel in hand. Library top in order: Island, Grizzly Bears, Island, Hill Giant,
+  Craw Wurm.
+- **Do:** Cast Selvala's Stampede. Vote: you 'wild', B 'free', C 'wild'. At the hand prompt, pick
+  Serra Angel. Run 2: everyone votes 'free' (no reveal should happen).
+- **Check:** Nobody votes until the spell resolves. The vote is asked in turn order starting with
+  the caster (A, B, C), each as a two-option prompt ('Vote for wild' / 'Vote for free') with no
+  decline (rule 701.38a; ruling: no abstaining). Each voter should be able to see the votes before
+  theirs (ruling). With 2 wild votes you reveal until two creature cards: Island, Bears, Island,
+  Hill Giant. Bears and Hill Giant enter together, the two Islands are shuffled back with the rest,
+  and Craw Wurm is never revealed. Then 'Choose up to 1 card to put onto the battlefield' from your
+  hand offers only permanent cards. Serra Angel enters after the revealed creatures (ruling). Enter
+  triggers go on the stack only after the spell finishes. Run 2: nothing is revealed for 0 wild
+  votes, and you may put up to 3 permanents from hand.
+- **Known limits:** AUTHORING: a vote for objects (Council's Judgment) and extra votes (rule
+  701.38d) aren't built. Legibility: each vote is logged as a modes-chosen event, which
+  client/src/format.ts prints as 'Selvala's Stampede — Bob chose mode(s) 2', not 'voted free'. Check
+  whether later voters can tell the earlier votes. If they can't, that's a gap, and BACKLOG doesn't
+  list it yet.
+
+### Gix, Yawgmoth Praetor
+
+*New decision* — 8d7040cd (toOpponent combat-damage trigger, discard X with no {X}, cast-now repeat from exiled-this-way); 3ea049d4 (repeat re-offers only the cards first exiled)
+
+- **Setup:** 3 players (A = you, B, C), B human-seated. You: Gix and Grizzly Bears, neither
+  summoning sick; 7 Swamps untapped; 4 cards in hand; no land played this turn. B: a Grizzly Bears
+  of their own. B's library top three: Grizzly Bears, Forest, Hill Giant. Run 3 adds Rest in Peace
+  on your battlefield, and B's library top two become Thrill of Possibility, Hill Giant.
+- **Do:** Run 1: attack B with your Bears. On B's turn, B attacks C with their Bears, and later B
+  attacks you. Run 2: in your main phase, activate Gix's {4}{B}{B}{B}, Discard X targeting B with X
+  = 3. Discard three. Cast Grizzly Bears free, play the Forest, then decline. Run 2b: activate it on
+  an opponent's turn instead. Run 3: X = 2, cast Thrill of Possibility free from the exile, and
+  discard a card from your hand to pay its cost.
+- **Check:** Run 1: your Bears hitting B asks you 'Pay 1 life', with an option to decline. Paying
+  puts you at 19 and draws a card. B's Bears hitting C asks B, not you: any creature hitting one of
+  Gix's controller's opponents lets its controller pay and draw. B's Bears hitting you asks nobody.
+  Run 2: the X picker appears though the cost has no {X}, capped at the cards in your hand. The
+  discard prompt asks for exactly X cards. After the three cards are exiled, a cast-now prompt
+  offers the spells free and the Forest as a land play. You're offered it again after each one until
+  you decline. The Hill Giant you declined stays in exile and can't be played later (ruling: you
+  must play them as the ability resolves). Run 2b: the Forest isn't offered off your turn (ruling:
+  lands only on your own turn, with a land play left). A spell with {X} is cast at X = 0. Run 3: the
+  card you discarded for Thrill goes to exile because of Rest in Peace, and the next offer lists
+  only Hill Giant, not that card (3ea049d4).
+- **Known limits:** None documented beyond the rulings.
+
+### Lethal Scheme
+
+*New decision* — 9e672721 (convokedBy, for-each-convoker in caster's order); 7754b772 (a copy uses the original's convokers, rule 707.10; connive LKI is 701.50b)
+
+- **Setup:** 2 players, at instant speed (your main phase is easiest). You: 2 Swamps untapped, two
+  untapped Grizzly Bears, plus 2 Islands for run 3. In hand: Lethal Scheme, Hill Giant and an
+  Island, plus Twincast and three more nonland cards for run 3. Opponent: Serra Angel, and a second
+  Serra Angel for run 3. For run 2 the opponent holds Murder with mana.
+- **Do:** Run 1: cast Lethal Scheme on the Angel, convoking with both Bears for the {2} and Swamps
+  for {B}{B}. When asked, pick the second Bears to connive first. Discard Hill Giant on its connive
+  and the Island on the other. Run 2: the opponent Murders the first Bears in response. Have the
+  dead one connive first and discard a nonland card. Run 3: with Lethal Scheme on the stack, cast
+  Twincast on it, aim the copy at the other Angel, and discard nonland cards every time.
+- **Check:** The Angel is destroyed before anyone connives. A choose-modes asks the order, labelling
+  each creature 'Grizzly Bears (convoked 1st)' / '(convoked 2nd)' (ruling: one at a time in the
+  controller's order). Each connive draws, then discards, and a nonland discard puts a +1/+1 counter
+  on that creature only. Nobody acts between the discard and the counter (ruling). Run 2: the dead
+  one is labelled '(convoked 1st, gone)'. It still connives: you draw and discard, but no counter
+  lands anywhere (rule 701.50b; ruling). Run 3: four connives in all, two from the copy and two from
+  the original, so each Bears ends with two counters (rule 707.10; 7754b772).
+- **Known limits:** None specific.
+
+### Necropolis Fiend, Moorland Haunt
+
+*New decision* — e8e4dbf3 (exileFromGraveyard with count 'x'); fed228fa (Moorland Haunt, the same cost with a filter)
+
+- **Setup:** 2 players, your main phase. You: Necropolis Fiend (not summoning sick) and 2 untapped
+  Swamps. Your graveyard: Grizzly Bears, Hill Giant, Island. Opponent: Serra Angel. Run 2: 3 Swamps
+  and only 1 card in your graveyard. Run 3: Moorland Haunt, a Plains and an Island untapped. Your
+  graveyard starts with only an Island; then add one creature card, then two.
+- **Do:** Run 1: activate the Fiend, set X = 2, target the Angel, and exile the Bears and the Island
+  when asked. Run 2: try X = 2. Run 3: look for the Haunt's Spirit ability with no creature card in
+  the graveyard, then with one, then with two.
+- **Check:** Run 1: the X picker tops out at 2, the lower of your mana and your graveyard. After
+  targeting, a popup titled 'Choose 2 cards to exile' lists your graveyard. The chosen cards are
+  exiled together and priority comes back to you, on any player's turn (rule 117.3c). The Angel is
+  2/2 until end of turn. Run 2: X = 2 isn't allowed (one card to exile). Run 3: the Spirit ability
+  isn't offered without a creature card in your graveyard. With exactly one it's exiled without a
+  prompt. With two you're asked which. You get a 1/1 flying Spirit.
+- **Known limits:** AUTHORING §8 costs: the cards are chosen once the ability is on the stack, as a
+  cost paid with priority returned. exileFromGraveyard isn't supported on mana abilities, nor beside
+  a discard, a return-to-hand or a sacrifice of several.
+
+### Shigeki, Jukai Visionary
+
+*New decision* — e8e4dbf3 (returnSelfToHand cost; X target cards on an activated ability; targetsFillable floor)
+
+- **Setup:** 2 players, your main phase. You: Shigeki on the battlefield (not summoning sick) and 10
+  untapped Forests. Library top four: Forest, Grizzly Bears, Swamp, Hill Giant. Your graveyard:
+  Grizzly Bears, Hill Giant, and a legendary card (Baldin, Century Herdmaster).
+- **Do:** Activate {1}{G}, {T}, Return Shigeki: put the Swamp onto the battlefield. Then, from hand,
+  open Shigeki's channel options and activate it at X = 2, trying first to include the legendary
+  card.
+- **Check:** Shigeki goes to your hand as soon as you activate, as a cost before anyone can respond.
+  On resolution all four cards are revealed to everyone. You may put one land onto the battlefield
+  tapped (or none), and the other three go to your graveyard. Channel from hand is offered once per
+  X: X = 0, 1 and 2 here (X can't be 3 or 4 despite the mana, because there are only two
+  nonlegendary cards plus the newly milled ones; recount after the first ability). Each option needs
+  exactly X targets, legendary cards aren't targetable, and Shigeki goes to the graveyard as the
+  discard cost (ruling). The targets return to hand together.
+- **Known limits:** None documented. Note that the first ability fills your graveyard, so the
+  channel's X ceiling grows after it.
+
+### Steward of the Harvest
+
+*New decision* — e32e436f (grantsActivatedOfLinkedExile, card-activated ability ref)
+
+- **Setup:** 2 players, your main phase. You: Grizzly Bears (not summoning sick), another Grizzly
+  Bears that just entered (summoning sick), and Steward of the Harvest in hand with mana. Your
+  graveyard: Forest, Evolving Wilds, Island. Have a 1-mana green spell in hand to test paying with a
+  creature.
+- **Do:** Cast Steward. For its enters trigger, target the Forest and Evolving Wilds. Then open the
+  old Bears' abilities, tap it for {G}, and try to pay for the green spell with it. Next, activate
+  the Evolving Wilds ability on a creature. Finally, kill the Steward and look at the Bears'
+  abilities again.
+- **Check:** The target prompt allows up to three land cards from your graveyard only. Afterwards
+  every creature you control lists '{T}: Add {G}' (a Forest's built-in mana ability, ruling) and
+  Evolving Wilds' '{T}, Sacrifice…: search' ability. Opponents' creatures don't get them.
+  Summoning-sick creatures, the Steward included, can't use the {T} abilities (rule 302.6). Tapping
+  for {G} adds G. Check whether the payment helper offers the creature as a mana source. Evolving
+  Wilds' ability sacrifices the creature that used it, not a land (ruling: a name means the
+  creature). With the Steward gone the abilities disappear, and the lands stay in exile.
+- **Known limits:** AUTHORING §5: only abilities that work on the battlefield are granted (none with
+  a zone). Triggered and static abilities of the lands never pass on (ruling).
+
+### Sepulchral Primordial, Diluvian Primordial
+
+*New decision* — fed228fa (look-and-choose zone 'targets'; cast-now from 'targets' with repeat; one {seat} slot per opponent)
+
+- **Setup:** 3 or 4 players. B's graveyard: Hill Giant, Serra Angel, Lightning Bolt. C's graveyard:
+  Grizzly Bears, Shock. You: both Primordials in hand with mana (or put each onto the battlefield
+  with its enters trigger). For the one-entry check, also put Ingenious Artillerist on your
+  battlefield (it triggers on one or more artifacts entering) and Ornithopters in B's and C's
+  graveyards.
+- **Do:** Sepulchral: on its enters trigger, fill the slots (Hill Giant for B, Grizzly Bears for C)
+  and try putting C's card in B's slot. On resolution, choose only the Bears. Repeat with the two
+  Ornithopters and choose both. Diluvian: target Lightning Bolt (B) and Shock (C). On resolution,
+  cast Shock first at C, then cast or decline the Bolt.
+- **Check:** The target prompt has one optional slot per opponent, worded by seat ('creature card in
+  the next opponent's graveyard', 'the opponent 2 seats on's graveyard'; check that it reads
+  clearly). Each slot accepts only that player's cards and can be skipped. Sepulchral: on resolution
+  a popup 'Choose up to 3 cards to put onto the battlefield' offers only the targeted cards still
+  there. The chosen cards enter under your control together (ruling), so Ingenious Artillerist
+  triggers once for both Ornithopters (one 2-damage hit each to B and C). Diluvian: the cast-now
+  prompt lets you pick which target to cast first, free (X = 0), timing ignored, each one optional.
+  After you cast Shock, only the Bolt is re-offered. A card you decline stays in its owner's
+  graveyard. If both are cast, the last one cast resolves first (ruling). Each spell is exiled after
+  resolving, or if countered, instead of going to a graveyard.
+- **Known limits:** fed228fa / target.ts: slots are bound to seats 1–3 (four players at most). A
+  player who has left keeps their seat with nothing to target.
+
+### Combustible Gearhulk
+
+*New decision* — fed228fa (an each-player-may of two outcomes asked of the target opponent; thisWay milled sumOf mana-value)
+
+- **Setup:** 2 players (human opponent). You: Combustible Gearhulk in hand with {4}{R}{R}. Library
+  top three: Fireball, Grizzly Bears, Hill Giant. Run 3: only 2 cards left in your library.
+- **Do:** Cast the Gearhulk and target the opponent. Run 1: the opponent picks 'Have them draw three
+  cards.' Run 2: the opponent picks the mill option. Run 3: the opponent picks the draw.
+- **Check:** The opponent, not you, gets a two-option prompt as the trigger resolves. Run 1: you
+  draw 3 and the opponent's life is unchanged. Run 2: you mill those three and the opponent takes 7
+  = Hill Giant 4 + Bears 2 + Fireball 1 ({X} counts as 0; ruling). The damage comes from the
+  Gearhulk. Run 3: the draw is still offered (ruling), and you lose to the empty-library draw when
+  state-based actions are checked.
+- **Known limits:** None documented. A bot opponent answers automatically, so use a human seat to
+  see the prompt.
+
+### Dauthi Voidwalker
+
+*Rules call* — 61e6bf33 (shadow, withCounters void, choose-exiled-to-play); 7754b772 (void counter only for the chooser it serves, rule 616.1)
+
+- **Setup:** 2 players. You: Dauthi Voidwalker (not summoning sick), a Grizzly Bears, Murder plus
+  mana. Opponent: Grizzly Bears, a Goblin token, Think Twice in their graveyard and 3 untapped
+  Islands, and a sorcery in hand to cast on their turn. Later steps add Rest in Peace on the
+  opponent's side.
+- **Do:** 1) Attack with Dauthi. 2) Murder their Bears, then kill your own Bears and their Goblin
+  token. 3) The opponent casts Think Twice by flashback. 4) Let the opponent resolve a sorcery on
+  their turn. 5) Give the opponent Rest in Peace and kill another of their creatures. 6) On your
+  main phase, tap and sacrifice Dauthi with one void card in exile, and again with two or more.
+- **Check:** 1) Only shadow creatures may block Dauthi, and Dauthi can block only shadow creatures
+  (rule 702.28b). The card shows the shadow glyph. 2) Their Bears goes to exile with a visible void
+  counter instead of dying, so nothing sees it die (ruling). Your own Bears goes to your graveyard.
+  Their token still dies (ruling). 3) The flashback spell is exiled by flashback, with no void
+  counter, because the opponent picks which replacement applies (rule 616.1; 7754b772). 4) Their
+  resolved sorcery is exiled with a void counter. 5) With Rest in Peace (theirs), their creature is
+  exiled without a void counter: their choice. 6) With one void card it's chosen automatically. With
+  two or more, a popup 'Choose a card you may play' lists only opponent-owned exiled cards with void
+  counters. The chosen card is playable this turn only, only without paying its mana cost (X = 0,
+  additional costs still paid), and at normal timing. A land uses your land play (rulings). Cards
+  exiled without a counter aren't offered.
+- **Known limits:** AUTHORING §8 (replacements): the 616.1 choice between Dauthi's exile and another
+  exiling replacement isn't put to the player as a prompt. The engine picks for the chooser, taking
+  the void counter only when the counter is theirs to use.
+
+### Territorial Hellkite, Scourge of the Throne
+
+*Rules call* — 9e672721 (attack-random-opponent, firstTimeEachTurn, most-still-attacking intervening if); 7754b772 (Scourge gone before resolving is read as it left)
+
+- **Setup:** 3 players: you A at 20, B at 40, C at 20. Your turn, precombat main. You: Territorial
+  Hellkite and Scourge of the Throne, both able to attack, and Revitalize plus {1}{W} for run 3. Run
+  4 (2 players): Hellkite alone over several of your turns. Run 5 (3 players): B controls Propaganda
+  and you have no spare mana.
+- **Do:** Run 1: go to combat. Attack with the Hellkite where it must go and Scourge at B. Let
+  Scourge's trigger resolve, then attack in the additional combat (Hellkite where told, Scourge at B
+  again). Run 3: while Scourge's trigger is on the stack, cast Revitalize, then raise your life
+  above B's (scenario builder if needed). Run 4: attack with the Hellkite on turns N, N+2 and N+4.
+  Run 5: at the beginning of combat, note the random pick. If it's B (Propaganda), try to attack C
+  instead.
+- **Check:** At the beginning of combat the log reads '<player> is chosen at random: Territorial
+  Hellkite attacks them this combat if able'. The attack bar should start the Hellkite assigned to
+  that player and refuse another defender. Scourge at B (most life) gets a dethrone counter. Its
+  second trigger untaps all attacking creatures and adds a combat after this one. In the additional
+  combat the Hellkite triggers again and must pick the other opponent, the one it didn't attack
+  during your last combat. Scourge gets dethrone again but no third combat (not its first attack
+  this turn). Run 3: dethrone's counter stays (ruling), but the untap and extra combat don't happen,
+  because the intervening if is checked again on resolution (rule 603.4). Run 4 (2 players): turn N
+  attacks B. At N+2 nobody can be chosen and the Hellkite taps itself. At N+4 (it didn't attack last
+  combat) B is chosen again. Run 5: per rule 508.1d and the ruling, if attacking the chosen player
+  costs something, the Hellkite is free to attack the other opponent or stay home.
+- **Known limits:** AUTHORING (attack-random-opponent): 'nothing forces a cost to be paid'.
+  Suspected bug for run 5: from reading engine/src/combat/eligibility.ts, attackRequirementsForbid
+  ignores attack taxes. With Propaganda the Hellkite seems to be offered only the chosen B (pay or
+  stay home), not C, which contradicts the ruling. The same may affect encore tokens.
+
+### Opportunistic Dragon
+
+*Rules call* — 59220166 (while-source duration, rule 611.2b; leave batches and 603.10a); 3ea049d4 (a blink within one event ends the old stint's effects, rule 400.7)
+
+- **Setup:** 2 players. Opponent: Syr Konrad, the Grim (a Human) and Sol Ring; Murder and Threaten
+  (or Act of Treason) with mana. You: Opportunistic Dragon in hand with {2}{R}{R}, and Cloudshift
+  with {W}.
+- **Do:** Run 1: cast the Dragon and target Konrad. Pass to your next turn. Then the opponent
+  Murders the Dragon. Run 2: steal Konrad, then Cloudshift the Dragon and target Sol Ring with the
+  new trigger. Run 3: steal Konrad, then the opponent Threatens the Dragon. Run 4: kill the Dragon
+  in response to its enters trigger.
+- **Check:** Run 1: you control Konrad with no abilities and it can't attack or block. The log
+  doesn't say 'this turn'. It lasts into later turns. When the Dragon dies, Konrad goes back with
+  his abilities, and he doesn't trigger on the Dragon's own death, because the abilities were gone
+  at that moment (ruling; rule 603.10a). The next creature death does ping. Run 2: Cloudshift ends
+  the old effect at once (Konrad back, abilities back). The new trigger's target is under the new
+  Dragon's stint. Run 3: you keep Konrad, still ability-less, while the opponent controls the Dragon
+  (ruling: it lasts until the Dragon leaves the battlefield). Run 4: nothing happens at all, and
+  Konrad never changes hands (ruling; 611.2b).
+- **Known limits:** None documented.
+
+### Chandra's Ignition, Arachnogenesis
+
+*Rules call* — fed228fa (DamageFrom a target slot's creature; prevent-all-combat-damage 'by' filter); 3ea049d4 (a simultaneous sequence's damage is one event, so lifelink gains once)
+
+- **Setup:** Ignition: 2 or 3 players, your main phase. You: Vampire Nighthawk (2/3 flying,
+  deathtouch, lifelink), a Grizzly Bears, 5 Mountains, Chandra's Ignition in hand. Opponent(s):
+  Serra Angel, Craw Wurm, 20 life. Arachnogenesis: on the opponent's turn, with B attacking you with
+  Grizzly Bears and Hill Giant (in 3 players, plus a creature attacking C). You: 3 Forests and
+  Arachnogenesis.
+- **Do:** Ignition run 1: cast it targeting Nighthawk. Run 2: the opponent kills the Nighthawk in
+  response. Arachnogenesis: in the declare attackers step, cast it, then block the Bears with a
+  Spider.
+- **Check:** Ignition: your Bears and every opponent creature die (deathtouch), each opponent goes
+  to 18, and Nighthawk takes no damage. You gain 8 life (2 × 3 creatures + 2 per opponent) in one
+  life gain, a single log line, because it's one damage event (3ea049d4). The creature is the
+  source, not the spell (ruling). Run 2: nothing happens at all (ruling; 608.2b). Arachnogenesis: X
+  counts only creatures attacking you, not one attacking another player or your planeswalker (rule
+  506.3), so you get two 1/2 reach Spiders. You take no combat damage. The blocking Spider deals its
+  1 to the Bears while the Bears' damage to it is prevented. The log says 'Arachnogenesis: some
+  combat damage is prevented this turn'.
+- **Known limits:** None documented.
+
+### Baloth Prime, Pugnacious Hammerskull, Junk Winder
+
+*Rules call* — fed228fa (stun counters, rule 122.1d; tap doesntUntapNext; a trigger-time 'while' condition); 3ea049d4 (rulings pinned: Baloth sacrificed with lands, Dinosaur arriving late, one trigger per stacked token)
+
+- **Setup:** 2 players. You: Baloth Prime in hand with {3}{G}, 5+ lands to sacrifice and pay {4};
+  Pugnacious Hammerskull (not summoning sick); Ancient Brontodon in hand; Junk Winder on the
+  battlefield and Raise the Alarm (makes two 1/1 Soldier tokens). Opponent: Grizzly Bears, Hill
+  Giant, Serra Angel.
+- **Do:** Cast Baloth Prime and pass to your next turn. Activate {4}, Sacrifice a land. Attack with
+  the Hammerskull alone, then on a later turn attack with the Brontodon also out, and once put the
+  Brontodon in with the Hammerskull's trigger on the stack. Cast Raise the Alarm with Junk Winder
+  out, target two opponent permanents, and watch their next untap steps.
+- **Check:** Baloth enters tapped with 6 stun counters shown on the card. Each untap step removes
+  one instead of untapping it. The land-sacrifice trigger makes a tapped 4/4 Beast and removes
+  another stun counter rather than untapping Baloth. Only after the counters run out does it untap.
+  If Baloth is sacrificed together with lands, it still triggers for each land (ruling). Hammerskull
+  attacking without another Dinosaur gets a stun counter and stays tapped through your next untap
+  step, which spends the counter. With the Brontodon already out it gets no counter. A Dinosaur
+  arriving after the attack doesn't stop the counter (ruling: the condition is checked on trigger).
+  Junk Winder: two token triggers, each tapping its target. Those permanents stay tapped through
+  their controller's next untap step and untap the one after.
+- **Known limits:** None documented.
+
+### Neriv, Crackling Vanguard
+
+*Rules call* — 41672c92 (distinctTokenNames, rule 111.4; attacked-with-commander-this-turn); 7754b772 (named tokens and copies counted by their 111.4 names)
+
+- **Setup:** Commander game, 2+ players. You: Neriv as your commander on the battlefield (not
+  summoning sick). Tokens you control: two Goblin tokens (from Neriv's enters trigger), a Treasure,
+  and two Angel tokens from different sources. Opponent: a Food token. Run 2: Neriv in the 99, with
+  your real commander on the battlefield able to attack.
+- **Do:** Run 1: attack with Neriv, then try to play the exiled cards that turn. On your next turn
+  try again before attacking, then attack with Neriv and try again. Run 2: attack with Neriv but not
+  your commander, then on another turn attack with both.
+- **Check:** Neriv exiles one card per differently named token you control. Goblin, Treasure and
+  Angel make 3: two of the same name count once, and an opponent's token doesn't count (ruling; rule
+  111.4 names). The exiled cards are playable only during a turn you attacked with a commander, and
+  stay playable for as long as they stay exiled. They're not playable next turn until a commander
+  has attacked that turn. Run 2: after a non-commander Neriv attacks, the cards aren't playable
+  until your commander attacks that turn.
+- **Known limits:** None documented.
+
+### Living Death
+
+*Rules call* — 9e672721 (exile-graveyard filter, sacrifice-all, put-exiled-this-way-onto-battlefield)
+
+- **Setup:** 2 players, your main phase. You: 5 Swamps, Living Death in hand, Hill Giant on the
+  battlefield, Grizzly Bears in your graveyard. Opponent: Serra Angel on the battlefield, Craw Wurm
+  and an Island in their graveyard. Run 2: the opponent also controls Rest in Peace.
+- **Do:** Cast Living Death (once without Rest in Peace, once with it).
+- **Check:** Run 1: Grizzly Bears enters under your control and Craw Wurm under the opponent's. Hill
+  Giant and Serra Angel go to graveyards. The Island stays put. Each step happens for everyone at
+  once, and the creatures enter together (ruling). Run 2: Grizzly Bears still returns, but Hill
+  Giant, exiled by Rest in Peace as it was sacrificed, stays in exile. Only cards the first
+  instruction exiled come back (ruling).
+- **Known limits:** None documented.
