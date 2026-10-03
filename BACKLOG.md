@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**368 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**369 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -56,16 +56,19 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 10, Sultai Arisen 20, Abzan Armor 10, Mardu Surge 10, Jeskai Striker 3 — 53,
-  every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
-  any more. **Next:** two for "the creature it sacrificed" (`docs/card-blockers.md`), and
-  harmonize for Zenith Festival (Nature's Rhythm on the top-5000 list too): a cast that taps up
-  to one creature to cut its cost by that creature's power, which the cast offer can't price yet
-  — each creature it could tap is its own variant, through X planning and affordability, with a
-  client label naming the creature.
+  now: Temur Roar 3, Sultai Arisen 1, Abzan Armor 2, Mardu Surge 0, Jeskai Striker 2 — 8, each
+  behind a feature of its own (records in `engine/data/sweep-3/TDC*.json` and the older sweeps):
+  harmonize for Zenith Festival (Nature's Rhythm on the top-5000 list too — a cast that taps up
+  to one creature to cut its cost by that creature's power, which the cast offer can't price yet:
+  each creature it could tap is its own variant, through X planning and affordability, with a
+  client label naming the creature); demonstrate for Transforming Flourish; dredge for Life from
+  the Loam; Curses, an Aura enchanting a player, for Curse of Opulence; manifest for Reality
+  Shift; modes that each target a different player for Shadrix Silverquill; keeping creatures of
+  total power 4 or less for Slaughter the Strong; and unspent red mana that stays, with "pay any
+  amount of {R}", for Leyline Tyrant.
 - **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
-  `SAMPLE_DECKS`): 63 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
+  `SAMPLE_DECKS`): 48 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
   the TDC decks for authoring.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
@@ -74,7 +77,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,330 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,389 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more

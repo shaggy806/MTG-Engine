@@ -29,14 +29,11 @@ delve (Treasure Cruise) and, until end of turn, "can attack as though it didn't 
 "assigns combat damage equal to its toughness" (Assault Formation, Wakestone Gargoyle, Walking
 Bulwark).
 
-Jeskai's last 3 each need something different (Curse of the Swine's X targets were built on
-2026-10-02): Curses (Curse of Opulence), a target per opponent and a cycling trigger (Dismantling Wave) and demonstrate
-(Transforming Flourish). Across all five decks no feature blocks more than two: "the creature it
-sacrificed" (hideaway was built 2026-10-02 — Mosswort Bridge, Windbrisk Heights and the other
-hideaway cards; an ability's divided damage and Omen on 2026-10-03, below). The other three delve
-cards each need one more thing: a target in each player's graveyard (Afterlife from the Loam),
-"exile X cards from your graveyard" as a cost (Necropolis Fiend), and a card an opponent
-chooses (Tasigur, the Golden Fang).
+Since round three's precons pass (2026-10-03, below) 8 are left across the five decks, each
+behind a feature of its own: harmonize (Zenith Festival), demonstrate (Transforming Flourish),
+dredge (Life from the Loam), Curses (Curse of Opulence), manifest (Reality Shift), modes that each
+target a different player (Shadrix Silverquill), keeping creatures of total power 4 or less
+(Slaughter the Strong), and unspent red mana with "pay any amount" (Leyline Tyrant).
 
 ### The one-off keywords pass (2026-10-03)
 
@@ -161,7 +158,7 @@ A second round the same morning, 74 more:
 
 ### Round three (2026-10-03, afternoon)
 
-Five more passes; the four below are merged (83 cards), the TDC precons' pass is still building:
+Five more passes, all merged (156 cards):
 
 - **Mana abilities** (28): a colour chosen as it resolves keyed to an amount, "any type a land you
   control could produce", colours among permanents or graveyard cards, mana doubling, imprint —
@@ -190,6 +187,24 @@ Five more passes; the four below are merged (83 cards), the TDC precons' pass is
   of Atraxa; Battlemage's Bracers. Still blocked: Koma (modal activated abilities with targeted
   modes), Maskwood Nexus, Twinning Staff, Rings of Brighthearth, Echoes of Eternity, Adagia,
   Throne of Eldraine.
+- **The TDC precons** (73; stopped at the user's call with 15 commits in, then reviewed in four
+  parts — a dozen fixes, no card pulled): a counter as a cost (Wall of Roots), exchanging life and
+  toughness (Tree of Redemption, Tree of Perdition), cards exiled with a source (Colfenor's Urn),
+  Canopy Gargantuan, Baldin, Weathered Sentinels, Essence Anchor, Welcome the Dead, Tip the
+  Scales; cycling as an ability on the stack with "when you cycle this card" (Dismantling Wave,
+  Decree of Pain) and targets bound to a seat (Afterlife from the Loam); the command zone
+  (Command Beacon), graveyard statics (Wonder, Anger, Brawn, Filth), per-player edicts (Will of
+  the Abzan, Will of the Mardu); Temple of the Dragon Queen; tokens attacking this combat, Angels
+  instead, becoming a copy and bounce costs (Legion Warboss, Divine Visitation, Sarkhan, Soul
+  Aflame, Myr Battlesphere, Quirion Ranger, Multani, Mina and Denn); first attacks, random
+  opponents and convokers (Scourge of the Throne, Territorial Hellkite, Living Death, Lethal
+  Scheme); shadow, void counters and an opponent's choice (Dauthi Voidwalker, Tasigur,
+  Colossal Grave-Reaver); Neriv; "exile X cards from your graveyard" and self-bounce costs
+  (Necropolis Fiend, Shigeki); Gix; Selvala's Stampede; Steward of the Harvest; Opportunistic
+  Dragon; Sepulchral Primordial, Chandra's Ignition, Baloth Prime and more from the other
+  precons. Two pieces it built again were on main already, and main's were kept: Faeburrow
+  Elder's mana and "exile N cards from your graveyard" as a cost (now with an X). TDC stand-ins
+  left: 8 (above).
 
 ## Top-5000 batches (sweep 3)
 
