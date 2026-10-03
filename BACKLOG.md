@@ -497,9 +497,7 @@ Follow-on ideas, approved by the user on 2026-09-30:
   shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing
   with the pool. They read only printed fields, each ability's text (colour identity) and the
   tokens a card makes. A generated catalog of just those, sharded the same way, would be a
-  fraction of the size. The game page loads no definitions up front. **Add a progress
-  indicator while the library loads** (`client/src/library/LibraryPage.tsx`): the user wants one
-  shown while those shards come in.
+  fraction of the size. The game page loads no definitions up front.
 - **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
   `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses

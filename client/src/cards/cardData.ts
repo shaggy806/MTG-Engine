@@ -21,6 +21,8 @@ import { CARD_SHARD_COUNT, CardRegistry, cardShardOf, loadCardShard } from 'engi
  *   deck builder, which search, sort and validate over every card.
  *   `main.tsx` fetches it alongside the page's own code and renders the page
  *   once both are in, so inside those pages `cardPool()` is always ready.
+ *   Until then, `usePoolProgress` says how many of the shards are in, for
+ *   the loading screen's progress bar (`PoolLoading.tsx`).
  *
  * Art is the exception, since the lobby draws commander art before anyone
  * has asked for a card. The engine's `PINNED_ART` holds the few printings
@@ -40,6 +42,19 @@ const byName = new Map<string, CardDefinition>()
 let version = 0
 const listeners = new Set<() => void>()
 
+/** How much of the pool is in, for a page waiting on all of it. */
+export interface PoolProgress {
+  /** Shards loaded so far, counting any a lookup by name fetched first. A
+   * shard whose fetch failed doesn't count until a later fetch succeeds. */
+  readonly loaded: number
+  /** Every shard: `CARD_SHARD_COUNT`. */
+  readonly total: number
+}
+
+/** Replaced, never mutated, as each shard arrives, so `useSyncExternalStore`
+ * sees the same object until something changed. */
+let progress: PoolProgress = { loaded: 0, total: CARD_SHARD_COUNT }
+
 function fetchShard(index: number): Promise<CardShard> {
   const loaded = shards.get(index)
   if (loaded !== undefined) return Promise.resolve(loaded)
@@ -52,6 +67,7 @@ function fetchShard(index: number): Promise<CardShard> {
         shards.set(index, shard)
         inFlight.delete(index)
         version++
+        progress = { loaded: shards.size, total: CARD_SHARD_COUNT }
         for (const listener of listeners) listener()
         return shard
       },
@@ -110,6 +126,21 @@ const currentVersion = () => version
 export function useCardData(): (name: string) => CardDefinition | null | undefined {
   useSyncExternalStore(subscribe, currentVersion)
   return peekCard
+}
+
+/** How many of the pool's shards are in. */
+export function poolProgress(): PoolProgress {
+  return progress
+}
+
+/**
+ * `poolProgress`, for a component that draws it: the component renders again
+ * as each shard arrives. A failed shard isn't reported here, since
+ * `loadCardPool` rejects on it, and the page waiting on the pool shows its
+ * failure instead (`PoolLoadBoundary`).
+ */
+export function usePoolProgress(): PoolProgress {
+  return useSyncExternalStore(subscribe, poolProgress)
 }
 
 /** Every card and token, for the pages that work over all of them. */

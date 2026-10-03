@@ -32,8 +32,17 @@ and rendered once both are in; the game's own download holds no card definitions
   in the lobby needs no definition at all: the engine's generated `PINNED_ART` holds the few
   printings the pool pins, and everything else resolves on Scryfall by name. A shard that fails
   to load (the network, or a deploy replacing the build while a tab is open) reads as not loaded
-  and is asked for again next time; the lazy pages show `cards/PoolLoading.tsx`'s loading state
-  and, on failure, a reload offer. `engine/client` doesn't export `BUILTIN_CARDS`,
+  and is asked for again next time. While the pool loads, the lazy pages show
+  `cards/PoolLoading.tsx`: a progress bar (`role="progressbar"`, shards loaded of
+  `CARD_SHARD_COUNT`) fed by `usePoolProgress` — `poolProgress()`'s `{loaded, total}`, a snapshot
+  replaced as each shard arrives, counting shards a lookup by name fetched first and never a failed
+  one. A failed shard rejects `loadCardPool`, and `PoolLoadBoundary` swaps the bar for a reload
+  offer; a shard that never answers leaves the bar still, so after 15 s without a new shard it
+  says "This is taking longer than usual" with a Reload button, hung below the bar so the bar
+  doesn't move. The bar's fill follows `motionPrefs` (`--anim-scale`, no transition under
+  `[data-reduce-motion]`); `cards/cardData.test.ts` covers the accounting and
+  `e2e/pool-progress.spec.ts` the page, holding the shard responses to read the bar part-way
+  (`E2E_SHOTS_DIR` saves screenshots). `engine/client` doesn't export `BUILTIN_CARDS`,
   `POOL_CARDS`, `TOKEN_CARDS` or `createDefaultRegistry`, and must not start to: any of them puts
   the whole pool back into whichever chunk imported it.
 
@@ -66,7 +75,7 @@ and rendered once both are in; the game's own download holds no card definitions
 - **Mana symbols always go through `<Symbols text={…} />`**, which renders `{…}` tokens as sliced-artwork pips with a CSS fallback. Never hand-roll a coloured circle.
 - **Columns that must be equal need `minmax(0, 1fr)`, not `1fr`.** A bare `1fr` is `minmax(auto, 1fr)`, so a track whose content has a wide minimum (a row of input-plus-button, a long unbreakable word, an image) takes more than its share and its neighbour takes less. On the landing page that silently gave the join panel 414px against the start panel's 387 while the footer nav below, having no such pressure, split evenly and lined up with neither. The same footgun is why the seat grid and the board rows are written with `minmax(0, 1fr)` too.
 - **A child that names its own width inside a padded box will escape that padding.** `.seat-board` at `min(1180px, 90vw)` inside a `.seat-board-box` at `min(1180px, 94vw)` overran the box's content area on a wide screen and pushed the outer seat panels out through its side padding. Let the box own the width and the child fill it (`width: 100%`).
-- **The client's automated tests are a few vitest unit tests for pure logic** (`src/**/*.test.ts`, `npm test -w client`, part of the root `npm test`; the animation scheduler so far) **and a Playwright smoke suite** (`client/e2e/`, `npm run test:e2e -w client`): the landing page, a 2- and a 4-player dev room at 1366x768, and walking into combat. It catches a page that no longer loads or a flow that no longer reaches its decision, not a layout that got worse, so verify any UI change live in the browser, in *both* a 2-player and a 3-4 player room, since the layouts diverge — **and at a short viewport (~768px tall), not just whatever monitor you're on.** Several severe layout bugs (every battlefield tile crushed to its 40px floor, the command/library rail overflowing its quadrant, the hand fan hanging off the bottom of the screen) were invisible at 1440p and obvious at 768p.
+- **The client's automated tests are a few vitest unit tests for pure logic** (`src/**/*.test.ts`, `npm test -w client`, part of the root `npm test`: the animation scheduler, board order, event wording and the card pool's load progress) **and a Playwright smoke suite** (`client/e2e/`, `npm run test:e2e -w client`): the landing page, a 2- and a 4-player dev room at 1366x768, walking into combat, and the library's and deck builder's card-loading bar (`pool-progress.spec.ts`). It catches a page that no longer loads or a flow that no longer reaches its decision, not a layout that got worse, so verify any UI change live in the browser, in *both* a 2-player and a 3-4 player room, since the layouts diverge — **and at a short viewport (~768px tall), not just whatever monitor you're on.** Several severe layout bugs (every battlefield tile crushed to its 40px floor, the command/library rail overflowing its quadrant, the hand fan hanging off the bottom of the screen) were invisible at 1440p and obvious at 768p.
 
 ## Client commands, in full
 
