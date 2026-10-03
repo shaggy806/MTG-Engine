@@ -1,24 +1,26 @@
 import { defineConfig } from '@playwright/test'
 
-// Smoke tests of the real client against `npm run dev-rooms -w server`, the
-// room server preloaded with known board states (server/scripts/dev-scenarios.mjs).
-// Both servers are started here, or reused if they're already running locally.
-// Build engine, protocol and server first: dev-rooms imports their dist/.
-//
-// @playwright/test is pinned to the version whose Chromium build the cloud
-// sessions' image ships (/opt/pw-browsers/chromium-1194), so it runs there
-// without a download. Elsewhere run `npx playwright install chromium` once.
+// The three ports are overridable so several checkouts (git worktrees, parallel
+// agents) can run the suite at once. With any of them set, a run never reuses
+// a server already listening there — it could be another checkout's, serving
+// other code — and starts its own on the ports given.
+const webPort = Number(process.env.E2E_WEB_PORT ?? 5173)
+const serverPort = Number(process.env.E2E_SERVER_PORT ?? 4000)
+const controlPort = Number(process.env.E2E_CONTROL_PORT ?? 4099)
+const isolated =
+  process.env.E2E_WEB_PORT !== undefined ||
+  process.env.E2E_SERVER_PORT !== undefined ||
+  process.env.E2E_CONTROL_PORT !== undefined
+const reuseExistingServer = !process.env.CI && !isolated
+
 export default defineConfig({
   testDir: './e2e',
-  // dev-rooms' `reset` drops every open connection, not just that room's, so
-  // tests that reset rooms can't overlap.
   workers: 1,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     browserName: 'chromium',
-    baseURL: 'http://127.0.0.1:5173',
-    // The short screen the layout rules are written against (client/CLAUDE.md).
+    baseURL: `http://127.0.0.1:${webPort}`,
     viewport: { width: 1366, height: 768 },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
@@ -27,15 +29,16 @@ export default defineConfig({
     {
       command: 'npm run dev-rooms -w server',
       cwd: '..',
-      // The command port answers a bare GET with the room list.
-      url: 'http://127.0.0.1:4099',
-      reuseExistingServer: !process.env.CI,
+      url: `http://127.0.0.1:${controlPort}`,
+      env: { ...process.env, PORT: String(serverPort), CONTROL_PORT: String(controlPort) } as Record<string, string>,
+      reuseExistingServer,
       timeout: 60_000,
     },
     {
-      command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',
-      url: 'http://127.0.0.1:5173',
-      reuseExistingServer: !process.env.CI,
+      command: `npm run dev -- --host 127.0.0.1 --port ${webPort} --strictPort`,
+      url: `http://127.0.0.1:${webPort}`,
+      env: { ...process.env, VITE_SERVER_URL: `ws://127.0.0.1:${serverPort}` } as Record<string, string>,
+      reuseExistingServer,
       timeout: 60_000,
     },
   ],

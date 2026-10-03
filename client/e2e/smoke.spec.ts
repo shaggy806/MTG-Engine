@@ -5,8 +5,8 @@ import type { APIRequestContext, Page } from '@playwright/test'
 // one did there. The rooms are defined in server/scripts/dev-scenarios.mjs;
 // in each, the first seat is the human one and the rest are scripted bots.
 
-/** dev-rooms' loopback command port. */
-const CONTROL = 'http://127.0.0.1:4099'
+/** dev-rooms' loopback command port (`E2E_CONTROL_PORT` — see playwright.config.ts). */
+const CONTROL = `http://127.0.0.1:${process.env.E2E_CONTROL_PORT ?? 4099}`
 
 async function resetRoom(request: APIRequestContext, room: string): Promise<void> {
   const response = await request.post(CONTROL, { data: { op: 'reset', room } })
