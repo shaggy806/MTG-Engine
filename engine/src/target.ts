@@ -117,6 +117,12 @@ export type TargetSpec =
       readonly kind: "permanent";
       readonly whose?: "any" | "you" | "opponent" | "trigger-player" | "defending-player";
       readonly filter: CardFilter;
+      /** "…that's **attacking that player**" (Echoing Assault's "target
+       * nontoken creature that's attacking that player", the player a
+       * `attacks-player` trigger names): attacking that player itself — not
+       * a planeswalker they control, which is a different thing to attack
+       * (rules 506.3, 509.1a). Needs `TargetSource.triggerPlayer`. */
+      readonly attacking?: "trigger-player";
     }
   /**
    * A card in a graveyard — the general form for a graveyard the way

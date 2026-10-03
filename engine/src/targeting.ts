@@ -223,6 +223,12 @@ export function isLegalTarget(
       return false;
     }
     if (whose === "defending-player" && object.controller !== defendingPlayerOf(state, source)) return false;
+    if (
+      spec.attacking === "trigger-player" &&
+      (source?.triggerPlayer === undefined || object.attacking !== source.triggerPlayer)
+    ) {
+      return false;
+    }
     return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
   }
   // A filtered spell on the stack.

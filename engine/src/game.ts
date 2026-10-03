@@ -74,6 +74,7 @@ import {
   effectiveTypes,
   hasAnyAbility,
   hasLostAbilities,
+  hasLayerFourPart,
   abilitiesLostAt,
   grantOutlastsLoss,
   modifierGrantApplies,
@@ -8336,8 +8337,12 @@ export class Game {
     const out: TriggeredGrantSource[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
-      if (source === undefined || hasLostAbilities(source)) continue;
+      if (source === undefined) continue;
+      // A source that lost its abilities grants nothing, but for a static
+      // with a layer-4 part (rule 613.6 — see `activatedGrantSources`).
+      const lost = hasLostAbilities(source);
       this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+        if (lost && !hasLayerFourPart(ability)) return;
         if (ability.grantsTriggered !== undefined) {
           out.push({ source, ability, staticIndex, abilities: ability.grantsTriggered });
         }
@@ -8474,8 +8479,14 @@ export class Game {
     const out: GrantSource[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const source = this.state.objects[id];
-      if (source === undefined || hasLostAbilities(source)) continue;
+      if (source === undefined) continue;
+      // A source that lost its abilities grants nothing — but a static with
+      // a layer-4 part applied there before the loss (layer 6), and keeps
+      // applying in the later layers (rule 613.6), its grants going against
+      // the loss in timestamp order (Goddric, Cloaked Reveler's ruling).
+      const lost = hasLostAbilities(source);
       this.registry.get(printedCardName(source)).static.forEach((ability, staticIndex) => {
+        if (lost && !hasLayerFourPart(ability)) return;
         if (ability.grantsActivated !== undefined) {
           out.push({ source, ability, staticIndex, abilities: ability.grantsActivated });
         }
@@ -13901,6 +13912,33 @@ export class Game {
       putOnLibrary: (target, position) => {
         if (target.kind === "object") this.putOnLibrary(target.object, position);
       },
+      shuffleIntoLibrary: (target) => {
+        if (target.kind !== "object") return;
+        const object = this.state.objects[target.object];
+        if (object === undefined || object.zone !== "battlefield") return;
+        // Its owner shuffles it into their library (rule 701.24a): put there,
+        // then that library shuffled — even when a token ceased to exist on
+        // the way or a replacement sent it elsewhere (Chaos Warp's ruling).
+        const owner = object.owner;
+        this.moveObject(target.object, "library");
+        if (this.state.players[owner]?.hasLost === false) this.shuffleLibraryOf(owner);
+      },
+      ownerOf: (ref) =>
+        ref.kind === "player"
+          ? ref.player
+          : (this.state.objects[ref.object]?.owner ?? lastKnownOf(ref)?.owner),
+      removeCounter: (target, counter, amount) => {
+        if (target.kind !== "object" || amount <= 0) return;
+        const before = this.state.objects[target.object];
+        if (before === undefined || before.zone !== "battlefield" || (before.counters[counter] ?? 0) <= 0) return;
+        // One token of a stack loses it, not every token in it.
+        const id = this.splitOneFromStack(target.object);
+        const object = this.state.objects[id];
+        const n = Math.min(amount, object.counters[counter] ?? 0);
+        object.counters[counter] = (object.counters[counter] ?? 0) - n;
+        if (object.counters[counter] <= 0) delete object.counters[counter];
+        this.emit({ type: "counter-removed", object: id, counter, amount: n });
+      },
       delayTrigger: (at, effect, text, delayedController, own) =>
         this.createDelayedTrigger(
           source,
@@ -14074,6 +14112,17 @@ export class Game {
           targetZones,
         ),
       tookEachPlayerMay: (player, since) => this.tookEachPlayerMay(source, player, since),
+      sacrificedForEachPlayerMay: (player, since) => {
+        let answered = false;
+        for (const event of this.eventsSince(since)) {
+          if (event.type === "modes-chosen" && event.source === source && event.player === player) {
+            answered = true;
+          } else if (answered && event.type === "permanent-sacrificed" && event.player === player) {
+            return event.object;
+          }
+        }
+        return undefined;
+      },
       nextEventSeq: () => this.state.eventSeq,
       // "Damage equal to its power" from a dies trigger reads the power it
       // died with (the Juri and Elenda rulings); a target that has left, the
@@ -14507,9 +14556,11 @@ export class Game {
         ),
       scry: (amount, surveil, then) =>
         this.beginScry(source, controller, x, amount, surveil ? "surveil" : "scry", then ?? null),
-      revealTop: (then) => {
-        const top = this.state.zones.perPlayer[controller].library[0];
-        if (top !== undefined) this.revealCards(controller, [top], "library");
+      revealTop: (then, player = controller) => {
+        // Whose library it is reveals it: Chaos Warp's owner "reveals the
+        // top card of their library".
+        const top = this.state.zones.perPlayer[player]?.library[0];
+        if (top !== undefined) this.revealCards(player, [top], "library");
         applyEffectSpec(
           then,
           this.makeResolutionContext(
@@ -20962,6 +21013,13 @@ export class Game {
    * perspective as `entering` enters. The count never includes `entering`
    * itself or anything entering with it — "for each Angel you **already**
    * control" (Giada) — and `"trigger-object"` names the entering permanent.
+   *
+   * A graveyard count still counts what is entering from a graveyard: a
+   * replacement that applies as it enters is applied before it moves (rule
+   * 614.12), so it is still a card there — "if Diregraf Colossus enters the
+   * battlefield from your graveyard, its first ability will count itself",
+   * and any other Zombie card entering from it at the same time (its
+   * ruling; Unbreathing Horde's too).
    */
   private enteringCounterAmount(
     source: ObjectId,
@@ -20972,8 +21030,16 @@ export class Game {
     if (typeof amount === "number") return amount;
     const notYet = [entering, ...(this.enterBatch ?? [])];
     const ctx = this.makeResolutionContext(source, controller, [], 0, 0, entering);
+    const fromGraveyard = notYet.filter((id) => {
+      const object = this.state.objects[id];
+      return object?.zone === "battlefield" && object.entry?.from === "graveyard" && !object.isToken;
+    });
     const n = amountValue(amount, {
       ...ctx,
+      countInGraveyard: (filter) =>
+        ctx.countInGraveyard(filter) +
+        fromGraveyard.filter((id) => matchesFilter(this.state, this.registry, id, filter, { you: controller }))
+          .length,
       countMatching: (filter, except = []) => ctx.countMatching(filter, [...except, ...notYet]),
       aggregate: (spec, except = []) => ctx.aggregate(spec, [...except, ...notYet]),
       colorsAmong: (filter, except = []) => ctx.colorsAmong(filter, [...except, ...notYet]),

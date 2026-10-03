@@ -126,6 +126,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   untap: (n, v) => v.touch(n.target, "help", MINOR),
   destroy: (n, v) => v.touch(n.target, "harm", DECISIVE),
   "put-on-bottom-of-library": (n, v) => v.touch(n.target, "harm", DECISIVE),
+  "shuffle-into-library": (n, v) => v.touch(n.target, "harm", DECISIVE),
   "destroy-all": none,
   regenerate: (n, v) => v.touch(n.target, "help", MINOR),
   "regenerate-all": none,
@@ -211,6 +212,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "add-counter": (n, v) =>
     v.touch(n.target, HARMFUL_COUNTERS.has(n.counter) ? "harm" : "help", MAJOR),
   "add-counter-all": none,
+  // The reverse of `add-counter`: losing a harmful counter helps.
+  "remove-counter": (n, v) =>
+    v.touch(n.target, HARMFUL_COUNTERS.has(n.counter) ? "help" : "harm", MAJOR),
   // Card selection and maybe a counter, for the conniving permanent's side.
   connive: (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-player-hexproof": none,

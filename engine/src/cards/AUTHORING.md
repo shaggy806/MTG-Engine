@@ -399,7 +399,11 @@ view (Scourge of Valkas: `{ countOf: { subtype: "Dragon", controlledBy: "you" } 
 Craterhoof: `{ countOf: { type: "creature", controlledBy: "you" } }`);
 `{ countInGraveyard: CardFilter }` — how many cards in *graveyards* match
 (Undergrowth — Lotleth Giant's "for each creature card in your graveyard";
-`ownedBy: "you"` is what narrows it to your own);
+`ownedBy: "you"` is what narrows it to your own). In an "enters with a
+counter for each …" replacement it still counts a card entering **from** a
+graveyard, itself or one entering with it, since the replacement applies
+before it moves (rule 614.12 — Diregraf Colossus's and Unbreathing Horde's
+rulings);
 `{ lifeTotal: "you" }` — the controller's life total (Ajani's ultimate);
 `{ lifeTotal: "each" }` — the life of **each player a scoped effect is
 applied to**, read once per player ("each opponent loses half **their**
@@ -774,6 +778,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 | `grant-keyword-all` | `filter`, `keyword`, `duration`, `exceptSource?` | Overrun's trample. `exceptSource` is "**other** Spiders you control gain …" (Cosmic Spider-Man). Hits what matches as it resolves (rule 611.2c) — a creature arriving later doesn't gain it. |
 | `connive` | `target`, `amount?` | Connive (rule 701.50): the permanent's controller draws `amount` (1 by default; "connives X" is an amount), discards that many, then puts a +1/+1 counter on it for each nonland card discarded — by its own discards only, so two connives in one resolution don't count each other's. A permanent that has left is connived with by its last controller and gets no counter (701.50c). Ledger Shredder (`target: "source"`), Raffine, Scheming Seer, Spymaster's Vault. |
 | `add-counter` | `target`, `counter` (string), `amount`, `by?` | `by` (an `EffectPlayerRef`) is who puts them when the card says someone else does — Alexios's "that player … puts a +1/+1 counter on it" is `by: "active-player"` — which a "whenever you put … counters" trigger reads; the effect's controller otherwise. `counter: "+1/+1"` etc. A **keyword counter** (rule 122.1b) is a counter named for the keyword, spelled as the engine's `Keyword` — `"flying"`, `"first-strike"`, `"double-strike"`, `"deathtouch"`, `"haste"`, `"hexproof"`, `"indestructible"`, `"lifelink"`, `"menace"`, `"reach"`, `"trample"`, `"vigilance"` — and the permanent has that keyword while the counter is on it (layer 6; `KEYWORD_COUNTERS` in `characteristics.ts`). Decayed, exalted and shadow counters aren't modeled. |
+| `remove-counter` | `target`, `counter` (string), `amount` | The reverse of `add-counter` — Unbreathing Horde's "prevent that damage and remove a +1/+1 counter from it" (the `then` of its `would-deal-damage` prevention, `target: "source"`). Removes up to `amount`, as many as there are, and none from a permanent with none (its ruling); announced as `counter-removed`, so "for as long as it has a counter" durations end with the last. Only a permanent still on the battlefield as the same object loses any (rule 122.2). |
 | `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
 | `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). |
 | `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
@@ -822,7 +827,8 @@ ability would have no way to name a token that didn't exist when it was set up.
 | --- | --- | --- |
 | `search-library` | `who?: { controllerOfTarget }` (Path to Exile — *its controller* searches), `filter`, `destination: "hand" \| "battlefield"`, `min`, `max`, `enterTapped?`, `restDestination?` | Demonic Tutor, Rampant Growth. `zones?: "library" | "graveyard" | "library-and-graveyard"` is what's searched (default the library): "search your library **and/or graveyard**" (Finale of Devastation) is a resolution-time `modal` over the three, so the player picks; only a search that includes the library shuffles it, and a match in the graveyard — a public zone — must be found (failing to find is for hidden zones, rule 701.19b). `max` is an `EffectAmount`, so "up to X basic lands, where X is the number of tapped creatures you control" is a `countOf` (Harvest Season). `restDestination` sends every *chosen* card after the first somewhere else — Cultivate's "put one onto the battlefield tapped and the other into your hand" (distinct from `leftover`, which is about cards **not** chosen). `together?` is a rule over the finds *as a set*, which `filter` (one card at a time) can't say: `{ share: "land-type" }` is Myriad Landscape's "up to two basic land cards **that share a land type**" (one card alone always passes); `{ oneEach: [{ label, filter }, …] }` is Krosan Verge's "a Forest card **and** a Plains card" — one find per slot, each matching its slot's filter, a card that fits both filling either, any slot missable (rule 701.19b). With `oneEach`, `filter` should admit exactly what some slot does (`{ subtypes: ["Forest", "Plains"] }`) and `max` be the slot count. The decision offers every card `filter` admits and rejects a set that breaks the rule; the bots' picks are turned into legal ones (`zone-choice-together.ts`), and the client greys out Confirm. |
 | `scry` | `amount`, `then?` | Preordain (`then: { kind: "draw", amount: 1 }`). `amount` may be live, read as it applies (The Scarab God's "scry X, where X is the number of Zombies you control"). |
-| `reveal-top` | `then` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. |
+| `reveal-top` | `then`, `of?: { ownerOfTarget }` | "Reveal the top card of your library. If it's a land card, put it onto the battlefield tapped. Otherwise, draw a card" (Thrasios). Reveals to every player, then applies `then` with **that card as target 0**, so a `{ kind: "target", index: 0, filter }` condition and a `put-onto-battlefield { target: 0 }` both reach it. The card doesn't move unless `then` moves it. `of: { ownerOfTarget: n }` is the top of **another** library — that of the owner of target `n`, who reveals it (Chaos Warp's "then reveals the top card of their library"); the owner is known even once the target has moved or a token has ceased to exist, and a `put-onto-battlefield` puts the card under that owner's control. |
+| `shuffle-into-library` | `target` | "The owner of target permanent shuffles it into their library" (Chaos Warp): into its **owner's** library, which is then shuffled (rule 701.24a) — even for a token, which ceases to exist there (rule 111.7), or a commander a replacement sent to the command zone. Nothing happens to one that has left the battlefield. |
 | `reveal-until` | `whose?`, `filter`, `exile?`, `put?: "battlefield" \| "hand" \| "graveyard"`, `tapped?`, `attacking?` (as `create-token`'s — Raph & Mikey), `then?`, `rest: "bottom-random" \| "graveyard" \| "shuffle" \| "stay"`, `keepFound?` | A generalised cascade: reveal cards from the top of a library — the controller's, or the player in target slot `whose` — until one matches `filter` (an `{ amount }` compare is bound as it applies: "a nonland card with lesser mana value"). The Prismatic Bridge's "…until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order" is `{ filter: { typesAnyOf: ["creature", "planeswalker"] }, put: "battlefield", rest: "bottom-random" }`; Umbris's "target opponent exiles cards from the top of their library until they exile a land card" is `{ whose: 0, filter: { type: "land" }, exile: true, rest: "stay" }` (`exile` exiles each card face up as it goes). `then` is applied with **the card found as target 0** after `put` — "you may put that card onto the battlefield. Then shuffle" is a `then` of `{ kind: "may", effect: { kind: "put-onto-battlefield", target: 0 } }` with `rest: "shuffle"`, and the rest wait for its answer. `rest` places every revealed card still where it was revealed — the card found too, if nothing moved it, unless `keepFound` ("put each **other** card exiled this way on the bottom" — it stays in exile to be cast); with nothing matching, that's all of them. |
 | `surveil` | `amount`, `then?` | Consider. `amount` may be live, as `scry`'s. |
 | `allow-cast-from-exile` | `target`, `free?`, `laterTurns?` | "Until end of turn, you may cast that card [without paying its mana cost]" — a card in exile, usually a `reveal-until`'s find (Codie). Cast only, this turn, by the effect's controller; `free` permits only the free cast. `laterTurns` is warp's instead: the card's owner, from the next turn on, for as long as it stays exiled. |
@@ -1106,7 +1112,15 @@ exist (rule 111.7), so neither comes back.
   `resultsFor` keeps the follow-ups to a scope: Kynaios and Tiro's "then each
   **opponent** who didn't draws a card" asks `"each-player"` with
   `resultsFor: "each-opponent"`. A player with nothing they could take isn't
-  asked, and didn't. `choices` (two or more `{ text, effect }`) is a
+  asked, and didn't. A permanent a player **sacrificed** in answer (a
+  `sacrifice` option) is their follow-up's `"sacrificed"`, so
+  `sharesCardTypeWith: "sacrificed"` inside `ifDid` reads it: Braids, Arisen
+  Nightmare's "you may sacrifice an artifact, creature, …. If you do, each
+  opponent may sacrifice a permanent of their choice that shares a card type
+  with it. For each opponent who doesn't, …" is a `who: "you"` sacrifice
+  option whose `ifDid` is the opponents' `each-player-may`. (The follow-ups'
+  dynamic filters are bound as they apply, not when the question is asked.)
+  `choices` (two or more `{ text, effect }`) is a
   **villainous choice** (rule 701.56 — "each opponent faces a villainous
   choice — …, or …"): each of them must pick one, and the one picked is the
   **controller's** effect about them ("you draw a card"; "that player
@@ -1515,7 +1529,11 @@ stopped covering:
   player its event names (Alela, Cunning Conqueror's player dealt combat
   damage), whose permanents alone are legal. `whose: "defending-player"` is
   the player the ability's source is attacking (Kogla, the Titan Ape's
-  "destroy target artifact or enchantment defending player controls"). **Prefer a string
+  "destroy target artifact or enchantment defending player controls").
+  `attacking: "trigger-player"` is "target creature **that's attacking that
+  player**" (Echoing Assault, on an `attacks-player` trigger): attacking that
+  player itself — a creature attacking a planeswalker they control isn't
+  (rules 506.3, 509.1a). **Prefer a string
   literal when one fits** — it reads better and most of the pool uses them;
   reach for this when spelling the shape as a literal wouldn't be reused.
 - `{ kind: "spell", whose?: "any" | "you" | "opponent", filter: CardFilter }` — a spell
@@ -2166,7 +2184,18 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   whose scope depends on another effect's added types applies after it (rule
   613.8: Kudo's "other creatures" reaches a land animated after Kudo arrived). A static with a
   layer-4 part fixes its reach there (rule 613.6): its keywords, granted
-  abilities and P/T go to exactly the permanents it gave the type to.
+  abilities and P/T go to exactly the permanents it gave the type to. It
+  also outlives its source losing its abilities: that loss is layer 6, so the
+  static applied in layer 4 first and keeps applying in 7b and 7d — its
+  layer-6 grants go against the loss in timestamp order, like any (Goddric,
+  Cloaked Reveler's ruling: "still a Dragon creature with base power and
+  toughness 4/4").
+- `setSubtypes: string[]` — layer 4: the affected permanents' subtypes of the
+  same kind are **replaced** by these (rule 205.1a), the rest staying —
+  Goddric, Cloaked Reveler's "is a Dragon … (He loses all other creature
+  types.)" is `setSubtypes: ["Dragon"]`. The static form of `animate`'s
+  `setSubtypes`; a layer-4 part like `addTypes`, in timestamp order with the
+  rest.
 - `setBasePt: { power?, toughness? }` — layer 7b: the affected permanents
   *have base* power and/or toughness N ("have base power and toughness 10/10";
   a lone `toughness` is "have base toughness 1"). In timestamp order with

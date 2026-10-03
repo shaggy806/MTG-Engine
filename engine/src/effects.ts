@@ -1775,6 +1775,21 @@ export type EffectSpec =
     }
   | {
       /**
+       * Remove `amount` counters of kind `counter` from a permanent — the
+       * reverse of `add-counter`: Unbreathing Horde's "prevent that damage
+       * and remove a +1/+1 counter from it". Removes as many as there are,
+       * up to `amount` (none at all from one with none — its ruling), and
+       * announces what it removed (`counter-removed`). Only a permanent
+       * still on the battlefield as the same object (rule 400.7) loses any:
+       * counters on a card that has left simply ceased to exist (rule 122.2).
+       */
+      readonly kind: "remove-counter";
+      readonly target: EffectTargetRef;
+      readonly counter: string;
+      readonly amount: EffectAmount;
+    }
+  | {
+      /**
        * Put counters on **every** battlefield permanent matching `filter`
        * (Loyal Guardian: "put a +1/+1 counter on each creature you control").
        * The untargeted, mass form of `add-counter`; routes through the same
@@ -2853,9 +2868,31 @@ export type EffectSpec =
        * library nothing is revealed and `then` runs with no target, so a
        * target condition reads false and an "otherwise, draw" draws (and
        * fails) as the card says.
+       *
+       * `of: { ownerOfTarget }` reveals the top of **another** library: that
+       * of the owner of the object in a target slot (Chaos Warp's "the owner
+       * of target permanent … reveals the top card of their library"). The
+       * owner never changes (rules 108.3, 111.2), so it is still known once the
+       * object has moved or a token has ceased to exist. That player is the
+       * one who reveals, and a `put-onto-battlefield` in `then` puts the
+       * card onto the battlefield under its owner's control — them.
        */
       readonly kind: "reveal-top";
       readonly then: EffectSpec;
+      readonly of?: { readonly ownerOfTarget: number };
+    }
+  | {
+      /**
+       * "The owner of target permanent **shuffles it into their library**"
+       * (Chaos Warp): the permanent is put into its owner's library and that
+       * library is shuffled (rule 701.24a). A token goes too and ceases to
+       * exist there (rule 111.7), and the library is still shuffled (Chaos
+       * Warp's ruling); so is it when a replacement sends the permanent
+       * somewhere else (a commander to the command zone, rule 903.9b). Does
+       * nothing to an object that isn't on the battlefield any more.
+       */
+      readonly kind: "shuffle-into-library";
+      readonly target: EffectTargetRef;
     }
   | {
       /** Surveil `amount` (rule 701.43) — look at the top N, put any number
@@ -3589,6 +3626,10 @@ export interface EffectApi {
   /** Whether `player` took what an `"each-player-may"` that began at event
    * `since` offered them — their first answer for this source since. */
   tookEachPlayerMay(player: PlayerId, since: number): boolean;
+  /** The permanent `player` sacrificed in answer to an `"each-player-may"`
+   * begun at event `since` — the first they sacrificed after their answer —
+   * or `undefined` when they sacrificed none. */
+  sacrificedForEachPlayerMay(player: PlayerId, since: number): ObjectId | undefined;
   /** The sequence number the next event will have. */
   nextEventSeq(): number;
   /** See the `"populate"` {@link EffectSpec}. */
@@ -3829,8 +3870,16 @@ export interface EffectApi {
     zones?: SearchZones,
     together?: SearchTogether,
   ): void;
-  /** See the `"reveal-top"` {@link EffectSpec}. */
-  revealTop(then: EffectSpec): void;
+  /** See the `"reveal-top"` {@link EffectSpec}. `player` is whose library
+   * (the effect's controller's when omitted). */
+  revealTop(then: EffectSpec, player?: PlayerId): void;
+  /** See the `"shuffle-into-library"` {@link EffectSpec}. */
+  shuffleIntoLibrary(target: TargetRef): void;
+  /** Who owns the object `target` names — as it last existed, if it has
+   * ceased to exist — or the player itself. */
+  ownerOf(target: TargetRef): PlayerId | undefined;
+  /** See the `"remove-counter"` {@link EffectSpec}. */
+  removeCounter(target: TargetRef, counter: string, amount: number): void;
   /** See the `"look-and-choose"` {@link EffectSpec}. */
   lookAndChoose(
     zone: "library" | "graveyard" | "hand",
@@ -4000,7 +4049,13 @@ function applyEachPlayerMay(
     if (followUp === undefined) continue;
     const parked = ctx.parkedCount();
     const pendingBefore = ctx.decisionPending();
-    applyEffectSpec(followUp, ctx.aboutPlayer(player));
+    // What they sacrificed in answer, if anything, is the follow-up's
+    // "sacrificed" — "you may sacrifice an artifact, creature, …. If you do,
+    // each opponent may sacrifice a permanent that shares a card type with
+    // it" (Braids, Arisen Nightmare).
+    const about = ctx.aboutPlayer(player);
+    const sacrificed = did ? ctx.sacrificedForEachPlayerMay(player, since) : undefined;
+    applyEffectSpec(followUp, sacrificed === undefined ? about : about.withSacrificed(sacrificed));
     if (results.length > 0 && !pendingBefore && ctx.decisionPending()) {
       park({ since, asked, toAsk: [], results }, parked);
       return;
@@ -4413,6 +4468,12 @@ const NESTED_EFFECT_KEYS: ReadonlySet<string> = new Set([
   "else",
   "otherwise",
   "modes",
+  // An `each-player-may`'s follow-ups, which apply once everyone has
+  // answered — Braids, Arisen Nightmare's "each opponent may sacrifice a
+  // permanent that shares a card type with it" reads the permanent its
+  // controller sacrificed in answer, which only exists by then.
+  "ifDid",
+  "ifDidnt",
 ]);
 
 /** Is this a `NumCompare` whose `n` is an `{ amount }` operand? Written out
@@ -5214,6 +5275,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (amount > 0) ctx.addCounter(target, "+1/+1", amount);
       return;
     }
+    case "remove-counter": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.removeCounter(target, spec.counter, amountValue(spec.amount, ctx));
+      return;
+    }
     case "add-counter": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target === undefined) return;
@@ -5746,9 +5812,21 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "scry":
       ctx.scry(amountValue(spec.amount, ctx), false, spec.then);
       return;
-    case "reveal-top":
-      ctx.revealTop(spec.then);
+    case "reveal-top": {
+      if (spec.of === undefined) {
+        ctx.revealTop(spec.then);
+        return;
+      }
+      const of = ctx.targets[spec.of.ownerOfTarget];
+      const owner = of === undefined ? undefined : ctx.ownerOf(of);
+      if (owner !== undefined) ctx.revealTop(spec.then, owner);
       return;
+    }
+    case "shuffle-into-library": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target !== undefined) ctx.shuffleIntoLibrary(target);
+      return;
+    }
     case "surveil":
       ctx.scry(amountValue(spec.amount, ctx), true, spec.then);
       return;

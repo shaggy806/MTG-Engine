@@ -1226,7 +1226,7 @@ function ownLayerFour(registry: CardRegistry, object: GameObject): LayerFour {
  * case: Kudo's "other creatures are Bears" depends on anything that makes a
  * permanent a creature (rule 613.8a), so a Mishra's Factory animated after
  * Kudo arrived is still a Bear. Every layer-4 effect here only *adds* types
- * (bar a modifier's `setSubtypes`), so the fold is repeated with each scope
+ * (bar a `setSubtypes`, a modifier's or a static's), so the fold is repeated with each scope
  * matched against the types it has so far *plus* everything the previous
  * pass added, until which statics apply stops changing — the dependency
  * order for additive effects. A pair that depend on each other (a loop,
@@ -1288,6 +1288,13 @@ function foldLayerFourOnce(
       continue;
     }
     if (ability.addTypes !== undefined) types = union(types, ability.addTypes);
+    if (ability.setSubtypes !== undefined) {
+      // Rule 205.1a: they replace the existing subtypes of their own kind —
+      // Goddric's "is a Dragon" takes every creature type — and the rest stay.
+      const set = ability.setSubtypes.map((w) => substituteWord(source, w));
+      const kinds = new Set(set.map(subtypeKind));
+      subtypes = [...subtypes.filter((s) => !kinds.has(subtypeKind(s))), ...set];
+    }
     if (ability.addSubtypes !== undefined) {
       // The source's own text change rewrites the word it grants, as it
       // does a lord clause's.
@@ -1318,8 +1325,10 @@ function assertSameLayerFour(cached: LayerFour, fresh: LayerFour, id: ObjectId):
 
 /** Whether a static changes types in layer 4 — and so fixes, there, which
  * permanents the rest of it applies to (rule 613.6). */
-function hasLayerFourPart(ability: StaticAbility): boolean {
-  return ability.addTypes !== undefined || ability.addSubtypes !== undefined;
+export function hasLayerFourPart(ability: StaticAbility): boolean {
+  return (
+    ability.addTypes !== undefined || ability.addSubtypes !== undefined || ability.setSubtypes !== undefined
+  );
 }
 
 /**
@@ -1340,9 +1349,13 @@ function typeGrantSources(
     if (statics.length === 0) continue;
     for (const ability of statics) {
       if (!hasLayerFourPart(ability)) continue;
-      // As in `contributingStaticSources`: a permanent that lost its
-      // abilities, or whose controller has left the game, grants nothing.
-      if (hasLostAbilities(source) || state.players[source.controller]?.hasLost === true) break;
+      // As in `contributingStaticSources`: a permanent whose controller has
+      // left the game grants nothing. One that has lost its abilities still
+      // does here: that loss is a layer-6 effect, and layer 4 comes first
+      // (rule 613.1d, 613.1f), so the ability is still there to apply — and
+      // having started to apply, it keeps applying in the later layers
+      // (rule 613.6; Goddric, Cloaked Reveler's ruling).
+      if (state.players[source.controller]?.hasLost === true) break;
       (out ??= []).push({ source, ability });
     }
   }
@@ -1675,10 +1688,15 @@ function abilityGrantSources(
   let out: ContributingStatic[] | null = null;
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
-    if (source === undefined || hasLostAbilities(source)) continue;
+    if (source === undefined) continue;
     if (state.players[source.controller]?.hasLost === true) continue;
+    // A static with a layer-4 part outlives its source's loss of abilities
+    // (rule 613.6 — see `typeGrantSources`); its grants then go against that
+    // loss in timestamp order, like any (`grantOutlastsLoss`).
+    const lost = hasLostAbilities(source);
     for (const ability of registry.get(printedCardName(source)).static) {
       if (ability.grantsActivated === undefined && ability.grantsTriggered === undefined) continue;
+      if (lost && !hasLayerFourPart(ability)) continue;
       (out ??= []).push({ source, ability });
     }
   }
@@ -2080,13 +2098,19 @@ function contributingStaticSources(
   const out: ContributingStatic[] = [];
   for (const sourceId of state.zones.shared.battlefield) {
     const source = state.objects[sourceId];
-    if (hasLostAbilities(source)) continue; // layer 6 — its statics don't function
+    // Layer 6 — a permanent that lost its abilities has no statics, bar one
+    // with a layer-4 part: that part applied before the loss (layer 4), so
+    // the rest of it keeps applying in the later layers (rule 613.6 — see
+    // `typeGrantSources`), its layer-6 grants in timestamp order with the
+    // loss (`grantOutlastsLoss`).
+    const lost = hasLostAbilities(source);
     // An eliminated player's permanents stay on the board to be looked at but
     // stop affecting the game — so their anthems and lords stop applying too.
     // See the note in `matchesFilter`: they leave play, not view — rule
     // 800.4a would have removed them from the game entirely.
     if (state.players[source.controller]?.hasLost === true) continue;
     for (const ability of registry.get(printedCardName(source)).static) {
+      if (lost && !hasLayerFourPart(ability)) continue;
       // Only P/T-bonus / keyword-grant / restriction statics contribute here.
       // A static that is purely a replacement (rule 614 — "enters tapped") or
       // a CDA (`setBasePtFromCount`, handled in its own pass) modifies nothing.

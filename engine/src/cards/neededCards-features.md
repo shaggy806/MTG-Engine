@@ -232,8 +232,9 @@ Garenbrig (717)
   the Sword cycle): `protection: {colors, types}` widening to a `CardFilter`.
   The One Ring and Teferi's Protection give protection to a *player* instead.
 - **Cards E3 skipped** for want of a primitive and still unauthored:
-  Ponder (put cards back in any order), Chaos Warp (shuffle a permanent
-  into a library), The One Ring (protection for a player), Urza's Saga.
+  Ponder (put cards back in any order), The One Ring (protection for a
+  player), Urza's Saga. (Chaos Warp's `shuffle-into-library` was built
+  2026-10-02.)
 
 ### Modal triggers with targeted modes — built 2026-09-26
 

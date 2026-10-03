@@ -746,6 +746,15 @@ export interface StaticAbility {
    * other types", "Artifacts you control are Foods"). */
   readonly addSubtypes?: readonly string[];
   /**
+   * Layer 4 — subtypes that **replace** the affected permanents' existing
+   * subtypes of the same kind (rule 205.1a): Goddric, Cloaked Reveler's
+   * "is a Dragon … (He loses all other creature types.)" is
+   * `setSubtypes: ["Dragon"]` — every creature type goes, its other
+   * subtypes stay. The static counterpart of an `animate` effect's
+   * `setSubtypes`, applied in timestamp order with the rest of layer 4.
+   */
+  readonly setSubtypes?: readonly string[];
+  /**
    * Layer 7b — sets the affected permanents' base power and/or toughness
    * (Kudo: "have base power and toughness 2/2"; a lone `toughness` is "have
    * base toughness 1"). After characteristic-defining abilities, in
