@@ -2587,12 +2587,12 @@ clause (section 9):
   of these under `all`, `{ filter: { type: "creature" } }` and `{ filter: {
   notTypes: ["creature"] } }` — an Adventure cast as its instant or sorcery
   half was a noncreature spell, though a creature card sits in exile after.
-- `{ kind: "trigger-spell-first", anyOf: [{ filter, otherThanSource? }] }` — a
-  cast trigger's spell is its caster's first spell this turn matching one of
-  the filters (Alania, Divergent Storm — see `whileCondition` in §9). Only a
-  cast trigger's `condition` can answer it.
   The cast trigger's `firstEachTurn`/`nthEachTurn` with a filter, and a
   `costModification`'s `firstEachTurn`, count the same records.
+- `{ kind: "trigger-spell-first", anyOf: [{ filter, otherThanSource? }] }` — a
+  cast trigger's spell is its caster's first spell this turn matching one of
+  the filters (Alania, Divergent Storm — see `whileCondition` in §9), counting
+  the same records. Only a cast trigger's `condition` can answer it.
 - `{ kind: "creature-died-this-turn" }` — Liliana's Devotee. Reads the
   turn-scoped `GameState.creaturesDiedThisTurn`, counted in `moveObject`
   while the dying permanent's types are still readable.
