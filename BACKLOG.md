@@ -170,7 +170,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **More training scenarios.** 57 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
+- **More training scenarios.** 70 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
   added blocks, attack targets, answers on the stack (a pump against burn, Counterspell and
   Heroic Intervention against a wrath, Fog against lethal) and sequencing, all passing but
   two, now in training (below). More come from live games: the in-game Capture button
