@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2125 already implemented / 2875 missing (marks refreshed 2026-10-03)
+2135 already implemented / 2865 missing (marks refreshed 2026-10-03)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -337,7 +337,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   338  Port Town                                {0}              Land
 [x]   339  Putrefy                                  {1}{B}{G}        Instant
 [ ]   340  Kindred Discovery                        {3}{U}{U}        Enchantment
-[ ]   341  Sevinne's Reclamation                    {2}{W}           Sorcery
+[x]   341  Sevinne's Reclamation                    {2}{W}           Sorcery
 [x]   342  Furycalm Snarl                           {0}              Land
 [x]   343  Loran of the Third Path                  {2}{W}           Legendary Creature — Human Artificer
 [x]   344  Fortified Village                        {0}              Land
@@ -686,7 +686,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   687  Imperial Recruiter                       {2}{R}           Creature — Human Advisor
 [ ]   688  Innkeeper's Talent                       {1}{G}           Enchantment — Class
 [ ]   689  Into the Flood Maw                       {U}              Instant
-[ ]   690  Reflections of Littjara                  {4}{U}           Enchantment
+[x]   690  Reflections of Littjara                  {4}{U}           Enchantment
 [ ]   691  Archivist of Oghma                       {1}{W}           Creature — Halfling Cleric
 [x]   692  Ancient Greenwarden                      {4}{G}{G}        Creature — Elemental
 [x]   693  Vernal Fen                               {0}              Land — Swamp Forest
@@ -1531,7 +1531,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1538  Feldon of the Third Path                 {1}{R}{R}        Legendary Creature — Human Artificer
 [x]  1539  Natural Order                            {2}{G}{G}        Sorcery
 [x]  1540  Utvara Hellkite                          {6}{R}{R}        Creature — Dragon
-[ ]  1541  Rebuff the Wicked                        {W}              Instant
+[x]  1541  Rebuff the Wicked                        {W}              Instant
 [ ]  1542  Eerie Ultimatum                          {W}{W}{B}{B}{B}{G}{G} Sorcery
 [ ]  1543  Creeping Bloodsucker                     {1}{B}           Creature — Vampire
 [x]  1544  Pawn of Ulamog                           {1}{B}{B}        Creature — Vampire Shaman
@@ -2069,7 +2069,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2076  Selesnya Guildgate                       {0}              Land — Gate
 [ ]  2077  Fallen Shinobi                           {3}{U}{B}        Creature — Zombie Ninja
 [ ]  2078  Winding Constrictor                      {B}{G}           Creature — Snake
-[ ]  2079  Pearl-Ear, Imperial Advisor              {1}{W}{W}        Legendary Creature — Fox Advisor
+[x]  2079  Pearl-Ear, Imperial Advisor              {1}{W}{W}        Legendary Creature — Fox Advisor
 [x]  2080  Grim Backwoods                           {0}              Land
 [x]  2081  Vengeful Ancestor                        {2}{R}{R}        Creature — Spirit Dragon
 [x]  2082  Sowing Mycospawn                         {3}{G}           Creature — Eldrazi Fungus
@@ -2078,7 +2078,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2085  Deathreap Ritual                         {2}{B}{G}        Enchantment
 [x]  2086  Nissa, Resurgent Animist                 {2}{G}           Legendary Creature — Elf Scout
 [x]  2087  Body of Knowledge                        {3}{U}{U}        Creature — Avatar
-[ ]  2088  Dawn Charm                               {1}{W}           Instant
+[x]  2088  Dawn Charm                               {1}{W}           Instant
 [x]  2089  Personal Tutor                           {U}              Sorcery
 [x]  2090  Paradise Druid                           {1}{G}           Creature — Elf Druid
 [ ]  2091  Ruthless Technomancer                    {3}{B}           Creature — Human Wizard
@@ -2199,7 +2199,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2206  Ondu Inversion // Ondu Skyruins          {8}              Sorcery // Land
 [x]  2207  Argentum Armor                           {6}              Artifact — Equipment
 [x]  2208  Wall of Blossoms                         {1}{G}           Creature — Plant Wall
-[ ]  2209  Season of Growth                         {1}{G}           Enchantment
+[x]  2209  Season of Growth                         {1}{G}           Enchantment
 [x]  2210  Arabella, Abandoned Doll                 {R}{W}           Legendary Artifact Creature — Toy
 [x]  2211  Shock                                    {R}              Instant
 [x]  2212  Contentious Plan                         {1}{U}           Sorcery
@@ -3409,7 +3409,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3416  Lembas                                   {2}              Artifact — Food
 [ ]  3417  Blood Pact                               {2}{B}           Instant
 [ ]  3418  Transmutation Font                       {5}              Artifact
-[ ]  3419  Zada, Hedron Grinder                     {3}{R}           Legendary Creature — Goblin Ally
+[x]  3419  Zada, Hedron Grinder                     {3}{R}           Legendary Creature — Goblin Ally
 [ ]  3420  Feline Sovereign                         {2}{G}           Creature — Cat
 [x]  3421  Turbulent Fen                            {0}              Land — Swamp Forest
 [ ]  3422  Strength of Will                         {1}{G}           Instant
@@ -3531,7 +3531,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3538  Council's Judgment                       {1}{W}{W}        Sorcery
 [ ]  3539  Auroral Procession                       {G}{U}           Instant
 [x]  3540  Stroke of Genius                         {X}{2}{U}        Instant
-[ ]  3541  Krark, the Thumbless                     {1}{R}           Legendary Creature — Goblin Wizard
+[x]  3541  Krark, the Thumbless                     {1}{R}           Legendary Creature — Goblin Wizard
 [x]  3542  Sidisi, Brood Tyrant                     {1}{B}{G}{U}     Legendary Creature — Snake Shaman
 [ ]  3543  Atraxa, Grand Unifier                    {3}{G}{W}{U}{B}  Legendary Creature — Phyrexian Angel
 [ ]  3544  Patron of the Vein                       {4}{B}{B}        Creature — Vampire Shaman
@@ -3697,7 +3697,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3704  Ambition's Cost                          {3}{B}           Sorcery
 [ ]  3705  Haunting Voyage                          {4}{B}{B}        Sorcery
 [ ]  3706  Screaming Nemesis                        {2}{R}           Creature — Spirit
-[ ]  3707  Fire Lord Azula                          {1}{U}{B}{R}     Legendary Creature — Human Noble
+[x]  3707  Fire Lord Azula                          {1}{U}{B}{R}     Legendary Creature — Human Noble
 [ ]  3708  The Second Doctor                        {2}{W}{U}        Legendary Creature — Time Lord Doctor
 [x]  3709  Yavimaya Hollow                          {0}              Legendary Land
 [x]  3710  Absorb                                   {W}{U}{U}        Instant
@@ -4037,7 +4037,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4044  Colossification                          {5}{G}{G}        Enchantment — Aura
 [ ]  4045  Kefka, Dancing Mad                       {5}{B}{R}        Legendary Creature — Human Wizard
 [x]  4046  Innocent Blood                           {B}              Sorcery
-[ ]  4047  Alania, Divergent Storm                  {3}{U}{R}        Legendary Creature — Otter Wizard
+[x]  4047  Alania, Divergent Storm                  {3}{U}{R}        Legendary Creature — Otter Wizard
 [ ]  4048  Metallurgic Summonings                   {3}{U}{U}        Enchantment
 [ ]  4049  Old Stickfingers                         {X}{B}{G}        Legendary Creature — Horror
 [ ]  4050  Armageddon                               {3}{W}           Sorcery
