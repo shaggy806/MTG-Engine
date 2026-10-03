@@ -4282,12 +4282,6 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
   }
 }
 
-/**
- * An `"each-player-may"`: ask each player in turn, then apply the follow-ups
- * player by player. Each question — and each follow-up that stops to ask
- * something — parks the rest as a copy carrying its `progress`, beneath
- * whatever that step parked of its own, so it all happens in order.
- */
 /** Who an `"each-player-may"` asks: its scope's players, or the one who
  * controls what a target slot points at (nobody, for an empty slot). */
 function eachPlayerMayAsks(
@@ -4300,6 +4294,12 @@ function eachPlayerMayAsks(
   return player === undefined || !ctx.playersInScope("each-player").includes(player) ? [] : [player];
 }
 
+/**
+ * An `"each-player-may"`: ask each player in turn, then apply the follow-ups
+ * player by player. Each question — and each follow-up that stops to ask
+ * something — parks the rest as a copy carrying its `progress`, beneath
+ * whatever that step parked of its own, so it all happens in order.
+ */
 function applyEachPlayerMay(
   spec: Extract<EffectSpec, { kind: "each-player-may" }>,
   ctx: ResolutionContext,

@@ -77,6 +77,10 @@ export function targetSpecReadsX(spec: TargetSpec): boolean {
  * printed ones elsewhere (a channel ability's card in a hand — the ruling).
  * Once it has moved, its last-known information (rule 113.7a): as it last
  * existed on the battlefield, or, from another zone, the card it still is.
+ * A permanent's ability knows which stint on the battlefield its source was
+ * (`lastKnownRefs.source`, read before a "Sacrifice this" cost moved it), so
+ * a Mirrormade copying Mind Stone, sacrificed to draw, was an artifact — not
+ * the enchantment card it is in the graveyard.
  */
 export function abilitySourceTypes(
   state: GameState,
@@ -87,6 +91,16 @@ export function abilitySourceTypes(
   if (id === null) return [];
   const source = state.objects[id];
   if (source === undefined) return state.ceasedTokens?.[id]?.types ?? [];
+  const asPermanent = ability.lastKnownRefs?.source;
+  if (asPermanent !== undefined) {
+    if (source.zone === "battlefield" && (source.zoneChangeCount ?? 0) === asPermanent) {
+      return effectiveTypes(state, registry, source);
+    }
+    const known = [source.lastKnown, ...(source.earlierLastKnown ?? [])].find(
+      (k) => k !== undefined && k.zoneChangeCount === asPermanent,
+    );
+    if (known !== undefined) return known.types;
+  }
   const stint = ability.sourceZoneChangeCount;
   if (stint === undefined || (source.zoneChangeCount ?? 0) === stint) {
     return source.zone === "battlefield"

@@ -648,6 +648,27 @@ describe("Weaver of Harmony", () => {
     expect(zoneOf(game, second)).toBe("battlefield");
   });
 
+  it("reads a source its cost sacrificed as it last was: Mirrormade as Mind Stone was an artifact", () => {
+    const game = setUp();
+    const weaver = spawn(game, "Weaver of Harmony");
+    const stone = spawn(game, "Mind Stone", B);
+    const mirror = cast(game, A, "Mirrormade");
+    game.advanceUntil(settle);
+    expect(game.state.awaiting?.kind).toBe("choose-copy");
+    game.dispatch({ type: "choose-copy", player: A, copy: stone });
+    game.advanceUntil(quiet);
+    expect(game.characteristics(mirror).types).toEqual(["artifact"]);
+    // "{1}, {T}, Sacrifice Mind Stone: Draw a card" — Mirrormade is an
+    // enchantment card in the graveyard now, but its ability's source was an
+    // artifact (rule 113.7a).
+    game.dispatch({ type: "activate-ability", player: A, source: mirror, abilityIndex: 1, targets: [] });
+    expect(zoneOf(game, mirror)).toBe("graveyard");
+    const ability = abilitiesOnStack(game)[0];
+    expect(() =>
+      game.dispatch({ type: "activate-ability", player: A, source: weaver, abilityIndex: 0, targets: [obj(ability)] }),
+    ).toThrow();
+  });
+
   it("can't copy an ability from a non-enchantment source", () => {
     const game = setUp();
     const weaver = spawn(game, "Weaver of Harmony");
@@ -839,6 +860,20 @@ describe("Chain of Vapor", () => {
     game.advanceUntil(quiet);
     expect(zoneOf(game, mine)).toBe("hand");
     expect(game.eventsOfType("spell-copied")).toHaveLength(1);
+  });
+
+  it("asks whoever controlled the permanent as it left, not its owner", () => {
+    const game = setUp();
+    const stolen = spawn(game, "Grizzly Bears", B);
+    cast(game, A, "Act of Treason", [obj(stolen)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[stolen].controller).toBe(A);
+    const lands = landsOf(game, A).length;
+    cast(game, A, "Chain of Vapor", [obj(stolen)]);
+    answerSacrifice(game, A, true);
+    expect(zoneOf(game, stolen)).toBe("hand");
+    expect(game.state.objects[stolen].owner).toBe(B);
+    expect(landsOf(game, A)).toHaveLength(lands - 1);
   });
 
   it("declined, nothing more happens", () => {
