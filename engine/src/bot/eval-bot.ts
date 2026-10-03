@@ -223,6 +223,10 @@ const UNSAFE = -1e8;
  * blockers, and the first few cover what matters. */
 const MAX_MENACE_PAIRS = 6;
 
+/** Double blocks tried per attacker, for the same reason — see
+ * `declareBlockers`. */
+const MAX_GANG_PAIRS = 6;
+
 /**
  * Moves simulated per round of a combat climb. A combat simulation is far
  * dearer than a priority one — it runs blocks, damage and every trigger on
@@ -534,6 +538,10 @@ export class EvalBotController extends HeuristicBotController {
   } | null = null;
   /** See {@link DecisionAudit}. Written, never read. */
   lastDecision: DecisionAudit | null = null;
+  /** What the last priority search played in place of passing, when the
+   * search's best was to pass (a due cantrip — `isCantripDue`), so a replay
+   * of its scores can do the same (`scenario-fit.ts`). Written, never read. */
+  lastPassFallback: Action | null = null;
 
   constructor(
     playerId: PlayerId,
@@ -556,6 +564,7 @@ export class EvalBotController extends HeuristicBotController {
 
   act(view: ControllerView): Action {
     this.lastDecision = null;
+    this.lastPassFallback = null;
     const continued = this.continueBatch(view) ?? this.holdPass(view);
     this.passedOn = null;
     this.actedOn = null;
@@ -577,6 +586,8 @@ export class EvalBotController extends HeuristicBotController {
     // Candidates that help an opponent's attacker with something lasting:
     // kept only if the defending player dies (`opponentPump`).
     const mustKill = new Map<Action, PlayerId>();
+    // A cantrip due now (`isCantripDue`), played if the search would pass.
+    let cantrip: Action | null = null;
     // A read-only region: ranking targets folds every option's
     // characteristics, and nothing changes the state until the simulations
     // below, which run outside it.
@@ -601,7 +612,9 @@ export class EvalBotController extends HeuristicBotController {
         // Mana our own main phase could cast a spell with, spent in our upkeep
         // (`holdsManaForMain`): the rollouts never show that spell.
         if (this.holdsManaForMain(view.state, legal)) continue;
+        const due = this.isCantripDue(view.state, legal);
         for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
+          if (due) cantrip ??= action;
           const verdict = this.opponentPump(view.state, legal, action);
           if (verdict === "drop") continue;
           if (verdict !== "ok") mustKill.set(action, verdict.kills);
@@ -792,6 +805,9 @@ export class EvalBotController extends HeuristicBotController {
         stack: base + 1,
       };
     }
+    // A cantrip scores a wash against passing — see `isCantripDue`.
+    this.lastPassFallback = cantrip;
+    if (best.type === "pass-priority" && cantrip !== null) best = cantrip;
     this.lastDecision = audit("priority", budget);
     if (best.type === "pass-priority") this.rememberPass(view);
     else if (this.batch === null && view.state.awaiting === null) {
@@ -1192,7 +1208,20 @@ export class EvalBotController extends HeuristicBotController {
       if (power >= attacker.toughness || blockers.some((b) => b?.keywords.has("deathtouch"))) {
         value += creatureValue(attacker, w);
       }
-      for (const b of blockers) if (b !== undefined && kills(attacker, b)) value -= creatureValue(b, w);
+      // The attacker's damage kills what it can of the blockers, the most
+      // valuable first, as its controller would assign it — a 4/4 double
+      // blocked by two 3/3s kills one of them, not both.
+      let left = damage;
+      const deathtouch = attacker.keywords.has("deathtouch");
+      const byValue = blockers
+        .filter((b): b is CombatCreature => b !== undefined)
+        .sort((x, y) => creatureValue(y, w) - creatureValue(x, w));
+      for (const b of byValue) {
+        const needs = deathtouch ? 1 : b.toughness;
+        if (left < needs) continue;
+        left -= needs;
+        value -= creatureValue(b, w);
+      }
       return value;
     };
 
@@ -1215,6 +1244,34 @@ export class EvalBotController extends HeuristicBotController {
         let pairs = 0;
         for (let i = 0; i < able.length && pairs < MAX_MENACE_PAIRS; i += 1) {
           for (let j = i + 1; j < able.length && pairs < MAX_MENACE_PAIRS; j += 1) {
+            const move = [
+              { blocker: able[i].blocker, attacker },
+              { blocker: able[j].blocker, attacker },
+            ];
+            out.push({ next: [...current, ...move], estimate: estimate(move) });
+            pairs += 1;
+          }
+        }
+      }
+      // Two blockers onto one attacker that neither kills alone: added one at
+      // a time, the first is just a creature lost, so the climb never got to
+      // the second (two 3/3s let a 4/4 through rather than trade one for it).
+      const blocked = new Set(current.map((b) => b.attacker));
+      const attackersHere = new Set(free.flatMap((e) => e.canBlock));
+      for (const attacker of attackersHere) {
+        if (blocked.has(attacker) || legal.menaceAttackers.includes(attacker)) continue;
+        const target = creatures.get(attacker);
+        if (target === undefined) continue;
+        const able = free.filter((e) => {
+          const b = creatures.get(e.blocker);
+          return e.canBlock.includes(attacker) && b !== undefined && !kills(b, target);
+        });
+        let pairs = 0;
+        for (let i = 0; i < able.length && pairs < MAX_GANG_PAIRS; i += 1) {
+          for (let j = i + 1; j < able.length && pairs < MAX_GANG_PAIRS; j += 1) {
+            const x = creatures.get(able[i].blocker);
+            const y = creatures.get(able[j].blocker);
+            if (x === undefined || y === undefined || x.damage + y.damage < target.toughness) continue;
             const move = [
               { blocker: able[i].blocker, attacker },
               { blocker: able[j].blocker, attacker },

@@ -1630,6 +1630,215 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
 
+  asked({
+    name: "double-blocks to kill a bigger attacker",
+    rule: "Two 3/3s block a 4/4 together: one dies, and so does the 4/4.",
+    position(registry) {
+      // Blocks were added one at a time, and either 3/3 alone is just a
+      // creature lost, so the climb never reached the pair.
+      const game = table(registry, [A, B], B);
+      onBoard(game, "Centaur Courser", A);
+      onBoard(game, "Centaur Courser", A);
+      const baloth = onBoard(game, "Rumbling Baloth", B);
+      const failed = bobAttacks(game, [baloth]);
+      if (failed !== null) return failed;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: blocksOf(action)?.filter((b) => b.attacker === baloth).length === 2,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "flashes in Ambush Viper to block an attacker",
+    rule: "A flash deathtouch creature comes down after attacks, in front of the biggest.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      lands(game, "Forest", A, 2);
+      const viper = game.debugSpawn("Ambush Viper", A, "hand");
+      const wurm = onBoard(game, "Craw Wurm", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === B);
+      game.dispatch({ type: "declare-attackers", player: B, attackers: [{ attacker: wurm, defender: A }] });
+      game.advanceUntil((s) => s.priority.holder === A || s.result.over);
+      if (game.state.turn.step !== "declare-attackers") {
+        return { passed: false, detail: `reached ${game.state.turn.step}, not the attack` };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === viper,
+          detail: `with a 6/4 attacking, chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
+  // --- planeswalkers ---------------------------------------------------------
+  {
+    name: "attacks an undefended planeswalker",
+    rule: "At a four-player table, a 3/3 kills an unprotected Garruk rather than chip a player at 40.",
+    run(weights, registry, makeBot) {
+      const game = table(registry, [A, B, C, D], A);
+      for (const p of [A, B, C, D]) game.state.players[p].life = 40;
+      onBoard(game, "Centaur Courser", A);
+      const garruk = onBoard(game, "Garruk Wildspeaker", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.length === 1 && attackers[0].defender === garruk,
+        detail: `attacked ${attackers.map((d) => cardOf(game, d.defender as ObjectId)).join(", ") || "nothing"}`,
+      };
+    },
+  },
+  {
+    name: "takes lethal on the player over their planeswalker",
+    rule: "Two 3/3s at a player on 6 win; at Garruk they don't.",
+    run(weights, registry, makeBot) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Centaur Courser", A);
+      onBoard(game, "Centaur Courser", A);
+      onBoard(game, "Garruk Wildspeaker", B);
+      game.state.players[B].life = 6;
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      return {
+        passed: attackers.length === 2 && attackers.every((d) => d.defender === B),
+        detail: `attacked ${attackers.map((d) => String(d.defender)).join(", ") || "nothing"}`,
+      };
+    },
+  },
+  asked({
+    name: "bolts a planeswalker",
+    rule: "Three damage kills a three-loyalty Garruk; at 40 life the player can wait.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      game.state.players[B].life = 40;
+      onBoard(game, "Mountain", A);
+      const garruk = onBoard(game, "Garruk Wildspeaker", B);
+      game.debugSpawn("Lightning Bolt", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === garruk,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "Garruk overruns for lethal",
+    rule: "Garruk's -4 on three 2/2s is fifteen trampling damage at a player on 12.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      const garruk = onBoard(game, "Garruk Wildspeaker", A);
+      game.state.objects[garruk].counters.loyalty = 4;
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Grizzly Bears", A);
+      game.state.players[B].life = 12;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === garruk && action.abilityIndex === 2,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "Elspeth wipes the big creatures",
+    rule: "Facing three 6/4s, Elspeth, Sun's Champion's -3 destroys them.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      const elspeth = onBoard(game, "Elspeth, Sun's Champion", A);
+      for (let i = 0; i < 3; i += 1) onBoard(game, "Craw Wurm", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === elspeth && action.abilityIndex === 1,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "blocks to protect its planeswalker",
+    rule: "A free block on the creature attacking our Garruk.",
+    position(registry) {
+      const game = table(registry, [A, B], B);
+      const garruk = onBoard(game, "Garruk Wildspeaker", A);
+      const courser = onBoard(game, "Centaur Courser", A);
+      const bears = onBoard(game, "Grizzly Bears", B);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === B);
+      game.dispatch({ type: "declare-attackers", player: B, attackers: [{ attacker: bears, defender: garruk }] });
+      game.advanceUntil((s) => (s.awaiting?.kind === "blockers" && s.awaiting.player === A) || s.result.over);
+      if (game.state.awaiting?.kind !== "blockers") return { passed: false, detail: "alice was never asked to block" };
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: blocksOf(action)?.some((b) => b.blocker === courser && b.attacker === bears) === true,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
+  // --- cantrips --------------------------------------------------------------
+  ...(
+    [
+      ["casts Opt at the end of the turn before its own", [A, B], true],
+      ["holds Opt earlier in the round", [A, B, C], false],
+    ] as const
+  ).map(([name, players, cast]) =>
+    asked({
+      name,
+      rule: "An instant cantrip waits for the last window before our untap, then is cast.",
+      position(registry) {
+        // A cantrip replaces itself, so it scored a wash and v2 never cast
+        // Opt at all (`isCantripDue`). At three players, Bob's end step is
+        // followed by Carol's turn: the mana stays up a while longer.
+        const game = table(registry, [...players], B);
+        onBoard(game, "Island", A);
+        const opt = game.debugSpawn("Opt", A, "hand");
+        game.advanceUntil(
+          (s) => (s.turn.step === "end" && s.priority.holder === A && s.zones.shared.stack.length === 0) || s.result.over,
+        );
+        if (game.state.turn.step !== "end") return { passed: false, detail: "never reached bob's end step" };
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "cast-spell" && action.card === opt) === cast,
+            detail: `chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "casts Ponder with nothing better to do",
+    rule: "A sorcery cantrip is cast in our own main phase rather than held.",
+    position(registry) {
+      const game = table(registry, [A, B], A);
+      onBoard(game, "Island", A);
+      const ponder = game.debugSpawn("Ponder", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === ponder,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+
   // --- attacks ---------------------------------------------------------------
   {
     name: "does not attack into a bigger untapped blocker",

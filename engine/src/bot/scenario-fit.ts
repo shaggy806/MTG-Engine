@@ -55,6 +55,9 @@ export interface ScenarioRecord {
   readonly chosenRight: boolean;
   /** A priority window's replay is exact; a decision's may not be. */
   readonly exact: boolean;
+  /** What the bot plays instead when its best answer is to pass — a due
+   * cantrip (`EvalBotController.lastPassFallback`). */
+  readonly passFallback?: Action | null;
 }
 
 /**
@@ -89,6 +92,7 @@ export function recordScenario(
     chosen,
     chosenRight: position.judge(chosen).passed,
     exact,
+    passFallback: bot.lastPassFallback,
   };
 }
 
@@ -106,6 +110,12 @@ export function replayChoice(record: ScenarioRecord, weights: EvalWeights): numb
       bestScore = score;
     }
   });
+  const fallback = record.passFallback;
+  if (fallback != null && record.answers[best]?.action.type === "pass-priority") {
+    const key = JSON.stringify(fallback);
+    const at = record.answers.findIndex((a) => JSON.stringify(a.action) === key);
+    if (at !== -1) return at;
+  }
   return best;
 }
 

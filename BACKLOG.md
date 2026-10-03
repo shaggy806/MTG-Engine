@@ -170,15 +170,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
 base, retire v3. One line per step still open:
 
-- **More training scenarios.** 72 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
+- **More training scenarios.** 83 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
   added blocks, attack targets, answers on the stack (a pump against burn, Counterspell and
   Heroic Intervention against a wrath, Fog against lethal) and sequencing; two found bugs,
   since fixed (no answer to its own wrath, no chip damage at four players). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which `bot:scenarios` and `bot:fit-scenarios`
   read as training scenarios, as does each blunder `bot:behaviour` shows. `npm run
   bot:captures -w engine` lists them with v2's answer today; once one is fixed, `-- resolve`
-  moves it to `captures/resolved/`, where it gates. Not yet covered: mulligans (they have
-  their own `mulligan-policy.test.ts`), planeswalkers, and multi-blocker combat.
+  moves it to `captures/resolved/`, where it gates. Planeswalkers, double blocks, flash
+  and cantrips added the same day. Not yet covered: mulligans (`mulligan-policy.test.ts`).
 
 Beyond that plan:
 

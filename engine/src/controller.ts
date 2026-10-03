@@ -1600,6 +1600,35 @@ export class HeuristicBotController extends AutomaticController {
     return effect.includes('"search-library"') && effect.includes('"destination":"battlefield"');
   }
 
+  /** The end step of the player whose turn comes right before ours, with
+   * nothing on the stack: the last window before our untap step, so mana
+   * left here is mana gone. */
+  protected isEndOfTurnBeforeOurs(state: GameState): boolean {
+    if (state.zones.shared.stack.length > 0 || state.turn.step !== "end") return false;
+    const living = state.turnOrder.filter((p) => !state.players[p].hasLost);
+    const mine = living.indexOf(this.playerId);
+    const before = living[(mine - 1 + living.length) % living.length];
+    return before !== this.playerId && activePlayerOf(state) === before;
+  }
+
+  /**
+   * A cantrip at the moment to cast it, when the search would pass: a spell
+   * that only draws and filters (`isCardFlow` — Opt, Brainstorm, Ponder),
+   * an instant at the end of the turn before ours, a sorcery in our own main
+   * phase. It replaces itself, so the evaluation scores it a wash, and what
+   * it's for — seeing more cards, choosing among them — leaves nothing in
+   * the state to score: v2 held Opt all game, in its own turn and at the
+   * end of everyone else's.
+   */
+  protected isCantripDue(state: GameState, legal: LegalAction): boolean {
+    if (legal.kind !== "cast-spell" || !this.registry.has(legal.cardName)) return false;
+    if (legal.castModal !== undefined || legal.face !== undefined) return false;
+    const def = this.registry.get(legal.cardName);
+    if (!isCardFlow(def.effect)) return false;
+    if (def.types.includes("instant")) return this.isEndOfTurnBeforeOurs(state);
+    return def.types.includes("sorcery");
+  }
+
   /**
    * A creature that sacrifices itself to put a land onto the battlefield
    * (Sakura-Tribe Elder), at the moment to do it: the end step of the player
@@ -1620,11 +1649,7 @@ export class HeuristicBotController extends AutomaticController {
     if (ability === undefined || ability.cost.sacrifice !== "self" || ability.cost.mana !== null) return false;
     const effect = JSON.stringify(ability.effect ?? null);
     if (!effect.includes('"search-library"') || !effect.includes('"destination":"battlefield"')) return false;
-    if (state.zones.shared.stack.length > 0 || state.turn.step !== "end") return false;
-    const living = state.turnOrder.filter((p) => !state.players[p].hasLost);
-    const mine = living.indexOf(this.playerId);
-    const before = living[(mine - 1 + living.length) % living.length];
-    if (before === this.playerId || activePlayerOf(state) !== before) return false;
+    if (!this.isEndOfTurnBeforeOurs(state)) return false;
     const lands = state.zones.shared.battlefield.filter((id) => {
       const o = state.objects[id];
       return o?.controller === this.playerId && computeCharacteristics(state, this.registry, id).types.includes("land");
@@ -2451,6 +2476,39 @@ type Sweep = Extract<
   EffectSpec,
   { readonly kind: "destroy-all" | "damage-all" | "exile-all" | "return-to-hand-all" }
 >;
+
+/** Whether `effect` only draws and filters our own cards — draws, scries,
+ * surveils, and looks that keep or put back — and draws at least one. */
+function isCardFlow(effect: EffectSpec | null | undefined): boolean {
+  let draws = false;
+  const walk = (e: EffectSpec | null | undefined): boolean => {
+    if (e === null || e === undefined) return true;
+    switch (e.kind) {
+      case "draw":
+        if (e.who !== undefined || e.target !== undefined) return false;
+        draws = true;
+        return true;
+      case "scry":
+      case "surveil":
+        return walk(e.then);
+      case "look-and-choose":
+        return (
+          (e.zone === "library" || e.zone === "hand") &&
+          (e.destination === "hand" || e.destination === "library-top") &&
+          e.then === undefined
+        );
+      case "sequence":
+        return e.effects.every(walk);
+      case "may":
+        return walk(e.effect);
+      case "shuffle-library":
+        return true;
+      default:
+        return false;
+    }
+  };
+  return walk(effect) && draws;
+}
 
 /** The mass removal in `effect` — destroy, damage, exile or bounce "all"
  * — through sequences and "may"s. */
