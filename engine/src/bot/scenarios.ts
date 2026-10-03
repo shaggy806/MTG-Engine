@@ -1176,6 +1176,10 @@ const SCENARIOS: readonly BotScenario[] = [
         const game = table(registry, [A, B, C, D], active);
         lands(game, "Forest", A, 2);
         const elder = onBoard(game, "Sakura-Tribe Elder", A);
+        // Something for it to block: our own blockers count only where they'd
+        // hold an attack off (`features.ts`'s `deterringBlockers`), and the
+        // 0/2 survives a 1/1.
+        onBoard(game, "Llanowar Elves", C);
         game.advanceUntil(
           (s) =>
             (s.turn.step === "end" && s.priority.holder === A && s.zones.shared.stack.length === 0) ||
@@ -1642,14 +1646,14 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "attacks the open player, not one with a blocker",
     rule: "At a four-player table, a 2/2 goes at the opponent who can't block it.",
-    kind: "training",
     run(weights, registry, makeBot) {
-      // v2 attacks with nothing, here and with no creature anywhere but its
+      // v2 attacked with nothing, here and with no creature anywhere but its
       // own, at three players as at four. The leading opponent counts in
       // full and the rest at `otherOpponents` over their average, so two
       // damage to one of three opponents at 20 is worth about a quarter
-      // point, and tapping the 2/2 costs `untappedCreatures` 0.5 — a
-      // blocker kept home against no attacker at all.
+      // point, and tapping the 2/2 cost `untappedCreatures` 0.5 — for a
+      // blocker that could only chump the 3/3s. Our blockers now count only
+      // where they'd hold an attack off (`features.ts`, `deterringBlockers`).
       const game = table(registry, [A, B, C, D], A);
       onBoard(game, "Grizzly Bears", A);
       onBoard(game, "Centaur Courser", B);
@@ -1761,12 +1765,13 @@ const SCENARIOS: readonly BotScenario[] = [
   {
     name: "Yahenni sacrifices to survive its own wrath",
     rule: "Having cast a wrath, Yahenni's controller sacrifices into it before it resolves.",
-    kind: "training",
     run(weights, registry, makeBot) {
       // The live game's likelier shape (Mardu Surge runs Blasphemous Act).
-      // One bot plays both windows: `holdPass` passes on a spell the bot
+      // One bot plays both windows: `holdPass` passed on a spell the bot had
       // just cast, since the cast was scored as everyone passing until it
-      // resolved — a score that never includes a response of our own.
+      // resolved — a score that never includes a response of our own. It
+      // now searches that window when the spell is our own wipe taking a
+      // creature of ours (`ownWipeOnStack`).
       const game = table(registry, [A, B], A);
       lands(game, "Mountain", A, 8);
       const yahenni = onBoard(game, "Yahenni, Undying Partisan", A);

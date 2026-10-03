@@ -45,9 +45,10 @@ import type { CardDefinition, Keyword } from "../cards/define.js";
 import { entersToCounter } from "../effect-worth.js";
 import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
-import type { PlayerId } from "../primitives.js";
+import type { ObjectId, PlayerId } from "../primitives.js";
 import { POISON_LETHAL, printedCardName } from "../state.js";
 import { playersAttackableNextTurn } from "../combat/eligibility.js";
+import { canBlock, combatCreatures } from "./combat-math.js";
 import { COMMANDER_DAMAGE_LETHAL } from "../view.js";
 import type { GameObject, GameState } from "../state.js";
 
@@ -441,6 +442,39 @@ export function playerFeatures(
   );
 }
 
+/**
+ * Our untapped creatures that would hold off an attack next turn: each can
+ * block a creature an opponent could attack us with and kill it or survive
+ * it. A 2/2 kept home against 3/3s can only chump, which the crackback
+ * check already prices where it matters (lethal), and one kept home against
+ * no attacker at all blocks nothing. Counted in full, they made tapping any
+ * creature to attack cost `untappedCreatures`, and at three or four players
+ * chip damage to one of several opponents scores less than that: v2 never
+ * swung a lone 2/2 even at an empty table ("attacks the open player, not one
+ * with a blocker").
+ */
+function deterringBlockers(state: GameState, registry: CardRegistry, player: PlayerId): Set<ObjectId> {
+  const out = new Set<ObjectId>();
+  const mine = combatCreatures(state, registry, player, true);
+  if (mine.length === 0) return out;
+  const attackers = state.turnOrder
+    .filter((q) => q !== player && !state.players[q].hasLost)
+    .flatMap((q) => combatCreatures(state, registry, q, false))
+    .filter((a) => a.canAttack && playersAttackableNextTurn(state, registry, a.id).includes(player));
+  for (const blocker of mine) {
+    if (out.has(blocker.id)) continue;
+    const holds = attackers.some(
+      (attacker) =>
+        canBlock(blocker, attacker) &&
+        (blocker.damage >= attacker.toughness ||
+          blocker.keywords.has("deathtouch") ||
+          (attacker.damage < blocker.toughness && !attacker.keywords.has("deathtouch"))),
+    );
+    if (holds) out.add(blocker.id);
+  }
+  return out;
+}
+
 function playerFeaturesUncached(
   state: GameState,
   registry: CardRegistry,
@@ -471,6 +505,8 @@ function playerFeaturesUncached(
   /** Noncreature tokens by name — see `TOKEN_CAP` — and whether they're
    * one-shot resources (`isResourceToken`). */
   const tokenPiles = new Map<string, { count: number; resource: boolean }>();
+  // Our own blockers count only where one would hold an attack off.
+  const deterring = isMe ? deterringBlockers(state, registry, player) : null;
 
   for (const id of state.zones.shared.battlefield) {
     const object = state.objects[id];
@@ -491,7 +527,9 @@ function playerFeaturesUncached(
       toughness += c.toughness * n;
       if (count(c, EVASION) > 0) evasivePower += damage * n;
       combatKeywords += count(c, COMBAT_KEYWORDS) * n;
-      if (!object.tapped && !c.restrictions.has("cant-block")) untappedCreatures += n;
+      if (!object.tapped && !c.restrictions.has("cant-block") && (deterring?.has(id) ?? true)) {
+        untappedCreatures += n;
+      }
       // A creature that can't attack deals none of its power: Pacifism, a
       // defender. `power` counts it all the same — and so, before this, did
       // the bot, which is how it came to pacify its own creatures for free.

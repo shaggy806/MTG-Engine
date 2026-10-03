@@ -382,11 +382,21 @@ describe("evaluateState features", () => {
     expect(delta({ combatKeywords: 1 }, (g) => void g.debugSpawn("Typhoid Rats", A))).toBe(1);
   });
 
-  it("counts untapped creatures as blockers", () => {
-    expect(delta({ untappedCreatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(1);
-    expect(
-      delta({ untappedCreatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A, "battlefield", { tapped: true })),
-    ).toBe(0);
+  it("counts our untapped creatures as blockers only where they'd hold an attack off", () => {
+    // Bob's attacker is tapped so his own untapped count stays out of it: it
+    // untaps for his turn all the same.
+    const against = (attacker: string, mine: { tapped?: boolean } = {}) =>
+      delta({ untappedCreatures: 1 }, (g) => {
+        g.debugSpawn(attacker, B, "battlefield", { tapped: true });
+        g.debugSpawn("Grizzly Bears", A, "battlefield", mine);
+      });
+    // A 2/2 kills a 2/2 attacker, so it holds one off.
+    expect(against("Grizzly Bears")).toBe(1);
+    expect(against("Grizzly Bears", { tapped: true })).toBe(0);
+    // Against a 3/3 it could only chump.
+    expect(against("Centaur Courser")).toBe(0);
+    // And with nothing to attack us, it blocks nothing.
+    expect(delta({ untappedCreatures: 1 }, (g) => void g.debugSpawn("Grizzly Bears", A))).toBe(0);
   });
 
   it("pays full value for lands up to the cap and less after it", () => {
