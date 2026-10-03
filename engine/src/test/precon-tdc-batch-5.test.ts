@@ -136,7 +136,12 @@ describe("Walking Bulwark", () => {
     const game = setUp();
     const bulwark = ready(game, "Walking Bulwark");
     const gargoyle = ready(game, "Wakestone Gargoyle");
-    game.advanceUntil((s) => s.turn.step === "beginning-of-combat" && s.priority.holder === A);
+    // Offered in the main phase, refused at the beginning of combat.
+    expect(
+      game.legalActions(A).some((o) => o.kind === "activate-ability" && o.source === bulwark),
+    ).toBe(true);
+    game.advanceUntil((s) => s.turn.step === "begin-combat" && s.priority.holder === A);
+    expect(game.state.turn.step).toBe("begin-combat");
     expect(() =>
       game.dispatch({ type: "activate-ability", player: A, source: bulwark, abilityIndex: 0, targets: [obj(gargoyle)] }),
     ).toThrow();
