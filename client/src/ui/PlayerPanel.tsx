@@ -21,6 +21,9 @@ export interface PlayerPanelProps {
   /** Whether this seat's connection is currently live. `null` when unknown
    * (e.g. no room-level seat data yet). */
   readonly online?: boolean | null
+  /** A bot is playing this seat: it shows a robot rather than the online
+   * dot, which for a bot (no connection) read as "disconnected". */
+  readonly bot?: boolean
   /** For resolving this player's chosen display name, if any. */
   readonly seats?: readonly SeatStatus[]
   /** This player's own cards currently in the (shared) exile zone. */
@@ -73,6 +76,7 @@ export function PlayerPanel({
   hasPriority,
   waiting = null,
   online = null,
+  bot = false,
   seats,
   exileSize = 0,
   wentFirst = false,
@@ -113,7 +117,11 @@ export function PlayerPanel({
       data-player-id={info.id}
     >
       <div className="pp-head">
-        {online === null ? null : (
+        {bot ? (
+          <span className="pp-bot" title="played by a bot" role="img" aria-label="bot">
+            🤖
+          </span>
+        ) : online === null ? null : (
           <span
             className={`pp-online-dot ${online ? 'online' : 'offline'}`}
             title={online ? 'connected' : 'disconnected'}

@@ -334,9 +334,6 @@ Follow-on ideas, approved by the user on 2026-09-30:
   fraction of the size. The game page loads no definitions up front. **Add a progress
   indicator while the library loads** (`client/src/library/LibraryPage.tsx`): the user wants one
   shown while those shards come in.
-- **A bot's seat shows the red "disconnected" dot.** Replace it with a robot emoji when a bot
-  is playing that seat (`client/src/ui/PlayerPanel.tsx`, the `online` dot titled
-  connected/disconnected).
 - **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
   `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses

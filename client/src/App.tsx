@@ -4124,6 +4124,7 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
           : null
       }
       online={onlineOf(pid)}
+      bot={game.seats.find((s) => s.player === pid)?.isBot === true}
       seats={game.seats}
       exileSize={exileOf(pid).length}
       wentFirst={pid === view.startingPlayer}

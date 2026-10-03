@@ -538,6 +538,12 @@
 .pp-online-dot.offline {
   background: var(--bad);
 }
+/* A bot's seat, in the online dot's place. */
+.pp-bot {
+  align-self: center;
+  font-size: 0.85em;
+  line-height: 1;
+}
 .pp-name {
   font-weight: 600;
 }
