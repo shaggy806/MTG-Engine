@@ -98,6 +98,12 @@ even 25%), each pinned by a test or a gate scenario:
   that could go nowhere forever (a v1 run's seed 617); the turn now goes on without an active
   player (rule 800.4j) — no draw, attackers or cleanup discard for them.
 
+Then `tokenEngines` (`shipped-2026-10-03`): the creature tokens a round a permanent keeps making
+— Hero of Bladehold's two Soldiers each attack, Young Pyromancer's Elemental, Elspeth's +1 — rated
+like `drawEngines` and priced at 2 a token. Mardu Surge runs fourteen such engines, Token Triumph
+eleven; at 0 Hero of Bladehold was a 3/4, and removal took a vanilla 4/4 over it ("removal takes
+the token engine"). Benched level: 24.5% [20.5, 28.9] over 400 four-player games.
+
 ### Left
 
 - **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
@@ -107,8 +113,8 @@ even 25%), each pinned by a test or a gate scenario:
   point of life worth ~20×power/life²; commander damage is linear. A patch (life scale from the
   starting state, a curve for commander damage) removed visible chumps but changed nothing
   measurable in 18 games.
-- **Token payoffs and engines undervalued**: Deadly Dispute, Krenko, Hero of Bladehold cast far
-  less by v2 than v1; attack triggers and "leaves the battlefield" payoffs aren't valued.
+- **Token payoffs beyond engines**: what a token engine keeps making is priced now (below), but
+  Deadly Dispute-style sacrifice outlets and "leaves the battlefield" payoffs still aren't.
 - **Neither bot goes wide** into a board of blockers with many small creatures.
 - **Premium removal fired early** at weak targets. A flat reserve — cheap instant removal
   counted in `answers` at 3, like a counterspell — was tried 2026-10-03 and dropped: it held

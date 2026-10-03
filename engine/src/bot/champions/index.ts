@@ -37,6 +37,7 @@ export interface Champion {
 }
 
 import { SHIPPED_2026_10_02 } from "./shipped-2026-10-02.js";
+import { SHIPPED_2026_10_03 } from "./shipped-2026-10-03.js";
 import { SHIPPED_2026_09_27C } from "./shipped-2026-09-27c.js";
 import { SHIPPED_2026_09_27B } from "./shipped-2026-09-27b.js";
 import { SHIPPED_2026_09_27 } from "./shipped-2026-09-27.js";
@@ -53,6 +54,7 @@ import { RAMP } from "./ramp.js";
  * *different*, not to be good.
  */
 export const CHAMPIONS: readonly Champion[] = [
+  SHIPPED_2026_10_03,
   SHIPPED_2026_10_02,
   SHIPPED_2026_09_27C,
   SHIPPED_2026_09_27B,
@@ -74,6 +76,7 @@ export function championById(id: string): Champion {
 }
 
 export {
+  SHIPPED_2026_10_03,
   SHIPPED_2026_10_02,
   SHIPPED_2026_09_27C,
   SHIPPED_2026_09_27B,

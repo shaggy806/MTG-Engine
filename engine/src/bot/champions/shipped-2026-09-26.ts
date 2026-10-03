@@ -61,6 +61,7 @@ export const SHIPPED_2026_09_26: Champion = {
     answers: 0,
     // Scored as `otherPermanents` was before one-shot tokens got their own term.
     resourceTokens: 2,
+    tokenEngines: 0,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.5,

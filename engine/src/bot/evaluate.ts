@@ -149,6 +149,9 @@ export interface EvalWeights {
    * Food — up to `TOKEN_CAP` of a kind; past it they're `extraTokens`. One
    * use each, so worth less than a permanent that stays. */
   readonly resourceTokens: number;
+  /** Creature tokens a round our permanents keep making (`features.ts`):
+   * Hero of Bladehold, Young Pyromancer, Elspeth, Sun's Champion. */
+  readonly tokenEngines: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -311,6 +314,13 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // `otherPermanents` (2) before 2026-10-02, a Treasure was worth as much as
   // the Sol Ring it could pay for, and v2 wouldn't trade one for the other.
   resourceTokens: 0.5,
+  // A creature token a round at 2, about half the token itself: the engine
+  // has to survive and, for an attack trigger, attack. At 0 (before
+  // 2026-10-03) Hero of Bladehold was priced as a 3/4 — the deck autopsies
+  // found the token decks' engines cast far less by v2 than by v1, and
+  // removal went at a vanilla 4/4 over the Hero ("removal takes the token
+  // engine").
+  tokenEngines: 2,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

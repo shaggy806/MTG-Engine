@@ -90,6 +90,7 @@ export const FEATURE_KEYS = [
   "threat",
   "answers",
   "resourceTokens",
+  "tokenEngines",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -347,14 +348,67 @@ function drawsPerFiring(effect: unknown, unless = false): number {
   );
 }
 
-/** A draw engine's cards a round of the table, as `fixed + perOpponent` ×
- * the opponents still in: see {@link drawRate}. */
-interface DrawRate {
+/** An engine's output a round of the table, as `fixed + perOpponent` × the
+ * opponents still in: see {@link engineRate}. */
+interface EngineRate {
   readonly fixed: number;
   readonly perOpponent: number;
 }
 
-const engineMemo = new WeakMap<CardDefinition, DrawRate>();
+/**
+ * What a permanent keeps making each round of the table, one firing making
+ * what `perFiring` says. A trigger on what an opponent does fires once per
+ * opponent a round (half that when only their second draw or spell a turn
+ * counts, and once in all when it's their attack on us); one on anyone's
+ * spell, draw or step once per player; anything else — our own upkeep, our
+ * own spells, combat, a creature entering or dying — about once. Not a
+ * one-shot (`isOneShot`). Activated abilities `repeatable` keeps, which
+ * usually share a tap or the mana, count the best of them once.
+ */
+function engineRate(
+  def: CardDefinition,
+  perFiring: (effect: unknown) => number,
+  repeatable: (ability: CardDefinition["activated"][number]) => boolean,
+): EngineRate {
+  let fixed = 0;
+  let perOpponent = 0;
+  for (const t of def.triggered) {
+    if (isOneShot(t.trigger)) continue;
+    const made = perFiring(t.effect);
+    if (made === 0) continue;
+    const trigger = t.trigger as {
+      readonly on: string;
+      readonly who?: unknown;
+      readonly nthEachTurn?: unknown;
+      readonly attackingYou?: unknown;
+    };
+    // An intervening "if" (rule 603.4) gates every firing — Ophiomancer
+    // makes a Snake each upkeep only while it has none — so it's about once,
+    // however many players' steps it watches. An opponent attacking *us*
+    // (Ever-Watching Threshold, Isperia) is one of their targets, not every
+    // opponent's every turn: about once too.
+    if (t.condition !== undefined) {
+      fixed += made;
+    } else if (trigger.who === "opponent" && trigger.attackingYou !== true) {
+      perOpponent += made * (typeof trigger.nthEachTurn === "number" && trigger.nthEachTurn > 1 ? 0.5 : 1);
+    } else if (
+      trigger.who === "any" &&
+      (trigger.on === "cast-spell" || trigger.on === "draws" || trigger.on === "step-begins")
+    ) {
+      fixed += made;
+      perOpponent += made;
+    } else {
+      fixed += made;
+    }
+  }
+  let activated = 0;
+  for (const a of def.activated) {
+    if (repeatable(a)) activated = Math.max(activated, perFiring(a.effect));
+  }
+  return { fixed: fixed + activated, perOpponent };
+}
+
+const drawMemo = new WeakMap<CardDefinition, EngineRate>();
 
 /**
  * How many cards a permanent keeps drawing its controller each round of the
@@ -365,55 +419,76 @@ const engineMemo = new WeakMap<CardDefinition, DrawRate>();
  * Phyrexian Arena at a quarter of a Grizzly Bears, because nothing counted
  * what it keeps doing.
  *
- * By rate, so Rhystic Study, which draws off every opponent's spell, isn't
- * scored the same as Phyrexian Arena's one card a turn. A trigger on what an
- * opponent does fires once per opponent a round (half that when only their
- * second draw or spell a turn counts, and once in all when it's their attack
- * on us); one on anyone's spell, draw or step
- * once per player; anything else — our own upkeep, our own spells, combat,
- * a creature entering or dying — about once. Each firing draws what
- * {@link drawsPerFiring} says. Activated abilities, which usually share a tap
- * or the mana, count the best of them once. Arena is 1 by construction, so
- * `drawEngines` prices a card a round.
+ * By rate ({@link engineRate}), so Rhystic Study, which draws off every
+ * opponent's spell, isn't scored the same as Phyrexian Arena's one card a
+ * turn. Each firing draws what {@link drawsPerFiring} says. Arena is 1 by
+ * construction, so `drawEngines` prices a card a round.
  */
 function drawRate(def: CardDefinition, opponents: number): number {
-  let rate = engineMemo.get(def);
+  let rate = drawMemo.get(def);
   if (rate === undefined) {
-    let fixed = 0;
-    let perOpponent = 0;
-    for (const t of def.triggered) {
-      if (isOneShot(t.trigger)) continue;
-      const cards = drawsPerFiring(t.effect);
-      if (cards === 0) continue;
-      const trigger = t.trigger as {
-        readonly on: string;
-        readonly who?: unknown;
-        readonly nthEachTurn?: unknown;
-        readonly attackingYou?: unknown;
-      };
-      // An opponent attacking *us* (Ever-Watching Threshold, Isperia) is one
-      // of their targets, not every opponent's every turn: about once.
-      if (trigger.who === "opponent" && trigger.attackingYou !== true) {
-        perOpponent += cards * (typeof trigger.nthEachTurn === "number" && trigger.nthEachTurn > 1 ? 0.5 : 1);
-      } else if (
-        trigger.who === "any" &&
-        (trigger.on === "cast-spell" || trigger.on === "draws" || trigger.on === "step-begins")
-      ) {
-        fixed += cards;
-        perOpponent += cards;
-      } else {
-        fixed += cards;
-      }
-    }
-    let activated = 0;
-    for (const a of def.activated) {
-      if (a.cost.sacrifice === "self" || isManaAbility(a)) continue;
-      activated = Math.max(activated, drawsPerFiring(a.effect));
-    }
-    rate = { fixed: fixed + activated, perOpponent };
-    engineMemo.set(def, rate);
+    rate = engineRate(
+      def,
+      (effect) => drawsPerFiring(effect),
+      (a) => a.cost.sacrifice !== "self" && !isManaAbility(a),
+    );
+    drawMemo.set(def, rate);
   }
   return Math.min(DRAW_RATE_CAP, rate.fixed + rate.perOpponent * opponents);
+}
+
+/** The most creature tokens one engine is credited a round, for the same
+ * reasons as {@link DRAW_RATE_CAP}. */
+const TOKEN_RATE_CAP = 3;
+
+/** Creature tokens one firing of `effect` makes its controller: the largest
+ * fixed `create-token` count in it (1 for a counted one), of a token that's
+ * a creature. 0 if it makes none, or makes them for someone else. */
+function tokensPerFiring(registry: CardRegistry, effect: unknown): number {
+  if (effect === null || typeof effect !== "object") return 0;
+  if (Array.isArray(effect)) return Math.max(0, ...effect.map((e) => tokensPerFiring(registry, e)));
+  const node = effect as {
+    readonly kind?: unknown;
+    readonly token?: unknown;
+    readonly count?: unknown;
+    readonly who?: unknown;
+  };
+  if (node.kind === "create-token" && (node.who === undefined || node.who === "you")) {
+    if (typeof node.token !== "string" || !registry.has(node.token)) return 0;
+    if (!registry.get(node.token).types.includes("creature")) return 0;
+    return typeof node.count === "number" ? node.count : 1;
+  }
+  return Math.max(
+    0,
+    ...Object.values(effect).map((value) =>
+      value !== null && typeof value === "object" ? tokensPerFiring(registry, value) : 0,
+    ),
+  );
+}
+
+const tokenMemo = new WeakMap<CardDefinition, EngineRate>();
+
+/**
+ * How many creature tokens a permanent keeps making its controller each
+ * round of the table — 0 for one that doesn't. Hero of Bladehold's two
+ * Soldiers each attack, Young Pyromancer's Elemental off our instants and
+ * sorceries, Elspeth, Sun's Champion's +1, Twilight Drover's activation. Not
+ * a one-shot: Beetleback Chief makes its Goblins once, as it enters; nor an
+ * ability that costs loyalty (Lord Windgrace's ultimate). The deck autopsies found the token decks' engines cast far less by
+ * v2 than by v1 — Hero of Bladehold priced as a 3/4 — because nothing counted
+ * what they keep making. Rated like {@link drawRate}.
+ */
+function tokenRate(registry: CardRegistry, def: CardDefinition, opponents: number): number {
+  let rate = tokenMemo.get(def);
+  if (rate === undefined) {
+    rate = engineRate(
+      def,
+      (effect) => tokensPerFiring(registry, effect),
+      (a) => a.cost.sacrifice !== "self" && !isManaAbility(a) && (a.loyaltyCost ?? 0) >= 0,
+    );
+    tokenMemo.set(def, rate);
+  }
+  return Math.min(TOKEN_RATE_CAP, rate.fixed + rate.perOpponent * opponents);
 }
 
 /**
@@ -499,6 +574,7 @@ function playerFeaturesUncached(
   let counters = 0;
   let nonlandMana = 0;
   let drawEngines = 0;
+  let tokenEngines = 0;
   const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost).length;
   let commanderOnBoard = 0;
   let idlePower = 0;
@@ -561,6 +637,7 @@ function playerFeaturesUncached(
       const def = registry.get(name);
       nonlandMana += manaPerTurn(def) * n;
       drawEngines += drawRate(def, opponents) * n;
+      tokenEngines += tokenRate(registry, def, opponents) * n;
     }
     if (object.isCommander && object.owner === player) commanderOnBoard += 1;
     if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;
@@ -696,5 +773,6 @@ function playerFeaturesUncached(
     threat,
     answers,
     resourceTokens,
+    tokenEngines,
   };
 }

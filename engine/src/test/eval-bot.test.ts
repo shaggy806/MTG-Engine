@@ -339,6 +339,25 @@ describe("evaluateState features", () => {
     expect(delta({ drawEngines: 1 }, (g) => void g.debugSpawn("Consecrated Sphinx", A), four)).toBe(3);
   });
 
+  it("counts permanents that keep making creature tokens, not ones that make them once", () => {
+    const making = (card: string) => delta({ tokenEngines: 1 }, (g) => void g.debugSpawn(card, A));
+    // Two Soldiers each time it attacks.
+    expect(making("Hero of Bladehold")).toBe(2);
+    // Three Soldiers for +1; the ultimates cost loyalty, so they aren't a rate.
+    expect(making("Elspeth, Sun's Champion")).toBe(3);
+    expect(making("Lord Windgrace")).toBe(0);
+    // Two Goblins once, as it enters.
+    expect(making("Beetleback Chief")).toBe(0);
+    // A Treasure isn't a creature.
+    expect(making("Smothering Tithe")).toBe(0);
+  });
+
+  it("counts a token engine behind an intervening if about once a round", () => {
+    const four = [A, B, C, D];
+    // Each player's upkeep, but only while it has no Snake: one, not four.
+    expect(delta({ tokenEngines: 1 }, (g) => void g.debugSpawn("Ophiomancer", A), four)).toBe(1);
+  });
+
   it("counts our own commander on the battlefield", () => {
     expect(
       delta({ commanderOnBoard: 1 }, (g) => {

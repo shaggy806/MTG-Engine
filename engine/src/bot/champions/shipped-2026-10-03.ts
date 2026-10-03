@@ -2,19 +2,19 @@ import type { Champion } from "./index.js";
 
 /**
  * The v2 vector live rooms seat, as `DEFAULT_WEIGHTS` stood at the end of
- * 2026-09-27, after `shipped-2026-09-27b`:
+ * 2026-10-03, after `shipped-2026-10-02`:
  *
- * - `answers` 3 — a Counterspell in hand is held back for anything worth
- *   more than this to counter: a Signet or a Divination goes through, a
- *   creature, a draw engine or a wrath of our board doesn't.
- * - `drawEngines` 4 — an opponent's Rhystic Study is worth countering.
+ * - `tokenEngines` 0 → 2 — a creature token a round that a permanent keeps
+ *   making (Hero of Bladehold, Young Pyromancer, Elspeth, Sun's Champion's
+ *   +1). At 0 the token decks' engines were priced on their bodies alone.
  *
- * Read with `bot:diff` rather than benched.
+ * Gate scenario "removal takes the token engine". Benched level against
+ * shipped-2026-10-02 (24.5% [20.5, 28.9], 400 four-player games).
  */
-export const SHIPPED_2026_09_27C: Champion = {
-  id: "shipped-2026-09-27c",
-  date: "2026-09-27",
-  note: "DEFAULT_WEIGHTS at the end of 2026-09-27: shipped-2026-09-27b with a Counterspell reserve (answers 3) and draw engines at 4",
+export const SHIPPED_2026_10_03: Champion = {
+  id: "shipped-2026-10-03",
+  date: "2026-10-03",
+  note: "DEFAULT_WEIGHTS at the end of 2026-10-03: shipped-2026-10-02 with token engines priced (tokenEngines 2)",
   weights: {
     life: 0.5,
     lifeDanger: 1,
@@ -43,16 +43,15 @@ export const SHIPPED_2026_09_27C: Champion = {
     monarch: 3,
     emblems: 3,
     commanderTax: 0.5,
-    nonlandMana: 0,
+    nonlandMana: 0.5,
     drawEngines: 4,
     commanderOnBoard: 3,
     idlePower: 0.5,
     extraTokens: 0,
     threat: 1,
     answers: 3,
-    // Scored as `otherPermanents` was before one-shot tokens got their own term.
-    resourceTokens: 2,
-    tokenEngines: 0,
+    resourceTokens: 0.5,
+    tokenEngines: 2,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,

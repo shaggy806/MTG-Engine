@@ -1052,6 +1052,31 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "removal takes the token engine",
+    rule: "Hero of Bladehold makes two attackers a turn; a vanilla 4/4 is only itself.",
+    position(registry) {
+      // Priced as a 3/4, the Hero was the smaller threat, and nothing counted
+      // the Soldiers it keeps making (the Mardu autopsy: token engines cast
+      // far less by v2 than by v1). `tokenEngines` is that rate.
+      const game = table(registry, [A, B, C, D], A);
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Swamp" : "Plains", player, 4);
+      game.debugSpawn("Murder", A, "hand");
+      const hero = onBoard(game, "Hero of Bladehold", B);
+      onBoard(game, "Rumbling Baloth", B);
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === hero,
+            detail: action.type === "cast-spell" ? `killed ${cardOf(game, hit)}` : `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
     name: "mills an opponent, not itself",
     rule: "With nothing that wants a full graveyard, a mill trigger goes at an opponent.",
     position(registry) {
