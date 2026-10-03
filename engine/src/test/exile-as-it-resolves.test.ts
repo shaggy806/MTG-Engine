@@ -136,6 +136,38 @@ describe("Feather, the Redeemed", () => {
     expect(game.state.objects[growth].zone).toBe("hand");
   });
 
+  it("asks beside an Adventure's exile: Feather's first returns the card, the Adventure's sends it on one", () => {
+    // Rule 715.3d's "instead of putting it into its owner's graveyard … exiles
+    // it" is a replacement too (rule 616.1).
+    for (const featherFirst of [true, false]) {
+      const { game, bear } = setUp();
+      for (let i = 0; i < 2; i += 1) game.debugSpawn("Swamp", A, "battlefield", { tapped: false });
+      // Swift End, Murderous Rider's Adventure, aimed at A's own Bear.
+      const rider = cast(game, "Murderous Rider", [objectRef(bear)], { face: 1 });
+      game.advanceUntil(settle);
+      expect(game.state.awaiting?.kind).toBe("choose-modes");
+      game.dispatch({ type: "choose-modes", player: A, modes: [featherFirst ? 0 : 1] });
+      game.advanceUntil(quiet);
+      expect(game.state.objects[bear].zone).toBe("graveyard");
+      expect(game.state.objects[rider].zone).toBe("exile");
+      expect(game.state.objects[rider].onAdventure === true).toBe(!featherFirst);
+      game.advanceUntil(afterEndStep);
+      expect(game.state.objects[rider].zone).toBe(featherFirst ? "hand" : "exile");
+    }
+  });
+
+  it("leaves alone a spell its caster doesn't own", () => {
+    // The ruling: it won't try to go to your graveyard, so it isn't exiled.
+    const { game, bear } = setUp();
+    const growth = cast(game, "Giant Growth", [objectRef(bear)]);
+    // Stands in for a card of B's that A cast (the pool's ways to do that
+    // bring their own exile, which would compete).
+    game.state.objects[growth].owner = B;
+    game.advanceUntil(quiet);
+    expect(game.state.objects[growth].zone).toBe("graveyard");
+    expect(game.state.zones.perPlayer[B].graveyard).toContain(growth);
+  });
+
   it("does nothing without Feather", () => {
     const { game, bear } = setUp(false);
     const growth = cast(game, "Giant Growth", [objectRef(bear)]);
