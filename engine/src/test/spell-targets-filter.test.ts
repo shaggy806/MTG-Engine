@@ -63,6 +63,21 @@ describe("a cast trigger on what the spell targets", () => {
     expect(hand(game)).toBe(before + 1);
   });
 
+  it("scries once for each creature entering together, a token stack's included", () => {
+    // The Season of Growth ruling: two creatures at once is two scry 1s.
+    const game = setUp();
+    game.debugSpawn("Season of Growth", A, "battlefield");
+    cast(game, A, "Raise the Alarm");
+    let scries = 0;
+    for (let i = 0; i < 5; i += 1) {
+      game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+      if (game.state.awaiting?.kind !== "scry") break;
+      scries += 1;
+      game.dispatch({ type: "scry", player: A, away: [] });
+    }
+    expect(scries).toBe(2);
+  });
+
   it("doesn't for an opponent's creature, a player, or a spell with no targets", () => {
     const game = setUp();
     game.debugSpawn("Season of Growth", A, "battlefield");
@@ -132,6 +147,19 @@ describe("a damage trigger on a spell that targets only a single creature — Im
     expect(game.state.players[B].life).toBe(18);
   });
 
+  it("ignores a spell aimed at two different creatures", () => {
+    // "Only a single creature": Magma Opus taps the Wurm and the Bear and
+    // deals its 4 to the Wurm — every target a creature, but two of them.
+    const game = setUp();
+    game.debugSpawn("Imodane, the Pyrohammer", A, "battlefield");
+    const wurm = game.debugSpawn("Craw Wurm", B, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", B, "battlefield");
+    cast(game, A, "Magma Opus", [objectRef(wurm), objectRef(bear), objectRef(wurm)], { division: [4] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[wurm].zone).toBe("graveyard");
+    expect(game.state.players[B].life).toBe(20);
+  });
+
   it("ignores an opponent's spell", () => {
     const game = setUp();
     game.debugSpawn("Imodane, the Pyrohammer", A, "battlefield");
@@ -185,6 +213,23 @@ describe("a spell target spec on what the spell targets", () => {
     expect(game.state.objects[bear].zone).toBe("hand");
     // Rebuff fizzled, so Shock resolved — and fizzled itself, its target gone.
     expect(game.eventsOfType("spell-countered")).toHaveLength(0);
+  });
+
+  it("doesn't resolve once that permanent has left and come back, a new object", () => {
+    // Rule 400.7: the Bear Cloudshift returns isn't the one Shock targets,
+    // though it's on the battlefield under your control again.
+    const game = setUp();
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    game.dispatch({ type: "pass-priority", player: A });
+    const shock = cast(game, B, "Shock", [objectRef(bear)]);
+    game.dispatch({ type: "pass-priority", player: B });
+    cast(game, A, "Rebuff the Wicked", [objectRef(shock)]);
+    cast(game, A, "Cloudshift", [objectRef(bear)]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bear].zone).toBe("battlefield");
+    expect(game.eventsOfType("spell-countered")).toHaveLength(0);
+    expect(game.state.objects[shock].zone).toBe("graveyard");
+    expect(game.state.objects[bear].damageMarked).toBe(0);
   });
 
   it("counters a spell that targets you — Dawn Charm", () => {

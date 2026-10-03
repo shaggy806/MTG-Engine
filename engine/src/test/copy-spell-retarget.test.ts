@@ -102,6 +102,23 @@ describe("copy for each permanent it could target — Zada, Hedron Grinder", () 
     expect(power(game, bear)).toBe(5);
   });
 
+  it("copies a spell aimed at Zada in every slot, each copy aimed at one creature in every slot", () => {
+    // The rulings: every target Zada triggers it, and so does nothing less —
+    // Zada and another creature isn't "only Zada".
+    const game = setUp();
+    const zada = game.debugSpawn("Zada, Hedron Grinder", A, "battlefield");
+    const bear = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    cast(game, A, "Seeds of Strength", [objectRef(zada), objectRef(zada), objectRef(bear)]);
+    game.advanceUntil(quiet);
+    expect(game.eventsOfType("spell-copied")).toHaveLength(0);
+    expect(power(game, zada)).toBe(5);
+    cast(game, A, "Seeds of Strength", [objectRef(zada), objectRef(zada), objectRef(zada)]);
+    game.advanceUntil(quiet);
+    expect(game.eventsOfType("spell-copied")).toHaveLength(1);
+    expect(power(game, zada)).toBe(8);
+    expect(power(game, bear)).toBe(6);
+  });
+
   it("gives each token of a stack its own copy", () => {
     const game = setUp();
     const zada = game.debugSpawn("Zada, Hedron Grinder", A, "battlefield");
@@ -194,6 +211,26 @@ describe("a copy that targets the source — Ivy, Gleeful Spellthief", () => {
     game.advanceUntil(settle);
     expect(game.state.awaiting).toBeNull();
     expect(game.eventsOfType("spell-copied")).toHaveLength(0);
+  });
+
+  it("needs a single creature: two different ones don't count, one in every slot does", () => {
+    // The rulings: only one creature and nothing else; several targets all
+    // that one creature still count, and every target of the copy is Ivy.
+    const game = setUp();
+    const ivy = game.debugSpawn("Ivy, Gleeful Spellthief", A, "battlefield");
+    const first = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    const second = game.debugSpawn("Grizzly Bears", A, "battlefield");
+    cast(game, A, "Seeds of Strength", [objectRef(first), objectRef(second), objectRef(first)]);
+    game.advanceUntil(settle);
+    expect(game.state.awaiting).toBeNull();
+    expect(game.eventsOfType("spell-copied")).toHaveLength(0);
+    cast(game, A, "Seeds of Strength", [objectRef(second), objectRef(second), objectRef(second)]);
+    game.advanceUntil(settle);
+    expect(game.state.awaiting?.kind).toBe("choose-modes");
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    expect(power(game, ivy)).toBe(5);
+    expect(power(game, second)).toBe(6);
   });
 });
 
