@@ -29,6 +29,23 @@ export const COMMANDERS = {
   dave: "Atraxa, Praetors' Voice",
 };
 
+/** EXILE's and EXIL4's board: alice's ways of exiling from the top of a
+ * library, with mana for all of them. Her library is stacked so a cascade
+ * exiles a few lands before it finds Divination. */
+const EXILE_BOARD = {
+  lands: { alice: 15, bob: 3, carol: 3, dave: 3 },
+  battlefield: {
+    alice: ["Mystic Forge", "Ulamog, the Ceaseless Hunger", "Pako, Arcane Retriever"],
+  },
+  hand: { alice: ["Reckless Impulse", "Bloodbraid Elf", "Outrageous Robbery", "Watcher for Tomorrow"] },
+  setup(game) {
+    // Each goes on top, so the last spawned is the top card.
+    for (const name of ["Forest", "Island", "Swamp", "Divination", "Plains", "Mountain", "Island", "Forest"]) {
+      game.debugSpawn(name, "alice", "library");
+    }
+  },
+};
+
 export default {
   TWOAA: {
     about:
@@ -463,5 +480,24 @@ export default {
     lands: { alice: 3, bob: 3 },
     hand: { alice: ["Port Town", "Game Trail", "Island", "Plains", "Mountain", "Grizzly Bears"] },
     bots: { bob: {} },
+  },
+
+  EXILE: {
+    about:
+      "2p. Exiling from the top of a library, each the way a mill peels: cast Reckless Impulse " +
+      "(an impulse draw of two), activate Mystic Forge (the top card), cast Bloodbraid Elf (a " +
+      "cascade, one card at a time, into Divination), Outrageous Robbery (bob's top X, face " +
+      "down) and Watcher for Tomorrow (hideaway), and attack with Ulamog (bob exiles twenty) " +
+      "and Pako (each player's top card).",
+    players: ["alice", "bob"],
+    ...EXILE_BOARD,
+    bots: { bob: {} },
+  },
+
+  EXIL4: {
+    about: "4p. EXILE's board for alice, in the quadrant layout: Pako takes all four libraries' tops.",
+    players: ["alice", "bob", "carol", "dave"],
+    ...EXILE_BOARD,
+    bots: { bob: {}, carol: {}, dave: {} },
   },
 };
