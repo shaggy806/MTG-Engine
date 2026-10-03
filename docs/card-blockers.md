@@ -159,6 +159,38 @@ A second round the same morning, 74 more:
   trigger tied to one extra turn), Halo Fountain (untapping as a cost), Darksteel Reactor (a state
   trigger), The Golden Throne (a would-lose replacement), Out of the Tombs, Maze's End.
 
+### Round three (2026-10-03, afternoon)
+
+Five more passes; the four below are merged (83 cards), the TDC precons' pass is still building:
+
+- **Mana abilities** (28): a colour chosen as it resolves keyed to an amount, "any type a land you
+  control could produce", colours among permanents or graveyard cards, mana doubling, imprint —
+  Nykthos, Nyx Lotus, Reflecting Pool, Horizon of Progress, Mox Amber, Bloom Tender, The Grey
+  Havens, Mana Reflection, Mana Flare, Heartbeat of Spring, Zendikar Resurgent, Mirari's Wake,
+  Kinnan, Culling Ritual, Deathrite Shaman, Chrome Mox, Three Tree City, Faeburrow Elder and
+  more. Still blocked: Selvala, Heart of the Wilds and Cascading Cataracts (a colour-split
+  picker), Omnath, Locus of All and Yurlok (mana that doesn't empty), Jasmine Boreal (a
+  restriction read as the spell is cast), Pit of Offerings (a linked targeted exile), Outcaster
+  Trailblazer (plot), Extraplanar Lens, Vorinclex, Voice of Hunger.
+- **Library ordering and choosing cards as a cost** (18): Sensei's Divining Top, Dig Through
+  Time, Stock Up, Experimental Augury, Halimar Depths, Teferi's Puzzle Box, Aragorn, Valakut
+  Awakening, Growing Rites of Itlimoc, Varina, Drivnod, Psychic Frog, Mines of Moria, Nezahal,
+  Key to the City, Ghostly Pilferer, Moorland Haunt, Mesmeric Orb. Still blocked: Scroll Rack,
+  Kozilek, the Great Distortion, Satoru Umezawa (ninjutsu), Aminatou (miracle), Birgi (boast),
+  Jaxis (blitz — client), Chainer, Shilgengar.
+- **Infect, wither, spree and gift** (30): Inkmoth Nexus, Plague Myr, Blighted Agent, Skithiryx,
+  Tainted Strike, Triumph of the Hordes, Phyresis, Three Steps Ahead, Final Showdown, Requisition
+  Raid, Smuggler's Surprise, Dawn's Truce, Into the Flood Maw, Parting Gust, Starfall Invocation,
+  Scrapshooter and more. Still blocked: Return the Favor (changing a target), Great Train Heist,
+  Lively Dirge, Grafted Exoskeleton (an unattach trigger), Blightsteel Colossus (a self-shuffle
+  replacement from any zone), Perch Protection (phasing).
+- **Leftovers** (7, and a fix): Notion Thief made exact (it spares an opponent's first draw in
+  each of their draw steps); Strionic Resonator, Peter Parker's Camera, Molten Echoes,
+  Flameshadow Conjuring and Increasing Vengeance on main's copy-ability vocabulary; Ixhel, Scion
+  of Atraxa; Battlemage's Bracers. Still blocked: Koma (modal activated abilities with targeted
+  modes), Maskwood Nexus, Twinning Staff, Rings of Brighthearth, Echoes of Eternity, Adagia,
+  Throne of Eldraine.
+
 ## Top-5000 batches (sweep 3)
 
 - **Batch 4 (2026-09-28)** took the cards the debt fixes unblocked: 15 authored (regeneration,
