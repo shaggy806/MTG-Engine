@@ -6937,14 +6937,16 @@ export class Game {
     return total;
   }
 
-  /** `options` less the targets whose life cost (`targetingLifeCost`) is
-   * more than `caster` has: a spell can't be cast with them. */
+  /** `options` less the targets whose life cost (`targetingLifeCost`)
+   * `caster` can't pay — more than they have, or any while they can't lose
+   * life (rule 119.8): a spell can't be cast with them. */
   private affordableTargetOptions(
     caster: PlayerId,
     options: readonly (readonly TargetRef[])[],
   ): TargetRef[][] {
-    const life = this.state.players[caster].life;
-    return options.map((slot) => slot.filter((ref) => this.targetingLifeCost(caster, [ref]) <= life));
+    return options.map((slot) =>
+      slot.filter((ref) => this.canPayLife(caster, this.targetingLifeCost(caster, [ref]))),
+    );
   }
 
   /** Move `cardId` to the stack as a free cast with the given targets (rule
@@ -23069,25 +23071,35 @@ export class Game {
     // they can win, so a player who can't neither wins nor loses for it (the
     // rulings). Applied before an opponent's redirect (Notion Thief), the
     // order the drawing player would pick (rule 616.1) whenever they can win.
-    const winSource = this.drawWinSourceFor(player);
-    if (winSource !== null) {
-      this.winGame(player, `won the game with ${printedCardName(winSource)}`);
-      return;
-    }
+    if (this.drawWonInstead(player)) return;
     // would-draw replacement (Notion Thief-lite — rule 614 / ROADMAP Phase 11
     // EG-6): an opponent's draw is replaced by the replacement source's
     // controller drawing instead. Applied once — the redirected draw itself
-    // isn't re-redirected.
+    // isn't re-redirected — but the draw it becomes is theirs, which their
+    // own Laboratory Maniac can still replace (rule 616.2).
     const redirectTo = this.drawRedirectFor(player);
     if (redirectTo !== null) {
       this.emit({ type: "draw-redirected", from: player, to: redirectTo });
-      this.drawCardRaw(redirectTo);
+      if (!this.drawWonInstead(redirectTo)) this.drawCardRaw(redirectTo);
       return;
     }
     // "If you would draw a card, draw N cards instead" — those N aren't
-    // replaced again (rule 614.5).
+    // replaced again by it (rule 614.5), though one that finds the library
+    // empty is Laboratory Maniac's to replace (616.2).
     const draws = this.drawCountFor(player);
-    for (let i = 0; i < draws; i += 1) this.drawCardRaw(player);
+    for (let i = 0; i < draws && !this.state.result.over; i += 1) {
+      if (!this.drawWonInstead(player)) this.drawCardRaw(player);
+    }
+  }
+
+  /** Laboratory Maniac's "you win the game instead" for one draw of
+   * `player`'s, if it applies to it now (`drawWinSourceFor`): the draw is
+   * replaced, and they win if they can. Returns whether it was replaced. */
+  private drawWonInstead(player: PlayerId): boolean {
+    const winSource = this.drawWinSourceFor(player);
+    if (winSource === null) return false;
+    this.winGame(player, `won the game with ${printedCardName(winSource)}`);
+    return true;
   }
 
   /** How many cards a single draw of `player`'s becomes under a `would-draw`

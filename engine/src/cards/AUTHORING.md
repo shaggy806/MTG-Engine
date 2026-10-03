@@ -3059,7 +3059,9 @@ clause (section 9):
   can't win, who then neither wins nor loses for it (the rulings), and it's
   applied before an opponent's Notion Thief — the order the drawing player
   would pick whenever they can win (rule 616.1; when they can't, the choice
-  isn't offered, see §15's replacement ordering).
+  isn't offered, see §15's replacement ordering). It also replaces a draw
+  another replacement made of yours (rule 616.2): your own Notion Thief's
+  "you draw a card instead" from an empty library wins.
 - `{ event: "would-mill", who, multiplier?, plus? }` — Bruvac the
   Grandiloquent's "if an opponent would mill one or more cards, they mill
   twice that many cards instead" (`who: "opponent"`, `multiplier: 2`), The

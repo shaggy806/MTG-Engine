@@ -199,6 +199,13 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   Skrelv, Defector Mite, which also needs hexproof from a colour) and a static scoped to
   "creatures with toxic" (Skrelv's Hive: toxic is folded in the layer such a scope would have
   to wait for).
+- **A Siege's chosen side as it leaves.** `chosenOnEnter` isn't in `LastKnownInfo`, so a
+  `chosen-on-enter`-gated leaves-the-battlefield trigger (Outpost Siege's "Dragons") doesn't
+  look back at a Siege dying with the creatures. (A trigger already on the stack resolves
+  whatever became of its source — rule 113.7a, fixed 2026-10-03.)
+- **A look at nothing still asks.** `look-and-choose` over an empty library (Thassa's Oracle
+  at devotion 2 with no cards left) raises a `choose-from-zone` with no cards in it; it should
+  skip straight to what follows.
 - **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
   timestamp order only.
 - **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`), and so is

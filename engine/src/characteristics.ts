@@ -674,6 +674,17 @@ function evalStaticCondition(
           source.timestamp === opts.sourceTimestamp)
       );
     case "chosen-on-enter":
+      // Which of its abilities the permanent has (a Siege's, Mirrodin
+      // Besieged's), not an "if" of the ability's own. One that has triggered
+      // exists independently of its source (rule 113.7a): asked again as it
+      // resolves (`sourceTimestamp`, given only then) once the source has
+      // left the battlefield, or left and come back as a new object, it holds.
+      if (
+        opts.sourceTimestamp !== undefined &&
+        (source.zone !== "battlefield" || source.timestamp !== opts.sourceTimestamp)
+      ) {
+        return true;
+      }
       return source.chosenOnEnter === condition.value;
     case "self-kicked":
       // On the battlefield it's `enteredKicked` (the stack flag is cleared by

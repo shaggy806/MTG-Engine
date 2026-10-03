@@ -222,6 +222,17 @@ describe("Laboratory Maniac's replacement", () => {
     expect(game.state.players[A].hasLost).toBe(false);
   });
 
+  it("replaces the draw an opponent's draw becomes under its controller's own Notion Thief (rule 616.2)", () => {
+    const game = makeGame([A, B]);
+    game.debugSpawn("Laboratory Maniac", A, "battlefield");
+    game.debugSpawn("Notion Thief", A, "battlefield");
+    game.state.zones.perPlayer[A].library = [];
+    // Bob's draw becomes Alice's, from her empty library: she wins instead.
+    game.debugApplyEffect(B, { kind: "draw", amount: 2 });
+    expect(game.state.result).toMatchObject({ over: true, winner: A, reason: "won the game with Laboratory Maniac" });
+    expect(game.state.players[A].attemptedDrawFromEmptyLibrary).not.toBe(true);
+  });
+
   it("is applied before an opponent's Notion Thief redirect", () => {
     const game = makeGame([A, B]);
     game.debugSpawn("Laboratory Maniac", A, "battlefield");
@@ -286,5 +297,26 @@ describe("can't lose life (rule 119.8)", () => {
     expect(game.canDispatch({ type: "cast-spell", player: A, card: deluge, xValue: 2 })).toMatch(/life/);
     // Paying 0 life is always possible (rule 119.4b).
     expect(game.canDispatch({ type: "cast-spell", player: A, card: deluge, xValue: 0 })).toBeNull();
+  });
+
+  it("takes a target whose spell costs life (Terror of the Peaks) off the offered targets", () => {
+    const game = makeGame([A, B], ["Lightning Bolt"]);
+    game.debugSpawn("Mountain", A, "battlefield");
+    const terror = game.debugSpawn("Terror of the Peaks", B, "battlefield");
+    const bolt = game.handOf(A).find((id) => game.state.objects[id].cardName === "Lightning Bolt");
+    if (bolt === undefined) throw new Error("no Lightning Bolt");
+    const offered = (): boolean =>
+      game
+        .legalActions(A)
+        .some(
+          (x) =>
+            x.kind === "cast-spell" &&
+            x.card === bolt &&
+            x.targetOptions.some((slot) => slot.some((t) => t.kind === "object" && t.object === terror)),
+        );
+    expect(offered()).toBe(true);
+    everybody(game);
+    // Offered and then refused at the cast would be a legal action that throws.
+    expect(offered()).toBe(false);
   });
 });

@@ -685,7 +685,10 @@ export type StaticCondition =
    */
   | { readonly kind: "spells-cast-this-game"; readonly named: string; readonly atLeast: number }
   /** The source's `chosenOnEnter` label equals `value` — Frontier Siege's
-   * "Khans" / "Dragons" halves. */
+   * "Khans" / "Dragons" halves. Which abilities the permanent has, not an
+   * "if" of the ability's: on a triggered ability it gates the triggering,
+   * and holds as the ability resolves once the source has left (rule 113.7a
+   * — Mirrodin Besieged destroyed in response still makes them lose). */
   | { readonly kind: "chosen-on-enter"; readonly value: string }
   /** An opponent of the source's controller has lost life this turn (Theater
    * of Horrors). Reads the per-player `lifeLostThisTurn` amount as `> 0`. */

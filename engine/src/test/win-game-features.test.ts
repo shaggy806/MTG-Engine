@@ -546,6 +546,19 @@ describe("Mirrodin Besieged", () => {
     expect(game.state.players[C].hasLost).toBe(false);
   });
 
+  it("Phyrexian: the trigger resolves though the enchantment is destroyed in response (rule 113.7a)", () => {
+    const { game } = setUp([], [A, B, C]);
+    const besieged = game.debugSpawn("Mirrodin Besieged", A, "battlefield");
+    game.state.objects[besieged].chosenOnEnter = "Phyrexian";
+    for (let i = 0; i < 15; i += 1) game.debugSpawn("Sol Ring", A, "graveyard");
+    game.advanceUntil((s) => s.result.over || s.zones.shared.stack.length > 0);
+    expect(game.state.turn.step).toBe("end");
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [{ kind: "object", object: besieged }]);
+    expect(game.state.objects[besieged].zone).toBe("graveyard");
+    game.advanceUntil((s) => s.result.over || s.turn.number === 2);
+    expect(game.state.players[B].lossReason).toBe("lost the game to Mirrodin Besieged");
+  });
+
   it("Phyrexian with fourteen: nobody loses; Mirran instead makes a Myr per artifact spell", () => {
     const { game } = setUp([], [A, B]);
     const besieged = game.debugSpawn("Mirrodin Besieged", A, "battlefield");
