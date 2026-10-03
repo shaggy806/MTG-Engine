@@ -144,6 +144,7 @@ import _poolShatteredAngel from "../pool/shattered-angel.js";
 import _poolSigardasAid from "../pool/sigardas-aid.js";
 import _poolSilverbluffBridge from "../pool/silverbluff-bridge.js";
 import _poolSilvercladFerocidons from "../pool/silverclad-ferocidons.js";
+import _poolSilverquillTheDisputant from "../pool/silverquill-the-disputant.js";
 import _poolSimicCluestone from "../pool/simic-cluestone.js";
 import _poolSivitriScarzam from "../pool/sivitri-scarzam.js";
 import _poolSkeletalCrocodile from "../pool/skeletal-crocodile.js";
@@ -352,6 +353,7 @@ const shard: CardShard = {
     _poolSigardasAid,
     _poolSilverbluffBridge,
     _poolSilvercladFerocidons,
+    _poolSilverquillTheDisputant,
     _poolSimicCluestone,
     _poolSivitriScarzam,
     _poolSkeletalCrocodile,

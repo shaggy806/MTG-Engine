@@ -963,6 +963,13 @@ export interface StaticAbility {
   readonly spellsHaveDelve?: boolean;
   /** Keywords granted in layer 6. */
   readonly grantKeywords?: readonly Keyword[];
+  /**
+   * Toxic N granted in layer 6 (rule 702.164) — Karumonix, the Rat King's
+   * "Other Rats you control have toxic 1". One more instance of toxic on each
+   * affected creature, adding N to its total toxic value (702.164b) beside a
+   * printed one (`CardDefinition.toxic`) and any other grant.
+   */
+  readonly grantToxic?: number;
   /** Activated abilities this static grants to every object it `affects`
    * (Chromatic Lantern: "Lands you control have '{T}: Add one mana of any
    * color.'"; Cryptolith Rite does the same for creatures). Rule 613 layer 6 —
@@ -1115,6 +1122,19 @@ export interface StaticAbility {
     /** Every player's spells, not just this permanent's controller's —
      * Lier, Disciple of the Drowned's "**Spells** can't be countered". */
     readonly allSpells?: boolean;
+    /** The spells have casualty N (rule 702.153) — Silverquill, the
+     * Disputant's "each instant and sorcery spell you cast has casualty 1":
+     * as one is cast its caster may sacrifice a creature with power N or
+     * greater, and if they do, it's copied. One more instance beside a
+     * printed one (`CardDefinition.casualty`) or another grant, each paid
+     * and copying separately (702.153b). Read as the spell is cast. */
+    readonly casualty?: number;
+    /** Only the first spell matching `filter` its controller casts each turn
+     * — Anhelo, the Painter's "**the first** instant or sorcery spell you
+     * cast each turn has casualty 2". Spells cast earlier this turn count,
+     * even ones cast before this permanent arrived (`PlayerState
+     * .spellsCastThisTurnAs`, each read as it was cast). */
+    readonly firstEachTurn?: boolean;
   };
   /** "You have no maximum hand size" (Thought Vessel, Reliquary Tower). A
    * property of the *controller*, not of anything this ability `affects`, so
@@ -1504,6 +1524,16 @@ export interface CardDefinition {
   readonly power: number | null;
   readonly toughness: number | null;
   readonly keywords: readonly Keyword[];
+  /**
+   * Toxic N (rule 702.164 — Karumonix, the Rat King's "Toxic 1"): the N its
+   * printed toxic ability has, 0 for none. Not a {@link Keyword}, because
+   * toxic is parameterised and cumulative (702.164b): a creature's "total
+   * toxic value" is the sum of every instance it has, this one and any a
+   * static grants (`StaticAbility.grantToxic`), folded in layer 6 as
+   * `Characteristics.toxic`. Combat damage it deals a player gives that
+   * player that many poison counters (120.3g, 702.164c).
+   */
+  readonly toxic: number;
   readonly text: string;
   /** Target slots, in order. Chosen when the spell is cast. Empty for a
    * `castModal` spell (its targets come from the chosen modes). */
@@ -1679,6 +1709,18 @@ export interface CardDefinition {
    * afford (`LegalAction.targetCount`). `null` for none.
    */
   readonly costPerExtraTarget: string | null;
+  /**
+   * Casualty N (rule 702.153a — Cut Your Losses' "Casualty 2"): "As an
+   * additional cost to cast this spell, you may sacrifice a creature with
+   * power N or greater" and "When you cast this spell, if a casualty cost
+   * was paid for it, copy it. If the spell has any targets, you may choose
+   * new targets for the copy." The caster is asked once the spell is on the
+   * stack, as a `choose-permanents` of up to one such creature (the optional
+   * cost is paid with the rest of the costs, rule 601.2h); paying it queues
+   * the copy, which resolves first. A static grants more with
+   * `grantsToSpells.casualty` (Silverquill, the Disputant). `null` for none.
+   */
+  readonly casualty: number | null;
   /** Declarative resolution effect, or `null`. */
   readonly effect: EffectSpec | null;
   /** Imperative resolution script (takes precedence over `effect`), or `null`. */
@@ -1939,6 +1981,7 @@ const PRINTED_ABILITY: {
   power: false,
   toughness: false,
   keywords: (def) => def.keywords.length > 0,
+  toxic: (def) => def.toxic > 0,
   text: false,
   targets: (def) => def.targets.length > 0,
   castModal: (def) => def.castModal !== null,
@@ -1951,6 +1994,7 @@ const PRINTED_ABILITY: {
   delve: (def) => def.delve,
   selfCostReduction: (def) => def.selfCostReduction !== null,
   costPerExtraTarget: (def) => def.costPerExtraTarget !== null,
+  casualty: (def) => def.casualty !== null,
   effect: (def) => def.effect !== null,
   resolve: (def) => def.resolve !== null,
   activated: (def) => def.activated.length > 0,
@@ -2054,6 +2098,8 @@ interface CardDraft {
   power?: number;
   toughness?: number;
   keywords?: readonly Keyword[];
+  /** See {@link CardDefinition.toxic}. */
+  toxic?: number;
   text?: string;
   targets?: readonly TargetSpec[];
   castModal?: CastModalSpec;
@@ -2087,6 +2133,8 @@ interface CardDraft {
     readonly reduceGeneric: CostReductionAmount;
   };
   costPerExtraTarget?: string;
+  /** See {@link CardDefinition.casualty}. */
+  casualty?: number;
   effect?: EffectSpec;
   resolve?: SpellResolver;
   activated?: readonly ActivatedAbility[];
@@ -2160,6 +2208,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     power: draft.power ?? null,
     toughness: draft.toughness ?? null,
     keywords: draft.keywords ?? [],
+    toxic: draft.toxic ?? 0,
     text: draft.text ?? "",
     targets: draft.targets ?? [],
     castModal: draft.castModal ?? null,
@@ -2172,6 +2221,7 @@ export function defineCard(draft: CardDraft): CardDefinition {
     delve: draft.delve ?? false,
     selfCostReduction: draft.selfCostReduction ?? null,
     costPerExtraTarget: draft.costPerExtraTarget ?? null,
+    casualty: draft.casualty ?? null,
     effect: draft.effect ?? null,
     resolve: draft.resolve ?? null,
     activated: draft.activated ?? [],

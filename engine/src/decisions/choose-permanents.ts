@@ -10,6 +10,11 @@
  * `choose-permanents` effect; the answer applies that effect's `then` to each
  * permanent picked. A compacted token stack is one entry that may be named up
  * to its size, as `sacrifice`'s is.
+ *
+ * It also asks a spell's casualty cost as it's cast (rule 702.153a — "you may
+ * sacrifice a creature with power N or greater"): up to one of the caster's
+ * creatures, raised by `Game.promptNextCasualty` with the awaiting's
+ * `casualty` set, and answered by `Game.applyCasualty` instead of `then`.
  */
 
 import type { Action, LegalAction } from "../actions.js";

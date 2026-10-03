@@ -29,6 +29,7 @@ import _poolBitterthornNissasAnimus from "../pool/bitterthorn-nissas-animus.js";
 import _poolBlisteringBarrier from "../pool/blistering-barrier.js";
 import _poolBloodbriar from "../pool/bloodbriar.js";
 import _poolBloodrageBrawler from "../pool/bloodrage-brawler.js";
+import _poolBloodrootApothecary from "../pool/bloodroot-apothecary.js";
 import _poolBlossomingSands from "../pool/blossoming-sands.js";
 import _poolBoaConstrictor from "../pool/boa-constrictor.js";
 import _poolBorosSwiftblade from "../pool/boros-swiftblade.js";
@@ -240,6 +241,7 @@ const shard: CardShard = {
     _poolBlisteringBarrier,
     _poolBloodbriar,
     _poolBloodrageBrawler,
+    _poolBloodrootApothecary,
     _poolBlossomingSands,
     _poolBoaConstrictor,
     _poolBorosSwiftblade,

@@ -16,9 +16,8 @@ that one card is the reason the deck exists.
   feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ones, engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+1 —
-  Karn, Legacy Reforged, whose deny-list mana is built), `keyword:toxic` (+1 — Ixhel),
-  `zone:visibility-extensions` (+1), `keyword:blitz` (+1), `keyword:mayhem` (+1),
-  `effect:additional-upkeep-steps` (+1).
+  Karn, Legacy Reforged, whose deny-list mana is built), `zone:visibility-extensions` (+1),
+  `keyword:blitz` (+1, UI-bound — below), `keyword:mayhem` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `decision:choose-permanent` (11).
   `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
@@ -37,6 +36,12 @@ that one card is the reason the deck exists.
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
+- **Blitz and speed wait on the client** (AUTHORING §15). Blitz (Henzie "Toolbox" Torre, Star
+  Athlete, Jaxis) is an alternative-cost cast variant, and the client spells out each variant
+  in `castExtras` and its buttons, so it needs a "blitz" label and echo there. Speed
+  (`mechanic:speed` — Mendicant Core, Vnwxt, the four Raceways, Howlsquad Heavy) needs the
+  player panel to show a player's speed and the stack to draw its inherent trigger, which has
+  no source (rule 702.179d); Mendicant Core also needs `effect:copy-spell-extensions`.
 - **A commander dropped by its review.** Aragorn, the Uniter needs scry to let the player order
   the kept cards (`decision:library-ordering`).
 
@@ -158,6 +163,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Replacement ordering.** There is no general `choose-replacement-order` (rule 616.1) — only
   Feather's exile beside another exiling replacement asks — and no damage redirection to a
   third object.
+- **A cast's discard cost hands priority to the active player.** A spell with an additional
+  discard cost (`additionalCost.discard`, a `discard` cost option) raises the discard once it's
+  on the stack, and `applyDiscard` then gives priority to the active player rather than the
+  caster (rule 117.3c) — wrong for an instant cast on someone else's turn. Casualty's ask
+  carries its `priorityTo`; the discard needs the same.
+- **Toxic's last two shapes.** "Gains toxic N until end of turn" (no modifier carries toxic —
+  Skrelv, Defector Mite, which also needs hexproof from a colour) and a static scoped to
+  "creatures with toxic" (Skrelv's Hive: toxic is folded in the layer such a scope would have
+  to wait for).
 - **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
   timestamp order only.
 - **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`), and so is

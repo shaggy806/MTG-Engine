@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbzanAscendancy from "../pool/abzan-ascendancy.js";
 import _poolAetherHelix from "../pool/aether-helix.js";
 import _poolAlelaCunningConqueror from "../pool/alela-cunning-conqueror.js";
+import _poolAnheloThePainter from "../pool/anhelo-the-painter.js";
 import _poolAnkleBiter from "../pool/ankle-biter.js";
 import _poolAshlingTheLimitless from "../pool/ashling-the-limitless.js";
 import _poolAtarkaMonument from "../pool/atarka-monument.js";
@@ -16,6 +17,7 @@ import _poolBaronyVampire from "../pool/barony-vampire.js";
 import _poolBarrinMasterWizard from "../pool/barrin-master-wizard.js";
 import _poolBashToBits from "../pool/bash-to-bits.js";
 import _poolBattlewandOak from "../pool/battlewand-oak.js";
+import _poolBiliousSkulldweller from "../pool/bilious-skulldweller.js";
 import _poolBlackSunsZenith from "../pool/black-suns-zenith.js";
 import _poolBlackWaltzNo3 from "../pool/black-waltz-no-3.js";
 import _poolBlistergrub from "../pool/blistergrub.js";
@@ -98,6 +100,7 @@ import _poolInsurrection from "../pool/insurrection.js";
 import _poolIroassChampion from "../pool/iroass-champion.js";
 import _poolIroncladKrovod from "../pool/ironclad-krovod.js";
 import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
+import _poolKarumonixTheRatKing from "../pool/karumonix-the-rat-king.js";
 import _poolKeenSense from "../pool/keen-sense.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
@@ -230,6 +233,7 @@ const shard: CardShard = {
     _poolAbzanAscendancy,
     _poolAetherHelix,
     _poolAlelaCunningConqueror,
+    _poolAnheloThePainter,
     _poolAnkleBiter,
     _poolAshlingTheLimitless,
     _poolAtarkaMonument,
@@ -240,6 +244,7 @@ const shard: CardShard = {
     _poolBarrinMasterWizard,
     _poolBashToBits,
     _poolBattlewandOak,
+    _poolBiliousSkulldweller,
     _poolBlackSunsZenith,
     _poolBlackWaltzNo3,
     _poolBlistergrub,
@@ -322,6 +327,7 @@ const shard: CardShard = {
     _poolIroassChampion,
     _poolIroncladKrovod,
     _poolJenovaAncientCalamity,
+    _poolKarumonixTheRatKing,
     _poolKeenSense,
     _poolKingCheetah,
     _poolKnightErrant,

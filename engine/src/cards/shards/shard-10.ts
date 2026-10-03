@@ -24,6 +24,7 @@ import _poolBattlefieldForge from "../pool/battlefield-forge.js";
 import _poolBidentOfThassa from "../pool/bident-of-thassa.js";
 import _poolBladebrand from "../pool/bladebrand.js";
 import _poolBlasphemousAct from "../pool/blasphemous-act.js";
+import _poolBlightbellyRat from "../pool/blightbelly-rat.js";
 import _poolBlizzardElemental from "../pool/blizzard-elemental.js";
 import _poolBloodgiftDemon from "../pool/bloodgift-demon.js";
 import _poolBlossomingDefense from "../pool/blossoming-defense.js";
@@ -255,6 +256,7 @@ const shard: CardShard = {
     _poolBidentOfThassa,
     _poolBladebrand,
     _poolBlasphemousAct,
+    _poolBlightbellyRat,
     _poolBlizzardElemental,
     _poolBloodgiftDemon,
     _poolBlossomingDefense,

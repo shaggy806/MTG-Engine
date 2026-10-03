@@ -113,6 +113,7 @@ import _poolMindSculpt from "../pool/mind-sculpt.js";
 import _poolMireTriton from "../pool/mire-triton.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
 import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
+import _poolMyrConvert from "../pool/myr-convert.js";
 import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
 import _poolNarciFableSinger from "../pool/narci-fable-singer.js";
@@ -317,6 +318,7 @@ const shard: CardShard = {
     _poolMireTriton,
     _poolMoltenBlast,
     _poolMurmuringMystic,
+    _poolMyrConvert,
     _poolMyrKinsmith,
     _poolNantukoHusk,
     _poolNarciFableSinger,

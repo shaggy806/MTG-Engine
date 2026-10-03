@@ -46,6 +46,7 @@ import _poolCrashThrough from "../pool/crash-through.js";
 import _poolCrosissAttendant from "../pool/crosiss-attendant.js";
 import _poolCurioVendor from "../pool/curio-vendor.js";
 import _poolCursedFlesh from "../pool/cursed-flesh.js";
+import _poolCutYourLosses from "../pool/cut-your-losses.js";
 import _poolDarigaazsCharm from "../pool/darigaazs-charm.js";
 import _poolDarkthicketWolf from "../pool/darkthicket-wolf.js";
 import _poolDeadapult from "../pool/deadapult.js";
@@ -265,6 +266,7 @@ const shard: CardShard = {
     _poolCrosissAttendant,
     _poolCurioVendor,
     _poolCursedFlesh,
+    _poolCutYourLosses,
     _poolDarigaazsCharm,
     _poolDarkthicketWolf,
     _poolDeadapult,

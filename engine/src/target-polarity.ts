@@ -261,6 +261,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   },
   "exile-spell-as-it-resolves": none,
   "additional-combat": none,
+  "additional-upkeep-steps": none,
   "additional-land-drop": none,
   "shuffle-library": none,
   "damage-divided": none,

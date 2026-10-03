@@ -455,6 +455,11 @@ export type TriggerSpec =
        * "becomes the target of a spell" (Gargos, Vicious Watcher; Tectonic
        * Giant). */
       readonly spellOnly?: boolean;
+      /** The ability's targets are all its controller's choice: the
+       * targeting player never fills its first slot — Venerated Rotpriest's
+       * "target opponent gets a poison counter" may name any opponent, not
+       * only the one whose spell it was. */
+      readonly targeterNotTarget?: boolean;
     }
   | {
       /**

@@ -1405,10 +1405,42 @@ export const COMMANDER_RULES: Partial<GameRules> = {
   freeFirstMulligan: true,
 };
 
+/**
+ * A spell's casualty costs being offered as it's cast (rule 702.153a): its
+ * caster may sacrifice a creature with power N or greater, asked as a
+ * `choose-permanents` of up to one. Each instance of casualty is its own
+ * optional cost (702.153b), asked one after another. Once they're all
+ * answered, `priorityTo` gets priority — the caster, as after any cast (rule
+ * 117.3c), or the active player for a spell cast while something resolved.
+ * Queued in `GameState.pendingCasualty` as the spell is cast and asked the
+ * next time a player would get priority, before any trigger goes on the
+ * stack.
+ */
+export interface CasualtyAsk {
+  readonly spell: ObjectId;
+  /** The caster, who pays. */
+  readonly player: PlayerId;
+  /** The N of each instance still to ask about, in order; the first is the
+   * one a raised decision is asking about. */
+  readonly amounts: readonly number[];
+  readonly priorityTo: PlayerId;
+}
+
+/** A phase an effect added straight after the combat phase under way — see
+ * `GameState.phasesAfterThisCombat`. */
+export type AddedPhase =
+  | { readonly kind: "combat"; readonly withMain: boolean }
+  | { readonly kind: "upkeep" };
+
 export interface TurnState {
   number: number;
   activePlayerIndex: number;
   step: Step;
+  /** The `"upkeep"` step under way is the only step of an additional
+   * beginning phase (rules 500.10, 500.11 — an `AddedPhase` of kind
+   * `"upkeep"`): when it ends, the turn goes on to whatever followed the
+   * combat phase it came after, never to a draw step. */
+  addedUpkeep?: boolean;
   /** True when this turn was taken via an extra-turn effect (Time Warp) rather
    * than the normal rotation — ROADMAP Phase 7. */
   isExtra: boolean;
@@ -1771,6 +1803,10 @@ export type AwaitingDecision =
       readonly then: EffectSpec;
       readonly source: ObjectId;
       readonly x: number;
+      /** Set when the choice is a spell's casualty cost being paid as it's
+       * cast, rather than an effect resolving — see {@link CasualtyAsk}.
+       * `then` is unused. */
+      readonly casualty?: CasualtyAsk;
     }
   | {
       /** A modal spell/ability is resolving (rule 700.2), or a "you may"
@@ -2837,10 +2873,18 @@ export interface GameState {
    * turn — the `attack-requirement` effect (Kardur, Doomscourge). See
    * {@link AttackRequirementRule}. Absent when there are none. */
   attackRequirements?: AttackRequirementRule[];
-  /** Combat phases owed straight after the combat phase under way ("after
-   * this phase, there is an additional combat phase"), each maybe
-   * "followed by an additional main phase". Turn-scoped. */
-  combatsAfterThisCombat?: { readonly withMain: boolean }[];
+  /** Phases owed straight after the combat phase under way, the next one
+   * first — each is added directly after the phase it was made in, so the
+   * most recently created goes first (rule 500.8). An additional combat
+   * phase ("after this phase, there is an additional combat phase"), maybe
+   * "followed by an additional main phase"; or an additional beginning phase
+   * holding only an upkeep step (Obeka, Splitter of Seconds' "you get that
+   * many additional upkeep steps after this phase" — rules 500.10, 500.11:
+   * its untap and draw steps are skipped). Turn-scoped. */
+  phasesAfterThisCombat?: AddedPhase[];
+  /** Spells just cast whose casualty costs (rule 702.153a) are still to be
+   * offered — see {@link CasualtyAsk}. Absent when there are none. */
+  pendingCasualty?: CasualtyAsk[];
   /** Additional main phases owed after the postcombat main phase under way
    * (a `withMain` combat's). Turn-scoped. */
   extraMainPhases?: number;

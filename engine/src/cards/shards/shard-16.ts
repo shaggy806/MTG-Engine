@@ -43,6 +43,7 @@ import _poolChildOfNight from "../pool/child-of-night.js";
 import _poolCityPigeon from "../pool/city-pigeon.js";
 import _poolCobbledWings from "../pool/cobbled-wings.js";
 import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
+import _poolContaminantGrafter from "../pool/contaminant-grafter.js";
 import _poolCourtOfGarenbrig from "../pool/court-of-garenbrig.js";
 import _poolCraterize from "../pool/craterize.js";
 import _poolCruxOfFate from "../pool/crux-of-fate.js";
@@ -136,6 +137,7 @@ import _poolNestingDragon from "../pool/nesting-dragon.js";
 import _poolNighthawkScavenger from "../pool/nighthawk-scavenger.js";
 import _poolNocturnalFeeder from "../pool/nocturnal-feeder.js";
 import _poolNoxiousNewt from "../pool/noxious-newt.js";
+import _poolObekaSplitterOfSeconds from "../pool/obeka-splitter-of-seconds.js";
 import _poolOctoprophet from "../pool/octoprophet.js";
 import _poolOmegaMyr from "../pool/omega-myr.js";
 import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
@@ -285,6 +287,7 @@ const shard: CardShard = {
     _poolCityPigeon,
     _poolCobbledWings,
     _poolColdCaseCracker,
+    _poolContaminantGrafter,
     _poolCourtOfGarenbrig,
     _poolCraterize,
     _poolCruxOfFate,
@@ -378,6 +381,7 @@ const shard: CardShard = {
     _poolNighthawkScavenger,
     _poolNocturnalFeeder,
     _poolNoxiousNewt,
+    _poolObekaSplitterOfSeconds,
     _poolOctoprophet,
     _poolOmegaMyr,
     _poolOneWithTheWind,

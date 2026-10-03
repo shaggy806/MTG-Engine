@@ -270,6 +270,7 @@ from the same link.
 | `loyalty` | `number` | planeswalker starting loyalty — §8, §12 |
 | `castModal` | `{ minModes, maxModes, maxModesIf?, modes: ModeOption[] }` | a modal **spell** ("Choose one —" and bullets) — its modes are chosen as it's cast (rules 601.2b, 700.2a), whether or not they target (Farewell's have no targets). The `modal` *effect* is for a choice made on resolution instead — §6. `maxModesIf: { condition, maxModes }` raises the most while a condition holds as it's cast: Will of the Sultai's "If you control a commander as you cast this spell, you may choose both instead" is `{ condition: { kind: "controls", filter: { isCommander: true }, atLeast: 1 }, maxModes: 2 }`. `costPerExtraMode: "{G}"` is **escalate** (rule 702.120a — Collective Resistance): that mana once per mode beyond the first, an additional cost paid on top of an alternative cost or a free cast too (118.9d); the offer's `maxModes` is capped at what the caster can pay. Mana escalate only — a discard (Collective Brutality) or tap (Collective Effort) escalate isn't expressible. |
 | `costPerExtraTarget` | mana string | "This spell costs {1} more to cast for each target beyond the first" (Fireball; Strive — Twinflame's `"{2}{R}"`): a cost increase once per distinct target after the first (rule 601.2f), on top of whatever cost is paid. The offer's `targetCount` lists the counts the caster can afford, and an `{X}` spell's `xCost.maxXByTargetCount` the largest X at each. |
+| `casualty` | `number` | **Casualty N** (rule 702.153a — Cut Your Losses' "Casualty 2"): "as an additional cost to cast this spell, you may sacrifice a creature with power N or greater", and when it's paid the spell is copied (its own "when you cast this spell" ability, so the copy resolves first), its controller choosing new targets for the copy if it likes. Not a cast variant: once the spell is on the stack its caster is asked a `choose-permanents` of up to one such creature (min 0) — on a free cast too (cascade), since it's an additional cost — and paying it queues the copy. Each instance, printed or granted (`grantsToSpells.casualty` — §10), is asked and copies separately (702.153b). Put "Casualty N" in `text`. |
 | `additionalCost` | `{ sacrifice: CardFilter }` | a **mandatory** extra cost to cast (rule 601.2f — Harrow: "sacrifice a land"). Paid as the spell is cast, so it stands even if the spell is countered, and the spell isn't castable at all without it. The caster picks which permanent. |
 | `additionalCost.options` | `AdditionalCostOption[]` | a **choice** of whole costs, exactly one paid (Bitter Triumph: "discard a card or pay 3 life"; Demand Answers: "sacrifice an artifact or discard a card"). Each option takes a `text` label plus any of `discard` / `payLife` / `sacrifice` / `mana`, and is enumerated as its own castable variant — so the caster chooses by picking a `cast-spell`, not by answering a decision. **Not for a cost whose *filter* spans two types**: Deadly Dispute's "sacrifice an artifact or creature" is one cost with `typesAnyOf` and needs none of this. |
 | `kicker` | `{ cost, targets?, effect?, keyword?, multi? }` | **kicker** (rule 702.33 — Tear Asunder). `cost` is folded onto the printed cost; `targets` / `effect` replace the unkicked ones when kicked. `legalActions` offers the card twice, kicked and unkicked. `multi: true` is **multikicker** (702.33c — Everflowing Chalice): offered once per number of times the caster can pay it (`kickCount`, with `kickerCost` that many times over), and "for each time it was kicked" is an `enters-battlefield` replacement's `counters: { kind, amount: "times-kicked" }` (0 when it wasn't cast). `keyword: "offspring"` is the same optional additional cost under Offspring's name (rule 702.175) — pair it with `offspringTrigger()` (below). |
@@ -383,6 +384,20 @@ grants the keyword. "Is every creature type" / "every land type" granted by an
 effect (Mutavault's animation, Omo's everything counters) is
 `EVERY_CREATURE_TYPE` / `EVERY_LAND_TYPE` in an `addSubtypes`. **Never read a
 subtype list with `includes`** in engine code — ask `hasSubtype`.
+
+**Toxic** (rule 702.164) is a field, not a `keywords` string, because it's
+parameterised and cumulative: `toxic: 1` is "Toxic 1" (Karumonix, the Rat
+King). A static grants more with `grantToxic: N` (Karumonix's "Other Rats you
+control have toxic 1" — `affects: { scope: "creatures-you-control",
+excludeSelf: true, subtype: "Rat" }`). The layer fold sums every instance into
+`Characteristics.toxic`, the creature's total toxic value (702.164b; a
+creature that loses its abilities loses the printed one), and combat damage it
+deals a player gives that player that many poison counters on top of the
+damage (120.3g) — however much damage it was, and never for noncombat damage
+(the rulings). Keep "Toxic N" in `text`. A token with toxic is a token card
+with the field (`Phyrexian Mite Token`). Not yet: "gains toxic N until end of
+turn" (no modifier carries it) and a static scoped to "creatures with toxic"
+(Skrelv's Hive) — toxic is read in the same layer it would have to wait for.
 
 Anything not in that list (protection wording, ward, prowess, …) is **not** a
 keyword string — it's a static or triggered ability. See §9–10.
@@ -843,7 +858,7 @@ ability would have no way to name a token that didn't exist when it was set up.
 
 ### Turn structure / cast-triggered
 
-`take-extra-turn { target? }` (the effect's controller, or with `target` the player in that slot — Time Warp's "target player takes an extra turn"; taken directly after this turn, the most recently created first, and the rotation then carries on from the turn it followed — rule 500.7), `additional-combat { afterThisPhase?, withMain? }`, `additional-land-drop { amount }` (Explore's "You may
+`take-extra-turn { target? }` (the effect's controller, or with `target` the player in that slot — Time Warp's "target player takes an extra turn"; taken directly after this turn, the most recently created first, and the rotation then carries on from the turn it followed — rule 500.7), `additional-combat { afterThisPhase?, withMain? }`, `additional-upkeep-steps { amount }` (below), `additional-land-drop { amount }` (Explore's "You may
 play an additional land this turn"), `untap-all { filter, controlledByTarget? }`, `storm { of? }`
 (`of: "trigger-object"` copies the trigger's spell rather than the source: a `nextSpell`
 delayed trigger's "the next instant or sorcery spell you cast this turn has storm" — Storm, Force
@@ -898,6 +913,18 @@ phase"), and `withMain: true` adds "followed by an additional main phase"
 turn. Use it from a combat trigger; the `turn-structure` condition's
 `combatPhase: 1` is "if it's the first combat phase of the turn", which is
 what stops Karlach's trigger adding a third.
+
+`additional-upkeep-steps { amount }` is Obeka, Splitter of Seconds' "you get
+that many additional upkeep steps after this phase" (`amount: { triggerValue:
+true }` on its combat damage trigger). An upkeep step lives in a beginning
+phase, so each is an additional beginning phase straight after the combat
+phase under way with its untap and draw steps skipped (rules 500.10, 500.11);
+"at the beginning of your upkeep" triggers and suspend's counters run in each,
+a delayed "next upkeep" waits for it, and then the turn goes on to the
+postcombat main phase. Phases added after the same combat phase go most
+recent first (500.8), so an additional combat made during end of combat comes
+before the upkeeps. Nothing is added on another player's turn (500.10a), and
+only a combat phase can be "this phase" — use it from a combat trigger.
 
 ### Format extras
 
@@ -1845,7 +1872,7 @@ triggered: [
 | --- | --- | --- |
 | `enters-battlefield` | `who`, `filter?`, `otherOnly?`, `batched?` | a permanent enters; `batched` is "whenever **one or more** … enter": once per simultaneous entry, `{ triggerValue: true }` how many matched (Marneus Calgar, Ingenious Artillerist) |
 | `dies` | `who`, `filter?`, `otherOnly?` | a permanent → graveyard from the battlefield, **however it got there** (rule 700.4) — destroyed, sacrificed, the legend rule, a Saga completing. A commander dies like anything else: its owner is offered the command zone only once it's in the graveyard (903.9a). |
-| `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot when that slot can hold a player ("deals 3 damage to that player"). |
+| `becomes-target` | `who`, `filter?`, `byOpponentOnly?`, `spellOnly?`, `targeterNotTarget?` | a permanent was chosen as a target of a spell or ability (rule 115.7 — Thunderbreak Regent); `spellOnly` narrows it to "becomes the target of a **spell**" (Gargos, Vicious Watcher; Tectonic Giant). Fires as the spell/ability goes on the stack, so it triggers even if that spell is countered or later fizzles, and once per targeted object — a spell naming the same creature in two slots triggers it once, one naming two of your creatures triggers a `you-control` watcher twice. The *player* who targeted it auto-fills the first target slot when that slot can hold a player ("deals 3 damage to that player"), unless `targeterNotTarget` says the slot is a real choice (Venerated Rotpriest's "target opponent gets a poison counter" may name any opponent). |
 | `tapped-for-mana` | `who`, `filter?`, `producing?: "C"` | a permanent was tapped for mana (its mana ability with `{T}` in the cost); `producing: "C"` is "whenever you tap a land **for {C}**" (Ultima, Origin of Oblivion) — only when it made colorless mana, once however much. A **triggered mana ability** (rule 605.1b): never on the stack, its `add-mana` is made with the tapped permanent's mana and counted by the auto-payer — see "Triggered mana abilities" in §8. |
 | `becomes-tapped` | `who`, `filter?` | a permanent became tapped (rule 701.21a — City of Brass). Fires for every tapping: a mana ability, a cost that taps it, an opponent's tap effect. Not the same as `add-mana`'s `painToController`, which only charges the mana-ability path. |
 | `leaves-battlefield` | `who`, `filter?`, `otherOnly?`, `to?` | a permanent leaves for **any** zone — or only the destinations `to` lists (Reyhan, Last of the Abzan's "dies or is put into the command zone" is `to: ["graveyard", "command"]`). `filter` is matched against it as it last existed on the battlefield, so "if it had one or more +1/+1 counters on it" is a `counters` clause there; it's the trigger object, so "that many" is `{ countersOn: "trigger-object", counter: "+1/+1" }`. |
@@ -2181,6 +2208,13 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   `splitSecond: true` gives them split second — Shadow the Hedgehog's "each
   spell you cast has split second if mana from an artifact was spent to cast
   it" is `{ filter: { manaFrom: { type: "artifact" } }, splitSecond: true }`.
+  `casualty: N` gives them casualty N (rule 702.153 — see `casualty` in §3):
+  Silverquill, the Disputant's "each instant and sorcery spell you cast has
+  casualty 1" is `{ filter: { typesAnyOf: ["instant", "sorcery"] }, casualty:
+  1 }`, an instance beside any other the spell has. `firstEachTurn: true` is
+  "**the first** [filter] spell you cast each turn" (Anhelo, the Painter's
+  casualty 2): of the spells you've cast this turn that matched as they were
+  cast, those before this permanent arrived included, only the first.
 - `grantsOffspringToSpells: { cost, filter? }` — the spells you cast that
   match `filter` gain offspring for `cost` (rule 702.175 — Zinnia, Valley's
   Voice's "creature spells you cast gain offspring {2} as you cast them"):
@@ -2290,6 +2324,9 @@ their declarations to it (`withinAttackTax`), and the client shows the running c
   `animate`'s set P/T, under counters (7c) and bonuses (7d). Distinct from the
   `"self"`-only `setBasePtFromCount` CDA, which applies first.
 - `grantKeywords: [...]` — layer 6 keyword grant.
+- `grantToxic: N` — layer 6: one more instance of toxic N on each affected
+  creature, added to its total toxic value (Karumonix's "Other Rats you
+  control have toxic 1" — see §5).
 - `grantsActivated: [...]` — give the affected permanents these activated
   abilities (Chromatic Lantern, Cryptolith Rite).
 - `grantsTriggered: [...]` — the same in layer 6 for *triggered* abilities
@@ -3200,9 +3237,15 @@ Delete an entry in the same commit as the feature that retires it.
   other types" isn't modeled.
 - **Bestow** (rule 702.103 — Springheart Nantuko), **Embalm** (rule 702.128
   — Vizier of Many Faces, whose Clone ability has to carry it), **retrace**
-  (rule 702.83 — Six), **riot**
-  (rule 702.152 — Rhythm of the Wild) are unmodeled alt-cast / ETB-choice
-  mechanics (needed-cards P18).
+  (rule 702.81 — Six), **riot**
+  (rule 702.136 — Rhythm of the Wild) are unmodeled alt-cast / ETB-choice
+  mechanics (needed-cards P18). **Blitz** (rule 702.152 — Henzie "Toolbox"
+  Torre) and **speed** / Max speed (rules 702.178, 702.179 — Mendicant Core,
+  Vnwxt, the Raceways) wait on client work: blitz is an alternative cost the
+  client has no label or echo for (each cast variant is spelled out in its
+  `castExtras` and buttons), and speed is a player value the player panel
+  doesn't show, raised by an inherent triggered ability with no source,
+  which the stack can't draw.
 
 **Partial:**
 

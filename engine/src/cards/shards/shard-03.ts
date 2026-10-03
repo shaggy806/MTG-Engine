@@ -175,6 +175,7 @@ import _poolTurnToFrog from "../pool/turn-to-frog.js";
 import _poolUndercityDireRat from "../pool/undercity-dire-rat.js";
 import _poolUrbanDaggertooth from "../pool/urban-daggertooth.js";
 import _poolUtopiaTree from "../pool/utopia-tree.js";
+import _poolVeneratedRotpriest from "../pool/venerated-rotpriest.js";
 import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
 import _poolWhiteKnight from "../pool/white-knight.js";
@@ -365,6 +366,7 @@ const shard: CardShard = {
     _poolUndercityDireRat,
     _poolUrbanDaggertooth,
     _poolUtopiaTree,
+    _poolVeneratedRotpriest,
     _poolVonaButcherOfMagan,
     _poolVraskasContempt,
     _poolWhiteKnight,

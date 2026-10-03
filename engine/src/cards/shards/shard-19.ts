@@ -209,6 +209,7 @@ import _poolWitchsCottage from "../pool/witchs-cottage.js";
 import _poolWyluliWolf from "../pool/wyluli-wolf.js";
 import _poolYavimayaWurm from "../pool/yavimaya-wurm.js";
 import _poolZombieGoliath from "../pool/zombie-goliath.js";
+import _tokensPhyrexianMiteToken from "../tokens/phyrexian-mite-token.js";
 import _tokensRedElementalToken11 from "../tokens/red-elemental-token-1-1.js";
 import _tokensServoToken from "../tokens/servo-token.js";
 
@@ -422,6 +423,7 @@ const shard: CardShard = {
     _poolZombieGoliath,
   ],
   tokens: [
+    _tokensPhyrexianMiteToken,
     _tokensRedElementalToken11,
     _tokensServoToken,
   ],

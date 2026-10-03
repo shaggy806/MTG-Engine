@@ -806,6 +806,12 @@ export interface Characteristics {
   readonly basePower: number;
   readonly baseToughness: number;
   readonly keywords: ReadonlySet<Keyword>;
+  /** Its total toxic value (rule 702.164b): the N of every toxic ability it
+   * has, summed — a printed one (`CardDefinition.toxic`) unless it has lost
+   * its abilities, and each `grantToxic` static reaching it. 0 for none.
+   * Combat damage it deals a player gives that player this many poison
+   * counters (rule 120.3g). */
+  readonly toxic: number;
   readonly types: readonly CardType[];
   readonly subtypes: readonly string[];
   readonly colors: ReadonlySet<Color>;
@@ -986,13 +992,29 @@ export function spellGrantReaches(
   if (ability.condition !== undefined && !staticConditionMet(state, registry, source, ability.condition)) {
     return false;
   }
-  return (
-    grant.filter === undefined ||
-    matchesFilter(state, registry, spell.id, grant.filter, {
+  if (
+    grant.filter !== undefined &&
+    !matchesFilter(state, registry, spell.id, grant.filter, {
       you: source.controller,
       ...(amount !== undefined ? { amount } : {}),
     })
-  );
+  ) {
+    return false;
+  }
+  // "The first [filter] spell you cast each turn" (Anhelo, the Painter): of
+  // the spells its caster has cast this turn that matched as they were cast,
+  // this is the first — this cast of it, not an earlier one of the same card.
+  if (grant.firstEachTurn === true) {
+    const filter = grant.filter;
+    const first = (state.players[spell.controller]?.spellsCastThisTurnAs ?? []).find(
+      (cast) =>
+        filter === undefined ||
+        matchesFilter(state, registry, cast.id, filter, { you: source.controller, snapshot: cast.spell }),
+    );
+    if (first === undefined || first.id !== spell.id) return false;
+    if ((first.spell.zoneChangeCount ?? 0) !== (spell.zoneChangeCount ?? 0)) return false;
+  }
+  return true;
 }
 
 /** Whether `spell`, on the stack, has split second (rule 702.61): printed, or
@@ -2100,6 +2122,8 @@ interface AppliedEffect {
   readonly power: number;
   readonly toughness: number;
   readonly keywords: readonly Keyword[];
+  /** Toxic N it grants (`grantToxic`), 0 for none. */
+  readonly toxic: number;
   readonly restrictions: readonly CombatRestriction[];
   readonly combatDamageByToughness: StaticAbility["combatDamageByToughness"];
   readonly canAttackAsThoughNoDefender: boolean;
@@ -2121,6 +2145,7 @@ function contributesToCharacteristics(ability: StaticAbility): boolean {
     ability.grantPt !== undefined ||
     ability.grantPtPerCount !== undefined ||
     ability.grantKeywords !== undefined ||
+    ability.grantToxic !== undefined ||
     ability.restrictions !== undefined ||
     ability.combatDamageByToughness !== undefined ||
     ability.canAttackAsThoughNoDefender === true ||
@@ -2295,6 +2320,7 @@ function collectStaticEffects(
       power: (ability.grantPt?.[0] ?? 0) + scaledPower,
       toughness: (ability.grantPt?.[1] ?? 0) + scaledToughness,
       keywords: ability.grantKeywords ?? [],
+      toxic: ability.grantToxic ?? 0,
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
@@ -2341,6 +2367,7 @@ function collectStaticEffects(
       power: ability.grantPt?.[0] ?? 0,
       toughness: ability.grantPt?.[1] ?? 0,
       keywords: ability.grantKeywords ?? [],
+      toxic: ability.grantToxic ?? 0,
       restrictions: ability.restrictions ?? [],
       combatDamageByToughness: ability.combatDamageByToughness,
       canAttackAsThoughNoDefender: ability.canAttackAsThoughNoDefender === true,
@@ -2425,6 +2452,7 @@ function assertSameCharacteristics(
       basePower: c.basePower,
       baseToughness: c.baseToughness,
       keywords: [...c.keywords].sort(),
+      toxic: c.toxic,
       types: [...c.types].sort(),
       subtypes: [...c.subtypes].sort(),
       colors: [...c.colors].sort(),
@@ -2466,8 +2494,10 @@ function computeCharacteristicsUncached(
   const printedPt = !def.activated.some((ability) => ability.station === true);
   let power = printedPt ? (def.power ?? 0) : 0;
   let toughness = printedPt ? (def.toughness ?? 0) : 0;
-  // Layer 6 — a permanent that lost its abilities keeps no printed keywords.
+  // Layer 6 — a permanent that lost its abilities keeps no printed keywords,
+  // nor its printed toxic.
   const keywords = new Set<Keyword>(lostAbilities ? [] : def.keywords);
+  let toxic = lostAbilities ? 0 : def.toxic;
   // Layers 3 + 4 — text substitution, then every type-changing effect in
   // timestamp order: the object's own modifiers (a man-land's animation adds
   // `creature`) and type-granting statics.
@@ -2508,6 +2538,9 @@ function computeCharacteristicsUncached(
   for (const effect of staticEffects) {
     const granted = grantOutlastsLoss(lostAt, effect.timestamp);
     if (granted) for (const keyword of effect.keywords) keywords.add(keyword);
+    // Each grant is one more instance of toxic, and instances add up (rule
+    // 702.164b).
+    if (granted) toxic += effect.toxic;
     for (const r of effect.restrictions) restrictions.add(r);
     if (effect.combatDamageByToughness !== undefined && byToughness !== "always") {
       byToughness = effect.combatDamageByToughness;
@@ -2637,6 +2670,7 @@ function computeCharacteristicsUncached(
     basePower,
     baseToughness,
     keywords,
+    toxic,
     types,
     subtypes,
     colors,

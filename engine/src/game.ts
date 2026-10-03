@@ -227,6 +227,7 @@ import {
 } from "./state.js";
 import type {
   AwaitingDecision,
+  CasualtyAsk,
   CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
@@ -4244,7 +4245,8 @@ export class Game {
     delete this.state.turnRestrictions;
     delete this.state.turnDefenderAttacks;
     delete this.state.turnProhibitions;
-    delete this.state.combatsAfterThisCombat;
+    delete this.state.phasesAfterThisCombat;
+    delete this.state.turn.addedUpkeep;
     delete this.state.extraMainPhases;
     delete this.state.turn.combatPhases;
     delete this.state.turn.mainPhases;
@@ -4464,6 +4466,12 @@ export class Game {
         this.promptNextDiscard();
         continue;
       }
+      // A spell just cast with casualty: its caster is offered each optional
+      // sacrifice in turn (rule 702.153a), before its copy goes on the stack.
+      if ((this.state.pendingCasualty?.length ?? 0) > 0) {
+        this.promptNextCasualty();
+        continue;
+      }
       // Work through a sacrifice effect (Diabolic Edict / Fleshbag Marauder):
       // ask each player who has a choice in turn, then sacrifice everything
       // chosen at once (rule 101.4) — so an aristocrat sacrificed to one
@@ -4522,17 +4530,32 @@ export class Game {
       this.prepareForPriority(this.state.awaiting?.player ?? this.activePlayer);
       return;
     }
-    // "After this phase, there is an additional combat phase" (rule 500.8):
-    // straight after this one — and, "followed by an additional main phase",
-    // one more main phase once it's over.
-    const after = this.state.combatsAfterThisCombat;
-    if (this.state.turn.step === "end-combat" && after !== undefined && after.length > 0) {
+    // Phases added after the combat phase that just ended (rule 500.8), or
+    // after the additional beginning phase that did, which came after it: the
+    // next one owed. "After this phase, there is an additional combat phase"
+    // — and, "followed by an additional main phase", one more main phase once
+    // it's over; or an additional upkeep step, which is a beginning phase of
+    // its own with its untap and draw steps skipped (rules 500.10, 500.11).
+    const addedUpkeepEnding = this.state.turn.step === "upkeep" && this.state.turn.addedUpkeep === true;
+    if (addedUpkeepEnding) delete this.state.turn.addedUpkeep;
+    const after = this.state.phasesAfterThisCombat;
+    if ((this.state.turn.step === "end-combat" || addedUpkeepEnding) && after !== undefined && after.length > 0) {
       const [next, ...rest] = after;
-      if (rest.length > 0) this.state.combatsAfterThisCombat = rest;
-      else delete this.state.combatsAfterThisCombat;
+      if (rest.length > 0) this.state.phasesAfterThisCombat = rest;
+      else delete this.state.phasesAfterThisCombat;
+      if (next.kind === "upkeep") {
+        this.state.turn.addedUpkeep = true;
+        this.enterStep("upkeep");
+        return;
+      }
       if (next.withMain) this.state.extraMainPhases = (this.state.extraMainPhases ?? 0) + 1;
       this.emit({ type: "additional-combat-phase" });
       this.enterStep("begin-combat");
+      return;
+    }
+    // Then the turn goes on as it would have after that combat phase.
+    if (addedUpkeepEnding) {
+      this.enterStep("postcombat-main");
       return;
     }
     if (this.state.turn.step === "postcombat-main" && (this.state.extraMainPhases ?? 0) > 0) {
@@ -6713,6 +6736,10 @@ export class Game {
     // A free cast (cascade, suspend) targets like any other — the trigger
     // is about being targeted, not about how the spell was paid for.
     this.announceTargeted(targets, owner, cardId, true);
+    // Casualty is an additional cost, so a free cast may pay it too (rule
+    // 601.2b); this cast happens while something resolves, after which the
+    // active player gets priority.
+    this.queueCasualty(owner, cardId, this.activePlayer);
     return true;
   }
 
@@ -8731,7 +8758,125 @@ export class Game {
     }
     // Cast during a resolution: once that resolution finishes, the active
     // player gets priority (rule 117.3b), not necessarily the caster.
-    this.afterPlayerAction(via === "effect" ? this.activePlayer : player);
+    const priorityTo = via === "effect" ? this.activePlayer : player;
+    this.queueCasualty(player, cardId, priorityTo);
+    this.afterPlayerAction(priorityTo);
+  }
+
+  /**
+   * Casualty (rule 702.153a): "As an additional cost to cast this spell, you
+   * may sacrifice a creature with power N or greater" — printed on the spell
+   * or given to it by a `grantsToSpells` static (Silverquill, the Disputant),
+   * each instance its own cost (702.153b). Queued once the spell is on the
+   * stack, so a grant that reads it as cast (Anhelo, the Painter's "the first
+   * instant or sorcery spell you cast each turn") sees it; asked by
+   * `promptNextCasualty` before anything else happens.
+   */
+  private queueCasualty(player: PlayerId, spellId: ObjectId, priorityTo: PlayerId): void {
+    const spell = this.state.objects[spellId];
+    if (spell === undefined || spell.zone !== "stack" || spell.kind !== "card") return;
+    const amounts: number[] = [];
+    const printed = this.registry.get(printedCardName(spell)).casualty;
+    if (printed !== null) amounts.push(printed);
+    for (const id of this.state.zones.shared.battlefield) {
+      const source = this.state.objects[id];
+      if (source === undefined) continue;
+      for (const ability of this.registry.get(printedCardName(source)).static) {
+        const n = ability.grantsToSpells?.casualty;
+        if (n !== undefined && spellGrantReaches(this.state, this.registry, source, ability, spell)) amounts.push(n);
+      }
+    }
+    if (amounts.length === 0) return;
+    (this.state.pendingCasualty ??= []).push({ spell: spellId, player, amounts, priorityTo });
+  }
+
+  /** The creatures `player` could sacrifice for casualty `amount`: theirs,
+   * with power `amount` or greater now, and able to be sacrificed. */
+  private casualtyCandidates(player: PlayerId, amount: number): ObjectId[] {
+    return this.battlefieldMatching(player, {
+      type: "creature",
+      controlledBy: "you",
+      power: { op: "gte", n: amount },
+    }).filter((id) => this.canBeSacrificed(id));
+  }
+
+  /** Ask the next casualty cost owed (see `queueCasualty`) as a
+   * `choose-permanents` of up to one creature. An instance its caster has
+   * nothing to pay with is skipped, as is a spell that has left the stack. */
+  private promptNextCasualty(): void {
+    const [ask, ...queue] = this.state.pendingCasualty ?? [];
+    if (queue.length > 0) this.state.pendingCasualty = queue;
+    else delete this.state.pendingCasualty;
+    if (ask === undefined) return;
+    const spell = this.state.objects[ask.spell];
+    if (spell === undefined || spell.zone !== "stack" || this.state.players[ask.player]?.hasLost !== false) return;
+    for (let i = 0; i < ask.amounts.length; i += 1) {
+      const amount = ask.amounts[i];
+      const eligible = this.casualtyCandidates(ask.player, amount);
+      if (eligible.length === 0) continue;
+      this.state.awaiting = {
+        kind: "choose-permanents",
+        player: ask.player,
+        eligible,
+        min: 0,
+        max: 1,
+        prompt: `Casualty ${amount} — you may sacrifice a creature with power ${amount} or greater to copy ${nameOf(spell)}`,
+        then: { kind: "sequence", effects: [] },
+        source: ask.spell,
+        x: 0,
+        casualty: { ...ask, amounts: ask.amounts.slice(i) },
+      };
+      return;
+    }
+  }
+
+  /** Answers a casualty cost (`promptNextCasualty`): the creature chosen, if
+   * any, is sacrificed as the cost (rule 601.2h), and the spell's "when you
+   * cast this spell, if a casualty cost was paid for it, copy it" triggers
+   * (702.153a). It's the spell's own ability, of no card's ability list, so
+   * it carries its own record, as a mana-spend rider does. Then the next
+   * instance is asked, and once none is left, `priorityTo` gets priority. */
+  private applyCasualty(player: PlayerId, chosen: readonly ObjectId[], ask: CasualtyAsk): void {
+    this.state.awaiting = null;
+    const [amount, ...rest] = ask.amounts;
+    const spell = this.state.objects[ask.spell];
+    const victim = chosen[0];
+    if (
+      amount !== undefined &&
+      victim !== undefined &&
+      spell?.zone === "stack" &&
+      this.casualtyCandidates(player, amount).includes(victim)
+    ) {
+      const id = this.splitOneFromStack(victim);
+      const sacrificer = this.state.objects[id].controller;
+      this.moveObject(id, "graveyard");
+      this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
+      const text = `Casualty ${amount} — copy ${nameOf(spell)}. You may choose new targets for the copy.`;
+      this.state.pendingTriggers.push({
+        sourceObjectId: ask.spell,
+        cardName: printedCardName(spell),
+        abilityIndex: 0,
+        controller: player,
+        triggerObject: ask.spell,
+        lastKnownRefs: { triggerSpell: spell.zoneChangeCount ?? 0 },
+        delayed: {
+          id: `casualty-${this.state.nextObjectSeq}-${rest.length}`,
+          controller: player,
+          // Never consulted: the record goes straight on the stack, like a
+          // mana-spend rider's.
+          at: "next-end-step",
+          createdOnTurn: this.state.turn.number,
+          createdDuringEndStep: false,
+          source: ask.spell,
+          sourceName: printedCardName(spell),
+          targets: [],
+          effect: { kind: "copy-spell", target: "trigger-spell", newTargets: true },
+          text,
+        },
+      });
+    }
+    if (rest.length > 0) (this.state.pendingCasualty ??= []).unshift({ ...ask, amounts: rest });
+    this.prepareForPriority(ask.priorityTo);
   }
 
   /**
@@ -11996,7 +12141,9 @@ export class Game {
           // are real choices — Mindscour Dragon's "target player mills four",
           // Sword of Fire and Ice's "any target" — never the event's to fill.)
           const autoCandidate: TargetRef | undefined =
-            ability.trigger.on === "becomes-target" && event.type === "object-targeted"
+            ability.trigger.on === "becomes-target" &&
+            ability.trigger.targeterNotTarget !== true &&
+            event.type === "object-targeted"
               ? { kind: "player" as const, player: event.by }
               : undefined;
           // Only hand the event-determined player to slot 0 if that slot can
@@ -12526,6 +12673,11 @@ export class Game {
     } else if (event.type === "life-changed") {
       // "That player" of a life-gain or life-loss trigger — the one whose
       // life changed (Mindcrank: "that player mills that many cards").
+      player = event.player;
+    } else if (event.type === "permanent-sacrificed") {
+      // The player who sacrificed it (Bloodroot Apothecary: "whenever an
+      // opponent sacrifices a noncreature token, that player gets two
+      // poison counters").
       player = event.player;
     } else if (event.type === "attacker-blocked") {
       // The defending player — the one whose creatures blocked it.
@@ -15121,8 +15273,23 @@ export class Game {
       finishExiledAsItResolves: (spell, feather) => this.finishExiledAsItResolves(spell, feather),
       additionalCombat: (afterThisPhase) => {
         if (afterThisPhase === undefined) this.state.extraCombats += 1;
-        else (this.state.combatsAfterThisCombat ??= []).push({ withMain: afterThisPhase.withMain });
+        // Directly after this phase, so ahead of any added after it before
+        // (rule 500.8).
+        else {
+          (this.state.phasesAfterThisCombat ??= []).unshift({ kind: "combat", withMain: afterThisPhase.withMain });
+        }
         this.emit({ type: "additional-combat-queued", player: controller });
+      },
+      additionalUpkeeps: (count) => {
+        // "You get" a step on someone else's turn: none is added (rule
+        // 500.10a). And "after this phase" is after the combat phase under
+        // way, the only place its card resolves it.
+        if (count <= 0 || controller !== this.activePlayer) return;
+        if (PHASE_OF_STEP[this.state.turn.step] !== "combat") return;
+        const added = Array.from({ length: Math.min(count, Game.MAX_EFFECT_INSTANCES) }, () => ({
+          kind: "upkeep" as const,
+        }));
+        (this.state.phasesAfterThisCombat ??= []).unshift(...added);
       },
       additionalLandDrops: (amount) => {
         const seat = this.state.players[controller];
@@ -18377,6 +18544,10 @@ export class Game {
     if (awaiting === null || awaiting.kind !== "choose-permanents") {
       throw new Error("unreachable: choosePermanents.whyCannot should have caught this");
     }
+    if (awaiting.casualty !== undefined) {
+      this.applyCasualty(player, chosen, awaiting.casualty);
+      return;
+    }
     const { then, source, x } = awaiting;
     this.state.awaiting = null;
     for (const id of chosen) {
@@ -19309,12 +19480,18 @@ export class Game {
         return step === "end" && endStepOk;
       case "your-next-end-step":
         return step === "end" && endStepOk && active === trigger.controller;
-      // An upkeep is over by the time anything could create one of these, so
-      // the next `enterStep("upkeep")` is always a later turn's.
+      // A turn's own upkeep is over by the time anything could create one of
+      // these, so the next `enterStep("upkeep")` is a later turn's — or an
+      // additional upkeep step this turn (Obeka, Splitter of Seconds), which
+      // began after it was made and is the next upkeep (rule 500.10).
       case "next-upkeep":
-        return step === "upkeep" && laterTurn;
+        return step === "upkeep" && (laterTurn || this.state.turn.addedUpkeep === true);
       case "your-next-upkeep":
-        return step === "upkeep" && laterTurn && active === trigger.controller;
+        return (
+          step === "upkeep" &&
+          (laterTurn || this.state.turn.addedUpkeep === true) &&
+          active === trigger.controller
+        );
       // Made during this combat's end of combat step, it waits for the next
       // one: this step began before it existed.
       case "end-of-combat":
@@ -20899,6 +21076,14 @@ export class Game {
       this.emit({ type: "damage-dealt", source, target, amount, combat });
       this.changeLife(target.player, -amount);
       this.applyLifelink(source, amount, sourceLastKnown);
+      // Toxic (rules 120.3g, 702.164c): combat damage dealt to a player by a
+      // creature with toxic also has its controller give that player its
+      // total toxic value in poison counters — however much damage it was
+      // (the rulings), and never for noncombat damage.
+      if (combat) {
+        const toxic = this.toxicOf(source);
+        if (toxic > 0) this.changePlayerCounters(target.player, "poison", toxic);
+      }
       // A creature dealing combat damage to the monarch makes its controller
       // the monarch (rule 720.5).
       const src = this.state.objects[source];
@@ -20953,6 +21138,16 @@ export class Game {
     this.emit({ type: "damage-dealt", source, target, amount, combat });
     this.applyLifelink(source, amount, sourceLastKnown);
     return amount;
+  }
+
+  /** The total toxic value (rule 702.164b) of `source` if it's a creature on
+   * the battlefield — what its combat damage to a player gives in poison
+   * counters — else 0. */
+  private toxicOf(source: ObjectId): number {
+    const object = this.state.objects[source];
+    if (object === undefined || object.zone !== "battlefield") return 0;
+    const chars = computeCharacteristics(this.state, this.registry, source);
+    return chars.types.includes("creature") ? chars.toxic : 0;
   }
 
   /** True if `source` is a battlefield creature whose current keywords

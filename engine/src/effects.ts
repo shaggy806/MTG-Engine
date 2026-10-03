@@ -2258,6 +2258,19 @@ export type EffectSpec =
       readonly withMain?: boolean;
     }
   | {
+      /** "You get that many additional upkeep steps after this phase" (Obeka,
+       * Splitter of Seconds, whose `amount` is `{ triggerValue: true }`, the
+       * combat damage it dealt): an upkeep step belongs to a beginning phase,
+       * so this adds `amount` beginning phases, each holding only an upkeep
+       * step — their untap and draw steps are skipped (rules 500.10, 500.11)
+       * — straight after the combat phase under way, ahead of any phase added
+       * after it earlier (500.8). "At the beginning of your upkeep" triggers
+       * in each. Only on its controller's own turn ("you get" — 500.10a), and
+       * only from a combat phase, which is where its one card resolves it. */
+      readonly kind: "additional-upkeep-steps";
+      readonly amount: EffectAmount;
+    }
+  | {
       /** "N damage divided as you choose among any number of targets"
        * (Magma Opus): each target of the group starting at slot `from` is
        * dealt its share of the spell's `division`. A target that has become
@@ -3830,6 +3843,8 @@ export interface EffectApi {
   /** Queue an additional combat + main phase after this main phase (Aggravated
    * Assault). */
   additionalCombat(afterThisPhase?: { readonly withMain: boolean }): void;
+  /** See the `additional-upkeep-steps` {@link EffectSpec}. */
+  additionalUpkeeps(count: number): void;
   /** See the `additional-land-drop` {@link EffectSpec}. */
   additionalLandDrops(amount: number): void;
   /** Untap every battlefield permanent matching `filter`. */
@@ -5620,6 +5635,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       ctx.additionalCombat(
         spec.afterThisPhase === true ? { withMain: spec.withMain === true } : undefined,
       );
+      return;
+    case "additional-upkeep-steps":
+      ctx.additionalUpkeeps(amountValue(spec.amount, ctx));
       return;
     case "additional-land-drop":
       ctx.additionalLandDrops(spec.amount);

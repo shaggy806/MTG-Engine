@@ -129,6 +129,7 @@ import _poolMetastaticEvangel from "../pool/metastatic-evangel.js";
 import _poolMetropolisSprite from "../pool/metropolis-sprite.js";
 import _poolMikaeusTheLunarch from "../pool/mikaeus-the-lunarch.js";
 import _poolMindsEye from "../pool/minds-eye.js";
+import _poolMirrex from "../pool/mirrex.js";
 import _poolMoaningWall from "../pool/moaning-wall.js";
 import _poolMoggRaider from "../pool/mogg-raider.js";
 import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
@@ -206,6 +207,7 @@ import _poolWanderersIntervention from "../pool/wanderers-intervention.js";
 import _poolWarleadersCall from "../pool/warleaders-call.js";
 import _poolWatcherInTheMist from "../pool/watcher-in-the-mist.js";
 import _poolWateryGrave from "../pool/watery-grave.js";
+import _poolWhiteSunsTwilight from "../pool/white-suns-twilight.js";
 import _poolWightOfTheReliquary from "../pool/wight-of-the-reliquary.js";
 import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
 import _poolWindStrider from "../pool/wind-strider.js";
@@ -347,6 +349,7 @@ const shard: CardShard = {
     _poolMetropolisSprite,
     _poolMikaeusTheLunarch,
     _poolMindsEye,
+    _poolMirrex,
     _poolMoaningWall,
     _poolMoggRaider,
     _poolMoorishCavalry,
@@ -424,6 +427,7 @@ const shard: CardShard = {
     _poolWarleadersCall,
     _poolWatcherInTheMist,
     _poolWateryGrave,
+    _poolWhiteSunsTwilight,
     _poolWightOfTheReliquary,
     _poolWildwoodPatrol,
     _poolWindStrider,
