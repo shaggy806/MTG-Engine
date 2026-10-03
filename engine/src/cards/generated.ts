@@ -3261,6 +3261,7 @@ import _poolLeoninSunStandard from "./pool/leonin-sun-standard.js";
 import _poolLeoninWarleader from "./pool/leonin-warleader.js";
 import _poolLeopardSpottedJiao from "./pool/leopard-spotted-jiao.js";
 import _poolLeshracsRite from "./pool/leshracs-rite.js";
+import _poolLethalScheme from "./pool/lethal-scheme.js";
 import _poolLetterOfAcceptance from "./pool/letter-of-acceptance.js";
 import _poolLevitation from "./pool/levitation.js";
 import _poolLeyDruid from "./pool/ley-druid.js";
@@ -3308,6 +3309,7 @@ import _poolLithatog from "./pool/lithatog.js";
 import _poolLithoformEngine from "./pool/lithoform-engine.js";
 import _poolLiturgyOfBlood from "./pool/liturgy-of-blood.js";
 import _poolLiveOrDie from "./pool/live-or-die.js";
+import _poolLivingDeath from "./pool/living-death.js";
 import _poolLivingLightning from "./pool/living-lightning.js";
 import _poolLivingTempest from "./pool/living-tempest.js";
 import _poolLizardWarrior from "./pool/lizard-warrior.js";
@@ -4826,6 +4828,7 @@ import _poolScourForScrap from "./pool/scour-for-scrap.js";
 import _poolScourFromExistence from "./pool/scour-from-existence.js";
 import _poolScouredBarrens from "./pool/scoured-barrens.js";
 import _poolScourgeOfFleets from "./pool/scourge-of-fleets.js";
+import _poolScourgeOfTheThrone from "./pool/scourge-of-the-throne.js";
 import _poolScourgeOfValkas from "./pool/scourge-of-valkas.js";
 import _poolScourgemark from "./pool/scourgemark.js";
 import _poolScouringSands from "./pool/scouring-sands.js";
@@ -5732,6 +5735,7 @@ import _poolTerrasymbiosis from "./pool/terrasymbiosis.js";
 import _poolTerrianWorldTyrant from "./pool/terrian-world-tyrant.js";
 import _poolTerritorialBaloth from "./pool/territorial-baloth.js";
 import _poolTerritorialHammerskull from "./pool/territorial-hammerskull.js";
+import _poolTerritorialHellkite from "./pool/territorial-hellkite.js";
 import _poolTerritorialRoc from "./pool/territorial-roc.js";
 import _poolTerritorialScythecat from "./pool/territorial-scythecat.js";
 import _poolTerrorOfMountVelus from "./pool/terror-of-mount-velus.js";
@@ -10185,6 +10189,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLeoninWarleader,
   _poolLeopardSpottedJiao,
   _poolLeshracsRite,
+  _poolLethalScheme,
   _poolLetterOfAcceptance,
   _poolLevitation,
   _poolLeyDruid,
@@ -10232,6 +10237,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolLithoformEngine,
   _poolLiturgyOfBlood,
   _poolLiveOrDie,
+  _poolLivingDeath,
   _poolLivingLightning,
   _poolLivingTempest,
   _poolLizardWarrior,
@@ -11750,6 +11756,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolScourFromExistence,
   _poolScouredBarrens,
   _poolScourgeOfFleets,
+  _poolScourgeOfTheThrone,
   _poolScourgeOfValkas,
   _poolScourgemark,
   _poolScouringSands,
@@ -12656,6 +12663,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTerrianWorldTyrant,
   _poolTerritorialBaloth,
   _poolTerritorialHammerskull,
+  _poolTerritorialHellkite,
   _poolTerritorialRoc,
   _poolTerritorialScythecat,
   _poolTerrorOfMountVelus,

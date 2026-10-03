@@ -108,6 +108,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "for-each-target": (n, v) => v.child(n.effect),
   "for-each-player": (n, v) => v.child(n.effect),
   "for-target": (n, v) => v.child(n.effect),
+  // Their slot 0 is a convoking creature, not the spell's target 0.
+  "for-each-convoker": none,
+  "for-convoker": none,
   "choose-permanents": none,
   damage: (n, v) => {
     v.touch(n.target, "harm", MAJOR);
@@ -178,6 +181,10 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     if (n.target !== undefined) v.touch(n.target, "help", MINOR);
   },
   "damage-by-toughness": (n, v) => v.touch(n.target, "help", MINOR),
+  "attack-random-opponent": (n, v) => {
+    v.touch(n.target, "either", MINOR);
+    v.child(n.else);
+  },
   // Its own source in print (Tree of Redemption); which way it cuts turns
   // on the numbers, not the side of the table.
   "put-in-command-zone": (n, v) => v.touch(n.target, "either", MINOR),
@@ -337,6 +344,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   },
   ward: none,
   "sacrifice-all-but": none,
+  "sacrifice-all": none,
+  "put-exiled-this-way-onto-battlefield": none,
   encore: none,
   goad: (n, v) => v.touch(n.target, "harm", MINOR),
   // Menace and can't block: a drawback on a blocker, a boon on an attacker.

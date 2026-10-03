@@ -452,6 +452,210 @@ describe("Sarkhan, Soul Aflame", () => {
   });
 });
 
+describe("Scourge of the Throne", () => {
+  const counters = (game: Game, id: ObjectId) => game.state.objects[id].counters["+1/+1"] ?? 0;
+
+  it("attacking the player with the most life untaps the attackers and adds a combat, only the first time each turn", () => {
+    const game = setUp();
+    const scourge = ready(game, "Scourge of the Throne");
+    const bears = ready(game, "Grizzly Bears");
+    toAttackers(game);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: scourge, defender: B },
+        { attacker: bears, defender: B },
+      ],
+    });
+    game.advanceUntil(quiet);
+    // Tied for the most life: dethrone's counter, and the attackers untapped.
+    expect(counters(game, scourge)).toBe(1);
+    expect(game.state.objects[scourge].tapped).toBe(false);
+    expect(game.state.objects[bears].tapped).toBe(false);
+    // The additional combat, in the same turn: Scourge attacks again.
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
+    expect(game.state.turn.number).toBe(1);
+    // Bob still has the most life, so only "the first time each turn" stops it.
+    game.state.players[B].life = 40;
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: scourge, defender: B }] });
+    game.advanceUntil(quiet);
+    // Dethrone again; but not a third combat — this wasn't its first attack.
+    expect(counters(game, scourge)).toBe(2);
+    expect(game.state.objects[scourge].tapped).toBe(true);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
+    expect(game.state.turn.number).toBe(2);
+  });
+
+  it("does nothing attacking a player without the most life", () => {
+    const game = setUp();
+    const scourge = ready(game, "Scourge of the Throne");
+    game.state.players[A].life = 25;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: scourge, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(counters(game, scourge)).toBe(0);
+    expect(game.state.objects[scourge].tapped).toBe(true);
+  });
+
+  it("asks again as it resolves: no extra combat once the defender no longer has the most life — but dethrone's counter stays", () => {
+    const game = setUp();
+    const scourge = ready(game, "Scourge of the Throne");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: scourge, defender: B }] });
+    game.advanceUntil((s) => s.zones.shared.stack.length > 0 && s.pendingTriggers.length === 0 && s.awaiting === null);
+    game.debugApplyEffect(A, { kind: "gain-life", amount: 3 });
+    game.advanceUntil(quiet);
+    expect(counters(game, scourge)).toBe(1);
+    expect(game.state.objects[scourge].tapped).toBe(true);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
+    expect(game.state.turn.number).toBe(2);
+  });
+});
+
+describe("Territorial Hellkite", () => {
+  const chosenFor = (game: Game, id: ObjectId) => game.state.objects[id].mustAttackPlayer;
+
+  it("picks an opponent at random that it must attack this combat, and not the one it attacked last combat", () => {
+    const game = setUp([A, B, C]);
+    const hellkite = ready(game, "Territorial Hellkite");
+    toAttackers(game);
+    const first = chosenFor(game, hellkite);
+    expect([B, C]).toContain(first);
+    expect(attackOffer(game).mustAttack).toContain(hellkite);
+    const other = first === B ? C : B;
+    // Not the other opponent: only the chosen one obeys the requirement.
+    expect(() =>
+      game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: hellkite, defender: other! }] }),
+    ).toThrow();
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: hellkite, defender: first! }] });
+    game.advanceUntil((s) => s.turn.step === "postcombat-main");
+    // This combat only.
+    expect(chosenFor(game, hellkite)).toBeUndefined();
+    // Alice's next combat: the one it didn't attack.
+    game.advanceUntil((s) => s.turn.number === 4 && s.awaiting?.kind === "attackers");
+    expect(chosenFor(game, hellkite)).toBe(other);
+  });
+
+  it("with only the opponent it attacked last combat to pick, taps itself", () => {
+    const game = setUp();
+    const hellkite = ready(game, "Territorial Hellkite");
+    toAttackers(game);
+    expect(chosenFor(game, hellkite)).toBe(B);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: hellkite, defender: B }] });
+    game.advanceUntil((s) => s.turn.number === 3 && s.turn.step === "begin-combat" && quiet(s));
+    expect(chosenFor(game, hellkite)).toBeUndefined();
+    expect(game.state.objects[hellkite].tapped).toBe(true);
+    // And the turn after, it didn't attack last combat: any opponent again.
+    game.advanceUntil((s) => s.turn.number === 5 && s.turn.step === "begin-combat" && quiet(s));
+    expect(chosenFor(game, hellkite)).toBe(B);
+  });
+
+  it("only triggers on its controller's turn", () => {
+    const game = setUp();
+    const hellkite = ready(game, "Territorial Hellkite", B);
+    game.advanceUntil((s) => s.turn.number === 1 && s.turn.step === "postcombat-main");
+    expect(chosenFor(game, hellkite)).toBeUndefined();
+    expect(game.state.objects[hellkite].tapped).toBe(false);
+  });
+});
+
+describe("Living Death", () => {
+  const castLivingDeath = (game: Game) => {
+    for (let i = 0; i < 5; i += 1) game.state.objects[game.debugSpawn("Swamp", A, "battlefield")].tapped = false;
+    const spell = game.debugSpawn("Living Death", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: spell, targets: [] });
+    game.advanceUntil(quiet);
+  };
+
+  it("swaps every player's creatures on the battlefield for the creature cards in their graveyard", () => {
+    const game = setUp();
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const giant = ready(game, "Hill Giant");
+    const wurm = game.debugSpawn("Craw Wurm", B, "graveyard");
+    const angel = ready(game, "Serra Angel", B);
+    const island = game.debugSpawn("Island", B, "graveyard");
+    castLivingDeath(game);
+    expect(game.state.objects[bears].zone).toBe("battlefield");
+    expect(game.state.objects[bears].controller).toBe(A);
+    expect(game.state.objects[wurm].zone).toBe("battlefield");
+    expect(game.state.objects[wurm].controller).toBe(B);
+    expect(game.state.objects[giant].zone).toBe("graveyard");
+    expect(game.state.objects[angel].zone).toBe("graveyard");
+    // Not a creature card: stays.
+    expect(game.state.objects[island].zone).toBe("graveyard");
+  });
+
+  it("brings back only what it exiled from graveyards, not a creature a replacement exiled as it was sacrificed", () => {
+    const game = setUp();
+    // In the graveyard before Rest in Peace, which would exile it on the way.
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    ready(game, "Rest in Peace", B);
+    const giant = ready(game, "Hill Giant");
+    castLivingDeath(game);
+    expect(game.state.objects[bears].zone).toBe("battlefield");
+    expect(game.state.objects[giant].zone).toBe("exile");
+  });
+});
+
+describe("Lethal Scheme", () => {
+  const prepare = (game: Game) => {
+    for (let i = 0; i < 2; i += 1) game.state.objects[game.debugSpawn("Swamp", A, "battlefield")].tapped = false;
+    const one = ready(game, "Grizzly Bears");
+    const two = ready(game, "Grizzly Bears");
+    const angel = ready(game, "Serra Angel", B);
+    const nonland = game.debugSpawn("Hill Giant", A, "hand");
+    const spell = game.debugSpawn("Lethal Scheme", A, "hand");
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: spell,
+      targets: [obj(angel)],
+      convoke: [{ creature: one }, { creature: two }],
+    });
+    return { one, two, angel, nonland };
+  };
+  const discard = (game: Game, card: ObjectId) => {
+    game.advanceUntil((s) => s.awaiting?.kind === "discard");
+    game.dispatch({ type: "discard", player: A, cards: [card] });
+  };
+  const anIsland = (game: Game): ObjectId =>
+    game.state.zones.perPlayer[A].hand.find((id) => game.state.objects[id].cardName === "Island")!;
+
+  it("destroys, then each creature that convoked it connives, in the order its controller chooses", () => {
+    const game = setUp();
+    const { one, two, angel, nonland } = prepare(game);
+    expect(game.state.objects[one].tapped && game.state.objects[two].tapped).toBe(true);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    expect(game.state.objects[angel].zone).toBe("graveyard");
+    // The second to convoke goes first.
+    game.dispatch({ type: "choose-modes", player: A, modes: [1] });
+    discard(game, nonland);
+    discard(game, anIsland(game));
+    game.advanceUntil(quiet);
+    expect(game.state.objects[two].counters["+1/+1"]).toBe(1);
+    expect(game.state.objects[one].counters["+1/+1"] ?? 0).toBe(0);
+  });
+
+  it("a convoker that has died since still connives, but gets no counter", () => {
+    const game = setUp();
+    const { one, two, nonland } = prepare(game);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(one)]);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    const handBefore = game.state.zones.perPlayer[A].hand.length;
+    // The dead one first: it draws and discards (a nonland card), nothing gets a counter.
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    discard(game, nonland);
+    discard(game, anIsland(game));
+    game.advanceUntil(quiet);
+    // Two draws, two discards.
+    expect(game.state.zones.perPlayer[A].hand.length).toBe(handBefore);
+    expect(game.state.objects[nonland].zone).toBe("graveyard");
+    expect(game.state.objects[one].zone).toBe("graveyard");
+    expect(game.state.objects[two].counters["+1/+1"] ?? 0).toBe(0);
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

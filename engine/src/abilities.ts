@@ -419,7 +419,14 @@ export type DefenderLife =
    * (Breena, the Demagogue): more than at least one *other* opponent of this
    * permanent's controller. An intervening-if (rule 603.4), so it's asked
    * again as the ability resolves, of the same attacked player. */
-  | "more-than-another-opponent";
+  | "more-than-another-opponent"
+  /** "…, **if it's attacking** the player with the most life or tied for
+   * most life" (Scourge of the Throne): `"most"` as an intervening-if (rule
+   * 603.4), asked again as the ability resolves of the player the attacker
+   * is attacking then — as it last existed if it has left the battlefield,
+   * and nobody if it has been removed from combat (the ruling: unlike
+   * dethrone, it must hold at both times). */
+  | "most-still-attacking";
 
 /** Who the triggering object must be relative to the ability's source. */
 export type TriggerWho =
@@ -681,6 +688,11 @@ export type TriggerSpec =
        * the player with the most life or tied for most life". See
        * {@link DefenderLife}. */
       readonly defenderLife?: DefenderLife;
+      /** "Whenever this creature attacks **for the first time each turn**"
+       * (Scourge of the Throne): only a declaration of an attacker that
+       * hadn't been declared one earlier this turn — a later combat's
+       * attack doesn't fire it. */
+      readonly firstTimeEachTurn?: boolean;
     }
   | {
       /**

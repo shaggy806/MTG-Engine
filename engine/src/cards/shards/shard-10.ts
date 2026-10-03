@@ -120,6 +120,7 @@ import _poolLeoninScimitar from "../pool/leonin-scimitar.js";
 import _poolLightningTalons from "../pool/lightning-talons.js";
 import _poolLionheartGlimmer from "../pool/lionheart-glimmer.js";
 import _poolLiveOrDie from "../pool/live-or-die.js";
+import _poolLivingDeath from "../pool/living-death.js";
 import _poolLordOfExtinction from "../pool/lord-of-extinction.js";
 import _poolLuminarchAspirant from "../pool/luminarch-aspirant.js";
 import _poolLyraDawnbringer from "../pool/lyra-dawnbringer.js";
@@ -357,6 +358,7 @@ const shard: CardShard = {
     _poolLightningTalons,
     _poolLionheartGlimmer,
     _poolLiveOrDie,
+    _poolLivingDeath,
     _poolLordOfExtinction,
     _poolLuminarchAspirant,
     _poolLyraDawnbringer,

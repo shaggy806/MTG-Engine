@@ -190,6 +190,7 @@ import _poolTalonTrooper from "../pool/talon-trooper.js";
 import _poolTaoistHermit from "../pool/taoist-hermit.js";
 import _poolTempestAngler from "../pool/tempest-angler.js";
 import _poolTempestDrake from "../pool/tempest-drake.js";
+import _poolTerritorialHellkite from "../pool/territorial-hellkite.js";
 import _poolTheMycotyrant from "../pool/the-mycotyrant.js";
 import _poolTheWindCrystal from "../pool/the-wind-crystal.js";
 import _poolThirdPathSavant from "../pool/third-path-savant.js";
@@ -418,6 +419,7 @@ const shard: CardShard = {
     _poolTaoistHermit,
     _poolTempestAngler,
     _poolTempestDrake,
+    _poolTerritorialHellkite,
     _poolTheMycotyrant,
     _poolTheWindCrystal,
     _poolThirdPathSavant,

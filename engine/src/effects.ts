@@ -930,6 +930,33 @@ export type EffectSpec =
     }
   | {
       /**
+       * `effect` once for each creature that convoked the resolving spell
+       * (rule 702.51a), in the order they were tapped, each bound to target
+       * slot 0 — Lethal Scheme's "each creature that convoked this spell
+       * connives" is `{ kind: "for-each-convoker", effect: { kind:
+       * "connive", target: 0 } }`. As a `sequence`'s steps, so one that stops
+       * to ask (a connive's discard) is answered before the next. A creature
+       * that has left the battlefield since — or come back as a new object
+       * (rule 400.7) — is read as it last existed and not acted on: it still
+       * connives, its last controller drawing and discarding, but gets no
+       * counter (rule 701.50c). They go one at a time in the order the
+       * spell's controller chooses (Lethal Scheme's ruling): with more than
+       * one left, a `choose-modes` asks which is next.
+       */
+      readonly kind: "for-each-convoker";
+      readonly effect: EffectSpec;
+      /** Set only by the engine: the convokers (by index) still to go. */
+      readonly remaining?: readonly number[];
+    }
+  | {
+      /** One convoker's turn of a `for-each-convoker`. Built by the engine
+       * as it applies one — never authored. */
+      readonly kind: "for-convoker";
+      readonly index: number;
+      readonly effect: EffectSpec;
+    }
+  | {
+      /**
        * "Deals X damage **divided evenly, rounded down**, among any number of
        * targets" (Fireball): the targets from slot `from` on — an
        * `any-number` group — each dealt `amount` divided by how many of them
@@ -1124,7 +1151,13 @@ export type EffectSpec =
        * spell. Same shape as `damage`/`gain-life`'s field of the same name. */
       readonly toControllerOfTarget?: number;
     }
-  | { readonly kind: "tap"; readonly target: number }
+  | {
+      /** Tap `target` — a slot, or `"source"` for the effect's own
+       * permanent with no target at all (Territorial Hellkite's "tap this
+       * creature"), only while it's still that object (rule 400.7). */
+      readonly kind: "tap";
+      readonly target: EffectTargetRef;
+    }
   | {
       /** `target` accepts `"trigger-object"` for an untargeted "untap it"
        * off a trigger (Amulet of Vigor: untap the permanent that just
@@ -1439,6 +1472,28 @@ export type EffectSpec =
       /** `"each-opponent"`: Soul-Guide Lantern's "exile each opponent's
        * graveyard", one move like `"each-player"`. */
       readonly target: number | "you" | "each-player" | "each-opponent";
+      /** Only the cards matching this — Living Death's "each player exiles
+       * all **creature cards** from their graveyard". */
+      readonly filter?: CardFilter;
+    }
+  | {
+      /** Each player in `who` sacrifices every permanent matching `filter`
+       * they control — Living Death's "then sacrifices all creatures they
+       * control": nobody chooses anything, and they all go at once (one
+       * event, rule 603.10a). One that can't be sacrificed stays. */
+      readonly kind: "sacrifice-all";
+      readonly who: PlayerScope;
+      readonly filter: CardFilter;
+    }
+  | {
+      /** Put every card this resolution has exiled so far — from anywhere
+       * but the battlefield — onto the battlefield under its owner's
+       * control, all at once (Living Death's "then puts all cards they
+       * exiled this way onto the battlefield"). A permanent exiled from the
+       * battlefield, by a replacement say (Leyline of the Void's), isn't
+       * among them (the ruling), nor a card that has left exile since. Each
+       * one's "as this enters" choices are asked first (rule 614.12). */
+      readonly kind: "put-exiled-this-way-onto-battlefield";
     }
   | {
       /** Exile a target permanent, then immediately return it to the
@@ -2213,6 +2268,25 @@ export type EffectSpec =
       readonly kind: "attack-despite-defender";
       readonly target?: EffectTargetRef;
       readonly filter?: CardFilter;
+    }
+  | {
+      /**
+       * Territorial Hellkite's "choose an opponent at random **that this
+       * creature didn't attack during your last combat**. This creature
+       * attacks that player this combat if able. If you can't choose an
+       * opponent this way, tap this creature": the game picks among the
+       * effect's controller's opponents still in the game — with
+       * `notAttackedLastCombat`, not the one `target` attacked in its
+       * controller's combat before this one (any, if it didn't attack then)
+       * — and `target` must attack that player this combat if able (rule
+       * 508.1d; not a planeswalker of theirs, and no cost need be paid). A
+       * player who can't be attacked may still be picked (the rulings).
+       * With nobody to pick, `else` happens instead.
+       */
+      readonly kind: "attack-random-opponent";
+      readonly target: EffectTargetRef;
+      readonly notAttackedLastCombat?: boolean;
+      readonly else?: EffectSpec;
     }
   | {
       /** `target` assigns combat damage equal to its toughness rather than
@@ -3891,6 +3965,16 @@ export interface EffectApi {
    * where it was when targeted, whether it was found illegal — moves with
    * it. */
   withTargetAt(from: number, index: number): ResolutionContext;
+  /** How many creatures convoked the resolving spell (its `convokedBy`). */
+  convokerCount(): number;
+  /** Convoker `index`, named for a choice among them: its name as it is
+   * now, or as it last existed on the battlefield, and when it tapped. */
+  convokerLabel(index: number): string;
+  /** This context with convoker `index` of the resolving spell as target 0 —
+   * see `for-each-convoker`: acted on only while it's the same object on
+   * the battlefield that tapped (rule 400.7), read as it last existed there
+   * otherwise. */
+  withConvoker(index: number): ResolutionContext;
   /** This context with only targets `offset`…`offset + count - 1`, as
    * slots 0… — one announced mode's own targets (see the `"modal"`
    * {@link EffectSpec}), with what was known about each moving with it. */
@@ -3977,7 +4061,14 @@ export interface EffectApi {
   reflexiveTrigger(targets: readonly TargetSpec[], effect: EffectSpec, text: string, value?: number): void;
   /** Exile every card in `target`'s graveyard (a player — Bojuka Bog), as
    * one move. */
-  exileGraveyard(target: TargetRef): void;
+  exileGraveyard(target: TargetRef, filter?: CardFilter): void;
+  /** Each of `players` sacrifices every permanent matching `filter` they
+   * control, at once — see the `"sacrifice-all"` {@link EffectSpec}. */
+  sacrificeAll(players: readonly PlayerId[], filter: CardFilter): void;
+  /** See the `"put-exiled-this-way-onto-battlefield"` {@link EffectSpec}.
+   * `true` when it stopped first to ask an "as this enters" choice (nothing
+   * has moved; apply it again once that's answered). */
+  putExiledThisWayOntoBattlefield(): boolean;
   /** Carry out `fn` as one simultaneous event: the cards it takes out of
    * graveyards leave together (one `cards-left-graveyard`), the permanents
    * it takes off the battlefield leave together (rule 603.10a), and the ones
@@ -4450,6 +4541,10 @@ export interface EffectApi {
   /** The permanent `target` becomes a copy of `of` until end of turn — see
    * the `"become-copy"` {@link EffectSpec}. */
   becomeCopy(target: ObjectId, of: ObjectId, exceptions?: CopyExceptions): void;
+  /** Pick an opponent at random for creature `target` to attack this combat
+   * — see the `"attack-random-opponent"` {@link EffectSpec}. `false` when
+   * there was nobody to pick; `true` otherwise, `target` gone included. */
+  attackRandomOpponent(target: ObjectId, notAttackedLastCombat: boolean): boolean;
   /** The game becomes day or night (rule 726). */
   setDayNight(value: "day" | "night"): void;
   /** `who` becomes the monarch (rule 720). */
@@ -5543,6 +5638,32 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       applyEffectSpec(spec.effect, ctx.withTargetAt(spec.from, spec.index));
       return;
     }
+    case "for-each-convoker": {
+      const remaining = spec.remaining ?? Array.from({ length: ctx.convokerCount() }, (_, index) => index);
+      if (remaining.length === 0) return;
+      const one = (index: number): EffectSpec => ({ kind: "for-convoker", index, effect: spec.effect });
+      if (remaining.length === 1) {
+        applyEffectSpec(one(remaining[0]), ctx);
+        return;
+      }
+      // One at a time, in the order the controller chooses: which next — the
+      // rest after it, asked again.
+      ctx.chooseModes(
+        1,
+        1,
+        remaining.map((index) => ({
+          text: ctx.convokerLabel(index),
+          effect: {
+            kind: "sequence",
+            effects: [one(index), { ...spec, remaining: remaining.filter((i) => i !== index) }],
+          },
+        })),
+      );
+      return;
+    }
+    case "for-convoker":
+      applyEffectSpec(spec.effect, ctx.withConvoker(spec.index));
+      return;
     case "choose-permanents":
       ctx.choosePermanents(spec.filter, spec.min ?? 0, amountValue(spec.upTo, ctx), spec.then, spec.prompt);
       return;
@@ -5684,7 +5805,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "tap": {
-      const target = ctx.targets[spec.target];
+      const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.tapPermanent(target);
       return;
     }
@@ -5858,7 +5979,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const scope = spec.target;
         ctx.simultaneously(() => {
           for (const player of ctx.playersInScope(scope)) {
-            ctx.exileGraveyard({ kind: "player", player });
+            ctx.exileGraveyard({ kind: "player", player }, spec.filter);
           }
         });
         return;
@@ -5867,7 +5988,15 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         spec.target === "you"
           ? ({ kind: "player", player: ctx.controller } as const)
           : ctx.targets[spec.target];
-      if (target !== undefined) ctx.exileGraveyard(target);
+      if (target !== undefined) ctx.exileGraveyard(target, spec.filter);
+      return;
+    }
+    case "sacrifice-all":
+      ctx.sacrificeAll(ctx.playersInScope(spec.who), spec.filter);
+      return;
+    case "put-exiled-this-way-onto-battlefield": {
+      const parked = ctx.parkedCount();
+      if (ctx.putExiledThisWayOntoBattlefield()) ctx.resumeAfterDecisions(spec, parked);
       return;
     }
     case "flicker": {
@@ -6137,9 +6266,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "connive": {
       const target = resolveEffectTarget(spec.target, ctx);
-      if (target?.kind !== "object") return;
+      // One that has left — or is back as a new object — still connives, as
+      // it last existed: its last controller draws and discards, and nothing
+      // gets a counter (rule 701.50c). A context that only reads it (a
+      // `for-each-convoker`'s) says which it was.
+      const read = target ?? (typeof spec.target === "number" ? ctx.readTargets?.[spec.target] : undefined);
+      if (read?.kind !== "object") return;
       if (spec.discardsSince === undefined) {
-        const player = ctx.controllerOf(target);
+        const player = ctx.controllerOf(read);
         const n = amountValue(spec.amount ?? 1, ctx);
         if (player === undefined || n <= 0) return;
         const since = ctx.nextEventSeq();
@@ -6159,7 +6293,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       const nonland = ctx.thisWay("discarded", undefined, { notTypes: ["land"] }, spec.discardsSince);
       const amount = nonland.reduce((n, e) => n + e.count, 0);
-      if (amount > 0) ctx.addCounter(target, "+1/+1", amount);
+      if (amount > 0 && target !== undefined) ctx.addCounter(target, "+1/+1", amount);
       return;
     }
     case "remove-counter": {
@@ -6289,6 +6423,13 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "damage-by-toughness": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) ctx.damageByToughness(target);
+      return;
+    }
+    case "attack-random-opponent": {
+      const target = resolveEffectTarget(spec.target, ctx);
+      if (target?.kind !== "object") return;
+      const chosen = ctx.attackRandomOpponent(target.object, spec.notAttackedLastCombat === true);
+      if (!chosen && spec.else !== undefined) applyEffectSpec(spec.else, ctx);
       return;
     }
     case "put-in-command-zone": {

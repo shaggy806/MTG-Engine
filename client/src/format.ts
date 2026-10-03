@@ -280,6 +280,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       }`
     case 'text-changed':
       return `${name(event.object)}: text "${event.from}" → "${event.to}"`
+    case 'random-player-chosen':
+      return `${who(event.chosen)} is chosen at random: ${name(event.object)} attacks them this combat if able`
     case 'attacker-declared':
       return `${name(event.attacker)} attacks ${defender(event.defender)}`
     case 'entered-attacking':

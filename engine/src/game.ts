@@ -4576,7 +4576,15 @@ export class Game {
     this.state.turn.step = step;
     // Which combat or main phase of the turn this is (Karlach's "the first
     // combat phase of the turn").
-    if (step === "begin-combat") this.state.turn.combatPhases = (this.state.turn.combatPhases ?? 0) + 1;
+    if (step === "begin-combat") {
+      this.state.turn.combatPhases = (this.state.turn.combatPhases ?? 0) + 1;
+      // "Your last combat" (Territorial Hellkite): the one before this.
+      const active = this.state.players[this.activePlayer];
+      if (active !== undefined) {
+        if (active.currentCombat !== undefined) active.previousCombat = active.currentCombat;
+        active.currentCombat = { turn: this.state.turn.number, phase: this.state.turn.combatPhases };
+      }
+    }
     if (isMainPhase(step)) this.state.turn.mainPhases = (this.state.turn.mainPhases ?? 0) + 1;
     // Mana empties as each step and phase ends (rule 500.4), except units
     // whose source said otherwise — Savage Ventmaw's "you don't lose this
@@ -5453,12 +5461,48 @@ export class Game {
     );
   }
 
+  /**
+   * The `attack-random-opponent` effect (Territorial Hellkite): one of
+   * `controller`'s opponents still in the game, picked with the game's
+   * seeded randomness — with `notAttackedLastCombat`, not the player `id`
+   * attacked during `controller`'s combat before this one — is the player
+   * `id` must attack this combat if able. `false` when there was nobody to
+   * pick. Announced as the `random-player-chosen` event.
+   */
+  private attackRandomOpponent(controller: PlayerId, id: ObjectId, notAttackedLastCombat: boolean): boolean {
+    const object = this.state.objects[id];
+    if (object === undefined || object.zone !== "battlefield") return true;
+    let attacked: PlayerId | null = null;
+    if (notAttackedLastCombat) {
+      const last = this.state.players[controller]?.previousCombat;
+      const record = object.lastAttack;
+      if (last !== undefined && record !== undefined && record.combat.turn === last.turn && record.combat.phase === last.phase) {
+        attacked = record.player;
+      }
+    }
+    const candidates = this.scopedPlayers(controller, "each-opponent").filter((p) => p !== attacked);
+    if (candidates.length === 0) return false;
+    const chosen = candidates[Math.min(candidates.length - 1, Math.floor(this.rng.next() * candidates.length))];
+    this.state.rngState = this.rng.seed;
+    const target = this.splitOneFromStack(id);
+    const attacker = this.state.objects[target];
+    attacker.mustAttackPlayer = chosen;
+    attacker.mustAttackPlayerThisCombat = true;
+    this.emit({ type: "random-player-chosen", player: controller, chosen, object: target });
+    return true;
+  }
+
   /** End every modifier that lasts "until end of combat" (rule 500.5a) —
    * Legion Warboss's token's "attacks this combat if able". */
   private expireUntilEndOfCombat(): void {
     const expired: ObjectId[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
+      // "Attacks that player this combat if able" (Territorial Hellkite).
+      if (object.mustAttackPlayerThisCombat === true) {
+        delete object.mustAttackPlayer;
+        delete object.mustAttackPlayerThisCombat;
+      }
       if (!object.modifiers.some((m) => m.untilEndOfCombat === true)) continue;
       object.modifiers = object.modifiers.filter((m) => m.untilEndOfCombat !== true);
       expired.push(id);
@@ -5604,6 +5648,23 @@ export class Game {
         return false;
       }
     }
+    if (trigger.defenderLife === "most-still-attacking") {
+      // "If it's attacking …": what it attacks now, or as it left the
+      // battlefield; removed from combat, it attacks nobody.
+      const attacker = object.triggerObject;
+      const live = attacker === undefined ? undefined : this.state.objects[attacker];
+      const stint = object.lastKnownRefs?.triggerObject;
+      const stillHere =
+        live?.zone === "battlefield" && (stint === undefined || (live.zoneChangeCount ?? 0) === stint);
+      const defender = stillHere ? live.attacking : object.lastKnownRefs?.player;
+      if (
+        defender === null ||
+        defender === undefined ||
+        !this.defenderLifeRanks(trigger.defenderLife, defender, object.controller)
+      ) {
+        return false;
+      }
+    }
     return this.stillAttackingAlone(ability, object);
   }
 
@@ -5644,6 +5705,7 @@ export class Game {
     const others = this.state.turnOrder.filter((p) => p !== defender && !this.state.players[p].hasLost);
     switch (rank) {
       case "most":
+      case "most-still-attacking":
         return others.every((p) => this.state.players[p].life <= attacked.life);
       case "more-than-another-opponent":
         return others.some((p) => p !== you && this.state.players[p].life < attacked.life);
@@ -5820,7 +5882,12 @@ export class Game {
     // complete (508.3), so an attack trigger's "if no other creatures are
     // attacking that player" sees every attacker, not just the ones declared
     // before its own.
-    const declaredNow: { readonly id: ObjectId; readonly defender: PlayerId | ObjectId; readonly taps: boolean }[] = [];
+    const declaredNow: {
+      readonly id: ObjectId;
+      readonly defender: PlayerId | ObjectId;
+      readonly taps: boolean;
+      readonly first: boolean;
+    }[] = [];
     for (const { attacker, defender, count } of declarations) {
       // A compacted stack materializes into real individual attackers here —
       // all of it, or the entry's `count` — see `materializeStack`.
@@ -5829,12 +5896,21 @@ export class Game {
         object.attacking = defender;
         object.blockedBy = [];
         object.blocked = false;
+        // "Attacks for the first time each turn": not declared earlier this
+        // turn, in an earlier combat.
+        const first = object.attackedThisTurn !== true;
         // Boast (702.135) asks whether this creature attacked this turn —
-        // recorded here, and reset in the controller's untap step.
+        // recorded here, and reset as each turn begins.
         object.attackedThisTurn = true;
+        // Which combat, and which player — "didn't attack during your last
+        // combat" (Territorial Hellkite). A planeswalker isn't its player.
+        object.lastAttack = {
+          combat: { turn: this.state.turn.number, phase: this.state.turn.combatPhases ?? 1 },
+          player: this.state.players[defender as PlayerId] !== undefined ? (defender as PlayerId) : null,
+        };
         const taps = !this.objHasKeyword(id, "vigilance");
         if (taps) object.tapped = true;
-        declaredNow.push({ id, defender, taps });
+        declaredNow.push({ id, defender, taps, first });
       }
     }
     if (tax > 0) {
@@ -5843,14 +5919,14 @@ export class Game {
       this.executePayment(player, payment);
     }
     const allAttackers = declaredNow.map((d) => d.id);
-    for (const { id, defender, taps } of declaredNow) {
+    for (const { id, defender, taps, first } of declaredNow) {
       // Attacking *taps* the creature, so a "becomes tapped" trigger (rule
       // 701.21a) fires here exactly as it would for a cost or for convoke —
       // Emmara, Soul of the Accord makes its Soldier when it attacks. This was
       // setting the flag without announcing it, so those triggers silently
       // never fired on the commonest way a creature gets tapped.
       if (taps) this.emit({ type: "permanent-tapped", object: id });
-      this.emit({ type: "attacker-declared", attacker: id, defender });
+      this.emit({ type: "attacker-declared", attacker: id, defender, ...(first ? { firstThisTurn: true as const } : {}) });
       // Who attacked whom, for the bots' sense of threat (`PlayerState.
       // lastAttackedBy`): a planeswalker's controller counts as attacked.
       const attacked = this.state.players[defender as PlayerId]
@@ -9121,11 +9197,15 @@ export class Game {
     // Convoke (rule 702.51a): tap the chosen creatures as part of the cost,
     // alongside the mana payment above — a token peeled off a stack for each
     // time the stack is named.
+    // Which creatures convoked it, each as the object it was then — "each
+    // creature that convoked this spell" (Lethal Scheme).
+    const convokers: { object: ObjectId; stint: number }[] = [];
     for (const { creature } of convoked) {
       if (this.state.objects[creature] === undefined) continue;
       const id = this.splitOneFromStack(creature);
       this.state.objects[id].tapped = true;
       this.emit({ type: "permanent-tapped", object: id });
+      convokers.push({ object: id, stint: this.state.objects[id].zoneChangeCount ?? 0 });
     }
 
     // Escape (rule 702.139a): exile N other cards from the graveyard as part
@@ -9195,6 +9275,7 @@ export class Game {
     // Where it's cast from, known as its costs are paid — mana that may only
     // pay for a spell cast from a graveyard asks (Lord of the Forsaken).
     object.castFrom = castFrom;
+    if (convokers.length > 0) object.convokedBy = convokers;
     if (impulseUsed?.oncePerTurn === true && impulseUsed.source !== undefined) {
       const linked = this.state.objects[impulseUsed.source.id];
       if (linked !== undefined) linked.impulseCastOnTurn = this.state.turn.number;
@@ -14652,6 +14733,7 @@ export class Game {
           (spec.defender === undefined ||
             (spec.defender === "player") === (this.state.players[event.defender as PlayerId] !== undefined)) &&
           (spec.aloneAgainstDefender !== true || this.attackingAlone(event.attacker, event.defender)) &&
+          (spec.firstTimeEachTurn !== true || event.firstThisTurn === true) &&
           (spec.defenderLife === undefined ||
             this.defenderLifeRanks(spec.defenderLife, event.defender, self.controller))
         );
@@ -16193,6 +16275,8 @@ export class Game {
         colorsAmongPermanents(this.state, this.registry, controller, filter, except),
       becomeCopy: (target, of, exceptions) =>
         this.becomeCopyUntilEndOfTurn(target, of, exceptions, lastKnownOf({ kind: "object", object: of })),
+      attackRandomOpponent: (target, notAttackedLastCombat) =>
+        this.attackRandomOpponent(controller, target, notAttackedLastCombat),
       permanentsMatching: (filter) =>
         this.battlefieldMatching(controller, filter).map((object) => ({
           object,
@@ -16332,6 +16416,47 @@ export class Game {
                     .map((slot) => slot - offset),
                 }
               : {}),
+          },
+        );
+      },
+      convokerCount: () => this.state.objects[source]?.convokedBy?.length ?? 0,
+      convokerLabel: (index) => {
+        const record = this.state.objects[source]?.convokedBy?.[index];
+        if (record === undefined) return "?";
+        const live = this.state.objects[record.object];
+        const here = live?.zone === "battlefield" && (live.zoneChangeCount ?? 0) === record.stint;
+        const name = here
+          ? nameOf(live)
+          : (this.lastKnownOfStint(record.object, record.stint)?.name ?? (live !== undefined ? nameOf(live) : "?"));
+        const nth = index + 1;
+        const suffix = nth % 10 === 1 && nth % 100 !== 11 ? "st" : nth % 10 === 2 && nth % 100 !== 12 ? "nd" : nth % 10 === 3 && nth % 100 !== 13 ? "rd" : "th";
+        return `${name} (convoked ${nth}${suffix}${here ? "" : ", gone"})`;
+      },
+      withConvoker: (index) => {
+        // The creature as the stint that tapped: acted on only while it's
+        // still that object on the battlefield (rule 400.7), read as it last
+        // existed otherwise — pinned as the context's "tapped" permanent, a
+        // creature tapped to pay this spell's cost.
+        const record = this.state.objects[source]?.convokedBy?.[index];
+        const ref: TargetRef | undefined = record === undefined ? undefined : { kind: "object", object: record.object };
+        const live = record === undefined ? undefined : this.state.objects[record.object];
+        const same =
+          record !== undefined && live?.zone === "battlefield" && (live.zoneChangeCount ?? 0) === record.stint;
+        return this.makeResolutionContext(
+          source,
+          controller,
+          [same ? ref : undefined],
+          x,
+          triggerValue,
+          triggerObject,
+          stackMultiplier,
+          resolutionCount,
+          ["battlefield"],
+          record === undefined ? refs : { ...refs, tapped: { object: record.object, zoneChangeCount: record.stint } },
+          {
+            ...(opts.sourceLost !== undefined ? { sourceLost: opts.sourceLost } : {}),
+            ...(opts.abilityKey !== undefined ? { abilityKey: opts.abilityKey } : {}),
+            ...(ref !== undefined ? { readTargets: [ref] } : {}),
           },
         );
       },
@@ -16551,15 +16676,60 @@ export class Game {
           under,
           types,
         ),
-      exileGraveyard: (target) => {
+      exileGraveyard: (target, filter) => {
         if (target.kind !== "player") return;
         // Snapshot: `moveObject` mutates the graveyard array as it goes. The
-        // whole graveyard goes at once.
+        // whole graveyard goes at once — or every card in it matching
+        // `filter` (Living Death's creature cards).
+        const going = [...this.state.zones.perPlayer[target.player].graveyard].filter(
+          (id) => filter === undefined || matchesFilter(this.state, this.registry, id, filter, { you: controller }),
+        );
         this.withGraveyardLeaveBatch(() => {
-          for (const id of [...this.state.zones.perPlayer[target.player].graveyard]) {
-            this.moveObject(id, "exile");
+          for (const id of going) this.moveObject(id, "exile");
+        });
+      },
+      sacrificeAll: (players, filter) => {
+        // Every one at once, nobody choosing (rule 603.10a — each one's dies
+        // trigger sees the others go). One that can't be sacrificed stays.
+        const victims = this.state.zones.shared.battlefield.filter((id) => {
+          const object = this.state.objects[id];
+          return (
+            object !== undefined &&
+            players.includes(object.controller) &&
+            matchesFilter(this.state, this.registry, id, filter, { you: object.controller }) &&
+            this.canBeSacrificed(id)
+          );
+        });
+        if (victims.length === 0) return;
+        this.withLeaveBatch(() => {
+          this.snapshotLeaving(victims);
+          for (const id of victims) {
+            const sacrificer = this.state.objects[id].controller;
+            this.moveObject(id, "graveyard");
+            this.emit({ type: "permanent-sacrificed", object: id, player: sacrificer });
           }
         });
+      },
+      putExiledThisWayOntoBattlefield: () => {
+        // What this resolution exiled from a graveyard, a hand or a library —
+        // not a permanent it exiled (a replacement's), and only a card still
+        // in exile. Each one's "as this enters" choices first (rule 614.12).
+        const returning = thisWayEntries(this.state, "exiled", since)
+          .filter((e) => !e.departed)
+          .map((e) => e.object)
+          .filter((id) => {
+            const object = this.state.objects[id];
+            return object !== undefined && object.zone === "exile" && !object.isToken;
+          });
+        if (returning.some((id) => this.askEnterChoice(id, this.state.objects[id].owner))) return true;
+        this.withEnterBatch(() => {
+          for (const id of returning) {
+            if (this.moveObject(id, "battlefield")) {
+              this.emit({ type: "permanent-entered-battlefield", object: id });
+            }
+          }
+        });
+        return false;
       },
       simultaneously: (fn) =>
         this.withLeaveBatch(() => this.withGraveyardLeaveBatch(() => this.withEnterBatch(fn))),
@@ -25502,6 +25672,9 @@ export class Game {
     delete object.impulse;
     delete object.impulseCastOnTurn;
     delete object.attackedThisTurn;
+    delete object.lastAttack;
+    delete object.mustAttackPlayer;
+    delete object.mustAttackPlayerThisCombat;
     delete object.damageThisTurn;
     delete object.dealtDamageToCreatureOnTurn;
     // Goaded and suspected are designations of the permanent that left
@@ -25602,6 +25775,7 @@ export class Game {
     object.enteredGiftTo = enteringGiftTo;
     object.entry = entry;
     object.castFrom = undefined;
+    delete object.convokedBy;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves
     // exile some other way is no longer the one the Banishing Light took, so
     // nothing comes back when the Light does. `exileByEffect` sets this

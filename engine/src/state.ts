@@ -82,6 +82,11 @@ export interface GameObject {
    * onto the battlefield records as `entry.cast.from`. Gone with its next
    * move. */
   castFrom?: ZoneType;
+  /** The creatures that convoked this spell (rule 702.51a), each as the
+   * battlefield stint it tapped from, in the order they were tapped — "each
+   * creature that convoked this spell" (Lethal Scheme). Gone with its next
+   * move. */
+  convokedBy?: readonly { readonly object: ObjectId; readonly stint: number }[];
   /**
    * This card is in exile because of an "exile until ~ leaves the
    * battlefield" ability, and this is the id of the permanent that did it
@@ -200,6 +205,14 @@ export interface GameObject {
    * `attackedThisTurn` filter clause. Reset as each turn begins, and by any
    * change of zone (the permanent that comes back never attacked). */
   attackedThisTurn?: boolean;
+  /** The combat this permanent was last declared an attacker in, and the
+   * player it attacked then (`null` for a planeswalker) — "that this
+   * creature didn't attack during your last combat" (Territorial Hellkite).
+   * Gone with any change of zone. */
+  lastAttack?: { readonly combat: CombatId; readonly player: PlayerId | null };
+  /** `mustAttackPlayer` lasts only this combat (rule 500.5a) — Territorial
+   * Hellkite's "attacks that player this combat if able". */
+  mustAttackPlayerThisCombat?: true;
   /** What damaged this permanent this turn — see {@link DamageHistory}.
    * Only this stint's (a zone change makes a new object, rule 400.7), and
    * only this turn's: a record from an earlier turn is stale. */
@@ -1474,6 +1487,12 @@ export interface PlayerState {
    * included — "their last turn". Set as each of their turns begins, and as
    * they declare attackers (so a first turn counts). */
   lastTurnTaken?: number;
+  /** The combat phase of this player's turns under way or most recently
+   * begun (`turn`, and `phase` — `TurnState.combatPhases` then), and the
+   * one before it — "your last combat" as a new combat begins (Territorial
+   * Hellkite). Set as each beginning of combat step of their turn starts. */
+  currentCombat?: CombatId;
+  previousCombat?: CombatId;
   /**
    * Which printing of each card this player brought, keyed by card name — a
    * Scryfall reference in the same shapes {@link CardDefinition.art} accepts
@@ -2226,6 +2245,13 @@ export type DelayedTriggerTiming =
   /** "At end of combat" — the beginning of the next end of combat step
    * (rule 511.2): myriad's "exile the tokens at end of combat". */
   | "end-of-combat";
+
+/** Which combat phase: the turn's number, and which of that turn's combat
+ * phases (`TurnState.combatPhases` as it began — 1 for the first). */
+export interface CombatId {
+  readonly turn: number;
+  readonly phase: number;
+}
 
 /** One object in a {@link TurnHistory} list; a token stack entering or
  * leaving at once counts as every token in it. */

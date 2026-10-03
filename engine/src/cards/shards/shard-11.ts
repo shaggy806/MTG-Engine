@@ -175,6 +175,7 @@ import _poolSaprazzanHeir from "../pool/saprazzan-heir.js";
 import _poolSatyrWayfinder from "../pool/satyr-wayfinder.js";
 import _poolSchoolOfTheUnseen from "../pool/school-of-the-unseen.js";
 import _poolScorchingMissile from "../pool/scorching-missile.js";
+import _poolScourgeOfTheThrone from "../pool/scourge-of-the-throne.js";
 import _poolScrawlingCrawler from "../pool/scrawling-crawler.js";
 import _poolSearchlightGeist from "../pool/searchlight-geist.js";
 import _poolSejiriRefuge from "../pool/sejiri-refuge.js";
@@ -427,6 +428,7 @@ const shard: CardShard = {
     _poolSatyrWayfinder,
     _poolSchoolOfTheUnseen,
     _poolScorchingMissile,
+    _poolScourgeOfTheThrone,
     _poolScrawlingCrawler,
     _poolSearchlightGeist,
     _poolSejiriRefuge,

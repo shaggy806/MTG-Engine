@@ -100,6 +100,7 @@ import _poolKikiJikiMirrorBreaker from "../pool/kiki-jiki-mirror-breaker.js";
 import _poolKindredDominance from "../pool/kindred-dominance.js";
 import _poolKnightOfTheWhiteOrchid from "../pool/knight-of-the-white-orchid.js";
 import _poolLastMarchOfTheEnts from "../pool/last-march-of-the-ents.js";
+import _poolLethalScheme from "../pool/lethal-scheme.js";
 import _poolLightningJavelin from "../pool/lightning-javelin.js";
 import _poolLilianasMastery from "../pool/lilianas-mastery.js";
 import _poolLivingTempest from "../pool/living-tempest.js";
@@ -325,6 +326,7 @@ const shard: CardShard = {
     _poolKindredDominance,
     _poolKnightOfTheWhiteOrchid,
     _poolLastMarchOfTheEnts,
+    _poolLethalScheme,
     _poolLightningJavelin,
     _poolLilianasMastery,
     _poolLivingTempest,

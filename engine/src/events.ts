@@ -483,10 +483,21 @@ export type GameEvent =
       readonly to: string;
     })
   | (Base & {
+      /** `player`'s effect picked `chosen` at random for `object` — the
+       * opponent Territorial Hellkite must attack this combat. */
+      readonly type: "random-player-chosen";
+      readonly player: PlayerId;
+      readonly chosen: PlayerId;
+      readonly object: ObjectId;
+    })
+  | (Base & {
       readonly type: "attacker-declared";
       readonly attacker: ObjectId;
       /** A player, or an opponent's planeswalker (rule 508.1). */
       readonly defender: PlayerId | ObjectId;
+      /** It hadn't been declared an attacker yet this turn — "attacks for
+       * the first time each turn" (Scourge of the Throne). */
+      readonly firstThisTurn?: true;
     })
   | (Base & {
       /** A creature was put onto the battlefield attacking `defender` (rule
