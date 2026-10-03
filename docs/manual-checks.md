@@ -188,6 +188,7 @@ How to use it:
 | [Neriv, Crackling Vanguard](#neriv-crackling-vanguard) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 | [Living Death](#living-death) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 | [Reckless Impulse, Bloodbraid Elf, Ulamog, the Ceaseless Hunger, Pako, Arcane Retriever](#reckless-impulse-bloodbraid-elf-ulamog-the-ceaseless-hunger-pako-arcane-retriever) | animation | Exiling from the top of a library |
+| [Tribute to the World Tree, Secure the Wastes, Thalisse, Reverent Medium, Simic Ascendancy, Basri's Solidarity](#tribute-to-the-world-tree-secure-the-wastes-thalisse-reverent-medium-simic-ascendancy-basris-solidarity) | rules call | Token stacks folding back |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3732,3 +3733,25 @@ How to use it:
   motion fades the cards in place.
 - **Known limits:** Cascade's misses going back to the bottom aren't animated: the counts that ran
   down jump back when the board lands (`BACKLOG.md`, Legibility of play).
+
+## Token stacks folding back (2026-10-03)
+
+### Tribute to the World Tree, Secure the Wastes, Thalisse, Reverent Medium, Simic Ascendancy, Basri's Solidarity
+
+*Rules call* — stack-counters (tokens split off a stack fold back once identical; counters on a
+stack count once per token)
+
+- **Setup:** dev-rooms `TREES` (2 players: a stack of ten Warrior tokens, Tribute to the World Tree,
+  Secure the Wastes in hand) and `TREE4` (4 players: Tribute, Secure the Wastes, 12 lands). For the
+  counts: Thalisse, Reverent Medium and Simic Ascendancy on your side, Basri's Solidarity in hand.
+- **Do:** Cast Secure the Wastes for 3 in `TREES` and for 10 in `TREE4`, and let Tribute's triggers
+  resolve. Then cast Basri's Solidarity, and pass to your end step.
+- **Check:** `TREES`: one ×10 Warrior tile at 1/1 and one ×3 tile at 3/3 with a "+1/+1 2" chip, not
+  three separate 3/3 tiles. `TREE4`: one ×10 tile at 3/3 with its chip once the last trigger
+  resolves. Each Warrior got exactly two counters (none got four, none none). Basri's Solidarity
+  puts one counter on every Warrior and Simic Ascendancy gets one growth counter per Warrior, not
+  per tile. At the end step Thalisse makes one Spirit per token you created this turn.
+- **Known limits:** While the triggers resolve the stack splits a Warrior at a time; it folds back
+  only once nothing is waiting. A per-token trigger that grants an effect instead (Rapid Augmenter's
+  haste) keeps the tokens apart until cleanup, each grant having its own timestamp. Counters landing
+  on tokens that fold away in the same frame don't float their "+1/+1 ×2" (`BACKLOG.md`).

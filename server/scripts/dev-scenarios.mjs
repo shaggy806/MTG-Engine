@@ -266,6 +266,37 @@ export default {
     bots: { bob: {} },
   },
 
+  TREES: {
+    about:
+      "2p. Counters on each token of a stack keep it one stack: alice has a stack of ten " +
+      "Warrior tokens and Tribute to the World Tree. Cast Secure the Wastes for 3: the three " +
+      "new Warriors fold into the stack as they enter, Tribute triggers once for each and " +
+      "puts two +1/+1 counters on one Warrior at a time, and the three end up one tile (x3, " +
+      "+1/+1 2) beside the untouched ten.",
+    players: ["alice", "bob"],
+    lands: { alice: 8, bob: 5 },
+    hand: { alice: ["Secure the Wastes"] },
+    setup(game) {
+      // Real tokens, made the way a card makes them: ten compact into one stack.
+      // Tribute arrives after them, so they didn't trigger it.
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Warrior Token", count: 10 });
+      game.debugSpawn("Tribute to the World Tree", "alice", "battlefield");
+    },
+    bots: { bob: {} },
+  },
+
+  TREE4: {
+    about:
+      "4p. Tribute to the World Tree with every Warrior entering: cast Secure the Wastes for " +
+      "10, Tribute triggers ten times and puts two +1/+1 counters on each Warrior in turn, " +
+      "and the ten end up one stack tile (x10, +1/+1 2) once the last trigger resolves.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 12, bob: 5, carol: 5, dave: 5 },
+    battlefield: { alice: ["Tribute to the World Tree"] },
+    hand: { alice: ["Secure the Wastes"] },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
   LURES: {
     about:
       "2p. Bob attacks alice with a Lure-enchanted Hill Giant and a Grizzly Bears. Every " +

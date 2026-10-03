@@ -14,6 +14,7 @@
 //   curl -s localhost:4099 -d '{"op":"spawn","room":"FOURP","player":"alice","cards":["Serra Angel"]}'
 //   curl -s localhost:4099 -d '{"op":"move","room":"FOURP","names":["Serra Angel"],"to":"graveyard"}'
 //   curl -s localhost:4099 -d '{"op":"life","room":"FOURP","player":"dave","value":5}'
+//   curl -s localhost:4099 -d '{"op":"objects","room":"TREES","names":["Warrior Token"]}'
 //   curl -s localhost:4099 -d '{"op":"eval","room":"FOURP","js":"return game.state.turn"}'
 //
 // Every command that changes a room pushes the result to its browsers at
@@ -261,6 +262,22 @@ const ops = {
     game.state.players[cmd.player].life = cmd.value;
     return { [cmd.player]: cmd.value };
   },
+  // Read-only, unlike `eval` (which pushes a frame): the objects named in
+  // `names` (or by `ids`) as the engine holds them — a token stack's
+  // `stackCount`, counters — for a test polling a board mid-animation.
+  objects: (_room, game, cmd) =>
+    resolveIds(game, cmd).map((id) => {
+      const o = game.state.objects[id];
+      return {
+        id,
+        cardName: o.cardName,
+        controller: o.controller,
+        zone: o.zone,
+        stackCount: o.stackCount ?? 1,
+        tapped: o.tapped,
+        counters: o.counters,
+      };
+    }),
   eval: (room, game, cmd) => new Function("game", "room", "registry", cmd.js)(game, room, registry),
 };
 /** Commands that change a room, and so push a frame afterwards. */
