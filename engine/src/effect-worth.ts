@@ -289,6 +289,16 @@ function untargetedWorth(effect: EffectSpec, ctx: WorthContext): number {
     case "cascade":
       // Taking cascade's free spell: about a card, like a tutor to hand.
       return effect.finish?.cast === true ? onPlayers(you, CARD, ctx) : 0;
+    case "choose-exiled-to-play": {
+      // A card to play this turn — free, an opponent's (Dauthi Voidwalker).
+      // Nothing, roughly, when no exiled card of another player's carries
+      // a counter to pick it out by.
+      const any = ctx.state.zones.shared.exile.some((id) => {
+        const card = ctx.state.objects[id];
+        return card !== undefined && card.owner !== ctx.controller && Object.keys(card.counters).length > 0;
+      });
+      return any ? onPlayers(you, effect.free === true ? CARD * 1.5 : CARD, ctx) : 0;
+    }
     default:
       return 0;
   }

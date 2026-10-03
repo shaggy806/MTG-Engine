@@ -1097,6 +1097,7 @@ import _poolColorfulFeiyiSparrow from "./pool/colorful-feiyi-sparrow.js";
 import _poolColosYearling from "./pool/colos-yearling.js";
 import _poolColossadactyl from "./pool/colossadactyl.js";
 import _poolColossalDreadmaw from "./pool/colossal-dreadmaw.js";
+import _poolColossalGraveReaver from "./pool/colossal-grave-reaver.js";
 import _poolColossalMajesty from "./pool/colossal-majesty.js";
 import _poolColossapede from "./pool/colossapede.js";
 import _poolColossodonYearling from "./pool/colossodon-yearling.js";
@@ -1324,6 +1325,7 @@ import _poolDauntlessCathar from "./pool/dauntless-cathar.js";
 import _poolDauntlessEscort from "./pool/dauntless-escort.js";
 import _poolDauntlessSurvivor from "./pool/dauntless-survivor.js";
 import _poolDauntlessVeteran from "./pool/dauntless-veteran.js";
+import _poolDauthiVoidwalker from "./pool/dauthi-voidwalker.js";
 import _poolDavenantArcher from "./pool/davenant-archer.js";
 import _poolDawnCharm from "./pool/dawn-charm.js";
 import _poolDawnGryff from "./pool/dawn-gryff.js";
@@ -5669,6 +5671,7 @@ import _poolTarSnare from "./pool/tar-snare.js";
 import _poolTarmogoyf from "./pool/tarmogoyf.js";
 import _poolTarnishedCitadel from "./pool/tarnished-citadel.js";
 import _poolTarpan from "./pool/tarpan.js";
+import _poolTasigurTheGoldenFang from "./pool/tasigur-the-golden-fang.js";
 import _poolTasseledDromedary from "./pool/tasseled-dromedary.js";
 import _poolTatteredApparition from "./pool/tattered-apparition.js";
 import _poolTatteredMummy from "./pool/tattered-mummy.js";
@@ -8025,6 +8028,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolColosYearling,
   _poolColossadactyl,
   _poolColossalDreadmaw,
+  _poolColossalGraveReaver,
   _poolColossalMajesty,
   _poolColossapede,
   _poolColossodonYearling,
@@ -8252,6 +8256,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolDauntlessEscort,
   _poolDauntlessSurvivor,
   _poolDauntlessVeteran,
+  _poolDauthiVoidwalker,
   _poolDavenantArcher,
   _poolDawnCharm,
   _poolDawnGryff,
@@ -12597,6 +12602,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTarmogoyf,
   _poolTarnishedCitadel,
   _poolTarpan,
+  _poolTasigurTheGoldenFang,
   _poolTasseledDromedary,
   _poolTatteredApparition,
   _poolTatteredMummy,

@@ -53,6 +53,9 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   fear: '', // ms-ability-duels-fear
   intimidate: '', // ms-ability-duels-intimidate
   skulk: '', // ms-ability-skulk
+  // No shadow icon anywhere in the font; shadow is evasion both ways, so the
+  // Duels unblockable one, as desertwalk borrows it.
+  shadow: '', // ms-ability-duels-unblockable
   // No flanking icon anywhere in the font; it's a block trigger, so the
   // combat-condition one.
   flanking: '', // ms-ability-combat-condition

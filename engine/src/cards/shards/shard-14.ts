@@ -183,6 +183,7 @@ import _poolSurgicalSkullbomb from "../pool/surgical-skullbomb.js";
 import _poolSuspiciousShambler from "../pool/suspicious-shambler.js";
 import _poolTalrand from "../pool/talrand.js";
 import _poolTanaTheBloodsower from "../pool/tana-the-bloodsower.js";
+import _poolTasigurTheGoldenFang from "../pool/tasigur-the-golden-fang.js";
 import _poolTempleOfSilence from "../pool/temple-of-silence.js";
 import _poolTempleOfTriumph from "../pool/temple-of-triumph.js";
 import _poolThalisseReverentMedium from "../pool/thalisse-reverent-medium.js";
@@ -405,6 +406,7 @@ const shard: CardShard = {
     _poolSuspiciousShambler,
     _poolTalrand,
     _poolTanaTheBloodsower,
+    _poolTasigurTheGoldenFang,
     _poolTempleOfSilence,
     _poolTempleOfTriumph,
     _poolThalisseReverentMedium,

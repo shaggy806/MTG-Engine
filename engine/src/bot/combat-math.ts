@@ -125,6 +125,8 @@ export function canBlock(blocker: CombatCreature, attacker: CombatCreature): boo
   }
   // Skulk (rule 702.118b): no blocker with greater power.
   if (a.has("skulk") && blocker.power > attacker.power) return false;
+  // Shadow (rule 702.28b): only shadow blocks shadow, and only shadow.
+  if (a.has("shadow") !== blocker.keywords.has("shadow")) return false;
   for (const [keyword, landType] of LANDWALK) {
     if (a.has(keyword) && blocker.controllerLands.has(landType)) return false;
   }

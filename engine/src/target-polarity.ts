@@ -111,6 +111,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   // Their slot 0 is a convoking creature, not the spell's target 0.
   "for-each-convoker": none,
   "for-convoker": none,
+  "choose-opponent": (n, v) => v.child(n.then),
+  "about-player": (n, v) => v.child(n.effect),
   "choose-permanents": none,
   damage: (n, v) => {
     v.touch(n.target, "harm", MAJOR);
@@ -345,7 +347,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   ward: none,
   "sacrifice-all-but": none,
   "sacrifice-all": none,
+  "choose-exiled-to-play": none,
   "put-exiled-this-way-onto-battlefield": none,
+  "put-arrived-onto-battlefield": none,
   encore: none,
   goad: (n, v) => v.touch(n.target, "harm", MINOR),
   // Menace and can't block: a drawback on a blocker, a boon on an attacker.

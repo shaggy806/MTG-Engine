@@ -303,6 +303,12 @@ export function whyCannotBlock(
       return `${blockerDef.name} can't block ${attackerDef.name} (${fear ? "fear" : "intimidate"})`;
     }
   }
+  // Shadow (rule 702.28b): a creature with it is blocked only by creatures
+  // with it, and one without it isn't blocked by them.
+  if (objHasKeyword(state, registry, attackerId, "shadow") !== objHasKeyword(state, registry, blockerId, "shadow")) {
+    const attackerDef = registry.get(printedCardName(attacker));
+    return `${blockerDef.name} can't block ${attackerDef.name} (shadow)`;
+  }
   // Skulk (rule 702.118b): not by a creature with greater power, compared as
   // the block is declared — a change afterwards undoes nothing (the ruling).
   if (

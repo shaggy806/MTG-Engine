@@ -1170,6 +1170,10 @@ export interface LastKnownRefs {
     readonly zoneChangeCount: number;
     readonly at: PlayerId | ObjectId | null;
   }[];
+  /** "One of them" (Colossal Grave-Reaver): the cards of the move a batched
+   * `put-into-graveyard` trigger fired on that counted for it, each as the
+   * object it became in that graveyard. */
+  readonly arrivedTogether?: readonly { readonly object: ObjectId; readonly zoneChangeCount: number }[];
   readonly enteredTogether?: readonly {
     readonly object: ObjectId;
     readonly zoneChangeCount: number;

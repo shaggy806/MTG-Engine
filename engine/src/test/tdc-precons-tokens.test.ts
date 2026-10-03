@@ -656,6 +656,164 @@ describe("Lethal Scheme", () => {
   });
 });
 
+describe("Dauthi Voidwalker", () => {
+  it("has shadow: it blocks and is blocked only by creatures with shadow", () => {
+    const game = setUp();
+    const dauthi = ready(game, "Dauthi Voidwalker");
+    const bears = ready(game, "Grizzly Bears");
+    const theirDauthi = ready(game, "Dauthi Voidwalker", B);
+    const theirBears = ready(game, "Grizzly Bears", B);
+    toAttackers(game);
+    game.dispatch({
+      type: "declare-attackers",
+      player: A,
+      attackers: [
+        { attacker: dauthi, defender: B },
+        { attacker: bears, defender: B },
+      ],
+    });
+    game.advanceUntil((s) => s.awaiting?.kind === "blockers");
+    expect(() =>
+      game.dispatch({ type: "declare-blockers", player: B, blocks: [{ blocker: theirBears, attacker: dauthi }] }),
+    ).toThrow(/shadow/);
+    expect(() =>
+      game.dispatch({ type: "declare-blockers", player: B, blocks: [{ blocker: theirDauthi, attacker: bears }] }),
+    ).toThrow(/shadow/);
+    game.dispatch({ type: "declare-blockers", player: B, blocks: [{ blocker: theirDauthi, attacker: dauthi }] });
+    expect(game.state.objects[theirDauthi].blocking).toBe(dauthi);
+  });
+
+  it("exiles an opponent's card bound for their graveyard with a void counter — not your own, nor a token", () => {
+    const game = setUp();
+    ready(game, "Dauthi Voidwalker");
+    const theirs = ready(game, "Grizzly Bears", B);
+    const mine = ready(game, "Grizzly Bears");
+    game.debugApplyEffect(A, { kind: "create-token", token: "Goblin Token", count: 1 }, []);
+    game.debugApplyEffect(B, { kind: "create-token", token: "Goblin Token", count: 1 }, []);
+    const goblin = named(game, "Goblin Token", B)[0];
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(theirs)]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(mine)]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(goblin)]);
+    expect(game.state.objects[theirs].zone).toBe("exile");
+    expect(game.state.objects[theirs].counters["void"]).toBe(1);
+    expect(game.state.objects[mine].zone).toBe("graveyard");
+    // The token died (it's gone either way, but it did go to the graveyard).
+    expect(game.state.eventLog.some((e) => e.type === "permanent-left-battlefield" && e.object === goblin && e.toZone === "graveyard")).toBe(true);
+  });
+
+  it("sacrifices itself to let you play an opponent's void card this turn, free", () => {
+    const game = setUp();
+    const dauthi = ready(game, "Dauthi Voidwalker");
+    const theirs = ready(game, "Grizzly Bears", B);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(theirs)]);
+    // An exiled card without a void counter isn't one to choose.
+    const plain = game.debugSpawn("Hill Giant", B, "exile");
+    game.dispatch({ type: "activate-ability", player: A, source: dauthi, abilityIndex: 0, targets: [] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[dauthi].zone).toBe("graveyard");
+    expect(game.state.objects[theirs].impulse?.player).toBe(A);
+    expect(game.state.objects[plain].impulse).toBeUndefined();
+    // No mana: only free.
+    game.dispatch({ type: "cast-spell", player: A, card: theirs, targets: [], via: "impulse", free: true });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[theirs].zone).toBe("battlefield");
+    expect(game.state.objects[theirs].controller).toBe(A);
+  });
+});
+
+describe("Tasigur, the Golden Fang", () => {
+  const activateTasigur = (game: Game) => {
+    for (const land of ["Forest", "Forest", "Island", "Island"]) {
+      game.state.objects[game.debugSpawn(land, A, "battlefield")].tapped = false;
+    }
+    const tasigur = ready(game, "Tasigur, the Golden Fang");
+    game.dispatch({ type: "activate-ability", player: A, source: tasigur, abilityIndex: 0, targets: [] });
+    return tasigur;
+  };
+
+  it("mills two, then the opponent picks the nonland card from your graveyard that goes to your hand", () => {
+    const game = setUp();
+    const giant = game.debugSpawn("Hill Giant", A, "graveyard");
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    const library = game.state.zones.perPlayer[A].library.length;
+    activateTasigur(game);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    expect(game.state.zones.perPlayer[A].library.length).toBe(library - 2);
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.player).toBe(B);
+    // The milled Islands are lands: only the two creature cards are offered.
+    expect(awaiting?.kind === "choose-from-zone" ? [...awaiting.eligible].sort() : []).toEqual([giant, bears].sort());
+    game.dispatch({ type: "choose-from-zone", player: B, chosen: [bears] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].zone).toBe("hand");
+    expect(game.state.objects[bears].owner).toBe(A);
+    expect(game.state.zones.perPlayer[A].hand).toContain(bears);
+    expect(game.state.objects[giant].zone).toBe("graveyard");
+  });
+
+  it("with several opponents, you choose which one chooses", () => {
+    const game = setUp([A, B, C]);
+    const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+    activateTasigur(game);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes");
+    expect(game.state.awaiting?.player).toBe(A);
+    // The second mode: Carol.
+    game.dispatch({ type: "choose-modes", player: A, modes: [1] });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    expect(game.state.awaiting?.player).toBe(C);
+    game.dispatch({ type: "choose-from-zone", player: C, chosen: [bears] });
+    game.advanceUntil(quiet);
+    expect(game.state.zones.perPlayer[A].hand).toContain(bears);
+  });
+});
+
+describe("Colossal Grave-Reaver", () => {
+  const withLibrary = (top: readonly string[]) => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      rules: { skipFirstDraw: false, maxLandsPerTurn: 99, maxHandSize: 99 },
+      decks: [
+        // The first seven are the opening hand.
+        { player: A, cards: [...Array<string>(7).fill("Island"), ...top, ...Array<string>(30).fill("Island")] },
+        { player: B, cards: Array<string>(40).fill("Island") },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    return game;
+  };
+
+  it("mills three as it enters, and puts one of the creature cards milled onto the battlefield, your choice", () => {
+    // The first is the turn's draw.
+    const game = withLibrary(["Island", "Grizzly Bears", "Island", "Hill Giant"]);
+    game.debugSpawn("Colossal Grave-Reaver", A, "battlefield", { announceEntry: true });
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || quiet(s));
+    const awaiting = game.state.awaiting;
+    expect(awaiting?.kind).toBe("choose-from-zone");
+    const names = awaiting?.kind === "choose-from-zone" ? awaiting.eligible.map((id) => game.state.objects[id].cardName).sort() : [];
+    expect(names).toEqual(["Grizzly Bears", "Hill Giant"]);
+    const giant = awaiting?.kind === "choose-from-zone" ? awaiting.eligible.find((id) => game.state.objects[id].cardName === "Hill Giant")! : "";
+    game.dispatch({ type: "choose-from-zone", player: A, chosen: [giant] });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[giant].zone).toBe("battlefield");
+    expect(game.state.objects[giant].controller).toBe(A);
+    expect(named(game, "Grizzly Bears")).toHaveLength(0);
+  });
+
+  it("with one creature card among them, just puts it there; with none, nothing", () => {
+    const game = withLibrary(["Island", "Grizzly Bears", "Island", "Island", "Island", "Island"]);
+    const reaver = game.debugSpawn("Colossal Grave-Reaver", A, "battlefield", { announceEntry: true });
+    game.advanceUntil(quiet);
+    expect(named(game, "Grizzly Bears")).toHaveLength(1);
+    // A mill of only lands doesn't trigger it.
+    game.state.objects[reaver].summoningSick = false;
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: reaver, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(game.state.zones.perPlayer[A].graveyard.length).toBe(5);
+  });
+});
+
 describe("Divine Visitation", () => {
   const angel = "4/4 Vigilant Angel Token";
 

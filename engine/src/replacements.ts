@@ -232,6 +232,11 @@ export interface GraveyardExileReplacement {
   readonly instead: "exile";
   readonly filter?: CardFilter;
   readonly from?: "battlefield";
+  /** "…instead exile it **with a void counter on it**" (Dauthi
+   * Voidwalker): counters the card has in exile, put on as it arrives
+   * there — not an effect putting counters, so a doubler doesn't touch
+   * them. */
+  readonly withCounters?: { readonly kind: string; readonly amount: number };
 }
 
 /** "If a player [who] would draw a card, [this permanent's controller] draws a

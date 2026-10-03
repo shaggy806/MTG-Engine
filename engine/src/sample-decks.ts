@@ -295,13 +295,10 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Woodland Cemetery", 1],
     ],
     substitutions: [
-      sub("Colossal Grave-Reaver", "Archon of Cruelty", "Eight-mana creature: attack trigger, evasive creature."),
-      sub("Dauthi Voidwalker", "Scavenging Ooze", "Two-mana creature: graveyard hate."),
       sub("Life from the Loam", "Grim Discovery", "Two-mana sorcery: land recursion, regrowth."),
       sub("Necropolis Fiend", "Black Dragon", "Nine-mana creature: removal, evasive creature."),
       sub("Shigeki, Jukai Visionary", "Coiling Oracle", "Two-mana creature: extra land, ramp."),
       sub("Steward of the Harvest", "Cemetery Reaper", "Four-mana creature."),
-      sub("Tasigur, the Golden Fang", "Barrow Witches", "Six-mana creature: regrowth, recursion."),
     ],
   }),
   precon({

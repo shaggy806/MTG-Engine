@@ -140,6 +140,9 @@ export type Keyword =
   /** Skulk (rule 702.118) — can't be blocked by creatures with greater power,
    * compared as blockers are declared (Behind the Scenes). */
   | "skulk"
+  /** Shadow (rule 702.28) — can be blocked only by creatures with shadow,
+   * and can block only creatures with shadow (Dauthi Voidwalker). */
+  | "shadow"
   /** Flanking (rule 702.25) — a triggered ability: the keyword is what a
    * "creature without flanking" asks about, and the `flanking()` card helper
    * is the trigger itself, so a card lists both (Sidar Kondo of Jamuraa). */

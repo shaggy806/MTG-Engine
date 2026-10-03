@@ -111,6 +111,7 @@ import {
 import type { Characteristics } from "./characteristics.js";
 import type {
   DamageMultiplierReplacement,
+  GraveyardExileReplacement,
   LifeGainReplacement,
   MillMultiplierReplacement,
 } from "./replacements.js";
@@ -13983,7 +13984,19 @@ export class Game {
                   ...(atTrigger ?? {}),
                   enteredTogether: this.enterBatchMatching(ability.trigger, event, object),
                 }
-              : atTrigger;
+              : // "Put one of them onto the battlefield": which cards, as
+                // the objects they are in that graveyard.
+                ability.trigger.on === "put-into-graveyard" &&
+                  ability.trigger.batched === true &&
+                  event.type === "cards-put-into-graveyard"
+                ? {
+                    ...(atTrigger ?? {}),
+                    arrivedTogether: this.graveyardArrivals(ability.trigger, event.arrivals, object).map((card) => ({
+                      object: card,
+                      zoneChangeCount: this.state.objects[card]?.zoneChangeCount ?? 0,
+                    })),
+                  }
+                : atTrigger;
           const base = {
             sourceObjectId: id,
             cardName: lastSeen !== undefined ? lastSeen.name : printedCardName(object),
@@ -16710,6 +16723,43 @@ export class Game {
           }
         });
       },
+      putArrivedOntoBattlefield: (count) => {
+        // "One of them": the cards the batched trigger fired on, still in
+        // that graveyard as the same objects (rule 400.7).
+        const still = (refs.arrivedTogether ?? [])
+          .filter(({ object, zoneChangeCount }) => {
+            const card = this.state.objects[object];
+            return card?.zone === "graveyard" && (card.zoneChangeCount ?? 0) === zoneChangeCount;
+          })
+          .map(({ object }) => object);
+        if (still.length === 0 || count <= 0) return false;
+        if (still.length > count) {
+          this.state.awaiting = {
+            kind: "choose-from-zone",
+            player: controller,
+            ids: still,
+            eligible: still,
+            min: count,
+            max: count,
+            destination: "battlefield",
+            leftover: "stay",
+            enterUnder: controller,
+          };
+          return false;
+        }
+        if (still.some((id) => this.askEnterChoice(id, controller))) return true;
+        this.withGraveyardLeaveBatch(() =>
+          this.withEnterBatch(() => {
+            for (const id of still) {
+              const under = this.state.objects[id]?.owner === controller ? {} : { under: controller };
+              if (this.moveObject(id, "battlefield", under)) {
+                this.emit({ type: "permanent-entered-battlefield", object: id });
+              }
+            }
+          }),
+        );
+        return false;
+      },
       putExiledThisWayOntoBattlefield: () => {
         // What this resolution exiled from a graveyard, a hand or a library —
         // not a permanent it exiled (a replacement's), and only a card still
@@ -16823,6 +16873,39 @@ export class Game {
               castOnly: true,
               ...(free ? { free: { only: true } } : {}),
             };
+      },
+      chooseExiledToPlay: (filter, free) => {
+        // "Choose an exiled card …": face up, matching from the chooser's
+        // side; not a target. "You may play it this turn": a land too.
+        const eligible = this.state.zones.shared.exile.filter((id) => {
+          const card = this.state.objects[id];
+          return (
+            card !== undefined &&
+            card.exiledFaceDown === undefined &&
+            matchesFilter(this.state, this.registry, id, filter, { you: controller })
+          );
+        });
+        if (eligible.length === 0) return;
+        const grant: NonNullable<GameObject["impulse"]> = {
+          player: controller,
+          expiry: { kind: "end-of-turn", turn: this.state.turn.number },
+          ...(free ? { free: { only: true } } : {}),
+        };
+        if (eligible.length === 1) {
+          this.state.objects[eligible[0]].impulse = { ...grant };
+          return;
+        }
+        this.state.awaiting = {
+          kind: "choose-from-zone",
+          player: controller,
+          ids: eligible,
+          eligible,
+          min: 1,
+          max: 1,
+          destination: "exile-playable",
+          leftover: "stay",
+          impulseGrant: grant,
+        };
       },
       fight: (a, b, oneSided) => this.fightCreatures(a, b, oneSided),
       counterSpell: (target, into) => this.counterSpellByEffect(target, into),
@@ -17588,7 +17671,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking, enterAs, chooser) => {
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking, enterAs, chooser, picker) => {
         // "Exile one of them face down" (hideaway): linked to the source, in
         // the stint this ability refers to (rule 607.2a).
         const sourceObject = this.state.objects[source];
@@ -17619,6 +17702,7 @@ export class Game {
           source,
           exileLink,
           enterAs,
+          picker,
         );
       },
     };
@@ -17661,6 +17745,9 @@ export class Game {
     source?: ObjectId,
     exileLink?: { readonly source: ObjectId; readonly zoneChangeCount: number },
     enterAs?: EnterTypes,
+    /** Who makes the choice when it isn't `player`, whose zone it is — an
+     * opponent picking from your graveyard (Tasigur, the Golden Fang). */
+    picker?: PlayerId,
   ): void {
     // Every graveyard, in turn order — all public (Necromantic Selection).
     const zoneCards =
@@ -17684,7 +17771,7 @@ export class Game {
     const eligible = ids.filter((id) => this.matchesZoneChoiceFilter(id, filter, player, source));
     this.state.awaiting = {
       kind: "choose-from-zone",
-      player,
+      player: picker ?? player,
       ids,
       eligible,
       min: Math.min(min, eligible.length),
@@ -25092,6 +25179,15 @@ export class Game {
    * against the card's printed characteristics from the replacement source's
    * controller's perspective. */
   private graveyardIsReplacedWithExile(cardId: ObjectId, fromBattlefield: boolean): boolean {
+    return this.graveyardExileReplacement(cardId, fromBattlefield) !== undefined;
+  }
+
+  /** The replacement {@link graveyardIsReplacedWithExile} finds, for what it
+   * says beyond "exile it instead" — Dauthi Voidwalker's void counter. */
+  private graveyardExileReplacement(
+    cardId: ObjectId,
+    fromBattlefield: boolean,
+  ): GraveyardExileReplacement | undefined {
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (hasLostAbilities(object)) continue;
@@ -25112,7 +25208,7 @@ export class Game {
         ) {
           continue;
         }
-        return true;
+        return r;
       }
     }
     // Permanents leaving in one event leave together, so a replacement one
@@ -25137,11 +25233,11 @@ export class Game {
           ) {
             continue;
           }
-          return true;
+          return r;
         }
       }
     }
-    return false;
+    return undefined;
   }
 
   /**
@@ -25431,9 +25527,16 @@ export class Game {
       to = "exile";
       this.emit({ type: "graveyard-replaced-with-exile", object: id });
     }
-    if (to === "graveyard" && this.graveyardIsReplacedWithExile(id, leavingBattlefield)) {
-      to = "exile";
-      this.emit({ type: "graveyard-replaced-with-exile", object: id });
+    // "…instead exile it with a void counter on it" (Dauthi Voidwalker): the
+    // counters it has as it arrives in exile.
+    let exileCounters: { readonly kind: string; readonly amount: number } | undefined;
+    if (to === "graveyard") {
+      const replaced = this.graveyardExileReplacement(id, leavingBattlefield);
+      if (replaced !== undefined) {
+        to = "exile";
+        exileCounters = replaced.withCounters;
+        this.emit({ type: "graveyard-replaced-with-exile", object: id });
+      }
     }
 
     // Flashback (rule 702.34) / disturb (rule 702.150): a card cast this way is
@@ -25695,6 +25798,9 @@ export class Game {
     if (!keepCounters) {
       object.counters = {};
       delete object.counterTimestamps;
+    }
+    if (exileCounters !== undefined && to === "exile" && exileCounters.amount > 0) {
+      object.counters[exileCounters.kind] = (object.counters[exileCounters.kind] ?? 0) + exileCounters.amount;
     }
     object.modifiers = keptPrototype;
     object.attachedTo = null;

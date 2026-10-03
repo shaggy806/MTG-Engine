@@ -957,6 +957,26 @@ export type EffectSpec =
     }
   | {
       /**
+       * "**You choose an opponent**" as this resolves — Tasigur, the Golden
+       * Fang's "…a nonland card of an opponent's choice", where you choose
+       * the opponent and then they choose the card (the ruling): `then`,
+       * with the `"that-player"` scope naming the one chosen. Not a target.
+       * Among the opponents still in the game; with one, nobody is asked,
+       * and with none nothing happens. Asked as a `choose-modes`.
+       */
+      readonly kind: "choose-opponent";
+      readonly then: EffectSpec;
+    }
+  | {
+      /** `effect` with `"that-player"` naming `player` — the mode a
+       * `choose-opponent` answer applies. Built by the engine — never
+       * authored. Nothing, once `player` has left the game. */
+      readonly kind: "about-player";
+      readonly player: PlayerId;
+      readonly effect: EffectSpec;
+    }
+  | {
+      /**
        * "Deals X damage **divided evenly, rounded down**, among any number of
        * targets" (Fireball): the targets from slot `from` on — an
        * `any-number` group — each dealt `amount` divided by how many of them
@@ -1486,6 +1506,17 @@ export type EffectSpec =
       readonly filter: CardFilter;
     }
   | {
+      /** Put `count` of the cards a batched `put-into-graveyard` trigger
+       * fired on onto the battlefield under the effect's controller's
+       * control — Colossal Grave-Reaver's "whenever one or more creature
+       * cards are put into your graveyard from your library, **put one of
+       * them onto the battlefield**". Only those still in that graveyard as
+       * the same objects (rule 400.7); the controller chooses which when
+       * more are left than it takes, and must take that many. */
+      readonly kind: "put-arrived-onto-battlefield";
+      readonly count: number;
+    }
+  | {
       /** Put every card this resolution has exiled so far — from anywhere
        * but the battlefield — onto the battlefield under its owner's
        * control, all at once (Living Death's "then puts all cards they
@@ -1812,6 +1843,18 @@ export type EffectSpec =
       readonly rest?: "bottom-random";
       /** Set only on the copy parked across the decision. */
       readonly progress?: CastNowProgress;
+    }
+  | {
+      /** "**Choose an exiled card** an opponent owns with a void counter on
+       * it. **You may play it this turn** without paying its mana cost"
+       * (Dauthi Voidwalker): the effect's controller picks one face-up card
+       * in exile matching `filter` (from their side) — nothing is targeted —
+       * and may play it this turn: a land as their land play, a spell at its
+       * normal timing (the rulings), with `free` only without paying its
+       * mana cost. Nothing happens with none to choose. */
+      readonly kind: "choose-exiled-to-play";
+      readonly filter: CardFilter;
+      readonly free?: boolean;
     }
   | {
       /** "Until end of turn, you may cast that card" — a card in exile
@@ -3530,6 +3573,11 @@ export type EffectSpec =
        * Vastlands); the cards they take are theirs. Default: the effect's
        * controller. */
       readonly player?: "that-player";
+      /** Someone else makes the choice from that zone: `"that-player"` is
+       * the opponent a `choose-opponent` chose — Tasigur, the Golden Fang's
+       * "return a nonland card **of an opponent's choice** from your
+       * graveyard to your hand". A public zone only (a graveyard). */
+      readonly chooser?: "that-player";
       /** `"hand"` is the "you may put a land card **from your hand** onto the
        * battlefield" family (Growth Spiral, Ghalta) — nothing is revealed
        * there, the chooser is looking at their own hand, and `leftover` is
@@ -4037,6 +4085,8 @@ export interface EffectApi {
   entersWithCounters(target: TargetRef, counter: string, amount: number): void;
   /** See the `"allow-cast-from-exile"` {@link EffectSpec}. */
   allowCastFromExile(target: TargetRef, free: boolean, laterTurns?: boolean): void;
+  /** See the `"choose-exiled-to-play"` {@link EffectSpec}. */
+  chooseExiledToPlay(filter: CardFilter, free: boolean): void;
   /** See the `"cast-now"` {@link EffectSpec}: offer the effect's
    * controller the cast of one of `cards`, as a `cast-now` decision — or
    * nothing, when none of them can be cast. */
@@ -4069,6 +4119,9 @@ export interface EffectApi {
    * `true` when it stopped first to ask an "as this enters" choice (nothing
    * has moved; apply it again once that's answered). */
   putExiledThisWayOntoBattlefield(): boolean;
+  /** See the `"put-arrived-onto-battlefield"` {@link EffectSpec}. `true`
+   * when it stopped first to ask an "as this enters" choice. */
+  putArrivedOntoBattlefield(count: number): boolean;
   /** Carry out `fn` as one simultaneous event: the cards it takes out of
    * graveyards leave together (one `cards-left-graveyard`), the permanents
    * it takes off the battlefield leave together (rule 603.10a), and the ones
@@ -4645,6 +4698,9 @@ export interface EffectApi {
     /** Whose zone and who chooses — see `look-and-choose`'s `player`; the
      * effect's controller when absent. */
     chooser?: PlayerId,
+    /** Who chooses instead, the zone still `chooser`'s — see
+     * `look-and-choose`'s `chooser`. */
+    picker?: PlayerId,
   ): void;
 }
 
@@ -5664,6 +5720,27 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "for-convoker":
       applyEffectSpec(spec.effect, ctx.withConvoker(spec.index));
       return;
+    case "choose-opponent": {
+      const opponents = ctx.playersInScope("each-opponent");
+      if (opponents.length === 0) return;
+      if (opponents.length === 1) {
+        applyEffectSpec(spec.then, ctx.aboutPlayer(opponents[0]));
+        return;
+      }
+      ctx.chooseModes(
+        1,
+        1,
+        opponents.map((player) => ({
+          text: `Choose ${player.charAt(0).toUpperCase()}${player.slice(1)}`,
+          effect: { kind: "about-player", player, effect: spec.then },
+        })),
+      );
+      return;
+    }
+    case "about-player":
+      if (!ctx.playersInScope("each-player").includes(spec.player)) return;
+      applyEffectSpec(spec.effect, ctx.aboutPlayer(spec.player));
+      return;
     case "choose-permanents":
       ctx.choosePermanents(spec.filter, spec.min ?? 0, amountValue(spec.upTo, ctx), spec.then, spec.prompt);
       return;
@@ -5999,6 +6076,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       if (ctx.putExiledThisWayOntoBattlefield()) ctx.resumeAfterDecisions(spec, parked);
       return;
     }
+    case "put-arrived-onto-battlefield": {
+      const parked = ctx.parkedCount();
+      if (ctx.putArrivedOntoBattlefield(spec.count)) ctx.resumeAfterDecisions(spec, parked);
+      return;
+    }
     case "flicker": {
       const target = spec.target;
       const refs: EffectTargetRef[] =
@@ -6126,6 +6208,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     }
     case "cast-now":
       applyCastNowSpec(spec, ctx);
+      return;
+    case "choose-exiled-to-play":
+      ctx.chooseExiledToPlay(spec.filter, spec.free === true);
       return;
     case "allow-cast-from-exile": {
       const target = resolveEffectTarget(spec.target, ctx);
@@ -7000,6 +7085,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       // left the game.
       const chooser = spec.player === "that-player" ? ctx.playersInScope("that-player")[0] : undefined;
       if (spec.player === "that-player" && chooser === undefined) return;
+      // "…of an opponent's choice" (Tasigur): they pick from your zone.
+      const picker = spec.chooser === "that-player" ? ctx.playersInScope("that-player")[0] : undefined;
+      if (spec.chooser === "that-player" && picker === undefined) return;
       ctx.lookAndChoose(
         spec.zone,
         spec.count === undefined ? undefined : amountValue(spec.count, ctx),
@@ -7025,6 +7113,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         resolveEnterAttacking(spec.attacking, ctx),
         spec.enterAs,
         chooser,
+        picker,
       );
       return;
     }
