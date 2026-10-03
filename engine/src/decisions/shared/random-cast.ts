@@ -26,12 +26,18 @@ export function randomCast(
     const castable = cm.modes
       .map((_m, i) => i)
       .filter((i) => cm.modes[i].targetOptions.every((o) => o.length > 0));
-    const most = Math.min(cm.maxModes, castable.length);
-    if (most < cm.minModes) return null;
-    const want = cm.minModes + rng.pickIndex(most - cm.minModes + 1);
-    const pool = [...castable];
-    modes = [];
-    for (let i = 0; i < want; i += 1) modes.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    if (cm.modeSets !== undefined) {
+      // Spree (rule 702.172a): one of the sets it can pay for.
+      if (cm.modeSets.length === 0) return null;
+      modes = [...cm.modeSets[rng.pickIndex(cm.modeSets.length)]];
+    } else {
+      const most = Math.min(cm.maxModes, castable.length);
+      if (most < cm.minModes) return null;
+      const want = cm.minModes + rng.pickIndex(most - cm.minModes + 1);
+      const pool = [...castable];
+      modes = [];
+      for (let i = 0; i < want; i += 1) modes.push(pool.splice(rng.pickIndex(pool.length), 1)[0]);
+    }
     modes.sort((a, b) => a - b);
     options = modes.flatMap((i) => cm.modes[i].targetOptions);
     specs = modes.flatMap((i) => cm.modes[i].targetSpecs);

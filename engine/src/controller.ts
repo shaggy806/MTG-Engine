@@ -17,7 +17,7 @@ import type {
   TapCostOffer,
 } from "./actions.js";
 import { abilityLifeCost } from "./abilities.js";
-import { convokeProofFor, delvePicks } from "./actions.js";
+import { convokeProofFor, delvePicks, fitModeSet } from "./actions.js";
 import { obeyingLure } from "./combat/blocking.js";
 import { whyCannotAttack } from "./combat/eligibility.js";
 import { standardAssignment } from "./combat/damage.js";
@@ -1270,11 +1270,17 @@ export class RandomController extends AutomaticController {
             .map((_m, i) => i)
             .filter((i) => cm.modes[i].targetOptions.every((o) => o.length > 0));
           if (castable.length < cm.minModes) return passFor(player);
-          const want = cm.minModes + this.pickIndex(Math.min(cm.maxModes, castable.length) - cm.minModes + 1);
-          const pool = [...castable];
           const modes: number[] = [];
-          for (let i = 0; i < want && pool.length > 0; i += 1) {
-            modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+          if (cm.modeSets !== undefined) {
+            // Spree (rule 702.172a): one of the sets it can pay for.
+            if (cm.modeSets.length === 0) return passFor(player);
+            modes.push(...cm.modeSets[this.pickIndex(cm.modeSets.length)]);
+          } else {
+            const want = cm.minModes + this.pickIndex(Math.min(cm.maxModes, castable.length) - cm.minModes + 1);
+            const pool = [...castable];
+            for (let i = 0; i < want && pool.length > 0; i += 1) {
+              modes.push(pool.splice(this.pickIndex(pool.length), 1)[0]);
+            }
           }
           modes.sort((a, b) => a - b);
           const picked = modes.flatMap((i) => this.pickTargets(cm.modes[i].targetOptions));
@@ -2103,12 +2109,11 @@ export class HeuristicBotController extends AutomaticController {
     const cm = legal.castModal;
     if (cm === undefined) return null;
     const aimable = this.aimableModes(state, legal);
-    const usable =
-      aimable.length >= cm.minModes
-        ? aimable
-        : cm.modes
-            .map((_mode, i) => i)
-            .filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
+    const fillable = () =>
+      cm.modes.map((_mode, i) => i).filter((i) => cm.modes[i].targetOptions.every((options) => options.length > 0));
+    // Spree (rule 702.172a): the most of them it can pay for together.
+    if (cm.modeSets !== undefined) return fitModeSet(cm.modeSets, aimable) ?? fitModeSet(cm.modeSets, fillable());
+    const usable = aimable.length >= cm.minModes ? aimable : fillable();
     if (usable.length < cm.minModes) return null;
     return usable.slice(0, Math.max(cm.minModes, Math.min(cm.maxModes, usable.length)));
   }

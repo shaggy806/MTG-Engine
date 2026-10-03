@@ -129,6 +129,7 @@ import { legendRule } from "./decisions/legend-rule.js";
 import { orderTriggers as orderTriggersDecision } from "./decisions/order-triggers.js";
 import { mulligan } from "./decisions/mulligan.js";
 import { mulliganCardsOwed } from "./decisions/shared/mulligan-math.js";
+import { subsetsBetween } from "./decisions/shared/subsets.js";
 import { commanderReplacement } from "./decisions/commander-replacement.js";
 import { discard } from "./decisions/discard.js";
 import { sacrifice } from "./decisions/sacrifice.js";
@@ -249,6 +250,7 @@ import {
 import type {
   AwaitingDecision,
   CasualtyAsk,
+  GiftAsk,
   CombatDamageState,
   CommanderMoveOrigin,
   CommanderReplacementZone,
@@ -1919,12 +1921,16 @@ export class Game {
     card: ObjectId,
     /** Fewer modes than the card allows: as many as escalate can pay for. */
     affordableMaxModes?: number,
+    /** Spree (rule 702.172a): the sets of modes this variant can pay for —
+     * see `spreeModeSets`. */
+    modeSets?: readonly (readonly number[])[],
   ): Pick<Extract<LegalAction, { kind: "cast-spell" }>, "castModal"> {
     if (def.castModal === null) return {};
+    const mostInASet = modeSets === undefined ? undefined : Math.max(0, ...modeSets.map((set) => set.length));
     return {
       castModal: {
         minModes: def.castModal.minModes,
-        maxModes: affordableMaxModes ?? this.castModalMaxModes(def.castModal, card),
+        maxModes: mostInASet ?? affordableMaxModes ?? this.castModalMaxModes(def.castModal, card),
         modes: def.castModal.modes.map((m) => ({
           text: m.text,
           targetSpecs: [...(m.targets ?? [])],
@@ -1932,9 +1938,26 @@ export class Game {
             player,
             this.targetOptionsFor(m.targets ?? [], player, this.cardSource(def, card)),
           ),
+          ...(m.spreeCost !== undefined ? { cost: m.spreeCost } : {}),
         })),
+        ...(modeSets !== undefined ? { modeSets: modeSets.map((set) => [...set]) } : {}),
       },
     };
+  }
+
+  /**
+   * Spree (rule 702.172a): every set of `def`'s modes, smallest first, that
+   * `castable` says the spell can be cast with — or `null` when it isn't a
+   * spree spell. At most 2^n − 1 sets; spree cards have two to four modes.
+   */
+  private spreeModeSets(
+    def: CardDefinition,
+    castable: (modes: readonly number[]) => boolean,
+  ): number[][] | null {
+    const modal = def.castModal;
+    if (modal === null || !modal.modes.some((m) => m.spreeCost !== undefined)) return null;
+    const indices = modal.modes.map((_m, i) => i);
+    return subsetsBetween(indices, Math.max(1, modal.minModes), modal.maxModes, 64).filter((set) => castable(set));
   }
 
   /**
@@ -2292,7 +2315,7 @@ export class Game {
         for (let k = most; k > Math.max(1, modal.minModes); k -= 1) {
           const withModes = this.withFace(card, face ?? 0, () =>
             this.castCostString(card, via, face, kicked, overload, free, altCost === true, costOption, player,
-              graveyardGrant, offspring === true, evoke ?? null, k - 1),
+              graveyardGrant, offspring === true, evoke ?? null, Array.from({ length: k }, (_v, i) => i)),
           );
           if (withModes === null) continue;
           const total = this.withFace(card, face ?? 0, () =>
@@ -2302,6 +2325,16 @@ export class Game {
         }
         return Math.max(1, modal.minModes);
       };
+      // Spree (rule 702.172a): which modes this variant can be cast with —
+      // each chosen mode adding its own cost, each needing a legal target
+      // (the rulings). Judged on mana alone, at the least X. None, and it
+      // can't be cast this way at all: at least one mode must be chosen.
+      const spreeSets = this.spreeModeSets(def, (modes) =>
+        this.whyCannotCastSpell(player, card, via, face ?? 0, modes, kicked, undefined, overload, free, undefined,
+          altCost === true, costOption, undefined, graveyardGrant, xFloor, 0, undefined, false, offspring === true,
+          evoke ?? null) === null,
+      );
+      if (spreeSets !== null && spreeSets.length === 0) continue;
       const specs = this.effectiveTargetSpecs(def, undefined, kicked, overload);
       const options = this.affordableTargetOptions(
         player,
@@ -2395,7 +2428,7 @@ export class Game {
         ...(via !== undefined ? { via } : {}),
         ...(graveyardGrant !== undefined ? { graveyardGrant } : {}),
         ...(face !== undefined ? { face } : {}),
-        ...this.castModalDescriptor(def, player, card, escalatedMaxModes()),
+        ...this.castModalDescriptor(def, player, card, escalatedMaxModes(), spreeSets ?? undefined),
         ...(sacrifices.length > 0 ? { sacrifice: { choices: sacrifices } } : {}),
         ...(kicked && def.kicker !== null
           ? {
@@ -3861,6 +3894,12 @@ export class Game {
       throw new Error("unreachable: whyCannotChooseModes should have caught this");
     }
 
+    // A gift's opponent, chosen as its cost is paid (rule 702.174a).
+    if (awaiting.giftAsk !== undefined) {
+      this.applyGiftChoice(player, modeIndices, awaiting.giftAsk);
+      return;
+    }
+
     // A modal trigger announcing its modes: they're the ability's, recorded
     // as it goes on the stack, not applied now.
     if (awaiting.announcing === true) {
@@ -4624,6 +4663,12 @@ export class Game {
       // "Each opponent discards a card": the next player owed a choice.
       if (this.state.pendingDiscards.length > 0) {
         this.promptNextDiscard();
+        continue;
+      }
+      // A spell just cast with its gift promised: its opponent is chosen as
+      // the gift cost is paid (rule 702.174a), before anyone gets priority.
+      if ((this.state.pendingGifts?.length ?? 0) > 0) {
+        this.promptNextGift();
         continue;
       }
       // A spell just cast with casualty: its caster is offered each optional
@@ -7984,14 +8029,19 @@ export class Game {
     /** Cast for an evoke cost (rule 702.74) rather than its mana cost —
      * which one (`""` for the first it has); `null` when not evoked. */
     evoke: string | null = null,
-    /** Modes chosen beyond the first, for escalate (rule 702.120a). */
-    extraModes = 0,
+    /** The modes chosen for a `castModal` spell — for escalate (rule
+     * 702.120a), how many beyond the first; for spree (702.172a), which. */
+    modes: readonly number[] = [],
   ): string | null {
     const def = this.faceDef(cardId, face);
-    // Escalate (rule 702.120a) is an additional cost: added to whatever is
-    // paid, an alternative cost or a free cast included (118.9d).
+    // Escalate (rule 702.120a) and spree (702.172a) are additional costs:
+    // added to whatever is paid, an alternative cost or a free cast
+    // included (118.9d; the spree rulings).
     const escalateCost = def.castModal?.costPerExtraMode;
-    const escalate = escalateCost === undefined || extraModes <= 0 ? "" : escalateCost.repeat(extraModes);
+    const extraModes = modes.length - 1;
+    const spree = modes.map((i) => def.castModal?.modes[i]?.spreeCost ?? "").join("");
+    const escalate =
+      (escalateCost === undefined || extraModes <= 0 ? "" : escalateCost.repeat(extraModes)) + spree;
     // An alternative cost (Sephara, Jodah) replaces the mana cost entirely,
     // like overload and a free-cast permission — the creature-tapping half
     // is paid separately in `castSpell`.
@@ -8380,6 +8430,10 @@ export class Game {
       return `${def.name} can't be kicked ${kicked} times`;
     }
     if (kicked && def.kicker === null) return `${def.name} has no kicker`;
+    // A gift is promised to an opponent (rule 702.174a): none left, none.
+    if (kicked && def.kicker?.keyword === "gift" && this.giftCandidates(player).length === 0) {
+      return `${player} has no opponent to promise ${def.name}'s gift to`;
+    }
     if (typeof kicked === "number" && kicked > 1 && def.kicker?.multi !== true) {
       return `${def.name}'s kicker can be paid only once`;
     }
@@ -8481,7 +8535,7 @@ export class Game {
     // only ever suspended).
     const costString = this.withFace(cardId, face, () =>
       this.castCostString(cardId, via, face, kicked, overload, free, altCost, undefined, player, graveyardGrant, offspring, evoke,
-        modes === undefined ? 0 : modes.length - 1),
+        modes ?? []),
     );
     if (costString === null) return `${def.name} has no mana cost to pay (rule 118.6)`;
     // At the X being cast for: convoking creatures can pay for X (Chord of
@@ -8917,7 +8971,7 @@ export class Game {
       graveyardGrant,
       offspring,
       evoke,
-      modes === undefined ? 0 : modes.length - 1,
+      modes ?? [],
     );
     const hasX =
       parseManaCost(costString).x > 0 ||
@@ -9269,6 +9323,7 @@ export class Game {
     // Cast during a resolution: once that resolution finishes, the active
     // player gets priority (rule 117.3b), not necessarily the caster.
     const priorityTo = via === "effect" ? this.activePlayer : player;
+    if (kicked && def.kicker?.keyword === "gift") this.queueGift(player, cardId, priorityTo);
     this.queueCasualty(player, cardId, priorityTo);
     this.afterPlayerAction(priorityTo);
   }
@@ -9298,6 +9353,82 @@ export class Game {
     }
     if (amounts.length === 0) return;
     (this.state.pendingCasualty ??= []).push({ spell: spellId, player, amounts, priorityTo });
+  }
+
+  /** The opponents `player` could promise a gift to (rule 702.174a), still
+   * in the game, in turn order from the one after them. */
+  private giftCandidates(player: PlayerId): PlayerId[] {
+    const order = this.state.turnOrder;
+    const at = order.indexOf(player);
+    const rotated = at < 0 ? [...order] : [...order.slice(at + 1), ...order.slice(0, at)];
+    return rotated.filter((p) => p !== player && this.state.players[p]?.hasLost === false);
+  }
+
+  /**
+   * Gift (rule 702.174a): a spell cast with its gift promised has its
+   * opponent chosen as the gift cost is paid — queued once the spell is on
+   * the stack, as casualty is, and asked by `promptNextGift` before anyone
+   * gets priority. See {@link GiftAsk}.
+   */
+  private queueGift(player: PlayerId, spellId: ObjectId, priorityTo: PlayerId): void {
+    const spell = this.state.objects[spellId];
+    if (spell === undefined || spell.zone !== "stack") return;
+    const candidates = this.giftCandidates(player);
+    if (candidates.length === 0) return;
+    (this.state.pendingGifts ??= []).push({ spell: spellId, player, candidates, priorityTo });
+  }
+
+  /** Choose the next promised gift's opponent (see `queueGift`): the only
+   * one there is without asking, else a yes-or-no `choose-modes` about the
+   * first candidate. */
+  private promptNextGift(): void {
+    const [ask, ...queue] = this.state.pendingGifts ?? [];
+    if (queue.length > 0) this.state.pendingGifts = queue;
+    else delete this.state.pendingGifts;
+    if (ask === undefined) return;
+    const spell = this.state.objects[ask.spell];
+    if (spell === undefined || spell.zone !== "stack") return;
+    const candidates = ask.candidates.filter((p) => this.state.players[p]?.hasLost === false);
+    if (candidates.length === 0) return;
+    if (candidates.length === 1) {
+      this.promiseGift(ask.spell, ask.player, candidates[0]);
+      return;
+    }
+    this.state.awaiting = {
+      kind: "choose-modes",
+      player: ask.player,
+      about: candidates[0],
+      source: ask.spell,
+      minModes: 0,
+      maxModes: 1,
+      modes: [{ text: "Promise the gift to this opponent?", effect: { kind: "sequence", effects: [] } }],
+      x: 0,
+      targets: [],
+      giftAsk: { ...ask, candidates },
+    };
+  }
+
+  /** The gift of `spellId` is promised to `to` (rule 702.174a). */
+  private promiseGift(spellId: ObjectId, player: PlayerId, to: PlayerId): void {
+    const spell = this.state.objects[spellId];
+    if (spell === undefined || spell.zone !== "stack") return;
+    spell.giftTo = to;
+    this.emit({ type: "gift-promised", spell: spellId, player, to });
+  }
+
+  /** Answers a gift's "promise it to this opponent?" (`promptNextGift`):
+   * yes, and it's theirs; no, and the next is asked about — the last one
+   * left taking it, since a promise was made. Then `priorityTo` gets
+   * priority once nothing else is owed. */
+  private applyGiftChoice(player: PlayerId, chosen: readonly number[], ask: GiftAsk): void {
+    this.state.awaiting = null;
+    const [first, ...rest] = ask.candidates;
+    if (chosen.length > 0 && first !== undefined) {
+      this.promiseGift(ask.spell, player, first);
+    } else if (rest.length > 0) {
+      (this.state.pendingGifts ??= []).unshift({ ...ask, candidates: rest });
+    }
+    this.prepareForPriority(ask.priorityTo);
   }
 
   /** The creatures `player` could sacrifice for casualty `amount`: theirs,
@@ -12545,6 +12676,7 @@ export class Game {
         // whatever isn't about that target. Only when every target the spell
         // chose is illegal does nothing happen, target-less modes included.
         let offset = 0;
+        const steps: { effect: EffectSpec; ctx: ResolutionContext }[] = [];
         for (const mi of chosenModes) {
           const mode = def.castModal.modes[mi];
           const count = mode?.targets?.length ?? 0;
@@ -12553,9 +12685,9 @@ export class Game {
           const illegal = legality.illegal.filter((i) => i >= offset && i < offset + count).map((i) => i - offset);
           offset += count;
           if (mode === undefined) continue;
-          applyEffectSpec(
-            mode.effect,
-            this.makeResolutionContext(
+          steps.push({
+            effect: mode.effect,
+            ctx: this.makeResolutionContext(
               id,
               object.controller,
               slice,
@@ -12568,7 +12700,23 @@ export class Game {
               object.lastKnownRefs,
               illegal.length > 0 ? { illegalTargets: illegal } : {},
             ),
-          );
+          });
+        }
+        // The modes are followed in order (rules 608.2c, 700.2 — "no matter
+        // which modes you choose, you always follow the instructions in the
+        // order they are written"), as a `sequence`'s steps are: a mode that
+        // stops to ask something — a search, a discard, a choice — is
+        // answered before the next mode happens. The modes after it wait in
+        // `suspendedResolutions`, each with its own targets, beneath whatever
+        // that mode parked of its own and in order.
+        const pendingBefore = steps[0]?.ctx.decisionPending() ?? false;
+        for (let k = 0; k < steps.length; k += 1) {
+          const parked = this.state.suspendedResolutions.length;
+          applyEffectSpec(steps[k].effect, steps[k].ctx);
+          if (k + 1 < steps.length && !pendingBefore && steps[k].ctx.decisionPending()) {
+            for (const later of steps.slice(k + 1)) later.ctx.resumeAfterDecisions(later.effect, parked);
+            break;
+          }
         }
       } else {
         const illegalTargets = legality.illegal;
@@ -16523,10 +16671,10 @@ export class Game {
         // ceases to exist either way (rule 111.7).
         this.moveObject(id, "library");
       },
-      addCounterAll: (filter, counter, amount, exceptSource) => {
+      addCounterAll: (filter, counter, amount, exceptSource, scopeTo) => {
         // Snapshot first — `addCounter` can kill a permanent (a -1/-1 counter)
         // and mutate the battlefield array underneath the loop.
-        for (const id of this.battlefieldMatching(controller, filter)) {
+        for (const id of this.battlefieldMatching(scopeTo ?? controller, filter)) {
           if (exceptSource === true && id === source) continue;
           this.addCounter({ kind: "object", object: id }, counter, amount, false, controller);
         }
@@ -16627,6 +16775,25 @@ export class Game {
         // Nothing is announced, so nothing else invalidates the fold.
         invalidateComputedCache();
       },
+      loseAbilitiesAll: (filter, duration) => {
+        const kept = lasting(duration, controller);
+        // One effect, one timestamp (rule 613.7b), over what matches now
+        // (611.2c); a token stack loses them whole.
+        const timestamp = this.freshTimestamp();
+        for (const id of this.battlefieldMatching(controller, filter)) {
+          const object = this.state.objects[id];
+          if (object === undefined || object.zone !== "battlefield" || !durationBegins(object, kept)) continue;
+          object.modifiers.push({
+            timestamp,
+            power: 0,
+            toughness: 0,
+            keywords: [],
+            loseAbilities: true,
+            ...durationFields(kept),
+          });
+        }
+        invalidateComputedCache();
+      },
       grantPlayerHexproof: (who) => {
         for (const player of scoped(who)) {
           if (!this.state.hexproofPlayers.includes(player)) {
@@ -16638,6 +16805,43 @@ export class Game {
         if (this.state.players[player]?.hasLost !== false) return;
         this.state.extraTurns.push(player);
         this.emit({ type: "extra-turn-queued", player });
+      },
+      giveGift: (gift) => {
+        // Who it was promised to: the resolving spell's, or the permanent's
+        // spell's as it entered — as it last existed there, if it has left.
+        const live = this.state.objects[source];
+        const departed = departedSource();
+        const to =
+          departed !== undefined
+            ? departed.enteredGiftTo
+            : live?.zone === "stack"
+              ? live.giftTo
+              : live?.zone === "battlefield"
+                ? live.enteredGiftTo
+                : undefined;
+        if (to === undefined || this.state.players[to]?.hasLost !== false) return;
+        // The gifts themselves (rules 702.174d–i): the chosen player does it.
+        switch (gift) {
+          case "card":
+            this.drawCard(to);
+            return;
+          case "extra-turn":
+            this.state.extraTurns.push(to);
+            this.emit({ type: "extra-turn-queued", player: to });
+            return;
+          case "tapped-fish":
+            this.createTokens(to, "Fish Token", 1, true);
+            return;
+          case "food":
+            this.createTokens(to, "Food Token", 1);
+            return;
+          case "treasure":
+            this.createTokens(to, "Treasure Token", 1);
+            return;
+          case "octopus":
+            this.createTokens(to, "Octopus Token", 1);
+            return;
+        }
       },
       winGame: (player) => this.winGame(player, `won the game with ${this.effectSourceName(source)}`),
       loseGame: (players) => this.loseGame(players, `lost the game to ${this.effectSourceName(source)}`),
@@ -18676,6 +18880,7 @@ export class Game {
       ...(object.overloaded === true ? { overloaded: true } : {}),
       ...(object.evokePaid === true ? { evokePaid: true } : {}),
       ...(object.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
+      ...(object.giftTo !== undefined ? { giftTo: object.giftTo } : {}),
       modifiers: object.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })),
     };
   }
@@ -18739,6 +18944,9 @@ export class Game {
       ...(spell.overloaded === true ? { overloaded: true } : {}),
       ...(spell.evokePaid === true ? { evokePaid: true } : {}),
       ...(spell.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
+      // "If you copy a spell for which the gift was promised, the gift was
+      // also promised to the same opponent for the copy" (the ruling).
+      ...(spell.giftTo !== undefined ? { giftTo: spell.giftTo } : {}),
       attacking: null,
       blocking: null,
       blockedBy: [],
@@ -22869,8 +23077,14 @@ export class Game {
       this.emit({ type: "damage-dealt", source, target, amount, combat });
       // The damage is dealt in full — lifelink, commander damage and "is
       // dealt damage" all see it — whatever it does to the life total.
-      const loss = this.lifeLossFromDamage(target.player, amount);
-      if (loss > 0) this.changeLife(target.player, -loss);
+      // From a source with infect it's that many poison counters instead of
+      // life (rules 120.3a-b, 702.90b): the source's controller gives them.
+      if (this.sourceHasDamageKeyword(source, "infect", sourceLastKnown)) {
+        this.changePlayerCounters(target.player, "poison", amount);
+      } else {
+        const loss = this.lifeLossFromDamage(target.player, amount);
+        if (loss > 0) this.changeLife(target.player, -loss);
+      }
       this.applyLifelink(source, amount, sourceLastKnown);
       // Toxic (rules 120.3g, 702.164c): combat damage dealt to a player by a
       // creature with toxic also has its controller give that player its
@@ -22927,13 +23141,43 @@ export class Game {
       this.applyLifelink(source, amount, sourceLastKnown);
       return amount;
     }
-    object.damageMarked += amount;
+    // From a source with wither or infect, damage to a creature isn't marked:
+    // the source's controller puts that many -1/-1 counters on it instead
+    // (rules 120.3d-e, 702.80a, 702.90c) — a counter placement, so Doubling
+    // Season and "whenever you put -1/-1 counters" see it.
+    const asCounters =
+      this.sourceHasDamageKeyword(source, "infect", sourceLastKnown) ||
+      this.sourceHasDamageKeyword(source, "wither", sourceLastKnown);
+    if (!asCounters) object.damageMarked += amount;
     if (this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)) {
       object.markedByDeathtouch = true;
     }
     this.emit({ type: "damage-dealt", source, target, amount, combat });
+    if (asCounters) {
+      const by = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
+      this.addCounter(target, "-1/-1", amount, false, by);
+    }
     this.applyLifelink(source, amount, sourceLastKnown);
     return amount;
+  }
+
+  /**
+   * Whether `source` deals damage with `keyword` — infect or wither, which
+   * work from whatever zone the source deals damage from (rules 702.80c,
+   * 702.90e): the spell or permanent as it is, or, given its last-known
+   * information, as it last existed (702.80b, 702.90d). Unlike
+   * `sourceHasKeyword`, not only a creature's.
+   */
+  private sourceHasDamageKeyword(
+    source: ObjectId,
+    keyword: "infect" | "wither",
+    sourceLastKnown?: LastKnownInfo,
+  ): boolean {
+    if (sourceLastKnown !== undefined) return sourceLastKnown.keywords.includes(keyword);
+    const object = this.state.objects[source];
+    if (object === undefined || object.kind !== "card") return false;
+    if (object.zone !== "battlefield" && object.zone !== "stack") return false;
+    return this.objHasKeyword(source, keyword);
   }
 
   /** The total toxic value (rule 702.164b) of `source` if it's a creature on
@@ -23662,7 +23906,11 @@ export class Game {
           reason = "toughness is 0 or less";
         } else if (!indestructible && object.damageMarked >= toughness) {
           reason = "lethal damage";
-        } else if (!indestructible && object.markedByDeathtouch && object.damageMarked > 0) {
+        } else if (!indestructible && object.markedByDeathtouch) {
+          // Dealt damage by a deathtouch source (704.5h) — set only as
+          // damage over 0 is dealt, and cleared with the damage. Read alone
+          // since damage from one with wither or infect too is -1/-1
+          // counters, not marked damage (120.3d), and still kills.
           reason = "deathtouch";
         }
         // Both damage checks destroy it (704.5g-h), which a regeneration
@@ -24302,6 +24550,7 @@ export class Game {
       isCommander: object.isCommander,
       tapped: object.tapped,
       ...(object.enteredKicked === true ? { enteredKicked: true } : {}),
+      ...(object.enteredGiftTo !== undefined ? { enteredGiftTo: object.enteredGiftTo } : {}),
       ...(object.chosenCreatureType != null ? { chosenCreatureType: object.chosenCreatureType } : {}),
       ...(object.enteredBattlefieldOnTurn !== null ? { enteredOnTurn: object.enteredBattlefieldOnTurn } : {}),
       ...(object.entry !== undefined ? { entry: object.entry } : {}),
@@ -24668,6 +24917,9 @@ export class Game {
     // flag on the *next* move, so a Verix that dies and returns is unkicked.
     const enteringKicked = object.zone === "stack" && to === "battlefield" && object.kicked === true;
     const enteringTimesKicked = enteringKicked ? object.timesKicked : undefined;
+    // Its gift's opponent, the same way (rule 702.174b's "if its gift cost
+    // was paid" is an ETB trigger).
+    const enteringGiftTo = object.zone === "stack" && to === "battlefield" ? object.giftTo : undefined;
     // A prototyped spell's characteristics stay with the permanent it
     // becomes; any other move drops them (rule 718.3b). So does what the
     // spell got for how it was cast (`castRider` — rules 400.7b, 611.3d).
@@ -24862,6 +25114,7 @@ export class Game {
     object.kicked = undefined;
     object.timesKicked = undefined;
     object.offspringGrantPaid = undefined;
+    object.giftTo = undefined;
     object.evokePaid = undefined;
     // "That spell can't be countered" was about this casting, so it ends when
     // the spell leaves the stack (Cavern of Souls). So does what the casting
@@ -24870,6 +25123,7 @@ export class Game {
     object.lastKnownRefs = undefined;
     object.enteredKicked = enteringKicked;
     object.enteredTimesKicked = enteringTimesKicked;
+    object.enteredGiftTo = enteringGiftTo;
     object.entry = entry;
     object.castFrom = undefined;
     // The O-Ring link (rule 720.2) dies with any move: a card that leaves

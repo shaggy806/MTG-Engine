@@ -3253,6 +3253,17 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
     const picked = pendingModes.picked
     const uncastable = (i: number) =>
       cm.modes[i].targetOptions.some((o) => o.length === 0)
+    // Spree (rule 702.172a): each mode adds its own cost, so only some sets
+    // of modes can be paid for together — the offer's `modeSets`. A mode is
+    // open while some payable set holds it beside what's picked, and Confirm
+    // waits for picks that are one of those sets.
+    const sets = cm.modeSets
+    const fits = (picks: readonly number[]) =>
+      sets === undefined || sets.some((s) => picks.every((p) => s.includes(p)))
+    const complete =
+      sets === undefined
+        ? picked.length >= cm.minModes && picked.length <= cm.maxModes
+        : sets.some((s) => s.length === picked.length && picked.every((p) => s.includes(p)))
     const toggle = (i: number) =>
       setPendingModes((prev) =>
         prev === null
@@ -3277,15 +3288,15 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
             key={i}
             type="button"
             className={picked.includes(i) ? 'selected' : undefined}
-            disabled={uncastable(i) && !picked.includes(i)}
+            disabled={(uncastable(i) || !fits([...picked, i])) && !picked.includes(i)}
             onClick={() => toggle(i)}
           >
-            {m.text}
+            <Symbols text={m.text} />
           </button>
         ))}
         <button
           type="button"
-          disabled={picked.length < cm.minModes || picked.length > cm.maxModes}
+          disabled={!complete}
           onClick={confirmModes}
         >
           Confirm
@@ -3554,7 +3565,13 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
         {ways.map((c, i) => (
           <button key={i} type="button" onClick={() => beginCast(c)}>
             Cast {c.cardName}
-            {c.kicked ? <> ({c.kickerKeyword ?? 'kicked'} <Symbols text={c.kickerCost ?? ''} />)</> : null}
+            {/* A gift costs no mana: "(gift)", nothing after it. */}
+            {c.kicked ? (
+              <>
+                {' '}({c.kickerKeyword ?? 'kicked'}
+                {c.kickerCost ? <> <Symbols text={c.kickerCost} /></> : null})
+              </>
+            ) : null}
             {c.costOptionText ? <> (<Symbols text={c.costOptionText} />)</> : null}
             {c.free ? ' (free)' : ''}
             {c.prototype ? <> (prototype <Symbols text={c.prototypeCost ?? ''} />)</> : null}
@@ -4490,7 +4507,10 @@ function Table({ view, seat, opponents, game, actions, hand, previousView, board
                     <button key={i} type="button" onClick={() => playFace(a)}>
                       {a.kind === 'play-land' ? 'Play' : 'Cast'} {a.cardName}
                       {a.kind === 'cast-spell' && a.kicked ? (
-                        <> ({a.kickerKeyword ?? 'kicked'} <Symbols text={a.kickerCost ?? ''} />)</>
+                        <>
+                          {' '}({a.kickerKeyword ?? 'kicked'}
+                          {a.kickerCost ? <> <Symbols text={a.kickerCost} /></> : null})
+                        </>
                       ) : null}
                       {a.kind === 'cast-spell' && a.overload ? (
                         <> (overload <Symbols text={a.overloadCost ?? ''} />)</>

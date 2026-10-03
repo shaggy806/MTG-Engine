@@ -57,6 +57,10 @@ export const KEYWORD_GLYPH: Record<Keyword, string> = {
   // combat-condition one.
   flanking: '', // ms-ability-combat-condition
   riot: '', // ms-ability-riot
+  infect: '', // ms-ability-infect
+  // No wither icon anywhere in the font; it deals damage as -1/-1
+  // counters, so the -1/-1 counter's.
+  wither: '', // ms-counter-minus
   // Landwalk: Arena's own icons for the five basic types. Desert has none
   // anywhere in the font, and landwalk is conditional unblockability, so
   // desertwalk borrows the Duels icon for that.

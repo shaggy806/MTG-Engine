@@ -94,6 +94,7 @@ import _poolHourOfReckoning from "../pool/hour-of-reckoning.js";
 import _poolImprovisedArmor from "../pool/improvised-armor.js";
 import _poolInfernoTitan from "../pool/inferno-titan.js";
 import _poolInfuriate from "../pool/infuriate.js";
+import _poolInsatiableAvarice from "../pool/insatiable-avarice.js";
 import _poolJarvisEarthsMightiestButler from "../pool/jarvis-earths-mightiest-butler.js";
 import _poolJinGitaxiasProgressTyrant from "../pool/jin-gitaxias-progress-tyrant.js";
 import _poolJungleLion from "../pool/jungle-lion.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolImprovisedArmor,
     _poolInfernoTitan,
     _poolInfuriate,
+    _poolInsatiableAvarice,
     _poolJarvisEarthsMightiestButler,
     _poolJinGitaxiasProgressTyrant,
     _poolJungleLion,

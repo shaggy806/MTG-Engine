@@ -171,6 +171,7 @@ import _poolSacredNectar from "../pool/sacred-nectar.js";
 import _poolSanguineBond from "../pool/sanguine-bond.js";
 import _poolSavageVentmaw from "../pool/savage-ventmaw.js";
 import _poolScavengerDrake from "../pool/scavenger-drake.js";
+import _poolScrapshooter from "../pool/scrapshooter.js";
 import _poolSeaGateBanneret from "../pool/sea-gate-banneret.js";
 import _poolSepharaSkysBlade from "../pool/sephara-skys-blade.js";
 import _poolShineshadowSnarl from "../pool/shineshadow-snarl.js";
@@ -234,6 +235,7 @@ import _poolZulaportCutthroat from "../pool/zulaport-cutthroat.js";
 import _tokens11BlueBirdToken from "../tokens/1-1-blue-bird-token.js";
 import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
 import _tokensKomasCoil from "../tokens/komas-coil.js";
+import _tokensPhyrexianInsectToken from "../tokens/phyrexian-insect-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -405,6 +407,7 @@ const shard: CardShard = {
     _poolSanguineBond,
     _poolSavageVentmaw,
     _poolScavengerDrake,
+    _poolScrapshooter,
     _poolSeaGateBanneret,
     _poolSepharaSkysBlade,
     _poolShineshadowSnarl,
@@ -470,6 +473,7 @@ const shard: CardShard = {
     _tokens11BlueBirdToken,
     _tokensDragonToken66,
     _tokensKomasCoil,
+    _tokensPhyrexianInsectToken,
   ],
 };
 

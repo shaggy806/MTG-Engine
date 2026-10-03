@@ -118,6 +118,7 @@ import _poolNykthosShrineToNyx from "../pool/nykthos-shrine-to-nyx.js";
 import _poolOakgnarlWarrior from "../pool/oakgnarl-warrior.js";
 import _poolOtawaraSoaringCity from "../pool/otawara-soaring-city.js";
 import _poolPatchworkAutomaton from "../pool/patchwork-automaton.js";
+import _poolPeerlessRecycling from "../pool/peerless-recycling.js";
 import _poolPensiveMinotaur from "../pool/pensive-minotaur.js";
 import _poolPhantomNinja from "../pool/phantom-ninja.js";
 import _poolPhyrexiasCore from "../pool/phyrexias-core.js";
@@ -157,6 +158,7 @@ import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
+import _poolStarfallInvocation from "../pool/starfall-invocation.js";
 import _poolStarstorm from "../pool/starstorm.js";
 import _poolSusurSecundiVoidAltar from "../pool/susur-secundi-void-altar.js";
 import _poolSuturePriest from "../pool/suture-priest.js";
@@ -192,6 +194,7 @@ import _poolWarrenElder from "../pool/warren-elder.js";
 import _poolWaryOkapi from "../pool/wary-okapi.js";
 import _poolWastes from "../pool/wastes.js";
 import _poolWatchfulGiant from "../pool/watchful-giant.js";
+import _poolWearDown from "../pool/wear-down.js";
 import _poolWerebear from "../pool/werebear.js";
 import _poolWetlandSambar from "../pool/wetland-sambar.js";
 import _poolWhiteSunsZenith from "../pool/white-suns-zenith.js";
@@ -329,6 +332,7 @@ const shard: CardShard = {
     _poolOakgnarlWarrior,
     _poolOtawaraSoaringCity,
     _poolPatchworkAutomaton,
+    _poolPeerlessRecycling,
     _poolPensiveMinotaur,
     _poolPhantomNinja,
     _poolPhyrexiasCore,
@@ -368,6 +372,7 @@ const shard: CardShard = {
     _poolSpawnbinderMage,
     _poolSpellkeeperWeird,
     _poolStandingTroops,
+    _poolStarfallInvocation,
     _poolStarstorm,
     _poolSusurSecundiVoidAltar,
     _poolSuturePriest,
@@ -403,6 +408,7 @@ const shard: CardShard = {
     _poolWaryOkapi,
     _poolWastes,
     _poolWatchfulGiant,
+    _poolWearDown,
     _poolWerebear,
     _poolWetlandSambar,
     _poolWhiteSunsZenith,

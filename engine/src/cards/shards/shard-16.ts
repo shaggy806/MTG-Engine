@@ -103,6 +103,7 @@ import _poolIkraShidiqiTheUsurper from "../pool/ikra-shidiqi-the-usurper.js";
 import _poolImmolatingSouleater from "../pool/immolating-souleater.js";
 import _poolImperiousInkmage from "../pool/imperious-inkmage.js";
 import _poolIndathaTriome from "../pool/indatha-triome.js";
+import _poolInkmothNexus from "../pool/inkmoth-nexus.js";
 import _poolInspiredSprite from "../pool/inspired-sprite.js";
 import _poolInvasionReinforcements from "../pool/invasion-reinforcements.js";
 import _poolInventorsFair from "../pool/inventors-fair.js";
@@ -354,6 +355,7 @@ const shard: CardShard = {
     _poolImmolatingSouleater,
     _poolImperiousInkmage,
     _poolIndathaTriome,
+    _poolInkmothNexus,
     _poolInspiredSprite,
     _poolInvasionReinforcements,
     _poolInventorsFair,

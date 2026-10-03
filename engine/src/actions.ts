@@ -516,6 +516,36 @@ export function convokeProofFor(offer: ConvokeOffer, xValue = 0): ConvokePayment
   return out.reverse();
 }
 
+/**
+ * The modes to cast a spree spell with (rule 702.172a), out of the sets its
+ * offer can pay for (`castModal.modeSets`): the largest made only of modes in
+ * `wanted`, which lists the modes a driver would choose, best first — between
+ * two sets of a size, the one whose modes come earlier in it. `null` when no
+ * payable set is made of wanted modes alone.
+ */
+export function fitModeSet(
+  modeSets: readonly (readonly number[])[],
+  wanted: readonly number[],
+): number[] | null {
+  const rank = new Map(wanted.map((mode, i) => [mode, i]));
+  const ranks = (set: readonly number[]): number[] =>
+    set.map((mode) => rank.get(mode) ?? Infinity).sort((a, b) => a - b);
+  let best: readonly number[] | null = null;
+  for (const set of modeSets) {
+    if (set.length === 0 || !set.every((mode) => rank.has(mode))) continue;
+    if (best === null || set.length > best.length) {
+      best = set;
+      continue;
+    }
+    if (set.length < best.length) continue;
+    const mine = ranks(set);
+    const theirs = ranks(best);
+    const first = mine.findIndex((r, i) => r !== theirs[i]);
+    if (first >= 0 && mine[first] < theirs[first]) best = set;
+  }
+  return best === null ? null : [...best];
+}
+
 export const actionPlayer = (action: Action): PlayerId => action.player;
 
 /**
@@ -588,7 +618,20 @@ export type LegalAction =
           /** Legal `TargetRef`s per slot of this mode, right now. A slot with an
            * empty list has no legal target — the mode can't be chosen. */
           readonly targetOptions: readonly (readonly TargetRef[])[];
+          /** Spree (rule 702.172a): the additional cost this mode adds if
+           * it's chosen, for labelling. */
+          readonly cost?: string;
         }[];
+        /**
+         * Spree (rule 702.172a): what the modes chosen cost depends on which
+         * they are, so this lists every set of modes this variant can be
+         * cast with right now — each payable with its modes' costs added,
+         * and each of its modes with a legal target — ascending, smallest
+         * sets first. The `modes` a cast sends must be one of them
+         * (`fitModeSet`). Absent for any other modal spell, where any
+         * `minModes..maxModes` of the modes with legal targets will do.
+         */
+        readonly modeSets?: readonly (readonly number[])[];
       };
       /** Set when the spell's cost contains `{X}`. `maxX` is the largest value
        * of X this player could currently pay for (0 when only X=0 is
@@ -662,8 +705,10 @@ export type LegalAction =
        * echoes it back as the action's `kickCount`. */
       readonly kickCount?: number;
       /** The keyword that optional cost goes by when it isn't kicker —
-       * `"offspring"` (rule 702.175) — for labelling. */
-      readonly kickerKeyword?: "offspring";
+       * `"offspring"` (rule 702.175), `"gift"` (702.174: the variant that
+       * promises the gift; to whom is asked once it's cast) — for
+       * labelling. */
+      readonly kickerKeyword?: "offspring" | "gift";
       /** A variant that pays a granted offspring cost as well (Zinnia) —
        * echoed back as the action's `offspring`; `offspringCost` for
        * labelling. */

@@ -200,6 +200,15 @@ export type GameEvent =
       readonly asItAttacks: boolean;
     })
   | (Base & {
+      /** `player` promised `spell`'s gift to the opponent `to` (rule
+       * 702.174a), as its gift cost was paid. The gift is given as it
+       * resolves, or as the permanent it becomes enters. */
+      readonly type: "gift-promised";
+      readonly spell: ObjectId;
+      readonly player: PlayerId;
+      readonly to: PlayerId;
+    })
+  | (Base & {
       readonly type: "card-drawn";
       readonly player: PlayerId;
       readonly object: ObjectId;

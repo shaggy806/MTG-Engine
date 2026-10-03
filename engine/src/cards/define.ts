@@ -150,6 +150,18 @@ export type Keyword =
    * a static granting it to others (Rhythm of the Wild) isn't read as they
    * enter (AUTHORING §15). */
   | "riot"
+  /** Infect (rule 702.90): damage this deals to a player gives them that
+   * many poison counters instead of costing life (120.3b), and damage it
+   * deals to a creature is that many -1/-1 counters instead of marked damage
+   * (120.3d) — any damage, not only combat damage, and still damage in every
+   * other respect (lifelink, deathtouch, "is dealt damage", prevention). A
+   * planeswalker loses loyalty as usual. Read off the source as it is, or as
+   * it last existed (702.90d). `Game.dealDamage`. */
+  | "infect"
+  /** Wither (rule 702.80): infect's creature half alone — damage this deals
+   * to a creature is that many -1/-1 counters instead of marked damage
+   * (120.3d); damage to a player is life loss as usual. */
+  | "wither"
   /** Landwalk (rule 702.14) — can't be blocked as long as the defending
    * player controls a land of that type. One keyword per land type a card
    * prints: the five basic types, and Desert (Hazezon, Shaper of Sand). The
@@ -1652,6 +1664,9 @@ export interface CastModalSpec {
    * (Collective Brutality) or tap (Collective Effort) aren't modelled.
    */
   readonly costPerExtraMode?: string;
+  /** Spree (rule 702.172a) is each mode's `ModeOption.spreeCost`: "choose
+   * one or more modes; as an additional cost to cast this spell, pay the
+   * costs associated with those modes". */
   readonly modes: readonly ModeOption[];
 }
 
@@ -1789,8 +1804,17 @@ export interface CardDefinition {
      * (the `offspringTrigger()` helper's "if its offspring cost was paid"),
      * and the offer says `kickerKeyword` so it's labelled for what it is. A
      * spell cast this way is not a *kicked* spell to anything else.
+     *
+     * `"gift"` (rule 702.174a) is "as an additional cost to cast this
+     * spell, you may choose an opponent": `cost` is `""`, promising it is
+     * the kicked variant (702.174k), `targets` / `effect` are what the
+     * spell does "if the gift was promised" (702.174m — its targets are
+     * chosen only then), `effect` opening with the `gift` effect
+     * (702.174j); `self-kicked` is "if the gift was promised" on a
+     * permanent, whose gift is the `giftTrigger` helper. The opponent is
+     * chosen as the cost is paid — see `GiftAsk`.
      */
-    readonly keyword?: "offspring";
+    readonly keyword?: "offspring" | "gift";
     /**
      * Multikicker (rule 702.33c): "you may pay an additional [cost] any
      * number of times as you cast this spell". The spell is offered once per
@@ -2301,7 +2325,7 @@ interface CardDraft {
     readonly cost: string;
     readonly targets?: readonly TargetSpec[];
     readonly effect?: EffectSpec;
-    readonly keyword?: "offspring";
+    readonly keyword?: "offspring" | "gift";
     readonly multi?: boolean;
   };
   overload?: {

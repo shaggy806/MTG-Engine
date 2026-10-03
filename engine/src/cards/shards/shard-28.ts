@@ -36,6 +36,7 @@ import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
 import _poolCarrionCrow from "../pool/carrion-crow.js";
 import _poolCliveIfritsDominant from "../pool/clive-ifrits-dominant.js";
+import _poolCoilingRebirth from "../pool/coiling-rebirth.js";
 import _poolConcealedCourtyard from "../pool/concealed-courtyard.js";
 import _poolCounselOfTheSoratami from "../pool/counsel-of-the-soratami.js";
 import _poolCrimsonMage from "../pool/crimson-mage.js";
@@ -45,6 +46,7 @@ import _poolDakmorBat from "../pool/dakmor-bat.js";
 import _poolDarksteelCitadel from "../pool/darksteel-citadel.js";
 import _poolDarksteelSentinel from "../pool/darksteel-sentinel.js";
 import _poolDawningAngel from "../pool/dawning-angel.js";
+import _poolDawnsTruce from "../pool/dawns-truce.js";
 import _poolDeepglowSkate from "../pool/deepglow-skate.js";
 import _poolDiregrafGhoul from "../pool/diregraf-ghoul.js";
 import _poolDispersalTechnician from "../pool/dispersal-technician.js";
@@ -116,6 +118,7 @@ import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
+import _poolOctomancer from "../pool/octomancer.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
 import _poolOvergrownBattlement from "../pool/overgrown-battlement.js";
 import _poolPacificationArray from "../pool/pacification-array.js";
@@ -245,6 +248,7 @@ const shard: CardShard = {
     _poolBullCerodon,
     _poolCarrionCrow,
     _poolCliveIfritsDominant,
+    _poolCoilingRebirth,
     _poolConcealedCourtyard,
     _poolCounselOfTheSoratami,
     _poolCrimsonMage,
@@ -254,6 +258,7 @@ const shard: CardShard = {
     _poolDarksteelCitadel,
     _poolDarksteelSentinel,
     _poolDawningAngel,
+    _poolDawnsTruce,
     _poolDeepglowSkate,
     _poolDiregrafGhoul,
     _poolDispersalTechnician,
@@ -325,6 +330,7 @@ const shard: CardShard = {
     _poolMyrkulLordOfBones,
     _poolMysticMonastery,
     _poolNightguardPatrol,
+    _poolOctomancer,
     _poolOmnathLocusOfCreation,
     _poolOvergrownBattlement,
     _poolPacificationArray,

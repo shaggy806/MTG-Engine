@@ -45,6 +45,8 @@ export const makeFormatter = (game) => {
         return `${name(e.object)} becomes monstrous`;
       case "permanent-exerted":
         return `${e.player} exerts ${name(e.object)}`;
+      case "gift-promised":
+        return `${e.player} promises ${name(e.spell)}'s gift to ${e.to}`;
       case "day-night-changed":
         return `it becomes ${e.value}`;
       case "counter-failed":

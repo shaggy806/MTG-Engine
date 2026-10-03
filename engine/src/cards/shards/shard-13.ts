@@ -87,6 +87,7 @@ import _poolHuatlisSnubhorn from "../pool/huatlis-snubhorn.js";
 import _poolHullcarver from "../pool/hullcarver.js";
 import _poolHundroog from "../pool/hundroog.js";
 import _poolHungryGhoul from "../pool/hungry-ghoul.js";
+import _poolIchorclawMyr from "../pool/ichorclaw-myr.js";
 import _poolIlluminatedWings from "../pool/illuminated-wings.js";
 import _poolImpactTremors from "../pool/impact-tremors.js";
 import _poolImperialSeal from "../pool/imperial-seal.js";
@@ -112,6 +113,7 @@ import _poolLuminousBroodmoth from "../pool/luminous-broodmoth.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
 import _poolMassacreWurm from "../pool/massacre-wurm.js";
 import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
+import _poolMidnightBanshee from "../pool/midnight-banshee.js";
 import _poolMigratingKetradon from "../pool/migrating-ketradon.js";
 import _poolMishrasFactory from "../pool/mishras-factory.js";
 import _poolMithrilCoat from "../pool/mithril-coat.js";
@@ -184,6 +186,7 @@ import _poolTheJollyBalloonMan from "../pool/the-jolly-balloon-man.js";
 import _poolThornwindFaeries from "../pool/thornwind-faeries.js";
 import _poolTomeOfLegends from "../pool/tome-of-legends.js";
 import _poolTouchstone from "../pool/touchstone.js";
+import _poolTriumphOfTheHordes from "../pool/triumph-of-the-hordes.js";
 import _poolTrollHornCameo from "../pool/troll-horn-cameo.js";
 import _poolUkudCobra from "../pool/ukud-cobra.js";
 import _poolUnhinge from "../pool/unhinge.js";
@@ -298,6 +301,7 @@ const shard: CardShard = {
     _poolHullcarver,
     _poolHundroog,
     _poolHungryGhoul,
+    _poolIchorclawMyr,
     _poolIlluminatedWings,
     _poolImpactTremors,
     _poolImperialSeal,
@@ -323,6 +327,7 @@ const shard: CardShard = {
     _poolMagusOfTheBazaar,
     _poolMassacreWurm,
     _poolMerfolkOfTheDepths,
+    _poolMidnightBanshee,
     _poolMigratingKetradon,
     _poolMishrasFactory,
     _poolMithrilCoat,
@@ -395,6 +400,7 @@ const shard: CardShard = {
     _poolThornwindFaeries,
     _poolTomeOfLegends,
     _poolTouchstone,
+    _poolTriumphOfTheHordes,
     _poolTrollHornCameo,
     _poolUkudCobra,
     _poolUnhinge,

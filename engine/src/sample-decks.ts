@@ -1151,7 +1151,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       sub("Monstrous Onslaught", "Primal Might", "Green removal that uses a creature's power."),
       sub("Pugnacious Hammerskull", "Topiary Stomper", "Three-mana green Dinosaur, big for its cost."),
       sub("Ram Through", "Rabid Bite", "Cheap one-sided fight."),
-      sub("Scrapshooter", "Reclamation Sage", "Three-mana green creature that destroys an artifact or enchantment as it enters."),
     ],
   }),
   precon({

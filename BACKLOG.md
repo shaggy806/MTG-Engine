@@ -158,6 +158,30 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `look-and-choose`'s `"exile"` / `"exile-face-down"` destinations do), so Pit of Offerings'
   "exile up to three target cards from graveyards … any of the exiled cards' colors" (an
   `add-mana` `colorAmong` with `zone: "exiled-with-source"`) waits on it.
+- **Cascade and suspend cast with no modes and no kicker.** Their free cast
+  (`castCardWithoutPaying`) reads only `def.targets`: a modal spell (a Charm, a Command, a spree
+  spell — rule 702.172a's "you must still choose at least one mode") is cast with no modes and
+  resolves doing nothing, and an optional additional cost is never offered — not kicker, and not
+  a gift (rule 702.174a's "you may promise"). Route them through the `cast-now` decision's free
+  cast, which offers every variant, keeping cascade's tail and suspend's haste.
+- **Changing a spell or ability's target** (rule 115.7 — Return the Favor's "change the target
+  of target spell or ability with a single target"), and a target slot that takes an instant or
+  sorcery spell *or* an activated or triggered ability (its first mode). Return the Favor waits
+  on both.
+- **"Whenever a creature you control deals combat damage to that player this turn"** — a
+  delayed trigger lasting the turn, keyed on a target player (Great Train Heist's third mode),
+  and "if it's your combat phase" as a condition (its first). `DelayedCombatDamage` watches one
+  creature only.
+- **"Whenever this Equipment becomes unattached from a permanent"** (Grafted Exoskeleton): no
+  unattach event or trigger — an equip elsewhere, the Equipment leaving, the creature ceasing to
+  be a creature.
+- **A card's own "if this would be put into a graveyard from anywhere, reveal it and shuffle it
+  into its owner's library instead"** (Blightsteel Colossus, the Darksteel Colossus family) — a
+  self-replacement working from every zone, which beside Rest in Peace also needs its owner to
+  choose the order (rule 616.1).
+- **A set rule on a graveyard choice**: "up to two creature cards with total mana value 4 or
+  less" (Lively Dirge's second mode). `together` exists only on a library search
+  (`zone-choice-together.ts` takes a new rule cheaply, and the clients already read it).
 - **Delve and convoke together on an {X} spell.** `xCost.maxX` is the better of the two alone
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the
@@ -349,6 +373,10 @@ Beyond that plan:
 
 ## Client / UI
 
+- **A gift's opponent is asked one opponent at a time** (rule 702.174a): with two or more
+  opponents the caster answers a yes-or-no `choose-modes` `about` each in turn, the last one
+  left taking it. One prompt naming every opponent (picked on their panels) would read better;
+  the engine side is `promptNextGift`.
 - **Next priority (the user, 2026-10-02): a scenario builder for testing cards and interactions.**
   Build a game state from scratch, searching cards from the card library and placing them, with
   no game triggers happening while building; then switch to game mode to play cards and see how

@@ -128,6 +128,7 @@ import _poolPawnOfUlamog from "../pool/pawn-of-ulamog.js";
 import _poolPerplexingTest from "../pool/perplexing-test.js";
 import _poolPhyrexianDebaser from "../pool/phyrexian-debaser.js";
 import _poolPhytoburst from "../pool/phytoburst.js";
+import _poolPlagueStinger from "../pool/plague-stinger.js";
 import _poolPlateau from "../pool/plateau.js";
 import _poolPlatedCrusher from "../pool/plated-crusher.js";
 import _poolPlumecreedEscort from "../pool/plumecreed-escort.js";
@@ -343,6 +344,7 @@ const shard: CardShard = {
     _poolPerplexingTest,
     _poolPhyrexianDebaser,
     _poolPhytoburst,
+    _poolPlagueStinger,
     _poolPlateau,
     _poolPlatedCrusher,
     _poolPlumecreedEscort,

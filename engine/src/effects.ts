@@ -634,6 +634,15 @@ export interface RevealUntilProgress {
   readonly placed: boolean;
 }
 
+/**
+ * What a gift gives (rules 702.174d–i): "Gift a Food" — the chosen player
+ * creates a Food token; "a card" — they draw a card; "a tapped Fish" — they
+ * create a tapped 1/1 blue Fish creature token; "an extra turn" — they take
+ * an extra turn after this one; "a Treasure"; "an Octopus" — an 8/8 blue
+ * Octopus creature token.
+ */
+export type GiftKind = "food" | "card" | "tapped-fish" | "extra-turn" | "treasure" | "octopus";
+
 /** Which players an "each" / mass effect reaches. */
 /**
  * What a spell or ability did "this way" — the cards it made players
@@ -1943,6 +1952,12 @@ export type EffectSpec =
       /** Spare the effect's own source — "put a +1/+1 counter on each
        * **other** creature you control" (Finneas, Ace Archer). */
       readonly exceptSource?: boolean;
+      /** As on `modify-pt-all`: the filter is read from the side of the
+       * player in this target slot — Requisition Raid's "each creature
+       * **target player** controls" is `{ type: "creature", controlledBy:
+       * "you" }` with slot 0. That player gone (an illegal target), it puts
+       * none (rule 608.2b). */
+      readonly controlledByTarget?: number;
     }
   | {
       /** "You gain hexproof until end of turn" (Lazotep Plating). A *player*
@@ -2210,6 +2225,20 @@ export type EffectSpec =
     }
   | {
       /**
+       * Every battlefield permanent matching `filter` loses all its
+       * abilities (layer 6) — Final Showdown's "all creatures lose all
+       * abilities until end of turn". The mass form of `lose-abilities`:
+       * the permanents are the ones that match as it applies (rule 611.2c),
+       * under one effect with one timestamp, so an ability an effect grants
+       * one of them afterwards isn't lost (rule 613.7 — the ruling), and a
+       * creature that arrives later keeps its own.
+       */
+      readonly kind: "lose-abilities-all";
+      readonly filter: CardFilter;
+      readonly duration: PtDuration;
+    }
+  | {
+      /**
        * Give a permanent an activated ability — the one-shot counterpart of
        * `StaticAbility.grantsActivated`, riding on the target's own modifiers
        * like `grant-triggered`. A mana ability is seen by the mana payer, or
@@ -2247,6 +2276,21 @@ export type EffectSpec =
        * (Time Warp: "target player takes an extra turn after this one"). */
       readonly kind: "take-extra-turn";
       readonly target?: number;
+    }
+  | {
+      /**
+       * Gift (rule 702.174): the gift given to the opponent it was promised
+       * to — the spell's, or for a permanent, its spell's as it entered
+       * (`GameObject.giftTo` / `enteredGiftTo`, read as it last existed if
+       * it has left). Nothing when no gift was promised, or that player has
+       * left the game. An instant or sorcery gives it before its other
+       * effects (702.174j): the first step of its kicker `effect` (a gift
+       * is the kicker machinery under the keyword `gift`); a permanent, in
+       * "when this permanent enters, if its gift cost was paid" (702.174b —
+       * the `giftTrigger` helper).
+       */
+      readonly kind: "gift";
+      readonly gift: GiftKind;
     }
   | {
       /** Storm (rule 702.40 — ROADMAP Phase 8): put a copy of the spell this
@@ -3505,6 +3549,15 @@ export interface ModeOption {
    * `modal` / `may` effect (not announced) requires *non*-targeted modes and
    * ignores this. */
   readonly targets?: readonly TargetSpec[];
+  /**
+   * Spree (rule 702.172a): this mode's own additional cost — "+ {1} —" —
+   * paid as the spell is cast if the mode is chosen, on top of whatever else
+   * is paid, an alternative cost or a free cast included (rule 118.9d; the
+   * rulings). Only on a `castModal` card, whose every mode has one, with
+   * `minModes: 1` and `maxModes` all of them. Its mana value is still its
+   * mana cost's alone.
+   */
+  readonly spreeCost?: string;
 }
 
 /** Primitive mutations an effect can perform. Implemented by the engine. */
@@ -4050,6 +4103,8 @@ export interface EffectApi {
     counter: string,
     amount: number,
     exceptSource?: boolean,
+    /** Whose side `filter` is read from — see `controlledByTarget`. */
+    scopeTo?: PlayerId,
   ): void;
   /** See the `"double-counters-all"` {@link EffectSpec}. */
   doubleCountersAll(filter: CardFilter, counterKind: string): void;
@@ -4069,6 +4124,8 @@ export interface EffectApi {
   /** See the `"grant-activated"` {@link EffectSpec}. */
   grantActivated(target: TargetRef, ability: ActivatedAbility, duration: PtDuration): void;
   /** See the `"lose-abilities"` {@link EffectSpec}. */
+  /** See the `"lose-abilities-all"` {@link EffectSpec}. */
+  loseAbilitiesAll(filter: CardFilter, duration: PtDuration): void;
   loseAbilities(
     target: TargetRef,
     opts: {
@@ -4081,6 +4138,8 @@ export interface EffectApi {
   grantActivatedAll(filter: CardFilter, ability: ActivatedAbility, duration: PtDuration): void;
   /** `player` takes an extra turn after this one (Time Warp). */
   takeExtraTurn(player: PlayerId): void;
+  /** See the `"gift"` {@link EffectSpec}. */
+  giveGift(gift: GiftKind): void;
   /** `player` wins the game, unless they can't — see the `"win-game"`
    * {@link EffectSpec}. */
   winGame(player: PlayerId): void;
@@ -5893,14 +5952,18 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "monstrosity":
       ctx.monstrosity(amountValue(spec.amount, ctx));
       return;
-    case "add-counter-all":
+    case "add-counter-all": {
+      const scopeTo = scopedController(spec.controlledByTarget, ctx);
+      if (spec.controlledByTarget !== undefined && scopeTo === undefined) return;
       ctx.addCounterAll(
         spec.filter,
         spec.counter,
         amountValue(spec.amount, ctx),
         spec.exceptSource === true,
+        scopeTo,
       );
       return;
+    }
     case "double-counters-all":
       ctx.doubleCountersAll(spec.filter, spec.counterKind);
       return;
@@ -6083,6 +6146,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-activated-all":
       ctx.grantActivatedAll(spec.filter, spec.ability, spec.duration);
       return;
+    case "lose-abilities-all":
+      ctx.loseAbilitiesAll(spec.filter, spec.duration);
+      return;
     case "lose-abilities": {
       const target = resolveEffectTarget(spec.target, ctx);
       if (target !== undefined) {
@@ -6094,6 +6160,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       }
       return;
     }
+    case "gift":
+      ctx.giveGift(spec.gift);
+      return;
     case "take-extra-turn": {
       const target = spec.target === undefined ? undefined : ctx.targets[spec.target];
       if (spec.target !== undefined && target?.kind !== "player") return;

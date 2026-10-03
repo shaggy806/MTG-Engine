@@ -83,6 +83,7 @@ import _poolHumbleDefector from "../pool/humble-defector.js";
 import _poolHungryMegasloth from "../pool/hungry-megasloth.js";
 import _poolIcatianScout from "../pool/icatian-scout.js";
 import _poolIceTunnel from "../pool/ice-tunnel.js";
+import _poolIchorRats from "../pool/ichor-rats.js";
 import _poolImmolation from "../pool/immolation.js";
 import _poolImpetuousSunchaser from "../pool/impetuous-sunchaser.js";
 import _poolImprovisedWeaponry from "../pool/improvised-weaponry.js";
@@ -298,6 +299,7 @@ const shard: CardShard = {
     _poolHungryMegasloth,
     _poolIcatianScout,
     _poolIceTunnel,
+    _poolIchorRats,
     _poolImmolation,
     _poolImpetuousSunchaser,
     _poolImprovisedWeaponry,

@@ -13,7 +13,7 @@
  */
 
 import type { Action, ConvokePayment, LegalAction } from "../actions.js";
-import { convokeProofFor, delvePicks } from "../actions.js";
+import { convokeProofFor, delvePicks, fitModeSet } from "../actions.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import { subsetsBetween } from "../decisions/shared/subsets.js";
 import { targetCombos } from "../decisions/shared/target-combos.js";
@@ -131,23 +131,22 @@ function castCandidates(legal: CastSpellLegal, player: PlayerId): Action[] {
       .map((_mode, index) => index)
       .filter((index) => modal.modes[index].targetOptions.every((o) => o.length > 0));
     if (fillable.length < modal.minModes) return [];
-    const most = fillable.slice(
-      0,
-      Math.max(modal.minModes, Math.min(modal.maxModes, fillable.length)),
-    );
+    // Spree (rule 702.172a): only the sets of modes it can pay for.
+    const sets = modal.modeSets;
+    const most =
+      sets !== undefined
+        ? fitModeSet(sets, fillable)
+        : fillable.slice(0, Math.max(modal.minModes, Math.min(modal.maxModes, fillable.length)));
+    if (most === null) return [];
     const choices = [most];
     const seenModes = new Set([JSON.stringify(most)]);
-    for (const modes of subsetsBetween(
-      fillable,
-      Math.max(1, modal.minModes),
-      modal.maxModes,
-      MAX_TARGET_COMBOS * 2,
-    )) {
+    for (const modes of sets ??
+      subsetsBetween(fillable, Math.max(1, modal.minModes), modal.maxModes, MAX_TARGET_COMBOS * 2)) {
       if (choices.length >= MAX_TARGET_COMBOS) break;
       const key = JSON.stringify(modes);
       if (seenModes.has(key)) continue;
       seenModes.add(key);
-      choices.push(modes);
+      choices.push([...modes]);
     }
     const out: Action[] = [];
     for (const modes of choices) {

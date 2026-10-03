@@ -84,6 +84,7 @@ export const KEYWORDS = {
   "first strike": "first-strike", "double strike": "double-strike", trample: "trample",
   deathtouch: "deathtouch", lifelink: "lifelink", menace: "menace", indestructible: "indestructible",
   hexproof: "hexproof", shroud: "shroud", flash: "flash", fear: "fear", intimidate: "intimidate", skulk: "skulk", riot: "riot",
+  infect: "infect", wither: "wither",
   plainswalk: "plainswalk", islandwalk: "islandwalk", swampwalk: "swampwalk",
   mountainwalk: "mountainwalk", forestwalk: "forestwalk", desertwalk: "desertwalk",
   changeling: "changeling", daybound: "daybound", nightbound: "nightbound",

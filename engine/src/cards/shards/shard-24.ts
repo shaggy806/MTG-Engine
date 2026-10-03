@@ -72,6 +72,7 @@ import _poolFeralProwler from "../pool/feral-prowler.js";
 import _poolFeralRidgewolf from "../pool/feral-ridgewolf.js";
 import _poolFerrousLake from "../pool/ferrous-lake.js";
 import _poolFierceGuardianship from "../pool/fierce-guardianship.js";
+import _poolFinalShowdown from "../pool/final-showdown.js";
 import _poolFireElemental from "../pool/fire-elemental.js";
 import _poolFireball from "../pool/fireball.js";
 import _poolFootSoldiers from "../pool/foot-soldiers.js";
@@ -170,6 +171,7 @@ import _poolSteelWall from "../pool/steel-wall.js";
 import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
+import _poolTaintedStrike from "../pool/tainted-strike.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
 import _poolTevalArbiterOfVirtue from "../pool/teval-arbiter-of-virtue.js";
@@ -288,6 +290,7 @@ const shard: CardShard = {
     _poolFeralRidgewolf,
     _poolFerrousLake,
     _poolFierceGuardianship,
+    _poolFinalShowdown,
     _poolFireElemental,
     _poolFireball,
     _poolFootSoldiers,
@@ -386,6 +389,7 @@ const shard: CardShard = {
     _poolStormshriekFeral,
     _poolSunbladeAngel,
     _poolSwordOfWealthAndPower,
+    _poolTaintedStrike,
     _poolTangledVale,
     _poolTeferisProtege,
     _poolTevalArbiterOfVirtue,

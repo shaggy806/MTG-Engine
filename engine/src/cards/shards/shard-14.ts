@@ -147,6 +147,7 @@ import _poolObeliskOfNaya from "../pool/obelisk-of-naya.js";
 import _poolOnyxGoblet from "../pool/onyx-goblet.js";
 import _poolPearledUnicorn from "../pool/pearled-unicorn.js";
 import _poolPerilousShadow from "../pool/perilous-shadow.js";
+import _poolPhyrexianSwarmlord from "../pool/phyrexian-swarmlord.js";
 import _poolPiercingLight from "../pool/piercing-light.js";
 import _poolPrimevalBounty from "../pool/primeval-bounty.js";
 import _poolPrismite from "../pool/prismite.js";
@@ -161,6 +162,7 @@ import _poolRinAndSeriInseparable from "../pool/rin-and-seri-inseparable.js";
 import _poolRoccoStreetChef from "../pool/rocco-street-chef.js";
 import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
+import _poolSazacapsBrew from "../pool/sazacaps-brew.js";
 import _poolScourgemark from "../pool/scourgemark.js";
 import _poolShatter from "../pool/shatter.js";
 import _poolShelteringLight from "../pool/sheltering-light.js";
@@ -170,6 +172,7 @@ import _poolShriekmaw from "../pool/shriekmaw.js";
 import _poolShuFootSoldiers from "../pool/shu-foot-soldiers.js";
 import _poolSiegeZombie from "../pool/siege-zombie.js";
 import _poolSilverRaven from "../pool/silver-raven.js";
+import _poolSkithiryxTheBlightDragon from "../pool/skithiryx-the-blight-dragon.js";
 import _poolSparringConstruct from "../pool/sparring-construct.js";
 import _poolSpitefulMotives from "../pool/spiteful-motives.js";
 import _poolStitchTogether from "../pool/stitch-together.js";
@@ -365,6 +368,7 @@ const shard: CardShard = {
     _poolOnyxGoblet,
     _poolPearledUnicorn,
     _poolPerilousShadow,
+    _poolPhyrexianSwarmlord,
     _poolPiercingLight,
     _poolPrimevalBounty,
     _poolPrismite,
@@ -379,6 +383,7 @@ const shard: CardShard = {
     _poolRoccoStreetChef,
     _poolRuinousGremlin,
     _poolSandsteppeCitadel,
+    _poolSazacapsBrew,
     _poolScourgemark,
     _poolShatter,
     _poolShelteringLight,
@@ -388,6 +393,7 @@ const shard: CardShard = {
     _poolShuFootSoldiers,
     _poolSiegeZombie,
     _poolSilverRaven,
+    _poolSkithiryxTheBlightDragon,
     _poolSparringConstruct,
     _poolSpitefulMotives,
     _poolStitchTogether,

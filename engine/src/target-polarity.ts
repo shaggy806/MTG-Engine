@@ -251,6 +251,8 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   "grant-graveyard-cast": (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-triggered": (n, v) => v.touch(n.target, "help", MAJOR),
   "lose-abilities": (n, v) => v.touch(n.target, "harm", MAJOR),
+  "lose-abilities-all": none,
+  gift: none,
   "grant-activated": (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-activated-all": none,
   "grant-triggered-all": none,

@@ -137,6 +137,7 @@ import _poolPendulumOfPatterns from "../pool/pendulum-of-patterns.js";
 import _poolPerilousLandscape from "../pool/perilous-landscape.js";
 import _poolPestilentWolf from "../pool/pestilent-wolf.js";
 import _poolPiratePeddlers from "../pool/pirate-peddlers.js";
+import _poolPlagueMyr from "../pool/plague-myr.js";
 import _poolPlayfulShove from "../pool/playful-shove.js";
 import _poolPrizedStatue from "../pool/prized-statue.js";
 import _poolProsperousPirates from "../pool/prosperous-pirates.js";
@@ -357,6 +358,7 @@ const shard: CardShard = {
     _poolPerilousLandscape,
     _poolPestilentWolf,
     _poolPiratePeddlers,
+    _poolPlagueMyr,
     _poolPlayfulShove,
     _poolPrizedStatue,
     _poolProsperousPirates,

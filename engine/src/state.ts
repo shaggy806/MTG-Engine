@@ -544,6 +544,16 @@ export interface GameObject {
    * permanent it becomes gets offspring's trigger as it enters. Cleared on
    * any zone change after that. */
   offspringGrantPaid?: boolean;
+  /** Gift (rule 702.174): the opponent this spell's gift was promised to —
+   * chosen as its gift cost was paid (`GiftAsk`), copied to a copy of it
+   * (the ruling). Cleared on any zone change; a permanent spell carries it
+   * onto the battlefield as `enteredGiftTo`. */
+  giftTo?: PlayerId;
+  /** The opponent the gift of this permanent's spell was promised to, for
+   * its "when this permanent enters, if its gift cost was paid" ability
+   * (rule 702.174b). Gone with its next move; a copy of the permanent
+   * doesn't have it (the ruling). */
+  enteredGiftTo?: PlayerId;
   /** This spell was cast for its evoke cost (rule 702.74): the permanent it
    * becomes gets evoke's sacrifice trigger as it enters. Cleared on any
    * zone change after that. */
@@ -793,6 +803,8 @@ export interface SpellSnapshot {
   readonly overloaded?: boolean;
   readonly evokePaid?: boolean;
   readonly offspringGrantPaid?: boolean;
+  /** Who its gift was promised to — a copy's is promised to them too. */
+  readonly giftTo?: PlayerId;
   /** Its copiable modifiers (a prototyped spell's — rule 718.3c). */
   readonly modifiers: readonly PtModifier[];
 }
@@ -1008,6 +1020,9 @@ export interface LastKnownInfo {
   /** Its spell was cast kicked (or its offspring cost paid) — `enteredKicked`,
    * so "if it was kicked" still answers once it has left. */
   readonly enteredKicked?: boolean;
+  /** Who its spell's gift was promised to — `enteredGiftTo` — so the gift
+   * is still given once it has left. */
+  readonly enteredGiftTo?: PlayerId;
   /** The turn it entered the battlefield on, and the turn it attacked on if
    * it did — for the `enteredThisTurn` / `attackedThisTurn` filter clauses. */
   readonly enteredOnTurn?: number;
@@ -1474,6 +1489,26 @@ export const COMMANDER_RULES: Partial<GameRules> = {
   startingLife: 40,
   freeFirstMulligan: true,
 };
+
+/**
+ * Gift (rule 702.174a): "as an additional cost to cast this spell, you may
+ * choose an opponent". Promising it is a cast variant — the kicker machinery
+ * under the keyword `gift` — and the opponent is chosen as the cost is paid
+ * (601.2h, after the targets), queued in `GameState.pendingGifts` as the
+ * spell is cast and asked before anyone gets priority. With one opponent
+ * there's nothing to ask; with more, the caster is asked about each in turn
+ * ("promise it to this opponent?", a `choose-modes` naming them), the last
+ * one left taking it. See {@link CasualtyAsk} for the same shape.
+ */
+export interface GiftAsk {
+  readonly spell: ObjectId;
+  /** The caster, who promised it. */
+  readonly player: PlayerId;
+  /** The opponents it may still go to, in turn order from the caster's
+   * left; the first is the one a raised decision is asking about. */
+  readonly candidates: readonly PlayerId[];
+  readonly priorityTo: PlayerId;
+}
 
 /**
  * A spell's casualty costs being offered as it's cast (rule 702.153a): its
@@ -1997,6 +2032,11 @@ export type AwaitingDecision =
        * the ward cost of `warded`, declining counters `spell` (also the
        * decision's target 0). Choosing to pay logs `ward-paid`. */
       readonly ward?: { readonly warded: ObjectId; readonly spell: ObjectId };
+      /** Set when this is a gift being promised (rule 702.174a — see
+       * {@link GiftAsk}): its one mode promises it to `about`, the first of
+       * the candidates; declining asks about the next. Its modes' effects
+       * are unused. */
+      readonly giftAsk?: GiftAsk;
       /** The life and energy parts of a `may`'s cost — see `may.costLife`
        * and `may.costEnergy` — paid alongside `cost` as the choice is made. */
       readonly costLife?: number;
@@ -3079,6 +3119,9 @@ export interface GameState {
   /** Spells just cast whose casualty costs (rule 702.153a) are still to be
    * offered — see {@link CasualtyAsk}. Absent when there are none. */
   pendingCasualty?: CasualtyAsk[];
+  /** Spells just cast with their gift promised whose opponent is still to
+   * be chosen — see {@link GiftAsk}. Absent when there are none. */
+  pendingGifts?: GiftAsk[];
   /** Additional main phases owed after the postcombat main phase under way
    * (a `withMain` combat's). Turn-scoped. */
   extraMainPhases?: number;

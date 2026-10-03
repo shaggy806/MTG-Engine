@@ -117,6 +117,7 @@ import _poolKingpinsEnforcers from "../pool/kingpins-enforcers.js";
 import _poolLaeliaTheBladeReforged from "../pool/laelia-the-blade-reforged.js";
 import _poolLavaglidePathway from "../pool/lavaglide-pathway.js";
 import _poolLightOfHope from "../pool/light-of-hope.js";
+import _poolLongRiversPull from "../pool/long-rivers-pull.js";
 import _poolLootExuberantExplorer from "../pool/loot-exuberant-explorer.js";
 import _poolLoporritScout from "../pool/loporrit-scout.js";
 import _poolLumengridGargoyle from "../pool/lumengrid-gargoyle.js";
@@ -170,6 +171,7 @@ import _poolShivanHellkite from "../pool/shivan-hellkite.js";
 import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js";
 import _poolShuSoldierFarmers from "../pool/shu-soldier-farmers.js";
 import _poolSkyshroudElf from "../pool/skyshroud-elf.js";
+import _poolSmugglersSurprise from "../pool/smugglers-surprise.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
 import _poolSpinedThopter from "../pool/spined-thopter.js";
 import _poolSpireMonitor from "../pool/spire-monitor.js";
@@ -340,6 +342,7 @@ const shard: CardShard = {
     _poolLaeliaTheBladeReforged,
     _poolLavaglidePathway,
     _poolLightOfHope,
+    _poolLongRiversPull,
     _poolLootExuberantExplorer,
     _poolLoporritScout,
     _poolLumengridGargoyle,
@@ -393,6 +396,7 @@ const shard: CardShard = {
     _poolShrineOfTheForsakenGods,
     _poolShuSoldierFarmers,
     _poolSkyshroudElf,
+    _poolSmugglersSurprise,
     _poolSneeringShadewriter,
     _poolSpinedThopter,
     _poolSpireMonitor,

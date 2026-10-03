@@ -115,6 +115,7 @@ import _poolNegate from "../pool/negate.js";
 import _poolObsianusGolem from "../pool/obsianus-golem.js";
 import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
 import _poolOstiaryThrull from "../pool/ostiary-thrull.js";
+import _poolPartingGust from "../pool/parting-gust.js";
 import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
 import _poolPriestOfTitania from "../pool/priest-of-titania.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolObsianusGolem,
     _poolOreskosSwiftclaw,
     _poolOstiaryThrull,
+    _poolPartingGust,
     _poolPreordain,
     _poolPreyUpon,
     _poolPriestOfTitania,

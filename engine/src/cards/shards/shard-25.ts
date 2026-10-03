@@ -148,6 +148,7 @@ import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
 import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
+import _poolRequisitionRaid from "../pool/requisition-raid.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiseOfTheEldrazi from "../pool/rise-of-the-eldrazi.js";
@@ -184,6 +185,7 @@ import _poolTarSnare from "../pool/tar-snare.js";
 import _poolTerramorphicExpanse from "../pool/terramorphic-expanse.js";
 import _poolThatsMine from "../pool/thats-mine.js";
 import _poolThopterSpyNetwork from "../pool/thopter-spy-network.js";
+import _poolThreeStepsAhead from "../pool/three-steps-ahead.js";
 import _poolTitanHunter from "../pool/titan-hunter.js";
 import _poolTopiaryStomper from "../pool/topiary-stomper.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
@@ -364,6 +366,7 @@ const shard: CardShard = {
     _poolRebelliousStrike,
     _poolRecklessBarbarian,
     _poolReflectionsOfLittjara,
+    _poolRequisitionRaid,
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
     _poolRiseOfTheEldrazi,
@@ -400,6 +403,7 @@ const shard: CardShard = {
     _poolTerramorphicExpanse,
     _poolThatsMine,
     _poolThopterSpyNetwork,
+    _poolThreeStepsAhead,
     _poolTitanHunter,
     _poolTopiaryStomper,
     _poolTorchGauntlet,

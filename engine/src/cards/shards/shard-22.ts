@@ -128,6 +128,7 @@ import _poolOgresCleaver from "../pool/ogres-cleaver.js";
 import _poolOrcishBloodpainter from "../pool/orcish-bloodpainter.js";
 import _poolOvergrownEstate from "../pool/overgrown-estate.js";
 import _poolPainfulTruths from "../pool/painful-truths.js";
+import _poolPhyresis from "../pool/phyresis.js";
 import _poolPillarfieldOx from "../pool/pillarfield-ox.js";
 import _poolPlatedWurm from "../pool/plated-wurm.js";
 import _poolPlumeveil from "../pool/plumeveil.js";
@@ -351,6 +352,7 @@ const shard: CardShard = {
     _poolOrcishBloodpainter,
     _poolOvergrownEstate,
     _poolPainfulTruths,
+    _poolPhyresis,
     _poolPillarfieldOx,
     _poolPlatedWurm,
     _poolPlumeveil,

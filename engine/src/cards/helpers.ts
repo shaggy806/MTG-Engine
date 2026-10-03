@@ -5,7 +5,7 @@
  */
 
 import type { ActivatedAbility, TriggeredAbility } from "../abilities.js";
-import { wardCostText, type EffectAmount, type EffectSpec, type WardCost } from "../effects.js";
+import { wardCostText, type EffectAmount, type EffectSpec, type GiftKind, type WardCost } from "../effects.js";
 import type { CardFilter } from "../filter.js";
 import type { Color, ManaType } from "../mana.js";
 import type { TargetSpec } from "../target.js";
@@ -571,6 +571,40 @@ export const offspringTrigger = (): TriggeredAbility => ({
   resolve: null,
   text: "When this creature enters, if its offspring cost was paid, create a 1/1 token copy of it.",
 });
+
+/**
+ * Gift on a permanent (rule 702.174b): "When this permanent enters, if its
+ * gift cost was paid, [the gift]" — the chosen opponent draws a card,
+ * creates a Food, … (`GiftKind`). Pair it with `kicker: GIFT_KICKER`, the
+ * optional additional cost. Given even if the permanent has left by the time
+ * it resolves, to the opponent its spell promised it to; a token copy of the
+ * permanent wasn't promised anything (the ruling).
+ */
+export const giftTrigger = (gift: GiftKind): TriggeredAbility => ({
+  trigger: { on: "enters-battlefield", who: "self" },
+  condition: { kind: "self-kicked" },
+  targets: [],
+  effect: { kind: "gift", gift },
+  resolve: null,
+  text: `When this permanent enters, if its gift cost was paid, ${GIFT_TEXT[gift]}.`,
+});
+
+/** "If you do, [they …]" — what each gift is, for its trigger's text. */
+const GIFT_TEXT: Record<GiftKind, string> = {
+  card: "the chosen opponent draws a card",
+  food: "the chosen opponent creates a Food token",
+  treasure: "the chosen opponent creates a Treasure token",
+  "tapped-fish": "the chosen opponent creates a tapped 1/1 blue Fish creature token",
+  octopus: "the chosen opponent creates an 8/8 blue Octopus creature token",
+  "extra-turn": "the chosen opponent takes an extra turn after this one",
+};
+
+/** Gift's first ability (rule 702.174a), "as an additional cost to cast this
+ * spell, you may choose an opponent": an optional additional cost that costs
+ * no mana, under the keyword `gift` — see `CardDefinition.kicker.keyword`.
+ * An instant or sorcery spreads `targets` / `effect` for "if the gift was
+ * promised" into it; a permanent uses it as is, with `giftTrigger`. */
+export const GIFT_KICKER = { cost: "", keyword: "gift" } as const;
 
 /**
  * Ravenous (rule 702.156a — Jacked Rabbit): "This permanent enters with X

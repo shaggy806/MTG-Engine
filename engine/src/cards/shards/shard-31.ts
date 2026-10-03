@@ -21,6 +21,7 @@ import _poolBaradDur from "../pool/barad-dur.js";
 import _poolBarbarianRiftcutter from "../pool/barbarian-riftcutter.js";
 import _poolBeanstalkGiant from "../pool/beanstalk-giant.js";
 import _poolBindingTheOldGods from "../pool/binding-the-old-gods.js";
+import _poolBlightedAgent from "../pool/blighted-agent.js";
 import _poolBloodCrypt from "../pool/blood-crypt.js";
 import _poolBloodthroneVampire from "../pool/bloodthrone-vampire.js";
 import _poolBogRaiders from "../pool/bog-raiders.js";
@@ -202,6 +203,7 @@ import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
 import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
 import _tokensGolemFlyingToken from "../tokens/golem-flying-token.js";
+import _tokensOctopusToken from "../tokens/octopus-token.js";
 import _tokensPhyrexianGermToken from "../tokens/phyrexian-germ-token.js";
 import _tokensRedWhiteSoldierHasteToken from "../tokens/red-white-soldier-haste-token.js";
 
@@ -225,6 +227,7 @@ const shard: CardShard = {
     _poolBarbarianRiftcutter,
     _poolBeanstalkGiant,
     _poolBindingTheOldGods,
+    _poolBlightedAgent,
     _poolBloodCrypt,
     _poolBloodthroneVampire,
     _poolBogRaiders,
@@ -408,6 +411,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensGolemFlyingToken,
+    _tokensOctopusToken,
     _tokensPhyrexianGermToken,
     _tokensRedWhiteSoldierHasteToken,
   ],

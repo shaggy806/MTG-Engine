@@ -122,6 +122,8 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       return `${name(event.object)} becomes monstrous`
     case 'permanent-exerted':
       return `${who(event.player)} exerts ${name(event.object)}`
+    case 'gift-promised':
+      return `${who(event.player)} promises ${name(event.spell)}'s gift to ${who(event.to)}`
     case 'day-night-changed':
       return `it becomes ${event.value}`
     case 'counter-failed':
