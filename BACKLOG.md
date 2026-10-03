@@ -403,6 +403,10 @@ Beyond that plan:
   and removal ahead of creatures, Sakura-Tribe Elder's land taken (right) and a 1/1 Rat token
   chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than Skullclamp: a small creature's flat value is the
   question, weighed against the chump blocks it would bring back.
+- **Picking a card for an opponent.** A `choose-from-zone` with `forPlayer` (Tasigur, the Golden
+  Fang's "a nonland card of an opponent's choice") goes through the bots' ordinary
+  `chooseFromZone`, which takes what it would want for itself — so a bot hands Tasigur's
+  controller its best card rather than its worst.
 
 ## Client / UI
 
@@ -422,6 +426,11 @@ Beyond that plan:
   702.164b) isn't a `Keyword`, so `VisibleObject.keywords` leaves it out: a Rat that
   Karumonix, the Rat King gives toxic 1 shows nothing, and only a printed "Toxic N" is readable,
   in the card's text. The view needs a `toxic` field and the board a badge for it.
+- **"Choose an opponent" names seats, not players.** `choose-opponent` (Tasigur, the Golden
+  Fang) asks with a `choose-modes` whose texts are "Choose Bob" — the capitalised seat id — and
+  the popup prints mode texts as they are, so a player with a display name is offered by the
+  wrong one. The modes need to say which player each is, for the client to label with
+  `playerLabel`.
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 

@@ -5717,7 +5717,15 @@ export class Game {
       const stint = object.lastKnownRefs?.triggerObject;
       const stillHere =
         live?.zone === "battlefield" && (stint === undefined || (live.zoneChangeCount ?? 0) === stint);
-      const defender = stillHere ? live.attacking : object.lastKnownRefs?.player;
+      // Gone, it attacked the player it was declared at — unless it was
+      // removed from combat before it left.
+      const departed =
+        !stillHere && attacker !== undefined && stint !== undefined ? this.lastKnownOfStint(attacker, stint) : undefined;
+      const defender = stillHere
+        ? live.attacking
+        : departed?.attacking === false
+          ? null
+          : object.lastKnownRefs?.player;
       if (
         defender === null ||
         defender === undefined ||
@@ -16439,19 +16447,21 @@ export class Game {
       colorsAmong: (filter, except) =>
         colorsAmongPermanents(this.state, this.registry, controller, filter, except),
       distinctTokenNames: (filter) => {
-        // A token's name (rule 111.4): what its maker named it or what it
-        // copies (`nameOf` reads both), else its subtypes plus "Token" — not
-        // the registry key, which can carry a size ("4/4 Vigilant Angel
-        // Token" is an Angel Token).
+        // A token's name (rule 111.4): the one its maker gave it — a
+        // `tokenName` or a copy exception's (`nameOf`), or the key of a
+        // named token's definition (Karox Bladewing) — else its subtypes
+        // plus "Token". A generic token's key says "Token", often with a
+        // size or a note to tell it apart ("4/4 Vigilant Angel Token" is an
+        // Angel Token), and a copy has the name of what it copies (rule
+        // 707.2): a card's, or a token's worked out the same way.
         const names = new Set<string>();
         for (const id of this.battlefieldMatching(controller, filter)) {
           const object = this.state.objects[id];
           if (!object.isToken) continue;
           const named = nameOf(object);
+          const key = printedCardName(object);
           names.add(
-            object.copyOf !== null || named !== object.cardName
-              ? named
-              : `${this.registry.get(object.cardName).subtypes.join(" ")} Token`,
+            named !== key || !/\bToken\b/.test(key) ? named : `${this.registry.get(key).subtypes.join(" ")} Token`,
           );
         }
         return names.size;
@@ -19707,6 +19717,7 @@ export class Game {
       ...(object.evokePaid === true ? { evokePaid: true } : {}),
       ...(object.offspringGrantPaid === true ? { offspringGrantPaid: true } : {}),
       ...(object.giftTo !== undefined ? { giftTo: object.giftTo } : {}),
+      ...(object.convokedBy !== undefined ? { convokedBy: [...object.convokedBy] } : {}),
       modifiers: object.modifiers.filter((m) => m.copiable === true).map((m) => ({ ...m })),
     };
   }
@@ -19773,6 +19784,8 @@ export class Game {
       // "If you copy a spell for which the gift was promised, the gift was
       // also promised to the same opponent for the copy" (the ruling).
       ...(spell.giftTo !== undefined ? { giftTo: spell.giftTo } : {}),
+      // "Each creature that convoked this spell": the original's (707.10).
+      ...(spell.convokedBy !== undefined ? { convokedBy: [...spell.convokedBy] } : {}),
       attacking: null,
       blocking: null,
       blockedBy: [],
@@ -25474,15 +25487,19 @@ export class Game {
    * against the card's printed characteristics from the replacement source's
    * controller's perspective. */
   private graveyardIsReplacedWithExile(cardId: ObjectId, fromBattlefield: boolean): boolean {
-    return this.graveyardExileReplacement(cardId, fromBattlefield) !== undefined;
+    return this.graveyardExileReplacements(cardId, fromBattlefield, true).length > 0;
   }
 
-  /** The replacement {@link graveyardIsReplacedWithExile} finds, for what it
-   * says beyond "exile it instead" — Dauthi Voidwalker's void counter. */
-  private graveyardExileReplacement(
+  /** Every replacement {@link graveyardIsReplacedWithExile} finds (only the
+   * first with `firstOnly`), each with the controller of the permanent it's
+   * from — for what one says beyond "exile it instead" (Dauthi Voidwalker's
+   * void counter), and who would want it (see `exileCountersChosen`). */
+  private graveyardExileReplacements(
     cardId: ObjectId,
     fromBattlefield: boolean,
-  ): GraveyardExileReplacement | undefined {
+    firstOnly = false,
+  ): { readonly replacement: GraveyardExileReplacement; readonly controller: PlayerId }[] {
+    const found: { readonly replacement: GraveyardExileReplacement; readonly controller: PlayerId }[] = [];
     for (const id of this.state.zones.shared.battlefield) {
       const object = this.state.objects[id];
       if (hasLostAbilities(object)) continue;
@@ -25503,7 +25520,8 @@ export class Game {
         ) {
           continue;
         }
-        return r;
+        found.push({ replacement: r, controller: object.controller });
+        if (firstOnly) return found;
       }
     }
     // Permanents leaving in one event leave together, so a replacement one
@@ -25528,11 +25546,38 @@ export class Game {
           ) {
             continue;
           }
-          return r;
+          found.push({ replacement: r, controller: last.controller });
+          if (firstOnly) return found;
         }
       }
     }
-    return undefined;
+    return found;
+  }
+
+  /**
+   * The counters a card exiled instead of being put into a graveyard has as
+   * it arrives — Dauthi Voidwalker's void counter — when several
+   * replacements would exile it (rule 616.1): `statics` (each with its
+   * permanent's controller) and, if `otherExile`, one that exiles it with
+   * none (a finality counter, flashback, disturb, a Kess-style permission).
+   * The affected object's controller — its owner, off the battlefield and
+   * the stack — picks which applies, and they differ only in the counter,
+   * which serves only a player whose own permanent's replacement puts it (a
+   * void card is played by an opponent of its owner, with Dauthi
+   * Voidwalker's ability). So the chooser takes the counter when one of
+   * those is theirs, and none otherwise — an opponent's flashback spell is
+   * exiled by flashback, with no void counter on it.
+   */
+  private exileCountersChosen(
+    object: GameObject,
+    statics: readonly { readonly replacement: GraveyardExileReplacement; readonly controller: PlayerId }[],
+    otherExile: boolean,
+  ): { readonly kind: string; readonly amount: number } | undefined {
+    const counting = statics.filter((s) => s.replacement.withCounters !== undefined);
+    if (counting.length === 0) return undefined;
+    if (!otherExile && counting.length === statics.length) return counting[0].replacement.withCounters;
+    const chooser = object.zone === "battlefield" || object.zone === "stack" ? object.controller : object.owner;
+    return counting.find((s) => s.controller === chooser)?.replacement.withCounters;
   }
 
   /**
@@ -25818,18 +25863,25 @@ export class Game {
       this.emit({ type: "leave-replaced-with-exile", object: id, intendedZone: to });
       to = "exile";
     }
-    if (leavingBattlefield && to === "graveyard" && (object.counters["finality"] ?? 0) > 0) {
-      to = "exile";
-      this.emit({ type: "graveyard-replaced-with-exile", object: id });
-    }
     // "…instead exile it with a void counter on it" (Dauthi Voidwalker): the
-    // counters it has as it arrives in exile.
+    // counters it has as it arrives in exile — unless a replacement that
+    // exiles it with none is the one its controller picks (rule 616.1, see
+    // `exileCountersChosen`): a finality counter, or flashback's, disturb's
+    // or a Kess-style permission's below.
     let exileCounters: { readonly kind: string; readonly amount: number } | undefined;
     if (to === "graveyard") {
-      const replaced = this.graveyardExileReplacement(id, leavingBattlefield);
-      if (replaced !== undefined) {
+      const finality = leavingBattlefield && (object.counters["finality"] ?? 0) > 0;
+      const replaced = this.graveyardExileReplacements(id, leavingBattlefield);
+      if (finality || replaced.length > 0) {
         to = "exile";
-        exileCounters = replaced.withCounters;
+        exileCounters = this.exileCountersChosen(
+          object,
+          replaced,
+          finality ||
+            object.castVia === "flashback" ||
+            object.castVia === "disturb" ||
+            object.exileIfWouldGoToGraveyard === true,
+        );
         this.emit({ type: "graveyard-replaced-with-exile", object: id });
       }
     }

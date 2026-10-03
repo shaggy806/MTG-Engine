@@ -963,17 +963,18 @@ export type EffectSpec =
   | {
       /**
        * `effect` once for each creature that convoked the resolving spell
-       * (rule 702.51a), in the order they were tapped, each bound to target
-       * slot 0 — Lethal Scheme's "each creature that convoked this spell
-       * connives" is `{ kind: "for-each-convoker", effect: { kind:
-       * "connive", target: 0 } }`. As a `sequence`'s steps, so one that stops
-       * to ask (a connive's discard) is answered before the next. A creature
-       * that has left the battlefield since — or come back as a new object
-       * (rule 400.7) — is read as it last existed and not acted on: it still
-       * connives, its last controller drawing and discarding, but gets no
-       * counter (rule 701.50c). They go one at a time in the order the
-       * spell's controller chooses (Lethal Scheme's ruling): with more than
-       * one left, a `choose-modes` asks which is next.
+       * (rule 702.51c) — a copy's are the original's (rule 707.10) — each
+       * bound to target slot 0: Lethal Scheme's "each creature that
+       * convoked this spell connives" is `{ kind: "for-each-convoker",
+       * effect: { kind: "connive", target: 0 } }`. As a `sequence`'s steps,
+       * so one that stops to ask (a connive's discard) is answered before
+       * the next. A creature that has left the battlefield since — or come
+       * back as a new object (rule 400.7) — is read as it last existed and
+       * not acted on: it still connives, its last controller drawing and
+       * discarding, but gets no counter (rule 701.50b). They go one at a
+       * time in the order the spell's controller chooses (rule 701.50c,
+       * Lethal Scheme's ruling): with more than one left, a `choose-modes`
+       * asks which is next.
        */
       readonly kind: "for-each-convoker";
       readonly effect: EffectSpec;
@@ -2142,7 +2143,7 @@ export type EffectSpec =
        * cards (1 by default — "connives X" is an amount), then discards that
        * many, then puts a +1/+1 counter on it for each nonland card
        * discarded. A permanent that has left is still connived with — its
-       * last controller draws and discards — but gets no counter (701.50c).
+       * last controller draws and discards — but gets no counter (701.50b).
        */
       readonly kind: "connive";
       readonly target: EffectTargetRef;
@@ -6575,7 +6576,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       const target = resolveEffectTarget(spec.target, ctx);
       // One that has left — or is back as a new object — still connives, as
       // it last existed: its last controller draws and discards, and nothing
-      // gets a counter (rule 701.50c). A context that only reads it (a
+      // gets a counter (rule 701.50b). A context that only reads it (a
       // `for-each-convoker`'s) says which it was.
       const read = target ?? (typeof spec.target === "number" ? ctx.readTargets?.[spec.target] : undefined);
       if (read?.kind !== "object") return;

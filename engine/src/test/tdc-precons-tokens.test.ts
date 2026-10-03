@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { LegalAction } from "../actions.js";
+import { POOL_CARDS } from "../cards/generated.js";
 import { restrictionsOf } from "../characteristics.js";
 import { supertypesOf } from "../filter.js";
 import { Game } from "../game.js";
@@ -511,6 +512,22 @@ describe("Scourge of the Throne", () => {
     game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
     expect(game.state.turn.number).toBe(2);
   });
+
+  it("gone before it resolves, it's read as it left: removed from combat first, it was attacking nobody", () => {
+    const game = setUp();
+    const scourge = ready(game, "Scourge of the Throne");
+    // Held back, to attack in an additional combat if there were one.
+    ready(game, "Grizzly Bears");
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: scourge, defender: B }] });
+    game.advanceUntil((s) => s.zones.shared.stack.length > 0 && s.pendingTriggers.length === 0 && s.awaiting === null);
+    // A change of control removes it from combat (rule 506.4); then it dies.
+    game.debugApplyEffect(B, { kind: "gain-control", target: 0 }, [obj(scourge)]);
+    game.debugApplyEffect(B, { kind: "destroy", target: 0 }, [obj(scourge)]);
+    game.advanceUntil(quiet);
+    game.advanceUntil((s) => s.awaiting?.kind === "attackers" || s.turn.number > 1);
+    expect(game.state.turn.number).toBe(2);
+  });
 });
 
 describe("Territorial Hellkite", () => {
@@ -654,6 +671,39 @@ describe("Lethal Scheme", () => {
     expect(game.state.objects[one].zone).toBe("graveyard");
     expect(game.state.objects[two].counters["+1/+1"] ?? 0).toBe(0);
   });
+
+  it("a copy makes the creatures that convoked the original connive too (rule 707.10)", () => {
+    const game = setUp();
+    for (let i = 0; i < 2; i += 1) game.state.objects[game.debugSpawn("Island", A, "battlefield")].tapped = false;
+    const { one, two } = prepare(game);
+    const other = ready(game, "Serra Angel", B);
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Hill Giant", A, "hand");
+    const twincast = game.debugSpawn("Twincast", A, "hand");
+    game.dispatch({ type: "cast-spell", player: A, card: twincast, targets: [obj(game.state.zones.shared.stack[0])] });
+    let discards = 0;
+    for (let guard = 0; guard < 50 && !quiet(game.state); guard += 1) {
+      game.advanceUntil((s) => s.awaiting !== null || quiet(s));
+      const awaiting = game.state.awaiting;
+      if (awaiting === null) break;
+      if (awaiting.kind === "choose-targets") {
+        game.dispatch({ type: "choose-targets", player: A, targets: [obj(other)] });
+      } else if (awaiting.kind === "choose-modes") {
+        game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+      } else if (awaiting.kind === "discard") {
+        // A nonland card each time: every connive puts a counter on.
+        const giant = game.state.zones.perPlayer[A].hand.find((id) => game.state.objects[id].cardName === "Hill Giant")!;
+        game.dispatch({ type: "discard", player: A, cards: [giant] });
+        discards += 1;
+      } else {
+        throw new Error(`unexpected ${awaiting.kind}`);
+      }
+    }
+    expect(game.state.objects[other].zone).toBe("graveyard");
+    // Four connives: the copy's two, then the original's two.
+    expect(discards).toBe(4);
+    expect(game.state.objects[one].counters["+1/+1"]).toBe(2);
+    expect(game.state.objects[two].counters["+1/+1"]).toBe(2);
+  });
 });
 
 describe("Dauthi Voidwalker", () => {
@@ -718,6 +768,43 @@ describe("Dauthi Voidwalker", () => {
     game.advanceUntil(quiet);
     expect(game.state.objects[theirs].zone).toBe("battlefield");
     expect(game.state.objects[theirs].controller).toBe(A);
+  });
+
+  // Rule 616.1: the affected object's controller (its owner, off the
+  // battlefield and the stack) picks which replacement applies — and only
+  // the void counter's controller has any use for it.
+  it("leaves an opponent's flashback spell to flashback's exile, with no void counter", () => {
+    const game = setUp();
+    for (let i = 0; i < 3; i += 1) game.state.objects[game.debugSpawn("Island", B, "battlefield")].tapped = false;
+    const thinkTwice = game.debugSpawn("Think Twice", B, "graveyard");
+    ready(game, "Dauthi Voidwalker");
+    game.dispatch({ type: "pass-priority", player: A });
+    game.dispatch({ type: "cast-spell", player: B, card: thinkTwice, targets: [], via: "flashback" });
+    game.advanceUntil(quiet);
+    expect(game.state.objects[thinkTwice].zone).toBe("exile");
+    expect(game.state.objects[thinkTwice].counters["void"] ?? 0).toBe(0);
+  });
+
+  it("beside Rest in Peace, puts the void counter on only for a chooser who controls Dauthi", () => {
+    const game = setUp();
+    ready(game, "Dauthi Voidwalker");
+    ready(game, "Rest in Peace", B);
+    // Bob's creature, Bob's to choose: Rest in Peace's exile.
+    const his = ready(game, "Grizzly Bears", B);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(his)]);
+    expect(game.state.objects[his].zone).toBe("exile");
+    expect(game.state.objects[his].counters["void"] ?? 0).toBe(0);
+    // Bob's creature under Alice's control: hers to choose, and the counter is hers.
+    const taken = ready(game, "Hill Giant", B);
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0 }, [obj(taken)]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(taken)]);
+    expect(game.state.objects[taken].zone).toBe("exile");
+    expect(game.state.objects[taken].counters["void"]).toBe(1);
+    // Alone, Dauthi's replacement puts it on.
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(named(game, "Rest in Peace", B)[0])]);
+    const next = ready(game, "Grizzly Bears", B);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(next)]);
+    expect(game.state.objects[next].counters["void"]).toBe(1);
   });
 });
 
@@ -842,6 +929,38 @@ describe("Neriv, Crackling Vanguard", () => {
     expect(exiledByNeriv(game)).toHaveLength(3);
     // Not a turn Alice attacked with a commander: none playable.
     for (const id of exiledByNeriv(game)) expect(playable(game, id)).toBe(false);
+  });
+
+  it("counts a named token by its own name, not its subtypes", () => {
+    const game = setUp();
+    const neriv = ready(game, "Neriv, Crackling Vanguard");
+    // "Karox Bladewing" and a "Dragon Token": two names, both Dragons.
+    game.debugApplyEffect(A, { kind: "create-token", token: "Karox Bladewing", count: 1 });
+    game.debugApplyEffect(A, { kind: "create-token", token: "Dragon Token (Firebreathing)", count: 1 });
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: neriv, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(exiledByNeriv(game)).toHaveLength(2);
+  });
+
+  it("counts a copy of a token by that token's name (rule 707.2), not its key", () => {
+    const game = setUp();
+    const neriv = ready(game, "Neriv, Crackling Vanguard");
+    // An Angel Token, and a copy of a differently keyed Angel Token: one name.
+    game.debugApplyEffect(A, { kind: "create-token", token: "4/4 Angel Token", count: 1 });
+    game.debugApplyEffect(A, { kind: "create-token", token: "4/4 Vigilant Angel Token", count: 1 });
+    const [vigilant] = named(game, "4/4 Vigilant Angel Token");
+    game.debugApplyEffect(A, { kind: "create-token-copy", of: 0, count: 1 }, [obj(vigilant)]);
+    game.debugApplyEffect(A, { kind: "destroy", target: 0 }, [obj(vigilant)]);
+    expect(tokensOf(game).filter((id) => game.state.objects[id].copyOf === "4/4 Vigilant Angel Token")).toHaveLength(1);
+    toAttackers(game);
+    game.dispatch({ type: "declare-attackers", player: A, attackers: [{ attacker: neriv, defender: B }] });
+    game.advanceUntil(quiet);
+    expect(exiledByNeriv(game)).toHaveLength(1);
+  });
+
+  it("can tell a generic token by its key: one says \"Token\", and no card's name does", () => {
+    for (const card of POOL_CARDS) expect(card.name).not.toMatch(/\bToken\b/);
   });
 
   it("lets you play them during a turn you attacked with a commander, and for as long as they stay exiled", () => {

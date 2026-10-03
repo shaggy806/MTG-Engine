@@ -3,8 +3,9 @@ import { defineCard } from "../define.js";
 // The creatures that convoked it connive one at a time, in the order its
 // controller chooses, after the destroy. One that has left the battlefield
 // since still connives — its controller draws and discards — but nothing
-// gets a counter (rule 701.50c, the ruling); nobody acts between a connive's
-// discard and its counter (the ruling).
+// gets a counter (rule 701.50b, the ruling); nobody acts between a connive's
+// discard and its counter (the ruling). A copy of it makes the creatures
+// that convoked the original connive (rule 707.10).
 const TEXT =
   "Destroy target creature or planeswalker. Each creature that convoked this spell connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on that creature.)";
 

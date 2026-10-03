@@ -848,6 +848,11 @@ export interface SpellSnapshot {
   readonly offspringGrantPaid?: boolean;
   /** Who its gift was promised to — a copy's is promised to them too. */
   readonly giftTo?: PlayerId;
+  /** The creatures that convoked it (`GameObject.convokedBy`): a copy's
+   * "each creature that convoked this spell" means the original's — an
+   * effect of a copy that refers to objects used to pay its costs uses
+   * those that paid the original's (rule 707.10). */
+  readonly convokedBy?: readonly { readonly object: ObjectId; readonly stint: number }[];
   /** Its copiable modifiers (a prototyped spell's — rule 718.3c). */
   readonly modifiers: readonly PtModifier[];
 }
