@@ -119,6 +119,34 @@ Four engine passes built in parallel worktrees, each reviewed adversarially befo
   Mirror Box, Machine God's Effigy, Imposter Mech, Sakashima's Student, Flesh Duplicate,
   Chameleon, Vizier of Many Faces and Naga Fleshcrafter for other features.
 
+A second round the same morning, 52 more:
+
+- **Sacrifice costs of several permanents** (12): Sai, Master Thopterist; Jarad, Golgari Lich
+  Lord; Westvale Abbey // Ormendahl, Profane Prince; Eliminate the Competition; Magda, Brazen
+  Outlaw; Metalwork Colossus; Mondrak, Glory Dominus; Priest of Forgotten Gods; Ruthless
+  Technomancer; Zopandrel, Hunger Dominus; Grim Hireling; Dread Return. Partly built — "sacrifice
+  any number" isn't (Plumb the Forbidden, Dargo, Extus). Still blocked for other features: Breya
+  (modal activated abilities with targeted modes), Chatterfang and Peregrin Took (an additive token
+  replacement), Magda, the Hoardmaster (crime), Bolas's Citadel (paying life for a top-of-library
+  cast), Shilgengar, Valgavoth, Scourge of Nel Toth.
+- **The TDC one-offs** (22): monstrosity, Omen, exert, riot, skulk, flanking, a mill cost, entering
+  from a graveyard, a spell exiling itself, an ability's divided damage — Stormbreath Dragon,
+  Protector of the Wastes, Stormshriek Feral, Whirlwing Stormbrood, Glorybringer, Skarrgan
+  Hellkite, Dragonlord Atarka, Behind the Scenes, Sidar Kondo of Jamuraa, Millikin, River Kelpie,
+  Kotis, Sibsig Champion, Necromantic Selection, Reunion of the House and eight more. Still
+  blocked: harmonize (Zenith Festival, Nature's Rhythm), riot granted as a permanent enters (Rhythm
+  of the Wild, Spider-Punk), evoke with a non-mana cost (Fury), Arena of Glory.
+- **Copying abilities and the "ready now" cards** (18): Lithoform Engine, Illusionist's Bracers,
+  Thousand-Year Storm, Reverberate, Dualcaster Mage, Inalla, Jin-Gitaxias, Progress Tyrant, Kitsa,
+  Electroduplicate, Brain Freeze, Chain of Vapor, Sword of Wealth and Power, Thunderclap Drake,
+  Weaver of Harmony, Primal Amulet, Virtue of Knowledge, Wandering Archaic and Sink into Stupor.
+  Still blocked: Rings of Brighthearth (cycling isn't an ability on the stack), Twinning Staff,
+  Echoes of Eternity (Kindred), Koma, Maskwood Nexus, Throne of Eldraine, Adagia, Hostage Taker,
+  Gonti, Lord of Luxury and Brainstealer Dragon. A parallel pass on an older base also authored
+  Strionic Resonator, Peter Parker's Camera, Molten Echoes, Flameshadow Conjuring and Increasing
+  Vengeance on its own copy-ability feature; that branch wasn't merged, and those five are
+  re-authorable on the one that was.
+
 ## Top-5000 batches (sweep 3)
 
 - **Batch 4 (2026-09-28)** took the cards the debt fixes unblocked: 15 authored (regeneration,

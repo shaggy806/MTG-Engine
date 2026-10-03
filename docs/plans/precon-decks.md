@@ -1,10 +1,10 @@
 # Real precon decks for the bots
 
 Status: **shipped, with substitutions** (2026-09-30) — `engine/src/sample-decks.ts` is the five
-**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 425 of the 495
-non-commander slots are the printed cards; the other 70 are cards the engine doesn't implement
+**Tarkir: Dragonstorm Commander** decks (MTGJSON set code `TDC`, 2025). 441 of the 495
+non-commander slots are the printed cards; the other 54 are cards the engine doesn't implement
 yet, played by stand-ins listed under [Substitutions](#substitutions) below (147 at the swap;
-TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands, then the 2026-10-03 mana-and-exile pass 2 — Thundermane Dragon's cast from the top and Grenzo, Havoc Raiser's any-colour spending, the spells pass 1 — Reflections of Littjara — and the copy-on-enter pass 1 — Deceptive Frostkite). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
+TDC batch 1 authored 41, batch 2 — casting a spell as another resolves — 8, Shiko and Narset, Unified 1, and Jeskai batch 3 — copies with new targets, storm on an Aura — 5, and batch 4 — countering an ability, a three-way look, "unless they discard a land", an attack count rechecked — 4, then Lier 1, and an attack tax for Ghostly Prison 1, split cards and divided damage 2, then delve and attacking despite defender 4, Hero of Bladehold 1, then the 2026-10-02 features pass 5 — Myriad Landscape, Chaos Warp, Curse of the Swine and two hideaway lands, then the 2026-10-03 mana-and-exile pass 2 — Thundermane Dragon's cast from the top and Grenzo, Havoc Raiser's any-colour spending, the spells pass 1 — Reflections of Littjara — and the copy-on-enter pass 1 — Deceptive Frostkite, the sacrifice-costs pass 2 — Jarad, Golgari Lich Lord and Eliminate the Competition — and the TDC one-offs pass 14 — monstrosity, Omen, exert, riot, skulk, flanking, an ability's divided damage). Authoring the rest is the current card priority (`BACKLOG.md`, "Card
 backlog"); `engine/data/sweep-3/TDC*.json` and the earlier sweep records name what each needs.
 
 From 2026-09-16 to 2026-09-30 the decks were the five 2022 Starter Commander Decks (`SCD`),

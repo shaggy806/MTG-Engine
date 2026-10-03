@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**362 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**364 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -56,7 +56,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 16, Sultai Arisen 25, Abzan Armor 15, Mardu Surge 11, Jeskai Striker 3 — 70,
+  now: Temur Roar 10, Sultai Arisen 20, Abzan Armor 11, Mardu Surge 10, Jeskai Striker 3 — 54,
   every one recorded with what it needs (`engine/data/sweep-3/TDC*.json`). No one feature leads
   any more. **Next:** two for "the creature it sacrificed" (`docs/card-blockers.md`), and
   harmonize for Zenith Festival (Nature's Rhythm on the top-5000 list too): a cast that taps up
@@ -65,7 +65,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   client label naming the creature.
 - **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
-  `SAMPLE_DECKS`): 68 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
+  `SAMPLE_DECKS`): 65 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
   the TDC decks for authoring.
 - **Pick the bench (the user's call).** Re-run 2026-10-03 (`docs/plans/deck-autopsies.md`, "The
   re-run"): the bench holds both ends of the table — Temur Roar 71%, Mardu Surge 12.5% — while
@@ -78,7 +78,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,189 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,230 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, "you win the
