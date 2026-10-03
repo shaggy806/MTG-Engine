@@ -8,6 +8,7 @@
 import type { IncomingMessage } from "node:http";
 import type { WebSocket, WebSocketServer } from "ws";
 import { COMMANDER_RULES } from "engine";
+import type { ArtManifestEntry } from "engine";
 import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import type { CaptureLog } from "./capture.js";
@@ -38,6 +39,8 @@ function send(ws: WebSocket, message: ServerMessage): void {
 function broadcast(room: Room): void {
   const seats = room.seatStatuses();
   for (const { seat, connection } of room.connectedSeats()) {
+    const firstFrame = !sentArtManifest.has(connection);
+    if (firstFrame) sentArtManifest.add(connection);
     connection.send({
       type: "state",
       roomId: room.id,
@@ -52,8 +55,25 @@ function broadcast(room: Room): void {
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
       ...(room.captures !== null ? { capture: true as const } : {}),
+      ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),
     });
   }
+}
+
+/** The connections that have had this game's art manifest — each gets it
+ * with its first frame, a reconnecting one (a new connection) again. */
+const sentArtManifest = new WeakSet<Connection>();
+const artManifests = new WeakMap<Room, readonly ArtManifestEntry[]>();
+
+/** Every card in the room's decks, worked out once: the cards are all there
+ * from the start, and none join a deck later. */
+function artManifestFor(room: Room): readonly ArtManifestEntry[] {
+  let manifest = artManifests.get(room);
+  if (manifest === undefined) {
+    manifest = room.game.artManifest();
+    artManifests.set(room, manifest);
+  }
+  return manifest;
 }
 
 /** The capture log of a room that keeps one, for its host — see

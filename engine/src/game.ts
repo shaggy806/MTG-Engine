@@ -284,8 +284,8 @@ import {
 import type { TargetSource } from "./targeting.js";
 import { PHASE_OF_STEP, isMainPhase, nextStep, stepUsesPriority } from "./turn.js";
 import type { Step } from "./turn.js";
-import { COMMANDER_DAMAGE_LETHAL, viewFor } from "./view.js";
-import type { PlayerView, ViewOptions } from "./view.js";
+import { COMMANDER_DAMAGE_LETHAL, artManifest, viewFor } from "./view.js";
+import type { ArtManifestEntry, PlayerView, ViewOptions } from "./view.js";
 
 export interface DeckList {
   readonly player: PlayerId;
@@ -1054,6 +1054,12 @@ export class Game {
   }
 
   /** A redacted, self-contained snapshot from one player's seat. */
+  /** Every card in every deck, as the art its tiles ask for  see
+   * `artManifest` in `view.ts`. */
+  artManifest(): ArtManifestEntry[] {
+    return artManifest(this.state, this.registry);
+  }
+
   viewFor(player: PlayerId, options: ViewOptions = {}): PlayerView {
     return viewFor(this.state, this.registry, player, {
       // What each of this seat's castable cards really costs, so the client

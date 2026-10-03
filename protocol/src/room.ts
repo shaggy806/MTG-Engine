@@ -10,7 +10,7 @@
  * with, and both workspaces already depend on `engine`.
  */
 
-import type { Action, LegalAction, PlayerId, PlayerView, Step } from "engine";
+import type { Action, ArtManifestEntry, LegalAction, PlayerId, PlayerView, Step } from "engine";
 
 /**
  * A player's standing priority-passing preferences — their own, kept on
@@ -427,6 +427,11 @@ export type ServerMessage =
       /** Present when this server captures bot decisions for training
        * scenarios — a developer's server, never the public site. */
       readonly capture?: true;
+      /** On a connection's first frame of a game only: every card in every
+       * player's deck, as the art its tiles will ask for, for the client to
+       * load quietly ahead of time (`artManifest` in the engine). It names
+       * what's in each deck — accepted, for games among friends. */
+      readonly artManifest?: readonly ArtManifestEntry[];
     }
   | { readonly type: "capture-list"; readonly entries: readonly CaptureSummary[] }
   | {

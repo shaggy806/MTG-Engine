@@ -139,6 +139,10 @@ describe("room server (end to end over WebSocket)", () => {
     }
     expect(aliceRebroadcast.seats.every((s) => s.claimed)).toBe(true);
     expect(bobState.seat).toBe(BOB);
+    // The game's first frame names every card in it, for the client to load
+    // the art of ahead of time — each player's deck, commanders included.
+    expect(bobState.artManifest?.length).toBeGreaterThan(0);
+    expect(aliceRebroadcast.artManifest?.some((e) => e.name === SEATS[0].commanders![0])).toBe(true);
     // Real rooms turn on mulligans — both players are asked at once (parallel,
     // not turn order) and keep their opening hand before turn 1's priority
     // even exists.
@@ -169,6 +173,8 @@ describe("room server (end to end over WebSocket)", () => {
     );
     const [, bobAfterKeep] = await Promise.all([nextMessage(aliceWs), nextMessage(bobWs)]);
     if (bobAfterKeep.type !== "state") throw new Error("unreachable");
+    // Only the first frame carries it.
+    expect(bobAfterKeep.artManifest).toBeUndefined();
 
     const holder = bobAfterKeep.view.priority.holder;
     expect(holder).not.toBeNull();

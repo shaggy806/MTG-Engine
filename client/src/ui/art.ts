@@ -489,3 +489,86 @@ export function resolveArtUrl(
   // emit a broken (or hostile) <img src>.
   return byNameUrl(name, version)
 }
+
+/** How long after a game's first frame the pre-load starts: that board's own
+ * images go first. */
+const PREFETCH_DELAY_MS = 1500
+/** At most this many pre-load images downloading at once. */
+const PREFETCH_CONCURRENCY = 4
+/** A pinned printing's URL goes through Scryfall's API (a 302 to the image),
+ * which allows about ten requests a second: these are spaced under that. */
+const PREFETCH_API_GAP_MS = 150
+
+/**
+ * Loads the art of every card in a game quietly, at the start, so none of it
+ * waits on the network the first time it's drawn — the browser serves the
+ * `<img>` from its cache. `entries` is the server's `artManifest`: each
+ * card's front-face name and, when pinned, its printing — the same pair a
+ * tile asks `resolveArtUrl` for, so the cached URL is the one it will use.
+ *
+ * Gentle on the network: it starts after the first board's own images, names
+ * go through the batched lookup like any tile's, a pinned printing's API
+ * redirect is paced under Scryfall's rate limit, a few images download at a
+ * time at low priority, and nothing loads with the browser's data saver on.
+ */
+export function prefetchArt(entries: readonly { readonly name: string; readonly art?: string }[]): void {
+  if (typeof window === 'undefined' || entries.length === 0) return
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+  if (connection?.saveData === true) return
+  window.setTimeout(() => startPrefetch(entries), PREFETCH_DELAY_MS)
+}
+
+function startPrefetch(entries: readonly { readonly name: string; readonly art?: string }[]): void {
+  const queue: { url: string; api: boolean }[] = []
+  const waiting = new Map<string, string>()
+  for (const { name, art } of entries) {
+    if (art) {
+      const url = resolveArtUrl(art, name, 'art_crop')
+      queue.push({ url, api: url.startsWith('https://api.scryfall.com/') })
+    } else {
+      waiting.set(name.toLowerCase(), name)
+      queueArtLookup(name)
+    }
+  }
+  let active = 0
+  let lastApiAt = 0
+  const pump = (): void => {
+    while (active < PREFETCH_CONCURRENCY && queue.length > 0) {
+      const next = queue[0]
+      if (next.api) {
+        const wait = lastApiAt + PREFETCH_API_GAP_MS - Date.now()
+        if (wait > 0) {
+          window.setTimeout(pump, wait)
+          return
+        }
+        lastApiAt = Date.now()
+      }
+      queue.shift()
+      active += 1
+      const img = new Image()
+      img.decoding = 'async'
+      img.fetchPriority = 'low'
+      img.onload = img.onerror = () => {
+        active -= 1
+        pump()
+      }
+      img.src = next.url
+    }
+  }
+  // A name joins the queue once its batched lookup has given it a direct
+  // CDN URL; one the lookup gave up on is left for its tile to fetch.
+  const drain = (): void => {
+    for (const [key, name] of waiting) {
+      if (imageCache.has(key)) {
+        waiting.delete(key)
+        queue.push({ url: resolveArtUrl(undefined, name, 'art_crop'), api: false })
+      } else if (batchGaveUp.has(key)) {
+        waiting.delete(key)
+      }
+    }
+    if (waiting.size === 0) unsubscribe()
+    pump()
+  }
+  const unsubscribe = subscribeArtCache(drain)
+  drain()
+}

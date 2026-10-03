@@ -17,6 +17,7 @@ import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine
 import type { Frame } from '../game/usePlayback.ts'
 import { realId } from '../game/stackMembers.ts'
 import type { BotSpeed, CaptureSummary, ClientMessage, PassSettings, SeatStatus, ServerMessage, WireDeck } from 'protocol'
+import { prefetchArt } from '../ui/art.ts'
 
 const SERVER_URL =
   (import.meta.env.VITE_SERVER_URL as string | undefined) ??
@@ -413,6 +414,8 @@ export function useNetworkGame(): NetworkGame {
         case 'state': {
           const wasPlaying = isPlayingRef.current
           isPlayingRef.current = true
+          // The game's first frame names every card in it: load their art now.
+          if (message.artManifest) prefetchArt(message.artManifest)
           // A `state` for our pending seat confirms the claim — persist it now,
           // and clear any "seat is taken" error from an earlier failed attempt.
           const pending = pendingClaimRef.current

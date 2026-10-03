@@ -456,6 +456,40 @@ function visible(
   };
 }
 
+/** One card to load the art of ahead of time — see {@link artManifest}. */
+export interface ArtManifestEntry {
+  /** The front face's name: what a tile asks Scryfall for. */
+  readonly name: string;
+  /** Its owner's chosen printing, or the pool's pinned art — a tile's `art`. */
+  readonly art?: string;
+}
+
+/**
+ * Every card every player brought — library, hand, command zone, wherever
+ * it is now — as the art a tile would ask for, once each. For a client to
+ * load quietly at the start of a game so no card's art waits on the network
+ * the first time it's seen (the server's `artManifest`). Not redacted: it
+ * names the cards in every deck, which is accepted for games among friends.
+ * Tokens aren't anyone's deck, and are left out.
+ */
+export function artManifest(state: GameState, registry: CardRegistry): ArtManifestEntry[] {
+  const seen = new Set<string>();
+  const out: ArtManifestEntry[] = [];
+  for (const object of Object.values(state.objects)) {
+    if (object.kind !== "card" || object.isToken) continue;
+    const printed = printedCardName(object);
+    if (!registry.has(printed)) continue;
+    const def = registry.get(printed);
+    const name = def.faces?.[0] ?? printed;
+    const art = state.players[object.owner]?.printings[name] ?? def.art;
+    const key = `${name} ${art ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(art === undefined || art === null ? { name } : { name, art });
+  }
+  return out;
+}
+
 /**
  * Each battlefield permanent's linked exile — see `VisibleObject.holding`.
  * A link counts only while its permanent is on the battlefield: an O-Ring's
