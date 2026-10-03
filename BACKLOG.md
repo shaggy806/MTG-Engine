@@ -56,9 +56,15 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
   `SAMPLE_DECKS`): 71 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
   the TDC decks for authoring.
-- **Deck win rates under identical bots (the user's next test).** Seat the same bot on every
-  `SAMPLE_DECKS` deck, measure each deck's win rate, and flag `bench` on the decks that hold
-  their own, so no deck that loses every game skews a bot benchmark.
+- **Re-run deck win rates after the autopsy fixes and pick the bench** (`npm run bot:decks -w
+  engine`; `docs/plans/deck-autopsies.md`). Sultai Arisen is off the bench; four decks are left
+  on it. Candidates that held their own under v2: Tramplesaurus Rex, Chaos Incarnate, Reign of
+  Dragons, Token Triumph, Draconic Destruction.
+- **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): counterspells
+  credited while tapped out; chained spells invisible to the search; token stacks in attack
+  planning; chump blocks at high life; token payoffs undervalued; a mobilize token counted as a
+  creature; going wide into blockers; premium removal fired early; Sultai's and Mardu's
+  plan-gutting stand-ins.
 - **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.

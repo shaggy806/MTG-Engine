@@ -1,7 +1,7 @@
 /**
  * The starter decks: real, format-legal 100-card Commander precons. First the
  * five Tarkir: Dragonstorm Commander decks (2025, MTGJSON set code `TDC`),
- * the bots' defaults since 2026-09-30 and the only ones flagged `bench`; then
+ * the bots' defaults since 2026-09-30, four of them flagged `bench`; then
  * (2026-10-02) the five 2022 Starter Commander Decks (`SCD`) they replaced and
  * four more picked as nearest complete among WotC's Commander precons:
  * Tramplesaurus Rex and Reign of Dragons (`FDC`), Family Matters (`BLC`) and
@@ -211,7 +211,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Sultai Arisen",
-    bench: true,
+    // Off the bench (2026-10-02): about 11% under v1 and v2 alike in the
+    // deck-against-deck run — a strong deck the bots can't pilot (self-mill,
+    // lands and creatures back from the graveyard), so it measured nothing.
     commander: "Teval, the Balanced Scale",
     description: "Sultai graveyard: mill yourself, bring lands and creatures back, and make Zombies as cards leave the graveyard.",
     printed: [

@@ -1,0 +1,104 @@
+# Deck win rates and autopsies
+
+Status: **first pass done** (2026-10-02): the run, four autopsies, the general bot fixes they
+found, and Sultai Arisen off the bench. What's left is listed at the end and in `BACKLOG.md`.
+
+## Why
+
+Every bot benchmark seats the bots on `BENCH_DECKS`. A deck that loses every game no matter who
+pilots it measures nothing about a bot; a deck the bots can't pilot measures only that. So
+before trusting a bench, ask how each deck does when identical bots play every seat, and look
+at the decks at the bottom to see whether the deck or the bot is losing.
+
+## The run
+
+`npm run bot:decks -w engine` (`engine/scripts/deck-winrates.mjs`): the same bot in every seat,
+four distinct decks a game from all fourteen `SAMPLE_DECKS`, each round dealing every deck once
+into tables, each table played once per seat rotation. `bot:autopsy` replays one of its games
+turn by turn.
+
+v2, 188 games (stopped early once the bottom was clear), and v1, 840 games, on the same tables:
+
+| deck | v2 | v1 |
+|---|---|---|
+| Temur Roar* | 59% | 47% |
+| Tramplesaurus Rex | 37% | 61% |
+| Chaos Incarnate | 36% | 22.5% |
+| Abzan Armor* | 33% | 25% |
+| Reign of Dragons | 33% | 24% |
+| Draconic Destruction | 28% | 20% |
+| Token Triumph | 28% | 18% |
+| First Flight | 21% | 20% |
+| Family Matters | 17% | 11% |
+| World Shaper | 12.5% | 8% |
+| Sultai Arisen* | 11.5% | 10% |
+| Mardu Surge* | 11% | 25% |
+| Jeskai Striker* | 9% | 23% |
+| Grave Danger | 7.5% | 24% |
+
+(\* bench decks at the time.)
+
+**The v1 column is not "how a weaker bot plays the deck".** v1's attack check ignored evasion,
+so its Dragon decks kept their flyers home (Temur Roar dealt 6.1 damage a turn under v1, 13.7
+under v2), and v1 defenders almost never blocked. Mixed tables settled it: Grave Danger on v2
+against three v1 seats won 56%, Mardu Surge 43%, an average deck in that seat 51%. So the
+ground decks' drop from v1 to v2 is mostly their opponents getting better, not their own seat
+getting worse.
+
+## What the autopsies found
+
+Four read-only autopsies (Grave Danger, Jeskai Striker, Sultai Arisen, Mardu Surge), each
+replaying its deck's losses and probing the scores of the bot's candidates.
+
+- **Sultai Arisen** — mostly the deck: 25 stand-ins hollowed out the graveyard engine (Teval's
+  Judgment, Essence Anchor, Kotis, Living Death all gone; Tasigur became a vanilla 3/4). Weak
+  under both bots. Off the bench.
+- **World Shaper** — weak under both bots; a land-recursion plan the bots can't pilot. Never on
+  the bench.
+- **Grave Danger** — about two-thirds matchup: a ground Zombie deck against four Dragon decks
+  that attack properly. Its v2 seat plays it as well as any.
+- **Jeskai Striker** — about 60% bot: the deck runs on card selection, flash and chained spells,
+  which are v2's blind spots.
+- **Mardu Surge** — mostly its opponents; its own seat wastes tokens chumping and drew more
+  attacks.
+
+### Fixed (2026-10-02), each with a gate scenario that fails without it
+
+- Card selection that replaces itself counts as a cantrip (`isCardFlow` by net cards: Expressive
+  Iteration, Compulsive Research aimed at ourselves, Brainstorm; not Faithless Looting).
+- A suspend is played when the search would pass (`isSuspendDue`).
+- A counter-creature (Transcendent Dragon) is cast for its body at the end of the turn before
+  ours rather than held forever.
+- "Any number of targets" groups are offered as the best one, two, three… (Curse of the Swine
+  for X of 3+), not none / each alone / all.
+- A wipe held for after combat stays a candidate; if it scores best, the bot passes to combat
+  with its mana intact (Blood Money, Damnation).
+- No mana spent in our main phase while only our own triggers are on the stack, nor on cycling
+  in our upkeep (`holdsManaForMain`).
+- A fetch takes the colour the hand's spells want and no land in hand makes (`colorWants`).
+- v1 blocks — and so v2's prediction of every defender — take worthwhile trades and gang blocks,
+  skip deathtouch attackers, and block with one token of a stack, not the stack. v1's attack
+  check sees evasion and gang blocks (`wouldDieAttacking`, `blockWorth`, `gangLoss`).
+- Engine: two count-scaled bonuses that count each other (two Zinnias) recursed forever in
+  `computeCharacteristics` (`countInProgress`).
+
+### Left
+
+- **Counterspells are credited while tapped out** (`answers` counts a counterspell in hand
+  whatever mana is open), so tapping out looks free and they rot in hand.
+- **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
+  first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
+  `"acting"` rollout for decks whose commander has a cast trigger.
+- **Token stacks in attack planning**: `alphaStrike` dedupes a stack to one creature, and no
+  attack splits a stack between defenders.
+- **Chump blocks at high life**: `threat` measured at the end of the simulated combat makes each
+  point of life worth ~20×power/life²; commander damage is linear. A patch (life scale from the
+  starting state, a curve for commander damage) removed visible chumps but changed nothing
+  measurable in 18 games.
+- **Token payoffs and engines undervalued**: Deadly Dispute, Krenko, Hero of Bladehold cast far
+  less by v2 than v1; attack triggers and "leaves the battlefield" payoffs aren't valued.
+- **A token that's sacrificed at end step** (mobilize) counts as a full creature in combat.
+- **Neither bot goes wide** into a board of blockers with many small creatures.
+- **Premium removal fired early** at weak targets; no reserve like Counterspell's.
+- **Stand-ins that gut a plan**: Sultai's Barrow Witches (vanilla without Knights) and Black
+  Market Connections; Mardu's anthem and token-doubling cards.
