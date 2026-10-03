@@ -144,4 +144,21 @@ describe("discard as an activation cost", () => {
     expect(game.state.priority.holder).toBe(A);
     expect(game.state.zones.shared.stack).toHaveLength(1);
   });
+
+  it("a spell's additional discard hands priority back to its caster too, on another player's turn", () => {
+    const game = setUp();
+    spawn(game, "Mountain");
+    spawn(game, "Mountain");
+    const thrill = toHand(game, "Thrill of Possibility");
+    const giant = toHand(game, "Hill Giant");
+    toHand(game, "Craw Wurm");
+    game.advanceUntil(
+      (s) => s.turnOrder[s.turn.activePlayerIndex] === B && s.turn.step === "upkeep" && s.priority.holder === A,
+    );
+    game.dispatch({ type: "cast-spell", player: A, card: thrill });
+    expect(game.state.awaiting?.kind).toBe("discard");
+    game.dispatch({ type: "discard", player: A, cards: [giant] });
+    expect(game.state.priority.holder).toBe(A);
+    expect(game.state.zones.shared.stack).toEqual([thrill]);
+  });
 });

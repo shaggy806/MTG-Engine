@@ -274,4 +274,101 @@ describe("look-and-choose: cards from a hand to the bottom, in the order picked"
     expect(hand(game, B)).toHaveLength(3);
     expect(hand(game, B)).not.toContain(p);
   });
+
+  it("Teferi's Puzzle Box: two of them trigger separately (its ruling)", () => {
+    const game = setUp();
+    spawn(game, "Teferi's Puzzle Box");
+    spawn(game, "Teferi's Puzzle Box");
+    game.debugSpawn("Grizzly Bears", B, "hand");
+    game.debugSpawn("Hill Giant", B, "hand");
+    game.advanceUntil((s) => s.turnOrder[s.turn.activePlayerIndex] === B && s.awaiting?.kind === "choose-from-zone");
+    let asked = 0;
+    for (let offer = zoneOffer(game, B); offer !== undefined && asked < 5; offer = zoneOffer(game, B)) {
+      asked += 1;
+      choose(game, offer.ids, B);
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || quiet(s));
+    }
+    expect(asked).toBe(2);
+    expect(hand(game, B)).toHaveLength(3);
+  });
+});
+
+describe("a commander put from its owner's hand into their library (rule 903.9b)", () => {
+  /** A card in `player`'s hand that is their commander. */
+  const commanderInHand = (game: Game, name: string, player: PlayerId = A): ObjectId => {
+    const id = game.debugSpawn(name, player, "hand");
+    game.state.objects[id].isCommander = true;
+    return id;
+  };
+  const answer = (game: Game, toCommandZone: boolean, player: PlayerId = A): void => {
+    expect(game.state.awaiting?.kind).toBe("commander-replacement");
+    expect(game.state.awaiting?.player).toBe(player);
+    game.dispatch({ type: "commander-replacement", player, toCommandZone });
+  };
+
+  it("Valakut Awakening: to the command zone instead, which isn't put on the bottom", () => {
+    const game = setUp();
+    ["Mountain", "Mountain", "Mountain"].forEach((name) => spawn(game, name));
+    const general = commanderInHand(game, "Grizzly Bears");
+    const giant = game.debugSpawn("Hill Giant", A, "hand");
+    castFromHand(game, "Valakut Awakening");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    choose(game, [giant, general]);
+    // Asked before anything moves.
+    expect(game.state.objects[giant].zone).toBe("hand");
+    answer(game, true);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[general].zone).toBe("command");
+    expect(library(game).at(-1)).toBe(giant);
+    // One card put on the bottom: two drawn.
+    expect(hand(game)).toHaveLength(2);
+  });
+
+  it("Valakut Awakening: kept for the library, it goes where it was picked and counts", () => {
+    const game = setUp();
+    ["Mountain", "Mountain", "Mountain"].forEach((name) => spawn(game, name));
+    const general = commanderInHand(game, "Grizzly Bears");
+    const giant = game.debugSpawn("Hill Giant", A, "hand");
+    castFromHand(game, "Valakut Awakening");
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+    choose(game, [general, giant]);
+    answer(game, false);
+    game.advanceUntil(quiet);
+    expect(library(game).slice(-2)).toEqual([general, giant]);
+    expect(hand(game)).toHaveLength(3);
+  });
+
+  it("Teferi's Puzzle Box: the whole hand, the commander offered the command zone", () => {
+    const game = setUp();
+    spawn(game, "Teferi's Puzzle Box");
+    const general = commanderInHand(game, "Grizzly Bears", B);
+    game.debugSpawn("Hill Giant", B, "hand");
+    game.advanceUntil((s) => s.turnOrder[s.turn.activePlayerIndex] === B && s.awaiting?.kind === "choose-from-zone");
+    choose(game, zoneOffer(game, B)?.ids ?? [], B);
+    answer(game, true, B);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[general].zone).toBe("command");
+    // Three cards in hand (two and the step's draw), two of them put there.
+    expect(hand(game, B)).toHaveLength(2);
+  });
+
+  it("Brainstorm: the commander put back on top where it was picked, or to the command zone", () => {
+    for (const toCommandZone of [false, true]) {
+      const game = setUp();
+      spawn(game, "Island");
+      const general = commanderInHand(game, "Grizzly Bears");
+      const giant = game.debugSpawn("Hill Giant", A, "hand");
+      castFromHand(game, "Brainstorm");
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone");
+      choose(game, [giant, general]);
+      answer(game, toCommandZone);
+      game.advanceUntil(quiet);
+      if (toCommandZone) {
+        expect(game.state.objects[general].zone).toBe("command");
+        expect(library(game)[0]).toBe(giant);
+      } else {
+        expect(library(game).slice(0, 2)).toEqual([giant, general]);
+      }
+    }
+  });
 });

@@ -69,6 +69,21 @@ describe("Key to the City", () => {
     expect(hand(game).length).toBe(before + 1);
   });
 
+  it("offers the draw when an effect untaps it, not only in an untap step", () => {
+    const game = setUp();
+    const key = spawn(game, "Key to the City");
+    game.state.objects[key].tapped = true;
+    spawn(game, "Wastes");
+    spawn(game, "Wastes");
+    game.debugApplyEffect(A, { kind: "untap", target: 0 }, [{ kind: "object", object: key }]);
+    game.advanceUntil((s) => s.awaiting?.kind === "choose-modes" || quiet(s));
+    expect(game.state.awaiting?.kind).toBe("choose-modes");
+    const before = hand(game).length;
+    game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+    game.advanceUntil(quiet);
+    expect(hand(game).length).toBe(before + 1);
+  });
+
   it("can be activated with no target", () => {
     const game = setUp();
     const key = spawn(game, "Key to the City");
@@ -129,6 +144,37 @@ describe("Mesmeric Orb", () => {
     // The Wastes and ten Soldiers: eleven mills.
     expect(millsOfB()).toBe(before + 11);
     expect(graveyard(game, A)).toHaveLength(0);
+  });
+
+  it("mills once for one token untapped out of a tapped stack", () => {
+    const game = setUp();
+    spawn(game, "Mesmeric Orb");
+    game.debugApplyEffect(B, { kind: "create-token", token: "Soldier Token", count: 5, tapped: true });
+    const stack = game.state.zones.shared.battlefield.find((id) => game.state.objects[id].cardName === "Soldier Token");
+    expect(stack).toBeDefined();
+    const before = graveyard(game, B).length;
+    game.debugApplyEffect(A, { kind: "untap", target: 0 }, [{ kind: "object", object: stack as ObjectId }]);
+    game.advanceUntil(quiet);
+    expect(graveyard(game, B).length).toBe(before + 1);
+  });
+
+  it("mills whoever controlled the permanent as it last was, once it has left", () => {
+    const game = setUp();
+    spawn(game, "Mesmeric Orb");
+    const bears = spawn(game, "Grizzly Bears", B);
+    game.debugApplyEffect(A, { kind: "gain-control", target: 0, untilEndOfTurn: false }, [
+      { kind: "object", object: bears },
+    ]);
+    game.advanceUntil(quiet);
+    game.state.objects[bears].tapped = true;
+    const [millA, millB] = [graveyard(game, A).length, graveyard(game, B).length];
+    game.debugApplyEffect(A, { kind: "untap", target: 0 }, [{ kind: "object", object: bears }]);
+    // Back to its owner's hand before the trigger resolves.
+    game.debugApplyEffect(A, { kind: "return-to-hand", target: 0 }, [{ kind: "object", object: bears }]);
+    game.advanceUntil(quiet);
+    expect(game.state.objects[bears].zone).toBe("hand");
+    expect(graveyard(game, A).length).toBe(millA + 1);
+    expect(graveyard(game, B).length).toBe(millB);
   });
 
   it("isn't fired by a shock land that entered untapped", () => {

@@ -2,9 +2,9 @@ import { defineCard } from "../define.js";
 
 // The draw trigger resolves before the noncreature spell that caused it (its
 // ruling). The three cards are discarded as the ability goes on the stack. The
-// return is linked to the exile (rule 610.3) and brings back a new object
-// (400.7), tapped and under its owner's control: no counters, Auras or
-// combat (its ruling).
+// delayed return finds only the card this exiled, still in exile (rule
+// 603.7c), and brings back a new object (400.7), tapped and under its owner's
+// control: no counters, Auras or combat (its ruling).
 const DRAW_TEXT = "Whenever an opponent casts a noncreature spell, draw a card.";
 const BLINK_TEXT =
   "Discard three cards: Exile Nezahal. Return it to the battlefield tapped under its owner's control at the beginning of the next end step.";

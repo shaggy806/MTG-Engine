@@ -2303,8 +2303,10 @@ export interface DelayedTrigger {
 export type CommanderReplacementZone = "graveyard" | "exile" | "hand" | "library";
 /** Where a commander waits while its 903.9 choice is pending, other than the
  * battlefield (see `GameState.deferredCommanderMove`): the graveyard or exile
- * it was put into (903.9a), or for a return to hand, the zone it's leaving. */
-export type CommanderMoveOrigin = "stack" | "graveyard" | "exile";
+ * it was put into (903.9a), or for a return to hand, the zone it's leaving;
+ * or the hand a `choose-from-zone` is putting it into a library from
+ * (`heldByZoneChoice`). */
+export type CommanderMoveOrigin = "stack" | "graveyard" | "exile" | "hand";
 
 /**
  * What caused the decision on {@link GameState.awaiting} — the resolving
@@ -2406,6 +2408,11 @@ export type PendingEntry =
       readonly awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>;
       readonly player: PlayerId;
       readonly chosen: readonly ObjectId[];
+      /** Or because a chosen card is its owner's commander, bound from their
+       * hand for their library, whose owner may put it into the command zone
+       * instead (rule 903.9b): each one's answer, once given — `true` for the
+       * command zone. */
+      readonly commanderAnswers?: Readonly<Record<string, boolean>>;
     }
   | {
       /** Cards exiled "until" a permanent leaves, coming back because its
@@ -2935,6 +2942,12 @@ export interface GameState {
      * stack (Unsubstantiate), or a card from a graveyard or exile, each of
      * which waits where it is. */
     readonly from?: CommanderMoveOrigin;
+    /** A commander a `choose-from-zone` answer is putting from its owner's
+     * hand into their library (Brainstorm, Valakut Awakening, Teferi's
+     * Puzzle Box — rule 903.9b): the answer is only *recorded* (the parked
+     * `PendingEntry`'s `commanderAnswers`), and the choice carries out the
+     * move with the rest of its cards, in the order picked. */
+    readonly heldByZoneChoice?: true;
   } | null;
   /**
    * Commanders whose owner is owed the choice on `deferredCommanderMove` and
@@ -2952,6 +2965,7 @@ export interface GameState {
     readonly stint?: number;
     readonly leftWith?: readonly ObjectId[];
     readonly from?: CommanderMoveOrigin;
+    readonly heldByZoneChoice?: true;
   }[];
   /**
    * Commanders put into a graveyard or exile since state-based actions were

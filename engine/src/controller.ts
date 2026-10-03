@@ -2210,8 +2210,11 @@ export class HeuristicBotController extends AutomaticController {
    * bot has usually just paid for — a library search, a graveyard
    * recursion, a "look at the top N and take some" — and taking the minimum
    * means cracking an Evolving Wilds and then declining to find the land.
-   * (Giving cards up is never routed through here: discarding, putting cards
-   * on the bottom and sacrificing are all their own decisions.)
+   * (Most giving-up is its own decision — discarding, a mulligan's bottom,
+   * sacrificing — but a few choices that give cards up come here too, in this
+   * same ranking: an order over every card, Valakut Awakening's "any number
+   * of cards from your hand on the bottom", and an activated ability's
+   * "exile N cards from your graveyard" cost.)
    */
   chooseFromZone(
     view: ControllerView,

@@ -599,4 +599,5 @@ to index 0, i.e. exactly the wrong end.
 **Skipped: Moorland Haunt.** "Exile a creature card from your graveyard" as an
 activation cost needs a real *choice* of which card, and which one you keep
 matters for the rest of the deck. Auto-picking would be an unchosen decision,
-so it stays unauthored.
+so it stays unauthored. (Authored 2026-10-03, once `AbilityCost.exileFromGraveyard`
+asked that choice as the ability goes on the stack.)

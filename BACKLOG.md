@@ -244,10 +244,12 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   See `docs/plans/token-stack-choices.md`.
 - **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
   `effect`.
-- **A commander put from a hand into a library isn't offered the command zone** (rule 903.9b:
-  "from anywhere"). `moveObject`'s 903.9b deferral covers a move to a hand from elsewhere and
-  a move off the battlefield, not hand → library: Brainstorm, Valakut Awakening and Teferi's
-  Puzzle Box put a commander in hand into the library without asking.
+- **A commander put into a library from a graveyard, exile or the stack isn't offered the
+  command zone** (rule 903.9b: "from anywhere"). `moveObject`'s 903.9b deferral covers a move
+  to a hand from elsewhere and a move off the battlefield; a `choose-from-zone` putting one
+  from a hand into a library asks first (`finishZoneChoice` — Brainstorm, Valakut Awakening,
+  Teferi's Puzzle Box). Noxious Revival on a commander left in a graveyard puts it on top of
+  the library without asking.
 - **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
   trigger by the stack's `stackCount` (Mesmeric Orb, 2026-10-03); `permanent-tapped` doesn't,
   so a tap-all over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.

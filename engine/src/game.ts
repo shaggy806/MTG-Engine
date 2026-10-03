@@ -3325,6 +3325,27 @@ export class Game {
 
     const { commander, intendedZone, leftWith } = deferred;
     this.state.awaiting = null;
+    if (deferred.heldByZoneChoice === true) {
+      // A `choose-from-zone` putting it from its owner's hand into their
+      // library: the answer goes back to that choice, parked until now,
+      // which carries out the move with the rest of its cards.
+      this.state.deferredCommanderMove = null;
+      const parked = this.state.suspendedResolutions;
+      for (let i = parked.length - 1; i >= 0; i -= 1) {
+        const held = parked[i];
+        if (held.effect !== null) continue;
+        const enter = held.enter;
+        if (enter?.kind !== "zone-choice" || !enter.chosen.includes(commander)) continue;
+        parked[i] = {
+          ...held,
+          enter: { ...enter, commanderAnswers: { ...(enter.commanderAnswers ?? {}), [commander]: toCommandZone } },
+        };
+        break;
+      }
+      this.emit({ type: "commander-zone-decision", object: commander, toCommandZone, from: intendedZone });
+      this.prepareForPriority(this.activePlayer);
+      return;
+    }
     if (intendedZone === "graveyard" || intendedZone === "exile") {
       this.state.deferredCommanderMove = null;
       if (toCommandZone) this.moveObject(commander, "command");
@@ -5032,6 +5053,31 @@ export class Game {
         return;
       }
     }
+    // A commander put from its owner's hand into their library (Brainstorm,
+    // Valakut Awakening, Teferi's Puzzle Box) may go to the command zone
+    // instead (rule 903.9b — a replacement, so asked before anything moves).
+    // One commander at a time, the choice parked meanwhile as for an "as
+    // this enters" choice; the answer is carried out with the rest of the
+    // move, a commander kept for the library going where it was picked to.
+    const answers = entry.commanderAnswers ?? {};
+    for (const [index, id] of chosen.entries()) {
+      const to = this.chosenFromZoneTo(awaiting, index);
+      if (to !== "library-top" && to !== "library-bottom") continue;
+      const object = this.state.objects[id];
+      if (object?.zone !== "hand" || object.isCommander !== true || id in answers) continue;
+      if (this.state.players[object.owner]?.hasLost === true) continue;
+      this.state.suspendedResolutions.push({ effect: null, enter: entry });
+      this.state.pendingCommanderMoves.unshift({
+        commander: id,
+        intendedZone: "library",
+        from: "hand",
+        heldByZoneChoice: true,
+      });
+      this.state.awaiting = null;
+      this.raiseNextCommanderChoice();
+      return;
+    }
+    const toCommandZone = new Set(chosen.filter((id) => answers[id] === true));
     // The moves happen while the choice they carry out is still the decision
     // up, as they always have: a shock land a search finds waits its turn.
     this.state.awaiting = awaiting;
@@ -5041,7 +5087,7 @@ export class Game {
     // graveyard leave it as one move ("return up to two cards").
     let toOrder: readonly ObjectId[] = [];
     this.withGraveyardLeaveBatch(() => {
-      toOrder = this.moveChosenFromZone(awaiting, player, chosen, leftover);
+      toOrder = this.moveChosenFromZone(awaiting, player, chosen, leftover, toCommandZone);
     });
 
     // An order takes nothing: it only says where each card goes.
@@ -5162,12 +5208,15 @@ export class Game {
   /** The moves half of {@link applyChooseFromZone}: the chosen cards to where
    * the choice sends them, and the ones left over. Returns the leftover cards
    * still to be ordered onto the bottom of the library (`"bottom-any-order"`
-   * — see `beginLibraryOrder`), which haven't moved yet. */
+   * — see `beginLibraryOrder`), which haven't moved yet. `toCommandZone`:
+   * commanders whose owners put them into the command zone instead of the
+   * library (rule 903.9b — see `finishZoneChoice`). */
   private moveChosenFromZone(
     awaiting: Extract<AwaitingDecision, { kind: "choose-from-zone" }>,
     player: PlayerId,
     chosen: readonly ObjectId[],
     leftover: readonly ObjectId[],
+    toCommandZone: ReadonlySet<ObjectId> = new Set(),
   ): readonly ObjectId[] {
     // Cards a choice puts from a hand on the bottom of a library (Valakut
     // Awakening), announced together once they're there — what "that many"
@@ -5185,6 +5234,11 @@ export class Game {
         if (object !== undefined && awaiting.impulseGrant !== undefined) {
           object.impulse = { ...awaiting.impulseGrant };
         }
+        return;
+      }
+      // Its owner put it into the command zone instead (rule 903.9b).
+      if (toCommandZone.has(id)) {
+        this.moveObject(id, "command");
         return;
       }
       const to = this.chosenFromZoneTo(awaiting, index);
@@ -5304,7 +5358,7 @@ export class Game {
     // 701.19j — "shuffle, *then* put that card on top"). Last chosen first,
     // so a multi-card find ends up in the order it was chosen.
     if (awaiting.destination === "library-top") {
-      for (const id of [...chosen].reverse()) this.putOnLibrary(id, "top");
+      for (const id of [...chosen].reverse()) if (!toCommandZone.has(id)) this.putOnLibrary(id, "top");
     }
     return toOrder;
   }
