@@ -46,6 +46,34 @@ against three v1 seats won 56%, Mardu Surge 43%, an average deck in that seat 51
 ground decks' drop from v1 to v2 is mostly their opponents getting better, not their own seat
 getting worse.
 
+### The re-run (2026-10-03)
+
+The same table, v2 in every seat, 168 games on the build with every fix below (through the v1
+wide-lethal check), against the first run's 188:
+
+| deck | first run | re-run | 95% CI |
+|---|---|---|---|
+| Temur Roar* | 60% | 71% | [57, 82] |
+| Abzan Armor* | 33% | 35% | [23, 50] |
+| Tramplesaurus Rex | 37% | 29% | [18, 43] |
+| Reign of Dragons | 33% | 26% | [15, 40] |
+| Draconic Destruction | 28% | 25% | [15, 39] |
+| Token Triumph | 29% | 25% | [15, 39] |
+| Chaos Incarnate | 36% | 23% | [14, 37] |
+| Sultai Arisen | 11.5% | 23% | [13, 37] |
+| Grave Danger | 7.5% | 21% | [12, 34] |
+| First Flight | 21% | 21% | [12, 34] |
+| Jeskai Striker* | 9% | 19% | [10, 33] |
+| Mardu Surge* | 12% | 12.5% | [6, 25] |
+| Family Matters | 18% | 12.5% | [6, 25] |
+| World Shaper | 12.5% | 6% | [2, 17] |
+
+(\* bench decks.) The decks the autopsies worked on moved most — Grave Danger, Jeskai Striker and
+Sultai Arisen about doubled — and the field closed up around 25%. The bench still holds both ends:
+Temur Roar wins seven games in ten, and Mardu Surge, its token engines priced and its chumps gone,
+is flat at one in eight. Run with `node engine/scripts/deck-winrates.mjs --rounds 12 --out …`;
+the rows are in `.scratch/deck-winrates-v2-4p-2026-10-03.ndjson`.
+
 ## What the autopsies found
 
 Four read-only autopsies (Grave Danger, Jeskai Striker, Sultai Arisen, Mardu Surge), each
