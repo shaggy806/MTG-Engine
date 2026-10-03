@@ -183,7 +183,16 @@ export type ManaPurpose =
   /** A spell being cast. `card` is still in its pre-cast zone at payment
    * time, so a filter over it reads printed characteristics — which is
    * exactly what "a creature spell" means. */
-  | { readonly kind: "cast"; readonly card: ObjectId }
+  | {
+      readonly kind: "cast";
+      readonly card: ObjectId;
+      /** The face being cast, when it isn't the card's front (an Adventure,
+       * a split half, a modal back face): a restriction reads that face's
+       * characteristics (rule 715.3 — Bathe in Gold is an instant, not the
+       * Dragon creature card it's on, so Haven of the Spirit Dragon's
+       * Dragon-only mana can't pay for it). */
+      readonly face?: number;
+    }
   /** An activated ability of `source` being paid for. */
   | { readonly kind: "ability"; readonly source: ObjectId }
   | null;

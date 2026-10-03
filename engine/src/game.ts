@@ -2234,7 +2234,7 @@ export class Game {
           const total = this.withFace(card, face ?? 0, () =>
             this.castingCostOf(player, card, def, 0, withModes, pricedAt),
           );
-          if (this.payMana(player, total, undefined, undefined, { kind: "cast", card }) !== null) return k;
+          if (this.payMana(player, total, undefined, undefined, { kind: "cast", card, face: face ?? 0 }) !== null) return k;
         }
         return Math.max(1, modal.minModes);
       };
@@ -7829,7 +7829,7 @@ export class Game {
       convoked = resolved;
     }
     const cost = convoked.length > 0 ? this.reduceCostByConvoke(delved, convoked) : delved;
-    const purpose: ManaPurpose = { kind: "cast", card: cardId };
+    const purpose: ManaPurpose = { kind: "cast", card: cardId, face };
     const alternativeTaps = altCost ? this.alternativeCostOf(cardId, def, via, player)?.tapCreatures : undefined;
     if (alternativeTaps !== undefined) {
       // The tap half is checked against the same mana — see `tapCostOffer`.
@@ -10460,6 +10460,11 @@ export class Game {
         ? [restriction.spell, purpose.card]
         : [restriction.abilityOf, purpose.source];
     if (filter === undefined) return false;
+    // The face being cast, as it will be on the stack (see `ManaPurpose`).
+    if (purpose.kind === "cast" && purpose.face !== undefined) {
+      const face = purpose.face;
+      return this.withFace(subject, face, () => matchesFilter(this.state, this.registry, subject, filter, { you: player }));
+    }
     // "Activate abilities of creatures" is about creature permanents (rule
     // 109.2): a creature card's ability from the hand or a graveyard isn't
     // one (Castle Garenbrig's ruling). "A creature source" is (109.2a).
@@ -15906,7 +15911,7 @@ export class Game {
       cost,
       undefined,
       undefined,
-      { kind: "cast", card: cardId },
+      { kind: "cast", card: cardId, face },
     );
   }
 
