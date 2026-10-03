@@ -168,6 +168,7 @@ import _poolSteelHellkite from "../pool/steel-hellkite.js";
 import _poolSteelWall from "../pool/steel-wall.js";
 import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
+import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
 import _poolTevalArbiterOfVirtue from "../pool/teval-arbiter-of-virtue.js";
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _poolSteelWall,
     _poolStormshriekFeral,
     _poolSunbladeAngel,
+    _poolSwordOfWealthAndPower,
     _poolTangledVale,
     _poolTeferisProtege,
     _poolTevalArbiterOfVirtue,

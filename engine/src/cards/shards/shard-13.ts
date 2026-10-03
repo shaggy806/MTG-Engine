@@ -158,6 +158,7 @@ import _poolSharedRoots from "../pool/shared-roots.js";
 import _poolShortBow from "../pool/short-bow.js";
 import _poolSkullOfRamos from "../pool/skull-of-ramos.js";
 import _poolSoliton from "../pool/soliton.js";
+import _poolSoporificSprings from "../pool/soporific-springs.js";
 import _poolSphinxSummoner from "../pool/sphinx-summoner.js";
 import _poolSpinalCentipede from "../pool/spinal-centipede.js";
 import _poolStampedingRhino from "../pool/stampeding-rhino.js";
@@ -367,6 +368,7 @@ const shard: CardShard = {
     _poolShortBow,
     _poolSkullOfRamos,
     _poolSoliton,
+    _poolSoporificSprings,
     _poolSphinxSummoner,
     _poolSpinalCentipede,
     _poolStampedingRhino,

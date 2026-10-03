@@ -7,7 +7,7 @@ import { filterReadsX, matchesFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
 import { printedCardName } from "./state.js";
-import type { GameState } from "./state.js";
+import type { GameObject, GameState } from "./state.js";
 import {
   anyNumberSlot,
   concreteTargetSpecs,
@@ -65,7 +65,38 @@ export function targetSpecReadsX(spec: TargetSpec): boolean {
   if (spec.kind === "optional" || spec.kind === "other" || spec.kind === "any-number") {
     return targetSpecReadsX(spec.of);
   }
+  if (spec.kind === "ability") return false;
   return spec.filter !== undefined && filterReadsX(spec.filter);
+}
+
+/**
+ * The card types of the source of `ability`, an ability object on the stack
+ * — what "an ability … from an enchantment source" asks (Weaver of Harmony).
+ * The source as it is while it's still the object it was as the ability went
+ * on the stack (rule 400.7): its current types on the battlefield, its
+ * printed ones elsewhere (a channel ability's card in a hand — the ruling).
+ * Once it has moved, its last-known information (rule 113.7a): as it last
+ * existed on the battlefield, or, from another zone, the card it still is.
+ */
+export function abilitySourceTypes(
+  state: GameState,
+  registry: CardRegistry,
+  ability: GameObject,
+): readonly CardType[] {
+  const id = ability.sourceObjectId;
+  if (id === null) return [];
+  const source = state.objects[id];
+  if (source === undefined) return state.ceasedTokens?.[id]?.types ?? [];
+  const stint = ability.sourceZoneChangeCount;
+  if (stint === undefined || (source.zoneChangeCount ?? 0) === stint) {
+    return source.zone === "battlefield"
+      ? effectiveTypes(state, registry, source)
+      : registry.get(printedCardName(source)).types;
+  }
+  const departed = [source.lastKnown, ...(source.earlierLastKnown ?? [])].find(
+    (known) => known !== undefined && known.zoneChangeCount === stint,
+  );
+  return departed !== undefined ? departed.types : registry.get(printedCardName(source)).types;
 }
 
 /** Does `target`'s protection (rule 702.16) stop `source` from affecting it? */
@@ -246,6 +277,32 @@ export function isLegalTarget(
     if (whose === "you" && controller !== forPlayer) return false;
     if (whose === "opponent" && controller === forPlayer) return false;
     return matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source));
+  }
+  // A spell on the stack or a permanent on the battlefield, whichever it is.
+  if (typeof spec === "object" && spec.kind === "spell-or-permanent") {
+    if (ref.kind !== "object") return false;
+    const object = state.objects[ref.object];
+    if (object === undefined) return false;
+    if (!isSpellOnStack(state, ref.object) && object.zone !== "battlefield") return false;
+    const whose = spec.whose ?? "any";
+    if (whose === "you" && object.controller !== forPlayer) return false;
+    if (whose === "opponent" && object.controller === forPlayer) return false;
+    return (
+      spec.filter === undefined ||
+      matchesFilter(state, registry, ref.object, spec.filter, targetFilterContext(forPlayer, source))
+    );
+  }
+  // A narrowed activated or triggered ability on the stack.
+  if (typeof spec === "object" && spec.kind === "ability") {
+    if (ref.kind !== "object") return false;
+    const ability = state.objects[ref.object];
+    if (ability === undefined || ability.zone !== "stack" || ability.kind !== "ability") return false;
+    if (spec.whose === "you" && ability.controller !== forPlayer) return false;
+    if (spec.sourceTypes !== undefined) {
+      const types = abilitySourceTypes(state, registry, ability);
+      if (!spec.sourceTypes.some((t) => types.includes(t))) return false;
+    }
+    return true;
   }
   // The structured graveyard spec.
   if (typeof spec === "object") {

@@ -1242,6 +1242,11 @@ export interface PendingTrigger {
    * right order.
    */
   readonly delayed?: DelayedTrigger;
+  /** A mana-spend rider's `triggerObject` is the spell the mana paid for,
+   * still being cast as the rider fires: its `lastKnownRefs.triggerSpell` —
+   * which stint on the stack "that spell" is — is read as the rider is
+   * placed, by when the spell is there. */
+  readonly triggerSpellOnPlacement?: true;
   /** A reflexive triggered ability — see {@link ReflexiveTrigger}. Placed
    * like a card's own triggered ability, choosing its targets as it goes on
    * the stack, from this record's specs rather than a card's list. */
@@ -2720,6 +2725,12 @@ export interface GameState {
    * to be asked about their new targets, oldest first. Drained one at a time
    * in the `prepareForPriority` fixpoint. Absent when empty. */
   copyTargetsQueue?: ObjectId[];
+  /** Ability objects that left the stack while a triggered ability waiting
+   * on it named one as its trigger object, as they last were there — what
+   * Illusionist's Bracers' "copy that ability" copies once the ability has
+   * been countered in response (rule 707.10, as Rings of Brighthearth's
+   * ruling has it). Emptied as each turn begins. Absent when empty. */
+  departedAbilities?: Record<ObjectId, GameObject>;
   /** Suspended cards still to be free-cast this upkeep, after one of them
    * paused on a `choose-targets` decision. Drained by `applyChooseTargets`. */
   pendingSuspendedCasts: ObjectId[];
@@ -3090,6 +3101,12 @@ export function createPlayerState(id: PlayerId, rules: GameRules): PlayerState {
  */
 export function cloneGameState(state: GameState): GameState {
   return clonePlainTree(state) as GameState;
+}
+
+/** Deep-copy one piece of a `GameState` — an object of it, say — under the
+ * same guarantees as {@link cloneGameState}. */
+export function clonePlain<T>(value: T): T {
+  return clonePlainTree(value) as T;
 }
 
 function clonePlainTree(value: unknown): unknown {

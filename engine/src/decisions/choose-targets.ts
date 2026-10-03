@@ -24,7 +24,7 @@
 
 import type { Action, LegalAction } from "../actions.js";
 import type { PlayerId } from "../primitives.js";
-import { divisionOf, normalizeTargets, sameTargetRef } from "../target.js";
+import { divisionOf, normalizeTargets, otherSlotConflict, sameTargetRef } from "../target.js";
 import type { ResolvedTargets } from "../target.js";
 import { cardSource, invalidTargetReason } from "../targeting.js";
 import type { TargetSource } from "../targeting.js";
@@ -71,6 +71,15 @@ function whyNotCopyTargets(
     if (!awaiting.options[i].some((o) => sameTargetRef(o, target))) {
       return `that isn't a legal new target for slot ${i + 1}`;
     }
+  }
+  // A copy of an ability targets from that ability's source — its permanent,
+  // with what its filters read — which each slot's options were already
+  // judged against (`Game.askCopyTargets`); a card's printed
+  // characteristics can't stand in for that, so only the slots' relations
+  // to each other are checked again.
+  if (ctx.state.objects[awaiting.source]?.kind === "ability") {
+    const conflict = otherSlotConflict(awaiting.specs, chosen);
+    return conflict === null ? null : `target ${conflict.slot + 1} must be another than target ${conflict.than + 1}`;
   }
   const source = cardSource(ctx.registry.get(awaiting.cardName), awaiting.source);
   const whole = invalidTargetReason(ctx.state, ctx.registry, awaiting.specs, chosen, player, awaiting.cardName, source);

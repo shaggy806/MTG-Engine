@@ -119,6 +119,7 @@ import _poolPheresBandCentaurs from "../pool/pheres-band-centaurs.js";
 import _poolPhyrexianHulk from "../pool/phyrexian-hulk.js";
 import _poolPhyrexianWalker from "../pool/phyrexian-walker.js";
 import _poolPotionOfHealing from "../pool/potion-of-healing.js";
+import _poolPrimalWellspring from "../pool/primal-wellspring.js";
 import _poolPromisingVein from "../pool/promising-vein.js";
 import _poolPyreHound from "../pool/pyre-hound.js";
 import _poolRainOfRevelation from "../pool/rain-of-revelation.js";
@@ -179,6 +180,7 @@ import _poolVesperGhoul from "../pool/vesper-ghoul.js";
 import _poolVesselOfEphemera from "../pool/vessel-of-ephemera.js";
 import _poolVexingBauble from "../pool/vexing-bauble.js";
 import _poolViridescentBog from "../pool/viridescent-bog.js";
+import _poolVirtueOfKnowledge from "../pool/virtue-of-knowledge.js";
 import _poolVoraciousNull from "../pool/voracious-null.js";
 import _poolWarrenSoultrader from "../pool/warren-soultrader.js";
 import _poolWaterElemental from "../pool/water-elemental.js";
@@ -306,6 +308,7 @@ const shard: CardShard = {
     _poolPhyrexianHulk,
     _poolPhyrexianWalker,
     _poolPotionOfHealing,
+    _poolPrimalWellspring,
     _poolPromisingVein,
     _poolPyreHound,
     _poolRainOfRevelation,
@@ -366,6 +369,7 @@ const shard: CardShard = {
     _poolVesselOfEphemera,
     _poolVexingBauble,
     _poolViridescentBog,
+    _poolVirtueOfKnowledge,
     _poolVoraciousNull,
     _poolWarrenSoultrader,
     _poolWaterElemental,

@@ -97,6 +97,7 @@ import _poolHoardRobber from "../pool/hoard-robber.js";
 import _poolHoardSmelterDragon from "../pool/hoard-smelter-dragon.js";
 import _poolHookHauntDrifter from "../pool/hook-haunt-drifter.js";
 import _poolHovermyr from "../pool/hovermyr.js";
+import _poolInallaArchmageRitualist from "../pool/inalla-archmage-ritualist.js";
 import _poolIndulgingPatrician from "../pool/indulging-patrician.js";
 import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
 import _poolIntrudingSoulrager from "../pool/intruding-soulrager.js";
@@ -345,6 +346,7 @@ const shard: CardShard = {
     _poolHoardSmelterDragon,
     _poolHookHauntDrifter,
     _poolHovermyr,
+    _poolInallaArchmageRitualist,
     _poolIndulgingPatrician,
     _poolInspiringOverseer,
     _poolIntrudingSoulrager,

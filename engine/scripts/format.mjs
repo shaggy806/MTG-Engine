@@ -29,6 +29,10 @@ export const makeFormatter = (game) => {
         return `additional combat phase`;
       case "spell-copied":
         return `${e.controller} copies ${name(e.original)}`;
+      case "ability-copied":
+        return e.source === null
+          ? `${e.controller} copies an ability`
+          : `${e.controller} copies an ability of ${name(e.source)}`;
       case "lore-counter-added":
         return `${name(e.object)} — lore counter ${e.lore}`;
       case "saga-completed":

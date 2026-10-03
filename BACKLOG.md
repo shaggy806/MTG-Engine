@@ -93,9 +93,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `reveal-until` whose `then` is a free `cast-now`), Kellan, the Kid, Descendants' Path and
   Buster Sword. Recheck each against its Oracle text before authoring it.
 - **Cards a built feature may have unblocked.** A copy's new targets (2026-09-30) was the most
-  recorded blocker across sweep 2 and 3 (Thousand-Year Storm, Reverberate, Rings of
-  Brighthearth, Echoes of Eternity, Loki Laufeyson, …); recheck the records that cite
-  `decision:copy-new-targets` and author what needs nothing else.
+  recorded blocker across sweep 2 and 3. The "ready now" pass (2026-10-03) authored 14 of the
+  cards citing it (Thousand-Year Storm, Reverberate, Chain of Vapor, Lithoform Engine, …) and
+  found what else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need (`docs/card-blockers.md`, "Ready now"). Still to recheck: the other records citing
+  `decision:copy-new-targets` (Loki Laufeyson, …), and the leads that pass opened (Venser,
+  Shaper Savant; Strionic Resonator; Battlemage's Bracers).
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
@@ -165,6 +167,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   - Forecast (11).
   - Companion (10).
   Exhaust and Boast are read, as the ability flags the engine already has.
+- **Cycling resolves without the stack.** Rule 702.29a makes it an activated ability ("[Cost],
+  Discard this card: Draw a card"); `cycleCard` draws (or landcycling searches) as the cost is
+  paid, so nobody can respond to it, counter it or copy it. Blocks Rings of Brighthearth
+  ("whenever you activate an ability"). Needs a cycling ability object on the stack the client
+  can draw and the bots can price.
 - **Replacement ordering.** There is no general `choose-replacement-order` (rule 616.1) — only
   Feather's exile beside another exiling replacement asks — and no damage redirection to a
   third object.
@@ -414,6 +421,12 @@ Follow-on ideas, approved by the user on 2026-09-30:
   where 150 two-player seeds reach all but 46. Either raise CI's game counts (about 60
   two-player seeds for 87%, roughly double the fuzz time), or start each run at a different
   seed so that successive runs sweep the whole pool.
+- **Eminence is cited as rule 702.106**, which is Hidden Agenda: `abilities.ts`
+  (`fromCommandZone`), `cards/define.ts`, `game.ts` and `eminence.test.ts`. Eminence is an
+  ability word (rule 207.2c), with no rule of its own; the cards' text is what works. Likewise
+  "a delayed ability chooses no new targets" is cited as 603.7d (AUTHORING §6, `effects.ts`'s
+  `delayed-trigger`), which is about its source and controller: its captured objects aren't
+  targets because its text doesn't say "target".
 
 ## Code health
 

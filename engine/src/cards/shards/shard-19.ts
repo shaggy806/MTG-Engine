@@ -46,7 +46,9 @@ import _poolDevilthornFox from "../pool/devilthorn-fox.js";
 import _poolDimensionX from "../pool/dimension-x.js";
 import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
+import _poolDualcasterMage from "../pool/dualcaster-mage.js";
 import _poolDungroveElder from "../pool/dungrove-elder.js";
+import _poolExploreTheVastlands from "../pool/explore-the-vastlands.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
 import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
@@ -261,7 +263,9 @@ const shard: CardShard = {
     _poolDimensionX,
     _poolDismiss,
     _poolDrossSkullbomb,
+    _poolDualcasterMage,
     _poolDungroveElder,
+    _poolExploreTheVastlands,
     _poolExsanguinate,
     _poolFabledPassage,
     _poolFalkenrathNoble,

@@ -1,5 +1,6 @@
 /** Reference types for spell / ability targets. Pure data, no logic. */
 
+import type { CardType } from "./cards.js";
 import type { CardFilter } from "./filter.js";
 import type { Color } from "./mana.js";
 import type { ObjectId, PlayerId } from "./primitives.js";
@@ -161,6 +162,38 @@ export type TargetSpec =
        * Defaults to `"any"`. */
       readonly whose?: "any" | "you" | "opponent";
       readonly filter: CardFilter;
+    }
+  /**
+   * A spell on the stack **or** a permanent on the battlefield, in one slot
+   * — "return target spell or nonland permanent an opponent controls to its
+   * owner's hand" (Sink into Stupor). `whose` is the spell's or the
+   * permanent's controller: "an opponent controls" reads on both nouns, as
+   * in "target creature or planeswalker an opponent controls". `filter` is
+   * matched against whichever it is — a spell is never a land, so
+   * `notTypes: ["land"]` narrows only the permanents.
+   */
+  | {
+      readonly kind: "spell-or-permanent";
+      readonly whose?: "any" | "you" | "opponent";
+      readonly filter?: CardFilter;
+    }
+  /**
+   * An activated or triggered ability on the stack, narrowed — the general
+   * form of `"activated-or-triggered-ability"`: "target activated or
+   * triggered ability **you control**" (Lithoform Engine, Vantress Visions),
+   * "… you control **from an enchantment source**" (Weaver of Harmony). A
+   * mana ability never is one (rule 605.3b); a Saga chapter is a triggered
+   * ability (714.2b).
+   */
+  | {
+      readonly kind: "ability";
+      /** Whose ability: its controller. Defaults to `"any"`. */
+      readonly whose?: "any" | "you";
+      /** Its source has one of these card types — as it is, or as it last
+       * existed on the battlefield if it has left there since the ability
+       * went on the stack; a card in another zone (a channel ability's) by
+       * its printed types. */
+      readonly sourceTypes?: readonly CardType[];
     }
   /**
    * A slot that may be left empty — "up to one target creature" (Ajani,
@@ -589,6 +622,15 @@ export function describeTargetSpec(spec: TargetSpec | string): string {
       : than === "trigger-object"
         ? `${inner} other than that one`
         : `${inner} other than that player`;
+  }
+  if (spec.kind === "spell-or-permanent") {
+    const nonland = spec.filter?.notTypes?.includes("land") === true ? "nonland " : "";
+    const whose = spec.whose === "you" ? " you control" : spec.whose === "opponent" ? " an opponent controls" : "";
+    return `spell or ${nonland}permanent${whose}`;
+  }
+  if (spec.kind === "ability") {
+    const from = spec.sourceTypes === undefined ? "" : ` from ${spec.sourceTypes.join(" or ")} source`;
+    return `activated or triggered ability${spec.whose === "you" ? " you control" : ""}${from}`;
   }
   if (spec.kind === "spell") {
     const colour = spec.filter.colors?.length === 1 ? `${COLOUR_WORD[spec.filter.colors[0]]} ` : "";

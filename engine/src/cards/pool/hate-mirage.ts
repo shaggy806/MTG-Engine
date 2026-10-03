@@ -15,22 +15,12 @@ export default defineCard({
     effects: [
       // `who: "you"` — the copies are of creatures you *don't* control, and
       // enter under yours.
-      {
-        kind: "create-token-copy",
-        of: 0,
-        count: 1,
-        gainsHaste: true,
-        exileAtEndStep: true,
-        who: "you",
-      },
-      {
-        kind: "create-token-copy",
-        of: 1,
-        count: 1,
-        gainsHaste: true,
-        exileAtEndStep: true,
-        who: "you",
-      },
+      { kind: "create-token-copy", of: 0, count: 1, exileAtEndStep: true, who: "you" },
+      { kind: "create-token-copy", of: 1, count: 1, exileAtEndStep: true, who: "you" },
+      // "Those tokens gain haste" isn't a copy exception ("except it has
+      // haste" would be, rule 707.9b): it's granted once they're made, so a
+      // copy of one of them doesn't have it.
+      { kind: "grant-keyword-all", filter: { thisWay: "created" }, keyword: "haste", duration: "permanent" },
     ],
   },
 });

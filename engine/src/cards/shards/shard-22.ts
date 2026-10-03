@@ -22,6 +22,7 @@ import _poolBazaarTrademage from "../pool/bazaar-trademage.js";
 import _poolBeeSting from "../pool/bee-sting.js";
 import _poolBenalishHeralds from "../pool/benalish-heralds.js";
 import _poolBogInitiate from "../pool/bog-initiate.js";
+import _poolBrainFreeze from "../pool/brain-freeze.js";
 import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
 import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
@@ -183,6 +184,7 @@ import _poolTheyWentThisWay from "../pool/they-went-this-way.js";
 import _poolThornOfTheBlackRose from "../pool/thorn-of-the-black-rose.js";
 import _poolThornling from "../pool/thornling.js";
 import _poolThrillOfPossibility from "../pool/thrill-of-possibility.js";
+import _poolThunderclapDrake from "../pool/thunderclap-drake.js";
 import _poolThunderingGiant from "../pool/thundering-giant.js";
 import _poolTimberGorge from "../pool/timber-gorge.js";
 import _poolTinybonesBaubleBurglar from "../pool/tinybones-bauble-burglar.js";
@@ -239,6 +241,7 @@ const shard: CardShard = {
     _poolBeeSting,
     _poolBenalishHeralds,
     _poolBogInitiate,
+    _poolBrainFreeze,
     _poolBroodcallerScourge,
     _poolBuriedRuin,
     _poolCalamityOfCinders,
@@ -400,6 +403,7 @@ const shard: CardShard = {
     _poolThornOfTheBlackRose,
     _poolThornling,
     _poolThrillOfPossibility,
+    _poolThunderclapDrake,
     _poolThunderingGiant,
     _poolTimberGorge,
     _poolTinybonesBaubleBurglar,

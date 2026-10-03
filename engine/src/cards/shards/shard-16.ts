@@ -57,6 +57,7 @@ import _poolDoorOfDestinies from "../pool/door-of-destinies.js";
 import _poolDragonTempest from "../pool/dragon-tempest.js";
 import _poolDragonsEyeSentry from "../pool/dragons-eye-sentry.js";
 import _poolDwarvenTrader from "../pool/dwarven-trader.js";
+import _poolElectroduplicate from "../pool/electroduplicate.js";
 import _poolEmbraalGearSmasher from "../pool/embraal-gear-smasher.js";
 import _poolEncroachingDragonstorm from "../pool/encroaching-dragonstorm.js";
 import _poolEndRazeForerunners from "../pool/end-raze-forerunners.js";
@@ -302,6 +303,7 @@ const shard: CardShard = {
     _poolDragonTempest,
     _poolDragonsEyeSentry,
     _poolDwarvenTrader,
+    _poolElectroduplicate,
     _poolEmbraalGearSmasher,
     _poolEncroachingDragonstorm,
     _poolEndRazeForerunners,

@@ -93,6 +93,7 @@ import _poolHarrow from "../pool/harrow.js";
 import _poolHateMirage from "../pool/hate-mirage.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
+import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
 import _poolJhessianInfiltrator from "../pool/jhessian-infiltrator.js";
@@ -300,6 +301,7 @@ const shard: CardShard = {
     _poolHateMirage,
     _poolHowlingMine,
     _poolHulkingOgre,
+    _poolIllusionistsBracers,
     _poolIzzetBoilerworks,
     _poolJackhammer,
     _poolJhessianInfiltrator,

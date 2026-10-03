@@ -197,6 +197,7 @@ import _poolVolcanicUpheaval from "../pool/volcanic-upheaval.js";
 import _poolWalkingCorpse from "../pool/walking-corpse.js";
 import _poolWarclampMastiff from "../pool/warclamp-mastiff.js";
 import _poolWeaverOfCurrents from "../pool/weaver-of-currents.js";
+import _poolWeaverOfHarmony from "../pool/weaver-of-harmony.js";
 import _poolWhirlermaker from "../pool/whirlermaker.js";
 import _poolWhisperAgent from "../pool/whisper-agent.js";
 import _poolWingsOfAesthir from "../pool/wings-of-aesthir.js";
@@ -402,6 +403,7 @@ const shard: CardShard = {
     _poolWalkingCorpse,
     _poolWarclampMastiff,
     _poolWeaverOfCurrents,
+    _poolWeaverOfHarmony,
     _poolWhirlermaker,
     _poolWhisperAgent,
     _poolWingsOfAesthir,

@@ -179,6 +179,7 @@ import _poolSwordOfForgeAndFrontier from "../pool/sword-of-forge-and-frontier.js
 import _poolTangleMantis from "../pool/tangle-mantis.js";
 import _poolTempleOfMalice from "../pool/temple-of-malice.js";
 import _poolTheaterOfHorrors from "../pool/theater-of-horrors.js";
+import _poolThousandYearStorm from "../pool/thousand-year-storm.js";
 import _poolTitansGrave from "../pool/titans-grave.js";
 import _poolTopazDragon from "../pool/topaz-dragon.js";
 import _poolTophTheFirstMetalbender from "../pool/toph-the-first-metalbender.js";
@@ -399,6 +400,7 @@ const shard: CardShard = {
     _poolTangleMantis,
     _poolTempleOfMalice,
     _poolTheaterOfHorrors,
+    _poolThousandYearStorm,
     _poolTitansGrave,
     _poolTopazDragon,
     _poolTophTheFirstMetalbender,

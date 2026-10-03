@@ -66,6 +66,17 @@ export type GameEvent =
       readonly controller: PlayerId;
     })
   | (Base & {
+      /** A copy of an activated or triggered ability was put on the stack
+       * (rule 707.10 — Lithoform Engine, Illusionist's Bracers). `original`
+       * may be gone already (countered in response); `source` is the
+       * ability's source, which the copy shares (707.10b). */
+      readonly type: "ability-copied";
+      readonly original: ObjectId;
+      readonly copy: ObjectId;
+      readonly source: ObjectId | null;
+      readonly controller: PlayerId;
+    })
+  | (Base & {
       /** A lore counter was added to a Saga; `lore` is the new count (rule
        * 714.2 — ROADMAP Phase 10). */
       readonly type: "lore-counter-added";
@@ -344,6 +355,9 @@ export type GameEvent =
       readonly source: ObjectId;
       readonly player: PlayerId;
       readonly onStack: boolean;
+      /** The ability object it put on the stack — what an `activates-ability`
+       * trigger's "that ability" is. Absent for a mana ability. */
+      readonly ability?: ObjectId;
     })
   | (Base & {
       /**

@@ -150,6 +150,7 @@ import _poolShamblingGhast from "../pool/shambling-ghast.js";
 import _poolShelteringLandscape from "../pool/sheltering-landscape.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolShinyImpetus from "../pool/shiny-impetus.js";
+import _poolSinkIntoStupor from "../pool/sink-into-stupor.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
 import _poolSkylineDespot from "../pool/skyline-despot.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
@@ -362,6 +363,7 @@ const shard: CardShard = {
     _poolShelteringLandscape,
     _poolShimmeringGrotto,
     _poolShinyImpetus,
+    _poolSinkIntoStupor,
     _poolSkycloudExpanse,
     _poolSkylineDespot,
     _poolSlobadGoblinTinkerer,

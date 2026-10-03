@@ -77,6 +77,7 @@ import _poolJhessianLookout from "../pool/jhessian-lookout.js";
 import _poolKaradorGhostChieftain from "../pool/karador-ghost-chieftain.js";
 import _poolKavuGlider from "../pool/kavu-glider.js";
 import _poolKenrithTheReturnedKing from "../pool/kenrith-the-returned-king.js";
+import _poolKitsaOtterballElite from "../pool/kitsa-otterball-elite.js";
 import _poolKodamaOfTheWestTree from "../pool/kodama-of-the-west-tree.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
 import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
@@ -271,6 +272,7 @@ const shard: CardShard = {
     _poolKaradorGhostChieftain,
     _poolKavuGlider,
     _poolKenrithTheReturnedKing,
+    _poolKitsaOtterballElite,
     _poolKodamaOfTheWestTree,
     _poolKorHalberd,
     _poolKrenkoTinStreetKingpin,

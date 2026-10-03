@@ -1129,11 +1129,38 @@ export type TriggerSpec =
        * "whenever you cast a spell with one or more targets". `{ triggerValue:
        * true }` is then how many targets it has ("draw that many cards"). */
       readonly withTargets?: boolean;
+      /**
+       * Make `{ triggerValue: true }` the number of spells matching this
+       * filter that the caster cast this turn **before** this one — read as
+       * it triggers, so a spell cast in response doesn't change it, and each
+       * earlier spell read as it was cast. Thousand-Year Storm's "copy it for
+       * each other instant and sorcery spell you've cast before it this
+       * turn" (countered spells were still cast — its ruling).
+       */
+      readonly countCastBefore?: CardFilter;
       /** Only a spell that shares no creature type with a creature its
        * caster controls or a creature card in their graveyard — Volo, Guide
        * to Monsters. A changeling on either side shares every type (rule
        * 702.73a); a spell with no creature type shares none. */
       readonly sharesNoCreatureType?: boolean;
+    }
+  | {
+      /**
+       * An ability was activated — one that uses the stack, so never a mana
+       * ability (rule 605.3b): "whenever an ability of **equipped creature**
+       * is activated, if it isn't a mana ability" (Illusionist's Bracers,
+       * `who: "attached"` — the ability's source is the host, still attached
+       * once its costs are paid: a host sacrificed to pay them isn't). The
+       * trigger object is the ability on the stack, which a `copy-ability`
+       * of `"trigger-ability"` copies.
+       *
+       * Only a permanent's abilities, for now: "whenever you activate an
+       * ability" (Rings of Brighthearth) would have to see cycling, whose
+       * draw the engine gives without using the stack (rule 702.29a says it
+       * should), so there'd be nothing to copy.
+       */
+      readonly on: "activates-ability";
+      readonly who: "attached";
     }
   | {
       /** *This* spell (the one carrying the ability) was cast — a triggered

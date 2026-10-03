@@ -329,6 +329,46 @@ needs:
   Autumn), trigger doubling (Traveling Chocobo), a Case or Class (Case of the Locked Hothouse,
   Fortune Teller's Talent) and reconfigure (The Reality Chip).
 
+### Ready now: the cards the 10-03 passes unblocked (2026-10-03)
+
+28 cards whose every recorded blocker those passes had built (a copy's new targets above all),
+rechecked against their Oracle text and rulings. Built for them: `copy-spell`'s `count` with a
+cast trigger's `countCastBefore` and the `{ commanderCasts: "you" }` amount; a mana rider's "that
+spell" as a `"trigger-spell"`; copying an activated or triggered ability (`copy-ability`, the
+`{ kind: "ability" }` target, the `activates-ability` trigger); a `spell-or-permanent` target;
+`look-and-choose`'s `player: "that-player"`; `each-player-may`'s `who: { controllerOfTarget }`;
+and trigger doublers reaching only permanents' abilities (a commander's eminence from the
+command zone isn't one). 18 authored: Reverberate;
+Dualcaster Mage; Brain Freeze; Kitsa, Otterball Elite; Jin-Gitaxias, Progress Tyrant; Sword of
+Wealth and Power; Electroduplicate; Inalla, Archmage Ritualist; Thousand-Year Storm; Thunderclap
+Drake; Primal Amulet; Lithoform Engine; Weaver of Harmony; Virtue of Knowledge; Illusionist's
+Bracers; Wandering Archaic; Sink into Stupor; Chain of Vapor. Hate Mirage's "those tokens gain haste" was made
+non-copiable on the way, as Inalla's is. Still blocked, each by more than its record said:
+
+- **Rings of Brighthearth**: "whenever you activate an ability" must see cycling, which the
+  engine resolves without the stack (BACKLOG, "Engine rules gaps").
+- **Twinning Staff**: a replacement on copying a spell, and its controller choosing where the
+  additional copy goes among the others (its ruling) — no order decision for copies.
+- **Echoes of Eternity**: the Kindred card type, and doubling a colourless *spell's* triggers
+  (`doubleTriggersOf` reaches permanents only).
+- **Koma, Cosmos Serpent**: a modal *activated* ability with a targeted mode, and "its
+  activated abilities can't be activated this turn".
+- **Maskwood Nexus**: creature spells and creature cards outside the battlefield being every
+  creature type — a static's types reach only the battlefield.
+- **Throne of Eldraine**: "spend this mana only to cast monocolored spells of that color" (no
+  monocoloured or chosen-colour clause in a mana restriction) and "spend only mana of the
+  chosen color to activate this ability" (no spending rule on an activation cost).
+- **Adagia, Windswept Bastion**: a token copy of an Aura must be told what it enchants as it
+  enters (rule 303.4f, its ruling); `create-token-copy` doesn't ask.
+- **Hostage Taker, Gonti, Lord of Luxury, Brainstealer Dragon**: as the mana-and-exile pass
+  recorded (the O-Ring's return by trigger; another player's library in a look-and-choose; "its
+  owner" as a player).
+
+Leads the new pieces open outside this list: Venser, Shaper Savant (`spell-or-permanent`);
+Strionic Resonator ("copy target **triggered** ability you control" — needs only an
+`abilityKind` clause on the `ability` target); Battlemage's Bracers (`activates-ability`, with
+haste); Ulalek, Fused Atrocity still waits on colourless hybrid mana.
+
 ### Elsewhere
 
 - **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos

@@ -145,6 +145,7 @@ import _poolRavenousChupacabra from "../pool/ravenous-chupacabra.js";
 import _poolRavenousHarpy from "../pool/ravenous-harpy.js";
 import _poolRefute from "../pool/refute.js";
 import _poolRestorationAngel from "../pool/restoration-angel.js";
+import _poolReverberate from "../pool/reverberate.js";
 import _poolRipplesOfUndeath from "../pool/ripples-of-undeath.js";
 import _poolRiptideTurtle from "../pool/riptide-turtle.js";
 import _poolRivendell from "../pool/rivendell.js";
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _poolRavenousHarpy,
     _poolRefute,
     _poolRestorationAngel,
+    _poolReverberate,
     _poolRipplesOfUndeath,
     _poolRiptideTurtle,
     _poolRivendell,

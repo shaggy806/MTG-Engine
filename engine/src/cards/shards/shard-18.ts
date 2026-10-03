@@ -124,6 +124,7 @@ import _poolPitilessPontiff from "../pool/pitiless-pontiff.js";
 import _poolPlaguedRusalka from "../pool/plagued-rusalka.js";
 import _poolPlatedRootwalla from "../pool/plated-rootwalla.js";
 import _poolPouncingCheetah from "../pool/pouncing-cheetah.js";
+import _poolPrimalAmulet from "../pool/primal-amulet.js";
 import _poolProftsEideticMemory from "../pool/profts-eidetic-memory.js";
 import _poolPsychosisCrawler from "../pool/psychosis-crawler.js";
 import _poolPutrefy from "../pool/putrefy.js";
@@ -333,6 +334,7 @@ const shard: CardShard = {
     _poolPlaguedRusalka,
     _poolPlatedRootwalla,
     _poolPouncingCheetah,
+    _poolPrimalAmulet,
     _poolProftsEideticMemory,
     _poolPsychosisCrawler,
     _poolPutrefy,

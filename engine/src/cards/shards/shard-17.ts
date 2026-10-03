@@ -29,6 +29,7 @@ import _poolBorosCharm from "../pool/boros-charm.js";
 import _poolBurlfistOak from "../pool/burlfist-oak.js";
 import _poolBurrowingRazormaw from "../pool/burrowing-razormaw.js";
 import _poolCascadeBluffs from "../pool/cascade-bluffs.js";
+import _poolChainOfVapor from "../pool/chain-of-vapor.js";
 import _poolCharge from "../pool/charge.js";
 import _poolCheckpointOfficer from "../pool/checkpoint-officer.js";
 import _poolChitinousCloak from "../pool/chitinous-cloak.js";
@@ -109,6 +110,7 @@ import _poolLandTax from "../pool/land-tax.js";
 import _poolLashOfTheWhip from "../pool/lash-of-the-whip.js";
 import _poolLeoninSnarecaster from "../pool/leonin-snarecaster.js";
 import _poolLetterOfAcceptance from "../pool/letter-of-acceptance.js";
+import _poolLithoformEngine from "../pool/lithoform-engine.js";
 import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
 import _poolMagdaBrazenOutlaw from "../pool/magda-brazen-outlaw.js";
 import _poolMagmaJet from "../pool/magma-jet.js";
@@ -252,6 +254,7 @@ const shard: CardShard = {
     _poolBurlfistOak,
     _poolBurrowingRazormaw,
     _poolCascadeBluffs,
+    _poolChainOfVapor,
     _poolCharge,
     _poolCheckpointOfficer,
     _poolChitinousCloak,
@@ -332,6 +335,7 @@ const shard: CardShard = {
     _poolLashOfTheWhip,
     _poolLeoninSnarecaster,
     _poolLetterOfAcceptance,
+    _poolLithoformEngine,
     _poolMacetailHystrodon,
     _poolMagdaBrazenOutlaw,
     _poolMagmaJet,

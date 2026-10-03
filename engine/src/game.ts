@@ -226,6 +226,7 @@ import {
   POISON_LETHAL,
   activePlayerOf,
   cloneGameState,
+  clonePlain,
   createPlayerState,
   faceName,
   manaCostOverride,
@@ -4116,7 +4117,7 @@ export class Game {
     const copy = next === undefined ? undefined : this.state.objects[next];
     if (copy === undefined || copy.zone !== "stack" || next === undefined) return;
     if (this.askCopyTargets(next)) return;
-    this.announceTargeted(copy.targets ?? [], copy.controller, next, true);
+    this.announceCopyTargets(next);
   }
 
   /**
@@ -4143,7 +4144,7 @@ export class Game {
     copy.targets = targets;
     if (zones !== undefined) copy.targetZones = zones;
     if (stints !== undefined) copy.targetStints = stints;
-    this.announceTargeted(targets, copy.controller, copyId, true);
+    this.announceCopyTargets(copyId);
   }
 
   /**
@@ -4431,6 +4432,8 @@ export class Game {
       this.state.players[player].usedGraveyardThisTurn = false;
       delete this.state.players[player].turnHistory;
     }
+    // Nothing waits on a departed ability across turns: the stack is empty.
+    delete this.state.departedAbilities;
     // "Until your next turn" effects end as that turn begins (the active
     // player is the new one by now).
     beginningFor.push(this.activePlayer);
@@ -5045,6 +5048,9 @@ export class Game {
       ...(awaiting.leftoverIf !== undefined ? { leftoverIf: awaiting.leftoverIf } : {}),
       ...(awaiting.thenSource !== undefined ? { thenSource: awaiting.thenSource } : {}),
       ...(awaiting.thenX !== undefined ? { thenX: awaiting.thenX } : {}),
+      // "May reveal a land card and/or an instant or sorcery card" (Explore
+      // the Vastlands): what the second choice takes is shown too.
+      ...(awaiting.reveal === true ? { reveal: true } : {}),
     };
     if (next.max > 0) {
       this.state.awaiting = next;
@@ -10443,6 +10449,7 @@ export class Game {
       source: sourceId,
       player,
       onStack: true,
+      ability: abilityId,
     });
     this.announceTargeted(chosen, player, sourceId, false, abilityId);
     // "Sacrifice two artifacts": which ones is chosen now, as the cost is paid
@@ -11525,6 +11532,12 @@ export class Game {
       cardName: rider.sourceName,
       abilityIndex: 0,
       controller,
+      // "That spell" — Primal Wellspring's "copy that spell" — as a
+      // `"trigger-spell"`, which reads it as it last was on the stack once
+      // it has gone (its ruling: it's copied even if countered first). Which
+      // stint on the stack is read as the rider is placed, by when it's there.
+      triggerObject: purpose.card,
+      triggerSpellOnPlacement: true,
       delayed: {
         id: `mana-rider-${this.state.nextObjectSeq}`,
         controller,
@@ -12561,7 +12574,23 @@ export class Game {
     const stack = this.state.zones.shared.stack;
     const index = stack.indexOf(id);
     if (index >= 0) stack.splice(index, 1);
+    const object = this.state.objects[id];
+    if (object !== undefined) this.rememberDepartingAbility(object);
     delete this.state.objects[id];
+  }
+
+  /** Keep `ability`, about to leave the stack, as it last was there, if a
+   * triggered ability waiting on the stack names it as its trigger object —
+   * Illusionist's Bracers' "copy that ability", which still copies one
+   * countered in response (`GameState.departedAbilities`). The first
+   * snapshot stands: a countered ability loses its targets on the way out. */
+  private rememberDepartingAbility(ability: GameObject): void {
+    if (ability.kind !== "ability" || this.state.departedAbilities?.[ability.id] !== undefined) return;
+    const waiting =
+      this.state.zones.shared.stack.some((id) => id !== ability.id && this.state.objects[id]?.triggerObject === ability.id) ||
+      this.state.pendingTriggers.some((t) => t.triggerObject === ability.id);
+    if (!waiting) return;
+    (this.state.departedAbilities ??= {})[ability.id] = clonePlain(ability);
   }
 
   // --- triggered abilities ------------------------------------
@@ -12785,6 +12814,9 @@ export class Game {
                   ? event.blocker
                   : event.type === "object-targeted"
                   ? event.object
+                  : // The ability just activated: "copy that ability".
+                    event.type === "ability-activated"
+                    ? event.ability
                   : // The spell that was cast, so a cast trigger can read it —
                     // "damage equal to **that spell's** mana value" is a
                     // `{ manaValueOf: "trigger-object" }`, which read 0 without
@@ -12855,6 +12887,12 @@ export class Game {
                       ability.trigger.withTargets === true &&
                       event.type === "spell-cast"
                     ? this.spellTargetCount(event.object)
+                    : // "For each other instant and sorcery spell you've cast
+                      // before it this turn" (Thousand-Year Storm).
+                      ability.trigger.on === "cast-spell" &&
+                        ability.trigger.countCastBefore !== undefined &&
+                        event.type === "spell-cast"
+                      ? this.castBefore(event.player, event.object, ability.trigger.countCastBefore, object.controller)
                     : // "Loses that much life" (Sanguine Bond, Exquisite Blood):
                       // how much the life total moved.
                       (ability.trigger.on === "gains-life" || ability.trigger.on === "loses-life") &&
@@ -12913,13 +12951,18 @@ export class Game {
           // `doubleEntryTriggers` static the ability's controller has makes
           // this ETB trigger fire one additional time (two doublers = fires
           // three times total).
-          const entryDoublers =
-            (ability.trigger.on === "enters-battlefield" &&
-            event.type === "permanent-entered-battlefield"
-              ? this.entryTriggerDoublers(object.controller, event.object)
-              : 0) +
-            this.causeTriggerDoublers(object.controller, event) +
-            this.sourceTriggerDoublers(object.controller, id, lastSeen !== undefined);
+          // Every doubler says "a triggered ability of a *permanent* you
+          // control": not a commander's eminence from the command zone, a
+          // card's from a graveyard, or a spell's own cast trigger (storm).
+          const permanentSource = live.zone === "battlefield" || lastSeen !== undefined;
+          const entryDoublers = !permanentSource
+            ? 0
+            : (ability.trigger.on === "enters-battlefield" &&
+              event.type === "permanent-entered-battlefield"
+                ? this.entryTriggerDoublers(object.controller, event.object)
+                : 0) +
+              this.causeTriggerDoublers(object.controller, event) +
+              this.sourceTriggerDoublers(object.controller, id, lastSeen !== undefined);
           // A compacted stack that left play is that many permanents leaving,
           // each its own event: Zulaport Cutthroat drains once per Goblin in
           // a stack a wrath kills. The stack's own abilities already scale by
@@ -13803,6 +13846,20 @@ export class Game {
           this.matchesWho(spec.who, event.object, self) &&
           this.triggerFilterOk(spec.filter, event.object, self)
         );
+      case "activates-ability": {
+        // Only an ability on the stack: a mana ability isn't one (rule
+        // 605.3b). "An ability of equipped creature": its host now, once the
+        // costs are paid (rules 602.2b, 601.2i) — a host sacrificed to pay them, or
+        // an Equipment that was, equips nothing by then (the Illusionist's
+        // Bracers rulings), unlike a dies trigger's look back.
+        if (event.type !== "ability-activated" || !event.onStack || event.ability === undefined) return false;
+        const host = this.state.objects[event.source];
+        return (
+          self.zone === "battlefield" &&
+          host?.zone === "battlefield" &&
+          self.attachedTo === event.source
+        );
+      }
       case "step-begins":
         return (
           event.type === "step-began" &&
@@ -14308,6 +14365,8 @@ export class Game {
     readonly x?: number;
     readonly delayed?: DelayedTrigger;
     readonly lastKnownRefs?: LastKnownRefs;
+    /** See `PendingTrigger.triggerSpellOnPlacement`. */
+    readonly triggerSpellOnPlacement?: true;
     readonly targetedBy?: TargetedBy;
     readonly reflexive?: ReflexiveTrigger;
     /** See `PendingTrigger.modes`. */
@@ -14333,6 +14392,15 @@ export class Game {
       // targeted them, as for a step-keyed one.
       if (trigger.lastKnownRefs !== undefined) {
         this.state.objects[id].lastKnownRefs = trigger.lastKnownRefs;
+      }
+      // A mana rider's spell, on the stack by now: this stint of it is
+      // "that spell".
+      const spell = trigger.triggerObject === undefined ? undefined : this.state.objects[trigger.triggerObject];
+      if (trigger.triggerSpellOnPlacement === true && spell?.zone === "stack" && spell.kind === "card") {
+        this.state.objects[id].lastKnownRefs = {
+          ...(this.state.objects[id].lastKnownRefs ?? {}),
+          triggerSpell: spell.zoneChangeCount ?? 0,
+        };
       }
       this.carryDelayedIdentity(id, trigger.delayed);
       this.emit({
@@ -15048,6 +15116,10 @@ export class Game {
         if (object === undefined) return 0;
         return this.state.players[object.owner]?.commanderCastCounts[object.cardName] ?? 0;
       },
+      // Every commander of theirs, added up (Thunderclap Drake's ruling: one
+      // cast of one partner and two of the other is three).
+      commanderCastsBy: (player) =>
+        Object.values(this.state.players[player]?.commanderCastCounts ?? {}).reduce((n, c) => n + c, 0),
       powerAmong: (entries) =>
         entries.reduce((n, { object: id, departed, count }) => {
           const object = this.state.objects[id];
@@ -15897,6 +15969,7 @@ export class Game {
           opts,
         ),
       copySpell: (target, newTargets) => this.copySpellByEffect(controller, target, newTargets),
+      copyAbility: (target, newTargets) => this.copyAbilityByEffect(controller, target, triggerObject, newTargets),
       triggerSpell: () => {
         // The spell whose casting fired this (rule 603.2), as it is if it's
         // still on the stack and as it last was there if it has gone since
@@ -16206,7 +16279,7 @@ export class Game {
           ),
         );
       },
-      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking, enterAs) => {
+      lookAndChoose: (zone, count, min, max, destination, leftover, filter, enterTapped, then, reveal, leftoverIf, secondPick, attacking, enterAs, chooser) => {
         // "Exile one of them face down" (hideaway): linked to the source, in
         // the stint this ability refers to (rule 607.2a).
         const sourceObject = this.state.objects[source];
@@ -16215,7 +16288,8 @@ export class Game {
         const exileLink =
           destination === "exile-face-down" && stint !== undefined ? { source, zoneChangeCount: stint } : undefined;
         this.beginZoneChoice(
-          controller,
+          // "Each player looks at … their library" — that player's own.
+          chooser ?? controller,
           zone,
           count,
           min,
@@ -17835,6 +17909,20 @@ export class Game {
     return (spell.targets ?? []).filter((t, i) => t !== undefined && !auto.has(i)).length;
   }
 
+  /** How many spells matching `filter` `caster` cast this turn before the
+   * spell `id` (`PlayerState.spellsCastThisTurnAs`, each as it was cast) —
+   * a cast trigger's `countCastBefore`, asked as the spell is cast, when its
+   * own record is the latest one for it. `you` answers the filter's "you". */
+  private castBefore(caster: PlayerId, id: ObjectId, filter: CardFilter, you: PlayerId): number {
+    const cast = this.state.players[caster]?.spellsCastThisTurnAs ?? [];
+    let own = cast.length - 1;
+    while (own >= 0 && cast[own].id !== id) own -= 1;
+    return cast
+      .slice(0, Math.max(0, own))
+      .filter(({ id: earlier, spell }) => matchesFilter(this.state, this.registry, earlier, filter, { you, snapshot: spell }))
+      .length;
+  }
+
   /** See {@link SpellSnapshot}: `object`'s copiable state as it is now. */
   private spellSnapshot(object: GameObject): SpellSnapshot {
     return {
@@ -18049,10 +18137,25 @@ export class Game {
   private askCopyTargets(copyId: ObjectId): boolean {
     const copy = this.state.objects[copyId];
     const targets = copy.targets ?? [];
-    const specs = this.spellTargetSpecs(copy);
+    // A copy of an ability targets as that ability does, from its source,
+    // judged for the copy's controller.
+    const specs =
+      copy.kind === "ability" ? triggerTargetSpecs(this.stackAbilityOf(copy), copy.chosenModes) : this.spellTargetSpecs(copy);
     if (specs.length === 0) return false;
     const auto = new Set(copy.autoTargetSlots ?? []);
-    const source = this.cardSource(this.registry.get(copy.cardName), copyId);
+    const source =
+      copy.kind === "ability"
+        ? this.abilityTargetSource({
+            sourceObjectId: copy.sourceObjectId ?? copyId,
+            controller: copy.controller,
+            targets,
+            x: copy.xValue ?? 0,
+            triggerValue: copy.triggerValue ?? 0,
+            ...(copy.triggerObject !== undefined ? { triggerObject: copy.triggerObject } : {}),
+            ...(copy.targetZones !== undefined ? { targetZones: copy.targetZones } : {}),
+            ...(copy.lastKnownRefs !== undefined ? { lastKnownRefs: copy.lastKnownRefs } : {}),
+          })
+        : this.cardSource(this.registry.get(copy.cardName), copyId);
     const slots: number[] = [];
     const slotSpecs: TargetSpec[] = [];
     const options: TargetRef[][] = [];
@@ -18283,6 +18386,82 @@ export class Game {
   private copySpellByEffect(controller: PlayerId, target: TargetRef, newTargets: boolean): void {
     if (target.kind !== "object") return;
     this.copyStackSpell(target.object, controller, newTargets);
+  }
+
+  /**
+   * Put a copy of the activated or triggered ability `original` onto the
+   * stack under `controller` (rule 707.10) — an ability object on the stack,
+   * or one as it last was there (`GameState.departedAbilities`). The copy is
+   * the original with every choice made for it: its source (707.10b — and so
+   * the same ability for "the Nth time this ability has resolved this
+   * turn"), modes, targets, X, trigger event and what paid its costs (the
+   * creature sacrificed, rule 707.10). One instance of it, where the object
+   * stands for several identical ones. It isn't activated (707.10).
+   *
+   * With `newTargets` (707.10c) its controller is asked which targets to
+   * change, as for a spell's copy; meanwhile it sits on the stack with the
+   * original's.
+   */
+  private copyStackAbility(original: GameObject, controller: PlayerId, newTargets: boolean): ObjectId {
+    const id = this.mintObjectId();
+    const { stackCount: _count, stackMultiplier: _multiplier, ...rest } = clonePlain(original);
+    this.state.objects[id] = {
+      ...rest,
+      id,
+      owner: controller,
+      controller,
+      zone: "stack",
+      isCopy: true,
+      stackedAtSeq: this.state.eventSeq,
+    };
+    this.state.zones.shared.stack.push(id);
+    this.emit({ type: "ability-copied", original: original.id, copy: id, source: original.sourceObjectId, controller });
+    if (newTargets && this.askCopyTargets(id)) return id;
+    this.announceCopyTargets(id);
+    return id;
+  }
+
+  /** The `copy-ability` effect: copy the ability object `target` names, if
+   * it's an activated or triggered ability on the stack — or, with
+   * `"trigger-ability"`, the one whose activation fired the resolving
+   * trigger (`triggerObject`), as it last was there if it has gone. */
+  private copyAbilityByEffect(
+    controller: PlayerId,
+    target: TargetRef | "trigger-ability",
+    triggerObject: ObjectId | undefined,
+    newTargets: boolean,
+  ): void {
+    const id = target === "trigger-ability" ? triggerObject : target.kind === "object" ? target.object : undefined;
+    if (id === undefined) return;
+    const live = this.state.objects[id];
+    const original =
+      live !== undefined && live.zone === "stack" && live.kind === "ability"
+        ? live
+        : target === "trigger-ability"
+          ? this.state.departedAbilities?.[id]
+          : undefined;
+    if (original === undefined) return;
+    this.copyStackAbility(original, controller, newTargets);
+  }
+
+  /** Announce the copy `copyId`'s targets as the targets of a spell or
+   * ability (rule 115.7 — "becomes the target of" triggers), once they're
+   * settled. A copy of an ability targets from that ability's source. */
+  private announceCopyTargets(copyId: ObjectId): void {
+    const copy = this.state.objects[copyId];
+    if (copy === undefined) return;
+    if (copy.kind === "ability") {
+      this.announceTargeted(
+        copy.targets ?? [],
+        copy.controller,
+        copy.sourceObjectId ?? copyId,
+        false,
+        copyId,
+        copy.autoTargetSlots ?? [],
+      );
+      return;
+    }
+    this.announceTargeted(copy.targets ?? [], copy.controller, copyId, true);
   }
 
   /** Attach the Aura or Equipment `source` to `target` (rule 701.3; used by
@@ -21263,6 +21442,9 @@ export class Game {
       this.emit({ type: "counter-failed", object: id });
       return false;
     }
+    // Countered, an ability is still copied as it last was (with its
+    // targets) by a trigger waiting on it.
+    if (object.kind === "ability" && (object.stackCount ?? 1) <= 1) this.rememberDepartingAbility(object);
     this.forgetSpellTargets(object);
     // An ability on the stack (ward counters those too) just ceases to exist
     // — one of them, where the object stands for several identical ones.

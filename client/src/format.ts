@@ -106,6 +106,10 @@ export function describeEvent(event: GameEvent, nameOf: NameOf, seats: readonly 
       return `additional combat phase`
     case 'spell-copied':
       return `${who(event.controller)} copies ${name(event.original)}`
+    case 'ability-copied':
+      return event.source === null
+        ? `${who(event.controller)} copies an ability`
+        : `${who(event.controller)} copies an ability of ${name(event.source)}`
     case 'lore-counter-added':
       return `${name(event.object)} — lore counter ${event.lore}`
     case 'saga-completed':

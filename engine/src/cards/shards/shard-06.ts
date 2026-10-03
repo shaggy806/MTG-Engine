@@ -93,6 +93,7 @@ import _poolImprovisedArmor from "../pool/improvised-armor.js";
 import _poolInfernoTitan from "../pool/inferno-titan.js";
 import _poolInfuriate from "../pool/infuriate.js";
 import _poolJarvisEarthsMightiestButler from "../pool/jarvis-earths-mightiest-butler.js";
+import _poolJinGitaxiasProgressTyrant from "../pool/jin-gitaxias-progress-tyrant.js";
 import _poolJungleLion from "../pool/jungle-lion.js";
 import _poolKujaGenomeSorcerer from "../pool/kuja-genome-sorcerer.js";
 import _poolLathlissDragonQueen from "../pool/lathliss-dragon-queen.js";
@@ -301,6 +302,7 @@ const shard: CardShard = {
     _poolInfernoTitan,
     _poolInfuriate,
     _poolJarvisEarthsMightiestButler,
+    _poolJinGitaxiasProgressTyrant,
     _poolJungleLion,
     _poolKujaGenomeSorcerer,
     _poolLathlissDragonQueen,

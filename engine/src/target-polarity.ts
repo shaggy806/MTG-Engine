@@ -262,6 +262,9 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
     v.touch(n.target, "take", MAJOR);
     if (typeof n.retargetTo === "number") v.touch(n.retargetTo, "help", MAJOR);
   },
+  // An ability you'd want twice is yours: every card copying one says "you
+  // control".
+  "copy-ability": (n, v) => v.touch(n.target, "help", MAJOR),
   "exile-spell-as-it-resolves": none,
   "additional-combat": none,
   "additional-upkeep-steps": none,
@@ -636,6 +639,10 @@ export function specSide(spec: TargetSpec): SpecSide {
             ? "opponent"
             : "any";
       case "spell":
+        return spec.whose === "you" ? "you" : spec.whose === "opponent" ? "opponent" : "any";
+      case "ability":
+        return spec.whose === "you" ? "you" : "any";
+      case "spell-or-permanent":
         return spec.whose === "you" ? "you" : spec.whose === "opponent" ? "opponent" : "any";
       case "card-in-graveyard":
         return spec.whose === "you" ? "you" : spec.whose === "opponent" || spec.whose === "defending-player" ? "opponent" : "any";

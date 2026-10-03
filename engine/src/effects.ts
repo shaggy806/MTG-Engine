@@ -273,6 +273,14 @@ export type EffectAmount =
    * for anything that isn't a card.
    */
   | { readonly commanderCastsOf: AmountRef }
+  /**
+   * How many times the effect's controller has cast **their commanders** from
+   * the command zone this game, all of them together (rule 903.8's counts,
+   * added up) — Thunderclap Drake's "for each time you've cast your commander
+   * from the command zone this game", whose ruling adds both of a pair's
+   * casts. 0 for a player with no commander.
+   */
+  | { readonly commanderCasts: "you" }
   /** A current life total: the effect controller's (`"you"` — Ajani, Caller
    * of the Pride's ultimate: "create X 2/2 white Cat creature tokens, where X
    * is your life total"), or `"each"`, the life of **each player the effect
@@ -2233,11 +2241,42 @@ export type EffectSpec =
        * `"trigger-spell"` only.
        */
       readonly forEachItCouldTarget?: { readonly filter: CardFilter; readonly other?: true };
+      /**
+       * "Copy it **for each** …": how many copies, read as the effect
+       * applies — Thousand-Year Storm's "for each other instant and sorcery
+       * spell you've cast before it this turn" (`{ triggerValue: true }`
+       * off a cast trigger's `countCastBefore`), Thunderclap Drake's "for
+       * each time you've cast your commander from the command zone this
+       * game" (`{ commanderCasts: "you" }`). One copy when omitted; none at
+       * 0. With `newTargets`, each copy is asked about in turn, as storm's
+       * are. Not with `forEachItCouldTarget`.
+       */
+      readonly count?: EffectAmount;
       /** The spell to copy, captured: only the engine sets this, on the copy
        * that a `forEachItCouldTarget` hands its `choose-permanents` decision
        * (which applies it once per permanent chosen, with that one as target
        * 0, outside the triggered ability that knew the spell). */
       readonly spell?: { readonly snapshot: SpellSnapshot; readonly original: ObjectId };
+    }
+  | {
+      /**
+       * Copy an activated or triggered ability on the stack (rule 707.10):
+       * the one in target slot `target` (Lithoform Engine, Vantress Visions,
+       * Weaver of Harmony — an `{ kind: "ability" }` target), or with
+       * `"trigger-ability"` the one whose activation fired this triggered
+       * ability (Illusionist's Bracers' "copy that ability", an
+       * `activates-ability` trigger) — as it last was on the stack if it
+       * has gone since. The copy has the original's source (707.10b), modes,
+       * targets, X and what was paid for it (the creature sacrificed, the
+       * permanent tapped), counts as the same ability for "the Nth time this
+       * ability has resolved", and is controlled by this effect's controller;
+       * choices made as it resolves are made again (707.10). It isn't
+       * activated, so nothing watching activations sees it.
+       */
+      readonly kind: "copy-ability";
+      readonly target: number | "trigger-ability";
+      /** "You may choose new targets for the copy" (rule 707.10c). */
+      readonly newTargets?: true;
     }
   | {
       /**
@@ -2795,7 +2834,11 @@ export type EffectSpec =
        * could take) didn't.
        */
       readonly kind: "each-player-may";
-      readonly who: PlayerScope;
+      /** A scope, or `{ controllerOfTarget }` — "**that permanent's
+       * controller** may sacrifice a land" (Chain of Vapor): whoever
+       * controls what the target slot points at, as it last existed if it
+       * has left (rule 608.2h). */
+      readonly who: PlayerScope | { readonly controllerOfTarget: number };
       readonly prompt?: string;
       readonly effect?: EffectSpec;
       readonly options?: readonly BoundUnlessOption[];
@@ -3112,6 +3155,12 @@ export type EffectSpec =
        * controller's own `choose-from-zone` action before granting anyone
        * priority again. */
       readonly kind: "look-and-choose";
+      /** Whose zone, who looks and who chooses: `"that-player"` is the
+       * player a `for-each-player` is about — "each player looks at the top
+       * five cards of **their** library and may reveal …" (Explore the
+       * Vastlands); the cards they take are theirs. Default: the effect's
+       * controller. */
+      readonly player?: "that-player";
       /** `"hand"` is the "you may put a land card **from your hand** onto the
        * battlefield" family (Growth Spiral, Ghalta) — nothing is revealed
        * there, the chooser is looking at their own hand, and `leftover` is
@@ -3337,6 +3386,9 @@ export interface EffectApi {
   colorsSpentOf(target: TargetRef): number;
   /** See the `{ commanderCastsOf }` {@link EffectAmount}. */
   commanderCastsOf(target: TargetRef): number;
+  /** See the `{ commanderCasts }` {@link EffectAmount}: `player`'s casts of
+   * their commanders from the command zone this game, added up. */
+  commanderCastsBy(player: PlayerId): number;
   /** A player's current life total — see the `{ lifeTotal }` {@link EffectAmount}. */
   lifeTotalOf(player: PlayerId): number;
   /** One player's running total for `stat` this turn — see the `turnStat`
@@ -3894,6 +3946,10 @@ export interface EffectApi {
     spell: SpellSnapshot,
     opts: { readonly newTargets: boolean; readonly retargetTo?: TargetRef; readonly original?: ObjectId },
   ): boolean;
+  /** See the `copy-ability` {@link EffectSpec}: copy the ability object
+   * `target` names, or with `"trigger-ability"` the one whose activation
+   * fired this trigger. */
+  copyAbility(target: TargetRef | "trigger-ability", newTargets: boolean): void;
   /** See `copy-spell`'s `forEachItCouldTarget`: copy `spell` once for each
    * permanent it could target, in the order its controller chooses. */
   copyTriggerSpellForEach(
@@ -4115,6 +4171,9 @@ export interface EffectApi {
     secondPick?: ZoneSecondPick,
     attacking?: ResolvedEnterAttacking,
     enterAs?: EnterTypes,
+    /** Whose zone and who chooses — see `look-and-choose`'s `player`; the
+     * effect's controller when absent. */
+    chooser?: PlayerId,
   ): void;
 }
 
@@ -4229,13 +4288,25 @@ export function isCountScalableEffect(effect: EffectSpec): boolean {
  * something — parks the rest as a copy carrying its `progress`, beneath
  * whatever that step parked of its own, so it all happens in order.
  */
+/** Who an `"each-player-may"` asks: its scope's players, or the one who
+ * controls what a target slot points at (nobody, for an empty slot). */
+function eachPlayerMayAsks(
+  who: Extract<EffectSpec, { kind: "each-player-may" }>["who"],
+  ctx: ResolutionContext,
+): readonly PlayerId[] {
+  if (typeof who === "string") return ctx.playersInScope(who);
+  const ref = ctx.targets[who.controllerOfTarget];
+  const player = ref === undefined ? undefined : ctx.controllerOf(ref);
+  return player === undefined || !ctx.playersInScope("each-player").includes(player) ? [] : [player];
+}
+
 function applyEachPlayerMay(
   spec: Extract<EffectSpec, { kind: "each-player-may" }>,
   ctx: ResolutionContext,
 ): void {
   const since = spec.progress?.since ?? ctx.nextEventSeq();
   let asked = spec.progress?.asked ?? [];
-  let toAsk = spec.progress?.toAsk ?? ctx.playersInScope(spec.who);
+  let toAsk = spec.progress?.toAsk ?? eachPlayerMayAsks(spec.who, ctx);
   const park = (progress: EachPlayerMayProgress, below: number): void =>
     ctx.resumeAfterDecisions({ ...spec, progress }, below);
   // One question at a time, each answered before the next is asked (rule
@@ -4391,6 +4462,11 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
 /** How many flips "flip a coin until you lose a flip" makes at most — a
  * bound the seeded stream practically never reaches, against a loop. */
 const MAX_FLIPS = 1000;
+
+/** The most copies one `copy-spell` with a `count` puts on the stack — the
+ * same resource bound as `Game.MAX_EFFECT_INSTANCES`, which this module
+ * can't import (a real cycle). No real game gets near it. */
+const MAX_COPY_COUNT = 1000;
 
 /** Resolve an {@link EffectAmount} against the resolution context. `each`
  * is the player a scoped effect is being applied to right now, for a
@@ -4581,6 +4657,7 @@ function signedAmountValue(
     const ref = resolveAmountRef(amount.colorsSpentOf, ctx);
     return ref === undefined ? 0 : ctx.colorsSpentOf(ref);
   }
+  if ("commanderCasts" in amount) return ctx.commanderCastsBy(ctx.controller);
   if ("commanderCastsOf" in amount) {
     const ref = resolveAmountRef(amount.commanderCastsOf, ctx);
     return ref === undefined ? 0 : ctx.commanderCastsOf(ref);
@@ -5678,6 +5755,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "copy-spell": {
       const newTargets = spec.newTargets === true;
+      // "Copy it for each …": the count, read as this applies.
+      const times =
+        spec.count === undefined ? 1 : Math.min(Math.max(0, amountValue(spec.count, ctx)), MAX_COPY_COUNT);
       let copied = false;
       if (spec.target === "trigger-spell" || spec.spell !== undefined) {
         const spell = spec.spell?.snapshot ?? ctx.triggerSpell();
@@ -5690,11 +5770,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
             // A slot whose target has gone, or a source that has left, has
             // nothing to aim the copy at.
             if (spec.retargetTo === undefined || retargetTo !== undefined) {
-              copied = ctx.copyTriggerSpell(spell, {
-                newTargets,
-                ...(retargetTo !== undefined ? { retargetTo } : {}),
-                ...(spec.spell !== undefined ? { original: spec.spell.original } : {}),
-              });
+              for (let i = 0; i < times; i += 1) {
+                const made = ctx.copyTriggerSpell(spell, {
+                  newTargets,
+                  ...(retargetTo !== undefined ? { retargetTo } : {}),
+                  ...(spec.spell !== undefined ? { original: spec.spell.original } : {}),
+                });
+                copied = copied || made;
+              }
             }
           }
         }
@@ -5703,11 +5786,20 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const target =
           spec.target === "source" ? ({ kind: "object", object: ctx.source } as const) : ctx.targets[spec.target];
         if (target !== undefined) {
-          ctx.copySpell(target, newTargets);
-          copied = true;
+          for (let i = 0; i < times; i += 1) ctx.copySpell(target, newTargets);
+          copied = times > 0;
         }
       }
       if (!copied && spec.otherwise !== undefined) applyEffectSpec(spec.otherwise, ctx);
+      return;
+    }
+    case "copy-ability": {
+      if (spec.target === "trigger-ability") {
+        ctx.copyAbility("trigger-ability", spec.newTargets === true);
+        return;
+      }
+      const target = ctx.targets[spec.target];
+      if (target !== undefined) ctx.copyAbility(target, spec.newTargets === true);
       return;
     }
     case "additional-combat":
@@ -6114,7 +6206,11 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       );
       return;
     }
-    case "look-and-choose":
+    case "look-and-choose": {
+      // "Each player looks at … their library": nobody, once that player has
+      // left the game.
+      const chooser = spec.player === "that-player" ? ctx.playersInScope("that-player")[0] : undefined;
+      if (spec.player === "that-player" && chooser === undefined) return;
       ctx.lookAndChoose(
         spec.zone,
         spec.count === undefined ? undefined : amountValue(spec.count, ctx),
@@ -6139,8 +6235,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
             },
         resolveEnterAttacking(spec.attacking, ctx),
         spec.enterAs,
+        chooser,
       );
       return;
+    }
     default:
       throw new Error(
         `unhandled effect kind: ${(spec as { kind: string }).kind}`,

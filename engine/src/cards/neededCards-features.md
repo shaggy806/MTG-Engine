@@ -662,6 +662,15 @@ in `git log`.
   — base P/T, mana abilities, any ability, `{X}` and coloured symbols in the
   mana cost, card-type count, a name different from a group (Raggadragga,
   Duskana; `card-property-clauses.test.ts`).
+- **Ready now** (2026-10-03, `ready-now-features.test.ts`) — the cards the 10-03 passes
+  unblocked, rechecked: copying an activated or triggered ability (`effect:copy-ability`: the
+  `copy-ability` effect, the `ability` target, the `activates-ability` trigger), `copy-spell`'s
+  `count` with `countCastBefore` and `{ commanderCasts: "you" }`, a mana rider's
+  `"trigger-spell"`, the `spell-or-permanent` target, `look-and-choose`'s `player:
+  "that-player"`, `each-player-may`'s `who: { controllerOfTarget }`, and trigger doublers held
+  to permanents' abilities. 18 cards (Thousand-Year Storm, Lithoform Engine, Illusionist's
+  Bracers, …); what blocks the other 10 is in
+  `docs/card-blockers.md`, "Ready now".
 
 
 ## Completed: `neededCards.txt` passes (P0-P20)

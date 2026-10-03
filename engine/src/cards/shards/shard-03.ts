@@ -179,6 +179,7 @@ import _poolUtopiaTree from "../pool/utopia-tree.js";
 import _poolVeneratedRotpriest from "../pool/venerated-rotpriest.js";
 import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
+import _poolWanderingArchaic from "../pool/wandering-archaic.js";
 import _poolWhiteKnight from "../pool/white-knight.js";
 import _poolWittyRoastmaster from "../pool/witty-roastmaster.js";
 import _poolWoeStrider from "../pool/woe-strider.js";
@@ -371,6 +372,7 @@ const shard: CardShard = {
     _poolVeneratedRotpriest,
     _poolVonaButcherOfMagan,
     _poolVraskasContempt,
+    _poolWanderingArchaic,
     _poolWhiteKnight,
     _poolWittyRoastmaster,
     _poolWoeStrider,
