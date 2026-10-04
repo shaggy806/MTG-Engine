@@ -19,6 +19,7 @@ import _poolAvenFlock from "../pool/aven-flock.js";
 import _poolAvenFogbringer from "../pool/aven-fogbringer.js";
 import _poolAvenGagglemaster from "../pool/aven-gagglemaster.js";
 import _poolBarterInBlood from "../pool/barter-in-blood.js";
+import _poolBasiliskGate from "../pool/basilisk-gate.js";
 import _poolBattlegroundGeist from "../pool/battleground-geist.js";
 import _poolBeholdTheMultiverse from "../pool/behold-the-multiverse.js";
 import _poolBlightedShaman from "../pool/blighted-shaman.js";
@@ -52,6 +53,7 @@ import _poolDragonMage from "../pool/dragon-mage.js";
 import _poolDranasEmissary from "../pool/dranas-emissary.js";
 import _poolDregReaver from "../pool/dreg-reaver.js";
 import _poolDrossHopper from "../pool/dross-hopper.js";
+import _poolDuskLegionDuelist from "../pool/dusk-legion-duelist.js";
 import _poolEagleOfTheWatch from "../pool/eagle-of-the-watch.js";
 import _poolEarthshakingSi from "../pool/earthshaking-si.js";
 import _poolEladamrisCall from "../pool/eladamris-call.js";
@@ -95,6 +97,7 @@ import _poolInspiringVantage from "../pool/inspiring-vantage.js";
 import _poolIsland from "../pool/island.js";
 import _poolJaheiraFriendOfTheForest from "../pool/jaheira-friend-of-the-forest.js";
 import _poolJodahArchmageEternal from "../pool/jodah-archmage-eternal.js";
+import _poolJolraelMwonvuliRecluse from "../pool/jolrael-mwonvuli-recluse.js";
 import _poolJuriMasterOfTheRevue from "../pool/juri-master-of-the-revue.js";
 import _poolKarlachFuryOfAvernus from "../pool/karlach-fury-of-avernus.js";
 import _poolKayasGhostform from "../pool/kayas-ghostform.js";
@@ -142,6 +145,7 @@ import _poolPullUnder from "../pool/pull-under.js";
 import _poolPyroceratops from "../pool/pyroceratops.js";
 import _poolRamosDragonEngine from "../pool/ramos-dragon-engine.js";
 import _poolRazorfootGriffin from "../pool/razorfoot-griffin.js";
+import _poolRecklessHandling from "../pool/reckless-handling.js";
 import _poolRevitalize from "../pool/revitalize.js";
 import _poolRiseAgain from "../pool/rise-again.js";
 import _poolRorixBladewing from "../pool/rorix-bladewing.js";
@@ -151,6 +155,7 @@ import _poolRottingRegisaur from "../pool/rotting-regisaur.js";
 import _poolRuricThar from "../pool/ruric-thar.js";
 import _poolRydiaSummonerOfMist from "../pool/rydia-summoner-of-mist.js";
 import _poolSailorOfMeans from "../pool/sailor-of-means.js";
+import _poolSanctumOfUgin from "../pool/sanctum-of-ugin.js";
 import _poolSatyaAetherfluxGenius from "../pool/satya-aetherflux-genius.js";
 import _poolSavaiSabertooth from "../pool/savai-sabertooth.js";
 import _poolSavor from "../pool/savor.js";
@@ -214,6 +219,7 @@ import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
 import _tokensPhyrexianGolemToken from "../tokens/phyrexian-golem-token.js";
+import _tokensSoldierTokenFinaleOfGlory from "../tokens/soldier-token-finale-of-glory.js";
 import _tokensVampireToken from "../tokens/vampire-token.js";
 import _tokensWurmToken66 from "../tokens/wurm-token-6-6.js";
 import _tokensXXDinosaurTokenTrample from "../tokens/x-x-dinosaur-token-trample.js";
@@ -236,6 +242,7 @@ const shard: CardShard = {
     _poolAvenFogbringer,
     _poolAvenGagglemaster,
     _poolBarterInBlood,
+    _poolBasiliskGate,
     _poolBattlegroundGeist,
     _poolBeholdTheMultiverse,
     _poolBlightedShaman,
@@ -269,6 +276,7 @@ const shard: CardShard = {
     _poolDranasEmissary,
     _poolDregReaver,
     _poolDrossHopper,
+    _poolDuskLegionDuelist,
     _poolEagleOfTheWatch,
     _poolEarthshakingSi,
     _poolEladamrisCall,
@@ -312,6 +320,7 @@ const shard: CardShard = {
     _poolIsland,
     _poolJaheiraFriendOfTheForest,
     _poolJodahArchmageEternal,
+    _poolJolraelMwonvuliRecluse,
     _poolJuriMasterOfTheRevue,
     _poolKarlachFuryOfAvernus,
     _poolKayasGhostform,
@@ -359,6 +368,7 @@ const shard: CardShard = {
     _poolPyroceratops,
     _poolRamosDragonEngine,
     _poolRazorfootGriffin,
+    _poolRecklessHandling,
     _poolRevitalize,
     _poolRiseAgain,
     _poolRorixBladewing,
@@ -368,6 +378,7 @@ const shard: CardShard = {
     _poolRuricThar,
     _poolRydiaSummonerOfMist,
     _poolSailorOfMeans,
+    _poolSanctumOfUgin,
     _poolSatyaAetherfluxGenius,
     _poolSavaiSabertooth,
     _poolSavor,
@@ -433,6 +444,7 @@ const shard: CardShard = {
     _tokensDragonIllusionToken,
     _tokensElementalToken55,
     _tokensPhyrexianGolemToken,
+    _tokensSoldierTokenFinaleOfGlory,
     _tokensVampireToken,
     _tokensWurmToken66,
     _tokensXXDinosaurTokenTrample,

@@ -149,6 +149,7 @@ import _poolNivMizzetParun from "../pool/niv-mizzet-parun.js";
 import _poolNoMercy from "../pool/no-mercy.js";
 import _poolObeliskOfNaya from "../pool/obelisk-of-naya.js";
 import _poolOnyxGoblet from "../pool/onyx-goblet.js";
+import _poolParasiticImpetus from "../pool/parasitic-impetus.js";
 import _poolPearledUnicorn from "../pool/pearled-unicorn.js";
 import _poolPerilousShadow from "../pool/perilous-shadow.js";
 import _poolPhyrexianSwarmlord from "../pool/phyrexian-swarmlord.js";
@@ -377,6 +378,7 @@ const shard: CardShard = {
     _poolNoMercy,
     _poolObeliskOfNaya,
     _poolOnyxGoblet,
+    _poolParasiticImpetus,
     _poolPearledUnicorn,
     _poolPerilousShadow,
     _poolPhyrexianSwarmlord,

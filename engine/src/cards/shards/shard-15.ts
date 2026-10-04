@@ -145,6 +145,7 @@ import _poolObscuraInitiate from "../pool/obscura-initiate.js";
 import _poolOrdinaryBear from "../pool/ordinary-bear.js";
 import _poolPashalikMons from "../pool/pashalik-mons.js";
 import _poolPiranhaMarsh from "../pool/piranha-marsh.js";
+import _poolPreposterousProportions from "../pool/preposterous-proportions.js";
 import _poolPriestOfFellRites from "../pool/priest-of-fell-rites.js";
 import _poolRakdosTrumpeter from "../pool/rakdos-trumpeter.js";
 import _poolRapaciousDragon from "../pool/rapacious-dragon.js";
@@ -203,6 +204,7 @@ import _poolTundraWolves from "../pool/tundra-wolves.js";
 import _poolTymorasInvoker from "../pool/tymoras-invoker.js";
 import _poolUnmarkedGrave from "../pool/unmarked-grave.js";
 import _poolVampireSoulcaller from "../pool/vampire-soulcaller.js";
+import _poolVegaTheWatcher from "../pool/vega-the-watcher.js";
 import _poolViashinoGrappler from "../pool/viashino-grappler.js";
 import _poolViashivanDragon from "../pool/viashivan-dragon.js";
 import _poolVileEntomber from "../pool/vile-entomber.js";
@@ -216,6 +218,7 @@ import _poolWurmcoilEngine from "../pool/wurmcoil-engine.js";
 import _poolYoungPyromancer from "../pool/young-pyromancer.js";
 import _poolYumaProudProtector from "../pool/yuma-proud-protector.js";
 import _poolZuranSpellcaster from "../pool/zuran-spellcaster.js";
+import _tokensBadgerToken from "../tokens/badger-token.js";
 import _tokensDragonToken55 from "../tokens/dragon-token-5-5.js";
 import _tokensGoatToken from "../tokens/goat-token.js";
 import _tokensGoblinToken from "../tokens/goblin-token.js";
@@ -370,6 +373,7 @@ const shard: CardShard = {
     _poolOrdinaryBear,
     _poolPashalikMons,
     _poolPiranhaMarsh,
+    _poolPreposterousProportions,
     _poolPriestOfFellRites,
     _poolRakdosTrumpeter,
     _poolRapaciousDragon,
@@ -428,6 +432,7 @@ const shard: CardShard = {
     _poolTymorasInvoker,
     _poolUnmarkedGrave,
     _poolVampireSoulcaller,
+    _poolVegaTheWatcher,
     _poolViashinoGrappler,
     _poolViashivanDragon,
     _poolVileEntomber,
@@ -443,6 +448,7 @@ const shard: CardShard = {
     _poolZuranSpellcaster,
   ],
   tokens: [
+    _tokensBadgerToken,
     _tokensDragonToken55,
     _tokensGoatToken,
     _tokensGoblinToken,

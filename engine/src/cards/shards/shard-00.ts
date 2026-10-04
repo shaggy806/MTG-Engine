@@ -55,14 +55,17 @@ import _poolDiresight from "../pool/diresight.js";
 import _poolDiscipleOfTheVault from "../pool/disciple-of-the-vault.js";
 import _poolDoomedDissenter from "../pool/doomed-dissenter.js";
 import _poolDoomedTraveler from "../pool/doomed-traveler.js";
+import _poolDoubleVision from "../pool/double-vision.js";
 import _poolDowsingDagger from "../pool/dowsing-dagger.js";
 import _poolDragonEngine from "../pool/dragon-engine.js";
 import _poolDrogskolShieldmate from "../pool/drogskol-shieldmate.js";
 import _poolDyingToServe from "../pool/dying-to-serve.js";
 import _poolEagerTrufflesnout from "../pool/eager-trufflesnout.js";
+import _poolEarthquake from "../pool/earthquake.js";
 import _poolElfhameWurm from "../pool/elfhame-wurm.js";
 import _poolEliteArchers from "../pool/elite-archers.js";
 import _poolElvishHandservant from "../pool/elvish-handservant.js";
+import _poolElvishHarbinger from "../pool/elvish-harbinger.js";
 import _poolEmbercleave from "../pool/embercleave.js";
 import _poolEverethViceroyOfPlunder from "../pool/evereth-viceroy-of-plunder.js";
 import _poolExplorersScope from "../pool/explorers-scope.js";
@@ -89,6 +92,7 @@ import _poolGravewaker from "../pool/gravewaker.js";
 import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHannaShipsNavigator from "../pool/hanna-ships-navigator.js";
+import _poolHarmonizedCrescendo from "../pool/harmonized-crescendo.js";
 import _poolHaughtyDjinn from "../pool/haughty-djinn.js";
 import _poolHellkiteCourser from "../pool/hellkite-courser.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
@@ -292,14 +296,17 @@ const shard: CardShard = {
     _poolDiscipleOfTheVault,
     _poolDoomedDissenter,
     _poolDoomedTraveler,
+    _poolDoubleVision,
     _poolDowsingDagger,
     _poolDragonEngine,
     _poolDrogskolShieldmate,
     _poolDyingToServe,
     _poolEagerTrufflesnout,
+    _poolEarthquake,
     _poolElfhameWurm,
     _poolEliteArchers,
     _poolElvishHandservant,
+    _poolElvishHarbinger,
     _poolEmbercleave,
     _poolEverethViceroyOfPlunder,
     _poolExplorersScope,
@@ -326,6 +333,7 @@ const shard: CardShard = {
     _poolGuardianAutomaton,
     _poolGyreSage,
     _poolHannaShipsNavigator,
+    _poolHarmonizedCrescendo,
     _poolHaughtyDjinn,
     _poolHellkiteCourser,
     _poolHornetHarasser,

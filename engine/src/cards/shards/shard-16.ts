@@ -32,6 +32,7 @@ import _poolBlindPhantasm from "../pool/blind-phantasm.js";
 import _poolBloodfellCaves from "../pool/bloodfell-caves.js";
 import _poolBloodthirstyAerialist from "../pool/bloodthirsty-aerialist.js";
 import _poolBoltHound from "../pool/bolt-hound.js";
+import _poolBoneShards from "../pool/bone-shards.js";
 import _poolBorosRecruit from "../pool/boros-recruit.js";
 import _poolBoulderRush from "../pool/boulder-rush.js";
 import _poolCarnivorousMossBeast from "../pool/carnivorous-moss-beast.js";
@@ -88,6 +89,7 @@ import _poolGhostlyPilferer from "../pool/ghostly-pilferer.js";
 import _poolGlacialWall from "../pool/glacial-wall.js";
 import _poolGlimmerBairn from "../pool/glimmer-bairn.js";
 import _poolGlissaTheTraitor from "../pool/glissa-the-traitor.js";
+import _poolGlisteningSphere from "../pool/glistening-sphere.js";
 import _poolGlitterfang from "../pool/glitterfang.js";
 import _poolGoblinChirurgeon from "../pool/goblin-chirurgeon.js";
 import _poolGrapeshot from "../pool/grapeshot.js";
@@ -128,11 +130,13 @@ import _poolLongtuskCub from "../pool/longtusk-cub.js";
 import _poolLoxodonLineBreaker from "../pool/loxodon-line-breaker.js";
 import _poolLynx from "../pool/lynx.js";
 import _poolMaalfeldTwins from "../pool/maalfeld-twins.js";
+import _poolMachineGodsEffigy from "../pool/machine-gods-effigy.js";
 import _poolMalakirRebirth from "../pool/malakir-rebirth.js";
 import _poolManaformHellkite from "../pool/manaform-hellkite.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
+import _poolMirrorpool from "../pool/mirrorpool.js";
 import _poolMoxAmber from "../pool/mox-amber.js";
 import _poolMundasVanguard from "../pool/mundas-vanguard.js";
 import _poolMyrTurbine from "../pool/myr-turbine.js";
@@ -211,6 +215,7 @@ import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
 import _poolTogetherForever from "../pool/together-forever.js";
+import _poolTophHardheadedTeacher from "../pool/toph-hardheaded-teacher.js";
 import _poolTradingPost from "../pool/trading-post.js";
 import _poolTreeOfPerdition from "../pool/tree-of-perdition.js";
 import _poolTriplicateTitan from "../pool/triplicate-titan.js";
@@ -289,6 +294,7 @@ const shard: CardShard = {
     _poolBloodfellCaves,
     _poolBloodthirstyAerialist,
     _poolBoltHound,
+    _poolBoneShards,
     _poolBorosRecruit,
     _poolBoulderRush,
     _poolCarnivorousMossBeast,
@@ -345,6 +351,7 @@ const shard: CardShard = {
     _poolGlacialWall,
     _poolGlimmerBairn,
     _poolGlissaTheTraitor,
+    _poolGlisteningSphere,
     _poolGlitterfang,
     _poolGoblinChirurgeon,
     _poolGrapeshot,
@@ -385,11 +392,13 @@ const shard: CardShard = {
     _poolLoxodonLineBreaker,
     _poolLynx,
     _poolMaalfeldTwins,
+    _poolMachineGodsEffigy,
     _poolMalakirRebirth,
     _poolManaformHellkite,
     _poolMerfolkSkydiver,
     _poolMikaeusTheUnhallowed,
     _poolMillstone,
+    _poolMirrorpool,
     _poolMoxAmber,
     _poolMundasVanguard,
     _poolMyrTurbine,
@@ -468,6 +477,7 @@ const shard: CardShard = {
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,
     _poolTogetherForever,
+    _poolTophHardheadedTeacher,
     _poolTradingPost,
     _poolTreeOfPerdition,
     _poolTriplicateTitan,

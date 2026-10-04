@@ -35,6 +35,7 @@ import _poolBroadsideBarrage from "../pool/broadside-barrage.js";
 import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
 import _poolCarrionCrow from "../pool/carrion-crow.js";
+import _poolCelestineTheLivingSaint from "../pool/celestine-the-living-saint.js";
 import _poolCliveIfritsDominant from "../pool/clive-ifrits-dominant.js";
 import _poolCoilingRebirth from "../pool/coiling-rebirth.js";
 import _poolConcealedCourtyard from "../pool/concealed-courtyard.js";
@@ -254,6 +255,7 @@ const shard: CardShard = {
     _poolBrushstrider,
     _poolBullCerodon,
     _poolCarrionCrow,
+    _poolCelestineTheLivingSaint,
     _poolCliveIfritsDominant,
     _poolCoilingRebirth,
     _poolConcealedCourtyard,

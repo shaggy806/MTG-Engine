@@ -511,10 +511,11 @@ export function parseSentence(sentence, ctx) {
 
   // Tokens.
   // One kind of token, its "with" a list of keywords only: "create a Food
-  // token or a Treasure token", "…with deathtouch and a 3/3 … with lifelink"
-  // and a token with a quoted ability are left to a person.
+  // token or a Treasure token", "…with deathtouch and a 3/3 … with lifelink",
+  // two kinds in one sentence ("X Halflings and X Food tokens") and a token
+  // with a quoted ability are left to a person.
   const KWS = `${KW}(?:(?:, | and |, and )${KW})*`;
-  if ((m = re(`create ${N} (tapped )?([^"“]+?) tokens?(?: with (${KWS}))?`).exec(s)) && !/ or | and an? /.test(m[3])) {
+  if ((m = re(`create ${N} (tapped )?([^"“]+?) tokens?(?: with (${KWS}))?`).exec(s)) && !/ or | and an? |\btokens? and /.test(m[3])) {
     const name = ctx.tokenFor?.(`${m[3]}${m[4] ? ` with ${m[4]}` : ""}`) ?? null;
     if (name === null) return null;
     return { kind: "create-token", token: name, count: amount(m[1]), ...(m[2] ? { tapped: true } : {}) };

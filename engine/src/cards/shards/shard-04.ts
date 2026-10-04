@@ -167,11 +167,13 @@ import _poolRubyDaringTracker from "../pool/ruby-daring-tracker.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
 import _poolSaiMasterThopterist from "../pool/sai-master-thopterist.js";
 import _poolSanctify from "../pool/sanctify.js";
+import _poolSanguineMorass from "../pool/sanguine-morass.js";
 import _poolSarkhansTriumph from "../pool/sarkhans-triumph.js";
 import _poolScarbladeScout from "../pool/scarblade-scout.js";
 import _poolScatteredGroves from "../pool/scattered-groves.js";
 import _poolSeafloorOracle from "../pool/seafloor-oracle.js";
 import _poolSeizeTheDay from "../pool/seize-the-day.js";
+import _poolShadowRift from "../pool/shadow-rift.js";
 import _poolShadowyBackstreet from "../pool/shadowy-backstreet.js";
 import _poolShieldWall from "../pool/shield-wall.js";
 import _poolShimmeringWings from "../pool/shimmering-wings.js";
@@ -402,11 +404,13 @@ const shard: CardShard = {
     _poolRuneSealedWall,
     _poolSaiMasterThopterist,
     _poolSanctify,
+    _poolSanguineMorass,
     _poolSarkhansTriumph,
     _poolScarbladeScout,
     _poolScatteredGroves,
     _poolSeafloorOracle,
     _poolSeizeTheDay,
+    _poolShadowRift,
     _poolShadowyBackstreet,
     _poolShieldWall,
     _poolShimmeringWings,

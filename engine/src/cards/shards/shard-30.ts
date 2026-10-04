@@ -24,6 +24,7 @@ import _poolAzulaAlwaysLies from "../pool/azula-always-lies.js";
 import _poolBilboBirthdayCelebrant from "../pool/bilbo-birthday-celebrant.js";
 import _poolBlackPantherVanguard from "../pool/black-panther-vanguard.js";
 import _poolBlackbladeReforged from "../pool/blackblade-reforged.js";
+import _poolBladeHistorian from "../pool/blade-historian.js";
 import _poolBlightedWoodland from "../pool/blighted-woodland.js";
 import _poolBloodArtist from "../pool/blood-artist.js";
 import _poolBloodPet from "../pool/blood-pet.js";
@@ -34,6 +35,7 @@ import _poolBraveKinDuo from "../pool/brave-kin-duo.js";
 import _poolBringBack from "../pool/bring-back.js";
 import _poolBurdenedAerialist from "../pool/burdened-aerialist.js";
 import _poolBurrogBanemaker from "../pool/burrog-banemaker.js";
+import _poolCacklingCounterpart from "../pool/cackling-counterpart.js";
 import _poolCameraLauncher from "../pool/camera-launcher.js";
 import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
@@ -49,6 +51,7 @@ import _poolConclaveNaturalists from "../pool/conclave-naturalists.js";
 import _poolConduitPylons from "../pool/conduit-pylons.js";
 import _poolCosmiumBlast from "../pool/cosmium-blast.js";
 import _poolCrossbowInfantry from "../pool/crossbow-infantry.js";
+import _poolCrossroadsVillage from "../pool/crossroads-village.js";
 import _poolCruelCelebrant from "../pool/cruel-celebrant.js";
 import _poolCruelFinality from "../pool/cruel-finality.js";
 import _poolCryptGhast from "../pool/crypt-ghast.js";
@@ -99,6 +102,7 @@ import _poolHagraSharpshooter from "../pool/hagra-sharpshooter.js";
 import _poolHardenedScaleArmor from "../pool/hardened-scale-armor.js";
 import _poolHarvesterOfSouls from "../pool/harvester-of-souls.js";
 import _poolHavenOfTheHarvest from "../pool/haven-of-the-harvest.js";
+import _poolHeadlessRider from "../pool/headless-rider.js";
 import _poolHeliodsPilgrim from "../pool/heliods-pilgrim.js";
 import _poolHexplateGolem from "../pool/hexplate-golem.js";
 import _poolHorizonScholar from "../pool/horizon-scholar.js";
@@ -137,6 +141,7 @@ import _poolMikaeusTheLunarch from "../pool/mikaeus-the-lunarch.js";
 import _poolMindsEye from "../pool/minds-eye.js";
 import _poolMirrex from "../pool/mirrex.js";
 import _poolMoaningWall from "../pool/moaning-wall.js";
+import _poolMockingSprite from "../pool/mocking-sprite.js";
 import _poolMoggRaider from "../pool/mogg-raider.js";
 import _poolMoorishCavalry from "../pool/moorish-cavalry.js";
 import _poolMoriokScavenger from "../pool/moriok-scavenger.js";
@@ -256,6 +261,7 @@ const shard: CardShard = {
     _poolBilboBirthdayCelebrant,
     _poolBlackPantherVanguard,
     _poolBlackbladeReforged,
+    _poolBladeHistorian,
     _poolBlightedWoodland,
     _poolBloodArtist,
     _poolBloodPet,
@@ -266,6 +272,7 @@ const shard: CardShard = {
     _poolBringBack,
     _poolBurdenedAerialist,
     _poolBurrogBanemaker,
+    _poolCacklingCounterpart,
     _poolCameraLauncher,
     _poolCaveSense,
     _poolCelestialForce,
@@ -281,6 +288,7 @@ const shard: CardShard = {
     _poolConduitPylons,
     _poolCosmiumBlast,
     _poolCrossbowInfantry,
+    _poolCrossroadsVillage,
     _poolCruelCelebrant,
     _poolCruelFinality,
     _poolCryptGhast,
@@ -331,6 +339,7 @@ const shard: CardShard = {
     _poolHardenedScaleArmor,
     _poolHarvesterOfSouls,
     _poolHavenOfTheHarvest,
+    _poolHeadlessRider,
     _poolHeliodsPilgrim,
     _poolHexplateGolem,
     _poolHorizonScholar,
@@ -369,6 +378,7 @@ const shard: CardShard = {
     _poolMindsEye,
     _poolMirrex,
     _poolMoaningWall,
+    _poolMockingSprite,
     _poolMoggRaider,
     _poolMoorishCavalry,
     _poolMoriokScavenger,

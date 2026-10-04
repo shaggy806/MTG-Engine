@@ -197,6 +197,7 @@ import _poolUsherOfTheFallen from "../pool/usher-of-the-fallen.js";
 import _poolUtvaraHellkite from "../pool/utvara-hellkite.js";
 import _poolValakutPredator from "../pool/valakut-predator.js";
 import _poolVantressVisions from "../pool/vantress-visions.js";
+import _poolVenatHeartOfHydaelyn from "../pool/venat-heart-of-hydaelyn.js";
 import _poolVerdigris from "../pool/verdigris.js";
 import _poolVerduranEnchantress from "../pool/verduran-enchantress.js";
 import _poolVernalFen from "../pool/vernal-fen.js";
@@ -418,6 +419,7 @@ const shard: CardShard = {
     _poolUtvaraHellkite,
     _poolValakutPredator,
     _poolVantressVisions,
+    _poolVenatHeartOfHydaelyn,
     _poolVerdigris,
     _poolVerduranEnchantress,
     _poolVernalFen,

@@ -23,6 +23,7 @@ import _poolBloodCelebrant from "../pool/blood-celebrant.js";
 import _poolBojukaBog from "../pool/bojuka-bog.js";
 import _poolBoldBiochemist from "../pool/bold-biochemist.js";
 import _poolBronzebeakMoa from "../pool/bronzebeak-moa.js";
+import _poolChatterstorm from "../pool/chatterstorm.js";
 import _poolChildOfAlara from "../pool/child-of-alara.js";
 import _poolChishiroTheShatteredBlade from "../pool/chishiro-the-shattered-blade.js";
 import _poolCircuitMender from "../pool/circuit-mender.js";
@@ -77,6 +78,7 @@ import _poolGrizzlyBears from "../pool/grizzly-bears.js";
 import _poolHalfElfMonk from "../pool/half-elf-monk.js";
 import _poolHandOfDeath from "../pool/hand-of-death.js";
 import _poolHapatraVizierOfPoisons from "../pool/hapatra-vizier-of-poisons.js";
+import _poolHeartlessSummoning from "../pool/heartless-summoning.js";
 import _poolHeartwoodGiant from "../pool/heartwood-giant.js";
 import _poolHerculesPrinceOfPower from "../pool/hercules-prince-of-power.js";
 import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
@@ -168,6 +170,7 @@ import _poolSerrasBlessing from "../pool/serras-blessing.js";
 import _poolSeshiroTheAnointed from "../pool/seshiro-the-anointed.js";
 import _poolShadowbeastSighting from "../pool/shadowbeast-sighting.js";
 import _poolSheHulkJadeDefender from "../pool/she-hulk-jade-defender.js";
+import _poolShimmerDragon from "../pool/shimmer-dragon.js";
 import _poolSimicCharm from "../pool/simic-charm.js";
 import _poolSkyshroudClaim from "../pool/skyshroud-claim.js";
 import _poolSkyshroudPoacher from "../pool/skyshroud-poacher.js";
@@ -199,6 +202,7 @@ import _poolTranquilThicket from "../pool/tranquil-thicket.js";
 import _poolTrostaniSelesnyasVoice from "../pool/trostani-selesnyas-voice.js";
 import _poolTuinvaleTreefolk from "../pool/tuinvale-treefolk.js";
 import _poolTwitchingDoll from "../pool/twitching-doll.js";
+import _poolUnchartedHaven from "../pool/uncharted-haven.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
 import _poolUthrosResearchCraft from "../pool/uthros-research-craft.js";
 import _poolValkyriorSkyrider from "../pool/valkyrior-skyrider.js";
@@ -255,6 +259,7 @@ const shard: CardShard = {
     _poolBojukaBog,
     _poolBoldBiochemist,
     _poolBronzebeakMoa,
+    _poolChatterstorm,
     _poolChildOfAlara,
     _poolChishiroTheShatteredBlade,
     _poolCircuitMender,
@@ -309,6 +314,7 @@ const shard: CardShard = {
     _poolHalfElfMonk,
     _poolHandOfDeath,
     _poolHapatraVizierOfPoisons,
+    _poolHeartlessSummoning,
     _poolHeartwoodGiant,
     _poolHerculesPrinceOfPower,
     _poolHermiticNautilus,
@@ -400,6 +406,7 @@ const shard: CardShard = {
     _poolSeshiroTheAnointed,
     _poolShadowbeastSighting,
     _poolSheHulkJadeDefender,
+    _poolShimmerDragon,
     _poolSimicCharm,
     _poolSkyshroudClaim,
     _poolSkyshroudPoacher,
@@ -431,6 +438,7 @@ const shard: CardShard = {
     _poolTrostaniSelesnyasVoice,
     _poolTuinvaleTreefolk,
     _poolTwitchingDoll,
+    _poolUnchartedHaven,
     _poolUnyieldingKrumar,
     _poolUthrosResearchCraft,
     _poolValkyriorSkyrider,

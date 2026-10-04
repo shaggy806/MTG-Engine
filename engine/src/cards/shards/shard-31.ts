@@ -34,6 +34,7 @@ import _poolCastleSengir from "../pool/castle-sengir.js";
 import _poolCatalystElemental from "../pool/catalyst-elemental.js";
 import _poolCharityExtractor from "../pool/charity-extractor.js";
 import _poolChitteringDispatcher from "../pool/chittering-dispatcher.js";
+import _poolChromaticStar from "../pool/chromatic-star.js";
 import _poolClearwaterPathway from "../pool/clearwater-pathway.js";
 import _poolClinquantSkymage from "../pool/clinquant-skymage.js";
 import _poolCloudkinSeer from "../pool/cloudkin-seer.js";
@@ -70,11 +71,13 @@ import _poolFlameJavelin from "../pool/flame-javelin.js";
 import _poolFlameRift from "../pool/flame-rift.js";
 import _poolFlameshadowConjuring from "../pool/flameshadow-conjuring.js";
 import _poolFloralEvoker from "../pool/floral-evoker.js";
+import _poolFogBank from "../pool/fog-bank.js";
 import _poolFog from "../pool/fog.js";
 import _poolFontOfMythos from "../pool/font-of-mythos.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
+import _poolGenesisChamber from "../pool/genesis-chamber.js";
 import _poolGhostlyFlicker from "../pool/ghostly-flicker.js";
 import _poolGideonsLawkeeper from "../pool/gideons-lawkeeper.js";
 import _poolGnathosaur from "../pool/gnathosaur.js";
@@ -115,9 +118,12 @@ import _poolKorlessaScaleSinger from "../pool/korlessa-scale-singer.js";
 import _poolKrarkClanIronworks from "../pool/krark-clan-ironworks.js";
 import _poolKrosanGrip from "../pool/krosan-grip.js";
 import _poolLizardWarrior from "../pool/lizard-warrior.js";
+import _poolLongshotRebelBowman from "../pool/longshot-rebel-bowman.js";
 import _poolMagmaquake from "../pool/magmaquake.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
+import _poolMiscast from "../pool/miscast.js";
+import _poolMischievousMystic from "../pool/mischievous-mystic.js";
 import _poolMoanOfTheUnhallowed from "../pool/moan-of-the-unhallowed.js";
 import _poolMoltenEchoes from "../pool/molten-echoes.js";
 import _poolNimReplica from "../pool/nim-replica.js";
@@ -159,6 +165,7 @@ import _poolShinenOfStarsLight from "../pool/shinen-of-stars-light.js";
 import _poolShireScarecrow from "../pool/shire-scarecrow.js";
 import _poolSilasRennSeekerAdept from "../pool/silas-renn-seeker-adept.js";
 import _poolSilentClearing from "../pool/silent-clearing.js";
+import _poolSireOfStagnation from "../pool/sire-of-stagnation.js";
 import _poolSkirsdagCultist from "../pool/skirsdag-cultist.js";
 import _poolSliceInTwain from "../pool/slice-in-twain.js";
 import _poolSmokespewInvoker from "../pool/smokespew-invoker.js";
@@ -171,6 +178,7 @@ import _poolSpriteDragon from "../pool/sprite-dragon.js";
 import _poolStensiaBloodhall from "../pool/stensia-bloodhall.js";
 import _poolStoneskin from "../pool/stoneskin.js";
 import _poolStrokeOfGenius from "../pool/stroke-of-genius.js";
+import _poolSummerBloom from "../pool/summer-bloom.js";
 import _poolSwarmyard from "../pool/swarmyard.js";
 import _poolSylvanSafekeeper from "../pool/sylvan-safekeeper.js";
 import _poolTatteredMummy from "../pool/tattered-mummy.js";
@@ -244,6 +252,7 @@ const shard: CardShard = {
     _poolCatalystElemental,
     _poolCharityExtractor,
     _poolChitteringDispatcher,
+    _poolChromaticStar,
     _poolClearwaterPathway,
     _poolClinquantSkymage,
     _poolCloudkinSeer,
@@ -280,11 +289,13 @@ const shard: CardShard = {
     _poolFlameRift,
     _poolFlameshadowConjuring,
     _poolFloralEvoker,
+    _poolFogBank,
     _poolFog,
     _poolFontOfMythos,
     _poolFoundryInspector,
     _poolFoxfireOak,
     _poolFungalInfection,
+    _poolGenesisChamber,
     _poolGhostlyFlicker,
     _poolGideonsLawkeeper,
     _poolGnathosaur,
@@ -325,9 +336,12 @@ const shard: CardShard = {
     _poolKrarkClanIronworks,
     _poolKrosanGrip,
     _poolLizardWarrior,
+    _poolLongshotRebelBowman,
     _poolMagmaquake,
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
+    _poolMiscast,
+    _poolMischievousMystic,
     _poolMoanOfTheUnhallowed,
     _poolMoltenEchoes,
     _poolNimReplica,
@@ -369,6 +383,7 @@ const shard: CardShard = {
     _poolShireScarecrow,
     _poolSilasRennSeekerAdept,
     _poolSilentClearing,
+    _poolSireOfStagnation,
     _poolSkirsdagCultist,
     _poolSliceInTwain,
     _poolSmokespewInvoker,
@@ -381,6 +396,7 @@ const shard: CardShard = {
     _poolStensiaBloodhall,
     _poolStoneskin,
     _poolStrokeOfGenius,
+    _poolSummerBloom,
     _poolSwarmyard,
     _poolSylvanSafekeeper,
     _poolTatteredMummy,

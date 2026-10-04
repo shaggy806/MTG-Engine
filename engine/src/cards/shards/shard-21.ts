@@ -52,6 +52,7 @@ import _poolEmperorMihailIi from "../pool/emperor-mihail-ii.js";
 import _poolErase from "../pool/erase.js";
 import _poolFalseSummoning from "../pool/false-summoning.js";
 import _poolFarewell from "../pool/farewell.js";
+import _poolFecundGreenshell from "../pool/fecund-greenshell.js";
 import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
 import _poolFireLitThicket from "../pool/fire-lit-thicket.js";
@@ -138,6 +139,7 @@ import _poolRathiTrapper from "../pool/rathi-trapper.js";
 import _poolRazortoothRats from "../pool/razortooth-rats.js";
 import _poolRedHerring from "../pool/red-herring.js";
 import _poolRendmawCreakingNest from "../pool/rendmaw-creaking-nest.js";
+import _poolRevengeOfRavens from "../pool/revenge-of-ravens.js";
 import _poolRipchainRazorkin from "../pool/ripchain-razorkin.js";
 import _poolRoilingRegrowth from "../pool/roiling-regrowth.js";
 import _poolRustwingFalcon from "../pool/rustwing-falcon.js";
@@ -253,6 +255,7 @@ const shard: CardShard = {
     _poolErase,
     _poolFalseSummoning,
     _poolFarewell,
+    _poolFecundGreenshell,
     _poolFelidarRetreat,
     _poolFestivalCrasher,
     _poolFireLitThicket,
@@ -339,6 +342,7 @@ const shard: CardShard = {
     _poolRazortoothRats,
     _poolRedHerring,
     _poolRendmawCreakingNest,
+    _poolRevengeOfRavens,
     _poolRipchainRazorkin,
     _poolRoilingRegrowth,
     _poolRustwingFalcon,

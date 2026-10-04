@@ -89,6 +89,7 @@ import _poolGlaringFleshraker from "../pool/glaring-fleshraker.js";
 import _poolGolgariLocket from "../pool/golgari-locket.js";
 import _poolGrayscaledGharial from "../pool/grayscaled-gharial.js";
 import _poolGreatFurnace from "../pool/great-furnace.js";
+import _poolGreensleevesMaroSorcerer from "../pool/greensleeves-maro-sorcerer.js";
 import _poolGrimTutor from "../pool/grim-tutor.js";
 import _poolGrizzledLeotau from "../pool/grizzled-leotau.js";
 import _poolGruulSignet from "../pool/gruul-signet.js";
@@ -315,6 +316,7 @@ const shard: CardShard = {
     _poolGolgariLocket,
     _poolGrayscaledGharial,
     _poolGreatFurnace,
+    _poolGreensleevesMaroSorcerer,
     _poolGrimTutor,
     _poolGrizzledLeotau,
     _poolGruulSignet,

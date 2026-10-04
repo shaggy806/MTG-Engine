@@ -34,6 +34,7 @@ import _poolBorderlandMinotaur from "../pool/borderland-minotaur.js";
 import _poolBrasssBounty from "../pool/brasss-bounty.js";
 import _poolBreenaTheDemagogue from "../pool/breena-the-demagogue.js";
 import _poolCapashenStandard from "../pool/capashen-standard.js";
+import _poolCarmenCruelSkymarcher from "../pool/carmen-cruel-skymarcher.js";
 import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
 import _poolCatapultSquad from "../pool/catapult-squad.js";
@@ -122,6 +123,7 @@ import _poolMiirymSentinelWyrm from "../pool/miirym-sentinel-wyrm.js";
 import _poolMinamoSchoolAtWatersEdge from "../pool/minamo-school-at-waters-edge.js";
 import _poolMireShade from "../pool/mire-shade.js";
 import _poolMnemonicWall from "../pool/mnemonic-wall.js";
+import _poolMomentaryBlink from "../pool/momentary-blink.js";
 import _poolMoxOpal from "../pool/mox-opal.js";
 import _poolMysticPeak from "../pool/mystic-peak.js";
 import _poolNantukoElder from "../pool/nantuko-elder.js";
@@ -197,12 +199,14 @@ import _poolTwilightDrover from "../pool/twilight-drover.js";
 import _poolTwoHeadedZombie from "../pool/two-headed-zombie.js";
 import _poolTyrranaxRex from "../pool/tyrranax-rex.js";
 import _poolUndergrowthLeopard from "../pool/undergrowth-leopard.js";
+import _poolUnholyGrotto from "../pool/unholy-grotto.js";
 import _poolUnnaturalRestoration from "../pool/unnatural-restoration.js";
 import _poolUrabraskTheHidden from "../pool/urabrask-the-hidden.js";
 import _poolUrzasSaga from "../pool/urzas-saga.js";
 import _poolValakutInvoker from "../pool/valakut-invoker.js";
 import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
+import _poolVeinRipper from "../pool/vein-ripper.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
 import _poolVividCreek from "../pool/vivid-creek.js";
@@ -257,6 +261,7 @@ const shard: CardShard = {
     _poolBrasssBounty,
     _poolBreenaTheDemagogue,
     _poolCapashenStandard,
+    _poolCarmenCruelSkymarcher,
     _poolCastleVantress,
     _poolCatacombCrocodile,
     _poolCatapultSquad,
@@ -345,6 +350,7 @@ const shard: CardShard = {
     _poolMinamoSchoolAtWatersEdge,
     _poolMireShade,
     _poolMnemonicWall,
+    _poolMomentaryBlink,
     _poolMoxOpal,
     _poolMysticPeak,
     _poolNantukoElder,
@@ -420,12 +426,14 @@ const shard: CardShard = {
     _poolTwoHeadedZombie,
     _poolTyrranaxRex,
     _poolUndergrowthLeopard,
+    _poolUnholyGrotto,
     _poolUnnaturalRestoration,
     _poolUrabraskTheHidden,
     _poolUrzasSaga,
     _poolValakutInvoker,
     _poolVandalblast,
     _poolVandalize,
+    _poolVeinRipper,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,
     _poolVividCreek,

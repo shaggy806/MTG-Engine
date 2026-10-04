@@ -43,6 +43,7 @@ import _poolClockworkDrawbridge from "../pool/clockwork-drawbridge.js";
 import _poolConduitOfWorlds from "../pool/conduit-of-worlds.js";
 import _poolCordialVampire from "../pool/cordial-vampire.js";
 import _poolCripplingFear from "../pool/crippling-fear.js";
+import _poolCrystallineCrawler from "../pool/crystalline-crawler.js";
 import _poolCunningRhetoric from "../pool/cunning-rhetoric.js";
 import _poolCuriosityCrafter from "../pool/curiosity-crafter.js";
 import _poolDarksteelForge from "../pool/darksteel-forge.js";
@@ -231,9 +232,11 @@ import _poolTombOfTheSpiritDragon from "../pool/tomb-of-the-spirit-dragon.js";
 import _poolTowerOfCalamities from "../pool/tower-of-calamities.js";
 import _poolTrainedOrgg from "../pool/trained-orgg.js";
 import _poolTranquilExpanse from "../pool/tranquil-expanse.js";
+import _poolTranscendentEnvoy from "../pool/transcendent-envoy.js";
 import _poolTundraWall from "../pool/tundra-wall.js";
 import _poolTwoHeadedHunter from "../pool/two-headed-hunter.js";
 import _poolTyroxSauridTyrant from "../pool/tyrox-saurid-tyrant.js";
+import _poolUndeadWarchief from "../pool/undead-warchief.js";
 import _poolUndergroundMortuary from "../pool/underground-mortuary.js";
 import _poolUnfriendlyFire from "../pool/unfriendly-fire.js";
 import _poolUrabrasksForge from "../pool/urabrasks-forge.js";
@@ -306,6 +309,7 @@ const shard: CardShard = {
     _poolConduitOfWorlds,
     _poolCordialVampire,
     _poolCripplingFear,
+    _poolCrystallineCrawler,
     _poolCunningRhetoric,
     _poolCuriosityCrafter,
     _poolDarksteelForge,
@@ -494,9 +498,11 @@ const shard: CardShard = {
     _poolTowerOfCalamities,
     _poolTrainedOrgg,
     _poolTranquilExpanse,
+    _poolTranscendentEnvoy,
     _poolTundraWall,
     _poolTwoHeadedHunter,
     _poolTyroxSauridTyrant,
+    _poolUndeadWarchief,
     _poolUndergroundMortuary,
     _poolUnfriendlyFire,
     _poolUrabrasksForge,

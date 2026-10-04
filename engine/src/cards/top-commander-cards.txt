@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2542 already implemented / 2458 missing (marks refreshed 2026-10-04)
+2644 already implemented / 2356 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2698,19 +2698,19 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2705  Cloudstone Curio                         {3}              Artifact
 [ ]  2706  Loading Zone                             {3}{G}           Enchantment
 [ ]  2707  Transpose                                {2}{B}           Instant
-[ ]  2708  Torrential Gearhulk                      {4}{U}{U}        Artifact Creature — Construct
+[x]  2708  Torrential Gearhulk                      {4}{U}{U}        Artifact Creature — Construct
 [ ]  2709  Thrakkus the Butcher                     {3}{R}{G}        Legendary Creature — Dragon Peasant
-[ ]  2710  Bloodsoaked Insight // Sanguine Morass   {7}              Sorcery // Land
-[ ]  2711  Harmonized Crescendo                     {4}{U}{U}        Instant
+[x]  2710  Bloodsoaked Insight // Sanguine Morass   {7}              Sorcery // Land
+[x]  2711  Harmonized Crescendo                     {4}{U}{U}        Instant
 [ ]  2712  Skysovereign, Consul Flagship            {5}              Legendary Artifact — Vehicle
 [ ]  2713  Fire Covenant                            {1}{B}{R}        Instant
-[ ]  2714  Vega, the Watcher                        {1}{W}{U}        Legendary Creature — Bird Spirit
-[ ]  2715  Blade Historian                          {R/W}{R/W}{R/W}{R/W} Creature — Human Cleric
+[x]  2714  Vega, the Watcher                        {1}{W}{U}        Legendary Creature — Bird Spirit
+[x]  2715  Blade Historian                          {R/W}{R/W}{R/W}{R/W} Creature — Human Cleric
 [x]  2716  Sword of War and Peace                   {3}              Artifact — Equipment
 [ ]  2717  Nalfeshnee                               {5}{R}           Creature — Beast Demon
-[ ]  2718  Step Through                             {3}{U}{U}        Sorcery
+[x]  2718  Step Through                             {3}{U}{U}        Sorcery
 [ ]  2719  Persistent Constrictor                   {4}{B}           Creature — Zombie Snake
-[ ]  2720  Reckless Handling                        {1}{R}           Sorcery
+[x]  2720  Reckless Handling                        {1}{R}           Sorcery
 [x]  2721  Fynn, the Fangbearer                     {1}{G}           Legendary Creature — Human Warrior
 [x]  2722  Ygra, Eater of All                       {3}{B}{G}        Legendary Creature — Elemental Cat
 [ ]  2723  Domri, Anarch of Bolas                   {1}{R}{G}        Legendary Planeswalker — Domri
@@ -2719,15 +2719,15 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2726  River of Tears                           {0}              Land
 [ ]  2727  Deadpool, Trading Card                   {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
 [ ]  2728  Rakdos, Patron of Chaos                  {4}{B}{R}        Legendary Creature — Demon
-[ ]  2729  Vein Ripper                              {3}{B}{B}{B}     Creature — Vampire Assassin
-[ ]  2730  Master of Dark Rites                     {B}              Creature — Vampire Cleric
-[ ]  2731  Momentary Blink                          {1}{W}           Instant
-[ ]  2732  Sylvan Tutor                             {G}              Sorcery
-[ ]  2733  Shimmer Dragon                           {4}{U}{U}        Creature — Dragon
+[x]  2729  Vein Ripper                              {3}{B}{B}{B}     Creature — Vampire Assassin
+[x]  2730  Master of Dark Rites                     {B}              Creature — Vampire Cleric
+[x]  2731  Momentary Blink                          {1}{W}           Instant
+[x]  2732  Sylvan Tutor                             {G}              Sorcery
+[x]  2733  Shimmer Dragon                           {4}{U}{U}        Creature — Dragon
 [x]  2734  Voracious Hydra                          {X}{G}{G}        Creature — Hydra
-[ ]  2735  Mischievous Mystic                       {1}{U}           Creature — Human Wizard
-[ ]  2736  Dusk Legion Duelist                      {1}{W}           Creature — Vampire Soldier
-[ ]  2737  Infectious Bite                          {1}{G}           Instant
+[x]  2735  Mischievous Mystic                       {1}{U}           Creature — Human Wizard
+[x]  2736  Dusk Legion Duelist                      {1}{W}           Creature — Vampire Soldier
+[x]  2737  Infectious Bite                          {1}{G}           Instant
 [ ]  2738  Danny Pink                               {3}{U}           Legendary Creature — Human Soldier Advisor
 [x]  2739  Bite Down                                {1}{G}           Instant
 [x]  2740  Clifftop Lookout                         {2}{G}           Creature — Frog Scout
@@ -2735,23 +2735,23 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2742  Boseiju, Who Shelters All                {0}              Legendary Land
 [x]  2743  Zombie Master                            {1}{B}{B}        Creature — Zombie
 [ ]  2744  Semester's End                           {3}{W}           Instant
-[ ]  2745  Miscast                                  {U}              Instant
+[x]  2745  Miscast                                  {U}              Instant
 [x]  2746  Dina, Soul Steeper                       {B}{G}           Legendary Creature — Dryad Druid
-[ ]  2747  Fog Bank                                 {1}{U}           Creature — Wall
+[x]  2747  Fog Bank                                 {1}{U}           Creature — Wall
 [x]  2748  Aura Mutation                            {G}{W}           Instant
-[ ]  2749  Cryptothrall                             {4}              Artifact Creature — Construct
-[ ]  2750  Traumatize                               {3}{U}{U}        Sorcery
-[ ]  2751  Heartless Summoning                      {1}{B}           Enchantment
+[x]  2749  Cryptothrall                             {4}              Artifact Creature — Construct
+[x]  2750  Traumatize                               {3}{U}{U}        Sorcery
+[x]  2751  Heartless Summoning                      {1}{B}           Enchantment
 [ ]  2752  Wilhelt, the Rotcleaver                  {2}{U}{B}        Legendary Creature — Zombie Warrior
 [ ]  2753  Virtue of Strength // Garenbrig Growth   {5}{G}{G} // {G} Enchantment // Sorcery — Adventure
 [ ]  2754  Flesh Duplicate                          {U}{U}           Creature — Shapeshifter Rebel
 [ ]  2755  Charred Foyer // Warped Space            {3}{R} // {4}{R}{R} Enchantment — Room // Enchantment — Room
 [x]  2756  Retreat to Hagra                         {2}{B}           Enchantment
 [x]  2757  Rimewood Falls                           {0}              Snow Land — Forest Island
-[ ]  2758  Bone Shards                              {B}              Sorcery
-[ ]  2759  Sire of Stagnation                       {4}{U}{B}        Creature — Eldrazi
-[ ]  2760  Double Vision                            {3}{R}{R}        Enchantment
-[ ]  2761  Guardian Augmenter                       {2}{G}           Creature — Troll Wizard
+[x]  2758  Bone Shards                              {B}              Sorcery
+[x]  2759  Sire of Stagnation                       {4}{U}{B}        Creature — Eldrazi
+[x]  2760  Double Vision                            {3}{R}{R}        Enchantment
+[x]  2761  Guardian Augmenter                       {2}{G}           Creature — Troll Wizard
 [ ]  2762  Folio of Fancies                         {1}{U}           Artifact — Book
 [ ]  2763  Witch-king of Angmar                     {3}{B}{B}        Legendary Creature — Wraith Noble
 [ ]  2764  Rousing Refrain                          {3}{R}{R}        Sorcery
@@ -2759,209 +2759,209 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2766  Caesar, Legion's Emperor                 {1}{R}{W}{B}     Legendary Creature — Human Soldier
 [x]  2767  Champion of the Perished                 {B}              Creature — Zombie
 [ ]  2768  Raging Ravine                            {0}              Land
-[ ]  2769  Inspired Tinkering                       {4}{R}           Sorcery
+[x]  2769  Inspired Tinkering                       {4}{R}           Sorcery
 [ ]  2770  Alseid of Life's Bounty                  {W}              Enchantment Creature — Nymph
-[ ]  2771  Greensleeves, Maro-Sorcerer              {3}{G}{G}        Legendary Creature — Elemental Sorcerer
-[ ]  2772  Emiel the Blessed                        {2}{W}{W}        Legendary Creature — Unicorn
+[x]  2771  Greensleeves, Maro-Sorcerer              {3}{G}{G}        Legendary Creature — Elemental Sorcerer
+[x]  2772  Emiel the Blessed                        {2}{W}{W}        Legendary Creature — Unicorn
 [x]  2773  Dwarven Mine                             {0}              Land — Mountain
 [x]  2774  Expel the Interlopers                    {3}{W}{W}        Sorcery
 [ ]  2775  Golgari Grave-Troll                      {4}{G}           Creature — Troll Skeleton
 [ ]  2776  Troll of Khazad-dûm                      {5}{B}           Creature — Troll
-[ ]  2777  Great Divide Guide                       {1}{G}           Creature — Human Scout Ally
+[x]  2777  Great Divide Guide                       {1}{G}           Creature — Human Scout Ally
 [ ]  2778  Aerial Extortionist                      {3}{W}{W}        Creature — Bird Soldier
 [ ]  2779  Tishana's Tidebinder                     {2}{U}           Creature — Merfolk Wizard
 [x]  2780  Nightshade Dryad                         {1}{G}           Creature — Dryad
 [ ]  2781  Aetherspouts                             {3}{U}{U}        Instant
 [ ]  2782  Lurrus of the Dream-Den                  {1}{W/B}{W/B}    Legendary Creature — Cat Nightmare
-[ ]  2783  Time Sieve                               {U}{B}           Artifact
+[x]  2783  Time Sieve                               {U}{B}           Artifact
 [ ]  2784  Aettir and Priwen                        {6}              Legendary Artifact — Equipment
-[ ]  2785  Mirrorpool                               {0}              Land
-[ ]  2786  Raise the Past                           {2}{W}{W}        Sorcery
+[x]  2785  Mirrorpool                               {0}              Land
+[x]  2786  Raise the Past                           {2}{W}{W}        Sorcery
 [ ]  2787  Struggle for Project Purity              {3}{U}           Enchantment
-[ ]  2788  Resurgent Belief                         {0}              Sorcery
+[x]  2788  Resurgent Belief                         {0}              Sorcery
 [ ]  2789  Sundial of the Infinite                  {2}              Artifact
 [x]  2790  Venerated Rotpriest                      {G}              Creature — Phyrexian Druid
 [ ]  2791  Ethersworn Canonist                      {1}{W}           Artifact Creature — Human Cleric
-[ ]  2792  Repulsive Mutation                       {X}{G}{U}        Instant
+[x]  2792  Repulsive Mutation                       {X}{G}{U}        Instant
 [ ]  2793  Case of the Ransacked Lab                {2}{U}           Enchantment — Case
-[ ]  2794  Reyav, Master Smith                      {R}{W}           Legendary Creature — Dwarf Artificer
+[x]  2794  Reyav, Master Smith                      {R}{W}           Legendary Creature — Dwarf Artificer
 [x]  2795  Blightbelly Rat                          {1}{B}           Creature — Phyrexian Rat
 [ ]  2796  Wrenn and Realmbreaker                   {1}{G}{G}        Legendary Planeswalker — Wrenn
 [ ]  2797  Gwenom, Remorseless                      {3}{B}{B}        Legendary Creature — Symbiote Spider Hero
 [ ]  2798  Cyberman Patrol                          {2}              Artifact Creature — Cyberman
-[ ]  2799  Sulfuric Vortex                          {1}{R}{R}        Enchantment
-[ ]  2800  Emeria's Call // Emeria, Shattered Skyclave {7}              Sorcery // Land
+[x]  2799  Sulfuric Vortex                          {1}{R}{R}        Enchantment
+[x]  2800  Emeria's Call // Emeria, Shattered Skyclave {7}              Sorcery // Land
 [x]  2801  Peerless Recycling                       {1}{G}           Instant
 [x]  2802  Hornet Nest                              {2}{G}           Creature — Insect
 [x]  2803  Graypelt Refuge                          {0}              Land
 [ ]  2804  Dance of the Manse                       {X}{W}{U}        Sorcery
-[ ]  2805  Uncharted Haven                          {0}              Land
+[x]  2805  Uncharted Haven                          {0}              Land
 [x]  2806  Cemetery Tampering                       {2}{B}           Enchantment
 [ ]  2807  Mirror Room // Fractured Realm           {2}{U} // {5}{U}{U} Enchantment — Room // Enchantment — Room
-[ ]  2808  Volrath's Stronghold                     {0}              Legendary Land
-[ ]  2809  The Seriema                              {1}{W}{W}        Legendary Artifact — Spacecraft
+[x]  2808  Volrath's Stronghold                     {0}              Legendary Land
+[x]  2809  The Seriema                              {1}{W}{W}        Legendary Artifact — Spacecraft
 [x]  2810  Mist-Cloaked Herald                      {U}              Creature — Merfolk Warrior
-[ ]  2811  Elven Ambush                             {3}{G}           Instant
+[x]  2811  Elven Ambush                             {3}{G}           Instant
 [ ]  2812  Ugin's Labyrinth                         {0}              Land
-[ ]  2813  Parasitic Impetus                        {2}{B}           Enchantment — Aura
-[ ]  2814  Jeskai Ascendancy                        {U}{R}{W}        Enchantment
+[x]  2813  Parasitic Impetus                        {2}{B}           Enchantment — Aura
+[x]  2814  Jeskai Ascendancy                        {U}{R}{W}        Enchantment
 [ ]  2815  Tragic Arrogance                         {3}{W}{W}        Sorcery
-[ ]  2816  Mistveil Plains                          {0}              Land — Plains
-[ ]  2817  Genesis Chamber                          {2}              Artifact
+[x]  2816  Mistveil Plains                          {0}              Land — Plains
+[x]  2817  Genesis Chamber                          {2}              Artifact
 [ ]  2818  Heaped Harvest                           {2}{G}           Artifact — Food
 [x]  2819  Thrashing Brontodon                      {1}{G}{G}        Creature — Dinosaur
-[ ]  2820  Graveshifter                             {3}{B}           Creature — Shapeshifter
+[x]  2820  Graveshifter                             {3}{B}           Creature — Shapeshifter
 [ ]  2821  Meekstone                                {1}              Artifact
 [x]  2822  Lazotep Plating                          {1}{U}           Instant
-[ ]  2823  Sylvan Anthem                            {G}{G}           Enchantment
-[ ]  2824  Valkyrie Harbinger                       {4}{W}{W}        Creature — Angel Cleric
+[x]  2823  Sylvan Anthem                            {G}{G}           Enchantment
+[x]  2824  Valkyrie Harbinger                       {4}{W}{W}        Creature — Angel Cleric
 [ ]  2825  Sidisi, Undead Vizier                    {3}{B}{B}        Legendary Creature — Zombie Snake
 [x]  2826  Prime Speaker Zegana                     {2}{G}{G}{U}{U}  Legendary Creature — Merfolk Wizard
-[ ]  2827  Pyromancer's Goggles                     {5}              Legendary Artifact
-[ ]  2828  Chromatic Star                           {1}              Artifact
-[ ]  2829  Carmen, Cruel Skymarcher                 {3}{W}{B}        Legendary Creature — Vampire Soldier
-[ ]  2830  Kozilek's Unsealing                      {2}{U}           Enchantment
+[x]  2827  Pyromancer's Goggles                     {5}              Legendary Artifact
+[x]  2828  Chromatic Star                           {1}              Artifact
+[x]  2829  Carmen, Cruel Skymarcher                 {3}{W}{B}        Legendary Creature — Vampire Soldier
+[x]  2830  Kozilek's Unsealing                      {2}{U}           Enchantment
 [ ]  2831  Price of Progress                        {1}{R}           Instant
 [ ]  2832  Urza's Bauble                            {0}              Artifact
 [ ]  2833  Lae'zel's Acrobatics                     {3}{W}           Instant
-[ ]  2834  Resonating Lute                          {2}{U}{R}        Artifact
+[x]  2834  Resonating Lute                          {2}{U}{R}        Artifact
 [x]  2835  Vorpal Sword                             {B}              Artifact — Equipment
-[ ]  2836  Ulvenwald Hydra                          {4}{G}{G}        Creature — Hydra
-[ ]  2837  Chatterstorm                             {1}{G}           Sorcery
+[x]  2836  Ulvenwald Hydra                          {4}{G}{G}        Creature — Hydra
+[x]  2837  Chatterstorm                             {1}{G}           Sorcery
 [ ]  2838  Rionya, Fire Dancer                      {3}{R}{R}        Legendary Creature — Human Wizard
-[ ]  2839  Preposterous Proportions                 {5}{G}{G}        Sorcery
+[x]  2839  Preposterous Proportions                 {5}{G}{G}        Sorcery
 [x]  2840  Weathered Sentinels                      {3}              Artifact Creature — Wall
 [ ]  2841  The Chain Veil                           {4}              Legendary Artifact
 [x]  2842  Zur the Enchanter                        {1}{W}{U}{B}     Legendary Creature — Human Wizard
-[ ]  2843  Abundant Countryside                     {0}              Land
+[x]  2843  Abundant Countryside                     {0}              Land
 [ ]  2844  Gisa, Glorious Resurrector               {2}{B}{B}        Legendary Creature — Human Wizard
-[ ]  2845  Fecund Greenshell                        {3}{G}{G}        Creature — Elemental Turtle
+[x]  2845  Fecund Greenshell                        {3}{G}{G}        Creature — Elemental Turtle
 [x]  2846  Mirrex                                   {0}              Land — Sphere
 [x]  2847  Overgrown Battlement                     {1}{G}           Creature — Wall
-[ ]  2848  Transcendent Envoy                       {1}{W}           Enchantment Creature — Griffin
+[x]  2848  Transcendent Envoy                       {1}{W}           Enchantment Creature — Griffin
 [ ]  2849  Sovereign Okinec Ahau                    {2}{G}{W}        Legendary Creature — Cat Noble
 [ ]  2850  Metamorphosis Fanatic                    {4}{B}{B}        Creature — Human Cleric
-[ ]  2851  Scythecat Cub                            {1}{G}           Creature — Cat
+[x]  2851  Scythecat Cub                            {1}{G}           Creature — Cat
 [x]  2852  Keen Sense                               {G}              Enchantment — Aura
 [x]  2853  Zhulodok, Void Gorger                    {5}{C}           Legendary Creature — Eldrazi
-[ ]  2854  Olivia's Wrath                           {4}{B}           Sorcery
+[x]  2854  Olivia's Wrath                           {4}{B}           Sorcery
 [ ]  2855  Archetype of Aggression                  {1}{R}{R}        Enchantment Creature — Human Warrior
-[ ]  2856  Headless Rider                           {2}{B}           Creature — Zombie
+[x]  2856  Headless Rider                           {2}{B}           Creature — Zombie
 [x]  2857  Ratadrabik of Urborg                     {2}{W}{B}        Legendary Creature — Zombie Wizard
 [ ]  2858  Wyll's Reversal                          {2}{R}           Instant
 [ ]  2859  Sunspine Lynx                            {2}{R}{R}        Creature — Elemental Cat
 [ ]  2860  Hell to Pay                              {X}{R}           Sorcery
 [ ]  2861  Ichormoon Gauntlet                       {2}{U}           Artifact
 [ ]  2862  Drift of Phantasms                       {2}{U}           Creature — Spirit
-[ ]  2863  Sacrifice                                {B}              Instant
+[x]  2863  Sacrifice                                {B}              Instant
 [x]  2864  Gingerbread Cabin                        {0}              Land — Forest
-[ ]  2865  Revenge of Ravens                        {3}{B}           Enchantment
+[x]  2865  Revenge of Ravens                        {3}{B}           Enchantment
 [ ]  2866  Inspiring Leader                         {2}{W}           Legendary Enchantment — Background
-[ ]  2867  Venat, Heart of Hydaelyn // Hydaelyn, the Mothercrystal {3}              Legendary Creature — Elder Wizard // Legendary Creature — God
-[ ]  2868  Earthquake                               {X}{R}           Sorcery
+[x]  2867  Venat, Heart of Hydaelyn // Hydaelyn, the Mothercrystal {3}              Legendary Creature — Elder Wizard // Legendary Creature — God
+[x]  2868  Earthquake                               {X}{R}           Sorcery
 [x]  2869  Fell                                     {1}{B}           Sorcery
 [x]  2870  Ripjaw Raptor                            {2}{G}{G}        Creature — Dinosaur
 [ ]  2871  Tooth and Nail                           {5}{G}{G}        Sorcery
 [ ]  2872  Pain for All                             {2}{R}           Enchantment — Aura
-[ ]  2873  Elvish Harbinger                         {2}{G}           Creature — Elf Druid
+[x]  2873  Elvish Harbinger                         {2}{G}           Creature — Elf Druid
 [ ]  2874  Nowhere to Run                           {1}{B}           Enchantment
-[ ]  2875  Mocking Sprite                           {2}{U}           Creature — Faerie Rogue
-[ ]  2876  Finale of Glory                          {X}{W}{W}        Sorcery
+[x]  2875  Mocking Sprite                           {2}{U}           Creature — Faerie Rogue
+[x]  2876  Finale of Glory                          {X}{W}{W}        Sorcery
 [ ]  2877  Winter Moon                              {2}              Artifact
 [ ]  2878  Archetype of Endurance                   {6}{G}{G}        Enchantment Creature — Boar
-[ ]  2879  Celestine, the Living Saint              {4}{W}           Legendary Creature — Human Warrior
-[ ]  2880  Basilisk Gate                            {0}              Land — Gate
+[x]  2879  Celestine, the Living Saint              {4}{W}           Legendary Creature — Human Warrior
+[x]  2880  Basilisk Gate                            {0}              Land — Gate
 [ ]  2881  Silent-Blade Oni                         {3}{U}{U}{B}{B}  Creature — Demon Ninja
 [ ]  2882  Stormtide Leviathan                      {5}{U}{U}{U}     Creature — Leviathan
 [x]  2883  Jodah, the Unifier                       {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
-[ ]  2884  Glistening Sphere                        {3}              Artifact
+[x]  2884  Glistening Sphere                        {3}              Artifact
 [x]  2885  One with the Machine                     {3}{U}           Sorcery
 [ ]  2886  Silver-Fur Master                        {U}{B}           Creature — Rat Ninja
 [ ]  2887  Unholy Annex // Ritual Chamber           {2}{B} // {3}{B}{B} Enchantment — Room // Enchantment — Room
 [ ]  2888  Renata, Called to the Hunt               {2}{G}{G}        Legendary Enchantment Creature — Demigod
 [ ]  2889  Outcaster Trailblazer                    {2}{G}           Creature — Human Druid
-[ ]  2890  Chief of the Foundry                     {3}              Artifact Creature — Construct
+[x]  2890  Chief of the Foundry                     {3}              Artifact Creature — Construct
 [ ]  2891  Paradox Haze                             {2}{U}           Enchantment — Aura
 [ ]  2892  Fraying Sanity                           {2}{U}           Enchantment — Aura Curse
-[ ]  2893  Shadow Rift                              {U}              Instant
-[ ]  2894  Wrecking Ball Arm                        {2}              Legendary Artifact — Equipment
-[ ]  2895  Cackling Counterpart                     {1}{U}{U}        Instant
+[x]  2893  Shadow Rift                              {U}              Instant
+[x]  2894  Wrecking Ball Arm                        {2}              Legendary Artifact — Equipment
+[x]  2895  Cackling Counterpart                     {1}{U}{U}        Instant
 [x]  2896  Phyresis                                 {1}{B}           Enchantment — Aura
-[ ]  2897  Oswald Fiddlebender                      {1}{W}           Legendary Creature — Gnome Artificer
-[ ]  2898  Flumph                                   {1}{W}           Creature — Jellyfish
+[x]  2897  Oswald Fiddlebender                      {1}{W}           Legendary Creature — Gnome Artificer
+[x]  2898  Flumph                                   {1}{W}           Creature — Jellyfish
 [ ]  2899  Wash Away                                {U}              Instant
 [x]  2900  Arbor Adherent                           {3}{G}           Creature — Dog Druid
 [x]  2901  Kefka, Court Mage // Kefka, Ruler of Ruin {5}              Legendary Creature — Human Wizard // Legendary Creature — Avatar Wizard
 [ ]  2902  Magewright's Stone                       {2}              Artifact
-[ ]  2903  Undead Warchief                          {2}{B}{B}        Creature — Zombie
+[x]  2903  Undead Warchief                          {2}{B}{B}        Creature — Zombie
 [x]  2904  Hinterland Sanctifier                    {W}              Creature — Rabbit Cleric
 [ ]  2905  Overlord of the Floodpits                {3}{U}{U}        Enchantment Creature — Avatar Horror
-[ ]  2906  Machine God's Effigy                     {4}              Artifact
+[x]  2906  Machine God's Effigy                     {4}              Artifact
 [x]  2907  Gleaming Overseer                        {1}{U}{B}        Creature — Zombie Wizard
 [x]  2908  Rite of the Dragoncaller                 {4}{R}{R}        Enchantment
 [x]  2909  Simic Charm                              {G}{U}           Instant
-[ ]  2910  Wolverine Riders                         {4}{G}{G}        Creature — Elf Warrior
-[ ]  2911  Sanctum of Ugin                          {0}              Land
+[x]  2910  Wolverine Riders                         {4}{G}{G}        Creature — Elf Warrior
+[x]  2911  Sanctum of Ugin                          {0}              Land
 [x]  2912  Orcish Lumberjack                        {R}              Creature — Orc
-[ ]  2913  Summer Bloom                             {1}{G}           Sorcery
+[x]  2913  Summer Bloom                             {1}{G}           Sorcery
 [x]  2914  Memorial to Folly                        {0}              Land
 [ ]  2915  Pariah                                   {2}{W}           Enchantment — Aura
 [x]  2916  Storm Herd                               {8}{W}{W}        Sorcery
-[ ]  2917  Otharri, Suns' Glory                     {3}{R}{W}        Legendary Creature — Phoenix
+[x]  2917  Otharri, Suns' Glory                     {3}{R}{W}        Legendary Creature — Phoenix
 [x]  2918  Geode Rager                              {4}{R}{R}        Creature — Elemental
-[ ]  2919  Nirkana Revenant                         {4}{B}{B}        Creature — Vampire Shade
+[x]  2919  Nirkana Revenant                         {4}{B}{B}        Creature — Vampire Shade
 [ ]  2920  Spikefield Hazard // Spikefield Cave     {1}              Instant // Land
-[ ]  2921  Longshot, Rebel Bowman                   {3}{R}           Legendary Creature — Human Rebel Ally
+[x]  2921  Longshot, Rebel Bowman                   {3}{R}           Legendary Creature — Human Rebel Ally
 [x]  2922  Bitter Reunion                           {1}{R}           Enchantment
 [x]  2923  Glasswing Grace // Age-Graced Chapel     {5}              Enchantment — Aura // Land
-[ ]  2924  Unholy Grotto                            {0}              Land
-[ ]  2925  Farmer Cotton                            {X}{G}{W}        Legendary Creature — Halfling Peasant
+[x]  2924  Unholy Grotto                            {0}              Land
+[x]  2925  Farmer Cotton                            {X}{G}{W}        Legendary Creature — Halfling Peasant
 [ ]  2926  Ink-Eyes, Servant of Oni                 {4}{B}{B}        Legendary Creature — Rat Ninja
 [ ]  2927  Nykthos Paragon                          {4}{W}{W}        Enchantment Creature — Human Soldier
-[ ]  2928  Crystalline Crawler                      {4}              Artifact Creature — Construct
+[x]  2928  Crystalline Crawler                      {4}              Artifact Creature — Construct
 [x]  2929  Derevi, Empyrial Tactician               {G}{W}{U}        Legendary Creature — Bird Wizard
 [x]  2930  Legion Loyalty                           {6}{W}{W}        Enchantment
 [ ]  2931  Skirge Familiar                          {4}{B}           Creature — Phyrexian Imp
-[ ]  2932  Mudflat Village                          {0}              Land
+[x]  2932  Mudflat Village                          {0}              Land
 [ ]  2933  Duplicant                                {6}              Artifact Creature — Shapeshifter
 [ ]  2934  Savage Beating                           {3}{R}{R}        Instant
-[ ]  2935  Brokers Ascendancy                       {G}{W}{U}        Enchantment
+[x]  2935  Brokers Ascendancy                       {G}{W}{U}        Enchantment
 [x]  2936  Foundation Breaker                       {3}{G}           Creature — Elemental
-[ ]  2937  Toph, Hardheaded Teacher                 {2}{R}{G}        Legendary Creature — Human Warrior Ally
+[x]  2937  Toph, Hardheaded Teacher                 {2}{R}{G}        Legendary Creature — Human Warrior Ally
 [ ]  2938  Angel of Destiny                         {3}{W}{W}        Creature — Angel Cleric
 [x]  2939  Necroskitter                             {1}{B}{B}        Creature — Elemental
 [ ]  2940  Beacon of Immortality                    {5}{W}           Instant
 [ ]  2941  Spider-Sense                             {1}{U}           Instant
-[ ]  2942  The Goose Mother                         {X}{G}{U}        Legendary Creature — Bird Hydra
-[ ]  2943  Jolrael, Mwonvuli Recluse                {1}{G}           Legendary Creature — Human Druid
+[x]  2942  The Goose Mother                         {X}{G}{U}        Legendary Creature — Bird Hydra
+[x]  2943  Jolrael, Mwonvuli Recluse                {1}{G}           Legendary Creature — Human Druid
 [ ]  2944  Tasha's Hideous Laughter                 {1}{U}{U}        Sorcery
 [ ]  2945  Umezawa's Jitte                          {2}              Legendary Artifact — Equipment
 [ ]  2946  Maze's End                               {0}              Land
 [ ]  2947  Benevolent Hydra                         {X}{G}{G}        Creature — Hydra
 [ ]  2948  Cultivator's Caravan                     {3}              Artifact — Vehicle
-[ ]  2949  Oakhollow Village                        {0}              Land
+[x]  2949  Oakhollow Village                        {0}              Land
 [ ]  2950  Nazgûl                                   {2}{B}           Creature — Wraith Knight
-[ ]  2951  Shoreline Looter                         {1}{U}           Creature — Rat Rogue
+[x]  2951  Shoreline Looter                         {1}{U}           Creature — Rat Rogue
 [x]  2952  Dragonstorm Globe                        {3}              Artifact
 [ ]  2953  Fated Firepower                          {X}{R}{R}{R}     Enchantment
 [x]  2954  Curious Altisaur                         {3}{G}           Creature — Dinosaur
 [ ]  2955  Underrealm Lich                          {3}{B}{G}        Creature — Zombie Elf Shaman
-[ ]  2956  Eye of Ugin                              {0}              Legendary Land
+[x]  2956  Eye of Ugin                              {0}              Legendary Land
 [ ]  2957  Yenna, Redtooth Regent                   {2}{G}{W}        Legendary Creature — Elf Noble
-[ ]  2958  Crossroads Village                       {0}              Land — Town
+[x]  2958  Crossroads Village                       {0}              Land — Town
 [x]  2959  Unsummon                                 {U}              Instant
 [ ]  2960  Settle the Wreckage                      {2}{W}{W}        Instant
 [x]  2961  Tower Defense                            {1}{G}           Instant
 [ ]  2962  Rampaging Yao Guai                       {X}{G}{G}{G}     Creature — Bear Mutant
 [ ]  2963  The Unagi of Kyoshi Island               {3}{U}{U}        Legendary Creature — Serpent
-[ ]  2964  Tyvar, the Pummeler                      {1}{G}{G}        Legendary Creature — Elf Warrior
-[ ]  2965  Mindsplice Apparatus                     {3}{U}           Artifact
+[x]  2964  Tyvar, the Pummeler                      {1}{G}{G}        Legendary Creature — Elf Warrior
+[x]  2965  Mindsplice Apparatus                     {3}{U}           Artifact
 [x]  2966  Will of the Sultai                       {4}{G}           Sorcery
 [x]  2967  Dragon Mage                              {5}{R}{R}        Creature — Dragon Wizard
 [x]  2968  Revive the Shire                         {1}{G}           Sorcery
-[ ]  2969  Sleight of Hand                          {U}              Sorcery
-[ ]  2970  Starnheim Courser                        {2}{W}           Creature — Pegasus
-[ ]  2971  Ulvenwald Tracker                        {G}              Creature — Human Shaman
+[x]  2969  Sleight of Hand                          {U}              Sorcery
+[x]  2970  Starnheim Courser                        {2}{W}           Creature — Pegasus
+[x]  2971  Ulvenwald Tracker                        {G}              Creature — Human Shaman
 [ ]  2972  Doppelgang                               {X}{X}{X}{G}{U}  Sorcery
 [ ]  2973  Fatal Push                               {B}              Instant
 [ ]  2974  Lifestream's Blessing                    {4}{G}{G}        Instant

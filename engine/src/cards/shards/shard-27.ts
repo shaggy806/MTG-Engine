@@ -77,6 +77,7 @@ import _poolGhoulcallerGisa from "../pool/ghoulcaller-gisa.js";
 import _poolGiantScorpion from "../pool/giant-scorpion.js";
 import _poolGladecoverScout from "../pool/gladecover-scout.js";
 import _poolGoblinMountaineer from "../pool/goblin-mountaineer.js";
+import _poolGreatDivideGuide from "../pool/great-divide-guide.js";
 import _poolGrimclawBats from "../pool/grimclaw-bats.js";
 import _poolHavenwoodBattleground from "../pool/havenwood-battleground.js";
 import _poolHazoretsMonument from "../pool/hazorets-monument.js";
@@ -302,6 +303,7 @@ const shard: CardShard = {
     _poolGiantScorpion,
     _poolGladecoverScout,
     _poolGoblinMountaineer,
+    _poolGreatDivideGuide,
     _poolGrimclawBats,
     _poolHavenwoodBattleground,
     _poolHazoretsMonument,

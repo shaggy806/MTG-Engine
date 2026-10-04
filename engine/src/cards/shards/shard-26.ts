@@ -92,6 +92,8 @@ import _poolIchorRats from "../pool/ichor-rats.js";
 import _poolImmolation from "../pool/immolation.js";
 import _poolImpetuousSunchaser from "../pool/impetuous-sunchaser.js";
 import _poolImprovisedWeaponry from "../pool/improvised-weaponry.js";
+import _poolInfectiousBite from "../pool/infectious-bite.js";
+import _poolInspiredTinkering from "../pool/inspired-tinkering.js";
 import _poolInspiringCleric from "../pool/inspiring-cleric.js";
 import _poolInspiringUnicorn from "../pool/inspiring-unicorn.js";
 import _poolIronGiant from "../pool/iron-giant.js";
@@ -131,6 +133,7 @@ import _poolNephaliaMoondrakes from "../pool/nephalia-moondrakes.js";
 import _poolNetherTraitor from "../pool/nether-traitor.js";
 import _poolNeurokHoversail from "../pool/neurok-hoversail.js";
 import _poolNeutralize from "../pool/neutralize.js";
+import _poolNirkanaRevenant from "../pool/nirkana-revenant.js";
 import _poolNorwoodRanger from "../pool/norwood-ranger.js";
 import _poolNoxiousToad from "../pool/noxious-toad.js";
 import _poolObyrasAttendants from "../pool/obyras-attendants.js";
@@ -198,6 +201,7 @@ import _poolThornhideWolves from "../pool/thornhide-wolves.js";
 import _poolThrissNantukoPrimus from "../pool/thriss-nantuko-primus.js";
 import _poolTimelessLotus from "../pool/timeless-lotus.js";
 import _poolTirelessTracker from "../pool/tireless-tracker.js";
+import _poolTorrentialGearhulk from "../pool/torrential-gearhulk.js";
 import _poolTreasureHunter from "../pool/treasure-hunter.js";
 import _poolTritonShorestalker from "../pool/triton-shorestalker.js";
 import _poolUktabiOrangutan from "../pool/uktabi-orangutan.js";
@@ -224,6 +228,7 @@ import _poolZagothTriome from "../pool/zagoth-triome.js";
 import _poolZealotOfTheGodPharaoh from "../pool/zealot-of-the-god-pharaoh.js";
 import _poolZombieApocalypse from "../pool/zombie-apocalypse.js";
 import _tokensPegasusToken from "../tokens/pegasus-token.js";
+import _tokensRebelToken from "../tokens/rebel-token.js";
 import _tokensRobotToken from "../tokens/robot-token.js";
 import _tokensZombieToken from "../tokens/zombie-token.js";
 
@@ -318,6 +323,8 @@ const shard: CardShard = {
     _poolImmolation,
     _poolImpetuousSunchaser,
     _poolImprovisedWeaponry,
+    _poolInfectiousBite,
+    _poolInspiredTinkering,
     _poolInspiringCleric,
     _poolInspiringUnicorn,
     _poolIronGiant,
@@ -357,6 +364,7 @@ const shard: CardShard = {
     _poolNetherTraitor,
     _poolNeurokHoversail,
     _poolNeutralize,
+    _poolNirkanaRevenant,
     _poolNorwoodRanger,
     _poolNoxiousToad,
     _poolObyrasAttendants,
@@ -424,6 +432,7 @@ const shard: CardShard = {
     _poolThrissNantukoPrimus,
     _poolTimelessLotus,
     _poolTirelessTracker,
+    _poolTorrentialGearhulk,
     _poolTreasureHunter,
     _poolTritonShorestalker,
     _poolUktabiOrangutan,
@@ -452,6 +461,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensPegasusToken,
+    _tokensRebelToken,
     _tokensRobotToken,
     _tokensZombieToken,
   ],

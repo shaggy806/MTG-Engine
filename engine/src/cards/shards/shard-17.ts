@@ -140,6 +140,7 @@ import _poolPrimevalShambler from "../pool/primeval-shambler.js";
 import _poolPrismariCommand from "../pool/prismari-command.js";
 import _poolPullFromTomorrow from "../pool/pull-from-tomorrow.js";
 import _poolPyreCharger from "../pool/pyre-charger.js";
+import _poolPyromancersGoggles from "../pool/pyromancers-goggles.js";
 import _poolQueenMarchesa from "../pool/queen-marchesa.js";
 import _poolQuickStudy from "../pool/quick-study.js";
 import _poolRaffineSchemingSeer from "../pool/raffine-scheming-seer.js";
@@ -373,6 +374,7 @@ const shard: CardShard = {
     _poolPrismariCommand,
     _poolPullFromTomorrow,
     _poolPyreCharger,
+    _poolPyromancersGoggles,
     _poolQueenMarchesa,
     _poolQuickStudy,
     _poolRaffineSchemingSeer,

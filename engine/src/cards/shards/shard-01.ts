@@ -34,6 +34,7 @@ import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
 import _poolCodexShredder from "../pool/codex-shredder.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
+import _poolCryptothrall from "../pool/cryptothrall.js";
 import _poolDarkDeal from "../pool/dark-deal.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
@@ -51,6 +52,7 @@ import _poolEumidianTerrabotanist from "../pool/eumidian-terrabotanist.js";
 import _poolEvolutionWitness from "../pool/evolution-witness.js";
 import _poolFarbogBoneflinger from "../pool/farbog-boneflinger.js";
 import _poolFarbogExplorer from "../pool/farbog-explorer.js";
+import _poolFarmerCotton from "../pool/farmer-cotton.js";
 import _poolFlameblastDragon from "../pool/flameblast-dragon.js";
 import _poolFloodedGrove from "../pool/flooded-grove.js";
 import _poolForumOfAmity from "../pool/forum-of-amity.js";
@@ -178,8 +180,10 @@ import _poolThreeTragedies from "../pool/three-tragedies.js";
 import _poolThrummingbird from "../pool/thrummingbird.js";
 import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.js";
 import _poolTragicPoet from "../pool/tragic-poet.js";
+import _poolTraumatize from "../pool/traumatize.js";
 import _poolTwiceTheRage from "../pool/twice-the-rage.js";
 import _poolTwilightPanther from "../pool/twilight-panther.js";
+import _poolUlvenwaldTracker from "../pool/ulvenwald-tracker.js";
 import _poolUnexpectedWindfall from "../pool/unexpected-windfall.js";
 import _poolUnseenWalker from "../pool/unseen-walker.js";
 import _poolUrzasPowerPlant from "../pool/urzas-power-plant.js";
@@ -191,6 +195,7 @@ import _poolVengefulDead from "../pool/vengeful-dead.js";
 import _poolVeteranCavalier from "../pool/veteran-cavalier.js";
 import _poolVirusBeetle from "../pool/virus-beetle.js";
 import _poolVizkopaVampire from "../pool/vizkopa-vampire.js";
+import _poolVolrathsStronghold from "../pool/volraths-stronghold.js";
 import _poolVoraciousBibliophile from "../pool/voracious-bibliophile.js";
 import _poolWanderOff from "../pool/wander-off.js";
 import _poolWastewoodVerge from "../pool/wastewood-verge.js";
@@ -238,6 +243,7 @@ const shard: CardShard = {
     _poolCodexShredder,
     _poolCosmicSpiderMan,
     _poolCourierHawk,
+    _poolCryptothrall,
     _poolDarkDeal,
     _poolDefiantSalvager,
     _poolDejaVu,
@@ -255,6 +261,7 @@ const shard: CardShard = {
     _poolEvolutionWitness,
     _poolFarbogBoneflinger,
     _poolFarbogExplorer,
+    _poolFarmerCotton,
     _poolFlameblastDragon,
     _poolFloodedGrove,
     _poolForumOfAmity,
@@ -382,8 +389,10 @@ const shard: CardShard = {
     _poolThrummingbird,
     _poolTitaniaProtectorOfArgoth,
     _poolTragicPoet,
+    _poolTraumatize,
     _poolTwiceTheRage,
     _poolTwilightPanther,
+    _poolUlvenwaldTracker,
     _poolUnexpectedWindfall,
     _poolUnseenWalker,
     _poolUrzasPowerPlant,
@@ -395,6 +404,7 @@ const shard: CardShard = {
     _poolVeteranCavalier,
     _poolVirusBeetle,
     _poolVizkopaVampire,
+    _poolVolrathsStronghold,
     _poolVoraciousBibliophile,
     _poolWanderOff,
     _poolWastewoodVerge,

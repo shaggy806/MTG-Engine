@@ -97,6 +97,7 @@ import _poolIrrigatedFarmland from "../pool/irrigated-farmland.js";
 import _poolJackedRabbit from "../pool/jacked-rabbit.js";
 import _poolJalumTome from "../pool/jalum-tome.js";
 import _poolJeskaWarriorAdept from "../pool/jeska-warrior-adept.js";
+import _poolJeskaiAscendancy from "../pool/jeskai-ascendancy.js";
 import _poolKeeneyeAven from "../pool/keeneye-aven.js";
 import _poolKessigFlamebreather from "../pool/kessig-flamebreather.js";
 import _poolKrenkosEnforcer from "../pool/krenkos-enforcer.js";
@@ -126,6 +127,7 @@ import _poolNullmageShepherd from "../pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "../pool/ob-nixilis-the-fallen.js";
 import _poolOdricLunarchMarshal from "../pool/odric-lunarch-marshal.js";
 import _poolOgreArsonist from "../pool/ogre-arsonist.js";
+import _poolOliviasWrath from "../pool/olivias-wrath.js";
 import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
 import _poolParapetWatchers from "../pool/parapet-watchers.js";
 import _poolPawnOfUlamog from "../pool/pawn-of-ulamog.js";
@@ -212,6 +214,7 @@ import _poolWeiInfantry from "../pool/wei-infantry.js";
 import _poolWildfire from "../pool/wildfire.js";
 import _poolWilyGoblin from "../pool/wily-goblin.js";
 import _poolWitnessOfTomorrows from "../pool/witness-of-tomorrows.js";
+import _poolWolverineRiders from "../pool/wolverine-riders.js";
 import _poolWoodElves from "../pool/wood-elves.js";
 import _poolWoodedFoothills from "../pool/wooded-foothills.js";
 import _poolYavimayaCradleOfGrowth from "../pool/yavimaya-cradle-of-growth.js";
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolJackedRabbit,
     _poolJalumTome,
     _poolJeskaWarriorAdept,
+    _poolJeskaiAscendancy,
     _poolKeeneyeAven,
     _poolKessigFlamebreather,
     _poolKrenkosEnforcer,
@@ -351,6 +355,7 @@ const shard: CardShard = {
     _poolObNixilisTheFallen,
     _poolOdricLunarchMarshal,
     _poolOgreArsonist,
+    _poolOliviasWrath,
     _poolOtherworldlyGaze,
     _poolParapetWatchers,
     _poolPawnOfUlamog,
@@ -437,6 +442,7 @@ const shard: CardShard = {
     _poolWildfire,
     _poolWilyGoblin,
     _poolWitnessOfTomorrows,
+    _poolWolverineRiders,
     _poolWoodElves,
     _poolWoodedFoothills,
     _poolYavimayaCradleOfGrowth,

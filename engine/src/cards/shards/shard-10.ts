@@ -37,6 +37,7 @@ import _poolBottleGnomes from "../pool/bottle-gnomes.js";
 import _poolBrawlersPlate from "../pool/brawlers-plate.js";
 import _poolBrazenFreebooter from "../pool/brazen-freebooter.js";
 import _poolBreathOfLife from "../pool/breath-of-life.js";
+import _poolBrokersAscendancy from "../pool/brokers-ascendancy.js";
 import _poolBullRush from "../pool/bull-rush.js";
 import _poolBurstOfEnergy from "../pool/burst-of-energy.js";
 import _poolCanyonMinotaur from "../pool/canyon-minotaur.js";
@@ -93,6 +94,7 @@ import _poolGracefulAdept from "../pool/graceful-adept.js";
 import _poolGreaterGood from "../pool/greater-good.js";
 import _poolGrimMonolith from "../pool/grim-monolith.js";
 import _poolGrimPhysician from "../pool/grim-physician.js";
+import _poolGuardianAugmenter from "../pool/guardian-augmenter.js";
 import _poolHammerOfNazahn from "../pool/hammer-of-nazahn.js";
 import _poolHermitDruid from "../pool/hermit-druid.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
@@ -201,6 +203,7 @@ import _poolTalruumMinotaur from "../pool/talruum-minotaur.js";
 import _poolTamiyosSafekeeping from "../pool/tamiyos-safekeeping.js";
 import _poolTannukMemorialEnsign from "../pool/tannuk-memorial-ensign.js";
 import _poolTheMindskinner from "../pool/the-mindskinner.js";
+import _poolTheSeriema from "../pool/the-seriema.js";
 import _poolThopterArchitect from "../pool/thopter-architect.js";
 import _poolThoughtScour from "../pool/thought-scour.js";
 import _poolTigereyeCameo from "../pool/tigereye-cameo.js";
@@ -279,6 +282,7 @@ const shard: CardShard = {
     _poolBrawlersPlate,
     _poolBrazenFreebooter,
     _poolBreathOfLife,
+    _poolBrokersAscendancy,
     _poolBullRush,
     _poolBurstOfEnergy,
     _poolCanyonMinotaur,
@@ -335,6 +339,7 @@ const shard: CardShard = {
     _poolGreaterGood,
     _poolGrimMonolith,
     _poolGrimPhysician,
+    _poolGuardianAugmenter,
     _poolHammerOfNazahn,
     _poolHermitDruid,
     _poolHeroicIntervention,
@@ -443,6 +448,7 @@ const shard: CardShard = {
     _poolTamiyosSafekeeping,
     _poolTannukMemorialEnsign,
     _poolTheMindskinner,
+    _poolTheSeriema,
     _poolThopterArchitect,
     _poolThoughtScour,
     _poolTigereyeCameo,

@@ -68,6 +68,7 @@ import _poolGleamingGeardrake from "../pool/gleaming-geardrake.js";
 import _poolGlimmeringAngel from "../pool/glimmering-angel.js";
 import _poolGoblinOffensive from "../pool/goblin-offensive.js";
 import _poolGodPharaohsStatue from "../pool/god-pharaohs-statue.js";
+import _poolGraveshifter from "../pool/graveshifter.js";
 import _poolGrayOgre from "../pool/gray-ogre.js";
 import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
@@ -118,6 +119,7 @@ import _poolOjerAxonilDeepestMight from "../pool/ojer-axonil-deepest-might.js";
 import _poolOldGhastbark from "../pool/old-ghastbark.js";
 import _poolOminousSeas from "../pool/ominous-seas.js";
 import _poolOnyxMage from "../pool/onyx-mage.js";
+import _poolOtharriSunsGlory from "../pool/otharri-suns-glory.js";
 import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
 import _poolPlatedSlagwurm from "../pool/plated-slagwurm.js";
@@ -149,6 +151,7 @@ import _poolSenseisDiviningTop from "../pool/senseis-divining-top.js";
 import _poolSerpentSpecialist from "../pool/serpent-specialist.js";
 import _poolShadowcloakVampire from "../pool/shadowcloak-vampire.js";
 import _poolShockingSharpshooter from "../pool/shocking-sharpshooter.js";
+import _poolShorelineLooter from "../pool/shoreline-looter.js";
 import _poolSimicGrowthChamber from "../pool/simic-growth-chamber.js";
 import _poolSimicSkySwallower from "../pool/simic-sky-swallower.js";
 import _poolSimulacrumSynthesizer from "../pool/simulacrum-synthesizer.js";
@@ -161,6 +164,7 @@ import _poolSonicScrewdriver from "../pool/sonic-screwdriver.js";
 import _poolSoulknifeSpy from "../pool/soulknife-spy.js";
 import _poolSpiritualGuardian from "../pool/spiritual-guardian.js";
 import _poolSpottedGriffin from "../pool/spotted-griffin.js";
+import _poolStarnheimCourser from "../pool/starnheim-courser.js";
 import _poolSteadfastness from "../pool/steadfastness.js";
 import _poolStingingBarrier from "../pool/stinging-barrier.js";
 import _poolStolenGrain from "../pool/stolen-grain.js";
@@ -195,6 +199,7 @@ import _poolWithstandDeath from "../pool/withstand-death.js";
 import _poolWortBoggartAuntie from "../pool/wort-boggart-auntie.js";
 import _poolYellowScarvesTroops from "../pool/yellow-scarves-troops.js";
 import _poolZookeeperMechan from "../pool/zookeeper-mechan.js";
+import _tokensAngelWarriorToken from "../tokens/angel-warrior-token.js";
 import _tokensElementalToken53 from "../tokens/elemental-token-5-3.js";
 import _tokensHornetToken from "../tokens/hornet-token.js";
 import _tokensImpTokenJudith from "../tokens/imp-token-judith.js";
@@ -269,6 +274,7 @@ const shard: CardShard = {
     _poolGlimmeringAngel,
     _poolGoblinOffensive,
     _poolGodPharaohsStatue,
+    _poolGraveshifter,
     _poolGrayOgre,
     _poolGrazingGladehart,
     _poolGyreEngineer,
@@ -319,6 +325,7 @@ const shard: CardShard = {
     _poolOldGhastbark,
     _poolOminousSeas,
     _poolOnyxMage,
+    _poolOtharriSunsGlory,
     _poolPetAvengers,
     _poolPhalanxVanguard,
     _poolPlatedSlagwurm,
@@ -350,6 +357,7 @@ const shard: CardShard = {
     _poolSerpentSpecialist,
     _poolShadowcloakVampire,
     _poolShockingSharpshooter,
+    _poolShorelineLooter,
     _poolSimicGrowthChamber,
     _poolSimicSkySwallower,
     _poolSimulacrumSynthesizer,
@@ -362,6 +370,7 @@ const shard: CardShard = {
     _poolSoulknifeSpy,
     _poolSpiritualGuardian,
     _poolSpottedGriffin,
+    _poolStarnheimCourser,
     _poolSteadfastness,
     _poolStingingBarrier,
     _poolStolenGrain,
@@ -398,6 +407,7 @@ const shard: CardShard = {
     _poolZookeeperMechan,
   ],
   tokens: [
+    _tokensAngelWarriorToken,
     _tokensElementalToken53,
     _tokensHornetToken,
     _tokensImpTokenJudith,

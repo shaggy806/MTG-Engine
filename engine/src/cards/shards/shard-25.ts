@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-titan.js";
+import _poolAbundantCountryside from "../pool/abundant-countryside.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
 import _poolAncientGrudge from "../pool/ancient-grudge.js";
 import _poolAquusSteed from "../pool/aquus-steed.js";
@@ -75,6 +76,7 @@ import _poolFirebrandArcher from "../pool/firebrand-archer.js";
 import _poolFlameSlash from "../pool/flame-slash.js";
 import _poolFleetingDistraction from "../pool/fleeting-distraction.js";
 import _poolFlowstoneInfusion from "../pool/flowstone-infusion.js";
+import _poolFlumph from "../pool/flumph.js";
 import _poolFlushOut from "../pool/flush-out.js";
 import _poolFontOfFortunes from "../pool/font-of-fortunes.js";
 import _poolFoundryOfTheConsuls from "../pool/foundry-of-the-consuls.js";
@@ -94,6 +96,7 @@ import _poolGraspingLongneck from "../pool/grasping-longneck.js";
 import _poolHallOfHeliodsGenerosity from "../pool/hall-of-heliods-generosity.js";
 import _poolHarnessedSnubhorn from "../pool/harnessed-snubhorn.js";
 import _poolHauntedGuardian from "../pool/haunted-guardian.js";
+import _poolHydaelynTheMothercrystal from "../pool/hydaelyn-the-mothercrystal.js";
 import _poolHydrosurge from "../pool/hydrosurge.js";
 import _poolIgneousGolem from "../pool/igneous-golem.js";
 import _poolIllvoiGaleblade from "../pool/illvoi-galeblade.js";
@@ -121,6 +124,7 @@ import _poolLoyalApprentice from "../pool/loyal-apprentice.js";
 import _poolMantisRider from "../pool/mantis-rider.js";
 import _poolMasterOfEtherium from "../pool/master-of-etherium.js";
 import _poolMinotaurAbomination from "../pool/minotaur-abomination.js";
+import _poolMistveilPlains from "../pool/mistveil-plains.js";
 import _poolMoggcatcher from "../pool/moggcatcher.js";
 import _poolMorbidOpportunist from "../pool/morbid-opportunist.js";
 import _poolMorgueThrull from "../pool/morgue-thrull.js";
@@ -156,6 +160,7 @@ import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
 import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
 import _poolRequisitionRaid from "../pool/requisition-raid.js";
+import _poolReyavMasterSmith from "../pool/reyav-master-smith.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiseOfTheEldrazi from "../pool/rise-of-the-eldrazi.js";
@@ -199,6 +204,7 @@ import _poolTitanHunter from "../pool/titan-hunter.js";
 import _poolTopiaryStomper from "../pool/topiary-stomper.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
+import _poolTyvarThePummeler from "../pool/tyvar-the-pummeler.js";
 import _poolUltimoCivilizationsEnd from "../pool/ultimo-civilizations-end.js";
 import _poolUltronDrone from "../pool/ultron-drone.js";
 import _poolUndercitySewers from "../pool/undercity-sewers.js";
@@ -234,6 +240,7 @@ import _tokensWurmToken from "../tokens/wurm-token.js";
 const shard: CardShard = {
   pool: [
     _poolAbominationTerrifyingTitan,
+    _poolAbundantCountryside,
     _poolAltarOfDementia,
     _poolAncientGrudge,
     _poolAquusSteed,
@@ -305,6 +312,7 @@ const shard: CardShard = {
     _poolFlameSlash,
     _poolFleetingDistraction,
     _poolFlowstoneInfusion,
+    _poolFlumph,
     _poolFlushOut,
     _poolFontOfFortunes,
     _poolFoundryOfTheConsuls,
@@ -324,6 +332,7 @@ const shard: CardShard = {
     _poolHallOfHeliodsGenerosity,
     _poolHarnessedSnubhorn,
     _poolHauntedGuardian,
+    _poolHydaelynTheMothercrystal,
     _poolHydrosurge,
     _poolIgneousGolem,
     _poolIllvoiGaleblade,
@@ -351,6 +360,7 @@ const shard: CardShard = {
     _poolMantisRider,
     _poolMasterOfEtherium,
     _poolMinotaurAbomination,
+    _poolMistveilPlains,
     _poolMoggcatcher,
     _poolMorbidOpportunist,
     _poolMorgueThrull,
@@ -386,6 +396,7 @@ const shard: CardShard = {
     _poolRecklessBarbarian,
     _poolReflectionsOfLittjara,
     _poolRequisitionRaid,
+    _poolReyavMasterSmith,
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
     _poolRiseOfTheEldrazi,
@@ -429,6 +440,7 @@ const shard: CardShard = {
     _poolTopiaryStomper,
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
+    _poolTyvarThePummeler,
     _poolUltimoCivilizationsEnd,
     _poolUltronDrone,
     _poolUndercitySewers,

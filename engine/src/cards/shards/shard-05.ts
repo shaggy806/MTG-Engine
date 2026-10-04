@@ -39,6 +39,7 @@ import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
 import _poolCentaurVinecrasher from "../pool/centaur-vinecrasher.js";
 import _poolChampionOfTheParish from "../pool/champion-of-the-parish.js";
 import _poolCharismaticVanguard from "../pool/charismatic-vanguard.js";
+import _poolChiefOfTheFoundry from "../pool/chief-of-the-foundry.js";
 import _poolChitteringWitch from "../pool/chittering-witch.js";
 import _poolChorusOfWoe from "../pool/chorus-of-woe.js";
 import _poolChronicleOfVictory from "../pool/chronicle-of-victory.js";
@@ -139,6 +140,7 @@ import _poolNerivCracklingVanguard from "../pool/neriv-crackling-vanguard.js";
 import _poolNetworkDisruptor from "../pool/network-disruptor.js";
 import _poolNobleHierarch from "../pool/noble-hierarch.js";
 import _poolNorinTheWary from "../pool/norin-the-wary.js";
+import _poolOakhollowVillage from "../pool/oakhollow-village.js";
 import _poolObsidianGiant from "../pool/obsidian-giant.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
 import _poolPactOfNegation from "../pool/pact-of-negation.js";
@@ -151,6 +153,7 @@ import _poolRakdosShredFreak from "../pool/rakdos-shred-freak.js";
 import _poolRapidAugmenter from "../pool/rapid-augmenter.js";
 import _poolRavenousIntruder from "../pool/ravenous-intruder.js";
 import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
+import _poolResonatingLute from "../pool/resonating-lute.js";
 import _poolRhonassMonument from "../pool/rhonass-monument.js";
 import _poolRiftBolt from "../pool/rift-bolt.js";
 import _poolRingOfTheLucii from "../pool/ring-of-the-lucii.js";
@@ -162,6 +165,7 @@ import _poolRuinationWurm from "../pool/ruination-wurm.js";
 import _poolRuinsRecluse from "../pool/ruins-recluse.js";
 import _poolRuptureSpire from "../pool/rupture-spire.js";
 import _poolScoriaElemental from "../pool/scoria-elemental.js";
+import _poolScythecatCub from "../pool/scythecat-cub.js";
 import _poolSeekerOfSkybreak from "../pool/seeker-of-skybreak.js";
 import _poolSelesnyaEvangel from "../pool/selesnya-evangel.js";
 import _poolSerpentAssassin from "../pool/serpent-assassin.js";
@@ -190,6 +194,7 @@ import _poolSupplyRunners from "../pool/supply-runners.js";
 import _poolSupremeVerdict from "../pool/supreme-verdict.js";
 import _poolSwanSong from "../pool/swan-song.js";
 import _poolSwiftfootBoots from "../pool/swiftfoot-boots.js";
+import _poolSylvanAnthem from "../pool/sylvan-anthem.js";
 import _poolTarmogoyf from "../pool/tarmogoyf.js";
 import _poolTeferisPuzzleBox from "../pool/teferis-puzzle-box.js";
 import _poolTempleBell from "../pool/temple-bell.js";
@@ -226,6 +231,7 @@ import _poolZodiacSnake from "../pool/zodiac-snake.js";
 import _poolZurgoStormrender from "../pool/zurgo-stormrender.js";
 import _tokensBananaToken from "../tokens/banana-token.js";
 import _tokensDeathtouchSnakeToken from "../tokens/deathtouch-snake-token.js";
+import _tokensHalflingToken from "../tokens/halfling-token.js";
 import _tokensHumanSoldierToken from "../tokens/human-soldier-token.js";
 import _tokensInsectTokenFlyingHaste from "../tokens/insect-token-flying-haste.js";
 import _tokensRatTokenVren from "../tokens/rat-token-vren.js";
@@ -269,6 +275,7 @@ const shard: CardShard = {
     _poolCentaurVinecrasher,
     _poolChampionOfTheParish,
     _poolCharismaticVanguard,
+    _poolChiefOfTheFoundry,
     _poolChitteringWitch,
     _poolChorusOfWoe,
     _poolChronicleOfVictory,
@@ -369,6 +376,7 @@ const shard: CardShard = {
     _poolNetworkDisruptor,
     _poolNobleHierarch,
     _poolNorinTheWary,
+    _poolOakhollowVillage,
     _poolObsidianGiant,
     _poolOverwhelmingStampede,
     _poolPactOfNegation,
@@ -381,6 +389,7 @@ const shard: CardShard = {
     _poolRapidAugmenter,
     _poolRavenousIntruder,
     _poolRememberTheFallen,
+    _poolResonatingLute,
     _poolRhonassMonument,
     _poolRiftBolt,
     _poolRingOfTheLucii,
@@ -392,6 +401,7 @@ const shard: CardShard = {
     _poolRuinsRecluse,
     _poolRuptureSpire,
     _poolScoriaElemental,
+    _poolScythecatCub,
     _poolSeekerOfSkybreak,
     _poolSelesnyaEvangel,
     _poolSerpentAssassin,
@@ -420,6 +430,7 @@ const shard: CardShard = {
     _poolSupremeVerdict,
     _poolSwanSong,
     _poolSwiftfootBoots,
+    _poolSylvanAnthem,
     _poolTarmogoyf,
     _poolTeferisPuzzleBox,
     _poolTempleBell,
@@ -458,6 +469,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBananaToken,
     _tokensDeathtouchSnakeToken,
+    _tokensHalflingToken,
     _tokensHumanSoldierToken,
     _tokensInsectTokenFlyingHaste,
     _tokensRatTokenVren,

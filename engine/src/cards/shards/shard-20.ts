@@ -26,6 +26,7 @@ import _poolBalshanCollaborator from "../pool/balshan-collaborator.js";
 import _poolBarkchannelPathway from "../pool/barkchannel-pathway.js";
 import _poolBatterskull from "../pool/batterskull.js";
 import _poolBlanchwoodTreefolk from "../pool/blanchwood-treefolk.js";
+import _poolBloodsoakedInsight from "../pool/bloodsoaked-insight.js";
 import _poolBlurredMongoose from "../pool/blurred-mongoose.js";
 import _poolBoggartTrawler from "../pool/boggart-trawler.js";
 import _poolBoltOfKeranos from "../pool/bolt-of-keranos.js";
@@ -69,6 +70,7 @@ import _poolEarthbenderAscension from "../pool/earthbender-ascension.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
 import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
+import _poolEmeriasCall from "../pool/emerias-call.js";
 import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
 import _poolEsperCormorants from "../pool/esper-cormorants.js";
 import _poolEtherealArmor from "../pool/ethereal-armor.js";
@@ -115,6 +117,7 @@ import _poolMarshFlats from "../pool/marsh-flats.js";
 import _poolMassProduction from "../pool/mass-production.js";
 import _poolMerfolkTraders from "../pool/merfolk-traders.js";
 import _poolMillikin from "../pool/millikin.js";
+import _poolMindspliceApparatus from "../pool/mindsplice-apparatus.js";
 import _poolMirriCatWarrior from "../pool/mirri-cat-warrior.js";
 import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
@@ -142,6 +145,7 @@ import _poolQueensCommission from "../pool/queens-commission.js";
 import _poolQuintoriusHistoryChaser from "../pool/quintorius-history-chaser.js";
 import _poolRadhaHeirToKeld from "../pool/radha-heir-to-keld.js";
 import _poolRagingCougar from "../pool/raging-cougar.js";
+import _poolRaiseThePast from "../pool/raise-the-past.js";
 import _poolRatcatcher from "../pool/ratcatcher.js";
 import _poolRavagingHorde from "../pool/ravaging-horde.js";
 import _poolRecklessAssault from "../pool/reckless-assault.js";
@@ -183,6 +187,7 @@ import _poolSunkenHollow from "../pool/sunken-hollow.js";
 import _poolSurvivorOfKorlis from "../pool/survivor-of-korlis.js";
 import _poolSvyeluniteTemple from "../pool/svyelunite-temple.js";
 import _poolSweettoothWitch from "../pool/sweettooth-witch.js";
+import _poolSylvanTutor from "../pool/sylvan-tutor.js";
 import _poolTalasAirShip from "../pool/talas-air-ship.js";
 import _poolTalismanOfHierarchy from "../pool/talisman-of-hierarchy.js";
 import _poolTatyova from "../pool/tatyova.js";
@@ -243,6 +248,7 @@ const shard: CardShard = {
     _poolBarkchannelPathway,
     _poolBatterskull,
     _poolBlanchwoodTreefolk,
+    _poolBloodsoakedInsight,
     _poolBlurredMongoose,
     _poolBoggartTrawler,
     _poolBoltOfKeranos,
@@ -286,6 +292,7 @@ const shard: CardShard = {
     _poolEbonyTreefolk,
     _poolEidolonOfInspiration,
     _poolEmberethShieldbreaker,
+    _poolEmeriasCall,
     _poolEnduringTenacity,
     _poolEsperCormorants,
     _poolEtherealArmor,
@@ -332,6 +339,7 @@ const shard: CardShard = {
     _poolMassProduction,
     _poolMerfolkTraders,
     _poolMillikin,
+    _poolMindspliceApparatus,
     _poolMirriCatWarrior,
     _poolMoltenTributary,
     _poolMoltensteelDragon,
@@ -359,6 +367,7 @@ const shard: CardShard = {
     _poolQuintoriusHistoryChaser,
     _poolRadhaHeirToKeld,
     _poolRagingCougar,
+    _poolRaiseThePast,
     _poolRatcatcher,
     _poolRavagingHorde,
     _poolRecklessAssault,
@@ -400,6 +409,7 @@ const shard: CardShard = {
     _poolSurvivorOfKorlis,
     _poolSvyeluniteTemple,
     _poolSweettoothWitch,
+    _poolSylvanTutor,
     _poolTalasAirShip,
     _poolTalismanOfHierarchy,
     _poolTatyova,

@@ -146,6 +146,7 @@ import _poolRavagedHighlands from "../pool/ravaged-highlands.js";
 import _poolRazorgrassAmbush from "../pool/razorgrass-ambush.js";
 import _poolRearingEmbermare from "../pool/rearing-embermare.js";
 import _poolReconstruction from "../pool/reconstruction.js";
+import _poolResurgentBelief from "../pool/resurgent-belief.js";
 import _poolRhoxWarMonk from "../pool/rhox-war-monk.js";
 import _poolRideTheRails from "../pool/ride-the-rails.js";
 import _poolRimewoodFalls from "../pool/rimewood-falls.js";
@@ -200,6 +201,7 @@ import _poolTouchstone from "../pool/touchstone.js";
 import _poolTriumphOfTheHordes from "../pool/triumph-of-the-hordes.js";
 import _poolTrollHornCameo from "../pool/troll-horn-cameo.js";
 import _poolUkudCobra from "../pool/ukud-cobra.js";
+import _poolUlvenwaldHydra from "../pool/ulvenwald-hydra.js";
 import _poolUnhinge from "../pool/unhinge.js";
 import _poolValiantGuard from "../pool/valiant-guard.js";
 import _poolViashinoSandsprinter from "../pool/viashino-sandsprinter.js";
@@ -371,6 +373,7 @@ const shard: CardShard = {
     _poolRazorgrassAmbush,
     _poolRearingEmbermare,
     _poolReconstruction,
+    _poolResurgentBelief,
     _poolRhoxWarMonk,
     _poolRideTheRails,
     _poolRimewoodFalls,
@@ -425,6 +428,7 @@ const shard: CardShard = {
     _poolTriumphOfTheHordes,
     _poolTrollHornCameo,
     _poolUkudCobra,
+    _poolUlvenwaldHydra,
     _poolUnhinge,
     _poolValiantGuard,
     _poolViashinoSandsprinter,

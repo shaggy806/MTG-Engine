@@ -50,6 +50,7 @@ import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
 import _poolDualcasterMage from "../pool/dualcaster-mage.js";
 import _poolDungroveElder from "../pool/dungrove-elder.js";
+import _poolElvenAmbush from "../pool/elven-ambush.js";
 import _poolEmrakulsMessenger from "../pool/emrakuls-messenger.js";
 import _poolExploreTheVastlands from "../pool/explore-the-vastlands.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
@@ -116,6 +117,7 @@ import _poolMageSlayer from "../pool/mage-slayer.js";
 import _poolMagefireWings from "../pool/magefire-wings.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
+import _poolMasterOfDarkRites from "../pool/master-of-dark-rites.js";
 import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
 import _poolMindbladeRender from "../pool/mindblade-render.js";
@@ -133,6 +135,7 @@ import _poolNihilSpellbomb from "../pool/nihil-spellbomb.js";
 import _poolNissaResurgentAnimist from "../pool/nissa-resurgent-animist.js";
 import _poolOgreBerserker from "../pool/ogre-berserker.js";
 import _poolOrzhovLocket from "../pool/orzhov-locket.js";
+import _poolOswaldFiddlebender from "../pool/oswald-fiddlebender.js";
 import _poolOutlawMedic from "../pool/outlaw-medic.js";
 import _poolOwlbear from "../pool/owlbear.js";
 import _poolPendulumOfPatterns from "../pool/pendulum-of-patterns.js";
@@ -146,6 +149,7 @@ import _poolProsperousPirates from "../pool/prosperous-pirates.js";
 import _poolPseudodragonFamiliar from "../pool/pseudodragon-familiar.js";
 import _poolRecklessBrute from "../pool/reckless-brute.js";
 import _poolRedElementalBlast from "../pool/red-elemental-blast.js";
+import _poolRepulsiveMutation from "../pool/repulsive-mutation.js";
 import _poolResupply from "../pool/resupply.js";
 import _poolRighteousCharge from "../pool/righteous-charge.js";
 import _poolRipClanCrasher from "../pool/rip-clan-crasher.js";
@@ -277,6 +281,7 @@ const shard: CardShard = {
     _poolDrossSkullbomb,
     _poolDualcasterMage,
     _poolDungroveElder,
+    _poolElvenAmbush,
     _poolEmrakulsMessenger,
     _poolExploreTheVastlands,
     _poolExsanguinate,
@@ -343,6 +348,7 @@ const shard: CardShard = {
     _poolMagefireWings,
     _poolMakindiSliderunner,
     _poolManicVandal,
+    _poolMasterOfDarkRites,
     _poolMercilessExecutioner,
     _poolMeticulousArchive,
     _poolMindbladeRender,
@@ -360,6 +366,7 @@ const shard: CardShard = {
     _poolNissaResurgentAnimist,
     _poolOgreBerserker,
     _poolOrzhovLocket,
+    _poolOswaldFiddlebender,
     _poolOutlawMedic,
     _poolOwlbear,
     _poolPendulumOfPatterns,
@@ -373,6 +380,7 @@ const shard: CardShard = {
     _poolPseudodragonFamiliar,
     _poolRecklessBrute,
     _poolRedElementalBlast,
+    _poolRepulsiveMutation,
     _poolResupply,
     _poolRighteousCharge,
     _poolRipClanCrasher,

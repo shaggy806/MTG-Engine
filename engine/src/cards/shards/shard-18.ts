@@ -59,6 +59,7 @@ import _poolEntishRestoration from "../pool/entish-restoration.js";
 import _poolExpansion from "../pool/expansion.js";
 import _poolFeastOfTheUnicorn from "../pool/feast-of-the-unicorn.js";
 import _poolFeralMaaka from "../pool/feral-maaka.js";
+import _poolFinaleOfGlory from "../pool/finale-of-glory.js";
 import _poolFirebolt from "../pool/firebolt.js";
 import _poolFodderCannon from "../pool/fodder-cannon.js";
 import _poolForgottenCave from "../pool/forgotten-cave.js";
@@ -93,6 +94,7 @@ import _poolKalonianHydra from "../pool/kalonian-hydra.js";
 import _poolKeeningBanshee from "../pool/keening-banshee.js";
 import _poolKefkaRulerOfRuin from "../pool/kefka-ruler-of-ruin.js";
 import _poolKothsCourier from "../pool/koths-courier.js";
+import _poolKozileksUnsealing from "../pool/kozileks-unsealing.js";
 import _poolKrenkoMobBoss from "../pool/krenko-mob-boss.js";
 import _poolKynaiosAndTiroOfMeletis from "../pool/kynaios-and-tiro-of-meletis.js";
 import _poolLavafumeInvoker from "../pool/lavafume-invoker.js";
@@ -167,6 +169,7 @@ import _poolStandingTroops from "../pool/standing-troops.js";
 import _poolStarAthlete from "../pool/star-athlete.js";
 import _poolStarfallInvocation from "../pool/starfall-invocation.js";
 import _poolStarstorm from "../pool/starstorm.js";
+import _poolStepThrough from "../pool/step-through.js";
 import _poolStewardOfTheHarvest from "../pool/steward-of-the-harvest.js";
 import _poolSusurSecundiVoidAltar from "../pool/susur-secundi-void-altar.js";
 import _poolSuturePriest from "../pool/suture-priest.js";
@@ -194,6 +197,7 @@ import _poolTyphoidRats from "../pool/typhoid-rats.js";
 import _poolUnquestionedAuthority from "../pool/unquestioned-authority.js";
 import _poolUtterEnd from "../pool/utter-end.js";
 import _poolValgavothHarrowerOfSouls from "../pool/valgavoth-harrower-of-souls.js";
+import _poolValkyrieHarbinger from "../pool/valkyrie-harbinger.js";
 import _poolVampireSpawn from "../pool/vampire-spawn.js";
 import _poolVastwoodThicket from "../pool/vastwood-thicket.js";
 import _poolViashinoRunner from "../pool/viashino-runner.js";
@@ -220,6 +224,7 @@ import _poolZimoneAndDina from "../pool/zimone-and-dina.js";
 import _poolZodiacRat from "../pool/zodiac-rat.js";
 import _tokensAllyToken from "../tokens/ally-token.js";
 import _tokensBloodToken from "../tokens/blood-token.js";
+import _tokensCatTokenJolraelMwonvuliRecluse from "../tokens/cat-token-jolrael-mwonvuli-recluse.js";
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
@@ -286,6 +291,7 @@ const shard: CardShard = {
     _poolExpansion,
     _poolFeastOfTheUnicorn,
     _poolFeralMaaka,
+    _poolFinaleOfGlory,
     _poolFirebolt,
     _poolFodderCannon,
     _poolForgottenCave,
@@ -320,6 +326,7 @@ const shard: CardShard = {
     _poolKeeningBanshee,
     _poolKefkaRulerOfRuin,
     _poolKothsCourier,
+    _poolKozileksUnsealing,
     _poolKrenkoMobBoss,
     _poolKynaiosAndTiroOfMeletis,
     _poolLavafumeInvoker,
@@ -394,6 +401,7 @@ const shard: CardShard = {
     _poolStarAthlete,
     _poolStarfallInvocation,
     _poolStarstorm,
+    _poolStepThrough,
     _poolStewardOfTheHarvest,
     _poolSusurSecundiVoidAltar,
     _poolSuturePriest,
@@ -421,6 +429,7 @@ const shard: CardShard = {
     _poolUnquestionedAuthority,
     _poolUtterEnd,
     _poolValgavothHarrowerOfSouls,
+    _poolValkyrieHarbinger,
     _poolVampireSpawn,
     _poolVastwoodThicket,
     _poolViashinoRunner,
@@ -449,6 +458,7 @@ const shard: CardShard = {
   tokens: [
     _tokensAllyToken,
     _tokensBloodToken,
+    _tokensCatTokenJolraelMwonvuliRecluse,
     _tokensCatToken,
     _tokensFaerieRogueToken,
     _tokensHumanKnightToken,

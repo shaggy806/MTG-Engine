@@ -60,6 +60,8 @@ import _poolDrogskolCavalry from "../pool/drogskol-cavalry.js";
 import _poolDwarvenGrunt from "../pool/dwarven-grunt.js";
 import _poolEarthRift from "../pool/earth-rift.js";
 import _poolEject from "../pool/eject.js";
+import _poolEmeriaShatteredSkyclave from "../pool/emeria-shattered-skyclave.js";
+import _poolEmielTheBlessed from "../pool/emiel-the-blessed.js";
 import _poolEndTheFestivities from "../pool/end-the-festivities.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
@@ -118,6 +120,7 @@ import _poolMindscourDragon from "../pool/mindscour-dragon.js";
 import _poolMinotaurWarrior from "../pool/minotaur-warrior.js";
 import _poolMintstrosity from "../pool/mintstrosity.js";
 import _poolMistyRainforest from "../pool/misty-rainforest.js";
+import _poolMudflatVillage from "../pool/mudflat-village.js";
 import _poolMyrBattlesphere from "../pool/myr-battlesphere.js";
 import _poolNadiersNightblade from "../pool/nadiers-nightblade.js";
 import _poolNagaOracle from "../pool/naga-oracle.js";
@@ -155,6 +158,7 @@ import _poolRubblebackRhino from "../pool/rubbleback-rhino.js";
 import _poolRubblebeltMaverick from "../pool/rubblebelt-maverick.js";
 import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
+import _poolSacrifice from "../pool/sacrifice.js";
 import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
@@ -293,6 +297,8 @@ const shard: CardShard = {
     _poolDwarvenGrunt,
     _poolEarthRift,
     _poolEject,
+    _poolEmeriaShatteredSkyclave,
+    _poolEmielTheBlessed,
     _poolEndTheFestivities,
     _poolEtherswornAdjudicator,
     _poolExemplarOfLight,
@@ -351,6 +357,7 @@ const shard: CardShard = {
     _poolMinotaurWarrior,
     _poolMintstrosity,
     _poolMistyRainforest,
+    _poolMudflatVillage,
     _poolMyrBattlesphere,
     _poolNadiersNightblade,
     _poolNagaOracle,
@@ -388,6 +395,7 @@ const shard: CardShard = {
     _poolRubblebeltMaverick,
     _poolRunAwayTogether,
     _poolRustedSentinel,
+    _poolSacrifice,
     _poolSamwiseGamgee,
     _poolScarecrone,
     _poolScavengingScarab,

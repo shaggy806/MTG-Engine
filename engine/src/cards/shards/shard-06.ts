@@ -72,6 +72,7 @@ import _poolEmpyreanEagle from "../pool/empyrean-eagle.js";
 import _poolEshkiTemursRoar from "../pool/eshki-temurs-roar.js";
 import _poolEtheriumSculptor from "../pool/etherium-sculptor.js";
 import _poolEverybodyLives from "../pool/everybody-lives.js";
+import _poolEyeOfUgin from "../pool/eye-of-ugin.js";
 import _poolEyesOfTheBeholder from "../pool/eyes-of-the-beholder.js";
 import _poolFelidarSovereign from "../pool/felidar-sovereign.js";
 import _poolFireNationSoldier from "../pool/fire-nation-soldier.js";
@@ -179,11 +180,13 @@ import _poolSwordOfLightAndShadow from "../pool/sword-of-light-and-shadow.js";
 import _poolTakenumaAbandonedMire from "../pool/takenuma-abandoned-mire.js";
 import _poolTeeterpeakAmbusher from "../pool/teeterpeak-ambusher.js";
 import _poolTelimtorsDarts from "../pool/telimtors-darts.js";
+import _poolTheGooseMother from "../pool/the-goose-mother.js";
 import _poolThopterEngineer from "../pool/thopter-engineer.js";
 import _poolThrabenValiant from "../pool/thraben-valiant.js";
 import _poolThreaten from "../pool/threaten.js";
 import _poolThunderSpirit from "../pool/thunder-spirit.js";
 import _poolTidechannelPathway from "../pool/tidechannel-pathway.js";
+import _poolTimeSieve from "../pool/time-sieve.js";
 import _poolTirelessProvisioner from "../pool/tireless-provisioner.js";
 import _poolTouchOfBrilliance from "../pool/touch-of-brilliance.js";
 import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
@@ -207,6 +210,7 @@ import _poolWindfall from "../pool/windfall.js";
 import _poolWingedCoatl from "../pool/winged-coatl.js";
 import _poolWingedWords from "../pool/winged-words.js";
 import _poolWoodlandMystic from "../pool/woodland-mystic.js";
+import _poolWreckingBallArm from "../pool/wrecking-ball-arm.js";
 import _poolZendikarResurgent from "../pool/zendikar-resurgent.js";
 import _poolZhalfirinVoid from "../pool/zhalfirin-void.js";
 import _poolZodiacMonkey from "../pool/zodiac-monkey.js";
@@ -292,6 +296,7 @@ const shard: CardShard = {
     _poolEshkiTemursRoar,
     _poolEtheriumSculptor,
     _poolEverybodyLives,
+    _poolEyeOfUgin,
     _poolEyesOfTheBeholder,
     _poolFelidarSovereign,
     _poolFireNationSoldier,
@@ -399,11 +404,13 @@ const shard: CardShard = {
     _poolTakenumaAbandonedMire,
     _poolTeeterpeakAmbusher,
     _poolTelimtorsDarts,
+    _poolTheGooseMother,
     _poolThopterEngineer,
     _poolThrabenValiant,
     _poolThreaten,
     _poolThunderSpirit,
     _poolTidechannelPathway,
+    _poolTimeSieve,
     _poolTirelessProvisioner,
     _poolTouchOfBrilliance,
     _poolTraverseTheOutlands,
@@ -427,6 +434,7 @@ const shard: CardShard = {
     _poolWingedCoatl,
     _poolWingedWords,
     _poolWoodlandMystic,
+    _poolWreckingBallArm,
     _poolZendikarResurgent,
     _poolZhalfirinVoid,
     _poolZodiacMonkey,

@@ -176,6 +176,7 @@ import _poolStarwinder from "../pool/starwinder.js";
 import _poolSteelHellkite from "../pool/steel-hellkite.js";
 import _poolSteelWall from "../pool/steel-wall.js";
 import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
+import _poolSulfuricVortex from "../pool/sulfuric-vortex.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
 import _poolSwordOfTheRealms from "../pool/sword-of-the-realms.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
@@ -403,6 +404,7 @@ const shard: CardShard = {
     _poolSteelHellkite,
     _poolSteelWall,
     _poolStormshriekFeral,
+    _poolSulfuricVortex,
     _poolSunbladeAngel,
     _poolSwordOfTheRealms,
     _poolSwordOfWealthAndPower,
