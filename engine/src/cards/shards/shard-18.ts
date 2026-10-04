@@ -19,6 +19,7 @@ import _poolBarbedBattlegear from "../pool/barbed-battlegear.js";
 import _poolBedevil from "../pool/bedevil.js";
 import _poolBirdMaiden from "../pool/bird-maiden.js";
 import _poolBlindingMage from "../pool/blinding-mage.js";
+import _poolBloodlineNecromancer from "../pool/bloodline-necromancer.js";
 import _poolBloodlinePretender from "../pool/bloodline-pretender.js";
 import _poolBloomHulk from "../pool/bloom-hulk.js";
 import _poolBodyOfKnowledge from "../pool/body-of-knowledge.js";
@@ -86,6 +87,7 @@ import _poolHamzaGuardianOfArashin from "../pool/hamza-guardian-of-arashin.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
 import _poolHauntedCloak from "../pool/haunted-cloak.js";
 import _poolHeraldsHorn from "../pool/heralds-horn.js";
+import _poolHideOnTheCeiling from "../pool/hide-on-the-ceiling.js";
 import _poolHillGiantHerdgorger from "../pool/hill-giant-herdgorger.js";
 import _poolHippoCows from "../pool/hippo-cows.js";
 import _poolHornOfGondor from "../pool/horn-of-gondor.js";
@@ -247,6 +249,7 @@ import _tokensCatTokenJolraelMwonvuliRecluse from "../tokens/cat-token-jolrael-m
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
+import _tokensKrakenTokenSpawningKraken from "../tokens/kraken-token-spawning-kraken.js";
 import _tokensPhyrexianHorrorToken from "../tokens/phyrexian-horror-token.js";
 import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
@@ -270,6 +273,7 @@ const shard: CardShard = {
     _poolBedevil,
     _poolBirdMaiden,
     _poolBlindingMage,
+    _poolBloodlineNecromancer,
     _poolBloodlinePretender,
     _poolBloomHulk,
     _poolBodyOfKnowledge,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolHardenedTactician,
     _poolHauntedCloak,
     _poolHeraldsHorn,
+    _poolHideOnTheCeiling,
     _poolHillGiantHerdgorger,
     _poolHippoCows,
     _poolHornOfGondor,
@@ -500,6 +505,7 @@ const shard: CardShard = {
     _tokensCatToken,
     _tokensFaerieRogueToken,
     _tokensHumanKnightToken,
+    _tokensKrakenTokenSpawningKraken,
     _tokensPhyrexianHorrorToken,
     _tokensRatTokenCantBlock,
     _tokensWhiteDogToken11,

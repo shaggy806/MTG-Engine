@@ -53,6 +53,7 @@ import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
 import _poolDualcasterMage from "../pool/dualcaster-mage.js";
 import _poolDungroveElder from "../pool/dungrove-elder.js";
+import _poolEarthcraft from "../pool/earthcraft.js";
 import _poolElvenAmbush from "../pool/elven-ambush.js";
 import _poolEmrakulsMessenger from "../pool/emrakuls-messenger.js";
 import _poolExploreTheVastlands from "../pool/explore-the-vastlands.js";
@@ -300,6 +301,7 @@ const shard: CardShard = {
     _poolDrossSkullbomb,
     _poolDualcasterMage,
     _poolDungroveElder,
+    _poolEarthcraft,
     _poolElvenAmbush,
     _poolEmrakulsMessenger,
     _poolExploreTheVastlands,

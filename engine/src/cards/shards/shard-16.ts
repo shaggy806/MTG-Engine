@@ -70,6 +70,7 @@ import _poolEnlightenedTutor from "../pool/enlightened-tutor.js";
 import _poolErodedCanyon from "../pool/eroded-canyon.js";
 import _poolEssenceFlux from "../pool/essence-flux.js";
 import _poolEternalWarrior from "../pool/eternal-warrior.js";
+import _poolEtherealInvestigator from "../pool/ethereal-investigator.js";
 import _poolExtravagantReplication from "../pool/extravagant-replication.js";
 import _poolFaerieSeer from "../pool/faerie-seer.js";
 import _poolFavorableWinds from "../pool/favorable-winds.js";
@@ -344,6 +345,7 @@ const shard: CardShard = {
     _poolErodedCanyon,
     _poolEssenceFlux,
     _poolEternalWarrior,
+    _poolEtherealInvestigator,
     _poolExtravagantReplication,
     _poolFaerieSeer,
     _poolFavorableWinds,

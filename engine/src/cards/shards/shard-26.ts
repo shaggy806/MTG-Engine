@@ -83,6 +83,7 @@ import _poolGlimpseTheUnthinkable from "../pool/glimpse-the-unthinkable.js";
 import _poolGoblinBully from "../pool/goblin-bully.js";
 import _poolGolgariFindbroker from "../pool/golgari-findbroker.js";
 import _poolGoliathBeetle from "../pool/goliath-beetle.js";
+import _poolGraveVenerations from "../pool/grave-venerations.js";
 import _poolGreatOakGuardian from "../pool/great-oak-guardian.js";
 import _poolGreed from "../pool/greed.js";
 import _poolGriffinProtector from "../pool/griffin-protector.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolGoblinBully,
     _poolGolgariFindbroker,
     _poolGoliathBeetle,
+    _poolGraveVenerations,
     _poolGreatOakGuardian,
     _poolGreed,
     _poolGriffinProtector,

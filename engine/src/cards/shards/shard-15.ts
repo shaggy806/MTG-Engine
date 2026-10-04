@@ -93,6 +93,7 @@ import _poolGratuitousViolence from "../pool/gratuitous-violence.js";
 import _poolGrimoireOfTheDead from "../pool/grimoire-of-the-dead.js";
 import _poolGruulGuildmage from "../pool/gruul-guildmage.js";
 import _poolHamatoNinpo from "../pool/hamato-ninpo.js";
+import _poolHaruHiddenTalent from "../pool/haru-hidden-talent.js";
 import _poolHavenOfTheSpiritDragon from "../pool/haven-of-the-spirit-dragon.js";
 import _poolHealersFlock from "../pool/healers-flock.js";
 import _poolHighlandWeald from "../pool/highland-weald.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolGrimoireOfTheDead,
     _poolGruulGuildmage,
     _poolHamatoNinpo,
+    _poolHaruHiddenTalent,
     _poolHavenOfTheSpiritDragon,
     _poolHealersFlock,
     _poolHighlandWeald,

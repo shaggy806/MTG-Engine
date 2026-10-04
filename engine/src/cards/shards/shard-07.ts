@@ -21,6 +21,7 @@ import _poolBlackcleaveCliffs from "../pool/blackcleave-cliffs.js";
 import _poolBlazingHellhound from "../pool/blazing-hellhound.js";
 import _poolBlightedFen from "../pool/blighted-fen.js";
 import _poolBloodCelebrant from "../pool/blood-celebrant.js";
+import _poolBlueSunsTwilight from "../pool/blue-suns-twilight.js";
 import _poolBojukaBog from "../pool/bojuka-bog.js";
 import _poolBoldBiochemist from "../pool/bold-biochemist.js";
 import _poolBronzebeakMoa from "../pool/bronzebeak-moa.js";
@@ -32,6 +33,7 @@ import _poolCollectorOuphe from "../pool/collector-ouphe.js";
 import _poolColossapede from "../pool/colossapede.js";
 import _poolConstrictingTendrils from "../pool/constricting-tendrils.js";
 import _poolCrazedSkirge from "../pool/crazed-skirge.js";
+import _poolCreosoteHeath from "../pool/creosote-heath.js";
 import _poolCurate from "../pool/curate.js";
 import _poolCuriousPair from "../pool/curious-pair.js";
 import _poolDancingScimitar from "../pool/dancing-scimitar.js";
@@ -74,6 +76,7 @@ import _poolGhaltaStampedeTyrant from "../pool/ghalta-stampede-tyrant.js";
 import _poolGloinDwarfEmissary from "../pool/gloin-dwarf-emissary.js";
 import _poolGoldMyr from "../pool/gold-myr.js";
 import _poolGoldhound from "../pool/goldhound.js";
+import _poolGothmogMorgulLieutenant from "../pool/gothmog-morgul-lieutenant.js";
 import _poolGreaterBasilisk from "../pool/greater-basilisk.js";
 import _poolGrindingStation from "../pool/grinding-station.js";
 import _poolGrizzlyBears from "../pool/grizzly-bears.js";
@@ -240,11 +243,13 @@ import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
 import _poolZacamaPrimalCalamity from "../pool/zacama-primal-calamity.js";
 import _poolZephyrScribe from "../pool/zephyr-scribe.js";
+import _poolZoZuThePunisher from "../pool/zo-zu-the-punisher.js";
 import _poolZodiacDog from "../pool/zodiac-dog.js";
 import _tokensAstartesWarriorToken from "../tokens/astartes-warrior-token.js";
 import _tokensCragflame from "../tokens/cragflame.js";
 import _tokensDrakeToken from "../tokens/drake-token.js";
 import _tokensEggToken from "../tokens/egg-token.js";
+import _tokensHorseToken from "../tokens/horse-token.js";
 import _tokensInsectTokenBlackFlying from "../tokens/insect-token-black-flying.js";
 import _tokensInsectTokenNestOfScarabs from "../tokens/insect-token-nest-of-scarabs.js";
 import _tokensKaroxBladewingToken from "../tokens/karox-bladewing-token.js";
@@ -273,6 +278,7 @@ const shard: CardShard = {
     _poolBlazingHellhound,
     _poolBlightedFen,
     _poolBloodCelebrant,
+    _poolBlueSunsTwilight,
     _poolBojukaBog,
     _poolBoldBiochemist,
     _poolBronzebeakMoa,
@@ -284,6 +290,7 @@ const shard: CardShard = {
     _poolColossapede,
     _poolConstrictingTendrils,
     _poolCrazedSkirge,
+    _poolCreosoteHeath,
     _poolCurate,
     _poolCuriousPair,
     _poolDancingScimitar,
@@ -326,6 +333,7 @@ const shard: CardShard = {
     _poolGloinDwarfEmissary,
     _poolGoldMyr,
     _poolGoldhound,
+    _poolGothmogMorgulLieutenant,
     _poolGreaterBasilisk,
     _poolGrindingStation,
     _poolGrizzlyBears,
@@ -492,6 +500,7 @@ const shard: CardShard = {
     _poolYotianSoldier,
     _poolZacamaPrimalCalamity,
     _poolZephyrScribe,
+    _poolZoZuThePunisher,
     _poolZodiacDog,
   ],
   tokens: [
@@ -499,6 +508,7 @@ const shard: CardShard = {
     _tokensCragflame,
     _tokensDrakeToken,
     _tokensEggToken,
+    _tokensHorseToken,
     _tokensInsectTokenBlackFlying,
     _tokensInsectTokenNestOfScarabs,
     _tokensKaroxBladewingToken,

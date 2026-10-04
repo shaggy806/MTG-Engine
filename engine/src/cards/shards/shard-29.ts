@@ -8,6 +8,7 @@ import _poolAdaptiveGemguard from "../pool/adaptive-gemguard.js";
 import _poolAffaProtector from "../pool/affa-protector.js";
 import _poolAllosaurusShepherd from "../pool/allosaurus-shepherd.js";
 import _poolApproachOfTheSecondSun from "../pool/approach-of-the-second-sun.js";
+import _poolArchmageOfEchoes from "../pool/archmage-of-echoes.js";
 import _poolArdbert from "../pool/ardbert.js";
 import _poolArgentumArmor from "../pool/argentum-armor.js";
 import _poolArmageddon from "../pool/armageddon.js";
@@ -19,6 +20,7 @@ import _poolBlackChocobo from "../pool/black-chocobo.js";
 import _poolBlightedBat from "../pool/blighted-bat.js";
 import _poolBlisterBeetle from "../pool/blister-beetle.js";
 import _poolBloodcrusherOfKhorne from "../pool/bloodcrusher-of-khorne.js";
+import _poolBlossomingBogbeast from "../pool/blossoming-bogbeast.js";
 import _poolBruseTarlBoorishHerder from "../pool/bruse-tarl-boorish-herder.js";
 import _poolBurgeoning from "../pool/burgeoning.js";
 import _poolBuriedAlive from "../pool/buried-alive.js";
@@ -38,6 +40,8 @@ import _poolCrumblingVestige from "../pool/crumbling-vestige.js";
 import _poolDamn from "../pool/damn.js";
 import _poolDarkDeed from "../pool/dark-deed.js";
 import _poolDarkOffering from "../pool/dark-offering.js";
+import _poolDazzlingDenial from "../pool/dazzling-denial.js";
+import _poolDecoctionModule from "../pool/decoction-module.js";
 import _poolDedicatedMartyr from "../pool/dedicated-martyr.js";
 import _poolDemandAnswers from "../pool/demand-answers.js";
 import _poolDesertDrake from "../pool/desert-drake.js";
@@ -189,9 +193,11 @@ import _poolSurveyTheWreckage from "../pool/survey-the-wreckage.js";
 import _poolSylvanCaryatid from "../pool/sylvan-caryatid.js";
 import _poolTaiga from "../pool/taiga.js";
 import _poolTakeUpTheShield from "../pool/take-up-the-shield.js";
+import _poolTectonicEdge from "../pool/tectonic-edge.js";
 import _poolTempleAcolyte from "../pool/temple-acolyte.js";
 import _poolTheFirstSliver from "../pool/the-first-sliver.js";
 import _poolTheMasterOfKeys from "../pool/the-master-of-keys.js";
+import _poolTheQueenOfDale from "../pool/the-queen-of-dale.js";
 import _poolTheUrDragon from "../pool/the-ur-dragon.js";
 import _poolThoughtCourier from "../pool/thought-courier.js";
 import _poolThrottle from "../pool/throttle.js";
@@ -229,6 +235,7 @@ const shard: CardShard = {
     _poolAffaProtector,
     _poolAllosaurusShepherd,
     _poolApproachOfTheSecondSun,
+    _poolArchmageOfEchoes,
     _poolArdbert,
     _poolArgentumArmor,
     _poolArmageddon,
@@ -240,6 +247,7 @@ const shard: CardShard = {
     _poolBlightedBat,
     _poolBlisterBeetle,
     _poolBloodcrusherOfKhorne,
+    _poolBlossomingBogbeast,
     _poolBruseTarlBoorishHerder,
     _poolBurgeoning,
     _poolBuriedAlive,
@@ -259,6 +267,8 @@ const shard: CardShard = {
     _poolDamn,
     _poolDarkDeed,
     _poolDarkOffering,
+    _poolDazzlingDenial,
+    _poolDecoctionModule,
     _poolDedicatedMartyr,
     _poolDemandAnswers,
     _poolDesertDrake,
@@ -410,9 +420,11 @@ const shard: CardShard = {
     _poolSylvanCaryatid,
     _poolTaiga,
     _poolTakeUpTheShield,
+    _poolTectonicEdge,
     _poolTempleAcolyte,
     _poolTheFirstSliver,
     _poolTheMasterOfKeys,
+    _poolTheQueenOfDale,
     _poolTheUrDragon,
     _poolThoughtCourier,
     _poolThrottle,

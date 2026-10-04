@@ -9,6 +9,7 @@ import _poolAcolyteOfAclazotz from "../pool/acolyte-of-aclazotz.js";
 import _poolAkkiBattleSquad from "../pool/akki-battle-squad.js";
 import _poolAlphaMyr from "../pool/alpha-myr.js";
 import _poolAltanakTheThriceCalled from "../pool/altanak-the-thrice-called.js";
+import _poolAmazingAcrobatics from "../pool/amazing-acrobatics.js";
 import _poolAncestralReminiscence from "../pool/ancestral-reminiscence.js";
 import _poolAngelOfMercy from "../pool/angel-of-mercy.js";
 import _poolAngelOfTheRuins from "../pool/angel-of-the-ruins.js";
@@ -18,6 +19,7 @@ import _poolAnimalSanctuary from "../pool/animal-sanctuary.js";
 import _poolArchersParapet from "../pool/archers-parapet.js";
 import _poolArmoredCancrix from "../pool/armored-cancrix.js";
 import _poolAtraxaPraetorsVoice from "../pool/atraxa-praetors-voice.js";
+import _poolAzureBeastbinder from "../pool/azure-beastbinder.js";
 import _poolBallroom from "../pool/ballroom.js";
 import _poolBaradDur from "../pool/barad-dur.js";
 import _poolBarbarianRiftcutter from "../pool/barbarian-riftcutter.js";
@@ -42,6 +44,7 @@ import _poolClinquantSkymage from "../pool/clinquant-skymage.js";
 import _poolCloudkinSeer from "../pool/cloudkin-seer.js";
 import _poolColossodonYearling from "../pool/colossodon-yearling.js";
 import _poolCommissarSeverinaRaine from "../pool/commissar-severina-raine.js";
+import _poolCoppercoatVanguard from "../pool/coppercoat-vanguard.js";
 import _poolCounterspell from "../pool/counterspell.js";
 import _poolCrackOpen from "../pool/crack-open.js";
 import _poolCrimsonFleetCommodore from "../pool/crimson-fleet-commodore.js";
@@ -50,6 +53,7 @@ import _poolDerangedWhelp from "../pool/deranged-whelp.js";
 import _poolDesertOfTheGlorified from "../pool/desert-of-the-glorified.js";
 import _poolDesertSandstorm from "../pool/desert-sandstorm.js";
 import _poolDesolateMire from "../pool/desolate-mire.js";
+import _poolDiffusionSliver from "../pool/diffusion-sliver.js";
 import _poolDinotomaton from "../pool/dinotomaton.js";
 import _poolDiplomaticImmunity from "../pool/diplomatic-immunity.js";
 import _poolDivineArrow from "../pool/divine-arrow.js";
@@ -181,6 +185,7 @@ import _poolSliceInTwain from "../pool/slice-in-twain.js";
 import _poolSmokespewInvoker from "../pool/smokespew-invoker.js";
 import _poolSnowfieldSinkhole from "../pool/snowfield-sinkhole.js";
 import _poolSoulManipulation from "../pool/soul-manipulation.js";
+import _poolSowerOfTemptation from "../pool/sower-of-temptation.js";
 import _poolSparkSpray from "../pool/spark-spray.js";
 import _poolSpelunking from "../pool/spelunking.js";
 import _poolSpinelessThug from "../pool/spineless-thug.js";
@@ -241,6 +246,7 @@ const shard: CardShard = {
     _poolAkkiBattleSquad,
     _poolAlphaMyr,
     _poolAltanakTheThriceCalled,
+    _poolAmazingAcrobatics,
     _poolAncestralReminiscence,
     _poolAngelOfMercy,
     _poolAngelOfTheRuins,
@@ -250,6 +256,7 @@ const shard: CardShard = {
     _poolArchersParapet,
     _poolArmoredCancrix,
     _poolAtraxaPraetorsVoice,
+    _poolAzureBeastbinder,
     _poolBallroom,
     _poolBaradDur,
     _poolBarbarianRiftcutter,
@@ -274,6 +281,7 @@ const shard: CardShard = {
     _poolCloudkinSeer,
     _poolColossodonYearling,
     _poolCommissarSeverinaRaine,
+    _poolCoppercoatVanguard,
     _poolCounterspell,
     _poolCrackOpen,
     _poolCrimsonFleetCommodore,
@@ -282,6 +290,7 @@ const shard: CardShard = {
     _poolDesertOfTheGlorified,
     _poolDesertSandstorm,
     _poolDesolateMire,
+    _poolDiffusionSliver,
     _poolDinotomaton,
     _poolDiplomaticImmunity,
     _poolDivineArrow,
@@ -413,6 +422,7 @@ const shard: CardShard = {
     _poolSmokespewInvoker,
     _poolSnowfieldSinkhole,
     _poolSoulManipulation,
+    _poolSowerOfTemptation,
     _poolSparkSpray,
     _poolSpelunking,
     _poolSpinelessThug,

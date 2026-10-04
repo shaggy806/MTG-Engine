@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAgonyWarp from "../pool/agony-warp.js";
+import _poolAjaniTheGreathearted from "../pool/ajani-the-greathearted.js";
 import _poolAmbitionsCost from "../pool/ambitions-cost.js";
 import _poolAndurilFlameOfTheWest from "../pool/anduril-flame-of-the-west.js";
 import _poolAngelOfLight from "../pool/angel-of-light.js";
@@ -40,6 +41,7 @@ import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
 import _poolCatapultSquad from "../pool/catapult-squad.js";
 import _poolCephalidScout from "../pool/cephalid-scout.js";
+import _poolChaosWand from "../pool/chaos-wand.js";
 import _poolChaosWarp from "../pool/chaos-warp.js";
 import _poolChatterOfTheSquirrel from "../pool/chatter-of-the-squirrel.js";
 import _poolCommuneWithLava from "../pool/commune-with-lava.js";
@@ -188,6 +190,7 @@ import _poolStormHerd from "../pool/storm-herd.js";
 import _poolStrawSoldiers from "../pool/straw-soldiers.js";
 import _poolStripedRiverwinder from "../pool/striped-riverwinder.js";
 import _poolStrongarmMonk from "../pool/strongarm-monk.js";
+import _poolSubmerge from "../pool/submerge.js";
 import _poolSunTitan from "../pool/sun-titan.js";
 import _poolSundialDawnTyrant from "../pool/sundial-dawn-tyrant.js";
 import _poolSyrAlinTheLionsClaw from "../pool/syr-alin-the-lions-claw.js";
@@ -216,6 +219,7 @@ import _poolUrzasSaga from "../pool/urzas-saga.js";
 import _poolValakutInvoker from "../pool/valakut-invoker.js";
 import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
+import _poolVanishingVerse from "../pool/vanishing-verse.js";
 import _poolVeinRipper from "../pool/vein-ripper.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
@@ -242,6 +246,7 @@ import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 const shard: CardShard = {
   pool: [
     _poolAgonyWarp,
+    _poolAjaniTheGreathearted,
     _poolAmbitionsCost,
     _poolAndurilFlameOfTheWest,
     _poolAngelOfLight,
@@ -278,6 +283,7 @@ const shard: CardShard = {
     _poolCatacombCrocodile,
     _poolCatapultSquad,
     _poolCephalidScout,
+    _poolChaosWand,
     _poolChaosWarp,
     _poolChatterOfTheSquirrel,
     _poolCommuneWithLava,
@@ -426,6 +432,7 @@ const shard: CardShard = {
     _poolStrawSoldiers,
     _poolStripedRiverwinder,
     _poolStrongarmMonk,
+    _poolSubmerge,
     _poolSunTitan,
     _poolSundialDawnTyrant,
     _poolSyrAlinTheLionsClaw,
@@ -454,6 +461,7 @@ const shard: CardShard = {
     _poolValakutInvoker,
     _poolVandalblast,
     _poolVandalize,
+    _poolVanishingVerse,
     _poolVeinRipper,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,

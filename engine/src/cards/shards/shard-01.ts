@@ -8,6 +8,7 @@ import _poolAjanisPridemate from "../pool/ajanis-pridemate.js";
 import _poolAlabornGrenadier from "../pool/alaborn-grenadier.js";
 import _poolAlgaeGharial from "../pool/algae-gharial.js";
 import _poolAltarOfTheBrood from "../pool/altar-of-the-brood.js";
+import _poolAngelOfFinality from "../pool/angel-of-finality.js";
 import _poolAngelicEdict from "../pool/angelic-edict.js";
 import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
@@ -52,6 +53,7 @@ import _poolEmbodimentOfSpring from "../pool/embodiment-of-spring.js";
 import _poolEnvironmentalScientist from "../pool/environmental-scientist.js";
 import _poolEumidianTerrabotanist from "../pool/eumidian-terrabotanist.js";
 import _poolEvolutionWitness from "../pool/evolution-witness.js";
+import _poolFaldornDreadWolfHerald from "../pool/faldorn-dread-wolf-herald.js";
 import _poolFarbogBoneflinger from "../pool/farbog-boneflinger.js";
 import _poolFarbogExplorer from "../pool/farbog-explorer.js";
 import _poolFarmerCotton from "../pool/farmer-cotton.js";
@@ -123,6 +125,7 @@ import _poolOgnis from "../pool/ognis.js";
 import _poolOgreTaskmaster from "../pool/ogre-taskmaster.js";
 import _poolOwlinShieldmage from "../pool/owlin-shieldmage.js";
 import _poolPanickedAltisaur from "../pool/panicked-altisaur.js";
+import _poolPatronOfTheArts from "../pool/patron-of-the-arts.js";
 import _poolPegasusCharger from "../pool/pegasus-charger.js";
 import _poolPeterParkersCamera from "../pool/peter-parkers-camera.js";
 import _poolPharikasLibation from "../pool/pharikas-libation.js";
@@ -229,6 +232,7 @@ const shard: CardShard = {
     _poolAlabornGrenadier,
     _poolAlgaeGharial,
     _poolAltarOfTheBrood,
+    _poolAngelOfFinality,
     _poolAngelicEdict,
     _poolArchweaver,
     _poolArtisansSorrow,
@@ -273,6 +277,7 @@ const shard: CardShard = {
     _poolEnvironmentalScientist,
     _poolEumidianTerrabotanist,
     _poolEvolutionWitness,
+    _poolFaldornDreadWolfHerald,
     _poolFarbogBoneflinger,
     _poolFarbogExplorer,
     _poolFarmerCotton,
@@ -344,6 +349,7 @@ const shard: CardShard = {
     _poolOgreTaskmaster,
     _poolOwlinShieldmage,
     _poolPanickedAltisaur,
+    _poolPatronOfTheArts,
     _poolPegasusCharger,
     _poolPeterParkersCamera,
     _poolPharikasLibation,

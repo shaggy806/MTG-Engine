@@ -15,6 +15,7 @@ import _poolAlabasterMage from "../pool/alabaster-mage.js";
 import _poolAlertShuInfantry from "../pool/alert-shu-infantry.js";
 import _poolAlphaTyrranax from "../pool/alpha-tyrranax.js";
 import _poolAmbushParatrooper from "../pool/ambush-paratrooper.js";
+import _poolAnaraWolvidFamiliar from "../pool/anara-wolvid-familiar.js";
 import _poolAnzragTheQuakeMole from "../pool/anzrag-the-quake-mole.js";
 import _poolArcanisTheOmnipotent from "../pool/arcanis-the-omnipotent.js";
 import _poolAuraBlast from "../pool/aura-blast.js";
@@ -86,6 +87,7 @@ import _poolGlaringAegis from "../pool/glaring-aegis.js";
 import _poolGlasspoolShore from "../pool/glasspool-shore.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
 import _poolGolgariRotwurm from "../pool/golgari-rotwurm.js";
+import _poolGrandColiseum from "../pool/grand-coliseum.js";
 import _poolGraniticTitan from "../pool/granitic-titan.js";
 import _poolGreenweaverDruid from "../pool/greenweaver-druid.js";
 import _poolGristleGrinner from "../pool/gristle-grinner.js";
@@ -102,6 +104,7 @@ import _poolIceridgeSerpent from "../pool/iceridge-serpent.js";
 import _poolImmaculateMagistrate from "../pool/immaculate-magistrate.js";
 import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
 import _poolIorethOfTheHealingHouse from "../pool/ioreth-of-the-healing-house.js";
+import _poolJanJansenChaosCrafter from "../pool/jan-jansen-chaos-crafter.js";
 import _poolJayemdaeTome from "../pool/jayemdae-tome.js";
 import _poolJazalGoldmane from "../pool/jazal-goldmane.js";
 import _poolJonIrenicusShatteredOne from "../pool/jon-irenicus-shattered-one.js";
@@ -157,6 +160,7 @@ import _poolRaucousTheater from "../pool/raucous-theater.js";
 import _poolRefocus from "../pool/refocus.js";
 import _poolRemoveSoul from "../pool/remove-soul.js";
 import _poolRepulsorRays from "../pool/repulsor-rays.js";
+import _poolRetractionHelix from "../pool/retraction-helix.js";
 import _poolReturnedCentaur from "../pool/returned-centaur.js";
 import _poolRighteousAvengers from "../pool/righteous-avengers.js";
 import _poolRishadanPort from "../pool/rishadan-port.js";
@@ -249,6 +253,7 @@ const shard: CardShard = {
     _poolAlertShuInfantry,
     _poolAlphaTyrranax,
     _poolAmbushParatrooper,
+    _poolAnaraWolvidFamiliar,
     _poolAnzragTheQuakeMole,
     _poolArcanisTheOmnipotent,
     _poolAuraBlast,
@@ -320,6 +325,7 @@ const shard: CardShard = {
     _poolGlasspoolShore,
     _poolGoldenTailDisciple,
     _poolGolgariRotwurm,
+    _poolGrandColiseum,
     _poolGraniticTitan,
     _poolGreenweaverDruid,
     _poolGristleGrinner,
@@ -336,6 +342,7 @@ const shard: CardShard = {
     _poolImmaculateMagistrate,
     _poolIndomitableAncients,
     _poolIorethOfTheHealingHouse,
+    _poolJanJansenChaosCrafter,
     _poolJayemdaeTome,
     _poolJazalGoldmane,
     _poolJonIrenicusShatteredOne,
@@ -391,6 +398,7 @@ const shard: CardShard = {
     _poolRefocus,
     _poolRemoveSoul,
     _poolRepulsorRays,
+    _poolRetractionHelix,
     _poolReturnedCentaur,
     _poolRighteousAvengers,
     _poolRishadanPort,

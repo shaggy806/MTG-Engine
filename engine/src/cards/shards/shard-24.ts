@@ -93,6 +93,7 @@ import _poolHanweirGarrison from "../pool/hanweir-garrison.js";
 import _poolHeartWarden from "../pool/heart-warden.js";
 import _poolHelgaSkittishSeer from "../pool/helga-skittish-seer.js";
 import _poolHellsKitchen from "../pool/hells-kitchen.js";
+import _poolHerdBaloth from "../pool/herd-baloth.js";
 import _poolHeritageDruid from "../pool/heritage-druid.js";
 import _poolHermesOverseerOfElpis from "../pool/hermes-overseer-of-elpis.js";
 import _poolHerosHeirloom from "../pool/heros-heirloom.js";
@@ -106,6 +107,7 @@ import _poolJunkWinder from "../pool/junk-winder.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
 import _poolKarlovOfTheGhostCouncil from "../pool/karlov-of-the-ghost-council.js";
+import _poolKarnsTemporalSundering from "../pool/karns-temporal-sundering.js";
 import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
 import _poolKinnanBonderProdigy from "../pool/kinnan-bonder-prodigy.js";
 import _poolKoglaTheTitanApe from "../pool/kogla-the-titan-ape.js";
@@ -170,6 +172,7 @@ import _poolScrivener from "../pool/scrivener.js";
 import _poolScytheLeopard from "../pool/scythe-leopard.js";
 import _poolSeachromeCoast from "../pool/seachrome-coast.js";
 import _poolSeagrafSkaab from "../pool/seagraf-skaab.js";
+import _poolShootTheSheriff from "../pool/shoot-the-sheriff.js";
 import _poolShrikeForce from "../pool/shrike-force.js";
 import _poolSicken from "../pool/sicken.js";
 import _poolSidequestRaiseAChocobo from "../pool/sidequest-raise-a-chocobo.js";
@@ -191,6 +194,7 @@ import _poolSwordOfTheRealms from "../pool/sword-of-the-realms.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
 import _poolTaintedStrike from "../pool/tainted-strike.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
+import _poolTavernBrawler from "../pool/tavern-brawler.js";
 import _poolTeferisProtege from "../pool/teferis-protege.js";
 import _poolTevalArbiterOfVirtue from "../pool/teval-arbiter-of-virtue.js";
 import _poolTheFabulousFrogMan from "../pool/the-fabulous-frog-man.js";
@@ -332,6 +336,7 @@ const shard: CardShard = {
     _poolHeartWarden,
     _poolHelgaSkittishSeer,
     _poolHellsKitchen,
+    _poolHerdBaloth,
     _poolHeritageDruid,
     _poolHermesOverseerOfElpis,
     _poolHerosHeirloom,
@@ -345,6 +350,7 @@ const shard: CardShard = {
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,
     _poolKarlovOfTheGhostCouncil,
+    _poolKarnsTemporalSundering,
     _poolKasimirTheLoneWolf,
     _poolKinnanBonderProdigy,
     _poolKoglaTheTitanApe,
@@ -409,6 +415,7 @@ const shard: CardShard = {
     _poolScytheLeopard,
     _poolSeachromeCoast,
     _poolSeagrafSkaab,
+    _poolShootTheSheriff,
     _poolShrikeForce,
     _poolSicken,
     _poolSidequestRaiseAChocobo,
@@ -430,6 +437,7 @@ const shard: CardShard = {
     _poolSwordOfWealthAndPower,
     _poolTaintedStrike,
     _poolTangledVale,
+    _poolTavernBrawler,
     _poolTeferisProtege,
     _poolTevalArbiterOfVirtue,
     _poolTheFabulousFrogMan,

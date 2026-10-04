@@ -134,6 +134,7 @@ import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
 import _poolNarciFableSinger from "../pool/narci-fable-singer.js";
 import _poolNecromanticSelection from "../pool/necromantic-selection.js";
+import _poolNecropolisRegent from "../pool/necropolis-regent.js";
 import _poolNightscapeFamiliar from "../pool/nightscape-familiar.js";
 import _poolNyxbornMarauder from "../pool/nyxborn-marauder.js";
 import _poolOphidianEye from "../pool/ophidian-eye.js";
@@ -203,6 +204,7 @@ import _poolThievingMagpie from "../pool/thieving-magpie.js";
 import _poolThirstForDiscovery from "../pool/thirst-for-discovery.js";
 import _poolThornspireVerge from "../pool/thornspire-verge.js";
 import _poolThrasiosTritonHero from "../pool/thrasios-triton-hero.js";
+import _poolThreeTreeMascot from "../pool/three-tree-mascot.js";
 import _poolThunderscapeApprentice from "../pool/thunderscape-apprentice.js";
 import _poolTormentingVoice from "../pool/tormenting-voice.js";
 import _poolTrevasAttendant from "../pool/trevas-attendant.js";
@@ -368,6 +370,7 @@ const shard: CardShard = {
     _poolNantukoHusk,
     _poolNarciFableSinger,
     _poolNecromanticSelection,
+    _poolNecropolisRegent,
     _poolNightscapeFamiliar,
     _poolNyxbornMarauder,
     _poolOphidianEye,
@@ -437,6 +440,7 @@ const shard: CardShard = {
     _poolThirstForDiscovery,
     _poolThornspireVerge,
     _poolThrasiosTritonHero,
+    _poolThreeTreeMascot,
     _poolThunderscapeApprentice,
     _poolTormentingVoice,
     _poolTrevasAttendant,

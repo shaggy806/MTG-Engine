@@ -127,6 +127,7 @@ import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
 import _poolMyrRetriever from "../pool/myr-retriever.js";
 import _poolNagaEternal from "../pool/naga-eternal.js";
 import _poolNezahalPrimalTide from "../pool/nezahal-primal-tide.js";
+import _poolNightmareShepherd from "../pool/nightmare-shepherd.js";
 import _poolNoxiousRevival from "../pool/noxious-revival.js";
 import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
 import _poolOrazcaRaptor from "../pool/orazca-raptor.js";
@@ -161,6 +162,7 @@ import _poolSeethingSong from "../pool/seething-song.js";
 import _poolSelesnyaLocket from "../pool/selesnya-locket.js";
 import _poolSeparatistVoidmage from "../pool/separatist-voidmage.js";
 import _poolShieldMate from "../pool/shield-mate.js";
+import _poolShieldSphere from "../pool/shield-sphere.js";
 import _poolShigekiJukaiVisionary from "../pool/shigeki-jukai-visionary.js";
 import _poolShinenOfFlightsWings from "../pool/shinen-of-flights-wings.js";
 import _poolSilentAttendant from "../pool/silent-attendant.js";
@@ -214,6 +216,7 @@ import _poolWaterloggedGrove from "../pool/waterlogged-grove.js";
 import _poolWeightOfMemory from "../pool/weight-of-memory.js";
 import _poolWeldfastMonitor from "../pool/weldfast-monitor.js";
 import _poolWillOfTheSultai from "../pool/will-of-the-sultai.js";
+import _tokensConstructTokenJanJansenChaosCrafter from "../tokens/construct-token-jan-jansen-chaos-crafter.js";
 import _tokensPhyrexianGoblinToken from "../tokens/phyrexian-goblin-token.js";
 import _tokensPlantWarriorToken from "../tokens/plant-warrior-token.js";
 
@@ -343,6 +346,7 @@ const shard: CardShard = {
     _poolMyrRetriever,
     _poolNagaEternal,
     _poolNezahalPrimalTide,
+    _poolNightmareShepherd,
     _poolNoxiousRevival,
     _poolObeliskOfGrixis,
     _poolOrazcaRaptor,
@@ -377,6 +381,7 @@ const shard: CardShard = {
     _poolSelesnyaLocket,
     _poolSeparatistVoidmage,
     _poolShieldMate,
+    _poolShieldSphere,
     _poolShigekiJukaiVisionary,
     _poolShinenOfFlightsWings,
     _poolSilentAttendant,
@@ -432,6 +437,7 @@ const shard: CardShard = {
     _poolWillOfTheSultai,
   ],
   tokens: [
+    _tokensConstructTokenJanJansenChaosCrafter,
     _tokensPhyrexianGoblinToken,
     _tokensPlantWarriorToken,
   ],

@@ -111,6 +111,7 @@ import _poolIroncladKrovod from "../pool/ironclad-krovod.js";
 import _poolJenovaAncientCalamity from "../pool/jenova-ancient-calamity.js";
 import _poolKarumonixTheRatKing from "../pool/karumonix-the-rat-king.js";
 import _poolKeenSense from "../pool/keen-sense.js";
+import _poolKheruGoldkeeper from "../pool/kheru-goldkeeper.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
 import _poolKlauthUnrivaledAncient from "../pool/klauth-unrivaled-ancient.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
@@ -247,6 +248,7 @@ import _poolZephyrFalcon from "../pool/zephyr-falcon.js";
 import _poolZofBloodbog from "../pool/zof-bloodbog.js";
 import _tokensSandWarriorToken from "../tokens/sand-warrior-token.js";
 import _tokensSoldierToken from "../tokens/soldier-token.js";
+import _tokensSpawnTokenSpawningPit from "../tokens/spawn-token-spawning-pit.js";
 import _tokensWallToken13 from "../tokens/wall-token-1-3.js";
 
 const shard: CardShard = {
@@ -359,6 +361,7 @@ const shard: CardShard = {
     _poolJenovaAncientCalamity,
     _poolKarumonixTheRatKing,
     _poolKeenSense,
+    _poolKheruGoldkeeper,
     _poolKingCheetah,
     _poolKlauthUnrivaledAncient,
     _poolKnightErrant,
@@ -497,6 +500,7 @@ const shard: CardShard = {
   tokens: [
     _tokensSandWarriorToken,
     _tokensSoldierToken,
+    _tokensSpawnTokenSpawningPit,
     _tokensWallToken13,
   ],
 };

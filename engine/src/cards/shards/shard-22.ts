@@ -131,7 +131,9 @@ import _poolMudflatVillage from "../pool/mudflat-village.js";
 import _poolMyrBattlesphere from "../pool/myr-battlesphere.js";
 import _poolNadiersNightblade from "../pool/nadiers-nightblade.js";
 import _poolNagaOracle from "../pool/naga-oracle.js";
+import _poolNavigationOrb from "../pool/navigation-orb.js";
 import _poolNeedlethornDrake from "../pool/needlethorn-drake.js";
+import _poolNestedShambler from "../pool/nested-shambler.js";
 import _poolNexusWardens from "../pool/nexus-wardens.js";
 import _poolNomadOutpost from "../pool/nomad-outpost.js";
 import _poolNukaColaVendingMachine from "../pool/nuka-cola-vending-machine.js";
@@ -385,7 +387,9 @@ const shard: CardShard = {
     _poolMyrBattlesphere,
     _poolNadiersNightblade,
     _poolNagaOracle,
+    _poolNavigationOrb,
     _poolNeedlethornDrake,
+    _poolNestedShambler,
     _poolNexusWardens,
     _poolNomadOutpost,
     _poolNukaColaVendingMachine,

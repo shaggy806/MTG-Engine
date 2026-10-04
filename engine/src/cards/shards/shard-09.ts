@@ -131,12 +131,14 @@ import _poolNamoraTheSeaQueen from "../pool/namora-the-sea-queen.js";
 import _poolNetherHorror from "../pool/nether-horror.js";
 import _poolNezumiCutthroat from "../pool/nezumi-cutthroat.js";
 import _poolNightsWhisper from "../pool/nights-whisper.js";
+import _poolNinjaPizza from "../pool/ninja-pizza.js";
 import _poolNobleSteeds from "../pool/noble-steeds.js";
 import _poolNornsChoirmaster from "../pool/norns-choirmaster.js";
 import _poolNullmageShepherd from "../pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "../pool/ob-nixilis-the-fallen.js";
 import _poolOdricLunarchMarshal from "../pool/odric-lunarch-marshal.js";
 import _poolOgreArsonist from "../pool/ogre-arsonist.js";
+import _poolOliphaunt from "../pool/oliphaunt.js";
 import _poolOliviasWrath from "../pool/olivias-wrath.js";
 import _poolOnWingsOfGold from "../pool/on-wings-of-gold.js";
 import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
@@ -193,6 +195,7 @@ import _poolSpymastersVault from "../pool/spymasters-vault.js";
 import _poolStaffOfZegon from "../pool/staff-of-zegon.js";
 import _poolStonewoodInvoker from "../pool/stonewood-invoker.js";
 import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
+import _poolStormsplitter from "../pool/stormsplitter.js";
 import _poolStormwatchEagle from "../pool/stormwatch-eagle.js";
 import _poolStreamHopper from "../pool/stream-hopper.js";
 import _poolSummonIxion from "../pool/summon-ixion.js";
@@ -377,12 +380,14 @@ const shard: CardShard = {
     _poolNetherHorror,
     _poolNezumiCutthroat,
     _poolNightsWhisper,
+    _poolNinjaPizza,
     _poolNobleSteeds,
     _poolNornsChoirmaster,
     _poolNullmageShepherd,
     _poolObNixilisTheFallen,
     _poolOdricLunarchMarshal,
     _poolOgreArsonist,
+    _poolOliphaunt,
     _poolOliviasWrath,
     _poolOnWingsOfGold,
     _poolOtherworldlyGaze,
@@ -439,6 +444,7 @@ const shard: CardShard = {
     _poolStaffOfZegon,
     _poolStonewoodInvoker,
     _poolStormcarvedCoast,
+    _poolStormsplitter,
     _poolStormwatchEagle,
     _poolStreamHopper,
     _poolSummonIxion,

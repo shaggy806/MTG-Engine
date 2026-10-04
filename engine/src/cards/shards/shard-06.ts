@@ -66,6 +66,7 @@ import _poolDesynchronization from "../pool/desynchronization.js";
 import _poolDictateOfTheTwinGods from "../pool/dictate-of-the-twin-gods.js";
 import _poolDihadaBinderOfWills from "../pool/dihada-binder-of-wills.js";
 import _poolDjinnOfTheLamp from "../pool/djinn-of-the-lamp.js";
+import _poolDragToTheRoots from "../pool/drag-to-the-roots.js";
 import _poolDrainTheWell from "../pool/drain-the-well.js";
 import _poolDrakusethMawOfFlames from "../pool/drakuseth-maw-of-flames.js";
 import _poolDutifulServants from "../pool/dutiful-servants.js";
@@ -166,6 +167,7 @@ import _poolScaledNurturer from "../pool/scaled-nurturer.js";
 import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
 import _poolScionOfCalamity from "../pool/scion-of-calamity.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
+import _poolSeanceBoard from "../pool/seance-board.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
 import _poolSecretsOfTheDead from "../pool/secrets-of-the-dead.js";
 import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
@@ -198,6 +200,7 @@ import _poolThopterEngineer from "../pool/thopter-engineer.js";
 import _poolThrabenValiant from "../pool/thraben-valiant.js";
 import _poolThreaten from "../pool/threaten.js";
 import _poolThunderSpirit from "../pool/thunder-spirit.js";
+import _poolThunderingRaiju from "../pool/thundering-raiju.js";
 import _poolTidechannelPathway from "../pool/tidechannel-pathway.js";
 import _poolTimeSieve from "../pool/time-sieve.js";
 import _poolTirelessProvisioner from "../pool/tireless-provisioner.js";
@@ -304,6 +307,7 @@ const shard: CardShard = {
     _poolDictateOfTheTwinGods,
     _poolDihadaBinderOfWills,
     _poolDjinnOfTheLamp,
+    _poolDragToTheRoots,
     _poolDrainTheWell,
     _poolDrakusethMawOfFlames,
     _poolDutifulServants,
@@ -404,6 +408,7 @@ const shard: CardShard = {
     _poolScepterOfInsight,
     _poolScionOfCalamity,
     _poolScorchingSpear,
+    _poolSeanceBoard,
     _poolSearstepPathway,
     _poolSecretsOfTheDead,
     _poolSecureTheWastes,
@@ -436,6 +441,7 @@ const shard: CardShard = {
     _poolThrabenValiant,
     _poolThreaten,
     _poolThunderSpirit,
+    _poolThunderingRaiju,
     _poolTidechannelPathway,
     _poolTimeSieve,
     _poolTirelessProvisioner,

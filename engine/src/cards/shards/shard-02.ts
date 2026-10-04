@@ -207,6 +207,7 @@ import _poolSurtlandFrostpyre from "../pool/surtland-frostpyre.js";
 import _poolSwordsToPlowshares from "../pool/swords-to-plowshares.js";
 import _poolSymbolOfUnsummoning from "../pool/symbol-of-unsummoning.js";
 import _poolTheSurgicalBay from "../pool/the-surgical-bay.js";
+import _poolThrillingDiscovery from "../pool/thrilling-discovery.js";
 import _poolTidespoutTyrant from "../pool/tidespout-tyrant.js";
 import _poolTotemGuideHartebeest from "../pool/totem-guide-hartebeest.js";
 import _poolTowashiSongshaper from "../pool/towashi-songshaper.js";
@@ -221,6 +222,7 @@ import _poolVassalSoul from "../pool/vassal-soul.js";
 import _poolVerixBladewing from "../pool/verix-bladewing.js";
 import _poolViashinoCutthroat from "../pool/viashino-cutthroat.js";
 import _poolViashinoSandstalker from "../pool/viashino-sandstalker.js";
+import _poolVivienReid from "../pool/vivien-reid.js";
 import _poolVrenTheRelentless from "../pool/vren-the-relentless.js";
 import _poolWallOfEarth from "../pool/wall-of-earth.js";
 import _poolWallOfFaith from "../pool/wall-of-faith.js";
@@ -445,6 +447,7 @@ const shard: CardShard = {
     _poolSwordsToPlowshares,
     _poolSymbolOfUnsummoning,
     _poolTheSurgicalBay,
+    _poolThrillingDiscovery,
     _poolTidespoutTyrant,
     _poolTotemGuideHartebeest,
     _poolTowashiSongshaper,
@@ -459,6 +462,7 @@ const shard: CardShard = {
     _poolVerixBladewing,
     _poolViashinoCutthroat,
     _poolViashinoSandstalker,
+    _poolVivienReid,
     _poolVrenTheRelentless,
     _poolWallOfEarth,
     _poolWallOfFaith,

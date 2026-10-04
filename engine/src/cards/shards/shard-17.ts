@@ -200,6 +200,7 @@ import _poolThroneOfTheGodPharaoh from "../pool/throne-of-the-god-pharaoh.js";
 import _poolThunderingFalls from "../pool/thundering-falls.js";
 import _poolThunderingRebuke from "../pool/thundering-rebuke.js";
 import _poolTideSkimmer from "../pool/tide-skimmer.js";
+import _poolTitaniaNaturesForce from "../pool/titania-natures-force.js";
 import _poolTurbulentMoor from "../pool/turbulent-moor.js";
 import _poolTurntimberAscetic from "../pool/turntimber-ascetic.js";
 import _poolUktabiFaerie from "../pool/uktabi-faerie.js";
@@ -208,6 +209,7 @@ import _poolUnholyOfficiant from "../pool/unholy-officiant.js";
 import _poolUnknownShores from "../pool/unknown-shores.js";
 import _poolUnsummon from "../pool/unsummon.js";
 import _poolVeiledShade from "../pool/veiled-shade.js";
+import _poolVeinwitchCoven from "../pool/veinwitch-coven.js";
 import _poolVigilanteJustice from "../pool/vigilante-justice.js";
 import _poolVizierOfTheScorpion from "../pool/vizier-of-the-scorpion.js";
 import _poolVolatileFault from "../pool/volatile-fault.js";
@@ -443,6 +445,7 @@ const shard: CardShard = {
     _poolThunderingFalls,
     _poolThunderingRebuke,
     _poolTideSkimmer,
+    _poolTitaniaNaturesForce,
     _poolTurbulentMoor,
     _poolTurntimberAscetic,
     _poolUktabiFaerie,
@@ -451,6 +454,7 @@ const shard: CardShard = {
     _poolUnknownShores,
     _poolUnsummon,
     _poolVeiledShade,
+    _poolVeinwitchCoven,
     _poolVigilanteJustice,
     _poolVizierOfTheScorpion,
     _poolVolatileFault,

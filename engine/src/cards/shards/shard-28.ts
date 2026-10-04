@@ -92,6 +92,7 @@ import _poolHarmonize from "../pool/harmonize.js";
 import _poolHeraldOfFaith from "../pool/herald-of-faith.js";
 import _poolHighbornVampire from "../pool/highborn-vampire.js";
 import _poolHiredPoisoner from "../pool/hired-poisoner.js";
+import _poolHordewingSkaab from "../pool/hordewing-skaab.js";
 import _poolHorizonCanopy from "../pool/horizon-canopy.js";
 import _poolHulkBrutalBrawler from "../pool/hulk-brutal-brawler.js";
 import _poolImpeccableTiming from "../pool/impeccable-timing.js";
@@ -122,11 +123,13 @@ import _poolMarionetteApprentice from "../pool/marionette-apprentice.js";
 import _poolMarkOfTheVampire from "../pool/mark-of-the-vampire.js";
 import _poolMarshGoblins from "../pool/marsh-goblins.js";
 import _poolMartialGlory from "../pool/martial-glory.js";
+import _poolMassCalcify from "../pool/mass-calcify.js";
 import _poolMassOfGhouls from "../pool/mass-of-ghouls.js";
 import _poolMindControl from "../pool/mind-control.js";
 import _poolMinecartDaredevil from "../pool/minecart-daredevil.js";
 import _poolMirrorworks from "../pool/mirrorworks.js";
 import _poolMoleManMoloidMaster from "../pool/mole-man-moloid-master.js";
+import _poolMurderousRedcap from "../pool/murderous-redcap.js";
 import _poolMutableExplorer from "../pool/mutable-explorer.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
@@ -147,6 +150,7 @@ import _poolPlains from "../pool/plains.js";
 import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
 import _poolPoisonTheBlade from "../pool/poison-the-blade.js";
 import _poolPondProphet from "../pool/pond-prophet.js";
+import _poolPortOfKarfell from "../pool/port-of-karfell.js";
 import _poolPropaganda from "../pool/propaganda.js";
 import _poolProtectorOfTheWastes from "../pool/protector-of-the-wastes.js";
 import _poolPygmyPyrosaur from "../pool/pygmy-pyrosaur.js";
@@ -160,6 +164,7 @@ import _poolRecklessImpulse from "../pool/reckless-impulse.js";
 import _poolRedcapThief from "../pool/redcap-thief.js";
 import _poolResistanceSkywarden from "../pool/resistance-skywarden.js";
 import _poolResoluteReinforcements from "../pool/resolute-reinforcements.js";
+import _poolRestlessReef from "../pool/restless-reef.js";
 import _poolReveillark from "../pool/reveillark.js";
 import _poolReviveTheShire from "../pool/revive-the-shire.js";
 import _poolRimeshieldFrostGiant from "../pool/rimeshield-frost-giant.js";
@@ -324,6 +329,7 @@ const shard: CardShard = {
     _poolHeraldOfFaith,
     _poolHighbornVampire,
     _poolHiredPoisoner,
+    _poolHordewingSkaab,
     _poolHorizonCanopy,
     _poolHulkBrutalBrawler,
     _poolImpeccableTiming,
@@ -354,11 +360,13 @@ const shard: CardShard = {
     _poolMarkOfTheVampire,
     _poolMarshGoblins,
     _poolMartialGlory,
+    _poolMassCalcify,
     _poolMassOfGhouls,
     _poolMindControl,
     _poolMinecartDaredevil,
     _poolMirrorworks,
     _poolMoleManMoloidMaster,
+    _poolMurderousRedcap,
     _poolMutableExplorer,
     _poolMutantTownMusicians,
     _poolMyrkulLordOfBones,
@@ -379,6 +387,7 @@ const shard: CardShard = {
     _poolPoisonDartFrog,
     _poolPoisonTheBlade,
     _poolPondProphet,
+    _poolPortOfKarfell,
     _poolPropaganda,
     _poolProtectorOfTheWastes,
     _poolPygmyPyrosaur,
@@ -392,6 +401,7 @@ const shard: CardShard = {
     _poolRedcapThief,
     _poolResistanceSkywarden,
     _poolResoluteReinforcements,
+    _poolRestlessReef,
     _poolReveillark,
     _poolReviveTheShire,
     _poolRimeshieldFrostGiant,

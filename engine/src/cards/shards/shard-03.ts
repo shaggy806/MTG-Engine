@@ -43,6 +43,7 @@ import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
 import _poolDreamTwist from "../pool/dream-twist.js";
 import _poolEdenSeatOfTheSanctum from "../pool/eden-seat-of-the-sanctum.js";
 import _poolEloiseNephaliaSleuth from "../pool/eloise-nephalia-sleuth.js";
+import _poolEmberwildeCaptain from "../pool/emberwilde-captain.js";
 import _poolEmeriaAngel from "../pool/emeria-angel.js";
 import _poolErraticVisionary from "../pool/erratic-visionary.js";
 import _poolFaerieDuelist from "../pool/faerie-duelist.js";
@@ -59,6 +60,7 @@ import _poolGameTrail from "../pool/game-trail.js";
 import _poolGeneralsEnforcer from "../pool/generals-enforcer.js";
 import _poolGiadaFontOfHope from "../pool/giada-font-of-hope.js";
 import _poolGisaAndGeralf from "../pool/gisa-and-geralf.js";
+import _poolGixianPuppeteer from "../pool/gixian-puppeteer.js";
 import _poolGlissasCourier from "../pool/glissas-courier.js";
 import _poolGnawingVermin from "../pool/gnawing-vermin.js";
 import _poolGoblinCannon from "../pool/goblin-cannon.js";
@@ -167,6 +169,7 @@ import _poolSolemnOffering from "../pool/solemn-offering.js";
 import _poolSoulOfTheRapids from "../pool/soul-of-the-rapids.js";
 import _poolSpareSupplies from "../pool/spare-supplies.js";
 import _poolSparkDouble from "../pool/spark-double.js";
+import _poolSpectralDeluge from "../pool/spectral-deluge.js";
 import _poolSpectralSailor from "../pool/spectral-sailor.js";
 import _poolSplendidReclamation from "../pool/splendid-reclamation.js";
 import _poolStarlitAngel from "../pool/starlit-angel.js";
@@ -264,6 +267,7 @@ const shard: CardShard = {
     _poolDreamTwist,
     _poolEdenSeatOfTheSanctum,
     _poolEloiseNephaliaSleuth,
+    _poolEmberwildeCaptain,
     _poolEmeriaAngel,
     _poolErraticVisionary,
     _poolFaerieDuelist,
@@ -280,6 +284,7 @@ const shard: CardShard = {
     _poolGeneralsEnforcer,
     _poolGiadaFontOfHope,
     _poolGisaAndGeralf,
+    _poolGixianPuppeteer,
     _poolGlissasCourier,
     _poolGnawingVermin,
     _poolGoblinCannon,
@@ -388,6 +393,7 @@ const shard: CardShard = {
     _poolSoulOfTheRapids,
     _poolSpareSupplies,
     _poolSparkDouble,
+    _poolSpectralDeluge,
     _poolSpectralSailor,
     _poolSplendidReclamation,
     _poolStarlitAngel,

@@ -19,6 +19,7 @@ import _poolArcaneSignet from "../pool/arcane-signet.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
 import _poolAxegrinderGiant from "../pool/axegrinder-giant.js";
+import _poolBadgermole from "../pool/badgermole.js";
 import _poolBagOfHolding from "../pool/bag-of-holding.js";
 import _poolBardHeirOfGirion from "../pool/bard-heir-of-girion.js";
 import _poolBarrowWitches from "../pool/barrow-witches.js";
@@ -127,6 +128,7 @@ import _poolMagmakinArtillerist from "../pool/magmakin-artillerist.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
 import _poolMassacreWurm from "../pool/massacre-wurm.js";
 import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
+import _poolMerfolkSovereign from "../pool/merfolk-sovereign.js";
 import _poolMidnightBanshee from "../pool/midnight-banshee.js";
 import _poolMigratingKetradon from "../pool/migrating-ketradon.js";
 import _poolMishrasFactory from "../pool/mishras-factory.js";
@@ -182,6 +184,7 @@ import _poolSiegeGangLieutenant from "../pool/siege-gang-lieutenant.js";
 import _poolSkullOfRamos from "../pool/skull-of-ramos.js";
 import _poolSoliton from "../pool/soliton.js";
 import _poolSoporificSprings from "../pool/soporific-springs.js";
+import _poolSpawningPit from "../pool/spawning-pit.js";
 import _poolSphinxSummoner from "../pool/sphinx-summoner.js";
 import _poolSpinalCentipede from "../pool/spinal-centipede.js";
 import _poolStampedingRhino from "../pool/stampeding-rhino.js";
@@ -260,6 +263,7 @@ const shard: CardShard = {
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,
     _poolAxegrinderGiant,
+    _poolBadgermole,
     _poolBagOfHolding,
     _poolBardHeirOfGirion,
     _poolBarrowWitches,
@@ -368,6 +372,7 @@ const shard: CardShard = {
     _poolMagusOfTheBazaar,
     _poolMassacreWurm,
     _poolMerfolkOfTheDepths,
+    _poolMerfolkSovereign,
     _poolMidnightBanshee,
     _poolMigratingKetradon,
     _poolMishrasFactory,
@@ -423,6 +428,7 @@ const shard: CardShard = {
     _poolSkullOfRamos,
     _poolSoliton,
     _poolSoporificSprings,
+    _poolSpawningPit,
     _poolSphinxSummoner,
     _poolSpinalCentipede,
     _poolStampedingRhino,

@@ -63,6 +63,7 @@ import _poolCyberdriveAwakener from "../pool/cyberdrive-awakener.js";
 import _poolCyclopsOfEternalFury from "../pool/cyclops-of-eternal-fury.js";
 import _poolDakmorLancer from "../pool/dakmor-lancer.js";
 import _poolDarkslickDrake from "../pool/darkslick-drake.js";
+import _poolDawnOfANewAge from "../pool/dawn-of-a-new-age.js";
 import _poolDawnstrikePaladin from "../pool/dawnstrike-paladin.js";
 import _poolDaybreakCombatants from "../pool/daybreak-combatants.js";
 import _poolDeadeyeDuelist from "../pool/deadeye-duelist.js";
@@ -231,6 +232,7 @@ import _poolWingedBoots from "../pool/winged-boots.js";
 import _poolWingedShepherd from "../pool/winged-shepherd.js";
 import _poolWitchHunter from "../pool/witch-hunter.js";
 import _poolWitchsClinic from "../pool/witchs-clinic.js";
+import _poolYunaHopeOfSpira from "../pool/yuna-hope-of-spira.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZopandrelHungerDominus from "../pool/zopandrel-hunger-dominus.js";
 import _poolZukosOffense from "../pool/zukos-offense.js";
@@ -303,6 +305,7 @@ const shard: CardShard = {
     _poolCyclopsOfEternalFury,
     _poolDakmorLancer,
     _poolDarkslickDrake,
+    _poolDawnOfANewAge,
     _poolDawnstrikePaladin,
     _poolDaybreakCombatants,
     _poolDeadeyeDuelist,
@@ -471,6 +474,7 @@ const shard: CardShard = {
     _poolWingedShepherd,
     _poolWitchHunter,
     _poolWitchsClinic,
+    _poolYunaHopeOfSpira,
     _poolZealousLorecaster,
     _poolZopandrelHungerDominus,
     _poolZukosOffense,

@@ -60,6 +60,7 @@ import _poolCorpsejackMenace from "../pool/corpsejack-menace.js";
 import _poolCryptbreaker from "../pool/cryptbreaker.js";
 import _poolCustodianOfTheTrove from "../pool/custodian-of-the-trove.js";
 import _poolDarkConfidant from "../pool/dark-confidant.js";
+import _poolDauntlessDismantler from "../pool/dauntless-dismantler.js";
 import _poolDawnToDusk from "../pool/dawn-to-dusk.js";
 import _poolDealGoneBad from "../pool/deal-gone-bad.js";
 import _poolDefiantElf from "../pool/defiant-elf.js";
@@ -120,6 +121,7 @@ import _poolInfernalTribute from "../pool/infernal-tribute.js";
 import _poolInquisitivePuppet from "../pool/inquisitive-puppet.js";
 import _poolInspiredCharge from "../pool/inspired-charge.js";
 import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
+import _poolJacesSanctum from "../pool/jaces-sanctum.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
 import _poolLeapingMaster from "../pool/leaping-master.js";
@@ -137,6 +139,7 @@ import _poolManalith from "../pool/manalith.js";
 import _poolMarbleChalice from "../pool/marble-chalice.js";
 import _poolMartyrForTheCause from "../pool/martyr-for-the-cause.js";
 import _poolMaskOfMemory from "../pool/mask-of-memory.js";
+import _poolMaulOfTheSkyclaves from "../pool/maul-of-the-skyclaves.js";
 import _poolMendingHands from "../pool/mending-hands.js";
 import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.js";
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
@@ -155,6 +158,7 @@ import _poolPactOfNegation from "../pool/pact-of-negation.js";
 import _poolPlaguemawBeast from "../pool/plaguemaw-beast.js";
 import _poolProtomatterPowder from "../pool/protomatter-powder.js";
 import _poolPuresteelPaladin from "../pool/puresteel-paladin.js";
+import _poolQuicksilverAmulet from "../pool/quicksilver-amulet.js";
 import _poolQuicksilverPietroMaximoff from "../pool/quicksilver-pietro-maximoff.js";
 import _poolRaccoonRallier from "../pool/raccoon-rallier.js";
 import _poolRakdosShredFreak from "../pool/rakdos-shred-freak.js";
@@ -227,6 +231,7 @@ import _poolUndergrowthStadium from "../pool/undergrowth-stadium.js";
 import _poolVampireNoble from "../pool/vampire-noble.js";
 import _poolVelomachusLorehold from "../pool/velomachus-lorehold.js";
 import _poolVentureDeeper from "../pool/venture-deeper.js";
+import _poolViridianRevel from "../pool/viridian-revel.js";
 import _poolViridianShaman from "../pool/viridian-shaman.js";
 import _poolVolcanicIsland from "../pool/volcanic-island.js";
 import _poolVoraciousVarmint from "../pool/voracious-varmint.js";
@@ -311,6 +316,7 @@ const shard: CardShard = {
     _poolCryptbreaker,
     _poolCustodianOfTheTrove,
     _poolDarkConfidant,
+    _poolDauntlessDismantler,
     _poolDawnToDusk,
     _poolDealGoneBad,
     _poolDefiantElf,
@@ -371,6 +377,7 @@ const shard: CardShard = {
     _poolInquisitivePuppet,
     _poolInspiredCharge,
     _poolInvokeTheDivine,
+    _poolJacesSanctum,
     _poolJasmineBoreal,
     _poolKederektParasite,
     _poolLeapingMaster,
@@ -388,6 +395,7 @@ const shard: CardShard = {
     _poolMarbleChalice,
     _poolMartyrForTheCause,
     _poolMaskOfMemory,
+    _poolMaulOfTheSkyclaves,
     _poolMendingHands,
     _poolMerfolkOfThePearlTrident,
     _poolMightOfOaks,
@@ -406,6 +414,7 @@ const shard: CardShard = {
     _poolPlaguemawBeast,
     _poolProtomatterPowder,
     _poolPuresteelPaladin,
+    _poolQuicksilverAmulet,
     _poolQuicksilverPietroMaximoff,
     _poolRaccoonRallier,
     _poolRakdosShredFreak,
@@ -478,6 +487,7 @@ const shard: CardShard = {
     _poolVampireNoble,
     _poolVelomachusLorehold,
     _poolVentureDeeper,
+    _poolViridianRevel,
     _poolViridianShaman,
     _poolVolcanicIsland,
     _poolVoraciousVarmint,

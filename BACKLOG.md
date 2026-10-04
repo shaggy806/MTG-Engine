@@ -90,9 +90,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (3,021 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (3,111 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 4054 are triaged (batches 4–25);
+  engine features that block the most of the rest. Ranks through 4313 are triaged (batches 4–26);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -300,6 +300,10 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   (`look-and-choose` over `zone: "graveyard"`) misses those a replacement sent to exile (Rest in
   Peace, Dauthi Voidwalker), though rule 701.17c says it finds them in whatever public zone they
   went to. Smuggler's Surprise and Ripples of Undeath have it today; Bramble Familiar waits on it.
+- **"Return it transformed" brings back a card that can't transform.** Rule 712.14a: a card
+  that isn't double-faced, told to enter transformed, stays where it is; `flicker` with
+  `transformed` returns it normally. Clive, Ifrit's Dominant has it today; Dion, Bahamut's
+  Dominant and The Legend of Roku wait on it (found in the no-engine-work pass, not re-run).
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.

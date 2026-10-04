@@ -85,6 +85,7 @@ import _poolFoundryOfTheConsuls from "../pool/foundry-of-the-consuls.js";
 import _poolFugitiveWizard from "../pool/fugitive-wizard.js";
 import _poolFumigate from "../pool/fumigate.js";
 import _poolGaeasGift from "../pool/gaeas-gift.js";
+import _poolGaleriderSliver from "../pool/galerider-sliver.js";
 import _poolGeothermalBog from "../pool/geothermal-bog.js";
 import _poolGhostWarden from "../pool/ghost-warden.js";
 import _poolGiantAdephage from "../pool/giant-adephage.js";
@@ -331,6 +332,7 @@ const shard: CardShard = {
     _poolFugitiveWizard,
     _poolFumigate,
     _poolGaeasGift,
+    _poolGaleriderSliver,
     _poolGeothermalBog,
     _poolGhostWarden,
     _poolGiantAdephage,

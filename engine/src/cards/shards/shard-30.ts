@@ -9,6 +9,7 @@ import _poolAbyssalHorror from "../pool/abyssal-horror.js";
 import _poolAdarkarWastes from "../pool/adarkar-wastes.js";
 import _poolAdventurersInn from "../pool/adventurers-inn.js";
 import _poolAegisTurtle from "../pool/aegis-turtle.js";
+import _poolAlphinaudLeveilleur from "../pool/alphinaud-leveilleur.js";
 import _poolAmprynTactician from "../pool/ampryn-tactician.js";
 import _poolAnabaShaman from "../pool/anaba-shaman.js";
 import _poolAngrathsMarauders from "../pool/angraths-marauders.js";
@@ -189,8 +190,10 @@ import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js
 import _poolShuSoldierFarmers from "../pool/shu-soldier-farmers.js";
 import _poolSkitteringCicada from "../pool/skittering-cicada.js";
 import _poolSkyshroudElf from "../pool/skyshroud-elf.js";
+import _poolSmaugTheMagnificent from "../pool/smaug-the-magnificent.js";
 import _poolSmugglersSurprise from "../pool/smugglers-surprise.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
+import _poolSpawningKraken from "../pool/spawning-kraken.js";
 import _poolSpinedThopter from "../pool/spined-thopter.js";
 import _poolSpireMonitor from "../pool/spire-monitor.js";
 import _poolSquire from "../pool/squire.js";
@@ -256,6 +259,7 @@ const shard: CardShard = {
     _poolAdarkarWastes,
     _poolAdventurersInn,
     _poolAegisTurtle,
+    _poolAlphinaudLeveilleur,
     _poolAmprynTactician,
     _poolAnabaShaman,
     _poolAngrathsMarauders,
@@ -436,8 +440,10 @@ const shard: CardShard = {
     _poolShuSoldierFarmers,
     _poolSkitteringCicada,
     _poolSkyshroudElf,
+    _poolSmaugTheMagnificent,
     _poolSmugglersSurprise,
     _poolSneeringShadewriter,
+    _poolSpawningKraken,
     _poolSpinedThopter,
     _poolSpireMonitor,
     _poolSquire,

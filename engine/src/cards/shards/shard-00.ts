@@ -44,6 +44,7 @@ import _poolCaptainOfTheWatch from "../pool/captain-of-the-watch.js";
 import _poolCastleGarenbrig from "../pool/castle-garenbrig.js";
 import _poolCaveOfTemptation from "../pool/cave-of-temptation.js";
 import _poolChildOfThorns from "../pool/child-of-thorns.js";
+import _poolChocoboKnights from "../pool/chocobo-knights.js";
 import _poolCleansingScreech from "../pool/cleansing-screech.js";
 import _poolCloakOfFeathers from "../pool/cloak-of-feathers.js";
 import _poolCloudblazer from "../pool/cloudblazer.js";
@@ -295,6 +296,7 @@ const shard: CardShard = {
     _poolCastleGarenbrig,
     _poolCaveOfTemptation,
     _poolChildOfThorns,
+    _poolChocoboKnights,
     _poolCleansingScreech,
     _poolCloakOfFeathers,
     _poolCloudblazer,

@@ -74,6 +74,7 @@ import _poolEurekaMoment from "../pool/eureka-moment.js";
 import _poolEvacuation from "../pool/evacuation.js";
 import _poolEverflowingChalice from "../pool/everflowing-chalice.js";
 import _poolExcavatedWall from "../pool/excavated-wall.js";
+import _poolExtinguisherBattleship from "../pool/extinguisher-battleship.js";
 import _poolFeedTheSwarm from "../pool/feed-the-swarm.js";
 import _poolFeralAbomination from "../pool/feral-abomination.js";
 import _poolFinalReward from "../pool/final-reward.js";
@@ -158,6 +159,7 @@ import _poolPerimeterPatrol from "../pool/perimeter-patrol.js";
 import _poolPiaAndKiranNalaar from "../pool/pia-and-kiran-nalaar.js";
 import _poolPilgrimsEye from "../pool/pilgrims-eye.js";
 import _poolPinToTheEarth from "../pool/pin-to-the-earth.js";
+import _poolPippinWardenOfIsengard from "../pool/pippin-warden-of-isengard.js";
 import _poolPlanarBridge from "../pool/planar-bridge.js";
 import _poolPlatedSpider from "../pool/plated-spider.js";
 import _poolPravaOfTheSteelLegion from "../pool/prava-of-the-steel-legion.js";
@@ -179,6 +181,7 @@ import _poolRumblingSentry from "../pool/rumbling-sentry.js";
 import _poolRushwoodDryad from "../pool/rushwood-dryad.js";
 import _poolRustvaleBridge from "../pool/rustvale-bridge.js";
 import _poolSacredNectar from "../pool/sacred-nectar.js";
+import _poolSandstoneOracle from "../pool/sandstone-oracle.js";
 import _poolSanguineBond from "../pool/sanguine-bond.js";
 import _poolSavageVentmaw from "../pool/savage-ventmaw.js";
 import _poolScavengerDrake from "../pool/scavenger-drake.js";
@@ -191,12 +194,14 @@ import _poolSiegeRhino from "../pool/siege-rhino.js";
 import _poolSilentArtisan from "../pool/silent-artisan.js";
 import _poolSilundiIsle from "../pool/silundi-isle.js";
 import _poolSimplify from "../pool/simplify.js";
+import _poolSmellFear from "../pool/smell-fear.js";
 import _poolSozinsComet from "../pool/sozins-comet.js";
 import _poolSpatialContortion from "../pool/spatial-contortion.js";
 import _poolSphinxOfEnlightenment from "../pool/sphinx-of-enlightenment.js";
 import _poolSpirebluffCanal from "../pool/spirebluff-canal.js";
 import _poolSporeCrawler from "../pool/spore-crawler.js";
 import _poolSpringOfEternalPeace from "../pool/spring-of-eternal-peace.js";
+import _poolSquirrelSovereign from "../pool/squirrel-sovereign.js";
 import _poolStaunchThroneguard from "../pool/staunch-throneguard.js";
 import _poolSteelPlumeMarshal from "../pool/steel-plume-marshal.js";
 import _poolStonefareCrocodile from "../pool/stonefare-crocodile.js";
@@ -236,6 +241,7 @@ import _poolVenomthrope from "../pool/venomthrope.js";
 import _poolVilisBrokerOfBlood from "../pool/vilis-broker-of-blood.js";
 import _poolVindicate from "../pool/vindicate.js";
 import _poolVoyagerQuickwelder from "../pool/voyager-quickwelder.js";
+import _poolVraanExecutionerThane from "../pool/vraan-executioner-thane.js";
 import _poolWallOfFire from "../pool/wall-of-fire.js";
 import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
@@ -328,6 +334,7 @@ const shard: CardShard = {
     _poolEvacuation,
     _poolEverflowingChalice,
     _poolExcavatedWall,
+    _poolExtinguisherBattleship,
     _poolFeedTheSwarm,
     _poolFeralAbomination,
     _poolFinalReward,
@@ -412,6 +419,7 @@ const shard: CardShard = {
     _poolPiaAndKiranNalaar,
     _poolPilgrimsEye,
     _poolPinToTheEarth,
+    _poolPippinWardenOfIsengard,
     _poolPlanarBridge,
     _poolPlatedSpider,
     _poolPravaOfTheSteelLegion,
@@ -433,6 +441,7 @@ const shard: CardShard = {
     _poolRushwoodDryad,
     _poolRustvaleBridge,
     _poolSacredNectar,
+    _poolSandstoneOracle,
     _poolSanguineBond,
     _poolSavageVentmaw,
     _poolScavengerDrake,
@@ -445,12 +454,14 @@ const shard: CardShard = {
     _poolSilentArtisan,
     _poolSilundiIsle,
     _poolSimplify,
+    _poolSmellFear,
     _poolSozinsComet,
     _poolSpatialContortion,
     _poolSphinxOfEnlightenment,
     _poolSpirebluffCanal,
     _poolSporeCrawler,
     _poolSpringOfEternalPeace,
+    _poolSquirrelSovereign,
     _poolStaunchThroneguard,
     _poolSteelPlumeMarshal,
     _poolStonefareCrocodile,
@@ -490,6 +501,7 @@ const shard: CardShard = {
     _poolVilisBrokerOfBlood,
     _poolVindicate,
     _poolVoyagerQuickwelder,
+    _poolVraanExecutionerThane,
     _poolWallOfFire,
     _poolWandOfOrcus,
     _poolWanderingMusicians,

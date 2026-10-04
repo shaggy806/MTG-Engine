@@ -143,6 +143,7 @@ import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
 import _poolMoriokReaver from "../pool/moriok-reaver.js";
 import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
+import _poolMysidianElder from "../pool/mysidian-elder.js";
 import _poolMysticForge from "../pool/mystic-forge.js";
 import _poolMysticGate from "../pool/mystic-gate.js";
 import _poolNessianCourser from "../pool/nessian-courser.js";
@@ -161,6 +162,7 @@ import _poolOuroboroid from "../pool/ouroboroid.js";
 import _poolParadiseMantle from "../pool/paradise-mantle.js";
 import _poolPearlEarImperialAdvisor from "../pool/pearl-ear-imperial-advisor.js";
 import _poolPelakkaWurm from "../pool/pelakka-wurm.js";
+import _poolPerennialBehemoth from "../pool/perennial-behemoth.js";
 import _poolPestInfestation from "../pool/pest-infestation.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
 import _poolPharikasChosen from "../pool/pharikas-chosen.js";
@@ -252,6 +254,7 @@ import _poolUrnOfGodfire from "../pool/urn-of-godfire.js";
 import _poolUthrosTitanicGodcore from "../pool/uthros-titanic-godcore.js";
 import _poolVaultOfWhispers from "../pool/vault-of-whispers.js";
 import _poolViashinoSlaughtermaster from "../pool/viashino-slaughtermaster.js";
+import _poolVincentVengefulAtoner from "../pool/vincent-vengeful-atoner.js";
 import _poolVodalianHypnotist from "../pool/vodalian-hypnotist.js";
 import _poolWatcherOfTheWayside from "../pool/watcher-of-the-wayside.js";
 import _poolWaterfallAerialist from "../pool/waterfall-aerialist.js";
@@ -418,6 +421,7 @@ const shard: CardShard = {
     _poolMoriokReaver,
     _poolMossDiamond,
     _poolMossdog,
+    _poolMysidianElder,
     _poolMysticForge,
     _poolMysticGate,
     _poolNessianCourser,
@@ -436,6 +440,7 @@ const shard: CardShard = {
     _poolParadiseMantle,
     _poolPearlEarImperialAdvisor,
     _poolPelakkaWurm,
+    _poolPerennialBehemoth,
     _poolPestInfestation,
     _poolPestilentKathari,
     _poolPharikasChosen,
@@ -527,6 +532,7 @@ const shard: CardShard = {
     _poolUthrosTitanicGodcore,
     _poolVaultOfWhispers,
     _poolViashinoSlaughtermaster,
+    _poolVincentVengefulAtoner,
     _poolVodalianHypnotist,
     _poolWatcherOfTheWayside,
     _poolWaterfallAerialist,

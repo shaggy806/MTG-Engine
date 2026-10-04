@@ -58,6 +58,7 @@ import _poolCopperMyr from "../pool/copper-myr.js";
 import _poolCoralMerfolk from "../pool/coral-merfolk.js";
 import _poolCoverOfDarkness from "../pool/cover-of-darkness.js";
 import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
+import _poolCrestedSunmare from "../pool/crested-sunmare.js";
 import _poolCrosswayTroublemakers from "../pool/crossway-troublemakers.js";
 import _poolDauthiVoidwalker from "../pool/dauthi-voidwalker.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
@@ -128,6 +129,7 @@ import _poolMassProduction from "../pool/mass-production.js";
 import _poolMerfolkTraders from "../pool/merfolk-traders.js";
 import _poolMillikin from "../pool/millikin.js";
 import _poolMindspliceApparatus from "../pool/mindsplice-apparatus.js";
+import _poolMirageMesa from "../pool/mirage-mesa.js";
 import _poolMirriCatWarrior from "../pool/mirri-cat-warrior.js";
 import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
@@ -184,6 +186,7 @@ import _poolSocialClimber from "../pool/social-climber.js";
 import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
 import _poolSpitefulBanditry from "../pool/spiteful-banditry.js";
 import _poolSquirrelanoids from "../pool/squirrelanoids.js";
+import _poolStargaze from "../pool/stargaze.js";
 import _poolStarnheimAspirant from "../pool/starnheim-aspirant.js";
 import _poolStoicBuilder from "../pool/stoic-builder.js";
 import _poolStolenByTheFae from "../pool/stolen-by-the-fae.js";
@@ -203,6 +206,7 @@ import _poolSylvanTutor from "../pool/sylvan-tutor.js";
 import _poolTalasAirShip from "../pool/talas-air-ship.js";
 import _poolTalismanOfHierarchy from "../pool/talisman-of-hierarchy.js";
 import _poolTatyova from "../pool/tatyova.js";
+import _poolTavernScoundrel from "../pool/tavern-scoundrel.js";
 import _poolTerritorialScythecat from "../pool/territorial-scythecat.js";
 import _poolTezzeretsGambit from "../pool/tezzerets-gambit.js";
 import _poolThaliaGuardianOfThraben from "../pool/thalia-guardian-of-thraben.js";
@@ -293,6 +297,7 @@ const shard: CardShard = {
     _poolCoralMerfolk,
     _poolCoverOfDarkness,
     _poolCrashOfRhinos,
+    _poolCrestedSunmare,
     _poolCrosswayTroublemakers,
     _poolDauthiVoidwalker,
     _poolDeadlyInsect,
@@ -363,6 +368,7 @@ const shard: CardShard = {
     _poolMerfolkTraders,
     _poolMillikin,
     _poolMindspliceApparatus,
+    _poolMirageMesa,
     _poolMirriCatWarrior,
     _poolMoltenTributary,
     _poolMoltensteelDragon,
@@ -419,6 +425,7 @@ const shard: CardShard = {
     _poolSorcererOfTheFang,
     _poolSpitefulBanditry,
     _poolSquirrelanoids,
+    _poolStargaze,
     _poolStarnheimAspirant,
     _poolStoicBuilder,
     _poolStolenByTheFae,
@@ -438,6 +445,7 @@ const shard: CardShard = {
     _poolTalasAirShip,
     _poolTalismanOfHierarchy,
     _poolTatyova,
+    _poolTavernScoundrel,
     _poolTerritorialScythecat,
     _poolTezzeretsGambit,
     _poolThaliaGuardianOfThraben,
