@@ -225,6 +225,7 @@ import _poolVorpalSword from "../pool/vorpal-sword.js";
 import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
 import _poolVulshokBerserker from "../pool/vulshok-berserker.js";
 import _poolWaytaTrainerProdigy from "../pool/wayta-trainer-prodigy.js";
+import _poolWellRested from "../pool/well-rested.js";
 import _poolWildCantor from "../pool/wild-cantor.js";
 import _poolWillowrushVerge from "../pool/willowrush-verge.js";
 import _poolZagothCrystal from "../pool/zagoth-crystal.js";
@@ -459,6 +460,7 @@ const shard: CardShard = {
     _poolVoyagingSatyr,
     _poolVulshokBerserker,
     _poolWaytaTrainerProdigy,
+    _poolWellRested,
     _poolWildCantor,
     _poolWillowrushVerge,
     _poolZagothCrystal,

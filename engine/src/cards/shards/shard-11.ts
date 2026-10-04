@@ -204,9 +204,11 @@ import _poolSistersOfTheFlame from "../pool/sisters-of-the-flame.js";
 import _poolSkyEelSchool from "../pool/sky-eel-school.js";
 import _poolSkyclaveCleric from "../pool/skyclave-cleric.js";
 import _poolSkyhunterSkirmisher from "../pool/skyhunter-skirmisher.js";
+import _poolSliverHivelord from "../pool/sliver-hivelord.js";
 import _poolSomnomancer from "../pool/somnomancer.js";
 import _poolSorinRavenousNeonate from "../pool/sorin-ravenous-neonate.js";
 import _poolSowingMycospawn from "../pool/sowing-mycospawn.js";
+import _poolSpinnerOfSouls from "../pool/spinner-of-souls.js";
 import _poolSpiritMantle from "../pool/spirit-mantle.js";
 import _poolSporemound from "../pool/sporemound.js";
 import _poolSpringsageRitual from "../pool/springsage-ritual.js";
@@ -272,6 +274,7 @@ import _tokensOgreToken from "../tokens/ogre-token.js";
 import _tokensSnailToken from "../tokens/snail-token.js";
 import _tokensSpiderToken22Reach from "../tokens/spider-token-2-2-reach.js";
 import _tokensWarriorTokenVigilance from "../tokens/warrior-token-vigilance.js";
+import _tokensWolfTokenGarrukCursedHuntsman from "../tokens/wolf-token-garruk-cursed-huntsman.js";
 
 const shard: CardShard = {
   pool: [
@@ -476,9 +479,11 @@ const shard: CardShard = {
     _poolSkyEelSchool,
     _poolSkyclaveCleric,
     _poolSkyhunterSkirmisher,
+    _poolSliverHivelord,
     _poolSomnomancer,
     _poolSorinRavenousNeonate,
     _poolSowingMycospawn,
+    _poolSpinnerOfSouls,
     _poolSpiritMantle,
     _poolSporemound,
     _poolSpringsageRitual,
@@ -546,6 +551,7 @@ const shard: CardShard = {
     _tokensSnailToken,
     _tokensSpiderToken22Reach,
     _tokensWarriorTokenVigilance,
+    _tokensWolfTokenGarrukCursedHuntsman,
   ],
 };
 

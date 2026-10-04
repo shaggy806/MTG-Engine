@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAardvarkSloth from "../pool/aardvark-sloth.js";
 import _poolAbzanBanner from "../pool/abzan-banner.js";
 import _poolAcolyteOfAclazotz from "../pool/acolyte-of-aclazotz.js";
+import _poolAkkiBattleSquad from "../pool/akki-battle-squad.js";
 import _poolAlphaMyr from "../pool/alpha-myr.js";
 import _poolAltanakTheThriceCalled from "../pool/altanak-the-thrice-called.js";
 import _poolAncestralReminiscence from "../pool/ancestral-reminiscence.js";
@@ -13,6 +14,7 @@ import _poolAngelOfMercy from "../pool/angel-of-mercy.js";
 import _poolAngelOfTheRuins from "../pool/angel-of-the-ruins.js";
 import _poolAngelOfVitality from "../pool/angel-of-vitality.js";
 import _poolAnguishedUnmaking from "../pool/anguished-unmaking.js";
+import _poolAnimalSanctuary from "../pool/animal-sanctuary.js";
 import _poolArchersParapet from "../pool/archers-parapet.js";
 import _poolArmoredCancrix from "../pool/armored-cancrix.js";
 import _poolAtraxaPraetorsVoice from "../pool/atraxa-praetors-voice.js";
@@ -236,6 +238,7 @@ const shard: CardShard = {
     _poolAardvarkSloth,
     _poolAbzanBanner,
     _poolAcolyteOfAclazotz,
+    _poolAkkiBattleSquad,
     _poolAlphaMyr,
     _poolAltanakTheThriceCalled,
     _poolAncestralReminiscence,
@@ -243,6 +246,7 @@ const shard: CardShard = {
     _poolAngelOfTheRuins,
     _poolAngelOfVitality,
     _poolAnguishedUnmaking,
+    _poolAnimalSanctuary,
     _poolArchersParapet,
     _poolArmoredCancrix,
     _poolAtraxaPraetorsVoice,

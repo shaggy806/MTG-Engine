@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbzanAscendancy from "../pool/abzan-ascendancy.js";
 import _poolAetherHelix from "../pool/aether-helix.js";
+import _poolAjanisChosen from "../pool/ajanis-chosen.js";
 import _poolAlelaCunningConqueror from "../pool/alela-cunning-conqueror.js";
 import _poolAngelsGrace from "../pool/angels-grace.js";
 import _poolAnheloThePainter from "../pool/anhelo-the-painter.js";
@@ -160,6 +161,7 @@ import _poolRagingRedcap from "../pool/raging-redcap.js";
 import _poolRaidBombardment from "../pool/raid-bombardment.js";
 import _poolRaisedByGiants from "../pool/raised-by-giants.js";
 import _poolRangersLongbow from "../pool/rangers-longbow.js";
+import _poolReckonersBargain from "../pool/reckoners-bargain.js";
 import _poolResearchAssistant from "../pool/research-assistant.js";
 import _poolRestInPeace from "../pool/rest-in-peace.js";
 import _poolRetreatToCoralhelm from "../pool/retreat-to-coralhelm.js";
@@ -168,6 +170,7 @@ import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
 import _poolRubyDaringTracker from "../pool/ruby-daring-tracker.js";
+import _poolRugOfSmothering from "../pool/rug-of-smothering.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
 import _poolSaiMasterThopterist from "../pool/sai-master-thopterist.js";
 import _poolSanctify from "../pool/sanctify.js";
@@ -211,6 +214,7 @@ import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
 import _poolThrorsMap from "../pool/thrors-map.js";
 import _poolTigerClaws from "../pool/tiger-claws.js";
 import _poolTipTheScales from "../pool/tip-the-scales.js";
+import _poolTitaniasCommand from "../pool/titanias-command.js";
 import _poolTobiasAndrion from "../pool/tobias-andrion.js";
 import _poolTorturedExistence from "../pool/tortured-existence.js";
 import _poolToweringTitan from "../pool/towering-titan.js";
@@ -238,6 +242,7 @@ import _poolWheelOfFortune from "../pool/wheel-of-fortune.js";
 import _poolWhispersilkCloak from "../pool/whispersilk-cloak.js";
 import _poolWistfulSelkie from "../pool/wistful-selkie.js";
 import _poolWitherAndBloom from "../pool/wither-and-bloom.js";
+import _poolWorkshopAssistant from "../pool/workshop-assistant.js";
 import _poolZephyrFalcon from "../pool/zephyr-falcon.js";
 import _poolZofBloodbog from "../pool/zof-bloodbog.js";
 import _tokensSandWarriorToken from "../tokens/sand-warrior-token.js";
@@ -248,6 +253,7 @@ const shard: CardShard = {
   pool: [
     _poolAbzanAscendancy,
     _poolAetherHelix,
+    _poolAjanisChosen,
     _poolAlelaCunningConqueror,
     _poolAngelsGrace,
     _poolAnheloThePainter,
@@ -403,6 +409,7 @@ const shard: CardShard = {
     _poolRaidBombardment,
     _poolRaisedByGiants,
     _poolRangersLongbow,
+    _poolReckonersBargain,
     _poolResearchAssistant,
     _poolRestInPeace,
     _poolRetreatToCoralhelm,
@@ -411,6 +418,7 @@ const shard: CardShard = {
     _poolRevivingDose,
     _poolRidgeRannet,
     _poolRubyDaringTracker,
+    _poolRugOfSmothering,
     _poolRuneSealedWall,
     _poolSaiMasterThopterist,
     _poolSanctify,
@@ -454,6 +462,7 @@ const shard: CardShard = {
     _poolThrorsMap,
     _poolTigerClaws,
     _poolTipTheScales,
+    _poolTitaniasCommand,
     _poolTobiasAndrion,
     _poolTorturedExistence,
     _poolToweringTitan,
@@ -481,6 +490,7 @@ const shard: CardShard = {
     _poolWhispersilkCloak,
     _poolWistfulSelkie,
     _poolWitherAndBloom,
+    _poolWorkshopAssistant,
     _poolZephyrFalcon,
     _poolZofBloodbog,
   ],

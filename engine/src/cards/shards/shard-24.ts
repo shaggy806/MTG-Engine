@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbsorb from "../pool/absorb.js";
 import _poolAcidicSlime from "../pool/acidic-slime.js";
+import _poolAdantoTheFirstFort from "../pool/adanto-the-first-fort.js";
 import _poolAesthirGlider from "../pool/aesthir-glider.js";
 import _poolAgentOfStromgald from "../pool/agent-of-stromgald.js";
 import _poolAgentOfTreachery from "../pool/agent-of-treachery.js";
@@ -67,6 +68,7 @@ import _poolElvishVisionary from "../pool/elvish-visionary.js";
 import _poolErode from "../pool/erode.js";
 import _poolExpeditionMap from "../pool/expedition-map.js";
 import _poolExpressiveIteration from "../pool/expressive-iteration.js";
+import _poolExtinguishAllHope from "../pool/extinguish-all-hope.js";
 import _poolFellTheProfane from "../pool/fell-the-profane.js";
 import _poolFeralProwler from "../pool/feral-prowler.js";
 import _poolFeralRidgewolf from "../pool/feral-ridgewolf.js";
@@ -93,6 +95,7 @@ import _poolHelgaSkittishSeer from "../pool/helga-skittish-seer.js";
 import _poolHellsKitchen from "../pool/hells-kitchen.js";
 import _poolHeritageDruid from "../pool/heritage-druid.js";
 import _poolHermesOverseerOfElpis from "../pool/hermes-overseer-of-elpis.js";
+import _poolHerosHeirloom from "../pool/heros-heirloom.js";
 import _poolHexingSquelcher from "../pool/hexing-squelcher.js";
 import _poolHiddenGrotto from "../pool/hidden-grotto.js";
 import _poolHollowmurkSiege from "../pool/hollowmurk-siege.js";
@@ -102,6 +105,7 @@ import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
 import _poolJunkWinder from "../pool/junk-winder.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
+import _poolKarlovOfTheGhostCouncil from "../pool/karlov-of-the-ghost-council.js";
 import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
 import _poolKinnanBonderProdigy from "../pool/kinnan-bonder-prodigy.js";
 import _poolKoglaTheTitanApe from "../pool/kogla-the-titan-ape.js";
@@ -133,6 +137,7 @@ import _poolMonumentToEndurance from "../pool/monument-to-endurance.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
 import _poolMurkfiendLiege from "../pool/murkfiend-liege.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
+import _poolNibelheimAflame from "../pool/nibelheim-aflame.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
 import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
 import _poolObscuraStorefront from "../pool/obscura-storefront.js";
@@ -181,6 +186,7 @@ import _poolSteelWall from "../pool/steel-wall.js";
 import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSulfuricVortex from "../pool/sulfuric-vortex.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
+import _poolSunblastAngel from "../pool/sunblast-angel.js";
 import _poolSwordOfTheRealms from "../pool/sword-of-the-realms.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
 import _poolTaintedStrike from "../pool/tainted-strike.js";
@@ -238,6 +244,7 @@ const shard: CardShard = {
   pool: [
     _poolAbsorb,
     _poolAcidicSlime,
+    _poolAdantoTheFirstFort,
     _poolAesthirGlider,
     _poolAgentOfStromgald,
     _poolAgentOfTreachery,
@@ -300,6 +307,7 @@ const shard: CardShard = {
     _poolErode,
     _poolExpeditionMap,
     _poolExpressiveIteration,
+    _poolExtinguishAllHope,
     _poolFellTheProfane,
     _poolFeralProwler,
     _poolFeralRidgewolf,
@@ -326,6 +334,7 @@ const shard: CardShard = {
     _poolHellsKitchen,
     _poolHeritageDruid,
     _poolHermesOverseerOfElpis,
+    _poolHerosHeirloom,
     _poolHexingSquelcher,
     _poolHiddenGrotto,
     _poolHollowmurkSiege,
@@ -335,6 +344,7 @@ const shard: CardShard = {
     _poolJunkWinder,
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,
+    _poolKarlovOfTheGhostCouncil,
     _poolKasimirTheLoneWolf,
     _poolKinnanBonderProdigy,
     _poolKoglaTheTitanApe,
@@ -366,6 +376,7 @@ const shard: CardShard = {
     _poolMorgueToad,
     _poolMurkfiendLiege,
     _poolNarstadScrapper,
+    _poolNibelheimAflame,
     _poolNicolBolasTheRavager,
     _poolNinjaOfTheHand,
     _poolObscuraStorefront,
@@ -414,6 +425,7 @@ const shard: CardShard = {
     _poolStormshriekFeral,
     _poolSulfuricVortex,
     _poolSunbladeAngel,
+    _poolSunblastAngel,
     _poolSwordOfTheRealms,
     _poolSwordOfWealthAndPower,
     _poolTaintedStrike,

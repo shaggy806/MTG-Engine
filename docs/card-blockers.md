@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B24) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B25) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -351,7 +351,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 24 (2026-10-04, the no-engine-work pass)** triaged ranks 3512–3786: 95 authored (Steel of the Godhead, Agent Frank Horrigan, Good-Fortune Unicorn, Shadow in the Warp, Storm the Vault and 90 more — `top5000-batch-24a`–`h.test.ts`); 105 blocked (`B24.json`), each skipped at the first sign of engine work. Most-cited blockers: `effect:choices-by-other-players` (3), `keyword:ninjutsu` (3), `keyword:crew` (3), `new:static-set-color` (2), `mechanic:dice-rolling` (2).
 
-Past rank 3786, nothing is triaged.
+- **Batch 25 (2026-10-04, the no-engine-work pass)** triaged ranks 3787–4054: 91 authored (Tempered Steel, White Auracite, Sanctum of Stone Fangs, Garruk, Cursed Huntsman, Animal Sanctuary and 86 more — `top5000-batch-25a`–`h.test.ts`); 109 blocked (`B25.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (9), `mechanic:dice-rolling` (4), `new:static-lose-all-abilities` (3), `mechanic:curses` (2), `effect:attach-extensions` (2).
+
+Past rank 4054, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

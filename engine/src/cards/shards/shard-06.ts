@@ -108,6 +108,7 @@ import _poolJinGitaxiasProgressTyrant from "../pool/jin-gitaxias-progress-tyrant
 import _poolJungleLion from "../pool/jungle-lion.js";
 import _poolKujaGenomeSorcerer from "../pool/kuja-genome-sorcerer.js";
 import _poolLathlissDragonQueen from "../pool/lathliss-dragon-queen.js";
+import _poolLegionsLanding from "../pool/legions-landing.js";
 import _poolLoamDryad from "../pool/loam-dryad.js";
 import _poolLoransEscape from "../pool/lorans-escape.js";
 import _poolLotlethGiant from "../pool/lotleth-giant.js";
@@ -119,6 +120,7 @@ import _poolMikokoroCenterOfTheSea from "../pool/mikokoro-center-of-the-sea.js";
 import _poolMirkoObsessiveTheorist from "../pool/mirko-obsessive-theorist.js";
 import _poolMoggSentry from "../pool/mogg-sentry.js";
 import _poolMrFoxglove from "../pool/mr-foxglove.js";
+import _poolMuxusGoblinGrandee from "../pool/muxus-goblin-grandee.js";
 import _poolMyriadLandscape from "../pool/myriad-landscape.js";
 import _poolNaturalConnection from "../pool/natural-connection.js";
 import _poolNeedlepeakSpider from "../pool/needlepeak-spider.js";
@@ -149,6 +151,7 @@ import _poolQuicksilverFisher from "../pool/quicksilver-fisher.js";
 import _poolRaggadraggaGoregutsBoss from "../pool/raggadragga-goreguts-boss.js";
 import _poolRagingGoblin from "../pool/raging-goblin.js";
 import _poolRainOfThorns from "../pool/rain-of-thorns.js";
+import _poolRampagingBrontodon from "../pool/rampaging-brontodon.js";
 import _poolRamunapRuins from "../pool/ramunap-ruins.js";
 import _poolRankleMasterOfPranks from "../pool/rankle-master-of-pranks.js";
 import _poolRedoubledStormsinger from "../pool/redoubled-stormsinger.js";
@@ -230,6 +233,7 @@ import _tokensCitizenToken from "../tokens/citizen-token.js";
 import _tokensDragonTokenFirebreathing from "../tokens/dragon-token-firebreathing.js";
 import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
+import _tokensInsectTokenCanoptekScarabSwarm from "../tokens/insect-token-canoptek-scarab-swarm.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
 import _tokensLanderToken from "../tokens/lander-token.js";
 import _tokensMeteoriteToken from "../tokens/meteorite-token.js";
@@ -342,6 +346,7 @@ const shard: CardShard = {
     _poolJungleLion,
     _poolKujaGenomeSorcerer,
     _poolLathlissDragonQueen,
+    _poolLegionsLanding,
     _poolLoamDryad,
     _poolLoransEscape,
     _poolLotlethGiant,
@@ -353,6 +358,7 @@ const shard: CardShard = {
     _poolMirkoObsessiveTheorist,
     _poolMoggSentry,
     _poolMrFoxglove,
+    _poolMuxusGoblinGrandee,
     _poolMyriadLandscape,
     _poolNaturalConnection,
     _poolNeedlepeakSpider,
@@ -383,6 +389,7 @@ const shard: CardShard = {
     _poolRaggadraggaGoregutsBoss,
     _poolRagingGoblin,
     _poolRainOfThorns,
+    _poolRampagingBrontodon,
     _poolRamunapRuins,
     _poolRankleMasterOfPranks,
     _poolRedoubledStormsinger,
@@ -466,6 +473,7 @@ const shard: CardShard = {
     _tokensDragonTokenFirebreathing,
     _tokensEldraziSpawnToken,
     _tokensHydraToken,
+    _tokensInsectTokenCanoptekScarabSwarm,
     _tokensJunkToken,
     _tokensLanderToken,
     _tokensMeteoriteToken,

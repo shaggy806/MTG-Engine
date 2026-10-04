@@ -19,6 +19,7 @@ import _poolArcaneSignet from "../pool/arcane-signet.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
 import _poolAxegrinderGiant from "../pool/axegrinder-giant.js";
+import _poolBagOfHolding from "../pool/bag-of-holding.js";
 import _poolBardHeirOfGirion from "../pool/bard-heir-of-girion.js";
 import _poolBarrowWitches from "../pool/barrow-witches.js";
 import _poolBiteDown from "../pool/bite-down.js";
@@ -143,6 +144,7 @@ import _poolOrcishLumberjack from "../pool/orcish-lumberjack.js";
 import _poolOrzhovCluestone from "../pool/orzhov-cluestone.js";
 import _poolOverflowingInsight from "../pool/overflowing-insight.js";
 import _poolPersonalTutor from "../pool/personal-tutor.js";
+import _poolPhyrexianDelver from "../pool/phyrexian-delver.js";
 import _poolPhyrexianVivisector from "../pool/phyrexian-vivisector.js";
 import _poolPickYourPoison from "../pool/pick-your-poison.js";
 import _poolPiousInterdiction from "../pool/pious-interdiction.js";
@@ -190,6 +192,7 @@ import _poolStrandsOfNight from "../pool/strands-of-night.js";
 import _poolStubbornDenial from "../pool/stubborn-denial.js";
 import _poolSunBlessedPeak from "../pool/sun-blessed-peak.js";
 import _poolSunlitMarsh from "../pool/sunlit-marsh.js";
+import _poolSvyelunOfSeaAndSky from "../pool/svyelun-of-sea-and-sky.js";
 import _poolSwiftEnd from "../pool/swift-end.js";
 import _poolSwiftSpinner from "../pool/swift-spinner.js";
 import _poolSylvanBrushstrider from "../pool/sylvan-brushstrider.js";
@@ -257,6 +260,7 @@ const shard: CardShard = {
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,
     _poolAxegrinderGiant,
+    _poolBagOfHolding,
     _poolBardHeirOfGirion,
     _poolBarrowWitches,
     _poolBiteDown,
@@ -381,6 +385,7 @@ const shard: CardShard = {
     _poolOrzhovCluestone,
     _poolOverflowingInsight,
     _poolPersonalTutor,
+    _poolPhyrexianDelver,
     _poolPhyrexianVivisector,
     _poolPickYourPoison,
     _poolPiousInterdiction,
@@ -428,6 +433,7 @@ const shard: CardShard = {
     _poolStubbornDenial,
     _poolSunBlessedPeak,
     _poolSunlitMarsh,
+    _poolSvyelunOfSeaAndSky,
     _poolSwiftEnd,
     _poolSwiftSpinner,
     _poolSylvanBrushstrider,

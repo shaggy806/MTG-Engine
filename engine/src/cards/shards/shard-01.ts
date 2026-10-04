@@ -32,6 +32,7 @@ import _poolClarionCathars from "../pool/clarion-cathars.js";
 import _poolClementTheWorrywort from "../pool/clement-the-worrywort.js";
 import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
 import _poolCodexShredder from "../pool/codex-shredder.js";
+import _poolConformerShuriken from "../pool/conformer-shuriken.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
 import _poolCryptothrall from "../pool/cryptothrall.js";
@@ -188,6 +189,7 @@ import _poolThrummingbird from "../pool/thrummingbird.js";
 import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.js";
 import _poolTragicPoet from "../pool/tragic-poet.js";
 import _poolTraumatize from "../pool/traumatize.js";
+import _poolTraxosScourgeOfKroog from "../pool/traxos-scourge-of-kroog.js";
 import _poolTwiceTheRage from "../pool/twice-the-rage.js";
 import _poolTwilightPanther from "../pool/twilight-panther.js";
 import _poolUlvenwaldTracker from "../pool/ulvenwald-tracker.js";
@@ -209,6 +211,7 @@ import _poolWastewoodVerge from "../pool/wastewood-verge.js";
 import _poolWeatheredWayfarer from "../pool/weathered-wayfarer.js";
 import _poolWestvaleAbbey from "../pool/westvale-abbey.js";
 import _poolWhirlwingStormbrood from "../pool/whirlwing-stormbrood.js";
+import _poolWhitemaneLion from "../pool/whitemane-lion.js";
 import _poolWillOfTheAbzan from "../pool/will-of-the-abzan.js";
 import _poolWrennsResolve from "../pool/wrenns-resolve.js";
 import _poolXandersLounge from "../pool/xanders-lounge.js";
@@ -217,6 +220,7 @@ import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
 import _poolZadasCommando from "../pool/zadas-commando.js";
 import _tokensCatTokenArahboTheFirstFang from "../tokens/cat-token-arahbo-the-first-fang.js";
 import _tokensEldraziScionToken from "../tokens/eldrazi-scion-token.js";
+import _tokensMutavaultToken from "../tokens/mutavault-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -249,6 +253,7 @@ const shard: CardShard = {
     _poolClementTheWorrywort,
     _poolCloudheathDrake,
     _poolCodexShredder,
+    _poolConformerShuriken,
     _poolCosmicSpiderMan,
     _poolCourierHawk,
     _poolCryptothrall,
@@ -405,6 +410,7 @@ const shard: CardShard = {
     _poolTitaniaProtectorOfArgoth,
     _poolTragicPoet,
     _poolTraumatize,
+    _poolTraxosScourgeOfKroog,
     _poolTwiceTheRage,
     _poolTwilightPanther,
     _poolUlvenwaldTracker,
@@ -426,6 +432,7 @@ const shard: CardShard = {
     _poolWeatheredWayfarer,
     _poolWestvaleAbbey,
     _poolWhirlwingStormbrood,
+    _poolWhitemaneLion,
     _poolWillOfTheAbzan,
     _poolWrennsResolve,
     _poolXandersLounge,
@@ -436,6 +443,7 @@ const shard: CardShard = {
   tokens: [
     _tokensCatTokenArahboTheFirstFang,
     _tokensEldraziScionToken,
+    _tokensMutavaultToken,
   ],
 };
 

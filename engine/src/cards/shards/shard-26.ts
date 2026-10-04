@@ -165,6 +165,7 @@ import _poolRetrievalAgent from "../pool/retrieval-agent.js";
 import _poolRhoxOracle from "../pool/rhox-oracle.js";
 import _poolRiderInNeed from "../pool/rider-in-need.js";
 import _poolRiverpyreVerge from "../pool/riverpyre-verge.js";
+import _poolRoadsideReliquary from "../pool/roadside-reliquary.js";
 import _poolRotShambler from "../pool/rot-shambler.js";
 import _poolRovingHarper from "../pool/roving-harper.js";
 import _poolRubblebeltBoar from "../pool/rubblebelt-boar.js";
@@ -409,6 +410,7 @@ const shard: CardShard = {
     _poolRhoxOracle,
     _poolRiderInNeed,
     _poolRiverpyreVerge,
+    _poolRoadsideReliquary,
     _poolRotShambler,
     _poolRovingHarper,
     _poolRubblebeltBoar,

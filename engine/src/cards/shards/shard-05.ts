@@ -36,6 +36,7 @@ import _poolBodyDropper from "../pool/body-dropper.js";
 import _poolBrassSquire from "../pool/brass-squire.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
 import _poolBushwhack from "../pool/bushwhack.js";
+import _poolCadiraCallerOfTheSmall from "../pool/cadira-caller-of-the-small.js";
 import _poolCanyonWildcat from "../pool/canyon-wildcat.js";
 import _poolCaravanHurda from "../pool/caravan-hurda.js";
 import _poolCastleArdenvale from "../pool/castle-ardenvale.js";
@@ -193,6 +194,7 @@ import _poolSparkReaper from "../pool/spark-reaper.js";
 import _poolSpectatorSeating from "../pool/spectator-seating.js";
 import _poolSpiritSummoning from "../pool/spirit-summoning.js";
 import _poolSpitefulBully from "../pool/spiteful-bully.js";
+import _poolStarOfExtinction from "../pool/star-of-extinction.js";
 import _poolStealerOfSecrets from "../pool/stealer-of-secrets.js";
 import _poolStonespeakerCrystal from "../pool/stonespeaker-crystal.js";
 import _poolStorytellerPixie from "../pool/storyteller-pixie.js";
@@ -204,6 +206,7 @@ import _poolSupplyRunners from "../pool/supply-runners.js";
 import _poolSupremeVerdict from "../pool/supreme-verdict.js";
 import _poolSwanSong from "../pool/swan-song.js";
 import _poolSwiftfootBoots from "../pool/swiftfoot-boots.js";
+import _poolSyggRiverCutthroat from "../pool/sygg-river-cutthroat.js";
 import _poolSylvanAnthem from "../pool/sylvan-anthem.js";
 import _poolTarmogoyf from "../pool/tarmogoyf.js";
 import _poolTeferisPuzzleBox from "../pool/teferis-puzzle-box.js";
@@ -284,6 +287,7 @@ const shard: CardShard = {
     _poolBrassSquire,
     _poolBrineShaman,
     _poolBushwhack,
+    _poolCadiraCallerOfTheSmall,
     _poolCanyonWildcat,
     _poolCaravanHurda,
     _poolCastleArdenvale,
@@ -441,6 +445,7 @@ const shard: CardShard = {
     _poolSpectatorSeating,
     _poolSpiritSummoning,
     _poolSpitefulBully,
+    _poolStarOfExtinction,
     _poolStealerOfSecrets,
     _poolStonespeakerCrystal,
     _poolStorytellerPixie,
@@ -452,6 +457,7 @@ const shard: CardShard = {
     _poolSupremeVerdict,
     _poolSwanSong,
     _poolSwiftfootBoots,
+    _poolSyggRiverCutthroat,
     _poolSylvanAnthem,
     _poolTarmogoyf,
     _poolTeferisPuzzleBox,

@@ -10,6 +10,7 @@ import _poolAllosaurusShepherd from "../pool/allosaurus-shepherd.js";
 import _poolApproachOfTheSecondSun from "../pool/approach-of-the-second-sun.js";
 import _poolArdbert from "../pool/ardbert.js";
 import _poolArgentumArmor from "../pool/argentum-armor.js";
+import _poolArmageddon from "../pool/armageddon.js";
 import _poolAttendedKnight from "../pool/attended-knight.js";
 import _poolAuspiciousArrival from "../pool/auspicious-arrival.js";
 import _poolBargain from "../pool/bargain.js";
@@ -82,6 +83,7 @@ import _poolHenzieToolboxTorre from "../pool/henzie-toolbox-torre.js";
 import _poolHeraldOfSecretStreams from "../pool/herald-of-secret-streams.js";
 import _poolHiddenHideout from "../pool/hidden-hideout.js";
 import _poolHiddenNursery from "../pool/hidden-nursery.js";
+import _poolHideousTaskmaster from "../pool/hideous-taskmaster.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
 import _poolHulkingBugbear from "../pool/hulking-bugbear.js";
 import _poolHuntersInsight from "../pool/hunters-insight.js";
@@ -201,6 +203,7 @@ import _poolUnderseaInvader from "../pool/undersea-invader.js";
 import _poolUroTitanOfNaturesWrath from "../pool/uro-titan-of-natures-wrath.js";
 import _poolViciousConquistador from "../pool/vicious-conquistador.js";
 import _poolVictimize from "../pool/victimize.js";
+import _poolVirtueOfCourage from "../pool/virtue-of-courage.js";
 import _poolVoicelessSpirit from "../pool/voiceless-spirit.js";
 import _poolVoloGuideToMonsters from "../pool/volo-guide-to-monsters.js";
 import _poolWallOfIce from "../pool/wall-of-ice.js";
@@ -228,6 +231,7 @@ const shard: CardShard = {
     _poolApproachOfTheSecondSun,
     _poolArdbert,
     _poolArgentumArmor,
+    _poolArmageddon,
     _poolAttendedKnight,
     _poolAuspiciousArrival,
     _poolBargain,
@@ -300,6 +304,7 @@ const shard: CardShard = {
     _poolHeraldOfSecretStreams,
     _poolHiddenHideout,
     _poolHiddenNursery,
+    _poolHideousTaskmaster,
     _poolHithlainKnots,
     _poolHulkingBugbear,
     _poolHuntersInsight,
@@ -419,6 +424,7 @@ const shard: CardShard = {
     _poolUroTitanOfNaturesWrath,
     _poolViciousConquistador,
     _poolVictimize,
+    _poolVirtueOfCourage,
     _poolVoicelessSpirit,
     _poolVoloGuideToMonsters,
     _poolWallOfIce,

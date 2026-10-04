@@ -42,6 +42,7 @@ import _poolCatapultSquad from "../pool/catapult-squad.js";
 import _poolCephalidScout from "../pool/cephalid-scout.js";
 import _poolChaosWarp from "../pool/chaos-warp.js";
 import _poolChatterOfTheSquirrel from "../pool/chatter-of-the-squirrel.js";
+import _poolCommuneWithLava from "../pool/commune-with-lava.js";
 import _poolCoordinatedCharge from "../pool/coordinated-charge.js";
 import _poolCrossbowAmbush from "../pool/crossbow-ambush.js";
 import _poolCryptOfTheEternals from "../pool/crypt-of-the-eternals.js";
@@ -152,6 +153,7 @@ import _poolRakingClaws from "../pool/raking-claws.js";
 import _poolRaphMikeyTroublemakers from "../pool/raph-mikey-troublemakers.js";
 import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
 import _poolReachThroughMists from "../pool/reach-through-mists.js";
+import _poolRedXiiiProudWarrior from "../pool/red-xiii-proud-warrior.js";
 import _poolRegisaurAlpha from "../pool/regisaur-alpha.js";
 import _poolRelicBarrier from "../pool/relic-barrier.js";
 import _poolRenegadeTactics from "../pool/renegade-tactics.js";
@@ -233,6 +235,7 @@ import _poolWirewoodHivemaster from "../pool/wirewood-hivemaster.js";
 import _poolZimoneInfiniteAnalyst from "../pool/zimone-infinite-analyst.js";
 import _poolZofConsumption from "../pool/zof-consumption.js";
 import _tokensBlueRedElementalToken44 from "../tokens/blue-red-elemental-token-4-4.js";
+import _tokensConstructTokenMetallurgicSummonings from "../tokens/construct-token-metallurgic-summonings.js";
 import _tokensPlainKnightToken from "../tokens/plain-knight-token.js";
 import _tokensVampireToken11 from "../tokens/vampire-token-1-1.js";
 
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolCephalidScout,
     _poolChaosWarp,
     _poolChatterOfTheSquirrel,
+    _poolCommuneWithLava,
     _poolCoordinatedCharge,
     _poolCrossbowAmbush,
     _poolCryptOfTheEternals,
@@ -387,6 +391,7 @@ const shard: CardShard = {
     _poolRaphMikeyTroublemakers,
     _poolRazakethTheFoulblooded,
     _poolReachThroughMists,
+    _poolRedXiiiProudWarrior,
     _poolRegisaurAlpha,
     _poolRelicBarrier,
     _poolRenegadeTactics,
@@ -470,6 +475,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensBlueRedElementalToken44,
+    _tokensConstructTokenMetallurgicSummonings,
     _tokensPlainKnightToken,
     _tokensVampireToken11,
   ],

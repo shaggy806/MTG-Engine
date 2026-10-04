@@ -196,6 +196,7 @@ import _poolTrapmakersSnare from "../pool/trapmakers-snare.js";
 import _poolTrueLovesKiss from "../pool/true-loves-kiss.js";
 import _poolTundra from "../pool/tundra.js";
 import _poolTurbulentFen from "../pool/turbulent-fen.js";
+import _poolTurbulentSteppe from "../pool/turbulent-steppe.js";
 import _poolUndeadMinotaur from "../pool/undead-minotaur.js";
 import _poolUnholyStrength from "../pool/unholy-strength.js";
 import _poolUnstoppablePlan from "../pool/unstoppable-plan.js";
@@ -411,6 +412,7 @@ const shard: CardShard = {
     _poolTrueLovesKiss,
     _poolTundra,
     _poolTurbulentFen,
+    _poolTurbulentSteppe,
     _poolUndeadMinotaur,
     _poolUnholyStrength,
     _poolUnstoppablePlan,

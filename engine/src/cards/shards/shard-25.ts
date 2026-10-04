@@ -43,6 +43,7 @@ import _poolContaminatedLandscape from "../pool/contaminated-landscape.js";
 import _poolCrudeBentBlade from "../pool/crude-bent-blade.js";
 import _poolCruelEdict from "../pool/cruel-edict.js";
 import _poolCruelWitness from "../pool/cruel-witness.js";
+import _poolCryogenRelic from "../pool/cryogen-relic.js";
 import _poolDanithaCapashenParagon from "../pool/danitha-capashen-paragon.js";
 import _poolDarkborePathway from "../pool/darkbore-pathway.js";
 import _poolDauntlessVeteran from "../pool/dauntless-veteran.js";
@@ -68,6 +69,7 @@ import _poolEscapeToTheWilds from "../pool/escape-to-the-wilds.js";
 import _poolExpeditionEnvoy from "../pool/expedition-envoy.js";
 import _poolEyeOfNowhere from "../pool/eye-of-nowhere.js";
 import _poolFaithbearerPaladin from "../pool/faithbearer-paladin.js";
+import _poolFanaticOfMogis from "../pool/fanatic-of-mogis.js";
 import _poolFeiyiSnake from "../pool/feiyi-snake.js";
 import _poolFieryFinish from "../pool/fiery-finish.js";
 import _poolFinaleOfDevastation from "../pool/finale-of-devastation.js";
@@ -193,6 +195,7 @@ import _poolSparasHeadquarters from "../pool/sparas-headquarters.js";
 import _poolSpawnbedProtector from "../pool/spawnbed-protector.js";
 import _poolSpineOfIshSah from "../pool/spine-of-ish-sah.js";
 import _poolSpireOfIndustry from "../pool/spire-of-industry.js";
+import _poolSqueeGoblinNabob from "../pool/squee-goblin-nabob.js";
 import _poolStaunchDefenders from "../pool/staunch-defenders.js";
 import _poolStormCrow from "../pool/storm-crow.js";
 import _poolStorySeeker from "../pool/story-seeker.js";
@@ -286,6 +289,7 @@ const shard: CardShard = {
     _poolCrudeBentBlade,
     _poolCruelEdict,
     _poolCruelWitness,
+    _poolCryogenRelic,
     _poolDanithaCapashenParagon,
     _poolDarkborePathway,
     _poolDauntlessVeteran,
@@ -311,6 +315,7 @@ const shard: CardShard = {
     _poolExpeditionEnvoy,
     _poolEyeOfNowhere,
     _poolFaithbearerPaladin,
+    _poolFanaticOfMogis,
     _poolFeiyiSnake,
     _poolFieryFinish,
     _poolFinaleOfDevastation,
@@ -436,6 +441,7 @@ const shard: CardShard = {
     _poolSpawnbedProtector,
     _poolSpineOfIshSah,
     _poolSpireOfIndustry,
+    _poolSqueeGoblinNabob,
     _poolStaunchDefenders,
     _poolStormCrow,
     _poolStorySeeker,

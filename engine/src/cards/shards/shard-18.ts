@@ -61,6 +61,7 @@ import _poolElfReplica from "../pool/elf-replica.js";
 import _poolElgaudInquisitor from "../pool/elgaud-inquisitor.js";
 import _poolEntishRestoration from "../pool/entish-restoration.js";
 import _poolExpansion from "../pool/expansion.js";
+import _poolExperimentalConfectioner from "../pool/experimental-confectioner.js";
 import _poolFeastOfTheUnicorn from "../pool/feast-of-the-unicorn.js";
 import _poolFeralMaaka from "../pool/feral-maaka.js";
 import _poolFinaleOfGlory from "../pool/finale-of-glory.js";
@@ -76,6 +77,7 @@ import _poolGlamorousGrapplers from "../pool/glamorous-grapplers.js";
 import _poolGleamingBarrier from "../pool/gleaming-barrier.js";
 import _poolGleamingOverseer from "../pool/gleaming-overseer.js";
 import _poolGoblinFirebomb from "../pool/goblin-firebomb.js";
+import _poolGoblinSharpshooter from "../pool/goblin-sharpshooter.js";
 import _poolGoldenBear from "../pool/golden-bear.js";
 import _poolGrandmotherSengir from "../pool/grandmother-sengir.js";
 import _poolGreedyFreebooter from "../pool/greedy-freebooter.js";
@@ -159,6 +161,7 @@ import _poolSaltMarsh from "../pool/salt-marsh.js";
 import _poolSarcomiteMyr from "../pool/sarcomite-myr.js";
 import _poolSatyrEnchanter from "../pool/satyr-enchanter.js";
 import _poolSavannahLions from "../pool/savannah-lions.js";
+import _poolScavengedBrawler from "../pool/scavenged-brawler.js";
 import _poolScepterOfFugue from "../pool/scepter-of-fugue.js";
 import _poolScrap from "../pool/scrap.js";
 import _poolSentinelSpider from "../pool/sentinel-spider.js";
@@ -175,6 +178,7 @@ import _poolSkullCatapult from "../pool/skull-catapult.js";
 import _poolSkystrikeOfficer from "../pool/skystrike-officer.js";
 import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
 import _poolSongsOfTheDamned from "../pool/songs-of-the-damned.js";
+import _poolSorinImperiousBloodlord from "../pool/sorin-imperious-bloodlord.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
@@ -308,6 +312,7 @@ const shard: CardShard = {
     _poolElgaudInquisitor,
     _poolEntishRestoration,
     _poolExpansion,
+    _poolExperimentalConfectioner,
     _poolFeastOfTheUnicorn,
     _poolFeralMaaka,
     _poolFinaleOfGlory,
@@ -323,6 +328,7 @@ const shard: CardShard = {
     _poolGleamingBarrier,
     _poolGleamingOverseer,
     _poolGoblinFirebomb,
+    _poolGoblinSharpshooter,
     _poolGoldenBear,
     _poolGrandmotherSengir,
     _poolGreedyFreebooter,
@@ -406,6 +412,7 @@ const shard: CardShard = {
     _poolSarcomiteMyr,
     _poolSatyrEnchanter,
     _poolSavannahLions,
+    _poolScavengedBrawler,
     _poolScepterOfFugue,
     _poolScrap,
     _poolSentinelSpider,
@@ -422,6 +429,7 @@ const shard: CardShard = {
     _poolSkystrikeOfficer,
     _poolSnakeskinVeil,
     _poolSongsOfTheDamned,
+    _poolSorinImperiousBloodlord,
     _poolSpawnbinderMage,
     _poolSpellkeeperWeird,
     _poolStandingTroops,

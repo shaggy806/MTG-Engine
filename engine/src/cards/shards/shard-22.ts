@@ -9,6 +9,7 @@ import _poolAmateurHero from "../pool/amateur-hero.js";
 import _poolAngelOfFlightAlabaster from "../pool/angel-of-flight-alabaster.js";
 import _poolAngelOfTheGodPharaoh from "../pool/angel-of-the-god-pharaoh.js";
 import _poolAngelicAccord from "../pool/angelic-accord.js";
+import _poolAnnoyedAltisaur from "../pool/annoyed-altisaur.js";
 import _poolArchivist from "../pool/archivist.js";
 import _poolArdentMilitia from "../pool/ardent-militia.js";
 import _poolArkOfBlight from "../pool/ark-of-blight.js";
@@ -39,6 +40,7 @@ import _poolCoalGolem from "../pool/coal-golem.js";
 import _poolColdsteelHeart from "../pool/coldsteel-heart.js";
 import _poolCollectiveResistance from "../pool/collective-resistance.js";
 import _poolColossadactyl from "../pool/colossadactyl.js";
+import _poolColossalSkyturtle from "../pool/colossal-skyturtle.js";
 import _poolCouncilOfAdvisors from "../pool/council-of-advisors.js";
 import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
@@ -94,6 +96,7 @@ import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
+import _poolHydraOmnivore from "../pool/hydra-omnivore.js";
 import _poolIconOfAncestry from "../pool/icon-of-ancestry.js";
 import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
 import _poolInexorableTide from "../pool/inexorable-tide.js";
@@ -133,6 +136,7 @@ import _poolNexusWardens from "../pool/nexus-wardens.js";
 import _poolNomadOutpost from "../pool/nomad-outpost.js";
 import _poolNukaColaVendingMachine from "../pool/nuka-cola-vending-machine.js";
 import _poolNyxbornCourser from "../pool/nyxborn-courser.js";
+import _poolObeliskOfUrd from "../pool/obelisk-of-urd.js";
 import _poolObzedatsAid from "../pool/obzedats-aid.js";
 import _poolOculus from "../pool/oculus.js";
 import _poolOggyarBattleSeer from "../pool/oggyar-battle-seer.js";
@@ -183,6 +187,7 @@ import _poolSouthernElephant from "../pool/southern-elephant.js";
 import _poolSpeciesSpecialist from "../pool/species-specialist.js";
 import _poolSpellgorgerWeird from "../pool/spellgorger-weird.js";
 import _poolSphinxsRevelation from "../pool/sphinxs-revelation.js";
+import _poolSpiderManifestation from "../pool/spider-manifestation.js";
 import _poolSquall from "../pool/squall.js";
 import _poolStarkIndustriesExecutive from "../pool/stark-industries-executive.js";
 import _poolSterlingGrove from "../pool/sterling-grove.js";
@@ -228,6 +233,7 @@ import _poolUnburden from "../pool/unburden.js";
 import _poolUnwindingClock from "../pool/unwinding-clock.js";
 import _poolUtvaraScalper from "../pool/utvara-scalper.js";
 import _poolVirtuousCharge from "../pool/virtuous-charge.js";
+import _poolVolcanicTorrent from "../pool/volcanic-torrent.js";
 import _poolVulshokBattlegear from "../pool/vulshok-battlegear.js";
 import _poolWallOfOpposition from "../pool/wall-of-opposition.js";
 import _poolWaterloggedTeachings from "../pool/waterlogged-teachings.js";
@@ -257,6 +263,7 @@ const shard: CardShard = {
     _poolAngelOfFlightAlabaster,
     _poolAngelOfTheGodPharaoh,
     _poolAngelicAccord,
+    _poolAnnoyedAltisaur,
     _poolArchivist,
     _poolArdentMilitia,
     _poolArkOfBlight,
@@ -287,6 +294,7 @@ const shard: CardShard = {
     _poolColdsteelHeart,
     _poolCollectiveResistance,
     _poolColossadactyl,
+    _poolColossalSkyturtle,
     _poolCouncilOfAdvisors,
     _poolCracklingPerimeter,
     _poolCradleOfTheAccursed,
@@ -342,6 +350,7 @@ const shard: CardShard = {
     _poolHomunculusHorde,
     _poolHonorGuard,
     _poolHoverBarrier,
+    _poolHydraOmnivore,
     _poolIconOfAncestry,
     _poolImpulsivePilferer,
     _poolInexorableTide,
@@ -381,6 +390,7 @@ const shard: CardShard = {
     _poolNomadOutpost,
     _poolNukaColaVendingMachine,
     _poolNyxbornCourser,
+    _poolObeliskOfUrd,
     _poolObzedatsAid,
     _poolOculus,
     _poolOggyarBattleSeer,
@@ -431,6 +441,7 @@ const shard: CardShard = {
     _poolSpeciesSpecialist,
     _poolSpellgorgerWeird,
     _poolSphinxsRevelation,
+    _poolSpiderManifestation,
     _poolSquall,
     _poolStarkIndustriesExecutive,
     _poolSterlingGrove,
@@ -476,6 +487,7 @@ const shard: CardShard = {
     _poolUnwindingClock,
     _poolUtvaraScalper,
     _poolVirtuousCharge,
+    _poolVolcanicTorrent,
     _poolVulshokBattlegear,
     _poolWallOfOpposition,
     _poolWaterloggedTeachings,

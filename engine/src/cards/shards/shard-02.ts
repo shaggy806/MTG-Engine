@@ -22,6 +22,7 @@ import _poolBastionMastodon from "../pool/bastion-mastodon.js";
 import _poolBatterhorn from "../pool/batterhorn.js";
 import _poolBeaconHawk from "../pool/beacon-hawk.js";
 import _poolBlackDragonGate from "../pool/black-dragon-gate.js";
+import _poolBlightMound from "../pool/blight-mound.js";
 import _poolBogWraith from "../pool/bog-wraith.js";
 import _poolBoonOfTheWishGiver from "../pool/boon-of-the-wish-giver.js";
 import _poolBranchingEvolution from "../pool/branching-evolution.js";
@@ -75,6 +76,7 @@ import _poolEliteCatWarrior from "../pool/elite-cat-warrior.js";
 import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
 import _poolEstridsInvocation from "../pool/estrids-invocation.js";
+import _poolEvisceratorsInsight from "../pool/eviscerators-insight.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFaithfulMending from "../pool/faithful-mending.js";
 import _poolFarfinder from "../pool/farfinder.js";
@@ -113,6 +115,7 @@ import _poolKeepersOfTheFaith from "../pool/keepers-of-the-faith.js";
 import _poolKessigRecluse from "../pool/kessig-recluse.js";
 import _poolKherKeep from "../pool/kher-keep.js";
 import _poolKillianDecisiveMentor from "../pool/killian-decisive-mentor.js";
+import _poolKingOfThePride from "../pool/king-of-the-pride.js";
 import _poolKnighthood from "../pool/knighthood.js";
 import _poolKrenkosCommand from "../pool/krenkos-command.js";
 import _poolLargeBear from "../pool/large-bear.js";
@@ -126,6 +129,7 @@ import _poolMadrushCyclops from "../pool/madrush-cyclops.js";
 import _poolMaestrosInitiate from "../pool/maestros-initiate.js";
 import _poolMayhemDevil from "../pool/mayhem-devil.js";
 import _poolMemorialToWar from "../pool/memorial-to-war.js";
+import _poolMetallurgicSummonings from "../pool/metallurgic-summonings.js";
 import _poolMindSpring from "../pool/mind-spring.js";
 import _poolMishrasOnslaught from "../pool/mishras-onslaught.js";
 import _poolMolderingKarok from "../pool/moldering-karok.js";
@@ -222,6 +226,7 @@ import _poolWallOfEarth from "../pool/wall-of-earth.js";
 import _poolWallOfFaith from "../pool/wall-of-faith.js";
 import _poolWhipOfErebos from "../pool/whip-of-erebos.js";
 import _poolWhiptailWurm from "../pool/whiptail-wurm.js";
+import _poolWhiteAuracite from "../pool/white-auracite.js";
 import _poolWildCelebrants from "../pool/wild-celebrants.js";
 import _poolWildElephant from "../pool/wild-elephant.js";
 import _poolWitherbloomCampus from "../pool/witherbloom-campus.js";
@@ -255,6 +260,7 @@ const shard: CardShard = {
     _poolBatterhorn,
     _poolBeaconHawk,
     _poolBlackDragonGate,
+    _poolBlightMound,
     _poolBogWraith,
     _poolBoonOfTheWishGiver,
     _poolBranchingEvolution,
@@ -308,6 +314,7 @@ const shard: CardShard = {
     _poolEliteVanguard,
     _poolEnatuGolem,
     _poolEstridsInvocation,
+    _poolEvisceratorsInsight,
     _poolExiledBoggart,
     _poolFaithfulMending,
     _poolFarfinder,
@@ -346,6 +353,7 @@ const shard: CardShard = {
     _poolKessigRecluse,
     _poolKherKeep,
     _poolKillianDecisiveMentor,
+    _poolKingOfThePride,
     _poolKnighthood,
     _poolKrenkosCommand,
     _poolLargeBear,
@@ -359,6 +367,7 @@ const shard: CardShard = {
     _poolMaestrosInitiate,
     _poolMayhemDevil,
     _poolMemorialToWar,
+    _poolMetallurgicSummonings,
     _poolMindSpring,
     _poolMishrasOnslaught,
     _poolMolderingKarok,
@@ -455,6 +464,7 @@ const shard: CardShard = {
     _poolWallOfFaith,
     _poolWhipOfErebos,
     _poolWhiptailWurm,
+    _poolWhiteAuracite,
     _poolWildCelebrants,
     _poolWildElephant,
     _poolWitherbloomCampus,

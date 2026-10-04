@@ -35,6 +35,7 @@ import _poolBreachingDragonstorm from "../pool/breaching-dragonstorm.js";
 import _poolBroadsideBarrage from "../pool/broadside-barrage.js";
 import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
+import _poolCanoptekScarabSwarm from "../pool/canoptek-scarab-swarm.js";
 import _poolCarrionCrow from "../pool/carrion-crow.js";
 import _poolCelestineTheLivingSaint from "../pool/celestine-the-living-saint.js";
 import _poolCliveIfritsDominant from "../pool/clive-ifrits-dominant.js";
@@ -126,6 +127,7 @@ import _poolMindControl from "../pool/mind-control.js";
 import _poolMinecartDaredevil from "../pool/minecart-daredevil.js";
 import _poolMirrorworks from "../pool/mirrorworks.js";
 import _poolMoleManMoloidMaster from "../pool/mole-man-moloid-master.js";
+import _poolMutableExplorer from "../pool/mutable-explorer.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
@@ -265,6 +267,7 @@ const shard: CardShard = {
     _poolBroadsideBarrage,
     _poolBrushstrider,
     _poolBullCerodon,
+    _poolCanoptekScarabSwarm,
     _poolCarrionCrow,
     _poolCelestineTheLivingSaint,
     _poolCliveIfritsDominant,
@@ -356,6 +359,7 @@ const shard: CardShard = {
     _poolMinecartDaredevil,
     _poolMirrorworks,
     _poolMoleManMoloidMaster,
+    _poolMutableExplorer,
     _poolMutantTownMusicians,
     _poolMyrkulLordOfBones,
     _poolMysticMonastery,

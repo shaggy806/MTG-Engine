@@ -89,6 +89,7 @@ import _poolGodEternalOketra from "../pool/god-eternal-oketra.js";
 import _poolGoldmawChampion from "../pool/goldmaw-champion.js";
 import _poolGoldveinHydra from "../pool/goldvein-hydra.js";
 import _poolGoreclawTerrorOfQalSisma from "../pool/goreclaw-terror-of-qal-sisma.js";
+import _poolHarmonicSliver from "../pool/harmonic-sliver.js";
 import _poolHauntedRidge from "../pool/haunted-ridge.js";
 import _poolHeavyInfantry from "../pool/heavy-infantry.js";
 import _poolHeroOfBladehold from "../pool/hero-of-bladehold.js";
@@ -242,6 +243,7 @@ import _tokensBirdTokenHermesOverseerOfElpis from "../tokens/bird-token-hermes-o
 import _tokensElementalTokenAllColors from "../tokens/elemental-token-all-colors.js";
 import _tokensElephantToken from "../tokens/elephant-token.js";
 import _tokensForestDryadToken from "../tokens/forest-dryad-token.js";
+import _tokensInsectTokenInfestationSage from "../tokens/insect-token-infestation-sage.js";
 import _tokensTreasureToken from "../tokens/treasure-token.js";
 import _tokensZombieKnightToken from "../tokens/zombie-knight-token.js";
 
@@ -333,6 +335,7 @@ const shard: CardShard = {
     _poolGoldmawChampion,
     _poolGoldveinHydra,
     _poolGoreclawTerrorOfQalSisma,
+    _poolHarmonicSliver,
     _poolHauntedRidge,
     _poolHeavyInfantry,
     _poolHeroOfBladehold,
@@ -488,6 +491,7 @@ const shard: CardShard = {
     _tokensElementalTokenAllColors,
     _tokensElephantToken,
     _tokensForestDryadToken,
+    _tokensInsectTokenInfestationSage,
     _tokensTreasureToken,
     _tokensZombieKnightToken,
   ],

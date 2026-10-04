@@ -87,6 +87,7 @@ import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
 import _poolHighlandLake from "../pool/highland-lake.js";
 import _poolHydraBroodmaster from "../pool/hydra-broodmaster.js";
 import _poolIdyllicBeachfront from "../pool/idyllic-beachfront.js";
+import _poolInfestationSage from "../pool/infestation-sage.js";
 import _poolInnocentBlood from "../pool/innocent-blood.js";
 import _poolInordinateRage from "../pool/inordinate-rage.js";
 import _poolIsamaruHoundOfKonda from "../pool/isamaru-hound-of-konda.js";
@@ -108,6 +109,7 @@ import _poolLiquimetalCoating from "../pool/liquimetal-coating.js";
 import _poolLlanowarBehemoth from "../pool/llanowar-behemoth.js";
 import _poolLlanowarDead from "../pool/llanowar-dead.js";
 import _poolLoneMissionary from "../pool/lone-missionary.js";
+import _poolLotusBloom from "../pool/lotus-bloom.js";
 import _poolLounge from "../pool/lounge.js";
 import _poolLure from "../pool/lure.js";
 import _poolMakindiGriffin from "../pool/makindi-griffin.js";
@@ -164,6 +166,7 @@ import _poolSHIELDDeploymentDrone from "../pool/s-h-i-e-l-d-deployment-drone.js"
 import _poolSacellumArchers from "../pool/sacellum-archers.js";
 import _poolSacredWolf from "../pool/sacred-wolf.js";
 import _poolSageOfMysteries from "../pool/sage-of-mysteries.js";
+import _poolSanctumOfStoneFangs from "../pool/sanctum-of-stone-fangs.js";
 import _poolSanctumSeeker from "../pool/sanctum-seeker.js";
 import _poolSanitationAutomaton from "../pool/sanitation-automaton.js";
 import _poolSarumanTheWhiteHand from "../pool/saruman-the-white-hand.js";
@@ -220,6 +223,7 @@ import _poolVenomousHierophant from "../pool/venomous-hierophant.js";
 import _poolVigilantBaloth from "../pool/vigilant-baloth.js";
 import _poolViviOrnitier from "../pool/vivi-ornitier.js";
 import _poolVolcanicGeyser from "../pool/volcanic-geyser.js";
+import _poolVoyageHome from "../pool/voyage-home.js";
 import _poolWakandanDroneFlock from "../pool/wakandan-drone-flock.js";
 import _poolWallOfLimbs from "../pool/wall-of-limbs.js";
 import _poolWallOfRazors from "../pool/wall-of-razors.js";
@@ -230,6 +234,7 @@ import _poolWhiptongueFrog from "../pool/whiptongue-frog.js";
 import _poolWillowDryad from "../pool/willow-dryad.js";
 import _poolWoebearer from "../pool/woebearer.js";
 import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
+import _poolWoodfallPrimus from "../pool/woodfall-primus.js";
 import _poolWoodlandStream from "../pool/woodland-stream.js";
 import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
@@ -334,6 +339,7 @@ const shard: CardShard = {
     _poolHighlandLake,
     _poolHydraBroodmaster,
     _poolIdyllicBeachfront,
+    _poolInfestationSage,
     _poolInnocentBlood,
     _poolInordinateRage,
     _poolIsamaruHoundOfKonda,
@@ -355,6 +361,7 @@ const shard: CardShard = {
     _poolLlanowarBehemoth,
     _poolLlanowarDead,
     _poolLoneMissionary,
+    _poolLotusBloom,
     _poolLounge,
     _poolLure,
     _poolMakindiGriffin,
@@ -411,6 +418,7 @@ const shard: CardShard = {
     _poolSacellumArchers,
     _poolSacredWolf,
     _poolSageOfMysteries,
+    _poolSanctumOfStoneFangs,
     _poolSanctumSeeker,
     _poolSanitationAutomaton,
     _poolSarumanTheWhiteHand,
@@ -467,6 +475,7 @@ const shard: CardShard = {
     _poolVigilantBaloth,
     _poolViviOrnitier,
     _poolVolcanicGeyser,
+    _poolVoyageHome,
     _poolWakandanDroneFlock,
     _poolWallOfLimbs,
     _poolWallOfRazors,
@@ -477,6 +486,7 @@ const shard: CardShard = {
     _poolWillowDryad,
     _poolWoebearer,
     _poolWolfwillowHaven,
+    _poolWoodfallPrimus,
     _poolWoodlandStream,
     _poolYavimayaAncients,
     _poolYotianSoldier,

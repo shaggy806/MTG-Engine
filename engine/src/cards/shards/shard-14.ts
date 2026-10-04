@@ -171,6 +171,7 @@ import _poolRegress from "../pool/regress.js";
 import _poolRemoteIsle from "../pool/remote-isle.js";
 import _poolRewind from "../pool/rewind.js";
 import _poolRinAndSeriInseparable from "../pool/rin-and-seri-inseparable.js";
+import _poolRiteOfOblivion from "../pool/rite-of-oblivion.js";
 import _poolRoccoStreetChef from "../pool/rocco-street-chef.js";
 import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
@@ -196,6 +197,7 @@ import _poolSuspiciousShambler from "../pool/suspicious-shambler.js";
 import _poolTalrand from "../pool/talrand.js";
 import _poolTanaTheBloodsower from "../pool/tana-the-bloodsower.js";
 import _poolTasigurTheGoldenFang from "../pool/tasigur-the-golden-fang.js";
+import _poolTemperedSteel from "../pool/tempered-steel.js";
 import _poolTempleOfSilence from "../pool/temple-of-silence.js";
 import _poolTempleOfTriumph from "../pool/temple-of-triumph.js";
 import _poolThalisseReverentMedium from "../pool/thalisse-reverent-medium.js";
@@ -409,6 +411,7 @@ const shard: CardShard = {
     _poolRemoteIsle,
     _poolRewind,
     _poolRinAndSeriInseparable,
+    _poolRiteOfOblivion,
     _poolRoccoStreetChef,
     _poolRuinousGremlin,
     _poolSandsteppeCitadel,
@@ -434,6 +437,7 @@ const shard: CardShard = {
     _poolTalrand,
     _poolTanaTheBloodsower,
     _poolTasigurTheGoldenFang,
+    _poolTemperedSteel,
     _poolTempleOfSilence,
     _poolTempleOfTriumph,
     _poolThalisseReverentMedium,

@@ -15,6 +15,7 @@ import _poolAngrathsMarauders from "../pool/angraths-marauders.js";
 import _poolAnkleShanker from "../pool/ankle-shanker.js";
 import _poolAragornKingOfGondor from "../pool/aragorn-king-of-gondor.js";
 import _poolArgothianEnchantress from "../pool/argothian-enchantress.js";
+import _poolArtfulDodge from "../pool/artful-dodge.js";
 import _poolAspectOfGorgon from "../pool/aspect-of-gorgon.js";
 import _poolAtzocanSeer from "../pool/atzocan-seer.js";
 import _poolAuriokTransfixer from "../pool/auriok-transfixer.js";
@@ -110,6 +111,7 @@ import _poolHavenOfTheHarvest from "../pool/haven-of-the-harvest.js";
 import _poolHeadlessRider from "../pool/headless-rider.js";
 import _poolHeliodsPilgrim from "../pool/heliods-pilgrim.js";
 import _poolHexplateGolem from "../pool/hexplate-golem.js";
+import _poolHopToIt from "../pool/hop-to-it.js";
 import _poolHorizonScholar from "../pool/horizon-scholar.js";
 import _poolHorridVigor from "../pool/horrid-vigor.js";
 import _poolHowltoothHollow from "../pool/howltooth-hollow.js";
@@ -176,6 +178,7 @@ import _poolRiteOfReplication from "../pool/rite-of-replication.js";
 import _poolRootwaterHunter from "../pool/rootwater-hunter.js";
 import _poolSageOfLatNam from "../pool/sage-of-lat-nam.js";
 import _poolSavageLands from "../pool/savage-lands.js";
+import _poolSelflessSafewright from "../pool/selfless-safewright.js";
 import _poolSephirothsIntervention from "../pool/sephiroths-intervention.js";
 import _poolSerumVisions from "../pool/serum-visions.js";
 import _poolSetessanSkirmisher from "../pool/setessan-skirmisher.js";
@@ -259,6 +262,7 @@ const shard: CardShard = {
     _poolAnkleShanker,
     _poolAragornKingOfGondor,
     _poolArgothianEnchantress,
+    _poolArtfulDodge,
     _poolAspectOfGorgon,
     _poolAtzocanSeer,
     _poolAuriokTransfixer,
@@ -354,6 +358,7 @@ const shard: CardShard = {
     _poolHeadlessRider,
     _poolHeliodsPilgrim,
     _poolHexplateGolem,
+    _poolHopToIt,
     _poolHorizonScholar,
     _poolHorridVigor,
     _poolHowltoothHollow,
@@ -420,6 +425,7 @@ const shard: CardShard = {
     _poolRootwaterHunter,
     _poolSageOfLatNam,
     _poolSavageLands,
+    _poolSelflessSafewright,
     _poolSephirothsIntervention,
     _poolSerumVisions,
     _poolSetessanSkirmisher,

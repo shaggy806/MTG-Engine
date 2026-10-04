@@ -17,6 +17,7 @@ import _poolBeastWithin from "../pool/beast-within.js";
 import _poolBehemothSledge from "../pool/behemoth-sledge.js";
 import _poolBellowingAegisaur from "../pool/bellowing-aegisaur.js";
 import _poolBlightedCataract from "../pool/blighted-cataract.js";
+import _poolBovineIntervention from "../pool/bovine-intervention.js";
 import _poolBrotherhoodPatriarch from "../pool/brotherhood-patriarch.js";
 import _poolCanopyGargantuan from "../pool/canopy-gargantuan.js";
 import _poolCaptainOfUmbar from "../pool/captain-of-umbar.js";
@@ -65,11 +66,13 @@ import _poolGoldlustTriad from "../pool/goldlust-triad.js";
 import _poolGoldmeadowHarrier from "../pool/goldmeadow-harrier.js";
 import _poolGontiCannyAcquisitor from "../pool/gonti-canny-acquisitor.js";
 import _poolGorgonsHead from "../pool/gorgons-head.js";
+import _poolGrimServant from "../pool/grim-servant.js";
 import _poolGuardianKirin from "../pool/guardian-kirin.js";
 import _poolHalimarDepths from "../pool/halimar-depths.js";
 import _poolHaplessResearcher from "../pool/hapless-researcher.js";
 import _poolHarrierNaga from "../pool/harrier-naga.js";
 import _poolHarvestSeason from "../pool/harvest-season.js";
+import _poolHasteMagic from "../pool/haste-magic.js";
 import _poolHealersHawk from "../pool/healers-hawk.js";
 import _poolHengeOfRamos from "../pool/henge-of-ramos.js";
 import _poolHourOfDefeat from "../pool/hour-of-defeat.js";
@@ -85,6 +88,7 @@ import _poolIvyGleefulSpellthief from "../pool/ivy-gleeful-spellthief.js";
 import _poolIxhelScionOfAtraxa from "../pool/ixhel-scion-of-atraxa.js";
 import _poolJandorsSaddlebags from "../pool/jandors-saddlebags.js";
 import _poolKamiOfTwistedReflection from "../pool/kami-of-twisted-reflection.js";
+import _poolKarazikarTheEyeTyrant from "../pool/karazikar-the-eye-tyrant.js";
 import _poolKoalaSheep from "../pool/koala-sheep.js";
 import _poolKolaghansCommand from "../pool/kolaghans-command.js";
 import _poolKorCartographer from "../pool/kor-cartographer.js";
@@ -215,6 +219,7 @@ import _tokensBirdToken from "../tokens/bird-token.js";
 import _tokensCatBirdToken from "../tokens/cat-bird-token.js";
 import _tokensConstructTokenArtifactCount from "../tokens/construct-token-artifact-count.js";
 import _tokensElfDruidToken from "../tokens/elf-druid-token.js";
+import _tokensOxToken from "../tokens/ox-token.js";
 import _tokensPlantToken from "../tokens/plant-token.js";
 
 const shard: CardShard = {
@@ -233,6 +238,7 @@ const shard: CardShard = {
     _poolBehemothSledge,
     _poolBellowingAegisaur,
     _poolBlightedCataract,
+    _poolBovineIntervention,
     _poolBrotherhoodPatriarch,
     _poolCanopyGargantuan,
     _poolCaptainOfUmbar,
@@ -281,11 +287,13 @@ const shard: CardShard = {
     _poolGoldmeadowHarrier,
     _poolGontiCannyAcquisitor,
     _poolGorgonsHead,
+    _poolGrimServant,
     _poolGuardianKirin,
     _poolHalimarDepths,
     _poolHaplessResearcher,
     _poolHarrierNaga,
     _poolHarvestSeason,
+    _poolHasteMagic,
     _poolHealersHawk,
     _poolHengeOfRamos,
     _poolHourOfDefeat,
@@ -301,6 +309,7 @@ const shard: CardShard = {
     _poolIxhelScionOfAtraxa,
     _poolJandorsSaddlebags,
     _poolKamiOfTwistedReflection,
+    _poolKarazikarTheEyeTyrant,
     _poolKoalaSheep,
     _poolKolaghansCommand,
     _poolKorCartographer,
@@ -433,6 +442,7 @@ const shard: CardShard = {
     _tokensCatBirdToken,
     _tokensConstructTokenArtifactCount,
     _tokensElfDruidToken,
+    _tokensOxToken,
     _tokensPlantToken,
   ],
 };

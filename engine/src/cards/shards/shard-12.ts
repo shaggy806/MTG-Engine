@@ -100,6 +100,7 @@ import _poolHulkBruceBanner from "../pool/hulk-bruce-banner.js";
 import _poolIncreasingDevotion from "../pool/increasing-devotion.js";
 import _poolInspiringVantage from "../pool/inspiring-vantage.js";
 import _poolIsland from "../pool/island.js";
+import _poolJaggedBarrens from "../pool/jagged-barrens.js";
 import _poolJaheiraFriendOfTheForest from "../pool/jaheira-friend-of-the-forest.js";
 import _poolJodahArchmageEternal from "../pool/jodah-archmage-eternal.js";
 import _poolJolraelMwonvuliRecluse from "../pool/jolrael-mwonvuli-recluse.js";
@@ -119,6 +120,7 @@ import _poolLorescaleCoatl from "../pool/lorescale-coatl.js";
 import _poolLosDiablosMissileBase from "../pool/los-diablos-missile-base.js";
 import _poolManaTithe from "../pool/mana-tithe.js";
 import _poolMarbleDiamond from "../pool/marble-diamond.js";
+import _poolMerrowReejerey from "../pool/merrow-reejerey.js";
 import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
 import _poolMinesOfMoria from "../pool/mines-of-moria.js";
@@ -332,6 +334,7 @@ const shard: CardShard = {
     _poolIncreasingDevotion,
     _poolInspiringVantage,
     _poolIsland,
+    _poolJaggedBarrens,
     _poolJaheiraFriendOfTheForest,
     _poolJodahArchmageEternal,
     _poolJolraelMwonvuliRecluse,
@@ -351,6 +354,7 @@ const shard: CardShard = {
     _poolLosDiablosMissileBase,
     _poolManaTithe,
     _poolMarbleDiamond,
+    _poolMerrowReejerey,
     _poolMigratoryRoute,
     _poolMindSculpt,
     _poolMinesOfMoria,

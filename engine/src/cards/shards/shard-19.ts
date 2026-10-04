@@ -8,6 +8,7 @@ import _poolAccessTunnel from "../pool/access-tunnel.js";
 import _poolAetherGale from "../pool/aether-gale.js";
 import _poolAmphinMutineer from "../pool/amphin-mutineer.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
+import _poolApexOfPower from "../pool/apex-of-power.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
 import _poolArgothSanctumOfNature from "../pool/argoth-sanctum-of-nature.js";
 import _poolArmillarySphere from "../pool/armillary-sphere.js";
@@ -86,6 +87,7 @@ import _poolHallowedFountain from "../pool/hallowed-fountain.js";
 import _poolHandOfSilumgar from "../pool/hand-of-silumgar.js";
 import _poolHavenwoodWurm from "../pool/havenwood-wurm.js";
 import _poolHawkeaterMoth from "../pool/hawkeater-moth.js";
+import _poolHiddenVolcano from "../pool/hidden-volcano.js";
 import _poolHieroglyphicIllumination from "../pool/hieroglyphic-illumination.js";
 import _poolHighMarket from "../pool/high-market.js";
 import _poolHorrorOfTheDim from "../pool/horror-of-the-dim.js";
@@ -115,6 +117,7 @@ import _poolLeap from "../pool/leap.js";
 import _poolLifecraftersBestiary from "../pool/lifecrafters-bestiary.js";
 import _poolLifelink from "../pool/lifelink.js";
 import _poolLoreWeaver from "../pool/lore-weaver.js";
+import _poolLossarnachCaptain from "../pool/lossarnach-captain.js";
 import _poolLurkingPredators from "../pool/lurking-predators.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
 import _poolMabel from "../pool/mabel.js";
@@ -213,6 +216,7 @@ import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
 import _poolTowerDrake from "../pool/tower-drake.js";
 import _poolTradewindRider from "../pool/tradewind-rider.js";
+import _poolTrashForTreasure from "../pool/trash-for-treasure.js";
 import _poolUlamogsDreadsire from "../pool/ulamogs-dreadsire.js";
 import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
@@ -251,6 +255,7 @@ const shard: CardShard = {
     _poolAetherGale,
     _poolAmphinMutineer,
     _poolAncientTomb,
+    _poolApexOfPower,
     _poolArashinCleric,
     _poolArgothSanctumOfNature,
     _poolArmillarySphere,
@@ -329,6 +334,7 @@ const shard: CardShard = {
     _poolHandOfSilumgar,
     _poolHavenwoodWurm,
     _poolHawkeaterMoth,
+    _poolHiddenVolcano,
     _poolHieroglyphicIllumination,
     _poolHighMarket,
     _poolHorrorOfTheDim,
@@ -358,6 +364,7 @@ const shard: CardShard = {
     _poolLifecraftersBestiary,
     _poolLifelink,
     _poolLoreWeaver,
+    _poolLossarnachCaptain,
     _poolLurkingPredators,
     _poolLylaHolographicAssistant,
     _poolMabel,
@@ -456,6 +463,7 @@ const shard: CardShard = {
     _poolTopanAscetic,
     _poolTowerDrake,
     _poolTradewindRider,
+    _poolTrashForTreasure,
     _poolUlamogsDreadsire,
     _poolUnsubtleMockery,
     _poolUrborgDrake,

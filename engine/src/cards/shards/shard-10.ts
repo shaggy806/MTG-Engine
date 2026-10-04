@@ -160,6 +160,7 @@ import _poolPilgrimsEye from "../pool/pilgrims-eye.js";
 import _poolPinToTheEarth from "../pool/pin-to-the-earth.js";
 import _poolPlanarBridge from "../pool/planar-bridge.js";
 import _poolPlatedSpider from "../pool/plated-spider.js";
+import _poolPravaOfTheSteelLegion from "../pool/prava-of-the-steel-legion.js";
 import _poolPriestOfUrabrask from "../pool/priest-of-urabrask.js";
 import _poolPrismaticOmen from "../pool/prismatic-omen.js";
 import _poolProwlersHelm from "../pool/prowlers-helm.js";
@@ -183,6 +184,7 @@ import _poolSavageVentmaw from "../pool/savage-ventmaw.js";
 import _poolScavengerDrake from "../pool/scavenger-drake.js";
 import _poolScrapshooter from "../pool/scrapshooter.js";
 import _poolSeaGateBanneret from "../pool/sea-gate-banneret.js";
+import _poolSearchForAzcanta from "../pool/search-for-azcanta.js";
 import _poolSepharaSkysBlade from "../pool/sephara-skys-blade.js";
 import _poolShineshadowSnarl from "../pool/shineshadow-snarl.js";
 import _poolSiegeRhino from "../pool/siege-rhino.js";
@@ -412,6 +414,7 @@ const shard: CardShard = {
     _poolPinToTheEarth,
     _poolPlanarBridge,
     _poolPlatedSpider,
+    _poolPravaOfTheSteelLegion,
     _poolPriestOfUrabrask,
     _poolPrismaticOmen,
     _poolProwlersHelm,
@@ -435,6 +438,7 @@ const shard: CardShard = {
     _poolScavengerDrake,
     _poolScrapshooter,
     _poolSeaGateBanneret,
+    _poolSearchForAzcanta,
     _poolSepharaSkysBlade,
     _poolShineshadowSnarl,
     _poolSiegeRhino,

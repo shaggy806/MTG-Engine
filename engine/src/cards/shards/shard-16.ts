@@ -67,6 +67,7 @@ import _poolEmbraalGearSmasher from "../pool/embraal-gear-smasher.js";
 import _poolEncroachingDragonstorm from "../pool/encroaching-dragonstorm.js";
 import _poolEndRazeForerunners from "../pool/end-raze-forerunners.js";
 import _poolEnlightenedTutor from "../pool/enlightened-tutor.js";
+import _poolErodedCanyon from "../pool/eroded-canyon.js";
 import _poolEssenceFlux from "../pool/essence-flux.js";
 import _poolEternalWarrior from "../pool/eternal-warrior.js";
 import _poolExtravagantReplication from "../pool/extravagant-replication.js";
@@ -102,6 +103,7 @@ import _poolGruulCluestone from "../pool/gruul-cluestone.js";
 import _poolGruulNodorog from "../pool/gruul-nodorog.js";
 import _poolGuardianOfTheHalls from "../pool/guardian-of-the-halls.js";
 import _poolGuulDrazMucklord from "../pool/guul-draz-mucklord.js";
+import _poolHeartstone from "../pool/heartstone.js";
 import _poolHematiteGolem from "../pool/hematite-golem.js";
 import _poolHomaridExplorer from "../pool/homarid-explorer.js";
 import _poolHulkingCyclops from "../pool/hulking-cyclops.js";
@@ -136,6 +138,7 @@ import _poolMaalfeldTwins from "../pool/maalfeld-twins.js";
 import _poolMachineGodsEffigy from "../pool/machine-gods-effigy.js";
 import _poolMalakirRebirth from "../pool/malakir-rebirth.js";
 import _poolManaformHellkite from "../pool/manaform-hellkite.js";
+import _poolMarketbackWalker from "../pool/marketback-walker.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
@@ -214,6 +217,7 @@ import _poolTemurTawnyback from "../pool/temur-tawnyback.js";
 import _poolTerohsFaithful from "../pool/terohs-faithful.js";
 import _poolTheFalconSamWilson from "../pool/the-falcon-sam-wilson.js";
 import _poolTheLocustGod from "../pool/the-locust-god.js";
+import _poolTheirNameIsDeath from "../pool/their-name-is-death.js";
 import _poolThrabenPurebloods from "../pool/thraben-purebloods.js";
 import _poolThraxodemon from "../pool/thraxodemon.js";
 import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolEncroachingDragonstorm,
     _poolEndRazeForerunners,
     _poolEnlightenedTutor,
+    _poolErodedCanyon,
     _poolEssenceFlux,
     _poolEternalWarrior,
     _poolExtravagantReplication,
@@ -372,6 +377,7 @@ const shard: CardShard = {
     _poolGruulNodorog,
     _poolGuardianOfTheHalls,
     _poolGuulDrazMucklord,
+    _poolHeartstone,
     _poolHematiteGolem,
     _poolHomaridExplorer,
     _poolHulkingCyclops,
@@ -406,6 +412,7 @@ const shard: CardShard = {
     _poolMachineGodsEffigy,
     _poolMalakirRebirth,
     _poolManaformHellkite,
+    _poolMarketbackWalker,
     _poolMerfolkSkydiver,
     _poolMikaeusTheUnhallowed,
     _poolMillstone,
@@ -484,6 +491,7 @@ const shard: CardShard = {
     _poolTerohsFaithful,
     _poolTheFalconSamWilson,
     _poolTheLocustGod,
+    _poolTheirNameIsDeath,
     _poolThrabenPurebloods,
     _poolThraxodemon,
     _poolThunderingTanadon,

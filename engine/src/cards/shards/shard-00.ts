@@ -17,6 +17,7 @@ import _poolArcaneSanctum from "../pool/arcane-sanctum.js";
 import _poolAvenCloudchaser from "../pool/aven-cloudchaser.js";
 import _poolAvenSentry from "../pool/aven-sentry.js";
 import _poolAwakeningZone from "../pool/awakening-zone.js";
+import _poolAzcantaTheSunkenRuin from "../pool/azcanta-the-sunken-ruin.js";
 import _poolAzoriusCluestone from "../pool/azorius-cluestone.js";
 import _poolBasaltMonolith from "../pool/basalt-monolith.js";
 import _poolBatheInGold from "../pool/bathe-in-gold.js";
@@ -39,6 +40,7 @@ import _poolBurningOil from "../pool/burning-oil.js";
 import _poolBygoneColossus from "../pool/bygone-colossus.js";
 import _poolCageOfHands from "../pool/cage-of-hands.js";
 import _poolCalderaPyremaw from "../pool/caldera-pyremaw.js";
+import _poolCaptainOfTheWatch from "../pool/captain-of-the-watch.js";
 import _poolCastleGarenbrig from "../pool/castle-garenbrig.js";
 import _poolCaveOfTemptation from "../pool/cave-of-temptation.js";
 import _poolChildOfThorns from "../pool/child-of-thorns.js";
@@ -190,6 +192,7 @@ import _poolSisaysRing from "../pool/sisays-ring.js";
 import _poolSnappingDrake from "../pool/snapping-drake.js";
 import _poolSoulherder from "../pool/soulherder.js";
 import _poolSpectacleSummit from "../pool/spectacle-summit.js";
+import _poolSpellStutter from "../pool/spell-stutter.js";
 import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
 import _poolStoneworkPuma from "../pool/stonework-puma.js";
@@ -265,6 +268,7 @@ const shard: CardShard = {
     _poolAvenCloudchaser,
     _poolAvenSentry,
     _poolAwakeningZone,
+    _poolAzcantaTheSunkenRuin,
     _poolAzoriusCluestone,
     _poolBasaltMonolith,
     _poolBatheInGold,
@@ -287,6 +291,7 @@ const shard: CardShard = {
     _poolBygoneColossus,
     _poolCageOfHands,
     _poolCalderaPyremaw,
+    _poolCaptainOfTheWatch,
     _poolCastleGarenbrig,
     _poolCaveOfTemptation,
     _poolChildOfThorns,
@@ -438,6 +443,7 @@ const shard: CardShard = {
     _poolSnappingDrake,
     _poolSoulherder,
     _poolSpectacleSummit,
+    _poolSpellStutter,
     _poolSpinedMegalodon,
     _poolStarkIndustries,
     _poolStoneworkPuma,

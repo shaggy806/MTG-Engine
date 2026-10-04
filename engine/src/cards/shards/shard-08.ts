@@ -35,6 +35,7 @@ import _poolBonecallerCleric from "../pool/bonecaller-cleric.js";
 import _poolBountifulLandscape from "../pool/bountiful-landscape.js";
 import _poolBraidwoodCup from "../pool/braidwood-cup.js";
 import _poolBranchloftPathway from "../pool/branchloft-pathway.js";
+import _poolBrokenWings from "../pool/broken-wings.js";
 import _poolBywayCourier from "../pool/byway-courier.js";
 import _poolCabalEvangel from "../pool/cabal-evangel.js";
 import _poolCallTheGatewatch from "../pool/call-the-gatewatch.js";
@@ -188,6 +189,7 @@ import _poolSyphonFuel from "../pool/syphon-fuel.js";
 import _poolTalasWarrior from "../pool/talas-warrior.js";
 import _poolTalismanOfImpulse from "../pool/talisman-of-impulse.js";
 import _poolTeeteringPeaks from "../pool/teetering-peaks.js";
+import _poolTegwyllDukeOfSplendor from "../pool/tegwyll-duke-of-splendor.js";
 import _poolTemmetNaktamunsWill from "../pool/temmet-naktamuns-will.js";
 import _poolTemurDevotee from "../pool/temur-devotee.js";
 import _poolThaliasLancers from "../pool/thalias-lancers.js";
@@ -196,6 +198,7 @@ import _poolThroneOfGeth from "../pool/throne-of-geth.js";
 import _poolTidehollowStrix from "../pool/tidehollow-strix.js";
 import _poolTocasiasDigSite from "../pool/tocasias-dig-site.js";
 import _poolTuktukRubblefort from "../pool/tuktuk-rubblefort.js";
+import _poolTurbulentWilderness from "../pool/turbulent-wilderness.js";
 import _poolUnflinchingCourage from "../pool/unflinching-courage.js";
 import _poolUnhallowedPhalanx from "../pool/unhallowed-phalanx.js";
 import _poolUnwind from "../pool/unwind.js";
@@ -266,6 +269,7 @@ const shard: CardShard = {
     _poolBountifulLandscape,
     _poolBraidwoodCup,
     _poolBranchloftPathway,
+    _poolBrokenWings,
     _poolBywayCourier,
     _poolCabalEvangel,
     _poolCallTheGatewatch,
@@ -419,6 +423,7 @@ const shard: CardShard = {
     _poolTalasWarrior,
     _poolTalismanOfImpulse,
     _poolTeeteringPeaks,
+    _poolTegwyllDukeOfSplendor,
     _poolTemmetNaktamunsWill,
     _poolTemurDevotee,
     _poolThaliasLancers,
@@ -427,6 +432,7 @@ const shard: CardShard = {
     _poolTidehollowStrix,
     _poolTocasiasDigSite,
     _poolTuktukRubblefort,
+    _poolTurbulentWilderness,
     _poolUnflinchingCourage,
     _poolUnhallowedPhalanx,
     _poolUnwind,

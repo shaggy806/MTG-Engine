@@ -60,6 +60,7 @@ import _poolEdwardKenway from "../pool/edward-kenway.js";
 import _poolEldraziDisplacer from "../pool/eldrazi-displacer.js";
 import _poolElementalBond from "../pool/elemental-bond.js";
 import _poolElvishLookout from "../pool/elvish-lookout.js";
+import _poolEmberethBlaze from "../pool/embereth-blaze.js";
 import _poolEpicProportions from "../pool/epic-proportions.js";
 import _poolErtaiWizardAdept from "../pool/ertai-wizard-adept.js";
 import _poolEsperCharm from "../pool/esper-charm.js";
@@ -74,6 +75,7 @@ import _poolFlowstoneWyvern from "../pool/flowstone-wyvern.js";
 import _poolForceOfSavagery from "../pool/force-of-savagery.js";
 import _poolForgottenSentinel from "../pool/forgotten-sentinel.js";
 import _poolFumeSpitter from "../pool/fume-spitter.js";
+import _poolGarrukCursedHuntsman from "../pool/garruk-cursed-huntsman.js";
 import _poolGatewayPlaza from "../pool/gateway-plaza.js";
 import _poolGhostSpectralSaboteur from "../pool/ghost-spectral-saboteur.js";
 import _poolGhoulcallerGisa from "../pool/ghoulcaller-gisa.js";
@@ -127,6 +129,7 @@ import _poolObsianusGolem from "../pool/obsianus-golem.js";
 import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
 import _poolOstiaryThrull from "../pool/ostiary-thrull.js";
 import _poolPartingGust from "../pool/parting-gust.js";
+import _poolPestilence from "../pool/pestilence.js";
 import _poolPhyrexianTriniform from "../pool/phyrexian-triniform.js";
 import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
@@ -296,6 +299,7 @@ const shard: CardShard = {
     _poolEldraziDisplacer,
     _poolElementalBond,
     _poolElvishLookout,
+    _poolEmberethBlaze,
     _poolEpicProportions,
     _poolErtaiWizardAdept,
     _poolEsperCharm,
@@ -310,6 +314,7 @@ const shard: CardShard = {
     _poolForceOfSavagery,
     _poolForgottenSentinel,
     _poolFumeSpitter,
+    _poolGarrukCursedHuntsman,
     _poolGatewayPlaza,
     _poolGhostSpectralSaboteur,
     _poolGhoulcallerGisa,
@@ -363,6 +368,7 @@ const shard: CardShard = {
     _poolOreskosSwiftclaw,
     _poolOstiaryThrull,
     _poolPartingGust,
+    _poolPestilence,
     _poolPhyrexianTriniform,
     _poolPreordain,
     _poolPreyUpon,

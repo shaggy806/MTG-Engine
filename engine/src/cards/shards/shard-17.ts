@@ -39,6 +39,7 @@ import _poolCleansingNova from "../pool/cleansing-nova.js";
 import _poolCleverLumimancer from "../pool/clever-lumimancer.js";
 import _poolCloudKey from "../pool/cloud-key.js";
 import _poolCogworkWrestler from "../pool/cogwork-wrestler.js";
+import _poolComposerOfSpring from "../pool/composer-of-spring.js";
 import _poolConcordiaPegasus from "../pool/concordia-pegasus.js";
 import _poolContaminatedAquifer from "../pool/contaminated-aquifer.js";
 import _poolContrabandKingpin from "../pool/contraband-kingpin.js";
@@ -151,6 +152,7 @@ import _poolRainOfTears from "../pool/rain-of-tears.js";
 import _poolRavos from "../pool/ravos.js";
 import _poolReadTheBones from "../pool/read-the-bones.js";
 import _poolRecruiterOfTheGuard from "../pool/recruiter-of-the-guard.js";
+import _poolRelmsSketching from "../pool/relms-sketching.js";
 import _poolResoluteWatchdog from "../pool/resolute-watchdog.js";
 import _poolRishadanDockhand from "../pool/rishadan-dockhand.js";
 import _poolRiverBear from "../pool/river-bear.js";
@@ -280,6 +282,7 @@ const shard: CardShard = {
     _poolCleverLumimancer,
     _poolCloudKey,
     _poolCogworkWrestler,
+    _poolComposerOfSpring,
     _poolConcordiaPegasus,
     _poolContaminatedAquifer,
     _poolContrabandKingpin,
@@ -392,6 +395,7 @@ const shard: CardShard = {
     _poolRavos,
     _poolReadTheBones,
     _poolRecruiterOfTheGuard,
+    _poolRelmsSketching,
     _poolResoluteWatchdog,
     _poolRishadanDockhand,
     _poolRiverBear,
