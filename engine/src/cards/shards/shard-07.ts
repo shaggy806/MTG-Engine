@@ -104,6 +104,7 @@ import _poolKyoshiWarriorGuard from "../pool/kyoshi-warrior-guard.js";
 import _poolLastWord from "../pool/last-word.js";
 import _poolLightningWolf from "../pool/lightning-wolf.js";
 import _poolLionheartMaverick from "../pool/lionheart-maverick.js";
+import _poolLiquimetalCoating from "../pool/liquimetal-coating.js";
 import _poolLlanowarBehemoth from "../pool/llanowar-behemoth.js";
 import _poolLlanowarDead from "../pool/llanowar-dead.js";
 import _poolLoneMissionary from "../pool/lone-missionary.js";
@@ -141,6 +142,7 @@ import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
 import _poolPrimordialPachyderm from "../pool/primordial-pachyderm.js";
 import _poolPyromanticPilgrim from "../pool/pyromantic-pilgrim.js";
+import _poolRalStormConduit from "../pool/ral-storm-conduit.js";
 import _poolRampantRejuvenator from "../pool/rampant-rejuvenator.js";
 import _poolRapidHybridization from "../pool/rapid-hybridization.js";
 import _poolRaptorCompanion from "../pool/raptor-companion.js";
@@ -349,6 +351,7 @@ const shard: CardShard = {
     _poolLastWord,
     _poolLightningWolf,
     _poolLionheartMaverick,
+    _poolLiquimetalCoating,
     _poolLlanowarBehemoth,
     _poolLlanowarDead,
     _poolLoneMissionary,
@@ -386,6 +389,7 @@ const shard: CardShard = {
     _poolPriestOfGix,
     _poolPrimordialPachyderm,
     _poolPyromanticPilgrim,
+    _poolRalStormConduit,
     _poolRampantRejuvenator,
     _poolRapidHybridization,
     _poolRaptorCompanion,

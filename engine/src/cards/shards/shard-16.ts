@@ -120,6 +120,7 @@ import _poolJaceWielderOfMysteries from "../pool/jace-wielder-of-mysteries.js";
 import _poolJungleWeaver from "../pool/jungle-weaver.js";
 import _poolKataraHeroicHealer from "../pool/katara-heroic-healer.js";
 import _poolKazanduValley from "../pool/kazandu-valley.js";
+import _poolKioraTheRisingTide from "../pool/kiora-the-rising-tide.js";
 import _poolKnightOfTheSkywardEye from "../pool/knight-of-the-skyward-eye.js";
 import _poolKorSkyClimber from "../pool/kor-sky-climber.js";
 import _poolKraulWarrior from "../pool/kraul-warrior.js";
@@ -266,6 +267,7 @@ import _tokensMunitionsToken from "../tokens/munitions-token.js";
 import _tokensPhyrexianWurmLifelink from "../tokens/phyrexian-wurm-lifelink.js";
 import _tokensShapeshifterToken from "../tokens/shapeshifter-token.js";
 import _tokensSoldierArtifactToken from "../tokens/soldier-artifact-token.js";
+import _tokensVampireTokenEdgarCharmedGroomEdgarMarkovsCoffin from "../tokens/vampire-token-edgar-charmed-groom-edgar-markovs-coffin.js";
 import _tokensXXDemonTokenFlying from "../tokens/x-x-demon-token-flying.js";
 import _tokensZombieWarriorToken from "../tokens/zombie-warrior-token.js";
 
@@ -388,6 +390,7 @@ const shard: CardShard = {
     _poolJungleWeaver,
     _poolKataraHeroicHealer,
     _poolKazanduValley,
+    _poolKioraTheRisingTide,
     _poolKnightOfTheSkywardEye,
     _poolKorSkyClimber,
     _poolKraulWarrior,
@@ -536,6 +539,7 @@ const shard: CardShard = {
     _tokensPhyrexianWurmLifelink,
     _tokensShapeshifterToken,
     _tokensSoldierArtifactToken,
+    _tokensVampireTokenEdgarCharmedGroomEdgarMarkovsCoffin,
     _tokensXXDemonTokenFlying,
     _tokensZombieWarriorToken,
   ],

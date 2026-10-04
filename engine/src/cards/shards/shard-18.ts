@@ -65,6 +65,7 @@ import _poolFeastOfTheUnicorn from "../pool/feast-of-the-unicorn.js";
 import _poolFeralMaaka from "../pool/feral-maaka.js";
 import _poolFinaleOfGlory from "../pool/finale-of-glory.js";
 import _poolFirebolt from "../pool/firebolt.js";
+import _poolFlowOfKnowledge from "../pool/flow-of-knowledge.js";
 import _poolFodderCannon from "../pool/fodder-cannon.js";
 import _poolForgottenCave from "../pool/forgotten-cave.js";
 import _poolFoulFamiliar from "../pool/foul-familiar.js";
@@ -91,6 +92,7 @@ import _poolIndependentTroops from "../pool/independent-troops.js";
 import _poolInfernoFist from "../pool/inferno-fist.js";
 import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
+import _poolInvigoratingSurge from "../pool/invigorating-surge.js";
 import _poolIvyLaneDenizen from "../pool/ivy-lane-denizen.js";
 import _poolIzzetCharm from "../pool/izzet-charm.js";
 import _poolJagwaspSwarm from "../pool/jagwasp-swarm.js";
@@ -116,6 +118,7 @@ import _poolLoxodonWarhammer from "../pool/loxodon-warhammer.js";
 import _poolLunarConvocation from "../pool/lunar-convocation.js";
 import _poolLunaticPandora from "../pool/lunatic-pandora.js";
 import _poolMaarikaBrutalGladiator from "../pool/maarika-brutal-gladiator.js";
+import _poolMaccreadyLamplightMayor from "../pool/maccready-lamplight-mayor.js";
 import _poolMagnigothSentry from "../pool/magnigoth-sentry.js";
 import _poolMagnusTheRed from "../pool/magnus-the-red.js";
 import _poolManaVault from "../pool/mana-vault.js";
@@ -309,6 +312,7 @@ const shard: CardShard = {
     _poolFeralMaaka,
     _poolFinaleOfGlory,
     _poolFirebolt,
+    _poolFlowOfKnowledge,
     _poolFodderCannon,
     _poolForgottenCave,
     _poolFoulFamiliar,
@@ -335,6 +339,7 @@ const shard: CardShard = {
     _poolInfernoFist,
     _poolInspiredInsurgent,
     _poolInspiringCaptain,
+    _poolInvigoratingSurge,
     _poolIvyLaneDenizen,
     _poolIzzetCharm,
     _poolJagwaspSwarm,
@@ -360,6 +365,7 @@ const shard: CardShard = {
     _poolLunarConvocation,
     _poolLunaticPandora,
     _poolMaarikaBrutalGladiator,
+    _poolMaccreadyLamplightMayor,
     _poolMagnigothSentry,
     _poolMagnusTheRed,
     _poolManaVault,

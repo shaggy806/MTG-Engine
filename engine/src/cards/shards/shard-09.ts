@@ -54,6 +54,7 @@ import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
 import _poolDrumbellower from "../pool/drumbellower.js";
+import _poolEdgarMarkovsCoffin from "../pool/edgar-markovs-coffin.js";
 import _poolEdricSpymasterOfTrest from "../pool/edric-spymaster-of-trest.js";
 import _poolEmmaraSoulOfTheAccord from "../pool/emmara-soul-of-the-accord.js";
 import _poolEshkiDragonclaw from "../pool/eshki-dragonclaw.js";
@@ -112,6 +113,7 @@ import _poolLazotepPlating from "../pool/lazotep-plating.js";
 import _poolLedgerShredder from "../pool/ledger-shredder.js";
 import _poolLifebloodHydra from "../pool/lifeblood-hydra.js";
 import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
+import _poolLordOfTheUndead from "../pool/lord-of-the-undead.js";
 import _poolLushPortico from "../pool/lush-portico.js";
 import _poolMagicDamper from "../pool/magic-damper.js";
 import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
@@ -135,6 +137,7 @@ import _poolObNixilisTheFallen from "../pool/ob-nixilis-the-fallen.js";
 import _poolOdricLunarchMarshal from "../pool/odric-lunarch-marshal.js";
 import _poolOgreArsonist from "../pool/ogre-arsonist.js";
 import _poolOliviasWrath from "../pool/olivias-wrath.js";
+import _poolOnWingsOfGold from "../pool/on-wings-of-gold.js";
 import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
 import _poolParapetWatchers from "../pool/parapet-watchers.js";
 import _poolPawnOfUlamog from "../pool/pawn-of-ulamog.js";
@@ -191,6 +194,7 @@ import _poolStonewoodInvoker from "../pool/stonewood-invoker.js";
 import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
 import _poolStormwatchEagle from "../pool/stormwatch-eagle.js";
 import _poolStreamHopper from "../pool/stream-hopper.js";
+import _poolSummonIxion from "../pool/summon-ixion.js";
 import _poolSurvivorsEncampment from "../pool/survivors-encampment.js";
 import _poolSylvanScrying from "../pool/sylvan-scrying.js";
 import _poolSythisHarvestsHand from "../pool/sythis-harvests-hand.js";
@@ -216,6 +220,7 @@ import _poolVanquishersAxe from "../pool/vanquishers-axe.js";
 import _poolVastwoodFortification from "../pool/vastwood-fortification.js";
 import _poolVenerableLammasu from "../pool/venerable-lammasu.js";
 import _poolVeteransSidearm from "../pool/veterans-sidearm.js";
+import _poolVitalize from "../pool/vitalize.js";
 import _poolVolcanicStrength from "../pool/volcanic-strength.js";
 import _poolWallOfDenial from "../pool/wall-of-denial.js";
 import _poolWatchfulAutomaton from "../pool/watchful-automaton.js";
@@ -293,6 +298,7 @@ const shard: CardShard = {
     _poolDoomWhisperer,
     _poolDragonRoost,
     _poolDrumbellower,
+    _poolEdgarMarkovsCoffin,
     _poolEdricSpymasterOfTrest,
     _poolEmmaraSoulOfTheAccord,
     _poolEshkiDragonclaw,
@@ -351,6 +357,7 @@ const shard: CardShard = {
     _poolLedgerShredder,
     _poolLifebloodHydra,
     _poolLightningArmyOfOne,
+    _poolLordOfTheUndead,
     _poolLushPortico,
     _poolMagicDamper,
     _poolMagusOfTheWheel,
@@ -374,6 +381,7 @@ const shard: CardShard = {
     _poolOdricLunarchMarshal,
     _poolOgreArsonist,
     _poolOliviasWrath,
+    _poolOnWingsOfGold,
     _poolOtherworldlyGaze,
     _poolParapetWatchers,
     _poolPawnOfUlamog,
@@ -430,6 +438,7 @@ const shard: CardShard = {
     _poolStormcarvedCoast,
     _poolStormwatchEagle,
     _poolStreamHopper,
+    _poolSummonIxion,
     _poolSurvivorsEncampment,
     _poolSylvanScrying,
     _poolSythisHarvestsHand,
@@ -455,6 +464,7 @@ const shard: CardShard = {
     _poolVastwoodFortification,
     _poolVenerableLammasu,
     _poolVeteransSidearm,
+    _poolVitalize,
     _poolVolcanicStrength,
     _poolWallOfDenial,
     _poolWatchfulAutomaton,

@@ -5,9 +5,11 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbyssalGorestalker from "../pool/abyssal-gorestalker.js";
 import _poolAccessTunnel from "../pool/access-tunnel.js";
+import _poolAetherGale from "../pool/aether-gale.js";
 import _poolAmphinMutineer from "../pool/amphin-mutineer.js";
 import _poolAncientTomb from "../pool/ancient-tomb.js";
 import _poolArashinCleric from "../pool/arashin-cleric.js";
+import _poolArgothSanctumOfNature from "../pool/argoth-sanctum-of-nature.js";
 import _poolArmillarySphere from "../pool/armillary-sphere.js";
 import _poolAssaultFormation from "../pool/assault-formation.js";
 import _poolAvatarEnthusiasts from "../pool/avatar-enthusiasts.js";
@@ -119,6 +121,7 @@ import _poolMabel from "../pool/mabel.js";
 import _poolMadcapSkills from "../pool/madcap-skills.js";
 import _poolMageSlayer from "../pool/mage-slayer.js";
 import _poolMagefireWings from "../pool/magefire-wings.js";
+import _poolMagusOfTheCandelabra from "../pool/magus-of-the-candelabra.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
 import _poolMasterOfDarkRites from "../pool/master-of-dark-rites.js";
@@ -142,12 +145,14 @@ import _poolOrzhovLocket from "../pool/orzhov-locket.js";
 import _poolOswaldFiddlebender from "../pool/oswald-fiddlebender.js";
 import _poolOutlawMedic from "../pool/outlaw-medic.js";
 import _poolOwlbear from "../pool/owlbear.js";
+import _poolPackRat from "../pool/pack-rat.js";
 import _poolPendulumOfPatterns from "../pool/pendulum-of-patterns.js";
 import _poolPerilousLandscape from "../pool/perilous-landscape.js";
 import _poolPestilentWolf from "../pool/pestilent-wolf.js";
 import _poolPiratePeddlers from "../pool/pirate-peddlers.js";
 import _poolPlagueMyr from "../pool/plague-myr.js";
 import _poolPlayfulShove from "../pool/playful-shove.js";
+import _poolPolyraptor from "../pool/polyraptor.js";
 import _poolPrizedStatue from "../pool/prized-statue.js";
 import _poolProsperousPirates from "../pool/prosperous-pirates.js";
 import _poolPseudodragonFamiliar from "../pool/pseudodragon-familiar.js";
@@ -175,6 +180,7 @@ import _poolSecludedSteppe from "../pool/secluded-steppe.js";
 import _poolSelesnyaSanctuary from "../pool/selesnya-sanctuary.js";
 import _poolSerpentsPass from "../pool/serpents-pass.js";
 import _poolSerraZealot from "../pool/serra-zealot.js";
+import _poolShadowInTheWarp from "../pool/shadow-in-the-warp.js";
 import _poolShadowTheHedgehog from "../pool/shadow-the-hedgehog.js";
 import _poolShadowmageInfiltrator from "../pool/shadowmage-infiltrator.js";
 import _poolShefetDunes from "../pool/shefet-dunes.js";
@@ -242,9 +248,11 @@ const shard: CardShard = {
   pool: [
     _poolAbyssalGorestalker,
     _poolAccessTunnel,
+    _poolAetherGale,
     _poolAmphinMutineer,
     _poolAncientTomb,
     _poolArashinCleric,
+    _poolArgothSanctumOfNature,
     _poolArmillarySphere,
     _poolAssaultFormation,
     _poolAvatarEnthusiasts,
@@ -356,6 +364,7 @@ const shard: CardShard = {
     _poolMadcapSkills,
     _poolMageSlayer,
     _poolMagefireWings,
+    _poolMagusOfTheCandelabra,
     _poolMakindiSliderunner,
     _poolManicVandal,
     _poolMasterOfDarkRites,
@@ -379,12 +388,14 @@ const shard: CardShard = {
     _poolOswaldFiddlebender,
     _poolOutlawMedic,
     _poolOwlbear,
+    _poolPackRat,
     _poolPendulumOfPatterns,
     _poolPerilousLandscape,
     _poolPestilentWolf,
     _poolPiratePeddlers,
     _poolPlagueMyr,
     _poolPlayfulShove,
+    _poolPolyraptor,
     _poolPrizedStatue,
     _poolProsperousPirates,
     _poolPseudodragonFamiliar,
@@ -412,6 +423,7 @@ const shard: CardShard = {
     _poolSelesnyaSanctuary,
     _poolSerpentsPass,
     _poolSerraZealot,
+    _poolShadowInTheWarp,
     _poolShadowTheHedgehog,
     _poolShadowmageInfiltrator,
     _poolShefetDunes,

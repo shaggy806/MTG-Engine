@@ -55,7 +55,7 @@ import _poolDeathriteShaman from "../pool/deathrite-shaman.js";
 import _poolDemolitionField from "../pool/demolition-field.js";
 import _poolDrivnodCarnageDominus from "../pool/drivnod-carnage-dominus.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
-import _poolEatenAlive from "../pool/eaten-alive.js";
+import _poolEclipsedSteppe from "../pool/eclipsed-steppe.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
 import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
 import _poolEnfeeblement from "../pool/enfeeblement.js";
@@ -65,6 +65,7 @@ import _poolEtherealGuidance from "../pool/ethereal-guidance.js";
 import _poolEumidianHatchery from "../pool/eumidian-hatchery.js";
 import _poolEvendoWakingHaven from "../pool/evendo-waking-haven.js";
 import _poolExclusionMage from "../pool/exclusion-mage.js";
+import _poolFiendishDuo from "../pool/fiendish-duo.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
 import _poolFiskTower from "../pool/fisk-tower.js";
@@ -100,6 +101,7 @@ import _poolIdyllicTutor from "../pool/idyllic-tutor.js";
 import _poolIgneousCur from "../pool/igneous-cur.js";
 import _poolIncurableOgre from "../pool/incurable-ogre.js";
 import _poolIronpawAspirant from "../pool/ironpaw-aspirant.js";
+import _poolJaceBeleren from "../pool/jace-beleren.js";
 import _poolJunjiTheMidnightSky from "../pool/junji-the-midnight-sky.js";
 import _poolJunktown from "../pool/junktown.js";
 import _poolKamiOfTheCrescentMoon from "../pool/kami-of-the-crescent-moon.js";
@@ -124,6 +126,7 @@ import _poolMesaUnicorn from "../pool/mesa-unicorn.js";
 import _poolMetathranSoldier from "../pool/metathran-soldier.js";
 import _poolMiirymSentinelWyrm from "../pool/miirym-sentinel-wyrm.js";
 import _poolMinamoSchoolAtWatersEdge from "../pool/minamo-school-at-waters-edge.js";
+import _poolMindsDesire from "../pool/minds-desire.js";
 import _poolMireShade from "../pool/mire-shade.js";
 import _poolMnemonicWall from "../pool/mnemonic-wall.js";
 import _poolMomentaryBlink from "../pool/momentary-blink.js";
@@ -287,7 +290,7 @@ const shard: CardShard = {
     _poolDemolitionField,
     _poolDrivnodCarnageDominus,
     _poolEarthOriginYak,
-    _poolEatenAlive,
+    _poolEclipsedSteppe,
     _poolEiganjoSeatOfTheEmpire,
     _poolEncampmentKeeper,
     _poolEnfeeblement,
@@ -297,6 +300,7 @@ const shard: CardShard = {
     _poolEumidianHatchery,
     _poolEvendoWakingHaven,
     _poolExclusionMage,
+    _poolFiendishDuo,
     _poolFiligreeFamiliar,
     _poolFirescreamer,
     _poolFiskTower,
@@ -332,6 +336,7 @@ const shard: CardShard = {
     _poolIgneousCur,
     _poolIncurableOgre,
     _poolIronpawAspirant,
+    _poolJaceBeleren,
     _poolJunjiTheMidnightSky,
     _poolJunktown,
     _poolKamiOfTheCrescentMoon,
@@ -356,6 +361,7 @@ const shard: CardShard = {
     _poolMetathranSoldier,
     _poolMiirymSentinelWyrm,
     _poolMinamoSchoolAtWatersEdge,
+    _poolMindsDesire,
     _poolMireShade,
     _poolMnemonicWall,
     _poolMomentaryBlink,

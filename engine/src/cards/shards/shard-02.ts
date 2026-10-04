@@ -76,6 +76,7 @@ import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
 import _poolEstridsInvocation from "../pool/estrids-invocation.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
+import _poolFaithfulMending from "../pool/faithful-mending.js";
 import _poolFarfinder from "../pool/farfinder.js";
 import _poolFelineSovereign from "../pool/feline-sovereign.js";
 import _poolFistsOfFlame from "../pool/fists-of-flame.js";
@@ -183,6 +184,7 @@ import _poolSkyhunterPatrol from "../pool/skyhunter-patrol.js";
 import _poolSkyrakerGiant from "../pool/skyraker-giant.js";
 import _poolSlashPanther from "../pool/slash-panther.js";
 import _poolSlitherborePathway from "../pool/slitherbore-pathway.js";
+import _poolSmileAtDeath from "../pool/smile-at-death.js";
 import _poolSnowCoveredIsland from "../pool/snow-covered-island.js";
 import _poolSoldierOfTheGreyHost from "../pool/soldier-of-the-grey-host.js";
 import _poolSongOfTotentanz from "../pool/song-of-totentanz.js";
@@ -191,6 +193,7 @@ import _poolSpikeJester from "../pool/spike-jester.js";
 import _poolSpittingDrake from "../pool/spitting-drake.js";
 import _poolSteadyProgress from "../pool/steady-progress.js";
 import _poolSteamSpitter from "../pool/steam-spitter.js";
+import _poolSteelOfTheGodhead from "../pool/steel-of-the-godhead.js";
 import _poolStonecoilSerpent from "../pool/stonecoil-serpent.js";
 import _poolSublimeEpiphany from "../pool/sublime-epiphany.js";
 import _poolSubtleStrike from "../pool/subtle-strike.js";
@@ -306,6 +309,7 @@ const shard: CardShard = {
     _poolEnatuGolem,
     _poolEstridsInvocation,
     _poolExiledBoggart,
+    _poolFaithfulMending,
     _poolFarfinder,
     _poolFelineSovereign,
     _poolFistsOfFlame,
@@ -413,6 +417,7 @@ const shard: CardShard = {
     _poolSkyrakerGiant,
     _poolSlashPanther,
     _poolSlitherborePathway,
+    _poolSmileAtDeath,
     _poolSnowCoveredIsland,
     _poolSoldierOfTheGreyHost,
     _poolSongOfTotentanz,
@@ -421,6 +426,7 @@ const shard: CardShard = {
     _poolSpittingDrake,
     _poolSteadyProgress,
     _poolSteamSpitter,
+    _poolSteelOfTheGodhead,
     _poolStonecoilSerpent,
     _poolSublimeEpiphany,
     _poolSubtleStrike,

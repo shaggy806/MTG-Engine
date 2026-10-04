@@ -198,32 +198,6 @@ describe("top-5000 batch 22e — Chitterspitter", () => {
   });
 });
 
-describe("top-5000 batch 22e — Eaten Alive", () => {
-  it("can pay {3}{B} instead of a sacrifice, and exiles the target", () => {
-    const { game } = setUp(["Eaten Alive"]);
-    const swamps = lands(game, "Swamp", 4);
-    const spell = inHand(game, "Eaten Alive");
-    const bears = spawn(game, "Grizzly Bears", B);
-    const payOffer = () =>
-      game
-        .legalActions(A)
-        .find((x) => x.kind === "cast-spell" && x.card === spell && x.costOptionText === "Pay {3}{B}");
-    swamps.push(spawn(game, "Swamp"));
-    const offer = payOffer();
-    expect(offer?.kind).toBe("cast-spell");
-    game.dispatch({
-      type: "cast-spell",
-      player: A,
-      card: spell,
-      targets: [{ kind: "object", object: bears }],
-      costOption: offer?.kind === "cast-spell" ? offer.costOption : undefined,
-    });
-    settle(game);
-    expect(zone(game, bears)).toBe("exile");
-    expect(swamps.every((id) => game.state.objects[id].tapped)).toBe(true);
-  });
-});
-
 describe("top-5000 batch 22e — Basim Ibn Ishaq", () => {
   it("draws for the first historic spell each turn only, and can't be blocked", () => {
     const { game } = setUp(["Ornithopter", "Ornithopter"]);

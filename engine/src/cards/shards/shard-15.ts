@@ -149,6 +149,7 @@ import _poolPashalikMons from "../pool/pashalik-mons.js";
 import _poolPiranhaMarsh from "../pool/piranha-marsh.js";
 import _poolPreposterousProportions from "../pool/preposterous-proportions.js";
 import _poolPriestOfFellRites from "../pool/priest-of-fell-rites.js";
+import _poolPrizefight from "../pool/prizefight.js";
 import _poolRakdosTrumpeter from "../pool/rakdos-trumpeter.js";
 import _poolRapaciousDragon from "../pool/rapacious-dragon.js";
 import _poolRathsEdge from "../pool/raths-edge.js";
@@ -157,6 +158,7 @@ import _poolRazakethsRite from "../pool/razakeths-rite.js";
 import _poolReapTheSeagraf from "../pool/reap-the-seagraf.js";
 import _poolRescind from "../pool/rescind.js";
 import _poolReunionOfTheHouse from "../pool/reunion-of-the-house.js";
+import _poolSanctumOfEternity from "../pool/sanctum-of-eternity.js";
 import _poolSangromancer from "../pool/sangromancer.js";
 import _poolSarkhansCatharsis from "../pool/sarkhans-catharsis.js";
 import _poolSavageHunger from "../pool/savage-hunger.js";
@@ -179,6 +181,7 @@ import _poolSokenzanCrucibleOfDefiance from "../pool/sokenzan-crucible-of-defian
 import _poolSoulGuideLantern from "../pool/soul-guide-lantern.js";
 import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
+import _poolSpellstutterSprite from "../pool/spellstutter-sprite.js";
 import _poolSproutingGoblin from "../pool/sprouting-goblin.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
 import _poolStrengthOfWill from "../pool/strength-of-will.js";
@@ -189,6 +192,7 @@ import _poolSupplyDrop from "../pool/supply-drop.js";
 import _poolSwabGoblin from "../pool/swab-goblin.js";
 import _poolSwamp from "../pool/swamp.js";
 import _poolSymbioticElf from "../pool/symbiotic-elf.js";
+import _poolSyncopate from "../pool/syncopate.js";
 import _poolTalismanOfCreativity from "../pool/talisman-of-creativity.js";
 import _poolTangleSpider from "../pool/tangle-spider.js";
 import _poolTenementCrasher from "../pool/tenement-crasher.js";
@@ -382,6 +386,7 @@ const shard: CardShard = {
     _poolPiranhaMarsh,
     _poolPreposterousProportions,
     _poolPriestOfFellRites,
+    _poolPrizefight,
     _poolRakdosTrumpeter,
     _poolRapaciousDragon,
     _poolRathsEdge,
@@ -390,6 +395,7 @@ const shard: CardShard = {
     _poolReapTheSeagraf,
     _poolRescind,
     _poolReunionOfTheHouse,
+    _poolSanctumOfEternity,
     _poolSangromancer,
     _poolSarkhansCatharsis,
     _poolSavageHunger,
@@ -412,6 +418,7 @@ const shard: CardShard = {
     _poolSoulGuideLantern,
     _poolSoulWarden,
     _poolSpellscornCoven,
+    _poolSpellstutterSprite,
     _poolSproutingGoblin,
     _poolStormriderSpirit,
     _poolStrengthOfWill,
@@ -422,6 +429,7 @@ const shard: CardShard = {
     _poolSwabGoblin,
     _poolSwamp,
     _poolSymbioticElf,
+    _poolSyncopate,
     _poolTalismanOfCreativity,
     _poolTangleSpider,
     _poolTenementCrasher,

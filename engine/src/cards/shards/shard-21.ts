@@ -6,7 +6,9 @@ import type { CardShard } from "../card-shards.js";
 import _poolAangAtTheCrossroads from "../pool/aang-at-the-crossroads.js";
 import _poolAlpineWatchdog from "../pool/alpine-watchdog.js";
 import _poolArachnogenesis from "../pool/arachnogenesis.js";
+import _poolArahboTheFirstFang from "../pool/arahbo-the-first-fang.js";
 import _poolArchwingDragon from "../pool/archwing-dragon.js";
+import _poolArmorcraftJudge from "../pool/armorcraft-judge.js";
 import _poolArmoredWhirlTurtle from "../pool/armored-whirl-turtle.js";
 import _poolAronBenaliasRuin from "../pool/aron-benalias-ruin.js";
 import _poolArrogantVampire from "../pool/arrogant-vampire.js";
@@ -37,6 +39,7 @@ import _poolConclaveTribunal from "../pool/conclave-tribunal.js";
 import _poolConsultTheStarCharts from "../pool/consult-the-star-charts.js";
 import _poolConviction from "../pool/conviction.js";
 import _poolCouriersCapsule from "../pool/couriers-capsule.js";
+import _poolCourtOfArdenvale from "../pool/court-of-ardenvale.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
 import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
@@ -48,6 +51,7 @@ import _poolDegaDisciple from "../pool/dega-disciple.js";
 import _poolDesperateBloodseeker from "../pool/desperate-bloodseeker.js";
 import _poolDisruptDecorum from "../pool/disrupt-decorum.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
+import _poolElanorGardner from "../pool/elanor-gardner.js";
 import _poolElvishDoomsayer from "../pool/elvish-doomsayer.js";
 import _poolEmmessiTome from "../pool/emmessi-tome.js";
 import _poolEmperorMihailIi from "../pool/emperor-mihail-ii.js";
@@ -170,6 +174,7 @@ import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
 import _poolStandFirm from "../pool/stand-firm.js";
 import _poolStandingStones from "../pool/standing-stones.js";
 import _poolStoneDocent from "../pool/stone-docent.js";
+import _poolStormTheVault from "../pool/storm-the-vault.js";
 import _poolStormcallerOfKeranos from "../pool/stormcaller-of-keranos.js";
 import _poolStudentOfOjutai from "../pool/student-of-ojutai.js";
 import _poolStumpStomp from "../pool/stump-stomp.js";
@@ -216,7 +221,9 @@ const shard: CardShard = {
     _poolAangAtTheCrossroads,
     _poolAlpineWatchdog,
     _poolArachnogenesis,
+    _poolArahboTheFirstFang,
     _poolArchwingDragon,
+    _poolArmorcraftJudge,
     _poolArmoredWhirlTurtle,
     _poolAronBenaliasRuin,
     _poolArrogantVampire,
@@ -247,6 +254,7 @@ const shard: CardShard = {
     _poolConsultTheStarCharts,
     _poolConviction,
     _poolCouriersCapsule,
+    _poolCourtOfArdenvale,
     _poolCravenGiant,
     _poolCurseOfTheSwine,
     _poolDaggerfangDuo,
@@ -258,6 +266,7 @@ const shard: CardShard = {
     _poolDesperateBloodseeker,
     _poolDisruptDecorum,
     _poolDranasChosen,
+    _poolElanorGardner,
     _poolElvishDoomsayer,
     _poolEmmessiTome,
     _poolEmperorMihailIi,
@@ -380,6 +389,7 @@ const shard: CardShard = {
     _poolStandFirm,
     _poolStandingStones,
     _poolStoneDocent,
+    _poolStormTheVault,
     _poolStormcallerOfKeranos,
     _poolStudentOfOjutai,
     _poolStumpStomp,

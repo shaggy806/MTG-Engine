@@ -136,6 +136,7 @@ import _poolNimanaSkydancer from "../pool/nimana-skydancer.js";
 import _poolObyraDreamingDuelist from "../pool/obyra-dreaming-duelist.js";
 import _poolOgreSentry from "../pool/ogre-sentry.js";
 import _poolOldGnawbone from "../pool/old-gnawbone.js";
+import _poolPatronOfTheVein from "../pool/patron-of-the-vein.js";
 import _poolPeregrineDrake from "../pool/peregrine-drake.js";
 import _poolPhyrexianVault from "../pool/phyrexian-vault.js";
 import _poolPrimevalShambler from "../pool/primeval-shambler.js";
@@ -161,6 +162,7 @@ import _poolSabretoothTiger from "../pool/sabretooth-tiger.js";
 import _poolScarwoodTreefolk from "../pool/scarwood-treefolk.js";
 import _poolScouredBarrens from "../pool/scoured-barrens.js";
 import _poolSeafloorDebris from "../pool/seafloor-debris.js";
+import _poolSearslicerGoblin from "../pool/searslicer-goblin.js";
 import _poolSeethingLandscape from "../pool/seething-landscape.js";
 import _poolSewnEyeDrake from "../pool/sewn-eye-drake.js";
 import _poolShelldockIsle from "../pool/shelldock-isle.js";
@@ -196,6 +198,7 @@ import _poolThroneOfTheGodPharaoh from "../pool/throne-of-the-god-pharaoh.js";
 import _poolThunderingFalls from "../pool/thundering-falls.js";
 import _poolThunderingRebuke from "../pool/thundering-rebuke.js";
 import _poolTideSkimmer from "../pool/tide-skimmer.js";
+import _poolTurbulentMoor from "../pool/turbulent-moor.js";
 import _poolTurntimberAscetic from "../pool/turntimber-ascetic.js";
 import _poolUktabiFaerie from "../pool/uktabi-faerie.js";
 import _poolUnderworldDreams from "../pool/underworld-dreams.js";
@@ -213,6 +216,7 @@ import _poolWarChariot from "../pool/war-chariot.js";
 import _poolWayfarersBauble from "../pool/wayfarers-bauble.js";
 import _poolWeb from "../pool/web.js";
 import _poolWeldfastWingsmith from "../pool/weldfast-wingsmith.js";
+import _poolWheelOfFate from "../pool/wheel-of-fate.js";
 import _poolWildColos from "../pool/wild-colos.js";
 import _poolWillowFaerie from "../pool/willow-faerie.js";
 import _poolWinterSoldierBuckyBarnes from "../pool/winter-soldier-bucky-barnes.js";
@@ -373,6 +377,7 @@ const shard: CardShard = {
     _poolObyraDreamingDuelist,
     _poolOgreSentry,
     _poolOldGnawbone,
+    _poolPatronOfTheVein,
     _poolPeregrineDrake,
     _poolPhyrexianVault,
     _poolPrimevalShambler,
@@ -398,6 +403,7 @@ const shard: CardShard = {
     _poolScarwoodTreefolk,
     _poolScouredBarrens,
     _poolSeafloorDebris,
+    _poolSearslicerGoblin,
     _poolSeethingLandscape,
     _poolSewnEyeDrake,
     _poolShelldockIsle,
@@ -433,6 +439,7 @@ const shard: CardShard = {
     _poolThunderingFalls,
     _poolThunderingRebuke,
     _poolTideSkimmer,
+    _poolTurbulentMoor,
     _poolTurntimberAscetic,
     _poolUktabiFaerie,
     _poolUnderworldDreams,
@@ -450,6 +457,7 @@ const shard: CardShard = {
     _poolWayfarersBauble,
     _poolWeb,
     _poolWeldfastWingsmith,
+    _poolWheelOfFate,
     _poolWildColos,
     _poolWillowFaerie,
     _poolWinterSoldierBuckyBarnes,

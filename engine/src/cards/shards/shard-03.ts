@@ -40,6 +40,7 @@ import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
 import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
 import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
 import _poolDreamTwist from "../pool/dream-twist.js";
+import _poolEdenSeatOfTheSanctum from "../pool/eden-seat-of-the-sanctum.js";
 import _poolEloiseNephaliaSleuth from "../pool/eloise-nephalia-sleuth.js";
 import _poolEmeriaAngel from "../pool/emeria-angel.js";
 import _poolErraticVisionary from "../pool/erratic-visionary.js";
@@ -97,6 +98,7 @@ import _poolMachinesmithAutomaton from "../pool/machinesmith-automaton.js";
 import _poolMahadiEmporiumMaster from "../pool/mahadi-emporium-master.js";
 import _poolMakindiMesas from "../pool/makindi-mesas.js";
 import _poolMalevolentAwakening from "../pool/malevolent-awakening.js";
+import _poolMapTheFrontier from "../pool/map-the-frontier.js";
 import _poolMerfolkCoralsmith from "../pool/merfolk-coralsmith.js";
 import _poolMetallicSliver from "../pool/metallic-sliver.js";
 import _poolMinotaurAggressor from "../pool/minotaur-aggressor.js";
@@ -124,6 +126,7 @@ import _poolPyrohemia from "../pool/pyrohemia.js";
 import _poolRampagingHippo from "../pool/rampaging-hippo.js";
 import _poolRaugrinCrystal from "../pool/raugrin-crystal.js";
 import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
+import _poolRegalForce from "../pool/regal-force.js";
 import _poolRejuvenatingSprings from "../pool/rejuvenating-springs.js";
 import _poolRelentlessAssault from "../pool/relentless-assault.js";
 import _poolResculpt from "../pool/resculpt.js";
@@ -137,6 +140,7 @@ import _poolRushwoodElemental from "../pool/rushwood-elemental.js";
 import _poolSacredPrey from "../pool/sacred-prey.js";
 import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
 import _poolSagesReverie from "../pool/sages-reverie.js";
+import _poolSakuraTribeScout from "../pool/sakura-tribe-scout.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
 import _poolScrapTrawler from "../pool/scrap-trawler.js";
 import _poolSeaGate from "../pool/sea-gate.js";
@@ -252,6 +256,7 @@ const shard: CardShard = {
     _poolDoctorDoomKingOfLatveria,
     _poolDogmeatEverLoyal,
     _poolDreamTwist,
+    _poolEdenSeatOfTheSanctum,
     _poolEloiseNephaliaSleuth,
     _poolEmeriaAngel,
     _poolErraticVisionary,
@@ -309,6 +314,7 @@ const shard: CardShard = {
     _poolMahadiEmporiumMaster,
     _poolMakindiMesas,
     _poolMalevolentAwakening,
+    _poolMapTheFrontier,
     _poolMerfolkCoralsmith,
     _poolMetallicSliver,
     _poolMinotaurAggressor,
@@ -336,6 +342,7 @@ const shard: CardShard = {
     _poolRampagingHippo,
     _poolRaugrinCrystal,
     _poolRayOfDissolution,
+    _poolRegalForce,
     _poolRejuvenatingSprings,
     _poolRelentlessAssault,
     _poolResculpt,
@@ -349,6 +356,7 @@ const shard: CardShard = {
     _poolSacredPrey,
     _poolSadisticHypnotist,
     _poolSagesReverie,
+    _poolSakuraTribeScout,
     _poolSalvagedManaworker,
     _poolScrapTrawler,
     _poolSeaGate,

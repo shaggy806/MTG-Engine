@@ -166,6 +166,7 @@ import _poolReyavMasterSmith from "../pool/reyav-master-smith.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
 import _poolRiseOfTheEldrazi from "../pool/rise-of-the-eldrazi.js";
+import _poolRiskyShortcut from "../pool/risky-shortcut.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
@@ -230,6 +231,7 @@ import _poolWallOfDistortion from "../pool/wall-of-distortion.js";
 import _poolWallOfTanglecord from "../pool/wall-of-tanglecord.js";
 import _poolWanderingOnes from "../pool/wandering-ones.js";
 import _poolWeaveFate from "../pool/weave-fate.js";
+import _poolWildsearScouringMaw from "../pool/wildsear-scouring-maw.js";
 import _poolWindcragSiege from "../pool/windcrag-siege.js";
 import _poolWindgracesJudgment from "../pool/windgraces-judgment.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
@@ -407,6 +409,7 @@ const shard: CardShard = {
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,
     _poolRiseOfTheEldrazi,
+    _poolRiskyShortcut,
     _poolRiveteersInitiate,
     _poolRockfallVale,
     _poolRograkhSonOfRohgahh,
@@ -471,6 +474,7 @@ const shard: CardShard = {
     _poolWallOfTanglecord,
     _poolWanderingOnes,
     _poolWeaveFate,
+    _poolWildsearScouringMaw,
     _poolWindcragSiege,
     _poolWindgracesJudgment,
     _poolWintersGrasp,

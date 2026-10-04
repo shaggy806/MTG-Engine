@@ -220,6 +220,7 @@ import _poolToweringThunderfist from "../pool/towering-thunderfist.js";
 import _poolTravelersAmulet from "../pool/travelers-amulet.js";
 import _poolTresserhornSinks from "../pool/tresserhorn-sinks.js";
 import _poolTrinketMage from "../pool/trinket-mage.js";
+import _poolTurbulentSprings from "../pool/turbulent-springs.js";
 import _poolTwoHeadedCerberus from "../pool/two-headed-cerberus.js";
 import _poolTyrantsMachine from "../pool/tyrants-machine.js";
 import _poolUltimaOriginOfOblivion from "../pool/ultima-origin-of-oblivion.js";
@@ -467,6 +468,7 @@ const shard: CardShard = {
     _poolTravelersAmulet,
     _poolTresserhornSinks,
     _poolTrinketMage,
+    _poolTurbulentSprings,
     _poolTwoHeadedCerberus,
     _poolTyrantsMachine,
     _poolUltimaOriginOfOblivion,

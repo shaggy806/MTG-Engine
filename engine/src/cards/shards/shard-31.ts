@@ -39,6 +39,7 @@ import _poolClearwaterPathway from "../pool/clearwater-pathway.js";
 import _poolClinquantSkymage from "../pool/clinquant-skymage.js";
 import _poolCloudkinSeer from "../pool/cloudkin-seer.js";
 import _poolColossodonYearling from "../pool/colossodon-yearling.js";
+import _poolCommissarSeverinaRaine from "../pool/commissar-severina-raine.js";
 import _poolCounterspell from "../pool/counterspell.js";
 import _poolCrackOpen from "../pool/crack-open.js";
 import _poolCrimsonFleetCommodore from "../pool/crimson-fleet-commodore.js";
@@ -87,6 +88,7 @@ import _poolGoblinBombardment from "../pool/goblin-bombardment.js";
 import _poolGodlessShrine from "../pool/godless-shrine.js";
 import _poolGoldenglowMoth from "../pool/goldenglow-moth.js";
 import _poolGolgariGermination from "../pool/golgari-germination.js";
+import _poolGontisAetherHeart from "../pool/gontis-aether-heart.js";
 import _poolGrabbyGiant from "../pool/grabby-giant.js";
 import _poolHalberdier from "../pool/halberdier.js";
 import _poolHammerheadTyrant from "../pool/hammerhead-tyrant.js";
@@ -207,6 +209,7 @@ import _poolTreeOfRedemption from "../pool/tree-of-redemption.js";
 import _poolTuvasaTheSunlit from "../pool/tuvasa-the-sunlit.js";
 import _poolUndercityShade from "../pool/undercity-shade.js";
 import _poolValorSinger from "../pool/valor-singer.js";
+import _poolVaultOfCatlacan from "../pool/vault-of-catlacan.js";
 import _poolVesselOfParamnesia from "../pool/vessel-of-paramnesia.js";
 import _poolViashinoSpearhunter from "../pool/viashino-spearhunter.js";
 import _poolWalkingAtlas from "../pool/walking-atlas.js";
@@ -266,6 +269,7 @@ const shard: CardShard = {
     _poolClinquantSkymage,
     _poolCloudkinSeer,
     _poolColossodonYearling,
+    _poolCommissarSeverinaRaine,
     _poolCounterspell,
     _poolCrackOpen,
     _poolCrimsonFleetCommodore,
@@ -314,6 +318,7 @@ const shard: CardShard = {
     _poolGodlessShrine,
     _poolGoldenglowMoth,
     _poolGolgariGermination,
+    _poolGontisAetherHeart,
     _poolGrabbyGiant,
     _poolHalberdier,
     _poolHammerheadTyrant,
@@ -434,6 +439,7 @@ const shard: CardShard = {
     _poolTuvasaTheSunlit,
     _poolUndercityShade,
     _poolValorSinger,
+    _poolVaultOfCatlacan,
     _poolVesselOfParamnesia,
     _poolViashinoSpearhunter,
     _poolWalkingAtlas,

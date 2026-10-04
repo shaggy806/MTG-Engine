@@ -136,6 +136,7 @@ import _poolPyroblast from "../pool/pyroblast.js";
 import _poolQueensBaySoldier from "../pool/queens-bay-soldier.js";
 import _poolRadstorm from "../pool/radstorm.js";
 import _poolRakdosCarnarium from "../pool/rakdos-carnarium.js";
+import _poolRakdosJoinsUp from "../pool/rakdos-joins-up.js";
 import _poolReaperKing from "../pool/reaper-king.js";
 import _poolRedwoodTreefolk from "../pool/redwood-treefolk.js";
 import _poolRemnantElemental from "../pool/remnant-elemental.js";
@@ -214,6 +215,7 @@ import _poolXandersLounge from "../pool/xanders-lounge.js";
 import _poolYavimayaHollow from "../pool/yavimaya-hollow.js";
 import _poolYgraEaterOfAll from "../pool/ygra-eater-of-all.js";
 import _poolZadasCommando from "../pool/zadas-commando.js";
+import _tokensCatTokenArahboTheFirstFang from "../tokens/cat-token-arahbo-the-first-fang.js";
 import _tokensEldraziScionToken from "../tokens/eldrazi-scion-token.js";
 
 const shard: CardShard = {
@@ -351,6 +353,7 @@ const shard: CardShard = {
     _poolQueensBaySoldier,
     _poolRadstorm,
     _poolRakdosCarnarium,
+    _poolRakdosJoinsUp,
     _poolReaperKing,
     _poolRedwoodTreefolk,
     _poolRemnantElemental,
@@ -431,6 +434,7 @@ const shard: CardShard = {
     _poolZadasCommando,
   ],
   tokens: [
+    _tokensCatTokenArahboTheFirstFang,
     _tokensEldraziScionToken,
   ],
 };

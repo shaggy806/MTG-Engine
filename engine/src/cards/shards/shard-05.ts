@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAetherworksMarvel from "../pool/aetherworks-marvel.js";
 import _poolAftermathAnalyst from "../pool/aftermath-analyst.js";
 import _poolAllThatGlitters from "../pool/all-that-glitters.js";
 import _poolAlpineGrizzly from "../pool/alpine-grizzly.js";
@@ -98,6 +99,7 @@ import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGrappleWithThePast from "../pool/grapple-with-the-past.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
+import _poolGreenwardenOfMurasa from "../pool/greenwarden-of-murasa.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
 import _poolGrowFromTheAshes from "../pool/grow-from-the-ashes.js";
@@ -182,6 +184,7 @@ import _poolShamblingGoblin from "../pool/shambling-goblin.js";
 import _poolSharlayanNationOfScholars from "../pool/sharlayan-nation-of-scholars.js";
 import _poolShatterskullRecruit from "../pool/shatterskull-recruit.js";
 import _poolShriekdiver from "../pool/shriekdiver.js";
+import _poolSifterOfSkulls from "../pool/sifter-of-skulls.js";
 import _poolSkyTheaterStrix from "../pool/sky-theater-strix.js";
 import _poolSlagdrillScrapper from "../pool/slagdrill-scrapper.js";
 import _poolSnapcasterMage from "../pool/snapcaster-mage.js";
@@ -244,9 +247,11 @@ import _tokensHumanSoldierToken from "../tokens/human-soldier-token.js";
 import _tokensInsectTokenFlyingHaste from "../tokens/insect-token-flying-haste.js";
 import _tokensRatTokenVren from "../tokens/rat-token-vren.js";
 import _tokensRobotVillainToken from "../tokens/robot-villain-token.js";
+import _tokensZombieTokenOnWingsOfGold from "../tokens/zombie-token-on-wings-of-gold.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAetherworksMarvel,
     _poolAftermathAnalyst,
     _poolAllThatGlitters,
     _poolAlpineGrizzly,
@@ -342,6 +347,7 @@ const shard: CardShard = {
     _poolGrappleWithThePast,
     _poolGravespawnSovereign,
     _poolGreatHallOfTheCitadel,
+    _poolGreenwardenOfMurasa,
     _poolGrimBackwoods,
     _poolGrimclimbPathway,
     _poolGrowFromTheAshes,
@@ -426,6 +432,7 @@ const shard: CardShard = {
     _poolSharlayanNationOfScholars,
     _poolShatterskullRecruit,
     _poolShriekdiver,
+    _poolSifterOfSkulls,
     _poolSkyTheaterStrix,
     _poolSlagdrillScrapper,
     _poolSnapcasterMage,
@@ -490,6 +497,7 @@ const shard: CardShard = {
     _tokensInsectTokenFlyingHaste,
     _tokensRatTokenVren,
     _tokensRobotVillainToken,
+    _tokensZombieTokenOnWingsOfGold,
   ],
 };
 

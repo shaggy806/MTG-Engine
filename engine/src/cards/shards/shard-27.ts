@@ -115,6 +115,7 @@ import _poolLumengridWarden from "../pool/lumengrid-warden.js";
 import _poolMagmaw from "../pool/magmaw.js";
 import _poolMalleableImpostor from "../pool/malleable-impostor.js";
 import _poolMasterDecoy from "../pool/master-decoy.js";
+import _poolMemoryErosion from "../pool/memory-erosion.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMindsDilation from "../pool/minds-dilation.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
@@ -233,6 +234,7 @@ import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
 import _tokensDinosaurToken from "../tokens/dinosaur-token.js";
 import _tokensHumanToken from "../tokens/human-token.js";
+import _tokensScionOfTheDeepToken from "../tokens/scion-of-the-deep-token.js";
 import _tokensShrineToken from "../tokens/shrine-token.js";
 
 const shard: CardShard = {
@@ -349,6 +351,7 @@ const shard: CardShard = {
     _poolMagmaw,
     _poolMalleableImpostor,
     _poolMasterDecoy,
+    _poolMemoryErosion,
     _poolMidnightHaunting,
     _poolMindsDilation,
     _poolMoltenGatekeeper,
@@ -469,6 +472,7 @@ const shard: CardShard = {
   tokens: [
     _tokensDinosaurToken,
     _tokensHumanToken,
+    _tokensScionOfTheDeepToken,
     _tokensShrineToken,
   ],
 };

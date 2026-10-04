@@ -4,6 +4,8 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbradedBluffs from "../pool/abraded-bluffs.js";
+import _poolAbzanBattlePriest from "../pool/abzan-battle-priest.js";
+import _poolAccessDenied from "../pool/access-denied.js";
 import _poolAegisOfTheHeavens from "../pool/aegis-of-the-heavens.js";
 import _poolAetherSpellbomb from "../pool/aether-spellbomb.js";
 import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
@@ -46,6 +48,7 @@ import _poolDrownerOfSecrets from "../pool/drowner-of-secrets.js";
 import _poolDuskshellCrawler from "../pool/duskshell-crawler.js";
 import _poolEarthElemental from "../pool/earth-elemental.js";
 import _poolEarthshakerDreadmaw from "../pool/earthshaker-dreadmaw.js";
+import _poolEdgarCharmedGroom from "../pool/edgar-charmed-groom.js";
 import _poolEliteArrester from "../pool/elite-arrester.js";
 import _poolElvishArchdruid from "../pool/elvish-archdruid.js";
 import _poolElvishArchers from "../pool/elvish-archers.js";
@@ -141,6 +144,7 @@ import _poolNirkanaRevenant from "../pool/nirkana-revenant.js";
 import _poolNorwoodRanger from "../pool/norwood-ranger.js";
 import _poolNoxiousToad from "../pool/noxious-toad.js";
 import _poolObyrasAttendants from "../pool/obyras-attendants.js";
+import _poolOmnathLocusOfTheRoil from "../pool/omnath-locus-of-the-roil.js";
 import _poolOpportunity from "../pool/opportunity.js";
 import _poolOpt from "../pool/opt.js";
 import _poolOrcSureshot from "../pool/orc-sureshot.js";
@@ -193,6 +197,7 @@ import _poolSquiresDevotion from "../pool/squires-devotion.js";
 import _poolStaffOfDomination from "../pool/staff-of-domination.js";
 import _poolStaffOfTitania from "../pool/staff-of-titania.js";
 import _poolStockUp from "../pool/stock-up.js";
+import _poolStoneOfErech from "../pool/stone-of-erech.js";
 import _poolStrokeOfMidnight from "../pool/stroke-of-midnight.js";
 import _poolSummitSentinel from "../pool/summit-sentinel.js";
 import _poolTajuruBlightblade from "../pool/tajuru-blightblade.js";
@@ -243,6 +248,8 @@ import _tokensZombieToken from "../tokens/zombie-token.js";
 const shard: CardShard = {
   pool: [
     _poolAbradedBluffs,
+    _poolAbzanBattlePriest,
+    _poolAccessDenied,
     _poolAegisOfTheHeavens,
     _poolAetherSpellbomb,
     _poolAetherfluxReservoir,
@@ -285,6 +292,7 @@ const shard: CardShard = {
     _poolDuskshellCrawler,
     _poolEarthElemental,
     _poolEarthshakerDreadmaw,
+    _poolEdgarCharmedGroom,
     _poolEliteArrester,
     _poolElvishArchdruid,
     _poolElvishArchers,
@@ -380,6 +388,7 @@ const shard: CardShard = {
     _poolNorwoodRanger,
     _poolNoxiousToad,
     _poolObyrasAttendants,
+    _poolOmnathLocusOfTheRoil,
     _poolOpportunity,
     _poolOpt,
     _poolOrcSureshot,
@@ -432,6 +441,7 @@ const shard: CardShard = {
     _poolStaffOfDomination,
     _poolStaffOfTitania,
     _poolStockUp,
+    _poolStoneOfErech,
     _poolStrokeOfMidnight,
     _poolSummitSentinel,
     _poolTajuruBlightblade,

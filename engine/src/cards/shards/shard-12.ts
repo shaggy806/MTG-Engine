@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbaddonTheDespoiler from "../pool/abaddon-the-despoiler.js";
 import _poolAbandonedAirTemple from "../pool/abandoned-air-temple.js";
+import _poolAgentFrankHorrigan from "../pool/agent-frank-horrigan.js";
 import _poolAkoumRefuge from "../pool/akoum-refuge.js";
 import _poolAladdinsRing from "../pool/aladdins-ring.js";
 import _poolAncientDen from "../pool/ancient-den.js";
@@ -33,6 +34,7 @@ import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolCarrionFeeder from "../pool/carrion-feeder.js";
 import _poolCastleLocthwain from "../pool/castle-locthwain.js";
+import _poolChampionOfDusk from "../pool/champion-of-dusk.js";
 import _poolChocoSeekerOfParadise from "../pool/choco-seeker-of-paradise.js";
 import _poolChromeProwler from "../pool/chrome-prowler.js";
 import _poolCircuitousRoute from "../pool/circuitous-route.js";
@@ -121,6 +123,7 @@ import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
 import _poolMinesOfMoria from "../pool/mines-of-moria.js";
 import _poolMireTriton from "../pool/mire-triton.js";
+import _poolMishrasWorkshop from "../pool/mishras-workshop.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
 import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
 import _poolMutilate from "../pool/mutilate.js";
@@ -140,6 +143,7 @@ import _poolPendrellDrake from "../pool/pendrell-drake.js";
 import _poolPhyrexianReclamation from "../pool/phyrexian-reclamation.js";
 import _poolPinnacleMonk from "../pool/pinnacle-monk.js";
 import _poolPiracyCharm from "../pool/piracy-charm.js";
+import _poolPlagueBelcher from "../pool/plague-belcher.js";
 import _poolPortalToPhyrexia from "../pool/portal-to-phyrexia.js";
 import _poolPretendingPoxbearers from "../pool/pretending-poxbearers.js";
 import _poolProphetOfThePeak from "../pool/prophet-of-the-peak.js";
@@ -194,6 +198,7 @@ import _poolTheGreyHavens from "../pool/the-grey-havens.js";
 import _poolTheLordOfPain from "../pool/the-lord-of-pain.js";
 import _poolTheScarabGod from "../pool/the-scarab-god.js";
 import _poolThievingMagpie from "../pool/thieving-magpie.js";
+import _poolThirstForDiscovery from "../pool/thirst-for-discovery.js";
 import _poolThornspireVerge from "../pool/thornspire-verge.js";
 import _poolThrasiosTritonHero from "../pool/thrasios-triton-hero.js";
 import _poolThunderscapeApprentice from "../pool/thunderscape-apprentice.js";
@@ -232,6 +237,7 @@ const shard: CardShard = {
   pool: [
     _poolAbaddonTheDespoiler,
     _poolAbandonedAirTemple,
+    _poolAgentFrankHorrigan,
     _poolAkoumRefuge,
     _poolAladdinsRing,
     _poolAncientDen,
@@ -260,6 +266,7 @@ const shard: CardShard = {
     _poolBreathOfFire,
     _poolCarrionFeeder,
     _poolCastleLocthwain,
+    _poolChampionOfDusk,
     _poolChocoSeekerOfParadise,
     _poolChromeProwler,
     _poolCircuitousRoute,
@@ -348,6 +355,7 @@ const shard: CardShard = {
     _poolMindSculpt,
     _poolMinesOfMoria,
     _poolMireTriton,
+    _poolMishrasWorkshop,
     _poolMoltenBlast,
     _poolMurmuringMystic,
     _poolMutilate,
@@ -367,6 +375,7 @@ const shard: CardShard = {
     _poolPhyrexianReclamation,
     _poolPinnacleMonk,
     _poolPiracyCharm,
+    _poolPlagueBelcher,
     _poolPortalToPhyrexia,
     _poolPretendingPoxbearers,
     _poolProphetOfThePeak,
@@ -421,6 +430,7 @@ const shard: CardShard = {
     _poolTheLordOfPain,
     _poolTheScarabGod,
     _poolThievingMagpie,
+    _poolThirstForDiscovery,
     _poolThornspireVerge,
     _poolThrasiosTritonHero,
     _poolThunderscapeApprentice,

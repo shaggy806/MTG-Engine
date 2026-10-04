@@ -90,9 +90,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,836 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,930 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 3511 are triaged (batches 4–23);
+  engine features that block the most of the rest. Ranks through 3786 are triaged (batches 4–24);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -292,6 +292,14 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   with disturb (`castVia === "disturb"` in `game.ts`), so a copy of it (Clone) goes to the
   graveyard and a disturbed one that lost its abilities (Humility) is still exiled (rule 707.2).
   Hook-Haunt Drifter has it today; Lunarch Veteran waits on it.
+- **An additional-cost option is offered without checking its mana.** "As an additional cost,
+  sacrifice a creature or pay {3}{B}" (`additionalCost.options` with a mana branch) is listed as
+  castable when the total can't be paid, and taking it throws in `castSpell` — the fuzzer's
+  random players found it (Eaten Alive, pulled from the pool for it).
+- **A milled card is looked for only in the graveyard.** An effect that finds "the milled cards"
+  (`look-and-choose` over `zone: "graveyard"`) misses those a replacement sent to exile (Rest in
+  Peace, Dauthi Voidwalker), though rule 701.17c says it finds them in whatever public zone they
+  went to. Smuggler's Surprise and Ripples of Undeath have it today; Bramble Familiar waits on it.
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.

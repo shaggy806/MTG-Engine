@@ -85,6 +85,7 @@ import _poolFrostburnWeird from "../pool/frostburn-weird.js";
 import _poolFurnaceWhelp from "../pool/furnace-whelp.js";
 import _poolFyndhornBrownie from "../pool/fyndhorn-brownie.js";
 import _poolGalewindMoose from "../pool/galewind-moose.js";
+import _poolGarnaBloodfistOfKeld from "../pool/garna-bloodfist-of-keld.js";
 import _poolGiantsBoulder from "../pool/giants-boulder.js";
 import _poolGoblinBalloonBrigade from "../pool/goblin-balloon-brigade.js";
 import _poolGoblinPiker from "../pool/goblin-piker.js";
@@ -119,6 +120,7 @@ import _poolKrakenHatchling from "../pool/kraken-hatchling.js";
 import _poolKranioceros from "../pool/kranioceros.js";
 import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
 import _poolLegionLoyalty from "../pool/legion-loyalty.js";
+import _poolLightningHelix from "../pool/lightning-helix.js";
 import _poolLuminousBroodmoth from "../pool/luminous-broodmoth.js";
 import _poolMagmakinArtillerist from "../pool/magmakin-artillerist.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
@@ -321,6 +323,7 @@ const shard: CardShard = {
     _poolFurnaceWhelp,
     _poolFyndhornBrownie,
     _poolGalewindMoose,
+    _poolGarnaBloodfistOfKeld,
     _poolGiantsBoulder,
     _poolGoblinBalloonBrigade,
     _poolGoblinPiker,
@@ -355,6 +358,7 @@ const shard: CardShard = {
     _poolKranioceros,
     _poolKutzilMalametExemplar,
     _poolLegionLoyalty,
+    _poolLightningHelix,
     _poolLuminousBroodmoth,
     _poolMagmakinArtillerist,
     _poolMagusOfTheBazaar,

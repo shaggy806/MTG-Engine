@@ -189,6 +189,7 @@ import _poolSiegeRhino from "../pool/siege-rhino.js";
 import _poolSilentArtisan from "../pool/silent-artisan.js";
 import _poolSilundiIsle from "../pool/silundi-isle.js";
 import _poolSimplify from "../pool/simplify.js";
+import _poolSozinsComet from "../pool/sozins-comet.js";
 import _poolSpatialContortion from "../pool/spatial-contortion.js";
 import _poolSphinxOfEnlightenment from "../pool/sphinx-of-enlightenment.js";
 import _poolSpirebluffCanal from "../pool/spirebluff-canal.js";
@@ -440,6 +441,7 @@ const shard: CardShard = {
     _poolSilentArtisan,
     _poolSilundiIsle,
     _poolSimplify,
+    _poolSozinsComet,
     _poolSpatialContortion,
     _poolSphinxOfEnlightenment,
     _poolSpirebluffCanal,

@@ -469,13 +469,6 @@
       "tested": true
     },
     {
-      "name": "Eaten Alive",
-      "files": [
-        "engine/src/cards/pool/eaten-alive.ts"
-      ],
-      "tested": true
-    },
-    {
       "name": "Basim Ibn Ishaq",
       "files": [
         "engine/src/cards/pool/basim-ibn-ishaq.ts"
@@ -1418,6 +1411,13 @@
         "new:each-player-may-simultaneous-sacrifice"
       ],
       "why": "ruling: opponents choose in turn order then sacrifice simultaneously; each-player-may acts on each answer before asking the next"
+    },
+    {
+      "name": "Eaten Alive",
+      "needs": [
+        "new:additional-cost-option-affordability"
+      ],
+      "why": "Its \"pay {3}{B}\" additional-cost option is offered even when the mana can't be paid, and taking it throws (fuzzer seeds 4, 27, 31)."
     }
   ]
 }

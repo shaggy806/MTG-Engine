@@ -240,6 +240,7 @@ import _poolWizardsOfThay from "../pool/wizards-of-thay.js";
 import _poolZephyrBoots from "../pool/zephyr-boots.js";
 import _poolZodiacTiger from "../pool/zodiac-tiger.js";
 import _poolZulAshurLichLord from "../pool/zul-ashur-lich-lord.js";
+import _tokensBearToken from "../tokens/bear-token.js";
 import _tokensDragonSpiritToken from "../tokens/dragon-spirit-token.js";
 import _tokensGreenCatToken11 from "../tokens/green-cat-token-1-1.js";
 import _tokensMyrToken from "../tokens/myr-token.js";
@@ -485,6 +486,7 @@ const shard: CardShard = {
     _poolZulAshurLichLord,
   ],
   tokens: [
+    _tokensBearToken,
     _tokensDragonSpiritToken,
     _tokensGreenCatToken11,
     _tokensMyrToken,

@@ -12,6 +12,7 @@ import _poolAncientCarp from "../pool/ancient-carp.js";
 import _poolAncientCrab from "../pool/ancient-crab.js";
 import _poolAngelOfDespair from "../pool/angel-of-despair.js";
 import _poolAnuridMurkdiver from "../pool/anurid-murkdiver.js";
+import _poolArcboundRavager from "../pool/arcbound-ravager.js";
 import _poolArchaeomender from "../pool/archaeomender.js";
 import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
@@ -57,6 +58,7 @@ import _poolDispatch from "../pool/dispatch.js";
 import _poolDivineTransformation from "../pool/divine-transformation.js";
 import _poolDivineVerdict from "../pool/divine-verdict.js";
 import _poolDranaLiberatorOfMalakir from "../pool/drana-liberator-of-malakir.js";
+import _poolDreadSummons from "../pool/dread-summons.js";
 import _poolEarthquakeDragon from "../pool/earthquake-dragon.js";
 import _poolEidolonOfPhilosophy from "../pool/eidolon-of-philosophy.js";
 import _poolElvishRegrower from "../pool/elvish-regrower.js";
@@ -282,6 +284,7 @@ const shard: CardShard = {
     _poolAncientCrab,
     _poolAngelOfDespair,
     _poolAnuridMurkdiver,
+    _poolArcboundRavager,
     _poolArchaeomender,
     _poolArmsDealer,
     _poolAttrition,
@@ -327,6 +330,7 @@ const shard: CardShard = {
     _poolDivineTransformation,
     _poolDivineVerdict,
     _poolDranaLiberatorOfMalakir,
+    _poolDreadSummons,
     _poolEarthquakeDragon,
     _poolEidolonOfPhilosophy,
     _poolElvishRegrower,

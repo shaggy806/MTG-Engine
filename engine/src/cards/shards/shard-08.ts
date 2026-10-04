@@ -76,6 +76,7 @@ import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
 import _poolFireUrchin from "../pool/fire-urchin.js";
+import _poolFlickACoin from "../pool/flick-a-coin.js";
 import _poolForensicGadgeteer from "../pool/forensic-gadgeteer.js";
 import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
@@ -181,6 +182,7 @@ import _poolSoulShred from "../pool/soul-shred.js";
 import _poolSphereGrid from "../pool/sphere-grid.js";
 import _poolSpiritOfMalevolence from "../pool/spirit-of-malevolence.js";
 import _poolSplashPortal from "../pool/splash-portal.js";
+import _poolStockingThePantry from "../pool/stocking-the-pantry.js";
 import _poolSulfurousMire from "../pool/sulfurous-mire.js";
 import _poolSyphonFuel from "../pool/syphon-fuel.js";
 import _poolTalasWarrior from "../pool/talas-warrior.js";
@@ -305,6 +307,7 @@ const shard: CardShard = {
     _poolFerociousCharge,
     _poolFireDrake,
     _poolFireUrchin,
+    _poolFlickACoin,
     _poolForensicGadgeteer,
     _poolFoundationBreaker,
     _poolFrostOgre,
@@ -410,6 +413,7 @@ const shard: CardShard = {
     _poolSphereGrid,
     _poolSpiritOfMalevolence,
     _poolSplashPortal,
+    _poolStockingThePantry,
     _poolSulfurousMire,
     _poolSyphonFuel,
     _poolTalasWarrior,

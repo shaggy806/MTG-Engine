@@ -138,6 +138,7 @@ import _poolPharikasMender from "../pool/pharikas-mender.js";
 import _poolPhyrexianArena from "../pool/phyrexian-arena.js";
 import _poolPhyrexianDenouncer from "../pool/phyrexian-denouncer.js";
 import _poolPlagueBeetle from "../pool/plague-beetle.js";
+import _poolPollutedBonds from "../pool/polluted-bonds.js";
 import _poolPollywogProdigy from "../pool/pollywog-prodigy.js";
 import _poolPrimalFrenzy from "../pool/primal-frenzy.js";
 import _poolPrismaticVista from "../pool/prismatic-vista.js";
@@ -158,10 +159,12 @@ import _poolRowanTreefolk from "../pool/rowan-treefolk.js";
 import _poolSandbarMerfolk from "../pool/sandbar-merfolk.js";
 import _poolSavageGorilla from "../pool/savage-gorilla.js";
 import _poolSawInHalf from "../pool/saw-in-half.js";
+import _poolScaledNurturer from "../pool/scaled-nurturer.js";
 import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
 import _poolScionOfCalamity from "../pool/scion-of-calamity.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
+import _poolSecretsOfTheDead from "../pool/secrets-of-the-dead.js";
 import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
 import _poolSelflessSavior from "../pool/selfless-savior.js";
 import _poolSetessanChampion from "../pool/setessan-champion.js";
@@ -369,6 +372,7 @@ const shard: CardShard = {
     _poolPhyrexianArena,
     _poolPhyrexianDenouncer,
     _poolPlagueBeetle,
+    _poolPollutedBonds,
     _poolPollywogProdigy,
     _poolPrimalFrenzy,
     _poolPrismaticVista,
@@ -389,10 +393,12 @@ const shard: CardShard = {
     _poolSandbarMerfolk,
     _poolSavageGorilla,
     _poolSawInHalf,
+    _poolScaledNurturer,
     _poolScepterOfInsight,
     _poolScionOfCalamity,
     _poolScorchingSpear,
     _poolSearstepPathway,
+    _poolSecretsOfTheDead,
     _poolSecureTheWastes,
     _poolSelflessSavior,
     _poolSetessanChampion,

@@ -31,6 +31,7 @@ import _poolCleverImpersonator from "../pool/clever-impersonator.js";
 import _poolCodieVociferousCodex from "../pool/codie-vociferous-codex.js";
 import _poolColorfulFeiyiSparrow from "../pool/colorful-feiyi-sparrow.js";
 import _poolCoralBarrier from "../pool/coral-barrier.js";
+import _poolCoriMountainMonastery from "../pool/cori-mountain-monastery.js";
 import _poolCravenKnight from "../pool/craven-knight.js";
 import _poolCrumblingVestige from "../pool/crumbling-vestige.js";
 import _poolDamn from "../pool/damn.js";
@@ -79,11 +80,14 @@ import _poolHedronRover from "../pool/hedron-rover.js";
 import _poolHeliodTheWarpedEclipse from "../pool/heliod-the-warped-eclipse.js";
 import _poolHenzieToolboxTorre from "../pool/henzie-toolbox-torre.js";
 import _poolHeraldOfSecretStreams from "../pool/herald-of-secret-streams.js";
+import _poolHiddenHideout from "../pool/hidden-hideout.js";
+import _poolHiddenNursery from "../pool/hidden-nursery.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
 import _poolHulkingBugbear from "../pool/hulking-bugbear.js";
 import _poolHuntersInsight from "../pool/hunters-insight.js";
 import _poolHurloonMinotaur from "../pool/hurloon-minotaur.js";
 import _poolIcecaveCrasher from "../pool/icecave-crasher.js";
+import _poolIdolized from "../pool/idolized.js";
 import _poolImotekhTheStormlord from "../pool/imotekh-the-stormlord.js";
 import _poolImotiCelebrantOfBounty from "../pool/imoti-celebrant-of-bounty.js";
 import _poolImperialCeratops from "../pool/imperial-ceratops.js";
@@ -103,6 +107,7 @@ import _poolLonelySandbar from "../pool/lonely-sandbar.js";
 import _poolMaelstromOfTheSpiritDragon from "../pool/maelstrom-of-the-spirit-dragon.js";
 import _poolMagesGuile from "../pool/mages-guile.js";
 import _poolMagmaticForce from "../pool/magmatic-force.js";
+import _poolMalakirBloodwitch from "../pool/malakir-bloodwitch.js";
 import _poolManorGate from "../pool/manor-gate.js";
 import _poolMantisEngine from "../pool/mantis-engine.js";
 import _poolMemorialToGenius from "../pool/memorial-to-genius.js";
@@ -138,6 +143,7 @@ import _poolReignOfThePit from "../pool/reign-of-the-pit.js";
 import _poolRelicOfSauron from "../pool/relic-of-sauron.js";
 import _poolRenegadeDemon from "../pool/renegade-demon.js";
 import _poolReprieve from "../pool/reprieve.js";
+import _poolRepurposingBay from "../pool/repurposing-bay.js";
 import _poolRevivingMelody from "../pool/reviving-melody.js";
 import _poolRiverSneak from "../pool/river-sneak.js";
 import _poolRuinsOfTrokair from "../pool/ruins-of-trokair.js";
@@ -188,6 +194,7 @@ import _poolTheUrDragon from "../pool/the-ur-dragon.js";
 import _poolThoughtCourier from "../pool/thought-courier.js";
 import _poolThrottle from "../pool/throttle.js";
 import _poolTorWauki from "../pool/tor-wauki.js";
+import _poolTormodTheDesecrator from "../pool/tormod-the-desecrator.js";
 import _poolTuknirDeathlock from "../pool/tuknir-deathlock.js";
 import _poolTymnaTheWeaver from "../pool/tymna-the-weaver.js";
 import _poolUnderseaInvader from "../pool/undersea-invader.js";
@@ -242,6 +249,7 @@ const shard: CardShard = {
     _poolCodieVociferousCodex,
     _poolColorfulFeiyiSparrow,
     _poolCoralBarrier,
+    _poolCoriMountainMonastery,
     _poolCravenKnight,
     _poolCrumblingVestige,
     _poolDamn,
@@ -290,11 +298,14 @@ const shard: CardShard = {
     _poolHeliodTheWarpedEclipse,
     _poolHenzieToolboxTorre,
     _poolHeraldOfSecretStreams,
+    _poolHiddenHideout,
+    _poolHiddenNursery,
     _poolHithlainKnots,
     _poolHulkingBugbear,
     _poolHuntersInsight,
     _poolHurloonMinotaur,
     _poolIcecaveCrasher,
+    _poolIdolized,
     _poolImotekhTheStormlord,
     _poolImotiCelebrantOfBounty,
     _poolImperialCeratops,
@@ -314,6 +325,7 @@ const shard: CardShard = {
     _poolMaelstromOfTheSpiritDragon,
     _poolMagesGuile,
     _poolMagmaticForce,
+    _poolMalakirBloodwitch,
     _poolManorGate,
     _poolMantisEngine,
     _poolMemorialToGenius,
@@ -349,6 +361,7 @@ const shard: CardShard = {
     _poolRelicOfSauron,
     _poolRenegadeDemon,
     _poolReprieve,
+    _poolRepurposingBay,
     _poolRevivingMelody,
     _poolRiverSneak,
     _poolRuinsOfTrokair,
@@ -399,6 +412,7 @@ const shard: CardShard = {
     _poolThoughtCourier,
     _poolThrottle,
     _poolTorWauki,
+    _poolTormodTheDesecrator,
     _poolTuknirDeathlock,
     _poolTymnaTheWeaver,
     _poolUnderseaInvader,

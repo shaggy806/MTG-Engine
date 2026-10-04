@@ -7,6 +7,7 @@ import _poolAeronautsWings from "../pool/aeronauts-wings.js";
 import _poolAgeGracedChapel from "../pool/age-graced-chapel.js";
 import _poolAgnaQela from "../pool/agna-qela.js";
 import _poolAjanisWelcome from "../pool/ajanis-welcome.js";
+import _poolAndTheyShallKnowNoFear from "../pool/and-they-shall-know-no-fear.js";
 import _poolAntManScottLang from "../pool/ant-man-scott-lang.js";
 import _poolArborealGrazer from "../pool/arboreal-grazer.js";
 import _poolArchaeomancer from "../pool/archaeomancer.js";
@@ -38,6 +39,7 @@ import _poolBrushland from "../pool/brushland.js";
 import _poolBurnishedHart from "../pool/burnished-hart.js";
 import _poolBuzzBots from "../pool/buzz-bots.js";
 import _poolCapashenUnicorn from "../pool/capashen-unicorn.js";
+import _poolCaptivatingCrew from "../pool/captivating-crew.js";
 import _poolCaptiveFlame from "../pool/captive-flame.js";
 import _poolCarefulStudy from "../pool/careful-study.js";
 import _poolCatWarriors from "../pool/cat-warriors.js";
@@ -116,6 +118,7 @@ import _poolHazezonShaperOfSand from "../pool/hazezon-shaper-of-sand.js";
 import _poolHeartOfRamos from "../pool/heart-of-ramos.js";
 import _poolHeartlessHidetsugu from "../pool/heartless-hidetsugu.js";
 import _poolHeraldOfThePantheon from "../pool/herald-of-the-pantheon.js";
+import _poolHexplateWallbreaker from "../pool/hexplate-wallbreaker.js";
 import _poolHistoryOfBenalia from "../pool/history-of-benalia.js";
 import _poolHoarShade from "../pool/hoar-shade.js";
 import _poolHollowScavenger from "../pool/hollow-scavenger.js";
@@ -213,6 +216,7 @@ import _poolUrzasCave from "../pool/urzas-cave.js";
 import _poolUrzasIncubator from "../pool/urzas-incubator.js";
 import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
 import _poolVeteranArmorsmith from "../pool/veteran-armorsmith.js";
+import _poolVillageBellRinger from "../pool/village-bell-ringer.js";
 import _poolVoldarenEstate from "../pool/voldaren-estate.js";
 import _poolWakestoneGargoyle from "../pool/wakestone-gargoyle.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
@@ -241,6 +245,7 @@ const shard: CardShard = {
     _poolAgeGracedChapel,
     _poolAgnaQela,
     _poolAjanisWelcome,
+    _poolAndTheyShallKnowNoFear,
     _poolAntManScottLang,
     _poolArborealGrazer,
     _poolArchaeomancer,
@@ -272,6 +277,7 @@ const shard: CardShard = {
     _poolBurnishedHart,
     _poolBuzzBots,
     _poolCapashenUnicorn,
+    _poolCaptivatingCrew,
     _poolCaptiveFlame,
     _poolCarefulStudy,
     _poolCatWarriors,
@@ -350,6 +356,7 @@ const shard: CardShard = {
     _poolHeartOfRamos,
     _poolHeartlessHidetsugu,
     _poolHeraldOfThePantheon,
+    _poolHexplateWallbreaker,
     _poolHistoryOfBenalia,
     _poolHoarShade,
     _poolHollowScavenger,
@@ -447,6 +454,7 @@ const shard: CardShard = {
     _poolUrzasIncubator,
     _poolVampireNighthawk,
     _poolVeteranArmorsmith,
+    _poolVillageBellRinger,
     _poolVoldarenEstate,
     _poolWakestoneGargoyle,
     _poolWalkingBallista,

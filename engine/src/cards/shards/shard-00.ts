@@ -22,6 +22,7 @@ import _poolBasaltMonolith from "../pool/basalt-monolith.js";
 import _poolBatheInGold from "../pool/bathe-in-gold.js";
 import _poolBeastAttack from "../pool/beast-attack.js";
 import _poolBigfinBouncer from "../pool/bigfin-bouncer.js";
+import _poolBladewingTheRisen from "../pool/bladewing-the-risen.js";
 import _poolBlindObedience from "../pool/blind-obedience.js";
 import _poolBlowflyInfestation from "../pool/blowfly-infestation.js";
 import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
@@ -165,6 +166,7 @@ import _poolReleaseTheDogs from "../pool/release-the-dogs.js";
 import _poolReliquaryMonk from "../pool/reliquary-monk.js";
 import _poolReliquaryTower from "../pool/reliquary-tower.js";
 import _poolRevelInRiches from "../pool/revel-in-riches.js";
+import _poolRideTheShoopuf from "../pool/ride-the-shoopuf.js";
 import _poolRiotPiker from "../pool/riot-piker.js";
 import _poolRocOfKherRidges from "../pool/roc-of-kher-ridges.js";
 import _poolRoxanneStarfallSavant from "../pool/roxanne-starfall-savant.js";
@@ -268,6 +270,7 @@ const shard: CardShard = {
     _poolBatheInGold,
     _poolBeastAttack,
     _poolBigfinBouncer,
+    _poolBladewingTheRisen,
     _poolBlindObedience,
     _poolBlowflyInfestation,
     _poolBootsOfSpeed,
@@ -411,6 +414,7 @@ const shard: CardShard = {
     _poolReliquaryMonk,
     _poolReliquaryTower,
     _poolRevelInRiches,
+    _poolRideTheShoopuf,
     _poolRiotPiker,
     _poolRocOfKherRidges,
     _poolRoxanneStarfallSavant,

@@ -11,6 +11,7 @@ import _poolAnheloThePainter from "../pool/anhelo-the-painter.js";
 import _poolAnkleBiter from "../pool/ankle-biter.js";
 import _poolAshlingTheLimitless from "../pool/ashling-the-limitless.js";
 import _poolAtarkaMonument from "../pool/atarka-monument.js";
+import _poolAuroralProcession from "../pool/auroral-procession.js";
 import _poolAvenSkirmisher from "../pool/aven-skirmisher.js";
 import _poolAviationPioneer from "../pool/aviation-pioneer.js";
 import _poolBaelothBarritylEntertainer from "../pool/baeloth-barrityl-entertainer.js";
@@ -18,6 +19,7 @@ import _poolBaronyVampire from "../pool/barony-vampire.js";
 import _poolBarrinMasterWizard from "../pool/barrin-master-wizard.js";
 import _poolBashToBits from "../pool/bash-to-bits.js";
 import _poolBattlewandOak from "../pool/battlewand-oak.js";
+import _poolBedrockTortoise from "../pool/bedrock-tortoise.js";
 import _poolBiliousSkulldweller from "../pool/bilious-skulldweller.js";
 import _poolBlackSunsZenith from "../pool/black-suns-zenith.js";
 import _poolBlackWaltzNo3 from "../pool/black-waltz-no-3.js";
@@ -31,6 +33,7 @@ import _poolBonebreakerGiant from "../pool/bonebreaker-giant.js";
 import _poolBoulderbornDragon from "../pool/boulderborn-dragon.js";
 import _poolBraingeyser from "../pool/braingeyser.js";
 import _poolBrainstorm from "../pool/brainstorm.js";
+import _poolBristlingBackwoods from "../pool/bristling-backwoods.js";
 import _poolCarnageTyrant from "../pool/carnage-tyrant.js";
 import _poolCelestialPrism from "../pool/celestial-prism.js";
 import _poolChainersEdict from "../pool/chainers-edict.js";
@@ -173,6 +176,7 @@ import _poolSarkhansTriumph from "../pool/sarkhans-triumph.js";
 import _poolScarbladeScout from "../pool/scarblade-scout.js";
 import _poolScatteredGroves from "../pool/scattered-groves.js";
 import _poolSeafloorOracle from "../pool/seafloor-oracle.js";
+import _poolSeizanPerverterOfTruth from "../pool/seizan-perverter-of-truth.js";
 import _poolSeizeTheDay from "../pool/seize-the-day.js";
 import _poolShadowRift from "../pool/shadow-rift.js";
 import _poolShadowyBackstreet from "../pool/shadowy-backstreet.js";
@@ -250,6 +254,7 @@ const shard: CardShard = {
     _poolAnkleBiter,
     _poolAshlingTheLimitless,
     _poolAtarkaMonument,
+    _poolAuroralProcession,
     _poolAvenSkirmisher,
     _poolAviationPioneer,
     _poolBaelothBarritylEntertainer,
@@ -257,6 +262,7 @@ const shard: CardShard = {
     _poolBarrinMasterWizard,
     _poolBashToBits,
     _poolBattlewandOak,
+    _poolBedrockTortoise,
     _poolBiliousSkulldweller,
     _poolBlackSunsZenith,
     _poolBlackWaltzNo3,
@@ -270,6 +276,7 @@ const shard: CardShard = {
     _poolBoulderbornDragon,
     _poolBraingeyser,
     _poolBrainstorm,
+    _poolBristlingBackwoods,
     _poolCarnageTyrant,
     _poolCelestialPrism,
     _poolChainersEdict,
@@ -412,6 +419,7 @@ const shard: CardShard = {
     _poolScarbladeScout,
     _poolScatteredGroves,
     _poolSeafloorOracle,
+    _poolSeizanPerverterOfTruth,
     _poolSeizeTheDay,
     _poolShadowRift,
     _poolShadowyBackstreet,

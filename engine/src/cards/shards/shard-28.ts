@@ -17,6 +17,7 @@ import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
 import _poolAnnieJoinsUp from "../pool/annie-joins-up.js";
 import _poolArachnoid from "../pool/arachnoid.js";
+import _poolArbaazMir from "../pool/arbaaz-mir.js";
 import _poolArgothianSwine from "../pool/argothian-swine.js";
 import _poolAtalanJackal from "../pool/atalan-jackal.js";
 import _poolAxgardCavalry from "../pool/axgard-cavalry.js";
@@ -93,6 +94,7 @@ import _poolHiredPoisoner from "../pool/hired-poisoner.js";
 import _poolHorizonCanopy from "../pool/horizon-canopy.js";
 import _poolHulkBrutalBrawler from "../pool/hulk-brutal-brawler.js";
 import _poolImpeccableTiming from "../pool/impeccable-timing.js";
+import _poolInfiltrationLens from "../pool/infiltration-lens.js";
 import _poolIngaAndEsika from "../pool/inga-and-esika.js";
 import _poolIridescentVinelasher from "../pool/iridescent-vinelasher.js";
 import _poolIrohsDemonstration from "../pool/irohs-demonstration.js";
@@ -245,6 +247,7 @@ const shard: CardShard = {
     _poolAnimPakalThousandthMoon,
     _poolAnnieJoinsUp,
     _poolArachnoid,
+    _poolArbaazMir,
     _poolArgothianSwine,
     _poolAtalanJackal,
     _poolAxgardCavalry,
@@ -321,6 +324,7 @@ const shard: CardShard = {
     _poolHorizonCanopy,
     _poolHulkBrutalBrawler,
     _poolImpeccableTiming,
+    _poolInfiltrationLens,
     _poolIngaAndEsika,
     _poolIridescentVinelasher,
     _poolIrohsDemonstration,

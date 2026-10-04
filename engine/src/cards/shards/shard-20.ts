@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbandonAttachments from "../pool/abandon-attachments.js";
 import _poolAbdelAdrianGorionsWard from "../pool/abdel-adrian-gorions-ward.js";
 import _poolActOfTreason from "../pool/act-of-treason.js";
 import _poolAetherChanneler from "../pool/aether-channeler.js";
@@ -48,6 +49,7 @@ import _poolCanopyVista from "../pool/canopy-vista.js";
 import _poolChainDevil from "../pool/chain-devil.js";
 import _poolChakramSlinger from "../pool/chakram-slinger.js";
 import _poolCobblebrute from "../pool/cobblebrute.js";
+import _poolCoerciveRecruiter from "../pool/coercive-recruiter.js";
 import _poolCoilAndCatch from "../pool/coil-and-catch.js";
 import _poolCoiledTinviper from "../pool/coiled-tinviper.js";
 import _poolColosYearling from "../pool/colos-yearling.js";
@@ -56,6 +58,7 @@ import _poolCopperMyr from "../pool/copper-myr.js";
 import _poolCoralMerfolk from "../pool/coral-merfolk.js";
 import _poolCoverOfDarkness from "../pool/cover-of-darkness.js";
 import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
+import _poolCrosswayTroublemakers from "../pool/crossway-troublemakers.js";
 import _poolDauthiVoidwalker from "../pool/dauthi-voidwalker.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
@@ -88,6 +91,7 @@ import _poolGoblinFireslinger from "../pool/goblin-fireslinger.js";
 import _poolGoblinGardener from "../pool/goblin-gardener.js";
 import _poolGolgariSignet from "../pool/golgari-signet.js";
 import _poolGoliathSpider from "../pool/goliath-spider.js";
+import _poolGoodFortuneUnicorn from "../pool/good-fortune-unicorn.js";
 import _poolGravedigger from "../pool/gravedigger.js";
 import _poolGrazilaxxIllithidScholar from "../pool/grazilaxx-illithid-scholar.js";
 import _poolGrimDiscovery from "../pool/grim-discovery.js";
@@ -102,6 +106,7 @@ import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolImpulse from "../pool/impulse.js";
+import _poolItllQuenchYa from "../pool/itll-quench-ya.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
 import _poolJaxisTheTroublemaker from "../pool/jaxis-the-troublemaker.js";
@@ -145,6 +150,7 @@ import _poolOverwhelmingInstinct from "../pool/overwhelming-instinct.js";
 import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
 import _poolPincherBeetles from "../pool/pincher-beetles.js";
 import _poolPristineTalisman from "../pool/pristine-talisman.js";
+import _poolPutridGoblin from "../pool/putrid-goblin.js";
 import _poolQuagmireDruid from "../pool/quagmire-druid.js";
 import _poolQueensCommission from "../pool/queens-commission.js";
 import _poolQuintoriusHistoryChaser from "../pool/quintorius-history-chaser.js";
@@ -231,6 +237,7 @@ import _tokensTarmogoyfToken from "../tokens/tarmogoyf-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbandonAttachments,
     _poolAbdelAdrianGorionsWard,
     _poolActOfTreason,
     _poolAetherChanneler,
@@ -276,6 +283,7 @@ const shard: CardShard = {
     _poolChainDevil,
     _poolChakramSlinger,
     _poolCobblebrute,
+    _poolCoerciveRecruiter,
     _poolCoilAndCatch,
     _poolCoiledTinviper,
     _poolColosYearling,
@@ -284,6 +292,7 @@ const shard: CardShard = {
     _poolCoralMerfolk,
     _poolCoverOfDarkness,
     _poolCrashOfRhinos,
+    _poolCrosswayTroublemakers,
     _poolDauthiVoidwalker,
     _poolDeadlyInsect,
     _poolDeadlyRollick,
@@ -316,6 +325,7 @@ const shard: CardShard = {
     _poolGoblinGardener,
     _poolGolgariSignet,
     _poolGoliathSpider,
+    _poolGoodFortuneUnicorn,
     _poolGravedigger,
     _poolGrazilaxxIllithidScholar,
     _poolGrimDiscovery,
@@ -330,6 +340,7 @@ const shard: CardShard = {
     _poolHulkingOgre,
     _poolIllusionistsBracers,
     _poolImpulse,
+    _poolItllQuenchYa,
     _poolIzzetBoilerworks,
     _poolJackhammer,
     _poolJaxisTheTroublemaker,
@@ -373,6 +384,7 @@ const shard: CardShard = {
     _poolPhyrexianTower,
     _poolPincherBeetles,
     _poolPristineTalisman,
+    _poolPutridGoblin,
     _poolQuagmireDruid,
     _poolQueensCommission,
     _poolQuintoriusHistoryChaser,
