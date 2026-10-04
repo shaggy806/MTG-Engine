@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAangAtTheCrossroads from "../pool/aang-at-the-crossroads.js";
+import _poolAbueloAncestralEcho from "../pool/abuelo-ancestral-echo.js";
 import _poolAlpineWatchdog from "../pool/alpine-watchdog.js";
 import _poolArachnogenesis from "../pool/arachnogenesis.js";
 import _poolArahboTheFirstFang from "../pool/arahbo-the-first-fang.js";
@@ -57,6 +58,7 @@ import _poolDjeruAndHazoret from "../pool/djeru-and-hazoret.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
 import _poolDuskLegionZealot from "../pool/dusk-legion-zealot.js";
 import _poolElanorGardner from "../pool/elanor-gardner.js";
+import _poolElvenFarsight from "../pool/elven-farsight.js";
 import _poolElvishDoomsayer from "../pool/elvish-doomsayer.js";
 import _poolEmmessiTome from "../pool/emmessi-tome.js";
 import _poolEmperorMihailIi from "../pool/emperor-mihail-ii.js";
@@ -97,6 +99,7 @@ import _poolHengegatePathway from "../pool/hengegate-pathway.js";
 import _poolHighPriestOfPenance from "../pool/high-priest-of-penance.js";
 import _poolHighlandForest from "../pool/highland-forest.js";
 import _poolHillcomberGiant from "../pool/hillcomber-giant.js";
+import _poolHolyDay from "../pool/holy-day.js";
 import _poolHoneyMammoth from "../pool/honey-mammoth.js";
 import _poolHugsGrislyGuardian from "../pool/hugs-grisly-guardian.js";
 import _poolIlysianCaryatid from "../pool/ilysian-caryatid.js";
@@ -175,6 +178,7 @@ import _poolSculptingSteel from "../pool/sculpting-steel.js";
 import _poolSeethingSong from "../pool/seething-song.js";
 import _poolSelesnyaLocket from "../pool/selesnya-locket.js";
 import _poolSeparatistVoidmage from "../pool/separatist-voidmage.js";
+import _poolShamblingVent from "../pool/shambling-vent.js";
 import _poolShieldMate from "../pool/shield-mate.js";
 import _poolShieldSphere from "../pool/shield-sphere.js";
 import _poolShigekiJukaiVisionary from "../pool/shigeki-jukai-visionary.js";
@@ -184,6 +188,7 @@ import _poolSkyRuinDrake from "../pool/sky-ruin-drake.js";
 import _poolSlinkingSerpent from "../pool/slinking-serpent.js";
 import _poolSolphimMayhemDominus from "../pool/solphim-mayhem-dominus.js";
 import _poolSomberwaldSage from "../pool/somberwald-sage.js";
+import _poolSouthWindAvatar from "../pool/south-wind-avatar.js";
 import _poolSpikedBaloth from "../pool/spiked-baloth.js";
 import _poolSpringleafParade from "../pool/springleaf-parade.js";
 import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
@@ -234,14 +239,17 @@ import _poolWaterloggedGrove from "../pool/waterlogged-grove.js";
 import _poolWeightOfMemory from "../pool/weight-of-memory.js";
 import _poolWeldfastMonitor from "../pool/weldfast-monitor.js";
 import _poolWillOfTheSultai from "../pool/will-of-the-sultai.js";
+import _tokensBirdTokenGwaihirGreatestOfTheEagles from "../tokens/bird-token-gwaihir-greatest-of-the-eagles.js";
 import _tokensConstructTokenJanJansenChaosCrafter from "../tokens/construct-token-jan-jansen-chaos-crafter.js";
 import _tokensMoogleToken from "../tokens/moogle-token.js";
 import _tokensPhyrexianGoblinToken from "../tokens/phyrexian-goblin-token.js";
 import _tokensPlantWarriorToken from "../tokens/plant-warrior-token.js";
+import _tokensRagavanToken from "../tokens/ragavan-token.js";
 
 const shard: CardShard = {
   pool: [
     _poolAangAtTheCrossroads,
+    _poolAbueloAncestralEcho,
     _poolAlpineWatchdog,
     _poolArachnogenesis,
     _poolArahboTheFirstFang,
@@ -295,6 +303,7 @@ const shard: CardShard = {
     _poolDranasChosen,
     _poolDuskLegionZealot,
     _poolElanorGardner,
+    _poolElvenFarsight,
     _poolElvishDoomsayer,
     _poolEmmessiTome,
     _poolEmperorMihailIi,
@@ -335,6 +344,7 @@ const shard: CardShard = {
     _poolHighPriestOfPenance,
     _poolHighlandForest,
     _poolHillcomberGiant,
+    _poolHolyDay,
     _poolHoneyMammoth,
     _poolHugsGrislyGuardian,
     _poolIlysianCaryatid,
@@ -413,6 +423,7 @@ const shard: CardShard = {
     _poolSeethingSong,
     _poolSelesnyaLocket,
     _poolSeparatistVoidmage,
+    _poolShamblingVent,
     _poolShieldMate,
     _poolShieldSphere,
     _poolShigekiJukaiVisionary,
@@ -422,6 +433,7 @@ const shard: CardShard = {
     _poolSlinkingSerpent,
     _poolSolphimMayhemDominus,
     _poolSomberwaldSage,
+    _poolSouthWindAvatar,
     _poolSpikedBaloth,
     _poolSpringleafParade,
     _poolStampedingScurryfoot,
@@ -474,10 +486,12 @@ const shard: CardShard = {
     _poolWillOfTheSultai,
   ],
   tokens: [
+    _tokensBirdTokenGwaihirGreatestOfTheEagles,
     _tokensConstructTokenJanJansenChaosCrafter,
     _tokensMoogleToken,
     _tokensPhyrexianGoblinToken,
     _tokensPlantWarriorToken,
+    _tokensRagavanToken,
   ],
 };
 

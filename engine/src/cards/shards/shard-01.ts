@@ -152,6 +152,7 @@ import _poolRadstorm from "../pool/radstorm.js";
 import _poolRakdosCarnarium from "../pool/rakdos-carnarium.js";
 import _poolRakdosJoinsUp from "../pool/rakdos-joins-up.js";
 import _poolReaperKing from "../pool/reaper-king.js";
+import _poolReconstructHistory from "../pool/reconstruct-history.js";
 import _poolRedwoodTreefolk from "../pool/redwood-treefolk.js";
 import _poolRemnantElemental from "../pool/remnant-elemental.js";
 import _poolRepercussion from "../pool/repercussion.js";
@@ -387,6 +388,7 @@ const shard: CardShard = {
     _poolRakdosCarnarium,
     _poolRakdosJoinsUp,
     _poolReaperKing,
+    _poolReconstructHistory,
     _poolRedwoodTreefolk,
     _poolRemnantElemental,
     _poolRepercussion,

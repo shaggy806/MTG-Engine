@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B32) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B33) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -367,7 +367,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 32 (2026-10-04, the no-engine-work pass)** triaged ranks 5491–5728: 95 authored (Earthbending Student, Serah Farron, Squirming Emergence, Honden of Cleansing Fire, United Front and 90 more — `top5000-batch-32a`–`h.test.ts`); 105 blocked (`B32.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (5), `effect:choices-by-other-players` (2), `mechanic:mutate` (2), `effect:put-onto-battlefield-options` (2), `mechanic:the-ring` (2).
 
-Past rank 5728, nothing is triaged.
+- **Batch 33 (2026-10-04, the no-engine-work pass)** triaged ranks 5729–5968: 109 authored (Steel Seraph, Angelic Chorus, The Seedcore, Rite of Passage, Legolas Greenleaf and 104 more — `top5000-batch-33a`–`h.test.ts`); 91 blocked (`B33.json`), each skipped at the first sign of engine work. Most-cited blockers: `mechanic:dungeon` (4), `replacement:damage-modification` (3), `mechanic:face-down` (3), `new:unverified-in-mass-pass` (3), `effect:choices-by-other-players` (2).
+
+Past rank 5968, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

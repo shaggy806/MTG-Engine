@@ -125,6 +125,7 @@ import _poolMemorialToGenius from "../pool/memorial-to-genius.js";
 import _poolMessengersSpeed from "../pool/messengers-speed.js";
 import _poolMistLeopard from "../pool/mist-leopard.js";
 import _poolMistvaultBridge from "../pool/mistvault-bridge.js";
+import _poolMomentsPeace from "../pool/moments-peace.js";
 import _poolMorgueTheft from "../pool/morgue-theft.js";
 import _poolMulldrifter from "../pool/mulldrifter.js";
 import _poolNaturesSpiral from "../pool/natures-spiral.js";
@@ -160,6 +161,7 @@ import _poolRelicOfSauron from "../pool/relic-of-sauron.js";
 import _poolRenegadeDemon from "../pool/renegade-demon.js";
 import _poolReprieve from "../pool/reprieve.js";
 import _poolRepurposingBay from "../pool/repurposing-bay.js";
+import _poolRestlessVinestalk from "../pool/restless-vinestalk.js";
 import _poolRevivingMelody from "../pool/reviving-melody.js";
 import _poolRiverSneak from "../pool/river-sneak.js";
 import _poolRuinsOfTrokair from "../pool/ruins-of-trokair.js";
@@ -194,6 +196,7 @@ import _poolSpottedGriffin from "../pool/spotted-griffin.js";
 import _poolStalwartShieldBearers from "../pool/stalwart-shield-bearers.js";
 import _poolStarnheimCourser from "../pool/starnheim-courser.js";
 import _poolSteadfastness from "../pool/steadfastness.js";
+import _poolSteelSeraph from "../pool/steel-seraph.js";
 import _poolStingingBarrier from "../pool/stinging-barrier.js";
 import _poolStolenGrain from "../pool/stolen-grain.js";
 import _poolStormFleetSprinter from "../pool/storm-fleet-sprinter.js";
@@ -230,6 +233,7 @@ import _poolWallOfIce from "../pool/wall-of-ice.js";
 import _poolWaterServant from "../pool/water-servant.js";
 import _poolWeaponizeTheMonsters from "../pool/weaponize-the-monsters.js";
 import _poolWeightOfTheUnderworld from "../pool/weight-of-the-underworld.js";
+import _poolWildRide from "../pool/wild-ride.js";
 import _poolWithstandDeath from "../pool/withstand-death.js";
 import _poolWortBoggartAuntie from "../pool/wort-boggart-auntie.js";
 import _poolYellowScarvesTroops from "../pool/yellow-scarves-troops.js";
@@ -368,6 +372,7 @@ const shard: CardShard = {
     _poolMessengersSpeed,
     _poolMistLeopard,
     _poolMistvaultBridge,
+    _poolMomentsPeace,
     _poolMorgueTheft,
     _poolMulldrifter,
     _poolNaturesSpiral,
@@ -403,6 +408,7 @@ const shard: CardShard = {
     _poolRenegadeDemon,
     _poolReprieve,
     _poolRepurposingBay,
+    _poolRestlessVinestalk,
     _poolRevivingMelody,
     _poolRiverSneak,
     _poolRuinsOfTrokair,
@@ -437,6 +443,7 @@ const shard: CardShard = {
     _poolStalwartShieldBearers,
     _poolStarnheimCourser,
     _poolSteadfastness,
+    _poolSteelSeraph,
     _poolStingingBarrier,
     _poolStolenGrain,
     _poolStormFleetSprinter,
@@ -473,6 +480,7 @@ const shard: CardShard = {
     _poolWaterServant,
     _poolWeaponizeTheMonsters,
     _poolWeightOfTheUnderworld,
+    _poolWildRide,
     _poolWithstandDeath,
     _poolWortBoggartAuntie,
     _poolYellowScarvesTroops,

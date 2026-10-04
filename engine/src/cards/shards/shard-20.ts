@@ -28,6 +28,7 @@ import _poolAxebaneBeast from "../pool/axebane-beast.js";
 import _poolBalshanCollaborator from "../pool/balshan-collaborator.js";
 import _poolBarkchannelPathway from "../pool/barkchannel-pathway.js";
 import _poolBatterskull from "../pool/batterskull.js";
+import _poolBellowingTanglewurm from "../pool/bellowing-tanglewurm.js";
 import _poolBlanchwoodTreefolk from "../pool/blanchwood-treefolk.js";
 import _poolBloodsoakedInsight from "../pool/bloodsoaked-insight.js";
 import _poolBlurredMongoose from "../pool/blurred-mongoose.js";
@@ -93,6 +94,7 @@ import _poolFireNationAmbushers from "../pool/fire-nation-ambushers.js";
 import _poolFiresOfUndeath from "../pool/fires-of-undeath.js";
 import _poolFurnaceSpirit from "../pool/furnace-spirit.js";
 import _poolGarrisonCat from "../pool/garrison-cat.js";
+import _poolGeodeGrotto from "../pool/geode-grotto.js";
 import _poolGildedSentinel from "../pool/gilded-sentinel.js";
 import _poolGimliOfTheGlitteringCaves from "../pool/gimli-of-the-glittering-caves.js";
 import _poolGlacialFloodplain from "../pool/glacial-floodplain.js";
@@ -115,6 +117,7 @@ import _poolHeliodTheRadiantDawn from "../pool/heliod-the-radiant-dawn.js";
 import _poolHelmOfTheGods from "../pool/helm-of-the-gods.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
+import _poolHypnoticSprite from "../pool/hypnotic-sprite.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolImpulse from "../pool/impulse.js";
 import _poolInvigoratingHotSpring from "../pool/invigorating-hot-spring.js";
@@ -166,6 +169,7 @@ import _poolOvergrownArmasaur from "../pool/overgrown-armasaur.js";
 import _poolOverwhelmingInstinct from "../pool/overwhelming-instinct.js";
 import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
 import _poolPincherBeetles from "../pool/pincher-beetles.js";
+import _poolPontiffOfBlight from "../pool/pontiff-of-blight.js";
 import _poolPristineTalisman from "../pool/pristine-talisman.js";
 import _poolPutridGoblin from "../pool/putrid-goblin.js";
 import _poolQasaliPridemage from "../pool/qasali-pridemage.js";
@@ -242,6 +246,7 @@ import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTormodsCrypt from "../pool/tormods-crypt.js";
 import _poolTrailOfCrumbs from "../pool/trail-of-crumbs.js";
 import _poolTrainingCenter from "../pool/training-center.js";
+import _poolTreetopVillage from "../pool/treetop-village.js";
 import _poolTrostaniDiscordant from "../pool/trostani-discordant.js";
 import _poolUndeadAugur from "../pool/undead-augur.js";
 import _poolVerdantSunsAvatar from "../pool/verdant-suns-avatar.js";
@@ -292,6 +297,7 @@ const shard: CardShard = {
     _poolBalshanCollaborator,
     _poolBarkchannelPathway,
     _poolBatterskull,
+    _poolBellowingTanglewurm,
     _poolBlanchwoodTreefolk,
     _poolBloodsoakedInsight,
     _poolBlurredMongoose,
@@ -357,6 +363,7 @@ const shard: CardShard = {
     _poolFiresOfUndeath,
     _poolFurnaceSpirit,
     _poolGarrisonCat,
+    _poolGeodeGrotto,
     _poolGildedSentinel,
     _poolGimliOfTheGlitteringCaves,
     _poolGlacialFloodplain,
@@ -379,6 +386,7 @@ const shard: CardShard = {
     _poolHelmOfTheGods,
     _poolHowlingMine,
     _poolHulkingOgre,
+    _poolHypnoticSprite,
     _poolIllusionistsBracers,
     _poolImpulse,
     _poolInvigoratingHotSpring,
@@ -430,6 +438,7 @@ const shard: CardShard = {
     _poolOverwhelmingInstinct,
     _poolPhyrexianTower,
     _poolPincherBeetles,
+    _poolPontiffOfBlight,
     _poolPristineTalisman,
     _poolPutridGoblin,
     _poolQasaliPridemage,
@@ -506,6 +515,7 @@ const shard: CardShard = {
     _poolTormodsCrypt,
     _poolTrailOfCrumbs,
     _poolTrainingCenter,
+    _poolTreetopVillage,
     _poolTrostaniDiscordant,
     _poolUndeadAugur,
     _poolVerdantSunsAvatar,

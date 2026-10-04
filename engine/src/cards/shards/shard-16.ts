@@ -48,6 +48,7 @@ import _poolCentaurNurturer from "../pool/centaur-nurturer.js";
 import _poolChargeThrough from "../pool/charge-through.js";
 import _poolChildOfNight from "../pool/child-of-night.js";
 import _poolCityPigeon from "../pool/city-pigeon.js";
+import _poolCloudpost from "../pool/cloudpost.js";
 import _poolCobbledWings from "../pool/cobbled-wings.js";
 import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
 import _poolCombineChrysalis from "../pool/combine-chrysalis.js";
@@ -59,6 +60,7 @@ import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
 import _poolDawnCharm from "../pool/dawn-charm.js";
 import _poolDazzlingRamparts from "../pool/dazzling-ramparts.js";
+import _poolDeeprootElite from "../pool/deeproot-elite.js";
 import _poolDeepwoodTantiv from "../pool/deepwood-tantiv.js";
 import _poolDelightedHalfling from "../pool/delighted-halfling.js";
 import _poolDesolateLighthouse from "../pool/desolate-lighthouse.js";
@@ -169,6 +171,7 @@ import _poolOctoprophet from "../pool/octoprophet.js";
 import _poolOmegaMyr from "../pool/omega-myr.js";
 import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
 import _poolOnulet from "../pool/onulet.js";
+import _poolOranRiefHydra from "../pool/oran-rief-hydra.js";
 import _poolOrbOfDragonkind from "../pool/orb-of-dragonkind.js";
 import _poolOvergrowth from "../pool/overgrowth.js";
 import _poolPainDistributor from "../pool/pain-distributor.js";
@@ -339,6 +342,7 @@ const shard: CardShard = {
     _poolChargeThrough,
     _poolChildOfNight,
     _poolCityPigeon,
+    _poolCloudpost,
     _poolCobbledWings,
     _poolColdCaseCracker,
     _poolCombineChrysalis,
@@ -350,6 +354,7 @@ const shard: CardShard = {
     _poolCunningSparkmage,
     _poolDawnCharm,
     _poolDazzlingRamparts,
+    _poolDeeprootElite,
     _poolDeepwoodTantiv,
     _poolDelightedHalfling,
     _poolDesolateLighthouse,
@@ -460,6 +465,7 @@ const shard: CardShard = {
     _poolOmegaMyr,
     _poolOneWithTheWind,
     _poolOnulet,
+    _poolOranRiefHydra,
     _poolOrbOfDragonkind,
     _poolOvergrowth,
     _poolPainDistributor,

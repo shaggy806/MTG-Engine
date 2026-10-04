@@ -34,6 +34,7 @@ import _poolBoneDevourer from "../pool/bone-devourer.js";
 import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
+import _poolCactusfolkSureshot from "../pool/cactusfolk-sureshot.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCanopyTactician from "../pool/canopy-tactician.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
@@ -231,6 +232,7 @@ import _poolTouchstone from "../pool/touchstone.js";
 import _poolTriumphOfTheHordes from "../pool/triumph-of-the-hordes.js";
 import _poolTrollHornCameo from "../pool/troll-horn-cameo.js";
 import _poolTrygonPredator from "../pool/trygon-predator.js";
+import _poolTurtleLair from "../pool/turtle-lair.js";
 import _poolUkudCobra from "../pool/ukud-cobra.js";
 import _poolUlvenwaldHydra from "../pool/ulvenwald-hydra.js";
 import _poolUnhinge from "../pool/unhinge.js";
@@ -248,6 +250,7 @@ import _poolWaspLancer from "../pool/wasp-lancer.js";
 import _poolWeftstalkerArdent from "../pool/weftstalker-ardent.js";
 import _poolWildAesthir from "../pool/wild-aesthir.js";
 import _poolWildWanderer from "../pool/wild-wanderer.js";
+import _poolWingedTempleOfOrazca from "../pool/winged-temple-of-orazca.js";
 import _poolWingmantleChaplain from "../pool/wingmantle-chaplain.js";
 import _poolWinotaJoinerOfForces from "../pool/winota-joiner-of-forces.js";
 import _poolWoodlandPatrol from "../pool/woodland-patrol.js";
@@ -294,6 +297,7 @@ const shard: CardShard = {
     _poolBrawn,
     _poolBreathstealer,
     _poolBredForTheHunt,
+    _poolCactusfolkSureshot,
     _poolCanopyGorger,
     _poolCanopyTactician,
     _poolCarrionAnts,
@@ -491,6 +495,7 @@ const shard: CardShard = {
     _poolTriumphOfTheHordes,
     _poolTrollHornCameo,
     _poolTrygonPredator,
+    _poolTurtleLair,
     _poolUkudCobra,
     _poolUlvenwaldHydra,
     _poolUnhinge,
@@ -508,6 +513,7 @@ const shard: CardShard = {
     _poolWeftstalkerArdent,
     _poolWildAesthir,
     _poolWildWanderer,
+    _poolWingedTempleOfOrazca,
     _poolWingmantleChaplain,
     _poolWinotaJoinerOfForces,
     _poolWoodlandPatrol,

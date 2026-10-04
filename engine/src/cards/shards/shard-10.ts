@@ -69,6 +69,7 @@ import _poolDimirSpybug from "../pool/dimir-spybug.js";
 import _poolDisorient from "../pool/disorient.js";
 import _poolDissolve from "../pool/dissolve.js";
 import _poolDivinerOfMist from "../pool/diviner-of-mist.js";
+import _poolDragonbackAssault from "../pool/dragonback-assault.js";
 import _poolDreadShade from "../pool/dread-shade.js";
 import _poolDutyBeyondDeath from "../pool/duty-beyond-death.js";
 import _poolEkunduGriffin from "../pool/ekundu-griffin.js";
@@ -106,6 +107,7 @@ import _poolGrimMonolith from "../pool/grim-monolith.js";
 import _poolGrimPhysician from "../pool/grim-physician.js";
 import _poolGuardianAugmenter from "../pool/guardian-augmenter.js";
 import _poolHammerOfNazahn from "../pool/hammer-of-nazahn.js";
+import _poolHellrider from "../pool/hellrider.js";
 import _poolHeraldOfWar from "../pool/herald-of-war.js";
 import _poolHermitDruid from "../pool/hermit-druid.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolDisorient,
     _poolDissolve,
     _poolDivinerOfMist,
+    _poolDragonbackAssault,
     _poolDreadShade,
     _poolDutyBeyondDeath,
     _poolEkunduGriffin,
@@ -394,6 +397,7 @@ const shard: CardShard = {
     _poolGrimPhysician,
     _poolGuardianAugmenter,
     _poolHammerOfNazahn,
+    _poolHellrider,
     _poolHeraldOfWar,
     _poolHermitDruid,
     _poolHeroicIntervention,

@@ -88,6 +88,7 @@ import _poolFlayerOfTheHatebound from "../pool/flayer-of-the-hatebound.js";
 import _poolForcedFruition from "../pool/forced-fruition.js";
 import _poolFrolickingFamiliar from "../pool/frolicking-familiar.js";
 import _poolGarrukWildspeaker from "../pool/garruk-wildspeaker.js";
+import _poolGatecreeperVine from "../pool/gatecreeper-vine.js";
 import _poolGeralfsMindcrusher from "../pool/geralfs-mindcrusher.js";
 import _poolGhirapurAetherGrid from "../pool/ghirapur-aether-grid.js";
 import _poolGhorClanBloodscale from "../pool/ghor-clan-bloodscale.js";
@@ -99,6 +100,7 @@ import _poolGoShintaiOfSharedPurpose from "../pool/go-shintai-of-shared-purpose.
 import _poolGoldForgedThopteryx from "../pool/gold-forged-thopteryx.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
 import _poolGreaterAuramancy from "../pool/greater-auramancy.js";
+import _poolGwaihirGreatestOfTheEagles from "../pool/gwaihir-greatest-of-the-eagles.js";
 import _poolHaazdaOfficer from "../pool/haazda-officer.js";
 import _poolHaliyaGuidedByLight from "../pool/haliya-guided-by-light.js";
 import _poolHallOfOracles from "../pool/hall-of-oracles.js";
@@ -131,6 +133,7 @@ import _poolLorescaleCoatl from "../pool/lorescale-coatl.js";
 import _poolLosDiablosMissileBase from "../pool/los-diablos-missile-base.js";
 import _poolManaTithe from "../pool/mana-tithe.js";
 import _poolMarbleDiamond from "../pool/marble-diamond.js";
+import _poolMelokuTheCloudedMirror from "../pool/meloku-the-clouded-mirror.js";
 import _poolMerrowReejerey from "../pool/merrow-reejerey.js";
 import _poolMigratoryRoute from "../pool/migratory-route.js";
 import _poolMindSculpt from "../pool/mind-sculpt.js";
@@ -230,6 +233,8 @@ import _poolThunderscapeApprentice from "../pool/thunderscape-apprentice.js";
 import _poolTormentingVoice from "../pool/tormenting-voice.js";
 import _poolTrevasAttendant from "../pool/trevas-attendant.js";
 import _poolTwincast from "../pool/twincast.js";
+import _poolTyrantGuard from "../pool/tyrant-guard.js";
+import _poolUlvenwaldOddity from "../pool/ulvenwald-oddity.js";
 import _poolUnburialRites from "../pool/unburial-rites.js";
 import _poolUntamedHunger from "../pool/untamed-hunger.js";
 import _poolValgavothsFaithful from "../pool/valgavoths-faithful.js";
@@ -346,6 +351,7 @@ const shard: CardShard = {
     _poolForcedFruition,
     _poolFrolickingFamiliar,
     _poolGarrukWildspeaker,
+    _poolGatecreeperVine,
     _poolGeralfsMindcrusher,
     _poolGhirapurAetherGrid,
     _poolGhorClanBloodscale,
@@ -357,6 +363,7 @@ const shard: CardShard = {
     _poolGoldForgedThopteryx,
     _poolGoobbueGardener,
     _poolGreaterAuramancy,
+    _poolGwaihirGreatestOfTheEagles,
     _poolHaazdaOfficer,
     _poolHaliyaGuidedByLight,
     _poolHallOfOracles,
@@ -389,6 +396,7 @@ const shard: CardShard = {
     _poolLosDiablosMissileBase,
     _poolManaTithe,
     _poolMarbleDiamond,
+    _poolMelokuTheCloudedMirror,
     _poolMerrowReejerey,
     _poolMigratoryRoute,
     _poolMindSculpt,
@@ -488,6 +496,8 @@ const shard: CardShard = {
     _poolTormentingVoice,
     _poolTrevasAttendant,
     _poolTwincast,
+    _poolTyrantGuard,
+    _poolUlvenwaldOddity,
     _poolUnburialRites,
     _poolUntamedHunger,
     _poolValgavothsFaithful,

@@ -75,6 +75,7 @@ import _poolExoticOrchard from "../pool/exotic-orchard.js";
 import _poolExplore from "../pool/explore.js";
 import _poolExplosiveShot from "../pool/explosive-shot.js";
 import _poolFaeburrowElder from "../pool/faeburrow-elder.js";
+import _poolFanaticalDevotion from "../pool/fanatical-devotion.js";
 import _poolFaunaShaman from "../pool/fauna-shaman.js";
 import _poolFearOfMissingOut from "../pool/fear-of-missing-out.js";
 import _poolFelidarCub from "../pool/felidar-cub.js";
@@ -147,6 +148,7 @@ import _poolNissasPilgrimage from "../pool/nissas-pilgrimage.js";
 import _poolOctomancer from "../pool/octomancer.js";
 import _poolOctopusForm from "../pool/octopus-form.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
+import _poolOonasBlackguard from "../pool/oonas-blackguard.js";
 import _poolOvergrownBattlement from "../pool/overgrown-battlement.js";
 import _poolPacificationArray from "../pool/pacification-array.js";
 import _poolPaintedBluffs from "../pool/painted-bluffs.js";
@@ -219,6 +221,7 @@ import _poolTempleOfMystery from "../pool/temple-of-mystery.js";
 import _poolTerritorialRoc from "../pool/territorial-roc.js";
 import _poolTeysaKarlov from "../pool/teysa-karlov.js";
 import _poolThanosDeathsConsort from "../pool/thanos-deaths-consort.js";
+import _poolTheAncientOne from "../pool/the-ancient-one.js";
 import _poolTheUnbeatableSquirrelGirl from "../pool/the-unbeatable-squirrel-girl.js";
 import _poolThreeTreeCity from "../pool/three-tree-city.js";
 import _poolThreefoldThunderhulk from "../pool/threefold-thunderhulk.js";
@@ -329,6 +332,7 @@ const shard: CardShard = {
     _poolExplore,
     _poolExplosiveShot,
     _poolFaeburrowElder,
+    _poolFanaticalDevotion,
     _poolFaunaShaman,
     _poolFearOfMissingOut,
     _poolFelidarCub,
@@ -401,6 +405,7 @@ const shard: CardShard = {
     _poolOctomancer,
     _poolOctopusForm,
     _poolOmnathLocusOfCreation,
+    _poolOonasBlackguard,
     _poolOvergrownBattlement,
     _poolPacificationArray,
     _poolPaintedBluffs,
@@ -473,6 +478,7 @@ const shard: CardShard = {
     _poolTerritorialRoc,
     _poolTeysaKarlov,
     _poolThanosDeathsConsort,
+    _poolTheAncientOne,
     _poolTheUnbeatableSquirrelGirl,
     _poolThreeTreeCity,
     _poolThreefoldThunderhulk,

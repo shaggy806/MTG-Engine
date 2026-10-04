@@ -64,6 +64,7 @@ import _poolDevkarinDissident from "../pool/devkarin-dissident.js";
 import _poolDevouringDeep from "../pool/devouring-deep.js";
 import _poolDispersingOrb from "../pool/dispersing-orb.js";
 import _poolDisruptingScepter from "../pool/disrupting-scepter.js";
+import _poolDowsingDevice from "../pool/dowsing-device.js";
 import _poolDruidLyrist from "../pool/druid-lyrist.js";
 import _poolDruidOfTheCowl from "../pool/druid-of-the-cowl.js";
 import _poolDuneDiviner from "../pool/dune-diviner.js";
@@ -96,6 +97,7 @@ import _poolGolgariRotwurm from "../pool/golgari-rotwurm.js";
 import _poolGrandColiseum from "../pool/grand-coliseum.js";
 import _poolGraniticTitan from "../pool/granitic-titan.js";
 import _poolGreenweaverDruid from "../pool/greenweaver-druid.js";
+import _poolGrimgrinCorpseBorn from "../pool/grimgrin-corpse-born.js";
 import _poolGristleGrinner from "../pool/gristle-grinner.js";
 import _poolHagiMob from "../pool/hagi-mob.js";
 import _poolHarmattanEfreet from "../pool/harmattan-efreet.js";
@@ -178,6 +180,7 @@ import _poolReturnedCentaur from "../pool/returned-centaur.js";
 import _poolRighteousAvengers from "../pool/righteous-avengers.js";
 import _poolRishadanPort from "../pool/rishadan-port.js";
 import _poolRisingPopulace from "../pool/rising-populace.js";
+import _poolRiteOfPassage from "../pool/rite-of-passage.js";
 import _poolRoofstalkerWight from "../pool/roofstalker-wight.js";
 import _poolSageOfTheMaze from "../pool/sage-of-the-maze.js";
 import _poolSalvagerOfSecrets from "../pool/salvager-of-secrets.js";
@@ -319,6 +322,7 @@ const shard: CardShard = {
     _poolDevouringDeep,
     _poolDispersingOrb,
     _poolDisruptingScepter,
+    _poolDowsingDevice,
     _poolDruidLyrist,
     _poolDruidOfTheCowl,
     _poolDuneDiviner,
@@ -351,6 +355,7 @@ const shard: CardShard = {
     _poolGrandColiseum,
     _poolGraniticTitan,
     _poolGreenweaverDruid,
+    _poolGrimgrinCorpseBorn,
     _poolGristleGrinner,
     _poolHagiMob,
     _poolHarmattanEfreet,
@@ -433,6 +438,7 @@ const shard: CardShard = {
     _poolRighteousAvengers,
     _poolRishadanPort,
     _poolRisingPopulace,
+    _poolRiteOfPassage,
     _poolRoofstalkerWight,
     _poolSageOfTheMaze,
     _poolSalvagerOfSecrets,

@@ -127,6 +127,7 @@ import _poolMagmaw from "../pool/magmaw.js";
 import _poolMalleableImpostor from "../pool/malleable-impostor.js";
 import _poolMasterDecoy from "../pool/master-decoy.js";
 import _poolMemoryErosion from "../pool/memory-erosion.js";
+import _poolMesmericGlare from "../pool/mesmeric-glare.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMindsDilation from "../pool/minds-dilation.js";
 import _poolMistDancer from "../pool/mist-dancer.js";
@@ -151,6 +152,7 @@ import _poolPrinceImrahilTheFair from "../pool/prince-imrahil-the-fair.js";
 import _poolPrivilegedPosition from "../pool/privileged-position.js";
 import _poolQasaliSlingers from "../pool/qasali-slingers.js";
 import _poolQuirionRanger from "../pool/quirion-ranger.js";
+import _poolRadioactiveSpider from "../pool/radioactive-spider.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
 import _poolRamirezDepietro from "../pool/ramirez-depietro.js";
@@ -208,6 +210,7 @@ import _poolTellingTime from "../pool/telling-time.js";
 import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
 import _poolTenderWildguide from "../pool/tender-wildguide.js";
+import _poolTervigon from "../pool/tervigon.js";
 import _poolTestOfEndurance from "../pool/test-of-endurance.js";
 import _poolTeysaOrzhovScion from "../pool/teysa-orzhov-scion.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
@@ -385,6 +388,7 @@ const shard: CardShard = {
     _poolMalleableImpostor,
     _poolMasterDecoy,
     _poolMemoryErosion,
+    _poolMesmericGlare,
     _poolMidnightHaunting,
     _poolMindsDilation,
     _poolMistDancer,
@@ -409,6 +413,7 @@ const shard: CardShard = {
     _poolPrivilegedPosition,
     _poolQasaliSlingers,
     _poolQuirionRanger,
+    _poolRadioactiveSpider,
     _poolRageThrower,
     _poolRakdosCluestone,
     _poolRamirezDepietro,
@@ -466,6 +471,7 @@ const shard: CardShard = {
     _poolTempleOfEnlightenment,
     _poolTempleOfPlenty,
     _poolTenderWildguide,
+    _poolTervigon,
     _poolTestOfEndurance,
     _poolTeysaOrzhovScion,
     _poolThantisTheWarweaver,

@@ -45,6 +45,7 @@ import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolCemeteryTampering from "../pool/cemetery-tampering.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
+import _poolChannelerInitiate from "../pool/channeler-initiate.js";
 import _poolChromaticSphere from "../pool/chromatic-sphere.js";
 import _poolCitadelGate from "../pool/citadel-gate.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
@@ -56,6 +57,7 @@ import _poolColossalGraveReaver from "../pool/colossal-grave-reaver.js";
 import _poolConclaveNaturalists from "../pool/conclave-naturalists.js";
 import _poolConduitPylons from "../pool/conduit-pylons.js";
 import _poolCorneredByBlackMages from "../pool/cornered-by-black-mages.js";
+import _poolCosmicHunger from "../pool/cosmic-hunger.js";
 import _poolCosmiumBlast from "../pool/cosmium-blast.js";
 import _poolCrossbowInfantry from "../pool/crossbow-infantry.js";
 import _poolCrossroadsVillage from "../pool/crossroads-village.js";
@@ -103,6 +105,7 @@ import _poolGalianBeast from "../pool/galian-beast.js";
 import _poolGarrukPrimalHunter from "../pool/garruk-primal-hunter.js";
 import _poolGimlisRecklessMight from "../pool/gimlis-reckless-might.js";
 import _poolGixYawgmothPraetor from "../pool/gix-yawgmoth-praetor.js";
+import _poolGoblinSpymaster from "../pool/goblin-spymaster.js";
 import _poolGoreSwine from "../pool/gore-swine.js";
 import _poolGoringCeratops from "../pool/goring-ceratops.js";
 import _poolGrafMole from "../pool/graf-mole.js";
@@ -304,6 +307,7 @@ const shard: CardShard = {
     _poolCelestialForce,
     _poolCemeteryTampering,
     _poolChainToMemory,
+    _poolChannelerInitiate,
     _poolChromaticSphere,
     _poolCitadelGate,
     _poolClockOfOmens,
@@ -315,6 +319,7 @@ const shard: CardShard = {
     _poolConclaveNaturalists,
     _poolConduitPylons,
     _poolCorneredByBlackMages,
+    _poolCosmicHunger,
     _poolCosmiumBlast,
     _poolCrossbowInfantry,
     _poolCrossroadsVillage,
@@ -362,6 +367,7 @@ const shard: CardShard = {
     _poolGarrukPrimalHunter,
     _poolGimlisRecklessMight,
     _poolGixYawgmothPraetor,
+    _poolGoblinSpymaster,
     _poolGoreSwine,
     _poolGoringCeratops,
     _poolGrafMole,

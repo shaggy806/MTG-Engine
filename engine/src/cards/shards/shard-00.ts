@@ -54,8 +54,10 @@ import _poolCloudblazer from "../pool/cloudblazer.js";
 import _poolCommandersSphere from "../pool/commanders-sphere.js";
 import _poolCommonCrook from "../pool/common-crook.js";
 import _poolConsecratedSphinx from "../pool/consecrated-sphinx.js";
+import _poolCosmicCube from "../pool/cosmic-cube.js";
 import _poolCraterhoofBehemoth from "../pool/craterhoof-behemoth.js";
 import _poolCursedMinotaur from "../pool/cursed-minotaur.js";
+import _poolDarkTutelage from "../pool/dark-tutelage.js";
 import _poolDeadlyDispute from "../pool/deadly-dispute.js";
 import _poolDesertTwister from "../pool/desert-twister.js";
 import _poolDinaSoulSteeper from "../pool/dina-soul-steeper.js";
@@ -99,6 +101,7 @@ import _poolGoldPan from "../pool/gold-pan.js";
 import _poolGolgariGuildgate from "../pool/golgari-guildgate.js";
 import _poolGravelHideGoblin from "../pool/gravel-hide-goblin.js";
 import _poolGravewaker from "../pool/gravewaker.js";
+import _poolGrixisPanorama from "../pool/grixis-panorama.js";
 import _poolGuardianAutomaton from "../pool/guardian-automaton.js";
 import _poolGyreSage from "../pool/gyre-sage.js";
 import _poolHallOfStormGiants from "../pool/hall-of-storm-giants.js";
@@ -328,8 +331,10 @@ const shard: CardShard = {
     _poolCommandersSphere,
     _poolCommonCrook,
     _poolConsecratedSphinx,
+    _poolCosmicCube,
     _poolCraterhoofBehemoth,
     _poolCursedMinotaur,
+    _poolDarkTutelage,
     _poolDeadlyDispute,
     _poolDesertTwister,
     _poolDinaSoulSteeper,
@@ -373,6 +378,7 @@ const shard: CardShard = {
     _poolGolgariGuildgate,
     _poolGravelHideGoblin,
     _poolGravewaker,
+    _poolGrixisPanorama,
     _poolGuardianAutomaton,
     _poolGyreSage,
     _poolHallOfStormGiants,

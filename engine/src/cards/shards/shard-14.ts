@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAberrant from "../pool/aberrant.js";
 import _poolAeronautsWings from "../pool/aeronauts-wings.js";
 import _poolAgeGracedChapel from "../pool/age-graced-chapel.js";
 import _poolAgnaQela from "../pool/agna-qela.js";
@@ -136,6 +137,7 @@ import _poolImposingVisage from "../pool/imposing-visage.js";
 import _poolInvokeTheFiremind from "../pool/invoke-the-firemind.js";
 import _poolIronshellBeetle from "../pool/ironshell-beetle.js";
 import _poolIsperiaSupremeJudge from "../pool/isperia-supreme-judge.js";
+import _poolIvoraInsatiableHeir from "../pool/ivora-insatiable-heir.js";
 import _poolJeditsDragoons from "../pool/jedits-dragoons.js";
 import _poolJinGitaxiasCoreAugur from "../pool/jin-gitaxias-core-augur.js";
 import _poolJoragaWarcaller from "../pool/joraga-warcaller.js";
@@ -261,6 +263,7 @@ import _tokensWallTokenRammasEchorAncientShield from "../tokens/wall-token-ramma
 
 const shard: CardShard = {
   pool: [
+    _poolAberrant,
     _poolAeronautsWings,
     _poolAgeGracedChapel,
     _poolAgnaQela,
@@ -394,6 +397,7 @@ const shard: CardShard = {
     _poolInvokeTheFiremind,
     _poolIronshellBeetle,
     _poolIsperiaSupremeJudge,
+    _poolIvoraInsatiableHeir,
     _poolJeditsDragoons,
     _poolJinGitaxiasCoreAugur,
     _poolJoragaWarcaller,

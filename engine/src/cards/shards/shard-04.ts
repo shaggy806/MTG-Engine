@@ -7,6 +7,7 @@ import _poolAbzanAscendancy from "../pool/abzan-ascendancy.js";
 import _poolAetherHelix from "../pool/aether-helix.js";
 import _poolAjanisChosen from "../pool/ajanis-chosen.js";
 import _poolAlelaCunningConqueror from "../pool/alela-cunning-conqueror.js";
+import _poolAngelicChorus from "../pool/angelic-chorus.js";
 import _poolAngelsGrace from "../pool/angels-grace.js";
 import _poolAnheloThePainter from "../pool/anhelo-the-painter.js";
 import _poolAnkleBiter from "../pool/ankle-biter.js";
@@ -47,6 +48,7 @@ import _poolCrawlingSensation from "../pool/crawling-sensation.js";
 import _poolCrimsonCaravaneer from "../pool/crimson-caravaneer.js";
 import _poolCrimsonKobolds from "../pool/crimson-kobolds.js";
 import _poolCrumblingNecropolis from "../pool/crumbling-necropolis.js";
+import _poolCultistOfTheAbsolute from "../pool/cultist-of-the-absolute.js";
 import _poolDaggerbackBasilisk from "../pool/daggerback-basilisk.js";
 import _poolDailyBugleNewspaper from "../pool/daily-bugle-newspaper.js";
 import _poolDakmorScorpion from "../pool/dakmor-scorpion.js";
@@ -201,6 +203,8 @@ import _poolSlashOfTalons from "../pool/slash-of-talons.js";
 import _poolSlimebind from "../pool/slimebind.js";
 import _poolSlitherBlade from "../pool/slither-blade.js";
 import _poolSnowCoveredWastes from "../pool/snow-covered-wastes.js";
+import _poolSongMadRuins from "../pool/song-mad-ruins.js";
+import _poolSongMadTreachery from "../pool/song-mad-treachery.js";
 import _poolSparringMummy from "../pool/sparring-mummy.js";
 import _poolSpitFlame from "../pool/spit-flame.js";
 import _poolSpringleafDrum from "../pool/springleaf-drum.js";
@@ -220,6 +224,7 @@ import _poolTangledFlorahedron from "../pool/tangled-florahedron.js";
 import _poolTelJiladJustice from "../pool/tel-jilad-justice.js";
 import _poolTerisianMindbreaker from "../pool/terisian-mindbreaker.js";
 import _poolTerminate from "../pool/terminate.js";
+import _poolTheReaperKingNoMore from "../pool/the-reaper-king-no-more.js";
 import _poolThievingVarmint from "../pool/thieving-varmint.js";
 import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
 import _poolThrorsMap from "../pool/thrors-map.js";
@@ -269,6 +274,7 @@ const shard: CardShard = {
     _poolAetherHelix,
     _poolAjanisChosen,
     _poolAlelaCunningConqueror,
+    _poolAngelicChorus,
     _poolAngelsGrace,
     _poolAnheloThePainter,
     _poolAnkleBiter,
@@ -309,6 +315,7 @@ const shard: CardShard = {
     _poolCrimsonCaravaneer,
     _poolCrimsonKobolds,
     _poolCrumblingNecropolis,
+    _poolCultistOfTheAbsolute,
     _poolDaggerbackBasilisk,
     _poolDailyBugleNewspaper,
     _poolDakmorScorpion,
@@ -463,6 +470,8 @@ const shard: CardShard = {
     _poolSlimebind,
     _poolSlitherBlade,
     _poolSnowCoveredWastes,
+    _poolSongMadRuins,
+    _poolSongMadTreachery,
     _poolSparringMummy,
     _poolSpitFlame,
     _poolSpringleafDrum,
@@ -482,6 +491,7 @@ const shard: CardShard = {
     _poolTelJiladJustice,
     _poolTerisianMindbreaker,
     _poolTerminate,
+    _poolTheReaperKingNoMore,
     _poolThievingVarmint,
     _poolThirdPathIconoclast,
     _poolThrorsMap,

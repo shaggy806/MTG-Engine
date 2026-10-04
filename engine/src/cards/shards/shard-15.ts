@@ -44,6 +44,7 @@ import _poolCrowdFavorites from "../pool/crowd-favorites.js";
 import _poolCrystalQuarry from "../pool/crystal-quarry.js";
 import _poolCutthroatContender from "../pool/cutthroat-contender.js";
 import _poolCybermenSquadron from "../pool/cybermen-squadron.js";
+import _poolDefiantBloodlord from "../pool/defiant-bloodlord.js";
 import _poolDemonicCounsel from "../pool/demonic-counsel.js";
 import _poolDespark from "../pool/despark.js";
 import _poolDivingGriffin from "../pool/diving-griffin.js";
@@ -58,6 +59,7 @@ import _poolEarthbendingStudent from "../pool/earthbending-student.js";
 import _poolEliminateTheCompetition from "../pool/eliminate-the-competition.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
+import _poolEssenceCapture from "../pool/essence-capture.js";
 import _poolExaltedSunborn from "../pool/exalted-sunborn.js";
 import _poolExecutionersCapsule from "../pool/executioners-capsule.js";
 import _poolExpandTheSphere from "../pool/expand-the-sphere.js";
@@ -79,6 +81,7 @@ import _poolFyndhornElder from "../pool/fyndhorn-elder.js";
 import _poolGanaxAstralHunter from "../pool/ganax-astral-hunter.js";
 import _poolGavonyTownship from "../pool/gavony-township.js";
 import _poolGazeOfGranite from "../pool/gaze-of-granite.js";
+import _poolGetOut from "../pool/get-out.js";
 import _poolGeyserGlider from "../pool/geyser-glider.js";
 import _poolGhostLitNourisher from "../pool/ghost-lit-nourisher.js";
 import _poolGiantOctopus from "../pool/giant-octopus.js";
@@ -115,6 +118,7 @@ import _poolKetramoseTheNewDawn from "../pool/ketramose-the-new-dawn.js";
 import _poolKetriaTriome from "../pool/ketria-triome.js";
 import _poolKiloApogeeMind from "../pool/kilo-apogee-mind.js";
 import _poolKitchen from "../pool/kitchen.js";
+import _poolLamentation from "../pool/lamentation.js";
 import _poolLanternKami from "../pool/lantern-kami.js";
 import _poolLarderZombie from "../pool/larder-zombie.js";
 import _poolLawlessBroker from "../pool/lawless-broker.js";
@@ -122,6 +126,7 @@ import _poolLazotepReaver from "../pool/lazotep-reaver.js";
 import _poolLegionStronghold from "../pool/legion-stronghold.js";
 import _poolLeoninWarleader from "../pool/leonin-warleader.js";
 import _poolLierDiscipleOfTheDrowned from "../pool/lier-disciple-of-the-drowned.js";
+import _poolLifeInsurance from "../pool/life-insurance.js";
 import _poolLightningRigCrew from "../pool/lightning-rig-crew.js";
 import _poolLlanowarLoamspeaker from "../pool/llanowar-loamspeaker.js";
 import _poolLoranOfTheThirdPath from "../pool/loran-of-the-third-path.js";
@@ -252,6 +257,7 @@ import _tokensRedWarriorToken from "../tokens/red-warrior-token.js";
 import _tokensSlugToken from "../tokens/slug-token.js";
 import _tokensSpiritTokenHeiBai from "../tokens/spirit-token-hei-bai.js";
 import _tokensSquirrelToken from "../tokens/squirrel-token.js";
+import _tokensTyranidToken from "../tokens/tyranid-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -296,6 +302,7 @@ const shard: CardShard = {
     _poolCrystalQuarry,
     _poolCutthroatContender,
     _poolCybermenSquadron,
+    _poolDefiantBloodlord,
     _poolDemonicCounsel,
     _poolDespark,
     _poolDivingGriffin,
@@ -310,6 +317,7 @@ const shard: CardShard = {
     _poolEliminateTheCompetition,
     _poolElvishMystic,
     _poolErinisGloomStalker,
+    _poolEssenceCapture,
     _poolExaltedSunborn,
     _poolExecutionersCapsule,
     _poolExpandTheSphere,
@@ -331,6 +339,7 @@ const shard: CardShard = {
     _poolGanaxAstralHunter,
     _poolGavonyTownship,
     _poolGazeOfGranite,
+    _poolGetOut,
     _poolGeyserGlider,
     _poolGhostLitNourisher,
     _poolGiantOctopus,
@@ -367,6 +376,7 @@ const shard: CardShard = {
     _poolKetriaTriome,
     _poolKiloApogeeMind,
     _poolKitchen,
+    _poolLamentation,
     _poolLanternKami,
     _poolLarderZombie,
     _poolLawlessBroker,
@@ -374,6 +384,7 @@ const shard: CardShard = {
     _poolLegionStronghold,
     _poolLeoninWarleader,
     _poolLierDiscipleOfTheDrowned,
+    _poolLifeInsurance,
     _poolLightningRigCrew,
     _poolLlanowarLoamspeaker,
     _poolLoranOfTheThirdPath,
@@ -506,6 +517,7 @@ const shard: CardShard = {
     _tokensSlugToken,
     _tokensSpiritTokenHeiBai,
     _tokensSquirrelToken,
+    _tokensTyranidToken,
   ],
 };
 

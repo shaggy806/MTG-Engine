@@ -27,6 +27,7 @@ import _poolBlackDragonGate from "../pool/black-dragon-gate.js";
 import _poolBlightMound from "../pool/blight-mound.js";
 import _poolBogWraith from "../pool/bog-wraith.js";
 import _poolBoonOfTheWishGiver from "../pool/boon-of-the-wish-giver.js";
+import _poolBoundlessRealms from "../pool/boundless-realms.js";
 import _poolBranchingEvolution from "../pool/branching-evolution.js";
 import _poolBruceBanner from "../pool/bruce-banner.js";
 import _poolBulkUp from "../pool/bulk-up.js";
@@ -89,6 +90,7 @@ import _poolFlamingSword from "../pool/flaming-sword.js";
 import _poolFranticSearch from "../pool/frantic-search.js";
 import _poolFrilledMystic from "../pool/frilled-mystic.js";
 import _poolFrontlineRebel from "../pool/frontline-rebel.js";
+import _poolFungalFortitude from "../pool/fungal-fortitude.js";
 import _poolGallantCitizen from "../pool/gallant-citizen.js";
 import _poolGarruksUprising from "../pool/garruks-uprising.js";
 import _poolGeralfVisionaryStitcher from "../pool/geralf-visionary-stitcher.js";
@@ -110,6 +112,7 @@ import _poolHollowhengeBeast from "../pool/hollowhenge-beast.js";
 import _poolHonorWornShaku from "../pool/honor-worn-shaku.js";
 import _poolHurloonShaman from "../pool/hurloon-shaman.js";
 import _poolHyraxTowerScout from "../pool/hyrax-tower-scout.js";
+import _poolImpulsivity from "../pool/impulsivity.js";
 import _poolInfectiousHost from "../pool/infectious-host.js";
 import _poolIonasJudgment from "../pool/ionas-judgment.js";
 import _poolJawsOfDefeat from "../pool/jaws-of-defeat.js";
@@ -279,6 +282,7 @@ const shard: CardShard = {
     _poolBlightMound,
     _poolBogWraith,
     _poolBoonOfTheWishGiver,
+    _poolBoundlessRealms,
     _poolBranchingEvolution,
     _poolBruceBanner,
     _poolBulkUp,
@@ -341,6 +345,7 @@ const shard: CardShard = {
     _poolFranticSearch,
     _poolFrilledMystic,
     _poolFrontlineRebel,
+    _poolFungalFortitude,
     _poolGallantCitizen,
     _poolGarruksUprising,
     _poolGeralfVisionaryStitcher,
@@ -362,6 +367,7 @@ const shard: CardShard = {
     _poolHonorWornShaku,
     _poolHurloonShaman,
     _poolHyraxTowerScout,
+    _poolImpulsivity,
     _poolInfectiousHost,
     _poolIonasJudgment,
     _poolJawsOfDefeat,

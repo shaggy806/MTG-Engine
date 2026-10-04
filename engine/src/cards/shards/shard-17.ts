@@ -8,6 +8,7 @@ import _poolAjaniCallerOfThePride from "../pool/ajani-caller-of-the-pride.js";
 import _poolAlabornCavalier from "../pool/alaborn-cavalier.js";
 import _poolAmaranthineWall from "../pool/amaranthine-wall.js";
 import _poolAmbushViper from "../pool/ambush-viper.js";
+import _poolAncientCraving from "../pool/ancient-craving.js";
 import _poolAngelicPage from "../pool/angelic-page.js";
 import _poolArcticTreeline from "../pool/arctic-treeline.js";
 import _poolArdentRecruit from "../pool/ardent-recruit.js";
@@ -162,6 +163,7 @@ import _poolRaffineSchemingSeer from "../pool/raffine-scheming-seer.js";
 import _poolRainOfTears from "../pool/rain-of-tears.js";
 import _poolRavos from "../pool/ravos.js";
 import _poolReadTheBones from "../pool/read-the-bones.js";
+import _poolReaperFromTheAbyss from "../pool/reaper-from-the-abyss.js";
 import _poolRecruiterOfTheGuard from "../pool/recruiter-of-the-guard.js";
 import _poolRelmsSketching from "../pool/relms-sketching.js";
 import _poolResoluteWatchdog from "../pool/resolute-watchdog.js";
@@ -213,9 +215,11 @@ import _poolThunderingFalls from "../pool/thundering-falls.js";
 import _poolThunderingRebuke from "../pool/thundering-rebuke.js";
 import _poolTideSkimmer from "../pool/tide-skimmer.js";
 import _poolTitaniaNaturesForce from "../pool/titania-natures-force.js";
+import _poolTreasonOfIsengard from "../pool/treason-of-isengard.js";
 import _poolTurbulentMoor from "../pool/turbulent-moor.js";
 import _poolTurntimberAscetic from "../pool/turntimber-ascetic.js";
 import _poolUktabiFaerie from "../pool/uktabi-faerie.js";
+import _poolUlvenwaldBehemoth from "../pool/ulvenwald-behemoth.js";
 import _poolUnderworldDreams from "../pool/underworld-dreams.js";
 import _poolUnholyOfficiant from "../pool/unholy-officiant.js";
 import _poolUnknownShores from "../pool/unknown-shores.js";
@@ -233,6 +237,7 @@ import _poolWayfarersBauble from "../pool/wayfarers-bauble.js";
 import _poolWeb from "../pool/web.js";
 import _poolWeldfastWingsmith from "../pool/weldfast-wingsmith.js";
 import _poolWheelOfFate from "../pool/wheel-of-fate.js";
+import _poolWhirlerVirtuoso from "../pool/whirler-virtuoso.js";
 import _poolWildColos from "../pool/wild-colos.js";
 import _poolWillowFaerie from "../pool/willow-faerie.js";
 import _poolWinterSoldierBuckyBarnes from "../pool/winter-soldier-bucky-barnes.js";
@@ -241,6 +246,7 @@ import _poolWitchsFamiliar from "../pool/witchs-familiar.js";
 import _poolWizenedCenn from "../pool/wizened-cenn.js";
 import _poolWolfsbaneHighlandHero from "../pool/wolfsbane-highland-hero.js";
 import _poolWoodlandDruid from "../pool/woodland-druid.js";
+import _poolWrongTurn from "../pool/wrong-turn.js";
 import _poolYahenniUndyingPartisan from "../pool/yahenni-undying-partisan.js";
 import _poolYawningFissure from "../pool/yawning-fissure.js";
 import _poolYevasForcemage from "../pool/yevas-forcemage.js";
@@ -266,6 +272,7 @@ const shard: CardShard = {
     _poolAlabornCavalier,
     _poolAmaranthineWall,
     _poolAmbushViper,
+    _poolAncientCraving,
     _poolAngelicPage,
     _poolArcticTreeline,
     _poolArdentRecruit,
@@ -420,6 +427,7 @@ const shard: CardShard = {
     _poolRainOfTears,
     _poolRavos,
     _poolReadTheBones,
+    _poolReaperFromTheAbyss,
     _poolRecruiterOfTheGuard,
     _poolRelmsSketching,
     _poolResoluteWatchdog,
@@ -471,9 +479,11 @@ const shard: CardShard = {
     _poolThunderingRebuke,
     _poolTideSkimmer,
     _poolTitaniaNaturesForce,
+    _poolTreasonOfIsengard,
     _poolTurbulentMoor,
     _poolTurntimberAscetic,
     _poolUktabiFaerie,
+    _poolUlvenwaldBehemoth,
     _poolUnderworldDreams,
     _poolUnholyOfficiant,
     _poolUnknownShores,
@@ -491,6 +501,7 @@ const shard: CardShard = {
     _poolWeb,
     _poolWeldfastWingsmith,
     _poolWheelOfFate,
+    _poolWhirlerVirtuoso,
     _poolWildColos,
     _poolWillowFaerie,
     _poolWinterSoldierBuckyBarnes,
@@ -499,6 +510,7 @@ const shard: CardShard = {
     _poolWizenedCenn,
     _poolWolfsbaneHighlandHero,
     _poolWoodlandDruid,
+    _poolWrongTurn,
     _poolYahenniUndyingPartisan,
     _poolYawningFissure,
     _poolYevasForcemage,

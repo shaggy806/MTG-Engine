@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbhorrentOverlord from "../pool/abhorrent-overlord.js";
 import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-titan.js";
 import _poolAbundantCountryside from "../pool/abundant-countryside.js";
 import _poolAlrundsEpiphany from "../pool/alrunds-epiphany.js";
@@ -75,6 +76,7 @@ import _poolFarTraveler from "../pool/far-traveler.js";
 import _poolFeiyiSnake from "../pool/feiyi-snake.js";
 import _poolFieryFinish from "../pool/fiery-finish.js";
 import _poolFinaleOfDevastation from "../pool/finale-of-devastation.js";
+import _poolFirbolgFlutist from "../pool/firbolg-flutist.js";
 import _poolFireDiamond from "../pool/fire-diamond.js";
 import _poolFirebrandArcher from "../pool/firebrand-archer.js";
 import _poolFlameSlash from "../pool/flame-slash.js";
@@ -172,6 +174,7 @@ import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
 import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
 import _poolRequisitionRaid from "../pool/requisition-raid.js";
+import _poolReverentHoplite from "../pool/reverent-hoplite.js";
 import _poolReyavMasterSmith from "../pool/reyav-master-smith.js";
 import _poolRhonasTheIndomitable from "../pool/rhonas-the-indomitable.js";
 import _poolRiptideLaboratory from "../pool/riptide-laboratory.js";
@@ -265,6 +268,7 @@ import _tokensWurmToken from "../tokens/wurm-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbhorrentOverlord,
     _poolAbominationTerrifyingTitan,
     _poolAbundantCountryside,
     _poolAlrundsEpiphany,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolFeiyiSnake,
     _poolFieryFinish,
     _poolFinaleOfDevastation,
+    _poolFirbolgFlutist,
     _poolFireDiamond,
     _poolFirebrandArcher,
     _poolFlameSlash,
@@ -434,6 +439,7 @@ const shard: CardShard = {
     _poolRecklessBarbarian,
     _poolReflectionsOfLittjara,
     _poolRequisitionRaid,
+    _poolReverentHoplite,
     _poolReyavMasterSmith,
     _poolRhonasTheIndomitable,
     _poolRiptideLaboratory,

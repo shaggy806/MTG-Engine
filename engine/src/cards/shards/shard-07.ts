@@ -89,6 +89,7 @@ import _poolHeartlessSummoning from "../pool/heartless-summoning.js";
 import _poolHeartwoodGiant from "../pool/heartwood-giant.js";
 import _poolHerculesPrinceOfPower from "../pool/hercules-prince-of-power.js";
 import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
+import _poolHiddenNecropolis from "../pool/hidden-necropolis.js";
 import _poolHighlandLake from "../pool/highland-lake.js";
 import _poolHydraBroodmaster from "../pool/hydra-broodmaster.js";
 import _poolIdyllicBeachfront from "../pool/idyllic-beachfront.js";
@@ -102,6 +103,7 @@ import _poolJetmirsGarden from "../pool/jetmirs-garden.js";
 import _poolJwariRuins from "../pool/jwari-ruins.js";
 import _poolKabiraPlateau from "../pool/kabira-plateau.js";
 import _poolKabutoMoth from "../pool/kabuto-moth.js";
+import _poolKariZevSkyshipRaider from "../pool/kari-zev-skyship-raider.js";
 import _poolKeigaTheTideStar from "../pool/keiga-the-tide-star.js";
 import _poolKindercatch from "../pool/kindercatch.js";
 import _poolKingfisher from "../pool/kingfisher.js";
@@ -162,6 +164,7 @@ import _poolRapidHybridization from "../pool/rapid-hybridization.js";
 import _poolRaptorCompanion from "../pool/raptor-companion.js";
 import _poolRaugrinTriome from "../pool/raugrin-triome.js";
 import _poolRavenhillFlock from "../pool/ravenhill-flock.js";
+import _poolRealmOfKoh from "../pool/realm-of-koh.js";
 import _poolReanimate from "../pool/reanimate.js";
 import _poolReconnaissanceMission from "../pool/reconnaissance-mission.js";
 import _poolReflexes from "../pool/reflexes.js";
@@ -202,6 +205,7 @@ import _poolSlimefootAndSquee from "../pool/slimefoot-and-squee.js";
 import _poolSoaringLightbringer from "../pool/soaring-lightbringer.js";
 import _poolSokkasSwordTraining from "../pool/sokkas-sword-training.js";
 import _poolSoulSnare from "../pool/soul-snare.js";
+import _poolSouredSprings from "../pool/soured-springs.js";
 import _poolSpitfireLagac from "../pool/spitfire-lagac.js";
 import _poolStaffOfCompleation from "../pool/staff-of-compleation.js";
 import _poolStarscapeCleric from "../pool/starscape-cleric.js";
@@ -218,6 +222,7 @@ import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
 import _poolThassasOracle from "../pool/thassas-oracle.js";
 import _poolTheShire from "../pool/the-shire.js";
+import _poolThornMammoth from "../pool/thorn-mammoth.js";
 import _poolThornglintBridge from "../pool/thornglint-bridge.js";
 import _poolThunderWall from "../pool/thunder-wall.js";
 import _poolThundertrapTrainer from "../pool/thundertrap-trainer.js";
@@ -269,7 +274,9 @@ import _tokensAstartesWarriorToken from "../tokens/astartes-warrior-token.js";
 import _tokensCragflame from "../tokens/cragflame.js";
 import _tokensDrakeToken from "../tokens/drake-token.js";
 import _tokensEggToken from "../tokens/egg-token.js";
+import _tokensGoblinTokenGoblinSpymaster from "../tokens/goblin-token-goblin-spymaster.js";
 import _tokensHorseToken from "../tokens/horse-token.js";
+import _tokensIllusionToken from "../tokens/illusion-token.js";
 import _tokensInsectTokenBlackFlying from "../tokens/insect-token-black-flying.js";
 import _tokensInsectTokenNestOfScarabs from "../tokens/insect-token-nest-of-scarabs.js";
 import _tokensKaroxBladewingToken from "../tokens/karox-bladewing-token.js";
@@ -367,6 +374,7 @@ const shard: CardShard = {
     _poolHeartwoodGiant,
     _poolHerculesPrinceOfPower,
     _poolHermiticNautilus,
+    _poolHiddenNecropolis,
     _poolHighlandLake,
     _poolHydraBroodmaster,
     _poolIdyllicBeachfront,
@@ -380,6 +388,7 @@ const shard: CardShard = {
     _poolJwariRuins,
     _poolKabiraPlateau,
     _poolKabutoMoth,
+    _poolKariZevSkyshipRaider,
     _poolKeigaTheTideStar,
     _poolKindercatch,
     _poolKingfisher,
@@ -440,6 +449,7 @@ const shard: CardShard = {
     _poolRaptorCompanion,
     _poolRaugrinTriome,
     _poolRavenhillFlock,
+    _poolRealmOfKoh,
     _poolReanimate,
     _poolReconnaissanceMission,
     _poolReflexes,
@@ -480,6 +490,7 @@ const shard: CardShard = {
     _poolSoaringLightbringer,
     _poolSokkasSwordTraining,
     _poolSoulSnare,
+    _poolSouredSprings,
     _poolSpitfireLagac,
     _poolStaffOfCompleation,
     _poolStarscapeCleric,
@@ -496,6 +507,7 @@ const shard: CardShard = {
     _poolTemporalAdept,
     _poolThassasOracle,
     _poolTheShire,
+    _poolThornMammoth,
     _poolThornglintBridge,
     _poolThunderWall,
     _poolThundertrapTrainer,
@@ -549,7 +561,9 @@ const shard: CardShard = {
     _tokensCragflame,
     _tokensDrakeToken,
     _tokensEggToken,
+    _tokensGoblinTokenGoblinSpymaster,
     _tokensHorseToken,
+    _tokensIllusionToken,
     _tokensInsectTokenBlackFlying,
     _tokensInsectTokenNestOfScarabs,
     _tokensKaroxBladewingToken,

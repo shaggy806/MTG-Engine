@@ -33,6 +33,8 @@ import _poolChivalricAlliance from "../pool/chivalric-alliance.js";
 import _poolCinderBarrens from "../pool/cinder-barrens.js";
 import _poolCommandTower from "../pool/command-tower.js";
 import _poolCondemn from "../pool/condemn.js";
+import _poolCondescend from "../pool/condescend.js";
+import _poolCorruptedConscience from "../pool/corrupted-conscience.js";
 import _poolCrashingDrawbridge from "../pool/crashing-drawbridge.js";
 import _poolCrucibleOfFire from "../pool/crucible-of-fire.js";
 import _poolCruelSomnophage from "../pool/cruel-somnophage.js";
@@ -47,6 +49,7 @@ import _poolDesmondMiles from "../pool/desmond-miles.js";
 import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
 import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
 import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
+import _poolDreadhound from "../pool/dreadhound.js";
 import _poolDreamTwist from "../pool/dream-twist.js";
 import _poolDustBowl from "../pool/dust-bowl.js";
 import _poolEdenSeatOfTheSanctum from "../pool/eden-seat-of-the-sanctum.js";
@@ -72,6 +75,7 @@ import _poolGisaAndGeralf from "../pool/gisa-and-geralf.js";
 import _poolGixianPuppeteer from "../pool/gixian-puppeteer.js";
 import _poolGlissasCourier from "../pool/glissas-courier.js";
 import _poolGnawingVermin from "../pool/gnawing-vermin.js";
+import _poolGoShintaiOfBoundlessVigor from "../pool/go-shintai-of-boundless-vigor.js";
 import _poolGoblinCannon from "../pool/goblin-cannon.js";
 import _poolGoldlustTriad from "../pool/goldlust-triad.js";
 import _poolGoldmeadowHarrier from "../pool/goldmeadow-harrier.js";
@@ -278,6 +282,8 @@ const shard: CardShard = {
     _poolCinderBarrens,
     _poolCommandTower,
     _poolCondemn,
+    _poolCondescend,
+    _poolCorruptedConscience,
     _poolCrashingDrawbridge,
     _poolCrucibleOfFire,
     _poolCruelSomnophage,
@@ -292,6 +298,7 @@ const shard: CardShard = {
     _poolDiscipleOfTheOldWays,
     _poolDoctorDoomKingOfLatveria,
     _poolDogmeatEverLoyal,
+    _poolDreadhound,
     _poolDreamTwist,
     _poolDustBowl,
     _poolEdenSeatOfTheSanctum,
@@ -317,6 +324,7 @@ const shard: CardShard = {
     _poolGixianPuppeteer,
     _poolGlissasCourier,
     _poolGnawingVermin,
+    _poolGoShintaiOfBoundlessVigor,
     _poolGoblinCannon,
     _poolGoldlustTriad,
     _poolGoldmeadowHarrier,

@@ -110,6 +110,8 @@ import _poolIdyllicTutor from "../pool/idyllic-tutor.js";
 import _poolIgneousCur from "../pool/igneous-cur.js";
 import _poolIncurableOgre from "../pool/incurable-ogre.js";
 import _poolIronpawAspirant from "../pool/ironpaw-aspirant.js";
+import _poolItzquinthFirstbornOfGishath from "../pool/itzquinth-firstborn-of-gishath.js";
+import _poolIvoryTower from "../pool/ivory-tower.js";
 import _poolJaceBeleren from "../pool/jace-beleren.js";
 import _poolJunjiTheMidnightSky from "../pool/junji-the-midnight-sky.js";
 import _poolJunktown from "../pool/junktown.js";
@@ -174,6 +176,7 @@ import _poolRile from "../pool/rile.js";
 import _poolRimefurReindeer from "../pool/rimefur-reindeer.js";
 import _poolRottedHulk from "../pool/rotted-hulk.js";
 import _poolRuneScarredDemon from "../pool/rune-scarred-demon.js";
+import _poolSarkhanFireblood from "../pool/sarkhan-fireblood.js";
 import _poolScorchedGeyser from "../pool/scorched-geyser.js";
 import _poolSelesnyaSignet from "../pool/selesnya-signet.js";
 import _poolServoExhibition from "../pool/servo-exhibition.js";
@@ -183,6 +186,7 @@ import _poolShelteringLandscape from "../pool/sheltering-landscape.js";
 import _poolShimmeringGrotto from "../pool/shimmering-grotto.js";
 import _poolShinyImpetus from "../pool/shiny-impetus.js";
 import _poolSinkIntoStupor from "../pool/sink-into-stupor.js";
+import _poolSkeletonCrew from "../pool/skeleton-crew.js";
 import _poolSkycloudExpanse from "../pool/skycloud-expanse.js";
 import _poolSkylineDespot from "../pool/skyline-despot.js";
 import _poolSlobadGoblinTinkerer from "../pool/slobad-goblin-tinkerer.js";
@@ -367,6 +371,8 @@ const shard: CardShard = {
     _poolIgneousCur,
     _poolIncurableOgre,
     _poolIronpawAspirant,
+    _poolItzquinthFirstbornOfGishath,
+    _poolIvoryTower,
     _poolJaceBeleren,
     _poolJunjiTheMidnightSky,
     _poolJunktown,
@@ -431,6 +437,7 @@ const shard: CardShard = {
     _poolRimefurReindeer,
     _poolRottedHulk,
     _poolRuneScarredDemon,
+    _poolSarkhanFireblood,
     _poolScorchedGeyser,
     _poolSelesnyaSignet,
     _poolServoExhibition,
@@ -440,6 +447,7 @@ const shard: CardShard = {
     _poolShimmeringGrotto,
     _poolShinyImpetus,
     _poolSinkIntoStupor,
+    _poolSkeletonCrew,
     _poolSkycloudExpanse,
     _poolSkylineDespot,
     _poolSlobadGoblinTinkerer,

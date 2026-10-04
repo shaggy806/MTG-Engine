@@ -80,6 +80,7 @@ import _poolDutifulServants from "../pool/dutiful-servants.js";
 import _poolEmeriaTheSkyRuin from "../pool/emeria-the-sky-ruin.js";
 import _poolEmpyreanEagle from "../pool/empyrean-eagle.js";
 import _poolEshkiTemursRoar from "../pool/eshki-temurs-roar.js";
+import _poolEternalThirst from "../pool/eternal-thirst.js";
 import _poolEtheriumSculptor from "../pool/etherium-sculptor.js";
 import _poolEverybodyLives from "../pool/everybody-lives.js";
 import _poolEyeOfUgin from "../pool/eye-of-ugin.js";
@@ -133,6 +134,7 @@ import _poolLuminousAngel from "../pool/luminous-angel.js";
 import _poolMarduBanner from "../pool/mardu-banner.js";
 import _poolMaritimeGuard from "../pool/maritime-guard.js";
 import _poolMarkedByHonor from "../pool/marked-by-honor.js";
+import _poolMeetingOfMinds from "../pool/meeting-of-minds.js";
 import _poolMikokoroCenterOfTheSea from "../pool/mikokoro-center-of-the-sea.js";
 import _poolMirkoObsessiveTheorist from "../pool/mirko-obsessive-theorist.js";
 import _poolMoggSentry from "../pool/mogg-sentry.js";
@@ -244,6 +246,7 @@ import _poolWallOfBlood from "../pool/wall-of-blood.js";
 import _poolWallOfOmens from "../pool/wall-of-omens.js";
 import _poolWelcomeTheDead from "../pool/welcome-the-dead.js";
 import _poolWhipSergeant from "../pool/whip-sergeant.js";
+import _poolWillScionOfPeace from "../pool/will-scion-of-peace.js";
 import _poolWindDrake from "../pool/wind-drake.js";
 import _poolWindfall from "../pool/windfall.js";
 import _poolWingedCoatl from "../pool/winged-coatl.js";
@@ -345,6 +348,7 @@ const shard: CardShard = {
     _poolEmeriaTheSkyRuin,
     _poolEmpyreanEagle,
     _poolEshkiTemursRoar,
+    _poolEternalThirst,
     _poolEtheriumSculptor,
     _poolEverybodyLives,
     _poolEyeOfUgin,
@@ -398,6 +402,7 @@ const shard: CardShard = {
     _poolMarduBanner,
     _poolMaritimeGuard,
     _poolMarkedByHonor,
+    _poolMeetingOfMinds,
     _poolMikokoroCenterOfTheSea,
     _poolMirkoObsessiveTheorist,
     _poolMoggSentry,
@@ -509,6 +514,7 @@ const shard: CardShard = {
     _poolWallOfOmens,
     _poolWelcomeTheDead,
     _poolWhipSergeant,
+    _poolWillScionOfPeace,
     _poolWindDrake,
     _poolWindfall,
     _poolWingedCoatl,

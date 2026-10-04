@@ -13,6 +13,7 @@ import _poolAnarchist from "../pool/anarchist.js";
 import _poolArchfiendOfDespair from "../pool/archfiend-of-despair.js";
 import _poolArchmagesCharm from "../pool/archmages-charm.js";
 import _poolAvengerOfZendikar from "../pool/avenger-of-zendikar.js";
+import _poolAyaOfAlexandria from "../pool/aya-of-alexandria.js";
 import _poolAzoriusSignet from "../pool/azorius-signet.js";
 import _poolBanishingBetrayal from "../pool/banishing-betrayal.js";
 import _poolBarbedBattlegear from "../pool/barbed-battlegear.js";
@@ -48,6 +49,7 @@ import _poolCongregate from "../pool/congregate.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
+import _poolCruelTutor from "../pool/cruel-tutor.js";
 import _poolDecadentDragon from "../pool/decadent-dragon.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
@@ -138,6 +140,7 @@ import _poolMemorialToFolly from "../pool/memorial-to-folly.js";
 import _poolMichelangeloTheHeart from "../pool/michelangelo-the-heart.js";
 import _poolMichikosReignOfTruth from "../pool/michikos-reign-of-truth.js";
 import _poolMillicentRestlessRevenant from "../pool/millicent-restless-revenant.js";
+import _poolMirkwoodSpider from "../pool/mirkwood-spider.js";
 import _poolMistRaven from "../pool/mist-raven.js";
 import _poolNahiriForgedInFury from "../pool/nahiri-forged-in-fury.js";
 import _poolNantukoDisciple from "../pool/nantuko-disciple.js";
@@ -146,6 +149,7 @@ import _poolNestingDovehawk from "../pool/nesting-dovehawk.js";
 import _poolNineTailWhiteFox from "../pool/nine-tail-white-fox.js";
 import _poolNykthosShrineToNyx from "../pool/nykthos-shrine-to-nyx.js";
 import _poolOakgnarlWarrior from "../pool/oakgnarl-warrior.js";
+import _poolObsessivePursuit from "../pool/obsessive-pursuit.js";
 import _poolOtawaraSoaringCity from "../pool/otawara-soaring-city.js";
 import _poolPatchworkAutomaton from "../pool/patchwork-automaton.js";
 import _poolPeerlessRecycling from "../pool/peerless-recycling.js";
@@ -191,6 +195,7 @@ import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
 import _poolSongsOfTheDamned from "../pool/songs-of-the-damned.js";
 import _poolSorinImperiousBloodlord from "../pool/sorin-imperious-bloodlord.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
+import _poolSpectrumSentinel from "../pool/spectrum-sentinel.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStalkingVengeance from "../pool/stalking-vengeance.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
@@ -265,6 +270,7 @@ import _tokensInklingToken from "../tokens/inkling-token.js";
 import _tokensKrakenTokenSpawningKraken from "../tokens/kraken-token-spawning-kraken.js";
 import _tokensPhyrexianHorrorToken from "../tokens/phyrexian-horror-token.js";
 import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
+import _tokensSkeletonPirateToken from "../tokens/skeleton-pirate-token.js";
 import _tokensSpiritTokenKuraTheBoundlessSky from "../tokens/spirit-token-kura-the-boundless-sky.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
 import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
@@ -281,6 +287,7 @@ const shard: CardShard = {
     _poolArchfiendOfDespair,
     _poolArchmagesCharm,
     _poolAvengerOfZendikar,
+    _poolAyaOfAlexandria,
     _poolAzoriusSignet,
     _poolBanishingBetrayal,
     _poolBarbedBattlegear,
@@ -316,6 +323,7 @@ const shard: CardShard = {
     _poolCopperlineGorge,
     _poolCourserOfKruphix,
     _poolCrucibleOfWorlds,
+    _poolCruelTutor,
     _poolDecadentDragon,
     _poolDeeprootChampion,
     _poolDesperateCharge,
@@ -406,6 +414,7 @@ const shard: CardShard = {
     _poolMichelangeloTheHeart,
     _poolMichikosReignOfTruth,
     _poolMillicentRestlessRevenant,
+    _poolMirkwoodSpider,
     _poolMistRaven,
     _poolNahiriForgedInFury,
     _poolNantukoDisciple,
@@ -414,6 +423,7 @@ const shard: CardShard = {
     _poolNineTailWhiteFox,
     _poolNykthosShrineToNyx,
     _poolOakgnarlWarrior,
+    _poolObsessivePursuit,
     _poolOtawaraSoaringCity,
     _poolPatchworkAutomaton,
     _poolPeerlessRecycling,
@@ -459,6 +469,7 @@ const shard: CardShard = {
     _poolSongsOfTheDamned,
     _poolSorinImperiousBloodlord,
     _poolSpawnbinderMage,
+    _poolSpectrumSentinel,
     _poolSpellkeeperWeird,
     _poolStalkingVengeance,
     _poolStandingTroops,
@@ -535,6 +546,7 @@ const shard: CardShard = {
     _tokensKrakenTokenSpawningKraken,
     _tokensPhyrexianHorrorToken,
     _tokensRatTokenCantBlock,
+    _tokensSkeletonPirateToken,
     _tokensSpiritTokenKuraTheBoundlessSky,
     _tokensWhiteDogToken11,
     _tokensZombieDruidToken,

@@ -89,6 +89,7 @@ import _poolGrimBauble from "../pool/grim-bauble.js";
 import _poolGrolnokTheOmnivore from "../pool/grolnok-the-omnivore.js";
 import _poolGuardianProject from "../pool/guardian-project.js";
 import _poolGuardiansOfMeletis from "../pool/guardians-of-meletis.js";
+import _poolHadanasClimb from "../pool/hadanas-climb.js";
 import _poolHallowedFountain from "../pool/hallowed-fountain.js";
 import _poolHandOfSilumgar from "../pool/hand-of-silumgar.js";
 import _poolHavenwoodWurm from "../pool/havenwood-wurm.js";
@@ -227,6 +228,7 @@ import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
 import _poolSupportiveParents from "../pool/supportive-parents.js";
 import _poolSurrakarMarauder from "../pool/surrakar-marauder.js";
 import _poolSwordOfSinewAndSteel from "../pool/sword-of-sinew-and-steel.js";
+import _poolSynapseSliver from "../pool/synapse-sliver.js";
 import _poolTajuruSnarecaster from "../pool/tajuru-snarecaster.js";
 import _poolTangleweaveArmor from "../pool/tangleweave-armor.js";
 import _poolTarnishedCitadel from "../pool/tarnished-citadel.js";
@@ -260,6 +262,7 @@ import _poolWickerWitch from "../pool/wicker-witch.js";
 import _poolWilsonRefinedGrizzly from "../pool/wilson-refined-grizzly.js";
 import _poolWindScarredCrag from "../pool/wind-scarred-crag.js";
 import _poolWingspanStride from "../pool/wingspan-stride.js";
+import _poolWinternightStories from "../pool/winternight-stories.js";
 import _poolWintersIntervention from "../pool/winters-intervention.js";
 import _poolWitchsCottage from "../pool/witchs-cottage.js";
 import _poolWyluliWolf from "../pool/wyluli-wolf.js";
@@ -359,6 +362,7 @@ const shard: CardShard = {
     _poolGrolnokTheOmnivore,
     _poolGuardianProject,
     _poolGuardiansOfMeletis,
+    _poolHadanasClimb,
     _poolHallowedFountain,
     _poolHandOfSilumgar,
     _poolHavenwoodWurm,
@@ -497,6 +501,7 @@ const shard: CardShard = {
     _poolSupportiveParents,
     _poolSurrakarMarauder,
     _poolSwordOfSinewAndSteel,
+    _poolSynapseSliver,
     _poolTajuruSnarecaster,
     _poolTangleweaveArmor,
     _poolTarnishedCitadel,
@@ -530,6 +535,7 @@ const shard: CardShard = {
     _poolWilsonRefinedGrizzly,
     _poolWindScarredCrag,
     _poolWingspanStride,
+    _poolWinternightStories,
     _poolWintersIntervention,
     _poolWitchsCottage,
     _poolWyluliWolf,

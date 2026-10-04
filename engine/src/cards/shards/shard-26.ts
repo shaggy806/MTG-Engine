@@ -13,6 +13,7 @@ import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
 import _poolAirElemental from "../pool/air-elemental.js";
 import _poolAkoumTeeth from "../pool/akoum-teeth.js";
 import _poolAkromaAngelOfWrath from "../pool/akroma-angel-of-wrath.js";
+import _poolAmbrosiaWhiteheart from "../pool/ambrosia-whiteheart.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
 import _poolAranaHeartOfTheSpider from "../pool/arana-heart-of-the-spider.js";
@@ -29,6 +30,7 @@ import _poolBogSmugglers from "../pool/bog-smugglers.js";
 import _poolBoldImpaler from "../pool/bold-impaler.js";
 import _poolBorealShelf from "../pool/boreal-shelf.js";
 import _poolBreakneckBerserker from "../pool/breakneck-berserker.js";
+import _poolByrkeLongEarOfTheLaw from "../pool/byrke-long-ear-of-the-law.js";
 import _poolCactusPreserve from "../pool/cactus-preserve.js";
 import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
@@ -42,6 +44,7 @@ import _poolCorpseKnight from "../pool/corpse-knight.js";
 import _poolCountOnLuck from "../pool/count-on-luck.js";
 import _poolCracklingDoom from "../pool/crackling-doom.js";
 import _poolCrenellatedWall from "../pool/crenellated-wall.js";
+import _poolCroakingCounterpart from "../pool/croaking-counterpart.js";
 import _poolDecreeOfPain from "../pool/decree-of-pain.js";
 import _poolDinaEssenceBrewer from "../pool/dina-essence-brewer.js";
 import _poolDrEggman from "../pool/dr-eggman.js";
@@ -96,6 +99,7 @@ import _poolGutterSkulk from "../pool/gutter-skulk.js";
 import _poolHarbingerOfTheHunt from "../pool/harbinger-of-the-hunt.js";
 import _poolHeapGate from "../pool/heap-gate.js";
 import _poolHitTheMotherLode from "../pool/hit-the-mother-lode.js";
+import _poolHollowhengeOverlord from "../pool/hollowhenge-overlord.js";
 import _poolHostileMinotaur from "../pool/hostile-minotaur.js";
 import _poolHumbleDefector from "../pool/humble-defector.js";
 import _poolHungryMegasloth from "../pool/hungry-megasloth.js";
@@ -218,6 +222,7 @@ import _poolTerrianWorldTyrant from "../pool/terrian-world-tyrant.js";
 import _poolTheFireCrystal from "../pool/the-fire-crystal.js";
 import _poolTheGreatHenge from "../pool/the-great-henge.js";
 import _poolTheMagicMirror from "../pool/the-magic-mirror.js";
+import _poolTheSeedcore from "../pool/the-seedcore.js";
 import _poolTheodenKingOfRohan from "../pool/theoden-king-of-rohan.js";
 import _poolThirstingShade from "../pool/thirsting-shade.js";
 import _poolThornhideWolves from "../pool/thornhide-wolves.js";
@@ -273,6 +278,7 @@ const shard: CardShard = {
     _poolAirElemental,
     _poolAkoumTeeth,
     _poolAkromaAngelOfWrath,
+    _poolAmbrosiaWhiteheart,
     _poolAncientBrontodon,
     _poolApexDevastator,
     _poolAranaHeartOfTheSpider,
@@ -289,6 +295,7 @@ const shard: CardShard = {
     _poolBoldImpaler,
     _poolBorealShelf,
     _poolBreakneckBerserker,
+    _poolByrkeLongEarOfTheLaw,
     _poolCactusPreserve,
     _poolCallToTheFeast,
     _poolCanyonJerboa,
@@ -302,6 +309,7 @@ const shard: CardShard = {
     _poolCountOnLuck,
     _poolCracklingDoom,
     _poolCrenellatedWall,
+    _poolCroakingCounterpart,
     _poolDecreeOfPain,
     _poolDinaEssenceBrewer,
     _poolDrEggman,
@@ -356,6 +364,7 @@ const shard: CardShard = {
     _poolHarbingerOfTheHunt,
     _poolHeapGate,
     _poolHitTheMotherLode,
+    _poolHollowhengeOverlord,
     _poolHostileMinotaur,
     _poolHumbleDefector,
     _poolHungryMegasloth,
@@ -478,6 +487,7 @@ const shard: CardShard = {
     _poolTheFireCrystal,
     _poolTheGreatHenge,
     _poolTheMagicMirror,
+    _poolTheSeedcore,
     _poolTheodenKingOfRohan,
     _poolThirstingShade,
     _poolThornhideWolves,

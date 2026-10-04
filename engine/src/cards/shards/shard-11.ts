@@ -53,6 +53,7 @@ import _poolCordialVampire from "../pool/cordial-vampire.js";
 import _poolCripplingFear from "../pool/crippling-fear.js";
 import _poolCrystallineCrawler from "../pool/crystalline-crawler.js";
 import _poolCunningRhetoric from "../pool/cunning-rhetoric.js";
+import _poolCuratorsWard from "../pool/curators-ward.js";
 import _poolCuriosityCrafter from "../pool/curiosity-crafter.js";
 import _poolDarksteelForge from "../pool/darksteel-forge.js";
 import _poolDawnsireSunstarDreadnought from "../pool/dawnsire-sunstar-dreadnought.js";
@@ -111,6 +112,7 @@ import _poolHearthfireHobgoblin from "../pool/hearthfire-hobgoblin.js";
 import _poolHeatedDebate from "../pool/heated-debate.js";
 import _poolHedronScrabbler from "../pool/hedron-scrabbler.js";
 import _poolHelmOfAwakening from "../pool/helm-of-awakening.js";
+import _poolHeraldOfSlaanesh from "../pool/herald-of-slaanesh.js";
 import _poolHeraldicBanner from "../pool/heraldic-banner.js";
 import _poolHitchclawRecluse from "../pool/hitchclaw-recluse.js";
 import _poolHoardRobber from "../pool/hoard-robber.js";
@@ -139,6 +141,7 @@ import _poolKithkinBillyrider from "../pool/kithkin-billyrider.js";
 import _poolKoboldsOfKherKeep from "../pool/kobolds-of-kher-keep.js";
 import _poolKyrenGlider from "../pool/kyren-glider.js";
 import _poolLadyOctopusInspiredInventor from "../pool/lady-octopus-inspired-inventor.js";
+import _poolLegolasGreenleaf from "../pool/legolas-greenleaf.js";
 import _poolLeoninSkyhunter from "../pool/leonin-skyhunter.js";
 import _poolLeshracsRite from "../pool/leshracs-rite.js";
 import _poolLilianasSteward from "../pool/lilianas-steward.js";
@@ -159,6 +162,7 @@ import _poolMoriokReaver from "../pool/moriok-reaver.js";
 import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
 import _poolMoxTantalite from "../pool/mox-tantalite.js";
+import _poolMusterTheDeparted from "../pool/muster-the-departed.js";
 import _poolMysidianElder from "../pool/mysidian-elder.js";
 import _poolMysticForge from "../pool/mystic-forge.js";
 import _poolMysticGate from "../pool/mystic-gate.js";
@@ -227,6 +231,7 @@ import _poolSistersOfTheFlame from "../pool/sisters-of-the-flame.js";
 import _poolSkyEelSchool from "../pool/sky-eel-school.js";
 import _poolSkyclaveCleric from "../pool/skyclave-cleric.js";
 import _poolSkyhunterSkirmisher from "../pool/skyhunter-skirmisher.js";
+import _poolSlingGangLieutenant from "../pool/sling-gang-lieutenant.js";
 import _poolSliverHivelord from "../pool/sliver-hivelord.js";
 import _poolSomnomancer from "../pool/somnomancer.js";
 import _poolSongOfFreyalise from "../pool/song-of-freyalise.js";
@@ -253,6 +258,7 @@ import _poolTalrandsInvocation from "../pool/talrands-invocation.js";
 import _poolTanglespanBridgeworks from "../pool/tanglespan-bridgeworks.js";
 import _poolTearAsunder from "../pool/tear-asunder.js";
 import _poolTempestTechnique from "../pool/tempest-technique.js";
+import _poolTenzaGodosMaul from "../pool/tenza-godos-maul.js";
 import _poolTerrorOfThePeaks from "../pool/terror-of-the-peaks.js";
 import _poolThaliaHereticCathar from "../pool/thalia-heretic-cathar.js";
 import _poolTheBeamtownBullies from "../pool/the-beamtown-bullies.js";
@@ -290,9 +296,11 @@ import _poolWirewoodSymbiote from "../pool/wirewood-symbiote.js";
 import _poolWishcoinCrab from "../pool/wishcoin-crab.js";
 import _poolWithinRange from "../pool/within-range.js";
 import _poolYevaNaturesHerald from "../pool/yeva-natures-herald.js";
+import _poolYouFindTheVillainsLair from "../pool/you-find-the-villains-lair.js";
 import _poolZetalpaPrimalDawn from "../pool/zetalpa-primal-dawn.js";
 import _poolZombieMaster from "../pool/zombie-master.js";
 import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
+import _tokensDragonTokenDragonbackAssault from "../tokens/dragon-token-dragonback-assault.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensGreenElementalToken22 from "../tokens/green-elemental-token-2-2.js";
 import _tokensHeroTokenBlackMagesRod from "../tokens/hero-token-black-mages-rod.js";
@@ -355,6 +363,7 @@ const shard: CardShard = {
     _poolCripplingFear,
     _poolCrystallineCrawler,
     _poolCunningRhetoric,
+    _poolCuratorsWard,
     _poolCuriosityCrafter,
     _poolDarksteelForge,
     _poolDawnsireSunstarDreadnought,
@@ -413,6 +422,7 @@ const shard: CardShard = {
     _poolHeatedDebate,
     _poolHedronScrabbler,
     _poolHelmOfAwakening,
+    _poolHeraldOfSlaanesh,
     _poolHeraldicBanner,
     _poolHitchclawRecluse,
     _poolHoardRobber,
@@ -441,6 +451,7 @@ const shard: CardShard = {
     _poolKoboldsOfKherKeep,
     _poolKyrenGlider,
     _poolLadyOctopusInspiredInventor,
+    _poolLegolasGreenleaf,
     _poolLeoninSkyhunter,
     _poolLeshracsRite,
     _poolLilianasSteward,
@@ -461,6 +472,7 @@ const shard: CardShard = {
     _poolMossDiamond,
     _poolMossdog,
     _poolMoxTantalite,
+    _poolMusterTheDeparted,
     _poolMysidianElder,
     _poolMysticForge,
     _poolMysticGate,
@@ -529,6 +541,7 @@ const shard: CardShard = {
     _poolSkyEelSchool,
     _poolSkyclaveCleric,
     _poolSkyhunterSkirmisher,
+    _poolSlingGangLieutenant,
     _poolSliverHivelord,
     _poolSomnomancer,
     _poolSongOfFreyalise,
@@ -555,6 +568,7 @@ const shard: CardShard = {
     _poolTanglespanBridgeworks,
     _poolTearAsunder,
     _poolTempestTechnique,
+    _poolTenzaGodosMaul,
     _poolTerrorOfThePeaks,
     _poolThaliaHereticCathar,
     _poolTheBeamtownBullies,
@@ -592,11 +606,13 @@ const shard: CardShard = {
     _poolWishcoinCrab,
     _poolWithinRange,
     _poolYevaNaturesHerald,
+    _poolYouFindTheVillainsLair,
     _poolZetalpaPrimalDawn,
     _poolZombieMaster,
   ],
   tokens: [
     _tokens22BlackBirdToken,
+    _tokensDragonTokenDragonbackAssault,
     _tokensElementalToken,
     _tokensGreenElementalToken22,
     _tokensHeroTokenBlackMagesRod,

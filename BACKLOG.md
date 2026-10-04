@@ -92,7 +92,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` lists the top 5000 by EDHREC rank (3,347 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 5011 are triaged (batches 4–29), and past the list, ranks 5011–5728 of the Oracle snapshot's EDHREC ranks (batches 30–32);
+  engine features that block the most of the rest. Ranks through 5011 are triaged (batches 4–29), and past the list, ranks 5011–5968 of the Oracle snapshot's EDHREC ranks (batches 30–33);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -313,6 +313,19 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   current controller sacrifice the permanent; if control changed, a card that says *you* sacrifice
   it should do nothing (rule 701.21a). Sneak Attack has it today; Come Back Wrong and Apprentice
   Necromancer wait on it.
+- **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape.** Each reviewer
+  flagged these while blocking a new card for the same reason; none was re-run, so check each:
+  - "This or another X" as one trigger, which misses its own entry when it isn't an X (a copy,
+    Conspiracy): Ayara, First of Locthwain and Bloomvine Regent (Théoden and Pashalik Mons are
+    split now).
+  - `each-player-may` asks one player at a time where the ruling has every player choose first,
+    then all act at once: Will of the Jeskai's wheel mode, Kwain, Itinerant Meddler.
+  - `trigger-controller` for "that player" on a spell-cast trigger reads the spell's controller as
+    the trigger resolves, so a stolen-library spell countered first points at its owner: Forced
+    Fruition, Ruric Thar, Spellshock, Magebane Lizard.
+  - `attach` to a "created" token picks one when a doubler makes two (Black Mage's Rod).
+  - Comments cite rule 610.3c for "exile nothing if the source already left"; it's 610.3a/b
+    (`game.ts`'s `exileObject`, `effects.ts`'s `untilSourceLeaves`). The behaviour is right.
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.

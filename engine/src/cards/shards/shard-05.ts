@@ -26,6 +26,7 @@ import _poolBasalThrull from "../pool/basal-thrull.js";
 import _poolBattleDisplay from "../pool/battle-display.js";
 import _poolBeledrosWitherbloom from "../pool/beledros-witherbloom.js";
 import _poolBellowingCrier from "../pool/bellowing-crier.js";
+import _poolBilbosGambit from "../pool/bilbos-gambit.js";
 import _poolBishopOfWings from "../pool/bishop-of-wings.js";
 import _poolBladedSentinel from "../pool/bladed-sentinel.js";
 import _poolBlanchwoodArmor from "../pool/blanchwood-armor.js";
@@ -88,6 +89,7 @@ import _poolEternalWitness from "../pool/eternal-witness.js";
 import _poolEyeblightAssassin from "../pool/eyeblight-assassin.js";
 import _poolFakeYourOwnDeath from "../pool/fake-your-own-death.js";
 import _poolFateUnraveler from "../pool/fate-unraveler.js";
+import _poolFightOn from "../pool/fight-on.js";
 import _poolFiligreeSages from "../pool/filigree-sages.js";
 import _poolFinneasAceArcher from "../pool/finneas-ace-archer.js";
 import _poolFlawlessManeuver from "../pool/flawless-maneuver.js";
@@ -134,6 +136,7 @@ import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
 import _poolJacesSanctum from "../pool/jaces-sanctum.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
+import _poolKeepSafe from "../pool/keep-safe.js";
 import _poolKellanTheKid from "../pool/kellan-the-kid.js";
 import _poolLeapingMaster from "../pool/leaping-master.js";
 import _poolLeyDruid from "../pool/ley-druid.js";
@@ -271,6 +274,7 @@ import _poolYouthfulScholar from "../pool/youthful-scholar.js";
 import _poolZodiacRooster from "../pool/zodiac-rooster.js";
 import _poolZodiacSnake from "../pool/zodiac-snake.js";
 import _poolZurgoStormrender from "../pool/zurgo-stormrender.js";
+import _tokensAssassinTokenAyaOfAlexandria from "../tokens/assassin-token-aya-of-alexandria.js";
 import _tokensBananaToken from "../tokens/banana-token.js";
 import _tokensDeathtouchSnakeToken from "../tokens/deathtouch-snake-token.js";
 import _tokensHalflingToken from "../tokens/halfling-token.js";
@@ -305,6 +309,7 @@ const shard: CardShard = {
     _poolBattleDisplay,
     _poolBeledrosWitherbloom,
     _poolBellowingCrier,
+    _poolBilbosGambit,
     _poolBishopOfWings,
     _poolBladedSentinel,
     _poolBlanchwoodArmor,
@@ -367,6 +372,7 @@ const shard: CardShard = {
     _poolEyeblightAssassin,
     _poolFakeYourOwnDeath,
     _poolFateUnraveler,
+    _poolFightOn,
     _poolFiligreeSages,
     _poolFinneasAceArcher,
     _poolFlawlessManeuver,
@@ -413,6 +419,7 @@ const shard: CardShard = {
     _poolJacesSanctum,
     _poolJasmineBoreal,
     _poolKederektParasite,
+    _poolKeepSafe,
     _poolKellanTheKid,
     _poolLeapingMaster,
     _poolLeyDruid,
@@ -552,6 +559,7 @@ const shard: CardShard = {
     _poolZurgoStormrender,
   ],
   tokens: [
+    _tokensAssassinTokenAyaOfAlexandria,
     _tokensBananaToken,
     _tokensDeathtouchSnakeToken,
     _tokensHalflingToken,

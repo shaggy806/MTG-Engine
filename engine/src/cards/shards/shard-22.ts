@@ -146,6 +146,7 @@ import _poolNeedlethornDrake from "../pool/needlethorn-drake.js";
 import _poolNestedShambler from "../pool/nested-shambler.js";
 import _poolNexusWardens from "../pool/nexus-wardens.js";
 import _poolNissaVoiceOfZendikar from "../pool/nissa-voice-of-zendikar.js";
+import _poolNoMoreLies from "../pool/no-more-lies.js";
 import _poolNomadOutpost from "../pool/nomad-outpost.js";
 import _poolNukaColaVendingMachine from "../pool/nuka-cola-vending-machine.js";
 import _poolNyxbornCourser from "../pool/nyxborn-courser.js";
@@ -159,6 +160,7 @@ import _poolOrcishBloodpainter from "../pool/orcish-bloodpainter.js";
 import _poolOtepecHuntmaster from "../pool/otepec-huntmaster.js";
 import _poolOvergrownEstate from "../pool/overgrown-estate.js";
 import _poolPainfulTruths from "../pool/painful-truths.js";
+import _poolPalaceSiege from "../pool/palace-siege.js";
 import _poolPhyresis from "../pool/phyresis.js";
 import _poolPillarfieldOx from "../pool/pillarfield-ox.js";
 import _poolPlatedWurm from "../pool/plated-wurm.js";
@@ -190,6 +192,7 @@ import _poolScavengingScarab from "../pool/scavenging-scarab.js";
 import _poolSealOfStrength from "../pool/seal-of-strength.js";
 import _poolSeismicSpike from "../pool/seismic-spike.js";
 import _poolSentinelsOfGlenElendra from "../pool/sentinels-of-glen-elendra.js";
+import _poolShepherdOfRot from "../pool/shepherd-of-rot.js";
 import _poolShireTerrace from "../pool/shire-terrace.js";
 import _poolSiegeGangCommander from "../pool/siege-gang-commander.js";
 import _poolSkirkProspector from "../pool/skirk-prospector.js";
@@ -271,6 +274,7 @@ import _poolYawgmothThranPhysician from "../pool/yawgmoth-thran-physician.js";
 import _poolZiatoraTheIncinerator from "../pool/ziatora-the-incinerator.js";
 import _tokensDragonEggToken from "../tokens/dragon-egg-token.js";
 import _tokensDwarfToken from "../tokens/dwarf-token.js";
+import _tokensHarpyToken from "../tokens/harpy-token.js";
 import _tokensLifelinkCatToken from "../tokens/lifelink-cat-token.js";
 import _tokensPhobos from "../tokens/phobos.js";
 import _tokensSnakeToken from "../tokens/snake-token.js";
@@ -420,6 +424,7 @@ const shard: CardShard = {
     _poolNestedShambler,
     _poolNexusWardens,
     _poolNissaVoiceOfZendikar,
+    _poolNoMoreLies,
     _poolNomadOutpost,
     _poolNukaColaVendingMachine,
     _poolNyxbornCourser,
@@ -433,6 +438,7 @@ const shard: CardShard = {
     _poolOtepecHuntmaster,
     _poolOvergrownEstate,
     _poolPainfulTruths,
+    _poolPalaceSiege,
     _poolPhyresis,
     _poolPillarfieldOx,
     _poolPlatedWurm,
@@ -464,6 +470,7 @@ const shard: CardShard = {
     _poolSealOfStrength,
     _poolSeismicSpike,
     _poolSentinelsOfGlenElendra,
+    _poolShepherdOfRot,
     _poolShireTerrace,
     _poolSiegeGangCommander,
     _poolSkirkProspector,
@@ -547,6 +554,7 @@ const shard: CardShard = {
   tokens: [
     _tokensDragonEggToken,
     _tokensDwarfToken,
+    _tokensHarpyToken,
     _tokensLifelinkCatToken,
     _tokensPhobos,
     _tokensSnakeToken,
