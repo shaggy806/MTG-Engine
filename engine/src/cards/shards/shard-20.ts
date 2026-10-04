@@ -36,6 +36,7 @@ import _poolBoonReflection from "../pool/boon-reflection.js";
 import _poolBorosLocket from "../pool/boros-locket.js";
 import _poolBothersomeQuasit from "../pool/bothersome-quasit.js";
 import _poolBragoKingEternal from "../pool/brago-king-eternal.js";
+import _poolBrambleSovereign from "../pool/bramble-sovereign.js";
 import _poolBrassSecretary from "../pool/brass-secretary.js";
 import _poolBreakDown from "../pool/break-down.js";
 import _poolBriaRiptideRogue from "../pool/bria-riptide-rogue.js";
@@ -65,6 +66,7 @@ import _poolDauthiVoidwalker from "../pool/dauthi-voidwalker.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
 import _poolDeathreapRitual from "../pool/deathreap-ritual.js";
+import _poolDeathsPresence from "../pool/deaths-presence.js";
 import _poolDelayedBlastFireball from "../pool/delayed-blast-fireball.js";
 import _poolDimirLocket from "../pool/dimir-locket.js";
 import _poolDispel from "../pool/dispel.js";
@@ -104,10 +106,12 @@ import _poolHaldanAvidArcanist from "../pool/haldan-avid-arcanist.js";
 import _poolHarrow from "../pool/harrow.js";
 import _poolHateMirage from "../pool/hate-mirage.js";
 import _poolHeliodTheRadiantDawn from "../pool/heliod-the-radiant-dawn.js";
+import _poolHelmOfTheGods from "../pool/helm-of-the-gods.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolImpulse from "../pool/impulse.js";
+import _poolInvigoratingHotSpring from "../pool/invigorating-hot-spring.js";
 import _poolItllQuenchYa from "../pool/itll-quench-ya.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
@@ -123,6 +127,7 @@ import _poolLeonardoTheBalance from "../pool/leonardo-the-balance.js";
 import _poolLeoninArmorguard from "../pool/leonin-armorguard.js";
 import _poolLifesLegacy from "../pool/lifes-legacy.js";
 import _poolLochKorrigan from "../pool/loch-korrigan.js";
+import _poolLushOasis from "../pool/lush-oasis.js";
 import _poolManaDrain from "../pool/mana-drain.js";
 import _poolManagorgerHydra from "../pool/managorger-hydra.js";
 import _poolMarshFlats from "../pool/marsh-flats.js";
@@ -186,6 +191,7 @@ import _poolSirShandlarOfEberyn from "../pool/sir-shandlar-of-eberyn.js";
 import _poolSkyshipStalker from "../pool/skyship-stalker.js";
 import _poolSkysnareSpider from "../pool/skysnare-spider.js";
 import _poolSlipThroughSpace from "../pool/slip-through-space.js";
+import _poolSnappingVoidcraw from "../pool/snapping-voidcraw.js";
 import _poolSnowCoveredMountain from "../pool/snow-covered-mountain.js";
 import _poolSocialClimber from "../pool/social-climber.js";
 import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
@@ -199,6 +205,7 @@ import _poolStoneRain from "../pool/stone-rain.js";
 import _poolStonehornChanter from "../pool/stonehorn-chanter.js";
 import _poolStormShaman from "../pool/storm-shaman.js";
 import _poolStormcloudSpirit from "../pool/stormcloud-spirit.js";
+import _poolStormscaleScion from "../pool/stormscale-scion.js";
 import _poolSubterraneanCavern from "../pool/subterranean-cavern.js";
 import _poolSuddenStrike from "../pool/sudden-strike.js";
 import _poolSultaiAscendancy from "../pool/sultai-ascendancy.js";
@@ -225,12 +232,14 @@ import _poolTimberwatchElf from "../pool/timberwatch-elf.js";
 import _poolTitansStrength from "../pool/titans-strength.js";
 import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTormodsCrypt from "../pool/tormods-crypt.js";
+import _poolTrailOfCrumbs from "../pool/trail-of-crumbs.js";
 import _poolTrainingCenter from "../pool/training-center.js";
 import _poolTrostaniDiscordant from "../pool/trostani-discordant.js";
 import _poolUndeadAugur from "../pool/undead-augur.js";
 import _poolVerdantSunsAvatar from "../pool/verdant-suns-avatar.js";
 import _poolViridianAcolyte from "../pool/viridian-acolyte.js";
 import _poolViridianZealot from "../pool/viridian-zealot.js";
+import _poolVodalianHexcatcher from "../pool/vodalian-hexcatcher.js";
 import _poolVoraciousHydra from "../pool/voracious-hydra.js";
 import _poolVorpalSword from "../pool/vorpal-sword.js";
 import _poolVoyagingSatyr from "../pool/voyaging-satyr.js";
@@ -282,6 +291,7 @@ const shard: CardShard = {
     _poolBorosLocket,
     _poolBothersomeQuasit,
     _poolBragoKingEternal,
+    _poolBrambleSovereign,
     _poolBrassSecretary,
     _poolBreakDown,
     _poolBriaRiptideRogue,
@@ -311,6 +321,7 @@ const shard: CardShard = {
     _poolDeadlyInsect,
     _poolDeadlyRollick,
     _poolDeathreapRitual,
+    _poolDeathsPresence,
     _poolDelayedBlastFireball,
     _poolDimirLocket,
     _poolDispel,
@@ -350,10 +361,12 @@ const shard: CardShard = {
     _poolHarrow,
     _poolHateMirage,
     _poolHeliodTheRadiantDawn,
+    _poolHelmOfTheGods,
     _poolHowlingMine,
     _poolHulkingOgre,
     _poolIllusionistsBracers,
     _poolImpulse,
+    _poolInvigoratingHotSpring,
     _poolItllQuenchYa,
     _poolIzzetBoilerworks,
     _poolJackhammer,
@@ -369,6 +382,7 @@ const shard: CardShard = {
     _poolLeoninArmorguard,
     _poolLifesLegacy,
     _poolLochKorrigan,
+    _poolLushOasis,
     _poolManaDrain,
     _poolManagorgerHydra,
     _poolMarshFlats,
@@ -432,6 +446,7 @@ const shard: CardShard = {
     _poolSkyshipStalker,
     _poolSkysnareSpider,
     _poolSlipThroughSpace,
+    _poolSnappingVoidcraw,
     _poolSnowCoveredMountain,
     _poolSocialClimber,
     _poolSorcererOfTheFang,
@@ -445,6 +460,7 @@ const shard: CardShard = {
     _poolStonehornChanter,
     _poolStormShaman,
     _poolStormcloudSpirit,
+    _poolStormscaleScion,
     _poolSubterraneanCavern,
     _poolSuddenStrike,
     _poolSultaiAscendancy,
@@ -471,12 +487,14 @@ const shard: CardShard = {
     _poolTitansStrength,
     _poolTomeBlast,
     _poolTormodsCrypt,
+    _poolTrailOfCrumbs,
     _poolTrainingCenter,
     _poolTrostaniDiscordant,
     _poolUndeadAugur,
     _poolVerdantSunsAvatar,
     _poolViridianAcolyte,
     _poolViridianZealot,
+    _poolVodalianHexcatcher,
     _poolVoraciousHydra,
     _poolVorpalSword,
     _poolVoyagingSatyr,

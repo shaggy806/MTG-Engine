@@ -63,6 +63,7 @@ import _poolEzuriClawOfProgress from "../pool/ezuri-claw-of-progress.js";
 import _poolFatefulEnd from "../pool/fateful-end.js";
 import _poolFelixFiveBoots from "../pool/felix-five-boots.js";
 import _poolFetidImp from "../pool/fetid-imp.js";
+import _poolFilterOut from "../pool/filter-out.js";
 import _poolFireAmbush from "../pool/fire-ambush.js";
 import _poolFirebornKnight from "../pool/fireborn-knight.js";
 import _poolFlameJet from "../pool/flame-jet.js";
@@ -80,6 +81,7 @@ import _poolGhostLitNourisher from "../pool/ghost-lit-nourisher.js";
 import _poolGiantOctopus from "../pool/giant-octopus.js";
 import _poolGideonsReproach from "../pool/gideons-reproach.js";
 import _poolGigantosaurus from "../pool/gigantosaurus.js";
+import _poolGlacierGodmaw from "../pool/glacier-godmaw.js";
 import _poolGnottvoldRecluse from "../pool/gnottvold-recluse.js";
 import _poolGoForTheThroat from "../pool/go-for-the-throat.js";
 import _poolGoblinBrigand from "../pool/goblin-brigand.js";
@@ -127,6 +129,7 @@ import _poolMaggotTherapy from "../pool/maggot-therapy.js";
 import _poolMakeshiftMunitions from "../pool/makeshift-munitions.js";
 import _poolMarshLurker from "../pool/marsh-lurker.js";
 import _poolMeanderingRiver from "../pool/meandering-river.js";
+import _poolMetropolisReformer from "../pool/metropolis-reformer.js";
 import _poolMindbreakTrap from "../pool/mindbreak-trap.js";
 import _poolMirrormade from "../pool/mirrormade.js";
 import _poolMisshapenFiend from "../pool/misshapen-fiend.js";
@@ -160,7 +163,9 @@ import _poolRayOfDistortion from "../pool/ray-of-distortion.js";
 import _poolRazakethsRite from "../pool/razakeths-rite.js";
 import _poolReapTheSeagraf from "../pool/reap-the-seagraf.js";
 import _poolRescind from "../pool/rescind.js";
+import _poolRestlessBivouac from "../pool/restless-bivouac.js";
 import _poolReunionOfTheHouse from "../pool/reunion-of-the-house.js";
+import _poolRoilCartographer from "../pool/roil-cartographer.js";
 import _poolSanctumOfEternity from "../pool/sanctum-of-eternity.js";
 import _poolSangromancer from "../pool/sangromancer.js";
 import _poolSaplingNursery from "../pool/sapling-nursery.js";
@@ -305,6 +310,7 @@ const shard: CardShard = {
     _poolFatefulEnd,
     _poolFelixFiveBoots,
     _poolFetidImp,
+    _poolFilterOut,
     _poolFireAmbush,
     _poolFirebornKnight,
     _poolFlameJet,
@@ -322,6 +328,7 @@ const shard: CardShard = {
     _poolGiantOctopus,
     _poolGideonsReproach,
     _poolGigantosaurus,
+    _poolGlacierGodmaw,
     _poolGnottvoldRecluse,
     _poolGoForTheThroat,
     _poolGoblinBrigand,
@@ -369,6 +376,7 @@ const shard: CardShard = {
     _poolMakeshiftMunitions,
     _poolMarshLurker,
     _poolMeanderingRiver,
+    _poolMetropolisReformer,
     _poolMindbreakTrap,
     _poolMirrormade,
     _poolMisshapenFiend,
@@ -402,7 +410,9 @@ const shard: CardShard = {
     _poolRazakethsRite,
     _poolReapTheSeagraf,
     _poolRescind,
+    _poolRestlessBivouac,
     _poolReunionOfTheHouse,
+    _poolRoilCartographer,
     _poolSanctumOfEternity,
     _poolSangromancer,
     _poolSaplingNursery,

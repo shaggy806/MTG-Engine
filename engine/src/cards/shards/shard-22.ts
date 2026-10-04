@@ -10,6 +10,7 @@ import _poolAmateurHero from "../pool/amateur-hero.js";
 import _poolAngelOfFlightAlabaster from "../pool/angel-of-flight-alabaster.js";
 import _poolAngelOfTheGodPharaoh from "../pool/angel-of-the-god-pharaoh.js";
 import _poolAngelicAccord from "../pool/angelic-accord.js";
+import _poolAnkhOfMishra from "../pool/ankh-of-mishra.js";
 import _poolAnnoyedAltisaur from "../pool/annoyed-altisaur.js";
 import _poolArchivist from "../pool/archivist.js";
 import _poolArdentMilitia from "../pool/ardent-militia.js";
@@ -95,6 +96,7 @@ import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
 import _poolHakodaSelflessCommander from "../pool/hakoda-selfless-commander.js";
 import _poolHeavyBallista from "../pool/heavy-ballista.js";
 import _poolHeirloomBlade from "../pool/heirloom-blade.js";
+import _poolHeronbladeElite from "../pool/heronblade-elite.js";
 import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
@@ -188,6 +190,7 @@ import _poolSkitteringSurveyor from "../pool/skittering-surveyor.js";
 import _poolSkycatSovereign from "../pool/skycat-sovereign.js";
 import _poolSlipperyBogle from "../pool/slippery-bogle.js";
 import _poolSnowCoveredForest from "../pool/snow-covered-forest.js";
+import _poolSongOfCreation from "../pool/song-of-creation.js";
 import _poolSouthernElephant from "../pool/southern-elephant.js";
 import _poolSpeciesSpecialist from "../pool/species-specialist.js";
 import _poolSpellgorgerWeird from "../pool/spellgorger-weird.js";
@@ -202,6 +205,7 @@ import _poolStoneforgeMystic from "../pool/stoneforge-mystic.js";
 import _poolStormcatchMentor from "../pool/stormcatch-mentor.js";
 import _poolStranglingSpores from "../pool/strangling-spores.js";
 import _poolSuChi from "../pool/su-chi.js";
+import _poolSummonFatChocobo from "../pool/summon-fat-chocobo.js";
 import _poolSurlyBadgersaur from "../pool/surly-badgersaur.js";
 import _poolSwashbuckling from "../pool/swashbuckling.js";
 import _poolSwordOfWarAndPeace from "../pool/sword-of-war-and-peace.js";
@@ -215,6 +219,7 @@ import _poolTevalTheBalancedScale from "../pool/teval-the-balanced-scale.js";
 import _poolThaliaAndTheGitrogMonster from "../pool/thalia-and-the-gitrog-monster.js";
 import _poolThassasBounty from "../pool/thassas-bounty.js";
 import _poolTheWallsOfBaSingSe from "../pool/the-walls-of-ba-sing-se.js";
+import _poolTheWanderingRescuer from "../pool/the-wandering-rescuer.js";
 import _poolTheyWentThisWay from "../pool/they-went-this-way.js";
 import _poolThornOfTheBlackRose from "../pool/thorn-of-the-black-rose.js";
 import _poolThornling from "../pool/thornling.js";
@@ -269,6 +274,7 @@ const shard: CardShard = {
     _poolAngelOfFlightAlabaster,
     _poolAngelOfTheGodPharaoh,
     _poolAngelicAccord,
+    _poolAnkhOfMishra,
     _poolAnnoyedAltisaur,
     _poolArchivist,
     _poolArdentMilitia,
@@ -354,6 +360,7 @@ const shard: CardShard = {
     _poolHakodaSelflessCommander,
     _poolHeavyBallista,
     _poolHeirloomBlade,
+    _poolHeronbladeElite,
     _poolHighlandGame,
     _poolHomunculusHorde,
     _poolHonorGuard,
@@ -447,6 +454,7 @@ const shard: CardShard = {
     _poolSkycatSovereign,
     _poolSlipperyBogle,
     _poolSnowCoveredForest,
+    _poolSongOfCreation,
     _poolSouthernElephant,
     _poolSpeciesSpecialist,
     _poolSpellgorgerWeird,
@@ -461,6 +469,7 @@ const shard: CardShard = {
     _poolStormcatchMentor,
     _poolStranglingSpores,
     _poolSuChi,
+    _poolSummonFatChocobo,
     _poolSurlyBadgersaur,
     _poolSwashbuckling,
     _poolSwordOfWarAndPeace,
@@ -474,6 +483,7 @@ const shard: CardShard = {
     _poolThaliaAndTheGitrogMonster,
     _poolThassasBounty,
     _poolTheWallsOfBaSingSe,
+    _poolTheWanderingRescuer,
     _poolTheyWentThisWay,
     _poolThornOfTheBlackRose,
     _poolThornling,

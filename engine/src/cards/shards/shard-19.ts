@@ -107,6 +107,7 @@ import _poolIzzetChronarch from "../pool/izzet-chronarch.js";
 import _poolJoustThrough from "../pool/joust-through.js";
 import _poolKardurDoomscourge from "../pool/kardur-doomscourge.js";
 import _poolKarokWrangler from "../pool/karok-wrangler.js";
+import _poolKelpieGuide from "../pool/kelpie-guide.js";
 import _poolKelsienThePlague from "../pool/kelsien-the-plague.js";
 import _poolKillerWhale from "../pool/killer-whale.js";
 import _poolKnightOfTheKeep from "../pool/knight-of-the-keep.js";
@@ -127,6 +128,7 @@ import _poolMageSlayer from "../pool/mage-slayer.js";
 import _poolMagefireWings from "../pool/magefire-wings.js";
 import _poolMagusOfTheCandelabra from "../pool/magus-of-the-candelabra.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
+import _poolMandateOfAbaddon from "../pool/mandate-of-abaddon.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
 import _poolMasterOfDarkRites from "../pool/master-of-dark-rites.js";
 import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolJoustThrough,
     _poolKardurDoomscourge,
     _poolKarokWrangler,
+    _poolKelpieGuide,
     _poolKelsienThePlague,
     _poolKillerWhale,
     _poolKnightOfTheKeep,
@@ -377,6 +380,7 @@ const shard: CardShard = {
     _poolMagefireWings,
     _poolMagusOfTheCandelabra,
     _poolMakindiSliderunner,
+    _poolMandateOfAbaddon,
     _poolManicVandal,
     _poolMasterOfDarkRites,
     _poolMercilessExecutioner,

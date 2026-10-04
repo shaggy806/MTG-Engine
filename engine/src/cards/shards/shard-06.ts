@@ -16,6 +16,7 @@ import _poolArabellaAbandonedDoll from "../pool/arabella-abandoned-doll.js";
 import _poolArborAdherent from "../pool/arbor-adherent.js";
 import _poolArchangel from "../pool/archangel.js";
 import _poolArmoredGriffin from "../pool/armored-griffin.js";
+import _poolArmoredScrapgorger from "../pool/armored-scrapgorger.js";
 import _poolAtog from "../pool/atog.js";
 import _poolAugmentingAutomaton from "../pool/augmenting-automaton.js";
 import _poolBallLightning from "../pool/ball-lightning.js";
@@ -33,6 +34,7 @@ import _poolBoomerangBasics from "../pool/boomerang-basics.js";
 import _poolBountifulPromenade from "../pool/bountiful-promenade.js";
 import _poolBruvacTheGrandiloquent from "../pool/bruvac-the-grandiloquent.js";
 import _poolBulwarkGiant from "../pool/bulwark-giant.js";
+import _poolBumiEclecticEarthbender from "../pool/bumi-eclectic-earthbender.js";
 import _poolBurrentonShieldBearers from "../pool/burrenton-shield-bearers.js";
 import _poolBurrowing from "../pool/burrowing.js";
 import _poolCallToMind from "../pool/call-to-mind.js";
@@ -88,8 +90,11 @@ import _poolFountainOfRenewal from "../pool/fountain-of-renewal.js";
 import _poolFrostMarsh from "../pool/frost-marsh.js";
 import _poolFrozenShade from "../pool/frozen-shade.js";
 import _poolFyndhornElves from "../pool/fyndhorn-elves.js";
+import _poolGalvanicBlast from "../pool/galvanic-blast.js";
 import _poolGeistOfTheArchives from "../pool/geist-of-the-archives.js";
+import _poolGhostfireSlice from "../pool/ghostfire-slice.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
+import _poolGlimmervoid from "../pool/glimmervoid.js";
 import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
 import _poolGoblinTrashmaster from "../pool/goblin-trashmaster.js";
@@ -108,6 +113,7 @@ import _poolInsatiableAvarice from "../pool/insatiable-avarice.js";
 import _poolJarvisEarthsMightiestButler from "../pool/jarvis-earths-mightiest-butler.js";
 import _poolJinGitaxiasProgressTyrant from "../pool/jin-gitaxias-progress-tyrant.js";
 import _poolJungleLion from "../pool/jungle-lion.js";
+import _poolKingDarienXlviii from "../pool/king-darien-xlviii.js";
 import _poolKujaGenomeSorcerer from "../pool/kuja-genome-sorcerer.js";
 import _poolLathlissDragonQueen from "../pool/lathliss-dragon-queen.js";
 import _poolLegionsLanding from "../pool/legions-landing.js";
@@ -183,6 +189,7 @@ import _poolSilentObserver from "../pool/silent-observer.js";
 import _poolSilverquillCampus from "../pool/silverquill-campus.js";
 import _poolSizzle from "../pool/sizzle.js";
 import _poolSkirsdagFlayer from "../pool/skirsdag-flayer.js";
+import _poolSmokeBomb from "../pool/smoke-bomb.js";
 import _poolSmolderingCrater from "../pool/smoldering-crater.js";
 import _poolSnappingGnarlid from "../pool/snapping-gnarlid.js";
 import _poolSoulboundGuardians from "../pool/soulbound-guardians.js";
@@ -212,6 +219,7 @@ import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
 import _poolTreeMonkey from "../pool/tree-monkey.js";
 import _poolTurntimberGrove from "../pool/turntimber-grove.js";
 import _poolTyrantsFamiliar from "../pool/tyrants-familiar.js";
+import _poolUchuulon from "../pool/uchuulon.js";
 import _poolUnbreathingHorde from "../pool/unbreathing-horde.js";
 import _poolUnnerve from "../pool/unnerve.js";
 import _poolUnrulyMob from "../pool/unruly-mob.js";
@@ -260,6 +268,7 @@ const shard: CardShard = {
     _poolArborAdherent,
     _poolArchangel,
     _poolArmoredGriffin,
+    _poolArmoredScrapgorger,
     _poolAtog,
     _poolAugmentingAutomaton,
     _poolBallLightning,
@@ -277,6 +286,7 @@ const shard: CardShard = {
     _poolBountifulPromenade,
     _poolBruvacTheGrandiloquent,
     _poolBulwarkGiant,
+    _poolBumiEclecticEarthbender,
     _poolBurrentonShieldBearers,
     _poolBurrowing,
     _poolCallToMind,
@@ -332,8 +342,11 @@ const shard: CardShard = {
     _poolFrostMarsh,
     _poolFrozenShade,
     _poolFyndhornElves,
+    _poolGalvanicBlast,
     _poolGeistOfTheArchives,
+    _poolGhostfireSlice,
     _poolGhostlyPrison,
+    _poolGlimmervoid,
     _poolGoblinGangLeader,
     _poolGoblinRally,
     _poolGoblinTrashmaster,
@@ -352,6 +365,7 @@ const shard: CardShard = {
     _poolJarvisEarthsMightiestButler,
     _poolJinGitaxiasProgressTyrant,
     _poolJungleLion,
+    _poolKingDarienXlviii,
     _poolKujaGenomeSorcerer,
     _poolLathlissDragonQueen,
     _poolLegionsLanding,
@@ -427,6 +441,7 @@ const shard: CardShard = {
     _poolSilverquillCampus,
     _poolSizzle,
     _poolSkirsdagFlayer,
+    _poolSmokeBomb,
     _poolSmolderingCrater,
     _poolSnappingGnarlid,
     _poolSoulboundGuardians,
@@ -456,6 +471,7 @@ const shard: CardShard = {
     _poolTreeMonkey,
     _poolTurntimberGrove,
     _poolTyrantsFamiliar,
+    _poolUchuulon,
     _poolUnbreathingHorde,
     _poolUnnerve,
     _poolUnrulyMob,

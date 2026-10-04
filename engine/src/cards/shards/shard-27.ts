@@ -32,6 +32,7 @@ import _poolBrilliantPlan from "../pool/brilliant-plan.js";
 import _poolCabarettiInitiate from "../pool/cabaretti-initiate.js";
 import _poolCancel from "../pool/cancel.js";
 import _poolCandlelightVigil from "../pool/candlelight-vigil.js";
+import _poolCantWakeUp from "../pool/cant-wake-up.js";
 import _poolCelebrityFencer from "../pool/celebrity-fencer.js";
 import _poolCentaurSafeguard from "../pool/centaur-safeguard.js";
 import _poolChantOfTheSkifsang from "../pool/chant-of-the-skifsang.js";
@@ -178,6 +179,7 @@ import _poolSparkElemental from "../pool/spark-elemental.js";
 import _poolSphinxMindbreaker from "../pool/sphinx-mindbreaker.js";
 import _poolSpinerockKnoll from "../pool/spinerock-knoll.js";
 import _poolSpiritedCompanion from "../pool/spirited-companion.js";
+import _poolSporocyst from "../pool/sporocyst.js";
 import _poolSpurredWolverine from "../pool/spurred-wolverine.js";
 import _poolStalkerHag from "../pool/stalker-hag.js";
 import _poolStaunchShieldmate from "../pool/staunch-shieldmate.js";
@@ -186,6 +188,7 @@ import _poolSteelLeafChampion from "../pool/steel-leaf-champion.js";
 import _poolSteepleRoc from "../pool/steeple-roc.js";
 import _poolStitchersSupplier from "../pool/stitchers-supplier.js";
 import _poolStolenStrategy from "../pool/stolen-strategy.js";
+import _poolStonehoofChieftain from "../pool/stonehoof-chieftain.js";
 import _poolStormOfSouls from "../pool/storm-of-souls.js";
 import _poolStormSpirit from "../pool/storm-spirit.js";
 import _poolStrengthOfThePack from "../pool/strength-of-the-pack.js";
@@ -199,6 +202,7 @@ import _poolTenderWildguide from "../pool/tender-wildguide.js";
 import _poolTestOfEndurance from "../pool/test-of-endurance.js";
 import _poolTeysaOrzhovScion from "../pool/teysa-orzhov-scion.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
+import _poolTheOddAcornGang from "../pool/the-odd-acorn-gang.js";
 import _poolTheUnderworldCookbook from "../pool/the-underworld-cookbook.js";
 import _poolTheWanderingMinstrel from "../pool/the-wandering-minstrel.js";
 import _poolThreeTreeRootweaver from "../pool/three-tree-rootweaver.js";
@@ -277,6 +281,7 @@ const shard: CardShard = {
     _poolCabarettiInitiate,
     _poolCancel,
     _poolCandlelightVigil,
+    _poolCantWakeUp,
     _poolCelebrityFencer,
     _poolCentaurSafeguard,
     _poolChantOfTheSkifsang,
@@ -423,6 +428,7 @@ const shard: CardShard = {
     _poolSphinxMindbreaker,
     _poolSpinerockKnoll,
     _poolSpiritedCompanion,
+    _poolSporocyst,
     _poolSpurredWolverine,
     _poolStalkerHag,
     _poolStaunchShieldmate,
@@ -431,6 +437,7 @@ const shard: CardShard = {
     _poolSteepleRoc,
     _poolStitchersSupplier,
     _poolStolenStrategy,
+    _poolStonehoofChieftain,
     _poolStormOfSouls,
     _poolStormSpirit,
     _poolStrengthOfThePack,
@@ -444,6 +451,7 @@ const shard: CardShard = {
     _poolTestOfEndurance,
     _poolTeysaOrzhovScion,
     _poolThantisTheWarweaver,
+    _poolTheOddAcornGang,
     _poolTheUnderworldCookbook,
     _poolTheWanderingMinstrel,
     _poolThreeTreeRootweaver,

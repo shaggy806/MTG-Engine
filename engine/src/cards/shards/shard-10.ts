@@ -43,6 +43,7 @@ import _poolBullRush from "../pool/bull-rush.js";
 import _poolBurstOfEnergy from "../pool/burst-of-energy.js";
 import _poolCanyonMinotaur from "../pool/canyon-minotaur.js";
 import _poolCapitalGuard from "../pool/capital-guard.js";
+import _poolChangelingWayfinder from "../pool/changeling-wayfinder.js";
 import _poolChapelGeist from "../pool/chapel-geist.js";
 import _poolCitanulHierophants from "../pool/citanul-hierophants.js";
 import _poolCivicWayfinder from "../pool/civic-wayfinder.js";
@@ -93,6 +94,7 @@ import _poolGiftOfGranite from "../pool/gift-of-granite.js";
 import _poolGlittermonger from "../pool/glittermonger.js";
 import _poolGoblinHero from "../pool/goblin-hero.js";
 import _poolGoblinReplica from "../pool/goblin-replica.js";
+import _poolGoblinWarStrike from "../pool/goblin-war-strike.js";
 import _poolGolgariCluestone from "../pool/golgari-cluestone.js";
 import _poolGracefulAdept from "../pool/graceful-adept.js";
 import _poolGreaterGood from "../pool/greater-good.js";
@@ -114,6 +116,7 @@ import _poolInspiringRoar from "../pool/inspiring-roar.js";
 import _poolIronwrightsCleansing from "../pool/ironwrights-cleansing.js";
 import _poolJeskaiBanner from "../pool/jeskai-banner.js";
 import _poolJhoiraWeatherlightCaptain from "../pool/jhoira-weatherlight-captain.js";
+import _poolJointExploration from "../pool/joint-exploration.js";
 import _poolJudithCarnageConnoisseur from "../pool/judith-carnage-connoisseur.js";
 import _poolKalakscionHungerTyrant from "../pool/kalakscion-hunger-tyrant.js";
 import _poolKarnLegacyReforged from "../pool/karn-legacy-reforged.js";
@@ -141,10 +144,12 @@ import _poolMarduHateblade from "../pool/mardu-hateblade.js";
 import _poolMerfolkMesmerist from "../pool/merfolk-mesmerist.js";
 import _poolMerfolkSkyscout from "../pool/merfolk-skyscout.js";
 import _poolMigrationPath from "../pool/migration-path.js";
+import _poolMindlessAutomaton from "../pool/mindless-automaton.js";
 import _poolMockingbird from "../pool/mockingbird.js";
 import _poolMoonHeron from "../pool/moon-heron.js";
 import _poolMoonsilverKey from "../pool/moonsilver-key.js";
 import _poolMoorFiend from "../pool/moor-fiend.js";
+import _poolMulch from "../pool/mulch.js";
 import _poolNantukoShade from "../pool/nantuko-shade.js";
 import _poolNecrogenSpellbomb from "../pool/necrogen-spellbomb.js";
 import _poolNecromancersAssistant from "../pool/necromancers-assistant.js";
@@ -152,8 +157,10 @@ import _poolNeedleshotGourna from "../pool/needleshot-gourna.js";
 import _poolNimbleBirdsticker from "../pool/nimble-birdsticker.js";
 import _poolNimbusMaze from "../pool/nimbus-maze.js";
 import _poolNorthPoleGates from "../pool/north-pole-gates.js";
+import _poolNullpriestOfOblivion from "../pool/nullpriest-of-oblivion.js";
 import _poolOashraCultivator from "../pool/oashra-cultivator.js";
 import _poolOgreBattledriver from "../pool/ogre-battledriver.js";
+import _poolOldRutstein from "../pool/old-rutstein.js";
 import _poolOnduGiant from "../pool/ondu-giant.js";
 import _poolOranRiefTheVastwood from "../pool/oran-rief-the-vastwood.js";
 import _poolOrcishSiegemaster from "../pool/orcish-siegemaster.js";
@@ -208,9 +215,11 @@ import _poolStaunchThroneguard from "../pool/staunch-throneguard.js";
 import _poolSteelPlumeMarshal from "../pool/steel-plume-marshal.js";
 import _poolStonefareCrocodile from "../pool/stonefare-crocodile.js";
 import _poolStriderHarness from "../pool/strider-harness.js";
+import _poolSuddenBreakthrough from "../pool/sudden-breakthrough.js";
 import _poolSummonTitan from "../pool/summon-titan.js";
 import _poolSurveillingSprite from "../pool/surveilling-sprite.js";
 import _poolSustenance from "../pool/sustenance.js";
+import _poolSwarmIntelligence from "../pool/swarm-intelligence.js";
 import _poolSwordOfTruthAndJustice from "../pool/sword-of-truth-and-justice.js";
 import _poolSyphonFlesh from "../pool/syphon-flesh.js";
 import _poolSyrVondamSunstarExemplar from "../pool/syr-vondam-sunstar-exemplar.js";
@@ -264,6 +273,7 @@ import _tokens11BlueBirdToken from "../tokens/1-1-blue-bird-token.js";
 import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
 import _tokensKomasCoil from "../tokens/komas-coil.js";
 import _tokensPhyrexianInsectToken from "../tokens/phyrexian-insect-token.js";
+import _tokensTreefolkTokenSylvanOffering from "../tokens/treefolk-token-sylvan-offering.js";
 
 const shard: CardShard = {
   pool: [
@@ -307,6 +317,7 @@ const shard: CardShard = {
     _poolBurstOfEnergy,
     _poolCanyonMinotaur,
     _poolCapitalGuard,
+    _poolChangelingWayfinder,
     _poolChapelGeist,
     _poolCitanulHierophants,
     _poolCivicWayfinder,
@@ -357,6 +368,7 @@ const shard: CardShard = {
     _poolGlittermonger,
     _poolGoblinHero,
     _poolGoblinReplica,
+    _poolGoblinWarStrike,
     _poolGolgariCluestone,
     _poolGracefulAdept,
     _poolGreaterGood,
@@ -378,6 +390,7 @@ const shard: CardShard = {
     _poolIronwrightsCleansing,
     _poolJeskaiBanner,
     _poolJhoiraWeatherlightCaptain,
+    _poolJointExploration,
     _poolJudithCarnageConnoisseur,
     _poolKalakscionHungerTyrant,
     _poolKarnLegacyReforged,
@@ -405,10 +418,12 @@ const shard: CardShard = {
     _poolMerfolkMesmerist,
     _poolMerfolkSkyscout,
     _poolMigrationPath,
+    _poolMindlessAutomaton,
     _poolMockingbird,
     _poolMoonHeron,
     _poolMoonsilverKey,
     _poolMoorFiend,
+    _poolMulch,
     _poolNantukoShade,
     _poolNecrogenSpellbomb,
     _poolNecromancersAssistant,
@@ -416,8 +431,10 @@ const shard: CardShard = {
     _poolNimbleBirdsticker,
     _poolNimbusMaze,
     _poolNorthPoleGates,
+    _poolNullpriestOfOblivion,
     _poolOashraCultivator,
     _poolOgreBattledriver,
+    _poolOldRutstein,
     _poolOnduGiant,
     _poolOranRiefTheVastwood,
     _poolOrcishSiegemaster,
@@ -472,9 +489,11 @@ const shard: CardShard = {
     _poolSteelPlumeMarshal,
     _poolStonefareCrocodile,
     _poolStriderHarness,
+    _poolSuddenBreakthrough,
     _poolSummonTitan,
     _poolSurveillingSprite,
     _poolSustenance,
+    _poolSwarmIntelligence,
     _poolSwordOfTruthAndJustice,
     _poolSyphonFlesh,
     _poolSyrVondamSunstarExemplar,
@@ -530,6 +549,7 @@ const shard: CardShard = {
     _tokensDragonToken66,
     _tokensKomasCoil,
     _tokensPhyrexianInsectToken,
+    _tokensTreefolkTokenSylvanOffering,
   ],
 };
 

@@ -59,6 +59,7 @@ import _poolCrystacean from "../pool/crystacean.js";
 import _poolCullingTheWeak from "../pool/culling-the-weak.js";
 import _poolCylianElf from "../pool/cylian-elf.js";
 import _poolDarkRitual from "../pool/dark-ritual.js";
+import _poolDarksteelJuggernaut from "../pool/darksteel-juggernaut.js";
 import _poolDarksteelPlate from "../pool/darksteel-plate.js";
 import _poolDawnsLightArcher from "../pool/dawns-light-archer.js";
 import _poolDeathgazeCockatrice from "../pool/deathgaze-cockatrice.js";
@@ -107,6 +108,7 @@ import _poolHollowmurkSiege from "../pool/hollowmurk-siege.js";
 import _poolHotDogCart from "../pool/hot-dog-cart.js";
 import _poolHuntersProwess from "../pool/hunters-prowess.js";
 import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
+import _poolJoriEnRuinDiver from "../pool/jori-en-ruin-diver.js";
 import _poolJunkWinder from "../pool/junk-winder.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
@@ -306,6 +308,7 @@ const shard: CardShard = {
     _poolCullingTheWeak,
     _poolCylianElf,
     _poolDarkRitual,
+    _poolDarksteelJuggernaut,
     _poolDarksteelPlate,
     _poolDawnsLightArcher,
     _poolDeathgazeCockatrice,
@@ -354,6 +357,7 @@ const shard: CardShard = {
     _poolHotDogCart,
     _poolHuntersProwess,
     _poolImpoliteEntrance,
+    _poolJoriEnRuinDiver,
     _poolJunkWinder,
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,

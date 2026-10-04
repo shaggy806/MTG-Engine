@@ -9,6 +9,7 @@ import _poolAlabornGrenadier from "../pool/alaborn-grenadier.js";
 import _poolAlgaeGharial from "../pool/algae-gharial.js";
 import _poolAltarOfTheBrood from "../pool/altar-of-the-brood.js";
 import _poolAngelOfFinality from "../pool/angel-of-finality.js";
+import _poolAngelfireIgnition from "../pool/angelfire-ignition.js";
 import _poolAngelicEdict from "../pool/angelic-edict.js";
 import _poolAnnul from "../pool/annul.js";
 import _poolArchweaver from "../pool/archweaver.js";
@@ -20,6 +21,7 @@ import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
 import _poolBlackMagesRod from "../pool/black-mages-rod.js";
 import _poolBosssChauffeur from "../pool/bosss-chauffeur.js";
+import _poolBrallinSkysharkRider from "../pool/brallin-skyshark-rider.js";
 import _poolBreathWeapon from "../pool/breath-weapon.js";
 import _poolBrokenBond from "../pool/broken-bond.js";
 import _poolBrokersHideout from "../pool/brokers-hideout.js";
@@ -42,6 +44,7 @@ import _poolDailyBugleBuilding from "../pool/daily-bugle-building.js";
 import _poolDarkDeal from "../pool/dark-deal.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
+import _poolDerangedAssistant from "../pool/deranged-assistant.js";
 import _poolDismalBackwater from "../pool/dismal-backwater.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
@@ -75,6 +78,7 @@ import _poolHarrierGriffin from "../pool/harrier-griffin.js";
 import _poolHashatonScarabsFist from "../pool/hashaton-scarabs-fist.js";
 import _poolHaywireMite from "../pool/haywire-mite.js";
 import _poolHedronCrab from "../pool/hedron-crab.js";
+import _poolHedronDetonator from "../pool/hedron-detonator.js";
 import _poolHighlandGiant from "../pool/highland-giant.js";
 import _poolHordelingOutburst from "../pool/hordeling-outburst.js";
 import _poolHorizonChimera from "../pool/horizon-chimera.js";
@@ -133,6 +137,7 @@ import _poolPharikasLibation from "../pool/pharikas-libation.js";
 import _poolPillardropWarden from "../pool/pillardrop-warden.js";
 import _poolPlanarPortal from "../pool/planar-portal.js";
 import _poolPlanetaryAnnihilation from "../pool/planetary-annihilation.js";
+import _poolPlunderingBarbarian from "../pool/plundering-barbarian.js";
 import _poolPrincessLucrezia from "../pool/princess-lucrezia.js";
 import _poolPrismaticLens from "../pool/prismatic-lens.js";
 import _poolPrizefighterConstruct from "../pool/prizefighter-construct.js";
@@ -176,6 +181,7 @@ import _poolStab from "../pool/stab.js";
 import _poolSungrassPrairie from "../pool/sungrass-prairie.js";
 import _poolSunscapeMaster from "../pool/sunscape-master.js";
 import _poolSuperState from "../pool/super-state.js";
+import _poolTailTheSuspect from "../pool/tail-the-suspect.js";
 import _poolTalismanOfConviction from "../pool/talisman-of-conviction.js";
 import _poolTannukSteadfastSecond from "../pool/tannuk-steadfast-second.js";
 import _poolTaureanMauler from "../pool/taurean-mauler.js";
@@ -234,6 +240,7 @@ const shard: CardShard = {
     _poolAlgaeGharial,
     _poolAltarOfTheBrood,
     _poolAngelOfFinality,
+    _poolAngelfireIgnition,
     _poolAngelicEdict,
     _poolAnnul,
     _poolArchweaver,
@@ -245,6 +252,7 @@ const shard: CardShard = {
     _poolBellowsLizard,
     _poolBlackMagesRod,
     _poolBosssChauffeur,
+    _poolBrallinSkysharkRider,
     _poolBreathWeapon,
     _poolBrokenBond,
     _poolBrokersHideout,
@@ -267,6 +275,7 @@ const shard: CardShard = {
     _poolDarkDeal,
     _poolDefiantSalvager,
     _poolDejaVu,
+    _poolDerangedAssistant,
     _poolDismalBackwater,
     _poolDragonSniper,
     _poolDurkwoodBoars,
@@ -300,6 +309,7 @@ const shard: CardShard = {
     _poolHashatonScarabsFist,
     _poolHaywireMite,
     _poolHedronCrab,
+    _poolHedronDetonator,
     _poolHighlandGiant,
     _poolHordelingOutburst,
     _poolHorizonChimera,
@@ -358,6 +368,7 @@ const shard: CardShard = {
     _poolPillardropWarden,
     _poolPlanarPortal,
     _poolPlanetaryAnnihilation,
+    _poolPlunderingBarbarian,
     _poolPrincessLucrezia,
     _poolPrismaticLens,
     _poolPrizefighterConstruct,
@@ -401,6 +412,7 @@ const shard: CardShard = {
     _poolSungrassPrairie,
     _poolSunscapeMaster,
     _poolSuperState,
+    _poolTailTheSuspect,
     _poolTalismanOfConviction,
     _poolTannukSteadfastSecond,
     _poolTaureanMauler,

@@ -71,9 +71,11 @@ import _poolElephantAmbush from "../pool/elephant-ambush.js";
 import _poolElfswornGiant from "../pool/elfsworn-giant.js";
 import _poolElvishVanguard from "../pool/elvish-vanguard.js";
 import _poolEndlessRanksOfTheDead from "../pool/endless-ranks-of-the-dead.js";
+import _poolEntrapmentManeuver from "../pool/entrapment-maneuver.js";
 import _poolEsperSentinel from "../pool/esper-sentinel.js";
 import _poolExplosiveVegetation from "../pool/explosive-vegetation.js";
 import _poolEzuriRenegadeLeader from "../pool/ezuri-renegade-leader.js";
+import _poolFaerieConclave from "../pool/faerie-conclave.js";
 import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
@@ -117,9 +119,11 @@ import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
 import _poolKyrenNegotiations from "../pool/kyren-negotiations.js";
 import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
 import _poolLegionWarboss from "../pool/legion-warboss.js";
+import _poolLilianaVess from "../pool/liliana-vess.js";
 import _poolLlanowarEnvoy from "../pool/llanowar-envoy.js";
 import _poolLongBodiedGreyDog from "../pool/long-bodied-grey-dog.js";
 import _poolLotusField from "../pool/lotus-field.js";
+import _poolLumberingFalls from "../pool/lumbering-falls.js";
 import _poolMagetasBoon from "../pool/magetas-boon.js";
 import _poolMalakirCullblade from "../pool/malakir-cullblade.js";
 import _poolMartialCoup from "../pool/martial-coup.js";
@@ -309,9 +313,11 @@ const shard: CardShard = {
     _poolElfswornGiant,
     _poolElvishVanguard,
     _poolEndlessRanksOfTheDead,
+    _poolEntrapmentManeuver,
     _poolEsperSentinel,
     _poolExplosiveVegetation,
     _poolEzuriRenegadeLeader,
+    _poolFaerieConclave,
     _poolFallajiChaindancer,
     _poolFerociousCharge,
     _poolFireDrake,
@@ -355,9 +361,11 @@ const shard: CardShard = {
     _poolKyrenNegotiations,
     _poolLeaveInTheDust,
     _poolLegionWarboss,
+    _poolLilianaVess,
     _poolLlanowarEnvoy,
     _poolLongBodiedGreyDog,
     _poolLotusField,
+    _poolLumberingFalls,
     _poolMagetasBoon,
     _poolMalakirCullblade,
     _poolMartialCoup,

@@ -27,6 +27,7 @@ import _poolBladewingTheRisen from "../pool/bladewing-the-risen.js";
 import _poolBlindObedience from "../pool/blind-obedience.js";
 import _poolBlowflyInfestation from "../pool/blowfly-infestation.js";
 import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
+import _poolBrainstone from "../pool/brainstone.js";
 import _poolBreechesEagerPillager from "../pool/breeches-eager-pillager.js";
 import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
 import _poolBrigidDounsMind from "../pool/brigid-douns-mind.js";
@@ -112,6 +113,7 @@ import _poolJayasFirenado from "../pool/jayas-firenado.js";
 import _poolJukaiMessenger from "../pool/jukai-messenger.js";
 import _poolJuniperOrderDruid from "../pool/juniper-order-druid.js";
 import _poolKabiraCrossroads from "../pool/kabira-crossroads.js";
+import _poolKellanInquisitiveProdigy from "../pool/kellan-inquisitive-prodigy.js";
 import _poolKessigWolfRun from "../pool/kessig-wolf-run.js";
 import _poolKnucklesTheEchidna from "../pool/knuckles-the-echidna.js";
 import _poolLaceWithMoonglove from "../pool/lace-with-moonglove.js";
@@ -127,6 +129,7 @@ import _poolManakin from "../pool/manakin.js";
 import _poolMartyrOfDusk from "../pool/martyr-of-dusk.js";
 import _poolMaskedBlackguard from "../pool/masked-blackguard.js";
 import _poolMassacreGirlKnownKiller from "../pool/massacre-girl-known-killer.js";
+import _poolMasterOfTheFeast from "../pool/master-of-the-feast.js";
 import _poolMegrim from "../pool/megrim.js";
 import _poolMengHuosHorde from "../pool/meng-huos-horde.js";
 import _poolMesaCavalier from "../pool/mesa-cavalier.js";
@@ -170,6 +173,7 @@ import _poolRecklessReveler from "../pool/reckless-reveler.js";
 import _poolReleaseTheDogs from "../pool/release-the-dogs.js";
 import _poolReliquaryMonk from "../pool/reliquary-monk.js";
 import _poolReliquaryTower from "../pool/reliquary-tower.js";
+import _poolRestlessFortress from "../pool/restless-fortress.js";
 import _poolRevelInRiches from "../pool/revel-in-riches.js";
 import _poolRideTheShoopuf from "../pool/ride-the-shoopuf.js";
 import _poolRiotPiker from "../pool/riot-piker.js";
@@ -284,6 +288,7 @@ const shard: CardShard = {
     _poolBlindObedience,
     _poolBlowflyInfestation,
     _poolBootsOfSpeed,
+    _poolBrainstone,
     _poolBreechesEagerPillager,
     _poolBrigidClachansHeart,
     _poolBrigidDounsMind,
@@ -369,6 +374,7 @@ const shard: CardShard = {
     _poolJukaiMessenger,
     _poolJuniperOrderDruid,
     _poolKabiraCrossroads,
+    _poolKellanInquisitiveProdigy,
     _poolKessigWolfRun,
     _poolKnucklesTheEchidna,
     _poolLaceWithMoonglove,
@@ -384,6 +390,7 @@ const shard: CardShard = {
     _poolMartyrOfDusk,
     _poolMaskedBlackguard,
     _poolMassacreGirlKnownKiller,
+    _poolMasterOfTheFeast,
     _poolMegrim,
     _poolMengHuosHorde,
     _poolMesaCavalier,
@@ -427,6 +434,7 @@ const shard: CardShard = {
     _poolReleaseTheDogs,
     _poolReliquaryMonk,
     _poolReliquaryTower,
+    _poolRestlessFortress,
     _poolRevelInRiches,
     _poolRideTheShoopuf,
     _poolRiotPiker,

@@ -32,6 +32,7 @@ import _poolBookOfRass from "../pool/book-of-rass.js";
 import _poolBootleggersStash from "../pool/bootleggers-stash.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
+import _poolBrightglassGearhulk from "../pool/brightglass-gearhulk.js";
 import _poolCarrionFeeder from "../pool/carrion-feeder.js";
 import _poolCastleLocthwain from "../pool/castle-locthwain.js";
 import _poolChampionOfDusk from "../pool/champion-of-dusk.js";
@@ -44,6 +45,7 @@ import _poolCrystalSlipper from "../pool/crystal-slipper.js";
 import _poolDarkmossBridge from "../pool/darkmoss-bridge.js";
 import _poolDarksteelGargoyle from "../pool/darksteel-gargoyle.js";
 import _poolDawntreaderElk from "../pool/dawntreader-elk.js";
+import _poolDeadlyBrew from "../pool/deadly-brew.js";
 import _poolDemonicTutor from "../pool/demonic-tutor.js";
 import _poolDestinySpinner from "../pool/destiny-spinner.js";
 import _poolDetainedByLegionnaires from "../pool/detained-by-legionnaires.js";
@@ -137,6 +139,7 @@ import _poolNecromanticSelection from "../pool/necromantic-selection.js";
 import _poolNecropolisRegent from "../pool/necropolis-regent.js";
 import _poolNightscapeFamiliar from "../pool/nightscape-familiar.js";
 import _poolNyxbornMarauder from "../pool/nyxborn-marauder.js";
+import _poolOmenHawker from "../pool/omen-hawker.js";
 import _poolOphidianEye from "../pool/ophidian-eye.js";
 import _poolOrimsChant from "../pool/orims-chant.js";
 import _poolOxiddaScrapmelter from "../pool/oxidda-scrapmelter.js";
@@ -157,6 +160,8 @@ import _poolPyroceratops from "../pool/pyroceratops.js";
 import _poolRamosDragonEngine from "../pool/ramos-dragon-engine.js";
 import _poolRazorfootGriffin from "../pool/razorfoot-griffin.js";
 import _poolRecklessHandling from "../pool/reckless-handling.js";
+import _poolReclaim from "../pool/reclaim.js";
+import _poolResearchThief from "../pool/research-thief.js";
 import _poolRevitalize from "../pool/revitalize.js";
 import _poolRiseAgain from "../pool/rise-again.js";
 import _poolRorixBladewing from "../pool/rorix-bladewing.js";
@@ -194,6 +199,7 @@ import _poolStrixLookout from "../pool/strix-lookout.js";
 import _poolSunbakedCanyon from "../pool/sunbaked-canyon.js";
 import _poolSupernaturalStamina from "../pool/supernatural-stamina.js";
 import _poolSurrakTheHuntCaller from "../pool/surrak-the-hunt-caller.js";
+import _poolSwordOfOnceAndFuture from "../pool/sword-of-once-and-future.js";
 import _poolTalonrend from "../pool/talonrend.js";
 import _poolTempleOfAbandon from "../pool/temple-of-abandon.js";
 import _poolTerritorialBaloth from "../pool/territorial-baloth.js";
@@ -228,6 +234,7 @@ import _poolWildernessReclamation from "../pool/wilderness-reclamation.js";
 import _poolWitchBlessedMeadow from "../pool/witch-blessed-meadow.js";
 import _poolWretchedDoll from "../pool/wretched-doll.js";
 import _tokensBoarToken from "../tokens/boar-token.js";
+import _tokensCentaurToken from "../tokens/centaur-token.js";
 import _tokensChocoboBirdToken from "../tokens/chocobo-bird-token.js";
 import _tokensDragonIllusionToken from "../tokens/dragon-illusion-token.js";
 import _tokensElementalToken55 from "../tokens/elemental-token-5-5.js";
@@ -268,6 +275,7 @@ const shard: CardShard = {
     _poolBootleggersStash,
     _poolBorosCluestone,
     _poolBreathOfFire,
+    _poolBrightglassGearhulk,
     _poolCarrionFeeder,
     _poolCastleLocthwain,
     _poolChampionOfDusk,
@@ -280,6 +288,7 @@ const shard: CardShard = {
     _poolDarkmossBridge,
     _poolDarksteelGargoyle,
     _poolDawntreaderElk,
+    _poolDeadlyBrew,
     _poolDemonicTutor,
     _poolDestinySpinner,
     _poolDetainedByLegionnaires,
@@ -373,6 +382,7 @@ const shard: CardShard = {
     _poolNecropolisRegent,
     _poolNightscapeFamiliar,
     _poolNyxbornMarauder,
+    _poolOmenHawker,
     _poolOphidianEye,
     _poolOrimsChant,
     _poolOxiddaScrapmelter,
@@ -393,6 +403,8 @@ const shard: CardShard = {
     _poolRamosDragonEngine,
     _poolRazorfootGriffin,
     _poolRecklessHandling,
+    _poolReclaim,
+    _poolResearchThief,
     _poolRevitalize,
     _poolRiseAgain,
     _poolRorixBladewing,
@@ -430,6 +442,7 @@ const shard: CardShard = {
     _poolSunbakedCanyon,
     _poolSupernaturalStamina,
     _poolSurrakTheHuntCaller,
+    _poolSwordOfOnceAndFuture,
     _poolTalonrend,
     _poolTempleOfAbandon,
     _poolTerritorialBaloth,
@@ -466,6 +479,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensBoarToken,
+    _tokensCentaurToken,
     _tokensChocoboBirdToken,
     _tokensDragonIllusionToken,
     _tokensElementalToken55,

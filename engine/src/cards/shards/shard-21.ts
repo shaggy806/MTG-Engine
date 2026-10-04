@@ -76,10 +76,12 @@ import _poolGlarbCalamitysAugur from "../pool/glarb-calamitys-augur.js";
 import _poolGliderKids from "../pool/glider-kids.js";
 import _poolGloriousCharge from "../pool/glorious-charge.js";
 import _poolGoblinKing from "../pool/goblin-king.js";
+import _poolGoblinLackey from "../pool/goblin-lackey.js";
 import _poolGoblinSurprise from "../pool/goblin-surprise.js";
 import _poolGoblinWarchief from "../pool/goblin-warchief.js";
 import _poolGoroGoroDiscipleOfRyusei from "../pool/goro-goro-disciple-of-ryusei.js";
 import _poolGreaterTanuki from "../pool/greater-tanuki.js";
+import _poolGrowingRanks from "../pool/growing-ranks.js";
 import _poolGruesomeDeformity from "../pool/gruesome-deformity.js";
 import _poolGruulTurf from "../pool/gruul-turf.js";
 import _poolGutShot from "../pool/gut-shot.js";
@@ -107,6 +109,7 @@ import _poolKhalniHeartExpedition from "../pool/khalni-heart-expedition.js";
 import _poolKiorasDambreaker from "../pool/kioras-dambreaker.js";
 import _poolKodamaOfTheNorthTree from "../pool/kodama-of-the-north-tree.js";
 import _poolLibraryLarcenist from "../pool/library-larcenist.js";
+import _poolLightningRunner from "../pool/lightning-runner.js";
 import _poolLoomingShade from "../pool/looming-shade.js";
 import _poolLordOfChange from "../pool/lord-of-change.js";
 import _poolLowlandGiant from "../pool/lowland-giant.js";
@@ -184,6 +187,7 @@ import _poolStudentOfOjutai from "../pool/student-of-ojutai.js";
 import _poolStumpStomp from "../pool/stump-stomp.js";
 import _poolSubmergedBoneyard from "../pool/submerged-boneyard.js";
 import _poolSunastianFalconer from "../pool/sunastian-falconer.js";
+import _poolSunsetStrikemaster from "../pool/sunset-strikemaster.js";
 import _poolSwordOfFeastAndFamine from "../pool/sword-of-feast-and-famine.js";
 import _poolSylvokReplica from "../pool/sylvok-replica.js";
 import _poolSymbioticBeast from "../pool/symbiotic-beast.js";
@@ -298,10 +302,12 @@ const shard: CardShard = {
     _poolGliderKids,
     _poolGloriousCharge,
     _poolGoblinKing,
+    _poolGoblinLackey,
     _poolGoblinSurprise,
     _poolGoblinWarchief,
     _poolGoroGoroDiscipleOfRyusei,
     _poolGreaterTanuki,
+    _poolGrowingRanks,
     _poolGruesomeDeformity,
     _poolGruulTurf,
     _poolGutShot,
@@ -329,6 +335,7 @@ const shard: CardShard = {
     _poolKiorasDambreaker,
     _poolKodamaOfTheNorthTree,
     _poolLibraryLarcenist,
+    _poolLightningRunner,
     _poolLoomingShade,
     _poolLordOfChange,
     _poolLowlandGiant,
@@ -406,6 +413,7 @@ const shard: CardShard = {
     _poolStumpStomp,
     _poolSubmergedBoneyard,
     _poolSunastianFalconer,
+    _poolSunsetStrikemaster,
     _poolSwordOfFeastAndFamine,
     _poolSylvokReplica,
     _poolSymbioticBeast,

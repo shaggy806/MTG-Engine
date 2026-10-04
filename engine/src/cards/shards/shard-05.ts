@@ -18,6 +18,7 @@ import _poolAssaultStrobe from "../pool/assault-strobe.js";
 import _poolAstarionTheDecadent from "../pool/astarion-the-decadent.js";
 import _poolAvacynsPilgrim from "../pool/avacyns-pilgrim.js";
 import _poolAvenReedstalker from "../pool/aven-reedstalker.js";
+import _poolBarbarianRing from "../pool/barbarian-ring.js";
 import _poolBarktoothWarbeard from "../pool/barktooth-warbeard.js";
 import _poolBasalThrull from "../pool/basal-thrull.js";
 import _poolBattleDisplay from "../pool/battle-display.js";
@@ -33,6 +34,7 @@ import _poolBlightPile from "../pool/blight-pile.js";
 import _poolBlightning from "../pool/blightning.js";
 import _poolBlossomingTortoise from "../pool/blossoming-tortoise.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
+import _poolBraidsCabalMinion from "../pool/braids-cabal-minion.js";
 import _poolBrassSquire from "../pool/brass-squire.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
 import _poolBushwhack from "../pool/bushwhack.js";
@@ -66,6 +68,7 @@ import _poolDealGoneBad from "../pool/deal-gone-bad.js";
 import _poolDefiantElf from "../pool/defiant-elf.js";
 import _poolDemonsDisciple from "../pool/demons-disciple.js";
 import _poolDemonsGrasp from "../pool/demons-grasp.js";
+import _poolDigsiteEngineer from "../pool/digsite-engineer.js";
 import _poolDismember from "../pool/dismember.js";
 import _poolDragonkinBerserker from "../pool/dragonkin-berserker.js";
 import _poolDragonsPresence from "../pool/dragons-presence.js";
@@ -99,9 +102,11 @@ import _poolGodoBanditWarlord from "../pool/godo-bandit-warlord.js";
 import _poolGoldenHind from "../pool/golden-hind.js";
 import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGrappleWithThePast from "../pool/grapple-with-the-past.js";
+import _poolGrasslands from "../pool/grasslands.js";
 import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
 import _poolGreenwardenOfMurasa from "../pool/greenwarden-of-murasa.js";
+import _poolGrimAffliction from "../pool/grim-affliction.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
 import _poolGrowFromTheAshes from "../pool/grow-from-the-ashes.js";
@@ -226,6 +231,7 @@ import _poolThinkTank from "../pool/think-tank.js";
 import _poolTillerEngine from "../pool/tiller-engine.js";
 import _poolTinderFarm from "../pool/tinder-farm.js";
 import _poolTomeRaider from "../pool/tome-raider.js";
+import _poolTriskelion from "../pool/triskelion.js";
 import _poolTwentyToedToad from "../pool/twenty-toed-toad.js";
 import _poolTwoHeadedHellkite from "../pool/two-headed-hellkite.js";
 import _poolUndergrowthRecon from "../pool/undergrowth-recon.js";
@@ -237,6 +243,7 @@ import _poolViridianRevel from "../pool/viridian-revel.js";
 import _poolViridianShaman from "../pool/viridian-shaman.js";
 import _poolVolcanicIsland from "../pool/volcanic-island.js";
 import _poolVoraciousVarmint from "../pool/voracious-varmint.js";
+import _poolWarrenWarleader from "../pool/warren-warleader.js";
 import _poolWastelandScorpion from "../pool/wasteland-scorpion.js";
 import _poolWatcherOfTheSpheres from "../pool/watcher-of-the-spheres.js";
 import _poolWatercourser from "../pool/watercourser.js";
@@ -277,6 +284,7 @@ const shard: CardShard = {
     _poolAstarionTheDecadent,
     _poolAvacynsPilgrim,
     _poolAvenReedstalker,
+    _poolBarbarianRing,
     _poolBarktoothWarbeard,
     _poolBasalThrull,
     _poolBattleDisplay,
@@ -292,6 +300,7 @@ const shard: CardShard = {
     _poolBlightning,
     _poolBlossomingTortoise,
     _poolBodyDropper,
+    _poolBraidsCabalMinion,
     _poolBrassSquire,
     _poolBrineShaman,
     _poolBushwhack,
@@ -325,6 +334,7 @@ const shard: CardShard = {
     _poolDefiantElf,
     _poolDemonsDisciple,
     _poolDemonsGrasp,
+    _poolDigsiteEngineer,
     _poolDismember,
     _poolDragonkinBerserker,
     _poolDragonsPresence,
@@ -358,9 +368,11 @@ const shard: CardShard = {
     _poolGoldenHind,
     _poolGrandCrescendo,
     _poolGrappleWithThePast,
+    _poolGrasslands,
     _poolGravespawnSovereign,
     _poolGreatHallOfTheCitadel,
     _poolGreenwardenOfMurasa,
+    _poolGrimAffliction,
     _poolGrimBackwoods,
     _poolGrimclimbPathway,
     _poolGrowFromTheAshes,
@@ -485,6 +497,7 @@ const shard: CardShard = {
     _poolTillerEngine,
     _poolTinderFarm,
     _poolTomeRaider,
+    _poolTriskelion,
     _poolTwentyToedToad,
     _poolTwoHeadedHellkite,
     _poolUndergrowthRecon,
@@ -496,6 +509,7 @@ const shard: CardShard = {
     _poolViridianShaman,
     _poolVolcanicIsland,
     _poolVoraciousVarmint,
+    _poolWarrenWarleader,
     _poolWastelandScorpion,
     _poolWatcherOfTheSpheres,
     _poolWatercourser,

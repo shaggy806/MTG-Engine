@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAbominationTerrifyingTitan from "../pool/abomination-terrifying-titan.js";
 import _poolAbundantCountryside from "../pool/abundant-countryside.js";
+import _poolAlrundsEpiphany from "../pool/alrunds-epiphany.js";
 import _poolAltarOfDementia from "../pool/altar-of-dementia.js";
 import _poolAncientGrudge from "../pool/ancient-grudge.js";
 import _poolAquusSteed from "../pool/aquus-steed.js";
@@ -70,6 +71,7 @@ import _poolExpeditionEnvoy from "../pool/expedition-envoy.js";
 import _poolEyeOfNowhere from "../pool/eye-of-nowhere.js";
 import _poolFaithbearerPaladin from "../pool/faithbearer-paladin.js";
 import _poolFanaticOfMogis from "../pool/fanatic-of-mogis.js";
+import _poolFarTraveler from "../pool/far-traveler.js";
 import _poolFeiyiSnake from "../pool/feiyi-snake.js";
 import _poolFieryFinish from "../pool/fiery-finish.js";
 import _poolFinaleOfDevastation from "../pool/finale-of-devastation.js";
@@ -125,6 +127,7 @@ import _poolLootThePathfinder from "../pool/loot-the-pathfinder.js";
 import _poolLordOfTheNazgul from "../pool/lord-of-the-nazgul.js";
 import _poolLotusCobra from "../pool/lotus-cobra.js";
 import _poolLoyalApprentice from "../pool/loyal-apprentice.js";
+import _poolMachinistsArsenal from "../pool/machinists-arsenal.js";
 import _poolMantisRider from "../pool/mantis-rider.js";
 import _poolMasterOfEtherium from "../pool/master-of-etherium.js";
 import _poolMinotaurAbomination from "../pool/minotaur-abomination.js";
@@ -254,6 +257,7 @@ const shard: CardShard = {
   pool: [
     _poolAbominationTerrifyingTitan,
     _poolAbundantCountryside,
+    _poolAlrundsEpiphany,
     _poolAltarOfDementia,
     _poolAncientGrudge,
     _poolAquusSteed,
@@ -319,6 +323,7 @@ const shard: CardShard = {
     _poolEyeOfNowhere,
     _poolFaithbearerPaladin,
     _poolFanaticOfMogis,
+    _poolFarTraveler,
     _poolFeiyiSnake,
     _poolFieryFinish,
     _poolFinaleOfDevastation,
@@ -374,6 +379,7 @@ const shard: CardShard = {
     _poolLordOfTheNazgul,
     _poolLotusCobra,
     _poolLoyalApprentice,
+    _poolMachinistsArsenal,
     _poolMantisRider,
     _poolMasterOfEtherium,
     _poolMinotaurAbomination,

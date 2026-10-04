@@ -19,6 +19,7 @@ import _poolAttercop from "../pool/attercop.js";
 import _poolAuraShards from "../pool/aura-shards.js";
 import _poolAzoriusChancery from "../pool/azorius-chancery.js";
 import _poolAzoriusKnightArbiter from "../pool/azorius-knight-arbiter.js";
+import _poolBackInTown from "../pool/back-in-town.js";
 import _poolBarkformHarvester from "../pool/barkform-harvester.js";
 import _poolBattlefieldRaptor from "../pool/battlefield-raptor.js";
 import _poolBayouDragonfly from "../pool/bayou-dragonfly.js";
@@ -74,6 +75,7 @@ import _poolFiendishDuo from "../pool/fiendish-duo.js";
 import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
 import _poolFiskTower from "../pool/fisk-tower.js";
+import _poolFleetSwallower from "../pool/fleet-swallower.js";
 import _poolFomoriVault from "../pool/fomori-vault.js";
 import _poolFreyaliseLlanowarsFury from "../pool/freyalise-llanowars-fury.js";
 import _poolFrogButler from "../pool/frog-butler.js";
@@ -94,6 +96,7 @@ import _poolHaloScarab from "../pool/halo-scarab.js";
 import _poolHavocJester from "../pool/havoc-jester.js";
 import _poolHawkeyeClintBarton from "../pool/hawkeye-clint-barton.js";
 import _poolHecteyes from "../pool/hecteyes.js";
+import _poolHelpingHand from "../pool/helping-hand.js";
 import _poolHeraldOfTheFair from "../pool/herald-of-the-fair.js";
 import _poolHighbornGhoul from "../pool/highborn-ghoul.js";
 import _poolHiredBlade from "../pool/hired-blade.js";
@@ -187,6 +190,7 @@ import _poolSorinOfHouseMarkov from "../pool/sorin-of-house-markov.js";
 import _poolSoulOfNewPhyrexia from "../pool/soul-of-new-phyrexia.js";
 import _poolSoulShatter from "../pool/soul-shatter.js";
 import _poolSouldrinker from "../pool/souldrinker.js";
+import _poolSpawningBed from "../pool/spawning-bed.js";
 import _poolSpiderwigBoggart from "../pool/spiderwig-boggart.js";
 import _poolSporecapSpider from "../pool/sporecap-spider.js";
 import _poolSpringbloomDruid from "../pool/springbloom-druid.js";
@@ -266,6 +270,7 @@ const shard: CardShard = {
     _poolAuraShards,
     _poolAzoriusChancery,
     _poolAzoriusKnightArbiter,
+    _poolBackInTown,
     _poolBarkformHarvester,
     _poolBattlefieldRaptor,
     _poolBayouDragonfly,
@@ -321,6 +326,7 @@ const shard: CardShard = {
     _poolFiligreeFamiliar,
     _poolFirescreamer,
     _poolFiskTower,
+    _poolFleetSwallower,
     _poolFomoriVault,
     _poolFreyaliseLlanowarsFury,
     _poolFrogButler,
@@ -341,6 +347,7 @@ const shard: CardShard = {
     _poolHavocJester,
     _poolHawkeyeClintBarton,
     _poolHecteyes,
+    _poolHelpingHand,
     _poolHeraldOfTheFair,
     _poolHighbornGhoul,
     _poolHiredBlade,
@@ -434,6 +441,7 @@ const shard: CardShard = {
     _poolSoulOfNewPhyrexia,
     _poolSoulShatter,
     _poolSouldrinker,
+    _poolSpawningBed,
     _poolSpiderwigBoggart,
     _poolSporecapSpider,
     _poolSpringbloomDruid,

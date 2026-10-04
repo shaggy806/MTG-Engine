@@ -57,6 +57,7 @@ import _poolConservatory from "../pool/conservatory.js";
 import _poolConsultTheNecrosages from "../pool/consult-the-necrosages.js";
 import _poolCorpseHauler from "../pool/corpse-hauler.js";
 import _poolCosmograndZenith from "../pool/cosmogrand-zenith.js";
+import _poolCrawlingInfestation from "../pool/crawling-infestation.js";
 import _poolCrystalBall from "../pool/crystal-ball.js";
 import _poolCuriousAltisaur from "../pool/curious-altisaur.js";
 import _poolCyberdriveAwakener from "../pool/cyberdrive-awakener.js";
@@ -104,6 +105,7 @@ import _poolGaladrielLightOfValinor from "../pool/galadriel-light-of-valinor.js"
 import _poolGhostsOfTheDamned from "../pool/ghosts-of-the-damned.js";
 import _poolGobblingOoze from "../pool/gobbling-ooze.js";
 import _poolGoblinAssaultTeam from "../pool/goblin-assault-team.js";
+import _poolGoblinChainwhirler from "../pool/goblin-chainwhirler.js";
 import _poolGoblinChariot from "../pool/goblin-chariot.js";
 import _poolGoblinInstigator from "../pool/goblin-instigator.js";
 import _poolGoldfuryStrider from "../pool/goldfury-strider.js";
@@ -178,9 +180,11 @@ import _poolRiteOfOblivion from "../pool/rite-of-oblivion.js";
 import _poolRoccoStreetChef from "../pool/rocco-street-chef.js";
 import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
+import _poolSarinthSteelseeker from "../pool/sarinth-steelseeker.js";
 import _poolSazacapsBrew from "../pool/sazacaps-brew.js";
 import _poolScourgemark from "../pool/scourgemark.js";
 import _poolScurryOfSquirrels from "../pool/scurry-of-squirrels.js";
+import _poolSerpentOfYawningDepths from "../pool/serpent-of-yawning-depths.js";
 import _poolShatter from "../pool/shatter.js";
 import _poolShelteringLight from "../pool/sheltering-light.js";
 import _poolShivanGorge from "../pool/shivan-gorge.js";
@@ -190,6 +194,7 @@ import _poolShuFootSoldiers from "../pool/shu-foot-soldiers.js";
 import _poolSiegeZombie from "../pool/siege-zombie.js";
 import _poolSilverRaven from "../pool/silver-raven.js";
 import _poolSkithiryxTheBlightDragon from "../pool/skithiryx-the-blight-dragon.js";
+import _poolSlinnVodaTheRisingDeep from "../pool/slinn-voda-the-rising-deep.js";
 import _poolSparringConstruct from "../pool/sparring-construct.js";
 import _poolSpitefulMotives from "../pool/spiteful-motives.js";
 import _poolStitchTogether from "../pool/stitch-together.js";
@@ -234,6 +239,7 @@ import _poolWingedBoots from "../pool/winged-boots.js";
 import _poolWingedShepherd from "../pool/winged-shepherd.js";
 import _poolWitchHunter from "../pool/witch-hunter.js";
 import _poolWitchsClinic from "../pool/witchs-clinic.js";
+import _poolWitherbloomCharm from "../pool/witherbloom-charm.js";
 import _poolYunaHopeOfSpira from "../pool/yuna-hope-of-spira.js";
 import _poolZealousLorecaster from "../pool/zealous-lorecaster.js";
 import _poolZopandrelHungerDominus from "../pool/zopandrel-hunger-dominus.js";
@@ -303,6 +309,7 @@ const shard: CardShard = {
     _poolConsultTheNecrosages,
     _poolCorpseHauler,
     _poolCosmograndZenith,
+    _poolCrawlingInfestation,
     _poolCrystalBall,
     _poolCuriousAltisaur,
     _poolCyberdriveAwakener,
@@ -350,6 +357,7 @@ const shard: CardShard = {
     _poolGhostsOfTheDamned,
     _poolGobblingOoze,
     _poolGoblinAssaultTeam,
+    _poolGoblinChainwhirler,
     _poolGoblinChariot,
     _poolGoblinInstigator,
     _poolGoldfuryStrider,
@@ -424,9 +432,11 @@ const shard: CardShard = {
     _poolRoccoStreetChef,
     _poolRuinousGremlin,
     _poolSandsteppeCitadel,
+    _poolSarinthSteelseeker,
     _poolSazacapsBrew,
     _poolScourgemark,
     _poolScurryOfSquirrels,
+    _poolSerpentOfYawningDepths,
     _poolShatter,
     _poolShelteringLight,
     _poolShivanGorge,
@@ -436,6 +446,7 @@ const shard: CardShard = {
     _poolSiegeZombie,
     _poolSilverRaven,
     _poolSkithiryxTheBlightDragon,
+    _poolSlinnVodaTheRisingDeep,
     _poolSparringConstruct,
     _poolSpitefulMotives,
     _poolStitchTogether,
@@ -480,6 +491,7 @@ const shard: CardShard = {
     _poolWingedShepherd,
     _poolWitchHunter,
     _poolWitchsClinic,
+    _poolWitherbloomCharm,
     _poolYunaHopeOfSpira,
     _poolZealousLorecaster,
     _poolZopandrelHungerDominus,

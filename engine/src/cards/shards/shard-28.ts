@@ -13,6 +13,7 @@ import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAncestralMask from "../pool/ancestral-mask.js";
 import _poolAncestralVision from "../pool/ancestral-vision.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
+import _poolAncientAnimus from "../pool/ancient-animus.js";
 import _poolAngelicFieldMarshal from "../pool/angelic-field-marshal.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
@@ -27,6 +28,7 @@ import _poolBazaarOfBaghdad from "../pool/bazaar-of-baghdad.js";
 import _poolBelloBardOfTheBrambles from "../pool/bello-bard-of-the-brambles.js";
 import _poolBeneathTheSands from "../pool/beneath-the-sands.js";
 import _poolBilbosDeadlySlice from "../pool/bilbos-deadly-slice.js";
+import _poolBiomassMutation from "../pool/biomass-mutation.js";
 import _poolBlackMarket from "../pool/black-market.js";
 import _poolBloodGlutton from "../pool/blood-glutton.js";
 import _poolBoarQPine from "../pool/boar-q-pine.js";
@@ -197,10 +199,12 @@ import _poolSliptideSerpent from "../pool/sliptide-serpent.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
 import _poolSolTalisman from "../pool/sol-talisman.js";
 import _poolSoulsFire from "../pool/souls-fire.js";
+import _poolSpitefulSliver from "../pool/spiteful-sliver.js";
 import _poolSplitUp from "../pool/split-up.js";
 import _poolSporeFrog from "../pool/spore-frog.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
 import _poolStonybrookBanneret from "../pool/stonybrook-banneret.js";
+import _poolStrixhavenStadium from "../pool/strixhaven-stadium.js";
 import _poolSunbeamSpellbomb from "../pool/sunbeam-spellbomb.js";
 import _poolTajuruPathwarden from "../pool/tajuru-pathwarden.js";
 import _poolTempleOfMystery from "../pool/temple-of-mystery.js";
@@ -253,6 +257,7 @@ const shard: CardShard = {
     _poolAncestralMask,
     _poolAncestralVision,
     _poolAnchovyBananaPizza,
+    _poolAncientAnimus,
     _poolAngelicFieldMarshal,
     _poolAniktheaHandOfErebos,
     _poolAnimPakalThousandthMoon,
@@ -267,6 +272,7 @@ const shard: CardShard = {
     _poolBelloBardOfTheBrambles,
     _poolBeneathTheSands,
     _poolBilbosDeadlySlice,
+    _poolBiomassMutation,
     _poolBlackMarket,
     _poolBloodGlutton,
     _poolBoarQPine,
@@ -437,10 +443,12 @@ const shard: CardShard = {
     _poolSnareThopter,
     _poolSolTalisman,
     _poolSoulsFire,
+    _poolSpitefulSliver,
     _poolSplitUp,
     _poolSporeFrog,
     _poolStickyFingers,
     _poolStonybrookBanneret,
+    _poolStrixhavenStadium,
     _poolSunbeamSpellbomb,
     _poolTajuruPathwarden,
     _poolTempleOfMystery,

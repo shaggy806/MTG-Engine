@@ -54,6 +54,7 @@ import _poolDreadmalkin from "../pool/dreadmalkin.js";
 import _poolDruidOfTheAnima from "../pool/druid-of-the-anima.js";
 import _poolDwarvenMine from "../pool/dwarven-mine.js";
 import _poolDwarvenRuins from "../pool/dwarven-ruins.js";
+import _poolElectrickery from "../pool/electrickery.js";
 import _poolEliteInstructor from "../pool/elite-instructor.js";
 import _poolElvishRanger from "../pool/elvish-ranger.js";
 import _poolEmeraldDragonfly from "../pool/emerald-dragonfly.js";
@@ -136,6 +137,7 @@ import _poolMummyParamount from "../pool/mummy-paramount.js";
 import _poolMurderousRider from "../pool/murderous-rider.js";
 import _poolNecroticHex from "../pool/necrotic-hex.js";
 import _poolNestOfScarabs from "../pool/nest-of-scarabs.js";
+import _poolOnTheTrail from "../pool/on-the-trail.js";
 import _poolOnakkeOgre from "../pool/onakke-ogre.js";
 import _poolOnduWarCleric from "../pool/ondu-war-cleric.js";
 import _poolOpenFire from "../pool/open-fire.js";
@@ -149,6 +151,7 @@ import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
 import _poolPrimordialPachyderm from "../pool/primordial-pachyderm.js";
 import _poolPyromanticPilgrim from "../pool/pyromantic-pilgrim.js";
+import _poolRakdosTheMuscle from "../pool/rakdos-the-muscle.js";
 import _poolRalStormConduit from "../pool/ral-storm-conduit.js";
 import _poolRampantRejuvenator from "../pool/rampant-rejuvenator.js";
 import _poolRapidHybridization from "../pool/rapid-hybridization.js";
@@ -204,6 +207,7 @@ import _poolSuddenStrength from "../pool/sudden-strength.js";
 import _poolSunSentinel from "../pool/sun-sentinel.js";
 import _poolSungracePegasus from "../pool/sungrace-pegasus.js";
 import _poolSwordOfFireAndIce from "../pool/sword-of-fire-and-ice.js";
+import _poolSyphonSliver from "../pool/syphon-sliver.js";
 import _poolSyrGingerTheMealEnder from "../pool/syr-ginger-the-meal-ender.js";
 import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
@@ -314,6 +318,7 @@ const shard: CardShard = {
     _poolDruidOfTheAnima,
     _poolDwarvenMine,
     _poolDwarvenRuins,
+    _poolElectrickery,
     _poolEliteInstructor,
     _poolElvishRanger,
     _poolEmeraldDragonfly,
@@ -396,6 +401,7 @@ const shard: CardShard = {
     _poolMurderousRider,
     _poolNecroticHex,
     _poolNestOfScarabs,
+    _poolOnTheTrail,
     _poolOnakkeOgre,
     _poolOnduWarCleric,
     _poolOpenFire,
@@ -409,6 +415,7 @@ const shard: CardShard = {
     _poolPriestOfGix,
     _poolPrimordialPachyderm,
     _poolPyromanticPilgrim,
+    _poolRakdosTheMuscle,
     _poolRalStormConduit,
     _poolRampantRejuvenator,
     _poolRapidHybridization,
@@ -464,6 +471,7 @@ const shard: CardShard = {
     _poolSunSentinel,
     _poolSungracePegasus,
     _poolSwordOfFireAndIce,
+    _poolSyphonSliver,
     _poolSyrGingerTheMealEnder,
     _poolTalismanOfDominance,
     _poolTemporalAdept,

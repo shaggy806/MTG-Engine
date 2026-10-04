@@ -65,6 +65,7 @@ import _poolCutADeal from "../pool/cut-a-deal.js";
 import _poolDayOfJudgment from "../pool/day-of-judgment.js";
 import _poolDecisiveDenial from "../pool/decisive-denial.js";
 import _poolDeftDuelist from "../pool/deft-duelist.js";
+import _poolDeliberate from "../pool/deliberate.js";
 import _poolDerangedOutcast from "../pool/deranged-outcast.js";
 import _poolDesolationProwler from "../pool/desolation-prowler.js";
 import _poolDimirAqueduct from "../pool/dimir-aqueduct.js";
@@ -132,6 +133,7 @@ import _poolKavuClimber from "../pool/kavu-climber.js";
 import _poolKazuulsCliffs from "../pool/kazuuls-cliffs.js";
 import _poolKeenEyedArchers from "../pool/keen-eyed-archers.js";
 import _poolKingpinsEnforcers from "../pool/kingpins-enforcers.js";
+import _poolKnightOfTheEbonLegion from "../pool/knight-of-the-ebon-legion.js";
 import _poolLaeliaTheBladeReforged from "../pool/laelia-the-blade-reforged.js";
 import _poolLavaglidePathway from "../pool/lavaglide-pathway.js";
 import _poolLightOfHope from "../pool/light-of-hope.js";
@@ -172,6 +174,7 @@ import _poolPlazaOfHeroes from "../pool/plaza-of-heroes.js";
 import _poolPollutedDead from "../pool/polluted-dead.js";
 import _poolPrakhataPillarBug from "../pool/prakhata-pillar-bug.js";
 import _poolPurpleCrystalCrab from "../pool/purple-crystal-crab.js";
+import _poolRavnicaAtWar from "../pool/ravnica-at-war.js";
 import _poolRazorfieldThresher from "../pool/razorfield-thresher.js";
 import _poolReadyToRumble from "../pool/ready-to-rumble.js";
 import _poolRejuvenate from "../pool/rejuvenate.js";
@@ -186,6 +189,7 @@ import _poolSephirothsIntervention from "../pool/sephiroths-intervention.js";
 import _poolSerumVisions from "../pool/serum-visions.js";
 import _poolSetessanSkirmisher from "../pool/setessan-skirmisher.js";
 import _poolShadowGlider from "../pool/shadow-glider.js";
+import _poolShanidSleepersScourge from "../pool/shanid-sleepers-scourge.js";
 import _poolShatteringBlow from "../pool/shattering-blow.js";
 import _poolShivanHellkite from "../pool/shivan-hellkite.js";
 import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js";
@@ -317,6 +321,7 @@ const shard: CardShard = {
     _poolDayOfJudgment,
     _poolDecisiveDenial,
     _poolDeftDuelist,
+    _poolDeliberate,
     _poolDerangedOutcast,
     _poolDesolationProwler,
     _poolDimirAqueduct,
@@ -384,6 +389,7 @@ const shard: CardShard = {
     _poolKazuulsCliffs,
     _poolKeenEyedArchers,
     _poolKingpinsEnforcers,
+    _poolKnightOfTheEbonLegion,
     _poolLaeliaTheBladeReforged,
     _poolLavaglidePathway,
     _poolLightOfHope,
@@ -424,6 +430,7 @@ const shard: CardShard = {
     _poolPollutedDead,
     _poolPrakhataPillarBug,
     _poolPurpleCrystalCrab,
+    _poolRavnicaAtWar,
     _poolRazorfieldThresher,
     _poolReadyToRumble,
     _poolRejuvenate,
@@ -438,6 +445,7 @@ const shard: CardShard = {
     _poolSerumVisions,
     _poolSetessanSkirmisher,
     _poolShadowGlider,
+    _poolShanidSleepersScourge,
     _poolShatteringBlow,
     _poolShivanHellkite,
     _poolShrineOfTheForsakenGods,

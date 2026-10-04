@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbyssalGatekeeper from "../pool/abyssal-gatekeeper.js";
 import _poolAlabornMusketeer from "../pool/alaborn-musketeer.js";
 import _poolAnafenzaTheForemost from "../pool/anafenza-the-foremost.js";
+import _poolAncestralAnger from "../pool/ancestral-anger.js";
 import _poolAnodetLurker from "../pool/anodet-lurker.js";
 import _poolAppetiteForTheUnnatural from "../pool/appetite-for-the-unnatural.js";
 import _poolArchonOfCruelty from "../pool/archon-of-cruelty.js";
@@ -32,6 +33,7 @@ import _poolCommandTower from "../pool/command-tower.js";
 import _poolCondemn from "../pool/condemn.js";
 import _poolCrashingDrawbridge from "../pool/crashing-drawbridge.js";
 import _poolCrucibleOfFire from "../pool/crucible-of-fire.js";
+import _poolCruelSomnophage from "../pool/cruel-somnophage.js";
 import _poolDeadlyDerision from "../pool/deadly-derision.js";
 import _poolDeadlyVisit from "../pool/deadly-visit.js";
 import _poolDecimate from "../pool/decimate.js";
@@ -92,6 +94,7 @@ import _poolIxhelScionOfAtraxa from "../pool/ixhel-scion-of-atraxa.js";
 import _poolJandorsSaddlebags from "../pool/jandors-saddlebags.js";
 import _poolKamiOfTwistedReflection from "../pool/kami-of-twisted-reflection.js";
 import _poolKarazikarTheEyeTyrant from "../pool/karazikar-the-eye-tyrant.js";
+import _poolKeepWatch from "../pool/keep-watch.js";
 import _poolKoalaSheep from "../pool/koala-sheep.js";
 import _poolKolaghansCommand from "../pool/kolaghans-command.js";
 import _poolKorCartographer from "../pool/kor-cartographer.js";
@@ -114,6 +117,7 @@ import _poolMortify from "../pool/mortify.js";
 import _poolMossKami from "../pool/moss-kami.js";
 import _poolMossViper from "../pool/moss-viper.js";
 import _poolNadirKraken from "../pool/nadir-kraken.js";
+import _poolNecronDeathmark from "../pool/necron-deathmark.js";
 import _poolNettleSwine from "../pool/nettle-swine.js";
 import _poolNimbusWings from "../pool/nimbus-wings.js";
 import _poolNoblePanther from "../pool/noble-panther.js";
@@ -150,6 +154,7 @@ import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
 import _poolSagesReverie from "../pool/sages-reverie.js";
 import _poolSakuraTribeScout from "../pool/sakura-tribe-scout.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
+import _poolScamperingSurveyor from "../pool/scampering-surveyor.js";
 import _poolScrapTrawler from "../pool/scrap-trawler.js";
 import _poolSeaGate from "../pool/sea-gate.js";
 import _poolSeacoastDrake from "../pool/seacoast-drake.js";
@@ -167,6 +172,7 @@ import _poolSkullOfOrm from "../pool/skull-of-orm.js";
 import _poolSkullbriarTheWalkingGrave from "../pool/skullbriar-the-walking-grave.js";
 import _poolSkylinePredator from "../pool/skyline-predator.js";
 import _poolSleightOfHand from "../pool/sleight-of-hand.js";
+import _poolSmokebraider from "../pool/smokebraider.js";
 import _poolSolemnOffering from "../pool/solemn-offering.js";
 import _poolSoulOfTheRapids from "../pool/soul-of-the-rapids.js";
 import _poolSpareSupplies from "../pool/spare-supplies.js";
@@ -207,6 +213,7 @@ import _poolUrbanDaggertooth from "../pool/urban-daggertooth.js";
 import _poolUtopiaTree from "../pool/utopia-tree.js";
 import _poolValakutStoneforge from "../pool/valakut-stoneforge.js";
 import _poolVeneratedRotpriest from "../pool/venerated-rotpriest.js";
+import _poolViridianLongbow from "../pool/viridian-longbow.js";
 import _poolVonaButcherOfMagan from "../pool/vona-butcher-of-magan.js";
 import _poolVraskasContempt from "../pool/vraskas-contempt.js";
 import _poolWallOfRoots from "../pool/wall-of-roots.js";
@@ -232,6 +239,7 @@ const shard: CardShard = {
     _poolAbyssalGatekeeper,
     _poolAlabornMusketeer,
     _poolAnafenzaTheForemost,
+    _poolAncestralAnger,
     _poolAnodetLurker,
     _poolAppetiteForTheUnnatural,
     _poolArchonOfCruelty,
@@ -258,6 +266,7 @@ const shard: CardShard = {
     _poolCondemn,
     _poolCrashingDrawbridge,
     _poolCrucibleOfFire,
+    _poolCruelSomnophage,
     _poolDeadlyDerision,
     _poolDeadlyVisit,
     _poolDecimate,
@@ -318,6 +327,7 @@ const shard: CardShard = {
     _poolJandorsSaddlebags,
     _poolKamiOfTwistedReflection,
     _poolKarazikarTheEyeTyrant,
+    _poolKeepWatch,
     _poolKoalaSheep,
     _poolKolaghansCommand,
     _poolKorCartographer,
@@ -340,6 +350,7 @@ const shard: CardShard = {
     _poolMossKami,
     _poolMossViper,
     _poolNadirKraken,
+    _poolNecronDeathmark,
     _poolNettleSwine,
     _poolNimbusWings,
     _poolNoblePanther,
@@ -376,6 +387,7 @@ const shard: CardShard = {
     _poolSagesReverie,
     _poolSakuraTribeScout,
     _poolSalvagedManaworker,
+    _poolScamperingSurveyor,
     _poolScrapTrawler,
     _poolSeaGate,
     _poolSeacoastDrake,
@@ -393,6 +405,7 @@ const shard: CardShard = {
     _poolSkullbriarTheWalkingGrave,
     _poolSkylinePredator,
     _poolSleightOfHand,
+    _poolSmokebraider,
     _poolSolemnOffering,
     _poolSoulOfTheRapids,
     _poolSpareSupplies,
@@ -433,6 +446,7 @@ const shard: CardShard = {
     _poolUtopiaTree,
     _poolValakutStoneforge,
     _poolVeneratedRotpriest,
+    _poolViridianLongbow,
     _poolVonaButcherOfMagan,
     _poolVraskasContempt,
     _poolWallOfRoots,

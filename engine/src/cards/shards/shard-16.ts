@@ -74,6 +74,7 @@ import _poolEtherealInvestigator from "../pool/ethereal-investigator.js";
 import _poolExtravagantReplication from "../pool/extravagant-replication.js";
 import _poolFaerieSeer from "../pool/faerie-seer.js";
 import _poolFavorableWinds from "../pool/favorable-winds.js";
+import _poolFelisaFangOfSilverquill from "../pool/felisa-fang-of-silverquill.js";
 import _poolFeralFerocity from "../pool/feral-ferocity.js";
 import _poolFirespitterWhelp from "../pool/firespitter-whelp.js";
 import _poolFistsOfTheAnvil from "../pool/fists-of-the-anvil.js";
@@ -140,6 +141,7 @@ import _poolMachineGodsEffigy from "../pool/machine-gods-effigy.js";
 import _poolMalakirRebirth from "../pool/malakir-rebirth.js";
 import _poolManaformHellkite from "../pool/manaform-hellkite.js";
 import _poolMarketbackWalker from "../pool/marketback-walker.js";
+import _poolMemoryPlunder from "../pool/memory-plunder.js";
 import _poolMerfolkSkydiver from "../pool/merfolk-skydiver.js";
 import _poolMikaeusTheUnhallowed from "../pool/mikaeus-the-unhallowed.js";
 import _poolMillstone from "../pool/millstone.js";
@@ -190,6 +192,7 @@ import _poolSelesnyaGuildmage from "../pool/selesnya-guildmage.js";
 import _poolSenateCourier from "../pool/senate-courier.js";
 import _poolShatteredSanctum from "../pool/shattered-sanctum.js";
 import _poolShipwreckMarsh from "../pool/shipwreck-marsh.js";
+import _poolShriekingDrake from "../pool/shrieking-drake.js";
 import _poolShrink from "../pool/shrink.js";
 import _poolSkarrganHellkite from "../pool/skarrgan-hellkite.js";
 import _poolSkybladeOfTheLegion from "../pool/skyblade-of-the-legion.js";
@@ -350,6 +353,7 @@ const shard: CardShard = {
     _poolExtravagantReplication,
     _poolFaerieSeer,
     _poolFavorableWinds,
+    _poolFelisaFangOfSilverquill,
     _poolFeralFerocity,
     _poolFirespitterWhelp,
     _poolFistsOfTheAnvil,
@@ -416,6 +420,7 @@ const shard: CardShard = {
     _poolMalakirRebirth,
     _poolManaformHellkite,
     _poolMarketbackWalker,
+    _poolMemoryPlunder,
     _poolMerfolkSkydiver,
     _poolMikaeusTheUnhallowed,
     _poolMillstone,
@@ -466,6 +471,7 @@ const shard: CardShard = {
     _poolSenateCourier,
     _poolShatteredSanctum,
     _poolShipwreckMarsh,
+    _poolShriekingDrake,
     _poolShrink,
     _poolSkarrganHellkite,
     _poolSkybladeOfTheLegion,

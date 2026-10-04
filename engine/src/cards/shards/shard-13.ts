@@ -15,6 +15,7 @@ import _poolAltarsLight from "../pool/altars-light.js";
 import _poolAminatouTheFateshifter from "../pool/aminatou-the-fateshifter.js";
 import _poolAncientGreenwarden from "../pool/ancient-greenwarden.js";
 import _poolAngelOfInvention from "../pool/angel-of-invention.js";
+import _poolAngelicSkirmisher from "../pool/angelic-skirmisher.js";
 import _poolArcaneSignet from "../pool/arcane-signet.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
@@ -49,6 +50,7 @@ import _poolCragcrownPathway from "../pool/cragcrown-pathway.js";
 import _poolCrawWurm from "../pool/craw-wurm.js";
 import _poolCrazedGoblin from "../pool/crazed-goblin.js";
 import _poolCruelRevival from "../pool/cruel-revival.js";
+import _poolCrypticCaves from "../pool/cryptic-caves.js";
 import _poolCunningBreezedancer from "../pool/cunning-breezedancer.js";
 import _poolDarkstarAugur from "../pool/darkstar-augur.js";
 import _poolDawnhartDisciple from "../pool/dawnhart-disciple.js";
@@ -93,6 +95,7 @@ import _poolGoblinBalloonBrigade from "../pool/goblin-balloon-brigade.js";
 import _poolGoblinPiker from "../pool/goblin-piker.js";
 import _poolGreatHornKrushok from "../pool/great-horn-krushok.js";
 import _poolGroveRumbler from "../pool/grove-rumbler.js";
+import _poolHajarLoyalBodyguard from "../pool/hajar-loyal-bodyguard.js";
 import _poolHeraldOfEternalDawn from "../pool/herald-of-eternal-dawn.js";
 import _poolHinataDawnCrowned from "../pool/hinata-dawn-crowned.js";
 import _poolHuatlisSnubhorn from "../pool/huatlis-snubhorn.js";
@@ -115,6 +118,7 @@ import _poolKeenGlidemaster from "../pool/keen-glidemaster.js";
 import _poolKeeperOfSecrets from "../pool/keeper-of-secrets.js";
 import _poolKiboUktabiPrince from "../pool/kibo-uktabi-prince.js";
 import _poolKiorasFollower from "../pool/kioras-follower.js";
+import _poolKishlaVillage from "../pool/kishla-village.js";
 import _poolKitesailScout from "../pool/kitesail-scout.js";
 import _poolKnightOfMeadowgrain from "../pool/knight-of-meadowgrain.js";
 import _poolKotisSibsigChampion from "../pool/kotis-sibsig-champion.js";
@@ -172,6 +176,7 @@ import _poolRoyalFalcon from "../pool/royal-falcon.js";
 import _poolRussetWolves from "../pool/russet-wolves.js";
 import _poolSakuraTribeElder from "../pool/sakura-tribe-elder.js";
 import _poolSanguineSyphoner from "../pool/sanguine-syphoner.js";
+import _poolSarumansTrickery from "../pool/sarumans-trickery.js";
 import _poolScarwoodGoblins from "../pool/scarwood-goblins.js";
 import _poolScorchingShot from "../pool/scorching-shot.js";
 import _poolScreechingPhoenix from "../pool/screeching-phoenix.js";
@@ -222,6 +227,7 @@ import _poolUlvenwaldHydra from "../pool/ulvenwald-hydra.js";
 import _poolUnhinge from "../pool/unhinge.js";
 import _poolValiantGuard from "../pool/valiant-guard.js";
 import _poolViashinoSandsprinter from "../pool/viashino-sandsprinter.js";
+import _poolVillainousWrath from "../pool/villainous-wrath.js";
 import _poolVivVisionTeenSynthezoid from "../pool/viv-vision-teen-synthezoid.js";
 import _poolVoiceOfMany from "../pool/voice-of-many.js";
 import _poolVoidwielder from "../pool/voidwielder.js";
@@ -260,6 +266,7 @@ const shard: CardShard = {
     _poolAminatouTheFateshifter,
     _poolAncientGreenwarden,
     _poolAngelOfInvention,
+    _poolAngelicSkirmisher,
     _poolArcaneSignet,
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,
@@ -294,6 +301,7 @@ const shard: CardShard = {
     _poolCrawWurm,
     _poolCrazedGoblin,
     _poolCruelRevival,
+    _poolCrypticCaves,
     _poolCunningBreezedancer,
     _poolDarkstarAugur,
     _poolDawnhartDisciple,
@@ -338,6 +346,7 @@ const shard: CardShard = {
     _poolGoblinPiker,
     _poolGreatHornKrushok,
     _poolGroveRumbler,
+    _poolHajarLoyalBodyguard,
     _poolHeraldOfEternalDawn,
     _poolHinataDawnCrowned,
     _poolHuatlisSnubhorn,
@@ -360,6 +369,7 @@ const shard: CardShard = {
     _poolKeeperOfSecrets,
     _poolKiboUktabiPrince,
     _poolKiorasFollower,
+    _poolKishlaVillage,
     _poolKitesailScout,
     _poolKnightOfMeadowgrain,
     _poolKotisSibsigChampion,
@@ -417,6 +427,7 @@ const shard: CardShard = {
     _poolRussetWolves,
     _poolSakuraTribeElder,
     _poolSanguineSyphoner,
+    _poolSarumansTrickery,
     _poolScarwoodGoblins,
     _poolScorchingShot,
     _poolScreechingPhoenix,
@@ -467,6 +478,7 @@ const shard: CardShard = {
     _poolUnhinge,
     _poolValiantGuard,
     _poolViashinoSandsprinter,
+    _poolVillainousWrath,
     _poolVivVisionTeenSynthezoid,
     _poolVoiceOfMany,
     _poolVoidwielder,

@@ -17,6 +17,8 @@ import _poolAtreusImpulsiveSon from "../pool/atreus-impulsive-son.js";
 import _poolAttendedSocialite from "../pool/attended-socialite.js";
 import _poolAvengerOfTheFallen from "../pool/avenger-of-the-fallen.js";
 import _poolAvengersHangar from "../pool/avengers-hangar.js";
+import _poolBalefireLiege from "../pool/balefire-liege.js";
+import _poolBarrensteppeSiege from "../pool/barrensteppe-siege.js";
 import _poolBastionEnforcer from "../pool/bastion-enforcer.js";
 import _poolBattlewiseValor from "../pool/battlewise-valor.js";
 import _poolBaylenTheHaymaker from "../pool/baylen-the-haymaker.js";
@@ -90,7 +92,9 @@ import _poolGongagaReactorTown from "../pool/gongaga-reactor-town.js";
 import _poolGoroGoroAndSatoru from "../pool/goro-goro-and-satoru.js";
 import _poolGrandArbiterAugustinIv from "../pool/grand-arbiter-augustin-iv.js";
 import _poolGrimBounty from "../pool/grim-bounty.js";
+import _poolGrimReapersSprint from "../pool/grim-reapers-sprint.js";
 import _poolGroundskeeper from "../pool/groundskeeper.js";
+import _poolHammersOfMoradin from "../pool/hammers-of-moradin.js";
 import _poolHangedExecutioner from "../pool/hanged-executioner.js";
 import _poolHashepOasis from "../pool/hashep-oasis.js";
 import _poolHeadlessHorseman from "../pool/headless-horseman.js";
@@ -265,6 +269,8 @@ const shard: CardShard = {
     _poolAttendedSocialite,
     _poolAvengerOfTheFallen,
     _poolAvengersHangar,
+    _poolBalefireLiege,
+    _poolBarrensteppeSiege,
     _poolBastionEnforcer,
     _poolBattlewiseValor,
     _poolBaylenTheHaymaker,
@@ -338,7 +344,9 @@ const shard: CardShard = {
     _poolGoroGoroAndSatoru,
     _poolGrandArbiterAugustinIv,
     _poolGrimBounty,
+    _poolGrimReapersSprint,
     _poolGroundskeeper,
+    _poolHammersOfMoradin,
     _poolHangedExecutioner,
     _poolHashepOasis,
     _poolHeadlessHorseman,

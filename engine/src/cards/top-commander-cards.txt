@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3197 already implemented / 1803 missing (marks refreshed 2026-10-04)
+3347 already implemented / 1653 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -4572,42 +4572,42 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4579  Nemesis of Reason                        {3}{U}{B}        Creature — Leviathan Horror
 [ ]  4580  Flow State                               {1}{U}           Sorcery
 [ ]  4581  Glowing One                              {2}{G}           Creature — Zombie Mutant
-[ ]  4582  Master of the Feast                      {1}{B}{B}        Enchantment Creature — Demon
-[ ]  4583  Boon of the Spirit Realm                 {3}{W}{W}        Enchantment
+[x]  4582  Master of the Feast                      {1}{B}{B}        Enchantment Creature — Demon
+[x]  4583  Boon of the Spirit Realm                 {3}{W}{W}        Enchantment
 [ ]  4584  Mind Flayer                              {3}{U}{U}        Creature — Horror
 [ ]  4585  Mindslaver                               {6}              Legendary Artifact
 [ ]  4586  Jeska, Thrice Reborn                     {2}{R}           Legendary Planeswalker — Jeska
 [x]  4587  Elderfang Disciple                       {1}{B}           Creature — Elf Cleric
 [x]  4588  Impassioned Orator                       {1}{W}           Creature — Human Cleric
 [ ]  4589  Seasoned Dungeoneer                      {3}{W}           Creature — Human Warrior
-[ ]  4590  Strixhaven Stadium                       {3}              Artifact
+[x]  4590  Strixhaven Stadium                       {3}              Artifact
 [ ]  4591  RMS Titanic                              {3}{R}           Legendary Artifact — Vehicle
-[ ]  4592  Electrickery                             {R}              Instant
+[x]  4592  Electrickery                             {R}              Instant
 [ ]  4593  Thran Portal                             {0}              Land — Gate
 [ ]  4594  Katara, Water Tribe's Hope               {2}{W}{U}{U}     Legendary Creature — Human Warrior Ally
-[ ]  4595  Grim Affliction                          {2}{B}           Instant
+[x]  4595  Grim Affliction                          {2}{B}           Instant
 [ ]  4596  Endless Evil                             {2}{U}           Enchantment — Aura
-[ ]  4597  Ghostfire Slice                          {2}{R}           Instant
-[ ]  4598  Cryptic Caves                            {0}              Land
+[x]  4597  Ghostfire Slice                          {2}{R}           Instant
+[x]  4598  Cryptic Caves                            {0}              Land
 [ ]  4599  Reluctant Role Model                     {1}{W}           Creature — Human Survivor
 [ ]  4600  Tifa's Limit Break                       {G}              Instant
 [ ]  4601  Moonmist                                 {1}{G}           Instant
-[ ]  4602  Hunted Horror                            {B}{B}           Creature — Horror
-[ ]  4603  Grim Reaper's Sprint                     {4}{R}           Enchantment — Aura
+[x]  4602  Hunted Horror                            {B}{B}           Creature — Horror
+[x]  4603  Grim Reaper's Sprint                     {4}{R}           Enchantment — Aura
 [ ]  4604  Polymorphist's Jest                      {1}{U}{U}        Instant
-[ ]  4605  Théoden, King of Rohan                   {1}{R}{W}        Legendary Creature — Human Noble
-[ ]  4606  Syphon Sliver                            {2}{B}           Creature — Sliver
-[ ]  4607  Crawling Infestation                     {2}{G}           Enchantment
+[x]  4605  Théoden, King of Rohan                   {1}{R}{W}        Legendary Creature — Human Noble
+[x]  4606  Syphon Sliver                            {2}{B}           Creature — Sliver
+[x]  4607  Crawling Infestation                     {2}{G}           Enchantment
 [ ]  4608  Restoration Seminar                      {5}{W}{W}        Sorcery — Lesson
 [ ]  4609  Summon: Valefor                          {4}{U}           Enchantment Creature — Saga Drake
 [ ]  4610  Skittering Invasion                      {7}              Kindred Sorcery — Eldrazi
-[ ]  4611  Entrapment Maneuver                      {3}{W}           Instant
+[x]  4611  Entrapment Maneuver                      {3}{W}           Instant
 [x]  4612  Xyris, the Writhing Storm                {2}{G}{U}{R}     Legendary Creature — Snake Leviathan
 [ ]  4613  Solar Array                              {3}              Artifact
 [ ]  4614  Furnace of Rath                          {1}{R}{R}{R}     Enchantment
 [x]  4615  Witherbloom Apprentice                   {B}{G}           Creature — Human Druid
-[ ]  4616  Summon: Fat Chocobo                      {4}{G}           Enchantment Creature — Saga Bird
-[ ]  4617  Viridian Longbow                         {1}              Artifact — Equipment
+[x]  4616  Summon: Fat Chocobo                      {4}{G}           Enchantment Creature — Saga Bird
+[x]  4617  Viridian Longbow                         {1}              Artifact — Equipment
 [x]  4618  Vivid Creek                              {0}              Land
 [ ]  4619  Calamity of the Titans                   {4}{C}{C}        Sorcery
 [ ]  4620  Khârn the Betrayer                       {3}{R}           Legendary Creature — Astartes Berserker
@@ -4616,19 +4616,19 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4623  Stormchaser's Talent                     {U}              Enchantment — Class
 [x]  4624  Remand                                   {1}{U}           Instant
 [ ]  4625  Rite of Harmony                          {G}{W}           Instant
-[ ]  4626  Growing Ranks                            {2}{G/W}{G/W}    Enchantment
+[x]  4626  Growing Ranks                            {2}{G/W}{G/W}    Enchantment
 [ ]  4627  Cleaver Skaab                            {3}{U}           Creature — Zombie Horror
 [ ]  4628  Mirrormind Crown                         {4}              Artifact — Equipment
 [ ]  4629  Grist, Voracious Larva // Grist, the Plague Swarm {1}              Legendary Creature — Insect // Legendary Planeswalker — Grist
-[ ]  4630  Serpent of Yawning Depths                {4}{U}{U}        Enchantment Creature — Serpent
-[ ]  4631  The Odd Acorn Gang                       {3}{B}{G}        Legendary Creature — Squirrel Warrior
-[ ]  4632  Keep Watch                               {2}{U}           Instant
-[ ]  4633  Shrieking Drake                          {U}              Creature — Drake
+[x]  4630  Serpent of Yawning Depths                {4}{U}{U}        Enchantment Creature — Serpent
+[x]  4631  The Odd Acorn Gang                       {3}{B}{G}        Legendary Creature — Squirrel Warrior
+[x]  4632  Keep Watch                               {2}{U}           Instant
+[x]  4633  Shrieking Drake                          {U}              Creature — Drake
 [x]  4634  Tannuk, Steadfast Second                 {2}{R}{R}        Legendary Creature — Kavu Pilot
-[ ]  4635  Plundering Barbarian                     {2}{R}           Creature — Dwarf Barbarian
+[x]  4635  Plundering Barbarian                     {2}{R}           Creature — Dwarf Barbarian
 [ ]  4636  Satsuki, the Living Lore                 {G}{W}           Legendary Creature — Human Druid
-[ ]  4637  Excalibur II                             {1}              Legendary Artifact — Equipment
-[ ]  4638  Armored Scrapgorger                      {1}{G}           Creature — Phyrexian Beast
+[x]  4637  Excalibur II                             {1}              Legendary Artifact — Equipment
+[x]  4638  Armored Scrapgorger                      {1}{G}           Creature — Phyrexian Beast
 [ ]  4639  Death Kiss                               {5}{R}           Creature — Beholder
 [ ]  4640  Echocasting Symposium                    {4}{U}{U}        Sorcery — Lesson
 [x]  4641  Theater of Horrors                       {1}{B}{R}        Enchantment
@@ -4637,91 +4637,91 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4644  Bitter Work                              {1}{R}{G}        Enchantment
 [ ]  4645  Gilraen, Dúnedain Protector              {2}{W}           Legendary Creature — Human Noble
 [ ]  4646  Phyrexian Scriptures                     {2}{B}{B}        Enchantment — Saga
-[ ]  4647  Wizard's Retort                          {1}{U}{U}        Instant
+[x]  4647  Wizard's Retort                          {1}{U}{U}        Instant
 [ ]  4648  Kiora Bests the Sea God                  {5}{U}{U}        Enchantment — Saga
 [ ]  4649  Assemble the Players                     {1}{W}           Enchantment
-[ ]  4650  Slaughter Specialist                     {1}{B}           Creature — Vampire Warrior
-[ ]  4651  Darksteel Juggernaut                     {5}              Artifact Creature — Juggernaut
-[ ]  4652  Goblin War Strike                        {R}              Sorcery
-[ ]  4653  Brallin, Skyshark Rider                  {3}{R}           Legendary Creature — Human Shaman
-[ ]  4654  Kellan, Inquisitive Prodigy // Tail the Suspect {2}{G}{U} // {G}{U} Legendary Creature — Human Faerie Detective // Sorcery — Adventure
+[x]  4650  Slaughter Specialist                     {1}{B}           Creature — Vampire Warrior
+[x]  4651  Darksteel Juggernaut                     {5}              Artifact Creature — Juggernaut
+[x]  4652  Goblin War Strike                        {R}              Sorcery
+[x]  4653  Brallin, Skyshark Rider                  {3}{R}           Legendary Creature — Human Shaman
+[x]  4654  Kellan, Inquisitive Prodigy // Tail the Suspect {2}{G}{U} // {G}{U} Legendary Creature — Human Faerie Detective // Sorcery — Adventure
 [ ]  4655  Rat Colony                               {1}{B}           Creature — Rat
 [ ]  4656  Rose, Cutthroat Raider                   {2}{R}{R}        Legendary Artifact Creature — Robot
-[ ]  4657  Sami, Wildcat Captain                    {4}{R}{W}        Legendary Creature — Human Artificer Rogue
+[x]  4657  Sami, Wildcat Captain                    {4}{R}{W}        Legendary Creature — Human Artificer Rogue
 [x]  4658  Tyrant's Familiar                        {5}{R}{R}        Creature — Dragon
 [ ]  4659  Sliver Legion                            {W}{U}{B}{R}{G}  Legendary Creature — Sliver
 [ ]  4660  Gilgamesh, Master-at-Arms                {4}{R}{R}        Legendary Creature — Human Samurai
 [ ]  4661  Absolute Virtue                          {6}{W}{U}        Legendary Creature — Avatar Warrior
-[ ]  4662  Shanid, Sleepers' Scourge                {1}{R}{W}{B}     Legendary Creature — Human Knight
+[x]  4662  Shanid, Sleepers' Scourge                {1}{R}{W}{B}     Legendary Creature — Human Knight
 [x]  4663  Marisi, Breaker of the Coil              {1}{R}{G}{W}     Legendary Creature — Cat Warrior
-[ ]  4664  Rally the Ranks                          {1}{W}           Enchantment
-[ ]  4665  Psychotic Fury                           {1}{R}           Instant
-[ ]  4666  Deranged Assistant                       {1}{U}           Creature — Human Wizard
+[x]  4664  Rally the Ranks                          {1}{W}           Enchantment
+[x]  4665  Psychotic Fury                           {1}{R}           Instant
+[x]  4666  Deranged Assistant                       {1}{U}           Creature — Human Wizard
 [x]  4667  Condemn                                  {W}              Instant
-[ ]  4668  Kelpie Guide                             {2}{U}           Creature — Beast
+[x]  4668  Kelpie Guide                             {2}{U}           Creature — Beast
 [x]  4669  Spit Flame                               {2}{R}           Instant
 [ ]  4670  Angel of Suffering                       {3}{B}{B}        Creature — Nightmare Angel
 [ ]  4671  Frogify                                  {1}{U}           Enchantment — Aura
 [ ]  4672  Shadow of Mortality                      {13}{B}{B}       Creature — Avatar
-[ ]  4673  Orcish Medicine                          {1}{B}           Instant
+[x]  4673  Orcish Medicine                          {1}{B}           Instant
 [ ]  4674  Jolene, the Plunder Queen                {2}{R}{G}        Legendary Creature — Human Warrior
-[ ]  4675  Song of Freyalise                        {1}{G}           Enchantment — Saga
-[ ]  4676  Snapping Voidcraw                        {1}{G}{U}        Creature — Eldrazi Turtle
+[x]  4675  Song of Freyalise                        {1}{G}           Enchantment — Saga
+[x]  4676  Snapping Voidcraw                        {1}{G}{U}        Creature — Eldrazi Turtle
 [ ]  4677  Blatant Thievery                         {4}{U}{U}{U}     Sorcery
 [x]  4678  Maraleaf Pixie                           {G}{U}           Creature — Faerie
 [x]  4679  Divine Resilience                        {W}              Instant
 [ ]  4680  Breeches, Brazen Plunderer               {3}{R}           Legendary Creature — Goblin Pirate
 [ ]  4681  Indomitable Might                        {3}{G}           Enchantment — Aura
-[ ]  4682  Spawning Bed                             {0}              Land
+[x]  4682  Spawning Bed                             {0}              Land
 [ ]  4683  Of Herbs and Stewed Rabbit               {2}{W}           Enchantment — Saga
-[ ]  4684  Hajar, Loyal Bodyguard                   {R}{G}           Legendary Creature — Human Soldier
-[ ]  4685  Scampering Surveyor                      {4}              Artifact Creature — Gnome
-[ ]  4686  Vodalian Hexcatcher                      {1}{U}           Creature — Merfolk Wizard
+[x]  4684  Hajar, Loyal Bodyguard                   {R}{G}           Legendary Creature — Human Soldier
+[x]  4685  Scampering Surveyor                      {4}              Artifact Creature — Gnome
+[x]  4686  Vodalian Hexcatcher                      {1}{U}           Creature — Merfolk Wizard
 [ ]  4687  Cool but Rude                            {1}{R}           Enchantment — Class
 [x]  4688  Ishai, Ojutai Dragonspeaker              {2}{W}{U}        Legendary Creature — Bird Monk
 [x]  4689  Midnight Banshee                         {3}{B}{B}{B}     Creature — Spirit
 [x]  4690  Eternal Skylord                          {4}{U}           Creature — Zombie Wizard
-[ ]  4691  Restless Ridgeline                       {0}              Land
-[ ]  4692  Back in Town                             {X}{2}{B}        Sorcery
-[ ]  4693  Angelic Skirmisher                       {4}{W}{W}        Creature — Angel
+[x]  4691  Restless Ridgeline                       {0}              Land
+[x]  4692  Back in Town                             {X}{2}{B}        Sorcery
+[x]  4693  Angelic Skirmisher                       {4}{W}{W}        Creature — Angel
 [ ]  4694  Preacher of the Schism                   {2}{B}           Creature — Vampire Cleric
 [ ]  4695  Apprentice Necromancer                   {1}{B}           Creature — Zombie Wizard
 [x]  4696  Cartographer's Hawk                      {1}{W}           Creature — Bird
 [x]  4697  Filth                                    {3}{B}           Creature — Incarnation
-[ ]  4698  Restless Fortress                        {0}              Land
+[x]  4698  Restless Fortress                        {0}              Land
 [ ]  4699  Freya Crescent                           {R}              Legendary Creature — Rat Knight
-[ ]  4700  Restless Bivouac                         {0}              Land
-[ ]  4701  Galvanic Blast                           {R}              Instant
+[x]  4700  Restless Bivouac                         {0}              Land
+[x]  4701  Galvanic Blast                           {R}              Instant
 [ ]  4702  Peacewalker Colossus                     {3}              Artifact — Vehicle
-[ ]  4703  Mulch                                    {1}{G}           Sorcery
+[x]  4703  Mulch                                    {1}{G}           Sorcery
 [ ]  4704  Haunted One                              {2}{B}           Legendary Enchantment — Background
 [ ]  4705  Trenzalore Clocktower                    {0}              Legendary Land
 [ ]  4706  Surgehacker Mech                         {4}              Artifact — Vehicle
 [ ]  4707  Marshal's Anthem                         {2}{W}{W}        Enchantment
 [ ]  4708  Guardian Scalelord                       {4}{W}           Creature — Dragon
-[ ]  4709  Felisa, Fang of Silverquill              {2}{W}{B}        Legendary Creature — Vampire Wizard
+[x]  4709  Felisa, Fang of Silverquill              {2}{W}{B}        Legendary Creature — Vampire Wizard
 [x]  4710  Raffine, Scheming Seer                   {W}{U}{B}        Legendary Creature — Sphinx Demon
 [ ]  4711  Dina's Guidance                          {1}{B}{G}        Instant
 [ ]  4712  Garnet, Princess of Alexandria           {G}{W}           Legendary Creature — Human Noble Cleric
-[ ]  4713  Metropolis Reformer                      {2}{W}           Creature — Angel Cleric
-[ ]  4714  Terisian Mindbreaker                     {7}              Artifact Creature — Juggernaut
+[x]  4713  Metropolis Reformer                      {2}{W}           Creature — Angel Cleric
+[x]  4714  Terisian Mindbreaker                     {7}              Artifact Creature — Juggernaut
 [ ]  4715  Ancient Adamantoise                      {5}{G}{G}{G}     Creature — Turtle
-[ ]  4716  Slinn Voda, the Rising Deep              {6}{U}{U}        Legendary Creature — Leviathan
+[x]  4716  Slinn Voda, the Rising Deep              {6}{U}{U}        Legendary Creature — Leviathan
 [ ]  4717  Star Compass                             {2}              Artifact
 [x]  4718  The Balrog of Moria                      {4}{B}{B}{R}     Legendary Creature — Avatar Demon
-[ ]  4719  Bramble Sovereign                        {2}{G}{G}        Creature — Dryad
+[x]  4719  Bramble Sovereign                        {2}{G}{G}        Creature — Dryad
 [x]  4720  Nezumi Informant                         {1}{B}           Creature — Rat Rogue
 [x]  4721  Blade Splicer                            {2}{W}           Creature — Phyrexian Human Artificer
 [ ]  4722  Ulalek, Fused Atrocity                   {C/W}{C/U}{C/B}{C/R}{C/G} Legendary Creature — Eldrazi
 [ ]  4723  The Raven Man                            {1}{B}           Legendary Creature — Human Wizard
 [x]  4724  Rabanastre, Royal City                   {0}              Land — Town
-[ ]  4725  Brightglass Gearhulk                     {G}{G}{W}{W}     Artifact Creature — Construct
-[ ]  4726  Research Thief                           {4}{U}           Artifact Creature — Moonfolk Wizard
+[x]  4725  Brightglass Gearhulk                     {G}{G}{W}{W}     Artifact Creature — Construct
+[x]  4726  Research Thief                           {4}{U}           Artifact Creature — Moonfolk Wizard
 [ ]  4727  Quick Sliver                             {1}{G}           Creature — Sliver
-[ ]  4728  Trail of Crumbs                          {1}{G}           Enchantment
-[ ]  4729  Invigorating Hot Spring                  {1}{R}{G}        Enchantment
+[x]  4728  Trail of Crumbs                          {1}{G}           Enchantment
+[x]  4729  Invigorating Hot Spring                  {1}{R}{G}        Enchantment
 [ ]  4730  Creative Technique                       {4}{R}           Sorcery
-[ ]  4731  Memory Plunder                           {U/B}{U/B}{U/B}{U/B} Instant
+[x]  4731  Memory Plunder                           {U/B}{U/B}{U/B}{U/B} Instant
 [x]  4732  Curate                                   {1}{U}           Instant
 [ ]  4733  Paladin Class                            {W}              Enchantment — Class
 [x]  4734  Plague Stinger                           {1}{B}           Creature — Phyrexian Insect Horror
@@ -4731,43 +4731,43 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4738  Nogi, Draco-Zealot                       {1}{R}{R}        Legendary Creature — Kobold Shaman
 [x]  4739  Ichorclaw Myr                            {2}              Artifact Creature — Phyrexian Myr
 [ ]  4740  Reject Imperfection                      {1}{U}{U}        Instant
-[ ]  4741  The Wandering Rescuer                    {3}{W}{W}        Legendary Creature — Human Samurai Noble
+[x]  4741  The Wandering Rescuer                    {3}{W}{W}        Legendary Creature — Human Samurai Noble
 [x]  4742  Gifted Aetherborn                        {B}{B}           Creature — Aetherborn Vampire
 [ ]  4743  Azusa's Many Journeys // Likeness of the Seeker {2}              Enchantment — Saga // Enchantment Creature — Human Monk
-[ ]  4744  Changeling Wayfinder                     {3}              Creature — Shapeshifter
-[ ]  4745  Far Traveler                             {2}{W}           Legendary Enchantment — Background
-[ ]  4746  Glimmervoid                              {0}              Land
+[x]  4744  Changeling Wayfinder                     {3}              Creature — Shapeshifter
+[x]  4745  Far Traveler                             {2}{W}           Legendary Enchantment — Background
+[x]  4746  Glimmervoid                              {0}              Land
 [x]  4747  Outrageous Robbery                       {X}{B}{B}        Instant
 [ ]  4748  Sea-Dasher Octopus                       {1}{U}{U}        Creature — Octopus
 [x]  4749  Ruric Thar, the Unbowed                  {4}{R}{G}        Legendary Creature — Ogre Warrior
 [ ]  4750  Restless Spire                           {0}              Land
-[ ]  4751  Heronblade Elite                         {2}{G}           Creature — Human Warrior
-[ ]  4752  Swarm Intelligence                       {6}{U}           Enchantment
+[x]  4751  Heronblade Elite                         {2}{G}           Creature — Human Warrior
+[x]  4752  Swarm Intelligence                       {6}{U}           Enchantment
 [ ]  4753  Wulfgar of Icewind Dale                  {3}{R}{G}        Legendary Creature — Human Barbarian
 [ ]  4754  Season of Loss                           {3}{B}{B}        Sorcery
 [x]  4755  Quandrix Campus                          {0}              Land
 [ ]  4756  Danitha, Benalia's Hope                  {4}{W}           Legendary Creature — Human Knight
-[ ]  4757  Saruman's Trickery                       {1}{U}{U}        Instant
+[x]  4757  Saruman's Trickery                       {1}{U}{U}        Instant
 [ ]  4758  Deekah, Fractal Theorist                 {4}{U}           Legendary Creature — Human Wizard
 [ ]  4759  Component Pouch                          {3}              Artifact
-[ ]  4760  Triskelion                               {6}              Artifact Creature — Construct
+[x]  4760  Triskelion                               {6}              Artifact Creature — Construct
 [ ]  4761  Frodo, Adventurous Hobbit                {W}{B}           Legendary Creature — Halfling Scout
-[ ]  4762  Alrund's Epiphany                        {5}{U}{U}        Sorcery
+[x]  4762  Alrund's Epiphany                        {5}{U}{U}        Sorcery
 [ ]  4763  Kruphix, God of Horizons                 {3}{G}{U}        Legendary Enchantment Creature — God
 [ ]  4764  Vexing Radgull                           {1}{U}           Creature — Bird Mutant
-[ ]  4765  Mandate of Abaddon                       {3}{B}           Sorcery
+[x]  4765  Mandate of Abaddon                       {3}{B}           Sorcery
 [ ]  4766  Dream Devourer                           {1}{B}           Creature — Demon Cleric
 [x]  4767  Traveler's Amulet                        {1}              Artifact
-[ ]  4768  Smoke Bomb                               {3}              Artifact
-[ ]  4769  Deadly Brew                              {B}{G}           Sorcery
+[x]  4768  Smoke Bomb                               {3}              Artifact
+[x]  4769  Deadly Brew                              {B}{G}           Sorcery
 [ ]  4770  Bonus Round                              {1}{R}{R}        Sorcery
 [x]  4771  Two-Headed Hellkite                      {1}{W}{U}{B}{R}{G} Creature — Dragon
 [x]  4772  Camaraderie                              {4}{G}{W}        Sorcery
 [ ]  4773  Grave Betrayal                           {5}{B}{B}        Enchantment
 [x]  4774  Twinblade Blessing                       {1}{W}{W}        Enchantment — Aura
-[ ]  4775  Sylvan Offering                          {X}{G}           Sorcery
+[x]  4775  Sylvan Offering                          {X}{G}           Sorcery
 [ ]  4776  Faramir, Prince of Ithilien              {2}{W}{U}        Legendary Creature — Human Noble
-[ ]  4777  Path of Annihilation                     {3}{G}           Enchantment
+[x]  4777  Path of Annihilation                     {3}{G}           Enchantment
 [ ]  4778  Bringer of the Last Gift                 {6}{B}{B}        Creature — Vampire Demon
 [x]  4779  Towering Titan                           {4}{G}{G}        Creature — Giant
 [ ]  4780  Wojek Investigator                       {2}{W}           Creature — Angel Detective
@@ -4777,88 +4777,88 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4784  Volcanic Vision                          {5}{R}{R}        Sorcery
 [ ]  4785  Prishe's Wanderings                      {2}{G}           Instant
 [ ]  4786  Heartless Act                            {1}{B}           Instant
-[ ]  4787  Mindless Automaton                       {4}              Artifact Creature — Construct
-[ ]  4788  Nullpriest of Oblivion                   {1}{B}           Creature — Vampire Cleric
+[x]  4787  Mindless Automaton                       {4}              Artifact Creature — Construct
+[x]  4788  Nullpriest of Oblivion                   {1}{B}           Creature — Vampire Cleric
 [ ]  4789  Tithing Blade // Consuming Sepulcher     {2}              Artifact // Artifact
 [x]  4790  Bilbo's Ring                             {3}              Legendary Artifact — Equipment
 [x]  4791  Goldhound                                {R}              Artifact Creature — Treasure Dog
 [ ]  4792  Mathemagics                              {X}{X}{U}{U}     Sorcery
-[ ]  4793  Ravnica at War                           {3}{W}           Sorcery
-[ ]  4794  Machinist's Arsenal                      {4}{W}           Artifact — Equipment
-[ ]  4795  Warren Warleader                         {2}{W}{W}        Creature — Rabbit Knight
+[x]  4793  Ravnica at War                           {3}{W}           Sorcery
+[x]  4794  Machinist's Arsenal                      {4}{W}           Artifact — Equipment
+[x]  4795  Warren Warleader                         {2}{W}{W}        Creature — Rabbit Knight
 [ ]  4796  Stensian Sanguinist // Exsanguinate      {1}{B} // {X}{B}{B} Creature — Vampire Cleric // Sorcery
 [ ]  4797  Surge to Victory                         {4}{R}{R}        Sorcery
 [x]  4798  Star Athlete                             {1}{R}{R}        Creature — Human Warrior
 [ ]  4799  Stolen Identity                          {4}{U}{U}        Sorcery
-[ ]  4800  Spiteful Sliver                          {2}{R}           Creature — Sliver
+[x]  4800  Spiteful Sliver                          {2}{R}           Creature — Sliver
 [x]  4801  Wand of Orcus                            {2}{B}           Legendary Artifact — Equipment
-[ ]  4802  Into the North                           {1}{G}           Sorcery
-[ ]  4803  Jori En, Ruin Diver                      {1}{U}{R}        Legendary Creature — Merfolk Wizard
+[x]  4802  Into the North                           {1}{G}           Sorcery
+[x]  4803  Jori En, Ruin Diver                      {1}{U}{R}        Legendary Creature — Merfolk Wizard
 [ ]  4804  Kaito, Bane of Nightmares                {2}{U}{B}        Legendary Planeswalker — Kaito
 [ ]  4805  Containment Priest                       {1}{W}           Creature — Human Cleric
 [x]  4806  Aminatou, the Fateshifter                {W}{U}{B}        Legendary Planeswalker — Aminatou
-[ ]  4807  Lilysplash Mentor                        {2}{G}{U}        Creature — Frog Druid
+[x]  4807  Lilysplash Mentor                        {2}{G}{U}        Creature — Frog Druid
 [ ]  4808  Gyome, Master Chef                       {2}{B}{G}        Legendary Creature — Troll Warlock
 [ ]  4809  Éomer, King of Rohan                     {3}{R}{W}        Legendary Creature — Human Noble
 [ ]  4810  Ultron, Artificial Malevolence           {3}              Legendary Artifact Creature — Robot Villain
 [x]  4811  Act of Treason                           {2}{R}           Sorcery
 [ ]  4812  Nemata, Primeval Warden                  {2}{B}{G}        Legendary Creature — Treefolk
-[ ]  4813  Audacity                                 {G}              Enchantment — Aura
+[x]  4813  Audacity                                 {G}              Enchantment — Aura
 [ ]  4814  Wondrous Crucible                        {7}              Artifact
 [ ]  4815  Filigree Vector                          {3}{W}           Artifact Creature — Phyrexian Construct
-[ ]  4816  Stormscale Scion                         {4}{R}{R}        Creature — Dragon
+[x]  4816  Stormscale Scion                         {4}{R}{R}        Creature — Dragon
 [ ]  4817  Moonlit Meditation                       {2}{U}           Enchantment — Aura
-[ ]  4818  Liliana Vess                             {3}{B}{B}        Legendary Planeswalker — Liliana
-[ ]  4819  Bumi, Eclectic Earthbender               {3}{G}{G}        Legendary Creature — Human Noble Ally
+[x]  4818  Liliana Vess                             {3}{B}{B}        Legendary Planeswalker — Liliana
+[x]  4819  Bumi, Eclectic Earthbender               {3}{G}{G}        Legendary Creature — Human Noble Ally
 [ ]  4820  Tale's End                               {1}{U}           Instant
 [x]  4821  Ambush Viper                             {1}{G}           Creature — Snake
-[ ]  4822  Villainous Wrath                         {3}{B}{B}        Sorcery
-[ ]  4823  Ancestral Anger                          {R}              Sorcery
-[ ]  4824  Cathedral of War                         {0}              Land
+[x]  4822  Villainous Wrath                         {3}{B}{B}        Sorcery
+[x]  4823  Ancestral Anger                          {R}              Sorcery
+[x]  4824  Cathedral of War                         {0}              Land
 [x]  4825  Sejiri Refuge                            {0}              Land
-[ ]  4826  Stonehoof Chieftain                      {7}{G}           Creature — Centaur Warrior
+[x]  4826  Stonehoof Chieftain                      {7}{G}           Creature — Centaur Warrior
 [ ]  4827  Zenos yae Galvus // Shinryu, Transcendent Rival {5}              Legendary Creature — Human Noble Warrior // Legendary Creature — Dragon
 [x]  4828  Atzocan Seer                             {1}{G}{W}        Creature — Human Druid
 [x]  4829  Neriv, Heart of the Storm                {1}{R}{W}{B}     Legendary Creature — Spirit Dragon
 [ ]  4830  Brotherhood Vertibird                    {3}              Artifact — Vehicle
 [ ]  4831  Flamerush Rider                          {4}{R}           Creature — Human Warrior
-[ ]  4832  Brainstone                               {1}              Artifact
+[x]  4832  Brainstone                               {1}              Artifact
 [x]  4833  Short Bow                                {2}              Artifact — Equipment
 [ ]  4834  Norman Osborn // Green Goblin            {2}              Legendary Creature — Human Scientist Villain // Legendary Creature — Goblin Human Villain
-[ ]  4835  Uchuulon                                 {3}{B}           Creature — Crab Ooze Horror
+[x]  4835  Uchuulon                                 {3}{B}           Creature — Crab Ooze Horror
 [ ]  4836  Taigam, Master Opportunist               {1}{U}           Legendary Creature — Human Monk
-[ ]  4837  Sporocyst                                {X}{X}{G}        Creature — Tyranid
-[ ]  4838  Braids, Cabal Minion                     {2}{B}{B}        Legendary Creature — Human Minion
-[ ]  4839  On the Trail                             {1}{G}           Enchantment
+[x]  4837  Sporocyst                                {X}{X}{G}        Creature — Tyranid
+[x]  4838  Braids, Cabal Minion                     {2}{B}{B}        Legendary Creature — Human Minion
+[x]  4839  On the Trail                             {1}{G}           Enchantment
 [ ]  4840  Coin of Mastery                          {4}              Artifact
-[ ]  4841  Barbarian Ring                           {0}              Land
+[x]  4841  Barbarian Ring                           {0}              Land
 [ ]  4842  Wandertale Mentor                        {R}{G}           Creature — Raccoon Bard
 [ ]  4843  Obelisk Spider                           {1}{B}{G}        Creature — Spider
-[ ]  4844  Deliberate                               {1}{U}           Instant
-[ ]  4845  Thalia's Lieutenant                      {1}{W}           Creature — Human Soldier
+[x]  4844  Deliberate                               {1}{U}           Instant
+[x]  4845  Thalia's Lieutenant                      {1}{W}           Creature — Human Soldier
 [ ]  4846  Relic of Progenitus                      {1}              Artifact
 [x]  4847  Liliana's Mastery                        {3}{B}{B}        Enchantment
 [ ]  4848  Summon: Magus Sisters                    {4}{G}           Enchantment Creature — Saga Faerie
-[ ]  4849  Avatar Roku, Firebender                  {3}{R}{R}{R}     Legendary Creature — Human Avatar
+[x]  4849  Avatar Roku, Firebender                  {3}{R}{R}{R}     Legendary Creature — Human Avatar
 [x]  4850  Winota, Joiner of Forces                 {2}{R}{W}        Legendary Creature — Human Warrior
-[ ]  4851  Lumbering Falls                          {0}              Land
-[ ]  4852  Goblin Lackey                            {R}              Creature — Goblin
-[ ]  4853  Open the Gates                           {G}              Sorcery
+[x]  4851  Lumbering Falls                          {0}              Land
+[x]  4852  Goblin Lackey                            {R}              Creature — Goblin
+[x]  4853  Open the Gates                           {G}              Sorcery
 [ ]  4854  Reflector Mage                           {1}{W}{U}        Creature — Human Wizard
 [ ]  4855  Astor, Bearer of Blades                  {2}{R}{W}        Legendary Creature — Human Warrior
 [x]  4856  Nelly Borca, Impulsive Accuser           {2}{R}{W}        Legendary Creature — Human Detective
 [ ]  4857  Aang, Airbending Master                  {4}{W}           Legendary Creature — Human Avatar Ally
-[ ]  4858  Doomskar                                 {3}{W}{W}        Sorcery
+[x]  4858  Doomskar                                 {3}{W}{W}        Sorcery
 [ ]  4859  Hateful Eidolon                          {B}              Enchantment Creature — Spirit
-[ ]  4860  Lupinflower Village                      {0}              Land
-[ ]  4861  Helm of the Gods                         {1}              Artifact — Equipment
-[ ]  4862  Adriana, Captain of the Guard            {3}{R}{W}        Legendary Creature — Human Knight
+[x]  4860  Lupinflower Village                      {0}              Land
+[x]  4861  Helm of the Gods                         {1}              Artifact — Equipment
+[x]  4862  Adriana, Captain of the Guard            {3}{R}{W}        Legendary Creature — Human Knight
 [x]  4863  Ultima Weapon                            {7}              Legendary Artifact — Equipment
 [ ]  4864  Snort                                    {3}{R}           Sorcery
 [ ]  4865  Platinum Emperion                        {8}              Artifact Creature — Golem
-[ ]  4866  Sword of Once and Future                 {3}              Artifact — Equipment
+[x]  4866  Sword of Once and Future                 {3}              Artifact — Equipment
 [x]  4867  Primal Rage                              {1}{G}           Enchantment
-[ ]  4868  Maelstrom Nexus                          {W}{U}{B}{R}{G}  Enchantment
+[x]  4868  Maelstrom Nexus                          {W}{U}{B}{R}{G}  Enchantment
 [ ]  4869  Toralf, God of Fury // Toralf's Hammer   {4}              Legendary Creature — God // Legendary Artifact — Equipment
 [x]  4870  Urza, Chief Artificer                    {3}{W}{U}{B}     Legendary Creature — Human Artificer
 [ ]  4871  Possibility Storm                        {3}{R}{R}        Enchantment
@@ -4866,139 +4866,139 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4873  Hammerhead Tyrant                        {4}{U}{U}        Creature — Dragon
 [ ]  4874  Faerie Artisans                          {3}{U}           Creature — Faerie Artificer
 [ ]  4875  Arvinox, the Mind Flail                  {4}{B}{B}{B}     Legendary Enchantment Creature — Horror
-[ ]  4876  Balefire Liege                           {2}{R/W}{R/W}{R/W} Creature — Spirit Horror
+[x]  4876  Balefire Liege                           {2}{R/W}{R/W}{R/W} Creature — Spirit Horror
 [ ]  4877  Treasure Chest                           {3}              Artifact
 [ ]  4878  Zara, Renegade Recruiter                 {3}{U}{R}        Legendary Creature — Human Pirate
 [ ]  4879  Izzet Generatorium                       {U}{R}           Artifact
-[ ]  4880  Biomass Mutation                         {X}{G/U}{G/U}    Instant
+[x]  4880  Biomass Mutation                         {X}{G/U}{G/U}    Instant
 [ ]  4881  Overcharged Amalgam                      {2}{U}{U}        Creature — Zombie Horror
 [ ]  4882  Wall of Frost                            {1}{U}{U}        Creature — Wall
-[ ]  4883  Sunset Strikemaster                      {1}{R}           Creature — Human Monk
+[x]  4883  Sunset Strikemaster                      {1}{R}           Creature — Human Monk
 [ ]  4884  Endless Foot Assault                     {2}{W}           Enchantment
 [ ]  4885  Thraben Watcher                          {2}{W}{W}        Creature — Angel
-[ ]  4886  Sudden Breakthrough                      {1}{R}           Instant
+[x]  4886  Sudden Breakthrough                      {1}{R}           Instant
 [ ]  4887  Elenda, Saint of Dusk                    {2}{W}{B}        Legendary Creature — Vampire Knight
 [ ]  4888  Harmonized Trio // Brainstorm            {U} // {U}       Creature — Merfolk Bard Wizard // Instant
 [x]  4889  Attrition                                {1}{B}{B}        Enchantment
-[ ]  4890  Kishla Village                           {0}              Land
+[x]  4890  Kishla Village                           {0}              Land
 [x]  4891  Marchesa, the Black Rose                 {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [ ]  4892  Defiler of Instinct                      {2}{R}{R}        Creature — Phyrexian Kavu
 [ ]  4893  Combat Calligrapher                      {3}{W}           Creature — Bird Cleric
 [x]  4894  Elfsworn Giant                           {3}{G}{G}        Creature — Giant
 [x]  4895  Sisay's Ring                             {4}              Artifact
 [x]  4896  Deduce                                   {1}{U}           Instant
-[ ]  4897  Barrensteppe Siege                       {2}{W}{B}        Enchantment
-[ ]  4898  Death's Presence                         {5}{G}           Enchantment
+[x]  4897  Barrensteppe Siege                       {2}{W}{B}        Enchantment
+[x]  4898  Death's Presence                         {5}{G}           Enchantment
 [ ]  4899  Sage of the Beyond                       {5}{U}{U}        Creature — Spirit Giant
-[ ]  4900  Fell Specter                             {3}{B}           Creature — Specter
+[x]  4900  Fell Specter                             {3}{B}           Creature — Specter
 [ ]  4901  Fumulus, the Infestation                 {3}{B}           Legendary Creature — Vampire Insect
-[ ]  4902  Knight of the Ebon Legion                {B}              Creature — Vampire Knight
-[ ]  4903  Helping Hand                             {W}              Sorcery
+[x]  4902  Knight of the Ebon Legion                {B}              Creature — Vampire Knight
+[x]  4903  Helping Hand                             {W}              Sorcery
 [ ]  4904  Cryptolith Fragment // Aurora of Emrakul {3}              Artifact // Creature — Eldrazi Reflection
-[ ]  4905  Witherbloom Charm                        {B}{G}           Instant
+[x]  4905  Witherbloom Charm                        {B}{G}           Instant
 [ ]  4906  Glass-Cast Heart                         {2}{B}           Artifact
 [x]  4907  Felix Five-Boots                         {2}{B}{G}{U}     Legendary Creature — Ooze Rogue
 [x]  4908  Bloodbraid Elf                           {2}{R}{G}        Creature — Elf Berserker
 [ ]  4909  Titan of Littjara                        {4}{U}{U}        Creature — Illusion
 [ ]  4910  Cut Down                                 {B}              Instant
-[ ]  4911  From Beyond                              {3}{G}           Enchantment
-[ ]  4912  Smokebraider                             {1}{R}           Creature — Elemental Shaman
+[x]  4911  From Beyond                              {3}{G}           Enchantment
+[x]  4912  Smokebraider                             {1}{R}           Creature — Elemental Shaman
 [ ]  4913  Aphetto Alchemist                        {1}{U}           Creature — Human Wizard
 [x]  4914  Ardbert, Warrior of Darkness             {1}{W}{B}        Legendary Creature — Spirit Warrior
-[ ]  4915  Thrumming Hivepool                       {6}              Artifact
+[x]  4915  Thrumming Hivepool                       {6}              Artifact
 [ ]  4916  Amoeboid Changeling                      {1}{U}           Creature — Shapeshifter
 [x]  4917  Behind the Scenes                        {2}{B}           Enchantment
-[ ]  4918  Necron Deathmark                         {3}{B}{B}        Artifact Creature — Necron
+[x]  4918  Necron Deathmark                         {3}{B}{B}        Artifact Creature — Necron
 [x]  4919  Loyal Subordinate                        {2}{B}           Creature — Zombie
 [ ]  4920  High Score                               {2}{G}           Enchantment
-[ ]  4921  Song of Creation                         {1}{G}{U}{R}     Enchantment
+[x]  4921  Song of Creation                         {1}{G}{U}{R}     Enchantment
 [ ]  4922  Cyber Conversion                         {U}{U}           Instant
 [ ]  4923  Doors of Durin                           {3}{R}{G}        Legendary Artifact
 [x]  4924  Pilgrim's Eye                            {3}              Artifact Creature — Thopter
 [x]  4925  Goblin War Drums                         {2}{R}           Enchantment
-[ ]  4926  Old Rutstein                             {1}{B}{G}        Legendary Creature — Human Peasant
+[x]  4926  Old Rutstein                             {1}{B}{G}        Legendary Creature — Human Peasant
 [x]  4927  Tunneling Geopede                        {2}{R}           Creature — Insect
 [ ]  4928  Suspended Sentence                       {3}{B}           Instant
 [x]  4929  Drifting Meadow                          {0}              Land
 [ ]  4930  The Bath Song                            {3}{U}           Enchantment — Saga
 [ ]  4931  Black Sun's Twilight                     {X}{B}           Instant
-[ ]  4932  Digsite Engineer                         {2}{W}           Creature — Dwarf Artificer
+[x]  4932  Digsite Engineer                         {2}{W}           Creature — Dwarf Artificer
 [ ]  4933  Nissa, Vital Force                       {3}{G}{G}        Legendary Planeswalker — Nissa
 [ ]  4934  Toby, Beastie Befriender                 {2}{W}           Legendary Creature — Human Wizard
 [ ]  4935  Baneslayer Angel                         {3}{W}{W}        Creature — Angel
 [ ]  4936  Gilt-Leaf Palace                         {0}              Land
-[ ]  4937  Hedron Detonator                         {2}{R}           Creature — Goblin Artificer
+[x]  4937  Hedron Detonator                         {2}{R}           Creature — Goblin Artificer
 [x]  4938  Deadly Recluse                           {1}{G}           Creature — Spider
 [x]  4939  Wolfwillow Haven                         {1}{G}           Enchantment — Aura
-[ ]  4940  Goblin Chainwhirler                      {R}{R}{R}        Creature — Goblin Warrior
+[x]  4940  Goblin Chainwhirler                      {R}{R}{R}        Creature — Goblin Warrior
 [x]  4941  Imotekh the Stormlord                    {2}{B}{B}        Legendary Artifact Creature — Necron
 [ ]  4942  Mission Briefing                         {U}{U}           Instant
 [ ]  4943  Kroxa, Titan of Death's Hunger           {B}{R}           Legendary Creature — Elder Giant
-[ ]  4944  Sarinth Steelseeker                      {1}{G}           Creature — Human Artificer Scout
-[ ]  4945  Ancient Animus                           {1}{G}           Instant
+[x]  4944  Sarinth Steelseeker                      {1}{G}           Creature — Human Artificer Scout
+[x]  4945  Ancient Animus                           {1}{G}           Instant
 [ ]  4946  Triple Triad                             {3}{R}{R}{R}     Enchantment
-[ ]  4947  Faerie Conclave                          {0}              Land
+[x]  4947  Faerie Conclave                          {0}              Land
 [x]  4948  Sharlayan, Nation of Scholars            {0}              Land — Town
 [ ]  4949  Goldberry, River-Daughter                {1}{U}           Legendary Creature — Nymph
 [ ]  4950  Summon: Shiva                            {3}{U}{U}        Enchantment Creature — Saga Elemental
 [ ]  4951  Celes, Rune Knight                       {1}{R}{W}{B}     Legendary Creature — Human Wizard Knight
-[ ]  4952  The Magic Mirror                         {6}{U}{U}{U}     Legendary Artifact
-[ ]  4953  Grasslands                               {0}              Land
+[x]  4952  The Magic Mirror                         {6}{U}{U}{U}     Legendary Artifact
+[x]  4953  Grasslands                               {0}              Land
 [ ]  4954  Defiler of Faith                         {3}{W}{W}        Creature — Phyrexian Human
 [x]  4955  Norin the Wary                           {R}              Legendary Creature — Human Warrior
 [ ]  4956  Naga Fleshcrafter                        {3}{U}           Creature — Snake Shapeshifter
-[ ]  4957  Ankh of Mishra                           {2}              Artifact
+[x]  4957  Ankh of Mishra                           {2}              Artifact
 [ ]  4958  Brought Back                             {W}{W}           Instant
 [ ]  4959  Tempt with Mayhem                        {1}{R}{R}        Instant
-[ ]  4960  Mistcutter Hydra                         {X}{G}           Creature — Hydra
+[x]  4960  Mistcutter Hydra                         {X}{G}           Creature — Hydra
 [ ]  4961  Ensnaring Bridge                         {3}              Artifact
 [x]  4962  Magma Opus                               {6}{U}{R}        Instant
 [ ]  4963  Terminus                                 {4}{W}{W}        Sorcery
-[ ]  4964  Lush Oasis                               {0}              Land — Desert
+[x]  4964  Lush Oasis                               {0}              Land — Desert
 [ ]  4965  Haystack                                 {1}{W}           Artifact
 [x]  4966  Judith, Carnage Connoisseur              {3}{B}{R}        Legendary Creature — Human Shaman
 [ ]  4967  Rith, Liberated Primeval                 {2}{R}{G}{W}     Legendary Creature — Dragon
-[ ]  4968  Angelfire Ignition                       {1}{R}{W}        Sorcery
-[ ]  4969  Roil Cartographer                        {1}{U}           Creature — Merfolk Rogue
-[ ]  4970  King Darien XLVIII                       {1}{G}{W}        Legendary Creature — Human Soldier
-[ ]  4971  Bant Panorama                            {0}              Land
+[x]  4968  Angelfire Ignition                       {1}{R}{W}        Sorcery
+[x]  4969  Roil Cartographer                        {1}{U}           Creature — Merfolk Rogue
+[x]  4970  King Darien XLVIII                       {1}{G}{W}        Legendary Creature — Human Soldier
+[x]  4971  Bant Panorama                            {0}              Land
 [x]  4972  Prophetic Prism                          {2}              Artifact
 [x]  4973  Fiendlash                                {1}{R}           Artifact — Equipment
-[ ]  4974  Rakdos, the Muscle                       {2}{B}{B}{R}     Legendary Creature — Demon Mercenary
+[x]  4974  Rakdos, the Muscle                       {2}{B}{B}{R}     Legendary Creature — Demon Mercenary
 [ ]  4975  Sorin, Lord of Innistrad                 {2}{W}{B}        Legendary Planeswalker — Sorin
 [ ]  4976  Michelangelo, Weirdness to 11            {1}{G}           Legendary Creature — Mutant Ninja Turtle
 [x]  4977  Undergrowth Recon                        {1}{G}{G}        Enchantment
 [x]  4978  Storm of Souls                           {4}{W}{W}        Sorcery
 [ ]  4979  Sauron's Ransom                          {1}{U}{B}        Instant
-[ ]  4980  Cruel Somnophage // Can't Wake Up        {1}{B} // {1}{U} Creature — Nightmare // Sorcery — Adventure
+[x]  4980  Cruel Somnophage // Can't Wake Up        {1}{B} // {1}{U} Creature — Nightmare // Sorcery — Adventure
 [ ]  4981  Profane Command                          {X}{B}{B}        Sorcery
 [x]  4982  Lingering Souls                          {2}{W}           Sorcery
-[ ]  4983  Glacier Godmaw                           {5}{G}{G}        Creature — Leviathan
+[x]  4983  Glacier Godmaw                           {5}{G}{G}        Creature — Leviathan
 [x]  4984  Batterskull                              {5}              Artifact — Equipment
-[ ]  4985  Joint Exploration                        {1}{U}           Instant
+[x]  4985  Joint Exploration                        {1}{U}           Instant
 [ ]  4986  Mm'menon, the Right Hand                 {3}{U}{U}        Legendary Creature — Jellyfish Advisor
 [ ]  4987  Abomination of Llanowar                  {1}{B}{G}        Legendary Creature — Elf Horror
 [x]  4988  Stadium Headliner                        {R}              Creature — Goblin Warrior
 [ ]  4989  The Wanderer                             {3}{W}           Legendary Planeswalker
 [ ]  4990  God-Eternal Rhonas                       {3}{G}{G}        Legendary Creature — Zombie God
 [x]  4991  Rydia, Summoner of Mist                  {R}{G}           Legendary Creature — Human Shaman
-[ ]  4992  Lightning Runner                         {3}{R}{R}        Creature — Human Warrior
+[x]  4992  Lightning Runner                         {3}{R}{R}        Creature — Human Warrior
 [x]  4993  Phyrexian Swarmlord                      {4}{G}{G}        Creature — Phyrexian Insect Horror
 [ ]  4994  Xu-Ifit, Osteoharmonist                  {1}{B}{B}        Legendary Creature — Human Wizard
 [ ]  4995  Tromokratis                              {5}{U}{U}        Legendary Creature — Kraken
 [x]  4996  Sokka, Tenacious Tactician               {1}{U}{R}{W}     Legendary Creature — Human Warrior Ally
-[ ]  4997  Reclaim                                  {G}              Instant
+[x]  4997  Reclaim                                  {G}              Instant
 [ ]  4998  Ruin Grinder                             {5}{R}           Artifact Creature — Construct
 [ ]  4999  Sin, Unending Cataclysm                  {5}{G}{U}        Legendary Creature — Leviathan Avatar
-[ ]  5000  Omen Hawker                              {U}              Creature — Octopus Advisor
-[ ]  5001  Hammers of Moradin                       {2}{W}           Creature — Dwarf Cleric
+[x]  5000  Omen Hawker                              {U}              Creature — Octopus Advisor
+[x]  5001  Hammers of Moradin                       {2}{W}           Creature — Dwarf Cleric
 [ ]  5002  Sothera, the Supervoid                   {2}{B}{B}        Legendary Enchantment
 [ ]  5003  Oriq Loremage                            {2}{B}{B}        Creature — Human Warlock
 [ ]  5004  Brass Knuckles                           {4}              Artifact — Equipment
-[ ]  5005  Filter Out                               {1}{U}{U}        Instant
+[x]  5005  Filter Out                               {1}{U}{U}        Instant
 [ ]  5006  Long-Term Plans                          {2}{U}           Instant
 [ ]  5007  Ravenous Tyrannosaurus                   {4}{R}{G}        Creature — Dinosaur
 [ ]  5008  Elspeth Tirel                            {3}{W}{W}        Legendary Planeswalker — Elspeth
-[ ]  5009  Fleet Swallower                          {5}{U}{U}        Creature — Fish
+[x]  5009  Fleet Swallower                          {5}{U}{U}        Creature — Fish
 [x]  5010  Oboro, Palace in the Clouds              {0}              Legendary Land
 [ ]  5011  Slip On the Ring                         {1}{W}           Instant

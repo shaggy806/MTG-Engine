@@ -78,6 +78,7 @@ import _poolEliteVanguard from "../pool/elite-vanguard.js";
 import _poolEnatuGolem from "../pool/enatu-golem.js";
 import _poolEstridsInvocation from "../pool/estrids-invocation.js";
 import _poolEvisceratorsInsight from "../pool/eviscerators-insight.js";
+import _poolExcaliburIi from "../pool/excalibur-ii.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFaithfulMending from "../pool/faithful-mending.js";
 import _poolFarfinder from "../pool/farfinder.js";
@@ -146,6 +147,7 @@ import _poolObeliskOfJund from "../pool/obelisk-of-jund.js";
 import _poolOketrasMonument from "../pool/oketras-monument.js";
 import _poolOloroAgelessAscetic from "../pool/oloro-ageless-ascetic.js";
 import _poolOnslaught from "../pool/onslaught.js";
+import _poolOpenTheGates from "../pool/open-the-gates.js";
 import _poolPaleBears from "../pool/pale-bears.js";
 import _poolPavelMaliki from "../pool/pavel-maliki.js";
 import _poolPearlDragon from "../pool/pearl-dragon.js";
@@ -206,9 +208,11 @@ import _poolSulfurFalls from "../pool/sulfur-falls.js";
 import _poolSunmanePegasus from "../pool/sunmane-pegasus.js";
 import _poolSurtlandFrostpyre from "../pool/surtland-frostpyre.js";
 import _poolSwordsToPlowshares from "../pool/swords-to-plowshares.js";
+import _poolSylvanOffering from "../pool/sylvan-offering.js";
 import _poolSymbolOfUnsummoning from "../pool/symbol-of-unsummoning.js";
 import _poolTheSurgicalBay from "../pool/the-surgical-bay.js";
 import _poolThrillingDiscovery from "../pool/thrilling-discovery.js";
+import _poolThrummingHivepool from "../pool/thrumming-hivepool.js";
 import _poolTidespoutTyrant from "../pool/tidespout-tyrant.js";
 import _poolTotemGuideHartebeest from "../pool/totem-guide-hartebeest.js";
 import _poolTowashiSongshaper from "../pool/towashi-songshaper.js";
@@ -236,6 +240,7 @@ import _poolWitherbloomCampus from "../pool/witherbloom-campus.js";
 import _poolWitherbloomTheBalancer from "../pool/witherbloom-the-balancer.js";
 import _poolWitheredWretch from "../pool/withered-wretch.js";
 import _poolWithoutWeakness from "../pool/without-weakness.js";
+import _poolWizardsRetort from "../pool/wizards-retort.js";
 import _poolWoollyThoctar from "../pool/woolly-thoctar.js";
 import _poolZephidsEmbrace from "../pool/zephids-embrace.js";
 import _tokensGnomeToken from "../tokens/gnome-token.js";
@@ -319,6 +324,7 @@ const shard: CardShard = {
     _poolEnatuGolem,
     _poolEstridsInvocation,
     _poolEvisceratorsInsight,
+    _poolExcaliburIi,
     _poolExiledBoggart,
     _poolFaithfulMending,
     _poolFarfinder,
@@ -387,6 +393,7 @@ const shard: CardShard = {
     _poolOketrasMonument,
     _poolOloroAgelessAscetic,
     _poolOnslaught,
+    _poolOpenTheGates,
     _poolPaleBears,
     _poolPavelMaliki,
     _poolPearlDragon,
@@ -447,9 +454,11 @@ const shard: CardShard = {
     _poolSunmanePegasus,
     _poolSurtlandFrostpyre,
     _poolSwordsToPlowshares,
+    _poolSylvanOffering,
     _poolSymbolOfUnsummoning,
     _poolTheSurgicalBay,
     _poolThrillingDiscovery,
+    _poolThrummingHivepool,
     _poolTidespoutTyrant,
     _poolTotemGuideHartebeest,
     _poolTowashiSongshaper,
@@ -477,6 +486,7 @@ const shard: CardShard = {
     _poolWitherbloomTheBalancer,
     _poolWitheredWretch,
     _poolWithoutWeakness,
+    _poolWizardsRetort,
     _poolWoollyThoctar,
     _poolZephidsEmbrace,
   ],

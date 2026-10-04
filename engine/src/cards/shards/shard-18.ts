@@ -64,6 +64,7 @@ import _poolEntishRestoration from "../pool/entish-restoration.js";
 import _poolExpansion from "../pool/expansion.js";
 import _poolExperimentalConfectioner from "../pool/experimental-confectioner.js";
 import _poolFeastOfTheUnicorn from "../pool/feast-of-the-unicorn.js";
+import _poolFellSpecter from "../pool/fell-specter.js";
 import _poolFeralMaaka from "../pool/feral-maaka.js";
 import _poolFinaleOfGlory from "../pool/finale-of-glory.js";
 import _poolFirebolt from "../pool/firebolt.js";
@@ -121,8 +122,10 @@ import _poolLostSoul from "../pool/lost-soul.js";
 import _poolLoxodonWarhammer from "../pool/loxodon-warhammer.js";
 import _poolLunarConvocation from "../pool/lunar-convocation.js";
 import _poolLunaticPandora from "../pool/lunatic-pandora.js";
+import _poolLupinflowerVillage from "../pool/lupinflower-village.js";
 import _poolMaarikaBrutalGladiator from "../pool/maarika-brutal-gladiator.js";
 import _poolMaccreadyLamplightMayor from "../pool/maccready-lamplight-mayor.js";
+import _poolMaelstromNexus from "../pool/maelstrom-nexus.js";
 import _poolMagnigothSentry from "../pool/magnigoth-sentry.js";
 import _poolMagnusTheRed from "../pool/magnus-the-red.js";
 import _poolManaVault from "../pool/mana-vault.js";
@@ -250,6 +253,7 @@ import _tokensCatTokenJolraelMwonvuliRecluse from "../tokens/cat-token-jolrael-m
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
+import _tokensInklingToken from "../tokens/inkling-token.js";
 import _tokensKrakenTokenSpawningKraken from "../tokens/kraken-token-spawning-kraken.js";
 import _tokensPhyrexianHorrorToken from "../tokens/phyrexian-horror-token.js";
 import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
@@ -320,6 +324,7 @@ const shard: CardShard = {
     _poolExpansion,
     _poolExperimentalConfectioner,
     _poolFeastOfTheUnicorn,
+    _poolFellSpecter,
     _poolFeralMaaka,
     _poolFinaleOfGlory,
     _poolFirebolt,
@@ -377,8 +382,10 @@ const shard: CardShard = {
     _poolLoxodonWarhammer,
     _poolLunarConvocation,
     _poolLunaticPandora,
+    _poolLupinflowerVillage,
     _poolMaarikaBrutalGladiator,
     _poolMaccreadyLamplightMayor,
+    _poolMaelstromNexus,
     _poolMagnigothSentry,
     _poolMagnusTheRed,
     _poolManaVault,
@@ -508,6 +515,7 @@ const shard: CardShard = {
     _tokensCatToken,
     _tokensFaerieRogueToken,
     _tokensHumanKnightToken,
+    _tokensInklingToken,
     _tokensKrakenTokenSpawningKraken,
     _tokensPhyrexianHorrorToken,
     _tokensRatTokenCantBlock,

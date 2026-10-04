@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B27) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B29) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -357,7 +357,11 @@ Five more passes, all merged (156 cards):
 
 - **Batch 27 (2026-10-04, the no-engine-work pass)** triaged ranks 4314–4581: 86 authored (Kaya's Wrath, Crystalline Sliver, Phyrexian Rebirth, Boomerang Basics, Shifting Sliver and 81 more — `top5000-batch-27a`–`h.test.ts`); 114 blocked (`B27.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (3), `effect:cast-and-activate-restrictions` (2), `new:return-transformed-non-dfc-stays-exiled` (2), `mechanic:face-down` (2), `effect:modal-activated-targeted-modes` (2).
 
-Past rank 4581, nothing is triaged.
+- **Batch 28 (2026-10-04, the no-engine-work pass)** triaged ranks 4582–4836: 92 authored (Master of the Feast, Boon of the Spirit Realm, Strixhaven Stadium, Electrickery, Grim Affliction and 87 more — `top5000-batch-28a`–`h.test.ts`); 108 blocked (`B28.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (6), `keyword:crew` (4), `replacement:damage-modification` (3), `effect:token-copy-options` (3), `effect:delayed-trigger-extensions` (3).
+
+- **Batch 29 (2026-10-04, the no-engine-work pass)** triaged ranks 4837–5011: 58 authored (Sporocyst, Braids, Cabal Minion, On the Trail, Barbarian Ring, Deliberate and 53 more — `top5000-batch-29a`–`h.test.ts`); 76 blocked (`B29.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (4), `effect:choices-by-other-players` (2), `static:combat-restriction-extensions` (2), `mechanic:face-down` (2), `mechanic:the-ring` (2).
+
+Past rank 5011, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

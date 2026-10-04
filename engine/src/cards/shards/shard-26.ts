@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _poolAbradedBluffs from "../pool/abraded-bluffs.js";
 import _poolAbzanBattlePriest from "../pool/abzan-battle-priest.js";
 import _poolAccessDenied from "../pool/access-denied.js";
+import _poolAdrianaCaptainOfTheGuard from "../pool/adriana-captain-of-the-guard.js";
 import _poolAegisOfTheHeavens from "../pool/aegis-of-the-heavens.js";
 import _poolAetherSpellbomb from "../pool/aether-spellbomb.js";
 import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
@@ -30,6 +31,7 @@ import _poolBreakneckBerserker from "../pool/breakneck-berserker.js";
 import _poolCactusPreserve from "../pool/cactus-preserve.js";
 import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
+import _poolCathedralOfWar from "../pool/cathedral-of-war.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
 import _poolChromaticOrrery from "../pool/chromatic-orrery.js";
 import _poolCityOfBrass from "../pool/city-of-brass.js";
@@ -212,6 +214,8 @@ import _poolTemporalTrespass from "../pool/temporal-trespass.js";
 import _poolTerrianWorldTyrant from "../pool/terrian-world-tyrant.js";
 import _poolTheFireCrystal from "../pool/the-fire-crystal.js";
 import _poolTheGreatHenge from "../pool/the-great-henge.js";
+import _poolTheMagicMirror from "../pool/the-magic-mirror.js";
+import _poolTheodenKingOfRohan from "../pool/theoden-king-of-rohan.js";
 import _poolThirstingShade from "../pool/thirsting-shade.js";
 import _poolThornhideWolves from "../pool/thornhide-wolves.js";
 import _poolThrissNantukoPrimus from "../pool/thriss-nantuko-primus.js";
@@ -257,6 +261,7 @@ const shard: CardShard = {
     _poolAbradedBluffs,
     _poolAbzanBattlePriest,
     _poolAccessDenied,
+    _poolAdrianaCaptainOfTheGuard,
     _poolAegisOfTheHeavens,
     _poolAetherSpellbomb,
     _poolAetherfluxReservoir,
@@ -281,6 +286,7 @@ const shard: CardShard = {
     _poolCactusPreserve,
     _poolCallToTheFeast,
     _poolCanyonJerboa,
+    _poolCathedralOfWar,
     _poolChaplainsBlessing,
     _poolChromaticOrrery,
     _poolCityOfBrass,
@@ -463,6 +469,8 @@ const shard: CardShard = {
     _poolTerrianWorldTyrant,
     _poolTheFireCrystal,
     _poolTheGreatHenge,
+    _poolTheMagicMirror,
+    _poolTheodenKingOfRohan,
     _poolThirstingShade,
     _poolThornhideWolves,
     _poolThrissNantukoPrimus,

@@ -136,13 +136,16 @@ import _poolOjerAxonilDeepestMight from "../pool/ojer-axonil-deepest-might.js";
 import _poolOldGhastbark from "../pool/old-ghastbark.js";
 import _poolOminousSeas from "../pool/ominous-seas.js";
 import _poolOnyxMage from "../pool/onyx-mage.js";
+import _poolOrcishMedicine from "../pool/orcish-medicine.js";
 import _poolOtharriSunsGlory from "../pool/otharri-suns-glory.js";
+import _poolPathOfAnnihilation from "../pool/path-of-annihilation.js";
 import _poolPetAvengers from "../pool/pet-avengers.js";
 import _poolPhalanxVanguard from "../pool/phalanx-vanguard.js";
 import _poolPlatedSlagwurm from "../pool/plated-slagwurm.js";
 import _poolPonder from "../pool/ponder.js";
 import _poolPrairieStream from "../pool/prairie-stream.js";
 import _poolPrescientChimera from "../pool/prescient-chimera.js";
+import _poolPsychoticFury from "../pool/psychotic-fury.js";
 import _poolQilinsBlessing from "../pool/qilins-blessing.js";
 import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
 import _poolQuietusSpike from "../pool/quietus-spike.js";
@@ -159,6 +162,7 @@ import _poolRuinsOfTrokair from "../pool/ruins-of-trokair.js";
 import _poolRunedServitor from "../pool/runed-servitor.js";
 import _poolSacredArmory from "../pool/sacred-armory.js";
 import _poolSaheeliRadiantCreator from "../pool/saheeli-radiant-creator.js";
+import _poolSamiWildcatCaptain from "../pool/sami-wildcat-captain.js";
 import _poolSanctuaryCat from "../pool/sanctuary-cat.js";
 import _poolSarythTheVipersFang from "../pool/saryth-the-vipers-fang.js";
 import _poolSavaiTriome from "../pool/savai-triome.js";
@@ -198,6 +202,7 @@ import _poolTaiga from "../pool/taiga.js";
 import _poolTakeUpTheShield from "../pool/take-up-the-shield.js";
 import _poolTectonicEdge from "../pool/tectonic-edge.js";
 import _poolTempleAcolyte from "../pool/temple-acolyte.js";
+import _poolThaliasLieutenant from "../pool/thalias-lieutenant.js";
 import _poolTheFirstSliver from "../pool/the-first-sliver.js";
 import _poolTheMasterOfKeys from "../pool/the-master-of-keys.js";
 import _poolTheQueenOfDale from "../pool/the-queen-of-dale.js";
@@ -369,13 +374,16 @@ const shard: CardShard = {
     _poolOldGhastbark,
     _poolOminousSeas,
     _poolOnyxMage,
+    _poolOrcishMedicine,
     _poolOtharriSunsGlory,
+    _poolPathOfAnnihilation,
     _poolPetAvengers,
     _poolPhalanxVanguard,
     _poolPlatedSlagwurm,
     _poolPonder,
     _poolPrairieStream,
     _poolPrescientChimera,
+    _poolPsychoticFury,
     _poolQilinsBlessing,
     _poolQuaketuskBoar,
     _poolQuietusSpike,
@@ -392,6 +400,7 @@ const shard: CardShard = {
     _poolRunedServitor,
     _poolSacredArmory,
     _poolSaheeliRadiantCreator,
+    _poolSamiWildcatCaptain,
     _poolSanctuaryCat,
     _poolSarythTheVipersFang,
     _poolSavaiTriome,
@@ -431,6 +440,7 @@ const shard: CardShard = {
     _poolTakeUpTheShield,
     _poolTectonicEdge,
     _poolTempleAcolyte,
+    _poolThaliasLieutenant,
     _poolTheFirstSliver,
     _poolTheMasterOfKeys,
     _poolTheQueenOfDale,

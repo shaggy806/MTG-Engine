@@ -78,6 +78,7 @@ import _poolFlankingTroops from "../pool/flanking-troops.js";
 import _poolFlayedOne from "../pool/flayed-one.js";
 import _poolForsakeTheWorldly from "../pool/forsake-the-worldly.js";
 import _poolForsakenSanctuary from "../pool/forsaken-sanctuary.js";
+import _poolFromBeyond from "../pool/from-beyond.js";
 import _poolGaeasCradle from "../pool/gaeas-cradle.js";
 import _poolGeodeRager from "../pool/geode-rager.js";
 import _poolGhostQuarter from "../pool/ghost-quarter.js";
@@ -212,6 +213,7 @@ import _poolSwordOfBodyAndMind from "../pool/sword-of-body-and-mind.js";
 import _poolSyphonMind from "../pool/syphon-mind.js";
 import _poolTangledFlorahedron from "../pool/tangled-florahedron.js";
 import _poolTelJiladJustice from "../pool/tel-jilad-justice.js";
+import _poolTerisianMindbreaker from "../pool/terisian-mindbreaker.js";
 import _poolTerminate from "../pool/terminate.js";
 import _poolThievingVarmint from "../pool/thieving-varmint.js";
 import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
@@ -331,6 +333,7 @@ const shard: CardShard = {
     _poolFlayedOne,
     _poolForsakeTheWorldly,
     _poolForsakenSanctuary,
+    _poolFromBeyond,
     _poolGaeasCradle,
     _poolGeodeRager,
     _poolGhostQuarter,
@@ -465,6 +468,7 @@ const shard: CardShard = {
     _poolSyphonMind,
     _poolTangledFlorahedron,
     _poolTelJiladJustice,
+    _poolTerisianMindbreaker,
     _poolTerminate,
     _poolThievingVarmint,
     _poolThirdPathIconoclast,

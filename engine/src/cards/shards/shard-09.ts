@@ -21,6 +21,7 @@ import _poolAuraMutation from "../pool/aura-mutation.js";
 import _poolAyaraFirstOfLocthwain from "../pool/ayara-first-of-locthwain.js";
 import _poolBaithookAngler from "../pool/baithook-angler.js";
 import _poolBanehound from "../pool/banehound.js";
+import _poolBantPanorama from "../pool/bant-panorama.js";
 import _poolBarkhideMauler from "../pool/barkhide-mauler.js";
 import _poolBatheInDragonfire from "../pool/bathe-in-dragonfire.js";
 import _poolBearCub from "../pool/bear-cub.js";
@@ -52,6 +53,7 @@ import _poolDeadlyRecluse from "../pool/deadly-recluse.js";
 import _poolDefiantKhenra from "../pool/defiant-khenra.js";
 import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
+import _poolDoomskar from "../pool/doomskar.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
 import _poolDrumbellower from "../pool/drumbellower.js";
 import _poolEdgarMarkovsCoffin from "../pool/edgar-markovs-coffin.js";
@@ -273,6 +275,7 @@ const shard: CardShard = {
     _poolAyaraFirstOfLocthwain,
     _poolBaithookAngler,
     _poolBanehound,
+    _poolBantPanorama,
     _poolBarkhideMauler,
     _poolBatheInDragonfire,
     _poolBearCub,
@@ -304,6 +307,7 @@ const shard: CardShard = {
     _poolDefiantKhenra,
     _poolDiamondPickAxe,
     _poolDoomWhisperer,
+    _poolDoomskar,
     _poolDragonRoost,
     _poolDrumbellower,
     _poolEdgarMarkovsCoffin,
