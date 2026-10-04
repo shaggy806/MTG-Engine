@@ -854,6 +854,7 @@ import _poolCacophodon from "./pool/cacophodon.js";
 import _poolCactusPreserve from "./pool/cactus-preserve.js";
 import _poolCadaverImp from "./pool/cadaver-imp.js";
 import _poolCaelornaCoralTyrant from "./pool/caelorna-coral-tyrant.js";
+import _poolCaesarLegionsEmperor from "./pool/caesar-legions-emperor.js";
 import _poolCageOfHands from "./pool/cage-of-hands.js";
 import _poolCalamityOfCinders from "./pool/calamity-of-cinders.js";
 import _poolCalderaPyremaw from "./pool/caldera-pyremaw.js";
@@ -1680,6 +1681,7 @@ import _poolEbonyRhino from "./pool/ebony-rhino.js";
 import _poolEbonyTreefolk from "./pool/ebony-treefolk.js";
 import _poolEchoingAssault from "./pool/echoing-assault.js";
 import _poolEcologistsTerrarium from "./pool/ecologists-terrarium.js";
+import _poolEddieBrock from "./pool/eddie-brock.js";
 import _poolEdgarMarkov from "./pool/edgar-markov.js";
 import _poolEdwardKenway from "./pool/edward-kenway.js";
 import _poolEerieInterlude from "./pool/eerie-interlude.js";
@@ -2923,6 +2925,7 @@ import _poolIronBarbHellion from "./pool/iron-barb-hellion.js";
 import _poolIronBully from "./pool/iron-bully.js";
 import _poolIronGiant from "./pool/iron-giant.js";
 import _poolIronLance from "./pool/iron-lance.js";
+import _poolIronManTitanOfInnovation from "./pool/iron-man-titan-of-innovation.js";
 import _poolIronMyr from "./pool/iron-myr.js";
 import _poolIronTuskElephant from "./pool/iron-tusk-elephant.js";
 import _poolIronWill from "./pool/iron-will.js";
@@ -6275,6 +6278,7 @@ import _poolVeneratedRotpriest from "./pool/venerated-rotpriest.js";
 import _poolVengefulAncestor from "./pool/vengeful-ancestor.js";
 import _poolVengefulBloodwitch from "./pool/vengeful-bloodwitch.js";
 import _poolVengefulDead from "./pool/vengeful-dead.js";
+import _poolVenomLethalProtector from "./pool/venom-lethal-protector.js";
 import _poolVenomcrawler from "./pool/venomcrawler.js";
 import _poolVenomizedCat from "./pool/venomized-cat.js";
 import _poolVenomousHierophant from "./pool/venomous-hierophant.js";
@@ -6728,6 +6732,7 @@ import _poolYouthfulKnight from "./pool/youthful-knight.js";
 import _poolYouthfulScholar from "./pool/youthful-scholar.js";
 import _poolYouthfulValkyrie from "./pool/youthful-valkyrie.js";
 import _poolYshtolaNightsBlessed from "./pool/yshtola-nights-blessed.js";
+import _poolYumaProudProtector from "./pool/yuma-proud-protector.js";
 import _poolYunaGrandSummoner from "./pool/yuna-grand-summoner.js";
 import _poolYusriFortunesFlame from "./pool/yusri-fortunes-flame.js";
 import _poolZacamaPrimalCalamity from "./pool/zacama-primal-calamity.js";
@@ -6906,6 +6911,7 @@ import _tokensPhyrexianWurmDeathtouch from "./tokens/phyrexian-wurm-deathtouch.j
 import _tokensPhyrexianWurmLifelink from "./tokens/phyrexian-wurm-lifelink.js";
 import _tokensPlainKnightToken from "./tokens/plain-knight-token.js";
 import _tokensPlantToken from "./tokens/plant-token.js";
+import _tokensPlantWarriorToken from "./tokens/plant-warrior-token.js";
 import _tokensRabbitToken from "./tokens/rabbit-token.js";
 import _tokensRatTokenCantBlock from "./tokens/rat-token-cant-block.js";
 import _tokensRatTokenVren from "./tokens/rat-token-vren.js";
@@ -7812,6 +7818,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCactusPreserve,
   _poolCadaverImp,
   _poolCaelornaCoralTyrant,
+  _poolCaesarLegionsEmperor,
   _poolCageOfHands,
   _poolCalamityOfCinders,
   _poolCalderaPyremaw,
@@ -8638,6 +8645,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolEbonyTreefolk,
   _poolEchoingAssault,
   _poolEcologistsTerrarium,
+  _poolEddieBrock,
   _poolEdgarMarkov,
   _poolEdwardKenway,
   _poolEerieInterlude,
@@ -9881,6 +9889,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolIronBully,
   _poolIronGiant,
   _poolIronLance,
+  _poolIronManTitanOfInnovation,
   _poolIronMyr,
   _poolIronTuskElephant,
   _poolIronWill,
@@ -13233,6 +13242,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolVengefulAncestor,
   _poolVengefulBloodwitch,
   _poolVengefulDead,
+  _poolVenomLethalProtector,
   _poolVenomcrawler,
   _poolVenomizedCat,
   _poolVenomousHierophant,
@@ -13686,6 +13696,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolYouthfulScholar,
   _poolYouthfulValkyrie,
   _poolYshtolaNightsBlessed,
+  _poolYumaProudProtector,
   _poolYunaGrandSummoner,
   _poolYusriFortunesFlame,
   _poolZacamaPrimalCalamity,
@@ -13870,6 +13881,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensPhyrexianWurmLifelink,
   _tokensPlainKnightToken,
   _tokensPlantToken,
+  _tokensPlantWarriorToken,
   _tokensRabbitToken,
   _tokensRatTokenCantBlock,
   _tokensRatTokenVren,

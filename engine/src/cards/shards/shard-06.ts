@@ -192,6 +192,7 @@ import _poolUnbreathingHorde from "../pool/unbreathing-horde.js";
 import _poolUnnerve from "../pool/unnerve.js";
 import _poolUnrulyMob from "../pool/unruly-mob.js";
 import _poolUpdraftElemental from "../pool/updraft-elemental.js";
+import _poolVenomLethalProtector from "../pool/venom-lethal-protector.js";
 import _poolVenomcrawler from "../pool/venomcrawler.js";
 import _poolVizierOfTumblingSands from "../pool/vizier-of-tumbling-sands.js";
 import _poolVolcanicHammer from "../pool/volcanic-hammer.js";
@@ -409,6 +410,7 @@ const shard: CardShard = {
     _poolUnnerve,
     _poolUnrulyMob,
     _poolUpdraftElemental,
+    _poolVenomLethalProtector,
     _poolVenomcrawler,
     _poolVizierOfTumblingSands,
     _poolVolcanicHammer,

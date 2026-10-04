@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**377 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**381 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -77,7 +77,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,394 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,395 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more

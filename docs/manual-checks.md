@@ -195,6 +195,10 @@ How to use it:
 | [Breena, the Demagogue](#breena-the-demagogue) | new decision | Choices on resolution: populate, amass, sacrifice-then |
 | [Abdel Adrian, Gorion's Ward](#abdel-adrian-gorions-ward) | new decision | Choices on resolution: populate, amass, sacrifice-then |
 | [Ziatora, the Incinerator, Felothar, Dawn of the Abzan](#ziatora-the-incinerator-felothar-dawn-of-the-abzan) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Caesar, Legion's Emperor](#caesar-legions-emperor) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Iron Man, Titan of Innovation](#iron-man-titan-of-innovation) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Eddie Brock, Venom, Lethal Protector](#eddie-brock-venom-lethal-protector) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Yuma, Proud Protector](#yuma-proud-protector) | rules call | Choices on resolution: populate, amass, sacrifice-then |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3837,3 +3841,54 @@ stack count once per token)
   target, dealing 5 (the Bears' last power) and making three Treasures. Felothar asks to sacrifice a
   nonland permanent (lands not offered); then a +1/+1 counter on each creature you control, Felothar
   included.
+
+### Caesar, Legion's Emperor
+
+*New decision* — the UI round (may-sacrifice-then)
+
+- **Setup:** Dev room CAESR: Caesar and a Grizzly Bears on alice's battlefield, bob with no
+  creatures. In a 3-4 player game, two opponents.
+- **Do:** Attack with Caesar; say Yes to sacrificing another creature; choose the tokens mode and
+  the damage mode.
+- **Check:** The Yes/No comes first (never offering Caesar itself); only after the Bears is
+  sacrificed does a second ability go on the stack, asking for exactly two of the three modes (and,
+  with two or more opponents, a target opponent for the damage mode). The two Soldiers enter tapped
+  and attacking (you pick whom each attacks) and the damage counts them. Neither Soldier triggers
+  Caesar again (the ruling).
+- **Known limits:** With one opponent the damage mode's target is taken without asking.
+
+### Iron Man, Titan of Innovation
+
+*New decision* — the UI round (may-sacrifice-then)
+
+- **Setup:** Iron Man and a Sol Ring on your battlefield; a Mind Stone (mana value 2) in your
+  library.
+- **Do:** Attack with Iron Man; sacrifice the Sol Ring when asked.
+- **Check:** A Treasure is made first and can itself be the artifact sacrificed (then the search is
+  for mana value 1). Sacrificing Sol Ring searches for an artifact with mana value exactly 2, which
+  enters tapped; the library is shuffled. Declining searches nothing.
+
+### Eddie Brock, Venom, Lethal Protector
+
+*New decision* — the UI round (may-sacrifice-then)
+
+- **Setup:** Eddie Brock in hand; Llanowar Elves and a Hill Giant in your graveyard; six mana
+  including {B}{R}{G}. Later: Venom attacking with a Hill Giant beside it and Grizzly Bears and Craw
+  Wurm in hand.
+- **Do:** Cast Eddie (target the Elves); next turn activate the transform; attack with Venom and
+  sacrifice the Hill Giant.
+- **Check:** Eddie's target offers only creature cards of mana value 1 or less. The transform is a
+  sorcery-speed activated ability and turns it into Venom (5/5 menace, trample, haste). Venom's
+  sacrifice of the Giant draws four, then offers a permanent card of mana value 4 or less from hand
+  (Bears yes, Craw Wurm no), optionally.
+
+### Yuma, Proud Protector
+
+*Rules call* — the UI round (may-sacrifice-then)
+
+- **Setup:** Three land cards in your graveyard and five lands out; Yuma in hand. A Desert (Desert
+  of the True) on your battlefield.
+- **Do:** Cast Yuma; when it enters, sacrifice the Desert.
+- **Check:** Yuma costs {1} less for each land card in your graveyard (five mana here). Sacrificing
+  a land draws a card; the Desert going to your graveyard also makes a 4/2 reach Plant Warrior. A
+  Desert milled or discarded makes one too; a Desert token wouldn't (it isn't a card).

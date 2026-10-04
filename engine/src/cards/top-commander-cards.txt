@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2394 already implemented / 2606 missing (marks refreshed 2026-10-04)
+2395 already implemented / 2605 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2756,7 +2756,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2763  Witch-king of Angmar                     {3}{B}{B}        Legendary Creature — Wraith Noble
 [ ]  2764  Rousing Refrain                          {3}{R}{R}        Sorcery
 [x]  2765  Quietus Spike                            {3}              Artifact — Equipment
-[ ]  2766  Caesar, Legion's Emperor                 {1}{R}{W}{B}     Legendary Creature — Human Soldier
+[x]  2766  Caesar, Legion's Emperor                 {1}{R}{W}{B}     Legendary Creature — Human Soldier
 [x]  2767  Champion of the Perished                 {B}              Creature — Zombie
 [ ]  2768  Raging Ravine                            {0}              Land
 [ ]  2769  Inspired Tinkering                       {4}{R}           Sorcery

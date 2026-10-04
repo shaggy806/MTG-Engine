@@ -166,3 +166,186 @@ describe("Felothar, Dawn of the Abzan", () => {
     for (const id of seen.sacrificeChoices ?? []) expect(game.characteristics(id).types).not.toContain("land");
   });
 });
+
+/** Into A's combat attacking B with `attackers`, then answering each
+ * decision with `answer` (which returns false to fall back on the defaults
+ * below) until the stack and triggers are empty after the attack. */
+const attackAndSettle = (game: Game, attackers: readonly ObjectId[], answer: (a: Awaiting) => boolean): void => {
+  for (let i = 0; i < 400; i += 1) {
+    const s = game.state;
+    const a = s.awaiting;
+    if (a !== null) {
+      if (answer(a)) continue;
+      if (a.kind === "attackers") {
+        game.dispatch({
+          type: "declare-attackers",
+          player: a.player,
+          attackers: a.player === A ? attackers.map((attacker) => ({ attacker, defender: B })) : [],
+        });
+        continue;
+      }
+      if (a.kind === "blockers") {
+        game.dispatch({ type: "declare-blockers", player: a.player, blockers: [] });
+        continue;
+      }
+      throw new Error(`unexpected ${a.kind} decision`);
+    }
+    if ((s.turn.step === "declare-blockers" || s.turn.step === "combat-damage") && quiet(s)) return;
+    game.dispatch({ type: "pass-priority", player: s.priority.holder! });
+  }
+  throw new Error("never settled");
+};
+
+describe("Iron Man, Titan of Innovation", () => {
+  it("makes a Treasure, then sacrificing a noncreature artifact finds one with mana value 1 more, tapped", () => {
+    const game = setUp();
+    const ironMan = spawn(game, "Iron Man, Titan of Innovation");
+    const ring = spawn(game, "Sol Ring");
+    const stone = game.debugSpawn("Mind Stone", A, "library");
+    let searched: readonly ObjectId[] = [];
+    attackAndSettle(game, [ironMan], (a) => {
+      if (a.kind === "choose-modes") {
+        game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+        return true;
+      }
+      if (a.kind === "sacrifice") {
+        game.dispatch({ type: "sacrifice", player: A, permanents: [ring] });
+        return true;
+      }
+      if (a.kind === "choose-from-zone") {
+        searched = a.eligible;
+        game.dispatch({ type: "choose-from-zone", player: A, chosen: a.eligible.includes(stone) ? [stone] : [] });
+        return true;
+      }
+      return false;
+    });
+    expect(onBattlefield(game, ring)).toBe(false);
+    expect(searched).toEqual([stone]);
+    expect(onBattlefield(game, stone)).toBe(true);
+    expect(game.state.objects[stone].tapped).toBe(true);
+    expect(treasures(game)).toBe(1);
+  });
+});
+
+describe("Yuma, Proud Protector", () => {
+  it("costs {1} less for each land card in your graveyard", () => {
+    const game = setUp();
+    for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "graveyard");
+    for (const land of ["Mountain", "Forest", "Plains", "Plains", "Plains"]) spawn(game, land);
+    const yuma = game.debugSpawn("Yuma, Proud Protector", A, "hand");
+    expect(game.legalActions(A).some((a) => a.kind === "cast-spell" && a.card === yuma)).toBe(true);
+  });
+
+  it("draws when a land is sacrificed as it enters, and a Desert sacrificed makes a Plant Warrior", () => {
+    const game = setUp();
+    const desert = spawn(game, "Desert of the True");
+    const hand = game.handOf(A).length;
+    game.debugSpawn("Yuma, Proud Protector", A, "battlefield", { summoningSick: false, announceEntry: true });
+    const { answer } = answerer(game, desert);
+    for (let i = 0; i < 40 && !quiet(game.state); i += 1) {
+      if (game.state.awaiting !== null) answer(game.state.awaiting);
+      else game.dispatch({ type: "pass-priority", player: game.state.priority.holder! });
+    }
+    expect(onBattlefield(game, desert)).toBe(false);
+    expect(game.handOf(A).length).toBe(hand + 1);
+    expect(game.battlefield.some((id) => game.state.objects[id].cardName === "Plant Warrior Token")).toBe(true);
+  });
+});
+
+describe("Eddie Brock // Venom, Lethal Protector", () => {
+  it("Eddie returns a creature card of mana value 1 or less as it enters, and transforms for {3}{B}{R}{G}", () => {
+    const game = setUp();
+    const elves = game.debugSpawn("Llanowar Elves", A, "graveyard");
+    game.debugSpawn("Hill Giant", A, "graveyard");
+    const eddie = game.debugSpawn("Eddie Brock", A, "battlefield", { summoningSick: false, announceEntry: true });
+    for (let i = 0; i < 40 && !quiet(game.state); i += 1) {
+      const a = game.state.awaiting;
+      if (a?.kind === "choose-targets") {
+        expect(a.options[0]).toEqual([{ kind: "object", object: elves }]);
+        game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "object", object: elves }] });
+      } else game.dispatch({ type: "pass-priority", player: game.state.priority.holder! });
+    }
+    expect(onBattlefield(game, elves)).toBe(true);
+    game.advanceUntil(
+      (s) => s.turn.step === "precombat-main" && s.priority.holder === A && s.turnOrder[s.turn.activePlayerIndex] === A,
+    );
+    for (const land of ["Swamp", "Mountain", "Forest", "Swamp", "Swamp", "Swamp"]) spawn(game, land);
+    const transform = game
+      .legalActions(A)
+      .find((a) => a.kind === "activate-ability" && a.source === eddie && a.text.startsWith("{3}{B}{R}{G}"));
+    if (transform?.kind !== "activate-ability") throw new Error("no transform offered");
+    game.dispatch({ type: "activate-ability", player: A, source: eddie, abilityIndex: transform.abilityIndex, targets: [] });
+    for (let i = 0; i < 20 && !quiet(game.state); i += 1) game.dispatch({ type: "pass-priority", player: game.state.priority.holder! });
+    expect(game.state.objects[eddie].face).toBe(1);
+    expect(game.characteristics(eddie).power).toBe(5);
+    expect(game.characteristics(eddie).keywords.has("menace")).toBe(true);
+  });
+
+  it("Venom sacrifices another creature to draw X, then may put a permanent card of mana value X or less from hand", () => {
+    const game = setUp();
+    const venom = game.debugSpawn("Eddie Brock", A, "battlefield", { summoningSick: false });
+    game.state.objects[venom].face = 1;
+    const giant = spawn(game, "Hill Giant");
+    game.state.zones.perPlayer[A].hand = [];
+    const bears = game.debugSpawn("Grizzly Bears", A, "hand");
+    const wurm = game.debugSpawn("Craw Wurm", A, "hand");
+    let offered: readonly ObjectId[] = [];
+    attackAndSettle(game, [venom], (a) => {
+      if (a.kind === "choose-modes") {
+        game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+        return true;
+      }
+      if (a.kind === "sacrifice") {
+        game.dispatch({ type: "sacrifice", player: A, permanents: [giant] });
+        return true;
+      }
+      if (a.kind === "choose-from-zone") {
+        offered = a.eligible;
+        game.dispatch({ type: "choose-from-zone", player: A, chosen: [bears] });
+        return true;
+      }
+      return false;
+    });
+    expect(onBattlefield(game, giant)).toBe(false);
+    // Hill Giant's mana value is 4: four cards drawn, then Grizzly Bears (2)
+    // put in; Craw Wurm (6) was never eligible.
+    expect(game.handOf(A)).toHaveLength(4 + 2 - 1);
+    expect(onBattlefield(game, bears)).toBe(true);
+    expect(offered).toContain(bears);
+    expect(offered).not.toContain(wurm);
+  });
+});
+
+describe("Caesar, Legion's Emperor", () => {
+  it("whenever you attack, sacrificing another creature triggers a reflexive ability whose two modes and target are chosen as it goes on the stack", () => {
+    const game = setUp();
+    const caesar = spawn(game, "Caesar, Legion's Emperor");
+    const bears = spawn(game, "Grizzly Bears");
+    const hand = game.handOf(A).length;
+    const asked: string[] = [];
+    attackAndSettle(game, [caesar], (a) => {
+      if (a.kind === "choose-modes" && a.minModes === 0) {
+        asked.push("may");
+        game.dispatch({ type: "choose-modes", player: A, modes: [0] });
+        return true;
+      }
+      if (a.kind === "choose-modes" && a.minModes === 2) {
+        asked.push(`modes ${a.modes.length}`);
+        game.dispatch({ type: "choose-modes", player: A, modes: [0, 2] });
+        return true;
+      }
+      if (a.kind === "choose-targets") {
+        asked.push("target");
+        game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "player", player: B }] });
+        return true;
+      }
+      return false;
+    });
+    expect(onBattlefield(game, bears)).toBe(false);
+    // The third mode's only legal target (two players) is taken without asking.
+    expect(asked).toEqual(["may", "modes 3"]);
+    // Two Soldiers, tapped and attacking; the damage counted them both.
+    expect(game.state.players[B].life).toBe(18);
+    expect(game.handOf(A).length).toBe(hand);
+  });
+});

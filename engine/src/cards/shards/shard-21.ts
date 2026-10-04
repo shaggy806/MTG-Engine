@@ -197,6 +197,7 @@ import _poolWeightOfMemory from "../pool/weight-of-memory.js";
 import _poolWeldfastMonitor from "../pool/weldfast-monitor.js";
 import _poolWillOfTheSultai from "../pool/will-of-the-sultai.js";
 import _tokensPhyrexianGoblinToken from "../tokens/phyrexian-goblin-token.js";
+import _tokensPlantWarriorToken from "../tokens/plant-warrior-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -396,6 +397,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensPhyrexianGoblinToken,
+    _tokensPlantWarriorToken,
   ],
 };
 

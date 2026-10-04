@@ -54,6 +54,7 @@ import _poolDragonlordAtarka from "../pool/dragonlord-atarka.js";
 import _poolDriftingMeadow from "../pool/drifting-meadow.js";
 import _poolDualSunAdepts from "../pool/dual-sun-adepts.js";
 import _poolDuskanaTheRageMother from "../pool/duskana-the-rage-mother.js";
+import _poolEddieBrock from "../pool/eddie-brock.js";
 import _poolEldraziTemple from "../pool/eldrazi-temple.js";
 import _poolElsha from "../pool/elsha.js";
 import _poolElvesOfDeepShadow from "../pool/elves-of-deep-shadow.js";
@@ -273,6 +274,7 @@ const shard: CardShard = {
     _poolDriftingMeadow,
     _poolDualSunAdepts,
     _poolDuskanaTheRageMother,
+    _poolEddieBrock,
     _poolEldraziTemple,
     _poolElsha,
     _poolElvesOfDeepShadow,

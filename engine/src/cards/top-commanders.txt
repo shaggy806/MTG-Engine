@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-377 already implemented / 123 missing
+381 already implemented / 119 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -54,7 +54,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   48  The Necrobloom                                 22928 decks  {1}{W}{B}{G}     Legendary Creature — Plant
 [ ]   49  Mr. House, President and CEO                   22846 decks  {R}{W}{B}        Legendary Artifact Creature — Human
 [x]   50  Flubs, the Fool                                22839 decks  {G}{U}{R}        Legendary Creature — Frog Scout
-[ ]   51  Caesar, Legion's Emperor                       22746 decks  {1}{R}{W}{B}     Legendary Creature — Human Soldier
+[x]   51  Caesar, Legion's Emperor                       22746 decks  {1}{R}{W}{B}     Legendary Creature — Human Soldier
 [x]   52  Arabella, Abandoned Doll                       22645 decks  {R}{W}           Legendary Artifact Creature — Toy
 [ ]   53  Breya, Etherium Shaper                         22511 decks  {W}{U}{B}{R}     Legendary Artifact Creature — Human
 [ ]   54  Wilhelt, the Rotcleaver                        22477 decks  {2}{U}{B}        Legendary Creature — Zombie Warrior
@@ -269,7 +269,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  263  Bria, Riptide Rogue                             9969 decks  {2}{U}{R}        Legendary Creature — Otter Rogue
 [x]  264  Jetmir, Nexus of Revels                         9908 decks  {1}{R}{G}{W}     Legendary Creature — Cat Demon
 [ ]  265  Aloy, Savior of Meridian                        9887 decks  {3}{G}{U}        Legendary Creature — Human Warrior
-[ ]  266  Eddie Brock                                     9824 decks  {2}{B}           Legendary Creature — Human Hero Villain // Legendary Creature — Symbiote Hero Villain
+[x]  266  Eddie Brock                                     9824 decks  {2}{B}           Legendary Creature — Human Hero Villain // Legendary Creature — Symbiote Hero Villain
 [x]  267  Shiko and Narset, Unified                       9824 decks  {1}{U}{R}{W}     Legendary Creature — Human Spirit Dragon
 [x]  268  Nicol Bolas, the Ravager                        9786 decks  {1}{U}{B}{R}     Legendary Creature — Elder Dragon // Legendary Planeswalker — Bolas
 [x]  269  Quintorius, History Chaser                      9776 decks  {2}{R}{W}        Legendary Planeswalker — Quintorius
@@ -286,7 +286,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  280  Queza, Augur of Agonies                         9409 decks  {1}{W}{U}{B}     Legendary Creature — Octopus Advisor
 [x]  281  Tatyova, Benthic Druid                          9394 decks  {3}{G}{U}        Legendary Creature — Merfolk Druid
 [x]  282  Kratos, God of War                              9391 decks  {R}{R}{R}        Legendary Creature — God Warrior
-[ ]  283  Iron Man, Titan of Innovation                   9372 decks  {3}{U}{R}        Legendary Artifact Creature — Human Hero
+[x]  283  Iron Man, Titan of Innovation                   9372 decks  {3}{U}{R}        Legendary Artifact Creature — Human Hero
 [ ]  284  Thranduil, the Elvenking                        9332 decks  {2}{B}{G}{U}     Legendary Creature — Elf Noble
 [x]  285  Mirko, Obsessive Theorist                       9330 decks  {1}{U}{B}        Legendary Creature — Vampire Detective
 [x]  286  Rowan, Scion of War                             9315 decks  {1}{B}{R}        Legendary Creature — Human Wizard
@@ -375,7 +375,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  369  Sméagol, Helpful Guide                          7751 decks  {1}{B}{G}        Legendary Creature — Halfling Horror
 [x]  370  The Unbeatable Squirrel Girl                    7751 decks  {1}{G}{G}{G}     Legendary Creature — Squirrel Human Hero
 [x]  371  Ultima, Origin of Oblivion                      7742 decks  {5}              Legendary Creature — God
-[ ]  372  Yuma, Proud Protector                           7725 decks  {5}{R}{G}{W}     Legendary Creature — Human Ranger
+[x]  372  Yuma, Proud Protector                           7725 decks  {5}{R}{G}{W}     Legendary Creature — Human Ranger
 [ ]  373  Lathiel, the Bounteous Dawn                     7718 decks  {2}{G}{W}        Legendary Creature — Unicorn
 [ ]  374  Extus, Oriq Overlord                            7704 decks  {1}{W}{B}{B}     Legendary Creature — Human Warlock // Sorcery
 [x]  375  Tifa, Martial Artist                            7684 decks  {1}{R}{G}{W}     Legendary Creature — Human Monk

@@ -27,6 +27,7 @@ import _poolBrainFreeze from "../pool/brain-freeze.js";
 import _poolBroodcallerScourge from "../pool/broodcaller-scourge.js";
 import _poolBuriedRuin from "../pool/buried-ruin.js";
 import _poolBurntOffering from "../pool/burnt-offering.js";
+import _poolCaesarLegionsEmperor from "../pool/caesar-legions-emperor.js";
 import _poolCalamityOfCinders from "../pool/calamity-of-cinders.js";
 import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCartographersHawk from "../pool/cartographers-hawk.js";
@@ -254,6 +255,7 @@ const shard: CardShard = {
     _poolBroodcallerScourge,
     _poolBuriedRuin,
     _poolBurntOffering,
+    _poolCaesarLegionsEmperor,
     _poolCalamityOfCinders,
     _poolCanalMonitor,
     _poolCartographersHawk,
