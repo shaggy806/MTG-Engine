@@ -83,6 +83,9 @@ async function secureTheWastes(page: Page, x: number): Promise<void> {
   // The hand rests mostly below the screen's edge and rises when the pointer
   // comes near it.
   const card = page.locator('.hand-card', { hasText: 'Secure the Wastes' }).first()
+  // Straight after taking a seat the opening frames are still playing and the
+  // hand isn't drawn yet; hovering then fails as "not visible".
+  await expect(page.locator('.hand-strip-inner')).toBeVisible()
   await page.locator('.hand-strip-inner').hover({ force: true })
   await expect(page.locator('.hand-strip.raised')).toBeVisible()
   await card.click()
