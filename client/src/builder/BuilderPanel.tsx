@@ -21,6 +21,7 @@ import {
   updateCard,
   updateSeat,
 } from './spec.ts'
+import { ManualChecksSection } from './ManualChecksSection.tsx'
 import './builder.css'
 
 /**
@@ -290,6 +291,13 @@ export default function BuilderPanel({ game }: { readonly game: NetworkGame }) {
       {!game.isHost ? <p className="bp-notice bad">Only this room's host can change the board.</p> : null}
 
       <div className="bp-scroll">
+        <ManualChecksSection
+          building={building}
+          onLoad={(next) => {
+            send(next)
+            setSelected(null)
+          }}
+        />
         <Section title="Seats">
           <div className="bp-row">
             {building ? (

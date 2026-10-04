@@ -12,8 +12,11 @@ How to use it:
 - **New decision** entries come first in each section: the card raises a choice through a client
   path that's new or rarely exercised. **Rules call** entries are interactions where the engine made
   a careful ruling.
-- **Setup** is in game terms, enough to build the board in the scenario builder. A board worth
-  keeping can be saved there, or downloaded as JSON. `dev-rooms`' prepared rooms and command port
+- **Setup** is in game terms, and every entry's board is ready to load: the scenario builder's
+  **Manual checks** list shows each entry's text with a Load button per board
+  (`client/src/builder/manualChecks.ts`), and keeps your place and what you've ticked off. A new
+  entry needs a preset there too, under its exact `###` heading — a server test
+  (`manual-check-presets.test.ts`) builds every preset and fails on an entry without one. `dev-rooms`' prepared rooms and command port
   (`spawn`, `move`, `life` — `server/scripts/dev-rooms.mjs`) still work too.
 - **Known limits** are documented engine limitations (`engine/src/cards/AUTHORING.md` §15,
   `BACKLOG.md`), not bugs to report.
