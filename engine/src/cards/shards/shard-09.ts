@@ -102,8 +102,10 @@ import _poolInsatiableSouleater from "../pool/insatiable-souleater.js";
 import _poolIrrigatedFarmland from "../pool/irrigated-farmland.js";
 import _poolJackedRabbit from "../pool/jacked-rabbit.js";
 import _poolJalumTome from "../pool/jalum-tome.js";
+import _poolJasmineDragonTeaShop from "../pool/jasmine-dragon-tea-shop.js";
 import _poolJeskaWarriorAdept from "../pool/jeska-warrior-adept.js";
 import _poolJeskaiAscendancy from "../pool/jeskai-ascendancy.js";
+import _poolKayasWrath from "../pool/kayas-wrath.js";
 import _poolKeeneyeAven from "../pool/keeneye-aven.js";
 import _poolKessigFlamebreather from "../pool/kessig-flamebreather.js";
 import _poolKrenkosEnforcer from "../pool/krenkos-enforcer.js";
@@ -246,6 +248,7 @@ import _tokensBirdTokenHermesOverseerOfElpis from "../tokens/bird-token-hermes-o
 import _tokensElementalTokenAllColors from "../tokens/elemental-token-all-colors.js";
 import _tokensElephantToken from "../tokens/elephant-token.js";
 import _tokensForestDryadToken from "../tokens/forest-dryad-token.js";
+import _tokensGoblinTokenHaste from "../tokens/goblin-token-haste.js";
 import _tokensInsectTokenInfestationSage from "../tokens/insect-token-infestation-sage.js";
 import _tokensTreasureToken from "../tokens/treasure-token.js";
 import _tokensZombieKnightToken from "../tokens/zombie-knight-token.js";
@@ -351,8 +354,10 @@ const shard: CardShard = {
     _poolIrrigatedFarmland,
     _poolJackedRabbit,
     _poolJalumTome,
+    _poolJasmineDragonTeaShop,
     _poolJeskaWarriorAdept,
     _poolJeskaiAscendancy,
+    _poolKayasWrath,
     _poolKeeneyeAven,
     _poolKessigFlamebreather,
     _poolKrenkosEnforcer,
@@ -497,6 +502,7 @@ const shard: CardShard = {
     _tokensElementalTokenAllColors,
     _tokensElephantToken,
     _tokensForestDryadToken,
+    _tokensGoblinTokenHaste,
     _tokensInsectTokenInfestationSage,
     _tokensTreasureToken,
     _tokensZombieKnightToken,

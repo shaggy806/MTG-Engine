@@ -13,6 +13,7 @@ import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAncestralMask from "../pool/ancestral-mask.js";
 import _poolAncestralVision from "../pool/ancestral-vision.js";
 import _poolAnchovyBananaPizza from "../pool/anchovy-banana-pizza.js";
+import _poolAngelicFieldMarshal from "../pool/angelic-field-marshal.js";
 import _poolAniktheaHandOfErebos from "../pool/anikthea-hand-of-erebos.js";
 import _poolAnimPakalThousandthMoon from "../pool/anim-pakal-thousandth-moon.js";
 import _poolAnnieJoinsUp from "../pool/annie-joins-up.js";
@@ -90,6 +91,7 @@ import _poolGrendelSpawnOfKnull from "../pool/grendel-spawn-of-knull.js";
 import _poolGurmagSwiftwing from "../pool/gurmag-swiftwing.js";
 import _poolHarmonize from "../pool/harmonize.js";
 import _poolHeraldOfFaith from "../pool/herald-of-faith.js";
+import _poolHighSocietyHunter from "../pool/high-society-hunter.js";
 import _poolHighbornVampire from "../pool/highborn-vampire.js";
 import _poolHiredPoisoner from "../pool/hired-poisoner.js";
 import _poolHordewingSkaab from "../pool/hordewing-skaab.js";
@@ -177,6 +179,7 @@ import _poolSabotender from "../pool/sabotender.js";
 import _poolSanctumWeaver from "../pool/sanctum-weaver.js";
 import _poolScaledWurm from "../pool/scaled-wurm.js";
 import _poolScribeOfTheMindful from "../pool/scribe-of-the-mindful.js";
+import _poolSentinelSliver from "../pool/sentinel-sliver.js";
 import _poolSetessanGriffin from "../pool/setessan-griffin.js";
 import _poolShadowSummoning from "../pool/shadow-summoning.js";
 import _poolShadowbloodRidge from "../pool/shadowblood-ridge.js";
@@ -250,6 +253,7 @@ const shard: CardShard = {
     _poolAncestralMask,
     _poolAncestralVision,
     _poolAnchovyBananaPizza,
+    _poolAngelicFieldMarshal,
     _poolAniktheaHandOfErebos,
     _poolAnimPakalThousandthMoon,
     _poolAnnieJoinsUp,
@@ -327,6 +331,7 @@ const shard: CardShard = {
     _poolGurmagSwiftwing,
     _poolHarmonize,
     _poolHeraldOfFaith,
+    _poolHighSocietyHunter,
     _poolHighbornVampire,
     _poolHiredPoisoner,
     _poolHordewingSkaab,
@@ -414,6 +419,7 @@ const shard: CardShard = {
     _poolSanctumWeaver,
     _poolScaledWurm,
     _poolScribeOfTheMindful,
+    _poolSentinelSliver,
     _poolSetessanGriffin,
     _poolShadowSummoning,
     _poolShadowbloodRidge,

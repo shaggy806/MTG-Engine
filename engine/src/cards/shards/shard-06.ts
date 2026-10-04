@@ -29,6 +29,7 @@ import _poolBlessedOrator from "../pool/blessed-orator.js";
 import _poolBlindCreeper from "../pool/blind-creeper.js";
 import _poolBloodlineBidding from "../pool/bloodline-bidding.js";
 import _poolBombard from "../pool/bombard.js";
+import _poolBoomerangBasics from "../pool/boomerang-basics.js";
 import _poolBountifulPromenade from "../pool/bountiful-promenade.js";
 import _poolBruvacTheGrandiloquent from "../pool/bruvac-the-grandiloquent.js";
 import _poolBulwarkGiant from "../pool/bulwark-giant.js";
@@ -171,7 +172,9 @@ import _poolSeanceBoard from "../pool/seance-board.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
 import _poolSecretsOfTheDead from "../pool/secrets-of-the-dead.js";
 import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
+import _poolSeismicSense from "../pool/seismic-sense.js";
 import _poolSelflessSavior from "../pool/selfless-savior.js";
+import _poolSerumSnare from "../pool/serum-snare.js";
 import _poolSetessanChampion from "../pool/setessan-champion.js";
 import _poolSidarJabariOfZhalfir from "../pool/sidar-jabari-of-zhalfir.js";
 import _poolSiegecraft from "../pool/siegecraft.js";
@@ -270,6 +273,7 @@ const shard: CardShard = {
     _poolBlindCreeper,
     _poolBloodlineBidding,
     _poolBombard,
+    _poolBoomerangBasics,
     _poolBountifulPromenade,
     _poolBruvacTheGrandiloquent,
     _poolBulwarkGiant,
@@ -412,7 +416,9 @@ const shard: CardShard = {
     _poolSearstepPathway,
     _poolSecretsOfTheDead,
     _poolSecureTheWastes,
+    _poolSeismicSense,
     _poolSelflessSavior,
+    _poolSerumSnare,
     _poolSetessanChampion,
     _poolSidarJabariOfZhalfir,
     _poolSiegecraft,

@@ -14,6 +14,7 @@ import _poolAggressiveUrge from "../pool/aggressive-urge.js";
 import _poolAgoraphobia from "../pool/agoraphobia.js";
 import _poolAlaniaDivergentStorm from "../pool/alania-divergent-storm.js";
 import _poolAlchemistsApprentice from "../pool/alchemists-apprentice.js";
+import _poolAncestorsAid from "../pool/ancestors-aid.js";
 import _poolAngelsMercy from "../pool/angels-mercy.js";
 import _poolArchersOfQarsi from "../pool/archers-of-qarsi.js";
 import _poolArchfiendOfDepravity from "../pool/archfiend-of-depravity.js";
@@ -22,6 +23,7 @@ import _poolAridArchway from "../pool/arid-archway.js";
 import _poolBalefulStrix from "../pool/baleful-strix.js";
 import _poolBaneAlleyBlackguard from "../pool/bane-alley-blackguard.js";
 import _poolBannersRaised from "../pool/banners-raised.js";
+import _poolBaronBertramGraywater from "../pool/baron-bertram-graywater.js";
 import _poolBassaraTowerArcher from "../pool/bassara-tower-archer.js";
 import _poolBattershieldWarrior from "../pool/battershield-warrior.js";
 import _poolBattlegrowth from "../pool/battlegrowth.js";
@@ -37,6 +39,7 @@ import _poolBrambleweftBehemoth from "../pool/brambleweft-behemoth.js";
 import _poolBrashTaunter from "../pool/brash-taunter.js";
 import _poolBronzeSable from "../pool/bronze-sable.js";
 import _poolButcherOfMalakir from "../pool/butcher-of-malakir.js";
+import _poolCaptainSisay from "../pool/captain-sisay.js";
 import _poolCatalog from "../pool/catalog.js";
 import _poolCathodion from "../pool/cathodion.js";
 import _poolCavernCrawler from "../pool/cavern-crawler.js";
@@ -63,6 +66,7 @@ import _poolDesertOfTheFervent from "../pool/desert-of-the-fervent.js";
 import _poolDestructiveForce from "../pool/destructive-force.js";
 import _poolDimirInformant from "../pool/dimir-informant.js";
 import _poolDowsingShaman from "../pool/dowsing-shaman.js";
+import _poolEarthbendingLesson from "../pool/earthbending-lesson.js";
 import _poolEleshNornGrandCenobite from "../pool/elesh-norn-grand-cenobite.js";
 import _poolElvishVisionary from "../pool/elvish-visionary.js";
 import _poolErode from "../pool/erode.js";
@@ -257,6 +261,7 @@ const shard: CardShard = {
     _poolAgoraphobia,
     _poolAlaniaDivergentStorm,
     _poolAlchemistsApprentice,
+    _poolAncestorsAid,
     _poolAngelsMercy,
     _poolArchersOfQarsi,
     _poolArchfiendOfDepravity,
@@ -265,6 +270,7 @@ const shard: CardShard = {
     _poolBalefulStrix,
     _poolBaneAlleyBlackguard,
     _poolBannersRaised,
+    _poolBaronBertramGraywater,
     _poolBassaraTowerArcher,
     _poolBattershieldWarrior,
     _poolBattlegrowth,
@@ -280,6 +286,7 @@ const shard: CardShard = {
     _poolBrashTaunter,
     _poolBronzeSable,
     _poolButcherOfMalakir,
+    _poolCaptainSisay,
     _poolCatalog,
     _poolCathodion,
     _poolCavernCrawler,
@@ -306,6 +313,7 @@ const shard: CardShard = {
     _poolDestructiveForce,
     _poolDimirInformant,
     _poolDowsingShaman,
+    _poolEarthbendingLesson,
     _poolEleshNornGrandCenobite,
     _poolElvishVisionary,
     _poolErode,

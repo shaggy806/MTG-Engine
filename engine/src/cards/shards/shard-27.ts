@@ -9,6 +9,7 @@ import _poolAerieMystics from "../pool/aerie-mystics.js";
 import _poolAhriman from "../pool/ahriman.js";
 import _poolAkroanPhalanx from "../pool/akroan-phalanx.js";
 import _poolAlabornTrooper from "../pool/alaborn-trooper.js";
+import _poolAltarsReap from "../pool/altars-reap.js";
 import _poolAmuletOfVigor from "../pool/amulet-of-vigor.js";
 import _poolAntiVenomHorrifyingHealer from "../pool/anti-venom-horrifying-healer.js";
 import _poolAnvilwroughtRaptor from "../pool/anvilwrought-raptor.js";
@@ -48,6 +49,7 @@ import _poolDeathHoodCobra from "../pool/death-hood-cobra.js";
 import _poolDeconstruct from "../pool/deconstruct.js";
 import _poolDeepAnalysis from "../pool/deep-analysis.js";
 import _poolDereviEmpyrialTactician from "../pool/derevi-empyrial-tactician.js";
+import _poolDesecratedTomb from "../pool/desecrated-tomb.js";
 import _poolDevoutMonk from "../pool/devout-monk.js";
 import _poolDigThroughTime from "../pool/dig-through-time.js";
 import _poolDocksideChef from "../pool/dockside-chef.js";
@@ -103,6 +105,7 @@ import _poolJunkDiver from "../pool/junk-diver.js";
 import _poolKalamaxTheStormsire from "../pool/kalamax-the-stormsire.js";
 import _poolKelinoreBat from "../pool/kelinore-bat.js";
 import _poolKillMaimBurn from "../pool/kill-maim-burn.js";
+import _poolKnollspineDragon from "../pool/knollspine-dragon.js";
 import _poolKoboldTaskmaster from "../pool/kobold-taskmaster.js";
 import _poolKomaWorldEater from "../pool/koma-world-eater.js";
 import _poolKoskunKeep from "../pool/koskun-keep.js";
@@ -194,7 +197,9 @@ import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
 import _poolTenderWildguide from "../pool/tender-wildguide.js";
 import _poolTestOfEndurance from "../pool/test-of-endurance.js";
+import _poolTeysaOrzhovScion from "../pool/teysa-orzhov-scion.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
+import _poolTheUnderworldCookbook from "../pool/the-underworld-cookbook.js";
 import _poolTheWanderingMinstrel from "../pool/the-wandering-minstrel.js";
 import _poolThreeTreeRootweaver from "../pool/three-tree-rootweaver.js";
 import _poolThunderbreakRegent from "../pool/thunderbreak-regent.js";
@@ -249,6 +254,7 @@ const shard: CardShard = {
     _poolAhriman,
     _poolAkroanPhalanx,
     _poolAlabornTrooper,
+    _poolAltarsReap,
     _poolAmuletOfVigor,
     _poolAntiVenomHorrifyingHealer,
     _poolAnvilwroughtRaptor,
@@ -288,6 +294,7 @@ const shard: CardShard = {
     _poolDeconstruct,
     _poolDeepAnalysis,
     _poolDereviEmpyrialTactician,
+    _poolDesecratedTomb,
     _poolDevoutMonk,
     _poolDigThroughTime,
     _poolDocksideChef,
@@ -343,6 +350,7 @@ const shard: CardShard = {
     _poolKalamaxTheStormsire,
     _poolKelinoreBat,
     _poolKillMaimBurn,
+    _poolKnollspineDragon,
     _poolKoboldTaskmaster,
     _poolKomaWorldEater,
     _poolKoskunKeep,
@@ -434,7 +442,9 @@ const shard: CardShard = {
     _poolTempleOfPlenty,
     _poolTenderWildguide,
     _poolTestOfEndurance,
+    _poolTeysaOrzhovScion,
     _poolThantisTheWarweaver,
+    _poolTheUnderworldCookbook,
     _poolTheWanderingMinstrel,
     _poolThreeTreeRootweaver,
     _poolThunderbreakRegent,

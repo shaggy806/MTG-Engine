@@ -11,6 +11,7 @@ import _poolAetherSpellbomb from "../pool/aether-spellbomb.js";
 import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
 import _poolAirElemental from "../pool/air-elemental.js";
 import _poolAkoumTeeth from "../pool/akoum-teeth.js";
+import _poolAkromaAngelOfWrath from "../pool/akroma-angel-of-wrath.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
 import _poolArdenvaleFealty from "../pool/ardenvale-fealty.js";
@@ -119,6 +120,7 @@ import _poolLivingLightning from "../pool/living-lightning.js";
 import _poolLothlorienLookout from "../pool/lothlorien-lookout.js";
 import _poolLumengridSentinel from "../pool/lumengrid-sentinel.js";
 import _poolMaddeningCacophony from "../pool/maddening-cacophony.js";
+import _poolMaelstromColossus from "../pool/maelstrom-colossus.js";
 import _poolMaestrosTheater from "../pool/maestros-theater.js";
 import _poolMahamotiDjinn from "../pool/mahamoti-djinn.js";
 import _poolMalametWarScribe from "../pool/malamet-war-scribe.js";
@@ -198,6 +200,7 @@ import _poolSpringmaneCervin from "../pool/springmane-cervin.js";
 import _poolSquiresDevotion from "../pool/squires-devotion.js";
 import _poolStaffOfDomination from "../pool/staff-of-domination.js";
 import _poolStaffOfTitania from "../pool/staff-of-titania.js";
+import _poolStifle from "../pool/stifle.js";
 import _poolStockUp from "../pool/stock-up.js";
 import _poolStoneOfErech from "../pool/stone-of-erech.js";
 import _poolStrokeOfMidnight from "../pool/stroke-of-midnight.js";
@@ -226,6 +229,7 @@ import _poolVedalkenMesmerist from "../pool/vedalken-mesmerist.js";
 import _poolViashinoSlasher from "../pool/viashino-slasher.js";
 import _poolViashinoWarrior from "../pool/viashino-warrior.js";
 import _poolVincentValentine from "../pool/vincent-valentine.js";
+import _poolVindictiveVampire from "../pool/vindictive-vampire.js";
 import _poolVirtueOfPersistence from "../pool/virtue-of-persistence.js";
 import _poolVivisurgeonsInsight from "../pool/vivisurgeons-insight.js";
 import _poolVolatileFjord from "../pool/volatile-fjord.js";
@@ -245,6 +249,7 @@ import _poolZombieApocalypse from "../pool/zombie-apocalypse.js";
 import _tokensPegasusToken from "../tokens/pegasus-token.js";
 import _tokensRebelToken from "../tokens/rebel-token.js";
 import _tokensRobotToken from "../tokens/robot-token.js";
+import _tokensVampireRogueToken from "../tokens/vampire-rogue-token.js";
 import _tokensZombieToken from "../tokens/zombie-token.js";
 
 const shard: CardShard = {
@@ -257,6 +262,7 @@ const shard: CardShard = {
     _poolAetherfluxReservoir,
     _poolAirElemental,
     _poolAkoumTeeth,
+    _poolAkromaAngelOfWrath,
     _poolAncientBrontodon,
     _poolApexDevastator,
     _poolArdenvaleFealty,
@@ -365,6 +371,7 @@ const shard: CardShard = {
     _poolLothlorienLookout,
     _poolLumengridSentinel,
     _poolMaddeningCacophony,
+    _poolMaelstromColossus,
     _poolMaestrosTheater,
     _poolMahamotiDjinn,
     _poolMalametWarScribe,
@@ -444,6 +451,7 @@ const shard: CardShard = {
     _poolSquiresDevotion,
     _poolStaffOfDomination,
     _poolStaffOfTitania,
+    _poolStifle,
     _poolStockUp,
     _poolStoneOfErech,
     _poolStrokeOfMidnight,
@@ -472,6 +480,7 @@ const shard: CardShard = {
     _poolViashinoSlasher,
     _poolViashinoWarrior,
     _poolVincentValentine,
+    _poolVindictiveVampire,
     _poolVirtueOfPersistence,
     _poolVivisurgeonsInsight,
     _poolVolatileFjord,
@@ -493,6 +502,7 @@ const shard: CardShard = {
     _tokensPegasusToken,
     _tokensRebelToken,
     _tokensRobotToken,
+    _tokensVampireRogueToken,
     _tokensZombieToken,
   ],
 };

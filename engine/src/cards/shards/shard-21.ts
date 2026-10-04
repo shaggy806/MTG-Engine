@@ -47,10 +47,12 @@ import _poolDarkNourishment from "../pool/dark-nourishment.js";
 import _poolDeathgreeter from "../pool/deathgreeter.js";
 import _poolDeceptiveFrostkite from "../pool/deceptive-frostkite.js";
 import _poolDeduce from "../pool/deduce.js";
+import _poolDeeprootWaters from "../pool/deeproot-waters.js";
 import _poolDegaDisciple from "../pool/dega-disciple.js";
 import _poolDesperateBloodseeker from "../pool/desperate-bloodseeker.js";
 import _poolDisruptDecorum from "../pool/disrupt-decorum.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
+import _poolDuskLegionZealot from "../pool/dusk-legion-zealot.js";
 import _poolElanorGardner from "../pool/elanor-gardner.js";
 import _poolElvishDoomsayer from "../pool/elvish-doomsayer.js";
 import _poolEmmessiTome from "../pool/emmessi-tome.js";
@@ -217,6 +219,7 @@ import _poolWeightOfMemory from "../pool/weight-of-memory.js";
 import _poolWeldfastMonitor from "../pool/weldfast-monitor.js";
 import _poolWillOfTheSultai from "../pool/will-of-the-sultai.js";
 import _tokensConstructTokenJanJansenChaosCrafter from "../tokens/construct-token-jan-jansen-chaos-crafter.js";
+import _tokensMoogleToken from "../tokens/moogle-token.js";
 import _tokensPhyrexianGoblinToken from "../tokens/phyrexian-goblin-token.js";
 import _tokensPlantWarriorToken from "../tokens/plant-warrior-token.js";
 
@@ -266,10 +269,12 @@ const shard: CardShard = {
     _poolDeathgreeter,
     _poolDeceptiveFrostkite,
     _poolDeduce,
+    _poolDeeprootWaters,
     _poolDegaDisciple,
     _poolDesperateBloodseeker,
     _poolDisruptDecorum,
     _poolDranasChosen,
+    _poolDuskLegionZealot,
     _poolElanorGardner,
     _poolElvishDoomsayer,
     _poolEmmessiTome,
@@ -438,6 +443,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensConstructTokenJanJansenChaosCrafter,
+    _tokensMoogleToken,
     _tokensPhyrexianGoblinToken,
     _tokensPlantWarriorToken,
   ],

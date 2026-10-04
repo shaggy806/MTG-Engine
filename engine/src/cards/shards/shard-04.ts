@@ -36,6 +36,7 @@ import _poolBraingeyser from "../pool/braingeyser.js";
 import _poolBrainstorm from "../pool/brainstorm.js";
 import _poolBristlingBackwoods from "../pool/bristling-backwoods.js";
 import _poolCarnageTyrant from "../pool/carnage-tyrant.js";
+import _poolCauldronOfSouls from "../pool/cauldron-of-souls.js";
 import _poolCelestialPrism from "../pool/celestial-prism.js";
 import _poolChainersEdict from "../pool/chainers-edict.js";
 import _poolChardalynDragon from "../pool/chardalyn-dragon.js";
@@ -167,6 +168,7 @@ import _poolResearchAssistant from "../pool/research-assistant.js";
 import _poolRestInPeace from "../pool/rest-in-peace.js";
 import _poolRetreatToCoralhelm from "../pool/retreat-to-coralhelm.js";
 import _poolRetreatToHagra from "../pool/retreat-to-hagra.js";
+import _poolRetrofitterFoundry from "../pool/retrofitter-foundry.js";
 import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
@@ -211,6 +213,7 @@ import _poolSyphonMind from "../pool/syphon-mind.js";
 import _poolTangledFlorahedron from "../pool/tangled-florahedron.js";
 import _poolTelJiladJustice from "../pool/tel-jilad-justice.js";
 import _poolTerminate from "../pool/terminate.js";
+import _poolThievingVarmint from "../pool/thieving-varmint.js";
 import _poolThirdPathIconoclast from "../pool/third-path-iconoclast.js";
 import _poolThrorsMap from "../pool/thrors-map.js";
 import _poolTigerClaws from "../pool/tiger-claws.js";
@@ -286,6 +289,7 @@ const shard: CardShard = {
     _poolBrainstorm,
     _poolBristlingBackwoods,
     _poolCarnageTyrant,
+    _poolCauldronOfSouls,
     _poolCelestialPrism,
     _poolChainersEdict,
     _poolChardalynDragon,
@@ -417,6 +421,7 @@ const shard: CardShard = {
     _poolRestInPeace,
     _poolRetreatToCoralhelm,
     _poolRetreatToHagra,
+    _poolRetrofitterFoundry,
     _poolRevitalizingRepast,
     _poolRevivingDose,
     _poolRidgeRannet,
@@ -461,6 +466,7 @@ const shard: CardShard = {
     _poolTangledFlorahedron,
     _poolTelJiladJustice,
     _poolTerminate,
+    _poolThievingVarmint,
     _poolThirdPathIconoclast,
     _poolThrorsMap,
     _poolTigerClaws,

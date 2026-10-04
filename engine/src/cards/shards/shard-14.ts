@@ -112,6 +112,7 @@ import _poolGrandAbolisher from "../pool/grand-abolisher.js";
 import _poolGrappleWithDeath from "../pool/grapple-with-death.js";
 import _poolGravecrawler from "../pool/gravecrawler.js";
 import _poolGreataxe from "../pool/greataxe.js";
+import _poolGrumgullyTheGenerous from "../pool/grumgully-the-generous.js";
 import _poolGruulGuildgate from "../pool/gruul-guildgate.js";
 import _poolHagraCrocodile from "../pool/hagra-crocodile.js";
 import _poolHazardOfTheDunes from "../pool/hazard-of-the-dunes.js";
@@ -131,6 +132,7 @@ import _poolIronshellBeetle from "../pool/ironshell-beetle.js";
 import _poolIsperiaSupremeJudge from "../pool/isperia-supreme-judge.js";
 import _poolJeditsDragoons from "../pool/jedits-dragoons.js";
 import _poolJinGitaxiasCoreAugur from "../pool/jin-gitaxias-core-augur.js";
+import _poolJoragaWarcaller from "../pool/joraga-warcaller.js";
 import _poolJoustingDummy from "../pool/jousting-dummy.js";
 import _poolKeenBuccaneer from "../pool/keen-buccaneer.js";
 import _poolKonaRescueBeastie from "../pool/kona-rescue-beastie.js";
@@ -242,6 +244,8 @@ import _tokensGolemEnchantmentArtifactToken from "../tokens/golem-enchantment-ar
 import _tokensGolemVigilanceToken from "../tokens/golem-vigilance-token.js";
 import _tokensKrakenToken from "../tokens/kraken-token.js";
 import _tokensTentacleToken from "../tokens/tentacle-token.js";
+import _tokensTreefolkToken from "../tokens/treefolk-token.js";
+import _tokensWallTokenRammasEchorAncientShield from "../tokens/wall-token-rammas-echor-ancient-shield.js";
 
 const shard: CardShard = {
   pool: [
@@ -354,6 +358,7 @@ const shard: CardShard = {
     _poolGrappleWithDeath,
     _poolGravecrawler,
     _poolGreataxe,
+    _poolGrumgullyTheGenerous,
     _poolGruulGuildgate,
     _poolHagraCrocodile,
     _poolHazardOfTheDunes,
@@ -373,6 +378,7 @@ const shard: CardShard = {
     _poolIsperiaSupremeJudge,
     _poolJeditsDragoons,
     _poolJinGitaxiasCoreAugur,
+    _poolJoragaWarcaller,
     _poolJoustingDummy,
     _poolKeenBuccaneer,
     _poolKonaRescueBeastie,
@@ -486,6 +492,8 @@ const shard: CardShard = {
     _tokensGolemVigilanceToken,
     _tokensKrakenToken,
     _tokensTentacleToken,
+    _tokensTreefolkToken,
+    _tokensWallTokenRammasEchorAncientShield,
   ],
 };
 

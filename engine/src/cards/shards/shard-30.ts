@@ -32,6 +32,7 @@ import _poolBlightedWoodland from "../pool/blighted-woodland.js";
 import _poolBloodArtist from "../pool/blood-artist.js";
 import _poolBloodPet from "../pool/blood-pet.js";
 import _poolBloodbraidElf from "../pool/bloodbraid-elf.js";
+import _poolBonescytheSliver from "../pool/bonescythe-sliver.js";
 import _poolBorderGuard from "../pool/border-guard.js";
 import _poolBotanicalPlaza from "../pool/botanical-plaza.js";
 import _poolBraveKinDuo from "../pool/brave-kin-duo.js";
@@ -97,6 +98,7 @@ import _poolFurtiveAnalyst from "../pool/furtive-analyst.js";
 import _poolGaladhrimGuide from "../pool/galadhrim-guide.js";
 import _poolGalianBeast from "../pool/galian-beast.js";
 import _poolGarrukPrimalHunter from "../pool/garruk-primal-hunter.js";
+import _poolGimlisRecklessMight from "../pool/gimlis-reckless-might.js";
 import _poolGixYawgmothPraetor from "../pool/gix-yawgmoth-praetor.js";
 import _poolGoreSwine from "../pool/gore-swine.js";
 import _poolGoringCeratops from "../pool/goring-ceratops.js";
@@ -282,6 +284,7 @@ const shard: CardShard = {
     _poolBloodArtist,
     _poolBloodPet,
     _poolBloodbraidElf,
+    _poolBonescytheSliver,
     _poolBorderGuard,
     _poolBotanicalPlaza,
     _poolBraveKinDuo,
@@ -347,6 +350,7 @@ const shard: CardShard = {
     _poolGaladhrimGuide,
     _poolGalianBeast,
     _poolGarrukPrimalHunter,
+    _poolGimlisRecklessMight,
     _poolGixYawgmothPraetor,
     _poolGoreSwine,
     _poolGoringCeratops,

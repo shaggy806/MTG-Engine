@@ -143,6 +143,7 @@ import _poolNecropolisFiend from "../pool/necropolis-fiend.js";
 import _poolNiblisOfTheUrn from "../pool/niblis-of-the-urn.js";
 import _poolNimbusOfTheIsles from "../pool/nimbus-of-the-isles.js";
 import _poolNourish from "../pool/nourish.js";
+import _poolNoxiousGhoul from "../pool/noxious-ghoul.js";
 import _poolNoxiousGroodion from "../pool/noxious-groodion.js";
 import _poolNyxFleeceRam from "../pool/nyx-fleece-ram.js";
 import _poolObscuraInitiate from "../pool/obscura-initiate.js";
@@ -162,6 +163,7 @@ import _poolRescind from "../pool/rescind.js";
 import _poolReunionOfTheHouse from "../pool/reunion-of-the-house.js";
 import _poolSanctumOfEternity from "../pool/sanctum-of-eternity.js";
 import _poolSangromancer from "../pool/sangromancer.js";
+import _poolSaplingNursery from "../pool/sapling-nursery.js";
 import _poolSarkhansCatharsis from "../pool/sarkhans-catharsis.js";
 import _poolSavageHunger from "../pool/savage-hunger.js";
 import _poolScionOfUgin from "../pool/scion-of-ugin.js";
@@ -213,6 +215,7 @@ import _poolTreasureCruise from "../pool/treasure-cruise.js";
 import _poolTundraWolves from "../pool/tundra-wolves.js";
 import _poolTymorasInvoker from "../pool/tymoras-invoker.js";
 import _poolUnmarkedGrave from "../pool/unmarked-grave.js";
+import _poolUrzasFactory from "../pool/urzas-factory.js";
 import _poolVampireSoulcaller from "../pool/vampire-soulcaller.js";
 import _poolVegaTheWatcher from "../pool/vega-the-watcher.js";
 import _poolViashinoGrappler from "../pool/viashino-grappler.js";
@@ -382,6 +385,7 @@ const shard: CardShard = {
     _poolNiblisOfTheUrn,
     _poolNimbusOfTheIsles,
     _poolNourish,
+    _poolNoxiousGhoul,
     _poolNoxiousGroodion,
     _poolNyxFleeceRam,
     _poolObscuraInitiate,
@@ -401,6 +405,7 @@ const shard: CardShard = {
     _poolReunionOfTheHouse,
     _poolSanctumOfEternity,
     _poolSangromancer,
+    _poolSaplingNursery,
     _poolSarkhansCatharsis,
     _poolSavageHunger,
     _poolScionOfUgin,
@@ -452,6 +457,7 @@ const shard: CardShard = {
     _poolTundraWolves,
     _poolTymorasInvoker,
     _poolUnmarkedGrave,
+    _poolUrzasFactory,
     _poolVampireSoulcaller,
     _poolVegaTheWatcher,
     _poolViashinoGrappler,

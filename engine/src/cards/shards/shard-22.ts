@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAcademyRuins from "../pool/academy-ruins.js";
+import _poolAetherTunnel from "../pool/aether-tunnel.js";
 import _poolAkoumWarrior from "../pool/akoum-warrior.js";
 import _poolAmateurHero from "../pool/amateur-hero.js";
 import _poolAngelOfFlightAlabaster from "../pool/angel-of-flight-alabaster.js";
@@ -66,6 +67,7 @@ import _poolEject from "../pool/eject.js";
 import _poolEmeriaShatteredSkyclave from "../pool/emeria-shattered-skyclave.js";
 import _poolEmielTheBlessed from "../pool/emiel-the-blessed.js";
 import _poolEndTheFestivities from "../pool/end-the-festivities.js";
+import _poolEnterTheAvatarState from "../pool/enter-the-avatar-state.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
 import _poolEvolutionaryLeap from "../pool/evolutionary-leap.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
@@ -84,6 +86,7 @@ import _poolGargosViciousWatcher from "../pool/gargos-vicious-watcher.js";
 import _poolGlacialFortress from "../pool/glacial-fortress.js";
 import _poolGlazeFiend from "../pool/glaze-fiend.js";
 import _poolGlorifierOfDusk from "../pool/glorifier-of-dusk.js";
+import _poolGoblinRabblemaster from "../pool/goblin-rabblemaster.js";
 import _poolGoblinSkyRaider from "../pool/goblin-sky-raider.js";
 import _poolGoblinStriker from "../pool/goblin-striker.js";
 import _poolGoldveinPick from "../pool/goldvein-pick.js";
@@ -260,6 +263,7 @@ import _tokensSnakeToken from "../tokens/snake-token.js";
 const shard: CardShard = {
   pool: [
     _poolAcademyRuins,
+    _poolAetherTunnel,
     _poolAkoumWarrior,
     _poolAmateurHero,
     _poolAngelOfFlightAlabaster,
@@ -322,6 +326,7 @@ const shard: CardShard = {
     _poolEmeriaShatteredSkyclave,
     _poolEmielTheBlessed,
     _poolEndTheFestivities,
+    _poolEnterTheAvatarState,
     _poolEtherswornAdjudicator,
     _poolEvolutionaryLeap,
     _poolExemplarOfLight,
@@ -340,6 +345,7 @@ const shard: CardShard = {
     _poolGlacialFortress,
     _poolGlazeFiend,
     _poolGlorifierOfDusk,
+    _poolGoblinRabblemaster,
     _poolGoblinSkyRaider,
     _poolGoblinStriker,
     _poolGoldveinPick,

@@ -142,6 +142,7 @@ import _poolMaskOfMemory from "../pool/mask-of-memory.js";
 import _poolMaulOfTheSkyclaves from "../pool/maul-of-the-skyclaves.js";
 import _poolMendingHands from "../pool/mending-hands.js";
 import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.js";
+import _poolMerryEsquireOfRohan from "../pool/merry-esquire-of-rohan.js";
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
 import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
@@ -155,6 +156,7 @@ import _poolOakhollowVillage from "../pool/oakhollow-village.js";
 import _poolObsidianGiant from "../pool/obsidian-giant.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
 import _poolPactOfNegation from "../pool/pact-of-negation.js";
+import _poolPermissionDenied from "../pool/permission-denied.js";
 import _poolPlaguemawBeast from "../pool/plaguemaw-beast.js";
 import _poolProtomatterPowder from "../pool/protomatter-powder.js";
 import _poolPuresteelPaladin from "../pool/puresteel-paladin.js";
@@ -236,6 +238,7 @@ import _poolViridianShaman from "../pool/viridian-shaman.js";
 import _poolVolcanicIsland from "../pool/volcanic-island.js";
 import _poolVoraciousVarmint from "../pool/voracious-varmint.js";
 import _poolWastelandScorpion from "../pool/wasteland-scorpion.js";
+import _poolWatcherOfTheSpheres from "../pool/watcher-of-the-spheres.js";
 import _poolWatercourser from "../pool/watercourser.js";
 import _poolWestfoldRider from "../pool/westfold-rider.js";
 import _poolWhispererOfTheWilds from "../pool/whisperer-of-the-wilds.js";
@@ -398,6 +401,7 @@ const shard: CardShard = {
     _poolMaulOfTheSkyclaves,
     _poolMendingHands,
     _poolMerfolkOfThePearlTrident,
+    _poolMerryEsquireOfRohan,
     _poolMightOfOaks,
     _poolMishraEminentOne,
     _poolMoonwingMoth,
@@ -411,6 +415,7 @@ const shard: CardShard = {
     _poolObsidianGiant,
     _poolOverwhelmingStampede,
     _poolPactOfNegation,
+    _poolPermissionDenied,
     _poolPlaguemawBeast,
     _poolProtomatterPowder,
     _poolPuresteelPaladin,
@@ -492,6 +497,7 @@ const shard: CardShard = {
     _poolVolcanicIsland,
     _poolVoraciousVarmint,
     _poolWastelandScorpion,
+    _poolWatcherOfTheSpheres,
     _poolWatercourser,
     _poolWestfoldRider,
     _poolWhispererOfTheWilds,

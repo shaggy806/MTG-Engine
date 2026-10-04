@@ -12,6 +12,7 @@ import _poolArchonOfCruelty from "../pool/archon-of-cruelty.js";
 import _poolArmyOfTheDamned from "../pool/army-of-the-damned.js";
 import _poolAtarkaWorldRender from "../pool/atarka-world-render.js";
 import _poolAvacynAngelOfHope from "../pool/avacyn-angel-of-hope.js";
+import _poolAvatarKyoshiEarthbender from "../pool/avatar-kyoshi-earthbender.js";
 import _poolBakeIntoAPie from "../pool/bake-into-a-pie.js";
 import _poolBeastWithin from "../pool/beast-within.js";
 import _poolBehemothSledge from "../pool/behemoth-sledge.js";
@@ -129,6 +130,7 @@ import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
 import _poolPsionicPulse from "../pool/psionic-pulse.js";
 import _poolPyroclasticElemental from "../pool/pyroclastic-elemental.js";
 import _poolPyrohemia from "../pool/pyrohemia.js";
+import _poolQueenBrahne from "../pool/queen-brahne.js";
 import _poolRampagingHippo from "../pool/rampaging-hippo.js";
 import _poolRaugrinCrystal from "../pool/raugrin-crystal.js";
 import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
@@ -236,6 +238,7 @@ const shard: CardShard = {
     _poolArmyOfTheDamned,
     _poolAtarkaWorldRender,
     _poolAvacynAngelOfHope,
+    _poolAvatarKyoshiEarthbender,
     _poolBakeIntoAPie,
     _poolBeastWithin,
     _poolBehemothSledge,
@@ -353,6 +356,7 @@ const shard: CardShard = {
     _poolPsionicPulse,
     _poolPyroclasticElemental,
     _poolPyrohemia,
+    _poolQueenBrahne,
     _poolRampagingHippo,
     _poolRaugrinCrystal,
     _poolRayOfDissolution,

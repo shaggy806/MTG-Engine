@@ -51,6 +51,7 @@ import _poolCrookshankKobolds from "../pool/crookshank-kobolds.js";
 import _poolCrossroadsWatcher from "../pool/crossroads-watcher.js";
 import _poolCrushContraband from "../pool/crush-contraband.js";
 import _poolCryptOfAgadeem from "../pool/crypt-of-agadeem.js";
+import _poolCrystallineSliver from "../pool/crystalline-sliver.js";
 import _poolCultivate from "../pool/cultivate.js";
 import _poolCunningManeuver from "../pool/cunning-maneuver.js";
 import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
@@ -155,6 +156,7 @@ import _poolOashraCultivator from "../pool/oashra-cultivator.js";
 import _poolOgreBattledriver from "../pool/ogre-battledriver.js";
 import _poolOnduGiant from "../pool/ondu-giant.js";
 import _poolOranRiefTheVastwood from "../pool/oran-rief-the-vastwood.js";
+import _poolOrcishSiegemaster from "../pool/orcish-siegemaster.js";
 import _poolPerimeterPatrol from "../pool/perimeter-patrol.js";
 import _poolPiaAndKiranNalaar from "../pool/pia-and-kiran-nalaar.js";
 import _poolPilgrimsEye from "../pool/pilgrims-eye.js";
@@ -211,6 +213,7 @@ import _poolSurveillingSprite from "../pool/surveilling-sprite.js";
 import _poolSustenance from "../pool/sustenance.js";
 import _poolSwordOfTruthAndJustice from "../pool/sword-of-truth-and-justice.js";
 import _poolSyphonFlesh from "../pool/syphon-flesh.js";
+import _poolSyrVondamSunstarExemplar from "../pool/syr-vondam-sunstar-exemplar.js";
 import _poolTalasMerchant from "../pool/talas-merchant.js";
 import _poolTalruumMinotaur from "../pool/talruum-minotaur.js";
 import _poolTamiyosSafekeeping from "../pool/tamiyos-safekeeping.js";
@@ -233,6 +236,7 @@ import _poolTrenchingSteed from "../pool/trenching-steed.js";
 import _poolTuraKennerudSkyknight from "../pool/tura-kennerud-skyknight.js";
 import _poolTwinflameTyrant from "../pool/twinflame-tyrant.js";
 import _poolUmbralExpanse from "../pool/umbral-expanse.js";
+import _poolUndeadButler from "../pool/undead-butler.js";
 import _poolUnyaroBeeSting from "../pool/unyaro-bee-sting.js";
 import _poolVampireOfTheDireMoon from "../pool/vampire-of-the-dire-moon.js";
 import _poolVampiricTutor from "../pool/vampiric-tutor.js";
@@ -311,6 +315,7 @@ const shard: CardShard = {
     _poolCrossroadsWatcher,
     _poolCrushContraband,
     _poolCryptOfAgadeem,
+    _poolCrystallineSliver,
     _poolCultivate,
     _poolCunningManeuver,
     _poolDaggerdromeImp,
@@ -415,6 +420,7 @@ const shard: CardShard = {
     _poolOgreBattledriver,
     _poolOnduGiant,
     _poolOranRiefTheVastwood,
+    _poolOrcishSiegemaster,
     _poolPerimeterPatrol,
     _poolPiaAndKiranNalaar,
     _poolPilgrimsEye,
@@ -471,6 +477,7 @@ const shard: CardShard = {
     _poolSustenance,
     _poolSwordOfTruthAndJustice,
     _poolSyphonFlesh,
+    _poolSyrVondamSunstarExemplar,
     _poolTalasMerchant,
     _poolTalruumMinotaur,
     _poolTamiyosSafekeeping,
@@ -493,6 +500,7 @@ const shard: CardShard = {
     _poolTuraKennerudSkyknight,
     _poolTwinflameTyrant,
     _poolUmbralExpanse,
+    _poolUndeadButler,
     _poolUnyaroBeeSting,
     _poolVampireOfTheDireMoon,
     _poolVampiricTutor,

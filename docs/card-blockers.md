@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B26) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B27) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -355,7 +355,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 26 (2026-10-04, the no-engine-work pass)** triaged ranks 4055–4313: 90 authored (Anara, Wolvid Familiar, Sower of Temptation, Creosote Heath, Viridian Revel, Quicksilver Amulet and 85 more — `top5000-batch-26a`–`h.test.ts`); 110 blocked (`B26.json`), each skipped at the first sign of engine work. Most-cited blockers: `effect:emblem-triggered-abilities` (6), `keyword:crew` (4), `mechanic:the-ring` (3), `mechanic:rad-counters` (3), `new:class-levels` (2).
 
-Past rank 4313, nothing is triaged.
+- **Batch 27 (2026-10-04, the no-engine-work pass)** triaged ranks 4314–4581: 86 authored (Kaya's Wrath, Crystalline Sliver, Phyrexian Rebirth, Boomerang Basics, Shifting Sliver and 81 more — `top5000-batch-27a`–`h.test.ts`); 114 blocked (`B27.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (3), `effect:cast-and-activate-restrictions` (2), `new:return-transformed-non-dfc-stays-exiled` (2), `mechanic:face-down` (2), `effect:modal-activated-targeted-modes` (2).
+
+Past rank 4581, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

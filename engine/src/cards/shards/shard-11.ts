@@ -18,6 +18,7 @@ import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
 import _poolBarbaryApes from "../pool/barbary-apes.js";
 import _poolBattlemagesBracers from "../pool/battlemages-bracers.js";
+import _poolBeaconOfUnrest from "../pool/beacon-of-unrest.js";
 import _poolBehindTheScenes from "../pool/behind-the-scenes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
 import _poolBladeSplicer from "../pool/blade-splicer.js";
@@ -68,6 +69,7 @@ import _poolEpicureOfBlood from "../pool/epicure-of-blood.js";
 import _poolFacetReader from "../pool/facet-reader.js";
 import _poolFanaticOfRhonas from "../pool/fanatic-of-rhonas.js";
 import _poolFarhavenElf from "../pool/farhaven-elf.js";
+import _poolFiendArtisan from "../pool/fiend-artisan.js";
 import _poolFieryIslet from "../pool/fiery-islet.js";
 import _poolFontOfFertility from "../pool/font-of-fertility.js";
 import _poolForatog from "../pool/foratog.js";
@@ -143,6 +145,7 @@ import _poolMoonriseCleric from "../pool/moonrise-cleric.js";
 import _poolMoriokReaver from "../pool/moriok-reaver.js";
 import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
+import _poolMoxTantalite from "../pool/mox-tantalite.js";
 import _poolMysidianElder from "../pool/mysidian-elder.js";
 import _poolMysticForge from "../pool/mystic-forge.js";
 import _poolMysticGate from "../pool/mystic-gate.js";
@@ -166,6 +169,7 @@ import _poolPerennialBehemoth from "../pool/perennial-behemoth.js";
 import _poolPestInfestation from "../pool/pest-infestation.js";
 import _poolPestilentKathari from "../pool/pestilent-kathari.js";
 import _poolPharikasChosen from "../pool/pharikas-chosen.js";
+import _poolPhyrexianRebirth from "../pool/phyrexian-rebirth.js";
 import _poolPlanarGenesis from "../pool/planar-genesis.js";
 import _poolPlatedSeastrider from "../pool/plated-seastrider.js";
 import _poolPriestOfIroas from "../pool/priest-of-iroas.js";
@@ -194,6 +198,7 @@ import _poolSejiriRefuge from "../pool/sejiri-refuge.js";
 import _poolSepulchralPrimordial from "../pool/sepulchral-primordial.js";
 import _poolSerpentineKavu from "../pool/serpentine-kavu.js";
 import _poolShamblingStrider from "../pool/shambling-strider.js";
+import _poolShieldOfTheOversoul from "../pool/shield-of-the-oversoul.js";
 import _poolShiningAerosaur from "../pool/shining-aerosaur.js";
 import _poolShoreUp from "../pool/shore-up.js";
 import _poolShowOfValor from "../pool/show-of-valor.js";
@@ -239,6 +244,7 @@ import _poolThunderfootBaloth from "../pool/thunderfoot-baloth.js";
 import _poolTimeOfNeed from "../pool/time-of-need.js";
 import _poolTombOfTheSpiritDragon from "../pool/tomb-of-the-spirit-dragon.js";
 import _poolTowerOfCalamities from "../pool/tower-of-calamities.js";
+import _poolTowerWinder from "../pool/tower-winder.js";
 import _poolTrainedOrgg from "../pool/trained-orgg.js";
 import _poolTranquilExpanse from "../pool/tranquil-expanse.js";
 import _poolTranscendentEnvoy from "../pool/transcendent-envoy.js";
@@ -296,6 +302,7 @@ const shard: CardShard = {
     _poolAttrition,
     _poolBarbaryApes,
     _poolBattlemagesBracers,
+    _poolBeaconOfUnrest,
     _poolBehindTheScenes,
     _poolBerserkersOfBloodRidge,
     _poolBladeSplicer,
@@ -346,6 +353,7 @@ const shard: CardShard = {
     _poolFacetReader,
     _poolFanaticOfRhonas,
     _poolFarhavenElf,
+    _poolFiendArtisan,
     _poolFieryIslet,
     _poolFontOfFertility,
     _poolForatog,
@@ -421,6 +429,7 @@ const shard: CardShard = {
     _poolMoriokReaver,
     _poolMossDiamond,
     _poolMossdog,
+    _poolMoxTantalite,
     _poolMysidianElder,
     _poolMysticForge,
     _poolMysticGate,
@@ -444,6 +453,7 @@ const shard: CardShard = {
     _poolPestInfestation,
     _poolPestilentKathari,
     _poolPharikasChosen,
+    _poolPhyrexianRebirth,
     _poolPlanarGenesis,
     _poolPlatedSeastrider,
     _poolPriestOfIroas,
@@ -472,6 +482,7 @@ const shard: CardShard = {
     _poolSepulchralPrimordial,
     _poolSerpentineKavu,
     _poolShamblingStrider,
+    _poolShieldOfTheOversoul,
     _poolShiningAerosaur,
     _poolShoreUp,
     _poolShowOfValor,
@@ -517,6 +528,7 @@ const shard: CardShard = {
     _poolTimeOfNeed,
     _poolTombOfTheSpiritDragon,
     _poolTowerOfCalamities,
+    _poolTowerWinder,
     _poolTrainedOrgg,
     _poolTranquilExpanse,
     _poolTranscendentEnvoy,

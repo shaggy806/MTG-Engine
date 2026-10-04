@@ -9,6 +9,7 @@ import _poolActOfTreason from "../pool/act-of-treason.js";
 import _poolAetherChanneler from "../pool/aether-channeler.js";
 import _poolAeveProgenitorOoze from "../pool/aeve-progenitor-ooze.js";
 import _poolAffaGuardHound from "../pool/affa-guard-hound.js";
+import _poolAkroanHorse from "../pool/akroan-horse.js";
 import _poolAlelaArtfulProvocateur from "../pool/alela-artful-provocateur.js";
 import _poolAleshasLegacy from "../pool/aleshas-legacy.js";
 import _poolAnaconda from "../pool/anaconda.js";
@@ -135,10 +136,12 @@ import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
 import _poolMomentOfCraving from "../pool/moment-of-craving.js";
 import _poolMonasteryMentor from "../pool/monastery-mentor.js";
+import _poolMooglesValor from "../pool/moogles-valor.js";
 import _poolMoxJasper from "../pool/mox-jasper.js";
 import _poolMysticSnake from "../pool/mystic-snake.js";
 import _poolNaturesRhythm from "../pool/natures-rhythm.js";
 import _poolNecroskitter from "../pool/necroskitter.js";
+import _poolNemesisOfReason from "../pool/nemesis-of-reason.js";
 import _poolNoDachi from "../pool/no-dachi.js";
 import _poolNulldrifter from "../pool/nulldrifter.js";
 import _poolOboroPalaceInTheClouds from "../pool/oboro-palace-in-the-clouds.js";
@@ -147,6 +150,7 @@ import _poolOmniCheesePizza from "../pool/omni-cheese-pizza.js";
 import _poolOneirophage from "../pool/oneirophage.js";
 import _poolOrcishMechanics from "../pool/orcish-mechanics.js";
 import _poolOrochiLeafcaller from "../pool/orochi-leafcaller.js";
+import _poolOssification from "../pool/ossification.js";
 import _poolOvergrownArmasaur from "../pool/overgrown-armasaur.js";
 import _poolOverwhelmingInstinct from "../pool/overwhelming-instinct.js";
 import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
@@ -173,6 +177,7 @@ import _poolScarecrowGuide from "../pool/scarecrow-guide.js";
 import _poolSearingFlesh from "../pool/searing-flesh.js";
 import _poolSevinnesReclamation from "../pool/sevinnes-reclamation.js";
 import _poolShalaiAndHallar from "../pool/shalai-and-hallar.js";
+import _poolShamanOfThePack from "../pool/shaman-of-the-pack.js";
 import _poolShamanicRevelation from "../pool/shamanic-revelation.js";
 import _poolSheoldredsEdict from "../pool/sheoldreds-edict.js";
 import _poolShimmerMyr from "../pool/shimmer-myr.js";
@@ -211,10 +216,12 @@ import _poolTerritorialScythecat from "../pool/territorial-scythecat.js";
 import _poolTezzeretsGambit from "../pool/tezzerets-gambit.js";
 import _poolThaliaGuardianOfThraben from "../pool/thalia-guardian-of-thraben.js";
 import _poolTheEmperorOfPalamecia from "../pool/the-emperor-of-palamecia.js";
+import _poolTheTenRings from "../pool/the-ten-rings.js";
 import _poolTheWhizzerClassicSpeedster from "../pool/the-whizzer-classic-speedster.js";
 import _poolThoughtVessel from "../pool/thought-vessel.js";
 import _poolThrashingBrontodon from "../pool/thrashing-brontodon.js";
 import _poolThrivingHeath from "../pool/thriving-heath.js";
+import _poolTimberwatchElf from "../pool/timberwatch-elf.js";
 import _poolTitansStrength from "../pool/titans-strength.js";
 import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTormodsCrypt from "../pool/tormods-crypt.js";
@@ -248,6 +255,7 @@ const shard: CardShard = {
     _poolAetherChanneler,
     _poolAeveProgenitorOoze,
     _poolAffaGuardHound,
+    _poolAkroanHorse,
     _poolAlelaArtfulProvocateur,
     _poolAleshasLegacy,
     _poolAnaconda,
@@ -374,10 +382,12 @@ const shard: CardShard = {
     _poolMoltensteelDragon,
     _poolMomentOfCraving,
     _poolMonasteryMentor,
+    _poolMooglesValor,
     _poolMoxJasper,
     _poolMysticSnake,
     _poolNaturesRhythm,
     _poolNecroskitter,
+    _poolNemesisOfReason,
     _poolNoDachi,
     _poolNulldrifter,
     _poolOboroPalaceInTheClouds,
@@ -386,6 +396,7 @@ const shard: CardShard = {
     _poolOneirophage,
     _poolOrcishMechanics,
     _poolOrochiLeafcaller,
+    _poolOssification,
     _poolOvergrownArmasaur,
     _poolOverwhelmingInstinct,
     _poolPhyrexianTower,
@@ -412,6 +423,7 @@ const shard: CardShard = {
     _poolSearingFlesh,
     _poolSevinnesReclamation,
     _poolShalaiAndHallar,
+    _poolShamanOfThePack,
     _poolShamanicRevelation,
     _poolSheoldredsEdict,
     _poolShimmerMyr,
@@ -450,10 +462,12 @@ const shard: CardShard = {
     _poolTezzeretsGambit,
     _poolThaliaGuardianOfThraben,
     _poolTheEmperorOfPalamecia,
+    _poolTheTenRings,
     _poolTheWhizzerClassicSpeedster,
     _poolThoughtVessel,
     _poolThrashingBrontodon,
     _poolThrivingHeath,
+    _poolTimberwatchElf,
     _poolTitansStrength,
     _poolTomeBlast,
     _poolTormodsCrypt,

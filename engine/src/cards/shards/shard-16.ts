@@ -164,6 +164,7 @@ import _poolOrbOfDragonkind from "../pool/orb-of-dragonkind.js";
 import _poolOvergrowth from "../pool/overgrowth.js";
 import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
+import _poolPawpatchFormation from "../pool/pawpatch-formation.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
 import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolPiratesPillage from "../pool/pirates-pillage.js";
@@ -439,6 +440,7 @@ const shard: CardShard = {
     _poolOvergrowth,
     _poolPalladiumMyr,
     _poolPardicCollaborator,
+    _poolPawpatchFormation,
     _poolPhantomWarrior,
     _poolPhyrexianDefiler,
     _poolPiratesPillage,

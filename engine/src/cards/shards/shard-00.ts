@@ -102,6 +102,7 @@ import _poolHaughtyDjinn from "../pool/haughty-djinn.js";
 import _poolHellkiteCourser from "../pool/hellkite-courser.js";
 import _poolHornetHarasser from "../pool/hornet-harasser.js";
 import _poolImperialOutrider from "../pool/imperial-outrider.js";
+import _poolImperviousGreatwurm from "../pool/impervious-greatwurm.js";
 import _poolInGarruksWake from "../pool/in-garruks-wake.js";
 import _poolIncreasingVengeance from "../pool/increasing-vengeance.js";
 import _poolIronLance from "../pool/iron-lance.js";
@@ -137,6 +138,7 @@ import _poolMortivore from "../pool/mortivore.js";
 import _poolMourning from "../pool/mourning.js";
 import _poolNaturesLore from "../pool/natures-lore.js";
 import _poolNettlecyst from "../pool/nettlecyst.js";
+import _poolNightshadeHarvester from "../pool/nightshade-harvester.js";
 import _poolNightshadeStinger from "../pool/nightshade-stinger.js";
 import _poolNyleasForerunner from "../pool/nyleas-forerunner.js";
 import _poolOpenTheGraves from "../pool/open-the-graves.js";
@@ -184,9 +186,11 @@ import _poolScreechingBuzzard from "../pool/screeching-buzzard.js";
 import _poolScreechingSkaab from "../pool/screeching-skaab.js";
 import _poolScroungerOfSouls from "../pool/scrounger-of-souls.js";
 import _poolSearingWind from "../pool/searing-wind.js";
+import _poolSeersSundial from "../pool/seers-sundial.js";
 import _poolSeizeTheSpoils from "../pool/seize-the-spoils.js";
 import _poolSenateGriffin from "../pool/senate-griffin.js";
 import _poolSetonKrosanProtector from "../pool/seton-krosan-protector.js";
+import _poolShiftingSliver from "../pool/shifting-sliver.js";
 import _poolShinkaTheBloodsoakedKeep from "../pool/shinka-the-bloodsoaked-keep.js";
 import _poolSiegeSmash from "../pool/siege-smash.js";
 import _poolSisaysRing from "../pool/sisays-ring.js";
@@ -244,6 +248,7 @@ import _poolWoodedRidgeline from "../pool/wooded-ridgeline.js";
 import _poolYouthfulKnight from "../pool/youthful-knight.js";
 import _poolYouthfulValkyrie from "../pool/youthful-valkyrie.js";
 import _poolZhaoTheSeethingFlame from "../pool/zhao-the-seething-flame.js";
+import _poolZukoExiledPrince from "../pool/zuko-exiled-prince.js";
 import _poolZurEternalSchemer from "../pool/zur-eternal-schemer.js";
 import _poolZurgoThundersDecree from "../pool/zurgo-thunders-decree.js";
 import _tokensElementalTokenLagomosHandOfHatred from "../tokens/elemental-token-lagomos-hand-of-hatred.js";
@@ -354,6 +359,7 @@ const shard: CardShard = {
     _poolHellkiteCourser,
     _poolHornetHarasser,
     _poolImperialOutrider,
+    _poolImperviousGreatwurm,
     _poolInGarruksWake,
     _poolIncreasingVengeance,
     _poolIronLance,
@@ -389,6 +395,7 @@ const shard: CardShard = {
     _poolMourning,
     _poolNaturesLore,
     _poolNettlecyst,
+    _poolNightshadeHarvester,
     _poolNightshadeStinger,
     _poolNyleasForerunner,
     _poolOpenTheGraves,
@@ -436,9 +443,11 @@ const shard: CardShard = {
     _poolScreechingSkaab,
     _poolScroungerOfSouls,
     _poolSearingWind,
+    _poolSeersSundial,
     _poolSeizeTheSpoils,
     _poolSenateGriffin,
     _poolSetonKrosanProtector,
+    _poolShiftingSliver,
     _poolShinkaTheBloodsoakedKeep,
     _poolSiegeSmash,
     _poolSisaysRing,
@@ -496,6 +505,7 @@ const shard: CardShard = {
     _poolYouthfulKnight,
     _poolYouthfulValkyrie,
     _poolZhaoTheSeethingFlame,
+    _poolZukoExiledPrince,
     _poolZurEternalSchemer,
     _poolZurgoThundersDecree,
   ],

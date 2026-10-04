@@ -221,6 +221,7 @@ import _poolTrashForTreasure from "../pool/trash-for-treasure.js";
 import _poolUlamogsDreadsire from "../pool/ulamogs-dreadsire.js";
 import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
+import _poolUrzaPrinceOfKroog from "../pool/urza-prince-of-kroog.js";
 import _poolVectorImperialCapital from "../pool/vector-imperial-capital.js";
 import _poolVigilance from "../pool/vigilance.js";
 import _poolVirtueOfLoyalty from "../pool/virtue-of-loyalty.js";
@@ -245,6 +246,7 @@ import _poolWyluliWolf from "../pool/wyluli-wolf.js";
 import _poolYavimayaWurm from "../pool/yavimaya-wurm.js";
 import _poolZenithFestival from "../pool/zenith-festival.js";
 import _poolZombieGoliath from "../pool/zombie-goliath.js";
+import _poolZukosExile from "../pool/zukos-exile.js";
 import _tokensPhyrexianMiteToken from "../tokens/phyrexian-mite-token.js";
 import _tokensRedElementalToken11 from "../tokens/red-elemental-token-1-1.js";
 import _tokensServoToken from "../tokens/servo-token.js";
@@ -469,6 +471,7 @@ const shard: CardShard = {
     _poolUlamogsDreadsire,
     _poolUnsubtleMockery,
     _poolUrborgDrake,
+    _poolUrzaPrinceOfKroog,
     _poolVectorImperialCapital,
     _poolVigilance,
     _poolVirtueOfLoyalty,
@@ -493,6 +496,7 @@ const shard: CardShard = {
     _poolYavimayaWurm,
     _poolZenithFestival,
     _poolZombieGoliath,
+    _poolZukosExile,
   ],
   tokens: [
     _tokensPhyrexianMiteToken,

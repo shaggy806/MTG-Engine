@@ -117,6 +117,7 @@ import _poolKindlesparkDuo from "../pool/kindlespark-duo.js";
 import _poolKnightOfNewBenalia from "../pool/knight-of-new-benalia.js";
 import _poolKydeleChosenOfKruphix from "../pool/kydele-chosen-of-kruphix.js";
 import _poolLeafkinDruid from "../pool/leafkin-druid.js";
+import _poolLightOfPromise from "../pool/light-of-promise.js";
 import _poolLilianasStandardBearer from "../pool/lilianas-standard-bearer.js";
 import _poolLonesomeUnicorn from "../pool/lonesome-unicorn.js";
 import _poolLoomingAltisaur from "../pool/looming-altisaur.js";
@@ -241,6 +242,7 @@ import _poolWindgracesJudgment from "../pool/windgraces-judgment.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
 import _poolWoodedBastion from "../pool/wooded-bastion.js";
 import _tokensConstructTokenAncientStoneIdol from "../tokens/construct-token-ancient-stone-idol.js";
+import _tokensConstructTokenRetrofitterFoundry from "../tokens/construct-token-retrofitter-foundry.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
@@ -364,6 +366,7 @@ const shard: CardShard = {
     _poolKnightOfNewBenalia,
     _poolKydeleChosenOfKruphix,
     _poolLeafkinDruid,
+    _poolLightOfPromise,
     _poolLilianasStandardBearer,
     _poolLonesomeUnicorn,
     _poolLoomingAltisaur,
@@ -490,6 +493,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensConstructTokenAncientStoneIdol,
+    _tokensConstructTokenRetrofitterFoundry,
     _tokensElfWarriorToken,
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,

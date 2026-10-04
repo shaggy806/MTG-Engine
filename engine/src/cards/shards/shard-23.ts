@@ -19,6 +19,7 @@ import _poolAttercop from "../pool/attercop.js";
 import _poolAuraShards from "../pool/aura-shards.js";
 import _poolAzoriusChancery from "../pool/azorius-chancery.js";
 import _poolAzoriusKnightArbiter from "../pool/azorius-knight-arbiter.js";
+import _poolBarkformHarvester from "../pool/barkform-harvester.js";
 import _poolBattlefieldRaptor from "../pool/battlefield-raptor.js";
 import _poolBayouDragonfly from "../pool/bayou-dragonfly.js";
 import _poolBenalishMarshal from "../pool/benalish-marshal.js";
@@ -56,6 +57,7 @@ import _poolDazzlingLights from "../pool/dazzling-lights.js";
 import _poolDeadlyPlot from "../pool/deadly-plot.js";
 import _poolDeathriteShaman from "../pool/deathrite-shaman.js";
 import _poolDemolitionField from "../pool/demolition-field.js";
+import _poolDistinguishedConjurer from "../pool/distinguished-conjurer.js";
 import _poolDrivnodCarnageDominus from "../pool/drivnod-carnage-dominus.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
 import _poolEclipsedSteppe from "../pool/eclipsed-steppe.js";
@@ -113,6 +115,7 @@ import _poolKeeningApparition from "../pool/keening-apparition.js";
 import _poolKembasSkyguard from "../pool/kembas-skyguard.js";
 import _poolKodamasReach from "../pool/kodamas-reach.js";
 import _poolKongmingSleepingDragon from "../pool/kongming-sleeping-dragon.js";
+import _poolKuraTheBoundlessSky from "../pool/kura-the-boundless-sky.js";
 import _poolLavaAxe from "../pool/lava-axe.js";
 import _poolLeopardSpottedJiao from "../pool/leopard-spotted-jiao.js";
 import _poolLightningBlast from "../pool/lightning-blast.js";
@@ -133,6 +136,7 @@ import _poolMindsDesire from "../pool/minds-desire.js";
 import _poolMireShade from "../pool/mire-shade.js";
 import _poolMnemonicWall from "../pool/mnemonic-wall.js";
 import _poolMomentaryBlink from "../pool/momentary-blink.js";
+import _poolMothdustChangeling from "../pool/mothdust-changeling.js";
 import _poolMoxOpal from "../pool/mox-opal.js";
 import _poolMysticPeak from "../pool/mystic-peak.js";
 import _poolNantukoElder from "../pool/nantuko-elder.js";
@@ -238,6 +242,7 @@ import _poolWinterflame from "../pool/winterflame.js";
 import _poolWirewoodHivemaster from "../pool/wirewood-hivemaster.js";
 import _poolZimoneInfiniteAnalyst from "../pool/zimone-infinite-analyst.js";
 import _poolZofConsumption from "../pool/zof-consumption.js";
+import _tokensAssemblyWorkerToken from "../tokens/assembly-worker-token.js";
 import _tokensBlueRedElementalToken44 from "../tokens/blue-red-elemental-token-4-4.js";
 import _tokensConstructTokenMetallurgicSummonings from "../tokens/construct-token-metallurgic-summonings.js";
 import _tokensPlainKnightToken from "../tokens/plain-knight-token.js";
@@ -261,6 +266,7 @@ const shard: CardShard = {
     _poolAuraShards,
     _poolAzoriusChancery,
     _poolAzoriusKnightArbiter,
+    _poolBarkformHarvester,
     _poolBattlefieldRaptor,
     _poolBayouDragonfly,
     _poolBenalishMarshal,
@@ -298,6 +304,7 @@ const shard: CardShard = {
     _poolDeadlyPlot,
     _poolDeathriteShaman,
     _poolDemolitionField,
+    _poolDistinguishedConjurer,
     _poolDrivnodCarnageDominus,
     _poolEarthOriginYak,
     _poolEclipsedSteppe,
@@ -355,6 +362,7 @@ const shard: CardShard = {
     _poolKembasSkyguard,
     _poolKodamasReach,
     _poolKongmingSleepingDragon,
+    _poolKuraTheBoundlessSky,
     _poolLavaAxe,
     _poolLeopardSpottedJiao,
     _poolLightningBlast,
@@ -375,6 +383,7 @@ const shard: CardShard = {
     _poolMireShade,
     _poolMnemonicWall,
     _poolMomentaryBlink,
+    _poolMothdustChangeling,
     _poolMoxOpal,
     _poolMysticPeak,
     _poolNantukoElder,
@@ -482,6 +491,7 @@ const shard: CardShard = {
     _poolZofConsumption,
   ],
   tokens: [
+    _tokensAssemblyWorkerToken,
     _tokensBlueRedElementalToken44,
     _tokensConstructTokenMetallurgicSummonings,
     _tokensPlainKnightToken,

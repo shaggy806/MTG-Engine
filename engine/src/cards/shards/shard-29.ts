@@ -30,6 +30,7 @@ import _poolCavernThoctar from "../pool/cavern-thoctar.js";
 import _poolCelestialAncient from "../pool/celestial-ancient.js";
 import _poolChargingBadger from "../pool/charging-badger.js";
 import _poolCinderElemental from "../pool/cinder-elemental.js";
+import _poolCityOfDeath from "../pool/city-of-death.js";
 import _poolCleverImpersonator from "../pool/clever-impersonator.js";
 import _poolCodieVociferousCodex from "../pool/codie-vociferous-codex.js";
 import _poolColorfulFeiyiSparrow from "../pool/colorful-feiyi-sparrow.js";
@@ -37,9 +38,11 @@ import _poolCoralBarrier from "../pool/coral-barrier.js";
 import _poolCoriMountainMonastery from "../pool/cori-mountain-monastery.js";
 import _poolCravenKnight from "../pool/craven-knight.js";
 import _poolCrumblingVestige from "../pool/crumbling-vestige.js";
+import _poolCryptIncursion from "../pool/crypt-incursion.js";
 import _poolDamn from "../pool/damn.js";
 import _poolDarkDeed from "../pool/dark-deed.js";
 import _poolDarkOffering from "../pool/dark-offering.js";
+import _poolDarkProphecy from "../pool/dark-prophecy.js";
 import _poolDazzlingDenial from "../pool/dazzling-denial.js";
 import _poolDecoctionModule from "../pool/decoction-module.js";
 import _poolDedicatedMartyr from "../pool/dedicated-martyr.js";
@@ -207,6 +210,7 @@ import _poolTuknirDeathlock from "../pool/tuknir-deathlock.js";
 import _poolTymnaTheWeaver from "../pool/tymna-the-weaver.js";
 import _poolUnderseaInvader from "../pool/undersea-invader.js";
 import _poolUroTitanOfNaturesWrath from "../pool/uro-titan-of-natures-wrath.js";
+import _poolVenomSliver from "../pool/venom-sliver.js";
 import _poolViciousConquistador from "../pool/vicious-conquistador.js";
 import _poolVictimize from "../pool/victimize.js";
 import _poolVirtueOfCourage from "../pool/virtue-of-courage.js";
@@ -224,6 +228,8 @@ import _tokensAngelWarriorToken from "../tokens/angel-warrior-token.js";
 import _tokensElementalToken53 from "../tokens/elemental-token-5-3.js";
 import _tokensHornetToken from "../tokens/hornet-token.js";
 import _tokensImpTokenJudith from "../tokens/imp-token-judith.js";
+import _tokensMerfolkTokenDeeprootWaters from "../tokens/merfolk-token-deeproot-waters.js";
+import _tokensPhyrexianHorrorTokenPhyrexianRebirth from "../tokens/phyrexian-horror-token-phyrexian-rebirth.js";
 import _tokensRatToken from "../tokens/rat-token.js";
 import _tokensSaprolingToken from "../tokens/saproling-token.js";
 import _tokensSpawnToken from "../tokens/spawn-token.js";
@@ -257,6 +263,7 @@ const shard: CardShard = {
     _poolCelestialAncient,
     _poolChargingBadger,
     _poolCinderElemental,
+    _poolCityOfDeath,
     _poolCleverImpersonator,
     _poolCodieVociferousCodex,
     _poolColorfulFeiyiSparrow,
@@ -264,9 +271,11 @@ const shard: CardShard = {
     _poolCoriMountainMonastery,
     _poolCravenKnight,
     _poolCrumblingVestige,
+    _poolCryptIncursion,
     _poolDamn,
     _poolDarkDeed,
     _poolDarkOffering,
+    _poolDarkProphecy,
     _poolDazzlingDenial,
     _poolDecoctionModule,
     _poolDedicatedMartyr,
@@ -434,6 +443,7 @@ const shard: CardShard = {
     _poolTymnaTheWeaver,
     _poolUnderseaInvader,
     _poolUroTitanOfNaturesWrath,
+    _poolVenomSliver,
     _poolViciousConquistador,
     _poolVictimize,
     _poolVirtueOfCourage,
@@ -453,6 +463,8 @@ const shard: CardShard = {
     _tokensElementalToken53,
     _tokensHornetToken,
     _tokensImpTokenJudith,
+    _tokensMerfolkTokenDeeprootWaters,
+    _tokensPhyrexianHorrorTokenPhyrexianRebirth,
     _tokensRatToken,
     _tokensSaprolingToken,
     _tokensSpawnToken,

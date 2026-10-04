@@ -21,6 +21,7 @@ import _poolBlackcleaveCliffs from "../pool/blackcleave-cliffs.js";
 import _poolBlazingHellhound from "../pool/blazing-hellhound.js";
 import _poolBlightedFen from "../pool/blighted-fen.js";
 import _poolBloodCelebrant from "../pool/blood-celebrant.js";
+import _poolBloodsoakedChampion from "../pool/bloodsoaked-champion.js";
 import _poolBlueSunsTwilight from "../pool/blue-suns-twilight.js";
 import _poolBojukaBog from "../pool/bojuka-bog.js";
 import _poolBoldBiochemist from "../pool/bold-biochemist.js";
@@ -90,6 +91,7 @@ import _poolHermiticNautilus from "../pool/hermitic-nautilus.js";
 import _poolHighlandLake from "../pool/highland-lake.js";
 import _poolHydraBroodmaster from "../pool/hydra-broodmaster.js";
 import _poolIdyllicBeachfront from "../pool/idyllic-beachfront.js";
+import _poolIfnirDeadlands from "../pool/ifnir-deadlands.js";
 import _poolInfestationSage from "../pool/infestation-sage.js";
 import _poolInnocentBlood from "../pool/innocent-blood.js";
 import _poolInordinateRage from "../pool/inordinate-rage.js";
@@ -219,6 +221,7 @@ import _poolTrostaniSelesnyasVoice from "../pool/trostani-selesnyas-voice.js";
 import _poolTuinvaleTreefolk from "../pool/tuinvale-treefolk.js";
 import _poolTwitchingDoll from "../pool/twitching-doll.js";
 import _poolUnchartedHaven from "../pool/uncharted-haven.js";
+import _poolUndyingEvil from "../pool/undying-evil.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
 import _poolUthrosResearchCraft from "../pool/uthros-research-craft.js";
 import _poolValkyriorSkyrider from "../pool/valkyrior-skyrider.js";
@@ -278,6 +281,7 @@ const shard: CardShard = {
     _poolBlazingHellhound,
     _poolBlightedFen,
     _poolBloodCelebrant,
+    _poolBloodsoakedChampion,
     _poolBlueSunsTwilight,
     _poolBojukaBog,
     _poolBoldBiochemist,
@@ -347,6 +351,7 @@ const shard: CardShard = {
     _poolHighlandLake,
     _poolHydraBroodmaster,
     _poolIdyllicBeachfront,
+    _poolIfnirDeadlands,
     _poolInfestationSage,
     _poolInnocentBlood,
     _poolInordinateRage,
@@ -476,6 +481,7 @@ const shard: CardShard = {
     _poolTuinvaleTreefolk,
     _poolTwitchingDoll,
     _poolUnchartedHaven,
+    _poolUndyingEvil,
     _poolUnyieldingKrumar,
     _poolUthrosResearchCraft,
     _poolValkyriorSkyrider,

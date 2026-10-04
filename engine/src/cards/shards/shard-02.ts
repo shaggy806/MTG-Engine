@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAangsJourney from "../pool/aangs-journey.js";
 import _poolAdrixAndNev from "../pool/adrix-and-nev.js";
 import _poolAdvancedHoverguard from "../pool/advanced-hoverguard.js";
 import _poolAinokStrikeLeader from "../pool/ainok-strike-leader.js";
@@ -243,6 +244,7 @@ import _tokensSalamanderWarriorToken from "../tokens/salamander-warrior-token.js
 
 const shard: CardShard = {
   pool: [
+    _poolAangsJourney,
     _poolAdrixAndNev,
     _poolAdvancedHoverguard,
     _poolAinokStrikeLeader,

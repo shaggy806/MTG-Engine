@@ -151,6 +151,7 @@ import _poolPhyrexianVivisector from "../pool/phyrexian-vivisector.js";
 import _poolPickYourPoison from "../pool/pick-your-poison.js";
 import _poolPiousInterdiction from "../pool/pious-interdiction.js";
 import _poolPiranhaFly from "../pool/piranha-fly.js";
+import _poolPridemalkin from "../pool/pridemalkin.js";
 import _poolRakdosGuildgate from "../pool/rakdos-guildgate.js";
 import _poolRampantGrowth from "../pool/rampant-growth.js";
 import _poolRavagedHighlands from "../pool/ravaged-highlands.js";
@@ -395,6 +396,7 @@ const shard: CardShard = {
     _poolPickYourPoison,
     _poolPiousInterdiction,
     _poolPiranhaFly,
+    _poolPridemalkin,
     _poolRakdosGuildgate,
     _poolRampantGrowth,
     _poolRavagedHighlands,

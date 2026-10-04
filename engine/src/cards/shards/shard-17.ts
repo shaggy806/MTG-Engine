@@ -32,6 +32,7 @@ import _poolCascadeBluffs from "../pool/cascade-bluffs.js";
 import _poolChainOfVapor from "../pool/chain-of-vapor.js";
 import _poolCharge from "../pool/charge.js";
 import _poolCheckpointOfficer from "../pool/checkpoint-officer.js";
+import _poolChildrenOfKorlis from "../pool/children-of-korlis.js";
 import _poolChitinousCloak from "../pool/chitinous-cloak.js";
 import _poolCityOnFire from "../pool/city-on-fire.js";
 import _poolCitywideBust from "../pool/citywide-bust.js";
@@ -83,6 +84,7 @@ import _poolGiantGrowth from "../pool/giant-growth.js";
 import _poolGiftOfOrzhova from "../pool/gift-of-orzhova.js";
 import _poolGlitteringMassif from "../pool/glittering-massif.js";
 import _poolGloomPangolin from "../pool/gloom-pangolin.js";
+import _poolGoblinRingleader from "../pool/goblin-ringleader.js";
 import _poolGoldmireBridge from "../pool/goldmire-bridge.js";
 import _poolGongagaReactorTown from "../pool/gongaga-reactor-town.js";
 import _poolGoroGoroAndSatoru from "../pool/goro-goro-and-satoru.js";
@@ -130,6 +132,7 @@ import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
 import _poolMomentOfTriumph from "../pool/moment-of-triumph.js";
 import _poolMonkIdealist from "../pool/monk-idealist.js";
 import _poolMountainValley from "../pool/mountain-valley.js";
+import _poolNayaPanorama from "../pool/naya-panorama.js";
 import _poolNemaSiltlurker from "../pool/nema-siltlurker.js";
 import _poolNestRobber from "../pool/nest-robber.js";
 import _poolNightOfTheSweetsRevenge from "../pool/night-of-the-sweets-revenge.js";
@@ -277,6 +280,7 @@ const shard: CardShard = {
     _poolChainOfVapor,
     _poolCharge,
     _poolCheckpointOfficer,
+    _poolChildrenOfKorlis,
     _poolChitinousCloak,
     _poolCityOnFire,
     _poolCitywideBust,
@@ -328,6 +332,7 @@ const shard: CardShard = {
     _poolGiftOfOrzhova,
     _poolGlitteringMassif,
     _poolGloomPangolin,
+    _poolGoblinRingleader,
     _poolGoldmireBridge,
     _poolGongagaReactorTown,
     _poolGoroGoroAndSatoru,
@@ -375,6 +380,7 @@ const shard: CardShard = {
     _poolMomentOfTriumph,
     _poolMonkIdealist,
     _poolMountainValley,
+    _poolNayaPanorama,
     _poolNemaSiltlurker,
     _poolNestRobber,
     _poolNightOfTheSweetsRevenge,

@@ -10,6 +10,7 @@ import _poolAlgaeGharial from "../pool/algae-gharial.js";
 import _poolAltarOfTheBrood from "../pool/altar-of-the-brood.js";
 import _poolAngelOfFinality from "../pool/angel-of-finality.js";
 import _poolAngelicEdict from "../pool/angelic-edict.js";
+import _poolAnnul from "../pool/annul.js";
 import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
 import _poolAzureDrake from "../pool/azure-drake.js";
@@ -234,6 +235,7 @@ const shard: CardShard = {
     _poolAltarOfTheBrood,
     _poolAngelOfFinality,
     _poolAngelicEdict,
+    _poolAnnul,
     _poolArchweaver,
     _poolArtisansSorrow,
     _poolAzureDrake,

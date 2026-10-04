@@ -74,6 +74,7 @@ import _poolFacevaulter from "../pool/facevaulter.js";
 import _poolFellwarStone from "../pool/fellwar-stone.js";
 import _poolFesteringGoblin from "../pool/festering-goblin.js";
 import _poolFetidHeath from "../pool/fetid-heath.js";
+import _poolFistOfSuns from "../pool/fist-of-suns.js";
 import _poolFlameJavelin from "../pool/flame-javelin.js";
 import _poolFlameRift from "../pool/flame-rift.js";
 import _poolFlameshadowConjuring from "../pool/flameshadow-conjuring.js";
@@ -311,6 +312,7 @@ const shard: CardShard = {
     _poolFellwarStone,
     _poolFesteringGoblin,
     _poolFetidHeath,
+    _poolFistOfSuns,
     _poolFlameJavelin,
     _poolFlameRift,
     _poolFlameshadowConjuring,

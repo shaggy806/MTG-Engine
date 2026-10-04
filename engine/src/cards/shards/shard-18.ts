@@ -155,6 +155,7 @@ import _poolPsychosisCrawler from "../pool/psychosis-crawler.js";
 import _poolPutrefy from "../pool/putrefy.js";
 import _poolQuandrixPledgemage from "../pool/quandrix-pledgemage.js";
 import _poolQuirionSentinel from "../pool/quirion-sentinel.js";
+import _poolRammasEchorAncientShield from "../pool/rammas-echor-ancient-shield.js";
 import _poolRegalImperiosaur from "../pool/regal-imperiosaur.js";
 import _poolResoluteRider from "../pool/resolute-rider.js";
 import _poolRipApart from "../pool/rip-apart.js";
@@ -252,6 +253,7 @@ import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
 import _tokensKrakenTokenSpawningKraken from "../tokens/kraken-token-spawning-kraken.js";
 import _tokensPhyrexianHorrorToken from "../tokens/phyrexian-horror-token.js";
 import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
+import _tokensSpiritTokenKuraTheBoundlessSky from "../tokens/spirit-token-kura-the-boundless-sky.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
 import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
 
@@ -409,6 +411,7 @@ const shard: CardShard = {
     _poolPutrefy,
     _poolQuandrixPledgemage,
     _poolQuirionSentinel,
+    _poolRammasEchorAncientShield,
     _poolRegalImperiosaur,
     _poolResoluteRider,
     _poolRipApart,
@@ -508,6 +511,7 @@ const shard: CardShard = {
     _tokensKrakenTokenSpawningKraken,
     _tokensPhyrexianHorrorToken,
     _tokensRatTokenCantBlock,
+    _tokensSpiritTokenKuraTheBoundlessSky,
     _tokensWhiteDogToken11,
     _tokensZombieDruidToken,
   ],
