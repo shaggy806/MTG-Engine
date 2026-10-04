@@ -557,7 +557,9 @@ Dispute pays, so no token value both refused the chump at 35 and made the trade.
 opponent's life too made chip damage at 40 worth less, and `bot:diff` showed a dozen attacks held
 back. Against b1fb5793 over 12 four-player games: 72 of 28,689 decisions — Staff of Compleation
 and War Room paying life for cards, token trades in blocks, and fewer 1/1 tokens made (March of
-the Multitudes, Raise the Alarm, Dawn of Hope); BACKLOG watches the last.
+the Multitudes, Raise the Alarm, Dawn of Hope); BACKLOG watches the last. The A/B bench behind
+the push (one seat on 9ef11193 against three on b1fb5793, four players, 400 games) came back
+level: 25.9% [21.9, 30.4], three timeouts counted as even.
 
 ## Watching live games for
 
