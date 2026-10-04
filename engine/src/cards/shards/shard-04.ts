@@ -101,6 +101,7 @@ import _poolHerdGnarr from "../pool/herd-gnarr.js";
 import _poolHerosDownfall from "../pool/heros-downfall.js";
 import _poolHorizonOfProgress from "../pool/horizon-of-progress.js";
 import _poolHornOfGreed from "../pool/horn-of-greed.js";
+import _poolHornOfValhalla from "../pool/horn-of-valhalla.js";
 import _poolHornetCobra from "../pool/hornet-cobra.js";
 import _poolHulkingGoblin from "../pool/hulking-goblin.js";
 import _poolHumongulus from "../pool/humongulus.js";
@@ -356,6 +357,7 @@ const shard: CardShard = {
     _poolHerosDownfall,
     _poolHorizonOfProgress,
     _poolHornOfGreed,
+    _poolHornOfValhalla,
     _poolHornetCobra,
     _poolHulkingGoblin,
     _poolHumongulus,

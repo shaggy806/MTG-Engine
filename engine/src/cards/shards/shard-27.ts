@@ -101,6 +101,7 @@ import _poolHornOfRamos from "../pool/horn-of-ramos.js";
 import _poolHussarPatrol from "../pool/hussar-patrol.js";
 import _poolIdyllicGrange from "../pool/idyllic-grange.js";
 import _poolIronManTitanOfInnovation from "../pool/iron-man-titan-of-innovation.js";
+import _poolJaheirasRespite from "../pool/jaheiras-respite.js";
 import _poolJungleShrine from "../pool/jungle-shrine.js";
 import _poolJunkDiver from "../pool/junk-diver.js";
 import _poolKalamaxTheStormsire from "../pool/kalamax-the-stormsire.js";
@@ -116,6 +117,7 @@ import _poolLeatherbackBaloth from "../pool/leatherback-baloth.js";
 import _poolLeatherheadIronGator from "../pool/leatherhead-iron-gator.js";
 import _poolLeoninSunStandard from "../pool/leonin-sun-standard.js";
 import _poolLlanowarStalker from "../pool/llanowar-stalker.js";
+import _poolLongRangeSensor from "../pool/long-range-sensor.js";
 import _poolLordOfTheForsaken from "../pool/lord-of-the-forsaken.js";
 import _poolLumengridWarden from "../pool/lumengrid-warden.js";
 import _poolLuxCannon from "../pool/lux-cannon.js";
@@ -153,6 +155,7 @@ import _poolRegathanFirecat from "../pool/regathan-firecat.js";
 import _poolRestlessCottage from "../pool/restless-cottage.js";
 import _poolRetreatToKazandu from "../pool/retreat-to-kazandu.js";
 import _poolRiverMerfolk from "../pool/river-merfolk.js";
+import _poolRobeOfTheArchmagi from "../pool/robe-of-the-archmagi.js";
 import _poolRodOfRuin from "../pool/rod-of-ruin.js";
 import _poolSagesKnowledge from "../pool/sages-knowledge.js";
 import _poolSangriteBacklash from "../pool/sangrite-backlash.js";
@@ -350,6 +353,7 @@ const shard: CardShard = {
     _poolHussarPatrol,
     _poolIdyllicGrange,
     _poolIronManTitanOfInnovation,
+    _poolJaheirasRespite,
     _poolJungleShrine,
     _poolJunkDiver,
     _poolKalamaxTheStormsire,
@@ -365,6 +369,7 @@ const shard: CardShard = {
     _poolLeatherheadIronGator,
     _poolLeoninSunStandard,
     _poolLlanowarStalker,
+    _poolLongRangeSensor,
     _poolLordOfTheForsaken,
     _poolLumengridWarden,
     _poolLuxCannon,
@@ -402,6 +407,7 @@ const shard: CardShard = {
     _poolRestlessCottage,
     _poolRetreatToKazandu,
     _poolRiverMerfolk,
+    _poolRobeOfTheArchmagi,
     _poolRodOfRuin,
     _poolSagesKnowledge,
     _poolSangriteBacklash,

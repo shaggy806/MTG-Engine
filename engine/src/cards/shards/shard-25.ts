@@ -151,6 +151,7 @@ import _poolOppression from "../pool/oppression.js";
 import _poolOrnithopter from "../pool/ornithopter.js";
 import _poolOrthionHeroOfLavabrink from "../pool/orthion-hero-of-lavabrink.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
+import _poolPhylathWorldSculptor from "../pool/phylath-world-sculptor.js";
 import _poolPhyrexianAltar from "../pool/phyrexian-altar.js";
 import _poolPitilessPlunderer from "../pool/pitiless-plunderer.js";
 import _poolPlanarIncision from "../pool/planar-incision.js";
@@ -179,6 +180,7 @@ import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
 import _poolRoyalAssassin from "../pool/royal-assassin.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
+import _poolSandScout from "../pool/sand-scout.js";
 import _poolSandsower from "../pool/sandsower.js";
 import _poolScourgeOfFleets from "../pool/scourge-of-fleets.js";
 import _poolScuteSwarm from "../pool/scute-swarm.js";
@@ -249,6 +251,7 @@ import _tokensConstructTokenRetrofitterFoundry from "../tokens/construct-token-r
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
+import _tokensRobotTokenBigMotherMouser from "../tokens/robot-token-big-mother-mouser.js";
 import _tokensSpiritClericToken from "../tokens/spirit-cleric-token.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
 import _tokensWurmToken from "../tokens/wurm-token.js";
@@ -403,6 +406,7 @@ const shard: CardShard = {
     _poolOrnithopter,
     _poolOrthionHeroOfLavabrink,
     _poolOscorpResearchTeam,
+    _poolPhylathWorldSculptor,
     _poolPhyrexianAltar,
     _poolPitilessPlunderer,
     _poolPlanarIncision,
@@ -431,6 +435,7 @@ const shard: CardShard = {
     _poolRograkhSonOfRohgahh,
     _poolRoyalAssassin,
     _poolRumblingBaloth,
+    _poolSandScout,
     _poolSandsower,
     _poolScourgeOfFleets,
     _poolScuteSwarm,
@@ -503,6 +508,7 @@ const shard: CardShard = {
     _tokensElfWarriorToken,
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,
+    _tokensRobotTokenBigMotherMouser,
     _tokensSpiritClericToken,
     _tokensWizardTokenKuja,
     _tokensWurmToken,

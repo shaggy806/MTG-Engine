@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B29) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B30) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -361,7 +361,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 29 (2026-10-04, the no-engine-work pass)** triaged ranks 4837–5011: 58 authored (Sporocyst, Braids, Cabal Minion, On the Trail, Barbarian Ring, Deliberate and 53 more — `top5000-batch-29a`–`h.test.ts`); 76 blocked (`B29.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (4), `effect:choices-by-other-players` (2), `static:combat-restriction-extensions` (2), `mechanic:face-down` (2), `mechanic:the-ring` (2).
 
-Past rank 5011, nothing is triaged.
+- **Batch 30 (2026-10-04, the no-engine-work pass)** triaged ranks 5011–5251: 92 authored (Sweet-Gum Recluse, Lord of Atlantis, Soul Snuffers, Carnifex Demon, Horn of Valhalla and 87 more — `top5000-batch-30a`–`h.test.ts`); 107 blocked (`B30.json`), each skipped at the first sign of engine work. Most-cited blockers: `new:unverified-in-mass-pass` (11), `condition:devotion` (3), `keyword:miracle` (2), `mechanic:dice-rolling` (2), `mechanic:the-ring` (2).
+
+Past rank 5251, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

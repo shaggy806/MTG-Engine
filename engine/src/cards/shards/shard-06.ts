@@ -40,6 +40,7 @@ import _poolBurrowing from "../pool/burrowing.js";
 import _poolCallToMind from "../pool/call-to-mind.js";
 import _poolCanopySpider from "../pool/canopy-spider.js";
 import _poolCapitalCity from "../pool/capital-city.js";
+import _poolCaptureOfJingzhou from "../pool/capture-of-jingzhou.js";
 import _poolCasualtiesOfWar from "../pool/casualties-of-war.js";
 import _poolCentaurHealer from "../pool/centaur-healer.js";
 import _poolCharcoalDiamond from "../pool/charcoal-diamond.js";
@@ -92,6 +93,7 @@ import _poolFrozenShade from "../pool/frozen-shade.js";
 import _poolFyndhornElves from "../pool/fyndhorn-elves.js";
 import _poolGalvanicBlast from "../pool/galvanic-blast.js";
 import _poolGeistOfTheArchives from "../pool/geist-of-the-archives.js";
+import _poolGenerousEnt from "../pool/generous-ent.js";
 import _poolGhostfireSlice from "../pool/ghostfire-slice.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
 import _poolGlimmervoid from "../pool/glimmervoid.js";
@@ -189,6 +191,7 @@ import _poolSilentObserver from "../pool/silent-observer.js";
 import _poolSilverquillCampus from "../pool/silverquill-campus.js";
 import _poolSizzle from "../pool/sizzle.js";
 import _poolSkirsdagFlayer from "../pool/skirsdag-flayer.js";
+import _poolSkyknightSquire from "../pool/skyknight-squire.js";
 import _poolSmokeBomb from "../pool/smoke-bomb.js";
 import _poolSmolderingCrater from "../pool/smoldering-crater.js";
 import _poolSnappingGnarlid from "../pool/snapping-gnarlid.js";
@@ -205,6 +208,7 @@ import _poolSwordOfLightAndShadow from "../pool/sword-of-light-and-shadow.js";
 import _poolTakenumaAbandonedMire from "../pool/takenuma-abandoned-mire.js";
 import _poolTeeterpeakAmbusher from "../pool/teeterpeak-ambusher.js";
 import _poolTelimtorsDarts from "../pool/telimtors-darts.js";
+import _poolTheBoulderReadyToRumble from "../pool/the-boulder-ready-to-rumble.js";
 import _poolTheGooseMother from "../pool/the-goose-mother.js";
 import _poolThopterEngineer from "../pool/thopter-engineer.js";
 import _poolThrabenValiant from "../pool/thraben-valiant.js";
@@ -292,6 +296,7 @@ const shard: CardShard = {
     _poolCallToMind,
     _poolCanopySpider,
     _poolCapitalCity,
+    _poolCaptureOfJingzhou,
     _poolCasualtiesOfWar,
     _poolCentaurHealer,
     _poolCharcoalDiamond,
@@ -344,6 +349,7 @@ const shard: CardShard = {
     _poolFyndhornElves,
     _poolGalvanicBlast,
     _poolGeistOfTheArchives,
+    _poolGenerousEnt,
     _poolGhostfireSlice,
     _poolGhostlyPrison,
     _poolGlimmervoid,
@@ -441,6 +447,7 @@ const shard: CardShard = {
     _poolSilverquillCampus,
     _poolSizzle,
     _poolSkirsdagFlayer,
+    _poolSkyknightSquire,
     _poolSmokeBomb,
     _poolSmolderingCrater,
     _poolSnappingGnarlid,
@@ -457,6 +464,7 @@ const shard: CardShard = {
     _poolTakenumaAbandonedMire,
     _poolTeeterpeakAmbusher,
     _poolTelimtorsDarts,
+    _poolTheBoulderReadyToRumble,
     _poolTheGooseMother,
     _poolThopterEngineer,
     _poolThrabenValiant,

@@ -14,6 +14,7 @@ import _poolArchmageOfRunes from "../pool/archmage-of-runes.js";
 import _poolArchonOfSunsGrace from "../pool/archon-of-suns-grace.js";
 import _poolArcticFlats from "../pool/arctic-flats.js";
 import _poolArgivianArchaeologist from "../pool/argivian-archaeologist.js";
+import _poolArwenMortalQueen from "../pool/arwen-mortal-queen.js";
 import _poolArwenWeaverOfHope from "../pool/arwen-weaver-of-hope.js";
 import _poolAsgardianCitadel from "../pool/asgardian-citadel.js";
 import _poolAspiringAeronaut from "../pool/aspiring-aeronaut.js";
@@ -204,6 +205,7 @@ import _poolStormwatchEagle from "../pool/stormwatch-eagle.js";
 import _poolStreamHopper from "../pool/stream-hopper.js";
 import _poolSummonIxion from "../pool/summon-ixion.js";
 import _poolSurvivorsEncampment from "../pool/survivors-encampment.js";
+import _poolSylvanAwakening from "../pool/sylvan-awakening.js";
 import _poolSylvanScrying from "../pool/sylvan-scrying.js";
 import _poolSythisHarvestsHand from "../pool/sythis-harvests-hand.js";
 import _poolTaxiDriver from "../pool/taxi-driver.js";
@@ -234,6 +236,7 @@ import _poolWallOfDenial from "../pool/wall-of-denial.js";
 import _poolWatchfulAutomaton from "../pool/watchful-automaton.js";
 import _poolWaveWingElemental from "../pool/wave-wing-elemental.js";
 import _poolWeiInfantry from "../pool/wei-infantry.js";
+import _poolWickerboughElder from "../pool/wickerbough-elder.js";
 import _poolWildfire from "../pool/wildfire.js";
 import _poolWilyGoblin from "../pool/wily-goblin.js";
 import _poolWitnessOfTomorrows from "../pool/witness-of-tomorrows.js";
@@ -268,6 +271,7 @@ const shard: CardShard = {
     _poolArchonOfSunsGrace,
     _poolArcticFlats,
     _poolArgivianArchaeologist,
+    _poolArwenMortalQueen,
     _poolArwenWeaverOfHope,
     _poolAsgardianCitadel,
     _poolAspiringAeronaut,
@@ -458,6 +462,7 @@ const shard: CardShard = {
     _poolStreamHopper,
     _poolSummonIxion,
     _poolSurvivorsEncampment,
+    _poolSylvanAwakening,
     _poolSylvanScrying,
     _poolSythisHarvestsHand,
     _poolTaxiDriver,
@@ -488,6 +493,7 @@ const shard: CardShard = {
     _poolWatchfulAutomaton,
     _poolWaveWingElemental,
     _poolWeiInfantry,
+    _poolWickerboughElder,
     _poolWildfire,
     _poolWilyGoblin,
     _poolWitnessOfTomorrows,

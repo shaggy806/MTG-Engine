@@ -206,6 +206,7 @@ import _poolStormscapeApprentice from "../pool/stormscape-apprentice.js";
 import _poolSuddenStrength from "../pool/sudden-strength.js";
 import _poolSunSentinel from "../pool/sun-sentinel.js";
 import _poolSungracePegasus from "../pool/sungrace-pegasus.js";
+import _poolSuspiciousBookcase from "../pool/suspicious-bookcase.js";
 import _poolSwordOfFireAndIce from "../pool/sword-of-fire-and-ice.js";
 import _poolSyphonSliver from "../pool/syphon-sliver.js";
 import _poolSyrGingerTheMealEnder from "../pool/syr-ginger-the-meal-ender.js";
@@ -217,6 +218,7 @@ import _poolThornglintBridge from "../pool/thornglint-bridge.js";
 import _poolThunderWall from "../pool/thunder-wall.js";
 import _poolTimberlandGuide from "../pool/timberland-guide.js";
 import _poolTimeWipe from "../pool/time-wipe.js";
+import _poolToothyImaginaryFriend from "../pool/toothy-imaginary-friend.js";
 import _poolTorGiant from "../pool/tor-giant.js";
 import _poolTowerOfFortunes from "../pool/tower-of-fortunes.js";
 import _poolTrainingGrounds from "../pool/training-grounds.js";
@@ -229,10 +231,12 @@ import _poolUndyingEvil from "../pool/undying-evil.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
 import _poolUthrosResearchCraft from "../pool/uthros-research-craft.js";
 import _poolValkyriorSkyrider from "../pool/valkyrior-skyrider.js";
+import _poolValleyQuestcaller from "../pool/valley-questcaller.js";
 import _poolVenomousHierophant from "../pool/venomous-hierophant.js";
 import _poolVigilantBaloth from "../pool/vigilant-baloth.js";
 import _poolViviOrnitier from "../pool/vivi-ornitier.js";
 import _poolVolcanicGeyser from "../pool/volcanic-geyser.js";
+import _poolVoldarenEpicure from "../pool/voldaren-epicure.js";
 import _poolVoyageHome from "../pool/voyage-home.js";
 import _poolWakandanDroneFlock from "../pool/wakandan-drone-flock.js";
 import _poolWallOfLimbs from "../pool/wall-of-limbs.js";
@@ -246,12 +250,15 @@ import _poolWoebearer from "../pool/woebearer.js";
 import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
 import _poolWoodfallPrimus from "../pool/woodfall-primus.js";
 import _poolWoodlandStream from "../pool/woodland-stream.js";
+import _poolXolatoyacTheSmilingFlood from "../pool/xolatoyac-the-smiling-flood.js";
 import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
+import _poolYsgardsCall from "../pool/ysgards-call.js";
 import _poolZacamaPrimalCalamity from "../pool/zacama-primal-calamity.js";
 import _poolZephyrScribe from "../pool/zephyr-scribe.js";
 import _poolZoZuThePunisher from "../pool/zo-zu-the-punisher.js";
 import _poolZodiacDog from "../pool/zodiac-dog.js";
+import _poolZukoFirebendingMaster from "../pool/zuko-firebending-master.js";
 import _tokensAstartesWarriorToken from "../tokens/astartes-warrior-token.js";
 import _tokensCragflame from "../tokens/cragflame.js";
 import _tokensDrakeToken from "../tokens/drake-token.js";
@@ -470,6 +477,7 @@ const shard: CardShard = {
     _poolSuddenStrength,
     _poolSunSentinel,
     _poolSungracePegasus,
+    _poolSuspiciousBookcase,
     _poolSwordOfFireAndIce,
     _poolSyphonSliver,
     _poolSyrGingerTheMealEnder,
@@ -481,6 +489,7 @@ const shard: CardShard = {
     _poolThunderWall,
     _poolTimberlandGuide,
     _poolTimeWipe,
+    _poolToothyImaginaryFriend,
     _poolTorGiant,
     _poolTowerOfFortunes,
     _poolTrainingGrounds,
@@ -493,10 +502,12 @@ const shard: CardShard = {
     _poolUnyieldingKrumar,
     _poolUthrosResearchCraft,
     _poolValkyriorSkyrider,
+    _poolValleyQuestcaller,
     _poolVenomousHierophant,
     _poolVigilantBaloth,
     _poolViviOrnitier,
     _poolVolcanicGeyser,
+    _poolVoldarenEpicure,
     _poolVoyageHome,
     _poolWakandanDroneFlock,
     _poolWallOfLimbs,
@@ -510,12 +521,15 @@ const shard: CardShard = {
     _poolWolfwillowHaven,
     _poolWoodfallPrimus,
     _poolWoodlandStream,
+    _poolXolatoyacTheSmilingFlood,
     _poolYavimayaAncients,
     _poolYotianSoldier,
+    _poolYsgardsCall,
     _poolZacamaPrimalCalamity,
     _poolZephyrScribe,
     _poolZoZuThePunisher,
     _poolZodiacDog,
+    _poolZukoFirebendingMaster,
   ],
   tokens: [
     _tokensAstartesWarriorToken,

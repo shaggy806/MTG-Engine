@@ -18,6 +18,7 @@ import _poolAmbushParatrooper from "../pool/ambush-paratrooper.js";
 import _poolAnaraWolvidFamiliar from "../pool/anara-wolvid-familiar.js";
 import _poolAnzragTheQuakeMole from "../pool/anzrag-the-quake-mole.js";
 import _poolArcanisTheOmnipotent from "../pool/arcanis-the-omnipotent.js";
+import _poolAuntMay from "../pool/aunt-may.js";
 import _poolAuraBlast from "../pool/aura-blast.js";
 import _poolAzoriusLocket from "../pool/azorius-locket.js";
 import _poolAzusaLostButSeeking from "../pool/azusa-lost-but-seeking.js";
@@ -85,6 +86,7 @@ import _poolForensicGadgeteer from "../pool/forensic-gadgeteer.js";
 import _poolFoundationBreaker from "../pool/foundation-breaker.js";
 import _poolFrostOgre from "../pool/frost-ogre.js";
 import _poolGadrakTheCrownScourge from "../pool/gadrak-the-crown-scourge.js";
+import _poolGlacierwoodSiege from "../pool/glacierwood-siege.js";
 import _poolGlaringAegis from "../pool/glaring-aegis.js";
 import _poolGlasspoolShore from "../pool/glasspool-shore.js";
 import _poolGoldenTailDisciple from "../pool/golden-tail-disciple.js";
@@ -172,6 +174,7 @@ import _poolRisingPopulace from "../pool/rising-populace.js";
 import _poolRoofstalkerWight from "../pool/roofstalker-wight.js";
 import _poolSalvagerOfSecrets from "../pool/salvager-of-secrets.js";
 import _poolSandsOfDelirium from "../pool/sands-of-delirium.js";
+import _poolScrollshift from "../pool/scrollshift.js";
 import _poolSeaEagle from "../pool/sea-eagle.js";
 import _poolSeaScryer from "../pool/sea-scryer.js";
 import _poolSeasonalRitual from "../pool/seasonal-ritual.js";
@@ -193,6 +196,7 @@ import _poolSpiritOfMalevolence from "../pool/spirit-of-malevolence.js";
 import _poolSplashPortal from "../pool/splash-portal.js";
 import _poolStockingThePantry from "../pool/stocking-the-pantry.js";
 import _poolSulfurousMire from "../pool/sulfurous-mire.js";
+import _poolSweetGumRecluse from "../pool/sweet-gum-recluse.js";
 import _poolSyphonFuel from "../pool/syphon-fuel.js";
 import _poolTalasWarrior from "../pool/talas-warrior.js";
 import _poolTalismanOfImpulse from "../pool/talisman-of-impulse.js";
@@ -260,6 +264,7 @@ const shard: CardShard = {
     _poolAnaraWolvidFamiliar,
     _poolAnzragTheQuakeMole,
     _poolArcanisTheOmnipotent,
+    _poolAuntMay,
     _poolAuraBlast,
     _poolAzoriusLocket,
     _poolAzusaLostButSeeking,
@@ -327,6 +332,7 @@ const shard: CardShard = {
     _poolFoundationBreaker,
     _poolFrostOgre,
     _poolGadrakTheCrownScourge,
+    _poolGlacierwoodSiege,
     _poolGlaringAegis,
     _poolGlasspoolShore,
     _poolGoldenTailDisciple,
@@ -414,6 +420,7 @@ const shard: CardShard = {
     _poolRoofstalkerWight,
     _poolSalvagerOfSecrets,
     _poolSandsOfDelirium,
+    _poolScrollshift,
     _poolSeaEagle,
     _poolSeaScryer,
     _poolSeasonalRitual,
@@ -435,6 +442,7 @@ const shard: CardShard = {
     _poolSplashPortal,
     _poolStockingThePantry,
     _poolSulfurousMire,
+    _poolSweetGumRecluse,
     _poolSyphonFuel,
     _poolTalasWarrior,
     _poolTalismanOfImpulse,

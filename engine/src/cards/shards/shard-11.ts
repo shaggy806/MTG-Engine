@@ -22,10 +22,12 @@ import _poolBattlemagesBracers from "../pool/battlemages-bracers.js";
 import _poolBeaconOfUnrest from "../pool/beacon-of-unrest.js";
 import _poolBehindTheScenes from "../pool/behind-the-scenes.js";
 import _poolBerserkersOfBloodRidge from "../pool/berserkers-of-blood-ridge.js";
+import _poolBigMotherMouser from "../pool/big-mother-mouser.js";
 import _poolBladeSplicer from "../pool/blade-splicer.js";
 import _poolBlaze from "../pool/blaze.js";
 import _poolBloodVassal from "../pool/blood-vassal.js";
 import _poolBlueSunsZenith from "../pool/blue-suns-zenith.js";
+import _poolBonehoard from "../pool/bonehoard.js";
 import _poolBoomerang from "../pool/boomerang.js";
 import _poolBorderPatrol from "../pool/border-patrol.js";
 import _poolBorosGuildmage from "../pool/boros-guildmage.js";
@@ -38,6 +40,7 @@ import _poolCallerOfGales from "../pool/caller-of-gales.js";
 import _poolCamaraderie from "../pool/camaraderie.js";
 import _poolCapashenTemplar from "../pool/capashen-templar.js";
 import _poolCathedralSanctifier from "../pool/cathedral-sanctifier.js";
+import _poolChainsOfCustody from "../pool/chains-of-custody.js";
 import _poolChosenByHeliod from "../pool/chosen-by-heliod.js";
 import _poolCircleOfPower from "../pool/circle-of-power.js";
 import _poolCitanulStalwart from "../pool/citanul-stalwart.js";
@@ -69,6 +72,7 @@ import _poolEnduringVitality from "../pool/enduring-vitality.js";
 import _poolEpicureOfBlood from "../pool/epicure-of-blood.js";
 import _poolFacetReader from "../pool/facet-reader.js";
 import _poolFanaticOfRhonas from "../pool/fanatic-of-rhonas.js";
+import _poolFaramirStewardOfGondor from "../pool/faramir-steward-of-gondor.js";
 import _poolFarhavenElf from "../pool/farhaven-elf.js";
 import _poolFiendArtisan from "../pool/fiend-artisan.js";
 import _poolFieryIslet from "../pool/fiery-islet.js";
@@ -137,6 +141,7 @@ import _poolLilianasSteward from "../pool/lilianas-steward.js";
 import _poolLlanowarVanguard from "../pool/llanowar-vanguard.js";
 import _poolLoamdraggerGiant from "../pool/loamdragger-giant.js";
 import _poolManaCylix from "../pool/mana-cylix.js";
+import _poolMaraudingMako from "../pool/marauding-mako.js";
 import _poolMercilessEnforcers from "../pool/merciless-enforcers.js";
 import _poolMistcutterHydra from "../pool/mistcutter-hydra.js";
 import _poolMistyPalmsOasis from "../pool/misty-palms-oasis.js";
@@ -311,10 +316,12 @@ const shard: CardShard = {
     _poolBeaconOfUnrest,
     _poolBehindTheScenes,
     _poolBerserkersOfBloodRidge,
+    _poolBigMotherMouser,
     _poolBladeSplicer,
     _poolBlaze,
     _poolBloodVassal,
     _poolBlueSunsZenith,
+    _poolBonehoard,
     _poolBoomerang,
     _poolBorderPatrol,
     _poolBorosGuildmage,
@@ -327,6 +334,7 @@ const shard: CardShard = {
     _poolCamaraderie,
     _poolCapashenTemplar,
     _poolCathedralSanctifier,
+    _poolChainsOfCustody,
     _poolChosenByHeliod,
     _poolCircleOfPower,
     _poolCitanulStalwart,
@@ -358,6 +366,7 @@ const shard: CardShard = {
     _poolEpicureOfBlood,
     _poolFacetReader,
     _poolFanaticOfRhonas,
+    _poolFaramirStewardOfGondor,
     _poolFarhavenElf,
     _poolFiendArtisan,
     _poolFieryIslet,
@@ -426,6 +435,7 @@ const shard: CardShard = {
     _poolLlanowarVanguard,
     _poolLoamdraggerGiant,
     _poolManaCylix,
+    _poolMaraudingMako,
     _poolMercilessEnforcers,
     _poolMistcutterHydra,
     _poolMistyPalmsOasis,

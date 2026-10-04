@@ -112,6 +112,7 @@ import _poolJoriEnRuinDiver from "../pool/jori-en-ruin-diver.js";
 import _poolJunkWinder from "../pool/junk-winder.js";
 import _poolJwarIsleRefuge from "../pool/jwar-isle-refuge.js";
 import _poolKalonianBehemoth from "../pool/kalonian-behemoth.js";
+import _poolKamahlHeartOfKrosa from "../pool/kamahl-heart-of-krosa.js";
 import _poolKarlovOfTheGhostCouncil from "../pool/karlov-of-the-ghost-council.js";
 import _poolKarnsTemporalSundering from "../pool/karns-temporal-sundering.js";
 import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
@@ -221,6 +222,7 @@ import _poolUrtetRemnantOfMemnarch from "../pool/urtet-remnant-of-memnarch.js";
 import _poolUrzasTower from "../pool/urzas-tower.js";
 import _poolVampireOpportunist from "../pool/vampire-opportunist.js";
 import _poolVastwoodGorger from "../pool/vastwood-gorger.js";
+import _poolVastwoodSurge from "../pool/vastwood-surge.js";
 import _poolVerdantForce from "../pool/verdant-force.js";
 import _poolVeteranArmorer from "../pool/veteran-armorer.js";
 import _poolViridianClaw from "../pool/viridian-claw.js";
@@ -361,6 +363,7 @@ const shard: CardShard = {
     _poolJunkWinder,
     _poolJwarIsleRefuge,
     _poolKalonianBehemoth,
+    _poolKamahlHeartOfKrosa,
     _poolKarlovOfTheGhostCouncil,
     _poolKarnsTemporalSundering,
     _poolKasimirTheLoneWolf,
@@ -470,6 +473,7 @@ const shard: CardShard = {
     _poolUrzasTower,
     _poolVampireOpportunist,
     _poolVastwoodGorger,
+    _poolVastwoodSurge,
     _poolVerdantForce,
     _poolVeteranArmorer,
     _poolViridianClaw,

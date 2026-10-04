@@ -15,6 +15,7 @@ import _poolAnnul from "../pool/annul.js";
 import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
 import _poolAzureDrake from "../pool/azure-drake.js";
+import _poolBantCharm from "../pool/bant-charm.js";
 import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
 import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
@@ -45,6 +46,7 @@ import _poolDarkDeal from "../pool/dark-deal.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
 import _poolDerangedAssistant from "../pool/deranged-assistant.js";
+import _poolDiamondWeapon from "../pool/diamond-weapon.js";
 import _poolDismalBackwater from "../pool/dismal-backwater.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
@@ -246,6 +248,7 @@ const shard: CardShard = {
     _poolArchweaver,
     _poolArtisansSorrow,
     _poolAzureDrake,
+    _poolBantCharm,
     _poolBarrageOfExpendables,
     _poolBattleHymn,
     _poolBeastWhisperer,
@@ -276,6 +279,7 @@ const shard: CardShard = {
     _poolDefiantSalvager,
     _poolDejaVu,
     _poolDerangedAssistant,
+    _poolDiamondWeapon,
     _poolDismalBackwater,
     _poolDragonSniper,
     _poolDurkwoodBoars,

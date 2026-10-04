@@ -77,6 +77,7 @@ import _poolEvacuation from "../pool/evacuation.js";
 import _poolEverflowingChalice from "../pool/everflowing-chalice.js";
 import _poolExcavatedWall from "../pool/excavated-wall.js";
 import _poolExtinguisherBattleship from "../pool/extinguisher-battleship.js";
+import _poolFecundity from "../pool/fecundity.js";
 import _poolFeedTheSwarm from "../pool/feed-the-swarm.js";
 import _poolFeralAbomination from "../pool/feral-abomination.js";
 import _poolFinalReward from "../pool/final-reward.js";
@@ -182,6 +183,7 @@ import _poolRealmwalker from "../pool/realmwalker.js";
 import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.js";
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
 import _poolResplendentAngel from "../pool/resplendent-angel.js";
+import _poolRestlessVents from "../pool/restless-vents.js";
 import _poolRiotSpikes from "../pool/riot-spikes.js";
 import _poolRipjawRaptor from "../pool/ripjaw-raptor.js";
 import _poolRiverchurnMonument from "../pool/riverchurn-monument.js";
@@ -190,6 +192,7 @@ import _poolRumblingSentry from "../pool/rumbling-sentry.js";
 import _poolRushwoodDryad from "../pool/rushwood-dryad.js";
 import _poolRustvaleBridge from "../pool/rustvale-bridge.js";
 import _poolSacredNectar from "../pool/sacred-nectar.js";
+import _poolSaheeliTheSunsBrilliance from "../pool/saheeli-the-suns-brilliance.js";
 import _poolSandstoneOracle from "../pool/sandstone-oracle.js";
 import _poolSanguineBond from "../pool/sanguine-bond.js";
 import _poolSavageVentmaw from "../pool/savage-ventmaw.js";
@@ -203,7 +206,9 @@ import _poolSiegeRhino from "../pool/siege-rhino.js";
 import _poolSilentArtisan from "../pool/silent-artisan.js";
 import _poolSilundiIsle from "../pool/silundi-isle.js";
 import _poolSimplify from "../pool/simplify.js";
+import _poolSlashTheRanks from "../pool/slash-the-ranks.js";
 import _poolSmellFear from "../pool/smell-fear.js";
+import _poolSoulSnuffers from "../pool/soul-snuffers.js";
 import _poolSozinsComet from "../pool/sozins-comet.js";
 import _poolSpatialContortion from "../pool/spatial-contortion.js";
 import _poolSphinxOfEnlightenment from "../pool/sphinx-of-enlightenment.js";
@@ -351,6 +356,7 @@ const shard: CardShard = {
     _poolEverflowingChalice,
     _poolExcavatedWall,
     _poolExtinguisherBattleship,
+    _poolFecundity,
     _poolFeedTheSwarm,
     _poolFeralAbomination,
     _poolFinalReward,
@@ -456,6 +462,7 @@ const shard: CardShard = {
     _poolRekiTheHistoryOfKamigawa,
     _poolRenegadesGetaway,
     _poolResplendentAngel,
+    _poolRestlessVents,
     _poolRiotSpikes,
     _poolRipjawRaptor,
     _poolRiverchurnMonument,
@@ -464,6 +471,7 @@ const shard: CardShard = {
     _poolRushwoodDryad,
     _poolRustvaleBridge,
     _poolSacredNectar,
+    _poolSaheeliTheSunsBrilliance,
     _poolSandstoneOracle,
     _poolSanguineBond,
     _poolSavageVentmaw,
@@ -477,7 +485,9 @@ const shard: CardShard = {
     _poolSilentArtisan,
     _poolSilundiIsle,
     _poolSimplify,
+    _poolSlashTheRanks,
     _poolSmellFear,
+    _poolSoulSnuffers,
     _poolSozinsComet,
     _poolSpatialContortion,
     _poolSphinxOfEnlightenment,

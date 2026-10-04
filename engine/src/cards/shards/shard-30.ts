@@ -45,6 +45,7 @@ import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolCemeteryTampering from "../pool/cemetery-tampering.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
+import _poolChromaticSphere from "../pool/chromatic-sphere.js";
 import _poolCitadelGate from "../pool/citadel-gate.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
 import _poolCloudOfFaeries from "../pool/cloud-of-faeries.js";
@@ -81,6 +82,7 @@ import _poolElasIlKorSadisticPilgrim from "../pool/elas-il-kor-sadistic-pilgrim.
 import _poolElvishWarmaster from "../pool/elvish-warmaster.js";
 import _poolEmeraldMedallion from "../pool/emerald-medallion.js";
 import _poolEnergizer from "../pool/energizer.js";
+import _poolEngulfTheShore from "../pool/engulf-the-shore.js";
 import _poolEnhancedAwareness from "../pool/enhanced-awareness.js";
 import _poolEreborFlamesmith from "../pool/erebor-flamesmith.js";
 import _poolEssenceAnchor from "../pool/essence-anchor.js";
@@ -301,6 +303,7 @@ const shard: CardShard = {
     _poolCelestialForce,
     _poolCemeteryTampering,
     _poolChainToMemory,
+    _poolChromaticSphere,
     _poolCitadelGate,
     _poolClockOfOmens,
     _poolCloudOfFaeries,
@@ -337,6 +340,7 @@ const shard: CardShard = {
     _poolElvishWarmaster,
     _poolEmeraldMedallion,
     _poolEnergizer,
+    _poolEngulfTheShore,
     _poolEnhancedAwareness,
     _poolEreborFlamesmith,
     _poolEssenceAnchor,

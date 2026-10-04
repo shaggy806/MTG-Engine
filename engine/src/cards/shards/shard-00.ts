@@ -14,6 +14,7 @@ import _poolAncientStoneIdol from "../pool/ancient-stone-idol.js";
 import _poolAngelheartProtector from "../pool/angelheart-protector.js";
 import _poolAngelicGift from "../pool/angelic-gift.js";
 import _poolArcaneSanctum from "../pool/arcane-sanctum.js";
+import _poolArvadTheCursed from "../pool/arvad-the-cursed.js";
 import _poolAvenCloudchaser from "../pool/aven-cloudchaser.js";
 import _poolAvenSentry from "../pool/aven-sentry.js";
 import _poolAwakeningZone from "../pool/awakening-zone.js";
@@ -33,6 +34,7 @@ import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
 import _poolBrigidDounsMind from "../pool/brigid-douns-mind.js";
 import _poolBrilliantRestoration from "../pool/brilliant-restoration.js";
 import _poolBristlyBillSpineSower from "../pool/bristly-bill-spine-sower.js";
+import _poolBroadsideBombardiers from "../pool/broadside-bombardiers.js";
 import _poolBronzeGuardian from "../pool/bronze-guardian.js";
 import _poolBronzeSword from "../pool/bronze-sword.js";
 import _poolBroodhunterWurm from "../pool/broodhunter-wurm.js";
@@ -108,6 +110,7 @@ import _poolInGarruksWake from "../pool/in-garruks-wake.js";
 import _poolIncreasingVengeance from "../pool/increasing-vengeance.js";
 import _poolIronLance from "../pool/iron-lance.js";
 import _poolIvyDancer from "../pool/ivy-dancer.js";
+import _poolIzoniThousandEyed from "../pool/izoni-thousand-eyed.js";
 import _poolJacesIngenuity from "../pool/jaces-ingenuity.js";
 import _poolJayasFirenado from "../pool/jayas-firenado.js";
 import _poolJukaiMessenger from "../pool/jukai-messenger.js";
@@ -204,6 +207,7 @@ import _poolSpectacleSummit from "../pool/spectacle-summit.js";
 import _poolSpellStutter from "../pool/spell-stutter.js";
 import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
+import _poolStitchInTime from "../pool/stitch-in-time.js";
 import _poolStoneworkPuma from "../pool/stonework-puma.js";
 import _poolStrixSerenade from "../pool/strix-serenade.js";
 import _poolStrongarmThug from "../pool/strongarm-thug.js";
@@ -275,6 +279,7 @@ const shard: CardShard = {
     _poolAngelheartProtector,
     _poolAngelicGift,
     _poolArcaneSanctum,
+    _poolArvadTheCursed,
     _poolAvenCloudchaser,
     _poolAvenSentry,
     _poolAwakeningZone,
@@ -294,6 +299,7 @@ const shard: CardShard = {
     _poolBrigidDounsMind,
     _poolBrilliantRestoration,
     _poolBristlyBillSpineSower,
+    _poolBroadsideBombardiers,
     _poolBronzeGuardian,
     _poolBronzeSword,
     _poolBroodhunterWurm,
@@ -369,6 +375,7 @@ const shard: CardShard = {
     _poolIncreasingVengeance,
     _poolIronLance,
     _poolIvyDancer,
+    _poolIzoniThousandEyed,
     _poolJacesIngenuity,
     _poolJayasFirenado,
     _poolJukaiMessenger,
@@ -465,6 +472,7 @@ const shard: CardShard = {
     _poolSpellStutter,
     _poolSpinedMegalodon,
     _poolStarkIndustries,
+    _poolStitchInTime,
     _poolStoneworkPuma,
     _poolStrixSerenade,
     _poolStrongarmThug,

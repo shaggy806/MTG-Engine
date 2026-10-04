@@ -154,7 +154,9 @@ function parseTypeLine(typeLine) {
   const words = frontPart.trim().split(/\s+/);
   const supertypes = words.filter((w) => KNOWN_SUPERTYPES.has(w)).map((w) => w.toLowerCase());
   const types = words.filter((w) => KNOWN_TYPES.has(w)).map((w) => w.toLowerCase());
-  const subtypes = subPart ? subPart.trim().split(/\s+/) : [];
+  // "Time Lord" is one creature type with a space in it (rule 205.3m), so
+  // it's kept whole through the split.
+  const subtypes = subPart ? subPart.trim().replace(/\bTime Lord\b/g, "Time_Lord").split(/\s+/).map((s) => s.replace("Time_Lord", "Time Lord")) : [];
   return { supertypes, types, subtypes };
 }
 

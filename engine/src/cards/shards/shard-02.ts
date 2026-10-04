@@ -22,6 +22,7 @@ import _poolBaskingBroodscale from "../pool/basking-broodscale.js";
 import _poolBastionMastodon from "../pool/bastion-mastodon.js";
 import _poolBatterhorn from "../pool/batterhorn.js";
 import _poolBeaconHawk from "../pool/beacon-hawk.js";
+import _poolBeastcallerSavant from "../pool/beastcaller-savant.js";
 import _poolBlackDragonGate from "../pool/black-dragon-gate.js";
 import _poolBlightMound from "../pool/blight-mound.js";
 import _poolBogWraith from "../pool/bog-wraith.js";
@@ -91,6 +92,7 @@ import _poolFrontlineRebel from "../pool/frontline-rebel.js";
 import _poolGallantCitizen from "../pool/gallant-citizen.js";
 import _poolGarruksUprising from "../pool/garruks-uprising.js";
 import _poolGerrardsIrregulars from "../pool/gerrards-irregulars.js";
+import _poolGiantAnkheg from "../pool/giant-ankheg.js";
 import _poolGlaringFleshraker from "../pool/glaring-fleshraker.js";
 import _poolGolgariLocket from "../pool/golgari-locket.js";
 import _poolGrayscaledGharial from "../pool/grayscaled-gharial.js";
@@ -211,6 +213,7 @@ import _poolSwordsToPlowshares from "../pool/swords-to-plowshares.js";
 import _poolSylvanOffering from "../pool/sylvan-offering.js";
 import _poolSymbolOfUnsummoning from "../pool/symbol-of-unsummoning.js";
 import _poolTheSurgicalBay from "../pool/the-surgical-bay.js";
+import _poolTheThirteenthDoctor from "../pool/the-thirteenth-doctor.js";
 import _poolThrillingDiscovery from "../pool/thrilling-discovery.js";
 import _poolThrummingHivepool from "../pool/thrumming-hivepool.js";
 import _poolTidespoutTyrant from "../pool/tidespout-tyrant.js";
@@ -268,6 +271,7 @@ const shard: CardShard = {
     _poolBastionMastodon,
     _poolBatterhorn,
     _poolBeaconHawk,
+    _poolBeastcallerSavant,
     _poolBlackDragonGate,
     _poolBlightMound,
     _poolBogWraith,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolGallantCitizen,
     _poolGarruksUprising,
     _poolGerrardsIrregulars,
+    _poolGiantAnkheg,
     _poolGlaringFleshraker,
     _poolGolgariLocket,
     _poolGrayscaledGharial,
@@ -457,6 +462,7 @@ const shard: CardShard = {
     _poolSylvanOffering,
     _poolSymbolOfUnsummoning,
     _poolTheSurgicalBay,
+    _poolTheThirteenthDoctor,
     _poolThrillingDiscovery,
     _poolThrummingHivepool,
     _poolTidespoutTyrant,

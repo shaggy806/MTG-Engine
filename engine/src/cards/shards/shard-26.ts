@@ -226,6 +226,7 @@ import _poolTreasureHunter from "../pool/treasure-hunter.js";
 import _poolTreebeardGraciousHost from "../pool/treebeard-gracious-host.js";
 import _poolTritonShorestalker from "../pool/triton-shorestalker.js";
 import _poolUktabiOrangutan from "../pool/uktabi-orangutan.js";
+import _poolUnderworldConnections from "../pool/underworld-connections.js";
 import _poolUtopiaSprawl from "../pool/utopia-sprawl.js";
 import _poolVarinaLichQueen from "../pool/varina-lich-queen.js";
 import _poolVaultOfTheArchangel from "../pool/vault-of-the-archangel.js";
@@ -481,6 +482,7 @@ const shard: CardShard = {
     _poolTreebeardGraciousHost,
     _poolTritonShorestalker,
     _poolUktabiOrangutan,
+    _poolUnderworldConnections,
     _poolUtopiaSprawl,
     _poolVarinaLichQueen,
     _poolVaultOfTheArchangel,

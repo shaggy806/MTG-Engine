@@ -136,6 +136,7 @@ import _poolLithatog from "../pool/lithatog.js";
 import _poolLlanowarCavalry from "../pool/llanowar-cavalry.js";
 import _poolLlanowarVisionary from "../pool/llanowar-visionary.js";
 import _poolLocthwainScorn from "../pool/locthwain-scorn.js";
+import _poolLordOfAtlantis from "../pool/lord-of-atlantis.js";
 import _poolLoyalGuardian from "../pool/loyal-guardian.js";
 import _poolLumraBellowOfTheWoods from "../pool/lumra-bellow-of-the-woods.js";
 import _poolLyseHext from "../pool/lyse-hext.js";
@@ -237,6 +238,7 @@ import _poolTwoHeadedHellkite from "../pool/two-headed-hellkite.js";
 import _poolUndergrowthRecon from "../pool/undergrowth-recon.js";
 import _poolUndergrowthStadium from "../pool/undergrowth-stadium.js";
 import _poolVampireNoble from "../pool/vampire-noble.js";
+import _poolVatEmergence from "../pool/vat-emergence.js";
 import _poolVelomachusLorehold from "../pool/velomachus-lorehold.js";
 import _poolVentureDeeper from "../pool/venture-deeper.js";
 import _poolViridianRevel from "../pool/viridian-revel.js";
@@ -402,6 +404,7 @@ const shard: CardShard = {
     _poolLlanowarCavalry,
     _poolLlanowarVisionary,
     _poolLocthwainScorn,
+    _poolLordOfAtlantis,
     _poolLoyalGuardian,
     _poolLumraBellowOfTheWoods,
     _poolLyseHext,
@@ -503,6 +506,7 @@ const shard: CardShard = {
     _poolUndergrowthRecon,
     _poolUndergrowthStadium,
     _poolVampireNoble,
+    _poolVatEmergence,
     _poolVelomachusLorehold,
     _poolVentureDeeper,
     _poolViridianRevel,

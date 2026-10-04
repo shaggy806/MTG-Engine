@@ -170,6 +170,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Red Warrior Token",
   "Red-White Soldier Token",
   "Robot Token",
+  "Robot Token (Big Mother Mouser)",
   "Robot Villain Token",
   "Salamander Warrior Token",
   "Sand Warrior Token",
@@ -214,6 +215,7 @@ export const TOKEN_NAMES: readonly string[] = [
   "Wizard Token (Kuja)",
   "Wolf Token",
   "Wolf Token (Garruk, Cursed Huntsman)",
+  "Worm Token",
   "Wraith Token",
   "Wurm Token",
   "X/X Demon Token (Flying)",
@@ -334,5 +336,6 @@ export const PINNED_ART: Readonly<Partial<Record<string, string>>> = {
   "Venture Deeper": "https://cards.scryfall.io/art_crop/back/c/e/ceb7308d-608c-4ede-9496-d795fc5bb271.jpg",
   "Volcanic Fissure": "https://cards.scryfall.io/art_crop/back/5/0/50686ac7-346c-43d1-bdaa-28d46a12ad93.jpg",
   "Witch-Blessed Meadow": "https://cards.scryfall.io/art_crop/back/6/2/62061e7c-cf19-4f03-b8fa-2bdba62d6b0b.jpg",
+  "Ysgard's Call": "https://cards.scryfall.io/art_crop/back/b/2/b2419408-e907-4d62-b158-c97afc388c04.jpg",
   "Zof Bloodbog": "https://cards.scryfall.io/art_crop/back/9/8/98496d5b-1519-4f0c-8b46-0a43be643dfb.jpg",
 };

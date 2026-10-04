@@ -42,6 +42,7 @@ import _poolCanoptekScarabSwarm from "../pool/canoptek-scarab-swarm.js";
 import _poolCarrionCrow from "../pool/carrion-crow.js";
 import _poolCelestineTheLivingSaint from "../pool/celestine-the-living-saint.js";
 import _poolCliveIfritsDominant from "../pool/clive-ifrits-dominant.js";
+import _poolClivesHideaway from "../pool/clives-hideaway.js";
 import _poolCoilingRebirth from "../pool/coiling-rebirth.js";
 import _poolConcealedCourtyard from "../pool/concealed-courtyard.js";
 import _poolCounselOfTheSoratami from "../pool/counsel-of-the-soratami.js";
@@ -118,6 +119,7 @@ import _poolLeoninBattlemage from "../pool/leonin-battlemage.js";
 import _poolLeoninElder from "../pool/leonin-elder.js";
 import _poolLucentLiminid from "../pool/lucent-liminid.js";
 import _poolLuxurySuite from "../pool/luxury-suite.js";
+import _poolMaiScornfulStriker from "../pool/mai-scornful-striker.js";
 import _poolMakeAStand from "../pool/make-a-stand.js";
 import _poolManaGeode from "../pool/mana-geode.js";
 import _poolMandroidSquadron from "../pool/mandroid-squadron.js";
@@ -196,6 +198,7 @@ import _poolSkullProphet from "../pool/skull-prophet.js";
 import _poolSkyclaveGeopede from "../pool/skyclave-geopede.js";
 import _poolSkyscanner from "../pool/skyscanner.js";
 import _poolSliptideSerpent from "../pool/sliptide-serpent.js";
+import _poolSliverHive from "../pool/sliver-hive.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
 import _poolSolTalisman from "../pool/sol-talisman.js";
 import _poolSoulsFire from "../pool/souls-fire.js";
@@ -286,6 +289,7 @@ const shard: CardShard = {
     _poolCarrionCrow,
     _poolCelestineTheLivingSaint,
     _poolCliveIfritsDominant,
+    _poolClivesHideaway,
     _poolCoilingRebirth,
     _poolConcealedCourtyard,
     _poolCounselOfTheSoratami,
@@ -362,6 +366,7 @@ const shard: CardShard = {
     _poolLeoninElder,
     _poolLucentLiminid,
     _poolLuxurySuite,
+    _poolMaiScornfulStriker,
     _poolMakeAStand,
     _poolManaGeode,
     _poolMandroidSquadron,
@@ -440,6 +445,7 @@ const shard: CardShard = {
     _poolSkyclaveGeopede,
     _poolSkyscanner,
     _poolSliptideSerpent,
+    _poolSliverHive,
     _poolSnareThopter,
     _poolSolTalisman,
     _poolSoulsFire,

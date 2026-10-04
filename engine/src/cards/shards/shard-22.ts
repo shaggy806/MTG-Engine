@@ -12,6 +12,7 @@ import _poolAngelOfTheGodPharaoh from "../pool/angel-of-the-god-pharaoh.js";
 import _poolAngelicAccord from "../pool/angelic-accord.js";
 import _poolAnkhOfMishra from "../pool/ankh-of-mishra.js";
 import _poolAnnoyedAltisaur from "../pool/annoyed-altisaur.js";
+import _poolAnowonTheRuinSage from "../pool/anowon-the-ruin-sage.js";
 import _poolArchivist from "../pool/archivist.js";
 import _poolArdentMilitia from "../pool/ardent-militia.js";
 import _poolArkOfBlight from "../pool/ark-of-blight.js";
@@ -140,6 +141,7 @@ import _poolNavigationOrb from "../pool/navigation-orb.js";
 import _poolNeedlethornDrake from "../pool/needlethorn-drake.js";
 import _poolNestedShambler from "../pool/nested-shambler.js";
 import _poolNexusWardens from "../pool/nexus-wardens.js";
+import _poolNissaVoiceOfZendikar from "../pool/nissa-voice-of-zendikar.js";
 import _poolNomadOutpost from "../pool/nomad-outpost.js";
 import _poolNukaColaVendingMachine from "../pool/nuka-cola-vending-machine.js";
 import _poolNyxbornCourser from "../pool/nyxborn-courser.js";
@@ -148,6 +150,7 @@ import _poolObzedatsAid from "../pool/obzedats-aid.js";
 import _poolOculus from "../pool/oculus.js";
 import _poolOggyarBattleSeer from "../pool/oggyar-battle-seer.js";
 import _poolOgresCleaver from "../pool/ogres-cleaver.js";
+import _poolOliviaOpulentOutlaw from "../pool/olivia-opulent-outlaw.js";
 import _poolOrcishBloodpainter from "../pool/orcish-bloodpainter.js";
 import _poolOtepecHuntmaster from "../pool/otepec-huntmaster.js";
 import _poolOvergrownEstate from "../pool/overgrown-estate.js";
@@ -242,6 +245,7 @@ import _poolUltimaOriginOfOblivion from "../pool/ultima-origin-of-oblivion.js";
 import _poolUnburden from "../pool/unburden.js";
 import _poolUnwindingClock from "../pool/unwinding-clock.js";
 import _poolUtvaraScalper from "../pool/utvara-scalper.js";
+import _poolValleyMightcaller from "../pool/valley-mightcaller.js";
 import _poolVirtuousCharge from "../pool/virtuous-charge.js";
 import _poolVolcanicTorrent from "../pool/volcanic-torrent.js";
 import _poolVulshokBattlegear from "../pool/vulshok-battlegear.js";
@@ -276,6 +280,7 @@ const shard: CardShard = {
     _poolAngelicAccord,
     _poolAnkhOfMishra,
     _poolAnnoyedAltisaur,
+    _poolAnowonTheRuinSage,
     _poolArchivist,
     _poolArdentMilitia,
     _poolArkOfBlight,
@@ -404,6 +409,7 @@ const shard: CardShard = {
     _poolNeedlethornDrake,
     _poolNestedShambler,
     _poolNexusWardens,
+    _poolNissaVoiceOfZendikar,
     _poolNomadOutpost,
     _poolNukaColaVendingMachine,
     _poolNyxbornCourser,
@@ -412,6 +418,7 @@ const shard: CardShard = {
     _poolOculus,
     _poolOggyarBattleSeer,
     _poolOgresCleaver,
+    _poolOliviaOpulentOutlaw,
     _poolOrcishBloodpainter,
     _poolOtepecHuntmaster,
     _poolOvergrownEstate,
@@ -506,6 +513,7 @@ const shard: CardShard = {
     _poolUnburden,
     _poolUnwindingClock,
     _poolUtvaraScalper,
+    _poolValleyMightcaller,
     _poolVirtuousCharge,
     _poolVolcanicTorrent,
     _poolVulshokBattlegear,

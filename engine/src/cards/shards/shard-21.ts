@@ -27,6 +27,7 @@ import _poolBronzeWalrus from "../pool/bronze-walrus.js";
 import _poolBugenhagenWiseElder from "../pool/bugenhagen-wise-elder.js";
 import _poolBurstOfSpeed from "../pool/burst-of-speed.js";
 import _poolCacklingFiend from "../pool/cackling-fiend.js";
+import _poolCadricSoulKindler from "../pool/cadric-soul-kindler.js";
 import _poolCarnivorousPlant from "../pool/carnivorous-plant.js";
 import _poolChainReaction from "../pool/chain-reaction.js";
 import _poolChandrasMagmutt from "../pool/chandras-magmutt.js";
@@ -95,6 +96,7 @@ import _poolHighPriestOfPenance from "../pool/high-priest-of-penance.js";
 import _poolHighlandForest from "../pool/highland-forest.js";
 import _poolHillcomberGiant from "../pool/hillcomber-giant.js";
 import _poolHoneyMammoth from "../pool/honey-mammoth.js";
+import _poolHugsGrislyGuardian from "../pool/hugs-grisly-guardian.js";
 import _poolIlysianCaryatid from "../pool/ilysian-caryatid.js";
 import _poolImperialRecruiter from "../pool/imperial-recruiter.js";
 import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
@@ -102,6 +104,7 @@ import _poolJaradGolgariLichLord from "../pool/jarad-golgari-lich-lord.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
 import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
 import _poolJumboCactuar from "../pool/jumbo-cactuar.js";
+import _poolJundPanorama from "../pool/jund-panorama.js";
 import _poolKayaGeistHunter from "../pool/kaya-geist-hunter.js";
 import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
 import _poolKeeperOfTheNineGales from "../pool/keeper-of-the-nine-gales.js";
@@ -120,6 +123,7 @@ import _poolLysAlanaHuntmaster from "../pool/lys-alana-huntmaster.js";
 import _poolMangaraTheDiplomat from "../pool/mangara-the-diplomat.js";
 import _poolMarwynTheNurturer from "../pool/marwyn-the-nurturer.js";
 import _poolMerfolkSecretkeeper from "../pool/merfolk-secretkeeper.js";
+import _poolMerryWardenOfIsengard from "../pool/merry-warden-of-isengard.js";
 import _poolMesaEnchantress from "../pool/mesa-enchantress.js";
 import _poolMesmericOrb from "../pool/mesmeric-orb.js";
 import _poolMessengerDrake from "../pool/messenger-drake.js";
@@ -253,6 +257,7 @@ const shard: CardShard = {
     _poolBugenhagenWiseElder,
     _poolBurstOfSpeed,
     _poolCacklingFiend,
+    _poolCadricSoulKindler,
     _poolCarnivorousPlant,
     _poolChainReaction,
     _poolChandrasMagmutt,
@@ -321,6 +326,7 @@ const shard: CardShard = {
     _poolHighlandForest,
     _poolHillcomberGiant,
     _poolHoneyMammoth,
+    _poolHugsGrislyGuardian,
     _poolIlysianCaryatid,
     _poolImperialRecruiter,
     _poolIridescentBlademaster,
@@ -328,6 +334,7 @@ const shard: CardShard = {
     _poolJasperaSentinel,
     _poolJetmirNexusOfRevels,
     _poolJumboCactuar,
+    _poolJundPanorama,
     _poolKayaGeistHunter,
     _poolKeeperOfTheAccord,
     _poolKeeperOfTheNineGales,
@@ -346,6 +353,7 @@ const shard: CardShard = {
     _poolMangaraTheDiplomat,
     _poolMarwynTheNurturer,
     _poolMerfolkSecretkeeper,
+    _poolMerryWardenOfIsengard,
     _poolMesaEnchantress,
     _poolMesmericOrb,
     _poolMessengerDrake,

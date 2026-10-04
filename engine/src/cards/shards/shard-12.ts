@@ -81,6 +81,7 @@ import _poolFightRigging from "../pool/fight-rigging.js";
 import _poolFireNationPalace from "../pool/fire-nation-palace.js";
 import _poolFistsOfIronwood from "../pool/fists-of-ironwood.js";
 import _poolFlamekinSpitfire from "../pool/flamekin-spitfire.js";
+import _poolFlayerOfTheHatebound from "../pool/flayer-of-the-hatebound.js";
 import _poolForcedFruition from "../pool/forced-fruition.js";
 import _poolFrolickingFamiliar from "../pool/frolicking-familiar.js";
 import _poolGarrukWildspeaker from "../pool/garruk-wildspeaker.js";
@@ -89,6 +90,7 @@ import _poolGhirapurAetherGrid from "../pool/ghirapur-aether-grid.js";
 import _poolGhorClanBloodscale from "../pool/ghor-clan-bloodscale.js";
 import _poolGhostlyVisit from "../pool/ghostly-visit.js";
 import _poolGiantSpectacle from "../pool/giant-spectacle.js";
+import _poolGlenElendraLiege from "../pool/glen-elendra-liege.js";
 import _poolGnarledMass from "../pool/gnarled-mass.js";
 import _poolGoldForgedThopteryx from "../pool/gold-forged-thopteryx.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
@@ -324,6 +326,7 @@ const shard: CardShard = {
     _poolFireNationPalace,
     _poolFistsOfIronwood,
     _poolFlamekinSpitfire,
+    _poolFlayerOfTheHatebound,
     _poolForcedFruition,
     _poolFrolickingFamiliar,
     _poolGarrukWildspeaker,
@@ -332,6 +335,7 @@ const shard: CardShard = {
     _poolGhorClanBloodscale,
     _poolGhostlyVisit,
     _poolGiantSpectacle,
+    _poolGlenElendraLiege,
     _poolGnarledMass,
     _poolGoldForgedThopteryx,
     _poolGoobbueGardener,

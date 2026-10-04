@@ -14,6 +14,7 @@ import _poolArchaeomancer from "../pool/archaeomancer.js";
 import _poolArchfiendOfIfnir from "../pool/archfiend-of-ifnir.js";
 import _poolArchonOfRedemption from "../pool/archon-of-redemption.js";
 import _poolArdentElementalist from "../pool/ardent-elementalist.js";
+import _poolAshcoatOfTheShadowSwarm from "../pool/ashcoat-of-the-shadow-swarm.js";
 import _poolAureliaTheLawAbove from "../pool/aurelia-the-law-above.js";
 import _poolAvenOfEnduringHope from "../pool/aven-of-enduring-hope.js";
 import _poolAxebaneGuardian from "../pool/axebane-guardian.js";
@@ -174,6 +175,7 @@ import _poolRabbleRousing from "../pool/rabble-rousing.js";
 import _poolRakdosCharm from "../pool/rakdos-charm.js";
 import _poolRegress from "../pool/regress.js";
 import _poolRemoteIsle from "../pool/remote-isle.js";
+import _poolRestlessPrairie from "../pool/restless-prairie.js";
 import _poolRewind from "../pool/rewind.js";
 import _poolRinAndSeriInseparable from "../pool/rin-and-seri-inseparable.js";
 import _poolRiteOfOblivion from "../pool/rite-of-oblivion.js";
@@ -266,6 +268,7 @@ const shard: CardShard = {
     _poolArchfiendOfIfnir,
     _poolArchonOfRedemption,
     _poolArdentElementalist,
+    _poolAshcoatOfTheShadowSwarm,
     _poolAureliaTheLawAbove,
     _poolAvenOfEnduringHope,
     _poolAxebaneGuardian,
@@ -426,6 +429,7 @@ const shard: CardShard = {
     _poolRakdosCharm,
     _poolRegress,
     _poolRemoteIsle,
+    _poolRestlessPrairie,
     _poolRewind,
     _poolRinAndSeriInseparable,
     _poolRiteOfOblivion,

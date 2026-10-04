@@ -196,6 +196,7 @@ import _poolSteepleCreeper from "../pool/steeple-creeper.js";
 import _poolSteppeLynx from "../pool/steppe-lynx.js";
 import _poolStewardOfValeron from "../pool/steward-of-valeron.js";
 import _poolSummitProwler from "../pool/summit-prowler.js";
+import _poolSuperShredder from "../pool/super-shredder.js";
 import _poolSwiftbladeVindicator from "../pool/swiftblade-vindicator.js";
 import _poolSwordOfVengeance from "../pool/sword-of-vengeance.js";
 import _poolTaintedIsle from "../pool/tainted-isle.js";
@@ -448,6 +449,7 @@ const shard: CardShard = {
     _poolSteppeLynx,
     _poolStewardOfValeron,
     _poolSummitProwler,
+    _poolSuperShredder,
     _poolSwiftbladeVindicator,
     _poolSwordOfVengeance,
     _poolTaintedIsle,

@@ -127,6 +127,7 @@ import _poolMorgueTheft from "../pool/morgue-theft.js";
 import _poolMulldrifter from "../pool/mulldrifter.js";
 import _poolNaturesSpiral from "../pool/natures-spiral.js";
 import _poolNecroblossomSnarl from "../pool/necroblossom-snarl.js";
+import _poolNecroticSliver from "../pool/necrotic-sliver.js";
 import _poolNephaliaDrownyard from "../pool/nephalia-drownyard.js";
 import _poolNeurokReplica from "../pool/neurok-replica.js";
 import _poolNezumiInformant from "../pool/nezumi-informant.js";
@@ -187,6 +188,7 @@ import _poolSonicScrewdriver from "../pool/sonic-screwdriver.js";
 import _poolSoulknifeSpy from "../pool/soulknife-spy.js";
 import _poolSpiritualGuardian from "../pool/spiritual-guardian.js";
 import _poolSpottedGriffin from "../pool/spotted-griffin.js";
+import _poolStalwartShieldBearers from "../pool/stalwart-shield-bearers.js";
 import _poolStarnheimCourser from "../pool/starnheim-courser.js";
 import _poolSteadfastness from "../pool/steadfastness.js";
 import _poolStingingBarrier from "../pool/stinging-barrier.js";
@@ -365,6 +367,7 @@ const shard: CardShard = {
     _poolMulldrifter,
     _poolNaturesSpiral,
     _poolNecroblossomSnarl,
+    _poolNecroticSliver,
     _poolNephaliaDrownyard,
     _poolNeurokReplica,
     _poolNezumiInformant,
@@ -425,6 +428,7 @@ const shard: CardShard = {
     _poolSoulknifeSpy,
     _poolSpiritualGuardian,
     _poolSpottedGriffin,
+    _poolStalwartShieldBearers,
     _poolStarnheimCourser,
     _poolSteadfastness,
     _poolStingingBarrier,

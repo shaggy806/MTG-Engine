@@ -85,6 +85,7 @@ import _poolFogBank from "../pool/fog-bank.js";
 import _poolFog from "../pool/fog.js";
 import _poolFontOfMythos from "../pool/font-of-mythos.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
+import _poolFountainportBell from "../pool/fountainport-bell.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
 import _poolGatheringStone from "../pool/gathering-stone.js";
@@ -175,6 +176,7 @@ import _poolRockBadger from "../pool/rock-badger.js";
 import _poolRuggedPrairie from "../pool/rugged-prairie.js";
 import _poolSandbarSerpent from "../pool/sandbar-serpent.js";
 import _poolSanguinaryPriest from "../pool/sanguinary-priest.js";
+import _poolSazhKatzroy from "../pool/sazh-katzroy.js";
 import _poolScaledBehemoth from "../pool/scaled-behemoth.js";
 import _poolScavengingOoze from "../pool/scavenging-ooze.js";
 import _poolScornfulAetherLich from "../pool/scornful-aether-lich.js";
@@ -330,6 +332,7 @@ const shard: CardShard = {
     _poolFog,
     _poolFontOfMythos,
     _poolFoundryInspector,
+    _poolFountainportBell,
     _poolFoxfireOak,
     _poolFungalInfection,
     _poolGatheringStone,
@@ -420,6 +423,7 @@ const shard: CardShard = {
     _poolRuggedPrairie,
     _poolSandbarSerpent,
     _poolSanguinaryPriest,
+    _poolSazhKatzroy,
     _poolScaledBehemoth,
     _poolScavengingOoze,
     _poolScornfulAetherLich,

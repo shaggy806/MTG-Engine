@@ -103,6 +103,7 @@ import _poolKravensCats from "../pool/kravens-cats.js";
 import _poolLaboratoryDrudge from "../pool/laboratory-drudge.js";
 import _poolLlanowarTribe from "../pool/llanowar-tribe.js";
 import _poolLoxodonMystic from "../pool/loxodon-mystic.js";
+import _poolLoyalDrake from "../pool/loyal-drake.js";
 import _poolLurchingRotbeast from "../pool/lurching-rotbeast.js";
 import _poolMachinesmithAutomaton from "../pool/machinesmith-automaton.js";
 import _poolMahadiEmporiumMaster from "../pool/mahadi-emporium-master.js";
@@ -132,6 +133,7 @@ import _poolPrismariTheInspiration from "../pool/prismari-the-inspiration.js";
 import _poolProsshSkyraiderOfKher from "../pool/prossh-skyraider-of-kher.js";
 import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
 import _poolPsionicPulse from "../pool/psionic-pulse.js";
+import _poolPutridImp from "../pool/putrid-imp.js";
 import _poolPyroclasticElemental from "../pool/pyroclastic-elemental.js";
 import _poolPyrohemia from "../pool/pyrohemia.js";
 import _poolQueenBrahne from "../pool/queen-brahne.js";
@@ -201,6 +203,7 @@ import _poolTemurAscendancy from "../pool/temur-ascendancy.js";
 import _poolTesharAncestorsApostle from "../pool/teshar-ancestors-apostle.js";
 import _poolTheGaffer from "../pool/the-gaffer.js";
 import _poolTheIncredibleHulk from "../pool/the-incredible-hulk.js";
+import _poolTheScorpionGod from "../pool/the-scorpion-god.js";
 import _poolTheUnspeakable from "../pool/the-unspeakable.js";
 import _poolThrillOfTheHunt from "../pool/thrill-of-the-hunt.js";
 import _poolThrivingBluff from "../pool/thriving-bluff.js";
@@ -233,6 +236,7 @@ import _tokensConstructTokenArtifactCount from "../tokens/construct-token-artifa
 import _tokensElfDruidToken from "../tokens/elf-druid-token.js";
 import _tokensOxToken from "../tokens/ox-token.js";
 import _tokensPlantToken from "../tokens/plant-token.js";
+import _tokensWormToken from "../tokens/worm-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -336,6 +340,7 @@ const shard: CardShard = {
     _poolLaboratoryDrudge,
     _poolLlanowarTribe,
     _poolLoxodonMystic,
+    _poolLoyalDrake,
     _poolLurchingRotbeast,
     _poolMachinesmithAutomaton,
     _poolMahadiEmporiumMaster,
@@ -365,6 +370,7 @@ const shard: CardShard = {
     _poolProsshSkyraiderOfKher,
     _poolProwlingSerpopard,
     _poolPsionicPulse,
+    _poolPutridImp,
     _poolPyroclasticElemental,
     _poolPyrohemia,
     _poolQueenBrahne,
@@ -434,6 +440,7 @@ const shard: CardShard = {
     _poolTesharAncestorsApostle,
     _poolTheGaffer,
     _poolTheIncredibleHulk,
+    _poolTheScorpionGod,
     _poolTheUnspeakable,
     _poolThrillOfTheHunt,
     _poolThrivingBluff,
@@ -468,6 +475,7 @@ const shard: CardShard = {
     _tokensElfDruidToken,
     _tokensOxToken,
     _tokensPlantToken,
+    _tokensWormToken,
   ],
 };
 

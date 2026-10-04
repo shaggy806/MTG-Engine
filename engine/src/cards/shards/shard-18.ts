@@ -148,6 +148,7 @@ import _poolPeerlessRecycling from "../pool/peerless-recycling.js";
 import _poolPensiveMinotaur from "../pool/pensive-minotaur.js";
 import _poolPhantomNinja from "../pool/phantom-ninja.js";
 import _poolPhyrexiasCore from "../pool/phyrexias-core.js";
+import _poolPileOn from "../pool/pile-on.js";
 import _poolPitilessPontiff from "../pool/pitiless-pontiff.js";
 import _poolPlaguedRusalka from "../pool/plagued-rusalka.js";
 import _poolPlatedRootwalla from "../pool/plated-rootwalla.js";
@@ -408,6 +409,7 @@ const shard: CardShard = {
     _poolPensiveMinotaur,
     _poolPhantomNinja,
     _poolPhyrexiasCore,
+    _poolPileOn,
     _poolPitilessPontiff,
     _poolPlaguedRusalka,
     _poolPlatedRootwalla,

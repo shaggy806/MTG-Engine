@@ -26,6 +26,7 @@ import _poolBattleRageBlessing from "../pool/battle-rage-blessing.js";
 import _poolBayFalcon from "../pool/bay-falcon.js";
 import _poolBeastKinRanger from "../pool/beast-kin-ranger.js";
 import _poolBeetlebackChief from "../pool/beetleback-chief.js";
+import _poolBelladonnaTook from "../pool/belladonna-took.js";
 import _poolBishopsSoldier from "../pool/bishops-soldier.js";
 import _poolBlackWidowNatashaRomanoff from "../pool/black-widow-natasha-romanoff.js";
 import _poolBladeOfSelves from "../pool/blade-of-selves.js";
@@ -50,6 +51,7 @@ import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
 import _poolContaminantGrafter from "../pool/contaminant-grafter.js";
 import _poolCourtOfGarenbrig from "../pool/court-of-garenbrig.js";
 import _poolCraterize from "../pool/craterize.js";
+import _poolCreakwoodLiege from "../pool/creakwood-liege.js";
 import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
 import _poolDawnCharm from "../pool/dawn-charm.js";
@@ -164,6 +166,7 @@ import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
 import _poolOnulet from "../pool/onulet.js";
 import _poolOrbOfDragonkind from "../pool/orb-of-dragonkind.js";
 import _poolOvergrowth from "../pool/overgrowth.js";
+import _poolPainDistributor from "../pool/pain-distributor.js";
 import _poolPalladiumMyr from "../pool/palladium-myr.js";
 import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPawpatchFormation from "../pool/pawpatch-formation.js";
@@ -194,6 +197,7 @@ import _poolShatteredSanctum from "../pool/shattered-sanctum.js";
 import _poolShipwreckMarsh from "../pool/shipwreck-marsh.js";
 import _poolShriekingDrake from "../pool/shrieking-drake.js";
 import _poolShrink from "../pool/shrink.js";
+import _poolSilverwingSquadron from "../pool/silverwing-squadron.js";
 import _poolSkarrganHellkite from "../pool/skarrgan-hellkite.js";
 import _poolSkybladeOfTheLegion from "../pool/skyblade-of-the-legion.js";
 import _poolSkyshroudFalcon from "../pool/skyshroud-falcon.js";
@@ -201,6 +205,7 @@ import _poolSleddingOtterPenguin from "../pool/sledding-otter-penguin.js";
 import _poolSlinzaTheSpikedStampede from "../pool/slinza-the-spiked-stampede.js";
 import _poolSmaugTheGreatCalamity from "../pool/smaug-the-great-calamity.js";
 import _poolSmolderingMarsh from "../pool/smoldering-marsh.js";
+import _poolSnarlingGorehound from "../pool/snarling-gorehound.js";
 import _poolSpinedKarok from "../pool/spined-karok.js";
 import _poolSpinningWheel from "../pool/spinning-wheel.js";
 import _poolSpitefulVisions from "../pool/spiteful-visions.js";
@@ -209,6 +214,7 @@ import _poolStaffOfTheStoryteller from "../pool/staff-of-the-storyteller.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
 import _poolStormsWrath from "../pool/storms-wrath.js";
 import _poolStripMine from "../pool/strip-mine.js";
+import _poolSultaiCharm from "../pool/sultai-charm.js";
 import _poolSunderingEruption from "../pool/sundering-eruption.js";
 import _poolSunshotMilitia from "../pool/sunshot-militia.js";
 import _poolSurgeConductor from "../pool/surge-conductor.js";
@@ -262,6 +268,7 @@ import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
 import _poolWeaponsManufacturing from "../pool/weapons-manufacturing.js";
 import _poolWildGrowth from "../pool/wild-growth.js";
 import _poolWillOfTheTemur from "../pool/will-of-the-temur.js";
+import _poolWitheringBoon from "../pool/withering-boon.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
 import _poolWolverineBestThereIs from "../pool/wolverine-best-there-is.js";
 import _poolXyrisTheWrithingStorm from "../pool/xyris-the-writhing-storm.js";
@@ -305,6 +312,7 @@ const shard: CardShard = {
     _poolBayFalcon,
     _poolBeastKinRanger,
     _poolBeetlebackChief,
+    _poolBelladonnaTook,
     _poolBishopsSoldier,
     _poolBlackWidowNatashaRomanoff,
     _poolBladeOfSelves,
@@ -329,6 +337,7 @@ const shard: CardShard = {
     _poolContaminantGrafter,
     _poolCourtOfGarenbrig,
     _poolCraterize,
+    _poolCreakwoodLiege,
     _poolCruxOfFate,
     _poolCunningSparkmage,
     _poolDawnCharm,
@@ -443,6 +452,7 @@ const shard: CardShard = {
     _poolOnulet,
     _poolOrbOfDragonkind,
     _poolOvergrowth,
+    _poolPainDistributor,
     _poolPalladiumMyr,
     _poolPardicCollaborator,
     _poolPawpatchFormation,
@@ -473,6 +483,7 @@ const shard: CardShard = {
     _poolShipwreckMarsh,
     _poolShriekingDrake,
     _poolShrink,
+    _poolSilverwingSquadron,
     _poolSkarrganHellkite,
     _poolSkybladeOfTheLegion,
     _poolSkyshroudFalcon,
@@ -480,6 +491,7 @@ const shard: CardShard = {
     _poolSlinzaTheSpikedStampede,
     _poolSmaugTheGreatCalamity,
     _poolSmolderingMarsh,
+    _poolSnarlingGorehound,
     _poolSpinedKarok,
     _poolSpinningWheel,
     _poolSpitefulVisions,
@@ -488,6 +500,7 @@ const shard: CardShard = {
     _poolStoneHavenMedic,
     _poolStormsWrath,
     _poolStripMine,
+    _poolSultaiCharm,
     _poolSunderingEruption,
     _poolSunshotMilitia,
     _poolSurgeConductor,
@@ -541,6 +554,7 @@ const shard: CardShard = {
     _poolWeaponsManufacturing,
     _poolWildGrowth,
     _poolWillOfTheTemur,
+    _poolWitheringBoon,
     _poolWizardsSchool,
     _poolWolverineBestThereIs,
     _poolXyrisTheWrithingStorm,

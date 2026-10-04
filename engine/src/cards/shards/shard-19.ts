@@ -19,6 +19,7 @@ import _poolBarbarianHorde from "../pool/barbarian-horde.js";
 import _poolBenalishTrapper from "../pool/benalish-trapper.js";
 import _poolBewilder from "../pool/bewilder.js";
 import _poolBhaalsInvoker from "../pool/bhaals-invoker.js";
+import _poolBiosynthicBurst from "../pool/biosynthic-burst.js";
 import _poolBirninZanaPlaza from "../pool/birnin-zana-plaza.js";
 import _poolBitterReunion from "../pool/bitter-reunion.js";
 import _poolBlastingStation from "../pool/blasting-station.js";
@@ -62,6 +63,7 @@ import _poolFabledPassage from "../pool/fabled-passage.js";
 import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
 import _poolFellTheMighty from "../pool/fell-the-mighty.js";
 import _poolFireLordZuko from "../pool/fire-lord-zuko.js";
+import _poolFlamingFist from "../pool/flaming-fist.js";
 import _poolFlamingTyrannosaurus from "../pool/flaming-tyrannosaurus.js";
 import _poolFlowstoneKavu from "../pool/flowstone-kavu.js";
 import _poolFlyingDolphinFish from "../pool/flying-dolphin-fish.js";
@@ -91,6 +93,7 @@ import _poolHawkeaterMoth from "../pool/hawkeater-moth.js";
 import _poolHiddenVolcano from "../pool/hidden-volcano.js";
 import _poolHieroglyphicIllumination from "../pool/hieroglyphic-illumination.js";
 import _poolHighMarket from "../pool/high-market.js";
+import _poolHondenOfInfiniteRage from "../pool/honden-of-infinite-rage.js";
 import _poolHorrorOfTheDim from "../pool/horror-of-the-dim.js";
 import _poolIgniteTheFuture from "../pool/ignite-the-future.js";
 import _poolImpale from "../pool/impale.js";
@@ -206,6 +209,7 @@ import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
 import _poolStormbreathDragon from "../pool/stormbreath-dragon.js";
+import _poolStrikingSliver from "../pool/striking-sliver.js";
 import _poolSummonKnightsOfRound from "../pool/summon-knights-of-round.js";
 import _poolSunbillowVerge from "../pool/sunbillow-verge.js";
 import _poolSunbladeSamurai from "../pool/sunblade-samurai.js";
@@ -224,6 +228,7 @@ import _poolUlamogsDreadsire from "../pool/ulamogs-dreadsire.js";
 import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
 import _poolUrzaPrinceOfKroog from "../pool/urza-prince-of-kroog.js";
+import _poolUtopiaMycon from "../pool/utopia-mycon.js";
 import _poolVectorImperialCapital from "../pool/vector-imperial-capital.js";
 import _poolVigilance from "../pool/vigilance.js";
 import _poolVirtueOfLoyalty from "../pool/virtue-of-loyalty.js";
@@ -271,6 +276,7 @@ const shard: CardShard = {
     _poolBenalishTrapper,
     _poolBewilder,
     _poolBhaalsInvoker,
+    _poolBiosynthicBurst,
     _poolBirninZanaPlaza,
     _poolBitterReunion,
     _poolBlastingStation,
@@ -314,6 +320,7 @@ const shard: CardShard = {
     _poolFalkenrathNoble,
     _poolFellTheMighty,
     _poolFireLordZuko,
+    _poolFlamingFist,
     _poolFlamingTyrannosaurus,
     _poolFlowstoneKavu,
     _poolFlyingDolphinFish,
@@ -343,6 +350,7 @@ const shard: CardShard = {
     _poolHiddenVolcano,
     _poolHieroglyphicIllumination,
     _poolHighMarket,
+    _poolHondenOfInfiniteRage,
     _poolHorrorOfTheDim,
     _poolIgniteTheFuture,
     _poolImpale,
@@ -458,6 +466,7 @@ const shard: CardShard = {
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
     _poolStormbreathDragon,
+    _poolStrikingSliver,
     _poolSummonKnightsOfRound,
     _poolSunbillowVerge,
     _poolSunbladeSamurai,
@@ -476,6 +485,7 @@ const shard: CardShard = {
     _poolUnsubtleMockery,
     _poolUrborgDrake,
     _poolUrzaPrinceOfKroog,
+    _poolUtopiaMycon,
     _poolVectorImperialCapital,
     _poolVigilance,
     _poolVirtueOfLoyalty,

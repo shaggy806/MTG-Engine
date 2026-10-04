@@ -48,6 +48,7 @@ import _poolBurnBright from "../pool/burn-bright.js";
 import _poolCabalTrainee from "../pool/cabal-trainee.js";
 import _poolCallTheCavalry from "../pool/call-the-cavalry.js";
 import _poolCanopyVista from "../pool/canopy-vista.js";
+import _poolCarnifexDemon from "../pool/carnifex-demon.js";
 import _poolChainDevil from "../pool/chain-devil.js";
 import _poolChakramSlinger from "../pool/chakram-slinger.js";
 import _poolCobblebrute from "../pool/cobblebrute.js";
@@ -58,10 +59,12 @@ import _poolColosYearling from "../pool/colos-yearling.js";
 import _poolContagionClasp from "../pool/contagion-clasp.js";
 import _poolCopperMyr from "../pool/copper-myr.js";
 import _poolCoralMerfolk from "../pool/coral-merfolk.js";
+import _poolCorsairCaptain from "../pool/corsair-captain.js";
 import _poolCoverOfDarkness from "../pool/cover-of-darkness.js";
 import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
 import _poolCrestedSunmare from "../pool/crested-sunmare.js";
 import _poolCrosswayTroublemakers from "../pool/crossway-troublemakers.js";
+import _poolDanithaNewBenaliasLight from "../pool/danitha-new-benalias-light.js";
 import _poolDauthiVoidwalker from "../pool/dauthi-voidwalker.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
@@ -162,6 +165,7 @@ import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
 import _poolPincherBeetles from "../pool/pincher-beetles.js";
 import _poolPristineTalisman from "../pool/pristine-talisman.js";
 import _poolPutridGoblin from "../pool/putrid-goblin.js";
+import _poolQasaliPridemage from "../pool/qasali-pridemage.js";
 import _poolQuagmireDruid from "../pool/quagmire-druid.js";
 import _poolQueensCommission from "../pool/queens-commission.js";
 import _poolQuintoriusHistoryChaser from "../pool/quintorius-history-chaser.js";
@@ -303,6 +307,7 @@ const shard: CardShard = {
     _poolCabalTrainee,
     _poolCallTheCavalry,
     _poolCanopyVista,
+    _poolCarnifexDemon,
     _poolChainDevil,
     _poolChakramSlinger,
     _poolCobblebrute,
@@ -313,10 +318,12 @@ const shard: CardShard = {
     _poolContagionClasp,
     _poolCopperMyr,
     _poolCoralMerfolk,
+    _poolCorsairCaptain,
     _poolCoverOfDarkness,
     _poolCrashOfRhinos,
     _poolCrestedSunmare,
     _poolCrosswayTroublemakers,
+    _poolDanithaNewBenaliasLight,
     _poolDauthiVoidwalker,
     _poolDeadlyInsect,
     _poolDeadlyRollick,
@@ -417,6 +424,7 @@ const shard: CardShard = {
     _poolPincherBeetles,
     _poolPristineTalisman,
     _poolPutridGoblin,
+    _poolQasaliPridemage,
     _poolQuagmireDruid,
     _poolQueensCommission,
     _poolQuintoriusHistoryChaser,
