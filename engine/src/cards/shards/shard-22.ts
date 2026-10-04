@@ -50,6 +50,7 @@ import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
 import _poolCrimsonManticore from "../pool/crimson-manticore.js";
 import _poolCrookedCustodian from "../pool/crooked-custodian.js";
 import _poolCryptSliver from "../pool/crypt-sliver.js";
+import _poolCrystallizedSerah from "../pool/crystallized-serah.js";
 import _poolCullingRitual from "../pool/culling-ritual.js";
 import _poolCursedMirror from "../pool/cursed-mirror.js";
 import _poolDeadlyTempest from "../pool/deadly-tempest.js";
@@ -104,6 +105,7 @@ import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
+import _poolHowlingMoon from "../pool/howling-moon.js";
 import _poolHydraOmnivore from "../pool/hydra-omnivore.js";
 import _poolIconOfAncestry from "../pool/icon-of-ancestry.js";
 import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
@@ -249,6 +251,7 @@ import _poolUnburden from "../pool/unburden.js";
 import _poolUnwindingClock from "../pool/unwinding-clock.js";
 import _poolUtvaraScalper from "../pool/utvara-scalper.js";
 import _poolValleyMightcaller from "../pool/valley-mightcaller.js";
+import _poolVillagePillagers from "../pool/village-pillagers.js";
 import _poolVirtuousCharge from "../pool/virtuous-charge.js";
 import _poolVolcanicTorrent from "../pool/volcanic-torrent.js";
 import _poolVulshokBattlegear from "../pool/vulshok-battlegear.js";
@@ -321,6 +324,7 @@ const shard: CardShard = {
     _poolCrimsonManticore,
     _poolCrookedCustodian,
     _poolCryptSliver,
+    _poolCrystallizedSerah,
     _poolCullingRitual,
     _poolCursedMirror,
     _poolDeadlyTempest,
@@ -375,6 +379,7 @@ const shard: CardShard = {
     _poolHomunculusHorde,
     _poolHonorGuard,
     _poolHoverBarrier,
+    _poolHowlingMoon,
     _poolHydraOmnivore,
     _poolIconOfAncestry,
     _poolImpulsivePilferer,
@@ -520,6 +525,7 @@ const shard: CardShard = {
     _poolUnwindingClock,
     _poolUtvaraScalper,
     _poolValleyMightcaller,
+    _poolVillagePillagers,
     _poolVirtuousCharge,
     _poolVolcanicTorrent,
     _poolVulshokBattlegear,

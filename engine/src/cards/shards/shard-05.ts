@@ -5,6 +5,8 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAetherworksMarvel from "../pool/aetherworks-marvel.js";
 import _poolAftermathAnalyst from "../pool/aftermath-analyst.js";
+import _poolAinokBondKin from "../pool/ainok-bond-kin.js";
+import _poolAlBhedSalvagers from "../pool/al-bhed-salvagers.js";
 import _poolAllThatGlitters from "../pool/all-that-glitters.js";
 import _poolAlpineGrizzly from "../pool/alpine-grizzly.js";
 import _poolAmbassadorOak from "../pool/ambassador-oak.js";
@@ -36,6 +38,7 @@ import _poolBlossomingTortoise from "../pool/blossoming-tortoise.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
 import _poolBraidsCabalMinion from "../pool/braids-cabal-minion.js";
 import _poolBrassSquire from "../pool/brass-squire.js";
+import _poolBreakerOfArmies from "../pool/breaker-of-armies.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
 import _poolBushwhack from "../pool/bushwhack.js";
 import _poolCadiraCallerOfTheSmall from "../pool/cadira-caller-of-the-small.js";
@@ -119,6 +122,7 @@ import _poolHelixPinnacle from "../pool/helix-pinnacle.js";
 import _poolHelpfulHunter from "../pool/helpful-hunter.js";
 import _poolHerdHeirloom from "../pool/herd-heirloom.js";
 import _poolHeritageReclamation from "../pool/heritage-reclamation.js";
+import _poolHinderingLight from "../pool/hindering-light.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
@@ -153,6 +157,7 @@ import _poolMerfolkOfThePearlTrident from "../pool/merfolk-of-the-pearl-trident.
 import _poolMerryEsquireOfRohan from "../pool/merry-esquire-of-rohan.js";
 import _poolMightOfOaks from "../pool/might-of-oaks.js";
 import _poolMishraEminentOne from "../pool/mishra-eminent-one.js";
+import _poolMoltenPrimordial from "../pool/molten-primordial.js";
 import _poolMoonwingMoth from "../pool/moonwing-moth.js";
 import _poolMoorlandHaunt from "../pool/moorland-haunt.js";
 import _poolMossMonster from "../pool/moss-monster.js";
@@ -208,6 +213,7 @@ import _poolSolRing from "../pool/sol-ring.js";
 import _poolSongOfTheWorldsoul from "../pool/song-of-the-worldsoul.js";
 import _poolSparkReaper from "../pool/spark-reaper.js";
 import _poolSpectatorSeating from "../pool/spectator-seating.js";
+import _poolSpellshock from "../pool/spellshock.js";
 import _poolSpiritSummoning from "../pool/spirit-summoning.js";
 import _poolSpitefulBully from "../pool/spiteful-bully.js";
 import _poolStarOfExtinction from "../pool/star-of-extinction.js";
@@ -278,6 +284,8 @@ const shard: CardShard = {
   pool: [
     _poolAetherworksMarvel,
     _poolAftermathAnalyst,
+    _poolAinokBondKin,
+    _poolAlBhedSalvagers,
     _poolAllThatGlitters,
     _poolAlpineGrizzly,
     _poolAmbassadorOak,
@@ -309,6 +317,7 @@ const shard: CardShard = {
     _poolBodyDropper,
     _poolBraidsCabalMinion,
     _poolBrassSquire,
+    _poolBreakerOfArmies,
     _poolBrineShaman,
     _poolBushwhack,
     _poolCadiraCallerOfTheSmall,
@@ -392,6 +401,7 @@ const shard: CardShard = {
     _poolHelpfulHunter,
     _poolHerdHeirloom,
     _poolHeritageReclamation,
+    _poolHinderingLight,
     _poolHorseshoeCrab,
     _poolHowlingGolem,
     _poolHumblingElder,
@@ -426,6 +436,7 @@ const shard: CardShard = {
     _poolMerryEsquireOfRohan,
     _poolMightOfOaks,
     _poolMishraEminentOne,
+    _poolMoltenPrimordial,
     _poolMoonwingMoth,
     _poolMoorlandHaunt,
     _poolMossMonster,
@@ -481,6 +492,7 @@ const shard: CardShard = {
     _poolSongOfTheWorldsoul,
     _poolSparkReaper,
     _poolSpectatorSeating,
+    _poolSpellshock,
     _poolSpiritSummoning,
     _poolSpitefulBully,
     _poolStarOfExtinction,

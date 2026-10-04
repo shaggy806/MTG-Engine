@@ -92,6 +92,7 @@ import _poolGeothermalBog from "../pool/geothermal-bog.js";
 import _poolGhostWarden from "../pool/ghost-warden.js";
 import _poolGiantAdephage from "../pool/giant-adephage.js";
 import _poolGilanraCallerOfWirewood from "../pool/gilanra-caller-of-wirewood.js";
+import _poolGoShintaiOfHiddenCruelty from "../pool/go-shintai-of-hidden-cruelty.js";
 import _poolGoblinMotivator from "../pool/goblin-motivator.js";
 import _poolGoldForgedSentinel from "../pool/gold-forged-sentinel.js";
 import _poolGoldenEgg from "../pool/golden-egg.js";
@@ -223,6 +224,7 @@ import _poolTophEarthbendingMaster from "../pool/toph-earthbending-master.js";
 import _poolTopiaryStomper from "../pool/topiary-stomper.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
+import _poolTuskguardCaptain from "../pool/tuskguard-captain.js";
 import _poolTyvarThePummeler from "../pool/tyvar-the-pummeler.js";
 import _poolUltimoCivilizationsEnd from "../pool/ultimo-civilizations-end.js";
 import _poolUltronDrone from "../pool/ultron-drone.js";
@@ -352,6 +354,7 @@ const shard: CardShard = {
     _poolGhostWarden,
     _poolGiantAdephage,
     _poolGilanraCallerOfWirewood,
+    _poolGoShintaiOfHiddenCruelty,
     _poolGoblinMotivator,
     _poolGoldForgedSentinel,
     _poolGoldenEgg,
@@ -483,6 +486,7 @@ const shard: CardShard = {
     _poolTopiaryStomper,
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
+    _poolTuskguardCaptain,
     _poolTyvarThePummeler,
     _poolUltimoCivilizationsEnd,
     _poolUltronDrone,

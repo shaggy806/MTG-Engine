@@ -57,6 +57,7 @@ import _poolDiscipleOfBolas from "../pool/disciple-of-bolas.js";
 import _poolDoomedNecromancer from "../pool/doomed-necromancer.js";
 import _poolDragonBlood from "../pool/dragon-blood.js";
 import _poolDragonlordsServant from "../pool/dragonlords-servant.js";
+import _poolDreadmawsIre from "../pool/dreadmaws-ire.js";
 import _poolDrelnoch from "../pool/drelnoch.js";
 import _poolEagerCadet from "../pool/eager-cadet.js";
 import _poolElderGargaroth from "../pool/elder-gargaroth.js";
@@ -135,6 +136,7 @@ import _poolManholeCover from "../pool/manhole-cover.js";
 import _poolMassHysteria from "../pool/mass-hysteria.js";
 import _poolMemorialToFolly from "../pool/memorial-to-folly.js";
 import _poolMichelangeloTheHeart from "../pool/michelangelo-the-heart.js";
+import _poolMichikosReignOfTruth from "../pool/michikos-reign-of-truth.js";
 import _poolMillicentRestlessRevenant from "../pool/millicent-restless-revenant.js";
 import _poolMistRaven from "../pool/mist-raven.js";
 import _poolNahiriForgedInFury from "../pool/nahiri-forged-in-fury.js";
@@ -233,6 +235,7 @@ import _poolViashinoRunner from "../pool/viashino-runner.js";
 import _poolVoidRend from "../pool/void-rend.js";
 import _poolVulshokSorcerer from "../pool/vulshok-sorcerer.js";
 import _poolWallOfAir from "../pool/wall-of-air.js";
+import _poolWargate from "../pool/wargate.js";
 import _poolWarrenElder from "../pool/warren-elder.js";
 import _poolWaryOkapi from "../pool/wary-okapi.js";
 import _poolWastes from "../pool/wastes.js";
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolDoomedNecromancer,
     _poolDragonBlood,
     _poolDragonlordsServant,
+    _poolDreadmawsIre,
     _poolDrelnoch,
     _poolEagerCadet,
     _poolElderGargaroth,
@@ -400,6 +404,7 @@ const shard: CardShard = {
     _poolMassHysteria,
     _poolMemorialToFolly,
     _poolMichelangeloTheHeart,
+    _poolMichikosReignOfTruth,
     _poolMillicentRestlessRevenant,
     _poolMistRaven,
     _poolNahiriForgedInFury,
@@ -498,6 +503,7 @@ const shard: CardShard = {
     _poolVoidRend,
     _poolVulshokSorcerer,
     _poolWallOfAir,
+    _poolWargate,
     _poolWarrenElder,
     _poolWaryOkapi,
     _poolWastes,

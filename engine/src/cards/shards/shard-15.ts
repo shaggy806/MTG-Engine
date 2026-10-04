@@ -54,6 +54,7 @@ import _poolDromarsAttendant from "../pool/dromars-attendant.js";
 import _poolDrownInShapelessness from "../pool/drown-in-shapelessness.js";
 import _poolDryadOfTheIlysianGrove from "../pool/dryad-of-the-ilysian-grove.js";
 import _poolDynamicSoar from "../pool/dynamic-soar.js";
+import _poolEarthbendingStudent from "../pool/earthbending-student.js";
 import _poolEliminateTheCompetition from "../pool/eliminate-the-competition.js";
 import _poolElvishMystic from "../pool/elvish-mystic.js";
 import _poolErinisGloomStalker from "../pool/erinis-gloom-stalker.js";
@@ -194,6 +195,7 @@ import _poolSoulGuideLantern from "../pool/soul-guide-lantern.js";
 import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
 import _poolSpellstutterSprite from "../pool/spellstutter-sprite.js";
+import _poolSpittingDilophosaurus from "../pool/spitting-dilophosaurus.js";
 import _poolSproutingGoblin from "../pool/sprouting-goblin.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
 import _poolStrengthOfWill from "../pool/strength-of-will.js";
@@ -304,6 +306,7 @@ const shard: CardShard = {
     _poolDrownInShapelessness,
     _poolDryadOfTheIlysianGrove,
     _poolDynamicSoar,
+    _poolEarthbendingStudent,
     _poolEliminateTheCompetition,
     _poolElvishMystic,
     _poolErinisGloomStalker,
@@ -444,6 +447,7 @@ const shard: CardShard = {
     _poolSoulWarden,
     _poolSpellscornCoven,
     _poolSpellstutterSprite,
+    _poolSpittingDilophosaurus,
     _poolSproutingGoblin,
     _poolStormriderSpirit,
     _poolStrengthOfWill,

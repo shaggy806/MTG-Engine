@@ -53,6 +53,7 @@ import _poolDetainedByLegionnaires from "../pool/detained-by-legionnaires.js";
 import _poolDimirCluestone from "../pool/dimir-cluestone.js";
 import _poolDisaTheRestless from "../pool/disa-the-restless.js";
 import _poolDisenchant from "../pool/disenchant.js";
+import _poolDisorderInTheCourt from "../pool/disorder-in-the-court.js";
 import _poolDivination from "../pool/divination.js";
 import _poolDoriBearerOfFriends from "../pool/dori-bearer-of-friends.js";
 import _poolDragonHatchling from "../pool/dragon-hatchling.js";
@@ -187,9 +188,11 @@ import _poolSavaiSabertooth from "../pool/savai-sabertooth.js";
 import _poolSavor from "../pool/savor.js";
 import _poolScarletWitchWandaMaximoff from "../pool/scarlet-witch-wanda-maximoff.js";
 import _poolScrollThief from "../pool/scroll-thief.js";
+import _poolSeaGateWreckage from "../pool/sea-gate-wreckage.js";
 import _poolSeasonOfGrowth from "../pool/season-of-growth.js";
 import _poolSedgeScorpion from "../pool/sedge-scorpion.js";
 import _poolSelvalasStampede from "../pool/selvalas-stampede.js";
+import _poolShardOfTheNightbringer from "../pool/shard-of-the-nightbringer.js";
 import _poolShardmagesRescue from "../pool/shardmages-rescue.js";
 import _poolShelteredByGhosts from "../pool/sheltered-by-ghosts.js";
 import _poolShelteringBoughs from "../pool/sheltering-boughs.js";
@@ -308,6 +311,7 @@ const shard: CardShard = {
     _poolDimirCluestone,
     _poolDisaTheRestless,
     _poolDisenchant,
+    _poolDisorderInTheCourt,
     _poolDivination,
     _poolDoriBearerOfFriends,
     _poolDragonHatchling,
@@ -442,9 +446,11 @@ const shard: CardShard = {
     _poolSavor,
     _poolScarletWitchWandaMaximoff,
     _poolScrollThief,
+    _poolSeaGateWreckage,
     _poolSeasonOfGrowth,
     _poolSedgeScorpion,
     _poolSelvalasStampede,
+    _poolShardOfTheNightbringer,
     _poolShardmagesRescue,
     _poolShelteredByGhosts,
     _poolShelteringBoughs,

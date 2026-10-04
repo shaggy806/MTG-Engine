@@ -6,6 +6,7 @@ import type { CardShard } from "../card-shards.js";
 import _pool2Mace from "../pool/2-mace.js";
 import _poolAbstergoEntertainment from "../pool/abstergo-entertainment.js";
 import _poolAdultGoldDragon from "../pool/adult-gold-dragon.js";
+import _poolAerithLastAncient from "../pool/aerith-last-ancient.js";
 import _poolAmphinCutthroat from "../pool/amphin-cutthroat.js";
 import _poolAncestralVengeance from "../pool/ancestral-vengeance.js";
 import _poolAnimarSoulOfElements from "../pool/animar-soul-of-elements.js";
@@ -139,6 +140,7 @@ import _poolLivingDeath from "../pool/living-death.js";
 import _poolLordOfExtinction from "../pool/lord-of-extinction.js";
 import _poolLuminarchAspirant from "../pool/luminarch-aspirant.js";
 import _poolLyraDawnbringer from "../pool/lyra-dawnbringer.js";
+import _poolMagistratesScepter from "../pool/magistrates-scepter.js";
 import _poolMajaBretagardProtector from "../pool/maja-bretagard-protector.js";
 import _poolManglehorn from "../pool/manglehorn.js";
 import _poolManifoldKey from "../pool/manifold-key.js";
@@ -168,6 +170,7 @@ import _poolOnduGiant from "../pool/ondu-giant.js";
 import _poolOranRiefTheVastwood from "../pool/oran-rief-the-vastwood.js";
 import _poolOrcishSiegemaster from "../pool/orcish-siegemaster.js";
 import _poolPerimeterPatrol from "../pool/perimeter-patrol.js";
+import _poolPersonify from "../pool/personify.js";
 import _poolPiaAndKiranNalaar from "../pool/pia-and-kiran-nalaar.js";
 import _poolPilgrimsEye from "../pool/pilgrims-eye.js";
 import _poolPinToTheEarth from "../pool/pin-to-the-earth.js";
@@ -186,6 +189,7 @@ import _poolRekiTheHistoryOfKamigawa from "../pool/reki-the-history-of-kamigawa.
 import _poolRenegadesGetaway from "../pool/renegades-getaway.js";
 import _poolResplendentAngel from "../pool/resplendent-angel.js";
 import _poolRestlessVents from "../pool/restless-vents.js";
+import _poolRiddlesmith from "../pool/riddlesmith.js";
 import _poolRiotSpikes from "../pool/riot-spikes.js";
 import _poolRipjawRaptor from "../pool/ripjaw-raptor.js";
 import _poolRiverchurnMonument from "../pool/riverchurn-monument.js";
@@ -209,6 +213,7 @@ import _poolSilentArtisan from "../pool/silent-artisan.js";
 import _poolSilundiIsle from "../pool/silundi-isle.js";
 import _poolSimplify from "../pool/simplify.js";
 import _poolSlashTheRanks from "../pool/slash-the-ranks.js";
+import _poolSlaughterPact from "../pool/slaughter-pact.js";
 import _poolSmellFear from "../pool/smell-fear.js";
 import _poolSoulSnuffers from "../pool/soul-snuffers.js";
 import _poolSozinsComet from "../pool/sozins-comet.js";
@@ -249,6 +254,7 @@ import _poolTranquilCove from "../pool/tranquil-cove.js";
 import _poolTranquilLandscape from "../pool/tranquil-landscape.js";
 import _poolTreetopSnarespinner from "../pool/treetop-snarespinner.js";
 import _poolTrenchingSteed from "../pool/trenching-steed.js";
+import _poolTrueAncestry from "../pool/true-ancestry.js";
 import _poolTuraKennerudSkyknight from "../pool/tura-kennerud-skyknight.js";
 import _poolTwinflameTyrant from "../pool/twinflame-tyrant.js";
 import _poolUmbralExpanse from "../pool/umbral-expanse.js";
@@ -265,6 +271,7 @@ import _poolVraanExecutionerThane from "../pool/vraan-executioner-thane.js";
 import _poolWallOfFire from "../pool/wall-of-fire.js";
 import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
+import _poolWarrenInstigator from "../pool/warren-instigator.js";
 import _poolWelcomingVampire from "../pool/welcoming-vampire.js";
 import _poolWildwoodRebirth from "../pool/wildwood-rebirth.js";
 import _poolWillowElf from "../pool/willow-elf.js";
@@ -287,6 +294,7 @@ const shard: CardShard = {
     _pool2Mace,
     _poolAbstergoEntertainment,
     _poolAdultGoldDragon,
+    _poolAerithLastAncient,
     _poolAmphinCutthroat,
     _poolAncestralVengeance,
     _poolAnimarSoulOfElements,
@@ -420,6 +428,7 @@ const shard: CardShard = {
     _poolLordOfExtinction,
     _poolLuminarchAspirant,
     _poolLyraDawnbringer,
+    _poolMagistratesScepter,
     _poolMajaBretagardProtector,
     _poolManglehorn,
     _poolManifoldKey,
@@ -449,6 +458,7 @@ const shard: CardShard = {
     _poolOranRiefTheVastwood,
     _poolOrcishSiegemaster,
     _poolPerimeterPatrol,
+    _poolPersonify,
     _poolPiaAndKiranNalaar,
     _poolPilgrimsEye,
     _poolPinToTheEarth,
@@ -467,6 +477,7 @@ const shard: CardShard = {
     _poolRenegadesGetaway,
     _poolResplendentAngel,
     _poolRestlessVents,
+    _poolRiddlesmith,
     _poolRiotSpikes,
     _poolRipjawRaptor,
     _poolRiverchurnMonument,
@@ -490,6 +501,7 @@ const shard: CardShard = {
     _poolSilundiIsle,
     _poolSimplify,
     _poolSlashTheRanks,
+    _poolSlaughterPact,
     _poolSmellFear,
     _poolSoulSnuffers,
     _poolSozinsComet,
@@ -530,6 +542,7 @@ const shard: CardShard = {
     _poolTranquilLandscape,
     _poolTreetopSnarespinner,
     _poolTrenchingSteed,
+    _poolTrueAncestry,
     _poolTuraKennerudSkyknight,
     _poolTwinflameTyrant,
     _poolUmbralExpanse,
@@ -546,6 +559,7 @@ const shard: CardShard = {
     _poolWallOfFire,
     _poolWandOfOrcus,
     _poolWanderingMusicians,
+    _poolWarrenInstigator,
     _poolWelcomingVampire,
     _poolWildwoodRebirth,
     _poolWillowElf,

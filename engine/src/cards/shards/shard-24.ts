@@ -105,6 +105,7 @@ import _poolHerosHeirloom from "../pool/heros-heirloom.js";
 import _poolHexingSquelcher from "../pool/hexing-squelcher.js";
 import _poolHiddenGrotto from "../pool/hidden-grotto.js";
 import _poolHollowmurkSiege from "../pool/hollowmurk-siege.js";
+import _poolHondenOfLifesWeb from "../pool/honden-of-lifes-web.js";
 import _poolHotDogCart from "../pool/hot-dog-cart.js";
 import _poolHuntersProwess from "../pool/hunters-prowess.js";
 import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
@@ -186,6 +187,7 @@ import _poolSidequestRaiseAChocobo from "../pool/sidequest-raise-a-chocobo.js";
 import _poolSidisiBroodTyrant from "../pool/sidisi-brood-tyrant.js";
 import _poolSimicGuildgate from "../pool/simic-guildgate.js";
 import _poolSinkhole from "../pool/sinkhole.js";
+import _poolSkinrender from "../pool/skinrender.js";
 import _poolSkullFracture from "../pool/skull-fracture.js";
 import _poolSokenzanBruiser from "../pool/sokenzan-bruiser.js";
 import _poolSoothsayerAdept from "../pool/soothsayer-adept.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolHexingSquelcher,
     _poolHiddenGrotto,
     _poolHollowmurkSiege,
+    _poolHondenOfLifesWeb,
     _poolHotDogCart,
     _poolHuntersProwess,
     _poolImpoliteEntrance,
@@ -438,6 +441,7 @@ const shard: CardShard = {
     _poolSidisiBroodTyrant,
     _poolSimicGuildgate,
     _poolSinkhole,
+    _poolSkinrender,
     _poolSkullFracture,
     _poolSokenzanBruiser,
     _poolSoothsayerAdept,

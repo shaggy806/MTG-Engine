@@ -29,6 +29,7 @@ import _poolBrokersHideout from "../pool/brokers-hideout.js";
 import _poolBurnwillowClearing from "../pool/burnwillow-clearing.js";
 import _poolBurrogBefuddler from "../pool/burrog-befuddler.js";
 import _poolCacklingImp from "../pool/cackling-imp.js";
+import _poolCastIntoTheFire from "../pool/cast-into-the-fire.js";
 import _poolCatapultMaster from "../pool/catapult-master.js";
 import _poolCetaDisciple from "../pool/ceta-disciple.js";
 import _poolCinderStorm from "../pool/cinder-storm.js";
@@ -263,6 +264,7 @@ const shard: CardShard = {
     _poolBurnwillowClearing,
     _poolBurrogBefuddler,
     _poolCacklingImp,
+    _poolCastIntoTheFire,
     _poolCatapultMaster,
     _poolCetaDisciple,
     _poolCinderStorm,

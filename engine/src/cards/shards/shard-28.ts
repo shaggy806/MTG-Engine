@@ -119,6 +119,7 @@ import _poolLeoninBattlemage from "../pool/leonin-battlemage.js";
 import _poolLeoninElder from "../pool/leonin-elder.js";
 import _poolLucentLiminid from "../pool/lucent-liminid.js";
 import _poolLuxurySuite from "../pool/luxury-suite.js";
+import _poolMagusOfTheCoffers from "../pool/magus-of-the-coffers.js";
 import _poolMaiScornfulStriker from "../pool/mai-scornful-striker.js";
 import _poolMakeAStand from "../pool/make-a-stand.js";
 import _poolManaGeode from "../pool/mana-geode.js";
@@ -372,6 +373,7 @@ const shard: CardShard = {
     _poolLeoninElder,
     _poolLucentLiminid,
     _poolLuxurySuite,
+    _poolMagusOfTheCoffers,
     _poolMaiScornfulStriker,
     _poolMakeAStand,
     _poolManaGeode,

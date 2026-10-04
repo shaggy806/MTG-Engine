@@ -67,6 +67,7 @@ import _poolDrogskolReaver from "../pool/drogskol-reaver.js";
 import _poolDromadPurebred from "../pool/dromad-purebred.js";
 import _poolDrossProwler from "../pool/dross-prowler.js";
 import _poolDryadArbor from "../pool/dryad-arbor.js";
+import _poolDwynensElite from "../pool/dwynens-elite.js";
 import _poolEagerFirstYear from "../pool/eager-first-year.js";
 import _poolEatToExtinction from "../pool/eat-to-extinction.js";
 import _poolEfficientConstruction from "../pool/efficient-construction.js";
@@ -100,6 +101,7 @@ import _poolHangedExecutioner from "../pool/hanged-executioner.js";
 import _poolHashepOasis from "../pool/hashep-oasis.js";
 import _poolHeadlessHorseman from "../pool/headless-horseman.js";
 import _poolHedgeMaze from "../pool/hedge-maze.js";
+import _poolHondenOfNightsReach from "../pool/honden-of-nights-reach.js";
 import _poolHornedTurtle from "../pool/horned-turtle.js";
 import _poolHornetNest from "../pool/hornet-nest.js";
 import _poolHushwoodVerge from "../pool/hushwood-verge.js";
@@ -142,6 +144,7 @@ import _poolNemaSiltlurker from "../pool/nema-siltlurker.js";
 import _poolNestRobber from "../pool/nest-robber.js";
 import _poolNightOfTheSweetsRevenge from "../pool/night-of-the-sweets-revenge.js";
 import _poolNimanaSkydancer from "../pool/nimana-skydancer.js";
+import _poolNyleasIntervention from "../pool/nyleas-intervention.js";
 import _poolObyraDreamingDuelist from "../pool/obyra-dreaming-duelist.js";
 import _poolOgreSentry from "../pool/ogre-sentry.js";
 import _poolOldGnawbone from "../pool/old-gnawbone.js";
@@ -322,6 +325,7 @@ const shard: CardShard = {
     _poolDromadPurebred,
     _poolDrossProwler,
     _poolDryadArbor,
+    _poolDwynensElite,
     _poolEagerFirstYear,
     _poolEatToExtinction,
     _poolEfficientConstruction,
@@ -355,6 +359,7 @@ const shard: CardShard = {
     _poolHashepOasis,
     _poolHeadlessHorseman,
     _poolHedgeMaze,
+    _poolHondenOfNightsReach,
     _poolHornedTurtle,
     _poolHornetNest,
     _poolHushwoodVerge,
@@ -397,6 +402,7 @@ const shard: CardShard = {
     _poolNestRobber,
     _poolNightOfTheSweetsRevenge,
     _poolNimanaSkydancer,
+    _poolNyleasIntervention,
     _poolObyraDreamingDuelist,
     _poolOgreSentry,
     _poolOldGnawbone,

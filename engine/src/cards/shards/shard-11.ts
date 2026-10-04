@@ -18,6 +18,7 @@ import _poolArmsDealer from "../pool/arms-dealer.js";
 import _poolAttrition from "../pool/attrition.js";
 import _poolAudacity from "../pool/audacity.js";
 import _poolBarbaryApes from "../pool/barbary-apes.js";
+import _poolBarbedServitor from "../pool/barbed-servitor.js";
 import _poolBattlemagesBracers from "../pool/battlemages-bracers.js";
 import _poolBeaconOfUnrest from "../pool/beacon-of-unrest.js";
 import _poolBehindTheScenes from "../pool/behind-the-scenes.js";
@@ -77,6 +78,7 @@ import _poolFaramirStewardOfGondor from "../pool/faramir-steward-of-gondor.js";
 import _poolFarhavenElf from "../pool/farhaven-elf.js";
 import _poolFiendArtisan from "../pool/fiend-artisan.js";
 import _poolFieryIslet from "../pool/fiery-islet.js";
+import _poolFloodPlain from "../pool/flood-plain.js";
 import _poolFontOfFertility from "../pool/font-of-fertility.js";
 import _poolForatog from "../pool/foratog.js";
 import _poolForsakenDrifters from "../pool/forsaken-drifters.js";
@@ -185,6 +187,7 @@ import _poolPlanarGenesis from "../pool/planar-genesis.js";
 import _poolPlatedSeastrider from "../pool/plated-seastrider.js";
 import _poolPriestOfIroas from "../pool/priest-of-iroas.js";
 import _poolPrimalMight from "../pool/primal-might.js";
+import _poolPrismariCharm from "../pool/prismari-charm.js";
 import _poolQuilledSlagwurm from "../pool/quilled-slagwurm.js";
 import _poolRadiantGrove from "../pool/radiant-grove.js";
 import _poolRadiantSummit from "../pool/radiant-summit.js";
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolAttrition,
     _poolAudacity,
     _poolBarbaryApes,
+    _poolBarbedServitor,
     _poolBattlemagesBracers,
     _poolBeaconOfUnrest,
     _poolBehindTheScenes,
@@ -376,6 +380,7 @@ const shard: CardShard = {
     _poolFarhavenElf,
     _poolFiendArtisan,
     _poolFieryIslet,
+    _poolFloodPlain,
     _poolFontOfFertility,
     _poolForatog,
     _poolForsakenDrifters,
@@ -484,6 +489,7 @@ const shard: CardShard = {
     _poolPlatedSeastrider,
     _poolPriestOfIroas,
     _poolPrimalMight,
+    _poolPrismariCharm,
     _poolQuilledSlagwurm,
     _poolRadiantGrove,
     _poolRadiantSummit,

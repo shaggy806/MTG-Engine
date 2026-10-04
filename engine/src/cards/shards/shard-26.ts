@@ -15,6 +15,7 @@ import _poolAkoumTeeth from "../pool/akoum-teeth.js";
 import _poolAkromaAngelOfWrath from "../pool/akroma-angel-of-wrath.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
+import _poolAranaHeartOfTheSpider from "../pool/arana-heart-of-the-spider.js";
 import _poolArdenvaleFealty from "../pool/ardenvale-fealty.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
@@ -84,6 +85,7 @@ import _poolGiantMantis from "../pool/giant-mantis.js";
 import _poolGleefulArsonist from "../pool/gleeful-arsonist.js";
 import _poolGlimpseTheUnthinkable from "../pool/glimpse-the-unthinkable.js";
 import _poolGoblinBully from "../pool/goblin-bully.js";
+import _poolGolemFoundry from "../pool/golem-foundry.js";
 import _poolGolgariFindbroker from "../pool/golgari-findbroker.js";
 import _poolGoliathBeetle from "../pool/goliath-beetle.js";
 import _poolGraveVenerations from "../pool/grave-venerations.js";
@@ -141,6 +143,7 @@ import _poolMuseDrake from "../pool/muse-drake.js";
 import _poolMyrScrapling from "../pool/myr-scrapling.js";
 import _poolMysticSanctuary from "../pool/mystic-sanctuary.js";
 import _poolNaturalOrder from "../pool/natural-order.js";
+import _poolNeedleSpires from "../pool/needle-spires.js";
 import _poolNephaliaMoondrakes from "../pool/nephalia-moondrakes.js";
 import _poolNetherTraitor from "../pool/nether-traitor.js";
 import _poolNeurokHoversail from "../pool/neurok-hoversail.js";
@@ -251,6 +254,7 @@ import _poolYokedOx from "../pool/yoked-ox.js";
 import _poolZagothTriome from "../pool/zagoth-triome.js";
 import _poolZealotOfTheGodPharaoh from "../pool/zealot-of-the-god-pharaoh.js";
 import _poolZombieApocalypse from "../pool/zombie-apocalypse.js";
+import _tokensDragonElementalToken from "../tokens/dragon-elemental-token.js";
 import _tokensPegasusToken from "../tokens/pegasus-token.js";
 import _tokensRebelToken from "../tokens/rebel-token.js";
 import _tokensRobotToken from "../tokens/robot-token.js";
@@ -271,6 +275,7 @@ const shard: CardShard = {
     _poolAkromaAngelOfWrath,
     _poolAncientBrontodon,
     _poolApexDevastator,
+    _poolAranaHeartOfTheSpider,
     _poolArdenvaleFealty,
     _poolAshcoatBear,
     _poolAtomize,
@@ -340,6 +345,7 @@ const shard: CardShard = {
     _poolGleefulArsonist,
     _poolGlimpseTheUnthinkable,
     _poolGoblinBully,
+    _poolGolemFoundry,
     _poolGolgariFindbroker,
     _poolGoliathBeetle,
     _poolGraveVenerations,
@@ -397,6 +403,7 @@ const shard: CardShard = {
     _poolMyrScrapling,
     _poolMysticSanctuary,
     _poolNaturalOrder,
+    _poolNeedleSpires,
     _poolNephaliaMoondrakes,
     _poolNetherTraitor,
     _poolNeurokHoversail,
@@ -509,6 +516,7 @@ const shard: CardShard = {
     _poolZombieApocalypse,
   ],
   tokens: [
+    _tokensDragonElementalToken,
     _tokensPegasusToken,
     _tokensRebelToken,
     _tokensRobotToken,

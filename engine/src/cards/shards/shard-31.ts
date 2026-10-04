@@ -47,6 +47,7 @@ import _poolCloudkinSeer from "../pool/cloudkin-seer.js";
 import _poolColossodonYearling from "../pool/colossodon-yearling.js";
 import _poolCommissarSeverinaRaine from "../pool/commissar-severina-raine.js";
 import _poolCoppercoatVanguard from "../pool/coppercoat-vanguard.js";
+import _poolCopperhornScout from "../pool/copperhorn-scout.js";
 import _poolCounterspell from "../pool/counterspell.js";
 import _poolCrackOpen from "../pool/crack-open.js";
 import _poolCrimsonFleetCommodore from "../pool/crimson-fleet-commodore.js";
@@ -88,6 +89,7 @@ import _poolFoundryInspector from "../pool/foundry-inspector.js";
 import _poolFountainportBell from "../pool/fountainport-bell.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
+import _poolGallifreyCouncilChamber from "../pool/gallifrey-council-chamber.js";
 import _poolGatheringStone from "../pool/gathering-stone.js";
 import _poolGenesisChamber from "../pool/genesis-chamber.js";
 import _poolGhostlyFlicker from "../pool/ghostly-flicker.js";
@@ -213,6 +215,7 @@ import _poolTeferisTutelage from "../pool/teferis-tutelage.js";
 import _poolTemurBattlecrier from "../pool/temur-battlecrier.js";
 import _poolTheBattleOfBywater from "../pool/the-battle-of-bywater.js";
 import _poolTheReaverCleaver from "../pool/the-reaver-cleaver.js";
+import _poolTheWatcherInTheWater from "../pool/the-watcher-in-the-water.js";
 import _poolThorinsLastStand from "../pool/thorins-last-stand.js";
 import _poolTifaLockhart from "../pool/tifa-lockhart.js";
 import _poolTimbercrownPathway from "../pool/timbercrown-pathway.js";
@@ -296,6 +299,7 @@ const shard: CardShard = {
     _poolColossodonYearling,
     _poolCommissarSeverinaRaine,
     _poolCoppercoatVanguard,
+    _poolCopperhornScout,
     _poolCounterspell,
     _poolCrackOpen,
     _poolCrimsonFleetCommodore,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolFountainportBell,
     _poolFoxfireOak,
     _poolFungalInfection,
+    _poolGallifreyCouncilChamber,
     _poolGatheringStone,
     _poolGenesisChamber,
     _poolGhostlyFlicker,
@@ -462,6 +467,7 @@ const shard: CardShard = {
     _poolTemurBattlecrier,
     _poolTheBattleOfBywater,
     _poolTheReaverCleaver,
+    _poolTheWatcherInTheWater,
     _poolThorinsLastStand,
     _poolTifaLockhart,
     _poolTimbercrownPathway,

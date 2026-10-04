@@ -46,6 +46,7 @@ import _poolCrystalSkullIsuSpyglass from "../pool/crystal-skull-isu-spyglass.js"
 import _poolDaringApprentice from "../pool/daring-apprentice.js";
 import _poolDarkRemedy from "../pool/dark-remedy.js";
 import _poolDarkwaterCatacombs from "../pool/darkwater-catacombs.js";
+import _poolDawngladeRegent from "../pool/dawnglade-regent.js";
 import _poolDecanterOfEndlessWater from "../pool/decanter-of-endless-water.js";
 import _poolDenyEntry from "../pool/deny-entry.js";
 import _poolDevilthornFox from "../pool/devilthorn-fox.js";
@@ -79,6 +80,7 @@ import _poolGildedLotus from "../pool/gilded-lotus.js";
 import _poolGlassGolem from "../pool/glass-golem.js";
 import _poolGoblinGlider from "../pool/goblin-glider.js";
 import _poolGoliathMassManipulator from "../pool/goliath-mass-manipulator.js";
+import _poolGrapplingKraken from "../pool/grappling-kraken.js";
 import _poolGreatForestDruid from "../pool/great-forest-druid.js";
 import _poolGreatHart from "../pool/great-hart.js";
 import _poolGreelsCaress from "../pool/greels-caress.js";
@@ -146,6 +148,7 @@ import _poolMiresGrasp from "../pool/mires-grasp.js";
 import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
 import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
 import _poolMuckRats from "../pool/muck-rats.js";
+import _poolNaturalReclamation from "../pool/natural-reclamation.js";
 import _poolNecrogenCommunion from "../pool/necrogen-communion.js";
 import _poolNekusarTheMindrazer from "../pool/nekusar-the-mindrazer.js";
 import _poolNephaliaSeakite from "../pool/nephalia-seakite.js";
@@ -212,6 +215,7 @@ import _poolSokkaTenaciousTactician from "../pool/sokka-tenacious-tactician.js";
 import _poolSomberwaldDryad from "../pool/somberwald-dryad.js";
 import _poolSpellPierce from "../pool/spell-pierce.js";
 import _poolSpiderWomanStunningSavior from "../pool/spider-woman-stunning-savior.js";
+import _poolSquirmingEmergence from "../pool/squirming-emergence.js";
 import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
@@ -232,6 +236,7 @@ import _poolTopanAscetic from "../pool/topan-ascetic.js";
 import _poolTowerDrake from "../pool/tower-drake.js";
 import _poolTradewindRider from "../pool/tradewind-rider.js";
 import _poolTrashForTreasure from "../pool/trash-for-treasure.js";
+import _poolTroyanGutsyExplorer from "../pool/troyan-gutsy-explorer.js";
 import _poolUlamogsDreadsire from "../pool/ulamogs-dreadsire.js";
 import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
@@ -311,6 +316,7 @@ const shard: CardShard = {
     _poolDaringApprentice,
     _poolDarkRemedy,
     _poolDarkwaterCatacombs,
+    _poolDawngladeRegent,
     _poolDecanterOfEndlessWater,
     _poolDenyEntry,
     _poolDevilthornFox,
@@ -344,6 +350,7 @@ const shard: CardShard = {
     _poolGlassGolem,
     _poolGoblinGlider,
     _poolGoliathMassManipulator,
+    _poolGrapplingKraken,
     _poolGreatForestDruid,
     _poolGreatHart,
     _poolGreelsCaress,
@@ -411,6 +418,7 @@ const shard: CardShard = {
     _poolMoldervineReclamation,
     _poolMorophonTheBoundless,
     _poolMuckRats,
+    _poolNaturalReclamation,
     _poolNecrogenCommunion,
     _poolNekusarTheMindrazer,
     _poolNephaliaSeakite,
@@ -477,6 +485,7 @@ const shard: CardShard = {
     _poolSomberwaldDryad,
     _poolSpellPierce,
     _poolSpiderWomanStunningSavior,
+    _poolSquirmingEmergence,
     _poolSramSeniorEdificer,
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
@@ -497,6 +506,7 @@ const shard: CardShard = {
     _poolTowerDrake,
     _poolTradewindRider,
     _poolTrashForTreasure,
+    _poolTroyanGutsyExplorer,
     _poolUlamogsDreadsire,
     _poolUnsubtleMockery,
     _poolUrborgDrake,

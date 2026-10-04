@@ -43,6 +43,7 @@ import _poolCouriersCapsule from "../pool/couriers-capsule.js";
 import _poolCourtOfArdenvale from "../pool/court-of-ardenvale.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
 import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
+import _poolDaemogothTitan from "../pool/daemogoth-titan.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
 import _poolDarkNourishment from "../pool/dark-nourishment.js";
 import _poolDeathgreeter from "../pool/deathgreeter.js";
@@ -128,17 +129,20 @@ import _poolMerryWardenOfIsengard from "../pool/merry-warden-of-isengard.js";
 import _poolMesaEnchantress from "../pool/mesa-enchantress.js";
 import _poolMesmericOrb from "../pool/mesmeric-orb.js";
 import _poolMessengerDrake from "../pool/messenger-drake.js";
+import _poolMinionsReturn from "../pool/minions-return.js";
 import _poolMirrorEntity from "../pool/mirror-entity.js";
 import _poolMisguidedRage from "../pool/misguided-rage.js";
 import _poolMonoistSentry from "../pool/monoist-sentry.js";
 import _poolMorphicPool from "../pool/morphic-pool.js";
 import _poolMsBumbleflower from "../pool/ms-bumbleflower.js";
 import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
+import _poolMyrEnforcer from "../pool/myr-enforcer.js";
 import _poolMyrRetriever from "../pool/myr-retriever.js";
 import _poolNagaEternal from "../pool/naga-eternal.js";
 import _poolNezahalPrimalTide from "../pool/nezahal-primal-tide.js";
 import _poolNightmareShepherd from "../pool/nightmare-shepherd.js";
 import _poolNoxiousRevival from "../pool/noxious-revival.js";
+import _poolNymrisOonasTrickster from "../pool/nymris-oonas-trickster.js";
 import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
 import _poolOrazcaRaptor from "../pool/orazca-raptor.js";
 import _poolOrzhovSignet from "../pool/orzhov-signet.js";
@@ -198,6 +202,7 @@ import _poolSylvokReplica from "../pool/sylvok-replica.js";
 import _poolSymbioticBeast from "../pool/symbiotic-beast.js";
 import _poolTanglebloom from "../pool/tanglebloom.js";
 import _poolTanglepoolBridge from "../pool/tanglepool-bridge.js";
+import _poolTendrilsOfAgony from "../pool/tendrils-of-agony.js";
 import _poolTerrorOfTheFairgrounds from "../pool/terror-of-the-fairgrounds.js";
 import _poolTheEldestReborn from "../pool/the-eldest-reborn.js";
 import _poolThornwoodFalls from "../pool/thornwood-falls.js";
@@ -213,6 +218,7 @@ import _poolTurbulentFen from "../pool/turbulent-fen.js";
 import _poolTurbulentSteppe from "../pool/turbulent-steppe.js";
 import _poolUndeadMinotaur from "../pool/undead-minotaur.js";
 import _poolUnholyStrength from "../pool/unholy-strength.js";
+import _poolUnitedFront from "../pool/united-front.js";
 import _poolUnstoppablePlan from "../pool/unstoppable-plan.js";
 import _poolValorousSteed from "../pool/valorous-steed.js";
 import _poolVensersJournal from "../pool/vensers-journal.js";
@@ -275,6 +281,7 @@ const shard: CardShard = {
     _poolCourtOfArdenvale,
     _poolCravenGiant,
     _poolCurseOfTheSwine,
+    _poolDaemogothTitan,
     _poolDaggerfangDuo,
     _poolDarkNourishment,
     _poolDeathgreeter,
@@ -360,17 +367,20 @@ const shard: CardShard = {
     _poolMesaEnchantress,
     _poolMesmericOrb,
     _poolMessengerDrake,
+    _poolMinionsReturn,
     _poolMirrorEntity,
     _poolMisguidedRage,
     _poolMonoistSentry,
     _poolMorphicPool,
     _poolMsBumbleflower,
     _poolMurmuringPhantasm,
+    _poolMyrEnforcer,
     _poolMyrRetriever,
     _poolNagaEternal,
     _poolNezahalPrimalTide,
     _poolNightmareShepherd,
     _poolNoxiousRevival,
+    _poolNymrisOonasTrickster,
     _poolObeliskOfGrixis,
     _poolOrazcaRaptor,
     _poolOrzhovSignet,
@@ -430,6 +440,7 @@ const shard: CardShard = {
     _poolSymbioticBeast,
     _poolTanglebloom,
     _poolTanglepoolBridge,
+    _poolTendrilsOfAgony,
     _poolTerrorOfTheFairgrounds,
     _poolTheEldestReborn,
     _poolThornwoodFalls,
@@ -445,6 +456,7 @@ const shard: CardShard = {
     _poolTurbulentSteppe,
     _poolUndeadMinotaur,
     _poolUnholyStrength,
+    _poolUnitedFront,
     _poolUnstoppablePlan,
     _poolValorousSteed,
     _poolVensersJournal,

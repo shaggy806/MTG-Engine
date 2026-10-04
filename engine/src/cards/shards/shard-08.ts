@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbrade from "../pool/abrade.js";
+import _poolAcrobaticManeuver from "../pool/acrobatic-maneuver.js";
 import _poolAdmiralBrassUnsinkable from "../pool/admiral-brass-unsinkable.js";
 import _poolAdunOakenshield from "../pool/adun-oakenshield.js";
 import _poolAetherAdept from "../pool/aether-adept.js";
@@ -121,8 +122,10 @@ import _poolKinsbaileSkirmisher from "../pool/kinsbaile-skirmisher.js";
 import _poolKomodoRhino from "../pool/komodo-rhino.js";
 import _poolKwainItinerantMeddler from "../pool/kwain-itinerant-meddler.js";
 import _poolKyrenNegotiations from "../pool/kyren-negotiations.js";
+import _poolLavabellySliver from "../pool/lavabelly-sliver.js";
 import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
 import _poolLegionWarboss from "../pool/legion-warboss.js";
+import _poolLessonsFromLife from "../pool/lessons-from-life.js";
 import _poolLilianaVess from "../pool/liliana-vess.js";
 import _poolLlanowarEnvoy from "../pool/llanowar-envoy.js";
 import _poolLoftyDenial from "../pool/lofty-denial.js";
@@ -155,6 +158,7 @@ import _poolOverflowingBasin from "../pool/overflowing-basin.js";
 import _poolOverrun from "../pool/overrun.js";
 import _poolOxiddaDaredevil from "../pool/oxidda-daredevil.js";
 import _poolPathToExile from "../pool/path-to-exile.js";
+import _poolPerniciousDeed from "../pool/pernicious-deed.js";
 import _poolPhantomMonster from "../pool/phantom-monster.js";
 import _poolPierceStrider from "../pool/pierce-strider.js";
 import _poolPilgrimOfTheFires from "../pool/pilgrim-of-the-fires.js";
@@ -175,6 +179,7 @@ import _poolRighteousAvengers from "../pool/righteous-avengers.js";
 import _poolRishadanPort from "../pool/rishadan-port.js";
 import _poolRisingPopulace from "../pool/rising-populace.js";
 import _poolRoofstalkerWight from "../pool/roofstalker-wight.js";
+import _poolSageOfTheMaze from "../pool/sage-of-the-maze.js";
 import _poolSalvagerOfSecrets from "../pool/salvager-of-secrets.js";
 import _poolSandsOfDelirium from "../pool/sands-of-delirium.js";
 import _poolScrollshift from "../pool/scrollshift.js";
@@ -195,6 +200,7 @@ import _poolSlagwurmArmor from "../pool/slagwurm-armor.js";
 import _poolSmelt from "../pool/smelt.js";
 import _poolSoulShred from "../pool/soul-shred.js";
 import _poolSphereGrid from "../pool/sphere-grid.js";
+import _poolSpiderHamPeterPorker from "../pool/spider-ham-peter-porker.js";
 import _poolSpiritOfMalevolence from "../pool/spirit-of-malevolence.js";
 import _poolSplashPortal from "../pool/splash-portal.js";
 import _poolStockingThePantry from "../pool/stocking-the-pantry.js";
@@ -253,6 +259,7 @@ import _tokensWolfToken from "../tokens/wolf-token.js";
 const shard: CardShard = {
   pool: [
     _poolAbrade,
+    _poolAcrobaticManeuver,
     _poolAdmiralBrassUnsinkable,
     _poolAdunOakenshield,
     _poolAetherAdept,
@@ -370,8 +377,10 @@ const shard: CardShard = {
     _poolKomodoRhino,
     _poolKwainItinerantMeddler,
     _poolKyrenNegotiations,
+    _poolLavabellySliver,
     _poolLeaveInTheDust,
     _poolLegionWarboss,
+    _poolLessonsFromLife,
     _poolLilianaVess,
     _poolLlanowarEnvoy,
     _poolLoftyDenial,
@@ -404,6 +413,7 @@ const shard: CardShard = {
     _poolOverrun,
     _poolOxiddaDaredevil,
     _poolPathToExile,
+    _poolPerniciousDeed,
     _poolPhantomMonster,
     _poolPierceStrider,
     _poolPilgrimOfTheFires,
@@ -424,6 +434,7 @@ const shard: CardShard = {
     _poolRishadanPort,
     _poolRisingPopulace,
     _poolRoofstalkerWight,
+    _poolSageOfTheMaze,
     _poolSalvagerOfSecrets,
     _poolSandsOfDelirium,
     _poolScrollshift,
@@ -444,6 +455,7 @@ const shard: CardShard = {
     _poolSmelt,
     _poolSoulShred,
     _poolSphereGrid,
+    _poolSpiderHamPeterPorker,
     _poolSpiritOfMalevolence,
     _poolSplashPortal,
     _poolStockingThePantry,

@@ -84,6 +84,7 @@ import _poolDrossforgeBridge from "../pool/drossforge-bridge.js";
 import _poolDrownedCatacomb from "../pool/drowned-catacomb.js";
 import _poolDuskImp from "../pool/dusk-imp.js";
 import _poolEdgarMarkov from "../pool/edgar-markov.js";
+import _poolElementalEruption from "../pool/elemental-eruption.js";
 import _poolElephantRat from "../pool/elephant-rat.js";
 import _poolElvishScrapper from "../pool/elvish-scrapper.js";
 import _poolEvendoBrushrazer from "../pool/evendo-brushrazer.js";
@@ -153,6 +154,7 @@ import _poolMerfolkLooter from "../pool/merfolk-looter.js";
 import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
 import _poolMidnightAssassin from "../pool/midnight-assassin.js";
 import _poolMirranSpy from "../pool/mirran-spy.js";
+import _poolMirrorOfGaladriel from "../pool/mirror-of-galadriel.js";
 import _poolMnemonicSphere from "../pool/mnemonic-sphere.js";
 import _poolMoltenDuplication from "../pool/molten-duplication.js";
 import _poolMonkRealist from "../pool/monk-realist.js";
@@ -340,6 +342,7 @@ const shard: CardShard = {
     _poolDrownedCatacomb,
     _poolDuskImp,
     _poolEdgarMarkov,
+    _poolElementalEruption,
     _poolElephantRat,
     _poolElvishScrapper,
     _poolEvendoBrushrazer,
@@ -409,6 +412,7 @@ const shard: CardShard = {
     _poolMerrowWitsniper,
     _poolMidnightAssassin,
     _poolMirranSpy,
+    _poolMirrorOfGaladriel,
     _poolMnemonicSphere,
     _poolMoltenDuplication,
     _poolMonkRealist,

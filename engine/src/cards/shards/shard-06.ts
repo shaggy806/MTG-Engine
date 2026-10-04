@@ -54,6 +54,7 @@ import _poolCliffgate from "../pool/cliffgate.js";
 import _poolCloudchaserEagle from "../pool/cloudchaser-eagle.js";
 import _poolConsider from "../pool/consider.js";
 import _poolCopyArtifact from "../pool/copy-artifact.js";
+import _poolCoretapper from "../pool/coretapper.js";
 import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
 import _poolCrypticCommand from "../pool/cryptic-command.js";
@@ -99,11 +100,13 @@ import _poolGenerousEnt from "../pool/generous-ent.js";
 import _poolGenerousPup from "../pool/generous-pup.js";
 import _poolGhostfireSlice from "../pool/ghostfire-slice.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
+import _poolGlamdring from "../pool/glamdring.js";
 import _poolGlimmervoid from "../pool/glimmervoid.js";
 import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
 import _poolGoblinTrashmaster from "../pool/goblin-trashmaster.js";
 import _poolGravitationalShift from "../pool/gravitational-shift.js";
+import _poolGretaSweettoothScourge from "../pool/greta-sweettooth-scourge.js";
 import _poolGreyHavensNavigator from "../pool/grey-havens-navigator.js";
 import _poolGrislySalvage from "../pool/grisly-salvage.js";
 import _poolGroundbreaker from "../pool/groundbreaker.js";
@@ -255,6 +258,7 @@ import _tokensBlueBirdToken from "../tokens/blue-bird-token.js";
 import _tokensCitizenToken from "../tokens/citizen-token.js";
 import _tokensDragonTokenFirebreathing from "../tokens/dragon-token-firebreathing.js";
 import _tokensEldraziSpawnToken from "../tokens/eldrazi-spawn-token.js";
+import _tokensGolemTokenGolemFoundry from "../tokens/golem-token-golem-foundry.js";
 import _tokensHydraToken from "../tokens/hydra-token.js";
 import _tokensInsectTokenCanoptekScarabSwarm from "../tokens/insect-token-canoptek-scarab-swarm.js";
 import _tokensJunkToken from "../tokens/junk-token.js";
@@ -315,6 +319,7 @@ const shard: CardShard = {
     _poolCloudchaserEagle,
     _poolConsider,
     _poolCopyArtifact,
+    _poolCoretapper,
     _poolCorruptCourtOfficial,
     _poolCrackTheEarth,
     _poolCrypticCommand,
@@ -360,11 +365,13 @@ const shard: CardShard = {
     _poolGenerousPup,
     _poolGhostfireSlice,
     _poolGhostlyPrison,
+    _poolGlamdring,
     _poolGlimmervoid,
     _poolGoblinGangLeader,
     _poolGoblinRally,
     _poolGoblinTrashmaster,
     _poolGravitationalShift,
+    _poolGretaSweettoothScourge,
     _poolGreyHavensNavigator,
     _poolGrislySalvage,
     _poolGroundbreaker,
@@ -518,6 +525,7 @@ const shard: CardShard = {
     _tokensCitizenToken,
     _tokensDragonTokenFirebreathing,
     _tokensEldraziSpawnToken,
+    _tokensGolemTokenGolemFoundry,
     _tokensHydraToken,
     _tokensInsectTokenCanoptekScarabSwarm,
     _tokensJunkToken,

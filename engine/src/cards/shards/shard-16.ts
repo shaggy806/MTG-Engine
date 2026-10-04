@@ -42,6 +42,7 @@ import _poolCarnivorousMossBeast from "../pool/carnivorous-moss-beast.js";
 import _poolCartoucheOfKnowledge from "../pool/cartouche-of-knowledge.js";
 import _poolCatOwl from "../pool/cat-owl.js";
 import _poolCausticCaterpillar from "../pool/caustic-caterpillar.js";
+import _poolCelestialColonnade from "../pool/celestial-colonnade.js";
 import _poolCentaurCourser from "../pool/centaur-courser.js";
 import _poolCentaurNurturer from "../pool/centaur-nurturer.js";
 import _poolChargeThrough from "../pool/charge-through.js";
@@ -49,6 +50,7 @@ import _poolChildOfNight from "../pool/child-of-night.js";
 import _poolCityPigeon from "../pool/city-pigeon.js";
 import _poolCobbledWings from "../pool/cobbled-wings.js";
 import _poolColdCaseCracker from "../pool/cold-case-cracker.js";
+import _poolCombineChrysalis from "../pool/combine-chrysalis.js";
 import _poolContaminantGrafter from "../pool/contaminant-grafter.js";
 import _poolCourtOfGarenbrig from "../pool/court-of-garenbrig.js";
 import _poolCraterize from "../pool/craterize.js";
@@ -112,6 +114,7 @@ import _poolHarmlessOffering from "../pool/harmless-offering.js";
 import _poolHeartstone from "../pool/heartstone.js";
 import _poolHematiteGolem from "../pool/hematite-golem.js";
 import _poolHomaridExplorer from "../pool/homarid-explorer.js";
+import _poolHondenOfCleansingFire from "../pool/honden-of-cleansing-fire.js";
 import _poolHulkingCyclops from "../pool/hulking-cyclops.js";
 import _poolIkraShidiqiTheUsurper from "../pool/ikra-shidiqi-the-usurper.js";
 import _poolImmolatingSouleater from "../pool/immolating-souleater.js";
@@ -330,6 +333,7 @@ const shard: CardShard = {
     _poolCartoucheOfKnowledge,
     _poolCatOwl,
     _poolCausticCaterpillar,
+    _poolCelestialColonnade,
     _poolCentaurCourser,
     _poolCentaurNurturer,
     _poolChargeThrough,
@@ -337,6 +341,7 @@ const shard: CardShard = {
     _poolCityPigeon,
     _poolCobbledWings,
     _poolColdCaseCracker,
+    _poolCombineChrysalis,
     _poolContaminantGrafter,
     _poolCourtOfGarenbrig,
     _poolCraterize,
@@ -400,6 +405,7 @@ const shard: CardShard = {
     _poolHeartstone,
     _poolHematiteGolem,
     _poolHomaridExplorer,
+    _poolHondenOfCleansingFire,
     _poolHulkingCyclops,
     _poolIkraShidiqiTheUsurper,
     _poolImmolatingSouleater,

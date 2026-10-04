@@ -34,6 +34,7 @@ import _poolCabarettiInitiate from "../pool/cabaretti-initiate.js";
 import _poolCancel from "../pool/cancel.js";
 import _poolCandlelightVigil from "../pool/candlelight-vigil.js";
 import _poolCantWakeUp from "../pool/cant-wake-up.js";
+import _poolCavalierOfNight from "../pool/cavalier-of-night.js";
 import _poolCelebrityFencer from "../pool/celebrity-fencer.js";
 import _poolCentaurSafeguard from "../pool/centaur-safeguard.js";
 import _poolChantOfTheSkifsang from "../pool/chant-of-the-skifsang.js";
@@ -130,6 +131,7 @@ import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMindsDilation from "../pool/minds-dilation.js";
 import _poolMistDancer from "../pool/mist-dancer.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
+import _poolMonstrosityOfTheLake from "../pool/monstrosity-of-the-lake.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
 import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
 import _poolNastyEnd from "../pool/nasty-end.js";
@@ -147,6 +149,7 @@ import _poolPrimevalsGloriousRebirth from "../pool/primevals-glorious-rebirth.js
 import _poolPrimordialWurm from "../pool/primordial-wurm.js";
 import _poolPrinceImrahilTheFair from "../pool/prince-imrahil-the-fair.js";
 import _poolPrivilegedPosition from "../pool/privileged-position.js";
+import _poolQasaliSlingers from "../pool/qasali-slingers.js";
 import _poolQuirionRanger from "../pool/quirion-ranger.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
@@ -201,6 +204,7 @@ import _poolSwornGuardian from "../pool/sworn-guardian.js";
 import _poolSzarelGenesisShepherd from "../pool/szarel-genesis-shepherd.js";
 import _poolTalionTheKindlyLord from "../pool/talion-the-kindly-lord.js";
 import _poolTalismanOfIndulgence from "../pool/talisman-of-indulgence.js";
+import _poolTellingTime from "../pool/telling-time.js";
 import _poolTempleOfEnlightenment from "../pool/temple-of-enlightenment.js";
 import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
 import _poolTenderWildguide from "../pool/tender-wildguide.js";
@@ -288,6 +292,7 @@ const shard: CardShard = {
     _poolCancel,
     _poolCandlelightVigil,
     _poolCantWakeUp,
+    _poolCavalierOfNight,
     _poolCelebrityFencer,
     _poolCentaurSafeguard,
     _poolChantOfTheSkifsang,
@@ -384,6 +389,7 @@ const shard: CardShard = {
     _poolMindsDilation,
     _poolMistDancer,
     _poolMoltenGatekeeper,
+    _poolMonstrosityOfTheLake,
     _poolMoonlitWake,
     _poolMosscoatGoriak,
     _poolNastyEnd,
@@ -401,6 +407,7 @@ const shard: CardShard = {
     _poolPrimordialWurm,
     _poolPrinceImrahilTheFair,
     _poolPrivilegedPosition,
+    _poolQasaliSlingers,
     _poolQuirionRanger,
     _poolRageThrower,
     _poolRakdosCluestone,
@@ -455,6 +462,7 @@ const shard: CardShard = {
     _poolSzarelGenesisShepherd,
     _poolTalionTheKindlyLord,
     _poolTalismanOfIndulgence,
+    _poolTellingTime,
     _poolTempleOfEnlightenment,
     _poolTempleOfPlenty,
     _poolTenderWildguide,

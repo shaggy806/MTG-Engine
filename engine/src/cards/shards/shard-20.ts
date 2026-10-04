@@ -82,6 +82,7 @@ import _poolDuelistsHeritage from "../pool/duelists-heritage.js";
 import _poolEarthbenderAscension from "../pool/earthbender-ascension.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
 import _poolEidolonOfInspiration from "../pool/eidolon-of-inspiration.js";
+import _poolElderfangVenom from "../pool/elderfang-venom.js";
 import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
 import _poolEmeriasCall from "../pool/emerias-call.js";
 import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
@@ -235,6 +236,7 @@ import _poolThoughtVessel from "../pool/thought-vessel.js";
 import _poolThrashingBrontodon from "../pool/thrashing-brontodon.js";
 import _poolThrivingHeath from "../pool/thriving-heath.js";
 import _poolTimberwatchElf from "../pool/timberwatch-elf.js";
+import _poolTishanaVoiceOfThunder from "../pool/tishana-voice-of-thunder.js";
 import _poolTitansStrength from "../pool/titans-strength.js";
 import _poolTomeBlast from "../pool/tome-blast.js";
 import _poolTormodsCrypt from "../pool/tormods-crypt.js";
@@ -255,6 +257,7 @@ import _poolWellRested from "../pool/well-rested.js";
 import _poolWildCantor from "../pool/wild-cantor.js";
 import _poolWillowrushVerge from "../pool/willowrush-verge.js";
 import _poolZagothCrystal from "../pool/zagoth-crystal.js";
+import _poolZellDincht from "../pool/zell-dincht.js";
 import _poolZephyrNet from "../pool/zephyr-net.js";
 import _tokensFaerieToken from "../tokens/faerie-token.js";
 import _tokensIllusionTokenMinn from "../tokens/illusion-token-minn.js";
@@ -343,6 +346,7 @@ const shard: CardShard = {
     _poolEarthbenderAscension,
     _poolEbonyTreefolk,
     _poolEidolonOfInspiration,
+    _poolElderfangVenom,
     _poolEmberethShieldbreaker,
     _poolEmeriasCall,
     _poolEnduringTenacity,
@@ -496,6 +500,7 @@ const shard: CardShard = {
     _poolThrashingBrontodon,
     _poolThrivingHeath,
     _poolTimberwatchElf,
+    _poolTishanaVoiceOfThunder,
     _poolTitansStrength,
     _poolTomeBlast,
     _poolTormodsCrypt,
@@ -516,6 +521,7 @@ const shard: CardShard = {
     _poolWildCantor,
     _poolWillowrushVerge,
     _poolZagothCrystal,
+    _poolZellDincht,
     _poolZephyrNet,
   ],
   tokens: [

@@ -148,6 +148,7 @@ import _poolOrzhovGuildgate from "../pool/orzhov-guildgate.js";
 import _poolOverseerOfTheDamned from "../pool/overseer-of-the-damned.js";
 import _poolOversoldCemetery from "../pool/oversold-cemetery.js";
 import _poolPassionateArchaeologist from "../pool/passionate-archaeologist.js";
+import _poolPollenbrightDruid from "../pool/pollenbright-druid.js";
 import _poolPrecinctCaptain from "../pool/precinct-captain.js";
 import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
@@ -219,6 +220,7 @@ import _poolThassasOracle from "../pool/thassas-oracle.js";
 import _poolTheShire from "../pool/the-shire.js";
 import _poolThornglintBridge from "../pool/thornglint-bridge.js";
 import _poolThunderWall from "../pool/thunder-wall.js";
+import _poolThundertrapTrainer from "../pool/thundertrap-trainer.js";
 import _poolTimberlandGuide from "../pool/timberland-guide.js";
 import _poolTimeWipe from "../pool/time-wipe.js";
 import _poolToothyImaginaryFriend from "../pool/toothy-imaginary-friend.js";
@@ -253,6 +255,7 @@ import _poolWoebearer from "../pool/woebearer.js";
 import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
 import _poolWoodfallPrimus from "../pool/woodfall-primus.js";
 import _poolWoodlandStream from "../pool/woodland-stream.js";
+import _poolWorthyCost from "../pool/worthy-cost.js";
 import _poolXolatoyacTheSmilingFlood from "../pool/xolatoyac-the-smiling-flood.js";
 import _poolYavimayaAncients from "../pool/yavimaya-ancients.js";
 import _poolYotianSoldier from "../pool/yotian-soldier.js";
@@ -274,6 +277,7 @@ import _tokensPlantTokenDefender from "../tokens/plant-token-defender.js";
 import _tokensSpiritTokenQuintorius from "../tokens/spirit-token-quintorius.js";
 import _tokensVampireDemonToken from "../tokens/vampire-demon-token.js";
 import _tokensWraithToken from "../tokens/wraith-token.js";
+import _tokensZombieBerserkerToken from "../tokens/zombie-berserker-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -422,6 +426,7 @@ const shard: CardShard = {
     _poolOverseerOfTheDamned,
     _poolOversoldCemetery,
     _poolPassionateArchaeologist,
+    _poolPollenbrightDruid,
     _poolPrecinctCaptain,
     _poolPresenceOfGond,
     _poolPriestOfGix,
@@ -493,6 +498,7 @@ const shard: CardShard = {
     _poolTheShire,
     _poolThornglintBridge,
     _poolThunderWall,
+    _poolThundertrapTrainer,
     _poolTimberlandGuide,
     _poolTimeWipe,
     _poolToothyImaginaryFriend,
@@ -527,6 +533,7 @@ const shard: CardShard = {
     _poolWolfwillowHaven,
     _poolWoodfallPrimus,
     _poolWoodlandStream,
+    _poolWorthyCost,
     _poolXolatoyacTheSmilingFlood,
     _poolYavimayaAncients,
     _poolYotianSoldier,
@@ -550,6 +557,7 @@ const shard: CardShard = {
     _tokensSpiritTokenQuintorius,
     _tokensVampireDemonToken,
     _tokensWraithToken,
+    _tokensZombieBerserkerToken,
   ],
 };
 

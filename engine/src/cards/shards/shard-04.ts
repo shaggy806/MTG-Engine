@@ -119,6 +119,7 @@ import _poolKheruGoldkeeper from "../pool/kheru-goldkeeper.js";
 import _poolKingCheetah from "../pool/king-cheetah.js";
 import _poolKlauthUnrivaledAncient from "../pool/klauth-unrivaled-ancient.js";
 import _poolKnightErrant from "../pool/knight-errant.js";
+import _poolKnightOfTheReliquary from "../pool/knight-of-the-reliquary.js";
 import _poolKokushoTheEveningStar from "../pool/kokusho-the-evening-star.js";
 import _poolKorvoldFaeCursedKing from "../pool/korvold-fae-cursed-king.js";
 import _poolKozileksChanneler from "../pool/kozileks-channeler.js";
@@ -380,6 +381,7 @@ const shard: CardShard = {
     _poolKingCheetah,
     _poolKlauthUnrivaledAncient,
     _poolKnightErrant,
+    _poolKnightOfTheReliquary,
     _poolKokushoTheEveningStar,
     _poolKorvoldFaeCursedKing,
     _poolKozileksChanneler,

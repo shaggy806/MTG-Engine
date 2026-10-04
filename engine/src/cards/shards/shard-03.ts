@@ -21,6 +21,8 @@ import _poolBellowingAegisaur from "../pool/bellowing-aegisaur.js";
 import _poolBlightedCataract from "../pool/blighted-cataract.js";
 import _poolBovineIntervention from "../pool/bovine-intervention.js";
 import _poolBrotherhoodPatriarch from "../pool/brotherhood-patriarch.js";
+import _poolCaitSithFortuneTeller from "../pool/cait-sith-fortune-teller.js";
+import _poolCandlekeepSage from "../pool/candlekeep-sage.js";
 import _poolCanopyGargantuan from "../pool/canopy-gargantuan.js";
 import _poolCaptainOfUmbar from "../pool/captain-of-umbar.js";
 import _poolCaptivatingVampire from "../pool/captivating-vampire.js";
@@ -34,12 +36,14 @@ import _poolCondemn from "../pool/condemn.js";
 import _poolCrashingDrawbridge from "../pool/crashing-drawbridge.js";
 import _poolCrucibleOfFire from "../pool/crucible-of-fire.js";
 import _poolCruelSomnophage from "../pool/cruel-somnophage.js";
+import _poolDalekSquadron from "../pool/dalek-squadron.js";
 import _poolDeadlyDerision from "../pool/deadly-derision.js";
 import _poolDeadlyVisit from "../pool/deadly-visit.js";
 import _poolDecimate from "../pool/decimate.js";
 import _poolDeeptreadMerrow from "../pool/deeptread-merrow.js";
 import _poolDefenseOfTheHeart from "../pool/defense-of-the-heart.js";
 import _poolDementiaBat from "../pool/dementia-bat.js";
+import _poolDesmondMiles from "../pool/desmond-miles.js";
 import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
 import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
 import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
@@ -262,6 +266,8 @@ const shard: CardShard = {
     _poolBlightedCataract,
     _poolBovineIntervention,
     _poolBrotherhoodPatriarch,
+    _poolCaitSithFortuneTeller,
+    _poolCandlekeepSage,
     _poolCanopyGargantuan,
     _poolCaptainOfUmbar,
     _poolCaptivatingVampire,
@@ -275,12 +281,14 @@ const shard: CardShard = {
     _poolCrashingDrawbridge,
     _poolCrucibleOfFire,
     _poolCruelSomnophage,
+    _poolDalekSquadron,
     _poolDeadlyDerision,
     _poolDeadlyVisit,
     _poolDecimate,
     _poolDeeptreadMerrow,
     _poolDefenseOfTheHeart,
     _poolDementiaBat,
+    _poolDesmondMiles,
     _poolDiscipleOfTheOldWays,
     _poolDoctorDoomKingOfLatveria,
     _poolDogmeatEverLoyal,

@@ -39,6 +39,7 @@ import _poolCanopyTactician from "../pool/canopy-tactician.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
 import _poolCastleEmbereth from "../pool/castle-embereth.js";
 import _poolCatharsShield from "../pool/cathars-shield.js";
+import _poolCavalierOfDawn from "../pool/cavalier-of-dawn.js";
 import _poolCavernOfSouls from "../pool/cavern-of-souls.js";
 import _poolCelestialUnicorn from "../pool/celestial-unicorn.js";
 import _poolCloudreaderSphinx from "../pool/cloudreader-sphinx.js";
@@ -88,6 +89,7 @@ import _poolFountainOfYouth from "../pool/fountain-of-youth.js";
 import _poolFrostboilSnarl from "../pool/frostboil-snarl.js";
 import _poolFrostbridgeGuard from "../pool/frostbridge-guard.js";
 import _poolFrostburnWeird from "../pool/frostburn-weird.js";
+import _poolFungalSprouting from "../pool/fungal-sprouting.js";
 import _poolFurnaceWhelp from "../pool/furnace-whelp.js";
 import _poolFyndhornBrownie from "../pool/fyndhorn-brownie.js";
 import _poolGalewindMoose from "../pool/galewind-moose.js";
@@ -115,6 +117,7 @@ import _poolJadecraftArtisan from "../pool/jadecraft-artisan.js";
 import _poolJewelEyedCobra from "../pool/jewel-eyed-cobra.js";
 import _poolJoinTheDance from "../pool/join-the-dance.js";
 import _poolJourneyersKite from "../pool/journeyers-kite.js";
+import _poolJudgesFamiliar from "../pool/judges-familiar.js";
 import _poolJump from "../pool/jump.js";
 import _poolKeenGlidemaster from "../pool/keen-glidemaster.js";
 import _poolKeeperOfSecrets from "../pool/keeper-of-secrets.js";
@@ -138,6 +141,7 @@ import _poolMerfolkOfTheDepths from "../pool/merfolk-of-the-depths.js";
 import _poolMerfolkSovereign from "../pool/merfolk-sovereign.js";
 import _poolMidnightBanshee from "../pool/midnight-banshee.js";
 import _poolMigratingKetradon from "../pool/migrating-ketradon.js";
+import _poolMindslicer from "../pool/mindslicer.js";
 import _poolMishrasFactory from "../pool/mishras-factory.js";
 import _poolMithrilCoat from "../pool/mithril-coat.js";
 import _poolMonstrousCarabid from "../pool/monstrous-carabid.js";
@@ -194,6 +198,7 @@ import _poolSiegeGangLieutenant from "../pool/siege-gang-lieutenant.js";
 import _poolSkullOfRamos from "../pool/skull-of-ramos.js";
 import _poolSoliton from "../pool/soliton.js";
 import _poolSoporificSprings from "../pool/soporific-springs.js";
+import _poolSoulstoneSanctuary from "../pool/soulstone-sanctuary.js";
 import _poolSpawningPit from "../pool/spawning-pit.js";
 import _poolSphinxSummoner from "../pool/sphinx-summoner.js";
 import _poolSpinalCentipede from "../pool/spinal-centipede.js";
@@ -294,6 +299,7 @@ const shard: CardShard = {
     _poolCarrionAnts,
     _poolCastleEmbereth,
     _poolCatharsShield,
+    _poolCavalierOfDawn,
     _poolCavernOfSouls,
     _poolCelestialUnicorn,
     _poolCloudreaderSphinx,
@@ -343,6 +349,7 @@ const shard: CardShard = {
     _poolFrostboilSnarl,
     _poolFrostbridgeGuard,
     _poolFrostburnWeird,
+    _poolFungalSprouting,
     _poolFurnaceWhelp,
     _poolFyndhornBrownie,
     _poolGalewindMoose,
@@ -370,6 +377,7 @@ const shard: CardShard = {
     _poolJewelEyedCobra,
     _poolJoinTheDance,
     _poolJourneyersKite,
+    _poolJudgesFamiliar,
     _poolJump,
     _poolKeenGlidemaster,
     _poolKeeperOfSecrets,
@@ -393,6 +401,7 @@ const shard: CardShard = {
     _poolMerfolkSovereign,
     _poolMidnightBanshee,
     _poolMigratingKetradon,
+    _poolMindslicer,
     _poolMishrasFactory,
     _poolMithrilCoat,
     _poolMonstrousCarabid,
@@ -449,6 +458,7 @@ const shard: CardShard = {
     _poolSkullOfRamos,
     _poolSoliton,
     _poolSoporificSprings,
+    _poolSoulstoneSanctuary,
     _poolSpawningPit,
     _poolSphinxSummoner,
     _poolSpinalCentipede,
