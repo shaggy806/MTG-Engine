@@ -127,3 +127,26 @@ for (const room of ['POPUL', 'POPU4'] as const) {
     await shots(page, `${room}-abdel-done`)
   })
 }
+
+test('CAESR: a reflexive ability asks for two modes once the sacrifice is made', async ({ page, request }) => {
+  test.setTimeout(120_000)
+  const state = await openRoom(page, request, 'CAESR')
+  const [caesar] = idsOf(state, 'alice', "Caesar, Legion's Emperor")
+  const [bears] = idsOf(state, 'alice', 'Grizzly Bears')
+  // Into combat: the attack declaration comes up in the banner.
+  await untilChoice(page, /No attacks|Attack with/)
+  await page.locator(`.board [data-obj-id="${caesar}"]`).first().click()
+  await page.locator('.decision-banner').getByRole('button', { name: /^Attack with 1/ }).click()
+  await untilChoice(page, /Sacrifice another creature/)
+  await shots(page, 'CAESR-may')
+  await page.locator('.decision-banner').getByRole('button', { name: 'Yes', exact: true }).click()
+  await untilChoice(page, /Soldier creature tokens/)
+  await shots(page, 'CAESR-modes')
+  await expect
+    .poll(async () => {
+      const now = await control<RoomState>(request, { op: 'state', room: 'CAESR' })
+      return idsOf(now, 'alice', 'Grizzly Bears').length
+    }, paced)
+    .toBe(0)
+  expect(bears).toBeDefined()
+})

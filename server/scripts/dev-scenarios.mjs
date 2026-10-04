@@ -341,6 +341,18 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  CAESR: {
+    about:
+      "2p. Caesar, Legion's Emperor: attack with Caesar and say yes to sacrificing another " +
+      "creature (the Grizzly Bears); a reflexive ability then asks for two of its three modes " +
+      "as it goes on the stack — two hasty Soldiers tapped and attacking, a card for 1 life, " +
+      "damage to bob equal to alice's creature tokens.",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    battlefield: { alice: ["Caesar, Legion's Emperor", "Grizzly Bears"] },
+    bots: { bob: {} },
+  },
+
   LURES: {
     about:
       "2p. Bob attacks alice with a Lure-enchanted Hill Giant and a Grizzly Bears. Every " +
