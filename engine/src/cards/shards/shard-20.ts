@@ -97,6 +97,7 @@ import _poolHairStrungKoto from "../pool/hair-strung-koto.js";
 import _poolHaldanAvidArcanist from "../pool/haldan-avid-arcanist.js";
 import _poolHarrow from "../pool/harrow.js";
 import _poolHateMirage from "../pool/hate-mirage.js";
+import _poolHeliodTheRadiantDawn from "../pool/heliod-the-radiant-dawn.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
@@ -109,6 +110,7 @@ import _poolKalastriaNightwatch from "../pool/kalastria-nightwatch.js";
 import _poolKarametrasAcolyte from "../pool/karametras-acolyte.js";
 import _poolKazanduMammoth from "../pool/kazandu-mammoth.js";
 import _poolKindlyCustomer from "../pool/kindly-customer.js";
+import _poolKrangUtromWarlord from "../pool/krang-utrom-warlord.js";
 import _poolKraulStinger from "../pool/kraul-stinger.js";
 import _poolLeonardoTheBalance from "../pool/leonardo-the-balance.js";
 import _poolLeoninArmorguard from "../pool/leonin-armorguard.js";
@@ -323,6 +325,7 @@ const shard: CardShard = {
     _poolHaldanAvidArcanist,
     _poolHarrow,
     _poolHateMirage,
+    _poolHeliodTheRadiantDawn,
     _poolHowlingMine,
     _poolHulkingOgre,
     _poolIllusionistsBracers,
@@ -335,6 +338,7 @@ const shard: CardShard = {
     _poolKarametrasAcolyte,
     _poolKazanduMammoth,
     _poolKindlyCustomer,
+    _poolKrangUtromWarlord,
     _poolKraulStinger,
     _poolLeonardoTheBalance,
     _poolLeoninArmorguard,

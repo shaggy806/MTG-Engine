@@ -90,9 +90,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,742 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,836 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 3255 are triaged (batches 4–22);
+  engine features that block the most of the rest. Ranks through 3511 are triaged (batches 4–23);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -287,6 +287,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   (`tappedUnlessRevealFromHand`) checks each card's printed `subtypes`, so a changeling card in
   hand isn't offered as a Treefolk or Dragon to reveal (rule 702.73a: it has every creature type
   in every zone). Temple of the Dragon Queen has it today; Murmuring Bosk waits on it.
+- **Disturb's "exile it instead" is the cast path's, not the card's.** A back face's "if this
+  would be put into a graveyard from anywhere, exile it instead" is applied only to a card cast
+  with disturb (`castVia === "disturb"` in `game.ts`), so a copy of it (Clone) goes to the
+  graveyard and a disturbed one that lost its abilities (Humility) is still exiled (rule 707.2).
+  Hook-Haunt Drifter has it today; Lunarch Veteran waits on it.
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.

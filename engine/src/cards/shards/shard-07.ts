@@ -12,6 +12,7 @@ import _poolAlteredEgo from "../pool/altered-ego.js";
 import _poolAmbushGigapede from "../pool/ambush-gigapede.js";
 import _poolAntagonize from "../pool/antagonize.js";
 import _poolArchonOfFallingStars from "../pool/archon-of-falling-stars.js";
+import _poolAuriokChampion from "../pool/auriok-champion.js";
 import _poolAustereCommand from "../pool/austere-command.js";
 import _poolBakeryRaid from "../pool/bakery-raid.js";
 import _poolBarTheDoor from "../pool/bar-the-door.js";
@@ -111,6 +112,7 @@ import _poolLure from "../pool/lure.js";
 import _poolMakindiGriffin from "../pool/makindi-griffin.js";
 import _poolManOWar from "../pool/man-o-war.js";
 import _poolManaReflection from "../pool/mana-reflection.js";
+import _poolManaweftSliver from "../pool/manaweft-sliver.js";
 import _poolManedServal from "../pool/maned-serval.js";
 import _poolMaraudingBlightPriest from "../pool/marauding-blight-priest.js";
 import _poolMarshThreader from "../pool/marsh-threader.js";
@@ -125,6 +127,7 @@ import _poolMultaniYavimayasAvatar from "../pool/multani-yavimayas-avatar.js";
 import _poolMummyParamount from "../pool/mummy-paramount.js";
 import _poolMurderousRider from "../pool/murderous-rider.js";
 import _poolNecroticHex from "../pool/necrotic-hex.js";
+import _poolNestOfScarabs from "../pool/nest-of-scarabs.js";
 import _poolOnakkeOgre from "../pool/onakke-ogre.js";
 import _poolOnduWarCleric from "../pool/ondu-war-cleric.js";
 import _poolOpenFire from "../pool/open-fire.js";
@@ -138,6 +141,7 @@ import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
 import _poolPrimordialPachyderm from "../pool/primordial-pachyderm.js";
 import _poolPyromanticPilgrim from "../pool/pyromantic-pilgrim.js";
+import _poolRampantRejuvenator from "../pool/rampant-rejuvenator.js";
 import _poolRapidHybridization from "../pool/rapid-hybridization.js";
 import _poolRaptorCompanion from "../pool/raptor-companion.js";
 import _poolRaugrinTriome from "../pool/raugrin-triome.js";
@@ -235,6 +239,7 @@ import _tokensCragflame from "../tokens/cragflame.js";
 import _tokensDrakeToken from "../tokens/drake-token.js";
 import _tokensEggToken from "../tokens/egg-token.js";
 import _tokensInsectTokenBlackFlying from "../tokens/insect-token-black-flying.js";
+import _tokensInsectTokenNestOfScarabs from "../tokens/insect-token-nest-of-scarabs.js";
 import _tokensKaroxBladewingToken from "../tokens/karox-bladewing-token.js";
 import _tokensPlantTokenDefender from "../tokens/plant-token-defender.js";
 import _tokensSpiritTokenQuintorius from "../tokens/spirit-token-quintorius.js";
@@ -252,6 +257,7 @@ const shard: CardShard = {
     _poolAmbushGigapede,
     _poolAntagonize,
     _poolArchonOfFallingStars,
+    _poolAuriokChampion,
     _poolAustereCommand,
     _poolBakeryRaid,
     _poolBarTheDoor,
@@ -351,6 +357,7 @@ const shard: CardShard = {
     _poolMakindiGriffin,
     _poolManOWar,
     _poolManaReflection,
+    _poolManaweftSliver,
     _poolManedServal,
     _poolMaraudingBlightPriest,
     _poolMarshThreader,
@@ -365,6 +372,7 @@ const shard: CardShard = {
     _poolMummyParamount,
     _poolMurderousRider,
     _poolNecroticHex,
+    _poolNestOfScarabs,
     _poolOnakkeOgre,
     _poolOnduWarCleric,
     _poolOpenFire,
@@ -378,6 +386,7 @@ const shard: CardShard = {
     _poolPriestOfGix,
     _poolPrimordialPachyderm,
     _poolPyromanticPilgrim,
+    _poolRampantRejuvenator,
     _poolRapidHybridization,
     _poolRaptorCompanion,
     _poolRaugrinTriome,
@@ -477,6 +486,7 @@ const shard: CardShard = {
     _tokensDrakeToken,
     _tokensEggToken,
     _tokensInsectTokenBlackFlying,
+    _tokensInsectTokenNestOfScarabs,
     _tokensKaroxBladewingToken,
     _tokensPlantTokenDefender,
     _tokensSpiritTokenQuintorius,

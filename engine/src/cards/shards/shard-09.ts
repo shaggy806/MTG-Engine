@@ -43,6 +43,7 @@ import _poolCitanulDruid from "../pool/citanul-druid.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
 import _poolConsumingAberration from "../pool/consuming-aberration.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
+import _poolCountersquall from "../pool/countersquall.js";
 import _poolCourtOfCunning from "../pool/court-of-cunning.js";
 import _poolCovertOperative from "../pool/covert-operative.js";
 import _poolCrystalVein from "../pool/crystal-vein.js";
@@ -53,10 +54,12 @@ import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
 import _poolDrumbellower from "../pool/drumbellower.js";
+import _poolEdricSpymasterOfTrest from "../pool/edric-spymaster-of-trest.js";
 import _poolEmmaraSoulOfTheAccord from "../pool/emmara-soul-of-the-accord.js";
 import _poolEshkiDragonclaw from "../pool/eshki-dragonclaw.js";
 import _poolEvolutionCharm from "../pool/evolution-charm.js";
 import _poolExclude from "../pool/exclude.js";
+import _poolExpensiveTaste from "../pool/expensive-taste.js";
 import _poolFaerieInvaders from "../pool/faerie-invaders.js";
 import _poolFaerieMastermind from "../pool/faerie-mastermind.js";
 import _poolFamilyReunion from "../pool/family-reunion.js";
@@ -126,6 +129,7 @@ import _poolNetherHorror from "../pool/nether-horror.js";
 import _poolNezumiCutthroat from "../pool/nezumi-cutthroat.js";
 import _poolNightsWhisper from "../pool/nights-whisper.js";
 import _poolNobleSteeds from "../pool/noble-steeds.js";
+import _poolNornsChoirmaster from "../pool/norns-choirmaster.js";
 import _poolNullmageShepherd from "../pool/nullmage-shepherd.js";
 import _poolObNixilisTheFallen from "../pool/ob-nixilis-the-fallen.js";
 import _poolOdricLunarchMarshal from "../pool/odric-lunarch-marshal.js";
@@ -168,6 +172,7 @@ import _poolScouringSwarm from "../pool/scouring-swarm.js";
 import _poolSedgemoorWitch from "../pool/sedgemoor-witch.js";
 import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
 import _poolSerrasSanctum from "../pool/serras-sanctum.js";
+import _poolShadowheartDarkJusticiar from "../pool/shadowheart-dark-justiciar.js";
 import _poolShardingSphinx from "../pool/sharding-sphinx.js";
 import _poolShikoAndNarsetUnified from "../pool/shiko-and-narset-unified.js";
 import _poolShizoDeathsStorehouse from "../pool/shizo-deaths-storehouse.js";
@@ -228,6 +233,7 @@ import _poolZhulodokVoidGorger from "../pool/zhulodok-void-gorger.js";
 import _poolZofShade from "../pool/zof-shade.js";
 import _tokensArmyToken from "../tokens/army-token.js";
 import _tokensAssassinToken from "../tokens/assassin-token.js";
+import _tokensBirdTokenHermesOverseerOfElpis from "../tokens/bird-token-hermes-overseer-of-elpis.js";
 import _tokensElementalTokenAllColors from "../tokens/elemental-token-all-colors.js";
 import _tokensElephantToken from "../tokens/elephant-token.js";
 import _tokensForestDryadToken from "../tokens/forest-dryad-token.js";
@@ -276,6 +282,7 @@ const shard: CardShard = {
     _poolClingingDarkness,
     _poolConsumingAberration,
     _poolCorruptedConviction,
+    _poolCountersquall,
     _poolCourtOfCunning,
     _poolCovertOperative,
     _poolCrystalVein,
@@ -286,10 +293,12 @@ const shard: CardShard = {
     _poolDoomWhisperer,
     _poolDragonRoost,
     _poolDrumbellower,
+    _poolEdricSpymasterOfTrest,
     _poolEmmaraSoulOfTheAccord,
     _poolEshkiDragonclaw,
     _poolEvolutionCharm,
     _poolExclude,
+    _poolExpensiveTaste,
     _poolFaerieInvaders,
     _poolFaerieMastermind,
     _poolFamilyReunion,
@@ -359,6 +368,7 @@ const shard: CardShard = {
     _poolNezumiCutthroat,
     _poolNightsWhisper,
     _poolNobleSteeds,
+    _poolNornsChoirmaster,
     _poolNullmageShepherd,
     _poolObNixilisTheFallen,
     _poolOdricLunarchMarshal,
@@ -401,6 +411,7 @@ const shard: CardShard = {
     _poolSedgemoorWitch,
     _poolSeraphOfDawn,
     _poolSerrasSanctum,
+    _poolShadowheartDarkJusticiar,
     _poolShardingSphinx,
     _poolShikoAndNarsetUnified,
     _poolShizoDeathsStorehouse,
@@ -463,6 +474,7 @@ const shard: CardShard = {
   tokens: [
     _tokensArmyToken,
     _tokensAssassinToken,
+    _tokensBirdTokenHermesOverseerOfElpis,
     _tokensElementalTokenAllColors,
     _tokensElephantToken,
     _tokensForestDryadToken,

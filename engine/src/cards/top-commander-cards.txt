@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2742 already implemented / 2258 missing (marks refreshed 2026-10-04)
+2836 already implemented / 2164 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -3246,7 +3246,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3253  Rain of Filth                            {B}              Instant
 [ ]  3254  The Endstone                             {7}              Legendary Artifact
 [ ]  3255  Fandaniel, Telophoroi Ascian             {4}{B}           Legendary Creature — Elder Wizard
-[ ]  3256  Angel of Indemnity                       {5}{W}           Creature — Angel Warrior
+[x]  3256  Angel of Indemnity                       {5}{W}           Creature — Angel Warrior
 [ ]  3257  Misleading Signpost                      {2}{U}           Artifact
 [ ]  3258  Hour of Promise                          {4}{G}           Sorcery
 [ ]  3259  Tenuous Truce                            {1}{W}           Enchantment — Aura
@@ -3254,13 +3254,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3261  Tanglepool Bridge                        {0}              Artifact Land
 [ ]  3262  Duress                                   {B}              Sorcery
 [x]  3263  Goblin Instigator                        {1}{R}           Creature — Goblin Rogue
-[ ]  3264  Savvy Hunter                             {1}{B}{G}        Creature — Human Warrior
+[x]  3264  Savvy Hunter                             {1}{B}{G}        Creature — Human Warrior
 [x]  3265  Infantry Shield                          {2}{R}           Artifact — Equipment
-[ ]  3266  Manaweft Sliver                          {1}{G}           Creature — Sliver
+[x]  3266  Manaweft Sliver                          {1}{G}           Creature — Sliver
 [ ]  3267  Conspicuous Snoop                        {R}{R}           Creature — Goblin Rogue
 [ ]  3268  Jin-Gitaxias // The Great Synthesis      {5}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
 [ ]  3269  World at War                             {3}{R}{R}        Sorcery
-[ ]  3270  Keeper of Secrets                        {5}{R}           Creature — Demon
+[x]  3270  Keeper of Secrets                        {5}{R}           Creature — Demon
 [ ]  3271  Mistblade Shinobi                        {2}{U}           Creature — Human Ninja
 [ ]  3272  Firdoch Core                             {3}              Kindred Artifact — Shapeshifter
 [ ]  3273  Grievous Wound                           {3}{B}{B}        Enchantment — Aura
@@ -3269,116 +3269,116 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3276  Vorinclex // The Grand Evolution         {5}              Legendary Creature — Phyrexian Praetor // Enchantment — Saga
 [x]  3277  Test of Endurance                        {2}{W}{W}        Enchantment
 [x]  3278  Dockside Chef                            {B}              Enchantment Creature — Human Citizen
-[ ]  3279  Celestial Armor                          {2}{W}           Artifact — Equipment
-[ ]  3280  Godo, Bandit Warlord                     {5}{R}           Legendary Creature — Human Barbarian
+[x]  3279  Celestial Armor                          {2}{W}           Artifact — Equipment
+[x]  3280  Godo, Bandit Warlord                     {5}{R}           Legendary Creature — Human Barbarian
 [ ]  3281  Ojer Pakpatiq, Deepest Epoch // Temple of Cyclical Time {4}              Legendary Creature — God // Land
 [ ]  3282  Take the Bait                            {2}{R}{W}        Instant
 [x]  3283  Leonin Warleader                         {2}{W}{W}        Creature — Cat Soldier
-[ ]  3284  Grim Guardian                            {2}{B}           Enchantment Creature — Zombie
+[x]  3284  Grim Guardian                            {2}{B}           Enchantment Creature — Zombie
 [ ]  3285  Shielded by Faith                        {1}{W}{W}        Enchantment — Aura
 [x]  3286  Axebane Guardian                         {2}{G}           Creature — Human Druid
-[ ]  3287  Surrak Dragonclaw                        {2}{G}{U}{R}     Legendary Creature — Human Warrior
-[ ]  3288  Cosmogrand Zenith                        {2}{W}           Creature — Human Soldier
+[x]  3287  Surrak Dragonclaw                        {2}{G}{U}{R}     Legendary Creature — Human Warrior
+[x]  3288  Cosmogrand Zenith                        {2}{W}           Creature — Human Soldier
 [ ]  3289  Dire Fleet Daredevil                     {1}{R}           Creature — Human Pirate
 [x]  3290  Sisay, Weatherlight Captain              {2}{W}           Legendary Creature — Human Soldier
-[ ]  3291  Decisive Denial                          {G}{U}           Instant
-[ ]  3292  Decadent Dragon // Expensive Taste       {2}{R}{R} // {2}{B} Creature — Dragon // Instant — Adventure
-[ ]  3293  Weapons Manufacturing                    {1}{R}           Enchantment
-[ ]  3294  Canoptek Spyder                          {5}              Artifact Creature — Spider
-[ ]  3295  Scurry of Squirrels                      {2}{G}           Creature — Squirrel Scout
+[x]  3291  Decisive Denial                          {G}{U}           Instant
+[x]  3292  Decadent Dragon // Expensive Taste       {2}{R}{R} // {2}{B} Creature — Dragon // Instant — Adventure
+[x]  3293  Weapons Manufacturing                    {1}{R}           Enchantment
+[x]  3294  Canoptek Spyder                          {5}              Artifact Creature — Spider
+[x]  3295  Scurry of Squirrels                      {2}{G}           Creature — Squirrel Scout
 [ ]  3296  Gisa, the Hellraiser                     {3}{B}{B}        Legendary Creature — Human Warlock
 [ ]  3297  Shelter                                  {1}{W}           Instant
-[ ]  3298  Chocobo Racetrack                        {3}{G}{G}        Artifact
+[x]  3298  Chocobo Racetrack                        {3}{G}{G}        Artifact
 [ ]  3299  Hope of Ghirapur                         {1}              Legendary Artifact Creature — Thopter
-[ ]  3300  Court of Ire                             {3}{R}{R}        Enchantment
+[x]  3300  Court of Ire                             {3}{R}{R}        Enchantment
 [ ]  3301  Ghost Vacuum                             {1}              Artifact
 [ ]  3302  Commit // Memory                         {3}{U} // {4}{U}{U} Instant // Sorcery
 [x]  3303  Tiller Engine                            {2}              Artifact Creature — Construct
-[ ]  3304  Sunscorched Desert                       {0}              Land — Desert
+[x]  3304  Sunscorched Desert                       {0}              Land — Desert
 [ ]  3305  White Plume Adventurer                   {2}{W}           Creature — Orc Cleric
-[ ]  3306  Blossoming Tortoise                      {2}{G}{G}        Creature — Turtle
+[x]  3306  Blossoming Tortoise                      {2}{G}{G}        Creature — Turtle
 [x]  3307  Toph, the First Metalbender              {1}{R}{G}{W}     Legendary Creature — Human Warrior Ally
 [ ]  3308  Zirda, the Dawnwaker                     {1}{R/W}{R/W}    Legendary Creature — Elemental Fox
 [x]  3309  Fires of Yavimaya                        {1}{R}{G}        Enchantment
 [x]  3310  Ogre Battledriver                        {2}{R}{R}        Creature — Ogre Warrior
 [x]  3311  Seal of Cleansing                        {1}{W}           Enchantment
-[ ]  3312  Rampant Rejuvenator                      {3}{G}           Creature — Plant Hydra
+[x]  3312  Rampant Rejuvenator                      {3}{G}           Creature — Plant Hydra
 [ ]  3313  Defend the Rider                         {G}              Instant
-[ ]  3314  Kinjalli's Sunwing                       {2}{W}           Creature — Dinosaur
+[x]  3314  Kinjalli's Sunwing                       {2}{W}           Creature — Dinosaur
 [x]  3315  Vampire of the Dire Moon                 {B}              Creature — Vampire
 [x]  3316  Mana Flare                               {2}{R}           Enchantment
-[ ]  3317  Luminarch Ascension                      {1}{W}           Enchantment
+[x]  3317  Luminarch Ascension                      {1}{W}           Enchantment
 [x]  3318  Giant Growth                             {G}              Instant
-[ ]  3319  Renegade Tactics                         {R}              Sorcery
-[ ]  3320  Scion of Calamity                        {3}{G}{G}        Creature — Dinosaur
+[x]  3319  Renegade Tactics                         {R}              Sorcery
+[x]  3320  Scion of Calamity                        {3}{G}{G}        Creature — Dinosaur
 [ ]  3321  Lion Umbra                               {G}{G}           Enchantment — Aura
-[ ]  3322  Eiganjo Castle                           {0}              Legendary Land
+[x]  3322  Eiganjo Castle                           {0}              Legendary Land
 [ ]  3323  Orzhov Advokist                          {2}{W}           Creature — Human Advisor
-[ ]  3324  Skarrg, the Rage Pits                    {0}              Land
-[ ]  3325  Soul's Majesty                           {4}{G}           Sorcery
+[x]  3324  Skarrg, the Rage Pits                    {0}              Land
+[x]  3325  Soul's Majesty                           {4}{G}           Sorcery
 [x]  3326  Tree of Redemption                       {3}{G}           Creature — Plant
-[ ]  3327  Heliod, the Radiant Dawn // Heliod, the Warped Eclipse {4}              Legendary Enchantment Creature — God // Legendary Enchantment Creature — Phyrexian God
-[ ]  3328  Privileged Position                      {2}{G/W}{G/W}{G/W} Enchantment
+[x]  3327  Heliod, the Radiant Dawn // Heliod, the Warped Eclipse {4}              Legendary Enchantment Creature — God // Legendary Enchantment Creature — Phyrexian God
+[x]  3328  Privileged Position                      {2}{G/W}{G/W}{G/W} Enchantment
 [ ]  3329  Gemstone Mine                            {0}              Land
 [x]  3330  Frontier Siege                           {3}{G}           Enchantment
 [x]  3331  Ichor Rats                               {1}{B}{B}        Creature — Phyrexian Rat
 [ ]  3332  Mendicant Core, Guidelight               {W}{U}           Legendary Artifact Creature — Robot
-[ ]  3333  Make a Stand                             {2}{W}           Instant
+[x]  3333  Make a Stand                             {2}{W}           Instant
 [ ]  3334  Mech Hangar                              {0}              Land
 [ ]  3335  Fain, the Broker                         {2}{B}           Legendary Creature — Human Warlock
 [ ]  3336  Germination Practicum                    {3}{G}{G}        Sorcery — Lesson
-[ ]  3337  Rapacious Guest                          {2}{B}           Creature — Halfling Citizen
+[x]  3337  Rapacious Guest                          {2}{B}           Creature — Halfling Citizen
 [ ]  3338  Counterbalance                           {U}{U}           Enchantment
-[ ]  3339  Skittering Cicada                        {3}              Creature — Insect
+[x]  3339  Skittering Cicada                        {3}              Creature — Insect
 [ ]  3340  Lunarch Veteran // Luminous Phantom      {1}              Creature — Human Cleric // Creature — Spirit Cleric
 [x]  3341  Peter Parker's Camera                    {1}              Artifact
 [x]  3342  Nephalia Drownyard                       {0}              Land
 [ ]  3343  Magus of the Moon                        {2}{R}           Creature — Human Wizard
 [ ]  3344  Planar Engineering                       {3}{G}           Sorcery
-[ ]  3345  Evolutionary Leap                        {1}{G}           Enchantment
+[x]  3345  Evolutionary Leap                        {1}{G}           Enchantment
 [x]  3346  Goblin Chirurgeon                        {R}              Creature — Goblin Shaman
 [ ]  3347  Goblin Recruiter                         {1}{R}           Creature — Goblin
 [x]  3348  Sigarda, Font of Blessings               {2}{G}{W}        Legendary Creature — Angel
-[ ]  3349  Mycosynth Golem                          {11}             Artifact Creature — Golem
+[x]  3349  Mycosynth Golem                          {11}             Artifact Creature — Golem
 [ ]  3350  Chandra, Awakened Inferno                {4}{R}{R}        Legendary Planeswalker — Chandra
 [ ]  3351  Teferi, Temporal Pilgrim                 {3}{U}{U}        Legendary Planeswalker — Teferi
-[ ]  3352  Flagstones of Trokair                    {0}              Legendary Land
+[x]  3352  Flagstones of Trokair                    {0}              Legendary Land
 [x]  3353  Cut Your Losses                          {4}{U}{U}        Sorcery
 [ ]  3354  Generous Patron                          {2}{G}           Creature — Elf Advisor
 [x]  3355  Chittering Witch                         {3}{B}           Creature — Human Warlock
 [ ]  3356  Grove of the Burnwillows                 {0}              Land
-[ ]  3357  Goblin King                              {1}{R}{R}        Creature — Goblin
-[ ]  3358  Mortality Spear                          {2}{B}{G}        Instant
+[x]  3357  Goblin King                              {1}{R}{R}        Creature — Goblin
+[x]  3358  Mortality Spear                          {2}{B}{G}        Instant
 [ ]  3359  Quasiduplicate                           {1}{U}{U}        Sorcery
-[ ]  3360  Daily Bugle Building                     {0}              Land
+[x]  3360  Daily Bugle Building                     {0}              Land
 [ ]  3361  Bane of Bala Ged                         {7}              Creature — Eldrazi
 [ ]  3362  Songbirds' Blessing                      {3}{W}           Enchantment — Aura
-[ ]  3363  Rhys the Redeemed                        {G/W}            Legendary Creature — Elf Warrior
-[ ]  3364  Increasing Devotion                      {3}{W}{W}        Sorcery
+[x]  3363  Rhys the Redeemed                        {G/W}            Legendary Creature — Elf Warrior
+[x]  3364  Increasing Devotion                      {3}{W}{W}        Sorcery
 [ ]  3365  Worldwalker Helm                         {2}{U}           Artifact
 [ ]  3366  Deadbridge Chant                         {4}{B}{G}        Enchantment
 [ ]  3367  Out of the Tombs                         {2}{B}           Enchantment
-[ ]  3368  Reshape the Earth                        {6}{G}{G}{G}     Sorcery
+[x]  3368  Reshape the Earth                        {6}{G}{G}{G}     Sorcery
 [x]  3369  Clive, Ifrit's Dominant // Ifrit, Warden of Inferno {6}              Legendary Creature — Human Noble Warrior // Legendary Enchantment Creature — Saga Demon
 [x]  3370  Yeva, Nature's Herald                    {2}{G}{G}        Legendary Creature — Elf Shaman
 [ ]  3371  Rite of the Raging Storm                 {3}{R}{R}        Enchantment
 [ ]  3372  Heliod, God of the Sun                   {3}{W}           Legendary Enchantment Creature — God
 [x]  3373  Sphinx's Revelation                      {X}{W}{U}{U}     Instant
 [x]  3374  Aragorn, the Uniter                      {R}{G}{W}{U}     Legendary Creature — Human Noble
-[ ]  3375  Heat Shimmer                             {2}{R}           Sorcery
+[x]  3375  Heat Shimmer                             {2}{R}           Sorcery
 [ ]  3376  Inventory Management                     {R}{W}           Instant
 [ ]  3377  Ensnared by the Mara                     {2}{R}{R}        Sorcery
 [ ]  3378  Stinging Study                           {4}{B}           Instant
 [ ]  3379  Court of Locthwain                       {2}{B}{B}        Enchantment
 [ ]  3380  Lord of the Void                         {4}{B}{B}{B}     Creature — Demon
-[ ]  3381  Quest for Renewal                        {1}{G}           Enchantment
-[ ]  3382  Norn's Choirmaster                       {3}{W}{W}        Creature — Phyrexian Angel
-[ ]  3383  Immaculate Magistrate                    {3}{G}           Creature — Elf Shaman
+[x]  3381  Quest for Renewal                        {1}{G}           Enchantment
+[x]  3382  Norn's Choirmaster                       {3}{W}{W}        Creature — Phyrexian Angel
+[x]  3383  Immaculate Magistrate                    {3}{G}           Creature — Elf Shaman
 [ ]  3384  Vnwxt, Verbose Host                      {1}{U}           Legendary Creature — Homunculus
 [x]  3385  Ovika, Enigma Goliath                    {5}{U}{R}        Legendary Creature — Phyrexian Nightmare
 [ ]  3386  Ghostway                                 {2}{W}           Instant
 [ ]  3387  Esior, Wardwing Familiar                 {1}{U}           Legendary Creature — Bird
-[ ]  3388  The Gold Saucer                          {0}              Land — Town
+[x]  3388  The Gold Saucer                          {0}              Land — Town
 [ ]  3389  Daybreak Coronet                         {W}{W}           Enchantment — Aura
 [x]  3390  Rocky Tar Pit                            {0}              Land
 [x]  3391  Vizier of Tumbling Sands                 {2}{U}           Creature — Human Cleric
@@ -3388,79 +3388,79 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3395  Hooded Hydra                             {X}{G}{G}        Creature — Snake Hydra
 [x]  3396  Sigil of Sleep                           {U}              Enchantment — Aura
 [ ]  3397  Killian, Ink Duelist                     {W}{B}           Legendary Creature — Human Warlock
-[ ]  3398  Angelic Accord                           {3}{W}           Enchantment
-[ ]  3399  Squirrel Nest                            {1}{G}{G}        Enchantment — Aura
-[ ]  3400  Pathbreaker Ibex                         {4}{G}{G}        Creature — Goat
+[x]  3398  Angelic Accord                           {3}{W}           Enchantment
+[x]  3399  Squirrel Nest                            {1}{G}{G}        Enchantment — Aura
+[x]  3400  Pathbreaker Ibex                         {4}{G}{G}        Creature — Goat
 [x]  3401  White Sun's Zenith                       {X}{W}{W}{W}     Instant
-[ ]  3402  Consult the Star Charts                  {1}{U}           Instant
-[ ]  3403  Earthquake Dragon                        {14}{G}          Creature — Elemental Dragon
+[x]  3402  Consult the Star Charts                  {1}{U}           Instant
+[x]  3403  Earthquake Dragon                        {14}{G}          Creature — Elemental Dragon
 [x]  3404  Zombify                                  {3}{B}           Sorcery
 [ ]  3405  Leyline of Hope                          {2}{W}{W}        Enchantment
 [x]  3406  Roxanne, Starfall Savant                 {3}{R}{G}        Legendary Creature — Cat Druid
-[ ]  3407  Prince Imrahil the Fair                  {W}{U}           Legendary Creature — Human Noble
+[x]  3407  Prince Imrahil the Fair                  {W}{U}           Legendary Creature — Human Noble
 [ ]  3408  Nylea, God of the Hunt                   {3}{G}           Legendary Enchantment Creature — God
 [x]  3409  Hearthhull, the Worldseed                {1}{B}{R}{G}     Legendary Artifact — Spacecraft
 [ ]  3410  Mob Rule                                 {4}{R}{R}        Sorcery
-[ ]  3411  Hermes, Overseer of Elpis                {3}{U}           Legendary Creature — Elder Wizard
+[x]  3411  Hermes, Overseer of Elpis                {3}{U}           Legendary Creature — Elder Wizard
 [ ]  3412  Nyxborn Hydra                            {X}{G}           Enchantment Creature — Hydra
 [ ]  3413  Gogo, Master of Mimicry                  {2}{U}           Legendary Creature — Wizard
 [ ]  3414  Monstrous Rage                           {R}              Instant
 [x]  3415  Obyra, Dreaming Duelist                  {U}{B}           Legendary Creature — Faerie Warrior
 [ ]  3416  Lembas                                   {2}              Artifact — Food
-[ ]  3417  Blood Pact                               {2}{B}           Instant
+[x]  3417  Blood Pact                               {2}{B}           Instant
 [ ]  3418  Transmutation Font                       {5}              Artifact
 [x]  3419  Zada, Hedron Grinder                     {3}{R}           Legendary Creature — Goblin Ally
-[ ]  3420  Feline Sovereign                         {2}{G}           Creature — Cat
+[x]  3420  Feline Sovereign                         {2}{G}           Creature — Cat
 [x]  3421  Turbulent Fen                            {0}              Land — Swamp Forest
-[ ]  3422  Strength of Will                         {1}{G}           Instant
-[ ]  3423  Cloudshredder Sliver                     {R}{W}           Creature — Sliver
+[x]  3422  Strength of Will                         {1}{G}           Instant
+[x]  3423  Cloudshredder Sliver                     {R}{W}           Creature — Sliver
 [ ]  3424  The Mending of Dominaria                 {3}{G}{G}        Enchantment — Saga
-[ ]  3425  Tormented Soul                           {B}              Creature — Spirit
-[ ]  3426  Edric, Spymaster of Trest                {1}{G}{U}        Legendary Creature — Elf Rogue
+[x]  3425  Tormented Soul                           {B}              Creature — Spirit
+[x]  3426  Edric, Spymaster of Trest                {1}{G}{U}        Legendary Creature — Elf Rogue
 [ ]  3427  Eidolon of Countless Battles             {1}{W}{W}        Enchantment Creature — Spirit
-[ ]  3428  Costly Plunder                           {1}{B}           Instant
-[ ]  3429  Aether Hub                               {0}              Land
+[x]  3428  Costly Plunder                           {1}{B}           Instant
+[x]  3429  Aether Hub                               {0}              Land
 [ ]  3430  Ertai Resurrected                        {2}{U}{B}        Legendary Creature — Phyrexian Human Wizard
 [ ]  3431  Reckless Endeavor                        {5}{R}{R}        Sorcery
 [ ]  3432  Serra Paragon                            {2}{W}{W}        Creature — Angel
-[ ]  3433  General's Enforcer                       {W}{B}           Creature — Human Soldier
+[x]  3433  General's Enforcer                       {W}{B}           Creature — Human Soldier
 [ ]  3434  See Double                               {2}{U}{U}        Instant
 [ ]  3435  Trailtracker Scout                       {1}{G}           Creature — Raccoon Scout
-[ ]  3436  Axgard Armory                            {0}              Land
+[x]  3436  Axgard Armory                            {0}              Land
 [ ]  3437  Slicer, Hired Muscle // Slicer, High-Speed Antagonist {5}              Legendary Artifact Creature — Robot // Legendary Artifact — Vehicle
-[ ]  3438  Vincent Valentine // Galian Beast        {4}              Legendary Creature — Assassin // Legendary Creature — Werewolf Beast
-[ ]  3439  Nissa's Pilgrimage                       {2}{G}           Sorcery
-[ ]  3440  Ulamog's Dreadsire                       {10}             Creature — Eldrazi
+[x]  3438  Vincent Valentine // Galian Beast        {4}              Legendary Creature — Assassin // Legendary Creature — Werewolf Beast
+[x]  3439  Nissa's Pilgrimage                       {2}{G}           Sorcery
+[x]  3440  Ulamog's Dreadsire                       {10}             Creature — Eldrazi
 [x]  3441  Necromantic Selection                    {4}{B}{B}{B}     Sorcery
 [ ]  3442  Fear of Sleep Paralysis                  {5}{U}           Enchantment Creature — Nightmare
-[ ]  3443  Forgotten Creation                       {3}{U}           Creature — Zombie Horror
+[x]  3443  Forgotten Creation                       {3}{U}           Creature — Zombie Horror
 [ ]  3444  Visions of Beyond                        {U}              Instant
 [ ]  3445  Charming Scoundrel                       {1}{R}           Creature — Human Rogue
-[ ]  3446  Restless Cottage                         {0}              Land
+[x]  3446  Restless Cottage                         {0}              Land
 [ ]  3447  Ardyn, the Usurper                       {5}{B}{B}{B}     Legendary Creature — Elder Human Noble
 [ ]  3448  Neyali, Suns' Vanguard                   {2}{R}{W}        Legendary Creature — Human Rebel
 [ ]  3449  Rule of Law                              {2}{W}           Enchantment
 [ ]  3450  Thryx, the Sudden Storm                  {3}{U}{U}        Legendary Creature — Elemental Giant
-[ ]  3451  Prowler's Helm                           {2}              Artifact — Equipment
+[x]  3451  Prowler's Helm                           {2}              Artifact — Equipment
 [ ]  3452  Gods Willing                             {W}              Instant
 [ ]  3453  Dalkovan Encampment                      {0}              Land
 [x]  3454  Rabble Rousing                           {4}{W}           Enchantment
-[ ]  3455  Lyse Hext                                {1}{W}{U}        Legendary Creature — Human Rebel Monk
+[x]  3455  Lyse Hext                                {1}{W}{U}        Legendary Creature — Human Rebel Monk
 [x]  3456  Echoing Assault                          {4}{R}           Enchantment
-[ ]  3457  Ulamog's Crusher                         {8}              Creature — Eldrazi
+[x]  3457  Ulamog's Crusher                         {8}              Creature — Eldrazi
 [x]  3458  River Kelpie                             {3}{U}{U}        Creature — Beast
 [ ]  3459  Bonny Pall, Clearcutter                  {3}{G}{U}{U}     Legendary Creature — Giant Scout
-[ ]  3460  Ignite the Future                        {3}{R}           Sorcery
+[x]  3460  Ignite the Future                        {3}{R}           Sorcery
 [ ]  3461  Golgari Thug                             {1}{B}           Creature — Human Warrior
 [x]  3462  Devilish Valet                           {2}{R}           Creature — Devil Warrior
 [ ]  3463  Spirit Water Revival                     {1}{U}{U}        Sorcery
-[ ]  3464  Auriok Champion                          {W}{W}           Creature — Human Cleric
+[x]  3464  Auriok Champion                          {W}{W}           Creature — Human Cleric
 [ ]  3465  Invigorate                               {2}{G}           Instant
-[ ]  3466  Andúril, Flame of the West               {3}              Legendary Artifact — Equipment
-[ ]  3467  Trygon Predator                          {1}{G}{U}        Creature — Beast
+[x]  3466  Andúril, Flame of the West               {3}              Legendary Artifact — Equipment
+[x]  3467  Trygon Predator                          {1}{G}{U}        Creature — Beast
 [x]  3468  Hashaton, Scarab's Fist                  {W}{B}           Legendary Creature — Zombie Wizard
-[ ]  3469  Species Specialist                       {2}{B}{B}        Creature — Human Warrior
-[ ]  3470  K-9, Mark I                              {U}              Legendary Artifact Creature — Robot Dog
+[x]  3469  Species Specialist                       {2}{B}{B}        Creature — Human Warrior
+[x]  3470  K-9, Mark I                              {U}              Legendary Artifact Creature — Robot Dog
 [x]  3471  Caustic Caterpillar                      {G}              Creature — Insect
 [x]  3472  Alela, Cunning Conqueror                 {2}{U}{B}        Legendary Creature — Faerie Warlock
 [ ]  3473  Leyline of the Void                      {2}{B}{B}        Enchantment
@@ -3471,37 +3471,37 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3478  Coalition Relic                          {3}              Artifact
 [x]  3479  Kaalia of the Vast                       {1}{R}{W}{B}     Legendary Creature — Human Cleric
 [ ]  3480  Berserk                                  {G}              Instant
-[ ]  3481  Scion of Oona                            {2}{U}           Creature — Faerie Soldier
+[x]  3481  Scion of Oona                            {2}{U}           Creature — Faerie Soldier
 [ ]  3482  Rona, Herald of Invasion // Rona, Tolarian Obliterator {2}              Legendary Creature — Human Wizard // Legendary Creature — Phyrexian Wizard
-[ ]  3483  Wirewood Channeler                       {3}{G}           Creature — Elf Druid
+[x]  3483  Wirewood Channeler                       {3}{G}           Creature — Elf Druid
 [ ]  3484  Torpor Orb                               {2}              Artifact
 [ ]  3485  Jace, the Mind Sculptor                  {2}{U}{U}        Legendary Planeswalker — Jace
-[ ]  3486  Wirewood Symbiote                        {G}              Creature — Insect
+[x]  3486  Wirewood Symbiote                        {G}              Creature — Insect
 [ ]  3487  Tempting Contract                        {4}              Artifact
-[ ]  3488  Master of the Pearl Trident              {U}{U}           Creature — Merfolk
+[x]  3488  Master of the Pearl Trident              {U}{U}           Creature — Merfolk
 [ ]  3489  Timetwister                              {2}{U}           Sorcery
-[ ]  3490  Hamza, Guardian of Arashin               {4}{G}{W}        Legendary Creature — Elephant Warrior
-[ ]  3491  Prismatic Omen                           {1}{G}           Enchantment
+[x]  3490  Hamza, Guardian of Arashin               {4}{G}{W}        Legendary Creature — Elephant Warrior
+[x]  3491  Prismatic Omen                           {1}{G}           Enchantment
 [x]  3492  Bloomvine Regent // Claim Territory      {3}{G}{G} // {2}{G} Creature — Dragon // Sorcery — Omen
-[ ]  3493  Shadowheart, Dark Justiciar              {3}{B}           Legendary Creature — Human Elf Cleric
-[ ]  3494  Nest of Scarabs                          {2}{B}           Enchantment
+[x]  3493  Shadowheart, Dark Justiciar              {3}{B}           Legendary Creature — Human Elf Cleric
+[x]  3494  Nest of Scarabs                          {2}{B}           Enchantment
 [ ]  3495  Blood for the Blood God!                 {8}{B}{B}{R}     Instant
 [ ]  3496  Command Bridge                           {0}              Land
 [x]  3497  Highland Forest                          {0}              Snow Land — Mountain Forest
 [ ]  3498  Eidolon of Rhetoric                      {2}{W}           Enchantment Creature — Spirit
-[ ]  3499  Pit of Offerings                         {0}              Land — Cave
-[ ]  3500  Blazing Crescendo                        {1}{R}           Instant
-[ ]  3501  Treebeard, Gracious Host                 {2}{G}{W}        Legendary Creature — Treefolk
-[ ]  3502  Grow from the Ashes                      {2}{G}           Sorcery
-[ ]  3503  Brightcap Badger // Fungus Frolic        {3}{G} // {2}{G} Creature — Badger Druid // Instant — Adventure
-[ ]  3504  Soul of New Phyrexia                     {6}              Artifact Creature — Phyrexian Avatar
-[ ]  3505  Countersquall                            {U}{B}           Instant
+[x]  3499  Pit of Offerings                         {0}              Land — Cave
+[x]  3500  Blazing Crescendo                        {1}{R}           Instant
+[x]  3501  Treebeard, Gracious Host                 {2}{G}{W}        Legendary Creature — Treefolk
+[x]  3502  Grow from the Ashes                      {2}{G}           Sorcery
+[x]  3503  Brightcap Badger // Fungus Frolic        {3}{G} // {2}{G} Creature — Badger Druid // Instant — Adventure
+[x]  3504  Soul of New Phyrexia                     {6}              Artifact Creature — Phyrexian Avatar
+[x]  3505  Countersquall                            {U}{B}           Instant
 [x]  3506  Reckless Barbarian                       {1}{R}           Creature — Dragon Barbarian
-[ ]  3507  Krang, Utrom Warlord                     {9}              Legendary Artifact Creature — Utrom Robot
-[ ]  3508  Take Up the Shield                       {1}{W}           Instant
+[x]  3507  Krang, Utrom Warlord                     {9}              Legendary Artifact Creature — Utrom Robot
+[x]  3508  Take Up the Shield                       {1}{W}           Instant
 [ ]  3509  Doubling Cube                            {2}              Artifact
 [ ]  3510  Chrome Host Seedshark                    {2}{U}           Creature — Phyrexian Shark
-[ ]  3511  Raid Bombardment                         {2}{R}           Enchantment
+[x]  3511  Raid Bombardment                         {2}{R}           Enchantment
 [ ]  3512  Lulu, Stern Guardian                     {2}{U}           Legendary Creature — Human Wizard
 [ ]  3513  Invasion of Zendikar // Awakened Skyclave {4}              Battle — Siege // Creature — Elemental
 [ ]  3514  Steel of the Godhead                     {2}{W/U}         Enchantment — Aura

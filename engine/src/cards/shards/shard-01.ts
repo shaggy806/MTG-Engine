@@ -35,6 +35,7 @@ import _poolCodexShredder from "../pool/codex-shredder.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
 import _poolCryptothrall from "../pool/cryptothrall.js";
+import _poolDailyBugleBuilding from "../pool/daily-bugle-building.js";
 import _poolDarkDeal from "../pool/dark-deal.js";
 import _poolDefiantSalvager from "../pool/defiant-salvager.js";
 import _poolDejaVu from "../pool/deja-vu.js";
@@ -63,6 +64,7 @@ import _poolGoblinRaider from "../pool/goblin-raider.js";
 import _poolGolgariGuildmage from "../pool/golgari-guildmage.js";
 import _poolGorgonFlail from "../pool/gorgon-flail.js";
 import _poolGrenzoHavocRaiser from "../pool/grenzo-havoc-raiser.js";
+import _poolGrimGuardian from "../pool/grim-guardian.js";
 import _poolGrowingRitesOfItlimoc from "../pool/growing-rites-of-itlimoc.js";
 import _poolGuttersnipe from "../pool/guttersnipe.js";
 import _poolHarrierGriffin from "../pool/harrier-griffin.js";
@@ -248,6 +250,7 @@ const shard: CardShard = {
     _poolCosmicSpiderMan,
     _poolCourierHawk,
     _poolCryptothrall,
+    _poolDailyBugleBuilding,
     _poolDarkDeal,
     _poolDefiantSalvager,
     _poolDejaVu,
@@ -276,6 +279,7 @@ const shard: CardShard = {
     _poolGolgariGuildmage,
     _poolGorgonFlail,
     _poolGrenzoHavocRaiser,
+    _poolGrimGuardian,
     _poolGrowingRitesOfItlimoc,
     _poolGuttersnipe,
     _poolHarrierGriffin,

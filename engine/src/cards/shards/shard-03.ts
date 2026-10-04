@@ -54,6 +54,7 @@ import _poolFyndhornBow from "../pool/fyndhorn-bow.js";
 import _poolGalvanicIteration from "../pool/galvanic-iteration.js";
 import _poolGalvanicKey from "../pool/galvanic-key.js";
 import _poolGameTrail from "../pool/game-trail.js";
+import _poolGeneralsEnforcer from "../pool/generals-enforcer.js";
 import _poolGiadaFontOfHope from "../pool/giada-font-of-hope.js";
 import _poolGisaAndGeralf from "../pool/gisa-and-geralf.js";
 import _poolGlissasCourier from "../pool/glissas-courier.js";
@@ -265,6 +266,7 @@ const shard: CardShard = {
     _poolGalvanicIteration,
     _poolGalvanicKey,
     _poolGameTrail,
+    _poolGeneralsEnforcer,
     _poolGiadaFontOfHope,
     _poolGisaAndGeralf,
     _poolGlissasCourier,

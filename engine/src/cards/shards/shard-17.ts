@@ -42,6 +42,7 @@ import _poolCogworkWrestler from "../pool/cogwork-wrestler.js";
 import _poolConcordiaPegasus from "../pool/concordia-pegasus.js";
 import _poolContaminatedAquifer from "../pool/contaminated-aquifer.js";
 import _poolContrabandKingpin from "../pool/contraband-kingpin.js";
+import _poolCostlyPlunder from "../pool/costly-plunder.js";
 import _poolCourtOfGrace from "../pool/court-of-grace.js";
 import _poolCrashThrough from "../pool/crash-through.js";
 import _poolCrosissAttendant from "../pool/crosiss-attendant.js";
@@ -114,6 +115,7 @@ import _poolLashOfTheWhip from "../pool/lash-of-the-whip.js";
 import _poolLeoninSnarecaster from "../pool/leonin-snarecaster.js";
 import _poolLetterOfAcceptance from "../pool/letter-of-acceptance.js";
 import _poolLithoformEngine from "../pool/lithoform-engine.js";
+import _poolLuminarchAscension from "../pool/luminarch-ascension.js";
 import _poolMacetailHystrodon from "../pool/macetail-hystrodon.js";
 import _poolMaelstromWanderer from "../pool/maelstrom-wanderer.js";
 import _poolMagdaBrazenOutlaw from "../pool/magda-brazen-outlaw.js";
@@ -214,6 +216,7 @@ import _poolWeldfastWingsmith from "../pool/weldfast-wingsmith.js";
 import _poolWildColos from "../pool/wild-colos.js";
 import _poolWillowFaerie from "../pool/willow-faerie.js";
 import _poolWinterSoldierBuckyBarnes from "../pool/winter-soldier-bucky-barnes.js";
+import _poolWirewoodChanneler from "../pool/wirewood-channeler.js";
 import _poolWitchsFamiliar from "../pool/witchs-familiar.js";
 import _poolWizenedCenn from "../pool/wizened-cenn.js";
 import _poolWolfsbaneHighlandHero from "../pool/wolfsbane-highland-hero.js";
@@ -276,6 +279,7 @@ const shard: CardShard = {
     _poolConcordiaPegasus,
     _poolContaminatedAquifer,
     _poolContrabandKingpin,
+    _poolCostlyPlunder,
     _poolCourtOfGrace,
     _poolCrashThrough,
     _poolCrosissAttendant,
@@ -348,6 +352,7 @@ const shard: CardShard = {
     _poolLeoninSnarecaster,
     _poolLetterOfAcceptance,
     _poolLithoformEngine,
+    _poolLuminarchAscension,
     _poolMacetailHystrodon,
     _poolMaelstromWanderer,
     _poolMagdaBrazenOutlaw,
@@ -448,6 +453,7 @@ const shard: CardShard = {
     _poolWildColos,
     _poolWillowFaerie,
     _poolWinterSoldierBuckyBarnes,
+    _poolWirewoodChanneler,
     _poolWitchsFamiliar,
     _poolWizenedCenn,
     _poolWolfsbaneHighlandHero,

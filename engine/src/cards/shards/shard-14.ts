@@ -45,13 +45,16 @@ import _poolCatharsCompanion from "../pool/cathars-companion.js";
 import _poolCauldronOfEssence from "../pool/cauldron-of-essence.js";
 import _poolChannelTheSuns from "../pool/channel-the-suns.js";
 import _poolChiefOfTheScale from "../pool/chief-of-the-scale.js";
+import _poolChocoboRacetrack from "../pool/chocobo-racetrack.js";
 import _poolCircleOfDreamsDruid from "../pool/circle-of-dreams-druid.js";
+import _poolCloudshredderSliver from "../pool/cloudshredder-sliver.js";
 import _poolCobaltGolem from "../pool/cobalt-golem.js";
 import _poolCombatThresher from "../pool/combat-thresher.js";
 import _poolConiferStrider from "../pool/conifer-strider.js";
 import _poolConservatory from "../pool/conservatory.js";
 import _poolConsultTheNecrosages from "../pool/consult-the-necrosages.js";
 import _poolCorpseHauler from "../pool/corpse-hauler.js";
+import _poolCosmograndZenith from "../pool/cosmogrand-zenith.js";
 import _poolCrystalBall from "../pool/crystal-ball.js";
 import _poolCuriousAltisaur from "../pool/curious-altisaur.js";
 import _poolCyberdriveAwakener from "../pool/cyberdrive-awakener.js";
@@ -170,6 +173,7 @@ import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
 import _poolSazacapsBrew from "../pool/sazacaps-brew.js";
 import _poolScourgemark from "../pool/scourgemark.js";
+import _poolScurryOfSquirrels from "../pool/scurry-of-squirrels.js";
 import _poolShatter from "../pool/shatter.js";
 import _poolShelteringLight from "../pool/sheltering-light.js";
 import _poolShivanGorge from "../pool/shivan-gorge.js";
@@ -275,13 +279,16 @@ const shard: CardShard = {
     _poolCauldronOfEssence,
     _poolChannelTheSuns,
     _poolChiefOfTheScale,
+    _poolChocoboRacetrack,
     _poolCircleOfDreamsDruid,
+    _poolCloudshredderSliver,
     _poolCobaltGolem,
     _poolCombatThresher,
     _poolConiferStrider,
     _poolConservatory,
     _poolConsultTheNecrosages,
     _poolCorpseHauler,
+    _poolCosmograndZenith,
     _poolCrystalBall,
     _poolCuriousAltisaur,
     _poolCyberdriveAwakener,
@@ -400,6 +407,7 @@ const shard: CardShard = {
     _poolSandsteppeCitadel,
     _poolSazacapsBrew,
     _poolScourgemark,
+    _poolScurryOfSquirrels,
     _poolShatter,
     _poolShelteringLight,
     _poolShivanGorge,

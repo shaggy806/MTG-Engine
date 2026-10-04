@@ -23,6 +23,7 @@ import _poolBardHeirOfGirion from "../pool/bard-heir-of-girion.js";
 import _poolBarrowWitches from "../pool/barrow-witches.js";
 import _poolBiteDown from "../pool/bite-down.js";
 import _poolBlazemireVerge from "../pool/blazemire-verge.js";
+import _poolBloodPact from "../pool/blood-pact.js";
 import _poolBogImp from "../pool/bog-imp.js";
 import _poolBoggartBrute from "../pool/boggart-brute.js";
 import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
@@ -108,6 +109,7 @@ import _poolJoinTheDance from "../pool/join-the-dance.js";
 import _poolJourneyersKite from "../pool/journeyers-kite.js";
 import _poolJump from "../pool/jump.js";
 import _poolKeenGlidemaster from "../pool/keen-glidemaster.js";
+import _poolKeeperOfSecrets from "../pool/keeper-of-secrets.js";
 import _poolKiboUktabiPrince from "../pool/kibo-uktabi-prince.js";
 import _poolKiorasFollower from "../pool/kioras-follower.js";
 import _poolKitesailScout from "../pool/kitesail-scout.js";
@@ -152,6 +154,7 @@ import _poolRearingEmbermare from "../pool/rearing-embermare.js";
 import _poolReconstruction from "../pool/reconstruction.js";
 import _poolResurgentBelief from "../pool/resurgent-belief.js";
 import _poolRhoxWarMonk from "../pool/rhox-war-monk.js";
+import _poolRhysTheRedeemed from "../pool/rhys-the-redeemed.js";
 import _poolRideTheRails from "../pool/ride-the-rails.js";
 import _poolRimewoodFalls from "../pool/rimewood-falls.js";
 import _poolRipscalePredator from "../pool/ripscale-predator.js";
@@ -204,6 +207,7 @@ import _poolTomeOfLegends from "../pool/tome-of-legends.js";
 import _poolTouchstone from "../pool/touchstone.js";
 import _poolTriumphOfTheHordes from "../pool/triumph-of-the-hordes.js";
 import _poolTrollHornCameo from "../pool/troll-horn-cameo.js";
+import _poolTrygonPredator from "../pool/trygon-predator.js";
 import _poolUkudCobra from "../pool/ukud-cobra.js";
 import _poolUlvenwaldHydra from "../pool/ulvenwald-hydra.js";
 import _poolUnhinge from "../pool/unhinge.js";
@@ -255,6 +259,7 @@ const shard: CardShard = {
     _poolBarrowWitches,
     _poolBiteDown,
     _poolBlazemireVerge,
+    _poolBloodPact,
     _poolBogImp,
     _poolBoggartBrute,
     _poolBoilingRockPrison,
@@ -340,6 +345,7 @@ const shard: CardShard = {
     _poolJourneyersKite,
     _poolJump,
     _poolKeenGlidemaster,
+    _poolKeeperOfSecrets,
     _poolKiboUktabiPrince,
     _poolKiorasFollower,
     _poolKitesailScout,
@@ -384,6 +390,7 @@ const shard: CardShard = {
     _poolReconstruction,
     _poolResurgentBelief,
     _poolRhoxWarMonk,
+    _poolRhysTheRedeemed,
     _poolRideTheRails,
     _poolRimewoodFalls,
     _poolRipscalePredator,
@@ -436,6 +443,7 @@ const shard: CardShard = {
     _poolTouchstone,
     _poolTriumphOfTheHordes,
     _poolTrollHornCameo,
+    _poolTrygonPredator,
     _poolUkudCobra,
     _poolUlvenwaldHydra,
     _poolUnhinge,

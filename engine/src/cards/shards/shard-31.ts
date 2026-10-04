@@ -126,10 +126,12 @@ import _poolMagmaquake from "../pool/magmaquake.js";
 import _poolMalevolentRumble from "../pool/malevolent-rumble.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
+import _poolMasterOfThePearlTrident from "../pool/master-of-the-pearl-trident.js";
 import _poolMiscast from "../pool/miscast.js";
 import _poolMischievousMystic from "../pool/mischievous-mystic.js";
 import _poolMoanOfTheUnhallowed from "../pool/moan-of-the-unhallowed.js";
 import _poolMoltenEchoes from "../pool/molten-echoes.js";
+import _poolMortalitySpear from "../pool/mortality-spear.js";
 import _poolNimReplica from "../pool/nim-replica.js";
 import _poolNoxiousGearhulk from "../pool/noxious-gearhulk.js";
 import _poolOkaunEyeOfChaos from "../pool/okaun-eye-of-chaos.js";
@@ -183,6 +185,7 @@ import _poolStensiaBloodhall from "../pool/stensia-bloodhall.js";
 import _poolStoneskin from "../pool/stoneskin.js";
 import _poolStrokeOfGenius from "../pool/stroke-of-genius.js";
 import _poolSummerBloom from "../pool/summer-bloom.js";
+import _poolSurrakDragonclaw from "../pool/surrak-dragonclaw.js";
 import _poolSwarmyard from "../pool/swarmyard.js";
 import _poolSylvanSafekeeper from "../pool/sylvan-safekeeper.js";
 import _poolTatteredMummy from "../pool/tattered-mummy.js";
@@ -350,10 +353,12 @@ const shard: CardShard = {
     _poolMalevolentRumble,
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
+    _poolMasterOfThePearlTrident,
     _poolMiscast,
     _poolMischievousMystic,
     _poolMoanOfTheUnhallowed,
     _poolMoltenEchoes,
+    _poolMortalitySpear,
     _poolNimReplica,
     _poolNoxiousGearhulk,
     _poolOkaunEyeOfChaos,
@@ -407,6 +412,7 @@ const shard: CardShard = {
     _poolStoneskin,
     _poolStrokeOfGenius,
     _poolSummerBloom,
+    _poolSurrakDragonclaw,
     _poolSwarmyard,
     _poolSylvanSafekeeper,
     _poolTatteredMummy,

@@ -77,6 +77,7 @@ import _poolEnatuGolem from "../pool/enatu-golem.js";
 import _poolEstridsInvocation from "../pool/estrids-invocation.js";
 import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFarfinder from "../pool/farfinder.js";
+import _poolFelineSovereign from "../pool/feline-sovereign.js";
 import _poolFistsOfFlame from "../pool/fists-of-flame.js";
 import _poolFlamingSword from "../pool/flaming-sword.js";
 import _poolFranticSearch from "../pool/frantic-search.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolEstridsInvocation,
     _poolExiledBoggart,
     _poolFarfinder,
+    _poolFelineSovereign,
     _poolFistsOfFlame,
     _poolFlamingSword,
     _poolFranticSearch,

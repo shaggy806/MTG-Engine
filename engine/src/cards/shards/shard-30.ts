@@ -60,6 +60,7 @@ import _poolCruelFinality from "../pool/cruel-finality.js";
 import _poolCryptGhast from "../pool/crypt-ghast.js";
 import _poolCutADeal from "../pool/cut-a-deal.js";
 import _poolDayOfJudgment from "../pool/day-of-judgment.js";
+import _poolDecisiveDenial from "../pool/decisive-denial.js";
 import _poolDeftDuelist from "../pool/deft-duelist.js";
 import _poolDerangedOutcast from "../pool/deranged-outcast.js";
 import _poolDesolationProwler from "../pool/desolation-prowler.js";
@@ -92,6 +93,7 @@ import _poolFrostcliffSiege from "../pool/frostcliff-siege.js";
 import _poolFuelTheFlames from "../pool/fuel-the-flames.js";
 import _poolFurtiveAnalyst from "../pool/furtive-analyst.js";
 import _poolGaladhrimGuide from "../pool/galadhrim-guide.js";
+import _poolGalianBeast from "../pool/galian-beast.js";
 import _poolGarrukPrimalHunter from "../pool/garruk-primal-hunter.js";
 import _poolGixYawgmothPraetor from "../pool/gix-yawgmoth-praetor.js";
 import _poolGoreSwine from "../pool/gore-swine.js";
@@ -182,6 +184,7 @@ import _poolShatteringBlow from "../pool/shattering-blow.js";
 import _poolShivanHellkite from "../pool/shivan-hellkite.js";
 import _poolShrineOfTheForsakenGods from "../pool/shrine-of-the-forsaken-gods.js";
 import _poolShuSoldierFarmers from "../pool/shu-soldier-farmers.js";
+import _poolSkitteringCicada from "../pool/skittering-cicada.js";
 import _poolSkyshroudElf from "../pool/skyshroud-elf.js";
 import _poolSmugglersSurprise from "../pool/smugglers-surprise.js";
 import _poolSneeringShadewriter from "../pool/sneering-shadewriter.js";
@@ -300,6 +303,7 @@ const shard: CardShard = {
     _poolCryptGhast,
     _poolCutADeal,
     _poolDayOfJudgment,
+    _poolDecisiveDenial,
     _poolDeftDuelist,
     _poolDerangedOutcast,
     _poolDesolationProwler,
@@ -332,6 +336,7 @@ const shard: CardShard = {
     _poolFuelTheFlames,
     _poolFurtiveAnalyst,
     _poolGaladhrimGuide,
+    _poolGalianBeast,
     _poolGarrukPrimalHunter,
     _poolGixYawgmothPraetor,
     _poolGoreSwine,
@@ -422,6 +427,7 @@ const shard: CardShard = {
     _poolShivanHellkite,
     _poolShrineOfTheForsakenGods,
     _poolShuSoldierFarmers,
+    _poolSkitteringCicada,
     _poolSkyshroudElf,
     _poolSmugglersSurprise,
     _poolSneeringShadewriter,

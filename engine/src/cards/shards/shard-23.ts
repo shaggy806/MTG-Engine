@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAgonyWarp from "../pool/agony-warp.js";
 import _poolAmbitionsCost from "../pool/ambitions-cost.js";
+import _poolAndurilFlameOfTheWest from "../pool/anduril-flame-of-the-west.js";
 import _poolAngelOfLight from "../pool/angel-of-light.js";
 import _poolAngrathsRampage from "../pool/angraths-rampage.js";
 import _poolAragornTheUniter from "../pool/aragorn-the-uniter.js";
@@ -150,6 +151,7 @@ import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
 import _poolReachThroughMists from "../pool/reach-through-mists.js";
 import _poolRegisaurAlpha from "../pool/regisaur-alpha.js";
 import _poolRelicBarrier from "../pool/relic-barrier.js";
+import _poolRenegadeTactics from "../pool/renegade-tactics.js";
 import _poolRenegadeTroops from "../pool/renegade-troops.js";
 import _poolRimefurReindeer from "../pool/rimefur-reindeer.js";
 import _poolRottedHulk from "../pool/rotted-hulk.js";
@@ -171,6 +173,7 @@ import _poolSoddenVerdure from "../pool/sodden-verdure.js";
 import _poolSolemnSimulacrum from "../pool/solemn-simulacrum.js";
 import _poolSolveTheEquation from "../pool/solve-the-equation.js";
 import _poolSorinOfHouseMarkov from "../pool/sorin-of-house-markov.js";
+import _poolSoulOfNewPhyrexia from "../pool/soul-of-new-phyrexia.js";
 import _poolSoulShatter from "../pool/soul-shatter.js";
 import _poolSouldrinker from "../pool/souldrinker.js";
 import _poolSpiderwigBoggart from "../pool/spiderwig-boggart.js";
@@ -234,6 +237,7 @@ const shard: CardShard = {
   pool: [
     _poolAgonyWarp,
     _poolAmbitionsCost,
+    _poolAndurilFlameOfTheWest,
     _poolAngelOfLight,
     _poolAngrathsRampage,
     _poolAragornTheUniter,
@@ -379,6 +383,7 @@ const shard: CardShard = {
     _poolReachThroughMists,
     _poolRegisaurAlpha,
     _poolRelicBarrier,
+    _poolRenegadeTactics,
     _poolRenegadeTroops,
     _poolRimefurReindeer,
     _poolRottedHulk,
@@ -400,6 +405,7 @@ const shard: CardShard = {
     _poolSolemnSimulacrum,
     _poolSolveTheEquation,
     _poolSorinOfHouseMarkov,
+    _poolSoulOfNewPhyrexia,
     _poolSoulShatter,
     _poolSouldrinker,
     _poolSpiderwigBoggart,

@@ -115,7 +115,9 @@ describe("pool Partner commanders (rule 702.124)", () => {
             ? "partner-group"
             : /^Choose a Background\b/m.test(card.text)
               ? "choose-a-background"
-              : undefined;
+              : /^Doctor's companion\b/m.test(card.text)
+                ? "doctors-companion"
+                : undefined;
       expect(card.pairing?.kind, card.name).toBe(printed);
     }
   });

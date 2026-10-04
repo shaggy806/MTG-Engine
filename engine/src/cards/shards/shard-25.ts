@@ -129,6 +129,7 @@ import _poolMoggcatcher from "../pool/moggcatcher.js";
 import _poolMorbidOpportunist from "../pool/morbid-opportunist.js";
 import _poolMorgueThrull from "../pool/morgue-thrull.js";
 import _poolMutagenicGrowth from "../pool/mutagenic-growth.js";
+import _poolMycosynthGolem from "../pool/mycosynth-golem.js";
 import _poolMysticArchaeologist from "../pool/mystic-archaeologist.js";
 import _poolNeedForSpeed from "../pool/need-for-speed.js";
 import _poolNeedlevergePathway from "../pool/needleverge-pathway.js";
@@ -369,6 +370,7 @@ const shard: CardShard = {
     _poolMorbidOpportunist,
     _poolMorgueThrull,
     _poolMutagenicGrowth,
+    _poolMycosynthGolem,
     _poolMysticArchaeologist,
     _poolNeedForSpeed,
     _poolNeedlevergePathway,

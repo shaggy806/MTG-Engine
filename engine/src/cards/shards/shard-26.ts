@@ -63,10 +63,12 @@ import _poolFetidPools from "../pool/fetid-pools.js";
 import _poolFieryEmancipation from "../pool/fiery-emancipation.js";
 import _poolFinishingBlow from "../pool/finishing-blow.js";
 import _poolFiresOfYavimaya from "../pool/fires-of-yavimaya.js";
+import _poolFlagstonesOfTrokair from "../pool/flagstones-of-trokair.js";
 import _poolFleetfootDancer from "../pool/fleetfoot-dancer.js";
 import _poolFlowstoneMauler from "../pool/flowstone-mauler.js";
 import _poolFluxChanneler from "../pool/flux-channeler.js";
 import _poolFlyingMen from "../pool/flying-men.js";
+import _poolFungusFrolic from "../pool/fungus-frolic.js";
 import _poolFynnTheFangbearer from "../pool/fynn-the-fangbearer.js";
 import _poolGeistflame from "../pool/geistflame.js";
 import _poolGerrardsBattleCry from "../pool/gerrards-battle-cry.js";
@@ -154,6 +156,7 @@ import _poolRavenousDaggertooth from "../pool/ravenous-daggertooth.js";
 import _poolRavenousLindwurm from "../pool/ravenous-lindwurm.js";
 import _poolReassemblingSkeleton from "../pool/reassembling-skeleton.js";
 import _poolReclamationSage from "../pool/reclamation-sage.js";
+import _poolReshapeTheEarth from "../pool/reshape-the-earth.js";
 import _poolRetrievalAgent from "../pool/retrieval-agent.js";
 import _poolRhoxOracle from "../pool/rhox-oracle.js";
 import _poolRiderInNeed from "../pool/rider-in-need.js";
@@ -206,6 +209,7 @@ import _poolTimelessLotus from "../pool/timeless-lotus.js";
 import _poolTirelessTracker from "../pool/tireless-tracker.js";
 import _poolTorrentialGearhulk from "../pool/torrential-gearhulk.js";
 import _poolTreasureHunter from "../pool/treasure-hunter.js";
+import _poolTreebeardGraciousHost from "../pool/treebeard-gracious-host.js";
 import _poolTritonShorestalker from "../pool/triton-shorestalker.js";
 import _poolUktabiOrangutan from "../pool/uktabi-orangutan.js";
 import _poolUtopiaSprawl from "../pool/utopia-sprawl.js";
@@ -214,6 +218,7 @@ import _poolVaultOfTheArchangel from "../pool/vault-of-the-archangel.js";
 import _poolVedalkenMesmerist from "../pool/vedalken-mesmerist.js";
 import _poolViashinoSlasher from "../pool/viashino-slasher.js";
 import _poolViashinoWarrior from "../pool/viashino-warrior.js";
+import _poolVincentValentine from "../pool/vincent-valentine.js";
 import _poolVirtueOfPersistence from "../pool/virtue-of-persistence.js";
 import _poolVivisurgeonsInsight from "../pool/vivisurgeons-insight.js";
 import _poolVolatileFjord from "../pool/volatile-fjord.js";
@@ -297,10 +302,12 @@ const shard: CardShard = {
     _poolFieryEmancipation,
     _poolFinishingBlow,
     _poolFiresOfYavimaya,
+    _poolFlagstonesOfTrokair,
     _poolFleetfootDancer,
     _poolFlowstoneMauler,
     _poolFluxChanneler,
     _poolFlyingMen,
+    _poolFungusFrolic,
     _poolFynnTheFangbearer,
     _poolGeistflame,
     _poolGerrardsBattleCry,
@@ -388,6 +395,7 @@ const shard: CardShard = {
     _poolRavenousLindwurm,
     _poolReassemblingSkeleton,
     _poolReclamationSage,
+    _poolReshapeTheEarth,
     _poolRetrievalAgent,
     _poolRhoxOracle,
     _poolRiderInNeed,
@@ -440,6 +448,7 @@ const shard: CardShard = {
     _poolTirelessTracker,
     _poolTorrentialGearhulk,
     _poolTreasureHunter,
+    _poolTreebeardGraciousHost,
     _poolTritonShorestalker,
     _poolUktabiOrangutan,
     _poolUtopiaSprawl,
@@ -448,6 +457,7 @@ const shard: CardShard = {
     _poolVedalkenMesmerist,
     _poolViashinoSlasher,
     _poolViashinoWarrior,
+    _poolVincentValentine,
     _poolVirtueOfPersistence,
     _poolVivisurgeonsInsight,
     _poolVolatileFjord,

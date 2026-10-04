@@ -22,6 +22,7 @@ import _poolBarterInBlood from "../pool/barter-in-blood.js";
 import _poolBasiliskGate from "../pool/basilisk-gate.js";
 import _poolBattlegroundGeist from "../pool/battleground-geist.js";
 import _poolBeholdTheMultiverse from "../pool/behold-the-multiverse.js";
+import _poolBlazingCrescendo from "../pool/blazing-crescendo.js";
 import _poolBlightedShaman from "../pool/blighted-shaman.js";
 import _poolBlightsoilDruid from "../pool/blightsoil-druid.js";
 import _poolBloodMist from "../pool/blood-mist.js";
@@ -94,6 +95,7 @@ import _poolHarrierStrix from "../pool/harrier-strix.js";
 import _poolHearthhullTheWorldseed from "../pool/hearthhull-the-worldseed.js";
 import _poolHornetSting from "../pool/hornet-sting.js";
 import _poolHulkBruceBanner from "../pool/hulk-bruce-banner.js";
+import _poolIncreasingDevotion from "../pool/increasing-devotion.js";
 import _poolInspiringVantage from "../pool/inspiring-vantage.js";
 import _poolIsland from "../pool/island.js";
 import _poolJaheiraFriendOfTheForest from "../pool/jaheira-friend-of-the-forest.js";
@@ -133,6 +135,7 @@ import _poolOphidianEye from "../pool/ophidian-eye.js";
 import _poolOrimsChant from "../pool/orims-chant.js";
 import _poolOxiddaScrapmelter from "../pool/oxidda-scrapmelter.js";
 import _poolPatagiaGolem from "../pool/patagia-golem.js";
+import _poolPathbreakerIbex from "../pool/pathbreaker-ibex.js";
 import _poolPendrellDrake from "../pool/pendrell-drake.js";
 import _poolPhyrexianReclamation from "../pool/phyrexian-reclamation.js";
 import _poolPinnacleMonk from "../pool/pinnacle-monk.js";
@@ -246,6 +249,7 @@ const shard: CardShard = {
     _poolBasiliskGate,
     _poolBattlegroundGeist,
     _poolBeholdTheMultiverse,
+    _poolBlazingCrescendo,
     _poolBlightedShaman,
     _poolBlightsoilDruid,
     _poolBloodMist,
@@ -318,6 +322,7 @@ const shard: CardShard = {
     _poolHearthhullTheWorldseed,
     _poolHornetSting,
     _poolHulkBruceBanner,
+    _poolIncreasingDevotion,
     _poolInspiringVantage,
     _poolIsland,
     _poolJaheiraFriendOfTheForest,
@@ -357,6 +362,7 @@ const shard: CardShard = {
     _poolOrimsChant,
     _poolOxiddaScrapmelter,
     _poolPatagiaGolem,
+    _poolPathbreakerIbex,
     _poolPendrellDrake,
     _poolPhyrexianReclamation,
     _poolPinnacleMonk,

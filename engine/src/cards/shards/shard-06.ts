@@ -9,6 +9,7 @@ import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
 import _poolAlexiosDeimosOfKosmos from "../pool/alexios-deimos-of-kosmos.js";
 import _poolAlibouAncientWitness from "../pool/alibou-ancient-witness.js";
 import _poolAlleyStrangler from "../pool/alley-strangler.js";
+import _poolAngelOfIndemnity from "../pool/angel-of-indemnity.js";
 import _poolAngelOfRetribution from "../pool/angel-of-retribution.js";
 import _poolAnowonTheRuinThief from "../pool/anowon-the-ruin-thief.js";
 import _poolArabellaAbandonedDoll from "../pool/arabella-abandoned-doll.js";
@@ -79,6 +80,7 @@ import _poolFelidarSovereign from "../pool/felidar-sovereign.js";
 import _poolFireNationSoldier from "../pool/fire-nation-soldier.js";
 import _poolFlashback from "../pool/flashback.js";
 import _poolFlyingOctobot from "../pool/flying-octobot.js";
+import _poolForgottenCreation from "../pool/forgotten-creation.js";
 import _poolFortify from "../pool/fortify.js";
 import _poolFountainOfRenewal from "../pool/fountain-of-renewal.js";
 import _poolFrostMarsh from "../pool/frost-marsh.js";
@@ -140,6 +142,7 @@ import _poolPollywogProdigy from "../pool/pollywog-prodigy.js";
 import _poolPrimalFrenzy from "../pool/primal-frenzy.js";
 import _poolPrismaticVista from "../pool/prismatic-vista.js";
 import _poolProsperTomeBound from "../pool/prosper-tome-bound.js";
+import _poolQuestForRenewal from "../pool/quest-for-renewal.js";
 import _poolQuezaAugurOfAgonies from "../pool/queza-augur-of-agonies.js";
 import _poolQuicksilverFisher from "../pool/quicksilver-fisher.js";
 import _poolRaggadraggaGoregutsBoss from "../pool/raggadragga-goreguts-boss.js";
@@ -156,6 +159,7 @@ import _poolSandbarMerfolk from "../pool/sandbar-merfolk.js";
 import _poolSavageGorilla from "../pool/savage-gorilla.js";
 import _poolSawInHalf from "../pool/saw-in-half.js";
 import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
+import _poolScionOfCalamity from "../pool/scion-of-calamity.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
 import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
@@ -236,6 +240,7 @@ const shard: CardShard = {
     _poolAlexiosDeimosOfKosmos,
     _poolAlibouAncientWitness,
     _poolAlleyStrangler,
+    _poolAngelOfIndemnity,
     _poolAngelOfRetribution,
     _poolAnowonTheRuinThief,
     _poolArabellaAbandonedDoll,
@@ -306,6 +311,7 @@ const shard: CardShard = {
     _poolFireNationSoldier,
     _poolFlashback,
     _poolFlyingOctobot,
+    _poolForgottenCreation,
     _poolFortify,
     _poolFountainOfRenewal,
     _poolFrostMarsh,
@@ -367,6 +373,7 @@ const shard: CardShard = {
     _poolPrimalFrenzy,
     _poolPrismaticVista,
     _poolProsperTomeBound,
+    _poolQuestForRenewal,
     _poolQuezaAugurOfAgonies,
     _poolQuicksilverFisher,
     _poolRaggadraggaGoregutsBoss,
@@ -383,6 +390,7 @@ const shard: CardShard = {
     _poolSavageGorilla,
     _poolSawInHalf,
     _poolScepterOfInsight,
+    _poolScionOfCalamity,
     _poolScorchingSpear,
     _poolSearstepPathway,
     _poolSecureTheWastes,

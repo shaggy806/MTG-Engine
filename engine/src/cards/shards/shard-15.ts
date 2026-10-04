@@ -25,6 +25,7 @@ import _poolBondBeetle from "../pool/bond-beetle.js";
 import _poolBoneMiser from "../pool/bone-miser.js";
 import _poolBrainWeevil from "../pool/brain-weevil.js";
 import _poolBrenardGingerSculptor from "../pool/brenard-ginger-sculptor.js";
+import _poolCanoptekSpyder from "../pool/canoptek-spyder.js";
 import _poolCanopyBaloth from "../pool/canopy-baloth.js";
 import _poolCanyonSlough from "../pool/canyon-slough.js";
 import _poolCapashenKnight from "../pool/capashen-knight.js";
@@ -168,6 +169,7 @@ import _poolSelflessSpirit from "../pool/selfless-spirit.js";
 import _poolSheoldredTheApocalypse from "../pool/sheoldred-the-apocalypse.js";
 import _poolSilverbackApe from "../pool/silverback-ape.js";
 import _poolSilvercoatLion from "../pool/silvercoat-lion.js";
+import _poolSkarrgTheRagePits from "../pool/skarrg-the-rage-pits.js";
 import _poolSkateboard from "../pool/skateboard.js";
 import _poolSkorpekhDestroyer from "../pool/skorpekh-destroyer.js";
 import _poolSliverOverlord from "../pool/sliver-overlord.js";
@@ -179,6 +181,7 @@ import _poolSoulWarden from "../pool/soul-warden.js";
 import _poolSpellscornCoven from "../pool/spellscorn-coven.js";
 import _poolSproutingGoblin from "../pool/sprouting-goblin.js";
 import _poolStormriderSpirit from "../pool/stormrider-spirit.js";
+import _poolStrengthOfWill from "../pool/strength-of-will.js";
 import _poolStripedBears from "../pool/striped-bears.js";
 import _poolSulfurousSprings from "../pool/sulfurous-springs.js";
 import _poolSultaiBanner from "../pool/sultai-banner.js";
@@ -255,6 +258,7 @@ const shard: CardShard = {
     _poolBoneMiser,
     _poolBrainWeevil,
     _poolBrenardGingerSculptor,
+    _poolCanoptekSpyder,
     _poolCanopyBaloth,
     _poolCanyonSlough,
     _poolCapashenKnight,
@@ -398,6 +402,7 @@ const shard: CardShard = {
     _poolSheoldredTheApocalypse,
     _poolSilverbackApe,
     _poolSilvercoatLion,
+    _poolSkarrgTheRagePits,
     _poolSkateboard,
     _poolSkorpekhDestroyer,
     _poolSliverOverlord,
@@ -409,6 +414,7 @@ const shard: CardShard = {
     _poolSpellscornCoven,
     _poolSproutingGoblin,
     _poolStormriderSpirit,
+    _poolStrengthOfWill,
     _poolStripedBears,
     _poolSulfurousSprings,
     _poolSultaiBanner,

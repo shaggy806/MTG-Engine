@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbbeyMatron from "../pool/abbey-matron.js";
+import _poolAetherHub from "../pool/aether-hub.js";
 import _poolAkkiRockspeaker from "../pool/akki-rockspeaker.js";
 import _poolAlignedHeart from "../pool/aligned-heart.js";
 import _poolAlpineMeadow from "../pool/alpine-meadow.js";
@@ -56,6 +57,7 @@ import _poolDispatch from "../pool/dispatch.js";
 import _poolDivineTransformation from "../pool/divine-transformation.js";
 import _poolDivineVerdict from "../pool/divine-verdict.js";
 import _poolDranaLiberatorOfMalakir from "../pool/drana-liberator-of-malakir.js";
+import _poolEarthquakeDragon from "../pool/earthquake-dragon.js";
 import _poolEidolonOfPhilosophy from "../pool/eidolon-of-philosophy.js";
 import _poolElvishRegrower from "../pool/elvish-regrower.js";
 import _poolEnduringCourage from "../pool/enduring-courage.js";
@@ -253,6 +255,7 @@ import _poolWaywardGiant from "../pool/wayward-giant.js";
 import _poolWhiptongueHydra from "../pool/whiptongue-hydra.js";
 import _poolWieldingTheGreenDragon from "../pool/wielding-the-green-dragon.js";
 import _poolWildJhovall from "../pool/wild-jhovall.js";
+import _poolWirewoodSymbiote from "../pool/wirewood-symbiote.js";
 import _poolWishcoinCrab from "../pool/wishcoin-crab.js";
 import _poolWithinRange from "../pool/within-range.js";
 import _poolYevaNaturesHerald from "../pool/yeva-natures-herald.js";
@@ -271,6 +274,7 @@ import _tokensWarriorTokenVigilance from "../tokens/warrior-token-vigilance.js";
 const shard: CardShard = {
   pool: [
     _poolAbbeyMatron,
+    _poolAetherHub,
     _poolAkkiRockspeaker,
     _poolAlignedHeart,
     _poolAlpineMeadow,
@@ -323,6 +327,7 @@ const shard: CardShard = {
     _poolDivineTransformation,
     _poolDivineVerdict,
     _poolDranaLiberatorOfMalakir,
+    _poolEarthquakeDragon,
     _poolEidolonOfPhilosophy,
     _poolElvishRegrower,
     _poolEnduringCourage,
@@ -520,6 +525,7 @@ const shard: CardShard = {
     _poolWhiptongueHydra,
     _poolWieldingTheGreenDragon,
     _poolWildJhovall,
+    _poolWirewoodSymbiote,
     _poolWishcoinCrab,
     _poolWithinRange,
     _poolYevaNaturesHerald,

@@ -103,12 +103,14 @@ import _poolKalonianTusker from "../pool/kalonian-tusker.js";
 import _poolKamiOfAncientLaw from "../pool/kami-of-ancient-law.js";
 import _poolKamiOfOldStone from "../pool/kami-of-old-stone.js";
 import _poolKhenraCharioteer from "../pool/khenra-charioteer.js";
+import _poolKinjallisSunwing from "../pool/kinjallis-sunwing.js";
 import _poolKnotvineMystic from "../pool/knotvine-mystic.js";
 import _poolLeechriddenSwamp from "../pool/leechridden-swamp.js";
 import _poolLeoninBattlemage from "../pool/leonin-battlemage.js";
 import _poolLeoninElder from "../pool/leonin-elder.js";
 import _poolLucentLiminid from "../pool/lucent-liminid.js";
 import _poolLuxurySuite from "../pool/luxury-suite.js";
+import _poolMakeAStand from "../pool/make-a-stand.js";
 import _poolManaGeode from "../pool/mana-geode.js";
 import _poolMandroidSquadron from "../pool/mandroid-squadron.js";
 import _poolMaralenFaeAscendant from "../pool/maralen-fae-ascendant.js";
@@ -126,6 +128,7 @@ import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
+import _poolNissasPilgrimage from "../pool/nissas-pilgrimage.js";
 import _poolOctomancer from "../pool/octomancer.js";
 import _poolOctopusForm from "../pool/octopus-form.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
@@ -146,6 +149,7 @@ import _poolPygmyPyrosaur from "../pool/pygmy-pyrosaur.js";
 import _poolRagingMinotaur from "../pool/raging-minotaur.js";
 import _poolRakdosRagemutt from "../pool/rakdos-ragemutt.js";
 import _poolRamunapExcavator from "../pool/ramunap-excavator.js";
+import _poolRapaciousGuest from "../pool/rapacious-guest.js";
 import _poolRazortideBridge from "../pool/razortide-bridge.js";
 import _poolRazorvergeThicket from "../pool/razorverge-thicket.js";
 import _poolRecklessImpulse from "../pool/reckless-impulse.js";
@@ -327,12 +331,14 @@ const shard: CardShard = {
     _poolKamiOfAncientLaw,
     _poolKamiOfOldStone,
     _poolKhenraCharioteer,
+    _poolKinjallisSunwing,
     _poolKnotvineMystic,
     _poolLeechriddenSwamp,
     _poolLeoninBattlemage,
     _poolLeoninElder,
     _poolLucentLiminid,
     _poolLuxurySuite,
+    _poolMakeAStand,
     _poolManaGeode,
     _poolMandroidSquadron,
     _poolMaralenFaeAscendant,
@@ -350,6 +356,7 @@ const shard: CardShard = {
     _poolMyrkulLordOfBones,
     _poolMysticMonastery,
     _poolNightguardPatrol,
+    _poolNissasPilgrimage,
     _poolOctomancer,
     _poolOctopusForm,
     _poolOmnathLocusOfCreation,
@@ -370,6 +377,7 @@ const shard: CardShard = {
     _poolRagingMinotaur,
     _poolRakdosRagemutt,
     _poolRamunapExcavator,
+    _poolRapaciousGuest,
     _poolRazortideBridge,
     _poolRazorvergeThicket,
     _poolRecklessImpulse,

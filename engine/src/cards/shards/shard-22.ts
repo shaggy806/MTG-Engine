@@ -8,6 +8,7 @@ import _poolAkoumWarrior from "../pool/akoum-warrior.js";
 import _poolAmateurHero from "../pool/amateur-hero.js";
 import _poolAngelOfFlightAlabaster from "../pool/angel-of-flight-alabaster.js";
 import _poolAngelOfTheGodPharaoh from "../pool/angel-of-the-god-pharaoh.js";
+import _poolAngelicAccord from "../pool/angelic-accord.js";
 import _poolArchivist from "../pool/archivist.js";
 import _poolArdentMilitia from "../pool/ardent-militia.js";
 import _poolArkOfBlight from "../pool/ark-of-blight.js";
@@ -64,6 +65,7 @@ import _poolEmeriaShatteredSkyclave from "../pool/emeria-shattered-skyclave.js";
 import _poolEmielTheBlessed from "../pool/emiel-the-blessed.js";
 import _poolEndTheFestivities from "../pool/end-the-festivities.js";
 import _poolEtherswornAdjudicator from "../pool/ethersworn-adjudicator.js";
+import _poolEvolutionaryLeap from "../pool/evolutionary-leap.js";
 import _poolExemplarOfLight from "../pool/exemplar-of-light.js";
 import _poolExperimentalAugury from "../pool/experimental-augury.js";
 import _poolExquisiteBlood from "../pool/exquisite-blood.js";
@@ -99,6 +101,7 @@ import _poolIntrepidTenderfoot from "../pool/intrepid-tenderfoot.js";
 import _poolIronwillForger from "../pool/ironwill-forger.js";
 import _poolJukaiNaturalist from "../pool/jukai-naturalist.js";
 import _poolJungleDelver from "../pool/jungle-delver.js";
+import _poolK9MarkI from "../pool/k-9-mark-i.js";
 import _poolKaervekTheMerciless from "../pool/kaervek-the-merciless.js";
 import _poolKessDissidentMage from "../pool/kess-dissident-mage.js";
 import _poolKikiJikiMirrorBreaker from "../pool/kiki-jiki-mirror-breaker.js";
@@ -162,6 +165,7 @@ import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
 import _poolSacrifice from "../pool/sacrifice.js";
 import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
+import _poolSavvyHunter from "../pool/savvy-hunter.js";
 import _poolSawItComing from "../pool/saw-it-coming.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
@@ -176,6 +180,7 @@ import _poolSkycatSovereign from "../pool/skycat-sovereign.js";
 import _poolSlipperyBogle from "../pool/slippery-bogle.js";
 import _poolSnowCoveredForest from "../pool/snow-covered-forest.js";
 import _poolSouthernElephant from "../pool/southern-elephant.js";
+import _poolSpeciesSpecialist from "../pool/species-specialist.js";
 import _poolSpellgorgerWeird from "../pool/spellgorger-weird.js";
 import _poolSphinxsRevelation from "../pool/sphinxs-revelation.js";
 import _poolSquall from "../pool/squall.js";
@@ -250,6 +255,7 @@ const shard: CardShard = {
     _poolAmateurHero,
     _poolAngelOfFlightAlabaster,
     _poolAngelOfTheGodPharaoh,
+    _poolAngelicAccord,
     _poolArchivist,
     _poolArdentMilitia,
     _poolArkOfBlight,
@@ -306,6 +312,7 @@ const shard: CardShard = {
     _poolEmielTheBlessed,
     _poolEndTheFestivities,
     _poolEtherswornAdjudicator,
+    _poolEvolutionaryLeap,
     _poolExemplarOfLight,
     _poolExperimentalAugury,
     _poolExquisiteBlood,
@@ -341,6 +348,7 @@ const shard: CardShard = {
     _poolIronwillForger,
     _poolJukaiNaturalist,
     _poolJungleDelver,
+    _poolK9MarkI,
     _poolKaervekTheMerciless,
     _poolKessDissidentMage,
     _poolKikiJikiMirrorBreaker,
@@ -404,6 +412,7 @@ const shard: CardShard = {
     _poolRustedSentinel,
     _poolSacrifice,
     _poolSamwiseGamgee,
+    _poolSavvyHunter,
     _poolSawItComing,
     _poolScarecrone,
     _poolScavengingScarab,
@@ -418,6 +427,7 @@ const shard: CardShard = {
     _poolSlipperyBogle,
     _poolSnowCoveredForest,
     _poolSouthernElephant,
+    _poolSpeciesSpecialist,
     _poolSpellgorgerWeird,
     _poolSphinxsRevelation,
     _poolSquall,

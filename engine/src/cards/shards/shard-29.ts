@@ -76,6 +76,7 @@ import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
 import _poolHavocDevils from "../pool/havoc-devils.js";
 import _poolHedronRover from "../pool/hedron-rover.js";
+import _poolHeliodTheWarpedEclipse from "../pool/heliod-the-warped-eclipse.js";
 import _poolHenzieToolboxTorre from "../pool/henzie-toolbox-torre.js";
 import _poolHeraldOfSecretStreams from "../pool/herald-of-secret-streams.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
@@ -179,6 +180,7 @@ import _poolSunscorchedDivide from "../pool/sunscorched-divide.js";
 import _poolSurveyTheWreckage from "../pool/survey-the-wreckage.js";
 import _poolSylvanCaryatid from "../pool/sylvan-caryatid.js";
 import _poolTaiga from "../pool/taiga.js";
+import _poolTakeUpTheShield from "../pool/take-up-the-shield.js";
 import _poolTempleAcolyte from "../pool/temple-acolyte.js";
 import _poolTheFirstSliver from "../pool/the-first-sliver.js";
 import _poolTheMasterOfKeys from "../pool/the-master-of-keys.js";
@@ -285,6 +287,7 @@ const shard: CardShard = {
     _poolGyreEngineer,
     _poolHavocDevils,
     _poolHedronRover,
+    _poolHeliodTheWarpedEclipse,
     _poolHenzieToolboxTorre,
     _poolHeraldOfSecretStreams,
     _poolHithlainKnots,
@@ -388,6 +391,7 @@ const shard: CardShard = {
     _poolSurveyTheWreckage,
     _poolSylvanCaryatid,
     _poolTaiga,
+    _poolTakeUpTheShield,
     _poolTempleAcolyte,
     _poolTheFirstSliver,
     _poolTheMasterOfKeys,

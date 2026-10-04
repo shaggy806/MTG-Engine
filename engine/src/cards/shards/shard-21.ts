@@ -34,6 +34,7 @@ import _poolClavilenoFirstOfTheBlessed from "../pool/clavileno-first-of-the-bles
 import _poolCombustibleGearhulk from "../pool/combustible-gearhulk.js";
 import _poolCommonBond from "../pool/common-bond.js";
 import _poolConclaveTribunal from "../pool/conclave-tribunal.js";
+import _poolConsultTheStarCharts from "../pool/consult-the-star-charts.js";
 import _poolConviction from "../pool/conviction.js";
 import _poolCouriersCapsule from "../pool/couriers-capsule.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
@@ -68,6 +69,7 @@ import _poolGiganticBigBear from "../pool/gigantic-big-bear.js";
 import _poolGlarbCalamitysAugur from "../pool/glarb-calamitys-augur.js";
 import _poolGliderKids from "../pool/glider-kids.js";
 import _poolGloriousCharge from "../pool/glorious-charge.js";
+import _poolGoblinKing from "../pool/goblin-king.js";
 import _poolGoblinSurprise from "../pool/goblin-surprise.js";
 import _poolGoblinWarchief from "../pool/goblin-warchief.js";
 import _poolGoroGoroDiscipleOfRyusei from "../pool/goro-goro-disciple-of-ryusei.js";
@@ -242,6 +244,7 @@ const shard: CardShard = {
     _poolCombustibleGearhulk,
     _poolCommonBond,
     _poolConclaveTribunal,
+    _poolConsultTheStarCharts,
     _poolConviction,
     _poolCouriersCapsule,
     _poolCravenGiant,
@@ -276,6 +279,7 @@ const shard: CardShard = {
     _poolGlarbCalamitysAugur,
     _poolGliderKids,
     _poolGloriousCharge,
+    _poolGoblinKing,
     _poolGoblinSurprise,
     _poolGoblinWarchief,
     _poolGoroGoroDiscipleOfRyusei,

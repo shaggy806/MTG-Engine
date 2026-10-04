@@ -39,6 +39,7 @@ import _poolCityOfTraitors from "../pool/city-of-traitors.js";
 import _poolCommercialDistrict from "../pool/commercial-district.js";
 import _poolConsumingCorruption from "../pool/consuming-corruption.js";
 import _poolConsumptiveGoo from "../pool/consumptive-goo.js";
+import _poolCourtOfIre from "../pool/court-of-ire.js";
 import _poolCryptRipper from "../pool/crypt-ripper.js";
 import _poolCultistsStaff from "../pool/cultists-staff.js";
 import _poolDamnablePact from "../pool/damnable-pact.js";
@@ -131,6 +132,8 @@ import _poolPreyUpon from "../pool/prey-upon.js";
 import _poolPriestOfTitania from "../pool/priest-of-titania.js";
 import _poolPrimevalsGloriousRebirth from "../pool/primevals-glorious-rebirth.js";
 import _poolPrimordialWurm from "../pool/primordial-wurm.js";
+import _poolPrinceImrahilTheFair from "../pool/prince-imrahil-the-fair.js";
+import _poolPrivilegedPosition from "../pool/privileged-position.js";
 import _poolQuirionRanger from "../pool/quirion-ranger.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
 import _poolRakdosCluestone from "../pool/rakdos-cluestone.js";
@@ -138,6 +141,7 @@ import _poolRamirezDepietro from "../pool/ramirez-depietro.js";
 import _poolRazorgrassField from "../pool/razorgrass-field.js";
 import _poolRecover from "../pool/recover.js";
 import _poolRegathanFirecat from "../pool/regathan-firecat.js";
+import _poolRestlessCottage from "../pool/restless-cottage.js";
 import _poolRetreatToKazandu from "../pool/retreat-to-kazandu.js";
 import _poolRiverMerfolk from "../pool/river-merfolk.js";
 import _poolRodOfRuin from "../pool/rod-of-ruin.js";
@@ -160,6 +164,7 @@ import _poolSlinkingSkirge from "../pool/slinking-skirge.js";
 import _poolSnappingCreeper from "../pool/snapping-creeper.js";
 import _poolSokkaWolfCovesProtector from "../pool/sokka-wolf-coves-protector.js";
 import _poolSoulreaperOfMogis from "../pool/soulreaper-of-mogis.js";
+import _poolSoulsMajesty from "../pool/souls-majesty.js";
 import _poolSoulswornJury from "../pool/soulsworn-jury.js";
 import _poolSparkElemental from "../pool/spark-elemental.js";
 import _poolSphinxMindbreaker from "../pool/sphinx-mindbreaker.js";
@@ -268,6 +273,7 @@ const shard: CardShard = {
     _poolCommercialDistrict,
     _poolConsumingCorruption,
     _poolConsumptiveGoo,
+    _poolCourtOfIre,
     _poolCryptRipper,
     _poolCultistsStaff,
     _poolDamnablePact,
@@ -360,6 +366,8 @@ const shard: CardShard = {
     _poolPriestOfTitania,
     _poolPrimevalsGloriousRebirth,
     _poolPrimordialWurm,
+    _poolPrinceImrahilTheFair,
+    _poolPrivilegedPosition,
     _poolQuirionRanger,
     _poolRageThrower,
     _poolRakdosCluestone,
@@ -367,6 +375,7 @@ const shard: CardShard = {
     _poolRazorgrassField,
     _poolRecover,
     _poolRegathanFirecat,
+    _poolRestlessCottage,
     _poolRetreatToKazandu,
     _poolRiverMerfolk,
     _poolRodOfRuin,
@@ -389,6 +398,7 @@ const shard: CardShard = {
     _poolSnappingCreeper,
     _poolSokkaWolfCovesProtector,
     _poolSoulreaperOfMogis,
+    _poolSoulsMajesty,
     _poolSoulswornJury,
     _poolSparkElemental,
     _poolSphinxMindbreaker,

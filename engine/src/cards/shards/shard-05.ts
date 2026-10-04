@@ -30,6 +30,7 @@ import _poolBleachboneVerge from "../pool/bleachbone-verge.js";
 import _poolBlessedLight from "../pool/blessed-light.js";
 import _poolBlightPile from "../pool/blight-pile.js";
 import _poolBlightning from "../pool/blightning.js";
+import _poolBlossomingTortoise from "../pool/blossoming-tortoise.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
 import _poolBrassSquire from "../pool/brass-squire.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
@@ -91,6 +92,7 @@ import _poolGlorySeeker from "../pool/glory-seeker.js";
 import _poolGluttonousZombie from "../pool/gluttonous-zombie.js";
 import _poolGoblinRoughrider from "../pool/goblin-roughrider.js";
 import _poolGoblinSettler from "../pool/goblin-settler.js";
+import _poolGodoBanditWarlord from "../pool/godo-bandit-warlord.js";
 import _poolGoldenHind from "../pool/golden-hind.js";
 import _poolGrandCrescendo from "../pool/grand-crescendo.js";
 import _poolGrappleWithThePast from "../pool/grapple-with-the-past.js";
@@ -98,6 +100,7 @@ import _poolGravespawnSovereign from "../pool/gravespawn-sovereign.js";
 import _poolGreatHallOfTheCitadel from "../pool/great-hall-of-the-citadel.js";
 import _poolGrimBackwoods from "../pool/grim-backwoods.js";
 import _poolGrimclimbPathway from "../pool/grimclimb-pathway.js";
+import _poolGrowFromTheAshes from "../pool/grow-from-the-ashes.js";
 import _poolGuardianLions from "../pool/guardian-lions.js";
 import _poolHangarbackWalker from "../pool/hangarback-walker.js";
 import _poolHauntedMire from "../pool/haunted-mire.js";
@@ -125,6 +128,7 @@ import _poolLlanowarVisionary from "../pool/llanowar-visionary.js";
 import _poolLocthwainScorn from "../pool/locthwain-scorn.js";
 import _poolLoyalGuardian from "../pool/loyal-guardian.js";
 import _poolLumraBellowOfTheWoods from "../pool/lumra-bellow-of-the-woods.js";
+import _poolLyseHext from "../pool/lyse-hext.js";
 import _poolMalachiteGolem from "../pool/malachite-golem.js";
 import _poolManalith from "../pool/manalith.js";
 import _poolMarbleChalice from "../pool/marble-chalice.js";
@@ -192,6 +196,7 @@ import _poolStorytellerPixie from "../pool/storyteller-pixie.js";
 import _poolStudyHall from "../pool/study-hall.js";
 import _poolSuburbanSanctuary from "../pool/suburban-sanctuary.js";
 import _poolSugarRush from "../pool/sugar-rush.js";
+import _poolSunscorchedDesert from "../pool/sunscorched-desert.js";
 import _poolSupplyRunners from "../pool/supply-runners.js";
 import _poolSupremeVerdict from "../pool/supreme-verdict.js";
 import _poolSwanSong from "../pool/swan-song.js";
@@ -202,6 +207,7 @@ import _poolTeferisPuzzleBox from "../pool/teferis-puzzle-box.js";
 import _poolTempleBell from "../pool/temple-bell.js";
 import _poolTempleOfDeceit from "../pool/temple-of-deceit.js";
 import _poolTempleOfMalady from "../pool/temple-of-malady.js";
+import _poolTheGoldSaucer from "../pool/the-gold-saucer.js";
 import _poolTheLadyOfTheMountain from "../pool/the-lady-of-the-mountain.js";
 import _poolTheWaterCrystal from "../pool/the-water-crystal.js";
 import _poolThinkTank from "../pool/think-tank.js";
@@ -268,6 +274,7 @@ const shard: CardShard = {
     _poolBlessedLight,
     _poolBlightPile,
     _poolBlightning,
+    _poolBlossomingTortoise,
     _poolBodyDropper,
     _poolBrassSquire,
     _poolBrineShaman,
@@ -329,6 +336,7 @@ const shard: CardShard = {
     _poolGluttonousZombie,
     _poolGoblinRoughrider,
     _poolGoblinSettler,
+    _poolGodoBanditWarlord,
     _poolGoldenHind,
     _poolGrandCrescendo,
     _poolGrappleWithThePast,
@@ -336,6 +344,7 @@ const shard: CardShard = {
     _poolGreatHallOfTheCitadel,
     _poolGrimBackwoods,
     _poolGrimclimbPathway,
+    _poolGrowFromTheAshes,
     _poolGuardianLions,
     _poolHangarbackWalker,
     _poolHauntedMire,
@@ -363,6 +372,7 @@ const shard: CardShard = {
     _poolLocthwainScorn,
     _poolLoyalGuardian,
     _poolLumraBellowOfTheWoods,
+    _poolLyseHext,
     _poolMalachiteGolem,
     _poolManalith,
     _poolMarbleChalice,
@@ -430,6 +440,7 @@ const shard: CardShard = {
     _poolStudyHall,
     _poolSuburbanSanctuary,
     _poolSugarRush,
+    _poolSunscorchedDesert,
     _poolSupplyRunners,
     _poolSupremeVerdict,
     _poolSwanSong,
@@ -440,6 +451,7 @@ const shard: CardShard = {
     _poolTempleBell,
     _poolTempleOfDeceit,
     _poolTempleOfMalady,
+    _poolTheGoldSaucer,
     _poolTheLadyOfTheMountain,
     _poolTheWaterCrystal,
     _poolThinkTank,

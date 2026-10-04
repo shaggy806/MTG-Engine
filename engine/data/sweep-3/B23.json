@@ -1,0 +1,1427 @@
+{
+  "batch": "B23",
+  "status": "complete",
+  "ranks": "3256-3511",
+  "authored": [
+    {
+      "name": "Angel of Indemnity",
+      "files": [
+        "engine/src/cards/pool/angel-of-indemnity.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Savvy Hunter",
+      "files": [
+        "engine/src/cards/pool/savvy-hunter.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Manaweft Sliver",
+      "files": [
+        "engine/src/cards/pool/manaweft-sliver.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Keeper of Secrets",
+      "files": [
+        "engine/src/cards/pool/keeper-of-secrets.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Celestial Armor",
+      "files": [
+        "engine/src/cards/pool/celestial-armor.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Godo, Bandit Warlord",
+      "files": [
+        "engine/src/cards/pool/godo-bandit-warlord.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grim Guardian",
+      "files": [
+        "engine/src/cards/pool/grim-guardian.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Surrak Dragonclaw",
+      "files": [
+        "engine/src/cards/pool/surrak-dragonclaw.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Cosmogrand Zenith",
+      "files": [
+        "engine/src/cards/pool/cosmogrand-zenith.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Decisive Denial",
+      "files": [
+        "engine/src/cards/pool/decisive-denial.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Decadent Dragon",
+      "files": [
+        "engine/src/cards/pool/decadent-dragon.ts",
+        "engine/src/cards/pool/expensive-taste.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Weapons Manufacturing",
+      "files": [
+        "engine/src/cards/pool/weapons-manufacturing.ts",
+        "engine/src/cards/tokens/munitions-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Canoptek Spyder",
+      "files": [
+        "engine/src/cards/pool/canoptek-spyder.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Scurry of Squirrels",
+      "files": [
+        "engine/src/cards/pool/scurry-of-squirrels.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Chocobo Racetrack",
+      "files": [
+        "engine/src/cards/pool/chocobo-racetrack.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Court of Ire",
+      "files": [
+        "engine/src/cards/pool/court-of-ire.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sunscorched Desert",
+      "files": [
+        "engine/src/cards/pool/sunscorched-desert.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blossoming Tortoise",
+      "files": [
+        "engine/src/cards/pool/blossoming-tortoise.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rampant Rejuvenator",
+      "files": [
+        "engine/src/cards/pool/rampant-rejuvenator.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Kinjalli's Sunwing",
+      "files": [
+        "engine/src/cards/pool/kinjallis-sunwing.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Luminarch Ascension",
+      "files": [
+        "engine/src/cards/pool/luminarch-ascension.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Renegade Tactics",
+      "files": [
+        "engine/src/cards/pool/renegade-tactics.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Scion of Calamity",
+      "files": [
+        "engine/src/cards/pool/scion-of-calamity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Eiganjo Castle",
+      "files": [
+        "engine/src/cards/pool/eiganjo-castle.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Goblin King",
+      "files": [
+        "engine/src/cards/pool/goblin-king.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Skarrg, the Rage Pits",
+      "files": [
+        "engine/src/cards/pool/skarrg-the-rage-pits.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Soul's Majesty",
+      "files": [
+        "engine/src/cards/pool/souls-majesty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Make a Stand",
+      "files": [
+        "engine/src/cards/pool/make-a-stand.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Privileged Position",
+      "files": [
+        "engine/src/cards/pool/privileged-position.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Mycosynth Golem",
+      "files": [
+        "engine/src/cards/pool/mycosynth-golem.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Rapacious Guest",
+      "files": [
+        "engine/src/cards/pool/rapacious-guest.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Flagstones of Trokair",
+      "files": [
+        "engine/src/cards/pool/flagstones-of-trokair.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Evolutionary Leap",
+      "files": [
+        "engine/src/cards/pool/evolutionary-leap.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Skittering Cicada",
+      "files": [
+        "engine/src/cards/pool/skittering-cicada.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Heliod, the Radiant Dawn",
+      "files": [
+        "engine/src/cards/pool/heliod-the-radiant-dawn.ts",
+        "engine/src/cards/pool/heliod-the-warped-eclipse.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mortality Spear",
+      "files": [
+        "engine/src/cards/pool/mortality-spear.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Daily Bugle Building",
+      "files": [
+        "engine/src/cards/pool/daily-bugle-building.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Rhys the Redeemed",
+      "files": [
+        "engine/src/cards/pool/rhys-the-redeemed.ts",
+        "engine/src/cards/tokens/elf-warrior-token-rhys-the-redeemed.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Increasing Devotion",
+      "files": [
+        "engine/src/cards/pool/increasing-devotion.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Reshape the Earth",
+      "files": [
+        "engine/src/cards/pool/reshape-the-earth.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Heat Shimmer",
+      "files": [
+        "engine/src/cards/pool/heat-shimmer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Quest for Renewal",
+      "files": [
+        "engine/src/cards/pool/quest-for-renewal.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Norn's Choirmaster",
+      "files": [
+        "engine/src/cards/pool/norns-choirmaster.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Immaculate Magistrate",
+      "files": [
+        "engine/src/cards/pool/immaculate-magistrate.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "The Gold Saucer",
+      "files": [
+        "engine/src/cards/pool/the-gold-saucer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Angelic Accord",
+      "files": [
+        "engine/src/cards/pool/angelic-accord.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Squirrel Nest",
+      "files": [
+        "engine/src/cards/pool/squirrel-nest.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Pathbreaker Ibex",
+      "files": [
+        "engine/src/cards/pool/pathbreaker-ibex.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Consult the Star Charts",
+      "files": [
+        "engine/src/cards/pool/consult-the-star-charts.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Earthquake Dragon",
+      "files": [
+        "engine/src/cards/pool/earthquake-dragon.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prince Imrahil the Fair",
+      "files": [
+        "engine/src/cards/pool/prince-imrahil-the-fair.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Hermes, Overseer of Elpis",
+      "files": [
+        "engine/src/cards/pool/hermes-overseer-of-elpis.ts",
+        "engine/src/cards/tokens/bird-token-hermes-overseer-of-elpis.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Blood Pact",
+      "files": [
+        "engine/src/cards/pool/blood-pact.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Feline Sovereign",
+      "files": [
+        "engine/src/cards/pool/feline-sovereign.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Strength of Will",
+      "files": [
+        "engine/src/cards/pool/strength-of-will.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Cloudshredder Sliver",
+      "files": [
+        "engine/src/cards/pool/cloudshredder-sliver.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Tormented Soul",
+      "files": [
+        "engine/src/cards/pool/tormented-soul.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Edric, Spymaster of Trest",
+      "files": [
+        "engine/src/cards/pool/edric-spymaster-of-trest.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Costly Plunder",
+      "files": [
+        "engine/src/cards/pool/costly-plunder.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Aether Hub",
+      "files": [
+        "engine/src/cards/pool/aether-hub.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "General's Enforcer",
+      "files": [
+        "engine/src/cards/pool/generals-enforcer.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Axgard Armory",
+      "files": [
+        "engine/src/cards/pool/axgard-armory.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Vincent Valentine",
+      "files": [
+        "engine/src/cards/pool/vincent-valentine.ts",
+        "engine/src/cards/pool/galian-beast.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nissa's Pilgrimage",
+      "files": [
+        "engine/src/cards/pool/nissas-pilgrimage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ulamog's Dreadsire",
+      "files": [
+        "engine/src/cards/pool/ulamogs-dreadsire.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Forgotten Creation",
+      "files": [
+        "engine/src/cards/pool/forgotten-creation.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Restless Cottage",
+      "files": [
+        "engine/src/cards/pool/restless-cottage.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prowler's Helm",
+      "files": [
+        "engine/src/cards/pool/prowlers-helm.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lyse Hext",
+      "files": [
+        "engine/src/cards/pool/lyse-hext.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ulamog's Crusher",
+      "files": [
+        "engine/src/cards/pool/ulamogs-crusher.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Ignite the Future",
+      "files": [
+        "engine/src/cards/pool/ignite-the-future.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Auriok Champion",
+      "files": [
+        "engine/src/cards/pool/auriok-champion.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Andúril, Flame of the West",
+      "files": [
+        "engine/src/cards/pool/anduril-flame-of-the-west.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Trygon Predator",
+      "files": [
+        "engine/src/cards/pool/trygon-predator.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Species Specialist",
+      "files": [
+        "engine/src/cards/pool/species-specialist.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "K-9, Mark I",
+      "files": [
+        "engine/src/cards/pool/k-9-mark-i.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Scion of Oona",
+      "files": [
+        "engine/src/cards/pool/scion-of-oona.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wirewood Channeler",
+      "files": [
+        "engine/src/cards/pool/wirewood-channeler.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wirewood Symbiote",
+      "files": [
+        "engine/src/cards/pool/wirewood-symbiote.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Master of the Pearl Trident",
+      "files": [
+        "engine/src/cards/pool/master-of-the-pearl-trident.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hamza, Guardian of Arashin",
+      "files": [
+        "engine/src/cards/pool/hamza-guardian-of-arashin.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Prismatic Omen",
+      "files": [
+        "engine/src/cards/pool/prismatic-omen.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Shadowheart, Dark Justiciar",
+      "files": [
+        "engine/src/cards/pool/shadowheart-dark-justiciar.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nest of Scarabs",
+      "files": [
+        "engine/src/cards/pool/nest-of-scarabs.ts",
+        "engine/src/cards/tokens/insect-token-nest-of-scarabs.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Pit of Offerings",
+      "files": [
+        "engine/src/cards/pool/pit-of-offerings.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Blazing Crescendo",
+      "files": [
+        "engine/src/cards/pool/blazing-crescendo.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Treebeard, Gracious Host",
+      "files": [
+        "engine/src/cards/pool/treebeard-gracious-host.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Grow from the Ashes",
+      "files": [
+        "engine/src/cards/pool/grow-from-the-ashes.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Brightcap Badger",
+      "files": [
+        "engine/src/cards/pool/brightcap-badger.ts",
+        "engine/src/cards/pool/fungus-frolic.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Soul of New Phyrexia",
+      "files": [
+        "engine/src/cards/pool/soul-of-new-phyrexia.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Countersquall",
+      "files": [
+        "engine/src/cards/pool/countersquall.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Krang, Utrom Warlord",
+      "files": [
+        "engine/src/cards/pool/krang-utrom-warlord.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Take Up the Shield",
+      "files": [
+        "engine/src/cards/pool/take-up-the-shield.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Raid Bombardment",
+      "files": [
+        "engine/src/cards/pool/raid-bombardment.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Misleading Signpost",
+      "needs": [
+        "new:reselect-attack-target"
+      ],
+      "why": "no effect reselects which player or permanent an attacking creature is attacking"
+    },
+    {
+      "name": "Tenuous Truce",
+      "needs": [
+        "mechanic:curses"
+      ],
+      "why": "no Enchant opponent Aura, nor a trigger on attacks between you and the enchanted player"
+    },
+    {
+      "name": "Thornvault Forager",
+      "needs": [
+        "new:forage",
+        "effect:add-mana-extensions"
+      ],
+      "why": "no forage cost, and no 'two mana in any combination of colors'"
+    },
+    {
+      "name": "Duress",
+      "needs": [
+        "new:discard-chosen-from-revealed-hand"
+      ],
+      "why": "discard has no 'you choose a [filtered] card from their revealed hand' form"
+    },
+    {
+      "name": "Conspicuous Snoop",
+      "needs": [
+        "zone:cast-from-library-top",
+        "new:gain-top-card-activated-abilities"
+      ],
+      "why": "can't gain the activated abilities of the top card of the library"
+    },
+    {
+      "name": "Jin-Gitaxias",
+      "needs": [
+        "decision:free-cast-choices",
+        "static:max-hand-size"
+      ],
+      "why": "back face The Great Synthesis: cast any number of spells free from hand, no max hand size while you control it"
+    },
+    {
+      "name": "World at War",
+      "needs": [
+        "new:rebound"
+      ],
+      "why": "no rebound, nor an extra combat placed after the second main phase with an untap-attackers trigger"
+    },
+    {
+      "name": "Mistblade Shinobi",
+      "needs": [
+        "keyword:ninjutsu"
+      ],
+      "why": "ninjutsu isn't modeled"
+    },
+    {
+      "name": "Firdoch Core",
+      "needs": [
+        "new:kindred-type"
+      ],
+      "why": "Kindred card type isn't modeled (AUTHORING §15)"
+    },
+    {
+      "name": "Grievous Wound",
+      "needs": [
+        "mechanic:curses",
+        "trigger:damage-trigger-extensions"
+      ],
+      "why": "no Enchant player Aura, can't-gain-life for the enchanted player, or trigger on the enchanted player being dealt damage"
+    },
+    {
+      "name": "Ezuri, Stalker of Spheres",
+      "needs": [
+        "new:proliferate-trigger"
+      ],
+      "why": "no 'whenever you proliferate' trigger"
+    },
+    {
+      "name": "Vorinclex",
+      "needs": [
+        "effect:divide-among-targets"
+      ],
+      "why": "back face The Grand Evolution distributes seven +1/+1 counters among targets (AUTHORING §15)"
+    },
+    {
+      "name": "Ojer Pakpatiq, Deepest Epoch",
+      "needs": [
+        "new:rebound"
+      ],
+      "why": "no rebound to grant to instant spells"
+    },
+    {
+      "name": "Take the Bait",
+      "needs": [
+        "replacement:damage-modification",
+        "mechanic:goad-extensions"
+      ],
+      "why": "prevent-all-combat-damage can't be limited to damage dealt to you and your planeswalkers"
+    },
+    {
+      "name": "Shielded by Faith",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "attach can't move the Aura onto the trigger's entering creature (target only a slot or 'created')"
+    },
+    {
+      "name": "Dire Fleet Daredevil",
+      "needs": [
+        "zone:cast-cards-you-dont-own",
+        "replacement:exile-instead"
+      ],
+      "why": "No effect exiles a targeted graveyard card with a cast-this-turn permission plus any-type mana and exile-instead; cast-now is during resolution only."
+    },
+    {
+      "name": "Gisa, the Hellraiser",
+      "needs": [
+        "trigger:commit-crime"
+      ],
+      "why": "No commit-a-crime trigger."
+    },
+    {
+      "name": "Shelter",
+      "needs": [
+        "new:protection-from-chosen-color"
+      ],
+      "why": "No effect grants protection from a colour chosen on resolution."
+    },
+    {
+      "name": "Hope of Ghirapur",
+      "needs": [
+        "stat:object-damage-history",
+        "effect:temporary-player-effect"
+      ],
+      "why": "No target filter for 'player dealt combat damage by this this turn' nor a until-your-next-turn can't-cast-noncreature effect on one player."
+    },
+    {
+      "name": "Ghost Vacuum",
+      "needs": [
+        "effect:put-onto-battlefield-options"
+      ],
+      "why": "Returning cards exiled with it as 1/1 Spirits with a flying counter has no shape."
+    },
+    {
+      "name": "Commit",
+      "needs": [
+        "new:aftermath"
+      ],
+      "why": "Commit // Memory is an aftermath split card; aftermath isn't modeled."
+    },
+    {
+      "name": "White Plume Adventurer",
+      "needs": [
+        "mechanic:dungeon"
+      ],
+      "why": "The initiative and dungeons aren't modeled."
+    },
+    {
+      "name": "Zirda, the Dawnwaker",
+      "needs": [
+        "new:companion",
+        "cost:ability-cost-modification"
+      ],
+      "why": "Companion isn't modeled, and abilityCostModification only reaches permanent sources (Zirda also reduces cycling etc.)."
+    },
+    {
+      "name": "Defend the Rider",
+      "needs": [
+        "keyword:crew",
+        "keyword:saddle"
+      ],
+      "why": "Pilot token's 'saddles and crews as though its power were 2 greater' has no vocabulary."
+    },
+    {
+      "name": "Lion Umbra",
+      "needs": [
+        "new:umbra-armor",
+        "new:enchant-modified"
+      ],
+      "why": "Neither umbra armor nor 'Enchant modified creature' exists."
+    },
+    {
+      "name": "Orzhov Advokist",
+      "needs": [
+        "effect:choices-by-other-players"
+      ],
+      "why": "each player in turn order may choose a creature, then a per-player can't-attack-you until your next turn"
+    },
+    {
+      "name": "Gemstone Mine",
+      "needs": [
+        "effect:mana-ability-side-effects"
+      ],
+      "why": "'if no mining counters, sacrifice it' inside a mana ability makes it a stack ability here"
+    },
+    {
+      "name": "Mech Hangar",
+      "needs": [
+        "keyword:crew"
+      ],
+      "why": "'target Vehicle becomes an artifact creature' needs Vehicle printed P/T animation"
+    },
+    {
+      "name": "Fain, the Broker",
+      "needs": [
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "'Remove a counter from a creature you control' cost only removes from the source"
+    },
+    {
+      "name": "Germination Practicum",
+      "needs": [
+        "new:paradigm"
+      ],
+      "why": "paradigm (exile, recast a copy each first main phase) not modeled"
+    },
+    {
+      "name": "Counterbalance",
+      "needs": [
+        "condition:filter-dynamic-compare"
+      ],
+      "why": "comparing the revealed card's mana value to the trigger spell's: a target condition's filter can't bind an {amount} operand"
+    },
+    {
+      "name": "Magus of the Moon",
+      "needs": [
+        "static:basic-land-type-mana"
+      ],
+      "why": "Blood Moon effect: set land subtype, lose abilities, gain the Mountain mana ability"
+    },
+    {
+      "name": "Goblin Recruiter",
+      "needs": [
+        "decision:library-ordering"
+      ],
+      "why": "search any number, put them on top in any order"
+    },
+    {
+      "name": "Chandra, Awakened Inferno",
+      "needs": [
+        "effect:emblem-triggered-abilities"
+      ],
+      "why": "−X loyalty cost and an emblem with a triggered ability are both unmodeled"
+    },
+    {
+      "name": "Teferi, Temporal Pilgrim",
+      "needs": [
+        "effect:choices-by-other-players"
+      ],
+      "why": "−12: opponent chooses a permanent to bounce, then shuffles every nonland permanent they control (no mass shuffle-into-library)"
+    },
+    {
+      "name": "Generous Patron",
+      "needs": [
+        "trigger:counters-put"
+      ],
+      "why": "'one or more counters' of any kind: counter-added fires per kind, so mixed kinds on one creature (proliferate) would trigger twice"
+    },
+    {
+      "name": "Grove of the Burnwillows",
+      "needs": [
+        "effect:mana-ability-side-effects"
+      ],
+      "why": "'Each opponent gains 1 life' in a mana ability would push it onto the stack"
+    },
+    {
+      "name": "Quasiduplicate",
+      "needs": [
+        "new:jump-start"
+      ],
+      "why": "Jump-start (cast from graveyard for mana cost plus discarding a card) has no vocabulary; flashback takes no discard cost."
+    },
+    {
+      "name": "Bane of Bala Ged",
+      "needs": [
+        "new:player-chooses-permanents-to-exile"
+      ],
+      "why": "No effect where the defending player chooses and exiles N permanents they control (only sacrifice has a who scope)."
+    },
+    {
+      "name": "Songbirds' Blessing",
+      "needs": [
+        "effect:aura-enters-choice"
+      ],
+      "why": "If the Aura found can't attach, put-onto-battlefield leaves it in the library (then bottomed) instead of the ruling's put-into-hand; may's else doesn't fire on a failed put."
+    },
+    {
+      "name": "Worldwalker Helm",
+      "needs": [
+        "replacement:token-creation-additive"
+      ],
+      "why": "No additive 'those tokens plus an additional Map' token replacement."
+    },
+    {
+      "name": "Deadbridge Chant",
+      "needs": [
+        "effect:random-choice"
+      ],
+      "why": "Choosing a card at random in a graveyard has no vocabulary."
+    },
+    {
+      "name": "Out of the Tombs",
+      "needs": [
+        "replacement:new-event-replacements"
+      ],
+      "why": "would-draw with an empty library can only win the game or redirect draws, not return a creature card or else lose."
+    },
+    {
+      "name": "Heliod, God of the Sun",
+      "needs": [
+        "condition:devotion"
+      ],
+      "why": "No devotion StaticCondition / 'isn't a creature' type removal for the Theros God clause."
+    },
+    {
+      "name": "Inventory Management",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "No per-Aura/Equipment optional re-attach to a chosen creature you control."
+    },
+    {
+      "name": "Stinging Study",
+      "needs": [
+        "new:choose-commander-for-x"
+      ],
+      "why": "Only greatestCommanderManaValue exists; with two commanders the player chooses which one sets X, and only battlefield/command-zone commanders count."
+    },
+    {
+      "name": "Court of Locthwain",
+      "needs": [
+        "new:court-free-cast-from-linked-exile"
+      ],
+      "why": "No 'if you're the monarch, until end of turn cast one spell from among all cards exiled with this free' permission over the linked exile pile."
+    },
+    {
+      "name": "Lord of the Void",
+      "needs": [
+        "new:exile-top-then-put-creature-from-among"
+      ],
+      "why": "Exile top seven then put a creature card from among them onto the battlefield (mandatory) has no shape; look-and-choose has no plain exile leftover and doesn't exile first."
+    },
+    {
+      "name": "Ghostway",
+      "needs": [
+        "effect:flicker-generalized"
+      ],
+      "why": "flicker takes target slots only; no non-targeted 'exile each creature you control' with one linked delayed return."
+    },
+    {
+      "name": "Esior, Wardwing Familiar",
+      "needs": [
+        "cost:cost-modification-extensions"
+      ],
+      "why": "targetedBySpellsCost only adds life; no {3} mana increase for opponents' spells targeting commanders you control."
+    },
+    {
+      "name": "Daybreak Coronet",
+      "needs": [
+        "condition:filter-attachments"
+      ],
+      "why": "\"Enchant creature with another Aura attached\" — the enchant legality must exclude Coronet itself once attached; `enchanted: true` counts it"
+    },
+    {
+      "name": "Lathiel, the Bounteous Dawn",
+      "needs": [
+        "effect:divide-among-targets"
+      ],
+      "why": "distributing counters among any number of targets is unbuilt (§15)"
+    },
+    {
+      "name": "Winter Orb",
+      "needs": [
+        "new:untap-step-limit"
+      ],
+      "why": "no static limiting how many lands untap during untap steps"
+    },
+    {
+      "name": "O'aka, Traveling Merchant",
+      "needs": [
+        "cost:remove-counters-from-chosen"
+      ],
+      "why": "cost removes a counter of any kind from a chosen nonland permanent; removeCounter is source-only and kind-fixed"
+    },
+    {
+      "name": "Hooded Hydra",
+      "needs": [
+        "mechanic:face-down"
+      ],
+      "why": "morph and the as-turned-face-up replacement"
+    },
+    {
+      "name": "Killian, Ink Duelist",
+      "needs": [
+        "cost:cost-modification-extensions"
+      ],
+      "why": "costModification is matched on the card before targets exist; the `targets` filter only matches a spell on the stack"
+    },
+    {
+      "name": "Leyline of Hope",
+      "needs": [
+        "new:leyline-opening-hand"
+      ],
+      "why": "no opening-hand begin-on-battlefield, no +1 life-gain replacement, no 'starting life + 7' condition"
+    },
+    {
+      "name": "Nylea, God of the Hunt",
+      "needs": [
+        "condition:devotion"
+      ],
+      "why": "devotion-gated 'isn't a creature' static"
+    },
+    {
+      "name": "Mob Rule",
+      "needs": [
+        "effect:this-way-results"
+      ],
+      "why": "\"untap those creatures / they gain haste\" must hit exactly the creatures taken; re-filtering by power after the control change can differ (ruling)"
+    },
+    {
+      "name": "Nyxborn Hydra",
+      "needs": [
+        "new:bestow"
+      ],
+      "why": "bestow unmodeled (§15)"
+    },
+    {
+      "name": "Gogo, Master of Mimicry",
+      "needs": [
+        "effect:copy-ability"
+      ],
+      "why": "copy-ability has no count (X copies), no 'can't be copied', no X≥1"
+    },
+    {
+      "name": "Monstrous Rage",
+      "needs": [
+        "mechanic:role-tokens"
+      ],
+      "why": "Role tokens created attached, with the one-Role-per-controller rule"
+    },
+    {
+      "name": "Lembas",
+      "needs": [
+        "new:shuffle-self-from-graveyard"
+      ],
+      "why": "shuffle-into-library acts only on a permanent on the battlefield, not the card now in the graveyard"
+    },
+    {
+      "name": "Transmutation Font",
+      "needs": [
+        "cost:sacrifice-multiple"
+      ],
+      "why": "\"sacrifice three artifact tokens with different names\" cost has no different-names rule"
+    },
+    {
+      "name": "The Mending of Dominaria",
+      "needs": [
+        "new:shuffle-graveyard-into-library"
+      ],
+      "why": "III's 'shuffle your graveyard into your library' has no effect kind"
+    },
+    {
+      "name": "Eidolon of Countless Battles",
+      "needs": [
+        "new:bestow"
+      ],
+      "why": "bestow is unmodeled (AUTHORING §15)"
+    },
+    {
+      "name": "Ertai Resurrected",
+      "needs": [
+        "effect:target-spec-additions"
+      ],
+      "why": "no single target slot for 'spell, activated ability, or triggered ability'"
+    },
+    {
+      "name": "Reckless Endeavor",
+      "needs": [
+        "mechanic:dice-rolling"
+      ],
+      "why": "no die rolling"
+    },
+    {
+      "name": "Serra Paragon",
+      "needs": [
+        "zone:graveyard-cast-permissions"
+      ],
+      "why": "shared once-a-turn land play or permanent cast from graveyard, plus a granted dies-exile trigger on what was cast"
+    },
+    {
+      "name": "See Double",
+      "needs": [
+        "new:spell-cant-be-copied"
+      ],
+      "why": "'can't be copied' and 'an opponent has 8+ cards in graveyard' mode condition unexpressible"
+    },
+    {
+      "name": "Trailtracker Scout",
+      "needs": [
+        "new:expend-trigger"
+      ],
+      "why": "no expend trigger"
+    },
+    {
+      "name": "Slicer, Hired Muscle",
+      "needs": [
+        "new:more-than-meets-the-eye"
+      ],
+      "why": "More Than Meets the Eye, convert, living metal and the control-gift choice are unmodeled"
+    },
+    {
+      "name": "Fear of Sleep Paralysis",
+      "needs": [
+        "mechanic:rooms"
+      ],
+      "why": "Eerie's Room-unlock trigger and 'stun counters can't be removed' unmodeled"
+    },
+    {
+      "name": "Visions of Beyond",
+      "needs": [
+        "new:any-graveyard-size-condition"
+      ],
+      "why": "conditions only count your own graveyard, not 'a graveyard has twenty or more cards'"
+    },
+    {
+      "name": "Charming Scoundrel",
+      "needs": [
+        "mechanic:role-tokens"
+      ],
+      "why": "Wicked Role token unmodeled"
+    },
+    {
+      "name": "Ardyn, the Usurper",
+      "needs": [
+        "new:token-copy-as-enters-choices"
+      ],
+      "why": "ruling says the token copy's 'as enters' abilities work; a token copy isn't asked them (§15)"
+    },
+    {
+      "name": "Neyali, Suns' Vanguard",
+      "needs": [
+        "new:attacked-with-token-this-turn"
+      ],
+      "why": "'during any turn you attacked with a token' play permission has no condition"
+    },
+    {
+      "name": "Rule of Law",
+      "needs": [
+        "new:spell-cast-limit"
+      ],
+      "why": "no 'can't cast more than one spell each turn' static"
+    },
+    {
+      "name": "Thryx, the Sudden Storm",
+      "needs": [
+        "cost:cost-modification-extensions"
+      ],
+      "why": "costModification's manaValue filter is matched without the chosen X, but the ruling counts X toward mana value 5"
+    },
+    {
+      "name": "Gods Willing",
+      "needs": [
+        "new:protection-from-chosen-color"
+      ],
+      "why": "no effect grants protection from a color chosen on resolution"
+    },
+    {
+      "name": "Dalkovan Encampment",
+      "needs": [
+        "effect:delayed-trigger-extensions"
+      ],
+      "why": "no 'whenever you attack this turn' delayed trigger"
+    },
+    {
+      "name": "Bonny Pall, Clearcutter",
+      "needs": [
+        "decision:choose-from-zone-extensions"
+      ],
+      "why": "one choice of a land card across hand and graveyard together isn't a zone look-and-choose takes"
+    },
+    {
+      "name": "Golgari Thug",
+      "needs": [
+        "keyword:dredge"
+      ],
+      "why": "dredge is unmodeled"
+    },
+    {
+      "name": "Spirit Water Revival",
+      "needs": [
+        "keyword:waterbend"
+      ],
+      "why": "waterbend additional cost is unmodeled"
+    },
+    {
+      "name": "Invigorate",
+      "needs": [
+        "new:alt-cost-opponent-gains-life"
+      ],
+      "why": "no alternative cost of having an opponent gain life"
+    },
+    {
+      "name": "Leyline of the Void",
+      "needs": [
+        "new:begin-game-on-battlefield"
+      ],
+      "why": "no opening-hand 'begin the game with it on the battlefield'"
+    },
+    {
+      "name": "Didn't Say Please",
+      "needs": [
+        "effect:player-scope-extensions"
+      ],
+      "why": "mill can't name the target spell's controller"
+    },
+    {
+      "name": "Burning Inquiry",
+      "needs": [
+        "bug:simultaneous-zone-moves"
+      ],
+      "why": "scoped random discard is per player in turn; the ruling discards everyone's at the same time"
+    },
+    {
+      "name": "Master of Cruelties",
+      "needs": [
+        "static:combat-restriction-extensions"
+      ],
+      "why": "no 'can only attack alone', 'life total becomes 1' or 'assigns no combat damage this combat'"
+    },
+    {
+      "name": "Coalition Relic",
+      "needs": [
+        "effect:this-way-results"
+      ],
+      "why": "no count of counters removed this way to size the mana"
+    },
+    {
+      "name": "Berserk",
+      "needs": [
+        "condition:filter-this-turn-history"
+      ],
+      "why": "'destroy if it attacked this turn' per-creature history and 'cast only before the combat damage step' timing aren't expressible"
+    },
+    {
+      "name": "Rona, Herald of Invasion",
+      "needs": [
+        "effect:random-choice"
+      ],
+      "why": "back face exiles a card from the damaging source controller's hand at random then cast/put it; not expressible"
+    },
+    {
+      "name": "Torpor Orb",
+      "needs": [
+        "new:suppress-creature-enter-triggers"
+      ],
+      "why": "No static that stops creatures entering from causing abilities to trigger."
+    },
+    {
+      "name": "Jace, the Mind Sculptor",
+      "needs": [
+        "new:look-at-target-player-library-top"
+      ],
+      "why": "+2 looks at / bottoms the top of a target player's library and -12 exiles a target player's library then shuffles their hand in; neither is expressible."
+    },
+    {
+      "name": "Tempting Contract",
+      "needs": [
+        "effect:choices-by-other-players"
+      ],
+      "why": "each-player-may creates each opponent's Treasure (and yours per opponent) as separate events; the ruling has all of them created at the same time."
+    },
+    {
+      "name": "Timetwister",
+      "needs": [
+        "new:shuffle-hand-and-graveyard-into-library"
+      ],
+      "why": "No effect shuffles each player's hand and graveyard into their library."
+    },
+    {
+      "name": "Blood for the Blood God!",
+      "needs": [
+        "new:cost-reduction-creatures-died-this-turn"
+      ],
+      "why": "CostReductionAmount has no 'creatures that died this turn' count."
+    },
+    {
+      "name": "Command Bridge",
+      "needs": [
+        "new:unless-tap-untapped-permanent"
+      ],
+      "why": "UnlessOption has no 'tap an untapped permanent you control' option."
+    },
+    {
+      "name": "Eidolon of Rhetoric",
+      "needs": [
+        "new:one-spell-per-turn-limit"
+      ],
+      "why": "No static limiting each player to one spell each turn."
+    },
+    {
+      "name": "Doubling Cube",
+      "needs": [
+        "new:double-mana-pool"
+      ],
+      "why": "No effect doubles each type of unspent mana in the pool."
+    },
+    {
+      "name": "Chrome Host Seedshark",
+      "needs": [
+        "mechanic:incubate"
+      ],
+      "why": "Incubate / the Incubator // Phyrexian transforming token isn't built."
+    },
+    {
+      "name": "Hour of Promise",
+      "needs": [
+        "new:unverified-in-mass-pass"
+      ],
+      "why": "Authored in the no-engine-work pass, but its test failed; dropped rather than debugged (rule zero)."
+    },
+    {
+      "name": "Planar Engineering",
+      "needs": [
+        "new:unverified-in-mass-pass"
+      ],
+      "why": "Authored in the no-engine-work pass, but its test failed; dropped rather than debugged (rule zero)."
+    },
+    {
+      "name": "Rite of the Raging Storm",
+      "needs": [
+        "new:unverified-in-mass-pass"
+      ],
+      "why": "Authored in the no-engine-work pass, but its test failed; dropped rather than debugged (rule zero)."
+    },
+    {
+      "name": "Ensnared by the Mara",
+      "needs": [
+        "new:unverified-in-mass-pass"
+      ],
+      "why": "Authored in the no-engine-work pass, but its test failed; dropped rather than debugged (rule zero)."
+    },
+    {
+      "name": "Lunarch Veteran",
+      "needs": [
+        "new:disturb-exile-replacement-as-ability"
+      ],
+      "why": "Luminous Phantom's \"exile it instead\" is done by the disturb cast path, not as its own ability, so a copy doesn't exile and Humility doesn't stop it (Hook-Haunt Drifter shares it)."
+    }
+  ]
+}

@@ -87,6 +87,7 @@ import _poolHawkeaterMoth from "../pool/hawkeater-moth.js";
 import _poolHieroglyphicIllumination from "../pool/hieroglyphic-illumination.js";
 import _poolHighMarket from "../pool/high-market.js";
 import _poolHorrorOfTheDim from "../pool/horror-of-the-dim.js";
+import _poolIgniteTheFuture from "../pool/ignite-the-future.js";
 import _poolImpale from "../pool/impale.js";
 import _poolImplode from "../pool/implode.js";
 import _poolImpostorSyndrome from "../pool/impostor-syndrome.js";
@@ -166,6 +167,7 @@ import _poolSandblast from "../pool/sandblast.js";
 import _poolSandwurmConvergence from "../pool/sandwurm-convergence.js";
 import _poolSaruliCaretaker from "../pool/saruli-caretaker.js";
 import _poolScavengerGrounds from "../pool/scavenger-grounds.js";
+import _poolScionOfOona from "../pool/scion-of-oona.js";
 import _poolScorchedRusalka from "../pool/scorched-rusalka.js";
 import _poolScreamPuff from "../pool/scream-puff.js";
 import _poolScreechingDrake from "../pool/screeching-drake.js";
@@ -205,6 +207,7 @@ import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
 import _poolTowerDrake from "../pool/tower-drake.js";
 import _poolTradewindRider from "../pool/tradewind-rider.js";
+import _poolUlamogsDreadsire from "../pool/ulamogs-dreadsire.js";
 import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
 import _poolVectorImperialCapital from "../pool/vector-imperial-capital.js";
@@ -321,6 +324,7 @@ const shard: CardShard = {
     _poolHieroglyphicIllumination,
     _poolHighMarket,
     _poolHorrorOfTheDim,
+    _poolIgniteTheFuture,
     _poolImpale,
     _poolImplode,
     _poolImpostorSyndrome,
@@ -400,6 +404,7 @@ const shard: CardShard = {
     _poolSandwurmConvergence,
     _poolSaruliCaretaker,
     _poolScavengerGrounds,
+    _poolScionOfOona,
     _poolScorchedRusalka,
     _poolScreamPuff,
     _poolScreechingDrake,
@@ -439,6 +444,7 @@ const shard: CardShard = {
     _poolTopanAscetic,
     _poolTowerDrake,
     _poolTradewindRider,
+    _poolUlamogsDreadsire,
     _poolUnsubtleMockery,
     _poolUrborgDrake,
     _poolVectorImperialCapital,

@@ -20,6 +20,7 @@ import _poolAtlaPalaniNestTender from "../pool/atla-palani-nest-tender.js";
 import _poolAuraOfSilence from "../pool/aura-of-silence.js";
 import _poolAuramancer from "../pool/auramancer.js";
 import _poolAvenArcher from "../pool/aven-archer.js";
+import _poolAxgardArmory from "../pool/axgard-armory.js";
 import _poolBaldinCenturyHerdmaster from "../pool/baldin-century-herdmaster.js";
 import _poolBattleRageBlessing from "../pool/battle-rage-blessing.js";
 import _poolBayFalcon from "../pool/bay-falcon.js";
@@ -60,6 +61,7 @@ import _poolDoorOfDestinies from "../pool/door-of-destinies.js";
 import _poolDragonTempest from "../pool/dragon-tempest.js";
 import _poolDragonsEyeSentry from "../pool/dragons-eye-sentry.js";
 import _poolDwarvenTrader from "../pool/dwarven-trader.js";
+import _poolEiganjoCastle from "../pool/eiganjo-castle.js";
 import _poolElectroduplicate from "../pool/electroduplicate.js";
 import _poolEmbraalGearSmasher from "../pool/embraal-gear-smasher.js";
 import _poolEncroachingDragonstorm from "../pool/encroaching-dragonstorm.js";
@@ -160,6 +162,7 @@ import _poolPardicCollaborator from "../pool/pardic-collaborator.js";
 import _poolPhantomWarrior from "../pool/phantom-warrior.js";
 import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolPiratesPillage from "../pool/pirates-pillage.js";
+import _poolPitOfOfferings from "../pool/pit-of-offerings.js";
 import _poolPlatinumAngel from "../pool/platinum-angel.js";
 import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
@@ -246,6 +249,7 @@ import _poolWallOfLava from "../pool/wall-of-lava.js";
 import _poolWarlordsAxe from "../pool/warlords-axe.js";
 import _poolWarstormSurge from "../pool/warstorm-surge.js";
 import _poolWaterTribeCaptain from "../pool/water-tribe-captain.js";
+import _poolWeaponsManufacturing from "../pool/weapons-manufacturing.js";
 import _poolWildGrowth from "../pool/wild-growth.js";
 import _poolWillOfTheTemur from "../pool/will-of-the-temur.js";
 import _poolWizardsSchool from "../pool/wizards-school.js";
@@ -258,6 +262,7 @@ import _tokensBlueBlackFaerieToken from "../tokens/blue-black-faerie-token.js";
 import _tokensDinosaurToken31 from "../tokens/dinosaur-token-3-1.js";
 import _tokensInsectToken from "../tokens/insect-token.js";
 import _tokensLifelinkVampireToken from "../tokens/lifelink-vampire-token.js";
+import _tokensMunitionsToken from "../tokens/munitions-token.js";
 import _tokensPhyrexianWurmLifelink from "../tokens/phyrexian-wurm-lifelink.js";
 import _tokensShapeshifterToken from "../tokens/shapeshifter-token.js";
 import _tokensSoldierArtifactToken from "../tokens/soldier-artifact-token.js";
@@ -283,6 +288,7 @@ const shard: CardShard = {
     _poolAuraOfSilence,
     _poolAuramancer,
     _poolAvenArcher,
+    _poolAxgardArmory,
     _poolBaldinCenturyHerdmaster,
     _poolBattleRageBlessing,
     _poolBayFalcon,
@@ -323,6 +329,7 @@ const shard: CardShard = {
     _poolDragonTempest,
     _poolDragonsEyeSentry,
     _poolDwarvenTrader,
+    _poolEiganjoCastle,
     _poolElectroduplicate,
     _poolEmbraalGearSmasher,
     _poolEncroachingDragonstorm,
@@ -423,6 +430,7 @@ const shard: CardShard = {
     _poolPhantomWarrior,
     _poolPhyrexianDefiler,
     _poolPiratesPillage,
+    _poolPitOfOfferings,
     _poolPlatinumAngel,
     _poolProwcatcherSpecialist,
     _poolRabanastreRoyalCity,
@@ -509,6 +517,7 @@ const shard: CardShard = {
     _poolWarlordsAxe,
     _poolWarstormSurge,
     _poolWaterTribeCaptain,
+    _poolWeaponsManufacturing,
     _poolWildGrowth,
     _poolWillOfTheTemur,
     _poolWizardsSchool,
@@ -523,6 +532,7 @@ const shard: CardShard = {
     _tokensDinosaurToken31,
     _tokensInsectToken,
     _tokensLifelinkVampireToken,
+    _tokensMunitionsToken,
     _tokensPhyrexianWurmLifelink,
     _tokensShapeshifterToken,
     _tokensSoldierArtifactToken,

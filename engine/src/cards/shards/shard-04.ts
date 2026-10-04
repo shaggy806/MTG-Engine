@@ -154,6 +154,7 @@ import _poolPutridLeech from "../pool/putrid-leech.js";
 import _poolPyreticRitual from "../pool/pyretic-ritual.js";
 import _poolQuandrixCampus from "../pool/quandrix-campus.js";
 import _poolRagingRedcap from "../pool/raging-redcap.js";
+import _poolRaidBombardment from "../pool/raid-bombardment.js";
 import _poolRaisedByGiants from "../pool/raised-by-giants.js";
 import _poolRangersLongbow from "../pool/rangers-longbow.js";
 import _poolResearchAssistant from "../pool/research-assistant.js";
@@ -189,6 +190,7 @@ import _poolSparringMummy from "../pool/sparring-mummy.js";
 import _poolSpitFlame from "../pool/spit-flame.js";
 import _poolSpringleafDrum from "../pool/springleaf-drum.js";
 import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
+import _poolSquirrelNest from "../pool/squirrel-nest.js";
 import _poolStellaLeeWildCard from "../pool/stella-lee-wild-card.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
 import _poolSummonBahamut from "../pool/summon-bahamut.js";
@@ -391,6 +393,7 @@ const shard: CardShard = {
     _poolPyreticRitual,
     _poolQuandrixCampus,
     _poolRagingRedcap,
+    _poolRaidBombardment,
     _poolRaisedByGiants,
     _poolRangersLongbow,
     _poolResearchAssistant,
@@ -426,6 +429,7 @@ const shard: CardShard = {
     _poolSpitFlame,
     _poolSpringleafDrum,
     _poolSproutingThrinax,
+    _poolSquirrelNest,
     _poolStellaLeeWildCard,
     _poolSultaiSkullkeeper,
     _poolSummonBahamut,

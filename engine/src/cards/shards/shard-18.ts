@@ -25,6 +25,7 @@ import _poolBodyOfKnowledge from "../pool/body-of-knowledge.js";
 import _poolBonePitBrute from "../pool/bone-pit-brute.js";
 import _poolBoneSaw from "../pool/bone-saw.js";
 import _poolBoseijuWhoEndures from "../pool/boseiju-who-endures.js";
+import _poolBrightcapBadger from "../pool/brightcap-badger.js";
 import _poolBrimstoneTrebuchet from "../pool/brimstone-trebuchet.js";
 import _poolBrotherhoodRegalia from "../pool/brotherhood-regalia.js";
 import _poolBurningTreeEmissary from "../pool/burning-tree-emissary.js";
@@ -34,6 +35,7 @@ import _poolCaptainMarvelEarthsProtector from "../pool/captain-marvel-earths-pro
 import _poolCarrionHowler from "../pool/carrion-howler.js";
 import _poolCatharticAdept from "../pool/cathartic-adept.js";
 import _poolCauldronFamiliar from "../pool/cauldron-familiar.js";
+import _poolCelestialArmor from "../pool/celestial-armor.js";
 import _poolCodsworthHandyHelper from "../pool/codsworth-handy-helper.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
@@ -43,6 +45,7 @@ import _poolCommodoreGuff from "../pool/commodore-guff.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
+import _poolDecadentDragon from "../pool/decadent-dragon.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
 import _poolDevotedDruid from "../pool/devoted-druid.js";
@@ -76,6 +79,7 @@ import _poolGoldenBear from "../pool/golden-bear.js";
 import _poolGrandmotherSengir from "../pool/grandmother-sengir.js";
 import _poolGreedyFreebooter from "../pool/greedy-freebooter.js";
 import _poolHall from "../pool/hall.js";
+import _poolHamzaGuardianOfArashin from "../pool/hamza-guardian-of-arashin.js";
 import _poolHardenedTactician from "../pool/hardened-tactician.js";
 import _poolHauntedCloak from "../pool/haunted-cloak.js";
 import _poolHeraldsHorn from "../pool/heralds-horn.js";
@@ -201,6 +205,7 @@ import _poolTreasureMap from "../pool/treasure-map.js";
 import _poolTremble from "../pool/tremble.js";
 import _poolTruefirePaladin from "../pool/truefire-paladin.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
+import _poolUlamogsCrusher from "../pool/ulamogs-crusher.js";
 import _poolUnquestionedAuthority from "../pool/unquestioned-authority.js";
 import _poolUtterEnd from "../pool/utter-end.js";
 import _poolValgavothHarrowerOfSouls from "../pool/valgavoth-harrower-of-souls.js";
@@ -264,6 +269,7 @@ const shard: CardShard = {
     _poolBonePitBrute,
     _poolBoneSaw,
     _poolBoseijuWhoEndures,
+    _poolBrightcapBadger,
     _poolBrimstoneTrebuchet,
     _poolBrotherhoodRegalia,
     _poolBurningTreeEmissary,
@@ -273,6 +279,7 @@ const shard: CardShard = {
     _poolCarrionHowler,
     _poolCatharticAdept,
     _poolCauldronFamiliar,
+    _poolCelestialArmor,
     _poolCodsworthHandyHelper,
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
@@ -282,6 +289,7 @@ const shard: CardShard = {
     _poolCopperlineGorge,
     _poolCourserOfKruphix,
     _poolCrucibleOfWorlds,
+    _poolDecadentDragon,
     _poolDeeprootChampion,
     _poolDesperateCharge,
     _poolDevotedDruid,
@@ -315,6 +323,7 @@ const shard: CardShard = {
     _poolGrandmotherSengir,
     _poolGreedyFreebooter,
     _poolHall,
+    _poolHamzaGuardianOfArashin,
     _poolHardenedTactician,
     _poolHauntedCloak,
     _poolHeraldsHorn,
@@ -440,6 +449,7 @@ const shard: CardShard = {
     _poolTremble,
     _poolTruefirePaladin,
     _poolTyphoidRats,
+    _poolUlamogsCrusher,
     _poolUnquestionedAuthority,
     _poolUtterEnd,
     _poolValgavothHarrowerOfSouls,

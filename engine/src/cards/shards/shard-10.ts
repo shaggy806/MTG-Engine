@@ -161,6 +161,8 @@ import _poolPinToTheEarth from "../pool/pin-to-the-earth.js";
 import _poolPlanarBridge from "../pool/planar-bridge.js";
 import _poolPlatedSpider from "../pool/plated-spider.js";
 import _poolPriestOfUrabrask from "../pool/priest-of-urabrask.js";
+import _poolPrismaticOmen from "../pool/prismatic-omen.js";
+import _poolProwlersHelm from "../pool/prowlers-helm.js";
 import _poolPunkFrogs from "../pool/punk-frogs.js";
 import _poolRacersRing from "../pool/racers-ring.js";
 import _poolRavenousRats from "../pool/ravenous-rats.js";
@@ -214,6 +216,7 @@ import _poolTirelessMissionaries from "../pool/tireless-missionaries.js";
 import _poolTitaniumGolem from "../pool/titanium-golem.js";
 import _poolTolarianSerpent from "../pool/tolarian-serpent.js";
 import _poolTorbranThaneOfRedFell from "../pool/torbran-thane-of-red-fell.js";
+import _poolTormentedSoul from "../pool/tormented-soul.js";
 import _poolToxrillTheCorrosive from "../pool/toxrill-the-corrosive.js";
 import _poolTranquilCove from "../pool/tranquil-cove.js";
 import _poolTranquilLandscape from "../pool/tranquil-landscape.js";
@@ -409,6 +412,8 @@ const shard: CardShard = {
     _poolPlanarBridge,
     _poolPlatedSpider,
     _poolPriestOfUrabrask,
+    _poolPrismaticOmen,
+    _poolProwlersHelm,
     _poolPunkFrogs,
     _poolRacersRing,
     _poolRavenousRats,
@@ -462,6 +467,7 @@ const shard: CardShard = {
     _poolTitaniumGolem,
     _poolTolarianSerpent,
     _poolTorbranThaneOfRedFell,
+    _poolTormentedSoul,
     _poolToxrillTheCorrosive,
     _poolTranquilCove,
     _poolTranquilLandscape,
