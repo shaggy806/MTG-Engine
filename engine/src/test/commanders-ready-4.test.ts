@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 
 import { effectiveSubtypes, effectiveTypes } from "../characteristics.js";
+import { whyCannotBlock } from "../combat/eligibility.js";
 import { createDefaultRegistry } from "../cards.js";
 import { ScriptedController } from "../controller.js";
 import { Game } from "../game.js";
@@ -375,7 +376,13 @@ describe("Hei Bai, Forest Guardian", () => {
     activate(game, heiBai, 0);
     const [spirit] = named(game, "Spirit Token (Colorless, Evasive)");
     expect(spirit).toBeDefined();
-    expect(game.characteristics(spirit).restrictions).toContain("cant-block");
+    // "Can't block … non-Spirit creatures": it can still block a Spirit.
+    const bears = spawn(game, "Grizzly Bears", B);
+    const otherSpirit = spawn(game, "Kami of False Hope", B);
+    game.state.objects[bears].attacking = A;
+    game.state.objects[otherSpirit].attacking = A;
+    expect(whyCannotBlock(game.state, registry, A, spirit, bears)).not.toBeNull();
+    expect(whyCannotBlock(game.state, registry, A, spirit, otherSpirit)).toBeNull();
   });
 });
 

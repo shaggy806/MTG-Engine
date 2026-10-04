@@ -14,7 +14,7 @@ export default defineCard({
   static: [
     {
       affects: { scope: "self" },
-      restrictions: ["cant-block"],
+      canBlockOnly: { subtype: "Spirit" },
       cantBeBlockedBy: { type: "creature", notSubtypes: ["Spirit"] },
       text: TEXT,
     },
