@@ -64,6 +64,7 @@ for:
   per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`. Batch summaries go here, and
   so do card lists (which cards wait on a feature, which a built one may have unblocked): its
   "Open leads" section holds them, and `BACKLOG.md` points at it rather than listing cards.
+- **`docs/bot-misplays.md`** — bot misplays the user saw on the live site without a capture, each rebuilt as a training scenario by the `bot-misplay` skill, with why the bot chose it and the likely fix.
 - **`docs/engine-gaps.md`** and **`docs/client-gaps.md`** — the detail behind `BACKLOG.md`'s
   "Engine rules gaps" and "Client / UI" items (rule numbers, code sites, blocked cards), under
   the same bold titles; `BACKLOG.md` keeps one line each. Add or delete an item in both.

@@ -1241,6 +1241,86 @@ const SCENARIOS: readonly BotScenario[] = [
     }),
   ),
   asked({
+    name: "plays a Forest for Birds of Paradise, not a tapped Stomping Ground",
+    rule: "The land drop that casts this turn's spell beats one that enters tapped, and a basic beats paying 2 life.",
+    position(registry) {
+      // Reported from a live game (2026-10-04, no capture): a bot played
+      // Stomping Ground and let it enter tapped when a Forest — or the
+      // Stomping Ground with 2 life paid — would have cast Birds of Paradise
+      // that turn. A Mountain was in hand too. The current bots play the
+      // Forest (`castableAfter`, since 95fe54c5 on 2026-10-01), so the site
+      // was most likely on an older build; this holds the fix in place.
+      // `docs/bot-misplays.md`.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      const forest = game.debugSpawn("Forest", A, "hand");
+      game.debugSpawn("Mountain", A, "hand");
+      game.debugSpawn("Stomping Ground", A, "hand");
+      game.debugSpawn("Birds of Paradise", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === forest,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "pays 2 life for an untapped Stomping Ground to cast Birds of Paradise",
+    rule: "With only a shock land to make this turn's mana, 2 life at 40 is worth a turn-one mana creature.",
+    kind: "training",
+    position(registry) {
+      // Found recording the Stomping Ground report above: neither bot ever
+      // pays a shock land's life (`AutomaticController.payLifeForUntapped`
+      // returns false), so a Stomping Ground always enters tapped, and v1's
+      // land ranking (`castableAfter`) can't see a spell behind it — playing
+      // one stops at the pay decision. Turn one, Stomping Ground and Birds in
+      // hand: right is to pay and cast the Birds.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      const ground = game.debugSpawn("Stomping Ground", A, "hand");
+      game.debugSpawn("Birds of Paradise", A, "hand");
+      game.dispatch({ type: "play-land", player: A, card: ground });
+      if (game.state.awaiting?.kind !== "pay-life-for-untapped") {
+        return { passed: false, detail: "Stomping Ground never asked to pay 2 life" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "pay-life-for-untapped" && action.pay,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "casts Jaddi Offshoot before its land drop",
+    rule: "A landfall creature castable without the land drop goes first, so the land triggers it.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-04, no capture): on turn 2 a bot
+      // played a Swamp and then Jaddi Offshoot, when casting the Offshoot off
+      // its Forest first would have gained a life from the Swamp's landfall.
+      // Both bots play a land before anything else whenever they can.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 5;
+      lands(game, "Forest", A, 1);
+      game.debugSpawn("Swamp", A, "hand");
+      const offshoot = game.debugSpawn("Jaddi Offshoot", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === offshoot,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "fetches the colour it can't make yet",
     rule: "A land search takes a land of a missing colour over another of one it has.",
     position(registry) {
