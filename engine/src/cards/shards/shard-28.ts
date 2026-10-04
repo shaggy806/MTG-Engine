@@ -35,6 +35,7 @@ import _poolBoarQPine from "../pool/boar-q-pine.js";
 import _poolBountyOfMight from "../pool/bounty-of-might.js";
 import _poolBramblesnap from "../pool/bramblesnap.js";
 import _poolBreachingDragonstorm from "../pool/breaching-dragonstorm.js";
+import _poolBrighthearthBanneret from "../pool/brighthearth-banneret.js";
 import _poolBroadsideBarrage from "../pool/broadside-barrage.js";
 import _poolBrushstrider from "../pool/brushstrider.js";
 import _poolBullCerodon from "../pool/bull-cerodon.js";
@@ -155,6 +156,7 @@ import _poolPacificationArray from "../pool/pacification-array.js";
 import _poolPaintedBluffs from "../pool/painted-bluffs.js";
 import _poolPalaceFamiliar from "../pool/palace-familiar.js";
 import _poolPalaceSentinels from "../pool/palace-sentinels.js";
+import _poolPestRescuer from "../pool/pest-rescuer.js";
 import _poolPhyrexianMetamorph from "../pool/phyrexian-metamorph.js";
 import _poolPillarvergePathway from "../pool/pillarverge-pathway.js";
 import _poolPinnacleEmissary from "../pool/pinnacle-emissary.js";
@@ -209,6 +211,7 @@ import _poolSliverHive from "../pool/sliver-hive.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
 import _poolSolTalisman from "../pool/sol-talisman.js";
 import _poolSoulsFire from "../pool/souls-fire.js";
+import _poolSpDrPilotedByPeni from "../pool/sp-dr-piloted-by-peni.js";
 import _poolSpitefulSliver from "../pool/spiteful-sliver.js";
 import _poolSplinterfright from "../pool/splinterfright.js";
 import _poolSplitUp from "../pool/split-up.js";
@@ -297,6 +300,7 @@ const shard: CardShard = {
     _poolBountyOfMight,
     _poolBramblesnap,
     _poolBreachingDragonstorm,
+    _poolBrighthearthBanneret,
     _poolBroadsideBarrage,
     _poolBrushstrider,
     _poolBullCerodon,
@@ -417,6 +421,7 @@ const shard: CardShard = {
     _poolPaintedBluffs,
     _poolPalaceFamiliar,
     _poolPalaceSentinels,
+    _poolPestRescuer,
     _poolPhyrexianMetamorph,
     _poolPillarvergePathway,
     _poolPinnacleEmissary,
@@ -471,6 +476,7 @@ const shard: CardShard = {
     _poolSnareThopter,
     _poolSolTalisman,
     _poolSoulsFire,
+    _poolSpDrPilotedByPeni,
     _poolSpitefulSliver,
     _poolSplinterfright,
     _poolSplitUp,

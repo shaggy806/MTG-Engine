@@ -81,6 +81,7 @@ import _poolEtchedFamiliar from "../pool/etched-familiar.js";
 import _poolExperimentalAviator from "../pool/experimental-aviator.js";
 import _poolFallOfTheGavel from "../pool/fall-of-the-gavel.js";
 import _poolFatalFumes from "../pool/fatal-fumes.js";
+import _poolFatestitcher from "../pool/fatestitcher.js";
 import _poolFelhideMinotaur from "../pool/felhide-minotaur.js";
 import _poolFelidarGuardian from "../pool/felidar-guardian.js";
 import _poolFieldCreeper from "../pool/field-creeper.js";
@@ -156,6 +157,7 @@ import _poolNezumiBoneReader from "../pool/nezumi-bone-reader.js";
 import _poolNomadicElf from "../pool/nomadic-elf.js";
 import _poolNoviceDissector from "../pool/novice-dissector.js";
 import _poolOakenBoon from "../pool/oaken-boon.js";
+import _poolOkinaTempleToTheGrandfathers from "../pool/okina-temple-to-the-grandfathers.js";
 import _poolOmenOfTheHunt from "../pool/omen-of-the-hunt.js";
 import _poolOnduSkyruins from "../pool/ondu-skyruins.js";
 import _poolOrcishLumberjack from "../pool/orcish-lumberjack.js";
@@ -255,6 +257,7 @@ import _poolWaspLancer from "../pool/wasp-lancer.js";
 import _poolWeftstalkerArdent from "../pool/weftstalker-ardent.js";
 import _poolWildAesthir from "../pool/wild-aesthir.js";
 import _poolWildWanderer from "../pool/wild-wanderer.js";
+import _poolWingedHiveTyrant from "../pool/winged-hive-tyrant.js";
 import _poolWingedTempleOfOrazca from "../pool/winged-temple-of-orazca.js";
 import _poolWingmantleChaplain from "../pool/wingmantle-chaplain.js";
 import _poolWinotaJoinerOfForces from "../pool/winota-joiner-of-forces.js";
@@ -349,6 +352,7 @@ const shard: CardShard = {
     _poolExperimentalAviator,
     _poolFallOfTheGavel,
     _poolFatalFumes,
+    _poolFatestitcher,
     _poolFelhideMinotaur,
     _poolFelidarGuardian,
     _poolFieldCreeper,
@@ -424,6 +428,7 @@ const shard: CardShard = {
     _poolNomadicElf,
     _poolNoviceDissector,
     _poolOakenBoon,
+    _poolOkinaTempleToTheGrandfathers,
     _poolOmenOfTheHunt,
     _poolOnduSkyruins,
     _poolOrcishLumberjack,
@@ -523,6 +528,7 @@ const shard: CardShard = {
     _poolWeftstalkerArdent,
     _poolWildAesthir,
     _poolWildWanderer,
+    _poolWingedHiveTyrant,
     _poolWingedTempleOfOrazca,
     _poolWingmantleChaplain,
     _poolWinotaJoinerOfForces,

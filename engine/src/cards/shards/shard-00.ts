@@ -100,6 +100,7 @@ import _poolGoShintaiOfAncientWars from "../pool/go-shintai-of-ancient-wars.js";
 import _poolGoShintaiOfLostWisdom from "../pool/go-shintai-of-lost-wisdom.js";
 import _poolGoblinCavaliers from "../pool/goblin-cavaliers.js";
 import _poolGoblinElectromancer from "../pool/goblin-electromancer.js";
+import _poolGoblinGrenade from "../pool/goblin-grenade.js";
 import _poolGoblinTrailblazer from "../pool/goblin-trailblazer.js";
 import _poolGoldPan from "../pool/gold-pan.js";
 import _poolGolgariGuildgate from "../pool/golgari-guildgate.js";
@@ -159,6 +160,7 @@ import _poolNaturesLore from "../pool/natures-lore.js";
 import _poolNettlecyst from "../pool/nettlecyst.js";
 import _poolNightshadeHarvester from "../pool/nightshade-harvester.js";
 import _poolNightshadeStinger from "../pool/nightshade-stinger.js";
+import _poolNimblewrightSchematic from "../pool/nimblewright-schematic.js";
 import _poolNyleasForerunner from "../pool/nyleas-forerunner.js";
 import _poolOpenTheGraves from "../pool/open-the-graves.js";
 import _poolOpulentPalace from "../pool/opulent-palace.js";
@@ -199,6 +201,7 @@ import _poolRoxanneStarfallSavant from "../pool/roxanne-starfall-savant.js";
 import _poolRumblingSlum from "../pool/rumbling-slum.js";
 import _poolSalvageScout from "../pool/salvage-scout.js";
 import _poolSamLoyalAttendant from "../pool/sam-loyal-attendant.js";
+import _poolSamutVoiceOfDissent from "../pool/samut-voice-of-dissent.js";
 import _poolSanctumGargoyle from "../pool/sanctum-gargoyle.js";
 import _poolSarkhanSoulAflame from "../pool/sarkhan-soul-aflame.js";
 import _poolSatyrHedonist from "../pool/satyr-hedonist.js";
@@ -224,6 +227,7 @@ import _poolSpinedMegalodon from "../pool/spined-megalodon.js";
 import _poolStarkIndustries from "../pool/stark-industries.js";
 import _poolStitchInTime from "../pool/stitch-in-time.js";
 import _poolStoneworkPuma from "../pool/stonework-puma.js";
+import _poolStormkeldVanguard from "../pool/stormkeld-vanguard.js";
 import _poolStrixSerenade from "../pool/strix-serenade.js";
 import _poolStrongarmThug from "../pool/strongarm-thug.js";
 import _poolStrongholdAssassin from "../pool/stronghold-assassin.js";
@@ -258,6 +262,7 @@ import _poolUurgSpawnOfTurg from "../pool/uurg-spawn-of-turg.js";
 import _poolValorInAkros from "../pool/valor-in-akros.js";
 import _poolVigilantDrake from "../pool/vigilant-drake.js";
 import _poolVihaanGoldwaker from "../pool/vihaan-goldwaker.js";
+import _poolVodalianWaveKnight from "../pool/vodalian-wave-knight.js";
 import _poolVolunteerMilitia from "../pool/volunteer-militia.js";
 import _poolWallOfBlossoms from "../pool/wall-of-blossoms.js";
 import _poolWallOfSwords from "../pool/wall-of-swords.js";
@@ -381,6 +386,7 @@ const shard: CardShard = {
     _poolGoShintaiOfLostWisdom,
     _poolGoblinCavaliers,
     _poolGoblinElectromancer,
+    _poolGoblinGrenade,
     _poolGoblinTrailblazer,
     _poolGoldPan,
     _poolGolgariGuildgate,
@@ -440,6 +446,7 @@ const shard: CardShard = {
     _poolNettlecyst,
     _poolNightshadeHarvester,
     _poolNightshadeStinger,
+    _poolNimblewrightSchematic,
     _poolNyleasForerunner,
     _poolOpenTheGraves,
     _poolOpulentPalace,
@@ -480,6 +487,7 @@ const shard: CardShard = {
     _poolRumblingSlum,
     _poolSalvageScout,
     _poolSamLoyalAttendant,
+    _poolSamutVoiceOfDissent,
     _poolSanctumGargoyle,
     _poolSarkhanSoulAflame,
     _poolSatyrHedonist,
@@ -505,6 +513,7 @@ const shard: CardShard = {
     _poolStarkIndustries,
     _poolStitchInTime,
     _poolStoneworkPuma,
+    _poolStormkeldVanguard,
     _poolStrixSerenade,
     _poolStrongarmThug,
     _poolStrongholdAssassin,
@@ -539,6 +548,7 @@ const shard: CardShard = {
     _poolValorInAkros,
     _poolVigilantDrake,
     _poolVihaanGoldwaker,
+    _poolVodalianWaveKnight,
     _poolVolunteerMilitia,
     _poolWallOfBlossoms,
     _poolWallOfSwords,

@@ -130,6 +130,7 @@ import _poolHinderingLight from "../pool/hindering-light.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
+import _poolHuntersBow from "../pool/hunters-bow.js";
 import _poolIncubationDruid from "../pool/incubation-druid.js";
 import _poolInfernalTribute from "../pool/infernal-tribute.js";
 import _poolInquisitivePuppet from "../pool/inquisitive-puppet.js";
@@ -146,6 +147,7 @@ import _poolLeyDruid from "../pool/ley-druid.js";
 import _poolLightningStrike from "../pool/lightning-strike.js";
 import _poolLithatog from "../pool/lithatog.js";
 import _poolLlanowarCavalry from "../pool/llanowar-cavalry.js";
+import _poolLlanowarScout from "../pool/llanowar-scout.js";
 import _poolLlanowarVisionary from "../pool/llanowar-visionary.js";
 import _poolLocthwainScorn from "../pool/locthwain-scorn.js";
 import _poolLordOfAtlantis from "../pool/lord-of-atlantis.js";
@@ -201,6 +203,7 @@ import _poolRuinationWurm from "../pool/ruination-wurm.js";
 import _poolRuinsRecluse from "../pool/ruins-recluse.js";
 import _poolRumbleweed from "../pool/rumbleweed.js";
 import _poolRuptureSpire from "../pool/rupture-spire.js";
+import _poolSarkhanUnbroken from "../pool/sarkhan-unbroken.js";
 import _poolScoriaElemental from "../pool/scoria-elemental.js";
 import _poolScythecatCub from "../pool/scythecat-cub.js";
 import _poolSeekerOfSkybreak from "../pool/seeker-of-skybreak.js";
@@ -419,6 +422,7 @@ const shard: CardShard = {
     _poolHorseshoeCrab,
     _poolHowlingGolem,
     _poolHumblingElder,
+    _poolHuntersBow,
     _poolIncubationDruid,
     _poolInfernalTribute,
     _poolInquisitivePuppet,
@@ -435,6 +439,7 @@ const shard: CardShard = {
     _poolLightningStrike,
     _poolLithatog,
     _poolLlanowarCavalry,
+    _poolLlanowarScout,
     _poolLlanowarVisionary,
     _poolLocthwainScorn,
     _poolLordOfAtlantis,
@@ -490,6 +495,7 @@ const shard: CardShard = {
     _poolRuinsRecluse,
     _poolRumbleweed,
     _poolRuptureSpire,
+    _poolSarkhanUnbroken,
     _poolScoriaElemental,
     _poolScythecatCub,
     _poolSeekerOfSkybreak,

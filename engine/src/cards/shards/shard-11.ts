@@ -93,6 +93,7 @@ import _poolGhirapurOsprey from "../pool/ghirapur-osprey.js";
 import _poolGiantStrength from "../pool/giant-strength.js";
 import _poolGiftOfTheViper from "../pool/gift-of-the-viper.js";
 import _poolGildedGoose from "../pool/gilded-goose.js";
+import _poolGimliCounterOfKills from "../pool/gimli-counter-of-kills.js";
 import _poolGoShintaiOfLifesOrigin from "../pool/go-shintai-of-lifes-origin.js";
 import _poolGoblinChieftain from "../pool/goblin-chieftain.js";
 import _poolGoddricCloakedReveler from "../pool/goddric-cloaked-reveler.js";
@@ -172,6 +173,7 @@ import _poolNighthaze from "../pool/nighthaze.js";
 import _poolNivMizzetTheFiremind from "../pool/niv-mizzet-the-firemind.js";
 import _poolNogiDracoZealot from "../pool/nogi-draco-zealot.js";
 import _poolNullElementalBlast from "../pool/null-elemental-blast.js";
+import _poolNutrientBlock from "../pool/nutrient-block.js";
 import _poolOakenform from "../pool/oakenform.js";
 import _poolOkosAccomplices from "../pool/okos-accomplices.js";
 import _poolOmoQueenOfVesuva from "../pool/omo-queen-of-vesuva.js";
@@ -215,6 +217,7 @@ import _poolSchoolOfTheUnseen from "../pool/school-of-the-unseen.js";
 import _poolScorchingMissile from "../pool/scorching-missile.js";
 import _poolScourgeOfTheThrone from "../pool/scourge-of-the-throne.js";
 import _poolScrawlingCrawler from "../pool/scrawling-crawler.js";
+import _poolScuteMob from "../pool/scute-mob.js";
 import _poolSearchlightGeist from "../pool/searchlight-geist.js";
 import _poolSejiriRefuge from "../pool/sejiri-refuge.js";
 import _poolSepulchralPrimordial from "../pool/sepulchral-primordial.js";
@@ -406,6 +409,7 @@ const shard: CardShard = {
     _poolGiantStrength,
     _poolGiftOfTheViper,
     _poolGildedGoose,
+    _poolGimliCounterOfKills,
     _poolGoShintaiOfLifesOrigin,
     _poolGoblinChieftain,
     _poolGoddricCloakedReveler,
@@ -485,6 +489,7 @@ const shard: CardShard = {
     _poolNivMizzetTheFiremind,
     _poolNogiDracoZealot,
     _poolNullElementalBlast,
+    _poolNutrientBlock,
     _poolOakenform,
     _poolOkosAccomplices,
     _poolOmoQueenOfVesuva,
@@ -528,6 +533,7 @@ const shard: CardShard = {
     _poolScorchingMissile,
     _poolScourgeOfTheThrone,
     _poolScrawlingCrawler,
+    _poolScuteMob,
     _poolSearchlightGeist,
     _poolSejiriRefuge,
     _poolSepulchralPrimordial,

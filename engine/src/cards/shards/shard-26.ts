@@ -98,6 +98,7 @@ import _poolGriffinProtector from "../pool/griffin-protector.js";
 import _poolGutterSkulk from "../pool/gutter-skulk.js";
 import _poolHarbingerOfTheHunt from "../pool/harbinger-of-the-hunt.js";
 import _poolHeapGate from "../pool/heap-gate.js";
+import _poolHeartSliver from "../pool/heart-sliver.js";
 import _poolHitTheMotherLode from "../pool/hit-the-mother-lode.js";
 import _poolHollowhengeOverlord from "../pool/hollowhenge-overlord.js";
 import _poolHostileMinotaur from "../pool/hostile-minotaur.js";
@@ -163,6 +164,7 @@ import _poolOrcSureshot from "../pool/orc-sureshot.js";
 import _poolOrderOfTheSacredBell from "../pool/order-of-the-sacred-bell.js";
 import _poolPearlMedallion from "../pool/pearl-medallion.js";
 import _poolPilferedPlans from "../pool/pilfered-plans.js";
+import _poolPillarOfTheParuns from "../pool/pillar-of-the-paruns.js";
 import _poolPixieQueen from "../pool/pixie-queen.js";
 import _poolPortTown from "../pool/port-town.js";
 import _poolProdigalSorcerer from "../pool/prodigal-sorcerer.js";
@@ -202,6 +204,7 @@ import _poolSilverbeakGriffin from "../pool/silverbeak-griffin.js";
 import _poolSimicLocket from "../pool/simic-locket.js";
 import _poolSkyclaveRelic from "../pool/skyclave-relic.js";
 import _poolSnowCoveredPlains from "../pool/snow-covered-plains.js";
+import _poolSolidarityOfHeroes from "../pool/solidarity-of-heroes.js";
 import _poolSpearSpewer from "../pool/spear-spewer.js";
 import _poolSpectralReserves from "../pool/spectral-reserves.js";
 import _poolSporeSwarm from "../pool/spore-swarm.js";
@@ -363,6 +366,7 @@ const shard: CardShard = {
     _poolGutterSkulk,
     _poolHarbingerOfTheHunt,
     _poolHeapGate,
+    _poolHeartSliver,
     _poolHitTheMotherLode,
     _poolHollowhengeOverlord,
     _poolHostileMinotaur,
@@ -428,6 +432,7 @@ const shard: CardShard = {
     _poolOrderOfTheSacredBell,
     _poolPearlMedallion,
     _poolPilferedPlans,
+    _poolPillarOfTheParuns,
     _poolPixieQueen,
     _poolPortTown,
     _poolProdigalSorcerer,
@@ -467,6 +472,7 @@ const shard: CardShard = {
     _poolSimicLocket,
     _poolSkyclaveRelic,
     _poolSnowCoveredPlains,
+    _poolSolidarityOfHeroes,
     _poolSpearSpewer,
     _poolSpectralReserves,
     _poolSporeSwarm,

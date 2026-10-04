@@ -17,6 +17,7 @@ import _poolAncestorsProphet from "../pool/ancestors-prophet.js";
 import _poolAncientSpring from "../pool/ancient-spring.js";
 import _poolAntQueen from "../pool/ant-queen.js";
 import _poolArborbackStomper from "../pool/arborback-stomper.js";
+import _poolArmorOfShadows from "../pool/armor-of-shadows.js";
 import _poolArmoredWarhorse from "../pool/armored-warhorse.js";
 import _poolAscendedLawmage from "../pool/ascended-lawmage.js";
 import _poolAshlingRimebound from "../pool/ashling-rimebound.js";
@@ -45,6 +46,7 @@ import _poolBriaRiptideRogue from "../pool/bria-riptide-rogue.js";
 import _poolBridgeworksBattle from "../pool/bridgeworks-battle.js";
 import _poolBrightbladeStoat from "../pool/brightblade-stoat.js";
 import _poolBrightclimbPathway from "../pool/brightclimb-pathway.js";
+import _poolBrotherhoodsEnd from "../pool/brotherhoods-end.js";
 import _poolBullHippo from "../pool/bull-hippo.js";
 import _poolBurnBright from "../pool/burn-bright.js";
 import _poolCabalTrainee from "../pool/cabal-trainee.js";
@@ -88,6 +90,7 @@ import _poolEmberethShieldbreaker from "../pool/embereth-shieldbreaker.js";
 import _poolEmeriasCall from "../pool/emerias-call.js";
 import _poolEnduringTenacity from "../pool/enduring-tenacity.js";
 import _poolEsperCormorants from "../pool/esper-cormorants.js";
+import _poolEssenceHarvest from "../pool/essence-harvest.js";
 import _poolEtherealArmor from "../pool/ethereal-armor.js";
 import _poolFierceWitchstalker from "../pool/fierce-witchstalker.js";
 import _poolFireNationAmbushers from "../pool/fire-nation-ambushers.js";
@@ -104,6 +107,7 @@ import _poolGoblinGardener from "../pool/goblin-gardener.js";
 import _poolGolgariSignet from "../pool/golgari-signet.js";
 import _poolGoliathSpider from "../pool/goliath-spider.js";
 import _poolGoodFortuneUnicorn from "../pool/good-fortune-unicorn.js";
+import _poolGranGran from "../pool/gran-gran.js";
 import _poolGravedigger from "../pool/gravedigger.js";
 import _poolGrazilaxxIllithidScholar from "../pool/grazilaxx-illithid-scholar.js";
 import _poolGrimDiscovery from "../pool/grim-discovery.js";
@@ -184,6 +188,7 @@ import _poolRaiseThePast from "../pool/raise-the-past.js";
 import _poolRatcatcher from "../pool/ratcatcher.js";
 import _poolRavagingHorde from "../pool/ravaging-horde.js";
 import _poolRecklessAssault from "../pool/reckless-assault.js";
+import _poolRetreatToEmeria from "../pool/retreat-to-emeria.js";
 import _poolRevTitheExtractor from "../pool/rev-tithe-extractor.js";
 import _poolReyhanLastOfTheAbzan from "../pool/reyhan-last-of-the-abzan.js";
 import _poolRidgescaleTusker from "../pool/ridgescale-tusker.js";
@@ -288,6 +293,7 @@ const shard: CardShard = {
     _poolAncientSpring,
     _poolAntQueen,
     _poolArborbackStomper,
+    _poolArmorOfShadows,
     _poolArmoredWarhorse,
     _poolAscendedLawmage,
     _poolAshlingRimebound,
@@ -316,6 +322,7 @@ const shard: CardShard = {
     _poolBridgeworksBattle,
     _poolBrightbladeStoat,
     _poolBrightclimbPathway,
+    _poolBrotherhoodsEnd,
     _poolBullHippo,
     _poolBurnBright,
     _poolCabalTrainee,
@@ -359,6 +366,7 @@ const shard: CardShard = {
     _poolEmeriasCall,
     _poolEnduringTenacity,
     _poolEsperCormorants,
+    _poolEssenceHarvest,
     _poolEtherealArmor,
     _poolFierceWitchstalker,
     _poolFireNationAmbushers,
@@ -375,6 +383,7 @@ const shard: CardShard = {
     _poolGolgariSignet,
     _poolGoliathSpider,
     _poolGoodFortuneUnicorn,
+    _poolGranGran,
     _poolGravedigger,
     _poolGrazilaxxIllithidScholar,
     _poolGrimDiscovery,
@@ -455,6 +464,7 @@ const shard: CardShard = {
     _poolRatcatcher,
     _poolRavagingHorde,
     _poolRecklessAssault,
+    _poolRetreatToEmeria,
     _poolRevTitheExtractor,
     _poolReyhanLastOfTheAbzan,
     _poolRidgescaleTusker,

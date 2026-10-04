@@ -104,6 +104,7 @@ import _poolGolgariGermination from "../pool/golgari-germination.js";
 import _poolGontisAetherHeart from "../pool/gontis-aether-heart.js";
 import _poolGrabbyGiant from "../pool/grabby-giant.js";
 import _poolHalberdier from "../pool/halberdier.js";
+import _poolHallOfTagsin from "../pool/hall-of-tagsin.js";
 import _poolHammerheadTyrant from "../pool/hammerhead-tyrant.js";
 import _poolHanaKami from "../pool/hana-kami.js";
 import _poolHedronArchive from "../pool/hedron-archive.js";
@@ -249,6 +250,7 @@ import _poolZedruuTheGreathearted from "../pool/zedruu-the-greathearted.js";
 import _poolZulaportChainmage from "../pool/zulaport-chainmage.js";
 import _poolZurTheEnchanter from "../pool/zur-the-enchanter.js";
 import _poolZuranEnchanter from "../pool/zuran-enchanter.js";
+import _tokensAlienWarriorToken from "../tokens/alien-warrior-token.js";
 import _tokensGolemFlyingToken from "../tokens/golem-flying-token.js";
 import _tokensOctopusToken from "../tokens/octopus-token.js";
 import _tokensPhyrexianGermToken from "../tokens/phyrexian-germ-token.js";
@@ -358,6 +360,7 @@ const shard: CardShard = {
     _poolGontisAetherHeart,
     _poolGrabbyGiant,
     _poolHalberdier,
+    _poolHallOfTagsin,
     _poolHammerheadTyrant,
     _poolHanaKami,
     _poolHedronArchive,
@@ -505,6 +508,7 @@ const shard: CardShard = {
     _poolZuranEnchanter,
   ],
   tokens: [
+    _tokensAlienWarriorToken,
     _tokensGolemFlyingToken,
     _tokensOctopusToken,
     _tokensPhyrexianGermToken,

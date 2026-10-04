@@ -161,6 +161,7 @@ import _poolOverflowingBasin from "../pool/overflowing-basin.js";
 import _poolOverrun from "../pool/overrun.js";
 import _poolOxiddaDaredevil from "../pool/oxidda-daredevil.js";
 import _poolPathToExile from "../pool/path-to-exile.js";
+import _poolPerimeterCaptain from "../pool/perimeter-captain.js";
 import _poolPerniciousDeed from "../pool/pernicious-deed.js";
 import _poolPhantomMonster from "../pool/phantom-monster.js";
 import _poolPierceStrider from "../pool/pierce-strider.js";
@@ -420,6 +421,7 @@ const shard: CardShard = {
     _poolOverrun,
     _poolOxiddaDaredevil,
     _poolPathToExile,
+    _poolPerimeterCaptain,
     _poolPerniciousDeed,
     _poolPhantomMonster,
     _poolPierceStrider,

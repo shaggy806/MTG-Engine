@@ -59,6 +59,7 @@ import _poolCreakwoodLiege from "../pool/creakwood-liege.js";
 import _poolCruxOfFate from "../pool/crux-of-fate.js";
 import _poolCunningSparkmage from "../pool/cunning-sparkmage.js";
 import _poolDawnCharm from "../pool/dawn-charm.js";
+import _poolDayOfDestiny from "../pool/day-of-destiny.js";
 import _poolDazzlingRamparts from "../pool/dazzling-ramparts.js";
 import _poolDeeprootElite from "../pool/deeproot-elite.js";
 import _poolDeepwoodTantiv from "../pool/deepwood-tantiv.js";
@@ -97,6 +98,7 @@ import _poolFrilledOculus from "../pool/frilled-oculus.js";
 import _poolFrilledSandwalla from "../pool/frilled-sandwalla.js";
 import _poolFurycalmSnarl from "../pool/furycalm-snarl.js";
 import _poolFutureFlight from "../pool/future-flight.js";
+import _poolGeosurge from "../pool/geosurge.js";
 import _poolGhostlyPilferer from "../pool/ghostly-pilferer.js";
 import _poolGlacialWall from "../pool/glacial-wall.js";
 import _poolGlimmerBairn from "../pool/glimmer-bairn.js";
@@ -133,6 +135,7 @@ import _poolJaceWielderOfMysteries from "../pool/jace-wielder-of-mysteries.js";
 import _poolJungleWeaver from "../pool/jungle-weaver.js";
 import _poolKataraHeroicHealer from "../pool/katara-heroic-healer.js";
 import _poolKazanduValley from "../pool/kazandu-valley.js";
+import _poolKinjallisCaller from "../pool/kinjallis-caller.js";
 import _poolKioraTheRisingTide from "../pool/kiora-the-rising-tide.js";
 import _poolKnightOfTheSkywardEye from "../pool/knight-of-the-skyward-eye.js";
 import _poolKorSkyClimber from "../pool/kor-sky-climber.js";
@@ -170,6 +173,7 @@ import _poolObekaSplitterOfSeconds from "../pool/obeka-splitter-of-seconds.js";
 import _poolOctoprophet from "../pool/octoprophet.js";
 import _poolOmegaMyr from "../pool/omega-myr.js";
 import _poolOneWithTheWind from "../pool/one-with-the-wind.js";
+import _poolOniCultAnvil from "../pool/oni-cult-anvil.js";
 import _poolOnulet from "../pool/onulet.js";
 import _poolOranRiefHydra from "../pool/oran-rief-hydra.js";
 import _poolOrbOfDragonkind from "../pool/orb-of-dragonkind.js";
@@ -354,6 +358,7 @@ const shard: CardShard = {
     _poolCruxOfFate,
     _poolCunningSparkmage,
     _poolDawnCharm,
+    _poolDayOfDestiny,
     _poolDazzlingRamparts,
     _poolDeeprootElite,
     _poolDeepwoodTantiv,
@@ -392,6 +397,7 @@ const shard: CardShard = {
     _poolFrilledSandwalla,
     _poolFurycalmSnarl,
     _poolFutureFlight,
+    _poolGeosurge,
     _poolGhostlyPilferer,
     _poolGlacialWall,
     _poolGlimmerBairn,
@@ -428,6 +434,7 @@ const shard: CardShard = {
     _poolJungleWeaver,
     _poolKataraHeroicHealer,
     _poolKazanduValley,
+    _poolKinjallisCaller,
     _poolKioraTheRisingTide,
     _poolKnightOfTheSkywardEye,
     _poolKorSkyClimber,
@@ -465,6 +472,7 @@ const shard: CardShard = {
     _poolOctoprophet,
     _poolOmegaMyr,
     _poolOneWithTheWind,
+    _poolOniCultAnvil,
     _poolOnulet,
     _poolOranRiefHydra,
     _poolOrbOfDragonkind,

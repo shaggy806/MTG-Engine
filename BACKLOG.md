@@ -90,9 +90,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (3,347 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (86 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 5011 are triaged (batches 4–29), and past the list, ranks 5011–6199 of the Oracle snapshot's EDHREC ranks (batches 30–34);
+  engine features that block the most of the rest. Ranks through 5011 are triaged (batches 4–29), and past the list, ranks 5011–6428 of the Oracle snapshot's EDHREC ranks (batches 30–35);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),

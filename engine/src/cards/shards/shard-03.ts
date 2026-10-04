@@ -105,6 +105,7 @@ import _poolIxhelScionOfAtraxa from "../pool/ixhel-scion-of-atraxa.js";
 import _poolJandorsSaddlebags from "../pool/jandors-saddlebags.js";
 import _poolKamiOfTwistedReflection from "../pool/kami-of-twisted-reflection.js";
 import _poolKarazikarTheEyeTyrant from "../pool/karazikar-the-eye-tyrant.js";
+import _poolKataraWaterbendingMaster from "../pool/katara-waterbending-master.js";
 import _poolKeepWatch from "../pool/keep-watch.js";
 import _poolKoalaSheep from "../pool/koala-sheep.js";
 import _poolKolaghansCommand from "../pool/kolaghans-command.js";
@@ -129,6 +130,7 @@ import _poolMortify from "../pool/mortify.js";
 import _poolMossKami from "../pool/moss-kami.js";
 import _poolMossViper from "../pool/moss-viper.js";
 import _poolNadirKraken from "../pool/nadir-kraken.js";
+import _poolNaruMehaMasterWizard from "../pool/naru-meha-master-wizard.js";
 import _poolNecronDeathmark from "../pool/necron-deathmark.js";
 import _poolNettleSwine from "../pool/nettle-swine.js";
 import _poolNimbusWings from "../pool/nimbus-wings.js";
@@ -355,6 +357,7 @@ const shard: CardShard = {
     _poolJandorsSaddlebags,
     _poolKamiOfTwistedReflection,
     _poolKarazikarTheEyeTyrant,
+    _poolKataraWaterbendingMaster,
     _poolKeepWatch,
     _poolKoalaSheep,
     _poolKolaghansCommand,
@@ -379,6 +382,7 @@ const shard: CardShard = {
     _poolMossKami,
     _poolMossViper,
     _poolNadirKraken,
+    _poolNaruMehaMasterWizard,
     _poolNecronDeathmark,
     _poolNettleSwine,
     _poolNimbusWings,

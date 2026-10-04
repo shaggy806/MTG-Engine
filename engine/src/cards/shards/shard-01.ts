@@ -12,6 +12,7 @@ import _poolAngelOfFinality from "../pool/angel-of-finality.js";
 import _poolAngelfireIgnition from "../pool/angelfire-ignition.js";
 import _poolAngelicEdict from "../pool/angelic-edict.js";
 import _poolAnnul from "../pool/annul.js";
+import _poolAnthemOfChampions from "../pool/anthem-of-champions.js";
 import _poolArchweaver from "../pool/archweaver.js";
 import _poolArtisansSorrow from "../pool/artisans-sorrow.js";
 import _poolAzureDrake from "../pool/azure-drake.js";
@@ -21,6 +22,7 @@ import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
 import _poolBlackMagesRod from "../pool/black-mages-rod.js";
+import _poolBloodtracker from "../pool/bloodtracker.js";
 import _poolBosssChauffeur from "../pool/bosss-chauffeur.js";
 import _poolBrallinSkysharkRider from "../pool/brallin-skyshark-rider.js";
 import _poolBreathWeapon from "../pool/breath-weapon.js";
@@ -49,6 +51,7 @@ import _poolDejaVu from "../pool/deja-vu.js";
 import _poolDerangedAssistant from "../pool/deranged-assistant.js";
 import _poolDiamondWeapon from "../pool/diamond-weapon.js";
 import _poolDismalBackwater from "../pool/dismal-backwater.js";
+import _poolDragonMantle from "../pool/dragon-mantle.js";
 import _poolDragonSniper from "../pool/dragon-sniper.js";
 import _poolDurkwoodBoars from "../pool/durkwood-boars.js";
 import _poolEldraziMonument from "../pool/eldrazi-monument.js";
@@ -107,6 +110,7 @@ import _poolLifegift from "../pool/lifegift.js";
 import _poolLilianasDevotee from "../pool/lilianas-devotee.js";
 import _poolLilianasSpecter from "../pool/lilianas-specter.js";
 import _poolLimestoneGolem from "../pool/limestone-golem.js";
+import _poolLindenTheSteadfastQueen from "../pool/linden-the-steadfast-queen.js";
 import _poolLordSkitterSewerKing from "../pool/lord-skitter-sewer-king.js";
 import _poolLoreholdCampus from "../pool/lorehold-campus.js";
 import _poolLoxodonWayfarer from "../pool/loxodon-wayfarer.js";
@@ -204,6 +208,7 @@ import _poolTheHunterMaze from "../pool/the-hunter-maze.js";
 import _poolTheMeathookMassacre from "../pool/the-meathook-massacre.js";
 import _poolTheSpearOfLeonidas from "../pool/the-spear-of-leonidas.js";
 import _poolThoughtcast from "../pool/thoughtcast.js";
+import _poolThranVigil from "../pool/thran-vigil.js";
 import _poolThreeTragedies from "../pool/three-tragedies.js";
 import _poolThrummingbird from "../pool/thrummingbird.js";
 import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.js";
@@ -253,6 +258,7 @@ const shard: CardShard = {
     _poolAngelfireIgnition,
     _poolAngelicEdict,
     _poolAnnul,
+    _poolAnthemOfChampions,
     _poolArchweaver,
     _poolArtisansSorrow,
     _poolAzureDrake,
@@ -262,6 +268,7 @@ const shard: CardShard = {
     _poolBeastWhisperer,
     _poolBellowsLizard,
     _poolBlackMagesRod,
+    _poolBloodtracker,
     _poolBosssChauffeur,
     _poolBrallinSkysharkRider,
     _poolBreathWeapon,
@@ -290,6 +297,7 @@ const shard: CardShard = {
     _poolDerangedAssistant,
     _poolDiamondWeapon,
     _poolDismalBackwater,
+    _poolDragonMantle,
     _poolDragonSniper,
     _poolDurkwoodBoars,
     _poolEldraziMonument,
@@ -348,6 +356,7 @@ const shard: CardShard = {
     _poolLilianasDevotee,
     _poolLilianasSpecter,
     _poolLimestoneGolem,
+    _poolLindenTheSteadfastQueen,
     _poolLordSkitterSewerKing,
     _poolLoreholdCampus,
     _poolLoxodonWayfarer,
@@ -445,6 +454,7 @@ const shard: CardShard = {
     _poolTheMeathookMassacre,
     _poolTheSpearOfLeonidas,
     _poolThoughtcast,
+    _poolThranVigil,
     _poolThreeTragedies,
     _poolThrummingbird,
     _poolTitaniaProtectorOfArgoth,

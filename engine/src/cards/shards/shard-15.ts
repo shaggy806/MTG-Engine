@@ -23,6 +23,7 @@ import _poolBloodtallowCandle from "../pool/bloodtallow-candle.js";
 import _poolBoltwave from "../pool/boltwave.js";
 import _poolBondBeetle from "../pool/bond-beetle.js";
 import _poolBoneMiser from "../pool/bone-miser.js";
+import _poolBorosReckoner from "../pool/boros-reckoner.js";
 import _poolBrainWeevil from "../pool/brain-weevil.js";
 import _poolBrenardGingerSculptor from "../pool/brenard-ginger-sculptor.js";
 import _poolCanoptekSpyder from "../pool/canoptek-spyder.js";
@@ -39,6 +40,7 @@ import _poolConcentratedFire from "../pool/concentrated-fire.js";
 import _poolConjurersCloset from "../pool/conjurers-closet.js";
 import _poolContingencyPlan from "../pool/contingency-plan.js";
 import _poolCopperLonglegs from "../pool/copper-longlegs.js";
+import _poolCormelaGlamourThief from "../pool/cormela-glamour-thief.js";
 import _poolCropRotation from "../pool/crop-rotation.js";
 import _poolCrowdFavorites from "../pool/crowd-favorites.js";
 import _poolCrystalQuarry from "../pool/crystal-quarry.js";
@@ -47,6 +49,7 @@ import _poolCybermenSquadron from "../pool/cybermen-squadron.js";
 import _poolDefiantBloodlord from "../pool/defiant-bloodlord.js";
 import _poolDemonicCounsel from "../pool/demonic-counsel.js";
 import _poolDespark from "../pool/despark.js";
+import _poolDissipate from "../pool/dissipate.js";
 import _poolDivingGriffin from "../pool/diving-griffin.js";
 import _poolDoranBesiegedByTime from "../pool/doran-besieged-by-time.js";
 import _poolDragonmasterOutcast from "../pool/dragonmaster-outcast.js";
@@ -284,6 +287,7 @@ const shard: CardShard = {
     _poolBoltwave,
     _poolBondBeetle,
     _poolBoneMiser,
+    _poolBorosReckoner,
     _poolBrainWeevil,
     _poolBrenardGingerSculptor,
     _poolCanoptekSpyder,
@@ -300,6 +304,7 @@ const shard: CardShard = {
     _poolConjurersCloset,
     _poolContingencyPlan,
     _poolCopperLonglegs,
+    _poolCormelaGlamourThief,
     _poolCropRotation,
     _poolCrowdFavorites,
     _poolCrystalQuarry,
@@ -308,6 +313,7 @@ const shard: CardShard = {
     _poolDefiantBloodlord,
     _poolDemonicCounsel,
     _poolDespark,
+    _poolDissipate,
     _poolDivingGriffin,
     _poolDoranBesiegedByTime,
     _poolDragonmasterOutcast,

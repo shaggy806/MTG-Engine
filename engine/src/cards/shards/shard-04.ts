@@ -82,6 +82,7 @@ import _poolFelotharTheSteadfast from "../pool/felothar-the-steadfast.js";
 import _poolFierceEmpath from "../pool/fierce-empath.js";
 import _poolFiligreeCrawler from "../pool/filigree-crawler.js";
 import _poolFlameLash from "../pool/flame-lash.js";
+import _poolFlamekinHarbinger from "../pool/flamekin-harbinger.js";
 import _poolFlankingTroops from "../pool/flanking-troops.js";
 import _poolFlayedOne from "../pool/flayed-one.js";
 import _poolForsakeTheWorldly from "../pool/forsake-the-worldly.js";
@@ -205,6 +206,7 @@ import _poolShimmeringWings from "../pool/shimmering-wings.js";
 import _poolShivanReef from "../pool/shivan-reef.js";
 import _poolShuGrainCaravan from "../pool/shu-grain-caravan.js";
 import _poolSigiledSkink from "../pool/sigiled-skink.js";
+import _poolSisterHospitaller from "../pool/sister-hospitaller.js";
 import _poolSkyTerror from "../pool/sky-terror.js";
 import _poolSlashOfTalons from "../pool/slash-of-talons.js";
 import _poolSlimebind from "../pool/slimebind.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolFierceEmpath,
     _poolFiligreeCrawler,
     _poolFlameLash,
+    _poolFlamekinHarbinger,
     _poolFlankingTroops,
     _poolFlayedOne,
     _poolForsakeTheWorldly,
@@ -480,6 +483,7 @@ const shard: CardShard = {
     _poolShivanReef,
     _poolShuGrainCaravan,
     _poolSigiledSkink,
+    _poolSisterHospitaller,
     _poolSkyTerror,
     _poolSlashOfTalons,
     _poolSlimebind,

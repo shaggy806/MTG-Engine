@@ -70,6 +70,7 @@ import _poolEmberethBlaze from "../pool/embereth-blaze.js";
 import _poolEpicProportions from "../pool/epic-proportions.js";
 import _poolErtaiWizardAdept from "../pool/ertai-wizard-adept.js";
 import _poolEsperCharm from "../pool/esper-charm.js";
+import _poolEsperPanorama from "../pool/esper-panorama.js";
 import _poolEssenceScatter from "../pool/essence-scatter.js";
 import _poolExpansionExplosion from "../pool/expansion-explosion.js";
 import _poolExpedite from "../pool/expedite.js";
@@ -103,6 +104,7 @@ import _poolHoodedKavu from "../pool/hooded-kavu.js";
 import _poolHornOfRamos from "../pool/horn-of-ramos.js";
 import _poolHussarPatrol from "../pool/hussar-patrol.js";
 import _poolIdyllicGrange from "../pool/idyllic-grange.js";
+import _poolIncrementalBlight from "../pool/incremental-blight.js";
 import _poolIronManTitanOfInnovation from "../pool/iron-man-titan-of-innovation.js";
 import _poolJaheirasRespite from "../pool/jaheiras-respite.js";
 import _poolJungleShrine from "../pool/jungle-shrine.js";
@@ -335,6 +337,7 @@ const shard: CardShard = {
     _poolEpicProportions,
     _poolErtaiWizardAdept,
     _poolEsperCharm,
+    _poolEsperPanorama,
     _poolEssenceScatter,
     _poolExpansionExplosion,
     _poolExpedite,
@@ -368,6 +371,7 @@ const shard: CardShard = {
     _poolHornOfRamos,
     _poolHussarPatrol,
     _poolIdyllicGrange,
+    _poolIncrementalBlight,
     _poolIronManTitanOfInnovation,
     _poolJaheirasRespite,
     _poolJungleShrine,

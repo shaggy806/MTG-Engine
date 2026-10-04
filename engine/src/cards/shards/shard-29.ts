@@ -42,6 +42,7 @@ import _poolCrumblingVestige from "../pool/crumbling-vestige.js";
 import _poolCryptIncursion from "../pool/crypt-incursion.js";
 import _poolDamn from "../pool/damn.js";
 import _poolDarkDeed from "../pool/dark-deed.js";
+import _poolDarkFortress from "../pool/dark-fortress.js";
 import _poolDarkOffering from "../pool/dark-offering.js";
 import _poolDarkProphecy from "../pool/dark-prophecy.js";
 import _poolDazzlingDenial from "../pool/dazzling-denial.js";
@@ -105,6 +106,7 @@ import _poolImotiCelebrantOfBounty from "../pool/imoti-celebrant-of-bounty.js";
 import _poolImperialCeratops from "../pool/imperial-ceratops.js";
 import _poolIngeniousArtillerist from "../pool/ingenious-artillerist.js";
 import _poolInundatedArchive from "../pool/inundated-archive.js";
+import _poolJirinaDauntlessGeneral from "../pool/jirina-dauntless-general.js";
 import _poolJuggernaut from "../pool/juggernaut.js";
 import _poolJwariDisruption from "../pool/jwari-disruption.js";
 import _poolKazanduNectarpot from "../pool/kazandu-nectarpot.js";
@@ -152,6 +154,7 @@ import _poolPortraitOfMichiko from "../pool/portrait-of-michiko.js";
 import _poolPrairieStream from "../pool/prairie-stream.js";
 import _poolPrescientChimera from "../pool/prescient-chimera.js";
 import _poolPriestOfAncientLore from "../pool/priest-of-ancient-lore.js";
+import _poolProsperousPartnership from "../pool/prosperous-partnership.js";
 import _poolPsychoticFury from "../pool/psychotic-fury.js";
 import _poolQilinsBlessing from "../pool/qilins-blessing.js";
 import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
@@ -172,6 +175,7 @@ import _poolSacredArmory from "../pool/sacred-armory.js";
 import _poolSaheeliRadiantCreator from "../pool/saheeli-radiant-creator.js";
 import _poolSamiWildcatCaptain from "../pool/sami-wildcat-captain.js";
 import _poolSanctuaryCat from "../pool/sanctuary-cat.js";
+import _poolSandstormVerge from "../pool/sandstorm-verge.js";
 import _poolSarythTheVipersFang from "../pool/saryth-the-vipers-fang.js";
 import _poolSavaiTriome from "../pool/savai-triome.js";
 import _poolScarlandThrinax from "../pool/scarland-thrinax.js";
@@ -291,6 +295,7 @@ const shard: CardShard = {
     _poolCryptIncursion,
     _poolDamn,
     _poolDarkDeed,
+    _poolDarkFortress,
     _poolDarkOffering,
     _poolDarkProphecy,
     _poolDazzlingDenial,
@@ -354,6 +359,7 @@ const shard: CardShard = {
     _poolImperialCeratops,
     _poolIngeniousArtillerist,
     _poolInundatedArchive,
+    _poolJirinaDauntlessGeneral,
     _poolJuggernaut,
     _poolJwariDisruption,
     _poolKazanduNectarpot,
@@ -401,6 +407,7 @@ const shard: CardShard = {
     _poolPrairieStream,
     _poolPrescientChimera,
     _poolPriestOfAncientLore,
+    _poolProsperousPartnership,
     _poolPsychoticFury,
     _poolQilinsBlessing,
     _poolQuaketuskBoar,
@@ -421,6 +428,7 @@ const shard: CardShard = {
     _poolSaheeliRadiantCreator,
     _poolSamiWildcatCaptain,
     _poolSanctuaryCat,
+    _poolSandstormVerge,
     _poolSarythTheVipersFang,
     _poolSavaiTriome,
     _poolScarlandThrinax,

@@ -141,6 +141,7 @@ import _poolMemorialToWar from "../pool/memorial-to-war.js";
 import _poolMetallurgicSummonings from "../pool/metallurgic-summonings.js";
 import _poolMindSpring from "../pool/mind-spring.js";
 import _poolMishrasOnslaught from "../pool/mishras-onslaught.js";
+import _poolMisterFantasticReedRichards from "../pool/mister-fantastic-reed-richards.js";
 import _poolMolderingKarok from "../pool/moldering-karok.js";
 import _poolMountain from "../pool/mountain.js";
 import _poolMycosynthWellspring from "../pool/mycosynth-wellspring.js";
@@ -256,6 +257,7 @@ import _poolZephidsEmbrace from "../pool/zephids-embrace.js";
 import _tokensGnomeToken from "../tokens/gnome-token.js";
 import _tokensGolemToken from "../tokens/golem-token.js";
 import _tokensKnightTokenChivalricAlliance from "../tokens/knight-token-chivalric-alliance.js";
+import _tokensKorAllyToken from "../tokens/kor-ally-token.js";
 import _tokensSalamanderWarriorToken from "../tokens/salamander-warrior-token.js";
 
 const shard: CardShard = {
@@ -398,6 +400,7 @@ const shard: CardShard = {
     _poolMetallurgicSummonings,
     _poolMindSpring,
     _poolMishrasOnslaught,
+    _poolMisterFantasticReedRichards,
     _poolMolderingKarok,
     _poolMountain,
     _poolMycosynthWellspring,
@@ -515,6 +518,7 @@ const shard: CardShard = {
     _tokensGnomeToken,
     _tokensGolemToken,
     _tokensKnightTokenChivalricAlliance,
+    _tokensKorAllyToken,
     _tokensSalamanderWarriorToken,
   ],
 };

@@ -135,6 +135,7 @@ import _poolManaPrism from "../pool/mana-prism.js";
 import _poolMandibleJusticiar from "../pool/mandible-justiciar.js";
 import _poolMarchFromTheBlackGate from "../pool/march-from-the-black-gate.js";
 import _poolMarkOfFury from "../pool/mark-of-fury.js";
+import _poolMassiveRaid from "../pool/massive-raid.js";
 import _poolMastersCall from "../pool/masters-call.js";
 import _poolMercilessEviction from "../pool/merciless-eviction.js";
 import _poolMesaUnicorn from "../pool/mesa-unicorn.js";
@@ -225,6 +226,7 @@ import _poolThopterAssembly from "../pool/thopter-assembly.js";
 import _poolThorin from "../pool/thorin.js";
 import _poolTidalKraken from "../pool/tidal-kraken.js";
 import _poolTigraFelineFury from "../pool/tigra-feline-fury.js";
+import _poolToriDavenantFuryRider from "../pool/tori-davenant-fury-rider.js";
 import _poolTrainedCaracal from "../pool/trained-caracal.js";
 import _poolTraumaticCritique from "../pool/traumatic-critique.js";
 import _poolTrokinHighGuard from "../pool/trokin-high-guard.js";
@@ -399,6 +401,7 @@ const shard: CardShard = {
     _poolMandibleJusticiar,
     _poolMarchFromTheBlackGate,
     _poolMarkOfFury,
+    _poolMassiveRaid,
     _poolMastersCall,
     _poolMercilessEviction,
     _poolMesaUnicorn,
@@ -489,6 +492,7 @@ const shard: CardShard = {
     _poolThorin,
     _poolTidalKraken,
     _poolTigraFelineFury,
+    _poolToriDavenantFuryRider,
     _poolTrainedCaracal,
     _poolTraumaticCritique,
     _poolTrokinHighGuard,

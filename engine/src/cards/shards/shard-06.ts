@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbjure from "../pool/abjure.js";
 import _poolAdelineResplendentCathar from "../pool/adeline-resplendent-cathar.js";
 import _poolAetherize from "../pool/aetherize.js";
 import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
@@ -57,6 +58,7 @@ import _poolCopyArtifact from "../pool/copy-artifact.js";
 import _poolCoretapper from "../pool/coretapper.js";
 import _poolCorruptCourtOfficial from "../pool/corrupt-court-official.js";
 import _poolCrackTheEarth from "../pool/crack-the-earth.js";
+import _poolCrumbAndGetIt from "../pool/crumb-and-get-it.js";
 import _poolCrypticCommand from "../pool/cryptic-command.js";
 import _poolCuriosity from "../pool/curiosity.js";
 import _poolDaggerclawImp from "../pool/daggerclaw-imp.js";
@@ -146,6 +148,7 @@ import _poolNaturalConnection from "../pool/natural-connection.js";
 import _poolNeedlepeakSpider from "../pool/needlepeak-spider.js";
 import _poolNightshadeDryad from "../pool/nightshade-dryad.js";
 import _poolNightveilSprite from "../pool/nightveil-sprite.js";
+import _poolNoblesPurse from "../pool/nobles-purse.js";
 import _poolObeliskOfAlara from "../pool/obelisk-of-alara.js";
 import _poolObeliskOfBant from "../pool/obelisk-of-bant.js";
 import _poolObsessiveStitcher from "../pool/obsessive-stitcher.js";
@@ -181,6 +184,7 @@ import _poolRiptideCrab from "../pool/riptide-crab.js";
 import _poolRosaResoluteWhiteMage from "../pool/rosa-resolute-white-mage.js";
 import _poolRousingRead from "../pool/rousing-read.js";
 import _poolRowanTreefolk from "../pool/rowan-treefolk.js";
+import _poolRuinsOfOranRief from "../pool/ruins-of-oran-rief.js";
 import _poolSandbarMerfolk from "../pool/sandbar-merfolk.js";
 import _poolSavageGorilla from "../pool/savage-gorilla.js";
 import _poolSawInHalf from "../pool/saw-in-half.js";
@@ -244,6 +248,7 @@ import _poolUnrulyMob from "../pool/unruly-mob.js";
 import _poolUpdraftElemental from "../pool/updraft-elemental.js";
 import _poolVenomLethalProtector from "../pool/venom-lethal-protector.js";
 import _poolVenomcrawler from "../pool/venomcrawler.js";
+import _poolVerdantEmbrace from "../pool/verdant-embrace.js";
 import _poolVizierOfTumblingSands from "../pool/vizier-of-tumbling-sands.js";
 import _poolVolcanicHammer from "../pool/volcanic-hammer.js";
 import _poolWallOfBlood from "../pool/wall-of-blood.js";
@@ -271,10 +276,12 @@ import _tokensInsectTokenCanoptekScarabSwarm from "../tokens/insect-token-canopt
 import _tokensJunkToken from "../tokens/junk-token.js";
 import _tokensLanderToken from "../tokens/lander-token.js";
 import _tokensMeteoriteToken from "../tokens/meteorite-token.js";
+import _tokensPowerstoneToken from "../tokens/powerstone-token.js";
 import _tokensWizardTokenGuff from "../tokens/wizard-token-guff.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbjure,
     _poolAdelineResplendentCathar,
     _poolAetherize,
     _poolAlabasterHostSanctifier,
@@ -329,6 +336,7 @@ const shard: CardShard = {
     _poolCoretapper,
     _poolCorruptCourtOfficial,
     _poolCrackTheEarth,
+    _poolCrumbAndGetIt,
     _poolCrypticCommand,
     _poolCuriosity,
     _poolDaggerclawImp,
@@ -418,6 +426,7 @@ const shard: CardShard = {
     _poolNeedlepeakSpider,
     _poolNightshadeDryad,
     _poolNightveilSprite,
+    _poolNoblesPurse,
     _poolObeliskOfAlara,
     _poolObeliskOfBant,
     _poolObsessiveStitcher,
@@ -453,6 +462,7 @@ const shard: CardShard = {
     _poolRosaResoluteWhiteMage,
     _poolRousingRead,
     _poolRowanTreefolk,
+    _poolRuinsOfOranRief,
     _poolSandbarMerfolk,
     _poolSavageGorilla,
     _poolSawInHalf,
@@ -516,6 +526,7 @@ const shard: CardShard = {
     _poolUpdraftElemental,
     _poolVenomLethalProtector,
     _poolVenomcrawler,
+    _poolVerdantEmbrace,
     _poolVizierOfTumblingSands,
     _poolVolcanicHammer,
     _poolWallOfBlood,
@@ -545,6 +556,7 @@ const shard: CardShard = {
     _tokensJunkToken,
     _tokensLanderToken,
     _tokensMeteoriteToken,
+    _tokensPowerstoneToken,
     _tokensWizardTokenGuff,
   ],
 };

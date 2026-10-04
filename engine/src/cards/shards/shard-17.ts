@@ -104,6 +104,7 @@ import _poolHangedExecutioner from "../pool/hanged-executioner.js";
 import _poolHashepOasis from "../pool/hashep-oasis.js";
 import _poolHeadlessHorseman from "../pool/headless-horseman.js";
 import _poolHedgeMaze from "../pool/hedge-maze.js";
+import _poolHeraldOfKozilek from "../pool/herald-of-kozilek.js";
 import _poolHondenOfNightsReach from "../pool/honden-of-nights-reach.js";
 import _poolHornedTurtle from "../pool/horned-turtle.js";
 import _poolHornetNest from "../pool/hornet-nest.js";
@@ -136,6 +137,7 @@ import _poolMagmaJet from "../pool/magma-jet.js";
 import _poolMagmaOpus from "../pool/magma-opus.js";
 import _poolManamorphose from "../pool/manamorphose.js";
 import _poolMasterworkOfIngenuity from "../pool/masterwork-of-ingenuity.js";
+import _poolMilitaryIntelligence from "../pool/military-intelligence.js";
 import _poolMinnWilyIllusionist from "../pool/minn-wily-illusionist.js";
 import _poolMistgatePathway from "../pool/mistgate-pathway.js";
 import _poolMollyHayesRunaway from "../pool/molly-hayes-runaway.js";
@@ -372,6 +374,7 @@ const shard: CardShard = {
     _poolHashepOasis,
     _poolHeadlessHorseman,
     _poolHedgeMaze,
+    _poolHeraldOfKozilek,
     _poolHondenOfNightsReach,
     _poolHornedTurtle,
     _poolHornetNest,
@@ -404,6 +407,7 @@ const shard: CardShard = {
     _poolMagmaOpus,
     _poolManamorphose,
     _poolMasterworkOfIngenuity,
+    _poolMilitaryIntelligence,
     _poolMinnWilyIllusionist,
     _poolMistgatePathway,
     _poolMollyHayesRunaway,

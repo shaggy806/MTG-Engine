@@ -15,6 +15,7 @@ import _poolAronBenaliasRuin from "../pool/aron-benalias-ruin.js";
 import _poolArrogantVampire from "../pool/arrogant-vampire.js";
 import _poolAvenWindMage from "../pool/aven-wind-mage.js";
 import _poolAzlaskTheSwellingScourge from "../pool/azlask-the-swelling-scourge.js";
+import _poolAzoriusCharm from "../pool/azorius-charm.js";
 import _poolBalaGedSanctuary from "../pool/bala-ged-sanctuary.js";
 import _poolBallistaSquad from "../pool/ballista-squad.js";
 import _poolBaneOfProgress from "../pool/bane-of-progress.js";
@@ -22,6 +23,7 @@ import _poolBeastmasterAscension from "../pool/beastmaster-ascension.js";
 import _poolBeseechTheQueen from "../pool/beseech-the-queen.js";
 import _poolBlackMarketConnections from "../pool/black-market-connections.js";
 import _poolBloatedContaminator from "../pool/bloated-contaminator.js";
+import _poolBondOfDiscipline from "../pool/bond-of-discipline.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
 import _poolBrawnAmadeusCho from "../pool/brawn-amadeus-cho.js";
 import _poolBronzeWalrus from "../pool/bronze-walrus.js";
@@ -142,6 +144,7 @@ import _poolMonoistSentry from "../pool/monoist-sentry.js";
 import _poolMorphicPool from "../pool/morphic-pool.js";
 import _poolMsBumbleflower from "../pool/ms-bumbleflower.js";
 import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
+import _poolMuscleSliver from "../pool/muscle-sliver.js";
 import _poolMyrEnforcer from "../pool/myr-enforcer.js";
 import _poolMyrRetriever from "../pool/myr-retriever.js";
 import _poolNabanDeanOfIteration from "../pool/naban-dean-of-iteration.js";
@@ -162,6 +165,7 @@ import _poolPheresBandCentaurs from "../pool/pheres-band-centaurs.js";
 import _poolPhyrexianHulk from "../pool/phyrexian-hulk.js";
 import _poolPhyrexianWalker from "../pool/phyrexian-walker.js";
 import _poolPiperOfTheSwarm from "../pool/piper-of-the-swarm.js";
+import _poolPiperWrightPublickReporter from "../pool/piper-wright-publick-reporter.js";
 import _poolPotionOfHealing from "../pool/potion-of-healing.js";
 import _poolPrimalWellspring from "../pool/primal-wellspring.js";
 import _poolPromisingVein from "../pool/promising-vein.js";
@@ -265,6 +269,7 @@ const shard: CardShard = {
     _poolArrogantVampire,
     _poolAvenWindMage,
     _poolAzlaskTheSwellingScourge,
+    _poolAzoriusCharm,
     _poolBalaGedSanctuary,
     _poolBallistaSquad,
     _poolBaneOfProgress,
@@ -272,6 +277,7 @@ const shard: CardShard = {
     _poolBeseechTheQueen,
     _poolBlackMarketConnections,
     _poolBloatedContaminator,
+    _poolBondOfDiscipline,
     _poolBoonOfEmrakul,
     _poolBrawnAmadeusCho,
     _poolBronzeWalrus,
@@ -392,6 +398,7 @@ const shard: CardShard = {
     _poolMorphicPool,
     _poolMsBumbleflower,
     _poolMurmuringPhantasm,
+    _poolMuscleSliver,
     _poolMyrEnforcer,
     _poolMyrRetriever,
     _poolNabanDeanOfIteration,
@@ -412,6 +419,7 @@ const shard: CardShard = {
     _poolPhyrexianHulk,
     _poolPhyrexianWalker,
     _poolPiperOfTheSwarm,
+    _poolPiperWrightPublickReporter,
     _poolPotionOfHealing,
     _poolPrimalWellspring,
     _poolPromisingVein,

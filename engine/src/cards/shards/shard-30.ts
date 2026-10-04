@@ -37,6 +37,7 @@ import _poolBorderGuard from "../pool/border-guard.js";
 import _poolBotanicalPlaza from "../pool/botanical-plaza.js";
 import _poolBraveKinDuo from "../pool/brave-kin-duo.js";
 import _poolBringBack from "../pool/bring-back.js";
+import _poolBrokersCharm from "../pool/brokers-charm.js";
 import _poolBurdenedAerialist from "../pool/burdened-aerialist.js";
 import _poolBurrogBanemaker from "../pool/burrog-banemaker.js";
 import _poolCacklingCounterpart from "../pool/cackling-counterpart.js";
@@ -167,6 +168,7 @@ import _poolMyrMoonvessel from "../pool/myr-moonvessel.js";
 import _poolNayaBattlemage from "../pool/naya-battlemage.js";
 import _poolNimbleInnovator from "../pool/nimble-innovator.js";
 import _poolNimbleThopterist from "../pool/nimble-thopterist.js";
+import _poolOboroBreezecaller from "../pool/oboro-breezecaller.js";
 import _poolOfferImmortality from "../pool/offer-immortality.js";
 import _poolOmenOfTheDead from "../pool/omen-of-the-dead.js";
 import _poolOnduInversion from "../pool/ondu-inversion.js";
@@ -301,6 +303,7 @@ const shard: CardShard = {
     _poolBotanicalPlaza,
     _poolBraveKinDuo,
     _poolBringBack,
+    _poolBrokersCharm,
     _poolBurdenedAerialist,
     _poolBurrogBanemaker,
     _poolCacklingCounterpart,
@@ -431,6 +434,7 @@ const shard: CardShard = {
     _poolNayaBattlemage,
     _poolNimbleInnovator,
     _poolNimbleThopterist,
+    _poolOboroBreezecaller,
     _poolOfferImmortality,
     _poolOmenOfTheDead,
     _poolOnduInversion,

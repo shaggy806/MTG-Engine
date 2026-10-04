@@ -155,6 +155,7 @@ import _poolMedusaInhumanQueen from "../pool/medusa-inhuman-queen.js";
 import _poolMemoryDeluge from "../pool/memory-deluge.js";
 import _poolMerchantScroll from "../pool/merchant-scroll.js";
 import _poolMerfolkLooter from "../pool/merfolk-looter.js";
+import _poolMerfolkMistbinder from "../pool/merfolk-mistbinder.js";
 import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
 import _poolMidnightAssassin from "../pool/midnight-assassin.js";
 import _poolMirranSpy from "../pool/mirran-spy.js";
@@ -194,6 +195,7 @@ import _poolSarinthSteelseeker from "../pool/sarinth-steelseeker.js";
 import _poolSazacapsBrew from "../pool/sazacaps-brew.js";
 import _poolScavengerRegent from "../pool/scavenger-regent.js";
 import _poolScourgemark from "../pool/scourgemark.js";
+import _poolScrapyardRecombiner from "../pool/scrapyard-recombiner.js";
 import _poolScurryOfSquirrels from "../pool/scurry-of-squirrels.js";
 import _poolSerpentOfYawningDepths from "../pool/serpent-of-yawning-depths.js";
 import _poolShatter from "../pool/shatter.js";
@@ -242,6 +244,7 @@ import _poolVinereapMentor from "../pool/vinereap-mentor.js";
 import _poolVoldarenEstate from "../pool/voldaren-estate.js";
 import _poolWakestoneGargoyle from "../pool/wakestone-gargoyle.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
+import _poolWargRider from "../pool/warg-rider.js";
 import _poolWeakness from "../pool/weakness.js";
 import _poolWhirlerRogue from "../pool/whirler-rogue.js";
 import _poolWhisperingWizard from "../pool/whispering-wizard.js";
@@ -419,6 +422,7 @@ const shard: CardShard = {
     _poolMemoryDeluge,
     _poolMerchantScroll,
     _poolMerfolkLooter,
+    _poolMerfolkMistbinder,
     _poolMerrowWitsniper,
     _poolMidnightAssassin,
     _poolMirranSpy,
@@ -458,6 +462,7 @@ const shard: CardShard = {
     _poolSazacapsBrew,
     _poolScavengerRegent,
     _poolScourgemark,
+    _poolScrapyardRecombiner,
     _poolScurryOfSquirrels,
     _poolSerpentOfYawningDepths,
     _poolShatter,
@@ -506,6 +511,7 @@ const shard: CardShard = {
     _poolVoldarenEstate,
     _poolWakestoneGargoyle,
     _poolWalkingBallista,
+    _poolWargRider,
     _poolWeakness,
     _poolWhirlerRogue,
     _poolWhisperingWizard,

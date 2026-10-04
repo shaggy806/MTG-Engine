@@ -132,6 +132,7 @@ import _poolLordOfTheAccursed from "../pool/lord-of-the-accursed.js";
 import _poolLoseHope from "../pool/lose-hope.js";
 import _poolMarangRiverRegent from "../pool/marang-river-regent.js";
 import _poolMaskOfAvacyn from "../pool/mask-of-avacyn.js";
+import _poolMassManipulation from "../pool/mass-manipulation.js";
 import _poolMazirekKraulDeathPriest from "../pool/mazirek-kraul-death-priest.js";
 import _poolMindscourDragon from "../pool/mindscour-dragon.js";
 import _poolMinotaurWarrior from "../pool/minotaur-warrior.js";
@@ -414,6 +415,7 @@ const shard: CardShard = {
     _poolLoseHope,
     _poolMarangRiverRegent,
     _poolMaskOfAvacyn,
+    _poolMassManipulation,
     _poolMazirekKraulDeathPriest,
     _poolMindscourDragon,
     _poolMinotaurWarrior,

@@ -43,6 +43,7 @@ import _poolCaptainNghathrod from "../pool/captain-nghathrod.js";
 import _poolCharmingPrince from "../pool/charming-prince.js";
 import _poolChulane from "../pool/chulane.js";
 import _poolCitanulDruid from "../pool/citanul-druid.js";
+import _poolClarionConqueror from "../pool/clarion-conqueror.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
 import _poolConsumingAberration from "../pool/consuming-aberration.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
@@ -169,6 +170,7 @@ import _poolRallyThePeasants from "../pool/rally-the-peasants.js";
 import _poolRayOfRevelation from "../pool/ray-of-revelation.js";
 import _poolReaperOfTheWilds from "../pool/reaper-of-the-wilds.js";
 import _poolRebuffTheWicked from "../pool/rebuff-the-wicked.js";
+import _poolRecklessCharge from "../pool/reckless-charge.js";
 import _poolRecklessFireweaver from "../pool/reckless-fireweaver.js";
 import _poolRestorationGearsmith from "../pool/restoration-gearsmith.js";
 import _poolRidgetopRaptor from "../pool/ridgetop-raptor.js";
@@ -204,6 +206,7 @@ import _poolSplatterGoblin from "../pool/splatter-goblin.js";
 import _poolSpymastersVault from "../pool/spymasters-vault.js";
 import _poolStaffOfEdenVaultsKey from "../pool/staff-of-eden-vaults-key.js";
 import _poolStaffOfZegon from "../pool/staff-of-zegon.js";
+import _poolStealEnchantment from "../pool/steal-enchantment.js";
 import _poolStonewoodInvoker from "../pool/stonewood-invoker.js";
 import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
 import _poolStormsplitter from "../pool/stormsplitter.js";
@@ -308,6 +311,7 @@ const shard: CardShard = {
     _poolCharmingPrince,
     _poolChulane,
     _poolCitanulDruid,
+    _poolClarionConqueror,
     _poolClingingDarkness,
     _poolConsumingAberration,
     _poolCorruptedConviction,
@@ -434,6 +438,7 @@ const shard: CardShard = {
     _poolRayOfRevelation,
     _poolReaperOfTheWilds,
     _poolRebuffTheWicked,
+    _poolRecklessCharge,
     _poolRecklessFireweaver,
     _poolRestorationGearsmith,
     _poolRidgetopRaptor,
@@ -469,6 +474,7 @@ const shard: CardShard = {
     _poolSpymastersVault,
     _poolStaffOfEdenVaultsKey,
     _poolStaffOfZegon,
+    _poolStealEnchantment,
     _poolStonewoodInvoker,
     _poolStormcarvedCoast,
     _poolStormsplitter,

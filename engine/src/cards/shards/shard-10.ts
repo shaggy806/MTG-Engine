@@ -128,6 +128,7 @@ import _poolKalakscionHungerTyrant from "../pool/kalakscion-hunger-tyrant.js";
 import _poolKarnLegacyReforged from "../pool/karn-legacy-reforged.js";
 import _poolKioraBehemothBeckoner from "../pool/kiora-behemoth-beckoner.js";
 import _poolKissOfDeath from "../pool/kiss-of-death.js";
+import _poolKnightsCharge from "../pool/knights-charge.js";
 import _poolKratosGodOfWar from "../pool/kratos-god-of-war.js";
 import _poolKraumLudevicsOpus from "../pool/kraum-ludevics-opus.js";
 import _poolLadyOrca from "../pool/lady-orca.js";
@@ -208,6 +209,7 @@ import _poolScavengerDrake from "../pool/scavenger-drake.js";
 import _poolScrapshooter from "../pool/scrapshooter.js";
 import _poolSeaGateBanneret from "../pool/sea-gate-banneret.js";
 import _poolSearchForAzcanta from "../pool/search-for-azcanta.js";
+import _poolSeeTheTruth from "../pool/see-the-truth.js";
 import _poolSepharaSkysBlade from "../pool/sephara-skys-blade.js";
 import _poolShineshadowSnarl from "../pool/shineshadow-snarl.js";
 import _poolSiegeRhino from "../pool/siege-rhino.js";
@@ -276,6 +278,7 @@ import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
 import _poolWarrenInstigator from "../pool/warren-instigator.js";
 import _poolWelcomingVampire from "../pool/welcoming-vampire.js";
+import _poolWhisperBloodLiturgist from "../pool/whisper-blood-liturgist.js";
 import _poolWildwoodRebirth from "../pool/wildwood-rebirth.js";
 import _poolWillowElf from "../pool/willow-elf.js";
 import _poolWindDancer from "../pool/wind-dancer.js";
@@ -419,6 +422,7 @@ const shard: CardShard = {
     _poolKarnLegacyReforged,
     _poolKioraBehemothBeckoner,
     _poolKissOfDeath,
+    _poolKnightsCharge,
     _poolKratosGodOfWar,
     _poolKraumLudevicsOpus,
     _poolLadyOrca,
@@ -499,6 +503,7 @@ const shard: CardShard = {
     _poolScrapshooter,
     _poolSeaGateBanneret,
     _poolSearchForAzcanta,
+    _poolSeeTheTruth,
     _poolSepharaSkysBlade,
     _poolShineshadowSnarl,
     _poolSiegeRhino,
@@ -567,6 +572,7 @@ const shard: CardShard = {
     _poolWanderingMusicians,
     _poolWarrenInstigator,
     _poolWelcomingVampire,
+    _poolWhisperBloodLiturgist,
     _poolWildwoodRebirth,
     _poolWillowElf,
     _poolWindDancer,

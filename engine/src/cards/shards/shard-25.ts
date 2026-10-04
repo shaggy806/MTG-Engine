@@ -17,6 +17,7 @@ import _poolAssaultZeppelid from "../pool/assault-zeppelid.js";
 import _poolBaSingSe from "../pool/ba-sing-se.js";
 import _poolBastionOfRemembrance from "../pool/bastion-of-remembrance.js";
 import _poolBastionProtector from "../pool/bastion-protector.js";
+import _poolBearDown from "../pool/bear-down.js";
 import _poolBendersWaterskin from "../pool/benders-waterskin.js";
 import _poolBerserkersOnslaught from "../pool/berserkers-onslaught.js";
 import _poolBindingMummy from "../pool/binding-mummy.js";
@@ -39,6 +40,7 @@ import _poolChamberedNautilus from "../pool/chambered-nautilus.js";
 import _poolChampionOfArashin from "../pool/champion-of-arashin.js";
 import _poolChiefOfTheEdge from "../pool/chief-of-the-edge.js";
 import _poolCinderGlade from "../pool/cinder-glade.js";
+import _poolCindervines from "../pool/cindervines.js";
 import _poolCliffhavenVampire from "../pool/cliffhaven-vampire.js";
 import _poolCloudCrusader from "../pool/cloud-crusader.js";
 import _poolCombatCelebrant from "../pool/combat-celebrant.js";
@@ -60,6 +62,7 @@ import _poolDonAndresTheRenegade from "../pool/don-andres-the-renegade.js";
 import _poolDovinsVeto from "../pool/dovins-veto.js";
 import _poolDraconicDisciple from "../pool/draconic-disciple.js";
 import _poolDragUnder from "../pool/drag-under.js";
+import _poolDragonologist from "../pool/dragonologist.js";
 import _poolDrakeSkullCameo from "../pool/drake-skull-cameo.js";
 import _poolDreadbore from "../pool/dreadbore.js";
 import _poolDromarsCharm from "../pool/dromars-charm.js";
@@ -173,6 +176,7 @@ import _poolQuilledWolf from "../pool/quilled-wolf.js";
 import _poolRakdosLocket from "../pool/rakdos-locket.js";
 import _poolRampartArchitect from "../pool/rampart-architect.js";
 import _poolRaphaelToughTurtle from "../pool/raphael-tough-turtle.js";
+import _poolRaucousAudience from "../pool/raucous-audience.js";
 import _poolRebelliousStrike from "../pool/rebellious-strike.js";
 import _poolRecklessBarbarian from "../pool/reckless-barbarian.js";
 import _poolReflectionsOfLittjara from "../pool/reflections-of-littjara.js";
@@ -193,6 +197,7 @@ import _poolRuinousIntrusion from "../pool/ruinous-intrusion.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
 import _poolSandScout from "../pool/sand-scout.js";
 import _poolSandsower from "../pool/sandsower.js";
+import _poolSarkhansUnsealing from "../pool/sarkhans-unsealing.js";
 import _poolScourgeOfFleets from "../pool/scourge-of-fleets.js";
 import _poolScuteSwarm from "../pool/scute-swarm.js";
 import _poolSeasonOfRenewal from "../pool/season-of-renewal.js";
@@ -286,6 +291,7 @@ const shard: CardShard = {
     _poolBaSingSe,
     _poolBastionOfRemembrance,
     _poolBastionProtector,
+    _poolBearDown,
     _poolBendersWaterskin,
     _poolBerserkersOnslaught,
     _poolBindingMummy,
@@ -308,6 +314,7 @@ const shard: CardShard = {
     _poolChampionOfArashin,
     _poolChiefOfTheEdge,
     _poolCinderGlade,
+    _poolCindervines,
     _poolCliffhavenVampire,
     _poolCloudCrusader,
     _poolCombatCelebrant,
@@ -329,6 +336,7 @@ const shard: CardShard = {
     _poolDovinsVeto,
     _poolDraconicDisciple,
     _poolDragUnder,
+    _poolDragonologist,
     _poolDrakeSkullCameo,
     _poolDreadbore,
     _poolDromarsCharm,
@@ -442,6 +450,7 @@ const shard: CardShard = {
     _poolRakdosLocket,
     _poolRampartArchitect,
     _poolRaphaelToughTurtle,
+    _poolRaucousAudience,
     _poolRebelliousStrike,
     _poolRecklessBarbarian,
     _poolReflectionsOfLittjara,
@@ -462,6 +471,7 @@ const shard: CardShard = {
     _poolRumblingBaloth,
     _poolSandScout,
     _poolSandsower,
+    _poolSarkhansUnsealing,
     _poolScourgeOfFleets,
     _poolScuteSwarm,
     _poolSeasonOfRenewal,

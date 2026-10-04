@@ -139,6 +139,7 @@ import _poolLumberknot from "../pool/lumberknot.js";
 import _poolMarbleGargoyle from "../pool/marble-gargoyle.js";
 import _poolMarchOfTheMultitudes from "../pool/march-of-the-multitudes.js";
 import _poolMausoleumGuard from "../pool/mausoleum-guard.js";
+import _poolMeganticSliver from "../pool/megantic-sliver.js";
 import _poolMemoryDrain from "../pool/memory-drain.js";
 import _poolMentorOfTheMeek from "../pool/mentor-of-the-meek.js";
 import _poolMeteorSword from "../pool/meteor-sword.js";
@@ -154,6 +155,7 @@ import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNibelheimAflame from "../pool/nibelheim-aflame.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
 import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
+import _poolOakhameAdversary from "../pool/oakhame-adversary.js";
 import _poolObscuraStorefront from "../pool/obscura-storefront.js";
 import _poolOgreSlumlord from "../pool/ogre-slumlord.js";
 import _poolOgreWarrior from "../pool/ogre-warrior.js";
@@ -194,6 +196,7 @@ import _poolSinkhole from "../pool/sinkhole.js";
 import _poolSkinrender from "../pool/skinrender.js";
 import _poolSkullFracture from "../pool/skull-fracture.js";
 import _poolSmashToDust from "../pool/smash-to-dust.js";
+import _poolSojournersCompanion from "../pool/sojourners-companion.js";
 import _poolSokenzanBruiser from "../pool/sokenzan-bruiser.js";
 import _poolSoothsayerAdept from "../pool/soothsayer-adept.js";
 import _poolStaggeringInsight from "../pool/staggering-insight.js";
@@ -400,6 +403,7 @@ const shard: CardShard = {
     _poolMarbleGargoyle,
     _poolMarchOfTheMultitudes,
     _poolMausoleumGuard,
+    _poolMeganticSliver,
     _poolMemoryDrain,
     _poolMentorOfTheMeek,
     _poolMeteorSword,
@@ -415,6 +419,7 @@ const shard: CardShard = {
     _poolNibelheimAflame,
     _poolNicolBolasTheRavager,
     _poolNinjaOfTheHand,
+    _poolOakhameAdversary,
     _poolObscuraStorefront,
     _poolOgreSlumlord,
     _poolOgreWarrior,
@@ -455,6 +460,7 @@ const shard: CardShard = {
     _poolSkinrender,
     _poolSkullFracture,
     _poolSmashToDust,
+    _poolSojournersCompanion,
     _poolSokenzanBruiser,
     _poolSoothsayerAdept,
     _poolStaggeringInsight,
