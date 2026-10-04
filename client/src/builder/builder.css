@@ -1,0 +1,325 @@
+/* The scenario builder's drawer (a dev build only — BuilderPanel.tsx). It
+   sits over the right edge of the table rather than squeezing it, so the
+   board is drawn exactly as play will draw it; hide it to see what's under. */
+
+.builder-panel {
+  position: fixed;
+  top: clamp(36px, 5vh, 48px);
+  right: 0;
+  /* Above the band the table keeps for its Pass row and decision banner,
+     which stay usable — and on top — while the drawer is open. */
+  bottom: var(--bottom-band, clamp(52px, 6vh, 72px));
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  width: clamp(300px, 26vw, 440px);
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-bottom-left-radius: 8px;
+  box-shadow: -8px 0 24px rgb(0 0 0 / 0.35);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.builder-tab {
+  position: fixed;
+  top: clamp(44px, 7vh, 64px);
+  right: 0;
+  z-index: 55;
+  padding: 6px 10px;
+  border-radius: 8px 0 0 8px;
+  border: 1px dashed var(--accent);
+  background: var(--panel);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.bp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.bp-head h2 {
+  margin: 0;
+  font-size: 15px;
+  flex: 1;
+}
+.bp-mode {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.bp-mode.is-build {
+  background: rgb(217 176 84 / 0.18);
+  color: var(--warn);
+}
+.bp-mode.is-play {
+  background: rgb(95 174 124 / 0.18);
+  color: var(--good);
+}
+
+.bp-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 12px 12px;
+}
+
+.bp-section {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.bp-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.bp-section-head h3 {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.bp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 6px 0;
+}
+.bp-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.bp-grow {
+  flex: 1;
+  min-width: 0;
+}
+.bp-dim {
+  color: var(--muted-dim);
+  font-size: 11px;
+}
+.bp-notice {
+  margin: 0;
+  padding: 6px 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.bp-notice.bad {
+  background: rgb(194 86 79 / 0.15);
+  color: var(--bad);
+}
+
+.bp-number {
+  width: 5.5em;
+}
+.bp-search {
+  width: 100%;
+  box-sizing: border-box;
+}
+.bp-kind {
+  width: 7em;
+}
+
+.bp-seg {
+  display: inline-flex;
+}
+.bp-seg button {
+  border-radius: 0;
+}
+.bp-seg button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.bp-seg button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.bp-seg button.on {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bp-seats {
+  width: 100%;
+  border-collapse: collapse;
+}
+.bp-seats th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--muted-dim);
+  padding: 2px 4px;
+}
+.bp-seats td {
+  padding: 2px 4px;
+}
+.bp-seat-name {
+  font-weight: 600;
+}
+.bp-you {
+  font-size: 11px;
+  color: var(--good);
+}
+
+.bp-small {
+  padding: 1px 7px;
+  font-size: 12px;
+}
+.bp-icon {
+  padding: 0 6px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+.bp-icon:hover {
+  color: var(--text);
+}
+.bp-danger {
+  color: var(--bad);
+}
+.bp-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d1418;
+  font-weight: 700;
+}
+
+.bp-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  max-height: 38vh;
+  overflow-y: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.bp-results button {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: var(--text);
+}
+.bp-results button:hover {
+  background: var(--accent-bg);
+}
+
+.bp-selected-name {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.bp-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bp-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: var(--panel-2);
+  border-radius: 6px;
+}
+
+.bp-seat-cards summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.bp-zone h4 {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.bp-zone ul,
+.bp-saved {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.bp-zone li,
+.bp-saved li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.bp-zone li.on .bp-card {
+  background: rgb(217 176 84 / 0.15);
+  color: var(--warn);
+}
+.bp-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--text);
+}
+.bp-card:hover {
+  background: var(--accent-bg);
+}
+.bp-flag {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.bp-import textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.bp-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* The floating preview over a card name, as the deck builder shows it (its
+   rules live in deck-builder.css, which the game page doesn't load). */
+.card-hover-preview {
+  position: fixed;
+  z-index: 60;
+  --card-w: 220px;
+  --ct-scale: calc(220 / 150);
+  width: var(--card-w);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.55));
+}
+.card-hover-preview .card-tile:disabled {
+  opacity: 1;
+}
+.card-hover-preview .ct-type {
+  white-space: normal;
+}

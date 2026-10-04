@@ -4558,6 +4558,17 @@ export class Game {
   }
 
   /**
+   * **Debug only** — move an existing object to `zone` the way any move goes
+   * (`moveObject`: replacements, an entering permanent's setup), announcing
+   * nothing, as {@link debugSpawn} doesn't. For laying out a board — the
+   * scenario builder moving a commander out of the command zone. Returns
+   * whether it moved.
+   */
+  debugMove(id: ObjectId, zone: ZoneType): boolean {
+    return this.moveObject(id, zone);
+  }
+
+  /**
    * **Debug only** — resolve a bare {@link EffectSpec} as though
    * `player` controlled a source that produced it, with no card, no stack and
    * no cost. The sibling of {@link debugSpawn} for the *effect* vocabulary:

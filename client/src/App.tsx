@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import type {
   Action,
@@ -668,7 +668,7 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
  * resolving a card name in the history popup.
  */
 function GameScreen({ game }: { readonly game: NetworkGame }) {
-  const { seat, opponents } = game
+  const { seat } = game
   const [showHistory, setShowHistory] = useState(false)
   const [showCapture, setShowCapture] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
@@ -696,6 +696,16 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   // animations rather than racing ahead of them.
   const shown = usePlayback(game.frame, bus, game.ackFrame)
   const view = shown.view
+  // The seats around me as the frame being *shown* has them, not the newest
+  // one: a scenario builder can change how many players there are between
+  // frames, and the table must only ask the board it's drawing about the
+  // players on it.
+  const opponents = useMemo(() => {
+    if (view === null || seat === null) return game.opponents
+    const order = view.turnOrder
+    const i = order.indexOf(seat)
+    return i < 0 ? game.opponents.filter((p) => order.includes(p)) : [...order.slice(i + 1), ...order.slice(0, i)]
+  }, [view, seat, game.opponents])
   const botPlaying = game.seats.find((s) => s.player === seat)?.isBot === true
   // My passing preferences live on this device and the server does the
   // passing: sent when the game screen opens and whenever they change.
@@ -857,9 +867,19 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       ) : null}
 
       {showCapture ? <CapturePanel game={game} onClose={() => setShowCapture(false)} /> : null}
+      {BuilderPanel !== null && game.builder !== null ? (
+        <Suspense fallback={null}>
+          <BuilderPanel game={game} />
+        </Suspense>
+      ) : null}
     </div>
   )
 }
+
+/** The scenario builder's drawer: a dev build only. In a production build
+ * `import.meta.env.DEV` is `false`, so the import is dead code and the
+ * builder isn't in the bundle at all. */
+const BuilderPanel = import.meta.env.DEV ? lazy(() => import('./builder/BuilderPanel.tsx')) : null
 
 interface TableProps {
   readonly view: PlayerView

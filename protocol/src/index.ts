@@ -23,6 +23,15 @@ export type {
 } from "./room.js";
 
 export type {
+  BuilderInfo,
+  ScenarioCard,
+  ScenarioSeat,
+  ScenarioSpec,
+  ScenarioStep,
+  ScenarioZone,
+} from "./scenario.js";
+
+export type {
   DeckFormatReport,
   ImportDeckLine,
   ImportedCardReport,

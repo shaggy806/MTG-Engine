@@ -11,9 +11,11 @@ the game in the browser. `dev-down` stops them.
 
 ## 1. Which server
 
-- **The real server** (default): `node dist/index.js --capture` — the same
-  server the site runs, plus capture, so the game's **Capture** button can
-  save a bot's blunder as a training scenario (`server/src/capture.ts`).
+- **The real server** (default): `node dist/index.js --capture --builder` —
+  the same server the site runs, plus capture, so the game's **Capture** button
+  can save a bot's blunder as a training scenario (`server/src/capture.ts`),
+  and the scenario builder (the landing page's dev-only "Scenario builder").
+  dev-rooms has both on too.
 - **dev-rooms**, when the user wants a prepared board ("dev rooms", "test
   board", a room code like `FOURP` or `HORDE`, or checking a client change
   against a known position): `node scripts/dev-rooms.mjs` — the same server
@@ -58,7 +60,7 @@ Each as its own Bash call with `run_in_background: true` (logs to `$TEMP` so
 they can be read later):
 
 ```bash
-cd "$(git rev-parse --show-toplevel)/server" && node dist/index.js --capture > "$TEMP/mtg-server.log" 2>&1
+cd "$(git rev-parse --show-toplevel)/server" && node dist/index.js --capture --builder > "$TEMP/mtg-server.log" 2>&1
 ```
 (or, for dev-rooms: `... && node scripts/dev-rooms.mjs > "$TEMP/mtg-server.log" 2>&1`)
 

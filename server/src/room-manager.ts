@@ -5,6 +5,8 @@ import { PendingRoom } from "./pending-room.js";
 import type { PendingGameConfig } from "./pending-room.js";
 import { Room } from "./room.js";
 import type { CaptureConfig } from "./capture.js";
+import { BuilderSession } from "./builder.js";
+import { HostRole } from "./host.js";
 
 // No 0/O/1/I — avoids characters easily confused when a code is read aloud.
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -20,6 +22,9 @@ function randomRoomId(): string {
 
 export class RoomManager {
   private readonly rooms = new Map<string, Room | PendingRoom>();
+  /** Scenario builder rooms (`builder.ts`), by code — each also in `rooms`,
+   * under whichever `Room` it's serving right now. */
+  private readonly builders = new Map<string, BuilderSession>();
   private created = 0;
   /** Handed to every room this manager promotes — see `RoomOptions.capture`. */
   private readonly capture: CaptureConfig | undefined;
@@ -99,6 +104,26 @@ export class RoomManager {
     return this.rooms.get(roomId);
   }
 
+  /** Opens a scenario builder room on an empty board. A server started with
+   * `--builder` only — the transport checks. */
+  createBuilder(hostToken: string): BuilderSession {
+    let id = randomRoomId();
+    while (this.rooms.has(id)) id = randomRoomId();
+    const session = new BuilderSession(id, new HostRole(hostToken), {
+      install: (room) => this.rooms.set(id, room),
+      onUpdate: (room) => this.onRoomUpdate(room),
+      ...(this.capture !== undefined ? { capture: this.capture } : {}),
+    });
+    this.builders.set(id, session);
+    this.created += 1;
+    return session;
+  }
+
+  /** The scenario builder serving `roomId`, if it is one. */
+  builder(roomId: string): BuilderSession | undefined {
+    return this.builders.get(roomId);
+  }
+
   /** Deletes rooms with no connected seats that have been idle past
    * `maxIdleMs`, so an abandoned or never-joined room doesn't sit in memory
    * for the life of the process. Returns how many were reaped. */
@@ -108,6 +133,7 @@ export class RoomManager {
       if (room.connectedSeats().length === 0 && room.idleMs() > maxIdleMs) {
         if (room instanceof Room) room.dispose();
         this.rooms.delete(id);
+        this.builders.delete(id);
         reaped += 1;
       }
     }

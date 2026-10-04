@@ -44,7 +44,7 @@ import type {
   Step,
 } from "engine";
 import { HostRole } from "./host.js";
-import type { BotSpeed, PassSettings, SeatStatus, ServerMessage, WireDeck } from "protocol";
+import type { BotSpeed, BuilderInfo, PassSettings, SeatStatus, ServerMessage, WireDeck } from "protocol";
 
 export interface Connection {
   readonly send: (message: ServerMessage) => void;
@@ -256,6 +256,25 @@ export interface RoomOptions {
    * scenario (`capture.ts`). A developer's server only — omitted, as on the
    * public site, nothing is kept. */
   readonly capture?: CaptureConfig;
+  /**
+   * A scenario builder's board while it's being built (`builder.ts`): nobody
+   * acts — no bot moves, no auto-pass, no dispatch — and every seat is sent
+   * no legal actions. Each `settle()` only publishes.
+   */
+  readonly frozen?: boolean;
+  /** The frame number to count on from: a scenario builder rebuilds its room
+   * on every edit, and a client drops a frame numbered no higher than the
+   * last it saw. */
+  readonly startSeq?: number;
+}
+
+/** A human seat's claim, as `Room.humanClaims` hands it to a room built to
+ * replace this one. */
+export interface SeatClaim {
+  readonly player: PlayerId;
+  readonly clientToken: string;
+  readonly connection: Connection | null;
+  readonly displayName: string | null;
 }
 
 /**
@@ -336,10 +355,17 @@ export class Room {
   /** Recent bot decisions, when this server captures them — see
    * `RoomOptions.capture`. */
   readonly captures: CaptureLog | null;
+  /** See `RoomOptions.frozen`. */
+  readonly frozen: boolean;
+  /** What a scenario builder adds to each `state` push (`builder.ts`), or
+   * `null` in any other room. */
+  builder: BuilderInfo | null = null;
 
   constructor(id: string, game: Game, options: RoomOptions = {}) {
     this.id = id;
     this.game = game;
+    this.frozen = options.frozen === true;
+    this.seq = options.startSeq ?? 0;
     this.host = options.host ?? new HostRole(null);
     this.botSpeed = options.botSpeed ?? "normal";
     this.onUpdate = options.onUpdate ?? (() => {});
@@ -530,6 +556,47 @@ export class Room {
     return this.seats.find((s) => s.connection === connection)?.player ?? null;
   }
 
+  /** Every seat a human has claimed, for re-seating them in a room built to
+   * replace this one (a scenario builder's rebuild). */
+  humanClaims(): SeatClaim[] {
+    const out: SeatClaim[] = [];
+    for (const s of this.seats) {
+      if (s.clientToken === null) continue;
+      out.push({ player: s.player, clientToken: s.clientToken, connection: s.connection, displayName: s.displayName });
+    }
+    return out;
+  }
+
+  /**
+   * Moves `connection` from its seat to `player`'s, leaving the old seat
+   * unclaimed — a scenario builder's developer acting for every side in
+   * turn. Refused for a seat a bot plays or someone else holds.
+   */
+  switchSeat(connection: Connection, player: PlayerId): void {
+    const from = this.seats.find((s) => s.connection === connection);
+    if (from === undefined) throw new Error("claim a seat before switching");
+    const to = this.seatFor(player);
+    if (to === from) return;
+    if (this.bots.has(player)) throw new Error(`seat ${player} is played by a bot`);
+    if (to.clientToken !== null && to.clientToken !== from.clientToken) {
+      throw new Error(`seat ${player} is already claimed`);
+    }
+    to.clientToken = from.clientToken;
+    to.connection = connection;
+    to.displayName = from.displayName;
+    to.acksFrames = false;
+    to.ackedSeq = this.seq;
+    from.clientToken = null;
+    from.connection = null;
+    from.acksFrames = false;
+    from.autoPassUntil = null;
+    from.autoPassFrom = null;
+    from.autoPassPausedAt = null;
+    from.resolveAllFrom = null;
+    this.lastActivityAt = Date.now();
+    this.settle();
+  }
+
   /**
    * `connection`'s player concedes (rule 104.3a): they lose and leave the
    * game at once, and stay connected to watch the rest. A decision they owe
@@ -584,6 +651,7 @@ export class Room {
 
   /** Dispatches `action` on behalf of whichever seat `connection` claimed. */
   dispatch(connection: Connection, action: Action): void {
+    if (this.frozen) throw new Error("the board is being built — start play first");
     const seat = this.seatOf(connection);
     if (seat === null) throw new Error("claim a seat before acting");
     if (this.bots.has(seat)) throw new Error("a bot is playing this seat — take it back first");
@@ -1030,6 +1098,10 @@ export class Room {
    * mid-cascade.
    */
   private settle(): void {
+    if (this.frozen) {
+      this.publish();
+      return;
+    }
     // A bot move is already parked on the gate; it will resume the loop
     // itself once the clients have caught up. Whatever got us here (a human
     // answering a parallel mulligan, a seat arming auto-pass) still deserves

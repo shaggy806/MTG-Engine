@@ -1,7 +1,8 @@
 # Cards to check by hand
 
-Status: **open checklist**, started 2026-10-03. The cards below are worth playing by hand once the
-scenario builder lands (`BACKLOG.md`, Client / UI: build a board from scratch, then play it). The
+Status: **open checklist**, started 2026-10-03. The cards below are worth playing by hand in the
+scenario builder (a dev build's landing page, against `npm run dev -w server` or dev-rooms: build a
+board from scratch, then play it — `docs/plans/scenario-builder.md`). The
 engine's tests cover the rules; these entries cover what a player sees — a prompt that appears,
 reads clearly and offers exactly the legal options, and a board and log that end up right — and the
 rules calls a player would notice if the engine got them wrong.
@@ -11,9 +12,9 @@ How to use it:
 - **New decision** entries come first in each section: the card raises a choice through a client
   path that's new or rarely exercised. **Rules call** entries are interactions where the engine made
   a careful ruling.
-- **Setup** is in game terms, enough to build the board in the scenario builder. Until it exists,
-  `dev-rooms`' command port can build most of them (`spawn`, `move`, `life` —
-  `server/scripts/dev-rooms.mjs`).
+- **Setup** is in game terms, enough to build the board in the scenario builder. A board worth
+  keeping can be saved there, or downloaded as JSON. `dev-rooms`' prepared rooms and command port
+  (`spawn`, `move`, `life` — `server/scripts/dev-rooms.mjs`) still work too.
 - **Known limits** are documented engine limitations (`engine/src/cards/AUTHORING.md` §15,
   `BACKLOG.md`), not bugs to report.
 - Once an entry checks out, delete it; if something's wrong, add a line to `BACKLOG.md` and keep the

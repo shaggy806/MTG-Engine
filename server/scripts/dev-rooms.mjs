@@ -167,7 +167,8 @@ for (const code of Object.keys(SCENARIOS)) buildRoom(code);
 
 const httpServer = createServer();
 const wss = new WebSocketServer({ server: httpServer });
-attachRoomServer(wss, manager);
+// A developer's server: the scenario builder is on too.
+attachRoomServer(wss, manager, { builder: true });
 
 // ---- the control port --------------------------------------------------
 

@@ -356,8 +356,17 @@
 .landing-nav-card:first-child {
   grid-column: 1;
 }
-.landing-nav-card:last-child {
+.landing-nav-card:nth-child(2) {
   grid-column: 3;
+}
+/* The scenario builder (a dev build only): a row of its own under the two,
+   dashed as a tool rather than a page. */
+.landing-nav-card.landing-nav-dev {
+  grid-column: 1 / -1;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-style: dashed;
 }
 .landing-nav-card {
   display: flex;
@@ -404,7 +413,7 @@
     grid-template-columns: 1fr;
   }
   .landing-nav-card:first-child,
-  .landing-nav-card:last-child {
+  .landing-nav-card:nth-child(2) {
     grid-column: 1;
   }
 }

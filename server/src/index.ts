@@ -26,6 +26,10 @@ const keep = keepArg >= 0 ? Number(process.argv[keepArg + 1]) : CAPTURE_KEEP;
 if (!Number.isInteger(keep) || keep < 1) throw new Error("--capture-keep needs a whole number of decisions, at least 1");
 const manager = new RoomManager(capture ? { capture: { dir: DEFAULT_CAPTURE_DIR, registry, keep } } : {});
 if (capture) console.log(`capturing bot decisions to ${DEFAULT_CAPTURE_DIR}, the last ${keep} per room`);
+// `--builder`: the scenario builder (`builder.ts`), which lets a client put
+// any card anywhere — a developer's server only, never the public site.
+const builder = process.argv.includes("--builder");
+if (builder) console.log("scenario builder on");
 
 // An operator endpoint for `curl` over SSH, bound to loopback on a port the
 // Cloudflare tunnel does not forward. It carries room codes, which are join
@@ -117,7 +121,7 @@ const httpServer = createServer((req, res) => {
 });
 
 const wss = new WebSocketServer({ server: httpServer });
-attachRoomServer(wss, manager);
+attachRoomServer(wss, manager, { builder });
 
 httpServer.listen(port, () => {
   console.log(`MTG-Engine room server listening on ws://localhost:${port}`);

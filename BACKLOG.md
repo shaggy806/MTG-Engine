@@ -423,14 +423,13 @@ Beyond that plan:
   opponents the caster answers a yes-or-no `choose-modes` `about` each in turn, the last one
   left taking it. One prompt naming every opponent (picked on their panels) would read better;
   the engine side is `promptNextGift`.
-- **Next priority (the user, 2026-10-02): a scenario builder for testing cards and interactions.**
-  Build a game state from scratch, searching cards from the card library and placing them, with
-  no game triggers happening while building; then switch to game mode to play cards and see how
-  they interact, how the bots react, or whether the engine works properly. Today the closest thing
-  is `dev-rooms` (`server/scripts/dev-scenarios.mjs`, boards written in code, and the 4099 command
-  port's `spawn`/`move`/`life`), which has no UI and needs a scenario authored per board. Its first
-  workload is `docs/manual-checks.md`: the cards worth playing by hand (new decisions, careful rules
-  calls), each with a setup to build and what to check.
+- **What the scenario builder can't say yet** (`docs/plans/scenario-builder.md`). A
+  `ScenarioSpec` has no controller apart from the owner (a stolen permanent), no transformed or
+  face-down card, no damage marked, no effects lasting a turn, nothing on the stack, and play
+  always starts on turn 1 — so "Edit from here" leaves all of those behind. A commander placed in
+  a library goes to its bottom, whatever its place in the list. Each is a field on
+  `ScenarioCard`/`ScenarioSpec` and a step in `server/src/builder.ts`'s `buildScenario` and
+  `snapshotScenario`.
 - **A creature's total toxic value isn't in the player view.** `Characteristics.toxic` (rule
   702.164b) isn't a `Keyword`, so `VisibleObject.keywords` leaves it out: a Rat that
   Karumonix, the Rat King gives toxic 1 shows nothing, and only a printed "Toxic N" is readable,

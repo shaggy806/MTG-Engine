@@ -13,6 +13,7 @@ import type { RoomManager } from "./room-manager.js";
 import type { Room, Connection } from "./room.js";
 import type { CaptureLog } from "./capture.js";
 import { PendingRoom } from "./pending-room.js";
+import type { BuilderSession } from "./builder.js";
 import type { ClientMessage, ServerMessage } from "protocol";
 
 const RATE_LIMIT_WINDOW_MS = 5_000;
@@ -47,7 +48,7 @@ function broadcast(room: Room): void {
       seq: room.frameSeq,
       seat,
       view: room.game.viewFor(seat),
-      actions: room.game.legalActions(seat),
+      actions: room.frozen ? [] : room.game.legalActions(seat),
       seats,
       autoPassing: room.isAutoPassing(seat),
       autoPassPaused: room.isAutoPassPaused(seat),
@@ -55,6 +56,7 @@ function broadcast(room: Room): void {
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
       ...(room.captures !== null ? { capture: true as const } : {}),
+      ...(room.builder !== null ? { builder: room.builder } : {}),
       ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),
     });
   }
@@ -171,7 +173,29 @@ function tryPromote(ws: WebSocket, manager: RoomManager, room: PendingRoom): Roo
   }
 }
 
-export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): void {
+/** What a server offers beyond the public game. */
+export interface RoomServerOptions {
+  /** The scenario builder's messages (`builder.ts`): a developer's server
+   * only, since it lets a client put any card anywhere. */
+  readonly builder?: boolean;
+}
+
+/** The scenario builder serving `roomId`, or why there isn't one. */
+function requireBuilder(manager: RoomManager, roomId: string, enabled: boolean): BuilderSession {
+  if (!enabled) throw new Error("this server wasn't started with --builder");
+  const session = manager.builder(roomId);
+  if (session === undefined) throw new Error(`room ${roomId} isn't a scenario builder`);
+  // As `requireRoom` does: bind this transport to the room's frames.
+  session.room.onUpdate = broadcast;
+  return session;
+}
+
+export function attachRoomServer(
+  wss: WebSocketServer,
+  manager: RoomManager,
+  options: RoomServerOptions = {},
+): void {
+  const builderEnabled = options.builder === true;
   // Every frame a promoted room publishes — whether it came from a message
   // just handled or from a bot the room released on its own clock — goes out
   // through here.
@@ -472,6 +496,40 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
           connection.send({ type: "capture-saved", file });
           return;
         }
+        case "builder-create": {
+          if (!builderEnabled) throw new Error("this server wasn't started with --builder");
+          const session = manager.createBuilder(message.hostToken);
+          send(ws, { type: "room-created", roomId: session.id });
+          return;
+        }
+        case "builder-update": {
+          const session = requireBuilder(manager, message.roomId, builderEnabled);
+          requireHost(session.room, connection, "change the board");
+          session.update(message.spec);
+          return;
+        }
+        case "builder-start": {
+          const session = requireBuilder(manager, message.roomId, builderEnabled);
+          requireHost(session.room, connection, "start play");
+          session.start();
+          return;
+        }
+        case "builder-stop": {
+          const session = requireBuilder(manager, message.roomId, builderEnabled);
+          requireHost(session.room, connection, "stop play");
+          session.stop();
+          return;
+        }
+        case "builder-snapshot": {
+          const session = requireBuilder(manager, message.roomId, builderEnabled);
+          requireHost(session.room, connection, "stop play");
+          session.snapshot();
+          return;
+        }
+        case "builder-seat": {
+          requireBuilder(manager, message.roomId, builderEnabled).switchSeat(connection, message.seat);
+          return;
+        }
         case "ack": {
           // Purely a pacing signal, and one the client sends on its own
           // schedule — a stale room id here means the game is over or the
@@ -509,9 +567,12 @@ export function attachRoomServer(wss: WebSocketServer, manager: RoomManager): vo
 
     ws.on("close", () => {
       if (boundRoom === null) return;
-      boundRoom.disconnect(connection);
+      // A scenario builder has replaced the room this connection first bound
+      // to with each rebuild: the one under the code now is the one it's in.
+      const room = manager.get(boundRoom.id) ?? boundRoom;
+      room.disconnect(connection);
       // The host leaving hands the role to someone still here.
-      if (boundRoom instanceof PendingRoom) broadcastPending(boundRoom);
+      if (room instanceof PendingRoom) broadcastPending(room);
     });
   });
 }

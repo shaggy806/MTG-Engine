@@ -198,6 +198,16 @@ export function LandingScreen({
             Browse every card the engine implements, with its real rules text.
           </span>
         </a>
+        {/* A dev build only (and a server started with --builder): it puts
+            any card anywhere, which the public site mustn't offer. */}
+        {import.meta.env.DEV ? (
+          <button type="button" className="landing-nav-card landing-nav-dev" onClick={() => game.createBuilder()}>
+            <span className="landing-nav-name">Scenario builder</span>
+            <span className="landing-nav-desc">
+              Dev only: build a board from scratch, then play it to test cards and interactions.
+            </span>
+          </button>
+        ) : null}
       </nav>
     </div>
   )

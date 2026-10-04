@@ -25,15 +25,17 @@ that file.
 - **Security-relevant:** printings are accepted only as a bare Scryfall card id
   (`assertPrintingsAreSafe`, since they become `<img src>` in every seat's browser). The
   `/status` endpoint runs on a **separate loopback-only port** (4010) on purpose: the game port
-  is public through the Cloudflare tunnel. Captures (`--capture`) hold whole hidden state, so
-  they're dev-only.
+  is public through the Cloudflare tunnel. Captures (`--capture`) hold whole hidden state, and the
+  scenario builder (`--builder`, `builder.ts`) lets a client put any card anywhere, so both are
+  dev-only: the production service starts with neither.
 
 ## Where things are
 
 `room.ts`, `pending-room.ts`, `room-manager.ts`, `ws-server.ts`, `host.ts`, `decks.ts` (fallback
 seat decks from the engine's `SAMPLE_DECKS`), `import-deck.ts` (`POST /import-deck`, streamed
 NDJSON, batched Scryfall lookups), `oracle-tags.ts` (the card replacer's generated tag index),
-`capture.ts`, `status.ts`. Tests in `src/test/`.
+`capture.ts`, `builder.ts` (the scenario builder: a board built from data, rebuilt into a new
+frozen `Room` under the same code on every edit), `status.ts`. Tests in `src/test/`.
 
 ## Commands
 

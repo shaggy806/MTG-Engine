@@ -16,7 +16,17 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Action, LegalAction, ObjectId, PlayerId, PlayerView } from 'engine/client'
 import type { Frame } from '../game/usePlayback.ts'
 import { realId } from '../game/stackMembers.ts'
-import type { BotSpeed, CaptureSummary, ClientMessage, PassSettings, SeatStatus, ServerMessage, WireDeck } from 'protocol'
+import type {
+  BotSpeed,
+  BuilderInfo,
+  CaptureSummary,
+  ClientMessage,
+  PassSettings,
+  ScenarioSpec,
+  SeatStatus,
+  ServerMessage,
+  WireDeck,
+} from 'protocol'
 import { prefetchArt } from '../ui/art.ts'
 
 const SERVER_URL =
@@ -262,6 +272,19 @@ export interface NetworkGame {
   captureReport: (title: string, description: string, image?: string) => void
   /** Forgets the capture answers, for closing the panel. */
   clearCapture: () => void
+  /** The scenario builder's state, in a builder room (a server started with
+   * `--builder`, reached from a dev build only); `null` anywhere else. */
+  readonly builder: BuilderInfo | null
+  /** Opens a scenario builder room, this tab its host and first seat. */
+  createBuilder: () => void
+  /** Replaces the scenario being built (host only, while building). */
+  builderUpdate: (spec: ScenarioSpec) => void
+  /** Starts play from the scenario, or goes back to building it — from the
+   * scenario play started from, or (`snapshot`) from the game as it stands. */
+  builderStart: () => void
+  builderStop: (snapshot: boolean) => void
+  /** Moves this tab to another seat, to act for that side. */
+  builderSeat: (seat: PlayerId) => void
   nameOf: (id: ObjectId) => string
   clearError: () => void
   reconnect: () => void
@@ -282,6 +305,9 @@ export function useNetworkGame(): NetworkGame {
   /** The host token sent with `create-room`, kept until `room-created` says
    * which room it belongs to. */
   const pendingHostTokenRef = useRef<string | null>(null)
+  /** Set by `createBuilder` until its room is joined: a builder room seats
+   * its creator at once, with no seat board to choose from. */
+  const pendingBuilderRef = useRef(false)
   const unmountedRef = useRef(false)
   const reconnectAttemptRef = useRef(0)
   const reconnectTimeoutRef = useRef<number | null>(null)
@@ -306,6 +332,7 @@ export function useNetworkGame(): NetworkGame {
   const [botsPaused, setBotsPausedState] = useState(false)
   const [captureEnabled, setCaptureEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
+  const [builder, setBuilder] = useState<BuilderInfo | null>(null)
   const view = frame?.view ?? null
   const actions = frame?.actions ?? EMPTY_ACTIONS
 
@@ -391,6 +418,17 @@ export function useNetworkGame(): NetworkGame {
             return
           }
           const stored = loadStoredSeat(message.roomId)
+          // A scenario builder just opened: take the first seat free.
+          if (!stored && pendingBuilderRef.current && message.pending !== true) {
+            pendingBuilderRef.current = false
+            const free = message.seats.find((s) => !s.claimed && !s.isBot)
+            if (free !== undefined) {
+              const clientToken = newClientToken()
+              pendingClaimRef.current = { seat: free.player, clientToken }
+              send({ type: 'claim-seat', roomId: message.roomId, seat: free.player, clientToken })
+              return
+            }
+          }
           // In a waiting room the seat board takes a seat itself (`takeSeat`,
           // which reuses the stored token, so a readied seat comes back and
           // an un-readied one, freed when this device dropped, is taken
@@ -433,6 +471,13 @@ export function useNetworkGame(): NetworkGame {
           setBotSpeedState(message.botSpeed)
           setBotsPausedState(message.botsPaused === true)
           setCaptureEnabled(message.capture === true)
+          setBuilder(message.builder ?? null)
+          // A builder's seat switch moves this tab's claim with it: a refresh
+          // should come back to the seat it's in now.
+          if (message.builder !== undefined) {
+            const held = loadStoredSeat(message.roomId)
+            if (held && held.seat !== message.seat) storeSeat(message.roomId, message.seat, held.clientToken)
+          }
           setStatus('playing')
           return
         }
@@ -767,6 +812,42 @@ export function useNetworkGame(): NetworkGame {
 
   const clearCapture = useCallback(() => setCapture(NO_CAPTURE), [])
 
+  const createBuilder = useCallback(() => {
+    const hostToken = newClientToken()
+    pendingHostTokenRef.current = hostToken
+    pendingBuilderRef.current = true
+    send({ type: 'builder-create', hostToken })
+  }, [send])
+
+  const builderUpdate = useCallback(
+    (spec: ScenarioSpec) => {
+      const id = roomIdRef.current
+      if (id !== null) send({ type: 'builder-update', roomId: id, spec })
+    },
+    [send],
+  )
+
+  const builderStart = useCallback(() => {
+    const id = roomIdRef.current
+    if (id !== null) send({ type: 'builder-start', roomId: id })
+  }, [send])
+
+  const builderStop = useCallback(
+    (snapshot: boolean) => {
+      const id = roomIdRef.current
+      if (id !== null) send({ type: snapshot ? 'builder-snapshot' : 'builder-stop', roomId: id })
+    },
+    [send],
+  )
+
+  const builderSeat = useCallback(
+    (to: PlayerId) => {
+      const id = roomIdRef.current
+      if (id !== null) send({ type: 'builder-seat', roomId: id, seat: to })
+    },
+    [send],
+  )
+
   const nameOf = useCallback(
     (id: ObjectId): string => {
       // A member id (`<id>#<k>`, one token of a compacted stack while a
@@ -847,6 +928,12 @@ export function useNetworkGame(): NetworkGame {
     captureSave,
     captureReport,
     clearCapture,
+    builder,
+    createBuilder,
+    builderUpdate,
+    builderStart,
+    builderStop,
+    builderSeat,
     nameOf,
     clearError,
     reconnect,

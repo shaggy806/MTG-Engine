@@ -11,6 +11,7 @@
  */
 
 import type { Action, ArtManifestEntry, LegalAction, PlayerId, PlayerView, Step } from "engine";
+import type { BuilderInfo, ScenarioSpec } from "./scenario.js";
 
 /**
  * A player's standing priority-passing preferences — their own, kept on
@@ -365,6 +366,47 @@ export type ClientMessage =
       readonly description: string;
       /** A photo of what went wrong, as a PNG, JPEG, GIF or WebP data URL. */
       readonly image?: string;
+    }
+  // --- the scenario builder (a server started with `--builder` only; see
+  // `scenario.ts` and the `state` message's `builder`) ------------------------
+  | {
+      /** Opens a scenario builder room, the creator its host and first seat.
+       * Answered with `room-created`; the client then joins and claims a
+       * seat as for any room. */
+      readonly type: "builder-create";
+      readonly hostToken: string;
+    }
+  | {
+      /** Replaces the scenario being built and rebuilds the board from it.
+       * Host only, while building. */
+      readonly type: "builder-update";
+      readonly roomId: string;
+      readonly spec: ScenarioSpec;
+    }
+  | {
+      /** Starts play from the scenario: a real game, bots in the seats it
+       * names. Host only, while building. */
+      readonly type: "builder-start";
+      readonly roomId: string;
+    }
+  | {
+      /** Back to building, from the scenario play started from. Host only,
+       * while playing. */
+      readonly type: "builder-stop";
+      readonly roomId: string;
+    }
+  | {
+      /** Back to building, from the game as it stands now. Host only, while
+       * playing. */
+      readonly type: "builder-snapshot";
+      readonly roomId: string;
+    }
+  | {
+      /** Moves this connection to another seat — any seat no one else holds
+       * and no bot plays — so a developer can act for every side. */
+      readonly type: "builder-seat";
+      readonly roomId: string;
+      readonly seat: PlayerId;
     };
 
 /** One bot decision a capture-enabled room kept — see `capture-list`. */
@@ -427,6 +469,8 @@ export type ServerMessage =
       /** Present when this server captures bot decisions for training
        * scenarios — a developer's server, never the public site. */
       readonly capture?: true;
+      /** Present in a scenario builder room — see `scenario.ts`. */
+      readonly builder?: BuilderInfo;
       /** On a connection's first frame of a game only: every card in every
        * player's deck, as the art its tiles will ask for, for the client to
        * load quietly ahead of time (`artManifest` in the engine). It names

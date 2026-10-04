@@ -5,7 +5,9 @@ where it stands, and none is living documentation: the code and `docs/architectu
 
 The index, as of the last update:
 
-Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `card-replacer` (reworked
+Shipped: `basic-bots` (v1 bot), `card-library-page`, `deck-builder`, `scenario-builder` (a
+developer's tool: build a board from scratch, then play it — the scenario is data, and every edit
+rebuilds the game in a new frozen room under the same code), `card-replacer` (reworked
 onto Scryfall Tagger oracle tags), `precon-decks` (the five Tarkir: Dragonstorm starter decks and their stand-ins), `resolve-all-stack` (the one-shot "resolve the whole stack" button),
 `auto-pass-interruptions` (the shared "something real happened" scan that
 stops both it and auto-pass), `deck-biases` (a commander's deck reading some effects the other
