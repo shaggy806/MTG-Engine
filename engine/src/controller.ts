@@ -2225,6 +2225,10 @@ export class HeuristicBotController extends AutomaticController {
    * same ranking: an order over every card, Valakut Awakening's "any number
    * of cards from your hand on the bottom", and an activated ability's
    * "exile N cards from your graveyard" cost.)
+   *
+   * A choice made for another player (`forPlayer` — Tasigur, the Golden
+   * Fang's "a nonland card of an opponent's choice") goes the other way: as
+   * few cards as allowed, the least useful to them first.
    */
   chooseFromZone(
     view: ControllerView,
@@ -2232,6 +2236,11 @@ export class HeuristicBotController extends AutomaticController {
     min: number,
     max: number,
   ): readonly ObjectId[] {
+    const awaiting = view.state.awaiting;
+    const forPlayer = awaiting?.kind === "choose-from-zone" ? awaiting.forPlayer : undefined;
+    if (forPlayer !== undefined && forPlayer !== this.playerId) {
+      return this.leastUsefulTo(view.state, forPlayer, eligible, min);
+    }
     // A land search takes a colour we can't make yet first (`land-colors.ts`).
     const ranked = newColorsFirst(view.state, this.registry, this.playerId, eligible);
     return ranked.slice(0, Math.max(min, Math.min(max, ranked.length)));
@@ -2349,6 +2358,24 @@ export class HeuristicBotController extends AutomaticController {
       (id) => view.state.objects[id],
     );
     return shouldMulligan(hand, this.registry, count, view.state.rules);
+  }
+
+  /** The `count` cards of `eligible` that would do `player` the least good in
+   * hand, read as `chooseBottomOfHand` reads a hand mid-game against the
+   * lands `player` has out: cheap spells and ones still out of reach first. */
+  private leastUsefulTo(
+    state: GameState,
+    player: PlayerId,
+    eligible: readonly ObjectId[],
+    count: number,
+  ): readonly ObjectId[] {
+    const lands = state.zones.shared.battlefield.filter(
+      (id) =>
+        state.objects[id]?.controller === player &&
+        computeCharacteristics(state, this.registry, id).types.includes("land"),
+    ).length;
+    const cards = eligible.flatMap((id) => (state.objects[id] === undefined ? [] : [state.objects[id]]));
+    return chooseBottomOfHand(cards, this.registry, count, lands);
   }
 
   /** Surplus lands, then the most expensive spells — see `chooseBottomOfHand`. */

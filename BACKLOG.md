@@ -9,11 +9,6 @@ When something lands, delete its line. When you find something new, add one.
 Each waits on a decision only the user can make. Once one is answered, move the work it
 decides into its section below.
 
-- **Where should a bot's fallback deck come from?** A bot seat with no deck falls back to the
-  first four `SAMPLE_DECKS` by seat (`server/src/decks.ts`): Temur Roar, Sultai Arisen, Abzan
-  Armor, Mardu Surge. So bob's bot brings Sultai Arisen, which the deck run found the bots
-  can't pilot (it's been off the bench since 2026-10-02). Should a fallback come from the four
-  `bench` decks (Abzan Armor, Jeskai Striker, Token Triumph, Reign of Dragons) instead?
 - **How should we say which turn it is, and for whom?** A turn number counts every player's
   turns, so at a four-player table "turn 37" is the first player's 10th turn, which reads as a
   much longer game than it is. Where should the more specific form apply (the client, bench
@@ -157,7 +152,7 @@ under count budgets).
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets.
-- **More training scenarios.** 102 hand-built scenarios, 99 of them gating
+- **More training scenarios.** 105 hand-built scenarios, 102 of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
@@ -170,9 +165,8 @@ under count budgets).
   opponents' cards in hand is the obvious next shape.
 - **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
   since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
-  `docs/plans/precon-decks.md`), four flagged `bench`. Still unscoped: decks across a range of
-  power levels for bots to bring, and how a host picks one. (Where a bot's fallback comes from
-  is a question at the top.)
+  `docs/plans/precon-decks.md`), five flagged `bench`, whose first four are the seats' fallbacks. Still unscoped: decks across
+  a range of power levels for bots to bring, and how a host picks one.
 - **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
   commander's deck aim effects the other way and value its own board differently; Teval is the
   one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
@@ -188,10 +182,6 @@ under count budgets).
   chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than
   Skullclamp: a small creature's flat value is the question, weighed against the chump blocks it
   would bring back.
-- **Picking a card for an opponent.** A `choose-from-zone` with `forPlayer` (Tasigur, the Golden
-  Fang's "a nonland card of an opponent's choice") goes through the bots' ordinary
-  `chooseFromZone`, which takes what it would want for itself — so a bot hands Tasigur's
-  controller its best card rather than its worst.
 - **A smarter default trigger order.** A player who orders their own triggers is asked (the
   `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
   included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order

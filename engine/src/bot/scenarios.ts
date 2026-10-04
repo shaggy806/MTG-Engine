@@ -1259,6 +1259,39 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "hands Tasigur's controller the weaker card",
+    rule: "A card chosen for an opponent is the one least useful to them.",
+    position(registry) {
+      // Alice activates Tasigur, the Golden Fang, and Bob picks which nonland
+      // card in her graveyard she gets back. Both bots ranked the cards as
+      // their own pick (graveyard order here), so they handed her the Craw
+      // Wurm she can cast next turn rather than the Grizzly Bears.
+      const game = table(registry, [A, B], A);
+      lands(game, "Forest", A, 6);
+      const tasigur = onBoard(game, "Tasigur, the Golden Fang", A);
+      const wurm = game.debugSpawn("Craw Wurm", A, "graveyard");
+      const bears = game.debugSpawn("Grizzly Bears", A, "graveyard");
+      game.dispatch({ type: "activate-ability", player: A, source: tasigur, abilityIndex: 0, targets: [] });
+      game.advanceUntil(
+        (s) => (s.awaiting?.kind === "choose-from-zone" && s.awaiting.player === B) || s.result.over,
+      );
+      if (game.state.awaiting?.kind !== "choose-from-zone" || game.state.awaiting.player !== B) {
+        return { passed: false, detail: "bob was never asked to choose Alice's card" };
+      }
+      return {
+        game,
+        player: B,
+        judge(action) {
+          const chosen = action.type === "choose-from-zone" ? action.chosen : [];
+          return {
+            passed: chosen.length === 1 && chosen[0] === bears && !chosen.includes(wurm),
+            detail: `handed back ${chosen.map((id) => cardOf(game, id)).join(", ") || "nothing"}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
     name: "holds Transcendent Dragon with nothing to counter",
     rule: "A creature that counters a spell as it enters waits for an opponent's spell.",
     position(registry) {
