@@ -37,6 +37,7 @@ import _poolChantOfTheSkifsang from "../pool/chant-of-the-skifsang.js";
 import _poolChromeCat from "../pool/chrome-cat.js";
 import _poolCityOfTraitors from "../pool/city-of-traitors.js";
 import _poolCommercialDistrict from "../pool/commercial-district.js";
+import _poolConsumingCorruption from "../pool/consuming-corruption.js";
 import _poolConsumptiveGoo from "../pool/consumptive-goo.js";
 import _poolCryptRipper from "../pool/crypt-ripper.js";
 import _poolCultistsStaff from "../pool/cultists-staff.js";
@@ -70,7 +71,9 @@ import _poolFlowstoneWyvern from "../pool/flowstone-wyvern.js";
 import _poolForceOfSavagery from "../pool/force-of-savagery.js";
 import _poolForgottenSentinel from "../pool/forgotten-sentinel.js";
 import _poolFumeSpitter from "../pool/fume-spitter.js";
+import _poolGatewayPlaza from "../pool/gateway-plaza.js";
 import _poolGhostSpectralSaboteur from "../pool/ghost-spectral-saboteur.js";
+import _poolGhoulcallerGisa from "../pool/ghoulcaller-gisa.js";
 import _poolGiantScorpion from "../pool/giant-scorpion.js";
 import _poolGladecoverScout from "../pool/gladecover-scout.js";
 import _poolGoblinMountaineer from "../pool/goblin-mountaineer.js";
@@ -109,6 +112,7 @@ import _poolMagmaw from "../pool/magmaw.js";
 import _poolMalleableImpostor from "../pool/malleable-impostor.js";
 import _poolMasterDecoy from "../pool/master-decoy.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
+import _poolMindsDilation from "../pool/minds-dilation.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
 import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
@@ -121,6 +125,7 @@ import _poolPartingGust from "../pool/parting-gust.js";
 import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
 import _poolPriestOfTitania from "../pool/priest-of-titania.js";
+import _poolPrimevalsGloriousRebirth from "../pool/primevals-glorious-rebirth.js";
 import _poolPrimordialWurm from "../pool/primordial-wurm.js";
 import _poolQuirionRanger from "../pool/quirion-ranger.js";
 import _poolRageThrower from "../pool/rage-thrower.js";
@@ -197,6 +202,7 @@ import _poolUniversalSolvent from "../pool/universal-solvent.js";
 import _poolUnlicensedDisintegration from "../pool/unlicensed-disintegration.js";
 import _poolUrborgTombOfYawgmoth from "../pool/urborg-tomb-of-yawgmoth.js";
 import _poolValgavothsLair from "../pool/valgavoths-lair.js";
+import _poolVatOfRebirth from "../pool/vat-of-rebirth.js";
 import _poolVectisSilencers from "../pool/vectis-silencers.js";
 import _poolVelaTheNightClad from "../pool/vela-the-night-clad.js";
 import _poolVesselOfVolatility from "../pool/vessel-of-volatility.js";
@@ -216,6 +222,7 @@ import _poolYotianMedic from "../pool/yotian-medic.js";
 import _poolZendikarsRoil from "../pool/zendikars-roil.js";
 import _poolZiatorasProvingGround from "../pool/ziatoras-proving-ground.js";
 import _poolZodiacRabbit from "../pool/zodiac-rabbit.js";
+import _tokensDinosaurToken from "../tokens/dinosaur-token.js";
 import _tokensHumanToken from "../tokens/human-token.js";
 import _tokensShrineToken from "../tokens/shrine-token.js";
 
@@ -255,6 +262,7 @@ const shard: CardShard = {
     _poolChromeCat,
     _poolCityOfTraitors,
     _poolCommercialDistrict,
+    _poolConsumingCorruption,
     _poolConsumptiveGoo,
     _poolCryptRipper,
     _poolCultistsStaff,
@@ -288,7 +296,9 @@ const shard: CardShard = {
     _poolForceOfSavagery,
     _poolForgottenSentinel,
     _poolFumeSpitter,
+    _poolGatewayPlaza,
     _poolGhostSpectralSaboteur,
+    _poolGhoulcallerGisa,
     _poolGiantScorpion,
     _poolGladecoverScout,
     _poolGoblinMountaineer,
@@ -327,6 +337,7 @@ const shard: CardShard = {
     _poolMalleableImpostor,
     _poolMasterDecoy,
     _poolMidnightHaunting,
+    _poolMindsDilation,
     _poolMoltenGatekeeper,
     _poolMoonlitWake,
     _poolMosscoatGoriak,
@@ -339,6 +350,7 @@ const shard: CardShard = {
     _poolPreordain,
     _poolPreyUpon,
     _poolPriestOfTitania,
+    _poolPrimevalsGloriousRebirth,
     _poolPrimordialWurm,
     _poolQuirionRanger,
     _poolRageThrower,
@@ -415,6 +427,7 @@ const shard: CardShard = {
     _poolUnlicensedDisintegration,
     _poolUrborgTombOfYawgmoth,
     _poolValgavothsLair,
+    _poolVatOfRebirth,
     _poolVectisSilencers,
     _poolVelaTheNightClad,
     _poolVesselOfVolatility,
@@ -436,6 +449,7 @@ const shard: CardShard = {
     _poolZodiacRabbit,
   ],
   tokens: [
+    _tokensDinosaurToken,
     _tokensHumanToken,
     _tokensShrineToken,
   ],

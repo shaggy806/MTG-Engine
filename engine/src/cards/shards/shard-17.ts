@@ -76,6 +76,7 @@ import _poolFlameSpirit from "../pool/flame-spirit.js";
 import _poolFriendlyGhost from "../pool/friendly-ghost.js";
 import _poolGallowsWarden from "../pool/gallows-warden.js";
 import _poolGavonyTrapper from "../pool/gavony-trapper.js";
+import _poolGenesisHydra from "../pool/genesis-hydra.js";
 import _poolGiantGrowth from "../pool/giant-growth.js";
 import _poolGiftOfOrzhova from "../pool/gift-of-orzhova.js";
 import _poolGlitteringMassif from "../pool/glittering-massif.js";
@@ -188,6 +189,7 @@ import _poolTatteredApparition from "../pool/tattered-apparition.js";
 import _poolThaumaturgesFamiliar from "../pool/thaumaturges-familiar.js";
 import _poolThePrismaticBridge from "../pool/the-prismatic-bridge.js";
 import _poolThreeVisits from "../pool/three-visits.js";
+import _poolThroneOfTheGodPharaoh from "../pool/throne-of-the-god-pharaoh.js";
 import _poolThunderingFalls from "../pool/thundering-falls.js";
 import _poolThunderingRebuke from "../pool/thundering-rebuke.js";
 import _poolTideSkimmer from "../pool/tide-skimmer.js";
@@ -200,6 +202,8 @@ import _poolUnsummon from "../pool/unsummon.js";
 import _poolVeiledShade from "../pool/veiled-shade.js";
 import _poolVigilanteJustice from "../pool/vigilante-justice.js";
 import _poolVizierOfTheScorpion from "../pool/vizier-of-the-scorpion.js";
+import _poolVolatileFault from "../pool/volatile-fault.js";
+import _poolVraskaJoinsUp from "../pool/vraska-joins-up.js";
 import _poolWailingGhoul from "../pool/wailing-ghoul.js";
 import _poolWallOfWater from "../pool/wall-of-water.js";
 import _poolWarChariot from "../pool/war-chariot.js";
@@ -305,6 +309,7 @@ const shard: CardShard = {
     _poolFriendlyGhost,
     _poolGallowsWarden,
     _poolGavonyTrapper,
+    _poolGenesisHydra,
     _poolGiantGrowth,
     _poolGiftOfOrzhova,
     _poolGlitteringMassif,
@@ -417,6 +422,7 @@ const shard: CardShard = {
     _poolThaumaturgesFamiliar,
     _poolThePrismaticBridge,
     _poolThreeVisits,
+    _poolThroneOfTheGodPharaoh,
     _poolThunderingFalls,
     _poolThunderingRebuke,
     _poolTideSkimmer,
@@ -429,6 +435,8 @@ const shard: CardShard = {
     _poolVeiledShade,
     _poolVigilanteJustice,
     _poolVizierOfTheScorpion,
+    _poolVolatileFault,
+    _poolVraskaJoinsUp,
     _poolWailingGhoul,
     _poolWallOfWater,
     _poolWarChariot,

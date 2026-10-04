@@ -33,6 +33,7 @@ import _poolCanalMonitor from "../pool/canal-monitor.js";
 import _poolCartographersHawk from "../pool/cartographers-hawk.js";
 import _poolCatharticReunion from "../pool/cathartic-reunion.js";
 import _poolChokedEstuary from "../pool/choked-estuary.js";
+import _poolChompingChangeling from "../pool/chomping-changeling.js";
 import _poolCoalGolem from "../pool/coal-golem.js";
 import _poolColdsteelHeart from "../pool/coldsteel-heart.js";
 import _poolCollectiveResistance from "../pool/collective-resistance.js";
@@ -138,6 +139,7 @@ import _poolPlatedWurm from "../pool/plated-wurm.js";
 import _poolPlumeveil from "../pool/plumeveil.js";
 import _poolPollutedDelta from "../pool/polluted-delta.js";
 import _poolPrecisionBolt from "../pool/precision-bolt.js";
+import _poolPrimordialHydra from "../pool/primordial-hydra.js";
 import _poolProudMentor from "../pool/proud-mentor.js";
 import _poolRancor from "../pool/rancor.js";
 import _poolRatadrabikOfUrborg from "../pool/ratadrabik-of-urborg.js";
@@ -264,6 +266,7 @@ const shard: CardShard = {
     _poolCartographersHawk,
     _poolCatharticReunion,
     _poolChokedEstuary,
+    _poolChompingChangeling,
     _poolCoalGolem,
     _poolColdsteelHeart,
     _poolCollectiveResistance,
@@ -369,6 +372,7 @@ const shard: CardShard = {
     _poolPlumeveil,
     _poolPollutedDelta,
     _poolPrecisionBolt,
+    _poolPrimordialHydra,
     _poolProudMentor,
     _poolRancor,
     _poolRatadrabikOfUrborg,

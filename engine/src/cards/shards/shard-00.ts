@@ -10,6 +10,7 @@ import _poolAgentOfTheIronThrone from "../pool/agent-of-the-iron-throne.js";
 import _poolAleshaWhoLaughsAtFate from "../pool/alesha-who-laughs-at-fate.js";
 import _poolAlloyMyr from "../pool/alloy-myr.js";
 import _poolAncientSpider from "../pool/ancient-spider.js";
+import _poolAncientStoneIdol from "../pool/ancient-stone-idol.js";
 import _poolAngelheartProtector from "../pool/angelheart-protector.js";
 import _poolAngelicGift from "../pool/angelic-gift.js";
 import _poolArcaneSanctum from "../pool/arcane-sanctum.js";
@@ -50,6 +51,8 @@ import _poolCursedMinotaur from "../pool/cursed-minotaur.js";
 import _poolDeadlyDispute from "../pool/deadly-dispute.js";
 import _poolDesertTwister from "../pool/desert-twister.js";
 import _poolDinaSoulSteeper from "../pool/dina-soul-steeper.js";
+import _poolDiresight from "../pool/diresight.js";
+import _poolDiscipleOfTheVault from "../pool/disciple-of-the-vault.js";
 import _poolDoomedDissenter from "../pool/doomed-dissenter.js";
 import _poolDoomedTraveler from "../pool/doomed-traveler.js";
 import _poolDowsingDagger from "../pool/dowsing-dagger.js";
@@ -75,6 +78,7 @@ import _poolForest from "../pool/forest.js";
 import _poolGatewayShade from "../pool/gateway-shade.js";
 import _poolGhaltaPrimalHunger from "../pool/ghalta-primal-hunger.js";
 import _poolGhituWarCry from "../pool/ghitu-war-cry.js";
+import _poolGleamingSplendor from "../pool/gleaming-splendor.js";
 import _poolGoblinCavaliers from "../pool/goblin-cavaliers.js";
 import _poolGoblinElectromancer from "../pool/goblin-electromancer.js";
 import _poolGoblinTrailblazer from "../pool/goblin-trailblazer.js";
@@ -113,6 +117,7 @@ import _poolManakin from "../pool/manakin.js";
 import _poolMartyrOfDusk from "../pool/martyr-of-dusk.js";
 import _poolMaskedBlackguard from "../pool/masked-blackguard.js";
 import _poolMassacreGirlKnownKiller from "../pool/massacre-girl-known-killer.js";
+import _poolMegrim from "../pool/megrim.js";
 import _poolMengHuosHorde from "../pool/meng-huos-horde.js";
 import _poolMesaCavalier from "../pool/mesa-cavalier.js";
 import _poolMidnightGuard from "../pool/midnight-guard.js";
@@ -134,6 +139,7 @@ import _poolPakoArcaneRetriever from "../pool/pako-arcane-retriever.js";
 import _poolParadiseDruid from "../pool/paradise-druid.js";
 import _poolParadoxGardens from "../pool/paradox-gardens.js";
 import _poolPeaceStrider from "../pool/peace-strider.js";
+import _poolPettyTheft from "../pool/petty-theft.js";
 import _poolPhyrexianBroodlings from "../pool/phyrexian-broodlings.js";
 import _poolPipBoy3000 from "../pool/pip-boy-3000.js";
 import _poolPlunderingPirate from "../pool/plundering-pirate.js";
@@ -189,6 +195,7 @@ import _poolSunscorchRegent from "../pool/sunscorch-regent.js";
 import _poolSwordwiseCentaur from "../pool/swordwise-centaur.js";
 import _poolTalonTrooper from "../pool/talon-trooper.js";
 import _poolTaoistHermit from "../pool/taoist-hermit.js";
+import _poolTectonicHazard from "../pool/tectonic-hazard.js";
 import _poolTempestAngler from "../pool/tempest-angler.js";
 import _poolTempestDrake from "../pool/tempest-drake.js";
 import _poolTerritorialHellkite from "../pool/territorial-hellkite.js";
@@ -240,6 +247,7 @@ const shard: CardShard = {
     _poolAleshaWhoLaughsAtFate,
     _poolAlloyMyr,
     _poolAncientSpider,
+    _poolAncientStoneIdol,
     _poolAngelheartProtector,
     _poolAngelicGift,
     _poolArcaneSanctum,
@@ -280,6 +288,8 @@ const shard: CardShard = {
     _poolDeadlyDispute,
     _poolDesertTwister,
     _poolDinaSoulSteeper,
+    _poolDiresight,
+    _poolDiscipleOfTheVault,
     _poolDoomedDissenter,
     _poolDoomedTraveler,
     _poolDowsingDagger,
@@ -305,6 +315,7 @@ const shard: CardShard = {
     _poolGatewayShade,
     _poolGhaltaPrimalHunger,
     _poolGhituWarCry,
+    _poolGleamingSplendor,
     _poolGoblinCavaliers,
     _poolGoblinElectromancer,
     _poolGoblinTrailblazer,
@@ -343,6 +354,7 @@ const shard: CardShard = {
     _poolMartyrOfDusk,
     _poolMaskedBlackguard,
     _poolMassacreGirlKnownKiller,
+    _poolMegrim,
     _poolMengHuosHorde,
     _poolMesaCavalier,
     _poolMidnightGuard,
@@ -364,6 +376,7 @@ const shard: CardShard = {
     _poolParadiseDruid,
     _poolParadoxGardens,
     _poolPeaceStrider,
+    _poolPettyTheft,
     _poolPhyrexianBroodlings,
     _poolPipBoy3000,
     _poolPlunderingPirate,
@@ -419,6 +432,7 @@ const shard: CardShard = {
     _poolSwordwiseCentaur,
     _poolTalonTrooper,
     _poolTaoistHermit,
+    _poolTectonicHazard,
     _poolTempestAngler,
     _poolTempestDrake,
     _poolTerritorialHellkite,

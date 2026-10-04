@@ -23,7 +23,9 @@ import _poolBlisteringDieflyn from "../pool/blistering-dieflyn.js";
 import _poolBloodlineKeeper from "../pool/bloodline-keeper.js";
 import _poolBloodlustInciter from "../pool/bloodlust-inciter.js";
 import _poolBrambleWurm from "../pool/bramble-wurm.js";
+import _poolBrazenBorrower from "../pool/brazen-borrower.js";
 import _poolBrazenScourge from "../pool/brazen-scourge.js";
+import _poolBrightstoneRitual from "../pool/brightstone-ritual.js";
 import _poolBrinebarrowIntruder from "../pool/brinebarrow-intruder.js";
 import _poolBumbleflowersSharepot from "../pool/bumbleflowers-sharepot.js";
 import _poolBumpInTheNight from "../pool/bump-in-the-night.js";
@@ -60,6 +62,7 @@ import _poolDrownInIchor from "../pool/drown-in-ichor.js";
 import _poolEldraziDevastator from "../pool/eldrazi-devastator.js";
 import _poolElvenLyre from "../pool/elven-lyre.js";
 import _poolElvishHexhunter from "../pool/elvish-hexhunter.js";
+import _poolEmptyTheWarrens from "../pool/empty-the-warrens.js";
 import _poolEscapeToTheWilds from "../pool/escape-to-the-wilds.js";
 import _poolExpeditionEnvoy from "../pool/expedition-envoy.js";
 import _poolEyeOfNowhere from "../pool/eye-of-nowhere.js";
@@ -80,6 +83,7 @@ import _poolFumigate from "../pool/fumigate.js";
 import _poolGaeasGift from "../pool/gaeas-gift.js";
 import _poolGeothermalBog from "../pool/geothermal-bog.js";
 import _poolGhostWarden from "../pool/ghost-warden.js";
+import _poolGiantAdephage from "../pool/giant-adephage.js";
 import _poolGilanraCallerOfWirewood from "../pool/gilanra-caller-of-wirewood.js";
 import _poolGoblinMotivator from "../pool/goblin-motivator.js";
 import _poolGoldForgedSentinel from "../pool/gold-forged-sentinel.js";
@@ -178,6 +182,7 @@ import _poolSmotheringTithe from "../pool/smothering-tithe.js";
 import _poolSolidarity from "../pool/solidarity.js";
 import _poolSoulmender from "../pool/soulmender.js";
 import _poolSparasHeadquarters from "../pool/sparas-headquarters.js";
+import _poolSpineOfIshSah from "../pool/spine-of-ish-sah.js";
 import _poolSpireOfIndustry from "../pool/spire-of-industry.js";
 import _poolStaunchDefenders from "../pool/staunch-defenders.js";
 import _poolStormCrow from "../pool/storm-crow.js";
@@ -219,6 +224,7 @@ import _poolWindcragSiege from "../pool/windcrag-siege.js";
 import _poolWindgracesJudgment from "../pool/windgraces-judgment.js";
 import _poolWintersGrasp from "../pool/winters-grasp.js";
 import _poolWoodedBastion from "../pool/wooded-bastion.js";
+import _tokensConstructTokenAncientStoneIdol from "../tokens/construct-token-ancient-stone-idol.js";
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
@@ -247,7 +253,9 @@ const shard: CardShard = {
     _poolBloodlineKeeper,
     _poolBloodlustInciter,
     _poolBrambleWurm,
+    _poolBrazenBorrower,
     _poolBrazenScourge,
+    _poolBrightstoneRitual,
     _poolBrinebarrowIntruder,
     _poolBumbleflowersSharepot,
     _poolBumpInTheNight,
@@ -284,6 +292,7 @@ const shard: CardShard = {
     _poolEldraziDevastator,
     _poolElvenLyre,
     _poolElvishHexhunter,
+    _poolEmptyTheWarrens,
     _poolEscapeToTheWilds,
     _poolExpeditionEnvoy,
     _poolEyeOfNowhere,
@@ -304,6 +313,7 @@ const shard: CardShard = {
     _poolGaeasGift,
     _poolGeothermalBog,
     _poolGhostWarden,
+    _poolGiantAdephage,
     _poolGilanraCallerOfWirewood,
     _poolGoblinMotivator,
     _poolGoldForgedSentinel,
@@ -402,6 +412,7 @@ const shard: CardShard = {
     _poolSolidarity,
     _poolSoulmender,
     _poolSparasHeadquarters,
+    _poolSpineOfIshSah,
     _poolSpireOfIndustry,
     _poolStaunchDefenders,
     _poolStormCrow,
@@ -445,6 +456,7 @@ const shard: CardShard = {
     _poolWoodedBastion,
   ],
   tokens: [
+    _tokensConstructTokenAncientStoneIdol,
     _tokensElfWarriorToken,
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,

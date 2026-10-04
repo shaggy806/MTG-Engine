@@ -21,6 +21,7 @@ import _poolBloatedContaminator from "../pool/bloated-contaminator.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
 import _poolBrawnAmadeusCho from "../pool/brawn-amadeus-cho.js";
 import _poolBronzeWalrus from "../pool/bronze-walrus.js";
+import _poolBugenhagenWiseElder from "../pool/bugenhagen-wise-elder.js";
 import _poolBurstOfSpeed from "../pool/burst-of-speed.js";
 import _poolCacklingFiend from "../pool/cackling-fiend.js";
 import _poolCarnivorousPlant from "../pool/carnivorous-plant.js";
@@ -89,6 +90,7 @@ import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
 import _poolKayaGeistHunter from "../pool/kaya-geist-hunter.js";
 import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
 import _poolKeeperOfTheNineGales from "../pool/keeper-of-the-nine-gales.js";
+import _poolKhalniHeartExpedition from "../pool/khalni-heart-expedition.js";
 import _poolKiorasDambreaker from "../pool/kioras-dambreaker.js";
 import _poolKodamaOfTheNorthTree from "../pool/kodama-of-the-north-tree.js";
 import _poolLibraryLarcenist from "../pool/library-larcenist.js";
@@ -152,6 +154,7 @@ import _poolSilentAttendant from "../pool/silent-attendant.js";
 import _poolSkyRuinDrake from "../pool/sky-ruin-drake.js";
 import _poolSlinkingSerpent from "../pool/slinking-serpent.js";
 import _poolSolphimMayhemDominus from "../pool/solphim-mayhem-dominus.js";
+import _poolSomberwaldSage from "../pool/somberwald-sage.js";
 import _poolSpikedBaloth from "../pool/spiked-baloth.js";
 import _poolSpringleafParade from "../pool/springleaf-parade.js";
 import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
@@ -219,6 +222,7 @@ const shard: CardShard = {
     _poolBoonOfEmrakul,
     _poolBrawnAmadeusCho,
     _poolBronzeWalrus,
+    _poolBugenhagenWiseElder,
     _poolBurstOfSpeed,
     _poolCacklingFiend,
     _poolCarnivorousPlant,
@@ -287,6 +291,7 @@ const shard: CardShard = {
     _poolKayaGeistHunter,
     _poolKeeperOfTheAccord,
     _poolKeeperOfTheNineGales,
+    _poolKhalniHeartExpedition,
     _poolKiorasDambreaker,
     _poolKodamaOfTheNorthTree,
     _poolLibraryLarcenist,
@@ -350,6 +355,7 @@ const shard: CardShard = {
     _poolSkyRuinDrake,
     _poolSlinkingSerpent,
     _poolSolphimMayhemDominus,
+    _poolSomberwaldSage,
     _poolSpikedBaloth,
     _poolSpringleafParade,
     _poolStampedingScurryfoot,

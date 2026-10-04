@@ -11,6 +11,7 @@ import _poolAdventurersInn from "../pool/adventurers-inn.js";
 import _poolAegisTurtle from "../pool/aegis-turtle.js";
 import _poolAmprynTactician from "../pool/ampryn-tactician.js";
 import _poolAnabaShaman from "../pool/anaba-shaman.js";
+import _poolAngrathsMarauders from "../pool/angraths-marauders.js";
 import _poolAnkleShanker from "../pool/ankle-shanker.js";
 import _poolAragornKingOfGondor from "../pool/aragorn-king-of-gondor.js";
 import _poolArgothianEnchantress from "../pool/argothian-enchantress.js";
@@ -227,6 +228,7 @@ import _poolWindsweptHeath from "../pool/windswept-heath.js";
 import _poolWizardsOfThay from "../pool/wizards-of-thay.js";
 import _poolZephyrBoots from "../pool/zephyr-boots.js";
 import _poolZodiacTiger from "../pool/zodiac-tiger.js";
+import _poolZulAshurLichLord from "../pool/zul-ashur-lich-lord.js";
 import _tokensDragonSpiritToken from "../tokens/dragon-spirit-token.js";
 import _tokensGreenCatToken11 from "../tokens/green-cat-token-1-1.js";
 import _tokensMyrToken from "../tokens/myr-token.js";
@@ -241,6 +243,7 @@ const shard: CardShard = {
     _poolAegisTurtle,
     _poolAmprynTactician,
     _poolAnabaShaman,
+    _poolAngrathsMarauders,
     _poolAnkleShanker,
     _poolAragornKingOfGondor,
     _poolArgothianEnchantress,
@@ -457,6 +460,7 @@ const shard: CardShard = {
     _poolWizardsOfThay,
     _poolZephyrBoots,
     _poolZodiacTiger,
+    _poolZulAshurLichLord,
   ],
   tokens: [
     _tokensDragonSpiritToken,

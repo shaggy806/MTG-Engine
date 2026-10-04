@@ -59,6 +59,7 @@ import _poolEmberEyeWolf from "../pool/ember-eye-wolf.js";
 import _poolEnchantresssPresence from "../pool/enchantresss-presence.js";
 import _poolEngulfingEruption from "../pool/engulfing-eruption.js";
 import _poolEnlightenedAscetic from "../pool/enlightened-ascetic.js";
+import _poolEnvoyOfTheAncestors from "../pool/envoy-of-the-ancestors.js";
 import _poolEscapeTunnel from "../pool/escape-tunnel.js";
 import _poolEsikaGodOfTheTree from "../pool/esika-god-of-the-tree.js";
 import _poolEternalSkylord from "../pool/eternal-skylord.js";
@@ -67,6 +68,7 @@ import _poolExplore from "../pool/explore.js";
 import _poolExplosiveShot from "../pool/explosive-shot.js";
 import _poolFaeburrowElder from "../pool/faeburrow-elder.js";
 import _poolFaunaShaman from "../pool/fauna-shaman.js";
+import _poolFearOfMissingOut from "../pool/fear-of-missing-out.js";
 import _poolFelidarCub from "../pool/felidar-cub.js";
 import _poolFlubsTheFool from "../pool/flubs-the-fool.js";
 import _poolFriendlyTeddy from "../pool/friendly-teddy.js";
@@ -89,6 +91,7 @@ import _poolHiredPoisoner from "../pool/hired-poisoner.js";
 import _poolHorizonCanopy from "../pool/horizon-canopy.js";
 import _poolHulkBrutalBrawler from "../pool/hulk-brutal-brawler.js";
 import _poolImpeccableTiming from "../pool/impeccable-timing.js";
+import _poolIngaAndEsika from "../pool/inga-and-esika.js";
 import _poolIridescentVinelasher from "../pool/iridescent-vinelasher.js";
 import _poolIrohsDemonstration from "../pool/irohs-demonstration.js";
 import _poolIronBarbHellion from "../pool/iron-barb-hellion.js";
@@ -99,6 +102,7 @@ import _poolKamiOfAncientLaw from "../pool/kami-of-ancient-law.js";
 import _poolKamiOfOldStone from "../pool/kami-of-old-stone.js";
 import _poolKhenraCharioteer from "../pool/khenra-charioteer.js";
 import _poolKnotvineMystic from "../pool/knotvine-mystic.js";
+import _poolLeechriddenSwamp from "../pool/leechridden-swamp.js";
 import _poolLeoninBattlemage from "../pool/leonin-battlemage.js";
 import _poolLeoninElder from "../pool/leonin-elder.js";
 import _poolLucentLiminid from "../pool/lucent-liminid.js";
@@ -172,6 +176,7 @@ import _poolSkyscanner from "../pool/skyscanner.js";
 import _poolSliptideSerpent from "../pool/sliptide-serpent.js";
 import _poolSnareThopter from "../pool/snare-thopter.js";
 import _poolSolTalisman from "../pool/sol-talisman.js";
+import _poolSoulsFire from "../pool/souls-fire.js";
 import _poolSplitUp from "../pool/split-up.js";
 import _poolSporeFrog from "../pool/spore-frog.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
@@ -273,6 +278,7 @@ const shard: CardShard = {
     _poolEnchantresssPresence,
     _poolEngulfingEruption,
     _poolEnlightenedAscetic,
+    _poolEnvoyOfTheAncestors,
     _poolEscapeTunnel,
     _poolEsikaGodOfTheTree,
     _poolEternalSkylord,
@@ -281,6 +287,7 @@ const shard: CardShard = {
     _poolExplosiveShot,
     _poolFaeburrowElder,
     _poolFaunaShaman,
+    _poolFearOfMissingOut,
     _poolFelidarCub,
     _poolFlubsTheFool,
     _poolFriendlyTeddy,
@@ -303,6 +310,7 @@ const shard: CardShard = {
     _poolHorizonCanopy,
     _poolHulkBrutalBrawler,
     _poolImpeccableTiming,
+    _poolIngaAndEsika,
     _poolIridescentVinelasher,
     _poolIrohsDemonstration,
     _poolIronBarbHellion,
@@ -313,6 +321,7 @@ const shard: CardShard = {
     _poolKamiOfOldStone,
     _poolKhenraCharioteer,
     _poolKnotvineMystic,
+    _poolLeechriddenSwamp,
     _poolLeoninBattlemage,
     _poolLeoninElder,
     _poolLucentLiminid,
@@ -386,6 +395,7 @@ const shard: CardShard = {
     _poolSliptideSerpent,
     _poolSnareThopter,
     _poolSolTalisman,
+    _poolSoulsFire,
     _poolSplitUp,
     _poolSporeFrog,
     _poolStickyFingers,

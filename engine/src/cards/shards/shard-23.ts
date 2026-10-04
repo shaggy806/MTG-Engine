@@ -66,6 +66,7 @@ import _poolFiligreeFamiliar from "../pool/filigree-familiar.js";
 import _poolFirescreamer from "../pool/firescreamer.js";
 import _poolFiskTower from "../pool/fisk-tower.js";
 import _poolFomoriVault from "../pool/fomori-vault.js";
+import _poolFreyaliseLlanowarsFury from "../pool/freyalise-llanowars-fury.js";
 import _poolFrogButler from "../pool/frog-butler.js";
 import _poolFrontierSiege from "../pool/frontier-siege.js";
 import _poolFuneralCharm from "../pool/funeral-charm.js";
@@ -143,11 +144,13 @@ import _poolRakingClaws from "../pool/raking-claws.js";
 import _poolRaphMikeyTroublemakers from "../pool/raph-mikey-troublemakers.js";
 import _poolRazakethTheFoulblooded from "../pool/razaketh-the-foulblooded.js";
 import _poolReachThroughMists from "../pool/reach-through-mists.js";
+import _poolRegisaurAlpha from "../pool/regisaur-alpha.js";
 import _poolRelicBarrier from "../pool/relic-barrier.js";
 import _poolRenegadeTroops from "../pool/renegade-troops.js";
 import _poolRimefurReindeer from "../pool/rimefur-reindeer.js";
 import _poolRottedHulk from "../pool/rotted-hulk.js";
 import _poolRuneScarredDemon from "../pool/rune-scarred-demon.js";
+import _poolScorchedGeyser from "../pool/scorched-geyser.js";
 import _poolSelesnyaSignet from "../pool/selesnya-signet.js";
 import _poolServoExhibition from "../pool/servo-exhibition.js";
 import _poolSetessanTraining from "../pool/setessan-training.js";
@@ -286,6 +289,7 @@ const shard: CardShard = {
     _poolFirescreamer,
     _poolFiskTower,
     _poolFomoriVault,
+    _poolFreyaliseLlanowarsFury,
     _poolFrogButler,
     _poolFrontierSiege,
     _poolFuneralCharm,
@@ -363,11 +367,13 @@ const shard: CardShard = {
     _poolRaphMikeyTroublemakers,
     _poolRazakethTheFoulblooded,
     _poolReachThroughMists,
+    _poolRegisaurAlpha,
     _poolRelicBarrier,
     _poolRenegadeTroops,
     _poolRimefurReindeer,
     _poolRottedHulk,
     _poolRuneScarredDemon,
+    _poolScorchedGeyser,
     _poolSelesnyaSignet,
     _poolServoExhibition,
     _poolSetessanTraining,

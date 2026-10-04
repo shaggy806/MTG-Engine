@@ -10,6 +10,7 @@ import _poolAirElemental from "../pool/air-elemental.js";
 import _poolAkoumTeeth from "../pool/akoum-teeth.js";
 import _poolAncientBrontodon from "../pool/ancient-brontodon.js";
 import _poolApexDevastator from "../pool/apex-devastator.js";
+import _poolArdenvaleFealty from "../pool/ardenvale-fealty.js";
 import _poolAshcoatBear from "../pool/ashcoat-bear.js";
 import _poolAtomize from "../pool/atomize.js";
 import _poolAutonSoldier from "../pool/auton-soldier.js";
@@ -70,6 +71,7 @@ import _poolGerrardsBattleCry from "../pool/gerrards-battle-cry.js";
 import _poolGetThePoint from "../pool/get-the-point.js";
 import _poolGhyrsonStarnKelermorph from "../pool/ghyrson-starn-kelermorph.js";
 import _poolGiantMantis from "../pool/giant-mantis.js";
+import _poolGleefulArsonist from "../pool/gleeful-arsonist.js";
 import _poolGlimpseTheUnthinkable from "../pool/glimpse-the-unthinkable.js";
 import _poolGoblinBully from "../pool/goblin-bully.js";
 import _poolGolgariFindbroker from "../pool/golgari-findbroker.js";
@@ -101,6 +103,7 @@ import _poolKefkaCourtMage from "../pool/kefka-court-mage.js";
 import _poolKhalniAmbush from "../pool/khalni-ambush.js";
 import _poolLeoninLightscribe from "../pool/leonin-lightscribe.js";
 import _poolLiesaShroudOfDusk from "../pool/liesa-shroud-of-dusk.js";
+import _poolLinvalaKeeperOfSilence from "../pool/linvala-keeper-of-silence.js";
 import _poolLiturgyOfBlood from "../pool/liturgy-of-blood.js";
 import _poolLivingLightning from "../pool/living-lightning.js";
 import _poolLothlorienLookout from "../pool/lothlorien-lookout.js";
@@ -113,6 +116,7 @@ import _poolMantleOfWebs from "../pool/mantle-of-webs.js";
 import _poolMaraudersAxe from "../pool/marauders-axe.js";
 import _poolMarisisTwinclaws from "../pool/marisis-twinclaws.js";
 import _poolMarrowGnawer from "../pool/marrow-gnawer.js";
+import _poolMasterTransmuter from "../pool/master-transmuter.js";
 import _poolMetalworkColossus from "../pool/metalwork-colossus.js";
 import _poolMistCloakedHerald from "../pool/mist-cloaked-herald.js";
 import _poolMoorlandInquisitor from "../pool/moorland-inquisitor.js";
@@ -171,6 +175,7 @@ import _poolShireiShizosCaretaker from "../pool/shirei-shizos-caretaker.js";
 import _poolSilverErne from "../pool/silver-erne.js";
 import _poolSilverbeakGriffin from "../pool/silverbeak-griffin.js";
 import _poolSimicLocket from "../pool/simic-locket.js";
+import _poolSkyclaveRelic from "../pool/skyclave-relic.js";
 import _poolSnowCoveredPlains from "../pool/snow-covered-plains.js";
 import _poolSpearSpewer from "../pool/spear-spewer.js";
 import _poolSpectralReserves from "../pool/spectral-reserves.js";
@@ -231,6 +236,7 @@ const shard: CardShard = {
     _poolAkoumTeeth,
     _poolAncientBrontodon,
     _poolApexDevastator,
+    _poolArdenvaleFealty,
     _poolAshcoatBear,
     _poolAtomize,
     _poolAutonSoldier,
@@ -291,6 +297,7 @@ const shard: CardShard = {
     _poolGetThePoint,
     _poolGhyrsonStarnKelermorph,
     _poolGiantMantis,
+    _poolGleefulArsonist,
     _poolGlimpseTheUnthinkable,
     _poolGoblinBully,
     _poolGolgariFindbroker,
@@ -322,6 +329,7 @@ const shard: CardShard = {
     _poolKhalniAmbush,
     _poolLeoninLightscribe,
     _poolLiesaShroudOfDusk,
+    _poolLinvalaKeeperOfSilence,
     _poolLiturgyOfBlood,
     _poolLivingLightning,
     _poolLothlorienLookout,
@@ -334,6 +342,7 @@ const shard: CardShard = {
     _poolMaraudersAxe,
     _poolMarisisTwinclaws,
     _poolMarrowGnawer,
+    _poolMasterTransmuter,
     _poolMetalworkColossus,
     _poolMistCloakedHerald,
     _poolMoorlandInquisitor,
@@ -392,6 +401,7 @@ const shard: CardShard = {
     _poolSilverErne,
     _poolSilverbeakGriffin,
     _poolSimicLocket,
+    _poolSkyclaveRelic,
     _poolSnowCoveredPlains,
     _poolSpearSpewer,
     _poolSpectralReserves,

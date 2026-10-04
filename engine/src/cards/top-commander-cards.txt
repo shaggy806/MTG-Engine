@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2439 already implemented / 2561 missing (marks refreshed 2026-10-04)
+2542 already implemented / 2458 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2421,13 +2421,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2428  Abundant Growth                          {G}              Enchantment — Aura
 [ ]  2429  Force of Despair                         {1}{B}{B}        Instant
 [ ]  2430  Winds of Change                          {R}              Sorcery
-[ ]  2431  Master Transmuter                        {3}{U}           Artifact Creature — Human Artificer
+[x]  2431  Master Transmuter                        {3}{U}           Artifact Creature — Human Artificer
 [x]  2432  Gishath, Sun's Avatar                    {5}{R}{G}{W}     Legendary Creature — Dinosaur Avatar
-[ ]  2433  Primordial Hydra                         {X}{G}{G}        Creature — Hydra
+[x]  2433  Primordial Hydra                         {X}{G}{G}        Creature — Hydra
 [ ]  2434  Forsaken Miner                           {B}              Creature — Skeleton Rogue
-[ ]  2435  Mycosynth Wellspring                     {2}              Artifact
+[x]  2435  Mycosynth Wellspring                     {2}              Artifact
 [ ]  2436  Bruna, the Fading Light                  {5}{W}{W}        Legendary Creature — Angel Horror
-[ ]  2437  Consuming Corruption                     {B}{B}           Instant
+[x]  2437  Consuming Corruption                     {B}{B}           Instant
 [x]  2438  Encroaching Dragonstorm                  {3}{G}           Enchantment
 [ ]  2439  Villainous Wealth                        {X}{B}{G}{U}     Sorcery
 [x]  2440  Faerie Seer                              {U}              Creature — Faerie Wizard
@@ -2440,13 +2440,13 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2447  Boreal Druid                             {G}              Snow Creature — Elf Druid
 [x]  2448  Accursed Duneyard                        {0}              Land
 [ ]  2449  Dollmaker's Shop // Porcelain Gallery    {1}{W} // {4}{W}{W} Enchantment — Room // Enchantment — Room
-[ ]  2450  Cranial Plating                          {2}              Artifact — Equipment
-[ ]  2451  Endless Ranks of the Dead                {2}{B}{B}        Enchantment
+[x]  2450  Cranial Plating                          {2}              Artifact — Equipment
+[x]  2451  Endless Ranks of the Dead                {2}{B}{B}        Enchantment
 [ ]  2452  Druid of Purification                    {3}{G}           Creature — Human Druid
 [ ]  2453  Ancient Cellarspawn                      {1}{B}{B}        Enchantment Creature — Horror
-[ ]  2454  Collector Ouphe                          {1}{G}           Creature — Ouphe
+[x]  2454  Collector Ouphe                          {1}{G}           Creature — Ouphe
 [x]  2455  Molten Echoes                            {2}{R}{R}        Enchantment
-[ ]  2456  Pyrohemia                                {2}{R}{R}        Enchantment
+[x]  2456  Pyrohemia                                {2}{R}{R}        Enchantment
 [ ]  2457  Runic Armasaur                           {1}{G}{G}        Creature — Dinosaur
 [ ]  2458  Pantlaza, Sun-Favored                    {2}{R}{G}{W}     Legendary Creature — Dinosaur
 [x]  2459  Yarok, the Desecrated                    {2}{B}{G}{U}     Legendary Creature — Elemental Horror
@@ -2461,66 +2461,66 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2468  Ureni of the Unwritten                   {4}{G}{U}{R}     Legendary Creature — Spirit Dragon
 [ ]  2469  Wrenn and Seven                          {3}{G}{G}        Legendary Planeswalker — Wrenn
 [x]  2470  Myr Convert                              {2}              Artifact Creature — Phyrexian Myr
-[ ]  2471  Ivy Lane Denizen                         {3}{G}           Creature — Elf Warrior
+[x]  2471  Ivy Lane Denizen                         {3}{G}           Creature — Elf Warrior
 [ ]  2472  Gonti, Night Minister                    {2}{B}{B}        Legendary Creature — Aetherborn Rogue
-[ ]  2473  Alibou, Ancient Witness                  {3}{R}{W}        Legendary Artifact Creature — Golem
+[x]  2473  Alibou, Ancient Witness                  {3}{R}{W}        Legendary Artifact Creature — Golem
 [ ]  2474  Wand of Wonder                           {3}{R}           Artifact
-[ ]  2475  Disciple of the Vault                    {B}              Creature — Human Cleric
+[x]  2475  Disciple of the Vault                    {B}              Creature — Human Cleric
 [ ]  2476  Dionus, Elvish Archdruid                 {3}{G}           Legendary Creature — Elf Druid
 [ ]  2477  Mnemonic Betrayal                        {1}{U}{B}        Sorcery
 [ ]  2478  Ilharg, the Raze-Boar                    {3}{R}{R}        Legendary Creature — Boar God
 [ ]  2479  Kozilek, the Broken Reality              {9}              Legendary Creature — Eldrazi
-[ ]  2480  Manor Gate                               {0}              Land — Gate
-[ ]  2481  Inga and Esika                           {2}{G}{U}        Legendary Creature — Human God
+[x]  2480  Manor Gate                               {0}              Land — Gate
+[x]  2481  Inga and Esika                           {2}{G}{U}        Legendary Creature — Human God
 [ ]  2482  Aminatou's Augury                        {6}{U}{U}        Sorcery
 [ ]  2483  Weatherlight                             {4}              Legendary Artifact — Vehicle
-[ ]  2484  Infectious Inquiry                       {2}{B}           Sorcery
-[ ]  2485  Fear of Missing Out                      {1}{R}           Enchantment Creature — Nightmare
-[ ]  2486  Valley Rotcaller                         {1}{B}           Creature — Squirrel Warlock
+[x]  2484  Infectious Inquiry                       {2}{B}           Sorcery
+[x]  2485  Fear of Missing Out                      {1}{R}           Enchantment Creature — Nightmare
+[x]  2486  Valley Rotcaller                         {1}{B}           Creature — Squirrel Warlock
 [ ]  2487  Expropriate                              {7}{U}{U}        Sorcery
-[ ]  2488  Captivating Vampire                      {1}{B}{B}        Creature — Vampire
+[x]  2488  Captivating Vampire                      {1}{B}{B}        Creature — Vampire
 [ ]  2489  The Regalia                              {4}              Legendary Artifact — Vehicle
-[ ]  2490  Agna Qel'a                               {0}              Land
+[x]  2490  Agna Qel'a                               {0}              Land
 [x]  2491  Nulldrifter                              {7}              Creature — Eldrazi Elemental
 [x]  2492  Hordeling Outburst                       {1}{R}{R}        Sorcery
 [ ]  2493  Powerbalance                             {R}{R}           Enchantment
-[ ]  2494  Envoy of the Ancestors                   {2}{W}           Creature — Human Cleric
-[ ]  2495  Voldaren Estate                          {0}              Land
+[x]  2494  Envoy of the Ancestors                   {2}{W}           Creature — Human Cleric
+[x]  2495  Voldaren Estate                          {0}              Land
 [ ]  2496  Yuriko, the Tiger's Shadow               {1}{U}{B}        Legendary Creature — Human Ninja
-[ ]  2497  Unquestioned Authority                   {2}{W}           Enchantment — Aura
+[x]  2497  Unquestioned Authority                   {2}{W}           Enchantment — Aura
 [ ]  2498  Endless Atlas                            {2}              Artifact
 [ ]  2499  Selfless Squire                          {3}{W}           Creature — Human Soldier
-[ ]  2500  Ghoulcaller Gisa                         {3}{B}{B}        Legendary Creature — Human Wizard
+[x]  2500  Ghoulcaller Gisa                         {3}{B}{B}        Legendary Creature — Human Wizard
 [ ]  2501  Animist's Awakening                      {X}{G}           Sorcery
-[ ]  2502  Empty the Warrens                        {3}{R}           Sorcery
+[x]  2502  Empty the Warrens                        {3}{R}           Sorcery
 [x]  2503  Otherworldly Gaze                        {U}              Instant
 [ ]  2504  Echoing Deeps                            {0}              Land — Cave
 [ ]  2505  Y'shtola Rhul                            {4}{U}{U}        Legendary Creature — Cat Druid
-[ ]  2506  Forced Fruition                          {4}{U}{U}        Enchantment
-[ ]  2507  Regisaur Alpha                           {3}{R}{G}        Creature — Dinosaur
-[ ]  2508  Lair of the Hydra                        {0}              Land
+[x]  2506  Forced Fruition                          {4}{U}{U}        Enchantment
+[x]  2507  Regisaur Alpha                           {3}{R}{G}        Creature — Dinosaur
+[x]  2508  Lair of the Hydra                        {0}              Land
 [x]  2509  Thrasios, Triton Hero                    {G}{U}           Legendary Creature — Merfolk Wizard
-[ ]  2510  Bugenhagen, Wise Elder                   {1}{G}           Legendary Creature — Human Shaman
+[x]  2510  Bugenhagen, Wise Elder                   {1}{G}           Legendary Creature — Human Shaman
 [ ]  2511  Roiling Vortex                           {1}{R}           Enchantment
-[ ]  2512  Alandra, Sky Dreamer                     {2}{U}{U}        Legendary Creature — Merfolk Wizard
-[ ]  2513  Scorched Geyser                          {0}              Land — Island Mountain
+[x]  2512  Alandra, Sky Dreamer                     {2}{U}{U}        Legendary Creature — Merfolk Wizard
+[x]  2513  Scorched Geyser                          {0}              Land — Island Mountain
 [ ]  2514  Railway Brawler                          {3}{G}{G}        Creature — Rhino Warrior
-[ ]  2515  Brightstone Ritual                       {R}              Instant
+[x]  2515  Brightstone Ritual                       {R}              Instant
 [x]  2516  Ancient Ziggurat                         {0}              Land
 [x]  2517  Haughty Djinn                            {1}{U}{U}        Creature — Djinn
-[ ]  2518  Skyclave Relic                           {3}              Artifact
+[x]  2518  Skyclave Relic                           {3}              Artifact
 [ ]  2519  Court of Ambition                        {2}{B}{B}        Enchantment
 [x]  2520  Scour for Scrap                          {3}{U}           Instant
-[ ]  2521  Sundering Growth                         {G/W}{G/W}       Instant
-[ ]  2522  Ancient Stone Idol                       {10}             Artifact Creature — Golem
+[x]  2521  Sundering Growth                         {G/W}{G/W}       Instant
+[x]  2522  Ancient Stone Idol                       {10}             Artifact Creature — Golem
 [x]  2523  Esika, God of the Tree // The Prismatic Bridge {3}              Legendary Creature — God // Legendary Enchantment
-[ ]  2524  Karn, Legacy Reforged                    {5}              Legendary Artifact Creature — Golem
-[ ]  2525  Life's Legacy                            {1}{G}           Sorcery
+[x]  2524  Karn, Legacy Reforged                    {5}              Legendary Artifact Creature — Golem
+[x]  2525  Life's Legacy                            {1}{G}           Sorcery
 [ ]  2526  Astral Dragon                            {6}{U}{U}        Creature — Dragon
-[ ]  2527  Emrakul's Messenger                      {1}{U}           Creature — Eldrazi Faerie Rogue
-[ ]  2528  Diresight                                {2}{B}           Sorcery
-[ ]  2529  Giant Adephage                           {5}{G}{G}        Creature — Insect
-[ ]  2530  Mox Jasper                               {0}              Legendary Artifact
+[x]  2527  Emrakul's Messenger                      {1}{U}           Creature — Eldrazi Faerie Rogue
+[x]  2528  Diresight                                {2}{B}           Sorcery
+[x]  2529  Giant Adephage                           {5}{G}{G}        Creature — Insect
+[x]  2530  Mox Jasper                               {0}              Legendary Artifact
 [ ]  2531  Prosperous Thief                         {2}{U}           Creature — Human Ninja
 [ ]  2532  Kogla and Yidaro                         {2}{R}{R}{G}{G}  Legendary Creature — Ape Dinosaur Turtle
 [ ]  2533  Doc Aurlock, Grizzled Genius             {G}{U}           Legendary Creature — Bear Druid
@@ -2534,35 +2534,35 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2541  Artifact Mutation                        {R}{G}           Instant
 [ ]  2542  Kellogg, Dangerous Mind                  {1}{B}{R}        Legendary Creature — Human Mercenary
 [x]  2543  Temple of the Dragon Queen               {0}              Land
-[ ]  2544  Debt to the Deathless                    {X}{W}{W}{B}{B}  Sorcery
-[ ]  2545  Bloodline Bidding                        {6}{B}{B}        Sorcery
-[ ]  2546  Rampaging Ferocidon                      {2}{R}           Creature — Dinosaur
+[x]  2544  Debt to the Deathless                    {X}{W}{W}{B}{B}  Sorcery
+[x]  2545  Bloodline Bidding                        {6}{B}{B}        Sorcery
+[x]  2546  Rampaging Ferocidon                      {2}{R}           Creature — Dinosaur
 [x]  2547  Ajani's Welcome                          {W}              Enchantment
 [x]  2548  Blossoming Defense                       {G}              Instant
 [ ]  2549  Tinybones, the Pickpocket                {B}              Legendary Creature — Skeleton Rogue
 [x]  2550  Zhalfirin Void                           {0}              Land
-[ ]  2551  Sea Gate                                 {0}              Land — Gate
-[ ]  2552  Merchant Scroll                          {1}{U}           Sorcery
-[ ]  2553  Glóin, Dwarf Emissary                    {2}{R}           Legendary Creature — Dwarf Advisor
-[ ]  2554  Chomping Changeling                      {2}{G}           Creature — Shapeshifter
+[x]  2551  Sea Gate                                 {0}              Land — Gate
+[x]  2552  Merchant Scroll                          {1}{U}           Sorcery
+[x]  2553  Glóin, Dwarf Emissary                    {2}{R}           Legendary Creature — Dwarf Advisor
+[x]  2554  Chomping Changeling                      {2}{G}           Creature — Shapeshifter
 [ ]  2555  Titan of Industry                        {4}{G}{G}{G}     Creature — Elemental
-[ ]  2556  Tamiyo's Journal                         {5}              Legendary Artifact — Book
-[ ]  2557  Saheeli, Sublime Artificer               {1}{U/R}{U/R}    Legendary Planeswalker — Saheeli
+[x]  2556  Tamiyo's Journal                         {5}              Legendary Artifact — Book
+[x]  2557  Saheeli, Sublime Artificer               {1}{U/R}{U/R}    Legendary Planeswalker — Saheeli
 [ ]  2558  PuPu UFO                                 {2}              Artifact Creature — Construct Alien
-[ ]  2559  Black Dragon Gate                        {0}              Land — Gate
+[x]  2559  Black Dragon Gate                        {0}              Land — Gate
 [ ]  2560  Reiterate                                {1}{R}{R}        Instant
-[ ]  2561  Baldur's Gate                            {0}              Legendary Land — Gate
+[x]  2561  Baldur's Gate                            {0}              Legendary Land — Gate
 [ ]  2562  Mari, the Killing Quill                  {1}{B}{B}        Legendary Creature — Vampire Assassin
-[ ]  2563  Somberwald Sage                          {2}{G}           Creature — Human Druid
+[x]  2563  Somberwald Sage                          {2}{G}           Creature — Human Druid
 [ ]  2564  Nature's Will                            {2}{G}{G}        Enchantment
-[ ]  2565  Leechridden Swamp                        {0}              Land — Swamp
+[x]  2565  Leechridden Swamp                        {0}              Land — Swamp
 [ ]  2566  Aclazotz, Deepest Betrayal // Temple of the Dead {5}              Legendary Creature — Bat God // Land
-[ ]  2567  Indulgent Aristocrat                     {B}              Creature — Vampire Noble
-[ ]  2568  Witch of the Moors                       {3}{B}{B}        Creature — Human Warlock
+[x]  2567  Indulgent Aristocrat                     {B}              Creature — Vampire Noble
+[x]  2568  Witch of the Moors                       {3}{B}{B}        Creature — Human Warlock
 [x]  2569  Ajani's Pridemate                        {1}{W}           Creature — Cat Soldier
 [x]  2570  Retreat to Kazandu                       {2}{G}           Enchantment
 [ ]  2571  Gisela, the Broken Blade                 {2}{W}{W}        Legendary Creature — Angel Horror
-[ ]  2572  Angrath's Marauders                      {5}{R}{R}        Creature — Human Pirate
+[x]  2572  Angrath's Marauders                      {5}{R}{R}        Creature — Human Pirate
 [ ]  2573  Baird, Steward of Argive                 {2}{W}{W}        Legendary Creature — Human Soldier
 [x]  2574  Goblin Chieftain                         {1}{R}{R}        Creature — Goblin
 [x]  2575  Dread Presence                           {3}{B}           Creature — Nightmare
@@ -2570,80 +2570,80 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2577  Beamtown Beatstick                       {R}              Artifact — Equipment
 [ ]  2578  Currency Converter                       {1}              Artifact
 [x]  2579  Will of the Abzan                        {3}{B}           Sorcery
-[ ]  2580  Siege-Gang Lieutenant                    {3}{R}           Creature — Goblin
-[ ]  2581  Urabrask's Forge                         {2}{R}           Artifact
+[x]  2580  Siege-Gang Lieutenant                    {3}{R}           Creature — Goblin
+[x]  2581  Urabrask's Forge                         {2}{R}           Artifact
 [ ]  2582  Gauntlet of Power                        {5}              Artifact
 [ ]  2583  Yawgmoth's Will                          {2}{B}           Sorcery
 [ ]  2584  Andúril, Narsil Reforged                 {2}              Legendary Artifact — Equipment
 [ ]  2585  Gogo, Mysterious Mime                    {3}{R}           Legendary Creature — Wizard
-[ ]  2586  Momentous Fall                           {2}{G}{G}        Instant
-[ ]  2587  Puppeteer Clique                         {3}{B}{B}        Creature — Faerie Wizard
+[x]  2586  Momentous Fall                           {2}{G}{G}        Instant
+[x]  2587  Puppeteer Clique                         {3}{B}{B}        Creature — Faerie Wizard
 [x]  2588  Y'shtola, Night's Blessed                {1}{W}{U}{B}     Legendary Creature — Cat Warlock
-[ ]  2589  Megrim                                   {2}{B}           Enchantment
-[ ]  2590  Spine of Ish Sah                         {7}              Artifact
-[ ]  2591  Priest of Fell Rites                     {W}{B}           Creature — Human Warlock
-[ ]  2592  Soul's Fire                              {2}{R}           Instant
+[x]  2589  Megrim                                   {2}{B}           Enchantment
+[x]  2590  Spine of Ish Sah                         {7}              Artifact
+[x]  2591  Priest of Fell Rites                     {W}{B}           Creature — Human Warlock
+[x]  2592  Soul's Fire                              {2}{R}           Instant
 [ ]  2593  Ascend from Avernus                      {X}{W}{W}{W}     Sorcery
 [ ]  2594  Bloodthirster                            {5}{R}           Creature — Demon
-[ ]  2595  Brass Squire                             {3}              Artifact Creature — Myr
+[x]  2595  Brass Squire                             {3}              Artifact Creature — Myr
 [ ]  2596  Echo of Eons                             {4}{U}{U}        Sorcery
 [x]  2597  Rakdos, Lord of Riots                    {B}{B}{R}{R}     Legendary Creature — Demon
 [x]  2598  Scene of the Crime                       {0}              Artifact Land — Clue
 [ ]  2599  Arch of Orazca                           {0}              Land
-[ ]  2600  Linvala, Keeper of Silence               {2}{W}{W}        Legendary Creature — Angel
+[x]  2600  Linvala, Keeper of Silence               {2}{W}{W}        Legendary Creature — Angel
 [ ]  2601  Angelic Destiny                          {2}{W}{W}        Enchantment — Aura
-[ ]  2602  Black Mage's Rod                         {1}{B}           Artifact — Equipment
+[x]  2602  Black Mage's Rod                         {1}{B}           Artifact — Equipment
 [ ]  2603  Ghirapur Orrery                          {4}              Artifact
 [ ]  2604  Inquisitive Glimmer                      {W}{U}           Enchantment Creature — Fox Glimmer
-[ ]  2605  Cid, Freeflier Pilot                     {1}{W}           Legendary Creature — Human Warrior Pilot
+[x]  2605  Cid, Freeflier Pilot                     {1}{W}           Legendary Creature — Human Warrior Pilot
 [x]  2606  Bloated Contaminator                     {2}{G}           Creature — Phyrexian Beast
 [x]  2607  Burglar Rat                              {1}{B}           Creature — Rat
 [x]  2608  Kaervek the Merciless                    {5}{B}{R}        Legendary Creature — Human Shaman
-[ ]  2609  Virtue of Loyalty // Ardenvale Fealty    {3}{W}{W} // {1}{W} Enchantment // Instant — Adventure
-[ ]  2610  Gold-Forged Thopteryx                    {W}{U}           Artifact Creature — Dinosaur Thopter
+[x]  2609  Virtue of Loyalty // Ardenvale Fealty    {3}{W}{W} // {1}{W} Enchantment // Instant — Adventure
+[x]  2610  Gold-Forged Thopteryx                    {W}{U}           Artifact Creature — Dinosaur Thopter
 [x]  2611  Chulane, Teller of Tales                 {2}{G}{W}{U}     Legendary Creature — Human Druid
-[ ]  2612  Kabira Takedown // Kabira Plateau        {2}              Instant // Land
-[ ]  2613  Blood Seeker                             {1}{B}           Creature — Vampire Shaman
+[x]  2612  Kabira Takedown // Kabira Plateau        {2}              Instant // Land
+[x]  2613  Blood Seeker                             {1}{B}           Creature — Vampire Shaman
 [ ]  2614  Unbound Flourishing                      {2}{G}           Enchantment
 [ ]  2615  Final Parting                            {3}{B}{B}        Sorcery
-[ ]  2616  Vraska Joins Up                          {B}{G}           Legendary Enchantment
+[x]  2616  Vraska Joins Up                          {B}{G}           Legendary Enchantment
 [ ]  2617  Ghoulish Impetus                         {2}{B}           Enchantment — Aura
 [ ]  2618  Ancient Bronze Dragon                    {5}{G}{G}        Creature — Elder Dragon
-[ ]  2619  Gleaming Splendor                        {1}{W}           Enchantment
-[ ]  2620  Gateway Plaza                            {0}              Land — Gate
+[x]  2619  Gleaming Splendor                        {1}{W}           Enchantment
+[x]  2620  Gateway Plaza                            {0}              Land — Gate
 [ ]  2621  The Immortal Sun                         {6}              Legendary Artifact
 [x]  2622  Blood Pet                                {B}              Creature — Thrull
-[ ]  2623  Twinferno                                {1}{R}           Instant
+[x]  2623  Twinferno                                {1}{R}           Instant
 [ ]  2624  Thornbite Staff                          {2}              Kindred Artifact — Shaman Equipment
-[ ]  2625  Zul Ashur, Lich Lord                     {1}{B}           Legendary Creature — Zombie Warlock
-[ ]  2626  Dwynen, Gilt-Leaf Daen                   {2}{G}{G}        Legendary Creature — Elf Warrior
+[x]  2625  Zul Ashur, Lich Lord                     {1}{B}           Legendary Creature — Zombie Warlock
+[x]  2626  Dwynen, Gilt-Leaf Daen                   {2}{G}{G}        Legendary Creature — Elf Warrior
 [x]  2627  Survivors' Encampment                    {0}              Land — Desert
 [x]  2628  Darkmoss Bridge                          {0}              Artifact Land
 [x]  2629  Gond Gate                                {0}              Land — Gate
 [ ]  2630  Temporal Mastery                         {5}{U}{U}        Sorcery
 [x]  2631  Efficient Construction                   {3}{U}           Enchantment
-[ ]  2632  Valorous Stance                          {1}{W}           Instant
-[ ]  2633  Impulse                                  {1}{U}           Instant
+[x]  2632  Valorous Stance                          {1}{W}           Instant
+[x]  2633  Impulse                                  {1}{U}           Instant
 [ ]  2634  Wrathful Raptors                         {4}{R}           Creature — Dinosaur
 [ ]  2635  Serra's Emissary                         {4}{W}{W}{W}     Creature — Angel
 [ ]  2636  Planar Nexus                             {0}              Land
 [ ]  2637  Lich-Knights' Conquest                   {4}{B}           Sorcery
-[ ]  2638  Heritage Reclamation                     {1}{G}           Instant
-[ ]  2639  Dawnsire, Sunstar Dreadnought            {5}              Legendary Artifact — Spacecraft
-[ ]  2640  Throne of the God-Pharaoh                {2}              Legendary Artifact
-[ ]  2641  Cunning Rhetoric                         {2}{B}           Enchantment
+[x]  2638  Heritage Reclamation                     {1}{G}           Instant
+[x]  2639  Dawnsire, Sunstar Dreadnought            {5}              Legendary Artifact — Spacecraft
+[x]  2640  Throne of the God-Pharaoh                {2}              Legendary Artifact
+[x]  2641  Cunning Rhetoric                         {2}{B}           Enchantment
 [x]  2642  Tinybones, Bauble Burglar                {1}{B}           Legendary Creature — Skeleton Rogue
-[ ]  2643  Vat of Rebirth                           {B}              Artifact
-[ ]  2644  Gleeful Arsonist                         {2}{R}           Creature — Human Wizard
+[x]  2643  Vat of Rebirth                           {B}              Artifact
+[x]  2644  Gleeful Arsonist                         {2}{R}           Creature — Human Wizard
 [x]  2645  The Ur-Dragon                            {4}{W}{U}{B}{R}{G} Legendary Creature — Dragon Avatar
 [ ]  2646  Eldrazi Confluence                       {2}{C}{C}        Instant
-[ ]  2647  Voyager Quickwelder                      {2}{W}           Artifact Creature — Robot Artificer
+[x]  2647  Voyager Quickwelder                      {2}{W}           Artifact Creature — Robot Artificer
 [ ]  2648  Cursed Totem                             {2}              Artifact
 [ ]  2649  Scholar of New Horizons                  {1}{W}           Creature — Human Scout
 [ ]  2650  Firebender Ascension                     {1}{R}           Enchantment
 [x]  2651  Quick Study                              {2}{U}           Instant
 [ ]  2652  Thousand-Faced Shadow                    {U}              Creature — Human Ninja
-[ ]  2653  Prologue to Phyresis                     {1}{U}           Instant
+[x]  2653  Prologue to Phyresis                     {1}{U}           Instant
 [x]  2654  Crystal Grotto                           {0}              Land
 [ ]  2655  Chandra's Incinerator                    {5}{R}           Creature — Elemental
 [ ]  2656  Pemmin's Aura                            {1}{U}{U}        Enchantment — Aura
@@ -2656,37 +2656,37 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2663  The Earth King                           {3}{G}           Legendary Creature — Human Noble Ally
 [ ]  2664  Mirri, Weatherlight Duelist              {1}{G}{W}        Legendary Creature — Cat Warrior
 [ ]  2665  Zack Fair                                {W}              Legendary Creature — Human Soldier
-[ ]  2666  Volatile Fault                           {0}              Land — Cave
-[ ]  2667  Khalni Heart Expedition                  {1}{G}           Enchantment
-[ ]  2668  Tectonic Hazard                          {R}              Sorcery
-[ ]  2669  Nadir Kraken                             {1}{U}{U}        Creature — Kraken
+[x]  2666  Volatile Fault                           {0}              Land — Cave
+[x]  2667  Khalni Heart Expedition                  {1}{G}           Enchantment
+[x]  2668  Tectonic Hazard                          {R}              Sorcery
+[x]  2669  Nadir Kraken                             {1}{U}{U}        Creature — Kraken
 [x]  2670  Surge Conductor                          {3}              Artifact Creature — Robot
 [x]  2671  Estrid's Invocation                      {2}{U}           Enchantment
-[ ]  2672  Kuldotha Forgemaster                     {5}              Artifact Creature — Construct
-[ ]  2673  Bred for the Hunt                        {1}{G}{U}        Enchantment
-[ ]  2674  Murkfiend Liege                          {2}{G/U}{G/U}{G/U} Creature — Horror
-[ ]  2675  Genesis Hydra                            {X}{G}{G}        Creature — Plant Hydra
+[x]  2672  Kuldotha Forgemaster                     {5}              Artifact Creature — Construct
+[x]  2673  Bred for the Hunt                        {1}{G}{U}        Enchantment
+[x]  2674  Murkfiend Liege                          {2}{G/U}{G/U}{G/U} Creature — Horror
+[x]  2675  Genesis Hydra                            {X}{G}{G}        Creature — Plant Hydra
 [x]  2676  Thalisse, Reverent Medium                {3}{W}{B}        Legendary Creature — Human Cleric
-[ ]  2677  Teferi's Time Twist                      {1}{U}           Instant
+[x]  2677  Teferi's Time Twist                      {1}{U}           Instant
 [x]  2678  Queen Marchesa                           {1}{R}{W}{B}     Legendary Creature — Human Assassin
-[ ]  2679  Brazen Borrower // Petty Theft           {1}{U}{U} // {1}{U} Creature — Faerie Rogue // Instant — Adventure
-[ ]  2680  Archfiend of Despair                     {6}{B}{B}        Creature — Demon
+[x]  2679  Brazen Borrower // Petty Theft           {1}{U}{U} // {1}{U} Creature — Faerie Rogue // Instant — Adventure
+[x]  2680  Archfiend of Despair                     {6}{B}{B}        Creature — Demon
 [x]  2681  Tifa Lockhart                            {1}{G}           Legendary Creature — Human Monk
-[ ]  2682  Freyalise, Llanowar's Fury               {3}{G}{G}        Legendary Planeswalker — Freyalise
+[x]  2682  Freyalise, Llanowar's Fury               {3}{G}{G}        Legendary Planeswalker — Freyalise
 [ ]  2683  Gilded Drake                             {1}{U}           Creature — Drake
-[ ]  2684  Jwari Disruption // Jwari Ruins          {2}              Instant // Land
+[x]  2684  Jwari Disruption // Jwari Ruins          {2}              Instant // Land
 [ ]  2685  Gandalf the White                        {3}{W}{W}        Legendary Creature — Avatar Wizard
 [ ]  2686  Shadrix Silverquill                      {3}{W}{B}        Legendary Creature — Elder Dragon
 [ ]  2687  Zenith Chronicler                        {2}              Artifact Creature — Phyrexian Construct
 [x]  2688  Invisible Stalker                        {1}{U}           Creature — Human Rogue
 [x]  2689  Essence Scatter                          {1}{U}           Instant
-[ ]  2690  Pashalik Mons                            {2}{R}           Legendary Creature — Goblin Warrior
+[x]  2690  Pashalik Mons                            {2}{R}           Legendary Creature — Goblin Warrior
 [ ]  2691  Improvisation Capstone                   {5}{R}{R}        Sorcery — Lesson
 [ ]  2692  Spectacular Showdown                     {1}{R}           Sorcery
 [x]  2693  Pip-Boy 3000                             {1}              Artifact — Equipment
 [x]  2694  Skithiryx, the Blight Dragon             {3}{B}{B}        Legendary Creature — Phyrexian Dragon Skeleton
-[ ]  2695  Primevals' Glorious Rebirth              {5}{W}{B}        Legendary Sorcery
-[ ]  2696  Mind's Dilation                          {5}{U}{U}        Enchantment
+[x]  2695  Primevals' Glorious Rebirth              {5}{W}{B}        Legendary Sorcery
+[x]  2696  Mind's Dilation                          {5}{U}{U}        Enchantment
 [ ]  2697  Ultimate Magic: Holy                     {2}{W}           Instant
 [ ]  2698  Worldsoul's Rage                         {X}{R}{G}        Sorcery
 [x]  2699  Careful Study                            {U}              Sorcery

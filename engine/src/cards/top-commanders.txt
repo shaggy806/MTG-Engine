@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-388 already implemented / 112 missing
+389 already implemented / 111 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -479,7 +479,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  473  Mr. Foxglove                                    6450 decks  {2}{G}{W}{U}     Legendary Creature — Fox Rogue
 [x]  474  Slimefoot, the Stowaway                         6443 decks  {1}{B}{G}        Legendary Creature — Fungus
 [x]  475  The Emperor of Palamecia                        6412 decks  {U}{R}           Legendary Creature — Human Noble Wizard // Legendary Creature — Demon Noble Wizard
-[ ]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
+[x]  476  Karn, Legacy Reforged                           6406 decks  {5}              Legendary Artifact Creature — Golem
 [ ]  477  Cecily, Haunted Mage                            6405 decks  {1}{U}{B}{R}     Legendary Creature — Human Wizard
 [x]  478  Nelly Borca, Impulsive Accuser                  6401 decks  {2}{R}{W}        Legendary Creature — Human Detective
 [x]  479  Minn, Wily Illusionist                          6397 decks  {1}{U}{U}        Legendary Creature — Gnome Wizard

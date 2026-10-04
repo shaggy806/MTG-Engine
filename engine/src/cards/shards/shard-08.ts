@@ -19,6 +19,7 @@ import _poolAnzragTheQuakeMole from "../pool/anzrag-the-quake-mole.js";
 import _poolAuraBlast from "../pool/aura-blast.js";
 import _poolAzoriusLocket from "../pool/azorius-locket.js";
 import _poolAzusaLostButSeeking from "../pool/azusa-lost-but-seeking.js";
+import _poolBaldursGate from "../pool/baldurs-gate.js";
 import _poolBalduvianBarbarians from "../pool/balduvian-barbarians.js";
 import _poolBarrenMoor from "../pool/barren-moor.js";
 import _poolBattleflySwarm from "../pool/battlefly-swarm.js";
@@ -66,6 +67,7 @@ import _poolElendasHierophant from "../pool/elendas-hierophant.js";
 import _poolElephantAmbush from "../pool/elephant-ambush.js";
 import _poolElfswornGiant from "../pool/elfsworn-giant.js";
 import _poolElvishVanguard from "../pool/elvish-vanguard.js";
+import _poolEndlessRanksOfTheDead from "../pool/endless-ranks-of-the-dead.js";
 import _poolEsperSentinel from "../pool/esper-sentinel.js";
 import _poolExplosiveVegetation from "../pool/explosive-vegetation.js";
 import _poolEzuriRenegadeLeader from "../pool/ezuri-renegade-leader.js";
@@ -99,6 +101,7 @@ import _poolJayemdaeTome from "../pool/jayemdae-tome.js";
 import _poolJazalGoldmane from "../pool/jazal-goldmane.js";
 import _poolJonIrenicusShatteredOne from "../pool/jon-irenicus-shattered-one.js";
 import _poolJwariScuttler from "../pool/jwari-scuttler.js";
+import _poolKabiraTakedown from "../pool/kabira-takedown.js";
 import _poolKhalniTerritory from "../pool/khalni-territory.js";
 import _poolKinsbaileSkirmisher from "../pool/kinsbaile-skirmisher.js";
 import _poolKomodoRhino from "../pool/komodo-rhino.js";
@@ -140,6 +143,7 @@ import _poolPilgrimOfTheFires from "../pool/pilgrim-of-the-fires.js";
 import _poolPreemptiveStrike from "../pool/preemptive-strike.js";
 import _poolPrimalDruid from "../pool/primal-druid.js";
 import _poolProfessorsWarning from "../pool/professors-warning.js";
+import _poolPuppeteerClique from "../pool/puppeteer-clique.js";
 import _poolPygmyAllosaurus from "../pool/pygmy-allosaurus.js";
 import _poolRagingKavu from "../pool/raging-kavu.js";
 import _poolRangingRaptors from "../pool/ranging-raptors.js";
@@ -203,6 +207,7 @@ import _poolWellWornSpatula from "../pool/well-worn-spatula.js";
 import _poolWhipSilk from "../pool/whip-silk.js";
 import _poolWildOx from "../pool/wild-ox.js";
 import _poolWindSpirit from "../pool/wind-spirit.js";
+import _poolWitchOfTheMoors from "../pool/witch-of-the-moors.js";
 import _poolWitherbloomApprentice from "../pool/witherbloom-apprentice.js";
 import _poolWorldlyTutor from "../pool/worldly-tutor.js";
 import _poolWreckingCrew from "../pool/wrecking-crew.js";
@@ -235,6 +240,7 @@ const shard: CardShard = {
     _poolAuraBlast,
     _poolAzoriusLocket,
     _poolAzusaLostButSeeking,
+    _poolBaldursGate,
     _poolBalduvianBarbarians,
     _poolBarrenMoor,
     _poolBattleflySwarm,
@@ -282,6 +288,7 @@ const shard: CardShard = {
     _poolElephantAmbush,
     _poolElfswornGiant,
     _poolElvishVanguard,
+    _poolEndlessRanksOfTheDead,
     _poolEsperSentinel,
     _poolExplosiveVegetation,
     _poolEzuriRenegadeLeader,
@@ -315,6 +322,7 @@ const shard: CardShard = {
     _poolJazalGoldmane,
     _poolJonIrenicusShatteredOne,
     _poolJwariScuttler,
+    _poolKabiraTakedown,
     _poolKhalniTerritory,
     _poolKinsbaileSkirmisher,
     _poolKomodoRhino,
@@ -356,6 +364,7 @@ const shard: CardShard = {
     _poolPreemptiveStrike,
     _poolPrimalDruid,
     _poolProfessorsWarning,
+    _poolPuppeteerClique,
     _poolPygmyAllosaurus,
     _poolRagingKavu,
     _poolRangingRaptors,
@@ -419,6 +428,7 @@ const shard: CardShard = {
     _poolWhipSilk,
     _poolWildOx,
     _poolWindSpirit,
+    _poolWitchOfTheMoors,
     _poolWitherbloomApprentice,
     _poolWorldlyTutor,
     _poolWreckingCrew,

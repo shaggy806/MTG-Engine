@@ -50,6 +50,7 @@ import _poolDismiss from "../pool/dismiss.js";
 import _poolDrossSkullbomb from "../pool/dross-skullbomb.js";
 import _poolDualcasterMage from "../pool/dualcaster-mage.js";
 import _poolDungroveElder from "../pool/dungrove-elder.js";
+import _poolEmrakulsMessenger from "../pool/emrakuls-messenger.js";
 import _poolExploreTheVastlands from "../pool/explore-the-vastlands.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
@@ -201,6 +202,7 @@ import _poolUnsubtleMockery from "../pool/unsubtle-mockery.js";
 import _poolUrborgDrake from "../pool/urborg-drake.js";
 import _poolVectorImperialCapital from "../pool/vector-imperial-capital.js";
 import _poolVigilance from "../pool/vigilance.js";
+import _poolVirtueOfLoyalty from "../pool/virtue-of-loyalty.js";
 import _poolVisceridArmor from "../pool/viscerid-armor.js";
 import _poolVolcanicDragon from "../pool/volcanic-dragon.js";
 import _poolVoyagesEnd from "../pool/voyages-end.js";
@@ -275,6 +277,7 @@ const shard: CardShard = {
     _poolDrossSkullbomb,
     _poolDualcasterMage,
     _poolDungroveElder,
+    _poolEmrakulsMessenger,
     _poolExploreTheVastlands,
     _poolExsanguinate,
     _poolFabledPassage,
@@ -426,6 +429,7 @@ const shard: CardShard = {
     _poolUrborgDrake,
     _poolVectorImperialCapital,
     _poolVigilance,
+    _poolVirtueOfLoyalty,
     _poolVisceridArmor,
     _poolVolcanicDragon,
     _poolVoyagesEnd,

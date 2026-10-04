@@ -30,6 +30,7 @@ import _poolBlessedLight from "../pool/blessed-light.js";
 import _poolBlightPile from "../pool/blight-pile.js";
 import _poolBlightning from "../pool/blightning.js";
 import _poolBodyDropper from "../pool/body-dropper.js";
+import _poolBrassSquire from "../pool/brass-squire.js";
 import _poolBrineShaman from "../pool/brine-shaman.js";
 import _poolBushwhack from "../pool/bushwhack.js";
 import _poolCanyonWildcat from "../pool/canyon-wildcat.js";
@@ -64,6 +65,7 @@ import _poolDragonkinBerserker from "../pool/dragonkin-berserker.js";
 import _poolDragonsPresence from "../pool/dragons-presence.js";
 import _poolDryadsFavor from "../pool/dryads-favor.js";
 import _poolDuskdaleWurm from "../pool/duskdale-wurm.js";
+import _poolDwynenGiltLeafDaen from "../pool/dwynen-gilt-leaf-daen.js";
 import _poolElfhamePalace from "../pool/elfhame-palace.js";
 import _poolElvenChorus from "../pool/elven-chorus.js";
 import _poolEmeraldOryx from "../pool/emerald-oryx.js";
@@ -101,6 +103,7 @@ import _poolHedronCrawler from "../pool/hedron-crawler.js";
 import _poolHelixPinnacle from "../pool/helix-pinnacle.js";
 import _poolHelpfulHunter from "../pool/helpful-hunter.js";
 import _poolHerdHeirloom from "../pool/herd-heirloom.js";
+import _poolHeritageReclamation from "../pool/heritage-reclamation.js";
 import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
@@ -257,6 +260,7 @@ const shard: CardShard = {
     _poolBlightPile,
     _poolBlightning,
     _poolBodyDropper,
+    _poolBrassSquire,
     _poolBrineShaman,
     _poolBushwhack,
     _poolCanyonWildcat,
@@ -291,6 +295,7 @@ const shard: CardShard = {
     _poolDragonsPresence,
     _poolDryadsFavor,
     _poolDuskdaleWurm,
+    _poolDwynenGiltLeafDaen,
     _poolElfhamePalace,
     _poolElvenChorus,
     _poolEmeraldOryx,
@@ -328,6 +333,7 @@ const shard: CardShard = {
     _poolHelixPinnacle,
     _poolHelpfulHunter,
     _poolHerdHeirloom,
+    _poolHeritageReclamation,
     _poolHorseshoeCrab,
     _poolHowlingGolem,
     _poolHumblingElder,

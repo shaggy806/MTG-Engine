@@ -20,6 +20,7 @@ import _poolBlightedCataract from "../pool/blighted-cataract.js";
 import _poolBrotherhoodPatriarch from "../pool/brotherhood-patriarch.js";
 import _poolCanopyGargantuan from "../pool/canopy-gargantuan.js";
 import _poolCaptainOfUmbar from "../pool/captain-of-umbar.js";
+import _poolCaptivatingVampire from "../pool/captivating-vampire.js";
 import _poolCarvenCaryatid from "../pool/carven-caryatid.js";
 import _poolCavesOfKoilos from "../pool/caves-of-koilos.js";
 import _poolCinderBarrens from "../pool/cinder-barrens.js";
@@ -99,6 +100,7 @@ import _poolMorbidHunger from "../pool/morbid-hunger.js";
 import _poolMortify from "../pool/mortify.js";
 import _poolMossKami from "../pool/moss-kami.js";
 import _poolMossViper from "../pool/moss-viper.js";
+import _poolNadirKraken from "../pool/nadir-kraken.js";
 import _poolNettleSwine from "../pool/nettle-swine.js";
 import _poolNimbusWings from "../pool/nimbus-wings.js";
 import _poolNoblePanther from "../pool/noble-panther.js";
@@ -114,6 +116,7 @@ import _poolProsshSkyraiderOfKher from "../pool/prossh-skyraider-of-kher.js";
 import _poolProwlingSerpopard from "../pool/prowling-serpopard.js";
 import _poolPsionicPulse from "../pool/psionic-pulse.js";
 import _poolPyroclasticElemental from "../pool/pyroclastic-elemental.js";
+import _poolPyrohemia from "../pool/pyrohemia.js";
 import _poolRampagingHippo from "../pool/rampaging-hippo.js";
 import _poolRaugrinCrystal from "../pool/raugrin-crystal.js";
 import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
@@ -132,6 +135,7 @@ import _poolSadisticHypnotist from "../pool/sadistic-hypnotist.js";
 import _poolSagesReverie from "../pool/sages-reverie.js";
 import _poolSalvagedManaworker from "../pool/salvaged-manaworker.js";
 import _poolScrapTrawler from "../pool/scrap-trawler.js";
+import _poolSeaGate from "../pool/sea-gate.js";
 import _poolSeacoastDrake from "../pool/seacoast-drake.js";
 import _poolSeasideCitadel from "../pool/seaside-citadel.js";
 import _poolSeatOfTheSynod from "../pool/seat-of-the-synod.js";
@@ -178,6 +182,7 @@ import _poolThrivingBluff from "../pool/thriving-bluff.js";
 import _poolThrivingMoor from "../pool/thriving-moor.js";
 import _poolTidings from "../pool/tidings.js";
 import _poolTurnToFrog from "../pool/turn-to-frog.js";
+import _poolTwinferno from "../pool/twinferno.js";
 import _poolUndercityDireRat from "../pool/undercity-dire-rat.js";
 import _poolUrbanDaggertooth from "../pool/urban-daggertooth.js";
 import _poolUtopiaTree from "../pool/utopia-tree.js";
@@ -199,6 +204,7 @@ import _poolYoungWeiRecruits from "../pool/young-wei-recruits.js";
 import _tokensBirdToken from "../tokens/bird-token.js";
 import _tokensCatBirdToken from "../tokens/cat-bird-token.js";
 import _tokensConstructTokenArtifactCount from "../tokens/construct-token-artifact-count.js";
+import _tokensElfDruidToken from "../tokens/elf-druid-token.js";
 import _tokensPlantToken from "../tokens/plant-token.js";
 
 const shard: CardShard = {
@@ -220,6 +226,7 @@ const shard: CardShard = {
     _poolBrotherhoodPatriarch,
     _poolCanopyGargantuan,
     _poolCaptainOfUmbar,
+    _poolCaptivatingVampire,
     _poolCarvenCaryatid,
     _poolCavesOfKoilos,
     _poolCinderBarrens,
@@ -299,6 +306,7 @@ const shard: CardShard = {
     _poolMortify,
     _poolMossKami,
     _poolMossViper,
+    _poolNadirKraken,
     _poolNettleSwine,
     _poolNimbusWings,
     _poolNoblePanther,
@@ -314,6 +322,7 @@ const shard: CardShard = {
     _poolProwlingSerpopard,
     _poolPsionicPulse,
     _poolPyroclasticElemental,
+    _poolPyrohemia,
     _poolRampagingHippo,
     _poolRaugrinCrystal,
     _poolRayOfDissolution,
@@ -332,6 +341,7 @@ const shard: CardShard = {
     _poolSagesReverie,
     _poolSalvagedManaworker,
     _poolScrapTrawler,
+    _poolSeaGate,
     _poolSeacoastDrake,
     _poolSeasideCitadel,
     _poolSeatOfTheSynod,
@@ -378,6 +388,7 @@ const shard: CardShard = {
     _poolThrivingMoor,
     _poolTidings,
     _poolTurnToFrog,
+    _poolTwinferno,
     _poolUndercityDireRat,
     _poolUrbanDaggertooth,
     _poolUtopiaTree,
@@ -401,6 +412,7 @@ const shard: CardShard = {
     _tokensBirdToken,
     _tokensCatBirdToken,
     _tokensConstructTokenArtifactCount,
+    _tokensElfDruidToken,
     _tokensPlantToken,
   ],
 };

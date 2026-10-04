@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B19) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B20) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -341,7 +341,9 @@ Five more passes, all merged (156 cards):
   was dropped on its ruling: its −8 has every opponent choose a card hidden, then discard them
   all at once, which `each-player-may` can't do.
 
-Past rank 2428, nothing is triaged.
+- **Batch 20 (2026-10-04, the no-engine-work pass)** triaged ranks 2429–2703: 103 authored (Master Transmuter, Primordial Hydra, Mycosynth Wellspring, Consuming Corruption, Cranial Plating and 98 more — `top5000-batch-20a`–`h.test.ts`); 97 blocked (`B20.json`), each skipped at the first sign of engine work. Most-cited blockers: `static:combat-restriction-extensions` (3), `new:meld` (2), `effect:cast-during-resolution` (2), `trigger:activates-ability` (2), `mechanic:rooms` (2).
+
+Past rank 2703, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

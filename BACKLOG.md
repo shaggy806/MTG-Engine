@@ -29,7 +29,7 @@ decides into its section below.
 
 ## Commander gap (the current priority)
 
-**388 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**389 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -40,9 +40,9 @@ that one card is the reason the deck exists. Live numbers for everything below c
 - **Build down the greedy order.** `cmdrs:gaps` ranks every missing engine feature over
   `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to that file's
   `built` array and author the commanders it unblocks in the same commit. The next ones,
-  engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+2, Karn,
-  Legacy Reforged among them), `effect:missing-tokens`, `keyword:decayed` and
-  `trigger:activates-ability` (+1 each).
+  engine-only, with the commanders each fully unblocks: `effect:missing-tokens`,
+  `keyword:decayed`, `trigger:activates-ability`, `trigger:you-tap-opponent-creature` and
+  `effect:amount-aggregate` (+1 each).
 - **Most-needed features overall.** `effect:cast-during-resolution` (10),
   `effect:attach-extensions` (7), `zone:visibility-extensions` and `effect:missing-tokens` (6
   each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
@@ -90,9 +90,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,439 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,542 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 2428 are triaged (batches 4–19);
+  engine features that block the most of the rest. Ranks through 2703 are triaged (batches 4–20);
   past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
   one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
   spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
@@ -283,6 +283,10 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **A look at nothing still asks.** `look-and-choose` over an empty library (Thassa's Oracle
   at devotion 2 with no cards left) raises a `choose-from-zone` with no cards in it; it should
   skip straight to what follows.
+- **Revealing a card "of a type" from hand reads printed subtypes.** `Game.revealableFromHand`
+  (`tappedUnlessRevealFromHand`) checks each card's printed `subtypes`, so a changeling card in
+  hand isn't offered as a Treefolk or Dragon to reveal (rule 702.73a: it has every creature type
+  in every zone). Temple of the Dragon Queen has it today; Murmuring Bosk waits on it.
 - **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
   type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
   its statics in timestamp order only.

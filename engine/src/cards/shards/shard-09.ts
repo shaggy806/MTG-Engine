@@ -91,6 +91,7 @@ import _poolHeroOfBladehold from "../pool/hero-of-bladehold.js";
 import _poolHyenaPack from "../pool/hyena-pack.js";
 import _poolIceStorm from "../pool/ice-storm.js";
 import _poolIllegitimateBusiness from "../pool/illegitimate-business.js";
+import _poolInfectiousInquiry from "../pool/infectious-inquiry.js";
 import _poolInsatiableSouleater from "../pool/insatiable-souleater.js";
 import _poolIrrigatedFarmland from "../pool/irrigated-farmland.js";
 import _poolJackedRabbit from "../pool/jacked-rabbit.js";
@@ -315,6 +316,7 @@ const shard: CardShard = {
     _poolHyenaPack,
     _poolIceStorm,
     _poolIllegitimateBusiness,
+    _poolInfectiousInquiry,
     _poolInsatiableSouleater,
     _poolIrrigatedFarmland,
     _poolJackedRabbit,

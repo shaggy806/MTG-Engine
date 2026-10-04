@@ -43,8 +43,10 @@ import _poolClockworkDrawbridge from "../pool/clockwork-drawbridge.js";
 import _poolConduitOfWorlds from "../pool/conduit-of-worlds.js";
 import _poolCordialVampire from "../pool/cordial-vampire.js";
 import _poolCripplingFear from "../pool/crippling-fear.js";
+import _poolCunningRhetoric from "../pool/cunning-rhetoric.js";
 import _poolCuriosityCrafter from "../pool/curiosity-crafter.js";
 import _poolDarksteelForge from "../pool/darksteel-forge.js";
+import _poolDawnsireSunstarDreadnought from "../pool/dawnsire-sunstar-dreadnought.js";
 import _poolDemystify from "../pool/demystify.js";
 import _poolDevoteeOfStrength from "../pool/devotee-of-strength.js";
 import _poolDimirGuildmage from "../pool/dimir-guildmage.js";
@@ -210,6 +212,7 @@ import _poolStormfistCrusader from "../pool/stormfist-crusader.js";
 import _poolStreetbreakerWurm from "../pool/streetbreaker-wurm.js";
 import _poolStrengthOfTheHarvest from "../pool/strength-of-the-harvest.js";
 import _poolSummonPrimalOdin from "../pool/summon-primal-odin.js";
+import _poolSunderingGrowth from "../pool/sundering-growth.js";
 import _poolSweepingCleave from "../pool/sweeping-cleave.js";
 import _poolSwordOfTheAnimist from "../pool/sword-of-the-animist.js";
 import _poolSwornCompanions from "../pool/sworn-companions.js";
@@ -233,6 +236,7 @@ import _poolTwoHeadedHunter from "../pool/two-headed-hunter.js";
 import _poolTyroxSauridTyrant from "../pool/tyrox-saurid-tyrant.js";
 import _poolUndergroundMortuary from "../pool/underground-mortuary.js";
 import _poolUnfriendlyFire from "../pool/unfriendly-fire.js";
+import _poolUrabrasksForge from "../pool/urabrasks-forge.js";
 import _poolUrborgElf from "../pool/urborg-elf.js";
 import _poolUrnOfGodfire from "../pool/urn-of-godfire.js";
 import _poolUthrosTitanicGodcore from "../pool/uthros-titanic-godcore.js";
@@ -253,6 +257,7 @@ import _poolZombieMaster from "../pool/zombie-master.js";
 import _tokens22BlackBirdToken from "../tokens/2-2-black-bird-token.js";
 import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensGreenElementalToken22 from "../tokens/green-elemental-token-2-2.js";
+import _tokensHeroTokenBlackMagesRod from "../tokens/hero-token-black-mages-rod.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
 import _tokensOgreToken from "../tokens/ogre-token.js";
 import _tokensSnailToken from "../tokens/snail-token.js";
@@ -301,8 +306,10 @@ const shard: CardShard = {
     _poolConduitOfWorlds,
     _poolCordialVampire,
     _poolCripplingFear,
+    _poolCunningRhetoric,
     _poolCuriosityCrafter,
     _poolDarksteelForge,
+    _poolDawnsireSunstarDreadnought,
     _poolDemystify,
     _poolDevoteeOfStrength,
     _poolDimirGuildmage,
@@ -468,6 +475,7 @@ const shard: CardShard = {
     _poolStreetbreakerWurm,
     _poolStrengthOfTheHarvest,
     _poolSummonPrimalOdin,
+    _poolSunderingGrowth,
     _poolSweepingCleave,
     _poolSwordOfTheAnimist,
     _poolSwornCompanions,
@@ -491,6 +499,7 @@ const shard: CardShard = {
     _poolTyroxSauridTyrant,
     _poolUndergroundMortuary,
     _poolUnfriendlyFire,
+    _poolUrabrasksForge,
     _poolUrborgElf,
     _poolUrnOfGodfire,
     _poolUthrosTitanicGodcore,
@@ -513,6 +522,7 @@ const shard: CardShard = {
     _tokens22BlackBirdToken,
     _tokensElementalToken,
     _tokensGreenElementalToken22,
+    _tokensHeroTokenBlackMagesRod,
     _tokensNecronWarriorToken,
     _tokensOgreToken,
     _tokensSnailToken,

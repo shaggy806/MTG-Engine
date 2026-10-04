@@ -96,6 +96,7 @@ import _poolHateMirage from "../pool/hate-mirage.js";
 import _poolHowlingMine from "../pool/howling-mine.js";
 import _poolHulkingOgre from "../pool/hulking-ogre.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
+import _poolImpulse from "../pool/impulse.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
 import _poolJaxisTheTroublemaker from "../pool/jaxis-the-troublemaker.js";
@@ -106,6 +107,7 @@ import _poolKindlyCustomer from "../pool/kindly-customer.js";
 import _poolKraulStinger from "../pool/kraul-stinger.js";
 import _poolLeonardoTheBalance from "../pool/leonardo-the-balance.js";
 import _poolLeoninArmorguard from "../pool/leonin-armorguard.js";
+import _poolLifesLegacy from "../pool/lifes-legacy.js";
 import _poolLochKorrigan from "../pool/loch-korrigan.js";
 import _poolManaDrain from "../pool/mana-drain.js";
 import _poolManagorgerHydra from "../pool/managorger-hydra.js";
@@ -118,6 +120,7 @@ import _poolMoltenTributary from "../pool/molten-tributary.js";
 import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
 import _poolMomentOfCraving from "../pool/moment-of-craving.js";
 import _poolMonasteryMentor from "../pool/monastery-mentor.js";
+import _poolMoxJasper from "../pool/mox-jasper.js";
 import _poolMysticSnake from "../pool/mystic-snake.js";
 import _poolNaturesRhythm from "../pool/natures-rhythm.js";
 import _poolNecroskitter from "../pool/necroskitter.js";
@@ -310,6 +313,7 @@ const shard: CardShard = {
     _poolHowlingMine,
     _poolHulkingOgre,
     _poolIllusionistsBracers,
+    _poolImpulse,
     _poolIzzetBoilerworks,
     _poolJackhammer,
     _poolJaxisTheTroublemaker,
@@ -320,6 +324,7 @@ const shard: CardShard = {
     _poolKraulStinger,
     _poolLeonardoTheBalance,
     _poolLeoninArmorguard,
+    _poolLifesLegacy,
     _poolLochKorrigan,
     _poolManaDrain,
     _poolManagorgerHydra,
@@ -332,6 +337,7 @@ const shard: CardShard = {
     _poolMoltensteelDragon,
     _poolMomentOfCraving,
     _poolMonasteryMentor,
+    _poolMoxJasper,
     _poolMysticSnake,
     _poolNaturesRhythm,
     _poolNecroskitter,

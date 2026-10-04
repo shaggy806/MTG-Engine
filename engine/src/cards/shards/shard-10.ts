@@ -26,6 +26,7 @@ import _poolBladebrand from "../pool/bladebrand.js";
 import _poolBlasphemousAct from "../pool/blasphemous-act.js";
 import _poolBlightbellyRat from "../pool/blightbelly-rat.js";
 import _poolBlizzardElemental from "../pool/blizzard-elemental.js";
+import _poolBloodSeeker from "../pool/blood-seeker.js";
 import _poolBloodgiftDemon from "../pool/bloodgift-demon.js";
 import _poolBlossomingDefense from "../pool/blossoming-defense.js";
 import _poolBogTatters from "../pool/bog-tatters.js";
@@ -108,6 +109,7 @@ import _poolJeskaiBanner from "../pool/jeskai-banner.js";
 import _poolJhoiraWeatherlightCaptain from "../pool/jhoira-weatherlight-captain.js";
 import _poolJudithCarnageConnoisseur from "../pool/judith-carnage-connoisseur.js";
 import _poolKalakscionHungerTyrant from "../pool/kalakscion-hunger-tyrant.js";
+import _poolKarnLegacyReforged from "../pool/karn-legacy-reforged.js";
 import _poolKioraBehemothBeckoner from "../pool/kiora-behemoth-beckoner.js";
 import _poolKissOfDeath from "../pool/kiss-of-death.js";
 import _poolKratosGodOfWar from "../pool/kratos-god-of-war.js";
@@ -221,6 +223,7 @@ import _poolVedalkenOrrery from "../pool/vedalken-orrery.js";
 import _poolVenomthrope from "../pool/venomthrope.js";
 import _poolVilisBrokerOfBlood from "../pool/vilis-broker-of-blood.js";
 import _poolVindicate from "../pool/vindicate.js";
+import _poolVoyagerQuickwelder from "../pool/voyager-quickwelder.js";
 import _poolWallOfFire from "../pool/wall-of-fire.js";
 import _poolWandOfOrcus from "../pool/wand-of-orcus.js";
 import _poolWanderingMusicians from "../pool/wandering-musicians.js";
@@ -265,6 +268,7 @@ const shard: CardShard = {
     _poolBlasphemousAct,
     _poolBlightbellyRat,
     _poolBlizzardElemental,
+    _poolBloodSeeker,
     _poolBloodgiftDemon,
     _poolBlossomingDefense,
     _poolBogTatters,
@@ -347,6 +351,7 @@ const shard: CardShard = {
     _poolJhoiraWeatherlightCaptain,
     _poolJudithCarnageConnoisseur,
     _poolKalakscionHungerTyrant,
+    _poolKarnLegacyReforged,
     _poolKioraBehemothBeckoner,
     _poolKissOfDeath,
     _poolKratosGodOfWar,
@@ -460,6 +465,7 @@ const shard: CardShard = {
     _poolVenomthrope,
     _poolVilisBrokerOfBlood,
     _poolVindicate,
+    _poolVoyagerQuickwelder,
     _poolWallOfFire,
     _poolWandOfOrcus,
     _poolWanderingMusicians,

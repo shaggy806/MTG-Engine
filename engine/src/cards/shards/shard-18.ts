@@ -10,6 +10,7 @@ import _poolAkkiDrillmaster from "../pool/akki-drillmaster.js";
 import _poolAkkiScrapchomper from "../pool/akki-scrapchomper.js";
 import _poolAnOfferYouCantRefuse from "../pool/an-offer-you-cant-refuse.js";
 import _poolAnarchist from "../pool/anarchist.js";
+import _poolArchfiendOfDespair from "../pool/archfiend-of-despair.js";
 import _poolArchmagesCharm from "../pool/archmages-charm.js";
 import _poolAvengerOfZendikar from "../pool/avenger-of-zendikar.js";
 import _poolAzoriusSignet from "../pool/azorius-signet.js";
@@ -84,6 +85,7 @@ import _poolIndependentTroops from "../pool/independent-troops.js";
 import _poolInfernoFist from "../pool/inferno-fist.js";
 import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
+import _poolIvyLaneDenizen from "../pool/ivy-lane-denizen.js";
 import _poolIzzetCharm from "../pool/izzet-charm.js";
 import _poolJagwaspSwarm from "../pool/jagwasp-swarm.js";
 import _poolJodahTheUnifier from "../pool/jodah-the-unifier.js";
@@ -171,6 +173,7 @@ import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
 import _poolSyrKonradTheGrim from "../pool/syr-konrad-the-grim.js";
 import _poolTalismanOfCuriosity from "../pool/talisman-of-curiosity.js";
+import _poolTeferisTimeTwist from "../pool/teferis-time-twist.js";
 import _poolTerastodon from "../pool/terastodon.js";
 import _poolTerraHeraldOfHope from "../pool/terra-herald-of-hope.js";
 import _poolThallidSoothsayer from "../pool/thallid-soothsayer.js";
@@ -188,6 +191,7 @@ import _poolTowerDefense from "../pool/tower-defense.js";
 import _poolTremble from "../pool/tremble.js";
 import _poolTruefirePaladin from "../pool/truefire-paladin.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
+import _poolUnquestionedAuthority from "../pool/unquestioned-authority.js";
 import _poolUtterEnd from "../pool/utter-end.js";
 import _poolValgavothHarrowerOfSouls from "../pool/valgavoth-harrower-of-souls.js";
 import _poolVampireSpawn from "../pool/vampire-spawn.js";
@@ -215,9 +219,11 @@ import _poolZaxaraTheExemplary from "../pool/zaxara-the-exemplary.js";
 import _poolZimoneAndDina from "../pool/zimone-and-dina.js";
 import _poolZodiacRat from "../pool/zodiac-rat.js";
 import _tokensAllyToken from "../tokens/ally-token.js";
+import _tokensBloodToken from "../tokens/blood-token.js";
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
+import _tokensPhyrexianHorrorToken from "../tokens/phyrexian-horror-token.js";
 import _tokensRatTokenCantBlock from "../tokens/rat-token-cant-block.js";
 import _tokensWhiteDogToken11 from "../tokens/white-dog-token-1-1.js";
 import _tokensZombieDruidToken from "../tokens/zombie-druid-token.js";
@@ -231,6 +237,7 @@ const shard: CardShard = {
     _poolAkkiScrapchomper,
     _poolAnOfferYouCantRefuse,
     _poolAnarchist,
+    _poolArchfiendOfDespair,
     _poolArchmagesCharm,
     _poolAvengerOfZendikar,
     _poolAzoriusSignet,
@@ -305,6 +312,7 @@ const shard: CardShard = {
     _poolInfernoFist,
     _poolInspiredInsurgent,
     _poolInspiringCaptain,
+    _poolIvyLaneDenizen,
     _poolIzzetCharm,
     _poolJagwaspSwarm,
     _poolJodahTheUnifier,
@@ -392,6 +400,7 @@ const shard: CardShard = {
     _poolSymbioteSpawn,
     _poolSyrKonradTheGrim,
     _poolTalismanOfCuriosity,
+    _poolTeferisTimeTwist,
     _poolTerastodon,
     _poolTerraHeraldOfHope,
     _poolThallidSoothsayer,
@@ -409,6 +418,7 @@ const shard: CardShard = {
     _poolTremble,
     _poolTruefirePaladin,
     _poolTyphoidRats,
+    _poolUnquestionedAuthority,
     _poolUtterEnd,
     _poolValgavothHarrowerOfSouls,
     _poolVampireSpawn,
@@ -438,9 +448,11 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensAllyToken,
+    _tokensBloodToken,
     _tokensCatToken,
     _tokensFaerieRogueToken,
     _tokensHumanKnightToken,
+    _tokensPhyrexianHorrorToken,
     _tokensRatTokenCantBlock,
     _tokensWhiteDogToken11,
     _tokensZombieDruidToken,

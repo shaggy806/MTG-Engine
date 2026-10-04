@@ -73,6 +73,7 @@ import _poolFightRigging from "../pool/fight-rigging.js";
 import _poolFireNationPalace from "../pool/fire-nation-palace.js";
 import _poolFistsOfIronwood from "../pool/fists-of-ironwood.js";
 import _poolFlamekinSpitfire from "../pool/flamekin-spitfire.js";
+import _poolForcedFruition from "../pool/forced-fruition.js";
 import _poolFrolickingFamiliar from "../pool/frolicking-familiar.js";
 import _poolGarrukWildspeaker from "../pool/garruk-wildspeaker.js";
 import _poolGeralfsMindcrusher from "../pool/geralfs-mindcrusher.js";
@@ -81,6 +82,7 @@ import _poolGhorClanBloodscale from "../pool/ghor-clan-bloodscale.js";
 import _poolGhostlyVisit from "../pool/ghostly-visit.js";
 import _poolGiantSpectacle from "../pool/giant-spectacle.js";
 import _poolGnarledMass from "../pool/gnarled-mass.js";
+import _poolGoldForgedThopteryx from "../pool/gold-forged-thopteryx.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
 import _poolGreaterAuramancy from "../pool/greater-auramancy.js";
 import _poolHaazdaOfficer from "../pool/haazda-officer.js";
@@ -192,6 +194,7 @@ import _poolTwincast from "../pool/twincast.js";
 import _poolUnburialRites from "../pool/unburial-rites.js";
 import _poolUntamedHunger from "../pool/untamed-hunger.js";
 import _poolValgavothsFaithful from "../pool/valgavoths-faithful.js";
+import _poolValleyRotcaller from "../pool/valley-rotcaller.js";
 import _poolVaultOfChampions from "../pool/vault-of-champions.js";
 import _poolVengefulBloodwitch from "../pool/vengeful-bloodwitch.js";
 import _poolVerdantCatacombs from "../pool/verdant-catacombs.js";
@@ -287,6 +290,7 @@ const shard: CardShard = {
     _poolFireNationPalace,
     _poolFistsOfIronwood,
     _poolFlamekinSpitfire,
+    _poolForcedFruition,
     _poolFrolickingFamiliar,
     _poolGarrukWildspeaker,
     _poolGeralfsMindcrusher,
@@ -295,6 +299,7 @@ const shard: CardShard = {
     _poolGhostlyVisit,
     _poolGiantSpectacle,
     _poolGnarledMass,
+    _poolGoldForgedThopteryx,
     _poolGoobbueGardener,
     _poolGreaterAuramancy,
     _poolHaazdaOfficer,
@@ -406,6 +411,7 @@ const shard: CardShard = {
     _poolUnburialRites,
     _poolUntamedHunger,
     _poolValgavothsFaithful,
+    _poolValleyRotcaller,
     _poolVaultOfChampions,
     _poolVengefulBloodwitch,
     _poolVerdantCatacombs,

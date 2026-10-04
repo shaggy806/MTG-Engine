@@ -86,17 +86,20 @@ import _poolImperialCeratops from "../pool/imperial-ceratops.js";
 import _poolIngeniousArtillerist from "../pool/ingenious-artillerist.js";
 import _poolInundatedArchive from "../pool/inundated-archive.js";
 import _poolJuggernaut from "../pool/juggernaut.js";
+import _poolJwariDisruption from "../pool/jwari-disruption.js";
 import _poolKazanduNectarpot from "../pool/kazandu-nectarpot.js";
 import _poolKessigWolf from "../pool/kessig-wolf.js";
 import _poolKnightlyValor from "../pool/knightly-valor.js";
 import _poolKraulRaider from "../pool/kraul-raider.js";
 import _poolKrovikanScoundrel from "../pool/krovikan-scoundrel.js";
 import _poolKujarSeedsculptor from "../pool/kujar-seedsculptor.js";
+import _poolLairOfTheHydra from "../pool/lair-of-the-hydra.js";
 import _poolLegolassQuickReflexes from "../pool/legolass-quick-reflexes.js";
 import _poolLonelySandbar from "../pool/lonely-sandbar.js";
 import _poolMaelstromOfTheSpiritDragon from "../pool/maelstrom-of-the-spirit-dragon.js";
 import _poolMagesGuile from "../pool/mages-guile.js";
 import _poolMagmaticForce from "../pool/magmatic-force.js";
+import _poolManorGate from "../pool/manor-gate.js";
 import _poolMantisEngine from "../pool/mantis-engine.js";
 import _poolMemorialToGenius from "../pool/memorial-to-genius.js";
 import _poolMessengersSpeed from "../pool/messengers-speed.js";
@@ -284,17 +287,20 @@ const shard: CardShard = {
     _poolIngeniousArtillerist,
     _poolInundatedArchive,
     _poolJuggernaut,
+    _poolJwariDisruption,
     _poolKazanduNectarpot,
     _poolKessigWolf,
     _poolKnightlyValor,
     _poolKraulRaider,
     _poolKrovikanScoundrel,
     _poolKujarSeedsculptor,
+    _poolLairOfTheHydra,
     _poolLegolassQuickReflexes,
     _poolLonelySandbar,
     _poolMaelstromOfTheSpiritDragon,
     _poolMagesGuile,
     _poolMagmaticForce,
+    _poolManorGate,
     _poolMantisEngine,
     _poolMemorialToGenius,
     _poolMessengersSpeed,

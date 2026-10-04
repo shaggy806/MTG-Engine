@@ -7,6 +7,7 @@ import _poolAdelineResplendentCathar from "../pool/adeline-resplendent-cathar.js
 import _poolAetherize from "../pool/aetherize.js";
 import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
 import _poolAlexiosDeimosOfKosmos from "../pool/alexios-deimos-of-kosmos.js";
+import _poolAlibouAncientWitness from "../pool/alibou-ancient-witness.js";
 import _poolAlleyStrangler from "../pool/alley-strangler.js";
 import _poolAngelOfRetribution from "../pool/angel-of-retribution.js";
 import _poolAnowonTheRuinThief from "../pool/anowon-the-ruin-thief.js";
@@ -25,6 +26,7 @@ import _poolBecomeTheAvalanche from "../pool/become-the-avalanche.js";
 import _poolBenalishKnight from "../pool/benalish-knight.js";
 import _poolBlessedOrator from "../pool/blessed-orator.js";
 import _poolBlindCreeper from "../pool/blind-creeper.js";
+import _poolBloodlineBidding from "../pool/bloodline-bidding.js";
 import _poolBombard from "../pool/bombard.js";
 import _poolBountifulPromenade from "../pool/bountiful-promenade.js";
 import _poolBruvacTheGrandiloquent from "../pool/bruvac-the-grandiloquent.js";
@@ -225,6 +227,7 @@ const shard: CardShard = {
     _poolAetherize,
     _poolAlabasterHostSanctifier,
     _poolAlexiosDeimosOfKosmos,
+    _poolAlibouAncientWitness,
     _poolAlleyStrangler,
     _poolAngelOfRetribution,
     _poolAnowonTheRuinThief,
@@ -243,6 +246,7 @@ const shard: CardShard = {
     _poolBenalishKnight,
     _poolBlessedOrator,
     _poolBlindCreeper,
+    _poolBloodlineBidding,
     _poolBombard,
     _poolBountifulPromenade,
     _poolBruvacTheGrandiloquent,

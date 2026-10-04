@@ -26,6 +26,7 @@ import _poolBronzebeakMoa from "../pool/bronzebeak-moa.js";
 import _poolChildOfAlara from "../pool/child-of-alara.js";
 import _poolChishiroTheShatteredBlade from "../pool/chishiro-the-shattered-blade.js";
 import _poolCircuitMender from "../pool/circuit-mender.js";
+import _poolCollectorOuphe from "../pool/collector-ouphe.js";
 import _poolColossapede from "../pool/colossapede.js";
 import _poolConstrictingTendrils from "../pool/constricting-tendrils.js";
 import _poolCrazedSkirge from "../pool/crazed-skirge.js";
@@ -67,6 +68,7 @@ import _poolFuriousStrength from "../pool/furious-strength.js";
 import _poolGalecasterColossus from "../pool/galecaster-colossus.js";
 import _poolGeneralKreatTheBoltbringer from "../pool/general-kreat-the-boltbringer.js";
 import _poolGhaltaStampedeTyrant from "../pool/ghalta-stampede-tyrant.js";
+import _poolGloinDwarfEmissary from "../pool/gloin-dwarf-emissary.js";
 import _poolGoldMyr from "../pool/gold-myr.js";
 import _poolGoldhound from "../pool/goldhound.js";
 import _poolGreaterBasilisk from "../pool/greater-basilisk.js";
@@ -85,6 +87,8 @@ import _poolInnocentBlood from "../pool/innocent-blood.js";
 import _poolInordinateRage from "../pool/inordinate-rage.js";
 import _poolIsamaruHoundOfKonda from "../pool/isamaru-hound-of-konda.js";
 import _poolJetmirsGarden from "../pool/jetmirs-garden.js";
+import _poolJwariRuins from "../pool/jwari-ruins.js";
+import _poolKabiraPlateau from "../pool/kabira-plateau.js";
 import _poolKabutoMoth from "../pool/kabuto-moth.js";
 import _poolKeigaTheTideStar from "../pool/keiga-the-tide-star.js";
 import _poolKindercatch from "../pool/kindercatch.js";
@@ -254,6 +258,7 @@ const shard: CardShard = {
     _poolChildOfAlara,
     _poolChishiroTheShatteredBlade,
     _poolCircuitMender,
+    _poolCollectorOuphe,
     _poolColossapede,
     _poolConstrictingTendrils,
     _poolCrazedSkirge,
@@ -295,6 +300,7 @@ const shard: CardShard = {
     _poolGalecasterColossus,
     _poolGeneralKreatTheBoltbringer,
     _poolGhaltaStampedeTyrant,
+    _poolGloinDwarfEmissary,
     _poolGoldMyr,
     _poolGoldhound,
     _poolGreaterBasilisk,
@@ -313,6 +319,8 @@ const shard: CardShard = {
     _poolInordinateRage,
     _poolIsamaruHoundOfKonda,
     _poolJetmirsGarden,
+    _poolJwariRuins,
+    _poolKabiraPlateau,
     _poolKabutoMoth,
     _poolKeigaTheTideStar,
     _poolKindercatch,

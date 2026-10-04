@@ -30,6 +30,7 @@ import _poolCanyonSlough from "../pool/canyon-slough.js";
 import _poolCapashenKnight from "../pool/capashen-knight.js";
 import _poolCarrionScreecher from "../pool/carrion-screecher.js";
 import _poolChandraAcolyteOfFlame from "../pool/chandra-acolyte-of-flame.js";
+import _poolCidFreeflierPilot from "../pool/cid-freeflier-pilot.js";
 import _poolCliffsideLookout from "../pool/cliffside-lookout.js";
 import _poolCompulsiveResearch from "../pool/compulsive-research.js";
 import _poolConcentrate from "../pool/concentrate.js";
@@ -126,6 +127,7 @@ import _poolMindbreakTrap from "../pool/mindbreak-trap.js";
 import _poolMirrormade from "../pool/mirrormade.js";
 import _poolMisshapenFiend from "../pool/misshapen-fiend.js";
 import _poolMoaningSpirit from "../pool/moaning-spirit.js";
+import _poolMomentousFall from "../pool/momentous-fall.js";
 import _poolMortuaryMire from "../pool/mortuary-mire.js";
 import _poolMothriderPatrol from "../pool/mothrider-patrol.js";
 import _poolMuldrothaTheGravetide from "../pool/muldrotha-the-gravetide.js";
@@ -141,7 +143,9 @@ import _poolNoxiousGroodion from "../pool/noxious-groodion.js";
 import _poolNyxFleeceRam from "../pool/nyx-fleece-ram.js";
 import _poolObscuraInitiate from "../pool/obscura-initiate.js";
 import _poolOrdinaryBear from "../pool/ordinary-bear.js";
+import _poolPashalikMons from "../pool/pashalik-mons.js";
 import _poolPiranhaMarsh from "../pool/piranha-marsh.js";
+import _poolPriestOfFellRites from "../pool/priest-of-fell-rites.js";
 import _poolRakdosTrumpeter from "../pool/rakdos-trumpeter.js";
 import _poolRapaciousDragon from "../pool/rapacious-dragon.js";
 import _poolRathsEdge from "../pool/raths-edge.js";
@@ -251,6 +255,7 @@ const shard: CardShard = {
     _poolCapashenKnight,
     _poolCarrionScreecher,
     _poolChandraAcolyteOfFlame,
+    _poolCidFreeflierPilot,
     _poolCliffsideLookout,
     _poolCompulsiveResearch,
     _poolConcentrate,
@@ -347,6 +352,7 @@ const shard: CardShard = {
     _poolMirrormade,
     _poolMisshapenFiend,
     _poolMoaningSpirit,
+    _poolMomentousFall,
     _poolMortuaryMire,
     _poolMothriderPatrol,
     _poolMuldrothaTheGravetide,
@@ -362,7 +368,9 @@ const shard: CardShard = {
     _poolNyxFleeceRam,
     _poolObscuraInitiate,
     _poolOrdinaryBear,
+    _poolPashalikMons,
     _poolPiranhaMarsh,
+    _poolPriestOfFellRites,
     _poolRakdosTrumpeter,
     _poolRapaciousDragon,
     _poolRathsEdge,

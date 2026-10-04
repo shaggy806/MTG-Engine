@@ -16,6 +16,7 @@ import _poolBarrageOfExpendables from "../pool/barrage-of-expendables.js";
 import _poolBattleHymn from "../pool/battle-hymn.js";
 import _poolBeastWhisperer from "../pool/beast-whisperer.js";
 import _poolBellowsLizard from "../pool/bellows-lizard.js";
+import _poolBlackMagesRod from "../pool/black-mages-rod.js";
 import _poolBosssChauffeur from "../pool/bosss-chauffeur.js";
 import _poolBreathWeapon from "../pool/breath-weapon.js";
 import _poolBrokenBond from "../pool/broken-bond.js";
@@ -72,6 +73,7 @@ import _poolHorizonChimera from "../pool/horizon-chimera.js";
 import _poolHypnoticSpecter from "../pool/hypnotic-specter.js";
 import _poolIgnobleHierarch from "../pool/ignoble-hierarch.js";
 import _poolIllustriousHistorian from "../pool/illustrious-historian.js";
+import _poolIndulgentAristocrat from "../pool/indulgent-aristocrat.js";
 import _poolInsatiableHarpy from "../pool/insatiable-harpy.js";
 import _poolJaddiOffshoot from "../pool/jaddi-offshoot.js";
 import _poolJenaraAsuraOfWar from "../pool/jenara-asura-of-war.js";
@@ -218,6 +220,7 @@ const shard: CardShard = {
     _poolBattleHymn,
     _poolBeastWhisperer,
     _poolBellowsLizard,
+    _poolBlackMagesRod,
     _poolBosssChauffeur,
     _poolBreathWeapon,
     _poolBrokenBond,
@@ -274,6 +277,7 @@ const shard: CardShard = {
     _poolHypnoticSpecter,
     _poolIgnobleHierarch,
     _poolIllustriousHistorian,
+    _poolIndulgentAristocrat,
     _poolInsatiableHarpy,
     _poolJaddiOffshoot,
     _poolJenaraAsuraOfWar,

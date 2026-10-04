@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolAeronautsWings from "../pool/aeronauts-wings.js";
 import _poolAgeGracedChapel from "../pool/age-graced-chapel.js";
+import _poolAgnaQela from "../pool/agna-qela.js";
 import _poolAjanisWelcome from "../pool/ajanis-welcome.js";
 import _poolAntManScottLang from "../pool/ant-man-scott-lang.js";
 import _poolArborealGrazer from "../pool/arboreal-grazer.js";
@@ -132,6 +133,7 @@ import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
 import _poolLoyalWarhound from "../pool/loyal-warhound.js";
 import _poolManaFlare from "../pool/mana-flare.js";
 import _poolMedusaInhumanQueen from "../pool/medusa-inhuman-queen.js";
+import _poolMerchantScroll from "../pool/merchant-scroll.js";
 import _poolMerfolkLooter from "../pool/merfolk-looter.js";
 import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
 import _poolMidnightAssassin from "../pool/midnight-assassin.js";
@@ -205,6 +207,7 @@ import _poolUrzasCave from "../pool/urzas-cave.js";
 import _poolUrzasIncubator from "../pool/urzas-incubator.js";
 import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
 import _poolVeteranArmorsmith from "../pool/veteran-armorsmith.js";
+import _poolVoldarenEstate from "../pool/voldaren-estate.js";
 import _poolWakestoneGargoyle from "../pool/wakestone-gargoyle.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
 import _poolWeakness from "../pool/weakness.js";
@@ -224,11 +227,13 @@ import _tokensFishToken from "../tokens/fish-token.js";
 import _tokensGolemEnchantmentArtifactToken from "../tokens/golem-enchantment-artifact-token.js";
 import _tokensGolemVigilanceToken from "../tokens/golem-vigilance-token.js";
 import _tokensKrakenToken from "../tokens/kraken-token.js";
+import _tokensTentacleToken from "../tokens/tentacle-token.js";
 
 const shard: CardShard = {
   pool: [
     _poolAeronautsWings,
     _poolAgeGracedChapel,
+    _poolAgnaQela,
     _poolAjanisWelcome,
     _poolAntManScottLang,
     _poolArborealGrazer,
@@ -356,6 +361,7 @@ const shard: CardShard = {
     _poolLoyalWarhound,
     _poolManaFlare,
     _poolMedusaInhumanQueen,
+    _poolMerchantScroll,
     _poolMerfolkLooter,
     _poolMerrowWitsniper,
     _poolMidnightAssassin,
@@ -429,6 +435,7 @@ const shard: CardShard = {
     _poolUrzasIncubator,
     _poolVampireNighthawk,
     _poolVeteranArmorsmith,
+    _poolVoldarenEstate,
     _poolWakestoneGargoyle,
     _poolWalkingBallista,
     _poolWeakness,
@@ -450,6 +457,7 @@ const shard: CardShard = {
     _tokensGolemEnchantmentArtifactToken,
     _tokensGolemVigilanceToken,
     _tokensKrakenToken,
+    _tokensTentacleToken,
   ],
 };
 

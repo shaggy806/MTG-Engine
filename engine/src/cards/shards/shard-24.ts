@@ -104,6 +104,7 @@ import _poolKasimirTheLoneWolf from "../pool/kasimir-the-lone-wolf.js";
 import _poolKinnanBonderProdigy from "../pool/kinnan-bonder-prodigy.js";
 import _poolKoglaTheTitanApe from "../pool/kogla-the-titan-ape.js";
 import _poolKrosanVerge from "../pool/krosan-verge.js";
+import _poolKuldothaForgemaster from "../pool/kuldotha-forgemaster.js";
 import _poolKyoshiVillage from "../pool/kyoshi-village.js";
 import _poolLaboratoryBrute from "../pool/laboratory-brute.js";
 import _poolLeadenMyr from "../pool/leaden-myr.js";
@@ -127,6 +128,7 @@ import _poolMinisterOfImpediments from "../pool/minister-of-impediments.js";
 import _poolMireInMisery from "../pool/mire-in-misery.js";
 import _poolMonumentToEndurance from "../pool/monument-to-endurance.js";
 import _poolMorgueToad from "../pool/morgue-toad.js";
+import _poolMurkfiendLiege from "../pool/murkfiend-liege.js";
 import _poolNarstadScrapper from "../pool/narstad-scrapper.js";
 import _poolNicolBolasTheRavager from "../pool/nicol-bolas-the-ravager.js";
 import _poolNinjaOfTheHand from "../pool/ninja-of-the-hand.js";
@@ -139,9 +141,11 @@ import _poolPitilessGorgon from "../pool/pitiless-gorgon.js";
 import _poolPoisonArrow from "../pool/poison-arrow.js";
 import _poolPramikonSkyRampart from "../pool/pramikon-sky-rampart.js";
 import _poolPressurePoint from "../pool/pressure-point.js";
+import _poolPrologueToPhyresis from "../pool/prologue-to-phyresis.js";
 import _poolProwlingFelidar from "../pool/prowling-felidar.js";
 import _poolQuarryBeetle from "../pool/quarry-beetle.js";
 import _poolRakdosLordOfRiots from "../pool/rakdos-lord-of-riots.js";
+import _poolRampagingFerocidon from "../pool/rampaging-ferocidon.js";
 import _poolRenegadeMap from "../pool/renegade-map.js";
 import _poolRhoxBrute from "../pool/rhox-brute.js";
 import _poolRikuOfManyPaths from "../pool/riku-of-many-paths.js";
@@ -150,6 +154,7 @@ import _poolRoccoCabarettiCaterer from "../pool/rocco-cabaretti-caterer.js";
 import _poolRockslideElemental from "../pool/rockslide-elemental.js";
 import _poolRootwaterDiver from "../pool/rootwater-diver.js";
 import _poolRotcrownGhoul from "../pool/rotcrown-ghoul.js";
+import _poolSaheeliSublimeArtificer from "../pool/saheeli-sublime-artificer.js";
 import _poolSatyrGrovedancer from "../pool/satyr-grovedancer.js";
 import _poolSavageTwister from "../pool/savage-twister.js";
 import _poolScourgeOfValkas from "../pool/scourge-of-valkas.js";
@@ -326,6 +331,7 @@ const shard: CardShard = {
     _poolKinnanBonderProdigy,
     _poolKoglaTheTitanApe,
     _poolKrosanVerge,
+    _poolKuldothaForgemaster,
     _poolKyoshiVillage,
     _poolLaboratoryBrute,
     _poolLeadenMyr,
@@ -349,6 +355,7 @@ const shard: CardShard = {
     _poolMireInMisery,
     _poolMonumentToEndurance,
     _poolMorgueToad,
+    _poolMurkfiendLiege,
     _poolNarstadScrapper,
     _poolNicolBolasTheRavager,
     _poolNinjaOfTheHand,
@@ -361,9 +368,11 @@ const shard: CardShard = {
     _poolPoisonArrow,
     _poolPramikonSkyRampart,
     _poolPressurePoint,
+    _poolPrologueToPhyresis,
     _poolProwlingFelidar,
     _poolQuarryBeetle,
     _poolRakdosLordOfRiots,
+    _poolRampagingFerocidon,
     _poolRenegadeMap,
     _poolRhoxBrute,
     _poolRikuOfManyPaths,
@@ -372,6 +381,7 @@ const shard: CardShard = {
     _poolRockslideElemental,
     _poolRootwaterDiver,
     _poolRotcrownGhoul,
+    _poolSaheeliSublimeArtificer,
     _poolSatyrGrovedancer,
     _poolSavageTwister,
     _poolScourgeOfValkas,

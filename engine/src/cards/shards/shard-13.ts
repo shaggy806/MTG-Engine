@@ -10,6 +10,7 @@ import _poolAerialResponder from "../pool/aerial-responder.js";
 import _poolAfterlifeFromTheLoam from "../pool/afterlife-from-the-loam.js";
 import _poolAgentOfKotis from "../pool/agent-of-kotis.js";
 import _poolAkroanMastiff from "../pool/akroan-mastiff.js";
+import _poolAlandraSkyDreamer from "../pool/alandra-sky-dreamer.js";
 import _poolAltarsLight from "../pool/altars-light.js";
 import _poolAminatouTheFateshifter from "../pool/aminatou-the-fateshifter.js";
 import _poolAncientGreenwarden from "../pool/ancient-greenwarden.js";
@@ -28,6 +29,7 @@ import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
 import _poolBoneDevourer from "../pool/bone-devourer.js";
 import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
+import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
 import _poolCastleEmbereth from "../pool/castle-embereth.js";
@@ -47,6 +49,7 @@ import _poolCunningBreezedancer from "../pool/cunning-breezedancer.js";
 import _poolDarkstarAugur from "../pool/darkstar-augur.js";
 import _poolDawnhartDisciple from "../pool/dawnhart-disciple.js";
 import _poolDeathcapMarionette from "../pool/deathcap-marionette.js";
+import _poolDebtToTheDeathless from "../pool/debt-to-the-deathless.js";
 import _poolDefyGravity from "../pool/defy-gravity.js";
 import _poolDesertOfTheMindful from "../pool/desert-of-the-mindful.js";
 import _poolDiabolicEdict from "../pool/diabolic-edict.js";
@@ -163,6 +166,7 @@ import _poolSecludedCourtyard from "../pool/secluded-courtyard.js";
 import _poolSelflessCathar from "../pool/selfless-cathar.js";
 import _poolSharedRoots from "../pool/shared-roots.js";
 import _poolShortBow from "../pool/short-bow.js";
+import _poolSiegeGangLieutenant from "../pool/siege-gang-lieutenant.js";
 import _poolSkullOfRamos from "../pool/skull-of-ramos.js";
 import _poolSoliton from "../pool/soliton.js";
 import _poolSoporificSprings from "../pool/soporific-springs.js";
@@ -182,6 +186,7 @@ import _poolSylvanBrushstrider from "../pool/sylvan-brushstrider.js";
 import _poolSylvanRanger from "../pool/sylvan-ranger.js";
 import _poolSylvanReclamation from "../pool/sylvan-reclamation.js";
 import _poolSyrGwynHeroOfAshvale from "../pool/syr-gwyn-hero-of-ashvale.js";
+import _poolTamiyosJournal from "../pool/tamiyos-journal.js";
 import _poolTarPitcher from "../pool/tar-pitcher.js";
 import _poolTectonicGiant from "../pool/tectonic-giant.js";
 import _poolTempleGarden from "../pool/temple-garden.js";
@@ -230,6 +235,7 @@ const shard: CardShard = {
     _poolAfterlifeFromTheLoam,
     _poolAgentOfKotis,
     _poolAkroanMastiff,
+    _poolAlandraSkyDreamer,
     _poolAltarsLight,
     _poolAminatouTheFateshifter,
     _poolAncientGreenwarden,
@@ -248,6 +254,7 @@ const shard: CardShard = {
     _poolBoneDevourer,
     _poolBrawn,
     _poolBreathstealer,
+    _poolBredForTheHunt,
     _poolCanopyGorger,
     _poolCarrionAnts,
     _poolCastleEmbereth,
@@ -267,6 +274,7 @@ const shard: CardShard = {
     _poolDarkstarAugur,
     _poolDawnhartDisciple,
     _poolDeathcapMarionette,
+    _poolDebtToTheDeathless,
     _poolDefyGravity,
     _poolDesertOfTheMindful,
     _poolDiabolicEdict,
@@ -383,6 +391,7 @@ const shard: CardShard = {
     _poolSelflessCathar,
     _poolSharedRoots,
     _poolShortBow,
+    _poolSiegeGangLieutenant,
     _poolSkullOfRamos,
     _poolSoliton,
     _poolSoporificSprings,
@@ -402,6 +411,7 @@ const shard: CardShard = {
     _poolSylvanRanger,
     _poolSylvanReclamation,
     _poolSyrGwynHeroOfAshvale,
+    _poolTamiyosJournal,
     _poolTarPitcher,
     _poolTectonicGiant,
     _poolTempleGarden,

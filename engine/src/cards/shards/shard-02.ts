@@ -21,6 +21,7 @@ import _poolBaskingBroodscale from "../pool/basking-broodscale.js";
 import _poolBastionMastodon from "../pool/bastion-mastodon.js";
 import _poolBatterhorn from "../pool/batterhorn.js";
 import _poolBeaconHawk from "../pool/beacon-hawk.js";
+import _poolBlackDragonGate from "../pool/black-dragon-gate.js";
 import _poolBogWraith from "../pool/bog-wraith.js";
 import _poolBoonOfTheWishGiver from "../pool/boon-of-the-wish-giver.js";
 import _poolBranchingEvolution from "../pool/branching-evolution.js";
@@ -125,6 +126,7 @@ import _poolMindSpring from "../pool/mind-spring.js";
 import _poolMishrasOnslaught from "../pool/mishras-onslaught.js";
 import _poolMolderingKarok from "../pool/moldering-karok.js";
 import _poolMountain from "../pool/mountain.js";
+import _poolMycosynthWellspring from "../pool/mycosynth-wellspring.js";
 import _poolNarsetsReversal from "../pool/narsets-reversal.js";
 import _poolNeckSnap from "../pool/neck-snap.js";
 import _poolNicolBolasTheArisen from "../pool/nicol-bolas-the-arisen.js";
@@ -204,6 +206,7 @@ import _poolTropicalIsland from "../pool/tropical-island.js";
 import _poolUmbralCollarZealot from "../pool/umbral-collar-zealot.js";
 import _poolUrbanEvolution from "../pool/urban-evolution.js";
 import _poolUrzasWorkshop from "../pool/urzas-workshop.js";
+import _poolValorousStance from "../pool/valorous-stance.js";
 import _poolVassalSoul from "../pool/vassal-soul.js";
 import _poolVerixBladewing from "../pool/verix-bladewing.js";
 import _poolViashinoCutthroat from "../pool/viashino-cutthroat.js";
@@ -244,6 +247,7 @@ const shard: CardShard = {
     _poolBastionMastodon,
     _poolBatterhorn,
     _poolBeaconHawk,
+    _poolBlackDragonGate,
     _poolBogWraith,
     _poolBoonOfTheWishGiver,
     _poolBranchingEvolution,
@@ -348,6 +352,7 @@ const shard: CardShard = {
     _poolMishrasOnslaught,
     _poolMolderingKarok,
     _poolMountain,
+    _poolMycosynthWellspring,
     _poolNarsetsReversal,
     _poolNeckSnap,
     _poolNicolBolasTheArisen,
@@ -427,6 +432,7 @@ const shard: CardShard = {
     _poolUmbralCollarZealot,
     _poolUrbanEvolution,
     _poolUrzasWorkshop,
+    _poolValorousStance,
     _poolVassalSoul,
     _poolVerixBladewing,
     _poolViashinoCutthroat,
