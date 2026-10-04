@@ -204,3 +204,12 @@ in the same game going at someone else.
   it held Murder from a trailing player's Craw Wurm, the table's only creature (the gate's
   "kills a trailing player's threat"). The fix is in what a creature is worth to *kill* — its
   threat to us rather than its board value — or a reserve scaled by the threats still to come.
+  **The early half is done (2026-10-04, `earlyRemoval` 7):** in every player's first two turns
+  a removal spell in hand is worth 7 on top of its card, so v2 holds Swords from the Wall (a
+  kill worth 6) and still fires it at a ramped Craw Wurm (8). `bot:diff` over 12 four-player
+  games changed one decision: Swords held from a Reassembling Skeleton in round 2. Later in the
+  game the inversion stands — a 1/6 on a near-level leader's board is worth four times a trailing
+  player's Wurm, because the strongest opponent counts in full and the rest at half their
+  average. A softened leader (a smooth maximum over the opponents' scores) was tried the same
+  day: at softness 5 with a flat reserve of 2 every gate held but Swords stayed wrong (−0.39),
+  and from 8 up it stopped countering a draw engine; dropped.

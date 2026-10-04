@@ -152,6 +152,10 @@ export interface EvalWeights {
   /** Creature tokens a round our permanents keep making (`features.ts`):
    * Hero of Bladehold, Young Pyromancer, Elspeth, Sun's Champion. */
   readonly tokenEngines: number;
+  /** Removal spells in our hand during every player's first two turns
+   * (`features.ts`), on top of the card `hand` counts each as: what holds a
+   * Swords to Plowshares back from the first creature the table plays. */
+  readonly earlyRemoval: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -321,6 +325,13 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // removal went at a vanilla 4/4 over the Hero ("removal takes the token
   // engine").
   tokenEngines: 2,
+  // On turns 1 and 2 a removal spell is worth holding for what comes later
+  // (the user's ask, 2026-10-04). Between the two scenarios that pin it:
+  // killing a Wall of Reverence then scores 6 ("holds Swords to Plowshares
+  // for more than a wall") and a ramped Craw Wurm 8 ("kills a Craw Wurm
+  // ramped out on turn two"), so 7 holds the first and fires at the second,
+  // each by a point. From round 3 it counts nothing.
+  earlyRemoval: 7,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

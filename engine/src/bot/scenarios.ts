@@ -102,6 +102,18 @@ const forestDeck = (player: PlayerId) => ({ player, cards: Array<string>(40).fil
 const viewOf = (game: Game, player: PlayerId): ControllerView => game.controllerView(player);
 
 /**
+ * Move the clock past the opening rounds. A scenario's board stands for the
+ * middle of a game (nine lands, a Craw Wurm) though it's built on turn 1, and
+ * the bot reads the round: removal is held in the first two (`earlyRemoval`).
+ * Every turn number the bot reads is relative, so only that changes.
+ */
+function midGame(game: Game): void {
+  game.state.turn.number += MID_GAME_ROUNDS * game.state.turnOrder.length;
+}
+
+const MID_GAME_ROUNDS = 4;
+
+/**
  * A two-player game paused at Alice's precombat main with `setup`'s board in
  * place.
  *
@@ -111,6 +123,7 @@ const viewOf = (game: Game, player: PlayerId): ControllerView => game.controller
 function mainPhase(setup: (game: Game) => void, registry: CardRegistry): Game {
   const game = Game.create({ seed: 3, registry, decks: [forestDeck(A), forestDeck(B)] });
   game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+  midGame(game);
   setup(game);
   return game;
 }
@@ -119,6 +132,7 @@ function mainPhase(setup: (game: Game) => void, registry: CardRegistry): Game {
 function fourPlayerMain(registry: CardRegistry): Game {
   const game = Game.create({ seed: 3, registry, decks: [A, B, C, D].map(forestDeck) });
   game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+  midGame(game);
   game.state.zones.perPlayer[A].hand = [];
   return game;
 }
@@ -132,6 +146,7 @@ function table(registry: CardRegistry, players: readonly PlayerId[], active: Pla
       s.priority.holder === active &&
       s.turn.step === "precombat-main",
   );
+  midGame(game);
   for (const player of players) game.state.zones.perPlayer[player].hand = [];
   return game;
 }
@@ -2541,9 +2556,29 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "kills a Craw Wurm ramped out on turn two",
+    rule: "Early removal is held for a real threat, and a ramped six-power creature is one.",
+    position(registry) {
+      // The counterweight to holding Swords for more than a wall: whatever
+      // `earlyRemoval` is worth, it mustn't outweigh a threat this size.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 5;
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 2);
+      game.debugSpawn("Swords to Plowshares", A, "hand");
+      const wurm = onBoard(game, "Craw Wurm", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === wurm,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "holds Swords to Plowshares for more than a wall",
-    rule: "Cheap removal isn't spent on a defender while three opponents have threats to come.",
-    kind: "training",
+    rule: "Removal isn't spent in the first two rounds on a creature that threatens nothing.",
     position(registry) {
       // The deck autopsies' seed 116: Jeskai Striker spent Swords on a Wall
       // of Reverence on its second turn and had no answer to Lathliss later.
@@ -2551,8 +2586,10 @@ const SCENARIOS: readonly BotScenario[] = [
       // mostly its `toughness`; a flat reserve for removal in hand
       // (`answers`) still fired at it and held Murder from the table's only
       // creature (`docs/plans/deck-autopsies.md`).
+      // Held by `earlyRemoval` (the user's ask, 2026-10-04): alice's second turn.
       const game = table(registry, [A, B, C, D], A);
-      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 3);
+      game.state.turn.number = 5;
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 2);
       game.debugSpawn("Swords to Plowshares", A, "hand");
       const wall = onBoard(game, "Wall of Reverence", B);
       return {

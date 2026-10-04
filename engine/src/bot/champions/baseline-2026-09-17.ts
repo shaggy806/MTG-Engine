@@ -53,6 +53,7 @@ export const BASELINE_2026_09_17: Champion = {
     // Scored as `otherPermanents` was before one-shot tokens got their own term.
     resourceTokens: 0.5,
     tokenEngines: 0,
+    earlyRemoval: 0,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.5,

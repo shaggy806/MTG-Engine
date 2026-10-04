@@ -52,6 +52,7 @@ export const SHIPPED_2026_10_03: Champion = {
     answers: 3,
     resourceTokens: 0.5,
     tokenEngines: 2,
+    earlyRemoval: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,

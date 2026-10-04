@@ -526,6 +526,16 @@ four players (`effect-worth.ts` values a token copy of our own now); v1 never mo
 (now: to a creature ranking `REATTACH_MARGIN` above the host); and Skullclamp on a 1/1 token,
 which is the evaluation's — a training scenario, with `creatures` 2.5 → 2 as the fitter's lever.
 
+**After the plan: early removal (2026-10-04, the user's ask).** `earlyRemoval` (7, `features.ts`):
+removal spells in hand count on top of their card in every player's first two turns, so a
+Swords to Plowshares waits for a threat rather than the first creature down. Pinned between
+"holds Swords to Plowshares for more than a wall" (6) and "kills a Craw Wurm ramped out on turn
+two" (8). Scenario boards are built on turn 1 but stand for the middle of a game, so
+`scenarios.ts`'s `midGame` moves their clock four rounds on; the two early ones set theirs
+back. `bot:diff` against 3dd3bc8d: 18 of 27,639 decisions over 12 four-player games, all one
+held Swords (a Reassembling Skeleton, round 2). Also that day: a card chosen for an opponent
+(Tasigur, the Golden Fang) is the one least useful to them.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

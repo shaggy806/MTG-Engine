@@ -91,6 +91,7 @@ export const FEATURE_KEYS = [
   "answers",
   "resourceTokens",
   "tokenEngines",
+  "earlyRemoval",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -155,6 +156,10 @@ const LIBRARY_DANGER_AT = 15;
 /** `commanderDamage` from the worst damage taken: `d²/21`, so 21 is still
  * 21 and a hit weighs more the nearer the loss. */
 const commanderDamageCurve = (taken: number): number => (taken * taken) / COMMANDER_DAMAGE_LETHAL;
+
+/** The rounds of the game in which removal in hand counts `earlyRemoval`:
+ * every player's first two turns. */
+const EARLY_REMOVAL_ROUNDS = 2;
 
 /** `threat` weighs damage against what's left to lose: at this much life a
  * point counts as one, at twice it as a half. */
@@ -310,6 +315,44 @@ function counters(effect: unknown): boolean {
   if (Array.isArray(effect)) return effect.some(counters);
   if ((effect as { readonly kind?: unknown }).kind === "counter") return true;
   return Object.values(effect).some((value) => value !== null && typeof value === "object" && counters(value));
+}
+
+/** Whether `effect` destroys, exiles or deals damage to a target. */
+function removes(effect: unknown): boolean {
+  if (effect === null || typeof effect !== "object") return false;
+  if (Array.isArray(effect)) return effect.some(removes);
+  const node = effect as { readonly kind?: unknown; readonly target?: unknown };
+  if ((node.kind === "destroy" || node.kind === "exile" || node.kind === "damage") && typeof node.target === "number") {
+    return true;
+  }
+  return Object.values(effect).some((value) => value !== null && typeof value === "object" && removes(value));
+}
+
+/** Target specs that can name an opponent's creature. */
+function aimsAtCreatures(specs: readonly unknown[]): boolean {
+  return specs.some((spec) => {
+    const text = JSON.stringify(spec);
+    return (
+      text.includes("any-target") ||
+      (text.includes("creature") && !text.includes("you-control") && !text.includes("spell"))
+    );
+  });
+}
+
+const removalMemo = new WeakMap<CardDefinition, boolean>();
+
+/** An instant or sorcery that kills a target creature: Swords to Plowshares,
+ * Murder, Lightning Bolt — the cards `earlyRemoval` holds back. */
+function isRemoval(def: CardDefinition): boolean {
+  let found = removalMemo.get(def);
+  if (found === undefined) {
+    found =
+      (def.types.includes("instant") || def.types.includes("sorcery")) &&
+      aimsAtCreatures(def.targets ?? []) &&
+      removes(def.effect);
+    removalMemo.set(def, found);
+  }
+  return found;
 }
 
 const answerMemo = new WeakMap<CardDefinition, boolean>();
@@ -718,6 +761,14 @@ function playerFeaturesUncached(
   // tapped out, so tapping out looked free and they rotted in hand (Grave
   // Danger cast two in 53 games and ended 18 holding one).
   let answers = 0;
+  // Removal still in hand in the first `EARLY_REMOVAL_ROUNDS` rounds
+  // (`isRemoval`): on boards that early, whatever is out is rarely what the
+  // removal will be wanted for. The deck autopsies' seed 116: Jeskai Striker
+  // spent Swords to Plowshares on a Wall of Reverence on its second turn and
+  // had nothing for Lathliss later. Later in the game `hand` prices it like
+  // any card, as before.
+  const early = state.turn.number <= EARLY_REMOVAL_ROUNDS * state.turnOrder.length;
+  let earlyRemoval = 0;
   if (isMe) {
     const answerCosts: number[] = [];
     for (const id of zones.hand) {
@@ -726,6 +777,7 @@ function playerFeaturesUncached(
       const def = registry.get(object.cardName);
       if (!def.types.includes("land")) handManaValue += manaValueOf(registry, def.name);
       if (isAnswer(def)) answerCosts.push(manaValueOf(registry, def.name));
+      if (early && isRemoval(def)) earlyRemoval += 1;
     }
     let open = untappedMana;
     for (const cost of answerCosts.sort((x, y) => x - y)) {
@@ -799,5 +851,6 @@ function playerFeaturesUncached(
     answers,
     resourceTokens,
     tokenEngines,
+    earlyRemoval,
   };
 }

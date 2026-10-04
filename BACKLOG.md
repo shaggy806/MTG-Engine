@@ -151,8 +151,8 @@ under count budgets).
 
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
-  premium removal fired at weak targets.
-- **More training scenarios.** 105 hand-built scenarios, 102 of them gating
+  premium removal fired at weak targets past the first two rounds (the early half is done).
+- **More training scenarios.** 106 hand-built scenarios, 104 of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
