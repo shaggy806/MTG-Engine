@@ -107,6 +107,8 @@ export function MiniTile({
 
   const classes = [
     'mini-tile',
+    // A gold name banner, as a legendary card's frame is marked (rule 205.4d).
+    obj.supertypes?.includes('legendary') ? 'legendary' : '',
     obj.tapped ? 'tapped' : '',
     highlight ? 'highlight' : '',
     selected ? 'selected' : '',

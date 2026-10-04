@@ -2055,10 +2055,13 @@
   vertical-align: -2px;
 }
 /* smaller pips inside body text */
+/* Symbols in rules text shrink with it (--text-scale, the hand's fit-to-box),
+   or a wordy card's tap and mana symbols hold every line at full height and
+   shrinking the words gains nothing (Urza's Saga). */
 .ct-text .pip {
-  width: calc(11px * var(--ct-scale, 1));
-  height: calc(11px * var(--ct-scale, 1));
-  font-size: calc(8px * var(--ct-scale, 1));
+  width: calc(11px * var(--text-scale, 1) * var(--ct-scale, 1));
+  height: calc(11px * var(--text-scale, 1) * var(--ct-scale, 1));
+  font-size: calc(8px * var(--text-scale, 1) * var(--ct-scale, 1));
   vertical-align: -1px;
 }
 /* pips backed by real WotC artwork (an <img>) — the SVG carries its own
@@ -2098,7 +2101,7 @@
   letter-spacing: -0.5px;
 }
 .ct-text .pip-hybrid {
-  min-width: calc(11px * var(--ct-scale, 1));
+  min-width: calc(11px * var(--text-scale, 1) * var(--ct-scale, 1));
 }
 .pip-tap,
 .pip-untap {
@@ -2108,7 +2111,7 @@
 }
 .ct-text .pip-tap,
 .ct-text .pip-untap {
-  font-size: calc(9px * var(--ct-scale, 1));
+  font-size: calc(9px * var(--text-scale, 1) * var(--ct-scale, 1));
 }
 
 .ct-art {
@@ -2245,6 +2248,11 @@
    fixed height) can still grow taller to fit its text, same as before. */
 .card-tile.art-first .ct-text {
   min-height: 0;
+}
+/* The bottom padding keeps the last line clear of the P/T or loyalty badge;
+   a card with neither gives that room to its text. */
+.card-tile.no-corner-stat .ct-text {
+  padding-bottom: calc(4px * var(--ct-scale, 1));
 }
 .ct-kw {
   color: #cbb26a;
@@ -2480,6 +2488,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* A legendary permanent's name strip is gilded, as a legendary card's frame
+   is marked in print (rule 205.4d) -- the board's mini tiles have no type
+   line to say "Legendary" in. The full card's title bar matches, beside
+   its type line. */
+.mini-tile.legendary .mt-banner,
+.card-tile.legendary .ct-title,
+.card-tile.legendary .ct-name-row {
+  background: linear-gradient(180deg, #5c4a22 0%, #2b303c 90%);
+  box-shadow:
+    inset 0 2px 0 var(--gold),
+    inset 0 -1px 0 rgb(205 166 83 / 0.55);
 }
 /* the art and everything overlaid on it. Carries the 4:3 ratio the tile
    itself used to: the art_crop images this draws (see art.ts) are landscape,

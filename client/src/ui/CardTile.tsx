@@ -71,7 +71,8 @@ const KEYWORD_LABEL: Record<string, string> = {
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
 function typeLine(obj: VisibleObject): string {
-  const types = obj.types.map(cap).join(' ')
+  // "Legendary Creature — Human Warrior": supertypes first (rule 205.4).
+  const types = [...(obj.supertypes ?? []), ...obj.types].map(cap).join(' ')
   return obj.subtypes.length > 0
     ? `${types} — ${obj.subtypes.join(' ')}`
     : types
@@ -187,7 +188,9 @@ export function CardTile({
     if (!artFirst || !el) return
     el.style.removeProperty('--text-scale')
     let scale = 1
-    while (el.scrollHeight > el.clientHeight && scale > 0.55) {
+    // The floor is low enough for a Saga's three chapters (Urza's Saga): a
+    // hand card grows 1.65x on hover, which is where it's read.
+    while (el.scrollHeight > el.clientHeight && scale > 0.45) {
       scale = Math.round((scale - 0.05) * 100) / 100
       el.style.setProperty('--text-scale', String(scale))
     }
@@ -244,6 +247,10 @@ export function CardTile({
   const classes = [
     'card-tile',
     artFirst ? 'art-first' : '',
+    // Nothing in the bottom corner (no P/T, loyalty or stack count): the
+    // rules text may use the room kept for one (see .ct-text).
+    !isCreature && obj.loyalty === null && !(stackCount !== null && stackCount > 1) ? 'no-corner-stat' : '',
+    obj.supertypes?.includes('legendary') ? 'legendary' : '',
     obj.tapped ? 'tapped' : '',
     highlight ? 'highlight' : '',
     selected ? 'selected' : '',
