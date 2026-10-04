@@ -78,6 +78,33 @@ On that the user took Temur Roar and Mardu Surge off the bench (both stay starte
 Reign of Dragons and Token Triumph, near 25%, took their places — a Dragon deck and a token deck,
 as before. The bench is now Abzan Armor, Jeskai Striker, Reign of Dragons and Token Triumph.
 
+**Re-run, 2026-10-04**, after the 10-03 passes replaced most of the TDC decks' stand-ins (Sultai
+Arisen 25 → 1) and the overnight card passes. v2 over 168 games, v1 over 840, every deck in
+every seat (`.scratch/deck-winrates-v{1,2}-4p-2026-10-04.ndjson`):
+
+| deck | v2 10-03 | v2 10-04 | 95% CI | v1 10-04 |
+|---|---|---|---|---|
+| Temur Roar | 71% | 65% | [50, 77] | 42% |
+| Tramplesaurus Rex | 29% | 37.5% | [25, 52] | 50% |
+| Abzan Armor* | 35% | 27% | [17, 41] | 27% |
+| Jeskai Striker* | 19% | 27% | [17, 41] | 24% |
+| Draconic Destruction | 25% | 27% | [17, 41] | 32% |
+| Reign of Dragons* | 25% | 25% | [15, 39] | 25% |
+| Token Triumph* | 25% | 23% | [13, 37] | 17% |
+| Chaos Incarnate | 23% | 23% | [13, 37] | 23% |
+| Sultai Arisen | 23% | 21% | [12, 34] | 15% |
+| Mardu Surge | 12.5% | 19% | [10, 32] | 22.5% |
+| First Flight | 21% | 19% | [10, 32] | 30% |
+| Grave Danger | 21% | 15% | [7, 27] | 18% |
+| Family Matters | 12.5% | 15% | [7, 27] | 14% |
+| World Shaper | 6% | 8% | [3, 20] | 10% |
+
+(\* bench decks.) Nothing moved outside the noise of 48 games a deck: the stand-in swaps left the
+field where the 10-03 run put it. The four bench decks sit at 23–27% under v2, which is what a
+bench wants. Temur Roar still wins about two games in three under v2 (against 42% under v1, so
+the search plays it well, not the deck alone), and World Shaper stays bottom under both bots.
+Sultai Arisen now holds its own (21%) if a graveyard deck is wanted back on the bench.
+
 ## What the autopsies found
 
 Four read-only autopsies (Grave Danger, Jeskai Striker, Sultai Arisen, Mardu Surge), each
