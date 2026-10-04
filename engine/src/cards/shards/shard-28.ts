@@ -56,6 +56,7 @@ import _poolDreamPillager from "../pool/dream-pillager.js";
 import _poolDregRecycler from "../pool/dreg-recycler.js";
 import _poolDrossRipper from "../pool/dross-ripper.js";
 import _poolDrownInDreams from "../pool/drown-in-dreams.js";
+import _poolElvishPiper from "../pool/elvish-piper.js";
 import _poolEmberEyeWolf from "../pool/ember-eye-wolf.js";
 import _poolEnchantresssPresence from "../pool/enchantresss-presence.js";
 import _poolEngulfingEruption from "../pool/engulfing-eruption.js";
@@ -119,12 +120,14 @@ import _poolMartialGlory from "../pool/martial-glory.js";
 import _poolMassOfGhouls from "../pool/mass-of-ghouls.js";
 import _poolMindControl from "../pool/mind-control.js";
 import _poolMinecartDaredevil from "../pool/minecart-daredevil.js";
+import _poolMirrorworks from "../pool/mirrorworks.js";
 import _poolMoleManMoloidMaster from "../pool/mole-man-moloid-master.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
 import _poolMyrkulLordOfBones from "../pool/myrkul-lord-of-bones.js";
 import _poolMysticMonastery from "../pool/mystic-monastery.js";
 import _poolNightguardPatrol from "../pool/nightguard-patrol.js";
 import _poolOctomancer from "../pool/octomancer.js";
+import _poolOctopusForm from "../pool/octopus-form.js";
 import _poolOmnathLocusOfCreation from "../pool/omnath-locus-of-creation.js";
 import _poolOvergrownBattlement from "../pool/overgrown-battlement.js";
 import _poolPacificationArray from "../pool/pacification-array.js";
@@ -181,6 +184,7 @@ import _poolSoulsFire from "../pool/souls-fire.js";
 import _poolSplitUp from "../pool/split-up.js";
 import _poolSporeFrog from "../pool/spore-frog.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
+import _poolStonybrookBanneret from "../pool/stonybrook-banneret.js";
 import _poolSunbeamSpellbomb from "../pool/sunbeam-spellbomb.js";
 import _poolTajuruPathwarden from "../pool/tajuru-pathwarden.js";
 import _poolTempleOfMystery from "../pool/temple-of-mystery.js";
@@ -276,6 +280,7 @@ const shard: CardShard = {
     _poolDregRecycler,
     _poolDrossRipper,
     _poolDrownInDreams,
+    _poolElvishPiper,
     _poolEmberEyeWolf,
     _poolEnchantresssPresence,
     _poolEngulfingEruption,
@@ -339,12 +344,14 @@ const shard: CardShard = {
     _poolMassOfGhouls,
     _poolMindControl,
     _poolMinecartDaredevil,
+    _poolMirrorworks,
     _poolMoleManMoloidMaster,
     _poolMutantTownMusicians,
     _poolMyrkulLordOfBones,
     _poolMysticMonastery,
     _poolNightguardPatrol,
     _poolOctomancer,
+    _poolOctopusForm,
     _poolOmnathLocusOfCreation,
     _poolOvergrownBattlement,
     _poolPacificationArray,
@@ -401,6 +408,7 @@ const shard: CardShard = {
     _poolSplitUp,
     _poolSporeFrog,
     _poolStickyFingers,
+    _poolStonybrookBanneret,
     _poolSunbeamSpellbomb,
     _poolTajuruPathwarden,
     _poolTempleOfMystery,

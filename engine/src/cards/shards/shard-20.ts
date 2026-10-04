@@ -32,6 +32,7 @@ import _poolBoggartTrawler from "../pool/boggart-trawler.js";
 import _poolBoltOfKeranos from "../pool/bolt-of-keranos.js";
 import _poolBoonReflection from "../pool/boon-reflection.js";
 import _poolBorosLocket from "../pool/boros-locket.js";
+import _poolBothersomeQuasit from "../pool/bothersome-quasit.js";
 import _poolBragoKingEternal from "../pool/brago-king-eternal.js";
 import _poolBrassSecretary from "../pool/brass-secretary.js";
 import _poolBreakDown from "../pool/break-down.js";
@@ -80,6 +81,7 @@ import _poolFiresOfUndeath from "../pool/fires-of-undeath.js";
 import _poolFurnaceSpirit from "../pool/furnace-spirit.js";
 import _poolGarrisonCat from "../pool/garrison-cat.js";
 import _poolGildedSentinel from "../pool/gilded-sentinel.js";
+import _poolGimliOfTheGlitteringCaves from "../pool/gimli-of-the-glittering-caves.js";
 import _poolGlacialFloodplain from "../pool/glacial-floodplain.js";
 import _poolGloriousAnthem from "../pool/glorious-anthem.js";
 import _poolGoblinFireslinger from "../pool/goblin-fireslinger.js";
@@ -104,6 +106,7 @@ import _poolJackhammer from "../pool/jackhammer.js";
 import _poolJaxisTheTroublemaker from "../pool/jaxis-the-troublemaker.js";
 import _poolJhessianInfiltrator from "../pool/jhessian-infiltrator.js";
 import _poolKalastriaNightwatch from "../pool/kalastria-nightwatch.js";
+import _poolKarametrasAcolyte from "../pool/karametras-acolyte.js";
 import _poolKazanduMammoth from "../pool/kazandu-mammoth.js";
 import _poolKindlyCustomer from "../pool/kindly-customer.js";
 import _poolKraulStinger from "../pool/kraul-stinger.js";
@@ -173,6 +176,7 @@ import _poolSocialClimber from "../pool/social-climber.js";
 import _poolSorcererOfTheFang from "../pool/sorcerer-of-the-fang.js";
 import _poolSpitefulBanditry from "../pool/spiteful-banditry.js";
 import _poolSquirrelanoids from "../pool/squirrelanoids.js";
+import _poolStarnheimAspirant from "../pool/starnheim-aspirant.js";
 import _poolStoicBuilder from "../pool/stoic-builder.js";
 import _poolStolenByTheFae from "../pool/stolen-by-the-fae.js";
 import _poolStoneRain from "../pool/stone-rain.js";
@@ -254,6 +258,7 @@ const shard: CardShard = {
     _poolBoltOfKeranos,
     _poolBoonReflection,
     _poolBorosLocket,
+    _poolBothersomeQuasit,
     _poolBragoKingEternal,
     _poolBrassSecretary,
     _poolBreakDown,
@@ -302,6 +307,7 @@ const shard: CardShard = {
     _poolFurnaceSpirit,
     _poolGarrisonCat,
     _poolGildedSentinel,
+    _poolGimliOfTheGlitteringCaves,
     _poolGlacialFloodplain,
     _poolGloriousAnthem,
     _poolGoblinFireslinger,
@@ -326,6 +332,7 @@ const shard: CardShard = {
     _poolJaxisTheTroublemaker,
     _poolJhessianInfiltrator,
     _poolKalastriaNightwatch,
+    _poolKarametrasAcolyte,
     _poolKazanduMammoth,
     _poolKindlyCustomer,
     _poolKraulStinger,
@@ -395,6 +402,7 @@ const shard: CardShard = {
     _poolSorcererOfTheFang,
     _poolSpitefulBanditry,
     _poolSquirrelanoids,
+    _poolStarnheimAspirant,
     _poolStoicBuilder,
     _poolStolenByTheFae,
     _poolStoneRain,

@@ -77,6 +77,7 @@ import _poolFontOfMythos from "../pool/font-of-mythos.js";
 import _poolFoundryInspector from "../pool/foundry-inspector.js";
 import _poolFoxfireOak from "../pool/foxfire-oak.js";
 import _poolFungalInfection from "../pool/fungal-infection.js";
+import _poolGatheringStone from "../pool/gathering-stone.js";
 import _poolGenesisChamber from "../pool/genesis-chamber.js";
 import _poolGhostlyFlicker from "../pool/ghostly-flicker.js";
 import _poolGideonsLawkeeper from "../pool/gideons-lawkeeper.js";
@@ -96,6 +97,7 @@ import _poolHellkiteTyrant from "../pool/hellkite-tyrant.js";
 import _poolHerosResolve from "../pool/heros-resolve.js";
 import _poolHideousVisage from "../pool/hideous-visage.js";
 import _poolHoldoutSettlement from "../pool/holdout-settlement.js";
+import _poolHonoredDreyleader from "../pool/honored-dreyleader.js";
 import _poolHorizonExplorer from "../pool/horizon-explorer.js";
 import _poolHulkingDevil from "../pool/hulking-devil.js";
 import _poolIcewindElemental from "../pool/icewind-elemental.js";
@@ -117,9 +119,11 @@ import _poolKodamaOfTheEastTree from "../pool/kodama-of-the-east-tree.js";
 import _poolKorlessaScaleSinger from "../pool/korlessa-scale-singer.js";
 import _poolKrarkClanIronworks from "../pool/krark-clan-ironworks.js";
 import _poolKrosanGrip from "../pool/krosan-grip.js";
+import _poolLagomosHandOfHatred from "../pool/lagomos-hand-of-hatred.js";
 import _poolLizardWarrior from "../pool/lizard-warrior.js";
 import _poolLongshotRebelBowman from "../pool/longshot-rebel-bowman.js";
 import _poolMagmaquake from "../pool/magmaquake.js";
+import _poolMalevolentRumble from "../pool/malevolent-rumble.js";
 import _poolMarisiBreakerOfTheCoil from "../pool/marisi-breaker-of-the-coil.js";
 import _poolMarkerBeetles from "../pool/marker-beetles.js";
 import _poolMiscast from "../pool/miscast.js";
@@ -194,6 +198,7 @@ import _poolTouchTheSpiritRealm from "../pool/touch-the-spirit-realm.js";
 import _poolTowerOfChampions from "../pool/tower-of-champions.js";
 import _poolToweringIndrik from "../pool/towering-indrik.js";
 import _poolToxinAnalysis from "../pool/toxin-analysis.js";
+import _poolTreasureCove from "../pool/treasure-cove.js";
 import _poolTreasureDredger from "../pool/treasure-dredger.js";
 import _poolTreeOfRedemption from "../pool/tree-of-redemption.js";
 import _poolTuvasaTheSunlit from "../pool/tuvasa-the-sunlit.js";
@@ -201,6 +206,7 @@ import _poolUndercityShade from "../pool/undercity-shade.js";
 import _poolValorSinger from "../pool/valor-singer.js";
 import _poolVesselOfParamnesia from "../pool/vessel-of-paramnesia.js";
 import _poolViashinoSpearhunter from "../pool/viashino-spearhunter.js";
+import _poolWalkingAtlas from "../pool/walking-atlas.js";
 import _poolWallOfMist from "../pool/wall-of-mist.js";
 import _poolWallOfWood from "../pool/wall-of-wood.js";
 import _poolWaterfrontDistrict from "../pool/waterfront-district.js";
@@ -295,6 +301,7 @@ const shard: CardShard = {
     _poolFoundryInspector,
     _poolFoxfireOak,
     _poolFungalInfection,
+    _poolGatheringStone,
     _poolGenesisChamber,
     _poolGhostlyFlicker,
     _poolGideonsLawkeeper,
@@ -314,6 +321,7 @@ const shard: CardShard = {
     _poolHerosResolve,
     _poolHideousVisage,
     _poolHoldoutSettlement,
+    _poolHonoredDreyleader,
     _poolHorizonExplorer,
     _poolHulkingDevil,
     _poolIcewindElemental,
@@ -335,9 +343,11 @@ const shard: CardShard = {
     _poolKorlessaScaleSinger,
     _poolKrarkClanIronworks,
     _poolKrosanGrip,
+    _poolLagomosHandOfHatred,
     _poolLizardWarrior,
     _poolLongshotRebelBowman,
     _poolMagmaquake,
+    _poolMalevolentRumble,
     _poolMarisiBreakerOfTheCoil,
     _poolMarkerBeetles,
     _poolMiscast,
@@ -412,6 +422,7 @@ const shard: CardShard = {
     _poolTowerOfChampions,
     _poolToweringIndrik,
     _poolToxinAnalysis,
+    _poolTreasureCove,
     _poolTreasureDredger,
     _poolTreeOfRedemption,
     _poolTuvasaTheSunlit,
@@ -419,6 +430,7 @@ const shard: CardShard = {
     _poolValorSinger,
     _poolVesselOfParamnesia,
     _poolViashinoSpearhunter,
+    _poolWalkingAtlas,
     _poolWallOfMist,
     _poolWallOfWood,
     _poolWaterfrontDistrict,

@@ -24,6 +24,7 @@ import _poolBeledrosWitherbloom from "../pool/beledros-witherbloom.js";
 import _poolBellowingCrier from "../pool/bellowing-crier.js";
 import _poolBishopOfWings from "../pool/bishop-of-wings.js";
 import _poolBladedSentinel from "../pool/bladed-sentinel.js";
+import _poolBlanchwoodArmor from "../pool/blanchwood-armor.js";
 import _poolBlastedLandscape from "../pool/blasted-landscape.js";
 import _poolBleachboneVerge from "../pool/bleachbone-verge.js";
 import _poolBlessedLight from "../pool/blessed-light.js";
@@ -153,6 +154,7 @@ import _poolRakdosShredFreak from "../pool/rakdos-shred-freak.js";
 import _poolRapidAugmenter from "../pool/rapid-augmenter.js";
 import _poolRavenousIntruder from "../pool/ravenous-intruder.js";
 import _poolRememberTheFallen from "../pool/remember-the-fallen.js";
+import _poolReshape from "../pool/reshape.js";
 import _poolResonatingLute from "../pool/resonating-lute.js";
 import _poolRhonassMonument from "../pool/rhonass-monument.js";
 import _poolRiftBolt from "../pool/rift-bolt.js";
@@ -260,6 +262,7 @@ const shard: CardShard = {
     _poolBellowingCrier,
     _poolBishopOfWings,
     _poolBladedSentinel,
+    _poolBlanchwoodArmor,
     _poolBlastedLandscape,
     _poolBleachboneVerge,
     _poolBlessedLight,
@@ -389,6 +392,7 @@ const shard: CardShard = {
     _poolRapidAugmenter,
     _poolRavenousIntruder,
     _poolRememberTheFallen,
+    _poolReshape,
     _poolResonatingLute,
     _poolRhonassMonument,
     _poolRiftBolt,

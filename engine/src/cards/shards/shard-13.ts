@@ -31,6 +31,7 @@ import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
 import _poolCanopyGorger from "../pool/canopy-gorger.js";
+import _poolCanopyTactician from "../pool/canopy-tactician.js";
 import _poolCarrionAnts from "../pool/carrion-ants.js";
 import _poolCastleEmbereth from "../pool/castle-embereth.js";
 import _poolCatharsShield from "../pool/cathars-shield.js";
@@ -61,6 +62,7 @@ import _poolEddieBrock from "../pool/eddie-brock.js";
 import _poolEldraziTemple from "../pool/eldrazi-temple.js";
 import _poolElsha from "../pool/elsha.js";
 import _poolElvesOfDeepShadow from "../pool/elves-of-deep-shadow.js";
+import _poolElvishChampion from "../pool/elvish-champion.js";
 import _poolEmryLurkerOfTheLoch from "../pool/emry-lurker-of-the-loch.js";
 import _poolEnslavedScout from "../pool/enslaved-scout.js";
 import _poolEtchedFamiliar from "../pool/etched-familiar.js";
@@ -138,11 +140,13 @@ import _poolOrzhovCluestone from "../pool/orzhov-cluestone.js";
 import _poolOverflowingInsight from "../pool/overflowing-insight.js";
 import _poolPersonalTutor from "../pool/personal-tutor.js";
 import _poolPhyrexianVivisector from "../pool/phyrexian-vivisector.js";
+import _poolPickYourPoison from "../pool/pick-your-poison.js";
 import _poolPiousInterdiction from "../pool/pious-interdiction.js";
 import _poolPiranhaFly from "../pool/piranha-fly.js";
 import _poolRakdosGuildgate from "../pool/rakdos-guildgate.js";
 import _poolRampantGrowth from "../pool/rampant-growth.js";
 import _poolRavagedHighlands from "../pool/ravaged-highlands.js";
+import _poolRavenousSquirrel from "../pool/ravenous-squirrel.js";
 import _poolRazorgrassAmbush from "../pool/razorgrass-ambush.js";
 import _poolRearingEmbermare from "../pool/rearing-embermare.js";
 import _poolReconstruction from "../pool/reconstruction.js";
@@ -222,6 +226,7 @@ import _poolWoodlandPatrol from "../pool/woodland-patrol.js";
 import _poolZephid from "../pool/zephid.js";
 import _poolZephyrCharge from "../pool/zephyr-charge.js";
 import _poolZndrspltEyeOfWisdom from "../pool/zndrsplt-eye-of-wisdom.js";
+import _tokensBatToken from "../tokens/bat-token.js";
 import _tokensClueToken from "../tokens/clue-token.js";
 import _tokensGolemTrampleToken from "../tokens/golem-trample-token.js";
 import _tokensHumanWarriorToken from "../tokens/human-warrior-token.js";
@@ -258,6 +263,7 @@ const shard: CardShard = {
     _poolBreathstealer,
     _poolBredForTheHunt,
     _poolCanopyGorger,
+    _poolCanopyTactician,
     _poolCarrionAnts,
     _poolCastleEmbereth,
     _poolCatharsShield,
@@ -288,6 +294,7 @@ const shard: CardShard = {
     _poolEldraziTemple,
     _poolElsha,
     _poolElvesOfDeepShadow,
+    _poolElvishChampion,
     _poolEmryLurkerOfTheLoch,
     _poolEnslavedScout,
     _poolEtchedFamiliar,
@@ -365,11 +372,13 @@ const shard: CardShard = {
     _poolOverflowingInsight,
     _poolPersonalTutor,
     _poolPhyrexianVivisector,
+    _poolPickYourPoison,
     _poolPiousInterdiction,
     _poolPiranhaFly,
     _poolRakdosGuildgate,
     _poolRampantGrowth,
     _poolRavagedHighlands,
+    _poolRavenousSquirrel,
     _poolRazorgrassAmbush,
     _poolRearingEmbermare,
     _poolReconstruction,
@@ -451,6 +460,7 @@ const shard: CardShard = {
     _poolZndrspltEyeOfWisdom,
   ],
   tokens: [
+    _tokensBatToken,
     _tokensClueToken,
     _tokensGolemTrampleToken,
     _tokensHumanWarriorToken,

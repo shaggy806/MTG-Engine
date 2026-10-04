@@ -91,6 +91,7 @@ import _poolGrayscaledGharial from "../pool/grayscaled-gharial.js";
 import _poolGreatFurnace from "../pool/great-furnace.js";
 import _poolGreensleevesMaroSorcerer from "../pool/greensleeves-maro-sorcerer.js";
 import _poolGrimTutor from "../pool/grim-tutor.js";
+import _poolGrimaSarumansFootman from "../pool/grima-sarumans-footman.js";
 import _poolGrizzledLeotau from "../pool/grizzled-leotau.js";
 import _poolGruulSignet from "../pool/gruul-signet.js";
 import _poolHalvarGodOfBattle from "../pool/halvar-god-of-battle.js";
@@ -226,6 +227,7 @@ import _poolWithoutWeakness from "../pool/without-weakness.js";
 import _poolWoollyThoctar from "../pool/woolly-thoctar.js";
 import _poolZephidsEmbrace from "../pool/zephids-embrace.js";
 import _tokensGnomeToken from "../tokens/gnome-token.js";
+import _tokensKnightTokenChivalricAlliance from "../tokens/knight-token-chivalric-alliance.js";
 import _tokensSalamanderWarriorToken from "../tokens/salamander-warrior-token.js";
 
 const shard: CardShard = {
@@ -318,6 +320,7 @@ const shard: CardShard = {
     _poolGreatFurnace,
     _poolGreensleevesMaroSorcerer,
     _poolGrimTutor,
+    _poolGrimaSarumansFootman,
     _poolGrizzledLeotau,
     _poolGruulSignet,
     _poolHalvarGodOfBattle,
@@ -455,6 +458,7 @@ const shard: CardShard = {
   ],
   tokens: [
     _tokensGnomeToken,
+    _tokensKnightTokenChivalricAlliance,
     _tokensSalamanderWarriorToken,
   ],
 };

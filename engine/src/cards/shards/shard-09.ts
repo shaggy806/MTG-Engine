@@ -92,6 +92,7 @@ import _poolHyenaPack from "../pool/hyena-pack.js";
 import _poolIceStorm from "../pool/ice-storm.js";
 import _poolIllegitimateBusiness from "../pool/illegitimate-business.js";
 import _poolInfectiousInquiry from "../pool/infectious-inquiry.js";
+import _poolInfernalPlunge from "../pool/infernal-plunge.js";
 import _poolInsatiableSouleater from "../pool/insatiable-souleater.js";
 import _poolIrrigatedFarmland from "../pool/irrigated-farmland.js";
 import _poolJackedRabbit from "../pool/jacked-rabbit.js";
@@ -106,8 +107,10 @@ import _poolLagacLizard from "../pool/lagac-lizard.js";
 import _poolLandLeeches from "../pool/land-leeches.js";
 import _poolLazotepPlating from "../pool/lazotep-plating.js";
 import _poolLedgerShredder from "../pool/ledger-shredder.js";
+import _poolLifebloodHydra from "../pool/lifeblood-hydra.js";
 import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
 import _poolLushPortico from "../pool/lush-portico.js";
+import _poolMagicDamper from "../pool/magic-damper.js";
 import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
 import _poolManaLeak from "../pool/mana-leak.js";
@@ -164,6 +167,7 @@ import _poolScourFromExistence from "../pool/scour-from-existence.js";
 import _poolScouringSwarm from "../pool/scouring-swarm.js";
 import _poolSedgemoorWitch from "../pool/sedgemoor-witch.js";
 import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
+import _poolSerrasSanctum from "../pool/serras-sanctum.js";
 import _poolShardingSphinx from "../pool/sharding-sphinx.js";
 import _poolShikoAndNarsetUnified from "../pool/shiko-and-narset-unified.js";
 import _poolShizoDeathsStorehouse from "../pool/shizo-deaths-storehouse.js";
@@ -193,6 +197,7 @@ import _poolThermalNavigator from "../pool/thermal-navigator.js";
 import _poolThoseWhoServe from "../pool/those-who-serve.js";
 import _poolThrivingIsle from "../pool/thriving-isle.js";
 import _poolThundermaneDragon from "../pool/thundermane-dragon.js";
+import _poolTimeStretch from "../pool/time-stretch.js";
 import _poolTitaniasBoon from "../pool/titanias-boon.js";
 import _poolTocasiasWelcome from "../pool/tocasias-welcome.js";
 import _poolTorporDust from "../pool/torpor-dust.js";
@@ -320,6 +325,7 @@ const shard: CardShard = {
     _poolIceStorm,
     _poolIllegitimateBusiness,
     _poolInfectiousInquiry,
+    _poolInfernalPlunge,
     _poolInsatiableSouleater,
     _poolIrrigatedFarmland,
     _poolJackedRabbit,
@@ -334,8 +340,10 @@ const shard: CardShard = {
     _poolLandLeeches,
     _poolLazotepPlating,
     _poolLedgerShredder,
+    _poolLifebloodHydra,
     _poolLightningArmyOfOne,
     _poolLushPortico,
+    _poolMagicDamper,
     _poolMagusOfTheWheel,
     _poolManaGeyser,
     _poolManaLeak,
@@ -392,6 +400,7 @@ const shard: CardShard = {
     _poolScouringSwarm,
     _poolSedgemoorWitch,
     _poolSeraphOfDawn,
+    _poolSerrasSanctum,
     _poolShardingSphinx,
     _poolShikoAndNarsetUnified,
     _poolShizoDeathsStorehouse,
@@ -421,6 +430,7 @@ const shard: CardShard = {
     _poolThoseWhoServe,
     _poolThrivingIsle,
     _poolThundermaneDragon,
+    _poolTimeStretch,
     _poolTitaniasBoon,
     _poolTocasiasWelcome,
     _poolTorporDust,

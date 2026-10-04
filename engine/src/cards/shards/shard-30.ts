@@ -21,6 +21,7 @@ import _poolAuriokTransfixer from "../pool/auriok-transfixer.js";
 import _poolAvenFisher from "../pool/aven-fisher.js";
 import _poolAzoriusGuildgate from "../pool/azorius-guildgate.js";
 import _poolAzulaAlwaysLies from "../pool/azula-always-lies.js";
+import _poolBasimIbnIshaq from "../pool/basim-ibn-ishaq.js";
 import _poolBilboBirthdayCelebrant from "../pool/bilbo-birthday-celebrant.js";
 import _poolBlackPantherVanguard from "../pool/black-panther-vanguard.js";
 import _poolBlackbladeReforged from "../pool/blackblade-reforged.js";
@@ -41,6 +42,7 @@ import _poolCaveSense from "../pool/cave-sense.js";
 import _poolCelestialForce from "../pool/celestial-force.js";
 import _poolCemeteryTampering from "../pool/cemetery-tampering.js";
 import _poolChainToMemory from "../pool/chain-to-memory.js";
+import _poolCitadelGate from "../pool/citadel-gate.js";
 import _poolClockOfOmens from "../pool/clock-of-omens.js";
 import _poolCloudOfFaeries from "../pool/cloud-of-faeries.js";
 import _poolCloudshift from "../pool/cloudshift.js";
@@ -49,6 +51,7 @@ import _poolCollectiveBlessing from "../pool/collective-blessing.js";
 import _poolColossalGraveReaver from "../pool/colossal-grave-reaver.js";
 import _poolConclaveNaturalists from "../pool/conclave-naturalists.js";
 import _poolConduitPylons from "../pool/conduit-pylons.js";
+import _poolCorneredByBlackMages from "../pool/cornered-by-black-mages.js";
 import _poolCosmiumBlast from "../pool/cosmium-blast.js";
 import _poolCrossbowInfantry from "../pool/crossbow-infantry.js";
 import _poolCrossroadsVillage from "../pool/crossroads-village.js";
@@ -258,6 +261,7 @@ const shard: CardShard = {
     _poolAvenFisher,
     _poolAzoriusGuildgate,
     _poolAzulaAlwaysLies,
+    _poolBasimIbnIshaq,
     _poolBilboBirthdayCelebrant,
     _poolBlackPantherVanguard,
     _poolBlackbladeReforged,
@@ -278,6 +282,7 @@ const shard: CardShard = {
     _poolCelestialForce,
     _poolCemeteryTampering,
     _poolChainToMemory,
+    _poolCitadelGate,
     _poolClockOfOmens,
     _poolCloudOfFaeries,
     _poolCloudshift,
@@ -286,6 +291,7 @@ const shard: CardShard = {
     _poolColossalGraveReaver,
     _poolConclaveNaturalists,
     _poolConduitPylons,
+    _poolCorneredByBlackMages,
     _poolCosmiumBlast,
     _poolCrossbowInfantry,
     _poolCrossroadsVillage,

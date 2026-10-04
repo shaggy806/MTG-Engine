@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B21) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B22) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -345,7 +345,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 21 (2026-10-04, the no-engine-work pass)** triaged ranks 2704–2972: 102 authored (Vega, the Watcher, Blade Historian, Step Through, Vein Ripper, Master of Dark Rites and 97 more — `top5000-batch-21a`–`h.test.ts`); 98 blocked (`B21.json`), each skipped at the first sign of engine work. Most-cited blockers: `mechanic:rooms` (3), `keyword:ninjutsu` (3), `keyword:crew` (2), `effect:target-spec-additions` (2), `mechanic:the-ring` (2).
 
-Past rank 2972, nothing is triaged.
+- **Batch 22 (2026-10-04, the no-engine-work pass)** triaged ranks 2973–3255: 98 authored (Jumbo Cactuar, Galvanic Iteration, Abraded Bluffs, Repercussion, Regal Caracal and 93 more — `top5000-batch-22a`–`h.test.ts`); 102 blocked (`B22.json`), each skipped at the first sign of engine work. Most-cited blockers: `effect:choices-by-other-players` (3), `condition:devotion` (3), `keyword:crew` (3), `effect:delayed-trigger-extensions` (2), `new:prevent-and-reflect-damage` (2).
+
+Past rank 3255, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

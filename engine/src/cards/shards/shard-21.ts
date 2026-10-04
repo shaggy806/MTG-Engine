@@ -16,6 +16,7 @@ import _poolBalaGedSanctuary from "../pool/bala-ged-sanctuary.js";
 import _poolBallistaSquad from "../pool/ballista-squad.js";
 import _poolBaneOfProgress from "../pool/bane-of-progress.js";
 import _poolBeastmasterAscension from "../pool/beastmaster-ascension.js";
+import _poolBeseechTheQueen from "../pool/beseech-the-queen.js";
 import _poolBlackMarketConnections from "../pool/black-market-connections.js";
 import _poolBloatedContaminator from "../pool/bloated-contaminator.js";
 import _poolBoonOfEmrakul from "../pool/boon-of-emrakul.js";
@@ -56,6 +57,7 @@ import _poolFecundGreenshell from "../pool/fecund-greenshell.js";
 import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
 import _poolFireLitThicket from "../pool/fire-lit-thicket.js";
+import _poolFirebendingStudent from "../pool/firebending-student.js";
 import _poolFlameOfAnor from "../pool/flame-of-anor.js";
 import _poolFleetingEffigy from "../pool/fleeting-effigy.js";
 import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
@@ -68,6 +70,7 @@ import _poolGliderKids from "../pool/glider-kids.js";
 import _poolGloriousCharge from "../pool/glorious-charge.js";
 import _poolGoblinSurprise from "../pool/goblin-surprise.js";
 import _poolGoblinWarchief from "../pool/goblin-warchief.js";
+import _poolGoroGoroDiscipleOfRyusei from "../pool/goro-goro-disciple-of-ryusei.js";
 import _poolGreaterTanuki from "../pool/greater-tanuki.js";
 import _poolGruesomeDeformity from "../pool/gruesome-deformity.js";
 import _poolGruulTurf from "../pool/gruul-turf.js";
@@ -88,6 +91,7 @@ import _poolIridescentBlademaster from "../pool/iridescent-blademaster.js";
 import _poolJaradGolgariLichLord from "../pool/jarad-golgari-lich-lord.js";
 import _poolJasperaSentinel from "../pool/jaspera-sentinel.js";
 import _poolJetmirNexusOfRevels from "../pool/jetmir-nexus-of-revels.js";
+import _poolJumboCactuar from "../pool/jumbo-cactuar.js";
 import _poolKayaGeistHunter from "../pool/kaya-geist-hunter.js";
 import _poolKeeperOfTheAccord from "../pool/keeper-of-the-accord.js";
 import _poolKeeperOfTheNineGales from "../pool/keeper-of-the-nine-gales.js";
@@ -128,6 +132,7 @@ import _poolPhantasmalImage from "../pool/phantasmal-image.js";
 import _poolPheresBandCentaurs from "../pool/pheres-band-centaurs.js";
 import _poolPhyrexianHulk from "../pool/phyrexian-hulk.js";
 import _poolPhyrexianWalker from "../pool/phyrexian-walker.js";
+import _poolPiperOfTheSwarm from "../pool/piper-of-the-swarm.js";
 import _poolPotionOfHealing from "../pool/potion-of-healing.js";
 import _poolPrimalWellspring from "../pool/primal-wellspring.js";
 import _poolPromisingVein from "../pool/promising-vein.js";
@@ -219,6 +224,7 @@ const shard: CardShard = {
     _poolBallistaSquad,
     _poolBaneOfProgress,
     _poolBeastmasterAscension,
+    _poolBeseechTheQueen,
     _poolBlackMarketConnections,
     _poolBloatedContaminator,
     _poolBoonOfEmrakul,
@@ -259,6 +265,7 @@ const shard: CardShard = {
     _poolFelidarRetreat,
     _poolFestivalCrasher,
     _poolFireLitThicket,
+    _poolFirebendingStudent,
     _poolFlameOfAnor,
     _poolFleetingEffigy,
     _poolFrontierBivouac,
@@ -271,6 +278,7 @@ const shard: CardShard = {
     _poolGloriousCharge,
     _poolGoblinSurprise,
     _poolGoblinWarchief,
+    _poolGoroGoroDiscipleOfRyusei,
     _poolGreaterTanuki,
     _poolGruesomeDeformity,
     _poolGruulTurf,
@@ -291,6 +299,7 @@ const shard: CardShard = {
     _poolJaradGolgariLichLord,
     _poolJasperaSentinel,
     _poolJetmirNexusOfRevels,
+    _poolJumboCactuar,
     _poolKayaGeistHunter,
     _poolKeeperOfTheAccord,
     _poolKeeperOfTheNineGales,
@@ -331,6 +340,7 @@ const shard: CardShard = {
     _poolPheresBandCentaurs,
     _poolPhyrexianHulk,
     _poolPhyrexianWalker,
+    _poolPiperOfTheSwarm,
     _poolPotionOfHealing,
     _poolPrimalWellspring,
     _poolPromisingVein,

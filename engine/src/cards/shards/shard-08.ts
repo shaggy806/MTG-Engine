@@ -16,6 +16,7 @@ import _poolAlertShuInfantry from "../pool/alert-shu-infantry.js";
 import _poolAlphaTyrranax from "../pool/alpha-tyrranax.js";
 import _poolAmbushParatrooper from "../pool/ambush-paratrooper.js";
 import _poolAnzragTheQuakeMole from "../pool/anzrag-the-quake-mole.js";
+import _poolArcanisTheOmnipotent from "../pool/arcanis-the-omnipotent.js";
 import _poolAuraBlast from "../pool/aura-blast.js";
 import _poolAzoriusLocket from "../pool/azorius-locket.js";
 import _poolAzusaLostButSeeking from "../pool/azusa-lost-but-seeking.js";
@@ -127,6 +128,7 @@ import _poolMountainBandit from "../pool/mountain-bandit.js";
 import _poolMysticRetrieval from "../pool/mystic-retrieval.js";
 import _poolMythicProportions from "../pool/mythic-proportions.js";
 import _poolNaturesClaim from "../pool/natures-claim.js";
+import _poolNecroduality from "../pool/necroduality.js";
 import _poolNevinyrralsDisk from "../pool/nevinyrrals-disk.js";
 import _poolNightveilPredator from "../pool/nightveil-predator.js";
 import _poolOakhameRanger from "../pool/oakhame-ranger.js";
@@ -176,6 +178,7 @@ import _poolSmelt from "../pool/smelt.js";
 import _poolSoulShred from "../pool/soul-shred.js";
 import _poolSphereGrid from "../pool/sphere-grid.js";
 import _poolSpiritOfMalevolence from "../pool/spirit-of-malevolence.js";
+import _poolSplashPortal from "../pool/splash-portal.js";
 import _poolSulfurousMire from "../pool/sulfurous-mire.js";
 import _poolSyphonFuel from "../pool/syphon-fuel.js";
 import _poolTalasWarrior from "../pool/talas-warrior.js";
@@ -214,6 +217,7 @@ import _poolWorldlyTutor from "../pool/worldly-tutor.js";
 import _poolWreckingCrew from "../pool/wrecking-crew.js";
 import _poolYavimayaCoast from "../pool/yavimaya-coast.js";
 import _poolYouFindSomePrisoners from "../pool/you-find-some-prisoners.js";
+import _poolZimoneParadoxSculptor from "../pool/zimone-paradox-sculptor.js";
 import _poolZodiacOx from "../pool/zodiac-ox.js";
 import _poolZoralineCosmosCaller from "../pool/zoraline-cosmos-caller.js";
 import _poolZuranOrb from "../pool/zuran-orb.js";
@@ -238,6 +242,7 @@ const shard: CardShard = {
     _poolAlphaTyrranax,
     _poolAmbushParatrooper,
     _poolAnzragTheQuakeMole,
+    _poolArcanisTheOmnipotent,
     _poolAuraBlast,
     _poolAzoriusLocket,
     _poolAzusaLostButSeeking,
@@ -349,6 +354,7 @@ const shard: CardShard = {
     _poolMysticRetrieval,
     _poolMythicProportions,
     _poolNaturesClaim,
+    _poolNecroduality,
     _poolNevinyrralsDisk,
     _poolNightveilPredator,
     _poolOakhameRanger,
@@ -398,6 +404,7 @@ const shard: CardShard = {
     _poolSoulShred,
     _poolSphereGrid,
     _poolSpiritOfMalevolence,
+    _poolSplashPortal,
     _poolSulfurousMire,
     _poolSyphonFuel,
     _poolTalasWarrior,
@@ -436,6 +443,7 @@ const shard: CardShard = {
     _poolWreckingCrew,
     _poolYavimayaCoast,
     _poolYouFindSomePrisoners,
+    _poolZimoneParadoxSculptor,
     _poolZodiacOx,
     _poolZoralineCosmosCaller,
     _poolZuranOrb,

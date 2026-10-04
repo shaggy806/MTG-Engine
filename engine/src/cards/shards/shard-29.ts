@@ -50,12 +50,14 @@ import _poolEleshNornMotherOfMachines from "../pool/elesh-norn-mother-of-machine
 import _poolEnduringInnocence from "../pool/enduring-innocence.js";
 import _poolErietteOfTheCharmedApple from "../pool/eriette-of-the-charmed-apple.js";
 import _poolEtheriumAstrolabe from "../pool/etherium-astrolabe.js";
+import _poolExtractFromDarkness from "../pool/extract-from-darkness.js";
 import _poolEyeOfRamos from "../pool/eye-of-ramos.js";
 import _poolFadeIntoAntiquity from "../pool/fade-into-antiquity.js";
 import _poolFairgroundsPatrol from "../pool/fairgrounds-patrol.js";
 import _poolFertileGround from "../pool/fertile-ground.js";
 import _poolFiendlash from "../pool/fiendlash.js";
 import _poolFinalDeath from "../pool/final-death.js";
+import _poolFlayerOfLoyalties from "../pool/flayer-of-loyalties.js";
 import _poolFlightOfFancy from "../pool/flight-of-fancy.js";
 import _poolForbiddenAlchemy from "../pool/forbidden-alchemy.js";
 import _poolFracturedSanity from "../pool/fractured-sanity.js";
@@ -160,6 +162,7 @@ import _poolSkaabWrangler from "../pool/skaab-wrangler.js";
 import _poolSlagwoodsBridge from "../pool/slagwoods-bridge.js";
 import _poolSnap from "../pool/snap.js";
 import _poolSneakAttack from "../pool/sneak-attack.js";
+import _poolSolarTransformer from "../pool/solar-transformer.js";
 import _poolSonicScrewdriver from "../pool/sonic-screwdriver.js";
 import _poolSoulknifeSpy from "../pool/soulknife-spy.js";
 import _poolSpiritualGuardian from "../pool/spiritual-guardian.js";
@@ -256,12 +259,14 @@ const shard: CardShard = {
     _poolEnduringInnocence,
     _poolErietteOfTheCharmedApple,
     _poolEtheriumAstrolabe,
+    _poolExtractFromDarkness,
     _poolEyeOfRamos,
     _poolFadeIntoAntiquity,
     _poolFairgroundsPatrol,
     _poolFertileGround,
     _poolFiendlash,
     _poolFinalDeath,
+    _poolFlayerOfLoyalties,
     _poolFlightOfFancy,
     _poolForbiddenAlchemy,
     _poolFracturedSanity,
@@ -366,6 +371,7 @@ const shard: CardShard = {
     _poolSlagwoodsBridge,
     _poolSnap,
     _poolSneakAttack,
+    _poolSolarTransformer,
     _poolSonicScrewdriver,
     _poolSoulknifeSpy,
     _poolSpiritualGuardian,

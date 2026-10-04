@@ -94,6 +94,7 @@ import _poolHellsKitchen from "../pool/hells-kitchen.js";
 import _poolHeritageDruid from "../pool/heritage-druid.js";
 import _poolHexingSquelcher from "../pool/hexing-squelcher.js";
 import _poolHiddenGrotto from "../pool/hidden-grotto.js";
+import _poolHollowmurkSiege from "../pool/hollowmurk-siege.js";
 import _poolHotDogCart from "../pool/hot-dog-cart.js";
 import _poolHuntersProwess from "../pool/hunters-prowess.js";
 import _poolImpoliteEntrance from "../pool/impolite-entrance.js";
@@ -110,6 +111,7 @@ import _poolLaboratoryBrute from "../pool/laboratory-brute.js";
 import _poolLeadenMyr from "../pool/leaden-myr.js";
 import _poolLeafDancer from "../pool/leaf-dancer.js";
 import _poolLeafGilder from "../pool/leaf-gilder.js";
+import _poolLegionLieutenant from "../pool/legion-lieutenant.js";
 import _poolLiesaForgottenArchangel from "../pool/liesa-forgotten-archangel.js";
 import _poolLightningBolt from "../pool/lightning-bolt.js";
 import _poolLightningHounds from "../pool/lightning-hounds.js";
@@ -207,6 +209,7 @@ import _poolVeteranArmorer from "../pool/veteran-armorer.js";
 import _poolViridianClaw from "../pool/viridian-claw.js";
 import _poolVraskasFall from "../pool/vraskas-fall.js";
 import _poolWakandanShieldGuard from "../pool/wakandan-shield-guard.js";
+import _poolWakeningSunsAvatar from "../pool/wakening-suns-avatar.js";
 import _poolWalkingBulwark from "../pool/walking-bulwark.js";
 import _poolWallOfSpears from "../pool/wall-of-spears.js";
 import _poolWarRoom from "../pool/war-room.js";
@@ -215,6 +218,7 @@ import _poolWeaselbackRedcap from "../pool/weaselback-redcap.js";
 import _poolWillowWind from "../pool/willow-wind.js";
 import _poolWindbriskHeights from "../pool/windbrisk-heights.js";
 import _poolWirewoodElf from "../pool/wirewood-elf.js";
+import _poolWitchsOven from "../pool/witchs-oven.js";
 import _poolWitherbloomPledgemage from "../pool/witherbloom-pledgemage.js";
 import _poolWorldShaper from "../pool/world-shaper.js";
 import _poolYotianDissident from "../pool/yotian-dissident.js";
@@ -322,6 +326,7 @@ const shard: CardShard = {
     _poolHeritageDruid,
     _poolHexingSquelcher,
     _poolHiddenGrotto,
+    _poolHollowmurkSiege,
     _poolHotDogCart,
     _poolHuntersProwess,
     _poolImpoliteEntrance,
@@ -338,6 +343,7 @@ const shard: CardShard = {
     _poolLeadenMyr,
     _poolLeafDancer,
     _poolLeafGilder,
+    _poolLegionLieutenant,
     _poolLiesaForgottenArchangel,
     _poolLightningBolt,
     _poolLightningHounds,
@@ -435,6 +441,7 @@ const shard: CardShard = {
     _poolViridianClaw,
     _poolVraskasFall,
     _poolWakandanShieldGuard,
+    _poolWakeningSunsAvatar,
     _poolWalkingBulwark,
     _poolWallOfSpears,
     _poolWarRoom,
@@ -443,6 +450,7 @@ const shard: CardShard = {
     _poolWillowWind,
     _poolWindbriskHeights,
     _poolWirewoodElf,
+    _poolWitchsOven,
     _poolWitherbloomPledgemage,
     _poolWorldShaper,
     _poolYotianDissident,

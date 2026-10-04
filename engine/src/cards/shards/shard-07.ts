@@ -67,6 +67,7 @@ import _poolFlowstoneOverseer from "../pool/flowstone-overseer.js";
 import _poolForgeOfHeroes from "../pool/forge-of-heroes.js";
 import _poolFuriousStrength from "../pool/furious-strength.js";
 import _poolGalecasterColossus from "../pool/galecaster-colossus.js";
+import _poolGemhideSliver from "../pool/gemhide-sliver.js";
 import _poolGeneralKreatTheBoltbringer from "../pool/general-kreat-the-boltbringer.js";
 import _poolGhaltaStampedeTyrant from "../pool/ghalta-stampede-tyrant.js";
 import _poolGloinDwarfEmissary from "../pool/gloin-dwarf-emissary.js";
@@ -113,6 +114,7 @@ import _poolManaReflection from "../pool/mana-reflection.js";
 import _poolManedServal from "../pool/maned-serval.js";
 import _poolMaraudingBlightPriest from "../pool/marauding-blight-priest.js";
 import _poolMarshThreader from "../pool/marsh-threader.js";
+import _poolMaskOfGriselbrand from "../pool/mask-of-griselbrand.js";
 import _poolMawOfTheObzedat from "../pool/maw-of-the-obzedat.js";
 import _poolMerchantOfSecrets from "../pool/merchant-of-secrets.js";
 import _poolMindeyeDrake from "../pool/mindeye-drake.js";
@@ -144,6 +146,7 @@ import _poolReanimate from "../pool/reanimate.js";
 import _poolReconnaissanceMission from "../pool/reconnaissance-mission.js";
 import _poolReflexes from "../pool/reflexes.js";
 import _poolRefurbish from "../pool/refurbish.js";
+import _poolRegalCaracal from "../pool/regal-caracal.js";
 import _poolRelicOfLegends from "../pool/relic-of-legends.js";
 import _poolResurrectionOrb from "../pool/resurrection-orb.js";
 import _poolReturnToNature from "../pool/return-to-nature.js";
@@ -187,6 +190,7 @@ import _poolSuddenStrength from "../pool/sudden-strength.js";
 import _poolSunSentinel from "../pool/sun-sentinel.js";
 import _poolSungracePegasus from "../pool/sungrace-pegasus.js";
 import _poolSwordOfFireAndIce from "../pool/sword-of-fire-and-ice.js";
+import _poolSyrGingerTheMealEnder from "../pool/syr-ginger-the-meal-ender.js";
 import _poolTalismanOfDominance from "../pool/talisman-of-dominance.js";
 import _poolTemporalAdept from "../pool/temporal-adept.js";
 import _poolThassasOracle from "../pool/thassas-oracle.js";
@@ -303,6 +307,7 @@ const shard: CardShard = {
     _poolForgeOfHeroes,
     _poolFuriousStrength,
     _poolGalecasterColossus,
+    _poolGemhideSliver,
     _poolGeneralKreatTheBoltbringer,
     _poolGhaltaStampedeTyrant,
     _poolGloinDwarfEmissary,
@@ -349,6 +354,7 @@ const shard: CardShard = {
     _poolManedServal,
     _poolMaraudingBlightPriest,
     _poolMarshThreader,
+    _poolMaskOfGriselbrand,
     _poolMawOfTheObzedat,
     _poolMerchantOfSecrets,
     _poolMindeyeDrake,
@@ -380,6 +386,7 @@ const shard: CardShard = {
     _poolReconnaissanceMission,
     _poolReflexes,
     _poolRefurbish,
+    _poolRegalCaracal,
     _poolRelicOfLegends,
     _poolResurrectionOrb,
     _poolReturnToNature,
@@ -423,6 +430,7 @@ const shard: CardShard = {
     _poolSunSentinel,
     _poolSungracePegasus,
     _poolSwordOfFireAndIce,
+    _poolSyrGingerTheMealEnder,
     _poolTalismanOfDominance,
     _poolTemporalAdept,
     _poolThassasOracle,

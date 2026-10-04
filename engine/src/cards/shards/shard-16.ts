@@ -193,6 +193,7 @@ import _poolSpinedKarok from "../pool/spined-karok.js";
 import _poolSpinningWheel from "../pool/spinning-wheel.js";
 import _poolSpitefulVisions from "../pool/spiteful-visions.js";
 import _poolSprout from "../pool/sprout.js";
+import _poolStaffOfTheStoryteller from "../pool/staff-of-the-storyteller.js";
 import _poolStoneHavenMedic from "../pool/stone-haven-medic.js";
 import _poolStormsWrath from "../pool/storms-wrath.js";
 import _poolStripMine from "../pool/strip-mine.js";
@@ -455,6 +456,7 @@ const shard: CardShard = {
     _poolSpinningWheel,
     _poolSpitefulVisions,
     _poolSprout,
+    _poolStaffOfTheStoryteller,
     _poolStoneHavenMedic,
     _poolStormsWrath,
     _poolStripMine,

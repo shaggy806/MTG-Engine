@@ -43,6 +43,7 @@ import _poolChasmSkulker from "../pool/chasm-skulker.js";
 import _poolChimneyRabble from "../pool/chimney-rabble.js";
 import _poolChordOfCalling from "../pool/chord-of-calling.js";
 import _poolClanDefiance from "../pool/clan-defiance.js";
+import _poolCliffgate from "../pool/cliffgate.js";
 import _poolCloudchaserEagle from "../pool/cloudchaser-eagle.js";
 import _poolConsider from "../pool/consider.js";
 import _poolCopyArtifact from "../pool/copy-artifact.js";
@@ -87,6 +88,7 @@ import _poolGeistOfTheArchives from "../pool/geist-of-the-archives.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
 import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
+import _poolGoblinTrashmaster from "../pool/goblin-trashmaster.js";
 import _poolGravitationalShift from "../pool/gravitational-shift.js";
 import _poolGreyHavensNavigator from "../pool/grey-havens-navigator.js";
 import _poolGrislySalvage from "../pool/grisly-salvage.js";
@@ -157,6 +159,7 @@ import _poolScepterOfInsight from "../pool/scepter-of-insight.js";
 import _poolScorchingSpear from "../pool/scorching-spear.js";
 import _poolSearstepPathway from "../pool/searstep-pathway.js";
 import _poolSecureTheWastes from "../pool/secure-the-wastes.js";
+import _poolSelflessSavior from "../pool/selfless-savior.js";
 import _poolSetessanChampion from "../pool/setessan-champion.js";
 import _poolSidarJabariOfZhalfir from "../pool/sidar-jabari-of-zhalfir.js";
 import _poolSiegecraft from "../pool/siegecraft.js";
@@ -267,6 +270,7 @@ const shard: CardShard = {
     _poolChimneyRabble,
     _poolChordOfCalling,
     _poolClanDefiance,
+    _poolCliffgate,
     _poolCloudchaserEagle,
     _poolConsider,
     _poolCopyArtifact,
@@ -311,6 +315,7 @@ const shard: CardShard = {
     _poolGhostlyPrison,
     _poolGoblinGangLeader,
     _poolGoblinRally,
+    _poolGoblinTrashmaster,
     _poolGravitationalShift,
     _poolGreyHavensNavigator,
     _poolGrislySalvage,
@@ -381,6 +386,7 @@ const shard: CardShard = {
     _poolScorchingSpear,
     _poolSearstepPathway,
     _poolSecureTheWastes,
+    _poolSelflessSavior,
     _poolSetessanChampion,
     _poolSidarJabariOfZhalfir,
     _poolSiegecraft,

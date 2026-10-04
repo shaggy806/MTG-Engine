@@ -54,6 +54,7 @@ import _poolDeathriteShaman from "../pool/deathrite-shaman.js";
 import _poolDemolitionField from "../pool/demolition-field.js";
 import _poolDrivnodCarnageDominus from "../pool/drivnod-carnage-dominus.js";
 import _poolEarthOriginYak from "../pool/earth-origin-yak.js";
+import _poolEatenAlive from "../pool/eaten-alive.js";
 import _poolEiganjoSeatOfTheEmpire from "../pool/eiganjo-seat-of-the-empire.js";
 import _poolEncampmentKeeper from "../pool/encampment-keeper.js";
 import _poolEnfeeblement from "../pool/enfeeblement.js";
@@ -117,6 +118,7 @@ import _poolManaPrism from "../pool/mana-prism.js";
 import _poolMandibleJusticiar from "../pool/mandible-justiciar.js";
 import _poolMarkOfFury from "../pool/mark-of-fury.js";
 import _poolMastersCall from "../pool/masters-call.js";
+import _poolMercilessEviction from "../pool/merciless-eviction.js";
 import _poolMesaUnicorn from "../pool/mesa-unicorn.js";
 import _poolMetathranSoldier from "../pool/metathran-soldier.js";
 import _poolMiirymSentinelWyrm from "../pool/miirym-sentinel-wyrm.js";
@@ -281,6 +283,7 @@ const shard: CardShard = {
     _poolDemolitionField,
     _poolDrivnodCarnageDominus,
     _poolEarthOriginYak,
+    _poolEatenAlive,
     _poolEiganjoSeatOfTheEmpire,
     _poolEncampmentKeeper,
     _poolEnfeeblement,
@@ -344,6 +347,7 @@ const shard: CardShard = {
     _poolMandibleJusticiar,
     _poolMarkOfFury,
     _poolMastersCall,
+    _poolMercilessEviction,
     _poolMesaUnicorn,
     _poolMetathranSoldier,
     _poolMiirymSentinelWyrm,

@@ -120,6 +120,7 @@ import _poolMindscourDragon from "../pool/mindscour-dragon.js";
 import _poolMinotaurWarrior from "../pool/minotaur-warrior.js";
 import _poolMintstrosity from "../pool/mintstrosity.js";
 import _poolMistyRainforest from "../pool/misty-rainforest.js";
+import _poolMizziumMortars from "../pool/mizzium-mortars.js";
 import _poolMudflatVillage from "../pool/mudflat-village.js";
 import _poolMyrBattlesphere from "../pool/myr-battlesphere.js";
 import _poolNadiersNightblade from "../pool/nadiers-nightblade.js";
@@ -134,6 +135,7 @@ import _poolOculus from "../pool/oculus.js";
 import _poolOggyarBattleSeer from "../pool/oggyar-battle-seer.js";
 import _poolOgresCleaver from "../pool/ogres-cleaver.js";
 import _poolOrcishBloodpainter from "../pool/orcish-bloodpainter.js";
+import _poolOtepecHuntmaster from "../pool/otepec-huntmaster.js";
 import _poolOvergrownEstate from "../pool/overgrown-estate.js";
 import _poolPainfulTruths from "../pool/painful-truths.js";
 import _poolPhyresis from "../pool/phyresis.js";
@@ -160,6 +162,7 @@ import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
 import _poolSacrifice from "../pool/sacrifice.js";
 import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
+import _poolSawItComing from "../pool/saw-it-coming.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
 import _poolSealOfStrength from "../pool/seal-of-strength.js";
@@ -184,6 +187,7 @@ import _poolStoneforgeMystic from "../pool/stoneforge-mystic.js";
 import _poolStormcatchMentor from "../pool/stormcatch-mentor.js";
 import _poolStranglingSpores from "../pool/strangling-spores.js";
 import _poolSuChi from "../pool/su-chi.js";
+import _poolSurlyBadgersaur from "../pool/surly-badgersaur.js";
 import _poolSwashbuckling from "../pool/swashbuckling.js";
 import _poolSwordOfWarAndPeace from "../pool/sword-of-war-and-peace.js";
 import _poolTaigamsScheming from "../pool/taigams-scheming.js";
@@ -199,6 +203,7 @@ import _poolTheWallsOfBaSingSe from "../pool/the-walls-of-ba-sing-se.js";
 import _poolTheyWentThisWay from "../pool/they-went-this-way.js";
 import _poolThornOfTheBlackRose from "../pool/thorn-of-the-black-rose.js";
 import _poolThornling from "../pool/thornling.js";
+import _poolThrabenCharm from "../pool/thraben-charm.js";
 import _poolThrillOfPossibility from "../pool/thrill-of-possibility.js";
 import _poolThunderclapDrake from "../pool/thunderclap-drake.js";
 import _poolThunderingGiant from "../pool/thundering-giant.js";
@@ -357,6 +362,7 @@ const shard: CardShard = {
     _poolMinotaurWarrior,
     _poolMintstrosity,
     _poolMistyRainforest,
+    _poolMizziumMortars,
     _poolMudflatVillage,
     _poolMyrBattlesphere,
     _poolNadiersNightblade,
@@ -371,6 +377,7 @@ const shard: CardShard = {
     _poolOggyarBattleSeer,
     _poolOgresCleaver,
     _poolOrcishBloodpainter,
+    _poolOtepecHuntmaster,
     _poolOvergrownEstate,
     _poolPainfulTruths,
     _poolPhyresis,
@@ -397,6 +404,7 @@ const shard: CardShard = {
     _poolRustedSentinel,
     _poolSacrifice,
     _poolSamwiseGamgee,
+    _poolSawItComing,
     _poolScarecrone,
     _poolScavengingScarab,
     _poolSealOfStrength,
@@ -421,6 +429,7 @@ const shard: CardShard = {
     _poolStormcatchMentor,
     _poolStranglingSpores,
     _poolSuChi,
+    _poolSurlyBadgersaur,
     _poolSwashbuckling,
     _poolSwordOfWarAndPeace,
     _poolTaigamsScheming,
@@ -436,6 +445,7 @@ const shard: CardShard = {
     _poolTheyWentThisWay,
     _poolThornOfTheBlackRose,
     _poolThornling,
+    _poolThrabenCharm,
     _poolThrillOfPossibility,
     _poolThunderclapDrake,
     _poolThunderingGiant,

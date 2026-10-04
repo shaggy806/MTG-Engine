@@ -139,6 +139,7 @@ import _poolNyxbornSeaguard from "../pool/nyxborn-seaguard.js";
 import _poolOldGrowthGrove from "../pool/old-growth-grove.js";
 import _poolOmashuCity from "../pool/omashu-city.js";
 import _poolOpportunisticDragon from "../pool/opportunistic-dragon.js";
+import _poolOppression from "../pool/oppression.js";
 import _poolOrnithopter from "../pool/ornithopter.js";
 import _poolOrthionHeroOfLavabrink from "../pool/orthion-hero-of-lavabrink.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
@@ -187,6 +188,7 @@ import _poolSmotheringTithe from "../pool/smothering-tithe.js";
 import _poolSolidarity from "../pool/solidarity.js";
 import _poolSoulmender from "../pool/soulmender.js";
 import _poolSparasHeadquarters from "../pool/sparas-headquarters.js";
+import _poolSpawnbedProtector from "../pool/spawnbed-protector.js";
 import _poolSpineOfIshSah from "../pool/spine-of-ish-sah.js";
 import _poolSpireOfIndustry from "../pool/spire-of-industry.js";
 import _poolStaunchDefenders from "../pool/staunch-defenders.js";
@@ -201,6 +203,7 @@ import _poolThatsMine from "../pool/thats-mine.js";
 import _poolThopterSpyNetwork from "../pool/thopter-spy-network.js";
 import _poolThreeStepsAhead from "../pool/three-steps-ahead.js";
 import _poolTitanHunter from "../pool/titan-hunter.js";
+import _poolTophEarthbendingMaster from "../pool/toph-earthbending-master.js";
 import _poolTopiaryStomper from "../pool/topiary-stomper.js";
 import _poolTorchGauntlet from "../pool/torch-gauntlet.js";
 import _poolTrailOfEvidence from "../pool/trail-of-evidence.js";
@@ -234,6 +237,7 @@ import _tokensConstructTokenAncientStoneIdol from "../tokens/construct-token-anc
 import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
+import _tokensSpiritClericToken from "../tokens/spirit-cleric-token.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
 import _tokensWurmToken from "../tokens/wurm-token.js";
 
@@ -375,6 +379,7 @@ const shard: CardShard = {
     _poolOldGrowthGrove,
     _poolOmashuCity,
     _poolOpportunisticDragon,
+    _poolOppression,
     _poolOrnithopter,
     _poolOrthionHeroOfLavabrink,
     _poolOscorpResearchTeam,
@@ -423,6 +428,7 @@ const shard: CardShard = {
     _poolSolidarity,
     _poolSoulmender,
     _poolSparasHeadquarters,
+    _poolSpawnbedProtector,
     _poolSpineOfIshSah,
     _poolSpireOfIndustry,
     _poolStaunchDefenders,
@@ -437,6 +443,7 @@ const shard: CardShard = {
     _poolThopterSpyNetwork,
     _poolThreeStepsAhead,
     _poolTitanHunter,
+    _poolTophEarthbendingMaster,
     _poolTopiaryStomper,
     _poolTorchGauntlet,
     _poolTrailOfEvidence,
@@ -472,6 +479,7 @@ const shard: CardShard = {
     _tokensElfWarriorToken,
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,
+    _tokensSpiritClericToken,
     _tokensWizardTokenKuja,
     _tokensWurmToken,
   ],

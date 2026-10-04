@@ -58,6 +58,7 @@ import _poolFabledPassage from "../pool/fabled-passage.js";
 import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
 import _poolFellTheMighty from "../pool/fell-the-mighty.js";
 import _poolFireLordZuko from "../pool/fire-lord-zuko.js";
+import _poolFlamingTyrannosaurus from "../pool/flaming-tyrannosaurus.js";
 import _poolFlowstoneKavu from "../pool/flowstone-kavu.js";
 import _poolFlyingDolphinFish from "../pool/flying-dolphin-fish.js";
 import _poolFormidableSpeaker from "../pool/formidable-speaker.js";
@@ -88,6 +89,7 @@ import _poolHighMarket from "../pool/high-market.js";
 import _poolHorrorOfTheDim from "../pool/horror-of-the-dim.js";
 import _poolImpale from "../pool/impale.js";
 import _poolImplode from "../pool/implode.js";
+import _poolImpostorSyndrome from "../pool/impostor-syndrome.js";
 import _poolInfernoJet from "../pool/inferno-jet.js";
 import _poolInsidiousRoots from "../pool/insidious-roots.js";
 import _poolInspiration from "../pool/inspiration.js";
@@ -110,6 +112,7 @@ import _poolLeap from "../pool/leap.js";
 import _poolLifecraftersBestiary from "../pool/lifecrafters-bestiary.js";
 import _poolLifelink from "../pool/lifelink.js";
 import _poolLoreWeaver from "../pool/lore-weaver.js";
+import _poolLurkingPredators from "../pool/lurking-predators.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
 import _poolMabel from "../pool/mabel.js";
 import _poolMadcapSkills from "../pool/madcap-skills.js";
@@ -289,6 +292,7 @@ const shard: CardShard = {
     _poolFalkenrathNoble,
     _poolFellTheMighty,
     _poolFireLordZuko,
+    _poolFlamingTyrannosaurus,
     _poolFlowstoneKavu,
     _poolFlyingDolphinFish,
     _poolFormidableSpeaker,
@@ -319,6 +323,7 @@ const shard: CardShard = {
     _poolHorrorOfTheDim,
     _poolImpale,
     _poolImplode,
+    _poolImpostorSyndrome,
     _poolInfernoJet,
     _poolInsidiousRoots,
     _poolInspiration,
@@ -341,6 +346,7 @@ const shard: CardShard = {
     _poolLifecraftersBestiary,
     _poolLifelink,
     _poolLoreWeaver,
+    _poolLurkingPredators,
     _poolLylaHolographicAssistant,
     _poolMabel,
     _poolMadcapSkills,

@@ -23,6 +23,7 @@ import _poolBatheInGold from "../pool/bathe-in-gold.js";
 import _poolBeastAttack from "../pool/beast-attack.js";
 import _poolBigfinBouncer from "../pool/bigfin-bouncer.js";
 import _poolBlindObedience from "../pool/blind-obedience.js";
+import _poolBlowflyInfestation from "../pool/blowfly-infestation.js";
 import _poolBootsOfSpeed from "../pool/boots-of-speed.js";
 import _poolBreechesEagerPillager from "../pool/breeches-eager-pillager.js";
 import _poolBrigidClachansHeart from "../pool/brigid-clachans-heart.js";
@@ -182,6 +183,7 @@ import _poolSeizeTheSpoils from "../pool/seize-the-spoils.js";
 import _poolSenateGriffin from "../pool/senate-griffin.js";
 import _poolSetonKrosanProtector from "../pool/seton-krosan-protector.js";
 import _poolShinkaTheBloodsoakedKeep from "../pool/shinka-the-bloodsoaked-keep.js";
+import _poolSiegeSmash from "../pool/siege-smash.js";
 import _poolSisaysRing from "../pool/sisays-ring.js";
 import _poolSnappingDrake from "../pool/snapping-drake.js";
 import _poolSoulherder from "../pool/soulherder.js";
@@ -202,7 +204,9 @@ import _poolTaoistHermit from "../pool/taoist-hermit.js";
 import _poolTectonicHazard from "../pool/tectonic-hazard.js";
 import _poolTempestAngler from "../pool/tempest-angler.js";
 import _poolTempestDrake from "../pool/tempest-drake.js";
+import _poolTemporalManipulation from "../pool/temporal-manipulation.js";
 import _poolTerritorialHellkite from "../pool/territorial-hellkite.js";
+import _poolTheMightstoneAndWeakstone from "../pool/the-mightstone-and-weakstone.js";
 import _poolTheMycotyrant from "../pool/the-mycotyrant.js";
 import _poolTheWindCrystal from "../pool/the-wind-crystal.js";
 import _poolThirdPathSavant from "../pool/third-path-savant.js";
@@ -236,6 +240,7 @@ import _poolYouthfulValkyrie from "../pool/youthful-valkyrie.js";
 import _poolZhaoTheSeethingFlame from "../pool/zhao-the-seething-flame.js";
 import _poolZurEternalSchemer from "../pool/zur-eternal-schemer.js";
 import _poolZurgoThundersDecree from "../pool/zurgo-thunders-decree.js";
+import _tokensElementalTokenLagomosHandOfHatred from "../tokens/elemental-token-lagomos-hand-of-hatred.js";
 import _tokensFirstMateRagavan from "../tokens/first-mate-ragavan.js";
 import _tokensGreenSpiderTokenReach from "../tokens/green-spider-token-reach.js";
 import _tokensLifelinkSoldierToken from "../tokens/lifelink-soldier-token.js";
@@ -264,6 +269,7 @@ const shard: CardShard = {
     _poolBeastAttack,
     _poolBigfinBouncer,
     _poolBlindObedience,
+    _poolBlowflyInfestation,
     _poolBootsOfSpeed,
     _poolBreechesEagerPillager,
     _poolBrigidClachansHeart,
@@ -423,6 +429,7 @@ const shard: CardShard = {
     _poolSenateGriffin,
     _poolSetonKrosanProtector,
     _poolShinkaTheBloodsoakedKeep,
+    _poolSiegeSmash,
     _poolSisaysRing,
     _poolSnappingDrake,
     _poolSoulherder,
@@ -443,7 +450,9 @@ const shard: CardShard = {
     _poolTectonicHazard,
     _poolTempestAngler,
     _poolTempestDrake,
+    _poolTemporalManipulation,
     _poolTerritorialHellkite,
+    _poolTheMightstoneAndWeakstone,
     _poolTheMycotyrant,
     _poolTheWindCrystal,
     _poolThirdPathSavant,
@@ -479,6 +488,7 @@ const shard: CardShard = {
     _poolZurgoThundersDecree,
   ],
   tokens: [
+    _tokensElementalTokenLagomosHandOfHatred,
     _tokensFirstMateRagavan,
     _tokensGreenSpiderTokenReach,
     _tokensLifelinkSoldierToken,

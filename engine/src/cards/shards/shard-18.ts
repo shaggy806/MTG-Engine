@@ -33,6 +33,7 @@ import _poolCallOfTheHerd from "../pool/call-of-the-herd.js";
 import _poolCaptainMarvelEarthsProtector from "../pool/captain-marvel-earths-protector.js";
 import _poolCarrionHowler from "../pool/carrion-howler.js";
 import _poolCatharticAdept from "../pool/cathartic-adept.js";
+import _poolCauldronFamiliar from "../pool/cauldron-familiar.js";
 import _poolCodsworthHandyHelper from "../pool/codsworth-handy-helper.js";
 import _poolColdWaterSnapper from "../pool/cold-water-snapper.js";
 import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
@@ -108,12 +109,14 @@ import _poolLlanowarWastes from "../pool/llanowar-wastes.js";
 import _poolLocustSpray from "../pool/locust-spray.js";
 import _poolLostSoul from "../pool/lost-soul.js";
 import _poolLoxodonWarhammer from "../pool/loxodon-warhammer.js";
+import _poolLunarConvocation from "../pool/lunar-convocation.js";
 import _poolLunaticPandora from "../pool/lunatic-pandora.js";
 import _poolMaarikaBrutalGladiator from "../pool/maarika-brutal-gladiator.js";
 import _poolMagnigothSentry from "../pool/magnigoth-sentry.js";
 import _poolMagnusTheRed from "../pool/magnus-the-red.js";
 import _poolManaVault from "../pool/mana-vault.js";
 import _poolManholeCover from "../pool/manhole-cover.js";
+import _poolMassHysteria from "../pool/mass-hysteria.js";
 import _poolMemorialToFolly from "../pool/memorial-to-folly.js";
 import _poolMichelangeloTheHeart from "../pool/michelangelo-the-heart.js";
 import _poolMillicentRestlessRevenant from "../pool/millicent-restless-revenant.js";
@@ -121,6 +124,7 @@ import _poolMistRaven from "../pool/mist-raven.js";
 import _poolNahiriForgedInFury from "../pool/nahiri-forged-in-fury.js";
 import _poolNantukoDisciple from "../pool/nantuko-disciple.js";
 import _poolNerivHeartOfTheStorm from "../pool/neriv-heart-of-the-storm.js";
+import _poolNestingDovehawk from "../pool/nesting-dovehawk.js";
 import _poolNineTailWhiteFox from "../pool/nine-tail-white-fox.js";
 import _poolNykthosShrineToNyx from "../pool/nykthos-shrine-to-nyx.js";
 import _poolOakgnarlWarrior from "../pool/oakgnarl-warrior.js";
@@ -163,6 +167,7 @@ import _poolSkitteringHeartstopper from "../pool/skittering-heartstopper.js";
 import _poolSkullCatapult from "../pool/skull-catapult.js";
 import _poolSkystrikeOfficer from "../pool/skystrike-officer.js";
 import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
+import _poolSongsOfTheDamned from "../pool/songs-of-the-damned.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
@@ -188,9 +193,11 @@ import _poolThunderingCeratok from "../pool/thundering-ceratok.js";
 import _poolTifaMartialArtist from "../pool/tifa-martial-artist.js";
 import _poolTimeWarp from "../pool/time-warp.js";
 import _poolTimelessWitness from "../pool/timeless-witness.js";
+import _poolTolarianWinds from "../pool/tolarian-winds.js";
 import _poolTomeScour from "../pool/tome-scour.js";
 import _poolTorment from "../pool/torment.js";
 import _poolTowerDefense from "../pool/tower-defense.js";
+import _poolTreasureMap from "../pool/treasure-map.js";
 import _poolTremble from "../pool/tremble.js";
 import _poolTruefirePaladin from "../pool/truefire-paladin.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
@@ -265,6 +272,7 @@ const shard: CardShard = {
     _poolCaptainMarvelEarthsProtector,
     _poolCarrionHowler,
     _poolCatharticAdept,
+    _poolCauldronFamiliar,
     _poolCodsworthHandyHelper,
     _poolColdWaterSnapper,
     _poolCollectiveUnconscious,
@@ -340,12 +348,14 @@ const shard: CardShard = {
     _poolLocustSpray,
     _poolLostSoul,
     _poolLoxodonWarhammer,
+    _poolLunarConvocation,
     _poolLunaticPandora,
     _poolMaarikaBrutalGladiator,
     _poolMagnigothSentry,
     _poolMagnusTheRed,
     _poolManaVault,
     _poolManholeCover,
+    _poolMassHysteria,
     _poolMemorialToFolly,
     _poolMichelangeloTheHeart,
     _poolMillicentRestlessRevenant,
@@ -353,6 +363,7 @@ const shard: CardShard = {
     _poolNahiriForgedInFury,
     _poolNantukoDisciple,
     _poolNerivHeartOfTheStorm,
+    _poolNestingDovehawk,
     _poolNineTailWhiteFox,
     _poolNykthosShrineToNyx,
     _poolOakgnarlWarrior,
@@ -395,6 +406,7 @@ const shard: CardShard = {
     _poolSkullCatapult,
     _poolSkystrikeOfficer,
     _poolSnakeskinVeil,
+    _poolSongsOfTheDamned,
     _poolSpawnbinderMage,
     _poolSpellkeeperWeird,
     _poolStandingTroops,
@@ -420,9 +432,11 @@ const shard: CardShard = {
     _poolTifaMartialArtist,
     _poolTimeWarp,
     _poolTimelessWitness,
+    _poolTolarianWinds,
     _poolTomeScour,
     _poolTorment,
     _poolTowerDefense,
+    _poolTreasureMap,
     _poolTremble,
     _poolTruefirePaladin,
     _poolTyphoidRats,

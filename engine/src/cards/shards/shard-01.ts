@@ -132,10 +132,12 @@ import _poolPrizefighterConstruct from "../pool/prizefighter-construct.js";
 import _poolPsychicMembrane from "../pool/psychic-membrane.js";
 import _poolPyroblast from "../pool/pyroblast.js";
 import _poolQueensBaySoldier from "../pool/queens-bay-soldier.js";
+import _poolRadstorm from "../pool/radstorm.js";
 import _poolRakdosCarnarium from "../pool/rakdos-carnarium.js";
 import _poolReaperKing from "../pool/reaper-king.js";
 import _poolRedwoodTreefolk from "../pool/redwood-treefolk.js";
 import _poolRemnantElemental from "../pool/remnant-elemental.js";
+import _poolRepercussion from "../pool/repercussion.js";
 import _poolRepulse from "../pool/repulse.js";
 import _poolRiddlemasterSphinx from "../pool/riddlemaster-sphinx.js";
 import _poolRockyTarPit from "../pool/rocky-tar-pit.js";
@@ -155,10 +157,12 @@ import _poolShinenOfFurysFire from "../pool/shinen-of-furys-fire.js";
 import _poolShoreSnapper from "../pool/shore-snapper.js";
 import _poolSignpostScarecrow from "../pool/signpost-scarecrow.js";
 import _poolSkycrash from "../pool/skycrash.js";
+import _poolSkyhunterStrikeForce from "../pool/skyhunter-strike-force.js";
 import _poolSnowCoveredSwamp from "../pool/snow-covered-swamp.js";
 import _poolSoulOfWindgrace from "../pool/soul-of-windgrace.js";
 import _poolSoulOfZendikar from "../pool/soul-of-zendikar.js";
 import _poolSpectralRider from "../pool/spectral-rider.js";
+import _poolSpellSwindle from "../pool/spell-swindle.js";
 import _poolSpewFlame from "../pool/spew-flame.js";
 import _poolStab from "../pool/stab.js";
 import _poolSungrassPrairie from "../pool/sungrass-prairie.js";
@@ -341,10 +345,12 @@ const shard: CardShard = {
     _poolPsychicMembrane,
     _poolPyroblast,
     _poolQueensBaySoldier,
+    _poolRadstorm,
     _poolRakdosCarnarium,
     _poolReaperKing,
     _poolRedwoodTreefolk,
     _poolRemnantElemental,
+    _poolRepercussion,
     _poolRepulse,
     _poolRiddlemasterSphinx,
     _poolRockyTarPit,
@@ -364,10 +370,12 @@ const shard: CardShard = {
     _poolShoreSnapper,
     _poolSignpostScarecrow,
     _poolSkycrash,
+    _poolSkyhunterStrikeForce,
     _poolSnowCoveredSwamp,
     _poolSoulOfWindgrace,
     _poolSoulOfZendikar,
     _poolSpectralRider,
+    _poolSpellSwindle,
     _poolSpewFlame,
     _poolStab,
     _poolSungrassPrairie,

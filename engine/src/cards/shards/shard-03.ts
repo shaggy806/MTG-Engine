@@ -23,6 +23,8 @@ import _poolCaptainOfUmbar from "../pool/captain-of-umbar.js";
 import _poolCaptivatingVampire from "../pool/captivating-vampire.js";
 import _poolCarvenCaryatid from "../pool/carven-caryatid.js";
 import _poolCavesOfKoilos from "../pool/caves-of-koilos.js";
+import _poolChitterspitter from "../pool/chitterspitter.js";
+import _poolChivalricAlliance from "../pool/chivalric-alliance.js";
 import _poolCinderBarrens from "../pool/cinder-barrens.js";
 import _poolCommandTower from "../pool/command-tower.js";
 import _poolCondemn from "../pool/condemn.js";
@@ -49,6 +51,7 @@ import _poolFlamewaveInvoker from "../pool/flamewave-invoker.js";
 import _poolFlight from "../pool/flight.js";
 import _poolForsakenMonument from "../pool/forsaken-monument.js";
 import _poolFyndhornBow from "../pool/fyndhorn-bow.js";
+import _poolGalvanicIteration from "../pool/galvanic-iteration.js";
 import _poolGalvanicKey from "../pool/galvanic-key.js";
 import _poolGameTrail from "../pool/game-trail.js";
 import _poolGiadaFontOfHope from "../pool/giada-font-of-hope.js";
@@ -163,6 +166,7 @@ import _poolSterlingHound from "../pool/sterling-hound.js";
 import _poolStoneKavu from "../pool/stone-kavu.js";
 import _poolStoneSeederHierophant from "../pool/stone-seeder-hierophant.js";
 import _poolStrangle from "../pool/strangle.js";
+import _poolStromkirkCaptain from "../pool/stromkirk-captain.js";
 import _poolSulfurVent from "../pool/sulfur-vent.js";
 import _poolSunspireGriffin from "../pool/sunspire-griffin.js";
 import _poolSupplyLineCranes from "../pool/supply-line-cranes.js";
@@ -230,6 +234,8 @@ const shard: CardShard = {
     _poolCaptivatingVampire,
     _poolCarvenCaryatid,
     _poolCavesOfKoilos,
+    _poolChitterspitter,
+    _poolChivalricAlliance,
     _poolCinderBarrens,
     _poolCommandTower,
     _poolCondemn,
@@ -256,6 +262,7 @@ const shard: CardShard = {
     _poolFlight,
     _poolForsakenMonument,
     _poolFyndhornBow,
+    _poolGalvanicIteration,
     _poolGalvanicKey,
     _poolGameTrail,
     _poolGiadaFontOfHope,
@@ -370,6 +377,7 @@ const shard: CardShard = {
     _poolStoneKavu,
     _poolStoneSeederHierophant,
     _poolStrangle,
+    _poolStromkirkCaptain,
     _poolSulfurVent,
     _poolSunspireGriffin,
     _poolSupplyLineCranes,

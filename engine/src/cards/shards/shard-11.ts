@@ -92,6 +92,7 @@ import _poolGrowthSpiral from "../pool/growth-spiral.js";
 import _poolGryffVanguard from "../pool/gryff-vanguard.js";
 import _poolGuildlessCommons from "../pool/guildless-commons.js";
 import _poolGutlessGhoul from "../pool/gutless-ghoul.js";
+import _poolHallowedHaunting from "../pool/hallowed-haunting.js";
 import _poolHearthfireHobgoblin from "../pool/hearthfire-hobgoblin.js";
 import _poolHeatedDebate from "../pool/heated-debate.js";
 import _poolHedronScrabbler from "../pool/hedron-scrabbler.js";
@@ -358,6 +359,7 @@ const shard: CardShard = {
     _poolGryffVanguard,
     _poolGuildlessCommons,
     _poolGutlessGhoul,
+    _poolHallowedHaunting,
     _poolHearthfireHobgoblin,
     _poolHeatedDebate,
     _poolHedronScrabbler,

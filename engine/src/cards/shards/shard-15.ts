@@ -103,6 +103,7 @@ import _poolIronMyr from "../pool/iron-myr.js";
 import _poolIzzetCluestone from "../pool/izzet-cluestone.js";
 import _poolJhovallQueen from "../pool/jhovall-queen.js";
 import _poolJungleHollow from "../pool/jungle-hollow.js";
+import _poolKeeperOfFables from "../pool/keeper-of-fables.js";
 import _poolKetramoseTheNewDawn from "../pool/ketramose-the-new-dawn.js";
 import _poolKetriaTriome from "../pool/ketria-triome.js";
 import _poolKiloApogeeMind from "../pool/kilo-apogee-mind.js";
@@ -209,6 +210,7 @@ import _poolViashinoGrappler from "../pool/viashino-grappler.js";
 import _poolViashivanDragon from "../pool/viashivan-dragon.js";
 import _poolVileEntomber from "../pool/vile-entomber.js";
 import _poolVinelasherKudzu from "../pool/vinelasher-kudzu.js";
+import _poolVoiceOfTheBlessed from "../pool/voice-of-the-blessed.js";
 import _poolVolcanoImp from "../pool/volcano-imp.js";
 import _poolVolrathsGardens from "../pool/volraths-gardens.js";
 import _poolWardenOfTheEye from "../pool/warden-of-the-eye.js";
@@ -331,6 +333,7 @@ const shard: CardShard = {
     _poolIzzetCluestone,
     _poolJhovallQueen,
     _poolJungleHollow,
+    _poolKeeperOfFables,
     _poolKetramoseTheNewDawn,
     _poolKetriaTriome,
     _poolKiloApogeeMind,
@@ -437,6 +440,7 @@ const shard: CardShard = {
     _poolViashivanDragon,
     _poolVileEntomber,
     _poolVinelasherKudzu,
+    _poolVoiceOfTheBlessed,
     _poolVolcanoImp,
     _poolVolrathsGardens,
     _poolWardenOfTheEye,

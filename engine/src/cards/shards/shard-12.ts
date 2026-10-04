@@ -36,6 +36,7 @@ import _poolChocoSeekerOfParadise from "../pool/choco-seeker-of-paradise.js";
 import _poolChromeProwler from "../pool/chrome-prowler.js";
 import _poolCircuitousRoute from "../pool/circuitous-route.js";
 import _poolCloudcrownOak from "../pool/cloudcrown-oak.js";
+import _poolCreepingTarPit from "../pool/creeping-tar-pit.js";
 import _poolCrystalSlipper from "../pool/crystal-slipper.js";
 import _poolDarkmossBridge from "../pool/darkmoss-bridge.js";
 import _poolDarksteelGargoyle from "../pool/darksteel-gargoyle.js";
@@ -259,6 +260,7 @@ const shard: CardShard = {
     _poolChromeProwler,
     _poolCircuitousRoute,
     _poolCloudcrownOak,
+    _poolCreepingTarPit,
     _poolCrystalSlipper,
     _poolDarkmossBridge,
     _poolDarksteelGargoyle,

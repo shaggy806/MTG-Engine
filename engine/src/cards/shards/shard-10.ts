@@ -12,6 +12,7 @@ import _poolAnimarSoulOfElements from "../pool/animar-soul-of-elements.js";
 import _poolAnointedProcession from "../pool/anointed-procession.js";
 import _poolAppendageAmalgam from "../pool/appendage-amalgam.js";
 import _poolArahboRoarOfTheWorld from "../pool/arahbo-roar-of-the-world.js";
+import _poolArchenemysCharm from "../pool/archenemys-charm.js";
 import _poolArmyAnts from "../pool/army-ants.js";
 import _poolAsceticism from "../pool/asceticism.js";
 import _poolAysenAbbey from "../pool/aysen-abbey.js";
@@ -56,6 +57,7 @@ import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
 import _poolDarkness from "../pool/darkness.js";
 import _poolDaybreakCharger from "../pool/daybreak-charger.js";
 import _poolDefensiveStance from "../pool/defensive-stance.js";
+import _poolDenOfTheBugbear from "../pool/den-of-the-bugbear.js";
 import _poolDictateOfErebos from "../pool/dictate-of-erebos.js";
 import _poolDimirGuildgate from "../pool/dimir-guildgate.js";
 import _poolDimirSpybug from "../pool/dimir-spybug.js";
@@ -96,6 +98,7 @@ import _poolGrimMonolith from "../pool/grim-monolith.js";
 import _poolGrimPhysician from "../pool/grim-physician.js";
 import _poolGuardianAugmenter from "../pool/guardian-augmenter.js";
 import _poolHammerOfNazahn from "../pool/hammer-of-nazahn.js";
+import _poolHeraldOfWar from "../pool/herald-of-war.js";
 import _poolHermitDruid from "../pool/hermit-druid.js";
 import _poolHeroicIntervention from "../pool/heroic-intervention.js";
 import _poolHonoredKnightCaptain from "../pool/honored-knight-captain.js";
@@ -257,6 +260,7 @@ const shard: CardShard = {
     _poolAnointedProcession,
     _poolAppendageAmalgam,
     _poolArahboRoarOfTheWorld,
+    _poolArchenemysCharm,
     _poolArmyAnts,
     _poolAsceticism,
     _poolAysenAbbey,
@@ -301,6 +305,7 @@ const shard: CardShard = {
     _poolDarkness,
     _poolDaybreakCharger,
     _poolDefensiveStance,
+    _poolDenOfTheBugbear,
     _poolDictateOfErebos,
     _poolDimirGuildgate,
     _poolDimirSpybug,
@@ -341,6 +346,7 @@ const shard: CardShard = {
     _poolGrimPhysician,
     _poolGuardianAugmenter,
     _poolHammerOfNazahn,
+    _poolHeraldOfWar,
     _poolHermitDruid,
     _poolHeroicIntervention,
     _poolHonoredKnightCaptain,

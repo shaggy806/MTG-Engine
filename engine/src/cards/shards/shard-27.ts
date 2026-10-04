@@ -41,6 +41,7 @@ import _poolConsumingCorruption from "../pool/consuming-corruption.js";
 import _poolConsumptiveGoo from "../pool/consumptive-goo.js";
 import _poolCryptRipper from "../pool/crypt-ripper.js";
 import _poolCultistsStaff from "../pool/cultists-staff.js";
+import _poolDamnablePact from "../pool/damnable-pact.js";
 import _poolDarkslickShores from "../pool/darkslick-shores.js";
 import _poolDeathHoodCobra from "../pool/death-hood-cobra.js";
 import _poolDeconstruct from "../pool/deconstruct.js";
@@ -55,6 +56,7 @@ import _poolEbonStronghold from "../pool/ebon-stronghold.js";
 import _poolEchoingAssault from "../pool/echoing-assault.js";
 import _poolEcologistsTerrarium from "../pool/ecologists-terrarium.js";
 import _poolEdwardKenway from "../pool/edward-kenway.js";
+import _poolEldraziDisplacer from "../pool/eldrazi-displacer.js";
 import _poolElementalBond from "../pool/elemental-bond.js";
 import _poolElvishLookout from "../pool/elvish-lookout.js";
 import _poolEpicProportions from "../pool/epic-proportions.js";
@@ -123,6 +125,7 @@ import _poolObsianusGolem from "../pool/obsianus-golem.js";
 import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
 import _poolOstiaryThrull from "../pool/ostiary-thrull.js";
 import _poolPartingGust from "../pool/parting-gust.js";
+import _poolPhyrexianTriniform from "../pool/phyrexian-triniform.js";
 import _poolPreordain from "../pool/preordain.js";
 import _poolPreyUpon from "../pool/prey-upon.js";
 import _poolPriestOfTitania from "../pool/priest-of-titania.js";
@@ -267,6 +270,7 @@ const shard: CardShard = {
     _poolConsumptiveGoo,
     _poolCryptRipper,
     _poolCultistsStaff,
+    _poolDamnablePact,
     _poolDarkslickShores,
     _poolDeathHoodCobra,
     _poolDeconstruct,
@@ -281,6 +285,7 @@ const shard: CardShard = {
     _poolEchoingAssault,
     _poolEcologistsTerrarium,
     _poolEdwardKenway,
+    _poolEldraziDisplacer,
     _poolElementalBond,
     _poolElvishLookout,
     _poolEpicProportions,
@@ -349,6 +354,7 @@ const shard: CardShard = {
     _poolOreskosSwiftclaw,
     _poolOstiaryThrull,
     _poolPartingGust,
+    _poolPhyrexianTriniform,
     _poolPreordain,
     _poolPreyUpon,
     _poolPriestOfTitania,

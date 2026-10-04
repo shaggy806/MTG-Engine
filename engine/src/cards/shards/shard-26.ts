@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbradedBluffs from "../pool/abraded-bluffs.js";
 import _poolAegisOfTheHeavens from "../pool/aegis-of-the-heavens.js";
 import _poolAetherSpellbomb from "../pool/aether-spellbomb.js";
 import _poolAetherfluxReservoir from "../pool/aetherflux-reservoir.js";
@@ -57,6 +58,7 @@ import _poolEpfPointSquad from "../pool/epf-point-squad.js";
 import _poolEverWatchingThreshold from "../pool/ever-watching-threshold.js";
 import _poolEvolutionSage from "../pool/evolution-sage.js";
 import _poolExploration from "../pool/exploration.js";
+import _poolFertilid from "../pool/fertilid.js";
 import _poolFetidPools from "../pool/fetid-pools.js";
 import _poolFieryEmancipation from "../pool/fiery-emancipation.js";
 import _poolFinishingBlow from "../pool/finishing-blow.js";
@@ -193,6 +195,7 @@ import _poolSummitSentinel from "../pool/summit-sentinel.js";
 import _poolTajuruBlightblade from "../pool/tajuru-blightblade.js";
 import _poolTakeItBack from "../pool/take-it-back.js";
 import _poolTalismanOfProgress from "../pool/talisman-of-progress.js";
+import _poolTemporalTrespass from "../pool/temporal-trespass.js";
 import _poolTerrianWorldTyrant from "../pool/terrian-world-tyrant.js";
 import _poolTheFireCrystal from "../pool/the-fire-crystal.js";
 import _poolTheGreatHenge from "../pool/the-great-henge.js";
@@ -234,6 +237,7 @@ import _tokensZombieToken from "../tokens/zombie-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbradedBluffs,
     _poolAegisOfTheHeavens,
     _poolAetherSpellbomb,
     _poolAetherfluxReservoir,
@@ -288,6 +292,7 @@ const shard: CardShard = {
     _poolEverWatchingThreshold,
     _poolEvolutionSage,
     _poolExploration,
+    _poolFertilid,
     _poolFetidPools,
     _poolFieryEmancipation,
     _poolFinishingBlow,
@@ -424,6 +429,7 @@ const shard: CardShard = {
     _poolTajuruBlightblade,
     _poolTakeItBack,
     _poolTalismanOfProgress,
+    _poolTemporalTrespass,
     _poolTerrianWorldTyrant,
     _poolTheFireCrystal,
     _poolTheGreatHenge,
