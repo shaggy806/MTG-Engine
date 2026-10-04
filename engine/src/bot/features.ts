@@ -92,6 +92,7 @@ export const FEATURE_KEYS = [
   "resourceTokens",
   "tokenEngines",
   "earlyRemoval",
+  "earlyMana",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -160,6 +161,25 @@ const commanderDamageCurve = (taken: number): number => (taken * taken) / COMMAN
 /** The rounds of the game in which removal in hand counts `earlyRemoval`:
  * every player's first two turns. */
 const EARLY_REMOVAL_ROUNDS = 2;
+
+/** `earlyMana` counts a permanent's mana in full through this round… */
+const EARLY_MANA_FULL = 2;
+/** …and fades to nothing by this one: a Sol Ring on turn one is a third of
+ * a player's mana and two turns ahead, by turn six one source among many. */
+const EARLY_MANA_END = 6;
+
+/** The round of the game: every player's first turn is round 1. */
+function roundOf(state: GameState): number {
+  return Math.ceil(state.turn.number / Math.max(1, state.turnOrder.length));
+}
+
+/** How much of `nonlandMana` counts as `earlyMana` this round: 1 through
+ * `EARLY_MANA_FULL`, falling in a line to 0 at `EARLY_MANA_END`. */
+function earlyManaShare(state: GameState): number {
+  const round = roundOf(state);
+  if (round <= EARLY_MANA_FULL) return 1;
+  return Math.max(0, (EARLY_MANA_END - round) / (EARLY_MANA_END - EARLY_MANA_FULL));
+}
 
 /** `threat` weighs damage against what's left to lose: at this much life a
  * point counts as one, at twice it as a half. */
@@ -346,10 +366,15 @@ const removalMemo = new WeakMap<CardDefinition, boolean>();
 function isRemoval(def: CardDefinition): boolean {
   let found = removalMemo.get(def);
   if (found === undefined) {
+    // A mode of a modal spell counts on its own: Abrade's "3 damage to
+    // target creature".
+    const ways = [
+      { targets: def.targets ?? [], effect: def.effect },
+      ...(def.castModal?.modes ?? []).map((mode) => ({ targets: mode.targets ?? [], effect: mode.effect })),
+    ];
     found =
       (def.types.includes("instant") || def.types.includes("sorcery")) &&
-      aimsAtCreatures(def.targets ?? []) &&
-      removes(def.effect);
+      ways.some((way) => aimsAtCreatures(way.targets) && removes(way.effect));
     removalMemo.set(def, found);
   }
   return found;
@@ -767,7 +792,7 @@ function playerFeaturesUncached(
   // spent Swords to Plowshares on a Wall of Reverence on its second turn and
   // had nothing for Lathliss later. Later in the game `hand` prices it like
   // any card, as before.
-  const early = state.turn.number <= EARLY_REMOVAL_ROUNDS * state.turnOrder.length;
+  const early = roundOf(state) <= EARLY_REMOVAL_ROUNDS;
   let earlyRemoval = 0;
   if (isMe) {
     const answerCosts: number[] = [];
@@ -852,5 +877,9 @@ function playerFeaturesUncached(
     resourceTokens,
     tokenEngines,
     earlyRemoval,
+    // Mana from rocks and creatures in the opening rounds, on top of
+    // `nonlandMana`: a turn-one Sol Ring is worth killing then and much less
+    // by turn six (the user's ask, 2026-10-04).
+    earlyMana: nonlandMana * earlyManaShare(state),
   };
 }

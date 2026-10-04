@@ -63,6 +63,7 @@ export const SHIPPED_2026_09_27: Champion = {
     resourceTokens: 2,
     tokenEngines: 0,
     earlyRemoval: 0,
+    earlyMana: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,

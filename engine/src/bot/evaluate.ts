@@ -156,6 +156,11 @@ export interface EvalWeights {
    * (`features.ts`), on top of the card `hand` counts each as: what holds a
    * Swords to Plowshares back from the first creature the table plays. */
   readonly earlyRemoval: number;
+  /** Mana a turn from nonland permanents (`nonlandMana`), again, in the
+   * opening rounds only — in full through round 2, fading to nothing by round
+   * 6 (`features.ts`): acceleration is worth most, to have and to kill,
+   * before everyone has lands. */
+  readonly earlyMana: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -332,6 +337,14 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // ramped out on turn two"), so 7 holds the first and fires at the second,
   // each by a point. From round 3 it counts nothing.
   earlyRemoval: 7,
+  // Per mana a turn, on top of `nonlandMana`, in full through round 2 and gone
+  // by round 6 (the user's ask, 2026-10-04: kill acceleration early, not
+  // later). At 0 the bot Disenchanted a Warhammer as readily as a turn-two Sol
+  // Ring and held Swords from a turn-one Llanowar Elves (`earlyRemoval`);
+  // the Elves needs more than 4.2 ("kills an early Llanowar Elves"), and 6
+  // clears it by 1.8. Mid-game it's 0, so "later, destroys the Warhammer in
+  // use over a Sol Ring" stands as it did.
+  earlyMana: 6,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

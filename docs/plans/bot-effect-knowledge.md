@@ -536,6 +536,17 @@ back. `bot:diff` against 3dd3bc8d: 18 of 27,639 decisions over 12 four-player ga
 held Swords (a Reassembling Skeleton, round 2). Also that day: a card chosen for an opponent
 (Tasigur, the Golden Fang) is the one least useful to them.
 
+**After the plan: early acceleration (2026-10-04, the user's ask).** `earlyMana` (6, `features.ts`):
+`nonlandMana` again, in full through round 2 and fading to 0 by round 6, for every player — so
+a turn-two Sol Ring or Llanowar Elves is worth killing (and casting), and by mid-game a rock
+is one source among many. Pinned by "destroys an early Sol Ring over a Warhammer" and "kills an
+early Llanowar Elves" (which needs more than 4.2, over `earlyRemoval`), with "later, destroys
+the Warhammer in use over a Sol Ring" on the other side. `isRemoval` now reads a modal spell's
+modes too (Abrade). `scenarios.ts`'s mid-game clock moved to round 9, past the fade. `bot:diff`
+against 2b1f63c8: 22 of 27,452 decisions over 12 four-player games — Arcane Signet and Orb of
+Dragonkind cast ahead of spells in rounds 2–3, Dismantling Wave at a Sol Ring over cycling it,
+a Lightning Bolt held from a Scavenging Ooze, and a few attacks and blocks.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

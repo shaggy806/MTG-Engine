@@ -104,14 +104,15 @@ const viewOf = (game: Game, player: PlayerId): ControllerView => game.controller
 /**
  * Move the clock past the opening rounds. A scenario's board stands for the
  * middle of a game (nine lands, a Craw Wurm) though it's built on turn 1, and
- * the bot reads the round: removal is held in the first two (`earlyRemoval`).
+ * the bot reads the round: removal is held in the first two (`earlyRemoval`),
+ * and mana rocks and creatures count extra until the sixth (`earlyMana`).
  * Every turn number the bot reads is relative, so only that changes.
  */
 function midGame(game: Game): void {
   game.state.turn.number += MID_GAME_ROUNDS * game.state.turnOrder.length;
 }
 
-const MID_GAME_ROUNDS = 4;
+const MID_GAME_ROUNDS = 8;
 
 /**
  * A two-player game paused at Alice's precombat main with `setup`'s board in
@@ -2550,6 +2551,75 @@ const SCENARIOS: readonly BotScenario[] = [
         player: A,
         judge: (action) => ({
           passed: action.type === "cast-spell" && action.card === dispute,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "destroys an early Sol Ring over a Warhammer",
+    rule: "In the opening rounds, a mana rock is the artifact to destroy.",
+    position(registry) {
+      // The user's ask (2026-10-04): acceleration is what to kill early. On
+      // alice's second turn bob has a Sol Ring and carol a Loxodon Warhammer
+      // with nothing to carry it; before `earlyMana` the two scored alike
+      // (a permanent and its mana value, against a permanent, its mana value
+      // and half a point a mana).
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 5;
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 2);
+      game.debugSpawn("Disenchant", A, "hand");
+      const ring = onBoard(game, "Sol Ring", B);
+      onBoard(game, "Loxodon Warhammer", C);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === ring,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "kills an early Llanowar Elves",
+    rule: "A mana creature on turn one is worth the removal held back in the opening rounds.",
+    position(registry) {
+      // `earlyRemoval` holds Swords from a 1/6 wall on turn two; a turn-one
+      // mana creature is acceleration, which `earlyMana` prices to kill.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 5;
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 2);
+      game.debugSpawn("Swords to Plowshares", A, "hand");
+      const elves = onBoard(game, "Llanowar Elves", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === elves,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "later, destroys the Warhammer in use over a Sol Ring",
+    rule: "Past the opening rounds a mana rock is one source among many.",
+    position(registry) {
+      // The other side of "destroys an early Sol Ring": mid-game, the
+      // Warhammer on carol's Grizzly Bears is the artifact that matters.
+      const game = table(registry, [A, B, C, D], A);
+      for (const player of [A, B, C, D]) lands(game, player === A ? "Plains" : "Forest", player, 6);
+      game.debugSpawn("Disenchant", A, "hand");
+      onBoard(game, "Sol Ring", B);
+      const bears = onBoard(game, "Grizzly Bears", C);
+      const hammer = onBoard(game, "Loxodon Warhammer", C);
+      game.state.objects[hammer].attachedTo = bears;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && firstTarget(action) === hammer,
           detail: `chose ${describeAction(action)}`,
         }),
       };

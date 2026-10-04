@@ -55,6 +55,7 @@ export const DEFENSIVE: Champion = {
     resourceTokens: 0.75,
     tokenEngines: 0,
     earlyRemoval: 0,
+    earlyMana: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 1,
