@@ -341,6 +341,32 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  HARMN: {
+    about:
+      "2p. Harmonize: Zenith Festival in alice's graveyard, three Mountains and an untapped " +
+      "Hill Giant beside a tapped Craw Wurm. The graveyard viewer offers a harmonize cast " +
+      "tapping nothing and one tapping the Giant (−3) — not the tapped Wurm. Tapping the " +
+      "Giant, X=4 costs {1}{R}{R}.",
+    players: ["alice", "bob"],
+    battlefield: { alice: ["Mountain", "Mountain", "Mountain", "Hill Giant", "Craw Wurm"], bob: ["Plains"] },
+    setup(game, ids) {
+      game.state.objects[ids.alice[4]].tapped = true;
+      game.debugSpawn("Zenith Festival", "alice", "graveyard");
+    },
+    bots: { bob: {} },
+  },
+
+  BLITZ: {
+    about:
+      "2p. Blitz: Star Athlete in alice's hand with four Mountains, so it's offered for " +
+      "{1}{R}{R} and \"(blitz)\" for {3}{R}; blitzed, it attacks at once (haste) and its " +
+      "attack trigger asks bob whether to sacrifice his Hill Giant or take 5.",
+    players: ["alice", "bob"],
+    battlefield: { alice: ["Mountain", "Mountain", "Mountain", "Mountain"], bob: ["Hill Giant"] },
+    hand: { alice: ["Star Athlete"] },
+    bots: { bob: {} },
+  },
+
   CAESR: {
     about:
       "2p. Caesar, Legion's Emperor: attack with Caesar and say yes to sacrificing another " +
