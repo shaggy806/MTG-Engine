@@ -599,7 +599,9 @@ export type UnlessOption =
    * `{X}` in `text` shows the amount. A mana option like `pay`. */
   | { readonly payGeneric: EffectAmount; readonly text: string }
   | { readonly payLife: number; readonly text: string }
-  | { readonly sacrifice: CardFilter; readonly text: string }
+  /** `exceptSource`: "sacrifice **another** creature" (Ziatora, the
+   * Incinerator) — never the effect's own source. */
+  | { readonly sacrifice: CardFilter; readonly exceptSource?: boolean; readonly text: string }
   /** "…or discard a card" (Tergrid's Lantern, Torment of Hailfire). */
   | { readonly discard: number; readonly text: string }
   /** "Put a land card from your hand onto the battlefield" (Kynaios and
@@ -950,6 +952,9 @@ export type EffectSpec =
       readonly min?: number;
       readonly then: EffectSpec;
       readonly prompt: string;
+      /** "Any number of **other** nonland permanents you control" (Abdel
+       * Adrian, Gorion's Ward): never the effect's own source. */
+      readonly exceptSource?: boolean;
     }
   | {
       /** One member's turn of a `for-each-target`: target `index` bound to
@@ -2217,21 +2222,20 @@ export type EffectSpec =
     }
   | {
       /**
-       * Populate (rule 701.32) — create a token that's a copy of a creature
-       * token you control (Rootborn Defenses).
-       *
-       * The rules let the controller pick which creature token to copy; this
-       * copies the largest by power. With zero or one creature token — which
-       * is every case the precons produce — the choice is forced anyway. See
-       * AUTHORING §15 "Partial".
+       * Populate (rule 701.36a) — choose a creature token you control and
+       * create a token that's a copy of it (Rootborn Defenses). With two or
+       * more to choose from, the controller picks one on the board (a
+       * `choose-permanents`); with one, it's copied without asking.
        */
       readonly kind: "populate";
     }
   | {
       /**
-       * Amass N (rule 701.44) — "Amass Zombies 2": put N +1/+1 counters on an
-       * Army you control; it's also a `creatureType`. If you control no Army,
-       * create a 0/0 black Army creature token first.
+       * Amass N (rule 701.47a) — "Amass Zombies 2": put N +1/+1 counters on
+       * an Army you control; it's also a `creatureType`. If you control no
+       * Army, create a 0/0 black Army creature token first. With two or more
+       * Army creatures (a changeling is one too, rule 702.73a), the controller
+       * chooses which (a `choose-permanents`).
        *
        * One effect rather than a `conditional` + `create-token` +
        * `add-counter` sequence, because "an Army you control" has to be the
@@ -2240,8 +2244,11 @@ export type EffectSpec =
        */
       readonly kind: "amass";
       readonly amount: EffectAmount;
-      /** The creature type amass names; the Army gains it (701.44b). */
+      /** The creature type amass names; the Army gains it (701.47a). */
       readonly creatureType: string;
+      /** Set only by the engine: the Army chosen, as the target slot a
+       * `choose-permanents` binds it to — never authored. */
+      readonly onto?: number;
     }
   | {
       /**
@@ -4177,7 +4184,14 @@ export interface EffectApi {
    * {@link EffectSpec}), with what was known about each moving with it. */
   withTargetSlice(offset: number, count: number): ResolutionContext;
   /** See the `"choose-permanents"` {@link EffectSpec}: raise the choice. */
-  choosePermanents(filter: CardFilter, min: number, max: number, then: EffectSpec, prompt: string): void;
+  choosePermanents(
+    filter: CardFilter,
+    min: number,
+    max: number,
+    then: EffectSpec,
+    prompt: string,
+    exceptSource?: boolean,
+  ): void;
   /** This context, about `player`: the `"that-player"` scope names them —
    * an `"each-player-may"`'s follow-ups. */
   aboutPlayer(player: PlayerId): ResolutionContext;
@@ -4538,8 +4552,9 @@ export interface EffectApi {
   nextEventSeq(): number;
   /** See the `"populate"` {@link EffectSpec}. */
   populate(): void;
-  /** See the `"amass"` {@link EffectSpec}. */
-  amass(amount: number, creatureType: string): void;
+  /** See the `"amass"` {@link EffectSpec}. `onto`: the Army already
+   * chosen. */
+  amass(amount: number, creatureType: string, onto?: ObjectId): void;
   /** See the `"monstrosity"` {@link EffectSpec}. */
   monstrosity(amount: number): void;
   /** See the `"add-counter-all"` {@link EffectSpec}. */
@@ -5939,7 +5954,14 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       applyEffectSpec(spec.effect, ctx.aboutPlayer(spec.player));
       return;
     case "choose-permanents":
-      ctx.choosePermanents(spec.filter, spec.min ?? 0, amountValue(spec.upTo, ctx), spec.then, spec.prompt);
+      ctx.choosePermanents(
+        spec.filter,
+        spec.min ?? 0,
+        amountValue(spec.upTo, ctx),
+        spec.then,
+        spec.prompt,
+        spec.exceptSource,
+      );
       return;
     case "damage-divided-evenly": {
       // A member found illegal as it resolved isn't there (rule 608.2b), and
@@ -6548,9 +6570,16 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "populate":
       ctx.populate();
       return;
-    case "amass":
-      ctx.amass(amountValue(spec.amount, ctx), spec.creatureType);
+    case "amass": {
+      const chosen = spec.onto === undefined ? undefined : ctx.targets[spec.onto];
+      if (spec.onto !== undefined && chosen?.kind !== "object") return;
+      ctx.amass(
+        amountValue(spec.amount, ctx),
+        spec.creatureType,
+        chosen?.kind === "object" ? chosen.object : undefined,
+      );
       return;
+    }
     case "monstrosity":
       ctx.monstrosity(amountValue(spec.amount, ctx));
       return;

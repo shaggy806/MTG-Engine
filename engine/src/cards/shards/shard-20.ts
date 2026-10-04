@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAbdelAdrianGorionsWard from "../pool/abdel-adrian-gorions-ward.js";
 import _poolActOfTreason from "../pool/act-of-treason.js";
 import _poolAetherChanneler from "../pool/aether-channeler.js";
 import _poolAeveProgenitorOoze from "../pool/aeve-progenitor-ooze.js";
@@ -214,6 +215,7 @@ import _tokensTarmogoyfToken from "../tokens/tarmogoyf-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAbdelAdrianGorionsWard,
     _poolActOfTreason,
     _poolAetherChanneler,
     _poolAeveProgenitorOoze,

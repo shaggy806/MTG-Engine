@@ -190,6 +190,7 @@ import _poolThundermaneDragon from "../pool/thundermane-dragon.js";
 import _poolTitaniasBoon from "../pool/titanias-boon.js";
 import _poolTocasiasWelcome from "../pool/tocasias-welcome.js";
 import _poolTorporDust from "../pool/torpor-dust.js";
+import _poolTovolarDireOverlord from "../pool/tovolar-dire-overlord.js";
 import _poolTyvarsStand from "../pool/tyvars-stand.js";
 import _poolUnauthorizedExit from "../pool/unauthorized-exit.js";
 import _poolUnclaimedTerritory from "../pool/unclaimed-territory.js";
@@ -408,6 +409,7 @@ const shard: CardShard = {
     _poolTitaniasBoon,
     _poolTocasiasWelcome,
     _poolTorporDust,
+    _poolTovolarDireOverlord,
     _poolTyvarsStand,
     _poolUnauthorizedExit,
     _poolUnclaimedTerritory,

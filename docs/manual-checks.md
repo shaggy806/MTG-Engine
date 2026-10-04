@@ -189,6 +189,12 @@ How to use it:
 | [Living Death](#living-death) | rules call | The Tarkir precons, second half: void counters, votes, X costs, "as long as" |
 | [Reckless Impulse, Bloodbraid Elf, Ulamog, the Ceaseless Hunger, Pako, Arcane Retriever](#reckless-impulse-bloodbraid-elf-ulamog-the-ceaseless-hunger-pako-arcane-retriever) | animation | Exiling from the top of a library |
 | [Tribute to the World Tree, Secure the Wastes, Thalisse, Reverent Medium, Simic Ascendancy, Basri's Solidarity](#tribute-to-the-world-tree-secure-the-wastes-thalisse-reverent-medium-simic-ascendancy-basris-solidarity) | rules call | Token stacks folding back |
+| [Trostani, Selesnya's Voice](#trostani-selesnyas-voice) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Saruman, the White Hand, Changeling Outcast](#saruman-the-white-hand-changeling-outcast) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Wick, the Whorled Mind](#wick-the-whorled-mind) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Breena, the Demagogue](#breena-the-demagogue) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Abdel Adrian, Gorion's Ward](#abdel-adrian-gorions-ward) | new decision | Choices on resolution: populate, amass, sacrifice-then |
+| [Ziatora, the Incinerator, Felothar, Dawn of the Abzan](#ziatora-the-incinerator-felothar-dawn-of-the-abzan) | new decision | Choices on resolution: populate, amass, sacrifice-then |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3758,3 +3764,76 @@ stack count once per token)
   counters), so that a second
   combat doesn't count them again as new attackers (`BACKLOG.md`). Counters landing
   on tokens that fold away in the same frame don't float their "+1/+1 ×2" (`BACKLOG.md`).
+
+## Choices on resolution: populate, amass, sacrifice-then (2026-10-03, UI round)
+
+### Trostani, Selesnya's Voice
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Trostani on your battlefield, untapped, with {1}{G}{W} available; an Elephant token
+  (3/3) and a Soldier token (1/1) of yours; an opponent's creature token.
+- **Do:** Activate Trostani's populate ability.
+- **Check:** A choice on the board appears in the decision banner offering only your two creature
+  tokens (not the opponent's, not nontoken creatures); picking the Soldier makes a second Soldier,
+  not an Elephant. With only one kind of token (even several identical ones) nothing is asked and
+  one more is made. When another creature you control enters, you gain life equal to its toughness.
+- **Known limits:** Tokens alike in everything but when they were made count as one choice.
+
+### Saruman, the White Hand, Changeling Outcast
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Saruman and an Orc Army token with a +1/+1 counter on your battlefield, plus Changeling
+  Outcast (a changeling is an Army); Divination in hand with three Islands.
+- **Do:** Cast Divination.
+- **Check:** Saruman's trigger amasses 3: a choice on the board offers the Army token and Changeling
+  Outcast; the one picked gets three +1/+1 counters and becomes an Orc. With a single Army nothing
+  is asked. A creature spell doesn't trigger it. Goblins and Orcs you control (the Army) have ward
+  {2}.
+
+### Wick, the Whorled Mind
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Wick on the battlefield; two Snail tokens, one with a +1/+1 counter; Muck Rats in hand.
+  Separately, {U}{B}{R} available.
+- **Do:** Cast Muck Rats. Then activate Wick's ability, sacrificing a Snail.
+- **Check:** When a Rat enters with Snails out, a choice on the board offers your Snails (only
+  Snails) and the one picked gets a +1/+1 counter; with no Snail, a 1/1 Snail is made instead.
+  Sacrificing a 3-power Snail deals 3 to each opponent and draws 3 (its power as it last existed).
+
+### Breena, the Demagogue
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Three players. You control Breena and a Hill Giant. Bob has 10 life, Carol 20. On Bob's
+  turn he attacks Carol.
+- **Do:** Let Bob attack Carol.
+- **Check:** Breena triggers: Bob draws a card and you are asked (on the board, in your banner, on
+  Bob's turn) which of your creatures gets two +1/+1 counters. If Carol had less life than Bob,
+  nothing triggers. It still triggers, and Bob still draws, if you control no creature.
+
+### Abdel Adrian, Gorion's Ward
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Sol Ring, Grizzly Bears and a Plains on your battlefield; Abdel Adrian in hand.
+- **Do:** Cast Abdel Adrian and choose both nonland permanents. Then destroy Abdel Adrian.
+- **Check:** The choice offers Sol Ring and the Bears — never Abdel himself or the land, any number
+  including none. Each one chosen is exiled and a 1/1 Soldier made for it; when Abdel leaves, they
+  return (under their owners' control) and the Soldiers stay. An exiled token never returns but
+  still made a Soldier.
+
+### Ziatora, the Incinerator, Felothar, Dawn of the Abzan
+
+*New decision* — the UI round (choose-permanent, may-sacrifice-then)
+
+- **Setup:** Ziatora and a Grizzly Bears with three +1/+1 counters on your battlefield. Separately:
+  Felothar in hand, Sol Ring and a Grizzly Bears out.
+- **Do:** Go to your end step with Ziatora; cast Felothar.
+- **Check:** Ziatora asks whether to sacrifice another creature (never Ziatora itself; not asked at
+  all if it's your only creature); once you do, a separate ability goes on the stack asking for a
+  target, dealing 5 (the Bears' last power) and making three Treasures. Felothar asks to sacrifice a
+  nonland permanent (lands not offered); then a +1/+1 counter on each creature you control, Felothar
+  included.

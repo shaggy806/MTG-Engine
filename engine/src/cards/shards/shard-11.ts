@@ -252,6 +252,7 @@ import _tokensElementalToken from "../tokens/elemental-token.js";
 import _tokensGreenElementalToken22 from "../tokens/green-elemental-token-2-2.js";
 import _tokensNecronWarriorToken from "../tokens/necron-warrior-token.js";
 import _tokensOgreToken from "../tokens/ogre-token.js";
+import _tokensSnailToken from "../tokens/snail-token.js";
 import _tokensSpiderToken22Reach from "../tokens/spider-token-2-2-reach.js";
 import _tokensWarriorTokenVigilance from "../tokens/warrior-token-vigilance.js";
 
@@ -508,6 +509,7 @@ const shard: CardShard = {
     _tokensGreenElementalToken22,
     _tokensNecronWarriorToken,
     _tokensOgreToken,
+    _tokensSnailToken,
     _tokensSpiderToken22Reach,
     _tokensWarriorTokenVigilance,
   ],

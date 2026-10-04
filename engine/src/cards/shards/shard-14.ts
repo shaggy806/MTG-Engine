@@ -82,6 +82,7 @@ import _poolExplorationBroodship from "../pool/exploration-broodship.js";
 import _poolExplosiveImpact from "../pool/explosive-impact.js";
 import _poolFaerieFormation from "../pool/faerie-formation.js";
 import _poolFeatherbrainedFilcher from "../pool/featherbrained-filcher.js";
+import _poolFelotharDawnOfTheAbzan from "../pool/felothar-dawn-of-the-abzan.js";
 import _poolFemerefScouts from "../pool/femeref-scouts.js";
 import _poolFerociousZheng from "../pool/ferocious-zheng.js";
 import _poolFlamekinGildweaver from "../pool/flamekin-gildweaver.js";
@@ -305,6 +306,7 @@ const shard: CardShard = {
     _poolExplosiveImpact,
     _poolFaerieFormation,
     _poolFeatherbrainedFilcher,
+    _poolFelotharDawnOfTheAbzan,
     _poolFemerefScouts,
     _poolFerociousZheng,
     _poolFlamekinGildweaver,

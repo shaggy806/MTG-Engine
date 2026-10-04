@@ -17299,7 +17299,7 @@ export class Game {
         this.doubleCountersAll(controller, filter, counterKind),
       addCounter: (target, counter, amount, by) =>
         this.addCounter(target, counter, amount, true, by ?? controller),
-      amass: (amount, creatureType) => this.amass(controller, amount, creatureType),
+      amass: (amount, creatureType, onto) => this.amass(controller, amount, creatureType, source, x, onto),
       exert: (target, asItAttacks) => {
         // Rule 701.43: only a permanent can be exerted (701.43c), tapped or
         // not, and again (701.43b); it skips its exerter's next untap step.
@@ -17322,7 +17322,7 @@ export class Game {
         object.monstrous = true;
         this.emit({ type: "became-monstrous", object: source, amount });
       },
-      populate: () => this.populate(controller),
+      populate: () => this.populate(controller, source, x),
       encore: () => this.encore(controller, source),
       chosenColorOfSource: () => {
         const chosen = this.state.objects[source]?.chosenOnEnter;
@@ -17479,8 +17479,8 @@ export class Game {
         }
       },
       proliferate: (then) => this.beginProliferate(source, controller, x, then),
-      choosePermanents: (filter, min, max, then, prompt) =>
-        this.beginChoosePermanents(source, controller, x, filter, min, max, then, prompt),
+      choosePermanents: (filter, min, max, then, prompt, exceptSource) =>
+        this.beginChoosePermanents(source, controller, x, filter, min, max, then, prompt, exceptSource === true),
       grantKeyword: (target, keyword, duration) =>
         this.grantKeyword(target, keyword, lastingHere(duration)),
       restrict: (target, filter, restrictions, duration) =>
@@ -17943,6 +17943,11 @@ export class Game {
         const since = opts.transformSince;
         const last = this.state.objects[t.object]?.transformedAtSeq;
         if (t.object === source && since !== undefined && last !== undefined && last > since) return;
+        // Rules 702.145b, 702.145e: a daybound or nightbound permanent "can't
+        // transform except due to its daybound [nightbound] ability" — never
+        // by an effect (Tovolar, Dire Overlord's and Moonmist's rulings).
+        const keywords = computeCharacteristics(this.state, this.registry, t.object).keywords;
+        if (keywords.has("daybound") || keywords.has("nightbound")) return;
         this.transformPermanent(t.object);
       },
       setDayNight: (value) => this.setDayNight(value),
@@ -18338,7 +18343,7 @@ export class Game {
 
   /** Create `count` copies of the named token, controlled by `controller` (rule 111). */
   /**
-   * Amass N (rule 701.44) — see the `"amass"` {@link EffectSpec}.
+   * Amass N (rule 701.47a) — see the `"amass"` {@link EffectSpec}.
    *
    * The Army has to be found (or made) *before* the counters go on, and the
    * same one has to receive them, which is why this is one operation rather
@@ -18346,24 +18351,53 @@ export class Game {
    * creature, and that only works if "an Army you control" resolves to the
    * same object each time.
    *
-   * Picks the first Army on the battlefield rather than asking. The rules let
-   * the controller choose which Army when they control several (rule
-   * 701.47a). Amass itself never makes a second one, but a changeling is an
-   * Army creature too (rule 702.73a), so a changeling beside an Army token is
-   * a real choice this doesn't ask yet — see BACKLOG's engine rules gaps.
+   * Amass itself never makes a second Army, but a changeling is an Army
+   * creature too (rule 702.73a), and a copy of an Army is another: with two
+   * or more, the controller chooses which (`choose-permanents`, whose `then`
+   * is this amass again with `onto` the one chosen).
    */
-  private amass(controller: PlayerId, amount: number, creatureType: string): void {
+  private amass(
+    controller: PlayerId,
+    amount: number,
+    creatureType: string,
+    source: ObjectId,
+    x: number,
+    onto?: ObjectId,
+  ): void {
     if (amount <= 0) return;
     // "An Army creature you control": a changeling is one (rule 702.73a).
-    let army = this.state.zones.shared.battlefield.find((id) => {
+    const isArmy = (id: ObjectId): boolean => {
       const object = this.state.objects[id];
       return (
         object !== undefined &&
+        object.zone === "battlefield" &&
         object.controller === controller &&
         effectiveTypes(this.state, this.registry, object).includes("creature") &&
         hasSubtype(effectiveSubtypes(this.state, this.registry, object), "Army")
       );
-    });
+    };
+    let army: ObjectId | undefined;
+    if (onto !== undefined) {
+      // The one chosen — still an Army creature you control, or nothing.
+      if (!isArmy(onto)) return;
+      army = onto;
+    } else {
+      const armies = this.state.zones.shared.battlefield.filter(isArmy);
+      if (this.interchangeableKinds(armies) > 1) {
+        this.beginChoosePermanents(
+          source,
+          controller,
+          x,
+          { type: "creature", subtype: "Army", controlledBy: "you" },
+          1,
+          1,
+          { kind: "amass", amount, creatureType, onto: 0 },
+          "Amass: choose an Army creature you control",
+        );
+        return;
+      }
+      army = armies[0];
+    }
     if (army === undefined) {
       const before = new Set(this.state.zones.shared.battlefield);
       this.createTokens(controller, "Army Token", 1);
@@ -18383,8 +18417,12 @@ export class Game {
       // An Army entering as a stacked batch would share one object with
       // others; amass always makes exactly one, so peel it off to be safe.
       army = this.splitOneFromStack(army);
+    } else if ((this.state.objects[army]?.stackCount ?? 1) > 1) {
+      // "Choose an Army creature": one token of a stack of identical Armies,
+      // and only it gets the counters.
+      army = this.splitOneFromStack(army);
     }
-    // 701.44b — "It's also a [type]". A permanent subtype grant, so it sticks
+    // 701.47a — "It's also a [type]". A permanent subtype grant, so it sticks
     // across turns the way the printed type would.
     const object = this.state.objects[army];
     if (object !== undefined && !hasSubtype(effectiveSubtypes(this.state, this.registry, object), creatureType)) {
@@ -18401,12 +18439,20 @@ export class Game {
   }
 
   /**
-   * Populate (rule 701.32) — copy a creature token you control.
-   *
-   * Picks the largest by power rather than asking. The rules give the
-   * controller the choice, but it only ever matters with two or more creature
-   * tokens of different sizes, and no precon produces that; recorded in
-   * AUTHORING §15 alongside `proliferate`'s similar simplification.
+   * How many genuinely different permanents `ids` holds, for a choice of one
+   * of them: two that differ only in their timestamps (tokens made by one
+   * instruction get one each) are interchangeable — nothing a choice of one
+   * leads to can tell them apart.
+   */
+  private interchangeableKinds(ids: readonly ObjectId[]): number {
+    return new Set(ids.map((id) => exactTokenShape({ ...this.state.objects[id], timestamp: 0 }))).size;
+  }
+
+  /**
+   * Populate (rule 701.36a) — choose a creature token you control and copy
+   * it. With two or more (a token stack is one choice of every token in it),
+   * the controller picks on the board (`choose-permanents`, whose `then` is
+   * the copy); with one there is nothing to ask.
    */
   /**
    * A punisher clause — see the `"unless"` {@link EffectSpec}.
@@ -18486,7 +18532,7 @@ export class Game {
     }
 
     // Only offer what they can actually take.
-    const offer = this.optionModes(decide, options);
+    const offer = this.optionModes(decide, options, source);
     if (offer === null) {
       applyOtherwise();
       return;
@@ -18522,6 +18568,7 @@ export class Game {
   private optionModes(
     player: PlayerId,
     options: readonly BoundUnlessOption[],
+    source: ObjectId,
   ): { readonly modes: ModeOption[]; readonly cost?: string } | null {
     const available = options.filter((option) => {
       if ("pay" in option) return this.payMana(player, parseManaCost(option.pay)) !== null;
@@ -18534,7 +18581,7 @@ export class Game {
           matchesFilter(this.state, this.registry, id, option.putFromHand, { you: player }),
         );
       }
-      return this.eligibleSacrifices(player, option.sacrifice).length > 0;
+      return this.eligibleSacrifices(player, option.sacrifice, option.exceptSource === true ? source : undefined).length > 0;
     });
     if (available.length === 0) return null;
     const mana = available.find((o): o is Extract<BoundUnlessOption, { pay: string }> => "pay" in o);
@@ -18545,7 +18592,13 @@ export class Game {
           "payLife" in option
             ? { kind: "lose-life", amount: option.payLife, who: "you" }
             : "sacrifice" in option
-              ? { kind: "sacrifice", who: "you", filter: option.sacrifice, count: 1 }
+              ? {
+                  kind: "sacrifice",
+                  who: "you",
+                  filter: option.sacrifice,
+                  count: 1,
+                  ...(option.exceptSource === true ? { exceptSource: true } : {}),
+                }
               : "discard" in option
                 ? { kind: "discard", target: "you", amount: option.discard }
                 : "putFromHand" in option
@@ -18609,7 +18662,7 @@ export class Game {
     }
     const offer =
       spec.options !== undefined
-        ? this.optionModes(player, spec.options)
+        ? this.optionModes(player, spec.options, source)
         : spec.effect !== undefined
           ? { modes: [{ text: spec.prompt ?? "Do it?", effect: spec.effect }] }
           : null;
@@ -19313,21 +19366,25 @@ export class Game {
     });
   }
 
-  private populate(controller: PlayerId): void {
-    let best: ObjectId | undefined;
-    let bestPower = -Infinity;
-    for (const id of this.state.zones.shared.battlefield) {
-      const object = this.state.objects[id];
-      if (object === undefined || object.controller !== controller || !object.isToken) continue;
-      const c = computeCharacteristics(this.state, this.registry, id);
-      if (!c.types.includes("creature")) continue;
-      if (c.power > bestPower) {
-        bestPower = c.power;
-        best = id;
-      }
+  private populate(controller: PlayerId, source: ObjectId, x: number): void {
+    const filter: CardFilter = { type: "creature", token: true, controlledBy: "you" };
+    const tokens = this.battlefieldMatching(controller, filter);
+    if (tokens.length === 0) return;
+    // Tokens alike in everything but when they were made are no choice.
+    if (this.interchangeableKinds(tokens) > 1) {
+      this.beginChoosePermanents(
+        source,
+        controller,
+        x,
+        filter,
+        1,
+        1,
+        { kind: "create-token-copy", of: 0, count: 1 },
+        "Populate: choose a creature token to copy",
+      );
+      return;
     }
-    if (best === undefined) return;
-    this.createTokenCopy(best, 1, {
+    this.createTokenCopy(tokens[0], 1, {
       gainsHaste: false,
       exileAtEndStep: false,
       notLegendary: false,
@@ -21299,8 +21356,9 @@ export class Game {
     max: number,
     then: EffectSpec,
     prompt: string,
+    exceptSource = false,
   ): void {
-    const eligible = this.battlefieldMatching(player, filter);
+    const eligible = this.battlefieldMatching(player, filter).filter((id) => !exceptSource || id !== source);
     const available = eligible.reduce((n, id) => n + (this.state.objects[id]?.stackCount ?? 1), 0);
     const most = Math.min(Math.max(0, max), available);
     if (most <= 0) return;

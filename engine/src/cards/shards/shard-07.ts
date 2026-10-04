@@ -151,6 +151,7 @@ import _poolSacredWolf from "../pool/sacred-wolf.js";
 import _poolSageOfMysteries from "../pool/sage-of-mysteries.js";
 import _poolSanctumSeeker from "../pool/sanctum-seeker.js";
 import _poolSanitationAutomaton from "../pool/sanitation-automaton.js";
+import _poolSarumanTheWhiteHand from "../pool/saruman-the-white-hand.js";
 import _poolScavengerFolk from "../pool/scavenger-folk.js";
 import _poolScorpionsSting from "../pool/scorpions-sting.js";
 import _poolSearingSpear from "../pool/searing-spear.js";
@@ -191,6 +192,7 @@ import _poolTorGiant from "../pool/tor-giant.js";
 import _poolTowerOfFortunes from "../pool/tower-of-fortunes.js";
 import _poolTrainingGrounds from "../pool/training-grounds.js";
 import _poolTranquilThicket from "../pool/tranquil-thicket.js";
+import _poolTrostaniSelesnyasVoice from "../pool/trostani-selesnyas-voice.js";
 import _poolTuinvaleTreefolk from "../pool/tuinvale-treefolk.js";
 import _poolTwitchingDoll from "../pool/twitching-doll.js";
 import _poolUnyieldingKrumar from "../pool/unyielding-krumar.js";
@@ -376,6 +378,7 @@ const shard: CardShard = {
     _poolSageOfMysteries,
     _poolSanctumSeeker,
     _poolSanitationAutomaton,
+    _poolSarumanTheWhiteHand,
     _poolScavengerFolk,
     _poolScorpionsSting,
     _poolSearingSpear,
@@ -416,6 +419,7 @@ const shard: CardShard = {
     _poolTowerOfFortunes,
     _poolTrainingGrounds,
     _poolTranquilThicket,
+    _poolTrostaniSelesnyasVoice,
     _poolTuinvaleTreefolk,
     _poolTwitchingDoll,
     _poolUnyieldingKrumar,

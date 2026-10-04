@@ -387,7 +387,9 @@ One keyword per land type a card prints; a new type is a new keyword, added to
 `LANDWALK` in `combat/eligibility.ts` and to the client's `KEYWORD_GLYPH`.
 
 **Day/Night:** `daybound` / `nightbound` — the two faces of a modern werewolf;
-`Game.setDayNight` transforms them with the cycle.
+`Game.setDayNight` transforms them with the cycle. Nothing else transforms
+them (rules 702.145b, 702.145e): a `transform` effect leaves a daybound or
+nightbound permanent alone (Tovolar, Dire Overlord; Moonmist's ruling).
 
 **Changeling** (rule 702.73a): `changeling` — "this object is every creature
 type", in every zone. Put it in `keywords` and keep the printed subtypes
@@ -722,7 +724,7 @@ them.
 | --- | --- | --- |
 | `tap` | `target` (an index, or `"source"`), `doesntUntapNext?` | `"source"` taps the effect's own permanent with no target — Territorial Hellkite's "tap this creature" — while it's still that object. `doesntUntapNext` is "**it doesn't untap during its controller's next untap step**" (Junk Winder), tapped by this or already: the next untap step of whoever controls it then — the effect follows the permanent, not the player (Icy Blast's ruling) — and only its controller's (one it untaps in under Seedborn Muse isn't). |
 | `tap-all` | `filter` | Thundermaw Hellkite's "Tap those creatures" — the mirror of `untap-all`. `tap` only ever takes one chosen target. |
-| `choose-permanents` | `filter`, `upTo`, `min?`, `then`, `prompt` | A choice of permanents made **as it resolves, with no targeting** — "untap up to two lands" (Snap, Frantic Search, Peregrine Drake): `{ kind: "choose-permanents", filter: { type: "land" }, upTo: 2, then: { kind: "untap", target: 0 }, prompt: "Untap up to two lands" }`. The effect's controller picks from `min` (default 0) to `upTo` of the battlefield permanents matching `filter` from their side — anyone's, unless the filter says whose — and `then` applies to each as target 0 (a `choose-permanents` decision). Nothing chosen this way can make the spell fizzle, and a hexproof permanent can be chosen; don't author "up to N lands" as optional target slots, which gets both wrong. Nothing is asked when nothing matches. `then` shouldn't stop to ask anything itself. |
+| `choose-permanents` | `filter`, `upTo`, `min?`, `then`, `prompt`, `exceptSource?` | A choice of permanents made **as it resolves, with no targeting** — "untap up to two lands" (Snap, Frantic Search, Peregrine Drake): `{ kind: "choose-permanents", filter: { type: "land" }, upTo: 2, then: { kind: "untap", target: 0 }, prompt: "Untap up to two lands" }`. The effect's controller picks from `min` (default 0) to `upTo` of the battlefield permanents matching `filter` from their side — anyone's, unless the filter says whose — and `then` applies to each as target 0 (a `choose-permanents` decision). Nothing chosen this way can make the spell fizzle, and a hexproof permanent can be chosen; don't author "up to N lands" as optional target slots, which gets both wrong. Nothing is asked when nothing matches. `then` shouldn't stop to ask anything itself. `exceptSource` leaves the effect's own source out (Abdel Adrian, Gorion's Ward's "any number of **other** nonland permanents you control"). Steps after it in a `sequence` run once the choice is answered (Abdel Adrian's Soldiers count `{ thisWay: "exiled" }`). |
 | `untap` | `target: EffectTargetRef` — an index, `"source"`, or `"trigger-object"`; `by?` | Amulet of Vigor: `target: "trigger-object"` untaps the permanent whose entering fired the trigger, with no target slot at all. `by` (an `EffectPlayerRef`) is "that player … untaps it" (Alexios, Deimos of Kosmos: `"active-player"`): a player who has left the game untaps nothing. |
 | `destroy` | `target` (a slot, or `"trigger-object"` — Mikaeus, the Unhallowed's "whenever a Human deals damage to you, destroy **it**"), `cantBeRegenerated?` | Doom Blade. `cantBeRegenerated: true` is "It can't be regenerated" (Terminate, rule 701.15c): a regeneration shield doesn't replace this destruction. |
 | `regenerate` | `target: EffectTargetRef` | "{B}: Regenerate this creature" (Mortivore: `target: "source"` — or the `regenerateSelfAbility(cost, text)` helper), "Regenerate target creature" (a slot). Rule 701.15a: the permanent gets a shield that replaces the next time it would be destroyed this turn — by an effect, or by lethal or deathtouch damage — with removing all damage from it, tapping it and removing it from combat (an attacker it was blocking stays blocked). One shield per regeneration; unused ones go at cleanup. 0 toughness, sacrifice and the legend rule aren't destruction, so no shield helps. |
@@ -877,10 +879,10 @@ Neither goes on the stack yet (§15, "Partial").
 | `remove-counter` | `target`, `counter` (string), `amount` | The reverse of `add-counter` — Unbreathing Horde's "prevent that damage and remove a +1/+1 counter from it" (the `then` of its `would-deal-damage` prevention, `target: "source"`). Removes up to `amount`, as many as there are, and none from a permanent with none (its ruling); announced as `counter-removed`, so "for as long as it has a counter" durations end with the last. Only a permanent still on the battlefield as the same object loses any (rule 122.2). |
 | `earthbend` | `target`, `amount` | Earthbend N — "target land you control becomes a 0/0 creature with haste that's still a land. Put N +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped." (Toph, the First Metalbender's end-step earthbend 2 is a `step-begins` trigger with a land-you-control target slot and `{ kind: "earthbend", target: 0, amount: 2 }`). Permanent, not until end of turn. The return is a delayed trigger keyed to the land leaving (see *Delayed triggered abilities*), so it survives the land losing its abilities, returns it under its owner's control, and only from the graveyard or exile it went to. |
 | `add-counter-all` | `filter`, `counter`, `amount`, `exceptSource?` | the untargeted mass form (Loyal Guardian: "a +1/+1 counter on each creature you control"). Routes through `add-counter` per permanent, so Doubling Season still composes. `exceptSource` is "each **other** creature you control" (Finneas, Ace Archer). `controlledByTarget: slot` reads `filter` from the side of the player in that slot, as `modify-pt-all`'s does: Requisition Raid's "each creature **target player** controls" is `{ type: "creature", controlledBy: "you" }` with slot 0 — that player an illegal target, none. `amount: "own-toughness"` is "a number of counters on each … equal to **that creature's** toughness" (Canopy Gargantuan): every one's toughness read before any counter goes on. |
-| `populate` | — | Populate (rule 701.32): create a token copying a creature token you control (Rootborn Defenses). Copies the largest by power rather than asking — see §15 "Partial". |
+| `populate` | — | Populate (rule 701.36a): choose a creature token you control and create a token copying it (Rootborn Defenses, Trostani, Selesnya's Voice). With two or more that differ (tokens alike in all but their timestamps are one choice), the controller picks on the board — a `choose-permanents` whose `then` is the copy; with one, nothing is asked. |
 | `monstrosity` | `amount` | Monstrosity N (rule 701.37a): "if this permanent isn't monstrous, put N +1/+1 counters on it and it becomes monstrous" — always its own source, and only while that's the same permanent (400.7): one that left and came back, or is monstrous already, gets nothing and fires no `becomes-monstrous` trigger (the rulings). `GameObject.monstrous` is a designation, not an ability: losing abilities keeps it, leaving the battlefield ends it. `amount: "x"` is "Monstrosity X" off `{X}` in the cost (Hydra Broodmaster), and the trigger's `{ triggerValue: true }` is that X (701.37c). |
 | `exert` | `target`, `asItAttacks?` | Exert a permanent (rule 701.43): it won't untap during its exerter's next untap step — the effect controller's, whoever controls it by then (a borrowed creature exerted still untaps in its owner's), and the mark is gone after that untap step whether it untapped or not. Tapped or untapped, again or not (701.43b); only on the battlefield (701.43c). You rarely write it: a creature's "you may exert this creature as it attacks" is the static `exertAsItAttacks` (§10), which asks and exerts with `asItAttacks`. |
-| `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. A changeling is an Army creature too. Picks the first Army rather than asking — see §15 "Partial". |
+| `amass` | `amount`, `creatureType` | Amass N (rule 701.44). One effect rather than create-then-count, because "an Army you control" has to resolve to the **same** object each time — that's what makes repeated amassing grow one creature. A changeling is an Army creature too. With two or more Army creatures that differ, the controller chooses which (a `choose-permanents`, whose `then` is the amass again with the engine-only `onto` slot); counters go on one token of a stack. |
 | `grant-player-hexproof` | `who?` | "You gain hexproof until end of turn" (Lazotep Plating). A *player* can't be targeted by opponents; permanents gaining hexproof is `grant-keyword-all`. Turn-scoped on `GameState.hexproofPlayers`. |
 | `double-counters` | `target` | Deepglow Skate's "double the number of each kind of counter on" one permanent: another of each kind for each one there, put as `add-counter` puts them (Doubling Season applies). |
 | `double-counters-all` | `filter`, `counterKind` | Kalonian Hydra / Bristly Bill — doubles each matching permanent's own current count of that counter kind (routes through `add-counter`'s own logic, so Doubling Season's replacement still composes on top: 3x, not 4x) |
@@ -1291,7 +1293,8 @@ exist (rule 111.7), so neither comes back.
   `UnlessOption` is `{ pay }` (mana), `{ payGeneric }` (that much generic mana,
   read as the effect applies — Esper Sentinel's "pays {X}, where X is this
   creature's power" is `{ payGeneric: { powerOf: "source" }, text: "Pay {X}." }`,
-  `{X}` in the text showing the amount), `{ payLife }`, `{ sacrifice }`,
+  `{X}` in the text showing the amount), `{ payLife }`, `{ sacrifice }` (with
+  `exceptSource: true` for "sacrifice **another** creature"),
   `{ discard }` (a count — Tergrid's Lantern's "…unless they sacrifice a
   nonland permanent **or discard a card**") or `{ putFromHand }` (a filter —
   "put a land card from your hand onto the battlefield") plus a `text` label;
@@ -1337,6 +1340,10 @@ exist (rule 111.7), so neither comes back.
   with it. For each opponent who doesn't, …" is a `who: "you"` sacrifice
   option whose `ifDid` is the opponents' `each-player-may`. (The follow-ups'
   dynamic filters are bound as they apply, not when the question is asked.)
+  "You may sacrifice … **When you do**, …" is the same with a
+  `reflexive-trigger` as the `ifDid`, so the follow-up goes on the stack and
+  targets then (Ziatora, the Incinerator: `value: { powerOf: "sacrificed" }`
+  carries the creature's last-known power; Felothar, Dawn of the Abzan).
   `who: { controllerOfTarget: n }` asks whoever controls what slot `n` points
   at, as it last existed if it has left (rule 608.2h): Chain of Vapor's "then
   that permanent's controller may sacrifice a land of their choice. If the
@@ -3834,23 +3841,6 @@ Delete an entry in the same commit as the feature that retires it.
   A modal *spell* has neither problem: it uses `castModal`.
 - **Snow** mana is treated as generic — no snow permanents / snow-mana
   requirements.
-- **`populate`** copies the largest creature token you control rather than
-  letting you pick. That *is* a choice simplification: it bites only when the
-  candidates differ in some way the card itself doesn't care about. Under §0
-  that licence is narrow — check the claim against the actual pool rather
-  than assuming it. `proliferate` sat in this bullet until it was checked, and
-  it did not belong: it added a counter to *every* permanent on the
-  battlefield, opponents' included, so Atraxa grew their creatures and topped
-  up their planeswalkers every end step. It now raises a real "choose any
-  number" decision (`proliferate.test.ts`). Nor did **`tapOthers` /
-  `alternativeCost`**, which tapped the first eligible permanents: which
-  creatures a cost taps decides which can attack or block this turn. The
-  player picks them now (`tap-cost-choices.test.ts`).
-- **`amass`** puts its counters on the first Army creature you control rather
-  than letting you choose (rule 701.47a). Amass never makes a second Army
-  itself, but a changeling is an Army creature (Morophon beside an Orcish
-  Bowmasters' Army token), and which one grows is a real choice — this needs
-  the "choose a permanent" decision (`decision:choose-permanent`).
 - **A static can't pick what it affects by power or toughness.** Tetsuko
   Umezawa's "creatures you control with power or toughness 1 or less can't
   be blocked" needs P/T read inside the layer fold that computes them, and

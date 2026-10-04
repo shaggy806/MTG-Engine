@@ -32,6 +32,7 @@ import _poolBloodstoneCameo from "../pool/bloodstone-cameo.js";
 import _poolBloomingMarsh from "../pool/blooming-marsh.js";
 import _poolBorderlandMinotaur from "../pool/borderland-minotaur.js";
 import _poolBrasssBounty from "../pool/brasss-bounty.js";
+import _poolBreenaTheDemagogue from "../pool/breena-the-demagogue.js";
 import _poolCapashenStandard from "../pool/capashen-standard.js";
 import _poolCastleVantress from "../pool/castle-vantress.js";
 import _poolCatacombCrocodile from "../pool/catacomb-crocodile.js";
@@ -251,6 +252,7 @@ const shard: CardShard = {
     _poolBloomingMarsh,
     _poolBorderlandMinotaur,
     _poolBrasssBounty,
+    _poolBreenaTheDemagogue,
     _poolCapashenStandard,
     _poolCastleVantress,
     _poolCatacombCrocodile,

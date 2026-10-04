@@ -281,9 +281,6 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `choose-targets` answer's `division`: Skarrgan Hellkite, Dragonlord Atarka, Inferno Titan).
   Not yet: an X total (Fire Covenant), and "distribute N counters among" (Lathiel). See
   `neededCards-features.md`, "Unbounded targeting".
-- **Amass grows the first Army creature.** Rule 701.47a lets the player choose, and a changeling
-  is an Army too (Morophon beside Orcish Bowmasters' Army). The `choose-permanents` decision
-  (built 2026-09-26 for "untap up to N lands") is the piece it needs. See AUTHORING §15, "Partial".
 - **A token copy isn't asked its "as this enters" choice** (a token copy of Clone, Morophon or
   Urza's Incubator), though the gaps list marks `bug:as-enters-choices-any-entry` built. See
   AUTHORING §15.
@@ -473,9 +470,10 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
   pile and the counts run down, then jump back when the board lands. A reverse peel onto the pile
   would close it, once the move back announces itself: `finishCascade` and `placeRevealed` move
   the cards with no event (`cards-put-on-bottom` is only a hand's).
-- **A face-up exile from a library peels as a cardback**, like a mill: the cards never show their
-  faces, so what a cascade or an impulse draw took is only in the exile viewer and the History.
-  The peel could turn over to the face as it goes, for a card exiled face up.
+- **Cards milled or exiled from the top of a library should render as the actual card, not a
+  cardback** (the user, 2026-10-03). Today every peel (`runMill` in `AnimationLayer.tsx`) is a
+  generic cardback, so what a mill, cascade or impulse draw took is only in the zone viewers and
+  the History. Show each card's face as it peels off; a card exiled face down stays generic.
 - **A permanent exiled from the battlefield animates filters that don't interpolate**: `runDeath`'s
   exile keyframes go `brightness blur` → `brightness saturate drop-shadow` → `brightness saturate
   blur`, lists that differ, so the filter steps discretely. The mill peel's did the same and
@@ -546,6 +544,9 @@ Follow-on ideas, approved by the user on 2026-09-30:
   with the pool. They read only printed fields, each ability's text (colour identity) and the
   tokens a card makes. A generated catalog of just those, sharded the same way, would be a
   fraction of the size. The game page loads no definitions up front.
+- **Long rules text is hidden behind the creature stat line** (the user, 2026-10-03): on every card
+  renderer (`CardTile`'s layouts, hover cards, the cast spotlight — e.g. Abdel Adrian's text runs
+  under its 4/4 box), long text should fit or shrink so the P/T box never covers it.
 - **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
   `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
   "you may" asked after another decision in the same resolution (it parks, and loses
