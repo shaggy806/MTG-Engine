@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-390 already implemented / 110 missing
+391 already implemented / 109 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -352,7 +352,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  346  Elesh Norn, Mother of Machines                  8031 decks  {4}{W}           Legendary Creature — Phyrexian Praetor
 [x]  347  Tuvasa the Sunlit                               8030 decks  {G}{W}{U}        Legendary Creature — Merfolk Shaman
 [ ]  348  Grist, the Hunger Tide                          8023 decks  {1}{B}{G}        Legendary Planeswalker — Grist
-[ ]  349  Kellan, the Kid                                 8017 decks  {G}{W}{U}        Legendary Creature — Human Faerie Rogue
+[x]  349  Kellan, the Kid                                 8017 decks  {G}{W}{U}        Legendary Creature — Human Faerie Rogue
 [x]  350  Squall, SeeD Mercenary                          8000 decks  {2}{W}{B}        Legendary Creature — Human Knight Mercenary
 [x]  351  Morska, Undersea Sleuth                         7985 decks  {G}{W}{U}        Legendary Creature — Vedalken Fish Detective
 [x]  352  Bristly Bill, Spine Sower                       7950 decks  {1}{G}           Legendary Creature — Plant Druid

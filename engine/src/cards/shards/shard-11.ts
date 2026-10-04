@@ -66,6 +66,7 @@ import _poolDranaLiberatorOfMalakir from "../pool/drana-liberator-of-malakir.js"
 import _poolDreadSummons from "../pool/dread-summons.js";
 import _poolEarthquakeDragon from "../pool/earthquake-dragon.js";
 import _poolEidolonOfPhilosophy from "../pool/eidolon-of-philosophy.js";
+import _poolElectricRevelation from "../pool/electric-revelation.js";
 import _poolElvishRegrower from "../pool/elvish-regrower.js";
 import _poolEnduringCourage from "../pool/enduring-courage.js";
 import _poolEnduringVitality from "../pool/enduring-vitality.js";
@@ -135,6 +136,7 @@ import _poolKirdApe from "../pool/kird-ape.js";
 import _poolKithkinBillyrider from "../pool/kithkin-billyrider.js";
 import _poolKoboldsOfKherKeep from "../pool/kobolds-of-kher-keep.js";
 import _poolKyrenGlider from "../pool/kyren-glider.js";
+import _poolLadyOctopusInspiredInventor from "../pool/lady-octopus-inspired-inventor.js";
 import _poolLeoninSkyhunter from "../pool/leonin-skyhunter.js";
 import _poolLeshracsRite from "../pool/leshracs-rite.js";
 import _poolLilianasSteward from "../pool/lilianas-steward.js";
@@ -143,6 +145,7 @@ import _poolLoamdraggerGiant from "../pool/loamdragger-giant.js";
 import _poolManaCylix from "../pool/mana-cylix.js";
 import _poolMaraudingMako from "../pool/marauding-mako.js";
 import _poolMercilessEnforcers from "../pool/merciless-enforcers.js";
+import _poolMirrorImage from "../pool/mirror-image.js";
 import _poolMistcutterHydra from "../pool/mistcutter-hydra.js";
 import _poolMistyPalmsOasis from "../pool/misty-palms-oasis.js";
 import _poolMmmenonUthrosExile from "../pool/mmmenon-uthros-exile.js";
@@ -196,6 +199,7 @@ import _poolRiverKaijin from "../pool/river-kaijin.js";
 import _poolRootriderFaun from "../pool/rootrider-faun.js";
 import _poolRuinCrab from "../pool/ruin-crab.js";
 import _poolSageOfTheInwardEye from "../pool/sage-of-the-inward-eye.js";
+import _poolSanctumOfFruitfulHarvest from "../pool/sanctum-of-fruitful-harvest.js";
 import _poolSaprazzanHeir from "../pool/saprazzan-heir.js";
 import _poolSatyrWayfinder from "../pool/satyr-wayfinder.js";
 import _poolSchoolOfTheUnseen from "../pool/school-of-the-unseen.js";
@@ -253,6 +257,7 @@ import _poolThornscapeApprentice from "../pool/thornscape-apprentice.js";
 import _poolThunderfootBaloth from "../pool/thunderfoot-baloth.js";
 import _poolTimeOfNeed from "../pool/time-of-need.js";
 import _poolTombOfTheSpiritDragon from "../pool/tomb-of-the-spirit-dragon.js";
+import _poolTophGreatestEarthbender from "../pool/toph-greatest-earthbender.js";
 import _poolTowerOfCalamities from "../pool/tower-of-calamities.js";
 import _poolTowerWinder from "../pool/tower-winder.js";
 import _poolTrainedOrgg from "../pool/trained-orgg.js";
@@ -360,6 +365,7 @@ const shard: CardShard = {
     _poolDreadSummons,
     _poolEarthquakeDragon,
     _poolEidolonOfPhilosophy,
+    _poolElectricRevelation,
     _poolElvishRegrower,
     _poolEnduringCourage,
     _poolEnduringVitality,
@@ -429,6 +435,7 @@ const shard: CardShard = {
     _poolKithkinBillyrider,
     _poolKoboldsOfKherKeep,
     _poolKyrenGlider,
+    _poolLadyOctopusInspiredInventor,
     _poolLeoninSkyhunter,
     _poolLeshracsRite,
     _poolLilianasSteward,
@@ -437,6 +444,7 @@ const shard: CardShard = {
     _poolManaCylix,
     _poolMaraudingMako,
     _poolMercilessEnforcers,
+    _poolMirrorImage,
     _poolMistcutterHydra,
     _poolMistyPalmsOasis,
     _poolMmmenonUthrosExile,
@@ -490,6 +498,7 @@ const shard: CardShard = {
     _poolRootriderFaun,
     _poolRuinCrab,
     _poolSageOfTheInwardEye,
+    _poolSanctumOfFruitfulHarvest,
     _poolSaprazzanHeir,
     _poolSatyrWayfinder,
     _poolSchoolOfTheUnseen,
@@ -547,6 +556,7 @@ const shard: CardShard = {
     _poolThunderfootBaloth,
     _poolTimeOfNeed,
     _poolTombOfTheSpiritDragon,
+    _poolTophGreatestEarthbender,
     _poolTowerOfCalamities,
     _poolTowerWinder,
     _poolTrainedOrgg,

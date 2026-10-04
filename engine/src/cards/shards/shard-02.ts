@@ -91,6 +91,7 @@ import _poolFrilledMystic from "../pool/frilled-mystic.js";
 import _poolFrontlineRebel from "../pool/frontline-rebel.js";
 import _poolGallantCitizen from "../pool/gallant-citizen.js";
 import _poolGarruksUprising from "../pool/garruks-uprising.js";
+import _poolGeralfVisionaryStitcher from "../pool/geralf-visionary-stitcher.js";
 import _poolGerrardsIrregulars from "../pool/gerrards-irregulars.js";
 import _poolGiantAnkheg from "../pool/giant-ankheg.js";
 import _poolGlaringFleshraker from "../pool/glaring-fleshraker.js";
@@ -219,6 +220,7 @@ import _poolThrummingHivepool from "../pool/thrumming-hivepool.js";
 import _poolTidespoutTyrant from "../pool/tidespout-tyrant.js";
 import _poolTotemGuideHartebeest from "../pool/totem-guide-hartebeest.js";
 import _poolTowashiSongshaper from "../pool/towashi-songshaper.js";
+import _poolTransitMage from "../pool/transit-mage.js";
 import _poolTributeToTheWild from "../pool/tribute-to-the-wild.js";
 import _poolTritonShorethief from "../pool/triton-shorethief.js";
 import _poolTropicalIsland from "../pool/tropical-island.js";
@@ -340,6 +342,7 @@ const shard: CardShard = {
     _poolFrontlineRebel,
     _poolGallantCitizen,
     _poolGarruksUprising,
+    _poolGeralfVisionaryStitcher,
     _poolGerrardsIrregulars,
     _poolGiantAnkheg,
     _poolGlaringFleshraker,
@@ -468,6 +471,7 @@ const shard: CardShard = {
     _poolTidespoutTyrant,
     _poolTotemGuideHartebeest,
     _poolTowashiSongshaper,
+    _poolTransitMage,
     _poolTributeToTheWild,
     _poolTritonShorethief,
     _poolTropicalIsland,

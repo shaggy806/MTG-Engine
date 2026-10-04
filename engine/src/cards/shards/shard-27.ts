@@ -15,6 +15,7 @@ import _poolAntiVenomHorrifyingHealer from "../pool/anti-venom-horrifying-healer
 import _poolAnvilwroughtRaptor from "../pool/anvilwrought-raptor.js";
 import _poolArcaneFlight from "../pool/arcane-flight.js";
 import _poolAssaultGriffin from "../pool/assault-griffin.js";
+import _poolAstrologiansPlanisphere from "../pool/astrologians-planisphere.js";
 import _poolBarbtoothWurm from "../pool/barbtooth-wurm.js";
 import _poolBattleHurda from "../pool/battle-hurda.js";
 import _poolBeskirShieldmate from "../pool/beskir-shieldmate.js";
@@ -127,6 +128,7 @@ import _poolMasterDecoy from "../pool/master-decoy.js";
 import _poolMemoryErosion from "../pool/memory-erosion.js";
 import _poolMidnightHaunting from "../pool/midnight-haunting.js";
 import _poolMindsDilation from "../pool/minds-dilation.js";
+import _poolMistDancer from "../pool/mist-dancer.js";
 import _poolMoltenGatekeeper from "../pool/molten-gatekeeper.js";
 import _poolMoonlitWake from "../pool/moonlit-wake.js";
 import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
@@ -267,6 +269,7 @@ const shard: CardShard = {
     _poolAnvilwroughtRaptor,
     _poolArcaneFlight,
     _poolAssaultGriffin,
+    _poolAstrologiansPlanisphere,
     _poolBarbtoothWurm,
     _poolBattleHurda,
     _poolBeskirShieldmate,
@@ -379,6 +382,7 @@ const shard: CardShard = {
     _poolMemoryErosion,
     _poolMidnightHaunting,
     _poolMindsDilation,
+    _poolMistDancer,
     _poolMoltenGatekeeper,
     _poolMoonlitWake,
     _poolMosscoatGoriak,

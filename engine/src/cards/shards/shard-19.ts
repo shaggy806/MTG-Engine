@@ -62,6 +62,7 @@ import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
 import _poolFalkenrathNoble from "../pool/falkenrath-noble.js";
 import _poolFellTheMighty from "../pool/fell-the-mighty.js";
+import _poolFerventCharge from "../pool/fervent-charge.js";
 import _poolFireLordZuko from "../pool/fire-lord-zuko.js";
 import _poolFlamingFist from "../pool/flaming-fist.js";
 import _poolFlamingTyrannosaurus from "../pool/flaming-tyrannosaurus.js";
@@ -90,6 +91,7 @@ import _poolHallowedFountain from "../pool/hallowed-fountain.js";
 import _poolHandOfSilumgar from "../pool/hand-of-silumgar.js";
 import _poolHavenwoodWurm from "../pool/havenwood-wurm.js";
 import _poolHawkeaterMoth from "../pool/hawkeater-moth.js";
+import _poolHibernationSliver from "../pool/hibernation-sliver.js";
 import _poolHiddenVolcano from "../pool/hidden-volcano.js";
 import _poolHieroglyphicIllumination from "../pool/hieroglyphic-illumination.js";
 import _poolHighMarket from "../pool/high-market.js";
@@ -108,6 +110,7 @@ import _poolIntangibleVirtue from "../pool/intangible-virtue.js";
 import _poolIronrootTreefolk from "../pool/ironroot-treefolk.js";
 import _poolIzzetChronarch from "../pool/izzet-chronarch.js";
 import _poolJoustThrough from "../pool/joust-through.js";
+import _poolKamiOfFalseHope from "../pool/kami-of-false-hope.js";
 import _poolKardurDoomscourge from "../pool/kardur-doomscourge.js";
 import _poolKarokWrangler from "../pool/karok-wrangler.js";
 import _poolKelpieGuide from "../pool/kelpie-guide.js";
@@ -143,6 +146,7 @@ import _poolMiresGrasp from "../pool/mires-grasp.js";
 import _poolMoldervineReclamation from "../pool/moldervine-reclamation.js";
 import _poolMorophonTheBoundless from "../pool/morophon-the-boundless.js";
 import _poolMuckRats from "../pool/muck-rats.js";
+import _poolNecrogenCommunion from "../pool/necrogen-communion.js";
 import _poolNekusarTheMindrazer from "../pool/nekusar-the-mindrazer.js";
 import _poolNephaliaSeakite from "../pool/nephalia-seakite.js";
 import _poolNewBenalia from "../pool/new-benalia.js";
@@ -173,6 +177,7 @@ import _poolRighteousCharge from "../pool/righteous-charge.js";
 import _poolRipClanCrasher from "../pool/rip-clan-crasher.js";
 import _poolRiteOfFlame from "../pool/rite-of-flame.js";
 import _poolRiveteersOverlook from "../pool/riveteers-overlook.js";
+import _poolRoaringEarth from "../pool/roaring-earth.js";
 import _poolRoguesPassage from "../pool/rogues-passage.js";
 import _poolRowanScionOfWar from "../pool/rowan-scion-of-war.js";
 import _poolRubbleReading from "../pool/rubble-reading.js";
@@ -180,6 +185,7 @@ import _poolRunawaySteamKin from "../pool/runaway-steam-kin.js";
 import _poolSandblast from "../pool/sandblast.js";
 import _poolSandwurmConvergence from "../pool/sandwurm-convergence.js";
 import _poolSaruliCaretaker from "../pool/saruli-caretaker.js";
+import _poolScaretiller from "../pool/scaretiller.js";
 import _poolScavengerGrounds from "../pool/scavenger-grounds.js";
 import _poolScionOfOona from "../pool/scion-of-oona.js";
 import _poolScorchedRusalka from "../pool/scorched-rusalka.js";
@@ -205,6 +211,7 @@ import _poolSoaringSeacliff from "../pool/soaring-seacliff.js";
 import _poolSokkaTenaciousTactician from "../pool/sokka-tenacious-tactician.js";
 import _poolSomberwaldDryad from "../pool/somberwald-dryad.js";
 import _poolSpellPierce from "../pool/spell-pierce.js";
+import _poolSpiderWomanStunningSavior from "../pool/spider-woman-stunning-savior.js";
 import _poolSramSeniorEdificer from "../pool/sram-senior-edificer.js";
 import _poolStartFromScratch from "../pool/start-from-scratch.js";
 import _poolStonyVoicedGoblins from "../pool/stony-voiced-goblins.js";
@@ -219,6 +226,7 @@ import _poolSwordOfSinewAndSteel from "../pool/sword-of-sinew-and-steel.js";
 import _poolTajuruSnarecaster from "../pool/tajuru-snarecaster.js";
 import _poolTangleweaveArmor from "../pool/tangleweave-armor.js";
 import _poolTarnishedCitadel from "../pool/tarnished-citadel.js";
+import _poolThePrideOfHullClade from "../pool/the-pride-of-hull-clade.js";
 import _poolTomakulHonorGuard from "../pool/tomakul-honor-guard.js";
 import _poolTopanAscetic from "../pool/topan-ascetic.js";
 import _poolTowerDrake from "../pool/tower-drake.js";
@@ -319,6 +327,7 @@ const shard: CardShard = {
     _poolFabledPassage,
     _poolFalkenrathNoble,
     _poolFellTheMighty,
+    _poolFerventCharge,
     _poolFireLordZuko,
     _poolFlamingFist,
     _poolFlamingTyrannosaurus,
@@ -347,6 +356,7 @@ const shard: CardShard = {
     _poolHandOfSilumgar,
     _poolHavenwoodWurm,
     _poolHawkeaterMoth,
+    _poolHibernationSliver,
     _poolHiddenVolcano,
     _poolHieroglyphicIllumination,
     _poolHighMarket,
@@ -365,6 +375,7 @@ const shard: CardShard = {
     _poolIronrootTreefolk,
     _poolIzzetChronarch,
     _poolJoustThrough,
+    _poolKamiOfFalseHope,
     _poolKardurDoomscourge,
     _poolKarokWrangler,
     _poolKelpieGuide,
@@ -400,6 +411,7 @@ const shard: CardShard = {
     _poolMoldervineReclamation,
     _poolMorophonTheBoundless,
     _poolMuckRats,
+    _poolNecrogenCommunion,
     _poolNekusarTheMindrazer,
     _poolNephaliaSeakite,
     _poolNewBenalia,
@@ -430,6 +442,7 @@ const shard: CardShard = {
     _poolRipClanCrasher,
     _poolRiteOfFlame,
     _poolRiveteersOverlook,
+    _poolRoaringEarth,
     _poolRoguesPassage,
     _poolRowanScionOfWar,
     _poolRubbleReading,
@@ -437,6 +450,7 @@ const shard: CardShard = {
     _poolSandblast,
     _poolSandwurmConvergence,
     _poolSaruliCaretaker,
+    _poolScaretiller,
     _poolScavengerGrounds,
     _poolScionOfOona,
     _poolScorchedRusalka,
@@ -462,6 +476,7 @@ const shard: CardShard = {
     _poolSokkaTenaciousTactician,
     _poolSomberwaldDryad,
     _poolSpellPierce,
+    _poolSpiderWomanStunningSavior,
     _poolSramSeniorEdificer,
     _poolStartFromScratch,
     _poolStonyVoicedGoblins,
@@ -476,6 +491,7 @@ const shard: CardShard = {
     _poolTajuruSnarecaster,
     _poolTangleweaveArmor,
     _poolTarnishedCitadel,
+    _poolThePrideOfHullClade,
     _poolTomakulHonorGuard,
     _poolTopanAscetic,
     _poolTowerDrake,

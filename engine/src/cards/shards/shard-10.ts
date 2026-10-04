@@ -32,6 +32,7 @@ import _poolBloodgiftDemon from "../pool/bloodgift-demon.js";
 import _poolBlossomingDefense from "../pool/blossoming-defense.js";
 import _poolBogTatters from "../pool/bog-tatters.js";
 import _poolBogardanRager from "../pool/bogardan-rager.js";
+import _poolBoompile from "../pool/boompile.js";
 import _poolBorealDruid from "../pool/boreal-druid.js";
 import _poolBorosGuildgate from "../pool/boros-guildgate.js";
 import _poolBottleGnomes from "../pool/bottle-gnomes.js";
@@ -59,6 +60,7 @@ import _poolDaggerdromeImp from "../pool/daggerdrome-imp.js";
 import _poolDarkness from "../pool/darkness.js";
 import _poolDaybreakCharger from "../pool/daybreak-charger.js";
 import _poolDefensiveStance from "../pool/defensive-stance.js";
+import _poolDelete from "../pool/delete.js";
 import _poolDenOfTheBugbear from "../pool/den-of-the-bugbear.js";
 import _poolDictateOfErebos from "../pool/dictate-of-erebos.js";
 import _poolDimirGuildgate from "../pool/dimir-guildgate.js";
@@ -311,6 +313,7 @@ const shard: CardShard = {
     _poolBlossomingDefense,
     _poolBogTatters,
     _poolBogardanRager,
+    _poolBoompile,
     _poolBorealDruid,
     _poolBorosGuildgate,
     _poolBottleGnomes,
@@ -338,6 +341,7 @@ const shard: CardShard = {
     _poolDarkness,
     _poolDaybreakCharger,
     _poolDefensiveStance,
+    _poolDelete,
     _poolDenOfTheBugbear,
     _poolDictateOfErebos,
     _poolDimirGuildgate,

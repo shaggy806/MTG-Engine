@@ -129,6 +129,7 @@ import _poolLotusCobra from "../pool/lotus-cobra.js";
 import _poolLoyalApprentice from "../pool/loyal-apprentice.js";
 import _poolMachinistsArsenal from "../pool/machinists-arsenal.js";
 import _poolMantisRider from "../pool/mantis-rider.js";
+import _poolMaryReadAndAnneBonny from "../pool/mary-read-and-anne-bonny.js";
 import _poolMasterOfEtherium from "../pool/master-of-etherium.js";
 import _poolMinotaurAbomination from "../pool/minotaur-abomination.js";
 import _poolMistveilPlains from "../pool/mistveil-plains.js";
@@ -178,7 +179,10 @@ import _poolRiskyShortcut from "../pool/risky-shortcut.js";
 import _poolRiveteersInitiate from "../pool/riveteers-initiate.js";
 import _poolRockfallVale from "../pool/rockfall-vale.js";
 import _poolRograkhSonOfRohgahh from "../pool/rograkh-son-of-rohgahh.js";
+import _poolRoilingDragonstorm from "../pool/roiling-dragonstorm.js";
+import _poolRomanticRendezvous from "../pool/romantic-rendezvous.js";
 import _poolRoyalAssassin from "../pool/royal-assassin.js";
+import _poolRuinousIntrusion from "../pool/ruinous-intrusion.js";
 import _poolRumblingBaloth from "../pool/rumbling-baloth.js";
 import _poolSandScout from "../pool/sand-scout.js";
 import _poolSandsower from "../pool/sandsower.js";
@@ -252,6 +256,7 @@ import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
 import _tokensRobotTokenBigMotherMouser from "../tokens/robot-token-big-mother-mouser.js";
+import _tokensShapeshifterTokenIrregularCohort from "../tokens/shapeshifter-token-irregular-cohort.js";
 import _tokensSpiritClericToken from "../tokens/spirit-cleric-token.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
 import _tokensWurmToken from "../tokens/wurm-token.js";
@@ -384,6 +389,7 @@ const shard: CardShard = {
     _poolLoyalApprentice,
     _poolMachinistsArsenal,
     _poolMantisRider,
+    _poolMaryReadAndAnneBonny,
     _poolMasterOfEtherium,
     _poolMinotaurAbomination,
     _poolMistveilPlains,
@@ -433,7 +439,10 @@ const shard: CardShard = {
     _poolRiveteersInitiate,
     _poolRockfallVale,
     _poolRograkhSonOfRohgahh,
+    _poolRoilingDragonstorm,
+    _poolRomanticRendezvous,
     _poolRoyalAssassin,
+    _poolRuinousIntrusion,
     _poolRumblingBaloth,
     _poolSandScout,
     _poolSandsower,
@@ -509,6 +518,7 @@ const shard: CardShard = {
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,
     _tokensRobotTokenBigMotherMouser,
+    _tokensShapeshifterTokenIrregularCohort,
     _tokensSpiritClericToken,
     _tokensWizardTokenKuja,
     _tokensWurmToken,

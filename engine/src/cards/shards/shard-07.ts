@@ -96,6 +96,7 @@ import _poolIfnirDeadlands from "../pool/ifnir-deadlands.js";
 import _poolInfestationSage from "../pool/infestation-sage.js";
 import _poolInnocentBlood from "../pool/innocent-blood.js";
 import _poolInordinateRage from "../pool/inordinate-rage.js";
+import _poolIrregularCohort from "../pool/irregular-cohort.js";
 import _poolIsamaruHoundOfKonda from "../pool/isamaru-hound-of-konda.js";
 import _poolJetmirsGarden from "../pool/jetmirs-garden.js";
 import _poolJwariRuins from "../pool/jwari-ruins.js";
@@ -107,6 +108,7 @@ import _poolKingfisher from "../pool/kingfisher.js";
 import _poolKnightOfTheTusk from "../pool/knight-of-the-tusk.js";
 import _poolKnightWatch from "../pool/knight-watch.js";
 import _poolKnightsPledge from "../pool/knights-pledge.js";
+import _poolKumenaTyrantOfOrazca from "../pool/kumena-tyrant-of-orazca.js";
 import _poolKyoshiWarriorGuard from "../pool/kyoshi-warrior-guard.js";
 import _poolLastWord from "../pool/last-word.js";
 import _poolLightningWolf from "../pool/lightning-wolf.js";
@@ -150,6 +152,7 @@ import _poolPrecinctCaptain from "../pool/precinct-captain.js";
 import _poolPresenceOfGond from "../pool/presence-of-gond.js";
 import _poolPriestOfGix from "../pool/priest-of-gix.js";
 import _poolPrimordialPachyderm from "../pool/primordial-pachyderm.js";
+import _poolPrizePig from "../pool/prize-pig.js";
 import _poolPyromanticPilgrim from "../pool/pyromantic-pilgrim.js";
 import _poolRakdosTheMuscle from "../pool/rakdos-the-muscle.js";
 import _poolRalStormConduit from "../pool/ral-storm-conduit.js";
@@ -367,6 +370,7 @@ const shard: CardShard = {
     _poolInfestationSage,
     _poolInnocentBlood,
     _poolInordinateRage,
+    _poolIrregularCohort,
     _poolIsamaruHoundOfKonda,
     _poolJetmirsGarden,
     _poolJwariRuins,
@@ -378,6 +382,7 @@ const shard: CardShard = {
     _poolKnightOfTheTusk,
     _poolKnightWatch,
     _poolKnightsPledge,
+    _poolKumenaTyrantOfOrazca,
     _poolKyoshiWarriorGuard,
     _poolLastWord,
     _poolLightningWolf,
@@ -421,6 +426,7 @@ const shard: CardShard = {
     _poolPresenceOfGond,
     _poolPriestOfGix,
     _poolPrimordialPachyderm,
+    _poolPrizePig,
     _poolPyromanticPilgrim,
     _poolRakdosTheMuscle,
     _poolRalStormConduit,

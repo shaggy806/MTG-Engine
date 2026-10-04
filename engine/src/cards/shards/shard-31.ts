@@ -120,6 +120,7 @@ import _poolIronBully from "../pool/iron-bully.js";
 import _poolIshaiOjutaiDragonspeaker from "../pool/ishai-ojutai-dragonspeaker.js";
 import _poolItThatBetrays from "../pool/it-that-betrays.js";
 import _poolIthilienKingfisher from "../pool/ithilien-kingfisher.js";
+import _poolIymrithDesertDoom from "../pool/iymrith-desert-doom.js";
 import _poolIzzetSignet from "../pool/izzet-signet.js";
 import _poolJerrardOfTheClosedFist from "../pool/jerrard-of-the-closed-fist.js";
 import _poolJungleBarrier from "../pool/jungle-barrier.js";
@@ -162,6 +163,7 @@ import _poolPetrifiedField from "../pool/petrified-field.js";
 import _poolPhyrexianLens from "../pool/phyrexian-lens.js";
 import _poolRabidBite from "../pool/rabid-bite.js";
 import _poolRaidingNightstalker from "../pool/raiding-nightstalker.js";
+import _poolRamirezDepietroPillager from "../pool/ramirez-depietro-pillager.js";
 import _poolRangerCaptainOfEos from "../pool/ranger-captain-of-eos.js";
 import _poolRavenform from "../pool/ravenform.js";
 import _poolRegrowth from "../pool/regrowth.js";
@@ -367,6 +369,7 @@ const shard: CardShard = {
     _poolIshaiOjutaiDragonspeaker,
     _poolItThatBetrays,
     _poolIthilienKingfisher,
+    _poolIymrithDesertDoom,
     _poolIzzetSignet,
     _poolJerrardOfTheClosedFist,
     _poolJungleBarrier,
@@ -409,6 +412,7 @@ const shard: CardShard = {
     _poolPhyrexianLens,
     _poolRabidBite,
     _poolRaidingNightstalker,
+    _poolRamirezDepietroPillager,
     _poolRangerCaptainOfEos,
     _poolRavenform,
     _poolRegrowth,

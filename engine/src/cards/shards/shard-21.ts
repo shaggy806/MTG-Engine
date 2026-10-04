@@ -52,6 +52,7 @@ import _poolDeeprootWaters from "../pool/deeproot-waters.js";
 import _poolDegaDisciple from "../pool/dega-disciple.js";
 import _poolDesperateBloodseeker from "../pool/desperate-bloodseeker.js";
 import _poolDisruptDecorum from "../pool/disrupt-decorum.js";
+import _poolDjeruAndHazoret from "../pool/djeru-and-hazoret.js";
 import _poolDranasChosen from "../pool/dranas-chosen.js";
 import _poolDuskLegionZealot from "../pool/dusk-legion-zealot.js";
 import _poolElanorGardner from "../pool/elanor-gardner.js";
@@ -202,6 +203,7 @@ import _poolTheEldestReborn from "../pool/the-eldest-reborn.js";
 import _poolThornwoodFalls from "../pool/thornwood-falls.js";
 import _poolThrivingGrove from "../pool/thriving-grove.js";
 import _poolTomBombadil from "../pool/tom-bombadil.js";
+import _poolTorgalAFineHound from "../pool/torgal-a-fine-hound.js";
 import _poolTorstenVonUrsus from "../pool/torsten-von-ursus.js";
 import _poolTortoiseFormation from "../pool/tortoise-formation.js";
 import _poolTrapmakersSnare from "../pool/trapmakers-snare.js";
@@ -282,6 +284,7 @@ const shard: CardShard = {
     _poolDegaDisciple,
     _poolDesperateBloodseeker,
     _poolDisruptDecorum,
+    _poolDjeruAndHazoret,
     _poolDranasChosen,
     _poolDuskLegionZealot,
     _poolElanorGardner,
@@ -432,6 +435,7 @@ const shard: CardShard = {
     _poolThornwoodFalls,
     _poolThrivingGrove,
     _poolTomBombadil,
+    _poolTorgalAFineHound,
     _poolTorstenVonUrsus,
     _poolTortoiseFormation,
     _poolTrapmakersSnare,

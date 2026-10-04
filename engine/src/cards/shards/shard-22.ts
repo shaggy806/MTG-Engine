@@ -49,6 +49,7 @@ import _poolCracklingPerimeter from "../pool/crackling-perimeter.js";
 import _poolCradleOfTheAccursed from "../pool/cradle-of-the-accursed.js";
 import _poolCrimsonManticore from "../pool/crimson-manticore.js";
 import _poolCrookedCustodian from "../pool/crooked-custodian.js";
+import _poolCryptSliver from "../pool/crypt-sliver.js";
 import _poolCullingRitual from "../pool/culling-ritual.js";
 import _poolCursedMirror from "../pool/cursed-mirror.js";
 import _poolDeadlyTempest from "../pool/deadly-tempest.js";
@@ -92,6 +93,7 @@ import _poolGoblinRabblemaster from "../pool/goblin-rabblemaster.js";
 import _poolGoblinSkyRaider from "../pool/goblin-sky-raider.js";
 import _poolGoblinStriker from "../pool/goblin-striker.js";
 import _poolGoldveinPick from "../pool/goldvein-pick.js";
+import _poolGriffinAerie from "../pool/griffin-aerie.js";
 import _poolGuadosalamFarplaneGateway from "../pool/guadosalam-farplane-gateway.js";
 import _poolGuardianOfPilgrims from "../pool/guardian-of-pilgrims.js";
 import _poolHakodaSelflessCommander from "../pool/hakoda-selfless-commander.js";
@@ -199,6 +201,7 @@ import _poolSpeciesSpecialist from "../pool/species-specialist.js";
 import _poolSpellgorgerWeird from "../pool/spellgorger-weird.js";
 import _poolSphinxsRevelation from "../pool/sphinxs-revelation.js";
 import _poolSpiderManifestation from "../pool/spider-manifestation.js";
+import _poolSplinterTwin from "../pool/splinter-twin.js";
 import _poolSquall from "../pool/squall.js";
 import _poolStarkIndustriesExecutive from "../pool/stark-industries-executive.js";
 import _poolSterlingGrove from "../pool/sterling-grove.js";
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolCradleOfTheAccursed,
     _poolCrimsonManticore,
     _poolCrookedCustodian,
+    _poolCryptSliver,
     _poolCullingRitual,
     _poolCursedMirror,
     _poolDeadlyTempest,
@@ -360,6 +364,7 @@ const shard: CardShard = {
     _poolGoblinSkyRaider,
     _poolGoblinStriker,
     _poolGoldveinPick,
+    _poolGriffinAerie,
     _poolGuadosalamFarplaneGateway,
     _poolGuardianOfPilgrims,
     _poolHakodaSelflessCommander,
@@ -467,6 +472,7 @@ const shard: CardShard = {
     _poolSpellgorgerWeird,
     _poolSphinxsRevelation,
     _poolSpiderManifestation,
+    _poolSplinterTwin,
     _poolSquall,
     _poolStarkIndustriesExecutive,
     _poolSterlingGrove,

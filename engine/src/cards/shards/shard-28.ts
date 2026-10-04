@@ -135,6 +135,7 @@ import _poolMindControl from "../pool/mind-control.js";
 import _poolMinecartDaredevil from "../pool/minecart-daredevil.js";
 import _poolMirrorworks from "../pool/mirrorworks.js";
 import _poolMoleManMoloidMaster from "../pool/mole-man-moloid-master.js";
+import _poolMoriaMarauder from "../pool/moria-marauder.js";
 import _poolMurderousRedcap from "../pool/murderous-redcap.js";
 import _poolMutableExplorer from "../pool/mutable-explorer.js";
 import _poolMutantTownMusicians from "../pool/mutant-town-musicians.js";
@@ -152,6 +153,7 @@ import _poolPalaceFamiliar from "../pool/palace-familiar.js";
 import _poolPalaceSentinels from "../pool/palace-sentinels.js";
 import _poolPhyrexianMetamorph from "../pool/phyrexian-metamorph.js";
 import _poolPillarvergePathway from "../pool/pillarverge-pathway.js";
+import _poolPinnacleEmissary from "../pool/pinnacle-emissary.js";
 import _poolPlains from "../pool/plains.js";
 import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
 import _poolPoisonTheBlade from "../pool/poison-the-blade.js";
@@ -175,6 +177,7 @@ import _poolReveillark from "../pool/reveillark.js";
 import _poolReviveTheShire from "../pool/revive-the-shire.js";
 import _poolRimeshieldFrostGiant from "../pool/rimeshield-frost-giant.js";
 import _poolRobeOfMirrors from "../pool/robe-of-mirrors.js";
+import _poolRockalanche from "../pool/rockalanche.js";
 import _poolRootbreakerWurm from "../pool/rootbreaker-wurm.js";
 import _poolRootwalla from "../pool/rootwalla.js";
 import _poolRuneclawBear from "../pool/runeclaw-bear.js";
@@ -203,6 +206,7 @@ import _poolSnareThopter from "../pool/snare-thopter.js";
 import _poolSolTalisman from "../pool/sol-talisman.js";
 import _poolSoulsFire from "../pool/souls-fire.js";
 import _poolSpitefulSliver from "../pool/spiteful-sliver.js";
+import _poolSplinterfright from "../pool/splinterfright.js";
 import _poolSplitUp from "../pool/split-up.js";
 import _poolSporeFrog from "../pool/spore-frog.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
@@ -232,6 +236,7 @@ import _poolUniversalAutomaton from "../pool/universal-automaton.js";
 import _poolUrsapine from "../pool/ursapine.js";
 import _poolValakutAwakening from "../pool/valakut-awakening.js";
 import _poolVampireRevenant from "../pool/vampire-revenant.js";
+import _poolVeneratedStormsinger from "../pool/venerated-stormsinger.js";
 import _poolViashinoSandscout from "../pool/viashino-sandscout.js";
 import _poolVodalianSoldiers from "../pool/vodalian-soldiers.js";
 import _poolVolcanicUpheaval from "../pool/volcanic-upheaval.js";
@@ -244,6 +249,7 @@ import _poolWhisperAgent from "../pool/whisper-agent.js";
 import _poolWingsOfAesthir from "../pool/wings-of-aesthir.js";
 import _poolYunaGrandSummoner from "../pool/yuna-grand-summoner.js";
 import _poolZap from "../pool/zap.js";
+import _poolZeganaUtopianSpeaker from "../pool/zegana-utopian-speaker.js";
 import _poolZendikarFarguide from "../pool/zendikar-farguide.js";
 import _tokensKithkinToken from "../tokens/kithkin-token.js";
 import _tokensRedHumanToken from "../tokens/red-human-token.js";
@@ -382,6 +388,7 @@ const shard: CardShard = {
     _poolMinecartDaredevil,
     _poolMirrorworks,
     _poolMoleManMoloidMaster,
+    _poolMoriaMarauder,
     _poolMurderousRedcap,
     _poolMutableExplorer,
     _poolMutantTownMusicians,
@@ -399,6 +406,7 @@ const shard: CardShard = {
     _poolPalaceSentinels,
     _poolPhyrexianMetamorph,
     _poolPillarvergePathway,
+    _poolPinnacleEmissary,
     _poolPlains,
     _poolPoisonDartFrog,
     _poolPoisonTheBlade,
@@ -422,6 +430,7 @@ const shard: CardShard = {
     _poolReviveTheShire,
     _poolRimeshieldFrostGiant,
     _poolRobeOfMirrors,
+    _poolRockalanche,
     _poolRootbreakerWurm,
     _poolRootwalla,
     _poolRuneclawBear,
@@ -450,6 +459,7 @@ const shard: CardShard = {
     _poolSolTalisman,
     _poolSoulsFire,
     _poolSpitefulSliver,
+    _poolSplinterfright,
     _poolSplitUp,
     _poolSporeFrog,
     _poolStickyFingers,
@@ -479,6 +489,7 @@ const shard: CardShard = {
     _poolUrsapine,
     _poolValakutAwakening,
     _poolVampireRevenant,
+    _poolVeneratedStormsinger,
     _poolViashinoSandscout,
     _poolVodalianSoldiers,
     _poolVolcanicUpheaval,
@@ -491,6 +502,7 @@ const shard: CardShard = {
     _poolWingsOfAesthir,
     _poolYunaGrandSummoner,
     _poolZap,
+    _poolZeganaUtopianSpeaker,
     _poolZendikarFarguide,
   ],
   tokens: [

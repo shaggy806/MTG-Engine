@@ -9,6 +9,7 @@ import _poolAlabasterHostSanctifier from "../pool/alabaster-host-sanctifier.js";
 import _poolAlexiosDeimosOfKosmos from "../pool/alexios-deimos-of-kosmos.js";
 import _poolAlibouAncientWitness from "../pool/alibou-ancient-witness.js";
 import _poolAlleyStrangler from "../pool/alley-strangler.js";
+import _poolAlphaDeathclaw from "../pool/alpha-deathclaw.js";
 import _poolAngelOfIndemnity from "../pool/angel-of-indemnity.js";
 import _poolAngelOfRetribution from "../pool/angel-of-retribution.js";
 import _poolAnowonTheRuinThief from "../pool/anowon-the-ruin-thief.js";
@@ -31,6 +32,7 @@ import _poolBlindCreeper from "../pool/blind-creeper.js";
 import _poolBloodlineBidding from "../pool/bloodline-bidding.js";
 import _poolBombard from "../pool/bombard.js";
 import _poolBoomerangBasics from "../pool/boomerang-basics.js";
+import _poolBottomlessPit from "../pool/bottomless-pit.js";
 import _poolBountifulPromenade from "../pool/bountiful-promenade.js";
 import _poolBruvacTheGrandiloquent from "../pool/bruvac-the-grandiloquent.js";
 import _poolBulwarkGiant from "../pool/bulwark-giant.js";
@@ -94,6 +96,7 @@ import _poolFyndhornElves from "../pool/fyndhorn-elves.js";
 import _poolGalvanicBlast from "../pool/galvanic-blast.js";
 import _poolGeistOfTheArchives from "../pool/geist-of-the-archives.js";
 import _poolGenerousEnt from "../pool/generous-ent.js";
+import _poolGenerousPup from "../pool/generous-pup.js";
 import _poolGhostfireSlice from "../pool/ghostfire-slice.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
 import _poolGlimmervoid from "../pool/glimmervoid.js";
@@ -112,6 +115,7 @@ import _poolImprovisedArmor from "../pool/improvised-armor.js";
 import _poolInfernoTitan from "../pool/inferno-titan.js";
 import _poolInfuriate from "../pool/infuriate.js";
 import _poolInsatiableAvarice from "../pool/insatiable-avarice.js";
+import _poolIntoTheRoil from "../pool/into-the-roil.js";
 import _poolJarvisEarthsMightiestButler from "../pool/jarvis-earths-mightiest-butler.js";
 import _poolJinGitaxiasProgressTyrant from "../pool/jin-gitaxias-progress-tyrant.js";
 import _poolJungleLion from "../pool/jungle-lion.js";
@@ -165,6 +169,7 @@ import _poolRampagingBrontodon from "../pool/rampaging-brontodon.js";
 import _poolRamunapRuins from "../pool/ramunap-ruins.js";
 import _poolRankleMasterOfPranks from "../pool/rankle-master-of-pranks.js";
 import _poolRedoubledStormsinger from "../pool/redoubled-stormsinger.js";
+import _poolReefWorm from "../pool/reef-worm.js";
 import _poolRiotGear from "../pool/riot-gear.js";
 import _poolRiptideCrab from "../pool/riptide-crab.js";
 import _poolRousingRead from "../pool/rousing-read.js";
@@ -265,6 +270,7 @@ const shard: CardShard = {
     _poolAlexiosDeimosOfKosmos,
     _poolAlibouAncientWitness,
     _poolAlleyStrangler,
+    _poolAlphaDeathclaw,
     _poolAngelOfIndemnity,
     _poolAngelOfRetribution,
     _poolAnowonTheRuinThief,
@@ -287,6 +293,7 @@ const shard: CardShard = {
     _poolBloodlineBidding,
     _poolBombard,
     _poolBoomerangBasics,
+    _poolBottomlessPit,
     _poolBountifulPromenade,
     _poolBruvacTheGrandiloquent,
     _poolBulwarkGiant,
@@ -350,6 +357,7 @@ const shard: CardShard = {
     _poolGalvanicBlast,
     _poolGeistOfTheArchives,
     _poolGenerousEnt,
+    _poolGenerousPup,
     _poolGhostfireSlice,
     _poolGhostlyPrison,
     _poolGlimmervoid,
@@ -368,6 +376,7 @@ const shard: CardShard = {
     _poolInfernoTitan,
     _poolInfuriate,
     _poolInsatiableAvarice,
+    _poolIntoTheRoil,
     _poolJarvisEarthsMightiestButler,
     _poolJinGitaxiasProgressTyrant,
     _poolJungleLion,
@@ -421,6 +430,7 @@ const shard: CardShard = {
     _poolRamunapRuins,
     _poolRankleMasterOfPranks,
     _poolRedoubledStormsinger,
+    _poolReefWorm,
     _poolRiotGear,
     _poolRiptideCrab,
     _poolRousingRead,

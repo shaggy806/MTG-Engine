@@ -221,6 +221,7 @@ import _poolUrGolemsEye from "../pool/ur-golems-eye.js";
 import _poolUrtetRemnantOfMemnarch from "../pool/urtet-remnant-of-memnarch.js";
 import _poolUrzasTower from "../pool/urzas-tower.js";
 import _poolVampireOpportunist from "../pool/vampire-opportunist.js";
+import _poolVampireSocialite from "../pool/vampire-socialite.js";
 import _poolVastwoodGorger from "../pool/vastwood-gorger.js";
 import _poolVastwoodSurge from "../pool/vastwood-surge.js";
 import _poolVerdantForce from "../pool/verdant-force.js";
@@ -472,6 +473,7 @@ const shard: CardShard = {
     _poolUrtetRemnantOfMemnarch,
     _poolUrzasTower,
     _poolVampireOpportunist,
+    _poolVampireSocialite,
     _poolVastwoodGorger,
     _poolVastwoodSurge,
     _poolVerdantForce,

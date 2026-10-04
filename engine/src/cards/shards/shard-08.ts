@@ -18,6 +18,7 @@ import _poolAmbushParatrooper from "../pool/ambush-paratrooper.js";
 import _poolAnaraWolvidFamiliar from "../pool/anara-wolvid-familiar.js";
 import _poolAnzragTheQuakeMole from "../pool/anzrag-the-quake-mole.js";
 import _poolArcanisTheOmnipotent from "../pool/arcanis-the-omnipotent.js";
+import _poolArtificersAssistant from "../pool/artificers-assistant.js";
 import _poolAuntMay from "../pool/aunt-may.js";
 import _poolAuraBlast from "../pool/aura-blast.js";
 import _poolAzoriusLocket from "../pool/azorius-locket.js";
@@ -104,6 +105,7 @@ import _poolHinterlandHarbor from "../pool/hinterland-harbor.js";
 import _poolHinterlandSanctifier from "../pool/hinterland-sanctifier.js";
 import _poolHitMonkey from "../pool/hit-monkey.js";
 import _poolHolyStrength from "../pool/holy-strength.js";
+import _poolHondenOfSeeingWinds from "../pool/honden-of-seeing-winds.js";
 import _poolIceridgeSerpent from "../pool/iceridge-serpent.js";
 import _poolImmaculateMagistrate from "../pool/immaculate-magistrate.js";
 import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
@@ -123,6 +125,7 @@ import _poolLeaveInTheDust from "../pool/leave-in-the-dust.js";
 import _poolLegionWarboss from "../pool/legion-warboss.js";
 import _poolLilianaVess from "../pool/liliana-vess.js";
 import _poolLlanowarEnvoy from "../pool/llanowar-envoy.js";
+import _poolLoftyDenial from "../pool/lofty-denial.js";
 import _poolLongBodiedGreyDog from "../pool/long-bodied-grey-dog.js";
 import _poolLotusField from "../pool/lotus-field.js";
 import _poolLumberingFalls from "../pool/lumbering-falls.js";
@@ -264,6 +267,7 @@ const shard: CardShard = {
     _poolAnaraWolvidFamiliar,
     _poolAnzragTheQuakeMole,
     _poolArcanisTheOmnipotent,
+    _poolArtificersAssistant,
     _poolAuntMay,
     _poolAuraBlast,
     _poolAzoriusLocket,
@@ -350,6 +354,7 @@ const shard: CardShard = {
     _poolHinterlandSanctifier,
     _poolHitMonkey,
     _poolHolyStrength,
+    _poolHondenOfSeeingWinds,
     _poolIceridgeSerpent,
     _poolImmaculateMagistrate,
     _poolIndomitableAncients,
@@ -369,6 +374,7 @@ const shard: CardShard = {
     _poolLegionWarboss,
     _poolLilianaVess,
     _poolLlanowarEnvoy,
+    _poolLoftyDenial,
     _poolLongBodiedGreyDog,
     _poolLotusField,
     _poolLumberingFalls,

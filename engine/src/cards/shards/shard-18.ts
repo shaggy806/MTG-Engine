@@ -28,6 +28,7 @@ import _poolBoneSaw from "../pool/bone-saw.js";
 import _poolBoseijuWhoEndures from "../pool/boseiju-who-endures.js";
 import _poolBrightcapBadger from "../pool/brightcap-badger.js";
 import _poolBrimstoneTrebuchet from "../pool/brimstone-trebuchet.js";
+import _poolBrinelinTheMoonKraken from "../pool/brinelin-the-moon-kraken.js";
 import _poolBrotherhoodRegalia from "../pool/brotherhood-regalia.js";
 import _poolBurningTreeEmissary from "../pool/burning-tree-emissary.js";
 import _poolCabalStronghold from "../pool/cabal-stronghold.js";
@@ -43,6 +44,7 @@ import _poolCollectiveUnconscious from "../pool/collective-unconscious.js";
 import _poolColossalMajesty from "../pool/colossal-majesty.js";
 import _poolCommandBeacon from "../pool/command-beacon.js";
 import _poolCommodoreGuff from "../pool/commodore-guff.js";
+import _poolCongregate from "../pool/congregate.js";
 import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
@@ -188,6 +190,7 @@ import _poolSongsOfTheDamned from "../pool/songs-of-the-damned.js";
 import _poolSorinImperiousBloodlord from "../pool/sorin-imperious-bloodlord.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
+import _poolStalkingVengeance from "../pool/stalking-vengeance.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
 import _poolStarAthlete from "../pool/star-athlete.js";
 import _poolStarfallInvocation from "../pool/starfall-invocation.js";
@@ -253,6 +256,7 @@ import _tokensBloodToken from "../tokens/blood-token.js";
 import _tokensCatTokenJolraelMwonvuliRecluse from "../tokens/cat-token-jolrael-mwonvuli-recluse.js";
 import _tokensCatToken from "../tokens/cat-token.js";
 import _tokensFaerieRogueToken from "../tokens/faerie-rogue-token.js";
+import _tokensFishTokenReefWorm from "../tokens/fish-token-reef-worm.js";
 import _tokensHumanKnightToken from "../tokens/human-knight-token.js";
 import _tokensInklingToken from "../tokens/inkling-token.js";
 import _tokensKrakenTokenSpawningKraken from "../tokens/kraken-token-spawning-kraken.js";
@@ -289,6 +293,7 @@ const shard: CardShard = {
     _poolBoseijuWhoEndures,
     _poolBrightcapBadger,
     _poolBrimstoneTrebuchet,
+    _poolBrinelinTheMoonKraken,
     _poolBrotherhoodRegalia,
     _poolBurningTreeEmissary,
     _poolCabalStronghold,
@@ -304,6 +309,7 @@ const shard: CardShard = {
     _poolColossalMajesty,
     _poolCommandBeacon,
     _poolCommodoreGuff,
+    _poolCongregate,
     _poolCopperlineGorge,
     _poolCourserOfKruphix,
     _poolCrucibleOfWorlds,
@@ -449,6 +455,7 @@ const shard: CardShard = {
     _poolSorinImperiousBloodlord,
     _poolSpawnbinderMage,
     _poolSpellkeeperWeird,
+    _poolStalkingVengeance,
     _poolStandingTroops,
     _poolStarAthlete,
     _poolStarfallInvocation,
@@ -516,6 +523,7 @@ const shard: CardShard = {
     _tokensCatTokenJolraelMwonvuliRecluse,
     _tokensCatToken,
     _tokensFaerieRogueToken,
+    _tokensFishTokenReefWorm,
     _tokensHumanKnightToken,
     _tokensInklingToken,
     _tokensKrakenTokenSpawningKraken,

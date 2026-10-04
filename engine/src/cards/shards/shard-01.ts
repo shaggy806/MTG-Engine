@@ -72,6 +72,7 @@ import _poolGlareOfSubdual from "../pool/glare-of-subdual.js";
 import _poolGoblinRaider from "../pool/goblin-raider.js";
 import _poolGolgariGuildmage from "../pool/golgari-guildmage.js";
 import _poolGorgonFlail from "../pool/gorgon-flail.js";
+import _poolGravelighter from "../pool/gravelighter.js";
 import _poolGrenzoHavocRaiser from "../pool/grenzo-havoc-raiser.js";
 import _poolGrimGuardian from "../pool/grim-guardian.js";
 import _poolGrowingRitesOfItlimoc from "../pool/growing-rites-of-itlimoc.js";
@@ -305,6 +306,7 @@ const shard: CardShard = {
     _poolGoblinRaider,
     _poolGolgariGuildmage,
     _poolGorgonFlail,
+    _poolGravelighter,
     _poolGrenzoHavocRaiser,
     _poolGrimGuardian,
     _poolGrowingRitesOfItlimoc,

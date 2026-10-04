@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAcademyRector from "../pool/academy-rector.js";
 import _poolAccelerate from "../pool/accelerate.js";
 import _poolAesiTyrantOfGyreStrait from "../pool/aesi-tyrant-of-gyre-strait.js";
 import _poolAkroanJailer from "../pool/akroan-jailer.js";
@@ -107,6 +108,7 @@ import _poolGruulCluestone from "../pool/gruul-cluestone.js";
 import _poolGruulNodorog from "../pool/gruul-nodorog.js";
 import _poolGuardianOfTheHalls from "../pool/guardian-of-the-halls.js";
 import _poolGuulDrazMucklord from "../pool/guul-draz-mucklord.js";
+import _poolHarmlessOffering from "../pool/harmless-offering.js";
 import _poolHeartstone from "../pool/heartstone.js";
 import _poolHematiteGolem from "../pool/hematite-golem.js";
 import _poolHomaridExplorer from "../pool/homarid-explorer.js";
@@ -289,6 +291,7 @@ import _tokensZombieWarriorToken from "../tokens/zombie-warrior-token.js";
 
 const shard: CardShard = {
   pool: [
+    _poolAcademyRector,
     _poolAccelerate,
     _poolAesiTyrantOfGyreStrait,
     _poolAkroanJailer,
@@ -393,6 +396,7 @@ const shard: CardShard = {
     _poolGruulNodorog,
     _poolGuardianOfTheHalls,
     _poolGuulDrazMucklord,
+    _poolHarmlessOffering,
     _poolHeartstone,
     _poolHematiteGolem,
     _poolHomaridExplorer,

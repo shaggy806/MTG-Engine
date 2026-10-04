@@ -37,6 +37,7 @@ import _poolBloomingMarsh from "../pool/blooming-marsh.js";
 import _poolBorderlandMinotaur from "../pool/borderland-minotaur.js";
 import _poolBrasssBounty from "../pool/brasss-bounty.js";
 import _poolBreenaTheDemagogue from "../pool/breena-the-demagogue.js";
+import _poolBurstLightning from "../pool/burst-lightning.js";
 import _poolCapashenStandard from "../pool/capashen-standard.js";
 import _poolCarmenCruelSkymarcher from "../pool/carmen-cruel-skymarcher.js";
 import _poolCastleVantress from "../pool/castle-vantress.js";
@@ -128,6 +129,7 @@ import _poolMakindiOx from "../pool/makindi-ox.js";
 import _poolMammothSpider from "../pool/mammoth-spider.js";
 import _poolManaPrism from "../pool/mana-prism.js";
 import _poolMandibleJusticiar from "../pool/mandible-justiciar.js";
+import _poolMarchFromTheBlackGate from "../pool/march-from-the-black-gate.js";
 import _poolMarkOfFury from "../pool/mark-of-fury.js";
 import _poolMastersCall from "../pool/masters-call.js";
 import _poolMercilessEviction from "../pool/merciless-eviction.js";
@@ -154,6 +156,7 @@ import _poolPongify from "../pool/pongify.js";
 import _poolPrimeSpeakerZegana from "../pool/prime-speaker-zegana.js";
 import _poolPrimevalHerald from "../pool/primeval-herald.js";
 import _poolProdigiousGrowth from "../pool/prodigious-growth.js";
+import _poolProgenitorMimic from "../pool/progenitor-mimic.js";
 import _poolProtectorOfGondor from "../pool/protector-of-gondor.js";
 import _poolPython from "../pool/python.js";
 import _poolRainOfFilth from "../pool/rain-of-filth.js";
@@ -167,6 +170,7 @@ import _poolRegisaurAlpha from "../pool/regisaur-alpha.js";
 import _poolRelicBarrier from "../pool/relic-barrier.js";
 import _poolRenegadeTactics from "../pool/renegade-tactics.js";
 import _poolRenegadeTroops from "../pool/renegade-troops.js";
+import _poolRile from "../pool/rile.js";
 import _poolRimefurReindeer from "../pool/rimefur-reindeer.js";
 import _poolRottedHulk from "../pool/rotted-hulk.js";
 import _poolRuneScarredDemon from "../pool/rune-scarred-demon.js";
@@ -210,6 +214,7 @@ import _poolTerraStomper from "../pool/terra-stomper.js";
 import _poolTerrainGenerator from "../pool/terrain-generator.js";
 import _poolTheLordMasterOfHell from "../pool/the-lord-master-of-hell.js";
 import _poolThermoAlchemist from "../pool/thermo-alchemist.js";
+import _poolThopterAssembly from "../pool/thopter-assembly.js";
 import _poolThorin from "../pool/thorin.js";
 import _poolTidalKraken from "../pool/tidal-kraken.js";
 import _poolTigraFelineFury from "../pool/tigra-feline-fury.js";
@@ -228,6 +233,7 @@ import _poolValakutInvoker from "../pool/valakut-invoker.js";
 import _poolVandalblast from "../pool/vandalblast.js";
 import _poolVandalize from "../pool/vandalize.js";
 import _poolVanishingVerse from "../pool/vanishing-verse.js";
+import _poolVashtaNerada from "../pool/vashta-nerada.js";
 import _poolVeinRipper from "../pool/vein-ripper.js";
 import _poolVibraniumEnergyDaggers from "../pool/vibranium-energy-daggers.js";
 import _poolVirtuousVariant from "../pool/virtuous-variant.js";
@@ -288,6 +294,7 @@ const shard: CardShard = {
     _poolBorderlandMinotaur,
     _poolBrasssBounty,
     _poolBreenaTheDemagogue,
+    _poolBurstLightning,
     _poolCapashenStandard,
     _poolCarmenCruelSkymarcher,
     _poolCastleVantress,
@@ -379,6 +386,7 @@ const shard: CardShard = {
     _poolMammothSpider,
     _poolManaPrism,
     _poolMandibleJusticiar,
+    _poolMarchFromTheBlackGate,
     _poolMarkOfFury,
     _poolMastersCall,
     _poolMercilessEviction,
@@ -405,6 +413,7 @@ const shard: CardShard = {
     _poolPrimeSpeakerZegana,
     _poolPrimevalHerald,
     _poolProdigiousGrowth,
+    _poolProgenitorMimic,
     _poolProtectorOfGondor,
     _poolPython,
     _poolRainOfFilth,
@@ -418,6 +427,7 @@ const shard: CardShard = {
     _poolRelicBarrier,
     _poolRenegadeTactics,
     _poolRenegadeTroops,
+    _poolRile,
     _poolRimefurReindeer,
     _poolRottedHulk,
     _poolRuneScarredDemon,
@@ -461,6 +471,7 @@ const shard: CardShard = {
     _poolTerrainGenerator,
     _poolTheLordMasterOfHell,
     _poolThermoAlchemist,
+    _poolThopterAssembly,
     _poolThorin,
     _poolTidalKraken,
     _poolTigraFelineFury,
@@ -479,6 +490,7 @@ const shard: CardShard = {
     _poolVandalblast,
     _poolVandalize,
     _poolVanishingVerse,
+    _poolVashtaNerada,
     _poolVeinRipper,
     _poolVibraniumEnergyDaggers,
     _poolVirtuousVariant,

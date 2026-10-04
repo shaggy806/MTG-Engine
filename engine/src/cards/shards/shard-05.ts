@@ -55,6 +55,7 @@ import _poolCleaverRiot from "../pool/cleaver-riot.js";
 import _poolCliffhavenSellSword from "../pool/cliffhaven-sell-sword.js";
 import _poolClifftopLookout from "../pool/clifftop-lookout.js";
 import _poolCloudManta from "../pool/cloud-manta.js";
+import _poolCombatTutorial from "../pool/combat-tutorial.js";
 import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
 import _poolContentiousPlan from "../pool/contentious-plan.js";
@@ -129,6 +130,7 @@ import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
 import _poolJacesSanctum from "../pool/jaces-sanctum.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
+import _poolKellanTheKid from "../pool/kellan-the-kid.js";
 import _poolLeapingMaster from "../pool/leaping-master.js";
 import _poolLeyDruid from "../pool/ley-druid.js";
 import _poolLightningStrike from "../pool/lightning-strike.js";
@@ -160,6 +162,7 @@ import _poolNobleHierarch from "../pool/noble-hierarch.js";
 import _poolNorinTheWary from "../pool/norin-the-wary.js";
 import _poolOakhollowVillage from "../pool/oakhollow-village.js";
 import _poolObsidianGiant from "../pool/obsidian-giant.js";
+import _poolOperaLoveSong from "../pool/opera-love-song.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
 import _poolPactOfNegation from "../pool/pact-of-negation.js";
 import _poolPermissionDenied from "../pool/permission-denied.js";
@@ -202,6 +205,7 @@ import _poolSkyTheaterStrix from "../pool/sky-theater-strix.js";
 import _poolSlagdrillScrapper from "../pool/slagdrill-scrapper.js";
 import _poolSnapcasterMage from "../pool/snapcaster-mage.js";
 import _poolSolRing from "../pool/sol-ring.js";
+import _poolSongOfTheWorldsoul from "../pool/song-of-the-worldsoul.js";
 import _poolSparkReaper from "../pool/spark-reaper.js";
 import _poolSpectatorSeating from "../pool/spectator-seating.js";
 import _poolSpiritSummoning from "../pool/spirit-summoning.js";
@@ -249,6 +253,7 @@ import _poolWarrenWarleader from "../pool/warren-warleader.js";
 import _poolWastelandScorpion from "../pool/wasteland-scorpion.js";
 import _poolWatcherOfTheSpheres from "../pool/watcher-of-the-spheres.js";
 import _poolWatercourser from "../pool/watercourser.js";
+import _poolWellwisher from "../pool/wellwisher.js";
 import _poolWestfoldRider from "../pool/westfold-rider.js";
 import _poolWhispererOfTheWilds from "../pool/whisperer-of-the-wilds.js";
 import _poolWilt from "../pool/wilt.js";
@@ -323,6 +328,7 @@ const shard: CardShard = {
     _poolCliffhavenSellSword,
     _poolClifftopLookout,
     _poolCloudManta,
+    _poolCombatTutorial,
     _poolConquerorsFlail,
     _poolConsulateSkygate,
     _poolContentiousPlan,
@@ -397,6 +403,7 @@ const shard: CardShard = {
     _poolJacesSanctum,
     _poolJasmineBoreal,
     _poolKederektParasite,
+    _poolKellanTheKid,
     _poolLeapingMaster,
     _poolLeyDruid,
     _poolLightningStrike,
@@ -428,6 +435,7 @@ const shard: CardShard = {
     _poolNorinTheWary,
     _poolOakhollowVillage,
     _poolObsidianGiant,
+    _poolOperaLoveSong,
     _poolOverwhelmingStampede,
     _poolPactOfNegation,
     _poolPermissionDenied,
@@ -470,6 +478,7 @@ const shard: CardShard = {
     _poolSlagdrillScrapper,
     _poolSnapcasterMage,
     _poolSolRing,
+    _poolSongOfTheWorldsoul,
     _poolSparkReaper,
     _poolSpectatorSeating,
     _poolSpiritSummoning,
@@ -517,6 +526,7 @@ const shard: CardShard = {
     _poolWastelandScorpion,
     _poolWatcherOfTheSpheres,
     _poolWatercourser,
+    _poolWellwisher,
     _poolWestfoldRider,
     _poolWhispererOfTheWilds,
     _poolWilt,

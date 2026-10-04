@@ -63,6 +63,7 @@ import _poolExpandTheSphere from "../pool/expand-the-sphere.js";
 import _poolEzuriClawOfProgress from "../pool/ezuri-claw-of-progress.js";
 import _poolFatefulEnd from "../pool/fateful-end.js";
 import _poolFelixFiveBoots from "../pool/felix-five-boots.js";
+import _poolFesteringGulch from "../pool/festering-gulch.js";
 import _poolFetidImp from "../pool/fetid-imp.js";
 import _poolFilterOut from "../pool/filter-out.js";
 import _poolFireAmbush from "../pool/fire-ambush.js";
@@ -126,6 +127,7 @@ import _poolLoranOfTheThirdPath from "../pool/loran-of-the-third-path.js";
 import _poolLoreholdPledgemage from "../pool/lorehold-pledgemage.js";
 import _poolLostVale from "../pool/lost-vale.js";
 import _poolLothoCorruptShirriff from "../pool/lotho-corrupt-shirriff.js";
+import _poolLoyalInventor from "../pool/loyal-inventor.js";
 import _poolMaggotTherapy from "../pool/maggot-therapy.js";
 import _poolMakeshiftMunitions from "../pool/makeshift-munitions.js";
 import _poolMarshLurker from "../pool/marsh-lurker.js";
@@ -311,6 +313,7 @@ const shard: CardShard = {
     _poolEzuriClawOfProgress,
     _poolFatefulEnd,
     _poolFelixFiveBoots,
+    _poolFesteringGulch,
     _poolFetidImp,
     _poolFilterOut,
     _poolFireAmbush,
@@ -374,6 +377,7 @@ const shard: CardShard = {
     _poolLoreholdPledgemage,
     _poolLostVale,
     _poolLothoCorruptShirriff,
+    _poolLoyalInventor,
     _poolMaggotTherapy,
     _poolMakeshiftMunitions,
     _poolMarshLurker,

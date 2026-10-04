@@ -19,6 +19,7 @@ import _poolAntQueen from "../pool/ant-queen.js";
 import _poolArborbackStomper from "../pool/arborback-stomper.js";
 import _poolArmoredWarhorse from "../pool/armored-warhorse.js";
 import _poolAscendedLawmage from "../pool/ascended-lawmage.js";
+import _poolAshlingRimebound from "../pool/ashling-rimebound.js";
 import _poolAssassinsTrophy from "../pool/assassins-trophy.js";
 import _poolAuraFracture from "../pool/aura-fracture.js";
 import _poolAutomaticLibrarian from "../pool/automatic-librarian.js";
@@ -65,6 +66,7 @@ import _poolCrashOfRhinos from "../pool/crash-of-rhinos.js";
 import _poolCrestedSunmare from "../pool/crested-sunmare.js";
 import _poolCrosswayTroublemakers from "../pool/crossway-troublemakers.js";
 import _poolDanithaNewBenaliasLight from "../pool/danitha-new-benalias-light.js";
+import _poolDauntlessScrapbot from "../pool/dauntless-scrapbot.js";
 import _poolDauthiVoidwalker from "../pool/dauthi-voidwalker.js";
 import _poolDeadlyInsect from "../pool/deadly-insect.js";
 import _poolDeadlyRollick from "../pool/deadly-rollick.js";
@@ -278,6 +280,7 @@ const shard: CardShard = {
     _poolArborbackStomper,
     _poolArmoredWarhorse,
     _poolAscendedLawmage,
+    _poolAshlingRimebound,
     _poolAssassinsTrophy,
     _poolAuraFracture,
     _poolAutomaticLibrarian,
@@ -324,6 +327,7 @@ const shard: CardShard = {
     _poolCrestedSunmare,
     _poolCrosswayTroublemakers,
     _poolDanithaNewBenaliasLight,
+    _poolDauntlessScrapbot,
     _poolDauthiVoidwalker,
     _poolDeadlyInsect,
     _poolDeadlyRollick,

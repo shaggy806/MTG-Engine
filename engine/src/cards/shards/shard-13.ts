@@ -49,6 +49,7 @@ import _poolCoruscationMage from "../pool/coruscation-mage.js";
 import _poolCragcrownPathway from "../pool/cragcrown-pathway.js";
 import _poolCrawWurm from "../pool/craw-wurm.js";
 import _poolCrazedGoblin from "../pool/crazed-goblin.js";
+import _poolCreamOfTheCrop from "../pool/cream-of-the-crop.js";
 import _poolCruelRevival from "../pool/cruel-revival.js";
 import _poolCrypticCaves from "../pool/cryptic-caves.js";
 import _poolCunningBreezedancer from "../pool/cunning-breezedancer.js";
@@ -128,6 +129,7 @@ import _poolKranioceros from "../pool/kranioceros.js";
 import _poolKutzilMalametExemplar from "../pool/kutzil-malamet-exemplar.js";
 import _poolLegionLoyalty from "../pool/legion-loyalty.js";
 import _poolLightningHelix from "../pool/lightning-helix.js";
+import _poolLordSkittersButcher from "../pool/lord-skitters-butcher.js";
 import _poolLuminousBroodmoth from "../pool/luminous-broodmoth.js";
 import _poolMagmakinArtillerist from "../pool/magmakin-artillerist.js";
 import _poolMagusOfTheBazaar from "../pool/magus-of-the-bazaar.js";
@@ -302,6 +304,7 @@ const shard: CardShard = {
     _poolCragcrownPathway,
     _poolCrawWurm,
     _poolCrazedGoblin,
+    _poolCreamOfTheCrop,
     _poolCruelRevival,
     _poolCrypticCaves,
     _poolCunningBreezedancer,
@@ -381,6 +384,7 @@ const shard: CardShard = {
     _poolKutzilMalametExemplar,
     _poolLegionLoyalty,
     _poolLightningHelix,
+    _poolLordSkittersButcher,
     _poolLuminousBroodmoth,
     _poolMagmakinArtillerist,
     _poolMagusOfTheBazaar,

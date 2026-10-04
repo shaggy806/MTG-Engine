@@ -78,6 +78,7 @@ import _poolFearOfSurveillance from "../pool/fear-of-surveillance.js";
 import _poolFeatherOfFlight from "../pool/feather-of-flight.js";
 import _poolFervor from "../pool/fervor.js";
 import _poolFlameSpirit from "../pool/flame-spirit.js";
+import _poolForlornFlats from "../pool/forlorn-flats.js";
 import _poolFriendlyGhost from "../pool/friendly-ghost.js";
 import _poolGallowsWarden from "../pool/gallows-warden.js";
 import _poolGavonyTrapper from "../pool/gavony-trapper.js";
@@ -249,6 +250,7 @@ import _tokensBeastToken from "../tokens/beast-token.js";
 import _tokensCatBeastToken from "../tokens/cat-beast-token.js";
 import _tokensEldraziToken from "../tokens/eldrazi-token.js";
 import _tokensFungusTokenCantBlock from "../tokens/fungus-token-cant-block.js";
+import _tokensGriffinToken from "../tokens/griffin-token.js";
 import _tokensKnightToken from "../tokens/knight-token.js";
 import _tokensMoloidToken from "../tokens/moloid-token.js";
 import _tokensRedSpiritTokenMenace from "../tokens/red-spirit-token-menace.js";
@@ -331,6 +333,7 @@ const shard: CardShard = {
     _poolFeatherOfFlight,
     _poolFervor,
     _poolFlameSpirit,
+    _poolForlornFlats,
     _poolFriendlyGhost,
     _poolGallowsWarden,
     _poolGavonyTrapper,
@@ -504,6 +507,7 @@ const shard: CardShard = {
     _tokensCatBeastToken,
     _tokensEldraziToken,
     _tokensFungusTokenCantBlock,
+    _tokensGriffinToken,
     _tokensKnightToken,
     _tokensMoloidToken,
     _tokensRedSpiritTokenMenace,

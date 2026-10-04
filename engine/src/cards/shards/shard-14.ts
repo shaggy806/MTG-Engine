@@ -24,6 +24,7 @@ import _poolBartizanBats from "../pool/bartizan-bats.js";
 import _poolBattleMastery from "../pool/battle-mastery.js";
 import _poolBattleRampart from "../pool/battle-rampart.js";
 import _poolBennieBracksZoologist from "../pool/bennie-bracks-zoologist.js";
+import _poolBenthicBiomancer from "../pool/benthic-biomancer.js";
 import _poolBileUrchin from "../pool/bile-urchin.js";
 import _poolBlinkmothNexus from "../pool/blinkmoth-nexus.js";
 import _poolBlisterspitGremlin from "../pool/blisterspit-gremlin.js";
@@ -76,6 +77,7 @@ import _poolDevouringSwarm from "../pool/devouring-swarm.js";
 import _poolDiabolicTutor from "../pool/diabolic-tutor.js";
 import _poolDimirSignet from "../pool/dimir-signet.js";
 import _poolDissentersDeliverance from "../pool/dissenters-deliverance.js";
+import _poolDrannithRuins from "../pool/drannith-ruins.js";
 import _poolDreadwurm from "../pool/dreadwurm.js";
 import _poolDrossCrocodile from "../pool/dross-crocodile.js";
 import _poolDrossforgeBridge from "../pool/drossforge-bridge.js";
@@ -278,6 +280,7 @@ const shard: CardShard = {
     _poolBattleMastery,
     _poolBattleRampart,
     _poolBennieBracksZoologist,
+    _poolBenthicBiomancer,
     _poolBileUrchin,
     _poolBlinkmothNexus,
     _poolBlisterspitGremlin,
@@ -330,6 +333,7 @@ const shard: CardShard = {
     _poolDiabolicTutor,
     _poolDimirSignet,
     _poolDissentersDeliverance,
+    _poolDrannithRuins,
     _poolDreadwurm,
     _poolDrossCrocodile,
     _poolDrossforgeBridge,

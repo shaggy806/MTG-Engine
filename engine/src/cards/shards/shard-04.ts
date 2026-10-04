@@ -94,6 +94,7 @@ import _poolGratefulApparition from "../pool/grateful-apparition.js";
 import _poolGriffinSentinel from "../pool/griffin-sentinel.js";
 import _poolGrimHireling from "../pool/grim-hireling.js";
 import _poolGrislyTransformation from "../pool/grisly-transformation.js";
+import _poolGruffTriplets from "../pool/gruff-triplets.js";
 import _poolHammerheadMaggiaBoss from "../pool/hammerhead-maggia-boss.js";
 import _poolHealerOfThePride from "../pool/healer-of-the-pride.js";
 import _poolHeartwoodTreefolk from "../pool/heartwood-treefolk.js";
@@ -129,6 +130,7 @@ import _poolLaughingJasperFlint from "../pool/laughing-jasper-flint.js";
 import _poolLightningElemental from "../pool/lightning-elemental.js";
 import _poolLordWindgrace from "../pool/lord-windgrace.js";
 import _poolLoyalSubordinate from "../pool/loyal-subordinate.js";
+import _poolMacabreWaltz from "../pool/macabre-waltz.js";
 import _poolMagnifyingGlass from "../pool/magnifying-glass.js";
 import _poolMalcolmKeenEyedNavigator from "../pool/malcolm-keen-eyed-navigator.js";
 import _poolManaConfluence from "../pool/mana-confluence.js";
@@ -202,6 +204,7 @@ import _poolSparringMummy from "../pool/sparring-mummy.js";
 import _poolSpitFlame from "../pool/spit-flame.js";
 import _poolSpringleafDrum from "../pool/springleaf-drum.js";
 import _poolSproutingThrinax from "../pool/sprouting-thrinax.js";
+import _poolSquirrelMob from "../pool/squirrel-mob.js";
 import _poolSquirrelNest from "../pool/squirrel-nest.js";
 import _poolStellaLeeWildCard from "../pool/stella-lee-wild-card.js";
 import _poolSultaiSkullkeeper from "../pool/sultai-skullkeeper.js";
@@ -235,6 +238,7 @@ import _poolUnburiedEarthcarver from "../pool/unburied-earthcarver.js";
 import _poolVampireChampion from "../pool/vampire-champion.js";
 import _poolVaultSkirge from "../pool/vault-skirge.js";
 import _poolVenomizedCat from "../pool/venomized-cat.js";
+import _poolVergeRangers from "../pool/verge-rangers.js";
 import _poolVexingGull from "../pool/vexing-gull.js";
 import _poolViashinoBladescout from "../pool/viashino-bladescout.js";
 import _poolVillageCannibals from "../pool/village-cannibals.js";
@@ -256,6 +260,7 @@ import _tokensSandWarriorToken from "../tokens/sand-warrior-token.js";
 import _tokensSoldierToken from "../tokens/soldier-token.js";
 import _tokensSpawnTokenSpawningPit from "../tokens/spawn-token-spawning-pit.js";
 import _tokensWallToken13 from "../tokens/wall-token-1-3.js";
+import _tokensZombieTokenGeralfVisionaryStitcher from "../tokens/zombie-token-geralf-visionary-stitcher.js";
 
 const shard: CardShard = {
   pool: [
@@ -350,6 +355,7 @@ const shard: CardShard = {
     _poolGriffinSentinel,
     _poolGrimHireling,
     _poolGrislyTransformation,
+    _poolGruffTriplets,
     _poolHammerheadMaggiaBoss,
     _poolHealerOfThePride,
     _poolHeartwoodTreefolk,
@@ -385,6 +391,7 @@ const shard: CardShard = {
     _poolLightningElemental,
     _poolLordWindgrace,
     _poolLoyalSubordinate,
+    _poolMacabreWaltz,
     _poolMagnifyingGlass,
     _poolMalcolmKeenEyedNavigator,
     _poolManaConfluence,
@@ -458,6 +465,7 @@ const shard: CardShard = {
     _poolSpitFlame,
     _poolSpringleafDrum,
     _poolSproutingThrinax,
+    _poolSquirrelMob,
     _poolSquirrelNest,
     _poolStellaLeeWildCard,
     _poolSultaiSkullkeeper,
@@ -491,6 +499,7 @@ const shard: CardShard = {
     _poolVampireChampion,
     _poolVaultSkirge,
     _poolVenomizedCat,
+    _poolVergeRangers,
     _poolVexingGull,
     _poolViashinoBladescout,
     _poolVillageCannibals,
@@ -514,6 +523,7 @@ const shard: CardShard = {
     _tokensSoldierToken,
     _tokensSpawnTokenSpawningPit,
     _tokensWallToken13,
+    _tokensZombieTokenGeralfVisionaryStitcher,
   ],
 };
 

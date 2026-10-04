@@ -44,8 +44,10 @@ import _poolDiscipleOfTheOldWays from "../pool/disciple-of-the-old-ways.js";
 import _poolDoctorDoomKingOfLatveria from "../pool/doctor-doom-king-of-latveria.js";
 import _poolDogmeatEverLoyal from "../pool/dogmeat-ever-loyal.js";
 import _poolDreamTwist from "../pool/dream-twist.js";
+import _poolDustBowl from "../pool/dust-bowl.js";
 import _poolEdenSeatOfTheSanctum from "../pool/eden-seat-of-the-sanctum.js";
 import _poolEloiseNephaliaSleuth from "../pool/eloise-nephalia-sleuth.js";
+import _poolElvishRejuvenator from "../pool/elvish-rejuvenator.js";
 import _poolEmberwildeCaptain from "../pool/emberwilde-captain.js";
 import _poolEmeriaAngel from "../pool/emeria-angel.js";
 import _poolErraticVisionary from "../pool/erratic-visionary.js";
@@ -127,6 +129,7 @@ import _poolNyxbornBrute from "../pool/nyxborn-brute.js";
 import _poolOgreResister from "../pool/ogre-resister.js";
 import _poolOracleOfMulDaya from "../pool/oracle-of-mul-daya.js";
 import _poolOrazcaFrillback from "../pool/orazca-frillback.js";
+import _poolOrcristGoblinCleaver from "../pool/orcrist-goblin-cleaver.js";
 import _poolPersist from "../pool/persist.js";
 import _poolPiggyBank from "../pool/piggy-bank.js";
 import _poolPrismariTheInspiration from "../pool/prismari-the-inspiration.js";
@@ -236,6 +239,7 @@ import _tokensConstructTokenArtifactCount from "../tokens/construct-token-artifa
 import _tokensElfDruidToken from "../tokens/elf-druid-token.js";
 import _tokensOxToken from "../tokens/ox-token.js";
 import _tokensPlantToken from "../tokens/plant-token.js";
+import _tokensWhaleToken from "../tokens/whale-token.js";
 import _tokensWormToken from "../tokens/worm-token.js";
 
 const shard: CardShard = {
@@ -281,8 +285,10 @@ const shard: CardShard = {
     _poolDoctorDoomKingOfLatveria,
     _poolDogmeatEverLoyal,
     _poolDreamTwist,
+    _poolDustBowl,
     _poolEdenSeatOfTheSanctum,
     _poolEloiseNephaliaSleuth,
+    _poolElvishRejuvenator,
     _poolEmberwildeCaptain,
     _poolEmeriaAngel,
     _poolErraticVisionary,
@@ -364,6 +370,7 @@ const shard: CardShard = {
     _poolOgreResister,
     _poolOracleOfMulDaya,
     _poolOrazcaFrillback,
+    _poolOrcristGoblinCleaver,
     _poolPersist,
     _poolPiggyBank,
     _poolPrismariTheInspiration,
@@ -475,6 +482,7 @@ const shard: CardShard = {
     _tokensElfDruidToken,
     _tokensOxToken,
     _tokensPlantToken,
+    _tokensWhaleToken,
     _tokensWormToken,
   ],
 };

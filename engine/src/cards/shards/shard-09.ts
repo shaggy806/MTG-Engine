@@ -17,6 +17,7 @@ import _poolArgivianArchaeologist from "../pool/argivian-archaeologist.js";
 import _poolArwenMortalQueen from "../pool/arwen-mortal-queen.js";
 import _poolArwenWeaverOfHope from "../pool/arwen-weaver-of-hope.js";
 import _poolAsgardianCitadel from "../pool/asgardian-citadel.js";
+import _poolAshlingRekindled from "../pool/ashling-rekindled.js";
 import _poolAspiringAeronaut from "../pool/aspiring-aeronaut.js";
 import _poolAuraMutation from "../pool/aura-mutation.js";
 import _poolAyaraFirstOfLocthwain from "../pool/ayara-first-of-locthwain.js";
@@ -121,6 +122,7 @@ import _poolLifebloodHydra from "../pool/lifeblood-hydra.js";
 import _poolLightningArmyOfOne from "../pool/lightning-army-of-one.js";
 import _poolLordOfTheUndead from "../pool/lord-of-the-undead.js";
 import _poolLushPortico from "../pool/lush-portico.js";
+import _poolMagebaneLizard from "../pool/magebane-lizard.js";
 import _poolMagicDamper from "../pool/magic-damper.js";
 import _poolMagusOfTheWheel from "../pool/magus-of-the-wheel.js";
 import _poolManaGeyser from "../pool/mana-geyser.js";
@@ -159,6 +161,7 @@ import _poolPlumecreedEscort from "../pool/plumecreed-escort.js";
 import _poolPrakhataClubSecurity from "../pool/prakhata-club-security.js";
 import _poolPricklyBoggart from "../pool/prickly-boggart.js";
 import _poolPrimalRage from "../pool/primal-rage.js";
+import _poolProsperousBandit from "../pool/prosperous-bandit.js";
 import _poolPunySnack from "../pool/puny-snack.js";
 import _poolRageReflection from "../pool/rage-reflection.js";
 import _poolRainSlickedCopse from "../pool/rain-slicked-copse.js";
@@ -180,6 +183,7 @@ import _poolSavaiCrystal from "../pool/savai-crystal.js";
 import _poolScourForScrap from "../pool/scour-for-scrap.js";
 import _poolScourFromExistence from "../pool/scour-from-existence.js";
 import _poolScouringSwarm from "../pool/scouring-swarm.js";
+import _poolScrybRanger from "../pool/scryb-ranger.js";
 import _poolSedgemoorWitch from "../pool/sedgemoor-witch.js";
 import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
 import _poolSerrasSanctum from "../pool/serras-sanctum.js";
@@ -236,6 +240,7 @@ import _poolWallOfDenial from "../pool/wall-of-denial.js";
 import _poolWatchfulAutomaton from "../pool/watchful-automaton.js";
 import _poolWaveWingElemental from "../pool/wave-wing-elemental.js";
 import _poolWeiInfantry from "../pool/wei-infantry.js";
+import _poolWhiteLotusHideout from "../pool/white-lotus-hideout.js";
 import _poolWickerboughElder from "../pool/wickerbough-elder.js";
 import _poolWildfire from "../pool/wildfire.js";
 import _poolWilyGoblin from "../pool/wily-goblin.js";
@@ -274,6 +279,7 @@ const shard: CardShard = {
     _poolArwenMortalQueen,
     _poolArwenWeaverOfHope,
     _poolAsgardianCitadel,
+    _poolAshlingRekindled,
     _poolAspiringAeronaut,
     _poolAuraMutation,
     _poolAyaraFirstOfLocthwain,
@@ -378,6 +384,7 @@ const shard: CardShard = {
     _poolLightningArmyOfOne,
     _poolLordOfTheUndead,
     _poolLushPortico,
+    _poolMagebaneLizard,
     _poolMagicDamper,
     _poolMagusOfTheWheel,
     _poolManaGeyser,
@@ -416,6 +423,7 @@ const shard: CardShard = {
     _poolPrakhataClubSecurity,
     _poolPricklyBoggart,
     _poolPrimalRage,
+    _poolProsperousBandit,
     _poolPunySnack,
     _poolRageReflection,
     _poolRainSlickedCopse,
@@ -437,6 +445,7 @@ const shard: CardShard = {
     _poolScourForScrap,
     _poolScourFromExistence,
     _poolScouringSwarm,
+    _poolScrybRanger,
     _poolSedgemoorWitch,
     _poolSeraphOfDawn,
     _poolSerrasSanctum,
@@ -493,6 +502,7 @@ const shard: CardShard = {
     _poolWatchfulAutomaton,
     _poolWaveWingElemental,
     _poolWeiInfantry,
+    _poolWhiteLotusHideout,
     _poolWickerboughElder,
     _poolWildfire,
     _poolWilyGoblin,
