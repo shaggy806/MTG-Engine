@@ -219,7 +219,7 @@ describe('scheduleEvents', () => {
   it('peels an impulse draw of two like a mill of two', () => {
     const s = scheduleEvents([exiled([['a', 'p1'], ['b', 'p1']])], 'precombat-main')
     expect(s.totalMs).toBe(millDurationMs(2))
-    expect(libraryPeels(s.items.map((i) => i.event))).toEqual([
+    expect(libraryPeels(s.items.map((i) => i.event))).toMatchObject([
       { player: 'p1', parts: [{ exile: true, count: 2, startStep: 0 }] },
     ])
   })
@@ -232,7 +232,7 @@ describe('scheduleEvents', () => {
     expect(s.items.map((i) => i.offset)).toEqual([0, 0, 0, 0])
     expect(s.totalMs).toBe(millDurationMs(4))
     // …because they're one library's four cards in one sequence.
-    expect(libraryPeels(run)).toEqual([{ player: 'p1', parts: [{ exile: true, count: 4, startStep: 0 }] }])
+    expect(libraryPeels(run)).toMatchObject([{ player: 'p1', parts: [{ exile: true, count: 4, startStep: 0 }] }])
   })
 
   it("scales a run's beat with the viewer speed, and keeps it under reduced motion", () => {
@@ -273,7 +273,7 @@ describe('scheduleEvents', () => {
       exiled([['c', 'p1']]),
       exiled([['d', 'p1']]),
     ]
-    expect(libraryPeels(run)).toEqual([
+    expect(libraryPeels(run)).toMatchObject([
       {
         player: 'p1',
         parts: [
@@ -281,6 +281,17 @@ describe('scheduleEvents', () => {
           { exile: true, count: 2, startStep: 2 },
         ],
       },
+    ])
+    // Each card, in order, with the event it left in — what names its face.
+    expect(libraryPeels(run)[0].parts.map((p) => p.cards.map((c) => [c.object, c.seq]))).toEqual([
+      [
+        ['a', run[0].seq],
+        ['b', run[0].seq],
+      ],
+      [
+        ['c', run[1].seq],
+        ['d', run[2].seq],
+      ],
     ])
     expect(scheduleEvents(run, 'precombat-main').totalMs).toBe(MILL_STEP_MS + 3 * MILL_STAGGER_MS)
   })
@@ -297,16 +308,16 @@ describe('scheduleEvents', () => {
     ])
   })
 
-  it("keeps a run's later members when its beat fills the frame to the ceiling", () => {
-    // Two casts, a death and a resolve (4.54 s) leave 1.46 s of the 6 s —
-    // exactly seven cards peeling. The run's first event pays for the whole
-    // beat; the other six peel within it rather than being dropped.
+  it("keeps a run's later members when its beat nearly fills the frame", () => {
+    // A cast, a death and a resolve, then seven cards peeling: the run's
+    // first event pays for the whole beat, and the other six peel within it
+    // rather than being dropped as if each needed a beat of its own.
+    const before = [cast(), dies(), ev({ type: 'spell-resolved', object: 's1' })]
+    const base = scheduleEvents(before, 'precombat-main').totalMs
     const run = Array.from({ length: 7 }, (_, i) => exiled([[`c${i}`, 'p1']]))
-    const s = scheduleEvents(
-      [cast(), cast(), dies(), ev({ type: 'spell-resolved', object: 's1' }), ...run],
-      'precombat-main',
-    )
-    expect(s.totalMs).toBe(6000)
+    const s = scheduleEvents([...before, ...run], 'precombat-main')
+    expect(s.totalMs).toBe(base + millDurationMs(7))
+    expect(s.totalMs).toBeLessThanOrEqual(6000)
     expect(types(s.items).filter((t) => t === 'cards-put-into-exile')).toHaveLength(7)
   })
 

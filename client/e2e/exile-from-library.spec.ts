@@ -30,6 +30,10 @@ function pageErrors(page: Page): string[] {
  * showed, in order. */
 interface PeelRecord {
   floats: string[]
+  /** Every card face seen peeling, by name, and the most cardbacks seen
+   * peeling at once with no face behind them. */
+  faces: string[]
+  backsOnly: number
   maxPeeling: number
   stack: { delay: number; number: string }[]
   libraryCounts: Record<string, string[]>
@@ -37,7 +41,7 @@ interface PeelRecord {
 
 async function recordPeels(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const record: PeelRecord = { floats: [], maxPeeling: 0, stack: [], libraryCounts: {} }
+    const record: PeelRecord = { floats: [], faces: [], backsOnly: 0, maxPeeling: 0, stack: [], libraryCounts: {} }
     ;(window as unknown as { peels: PeelRecord }).peels = record
     // Watching the document itself: an init script runs before it has any
     // element, `documentElement` included.
@@ -52,12 +56,17 @@ async function recordPeels(page: Page): Promise<void> {
     }).observe(document, { childList: true, subtree: true })
     const sample = (): void => {
       const peeling = [...document.querySelectorAll<HTMLElement>('.peel-card')]
+      for (const name of document.querySelectorAll('.peel-front .ct-name')) {
+        const text = name.textContent ?? ''
+        if (text !== '' && !record.faces.includes(text)) record.faces.push(text)
+      }
+      record.backsOnly = Math.max(record.backsOnly, peeling.filter((el) => !el.querySelector('.peel-front')).length)
       if (peeling.length > record.maxPeeling) {
         record.maxPeeling = peeling.length
         // Document order is paint order: they share one z-index.
         record.stack = peeling.map((el) => ({
           delay: Number(el.getAnimations()[0]?.effect?.getTiming().delay ?? NaN),
-          number: el.textContent ?? '',
+          number: el.querySelector('.card-back-count')?.textContent ?? '',
         }))
       }
       for (const el of document.querySelectorAll('[data-library-count-of]')) {
@@ -79,6 +88,8 @@ const clearPeels = (page: Page): Promise<void> =>
   page.evaluate(() => {
     const record = (window as unknown as { peels: PeelRecord }).peels
     record.floats = []
+    record.faces = []
+    record.backsOnly = 0
     record.maxPeeling = 0
     record.stack = []
     record.libraryCounts = {}
@@ -212,5 +223,67 @@ test("exiling the top twenty, and each player's top card, at four players", asyn
   // Bob's ran down in steps (52, 49, 47, … 32) rather than in one jump.
   const steps = seen.libraryCounts.bob.filter((c) => /^library (3[3-9]|4\d|5[01])$/.test(c))
   expect(steps.length, String(seen.libraryCounts.bob)).toBeGreaterThanOrEqual(5)
+  expect(errors).toEqual([])
+})
+
+const SHOTS = process.env.E2E_SHOTS_DIR
+
+test('cards exiled face up show their faces as they peel; face-down ones stay cardbacks', async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(120_000)
+  await resetRoom(request, 'EXILE')
+  const errors = pageErrors(page)
+  await recordPeels(page)
+  await takeSeat(page, 'EXILE')
+  await clearPeels(page)
+
+  // Reckless Impulse: the top two, face up.
+  await cast(page, 'Reckless Impulse')
+  await passButton(page).click()
+  if (SHOTS !== undefined) {
+    await expect(page.locator('.peel-front .card-tile').first()).toBeVisible(paced)
+    await page.waitForTimeout(500)
+    await page.screenshot({ path: `${SHOTS}/peel-faces.png` })
+  }
+  await peelsPlayed(page, 1)
+  let seen = await peels(page)
+  expect(seen.faces.sort()).toEqual(['Forest', 'Island'])
+  expect(seen.backsOnly).toBe(0)
+
+  // A cascade: its misses go back under the library, and still show.
+  await clearPeels(page)
+  await cast(page, 'Bloodbraid Elf')
+  await passButton(page).click()
+  await expect(page.getByText('Cast Divination without paying its mana cost')).toBeVisible(paced)
+  await expect(page.locator('.peel-card')).toHaveCount(0, paced)
+  seen = await peels(page)
+  expect(seen.faces).toEqual(expect.arrayContaining(['Mountain', 'Plains', 'Divination']))
+  expect(errors).toEqual([])
+})
+
+test("a face-down exile peels as cardbacks, to everyone", async ({ page, request }) => {
+  test.setTimeout(120_000)
+  await resetRoom(request, 'EXILE')
+  const errors = pageErrors(page)
+  await recordPeels(page)
+  await takeSeat(page, 'EXILE')
+  await clearPeels(page)
+
+  // Outrageous Robbery: bob exiles his top X face down (only alice may look).
+  await cast(page, 'Outrageous Robbery')
+  const x = page.locator('.controls input[type="number"]')
+  if (await x.isVisible()) {
+    await x.fill('3')
+    await page.locator('.controls').getByRole('button', { name: 'Confirm' }).click()
+  }
+  const bob = page.locator('[data-player-id="bob"]').first()
+  if (await bob.isVisible()) await bob.click()
+  await passButton(page).click()
+  await peelsPlayed(page, 1)
+  const seen = await peels(page)
+  expect(seen.faces).toEqual([])
+  expect(seen.backsOnly).toBeGreaterThan(0)
   expect(errors).toEqual([])
 })

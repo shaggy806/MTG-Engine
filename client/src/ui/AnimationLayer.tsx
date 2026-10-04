@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import type {
   GameEvent,
   ObjectId,
@@ -10,7 +11,10 @@ import type {
   TargetRef,
   VisibleObject,
 } from 'engine/client'
+import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
+import { defToVisible } from './defToVisible.ts'
+import { loadCard, peekCard } from '../cards/cardData.ts'
 import { playerLabel, seatClassOf } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from 'protocol'
@@ -949,13 +953,32 @@ function runBounce(object: ObjectId, prev: PlayerView | null): void {
  * the number the pile's cardback shows while it's the top card, so the
  * count on the pile itself is seen running down too.
  */
-function runMill(events: readonly GameEvent[]): void {
-  for (const { player, parts } of libraryPeels(events)) peelFrom(player, parts)
+function runMill(events: readonly GameEvent[], view: PlayerView): void {
+  for (const { player, parts } of libraryPeels(events)) peelFrom(player, parts, view)
+}
+
+/** What a card peeling off a library shows: the card it was publicly known
+ * as when it left (`publicNameAt` — milled into a graveyard, exiled face up,
+ * revealed by a cascade), or `null` for one nobody saw, which stays a
+ * cardback (a card exiled face down). The shown board's own object when it's
+ * still that card — with its owner's printing — or else one made from its
+ * definition: a cascade's misses have gone back under the library by now.
+ * `later` when that definition hasn't been fetched yet. */
+type PeelFace = { readonly now: VisibleObject } | { readonly later: Promise<VisibleObject | null> } | null
+
+function peelFace(card: { readonly object: ObjectId; readonly seq: number }, view: PlayerView): PeelFace {
+  const name = publicNameAt(view.publicStints, card.object, card.seq)
+  if (name === undefined) return null
+  const shown = view.objects[card.object]
+  if (shown !== undefined && (shown.faceName === name || shown.cardName === name)) return { now: shown }
+  const def = peekCard(name)
+  if (def) return { now: defToVisible(def) }
+  return { later: loadCard(name).then((d) => (d ? defToVisible(d) : null)) }
 }
 
 /** The cards of one library's `parts` peeling off the top of `player`'s
  * pile, each part where the one before it left off — see {@link runMill}. */
-function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
+function peelFrom(player: PlayerId, parts: readonly PeelPart[], view: PlayerView): void {
   const pile = document.querySelector<HTMLElement>(`[data-library-of="${CSS.escape(player)}"]`)
   // What peels, and what the total floats off: the card the pile shows.
   const top = libraryCardOf(player)
@@ -1035,13 +1058,17 @@ function peelFrom(player: PlayerId, parts: readonly PeelPart[]): void {
           )
     left += part.count
     landed[intoKey] += part.count
-    peelCards(top, shown, part.exile, begin, numbers, place)
+    const faces = part.cards.slice(0, shown).map((c) => peelFace(c, view))
+    peelCards(top, shown, part.exile, begin, numbers, place, faces)
   }
 }
 
-/** `shown` cardbacks peeling off `top` (a library pile's card),
+/** `shown` cards peeling off `top` (a library pile's card),
  * `MILL_STAGGER_MS` apart from `begin`, each showing its entry in `numbers`
- * if there are any, each put on the page by `place` — see {@link runMill}. */
+ * if there are any, each put on the page by `place` — see {@link runMill}.
+ * A card with a face in `faces` turns over as it lifts off and is held,
+ * fanned out beside the pile so a run of them can be read, before it drops
+ * away (milled) or flares off (exiled); one without stays a cardback. */
 function peelCards(
   top: HTMLElement,
   shown: number,
@@ -1049,6 +1076,7 @@ function peelCards(
   begin: number,
   numbers: readonly number[] | null,
   place: (card: HTMLElement) => void,
+  faces: readonly PeelFace[] = [],
 ): void {
   const duration = scaled(MILL_STEP_MS)
   const stagger = scaled(MILL_STAGGER_MS)
@@ -1057,6 +1085,12 @@ function peelCards(
   if (r.width === 0) return
   // Card-shaped, even off a pile with no card left to measure.
   const height = Math.min(r.height, r.width * 1.4)
+  // The faces fan out towards the middle of the screen, each a little past
+  // the one before, grown to be read: at least 170px wide, whatever the size
+  // of the pile they came off (a short screen's is small).
+  const grow = Math.min(2.2, Math.max(1.35, 170 / r.width))
+  const step = r.width * grow * 0.62
+  const toward = r.left + r.width / 2 > window.innerWidth / 2 ? -1 : 1
   for (let i = 0; i < shown; i += 1) {
     const card = document.createElement('div')
     card.className = 'peel-card'
@@ -1064,7 +1098,7 @@ function peelCards(
     card.style.top = `${r.top}px`
     card.style.width = `${r.width}px`
     card.style.height = `${height}px`
-    const back = card.appendChild(document.createElement('div'))
+    const back = document.createElement('div')
     back.className = 'card-back'
     const number = numbers?.[i]
     if (number !== undefined) {
@@ -1072,58 +1106,119 @@ function peelCards(
       count.className = 'card-back-count'
       count.textContent = String(number)
     }
+    const face = faces[i] ?? null
+    const delay = begin + i * stagger
+    if (face === null) {
+      card.appendChild(back)
+      place(card)
+      animateBack(card, exile, reduced, duration, delay)
+      continue
+    }
+    // Two sides, turned together: the back on the pile, the face behind it.
+    card.style.setProperty('--card-w', `${r.width}px`)
+    const flip = card.appendChild(document.createElement('div'))
+    flip.className = 'peel-flip'
+    back.classList.add('peel-side')
+    if (!reduced) flip.appendChild(back)
+    const front = flip.appendChild(document.createElement('div'))
+    front.className = reduced ? 'peel-side peel-front peel-front-flat' : 'peel-side peel-front'
+    // Until the card is drawn (a definition still loading), it's a cardback.
+    front.appendChild(document.createElement('div')).className = 'card-back'
     place(card)
-    // Each animation's filters are one list of functions, so they
-    // interpolate: two lists that differ animate discretely, and Chromium
-    // painted a mill's last filter from the start — its cards waiting their
-    // turn came out black, though their computed style said otherwise.
+    const root = createRoot(front)
+    const render = (obj: VisibleObject | null): void => {
+      if (obj !== null && card.isConnected) root.render(<CardTile obj={obj} layout="art-first" />)
+    }
+    if ('now' in face) render(face.now)
+    else void face.later.then(render, () => {})
+    const dx = toward * step * (i + 1)
+    const end = exile
+      ? { transform: `translate(${dx}px, -95%) scale(${grow * 1.1})`, filter: 'grayscale(1) brightness(2.2) blur(3px)' }
+      : { transform: `translate(${dx}px, 15%) scale(${grow * 0.85})`, filter: 'grayscale(1) brightness(0.4) blur(0px)' }
+    const held = { transform: `translate(${dx}px, -60%) scale(${grow})`, filter: 'grayscale(0) brightness(1) blur(0px)' }
     const frames: Keyframe[] = reduced
-      ? exile
-        ? [
-            { opacity: 1, filter: 'brightness(1) saturate(1)' },
-            { opacity: 0, filter: 'brightness(1.8) saturate(0.3)' },
-          ]
-        : [
-            { opacity: 1, filter: 'grayscale(0) brightness(1)' },
-            { opacity: 0, filter: 'grayscale(1) brightness(0.5)' },
-          ]
-      : exile
-        ? [
-            {
-              opacity: 1,
-              transform: 'translateY(0) rotateY(0deg)',
-              filter: 'brightness(1) saturate(1) blur(0px) drop-shadow(0 0 0px rgba(150, 220, 255, 0))',
-            },
-            {
-              opacity: 1,
-              transform: 'translateY(-25%) rotateY(70deg)',
-              filter: 'brightness(2) saturate(1) blur(0px) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
-              offset: 0.45,
-            },
-            {
-              opacity: 0,
-              transform: 'translateY(-55%) rotateY(90deg) scale(1.1)',
-              filter: 'brightness(2.4) saturate(0) blur(4px) drop-shadow(0 0 12px rgba(150, 220, 255, 0))',
-            },
-          ]
-        : [
-            { opacity: 1, transform: 'translate(0, 0) rotateY(0deg)', filter: 'grayscale(0) brightness(1)' },
-            { opacity: 1, transform: 'translate(0, -30%) rotateY(70deg)', offset: 0.4 },
-            {
-              opacity: 0,
-              transform: 'translate(8%, 25%) rotateY(90deg) scale(0.85)',
-              filter: 'grayscale(1) brightness(0.4)',
-            },
-          ]
-    const a = card.animate(frames, {
-      duration,
-      delay: begin + i * stagger,
-      easing: 'ease-in-out',
-      fill: 'both',
-    })
-    a.onfinish = () => card.remove()
-    a.oncancel = () => card.remove()
+      ? [
+          { opacity: 1, filter: 'grayscale(0) brightness(1) blur(0px)' },
+          { opacity: 1, filter: 'grayscale(0) brightness(1) blur(0px)', offset: 0.75 },
+          { opacity: 0, filter: end.filter },
+        ]
+      : [
+          { opacity: 1, transform: 'translate(0px, 0%) scale(1)', filter: 'grayscale(0) brightness(1) blur(0px)' },
+          { opacity: 1, transform: `translate(${dx * 0.35}px, -60%) scale(${grow})`, offset: 0.25 },
+          { opacity: 1, ...held, offset: 0.4 },
+          { opacity: 1, ...held, offset: 0.78 },
+          { opacity: 0, ...end },
+        ]
+    const timing: KeyframeAnimationOptions = { duration, delay, easing: 'ease-in-out', fill: 'both' }
+    const a = card.animate(frames, timing)
+    if (!reduced) {
+      flip.animate(
+        [
+          { transform: 'rotateY(0deg)' },
+          { transform: 'rotateY(180deg)', offset: 0.25 },
+          { transform: 'rotateY(180deg)' },
+        ],
+        timing,
+      )
+    }
+    const done = (): void => {
+      card.remove()
+      // Unmounted after this task: React won't unmount a root mid-commit.
+      window.setTimeout(() => root.unmount(), 0)
+    }
+    a.onfinish = done
+    a.oncancel = done
   }
+}
+
+/** A cardback peeling off a pile, for a card nobody saw — see
+ * {@link peelCards}. */
+function animateBack(card: HTMLElement, exile: boolean, reduced: boolean, duration: number, delay: number): void {
+  // Each animation's filters are one list of functions, so they
+  // interpolate: two lists that differ animate discretely, and Chromium
+  // painted a mill's last filter from the start — its cards waiting their
+  // turn came out black, though their computed style said otherwise.
+  const frames: Keyframe[] = reduced
+    ? exile
+      ? [
+          { opacity: 1, filter: 'brightness(1) saturate(1)' },
+          { opacity: 0, filter: 'brightness(1.8) saturate(0.3)' },
+        ]
+      : [
+          { opacity: 1, filter: 'grayscale(0) brightness(1)' },
+          { opacity: 0, filter: 'grayscale(1) brightness(0.5)' },
+        ]
+    : exile
+      ? [
+          {
+            opacity: 1,
+            transform: 'translateY(0) rotateY(0deg)',
+            filter: 'brightness(1) saturate(1) blur(0px) drop-shadow(0 0 0px rgba(150, 220, 255, 0))',
+          },
+          {
+            opacity: 1,
+            transform: 'translateY(-25%) rotateY(70deg)',
+            filter: 'brightness(2) saturate(1) blur(0px) drop-shadow(0 0 12px rgba(150, 220, 255, 0.95))',
+            offset: 0.45,
+          },
+          {
+            opacity: 0,
+            transform: 'translateY(-55%) rotateY(90deg) scale(1.1)',
+            filter: 'brightness(2.4) saturate(0) blur(4px) drop-shadow(0 0 12px rgba(150, 220, 255, 0))',
+          },
+        ]
+      : [
+          { opacity: 1, transform: 'translate(0, 0) rotateY(0deg)', filter: 'grayscale(0) brightness(1)' },
+          { opacity: 1, transform: 'translate(0, -30%) rotateY(70deg)', offset: 0.4 },
+          {
+            opacity: 0,
+            transform: 'translate(8%, 25%) rotateY(90deg) scale(0.85)',
+            filter: 'grayscale(1) brightness(0.4)',
+          },
+        ]
+  const a = card.animate(frames, { duration, delay, easing: 'ease-in-out', fill: 'both' })
+  a.onfinish = () => card.remove()
+  a.oncancel = () => card.remove()
 }
 
 /**
@@ -1460,7 +1555,7 @@ export function AnimationLayer({
       // So are cards leaving libraries: a run of them shares one beat (one
       // delay), and plays as one, each library's cards in one sequence
       // (`runMill`).
-      const mills = new Map<number, GameEvent[]>()
+      const mills = new Map<number, { events: GameEvent[]; view: PlayerView }>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -1505,15 +1600,15 @@ export function AnimationLayer({
           continue
         }
         if (cardsOffLibraries(cue.event) > 0) {
-          const run = mills.get(cue.delay) ?? []
-          run.push(cue.event)
+          const run = mills.get(cue.delay) ?? { events: [], view: cue.view }
+          run.events.push(cue.event)
           mills.set(cue.delay, run)
           continue
         }
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
-      for (const [delay, run] of mills) window.setTimeout(() => runMill(run), delay)
+      for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
     })
   }, [bus])
 

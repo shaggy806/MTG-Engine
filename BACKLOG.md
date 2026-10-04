@@ -466,10 +466,6 @@ not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an 
   pile and the counts run down, then jump back when the board lands. A reverse peel onto the pile
   would close it, once the move back announces itself: `finishCascade` and `placeRevealed` move
   the cards with no event (`cards-put-on-bottom` is only a hand's).
-- **Cards milled or exiled from the top of a library should render as the actual card, not a
-  cardback** (the user, 2026-10-03). Today every peel (`runMill` in `AnimationLayer.tsx`) is a
-  generic cardback, so what a mill, cascade or impulse draw took is only in the zone viewers and
-  the History. Show each card's face as it peels off; a card exiled face down stays generic.
 - **A permanent exiled from the battlefield animates filters that don't interpolate**: `runDeath`'s
   exile keyframes go `brightness blur` → `brightness saturate drop-shadow` → `brightness saturate
   blur`, lists that differ, so the filter steps discretely. The mill peel's did the same and

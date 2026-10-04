@@ -53,10 +53,12 @@ export const HURT_STEP_MS = 700
 /** One card leaving a library from the top (milled, or exiled), shown on the
  * library pile itself: there's no graveyard or exile drawn on the table for
  * it to travel to. The cards peel off one after another, `MILL_STAGGER_MS`
- * apart, so a mill of three looks like three — see {@link millDurationMs}. */
-export const MILL_STEP_MS = 560
+ * apart, so a mill of three looks like three — see {@link millDurationMs}.
+ * Long enough to read: a card that goes face up (anything but a face-down
+ * exile) turns over and is held, fanned out beside the pile, before it goes. */
+export const MILL_STEP_MS = 1100
 /** How long after one card starts peeling off the next one does. */
-export const MILL_STAGGER_MS = 150
+export const MILL_STAGGER_MS = 200
 /** At most this many cards peel off one by one; past it the pile's count
  * still runs all the way down, a few cards to a step. */
 export const MAX_PEELED = 8
@@ -80,6 +82,10 @@ export function millDurationMs(count: number): number {
 export interface PeelPart {
   /** Exiled from the top, rather than milled. */
   readonly exile: boolean
+  /** Each card, in the order it left, with the event it left in — what the
+   * card was publicly known as at that moment, if anything, is its face
+   * (`publicNameAt`). */
+  readonly cards: readonly { readonly object: ObjectId; readonly seq: number }[]
   /** How many cards. At most `MAX_PEELED` of them are shown peeling. */
   readonly count: number
   /** How many `MILL_STAGGER_MS` steps after the run starts this part's
@@ -109,20 +115,23 @@ export interface LibraryPeel {
  * side by side, as "each player mills three" always has.
  */
 export function libraryPeels(events: readonly GameEvent[]): LibraryPeel[] {
-  const byPlayer = new Map<PlayerId, { exile: boolean; count: number }[]>()
-  const add = (player: PlayerId, exile: boolean, count: number): void => {
+  const byPlayer = new Map<PlayerId, { exile: boolean; count: number; cards: { object: ObjectId; seq: number }[] }[]>()
+  const add = (player: PlayerId, exile: boolean, objects: readonly ObjectId[], seq: number): void => {
     const parts = byPlayer.get(player) ?? []
     const last = parts.at(-1)
-    if (last !== undefined && last.exile === exile) last.count += count
-    else parts.push({ exile, count })
+    const cards = objects.map((object) => ({ object, seq }))
+    if (last !== undefined && last.exile === exile) {
+      last.count += objects.length
+      last.cards.push(...cards)
+    } else parts.push({ exile, count: objects.length, cards })
     byPlayer.set(player, parts)
   }
   for (const ev of events) {
     if (ev.type === 'cards-milled') {
-      if (ev.objects.length > 0) add(ev.player, false, ev.objects.length)
+      if (ev.objects.length > 0) add(ev.player, false, ev.objects, ev.seq)
     } else if (ev.type === 'cards-put-into-exile') {
       // Exile is one shared zone: each arrival names whose library it left.
-      for (const a of ev.arrivals) if (a.from === 'library') add(a.owner, true, 1)
+      for (const a of ev.arrivals) if (a.from === 'library') add(a.owner, true, [a.object], ev.seq)
     }
   }
   return [...byPlayer].map(([player, parts]) => {
