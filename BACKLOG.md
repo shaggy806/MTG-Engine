@@ -4,44 +4,60 @@ What is left to do, and nothing else. Each item is one line that points to where
 lives. Finished work belongs in `git log` and in the design records' `Status:` lines, not here.
 When something lands, delete its line. When you find something new, add one.
 
+## Questions for the user
+
+Each waits on a decision only the user can make. Once one is answered, move the work it
+decides into its section below.
+
+- **Where should a bot's fallback deck come from?** A bot seat with no deck falls back to the
+  first four `SAMPLE_DECKS` by seat (`server/src/decks.ts`): Temur Roar, Sultai Arisen, Abzan
+  Armor, Mardu Surge. So bob's bot brings Sultai Arisen, which the deck run found the bots
+  can't pilot (it's been off the bench since 2026-10-02). Should a fallback come from the four
+  `bench` decks (Abzan Armor, Jeskai Striker, Token Triumph, Reign of Dragons) instead?
+- **How should we say which turn it is, and for whom?** A turn number counts every player's
+  turns, so at a four-player table "turn 37" is the first player's 10th turn, which reads as a
+  much longer game than it is. Where should the more specific form apply (the client, bench
+  output, docs, commit messages), and what should it look like?
+- **What should the engine-test audit look for, and what should it produce?** The idea (raised
+  2026-09-27) is to go through the engine suite and check what it actually guards. The suite is
+  now 559 files and about 5,550 tests.
+- **Build text changing properly, or remove it?** `change-text` / `choose-text` have no card
+  since Artificial Evolution was removed (2026-09-28): it swapped one creature type on the
+  type line from a fixed 12-type menu, not "all instances" across the card's text. Either
+  build real layer-3 text changing (every creature-type word in a card's abilities, every
+  creature type offered, spells as targets) or remove the effect and the decision kind.
+
 ## Commander gap (the current priority)
 
 **388 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
-that one card is the reason the deck exists.
+that one card is the reason the deck exists. Live numbers for everything below come from
+`npm run cmdrs:gaps -w engine`.
 
-- **Ready to author, no engine work: none left** (2026-10-02: Tifa Lockhart, Yarok, Storm,
-  Force of Nature, Prismari and Teval, Arbiter of Virtue were the last).
-- **Build down the greedy order.** `npm run cmdrs:gaps -w engine` ranks every missing engine
-  feature over `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to
-  that file's `built` array and author the commanders it unblocks in the same commit. The next
-  ones, engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+1 —
-  Karn, Legacy Reforged, whose deny-list mana is built), `zone:visibility-extensions` (+1),
-  `keyword:mayhem` (+1).
-- **Most-needed features overall.** `effect:may-sacrifice-then` (13),
-  `decision:choose-permanent` (11).
-  `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
-  Narset; storm asks too); `effect:copy-spell-extensions`, `condition:cast-spell-targets` and
-  `replacement:spell-exiled-as-it-resolves` on 2026-10-03 (Zada, Feather, Krark, Ivy, Kalamax,
-  Volo, Stella Lee, Fire Lord Azula, Alania, Imodane). Orvar still needs
-  `decision:choose-permanent` and `trigger:discards-extensions`, Mendicant Core
-  `mechanic:speed`, Ulalek `effect:copy-ability` and colourless hybrid. `zone:exile-face-down`
-  (Edward Kenway) was split out of `zone:visibility-extensions` and built, and so was its "look
-  at the top card any time" (2026-10-03, with casting from the top). Live numbers come
-  from `cmdrs:gaps`.
+- **Ready to author, no engine work: none.** Jasmine Boreal of the Seven was listed as ready,
+  but her real blocker is the mana-restriction gap under Engine rules gaps, now recorded in her
+  gaps record as `cost:mana-restriction-at-cast`.
+- **Build down the greedy order.** `cmdrs:gaps` ranks every missing engine feature over
+  `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to that file's
+  `built` array and author the commanders it unblocks in the same commit. The next ones,
+  engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+2, Karn,
+  Legacy Reforged among them), `effect:missing-tokens`, `keyword:decayed` and
+  `trigger:activates-ability` (+1 each).
+- **Most-needed features overall.** `effect:cast-during-resolution` (10),
+  `effect:attach-extensions` (7), `zone:visibility-extensions` and `effect:missing-tokens` (6
+  each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
+  `cost:colorless-hybrid-mana` and `keyword:devoid`.
 - **UI-bound features.** These need a new client decision and a browser check:
-  `effect:may-sacrifice-then` (13), `decision:choose-permanent`
-  (11) and `effect:cast-during-resolution` (10 — partly built on 2026-09-30 as the `cast-now`
-  effect; what's left is in its `top-commanders-gaps.json` description),
-  `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
+  `effect:cast-during-resolution` (10; partly built on 2026-09-30 as the `cast-now` effect, and
+  what's left is in its `top-commanders-gaps.json` description), `effect:attach-extensions` (7),
+  `cost:sacrifice-multiple`, `decision:choose-permanent` and
+  `decision:choose-from-zone-extensions` (5 each). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
-- **Speed waits on the client** (AUTHORING §15). Speed
-  (`mechanic:speed` — Mendicant Core, Vnwxt, the four Raceways, Howlsquad Heavy) needs the
+- **Speed waits on the client** (AUTHORING §15). Speed (`mechanic:speed`) blocks Mendicant
+  Core, Vnwxt, the four Raceways and Howlsquad Heavy, and Max speed's 34 cards. It needs the
   player panel to show a player's speed and the stack to draw its inherent trigger, which has
-  no source (rule 702.179d); Mendicant Core also needs `effect:copy-spell-extensions`.
-- **A commander dropped by its review.** Aragorn, the Uniter needs scry to let the player order
-  the kept cards (`decision:library-ordering`).
+  no source (rule 702.179d).
 
 ## Card backlog (top-5000 staples and the precons)
 
@@ -67,47 +83,50 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   the TDC decks for authoring.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
-  premium removal fired at weak targets; Sultai's and Mardu's plan-gutting stand-ins.
-- **"You may search" isn't optional on 35 cards.** Their `search-library` has `min: 0` and no
-  `may` around it (Primal Druid), so declining still searches and shuffles, which a library
-  ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
+  premium removal fired at weak targets.
+- **"You may search" isn't optional on about 35 cards.** Their `search-library` has `min: 0` and
+  no `may` around it (Primal Druid), so declining still searches and shuffles, which a library
+  ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest. Not
+  to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
+  whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
   `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,403 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
-  past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more
-  than one spell each turn", the legendary sorcery restriction (205.4e), library ordering
-  (`decision:library-ordering`), "sacrifice any number" as a spell's additional cost
-  (`cost:sacrifice-multiple`'s remainder — Dargo, Plumb the Forbidden; "sacrifice N" and "X"
-  costs landed 2026-10-03) and improvise.
-- **The win-game cards still blocked** (winning and losing landed 2026-10-03,
-  `win-game.test.ts`): Mechanized Production and Liliana's Contract count artifacts or Demons
-  "with the same name" / "with different names", but tokens are keyed by disambiguated registry
-  names, not their rule-111.4 names (two Golem tokens from different cards share a name), and
-  Mechanized Production also copies "enchanted artifact" as it last existed; Final Fortune and
-  Last Chance lose at "that turn's end step" (a delayed trigger tied to one extra turn); Halo
-  Fountain untaps creatures as a cost; Darksteel Reactor is a state trigger (603.8); The Golden
-  Throne replaces losing the game; Out of the Tombs replaces an empty-library draw with a choice
-  from the graveyard; Maze's End returns itself to hand as a cost.
-- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (2026-10-03, built
-  for Approach of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu,
-  Ilharg, Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
+  past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
+  one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
+  spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
+  improvise, and a card's own permission to be cast from its graveyard where
+  `castFromGraveyardIf` doesn't reach (recheck each record against it).
+- **The win-game cards still blocked** (`win-game.test.ts`): Mechanized Production and Liliana's
+  Contract count artifacts or Demons "with the same name" / "with different names", but tokens
+  are keyed by disambiguated registry names, not their rule-111.4 names (two Golem tokens from
+  different cards share a name), and Mechanized Production also copies "enchanted artifact" as it
+  last existed; Final Fortune and Last Chance lose at "that turn's end step" (a delayed trigger
+  tied to one extra turn); Halo Fountain untaps creatures as a cost; Darksteel Reactor is a state
+  trigger (603.8); The Golden Throne replaces losing the game; Out of the Tombs replaces an
+  empty-library draw with a choice from the graveyard; Maze's End returns itself to hand as a
+  cost.
+- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (built for Approach
+  of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu, Ilharg,
+  Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
   Necrodominance. Recheck each against its Oracle text; most need something else too.
 - **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
   gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
-  still skip these, each recorded as blocked on it: Rishkar's Expertise, Jodah, the Unifier (a
-  `reveal-until` whose `then` is a free `cast-now`), Kellan, the Kid, Descendants' Path and
+  still skip these, each recorded as blocked on it: Kellan, the Kid, Descendants' Path and
   Buster Sword. Recheck each against its Oracle text before authoring it.
-- **Cards a built feature may have unblocked.** A copy's new targets (2026-09-30) was the most
-  recorded blocker across sweep 2 and 3. The "ready now" pass (2026-10-03) authored 14 of the
-  cards citing it (Thousand-Year Storm, Reverberate, Chain of Vapor, Lithoform Engine, …) and
-  found what else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need (`docs/card-blockers.md`, "Ready now"). Still to recheck: the other records citing
-  `decision:copy-new-targets` (Loki Laufeyson, …), and the leads that pass opened (Venser,
-  Shaper Savant; Strionic Resonator; Battlemage's Bracers).
+- **Cards a built feature may have unblocked.**
+  - A copy's new targets: the "ready now" pass authored 18 of the cards citing it and found what
+    else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need (`docs/card-blockers.md`,
+    "Ready now"). Still to recheck: the other records citing `decision:copy-new-targets` (Loki
+    Laufeyson, …) and Venser, Shaper Savant.
+  - A linked exile (`exile`'s `linked`, built for Colfenor's Urn): Pit of Offerings' "exile up to
+    three target cards from graveyards … any of the exiled cards' colors" was waiting on it (an
+    `add-mana` `colorAmong` with `zone: "exiled-with-source"`).
 - **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
   mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
   by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
-  carry yet (`evokeCostsOf` in `game.ts`). Fury needs a triggered ability's divided damage too.
+  carry yet (`evokeCostsOf` in `game.ts`).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
   amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
@@ -116,32 +135,47 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
   the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
   modes".
-- **Host-trigger cards, 34 left**: each blocked by something shared with other cards. See
+- **Host-trigger cards, 28 left**: each blocked by something shared with other cards. See
   `neededCards-features.md`, "Host triggers".
-- **EDH-popularity feature tiers.** Tier 2 is Spree and Class. Tier 3 is Discover, Evoke and
-  Reconfigure. Also open:
-  damage doubling as a replacement, the rest of the Overload/free-cast/convoke families, and the
-  items listed under each "still open". See `neededCards-features.md`, "Open: the card backlog".
-- **More Oracle-parser templates.** Every card the parser reads whole is in the pool: 4,205 of
-  them, each reviewed against its Oracle text, rulings and tokens (card sweep 3, 2026-09-25).
-  `npm run card:scaffold -w engine -- --report --all` now finds none left: 26,469
-  Commander-legal cards remain, each with a line the parser can't read. It reads the cost or
-  trigger of 16,853 of their abilities and the effect of 22% of those. The unread lines that
-  recur most are the next templates: an ability's "Choose one —" (266), Crew (180),
-  "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
+- **EDH-popularity feature tiers.** Tier 2 is Class. Tier 3 is Discover and Reconfigure. Also
+  open: the rest of the Overload/free-cast/convoke families, and the items listed under each
+  "still open". See `neededCards-features.md`, "Open: the card backlog".
+- **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
+  which changes how its line works. The scaffolder leaves them to author:
+  - Power-up is built, and 21 of its 37 cards are authored; the 16 left are in
+    `docs/card-blockers.md`.
+  - A Case's To solve and Solved (13 each).
+  - Forecast (11).
+  - Companion (10; see "Not modeled") and Max speed (34; see the Speed item above).
+  Exhaust and Boast are read, as the ability flags the engine already has.
+- **Library-ordering and cost leftovers** (`docs/card-blockers.md`): Kozilek, the Great
+  Distortion needs an ability's X announced with no `{X}` in its cost, read by both a discard
+  filter ("a card with mana value X") and its target ("spell with mana value X"); Scroll Rack
+  needs "put that many cards from the top of your library into your hand" (not a draw) and an
+  effect that puts several targeted cards on top in an order the player picks
+  (`beginLibraryOrder` would ask it); a spell's additional "exile a card from your graveyard"
+  cost isn't built (an activated ability's is `exileFromGraveyard`).
+- **More Oracle-parser templates.** Every card the parser reads whole is in the pool. As of
+  card sweep 3 (2026-09-25): 4,205 of them, each reviewed against its Oracle text, rulings and
+  tokens, and 26,469 Commander-legal cards left, each with a line the parser can't read. The
+  parser read the cost or trigger of 16,853 of their abilities, and the effect of 22% of those.
+  Rerun `npm run card:scaffold -w engine -- --report --all` for today's figures. The unread
+  lines that recurred most are the next templates: an ability's "Choose one —" (266), Crew
+  (180), "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
   `npm run card:parse-check -w engine` at zero disagreements, then `--auto-scan --all` writes
   what it unlocks to `review/` for checking.
 - **The limitation ledger.** Protection from a filter is built (2026-09-21); what its "19 cards"
   still hides is protection *granted* by an effect with a duration (Akroma's Will, Mother of
   Runes), protection from a chosen colour, and player protection (The One Ring, Teferi's
-  Protection). Beyond it: the "put into a graveyard from anywhere" trigger and "as this enters"
-  on a non-cast permanent. See `neededCards-features.md`, "The limitation ledger", and
-  `cards/AUTHORING.md` §15.
+  Protection). Beyond it: "as this enters" on a non-cast permanent. See
+  `neededCards-features.md`, "The limitation ledger", and `cards/AUTHORING.md` §15.
 - **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
   the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
-  one-off requests. 44 of its cards are still missing, and 7 of those aren't in the top-5000
-  list, so nothing else tracks them. Their `FEATURE:` notes date from the P0–P20 passes, so
-  re-check each one against the engine before building for it.
+  one-off requests. 22 of its cards are still missing, and 7 of those aren't in the top-5000
+  list, so nothing else tracks them: Incinerator of the Guilty, Mirror Room, Walk-In Closet,
+  Ureni, the Song Unending, World War Hulk, Greater Gargadon and Kavaron, Memorial World.
+  Their `FEATURE:` notes date from the P0–P20 passes, so re-check each one against the engine
+  before building for it.
 
 ## Engine rules gaps
 
@@ -153,11 +187,8 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 - **A mana restriction reads the spell before it's cast.** `ManaRestriction.spell` is matched
   against the card in its pre-cast zone, so an ability a static grants a spell as it's cast
   (Abaddon the Despoiler's cascade) is missed: Jasmine Boreal of the Seven's "only to cast
-  creature spells with no abilities" (her ruling) would wrongly pay for it. She waits on it.
-- **A targeted exile can't be linked to its source.** `exile` has no `exiledWith` link (only
-  `look-and-choose`'s `"exile"` / `"exile-face-down"` destinations do), so Pit of Offerings'
-  "exile up to three target cards from graveyards … any of the exiled cards' colors" (an
-  `add-mana` `colorAmong` with `zone: "exiled-with-source"`) waits on it.
+  creature spells with no abilities" (her ruling) would wrongly pay for it. She waits on it
+  (`cost:mana-restriction-at-cast` in the gaps JSON).
 - **Suspend's time-counter triggers don't use the stack.** Rule 702.62a makes "remove a time
   counter" and "when the last is removed, you may play it" triggered abilities; `upkeepStep` does
   both as the upkeep begins (`castSuspendedCard`), so nobody can respond between them.
@@ -165,7 +196,8 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   ("a card", no quality) must find that many while the library has them. Twelve tutors author it
   `search-library` with `filter: {}` and `min: 0` (Demonic Tutor, Vampiric Tutor, Imperial Seal,
   Grim Tutor, Razaketh …); it's `min: 1`, as Entomb and Insatiable Avarice have it — the search
-  already clamps `min` to what's there.
+  already clamps `min` to what's there. Don't sweep these together with the card backlog's
+  "You may search" cards, which need a `may` instead.
 - **704.5h reads "dealt deathtouch damage this turn", not "since the last state-based check".**
   `markedByDeathtouch` lasts until cleanup (`recordDamage`'s excess-damage reading uses it too),
   so a creature that survived deathtouch damage while indestructible is destroyed if it loses
@@ -203,30 +235,18 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   (`xPlanFor`), so Chord of Calling under Teval, Arbiter of Virtue can't reach the X both would
   pay together, and its offer's convoke proof and delve ranges are each worked out without the
   other. Needs a joint plan: convoke the creatures, delve the rest of the generic.
+- **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
+  the target-count range. This is latent: no pool card has both.
 - **The least X a top-of-library cast allows is searched only up to the mana a player can make**
   (`libraryTopMinX`, ceiling `manaCapacity`): an {X} spell that convoke or delve could pay up to
   Glarb, Calamity's Augur's mana value 4 isn't offered from the top.
-- **A smarter default trigger order.** A player who orders their own triggers is asked (the
-  `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
-  included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order
-  (`triggerPlacement` in `game.ts`). A heuristic could do better — card draw before a discard,
-  pumps before the attack they matter for — built from cases that come up in real games.
 - **Not modeled.** Battles, phasing, dungeons/Initiative/the Ring (Lord of the Nazgûl's
   "protection from Ring-bearers" is authored as inert on the strength of this: revisit it when
-  the Ring lands), banding, Companion,
-  snow *sources* (snow mana is generic), and full text-change beyond one creature-type word.
-  ROADMAP's Phase 10 deferred these as large or niche. None of them blocks ordinary Commander
-  play. The alt-cast long tail left by Phase 6 (retrace, Warp, Bestow, Prototype, …) is in
-  AUTHORING §15 and the limitation ledger.
-- **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
-  which changes how its line works. The scaffolder leaves them to author:
-  - Power-up is built, and 21 of its 37 cards are authored; the 16 left are in
-    `docs/card-blockers.md`.
-  - Max speed (34): needs `mechanic:speed`.
-  - A Case's To solve and Solved (13 each).
-  - Forecast (11).
-  - Companion (10).
-  Exhaust and Boast are read, as the ability flags the engine already has.
+  the Ring lands), banding, Companion, snow *sources* (snow mana is generic), face-down
+  permanents (morph, manifest, cloak; face-down exile is built), and full text-change beyond
+  one creature-type word. ROADMAP's Phase 10 deferred these as large or niche. None of them
+  blocks ordinary Commander play. The alt-cast long tail left by Phase 6 (retrace, Warp,
+  Bestow, Prototype, …) is in AUTHORING §15 and the limitation ledger.
 - **"Whenever you activate an ability" (Rings of Brighthearth).** `activates-ability` offers
   only `who: "attached"`. Cycling's draw is on the stack now (an ability object sourced from the
   cycled card), so a cycling activation would be one more for it to see.
@@ -259,25 +279,23 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   to wait for).
 - **A Siege's chosen side as it leaves.** `chosenOnEnter` isn't in `LastKnownInfo`, so a
   `chosen-on-enter`-gated leaves-the-battlefield trigger (Outpost Siege's "Dragons") doesn't
-  look back at a Siege dying with the creatures. (A trigger already on the stack resolves
-  whatever became of its source — rule 113.7a, fixed 2026-10-03.)
+  look back at a Siege dying with the creatures.
 - **A look at nothing still asks.** `look-and-choose` over an empty library (Thassa's Oracle
   at devotion 2 with no cards left) raises a `choose-from-zone` with no cards in it; it should
   skip straight to what follows.
-- **Static-effect dependency ordering** (rule 613.8) is not implemented. Statics apply in
-  timestamp order only.
+- **Static-effect dependency ordering** (rule 613.8) is implemented only for layer 4's additive
+  type grants (Kudo beside Mishra's Factory, `characteristics.ts`). Every other layer applies
+  its statics in timestamp order only.
 - **The rest of leaving the game** (rule 800.4). 800.4a is modeled (`leaveGame`), and so is
   800.4m (a duration tied to a departed player's next turn lasts until it would have begun).
   Not yet: a decision a departed player would have made (800.4g–h: another player makes it),
   and an effect ending that hands a permanent back to a departed default controller (800.4c:
   it's exiled instead).
-- **Dividing among targets: what's left.** A *spell's* "N damage divided as you choose among
-  any number of targets" is built (2026-10-01 — Magma Opus: `CardDefinition.divided`, the
-  cast's `division`, `damage-divided`, the client's division step), and so is an activated or
-  triggered ability's (2026-10-03 — `divided` on the ability, the activation's or the
-  `choose-targets` answer's `division`: Skarrgan Hellkite, Dragonlord Atarka, Inferno Titan).
-  Not yet: an X total (Fire Covenant), and "distribute N counters among" (Lathiel). See
-  `neededCards-features.md`, "Unbounded targeting".
+- **Dividing among targets: what's left.** A spell's and an ability's fixed "N damage divided as
+  you choose" are built (`divided`, the `division` answer). Not yet: an X total (Fire Covenant),
+  and "distribute N counters among" in general (Lathiel; Earth Crystal's "two counters among
+  one or two" runs through a `target-chosen` conditional). See `neededCards-features.md`,
+  "Unbounded targeting".
 - **A token copy isn't asked its "as this enters" choice** (a token copy of Clone, Morophon or
   Urza's Incubator), though the gaps list marks `bug:as-enters-choices-any-entry` built. See
   AUTHORING §15.
@@ -285,16 +303,13 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   never lets the player keep fewer (to sacrifice more for death triggers). The `choose-permanents`
   decision could ask it.
 - **Proliferate over a token stack.** A stack is one proliferate entry and every member gets the
-  counter; choosing some of them isn't built. (Splitting a stack across attackers or blockers is,
-  since 2026-09-28.) See `docs/plans/token-stack-choices.md`.
+  counter; choosing some of them isn't built. See `docs/plans/token-stack-choices.md`.
 - **Distinct targets in one token stack.** An "another target" relation (`distinctTargets`, an
   `any-number` group) names a stack once (`otherSlotConflict`, `slotOptions`), so "two target
   creatures", Terastodon's three, Curse of the Swine's X or Pest Infestation's up to X can't take
   two tokens of one stack (five Treasures in one stack are one target). Needs the relation checks
   to allow a repeat up to `stackCount` and a client control for picking a stack more than once.
   See `docs/plans/token-stack-choices.md`.
-- **Resolve-hatch sweep.** Convert the remaining imperative `resolve` cards to a declarative
-  `effect`.
 - **A commander put into a library from a graveyard, exile or the stack isn't offered the
   command zone** (rule 903.9b: "from anywhere"). `moveObject`'s 903.9b deferral covers a move
   to a hand from elsewhere and a move off the battlefield; a `choose-from-zone` putting one
@@ -302,106 +317,42 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   Teferi's Puzzle Box). Noxious Revival on a commander left in a graveyard puts it on top of
   the library without asking.
 - **A token stack tapping fires `becomes-tapped` once.** `permanent-untapped` scales a
-  trigger by the stack's `stackCount` (Mesmeric Orb, 2026-10-03); `permanent-tapped` doesn't,
-  so a tap-all over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
+  trigger by the stack's `stackCount` (Mesmeric Orb); `permanent-tapped` doesn't, so a tap-all
+  over a stack of Dwarf tokens makes one Treasure under Magda, not one per token.
 - **Creatures leave combat as the end of combat step begins, not as it ends** (rule 511.3: "As
   soon as the end of combat step ends, all creatures … are removed from combat"). `enterStep`
   runs `endCombatStep` as that step's turn-based action, so in its priority window nothing is
   attacking or blocking any more: an "at end of combat" trigger (511.2) that asks whether its
-  creature is attacking finds it isn't. Found 2026-10-03 while measuring when a stack's woken
-  attackers fold back (`token-stacking.test.ts`).
-- **Tokens that attacked stay split off their stack until cleanup**, even when they come out of
-  combat identical, or all get the same counter from an attack trigger: ten such Warriors are
-  ten objects (and, with counters, ten board tiles) through the second main phase.
-  `refoldSplitTokens` skips them because `turnHistory.attackers` counts each creature once by
-  object, and a stack folded mid-turn would attack in a second combat as itself plus fresh
-  tokens split off it, counted again (Windbrisk Heights, `token-stack-refold.test.ts`). Folding
-  them needs the history to know a split-off token's stack already attacked — say, count only
-  attackers that hadn't attacked yet this turn (`attackedThisTurn` before the declaration).
-  Not a rules gap: nothing plays differently. Found in review, 2026-10-03.
-- **Library-ordering and cost leftovers** (2026-10-03, `library-ordering.test.ts`,
-  `graveyard-exile-cost.test.ts`): Kozilek, the Great Distortion needs an ability's X
-  announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value
-  X") and its target ("spell with mana value X"); Scroll Rack needs "put that many cards from
-  the top of your library into your hand" (not a draw) and an effect that puts several
-  targeted cards on top in an order the player picks (`beginLibraryOrder` would ask it); a
-  spell's additional "exile a card from your graveyard" cost isn't built (an activated
-  ability's is `exileFromGraveyard`).
+  creature is attacking finds it isn't (`token-stacking.test.ts`).
 
 ## Bots
 
-The plan of record is `docs/plans/bot-effect-knowledge.md`: keep v2, give it an effect-aware
-base, retire v3. One line per step still open:
+Every step of `docs/plans/bot-effect-knowledge.md` (keep v2, give it an effect-aware base,
+retire v3) has landed. What's open is tuning: the items below, and the ones waiting on a live
+game to show a problem, listed in that plan's "Watching live games for" (wraths since
+`threat`, pumping an opponent's attacker, the `"acting"` rollout, big boards and deep stacks
+under count budgets).
 
-- **More training scenarios.** 83 hand-built scenarios gate (`bot/scenarios.ts`); 2026-10-02
-  added blocks, attack targets, answers on the stack (a pump against burn, Counterspell and
-  Heroic Intervention against a wrath, Fog against lethal) and sequencing; two found bugs,
-  since fixed (no answer to its own wrath, no chip damage at four players). More come from
-  live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which `bot:scenarios` and `bot:fit-scenarios`
-  read as training scenarios, as does each blunder `bot:behaviour` shows. `npm run
-  bot:captures -w engine` lists them with v2's answer today; once one is fixed, `-- resolve`
-  moves it to `captures/resolved/`, where it gates. Planeswalkers, double blocks, flash
-  and cantrips added the same day. Not yet covered: mulligans (`mulligan-policy.test.ts`).
-
-Beyond that plan:
-
+- **More training scenarios.** 102 hand-built scenarios, 99 of them gating
+  (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
+  live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
+  `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
+  `bot:behaviour` shows. `npm run bot:captures -w engine` lists them with v2's answer today;
+  once one is fixed, `-- resolve` moves it to `captures/resolved/`, where it gates.
 - **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
   Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a
   Grizzly Bears (worth 4.6 to counter, largely `threat`). If live games show it holding one
   into a loss, or spending one on a small creature, capture the position: a reserve scaled by
   opponents' cards in hand is the obvious next shape.
-- **Watch the wraths since `threat`.** With the threat term (2026-09-27) v2 casts more
-  sweepers: in six four-player games, Cleansing Nova three times (at 33, 19 and 5 life) and
-  Blasphemous Act over recasting its commander, and a turn-7 Magmaquake over Thunderbreak
-  Regent. At low life that's right; at 33 it's a judgment call. The gate's "wraths when far
-  behind" and "keeps its own winning board" hold. If a live game shows a wasted wrath, capture
-  it: the scenario is what would say whether `threat` needs a cap or a sweeper needs pricing.
-  Since `drawEngines` 4 (same day) Cleansing Nova's artifact-and-enchantment mode and removal
-  go after opponents' draw engines too, and one edict took the bot's own commander (Emmara)
-  over Mentor of the Meek, a judgment call worth capturing if it recurs.
-- **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
-  (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
-  attacks someone else, and then with help that ends at end of turn, on a creature goaded by
-  us, or — lasting help — only when it kills the player attacked. Temporary pumps on someone
-  else's attacker (Kessig Wolf Run, Unleash Fury) remain allowed and still cost mana the
-  evaluation can't see (`untappedMana` is 0): if they come up too often in live games, capture
-  one — the scenario says whether they need a price.
-- **The rollout still can't see our own later spells — tried, level.** Pumps wait for combat
-  and the upkeep's mana waits for the main phase (`wastedNow`, `holdsManaForMain`), but inside a
-  main phase or combat the default rollout passes at every window, so v2 can't see what a spell
-  it hasn't cast yet would have done with mana it spends now. The `"acting"` rollout policy
-  (2026-09-28, `simulate.ts`) lets our own seat play the rest of its turn as v1, with ties
-  against passing going to acting (without that the bot put its plays off — tested). It sees two
-  Grizzly Bears over one Rumbling Baloth with four mana, but benched **level**: 26.0%
-  [21.8, 30.6] against three default v2s over 400 four-player games (`bot:bench
-  --candidate-options '{"rollout":"acting"}' --opponent shipped-2026-09-27c`), with 23 games
-  timing out at 300 s. Opt-in, not the default. Worth another look only with a cheaper v1 in the
-  rollout or a reason to expect a different result.
-- **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
-  takes 258 s (705 before 2026-09-27's fixes), and an ordinary four-player game's first 40
-  turns 10.5 s (13.1 before the last two). Profiled after them, what's left is the engine's real
-  work: state-based actions folding every permanent's characteristics each check
-  (`stateBasedGraveyardMoves`, ~13%), the characteristics fold itself, and cloning states for
-  the search (~9%). Tried and dropped, each measured at nothing: a per-region cache of condition
-  answers (116 hits in 58,000 — a region lasts one event), deferring conditional trigger grants
-  in the scan (under 2% once filters read types lazily), and a shared mana scan for casting
-  (0.3% of an ordinary game). Live rooms stop at 300 ms, so this is the bench's time limit and a
-  thinner search, not a hang. A second shape, deep stacks rather than wide boards: seed 313 of
-  the 2026-10-02 A/B bench timed out on Jeskai's spell engine (Veyran doubling triggers,
-  Archmage Emeritus, copies of its own spells) — 73 items on the stack and ~110 permanents on
-  turn 42, each decision 5-30 s because every simulation resolves the whole stack. All seats
-  there were the old build, but nothing since makes the new one cheaper on it.
 - **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
   since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
-  `docs/plans/precon-decks.md`), four flagged `bench`. A bot seat still falls back to the first
-  four by seat (`server/src/decks.ts`): Temur Roar, Sultai Arisen, Abzan Armor, Mardu Surge — so
-  bob's bot brings Sultai Arisen, which the deck run found the bots can't pilot (off the bench since
-  2026-10-02). For the user: whether a bot's fallback should come from the bench decks. Still
-  unscoped: decks across a range of power levels for bots to bring, and how a host picks one.
-- **More deck biases.** `engine/src/deck-bias.ts` (2026-10-02, `docs/plans/deck-biases.md`)
-  lets a commander's deck aim effects the other way and value its own board differently; Teval
-  is the one entry. Add one when a live game shows a deck's bot playing against its plan, with a
-  gate scenario that fails without it. Kinds not built: cards to cast first or hold, attack
+  `docs/plans/precon-decks.md`), four flagged `bench`. Still unscoped: decks across a range of
+  power levels for bots to bring, and how a host picks one. (Where a bot's fallback comes from
+  is a question at the top.)
+- **More deck biases.** `engine/src/deck-bias.ts` (`docs/plans/deck-biases.md`) lets a
+  commander's deck aim effects the other way and value its own board differently; Teval is the
+  one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
+  scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
 - **Skullclamp and Deadly Dispute on a 1/1 token.** v2 passes on both (training scenario
   "Skullclamps a 1/1 token for two cards"; Deadly Dispute probed 2026-10-03, cast on a Treasure
@@ -410,12 +361,19 @@ Beyond that plan:
   `bot:fit-scenarios` finds `creatures` 2.5 → 2 breaks no gate scenario. Tried 2026-10-02:
   `bot:diff` over six four-player games changed 12 of 11,553 decisions, mostly more token blocks
   and removal ahead of creatures, Sakura-Tribe Elder's land taken (right) and a 1/1 Rat token
-  chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than Skullclamp: a small creature's flat value is the
-  question, weighed against the chump blocks it would bring back.
+  chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than
+  Skullclamp: a small creature's flat value is the question, weighed against the chump blocks it
+  would bring back.
 - **Picking a card for an opponent.** A `choose-from-zone` with `forPlayer` (Tasigur, the Golden
   Fang's "a nonland card of an opponent's choice") goes through the bots' ordinary
   `chooseFromZone`, which takes what it would want for itself — so a bot hands Tasigur's
   controller its best card rather than its worst.
+- **A smarter default trigger order.** A player who orders their own triggers is asked (the
+  `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
+  included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order
+  (`triggerPlacement` in `game.ts`). That order is legal; a heuristic could play better — card
+  draw before a discard, pumps before the attack they matter for — built from cases that come up
+  in real games.
 
 ## Client / UI
 
@@ -425,11 +383,11 @@ Beyond that plan:
   the engine side is `promptNextGift`.
 - **What the scenario builder can't say yet** (`docs/plans/scenario-builder.md`). A
   `ScenarioSpec` has no controller apart from the owner (a stolen permanent), no transformed or
-  face-down card, no damage marked, no effects lasting a turn, nothing on the stack, and play
-  always starts on turn 1 — so "Edit from here" leaves all of those behind. A commander placed in
-  a library goes to its bottom, whatever its place in the list. Each is a field on
-  `ScenarioCard`/`ScenarioSpec` and a step in `server/src/builder.ts`'s `buildScenario` and
-  `snapshotScenario`.
+  face-down card, no damage marked, no effects lasting a turn, nothing on the stack, and no turn
+  number (play starts on turn 1, though `active`/`step` set whose turn and which step) — so
+  "Edit from here" leaves all of those behind. A commander placed in a library goes to its
+  bottom, whatever its place in the list. Each is a field on `ScenarioCard`/`ScenarioSpec` and a
+  step in `server/src/builder.ts`'s `buildScenario` and `snapshotScenario`.
 - **A creature's total toxic value isn't in the player view.** `Characteristics.toxic` (rule
   702.164b) isn't a `Keyword`, so `VisibleObject.keywords` leaves it out: a Rat that
   Karumonix, the Rat King gives toxic 1 shows nothing, and only a printed "Toxic N" is readable,
@@ -439,25 +397,72 @@ Beyond that plan:
   the popup prints mode texts as they are, so a player with a display name is offered by the
   wrong one. The modes need to say which player each is, for the client to label with
   `playerLabel`.
+- **Face-down permanents should sit on their controller's board, and turning one face up should
+  work like any other activated ability** (the user's ask): a click on the card opens the same
+  little menu another permanent's activated abilities use, with "turn face up" in it when the
+  card can be turned face up. Blocked on the engine: there are no face-down permanents yet
+  (morph, manifest and cloak are "Not modeled").
+- **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
+  eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
+  art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
+  `CommanderTile` (command zone), `CommanderDamageChip`, the card back, `CardImage` (library,
+  replacement review), the lobby's `CommanderArt`, `PrintingPicker`'s thumbnails, the deck
+  builder's text rows and the landing hero. Each shape answers a size the others can't, so
+  merging them isn't worth it. What is duplicated is the art lookup:
+  `queueArtLookup` / `isArtPending` / `resolveArtUrl` / `recordArtFailure` and the tint
+  fallback, repeated in `CardTile`, `MiniTile`, `CommanderTile`, `CommanderDamageChip`,
+  `CardImage` and `deck-builder/ReplacementReview.tsx` (`CommanderArt` only resolves a URL).
+  Extract one `ArtCrop` component; and `PrintingPicker`'s raw `<img>` could be a `CardImage`.
+- **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
+  own menu entry only while the list stays small (two colours up to X = 22). Past that it
+  offers all of one type per type, and a count picker would let the player choose any split.
+  And when the payer taps such a source for more than a payment needs, the player can't choose
+  the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
+- **Quality-of-life room options (house rules).** Options the room creator can turn on before a
+  game that are technically against the rules but make play smoother. The user's example: mana
+  that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
+  cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
+  since the engine otherwise follows the Comprehensive Rules exactly.
+- **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
+- **The library and the deck builder load every card definition.** Both fetch all 32 card
+  shards (`client/src/cards/cardData.ts`): about 3.1 MB, 610 kB gzipped, at 5,400 cards, and
+  growing with the pool. They read only printed fields, each ability's text (colour identity)
+  and the tokens a card makes. A generated catalog of just those, sharded the same way, would be
+  a fraction of the size. The game page loads no definitions up front.
+- **Long rules text is hidden behind the creature stat line** (the user, 2026-10-03). The
+  art-first layout fits its text to the box (hand, cast spotlight); the title layout
+  (`CardTile.tsx`'s fit returns early for it: hover cards, the stack) doesn't fit at all, so
+  Abdel Adrian's text still runs under its 4/4 box there. Long text should fit or shrink so the
+  P/T box never covers it, in every layout.
+- **"Same for all" covers only a trigger's yes-or-no "you may"**
+  (`GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
+  "you may" asked after another decision in the same resolution (it parks, and loses
+  `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
+  granted (`grantedAbility` kind `modifier`, which has no signature).
+- **A new attack arrow's head lands before its line.** An attack arrow draws itself in along
+  its length (`arrow-draw`, `client/src/ui/ArrowLayer.tsx`), but its head is a marker on the
+  same path, drawn whole from the first frame, so it sits on the defender before the line gets
+  there. Resolving arrows put the head on a sliver path of its own that waits for the line
+  (`.arrow-tip`); attack arrows could do the same.
 
 ### Legibility of play: animation and pacing (the user's list, 2026-09-30)
 
-The build order and design are in `docs/plans/legibility-of-play.md`; every step of it has
-shipped (2026-09-30), so what's left here is follow-ups. The problem is that a bot turn can't be
-followed by eye, even at the slow bot speed. Only some kinds of event hold the game up for their
-animation (`PACED` in `client/src/game/animationSchedule.ts`: a card played, a combat hit, a
-permanent leaving, a tap, something leaving the stack, a trigger's source lighting up, a
-permanent arriving, counters, buffs, a transform, life and damage).
-Everything else lands with the next board and has no animation at all. The pipeline is in
+The design is in `docs/plans/legibility-of-play.md`; what's left here is follow-ups. The problem
+is that a bot turn can't be followed by eye, even at the slow bot speed. The kinds of event that
+hold the game up for their animation are `PACED` in `client/src/game/animationSchedule.ts`
+(cards played, combat hits, deaths and other leaves, taps and untaps, the stack, triggers'
+sources, arrivals, counters, buffs, transforms, life and damage, mills, discards, moves and the
+crown). Draws and the turn and phase banners animate without holding anything up, and other
+events land with the next board without animation. The pipeline is in
 `docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`). Each item below is
-now a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
+a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
 not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an `after` cue, or
 `flyGhost` for a move — and each must honour `motionPrefs` (speed and reduced motion).
 
 - **Re-measure the bot speeds.** Most events now hold the game for their animation, and the host
   can pause or step the bots, so `BOT_LINGER_MS` (`server/src/room.ts`: slow 1.6s, normal 0.7s,
-  after each frame) may now make "slow" too slow. Watch a 4-player bot game at each speed before
-  changing it.
+  after each frame) may now make "slow" too slow; the library peel has since grown to 1.1s a
+  step, too. Watch a 4-player bot game at each speed before changing it.
 - **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
   +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
   `pt-modified` is only a one-shot pump.
@@ -494,68 +499,14 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
   and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
   first half, over the old board, for a source that isn't on the new one.
-- **The initiative has no animation**: unlike the monarch, it has no event to animate from.
 - **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
   only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
   open the zone the card went to instead.
 - **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
   and download-free, but plain. Real samples could replace them cue for cue.
 
-- **Face-down permanents should sit on their controller's board, and turning one face up should
-  work like any other activated ability** (the user's ask): a click on the card opens the same
-  little menu another permanent's activated abilities use, with "turn face up" in it when the
-  card can be turned face up.
-
-- **One art-crop primitive (from the 2026-09-28 rendering audit).** The client draws a card
-  eleven ways: `CardTile` in two layouts (title: stack, zone viewer, every hover card;
-  art-first: hand, library top, cast spotlight, reveals), `MiniTile` (battlefield),
-  `CommanderTile` (command zone), `CommanderDamageChip`, the card back, `CardImage` (library,
-  replacement review), the lobby's `CommanderArt`, `PrintingPicker`'s thumbnails, the deck
-  builder's text rows and the landing hero. Each shape answers a size the others can't, so
-  merging them isn't worth it. What is duplicated is the art-crop box inside five of them:
-  `queueArtLookup` / `isArtPending` / `resolveArtUrl` / `recordArtFailure` and the tint
-  fallback, repeated in `CardTile`, `MiniTile`, `CommanderTile`, `CommanderDamageChip` and
-  `CommanderArt`. Extract one `ArtCrop` component; and `PrintingPicker`'s raw `<img>` could be a
-  `CardImage`.
-
-- **Large live mana amounts by hand.** "X mana in any combination" offers every split as its
-  own menu entry only while the list stays small (two colours up to X = 22). Past that it
-  offers all of one type per type, and a count picker would let the player choose any split.
-  And when the payer taps such a source for more than a payment needs, the player can't choose
-  the colour of what floats. The rest of `effect:mana-ability-dynamic-amount` is built.
-- **Convoke with a target-dependent cost.** The offered `proof` is priced at the dearer end of
-  the target-count range. This is latent: no pool card has both.
-- **Quality-of-life room options (house rules).** Options the room creator can turn on before a
-  game that are technically against the rules but make play smoother. The user's example: mana
-  that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
-  cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
-  since the engine otherwise follows the Comprehensive Rules exactly.
-- **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
-- **The library and the deck builder load every card definition.** Both fetch all 32 card
-  shards (`client/src/cards/cardData.ts`): 2.5 MB, 450 kB gzipped at 5,400 cards, and growing
-  with the pool. They read only printed fields, each ability's text (colour identity) and the
-  tokens a card makes. A generated catalog of just those, sharded the same way, would be a
-  fraction of the size. The game page loads no definitions up front.
-- **Long rules text is hidden behind the creature stat line** (the user, 2026-10-03): on every card
-  renderer (`CardTile`'s layouts, hover cards, the cast spotlight — e.g. Abdel Adrian's text runs
-  under its 4/4 box), long text should fit or shrink so the P/T box never covers it.
-- **"Same for all" covers only a trigger's yes-or-no "you may"** (built 2026-10-02,
-  `GameState.standingModeAnswers`). Not yet: a resolving trigger's choice among several modes, a
-  "you may" asked after another decision in the same resolution (it parks, and loses
-  `Game.resolvingTrigger`), the second player of an "each player may", and a trigger an effect
-  granted (`grantedAbility` kind `modifier`, which has no signature).
-- **A new attack arrow's head lands before its line.** An attack arrow draws itself in along
-  its length (`arrow-draw`, `client/src/ui/ArrowLayer.tsx`), but its head is a marker on the
-  same path, drawn whole from the first frame, so it sits on the defender before the line gets
-  there. Resolving arrows put the head on a sliver path of its own that waits for the line
-  (`.arrow-tip`); attack arrows could do the same.
-
 ## Tooling / docs
 
-- **Say which turn it is for whom (raised 2026-09-27).** A turn number counts every player's
-  turns, so at a four-player table "turn 37" is the first player's 10th turn — which reads as a
-  much longer game than it is. Talk about turns with that extra specificity. To be discussed
-  before anything is built: where it applies and what form it takes.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.
@@ -567,26 +518,25 @@ Follow-on ideas, approved by the user on 2026-09-30:
 - **Eminence is cited as rule 702.106**, which is Hidden Agenda: `abilities.ts`
   (`fromCommandZone`), `cards/define.ts`, `game.ts` and `eminence.test.ts`. Eminence is an
   ability word (rule 207.2c), with no rule of its own; the cards' text is what works. Likewise
-  "a delayed ability chooses no new targets" is cited as 603.7d (AUTHORING §6, `effects.ts`'s
-  `delayed-trigger`), which is about its source and controller: its captured objects aren't
-  targets because its text doesn't say "target".
+  "a delayed ability chooses no new targets" is cited as 603.7d, which is about its source and
+  controller: its captured objects aren't targets because its text doesn't say "target". That
+  citation is in AUTHORING §6, `effects.ts`'s `delayed-trigger`, `game.ts` (three places),
+  `state.ts` and `target-polarity.ts`.
 
 ## Code health
 
-- **`change-text` / `choose-text` are unused (2026-09-28).** Artificial Evolution, their only
-  card, was removed: it swapped one creature type on the type line from a fixed 12-type menu,
-  not "all instances" across the card's text. Either build real layer-3 text changing (every
-  creature-type word in a card's abilities, every creature type offered, spells as targets) or
-  remove the effect and the decision kind.
 - **Saved-deck migrations.** `client/src/deck-builder/decks.ts` rewrites two old shapes every
   time it reads saved decks: a lone `commander` (from before Partner pairs) and a card held under
-  its flavor name (Princess Sarah, renamed 2026-09-16; `nameForFlavorName`). Neither rewrite is saved, so an old deck needs them until
-  it's next edited. Write each migrated deck back once, then drop both.
-- **Vocabulary built ahead of any card.** About twenty effect, trigger, condition, filter and
-  replacement pieces, plus a few dozen optional fields, have no card using them yet, and five
-  have no test either. Keep them for the cards they were built for, but review the first card
-  that uses each. The list is in `neededCards-features.md`, "Built ahead". `painIfUntapped` is
-  the one no real card can use.
+  its flavor name (Princess Sarah, renamed 2026-09-16; `nameForFlavorName`). Neither rewrite is
+  saved, so an old deck needs them until it's next edited. Write each migrated deck back once,
+  then drop both.
+- **Vocabulary built ahead of any card.** Effect, trigger, condition, filter and replacement
+  pieces, plus optional fields, built before any card used them. Keep them for the cards they
+  were built for, but review the first card that uses each. The list is in
+  `neededCards-features.md`, "Built ahead", measured 2026-09-25 and now stale: about ten of its
+  pieces have cards since (`day-night`, `gain-control-all`, `notColors`, `sharesCardTypeWith`,
+  `xInManaCost`, `cardTypeCount`, `goadedForGame`, the `player-counters` condition, `{ sum }`,
+  …), so recount it. `painIfUntapped` is the one no real card can use.
 - **Prohibition scans are quadratic.** `abilitiesProhibited`/`prohibitionsOn` rescan the whole
   battlefield on every call, per permanent, and `recomputeControl` rescans for control Auras per
   permanent once anything has a control effect. On a land-heavy board they were 31% of a
@@ -594,7 +544,17 @@ Follow-on ideas, approved by the user on 2026-09-30:
   seed 27 (as the pool stood on 2026-09-29) is a 182-turn game of land-heavy boards that ends
   in deck-outs and takes ~32 s, past the local 30 s default (CI's four-player pass allows
   120 s), with `abilitiesProhibited`/`prohibitionsOn` ~10% of its profile and registry lookups
-  another 10%. Four-player seed 10 (2026-09-30) is another: 176 turns, ~31 s.
-- **Audit the engine tests (raised 2026-09-27).** Go through the engine suite we've been running
-  (430 files, 3,979 tests, about 100 s) and check what it actually guards. Unscoped: what the
-  audit looks for and what it produces.
+  another 10%. Four-player seed 10 (2026-09-30) is another: 176 turns, ~31 s. The bots' big
+  boards are the same cost seen from the search (`bot-effect-knowledge.md`, "Watching live
+  games for").
+- **Resolve-hatch sweep.** Convert the four remaining imperative `resolve` cards (Atarka, World
+  Render; Gaze of Granite; Green Sun's Zenith; Toxic Deluge) to a declarative `effect`.
+- **Tokens that attacked stay split off their stack until cleanup**, even when they come out of
+  combat identical, or all get the same counter from an attack trigger: ten such Warriors are
+  ten objects (and, with counters, ten board tiles) through the second main phase.
+  `refoldSplitTokens` skips them because `turnHistory.attackers` counts each creature once by
+  object, and a stack folded mid-turn would attack in a second combat as itself plus fresh
+  tokens split off it, counted again (Windbrisk Heights, `token-stack-refold.test.ts`). Folding
+  them needs the history to know a split-off token's stack already attacked — say, count only
+  attackers that hadn't attacked yet this turn (`attackedThisTurn` before the declaration).
+  Nothing plays differently.

@@ -1,6 +1,6 @@
 # Bots that know what their cards do (v2 on an effect-aware base)
 
-Status: **in progress** (2026-09-26). Decided after a fresh analysis of all three bots and a
+Status: **in progress** (2026-09-26; every step below had landed by 2026-09-27, and what remains is the tuning in BACKLOG's Bots section). Decided after a fresh analysis of all three bots and a
 survey of other card-game AIs: keep improving **v2** (`EvalBotController`, what live rooms seat),
 give it the one layer every successful MTG AI has and ours doesn't — knowledge of which side of
 the table each effect belongs on — and retire v3. This is not a new search. The search, the
@@ -525,3 +525,50 @@ read as worth 0, so the rollouts declined every copy and Blade of Selves was nev
 four players (`effect-worth.ts` values a token copy of our own now); v1 never moved Equipment
 (now: to a creature ranking `REATTACH_MARGIN` above the host); and Skullclamp on a 1/1 token,
 which is the evaluation's — a training scenario, with `creatures` 2.5 → 2 as the fitter's lever.
+
+## Watching live games for
+
+Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the
+problem, at which point the in-game Capture button turns it into a scenario that can decide it.
+
+- **Watch the wraths since `threat`.** With the threat term (2026-09-27) v2 casts more
+  sweepers: in six four-player games, Cleansing Nova three times (at 33, 19 and 5 life) and
+  Blasphemous Act over recasting its commander, and a turn-7 Magmaquake over Thunderbreak
+  Regent. At low life that's right; at 33 it's a judgment call. The gate's "wraths when far
+  behind" and "keeps its own winning board" hold. If a live game shows a wasted wrath, capture
+  it: the scenario is what would say whether `threat` needs a cap or a sweeper needs pricing.
+  Since `drawEngines` 4 (same day) Cleansing Nova's artifact-and-enchantment mode and removal
+  go after opponents' draw engines too, and one edict took the bot's own commander (Emmara)
+  over Mentor of the Meek, a judgment call worth capturing if it recurs.
+- **Pumping an opponent's attacker: how often, now that it's ruled.** The user's rule
+  (2026-09-27, `EvalBotController.opponentPump`): help an opponent's creature only while it
+  attacks someone else, and then with help that ends at end of turn, on a creature goaded by
+  us, or — lasting help — only when it kills the player attacked. Temporary pumps on someone
+  else's attacker (Kessig Wolf Run, Unleash Fury) remain allowed and still cost mana the
+  evaluation can't see (`untappedMana` is 0): if they come up too often in live games, capture
+  one — the scenario says whether they need a price.
+- **The rollout still can't see our own later spells — tried, level.** Pumps wait for combat
+  and the upkeep's mana waits for the main phase (`wastedNow`, `holdsManaForMain`), but inside a
+  main phase or combat the default rollout passes at every window, so v2 can't see what a spell
+  it hasn't cast yet would have done with mana it spends now. The `"acting"` rollout policy
+  (2026-09-28, `simulate.ts`) lets our own seat play the rest of its turn as v1, with ties
+  against passing going to acting (without that the bot put its plays off — tested). It sees two
+  Grizzly Bears over one Rumbling Baloth with four mana, but benched **level**: 26.0%
+  [21.8, 30.6] against three default v2s over 400 four-player games (`bot:bench
+  --candidate-options '{"rollout":"acting"}' --opponent shipped-2026-09-27c`), with 23 games
+  timing out at 300 s. Opt-in, not the default. Worth another look only with a cheaper v1 in the
+  rollout or a reason to expect a different result.
+- **Big boards under count budgets.** Seed 50's turn 40 (73 permanents, `bot:replay --from`)
+  takes 258 s (705 before 2026-09-27's fixes), and an ordinary four-player game's first 40
+  turns 10.5 s (13.1 before the last two). Profiled after them, what's left is the engine's real
+  work: state-based actions folding every permanent's characteristics each check
+  (`stateBasedGraveyardMoves`, ~13%), the characteristics fold itself, and cloning states for
+  the search (~9%). Tried and dropped, each measured at nothing: a per-region cache of condition
+  answers (116 hits in 58,000 — a region lasts one event), deferring conditional trigger grants
+  in the scan (under 2% once filters read types lazily), and a shared mana scan for casting
+  (0.3% of an ordinary game). Live rooms stop at 300 ms, so this is the bench's time limit and a
+  thinner search, not a hang. A second shape, deep stacks rather than wide boards: seed 313 of
+  the 2026-10-02 A/B bench timed out on Jeskai's spell engine (Veyran doubling triggers,
+  Archmage Emeritus, copies of its own spells) — 73 items on the stack and ~110 permanents on
+  turn 42, each decision 5-30 s because every simulation resolves the whole stack. All seats
+  there were the old build, but nothing since makes the new one cheaper on it.

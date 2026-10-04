@@ -8,19 +8,19 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Beast Within
 [+] 1 Birds of Paradise
 [+] 1 Blasphemous Act                  (P19 — `selfCostReduction.reduceGeneric` widened to accept the live-count `{countOf}` form, mirroring P16's `costModification.reduceGeneric`)
-[ ] 1 Bloom Tender                     FEATURE: a new `add-mana` form — one mana of EACH color among permanents you control, not a single chosen color like the existing "any-color"
+[x] 1 Bloom Tender
 [+] 1 Bountiful Landscape              (P17 — real text is a plain colourless tapland + sac-fetch-a-Forest/Island/Mountain + cycling, not a reveal-conditional land — the guess was wrong)
-[ ] 1 Broodcaller Scourge              FEATURE: `deals-combat-damage-to-player` has no `filter` (needed for "one or more Dragons you control", not just self) + a new "put a permanent card with mv <= X from hand onto the battlefield" cheat-into-play effect, gated by the trigger-supplied damage amount
+[x] 1 Broodcaller Scourge
 [ ] 1 Carnelian Orb of Dragonkind      FEATURE: not a restriction — a *bonus* keyed to what the produced mana gets spent on ("if that mana is spent on a Dragon creature spell, it gains haste"). The engine has no mana-provenance tracking at all; a different (and harder) problem than Haven of the Spirit Dragon's true spend-restriction below
 [+] 1 Cinder Glade
 [x] 1 Command Tower
 [x] 1 Cultivate
-[ ] 1 Deceptive Frostkite             FEATURE: `copyOnEnter` is a bare, unparameterized copy (`filter: "creature"` only) — needs a power>=4 restriction on the candidate AND an "except it gains an extra type + keyword" exception on top of the copy — a different, simpler ask than Sarkhan's P12 "keeps its OWN name" case
+[x] 1 Deceptive Frostkite
 [+] 1 Defense of the Heart            (P7 — opponent-controls condition + sacrifice-source effect)
 [ ] 1 Dracogenesis                     FEATURE: "you may cast Dragon spells without paying their mana costs" — an Omniscience-style free-cast permission on ALL of a cost (colored pips included), not just a generic reduction
 [+] 1 Dragon Tempest                   (P18 — zero new vocab: `grant-keyword` `target: "trigger-object"` + `damage` `amount: {countOf}` were both already shipped; the old FEATURE note here predated them)
 [ ] 1 Dragonhawk, Fate's Tempest       FEATURE: not divided damage at all (real text: impulse-draw = count of power-4+ creatures you control, then delayed end-step damage per card still exiled) — the same "exile + play until a deadline, then act on what's still exiled" primitive Valakut Exploration is missing below
-[ ] 1 Dragonlord Atarka                FEATURE: ETB "5 damage divided as you choose" among any number of target creatures/planeswalkers — needs variable-arity targeting (see P13)
+[x] 1 Dragonlord Atarka
 [+] 1 Dragonspeaker Shaman
 [+] 1 Encroaching Dragonstorm          (P16 — already-shipped search-library + return-to-hand widened to accept "source")
 [+] 1 Essence Flux                     FEATURE: flicker (exile then return under your control)
@@ -31,14 +31,14 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [x] 5 Forest
 [+] 1 Frontier Bivouac
 [x] 1 Frontier Siege
-[ ] 1 Frostcliff Siege                 FEATURE: (mode-on-enter siege — same gap as Frontier Siege)
+[x] 1 Frostcliff Siege
 [+] 1 Ganax, Astral Hunter             (P18 — zero new vocab: a plain Dragon-ETB Treasure trigger; the old FEATURE note here described a different, wrong mechanic. "Choose a Background" — a Commander deckbuilding option, pairing with a second non-legendary commander — isn't modeled; the engine's Partner support only pairs two same-type commanders)
 [+] 1 Garruk's Uprising               (P7 — TriggeredAbility.condition, an intervening-if ETB draw)
 [+] 1 Genesis Ultimatum                (P19 — new `look-and-choose` `leftover: "hand"` variant + a new `exileOnResolve` field for "Exile ~" as a plain resolution clause)
 [x] 1 Goldspan Dragon                  FEATURE: no "becomes the target of a spell" TriggerSpec; and `AffectSpec` has no "artifacts you control" scope to buff Treasures with (only self / creatures-you-control / lands-you-control / attached)
-[ ] 1 Haven of the Spirit Dragon       FEATURE: only the "any color, spend it only on a Dragon creature spell" restricted mana blocks this — no mana-provenance/restricted-spend tracking exists anywhere (shared gap with Path of Ancestry and Temple of the Dragon Queen below). The graveyard-return ability is already expressible now (`return-from-graveyard` filtered to Dragon, approximating away the "or Ugin planeswalker card" clause — the pool has no Ugin printing to need it for anyway)
-[ ] 1 Hellkite Courser                 FEATURE: real text has no "attacking" clause at all (a stale guess) — it puts a commander from the command zone onto the battlefield with haste, returning it to the command zone at the next end step. No effect moves a card from the command zone to the battlefield, nor is there a delayed "return it to the command zone" trigger
-[ ] 1 Hellkite Tyrant                  FEATURE: gain control of ALL of a player's artifacts at once (`gain-control` only takes a single target) + an alternate win condition (no "win the game" effect exists)
+[x] 1 Haven of the Spirit Dragon
+[x] 1 Hellkite Courser
+[x] 1 Hellkite Tyrant
 [+] 1 Heroic Intervention
 [+] 1 Hinterland Harbor
 [ ] 1 Incinerator of the Guilty        FEATURE: "collect evidence X" (Duskmourn rule 725) — exile graveyard cards totaling mana value >= a chosen X, a real new sub-system (a graveyard-selection cost paid at resolution, not cast time)
@@ -47,16 +47,16 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Kessig Wolf Run                  (P10 — {X} activated-ability cost feeds modify-pt "x")
 [+] 1 Kiora, Behemoth Beckoner         (P12 — real text needed no new vocab; the guessed static was wrong)
 [x] 1 Kodama's Reach
-[ ] 1 Last March of the Ents           FEATURE: real text has no counters at all (a stale guess) — draw cards equal to the GREATEST toughness among your creatures (a max-stat aggregate; `EffectAmount` only has `countOf`, a count, not a max) then put any number of creature cards from hand onto the battlefield (no "cards from hand onto the battlefield" effect exists at all)
+[x] 1 Last March of the Ents
 [+] 1 Lathliss, Dragon Queen           (+ token "Dragon Token" 5/5 flying)
 [+] 1 Lightning Greaves                (P15 — new "shroud" keyword)
 [x] 1 Llanowar Elves
 [+] 1 Magmaquake                       (P13 — CardFilter.notKeyword + two damage-all sweeps; {X} already worked)
-[ ] 1 Marang River Regent              FEATURE: real text has no unblockable clause at all (a stale guess) — it's an Omen MDFC: front-face ETB "return up to two OTHER target nonland permanents" needs optional/"up to N" targeting (every declared target slot is mandatory today — a previously-undocumented gap, see AUTHORING §15); the Omen back face also needs its own "shuffle into its owner's library instead of the graveyard after resolving" alt-zone rule, distinct from flashback/escape/disturb's fixed destinations
+[x] 1 Marang River Regent
 [+] 1 Miirym, Sentinel Wyrm            (P5b — create-token-copy of: trigger-object)
 [ ] 1 Mirror Room / Fractured Realm    FEATURE: Room cards (Duskmourn split-enchantment / door unlock); Fractured Realm's own ability is a broader (all-triggers, not just ETB) version of P15's doubleEntryTriggers
 [x] 1 Mossfire Valley
-[ ] 1 Mosswort Bridge                  FEATURE: Hideaway
+[x] 1 Mosswort Bridge
 [x] 6 Mountain
 [+] 1 Nature's Lore
 [+] 1 Old Gnawbone
@@ -66,26 +66,26 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [ ] 1 Rhythm of the Wild               FEATURE: riot (unmodeled — a wholly new "choose a +1/+1 counter or haste on ETB" keyword-adjacent mechanic); "creature spells you control can't be countered" needs a new static granting can't-be-countered to a filtered class of spells — `cantBeCountered` today is a fixed boolean on a single card's own definition, not a grantable protection
 [+] 1 Rockfall Vale
 [+] 1 Sakura-Tribe Elder              (P17 — real text is a sac-cost activated ability, not a dies trigger — zero new vocab, the same shape as Rampant Growth's search + AbilityCost.sacrifice: "self")
-[ ] 1 Sarkhan, Soul Aflame             FEATURE: a creature (not a planeswalker) becomes a copy of an entering Dragon until end of turn, except it keeps its own name and gains legendary (rule 707.9-style exception — see P12). The cost-reduction half ("Dragon spells you cast cost {1} less") needs no new vocab — `costModification: { applies: { subtype: "Dragon", controlledBy: "you" }, reduceGeneric: 1 }` already works
+[x] 1 Sarkhan, Soul Aflame
 [+] 1 Scourge of Valkas
 [ ] 1 Selvala, Heart of the Wilds      FEATURE: variable mana ability (X mana in ANY COMBINATION of colors, where X = greatest power among your creatures — needs both a max-stat aggregate and a mixed-color mana output) + a comparative "greater than every OTHER creature's power" condition, which no CardFilter/StaticCondition expresses (only fixed-threshold comparisons exist)
 [+] 1 Sheltered Thicket
 [+] 1 Shivan Reef
-[ ] 1 Smuggler's Surprise              FEATURE: Spree (choose one or more of several ADDITIONAL COSTS, each unlocking its own effect chunk) — a distinct, newer mechanic from a plain modal spell, which just picks among fixed-cost modes with no per-mode cost stacking
+[x] 1 Smuggler's Surprise
 [x] 1 Sol Ring
 [+] 1 Starfield Vocalist               (P15 — real text is a Panharmonicon-style ETB-trigger doubler, not constellation; the guess was wrong)
 [+] 1 Stomping Ground
 [+] 1 Sulfur Falls
 [+] 1 Temple of Abandon
 [+] 1 Temple of Mystery
-[ ] 1 Temple of the Dragon Queen       FEATURE: not restricted mana (unlike Haven of the Spirit Dragon above) — it picks ONE fixed color as it enters and taps for only that color forever. Needs (a) a "choose a color on ETB" mechanism analogous to `chooseCreatureTypeOnEnter` but feeding a mana ability's output color, (b) an OR-combinator between two `tappedUnless` conditions (revealed a Dragon OR controls a Dragon — `StaticCondition` has no logical-or), and (c) a "you may reveal a card from hand" ETB action — none of which exist today
+[x] 1 Temple of the Dragon Queen
 [+] 1 Temur Ascendancy
 [+] 1 Temur Battlecrier                (P16 — costModification.reduceGeneric widened to a live count; also fixed a latent controlledBy bug)
 [+] 1 Terror of the Peaks
 [ ] 1 Ureni, the Song Unending         FEATURE: ETB "X damage divided as you choose among any number of targets" — the same variable-arity divided-damage primitive blocking Dragonlord Atarka (P13) and Lord Windgrace's -3/-11 (P12)
 [+] 1 Urza's Incubator                 (P14 — new choose-creature-type AwaitingDecision + costModification.matchesChosenCreatureType)
 [+] 1 Utvara Hellkite                  (P11 — attacks TriggerSpec.filter)
-[ ] 1 Virtue of Knowledge              FEATURE: front half (doubleEntryTriggers) now unblocked by P15/Starfield Vocalist; the Adventure instant half needs a new "copy target activated or triggered ability" effect (copy-spell only copies a spell on the stack)
+[x] 1 Virtue of Knowledge
 [ ] 1 World War Hulk                    FEATURE: a Saga — chapter II ("+1/+1 counter x3") is already-shipped add-counter; I "cast the next qualifying spell for free" and III "double target creature's power/toughness" both need new effect kinds (a delayed one-shot free-cast permission; a "read current P/T and multiply" op, not an independent add)
 [+] 1 Yavimaya Coast
 [x] 1 Ureni of the Unwritten           (commander — in pool)
@@ -98,19 +98,19 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Blood Crypt
 [+] 1 Bloodstained Mire
 [+] 1 Bojuka Bog                      (P8 — exile-graveyard effect)
-[ ] 1 Burgeoning                       FEATURE: no "a player plays a land" trigger distinct from "a land enters the battlefield" (entering can also happen via non-land-drop effects, e.g. a tutor, which real Burgeoning shouldn't fire off) + no "put a land card from hand onto the battlefield" effect off a trigger
+[x] 1 Burgeoning
 [+] 1 Cabaretti Courtyard
 [+] 1 Cinder Glade                     (dup — see Deck 1)
 [x] 1 Command Tower
 [+] 1 Commercial District
-[ ] 1 Conduit of Worlds                FEATURE: the graveyard land-play half is already fully expressible now (`playFromGraveyard: {type: "land"}`, Ramunap Excavator's exact shape) — only the second ability (target a nonland permanent card in your graveyard, cast it once per turn) is blocked: no "target card in graveyard" TargetSpec, and no "cast from graveyard paying its normal cost" permission (flashback/escape only support fixed alternate costs)
+[x] 1 Conduit of Worlds
 [+] 1 Craterhoof Behemoth
 [+] 1 Crop Rotation                   (P8 — CardDefinition.additionalCost sacrifice)
 [x] 1 Dryad of the Ilysian Grove       FEATURE: the extra land drop is already free now (`extraLandsPerTurn: 1`, P16) — only "lands you control are every basic land type" is blocked: no continuous "grant subtypes" static exists (`grantKeywords`/`grantPt` grant keywords/P-T; nothing grants subtypes to a filtered scope)
-[ ] 1 Earthbender Ascension            FEATURE: "earthbend N" (Avatar — animate a land as a 0/0 haste creature with N +1/+1 counters, return it tapped when it dies/exiled) — a new mechanic also needed by Toph, Hardheaded Teacher
-[ ] 1 Evendo, Waking Haven             FEATURE: Station (rule 702.171) — same unbuilt mechanic as Exploration Broodship (P15) and Kavaron, Memorial World
+[x] 1 Earthbender Ascension
+[x] 1 Evendo, Waking Haven
 [x] 1 Evolving Wilds
-[ ] 1 Exploration Broodship            FEATURE: Station (not crew) — an activated ability that piles charge counters equal to a tapped creature's power onto this Spacecraft, with threshold-gated abilities (3+/8+) and an 8+ animation into a creature
+[x] 1 Exploration Broodship
 [x] 1 Fabled Passage
 [ ] 1 Famished Worldsire               FEATURE: Ward {3} already works; "devour land 3" (sac lands as it enters, gets 3x that many counters) is a new ETB replacement, and its own ETB effect needs X = this creature's current power, which EffectApi can't read (no characteristics access from a resolve script)
 [+] 1 Festering Thicket                (P17 — an unconditional-tapped B/G dual + cycling {2} — zero new vocab, Sheltered Thicket's exact shape)
@@ -119,7 +119,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Gaze of Granite                  (P10 — destroy-all with a resolve-time manaValue<=X filter)
 [ ] 1 Greater Gargadon                 FEATURE: "sacrifice a permanent: put a time counter on this" (suspend itself is supported)
 [+] 1 Harrow                          (P8 — CardDefinition.additionalCost sacrifice)
-[ ] 1 Horizon Explorer                 FEATURE: "lands you control enter untapped" needs a static that overrides an enters-tapped determination (the opposite of entersTappedStatic); "whenever you attack a player, create a Lander" fires once per attacked PLAYER per combat, not once per attacking creature like the existing "attacks" trigger
+[x] 1 Horizon Explorer
 [+] 1 Icetill Explorer                 (P16 — new extraLandsPerTurn static; playFromGraveyard + landfall mill already shipped)
 [+] 1 Ignoble Hierarch                 (P15 — new Exalted: attacks-alone TriggerSpec + trigger-object EffectTargetRef)
 [+] 1 Infernal Grasp
@@ -133,7 +133,7 @@ Legend:  [x] already in the pool   [+] added this pass   [ ] not yet — see FEA
 [+] 1 Mole Man, Moloid Master          (P16 — zero new vocab: playFromGraveyard + landfall create-token + the token's own may-mill attack trigger, all already shipped)
 [ ] 1 Moraug, Fury of Akoum            FEATURE: landfall extra combat phase — needs inserting a combat phase after WHATEVER phase the land entered during (not the fixed post-combat-only shape `additional-combat` has), a StaticCondition for "it's a main phase" (only `your-turn` exists), and per-creature times-attacked-this-turn tracking (today only a boolean `attacking` flag) for its own static buff
 [x] 3 Mountain
-[ ] 1 Myriad Landscape                 FEATURE: search two basics "that share a land type" — a relational constraint between the two found cards, not just a per-card filter
+[x] 1 Myriad Landscape
 [ ] 1 Nahiri's Lithoforming            FEATURE: `sacrifice`'s `count` is a fixed `number`, not an `EffectAmount` — can't sacrifice "X" lands where X is the spell's own chosen value; plus a temporary (this-turn-only) extra-land-drop grant and a temporary "lands enter tapped this turn" replacement, both distinct from the permanent per-card forms that exist today
 [+] 1 Ob Nixilis, the Fallen           (P19 — new `may` `then`/`else` tails + a targeted `lose-life` form, mirroring `damage`'s target/who split. Along the way, fixed a latent bug: a `may`/`modal` effect's chosen mode now sees the enclosing ability's own already-chosen targets instead of an empty array, so "you may have *target* X" wrapped in `may` actually resolves against the right target)
 [x] 1 Oracle of Mul Daya

@@ -177,5 +177,3 @@ in the same game going at someone else.
   it held Murder from a trailing player's Craw Wurm, the table's only creature (the gate's
   "kills a trailing player's threat"). The fix is in what a creature is worth to *kill* — its
   threat to us rather than its board value — or a reserve scaled by the threats still to come.
-- **Stand-ins that gut a plan**: Sultai's Barrow Witches (vanilla without Knights) and Black
-  Market Connections; Mardu's anthem and token-doubling cards.

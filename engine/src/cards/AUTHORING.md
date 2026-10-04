@@ -3747,9 +3747,6 @@ Delete an entry in the same commit as the feature that retires it.
 - No **"a player plays a land"** trigger distinct from "a land enters the
   battlefield" generally (Burgeoning) — the latter also fires for a land
   fetched by an effect, which the former shouldn't (needed-cards P18).
-- No **"a card was put into a graveyard from anywhere"** trigger — `dies` only
-  covers a permanent's battlefield → graveyard move (The Gitrog Monster's "a
-  land card goes to a graveyard from anywhere, draw a card") (needed-cards P18).
 - **"As this enters" choices — the ways onto the battlefield that don't ask.**
   A Clone's copy (`copyOnEnter`), a chosen creature type and a `chooseOnEnter`
   word are asked *before* the permanent moves (rule 614.12 —

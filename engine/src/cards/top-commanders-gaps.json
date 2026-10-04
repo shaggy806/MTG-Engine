@@ -1264,7 +1264,7 @@
   "trigger:activates-ability": {
    "size": "small",
    "ui": false,
-   "description": "A 'whenever a player activates an ability' trigger with filters, for example '{X} in its activation cost'."
+   "description": "A 'whenever a player activates an ability' trigger beyond who: \"attached\" (built for Battlemage's Bracers): other players and objects, with filters such as '{X} in its activation cost'."
   },
   "trigger:becomes-target-fixes": {
    "size": "small",
@@ -1435,6 +1435,11 @@
    "size": "medium",
    "ui": true,
    "description": "Play lands and cast spells from another player's hand (Sen Triplets): every hand check assumes the caster's own hand, and the client needs the opponent's revealed hand cards to be playable."
+  },
+  "cost:mana-restriction-at-cast": {
+   "size": "medium",
+   "ui": false,
+   "description": "A mana restriction matched against the spell as it is being cast, not the card in its pre-cast zone, so an ability a static grants as it is cast (Abaddon the Despoiler's cascade) counts: Jasmine Boreal of the Seven's \"only to cast creature spells with no abilities\" (her ruling). ManaRestriction.spell reads the pre-cast card today."
   }
  },
  "commanders": [
@@ -4680,7 +4685,8 @@
    "needs": [
     "condition:filter-card-property-clauses",
     "effect:add-mana-extensions",
-    "static:combat-restriction-extensions"
+    "static:combat-restriction-extensions",
+    "cost:mana-restriction-at-cast"
    ]
   },
   {

@@ -1,7 +1,7 @@
 /**
  * The starter decks: real, format-legal 100-card Commander precons. First the
  * five Tarkir: Dragonstorm Commander decks (2025, MTGJSON set code `TDC`),
- * the bots' defaults since 2026-09-30, two of them flagged `bench`; then
+ * the bots' defaults since 2026-09-30; then
  * (2026-10-02) the five 2022 Starter Commander Decks (`SCD`) they replaced and
  * four more picked as nearest complete among WotC's Commander precons:
  * Tramplesaurus Rex and Reign of Dragons (`FDC`), Family Matters (`BLC`) and

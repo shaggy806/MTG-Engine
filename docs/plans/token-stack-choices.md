@@ -4,7 +4,7 @@
 select multiple creatures out of a token stack, can we get a menu to do so?
 Similar to how we activate abilities". **Sacrifice is built**, engine and
 client, and checked live in the browser, and so are **tap costs**,
-**convoke**, and **attack and block splitting** (2026-09-28); only proliferate is left. The counting and whole-stack fixes it builds on are done (see below), and so is folding split-off tokens back together once they're identical again (2026-10-03, "Folding back").
+**convoke**, and **attack and block splitting** (2026-09-28). Two are left: choosing which of a stack proliferate touches, and naming one stack more than once for distinct targets (the table below). The counting and whole-stack fixes it builds on are done (see below), and so is folding split-off tokens back together once they're identical again (2026-10-03, "Folding back").
 
 ## Background
 

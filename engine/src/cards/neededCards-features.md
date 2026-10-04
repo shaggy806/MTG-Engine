@@ -125,13 +125,13 @@ checked-in snapshot.
 
 ### Tier 2 — solid value, smaller or more speculative
 
-- **Spree** (7 cards: Return the Favor, Three Steps Ahead, Great Train Heist) — a modal spell where each chosen mode carries its own *additional* cost, unlike `castModal`'s single shared cost. Extend `CardDefinition.castModal` with a per-mode `additionalCost?`.
+- ~~**Spree**~~ *(built — five Spree cards in the pool; Return the Favor and Great Train Heist wait on other features, BACKLOG's engine rules gaps)*.
 - **Class enchantments** (6 cards, `layout:class`: Wizard Class, Cleric Class, Druid Class) — a leveling permanent with rank-gated ability tiers, paid up incrementally. New card shape, closer to a Saga than anything else, but with a pay-to-advance cost per rank instead of a free per-turn chapter.
 
 ### Tier 3 — real but niche, or a big lift for a small current payoff
 
 - **Station** (7 cards, mostly newest-set/low-rank: Exploration Broodship, Evendo, Uthros) — a whole new subsystem (a permanent sub-type + counter-threshold-gated text tiers, keyed off what's tapped to fund it). Large build, currently low return — revisit once more Station cards enter the format.
-- **Discover** (4), **Evoke** (4), **Reconfigure** (3) — each a distinct, self-contained alt-cast/alt-ability shape; none shares much with the others or with Tier 1/2. Cherry-pick opportunistically.
+- **Discover** (4), **Reconfigure** (3) — each a distinct, self-contained alt-cast/alt-ability shape; neither shares much with the other or with Tier 1/2. Cherry-pick opportunistically. (**Evoke** is built for mana costs, 2026-09-29; the Incarnations' exile-a-card evoke cost is BACKLOG's.)
 - **Phasing** (8 cards, headlined by **Teferi's Protection** at #109) — explicitly out of scope per this file's parent (CLAUDE.md's "Not modeled" list). High-profile but a genuinely large state-machine addition (a whole not-really-a-zone permanent status); revisit only as a deliberate scope change, not opportunistically.
 - **Dungeons/Initiative** (3), **Vehicles/crew** (2), **split/aftermath layout** (4), **Battle cards** (2) — each explicitly out of scope already; low card counts in the top 2000 confirm they're not worth a scope change yet.
 - **Backgrounds** (3) are no longer blocked as a mechanic: the pairing is built (`pairing: { kind: "choose-a-background" }`) and one Background, Raised by Giants, is authored. What's left of the three comes down to each card's own text.
@@ -286,10 +286,12 @@ Mind, Sword of Sinew and Steel, Sword of War and Peace, Quietus Spike, Ultima
 Weapon, Staff of Titania, Wand of Orcus, Adaptive Omnitool, Bilbo's Ring, The
 Spear of Leonidas, Fiendlash, Sigil of Sleep, Resurrection Orb and Mage Slayer
 (an attack trigger's `toTriggerRecipient` is now the player or planeswalker
-attacked). 34 of the 75 are still blocked, each by something outside host
-triggers, most of it shared with other cards:
+attacked). 28 of the 75 are still blocked (34 then; Pip-Boy 3000, Shiny Impetus, Sword of Forge and
+Frontier, Sword of Wealth and Power, Fertile Ground and Vorpal Sword have since
+been authored), each by something outside host triggers, most of it shared
+with other cards:
 
-- **A static "is goaded"** (the Impetus Auras: Shiny, Parasitic, Martial,
+- **A static "is goaded"** (the Impetus Auras: Parasitic, Martial,
   Ghoulish): goad as a continuous effect of an attachment, not a one-shot.
 - **"Return this card" after its host died** (Angelic Destiny, Endless Evil,
   Gift of Immortality, Ghoulish Impetus): the Aura reaches the graveyard by the
@@ -298,12 +300,8 @@ triggers, most of it shared with other cards:
 - **"Deals damage" once per event** (Spirit Link, Umezawa's Jitte, Lost
   Jitte): with no recipient named, damage to several things at once is one
   trigger (rule 603.2c), where `deals-damage` fires once per recipient.
-- **Per-mode targets on a modal trigger** (Pip-Boy 3000): `announced` modes
-  can't carry targets yet.
 - **Free casts during resolution** (Buster Sword, Sword of Once and Future, The
-  Key to the Vault), **"you may play an additional land this turn"** (Sword of
-  Forge and Frontier), **copy the next instant or sorcery** (Sword of Wealth
-  and Power), **tokens that enter tapped and attacking** (Andúril, Flame of
+  Key to the Vault), **tokens that enter tapped and attacking** (Andúril, Flame of
   the West), **For Mirrodin!** (Hexplate Wallbreaker; living weapon and
   "the first combat phase of the turn" are built — Genji Glove and
   Nettlecyst are authored), **ascend** (Andúril, Narsil Reforged), **stun
@@ -311,8 +309,7 @@ triggers, most of it shared with other cards:
   **attached host condition** (Combat Research's "as long as enchanted
   creature is legendary"), and one-offs (Sword of Hearth and Home, Songbirds'
   Blessing, Infiltration Lens, Thran Power Suit, Pain for All,
-  Ordeal of Nylea, The Aetherspark, Fertile Ground's any-colour extra on a
-  hand-tapped land, Vorpal Sword).
+  Ordeal of Nylea, The Aetherspark).
 
 Sword of Fire and Ice turned up a real bug: a combat damage trigger's first
 target slot was auto-filled with the damaged player whenever it could hold
@@ -383,7 +380,7 @@ nothing in the repo distinguished them.
 | ~~unbounded targeting~~ *(built 2026-09-26 — see above)* | 9 | 544 | 0 | 0 |
 | ~~regeneration~~ *(built 2026-09-28 — Mortivore)* | 7 | 705 | 0 | 0 |
 | ~~Station~~ *(built — Hearthhull, the Worldseed)* | 7 | 951 | 0 | 0 |
-| "put into a graveyard from anywhere" trigger | 5 | 259 | 0 | 1 |
+| ~~"put into a graveyard from anywhere" trigger~~ *(built 2026-09-24 — `put-into-graveyard`; The Gitrog Monster)* | 5 | 259 | 0 | 1 |
 | "as this enters" on a non-cast permanent | 5 | 132 | 0 | 1 |
 | discard-a-card as an ability cost | 5 | 834 | 0 | 0 |
 | ~~damage doubling (a replacement)~~ *(built — `would-deal-damage`; Wolverine's `fromSelf` 2026-09-28)* | 4 | 794 | 0 | 0 |
