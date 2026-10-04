@@ -26035,22 +26035,26 @@ export class Game {
    */
   private moveObject(id: ObjectId, to: ZoneType, enter: EnterOptions = {}): boolean {
     const from = this.state.objects[id]?.zone;
+    // Where the move starts in the log: the events it emits itself (a lone
+    // card's `cards-put-into-exile`) already describe the card where it's
+    // going, so a public zone's stint covers them too.
+    const startSeq = this.state.eventSeq;
     // Zone moves interleave reads and writes too finely for point
     // invalidation — run with the computed-value cache off (and cleared on
     // the way out). See `suspendComputedCache`.
     const moved = suspendComputedCache(() => this.moveObjectUncached(id, to, enter));
     const now = this.state.objects[id]?.zone;
-    if (from !== undefined && now !== undefined && now !== from) this.trackPublicity(id, from, now);
+    if (from !== undefined && now !== undefined && now !== from) this.trackPublicity(id, from, now, startSeq);
     return moved;
   }
 
   /** Keep `GameState.publicStints` up to date across one zone change of `id`
    * — see {@link PublicStint}. */
-  private trackPublicity(id: ObjectId, from: ZoneType, to: ZoneType): void {
+  private trackPublicity(id: ObjectId, from: ZoneType, to: ZoneType, startSeq: number): void {
     const hidden = (zone: ZoneType): boolean => zone === "hand" || zone === "library";
     const open = this.openStintOf(id);
     if (!hidden(to)) {
-      this.openStint(id);
+      this.openStint(id, startSeq);
       return;
     }
     // Into a hand or library: still known if it was public a moment ago, and
@@ -26067,7 +26071,7 @@ export class Game {
 
   /** `id` is public knowledge from now on (it entered a public zone, or was
    * revealed): open a stint, or carry the open one on under its current name. */
-  private openStint(id: ObjectId): void {
+  private openStint(id: ObjectId, from: number = this.state.eventSeq): void {
     const object = this.state.objects[id];
     if (object === undefined) return;
     const open = this.openStintOf(id);
@@ -26075,7 +26079,7 @@ export class Game {
       open.name = faceName(object);
       return;
     }
-    ((this.state.publicStints ??= {})[id] ??= []).push({ from: this.state.eventSeq, name: faceName(object) });
+    ((this.state.publicStints ??= {})[id] ??= []).push({ from, name: faceName(object) });
   }
 
   /** Knowledge of what each of `ids` is ends now: a library shuffled, a card

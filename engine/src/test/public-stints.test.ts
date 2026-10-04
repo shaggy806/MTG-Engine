@@ -47,6 +47,34 @@ describe("public stints", () => {
     expect(seenAs(game, bears, bounced.seq)).toBe("Grizzly Bears");
   });
 
+  it("a card exiled on its own is named in its own exile line, even once it's back under the library", () => {
+    const game = setUp();
+    for (let i = 0; i < 2; i += 1) {
+      game.debugSpawn("Mountain", A, "battlefield");
+      game.debugSpawn("Forest", A, "battlefield");
+    }
+    const elf = game.debugSpawn("Bloodbraid Elf", A, "hand");
+    // Cascade exiles one card at a time: the Plains, then Divination.
+    const divination = game.debugSpawn("Divination", A, "library");
+    const plains = game.debugSpawn("Plains", A, "library");
+    game.dispatch({ type: "cast-spell", player: A, card: elf, targets: [] });
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now");
+    const exiles = game.eventsOfType("cards-put-into-exile");
+    const seqOf = (id: ObjectId): number => {
+      const e = exiles.find((x) => x.arrivals.some((a) => a.object === id));
+      if (e === undefined) throw new Error(`${id} wasn't exiled`);
+      return e.seq;
+    };
+    expect(seenAs(game, plains, seqOf(plains))).toBe("Plains");
+    expect(seenAs(game, divination, seqOf(divination))).toBe("Divination");
+    // Decline: the Plains and Divination go to the bottom, out of sight, and
+    // their exile lines still say what they were.
+    game.dispatch({ type: "cast-now", player: A, cast: null });
+    game.advanceUntil(quiet);
+    expect(game.viewFor(B).objects[plains]).toBeUndefined();
+    expect(seenAs(game, plains, seqOf(plains))).toBe("Plains");
+  });
+
   it("a card drawn and later cast isn't named in the draw", () => {
     const game = setUp();
     const bolt = game.debugSpawn("Lightning Bolt", A, "library");
