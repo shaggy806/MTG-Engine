@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2389 already implemented / 2611 missing (marks refreshed 2026-10-03)
+2394 already implemented / 2606 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1874,7 +1874,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1881  Sword of Forge and Frontier              {3}              Artifact — Equipment
 [x]  1882  Colossal Grave-Reaver                    {6}{B}{G}        Creature — Dragon
 [x]  1883  Terrain Generator                        {0}              Land
-[ ]  1884  Breena, the Demagogue                    {1}{W}{B}        Legendary Creature — Bird Warlock
+[x]  1884  Breena, the Demagogue                    {1}{W}{B}        Legendary Creature — Bird Warlock
 [x]  1885  Evacuation                               {3}{U}{U}        Instant
 [x]  1886  Dragonlord Dromoka                       {4}{G}{W}        Legendary Creature — Elder Dragon
 [x]  1887  Tormenting Voice                         {1}{R}           Sorcery
@@ -3013,7 +3013,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3020  Time Stretch                             {8}{U}{U}        Sorcery
 [ ]  3021  Marauding Raptor                         {1}{R}           Creature — Dinosaur
 [ ]  3022  Robe of Stars                            {1}{W}           Artifact — Equipment
-[ ]  3023  Abdel Adrian, Gorion's Ward              {4}{W}           Legendary Creature — Human Warrior
+[x]  3023  Abdel Adrian, Gorion's Ward              {4}{W}           Legendary Creature — Human Warrior
 [ ]  3024  Lifeblood Hydra                          {X}{G}{G}{G}     Creature — Hydra
 [ ]  3025  Brimaz, King of Oreskos                  {1}{W}{W}        Legendary Creature — Cat Soldier
 [ ]  3026  Esika's Chariot                          {3}{G}           Legendary Artifact — Vehicle
@@ -3101,7 +3101,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3108  Nesting Dovehawk                         {3}{W}           Creature — Bird
 [ ]  3109  Necrogoyf                                {3}{B}{B}        Creature — Lhurgoyf
 [ ]  3110  Light-Paws, Emperor's Voice              {1}{W}           Legendary Creature — Fox Advisor
-[ ]  3111  Ziatora, the Incinerator                 {3}{B}{R}{G}     Legendary Creature — Demon Dragon
+[x]  3111  Ziatora, the Incinerator                 {3}{B}{R}{G}     Legendary Creature — Demon Dragon
 [ ]  3112  Iron Spider, Stark Upgrade               {3}              Legendary Artifact Creature — Spider Hero
 [ ]  3113  Reshape                                  {X}{U}{U}        Sorcery
 [ ]  3114  Bothersome Quasit                        {2}{R}           Creature — Demon
@@ -3174,7 +3174,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3181  Frontier Warmonger                       {3}{R}           Creature — Human Warrior
 [x]  3182  Khalni Garden                            {0}              Land
 [ ]  3183  Lavinia, Azorius Renegade                {W}{U}           Legendary Creature — Human Soldier
-[ ]  3184  Trostani, Selesnya's Voice               {G}{G}{W}{W}     Legendary Creature — Dryad
+[x]  3184  Trostani, Selesnya's Voice               {G}{G}{W}{W}     Legendary Creature — Dryad
 [ ]  3185  Surly Badgersaur                         {3}{R}           Creature — Badger Dinosaur
 [ ]  3186  Athreos, Shroud-Veiled                   {4}{W}{B}        Legendary Enchantment Creature — God
 [x]  3187  Ms. Bumbleflower                         {1}{G}{W}{U}     Legendary Creature — Rabbit Citizen
@@ -3650,7 +3650,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3657  Seizan, Perverter of Truth               {3}{B}{B}        Legendary Creature — Demon Spirit
 [ ]  3658  Bumi, Unleashed                          {3}{R}{G}        Legendary Creature — Human Noble Ally
 [ ]  3659  Maelstrom Pulse                          {1}{B}{G}        Sorcery
-[ ]  3660  Saruman, the White Hand                  {1}{U}{B}{R}     Legendary Creature — Avatar Wizard
+[x]  3660  Saruman, the White Hand                  {1}{U}{B}{R}     Legendary Creature — Avatar Wizard
 [ ]  3661  Markov Baron                             {2}{B}           Creature — Vampire Noble
 [ ]  3662  Sakashima's Student                      {2}{U}{U}        Creature — Human Ninja
 [ ]  3663  Hobgoblin Bandit Lord                    {1}{R}{R}        Creature — Goblin Rogue
