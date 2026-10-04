@@ -172,10 +172,7 @@ under count budgets).
   one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
   scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **A body's worth on a wide board** (the user's question, 2026-10-04): every creature counts
-  `creatures` 2.5 whether it's the only one or the twentieth, so the tenth Soldier token is priced
-  like the first. A value that falls off with board size would let a wide board spend bodies
-  (sacrifice outlets, chump blocks) more freely. Measure it against the chump scenarios at 35.
+- **A body's worth on a wide board** (the user's question, 2026-10-04; shelved): every creature counts `creatures` 2.5 whether it's the first or the twentieth. Tried two ways. Discounting creatures past six on the board changed 28 of 28,856 decisions over 12 four-player games, half of them good (Felothar and Jarad sacrificing spares, more token attacks) but it also cut the value of *making* creatures (Raise the Alarm passed at 13 life). Discounting only creatures *lost* past six, counted from the decision's root, changed none of 28,501 at a refund of 2.5 or 4: a 2/2 is worth about 5.6 in all, so a refund flips a choice only near a whole creature (Village Rites on a spare Bears flips between 4.3 and 10). Revisit with a live misplay that needs it.
 - **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
   Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
   token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
