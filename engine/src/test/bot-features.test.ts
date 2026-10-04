@@ -89,15 +89,16 @@ describe("the nonlinear life and library terms", () => {
     expect(withTerm).toBe(withoutTerm);
   });
 
-  it("prices life at half a point above 15 and a point and a half below", () => {
+  it("prices life at a fifth of a point above 30, half to 15 and a point and a half below", () => {
     const game = newGame();
     const scoreAt = (life: number): number => {
       game.state.players[A].life = life;
       return evaluateState(game.state, game.registry, A, DEFAULT_WEIGHTS);
     };
-    // Two life at 40 is half a card (`hand` is 2); two life at 10, a card
-    // and a half.
-    expect(scoreAt(40) - scoreAt(38)).toBeCloseTo(1, 9);
+    // Two life at 40 is a fifth of a card (`hand` is 2, `lifeSurplus` takes
+    // back 0.3 a point above 30); at 20 half a card; at 10 a card and a half.
+    expect(scoreAt(40) - scoreAt(38)).toBeCloseTo(0.4, 9);
+    expect(scoreAt(20) - scoreAt(18)).toBeCloseTo(1, 9);
     expect(scoreAt(10) - scoreAt(8)).toBeCloseTo(3, 9);
   });
 
@@ -128,12 +129,15 @@ describe("lifeCost", () => {
     };
     for (const [life, damage] of [
       [40, 4],
+      [32, 4],
       [17, 4],
       [10, 4],
     ]) {
       expect(lifeCost(life, damage, DEFAULT_WEIGHTS)).toBeCloseTo(scoreAt(life) - scoreAt(life - damage));
     }
-    // Below the line the same four points cost three times as much.
-    expect(lifeCost(10, 4, DEFAULT_WEIGHTS)).toBeCloseTo(3 * lifeCost(40, 4, DEFAULT_WEIGHTS));
+    // Below 15 the same four points cost three times what they do between 15
+    // and 30, and that seven and a half times what they do above 30.
+    expect(lifeCost(10, 4, DEFAULT_WEIGHTS)).toBeCloseTo(3 * lifeCost(24, 4, DEFAULT_WEIGHTS));
+    expect(lifeCost(24, 4, DEFAULT_WEIGHTS)).toBeCloseTo(2.5 * lifeCost(40, 4, DEFAULT_WEIGHTS));
   });
 });

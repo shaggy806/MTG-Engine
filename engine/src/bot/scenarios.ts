@@ -2513,14 +2513,14 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "Skullclamps a 1/1 token for two cards",
     rule: "Equipping Skullclamp to a 1/1 token kills it for two cards: a card up.",
-    kind: "training",
     position(registry) {
       // Two cards (+4) against the token's body and its one point of attack:
       // every creature counts `creatures` 2.5 whatever its size, so the body
       // scores about as much as the cards, and the attack tips it to passing.
       const game = table(registry, [A, B], A);
       lands(game, "Mountain", A, 2);
-      onBoard(game, "Soldier Token", A);
+      const token = onBoard(game, "Soldier Token", A);
+      game.state.objects[token].isToken = true;
       const clamp = onBoard(game, "Skullclamp", A);
       return {
         game,
@@ -2535,7 +2535,6 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "sacrifices a 1/1 token to Deadly Dispute",
     rule: "A 1/1 token for two cards and a Treasure is a card up and more.",
-    kind: "training",
     position(registry) {
       // The Skullclamp scenario's root from the other side (probed
       // 2026-10-03): v2 casts Deadly Dispute on a Treasure, or a mobilize

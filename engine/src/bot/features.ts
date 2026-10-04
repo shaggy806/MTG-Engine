@@ -93,6 +93,8 @@ export const FEATURE_KEYS = [
   "tokenEngines",
   "earlyRemoval",
   "earlyMana",
+  "smallTokens",
+  "lifeSurplus",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -107,6 +109,8 @@ const SUBTRACTED: ReadonlySet<string> = new Set([
   "libraryDanger",
   "idlePower",
   "threat",
+  "smallTokens",
+  "lifeSurplus",
 ]);
 
 /**
@@ -130,6 +134,16 @@ const SUBTRACTED: ReadonlySet<string> = new Set([
 const LIFE_DANGER_AT = 15;
 
 /**
+ * The other end of `life`'s curve: past this, a point of life buys less. At a
+ * flat 0.5 a point, six life at 35 cost 3 — a card and a half — so a 1/1
+ * token that chumped a Craw Wurm there was worth keeping only if worth more
+ * than that, while Deadly Dispute trades one for about a card and a Treasure
+ * (2.5). `lifeSurplus` takes some of each point above this back — of our own
+ * life only. The user's call (2026-10-04): life above 30 counts for less.
+ */
+const LIFE_SURPLUS_ABOVE = 30;
+
+/**
  * What losing `damage` life from `life` costs the evaluation: `life` a
  * point, plus `lifeDanger` for each point that lands below
  * {@link LIFE_DANGER_AT} — the evaluation's own bend, for the cheap
@@ -139,10 +153,15 @@ const LIFE_DANGER_AT = 15;
 export function lifeCost(
   life: number,
   damage: number,
-  w: { readonly life: number; readonly lifeDanger: number },
+  w: { readonly life: number; readonly lifeDanger: number; readonly lifeSurplus: number },
 ): number {
   const below = (at: number): number => Math.max(0, LIFE_DANGER_AT - at);
-  return damage * w.life + (below(life - damage) - below(life)) * w.lifeDanger;
+  const above = (at: number): number => Math.max(0, at - LIFE_SURPLUS_ABOVE);
+  return (
+    damage * w.life +
+    (below(life - damage) - below(life)) * w.lifeDanger -
+    (above(life) - above(life - damage)) * w.lifeSurplus
+  );
 }
 
 /**
@@ -656,6 +675,7 @@ function playerFeaturesUncached(
   const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost).length;
   let commanderOnBoard = 0;
   let idlePower = 0;
+  let smallTokens = 0;
   /** Noncreature tokens by name — see `TOKEN_CAP` — and whether they're
    * one-shot resources (`isResourceToken`). */
   const tokenPiles = new Map<string, { count: number; resource: boolean }>();
@@ -685,6 +705,11 @@ function playerFeaturesUncached(
       power += damage * n;
       toughness += c.toughness * n;
       if (count(c, EVASION) > 0) evasivePower += damage * n;
+      // A 1/1 token: `creatures` prices every body alike, so before this one
+      // outweighed two cards and v2 wouldn't Skullclamp it or feed it to
+      // Deadly Dispute. Tokens only — a 1/1 card (Sakura-Tribe Elder) usually
+      // does something besides.
+      if (object.isToken && damage <= 1 && c.toughness <= 1) smallTokens += n;
       combatKeywords += count(c, COMBAT_KEYWORDS) * n;
       if (!object.tapped && !c.restrictions.has("cant-block") && (deterring?.has(id) ?? true)) {
         untappedCreatures += n;
@@ -830,6 +855,10 @@ function playerFeaturesUncached(
   return {
     life: p.life,
     lifeDanger: Math.max(0, LIFE_DANGER_AT - p.life),
+    // Our own only: our spare life is a resource to spend, but an opponent's
+    // is still the clock — discounting theirs too made chip damage at 40
+    // worth less, and `bot:diff` showed v2 holding back a dozen attacks.
+    lifeSurplus: isMe ? Math.max(0, p.life - LIFE_SURPLUS_ABOVE) : 0,
     // The nearest loss that isn't life: the worst commander's damage, or
     // poison on the same scale (10 counters lose as 21 damage does). Folded
     // into one term, so the fitted weight reads poison too without a refit.
@@ -881,5 +910,6 @@ function playerFeaturesUncached(
     // `nonlandMana`: a turn-one Sol Ring is worth killing then and much less
     // by turn six (the user's ask, 2026-10-04).
     earlyMana: nonlandMana * earlyManaShare(state),
+    smallTokens,
   };
 }

@@ -152,7 +152,7 @@ under count budgets).
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).
-- **More training scenarios.** 109 hand-built scenarios, 107 of them gating
+- **More training scenarios.** 109 hand-built scenarios, all of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
@@ -172,16 +172,13 @@ under count budgets).
   one entry. Add one when a live game shows a deck's bot playing against its plan, with a gate
   scenario that fails without it. Kinds not built: cards to cast first or hold, attack
   eagerness, and opponents' biases (milling an opponent's Teval still reads as neutral to us).
-- **Skullclamp and Deadly Dispute on a 1/1 token.** v2 passes on both (training scenario
-  "Skullclamps a 1/1 token for two cards"; Deadly Dispute probed 2026-10-03, cast on a Treasure
-  but not a Soldier token, `docs/plans/deck-autopsies.md`): two cards score just under a 1/1 body
-  and its point of attack, since every creature counts `creatures` 2.5 whatever its size.
-  `bot:fit-scenarios` finds `creatures` 2.5 → 2 breaks no gate scenario. Tried 2026-10-02:
-  `bot:diff` over six four-player games changed 12 of 11,553 decisions, mostly more token blocks
-  and removal ahead of creatures, Sakura-Tribe Elder's land taken (right) and a 1/1 Rat token
-  chump-blocking a 3/3 at 25 life (wrong) — not shipped. Deadly Dispute makes it more than
-  Skullclamp: a small creature's flat value is the question, weighed against the chump blocks it
-  would bring back.
+- **A body's worth on a wide board** (the user's question, 2026-10-04): every creature counts
+  `creatures` 2.5 whether it's the only one or the twentieth, so the tenth Soldier token is priced
+  like the first. A value that falls off with board size would let a wide board spend bodies
+  (sacrifice outlets, chump blocks) more freely. Measure it against the chump scenarios at 35.
+- **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
+  Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
+  token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
 - **A smarter default trigger order.** A player who orders their own triggers is asked (the
   `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots
   included, gets the engine's order: `stackFirst` (evoke's sacrifice), then detection order

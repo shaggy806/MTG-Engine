@@ -547,6 +547,18 @@ against 2b1f63c8: 22 of 27,452 decisions over 12 four-player games — Arcane Si
 Dragonkind cast ahead of spells in rounds 2–3, Dismantling Wave at a Sol Ring over cycling it,
 a Lightning Bolt held from a Scavenging Ooze, and a few attacks and blocks.
 
+**After the plan: tokens and spare life (2026-10-04, the user's call).** Two terms that only work
+together. `smallTokens` (1.4, subtracted): creature tokens of 1 power and 1 toughness, whose body
+`creatures` priced like any other — two cards from Skullclamp, or a card and a Treasure from
+Deadly Dispute, scored below one. But six life at 35 cost 3 at a flat 0.5 a point, more than
+Dispute pays, so no token value both refused the chump at 35 and made the trade. `lifeSurplus`
+(0.3, subtracted): our own life above 30, so a point there is worth 0.2. Tokens between 1.3
+(Dispute) and about 1.6 (the commander chump) are then right. Our own only: discounting an
+opponent's life too made chip damage at 40 worth less, and `bot:diff` showed a dozen attacks held
+back. Against b1fb5793 over 12 four-player games: 72 of 28,689 decisions — Staff of Compleation
+and War Room paying life for cards, token trades in blocks, and fewer 1/1 tokens made (March of
+the Multitudes, Raise the Alarm, Dawn of Hope); BACKLOG watches the last.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

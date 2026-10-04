@@ -189,7 +189,9 @@ in the same game going at someone else.
 - **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
   first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
   `"acting"` rollout for decks whose commander has a cast trigger.
-- **Token payoffs beyond engines**: what a token engine keeps making is priced now (above), but
+- **Token payoffs beyond engines** (sacrificing one for value is priced since 2026-10-04:
+  `smallTokens` 1.4 with `lifeSurplus` 0.3, so v2 Skullclamps a Soldier token and feeds one to
+  Deadly Dispute — `docs/plans/bot-effect-knowledge.md`): what a token engine keeps making is priced now (above), but
   sacrifice outlets and "leaves the battlefield" payoffs aren't. Probed 2026-10-03: v2 casts
   Deadly Dispute sacrificing a Treasure (+1.85 over passing) or a mobilize token due to die
   (+2.2), but not a 1/1 Soldier token (−1.3) — two cards and a Treasure score below a 1/1 token,

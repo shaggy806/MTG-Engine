@@ -161,6 +161,13 @@ export interface EvalWeights {
    * 6 (`features.ts`): acceleration is worth most, to have and to kill,
    * before everyone has lands. */
   readonly earlyMana: number;
+  /** Subtracted: creature tokens with at most 1 power and 1 toughness, whose
+   * body `creatures` prices like any other (`features.ts`). */
+  readonly smallTokens: number;
+  /** Subtracted: life above `LIFE_SURPLUS_ABOVE` (30, `features.ts`) — the
+   * part of `life` a point above it doesn't earn. At 0 the evaluation is
+   * exactly what it was before it existed. */
+  readonly lifeSurplus: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -345,6 +352,17 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // clears it by 1.8. Mid-game it's 0, so "later, destroys the Warhammer in
   // use over a Sol Ring" stands as it did.
   earlyMana: 6,
+  // A 1/1 token is worth less than its flat body, and life above 30 is worth
+  // less than life below it (the user's call, 2026-10-04) — the two together,
+  // since one without the other has no room: at a flat 0.5 a point, six life
+  // at 35 cost 3, more than Deadly Dispute pays for a token (about 2.5), so
+  // no token value both refused the chump and made the trade. With life
+  // above 30 at 0.2 a point, tokens between 1.3 ("sacrifices a 1/1 token to
+  // Deadly Dispute") and about 1.6 ("takes a commander's first small hit at
+  // 35 rather than chump") are right; 1.4 clears Dispute by 0.13 and
+  // Skullclamp by 1.3.
+  smallTokens: 1.4,
+  lifeSurplus: 0.3,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25
