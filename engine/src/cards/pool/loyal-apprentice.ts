@@ -20,7 +20,7 @@ export default defineCard({
   triggered: [
     {
       trigger: { on: "step-begins", step: "begin-combat", who: "you" },
-      condition: { kind: "controls", filter: { isCommander: true, controlledBy: "you" }, atLeast: 1 },
+      condition: { kind: "controls", filter: { isCommander: true, controlledBy: "you", ownedBy: "you" }, atLeast: 1 },
       targets: [],
       effect: { kind: "create-token", token: "Thopter Token", count: 1, gainUntilEndOfTurn: ["haste"] },
       resolve: null,

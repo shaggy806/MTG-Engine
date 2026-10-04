@@ -17,7 +17,7 @@ export default defineCard({
       trigger: { on: "step-begins", step: "begin-combat", who: "you" },
       condition: {
         kind: "controls",
-        filter: { isCommander: true, controlledBy: "you" },
+        filter: { isCommander: true, controlledBy: "you", ownedBy: "you" },
         atLeast: 1,
       },
       targets: [],

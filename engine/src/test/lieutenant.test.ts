@@ -68,6 +68,18 @@ describe("Thunderfoot Baloth", () => {
     expect(game.characteristics(other).keywords.has("trample")).toBe(true);
   });
 
+  it("doesn't count an opponent's commander you've gained control of", () => {
+    // "Your commander" is the one you own (rule 903.3); a stolen commander is
+    // a commander you control, not yours.
+    const game = makeGame();
+    game.advanceUntil((s) => s.priority.holder === A);
+    const stolen = game.debugSpawn("Atarka, World Render", B, "battlefield");
+    game.state.objects[stolen].isCommander = true;
+    game.state.objects[stolen].controller = A;
+    const baloth = game.debugSpawn("Thunderfoot Baloth", A, "battlefield");
+    expect(game.characteristics(baloth).power).toBe(5);
+  });
+
   it("leaves an opponent's creatures alone", () => {
     const game = makeGame();
     game.advanceUntil((s) => s.priority.holder === A);

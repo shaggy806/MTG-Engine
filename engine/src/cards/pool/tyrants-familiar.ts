@@ -19,7 +19,7 @@ export default defineCard({
       // `CardFilter.isCommander` already expresses it.
       condition: {
         kind: "controls",
-        filter: { isCommander: true, controlledBy: "you" },
+        filter: { isCommander: true, controlledBy: "you", ownedBy: "you" },
         atLeast: 1,
       },
       grantPt: [2, 2],

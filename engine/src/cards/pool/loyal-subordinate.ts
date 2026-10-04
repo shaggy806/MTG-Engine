@@ -2,7 +2,7 @@ import { defineCard } from "../define.js";
 
 const CONTROLS_COMMANDER = {
   kind: "controls",
-  filter: { isCommander: true, controlledBy: "you" },
+  filter: { isCommander: true, controlledBy: "you", ownedBy: "you" },
   atLeast: 1,
 } as const;
 
