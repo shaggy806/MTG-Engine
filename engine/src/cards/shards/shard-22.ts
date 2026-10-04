@@ -89,6 +89,7 @@ import _poolHighlandGame from "../pool/highland-game.js";
 import _poolHomunculusHorde from "../pool/homunculus-horde.js";
 import _poolHonorGuard from "../pool/honor-guard.js";
 import _poolHoverBarrier from "../pool/hover-barrier.js";
+import _poolIconOfAncestry from "../pool/icon-of-ancestry.js";
 import _poolImpulsivePilferer from "../pool/impulsive-pilferer.js";
 import _poolInexorableTide from "../pool/inexorable-tide.js";
 import _poolIntrepidTenderfoot from "../pool/intrepid-tenderfoot.js";
@@ -152,6 +153,7 @@ import _poolRubblebackRhino from "../pool/rubbleback-rhino.js";
 import _poolRubblebeltMaverick from "../pool/rubblebelt-maverick.js";
 import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
+import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
 import _poolSealOfStrength from "../pool/seal-of-strength.js";
@@ -216,6 +218,7 @@ import _poolWhisperingShade from "../pool/whispering-shade.js";
 import _poolWildGriffin from "../pool/wild-griffin.js";
 import _poolWilyBandar from "../pool/wily-bandar.js";
 import _poolWindbornMuse from "../pool/windborn-muse.js";
+import _poolWirewoodLodge from "../pool/wirewood-lodge.js";
 import _poolWuInfantry from "../pool/wu-infantry.js";
 import _poolWydwenTheBitingGale from "../pool/wydwen-the-biting-gale.js";
 import _poolYargleAndMultani from "../pool/yargle-and-multani.js";
@@ -317,6 +320,7 @@ const shard: CardShard = {
     _poolHomunculusHorde,
     _poolHonorGuard,
     _poolHoverBarrier,
+    _poolIconOfAncestry,
     _poolImpulsivePilferer,
     _poolInexorableTide,
     _poolIntrepidTenderfoot,
@@ -380,6 +384,7 @@ const shard: CardShard = {
     _poolRubblebeltMaverick,
     _poolRunAwayTogether,
     _poolRustedSentinel,
+    _poolSamwiseGamgee,
     _poolScarecrone,
     _poolScavengingScarab,
     _poolSealOfStrength,
@@ -444,6 +449,7 @@ const shard: CardShard = {
     _poolWildGriffin,
     _poolWilyBandar,
     _poolWindbornMuse,
+    _poolWirewoodLodge,
     _poolWuInfantry,
     _poolWydwenTheBitingGale,
     _poolYargleAndMultani,

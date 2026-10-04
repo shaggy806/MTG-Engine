@@ -82,6 +82,7 @@ import _poolGhostlyVisit from "../pool/ghostly-visit.js";
 import _poolGiantSpectacle from "../pool/giant-spectacle.js";
 import _poolGnarledMass from "../pool/gnarled-mass.js";
 import _poolGoobbueGardener from "../pool/goobbue-gardener.js";
+import _poolGreaterAuramancy from "../pool/greater-auramancy.js";
 import _poolHaazdaOfficer from "../pool/haazda-officer.js";
 import _poolHaliyaGuidedByLight from "../pool/haliya-guided-by-light.js";
 import _poolHarrierStrix from "../pool/harrier-strix.js";
@@ -114,6 +115,7 @@ import _poolMinesOfMoria from "../pool/mines-of-moria.js";
 import _poolMireTriton from "../pool/mire-triton.js";
 import _poolMoltenBlast from "../pool/molten-blast.js";
 import _poolMurmuringMystic from "../pool/murmuring-mystic.js";
+import _poolMutilate from "../pool/mutilate.js";
 import _poolMyrConvert from "../pool/myr-convert.js";
 import _poolMyrKinsmith from "../pool/myr-kinsmith.js";
 import _poolNantukoHusk from "../pool/nantuko-husk.js";
@@ -168,6 +170,7 @@ import _poolSlateOfAncestry from "../pool/slate-of-ancestry.js";
 import _poolSlipperyKarst from "../pool/slippery-karst.js";
 import _poolSpectacularSpiderMan from "../pool/spectacular-spider-man.js";
 import _poolSpellbook from "../pool/spellbook.js";
+import _poolSteelbaneHydra from "../pool/steelbane-hydra.js";
 import _poolSternProctor from "../pool/stern-proctor.js";
 import _poolStrixLookout from "../pool/strix-lookout.js";
 import _poolSunbakedCanyon from "../pool/sunbaked-canyon.js";
@@ -293,6 +296,7 @@ const shard: CardShard = {
     _poolGiantSpectacle,
     _poolGnarledMass,
     _poolGoobbueGardener,
+    _poolGreaterAuramancy,
     _poolHaazdaOfficer,
     _poolHaliyaGuidedByLight,
     _poolHarrierStrix,
@@ -325,6 +329,7 @@ const shard: CardShard = {
     _poolMireTriton,
     _poolMoltenBlast,
     _poolMurmuringMystic,
+    _poolMutilate,
     _poolMyrConvert,
     _poolMyrKinsmith,
     _poolNantukoHusk,
@@ -379,6 +384,7 @@ const shard: CardShard = {
     _poolSlipperyKarst,
     _poolSpectacularSpiderMan,
     _poolSpellbook,
+    _poolSteelbaneHydra,
     _poolSternProctor,
     _poolStrixLookout,
     _poolSunbakedCanyon,

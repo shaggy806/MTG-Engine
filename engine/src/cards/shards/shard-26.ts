@@ -43,6 +43,7 @@ import _poolDrakewingKrasis from "../pool/drakewing-krasis.js";
 import _poolDrownerOfSecrets from "../pool/drowner-of-secrets.js";
 import _poolDuskshellCrawler from "../pool/duskshell-crawler.js";
 import _poolEarthElemental from "../pool/earth-elemental.js";
+import _poolEarthshakerDreadmaw from "../pool/earthshaker-dreadmaw.js";
 import _poolEliteArrester from "../pool/elite-arrester.js";
 import _poolElvishArchdruid from "../pool/elvish-archdruid.js";
 import _poolElvishArchers from "../pool/elvish-archers.js";
@@ -123,6 +124,7 @@ import _poolMyrScrapling from "../pool/myr-scrapling.js";
 import _poolMysticSanctuary from "../pool/mystic-sanctuary.js";
 import _poolNaturalOrder from "../pool/natural-order.js";
 import _poolNephaliaMoondrakes from "../pool/nephalia-moondrakes.js";
+import _poolNetherTraitor from "../pool/nether-traitor.js";
 import _poolNeurokHoversail from "../pool/neurok-hoversail.js";
 import _poolNeutralize from "../pool/neutralize.js";
 import _poolNorwoodRanger from "../pool/norwood-ranger.js";
@@ -138,6 +140,7 @@ import _poolPixieQueen from "../pool/pixie-queen.js";
 import _poolPortTown from "../pool/port-town.js";
 import _poolProdigalSorcerer from "../pool/prodigal-sorcerer.js";
 import _poolPygmyRazorback from "../pool/pygmy-razorback.js";
+import _poolQarsiRevenant from "../pool/qarsi-revenant.js";
 import _poolRavenousDaggertooth from "../pool/ravenous-daggertooth.js";
 import _poolRavenousLindwurm from "../pool/ravenous-lindwurm.js";
 import _poolReassemblingSkeleton from "../pool/reassembling-skeleton.js";
@@ -261,6 +264,7 @@ const shard: CardShard = {
     _poolDrownerOfSecrets,
     _poolDuskshellCrawler,
     _poolEarthElemental,
+    _poolEarthshakerDreadmaw,
     _poolEliteArrester,
     _poolElvishArchdruid,
     _poolElvishArchers,
@@ -341,6 +345,7 @@ const shard: CardShard = {
     _poolMysticSanctuary,
     _poolNaturalOrder,
     _poolNephaliaMoondrakes,
+    _poolNetherTraitor,
     _poolNeurokHoversail,
     _poolNeutralize,
     _poolNorwoodRanger,
@@ -356,6 +361,7 @@ const shard: CardShard = {
     _poolPortTown,
     _poolProdigalSorcerer,
     _poolPygmyRazorback,
+    _poolQarsiRevenant,
     _poolRavenousDaggertooth,
     _poolRavenousLindwurm,
     _poolReassemblingSkeleton,

@@ -81,6 +81,7 @@ import _poolGloomhunter from "../pool/gloomhunter.js";
 import _poolGloomlakeVerge from "../pool/gloomlake-verge.js";
 import _poolGlorybringer from "../pool/glorybringer.js";
 import _poolGoblinWarDrums from "../pool/goblin-war-drums.js";
+import _poolGodEternalOketra from "../pool/god-eternal-oketra.js";
 import _poolGoldmawChampion from "../pool/goldmaw-champion.js";
 import _poolGoldveinHydra from "../pool/goldvein-hydra.js";
 import _poolGoreclawTerrorOfQalSisma from "../pool/goreclaw-terror-of-qal-sisma.js";
@@ -158,10 +159,12 @@ import _poolSavaiCrystal from "../pool/savai-crystal.js";
 import _poolScourForScrap from "../pool/scour-for-scrap.js";
 import _poolScourFromExistence from "../pool/scour-from-existence.js";
 import _poolScouringSwarm from "../pool/scouring-swarm.js";
+import _poolSedgemoorWitch from "../pool/sedgemoor-witch.js";
 import _poolSeraphOfDawn from "../pool/seraph-of-dawn.js";
 import _poolShardingSphinx from "../pool/sharding-sphinx.js";
 import _poolShikoAndNarsetUnified from "../pool/shiko-and-narset-unified.js";
 import _poolShizoDeathsStorehouse from "../pool/shizo-deaths-storehouse.js";
+import _poolSilkguard from "../pool/silkguard.js";
 import _poolSimicAscendancy from "../pool/simic-ascendancy.js";
 import _poolSkyclaveBasilica from "../pool/skyclave-basilica.js";
 import _poolSkyspearCavalry from "../pool/skyspear-cavalry.js";
@@ -302,6 +305,7 @@ const shard: CardShard = {
     _poolGloomlakeVerge,
     _poolGlorybringer,
     _poolGoblinWarDrums,
+    _poolGodEternalOketra,
     _poolGoldmawChampion,
     _poolGoldveinHydra,
     _poolGoreclawTerrorOfQalSisma,
@@ -379,10 +383,12 @@ const shard: CardShard = {
     _poolScourForScrap,
     _poolScourFromExistence,
     _poolScouringSwarm,
+    _poolSedgemoorWitch,
     _poolSeraphOfDawn,
     _poolShardingSphinx,
     _poolShikoAndNarsetUnified,
     _poolShizoDeathsStorehouse,
+    _poolSilkguard,
     _poolSimicAscendancy,
     _poolSkyclaveBasilica,
     _poolSkyspearCavalry,

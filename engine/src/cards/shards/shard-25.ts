@@ -15,6 +15,7 @@ import _poolBaSingSe from "../pool/ba-sing-se.js";
 import _poolBastionOfRemembrance from "../pool/bastion-of-remembrance.js";
 import _poolBastionProtector from "../pool/bastion-protector.js";
 import _poolBendersWaterskin from "../pool/benders-waterskin.js";
+import _poolBerserkersOnslaught from "../pool/berserkers-onslaught.js";
 import _poolBindingMummy from "../pool/binding-mummy.js";
 import _poolBirthingPod from "../pool/birthing-pod.js";
 import _poolBlazingVolley from "../pool/blazing-volley.js";
@@ -131,6 +132,7 @@ import _poolOldGrowthGrove from "../pool/old-growth-grove.js";
 import _poolOmashuCity from "../pool/omashu-city.js";
 import _poolOpportunisticDragon from "../pool/opportunistic-dragon.js";
 import _poolOrnithopter from "../pool/ornithopter.js";
+import _poolOrthionHeroOfLavabrink from "../pool/orthion-hero-of-lavabrink.js";
 import _poolOscorpResearchTeam from "../pool/oscorp-research-team.js";
 import _poolPhyrexianAltar from "../pool/phyrexian-altar.js";
 import _poolPitilessPlunderer from "../pool/pitiless-plunderer.js";
@@ -221,6 +223,7 @@ import _tokensElfWarriorToken from "../tokens/elf-warrior-token.js";
 import _tokensGlimmerToken from "../tokens/glimmer-token.js";
 import _tokensPhyrexianWurmDeathtouch from "../tokens/phyrexian-wurm-deathtouch.js";
 import _tokensWizardTokenKuja from "../tokens/wizard-token-kuja.js";
+import _tokensWurmToken from "../tokens/wurm-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -236,6 +239,7 @@ const shard: CardShard = {
     _poolBastionOfRemembrance,
     _poolBastionProtector,
     _poolBendersWaterskin,
+    _poolBerserkersOnslaught,
     _poolBindingMummy,
     _poolBirthingPod,
     _poolBlazingVolley,
@@ -352,6 +356,7 @@ const shard: CardShard = {
     _poolOmashuCity,
     _poolOpportunisticDragon,
     _poolOrnithopter,
+    _poolOrthionHeroOfLavabrink,
     _poolOscorpResearchTeam,
     _poolPhyrexianAltar,
     _poolPitilessPlunderer,
@@ -444,6 +449,7 @@ const shard: CardShard = {
     _tokensGlimmerToken,
     _tokensPhyrexianWurmDeathtouch,
     _tokensWizardTokenKuja,
+    _tokensWurmToken,
   ],
 };
 

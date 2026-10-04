@@ -52,6 +52,7 @@ import _poolDesertTwister from "../pool/desert-twister.js";
 import _poolDinaSoulSteeper from "../pool/dina-soul-steeper.js";
 import _poolDoomedDissenter from "../pool/doomed-dissenter.js";
 import _poolDoomedTraveler from "../pool/doomed-traveler.js";
+import _poolDowsingDagger from "../pool/dowsing-dagger.js";
 import _poolDragonEngine from "../pool/dragon-engine.js";
 import _poolDrogskolShieldmate from "../pool/drogskol-shieldmate.js";
 import _poolDyingToServe from "../pool/dying-to-serve.js";
@@ -281,6 +282,7 @@ const shard: CardShard = {
     _poolDinaSoulSteeper,
     _poolDoomedDissenter,
     _poolDoomedTraveler,
+    _poolDowsingDagger,
     _poolDragonEngine,
     _poolDrogskolShieldmate,
     _poolDyingToServe,

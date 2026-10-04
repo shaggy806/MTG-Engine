@@ -35,6 +35,7 @@ import _poolCamaraderie from "../pool/camaraderie.js";
 import _poolCapashenTemplar from "../pool/capashen-templar.js";
 import _poolCathedralSanctifier from "../pool/cathedral-sanctifier.js";
 import _poolChosenByHeliod from "../pool/chosen-by-heliod.js";
+import _poolCircleOfPower from "../pool/circle-of-power.js";
 import _poolCitanulStalwart from "../pool/citanul-stalwart.js";
 import _poolCivicStalwart from "../pool/civic-stalwart.js";
 import _poolClifftopRetreat from "../pool/clifftop-retreat.js";
@@ -98,6 +99,7 @@ import _poolHoardRobber from "../pool/hoard-robber.js";
 import _poolHoardSmelterDragon from "../pool/hoard-smelter-dragon.js";
 import _poolHookHauntDrifter from "../pool/hook-haunt-drifter.js";
 import _poolHovermyr from "../pool/hovermyr.js";
+import _poolHullBreach from "../pool/hull-breach.js";
 import _poolInallaArchmageRitualist from "../pool/inalla-archmage-ritualist.js";
 import _poolIndulgingPatrician from "../pool/indulging-patrician.js";
 import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
@@ -208,6 +210,7 @@ import _poolStormfistCrusader from "../pool/stormfist-crusader.js";
 import _poolStreetbreakerWurm from "../pool/streetbreaker-wurm.js";
 import _poolStrengthOfTheHarvest from "../pool/strength-of-the-harvest.js";
 import _poolSummonPrimalOdin from "../pool/summon-primal-odin.js";
+import _poolSweepingCleave from "../pool/sweeping-cleave.js";
 import _poolSwordOfTheAnimist from "../pool/sword-of-the-animist.js";
 import _poolSwornCompanions from "../pool/sworn-companions.js";
 import _poolTaintedWood from "../pool/tainted-wood.js";
@@ -290,6 +293,7 @@ const shard: CardShard = {
     _poolCapashenTemplar,
     _poolCathedralSanctifier,
     _poolChosenByHeliod,
+    _poolCircleOfPower,
     _poolCitanulStalwart,
     _poolCivicStalwart,
     _poolClifftopRetreat,
@@ -353,6 +357,7 @@ const shard: CardShard = {
     _poolHoardSmelterDragon,
     _poolHookHauntDrifter,
     _poolHovermyr,
+    _poolHullBreach,
     _poolInallaArchmageRitualist,
     _poolIndulgingPatrician,
     _poolInspiringOverseer,
@@ -463,6 +468,7 @@ const shard: CardShard = {
     _poolStreetbreakerWurm,
     _poolStrengthOfTheHarvest,
     _poolSummonPrimalOdin,
+    _poolSweepingCleave,
     _poolSwordOfTheAnimist,
     _poolSwornCompanions,
     _poolTaintedWood,

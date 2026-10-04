@@ -216,6 +216,7 @@ import _poolWanderersIntervention from "../pool/wanderers-intervention.js";
 import _poolWarleadersCall from "../pool/warleaders-call.js";
 import _poolWatcherInTheMist from "../pool/watcher-in-the-mist.js";
 import _poolWateryGrave from "../pool/watery-grave.js";
+import _poolWavebreakHippocamp from "../pool/wavebreak-hippocamp.js";
 import _poolWhiteSunsTwilight from "../pool/white-suns-twilight.js";
 import _poolWightOfTheReliquary from "../pool/wight-of-the-reliquary.js";
 import _poolWildwoodPatrol from "../pool/wildwood-patrol.js";
@@ -445,6 +446,7 @@ const shard: CardShard = {
     _poolWarleadersCall,
     _poolWatcherInTheMist,
     _poolWateryGrave,
+    _poolWavebreakHippocamp,
     _poolWhiteSunsTwilight,
     _poolWightOfTheReliquary,
     _poolWildwoodPatrol,

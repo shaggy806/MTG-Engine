@@ -216,6 +216,7 @@ import _poolWoodlandDruid from "../pool/woodland-druid.js";
 import _poolYahenniUndyingPartisan from "../pool/yahenni-undying-partisan.js";
 import _poolYawningFissure from "../pool/yawning-fissure.js";
 import _poolYevasForcemage from "../pool/yevas-forcemage.js";
+import _poolYourTempleIsUnderAttack from "../pool/your-temple-is-under-attack.js";
 import _poolZealousGuardian from "../pool/zealous-guardian.js";
 import _poolZinniaValleysVoice from "../pool/zinnia-valleys-voice.js";
 import _poolZodiacPig from "../pool/zodiac-pig.js";
@@ -444,6 +445,7 @@ const shard: CardShard = {
     _poolYahenniUndyingPartisan,
     _poolYawningFissure,
     _poolYevasForcemage,
+    _poolYourTempleIsUnderAttack,
     _poolZealousGuardian,
     _poolZinniaValleysVoice,
     _poolZodiacPig,

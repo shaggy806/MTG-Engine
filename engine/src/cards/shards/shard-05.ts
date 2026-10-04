@@ -67,6 +67,7 @@ import _poolDuskdaleWurm from "../pool/duskdale-wurm.js";
 import _poolElfhamePalace from "../pool/elfhame-palace.js";
 import _poolElvenChorus from "../pool/elven-chorus.js";
 import _poolEmeraldOryx from "../pool/emerald-oryx.js";
+import _poolEndbringer from "../pool/endbringer.js";
 import _poolEnormousBaloth from "../pool/enormous-baloth.js";
 import _poolEternalWitness from "../pool/eternal-witness.js";
 import _poolEyeblightAssassin from "../pool/eyeblight-assassin.js";
@@ -293,6 +294,7 @@ const shard: CardShard = {
     _poolElfhamePalace,
     _poolElvenChorus,
     _poolEmeraldOryx,
+    _poolEndbringer,
     _poolEnormousBaloth,
     _poolEternalWitness,
     _poolEyeblightAssassin,

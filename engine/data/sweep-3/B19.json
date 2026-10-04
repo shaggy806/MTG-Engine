@@ -1,0 +1,449 @@
+{
+  "batch": "B19",
+  "status": "complete",
+  "ranks": "2347-2428",
+  "authored": [
+    {
+      "name": "Silkguard",
+      "files": [
+        "engine/src/cards/pool/silkguard.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sandwurm Convergence",
+      "files": [
+        "engine/src/cards/pool/sandwurm-convergence.ts",
+        "engine/src/cards/tokens/wurm-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sedgemoor Witch",
+      "files": [
+        "engine/src/cards/pool/sedgemoor-witch.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Whelming Wave",
+      "files": [
+        "engine/src/cards/pool/whelming-wave.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Samwise Gamgee",
+      "files": [
+        "engine/src/cards/pool/samwise-gamgee.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Disdainful Stroke",
+      "files": [
+        "engine/src/cards/pool/disdainful-stroke.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Circle of Power",
+      "files": [
+        "engine/src/cards/pool/circle-of-power.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Your Temple Is Under Attack",
+      "files": [
+        "engine/src/cards/pool/your-temple-is-under-attack.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Lord Skitter, Sewer King",
+      "files": [
+        "engine/src/cards/pool/lord-skitter-sewer-king.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Halvar, God of Battle",
+      "files": [
+        "engine/src/cards/pool/halvar-god-of-battle.ts",
+        "engine/src/cards/pool/sword-of-the-realms.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Qarsi Revenant",
+      "files": [
+        "engine/src/cards/pool/qarsi-revenant.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Orthion, Hero of Lavabrink",
+      "files": [
+        "engine/src/cards/pool/orthion-hero-of-lavabrink.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Two-Handed Axe",
+      "files": [
+        "engine/src/cards/pool/two-handed-axe.ts",
+        "engine/src/cards/pool/sweeping-cleave.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Greater Auramancy",
+      "files": [
+        "engine/src/cards/pool/greater-auramancy.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Steelbane Hydra",
+      "files": [
+        "engine/src/cards/pool/steelbane-hydra.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Together Forever",
+      "files": [
+        "engine/src/cards/pool/together-forever.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Nether Traitor",
+      "files": [
+        "engine/src/cards/pool/nether-traitor.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Earthshaker Dreadmaw",
+      "files": [
+        "engine/src/cards/pool/earthshaker-dreadmaw.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Urban Evolution",
+      "files": [
+        "engine/src/cards/pool/urban-evolution.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Wirewood Lodge",
+      "files": [
+        "engine/src/cards/pool/wirewood-lodge.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Dowsing Dagger",
+      "files": [
+        "engine/src/cards/pool/dowsing-dagger.ts",
+        "engine/src/cards/pool/lost-vale.ts",
+        "engine/src/cards/tokens/plant-token-defender.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Sol Talisman",
+      "files": [
+        "engine/src/cards/pool/sol-talisman.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Berserkers' Onslaught",
+      "files": [
+        "engine/src/cards/pool/berserkers-onslaught.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Zealous Conscripts",
+      "files": [
+        "engine/src/cards/pool/zealous-conscripts.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Endbringer",
+      "files": [
+        "engine/src/cards/pool/endbringer.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Codex Shredder",
+      "files": [
+        "engine/src/cards/pool/codex-shredder.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Liliana's Caress",
+      "files": [
+        "engine/src/cards/pool/lilianas-caress.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Wavebreak Hippocamp",
+      "files": [
+        "engine/src/cards/pool/wavebreak-hippocamp.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Hull Breach",
+      "files": [
+        "engine/src/cards/pool/hull-breach.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "God-Pharaoh's Statue",
+      "files": [
+        "engine/src/cards/pool/god-pharaohs-statue.ts"
+      ],
+      "tested": false
+    },
+    {
+      "name": "Icon of Ancestry",
+      "files": [
+        "engine/src/cards/pool/icon-of-ancestry.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Mutilate",
+      "files": [
+        "engine/src/cards/pool/mutilate.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Ioreth of the Healing House",
+      "files": [
+        "engine/src/cards/pool/ioreth-of-the-healing-house.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Insight Engine",
+      "files": [
+        "engine/src/cards/pool/insight-engine.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "God-Eternal Oketra",
+      "files": [
+        "engine/src/cards/pool/god-eternal-oketra.ts",
+        "engine/src/cards/tokens/zombie-warrior-token.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Abundant Growth",
+      "files": [
+        "engine/src/cards/pool/abundant-growth.ts"
+      ],
+      "tested": false
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Amonkhet Raceway",
+      "needs": [
+        "mechanic:speed"
+      ],
+      "why": "Start your engines! and Max speed: speed isn't built (it waits on the client, BACKLOG)."
+    },
+    {
+      "name": "Ringsight",
+      "needs": [
+        "mechanic:the-ring"
+      ],
+      "why": "The Ring tempts you; the Ring isn't modeled."
+    },
+    {
+      "name": "Fury",
+      "needs": [
+        "new:evoke-exile-card-cost"
+      ],
+      "why": "Evoke—Exile a red card from your hand: evoke takes only a mana cost (evokeCostsOf)."
+    },
+    {
+      "name": "Darksteel Colossus",
+      "needs": [
+        "new:self-shuffle-replacement-from-anywhere"
+      ],
+      "why": "\"If it would be put into a graveyard from anywhere, shuffle it into its owner's library instead\" (BACKLOG, Engine rules gaps)."
+    },
+    {
+      "name": "Perch Protection",
+      "needs": [
+        "new:phasing"
+      ],
+      "why": "If the gift was promised, all permanents you control phase out; phasing isn't modeled."
+    },
+    {
+      "name": "Bow of Nylea",
+      "needs": [
+        "effect:modal-activated-targeted-modes"
+      ],
+      "why": "A modal activated ability whose modes carry their own targets."
+    },
+    {
+      "name": "Aetheric Amplifier",
+      "needs": [
+        "effect:modal-activated-targeted-modes"
+      ],
+      "why": "A modal activated ability whose first mode targets a permanent."
+    },
+    {
+      "name": "Crowded Crypt",
+      "needs": [
+        "keyword:decayed"
+      ],
+      "why": "Zombie tokens with decayed; decayed isn't built."
+    },
+    {
+      "name": "The Indomitable",
+      "needs": [
+        "keyword:crew"
+      ],
+      "why": "A Vehicle with Crew 3; crew isn't built."
+    },
+    {
+      "name": "Pathrazer of Ulamog",
+      "needs": [
+        "new:cant-be-blocked-except-by-n"
+      ],
+      "why": "\"Can't be blocked except by three or more creatures\": only menace's fixed 2 exists (combat/blocking.ts)."
+    },
+    {
+      "name": "Regal Behemoth",
+      "needs": [
+        "new:tapped-for-mana-condition"
+      ],
+      "why": "\"Whenever you tap a land for mana while you're the monarch\": tappedForManaExtras never reads a triggered mana ability's condition."
+    },
+    {
+      "name": "Nine-Lives Familiar",
+      "needs": [
+        "new:put-onto-battlefield-counters-amount"
+      ],
+      "why": "Returns with one fewer revival counter: withCounters.amount is a fixed number, not the last-known count minus one."
+    },
+    {
+      "name": "Tinder Wall",
+      "needs": [
+        "new:target-creature-source-is-blocking"
+      ],
+      "why": "\"Target creature it's blocking\" has no target spec."
+    },
+    {
+      "name": "Not of This World",
+      "needs": [
+        "new:kindred-card-type"
+      ],
+      "why": "Kindred isn't modeled; also needs a \"spell or ability that targets a permanent you control\" target and a cost reduction keyed to the chosen target."
+    },
+    {
+      "name": "Sceptre of Eternal Glory",
+      "needs": [
+        "new:controls-n-same-name-condition"
+      ],
+      "why": "\"Three or more lands with the same name\": no condition counts permanents by shared name."
+    },
+    {
+      "name": "Conclave Mentor",
+      "needs": [
+        "new:additive-counter-replacement"
+      ],
+      "why": "\"That many plus one\": would-add-counter only multiplies (Doubling Season); no additive form, and no order asked beside a doubler (rule 616.1)."
+    },
+    {
+      "name": "Worldspine Wurm",
+      "needs": [
+        "new:self-put-into-graveyard-from-anywhere-trigger"
+      ],
+      "why": "\"When ~ is put into a graveyard from anywhere, shuffle it in\": put-into-graveyard can't watch its own arrival."
+    },
+    {
+      "name": "Bruenor Battlehammer",
+      "needs": [
+        "cost:ability-cost-modification"
+      ],
+      "why": "\"Pay {0} rather than the equip cost of the first equip ability you activate each turn\": no alternative cost for an activated ability."
+    },
+    {
+      "name": "Frenzied Baloth",
+      "needs": [
+        "new:damage-cant-be-prevented"
+      ],
+      "why": "\"Combat damage can't be prevented\": no such static; its other clauses exist."
+    },
+    {
+      "name": "Darksteel Monolith",
+      "needs": [
+        "new:alternative-cost-for-spells-limits"
+      ],
+      "why": "alternativeCostForSpells has no once-each-turn limit and no cast-from-hand restriction."
+    },
+    {
+      "name": "Sphinx of the Second Sun",
+      "needs": [
+        "new:additional-beginning-phase"
+      ],
+      "why": "An additional beginning phase after a postcombat main phase; only extra upkeep steps exist."
+    },
+    {
+      "name": "Llanowar Reborn",
+      "needs": [
+        "effect:move-counter"
+      ],
+      "why": "Graft moves a +1/+1 counter (rule 122.5): no move-counter effect."
+    },
+    {
+      "name": "Lim-Dûl's Vault",
+      "needs": [
+        "effect:repeat-process"
+      ],
+      "why": "Pay 1 life to cycle the five to the bottom and look again, as many times as you choose."
+    },
+    {
+      "name": "Airbender Ascension",
+      "needs": [
+        "keyword:airbend"
+      ],
+      "why": "Airbend isn't built."
+    },
+    {
+      "name": "Mimic Vat",
+      "needs": [
+        "new:linked-exile-token-copy"
+      ],
+      "why": "Token copy of a card exiled with it, and returning each other linked card to the graveyard: neither exists."
+    },
+    {
+      "name": "Professor Onyx",
+      "needs": [
+        "new:hidden-simultaneous-choices"
+      ],
+      "why": "−8: each opponent chooses a card hidden, then all are discarded at once (its ruling); each-player-may asks openly, one at a time."
+    }
+  ]
+}

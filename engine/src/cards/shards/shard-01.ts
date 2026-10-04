@@ -30,6 +30,7 @@ import _poolClaimTerritory from "../pool/claim-territory.js";
 import _poolClarionCathars from "../pool/clarion-cathars.js";
 import _poolClementTheWorrywort from "../pool/clement-the-worrywort.js";
 import _poolCloudheathDrake from "../pool/cloudheath-drake.js";
+import _poolCodexShredder from "../pool/codex-shredder.js";
 import _poolCosmicSpiderMan from "../pool/cosmic-spider-man.js";
 import _poolCourierHawk from "../pool/courier-hawk.js";
 import _poolDarkDeal from "../pool/dark-deal.js";
@@ -87,6 +88,7 @@ import _poolLifegift from "../pool/lifegift.js";
 import _poolLilianasDevotee from "../pool/lilianas-devotee.js";
 import _poolLilianasSpecter from "../pool/lilianas-specter.js";
 import _poolLimestoneGolem from "../pool/limestone-golem.js";
+import _poolLordSkitterSewerKing from "../pool/lord-skitter-sewer-king.js";
 import _poolLoreholdCampus from "../pool/lorehold-campus.js";
 import _poolLoxodonWayfarer from "../pool/loxodon-wayfarer.js";
 import _poolLuminousBonds from "../pool/luminous-bonds.js";
@@ -230,6 +232,7 @@ const shard: CardShard = {
     _poolClarionCathars,
     _poolClementTheWorrywort,
     _poolCloudheathDrake,
+    _poolCodexShredder,
     _poolCosmicSpiderMan,
     _poolCourierHawk,
     _poolDarkDeal,
@@ -287,6 +290,7 @@ const shard: CardShard = {
     _poolLilianasDevotee,
     _poolLilianasSpecter,
     _poolLimestoneGolem,
+    _poolLordSkitterSewerKing,
     _poolLoreholdCampus,
     _poolLoxodonWayfarer,
     _poolLuminousBonds,

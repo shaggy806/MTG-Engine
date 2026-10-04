@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2403 already implemented / 2597 missing (marks refreshed 2026-10-04)
+2439 already implemented / 2561 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2337,88 +2337,88 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2344  Chthonian Nightmare                      {1}{B}           Enchantment
 [x]  2345  Conduit of Ruin                          {6}              Creature — Eldrazi
 [x]  2346  Escape to the Wilds                      {3}{R}{G}        Sorcery
-[ ]  2347  Silkguard                                {X}{G}           Instant
+[x]  2347  Silkguard                                {X}{G}           Instant
 [ ]  2348  Sceptre of Eternal Glory                 {4}              Legendary Artifact
-[ ]  2349  Sandwurm Convergence                     {6}{G}{G}        Enchantment
+[x]  2349  Sandwurm Convergence                     {6}{G}{G}        Enchantment
 [x]  2350  Geothermal Bog                           {0}              Land — Swamp Mountain
 [x]  2351  Kiora, Behemoth Beckoner                 {2}{G/U}         Legendary Planeswalker — Kiora
 [x]  2352  Rograkh, Son of Rohgahh                  {0}              Legendary Creature — Kobold Warrior
 [ ]  2353  Leyline Tyrant                           {2}{R}{R}        Creature — Dragon
-[ ]  2354  Sedgemoor Witch                          {2}{B}           Creature — Human Warlock
+[x]  2354  Sedgemoor Witch                          {2}{B}           Creature — Human Warlock
 [x]  2355  The Lord of Pain                         {3}{B}{R}        Legendary Creature — Human Assassin
 [ ]  2356  Amonkhet Raceway                         {0}              Land
 [x]  2357  Thirsting Roots                          {G}              Sorcery
-[ ]  2358  Whelming Wave                            {2}{U}{U}        Sorcery
-[ ]  2359  Samwise Gamgee                           {G}{W}           Legendary Creature — Halfling Peasant
-[ ]  2360  Disdainful Stroke                        {1}{U}           Instant
+[x]  2358  Whelming Wave                            {2}{U}{U}        Sorcery
+[x]  2359  Samwise Gamgee                           {G}{W}           Legendary Creature — Halfling Peasant
+[x]  2360  Disdainful Stroke                        {1}{U}           Instant
 [x]  2361  Sabotender                               {1}{R}           Creature — Plant
 [x]  2362  Beanstalk Giant // Fertile Footsteps     {6}{G} // {2}{G} Creature — Giant // Sorcery — Adventure
 [ ]  2363  Conclave Mentor                          {G}{W}           Creature — Centaur Cleric
 [x]  2364  Toxrill, the Corrosive                   {5}{B}{B}        Legendary Creature — Slug Horror
-[ ]  2365  Circle of Power                          {3}{B}           Sorcery
+[x]  2365  Circle of Power                          {3}{B}           Sorcery
 [ ]  2366  Bow of Nylea                             {1}{G}{G}        Legendary Enchantment Artifact
 [ ]  2367  Worldspine Wurm                          {8}{G}{G}{G}     Creature — Wurm
 [ ]  2368  Bruenor Battlehammer                     {2}{R}{W}        Legendary Creature — Dwarf Warrior
 [x]  2369  Dictate of the Twin Gods                 {3}{R}{R}        Enchantment
 [x]  2370  Kona, Rescue Beastie                     {3}{G}           Legendary Creature — Beast Survivor
 [x]  2371  Animar, Soul of Elements                 {G}{U}{R}        Legendary Creature — Elemental
-[ ]  2372  Your Temple Is Under Attack              {2}{W}           Instant
-[ ]  2373  Lord Skitter, Sewer King                 {2}{B}           Legendary Creature — Rat Noble
+[x]  2372  Your Temple Is Under Attack              {2}{W}           Instant
+[x]  2373  Lord Skitter, Sewer King                 {2}{B}           Legendary Creature — Rat Noble
 [ ]  2374  Frenzied Baloth                          {G}{G}           Creature — Beast
 [ ]  2375  The Indomitable                          {2}{U}{U}        Legendary Artifact — Vehicle
 [x]  2376  Banishing Light                          {2}{W}           Enchantment
 [ ]  2377  Aetheric Amplifier                       {3}              Artifact
-[ ]  2378  Halvar, God of Battle // Sword of the Realms {4}              Legendary Creature — God // Legendary Artifact — Equipment
-[ ]  2379  Qarsi Revenant                           {1}{B}{B}        Creature — Vampire
-[ ]  2380  Orthion, Hero of Lavabrink               {3}{R}           Legendary Creature — Human Soldier
-[ ]  2381  Two-Handed Axe // Sweeping Cleave        {2}{R} // {1}{R} Artifact — Equipment // Instant — Adventure
-[ ]  2382  Greater Auramancy                        {1}{W}           Enchantment
-[ ]  2383  Steelbane Hydra                          {X}{G}{G}        Creature — Turtle Hydra
+[x]  2378  Halvar, God of Battle // Sword of the Realms {4}              Legendary Creature — God // Legendary Artifact — Equipment
+[x]  2379  Qarsi Revenant                           {1}{B}{B}        Creature — Vampire
+[x]  2380  Orthion, Hero of Lavabrink               {3}{R}           Legendary Creature — Human Soldier
+[x]  2381  Two-Handed Axe // Sweeping Cleave        {2}{R} // {1}{R} Artifact — Equipment // Instant — Adventure
+[x]  2382  Greater Auramancy                        {1}{W}           Enchantment
+[x]  2383  Steelbane Hydra                          {X}{G}{G}        Creature — Turtle Hydra
 [ ]  2384  Darksteel Monolith                       {8}              Artifact
 [ ]  2385  Sphinx of the Second Sun                 {6}{U}{U}        Creature — Sphinx
 [ ]  2386  Ringsight                                {1}{U}{B}        Sorcery
-[ ]  2387  Together Forever                         {W}{W}           Enchantment
-[ ]  2388  Nether Traitor                           {B}{B}           Creature — Spirit
+[x]  2387  Together Forever                         {W}{W}           Enchantment
+[x]  2388  Nether Traitor                           {B}{B}           Creature — Spirit
 [x]  2389  Zendikar Resurgent                       {5}{G}{G}        Enchantment
 [ ]  2390  Fury                                     {3}{R}{R}        Creature — Elemental Incarnation
-[ ]  2391  Earthshaker Dreadmaw                     {4}{G}{G}        Creature — Dinosaur
-[ ]  2392  Urban Evolution                          {3}{G}{U}        Sorcery
-[ ]  2393  Wirewood Lodge                           {0}              Land
-[ ]  2394  Dowsing Dagger // Lost Vale              {2}              Artifact — Equipment // Land
+[x]  2391  Earthshaker Dreadmaw                     {4}{G}{G}        Creature — Dinosaur
+[x]  2392  Urban Evolution                          {3}{G}{U}        Sorcery
+[x]  2393  Wirewood Lodge                           {0}              Land
+[x]  2394  Dowsing Dagger // Lost Vale              {2}              Artifact — Equipment // Land
 [ ]  2395  Llanowar Reborn                          {0}              Land
 [ ]  2396  Lim-Dûl's Vault                          {U}{B}           Instant
-[ ]  2397  Sol Talisman                             {0}              Artifact
+[x]  2397  Sol Talisman                             {0}              Artifact
 [ ]  2398  Perch Protection                         {4}{W}{W}        Instant
-[ ]  2399  Berserkers' Onslaught                    {3}{R}{R}        Enchantment
+[x]  2399  Berserkers' Onslaught                    {3}{R}{R}        Enchantment
 [x]  2400  Shivan Gorge                             {0}              Legendary Land
-[ ]  2401  Zealous Conscripts                       {4}{R}           Creature — Human Warrior
+[x]  2401  Zealous Conscripts                       {4}{R}           Creature — Human Warrior
 [ ]  2402  Airbender Ascension                      {1}{W}           Enchantment
 [ ]  2403  Professor Onyx                           {4}{B}{B}        Legendary Planeswalker — Liliana
-[ ]  2404  Endbringer                               {5}{C}           Creature — Eldrazi
+[x]  2404  Endbringer                               {5}{C}           Creature — Eldrazi
 [ ]  2405  Mimic Vat                                {3}              Artifact
 [x]  2406  Outpost Siege                            {3}{R}           Enchantment
 [x]  2407  Naturalize                               {1}{G}           Instant
 [ ]  2408  Darksteel Colossus                       {11}             Artifact Creature — Golem
-[ ]  2409  Codex Shredder                           {1}              Artifact
-[ ]  2410  Liliana's Caress                         {1}{B}           Enchantment
-[ ]  2411  Wavebreak Hippocamp                      {2}{U}           Enchantment Creature — Horse Fish
-[ ]  2412  Hull Breach                              {R}{G}           Sorcery
+[x]  2409  Codex Shredder                           {1}              Artifact
+[x]  2410  Liliana's Caress                         {1}{B}           Enchantment
+[x]  2411  Wavebreak Hippocamp                      {2}{U}           Enchantment Creature — Horse Fish
+[x]  2412  Hull Breach                              {R}{G}           Sorcery
 [ ]  2413  Pathrazer of Ulamog                      {11}             Creature — Eldrazi
 [x]  2414  Dawn of Hope                             {1}{W}           Enchantment
-[ ]  2415  God-Pharaoh's Statue                     {6}              Legendary Artifact
-[ ]  2416  Icon of Ancestry                         {3}              Artifact
+[x]  2415  God-Pharaoh's Statue                     {6}              Legendary Artifact
+[x]  2416  Icon of Ancestry                         {3}              Artifact
 [ ]  2417  Regal Behemoth                           {4}{G}{G}        Creature — Dinosaur
 [ ]  2418  Nine-Lives Familiar                      {1}{B}{B}        Creature — Cat
-[ ]  2419  Mutilate                                 {2}{B}{B}        Sorcery
-[ ]  2420  Ioreth of the Healing House              {2}{U}           Legendary Creature — Human Cleric
+[x]  2419  Mutilate                                 {2}{B}{B}        Sorcery
+[x]  2420  Ioreth of the Healing House              {2}{U}           Legendary Creature — Human Cleric
 [x]  2421  Lightning, Army of One                   {1}{R}{W}        Legendary Creature — Human Soldier
-[ ]  2422  Insight Engine                           {2}{U}           Artifact
+[x]  2422  Insight Engine                           {2}{U}           Artifact
 [x]  2423  Wear Down                                {1}{G}           Sorcery
 [ ]  2424  Tinder Wall                              {G}              Creature — Plant Wall
-[ ]  2425  God-Eternal Oketra                       {3}{W}{W}        Legendary Creature — Zombie God
+[x]  2425  God-Eternal Oketra                       {3}{W}{W}        Legendary Creature — Zombie God
 [ ]  2426  Not of This World                        {7}              Kindred Instant — Eldrazi
 [ ]  2427  Crowded Crypt                            {2}{B}           Artifact
-[ ]  2428  Abundant Growth                          {G}              Enchantment — Aura
+[x]  2428  Abundant Growth                          {G}              Enchantment — Aura
 [ ]  2429  Force of Despair                         {1}{B}{B}        Instant
 [ ]  2430  Winds of Change                          {R}              Sorcery
 [ ]  2431  Master Transmuter                        {3}{U}           Artifact Creature — Human Artificer

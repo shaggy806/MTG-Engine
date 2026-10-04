@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAangAirNomad from "../pool/aang-air-nomad.js";
+import _poolAbundantGrowth from "../pool/abundant-growth.js";
 import _poolAbzanFalconer from "../pool/abzan-falconer.js";
 import _poolAccursedDuneyard from "../pool/accursed-duneyard.js";
 import _poolAkkiAvalanchers from "../pool/akki-avalanchers.js";
@@ -95,6 +96,7 @@ import _poolHealersFlock from "../pool/healers-flock.js";
 import _poolHighlandWeald from "../pool/highland-weald.js";
 import _poolHillGiant from "../pool/hill-giant.js";
 import _poolHonor from "../pool/honor.js";
+import _poolInsightEngine from "../pool/insight-engine.js";
 import _poolIrenicussVileDuplication from "../pool/irenicuss-vile-duplication.js";
 import _poolIronMyr from "../pool/iron-myr.js";
 import _poolIzzetCluestone from "../pool/izzet-cluestone.js";
@@ -114,6 +116,7 @@ import _poolLierDiscipleOfTheDrowned from "../pool/lier-disciple-of-the-drowned.
 import _poolLightningRigCrew from "../pool/lightning-rig-crew.js";
 import _poolLoranOfTheThirdPath from "../pool/loran-of-the-third-path.js";
 import _poolLoreholdPledgemage from "../pool/lorehold-pledgemage.js";
+import _poolLostVale from "../pool/lost-vale.js";
 import _poolLothoCorruptShirriff from "../pool/lotho-corrupt-shirriff.js";
 import _poolMaggotTherapy from "../pool/maggot-therapy.js";
 import _poolMakeshiftMunitions from "../pool/makeshift-munitions.js";
@@ -222,6 +225,7 @@ import _tokensSquirrelToken from "../tokens/squirrel-token.js";
 const shard: CardShard = {
   pool: [
     _poolAangAirNomad,
+    _poolAbundantGrowth,
     _poolAbzanFalconer,
     _poolAccursedDuneyard,
     _poolAkkiAvalanchers,
@@ -313,6 +317,7 @@ const shard: CardShard = {
     _poolHighlandWeald,
     _poolHillGiant,
     _poolHonor,
+    _poolInsightEngine,
     _poolIrenicussVileDuplication,
     _poolIronMyr,
     _poolIzzetCluestone,
@@ -332,6 +337,7 @@ const shard: CardShard = {
     _poolLightningRigCrew,
     _poolLoranOfTheThirdPath,
     _poolLoreholdPledgemage,
+    _poolLostVale,
     _poolLothoCorruptShirriff,
     _poolMaggotTherapy,
     _poolMakeshiftMunitions,

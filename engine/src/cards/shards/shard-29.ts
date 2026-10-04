@@ -67,6 +67,7 @@ import _poolGigglingSkitterspike from "../pool/giggling-skitterspike.js";
 import _poolGleamingGeardrake from "../pool/gleaming-geardrake.js";
 import _poolGlimmeringAngel from "../pool/glimmering-angel.js";
 import _poolGoblinOffensive from "../pool/goblin-offensive.js";
+import _poolGodPharaohsStatue from "../pool/god-pharaohs-statue.js";
 import _poolGrayOgre from "../pool/gray-ogre.js";
 import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
@@ -264,6 +265,7 @@ const shard: CardShard = {
     _poolGleamingGeardrake,
     _poolGlimmeringAngel,
     _poolGoblinOffensive,
+    _poolGodPharaohsStatue,
     _poolGrayOgre,
     _poolGrazingGladehart,
     _poolGyreEngineer,

@@ -233,6 +233,7 @@ import _poolYarokTheDesecrated from "../pool/yarok-the-desecrated.js";
 import _poolYokedPlowbeast from "../pool/yoked-plowbeast.js";
 import _poolZadaHedronGrinder from "../pool/zada-hedron-grinder.js";
 import _poolZarichiTiger from "../pool/zarichi-tiger.js";
+import _poolZealousConscripts from "../pool/zealous-conscripts.js";
 import _poolZulaportCutthroat from "../pool/zulaport-cutthroat.js";
 import _tokens11BlueBirdToken from "../tokens/1-1-blue-bird-token.js";
 import _tokensDragonToken66 from "../tokens/dragon-token-6-6.js";
@@ -471,6 +472,7 @@ const shard: CardShard = {
     _poolYokedPlowbeast,
     _poolZadaHedronGrinder,
     _poolZarichiTiger,
+    _poolZealousConscripts,
     _poolZulaportCutthroat,
   ],
   tokens: [

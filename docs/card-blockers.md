@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B18) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B19) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -328,8 +328,20 @@ Five more passes, all merged (156 cards):
   Inferno, Urza's Ruinous Blast), "shuffle it into its owner's library instead" (Nexus of Fate,
   Darksteel Colossus at rank 2408), and offering every alternative cost that applies rather than
   the first found (Dracogenesis, Rooftop Storm — Jodah shows the gap today).
+- **Batch 19 (2026-10-04)** triaged ranks 2347–2428: 36 authored (God-Eternal Oketra, Halvar, God
+  of Battle, Dowsing Dagger, Samwise Gamgee, Orthion, Hero of Lavabrink, Zealous Conscripts and 30
+  more — `top5000-batch-19a`–`19d.test.ts`); 26 blocked (`B19.json`). No engine change.
+  Nothing blocks more than two of them; the pairs are a modal activated ability with targeted
+  modes (Bow of Nylea, Aetheric Amplifier — Breya's and Koma's gap) and an alternative cost with
+  a once-a-turn limit (Darksteel Monolith; Bruenor's free first equip is its activated-ability
+  twin). Small and single: "can't be blocked except by N or more" (Pathrazer), a triggered mana
+  ability's "while" condition (Regal Behemoth), counters from an amount on a return (Nine-Lives
+  Familiar), "combat damage can't be prevented" (Frenzied Baloth), an additive counter
+  replacement (Conclave Mentor) and moving a counter (graft — Llanowar Reborn). Professor Onyx
+  was dropped on its ruling: its −8 has every opponent choose a card hidden, then discard them
+  all at once, which `each-player-may` can't do.
 
-Past rank 2346, nothing is triaged.
+Past rank 2428, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

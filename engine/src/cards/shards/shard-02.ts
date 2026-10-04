@@ -56,6 +56,7 @@ import _poolDesertOfTheTrue from "../pool/desert-of-the-true.js";
 import _poolDevotedHero from "../pool/devoted-hero.js";
 import _poolDiluvianPrimordial from "../pool/diluvian-primordial.js";
 import _poolDireFleetHoarder from "../pool/dire-fleet-hoarder.js";
+import _poolDisdainfulStroke from "../pool/disdainful-stroke.js";
 import _poolDiseaseCarriers from "../pool/disease-carriers.js";
 import _poolDisentomb from "../pool/disentomb.js";
 import _poolDivineFavor from "../pool/divine-favor.js";
@@ -90,6 +91,7 @@ import _poolGreatFurnace from "../pool/great-furnace.js";
 import _poolGrimTutor from "../pool/grim-tutor.js";
 import _poolGrizzledLeotau from "../pool/grizzled-leotau.js";
 import _poolGruulSignet from "../pool/gruul-signet.js";
+import _poolHalvarGodOfBattle from "../pool/halvar-god-of-battle.js";
 import _poolHarvesttideInfiltrator from "../pool/harvesttide-infiltrator.js";
 import _poolHelionaut from "../pool/helionaut.js";
 import _poolHollowhengeBeast from "../pool/hollowhenge-beast.js";
@@ -111,6 +113,7 @@ import _poolKrenkosCommand from "../pool/krenkos-command.js";
 import _poolLargeBear from "../pool/large-bear.js";
 import _poolLichsCaress from "../pool/lichs-caress.js";
 import _poolLifespringDruid from "../pool/lifespring-druid.js";
+import _poolLilianasCaress from "../pool/lilianas-caress.js";
 import _poolLorienRevealed from "../pool/lorien-revealed.js";
 import _poolLostInALabyrinth from "../pool/lost-in-a-labyrinth.js";
 import _poolLostInTheMist from "../pool/lost-in-the-mist.js";
@@ -199,6 +202,7 @@ import _poolTributeToTheWild from "../pool/tribute-to-the-wild.js";
 import _poolTritonShorethief from "../pool/triton-shorethief.js";
 import _poolTropicalIsland from "../pool/tropical-island.js";
 import _poolUmbralCollarZealot from "../pool/umbral-collar-zealot.js";
+import _poolUrbanEvolution from "../pool/urban-evolution.js";
 import _poolUrzasWorkshop from "../pool/urzas-workshop.js";
 import _poolVassalSoul from "../pool/vassal-soul.js";
 import _poolVerixBladewing from "../pool/verix-bladewing.js";
@@ -275,6 +279,7 @@ const shard: CardShard = {
     _poolDevotedHero,
     _poolDiluvianPrimordial,
     _poolDireFleetHoarder,
+    _poolDisdainfulStroke,
     _poolDiseaseCarriers,
     _poolDisentomb,
     _poolDivineFavor,
@@ -309,6 +314,7 @@ const shard: CardShard = {
     _poolGrimTutor,
     _poolGrizzledLeotau,
     _poolGruulSignet,
+    _poolHalvarGodOfBattle,
     _poolHarvesttideInfiltrator,
     _poolHelionaut,
     _poolHollowhengeBeast,
@@ -330,6 +336,7 @@ const shard: CardShard = {
     _poolLargeBear,
     _poolLichsCaress,
     _poolLifespringDruid,
+    _poolLilianasCaress,
     _poolLorienRevealed,
     _poolLostInALabyrinth,
     _poolLostInTheMist,
@@ -418,6 +425,7 @@ const shard: CardShard = {
     _poolTritonShorethief,
     _poolTropicalIsland,
     _poolUmbralCollarZealot,
+    _poolUrbanEvolution,
     _poolUrzasWorkshop,
     _poolVassalSoul,
     _poolVerixBladewing,

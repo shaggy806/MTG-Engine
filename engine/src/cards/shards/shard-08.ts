@@ -94,6 +94,7 @@ import _poolHitMonkey from "../pool/hit-monkey.js";
 import _poolHolyStrength from "../pool/holy-strength.js";
 import _poolIceridgeSerpent from "../pool/iceridge-serpent.js";
 import _poolIndomitableAncients from "../pool/indomitable-ancients.js";
+import _poolIorethOfTheHealingHouse from "../pool/ioreth-of-the-healing-house.js";
 import _poolJayemdaeTome from "../pool/jayemdae-tome.js";
 import _poolJazalGoldmane from "../pool/jazal-goldmane.js";
 import _poolJonIrenicusShatteredOne from "../pool/jon-irenicus-shattered-one.js";
@@ -309,6 +310,7 @@ const shard: CardShard = {
     _poolHolyStrength,
     _poolIceridgeSerpent,
     _poolIndomitableAncients,
+    _poolIorethOfTheHealingHouse,
     _poolJayemdaeTome,
     _poolJazalGoldmane,
     _poolJonIrenicusShatteredOne,

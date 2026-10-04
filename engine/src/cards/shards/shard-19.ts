@@ -155,6 +155,7 @@ import _poolRowanScionOfWar from "../pool/rowan-scion-of-war.js";
 import _poolRubbleReading from "../pool/rubble-reading.js";
 import _poolRunawaySteamKin from "../pool/runaway-steam-kin.js";
 import _poolSandblast from "../pool/sandblast.js";
+import _poolSandwurmConvergence from "../pool/sandwurm-convergence.js";
 import _poolSaruliCaretaker from "../pool/saruli-caretaker.js";
 import _poolScavengerGrounds from "../pool/scavenger-grounds.js";
 import _poolScorchedRusalka from "../pool/scorched-rusalka.js";
@@ -209,6 +210,7 @@ import _poolWallOfMulch from "../pool/wall-of-mulch.js";
 import _poolWallOfReverence from "../pool/wall-of-reverence.js";
 import _poolWarPriestOfThune from "../pool/war-priest-of-thune.js";
 import _poolWarScreecher from "../pool/war-screecher.js";
+import _poolWhelmingWave from "../pool/whelming-wave.js";
 import _poolWhirlwindOfThought from "../pool/whirlwind-of-thought.js";
 import _poolWickerWitch from "../pool/wicker-witch.js";
 import _poolWilsonRefinedGrizzly from "../pool/wilson-refined-grizzly.js";
@@ -378,6 +380,7 @@ const shard: CardShard = {
     _poolRubbleReading,
     _poolRunawaySteamKin,
     _poolSandblast,
+    _poolSandwurmConvergence,
     _poolSaruliCaretaker,
     _poolScavengerGrounds,
     _poolScorchedRusalka,
@@ -432,6 +435,7 @@ const shard: CardShard = {
     _poolWallOfReverence,
     _poolWarPriestOfThune,
     _poolWarScreecher,
+    _poolWhelmingWave,
     _poolWhirlwindOfThought,
     _poolWickerWitch,
     _poolWilsonRefinedGrizzly,

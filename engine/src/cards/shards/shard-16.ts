@@ -210,6 +210,7 @@ import _poolThraxodemon from "../pool/thraxodemon.js";
 import _poolThunderingTanadon from "../pool/thundering-tanadon.js";
 import _poolTimidShieldbearer from "../pool/timid-shieldbearer.js";
 import _poolToadstoolAdmirer from "../pool/toadstool-admirer.js";
+import _poolTogetherForever from "../pool/together-forever.js";
 import _poolTradingPost from "../pool/trading-post.js";
 import _poolTreeOfPerdition from "../pool/tree-of-perdition.js";
 import _poolTriplicateTitan from "../pool/triplicate-titan.js";
@@ -255,6 +256,7 @@ import _tokensPhyrexianWurmLifelink from "../tokens/phyrexian-wurm-lifelink.js";
 import _tokensShapeshifterToken from "../tokens/shapeshifter-token.js";
 import _tokensSoldierArtifactToken from "../tokens/soldier-artifact-token.js";
 import _tokensXXDemonTokenFlying from "../tokens/x-x-demon-token-flying.js";
+import _tokensZombieWarriorToken from "../tokens/zombie-warrior-token.js";
 
 const shard: CardShard = {
   pool: [
@@ -465,6 +467,7 @@ const shard: CardShard = {
     _poolThunderingTanadon,
     _poolTimidShieldbearer,
     _poolToadstoolAdmirer,
+    _poolTogetherForever,
     _poolTradingPost,
     _poolTreeOfPerdition,
     _poolTriplicateTitan,
@@ -512,6 +515,7 @@ const shard: CardShard = {
     _tokensShapeshifterToken,
     _tokensSoldierArtifactToken,
     _tokensXXDemonTokenFlying,
+    _tokensZombieWarriorToken,
   ],
 };
 

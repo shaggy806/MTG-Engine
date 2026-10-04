@@ -172,6 +172,7 @@ import _poolSteelHellkite from "../pool/steel-hellkite.js";
 import _poolSteelWall from "../pool/steel-wall.js";
 import _poolStormshriekFeral from "../pool/stormshriek-feral.js";
 import _poolSunbladeAngel from "../pool/sunblade-angel.js";
+import _poolSwordOfTheRealms from "../pool/sword-of-the-realms.js";
 import _poolSwordOfWealthAndPower from "../pool/sword-of-wealth-and-power.js";
 import _poolTaintedStrike from "../pool/tainted-strike.js";
 import _poolTangledVale from "../pool/tangled-vale.js";
@@ -188,6 +189,7 @@ import _poolToskiBearerOfSecrets from "../pool/toski-bearer-of-secrets.js";
 import _poolTreasureVault from "../pool/treasure-vault.js";
 import _poolTreetopFreedomFighters from "../pool/treetop-freedom-fighters.js";
 import _poolTwinbladeBlessing from "../pool/twinblade-blessing.js";
+import _poolTwoHandedAxe from "../pool/two-handed-axe.js";
 import _poolUnnaturalSpeed from "../pool/unnatural-speed.js";
 import _poolUrGolemsEye from "../pool/ur-golems-eye.js";
 import _poolUrtetRemnantOfMemnarch from "../pool/urtet-remnant-of-memnarch.js";
@@ -392,6 +394,7 @@ const shard: CardShard = {
     _poolSteelWall,
     _poolStormshriekFeral,
     _poolSunbladeAngel,
+    _poolSwordOfTheRealms,
     _poolSwordOfWealthAndPower,
     _poolTaintedStrike,
     _poolTangledVale,
@@ -408,6 +411,7 @@ const shard: CardShard = {
     _poolTreasureVault,
     _poolTreetopFreedomFighters,
     _poolTwinbladeBlessing,
+    _poolTwoHandedAxe,
     _poolUnnaturalSpeed,
     _poolUrGolemsEye,
     _poolUrtetRemnantOfMemnarch,

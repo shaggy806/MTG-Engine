@@ -224,6 +224,7 @@ import _tokensDrakeToken from "../tokens/drake-token.js";
 import _tokensEggToken from "../tokens/egg-token.js";
 import _tokensInsectTokenBlackFlying from "../tokens/insect-token-black-flying.js";
 import _tokensKaroxBladewingToken from "../tokens/karox-bladewing-token.js";
+import _tokensPlantTokenDefender from "../tokens/plant-token-defender.js";
 import _tokensSpiritTokenQuintorius from "../tokens/spirit-token-quintorius.js";
 import _tokensVampireDemonToken from "../tokens/vampire-demon-token.js";
 import _tokensWraithToken from "../tokens/wraith-token.js";
@@ -453,6 +454,7 @@ const shard: CardShard = {
     _tokensEggToken,
     _tokensInsectTokenBlackFlying,
     _tokensKaroxBladewingToken,
+    _tokensPlantTokenDefender,
     _tokensSpiritTokenQuintorius,
     _tokensVampireDemonToken,
     _tokensWraithToken,
