@@ -19,7 +19,8 @@ Read a file's entry before changing that file; you don't need the rest.
   **Nothing under `decisions/` imports `game.js`, and `state.ts` imports nothing from
   `decisions/`** (real ESM cycles). `defineDecision` is in its own file for the same reason.
 - **Rules accuracy is mandatory.** Match the Comprehensive Rules and cite the rule number;
-  known gaps are listed in `BACKLOG.md` under "Engine rules gaps".
+  known gaps are listed in `BACKLOG.md` under "Engine rules gaps", one line each, with the
+  detail in `docs/engine-gaps.md`.
 - **Acting on an object needs it to still be the same object** (rule 400.7): check
   `zoneChangeCount`/stints. A permanent that left is read through its `lastKnown` snapshot
   (603.10a, 608.2h). Simultaneous leaves, graveyard leaves and entries are each one event

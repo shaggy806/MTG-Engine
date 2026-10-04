@@ -1,8 +1,8 @@
 # Legibility of play: animation and pacing
 
 Status: **shipped** (2026-09-30). All six steps were planned and built that day; the follow-ups
-are in `BACKLOG.md`'s "Legibility of play" section. The item list is `BACKLOG.md`'s "Legibility of play" section. This file orders that
-list and settles the design questions everything else depends on.
+are under "Follow-ups" at the end of this file (`BACKLOG.md` points at them). This file orders
+the original list and settles the design questions everything else depends on.
 
 ## The problem
 
@@ -222,3 +222,63 @@ current step scrolled into view. Original items:
   client's two halves under it, or raise it with a comment tying the two numbers together.
 - **Remount cost.** Keyframe classes on tiles are cheap. Arrows and ghosts must stay in
   `AnimationLayer`, never inside `Table`, or the per-frame remount restarts them.
+
+## Follow-ups
+
+Moved here from `BACKLOG.md` on 2026-10-04; delete an item when it lands. The problem is that a
+bot turn can't be followed by eye, even at the slow bot speed. The kinds of event that hold
+the game up for their animation are `PACED` in `client/src/game/animationSchedule.ts`
+(cards played, combat hits, deaths and other leaves, taps and untaps, the stack, triggers'
+sources, arrivals, counters, buffs, transforms, life and damage, mills, discards, moves and the
+crown). Draws and the turn and phase banners animate without holding anything up, and other
+events land with the next board without animation. The pipeline is in
+`docs/architecture/client.md` (`usePlayback`/`animationBus`/`AnimationLayer`). Each item below is
+a small follow-up: a `slotFor` entry (which half of the frame, paced or not, shared beat or
+not), then an effect in `AnimationLayer` — an `.animate()` on the tile for an `after` cue, or
+`flyGhost` for a move — and each must honour `motionPrefs` (speed and reduced motion).
+
+- **Re-measure the bot speeds.** Most events now hold the game for their animation, and the host
+  can pause or step the bots, so `BOT_LINGER_MS` (`server/src/room.ts`: slow 1.6s, normal 0.7s,
+  after each frame) may now make "slow" too slow; the library peel has since grown to 1.1s a
+  step, too. Watch a 4-player bot game at each speed before changing it.
+- **A static buff has no animation.** Anthems and lords (Lord of Lineage's "other Vampires get
+  +2/+2") change P/T through the layers without an event, so the tiles just show new numbers.
+  `pt-modified` is only a one-shot pump.
+- **Cards exiled from a library and put back in the same resolution aren't animated going back**:
+  cascade's and discover's misses (and an "exile until" whose rest go to the bottom) peel off the
+  pile and the counts run down, then jump back when the board lands. A reverse peel onto the pile
+  would close it, once the move back announces itself: `finishCascade` and `placeRevealed` move
+  the cards with no event (`cards-put-on-bottom` is only a hand's).
+- **A permanent exiled from the battlefield animates filters that don't interpolate**: `runDeath`'s
+  exile keyframes go `brightness blur` → `brightness saturate drop-shadow` → `brightness saturate
+  blur`, lists that differ, so the filter steps discretely. The mill peel's did the same and
+  Chromium painted its last filter from the start (black cards); give every keyframe one list, as
+  `peelCards` now does, and look at it live.
+- **The crown has only been seen popping in**, not flying between players: that needs one
+  player taking the monarchy from another (combat damage), which no dev room sets up. It uses
+  the same captured flight as a change of control, which was checked.
+
+Follow-on ideas, approved by the user on 2026-09-30:
+
+- **Tokens merged into an engine stack arrive unanimated**: a second Raise the Alarm's Soldiers
+  are folded by the engine into the first two's stack (`stackCount`), so the object their
+  `permanent-entered-battlefield` names is gone from the view and nothing plays. The stack's tile
+  could glow and say "+2", as a tile the board folded them into already does (`runEnters`).
+  Likewise counters put on tokens peeled off a stack and folded back before the frame is drawn
+  (`refoldSplitTokens`, Tribute to the World Tree): only the `counter-added` naming the
+  surviving stack floats its "+1/+1 ×2"; the rest name objects gone from the view.
+- **The board folds identical tokens only when they carry no counters** (`board.ts`'s
+  `stackable` needs empty `counters`, though `tileKey` already compares them). Tokens that were
+  never one engine stack — three Warriors made below the stacking threshold, then grown alike by
+  Cathars' Crusade — stay a tile each. Dropping the condition needs every decision that picks
+  from a folded tile to take a fresh member per click first: proliferate's toggle acts on
+  `ids[0]` (`pickIdForClick` has no proliferate case), so a folded tile of three could only ever
+  give one of them a counter. Found 2026-10-03 (`docs/plans/token-stack-choices.md`).
+- **A dies trigger's source can't pulse**: `runPulse` lights the source's tile on the new board,
+  and a creature whose own death triggered is gone from it. It would need a pulse in the frame's
+  first half, over the old board, for a source that isn't on the new one.
+- **A history entry whose cards have left the board highlights nothing**: `highlightEvent` finds
+  only what's still drawn (a permanent, a stack entry, your hand, a player's panel). It could
+  open the zone the card went to instead.
+- **The sounds are synthesised placeholders** (`game/sound.ts`, Web Audio tones): licence-free
+  and download-free, but plain. Real samples could replace them cue for cue.
