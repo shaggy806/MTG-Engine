@@ -308,6 +308,39 @@ export default {
     bots: { bob: {}, carol: {}, dave: {} },
   },
 
+  POPUL: {
+    about:
+      "2p. Choices made on the board as an ability resolves: activate Trostani, Selesnya's " +
+      "Voice's populate ({1}{G}{W}, T) and choose which of alice's two different creature " +
+      "tokens (an Elephant, a Soldier) to copy; cast Abdel Adrian, Gorion's Ward and choose " +
+      "any number of her other nonland permanents (Sol Ring, Grizzly Bears) to exile — a " +
+      "Soldier for each.",
+    players: ["alice", "bob"],
+    lands: { alice: 10, bob: 5 },
+    battlefield: { alice: ["Trostani, Selesnya's Voice", "Sol Ring", "Grizzly Bears"] },
+    hand: { alice: ["Abdel Adrian, Gorion's Ward"] },
+    setup(game) {
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Elephant Token", count: 1 });
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Soldier Token", count: 1 });
+    },
+    bots: { bob: {} },
+  },
+
+  POPU4: {
+    about:
+      "4p. POPUL at four players: Trostani's populate between an Elephant and a Soldier token, " +
+      "and Abdel Adrian's exile of any number of other nonland permanents.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 10, bob: 5, carol: 5, dave: 5 },
+    battlefield: { alice: ["Trostani, Selesnya's Voice", "Sol Ring", "Grizzly Bears"] },
+    hand: { alice: ["Abdel Adrian, Gorion's Ward"] },
+    setup(game) {
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Elephant Token", count: 1 });
+      game.debugApplyEffect("alice", { kind: "create-token", token: "Soldier Token", count: 1 });
+    },
+    bots: { bob: {}, carol: {}, dave: {} },
+  },
+
   LURES: {
     about:
       "2p. Bob attacks alice with a Lure-enchanted Hill Giant and a Grizzly Bears. Every " +
