@@ -4,11 +4,12 @@
  * brings its own) — up to four seats, sliced down to however many players a
  * room asks for. The actual card lists live in `engine`'s `SAMPLE_DECKS`
  * (shared with the client's deck builder, which offers all of them as
- * ready-made "starter decks"); this just pairs the first four with this
+ * ready-made "starter decks"); this just pairs the first four `bench` decks
+ * (`BENCH_DECKS`, the ones the bots are measured on and pilot best) with this
  * server's fixed seat identities.
  */
 
-import { SAMPLE_DECKS, asPlayerId } from "engine";
+import { BENCH_DECKS, asPlayerId } from "engine";
 import type { PlayerId } from "engine";
 
 export const ALICE: PlayerId = asPlayerId("alice");
@@ -28,9 +29,9 @@ export interface SeatDeck {
  * players were asked for (2-4). */
 export const SEATS: readonly SeatDeck[] = [ALICE, BOB, CAROL, DAVE].map((id, i) => ({
   id,
-  name: SAMPLE_DECKS[i].name,
-  commanders: SAMPLE_DECKS[i].commanders,
-  cards: SAMPLE_DECKS[i].cards,
+  name: BENCH_DECKS[i].name,
+  commanders: BENCH_DECKS[i].commanders,
+  cards: BENCH_DECKS[i].cards,
 }));
 
 /** Alice's and Bob's decks addressed by name, for tests that construct a

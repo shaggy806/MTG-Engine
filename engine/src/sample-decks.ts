@@ -16,6 +16,11 @@
  * re-run): Abzan Armor, Jeskai Striker, Reign of Dragons and Token Triumph.
  * Temur Roar (71%) and Mardu Surge (12.5%) stay starter decks but off the
  * bench; the two in their place keep a Dragon deck and a token deck on it.
+ * Sultai Arisen rejoined on 2026-10-04 (21% in that day's re-run, its stand-ins
+ * down from 25 to 1), so the bench is five decks.
+ *
+ * The bench decks are also the fallbacks: `SEATS` gives a seat nobody brought
+ * a deck to — every bot's — the first four of them in this file's order.
  *
  * Two consumers: `server/src/decks.ts`'s `SEATS` (a room's fallback deck for
  * a seat nobody brought their own deck to, and every bot's deck) and the
@@ -197,9 +202,9 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
   }),
   precon({
     name: "Sultai Arisen",
-    // Off the bench (2026-10-02): about 11% under v1 and v2 alike in the
-    // deck-against-deck run — a strong deck the bots can't pilot (self-mill,
-    // lands and creatures back from the graveyard), so it measured nothing.
+    // Off the bench 2026-10-02 (about 11% under both bots, with 25 stand-ins
+    // hollowing out its graveyard engine), back on 2026-10-04 at 21%.
+    bench: true,
     commander: "Teval, the Balanced Scale",
     description: "Sultai graveyard: mill yourself, bring lands and creatures back, and make Zombies as cards leave the graveyard.",
     printed: [
