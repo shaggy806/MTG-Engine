@@ -728,6 +728,7 @@ interface CastNowAsk {
   readonly free: boolean;
   readonly exileAfter: boolean;
   readonly spell?: CardFilter;
+  readonly freeCastOf?: "cascade" | "suspend";
 }
 
 /** `duration` as an effect `you` control keeps it: "until your next turn"
@@ -1006,7 +1007,6 @@ export class Game {
       pendingBlockerDeclarations: [],
       pendingTriggers: [],
       pendingTargetedTrigger: null,
-      pendingTargetedCast: null,
       pendingSuspendedCasts: [],
       deferredCommanderMove: null,
       pendingCommanderMoves: [],
@@ -4206,8 +4206,8 @@ export class Game {
   }
 
   /** Answers a pending `choose-targets` decision (ROADMAP Phase 11 EG-1) — a
-   * triggered ability, or a suspended spell coming off suspend. Mints the
-   * ability / commits the free cast with the chosen targets, then resumes. */
+   * triggered ability's targets, or a copy's new ones. Mints the ability or
+   * retargets the copy, then resumes. */
   private applyChooseTargets(player: PlayerId, chosen: ResolvedTargets, division?: readonly number[]): void {
     const why = this.whyCannotChooseTargets(player, chosen, division);
     if (why !== null) throw new Error(why);
@@ -4219,7 +4219,6 @@ export class Game {
     this.state.awaiting = null;
 
     const trig = this.state.pendingTargetedTrigger;
-    const cast = this.state.pendingTargetedCast;
     const copy = this.state.pendingCopyTargets;
     if (copy != null) {
       this.state.pendingCopyTargets = null;
@@ -4256,24 +4255,6 @@ export class Game {
       );
       if (trig.modes !== undefined) this.state.objects[abilityId].chosenModes = [...trig.modes];
       if (shares !== undefined && typeof shares !== "string") this.state.objects[abilityId].division = shares;
-    } else if (cast !== null) {
-      this.state.pendingTargetedCast = null;
-      if (!this.commitFreeCast(cast.cardId, cast.via, cast.grantHaste, [...chosen])) {
-        // A card cascade found but couldn't cast goes to the bottom with the
-        // rest it exiled (rule 702.85e); the rest already went while this
-        // was asked. A suspended one stays exiled (702.62e).
-        if (cast.via === "cascade") {
-          this.emit({ type: "spell-fizzled", object: cast.cardId, reason: "cost increase can't be paid" });
-          this.moveObject(cast.cardId, "library");
-        } else {
-          this.abandonSuspendedCast(cast.cardId, "cost increase can't be paid");
-        }
-      }
-      // Other suspended cards owed a free cast this upkeep (rule 702.62e).
-      while (this.state.pendingSuspendedCasts.length > 0 && this.state.awaiting === null) {
-        const next = this.state.pendingSuspendedCasts.shift();
-        if (next !== undefined) this.castSuspendedCard(next);
-      }
     }
     if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
   }
@@ -4571,6 +4552,7 @@ export class Game {
     this.state.preventAllCombatDamage = false;
     delete this.state.combatDamagePreventedBy;
     this.state.hexproofPlayers = [];
+    delete this.state.spellGrantsThisTurn;
     this.state.creaturesDiedThisTurn = 0;
     // A reveal is public knowledge for as long as anyone could have acted on
     // it; past the turn it stops being rendered rather than lingering as a
@@ -5702,6 +5684,7 @@ export class Game {
     // "You gain hexproof until end of turn" ends here too (rule 514.2), not
     // as the next turn begins: a trigger in this cleanup step can target.
     this.state.hexproofPlayers = [];
+    delete this.state.spellGrantsThisTurn;
     // "Until end of turn" control effects (Act of Treason) end — control
     // falls to whichever control effect is now the latest (rule 613.7), else
     // the owner, and the creature is summoning-sick for them again.
@@ -7303,8 +7286,8 @@ export class Game {
     for (let i = 0; i < ready.length; i += 1) {
       this.castSuspendedCard(ready[i]);
       if (this.state.awaiting !== null) {
-        // A suspended spell paused on a `choose-targets` decision — the rest
-        // are cast after `applyChooseTargets` drains this queue.
+        // A suspended card's free cast is being offered — the rest are offered
+        // once that's answered (`applyCastNow` drains this queue).
         this.state.pendingSuspendedCasts = ready.slice(i + 1);
         return;
       }
@@ -7375,70 +7358,6 @@ export class Game {
   }
 
   /**
-   * Put `cardId` (from exile or library) onto the stack without paying its mana
-   * cost — the shared core of suspend / cascade free casts (rules 702.62e /
-   * 702.85e). Returns `false` if a target slot has no legal option (the caller
-   * decides what happens then); `true` if the spell was committed *or* a
-   * `choose-targets` decision was raised (a suspend cast with a real choice —
-   * ROADMAP Phase 11 EG-1). A cascade cast's targets stay auto-picked (deferring
-   * cascade's "then put the rest on the bottom" tail is more churn than it's
-   * worth for a rare edge).
-   */
-  private castCardWithoutPaying(
-    cardId: ObjectId,
-    opts: { via: CastVia; grantHaste?: boolean },
-  ): boolean {
-    const object = this.state.objects[cardId];
-    if (object === undefined) return false;
-    const owner = object.owner;
-    const def = this.registry.get(object.cardName);
-    const grantHaste = opts.grantHaste ?? false;
-    // An instruction to cast it doesn't beat a "can't cast" (rule 101.2).
-    if (this.whyProhibitedFromCasting(owner, cardId, def) !== null) return false;
-
-    const optionsPerSlot: TargetRef[][] = [];
-    for (const spec of def.targets) {
-      const [options] = this.affordableTargetOptions(owner, [
-        legalTargets(this.state, this.registry, spec, owner, this.cardSource(def, cardId)),
-      ]);
-      // "Up to one" or "any number of" with nothing to point at is a legal
-      // choice of none (rule 601.2c); only a required slot can't be filled.
-      if (options.length === 0 && !isOptionalSpec(spec)) return false;
-      optionsPerSlot.push([...options]);
-    }
-
-    // An "up to one" slot is never forced: leaving it empty is a choice.
-    const forced = optionsPerSlot.every(
-      (o, i) => o.length === 1 && !isOptionalSpec(def.targets[i]),
-    );
-    const nothingToChoose = optionsPerSlot.every((o) => o.length === 0);
-    if (def.targets.length === 0 || forced || nothingToChoose) {
-      // A group left empty contributes no slots at all.
-      const picks = optionsPerSlot.map((o) => o[0]);
-      const group = anyNumberSlot(def.targets);
-      return this.commitFreeCast(
-        cardId,
-        opts.via,
-        grantHaste,
-        group >= 0 && picks[group] === undefined ? picks.slice(0, group) : picks,
-      );
-    }
-
-    // A real choice is the caster's (rule 601.2c — cascade's 702.85a, suspend's
-    // 702.62e), so park a `choose-targets` decision.
-    this.state.pendingTargetedCast = { cardId, via: opts.via, grantHaste };
-    this.state.awaiting = {
-      kind: "choose-targets",
-      player: owner,
-      source: cardId,
-      cardName: def.name,
-      specs: [...def.targets],
-      options: optionsPerSlot,
-    };
-    return true;
-  }
-
-  /**
    * The life `caster` must pay for a spell aimed at `targets`: Terror of the
    * Peaks' "spells your opponents cast that target this creature cost an
    * additional 3 life to cast" (a `targetedBySpellsCost` static), once for
@@ -7476,86 +7395,23 @@ export class Game {
     );
   }
 
-  /** Move `cardId` to the stack as a free cast with the given targets (rule
-   * 702.62e / 702.85e) — the commit half of {@link castCardWithoutPaying}.
-   * `false`, with nothing moved, when a cost increase can't be paid. */
-  private commitFreeCast(
-    cardId: ObjectId,
-    via: CastVia,
-    grantHaste: boolean,
-    chosen: ResolvedTargets,
-  ): boolean {
-    const object = this.state.objects[cardId];
-    const owner = object.owner;
-    const stormCount = this.state.spellsCastThisTurn;
-    const castFrom = object.zone;
-    // "Without paying its mana cost" is an alternative cost of nothing, and
-    // cost increases still apply on top of it (rule 601.2f): Thalia's {1},
-    // or Hinata's {1} for each target. Worked out once the targets are
-    // chosen; a spell whose increase can't be paid isn't cast at all.
-    const increase = this.castingCostOf(
-      owner,
-      cardId,
-      this.registry.get(object.cardName),
-      0,
-      null,
-      distinctTargetCount(chosen, this.targetCopies(chosen)),
-    );
-    const payment = this.payMana(owner, increase, undefined, undefined, { kind: "cast", card: cardId });
-    if (payment === null) return false;
-    // Terror of the Peaks' extra life is no mana cost: a free cast pays it too.
-    const targetingLife = this.targetingLifeCost(owner, chosen);
-    if (!this.canPayLife(owner, targetingLife)) return false;
-    this.moveObject(cardId, "stack");
-    // Where it's cast from, known as its costs are paid — mana that may only
-    // pay for a spell cast from a graveyard asks (Lord of the Forsaken).
-    object.castFrom = castFrom;
-    this.executePayment(owner, payment);
-    if (targetingLife > 0) this.changeLife(owner, -targetingLife);
-    // Nothing to pay, so a target in a token stack is peeled off at once.
-    const targets = this.lockInTargets(chosen);
-    object.targets = targets.length > 0 ? [...targets] : null;
-    // Where each target is as the spell is cast, for last-known information.
-    object.targetZones = targets.length > 0 ? this.zonesOfTargets(targets) : undefined;
-    object.targetStints = targets.length > 0 ? this.stintsOfTargets(targets) : undefined;
-    object.castVia = via;
-    object.stormCount = stormCount;
-    // Cast without paying its mana cost: only what a cost increase took was
-    // spent (rule 118.9).
-    object.manaSpent = manaValue(payment.resolved);
-    if (grantHaste) object.hastyUntilItLeaves = true;
-    this.state.players[owner].spellsCastThisTurn += 1;
-    (this.state.players[owner].spellsCastThisTurnAs ??= []).push(this.castRecordOf(cardId));
-    this.recordCastName(owner, cardId);
-    this.state.spellsCastThisTurn += 1;
-    object.castFrom = castFrom;
-    this.emit({
-      type: "spell-cast",
-      player: owner,
-      object: cardId,
-      targets: targets.filter((t): t is TargetRef => t !== undefined),
-      x: object.xValue ?? null,
-      spellsThisTurn: this.state.players[owner].spellsCastThisTurn,
-      via,
-      from: castFrom,
-    });
-    // A free cast (cascade, suspend) targets like any other — the trigger
-    // is about being targeted, not about how the spell was paid for.
-    this.announceTargeted(targets, owner, cardId, true);
-    // Casualty is an additional cost, so a free cast may pay it too (rule
-    // 601.2b); this cast happens while something resolves, after which the
-    // active player gets priority.
-    this.queueCasualty(owner, cardId, this.activePlayer);
-    return true;
-  }
-
-  /** Cast a suspended card whose last time counter just came off (rule
-   * 702.62e). If it can't be cast now it stays exiled, no longer suspended. */
+  /** A suspended card whose last time counter just came off: "you may play
+   * it without paying its mana cost if able" (rule 702.62a) — offered as a
+   * full free cast (`cast-now`: modes, kicker, targets, or decline). If it
+   * can't be cast it stays exiled, no longer suspended (702.62e). */
   private castSuspendedCard(cardId: ObjectId): void {
     const object = this.state.objects[cardId];
     if (object === undefined || object.zone !== "exile") return;
-    if (!this.castCardWithoutPaying(cardId, { via: "suspend", grantHaste: true })) {
-      this.abandonSuspendedCast(cardId, "couldn't be cast");
+    this.raiseCastNow(object.owner, cardId, [cardId], { free: true, exileAfter: false, freeCastOf: "suspend" });
+    if (this.state.awaiting === null) this.abandonSuspendedCast(cardId, "couldn't be cast");
+  }
+
+  /** Offer the next suspended card owed its free cast this upkeep, until one
+   * raises a decision (rule 702.62e). */
+  private drainSuspendedCasts(): void {
+    while (this.state.pendingSuspendedCasts.length > 0 && this.state.awaiting === null) {
+      const next = this.state.pendingSuspendedCasts.shift();
+      if (next !== undefined) this.castSuspendedCard(next);
     }
   }
 
@@ -9047,6 +8903,7 @@ export class Game {
             free: awaiting.free,
             exileAfter: awaiting.exileAfter,
             ...(awaiting.spell !== undefined ? { spell: awaiting.spell } : {}),
+            ...(awaiting.freeCastOf !== undefined ? { freeCastOf: awaiting.freeCastOf } : {}),
           }
         : this.castNowProbe;
     return asked !== null && asked.player === player && asked.cards.includes(cardId) ? asked : null;
@@ -9072,6 +8929,7 @@ export class Game {
       free: options.free,
       exileAfter: options.exileAfter,
       ...(options.spell !== undefined ? { spell: options.spell } : {}),
+      ...(options.freeCastOf !== undefined ? { freeCastOf: options.freeCastOf } : {}),
     };
     const offers: CastSpellOffer[] = [];
     const lands: PlayLandOffer[] = [];
@@ -9124,6 +8982,7 @@ export class Game {
       free: options.free,
       ...(options.spell !== undefined ? { spell: options.spell } : {}),
       exileAfter: options.exileAfter,
+      ...(options.freeCastOf !== undefined ? { freeCastOf: options.freeCastOf } : {}),
     };
   }
 
@@ -9155,9 +9014,15 @@ export class Game {
     if (awaiting === null || awaiting.kind !== "cast-now" || awaiting.player !== player) {
       throw new Error(`${player} is not being asked to cast a card`);
     }
+    const freeCastOf = awaiting.freeCastOf;
     if (cast === null) {
       this.state.awaiting = null;
-      this.prepareForPriority(this.activePlayer);
+      // "If you don't, it remains exiled" (rule 702.62a), no longer suspended.
+      if (freeCastOf === "suspend") {
+        for (const id of awaiting.cards) this.abandonSuspendedCast(id, "not cast");
+        this.drainSuspendedCasts();
+      }
+      if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
       return;
     }
     if (cast.type === "play-land") {
@@ -9207,6 +9072,11 @@ export class Game {
       );
     } finally {
       this.castNowProbe = null;
+    }
+    // The other suspended cards owed their free cast this upkeep (702.62e).
+    if (freeCastOf === "suspend" && this.state.awaiting === null) {
+      this.drainSuspendedCasts();
+      if (this.state.awaiting === null) this.prepareForPriority(this.activePlayer);
     }
   }
 
@@ -9492,7 +9362,12 @@ export class Game {
       invalidateComputedCache();
     }
     object.xValue = hasX ? chosenX : null;
-    object.castVia = via ?? null;
+    // Cascade's or suspend's own free cast, offered as a `cast-now`: cast that
+    // way (rules 702.85a, 702.62a), and suspend's creature spell gains haste
+    // until its controller loses control of it or the permanent it becomes.
+    const freeCastOf = via === "effect" ? this.castNowProbe?.freeCastOf : undefined;
+    object.castVia = freeCastOf ?? via ?? null;
+    if (freeCastOf === "suspend") object.hastyUntilItLeaves = true;
     // Thundermane Dragon: "if you cast a creature spell this way, it gains
     // haste until end of turn" — the spell this permission let be cast
     // (rule 400.7h), and so the permanent it becomes, for as long as the
@@ -9598,7 +9473,7 @@ export class Game {
       targets: chosen.filter((t): t is TargetRef => t !== undefined),
       x: hasX ? chosenX : null,
       spellsThisTurn: this.state.players[player].spellsCastThisTurn,
-      ...(via !== undefined ? { via } : {}),
+      ...(via !== undefined ? { via: freeCastOf ?? via } : {}),
       from: castFrom,
     });
     this.announceTargeted(chosen, player, cardId, true);
@@ -10281,6 +10156,15 @@ export class Game {
             ref: { kind: "static", cardName, staticIndex, list: "spell-triggered", index },
           });
         });
+      }
+      // And what a resolved effect gave its controller's spells this turn
+      // (`grant-spells-this-turn` — Yidris), in the order it was given.
+      for (const grant of this.state.spellGrantsThisTurn ?? []) {
+        if (grant.player !== target.controller) continue;
+        if (grant.castFrom !== undefined && (target.castFrom == null || !grant.castFrom.includes(target.castFrom))) continue;
+        for (const grantedAbility of grant.triggered) {
+          granted.push({ ability: grantedAbility, ref: { kind: "modifier", ability: grantedAbility } });
+        }
       }
     }
     return granted.length === 0 ? printed : [...printed, ...granted];
@@ -17602,6 +17486,13 @@ export class Game {
         }
         invalidateComputedCache();
       },
+      grantSpellsThisTurn: (castFrom, triggered) => {
+        (this.state.spellGrantsThisTurn ??= []).push({
+          player: controller,
+          ...(castFrom !== undefined ? { castFrom: [...castFrom] } : {}),
+          triggered: [...triggered],
+        });
+      },
       grantPlayerHexproof: (who) => {
         for (const player of scoped(who)) {
           if (!this.state.hexproofPlayers.includes(player)) {
@@ -20230,43 +20121,22 @@ export class Game {
 
     this.emit({ type: "cascade-revealed", player: controller, exiled: [...exiledHere], cast: hit });
 
-    // One it couldn't cast (no legal target, or a "can't cast") isn't
-    // offered, as a "may" that can't be done isn't.
-    if (hit === null || !this.canCastWithoutPaying(hit)) {
-      this.finishCascade({ hit: hit ?? sourceId, exiled: exiledHere, cast: false });
+    if (hit === null) {
+      this.finishCascade({ hit: sourceId, exiled: exiledHere, cast: false });
       return null;
     }
-    return { hit, name: printedCardName(this.state.objects[hit]), exiled: exiledHere };
+    // One it can't cast (no legal target, a "can't cast", a cost increase it
+    // can't pay) isn't offered, as a "may" that can't be done isn't.
+    return { hit, name: printedCardName(this.state.objects[hit]), exiled: exiledHere, threshold };
   }
 
-  /** The answer to cascade's "you may cast it" (rule 702.85a): cast the card
-   * or not, then put everything still exiled by it on the bottom of the
-   * library in a random order (702.85e) — the card too if it wasn't cast.
-   * A cast with a real target choice parks one (`castCardWithoutPaying`); the
-   * card waits in exile for it, and the rest go meanwhile. */
+  /** Cascade's tail, once its "you may cast it" is answered (rule 702.85a):
+   * everything it exiled that's still in exile — the card found too, if it
+   * wasn't cast — goes on the bottom of the library in a random order. */
   private finishCascade(finish: CascadeFinish): void {
-    let hit: ObjectId | null = finish.hit;
-    if (!finish.cast || this.state.objects[hit]?.zone !== "exile") hit = null;
-    else if (!this.castCardWithoutPaying(hit, { via: "cascade", grantHaste: false })) hit = null;
-    const toBottom = finish.exiled.filter((id) => id !== hit && this.state.objects[id]?.zone === "exile");
+    const toBottom = finish.exiled.filter((id) => this.state.objects[id]?.zone === "exile");
     for (const id of shuffle(toBottom, this.rng)) this.moveObject(id, "library");
     this.state.rngState = this.rng.seed;
-  }
-
-  /** Could `cardId` be cast without paying its mana cost right now, as far as
-   * anything but a cost increase goes: not prohibited, and every required
-   * target slot has a legal target. The first half of
-   * `castCardWithoutPaying`, without casting. */
-  private canCastWithoutPaying(cardId: ObjectId): boolean {
-    const object = this.state.objects[cardId];
-    if (object === undefined) return false;
-    const def = this.registry.get(object.cardName);
-    if (this.whyProhibitedFromCasting(object.owner, cardId, def) !== null) return false;
-    return def.targets.every(
-      (spec) =>
-        isOptionalSpec(spec) ||
-        legalTargets(this.state, this.registry, spec, object.owner, this.cardSource(def, cardId)).length > 0,
-    );
   }
 
   /**

@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**381 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**387 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -77,7 +77,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,395 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,400 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more
@@ -158,12 +158,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `look-and-choose`'s `"exile"` / `"exile-face-down"` destinations do), so Pit of Offerings'
   "exile up to three target cards from graveyards … any of the exiled cards' colors" (an
   `add-mana` `colorAmong` with `zone: "exiled-with-source"`) waits on it.
-- **Cascade and suspend cast with no modes and no kicker.** Their free cast
-  (`castCardWithoutPaying`) reads only `def.targets`: a modal spell (a Charm, a Command, a spree
-  spell — rule 702.172a's "you must still choose at least one mode") is cast with no modes and
-  resolves doing nothing, and an optional additional cost is never offered — not kicker, and not
-  a gift (rule 702.174a's "you may promise"). Route them through the `cast-now` decision's free
-  cast, which offers every variant, keeping cascade's tail and suspend's haste.
+- **Suspend's time-counter triggers don't use the stack.** Rule 702.62a makes "remove a time
+  counter" and "when the last is removed, you may play it" triggered abilities; `upkeepStep` does
+  both as the upkeep begins (`castSuspendedCard`), so nobody can respond between them.
 - **"Search your library for a card" may fail to find.** Rule 701.23d: a search for a quantity
   ("a card", no quality) must find that many while the library has them. Twelve tutors author it
   `search-library` with `filter: {}` and `min: 0` (Demonic Tutor, Vampiric Tutor, Imperial Seal,

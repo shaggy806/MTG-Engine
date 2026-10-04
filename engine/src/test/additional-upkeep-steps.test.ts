@@ -131,7 +131,11 @@ describe("additional upkeep steps (Obeka, Splitter of Seconds)", () => {
     const { game, a } = setUp();
     game.debugSpawn("Mountain", A, "battlefield");
     const riftBolt = game.debugSpawn("Rift Bolt", A, "hand");
-    a.chooseTargetsFn = () => [{ kind: "player", player: B }];
+    // Take its free cast as the last counter comes off, aimed at bob.
+    a.chooseCastNowFn = (_v, offer) =>
+      offer.casts.length === 0
+        ? null
+        : { type: "cast-spell", player: A, card: offer.cards[0], targets: [{ kind: "player", player: B }], via: "effect", free: true };
     game.dispatch({ type: "suspend", player: A, card: riftBolt });
     game.advanceUntil(quiet);
     expect(game.state.objects[riftBolt].counters.time).toBe(1);

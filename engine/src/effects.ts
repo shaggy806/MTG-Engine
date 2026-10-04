@@ -31,6 +31,7 @@ import type {
   PlayerEffect,
   SpellSnapshot,
   TurnHistoryKind,
+  ZoneType,
 } from "./state.js";
 import type { ResolvedTargets, TargetRef, TargetSpec } from "./target.js";
 
@@ -804,6 +805,9 @@ export interface CascadeFound {
   readonly hit: ObjectId;
   readonly name: string;
   readonly exiled: readonly ObjectId[];
+  /** The cascade spell's mana value: the spell cast must have less (rule
+   * 702.85a — "the resulting spell's mana value"). */
+  readonly threshold: number;
 }
 
 /** The answer to cascade's "you may cast it" — see `EffectSpec` `cascade`. */
@@ -824,6 +828,11 @@ export interface CastNowOptions {
   /** "You may **play**": a land card on offer may be played, too — see the
    * `cast-now` effect's `play`. */
   readonly play?: boolean;
+  /** A free cast an ability of the card itself allows — cascade's (rule
+   * 702.85a) or suspend's (702.62a): recorded as the spell's `castVia`, and
+   * suspend's creature spell gains haste (`hastyUntilItLeaves`). A suspended
+   * card not cast stays exiled, no longer suspended. */
+  readonly freeCastOf?: "cascade" | "suspend";
 }
 
 /** A `cast-now` parked across its decision: the event it asked at and the
@@ -2222,6 +2231,19 @@ export type EffectSpec =
     }
   | {
       /**
+       * "As you cast spells from your hand this turn, they gain cascade"
+       * (Yidris, Maelstrom Wielder): the spells the effect's controller casts
+       * for the rest of the turn — from `castFrom`, when given — have
+       * `triggered` (a `this-cast` cascade) as they're cast, whatever happens
+       * to the source. Each resolution adds its own (the ruling: twice is
+       * cascade twice). Ends with the turn (rule 514.2).
+       */
+      readonly kind: "grant-spells-this-turn";
+      readonly castFrom?: readonly ZoneType[];
+      readonly triggered: readonly TriggeredAbility[];
+    }
+  | {
+      /**
        * Populate (rule 701.36a) — choose a creature token you control and
        * create a token that's a copy of it (Rootborn Defenses). With two or
        * more to choose from, the controller picks one on the board (a
@@ -2623,9 +2645,12 @@ export type EffectSpec =
        * is exiled; its controller may cast that card for free (702.85a), and
        * the rest go to the bottom. */
       readonly kind: "cascade";
-      /** The second half, once the player has said whether to cast what was
-       * found: the two answers to the "you may cast it" choice. Only the engine
-       * builds this; a card is authored as a bare `{ kind: "cascade" }`. */
+      /** The card found, offered as a full free cast (a `cast-now`: modes,
+       * kicker, targets and the rest, or decline). Only the engine builds
+       * this and `finish`; a card is authored as a bare `{ kind: "cascade" }`. */
+      readonly offer?: { readonly hit: ObjectId; readonly threshold: number };
+      /** The second half, once the offer is answered: everything it exiled
+       * that's still in exile goes to the bottom in a random order. */
       readonly finish?: CascadeFinish;
     }
   | {
@@ -4447,6 +4472,8 @@ export interface EffectApi {
   doublePtAll(filter: CardFilter, duration: PtDuration): void;
   /** See the `"grant-player-hexproof"` {@link EffectSpec}. */
   grantPlayerHexproof(who: PlayerScope): void;
+  /** See the `"grant-spells-this-turn"` {@link EffectSpec}. */
+  grantSpellsThisTurn(castFrom: readonly ZoneType[] | undefined, triggered: readonly TriggeredAbility[]): void;
   /** See the `"sacrifice-all-but"` {@link EffectSpec}. */
   sacrificeAllBut(player: PlayerId, keep: number, filter: CardFilter): void;
   /** See the `"encore"` {@link EffectSpec}. */
@@ -6567,6 +6594,9 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
     case "grant-player-hexproof":
       ctx.grantPlayerHexproof(spec.who ?? "you");
       return;
+    case "grant-spells-this-turn":
+      ctx.grantSpellsThisTurn(spec.castFrom, spec.triggered);
+      return;
     case "populate":
       ctx.populate();
       return;
@@ -6830,21 +6860,33 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     }
     case "cascade": {
+      if (spec.offer !== undefined) {
+        // "You may cast it without paying its mana cost if the resulting
+        // spell's mana value is less than this spell's" (rule 702.85a): the
+        // whole cast, chosen as any cast is (601.2b–c), or declined.
+        ctx.castNow([spec.offer.hit], {
+          free: true,
+          exileAfter: false,
+          spell: { manaValue: { op: "lt", n: spec.offer.threshold } },
+          freeCastOf: "cascade",
+        });
+        return;
+      }
       if (spec.finish !== undefined) {
         ctx.finishCascade(spec.finish);
         return;
       }
       const found = ctx.cascade(ctx.controller, ctx.source);
       if (found === null) return;
-      const finish = (cast: boolean): EffectSpec => ({
-        kind: "cascade",
-        finish: { hit: found.hit, exiled: found.exiled, cast },
-      });
-      ctx.chooseModes(
-        0,
-        1,
-        [{ text: `Cast ${found.name} without paying its mana cost`, effect: finish(true) }],
-        finish(false),
+      applyEffectSpec(
+        {
+          kind: "sequence",
+          effects: [
+            { kind: "cascade", offer: { hit: found.hit, threshold: found.threshold } },
+            { kind: "cascade", finish: { hit: found.hit, exiled: found.exiled, cast: false } },
+          ],
+        },
+        ctx,
       );
       return;
     }

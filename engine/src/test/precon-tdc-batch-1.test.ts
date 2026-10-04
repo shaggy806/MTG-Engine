@@ -27,6 +27,18 @@ const registry = createDefaultRegistry();
 
 const yes = (c: ScriptedController): ScriptedController => {
   c.chooseModesFn = () => [0];
+  // A free cast on offer (suspend's, cascade's) is taken.
+  c.chooseCastNowFn = (_v, offer) =>
+    offer.casts.length === 0
+      ? null
+      : {
+          type: "cast-spell",
+          player: c.playerId,
+          card: offer.casts[0].card,
+          targets: offer.casts[0].targetOptions.map((options) => options[0]),
+          via: "effect",
+          free: true,
+        };
   c.chooseFromZoneFn = (_view, eligible, min, max) => eligible.slice(0, Math.max(min, Math.min(max, 1)));
   return c;
 };

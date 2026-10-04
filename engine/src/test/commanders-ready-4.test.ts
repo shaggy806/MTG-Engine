@@ -522,7 +522,10 @@ describe("Abaddon the Despoiler", () => {
   it("a cheap enough spell from hand cascades on your turn", () => {
     const { game, a } = setUp(["Craw Wurm"]);
     // Take cascade's "you may cast it" (rule 702.85a).
-    a.chooseModesFn = () => [0];
+    a.chooseCastNowFn = (_v, offer) =>
+      offer.casts.length === 0
+        ? null
+        : { type: "cast-spell", player: A, card: offer.cards[0], targets: [], via: "effect", free: true };
     spawn(game, "Abaddon the Despoiler");
     game.debugApplyEffect(A, { kind: "lose-life", amount: 6, who: "each-opponent" }, [], {});
     game.advanceUntil(quiet);

@@ -94,10 +94,19 @@ const registry = createDefaultRegistry()
  * the scripted default does, declined. */
 const castsCascades = (player: PlayerId): ScriptedController => {
   const controller = new ScriptedController(player);
-  controller.chooseModesFn = (_view, minModes, _maxModes, texts) =>
-    texts.length === 1 && /^Cast .* without paying/.test(texts[0])
-      ? [0]
-      : Array.from({ length: minModes }, (_unused, i) => i);
+  controller.chooseModesFn = (_view, minModes) => Array.from({ length: minModes }, (_unused, i) => i);
+  // Cascade's free cast is taken: its first cast, first targets.
+  controller.chooseCastNowFn = (_v, offer) =>
+    offer.casts.length === 0
+      ? null
+      : {
+          type: "cast-spell",
+          player,
+          card: offer.casts[0].card,
+          targets: offer.casts[0].targetOptions.map((options) => options[0]),
+          via: "effect",
+          free: true,
+        };
   return controller;
 };
 

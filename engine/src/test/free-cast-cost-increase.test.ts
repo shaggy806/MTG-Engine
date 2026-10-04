@@ -27,18 +27,33 @@ const mkGame = (aLibrary: readonly string[]): Game =>
 const atFirstMain = (s: GameState): boolean => s.turn.step === "precombat-main";
 const settled = (s: GameState): boolean =>
   s.zones.shared.stack.length === 0 && s.awaiting === null;
+/** Accept a free-cast offer (`cast-now`) with its first cast, each target
+ * slot's first option. */
+const acceptOffer = (game: Game): void => {
+  const awaiting = game.state.awaiting;
+  if (awaiting?.kind !== "cast-now") throw new Error("no free-cast offer");
+  const offer = awaiting.offers[0];
+  game.dispatch({
+    type: "cast-now",
+    player: awaiting.player,
+    cast: {
+      type: "cast-spell",
+      player: awaiting.player,
+      card: offer.card,
+      targets: offer.targetOptions.map((options) => options[0]),
+      via: "effect",
+      free: true,
+    },
+  });
+};
+
 /** Settle, saying yes to cascade's "you may cast it" (rule 702.85a) each
  * time it's asked — the default controller declines every "may". */
 const settleCasting = (game: Game): void => {
   for (;;) {
-    game.advanceUntil(
-      (s) =>
-        (s.awaiting?.kind === "choose-modes" && /^Cast .* without paying/.test(s.awaiting.modes[0]?.text ?? "")) ||
-        settled(s),
-    );
-    const awaiting = game.state.awaiting;
-    if (awaiting?.kind !== "choose-modes") return;
-    game.dispatch({ type: "choose-modes", player: awaiting.player, modes: [0] });
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now" || settled(s));
+    if (game.state.awaiting?.kind !== "cast-now") return;
+    acceptOffer(game);
   }
 };
 
@@ -99,7 +114,7 @@ describe("cascade under Thalia, Guardian of Thraben", () => {
 
 describe("suspend under Thalia, Guardian of Thraben", () => {
   // Rift Bolt with its last time counter about to come off at alice's
-  // upkeep; it targets, so the cast parks a choose-targets decision first.
+  // upkeep: its free cast is offered (a cast-now), aimed at bob.
   const suspendBolt = (lands: number): { game: Game; bolt: ObjectId } => {
     const game = mkGame([]);
     onBattlefield(game, B, "Thalia, Guardian of Thraben", 1);
@@ -107,9 +122,13 @@ describe("suspend under Thalia, Guardian of Thraben", () => {
     const bolt = game.debugSpawn("Rift Bolt", A, "exile");
     game.state.objects[bolt].suspended = true;
     game.state.objects[bolt].counters = { time: 1 };
-    game.advanceUntil((s) => s.awaiting?.kind === "choose-targets" || atFirstMain(s));
-    if (game.state.awaiting?.kind === "choose-targets") {
-      game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "player", player: B }] });
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now" || atFirstMain(s));
+    if (game.state.awaiting?.kind === "cast-now") {
+      game.dispatch({
+        type: "cast-now",
+        player: A,
+        cast: { type: "cast-spell", player: A, card: bolt, targets: [{ kind: "player", player: B }], via: "effect", free: true },
+      });
     }
     game.advanceUntil(settled);
     return { game, bolt };
@@ -117,7 +136,7 @@ describe("suspend under Thalia, Guardian of Thraben", () => {
 
   it("pays Thalia's {1}, then deals its 3", () => {
     const { game, bolt } = suspendBolt(1);
-    expect(game.eventsOfType("spell-cast").find((e) => e.object === bolt)?.via).toBe("suspend");
+    expect(game.eventsOfType("spell-cast").some((e) => e.object === bolt)).toBe(true);
     expect(game.state.players[B].life).toBe(17);
     expect(untappedLands(game, A)).toBe(0);
     expect(game.state.objects[bolt].zone).toBe("graveyard");

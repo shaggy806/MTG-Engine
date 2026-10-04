@@ -90,8 +90,7 @@ export function canDeterminize(state: GameState): boolean {
   return (
     state.awaiting === null &&
     state.zones.shared.stack.length === 0 &&
-    state.pendingTargetedTrigger === null &&
-    state.pendingTargetedCast === null
+    state.pendingTargetedTrigger === null
   );
 }
 

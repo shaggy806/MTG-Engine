@@ -2830,6 +2830,7 @@ import _poolImmolatingSouleater from "./pool/immolating-souleater.js";
 import _poolImmolation from "./pool/immolation.js";
 import _poolImodaneThePyrohammer from "./pool/imodane-the-pyrohammer.js";
 import _poolImotekhTheStormlord from "./pool/imotekh-the-stormlord.js";
+import _poolImotiCelebrantOfBounty from "./pool/imoti-celebrant-of-bounty.js";
 import _poolImpactTremors from "./pool/impact-tremors.js";
 import _poolImpale from "./pool/impale.js";
 import _poolImpassionedOrator from "./pool/impassioned-orator.js";
@@ -3002,6 +3003,7 @@ import _poolJinGitaxiasCoreAugur from "./pool/jin-gitaxias-core-augur.js";
 import _poolJinGitaxiasProgressTyrant from "./pool/jin-gitaxias-progress-tyrant.js";
 import _poolJinSakaiGhostOfTsushima from "./pool/jin-sakai-ghost-of-tsushima.js";
 import _poolJodahArchmageEternal from "./pool/jodah-archmage-eternal.js";
+import _poolJodahTheUnifier from "./pool/jodah-the-unifier.js";
 import _poolJoinTheDance from "./pool/join-the-dance.js";
 import _poolJonIrenicusShatteredOne from "./pool/jon-irenicus-shattered-one.js";
 import _poolJoragaVisionary from "./pool/joraga-visionary.js";
@@ -3427,6 +3429,7 @@ import _poolMadcapSkills from "./pool/madcap-skills.js";
 import _poolMaddeningCacophony from "./pool/maddening-cacophony.js";
 import _poolMadrushCyclops from "./pool/madrush-cyclops.js";
 import _poolMaelstromOfTheSpiritDragon from "./pool/maelstrom-of-the-spirit-dragon.js";
+import _poolMaelstromWanderer from "./pool/maelstrom-wanderer.js";
 import _poolMaestrosInitiate from "./pool/maestros-initiate.js";
 import _poolMaestrosTheater from "./pool/maestros-theater.js";
 import _poolMagdaBrazenOutlaw from "./pool/magda-brazen-outlaw.js";
@@ -5802,6 +5805,7 @@ import _poolTheFabulousFrogMan from "./pool/the-fabulous-frog-man.js";
 import _poolTheFairBasilica from "./pool/the-fair-basilica.js";
 import _poolTheFalconSamWilson from "./pool/the-falcon-sam-wilson.js";
 import _poolTheFireCrystal from "./pool/the-fire-crystal.js";
+import _poolTheFirstSliver from "./pool/the-first-sliver.js";
 import _poolTheGaffer from "./pool/the-gaffer.js";
 import _poolTheGitrogMonster from "./pool/the-gitrog-monster.js";
 import _poolTheGreatHenge from "./pool/the-great-henge.js";
@@ -6718,6 +6722,7 @@ import _poolYellowScarvesTroops from "./pool/yellow-scarves-troops.js";
 import _poolYevaNaturesHerald from "./pool/yeva-natures-herald.js";
 import _poolYevasForcemage from "./pool/yevas-forcemage.js";
 import _poolYgraEaterOfAll from "./pool/ygra-eater-of-all.js";
+import _poolYidrisMaelstromWielder from "./pool/yidris-maelstrom-wielder.js";
 import _poolYokedOx from "./pool/yoked-ox.js";
 import _poolYokedPlowbeast from "./pool/yoked-plowbeast.js";
 import _poolYoshimaru from "./pool/yoshimaru.js";
@@ -6761,6 +6766,7 @@ import _poolZephyrSprite from "./pool/zephyr-sprite.js";
 import _poolZetalpaPrimalDawn from "./pool/zetalpa-primal-dawn.js";
 import _poolZhalfirinVoid from "./pool/zhalfirin-void.js";
 import _poolZhaoTheSeethingFlame from "./pool/zhao-the-seething-flame.js";
+import _poolZhulodokVoidGorger from "./pool/zhulodok-void-gorger.js";
 import _poolZiatoraTheIncinerator from "./pool/ziatora-the-incinerator.js";
 import _poolZiatorasProvingGround from "./pool/ziatoras-proving-ground.js";
 import _poolZimoneAndDina from "./pool/zimone-and-dina.js";
@@ -9794,6 +9800,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolImmolation,
   _poolImodaneThePyrohammer,
   _poolImotekhTheStormlord,
+  _poolImotiCelebrantOfBounty,
   _poolImpactTremors,
   _poolImpale,
   _poolImpassionedOrator,
@@ -9966,6 +9973,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJinGitaxiasProgressTyrant,
   _poolJinSakaiGhostOfTsushima,
   _poolJodahArchmageEternal,
+  _poolJodahTheUnifier,
   _poolJoinTheDance,
   _poolJonIrenicusShatteredOne,
   _poolJoragaVisionary,
@@ -10391,6 +10399,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolMaddeningCacophony,
   _poolMadrushCyclops,
   _poolMaelstromOfTheSpiritDragon,
+  _poolMaelstromWanderer,
   _poolMaestrosInitiate,
   _poolMaestrosTheater,
   _poolMagdaBrazenOutlaw,
@@ -12766,6 +12775,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTheFairBasilica,
   _poolTheFalconSamWilson,
   _poolTheFireCrystal,
+  _poolTheFirstSliver,
   _poolTheGaffer,
   _poolTheGitrogMonster,
   _poolTheGreatHenge,
@@ -13682,6 +13692,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolYevaNaturesHerald,
   _poolYevasForcemage,
   _poolYgraEaterOfAll,
+  _poolYidrisMaelstromWielder,
   _poolYokedOx,
   _poolYokedPlowbeast,
   _poolYoshimaru,
@@ -13725,6 +13736,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZetalpaPrimalDawn,
   _poolZhalfirinVoid,
   _poolZhaoTheSeethingFlame,
+  _poolZhulodokVoidGorger,
   _poolZiatoraTheIncinerator,
   _poolZiatorasProvingGround,
   _poolZimoneAndDina,

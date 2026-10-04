@@ -240,6 +240,7 @@ const RULES: { readonly [K in Kind]: Rule<K> } = {
   // Card selection and maybe a counter, for the conniving permanent's side.
   connive: (n, v) => v.touch(n.target, "help", MAJOR),
   "grant-player-hexproof": none,
+  "grant-spells-this-turn": none,
   populate: none,
   amass: none,
   monstrosity: none,
@@ -623,11 +624,6 @@ export function pendingTargetPolarities(
   registry: CardRegistry,
   bias?: PolarityBias,
 ): readonly Polarity[] | null {
-  const cast = state.pendingTargetedCast;
-  if (cast !== null) {
-    const name = state.objects[cast.cardId]?.cardName;
-    return name !== undefined && registry.has(name) ? castPolarities(registry.get(name), bias) : null;
-  }
   const pending = state.pendingTargetedTrigger;
   if (pending === null) return null;
   let all: readonly Polarity[] | null = null;

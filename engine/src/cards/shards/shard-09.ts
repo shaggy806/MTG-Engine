@@ -211,6 +211,8 @@ import _poolWitnessOfTomorrows from "../pool/witness-of-tomorrows.js";
 import _poolWoodElves from "../pool/wood-elves.js";
 import _poolWoodedFoothills from "../pool/wooded-foothills.js";
 import _poolYavimayaCradleOfGrowth from "../pool/yavimaya-cradle-of-growth.js";
+import _poolYidrisMaelstromWielder from "../pool/yidris-maelstrom-wielder.js";
+import _poolZhulodokVoidGorger from "../pool/zhulodok-void-gorger.js";
 import _poolZofShade from "../pool/zof-shade.js";
 import _tokensArmyToken from "../tokens/army-token.js";
 import _tokensAssassinToken from "../tokens/assassin-token.js";
@@ -430,6 +432,8 @@ const shard: CardShard = {
     _poolWoodElves,
     _poolWoodedFoothills,
     _poolYavimayaCradleOfGrowth,
+    _poolYidrisMaelstromWielder,
+    _poolZhulodokVoidGorger,
     _poolZofShade,
   ],
   tokens: [

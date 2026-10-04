@@ -1,14 +1,11 @@
 /**
  * Choosing targets for something already on its way to the stack.
  *
- * **Two state machines behind one kind**, which is why this one went last.
  * A triggered ability that needs a real target parks in
- * `state.pendingTargetedTrigger`; a spell being cast for free (suspend,
- * cascade) parks in `state.pendingTargetedCast`. Both raise this same
- * decision, and `Game.applyChooseTargets` resumes whichever was parked —
- * `placeTriggerOnStack`'s `"done" | "paused"` sentinel, `castCardWithoutPaying`'s
- * cascade short-circuit and `upkeepStep`'s suspended-cast stash are all on
- * the other side of that resume, and none of them move.
+ * `state.pendingTargetedTrigger` and raises this decision, and a copy of a
+ * spell asks its new targets with it (`current`); `Game.applyChooseTargets`
+ * resumes whichever was parked. (Cascade's and suspend's free casts used to
+ * park here too; they're whole casts offered as a `cast-now` now.)
  *
  * The module has to know about the split for exactly one reason: what counts
  * as the *source* of the targeting differs. A pending cast is still a card,
@@ -39,10 +36,7 @@ import { targetCombos } from "./shared/target-combos.js";
  * that has left, rule 608.2b) together with what a target filter's dynamic
  * operand reads, which only `Game` can answer.
  */
-function sourceForPending(ctx: DecisionReadCtx, source: ObjectId): TargetSource | undefined {
-  if (ctx.state.pendingTargetedCast !== null) {
-    return cardSource(ctx.registry.get(ctx.state.objects[source].cardName), source);
-  }
+function sourceForPending(ctx: DecisionReadCtx, _source: ObjectId): TargetSource | undefined {
   return ctx.pendingTriggerTargetSource();
 }
 

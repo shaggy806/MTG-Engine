@@ -37,14 +37,23 @@ const settled = (s: GameState): boolean =>
  * time it's asked — the default controller declines every "may". */
 const settleCasting = (game: Game): void => {
   for (;;) {
-    game.advanceUntil(
-      (s) =>
-        (s.awaiting?.kind === "choose-modes" && /^Cast .* without paying/.test(s.awaiting.modes[0]?.text ?? "")) ||
-        settled(s),
-    );
+    game.advanceUntil((s) => s.awaiting?.kind === "cast-now" || settled(s));
     const awaiting = game.state.awaiting;
-    if (awaiting?.kind !== "choose-modes") return;
-    game.dispatch({ type: "choose-modes", player: awaiting.player, modes: [0] });
+    if (awaiting?.kind !== "cast-now") return;
+    // The offer's first cast, each target slot's first option.
+    const offer = awaiting.offers[0];
+    game.dispatch({
+      type: "cast-now",
+      player: awaiting.player,
+      cast: {
+        type: "cast-spell",
+        player: awaiting.player,
+        card: offer.card,
+        targets: offer.targetOptions.map((options) => options[0]),
+        via: "effect",
+        free: true,
+      },
+    });
   }
 };
 

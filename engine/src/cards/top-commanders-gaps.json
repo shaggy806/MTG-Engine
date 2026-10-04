@@ -171,7 +171,8 @@
   "static:legend-rule-exemptions",
   "effect:lose-game",
   "effect:add-mana-extensions",
-  "effect:may-sacrifice-then"
+  "effect:may-sacrifice-then",
+  "decision:free-cast-choices"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

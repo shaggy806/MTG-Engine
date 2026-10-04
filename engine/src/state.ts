@@ -2251,6 +2251,8 @@ export type AwaitingDecision =
       readonly spell?: CardFilter;
       /** "If that spell would be put into your graveyard, exile it instead." */
       readonly exileAfter: boolean;
+      /** Cascade's or suspend's own free cast — see `CastNowOptions`. */
+      readonly freeCastOf?: "cascade" | "suspend";
     }
   | {
       /** A blocked attacker's controller assigns its combat damage among the
@@ -2961,13 +2963,6 @@ export interface GameState {
    */
   pendingModalTrigger?: PendingTrigger;
   /**
-   * A suspended spell coming off suspend, parked while its controller chooses
-   * targets (ROADMAP Phase 11 EG-1). `applyChooseTargets` commits the free cast.
-   */
-  pendingTargetedCast:
-    | { readonly cardId: ObjectId; readonly via: CastVia; readonly grantHaste: boolean }
-    | null;
-  /**
    * A copy of a spell on the stack whose controller is choosing new targets
    * for it (rule 707.10c — "you may choose new targets for the copy"): the
    * `choose-targets` on `awaiting` carries `current`, and `slots` maps its
@@ -2984,8 +2979,8 @@ export interface GameState {
    * been countered in response (rule 707.10, as Rings of Brighthearth's
    * ruling has it). Emptied as each turn begins. Absent when empty. */
   departedAbilities?: Record<ObjectId, GameObject>;
-  /** Suspended cards still to be free-cast this upkeep, after one of them
-   * paused on a `choose-targets` decision. Drained by `applyChooseTargets`. */
+  /** Suspended cards still to be offered their free cast this upkeep, after
+   * one of them raised its `cast-now`. Drained as that is answered. */
   pendingSuspendedCasts: ObjectId[];
   /**
    * Battlefield permanents a mass-destroy effect (Wrath of God) still has to
@@ -3288,6 +3283,14 @@ export interface GameState {
    * no permanent to hang it on. Cleared as each turn begins.
    */
   hexproofPlayers: PlayerId[];
+  /** Abilities each player's spells gain as they're cast for the rest of the
+   * turn (`grant-spells-this-turn` — Yidris, Maelstrom Wielder's cascade),
+   * one entry per resolution. Ends with the turn. Absent when empty. */
+  spellGrantsThisTurn?: {
+    readonly player: PlayerId;
+    readonly castFrom?: readonly ZoneType[];
+    readonly triggered: readonly TriggeredAbility[];
+  }[];
   /** How many creatures have died this turn — Liliana's Devotee's "if a
    * creature died this turn". Turn-scoped; reset as each turn begins. */
   creaturesDiedThisTurn: number;

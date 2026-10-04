@@ -32,6 +32,18 @@ const pad = (cards: readonly string[], land: string): string[] => [
 
 const makeGame = (aCards: readonly string[], land = "Mountain", registry = createDefaultRegistry()) => {
   const a = new ScriptedController(A);
+  // A suspended card's free cast is taken (rule 702.62a's "you may").
+  a.chooseCastNowFn = (_v, offer) =>
+    offer.casts.length === 0
+      ? null
+      : {
+          type: "cast-spell",
+          player: A,
+          card: offer.casts[0].card,
+          targets: offer.casts[0].targetOptions.map((options) => options[0]),
+          via: "effect",
+          free: true,
+        };
   const b = new ScriptedController(B);
   const game = Game.create({
     seed: 1,

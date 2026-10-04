@@ -118,15 +118,16 @@ describe("ROADMAP Phase 11 EG-1 — targeting decisions", () => {
     const bolt = game.handOf(A).find((i) => game.state.objects[i].cardName === "Rift Bolt")!;
     game.dispatch({ type: "suspend", player: A, card: bolt });
 
-    // Alice's next upkeep: the time counter comes off, the spell is cast free
-    // and needs a target.
+    // Alice's next upkeep: the time counter comes off, and its free cast is
+    // offered (a cast-now) — the target hers to choose.
     let sawChoice = false;
-    a.chooseTargetsFn = (_v, _s, _sp, opts) => {
+    a.chooseCastNowFn = (_v, offer) => {
       sawChoice = true;
-      expect(game.state.awaiting?.kind).toBe("choose-targets");
+      expect(game.state.awaiting?.kind).toBe("cast-now");
       expect(game.state.awaiting?.player).toBe(A);
-      void opts;
-      return [{ kind: "object", object: frail }];
+      const targets = offer.casts[0]?.targetOptions[0] ?? [];
+      expect(targets).toEqual(expect.arrayContaining([{ kind: "object", object: frail }, { kind: "object", object: beefy }]));
+      return { type: "cast-spell", player: A, card: bolt, targets: [{ kind: "object", object: frail }], via: "effect", free: true };
     };
     game.advanceUntil((s) => s.turn.number >= 3 && s.turn.step === "postcombat-main");
     expect(sawChoice).toBe(true);

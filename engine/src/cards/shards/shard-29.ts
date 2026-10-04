@@ -79,6 +79,7 @@ import _poolHuntersInsight from "../pool/hunters-insight.js";
 import _poolHurloonMinotaur from "../pool/hurloon-minotaur.js";
 import _poolIcecaveCrasher from "../pool/icecave-crasher.js";
 import _poolImotekhTheStormlord from "../pool/imotekh-the-stormlord.js";
+import _poolImotiCelebrantOfBounty from "../pool/imoti-celebrant-of-bounty.js";
 import _poolImperialCeratops from "../pool/imperial-ceratops.js";
 import _poolIngeniousArtillerist from "../pool/ingenious-artillerist.js";
 import _poolInundatedArchive from "../pool/inundated-archive.js";
@@ -167,6 +168,7 @@ import _poolSurveyTheWreckage from "../pool/survey-the-wreckage.js";
 import _poolSylvanCaryatid from "../pool/sylvan-caryatid.js";
 import _poolTaiga from "../pool/taiga.js";
 import _poolTempleAcolyte from "../pool/temple-acolyte.js";
+import _poolTheFirstSliver from "../pool/the-first-sliver.js";
 import _poolTheMasterOfKeys from "../pool/the-master-of-keys.js";
 import _poolTheUrDragon from "../pool/the-ur-dragon.js";
 import _poolThoughtCourier from "../pool/thought-courier.js";
@@ -273,6 +275,7 @@ const shard: CardShard = {
     _poolHurloonMinotaur,
     _poolIcecaveCrasher,
     _poolImotekhTheStormlord,
+    _poolImotiCelebrantOfBounty,
     _poolImperialCeratops,
     _poolIngeniousArtillerist,
     _poolInundatedArchive,
@@ -361,6 +364,7 @@ const shard: CardShard = {
     _poolSylvanCaryatid,
     _poolTaiga,
     _poolTempleAcolyte,
+    _poolTheFirstSliver,
     _poolTheMasterOfKeys,
     _poolTheUrDragon,
     _poolThoughtCourier,

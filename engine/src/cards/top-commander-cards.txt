@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2395 already implemented / 2605 missing (marks refreshed 2026-10-04)
+2400 already implemented / 2600 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -1595,7 +1595,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  1602  Return to Dust                           {2}{W}{W}        Instant
 [x]  1603  Scavenging Ooze                          {1}{G}           Creature — Ooze
 [x]  1604  Seize the Day                            {3}{R}           Sorcery
-[ ]  1605  Maelstrom Wanderer                       {5}{G}{U}{R}     Legendary Creature — Elemental
+[x]  1605  Maelstrom Wanderer                       {5}{G}{U}{R}     Legendary Creature — Elemental
 [x]  1606  Nurturing Peatland                       {0}              Land
 [x]  1607  Fomori Vault                             {0}              Land
 [x]  1608  End-Raze Forerunners                     {5}{G}{G}{G}     Creature — Boar
@@ -2566,7 +2566,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2573  Baird, Steward of Argive                 {2}{W}{W}        Legendary Creature — Human Soldier
 [x]  2574  Goblin Chieftain                         {1}{R}{R}        Creature — Goblin
 [x]  2575  Dread Presence                           {3}{B}           Creature — Nightmare
-[ ]  2576  Imoti, Celebrant of Bounty               {3}{G}{U}        Legendary Creature — Snake Druid
+[x]  2576  Imoti, Celebrant of Bounty               {3}{G}{U}        Legendary Creature — Snake Druid
 [x]  2577  Beamtown Beatstick                       {R}              Artifact — Equipment
 [ ]  2578  Currency Converter                       {1}              Artifact
 [x]  2579  Will of the Abzan                        {3}{B}           Sorcery
@@ -2843,7 +2843,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2850  Metamorphosis Fanatic                    {4}{B}{B}        Creature — Human Cleric
 [ ]  2851  Scythecat Cub                            {1}{G}           Creature — Cat
 [x]  2852  Keen Sense                               {G}              Enchantment — Aura
-[ ]  2853  Zhulodok, Void Gorger                    {5}{C}           Legendary Creature — Eldrazi
+[x]  2853  Zhulodok, Void Gorger                    {5}{C}           Legendary Creature — Eldrazi
 [ ]  2854  Olivia's Wrath                           {4}{B}           Sorcery
 [ ]  2855  Archetype of Aggression                  {1}{R}{R}        Enchantment Creature — Human Warrior
 [ ]  2856  Headless Rider                           {2}{B}           Creature — Zombie
@@ -2873,7 +2873,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  2880  Basilisk Gate                            {0}              Land — Gate
 [ ]  2881  Silent-Blade Oni                         {3}{U}{U}{B}{B}  Creature — Demon Ninja
 [ ]  2882  Stormtide Leviathan                      {5}{U}{U}{U}     Creature — Leviathan
-[ ]  2883  Jodah, the Unifier                       {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
+[x]  2883  Jodah, the Unifier                       {W}{U}{B}{R}{G}  Legendary Creature — Human Wizard
 [ ]  2884  Glistening Sphere                        {3}              Artifact
 [x]  2885  One with the Machine                     {3}{U}           Sorcery
 [ ]  2886  Silver-Fur Master                        {U}{B}           Creature — Rat Ninja
@@ -4226,7 +4226,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4233  Count on Luck                            {R}{R}{R}        Enchantment
 [ ]  4234  Rolling Hamsphere                        {7}              Artifact — Vehicle
 [ ]  4235  Unwanted Remake                          {W}              Instant
-[ ]  4236  The First Sliver                         {W}{U}{B}{R}{G}  Legendary Creature — Sliver
+[x]  4236  The First Sliver                         {W}{U}{B}{R}{G}  Legendary Creature — Sliver
 [ ]  4237  Gothmog, Morgul Lieutenant               {3}{B}           Legendary Creature — Human Soldier
 [ ]  4238  Unstable Amulet                          {1}{R}           Artifact
 [ ]  4239  Secret Arcade // Dusty Parlor            {4}{W} // {2}{W} Enchantment — Room // Enchantment — Room

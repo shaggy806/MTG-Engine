@@ -197,8 +197,19 @@ describe("Suspend — Rift Bolt", () => {
     expect(game.eventsOfType("card-suspended").some((e) => e.object === rift)).toBe(true);
 
     const totalLifeBefore = game.state.players[A].life + game.state.players[B].life;
-    // Advance past Alice's next upkeep — the time counter comes off and Rift
-    // Bolt is cast for free, then resolves before her main phase.
+    // Advance past Alice's next upkeep — the time counter comes off, Rift
+    // Bolt's free cast is offered and taken (aimed at bob), and it resolves
+    // before her main phase.
+    game.advanceUntil(
+      (s) => s.awaiting?.kind === "cast-now" || (s.turn.number >= 3 && s.turn.step === "precombat-main"),
+    );
+    if (game.state.awaiting?.kind === "cast-now") {
+      game.dispatch({
+        type: "cast-now",
+        player: A,
+        cast: { type: "cast-spell", player: A, card: rift, targets: [{ kind: "player", player: B }], via: "effect", free: true },
+      });
+    }
     game.advanceUntil((s) => s.turn.number >= 3 && s.turn.step === "precombat-main");
 
     expect(game.eventsOfType("time-counter-removed").some((e) => e.object === rift && e.remaining === 0)).toBe(true);

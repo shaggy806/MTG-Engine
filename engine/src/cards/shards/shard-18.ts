@@ -86,6 +86,7 @@ import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
 import _poolIzzetCharm from "../pool/izzet-charm.js";
 import _poolJagwaspSwarm from "../pool/jagwasp-swarm.js";
+import _poolJodahTheUnifier from "../pool/jodah-the-unifier.js";
 import _poolKalonianHydra from "../pool/kalonian-hydra.js";
 import _poolKeeningBanshee from "../pool/keening-banshee.js";
 import _poolKefkaRulerOfRuin from "../pool/kefka-ruler-of-ruin.js";
@@ -305,6 +306,7 @@ const shard: CardShard = {
     _poolInspiringCaptain,
     _poolIzzetCharm,
     _poolJagwaspSwarm,
+    _poolJodahTheUnifier,
     _poolKalonianHydra,
     _poolKeeningBanshee,
     _poolKefkaRulerOfRuin,

@@ -199,6 +199,11 @@ How to use it:
 | [Iron Man, Titan of Innovation](#iron-man-titan-of-innovation) | new decision | Choices on resolution: populate, amass, sacrifice-then |
 | [Eddie Brock, Venom, Lethal Protector](#eddie-brock-venom-lethal-protector) | new decision | Choices on resolution: populate, amass, sacrifice-then |
 | [Yuma, Proud Protector](#yuma-proud-protector) | rules call | Choices on resolution: populate, amass, sacrifice-then |
+| [Bloodbraid Elf, Kolaghan's Command, Orim's Chant](#bloodbraid-elf-kolaghans-command-orims-chant) | new decision | Free casts: cascade and suspend cast whole |
+| [Rift Bolt (suspend)](#rift-bolt-suspend) | new decision | Free casts: cascade and suspend cast whole |
+| [Maelstrom Wanderer, The First Sliver, Imoti, Celebrant of Bounty, Zhulodok, Void Gorger](#maelstrom-wanderer-the-first-sliver-imoti-celebrant-of-bounty-zhulodok-void-gorger) | rules call | Free casts: cascade and suspend cast whole |
+| [Yidris, Maelstrom Wielder](#yidris-maelstrom-wielder) | rules call | Free casts: cascade and suspend cast whole |
+| [Jodah, the Unifier](#jodah-the-unifier) | new decision | Free casts: cascade and suspend cast whole |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3892,3 +3897,63 @@ stack count once per token)
 - **Check:** Yuma costs {1} less for each land card in your graveyard (five mana here). Sacrificing
   a land draws a card; the Desert going to your graveyard also makes a 4/2 reach Plant Warrior. A
   Desert milled or discarded makes one too; a Desert token wouldn't (it isn't a card).
+
+## Free casts: cascade and suspend cast whole (2026-10-03, UI round)
+
+### Bloodbraid Elf, Kolaghan's Command, Orim's Chant
+
+*New decision* — the UI round (free-cast choices)
+
+- **Setup:** Bloodbraid Elf in hand with four lands; Kolaghan's Command on top of your library
+  (then, another time, Orim's Chant with a Plains among your lands).
+- **Do:** Cast Bloodbraid Elf and look at the offer when the cascade finds the card.
+- **Check:** The offer is the full cast: Kolaghan's Command asks for two of its four modes and their
+  targets; Orim's Chant is offered kicked and unkicked (the kicker's {W} paid). Declining is
+  possible. The card is cast before the cards the cascade passed over go to the bottom. A card that
+  can't be cast (no legal targets, a cost increase you can't pay) isn't offered and goes to the
+  bottom.
+
+### Rift Bolt (suspend)
+
+*New decision* — the UI round (free-cast choices)
+
+- **Setup:** Rift Bolt suspended in your exile with one time counter.
+- **Do:** Start your turn.
+- **Check:** At upkeep you're offered Rift Bolt's free cast, its target yours to choose; declining
+  leaves it in exile with no counters, no longer suspended. A suspended creature spell cast this way
+  has haste.
+- **Known limits:** Suspend's counter removal and cast happen as the upkeep begins rather than as
+  triggers on the stack (BACKLOG).
+
+### Maelstrom Wanderer, The First Sliver, Imoti, Celebrant of Bounty, Zhulodok, Void Gorger
+
+*Rules call* — the UI round (free-cast choices)
+
+- **Setup:** Each on the battlefield (or Maelstrom Wanderer in hand) with spells to cast: a Sliver
+  for The First Sliver, a mana value 6+ spell for Imoti, a colorless 7+ spell from hand for
+  Zhulodok.
+- **Do:** Cast the matching spells.
+- **Check:** Maelstrom Wanderer cascades twice, the first spell resolving before the second cascade
+  exiles anything, both looking under 8. The First Sliver gives cascade only to Slivers, Imoti to
+  mana value 6+, Zhulodok two cascades to colorless 7+ spells cast from hand only.
+
+### Yidris, Maelstrom Wielder
+
+*Rules call* — the UI round (free-cast choices)
+
+- **Setup:** Yidris attacking an opponent unblocked; spells in hand.
+- **Do:** After combat damage, cast spells from your hand; then next turn.
+- **Check:** Spells cast from your hand for the rest of that turn have cascade, even if Yidris
+  leaves; a second combat-damage trigger the same turn gives a second cascade. Next turn they don't.
+
+### Jodah, the Unifier
+
+*New decision* — the UI round (free-cast choices)
+
+- **Setup:** Jodah on the battlefield; a legendary spell of mana value 4 in hand; a legendary
+  nonland card of lesser mana value a few cards down your library.
+- **Do:** Cast the legendary spell from your hand.
+- **Check:** Cards are exiled until a legendary nonland card of lesser mana value; you're offered
+  its free cast. Declined, it stays in exile (unlike cascade) and the others go to the bottom in a
+  random order. A nonlegendary spell, or one cast from elsewhere than your hand, doesn't trigger it.
+  Legendary creatures you control get +X/+X for each legendary creature you control.
