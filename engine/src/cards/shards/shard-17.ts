@@ -76,10 +76,12 @@ import _poolElspethSunsChampion from "../pool/elspeth-suns-champion.js";
 import _poolEmblemOfTheWarmind from "../pool/emblem-of-the-warmind.js";
 import _poolEnterTheGodEternals from "../pool/enter-the-god-eternals.js";
 import _poolExpelTheInterlopers from "../pool/expel-the-interlopers.js";
+import _poolFaerieVandal from "../pool/faerie-vandal.js";
 import _poolFearOfSurveillance from "../pool/fear-of-surveillance.js";
 import _poolFeatherOfFlight from "../pool/feather-of-flight.js";
 import _poolFervor from "../pool/fervor.js";
 import _poolFlameSpirit from "../pool/flame-spirit.js";
+import _poolForerunnerOfTheLegion from "../pool/forerunner-of-the-legion.js";
 import _poolForlornFlats from "../pool/forlorn-flats.js";
 import _poolFriendlyGhost from "../pool/friendly-ghost.js";
 import _poolGallowsWarden from "../pool/gallows-warden.js";
@@ -170,6 +172,7 @@ import _poolResoluteWatchdog from "../pool/resolute-watchdog.js";
 import _poolRishadanDockhand from "../pool/rishadan-dockhand.js";
 import _poolRiverBear from "../pool/river-bear.js";
 import _poolRiverKelpie from "../pool/river-kelpie.js";
+import _poolRodolfDuskbringer from "../pool/rodolf-duskbringer.js";
 import _poolRootOut from "../pool/root-out.js";
 import _poolRustMonster from "../pool/rust-monster.js";
 import _poolSabertoothWyvern from "../pool/sabertooth-wyvern.js";
@@ -181,6 +184,7 @@ import _poolSearslicerGoblin from "../pool/searslicer-goblin.js";
 import _poolSeethingLandscape from "../pool/seething-landscape.js";
 import _poolSewnEyeDrake from "../pool/sewn-eye-drake.js";
 import _poolShelldockIsle from "../pool/shelldock-isle.js";
+import _poolShieldWallSentinel from "../pool/shield-wall-sentinel.js";
 import _poolShieldsMight from "../pool/shields-might.js";
 import _poolShock from "../pool/shock.js";
 import _poolShoreLurker from "../pool/shore-lurker.js";
@@ -340,10 +344,12 @@ const shard: CardShard = {
     _poolEmblemOfTheWarmind,
     _poolEnterTheGodEternals,
     _poolExpelTheInterlopers,
+    _poolFaerieVandal,
     _poolFearOfSurveillance,
     _poolFeatherOfFlight,
     _poolFervor,
     _poolFlameSpirit,
+    _poolForerunnerOfTheLegion,
     _poolForlornFlats,
     _poolFriendlyGhost,
     _poolGallowsWarden,
@@ -434,6 +440,7 @@ const shard: CardShard = {
     _poolRishadanDockhand,
     _poolRiverBear,
     _poolRiverKelpie,
+    _poolRodolfDuskbringer,
     _poolRootOut,
     _poolRustMonster,
     _poolSabertoothWyvern,
@@ -445,6 +452,7 @@ const shard: CardShard = {
     _poolSeethingLandscape,
     _poolSewnEyeDrake,
     _poolShelldockIsle,
+    _poolShieldWallSentinel,
     _poolShieldsMight,
     _poolShock,
     _poolShoreLurker,

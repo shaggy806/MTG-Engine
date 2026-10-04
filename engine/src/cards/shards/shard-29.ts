@@ -21,6 +21,7 @@ import _poolBlightedBat from "../pool/blighted-bat.js";
 import _poolBlisterBeetle from "../pool/blister-beetle.js";
 import _poolBloodcrusherOfKhorne from "../pool/bloodcrusher-of-khorne.js";
 import _poolBlossomingBogbeast from "../pool/blossoming-bogbeast.js";
+import _poolBoneSplinters from "../pool/bone-splinters.js";
 import _poolBruseTarlBoorishHerder from "../pool/bruse-tarl-boorish-herder.js";
 import _poolBurgeoning from "../pool/burgeoning.js";
 import _poolBuriedAlive from "../pool/buried-alive.js";
@@ -150,6 +151,7 @@ import _poolPonder from "../pool/ponder.js";
 import _poolPortraitOfMichiko from "../pool/portrait-of-michiko.js";
 import _poolPrairieStream from "../pool/prairie-stream.js";
 import _poolPrescientChimera from "../pool/prescient-chimera.js";
+import _poolPriestOfAncientLore from "../pool/priest-of-ancient-lore.js";
 import _poolPsychoticFury from "../pool/psychotic-fury.js";
 import _poolQilinsBlessing from "../pool/qilins-blessing.js";
 import _poolQuaketuskBoar from "../pool/quaketusk-boar.js";
@@ -268,6 +270,7 @@ const shard: CardShard = {
     _poolBlisterBeetle,
     _poolBloodcrusherOfKhorne,
     _poolBlossomingBogbeast,
+    _poolBoneSplinters,
     _poolBruseTarlBoorishHerder,
     _poolBurgeoning,
     _poolBuriedAlive,
@@ -397,6 +400,7 @@ const shard: CardShard = {
     _poolPortraitOfMichiko,
     _poolPrairieStream,
     _poolPrescientChimera,
+    _poolPriestOfAncientLore,
     _poolPsychoticFury,
     _poolQilinsBlessing,
     _poolQuaketuskBoar,

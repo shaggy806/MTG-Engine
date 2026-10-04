@@ -26,6 +26,7 @@ import _poolBlisteringDieflyn from "../pool/blistering-dieflyn.js";
 import _poolBloodlineKeeper from "../pool/bloodline-keeper.js";
 import _poolBloodlustInciter from "../pool/bloodlust-inciter.js";
 import _poolBrambleWurm from "../pool/bramble-wurm.js";
+import _poolBranchOfBoseiju from "../pool/branch-of-boseiju.js";
 import _poolBrazenBorrower from "../pool/brazen-borrower.js";
 import _poolBrazenScourge from "../pool/brazen-scourge.js";
 import _poolBrightstoneRitual from "../pool/brightstone-ritual.js";
@@ -68,6 +69,7 @@ import _poolElvenLyre from "../pool/elven-lyre.js";
 import _poolElvishHexhunter from "../pool/elvish-hexhunter.js";
 import _poolEmptyTheWarrens from "../pool/empty-the-warrens.js";
 import _poolEscapeToTheWilds from "../pool/escape-to-the-wilds.js";
+import _poolExorcise from "../pool/exorcise.js";
 import _poolExpeditionEnvoy from "../pool/expedition-envoy.js";
 import _poolEyeOfNowhere from "../pool/eye-of-nowhere.js";
 import _poolFaithbearerPaladin from "../pool/faithbearer-paladin.js";
@@ -100,6 +102,7 @@ import _poolGoldForgedSentinel from "../pool/gold-forged-sentinel.js";
 import _poolGoldenEgg from "../pool/golden-egg.js";
 import _poolGoldnightCommander from "../pool/goldnight-commander.js";
 import _poolGolemsHeart from "../pool/golems-heart.js";
+import _poolGrahaTiaScionReborn from "../pool/graha-tia-scion-reborn.js";
 import _poolGraspingLongneck from "../pool/grasping-longneck.js";
 import _poolHallOfHeliodsGenerosity from "../pool/hall-of-heliods-generosity.js";
 import _poolHarnessedSnubhorn from "../pool/harnessed-snubhorn.js";
@@ -200,6 +203,7 @@ import _poolShaperGuildmage from "../pool/shaper-guildmage.js";
 import _poolShivanDragon from "../pool/shivan-dragon.js";
 import _poolSilundiVision from "../pool/silundi-vision.js";
 import _poolSimicRagworm from "../pool/simic-ragworm.js";
+import _poolSirensRuse from "../pool/sirens-ruse.js";
 import _poolSkullclamp from "../pool/skullclamp.js";
 import _poolSkystreakEngineer from "../pool/skystreak-engineer.js";
 import _poolSlayersStronghold from "../pool/slayers-stronghold.js";
@@ -291,6 +295,7 @@ const shard: CardShard = {
     _poolBloodlineKeeper,
     _poolBloodlustInciter,
     _poolBrambleWurm,
+    _poolBranchOfBoseiju,
     _poolBrazenBorrower,
     _poolBrazenScourge,
     _poolBrightstoneRitual,
@@ -333,6 +338,7 @@ const shard: CardShard = {
     _poolElvishHexhunter,
     _poolEmptyTheWarrens,
     _poolEscapeToTheWilds,
+    _poolExorcise,
     _poolExpeditionEnvoy,
     _poolEyeOfNowhere,
     _poolFaithbearerPaladin,
@@ -365,6 +371,7 @@ const shard: CardShard = {
     _poolGoldenEgg,
     _poolGoldnightCommander,
     _poolGolemsHeart,
+    _poolGrahaTiaScionReborn,
     _poolGraspingLongneck,
     _poolHallOfHeliodsGenerosity,
     _poolHarnessedSnubhorn,
@@ -465,6 +472,7 @@ const shard: CardShard = {
     _poolShivanDragon,
     _poolSilundiVision,
     _poolSimicRagworm,
+    _poolSirensRuse,
     _poolSkullclamp,
     _poolSkystreakEngineer,
     _poolSlayersStronghold,

@@ -3,6 +3,7 @@
 
 import type { CardShard } from "../card-shards.js";
 
+import _poolAberrantReturn from "../pool/aberrant-return.js";
 import _poolAbzanAscendancy from "../pool/abzan-ascendancy.js";
 import _poolAetherHelix from "../pool/aether-helix.js";
 import _poolAjanisChosen from "../pool/ajanis-chosen.js";
@@ -40,6 +41,7 @@ import _poolCarnageTyrant from "../pool/carnage-tyrant.js";
 import _poolCauldronOfSouls from "../pool/cauldron-of-souls.js";
 import _poolCelestialPrism from "../pool/celestial-prism.js";
 import _poolChainersEdict from "../pool/chainers-edict.js";
+import _poolChakramRetriever from "../pool/chakram-retriever.js";
 import _poolChardalynDragon from "../pool/chardalyn-dragon.js";
 import _poolChasmDrake from "../pool/chasm-drake.js";
 import _poolContradict from "../pool/contradict.js";
@@ -60,10 +62,13 @@ import _poolDefile from "../pool/defile.js";
 import _poolDelneyStreetwiseLookout from "../pool/delney-streetwise-lookout.js";
 import _poolDesperateParry from "../pool/desperate-parry.js";
 import _poolDiabolicIntent from "../pool/diabolic-intent.js";
+import _poolDictateOfKarametra from "../pool/dictate-of-karametra.js";
 import _poolDiscipleOfTeveshSzat from "../pool/disciple-of-tevesh-szat.js";
+import _poolDoubleDown from "../pool/double-down.js";
 import _poolDrakeHatchling from "../pool/drake-hatchling.js";
 import _poolDreadPresence from "../pool/dread-presence.js";
 import _poolDungeonShade from "../pool/dungeon-shade.js";
+import _poolEarthRumble from "../pool/earth-rumble.js";
 import _poolEbonyRhino from "../pool/ebony-rhino.js";
 import _poolElderfangDisciple from "../pool/elderfang-disciple.js";
 import _poolElvishWarrior from "../pool/elvish-warrior.js";
@@ -71,6 +76,7 @@ import _poolEmergeFromTheCocoon from "../pool/emerge-from-the-cocoon.js";
 import _poolEngineRat from "../pool/engine-rat.js";
 import _poolExcaliburSwordOfEden from "../pool/excalibur-sword-of-eden.js";
 import _poolFabricate from "../pool/fabricate.js";
+import _poolFaerieBladecrafter from "../pool/faerie-bladecrafter.js";
 import _poolFatefulDiscovery from "../pool/fateful-discovery.js";
 import _poolFelotharTheSteadfast from "../pool/felothar-the-steadfast.js";
 import _poolFierceEmpath from "../pool/fierce-empath.js";
@@ -130,6 +136,7 @@ import _poolLampadOfDeathsVigil from "../pool/lampad-of-deaths-vigil.js";
 import _poolLance from "../pool/lance.js";
 import _poolLathrilBladeOfTheElves from "../pool/lathril-blade-of-the-elves.js";
 import _poolLaughingJasperFlint from "../pool/laughing-jasper-flint.js";
+import _poolLavaDart from "../pool/lava-dart.js";
 import _poolLightningElemental from "../pool/lightning-elemental.js";
 import _poolLordWindgrace from "../pool/lord-windgrace.js";
 import _poolLoyalSubordinate from "../pool/loyal-subordinate.js";
@@ -252,6 +259,7 @@ import _poolVitalizingWind from "../pool/vitalizing-wind.js";
 import _poolVoiceOfTheProvinces from "../pool/voice-of-the-provinces.js";
 import _poolVoiceOfVictory from "../pool/voice-of-victory.js";
 import _poolVoltaicServant from "../pool/voltaic-servant.js";
+import _poolWallOfJunk from "../pool/wall-of-junk.js";
 import _poolWallOfTorches from "../pool/wall-of-torches.js";
 import _poolWardenOfTheWoods from "../pool/warden-of-the-woods.js";
 import _poolWeaverOfLightning from "../pool/weaver-of-lightning.js";
@@ -270,6 +278,7 @@ import _tokensZombieTokenGeralfVisionaryStitcher from "../tokens/zombie-token-ge
 
 const shard: CardShard = {
   pool: [
+    _poolAberrantReturn,
     _poolAbzanAscendancy,
     _poolAetherHelix,
     _poolAjanisChosen,
@@ -307,6 +316,7 @@ const shard: CardShard = {
     _poolCauldronOfSouls,
     _poolCelestialPrism,
     _poolChainersEdict,
+    _poolChakramRetriever,
     _poolChardalynDragon,
     _poolChasmDrake,
     _poolContradict,
@@ -327,10 +337,13 @@ const shard: CardShard = {
     _poolDelneyStreetwiseLookout,
     _poolDesperateParry,
     _poolDiabolicIntent,
+    _poolDictateOfKarametra,
     _poolDiscipleOfTeveshSzat,
+    _poolDoubleDown,
     _poolDrakeHatchling,
     _poolDreadPresence,
     _poolDungeonShade,
+    _poolEarthRumble,
     _poolEbonyRhino,
     _poolElderfangDisciple,
     _poolElvishWarrior,
@@ -338,6 +351,7 @@ const shard: CardShard = {
     _poolEngineRat,
     _poolExcaliburSwordOfEden,
     _poolFabricate,
+    _poolFaerieBladecrafter,
     _poolFatefulDiscovery,
     _poolFelotharTheSteadfast,
     _poolFierceEmpath,
@@ -397,6 +411,7 @@ const shard: CardShard = {
     _poolLance,
     _poolLathrilBladeOfTheElves,
     _poolLaughingJasperFlint,
+    _poolLavaDart,
     _poolLightningElemental,
     _poolLordWindgrace,
     _poolLoyalSubordinate,
@@ -519,6 +534,7 @@ const shard: CardShard = {
     _poolVoiceOfTheProvinces,
     _poolVoiceOfVictory,
     _poolVoltaicServant,
+    _poolWallOfJunk,
     _poolWallOfTorches,
     _poolWardenOfTheWoods,
     _poolWeaverOfLightning,

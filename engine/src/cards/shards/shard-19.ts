@@ -36,6 +36,7 @@ import _poolCausticRain from "../pool/caustic-rain.js";
 import _poolChandrasIgnition from "../pool/chandras-ignition.js";
 import _poolChargingMonstrosaur from "../pool/charging-monstrosaur.js";
 import _poolChromeMox from "../pool/chrome-mox.js";
+import _poolCliffhavenKitesail from "../pool/cliffhaven-kitesail.js";
 import _poolCloakedSiren from "../pool/cloaked-siren.js";
 import _poolCoastalPeak from "../pool/coastal-peak.js";
 import _poolContractKilling from "../pool/contract-killing.js";
@@ -136,6 +137,7 @@ import _poolMadcapSkills from "../pool/madcap-skills.js";
 import _poolMageSlayer from "../pool/mage-slayer.js";
 import _poolMagefireWings from "../pool/magefire-wings.js";
 import _poolMagusOfTheCandelabra from "../pool/magus-of-the-candelabra.js";
+import _poolMakeYourMove from "../pool/make-your-move.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolMandateOfAbaddon from "../pool/mandate-of-abaddon.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
@@ -246,6 +248,7 @@ import _poolUrzaPrinceOfKroog from "../pool/urza-prince-of-kroog.js";
 import _poolUtopiaMycon from "../pool/utopia-mycon.js";
 import _poolVectorImperialCapital from "../pool/vector-imperial-capital.js";
 import _poolVigilance from "../pool/vigilance.js";
+import _poolViridianCorrupter from "../pool/viridian-corrupter.js";
 import _poolVirtueOfLoyalty from "../pool/virtue-of-loyalty.js";
 import _poolVisceridArmor from "../pool/viscerid-armor.js";
 import _poolVolcanicDragon from "../pool/volcanic-dragon.js";
@@ -267,6 +270,7 @@ import _poolWintersIntervention from "../pool/winters-intervention.js";
 import _poolWitchsCottage from "../pool/witchs-cottage.js";
 import _poolWyluliWolf from "../pool/wyluli-wolf.js";
 import _poolYavimayaWurm from "../pool/yavimaya-wurm.js";
+import _poolYawgmothsVileOffering from "../pool/yawgmoths-vile-offering.js";
 import _poolZenithFestival from "../pool/zenith-festival.js";
 import _poolZombieGoliath from "../pool/zombie-goliath.js";
 import _poolZukosExile from "../pool/zukos-exile.js";
@@ -309,6 +313,7 @@ const shard: CardShard = {
     _poolChandrasIgnition,
     _poolChargingMonstrosaur,
     _poolChromeMox,
+    _poolCliffhavenKitesail,
     _poolCloakedSiren,
     _poolCoastalPeak,
     _poolContractKilling,
@@ -409,6 +414,7 @@ const shard: CardShard = {
     _poolMageSlayer,
     _poolMagefireWings,
     _poolMagusOfTheCandelabra,
+    _poolMakeYourMove,
     _poolMakindiSliderunner,
     _poolMandateOfAbaddon,
     _poolManicVandal,
@@ -519,6 +525,7 @@ const shard: CardShard = {
     _poolUtopiaMycon,
     _poolVectorImperialCapital,
     _poolVigilance,
+    _poolViridianCorrupter,
     _poolVirtueOfLoyalty,
     _poolVisceridArmor,
     _poolVolcanicDragon,
@@ -540,6 +547,7 @@ const shard: CardShard = {
     _poolWitchsCottage,
     _poolWyluliWolf,
     _poolYavimayaWurm,
+    _poolYawgmothsVileOffering,
     _poolZenithFestival,
     _poolZombieGoliath,
     _poolZukosExile,

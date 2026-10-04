@@ -24,6 +24,7 @@ import _poolBaronAirshipKingdom from "../pool/baron-airship-kingdom.js";
 import _poolBarrageOgre from "../pool/barrage-ogre.js";
 import _poolBarrierOfBones from "../pool/barrier-of-bones.js";
 import _poolBazaarTrademage from "../pool/bazaar-trademage.js";
+import _poolBeaconOfTomorrows from "../pool/beacon-of-tomorrows.js";
 import _poolBeeSting from "../pool/bee-sting.js";
 import _poolBenalishHeralds from "../pool/benalish-heralds.js";
 import _poolBloomTender from "../pool/bloom-tender.js";
@@ -173,6 +174,7 @@ import _poolRancor from "../pool/rancor.js";
 import _poolRatadrabikOfUrborg from "../pool/ratadrabik-of-urborg.js";
 import _poolRazorfinHunter from "../pool/razorfin-hunter.js";
 import _poolRazortipWhip from "../pool/razortip-whip.js";
+import _poolRecklessLackey from "../pool/reckless-lackey.js";
 import _poolReinforcedRonin from "../pool/reinforced-ronin.js";
 import _poolRelearn from "../pool/relearn.js";
 import _poolResurrection from "../pool/resurrection.js";
@@ -183,10 +185,12 @@ import _poolRubblebackRhino from "../pool/rubbleback-rhino.js";
 import _poolRubblebeltMaverick from "../pool/rubblebelt-maverick.js";
 import _poolRunAwayTogether from "../pool/run-away-together.js";
 import _poolRustedSentinel from "../pool/rusted-sentinel.js";
+import _poolRyuseiTheFallingStar from "../pool/ryusei-the-falling-star.js";
 import _poolSacrifice from "../pool/sacrifice.js";
 import _poolSamwiseGamgee from "../pool/samwise-gamgee.js";
 import _poolSavvyHunter from "../pool/savvy-hunter.js";
 import _poolSawItComing from "../pool/saw-it-coming.js";
+import _poolScaleTheHeights from "../pool/scale-the-heights.js";
 import _poolScarecrone from "../pool/scarecrone.js";
 import _poolScavengingScarab from "../pool/scavenging-scarab.js";
 import _poolSealOfStrength from "../pool/seal-of-strength.js";
@@ -302,6 +306,7 @@ const shard: CardShard = {
     _poolBarrageOgre,
     _poolBarrierOfBones,
     _poolBazaarTrademage,
+    _poolBeaconOfTomorrows,
     _poolBeeSting,
     _poolBenalishHeralds,
     _poolBloomTender,
@@ -451,6 +456,7 @@ const shard: CardShard = {
     _poolRatadrabikOfUrborg,
     _poolRazorfinHunter,
     _poolRazortipWhip,
+    _poolRecklessLackey,
     _poolReinforcedRonin,
     _poolRelearn,
     _poolResurrection,
@@ -461,10 +467,12 @@ const shard: CardShard = {
     _poolRubblebeltMaverick,
     _poolRunAwayTogether,
     _poolRustedSentinel,
+    _poolRyuseiTheFallingStar,
     _poolSacrifice,
     _poolSamwiseGamgee,
     _poolSavvyHunter,
     _poolSawItComing,
+    _poolScaleTheHeights,
     _poolScarecrone,
     _poolScavengingScarab,
     _poolSealOfStrength,

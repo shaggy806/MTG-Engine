@@ -18,6 +18,7 @@ import _poolAzoriusSignet from "../pool/azorius-signet.js";
 import _poolBanishingBetrayal from "../pool/banishing-betrayal.js";
 import _poolBarbedBattlegear from "../pool/barbed-battlegear.js";
 import _poolBedevil from "../pool/bedevil.js";
+import _poolBighornerRancher from "../pool/bighorner-rancher.js";
 import _poolBirdMaiden from "../pool/bird-maiden.js";
 import _poolBlindingMage from "../pool/blinding-mage.js";
 import _poolBloodlineNecromancer from "../pool/bloodline-necromancer.js";
@@ -50,6 +51,7 @@ import _poolCopperlineGorge from "../pool/copperline-gorge.js";
 import _poolCourserOfKruphix from "../pool/courser-of-kruphix.js";
 import _poolCrucibleOfWorlds from "../pool/crucible-of-worlds.js";
 import _poolCruelTutor from "../pool/cruel-tutor.js";
+import _poolDalkovanPackbeasts from "../pool/dalkovan-packbeasts.js";
 import _poolDecadentDragon from "../pool/decadent-dragon.js";
 import _poolDeeprootChampion from "../pool/deeproot-champion.js";
 import _poolDesperateCharge from "../pool/desperate-charge.js";
@@ -104,6 +106,7 @@ import _poolInspiredInsurgent from "../pool/inspired-insurgent.js";
 import _poolInspiringCaptain from "../pool/inspiring-captain.js";
 import _poolInvigoratingSurge from "../pool/invigorating-surge.js";
 import _poolIvyLaneDenizen from "../pool/ivy-lane-denizen.js";
+import _poolIxallisLorekeeper from "../pool/ixallis-lorekeeper.js";
 import _poolIzzetCharm from "../pool/izzet-charm.js";
 import _poolJagwaspSwarm from "../pool/jagwasp-swarm.js";
 import _poolJodahTheUnifier from "../pool/jodah-the-unifier.js";
@@ -204,6 +207,8 @@ import _poolStarfallInvocation from "../pool/starfall-invocation.js";
 import _poolStarstorm from "../pool/starstorm.js";
 import _poolStepThrough from "../pool/step-through.js";
 import _poolStewardOfTheHarvest from "../pool/steward-of-the-harvest.js";
+import _poolStrengthBobblehead from "../pool/strength-bobblehead.js";
+import _poolSummonKujata from "../pool/summon-kujata.js";
 import _poolSusurSecundiVoidAltar from "../pool/susur-secundi-void-altar.js";
 import _poolSuturePriest from "../pool/suture-priest.js";
 import _poolSymbioteSpawn from "../pool/symbiote-spawn.js";
@@ -228,6 +233,7 @@ import _poolTowerDefense from "../pool/tower-defense.js";
 import _poolTreasureMap from "../pool/treasure-map.js";
 import _poolTremble from "../pool/tremble.js";
 import _poolTruefirePaladin from "../pool/truefire-paladin.js";
+import _poolTuneTheNarrative from "../pool/tune-the-narrative.js";
 import _poolTyphoidRats from "../pool/typhoid-rats.js";
 import _poolUlamogsCrusher from "../pool/ulamogs-crusher.js";
 import _poolUnquestionedAuthority from "../pool/unquestioned-authority.js";
@@ -252,6 +258,7 @@ import _poolWhiteSunsZenith from "../pool/white-suns-zenith.js";
 import _poolWillOfTheJeskai from "../pool/will-of-the-jeskai.js";
 import _poolWillOfTheMardu from "../pool/will-of-the-mardu.js";
 import _poolWiltLeafCavaliers from "../pool/wilt-leaf-cavaliers.js";
+import _poolWingedSliver from "../pool/winged-sliver.js";
 import _poolWirewoodSavage from "../pool/wirewood-savage.js";
 import _poolWrathOfGod from "../pool/wrath-of-god.js";
 import _poolXiraArien from "../pool/xira-arien.js";
@@ -292,6 +299,7 @@ const shard: CardShard = {
     _poolBanishingBetrayal,
     _poolBarbedBattlegear,
     _poolBedevil,
+    _poolBighornerRancher,
     _poolBirdMaiden,
     _poolBlindingMage,
     _poolBloodlineNecromancer,
@@ -324,6 +332,7 @@ const shard: CardShard = {
     _poolCourserOfKruphix,
     _poolCrucibleOfWorlds,
     _poolCruelTutor,
+    _poolDalkovanPackbeasts,
     _poolDecadentDragon,
     _poolDeeprootChampion,
     _poolDesperateCharge,
@@ -378,6 +387,7 @@ const shard: CardShard = {
     _poolInspiringCaptain,
     _poolInvigoratingSurge,
     _poolIvyLaneDenizen,
+    _poolIxallisLorekeeper,
     _poolIzzetCharm,
     _poolJagwaspSwarm,
     _poolJodahTheUnifier,
@@ -478,6 +488,8 @@ const shard: CardShard = {
     _poolStarstorm,
     _poolStepThrough,
     _poolStewardOfTheHarvest,
+    _poolStrengthBobblehead,
+    _poolSummonKujata,
     _poolSusurSecundiVoidAltar,
     _poolSuturePriest,
     _poolSymbioteSpawn,
@@ -502,6 +514,7 @@ const shard: CardShard = {
     _poolTreasureMap,
     _poolTremble,
     _poolTruefirePaladin,
+    _poolTuneTheNarrative,
     _poolTyphoidRats,
     _poolUlamogsCrusher,
     _poolUnquestionedAuthority,
@@ -526,6 +539,7 @@ const shard: CardShard = {
     _poolWillOfTheJeskai,
     _poolWillOfTheMardu,
     _poolWiltLeafCavaliers,
+    _poolWingedSliver,
     _poolWirewoodSavage,
     _poolWrathOfGod,
     _poolXiraArien,

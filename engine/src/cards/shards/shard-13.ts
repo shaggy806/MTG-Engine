@@ -17,6 +17,7 @@ import _poolAncientGreenwarden from "../pool/ancient-greenwarden.js";
 import _poolAngelOfInvention from "../pool/angel-of-invention.js";
 import _poolAngelicSkirmisher from "../pool/angelic-skirmisher.js";
 import _poolArcaneSignet from "../pool/arcane-signet.js";
+import _poolArchghoulOfThraben from "../pool/archghoul-of-thraben.js";
 import _poolArrowsOfJustice from "../pool/arrows-of-justice.js";
 import _poolAuthorityOfTheConsuls from "../pool/authority-of-the-consuls.js";
 import _poolAxegrinderGiant from "../pool/axegrinder-giant.js";
@@ -31,6 +32,7 @@ import _poolBogImp from "../pool/bog-imp.js";
 import _poolBoggartBrute from "../pool/boggart-brute.js";
 import _poolBoilingRockPrison from "../pool/boiling-rock-prison.js";
 import _poolBoneDevourer from "../pool/bone-devourer.js";
+import _poolBoneSabres from "../pool/bone-sabres.js";
 import _poolBrawn from "../pool/brawn.js";
 import _poolBreathstealer from "../pool/breathstealer.js";
 import _poolBredForTheHunt from "../pool/bred-for-the-hunt.js";
@@ -65,6 +67,7 @@ import _poolDestroyEvil from "../pool/destroy-evil.js";
 import _poolDiabolicEdict from "../pool/diabolic-edict.js";
 import _poolDragonlordAtarka from "../pool/dragonlord-atarka.js";
 import _poolDriftingMeadow from "../pool/drifting-meadow.js";
+import _poolDroverOfTheMighty from "../pool/drover-of-the-mighty.js";
 import _poolDualSunAdepts from "../pool/dual-sun-adepts.js";
 import _poolDuskanaTheRageMother from "../pool/duskana-the-rage-mother.js";
 import _poolEddieBrock from "../pool/eddie-brock.js";
@@ -120,6 +123,7 @@ import _poolJoinTheDance from "../pool/join-the-dance.js";
 import _poolJourneyersKite from "../pool/journeyers-kite.js";
 import _poolJudgesFamiliar from "../pool/judges-familiar.js";
 import _poolJump from "../pool/jump.js";
+import _poolKamahlsDruidicVow from "../pool/kamahls-druidic-vow.js";
 import _poolKeenGlidemaster from "../pool/keen-glidemaster.js";
 import _poolKeeperOfSecrets from "../pool/keeper-of-secrets.js";
 import _poolKiboUktabiPrince from "../pool/kibo-uktabi-prince.js";
@@ -183,6 +187,7 @@ import _poolRivenTurnbull from "../pool/riven-turnbull.js";
 import _poolRottingMastodon from "../pool/rotting-mastodon.js";
 import _poolRoyalFalcon from "../pool/royal-falcon.js";
 import _poolRussetWolves from "../pool/russet-wolves.js";
+import _poolSakashimasProtege from "../pool/sakashimas-protege.js";
 import _poolSakuraTribeElder from "../pool/sakura-tribe-elder.js";
 import _poolSanguineSyphoner from "../pool/sanguine-syphoner.js";
 import _poolSarumansTrickery from "../pool/sarumans-trickery.js";
@@ -280,6 +285,7 @@ const shard: CardShard = {
     _poolAngelOfInvention,
     _poolAngelicSkirmisher,
     _poolArcaneSignet,
+    _poolArchghoulOfThraben,
     _poolArrowsOfJustice,
     _poolAuthorityOfTheConsuls,
     _poolAxegrinderGiant,
@@ -294,6 +300,7 @@ const shard: CardShard = {
     _poolBoggartBrute,
     _poolBoilingRockPrison,
     _poolBoneDevourer,
+    _poolBoneSabres,
     _poolBrawn,
     _poolBreathstealer,
     _poolBredForTheHunt,
@@ -328,6 +335,7 @@ const shard: CardShard = {
     _poolDiabolicEdict,
     _poolDragonlordAtarka,
     _poolDriftingMeadow,
+    _poolDroverOfTheMighty,
     _poolDualSunAdepts,
     _poolDuskanaTheRageMother,
     _poolEddieBrock,
@@ -383,6 +391,7 @@ const shard: CardShard = {
     _poolJourneyersKite,
     _poolJudgesFamiliar,
     _poolJump,
+    _poolKamahlsDruidicVow,
     _poolKeenGlidemaster,
     _poolKeeperOfSecrets,
     _poolKiboUktabiPrince,
@@ -446,6 +455,7 @@ const shard: CardShard = {
     _poolRottingMastodon,
     _poolRoyalFalcon,
     _poolRussetWolves,
+    _poolSakashimasProtege,
     _poolSakuraTribeElder,
     _poolSanguineSyphoner,
     _poolSarumansTrickery,

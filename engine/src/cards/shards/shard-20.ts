@@ -121,6 +121,7 @@ import _poolHypnoticSprite from "../pool/hypnotic-sprite.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolImpulse from "../pool/impulse.js";
 import _poolInvigoratingHotSpring from "../pool/invigorating-hot-spring.js";
+import _poolInvoluntaryEmployment from "../pool/involuntary-employment.js";
 import _poolItllQuenchYa from "../pool/itll-quench-ya.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
@@ -168,6 +169,7 @@ import _poolOssification from "../pool/ossification.js";
 import _poolOvergrownArmasaur from "../pool/overgrown-armasaur.js";
 import _poolOverwhelmingInstinct from "../pool/overwhelming-instinct.js";
 import _poolPhyrexianTower from "../pool/phyrexian-tower.js";
+import _poolPiaNalaarConsulOfRevival from "../pool/pia-nalaar-consul-of-revival.js";
 import _poolPincherBeetles from "../pool/pincher-beetles.js";
 import _poolPontiffOfBlight from "../pool/pontiff-of-blight.js";
 import _poolPristineTalisman from "../pool/pristine-talisman.js";
@@ -390,6 +392,7 @@ const shard: CardShard = {
     _poolIllusionistsBracers,
     _poolImpulse,
     _poolInvigoratingHotSpring,
+    _poolInvoluntaryEmployment,
     _poolItllQuenchYa,
     _poolIzzetBoilerworks,
     _poolJackhammer,
@@ -437,6 +440,7 @@ const shard: CardShard = {
     _poolOvergrownArmasaur,
     _poolOverwhelmingInstinct,
     _poolPhyrexianTower,
+    _poolPiaNalaarConsulOfRevival,
     _poolPincherBeetles,
     _poolPontiffOfBlight,
     _poolPristineTalisman,

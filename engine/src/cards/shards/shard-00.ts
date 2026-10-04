@@ -54,10 +54,12 @@ import _poolCloudblazer from "../pool/cloudblazer.js";
 import _poolCommandersSphere from "../pool/commanders-sphere.js";
 import _poolCommonCrook from "../pool/common-crook.js";
 import _poolConsecratedSphinx from "../pool/consecrated-sphinx.js";
+import _poolConversionApparatus from "../pool/conversion-apparatus.js";
 import _poolCosmicCube from "../pool/cosmic-cube.js";
 import _poolCraterhoofBehemoth from "../pool/craterhoof-behemoth.js";
 import _poolCursedMinotaur from "../pool/cursed-minotaur.js";
 import _poolDarkTutelage from "../pool/dark-tutelage.js";
+import _poolDazzlingSphinx from "../pool/dazzling-sphinx.js";
 import _poolDeadlyDispute from "../pool/deadly-dispute.js";
 import _poolDesertTwister from "../pool/desert-twister.js";
 import _poolDinaSoulSteeper from "../pool/dina-soul-steeper.js";
@@ -90,10 +92,12 @@ import _poolFootHeadquarters from "../pool/foot-headquarters.js";
 import _poolForest from "../pool/forest.js";
 import _poolGalazethPrismari from "../pool/galazeth-prismari.js";
 import _poolGatewayShade from "../pool/gateway-shade.js";
+import _poolGempalmIncinerator from "../pool/gempalm-incinerator.js";
 import _poolGhaltaPrimalHunger from "../pool/ghalta-primal-hunger.js";
 import _poolGhituWarCry from "../pool/ghitu-war-cry.js";
 import _poolGleamingSplendor from "../pool/gleaming-splendor.js";
 import _poolGoShintaiOfAncientWars from "../pool/go-shintai-of-ancient-wars.js";
+import _poolGoShintaiOfLostWisdom from "../pool/go-shintai-of-lost-wisdom.js";
 import _poolGoblinCavaliers from "../pool/goblin-cavaliers.js";
 import _poolGoblinElectromancer from "../pool/goblin-electromancer.js";
 import _poolGoblinTrailblazer from "../pool/goblin-trailblazer.js";
@@ -331,10 +335,12 @@ const shard: CardShard = {
     _poolCommandersSphere,
     _poolCommonCrook,
     _poolConsecratedSphinx,
+    _poolConversionApparatus,
     _poolCosmicCube,
     _poolCraterhoofBehemoth,
     _poolCursedMinotaur,
     _poolDarkTutelage,
+    _poolDazzlingSphinx,
     _poolDeadlyDispute,
     _poolDesertTwister,
     _poolDinaSoulSteeper,
@@ -367,10 +373,12 @@ const shard: CardShard = {
     _poolForest,
     _poolGalazethPrismari,
     _poolGatewayShade,
+    _poolGempalmIncinerator,
     _poolGhaltaPrimalHunger,
     _poolGhituWarCry,
     _poolGleamingSplendor,
     _poolGoShintaiOfAncientWars,
+    _poolGoShintaiOfLostWisdom,
     _poolGoblinCavaliers,
     _poolGoblinElectromancer,
     _poolGoblinTrailblazer,

@@ -46,6 +46,7 @@ import _poolCatapultSquad from "../pool/catapult-squad.js";
 import _poolCephalidScout from "../pool/cephalid-scout.js";
 import _poolChaosWand from "../pool/chaos-wand.js";
 import _poolChaosWarp from "../pool/chaos-warp.js";
+import _poolCharismaBobblehead from "../pool/charisma-bobblehead.js";
 import _poolChatterOfTheSquirrel from "../pool/chatter-of-the-squirrel.js";
 import _poolCommuneWithLava from "../pool/commune-with-lava.js";
 import _poolCoordinatedCharge from "../pool/coordinated-charge.js";
@@ -99,6 +100,7 @@ import _poolHawkeyeClintBarton from "../pool/hawkeye-clint-barton.js";
 import _poolHecteyes from "../pool/hecteyes.js";
 import _poolHelpingHand from "../pool/helping-hand.js";
 import _poolHeraldOfTheFair from "../pool/herald-of-the-fair.js";
+import _poolHiddenBlade from "../pool/hidden-blade.js";
 import _poolHighbornGhoul from "../pool/highborn-ghoul.js";
 import _poolHiredBlade from "../pool/hired-blade.js";
 import _poolHobgoblinDragoon from "../pool/hobgoblin-dragoon.js";
@@ -155,6 +157,7 @@ import _poolPainfulQuandary from "../pool/painful-quandary.js";
 import _poolPlasmancer from "../pool/plasmancer.js";
 import _poolPollutedMire from "../pool/polluted-mire.js";
 import _poolPongify from "../pool/pongify.js";
+import _poolPrimalBeyond from "../pool/primal-beyond.js";
 import _poolPrimeSpeakerZegana from "../pool/prime-speaker-zegana.js";
 import _poolPrimevalHerald from "../pool/primeval-herald.js";
 import _poolProdigiousGrowth from "../pool/prodigious-growth.js";
@@ -307,6 +310,7 @@ const shard: CardShard = {
     _poolCephalidScout,
     _poolChaosWand,
     _poolChaosWarp,
+    _poolCharismaBobblehead,
     _poolChatterOfTheSquirrel,
     _poolCommuneWithLava,
     _poolCoordinatedCharge,
@@ -360,6 +364,7 @@ const shard: CardShard = {
     _poolHecteyes,
     _poolHelpingHand,
     _poolHeraldOfTheFair,
+    _poolHiddenBlade,
     _poolHighbornGhoul,
     _poolHiredBlade,
     _poolHobgoblinDragoon,
@@ -416,6 +421,7 @@ const shard: CardShard = {
     _poolPlasmancer,
     _poolPollutedMire,
     _poolPongify,
+    _poolPrimalBeyond,
     _poolPrimeSpeakerZegana,
     _poolPrimevalHerald,
     _poolProdigiousGrowth,

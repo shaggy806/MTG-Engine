@@ -43,6 +43,7 @@ import _poolConviction from "../pool/conviction.js";
 import _poolCouriersCapsule from "../pool/couriers-capsule.js";
 import _poolCourtOfArdenvale from "../pool/court-of-ardenvale.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
+import _poolCrystalShard from "../pool/crystal-shard.js";
 import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
 import _poolDaemogothTitan from "../pool/daemogoth-titan.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
@@ -65,6 +66,7 @@ import _poolEmperorMihailIi from "../pool/emperor-mihail-ii.js";
 import _poolErase from "../pool/erase.js";
 import _poolFalseSummoning from "../pool/false-summoning.js";
 import _poolFarewell from "../pool/farewell.js";
+import _poolFatefulAbsence from "../pool/fateful-absence.js";
 import _poolFecundGreenshell from "../pool/fecund-greenshell.js";
 import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
@@ -135,18 +137,21 @@ import _poolMessengerDrake from "../pool/messenger-drake.js";
 import _poolMinionsReturn from "../pool/minions-return.js";
 import _poolMirrorEntity from "../pool/mirror-entity.js";
 import _poolMisguidedRage from "../pool/misguided-rage.js";
+import _poolMonaLisaScienceGeek from "../pool/mona-lisa-science-geek.js";
 import _poolMonoistSentry from "../pool/monoist-sentry.js";
 import _poolMorphicPool from "../pool/morphic-pool.js";
 import _poolMsBumbleflower from "../pool/ms-bumbleflower.js";
 import _poolMurmuringPhantasm from "../pool/murmuring-phantasm.js";
 import _poolMyrEnforcer from "../pool/myr-enforcer.js";
 import _poolMyrRetriever from "../pool/myr-retriever.js";
+import _poolNabanDeanOfIteration from "../pool/naban-dean-of-iteration.js";
 import _poolNagaEternal from "../pool/naga-eternal.js";
 import _poolNezahalPrimalTide from "../pool/nezahal-primal-tide.js";
 import _poolNightmareShepherd from "../pool/nightmare-shepherd.js";
 import _poolNoxiousRevival from "../pool/noxious-revival.js";
 import _poolNymrisOonasTrickster from "../pool/nymris-oonas-trickster.js";
 import _poolObeliskOfGrixis from "../pool/obelisk-of-grixis.js";
+import _poolOpposition from "../pool/opposition.js";
 import _poolOrazcaRaptor from "../pool/orazca-raptor.js";
 import _poolOrzhovSignet from "../pool/orzhov-signet.js";
 import _poolParallelLives from "../pool/parallel-lives.js";
@@ -288,6 +293,7 @@ const shard: CardShard = {
     _poolCouriersCapsule,
     _poolCourtOfArdenvale,
     _poolCravenGiant,
+    _poolCrystalShard,
     _poolCurseOfTheSwine,
     _poolDaemogothTitan,
     _poolDaggerfangDuo,
@@ -310,6 +316,7 @@ const shard: CardShard = {
     _poolErase,
     _poolFalseSummoning,
     _poolFarewell,
+    _poolFatefulAbsence,
     _poolFecundGreenshell,
     _poolFelidarRetreat,
     _poolFestivalCrasher,
@@ -380,18 +387,21 @@ const shard: CardShard = {
     _poolMinionsReturn,
     _poolMirrorEntity,
     _poolMisguidedRage,
+    _poolMonaLisaScienceGeek,
     _poolMonoistSentry,
     _poolMorphicPool,
     _poolMsBumbleflower,
     _poolMurmuringPhantasm,
     _poolMyrEnforcer,
     _poolMyrRetriever,
+    _poolNabanDeanOfIteration,
     _poolNagaEternal,
     _poolNezahalPrimalTide,
     _poolNightmareShepherd,
     _poolNoxiousRevival,
     _poolNymrisOonasTrickster,
     _poolObeliskOfGrixis,
+    _poolOpposition,
     _poolOrazcaRaptor,
     _poolOrzhovSignet,
     _poolParallelLives,

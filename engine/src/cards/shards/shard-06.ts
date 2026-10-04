@@ -102,6 +102,7 @@ import _poolGenerousPup from "../pool/generous-pup.js";
 import _poolGhostfireSlice from "../pool/ghostfire-slice.js";
 import _poolGhostlyPrison from "../pool/ghostly-prison.js";
 import _poolGlamdring from "../pool/glamdring.js";
+import _poolGlimmerOfGenius from "../pool/glimmer-of-genius.js";
 import _poolGlimmervoid from "../pool/glimmervoid.js";
 import _poolGoblinGangLeader from "../pool/goblin-gang-leader.js";
 import _poolGoblinRally from "../pool/goblin-rally.js";
@@ -177,6 +178,7 @@ import _poolRedoubledStormsinger from "../pool/redoubled-stormsinger.js";
 import _poolReefWorm from "../pool/reef-worm.js";
 import _poolRiotGear from "../pool/riot-gear.js";
 import _poolRiptideCrab from "../pool/riptide-crab.js";
+import _poolRosaResoluteWhiteMage from "../pool/rosa-resolute-white-mage.js";
 import _poolRousingRead from "../pool/rousing-read.js";
 import _poolRowanTreefolk from "../pool/rowan-treefolk.js";
 import _poolSandbarMerfolk from "../pool/sandbar-merfolk.js";
@@ -229,9 +231,11 @@ import _poolTidechannelPathway from "../pool/tidechannel-pathway.js";
 import _poolTimeSieve from "../pool/time-sieve.js";
 import _poolTirelessProvisioner from "../pool/tireless-provisioner.js";
 import _poolTouchOfBrilliance from "../pool/touch-of-brilliance.js";
+import _poolTrashTheTown from "../pool/trash-the-town.js";
 import _poolTraverseTheOutlands from "../pool/traverse-the-outlands.js";
 import _poolTreeMonkey from "../pool/tree-monkey.js";
 import _poolTurntimberGrove from "../pool/turntimber-grove.js";
+import _poolTwoHeadedSliver from "../pool/two-headed-sliver.js";
 import _poolTyrantsFamiliar from "../pool/tyrants-familiar.js";
 import _poolUchuulon from "../pool/uchuulon.js";
 import _poolUnbreathingHorde from "../pool/unbreathing-horde.js";
@@ -370,6 +374,7 @@ const shard: CardShard = {
     _poolGhostfireSlice,
     _poolGhostlyPrison,
     _poolGlamdring,
+    _poolGlimmerOfGenius,
     _poolGlimmervoid,
     _poolGoblinGangLeader,
     _poolGoblinRally,
@@ -445,6 +450,7 @@ const shard: CardShard = {
     _poolReefWorm,
     _poolRiotGear,
     _poolRiptideCrab,
+    _poolRosaResoluteWhiteMage,
     _poolRousingRead,
     _poolRowanTreefolk,
     _poolSandbarMerfolk,
@@ -497,9 +503,11 @@ const shard: CardShard = {
     _poolTimeSieve,
     _poolTirelessProvisioner,
     _poolTouchOfBrilliance,
+    _poolTrashTheTown,
     _poolTraverseTheOutlands,
     _poolTreeMonkey,
     _poolTurntimberGrove,
+    _poolTwoHeadedSliver,
     _poolTyrantsFamiliar,
     _poolUchuulon,
     _poolUnbreathingHorde,

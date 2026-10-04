@@ -40,6 +40,7 @@ import _poolBrashTaunter from "../pool/brash-taunter.js";
 import _poolBronzeSable from "../pool/bronze-sable.js";
 import _poolButcherOfMalakir from "../pool/butcher-of-malakir.js";
 import _poolCaptainSisay from "../pool/captain-sisay.js";
+import _poolCaptainStormCosmiumRaider from "../pool/captain-storm-cosmium-raider.js";
 import _poolCatalog from "../pool/catalog.js";
 import _poolCathodion from "../pool/cathodion.js";
 import _poolCavernCrawler from "../pool/cavern-crawler.js";
@@ -234,6 +235,7 @@ import _poolVastwoodSurge from "../pool/vastwood-surge.js";
 import _poolVerdantForce from "../pool/verdant-force.js";
 import _poolVeteranArmorer from "../pool/veteran-armorer.js";
 import _poolViridianClaw from "../pool/viridian-claw.js";
+import _poolVividMeadow from "../pool/vivid-meadow.js";
 import _poolVraskasFall from "../pool/vraskas-fall.js";
 import _poolWakandanShieldGuard from "../pool/wakandan-shield-guard.js";
 import _poolWakeningSunsAvatar from "../pool/wakening-suns-avatar.js";
@@ -299,6 +301,7 @@ const shard: CardShard = {
     _poolBronzeSable,
     _poolButcherOfMalakir,
     _poolCaptainSisay,
+    _poolCaptainStormCosmiumRaider,
     _poolCatalog,
     _poolCathodion,
     _poolCavernCrawler,
@@ -493,6 +496,7 @@ const shard: CardShard = {
     _poolVerdantForce,
     _poolVeteranArmorer,
     _poolViridianClaw,
+    _poolVividMeadow,
     _poolVraskasFall,
     _poolWakandanShieldGuard,
     _poolWakeningSunsAvatar,

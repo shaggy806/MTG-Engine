@@ -31,6 +31,7 @@ import _poolBoggartCursecrafter from "../pool/boggart-cursecrafter.js";
 import _poolBookOfRass from "../pool/book-of-rass.js";
 import _poolBootleggersStash from "../pool/bootleggers-stash.js";
 import _poolBorosCluestone from "../pool/boros-cluestone.js";
+import _poolBoseijuReachesSkyward from "../pool/boseiju-reaches-skyward.js";
 import _poolBraidsConjurerAdept from "../pool/braids-conjurer-adept.js";
 import _poolBreathOfFire from "../pool/breath-of-fire.js";
 import _poolBrightglassGearhulk from "../pool/brightglass-gearhulk.js";
@@ -174,6 +175,7 @@ import _poolRamosDragonEngine from "../pool/ramos-dragon-engine.js";
 import _poolRazorfootGriffin from "../pool/razorfoot-griffin.js";
 import _poolRecklessHandling from "../pool/reckless-handling.js";
 import _poolReclaim from "../pool/reclaim.js";
+import _poolRemnantOfTheRisingStar from "../pool/remnant-of-the-rising-star.js";
 import _poolResearchThief from "../pool/research-thief.js";
 import _poolRevitalize from "../pool/revitalize.js";
 import _poolRiseAgain from "../pool/rise-again.js";
@@ -215,6 +217,7 @@ import _poolSteelbaneHydra from "../pool/steelbane-hydra.js";
 import _poolSternProctor from "../pool/stern-proctor.js";
 import _poolStrixLookout from "../pool/strix-lookout.js";
 import _poolSunbakedCanyon from "../pool/sunbaked-canyon.js";
+import _poolSunscapeFamiliar from "../pool/sunscape-familiar.js";
 import _poolSupernaturalStamina from "../pool/supernatural-stamina.js";
 import _poolSurrakTheHuntCaller from "../pool/surrak-the-hunt-caller.js";
 import _poolSwordOfOnceAndFuture from "../pool/sword-of-once-and-future.js";
@@ -294,6 +297,7 @@ const shard: CardShard = {
     _poolBookOfRass,
     _poolBootleggersStash,
     _poolBorosCluestone,
+    _poolBoseijuReachesSkyward,
     _poolBraidsConjurerAdept,
     _poolBreathOfFire,
     _poolBrightglassGearhulk,
@@ -437,6 +441,7 @@ const shard: CardShard = {
     _poolRazorfootGriffin,
     _poolRecklessHandling,
     _poolReclaim,
+    _poolRemnantOfTheRisingStar,
     _poolResearchThief,
     _poolRevitalize,
     _poolRiseAgain,
@@ -478,6 +483,7 @@ const shard: CardShard = {
     _poolSternProctor,
     _poolStrixLookout,
     _poolSunbakedCanyon,
+    _poolSunscapeFamiliar,
     _poolSupernaturalStamina,
     _poolSurrakTheHuntCaller,
     _poolSwordOfOnceAndFuture,

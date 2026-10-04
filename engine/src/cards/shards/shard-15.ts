@@ -107,6 +107,7 @@ import _poolHealersFlock from "../pool/healers-flock.js";
 import _poolHighlandWeald from "../pool/highland-weald.js";
 import _poolHillGiant from "../pool/hill-giant.js";
 import _poolHonor from "../pool/honor.js";
+import _poolIncandescentSoulstoke from "../pool/incandescent-soulstoke.js";
 import _poolInsightEngine from "../pool/insight-engine.js";
 import _poolIrenicussVileDuplication from "../pool/irenicuss-vile-duplication.js";
 import _poolIronMyr from "../pool/iron-myr.js";
@@ -159,6 +160,7 @@ import _poolNoxiousGhoul from "../pool/noxious-ghoul.js";
 import _poolNoxiousGroodion from "../pool/noxious-groodion.js";
 import _poolNyxFleeceRam from "../pool/nyx-fleece-ram.js";
 import _poolObscuraInitiate from "../pool/obscura-initiate.js";
+import _poolOmenOfTheSea from "../pool/omen-of-the-sea.js";
 import _poolOrdinaryBear from "../pool/ordinary-bear.js";
 import _poolPashalikMons from "../pool/pashalik-mons.js";
 import _poolPiranhaMarsh from "../pool/piranha-marsh.js";
@@ -240,6 +242,7 @@ import _poolVinelasherKudzu from "../pool/vinelasher-kudzu.js";
 import _poolVoiceOfTheBlessed from "../pool/voice-of-the-blessed.js";
 import _poolVolcanoImp from "../pool/volcano-imp.js";
 import _poolVolrathsGardens from "../pool/volraths-gardens.js";
+import _poolVoraciousVermin from "../pool/voracious-vermin.js";
 import _poolWardenOfTheEye from "../pool/warden-of-the-eye.js";
 import _poolWeatherseedElf from "../pool/weatherseed-elf.js";
 import _poolWorthyKnight from "../pool/worthy-knight.js";
@@ -365,6 +368,7 @@ const shard: CardShard = {
     _poolHighlandWeald,
     _poolHillGiant,
     _poolHonor,
+    _poolIncandescentSoulstoke,
     _poolInsightEngine,
     _poolIrenicussVileDuplication,
     _poolIronMyr,
@@ -417,6 +421,7 @@ const shard: CardShard = {
     _poolNoxiousGroodion,
     _poolNyxFleeceRam,
     _poolObscuraInitiate,
+    _poolOmenOfTheSea,
     _poolOrdinaryBear,
     _poolPashalikMons,
     _poolPiranhaMarsh,
@@ -498,6 +503,7 @@ const shard: CardShard = {
     _poolVoiceOfTheBlessed,
     _poolVolcanoImp,
     _poolVolrathsGardens,
+    _poolVoraciousVermin,
     _poolWardenOfTheEye,
     _poolWeatherseedElf,
     _poolWorthyKnight,

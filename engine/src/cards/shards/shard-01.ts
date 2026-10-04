@@ -98,6 +98,7 @@ import _poolKaradorGhostChieftain from "../pool/karador-ghost-chieftain.js";
 import _poolKavuGlider from "../pool/kavu-glider.js";
 import _poolKenrithTheReturnedKing from "../pool/kenrith-the-returned-king.js";
 import _poolKitsaOtterballElite from "../pool/kitsa-otterball-elite.js";
+import _poolKnightOfAutumn from "../pool/knight-of-autumn.js";
 import _poolKodamaOfTheWestTree from "../pool/kodama-of-the-west-tree.js";
 import _poolKorHalberd from "../pool/kor-halberd.js";
 import _poolKrenkoTinStreetKingpin from "../pool/krenko-tin-street-kingpin.js";
@@ -132,6 +133,7 @@ import _poolNightscapeMaster from "../pool/nightscape-master.js";
 import _poolNissaWhoShakesTheWorld from "../pool/nissa-who-shakes-the-world.js";
 import _poolOgnis from "../pool/ognis.js";
 import _poolOgreTaskmaster from "../pool/ogre-taskmaster.js";
+import _poolOminousCemetery from "../pool/ominous-cemetery.js";
 import _poolOwlinShieldmage from "../pool/owlin-shieldmage.js";
 import _poolPanickedAltisaur from "../pool/panicked-altisaur.js";
 import _poolPatronOfTheArts from "../pool/patron-of-the-arts.js";
@@ -163,6 +165,7 @@ import _poolRottingFensnake from "../pool/rotting-fensnake.js";
 import _poolRummagingWizard from "../pool/rummaging-wizard.js";
 import _poolRuthlessDeathfang from "../pool/ruthless-deathfang.js";
 import _poolSakashimaOfAThousandFaces from "../pool/sakashima-of-a-thousand-faces.js";
+import _poolSanctumOfTranquilLight from "../pool/sanctum-of-tranquil-light.js";
 import _poolSavageMansion from "../pool/savage-mansion.js";
 import _poolSavannah from "../pool/savannah.js";
 import _poolScaldingTarn from "../pool/scalding-tarn.js";
@@ -174,6 +177,7 @@ import _poolSerrasGuardian from "../pool/serras-guardian.js";
 import _poolShinenOfFurysFire from "../pool/shinen-of-furys-fire.js";
 import _poolShoreSnapper from "../pool/shore-snapper.js";
 import _poolSignpostScarecrow from "../pool/signpost-scarecrow.js";
+import _poolSixthSense from "../pool/sixth-sense.js";
 import _poolSkycrash from "../pool/skycrash.js";
 import _poolSkyhunterStrikeForce from "../pool/skyhunter-strike-force.js";
 import _poolSnowCoveredSwamp from "../pool/snow-covered-swamp.js";
@@ -183,6 +187,7 @@ import _poolSpectralRider from "../pool/spectral-rider.js";
 import _poolSpellSwindle from "../pool/spell-swindle.js";
 import _poolSpewFlame from "../pool/spew-flame.js";
 import _poolStab from "../pool/stab.js";
+import _poolSunderflock from "../pool/sunderflock.js";
 import _poolSungrassPrairie from "../pool/sungrass-prairie.js";
 import _poolSunscapeMaster from "../pool/sunscape-master.js";
 import _poolSuperState from "../pool/super-state.js";
@@ -334,6 +339,7 @@ const shard: CardShard = {
     _poolKavuGlider,
     _poolKenrithTheReturnedKing,
     _poolKitsaOtterballElite,
+    _poolKnightOfAutumn,
     _poolKodamaOfTheWestTree,
     _poolKorHalberd,
     _poolKrenkoTinStreetKingpin,
@@ -368,6 +374,7 @@ const shard: CardShard = {
     _poolNissaWhoShakesTheWorld,
     _poolOgnis,
     _poolOgreTaskmaster,
+    _poolOminousCemetery,
     _poolOwlinShieldmage,
     _poolPanickedAltisaur,
     _poolPatronOfTheArts,
@@ -399,6 +406,7 @@ const shard: CardShard = {
     _poolRummagingWizard,
     _poolRuthlessDeathfang,
     _poolSakashimaOfAThousandFaces,
+    _poolSanctumOfTranquilLight,
     _poolSavageMansion,
     _poolSavannah,
     _poolScaldingTarn,
@@ -410,6 +418,7 @@ const shard: CardShard = {
     _poolShinenOfFurysFire,
     _poolShoreSnapper,
     _poolSignpostScarecrow,
+    _poolSixthSense,
     _poolSkycrash,
     _poolSkyhunterStrikeForce,
     _poolSnowCoveredSwamp,
@@ -419,6 +428,7 @@ const shard: CardShard = {
     _poolSpellSwindle,
     _poolSpewFlame,
     _poolStab,
+    _poolSunderflock,
     _poolSungrassPrairie,
     _poolSunscapeMaster,
     _poolSuperState,

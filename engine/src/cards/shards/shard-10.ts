@@ -228,6 +228,7 @@ import _poolSquirrelSovereign from "../pool/squirrel-sovereign.js";
 import _poolStaunchThroneguard from "../pool/staunch-throneguard.js";
 import _poolSteelPlumeMarshal from "../pool/steel-plume-marshal.js";
 import _poolStonefareCrocodile from "../pool/stonefare-crocodile.js";
+import _poolStormsurgeKraken from "../pool/stormsurge-kraken.js";
 import _poolStriderHarness from "../pool/strider-harness.js";
 import _poolSuddenBreakthrough from "../pool/sudden-breakthrough.js";
 import _poolSummonTitan from "../pool/summon-titan.js";
@@ -518,6 +519,7 @@ const shard: CardShard = {
     _poolStaunchThroneguard,
     _poolSteelPlumeMarshal,
     _poolStonefareCrocodile,
+    _poolStormsurgeKraken,
     _poolStriderHarness,
     _poolSuddenBreakthrough,
     _poolSummonTitan,

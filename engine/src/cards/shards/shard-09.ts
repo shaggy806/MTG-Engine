@@ -173,6 +173,7 @@ import _poolRecklessFireweaver from "../pool/reckless-fireweaver.js";
 import _poolRestorationGearsmith from "../pool/restoration-gearsmith.js";
 import _poolRidgetopRaptor from "../pool/ridgetop-raptor.js";
 import _poolRiteOfTheDragoncaller from "../pool/rite-of-the-dragoncaller.js";
+import _poolRockfaceVillage from "../pool/rockface-village.js";
 import _poolRubbleSlinger from "../pool/rubble-slinger.js";
 import _poolSaberclawGolem from "../pool/saberclaw-golem.js";
 import _poolSacredPeaks from "../pool/sacred-peaks.js";
@@ -208,6 +209,7 @@ import _poolStormcarvedCoast from "../pool/stormcarved-coast.js";
 import _poolStormsplitter from "../pool/stormsplitter.js";
 import _poolStormwatchEagle from "../pool/stormwatch-eagle.js";
 import _poolStreamHopper from "../pool/stream-hopper.js";
+import _poolSubterfuge from "../pool/subterfuge.js";
 import _poolSummonIxion from "../pool/summon-ixion.js";
 import _poolSurvivorsEncampment from "../pool/survivors-encampment.js";
 import _poolSylvanAwakening from "../pool/sylvan-awakening.js";
@@ -436,6 +438,7 @@ const shard: CardShard = {
     _poolRestorationGearsmith,
     _poolRidgetopRaptor,
     _poolRiteOfTheDragoncaller,
+    _poolRockfaceVillage,
     _poolRubbleSlinger,
     _poolSaberclawGolem,
     _poolSacredPeaks,
@@ -471,6 +474,7 @@ const shard: CardShard = {
     _poolStormsplitter,
     _poolStormwatchEagle,
     _poolStreamHopper,
+    _poolSubterfuge,
     _poolSummonIxion,
     _poolSurvivorsEncampment,
     _poolSylvanAwakening,

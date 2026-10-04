@@ -183,6 +183,7 @@ import _poolPhyrexianDefiler from "../pool/phyrexian-defiler.js";
 import _poolPiratesPillage from "../pool/pirates-pillage.js";
 import _poolPitOfOfferings from "../pool/pit-of-offerings.js";
 import _poolPlatinumAngel from "../pool/platinum-angel.js";
+import _poolPredatorySliver from "../pool/predatory-sliver.js";
 import _poolProwcatcherSpecialist from "../pool/prowcatcher-specialist.js";
 import _poolRabanastreRoyalCity from "../pool/rabanastre-royal-city.js";
 import _poolRagingBull from "../pool/raging-bull.js";
@@ -477,6 +478,7 @@ const shard: CardShard = {
     _poolPiratesPillage,
     _poolPitOfOfferings,
     _poolPlatinumAngel,
+    _poolPredatorySliver,
     _poolProwcatcherSpecialist,
     _poolRabanastreRoyalCity,
     _poolRagingBull,

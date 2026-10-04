@@ -126,6 +126,7 @@ import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
 import _poolIntoTheNorth from "../pool/into-the-north.js";
 import _poolIntrudingSoulrager from "../pool/intruding-soulrager.js";
 import _poolInvasionTactics from "../pool/invasion-tactics.js";
+import _poolJaceMemoryAdept from "../pool/jace-memory-adept.js";
 import _poolJacesScrutiny from "../pool/jaces-scrutiny.js";
 import _poolJadeMage from "../pool/jade-mage.js";
 import _poolJayasGreeting from "../pool/jayas-greeting.js";
@@ -200,6 +201,7 @@ import _poolRallyTheRanks from "../pool/rally-the-ranks.js";
 import _poolRavineRaider from "../pool/ravine-raider.js";
 import _poolRecumbentBliss from "../pool/recumbent-bliss.js";
 import _poolRevelsongHorn from "../pool/revelsong-horn.js";
+import _poolRevengeOfTheRats from "../pool/revenge-of-the-rats.js";
 import _poolRibCageSpider from "../pool/rib-cage-spider.js";
 import _poolRitualOfRejuvenation from "../pool/ritual-of-rejuvenation.js";
 import _poolRiverKaijin from "../pool/river-kaijin.js";
@@ -239,6 +241,7 @@ import _poolSorinRavenousNeonate from "../pool/sorin-ravenous-neonate.js";
 import _poolSowingMycospawn from "../pool/sowing-mycospawn.js";
 import _poolSpinnerOfSouls from "../pool/spinner-of-souls.js";
 import _poolSpiritMantle from "../pool/spirit-mantle.js";
+import _poolSporecrownThallid from "../pool/sporecrown-thallid.js";
 import _poolSporemound from "../pool/sporemound.js";
 import _poolSpringsageRitual from "../pool/springsage-ritual.js";
 import _poolSquallDrifter from "../pool/squall-drifter.js";
@@ -436,6 +439,7 @@ const shard: CardShard = {
     _poolIntoTheNorth,
     _poolIntrudingSoulrager,
     _poolInvasionTactics,
+    _poolJaceMemoryAdept,
     _poolJacesScrutiny,
     _poolJadeMage,
     _poolJayasGreeting,
@@ -510,6 +514,7 @@ const shard: CardShard = {
     _poolRavineRaider,
     _poolRecumbentBliss,
     _poolRevelsongHorn,
+    _poolRevengeOfTheRats,
     _poolRibCageSpider,
     _poolRitualOfRejuvenation,
     _poolRiverKaijin,
@@ -549,6 +554,7 @@ const shard: CardShard = {
     _poolSowingMycospawn,
     _poolSpinnerOfSouls,
     _poolSpiritMantle,
+    _poolSporecrownThallid,
     _poolSporemound,
     _poolSpringsageRitual,
     _poolSquallDrifter,

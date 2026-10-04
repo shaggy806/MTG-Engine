@@ -81,6 +81,7 @@ import _poolExplosiveVegetation from "../pool/explosive-vegetation.js";
 import _poolEzuriRenegadeLeader from "../pool/ezuri-renegade-leader.js";
 import _poolFaerieConclave from "../pool/faerie-conclave.js";
 import _poolFallajiChaindancer from "../pool/fallaji-chaindancer.js";
+import _poolFangFearlessLcie from "../pool/fang-fearless-lcie.js";
 import _poolFerociousCharge from "../pool/ferocious-charge.js";
 import _poolFireDrake from "../pool/fire-drake.js";
 import _poolFireUrchin from "../pool/fire-urchin.js";
@@ -339,6 +340,7 @@ const shard: CardShard = {
     _poolEzuriRenegadeLeader,
     _poolFaerieConclave,
     _poolFallajiChaindancer,
+    _poolFangFearlessLcie,
     _poolFerociousCharge,
     _poolFireDrake,
     _poolFireUrchin,

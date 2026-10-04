@@ -72,6 +72,7 @@ import _poolDawnstrikePaladin from "../pool/dawnstrike-paladin.js";
 import _poolDaybreakCombatants from "../pool/daybreak-combatants.js";
 import _poolDeadeyeDuelist from "../pool/deadeye-duelist.js";
 import _poolDeathbloomThallid from "../pool/deathbloom-thallid.js";
+import _poolDemolisherSpawn from "../pool/demolisher-spawn.js";
 import _poolDesertOfTheIndomitable from "../pool/desert-of-the-indomitable.js";
 import _poolDevouringLight from "../pool/devouring-light.js";
 import _poolDevouringSwarm from "../pool/devouring-swarm.js";
@@ -151,6 +152,7 @@ import _poolLoxodonStalwart from "../pool/loxodon-stalwart.js";
 import _poolLoyalWarhound from "../pool/loyal-warhound.js";
 import _poolManaFlare from "../pool/mana-flare.js";
 import _poolMedusaInhumanQueen from "../pool/medusa-inhuman-queen.js";
+import _poolMemoryDeluge from "../pool/memory-deluge.js";
 import _poolMerchantScroll from "../pool/merchant-scroll.js";
 import _poolMerfolkLooter from "../pool/merfolk-looter.js";
 import _poolMerrowWitsniper from "../pool/merrow-witsniper.js";
@@ -190,6 +192,7 @@ import _poolRuinousGremlin from "../pool/ruinous-gremlin.js";
 import _poolSandsteppeCitadel from "../pool/sandsteppe-citadel.js";
 import _poolSarinthSteelseeker from "../pool/sarinth-steelseeker.js";
 import _poolSazacapsBrew from "../pool/sazacaps-brew.js";
+import _poolScavengerRegent from "../pool/scavenger-regent.js";
 import _poolScourgemark from "../pool/scourgemark.js";
 import _poolScurryOfSquirrels from "../pool/scurry-of-squirrels.js";
 import _poolSerpentOfYawningDepths from "../pool/serpent-of-yawning-depths.js";
@@ -235,6 +238,7 @@ import _poolUrzasIncubator from "../pool/urzas-incubator.js";
 import _poolVampireNighthawk from "../pool/vampire-nighthawk.js";
 import _poolVeteranArmorsmith from "../pool/veteran-armorsmith.js";
 import _poolVillageBellRinger from "../pool/village-bell-ringer.js";
+import _poolVinereapMentor from "../pool/vinereap-mentor.js";
 import _poolVoldarenEstate from "../pool/voldaren-estate.js";
 import _poolWakestoneGargoyle from "../pool/wakestone-gargoyle.js";
 import _poolWalkingBallista from "../pool/walking-ballista.js";
@@ -332,6 +336,7 @@ const shard: CardShard = {
     _poolDaybreakCombatants,
     _poolDeadeyeDuelist,
     _poolDeathbloomThallid,
+    _poolDemolisherSpawn,
     _poolDesertOfTheIndomitable,
     _poolDevouringLight,
     _poolDevouringSwarm,
@@ -411,6 +416,7 @@ const shard: CardShard = {
     _poolLoyalWarhound,
     _poolManaFlare,
     _poolMedusaInhumanQueen,
+    _poolMemoryDeluge,
     _poolMerchantScroll,
     _poolMerfolkLooter,
     _poolMerrowWitsniper,
@@ -450,6 +456,7 @@ const shard: CardShard = {
     _poolSandsteppeCitadel,
     _poolSarinthSteelseeker,
     _poolSazacapsBrew,
+    _poolScavengerRegent,
     _poolScourgemark,
     _poolScurryOfSquirrels,
     _poolSerpentOfYawningDepths,
@@ -495,6 +502,7 @@ const shard: CardShard = {
     _poolVampireNighthawk,
     _poolVeteranArmorsmith,
     _poolVillageBellRinger,
+    _poolVinereapMentor,
     _poolVoldarenEstate,
     _poolWakestoneGargoyle,
     _poolWalkingBallista,

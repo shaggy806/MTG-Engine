@@ -5,6 +5,7 @@ import type { CardShard } from "../card-shards.js";
 
 import _poolActionNewsCrew from "../pool/action-news-crew.js";
 import _poolAdvanceScout from "../pool/advance-scout.js";
+import _poolAgentVenom from "../pool/agent-venom.js";
 import _poolAgonasaurRex from "../pool/agonasaur-rex.js";
 import _poolAjanisMantra from "../pool/ajanis-mantra.js";
 import _poolAlterFate from "../pool/alter-fate.js";
@@ -255,6 +256,7 @@ import _poolWallOfVines from "../pool/wall-of-vines.js";
 import _poolWarthog from "../pool/warthog.js";
 import _poolWernogRidersChaplain from "../pool/wernog-riders-chaplain.js";
 import _poolWhiptongueFrog from "../pool/whiptongue-frog.js";
+import _poolWildfireAwakener from "../pool/wildfire-awakener.js";
 import _poolWillowDryad from "../pool/willow-dryad.js";
 import _poolWoebearer from "../pool/woebearer.js";
 import _poolWolfwillowHaven from "../pool/wolfwillow-haven.js";
@@ -290,6 +292,7 @@ const shard: CardShard = {
   pool: [
     _poolActionNewsCrew,
     _poolAdvanceScout,
+    _poolAgentVenom,
     _poolAgonasaurRex,
     _poolAjanisMantra,
     _poolAlterFate,
@@ -540,6 +543,7 @@ const shard: CardShard = {
     _poolWarthog,
     _poolWernogRidersChaplain,
     _poolWhiptongueFrog,
+    _poolWildfireAwakener,
     _poolWillowDryad,
     _poolWoebearer,
     _poolWolfwillowHaven,

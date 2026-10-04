@@ -85,6 +85,7 @@ import _poolExiledBoggart from "../pool/exiled-boggart.js";
 import _poolFaithfulMending from "../pool/faithful-mending.js";
 import _poolFarfinder from "../pool/farfinder.js";
 import _poolFelineSovereign from "../pool/feline-sovereign.js";
+import _poolFirebendingLesson from "../pool/firebending-lesson.js";
 import _poolFistsOfFlame from "../pool/fists-of-flame.js";
 import _poolFlamingSword from "../pool/flaming-sword.js";
 import _poolFranticSearch from "../pool/frantic-search.js";
@@ -149,6 +150,7 @@ import _poolNicolBolasTheArisen from "../pool/nicol-bolas-the-arisen.js";
 import _poolNissasExpedition from "../pool/nissas-expedition.js";
 import _poolNoviceInspector from "../pool/novice-inspector.js";
 import _poolNurturingPeatland from "../pool/nurturing-peatland.js";
+import _poolOathswornVampire from "../pool/oathsworn-vampire.js";
 import _poolObeliskOfJund from "../pool/obelisk-of-jund.js";
 import _poolOketrasMonument from "../pool/oketras-monument.js";
 import _poolOloroAgelessAscetic from "../pool/oloro-ageless-ascetic.js";
@@ -340,6 +342,7 @@ const shard: CardShard = {
     _poolFaithfulMending,
     _poolFarfinder,
     _poolFelineSovereign,
+    _poolFirebendingLesson,
     _poolFistsOfFlame,
     _poolFlamingSword,
     _poolFranticSearch,
@@ -404,6 +407,7 @@ const shard: CardShard = {
     _poolNissasExpedition,
     _poolNoviceInspector,
     _poolNurturingPeatland,
+    _poolOathswornVampire,
     _poolObeliskOfJund,
     _poolOketrasMonument,
     _poolOloroAgelessAscetic,

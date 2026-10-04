@@ -57,6 +57,7 @@ import _poolEloiseNephaliaSleuth from "../pool/eloise-nephalia-sleuth.js";
 import _poolElvishRejuvenator from "../pool/elvish-rejuvenator.js";
 import _poolEmberwildeCaptain from "../pool/emberwilde-captain.js";
 import _poolEmeriaAngel from "../pool/emeria-angel.js";
+import _poolEndlessOne from "../pool/endless-one.js";
 import _poolErraticVisionary from "../pool/erratic-visionary.js";
 import _poolFaerieDuelist from "../pool/faerie-duelist.js";
 import _poolFanBearer from "../pool/fan-bearer.js";
@@ -306,6 +307,7 @@ const shard: CardShard = {
     _poolElvishRejuvenator,
     _poolEmberwildeCaptain,
     _poolEmeriaAngel,
+    _poolEndlessOne,
     _poolErraticVisionary,
     _poolFaerieDuelist,
     _poolFanBearer,

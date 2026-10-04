@@ -51,6 +51,7 @@ import _poolDarkslickShores from "../pool/darkslick-shores.js";
 import _poolDeathHoodCobra from "../pool/death-hood-cobra.js";
 import _poolDeconstruct from "../pool/deconstruct.js";
 import _poolDeepAnalysis from "../pool/deep-analysis.js";
+import _poolDeployToTheFront from "../pool/deploy-to-the-front.js";
 import _poolDereviEmpyrialTactician from "../pool/derevi-empyrial-tactician.js";
 import _poolDesecratedTomb from "../pool/desecrated-tomb.js";
 import _poolDevoutMonk from "../pool/devout-monk.js";
@@ -138,6 +139,7 @@ import _poolMosscoatGoriak from "../pool/mosscoat-goriak.js";
 import _poolNastyEnd from "../pool/nasty-end.js";
 import _poolNegate from "../pool/negate.js";
 import _poolObsianusGolem from "../pool/obsianus-golem.js";
+import _poolOctaviaLivingThesis from "../pool/octavia-living-thesis.js";
 import _poolOreskosSwiftclaw from "../pool/oreskos-swiftclaw.js";
 import _poolOstiaryThrull from "../pool/ostiary-thrull.js";
 import _poolPartingGust from "../pool/parting-gust.js";
@@ -167,6 +169,7 @@ import _poolRodOfRuin from "../pool/rod-of-ruin.js";
 import _poolSagesKnowledge from "../pool/sages-knowledge.js";
 import _poolSangriteBacklash from "../pool/sangrite-backlash.js";
 import _poolSavannahSage from "../pool/savannah-sage.js";
+import _poolSavraQueenOfTheGolgari from "../pool/savra-queen-of-the-golgari.js";
 import _poolScionOfTheSwarm from "../pool/scion-of-the-swarm.js";
 import _poolScrapyardSteelbreaker from "../pool/scrapyard-steelbreaker.js";
 import _poolSerraAscendant from "../pool/serra-ascendant.js";
@@ -247,6 +250,7 @@ import _poolVodalianMerchant from "../pool/vodalian-merchant.js";
 import _poolVolcanicFissure from "../pool/volcanic-fissure.js";
 import _poolWallOfStone from "../pool/wall-of-stone.js";
 import _poolWarriorsHonor from "../pool/warriors-honor.js";
+import _poolWaxenShapethief from "../pool/waxen-shapethief.js";
 import _poolWaywardServant from "../pool/wayward-servant.js";
 import _poolWeatheredSentinels from "../pool/weathered-sentinels.js";
 import _poolWitheringTorment from "../pool/withering-torment.js";
@@ -312,6 +316,7 @@ const shard: CardShard = {
     _poolDeathHoodCobra,
     _poolDeconstruct,
     _poolDeepAnalysis,
+    _poolDeployToTheFront,
     _poolDereviEmpyrialTactician,
     _poolDesecratedTomb,
     _poolDevoutMonk,
@@ -399,6 +404,7 @@ const shard: CardShard = {
     _poolNastyEnd,
     _poolNegate,
     _poolObsianusGolem,
+    _poolOctaviaLivingThesis,
     _poolOreskosSwiftclaw,
     _poolOstiaryThrull,
     _poolPartingGust,
@@ -428,6 +434,7 @@ const shard: CardShard = {
     _poolSagesKnowledge,
     _poolSangriteBacklash,
     _poolSavannahSage,
+    _poolSavraQueenOfTheGolgari,
     _poolScionOfTheSwarm,
     _poolScrapyardSteelbreaker,
     _poolSerraAscendant,
@@ -508,6 +515,7 @@ const shard: CardShard = {
     _poolVolcanicFissure,
     _poolWallOfStone,
     _poolWarriorsHonor,
+    _poolWaxenShapethief,
     _poolWaywardServant,
     _poolWeatheredSentinels,
     _poolWitheringTorment,

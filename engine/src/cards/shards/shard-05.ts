@@ -14,6 +14,7 @@ import _poolAmbushParty from "../pool/ambush-party.js";
 import _poolAnHavvaTownship from "../pool/an-havva-township.js";
 import _poolAnabaBodyguard from "../pool/anaba-bodyguard.js";
 import _poolAphettoGrifter from "../pool/aphetto-grifter.js";
+import _poolArcboundCrusher from "../pool/arcbound-crusher.js";
 import _poolArchangelOfThune from "../pool/archangel-of-thune.js";
 import _poolArchmageEmeritus from "../pool/archmage-emeritus.js";
 import _poolAssaultStrobe from "../pool/assault-strobe.js";
@@ -64,6 +65,7 @@ import _poolConquerorsFlail from "../pool/conquerors-flail.js";
 import _poolConsulateSkygate from "../pool/consulate-skygate.js";
 import _poolContentiousPlan from "../pool/contentious-plan.js";
 import _poolCorpsejackMenace from "../pool/corpsejack-menace.js";
+import _poolCorsairsOfUmbar from "../pool/corsairs-of-umbar.js";
 import _poolCryptbreaker from "../pool/cryptbreaker.js";
 import _poolCustodianOfTheTrove from "../pool/custodian-of-the-trove.js";
 import _poolDarkConfidant from "../pool/dark-confidant.js";
@@ -135,6 +137,7 @@ import _poolInspiredCharge from "../pool/inspired-charge.js";
 import _poolInvokeTheDivine from "../pool/invoke-the-divine.js";
 import _poolJacesSanctum from "../pool/jaces-sanctum.js";
 import _poolJasmineBoreal from "../pool/jasmine-boreal.js";
+import _poolJuganDefendsTheTemple from "../pool/jugan-defends-the-temple.js";
 import _poolKederektParasite from "../pool/kederekt-parasite.js";
 import _poolKeepSafe from "../pool/keep-safe.js";
 import _poolKellanTheKid from "../pool/kellan-the-kid.js";
@@ -174,6 +177,7 @@ import _poolOperaLoveSong from "../pool/opera-love-song.js";
 import _poolOverwhelmingStampede from "../pool/overwhelming-stampede.js";
 import _poolPactOfNegation from "../pool/pact-of-negation.js";
 import _poolPermissionDenied from "../pool/permission-denied.js";
+import _poolPillarOfOrigins from "../pool/pillar-of-origins.js";
 import _poolPlaguemawBeast from "../pool/plaguemaw-beast.js";
 import _poolProtomatterPowder from "../pool/protomatter-powder.js";
 import _poolPuresteelPaladin from "../pool/puresteel-paladin.js";
@@ -195,6 +199,7 @@ import _poolRoothaMasteringTheMoment from "../pool/rootha-mastering-the-moment.j
 import _poolRuggedHighlands from "../pool/rugged-highlands.js";
 import _poolRuinationWurm from "../pool/ruination-wurm.js";
 import _poolRuinsRecluse from "../pool/ruins-recluse.js";
+import _poolRumbleweed from "../pool/rumbleweed.js";
 import _poolRuptureSpire from "../pool/rupture-spire.js";
 import _poolScoriaElemental from "../pool/scoria-elemental.js";
 import _poolScythecatCub from "../pool/scythecat-cub.js";
@@ -222,6 +227,7 @@ import _poolSpitefulBully from "../pool/spiteful-bully.js";
 import _poolStarOfExtinction from "../pool/star-of-extinction.js";
 import _poolStealerOfSecrets from "../pool/stealer-of-secrets.js";
 import _poolStonespeakerCrystal from "../pool/stonespeaker-crystal.js";
+import _poolStonySilence from "../pool/stony-silence.js";
 import _poolStorytellerPixie from "../pool/storyteller-pixie.js";
 import _poolStudyHall from "../pool/study-hall.js";
 import _poolSuburbanSanctuary from "../pool/suburban-sanctuary.js";
@@ -297,6 +303,7 @@ const shard: CardShard = {
     _poolAnHavvaTownship,
     _poolAnabaBodyguard,
     _poolAphettoGrifter,
+    _poolArcboundCrusher,
     _poolArchangelOfThune,
     _poolArchmageEmeritus,
     _poolAssaultStrobe,
@@ -347,6 +354,7 @@ const shard: CardShard = {
     _poolConsulateSkygate,
     _poolContentiousPlan,
     _poolCorpsejackMenace,
+    _poolCorsairsOfUmbar,
     _poolCryptbreaker,
     _poolCustodianOfTheTrove,
     _poolDarkConfidant,
@@ -418,6 +426,7 @@ const shard: CardShard = {
     _poolInvokeTheDivine,
     _poolJacesSanctum,
     _poolJasmineBoreal,
+    _poolJuganDefendsTheTemple,
     _poolKederektParasite,
     _poolKeepSafe,
     _poolKellanTheKid,
@@ -457,6 +466,7 @@ const shard: CardShard = {
     _poolOverwhelmingStampede,
     _poolPactOfNegation,
     _poolPermissionDenied,
+    _poolPillarOfOrigins,
     _poolPlaguemawBeast,
     _poolProtomatterPowder,
     _poolPuresteelPaladin,
@@ -478,6 +488,7 @@ const shard: CardShard = {
     _poolRuggedHighlands,
     _poolRuinationWurm,
     _poolRuinsRecluse,
+    _poolRumbleweed,
     _poolRuptureSpire,
     _poolScoriaElemental,
     _poolScythecatCub,
@@ -505,6 +516,7 @@ const shard: CardShard = {
     _poolStarOfExtinction,
     _poolStealerOfSecrets,
     _poolStonespeakerCrystal,
+    _poolStonySilence,
     _poolStorytellerPixie,
     _poolStudyHall,
     _poolSuburbanSanctuary,

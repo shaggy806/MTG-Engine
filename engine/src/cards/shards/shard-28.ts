@@ -74,6 +74,7 @@ import _poolEternalSkylord from "../pool/eternal-skylord.js";
 import _poolExoticOrchard from "../pool/exotic-orchard.js";
 import _poolExplore from "../pool/explore.js";
 import _poolExplosiveShot from "../pool/explosive-shot.js";
+import _poolExudeToxin from "../pool/exude-toxin.js";
 import _poolFaeburrowElder from "../pool/faeburrow-elder.js";
 import _poolFanaticalDevotion from "../pool/fanatical-devotion.js";
 import _poolFaunaShaman from "../pool/fauna-shaman.js";
@@ -212,6 +213,7 @@ import _poolSpitefulSliver from "../pool/spiteful-sliver.js";
 import _poolSplinterfright from "../pool/splinterfright.js";
 import _poolSplitUp from "../pool/split-up.js";
 import _poolSporeFrog from "../pool/spore-frog.js";
+import _poolStarWhale from "../pool/star-whale.js";
 import _poolStickyFingers from "../pool/sticky-fingers.js";
 import _poolStonybrookBanneret from "../pool/stonybrook-banneret.js";
 import _poolStrixhavenStadium from "../pool/strixhaven-stadium.js";
@@ -222,6 +224,7 @@ import _poolTerritorialRoc from "../pool/territorial-roc.js";
 import _poolTeysaKarlov from "../pool/teysa-karlov.js";
 import _poolThanosDeathsConsort from "../pool/thanos-deaths-consort.js";
 import _poolTheAncientOne from "../pool/the-ancient-one.js";
+import _poolTheSwarmweaver from "../pool/the-swarmweaver.js";
 import _poolTheUnbeatableSquirrelGirl from "../pool/the-unbeatable-squirrel-girl.js";
 import _poolThreeTreeCity from "../pool/three-tree-city.js";
 import _poolThreefoldThunderhulk from "../pool/threefold-thunderhulk.js";
@@ -255,6 +258,8 @@ import _poolYunaGrandSummoner from "../pool/yuna-grand-summoner.js";
 import _poolZap from "../pool/zap.js";
 import _poolZeganaUtopianSpeaker from "../pool/zegana-utopian-speaker.js";
 import _poolZendikarFarguide from "../pool/zendikar-farguide.js";
+import _tokensElementalTokenWildfireAwakener from "../tokens/elemental-token-wildfire-awakener.js";
+import _tokensHumanMonkToken from "../tokens/human-monk-token.js";
 import _tokensKithkinToken from "../tokens/kithkin-token.js";
 import _tokensRedHumanToken from "../tokens/red-human-token.js";
 
@@ -331,6 +336,7 @@ const shard: CardShard = {
     _poolExoticOrchard,
     _poolExplore,
     _poolExplosiveShot,
+    _poolExudeToxin,
     _poolFaeburrowElder,
     _poolFanaticalDevotion,
     _poolFaunaShaman,
@@ -469,6 +475,7 @@ const shard: CardShard = {
     _poolSplinterfright,
     _poolSplitUp,
     _poolSporeFrog,
+    _poolStarWhale,
     _poolStickyFingers,
     _poolStonybrookBanneret,
     _poolStrixhavenStadium,
@@ -479,6 +486,7 @@ const shard: CardShard = {
     _poolTeysaKarlov,
     _poolThanosDeathsConsort,
     _poolTheAncientOne,
+    _poolTheSwarmweaver,
     _poolTheUnbeatableSquirrelGirl,
     _poolThreeTreeCity,
     _poolThreefoldThunderhulk,
@@ -514,6 +522,8 @@ const shard: CardShard = {
     _poolZendikarFarguide,
   ],
   tokens: [
+    _tokensElementalTokenWildfireAwakener,
+    _tokensHumanMonkToken,
     _tokensKithkinToken,
     _tokensRedHumanToken,
   ],

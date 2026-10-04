@@ -60,6 +60,7 @@ import _poolDiffusionSliver from "../pool/diffusion-sliver.js";
 import _poolDinotomaton from "../pool/dinotomaton.js";
 import _poolDiplomaticImmunity from "../pool/diplomatic-immunity.js";
 import _poolDivineArrow from "../pool/divine-arrow.js";
+import _poolDizzySpell from "../pool/dizzy-spell.js";
 import _poolDrMadisonLi from "../pool/dr-madison-li.js";
 import _poolDragonMoose from "../pool/dragon-moose.js";
 import _poolDragonlairSpider from "../pool/dragonlair-spider.js";
@@ -112,6 +113,7 @@ import _poolHerosResolve from "../pool/heros-resolve.js";
 import _poolHideousVisage from "../pool/hideous-visage.js";
 import _poolHoldoutSettlement from "../pool/holdout-settlement.js";
 import _poolHonoredDreyleader from "../pool/honored-dreyleader.js";
+import _poolHopelessNightmare from "../pool/hopeless-nightmare.js";
 import _poolHorizonExplorer from "../pool/horizon-explorer.js";
 import _poolHulkingDevil from "../pool/hulking-devil.js";
 import _poolHuntedHorror from "../pool/hunted-horror.js";
@@ -312,6 +314,7 @@ const shard: CardShard = {
     _poolDinotomaton,
     _poolDiplomaticImmunity,
     _poolDivineArrow,
+    _poolDizzySpell,
     _poolDrMadisonLi,
     _poolDragonMoose,
     _poolDragonlairSpider,
@@ -364,6 +367,7 @@ const shard: CardShard = {
     _poolHideousVisage,
     _poolHoldoutSettlement,
     _poolHonoredDreyleader,
+    _poolHopelessNightmare,
     _poolHorizonExplorer,
     _poolHulkingDevil,
     _poolHuntedHorror,

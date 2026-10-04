@@ -220,6 +220,7 @@ import _poolThousandYearStorm from "../pool/thousand-year-storm.js";
 import _poolTitansGrave from "../pool/titans-grave.js";
 import _poolTopazDragon from "../pool/topaz-dragon.js";
 import _poolTophTheFirstMetalbender from "../pool/toph-the-first-metalbender.js";
+import _poolTourachDreadCantor from "../pool/tourach-dread-cantor.js";
 import _poolTowerGargoyle from "../pool/tower-gargoyle.js";
 import _poolTowerOfEons from "../pool/tower-of-eons.js";
 import _poolTravelingMinister from "../pool/traveling-minister.js";
@@ -231,6 +232,7 @@ import _poolUnearth from "../pool/unearth.js";
 import _poolUnexplainedDisappearance from "../pool/unexplained-disappearance.js";
 import _poolUnfulfilledDesires from "../pool/unfulfilled-desires.js";
 import _poolUniversityCampus from "../pool/university-campus.js";
+import _poolVedalkenEngineer from "../pool/vedalken-engineer.js";
 import _poolVengefulAncestor from "../pool/vengeful-ancestor.js";
 import _poolVermiculos from "../pool/vermiculos.js";
 import _poolVialOfPoison from "../pool/vial-of-poison.js";
@@ -482,6 +484,7 @@ const shard: CardShard = {
     _poolTitansGrave,
     _poolTopazDragon,
     _poolTophTheFirstMetalbender,
+    _poolTourachDreadCantor,
     _poolTowerGargoyle,
     _poolTowerOfEons,
     _poolTravelingMinister,
@@ -493,6 +496,7 @@ const shard: CardShard = {
     _poolUnexplainedDisappearance,
     _poolUnfulfilledDesires,
     _poolUniversityCampus,
+    _poolVedalkenEngineer,
     _poolVengefulAncestor,
     _poolVermiculos,
     _poolVialOfPoison,
