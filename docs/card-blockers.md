@@ -17,6 +17,77 @@ activation cost (2026-09-29), split cards and a spell's divided damage (2026-10-
 taxes (2026-10-01) are built, so lines below that rank them as next are history. When a batch
 lands, add its summary here, not to `BACKLOG.md`.
 
+## Open leads
+
+Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
+lead when its cards land or turn out blocked on something else (record that in the batch JSON).
+
+- **The TDC precons' 7 missing cards**, each behind a feature of its own (records in
+  `engine/data/sweep-3/TDC*.json` and the older sweeps): demonstrate for Transforming Flourish;
+  dredge for Life from the Loam; Curses, an Aura enchanting a player, for Curse of Opulence;
+  manifest for Reality Shift; modes that each target a different player for Shadrix
+  Silverquill; keeping creatures of total power 4 or less for Slaughter the Strong; and unspent
+  red mana that stays, with "pay any amount of {R}", for Leyline Tyrant.
+- **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
+  each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a spell's
+  additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
+  improvise, and a card's own permission to be cast from its graveyard where
+  `castFromGraveyardIf` doesn't reach (recheck each record against it).
+- **The win-game cards still blocked** (`win-game.test.ts`): Mechanized Production and Liliana's
+  Contract count artifacts or Demons "with the same name" / "with different names", but tokens
+  are keyed by disambiguated registry names, not their rule-111.4 names (two Golem tokens from
+  different cards share a name), and Mechanized Production also copies "enchanted artifact" as it
+  last existed; Final Fortune and Last Chance lose at "that turn's end step" (a delayed trigger
+  tied to one extra turn); Halo Fountain untaps creatures as a cost; Darksteel Reactor is a state
+  trigger (603.8); The Golden Throne replaces losing the game; Out of the Tombs replaces an
+  empty-library draw with a choice from the graveyard; Maze's End returns itself to hand as a
+  cost.
+- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (built for Approach
+  of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu, Ilharg,
+  Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
+  Necrodominance. Recheck each against its Oracle text; most need something else too.
+- **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
+  gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
+  still skip these, each recorded as blocked on it: Kellan, the Kid, Descendants' Path and
+  Buster Sword. Recheck each against its Oracle text before authoring it.
+- **A copy's new targets:** the "ready now" pass authored 18 of the cards citing it and found
+  what else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need ("Ready now",
+  below). Still to recheck: the other records citing `decision:copy-new-targets` (Loki
+  Laufeyson, …) and Venser, Shaper Savant.
+- **A linked exile** (`exile`'s `linked`, built for Colfenor's Urn): Pit of Offerings' "exile up
+  to three target cards from graveyards … any of the exiled cards' colors" was waiting on it (an
+  `add-mana` `colorAmong` with `zone: "exiled-with-source"`).
+- **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
+  mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
+  by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
+  carry yet (`evokeCostsOf` in `game.ts`).
+- **The damage actually dealt as an amount** (`new:damage-dealt-this-way`): Creeping Bloodsucker
+  (B9), and the fix for Enter the God-Eternals (BACKLOG).
+- **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
+  which changes how its line works; the scaffolder leaves them to author: a Case's To solve and
+  Solved (13 each), Forecast (11), Companion (10; not modeled) and Max speed (34). Power-up is
+  built (its 16 left are under "Power-up", below). Exhaust and Boast are read, as the ability
+  flags the engine already has.
+- **Library-ordering and cost leftovers:** Kozilek, the Great Distortion needs an ability's X
+  announced with no `{X}` in its cost, read by both a discard filter ("a card with mana value
+  X") and its target ("spell with mana value X"); Scroll Rack needs "put that many cards from
+  the top of your library into your hand" (not a draw) and an effect that puts several targeted
+  cards on top in an order the player picks (`beginLibraryOrder` would ask it); a spell's
+  additional "exile a card from your graveyard" cost isn't built (an activated ability's is
+  `exileFromGraveyard`).
+- **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks the
+  pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
+  one-off requests. 22 of its cards are still missing, and 7 of those aren't in the top-5000
+  list, so nothing else tracks them: Incinerator of the Guilty, Mirror Room, Walk-In Closet,
+  Ureni, the Song Unending, World War Hulk, Greater Gargadon and Kavaron, Memorial World. Their
+  `FEATURE:` notes date from the P0–P20 passes, so re-check each one against the engine before
+  building for it.
+- **Oracle-parser figures** as of card sweep 3 (2026-09-25): 4,205 parser-read cards in the
+  pool, 26,469 Commander-legal cards left with a line the parser can't read; the parser read the
+  cost or trigger of 16,853 of their abilities and the effect of 22% of those. The unread lines
+  that recurred most: an ability's "Choose one —" (266), Crew (180), "Regenerate ~" (151), "You
+  may pay {…}" (142), "Transform ~" (138).
+
 ## The Tarkir: Dragonstorm precons (TDC1–TDC5)
 
 147 were missing at the swap to the TDC decks (2026-09-30). TDC batch 1 authored 41

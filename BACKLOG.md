@@ -61,121 +61,42 @@ that one card is the reason the deck exists. Live numbers for everything below c
 
 ## Card backlog (top-5000 staples and the precons)
 
-What blocks each unimplemented card, batch by batch and family by family, is in
-**`docs/card-blockers.md`** (and the per-card JSON records it indexes, `engine/data/sweep-2/` and
-`sweep-3/`). Add each batch's summary there; this section keeps only what to do next.
+What blocks each unimplemented card, and which cards a built feature may have unblocked, is in
+**`docs/card-blockers.md`** ("Open leads" first, then batch by batch and family by family, over
+the per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`). Card lists go there; this
+section keeps only what to do next.
 
-- **Now (priority since 2026-09-30): the missing cards of the Tarkir: Dragonstorm precons.**
-  The five TDC decks are `SAMPLE_DECKS`, so every bot and every unclaimed seat plays them, with
-  stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
-  tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
-  list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 2, Sultai Arisen 1, Abzan Armor 2, Mardu Surge 0, Jeskai Striker 2 — 7, each
-  behind a feature of its own (records in `engine/data/sweep-3/TDC*.json` and the older sweeps):
-  demonstrate for Transforming Flourish; dredge for Life from
-  the Loam; Curses, an Aura enchanting a player, for Curse of Opulence; manifest for Reality
-  Shift; modes that each target a different player for Shadrix Silverquill; keeping creatures of
-  total power 4 or less for Slaughter the Strong; and unspent red mana that stays, with "pay any
-  amount of {R}", for Leyline Tyrant.
-- **The nine other starter precons' stand-ins** (since 2026-10-02: the five 2022 Starter
-  Commander Decks and Tramplesaurus Rex, Reign of Dragons, Family Matters, World Shaper in
-  `SAMPLE_DECKS`): 48 stand-ins, every one recorded in `engine/data/sweep-3/PC-*.json`. Behind
-  the TDC decks for authoring.
-- **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
-  invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
-  premium removal fired at weak targets.
+- **Now (priority since 2026-09-30): the TDC precons' 7 missing cards** (`SAMPLE_DECKS`, so every
+  bot plays them): Temur Roar 2, Sultai Arisen 1, Abzan Armor 2, Jeskai Striker 2, each behind a
+  feature of its own. Delete a card's substitution in `sample-decks.ts` as it lands. Which
+  feature each needs: `docs/card-blockers.md`, "Open leads".
+- **The nine other starter precons' 48 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
+  TDC decks.
+- **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,347 of 5,000
+  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6428 (batches 30–35);
+  rank 6429 is next. Every card left needs engine work: build the features that block the most
+  of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
+  are in `docs/card-blockers.md`, "Open leads").
+- **Cards a built feature may have unblocked** — recheck each against its Oracle text:
+  `docs/card-blockers.md`, "Open leads".
 - **"You may search" isn't optional on about 35 cards.** Their `search-library` has `min: 0` and
   no `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest. Not
   to be confused with the tutors under Engine rules gaps ("Search your library for a card"),
   whose `min: 0` is wrong the other way: they need `min: 1`, not a `may`.
-- **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (86 implemented). Work down its
-  unmarked entries in rank order: author each card the engine runs faithfully, and build the
-  engine features that block the most of the rest. Ranks through 5011 are triaged (batches 4–29), and past the list, ranks 5011–6428 of the Oracle snapshot's EDHREC ranks (batches 30–35);
-  past that, nothing is. The cheap recurring blockers the batches found: "can't cast more than
-  one spell each turn", the legendary sorcery restriction (205.4e), "sacrifice any number" as a
-  spell's additional cost (`cost:sacrifice-multiple`'s remainder: Dargo, Plumb the Forbidden),
-  improvise, and a card's own permission to be cast from its graveyard where
-  `castFromGraveyardIf` doesn't reach (recheck each record against it).
-- **The win-game cards still blocked** (`win-game.test.ts`): Mechanized Production and Liliana's
-  Contract count artifacts or Demons "with the same name" / "with different names", but tokens
-  are keyed by disambiguated registry names, not their rule-111.4 names (two Golem tokens from
-  different cards share a name), and Mechanized Production also copies "enchanted artifact" as it
-  last existed; Final Fortune and Last Chance lose at "that turn's end step" (a delayed trigger
-  tied to one extra turn); Halo Fountain untaps creatures as a cost; Darksteel Reactor is a state
-  trigger (603.8); The Golden Throne replaces losing the game; Out of the Tombs replaces an
-  empty-library draw with a choice from the graveyard; Maze's End returns itself to hand as a
-  cost.
-- **Cards "Nth from the top" and the hand-size ordering may have unblocked** (built for Approach
-  of the Second Sun and Twenty-Toed Toad): God-Eternal Oketra, Rhonas and Bontu, Ilharg,
-  Riptide Gearhulk, Teferi, Hero of Dominaria's −3, Long-Term Plans, The Ten Rings,
-  Necrodominance. Recheck each against its Oracle text; most need something else too.
-- **Cards `cast-now` may have unblocked, outside the precons.** The feature stays out of the
-  gaps JSON's `built` list (it's only partly built), so the top-5000 and commander batches would
-  still skip these, each recorded as blocked on it: Kellan, the Kid, Descendants' Path and
-  Buster Sword. Recheck each against its Oracle text before authoring it.
-- **Cards a built feature may have unblocked.**
-  - A copy's new targets: the "ready now" pass authored 18 of the cards citing it and found what
-    else Rings of Brighthearth, Twinning Staff and Echoes of Eternity need (`docs/card-blockers.md`,
-    "Ready now"). Still to recheck: the other records citing `decision:copy-new-targets` (Loki
-    Laufeyson, …) and Venser, Shaper Savant.
-  - A linked exile (`exile`'s `linked`, built for Colfenor's Urn): Pit of Offerings' "exile up to
-    three target cards from graveyards … any of the exiled cards' colors" was waiting on it (an
-    `add-mana` `colorAmong` with `zone: "exiled-with-source"`).
-- **The Incarnations' evoke: "Evoke—Exile a [color] card from your hand."** Evoke is built for
-  mana costs (2026-09-29, Ashling); Endurance, Solitude, Fury and Subtlety (and Grief) pay theirs
-  by exiling a card of their color from hand, a non-mana cost choice the evoke variant can't
-  carry yet (`evokeCostsOf` in `game.ts`).
 - **Enter the God-Eternals gains a fixed 4 life**, not "life equal to the damage dealt this way":
   wrong beside Torbran, Gratuitous Violence or prevention. It needs the damage actually dealt as an
-  amount (`new:damage-dealt-this-way`), which Creeping Bloodsucker (B9) waits on too.
-- **Ninjutsu** (17 cards) and the rest of "enters tapped and attacking": `docs/card-blockers.md`.
-- **Modal activated abilities with targeted modes** (Breya, Etherium Shaper; Koma, Cosmos
-  Serpent; Umezawa's Jitte): modes chosen as it's activated (rule 700.2b), each with its targets —
-  the triggered half is built. See `neededCards-features.md`, "Modal triggers with targeted
-  modes".
-- **Host-trigger cards, 28 left**: each blocked by something shared with other cards. See
-  `neededCards-features.md`, "Host triggers".
-- **EDH-popularity feature tiers.** Tier 2 is Class. Tier 3 is Discover and Reconfigure. Also
-  open: the rest of the Overload/free-cast/convoke families, and the items listed under each
-  "still open". See `neededCards-features.md`, "Open: the card backlog".
-- **Labelled abilities the engine can't run.** Card sweep 3 found these dash labels, each of
-  which changes how its line works. The scaffolder leaves them to author:
-  - Power-up is built, and 21 of its 37 cards are authored; the 16 left are in
-    `docs/card-blockers.md`.
-  - A Case's To solve and Solved (13 each).
-  - Forecast (11).
-  - Companion (10; see "Not modeled") and Max speed (34; see the Speed item above).
-  Exhaust and Boast are read, as the ability flags the engine already has.
-- **Library-ordering and cost leftovers** (`docs/card-blockers.md`): Kozilek, the Great
-  Distortion needs an ability's X announced with no `{X}` in its cost, read by both a discard
-  filter ("a card with mana value X") and its target ("spell with mana value X"); Scroll Rack
-  needs "put that many cards from the top of your library into your hand" (not a draw) and an
-  effect that puts several targeted cards on top in an order the player picks
-  (`beginLibraryOrder` would ask it); a spell's additional "exile a card from your graveyard"
-  cost isn't built (an activated ability's is `exileFromGraveyard`).
-- **More Oracle-parser templates.** Every card the parser reads whole is in the pool. As of
-  card sweep 3 (2026-09-25): 4,205 of them, each reviewed against its Oracle text, rulings and
-  tokens, and 26,469 Commander-legal cards left, each with a line the parser can't read. The
-  parser read the cost or trigger of 16,853 of their abilities, and the effect of 22% of those.
-  Rerun `npm run card:scaffold -w engine -- --report --all` for today's figures. The unread
-  lines that recurred most are the next templates: an ability's "Choose one —" (266), Crew
-  (180), "Regenerate ~" (151), "You may pay {…}" (142), "Transform ~" (138). Add one, keep
-  `npm run card:parse-check -w engine` at zero disagreements, then `--auto-scan --all` writes
-  what it unlocks to `review/` for checking.
-- **The limitation ledger.** Protection from a filter is built (2026-09-21); what its "19 cards"
-  still hides is protection *granted* by an effect with a duration (Akroma's Will, Mother of
-  Runes), protection from a chosen colour, and player protection (The One Ring, Teferi's
-  Protection). Beyond it: "as this enters" on a non-cast permanent. See
-  `neededCards-features.md`, "The limitation ledger", and `cards/AUTHORING.md` §15.
-- **The original deck lists.** `engine/src/cards/neededCards.txt` holds the first two decks
-  the pool was built for (Ureni's Temur dragons, Korvold and Lord Windgrace's lands) and some
-  one-off requests. 22 of its cards are still missing, and 7 of those aren't in the top-5000
-  list, so nothing else tracks them: Incinerator of the Guilty, Mirror Room, Walk-In Closet,
-  Ureni, the Song Unending, World War Hulk, Greater Gargadon and Kavaron, Memorial World.
-  Their `FEATURE:` notes date from the P0–P20 passes, so re-check each one against the engine
-  before building for it.
+  amount (`new:damage-dealt-this-way`).
+- **Features with a family of cards behind them**, each detailed where it points:
+  Ninjutsu and the rest of "enters tapped and attacking" (`docs/card-blockers.md`); modal
+  activated abilities with targeted modes, host triggers (28 cards), the EDH-popularity tiers
+  (Class; Discover, Reconfigure) and the limitation ledger (`neededCards-features.md`); the
+  Incarnations' evoke by exiling a card, and the labelled abilities (Case, Forecast, Max speed)
+  (`docs/card-blockers.md`, "Open leads").
+- **More Oracle-parser templates.** The unread lines that recur most are the next templates
+  ("Choose one —" on an ability, Crew, "Regenerate ~", "You may pay {…}", "Transform ~"):
+  `npm run card:scaffold -w engine -- --report --all` for today's figures; keep
+  `npm run card:parse-check -w engine` at zero disagreements.
 
 ## Engine rules gaps
 
@@ -376,6 +297,9 @@ game to show a problem, listed in that plan's "Watching live games for" (wraths 
 `threat`, pumping an opponent's attacker, the `"acting"` rollout, big boards and deep stacks
 under count budgets).
 
+- **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
+  invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
+  premium removal fired at weak targets.
 - **More training scenarios.** 102 hand-built scenarios, 99 of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which

@@ -61,7 +61,9 @@ for:
   insists every entry has one); an entry is deleted once it checks out.
 - **`docs/card-blockers.md`** — reference, not a to-do list: what blocks the unimplemented cards,
   batch by batch (top-5000 batches, the TDC precons, card sweep 2) and by family, indexing the
-  per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`. Batch summaries go here.
+  per-card JSON records in `engine/data/sweep-2/` and `sweep-3/`. Batch summaries go here, and
+  so do card lists (which cards wait on a feature, which a built one may have unblocked): its
+  "Open leads" section holds them, and `BACKLOG.md` points at it rather than listing cards.
 - **`engine/src/cards/AUTHORING.md`** — the hand-authoring guide for adding a card. Read before
   authoring.
 - **`DEPLOYMENT.md`** — the tobyens.com production hosting/update runbook.
