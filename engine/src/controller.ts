@@ -1088,6 +1088,7 @@ function castExtras(
   convoke?: ConvokePayment[];
   delve?: ObjectId[];
   prototype?: boolean;
+  tap?: ObjectId[];
 } {
   const sac = legal.sacrifice;
   const convokeInfo = legal.convoke;
@@ -1108,6 +1109,8 @@ function castExtras(
     // flags above, and for the same reason: each branch is its own variant,
     // and a cast that names none is refused outright.
     ...(legal.costOption !== undefined ? { costOption: legal.costOption } : {}),
+    // A harmonize variant names the creature it taps (rule 702.180a): echoed.
+    ...(legal.harmonizeTap !== undefined ? { tap: [legal.harmonizeTap.object] } : {}),
     ...(sac !== undefined && sac.choices.length > 0
       ? { sacrifice: sac.choices[pickIndex(sac.choices.length)] }
       : {}),

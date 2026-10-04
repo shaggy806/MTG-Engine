@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-2400 already implemented / 2600 missing (marks refreshed 2026-10-04)
+2403 already implemented / 2597 missing (marks refreshed 2026-10-04)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -883,7 +883,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   887  Serum Visions                            {U}              Sorcery
 [x]   888  Disrupt Decorum                          {2}{R}{R}        Sorcery
 [x]   889  Solphim, Mayhem Dominus                  {2}{R}{R}        Legendary Creature — Phyrexian Horror
-[ ]   890  Nature's Rhythm                          {X}{G}{G}        Sorcery
+[x]   890  Nature's Rhythm                          {X}{G}{G}        Sorcery
 [x]   891  Temur Ascendancy                         {G}{U}{R}        Enchantment
 [x]   892  Grim Hireling                            {3}{B}           Creature — Tiefling Rogue
 [x]   893  Loot, Exuberant Explorer                 {2}{G}           Legendary Creature — Beast Noble
@@ -1736,7 +1736,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  1743  Fable of the Mirror-Breaker // Reflection of Kiki-Jiki {3}              Enchantment — Saga // Enchantment Creature — Goblin Shaman
 [x]  1744  The Scarab God                           {3}{U}{B}        Legendary Creature — God
 [x]  1745  Archmage's Charm                         {U}{U}{U}        Instant
-[ ]  1746  Jaxis, the Troublemaker                  {3}{R}           Legendary Creature — Human Warrior
+[x]  1746  Jaxis, the Troublemaker                  {3}{R}           Legendary Creature — Human Warrior
 [x]  1747  Lithoform Engine                         {4}              Legendary Artifact
 [x]  1748  Khalni Ambush // Khalni Territory        {3}              Instant // Land
 [x]  1749  Relic of Sauron                          {4}              Artifact
@@ -4788,7 +4788,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4795  Warren Warleader                         {2}{W}{W}        Creature — Rabbit Knight
 [ ]  4796  Stensian Sanguinist // Exsanguinate      {1}{B} // {X}{B}{B} Creature — Vampire Cleric // Sorcery
 [ ]  4797  Surge to Victory                         {4}{R}{R}        Sorcery
-[ ]  4798  Star Athlete                             {1}{R}{R}        Creature — Human Warrior
+[x]  4798  Star Athlete                             {1}{R}{R}        Creature — Human Warrior
 [ ]  4799  Stolen Identity                          {4}{U}{U}        Sorcery
 [ ]  4800  Spiteful Sliver                          {2}{R}           Creature — Sliver
 [x]  4801  Wand of Orcus                            {2}{B}           Legendary Artifact — Equipment

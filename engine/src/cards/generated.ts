@@ -2667,6 +2667,7 @@ import _poolHematiteGolem from "./pool/hematite-golem.js";
 import _poolHengeGuardian from "./pool/henge-guardian.js";
 import _poolHengeOfRamos from "./pool/henge-of-ramos.js";
 import _poolHengegatePathway from "./pool/hengegate-pathway.js";
+import _poolHenzieToolboxTorre from "./pool/henzie-toolbox-torre.js";
 import _poolHeraldOfEternalDawn from "./pool/herald-of-eternal-dawn.js";
 import _poolHeraldOfFaith from "./pool/herald-of-faith.js";
 import _poolHeraldOfSecretStreams from "./pool/herald-of-secret-streams.js";
@@ -2975,6 +2976,7 @@ import _poolJarvisEarthsMightiestButler from "./pool/jarvis-earths-mightiest-but
 import _poolJasmineBoreal from "./pool/jasmine-boreal.js";
 import _poolJasperaSentinel from "./pool/jaspera-sentinel.js";
 import _poolJawsOfDefeat from "./pool/jaws-of-defeat.js";
+import _poolJaxisTheTroublemaker from "./pool/jaxis-the-troublemaker.js";
 import _poolJayasFirenado from "./pool/jayas-firenado.js";
 import _poolJayasGreeting from "./pool/jayas-greeting.js";
 import _poolJayemdaeTome from "./pool/jayemdae-tome.js";
@@ -3815,6 +3817,7 @@ import _poolNaturalize from "./pool/naturalize.js";
 import _poolNaturesChant from "./pool/natures-chant.js";
 import _poolNaturesClaim from "./pool/natures-claim.js";
 import _poolNaturesLore from "./pool/natures-lore.js";
+import _poolNaturesRhythm from "./pool/natures-rhythm.js";
 import _poolNaturesSpiral from "./pool/natures-spiral.js";
 import _poolNayaBattlemage from "./pool/naya-battlemage.js";
 import _poolNearheathChaplain from "./pool/nearheath-chaplain.js";
@@ -5405,6 +5408,7 @@ import _poolStampedingScurryfoot from "./pool/stampeding-scurryfoot.js";
 import _poolStandFirm from "./pool/stand-firm.js";
 import _poolStandingStones from "./pool/standing-stones.js";
 import _poolStandingTroops from "./pool/standing-troops.js";
+import _poolStarAthlete from "./pool/star-athlete.js";
 import _poolStarfallInvocation from "./pool/starfall-invocation.js";
 import _poolStarfieldShepherd from "./pool/starfield-shepherd.js";
 import _poolStarfieldVocalist from "./pool/starfield-vocalist.js";
@@ -6755,6 +6759,7 @@ import _poolZedruuTheGreathearted from "./pool/zedruu-the-greathearted.js";
 import _poolZendikarFarguide from "./pool/zendikar-farguide.js";
 import _poolZendikarResurgent from "./pool/zendikar-resurgent.js";
 import _poolZendikarsRoil from "./pool/zendikars-roil.js";
+import _poolZenithFestival from "./pool/zenith-festival.js";
 import _poolZephid from "./pool/zephid.js";
 import _poolZephidsEmbrace from "./pool/zephids-embrace.js";
 import _poolZephyrBoots from "./pool/zephyr-boots.js";
@@ -9637,6 +9642,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolHengeGuardian,
   _poolHengeOfRamos,
   _poolHengegatePathway,
+  _poolHenzieToolboxTorre,
   _poolHeraldOfEternalDawn,
   _poolHeraldOfFaith,
   _poolHeraldOfSecretStreams,
@@ -9945,6 +9951,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolJasmineBoreal,
   _poolJasperaSentinel,
   _poolJawsOfDefeat,
+  _poolJaxisTheTroublemaker,
   _poolJayasFirenado,
   _poolJayasGreeting,
   _poolJayemdaeTome,
@@ -10785,6 +10792,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolNaturesChant,
   _poolNaturesClaim,
   _poolNaturesLore,
+  _poolNaturesRhythm,
   _poolNaturesSpiral,
   _poolNayaBattlemage,
   _poolNearheathChaplain,
@@ -12375,6 +12383,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStandFirm,
   _poolStandingStones,
   _poolStandingTroops,
+  _poolStarAthlete,
   _poolStarfallInvocation,
   _poolStarfieldShepherd,
   _poolStarfieldVocalist,
@@ -13725,6 +13734,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolZendikarFarguide,
   _poolZendikarResurgent,
   _poolZendikarsRoil,
+  _poolZenithFestival,
   _poolZephid,
   _poolZephidsEmbrace,
   _poolZephyrBoots,

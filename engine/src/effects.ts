@@ -3074,6 +3074,11 @@ export type EffectSpec =
       /** "**It gains haste until end of turn**" (Mishra, Eminent One): the
        * keywords last only this turn, unlike `gainsHaste`. */
       readonly gainUntilEndOfTurn?: readonly Keyword[];
+      /** "It **gains** haste and 'When this token dies, draw a card'" (Jaxis,
+       * the Troublemaker): abilities the copies gain with no end, an effect
+       * on them rather than a copy exception — so a copy of one of them has
+       * none of it (the rulings). */
+      readonly gains?: { readonly keywords?: readonly Keyword[]; readonly triggered?: readonly TriggeredAbility[] };
       /** Exile the token copies at the beginning of the next end step (Miirym). */
       readonly exileAtEndStep?: boolean;
       /** "Exile the tokens at end of combat" (myriad, rule 702.116a; Delina,
@@ -4773,6 +4778,10 @@ export interface EffectApi {
       basePt?: readonly [number, number];
       /** Keywords the copies gain until end of turn. */
       gainUntilEndOfTurn?: readonly Keyword[];
+      /** Keywords and triggered abilities they gain with no end (not
+       * copiable — see the effect's `gains`). */
+      gainKeywords?: readonly Keyword[];
+      gainTriggered?: readonly TriggeredAbility[];
       exceptions?: CopyExceptions;
       /** Copy the object as it is now, never as it last existed elsewhere. */
       asCard?: boolean;
@@ -7094,6 +7103,8 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
             ? { basePt: [ptSetValue(spec.basePt[0], ctx), ptSetValue(spec.basePt[1], ctx)] as const }
             : {}),
           ...(spec.gainUntilEndOfTurn ? { gainUntilEndOfTurn: spec.gainUntilEndOfTurn } : {}),
+          ...(spec.gains?.keywords !== undefined ? { gainKeywords: spec.gains.keywords } : {}),
+          ...(spec.gains?.triggered !== undefined ? { gainTriggered: spec.gains.triggered } : {}),
           ...(spec.exceptions ? { exceptions: spec.exceptions } : {}),
           ...(spec.asCard === true ? { asCard: true } : {}),
           ...(spec.tapped === true ? { tapped: true } : {}),

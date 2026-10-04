@@ -72,6 +72,7 @@ import _poolGrazingGladehart from "../pool/grazing-gladehart.js";
 import _poolGyreEngineer from "../pool/gyre-engineer.js";
 import _poolHavocDevils from "../pool/havoc-devils.js";
 import _poolHedronRover from "../pool/hedron-rover.js";
+import _poolHenzieToolboxTorre from "../pool/henzie-toolbox-torre.js";
 import _poolHeraldOfSecretStreams from "../pool/herald-of-secret-streams.js";
 import _poolHithlainKnots from "../pool/hithlain-knots.js";
 import _poolHulkingBugbear from "../pool/hulking-bugbear.js";
@@ -268,6 +269,7 @@ const shard: CardShard = {
     _poolGyreEngineer,
     _poolHavocDevils,
     _poolHedronRover,
+    _poolHenzieToolboxTorre,
     _poolHeraldOfSecretStreams,
     _poolHithlainKnots,
     _poolHulkingBugbear,

@@ -731,6 +731,18 @@ interface CastNowAsk {
   readonly freeCastOf?: "cascade" | "suspend";
 }
 
+/** `cost` with `n` less generic mana — "{4}{B}{R}" less 1 is "{3}{B}{R}",
+ * never below none. Only the generic number moves; coloured symbols and X
+ * stay. */
+function reduceGenericInCost(cost: string, n: number): string {
+  if (n <= 0) return cost;
+  const match = /\{(\d+)\}/.exec(cost);
+  if (match === null) return cost;
+  const left = Math.max(0, Number(match[1]) - n);
+  const rest = cost.replace(match[0], left === 0 ? "" : `{${left}}`);
+  return rest === "" ? "{0}" : rest;
+}
+
 /** `duration` as an effect `you` control keeps it: "until your next turn"
  * is yours. */
 function lasting(
@@ -1436,6 +1448,17 @@ export class Game {
               }),
             );
           }
+          // Blitz (rule 702.152a) — from the hand, for its blitz cost.
+          const blitzCost = this.blitzCostOf(card, def, player);
+          if (blitzCost !== null) {
+            out.push(
+              ...this.castSpellActions(player, card, cardName, def, {
+                ...faceProp,
+                via: "blitz",
+                costString: blitzCost,
+              }),
+            );
+          }
         }
       }
       const cardName = ownName;
@@ -1489,6 +1512,15 @@ export class Game {
           }),
         );
       }
+    }
+
+    // Harmonize (rule 702.180a) — a card in this player's graveyard with a
+    // harmonize cost may be cast from there for it.
+    for (const card of this.state.zones.perPlayer[player].graveyard) {
+      const cardName = this.state.objects[card].cardName;
+      const def = this.registry.get(cardName);
+      if (def.harmonize === null) continue;
+      out.push(...this.castSpellActions(player, card, cardName, def, { via: "harmonize", costString: def.harmonize.cost }));
     }
 
     // Disturb (rule 702.150) — a transforming DFC in this player's graveyard
@@ -2034,6 +2066,8 @@ export class Game {
       evoke?: string;
       /** A multikicker variant's number of times kicked (rule 702.33c). */
       kickCount?: number;
+      /** A harmonize variant's creature to tap (rule 702.180a). */
+      harmonizeTap?: ObjectId;
     }[] = [{ kicked: false, overload: false, free: false }];
     // Multikicker (rule 702.33c — Everflowing Chalice): one variant per
     // number of times, up to as many as the player's mana could pay for at
@@ -2063,7 +2097,8 @@ export class Game {
     // Guardianship) are each an alternative cast, mutually exclusive with
     // kicker and each other (no card on the list has more than one) — and
     // with warp, itself an alternative cost (rule 118.9a: only one applies).
-    const warp = via === "warp";
+    // Blitz is an alternative cost from the hand too (rule 702.152a).
+    const warp = via === "warp" || via === "blitz";
     if (def.overload !== null && impulseFree !== "only" && !warp) {
       variants.push({ kicked: false, overload: true, free: false });
     }
@@ -2125,7 +2160,21 @@ export class Game {
       const payingManaCost = variants.filter((v) => !v.free && !v.overload && v.altCost !== true && v.prototype !== true);
       for (const evokeCost of evokeCosts) variants.push(...payingManaCost.map((v) => ({ ...v, evoke: evokeCost })));
     }
-    for (const { kicked: kickedFlag, kickCount, overload, free, altCost, costOption, prototype, offspring, evoke } of variants) {
+    // Harmonize (rule 702.180a): the harmonize cost is the alternative cost
+    // paid, "tapping up to one untapped creature you control" — no creature,
+    // or each one that could be tapped, its own variant (702.180b), every
+    // one priced with that creature's power off.
+    if (via === "harmonize") {
+      const paying = variants.filter((v) => !v.free && !v.overload && v.altCost !== true && v.evoke === undefined);
+      const creatures = this.state.zones.shared.battlefield.filter(
+        (id) => this.whyCannotHarmonizeTap(player, card, id) === null,
+      );
+      variants.length = 0;
+      for (const v of paying) {
+        variants.push(v, ...creatures.map((harmonizeTap) => ({ ...v, harmonizeTap })));
+      }
+    }
+    for (const { kicked: kickedFlag, kickCount, overload, free, altCost, costOption, prototype, offspring, evoke, harmonizeTap } of variants) {
       // A multikicker variant passes its count where `kicked` goes.
       const kicked: boolean | number = kickCount ?? kickedFlag;
       const kickKey = `${free}|${altCost}|${costOption}|${prototype}|${offspring}|${evoke}`;
@@ -2134,6 +2183,8 @@ export class Game {
       // A prototyped variant is worked out as the prototyped spell it is: its
       // prototype cost, colors and size (rule 718 — the rulings).
       const undoPrototype = prototype === true ? this.applyPrototype(card) : () => {};
+      // A harmonize variant is priced, X and all, with its creature's power off.
+      const undoHarmonize = via === "harmonize" ? this.enterHarmonizeTap(harmonizeTap) : () => {};
       try {
       const printedOrPrototype =
         prototype === true && def.prototype !== null && costString === def.manaCost ? def.prototype.cost : costString;
@@ -2160,7 +2211,7 @@ export class Game {
           undefined,
           altCost === true,
           costOption,
-          undefined,
+          harmonizeTap !== undefined ? [harmonizeTap] : undefined,
           graveyardGrant,
           x,
           targetCount,
@@ -2481,6 +2532,15 @@ export class Game {
         ...(offspring === true && offspringCost !== null ? { offspring: true, offspringCost } : {}),
         ...(evoke !== undefined ? { evoke: true, evokeCost: evoke } : {}),
         ...(free ? { free: true } : {}),
+        ...(harmonizeTap !== undefined
+          ? {
+              harmonizeTap: {
+                object: harmonizeTap,
+                cardName: printedCardName(this.state.objects[harmonizeTap]),
+                power: Math.max(0, computeCharacteristics(this.state, this.registry, harmonizeTap).power),
+              },
+            }
+          : {}),
         ...(altCost === true
           ? (() => {
               const tapCost = this.altCostTapOffer(player, card, via, face ?? 0);
@@ -2645,6 +2705,7 @@ export class Game {
       }
       } finally {
         undoPrototype();
+        undoHarmonize();
         if (kickCount !== undefined && out.length === offeredBefore) kickFailed.add(kickKey);
       }
     }
@@ -7540,7 +7601,8 @@ export class Game {
           };
     const tax = this.isCastableCommander(player, cardId) ? this.commanderTax(player, cardId) : 0;
     const mods = this.costModificationFor(player, cardId, targetCount);
-    let reduction = mods.reduceGeneric;
+    // Harmonize's tapped creature (rule 702.180a), probed by the caller.
+    let reduction = mods.reduceGeneric + this.harmonizePower;
     if (
       def.selfCostReduction !== null &&
       staticConditionMet(this.state, this.registry, this.state.objects[cardId], def.selfCostReduction.condition)
@@ -8128,15 +8190,21 @@ export class Game {
   ): number {
     const parsed = parseManaCost(costString);
     if (parsed.x === 0) return 0;
-    // Upper bound: every mana source plus everything already floating — X can't
-    // exceed that no matter what.
+    // Upper bound: every mana source plus everything already floating, plus
+    // whatever generic mana a reduction takes off (a harmonize creature's
+    // power, a cost reducer) — X can't exceed that no matter what.
     const pool = this.state.players[player].manaPool;
-    const cap =
+    const sources =
       this.manaSources(player).reduce(
         (n, s) => n + Game.sourceCapacity(s),
         0,
       ) + pool.length;
+    // Harmonize's tapped creature can't also pay as mana (rule 702.180b).
+    const arrangement: ManaSourceArrangement | undefined =
+      this.harmonizeCreature === null ? undefined : { withheld: new Set([this.harmonizeCreature]) };
     return this.withFace(cardId, face, () => {
+      const atSources = this.castingCostOf(player, cardId, def, sources, costString, targetCount);
+      const cap = sources + Math.max(0, sources + parsed.generic - atSources.generic);
       let best = 0;
       for (let k = 1; k <= cap; k += 1) {
         if (
@@ -8146,6 +8214,7 @@ export class Game {
             undefined,
             undefined,
             { kind: "cast", card: cardId },
+            arrangement,
           ) === null
         ) {
           break;
@@ -8252,12 +8321,16 @@ export class Game {
         ? this.evokeCostOf(cardId, def, via, caster ?? this.state.objects[cardId]?.owner, evoke)
         : via === "flashback"
         ? (this.flashbackOf(cardId, graveyardGrant)?.cost ?? null)
+        : via === "harmonize"
+        ? (def.harmonize?.cost ?? null)
         : via === "escape"
           ? (this.escapeOf(cardId, face, graveyardGrant)?.cost ?? null)
           : via === "foretell"
             ? (def.foretell?.cost ?? null)
             : via === "warp"
               ? this.warpCostOfCaster(cardId, def, caster)
+              : via === "blitz"
+              ? this.blitzCostOf(cardId, def, caster ?? this.state.objects[cardId]?.owner ?? "")
             : // Disturb (rule 702.150) — the disturb cost is on the front face.
               via === "disturb"
               ? (this.frontFaceDef(cardId).disturb?.cost ?? null)
@@ -8444,7 +8517,26 @@ export class Game {
         return `${def.name} isn't a spell this lets ${player} cast`;
       }
     }
-    if (via === "flashback") {
+    if (via === "harmonize") {
+      if (def.harmonize === null) return `${def.name} does not have harmonize`;
+      if (!this.state.zones.perPlayer[player].graveyard.includes(cardId)) {
+        return `${def.name} is not in ${player}'s graveyard`;
+      }
+      if ((tap?.length ?? 0) > 1) return "harmonize taps up to one creature";
+      const tapped = tap?.[0];
+      if (tapped !== undefined) {
+        const why = this.whyCannotHarmonizeTap(player, cardId, tapped);
+        if (why !== null) return why;
+        // Priced with the creature's power off (and it held back from
+        // paying for itself as mana).
+        if (!this.harmonizeProbed) {
+          return this.withHarmonizeTap(tapped, () =>
+            this.whyCannotCastSpell(player, cardId, via, face, modes, kicked, sacrifice, overload, free, convoke,
+              altCost, costOption, tap, graveyardGrant, xValue, targetCount, escapeExile, prototype, offspring, evoke, delve),
+          );
+        }
+      }
+    } else if (via === "flashback") {
       const flashback = this.flashbackOf(cardId, graveyardGrant);
       if (flashback === null) {
         return graveyardGrant === undefined
@@ -8532,6 +8624,15 @@ export class Game {
       }
     } else if (via === "effect") {
       // Wherever the card is — the offer is the permission (checked above).
+    } else if (via === "blitz") {
+      // Rule 702.152a — for its blitz cost, from the hand or a commander from
+      // the command zone: an alternative cost, so no other one goes with it
+      // (118.9a).
+      if (!this.state.zones.perPlayer[player].hand.includes(cardId) && !this.isCastableCommander(player, cardId)) {
+        return `${player} does not have that card in hand`;
+      }
+      if (this.blitzCostOf(cardId, def, player) === null) return `${def.name} does not have blitz`;
+      if (overload || free || altCost) return `blitz is an alternative cost, and can't be combined with another`;
     } else if (via === "warp") {
       // Rule 702.185a — from the hand, for its warp cost: an alternative cost,
       // so no other one goes with it (118.9a).
@@ -8890,6 +8991,58 @@ export class Game {
    */
   private castNowProbe: CastNowAsk | null = null;
 
+  /**
+   * The generic mana a harmonize cast's tapped creature takes off its total
+   * cost (rule 702.180a) while that cast is priced, checked or paid —
+   * `castingCostOf` subtracts it after increases (601.2f). 0 otherwise.
+   */
+  private harmonizePower = 0;
+  /** Set while {@link withHarmonizeTap} is pricing a harmonize cast, so the
+   * casting check and the cast don't re-enter it. */
+  private harmonizeProbed = false;
+  /** The creature that harmonize cast taps, held back from paying for it as
+   * mana while `{X}` is sized (`maxAffordableX`). */
+  private harmonizeCreature: ObjectId | null = null;
+
+  /** Price what `fn` prices with `creature` tapped for harmonize: its power
+   * as it is now, nothing for `undefined`. Restores the probe after. */
+  private withHarmonizeTap<T>(creature: ObjectId | undefined, fn: () => T): T {
+    const restore = this.enterHarmonizeTap(creature);
+    try {
+      return fn();
+    } finally {
+      restore();
+    }
+  }
+
+  /** {@link withHarmonizeTap} as a set-and-restore pair, for a loop body
+   * that already has its own try/finally. */
+  private enterHarmonizeTap(creature: ObjectId | undefined): () => void {
+    const before = this.harmonizePower;
+    const probedBefore = this.harmonizeProbed;
+    const creatureBefore = this.harmonizeCreature;
+    const present = creature !== undefined && this.state.objects[creature] !== undefined;
+    this.harmonizePower = present ? Math.max(0, computeCharacteristics(this.state, this.registry, creature).power) : 0;
+    this.harmonizeCreature = present ? creature : null;
+    this.harmonizeProbed = true;
+    return () => {
+      this.harmonizePower = before;
+      this.harmonizeProbed = probedBefore;
+      this.harmonizeCreature = creatureBefore;
+    };
+  }
+
+  /** Why `creature` can't be the one `player` taps for a harmonize cast of
+   * `cardId` (rule 702.180a: an untapped creature they control). */
+  private whyCannotHarmonizeTap(player: PlayerId, cardId: ObjectId, creature: ObjectId): string | null {
+    const object = this.state.objects[creature];
+    if (object === undefined || object.zone !== "battlefield" || creature === cardId) return "that isn't on the battlefield";
+    if (object.controller !== player) return `${player} doesn't control that creature`;
+    if (object.tapped) return "that creature is tapped";
+    if (!effectiveTypes(this.state, this.registry, object).includes("creature")) return "that isn't a creature";
+    return null;
+  }
+
   /** The `cast-now` offer that lets `player` cast `cardId` `via: "effect"`
    * right now — the pending decision's, or the one being raised or answered
    * — or `null`. */
@@ -9104,6 +9257,17 @@ export class Game {
     division?: readonly number[],
     delve?: readonly ObjectId[],
   ): void {
+    // Harmonize (rule 702.180a): every cost below is priced with the tapped
+    // creature's power off.
+    if (via === "harmonize" && tap !== undefined && tap.length > 0 && !this.harmonizeProbed) {
+      const why = this.whyCannotHarmonizeTap(player, cardId, tap[0]);
+      if (why !== null) throw new Error(why);
+      this.withHarmonizeTap(tap[0], () =>
+        this.castSpell(player, cardId, targets, xValue, via, face, modes, kicked, sacrifice, overload, free,
+          convoke, altCost, costOption, tap, graveyardGrant, escapeExile, prototype, offspring, evoke, division, delve),
+      );
+      return;
+    }
     if (prototype && !this.prototypeApplied(cardId)) {
       if (this.faceDef(cardId, face).prototype === null) throw new Error(`${this.faceDef(cardId, face).name} has no prototype`);
       this.withPrototype(cardId, () =>
@@ -9238,6 +9402,12 @@ export class Game {
     // tap for mana.
     let manaArrangement: ManaSourceArrangement | undefined =
       convoked.length > 0 ? { withheld: new Set(convoked.map((p) => p.creature)) } : undefined;
+    // Harmonize's creature is tapped as the cost is paid (rule 702.180b), so
+    // it can't also tap for mana.
+    if (via === "harmonize" && tap !== undefined && tap.length > 0) {
+      tapPicked = [...tap];
+      manaArrangement = { ...(manaArrangement ?? {}), withheld: new Set([...(manaArrangement?.withheld ?? []), ...tap]) };
+    }
     if (alternativeTaps !== undefined) {
       const spec = { ...alternativeTaps, includeSelf: false };
       const offer = this.tapCostOffer(player, cardId, spec, cost, undefined, undefined, {
@@ -9312,6 +9482,7 @@ export class Game {
     // Laboratory Drudge: every route that casts a spell out of a graveyard.
     if (
       via === "flashback" ||
+      via === "harmonize" ||
       via === "escape" ||
       via === "disturb" ||
       via === "graveyard-permission"
@@ -12814,6 +12985,7 @@ export class Game {
     }
     const escapedWith = object.castVia === "escape" ? def.escape?.counters : undefined;
     const warped = object.castVia === "warp";
+    const blitzed = object.castVia === "blitz";
     // "That creature enters with two additional +1/+1 counters" (Yuna).
     const extraCounters = object.entersWithCounters;
     // Read before the move, which ends it with the stack.
@@ -12891,6 +13063,38 @@ export class Game {
     // beginning of the next end step — a delayed triggered ability, which
     // players can respond to, and which finds nothing once it has left and
     // come back (400.7). Its owner may then cast it on a later turn.
+    // Blitz (rule 702.152a): its blitz cost was paid, so as long as it stays
+    // this permanent it has haste and "when this is put into a graveyard from
+    // the battlefield, draw a card" — on a modifier, which a copy doesn't
+    // copy (the rulings) — and it's sacrificed at the beginning of the next
+    // end step, by a delayed trigger that finds nothing once it has left.
+    if (blitzed && this.state.objects[id]?.zone === "battlefield") {
+      this.state.objects[id].modifiers.push({
+        timestamp: this.state.timestampSeq,
+        power: 0,
+        toughness: 0,
+        keywords: ["haste"],
+        grantsTriggered: [
+          {
+            trigger: { on: "dies", who: "self" },
+            targets: [],
+            effect: { kind: "draw", amount: 1 },
+            resolve: null,
+            text: "When this creature dies, draw a card.",
+          },
+        ],
+        untilEndOfTurn: false,
+      });
+      invalidateComputedCache();
+      this.createDelayedTrigger(
+        id,
+        object.controller,
+        "next-end-step",
+        { kind: "sacrifice-source" },
+        "Blitz — sacrifice it at the beginning of the next end step.",
+        [],
+      );
+    }
     if (warped && this.state.objects[id]?.zone === "battlefield") {
       this.createDelayedTrigger(
         id,
@@ -13178,6 +13382,7 @@ export class Game {
       const competing =
         adventure ||
         object.castVia === "flashback" ||
+        object.castVia === "harmonize" ||
         object.castVia === "disturb" ||
         object.exileIfWouldGoToGraveyard === true ||
         this.graveyardIsReplacedWithExile(id, false);
@@ -19394,6 +19599,9 @@ export class Game {
       /** Keywords they gain with no end — encore's "the tokens gain haste":
        * an effect on them, not a copy exception, so not copiable. */
       gainKeywords?: readonly Keyword[];
+      /** Triggered abilities they gain with no end (Jaxis's "when this token
+       * dies, draw a card") — not copiable either. */
+      gainTriggered?: readonly TriggeredAbility[];
       exceptions?: CopyExceptions;
       asCard?: boolean;
       tapped?: boolean;
@@ -19456,6 +19664,9 @@ export class Game {
       ...untilEndOfTurnKeywords(opts.gainUntilEndOfTurn ?? []),
       ...(opts.gainKeywords !== undefined && opts.gainKeywords.length > 0
         ? [{ power: 0, toughness: 0, keywords: [...opts.gainKeywords], untilEndOfTurn: false }]
+        : []),
+      ...(opts.gainTriggered !== undefined && opts.gainTriggered.length > 0
+        ? [{ power: 0, toughness: 0, keywords: [], grantsTriggered: [...opts.gainTriggered], untilEndOfTurn: false }]
         : []),
     ];
     // Divine Visitation (rule 614.1a): a copy that would be created a
@@ -22979,6 +23190,37 @@ export class Game {
     return who === undefined ? null : this.warpCostOf(cardId, def, who);
   }
 
+  /**
+   * The blitz cost `player` may cast `cardId` for from their hand, or as a
+   * commander from the command zone (rule 702.152a): its own, or its mana cost where a `grantsBlitzInHand` static
+   * of a permanent they control gives it blitz (Henzie "Toolbox" Torre) —
+   * less {1} for each time they've cast a commander from the command zone
+   * when a `blitzCostReductionPerCommanderCast` static applies (Henzie).
+   * `null` when it has none, or isn't where it may be cast from that way.
+   */
+  private blitzCostOf(cardId: ObjectId, def: CardDefinition, player: PlayerId): string | null {
+    if (this.state.players[player] === undefined) return null;
+    // Rule 702.152a — "you may cast this card by paying [cost]": from the
+    // hand, or a commander from the command zone (its tax still added).
+    if (!this.state.zones.perPlayer[player].hand.includes(cardId) && !this.isCastableCommander(player, cardId)) {
+      return null;
+    }
+    let cost: string | null = def.blitz?.cost ?? null;
+    if (cost === null && def.types.includes("creature")) {
+      for (const { ability } of this.activeStaticsOf(player, (a) => a.grantsBlitzInHand !== undefined)) {
+        if (matchesFilter(this.state, this.registry, cardId, ability.grantsBlitzInHand!.filter, { you: player })) {
+          cost = def.manaCost;
+          break;
+        }
+      }
+    }
+    if (cost === null) return null;
+    const discounts = this.activeStaticsOf(player, (a) => a.blitzCostReductionPerCommanderCast === true).length;
+    if (discounts === 0) return cost;
+    const casts = Object.values(this.state.players[player].commanderCastCounts).reduce((n, c) => n + c, 0);
+    return reduceGenericInCost(cost, casts * discounts);
+  }
+
   private warpCostOf(cardId: ObjectId, def: CardDefinition, player: PlayerId): string | null {
     if (!this.state.zones.perPlayer[player].hand.includes(cardId)) return null;
     if (def.warp !== null) return def.warp.cost;
@@ -24870,6 +25112,11 @@ export class Game {
     const leaving = new Set(
       this.state.zones.shared.battlefield.filter((id) => this.state.objects[id]?.owner === player),
     );
+    // What they owned left the game (rule 800.4a), so it's out of combat
+    // (506.4), though the engine leaves it on the board, inert: an attack
+    // trigger that kills its own controller (Star Athlete) leaves no attacker
+    // for them to assign damage for.
+    for (const id of leaving) this.removeFromCombat(id);
     const exiled = this.state.zones.shared.exile.filter((id) => {
       const object = this.state.objects[id];
       return (
@@ -25959,6 +26206,7 @@ export class Game {
           replaced,
           finality ||
             object.castVia === "flashback" ||
+            object.castVia === "harmonize" ||
             object.castVia === "disturb" ||
             object.exileIfWouldGoToGraveyard === true,
         );
@@ -25966,12 +26214,13 @@ export class Game {
       }
     }
 
-    // Flashback (rule 702.34) / disturb (rule 702.150): a card cast this way is
-    // exiled instead of ever going to a graveyard — from the stack (fizzle /
-    // counter) or, for a disturb permanent, from the battlefield when it dies.
-    // `castVia` rides on the object (kept across the stack→battlefield move).
+    // Flashback (rule 702.34) / harmonize (702.180a) / disturb (rule 702.150):
+    // a card cast this way is exiled instead of ever going to a graveyard —
+    // from the stack (fizzle / counter) or, for a disturb permanent, from the
+    // battlefield when it dies. `castVia` rides on the object (kept across the
+    // stack→battlefield move).
     if (
-      (object.castVia === "flashback" || object.castVia === "disturb") &&
+      (object.castVia === "flashback" || object.castVia === "harmonize" || object.castVia === "disturb") &&
       to === "graveyard"
     ) {
       to = "exile";

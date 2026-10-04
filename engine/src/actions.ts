@@ -43,6 +43,9 @@ export type CastVia =
   | "adventure"
   | "suspend"
   | "cascade"
+  /** Harmonize (rule 702.180a) — cast from a graveyard for its harmonize
+   * cost, tapping up to one creature (`harmonizeTap`). */
+  | "harmonize"
   /** "Impulse draw" (Dream Pillager, Tectonic Giant, Theater of Horrors) — a
    * card exiled face-up with permission to play it, for its normal cost —
    * or one a `playFromExile` static lets its controller play (Grolnok, the
@@ -60,6 +63,8 @@ export type CastVia =
    * alternative cost — exiled at the next end step, castable from exile on a
    * later turn (which is an `"impulse"` cast). */
   | "warp"
+  /** Blitz (rule 702.152a) — cast from the hand for its blitz cost. */
+  | "blitz"
   /** Cast from your graveyard for its normal cost, under a permission a
    * permanent you control grants (Gisa and Geralf: "you may cast a Zombie
    * creature spell from your graveyard"). Unlike flashback, nothing exiles
@@ -604,6 +609,10 @@ export type LegalAction =
       /** The card divides `total` among the targets of the group at target
        * slot `slot` — the cast's `division` says how (Magma Opus). */
       readonly divide?: { readonly total: number; readonly slot: number };
+      /** A harmonize variant (rule 702.180a): the creature it taps, whose
+       * power comes off the cost — the cast echoes it as `tap: [object]`.
+       * Absent on the variant that taps none. */
+      readonly harmonizeTap?: { readonly object: ObjectId; readonly cardName: string; readonly power: number };
       /** Set for a *targeted modal* spell (rule 700.2 — ROADMAP Phase 11 EG-2):
        * the driver picks `minModes..maxModes` of `modes` (each a text label +
        * its own target specs), then targets for the chosen modes, then echoes

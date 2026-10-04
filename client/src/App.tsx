@@ -176,6 +176,7 @@ function graveyardVariantLabel(
     if (a.prototype) parts.push(`prototype ${a.prototypeCost ?? ''}`.trim())
     if (a.offspring) parts.push(`offspring ${a.offspringCost ?? ''}`.trim())
     if (a.evoke) parts.push(`evoke ${a.evokeCost ?? ''}`.trim())
+    if (a.harmonizeTap) parts.push(`tapping ${a.harmonizeTap.cardName} (−${a.harmonizeTap.power})`)
   }
   return parts.length > 0 ? `${verb} ${parts.join(', ')}` : verb
 }
@@ -200,6 +201,8 @@ const castExtras = (cast: CastAction) => ({
   // Which graveyard permission pays for it, when several could.
   ...(cast.graveyardGrant !== undefined ? { graveyardGrant: cast.graveyardGrant } : {}),
   ...(cast.tapCost !== undefined ? { tapCost: cast.tapCost } : {}),
+  // A harmonize variant's creature to tap (rule 702.180a): its own offer.
+  ...(cast.harmonizeTap !== undefined ? { tap: [cast.harmonizeTap.object] } : {}),
   // "4 damage divided as you choose" (Magma Opus): asked once the targets are in.
   ...(cast.divide !== undefined ? { divide: cast.divide } : {}),
   // Not echoed either: how many distinct targets are affordable, which the
@@ -392,6 +395,9 @@ interface Targeting {
   /** A "tap N untapped … you control" cost still to pick for, once the
    * targets are in — see `pendingTap`. */
   readonly tapCost?: TapCostOffer
+  /** A harmonize cast's creature to tap (rule 702.180a), echoed back as the
+   * cast's `tap`. */
+  readonly tap?: readonly ObjectId[]
   /** A convoke spell's creatures still to pick, once the targets are in —
    * see `pendingConvoke`. */
   readonly convokeOffer?: ConvokeOffer
@@ -1531,6 +1537,7 @@ function Table({
         | 'costOption'
         | 'graveyardGrant'
         | 'tapCost'
+        | 'tap'
         | 'convokeOffer'
         | 'divide'
       >,
@@ -1568,6 +1575,7 @@ function Table({
                 ...(t.sacrifice !== undefined ? { sacrifice: t.sacrifice } : {}),
                 ...(t.escapeExile !== undefined ? { escapeExile: [...t.escapeExile] } : {}),
                 ...(t.delve !== undefined && t.delve.length > 0 ? { delve: [...t.delve] } : {}),
+                ...(t.tap !== undefined ? { tap: [...t.tap] } : {}),
                 ...(division !== undefined ? { division: [...division] } : {}),
               }
             : {
@@ -4540,6 +4548,7 @@ function Table({
                         ? ` (X=${a.xCost.maxX})`
                         : ''}
                       {a.kind === 'cast-spell' && a.via === 'warp' ? ' (warp)' : ''}
+                      {a.kind === 'cast-spell' && a.via === 'blitz' ? ' (blitz)' : ''}
                       {a.kind === 'cast-spell' && a.offspring ? (
                         <> (offspring <Symbols text={a.offspringCost ?? ''} />)</>
                       ) : null}
@@ -4550,6 +4559,11 @@ function Table({
                         <> (prototype <Symbols text={a.prototypeCost ?? ''} />)</>
                       ) : null}
                       {a.kind === 'cast-spell' && a.altCost ? ' (alternative cost)' : ''}
+                      {a.kind === 'cast-spell' && a.via === 'harmonize'
+                        ? a.harmonizeTap
+                          ? ` (harmonize, tapping ${a.harmonizeTap.cardName}: −${a.harmonizeTap.power})`
+                          : ' (harmonize)'
+                        : ''}
                       {a.kind === 'cast-spell' && a.costOptionText ? (
                         <> (<Symbols text={a.costOptionText} />)</>
                       ) : null}

@@ -98,6 +98,7 @@ import _poolHulkingOgre from "../pool/hulking-ogre.js";
 import _poolIllusionistsBracers from "../pool/illusionists-bracers.js";
 import _poolIzzetBoilerworks from "../pool/izzet-boilerworks.js";
 import _poolJackhammer from "../pool/jackhammer.js";
+import _poolJaxisTheTroublemaker from "../pool/jaxis-the-troublemaker.js";
 import _poolJhessianInfiltrator from "../pool/jhessian-infiltrator.js";
 import _poolKalastriaNightwatch from "../pool/kalastria-nightwatch.js";
 import _poolKazanduMammoth from "../pool/kazandu-mammoth.js";
@@ -118,6 +119,7 @@ import _poolMoltensteelDragon from "../pool/moltensteel-dragon.js";
 import _poolMomentOfCraving from "../pool/moment-of-craving.js";
 import _poolMonasteryMentor from "../pool/monastery-mentor.js";
 import _poolMysticSnake from "../pool/mystic-snake.js";
+import _poolNaturesRhythm from "../pool/natures-rhythm.js";
 import _poolNecroskitter from "../pool/necroskitter.js";
 import _poolNoDachi from "../pool/no-dachi.js";
 import _poolNulldrifter from "../pool/nulldrifter.js";
@@ -310,6 +312,7 @@ const shard: CardShard = {
     _poolIllusionistsBracers,
     _poolIzzetBoilerworks,
     _poolJackhammer,
+    _poolJaxisTheTroublemaker,
     _poolJhessianInfiltrator,
     _poolKalastriaNightwatch,
     _poolKazanduMammoth,
@@ -330,6 +333,7 @@ const shard: CardShard = {
     _poolMomentOfCraving,
     _poolMonasteryMentor,
     _poolMysticSnake,
+    _poolNaturesRhythm,
     _poolNecroskitter,
     _poolNoDachi,
     _poolNulldrifter,

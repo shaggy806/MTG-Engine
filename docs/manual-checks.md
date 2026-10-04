@@ -204,6 +204,10 @@ How to use it:
 | [Maelstrom Wanderer, The First Sliver, Imoti, Celebrant of Bounty, Zhulodok, Void Gorger](#maelstrom-wanderer-the-first-sliver-imoti-celebrant-of-bounty-zhulodok-void-gorger) | rules call | Free casts: cascade and suspend cast whole |
 | [Yidris, Maelstrom Wielder](#yidris-maelstrom-wielder) | rules call | Free casts: cascade and suspend cast whole |
 | [Jodah, the Unifier](#jodah-the-unifier) | new decision | Free casts: cascade and suspend cast whole |
+| [Zenith Festival, Nature's Rhythm](#zenith-festival-natures-rhythm) | new decision | Harmonize and blitz |
+| [Star Athlete](#star-athlete) | new decision | Harmonize and blitz |
+| [Jaxis, the Troublemaker](#jaxis-the-troublemaker) | rules call | Harmonize and blitz |
+| [Henzie "Toolbox" Torre](#henzie-toolbox-torre) | rules call | Harmonize and blitz |
 
 ## Spells, copies and mana from unusual places (2026-10-03, first round)
 
@@ -3957,3 +3961,51 @@ stack count once per token)
   its free cast. Declined, it stays in exile (unlike cascade) and the others go to the bottom in a
   random order. A nonlegendary spell, or one cast from elsewhere than your hand, doesn't trigger it.
   Legendary creatures you control get +X/+X for each legendary creature you control.
+
+## Harmonize and blitz (2026-10-03)
+
+### Zenith Festival, Nature's Rhythm
+
+*New decision* — harmonize (rule 702.180a)
+
+- **Setup:** Dev room HARMN: Zenith Festival in your graveyard; three Mountains; an untapped Hill Giant and a tapped
+  creature of yours; a creature of an opponent's.
+- **Do:** Open Zenith Festival in your graveyard.
+- **Check:** It offers a harmonize cast tapping nothing and one "tapping Hill Giant (−3)" — never
+  the tapped creature or the opponent's. Tapping the Giant at X=4 costs {1}{R}{R}: the Giant taps
+  and can't also pay as mana; the coloured part never shrinks. Four cards are exiled to play until
+  your next turn, and Zenith Festival is exiled, not returned to the graveyard. Nature's Rhythm
+  the same way, searching for a creature of mana value X or less.
+
+### Star Athlete
+
+*New decision* — blitz (rule 702.152a)
+
+- **Setup:** Dev room BLITZ: Star Athlete in hand with four Mountains; an opponent with a nonland permanent.
+- **Do:** Cast it "(blitz)", attack with it, target the opponent's permanent; then let the turn end.
+- **Check:** It attacks the turn it's cast (haste). The opponent is asked whether to sacrifice the
+  targeted permanent: if they do, no 5 damage; if not, 5 damage to them. At your end step it's
+  sacrificed and you draw a card. Cast normally for {1}{R}{R} instead, it has no haste and stays.
+
+### Jaxis, the Troublemaker
+
+*Rules call* — blitz and a token copy that gains abilities
+
+- **Setup:** Jaxis on the battlefield, not summoning sick, with another creature, a Mountain and a
+  card in hand.
+- **Do:** Activate Jaxis in your main phase, discarding the card, targeting the other creature.
+- **Check:** Jaxis can't target itself. The token copy has haste, is sacrificed at the end step and
+  draws a card as it dies. Jaxis as a commander can be blitzed from the command zone for {1}{R} plus
+  tax.
+
+### Henzie "Toolbox" Torre
+
+*Rules call* — granted blitz and its discount
+
+- **Setup:** Henzie on the battlefield; a creature of mana value 4 or more and one of 3 or less in
+  hand; a commander you've cast from the command zone before.
+- **Do:** Look at the cast options for both creatures.
+- **Check:** Only the mana value 4+ creature has a "(blitz)" cast, costing its mana cost less {1}
+  for each time you've cast your commander from the command zone. Blitzed, it has haste, draws a
+  card when it dies and is sacrificed at the end step.
+- **Known limits:** Blitz is offered only from your hand and the command zone (BACKLOG).

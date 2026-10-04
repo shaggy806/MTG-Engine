@@ -1270,6 +1270,18 @@ export interface StaticAbility {
    */
   readonly grantsWarpInHand?: { readonly cost: string; readonly filter: CardFilter };
   /**
+   * The creature spells this permanent's controller casts that match
+   * `filter` have blitz, its cost equal to their mana cost (rule 702.152a —
+   * Henzie "Toolbox" Torre's "each creature spell you cast with mana value 4
+   * or greater has blitz"): offered as the `via: "blitz"` cast a printed
+   * blitz is, from the hand. */
+  readonly grantsBlitzInHand?: { readonly filter: CardFilter };
+  /** "Blitz costs you pay cost {1} less for each time you've cast your
+   * commander from the command zone this game" (Henzie): every blitz cost
+   * this permanent's controller pays, printed or granted, less that much
+   * generic mana. */
+  readonly blitzCostReductionPerCommanderCast?: boolean;
+  /**
    * The spells this permanent's controller casts that match `filter` gain
    * offspring for `cost` as they're cast (rule 702.175) — Zinnia, Valley's
    * Voice's "creature spells you cast gain offspring {2} as you cast them":
@@ -2040,6 +2052,13 @@ export interface CardDefinition {
      * Chosen as the cost is paid, as `additionalCost.sacrificeCount`'s are. */
     readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   } | null;
+  /** Harmonize (rule 702.180a) — this card may be cast from its owner's
+   * graveyard for `cost`, tapping up to one untapped creature they control,
+   * whose power comes off the total cost's generic mana; a spell so cast is
+   * exiled instead of going anywhere else from the stack. Each creature it
+   * could tap is its own cast variant (`harmonizeTap`), chosen as the cost is
+   * (702.180b). `null` for a card without harmonize. */
+  readonly harmonize: { readonly cost: string } | null;
   /**
    * "You may cast this card from your graveyard as long as [condition]"
    * (Gravecrawler: "as long as you control a Zombie") — an ability that
@@ -2066,6 +2085,16 @@ export interface CardDefinition {
    * has ended, for as long as it stays exiled. `null` for none.
    */
   readonly warp: { readonly cost: string } | null;
+  /**
+   * Blitz (rule 702.152a — Star Athlete): "You may cast this card by paying
+   * [cost] rather than its mana cost"; a permanent cast that way has haste
+   * and "When this permanent is put into a graveyard from the battlefield,
+   * draw a card", and is sacrificed at the beginning of the next end step (a
+   * delayed trigger). An alternative cost from the hand, offered as its own
+   * `cast-spell` (`via: "blitz"`). A copy of it gets none of that (the
+   * rulings). `null` for none.
+   */
+  readonly blitz: { readonly cost: string } | null;
   /**
    * Evoke (rule 702.74 — Mulldrifter): "You may cast this spell by paying
    * [cost] rather than paying its mana cost" and "When this permanent
@@ -2287,8 +2316,10 @@ const PRINTED_ABILITY: {
   chooseOnEnter: (def) => def.chooseOnEnter !== null,
   loyalty: false,
   flashback: (def) => def.flashback !== null,
+  harmonize: (def) => def.harmonize !== null,
   foretell: (def) => def.foretell !== null,
   warp: (def) => def.warp !== null,
+  blitz: (def) => def.blitz !== null,
   evoke: (def) => def.evoke !== null,
   prototype: (def) => def.prototype !== null,
   escape: (def) => def.escape !== null,
@@ -2435,8 +2466,10 @@ interface CardDraft {
     readonly sacrifice?: { readonly filter: CardFilter; readonly count: number };
   };
   castFromGraveyardIf?: StaticCondition;
+  harmonize?: { readonly cost: string };
   foretell?: { readonly cost: string };
   warp?: { readonly cost: string };
+  blitz?: { readonly cost: string };
   evoke?: { readonly cost: string };
   prototype?: { readonly cost: string; readonly power: number; readonly toughness: number };
   suspend?: { readonly n: number; readonly cost: string };
@@ -2523,8 +2556,10 @@ export function defineCard(draft: CardDraft): CardDefinition {
     chooseOnEnter: draft.chooseOnEnter ?? null,
     loyalty,
     flashback: draft.flashback ?? null,
+    harmonize: draft.harmonize ?? null,
     foretell: draft.foretell ?? null,
     warp: draft.warp ?? null,
+    blitz: draft.blitz ?? null,
     evoke: draft.evoke ?? null,
     prototype: draft.prototype ?? null,
     suspend: draft.suspend ?? null,

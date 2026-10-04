@@ -6,7 +6,7 @@ When something lands, delete its line. When you find something new, add one.
 
 ## Commander gap (the current priority)
 
-**387 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**388 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists.
 
@@ -17,7 +17,7 @@ that one card is the reason the deck exists.
   that file's `built` array and author the commanders it unblocks in the same commit. The next
   ones, engine-only, with the commanders each fully unblocks: `effect:amount-aggregate` (+1 —
   Karn, Legacy Reforged, whose deny-list mana is built), `zone:visibility-extensions` (+1),
-  `keyword:blitz` (+1, UI-bound — below), `keyword:mayhem` (+1).
+  `keyword:mayhem` (+1).
 - **Most-needed features overall.** `effect:may-sacrifice-then` (13),
   `decision:choose-permanent` (11).
   `decision:copy-new-targets` and `effect:copy-permanent-spell` landed 2026-09-30 (Shiko and
@@ -36,9 +36,7 @@ that one card is the reason the deck exists.
   `decision:free-cast-choices` (9), `effect:attach-extensions` (7). Sen Triplets also needs
   `zone:cast-from-opponents-hand` (playing cards from the target's revealed hand), on top of
   the revealed hand itself.
-- **Blitz and speed wait on the client** (AUTHORING §15). Blitz (Henzie "Toolbox" Torre, Star
-  Athlete, Jaxis) is an alternative-cost cast variant, and the client spells out each variant
-  in `castExtras` and its buttons, so it needs a "blitz" label and echo there. Speed
+- **Speed waits on the client** (AUTHORING §15). Speed
   (`mechanic:speed` — Mendicant Core, Vnwxt, the four Raceways, Howlsquad Heavy) needs the
   player panel to show a player's speed and the stack to draw its inherent trigger, which has
   no source (rule 702.179d); Mendicant Core also needs `effect:copy-spell-extensions`.
@@ -56,12 +54,9 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   stand-ins for what the engine can't run yet (`engine/src/sample-decks.ts`'s substitution
   tables; `docs/plans/precon-decks.md`). Author those cards deck by deck, ahead of the top-5000
   list; delete each one's substitution as it lands (`sample-decks.test.ts` insists). Missing
-  now: Temur Roar 3, Sultai Arisen 1, Abzan Armor 2, Mardu Surge 0, Jeskai Striker 2 — 8, each
+  now: Temur Roar 2, Sultai Arisen 1, Abzan Armor 2, Mardu Surge 0, Jeskai Striker 2 — 7, each
   behind a feature of its own (records in `engine/data/sweep-3/TDC*.json` and the older sweeps):
-  harmonize for Zenith Festival (Nature's Rhythm on the top-5000 list too — a cast that taps up
-  to one creature to cut its cost by that creature's power, which the cast offer can't price yet:
-  each creature it could tap is its own variant, through X planning and affordability, with a
-  client label naming the creature); demonstrate for Transforming Flourish; dredge for Life from
+  demonstrate for Transforming Flourish; dredge for Life from
   the Loam; Curses, an Aura enchanting a player, for Curse of Opulence; manifest for Reality
   Shift; modes that each target a different player for Shadrix Silverquill; keeping creatures of
   total power 4 or less for Slaughter the Strong; and unspent red mana that stays, with "pay any
@@ -77,7 +72,7 @@ What blocks each unimplemented card, batch by batch and family by family, is in
   `may` around it (Primal Druid), so declining still searches and shuffles, which a library
   ordering (a scry, a Brainstorm) loses. Fierce Empath has the right shape; sweep the rest.
 - **Next (after the TDC precon cards): the top 5000 cards, most-played first.**
-  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,400 implemented). Work down its
+  `top-commander-cards.txt` lists the top 5000 by EDHREC rank (2,403 implemented). Work down its
   unmarked entries in rank order: author each card the engine runs faithfully, and build the
   engine features that block the most of the rest. Ranks through 2346 are triaged (batches 4–18);
   past that, nothing is. The cheap recurring blockers the batches found: infect, a card's own permission to be cast from its graveyard, "can't cast more
@@ -150,6 +145,11 @@ What blocks each unimplemented card, batch by batch and family by family, is in
 
 ## Engine rules gaps
 
+- **Blitz is offered only from the hand and the command zone.** `Game.blitzCostOf` gates on
+  those two zones, so a blitz card another permission lets you cast (an impulse exile, a
+  graveyard grant, the top of a library) isn't offered its blitz cost there, though rule
+  702.152a allows it. Henzie's discount also moves only a cost's generic number, never an `{X}`
+  (no blitz cost in the pool has one yet).
 - **A mana restriction reads the spell before it's cast.** `ManaRestriction.spell` is matched
   against the card in its pre-cast zone, so an ability a static grants a spell as it's cast
   (Abaddon the Despoiler's cascade) is missed: Jasmine Boreal of the Seven's "only to cast

@@ -1,5 +1,5 @@
 Top 500 Commander *commanders* by EDHREC deck count (fetched 2026-09-22)
-387 already implemented / 113 missing
+388 already implemented / 112 missing
 Ranked by how many decks run the card AS THEIR COMMANDER (EDHREC num_decks) —
 not by how often it is played across Commander decks, which is what
 top-commander-cards.txt ranks and which badly misorders commanders.
@@ -95,7 +95,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]   89  Sisay, Weatherlight Captain                    19122 decks  {2}{W}           Legendary Creature — Human Soldier
 [x]   90  Kilo, Apogee Mind                              19083 decks  {U}{R}{W}        Legendary Artifact Creature — Robot Artificer
 [x]   91  Eriette of the Charmed Apple                   19038 decks  {1}{W}{B}        Legendary Creature — Human Warlock
-[ ]   92  Henzie "Toolbox" Torre                         18773 decks  {B}{R}{G}        Legendary Creature — Devil Rogue
+[x]   92  Henzie "Toolbox" Torre                         18773 decks  {B}{R}{G}        Legendary Creature — Devil Rogue
 [x]   93  Ragost, Deft Gastronaut                        18756 decks  {R}{W}           Legendary Creature — Lobster Citizen
 [ ]   94  Vial Smasher the Fierce                        18699 decks  {1}{B}{R}        Legendary Creature — Goblin Berserker
 [x]   95  Omnath, Locus of Creation                      18632 decks  {R}{G}{W}{U}     Legendary Creature — Elemental

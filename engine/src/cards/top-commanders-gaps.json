@@ -172,7 +172,8 @@
   "effect:lose-game",
   "effect:add-mana-extensions",
   "effect:may-sacrifice-then",
-  "decision:free-cast-choices"
+  "decision:free-cast-choices",
+  "keyword:blitz"
  ],
  "features": {
   "bug:as-enters-choices-any-entry": {

@@ -162,6 +162,7 @@ import _poolSnakeskinVeil from "../pool/snakeskin-veil.js";
 import _poolSpawnbinderMage from "../pool/spawnbinder-mage.js";
 import _poolSpellkeeperWeird from "../pool/spellkeeper-weird.js";
 import _poolStandingTroops from "../pool/standing-troops.js";
+import _poolStarAthlete from "../pool/star-athlete.js";
 import _poolStarfallInvocation from "../pool/starfall-invocation.js";
 import _poolStarstorm from "../pool/starstorm.js";
 import _poolStewardOfTheHarvest from "../pool/steward-of-the-harvest.js";
@@ -382,6 +383,7 @@ const shard: CardShard = {
     _poolSpawnbinderMage,
     _poolSpellkeeperWeird,
     _poolStandingTroops,
+    _poolStarAthlete,
     _poolStarfallInvocation,
     _poolStarstorm,
     _poolStewardOfTheHarvest,
