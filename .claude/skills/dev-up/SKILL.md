@@ -56,8 +56,11 @@ A failed build stops here: report the error, don't start anything.
 
 ## 4. Start both, in the background
 
-Each as its own Bash call with `run_in_background: true` (logs to `$TEMP` so
-they can be read later):
+Each as its own Bash call with `run_in_background: true` **and `timeout:
+7200000`** (two hours, the most a background task may run; without it the
+default 30 minutes stops the server mid-game). Logs go to `$TEMP` so they can
+be read later. When the limit does stop one, its shell goes but the `node`
+underneath can stay, holding the port — `dev-down`'s port sweep clears it.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)/server" && node dist/index.js --capture --builder > "$TEMP/mtg-server.log" 2>&1
@@ -89,4 +92,5 @@ cmd //c start "" "http://localhost:5173/"
 
 Two or three lines: which server and the URL; for dev-rooms, the room codes
 from the top of `$TEMP/mtg-server.log` (or the one opened); that Capture is on;
-and that `dev-down` stops everything.
+that both stop on their own after two hours (the background limit); and that
+`dev-down` stops everything.
