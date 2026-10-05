@@ -18,11 +18,11 @@
  * - `opponent` and `otherOpponents` are how per-player scores are *aggregated*
  *   across a table, above this layer. Fitting happens on two-player positions,
  *   where there is exactly one opponent and the aggregation is a free scale.
- * - `crackbackParanoia` and `crackbackMargin` aren't evaluation terms at all —
- *   they're knobs on the attack builder's combat arithmetic
- *   (`combat-math.ts`).
+ * - `crackbackParanoia`, `crackbackMargin` and `crackbackGrowth` aren't
+ *   evaluation terms at all — they're knobs on the attack builder's combat
+ *   arithmetic (`combat-math.ts`).
  *
- * Those five stay hand-set or tuned by the (1+1)-ES in `tune-bot.mjs`. See
+ * Those six stay hand-set or tuned by the (1+1)-ES in `tune-bot.mjs`. See
  * `docs/plans/smarter-bots.md`, "Fitting the weights from self-play".
  *
  * ## Sign convention

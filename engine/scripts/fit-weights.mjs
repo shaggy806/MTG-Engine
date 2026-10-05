@@ -187,8 +187,8 @@
 //
 // Only the terms the score is linear in (`FEATURE_KEYS`). `landCap` is a
 // threshold inside a feature, `opponent`/`otherOpponents` are how a bigger
-// table is aggregated, and `crackbackParanoia`/`crackbackMargin` are combat
-// knobs — none is a coefficient, so all five are carried through from the
+// table is aggregated, and `crackbackParanoia`/`crackbackMargin`/`crackbackGrowth` are
+// combat knobs — none is a coefficient, so all six are carried through from the
 // starting vector untouched and stay the (1+1)-ES's job.
 //
 // See `docs/plans/smarter-bots.md`, "Fitting the weights from self-play".

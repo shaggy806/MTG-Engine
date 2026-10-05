@@ -317,6 +317,7 @@ export const FIT_FIXED: readonly WeightKey[] = [
   "landCap",
   "crackbackParanoia",
   "crackbackMargin",
+  "crackbackGrowth",
   "idlePower",
 ];
 

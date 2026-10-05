@@ -1147,8 +1147,10 @@ export class EvalBotController extends HeuristicBotController {
     const budget = this.budget();
 
     // If the crackback kills us even when we hold everything back, holding
-    // back buys nothing: drop the constraint and race.
-    const deadAnyway = this.crackbackLethal(state);
+    // back buys nothing: drop the constraint and race. Read on the board as
+    // it shows, without `crackbackGrowth`: scaled, a merely threatening board
+    // would read as lost and turn the caution into an all-in race.
+    const deadAnyway = this.crackbackLethal(state, false);
 
     const alpha = this.alphaStrike(state, legal, deadAnyway, budget);
     if (alpha !== null) {
@@ -1548,10 +1550,19 @@ export class EvalBotController extends HeuristicBotController {
   }
 
   /** Would every opponent swinging at us before we untap again be lethal,
-   * keeping `crackbackMargin` life in reserve? */
-  private crackbackLethal(state: GameState): boolean {
+   * keeping `crackbackMargin` life in reserve — and, when `grown`, with the
+   * damage through scaled up by `crackbackGrowth`? */
+  private crackbackLethal(state: GameState, grown = true): boolean {
     const through = crackback(state, this.cards, this.playerId, this.weights.crackbackParanoia);
-    return isLethal(state, this.playerId, through, -this.weights.crackbackMargin);
+    const scale = grown ? 1 + this.weights.crackbackGrowth : 1;
+    const scaled =
+      scale === 1
+        ? through
+        : {
+            damage: through.damage * scale,
+            commanderDamage: new Map([...through.commanderDamage].map(([c, n]) => [c, n * scale] as const)),
+          };
+    return isLethal(state, this.playerId, scaled, -this.weights.crackbackMargin);
   }
 
   /** `null` when the engine refused this concrete filling of a legal shape. */
