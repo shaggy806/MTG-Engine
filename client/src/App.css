@@ -2258,6 +2258,23 @@
   color: #cbb26a;
   font-weight: 700;
 }
+/* An Adventure or Omen half (`VisibleObject.spellFace`): its own small block
+   at the top of the text box, set off from the creature's text below it. */
+.ct-spellface {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 calc(3px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1));
+  margin-bottom: calc(3px * var(--ct-scale, 1));
+  border-left: calc(2px * var(--ct-scale, 1)) solid #8a7a52;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.ct-sf-head {
+  color: #e2d6b4;
+}
+.ct-sf-type {
+  color: #9aa0ad;
+  font-style: italic;
+}
 .ct-rules {
   color: #c2c6cf;
   /* A card's `text` separates its abilities with "\n", the way the printed

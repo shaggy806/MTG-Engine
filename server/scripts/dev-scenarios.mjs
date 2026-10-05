@@ -277,6 +277,48 @@ export default {
     bots: { bob: {} },
   },
 
+  DEEPS: {
+    about:
+      "2p. A deep stack to watch resolve: bob has two Terror of the Peaks and casts " +
+      "Hornet Queen on his turn (pass yours). The Queen and her four Insects entering trigger " +
+      "both Terrors each time — ten targeted triggers, each its own stack entry, more than the " +
+      "stack fans out (it stops spreading at depth 7). A bug report (2026-10-04): the stack " +
+      "didn't shift forward as entries resolved until all the visible ones were gone.",
+    players: ["alice","bob"],
+    lands: { alice: 5, bob: 1 },
+    // Hornet Queen wants {G}{G}{G}: the basics `lands` deals cycle through all five.
+    battlefield: { bob: ["Terror of the Peaks", "Terror of the Peaks", ...Array(7).fill("Forest")] },
+    hand: { bob: ["Hornet Queen"] },
+    bots: { bob: { casts: [{ name: "Hornet Queen" }] } },
+  },
+
+  DEEP4: {
+    about:
+      "4p. A deep stack to watch resolve: bob has two Terror of the Peaks and casts " +
+      "Hornet Queen on his turn (pass yours). The Queen and her four Insects entering trigger " +
+      "both Terrors each time — ten targeted triggers, each its own stack entry, more than the " +
+      "stack fans out (it stops spreading at depth 7). A bug report (2026-10-04): the stack " +
+      "didn't shift forward as entries resolved until all the visible ones were gone.",
+    players: ["alice","bob","carol","dave"],
+    lands: { alice: 5, bob: 1, carol: 5, dave: 5 },
+    // Hornet Queen wants {G}{G}{G}: the basics `lands` deals cycle through all five.
+    battlefield: { bob: ["Terror of the Peaks", "Terror of the Peaks", ...Array(7).fill("Forest")] },
+    hand: { bob: ["Hornet Queen"] },
+    bots: { bob: { casts: [{ name: "Hornet Queen" }] }, carol: {}, dave: {} },
+  },
+
+  ADVNT: {
+    about:
+      "2p. Cards that are two spells: an adventurer (Smaug, the Great Calamity, its Adventure Spew " +
+      "Flame) and an omen card (Bloomvine Regent, its Omen Claim Territory) in alice's hand. Each " +
+      "card shows its spell half at the top of its text box (a bug report, 2026-10-04: only the " +
+      "creature's text was shown).",
+    players: ["alice", "bob"],
+    lands: { alice: 5, bob: 5 },
+    hand: { alice: ["Smaug, the Great Calamity", "Bloomvine Regent", "Grizzly Bears"] },
+    bots: { bob: {} },
+  },
+
   TREES: {
     about:
       "2p. Counters on each token of a stack keep it one stack: alice has a stack of ten " +

@@ -195,7 +195,7 @@ export function CardTile({
       el.style.setProperty('--text-scale', String(scale))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [artFirst, displayText, keywordLine, showText, counters.length])
+  }, [artFirst, displayText, keywordLine, showText, counters.length, obj.spellFace])
   // Same idea, one dimension: the type line is a single `white-space:nowrap`
   // line (see .ct-type), so "doesn't fit" means it overflows horizontally
   // (scrollWidth > clientWidth) rather than vertically -- otherwise the same
@@ -302,6 +302,31 @@ export function CardTile({
       </span>
 
       <span className="ct-text" ref={textRef}>
+        {/* An adventurer's Adventure or an omen card's Omen — the other spell
+            the card can be cast as, which the printed card shows beside its
+            creature's text (a bug report, 2026-10-04: a hand's Smaug, the
+            Great Calamity showed only "Flying"). */}
+        {obj.spellFace ? (
+          <span className="ct-spellface">
+            <span className="ct-sf-head">
+              <b>{obj.spellFace.name}</b>
+              {obj.spellFace.manaCost ? (
+                <>
+                  {' '}
+                  <Symbols text={obj.spellFace.manaCost} />
+                </>
+              ) : null}
+              <span className="ct-sf-type">
+                {' — '}
+                {obj.spellFace.types.map(cap).join(' ')}
+                {obj.spellFace.subtypes.length > 0 ? ` — ${obj.spellFace.subtypes.join(' ')}` : ''}
+              </span>
+            </span>
+            <span className="ct-rules">
+              <Symbols text={obj.spellFace.text} />
+            </span>
+          </span>
+        ) : null}
         {keywordLine ? <b className="ct-kw">{keywordLine}</b> : null}
         {showText ? (
           <span className="ct-rules">

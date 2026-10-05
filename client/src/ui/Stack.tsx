@@ -4,20 +4,7 @@ import type { SeatStatus } from 'protocol'
 import { decisionGhostOf } from '../game/decisionSource.ts'
 import { describeTarget, playerLabel, seatClassOf } from '../format.ts'
 import { CardTile } from './CardTile.tsx'
-
-// Cards shift down+left with depth (mirrors a real stack of cards spreading
-// out from under the one on top); the offset stops growing past this depth
-// so a big stack (10+ objects) doesn't sprawl further and further off to
-// the side -- scale/opacity already bottom out on their own (the Math.max
-// floors below), this just makes the offset saturate the same way.
-const STAGGER_X = 20
-const STAGGER_Y = 15
-const ROT_STEP = 3
-const SCALE_STEP = 0.075
-const MIN_SCALE = 0.6
-const OPACITY_STEP = 0.12
-const MIN_OPACITY = 0.55
-const MAX_OFFSET_DEPTH = 7
+import { stackDepthVars } from './stackDepth.ts'
 
 /** A permanent drawn on the stack as its card: none of its state on the
  * battlefield — tapped, damage, counters, combat, attachments — which is
@@ -141,29 +128,16 @@ export function Stack({
           const obj = view.objects[id]
           if (!obj) return null
           const isTop = depth === 0
-          const offsetDepth = Math.min(depth, MAX_OFFSET_DEPTH)
-          const scale = Math.max(MIN_SCALE, 1 - depth * SCALE_STEP)
-          const opacity = Math.max(MIN_OPACITY, 1 - depth * OPACITY_STEP)
-          // depth 0 (top) and depth 1 (the card directly behind it) both
-          // stay upright; rotation only starts from depth 2 on.
-          const rotate =
-            depth <= 1 ? 0 : (Math.min(depth, MAX_OFFSET_DEPTH + 1) - 1) * -ROT_STEP
-          // Custom properties, not the `top`/`right`/`transform`/`opacity`/
-          // `z-index` properties directly -- same trick the hand fan uses
-          // (see App.tsx's HAND_FAN_STEP_DEG comment) so .stack-entry:hover
-          // can cancel the depth styling (including bringing a buried card
-          // to the front) with a plain CSS rule instead of fighting an
-          // inline style, which always wins over a stylesheet rule short of
-          // `!important` -- z-index included, or a hovered deep card would
-          // pop to full size but stay painted under shallower ones.
-          const style = {
-            '--st-y': `${offsetDepth * STAGGER_Y}px`,
-            '--st-x': `${offsetDepth * STAGGER_X}px`,
-            '--st-rot': `${rotate}deg`,
-            '--st-scale': scale,
-            '--st-opacity': opacity,
-            '--st-z': N - depth,
-          } as CSSProperties
+          // Custom properties (`stackDepthVars`), not the `top`/`right`/
+          // `transform`/`opacity`/`z-index` properties directly -- same trick
+          // the hand fan uses (see App.tsx's HAND_FAN_STEP_DEG comment) so
+          // .stack-entry:hover can cancel the depth styling (including
+          // bringing a buried card to the front) with a plain CSS rule
+          // instead of fighting an inline style, which always wins over a
+          // stylesheet rule short of `!important` -- z-index included, or a
+          // hovered deep card would pop to full size but stay painted under
+          // shallower ones.
+          const style = stackDepthVars(depth, N) as CSSProperties
           const isGhost = id === ghost
           const label = isGhost
             ? 'prompted by'

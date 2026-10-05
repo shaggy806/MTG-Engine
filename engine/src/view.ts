@@ -106,6 +106,19 @@ export interface VisibleObject {
    * `copyOf ?? faceName` still says which card's face to draw. */
   readonly name?: string;
   readonly faces: readonly string[] | null;
+  /**
+   * An adventurer card's Adventure or an omen card's Omen — the spell half
+   * that shares its creature's frame (rules 715, 719) — while the card shows
+   * its creature face anywhere but the battlefield, so a hand or a graveyard
+   * can show both halves as the printed card does. Absent otherwise.
+   */
+  readonly spellFace?: {
+    readonly name: string;
+    readonly manaCost: string | null;
+    readonly types: readonly string[];
+    readonly subtypes: readonly string[];
+    readonly text: string;
+  };
   /** A Scryfall link pinning this card's art (its up face's / copied card's),
    * or `null` for the by-name lookup. See `CardDefinition.art`. Carries the
    * printing this card's owner brought when they chose one (`DeckList.printings`). */
@@ -409,6 +422,7 @@ function visible(
     faceName: faceName(object),
     ...(nameOf(object) !== printedCardName(object) ? { name: nameOf(object) } : {}),
     faces: object.faces === undefined ? null : [...object.faces],
+    ...spellFaceOf(registry, object),
     art: printing ?? def.art,
     faceIsBack,
     owner: object.owner,
@@ -497,6 +511,27 @@ export function artManifest(state: GameState, registry: CardRegistry): ArtManife
     out.push(art === undefined || art === null ? { name } : { name, art });
   }
   return out;
+}
+
+/** `VisibleObject.spellFace` for `object`, as a spread: its card's Adventure
+ * or Omen half while it shows its creature face off the battlefield. */
+function spellFaceOf(registry: CardRegistry, object: GameObject): { spellFace?: VisibleObject["spellFace"] } {
+  if (object.zone === "battlefield" || object.kind !== "card" || (object.face ?? 0) !== 0) return {};
+  const front = object.faces?.[0];
+  const back = object.faces?.[1];
+  if (front === undefined || back === undefined || !registry.has(front) || !registry.has(back)) return {};
+  const def = registry.get(front);
+  if (def.adventure !== true && def.omen !== true) return {};
+  const half = registry.get(back);
+  return {
+    spellFace: {
+      name: half.name,
+      manaCost: half.manaCost,
+      types: [...half.types],
+      subtypes: [...half.subtypes],
+      text: half.text,
+    },
+  };
 }
 
 /**

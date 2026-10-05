@@ -13,6 +13,7 @@ import type {
 } from 'engine/client'
 import { publicNameAt } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
+import { closeStackGap } from './stackDepth.ts'
 import { defToVisible } from './defToVisible.ts'
 import { loadCard, peekCard } from '../cards/cardData.ts'
 import { playerLabel, seatClassOf } from '../format.ts'
@@ -543,6 +544,9 @@ function stackEntryFor(ev: GameEvent): HTMLElement | null {
 function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
   const el = stackEntryFor(ev)
   if (!el) return
+  // The rest of the pile moves up behind it now, not when the frame's new
+  // board lands (`closeStackGap`).
+  closeStackGap(el)
   const duration = scaled(STACK_EXIT_MS)
   if (motionPrefs().reduced) {
     el.animate([{ opacity: 1 }, { opacity: 0 }], { duration, fill: 'forwards' })
