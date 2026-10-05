@@ -887,6 +887,14 @@ all-in race. The full swings made *into* a lethal-showing board were mostly that
 416, median life 12; 72% died, holding back lethal too) or swings `crackbackParanoia` passed
 (166, 17% died — the later opponents at half weight).
 
+Paired on 119 seeds (`bot:crackback`, 2026-10-05), `crackbackGrowth` 0.5 against 0: deaths after
+full swings its own check passed fell from 3.5% to 2.0% (z ≈ 2.7), at 10 life or less from 25% to
+7%, with as many full swings made; the four-player A/B against main was level (27.6%, [23.5,
+32.2]). But it swung 25 times into a board the plain check called lethal (19 died) against once
+without: with holding back flagged by the scaled check too, every candidate scored `UNSAFE` and
+was ranked by board value alone. So the scaling now applies only while holding back passes it.
+That refinement is **untested** — the paired run and a training scenario are still to do.
+
 ## Tests
 
 `engine/src/test/eval-bot.test.ts`, mirroring `heuristic-bot.test.ts`: bot-vs-bot and
