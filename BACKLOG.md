@@ -171,7 +171,7 @@ under count budgets).
 - **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
   Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
   token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
-- **Adaptive Training Post activated with nothing to copy** (a capture, HB5MR turn 31, open): the live bot had the chained-spells work and the full view isn't the difference, yet a fresh bot re-asked at the capture passes. Likely state the live bot carries between decisions (`continueBatch`, `holdPass`); replay the game's turn to see.
+- **Adaptive Training Post activated with nothing to copy** (a capture, HB5MR turn 31, open): it passes from its saved position on every build at every clock, with either view; the clock, randomness, carried state (`continueBatch`, `holdPass`) and a shallow copy are ruled out (5a62a1e8's message). Captures now save the live search's path and scores (`diagnosis`): the next such capture says which branch it took.
 - **Shiko or the other spell, when only one fits** (since the chained-spells change, 2026-10-04):
   with a cast payoff in reach the priority search rolls our turn out as v1 (`"acting"`), and where
   only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
