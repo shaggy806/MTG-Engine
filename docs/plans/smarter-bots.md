@@ -871,6 +871,22 @@ removal on our blockers. The bot can see the hands (see "Known: the bot cheats")
 on that makes combat worse the day the cheat is removed; a flat `crackbackMargin` of life to
 keep in reserve is the honest stand-in, and is tuned too.
 
+**Measured (2026-10-05, `bot:crackback`, 198 four-player self-play games).** Of the full swings
+that left no lethal showing even with every opponent all-in, 2.7% died before the bot's next
+turn — no worse than partial swings (6.5%) or holding back (4.2%) on the boards those were
+made on, and 1.4% when it kept nothing home. The risk sits at low life (0.4% at 31+, 4.1% at
+21–30, 12.7% at 11–20, 26% at 10 or less) and in what the arithmetic can't see: of the 70 deaths,
+44 were creatures already on the board hitting harder than shown (pumps, counters, anthems,
+removal on blockers), 16 creatures arriving after the swing and 8 noncombat damage or drain;
+the median death projected 10 and took 25. Haste decided 10 of the 70, and a haste enabler
+showing (Swiftfoot Boots, Anger in a graveyard, Dragon Tempest) put the rate at 3.5% against
+2.5% without — inside the noise. A flat margin does least where the threat is biggest, so
+`crackbackGrowth` scales the damage through by 1 + itself (0.5) instead; the dead-anyway test
+keeps the unscaled read, since scaled, a merely threatening board would turn caution into an
+all-in race. The full swings made *into* a lethal-showing board were mostly that race (175 of
+416, median life 12; 72% died, holding back lethal too) or swings `crackbackParanoia` passed
+(166, 17% died — the later opponents at half weight).
+
 ## Tests
 
 `engine/src/test/eval-bot.test.ts`, mirroring `heuristic-bot.test.ts`: bot-vs-bot and
