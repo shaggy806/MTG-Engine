@@ -55,7 +55,8 @@
     "bot:diff": "node scripts/bot-diff.mjs",
     "bot:replay": "node scripts/bot-replay.mjs",
     "bot:decks": "node scripts/deck-winrates.mjs",
-    "bot:autopsy": "node scripts/deck-autopsy.mjs"
+    "bot:autopsy": "node scripts/deck-autopsy.mjs",
+    "bot:crackback": "node scripts/bot-crackback.mjs"
   },
   "keywords": [],
   "author": "",
