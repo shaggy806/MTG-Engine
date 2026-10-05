@@ -177,6 +177,22 @@ const LIBRARY_DANGER_AT = 15;
  * 21 and a hit weighs more the nearer the loss. */
 const commanderDamageCurve = (taken: number): number => (taken * taken) / COMMANDER_DAMAGE_LETHAL;
 
+/** The opponents' average hand size at which a counterspell in hand is
+ * worth exactly `answers`' weight. */
+const ANSWER_HAND = 3;
+/** The most the opponents' hands can scale `answers` by. */
+const ANSWER_HAND_SCALE_MAX = 2;
+
+/** How much of `answers` a counterspell held now is worth: the living
+ * opponents' average hand size over `ANSWER_HAND`, capped at
+ * `ANSWER_HAND_SCALE_MAX`. Hand sizes are public. */
+function answerHandScale(state: GameState, player: PlayerId): number {
+  const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost);
+  if (opponents.length === 0) return 0;
+  const cards = opponents.reduce((n, p) => n + state.zones.perPlayer[p].hand.length, 0);
+  return Math.min(ANSWER_HAND_SCALE_MAX, cards / opponents.length / ANSWER_HAND);
+}
+
 /** The rounds of the game in which removal in hand counts `earlyRemoval`:
  * every player's first two turns. */
 const EARLY_REMOVAL_ROUNDS = 2;
@@ -835,6 +851,12 @@ function playerFeaturesUncached(
       open -= cost;
       answers += 1;
     }
+    // Scaled by what the opponents still hold: a counterspell is worth
+    // keeping for the spells to come, and those are in their hands. At
+    // `ANSWER_HAND` cards each it's the reserve it always was; with every
+    // hand empty it's nothing, so the bot counters what's in front of it;
+    // at full grip, up to twice as much, so a Grizzly Bears goes by.
+    answers *= answerHandScale(state, player);
   }
 
   let graveyardCastable = 0;

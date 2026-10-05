@@ -152,17 +152,12 @@ under count budgets).
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).
-- **More training scenarios.** 115 hand-built scenarios, all of them gating
+- **More training scenarios.** 117 hand-built scenarios, all of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
   `bot:behaviour` shows. `npm run bot:captures -w engine` lists them with v2's answer today;
   once one is fixed, `-- resolve` moves it to `captures/resolved/`, where it gates.
-- **Counterspells, beyond `answers`.** The reserve (`answers` 3) is a constant: the bot holds a
-  Counterspell as firmly when every opponent's hand is empty as at full grip, and counters a
-  Grizzly Bears (worth 4.6 to counter, largely `threat`). If live games show it holding one
-  into a loss, or spending one on a small creature, capture the position: a reserve scaled by
-  opponents' cards in hand is the obvious next shape.
 - **A wider pool of bot decks (later — raised 2026-09-26).** `SAMPLE_DECKS` is fourteen precons
   since 2026-10-02 (the five Tarkir: Dragonstorm decks, the five 2022 starter decks and four more —
   `docs/plans/precon-decks.md`), five flagged `bench`, whose first four are the seats' fallbacks. Still unscoped: decks across

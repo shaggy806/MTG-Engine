@@ -413,9 +413,31 @@ describe("evaluateState features", () => {
     ).toBe(0);
   });
 
+  /** Bob's hand cut to `cards` — the opponents' average hand `answers` is
+   * scaled by (`answerHandScale`: 1 at three cards). */
+  const bobHolds = (g: Game, cards: number): void => {
+    while (g.state.zones.perPlayer[B].hand.length < cards) g.debugSpawn("Forest", B, "hand");
+    g.state.zones.perPlayer[B].hand = g.state.zones.perPlayer[B].hand.slice(0, cards);
+  };
+
+  it("scales a counterspell's reserve by the opponents' hands: none when empty, double at six", () => {
+    const holding = (cards: number) =>
+      delta({ answers: 1 }, (g) => {
+        bobHolds(g, cards);
+        g.debugSpawn("Island", A, "battlefield");
+        g.debugSpawn("Island", A, "battlefield");
+        g.debugSpawn("Counterspell", A, "hand");
+      });
+    expect(holding(0)).toBe(0);
+    expect(holding(3)).toBe(1);
+    expect(holding(6)).toBe(2);
+    expect(holding(9)).toBe(2);
+  });
+
   it("counts a counterspell in hand only while the mana to cast it is open", () => {
     const withIslands = (tapped: boolean) =>
       delta({ answers: 1 }, (g) => {
+        bobHolds(g, 3);
         g.debugSpawn("Island", A, "battlefield", { tapped });
         g.debugSpawn("Island", A, "battlefield", { tapped });
         g.debugSpawn("Counterspell", A, "hand");
@@ -425,6 +447,7 @@ describe("evaluateState features", () => {
     // Two in hand, mana for one: one answer.
     expect(
       delta({ answers: 1 }, (g) => {
+        bobHolds(g, 3);
         g.debugSpawn("Island", A, "battlefield");
         g.debugSpawn("Island", A, "battlefield");
         g.debugSpawn("Counterspell", A, "hand");

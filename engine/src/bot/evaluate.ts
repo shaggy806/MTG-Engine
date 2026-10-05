@@ -323,7 +323,10 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // Grizzly Bears (4.6), a four-player Rhystic Study (7.4), a Craw
   // Wurm (10.9) and a wrath of its own board (26.8) — "saves Counterspell for
   // a threat", which no weight on the old terms could fix without also
-  // stopping the bot casting its rocks and draw spells.
+  // stopping the bot casting its rocks and draw spells. Since 2026-10-04 the
+  // feature is scaled by the opponents' average hand over three cards, up to
+  // double (`answerHandScale`), so this is the reserve at three cards each:
+  // nothing into empty hands, 6 into full grips, where a Bears goes by.
   answers: 3,
   // A Treasure, Clue or Food: one use, then gone — about a mana, which
   // `effect-worth.ts` prices at a quarter of a card. Counted in

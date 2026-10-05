@@ -573,6 +573,17 @@ decisions, nearly all the Jeskai and Shiko seats, 753 s for 12 games against ~66
 bench (one seat against three on fc11d433, 400 four-player games, 14 workers): 24.4% [20.5,
 28.9], level.
 
+**After the plan: the counterspell reserve follows the opponents' hands (2026-10-04).**
+`answers` held a Counterspell at a flat 3 whatever was left to come. The feature is now scaled
+by the living opponents' average hand size over three cards, capped at double
+(`answerHandScale` in `features.ts`; hand sizes are public): into empty hands the bot counters
+what's in front of it, into full grips a Grizzly Bears (4.6) goes by. The answers scenarios give
+the opponents three cards each (`holding`), where the reserve is what it was; two new gate
+scenarios hold the ends ("counters a Grizzly Bears when every hand is empty", "lets a Grizzly
+Bears by while every opponent holds a full grip", the second wrong under the flat reserve).
+`bot:diff` against c513665e: none of 32,997 decisions over 12 four-player games — hands near
+three, where nothing changes, are the common case.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

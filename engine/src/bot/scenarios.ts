@@ -160,6 +160,13 @@ const lands = (game: Game, name: string, player: PlayerId, count: number): void 
   for (let i = 0; i < count; i += 1) onBoard(game, name, player);
 };
 
+/** `count` cards in each of `players`' hands — what's still to come, which
+ * a counterspell's reserve is scaled by (`answers`, the opponents' average
+ * hand over 3). `table` empties every hand. */
+const holding = (game: Game, players: readonly PlayerId[], count: number): void => {
+  for (const player of players) for (let i = 0; i < count; i += 1) game.debugSpawn("Forest", player, "hand");
+};
+
 /** Cast `card` from `player`'s hand, then pass priority round until
  * `responder` holds it with the spell still on the stack. */
 function castAndPassTo(
@@ -836,6 +843,7 @@ const SCENARIOS: readonly BotScenario[] = [
       for (const player of [A, B, C, D]) {
         lands(game, player === A ? "Island" : "Forest", player, 6);
       }
+      holding(game, [B, C, D], 3);
       game.debugSpawn("Counterspell", A, "hand");
       castAndPassTo(game, B, game.debugSpawn("Craw Wurm", B, "hand"), A);
       return {
@@ -860,6 +868,7 @@ const SCENARIOS: readonly BotScenario[] = [
       for (const player of [A, B, C, D]) {
         lands(game, player === A ? "Island" : "Forest", player, 4);
       }
+      holding(game, [B, C, D], 3);
       game.debugSpawn("Counterspell", A, "hand");
       castAndPassTo(game, B, game.debugSpawn("Arcane Signet", B, "hand"), A);
       return {
@@ -888,6 +897,7 @@ const SCENARIOS: readonly BotScenario[] = [
         for (const player of [A, B, C, D]) {
           lands(game, player === A || player === B ? land : "Forest", player, 4);
         }
+        holding(game, [B, C, D], 3);
         game.debugSpawn("Counterspell", A, "hand");
         castAndPassTo(game, B, game.debugSpawn(card, B, "hand"), A);
         return {
@@ -896,6 +906,40 @@ const SCENARIOS: readonly BotScenario[] = [
           judge: (action) => ({
             passed: (action.type === "cast-spell") === counter,
             detail: `with bob's ${card} on the stack, chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  ...(
+    [
+      ["counters a Grizzly Bears when every hand is empty", 0, true],
+      ["lets a Grizzly Bears by while every opponent holds a full grip", 7, false],
+    ] as const
+  ).map(([name, cards, counter]) =>
+    asked({
+      name,
+      rule: counter
+        ? "With nothing left in any opponent's hand, the Counterspell has nothing better to wait for."
+        : "With seven cards in every opponent's hand, the Counterspell waits for more than a 2/2.",
+      position(registry) {
+        // BACKLOG, "Counterspells, beyond answers": the reserve was a
+        // constant, so v2 held a Counterspell as firmly into empty hands as
+        // into full ones, and countered a Grizzly Bears (4.6) at either. It's
+        // scaled by the opponents' average hand now (`answerHandScale`).
+        const game = table(registry, [A, B, C, D], B);
+        for (const player of [A, B, C, D]) {
+          lands(game, player === A ? "Island" : "Forest", player, 4);
+        }
+        holding(game, [B, C, D], cards);
+        game.debugSpawn("Counterspell", A, "hand");
+        castAndPassTo(game, B, game.debugSpawn("Grizzly Bears", B, "hand"), A);
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "cast-spell") === counter,
+            detail: `with bob's Grizzly Bears on the stack, chose ${describeAction(action)}`,
           }),
         };
       },
