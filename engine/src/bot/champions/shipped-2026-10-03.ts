@@ -60,5 +60,6 @@ export const SHIPPED_2026_10_03: Champion = {
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,
     crackbackMargin: 2,
+    crackbackGrowth: 0,
   },
 };

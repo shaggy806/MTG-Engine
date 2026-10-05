@@ -61,5 +61,6 @@ export const BASELINE_2026_09_17: Champion = {
     otherOpponents: 0.25,
     crackbackParanoia: 0.5,
     crackbackMargin: 2,
+    crackbackGrowth: 0,
   },
 };

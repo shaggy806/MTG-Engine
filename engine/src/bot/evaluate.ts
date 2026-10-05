@@ -184,6 +184,15 @@ export interface EvalWeights {
    * could come back gets within this much of lethal. Stands in for the
    * tricks, hasty creatures and removal the arithmetic doesn't model. */
   readonly crackbackMargin: number;
+  /** How much harder the crackback lands than the board shows: the damage
+   * through is scaled by 1 + this before it's held against our life, for the
+   * pumps, counters, anthems and removal on blockers the arithmetic can't
+   * see. Unlike the flat margin it grows with the threat, which is where the
+   * deaths were: of the bot's full swings that passed the flat check, 2.7%
+   * died before its next turn — 0.7% with a quarter of its life projected
+   * through, 11% with three quarters or more — and those that died took a
+   * median 25 against 10 projected (four-player self-play, 2026-10-05). */
+  readonly crackbackGrowth: number;
 }
 
 export const DEFAULT_WEIGHTS: EvalWeights = {
@@ -377,6 +386,7 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   otherOpponents: 0.5,
   crackbackParanoia: 0.5,
   crackbackMargin: 2,
+  crackbackGrowth: 0.5,
 };
 
 /**

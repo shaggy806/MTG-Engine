@@ -101,7 +101,7 @@ describe("features", () => {
     // `landCap` is a threshold inside a feature, `opponent`/`otherOpponents`
     // are how a table is aggregated, and the two crackback knobs belong to the
     // attack builder — none is a coefficient, so none is fittable.
-    const notFeatures = ["landCap", "opponent", "otherOpponents", "crackbackParanoia", "crackbackMargin"];
+    const notFeatures = ["landCap", "opponent", "otherOpponents", "crackbackParanoia", "crackbackMargin", "crackbackGrowth"];
     expect([...FEATURE_KEYS].sort()).toEqual(
       Object.keys(DEFAULT_WEIGHTS)
         .filter((k) => !notFeatures.includes(k))
