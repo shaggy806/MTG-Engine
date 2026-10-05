@@ -1151,8 +1151,15 @@ export class EvalBotController extends HeuristicBotController {
     // it shows, without `crackbackGrowth`: scaled, a merely threatening board
     // would read as lost and turn the caution into an all-in race.
     const deadAnyway = this.crackbackLethal(state, false);
+    // `crackbackGrowth` only sorts attacks while holding back passes it. When
+    // even no attack reads as unsafe scaled up (but not plainly — that's
+    // `deadAnyway`), every candidate would score `UNSAFE`, ranked by board
+    // value alone, and the climb could take a swing the plain check calls
+    // lethal: measured, 25 such swings in 119 four-player games, 19 of them
+    // deaths. Then the plain check sorts them, as it did before the scaling.
+    const grown = !this.crackbackLethal(state, true);
 
-    const alpha = this.alphaStrike(state, legal, deadAnyway, budget);
+    const alpha = this.alphaStrike(state, legal, deadAnyway, grown, budget);
     if (alpha !== null) {
       this.lastDecision = audit("attackers", budget);
       return alpha;
@@ -1170,7 +1177,7 @@ export class EvalBotController extends HeuristicBotController {
       if (after === null) return null;
       const value = evaluateState(after, this.cards, me, w);
       if (after.result.over || deadAnyway) return value;
-      return this.crackbackLethal(after) ? UNSAFE + value : value;
+      return this.crackbackLethal(after, grown) ? UNSAFE + value : value;
     };
 
     const mine = new Map(combatCreatures(state, this.cards, me, false).map((c) => [c.id, c]));
@@ -1403,6 +1410,7 @@ export class EvalBotController extends HeuristicBotController {
     state: GameState,
     legal: DeclareAttackersLegal,
     deadAnyway: boolean,
+    grown: boolean,
     budget: SearchBudget,
   ): AttackerDeclaration[] | null {
     const me = this.playerId;
@@ -1544,7 +1552,7 @@ export class EvalBotController extends HeuristicBotController {
           attackers: withRequiredAttackers(plan.declaration, legal),
         }),
       );
-      if (after !== null && !this.crackbackLethal(after)) return plan.declaration;
+      if (after !== null && !this.crackbackLethal(after, grown)) return plan.declaration;
     }
     return null;
   }
