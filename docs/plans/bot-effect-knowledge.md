@@ -561,6 +561,18 @@ the Multitudes, Raise the Alarm, Dawn of Hope); BACKLOG watches the last. The A/
 the push (one seat on 9ef11193 against three on b1fb5793, four players, 400 games) came back
 level: 25.9% [21.9, 30.4], three timeouts counted as even.
 
+**After the plan: chained spells (2026-10-04).** A first spell of the turn was never worth the
+payoff it set up, since the rollouts pass our own seat for the rest of the turn. While we have a
+"whenever you cast" payoff on the battlefield, in hand or in the command zone (Shiko and Narset
+cast from there is the turn's first spell herself — the user), the priority search uses the
+`"acting"` rollout (`castPayoff` in `eval-bot.ts`); a castable payoff permanent goes first when
+something can follow it (`payoffFirst`); and v1, which plays our seat in that rollout, aims a
+spell copy's new targets away from the original's (`chooseTargets`/`copyPolarities` — it kept a
+copied Bolt on the Bears the original was killing). `bot:diff` against fc11d433: 203 of 32,924
+decisions, nearly all the Jeskai and Shiko seats, 753 s for 12 games against ~660 before. A/B
+bench (one seat against three on fc11d433, 400 four-player games, 14 workers): 24.4% [20.5,
+28.9], level.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

@@ -55,6 +55,8 @@ import {
   onlyWrongSide,
   pendingTargetPolarities,
   rankTargets,
+  sideOf,
+  slotPolarities,
   targetValue,
 } from "./target-polarity.js";
 import type { Polarity } from "./target-polarity.js";
@@ -1455,6 +1457,50 @@ export function isLandfallPermanent(registry: CardRegistry, name: string): boole
   });
 }
 
+/** Whether two targets name the same player or object. */
+function sameRef(a: TargetRef, b: TargetRef): boolean {
+  return a.kind === "player"
+    ? b.kind === "player" && a.player === b.player
+    : b.kind === "object" && a.kind === "object" && a.object === b.object;
+}
+
+/**
+ * Whether `name` is a permanent spell with a "whenever you cast" trigger of
+ * its own — Shiko and Narset's Flurry, Monastery Mentor, Young Pyromancer:
+ * cast before the turn's other spells, it sees them. Shiko from the command
+ * zone is the turn's first spell herself, so the next is her second (the user,
+ * 2026-10-04).
+ */
+export function isCastPayoff(registry: CardRegistry, name: string): boolean {
+  if (!registry.has(name)) return false;
+  const def = registry.get(name);
+  if (def.types.includes("instant") || def.types.includes("sorcery") || def.types.includes("land")) return false;
+  return def.triggered.some((ability) => {
+    const trigger = ability.trigger as { readonly on?: unknown; readonly who?: unknown };
+    return trigger.on === "cast-spell" && trigger.who === "you";
+  });
+}
+
+/**
+ * The cast-payoff permanent among `offers` to cast before anything else: one
+ * after which another spell can still be cast this turn (`legalActionsAfter`),
+ * so the payoff sees it. Null when there's none, or nothing could follow.
+ */
+export function payoffFirst<T extends Action>(
+  view: ControllerView,
+  registry: CardRegistry,
+  offers: readonly T[],
+): T | null {
+  for (const offer of offers) {
+    if (offer.type !== "cast-spell" || offer.face !== undefined) continue;
+    const name = view.state.objects[offer.card]?.cardName ?? "";
+    if (!isCastPayoff(registry, name)) continue;
+    const after = view.legalActionsAfter?.(offer);
+    if (after?.some((a) => a.kind === "cast-spell" && a.card !== offer.card)) return offer;
+  }
+  return null;
+}
+
 export class HeuristicBotController extends AutomaticController {
   private readonly registry: CardRegistry;
   /** `source:abilityIndex` -> activations so far, for `activationTurn`. */
@@ -2173,19 +2219,55 @@ export class HeuristicBotController extends AutomaticController {
     return null;
   }
 
-  /** A trigger's targets (or a free cast's), aimed the same way as a cast's. */
+  /**
+   * A trigger's targets (or a free cast's), aimed the same way as a cast's.
+   * New targets for a copy (rule 707.10c, `current` set) go somewhere the
+   * original isn't already hitting: a harmful slot with another opponent's
+   * target to point at leaves its current one out, or a copied Lightning Bolt
+   * (Shiko and Narset's Flurry) stayed on the Bears the original was killing.
+   */
   chooseTargets(
     view: ControllerView,
     _sourceName: string,
     specs: readonly TargetSpec[],
     legalOptions: readonly (readonly TargetRef[])[],
   ): ChosenTargets {
-    return this.aimedTargets(
-      view.state,
-      legalOptions,
-      specs,
-      pendingTargetPolarities(view.state, this.registry, polarityBias(view.state, this.playerId)),
-    );
+    const state = view.state;
+    const bias = polarityBias(state, this.playerId);
+    const awaiting = state.awaiting;
+    const current = awaiting?.kind === "choose-targets" ? awaiting.current : undefined;
+    // A copy's new targets are read off the copied spell — a trigger may be
+    // resolving around it (Shiko and Narset's Flurry makes the copy), and its
+    // own slots aren't the copy's.
+    const polarities =
+      (current !== undefined ? this.copyPolarities(state, bias) : null) ??
+      pendingTargetPolarities(state, this.registry, bias);
+    const options =
+      current === undefined || polarities === null
+        ? legalOptions
+        : legalOptions.map((slot, i) => {
+            const now = current[i];
+            if (now === undefined || polarities[i] !== "harm") return slot;
+            const elsewhere = slot.filter(
+              (ref) => !sameRef(ref, now) && sideOf(state, ref, this.playerId) === "opponent",
+            );
+            return elsewhere.length > 0 ? elsewhere : slot;
+          });
+    return this.aimedTargets(state, options, specs, polarities);
+  }
+
+  /** A spell copy's slots (`GameState.pendingCopyTargets`), by the copied
+   * spell's own effect — Lightning Bolt's one slot is harm. Null for an
+   * ability's copy or a modal spell, whose slots this doesn't read. */
+  private copyPolarities(state: GameState, bias: ReturnType<typeof polarityBias>): readonly Polarity[] | null {
+    const pending = state.pendingCopyTargets;
+    if (pending === null || pending === undefined) return null;
+    const copy = state.objects[pending.copy];
+    if (copy === undefined || copy.kind === "ability" || !this.registry.has(copy.cardName)) return null;
+    const def = this.registry.get(copy.cardName);
+    if (def.castModal != null || def.effect == null) return null;
+    const all = slotPolarities(def.effect, def.targets.length, bias);
+    return pending.slots.map((slot) => all[slot] ?? "either");
   }
 
   /** What an Aura put onto the battlefield without being cast enchants (rule
@@ -2471,6 +2553,16 @@ export class HeuristicBotController extends AutomaticController {
         o.kind === "activate-ability" && this.isFreeFetch(view.state, o.source, o.abilityIndex),
     );
     if (fetch !== undefined) return this.toActivateAbility(view.state, fetch);
+
+    // A cast payoff goes before the turn's other spells (`payoffFirst`).
+    const payoff = payoffFirst(
+      view,
+      this.registry,
+      options
+        .filter((o): o is CastSpellLegal => o.kind === "cast-spell" && !this.taxWouldKill(view.state, o))
+        .map((o) => this.toCastSpell(view.state, o)),
+    );
+    if (payoff !== null) return payoff;
 
     const spells = options.filter(
       (o): o is CastSpellLegal =>

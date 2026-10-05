@@ -2658,6 +2658,79 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "casts Opt first so Shiko's Flurry copies the Lightning Bolt",
+    rule: "With a second-spell payoff out, a cheap first spell turns the next one into two.",
+    position(registry) {
+      // The deck autopsies' "chained spells are invisible": Shiko and Narset,
+      // Unified copies the second spell each turn that targets. Opt first
+      // makes the Bolt the second, and its copy kills the other Bears. The
+      // rollouts pass our own seat for the rest of the turn, so Opt alone
+      // scores as a cantrip — held for the end of the turn before ours. Fixed
+      // by the `"acting"` rollout while a cast payoff is out (`castPayoff`)
+      // and v1 aiming a copy away from the original's target.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Island", A, 2);
+      lands(game, "Mountain", A, 2);
+      for (const player of [A, B, C, D]) game.state.players[player].life = 40;
+      onBoard(game, "Shiko and Narset, Unified", A);
+      const opt = game.debugSpawn("Opt", A, "hand");
+      game.debugSpawn("Lightning Bolt", A, "hand");
+      onBoard(game, "Grizzly Bears", B);
+      onBoard(game, "Grizzly Bears", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === opt,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "casts Shiko first so the Lightning Bolt after her is copied",
+    rule: "A commander with a second-spell payoff is the turn's first spell herself.",
+    position(registry) {
+      // The user (2026-10-04): Shiko counts herself as a spell. Cast from the
+      // command zone she's the first of the turn, so a Bolt after her is the
+      // second and Flurry copies it — both Bears die. Bolt first, then Shiko,
+      // and nothing is copied.
+      const game = Game.create({
+        seed: 3,
+        registry,
+        decks: [
+          { player: A, cards: Array<string>(40).fill("Island"), commanders: ["Shiko and Narset, Unified"] },
+          ...[B, C, D].map(forestDeck),
+        ],
+      });
+      game.advanceUntil(
+        (s) => s.turnOrder[s.turn.activePlayerIndex] === A && s.priority.holder === A && s.turn.step === "precombat-main",
+      );
+      midGame(game);
+      for (const player of [A, B, C, D]) {
+        game.state.zones.perPlayer[player].hand = [];
+        game.state.players[player].life = 40;
+      }
+      lands(game, "Island", A, 2);
+      lands(game, "Mountain", A, 2);
+      lands(game, "Plains", A, 1);
+      game.debugSpawn("Lightning Bolt", A, "hand");
+      onBoard(game, "Grizzly Bears", B);
+      onBoard(game, "Grizzly Bears", B);
+      return {
+        game,
+        player: A,
+        judge: (action) => {
+          const card = action.type === "cast-spell" ? game.state.objects[action.card]?.cardName : undefined;
+          return {
+            passed: card === "Shiko and Narset, Unified",
+            detail: `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
     name: "destroys an early Sol Ring over a Warhammer",
     rule: "In the opening rounds, a mana rock is the artifact to destroy.",
     position(registry) {

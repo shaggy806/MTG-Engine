@@ -26,7 +26,7 @@ import type { Action, AttackerDeclaration, BlockerDeclaration, LegalAction } fro
 import type { CardRegistry } from "../cards.js";
 import { withRequiredAttackers } from "../combat/attacking.js";
 import { createDefaultRegistry } from "../cards.js";
-import { HeuristicBotController, isLandfallPermanent } from "../controller.js";
+import { HeuristicBotController, isLandfallPermanent, payoffFirst } from "../controller.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
@@ -519,6 +519,9 @@ export class EvalBotController extends HeuristicBotController {
   readonly weights: EvalWeights;
   private readonly horizon: Horizon;
   private readonly rollout: RolloutPolicy;
+  /** The rollout this priority decision is scored with: `rollout`, or
+   * `"acting"` while we have a cast payoff (`castPayoff`). */
+  private decisionRollout: RolloutPolicy;
   private readonly rolloutDecisions: boolean;
   private readonly maxSimulations: number;
   private readonly timeBudgetMs: number;
@@ -567,6 +570,7 @@ export class EvalBotController extends HeuristicBotController {
     this.weights = normalizeWeights(options.weights ?? DEFAULT_WEIGHTS);
     this.horizon = options.horizon ?? "turn";
     this.rollout = options.rollout ?? "combat";
+    this.decisionRollout = this.rollout;
     this.rolloutDecisions = options.rolloutDecisions ?? false;
     this.maxSimulations = options.maxSimulations ?? DEFAULT_MAX_SIMULATIONS;
     this.timeBudgetMs = options.timeBudgetMs ?? Infinity;
@@ -669,6 +673,15 @@ export class EvalBotController extends HeuristicBotController {
     // carrying a `face` is excluded: that's an MDFC, where taking the land
     // side means giving up a spell, which is exactly the trade the search is
     // for.
+    // A cast payoff goes before the turn's other spells, so it sees them —
+    // Shiko from the command zone first, the Bolt after her copied
+    // (`payoffFirst`). The search, even rolling our turn out, found "something
+    // now, Shiko later" and lost the Flurry.
+    const payoff = payoffFirst(view, this.cards, candidates);
+    if (payoff !== null) {
+      this.lastDecision = audit("priority", null);
+      return payoff;
+    }
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
     // A landfall permanent this window would cast goes before the land drop,
     // so the land triggers it — the same mana either way (`isLandfallPermanent`).
@@ -761,7 +774,13 @@ export class EvalBotController extends HeuristicBotController {
     // now; the tie goes to acting — to passing, the bot would put every play
     // off until the last window of its turn. Against each other, candidates
     // still need to be strictly better.
-    const tiesAct = this.rollout === "acting";
+    // A cast payoff in play or about to be (Shiko and Narset's Flurry, a
+    // prowess creature, Young Pyromancer): the rollouts play the rest of our
+    // turn (`"acting"`), or a cheap first spell is never worth the second
+    // spell it sets up — they'd pass our seat and never cast that one.
+    this.decisionRollout =
+      this.rollout !== "acting" && castPayoff(view.state, this.cards, this.playerId) ? "acting" : this.rollout;
+    const tiesAct = this.decisionRollout === "acting";
     for (const action of candidates) {
       if (spent(budget)) break;
       budget.left -= 1;
@@ -1575,7 +1594,7 @@ export class EvalBotController extends HeuristicBotController {
         this.cards,
         action,
         this.horizon,
-        this.rollout,
+        this.decisionRollout,
         this.rolloutDecisions ? this.selfInRollouts() : undefined,
       ),
     );
@@ -1584,6 +1603,30 @@ export class EvalBotController extends HeuristicBotController {
     if (mustKill !== undefined && after.players[mustKill]?.hasLost !== true) return null;
     return evaluateState(after, this.cards, this.playerId, this.weights);
   }
+}
+
+/**
+ * Whether `player` has a payoff for casting spells — a "whenever you cast"
+ * trigger (Shiko and Narset's Flurry, prowess, Young Pyromancer) — on the
+ * battlefield, or in hand or the command zone to be cast this turn: Shiko cast
+ * from the command zone is the turn's first spell herself, so the next one is
+ * the second.
+ */
+function castPayoff(state: GameState, cards: CardRegistry, player: PlayerId): boolean {
+  const own = state.zones.perPlayer[player];
+  const ids = [
+    ...state.zones.shared.battlefield.filter((id) => state.objects[id]?.controller === player),
+    ...own.hand,
+    ...state.zones.shared.command.filter((id) => state.objects[id]?.owner === player),
+  ];
+  return ids.some((id) => {
+    const object = state.objects[id];
+    if (object === undefined || !cards.has(object.cardName)) return false;
+    return cards.get(object.cardName).triggered.some((ability) => {
+      const trigger = ability.trigger as { readonly on?: unknown; readonly who?: unknown };
+      return trigger.on === "cast-spell" && trigger.who === "you";
+    });
+  });
 }
 
 /** Whether a land-drop candidate is the one `inherited` plays. */

@@ -186,9 +186,17 @@ in the same game going at someone else.
 
 ### Left
 
-- **Chained spells are invisible** to the search: prowess, Shiko's Flurry, storm count — the
-  first spell of a turn is never worth its payoff. A feature for spells cast this turn, or the
-  `"acting"` rollout for decks whose commander has a cast trigger.
+- **Chained spells** (prowess, Shiko's Flurry, storm count — the first spell of a turn never
+  worth its payoff): **addressed 2026-10-04.** While a "whenever you cast" payoff is on the
+  battlefield, in hand or in the command zone, v2's priority search rolls our turn out with the
+  `"acting"` rollout (`castPayoff`); a castable payoff permanent goes before the turn's other
+  spells when something can follow it (`payoffFirst`, both bots); and v1 aims a copy's new
+  targets away from what the original is already hitting (`chooseTargets`, `copyPolarities`).
+  Gate: "casts Opt first so Shiko's Flurry copies the Lightning Bolt", "casts Shiko first so the
+  Lightning Bolt after her is copied". `bot:diff` changed ~200 of ~33,000 decisions, almost all
+  in the Jeskai and Shiko seats; the A/B bench came back level, 24.4% [20.5, 28.9]. **Left:** when
+  only one of Shiko and another spell is affordable, v2 now often casts the other spell where it
+  used to cast Shiko (16 times in 12 games) — BACKLOG.
 - **Token payoffs beyond engines** (sacrificing one for value is priced since 2026-10-04:
   `smallTokens` 1.4 with `lifeSurplus` 0.3, so v2 Skullclamps a Soldier token and feeds one to
   Deadly Dispute — `docs/plans/bot-effect-knowledge.md`): what a token engine keeps making is priced now (above), but
