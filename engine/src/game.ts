@@ -17862,14 +17862,14 @@ export class Game {
       storm: (sourceId) => this.stormCopy(sourceId),
       cascade: (player, sourceId) => this.cascade(player, sourceId),
       finishCascade: (finish) => this.finishCascade(finish),
-      castNow: (cards, options) => this.raiseCastNow(controller, source, cards, options),
-      castSince: (cards, since) =>
+      castNow: (cards, options) => this.raiseCastNow(options.by ?? controller, source, cards, options),
+      castSince: (cards, since, by) =>
         eventLogSince(this.state, since).some(
           (event) =>
             ((event.type === "spell-cast" && event.via === "effect") ||
               // "You may play it" — a land played off the offer.
               event.type === "land-played") &&
-            event.player === controller &&
+            event.player === (by ?? controller) &&
             cards.includes(event.object),
         ),
       cardsIn: (player, zone) => [...(this.state.zones.perPlayer[player]?.[zone] ?? [])],
@@ -17941,7 +17941,7 @@ export class Game {
           refs,
           opts,
         ),
-      copySpell: (target, newTargets) => this.copySpellByEffect(controller, target, newTargets),
+      copySpell: (target, newTargets, by) => this.copySpellByEffect(by ?? controller, target, newTargets),
       copyAbility: (target, newTargets) => this.copyAbilityByEffect(controller, target, triggerObject, newTargets),
       triggerSpell: () => {
         // The spell whose casting fired this (rule 603.2), as it is if it's
@@ -17966,7 +17966,7 @@ export class Game {
           if (aimed === null) return false;
           copy = aimed;
         }
-        this.copySpellFrom(copy, original, controller, copyOpts.newTargets);
+        this.copySpellFrom(copy, original, copyOpts.controller ?? controller, copyOpts.newTargets);
         return true;
       },
       copyTriggerSpellForEach: (spell, each) => {
@@ -22370,14 +22370,15 @@ export class Game {
     const id = split ? this.splitOneFromStack(target.object) : target.object;
     const object = this.state.objects[id];
     // Graveyard as well as battlefield: "Exile target card from a graveyard"
-    // (Withered Wretch, Scavenging Ooze) targets a card, not a permanent.
-    // Anything already in exile is left alone.
+    // (Withered Wretch, Scavenging Ooze) targets a card, not a permanent. A
+    // library card is one a `reveal-until` has just revealed there (Creative
+    // Technique's "exile that card"). Anything already in exile is left alone.
     if (object === undefined) return;
     if (object.zone === "stack") {
       this.exileSpell(id);
       return;
     }
-    if (object.zone !== "battlefield" && object.zone !== "graveyard") return;
+    if (object.zone !== "battlefield" && object.zone !== "graveyard" && object.zone !== "library") return;
     const wasPermanent = object.zone === "battlefield";
     if (!this.moveObject(id, "exile")) return;
     // After the move: `moveObject` clears zone-scoped state on the way out,

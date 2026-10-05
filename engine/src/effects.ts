@@ -779,7 +779,12 @@ export type EffectPlayerRef =
   | "trigger-controller"
   | "trigger-player"
   | "that-player"
-  | { readonly target: number };
+  | { readonly target: number }
+  /** The controller of the permanent in this target slot, as it last existed
+   * on the battlefield if it has left — "**its controller** exiles cards …,
+   * then **they** may cast that card" (Transforming Flourish, after
+   * destroying it). Not a target. */
+  | { readonly controllerOfTarget: number };
 
 /**
  * What a creature put onto the battlefield attacking attacks (rule 508.4).
@@ -826,6 +831,8 @@ export interface CascadeFinish {
 
 /** How a `cast-now` offers its cards — see that {@link EffectSpec}. */
 export interface CastNowOptions {
+  /** Who is offered the cast — the effect's controller when omitted. */
+  readonly by?: PlayerId;
   readonly free: boolean;
   readonly exileAfter: boolean;
   readonly spell?: CardFilter;
@@ -1882,6 +1889,12 @@ export type EffectSpec =
       readonly kind: "cast-now";
       /** The card, when it's one card; absent with `from`. */
       readonly target?: EffectTargetRef;
+      /** Who may cast it, when that isn't the effect's controller — "then
+       * **they** may cast that card without paying its mana cost"
+       * (Transforming Flourish: `{ controllerOfTarget: 0 }`). Nobody, and so
+       * nothing offered, once that player has left the game. With `target`
+       * only. */
+      readonly by?: EffectPlayerRef;
       /**
        * Where the player picks the card from, when it's any of several:
        * their hand, their graveyard ("an instant or sorcery spell from your
@@ -2676,7 +2689,7 @@ export type EffectSpec =
        * this target slot, or `"that-player"` — each one a `for-each-player`
        * names (Consuming Aberration's "each opponent reveals cards from the
        * top of their library until they reveal a land card"). */
-      readonly whose?: number | "that-player";
+      readonly whose?: number | "that-player" | { readonly controllerOfTarget: number };
       /** What stops it, matched against each card as it's revealed — an `{
        * amount }` compare is bound as the effect applies ("a nonland card
        * with lesser mana value"). */
@@ -2731,6 +2744,13 @@ export type EffectSpec =
       readonly target: number | "trigger-spell" | "source";
       /** "You may choose new targets for the copy" (rule 707.10c). */
       readonly newTargets?: true;
+      /** Who controls the copy, when that isn't the effect's controller —
+       * demonstrate's "choose an opponent. That player copies the spell and
+       * may choose new targets for that copy" (rule 702.144a: `"that-player"`
+       * under a `choose-opponent`). They choose its new targets. Naming
+       * nobody — a player who has left the game — nothing is copied. Not with
+       * `forEachItCouldTarget` or `retargetTo`. */
+      readonly controller?: EffectPlayerRef;
       /** "Copy that spell if it targets a permanent or player" — any of its
        * targets was, when chosen. Otherwise it isn't copied. */
       readonly ifTargets?: "permanent-or-player";
@@ -4298,7 +4318,7 @@ export interface EffectApi {
   castNow(cards: readonly ObjectId[], options: CastNowOptions): void;
   /** Whether the effect's controller has cast (or played, a land) one of
    * `cards` at a `cast-now`'s offer since event `since`. */
-  castSince(cards: readonly ObjectId[], since: number): boolean;
+  castSince(cards: readonly ObjectId[], since: number, by?: PlayerId): boolean;
   /** The cards in `player`'s hand or graveyard. */
   cardsIn(player: PlayerId, zone: "hand" | "graveyard"): readonly ObjectId[];
   /** The cards this resolution has exiled so far from a library, a hand or
@@ -4664,7 +4684,7 @@ export interface EffectApi {
   finishCascade(finish: CascadeFinish): void;
   /** Copy the spell at `TargetRef` on the stack — see the `copy-spell`
    * {@link EffectSpec}. */
-  copySpell(target: TargetRef, newTargets: boolean): void;
+  copySpell(target: TargetRef, newTargets: boolean, controller?: PlayerId): void;
   /** The spell whose casting fired this triggered ability, as it is on the
    * stack or as it last was there (rule 608.2h); `null` if nothing cast one. */
   triggerSpell(): SpellSnapshot | null;
@@ -4675,7 +4695,13 @@ export interface EffectApi {
    * targets. */
   copyTriggerSpell(
     spell: SpellSnapshot,
-    opts: { readonly newTargets: boolean; readonly retargetTo?: TargetRef; readonly original?: ObjectId },
+    opts: {
+      readonly newTargets: boolean;
+      readonly retargetTo?: TargetRef;
+      readonly original?: ObjectId;
+      /** Who controls the copy — the effect's controller when omitted. */
+      readonly controller?: PlayerId;
+    },
   ): boolean;
   /** See the `copy-ability` {@link EffectSpec}: copy the ability object
    * `target` names, or with `"trigger-ability"` the one whose activation
@@ -5132,8 +5158,8 @@ function applyRevealUntil(
   let progress = spec.progress;
   if (progress === undefined) {
     let owner: PlayerId = ctx.controller;
-    if (spec.whose === "that-player") {
-      const player = effectPlayer("that-player", ctx);
+    if (spec.whose === "that-player" || typeof spec.whose === "object") {
+      const player = effectPlayer(spec.whose, ctx);
       if (player === undefined) return;
       owner = player;
     } else if (spec.whose !== undefined) {
@@ -5188,8 +5214,11 @@ function offerCastNow(
   const { cards, looked } = progress;
   const parked = ctx.parkedCount();
   const pendingBefore = ctx.decisionPending();
+  const by = spec.by === undefined ? undefined : effectPlayer(spec.by, ctx);
+  if (spec.by !== undefined && by === undefined) return false;
   if (cards.length > 0) {
     ctx.castNow(cards, {
+      ...(by !== undefined ? { by } : {}),
       free: spec.free === true,
       exileAfter: spec.exileAfter === true,
       ...(spec.play === true ? { play: true } : {}),
@@ -5241,7 +5270,8 @@ function applyCastNowSpec(spec: Extract<EffectSpec, { kind: "cast-now" }>, ctx: 
     return;
   }
   if (progress.followed !== true) {
-    const followUp = ctx.castSince(progress.cards, progress.since) ? spec.then : spec.else;
+    const by = spec.by === undefined ? undefined : effectPlayer(spec.by, ctx);
+    const followUp = ctx.castSince(progress.cards, progress.since, by) ? spec.then : spec.else;
     if (followUp !== undefined) {
       const parked = ctx.parkedCount();
       const pendingBefore = ctx.decisionPending();
@@ -5563,6 +5593,11 @@ function resolveEnterAttacking(
 
 function effectPlayer(ref: EffectPlayerRef, ctx: ResolutionContext): PlayerId | undefined {
   if (ref === "you") return ctx.controller;
+  if (typeof ref === "object" && "controllerOfTarget" in ref) {
+    const target = ctx.targets[ref.controllerOfTarget];
+    const player = target === undefined ? undefined : ctx.controllerOf(target);
+    return player !== undefined && ctx.playersInScope("each-player").includes(player) ? player : undefined;
+  }
   if (typeof ref === "object") {
     if (illegalSlot(ref.target, ctx)) return undefined;
     const target = ctx.targets[ref.target];
@@ -6920,6 +6955,12 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       return;
     case "copy-spell": {
       const newTargets = spec.newTargets === true;
+      // "That player copies the spell" (demonstrate): nobody, once they've gone.
+      const copier = spec.controller === undefined ? undefined : effectPlayer(spec.controller, ctx);
+      if (spec.controller !== undefined && copier === undefined) {
+        if (spec.otherwise !== undefined) applyEffectSpec(spec.otherwise, ctx);
+        return;
+      }
       // "Copy it for each …": the count, read as this applies.
       const times =
         spec.count === undefined ? 1 : Math.min(Math.max(0, amountValue(spec.count, ctx)), MAX_COPY_COUNT);
@@ -6938,6 +6979,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
               for (let i = 0; i < times; i += 1) {
                 const made = ctx.copyTriggerSpell(spell, {
                   newTargets,
+                  ...(copier !== undefined ? { controller: copier } : {}),
                   ...(retargetTo !== undefined ? { retargetTo } : {}),
                   ...(spec.spell !== undefined ? { original: spec.spell.original } : {}),
                 });
@@ -6951,7 +6993,7 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
         const target =
           spec.target === "source" ? ({ kind: "object", object: ctx.source } as const) : ctx.targets[spec.target];
         if (target !== undefined) {
-          for (let i = 0; i < times; i += 1) ctx.copySpell(target, newTargets);
+          for (let i = 0; i < times; i += 1) ctx.copySpell(target, newTargets, copier);
           copied = times > 0;
         }
       }
