@@ -590,7 +590,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Young Pyromancer", 1],
     ],
     substitutions: [
-      sub("Curse of Opulence", "Sticky Fingers", "One-mana enchantment: token maker, ramp."),
       sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
     ],
   }),
@@ -759,7 +758,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["White Sun's Zenith", 1],
     ],
     substitutions: [
-      sub("Curse of Bounty", "Raise the Alarm", "Two-mana token maker."),
     ],
   }),
   precon({
@@ -923,7 +921,6 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Zombie Apocalypse", 1],
     ],
     substitutions: [
-      sub("Curse of Disturbance", "Phyrexian Arena", "Three-mana black enchantment."),
       sub("Havengul Lich", "Bloodgift Demon", "Five-mana value creature."),
       sub("Liliana, Untouched by Death", "Mortivore", "Four-mana black card that grows with graveyards; no blue-black planeswalker is implemented."),
       sub("Scourge of Nel Toth", "Rakshasa Debaser", "Six-mana black finisher that returns creatures from graveyards to the battlefield."),

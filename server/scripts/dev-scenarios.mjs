@@ -398,6 +398,34 @@ export default {
     bots: { bob: {} },
   },
 
+  CURSE: {
+    about:
+      "3p. Curses: Curse of Opulence and Curse of Verbosity in alice's hand. Cast one at carol " +
+      "(click her panel): it sits on alice's board flagged \"→ carol\", with its art chip on " +
+      "carol's panel. On bob's turn the bot attacks carol with both Grizzly Bears — one trigger: " +
+      "alice and bob each get a Gold token (or draw), carol nothing.",
+    players: ["alice", "bob", "carol"],
+    lands: { alice: 6 },
+    battlefield: { bob: ["Grizzly Bears", "Grizzly Bears"] },
+    hand: { alice: ["Curse of Opulence", "Curse of Verbosity"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: { attack: "carol" }, carol: {} },
+  },
+
+  CRSRT: {
+    about:
+      "2p. A Curse entering without being cast (rule 303.4f): Murder alice's Archon of Falling " +
+      "Stars and return the Curse of Verbosity in her graveyard with its trigger — the banner " +
+      "asks for the player it enchants, and the players' panels light up.",
+    players: ["alice", "bob"],
+    battlefield: { alice: ["Archon of Falling Stars", "Swamp", "Swamp", "Swamp"] },
+    hand: { alice: ["Murder"] },
+    setup: (game) => {
+      game.debugSpawn("Curse of Verbosity", "alice", "graveyard");
+    },
+    bots: { bob: {} },
+  },
+
   BLITZ: {
     about:
       "2p. Blitz: Star Athlete in alice's hand with four Mountains, so it's offered for " +

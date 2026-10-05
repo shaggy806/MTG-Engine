@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3347 already implemented / 1653 missing (marks refreshed 2026-10-04)
+3350 already implemented / 1650 missing (marks refreshed 2026-10-05)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -695,7 +695,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]   696  Muddle the Mixture                       {U}{U}           Instant
 [ ]   697  Snuff Out                                {3}{B}           Instant
 [x]   698  Charcoal Diamond                         {2}              Artifact
-[ ]   699  Curse of Opulence                        {R}              Enchantment — Aura Curse
+[x]   699  Curse of Opulence                        {R}              Enchantment — Aura Curse
 [x]   700  The Earth Crystal                        {2}{G}{G}        Legendary Artifact
 [ ]   701  Springheart Nantuko                      {1}{G}           Enchantment Creature — Insect Monk
 [x]   702  Elspeth, Storm Slayer                    {3}{W}{W}        Legendary Planeswalker — Elspeth
@@ -3802,7 +3802,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  3809  Lossarnach Captain                       {3}{W}           Creature — Human Soldier
 [x]  3810  Crucible of Fire                         {3}{R}           Enchantment
 [ ]  3811  Galadhrim Brigade                        {2}{G}           Creature — Elf Soldier
-[ ]  3812  Curse of Verbosity                       {2}{U}           Enchantment — Aura Curse
+[x]  3812  Curse of Verbosity                       {2}{U}           Enchantment — Aura Curse
 [x]  3813  Reckoner's Bargain                       {1}{B}           Instant
 [x]  3814  Warden of Evos Isle                      {2}{U}           Creature — Bird Wizard
 [x]  3815  Legion's Landing // Adanto, the First Fort {1}              Legendary Enchantment // Legendary Land
@@ -4111,7 +4111,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  4118  Coppercoat Vanguard                      {1}{W}           Creature — Human Soldier
 [ ]  4119  Sword of the Squeak                      {2}              Artifact — Equipment
 [x]  4120  Azure Beastbinder                        {1}{U}           Creature — Rat Rogue
-[ ]  4121  Curse of Disturbance                     {2}{B}           Enchantment — Aura Curse
+[x]  4121  Curse of Disturbance                     {2}{B}           Enchantment — Aura Curse
 [ ]  4122  Horizon Stone                            {5}              Artifact
 [x]  4123  Rogue's Gloves                           {2}              Artifact — Equipment
 [ ]  4124  Inquisitor's Flail                       {2}              Artifact — Equipment

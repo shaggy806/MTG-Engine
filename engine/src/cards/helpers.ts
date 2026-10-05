@@ -82,6 +82,23 @@ export const undying = (): TriggeredAbility => ({
 });
 
 /**
+ * The Commander 2017 Curses' trigger (Curse of Opulence, Verbosity, Bounty,
+ * Disturbance): "Whenever enchanted player is attacked, [effect]. Each
+ * opponent attacking that player does the same." Once per declaration,
+ * however many creatures attack them, and not for an attack on only their
+ * planeswalkers (the rulings) — `attacks-player` with the Curse's own
+ * player as `defender`. `effect` reads the
+ * `"you-and-opponents-attacking-trigger-player"` scope for who does it.
+ */
+export const curseWhenAttacked = (effect: EffectSpec, text: string): TriggeredAbility => ({
+  trigger: { on: "attacks-player", who: "any", defender: "attached" },
+  targets: [],
+  effect,
+  resolve: null,
+  text,
+});
+
+/**
  * Persist (rule 702.79): "When this permanent dies, if it had no -1/-1
  * counters on it, return it to the battlefield under its owner's control with
  * a -1/-1 counter on it." Undying's mirror image. Put "Persist" in `text` as

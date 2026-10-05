@@ -4013,3 +4013,40 @@ stack count once per token)
   for each time you've cast your commander from the command zone. Blitzed, it has haste, draws a
   card when it dies and is sacrificed at the end step.
 - **Known limits:** Blitz is offered only from your hand and the command zone (BACKLOG).
+
+## Curses: Auras that enchant a player (2026-10-05)
+
+### Curse of Opulence, Curse of Verbosity, Curse of Bounty, Curse of Disturbance
+
+*Rules call* — an Aura on a player, and "each opponent attacking that player does the same"
+
+- **Setup:** A three-player table. Curse of Opulence in your hand with a Mountain; bob (yours to
+  play) has two Grizzly Bears; carol is a bot.
+- **Do:** Cast the Curse at carol (click her panel). Pass to bob's turn, sit at bob and attack carol
+  with both Bears.
+- **Check:** The Curse sits on your board flagged "→ carol", and carol's panel carries its art chip
+  ringed in your colour. As bob attacks carol, the trigger goes on the stack once (two attackers,
+  one trigger): you and bob each get one Gold token, carol none. A Gold sacrifices for one mana of
+  any colour without tapping. Attacking someone else, or only carol's planeswalker, doesn't
+  trigger it. Verbosity draws, Bounty untaps nonland permanents, Disturbance makes 2/2 Zombies, in
+  the same way.
+
+### Trespasser's Curse
+
+*Rules call* — "whenever a creature enchanted player controls enters"
+
+- **Setup:** Trespasser's Curse in your hand with two Swamps; bob (yours to play) has Grizzly Bears
+  in hand and two Forests.
+- **Do:** Cast the Curse at bob. On bob's turn, sit at bob and cast the Bears.
+- **Check:** As the Bears enter, bob loses 1 life and you gain 1. A creature entering under your
+  own control, or bob's noncreature permanent, does nothing.
+
+### Archon of Falling Stars returning a Curse
+
+*New decision* — what a Curse enchants when it enters without being cast (rule 303.4f)
+
+- **Setup:** Archon of Falling Stars on your battlefield, Murder in hand with three Swamps, and Curse
+  of Verbosity in your graveyard; one opponent.
+- **Do:** Murder your Archon and return the Curse with its trigger.
+- **Check:** The decision banner asks you to click the player it enchants, and the players' panels
+  light up (no permanent does). It enters attached to the one clicked.

@@ -492,6 +492,13 @@ in `git log`.
   graveyard move".
 - **E2** — every invented placeholder card replaced with a real printing.
 - **E3** — five more cycles and the text-structure audit (`card:verify --text`).
+- **Curses** (`mechanic:curses`, 2026-10-05, TDC6) — an Aura that enchants a
+  player (`GameObject.attachedToPlayer`, rule 303.4, with the 303.4f choice of
+  player), "whenever enchanted player is attacked" (`curseWhenAttacked`) and
+  "each opponent attacking that player does the same", and "a creature
+  enchanted player controls" (Curse of Opulence, Verbosity, Bounty,
+  Disturbance, Trespasser's Curse; `curses.test.ts`). The rest wait on one
+  more feature each (`engine/data/sweep-3/TDC6.json`).
 - **Mana provenance** — the mana pool as tagged `ManaUnit`s (Path of
   Ancestry, Cavern of Souls, …; `mana-provenance.test.ts`, AUTHORING §15).
 - **Changeling** (`keyword:changeling`) — every creature type, and every land

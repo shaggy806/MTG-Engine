@@ -51,6 +51,8 @@ import _poolCopperhornScout from "../pool/copperhorn-scout.js";
 import _poolCounterspell from "../pool/counterspell.js";
 import _poolCrackOpen from "../pool/crack-open.js";
 import _poolCrimsonFleetCommodore from "../pool/crimson-fleet-commodore.js";
+import _poolCurseOfOpulence from "../pool/curse-of-opulence.js";
+import _poolCurseOfVerbosity from "../pool/curse-of-verbosity.js";
 import _poolDematerialize from "../pool/dematerialize.js";
 import _poolDerangedWhelp from "../pool/deranged-whelp.js";
 import _poolDesertOfTheGlorified from "../pool/desert-of-the-glorified.js";
@@ -307,6 +309,8 @@ const shard: CardShard = {
     _poolCounterspell,
     _poolCrackOpen,
     _poolCrimsonFleetCommodore,
+    _poolCurseOfOpulence,
+    _poolCurseOfVerbosity,
     _poolDematerialize,
     _poolDerangedWhelp,
     _poolDesertOfTheGlorified,

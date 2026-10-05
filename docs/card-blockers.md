@@ -22,10 +22,9 @@ lands, add its summary here, not to `BACKLOG.md`.
 Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
 lead when its cards land or turn out blocked on something else (record that in the batch JSON).
 
-- **The TDC precons' 7 missing cards**, each behind a feature of its own (records in
+- **The TDC precons' 6 missing cards**, each behind a feature of its own (records in
   `engine/data/sweep-3/TDC*.json` and the older sweeps): demonstrate for Transforming Flourish;
-  dredge for Life from the Loam; Curses, an Aura enchanting a player, for Curse of Opulence;
-  manifest for Reality Shift; modes that each target a different player for Shadrix
+  dredge for Life from the Loam; manifest for Reality Shift; modes that each target a different player for Shadrix
   Silverquill; keeping creatures of total power 4 or less for Slaughter the Strong; and unspent
   red mana that stays, with "pay any amount of {R}", for Leyline Tyrant.
 - **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
@@ -88,7 +87,7 @@ lead when its cards land or turn out blocked on something else (record that in t
   that recurred most: an ability's "Choose one —" (266), Crew (180), "Regenerate ~" (151), "You
   may pay {…}" (142), "Transform ~" (138).
 
-## The Tarkir: Dragonstorm precons (TDC1–TDC5)
+## The Tarkir: Dragonstorm precons (TDC1–TDC6)
 
 147 were missing at the swap to the TDC decks (2026-09-30). TDC batch 1 authored 41
 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8 that casting a spell as another resolves
@@ -105,6 +104,16 @@ behind a feature of its own: harmonize (Zenith Festival), demonstrate (Transform
 dredge (Life from the Loam), Curses (Curse of Opulence), manifest (Reality Shift), modes that each
 target a different player (Shadrix Silverquill), keeping creatures of total power 4 or less
 (Slaughter the Strong), and unspent red mana with "pay any amount" (Leyline Tyrant).
+
+TDC6 (2026-10-05) built Curses — an Aura that enchants a player (rule 303.4), its 303.4f choice
+of player, "whenever enchanted player is attacked … each opponent attacking that player does the
+same" and "a creature enchanted player controls" — for Curse of Opulence, and with it Curse of
+Bounty and Curse of Disturbance (stand-ins in Token Triumph and Grave Danger), Curse of
+Verbosity and Trespasser's Curse (`curses.test.ts`). The other Curses each need one thing more
+(`TDC6.json`): Tenuous Truce an attack trigger that counts planeswalkers, Fraying Sanity a count
+of cards put into a graveyard this turn, Grievous Wound a static over the enchanted player,
+Paradox Haze an added upkeep, Curse of the Restless Dead decayed, Maddening Hex dice, and Ardenn
+an attach to a player.
 
 ### The one-off keywords pass (2026-10-03)
 

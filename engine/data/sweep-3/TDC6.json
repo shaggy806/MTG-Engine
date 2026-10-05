@@ -1,0 +1,95 @@
+{
+  "batch": "TDC6",
+  "status": "complete",
+  "ranks": "Curses: Auras that enchant a player (rule 303.4), \"whenever enchanted player is attacked\" with \"each opponent attacking that player does the same\", and \"a creature enchanted player controls\" (mechanic:curses)",
+  "authored": [
+    {
+      "name": "Curse of Opulence",
+      "files": [
+        "engine/src/cards/pool/curse-of-opulence.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Curse of Verbosity",
+      "files": [
+        "engine/src/cards/pool/curse-of-verbosity.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Curse of Bounty",
+      "files": [
+        "engine/src/cards/pool/curse-of-bounty.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Curse of Disturbance",
+      "files": [
+        "engine/src/cards/pool/curse-of-disturbance.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Trespasser's Curse",
+      "files": [
+        "engine/src/cards/pool/trespassers-curse.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": [
+    {
+      "name": "Tenuous Truce",
+      "needs": [
+        "new:attack-on-player-or-their-planeswalker-trigger"
+      ],
+      "why": "Enchant opponent works now, but 'when you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control' needs an attack trigger that counts planeswalkers and runs both ways; attacks-player counts players only."
+    },
+    {
+      "name": "Fraying Sanity",
+      "needs": [
+        "new:cards-put-into-graveyard-this-turn"
+      ],
+      "why": "Enchant player works now; X is the number of cards put into the enchanted player's graveyard from anywhere this turn, which no turn stat counts."
+    },
+    {
+      "name": "Grievous Wound",
+      "needs": [
+        "new:static-over-enchanted-player",
+        "trigger:damage-trigger-extensions"
+      ],
+      "why": "'Enchanted player can't gain life' is a static over the enchanted player (no affects scope reaches a player), and 'whenever enchanted player is dealt damage' needs a dealt-damage trigger keyed to the enchanted player."
+    },
+    {
+      "name": "Paradox Haze",
+      "needs": [
+        "effect:additional-upkeep-steps"
+      ],
+      "why": "Enchant player works now; 'at the beginning of enchanted player's first upkeep each turn, that player gets an additional upkeep step' needs an added upkeep for another player's turn."
+    },
+    {
+      "name": "Curse of the Restless Dead",
+      "needs": [
+        "keyword:decayed"
+      ],
+      "why": "Enchant player works now; its Zombie tokens have decayed."
+    },
+    {
+      "name": "Maddening Hex",
+      "needs": [
+        "mechanic:dice-rolling",
+        "effect:attach-extensions"
+      ],
+      "why": "A d6 roll, and reattaching the Curse to a random other opponent."
+    },
+    {
+      "name": "Ardenn, Intrepid Archaeologist",
+      "needs": [
+        "effect:attach-extensions"
+      ],
+      "why": "Attaching any number of Auras and Equipment to a target permanent or player: attach doesn't take a player."
+    }
+  ]
+}

@@ -1561,7 +1561,11 @@ import _poolCuriosityCrafter from "./pool/curiosity-crafter.js";
 import _poolCuriosity from "./pool/curiosity.js";
 import _poolCuriousAltisaur from "./pool/curious-altisaur.js";
 import _poolCuriousPair from "./pool/curious-pair.js";
+import _poolCurseOfBounty from "./pool/curse-of-bounty.js";
+import _poolCurseOfDisturbance from "./pool/curse-of-disturbance.js";
+import _poolCurseOfOpulence from "./pool/curse-of-opulence.js";
 import _poolCurseOfTheSwine from "./pool/curse-of-the-swine.js";
+import _poolCurseOfVerbosity from "./pool/curse-of-verbosity.js";
 import _poolCursebreak from "./pool/cursebreak.js";
 import _poolCursedFlesh from "./pool/cursed-flesh.js";
 import _poolCursedMinotaur from "./pool/cursed-minotaur.js";
@@ -7471,6 +7475,7 @@ import _poolTreetopVillage from "./pool/treetop-village.js";
 import _poolTremble from "./pool/tremble.js";
 import _poolTrenchingSteed from "./pool/trenching-steed.js";
 import _poolTrenoDarkCity from "./pool/treno-dark-city.js";
+import _poolTrespassersCurse from "./pool/trespassers-curse.js";
 import _poolTresserhornSinks from "./pool/tresserhorn-sinks.js";
 import _poolTrevasAttendant from "./pool/trevas-attendant.js";
 import _poolTributeMage from "./pool/tribute-mage.js";
@@ -8457,6 +8462,7 @@ import _tokensGoatToken from "./tokens/goat-token.js";
 import _tokensGoblinTokenGoblinSpymaster from "./tokens/goblin-token-goblin-spymaster.js";
 import _tokensGoblinTokenHaste from "./tokens/goblin-token-haste.js";
 import _tokensGoblinToken from "./tokens/goblin-token.js";
+import _tokensGoldToken from "./tokens/gold-token.js";
 import _tokensGolemEnchantmentArtifactToken from "./tokens/golem-enchantment-artifact-token.js";
 import _tokensGolemFlyingToken from "./tokens/golem-flying-token.js";
 import _tokensGolemTokenGolemFoundry from "./tokens/golem-token-golem-foundry.js";
@@ -10174,7 +10180,11 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCuriosity,
   _poolCuriousAltisaur,
   _poolCuriousPair,
+  _poolCurseOfBounty,
+  _poolCurseOfDisturbance,
+  _poolCurseOfOpulence,
   _poolCurseOfTheSwine,
+  _poolCurseOfVerbosity,
   _poolCursebreak,
   _poolCursedFlesh,
   _poolCursedMinotaur,
@@ -16084,6 +16094,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTremble,
   _poolTrenchingSteed,
   _poolTrenoDarkCity,
+  _poolTrespassersCurse,
   _poolTresserhornSinks,
   _poolTrevasAttendant,
   _poolTributeMage,
@@ -17076,6 +17087,7 @@ export const TOKEN_CARDS: readonly CardDefinition[] = [
   _tokensGoblinTokenGoblinSpymaster,
   _tokensGoblinTokenHaste,
   _tokensGoblinToken,
+  _tokensGoldToken,
   _tokensGolemEnchantmentArtifactToken,
   _tokensGolemFlyingToken,
   _tokensGolemTokenGolemFoundry,

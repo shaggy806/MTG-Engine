@@ -215,6 +215,7 @@ import _poolTitaniaProtectorOfArgoth from "../pool/titania-protector-of-argoth.j
 import _poolTragicPoet from "../pool/tragic-poet.js";
 import _poolTraumatize from "../pool/traumatize.js";
 import _poolTraxosScourgeOfKroog from "../pool/traxos-scourge-of-kroog.js";
+import _poolTrespassersCurse from "../pool/trespassers-curse.js";
 import _poolTwiceTheRage from "../pool/twice-the-rage.js";
 import _poolTwilightPanther from "../pool/twilight-panther.js";
 import _poolUlvenwaldTracker from "../pool/ulvenwald-tracker.js";
@@ -461,6 +462,7 @@ const shard: CardShard = {
     _poolTragicPoet,
     _poolTraumatize,
     _poolTraxosScourgeOfKroog,
+    _poolTrespassersCurse,
     _poolTwiceTheRage,
     _poolTwilightPanther,
     _poolUlvenwaldTracker,

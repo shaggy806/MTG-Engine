@@ -46,6 +46,7 @@ import _poolCouriersCapsule from "../pool/couriers-capsule.js";
 import _poolCourtOfArdenvale from "../pool/court-of-ardenvale.js";
 import _poolCravenGiant from "../pool/craven-giant.js";
 import _poolCrystalShard from "../pool/crystal-shard.js";
+import _poolCurseOfBounty from "../pool/curse-of-bounty.js";
 import _poolCurseOfTheSwine from "../pool/curse-of-the-swine.js";
 import _poolDaemogothTitan from "../pool/daemogoth-titan.js";
 import _poolDaggerfangDuo from "../pool/daggerfang-duo.js";
@@ -300,6 +301,7 @@ const shard: CardShard = {
     _poolCourtOfArdenvale,
     _poolCravenGiant,
     _poolCrystalShard,
+    _poolCurseOfBounty,
     _poolCurseOfTheSwine,
     _poolDaemogothTitan,
     _poolDaggerfangDuo,

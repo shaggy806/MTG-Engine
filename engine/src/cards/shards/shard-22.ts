@@ -53,6 +53,7 @@ import _poolCrookedCustodian from "../pool/crooked-custodian.js";
 import _poolCryptSliver from "../pool/crypt-sliver.js";
 import _poolCrystallizedSerah from "../pool/crystallized-serah.js";
 import _poolCullingRitual from "../pool/culling-ritual.js";
+import _poolCurseOfDisturbance from "../pool/curse-of-disturbance.js";
 import _poolCursedMirror from "../pool/cursed-mirror.js";
 import _poolDeadlyTempest from "../pool/deadly-tempest.js";
 import _poolDeathGrasp from "../pool/death-grasp.js";
@@ -336,6 +337,7 @@ const shard: CardShard = {
     _poolCryptSliver,
     _poolCrystallizedSerah,
     _poolCullingRitual,
+    _poolCurseOfDisturbance,
     _poolCursedMirror,
     _poolDeadlyTempest,
     _poolDeathGrasp,
