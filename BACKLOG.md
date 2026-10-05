@@ -182,6 +182,13 @@ under count budgets).
   games, `bot:diff`), where the old search cast Shiko. Bench level; worth a scenario from a live
   game before changing it.
 - **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go.
+
+## Client / UI
+
+One line each; the detail is in **`docs/client-gaps.md`**, under the same bold title, and the
+animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete both when an
+item lands.
+
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
 - **A creature's total toxic value isn't in the player view.**
