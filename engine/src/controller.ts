@@ -1501,6 +1501,22 @@ export function payoffFirst<T extends Action>(
   return null;
 }
 
+/**
+ * Whether `name` is an instant that hands its target's controller a creature
+ * token for what it takes — Beast Within's 3/3 Beast, Pongify's Ape. Cast on
+ * that player's own turn, the token can't attack until their next one; cast
+ * on ours, it's ready for theirs. Reported from a live game (2026-10-04):
+ * Beast Within on dave's Nesting Dragon in alice's own main phase.
+ */
+export function compensatesTarget(registry: CardRegistry, name: string): boolean {
+  if (!registry.has(name)) return false;
+  const def = registry.get(name);
+  if (!def.types.includes("instant")) return false;
+  return /"kind":"create-token"[^}]*"who":"target-controller"|"who":"target-controller"[^}]*"kind":"create-token"/.test(
+    JSON.stringify(def.effect ?? null),
+  );
+}
+
 export class HeuristicBotController extends AutomaticController {
   private readonly registry: CardRegistry;
   /** `source:abilityIndex` -> activations so far, for `activationTurn`. */
@@ -1915,6 +1931,24 @@ export class HeuristicBotController extends AutomaticController {
     return !state.zones.shared.stack.some((id) => {
       const object = state.objects[id];
       return object !== undefined && object.kind === "card" && object.controller !== this.playerId;
+    });
+  }
+
+  /**
+   * Whether `action` casts a removal instant that compensates its target's
+   * controller with a token (`compensatesTarget`) at a creature or permanent
+   * of an opponent whose turn it isn't: held for that player's turn, when the
+   * token arrives too late to attack.
+   */
+  protected holdsCompensationFor(state: GameState, action: Action): boolean {
+    if (action.type !== "cast-spell") return false;
+    const name = state.objects[action.card]?.cardName ?? "";
+    if (!compensatesTarget(this.registry, name)) return false;
+    const active = activePlayerOf(state);
+    return (action.targets ?? []).some((target) => {
+      if (target?.kind !== "object") return false;
+      const controller = state.objects[target.object]?.controller;
+      return controller !== undefined && controller !== this.playerId && controller !== active;
     });
   }
 
@@ -2572,7 +2606,10 @@ export class HeuristicBotController extends AutomaticController {
         !this.wastedNow(view.state, o) &&
         !this.holdsForASpell(view.state, o) &&
         !this.holdsWipeForCombat(view.state, o) &&
-        !this.holdsManaForMain(view.state, o),
+        !this.holdsManaForMain(view.state, o) &&
+        // A token-compensating removal instant waits for an opponent's turn
+        // (`holdsCompensationFor`, which v2 checks against the target).
+        !(compensatesTarget(this.registry, o.cardName) && activePlayerOf(view.state) === this.playerId),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>

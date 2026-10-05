@@ -209,17 +209,19 @@ describe("HeuristicBotController — aiming", () => {
   });
 
   it("finds the newest threat on a wide four-player board", () => {
-    // Beast Within can hit any permanent; the board's oldest are lands, and
+    // Vindicate can hit any permanent; the board's oldest are lands, and
     // the one worth destroying is carol's Craw Wurm, the sixteenth option.
+    // (It was Beast Within, which now waits for its target's controller's
+    // turn — `holdsCompensationFor`.)
     const game = atMain("Forest", [A, B, C, D]);
     for (const player of [A, B, C, D]) {
-      for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", player, "battlefield");
+      for (let i = 0; i < 3; i += 1) game.debugSpawn(player === A ? (i === 0 ? "Plains" : "Swamp") : "Forest", player, "battlefield");
     }
     creature(game, "Grizzly Bears", A);
     creature(game, "Llanowar Elves", B);
     creature(game, "Grizzly Bears", D);
     const wurm = creature(game, "Craw Wurm", C);
-    game.debugSpawn("Beast Within", A, "hand");
+    game.debugSpawn("Vindicate", A, "hand");
     const action = new HeuristicBotController(A).act(viewOf(game, A));
     expect(action.type).toBe("cast-spell");
     expect(onlyTarget(action)).toEqual({ kind: "object", object: wurm });

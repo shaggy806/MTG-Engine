@@ -1387,6 +1387,90 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "fetches two different basics when every colour is covered",
+    rule: "A search for two basic lands takes two colours, not two of one.",
+    position(registry) {
+      // Captured from a live game (2026-10-04, D8YAV turn 10): Encroaching
+      // Dragonstorm found two Forests for a Temur deck with Command Tower out.
+      // Every colour already had a source, so nothing ranked above library
+      // order (`newColorsFirst` now spreads by sources).
+      const game = table(registry, [A, B], A);
+      game.state.players[A].commanderIdentity = ["U", "R", "G"];
+      onBoard(game, "Forest", A);
+      onBoard(game, "Command Tower", A);
+      lands(game, "Forest", A, 3);
+      const library = game.state.zones.perPlayer[A].library;
+      // The search offers the library in order: two Forests first.
+      for (const name of ["Mountain", "Island"]) {
+        const id = game.debugSpawn(name, A, "library");
+        library.splice(library.indexOf(id), 1);
+        library.push(id);
+      }
+      const storm = game.debugSpawn("Encroaching Dragonstorm", A, "battlefield", { announceEntry: true });
+      void storm;
+      game.advanceUntil((s) => s.awaiting?.kind === "choose-from-zone" || s.result.over);
+      if (game.state.awaiting?.kind !== "choose-from-zone") {
+        return { passed: false, detail: "Encroaching Dragonstorm never asked for lands" };
+      }
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const chosen = action.type === "choose-from-zone" ? action.chosen : [];
+          const names = chosen.map((id) => cardOf(game, id));
+          return {
+            passed: chosen.length === 2 && new Set(names).size === 2,
+            detail: `took ${names.join(", ") || "nothing"}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
+    name: "keeps its life rather than swap 40 for a 0/40 Tree of Redemption",
+    rule: "Toughness past anything on the table that could hit it is worth nothing more.",
+    position(registry) {
+      // Captured from a live game (2026-10-04, HB5MR turn 18): at 40 life bob
+      // swapped his life with Tree of Redemption's 13 toughness — down to 13
+      // for a 0/40 wall. Toughness counted without a ceiling outscored the
+      // 27 life (`TOUGHNESS_CAP` in `features.ts`).
+      const game = table(registry, [A, B, C, D], A);
+      for (const player of [A, B, C, D]) game.state.players[player].life = 40;
+      const tree = onBoard(game, "Tree of Redemption", A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "activate-ability" && action.source === tree),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "holds Beast Within for the Dragon's controller's turn",
+    rule: "Removal that hands its target's controller a token waits for their turn, when the token can't attack.",
+    position(registry) {
+      // Captured from a live game (2026-10-04, D8YAV turn 15): alice cast
+      // Beast Within on dave's Nesting Dragon in her own main phase, so
+      // dave's 3/3 Beast was ready for his turn (`holdsCompensationFor`).
+      const game = table(registry, [A, B, C, D], A);
+      for (const player of [A, B, C, D]) game.state.players[player].life = 40;
+      lands(game, "Forest", A, 3);
+      lands(game, "Mountain", D, 5);
+      const within = game.debugSpawn("Beast Within", A, "hand");
+      onBoard(game, "Nesting Dragon", D);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "cast-spell" && action.card === within),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "fetches the colour it can't make yet",
     rule: "A land search takes a land of a missing colour over another of one it has.",
     position(registry) {

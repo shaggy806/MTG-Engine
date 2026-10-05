@@ -639,6 +639,9 @@ export class EvalBotController extends HeuristicBotController {
           // A draw aimed at a player is a cantrip aimed at us (Compulsive
           // Research's "target player draws three").
           if (due && cantrip === null && aimedOnlyAt(action, player)) cantrip = action;
+          // Beast Within and kin wait for the target's controller's turn
+          // (`holdsCompensationFor`), when their token can't attack.
+          if (this.holdsCompensationFor(view.state, action)) continue;
           const verdict = this.opponentPump(view.state, legal, action);
           if (verdict === "drop") continue;
           if (verdict !== "ok") mustKill.set(action, verdict.kills);

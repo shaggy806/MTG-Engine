@@ -143,6 +143,11 @@ const LIFE_DANGER_AT = 15;
  */
 const LIFE_SURPLUS_ABOVE = 30;
 
+/** The most toughness one creature counts for (`toughness`). Its combat
+ * damage is a separate term, so a Felothar wall that hits with its toughness
+ * keeps that in full. */
+const TOUGHNESS_CAP = 10;
+
 /**
  * What losing `damage` life from `life` costs the evaluation: `life` a
  * point, plus `lifeDanger` for each point that lands below
@@ -719,7 +724,10 @@ function playerFeaturesUncached(
       // Doran, the Siege Tower and the like — what these two terms measure.
       const damage = combatDamageOf(c);
       power += damage * n;
-      toughness += c.toughness * n;
+      // Capped: a wall's toughness past anything on the table that could
+      // hit it blocks no better. Uncapped, Tree of Redemption's swap of 40
+      // life for a 0/40 scored as a gain (a live capture, 2026-10-04).
+      toughness += Math.min(c.toughness, TOUGHNESS_CAP) * n;
       if (count(c, EVASION) > 0) evasivePower += damage * n;
       // A 1/1 token: `creatures` prices every body alike, so before this one
       // outweighed two cards and v2 wouldn't Skullclamp it or feed it to

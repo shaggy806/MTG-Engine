@@ -584,6 +584,17 @@ Bears by while every opponent holds a full grip", the second wrong under the fla
 `bot:diff` against c513665e: none of 32,997 decisions over 12 four-player games — hands near
 three, where nothing changes, are the common case.
 
+**After the plan: the 2026-10-04 evening captures.** Seven captured from the user's dev-server
+games. Fixed, each with a gate scenario that fails without it: Tree of Redemption swapping 40 life
+for a 0/40 (`toughness` now counts at most `TOUGHNESS_CAP` 10 a creature); Encroaching
+Dragonstorm taking two Forests with Command Tower out (`newColorsFirst` now spreads a multi-land
+search by sources, not only missing colours); Beast Within cast in our own main phase
+(`holdsCompensationFor` keeps a token-compensating removal instant for its target's
+controller's turn). Already right on today's build: Sol Ring behind a tapped Woodland Cemetery
+on turn one (`earlyMana`), Adaptive Training Post with nothing to copy (the chained-spells
+work). Open: Colfenor's Urn before Citywide Bust (BACKLOG), and the attack spread at the open
+player (a question for the user).
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the

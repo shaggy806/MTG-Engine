@@ -152,7 +152,7 @@ under count budgets).
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).
-- **More training scenarios.** 117 hand-built scenarios, all of them gating
+- **More training scenarios.** 120 hand-built scenarios, all of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
@@ -176,6 +176,12 @@ under count budgets).
   only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
   games, `bot:diff`), where the old search cast Shiko. Bench level; worth a scenario from a live
   game before changing it.
+- **A payoff permanent before the spell that triggers it, beyond cast triggers** (a capture,
+  2026-10-04, HB5MR turn 22): bob cast Citywide Bust without casting Colfenor's Urn first, which
+  would have caught his Tree of Redemption and Felothar as they died. The search scores the Urn
+  alone (its rollouts pass our seat for the rest of the turn); `castPayoff`/`payoffFirst` cover
+  only "whenever you cast" payoffs. The same reach for "dies" and "leaves" payoffs in hand would
+  catch it.
 - **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go.
 
 ## Client / UI

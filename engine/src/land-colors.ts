@@ -120,10 +120,17 @@ function colorWants(
 }
 
 /**
- * `ids` — cards a search or a "look at" may take — with the lands that make
- * the most wanted missing colours first (`colorWants`); otherwise in the
- * order given (stable). Only reorders a choice among lands alone: a tutor
- * that could take anything is left to whatever ranks it.
+ * `ids` — cards a search or a "look at" may take — best first: the lands that
+ * make the most wanted missing colours (`colorWants`), then the ones that make
+ * the colours we have the fewest sources of, counting each land as it's taken,
+ * so a search for two takes two different basics. Ties keep the order given.
+ * Only reorders a choice among lands alone: a tutor that could take anything
+ * is left to whatever ranks it.
+ *
+ * Reported from a live game (2026-10-04): Encroaching Dragonstorm found two
+ * Forests for a Temur deck with an Island and a Mountain on offer — Command
+ * Tower already made every colour, so nothing was "missing" and library order
+ * stood.
  */
 export function newColorsFirst(
   state: GameState,
@@ -136,15 +143,40 @@ export function newColorsFirst(
     return name !== undefined && registry.has(name) && registry.get(name).types.includes("land");
   });
   if (!lands || ids.length < 2) return [...ids];
-  const missing = missingColors(state, registry, me);
-  if (missing.size === 0) return [...ids];
   const identity = state.players[me]?.commanderIdentity ?? [];
-  const want = colorWants(state, registry, me, missing, identity);
-  const gain = new Map<ObjectId, number>();
-  for (const id of ids) {
-    let n = 0;
-    for (const c of colorsOf(state, registry, id, identity)) n += want.get(c) ?? 0;
-    gain.set(id, n);
+  const missing = missingColors(state, registry, me);
+  const want = missing.size === 0 ? new Map<Color, number>() : colorWants(state, registry, me, missing, identity);
+  // What each colour the deck uses is made by now: the permanents we control.
+  const useful = new Set<Color>(identity.length > 0 ? identity : COLORS);
+  const sources = new Map<Color, number>([...useful].map((c) => [c, 0]));
+  for (const id of state.zones.shared.battlefield) {
+    if (state.objects[id]?.controller !== me) continue;
+    for (const c of colorsOf(state, registry, id, identity)) {
+      if (sources.has(c)) sources.set(c, (sources.get(c) ?? 0) + 1);
+    }
   }
-  return [...ids].sort((a, b) => (gain.get(b) ?? 0) - (gain.get(a) ?? 0));
+  const colors = new Map(ids.map((id) => [id, colorsOf(state, registry, id, identity)]));
+  const score = (id: ObjectId): number => {
+    let missingGain = 0;
+    let spread = 0;
+    for (const c of colors.get(id) ?? []) {
+      missingGain += want.get(c) ?? 0;
+      if (sources.has(c)) spread += 1 / (1 + (sources.get(c) ?? 0));
+    }
+    // A missing colour outranks any spread.
+    return missingGain * 100 + spread;
+  };
+  const left = [...ids];
+  const out: ObjectId[] = [];
+  while (left.length > 0) {
+    let best = 0;
+    for (let i = 1; i < left.length; i += 1) if (score(left[i]) > score(left[best])) best = i;
+    const [id] = left.splice(best, 1);
+    out.push(id);
+    for (const c of colors.get(id) ?? []) {
+      if (sources.has(c)) sources.set(c, (sources.get(c) ?? 0) + 1);
+      want.delete(c);
+    }
+  }
+  return out;
 }
