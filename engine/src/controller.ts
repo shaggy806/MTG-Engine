@@ -513,7 +513,7 @@ export class AutomaticController implements PlayerController {
     );
   }
 
-  payLifeForUntapped(): boolean {
+  payLifeForUntapped(_view: ControllerView, _source: ObjectId, _life: number): boolean {
     // Conservative default: never bleed life for an untapped land (declining
     // is always legal). Tests that care override via a ScriptedController.
     return false;
@@ -1426,6 +1426,33 @@ function lifePaidBy(effect: EffectSpec | undefined): number {
   return effect.kind === "lose-life" && effect.who === "you" && typeof effect.amount === "number"
     ? effect.amount
     : 0;
+}
+
+/** Shock lands are paid for only while life stays above this after paying —
+ * the evaluation's danger line (`LIFE_DANGER_AT` in `bot/features.ts`). */
+const SHOCK_LIFE_FLOOR = 15;
+
+/**
+ * Whether `name` is a permanent spell with a landfall trigger of its own
+ * ("whenever a land you control enters"): cast before the turn's land drop,
+ * it sees the land enter. Mana is the same in either order, so casting it
+ * first costs nothing. Reported from a live game (2026-10-04): a bot played
+ * a Swamp and then Jaddi Offshoot, missing a life.
+ */
+export function isLandfallPermanent(registry: CardRegistry, name: string): boolean {
+  if (!registry.has(name)) return false;
+  const def = registry.get(name);
+  if (def.types.includes("instant") || def.types.includes("sorcery") || def.types.includes("land")) return false;
+  return def.triggered.some((ability) => {
+    const trigger = ability.trigger as {
+      readonly on?: unknown;
+      readonly who?: unknown;
+      readonly filter?: { readonly type?: unknown; readonly types?: unknown };
+    };
+    if (trigger.on !== "enters-battlefield" || trigger.who !== "you-control") return false;
+    const filter = trigger.filter;
+    return filter?.type === "land" || (Array.isArray(filter?.types) && filter.types.includes("land"));
+  });
 }
 
 export class HeuristicBotController extends AutomaticController {
@@ -2378,6 +2405,24 @@ export class HeuristicBotController extends AutomaticController {
     return chooseBottomOfHand(cards, this.registry, count, lands);
   }
 
+  /**
+   * Pay a shock land's life (Stomping Ground's 2) when the land untapped lets
+   * a spell be cast this turn that it wouldn't tapped, and life stays above
+   * `SHOCK_LIFE_FLOOR` after paying. Otherwise let it enter tapped. The bots
+   * used to never pay, so a lone Stomping Ground beside Birds of Paradise
+   * came in tapped and the Birds waited a turn.
+   */
+  payLifeForUntapped(view: ControllerView, _source: ObjectId, life: number): boolean {
+    const have = view.state.players[this.playerId]?.life ?? 0;
+    if (have - life <= SHOCK_LIFE_FLOOR) return false;
+    const castable = (pay: boolean): number => {
+      const after = view.legalActionsAfter?.({ type: "pay-life-for-untapped", player: this.playerId, pay });
+      if (after === null || after === undefined) return 0;
+      return new Set(after.flatMap((a) => (a.kind === "cast-spell" ? [a.card] : []))).size;
+    };
+    return castable(true) > castable(false);
+  }
+
   /** Surplus lands, then the most expensive spells — see `chooseBottomOfHand`. */
   chooseBottomOfLibrary(
     hand: readonly GameObject[],
@@ -2407,7 +2452,19 @@ export class HeuristicBotController extends AutomaticController {
     const options = view.legalActions();
 
     const lands = options.filter((o): o is PlayLandLegal => o.kind === "play-land");
-    if (lands.length > 0) return this.toPlayLand(this.bestLand(view, lands));
+    if (lands.length > 0) {
+      // A landfall permanent castable now goes first, so the land drop
+      // triggers it (`isLandfallPermanent`).
+      const landfall = options.find(
+        (o): o is CastSpellLegal =>
+          o.kind === "cast-spell" &&
+          o.face === undefined &&
+          isLandfallPermanent(this.registry, view.state.objects[o.card]?.cardName ?? "") &&
+          !this.taxWouldKill(view.state, o),
+      );
+      if (landfall !== undefined) return this.toCastSpell(view.state, landfall);
+      return this.toPlayLand(this.bestLand(view, lands));
+    }
 
     const fetch = options.find(
       (o): o is ActivateAbilityLegal =>

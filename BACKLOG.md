@@ -152,7 +152,7 @@ under count budgets).
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): chained spells
   invisible to the search; token payoffs beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).
-- **More training scenarios.** 112 hand-built scenarios, 110 of them gating
+- **More training scenarios.** 113 hand-built scenarios, all of them gating
   (`bot/scenarios.ts`). Not yet covered: mulligans (`mulligan-policy.test.ts`). More come from
   live games: the in-game Capture button (`--capture`) saves a position to `captures/`, which
   `bot:scenarios` and `bot:fit-scenarios` read as training scenarios, as does each blunder
@@ -176,7 +176,6 @@ under count budgets).
 - **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
   Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
   token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
-- **Live misplays** (`docs/bot-misplays.md`, recorded with the `bot-misplay` skill): open are casting a landfall creature before the land drop (Jaddi Offshoot) and never paying a shock land's 2 life to cast a spell that turn (Stomping Ground and Birds of Paradise). Each has a training scenario.
 - **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go.
 - **A smarter default trigger order.** A player who orders their own triggers is asked (the
   `order-triggers` decision, opt-in like MTG Arena's "auto order" switch); everyone else, bots

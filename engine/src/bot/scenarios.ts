@@ -1270,14 +1270,12 @@ const SCENARIOS: readonly BotScenario[] = [
   asked({
     name: "pays 2 life for an untapped Stomping Ground to cast Birds of Paradise",
     rule: "With only a shock land to make this turn's mana, 2 life at 40 is worth a turn-one mana creature.",
-    kind: "training",
     position(registry) {
-      // Found recording the Stomping Ground report above: neither bot ever
-      // pays a shock land's life (`AutomaticController.payLifeForUntapped`
-      // returns false), so a Stomping Ground always enters tapped, and v1's
-      // land ranking (`castableAfter`) can't see a spell behind it — playing
-      // one stops at the pay decision. Turn one, Stomping Ground and Birds in
-      // hand: right is to pay and cast the Birds.
+      // Found recording the Stomping Ground report above: neither bot paid a
+      // shock land's life, so a lone Stomping Ground always entered tapped.
+      // v1 now pays when the untapped land casts a spell this turn
+      // (`payLifeForUntapped`), and v2 takes its answer, since its rollouts
+      // pass our seat for the rest of the turn and never see the spell.
       const game = table(registry, [A, B, C, D], A);
       game.state.turn.number = 1;
       const ground = game.debugSpawn("Stomping Ground", A, "hand");
@@ -1297,14 +1295,38 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "lets Stomping Ground enter tapped with nothing to cast",
+    rule: "A shock land's 2 life buys nothing when no spell this turn needs the land untapped.",
+    position(registry) {
+      // The other side of "pays 2 life for an untapped Stomping Ground": with
+      // only a Craw Wurm in hand there's nothing to cast this turn.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      const ground = game.debugSpawn("Stomping Ground", A, "hand");
+      game.debugSpawn("Craw Wurm", A, "hand");
+      game.dispatch({ type: "play-land", player: A, card: ground });
+      if (game.state.awaiting?.kind !== "pay-life-for-untapped") {
+        return { passed: false, detail: "Stomping Ground never asked to pay 2 life" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "pay-life-for-untapped" && !action.pay,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "casts Jaddi Offshoot before its land drop",
     rule: "A landfall creature castable without the land drop goes first, so the land triggers it.",
-    kind: "training",
     position(registry) {
       // Reported from a live game (2026-10-04, no capture): on turn 2 a bot
       // played a Swamp and then Jaddi Offshoot, when casting the Offshoot off
       // its Forest first would have gained a life from the Swamp's landfall.
-      // Both bots play a land before anything else whenever they can.
+      // Both bots played a land before anything else; a landfall permanent
+      // castable now goes first since (`isLandfallPermanent`).
       const game = table(registry, [A, B, C, D], A);
       game.state.turn.number = 5;
       lands(game, "Forest", A, 1);

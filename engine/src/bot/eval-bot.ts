@@ -26,7 +26,7 @@ import type { Action, AttackerDeclaration, BlockerDeclaration, LegalAction } fro
 import type { CardRegistry } from "../cards.js";
 import { withRequiredAttackers } from "../combat/attacking.js";
 import { createDefaultRegistry } from "../cards.js";
-import { HeuristicBotController } from "../controller.js";
+import { HeuristicBotController, isLandfallPermanent } from "../controller.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
@@ -670,6 +670,20 @@ export class EvalBotController extends HeuristicBotController {
     // side means giving up a spell, which is exactly the trade the search is
     // for.
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
+    // A landfall permanent this window would cast goes before the land drop,
+    // so the land triggers it — the same mana either way (`isLandfallPermanent`).
+    if (lands.length > 0) {
+      const landfall = candidates.find(
+        (a) =>
+          a.type === "cast-spell" &&
+          a.face === undefined &&
+          isLandfallPermanent(this.cards, view.state.objects[a.card]?.cardName ?? ""),
+      );
+      if (landfall !== undefined) {
+        this.lastDecision = audit("priority", null);
+        return landfall;
+      }
+    }
     // **Nor is cracking a fetch** (`isFreeFetch`): it makes no mana, so
     // holding it gains nothing, and the evaluation scores a land traded for a
     // tapped land as a wash and passed. Which land to find is still searched,
@@ -1043,6 +1057,14 @@ export class EvalBotController extends HeuristicBotController {
    * priority move, v1's (`inherited`) the one to beat.
    */
   private decide(view: ControllerView, inherited: Action): Action {
+    // A shock land's 2 life is v1's call (`payLifeForUntapped`): it pays only
+    // for a spell the untapped land casts this turn, and the rollouts pass our
+    // own seat for the rest of the turn, so they never see that spell and
+    // price paying as 2 life for nothing — as with a land drop.
+    if (view.state.awaiting?.kind === "pay-life-for-untapped") {
+      this.lastDecision = audit("decision", null);
+      return inherited;
+    }
     const budget = this.budget(Math.min(DECISION_ROLLOUTS, this.maxSimulations));
     const answer = bestDecision(
       view,
