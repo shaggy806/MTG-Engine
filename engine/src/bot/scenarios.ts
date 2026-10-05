@@ -1363,6 +1363,77 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "plays its tapped land when the untapped one casts nothing more",
+    rule: "When no land drop casts anything more this turn, the land that enters tapped goes down now and the untapped one waits for a turn it matters.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-05, no capture): a Temur dragons bot
+      // on four lands played a Forest while holding Valgavoth's Lair, with
+      // nothing in hand a fifth untapped mana could cast (Heroic Intervention
+      // was castable either way). Next turn the Lair enters tapped, and Rorix
+      // Bladewing's {R}{R}{R} waits a turn more. v1's `bestLand` ranks by
+      // `castableAfter` (a tie here), then by pips no land on board pays —
+      // the Lair's "chosen" mana counts for no colour, so the Forest's green
+      // wins; nothing weighs "enters tapped". v2's land search plays v1's
+      // pick first, and its rollouts pass our seat, so it ties.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 17; // alice's fifth turn
+      for (const land of ["Temple of Abandon", "Forest", "Island", "Frontier Bivouac"]) onBoard(game, land, A);
+      game.debugSpawn("Forest", A, "hand");
+      const lair = game.debugSpawn("Valgavoth's Lair", A, "hand");
+      for (const card of [
+        "Broodcaller Scourge",
+        "Last March of the Ents",
+        "Drakuseth, Maw of Flames",
+        "Rorix Bladewing",
+        "Heroic Intervention",
+      ]) {
+        game.debugSpawn(card, A, "hand");
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === lair,
+          detail: `chose ${action.type === "play-land" ? cardOf(game, action.card) : describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "names a colour its deck plays for Valgavoth's Lair",
+    rule: "A land that taps for one chosen colour names a colour the deck's own spells need, never one outside its colour identity.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-05, no capture): a Temur bot named
+      // white for Valgavoth's Lair. The choice is asked as a
+      // "choose-creature-type" over the five colours, whose suggestions are
+      // only computed for the creature-type catalog, so every controller
+      // answers `suggested[0] ?? options[0]` — white, always.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 17;
+      const commander = onBoard(game, "Eshki, Temur's Roar", A);
+      game.state.objects[commander].isCommander = true;
+      for (const land of ["Forest", "Island"]) onBoard(game, land, A);
+      game.debugSpawn("Rorix Bladewing", A, "hand");
+      game.debugSpawn("Drakuseth, Maw of Flames", A, "hand");
+      const lair = game.debugSpawn("Valgavoth's Lair", A, "hand");
+      game.dispatch({ type: "play-land", player: A, card: lair });
+      if (game.state.awaiting?.kind !== "choose-creature-type") {
+        return { passed: false, detail: "Valgavoth's Lair never asked for a colour" };
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          // Red: the hand's two dragons want {R}{R}{R} and nothing on board makes it.
+          passed: action.type === "choose-creature-type" && action.creatureType === "R",
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "casts Jaddi Offshoot before its land drop",
     rule: "A landfall creature castable without the land drop goes first, so the land triggers it.",
     position(registry) {
@@ -2519,6 +2590,36 @@ const SCENARIOS: readonly BotScenario[] = [
       return {
         passed: atBob >= 8,
         detail: `sent ${atBob} at bob (${attackers.map((d) => `${d.count ?? "all"}→${String(d.defender)}`).join(", ") || "nothing"})`,
+      };
+    },
+  },
+  {
+    name: "sends only enough of a token stack to kill a planeswalker",
+    rule: "Five 1/1s kill a five-loyalty planeswalker; the other eight stay home to block.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-05, no capture): a bot swung all
+      // thirteen of its creature tokens at a planeswalker with 5 loyalty,
+      // when five would have killed it and eight could have stayed back as
+      // blockers. Here the walker's controller has nothing to block with and
+      // the other two opponents have a board that can swing back.
+      const game = table(registry, [A, B, C, D], A);
+      for (const p of [A, B, C, D]) game.state.players[p].life = 40;
+      const stack = onBoard(game, "Soldier Token", A);
+      game.state.objects[stack].isToken = true;
+      game.state.objects[stack].stackCount = 13;
+      const garruk = onBoard(game, "Garruk Wildspeaker", B);
+      game.state.objects[garruk].counters.loyalty = 5;
+      for (const p of [C, D]) for (let i = 0; i < 3; i += 1) onBoard(game, "Grizzly Bears", p);
+      game.advanceUntil((s) => s.awaiting?.kind === "attackers" && s.awaiting.player === A);
+      const attackers = makeBot(A, registry, weights).declareAttackers(viewOf(game, A));
+      const sent = (d: (typeof attackers)[number]): number =>
+        d.count ?? game.state.objects[d.attacker]?.stackCount ?? 1;
+      const atGarruk = attackers.filter((d) => d.defender === garruk).reduce((n, d) => n + sent(d), 0);
+      const home = 13 - attackers.reduce((n, d) => n + sent(d), 0);
+      return {
+        passed: atGarruk >= 5 && home >= 8,
+        detail: `sent ${atGarruk} at Garruk, kept ${home} home (${attackers.map((d) => `${d.count ?? "all"}→${String(d.defender)}`).join(", ") || "nothing"})`,
       };
     },
   },
