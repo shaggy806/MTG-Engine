@@ -37,7 +37,6 @@ import type {
   AwaitingDecision,
   ControllerView,
   GameState,
-  LegalAction,
   ObjectId,
   PlayerController,
   PlayerId,
@@ -611,14 +610,7 @@ export class Room {
     for (let i = 0; i < CONCEDE_DECISION_LIMIT; i += 1) {
       const awaiting = this.game.state.awaiting;
       if (awaiting === null || awaiting.kind === "mulligan" || awaiting.player !== seat) break;
-      let legal: readonly LegalAction[] | undefined;
-      this.game.dispatch(
-        stand.act({
-          state: this.game.state,
-          player: seat,
-          legalActions: () => (legal ??= this.game.legalActions(seat)),
-        }),
-      );
+      this.game.dispatch(stand.act(this.game.controllerView(seat)));
     }
     this.game.concede(seat);
     this.bots.delete(seat);
@@ -918,16 +910,13 @@ export class Room {
   private botAction(seat: PlayerId): Action {
     const bot = this.bots.get(seat);
     if (bot === undefined) throw new Error(`no bot on seat ${seat}`);
-    // Worked out once per question, as `Game`'s own controller view does:
-    // nothing changes the state while a bot decides, and v2 alone asks three
-    // times (v1's pick, its candidates, a decision's offer) — each a full
-    // enumeration of the board's targets.
-    let legal: readonly LegalAction[] | undefined;
-    const view: ControllerView = {
-      state: this.game.state,
-      player: seat,
-      legalActions: () => (legal ??= this.game.legalActions(seat)),
-    };
+    // `Game`'s own controller view — the one the bot tools, benches and
+    // scenarios decide with. A view built here had only `legalActions`, so
+    // everything a bot works out by trying a move first (`legalActionsAfter`:
+    // the land that casts a spell this turn, paying for a shock land, a cast
+    // payoff first) did nothing in a real room: a captured Sol Ring stayed in
+    // hand behind a tapped Woodland Cemetery (2026-10-04).
+    const view: ControllerView = this.game.controllerView(seat);
     // Captured only where there was a choice: a window where passing and
     // tapping for mana are all there is teaches nothing.
     const captured =

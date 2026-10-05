@@ -702,6 +702,31 @@ describe("Room", () => {
       expect(() => room.claimSeat(ALICE, "token-a", connection)).toThrow(/played by a bot/);
     });
 
+    it("decides with the game's full controller view: plays the land that casts Sol Ring", () => {
+      // A bot used to be handed a view with only `legalActions`, so every
+      // check that tries a move first (`legalActionsAfter`) saw nothing in a
+      // real room: on turn one it played a Woodland Cemetery, tapped, over the
+      // Swamp that casts Sol Ring (a capture, 2026-10-04).
+      const game = Game.create({
+        seed: 1,
+        shuffle: false,
+        decks: [
+          { player: ALICE, cards: Array<string>(40).fill("Forest") },
+          { player: BOB, cards: Array<string>(40).fill("Forest") },
+        ],
+      });
+      game.advanceUntil((s) => s.priority.holder === ALICE && s.turn.step === "precombat-main");
+      game.state.zones.perPlayer[ALICE].hand = [];
+      for (const name of ["Woodland Cemetery", "Swamp", "Sol Ring"]) game.debugSpawn(name, ALICE, "hand");
+      const room = new Room("VIEW1", game, { pacing: "immediate" });
+      room.addBot(ALICE);
+      const mine = room.game.state.zones.shared.battlefield
+        .filter((id) => room.game.state.objects[id].controller === ALICE)
+        .map((id) => room.game.state.objects[id].cardName);
+      expect(mine).toContain("Swamp");
+      expect(mine).toContain("Sol Ring");
+    });
+
     it("rejects adding a second bot to an already-bot seat", () => {
       const room = makeRoom();
       room.addBot(ALICE);
