@@ -589,9 +589,7 @@ export const SAMPLE_DECKS: readonly SampleDeck[] = [
       ["Will of the Jeskai", 1],
       ["Young Pyromancer", 1],
     ],
-    substitutions: [
-      sub("Transforming Flourish", "Stroke of Midnight", "Three-mana instant: removal."),
-    ],
+    substitutions: [],
   }),
   precon({
     name: "Draconic Destruction",

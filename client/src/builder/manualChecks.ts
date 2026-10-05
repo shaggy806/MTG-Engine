@@ -2414,6 +2414,13 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
   ),
   preset(
+    'Transforming Flourish, Creative Technique, Incarnation Technique, Replication Technique',
+    board({
+      you: { bf: ['Mountain*3', 'Runeclaw Bear'], hand: ['Transforming Flourish'], lib: ['Forest', 'Hill Giant'] },
+      opp: [{ human: true, bf: ['Grizzly Bears'], lib: ['Forest', 'Lightning Bolt'] }, { bf: ['Hill Giant'], lib: ['Swamp', 'Grizzly Bears'] }],
+    }),
+  ),
+  preset(
     'Archon of Falling Stars returning a Curse',
     board({
       you: { bf: ['Archon of Falling Stars', 'Swamp*3'], hand: ['Murder'], gy: ['Curse of Verbosity'] },

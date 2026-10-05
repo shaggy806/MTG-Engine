@@ -82,6 +82,36 @@ export const undying = (): TriggeredAbility => ({
 });
 
 /**
+ * Demonstrate (rule 702.144a): "When you cast this spell, you may copy it and
+ * you may choose new targets for the copy. If you copy the spell, choose an
+ * opponent. That player copies the spell and may choose new targets for that
+ * copy." Your copy goes on the stack above the spell and theirs above yours,
+ * so theirs resolves first (the rulings); declining, nobody copies it. Made
+ * from the spell as it last was on the stack if it has left (countered in
+ * response), as storm's copies are. Put the reminder text in `text` as well.
+ */
+export const demonstrate = (): TriggeredAbility => ({
+  trigger: { on: "this-cast" },
+  targets: [],
+  effect: {
+    kind: "may",
+    prompt: "Demonstrate: copy this spell? If you do, an opponent you choose copies it too.",
+    effect: {
+      kind: "sequence",
+      effects: [
+        { kind: "copy-spell", target: "trigger-spell", newTargets: true },
+        {
+          kind: "choose-opponent",
+          then: { kind: "copy-spell", target: "trigger-spell", newTargets: true, controller: "that-player" },
+        },
+      ],
+    },
+  },
+  resolve: null,
+  text: "Demonstrate (When you cast this spell, you may copy it. If you do, choose an opponent to also copy it.)",
+});
+
+/**
  * The Commander 2017 Curses' trigger (Curse of Opulence, Verbosity, Bounty,
  * Disturbance): "Whenever enchanted player is attacked, [effect]. Each
  * opponent attacking that player does the same." Once per declaration,

@@ -61,6 +61,7 @@ import _poolConsultTheNecrosages from "../pool/consult-the-necrosages.js";
 import _poolCorpseHauler from "../pool/corpse-hauler.js";
 import _poolCosmograndZenith from "../pool/cosmogrand-zenith.js";
 import _poolCrawlingInfestation from "../pool/crawling-infestation.js";
+import _poolCreativeTechnique from "../pool/creative-technique.js";
 import _poolCrystalBall from "../pool/crystal-ball.js";
 import _poolCuriousAltisaur from "../pool/curious-altisaur.js";
 import _poolCyberdriveAwakener from "../pool/cyberdrive-awakener.js";
@@ -328,6 +329,7 @@ const shard: CardShard = {
     _poolCorpseHauler,
     _poolCosmograndZenith,
     _poolCrawlingInfestation,
+    _poolCreativeTechnique,
     _poolCrystalBall,
     _poolCuriousAltisaur,
     _poolCyberdriveAwakener,

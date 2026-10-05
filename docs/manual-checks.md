@@ -4050,3 +4050,21 @@ stack count once per token)
 - **Do:** Murder your Archon and return the Curse with its trigger.
 - **Check:** The decision banner asks you to click the player it enchants, and the players' panels
   light up (no permanent does). It enters attached to the one clicked.
+
+## Demonstrate (2026-10-05)
+
+### Transforming Flourish, Creative Technique, Incarnation Technique, Replication Technique
+
+*New decision* — demonstrate: the opponent you choose copies the spell, under their control
+
+- **Setup:** A three-player table. Transforming Flourish in your hand with three Mountains, and
+  Runeclaw Bear on your side; bob (yours to play) has Grizzly Bears and a Forest then Lightning Bolt
+  on top of his library; carol has a Hill Giant.
+- **Do:** Cast Flourish at bob's Bears and say yes to demonstrate. Move your copy to carol's Giant,
+  choose bob as the opponent, sit at bob and move his copy to your Runeclaw Bear.
+- **Check:** The stack reads, top first: bob's copy, your copy, the spell. Bob's copy destroys your
+  Bear, and you exile from your library to a nonland card and are offered it free; your copy
+  destroys carol's Giant and carol is offered hers; the spell destroys bob's Bears and bob exiles
+  the Forest and is offered the Bolt. Declining demonstrate makes no copies at all. The Techniques
+  copy the same way, and Creative Technique leaves the lands it revealed on the bottom of the
+  library, not in exile.

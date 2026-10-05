@@ -22,9 +22,9 @@ lands, add its summary here, not to `BACKLOG.md`.
 Card-level detail behind `BACKLOG.md`'s card items, moved here from it on 2026-10-04. Delete a
 lead when its cards land or turn out blocked on something else (record that in the batch JSON).
 
-- **The TDC precons' 6 missing cards**, each behind a feature of its own (records in
-  `engine/data/sweep-3/TDC*.json` and the older sweeps): demonstrate for Transforming Flourish;
-  dredge for Life from the Loam; manifest for Reality Shift; modes that each target a different player for Shadrix
+- **The TDC precons' 5 missing cards**, each behind a feature of its own (records in
+  `engine/data/sweep-3/TDC*.json` and the older sweeps): dredge for Life from the Loam; manifest
+  for Reality Shift; modes that each target a different player for Shadrix
   Silverquill; keeping creatures of total power 4 or less for Slaughter the Strong; and unspent
   red mana that stays, with "pay any amount of {R}", for Leyline Tyrant.
 - **The cheap recurring blockers the top-5000 batches found:** "can't cast more than one spell
@@ -87,7 +87,7 @@ lead when its cards land or turn out blocked on something else (record that in t
   that recurred most: an ability's "Choose one —" (266), Crew (180), "Regenerate ~" (151), "You
   may pay {…}" (142), "Transform ~" (138).
 
-## The Tarkir: Dragonstorm precons (TDC1–TDC6)
+## The Tarkir: Dragonstorm precons (TDC1–TDC7)
 
 147 were missing at the swap to the TDC decks (2026-09-30). TDC batch 1 authored 41
 (`precon-tdc-batch-1.test.ts`) and batch 2 the 8 that casting a spell as another resolves
@@ -114,6 +114,12 @@ Verbosity and Trespasser's Curse (`curses.test.ts`). The other Curses each need 
 of cards put into a graveyard this turn, Grievous Wound a static over the enchanted player,
 Paradox Haze an added upkeep, Curse of the Restless Dead decayed, Maddening Hex dice, and Ardenn
 an attach to a player.
+
+TDC7 (2026-10-05) built demonstrate (rule 702.144a — `demonstrate()`: a copy for you, then one for
+the opponent you choose, under their control with their new targets) and a cast offered to a
+player other than the effect's controller (`cast-now`'s `by`), for Transforming Flourish, which
+leaves Jeskai Striker with no stand-ins, and the Strixhaven Techniques: Creative, Incarnation and
+Replication (`demonstrate.test.ts`).
 
 ### The one-off keywords pass (2026-10-03)
 

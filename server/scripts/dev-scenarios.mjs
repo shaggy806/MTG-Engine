@@ -426,6 +426,24 @@ export default {
     bots: { bob: {} },
   },
 
+  DEMON: {
+    about:
+      "2p. Demonstrate: Transforming Flourish in alice's hand with three Mountains. Cast it at " +
+      "bob's Grizzly Bears and say yes: alice's copy and bob's copy go on the stack above it, " +
+      "bob's on top. The Bears die, and bob exiles the Forest on top of his library and is " +
+      "offered the Hill Giant under it, free.",
+    players: ["alice", "bob"],
+    battlefield: { alice: ["Mountain", "Mountain", "Mountain"], bob: ["Grizzly Bears"] },
+    hand: { alice: ["Transforming Flourish"] },
+    setup: (game) => {
+      handOfSpellsOnly("alice")(game);
+      const library = game.state.zones.perPlayer.bob.library;
+      const top = ["Forest", "Hill Giant"].map((name) => game.debugSpawn(name, "bob", "library"));
+      game.state.zones.perPlayer.bob.library = [...top, ...library.filter((id) => !top.includes(id))];
+    },
+    bots: { bob: {} },
+  },
+
   BLITZ: {
     about:
       "2p. Blitz: Star Athlete in alice's hand with four Mountains, so it's offered for " +

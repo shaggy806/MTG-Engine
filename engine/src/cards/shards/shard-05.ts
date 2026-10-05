@@ -131,6 +131,7 @@ import _poolHorseshoeCrab from "../pool/horseshoe-crab.js";
 import _poolHowlingGolem from "../pool/howling-golem.js";
 import _poolHumblingElder from "../pool/humbling-elder.js";
 import _poolHuntersBow from "../pool/hunters-bow.js";
+import _poolIncarnationTechnique from "../pool/incarnation-technique.js";
 import _poolIncubationDruid from "../pool/incubation-druid.js";
 import _poolInfernalTribute from "../pool/infernal-tribute.js";
 import _poolInquisitivePuppet from "../pool/inquisitive-puppet.js";
@@ -423,6 +424,7 @@ const shard: CardShard = {
     _poolHowlingGolem,
     _poolHumblingElder,
     _poolHuntersBow,
+    _poolIncarnationTechnique,
     _poolIncubationDruid,
     _poolInfernalTribute,
     _poolInquisitivePuppet,

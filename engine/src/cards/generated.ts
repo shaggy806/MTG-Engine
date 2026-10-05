@@ -1484,6 +1484,7 @@ import _poolCrazedGoblin from "./pool/crazed-goblin.js";
 import _poolCrazedSkirge from "./pool/crazed-skirge.js";
 import _poolCreakwoodLiege from "./pool/creakwood-liege.js";
 import _poolCreamOfTheCrop from "./pool/cream-of-the-crop.js";
+import _poolCreativeTechnique from "./pool/creative-technique.js";
 import _poolCreepingTarPit from "./pool/creeping-tar-pit.js";
 import _poolCrenellatedWall from "./pool/crenellated-wall.js";
 import _poolCreosoteHeath from "./pool/creosote-heath.js";
@@ -3501,6 +3502,7 @@ import _poolImpulsivity from "./pool/impulsivity.js";
 import _poolInGarruksWake from "./pool/in-garruks-wake.js";
 import _poolInallaArchmageRitualist from "./pool/inalla-archmage-ritualist.js";
 import _poolIncandescentSoulstoke from "./pool/incandescent-soulstoke.js";
+import _poolIncarnationTechnique from "./pool/incarnation-technique.js";
 import _poolIncreasingDevotion from "./pool/increasing-devotion.js";
 import _poolIncreasingVengeance from "./pool/increasing-vengeance.js";
 import _poolIncrementalBlight from "./pool/incremental-blight.js";
@@ -5592,6 +5594,7 @@ import _poolRenegadeTactics from "./pool/renegade-tactics.js";
 import _poolRenegadeTroops from "./pool/renegade-troops.js";
 import _poolRenegadesGetaway from "./pool/renegades-getaway.js";
 import _poolRepercussion from "./pool/repercussion.js";
+import _poolReplicationTechnique from "./pool/replication-technique.js";
 import _poolReprieve from "./pool/reprieve.js";
 import _poolRepulse from "./pool/repulse.js";
 import _poolRepulsiveMutation from "./pool/repulsive-mutation.js";
@@ -7443,6 +7446,7 @@ import _poolTranquilThicket from "./pool/tranquil-thicket.js";
 import _poolTranscendentDragon from "./pool/transcendent-dragon.js";
 import _poolTranscendentEnvoy from "./pool/transcendent-envoy.js";
 import _poolTranscendentMessage from "./pool/transcendent-message.js";
+import _poolTransformingFlourish from "./pool/transforming-flourish.js";
 import _poolTransitMage from "./pool/transit-mage.js";
 import _poolTrapmakersSnare from "./pool/trapmakers-snare.js";
 import _poolTrashForTreasure from "./pool/trash-for-treasure.js";
@@ -10103,6 +10107,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolCrazedSkirge,
   _poolCreakwoodLiege,
   _poolCreamOfTheCrop,
+  _poolCreativeTechnique,
   _poolCreepingTarPit,
   _poolCrenellatedWall,
   _poolCreosoteHeath,
@@ -12120,6 +12125,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolInGarruksWake,
   _poolInallaArchmageRitualist,
   _poolIncandescentSoulstoke,
+  _poolIncarnationTechnique,
   _poolIncreasingDevotion,
   _poolIncreasingVengeance,
   _poolIncrementalBlight,
@@ -14211,6 +14217,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRenegadeTroops,
   _poolRenegadesGetaway,
   _poolRepercussion,
+  _poolReplicationTechnique,
   _poolReprieve,
   _poolRepulse,
   _poolRepulsiveMutation,
@@ -16062,6 +16069,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolTranscendentDragon,
   _poolTranscendentEnvoy,
   _poolTranscendentMessage,
+  _poolTransformingFlourish,
   _poolTransitMage,
   _poolTrapmakersSnare,
   _poolTrashForTreasure,

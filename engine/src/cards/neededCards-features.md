@@ -499,6 +499,10 @@ in `git log`.
   enchanted player controls" (Curse of Opulence, Verbosity, Bounty,
   Disturbance, Trespasser's Curse; `curses.test.ts`). The rest wait on one
   more feature each (`engine/data/sweep-3/TDC6.json`).
+- **Demonstrate** (2026-10-05, TDC7) — rule 702.144a as `demonstrate()`
+  (`copy-spell`'s `controller`), with `cast-now`'s `by` and the
+  `{ controllerOfTarget }` player reference: Transforming Flourish and the
+  Creative, Incarnation and Replication Techniques (`demonstrate.test.ts`).
 - **Mana provenance** — the mana pool as tagged `ManaUnit`s (Path of
   Ancestry, Cavern of Souls, …; `mana-provenance.test.ts`, AUTHORING §15).
 - **Changeling** (`keyword:changeling`) — every creature type, and every land

@@ -229,6 +229,7 @@ import _poolTotemSpeaker from "../pool/totem-speaker.js";
 import _poolToweringViewpoint from "../pool/towering-viewpoint.js";
 import _poolTragicSlip from "../pool/tragic-slip.js";
 import _poolTranscendentDragon from "../pool/transcendent-dragon.js";
+import _poolTransformingFlourish from "../pool/transforming-flourish.js";
 import _poolTreeOfTales from "../pool/tree-of-tales.js";
 import _poolTriskaidekaphile from "../pool/triskaidekaphile.js";
 import _poolTrophyMage from "../pool/trophy-mage.js";
@@ -496,6 +497,7 @@ const shard: CardShard = {
     _poolToweringViewpoint,
     _poolTragicSlip,
     _poolTranscendentDragon,
+    _poolTransformingFlourish,
     _poolTreeOfTales,
     _poolTriskaidekaphile,
     _poolTrophyMage,

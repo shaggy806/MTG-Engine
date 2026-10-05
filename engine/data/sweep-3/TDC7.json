@@ -1,0 +1,36 @@
+{
+  "batch": "TDC7",
+  "status": "complete",
+  "ranks": "Demonstrate (rule 702.144a), a cast offered to another player (cast-now's by), and the controller of a target slot's permanent as a player reference",
+  "authored": [
+    {
+      "name": "Transforming Flourish",
+      "files": [
+        "engine/src/cards/pool/transforming-flourish.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Creative Technique",
+      "files": [
+        "engine/src/cards/pool/creative-technique.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Incarnation Technique",
+      "files": [
+        "engine/src/cards/pool/incarnation-technique.ts"
+      ],
+      "tested": true
+    },
+    {
+      "name": "Replication Technique",
+      "files": [
+        "engine/src/cards/pool/replication-technique.ts"
+      ],
+      "tested": true
+    }
+  ],
+  "blocked": []
+}

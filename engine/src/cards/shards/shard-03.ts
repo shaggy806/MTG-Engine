@@ -157,6 +157,7 @@ import _poolRayOfDissolution from "../pool/ray-of-dissolution.js";
 import _poolRegalForce from "../pool/regal-force.js";
 import _poolRejuvenatingSprings from "../pool/rejuvenating-springs.js";
 import _poolRelentlessAssault from "../pool/relentless-assault.js";
+import _poolReplicationTechnique from "../pool/replication-technique.js";
 import _poolResculpt from "../pool/resculpt.js";
 import _poolRighteousBlow from "../pool/righteous-blow.js";
 import _poolRithsAttendant from "../pool/riths-attendant.js";
@@ -409,6 +410,7 @@ const shard: CardShard = {
     _poolRegalForce,
     _poolRejuvenatingSprings,
     _poolRelentlessAssault,
+    _poolReplicationTechnique,
     _poolResculpt,
     _poolRighteousBlow,
     _poolRithsAttendant,

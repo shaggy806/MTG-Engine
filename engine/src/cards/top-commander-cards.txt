@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3350 already implemented / 1650 missing (marks refreshed 2026-10-05)
+3353 already implemented / 1647 missing (marks refreshed 2026-10-05)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -3562,7 +3562,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  3569  Komainu Battle Armor                     {2}{R}           Artifact Creature — Equipment Dog
 [ ]  3570  Redress Fate                             {6}{W}{W}        Sorcery
 [ ]  3571  Hoarding Ogre                            {3}{R}           Creature — Ogre
-[ ]  3572  Incarnation Technique                    {4}{B}           Sorcery
+[x]  3572  Incarnation Technique                    {4}{B}           Sorcery
 [x]  3573  Riverchurn Monument                      {1}{U}           Artifact
 [x]  3574  Lord of the Undead                       {1}{B}{B}        Creature — Zombie
 [x]  3575  Ride the Shoopuf                         {1}{G}           Enchantment
@@ -4287,7 +4287,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4294  Biotransference                          {2}{B}{B}        Enchantment
 [x]  4295  Nightmare Shepherd                       {2}{B}{B}        Enchantment Creature — Demon
 [x]  4296  Hanweir Garrison                         {2}{R}           Creature — Human Soldier
-[ ]  4297  Replication Technique                    {4}{U}           Sorcery
+[x]  4297  Replication Technique                    {4}{U}           Sorcery
 [x]  4298  Hordewing Skaab                          {4}{U}           Creature — Zombie Horror
 [x]  4299  Hydra Broodmaster                        {4}{G}{G}        Creature — Hydra
 [ ]  4300  Kitesail Larcenist                       {2}{U}           Creature — Human Pirate
@@ -4720,7 +4720,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [ ]  4727  Quick Sliver                             {1}{G}           Creature — Sliver
 [x]  4728  Trail of Crumbs                          {1}{G}           Enchantment
 [x]  4729  Invigorating Hot Spring                  {1}{R}{G}        Enchantment
-[ ]  4730  Creative Technique                       {4}{R}           Sorcery
+[x]  4730  Creative Technique                       {4}{R}           Sorcery
 [x]  4731  Memory Plunder                           {U/B}{U/B}{U/B}{U/B} Instant
 [x]  4732  Curate                                   {1}{U}           Instant
 [ ]  4733  Paladin Class                            {W}              Enchantment — Class
