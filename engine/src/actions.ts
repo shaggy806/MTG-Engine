@@ -366,10 +366,11 @@ export type Action =
     }
   | {
       /** Answers a pending "choose what this Aura enchants" decision (rule
-       * 303.4f): one of the offered permanents. */
+       * 303.4f): one of the offered permanents, or one of the offered
+       * players for an "Enchant player" Aura. */
       readonly type: "choose-enchant";
       readonly player: PlayerId;
-      readonly enchant: ObjectId;
+      readonly enchant: ObjectId | PlayerId;
     }
   | {
       /** Answers a pending legend-rule decision (rule 704.5j): the one of the
@@ -1070,6 +1071,9 @@ export type LegalAction =
       readonly kind: "choose-enchant";
       readonly source: ObjectId;
       readonly options: readonly ObjectId[];
+      /** The players it could enchant instead — an "Enchant player" Aura
+       * (a Curse). Absent when none. */
+      readonly players?: readonly PlayerId[];
     }
   | {
       /** The legend rule: keep one of `options` — legendary permanents you

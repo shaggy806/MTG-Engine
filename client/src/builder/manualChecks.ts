@@ -2399,4 +2399,24 @@ export const MANUAL_CHECK_PRESETS: readonly ManualCheckPreset[] = [
     }),
     'cast Krenko from the command zone to see the discount',
   ),
+  preset(
+    'Curse of Opulence, Curse of Verbosity, Curse of Bounty, Curse of Disturbance',
+    board({
+      you: { bf: ['Mountain', 'Island*3', 'Forest*2', 'Swamp*3'], hand: ['Curse of Opulence', 'Curse of Verbosity', 'Curse of Bounty', 'Curse of Disturbance'] },
+      opp: [{ human: true, bf: ['Grizzly Bears*2', 'Mind Stone'] }, { bf: ['Ajani, Caller of the Pride'] }],
+    }),
+  ),
+  preset(
+    "Trespasser's Curse",
+    board({
+      you: { bf: ['Swamp*2'], hand: ["Trespasser's Curse"] },
+      opp: { human: true, bf: ['Forest*2'], hand: ['Grizzly Bears'] },
+    }),
+  ),
+  preset(
+    'Archon of Falling Stars returning a Curse',
+    board({
+      you: { bf: ['Archon of Falling Stars', 'Swamp*3'], hand: ['Murder'], gy: ['Curse of Verbosity'] },
+    }),
+  ),
 ]

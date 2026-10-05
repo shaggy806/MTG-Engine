@@ -471,7 +471,12 @@ export type TriggerWho =
    * by the host its source had then — remembered by a source that left at
    * the same time (`LastKnownInfo.attachedTo`).
    */
-  | "attached";
+  | "attached"
+  /** A permanent the player this Aura is attached to controls — a Curse's
+   * "Whenever a creature **enchanted player controls** enters" (Trespasser's
+   * Curse), read as it last existed if it has left. The trigger is the
+   * Curse's, and its controller's. */
+  | "enchanted-player-controls";
 
 export type TriggerSpec =
   | {

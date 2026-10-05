@@ -226,7 +226,7 @@ export interface DecisionHost {
   readonly applyPayLifeForUntapped: (player: PlayerId, pay: boolean) => void;
   readonly applyRevealForUntapped: (player: PlayerId, reveal: ObjectId | null) => void;
   readonly applyCopyChoice: (player: PlayerId, copy: ObjectId | null) => void;
-  readonly applyEnchantChoice: (player: PlayerId, enchant: ObjectId) => void;
+  readonly applyEnchantChoice: (player: PlayerId, enchant: ObjectId | PlayerId) => void;
   readonly applyLegendRuleChoice: (player: PlayerId, keep: ObjectId) => void;
   readonly applyTriggerOrder: (player: PlayerId, order: readonly number[]) => void;
   readonly applyTextChoice: (player: PlayerId, from: string, to: string) => void;

@@ -707,7 +707,8 @@ clause (below) chooses among them.
 
 `who?` is a `PlayerScope`: `"each-player" \| "each-opponent" \| "you" \|
 "active-player" \| "trigger-controller" \| "trigger-player" \|
-"each-other-opponent" \| "that-player"` (default = the effect's controller). `"active-player"`
+"each-other-opponent" \| "that-player" \| "you-and-opponents-attacking-trigger-player"`
+(default = the effect's controller). `"active-player"`
 is "that player" in a trigger that fires on someone else's step.
 `"trigger-controller"` is the controller of the triggering object (the player
 who drew the card, cast the spell). `"trigger-player"` is **the player the
@@ -717,8 +718,13 @@ controller when the attack was at it); nobody outside such a trigger.
 `"each-other-opponent"` is each of your opponents **but** that one (Kediss:
 "it deals that much damage to each other opponent"). `"that-player"` is the
 player an `each-player-may`'s follow-up is about (and otherwise the same as
-`"trigger-player"`). None of these is a target, so hexproof doesn't stop
-them.
+`"trigger-player"`). `"you-and-opponents-attacking-trigger-player"` is the
+Commander 2017 Curses' "[do X]. Each opponent attacking that player does the
+same": you, then each of your opponents controlling a creature attacking the
+trigger player as it resolves (just you, once none are). A Curse's trigger
+whose event names no player names **the enchanted player** as its trigger
+player (Trespasser's Curse's "that player loses 1 life"). None of these is a
+target, so hexproof doesn't stop them.
 
 ### Movement / removal
 
@@ -948,7 +954,7 @@ Neither goes on the stack yet (§15, "Partial").
 ### Turn structure / cast-triggered
 
 `take-extra-turn { target? }` (the effect's controller, or with `target` the player in that slot — Time Warp's "target player takes an extra turn"; taken directly after this turn, the most recently created first, and the rotation then carries on from the turn it followed — rule 500.7), `additional-combat { afterThisPhase?, withMain? }`, `additional-upkeep-steps { amount }` (below), `additional-land-drop { amount }` (Explore's "You may
-play an additional land this turn"), `untap-all { filter, controlledByTarget?, exceptSource? }` (`exceptSource`: Combat Celebrant's "untap all **other** creatures you control"), `storm { of? }`
+play an additional land this turn"), `untap-all { filter, controlledByTarget?, exceptSource?, who? }` (`exceptSource`: Combat Celebrant's "untap all **other** creatures you control"; `who`, a `PlayerScope`, has each of those players untap what matches `filter` from their own side — Curse of Bounty), `storm { of? }`
 (`of: "trigger-object"` copies the trigger's spell rather than the source: a `nextSpell`
 delayed trigger's "the next instant or sorcery spell you cast this turn has storm" — Storm, Force
 of Nature),
@@ -1874,6 +1880,17 @@ have all become illegal is countered by the game (fizzles).
 
 An Aura uses `targets: ["creature"]` (or whatever it enchants) — it attaches to
 its target on resolution automatically because it has the `"Aura"` subtype.
+"Enchant player" / "Enchant opponent" (a Curse, rule 303.4) is `targets:
+["player"]` / `["opponent"]`: it resolves attached to that player
+(`GameObject.attachedToPlayer`, never with `attachedTo`), entering any other way
+its controller picks a player (303.4f, the `choose-enchant` decision's
+`players`), and it's put into the graveyard once that player has left the game
+(704.5m). "Enchanted player" in a trigger is `"attached"` about a player
+(`attacks-player`'s `defender: "attached"` — `curseWhenAttacked` in `helpers.ts`
+builds the Curse of Opulence family's whole trigger), and "a creature
+enchanted player controls" is `"enchanted-player-controls"` (Trespasser's
+Curse). Not yet: a static ability over the enchanted player (Grievous Wound's
+"can't gain life"), or attaching an Aura to a player by an effect (Ardenn).
 
 ---
 
@@ -2281,7 +2298,9 @@ about a *player* is that player being an opponent — a `step-begins`
 trigger's "each opponent's end step" (Archfiend of Depravity), which fires
 once per opponent's **turn**, not once per opponent; about an *object* it is
 "… an opponent controls" ("whenever a creature an opponent controls dies"),
-read as it last existed on the battlefield once it has left. `"attached"` is the
+read as it last existed on the battlefield once it has left. `"enchanted-player-controls"`
+is "a creature **enchanted player** controls" — a Curse's; `"attached"` about a
+*player* is the player a Curse is attached to. `"attached"` is the
 permanent this one is attached to — "whenever **equipped** creature dies"
 (Skullclamp), "whenever **enchanted** land is tapped for mana" (Wild Growth),
 "whenever **enchanted** creature deals damage to an opponent" (Curiosity):

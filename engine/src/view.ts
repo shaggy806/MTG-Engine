@@ -208,6 +208,9 @@ export interface VisibleObject {
   readonly foretold: boolean;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   readonly attachedTo: ObjectId | null;
+  /** The player this Aura is attached to — a Curse's "Enchant player" —
+   * or `null`. Never set alongside `attachedTo`. */
+  readonly attachedToPlayer: PlayerId | null;
   /** Is this its owner's designated commander (rule 903)? */
   readonly isCommander: boolean;
   /** Every player who has goaded this creature (rule 701.15), however —
@@ -473,6 +476,7 @@ function visible(
     suspended: object.suspended ?? false,
     foretold: object.foretold ?? false,
     attachedTo: object.attachedTo,
+    attachedToPlayer: object.attachedToPlayer ?? null,
     isCommander: object.isCommander,
     goadedBy: [...goadersOf(state, registry, id)],
     suspected: object.zone === "battlefield" && object.suspectedAt !== undefined,

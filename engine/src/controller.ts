@@ -220,9 +220,15 @@ export interface PlayerController {
   /**
    * An Aura is entering the battlefield without being cast, and nothing says
    * what it enchants — return which of `options`, the permanents it could
-   * enchant, it enters attached to (rule 303.4f).
+   * enchant, or of `players`, the players an "Enchant player" Aura could, it
+   * enters attached to (rule 303.4f).
    */
-  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId;
+  chooseEnchant(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+    players: readonly PlayerId[],
+  ): ObjectId | PlayerId;
   /**
    * The legend rule (704.5j): you control two or more legendary permanents
    * named `name` — return which of `options` (the one you've controlled
@@ -539,8 +545,13 @@ export class AutomaticController implements PlayerController {
     return options[0] ?? null;
   }
 
-  chooseEnchant(_view: ControllerView, _source: ObjectId, options: readonly ObjectId[]): ObjectId {
-    return options[0];
+  chooseEnchant(
+    _view: ControllerView,
+    _source: ObjectId,
+    options: readonly ObjectId[],
+    players: readonly PlayerId[],
+  ): ObjectId | PlayerId {
+    return options[0] ?? players[0];
   }
 
   /** Keeps the one controlled longest — what the engine did before the
@@ -785,11 +796,12 @@ export class ScriptedController implements PlayerController {
     () => false;
   revealForUntappedFn: CopyChooser = (_view, _source, options) => options[0] ?? null;
   chooseCopyFn: CopyChooser =(_view, _source, options) => options[0] ?? null;
-  chooseEnchantFn: (view: ControllerView, source: ObjectId, options: readonly ObjectId[]) => ObjectId = (
-    _view,
-    _source,
-    options,
-  ) => options[0];
+  chooseEnchantFn: (
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+    players: readonly PlayerId[],
+  ) => ObjectId | PlayerId = (_view, _source, options, players) => options[0] ?? players[0];
   chooseLegendToKeepFn: (view: ControllerView, name: string, options: readonly ObjectId[]) => ObjectId = (
     _view,
     _name,
@@ -941,8 +953,13 @@ export class ScriptedController implements PlayerController {
     return this.chooseCopyFn(view, source, options);
   }
 
-  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId {
-    return this.chooseEnchantFn(view, source, options);
+  chooseEnchant(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+    players: readonly PlayerId[],
+  ): ObjectId | PlayerId {
+    return this.chooseEnchantFn(view, source, options, players);
   }
 
   chooseLegendToKeep(view: ControllerView, name: string, options: readonly ObjectId[]): ObjectId {
@@ -2307,7 +2324,12 @@ export class HeuristicBotController extends AutomaticController {
   /** What an Aura put onto the battlefield without being cast enchants (rule
    * 303.4f): the side its statics say — a Pacifism on an opponent's best
    * creature, a Rancor on our own. */
-  chooseEnchant(view: ControllerView, source: ObjectId, options: readonly ObjectId[]): ObjectId {
+  chooseEnchant(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly ObjectId[],
+    players: readonly PlayerId[],
+  ): ObjectId | PlayerId {
     const name = view.state.objects[source]?.cardName;
     const polarity: Polarity =
       name !== undefined && this.registry.has(name) ? auraPolarity(this.registry.get(name)) : "either";
@@ -2315,10 +2337,15 @@ export class HeuristicBotController extends AutomaticController {
       view.state,
       this.registry,
       this.playerId,
-      options.map((object): TargetRef => ({ kind: "object", object })),
+      [
+        ...options.map((object): TargetRef => ({ kind: "object", object })),
+        ...players.map((player): TargetRef => ({ kind: "player", player })),
+      ],
       polarity,
     )[0];
-    return best?.kind === "object" ? best.object : options[0];
+    if (best?.kind === "object") return best.object;
+    if (best?.kind === "player") return best.player;
+    return options[0] ?? players[0];
   }
 
   /**

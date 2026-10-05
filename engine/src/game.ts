@@ -3843,7 +3843,7 @@ export class Game {
    * `askEnterChoice` as an Aura is about to enter without being cast. The
    * answer waits on the Aura, and its entry carries on once priority is next
    * looked at; `moveObject` attaches it as it enters. */
-  private applyEnchantChoice(player: PlayerId, enchant: ObjectId): void {
+  private applyEnchantChoice(player: PlayerId, enchant: ObjectId | PlayerId): void {
     const why = chooseEnchant.whyCannot(this.decisionCtx, { type: "choose-enchant", player, enchant }, player);
     if (why !== null) throw new Error(why);
     const awaiting = this.state.awaiting;
@@ -3851,8 +3851,12 @@ export class Game {
       throw new Error("unreachable: whyCannot should have caught this");
     }
     const aura = this.state.objects[awaiting.source];
-    // One token of a stack, not the whole stack.
-    aura.enterChoice = { ...aura.enterChoice, enchant: this.splitOneFromStack(enchant) };
+    if ((awaiting.players ?? []).includes(enchant as PlayerId)) {
+      aura.enterChoice = { ...aura.enterChoice, enchantPlayer: enchant as PlayerId };
+    } else {
+      // One token of a stack, not the whole stack.
+      aura.enterChoice = { ...aura.enterChoice, enchant: this.splitOneFromStack(enchant as ObjectId) };
+    }
     this.state.awaiting = null;
     this.prepareForPriority(this.activePlayer);
   }
@@ -7065,7 +7069,7 @@ export class Game {
     // additional +1/+1 counter on it" — a printed (or copied) riot. One
     // granted by another permanent isn't asked (AUTHORING §15).
     if (answered?.riot === undefined && becoming.keywords.includes("riot")) return { kind: "riot" };
-    if (becoming.subtypes.includes("Aura") && answered?.enchant === undefined) {
+    if (becoming.subtypes.includes("Aura") && answered?.enchant === undefined && answered?.enchantPlayer === undefined) {
       return { kind: "enchant", as: becoming };
     }
     if (answered?.reveal === undefined) {
@@ -7115,8 +7119,16 @@ export class Game {
         const options = this.state.zones.shared.battlefield.filter((host) =>
           this.canEnchant(id, host, chooser, next.as),
         );
-        if (options.length > 0) {
-          this.state.awaiting = { kind: "choose-enchant", player: chooser, source: id, options };
+        // An "Enchant player" Aura (a Curse) chooses among players instead.
+        const players = this.state.turnOrder.filter((p) => this.canEnchantPlayer(id, p, chooser, next.as));
+        if (options.length > 0 || players.length > 0) {
+          this.state.awaiting = {
+            kind: "choose-enchant",
+            player: chooser,
+            source: id,
+            options,
+            ...(players.length > 0 ? { players } : {}),
+          };
           return true;
         }
         object.enterChoice = { ...object.enterChoice, enchant: null };
@@ -7149,8 +7161,8 @@ export class Game {
    * which is the slot its spell targets (303.4a), read without the targeting
    * rules: enchanting isn't targeting, so hexproof and shroud don't stop it.
    * Protection does (702.16c). Never itself, nothing out of the game, and
-   * nothing at all while the Aura is a creature (303.4d). Enchanting a player
-   * isn't modeled; every Aura in the pool enchants a permanent.
+   * nothing at all while the Aura is a creature (303.4d). A player is
+   * `canEnchantPlayer`'s question.
    */
   private canEnchant(aura: ObjectId, host: ObjectId, controller: PlayerId, def: CardDefinition): boolean {
     if (host === aura) return false;
@@ -7167,6 +7179,26 @@ export class Game {
     }
     const source = onBattlefield ? this.permanentSource(aura) : this.cardSource(def, aura);
     return !protectionBlocks(this.state, this.registry, host, source);
+  }
+
+  /**
+   * Could the Aura `aura` — as `def`, controlled by `controller` — enchant
+   * the player `player` (rule 303.4: "Enchant player", "Enchant opponent" —
+   * the Curses)? Its enchant ability is the slot its spell targets (303.4a),
+   * read without the targeting rules, so a hexproof player can still be
+   * enchanted by one that wasn't cast at them. Never a player who has left
+   * the game, nor while the Aura is a creature (303.4d).
+   */
+  private canEnchantPlayer(aura: ObjectId, player: PlayerId, controller: PlayerId, def: CardDefinition): boolean {
+    if (this.state.players[player]?.hasLost !== false) return false;
+    const spec = def.targets[0];
+    if (spec === undefined) return false;
+    const onBattlefield = this.state.objects[aura]?.zone === "battlefield";
+    const types = onBattlefield ? computeCharacteristics(this.state, this.registry, aura).types : def.types;
+    if (types.includes("creature")) return false;
+    return isLegalTarget(this.state, this.registry, spec, { kind: "player", player }, controller, undefined, {
+      notTargeted: true,
+    });
   }
 
   /** Could the Equipment `equipment` equip `host` (rule 301.5): a creature
@@ -12986,9 +13018,14 @@ export class Game {
     const def = this.registry.get(printedCardName(object));
     // An Aura spell enters attached to what it targets (rule 608.3b) — the
     // one way an Aura enters without choosing what it enchants (303.4f).
-    if (def.subtypes.includes("Aura") && object.enterChoice?.enchant === undefined) {
+    if (
+      def.subtypes.includes("Aura") &&
+      object.enterChoice?.enchant === undefined &&
+      object.enterChoice?.enchantPlayer === undefined
+    ) {
       const target = this.targetsStillMeant(object)[0];
       if (target?.kind === "object") object.enterChoice = { ...object.enterChoice, enchant: target.object };
+      if (target?.kind === "player") object.enterChoice = { ...object.enterChoice, enchantPlayer: target.player };
     }
     if (this.askEnterChoice(id, object.controller)) {
       this.state.suspendedResolutions.push({ effect: null, enter: { kind: "spell", object: id } });
@@ -14773,6 +14810,10 @@ export class Game {
       const attacking = this.state.objects[event.attacker]?.attacking;
       if (attacking !== null && attacking !== undefined) player = this.defendingPlayerOf(attacking);
     }
+    // A Curse's trigger whose event names nobody: "that player" is the
+    // enchanted player as it triggered (Trespasser's Curse: "whenever a
+    // creature enchanted player controls enters, that player loses 1 life").
+    if (player === undefined) player = departed?.attachedToPlayer ?? source.attachedToPlayer;
     if (
       sourceStint === undefined &&
       triggerStint === undefined &&
@@ -15599,8 +15640,14 @@ export class Game {
   ): boolean {
     if (who === "any") return true;
     if (who === "opponent") return self.controller !== player;
-    // Nothing attaches to a player here (no "enchant player" Auras).
-    if (who === "attached") return false;
+    // "Enchanted player" (a Curse): the player this Aura is attached to as
+    // the event happened — as it last existed, if it has left.
+    if (who === "enchanted-player-controls") return false;
+    if (who === "attached") {
+      const on =
+        self.zone === "battlefield" ? self.attachedToPlayer : (self.lastKnown?.attachedToPlayer ?? self.attachedToPlayer);
+      return on !== undefined && on === player;
+    }
     return self.controller === player;
   }
 
@@ -15630,6 +15677,17 @@ export class Game {
             : object.controller;
         // Every other player is an opponent (rule 102.2 — no teams here).
         return who === "you-control" ? controller === self.controller : controller !== self.controller;
+      }
+      case "enchanted-player-controls": {
+        const enchanted =
+          self.zone === "battlefield" ? self.attachedToPlayer : (self.lastKnown?.attachedToPlayer ?? self.attachedToPlayer);
+        const object = this.state.objects[subject];
+        if (enchanted === undefined || object === undefined) return false;
+        const controller =
+          lastKnown && object.zone !== "battlefield"
+            ? (object.lastKnown?.controller ?? object.controller)
+            : object.controller;
+        return controller === enchanted;
       }
       case "attached": {
         // The host as the event happened: a source still on the battlefield
@@ -24687,6 +24745,19 @@ export class Game {
     triggerPlayer?: PlayerId,
   ): PlayerId[] {
     if (who === "you") return [controller];
+    if (who === "you-and-opponents-attacking-trigger-player") {
+      const attacking = new Set<PlayerId>();
+      if (triggerPlayer !== undefined) {
+        for (const id of this.state.zones.shared.battlefield) {
+          const object = this.state.objects[id];
+          if (object.attacking === triggerPlayer && object.controller !== controller) attacking.add(object.controller);
+        }
+      }
+      const active = this.state.turnOrder.indexOf(this.activePlayer);
+      const rotated = [...this.state.turnOrder.slice(active), ...this.state.turnOrder.slice(0, active)];
+      const them = rotated.filter((p) => attacking.has(p) && !this.state.players[p].hasLost);
+      return this.state.players[controller]?.hasLost === false ? [controller, ...them] : them;
+    }
     if (who === "trigger-player" || who === "that-player") {
       return triggerPlayer === undefined || this.state.players[triggerPlayer]?.hasLost !== false
         ? []
@@ -25293,10 +25364,19 @@ export class Game {
       const def = this.registry.get(printedCardName(object));
       if (!def.subtypes.includes("Aura")) continue;
       if (object.attachedTo !== null && this.canEnchant(id, object.attachedTo, object.controller, def)) continue;
+      // A Curse on a player who has left the game, or one it can no longer
+      // enchant ("Enchant opponent" after a control change), goes too.
+      const onPlayer = object.attachedToPlayer;
+      if (onPlayer !== undefined && this.canEnchantPlayer(id, onPlayer, object.controller, def)) continue;
       add(id, {
         type: "permanent-destroyed",
         object: id,
-        reason: object.attachedTo === null ? "attached to nothing" : "no longer attached to a legal permanent",
+        reason:
+          onPlayer !== undefined
+            ? "no longer attached to a legal player"
+            : object.attachedTo === null
+              ? "attached to nothing"
+              : "no longer attached to a legal permanent",
       });
     }
 
@@ -26025,6 +26105,7 @@ export class Game {
       enchantedByController: attached.enchantedByController,
       ...(attached.enchantedBy.length > 0 ? { enchantedBy: attached.enchantedBy } : {}),
       ...(object.attachedTo !== null ? { attachedTo: object.attachedTo } : {}),
+      ...(object.attachedToPlayer !== undefined ? { attachedToPlayer: object.attachedToPlayer } : {}),
       ...(goaders.length > 0 ? { goaders: [...goaders] } : {}),
       ...(object.suspectedAt !== undefined ? { suspected: true } : {}),
       lostAbilities,
@@ -26536,6 +26617,7 @@ export class Game {
     }
     object.modifiers = keptPrototype;
     object.attachedTo = null;
+    delete object.attachedToPlayer;
     // A permanent that leaves the battlefield reverts to its owner's control
     // (rule 110.2 / 400.3) — so a stolen creature that dies or is bounced goes
     // to its owner, not the thief.
@@ -26583,6 +26665,12 @@ export class Game {
       if (host !== null && this.state.objects[host]?.zone === "battlefield") {
         object.attachedTo = host;
         this.emit({ type: "permanent-attached", source: id, target: host });
+      }
+      // Or to the player it enchants, if they're still in the game; if not,
+      // the state-based check puts it into the graveyard (704.5m).
+      const enchanted = enterChoice.enchantPlayer;
+      if (enchanted !== undefined && this.state.players[enchanted]?.hasLost === false) {
+        object.attachedToPlayer = enchanted;
       }
     }
     // Alt-cast zone markers (ROADMAP Phase 6) end on any zone change: a

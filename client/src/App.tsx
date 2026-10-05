@@ -2340,6 +2340,12 @@ function Table({
 
   const clickPlayerTarget = useCallback(
     (pid: PlayerId) => {
+      if (mode === 'choose-enchant' && enchantAction) {
+        if ((enchantAction.players ?? []).includes(pid)) {
+          game.dispatch({ type: 'choose-enchant', player: seat, enchant: pid })
+        }
+        return
+      }
       if (mode === 'attackers' && attackAction) {
         sendPicksAt(pid)
         return
@@ -2361,7 +2367,7 @@ function Table({
         unpickTarget({ kind: 'player', player: pid })
       }
     },
-    [attackAction, mode, pickTarget, unpickTarget, activeTargeting, sendPicksAt, proliferateAction],
+    [attackAction, mode, pickTarget, unpickTarget, activeTargeting, sendPicksAt, proliferateAction, enchantAction, game, seat],
   )
 
   const confirmAttackers = useCallback(() => {
@@ -2487,6 +2493,9 @@ function Table({
       : playerLabel(t as PlayerId, game.seats)
 
   const playerIsTargetable = (pid: PlayerId): boolean => {
+    if (mode === 'choose-enchant' && enchantAction) {
+      return (enchantAction.players ?? []).includes(pid)
+    }
     if (mode === 'attackers' && attackAction) {
       return canSendPicksAt(pid)
     }
@@ -2646,6 +2655,10 @@ function Table({
     const goaders = obj.goadedBy
       .filter((p) => view.turnOrder.includes(p))
       .map((p) => ({ seat: seatClassOf(view.turnOrder, p), name: playerLabel(p, game.seats) }))
+    const enchanting =
+      obj.attachedToPlayer !== null && view.turnOrder.includes(obj.attachedToPlayer)
+        ? { seat: seatClassOf(view.turnOrder, obj.attachedToPlayer), name: playerLabel(obj.attachedToPlayer, game.seats) }
+        : null
     if (opts.mini) {
       return (
         <MiniTile
@@ -2660,6 +2673,7 @@ function Table({
           attackSeat={attackSeat}
           aimedBy={aimedBy}
           goaders={goaders}
+          enchanting={enchanting}
           held={(obj.holding ?? []).map((h) => ({ id: h, obj: view.objects[h] ?? null }))}
           onClick={() => clickPermanent(ids)}
         />
@@ -2677,6 +2691,7 @@ function Table({
         attackSeat={attackSeat}
         aimedBy={aimedBy}
         goaders={goaders}
+        enchanting={enchanting}
         onClick={() => clickPermanent(ids)}
       />
     )
@@ -3088,7 +3103,7 @@ function Table({
       <div className="controls">
         <span>
           {view.decisionSource?.cardName ?? game.nameOf(enchantAction.source)} is entering the
-          battlefield — click what it enchants.
+          battlefield — click {(enchantAction.players ?? []).length > 0 ? 'the player' : 'what'} it enchants.
         </span>
       </div>
     )
@@ -4286,6 +4301,20 @@ function Table({
       wentFirst={pid === view.startingPlayer}
       isMonarch={view.monarch === pid}
       emblemCount={view.emblems.filter((e) => e.owner === pid).length}
+      curses={view.zones.battlefield.flatMap((id) => {
+        const o = view.objects[id]
+        return o !== undefined && o.attachedToPlayer === pid
+          ? [
+              {
+                id,
+                name: o.cardName,
+                art: o.art,
+                controllerClass: seatClassOf(view.turnOrder, o.controller),
+                controllerLabel: playerLabel(o.controller, game.seats),
+              },
+            ]
+          : []
+      })}
       onOpenEmblems={() => {
         const cards = view.emblems.flatMap((e, i) => (e.owner === pid ? [emblemToVisible(e, i)] : []))
         const byId = new Map(cards.map((c) => [c.id, c]))

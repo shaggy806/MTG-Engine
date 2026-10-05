@@ -687,6 +687,16 @@
 .cmdr-dmg.seat-d {
   --seat-color: var(--seat-d);
 }
+/* A Curse on this player (CurseChip.tsx): a commander-damage chip's shape,
+   art ringed in the Curse's controller's colour, with a mark for a total. */
+.pp-curses {
+  display: inline-flex;
+  align-self: center;
+  gap: 4px;
+}
+.pp-curse-mark {
+  color: #c79be8;
+}
 .cmdr-dmg.warn {
   color: var(--warn);
   border-color: var(--warn);
@@ -2324,6 +2334,9 @@
 }
 .card-flag.goad {
   background: var(--goader, #e0775b);
+}
+.card-flag.enchanting {
+  background: var(--goader, #c79be8);
 }
 .card-flag.suspect {
   background: #b89be0;

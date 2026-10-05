@@ -2,7 +2,8 @@
  * What an Aura enchants when it enters the battlefield other than by
  * resolving as an Aura spell — reanimated, returned from exile, put there
  * from a library or a hand — and the effect doesn't say (rule 303.4f): the
- * player it's entering under chooses a permanent it could legally enchant.
+ * player it's entering under chooses a permanent it could legally enchant,
+ * or for an "Enchant player" Aura (a Curse) a player.
  *
  * The raise stays on `Game`, in `askEnterChoice`, beside a Clone's copy: it's
  * asked before the Aura moves, so it enters attached. Like `choose-copy`, it
@@ -21,7 +22,12 @@ export const chooseEnchant = defineDecision({
   hasSource: true,
 
   legal: (_ctx, awaiting): LegalAction[] => [
-    { kind: "choose-enchant", source: awaiting.source, options: [...awaiting.options] },
+    {
+      kind: "choose-enchant",
+      source: awaiting.source,
+      options: [...awaiting.options],
+      ...(awaiting.players !== undefined ? { players: [...awaiting.players] } : {}),
+    },
   ],
 
   whyCannot: (ctx, action, player): string | null => {
@@ -33,8 +39,8 @@ export const chooseEnchant = defineDecision({
     }
     return subsetOf(
       [action.enchant],
-      awaiting.options,
-      (id) => `${id} is not one of the permanents that Aura could enchant`,
+      [...awaiting.options, ...(awaiting.players ?? [])],
+      (id) => `${id} is not one of the permanents or players that Aura could enchant`,
     );
   },
 
@@ -46,19 +52,20 @@ export const chooseEnchant = defineDecision({
   ask: (controller, view, awaiting, player): Action => ({
     type: "choose-enchant",
     player,
-    enchant: controller.chooseEnchant(view, awaiting.source, awaiting.options),
+    enchant: controller.chooseEnchant(view, awaiting.source, awaiting.options, awaiting.players ?? []),
   }),
 
   /** Every option, capped, in battlefield order: whether an Aura is a boon
    * or a curse isn't something the options say, so the search decides. */
   candidates: (legal, player, limit): Action[] => {
     if (legal.kind !== "choose-enchant") return [];
-    return legal.options.slice(0, limit).map((enchant) => ({ type: "choose-enchant", player, enchant }));
+    return [...legal.options, ...(legal.players ?? [])]
+      .slice(0, limit)
+      .map((enchant) => ({ type: "choose-enchant", player, enchant }));
   },
 
-  randomAnswer: (legal, player, rng): Action => ({
-    type: "choose-enchant",
-    player,
-    enchant: legal.options[rng.pickIndex(legal.options.length)],
-  }),
+  randomAnswer: (legal, player, rng): Action => {
+    const all = [...legal.options, ...(legal.players ?? [])];
+    return { type: "choose-enchant", player, enchant: all[rng.pickIndex(all.length)] };
+  },
 });

@@ -500,6 +500,10 @@ export interface GameObject {
     };
     readonly chosen?: string;
     readonly enchant?: ObjectId | null;
+    /** The player an "Enchant player" Aura enters attached to — its spell's
+     * target, or its controller's choice (303.4f). Answers what `enchant`
+     * would otherwise ask, and then `enchant` stays unset. */
+    readonly enchantPlayer?: PlayerId;
     /** The card a reveal land's controller revealed from hand, or `null`
      * for none (it enters tapped). */
     readonly reveal?: ObjectId | null;
@@ -825,6 +829,10 @@ export interface GameObject {
   stormCount?: number;
   /** The permanent this Aura/Equipment is attached to, or `null`. */
   attachedTo: ObjectId | null;
+  /** The player this Aura is attached to — a Curse's "Enchant player" (rule
+   * 303.4: an Aura can be attached to a player). Set instead of
+   * `attachedTo`, never with it; cleared on any zone change. */
+  attachedToPlayer?: PlayerId;
   /**
    * True for a player's designated commander (intrinsic, like `isToken` —
    * never reset by `moveObject`). Lets it be cast from the command zone
@@ -1125,6 +1133,9 @@ export interface LastKnownInfo {
    * so an "equipped creature dies" trigger still knows its host when both
    * left together. */
   readonly attachedTo?: ObjectId;
+  /** The player it was attached to, if it was a Curse on one — so an
+   * "enchanted player" trigger still knows them once it has left. */
+  readonly attachedToPlayer?: PlayerId;
   /** Enchanted by an Aura its own controller controlled — rule 700.9's
    * "modified". */
   readonly enchantedByController: boolean;
@@ -1924,6 +1935,9 @@ export type AwaitingDecision =
       readonly player: PlayerId;
       readonly source: ObjectId;
       readonly options: readonly ObjectId[];
+      /** The players an "Enchant player" Aura could enchant instead (rule
+       * 303.4f — a Curse returned to the battlefield). Absent when none. */
+      readonly players?: readonly PlayerId[];
     }
   | {
       /** The legend rule (704.5j): `player` controls two or more legendary

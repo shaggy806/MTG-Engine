@@ -19,6 +19,7 @@ function asCardFace(obj: VisibleObject): VisibleObject {
     attacking: null,
     blocking: null,
     attachedTo: null,
+    attachedToPlayer: null,
     goadedBy: [],
     suspected: false,
   }

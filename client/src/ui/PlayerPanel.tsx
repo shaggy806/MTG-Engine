@@ -4,6 +4,7 @@ import { playerLabel } from '../format.ts'
 import type { SeatClass } from '../format.ts'
 import type { SeatStatus } from 'protocol'
 import { CommanderDamageChip } from './CommanderDamageChip.tsx'
+import { CurseChip, type CurseOnPlayer } from './CurseChip.tsx'
 import { Symbols } from './Symbols.tsx'
 import { TargetedMark } from './TargetedMark.tsx'
 
@@ -34,6 +35,8 @@ export interface PlayerPanelProps {
   readonly isMonarch?: boolean
   /** How many emblems (rule 114) this player has. */
   readonly emblemCount?: number
+  /** The Auras attached to this player — Curses (rule 303.4). */
+  readonly curses?: readonly CurseOnPlayer[]
   /** Opens a read-only viewer of this player's graveyard/exile/hand, if provided. */
   readonly onOpenGraveyard?: () => void
   readonly onOpenExile?: () => void
@@ -82,6 +85,7 @@ export function PlayerPanel({
   wentFirst = false,
   isMonarch = false,
   emblemCount = 0,
+  curses = [],
   onOpenGraveyard,
   onOpenExile,
   onOpenHand,
@@ -177,6 +181,13 @@ export function PlayerPanel({
                 ownerClass={seatClassOf(d.owner)}
                 ownerLabel={playerLabel(d.owner, seats)}
               />
+            ))}
+          </span>
+        ) : null}
+        {curses.length > 0 ? (
+          <span className="pp-curses">
+            {curses.map((c) => (
+              <CurseChip key={c.id} curse={c} />
             ))}
           </span>
         ) : null}

@@ -751,6 +751,13 @@ export type PlayerScope =
    * damage to each other opponent". Every opponent when the trigger names
    * nobody. */
   | "each-other-opponent"
+  /** The effect's controller, then each of their opponents attacking the
+   * `"trigger-player"` — a Curse's "Whenever enchanted player is attacked,
+   * create a Gold token. **Each opponent attacking that player does the
+   * same**" (Curse of Opulence). A player is attacking another if they
+   * control a creature attacking them (the Curses' ruling), read as it
+   * resolves: with none attacking them any more, only the controller. */
+  | "you-and-opponents-attacking-trigger-player"
   /** "That player" in an `"each-player-may"`'s `ifDid` / `ifDidnt`: the
    * player the follow-up is about. Elsewhere, the same as
    * `"trigger-player"`. Not a target. */
@@ -2864,6 +2871,11 @@ export type EffectSpec =
        * Assault: `{ type: "creature", controlledBy: "you" }`). */
       readonly kind: "untap-all";
       readonly filter: CardFilter;
+      /** Each of these players untaps the permanents matching `filter`,
+       * read from their own side ("you" is each of them in turn) — Curse of
+       * Bounty's "untap all nonland permanents you control. Each opponent
+       * attacking that player untaps all nonland permanents they control". */
+      readonly who?: PlayerScope;
       /** As on `modify-pt-all` — "untap them" after pumping a targeted
        * player's creatures (Great Oak Guardian). */
       readonly controlledByTarget?: number;
@@ -6976,6 +6988,10 @@ export function applyEffectSpec(unbound: EffectSpec, ctx: ResolutionContext): vo
       });
       return;
     case "untap-all":
+      if (spec.who !== undefined) {
+        for (const player of ctx.playersInScope(spec.who)) ctx.untapAll(spec.filter, player, spec.exceptSource === true);
+        return;
+      }
       ctx.untapAll(spec.filter, scopedController(spec.controlledByTarget, ctx), spec.exceptSource === true);
       return;
     case "exert": {
