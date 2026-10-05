@@ -15748,13 +15748,53 @@ export class Game {
   /**
    * One player's waiting triggers in the order they go on the stack — the
    * first placed resolves last. As they stand when the player has ordered
-   * them (`PendingTrigger.ordered`); otherwise the engine's own order, a
-   * `stackFirst` ability first (see `TriggeredAbility.stackFirst`) and the
-   * rest in the order they triggered.
+   * them (`PendingTrigger.ordered`); otherwise the engine's own order (any
+   * order is legal, rule 603.3b): a `stackFirst` ability first (see
+   * `TriggeredAbility.stackFirst`), then those that read the board, then the
+   * rest, then those that add to it — so what grows the board resolves before
+   * what counts it (`triggerBoardRole`). Lathliss's Dragon token or Sarkhan
+   * becoming a Dragon before Dragon Tempest counts Dragons, Unnatural Growth's
+   * doubling before Surrak's formidable check: the cases a survey of bot games
+   * found (2026-10-04). Within each group, the order they triggered.
    */
   private triggerPlacement(theirs: readonly PendingTrigger[]): PendingTrigger[] {
     if (theirs.length > 0 && theirs.every((t) => t.ordered === true)) return [...theirs];
-    return [...theirs.filter((t) => t.stackFirst === true), ...theirs.filter((t) => t.stackFirst !== true)];
+    const rest = theirs.filter((t) => t.stackFirst !== true);
+    const role = new Map(rest.map((t) => [t, this.triggerBoardRole(t)]));
+    return [
+      ...theirs.filter((t) => t.stackFirst === true),
+      ...rest.filter((t) => role.get(t) === "reads"),
+      ...rest.filter((t) => role.get(t) === null),
+      ...rest.filter((t) => role.get(t) === "grows"),
+    ];
+  }
+
+  /**
+   * Whether a waiting trigger's ability reads the board — an amount counted
+   * off permanents (`countOf`) or an intervening "if" that does (`aggregate`,
+   * `controls`) — or adds to it: a token, a permanent becoming a copy, a
+   * counter, a P/T change. One that does both, or neither, is `null`.
+   */
+  private triggerBoardRole(t: PendingTrigger): "reads" | "grows" | null {
+    const def = this.registry.has(t.cardName) ? this.registry.get(t.cardName) : undefined;
+    const ability: unknown =
+      t.delayed !== undefined
+        ? t.delayed
+        : (t.reflexive ??
+          (t.grantedAbility !== undefined
+            ? this.abilityFromRef(t.grantedAbility)
+            : t.chapter === true
+              ? def?.chapters?.[t.abilityIndex]
+              : (this.triggeredOfSource(t.sourceObjectId, t.lastKnownRefs?.source)?.[t.abilityIndex] ??
+                def?.triggered[t.abilityIndex])));
+    if (ability === undefined || ability === null) return null;
+    const text = JSON.stringify(ability);
+    const reads = /"countOf"|"kind":"aggregate"|"kind":"controls"/.test(text);
+    const grows =
+      /"kind":"(create-token|become-copy|modify-pt|modify-pt-all|double-pt-all|add-counter|add-counter-all|double-counters|double-counters-all)"/.test(
+        text,
+      );
+    return reads === grows ? null : reads ? "reads" : "grows";
   }
 
   /**

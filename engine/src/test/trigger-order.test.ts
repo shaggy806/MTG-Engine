@@ -78,3 +78,45 @@ describe("ordering simultaneous triggers (rule 603.3b)", () => {
     expect(game.canDispatch({ type: "order-triggers", player: B, order: [0, 1] })).toMatch(/not being asked/);
   });
 });
+
+describe("the engine's own order: what grows the board resolves before what counts it", () => {
+  /** Alice's main phase with `permanents` out, then a Shivan Dragon entering.
+   * Every trigger asking for a target is aimed at bob, and the stack then
+   * resolved, so the damage dealt shows the order. */
+  const dragonEnters = (permanents: readonly string[]) => {
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      decks: [
+        { player: A, cards: Array<string>(40).fill("Mountain") },
+        { player: B, cards: Array<string>(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === A && s.turn.step === "precombat-main");
+    for (const name of permanents) game.debugSpawn(name, A);
+    game.debugSpawn("Shivan Dragon", A, "battlefield", { announceEntry: true });
+    for (let i = 0; i < 20; i += 1) {
+      game.advanceUntil((s) => s.awaiting !== null || (s.zones.shared.stack.length === 0 && s.pendingTriggers.length === 0));
+      const awaiting = game.state.awaiting;
+      if (awaiting === null) break;
+      if (awaiting.kind !== "choose-targets") throw new Error(`unexpected ${awaiting.kind}`);
+      game.dispatch({ type: "choose-targets", player: A, targets: [{ kind: "player", player: B }] });
+    }
+    return game;
+  };
+
+  it("makes Lathliss's Dragon token before Dragon Tempest counts Dragons", () => {
+    // Lathliss's token resolving first makes three Dragons (Lathliss, the
+    // Shivan, the token) for Tempest's X on the Shivan; the other way round,
+    // two. The token entering triggers Tempest again, at three either way:
+    // 3 + 3, where the engine's old order dealt 2 + 3.
+    const game = dragonEnters(["Dragon Tempest", "Lathliss, Dragon Queen"]);
+    expect(game.state.players[B].life).toBe(20 - 6);
+  });
+
+  it("orders them the same way listed the other way round", () => {
+    // Detection order doesn't decide it: Lathliss first on the battlefield.
+    const game = dragonEnters(["Lathliss, Dragon Queen", "Dragon Tempest"]);
+    expect(game.state.players[B].life).toBe(20 - 6);
+  });
+});
