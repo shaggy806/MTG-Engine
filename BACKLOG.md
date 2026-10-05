@@ -171,6 +171,7 @@ under count budgets).
 - **Fewer 1/1 tokens made since `smallTokens`** (2026-10-04): `bot:diff` showed March of the
   Multitudes, Raise the Alarm and Dawn of Hope's activation passed over for other plays. Watch the
   token decks (Token Triumph is on the bench); a token payoff on the board isn't priced yet.
+- **Adaptive Training Post activated with nothing to copy** (a capture, HB5MR turn 31, open): the live bot had the chained-spells work and the full view isn't the difference, yet a fresh bot re-asked at the capture passes. Likely state the live bot carries between decisions (`continueBatch`, `holdPass`); replay the game's turn to see.
 - **Shiko or the other spell, when only one fits** (since the chained-spells change, 2026-10-04):
   with a cast payoff in reach the priority search rolls our turn out as v1 (`"acting"`), and where
   only one of Shiko and another spell is affordable it now often casts the other (16 times in 12
@@ -182,7 +183,7 @@ under count budgets).
   alone (its rollouts pass our seat for the rest of the turn); `castPayoff`/`payoffFirst` cover
   only "whenever you cast" payoffs. The same reach for "dies" and "leaves" payoffs in hand would
   catch it.
-- **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go.
+- **Tactical mercy for a player far behind** (the user, 2026-10-04 — a politeness thing more than a misplay, and the balance is still open): a bot kills a player who is far behind whenever it can, but there is merit in not killing a player unless they are a threat or the kill wins the game. Where the line sits between swinging at an open player and sparing one with no creatures on board isn't settled; the attack builder (`bot/eval-bot.ts`, `alphaStrike`'s kill planner) is where it would go. Related, from a capture (HB5MR turn 20): dave sent all three attackers at alice, the one player without blockers; the user would have spread them — a politics call, maybe their own bias, maybe how tables really play. Both want a model of how attacks make enemies.
 
 ## Client / UI
 
