@@ -23,11 +23,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { captureOptions, cloneGameState, describeMove } from "engine";
+import { captureOptions, cloneGameState, describeMove, evaluateState } from "engine";
 import type {
   Action,
+  CaptureDiagnosis,
   CaptureOption,
   CardRegistry,
+  DecisionAudit,
   GameEvent,
   GameState,
   PlayerId,
@@ -92,8 +94,18 @@ interface Captured {
   readonly player: PlayerId;
   readonly state: GameState;
   readonly action: Action;
+  /** What the bot's own search said (`record`'s `search`), when it searched
+   * or took a shortcut it could report. */
+  readonly diagnosis?: CaptureDiagnosis;
   /** Worked out the first time someone asks (`options`). */
   options?: readonly CaptureOption[];
+}
+
+/** The candidates a bot's search scored at one decision, each with the
+ * state its simulation ended in (`EvalBotOptions.trace`), and its audit. */
+export interface SearchRecord {
+  readonly audit: DecisionAudit | null;
+  readonly trace: readonly { readonly action: Action; readonly after: GameState | null }[];
 }
 
 /** A photo's bytes and extension from its data URL — an image of a type in
@@ -128,10 +140,32 @@ export class CaptureLog {
     return cloneGameState({ ...state, eventLog: [] });
   }
 
-  /** What the bot did from `state` (a copy from `before`). */
-  record(player: PlayerId, state: GameState, action: Action): void {
-    this.entries.push({ id: this.nextId++, player, state, action });
+  /** What the bot did from `state` (a copy from `before`), and what its
+   * search said doing it. The candidates are scored here and only the scores
+   * kept: a state for each would hold hundreds of games' worth per room. */
+  record(player: PlayerId, state: GameState, action: Action, search?: SearchRecord): void {
+    const diagnosis = search === undefined ? undefined : this.diagnose(player, state, search);
+    this.entries.push({ id: this.nextId++, player, state, action, ...(diagnosis ? { diagnosis } : {}) });
     if (this.entries.length > this.keep) this.entries.shift();
+  }
+
+  private diagnose(player: PlayerId, state: GameState, search: SearchRecord): CaptureDiagnosis | undefined {
+    const audit = search.audit;
+    if (audit === null && search.trace.length === 0) return undefined;
+    const registry = this.config.registry;
+    const scores = search.trace
+      .map(({ action, after }) => ({
+        move: describeMove(state, action, registry),
+        score: after === null ? null : Math.round(evaluateState(after, registry, player) * 1000) / 1000,
+      }))
+      .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
+    return {
+      via: audit?.via ?? "unknown",
+      expired: audit?.expired ?? false,
+      simulations: audit?.simulations ?? 0,
+      ms: audit?.ms ?? 0,
+      scores,
+    };
   }
 
   /** The decisions kept, newest first. */
@@ -180,6 +214,7 @@ export class CaptureLog {
       did: entry.action,
       expect: expected,
       savedAt: new Date().toISOString(),
+      ...(entry.diagnosis ? { diagnosis: entry.diagnosis } : {}),
     };
     mkdirSync(this.config.dir, { recursive: true });
     const stamp = capture.savedAt.replace(/[:.]/g, "-");

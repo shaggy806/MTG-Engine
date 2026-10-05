@@ -196,12 +196,22 @@ export interface DecisionAudit {
   readonly kind: "priority" | "decision" | "attackers" | "blockers";
   readonly simulations: number;
   readonly ms: number;
+  /** Which path answered: `"search"`, or the shortcut taken instead of one
+   * (`"batch replay"`, `"held pass"`, `"no candidates"`, `"payoff first"`,
+   * `"landfall first"`, `"fetch"`, `"only land"`, `"land search"`,
+   * `"v1's answer"`). A capture records it (`server/src/capture.ts`), so a
+   * decision the saved position can't reproduce says which branch it took. */
+  readonly via: string;
+  /** The wall-clock budget ran out before the search finished. */
+  readonly expired: boolean;
 }
 
-const audit = (kind: DecisionAudit["kind"], budget: SearchBudget | null): DecisionAudit => ({
+const audit = (kind: DecisionAudit["kind"], budget: SearchBudget | null, via = "search"): DecisionAudit => ({
   kind,
   simulations: budget?.simulations ?? 0,
   ms: budget?.ms ?? 0,
+  via,
+  expired: budget !== null && budget.until !== Infinity && Date.now() >= budget.until,
 });
 
 /** Structural equality, for spotting v1's chosen action among the enumerated
@@ -581,11 +591,12 @@ export class EvalBotController extends HeuristicBotController {
     this.lastDecision = null;
     this.lastPassFallback = null;
     this.lastHeldForCombat = [];
-    const continued = this.continueBatch(view) ?? this.holdPass(view);
+    const fromBatch = this.continueBatch(view);
+    const continued = fromBatch ?? this.holdPass(view);
     this.passedOn = null;
     this.actedOn = null;
     if (continued !== null) {
-      this.lastDecision = audit("priority", null);
+      this.lastDecision = audit("priority", null, fromBatch !== null ? "batch replay" : "held pass");
       if (continued.type === "pass-priority") this.rememberPass(view);
       return continued;
     }
@@ -659,7 +670,7 @@ export class EvalBotController extends HeuristicBotController {
     // of 91k windows, a third of all the bot's CPU, and in a live room all of
     // it on the server's one thread.
     if (candidates.length === 0) {
-      this.lastDecision = audit("priority", null);
+      this.lastDecision = audit("priority", null, "no candidates");
       return pass;
     }
     const budget = this.budget();
@@ -682,7 +693,7 @@ export class EvalBotController extends HeuristicBotController {
     // now, Shiko later" and lost the Flurry.
     const payoff = payoffFirst(view, this.cards, candidates);
     if (payoff !== null) {
-      this.lastDecision = audit("priority", null);
+      this.lastDecision = audit("priority", null, "payoff first");
       return payoff;
     }
     const lands = candidates.filter((a) => a.type === "play-land" && a.face === undefined);
@@ -696,7 +707,7 @@ export class EvalBotController extends HeuristicBotController {
           isLandfallPermanent(this.cards, view.state.objects[a.card]?.cardName ?? ""),
       );
       if (landfall !== undefined) {
-        this.lastDecision = audit("priority", null);
+        this.lastDecision = audit("priority", null, "landfall first");
         return landfall;
       }
     }
@@ -717,11 +728,11 @@ export class EvalBotController extends HeuristicBotController {
           )
         : undefined;
     if (fetch !== undefined) {
-      this.lastDecision = audit("priority", null);
+      this.lastDecision = audit("priority", null, "fetch");
       return fetch;
     }
     if (lands.length === 1) {
-      this.lastDecision = audit("priority", null);
+      this.lastDecision = audit("priority", null, "only land");
       return lands[0];
     }
     if (lands.length > 1) {
@@ -744,7 +755,7 @@ export class EvalBotController extends HeuristicBotController {
           bestLand = land;
         }
       }
-      this.lastDecision = audit("priority", budget);
+      this.lastDecision = audit("priority", budget, "land search");
       return bestLand;
     }
 
@@ -1084,7 +1095,7 @@ export class EvalBotController extends HeuristicBotController {
     // own seat for the rest of the turn, so they never see that spell and
     // price paying as 2 life for nothing — as with a land drop.
     if (view.state.awaiting?.kind === "pay-life-for-untapped") {
-      this.lastDecision = audit("decision", null);
+      this.lastDecision = audit("decision", null, "v1's answer");
       return inherited;
     }
     const budget = this.budget(Math.min(DECISION_ROLLOUTS, this.maxSimulations));

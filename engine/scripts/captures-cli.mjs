@@ -70,6 +70,12 @@ if (command === "list") {
       console.log(`         ${file}`);
       if (capture.note !== "") console.log(`         note: ${capture.note}`);
       console.log(`         now: ${now.detail}`);
+      // What the live bot's search said as it made the move (`diagnosis`).
+      const d = capture.diagnosis;
+      if (d !== undefined) {
+        const top = d.scores.slice(0, 4).map((x) => `${x.move} ${x.score ?? "failed"}`).join("; ");
+        console.log(`         live: ${d.via}, ${d.simulations} simulations in ${d.ms} ms${d.expired ? ", clock ran out" : ""}${top ? ` — ${top}` : ""}`);
+      }
       const r = capture.resolved;
       if (r !== undefined) console.log(`         resolved ${r.at.slice(0, 10)} at ${r.commit}: ${r.note}`);
     }

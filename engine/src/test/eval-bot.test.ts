@@ -197,7 +197,7 @@ describe("what a decision costs", () => {
     for (let i = 0; i < 3; i += 1) game.debugSpawn("Forest", A, "battlefield");
     const bot = new EvalBotController(A, registry);
     expect(bot.act(viewOf(game))).toEqual({ type: "pass-priority", player: A });
-    expect(bot.lastDecision).toEqual({ kind: "priority", simulations: 0, ms: 0 });
+    expect(bot.lastDecision).toEqual({ kind: "priority", simulations: 0, ms: 0, via: "no candidates", expired: false });
   });
 
   it("plays a lone land drop without one either", () => {

@@ -36,6 +36,8 @@ import type {
   Action,
   AwaitingDecision,
   ControllerView,
+  DecisionAudit,
+  EvalBotOptions,
   GameState,
   ObjectId,
   PlayerController,
@@ -301,9 +303,10 @@ export interface SeatClaim {
  * it was still no better than v2, so it is retired. What replaced it is v2 on
  * an effect-aware base: `docs/plans/bot-effect-knowledge.md`.
  */
-const DEFAULT_BOT = (player: PlayerId): PlayerController =>
+const DEFAULT_BOT = (player: PlayerId, trace?: EvalBotOptions["trace"]): PlayerController =>
   new EvalBotController(player, undefined, {
     timeBudgetMs: BOT_DECISION_BUDGET_MS,
+    ...(trace !== undefined ? { trace } : {}),
   });
 
 /** A bot move parked until the clients have finished showing the frame it
@@ -354,6 +357,9 @@ export class Room {
   /** Recent bot decisions, when this server captures them — see
    * `RoomOptions.capture`. */
   readonly captures: CaptureLog | null;
+  /** What the deciding bot's search has scored so far this decision —
+   * filled only with capture on (`makeBot`'s trace). */
+  private searchTrace: { action: Action; after: GameState | null }[] = [];
   /** See `RoomOptions.frozen`. */
   readonly frozen: boolean;
   /** What a scenario builder adds to each `state` push (`builder.ts`), or
@@ -371,8 +377,14 @@ export class Room {
     this.pacing = options.pacing ?? "realtime";
     this.showStackArrivals = options.showStackArrivals ?? true;
     this.timers = options.timers ?? realTimers;
-    this.makeBot = options.botController ?? DEFAULT_BOT;
     this.captures = options.capture !== undefined ? new CaptureLog(options.capture, id) : null;
+    // With capture on, the default bots report every candidate they score,
+    // kept with the decision (`CaptureLog.record`'s `search`).
+    this.makeBot =
+      options.botController ??
+      (this.captures !== null
+        ? (player) => DEFAULT_BOT(player, (action, after) => this.searchTrace.push({ action, after }))
+        : DEFAULT_BOT);
     this.seats = game.state.turnOrder.map((player) => ({
       player,
       clientToken: null,
@@ -923,8 +935,13 @@ export class Room {
       this.captures !== null && !this.game.isDeadForMana(seat)
         ? this.captures.before(this.game.state)
         : null;
+    this.searchTrace = [];
     const action = bot.act(view);
-    if (captured !== null) this.captures?.record(seat, captured, action);
+    if (captured !== null) {
+      const audit = "lastDecision" in bot ? ((bot as { lastDecision: DecisionAudit | null }).lastDecision ?? null) : null;
+      this.captures?.record(seat, captured, action, { audit, trace: this.searchTrace });
+    }
+    this.searchTrace = [];
     return action;
   }
 

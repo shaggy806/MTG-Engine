@@ -51,6 +51,44 @@ function playedRoom(capture: boolean): { room: Room; dir: string } {
 }
 
 describe("capturing bot decisions", () => {
+  it("saves what the default bot's search said with the move: its path and every candidate's score", () => {
+    // A move the saved position can't reproduce needs the bot's own side of it
+    // (an Adaptive Training Post, 2026-10-04): the room's default bots report
+    // each candidate they score while capture is on.
+    const dir = mkdtempSync(join(tmpdir(), "mtg-capture-"));
+    dirs.push(dir);
+    const game = Game.create({
+      seed: 1,
+      shuffle: false,
+      registry,
+      decks: [
+        { player: ALICE, cards: Array<string>(40).fill("Mountain") },
+        { player: BOB, cards: Array<string>(40).fill("Forest") },
+      ],
+    });
+    game.advanceUntil((s) => s.priority.holder === ALICE && s.turn.step === "precombat-main");
+    game.state.zones.perPlayer[ALICE].hand = [];
+    for (let i = 0; i < 4; i += 1) game.debugSpawn("Mountain", ALICE, "battlefield");
+    game.debugSpawn("Lightning Bolt", ALICE, "hand");
+    game.debugSpawn("Grizzly Bears", BOB, "battlefield", { summoningSick: false });
+    const room = new Room("CAPT2", game, { pacing: "immediate", capture: { dir, registry, keep: 50 } });
+    room.addBot(ALICE);
+    const log = room.captures;
+    if (log === null) throw new Error("no capture log");
+    // The first decision it was asked: Bolt or pass, searched.
+    const first = log.list().at(-1);
+    if (first === undefined) throw new Error("nothing captured");
+    const capture = JSON.parse(readFileSync(log.save(first.id, "not-this", "note"), "utf8")) as ScenarioCapture;
+    expect(capture.diagnosis?.via).toBe("search");
+    expect(capture.diagnosis?.expired).toBe(false);
+    const scores = capture.diagnosis?.scores ?? [];
+    expect(scores.some((s) => s.move.startsWith("Pass"))).toBe(true);
+    expect(scores.some((s) => s.move.includes("Lightning Bolt"))).toBe(true);
+    // Best first.
+    const numbers = scores.map((s) => s.score ?? -Infinity);
+    expect([...numbers].sort((x, y) => y - x)).toEqual(numbers);
+  });
+
   it("keeps nothing without a capture config", () => {
     const { room } = playedRoom(false);
     expect(room.captures).toBeNull();

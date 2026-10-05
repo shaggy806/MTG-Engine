@@ -54,6 +54,27 @@ export interface ScenarioCapture {
   /** Set once the bot gets it right and the file has moved to
    * `captures/resolved/` (`npm run bot:captures -- resolve`). */
   readonly resolved?: CaptureResolution;
+  /** What the live bot's own search said as it made the move — absent from
+   * captures saved before 2026-10-04. */
+  readonly diagnosis?: CaptureDiagnosis;
+}
+
+/**
+ * How the live bot reached a captured move: the path it took (`DecisionAudit`
+ * — a search, or a shortcut), whether its clock ran out, and every candidate
+ * its search scored, best first. A capture holds the position; this holds
+ * the bot's side, which the position alone may not reproduce — an Adaptive
+ * Training Post activated with nothing to copy (2026-10-04) passed from its
+ * saved position on every build, at every clock.
+ */
+export interface CaptureDiagnosis {
+  readonly via: string;
+  readonly expired: boolean;
+  readonly simulations: number;
+  readonly ms: number;
+  /** Each candidate scored, as `describeMove` reads it, best first; `null`
+   * where its simulation failed. */
+  readonly scores: readonly { readonly move: string; readonly score: number | null }[];
 }
 
 /** How a capture was resolved. A resolved capture is a gate scenario: the
