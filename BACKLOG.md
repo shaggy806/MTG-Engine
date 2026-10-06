@@ -199,7 +199,6 @@ item lands.
 - **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06): a seat the game waits on shows a bare "thinking…" (`ui/PlayerPanel.tsx`); make it describe the decision — "scrying", "targeting", "choosing blockers" — from the pending decision's kind (`view.state.awaiting`) or the step.
 - **The lobby's default deck could be random** (the user, 2026-10-06): randomize which deck the lobby's "Add bot (default deck)" button gives the bot (`client/src/lobby/SeatBoard.tsx`), rather than always the same one.
 - **The highroll notice should look like the other alerts** (the user, 2026-10-06): the "won the highroll and goes first" notice at the start of a game (`App.tsx`) is styled on its own; make it match the game's other alerts.
-- **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06): every `.stack-entry` draws its "whose / ability of" label above the card and its target line below (`ui/Stack.tsx`); keep them on the top entry only.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
 - **A creature's total toxic value isn't in the player view.**

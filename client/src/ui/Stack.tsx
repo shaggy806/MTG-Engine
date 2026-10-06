@@ -133,6 +133,10 @@ export function Stack({
           const obj = view.objects[id]
           if (!obj) return null
           const isTop = depth === 0
+          // Only the top entry says whose it is and what it targets (App.css,
+          // `.shows-lines`); under a "prompted by" card, which isn't on the
+          // stack, the real top entry says it too.
+          const showsLines = depth === (ghost ? 1 : 0) || isTop
           // Custom properties (`stackDepthVars`), not the `top`/`right`/
           // `transform`/`opacity`/`z-index` properties directly -- same trick
           // the hand fan uses (see App.tsx's HAND_FAN_STEP_DEG comment) so
@@ -159,9 +163,9 @@ export function Stack({
           const isNew = before === null || !before.has(id)
           return (
             <div
-              className={`stack-entry${isTop ? ' is-top' : ''}${isGhost ? ' is-prompt' : ''}${
-                isNew ? ' is-new' : ''
-              }`}
+              className={`stack-entry${isTop ? ' is-top' : ''}${showsLines ? ' shows-lines' : ''}${
+                isGhost ? ' is-prompt' : ''
+              }${isNew ? ' is-new' : ''}`}
               key={id}
               style={style}
               // Read by AnimationLayer to find the entry as it leaves the

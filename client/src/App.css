@@ -1799,6 +1799,22 @@
 .stack-entry-label {
   color: var(--muted);
 }
+/* Only the top entry -- what a player is responding to -- says whose it is
+   and what it targets (`shows-lines`, Stack.tsx: the real top entry under a
+   "prompted by" card too): every entry's lines at once were a column of text
+   down the pile. A buried entry shows them again when it's hovered or
+   focused, as it comes up to full size to be read. Hidden rather than left
+   out, so an entry's card doesn't shift when it comes to the top. */
+.stack-entry:not(.shows-lines) .stack-entry-label,
+.stack-entry:not(.shows-lines) .stack-targets {
+  visibility: hidden;
+}
+.stack-entry:hover .stack-entry-label,
+.stack-entry:hover .stack-targets,
+.stack-entry:focus-within .stack-entry-label,
+.stack-entry:focus-within .stack-targets {
+  visibility: visible;
+}
 .stack-targets {
   color: var(--warn);
 }
