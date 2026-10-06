@@ -2779,13 +2779,21 @@
   height: var(--kw-size);
   display: grid;
   place-items: center;
-  font-family: 'Mana';
+  /* The icon is an SVG one em square (KeywordIcon), so this sets its size:
+     what the Mana font's glyph was drawn at. */
   font-size: calc(var(--kw-size) * 0.72);
   line-height: 1;
   color: #fff;
   background: var(--scrim);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
+}
+/* A keyword icon (KeywordIcon.tsx): one em square, in the text colour. */
+.kw-icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 .mt-badge {
   position: absolute;
@@ -2964,8 +2972,6 @@
   color: var(--gold);
 }
 .kt-glyph {
-  font-family: 'Mana';
-  font-weight: 400;
   font-size: 1.15em;
   color: var(--text);
 }

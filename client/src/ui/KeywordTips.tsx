@@ -1,5 +1,5 @@
 import type { VisibleObject } from 'engine/client'
-import { KEYWORD_GLYPH } from './abilityIcons.ts'
+import { KeywordIcon } from './KeywordIcon.tsx'
 import { stripReminders, tipsFor } from './textKeywords.ts'
 import { Symbols } from './Symbols.tsx'
 
@@ -26,8 +26,8 @@ export function KeywordTips({ obj, className = '' }: { readonly obj: VisibleObje
         <div key={tip.key} className="keyword-tip">
           <span className="kt-head">
             {tip.keyword !== undefined ? (
-              <span className="kt-glyph" aria-hidden="true">
-                {KEYWORD_GLYPH[tip.keyword]}
+              <span className="kt-glyph">
+                <KeywordIcon keyword={tip.keyword} />
               </span>
             ) : null}
             {tip.name}

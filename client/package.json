@@ -11,6 +11,7 @@
     "test:e2e": "playwright test",
     "preview": "vite preview",
     "slice-mana": "node scripts/slice-mana.mjs",
+    "keyword-icons": "node scripts/keyword-icons.mjs",
     "test": "vitest run"
   },
   "dependencies": {
