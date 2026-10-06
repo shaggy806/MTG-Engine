@@ -275,7 +275,7 @@
 .seat-panel-ready-btn.active {
   color: var(--good);
   border-color: var(--good);
-  background: rgba(34, 197, 94, 0.12);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
 }
 .seat-panel-add-bot {
   font-size: var(--text-xs);
@@ -294,7 +294,7 @@
   font-weight: 600;
   color: var(--good);
   border-color: var(--good);
-  background: rgba(34, 197, 94, 0.12);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
 }
 .start-game-btn:disabled {
   cursor: default;
@@ -318,7 +318,7 @@
 .deck-picker-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 8, 11, 0.75);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;

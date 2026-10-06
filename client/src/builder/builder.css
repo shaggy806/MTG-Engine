@@ -190,7 +190,7 @@
 .bp-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0d1418;
+  color: var(--on-accent);
   font-weight: 700;
 }
 

@@ -44,6 +44,29 @@
   --seat-d: #2f8cff;
   --seat-d-bg: rgba(47, 140, 255, 0.08);
 
+  /* Text on a bright fill: the accent button, card flags and badges, the
+     current phase pip, mana pips. */
+  --on-accent: #141007;
+  /* Dark veils over the table, made from --bg: a tapped card or a cost
+     over art (soft), an overlay's backdrop or a chip over art (the plain
+     one), a full-screen viewer (heavy). */
+  --scrim-soft: color-mix(in srgb, var(--bg) 50%, transparent);
+  --scrim: color-mix(in srgb, var(--bg) 82%, transparent);
+  --scrim-heavy: color-mix(in srgb, var(--bg) 92%, transparent);
+  /* A card's own surfaces: its face, the title and type bars, and the well
+     its art (or P/T) sits in. */
+  --card-face: #20202a;
+  --card-bar: #2a2a36;
+  --card-well: #121217;
+  --card-back-leather: linear-gradient(160deg, #3a2412, #160d06);
+  /* the faint light over the top of the table and the landing page */
+  --table-glow: #1a1a24;
+  /* Elevation, as three steps: a card or control lifted off the table, a
+     menu/toast/banner floating over it, a dialog over a scrim. */
+  --shadow-raised: 0 6px 16px rgba(0, 0, 0, 0.45);
+  --shadow-popover: 0 12px 30px -6px rgba(0, 0, 0, 0.6);
+  --shadow-dialog: 0 24px 56px -12px rgba(0, 0, 0, 0.7);
+
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
      the library back, a board row's min-height) derives its size from, so
