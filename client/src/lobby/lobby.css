@@ -5,6 +5,13 @@
    board) so nothing outside this subtree is affected. */
 .seat-board {
   --card-w: clamp(110px, 15vw, 190px);
+  /* The room-settings column's width, and a container the seats size
+     against (`cqw`), so their width doesn't depend on the row they're in. */
+  --side-w: clamp(200px, 17vw, 240px);
+  /* What the column takes from the seats' row; nothing once it moves
+     under them (the container query below). */
+  --side-room: calc(var(--side-w) + var(--seat-gap, 16px));
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   /* `--seat-gap` is declared on the dialog that holds this (App.css's
@@ -18,6 +25,22 @@
   width: 100%;
 }
 
+/* The seats, and beside them a column for the room's settings and Start
+   Game: setting the table up, then starting it, in one place. Centred as
+   one group, so a two-seat table sits next to its settings rather than
+   leaving a gap the width of two more seats between them. */
+.seat-board-main {
+  display: grid;
+  grid-template-columns: auto var(--side-w);
+  justify-content: center;
+  gap: var(--seat-gap, 16px);
+  align-items: start;
+}
+.seat-board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 .seat-board-grid {
   /* A seat is the same width at any table size: the width it has when four
      share the row. Letting 2 seats take a half each is what made the
@@ -25,13 +48,14 @@
      art grew to 450px, the seats' contents to twice their height, and the
      Start Game button fell below the fold at 768px, while four seats sat
      compact on one screen. A smaller table is now a narrower, centred row
-     of the same seats. Percentages in a track size resolve against the
-     grid's own width, and the room for the controls column (below) is
-     always set aside, so four seats plus the column still fit the row. */
+     of the same seats. Measured against the whole board (`100cqw`, the
+     `.seat-board` container) less the settings column, with the room for
+     the controls column (below) always set aside, so four seats plus both
+     columns still fit the row. */
   --seat-ctrl-w: clamp(76px, 8vw, 104px);
-  --seat-w: calc((100% - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
+  --seat-w: calc((100cqw - var(--side-room) - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
   display: grid;
-  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w)));
+  grid-template-columns: repeat(var(--seat-count), var(--seat-w));
   justify-content: center;
   gap: var(--seat-gap, 16px);
 }
@@ -41,7 +65,7 @@
    3-player one with an empty chair. `--seat-count` deliberately stays the
    number of real seats. */
 .seat-board-grid.has-controls {
-  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w))) auto;
+  grid-template-columns: repeat(var(--seat-count), var(--seat-w)) auto;
 }
 /* Centred rather than stretched: a full-height dashed box beside the real
    seats reads as another (empty) seat, which is the opposite of what a
@@ -283,15 +307,14 @@
   padding: 4px 8px;
 }
 
-/* The room's game settings (RoomSettingsPanel.tsx), between the seats and
-   Start Game: one row of labelled fields, the host's to change. */
+/* The room's game settings (RoomSettingsPanel.tsx), at the top of the
+   right-hand column: labelled fields one under another, the host's to
+   change. */
 .room-settings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: min(100%, 760px);
-  margin: 0 auto 14px;
-  padding: 12px 16px 14px;
+  gap: 10px;
+  padding: 12px 14px 14px;
   background: var(--panel-2);
   border: 1px solid var(--border);
 }
@@ -302,10 +325,8 @@
 }
 .room-settings-fields {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px 32px;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 12px;
 }
 .rs-field {
   display: flex;
@@ -345,6 +366,7 @@
   margin: 0;
 }
 .rs-select {
+  align-self: stretch;
   padding: 4px 8px;
   font-size: var(--text-sm);
   color: var(--text);
@@ -355,8 +377,9 @@
 .seat-board-footer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 6px;
+  text-align: center;
 }
 .start-game-btn {
   padding: 10px 28px;
@@ -483,4 +506,30 @@
 .deck-picker-build {
   align-self: center;
   font-size: var(--text-sm);
+}
+
+/* Last in the file so it overrides the rules above. A narrow board (about 1100px of screen and below) can't spare the
+   column: four seats would be ~150px each and their names truncate to
+   "P...". The settings go under the seats there, as one row. */
+@container (max-width: 1060px) {
+  .seat-board-main {
+    --side-room: 0px;
+    grid-template-columns: auto;
+  }
+  .seat-board-side {
+    justify-self: center;
+    width: min(100%, 760px);
+  }
+  .room-settings-fields {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 32px;
+  }
+  .rs-select {
+    align-self: auto;
+  }
+  .seat-board-footer {
+    align-items: center;
+  }
 }

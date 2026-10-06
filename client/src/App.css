@@ -3278,7 +3278,9 @@
    in App.tsx) needs a much wider box than the default overlay-box's small
    centered-dialog width to fit a per-seat grid (see client/src/lobby/) */
 .seat-board-box {
-  width: min(1180px, 94vw);
+  /* Wider than it was, for the room-settings column down its right side
+     (lobby.css's .seat-board-main), so four seats keep their width. */
+  width: min(1320px, 96vw);
   max-width: none;
   /* One rhythm across the whole board. The seat grid runs the full width of
      this box, so the box's own side inset reads as part of the same row as
