@@ -98,6 +98,9 @@ export function DeckEditor({
   readonly onDelete: () => void
 }) {
   const [query, setQuery] = useState('')
+  // Delete asks first: a deck lives only in this browser, so a misclick
+  // used to lose it for good.
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [name, setName] = useState(deck.name)
   const [hover, setHover] = useState<HoverTarget | null>(null)
@@ -308,17 +311,29 @@ export function DeckEditor({
             if (name.trim() && name !== deck.name) onChange({ ...deck, name: name.trim() })
           }}
         />
-        <div className="db-editor-actions">
-          <button type="button" onClick={onMakeActive} disabled={isActive}>
-            {isActive ? 'Active' : 'Make active'}
-          </button>
-          <button type="button" onClick={onDuplicate}>
-            Duplicate
-          </button>
-          <button type="button" onClick={onDelete}>
-            Delete
-          </button>
-        </div>
+        {confirmingDelete ? (
+          <div className="db-editor-actions db-delete-confirm" role="alert">
+            <span>Delete this deck? It can't be undone.</span>
+            <button type="button" className="db-danger" onClick={onDelete}>
+              Delete
+            </button>
+            <button type="button" onClick={() => setConfirmingDelete(false)} autoFocus>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="db-editor-actions">
+            <button type="button" onClick={onMakeActive} disabled={isActive}>
+              {isActive ? 'Active' : 'Make active'}
+            </button>
+            <button type="button" onClick={onDuplicate}>
+              Duplicate
+            </button>
+            <button type="button" onClick={() => setConfirmingDelete(true)}>
+              Delete…
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={`db-legality ${legality.legal ? 'legal' : 'illegal'}`}>
