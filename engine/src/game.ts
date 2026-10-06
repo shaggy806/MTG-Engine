@@ -24474,6 +24474,52 @@ export class Game {
     }
   }
 
+  /** A permanent dealing damage to an opponent of its controller adds to
+   * its `tally`: combat damage, or an ability's whose source it is. A spell,
+   * or a source already gone from the battlefield, has no stint to add to. */
+  private tallyDamage(source: ObjectId, target: TargetRef, amount: number): void {
+    if (target.kind !== "player" || amount <= 0) return;
+    const object = this.state.objects[source];
+    if (object === undefined || object.zone !== "battlefield" || object.controller === target.player) return;
+    const tally = this.tallyOf(object);
+    tally.damageToPlayers += amount;
+    tally.thisTurn.damageToPlayers += amount;
+  }
+
+  /** `object`'s `tally`, its `thisTurn` share started over if that was an
+   * earlier turn's. */
+  private tallyOf(object: GameObject): NonNullable<GameObject["tally"]> {
+    const turn = this.state.turn.number;
+    const tally = (object.tally ??= {
+      damageToPlayers: 0,
+      cardsDrawn: 0,
+      thisTurn: { turn, damageToPlayers: 0, cardsDrawn: 0 },
+    });
+    if (tally.thisTurn.turn !== turn) tally.thisTurn = { turn, damageToPlayers: 0, cardsDrawn: 0 };
+    return tally;
+  }
+
+  /** A card drawn while an ability resolves adds to its source's `tally`,
+   * when its controller drew it and the source is still the permanent that
+   * put the ability on the stack (its timestamp, rule 400.7). A spell's
+   * draws, and a draw step's, have no permanent to credit. */
+  private tallyDraw(player: PlayerId): void {
+    const resolving = this.state.resolvingSource;
+    if (resolving === undefined) return;
+    const object = this.state.objects[resolving.source];
+    if (
+      object === undefined ||
+      object.zone !== "battlefield" ||
+      object.timestamp !== resolving.timestamp ||
+      object.controller !== player
+    ) {
+      return;
+    }
+    const tally = this.tallyOf(object);
+    tally.cardsDrawn += 1;
+    tally.thisTurn.cardsDrawn += 1;
+  }
+
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
@@ -24528,6 +24574,7 @@ export class Game {
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return 0;
       this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
+      this.tallyDamage(source, target, amount);
       // The damage is dealt in full — lifelink, commander damage and "is
       // dealt damage" all see it — whatever it does to the life total.
       // From a source with infect it's that many poison counters instead of
@@ -25696,6 +25743,7 @@ export class Game {
       nthThisTurn: seat.cardsDrawnThisTurn,
       ...(firstInDrawStep ? { firstInDrawStep: true } : {}),
     });
+    this.tallyDraw(player);
   }
 
   /**
@@ -26633,6 +26681,8 @@ export class Game {
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
+    // What it did there was that object's (rule 400.7).
+    delete object.tally;
     // A permission to play it from exile was about that stint (rule 400.7):
     // exiled again later, it's a new object with none. Every grant sets it
     // after the move that exiles the card.

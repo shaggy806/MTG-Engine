@@ -259,3 +259,55 @@ describe("snapshot / regression", () => {
     expect(game.isOver).toBe(true);
   });
 });
+
+describe("a permanent's tally (what the bots' target ranking reads)", () => {
+  it("credits a draw to the permanent whose ability drew it, for its controller", () => {
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    const archivist = spawn(game, "Archivist", A);
+    game.dispatch({ type: "activate-ability", player: A, source: archivist, abilityIndex: 0 });
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[archivist].tally).toMatchObject({ damageToPlayers: 0, cardsDrawn: 1 });
+  });
+
+  it("credits damage to an opponent, not to a creature or its own controller", () => {
+    const game = mkGame();
+    game.advanceUntil(atFirstMain);
+    const pyromancer = spawn(game, "Prodigal Pyromancer", A);
+    const bears = spawn(game, "Grizzly Bears", B);
+    const ping = (target: { kind: "player"; player: PlayerId } | { kind: "object"; object: ObjectId }) => {
+      game.state.objects[pyromancer].tapped = false;
+      game.dispatch({ type: "activate-ability", player: A, source: pyromancer, abilityIndex: 0, targets: [target] });
+      game.advanceUntil(stackEmpty);
+    };
+    ping({ kind: "object", object: bears });
+    expect(game.state.objects[pyromancer].tally).toBeUndefined();
+    ping({ kind: "player", player: A });
+    expect(game.state.objects[pyromancer].tally).toBeUndefined();
+    ping({ kind: "player", player: B });
+    expect(game.state.objects[pyromancer].tally).toMatchObject({
+      damageToPlayers: 1,
+      cardsDrawn: 0,
+      thisTurn: { turn: game.state.turn.number, damageToPlayers: 1 },
+    });
+  });
+
+  it("starts over when the permanent leaves the battlefield (rule 400.7)", () => {
+    const game = mkGame(["Island", "Unsummon"]);
+    game.advanceUntil(atFirstMain);
+    const archivist = spawn(game, "Archivist", A);
+    game.dispatch({ type: "activate-ability", player: A, source: archivist, abilityIndex: 0 });
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[archivist].tally?.cardsDrawn).toBe(1);
+    game.dispatch({ type: "play-land", player: A, card: named(game, game.handOf(A), "Island") });
+    game.dispatch({
+      type: "cast-spell",
+      player: A,
+      card: named(game, game.handOf(A), "Unsummon"),
+      targets: [{ kind: "object", object: archivist }],
+    });
+    game.advanceUntil(stackEmpty);
+    expect(game.state.objects[archivist].zone).toBe("hand");
+    expect(game.state.objects[archivist].tally).toBeUndefined();
+  });
+});

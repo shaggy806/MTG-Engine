@@ -780,6 +780,26 @@ export interface GameObject {
   modifiers: PtModifier[];
   /** Order this object entered the battlefield (rule 613.7 timestamp); 0 if never. */
   timestamp: number;
+  /**
+   * What this permanent has done since it entered the battlefield: damage
+   * dealt to its controller's opponents with it as the source (combat or an
+   * ability of its own), and cards its controller drew while one of its
+   * abilities resolved. Public — every part of it is in the event log — and
+   * read only by the bots (`bot/features.ts`'s `trackRecordOf`), to spot a
+   * proven engine the printed stats undersell. Cleared when it leaves the
+   * battlefield: back, it's a new object (rule 400.7). Absent until it has
+   * done either.
+   *
+   * `thisTurn` is the current turn's share of the totals (stale once its
+   * `turn` has passed — see {@link settledTally}): a bot reads only what was
+   * done in earlier turns, so nothing its own search simulates this turn can
+   * add to the record it is judging by.
+   */
+  tally?: {
+    damageToPlayers: number;
+    cardsDrawn: number;
+    thisTurn: { turn: number; damageToPlayers: number; cardsDrawn: number };
+  };
   /** True for a token (rule 111): ceases to exist as an SBA once it leaves the battlefield. */
   isToken: boolean;
   /**
@@ -3531,4 +3551,19 @@ export function tokenFoldKey(o: GameObject): string {
     o.modifiers,
     o.regenerationShields ?? 0,
   ]);
+}
+
+/** `object`'s `tally` up to the end of the turn before `turn`: what it had
+ * done before the turn now being played. */
+export function settledTally(
+  object: GameObject,
+  turn: number,
+): { readonly damageToPlayers: number; readonly cardsDrawn: number } {
+  const tally = object.tally;
+  if (tally === undefined) return { damageToPlayers: 0, cardsDrawn: 0 };
+  if (tally.thisTurn.turn !== turn) return tally;
+  return {
+    damageToPlayers: tally.damageToPlayers - tally.thisTurn.damageToPlayers,
+    cardsDrawn: tally.cardsDrawn - tally.thisTurn.cardsDrawn,
+  };
 }
