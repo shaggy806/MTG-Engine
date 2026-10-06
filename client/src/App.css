@@ -3235,6 +3235,20 @@
   padding-inline: var(--seat-gap);
   position: relative;
 }
+/* Under the room code: the link to send a friend (lobby/InviteLink.tsx). */
+.invite-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.invite-link button {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+.invite-link-text {
+  width: 22em;
+  font-size: 13px;
+}
 /* Pinned in the corner rather than in the column, so the room code stays
    centred over the seats. */
 .seat-board-back {

@@ -94,6 +94,7 @@ import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
+import { InviteLink } from './lobby/InviteLink.tsx'
 import './App.css'
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
@@ -694,6 +695,7 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <p className="muted">Share this room code, then everyone joins.</p>
+        {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
         <div className="toast-stack">
           <ErrorLine game={game} />
         </div>
@@ -715,6 +717,7 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
       <div className="overlay-box seat-board-box">
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
+        {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
         <div className="toast-stack">
           <ErrorLine game={game} />
         </div>
