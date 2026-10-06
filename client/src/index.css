@@ -75,6 +75,11 @@
   --bevel-light: rgba(255, 255, 255, 0.22);
   --bevel-dark: rgba(0, 0, 0, 0.5);
   --bevel: inset 2px 2px 0 var(--bevel-light), inset -2px -3px 0 var(--bevel-dark);
+  /* The outline on a card's small coloured badges (×N, the flags, Goad): a
+     black edge outside, a light line just inside, so a gold or pastel tag
+     keeps its shape on any art. A shadow, not a border, so it takes no room
+     in a badge sized to its text. */
+  --badge-outline: 0 0 0 1px var(--bevel-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   --bevel-pressed: inset 2px 3px 0 var(--bevel-dark), inset -2px -2px 0 var(--bevel-light);
   /* The same edges on containers, after Minecraft's menus, and softer than
      a button's so the buttons still stand out: a dialog, popover, toast or
