@@ -51,8 +51,13 @@
      of the same seats. Measured against the whole board (`100cqw`, the
      `.seat-board` container) less the settings column: four columns, since
      the Add seat tile (below) only shows while there are three seats or
-     fewer. */
-  --seat-w: calc((100cqw - var(--side-room) - 3 * var(--seat-gap, 16px)) / 4);
+     fewer. Capped against the card size, since the board runs the screen's
+     full width: on a wide screen four seats would otherwise each be a third
+     of a 1080p screen wide. */
+  --seat-w: min(
+    calc((100cqw - var(--side-room) - 3 * var(--seat-gap, 16px)) / 4),
+    calc(var(--card-w) * 1.45)
+  );
   display: grid;
   grid-template-columns: repeat(var(--seat-count), var(--seat-w));
   justify-content: center;
