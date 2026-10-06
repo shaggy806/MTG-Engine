@@ -100,10 +100,25 @@ Ubuntu codename — see "codename gotcha" below). `/etc/caddy/Caddyfile`:
 ```
 :8080 {
     root * /opt/mtg-engine/client/dist
-    file_server
+
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
+    @other not path /assets/*
+    header @other Cache-Control "no-cache"
+
     try_files {path} /index.html
+    file_server
 }
 ```
+
+The `Cache-Control` headers are what make a deploy show up on the next load. Without one, a
+browser guesses how long `index.html` stays fresh (about a tenth of the time since it last
+changed), so after a quiet day it can keep serving the old page — and through it the old hashed
+scripts — for hours after a deploy. `no-cache` makes it ask every load (a cheap 304 when nothing
+changed); everything under `/assets/` is content-hashed, a new name on every build, so it can be
+cached forever. The matchers are on the *request* path, not `/index.html`, because Caddy applies
+`header` before `try_files` rewrites a route to `index.html`. After editing the Caddyfile,
+`sudo systemctl reload caddy`; check with `curl -sI https://mtg.tobyens.com/ | grep -i cache-control`.
 
 No TLS block — Cloudflare already terminated HTTPS before this ever sees the request. The client
 build that populates `client/dist/` must be built with `VITE_SERVER_URL=wss://ws.tobyens.com`
