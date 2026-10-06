@@ -2733,6 +2733,34 @@ const SCENARIOS: readonly BotScenario[] = [
       };
     },
   },
+  asked({
+    name: "sacrifices Tree of Redemption to Felothar, not Seedborn Muse",
+    rule: "Felothar draws the sacrificed creature's toughness and discards its power: a 0/13 is thirteen cards, a 2/4 two.",
+    kind: "training",
+    position(registry) {
+      // Reported from a live game (2026-10-06, no capture): a bot activated
+      // Felothar, the Steadfast sacrificing Seedborn Muse (draw 4, discard
+      // 2) with Tree of Redemption (draw 13, discard 0) on the board. v2's
+      // candidate for an ability with a sacrifice cost takes the last
+      // eligible permanent (`candidates.ts`'s `abilityCandidates`) — the
+      // choice is never searched, so the effect's reading of the sacrificed
+      // creature never decides it.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Forest", A, 4);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const felothar = onBoard(game, "Felothar the Steadfast", A);
+      const tree = onBoard(game, "Tree of Redemption", A);
+      onBoard(game, "Seedborn Muse", A);
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "activate-ability" && action.source === felothar && action.sacrifice === tree,
+          detail: `chose ${action.type === "activate-ability" && action.sacrifice !== undefined ? `${describeAction(action)} sacrificing ${cardOf(game, action.sacrifice)}` : describeAction(action)}`,
+        }),
+      };
+    },
+  }),
   {
     name: "lets Archmage Emeritus resolve before casting Abrade",
     rule: "A spell cast while our own cast payoff is still on the stack misses its trigger: let the payoff resolve first.",

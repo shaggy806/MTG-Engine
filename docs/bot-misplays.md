@@ -4,6 +4,24 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-06 — Felothar sacrificed Seedborn Muse over Tree of Redemption
+
+- **Seen:** a bot activated Felothar the Steadfast ("{3}, {T}, Sacrifice another creature: draw
+  cards equal to its toughness, then discard cards equal to its power") sacrificing Seedborn Muse
+  (draw 4, discard 2) with Tree of Redemption (draw 13, discard 0) on the board.
+- **Right:** sacrifice the Tree.
+- **Scenario:** "sacrifices Tree of Redemption to Felothar, not Seedborn Muse" (training) — the
+  activation it chooses doesn't name the Tree (no sacrifice named, left to the engine's default).
+- **Why:** an ability's sacrifice cost is never searched. v2's candidate fixes it to the last
+  eligible permanent (`bot/candidates.ts`'s `abilityCandidates`, "settled deterministically"),
+  and v1's activation picks the cheapest (`cheapestPermanents`); neither reads what the effect
+  does with the sacrificed creature (`toughnessOf`/`powerOf: "sacrificed"`).
+- **Fix (outline):** when an ability's effect reads the sacrificed creature, offer one candidate
+  per sacrifice choice (capped, cheapest and highest-reading first) and let the search score
+  them; the same for a spell's additional sacrifice cost (`castExtras`). Might cost a few more
+  simulations on boards with many creatures.
+- **Status:** open (the user: record, don't resolve now).
+
 ## 2026-10-06 — Abrade cast over its own Archmage Emeritus
 
 - **Seen:** Narset cast Archmage Emeritus, then Abrade at Weathered Sentinels with the Archmage
