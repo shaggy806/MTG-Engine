@@ -189,6 +189,22 @@ describe("Hearthhull, the Worldseed", () => {
     expect(game.state.players[B].life).toBe(life);
   });
 
+  it("the land it sacrifices pays the {1} when it can (rule 601.2g, 602.2b)", () => {
+    // A bug report (2026-10-05): the payment didn't know which land was about
+    // to go, so it tapped the other and the sacrificed one went untapped.
+    const game = setUp();
+    for (const id of game.battlefield) if (game.state.objects[id].controller === A) game.state.objects[id].tapped = true;
+    const hull = spawn(game, HEARTHHULL);
+    game.state.objects[hull].counters.charge = 2;
+    const forest = spawn(game, "Forest");
+    const fodder = spawn(game, "Swamp");
+    const offer = offers(game, hull).find((a) => a.text.startsWith("{1}, {T}, Sacrifice a land"));
+    if (offer === undefined) throw new Error("the 2+ ability isn't offered");
+    game.dispatch({ type: "activate-ability", player: A, source: hull, abilityIndex: offer.abilityIndex, sacrifice: fodder });
+    expect(game.state.objects[fodder].zone).toBe("graveyard");
+    expect(game.state.objects[forest].tapped).toBe(false);
+  });
+
   it("8+: whenever you sacrifice a land, each opponent loses 2 life", () => {
     const game = setUp();
     const hull = spawn(game, HEARTHHULL);

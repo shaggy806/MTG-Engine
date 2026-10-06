@@ -11022,6 +11022,13 @@ export class Game {
           for (const id of this.costSacrificeEligible(player, filter, except)) last.add(id);
         }
         manaArrangement = { last };
+      } else if (sacrificeVictim !== null) {
+        // The one permanent being sacrificed pays first where it can (rule
+        // 601.2g, via 602.2b): Hearthhull's "{1}, {T}, Sacrifice a land" taps
+        // that land for its {1} before it goes, as a cast's sacrifice does
+        // (a bug report, 2026-10-05). Excluded from paying, when it's the
+        // source with a {T} in the cost, it still is.
+        manaArrangement = { first: new Set([sacrificeVictim]) };
       }
       const payment = this.payMana(
         player,
