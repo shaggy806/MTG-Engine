@@ -29,9 +29,9 @@ import type { RandomSource } from "./decisions/contract.js";
 import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
-import { newColorsFirst } from "./land-colors.js";
+import { allColors, colorToName, newColorsFirst } from "./land-colors.js";
 import { scryAway } from "./scry-pick.js";
-import { manaValue, parseManaCost } from "./mana.js";
+import { COLORS, manaValue, parseManaCost } from "./mana.js";
 import type { EffectSpec } from "./effects.js";
 import {
   costWorth,
@@ -74,12 +74,13 @@ export interface ControllerView {
    * have them, and a chooser then narrows by those relations not at all. */
   readonly targetFacts?: TargetFacts;
   /**
-   * What this player could legally do if `action` were dispatched now,
-   * asked of a throwaway copy of the game — `null` if the engine refused it.
-   * Optional: a view built outside a `Game` (a test, a tool) may not offer
-   * it, and a controller must still decide without.
+   * What this player could legally do if `action` were dispatched now — or
+   * each of several, in order (a land, then the colour it asks for as it
+   * enters) — asked of a throwaway copy of the game; `null` if the engine
+   * refused one. Optional: a view built outside a `Game` (a test, a tool)
+   * may not offer it, and a controller must still decide without.
    */
-  legalActionsAfter?(action: Action): readonly LegalAction[] | null;
+  legalActionsAfter?(action: Action | readonly Action[]): readonly LegalAction[] | null;
 }
 
 /**
@@ -1551,8 +1552,15 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /** Every colour this card can tap for, read off its printed mana abilities
-   * (a dual reports both). Empty for a land that makes only colourless. */
-  private colorsProducedBy(cardName: string): readonly Color[] {
+   * (a dual reports both). Empty for a land that makes only colourless. A
+   * land that taps for a colour chosen as it entered (Valgavoth's Lair) makes
+   * `chosen` once it has one, and before that whichever colour we'll name
+   * (`colorToName`) — any in our commander's `identity`. */
+  private colorsProducedBy(
+    cardName: string,
+    identity: readonly Color[],
+    chosen?: string | null,
+  ): readonly Color[] {
     if (!this.registry.has(cardName)) return [];
     const out: Color[] = [];
     for (const ability of this.registry.get(cardName).activated) {
@@ -1561,7 +1569,10 @@ export class HeuristicBotController extends AutomaticController {
       const mana = effect.mana;
       if (typeof mana === "string") {
         if (mana === "any-color") return ["W", "U", "B", "R", "G"];
-        if (mana !== "C" && mana !== "chosen" && mana !== "produced") out.push(mana as Color);
+        if (mana === "chosen") {
+          if (chosen != null && allColors([chosen])) out.push(chosen as Color);
+          else out.push(...(identity.length > 0 ? identity : COLORS));
+        } else if (mana !== "C" && mana !== "produced") out.push(mana as Color);
       } else if ("oneOf" in mana) {
         for (const m of mana.oneOf) if (m !== "C") out.push(m as Color);
       } else if ("all" in mana) {
@@ -1595,12 +1606,13 @@ export class HeuristicBotController extends AutomaticController {
     if (lands.length === 1) return lands[0];
     const state = view.state;
     const me = this.playerId;
+    const identity = state.players[me]?.commanderIdentity ?? [];
 
     const have = new Set<Color>();
     for (const id of state.zones.shared.battlefield) {
       const object = state.objects[id];
       if (object === undefined || object.controller !== me) continue;
-      for (const c of this.colorsProducedBy(object.cardName)) have.add(c);
+      for (const c of this.colorsProducedBy(object.cardName, identity, object.chosenOnEnter)) have.add(c);
     }
 
     // What the hand is actually asking for, pip by pip — a card wanting
@@ -1619,24 +1631,60 @@ export class HeuristicBotController extends AutomaticController {
 
     let best = lands[0];
     let bestCastable = -1;
+    let bestTapped = false;
     let bestScore = -1;
     for (const land of lands) {
       const castable = this.castableAfter(view, land);
+      const tapped = this.entersTapped(land.cardName);
       let score = 0;
-      for (const color of new Set(this.colorsProducedBy(land.cardName))) {
+      for (const color of new Set(this.colorsProducedBy(land.cardName, identity))) {
         const wanted = want.get(color) ?? 0;
         if (wanted === 0) continue;
         // A colour already covered is worth far less than a new one, but not
         // nothing — a second source still helps cast {G}{G}.
         score += have.has(color) ? wanted : wanted * 10 + 100;
       }
-      if (castable > bestCastable || (castable === bestCastable && score > bestScore)) {
+      if (
+        castable > bestCastable ||
+        (castable === bestCastable && tapped && !bestTapped) ||
+        (castable === bestCastable && tapped === bestTapped && score > bestScore)
+      ) {
         bestCastable = castable;
+        bestTapped = tapped;
         bestScore = score;
         best = land;
       }
     }
     return best;
+  }
+
+  /** Whether `cardName` always enters tapped (Valgavoth's Lair, a gain land).
+   * A check land, a reveal land or a shock land may not, so they don't count. */
+  private entersTapped(cardName: string): boolean {
+    if (!this.registry.has(cardName)) return false;
+    return this.registry.get(cardName).static.some((ability) => {
+      const r = ability.replacement;
+      return (
+        r?.event === "enters-battlefield" &&
+        r.tapped === true &&
+        r.tappedUnless === undefined &&
+        r.tappedUnlessRevealFromHand === undefined &&
+        r.mayPayLife === undefined
+      );
+    });
+  }
+
+  /** "As this enters, choose a colour" (Valgavoth's Lair, the Thriving lands)
+   * comes as a creature-type choice over colours: name the one the deck wants
+   * (`colorToName`). Anything else is a real creature type. */
+  override chooseCreatureType(
+    view: ControllerView,
+    source: ObjectId,
+    options: readonly string[],
+    suggested: readonly string[],
+  ): string {
+    if (allColors(options)) return colorToName(view.state, this.registry, this.playerId, options);
+    return super.chooseCreatureType(view, source, options, suggested);
   }
 
   /**
@@ -1646,7 +1694,18 @@ export class HeuristicBotController extends AutomaticController {
    * leaves the choice to the pip count.
    */
   private castableAfter(view: ControllerView, land: PlayLandLegal): number {
-    const after = view.legalActionsAfter?.(this.toPlayLand(land));
+    const play = this.toPlayLand(land);
+    let after = view.legalActionsAfter?.(play);
+    // A land that asks "choose a colour" as it enters (Valgavoth's Lair)
+    // stops there, with nothing castable yet: answer it as we would, and look
+    // past it. Read before, it cast nothing and lost to any untapped land.
+    const choice = after?.find(
+      (a): a is Extract<LegalAction, { kind: "choose-creature-type" }> => a.kind === "choose-creature-type",
+    );
+    if (choice !== undefined) {
+      const creatureType = this.chooseCreatureType(view, choice.source, choice.options, choice.suggested);
+      after = view.legalActionsAfter?.([play, { type: "choose-creature-type", player: this.playerId, creatureType }]);
+    }
     if (after === null || after === undefined) return 0;
     return new Set(after.flatMap((a) => (a.kind === "cast-spell" ? [a.card] : []))).size;
   }

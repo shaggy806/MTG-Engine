@@ -29,13 +29,19 @@ import type { GameState } from "./state.js";
 const isColor = (m: string): m is Color => (COLORS as readonly string[]).includes(m);
 
 /** The colours one `add-mana` effect can make, for a player whose commander
- * identity is `identity`. */
-function addManaColors(effect: EffectSpec | null | undefined, identity: readonly Color[]): Color[] {
+ * identity is `identity`, on a permanent that named `chosen` as it entered
+ * (Valgavoth's Lair) — any colour while it hasn't. */
+function addManaColors(
+  effect: EffectSpec | null | undefined,
+  identity: readonly Color[],
+  chosen: Color | null,
+): Color[] {
   if (effect === null || effect === undefined) return [];
-  if (effect.kind === "sequence") return effect.effects.flatMap((e) => addManaColors(e, identity));
+  if (effect.kind === "sequence") return effect.effects.flatMap((e) => addManaColors(e, identity, chosen));
   if (effect.kind !== "add-mana") return [];
   const mana = effect.mana;
   if (typeof mana === "string") {
+    if (mana === "chosen" && chosen !== null) return [chosen];
     if (mana === "any-color" || mana === "chosen") return [...COLORS];
     if (mana === "commander-identity") return [...identity];
     return isColor(mana) ? [mana] : [];
@@ -46,8 +52,8 @@ function addManaColors(effect: EffectSpec | null | undefined, identity: readonly
 }
 
 /** The colours `def`'s printed mana abilities make. */
-function printedManaColors(def: CardDefinition, identity: readonly Color[]): Color[] {
-  return (def.activated ?? []).flatMap((ability) => addManaColors(ability.effect, identity));
+function printedManaColors(def: CardDefinition, identity: readonly Color[], chosen: Color | null): Color[] {
+  return (def.activated ?? []).flatMap((ability) => addManaColors(ability.effect, identity, chosen));
 }
 
 /** The colours permanent or card `id` could make mana of. */
@@ -61,8 +67,64 @@ function colorsOf(
   if (object === undefined || !registry.has(object.cardName)) return new Set();
   return new Set([
     ...intrinsicManaColors(state, registry, object),
-    ...printedManaColors(registry.get(object.cardName), identity),
+    ...printedManaColors(
+      registry.get(object.cardName),
+      identity,
+      object.chosenOnEnter != null && isColor(object.chosenOnEnter) ? object.chosenOnEnter : null,
+    ),
   ]);
+}
+
+/** The colours permanents `me` controls can make mana of. */
+function colorsOnBattlefield(state: GameState, registry: CardRegistry, me: PlayerId): Set<Color> {
+  const identity = state.players[me]?.commanderIdentity ?? [];
+  const have = new Set<Color>();
+  for (const id of state.zones.shared.battlefield) {
+    if (state.objects[id]?.controller !== me) continue;
+    for (const c of colorsOf(state, registry, id, identity)) have.add(c);
+  }
+  return have;
+}
+
+/**
+ * The colour to name for "as this enters, choose a colour" (Valgavoth's
+ * Lair, the Thriving lands) out of `options`: within the commander's colour
+ * identity whenever an option is, the one the spells in hand and the
+ * commanders waiting in the command zone want most by mana symbol — ten
+ * times over when nothing we control makes it yet. With nothing wanted, one
+ * we can't make yet. Ties keep `options`' order.
+ *
+ * Reported from a live game (2026-10-05): a Temur bot named white for
+ * Valgavoth's Lair, as every controller answered the choice with
+ * `options[0]`.
+ */
+export function colorToName(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  options: readonly Color[],
+): Color {
+  const identity = state.players[me]?.commanderIdentity ?? [];
+  const inIdentity = options.filter((c) => identity.includes(c));
+  const allowed = inIdentity.length > 0 ? inIdentity : options;
+  const have = colorsOnBattlefield(state, registry, me);
+  const pips = new Map<Color, number>();
+  const waiting = state.zones.shared.command.filter((id) => state.objects[id]?.owner === me);
+  for (const id of [...(state.zones.perPlayer[me]?.hand ?? []), ...waiting]) {
+    const name = state.objects[id]?.cardName;
+    if (name === undefined || !registry.has(name)) continue;
+    const def = registry.get(name);
+    if (def.types.includes("land")) continue;
+    const cost = parseManaCost(def.manaCost);
+    for (const c of COLORS) pips.set(c, (pips.get(c) ?? 0) + cost.colored[c]);
+  }
+  const score = (c: Color): number => (pips.get(c) ?? 0) * (have.has(c) ? 1 : 10) + (have.has(c) ? 0 : 1);
+  return allowed.reduce((best, c) => (score(c) > score(best) ? c : best));
+}
+
+/** Whether every option of a choice is a colour — a "choose a colour". */
+export function allColors(options: readonly string[]): options is readonly Color[] {
+  return options.length > 0 && options.every(isColor);
 }
 
 /** The colours `me` needs and has no permanent to make. */

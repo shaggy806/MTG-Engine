@@ -1910,7 +1910,7 @@ export class Game {
         // means "nothing learned", not an error.
         try {
           const copy = Game.fromSnapshot({ ...this.state, eventLog: [] }, { registry: this.registry });
-          copy.dispatch(action);
+          for (const each of Array.isArray(action) ? action : [action]) copy.dispatch(each);
           return copy.legalActions(player);
         } catch {
           return null;

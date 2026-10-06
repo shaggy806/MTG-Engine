@@ -1223,20 +1223,60 @@ export class EvalBotController extends HeuristicBotController {
     // together; it costs nothing from the climb's simulation count.
     const fallbackScore = fallback.length > 0 ? timed(budget, () => score(fallback)) : null;
 
-    // Built one attacker at a time, keeping each only if it improves the
-    // simulated result.
+    // A token stack is sent in parts: one token more, the fewest that finish
+    // off a planeswalker, or all it has left. Sent whole, thirteen stacked
+    // 1/1s went at a five-loyalty planeswalker, eight more than it took, with
+    // none kept home (reported from a live game, 2026-10-05).
+    const stackSize = (id: ObjectId): number => state.objects[id]?.stackCount ?? 1;
+    const sentOf = (current: readonly AttackerDeclaration[], id: ObjectId): number =>
+      current.filter((d) => d.attacker === id).reduce((n, d) => n + (d.count ?? stackSize(id)), 0);
+    const withMore = (
+      current: readonly AttackerDeclaration[],
+      attacker: ObjectId,
+      defender: PlayerId | ObjectId,
+      more: number,
+    ): AttackerDeclaration[] => {
+      const size = stackSize(attacker);
+      const existing = current.find((d) => d.attacker === attacker && d.defender === defender);
+      const count = (existing === undefined ? 0 : (existing.count ?? size)) + more;
+      return [
+        ...current.filter((d) => d !== existing),
+        count >= size ? { attacker, defender } : { attacker, defender, count },
+      ];
+    };
+    // Tokens of `attacker` it takes to finish off planeswalker `defender`,
+    // counting the damage already sent at it; Infinity at a player.
+    const toFinish = (current: readonly AttackerDeclaration[], attacker: ObjectId, defender: PlayerId | ObjectId): number => {
+      if (state.players[defender as PlayerId] !== undefined) return Infinity;
+      const loyalty = state.objects[defender as ObjectId]?.counters.loyalty ?? 0;
+      const sent = current
+        .filter((d) => d.defender === defender)
+        .reduce((n, d) => n + (mine.get(d.attacker)?.damage ?? 0) * (d.count ?? stackSize(d.attacker)), 0);
+      return Math.max(1, Math.ceil((loyalty - sent) / (mine.get(attacker)?.damage ?? 1)));
+    };
+
+    // Built one attacker (or part of a stack) at a time, keeping each only if
+    // it improves the simulated result.
     const [built, builtScore] = hillClimb<AttackerDeclaration>(
       [],
       (current) =>
         legal.eligible
           .filter((id) => (mine.get(id)?.damage ?? 0) > 0)
-          .filter((id) => !current.some((d) => d.attacker === id))
-          .flatMap((attacker) =>
-            (legal.defendersFor[attacker] ?? []).map((defender) => {
-              const move = { attacker, defender };
-              return { next: [...current, move], estimate: estimate(move) };
-            }),
-          ),
+          .flatMap((attacker) => {
+            const left = stackSize(attacker) - sentOf(current, attacker);
+            if (left <= 0) return [];
+            return (legal.defendersFor[attacker] ?? []).flatMap((defender) => {
+              const each = estimate({ attacker, defender });
+              const finish = toFinish(current, attacker, defender);
+              // Smallest first: `hillClimb` keeps the first of equal scores,
+              // and a token that adds nothing is better kept home.
+              const parts = new Set([1, ...(finish < left ? [finish] : []), left]);
+              return [...parts].map((more) => ({
+                next: withMore(current, attacker, defender, more),
+                estimate: each * Math.min(more, finish),
+              }));
+            });
+          }),
       score,
       budget,
     );

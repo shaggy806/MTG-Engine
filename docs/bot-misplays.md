@@ -21,7 +21,12 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   blockers' climb already moves one token of a stack per step. Might break: more simulations per
   attack on wide token boards (the climb's budget is per simulation), and the crackback check
   then decides how many stay home, so it inherits that check's gaps (BACKLOG).
-- **Status:** open.
+- **Status:** fixed in part. v2's attack climb now sends a stack in parts — one token more, the
+  fewest that finish a planeswalker, or all it has left, smallest first so a tie keeps the
+  leaner attack — and the scenario (now gate) sends 5 at Garruk. The other eight then go at the
+  walker's controller, who has no blockers, since nothing in the evaluation values a token kept
+  home unless the crackback is lethal. Whether the live board warranted keeping them back
+  depends on a threat this rebuild doesn't have.
 
 ## 2026-10-05 — Valgavoth's Lair named white in a Temur deck
 
@@ -37,7 +42,8 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   pips want most that the lands on the battlefield don't already make (`bestLand`'s tallies),
   within the commander's colour identity, falling back to the identity's first colour. v2
   inherits it. Low risk: today's answer is never deliberate.
-- **Status:** open.
+- **Status:** fixed (`colorToName` in `land-colors.ts`, v1's `chooseCreatureType` override);
+  the scenario gates.
 
 ## 2026-10-05 — untapped Forest played over a tapped Valgavoth's Lair
 
@@ -56,7 +62,10 @@ scenario passes and moves to the gate; then mark it `fixed` with the commit, or 
   identity allows. Might break: a tapped land played when the untapped one would have held up
   an instant — `castableAfter` already counts instants castable now, so that tie shouldn't
   arise; worth a `bot:diff`.
-- **Status:** open.
+- **Found on the way:** `castableAfter` stopped at the Lair's colour choice and saw nothing
+  castable behind it, so the Lair lost even to a land that cast no more. It now answers the
+  choice (`legalActionsAfter` takes a sequence) and looks past it.
+- **Status:** fixed (`bestLand`'s `entersTapped` tie-break); the scenario gates.
 
 ## 2026-10-04 — Jaddi Offshoot after the land drop
 
