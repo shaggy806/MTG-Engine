@@ -70,8 +70,20 @@
   --font-display: 'Cinzel', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 
+  /* The type scale for the interface: every fixed text size outside a card
+     is one of these. Card text scales with its card (App.css's --ct-scale),
+     icon glyphs (×, +, arrows) are sized as glyphs, and a page's hero
+     heading is fluid (clamp()), so those three stay as they are. */
+  --text-2xs: 10px; /* small-caps labels and badges */
+  --text-xs: 11px; /* secondary details: zone counts, captions */
+  --text-sm: 12px; /* dense UI: menus, lists, toasts */
+  --text-md: 13px; /* the default for panels and dialogs */
+  --text-base: 15px; /* body text, names, primary buttons */
+  --text-lg: 18px; /* dialog and pane headings */
+  --text-xl: 22px; /* page titles, life totals */
+
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--text);
   background: var(--bg);
 }
@@ -175,7 +187,7 @@ h3 {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .bot-speed-label {
   color: var(--muted);
@@ -183,7 +195,7 @@ h3 {
 }
 .bot-speed-option {
   padding: 3px 10px;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .bot-speed-option.active {
   border-color: var(--accent);

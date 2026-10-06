@@ -87,7 +87,7 @@
   background: transparent;
   border-color: var(--border-soft);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 3px 9px;
 }
 .ts-menu button:hover:not(:disabled) {
@@ -96,7 +96,7 @@
 }
 .ts-menu .bot-speed {
   margin-right: 6px;
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 .ts-menu .bot-speed-option.active {
   border-color: var(--accent);
@@ -121,7 +121,7 @@
   border-radius: 0;
   background: var(--panel);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  font-size: 12px;
+  font-size: var(--text-sm);
   white-space: nowrap;
 }
 .motion-row {
@@ -185,7 +185,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 10px;
+  font-size: var(--text-2xs);
 }
 .motion-heading + .motion-row {
   margin-top: -2px;
@@ -217,7 +217,7 @@
   border: 1px solid var(--warn);
   border-radius: 0;
   padding: 3px 9px;
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 /* Your seat's menu (ui/SeatMenu.tsx): the animations panel's box, its
    entries stacked. */
@@ -265,7 +265,7 @@
   background: var(--border-soft);
   color: var(--muted-dim);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: pointer;
@@ -331,15 +331,15 @@
   white-space: nowrap;
 }
 .pp-energy {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: #d9b44a;
 }
 .pp-poison {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: #8fce5a;
 }
 .pp-experience {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: #9fb8e6;
 }
 .turn-banner.seat-a .turn-banner-player {
@@ -465,7 +465,7 @@
 }
 .result-kicker {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -492,7 +492,7 @@
 .result-stats {
   margin-top: 10px;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
 }
 .result-stats th,
@@ -502,7 +502,7 @@
   white-space: nowrap;
 }
 .result-stats thead th {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -714,10 +714,10 @@
   opacity: 1;
 }
 .pp-went-first {
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .pp-life {
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   /* Pinned to the right edge of the header, always. The commander-damage
@@ -732,7 +732,7 @@
   display: flex;
   gap: 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .pp-zone-link {
   background: none;
@@ -760,14 +760,14 @@
   align-items: center;
   gap: 1px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--warn);
 }
 /* The one line saying a seat is out. It has to carry that on its own — the
    tint says "something is different here", this says what. */
 .pp-lost {
   color: var(--bad);
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -788,7 +788,7 @@
   border-radius: 0;
   border: 1px solid var(--border);
   background: #18181f;
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -1521,7 +1521,7 @@
   gap: 4px;
 }
 .side-zone-label {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
@@ -1542,7 +1542,7 @@
 }
 .side-zone-empty {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 /* an empty command zone slot — an outline, not a face-down card, since
    there's nothing there at all (unlike the library, which always has one).
@@ -1702,7 +1702,7 @@
   padding: 8px 10px;
 }
 .event-log h3 {
-  font-size: 12px;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
@@ -1725,7 +1725,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   cursor: pointer;
   user-select: none;
@@ -1736,7 +1736,7 @@
   cursor: pointer;
 }
 .event-log-empty {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted-dim);
   margin: 4px 0 0;
 }
@@ -1983,7 +1983,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .event-log .ev {
   display: grid;
@@ -2940,7 +2940,7 @@
   border-radius: 0;
 }
 .controls strong {
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 
 /* ===== a permanent's activated abilities, beside the permanent =====
@@ -2986,7 +2986,7 @@
 }
 .ability-menu-title {
   padding: 3px 7px 5px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -2998,7 +2998,7 @@
   /* Rules text, so it reads left-aligned and wraps like text — not the
      centered single line a button defaults to. */
   text-align: left;
-  font-size: 12.5px;
+  font-size: var(--text-sm);
   line-height: 1.35;
   padding: 6px 8px;
   border-radius: 0;
@@ -3057,7 +3057,7 @@
     0 18px 40px -12px rgba(0, 0, 0, 0.65),
     0 2px 8px rgba(0, 0, 0, 0.4);
   text-align: center;
-  font-size: 15px;
+  font-size: var(--text-base);
 }
 .mulligan-modal .hand {
   width: 100%;
@@ -3085,7 +3085,7 @@
   padding: 10px 0 0;
 }
 .hand h3 {
-  font-size: 12px;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-dim);
@@ -3267,7 +3267,7 @@
   min-width: 280px;
 }
 .overlay-box h2 {
-  font-size: 24px;
+  font-size: var(--text-xl);
   color: var(--accent);
 }
 /* The only field left inside an overlay box is the seat panel's "Your name",
@@ -3300,12 +3300,12 @@
   gap: 8px;
 }
 .invite-link button {
-  font-size: 13px;
+  font-size: var(--text-md);
   padding: 4px 12px;
 }
 .invite-link-text {
   width: 22em;
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 /* Pinned in the corner rather than in the column, so the room code stays
    centred over the seats. */
@@ -3348,7 +3348,7 @@
   gap: 12px;
 }
 .zone-viewer-head h2 {
-  font-size: 16px;
+  font-size: var(--text-lg);
 }
 .zone-viewer-head-actions {
   display: flex;
@@ -3388,7 +3388,7 @@
    Foretell/Cycle/multi-face plays, cast-from-zone) that sit alongside it. */
 .zone-viewer-card > button:not(.card-tile),
 .hand-card > button:not(.card-tile) {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   padding: 2px 8px;
 }
 /* The turn-over button on a double-faced card in the zone viewer: a round
@@ -3408,7 +3408,7 @@
   height: 24px;
   padding: 0;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1;
   background: rgba(8, 8, 11, 0.78);
   color: var(--text);
@@ -3457,7 +3457,7 @@
   animation: reveal-show calc(2600ms * var(--anim-scale, 1)) ease-out forwards;
 }
 .reveal-caption {
-  font-size: 13px;
+  font-size: var(--text-md);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--warn);
@@ -4221,7 +4221,7 @@
 .hand-grid-open {
   margin-left: 8px;
   padding: 1px 7px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   vertical-align: middle;
 }
 
