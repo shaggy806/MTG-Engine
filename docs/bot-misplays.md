@@ -4,6 +4,24 @@ Misplays the user saw on the live site that couldn't be captured, each rebuilt a
 `engine/src/bot/scenarios.ts` (the `bot-misplay` skill). Newest first. An entry stays until its
 scenario passes and moves to the gate; then mark it `fixed` with the commit, or delete it.
 
+## 2026-10-06 — Abrade cast over its own Archmage Emeritus
+
+- **Seen:** Narset cast Archmage Emeritus, then Abrade at Weathered Sentinels with the Archmage
+  still on the stack; Abrade resolved first, and magecraft's draw was missed.
+- **Right:** let the Archmage resolve, then cast Abrade, drawing a card off it.
+- **Scenario:** "lets Archmage Emeritus resolve before casting Abrade" (training) — casts Abrade in
+  response.
+- **Why:** v2 casts a cast payoff first (`payoffFirst`), but that early return doesn't record
+  `actedOn`, which is what makes the next window a held pass while our own spell resolves
+  (`holdPass`). So the window with the Archmage on the stack is searched afresh, and Abrade now
+  scores as well as Abrade later — under the "acting" rollout a payoff turns on, the tie goes to
+  acting.
+- **Fix:** record `actedOn` on the payoff-first return (and the other early returns that cast our
+  own spell — the landfall-first one), so the next window passes while it resolves. Might break:
+  nothing that was deliberate — a response to our own spell was never a searched choice; an
+  opponent's response still gets searched.
+- **Status:** open.
+
 ## 2026-10-05 — an untapped land over Glacial Fortress on turn one
 
 - **Seen:** on turn one a bot played its untapped land over a Glacial Fortress (tapped, with no

@@ -2734,6 +2734,40 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "lets Archmage Emeritus resolve before casting Abrade",
+    rule: "A spell cast while our own cast payoff is still on the stack misses its trigger: let the payoff resolve first.",
+    kind: "training",
+    run(weights, registry, makeBot) {
+      // Reported from a live game (2026-10-06, no capture): Narset cast
+      // Archmage Emeritus, then Abrade at Weathered Sentinels with the
+      // Archmage still on the stack — and missed magecraft's draw. The
+      // payoff went first (`payoffFirst`), but that return didn't record
+      // `actedOn`, so the next window wasn't held (`holdPass`): it was
+      // searched afresh, and Abrade now scored as well as Abrade later.
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Island", A, 4);
+      lands(game, "Mountain", A, 2);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const archmage = game.debugSpawn("Archmage Emeritus", A, "hand");
+      const abrade = game.debugSpawn("Abrade", A, "hand");
+      onBoard(game, "Weathered Sentinels", B);
+      const bot = makeBot(A, registry, weights);
+      const first = bot.act(viewOf(game, A));
+      if (!(first.type === "cast-spell" && first.card === archmage)) {
+        return { passed: false, detail: `cast first: ${describeAction(first)}` };
+      }
+      game.dispatch(first);
+      if (game.state.priority.holder !== A || game.state.objects[archmage]?.zone !== "stack") {
+        return { passed: false, detail: "never held priority with the Archmage on the stack" };
+      }
+      const second = bot.act(viewOf(game, A));
+      return {
+        passed: !(second.type === "cast-spell" && second.card === abrade),
+        detail: `with the Archmage on the stack, chose ${describeAction(second)}`,
+      };
+    },
+  },
+  {
     name: "taps a land, untaps it with Kiora and casts Ganax",
     rule: "An untap ability is one more mana: tap a land, untap it, cast the spell that mana pays for.",
     run(weights, registry, makeBot) {
