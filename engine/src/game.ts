@@ -11978,8 +11978,29 @@ export class Game {
       sources: arrange === undefined ? sources : arrangeManaSources(sources, arrange),
       canPay: (unit) => this.manaUnitCanPay(player, unit, purpose),
       preferred: this.deckColors(player),
+      keepCosts: this.otherCardCosts(player, purpose?.kind === "cast" ? purpose.card : undefined),
       ...(spendAs !== undefined ? { spendAs } : {}),
     };
+  }
+
+  /** The mana costs of `player`'s other cards: their hand and their
+   * commanders in the command zone, leaving out `paying`, the card this
+   * payment casts (see {@link ManaPlanningView.keepCosts}). */
+  private otherCardCosts(player: PlayerId, paying: ObjectId | undefined): ManaCost[] {
+    const costs: ManaCost[] = [];
+    const ids = [
+      ...(this.state.zones.perPlayer[player]?.hand ?? []),
+      ...this.state.zones.shared.command.filter((id) => this.state.objects[id]?.owner === player),
+    ];
+    for (const id of ids) {
+      if (id === paying) continue;
+      const object = this.state.objects[id];
+      if (object === undefined || object.kind !== "card" || !this.registry.has(object.cardName)) continue;
+      const cost = this.registry.get(object.cardName).manaCost;
+      if (cost === null) continue;
+      costs.push(parseManaCost(cost));
+    }
+    return costs;
   }
 
   /**

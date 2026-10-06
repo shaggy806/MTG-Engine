@@ -15,7 +15,7 @@
 
 import type { ActivatedAbility } from "./abilities.js";
 import type { BoardManaList, EffectSpec } from "./effects.js";
-import { COLORS, poolCounts, poolTotal } from "./mana.js";
+import { COLORS, manaValue, poolCounts, poolTotal } from "./mana.js";
 import type { Color, HybridOption, HybridPip, ManaCost, ManaType, ManaUnit, SpendAs } from "./mana.js";
 import type { ObjectId } from "./primitives.js";
 
@@ -248,6 +248,17 @@ export interface ManaPlanningView {
    * card lists first — white, as often as not, in a deck with no white cards.
    */
   readonly preferred: readonly ManaType[];
+  /**
+   * The costs of the payer's other cards — the rest of their hand and their
+   * commanders waiting in the command zone. Generic mana is paid from the
+   * source whose colours the ones still castable after this payment want
+   * least (their mana value within the sources left), so a `{2}` isn't paid
+   * with the only Islands while a `{1}{U}` waits in hand (a bug report,
+   * 2026-10-06: Fervor tapped both Islands, and Roiling Dragonstorm couldn't
+   * be cast). A nine-drop's pips don't count: it can't be cast with what's
+   * left anyway (the user's refinement). Absent: list order, as before.
+   */
+  readonly keepCosts?: readonly ManaCost[];
   /**
    * An effect lets this payment spend mana "as though it were mana of any
    * color" (`"any-color"` — Haldan, Avid Arcanist, Chromatic Orrery) or
@@ -852,9 +863,59 @@ function planManaPaymentOrdered(
     const next = free.find(dull) ?? free[0];
     return next === undefined ? null : takeGeneric(open(next, null));
   };
+  // What a source's colours are worth keeping for the rest of the hand
+  // (`ManaPlanningView.keep`): a fresh source for generic mana is the
+  // cheapest of these to give up, then the one making fewest colours, then
+  // list order.
+  // What the other cards still castable after this payment want, colour by
+  // colour (`ManaPlanningView.keepCosts`): castable meaning a mana value
+  // within the sources and floating mana this payment leaves.
+  const keep: Partial<Record<ManaType, number>> | undefined = (() => {
+    if (view.keepCosts === undefined || view.keepCosts.length === 0) return undefined;
+    const left = poolTotal(pool) + sources.length - manaValue(cost);
+    const out: Partial<Record<ManaType, number>> = {};
+    for (const other of view.keepCosts) {
+      if (manaValue(other) > left) continue;
+      for (const c of COLORS) if (other.colored[c] > 0) out[c] = (out[c] ?? 0) + other.colored[c];
+    }
+    return out;
+  })();
+  const makesOf = (src: ManaSource): Set<ManaType> => {
+    const makes = new Set<ManaType>();
+    for (const o of src.options) {
+      for (const m of o.fixed) makes.add(m);
+      if (o.anyColor > 0) for (const m of o.anyColorOf ?? COLORS) makes.add(m);
+    }
+    return makes;
+  };
+  // How many sources make each colour: a colour wanted once and made by one
+  // Swamp is scarce, one wanted three times and made by twenty Islands isn't.
+  const supply: Partial<Record<ManaType, number>> = {};
+  for (const src of sources) for (const m of makesOf(src)) supply[m] = (supply[m] ?? 0) + 1;
+  // A source's worth to the rest of the hand: for each colour it makes, how
+  // much that colour is wanted over how many sources make it.
+  const keepScore = (src: ManaSource): number => {
+    if (keep === undefined) return 0;
+    let score = 0;
+    for (const m of makesOf(src)) score += (keep[m] ?? 0) / Math.max(1, supply[m] ?? 0);
+    return score;
+  };
+  const colourCount = (src: ManaSource): number =>
+    new Set(
+      src.options.flatMap((o) => [...o.fixed.filter((m) => m !== "C"), ...(o.anyColor > 0 ? (o.anyColorOf ?? COLORS) : [])]),
+    ).size;
+  // Sorted within each group only: converters stay where `convertersFirst`
+  // put them (last, or first on the second pass), which the plan depends on.
+  const byKeep =
+    keep === undefined
+      ? sources
+      : sources
+          .map((src, i) => ({ src, i, group: isConverter(src) === convertersFirst ? 0 : 1, keep: keepScore(src), colours: colourCount(src) }))
+          .sort((a, b) => a.group - b.group || a.keep - b.keep || a.colours - b.colours || a.i - b.i)
+          .map((e) => e.src);
   const coverGeneric = (): boolean => {
     for (const t of tapped) if (takeGeneric(t) !== null) return true;
-    for (const next of sources) {
+    for (const next of byKeep) {
       if (isTapped(next.id)) continue;
       const t = openFunded(next, null);
       if (t !== null && takeGeneric(t) !== null) return true;

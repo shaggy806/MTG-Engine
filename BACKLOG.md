@@ -196,6 +196,10 @@ One line each; the detail is in **`docs/client-gaps.md`**, under the same bold t
 animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete both when an
 item lands.
 
+- **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06): a seat the game waits on shows a bare "thinking…" (`ui/PlayerPanel.tsx`); make it describe the decision — "scrying", "targeting", "choosing blockers" — from the pending decision's kind (`view.state.awaiting`) or the step.
+- **A trigger going on the stack flies from the permanent that was its source** (the user, 2026-10-06): today a triggered ability's stack entry just appears (`ui/Stack.tsx`'s `is-new` arrival); fly it from its source's tile, as a cast now flies into its place (`AnimationLayer`'s `slotIntoStack`).
+- **The lobby's default deck could be random** (the user, 2026-10-06): randomize which deck the lobby's "Add bot (default deck)" button gives the bot (`client/src/lobby/SeatBoard.tsx`), rather than always the same one.
+- **The highroll notice should look like the other alerts** (the user, 2026-10-06): the "won the highroll and goes first" notice at the start of a game (`App.tsx`) is styled on its own; make it match the game's other alerts.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
 - **A creature's total toxic value isn't in the player view.**
@@ -213,6 +217,7 @@ item lands.
 
 ## Tooling / docs
 
+- **An on-screen progress bar for the long checks** (the user, 2026-10-06): use Claude Code's new mods feature (a plugin's live pane or status line — the `plugin-authoring` skill) to show progress for the runs we do regularly: the engine suite, `bot:scenarios`, `bot:diff`, `bot:ab`, the fuzzer and the Playwright suites.
 - **Refresh the snapshots.** The EDHREC ranking snapshots (`top-commander-cards.txt`,
   `top-commanders.txt`) and `edhrec-rank.ts` are frozen. Re-fetching them moves the roster, so
   do it on purpose.

@@ -72,3 +72,20 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
+- **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06). While the game
+  waits on a bot, its panel says "thinking…" (`ui/PlayerPanel.tsx`, `waiting === 'bot'`). The
+  user wants it to say what the bot is actually doing — "scrying", "targeting" and the like. The
+  pending decision's kind (`PlayerView`'s `awaiting`) names most of them; a priority window could
+  read the step ("in combat", "at end of turn").
+- **A trigger going on the stack flies from the permanent that was its source** (the user,
+  2026-10-06). A triggered ability's stack entry appears in place (`ui/Stack.tsx`'s `is-new`
+  arrival), with its source's tile lit in the frame's second half (`runPulse`). The user wants it
+  to fly out of that permanent into its spot on the stack, as a cast spell now slots in
+  (`AnimationLayer`'s `liftSpotlight`/`slotIntoStack`); a source already gone (a dies trigger)
+  keeps today's arrival.
+- **The lobby's default deck could be random** (the user, 2026-10-06). The lobby's "Add bot (default
+  deck)" button (`client/src/lobby/SeatBoard.tsx`) always gives the same deck; the user wants it
+  randomized.
+- **The highroll notice should look like the other alerts** (the user, 2026-10-06). The
+  "🎲 <player> won the highroll and goes first" notice at the start of a game (`App.tsx`) has a
+  style of its own; the user wants it to look like the game's other alerts.
