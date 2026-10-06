@@ -309,7 +309,7 @@
   padding: 8px 10px;
   /* Never below 16px: a smaller font in a focused field is what makes iOS
      Safari zoom the whole page in on tap. */
-  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: clamp(16px, 1.6vw, 20px);
   letter-spacing: 0.3em;
   /* letter-spacing puts a trailing gap after the last character, which drags

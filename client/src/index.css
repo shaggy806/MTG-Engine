@@ -60,7 +60,16 @@
      here: it depends on how much room that permanent's own board has, so
      it's declared per board, in App.css's `.board` rule. */
 
-  font-family: 'Barlow', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* The site's three faces, and the only place any of them is named: Barlow
+     for everything you read, Cinzel for headings and banners, JetBrains Mono
+     for codes and numbers that should line up (room codes, the mana pool,
+     the `.mono` class).
+     The 'Mana' font (ui/symbols.css) is symbols, not type. */
+  --font-body: 'Barlow', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  font-family: var(--font-body);
   font-size: 15px;
   color: var(--text);
   background: var(--bg);
@@ -72,6 +81,15 @@
 
 body {
   margin: 0;
+}
+
+/* Form controls don't inherit the page's font by default; the builder's
+   selects and number boxes and the capture panel's text areas were in the
+   browser's own. */
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 button {
@@ -121,7 +139,7 @@ h2,
 h3 {
   margin: 0;
   font-weight: 600;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
 }
 
 .muted {
@@ -129,7 +147,7 @@ h3 {
 }
 
 .mono {
-  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 

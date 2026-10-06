@@ -135,7 +135,7 @@
 }
 .db-name-input {
   font: inherit;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 20px;
   background: none;
   border: 1px solid transparent;
@@ -666,7 +666,7 @@
 }
 .db-pane-head h3 {
   margin: 0;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
 }
