@@ -212,6 +212,7 @@ export function usePlayback(
           prev,
           delay: i.offset,
           half: 'before' as const,
+          ...(i.putDown ? { putDown: true as const } : {}),
         })),
       )
       // What resolves over the old board points at its targets while it does
@@ -310,6 +311,7 @@ export function usePlayback(
         prev: pending.prev,
         delay: i.offset,
         half: 'after' as const,
+        ...(i.putDown ? { putDown: true as const } : {}),
       })),
     )
   }, [displayed.revision])

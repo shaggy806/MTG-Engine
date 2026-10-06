@@ -34,6 +34,10 @@ export interface AnimationCue {
   /** Which board it plays over (see `Half`). An `after` cue is published
    * before the new board is painted, and has to start in that same task. */
   readonly half: Half
+  /** A permanent spell put down on the board: its exit lifts the card off the
+   * stack, and its arrival flies that card onto its tile (see
+   * `ScheduledEvent.putDown`). */
+  readonly putDown?: true
 }
 
 type Listener = (cues: readonly AnimationCue[]) => void

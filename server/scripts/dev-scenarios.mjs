@@ -745,4 +745,28 @@ export default {
     ...EXILE_BOARD,
     bots: { bob: {}, carol: {}, dave: {} },
   },
+
+  PUTDN: {
+    about:
+      "2p. Permanent spells put down on the board: cast Sol Ring, Grizzly Bears or Serra Angel " +
+      "and pass — each card leaves the stack for its tile, shrinking into it. Bob's Thalia, " +
+      "Heretic Cathar makes alice's creatures enter tapped (a tilted tile to land on); bob " +
+      "casts Colossal Dreadmaw on his turn.",
+    players: ["alice", "bob"],
+    lands: { alice: 12, bob: 10 },
+    battlefield: { alice: ["Llanowar Elves", "Hill Giant"], bob: ["Thalia, Heretic Cathar"] },
+    hand: { alice: ["Sol Ring", "Grizzly Bears", "Serra Angel"], bob: ["Colossal Dreadmaw"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: { casts: [{ name: "Colossal Dreadmaw" }] } },
+  },
+
+  PUTD4: {
+    about: "4p. PUTDN's board in the quadrant layout: carol casts Colossal Dreadmaw on her turn.",
+    players: ["alice", "bob", "carol", "dave"],
+    lands: { alice: 12, bob: 5, carol: 10, dave: 5 },
+    battlefield: { alice: ["Llanowar Elves", "Hill Giant"], bob: ["Thalia, Heretic Cathar"] },
+    hand: { alice: ["Sol Ring", "Grizzly Bears", "Serra Angel"], carol: ["Colossal Dreadmaw"] },
+    setup: handOfSpellsOnly("alice"),
+    bots: { bob: {}, carol: { casts: [{ name: "Colossal Dreadmaw" }] }, dave: {} },
+  },
 };

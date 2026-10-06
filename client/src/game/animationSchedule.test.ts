@@ -12,6 +12,7 @@ import {
   MILL_STAGGER_MS,
   MILL_STEP_MS,
   MOVE_STEP_MS,
+  PUT_DOWN_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
@@ -453,5 +454,94 @@ describe('scheduleEvents: what points at its targets as it resolves', () => {
     expect(types(s.items)).toContain('permanent-left-battlefield')
     expect(types(s.items)).not.toContain('spell-resolved')
     expect(s.aims).toEqual([])
+  })
+})
+
+describe('scheduleEvents: a permanent spell put down on its tile', () => {
+  const resolved = (object: string) => ev({ type: 'spell-resolved', object })
+  const entered = (object: string) => ev({ type: 'permanent-entered-battlefield', object })
+  const flagged = (items: readonly { event: GameEvent; putDown?: true }[]) =>
+    items.map((i) => [i.event.type, i.putDown === true])
+
+  it('marks the exit and the arrival of the same object, landing it instead of growing it in', () => {
+    const s = scheduleEvents([resolved('bear'), entered('bear'), entered('token')], 'precombat-main')
+    expect(flagged(s.items)).toEqual([['spell-resolved', true]])
+    expect(flagged(s.after)).toEqual([
+      ['permanent-entered-battlefield', true],
+      ['permanent-entered-battlefield', false],
+    ])
+    // The landing has its own beat, then the token grows in on the next.
+    expect(s.after.map((i) => i.offset)).toEqual([0, PUT_DOWN_STEP_MS])
+    expect(s.afterMs).toBe(PUT_DOWN_STEP_MS + ENTER_STEP_MS)
+  })
+
+  it('lands before anything else on the new board', () => {
+    const s = scheduleEvents(
+      [
+        tap('land'),
+        resolved('bear'),
+        entered('bear'),
+        ev({ type: 'ability-triggered', source: 'bear', controller: 'p1' }),
+      ],
+      'precombat-main',
+    )
+    expect(types(s.after)).toEqual(['permanent-entered-battlefield', 'permanent-tapped', 'ability-triggered'])
+    expect(s.after[0].putDown).toBe(true)
+  })
+
+  it('lands several permanents one after another, in the order they resolved', () => {
+    const s = scheduleEvents([resolved('a'), entered('a'), resolved('b'), entered('b')], 'precombat-main')
+    expect(s.after.map((i) => [(i.event as { object: string }).object, i.offset, i.putDown])).toEqual([
+      ['a', 0, true],
+      ['b', PUT_DOWN_STEP_MS, true],
+    ])
+    expect(s.afterMs).toBe(2 * PUT_DOWN_STEP_MS)
+    expect(s.items.every((i) => i.putDown === true)).toBe(true)
+  })
+
+  it('leaves an instant, a countered spell and a spell that went elsewhere as they were', () => {
+    const s = scheduleEvents(
+      [
+        resolved('bolt'),
+        ev({ type: 'spell-countered', object: 'bear' }),
+        entered('bear'),
+        resolved('exiled-instead'),
+        entered('someone-else'),
+      ],
+      'precombat-main',
+    )
+    expect(s.items.some((i) => i.putDown)).toBe(false)
+    expect(s.after.some((i) => i.putDown)).toBe(false)
+    // Both arrivals grow in, on one shared beat.
+    expect(s.afterMs).toBe(ENTER_STEP_MS)
+  })
+
+  it('fades in place under reduced motion: an exit and an arrival, as before', () => {
+    const s = scheduleEvents([resolved('bear'), entered('bear')], 'precombat-main', {
+      scale: 1,
+      reduced: true,
+    })
+    expect(s.items.some((i) => i.putDown)).toBe(false)
+    expect(s.after.some((i) => i.putDown)).toBe(false)
+    expect(s.afterMs).toBe(ENTER_STEP_MS)
+  })
+
+  it("scales the landing with the viewer's speed", () => {
+    const s = scheduleEvents([resolved('bear'), entered('bear')], 'precombat-main', {
+      scale: 2,
+      reduced: false,
+    })
+    expect(s.totalMs).toBe(2 * STACK_EXIT_MS)
+    expect(s.afterMs).toBe(2 * PUT_DOWN_STEP_MS)
+  })
+
+  it("marks neither end when the landing doesn't fit under the frame's ceiling", () => {
+    // Three casts take 5.4 s of the 6 s ceiling: the exit fits, the landing
+    // after it doesn't — so the exit flies off as it always has, rather than
+    // lifting a card that never lands.
+    const s = scheduleEvents([cast(), cast(), cast(), resolved('bear'), entered('bear')], 'precombat-main')
+    expect(types(s.items)).toContain('spell-resolved')
+    expect(s.items.some((i) => i.putDown)).toBe(false)
+    expect(s.after).toEqual([])
   })
 })

@@ -42,6 +42,11 @@ export const STACK_EXIT_MS = 520
 export const TRIGGER_STEP_MS = 480
 /** A permanent arriving on the board (a token materialising). */
 export const ENTER_STEP_MS = 420
+/** A resolving permanent spell put down on the board: the card lifted off
+ * the stack (in its `STACK_EXIT_MS` exit beat) travels to its new tile,
+ * shrinking from the full card into the board's mini tile as it goes. One
+ * beat each, in the order they resolved — see {@link ScheduledEvent.putDown}. */
+export const PUT_DOWN_STEP_MS = 640
 /** A glow for counters landing on a permanent, or a buff that isn't counters
  * (a pump, a granted keyword), with the change floating off it. */
 export const MARK_STEP_MS = 520
@@ -212,6 +217,15 @@ export interface ScheduledEvent {
   /** Milliseconds from the start of its half at which this event's own
    * animation should fire. */
   readonly offset: number
+  /**
+   * A permanent spell resolving and put down on the board, set on both of its
+   * ends — its `spell-resolved` (first half: the card lifts off the stack
+   * rather than flying off to its controller's side) and its
+   * `permanent-entered-battlefield` (second half: the lifted card travels
+   * onto its tile, instead of the tile growing in). Only ever set on both or
+   * neither, so a lifted card always has its landing to come.
+   */
+  readonly putDown?: true
 }
 
 /** The viewer's settings the schedule depends on (see `motionPrefs.ts`),
@@ -320,6 +334,7 @@ type SlotKind =
   | 'exit'
   | 'pulse'
   | 'enter'
+  | 'putDown'
   | 'counter'
   | 'buff'
   | 'flip'
@@ -341,6 +356,9 @@ type SlotKind =
  * shares a beat.
  */
 const AFTER_ORDER: readonly SlotKind[] = [
+  // First: the card being put down is hovering where the stack was until it
+  // lands, so nothing else on the new board goes before it.
+  'putDown',
   'untap',
   'tap',
   'enter',
@@ -372,6 +390,7 @@ const PACED: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'exit',
   'pulse',
   'enter',
+  'putDown',
   'counter',
   'buff',
   'flip',
@@ -387,7 +406,9 @@ const SHARED_BEAT: ReadonlySet<SlotKind> = new Set<SlotKind>([
   'death',
   'mill',
   'discard',
-  ...AFTER_ORDER,
+  // Not `putDown`: two permanents resolving in one frame land one after the
+  // other, each card onto its own tile.
+  ...AFTER_ORDER.filter((k) => k !== 'putDown'),
 ])
 
 interface Slot {
@@ -399,7 +420,21 @@ interface Slot {
 /** Each event's own reserved slots, or none for anything with no dedicated
  * animation — usually one, but combat damage to a creature is two: the
  * strike over the old board, the number over the new one. */
-function slotsFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Slot[] {
+function slotsFor(
+  ev: GameEvent,
+  phase: { current: Phase },
+  reduced: boolean,
+  resolvedSpells: Set<ObjectId>,
+): Slot[] {
+  // A permanent spell resolving is logged as `spell-resolved` and then its
+  // arrival on the battlefield, under the same id (the engine keeps an
+  // object's id across zones). That arrival is the spell put down, not a
+  // permanent appearing from nowhere. Reduced motion keeps today's fade out
+  // of the stack and fade in on the board instead of the flight.
+  if (ev.type === 'spell-resolved' && !reduced) resolvedSpells.add(ev.object)
+  if (ev.type === 'permanent-entered-battlefield' && resolvedSpells.delete(ev.object)) {
+    return [{ event: ev, kind: 'putDown', duration: PUT_DOWN_STEP_MS }]
+  }
   if (ev.type === 'damage-dealt') {
     const slots: Slot[] = []
     if (ev.combat) slots.push({ event: ev, kind: 'hit', duration: HIT_STEP_MS })
@@ -520,7 +555,8 @@ export function scheduleEvents(
   const { scale, reduced } = options
   const phase = { current: startPhase }
   const slots: Slot[] = []
-  for (const event of events) slots.push(...slotsFor(event, phase, reduced))
+  const resolvedSpells = new Set<ObjectId>()
+  for (const event of events) slots.push(...slotsFor(event, phase, reduced, resolvedSpells))
 
   // Announce only the phase a frame *lands* in, not every one it passed
   // through. A frame shows exactly one board — its own end state — so a
@@ -553,14 +589,47 @@ export function scheduleEvents(
     scale,
     ceiling - before.totalMs,
   )
+  const { items, landings } = pairPutDowns(before.items, after.items)
   return {
-    items: before.items,
+    items,
     totalMs: before.totalMs,
-    after: after.items,
+    after: landings,
     afterMs: after.totalMs,
     endPhase: phase.current,
-    aims: resolveAims(events, before.items, STACK_EXIT_MS * scale),
+    aims: resolveAims(events, items, STACK_EXIT_MS * scale),
   }
+}
+
+/**
+ * Marks both ends of each permanent spell put down (see
+ * {@link ScheduledEvent.putDown}) — only where both kept their slot under the
+ * frame's ceiling. A spell whose exit was dropped has no lifted card to land,
+ * and one whose landing was dropped would leave its card hovering, so either
+ * way the other end plays as it always has: the exit flies off to its
+ * controller's side, the arrival grows into place.
+ */
+function pairPutDowns(
+  before: readonly ScheduledEvent[],
+  after: readonly ScheduledEvent[],
+): { items: ScheduledEvent[]; landings: ScheduledEvent[] } {
+  const exits = new Set<ObjectId>()
+  for (const item of before) if (item.event.type === 'spell-resolved') exits.add(item.event.object)
+  const paired = new Set<ObjectId>()
+  // `layOut` marks every `putDown` slot it kept; a landing whose exit didn't
+  // keep its own loses the mark.
+  const landings = after.map((item) => {
+    if (item.putDown !== true || item.event.type !== 'permanent-entered-battlefield') return item
+    const object = item.event.object
+    if (!exits.has(object)) return { event: item.event, offset: item.offset }
+    paired.add(object)
+    return item
+  })
+  const items = before.map((item) =>
+    item.event.type === 'spell-resolved' && paired.has(item.event.object)
+      ? { ...item, putDown: true as const }
+      : item,
+  )
+  return { items, landings }
 }
 
 /** How long the beat that `slots[index]` starts lasts: its own slot — or,
@@ -616,7 +685,11 @@ function layOut(
     }
     const cost = PACED.has(slot.kind) ? beatDuration(slots, index) * scale : 0
     if (cumulative + cost > ceiling) break
-    items.push({ event: slot.event, offset: cumulative })
+    items.push(
+      slot.kind === 'putDown'
+        ? { event: slot.event, offset: cumulative, putDown: true }
+        : { event: slot.event, offset: cumulative },
+    )
     // Only a paced slot breaks a run: a snapshot or a banner between two
     // deaths doesn't make them two beats.
     if (PACED.has(slot.kind)) {

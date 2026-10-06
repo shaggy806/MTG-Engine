@@ -34,6 +34,7 @@ import {
   MILL_STEP_MS,
   MOVE_STEP_MS,
   PHASE_STEP_MS,
+  PUT_DOWN_STEP_MS,
   REVEAL_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
@@ -541,13 +542,16 @@ function stackEntryFor(ev: GameEvent): HTMLElement | null {
  * drained of colour, then it drops and fades — so it can't be mistaken for
  * having resolved. Reduced motion fades the entry, whatever the outcome.
  */
-function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
+function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId, putDown: boolean): void {
   const el = stackEntryFor(ev)
   if (!el) return
   // The rest of the pile moves up behind it now, not when the frame's new
   // board lands (`closeStackGap`).
   closeStackGap(el)
   const duration = scaled(STACK_EXIT_MS)
+  // A permanent spell whose landing is to come (`putDownOnTile`): picked up
+  // off the stack, to be put down on its tile once the new board is shown.
+  if (putDown && ev.type === 'spell-resolved' && liftOffStack(ev.object, el, duration)) return
   if (motionPrefs().reduced) {
     el.animate([{ opacity: 1 }, { opacity: 0 }], { duration, fill: 'forwards' })
     return
@@ -620,6 +624,238 @@ function runStackExit(ev: GameEvent, view: PlayerView, seat: PlayerId): void {
       { duration, easing: 'ease-in', fill: 'forwards' },
     ),
   )
+}
+
+/** How much bigger a card lifted off the stack is drawn while it's held. */
+const LIFT_SCALE = 1.06
+/** The shadow a lifted card casts on the table, and none once it's down. */
+const LIFTED_SHADOW = 'drop-shadow(0 16px 18px rgba(0, 0, 0, 0.6))'
+const FLAT_SHADOW = 'drop-shadow(0 0 0 rgba(0, 0, 0, 0))'
+
+/** A resolving permanent spell's card, picked up off the stack in the first
+ * half and waiting, by its object id, for its landing in the second
+ * (`putDownOnTile`). */
+interface LiftedCard {
+  /** A `.ghost-flight` box with no size of its own, placed on the card's
+   * centre: it carries the card (and later the tile) by that point. */
+  readonly box: HTMLElement
+  /** The card's copy, centred on the box. */
+  readonly face: HTMLElement
+  /** The card's on-screen width. */
+  readonly width: number
+  /** Where its centre was. */
+  readonly x: number
+  readonly y: number
+  readonly timer: number
+}
+const lifted = new Map<ObjectId, LiftedCard>()
+
+/** A card lifted off the stack whose landing never came: it fades where it
+ * hovers. */
+function dropLifted(card: LiftedCard, delay = 0): void {
+  window.clearTimeout(card.timer)
+  const fade = card.box.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: scaled(ENTER_STEP_MS) * 0.6,
+    delay,
+    fill: 'forwards',
+  })
+  releaseWhenDone(card.box, fade)
+}
+
+/** Every card still held from an earlier frame: a new frame starting means
+ * its landing isn't coming. */
+function dropAllLifted(): void {
+  for (const card of lifted.values()) dropLifted(card)
+  lifted.clear()
+}
+
+/**
+ * A resolving permanent spell, picked up off the stack: its card (the stack
+ * entry without its caption and target line) is copied into a box on
+ * `<body>`, outside React, over the entry, which is hidden; over the exit beat
+ * it lifts a little, casting a shadow, and it waits there — through the new
+ * board being shown — for `putDownOnTile` to carry it to its tile. False if
+ * the entry has no box on screen to copy.
+ */
+function liftOffStack(object: ObjectId, el: HTMLElement, duration: number): boolean {
+  const card = el.querySelector<HTMLElement>('.card-tile')
+  if (!card) return false
+  const r = card.getBoundingClientRect()
+  if (r.width === 0 || r.height === 0) return false
+  const copy = el.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-stack-id')
+  copy.classList.remove('is-new')
+  for (const extra of copy.querySelectorAll('.stack-entry-label, .stack-targets')) extra.remove()
+  Object.assign(copy.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: 'auto',
+    transform: 'none',
+    opacity: '1',
+    animation: 'none',
+    transition: 'none',
+  })
+  const face = document.createElement('div')
+  face.style.position = 'absolute'
+  face.style.left = `${-r.width / 2}px`
+  face.style.top = `${-r.height / 2}px`
+  face.style.width = `${r.width}px`
+  face.style.height = `${r.height}px`
+  face.style.setProperty('--card-w', `${card.offsetWidth}px`)
+  face.appendChild(copy)
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  const x = r.left + r.width / 2
+  const y = r.top + r.height / 2
+  box.style.left = `${x}px`
+  box.style.top = `${y}px`
+  box.appendChild(face)
+  document.body.appendChild(box)
+  el.style.visibility = 'hidden'
+  box.animate(
+    [
+      { transform: 'scale(1)', filter: FLAT_SHADOW },
+      { transform: `scale(${LIFT_SCALE})`, filter: LIFTED_SHADOW },
+    ],
+    { duration, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'forwards' },
+  )
+  lifted.get(object)?.box.remove()
+  // A backstop: the landing is scheduled in the same frame, and a frame
+  // never runs past the server's 12 s wait for it.
+  const timer = window.setTimeout(() => {
+    if (lifted.get(object)?.box === box) {
+      lifted.delete(object)
+      box.remove()
+    }
+  }, 12_000)
+  lifted.set(object, { box, face, width: r.width, x, y, timer })
+  return true
+}
+
+/** Whether the middle of `el` can be seen: inside the window and every box
+ * round it that clips (a quadrant's scroll box), so a tile scrolled out of
+ * view isn't flown to. */
+function inView(el: HTMLElement): boolean {
+  const r = el.getBoundingClientRect()
+  if (r.width === 0 || r.height === 0) return false
+  const x = r.left + r.width / 2
+  const y = r.top + r.height / 2
+  if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return false
+  for (let p = el.parentElement; p !== null && p !== document.body; p = p.parentElement) {
+    const cs = getComputedStyle(p)
+    if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue
+    const pr = p.getBoundingClientRect()
+    if (x < pr.left || x > pr.right || y < pr.top || y > pr.bottom) return false
+  }
+  return true
+}
+
+/** The size tokens a mini tile reads off its board, pinned in px on `to` so
+ * a copy of the tile outside the board draws the same. */
+function pinTileTokens(to: HTMLElement, tile: HTMLElement): void {
+  const cs = getComputedStyle(tile)
+  to.style.setProperty('--mini-w', `${tile.offsetWidth}px`)
+  for (const name of ['--mt-banner-h', '--mini-h']) {
+    const value = cs.getPropertyValue(name).trim()
+    if (value) to.style.setProperty(name, value)
+  }
+}
+
+/**
+ * A resolving permanent spell put down on the board, over the new one: the
+ * card lifted off the stack (`liftOffStack`) travels onto the permanent's
+ * tile, shrinking to the tile's width as the full card fades into a copy of
+ * the mini tile, which lands exactly on it — the real tile held hidden until
+ * then. A tapped tile is drawn tilted inside its layout box (the outer
+ * `data-obj-id` box), and the copy is of that box, so it lands tilted. One
+ * folded into a tile already on the board lands on it and the tile glows
+ * "+1". With no card held (the entry wasn't on screen) the permanent grows
+ * in as any arrival does; with no tile to land on (scrolled out of view, or
+ * not shown to this viewer) the card fades where it hovers instead.
+ */
+function putDownOnTile(object: ObjectId, isToken: boolean, delay: number): void {
+  const held = lifted.get(object)
+  lifted.delete(object)
+  if (!held) {
+    runEnter(object, isToken, delay)
+    return
+  }
+  window.clearTimeout(held.timer)
+  const wrap = boardTileOf(object)
+  const tile = wrap?.querySelector<HTMLElement>('.mini-tile')
+  if (!wrap || !tile || !inView(wrap)) {
+    dropLifted(held, delay)
+    runEnter(object, isToken, delay)
+    return
+  }
+  const t = wrap.getBoundingClientRect()
+  const width = wrap.offsetWidth
+  const height = wrap.offsetHeight
+  const copy = wrap.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-obj-id')
+  Object.assign(copy.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    margin: '0',
+    animation: 'none',
+    transition: 'none',
+  })
+  const landing = document.createElement('div')
+  landing.style.position = 'absolute'
+  landing.style.left = `${-width / 2}px`
+  landing.style.top = `${-height / 2}px`
+  landing.style.width = `${width}px`
+  landing.style.height = `${height}px`
+  landing.style.opacity = '0'
+  pinTileTokens(landing, tile)
+  landing.appendChild(copy)
+  held.box.appendChild(landing)
+
+  const duration = scaled(PUT_DOWN_STEP_MS)
+  const timing: KeyframeAnimationOptions = {
+    duration,
+    delay,
+    easing: 'cubic-bezier(0.45, 0, 0.25, 1)',
+    fill: 'both',
+  }
+  const dx = t.left + t.width / 2 - held.x
+  const dy = t.top + t.height / 2 - held.y
+  // The tile's width over the card's: the card shrinks to it as the tile
+  // grows from the card's, so the two stay one width while they cross-fade,
+  // each keeping its own shape.
+  const k = t.width / held.width
+  const flight = held.box.animate(
+    [
+      { transform: `translate(0, 0) scale(${LIFT_SCALE})`, filter: LIFTED_SHADOW },
+      { transform: `translate(${dx}px, ${dy}px) scale(1)`, filter: FLAT_SHADOW },
+    ],
+    timing,
+  )
+  held.face.animate([{ transform: 'scale(1)' }, { transform: `scale(${k})` }], timing)
+  landing.animate([{ transform: `scale(${1 / k})` }, { transform: 'scale(1)' }], timing)
+  const fade: KeyframeAnimationOptions = { duration, delay, fill: 'both' }
+  held.face.animate(
+    [{ opacity: 1 }, { opacity: 1, offset: 0.3 }, { opacity: 0, offset: 0.8 }, { opacity: 0 }],
+    fade,
+  )
+  landing.animate(
+    [{ opacity: 0 }, { opacity: 0, offset: 0.3 }, { opacity: 1, offset: 0.8 }, { opacity: 1 }],
+    fade,
+  )
+  releaseWhenDone(held.box, flight)
+  if (wrap.dataset.objId === object) {
+    // Hidden until the copy is down on it. Shown a moment before the copy
+    // goes, so the two overlap rather than leaving a frame with neither.
+    wrap.animate([{ opacity: 0 }, { opacity: 0 }], {
+      duration: delay + duration * 0.97,
+      fill: 'backwards',
+    })
+  } else {
+    glow(tile, 'gain', delay + duration, scaled(ENTER_STEP_MS))
+    floatText(wrap, '+1', 'gain', delay + duration, scaled(ENTER_STEP_MS) * 1.5)
+  }
 }
 
 /**
@@ -1511,7 +1747,7 @@ export function AnimationLayer({
         ev.type === 'spell-countered' ||
         ev.type === 'spell-fizzled'
       ) {
-        runStackExit(ev, view, seatRef.current)
+        runStackExit(ev, view, seatRef.current, cue.putDown === true)
       } else if (ev.type === 'permanent-left-battlefield') {
         if (ev.toZone === 'hand') runBounce(ev.object, cue.prev)
         else runDeath(ev.object, ev.toZone)
@@ -1554,6 +1790,8 @@ export function AnimationLayer({
     }
 
     return bus.subscribe((cues) => {
+      // A new frame: any card still held up from the last one won't land.
+      if (cues.some((c) => c.half === 'before')) dropAllLifted()
       // Arrivals are gathered and played per tile after the loop (`runEnters`).
       const enters: { object: ObjectId; isToken: boolean; delay: number }[] = []
       // So are cards leaving libraries: a run of them shares one beat (one
@@ -1569,7 +1807,10 @@ export function AnimationLayer({
           else if (cue.event.type === 'permanent-untapped') {
             runTap(cue.event.object, false, cue.delay)
           } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
-          else if (cue.event.type === 'permanent-entered-battlefield') {
+          else if (cue.event.type === 'permanent-entered-battlefield' && cue.putDown) {
+            const object = cue.event.object
+            putDownOnTile(object, cue.view.objects[object]?.isToken ?? false, cue.delay)
+          } else if (cue.event.type === 'permanent-entered-battlefield') {
             const object = cue.event.object
             // One sound per tile, as one animation: a folded member is silent.
             const tile = boardTileOf(object)
