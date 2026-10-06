@@ -72,9 +72,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
-- **The lobby's default deck could be random** (the user, 2026-10-06). The lobby's "Add bot (default
-  deck)" button (`client/src/lobby/SeatBoard.tsx`) always gives the same deck; the user wants it
-  randomized.
 - **The highroll notice should look like the other alerts** (the user, 2026-10-06). The
   "🎲 <player> won the highroll and goes first" notice at the start of a game (`App.tsx`) has a
   style of its own; the user wants it to look like the game's other alerts.

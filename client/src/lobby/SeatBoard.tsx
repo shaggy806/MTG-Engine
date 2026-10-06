@@ -9,6 +9,7 @@ import type { DeckContents, PickableDeck } from '../deck-builder/decks.ts'
 import { CommanderArt } from './CommanderArt.tsx'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
 import { BotSpeedControl } from '../ui/BotSpeedControl.tsx'
+import { randomBotDeck } from './randomBotDeck.ts'
 import './lobby.css'
 
 /** A table is 2-4 seats. Mirrors `PendingRoom`'s own limits, which are what
@@ -221,8 +222,12 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                   </>
                 )
               ) : host && !s.claimed && !s.isBot ? (
-                <button type="button" className="seat-panel-add-bot" onClick={() => game.addBot(s.player)}>
-                  Add bot (default deck)
+                <button
+                  type="button"
+                  className="seat-panel-add-bot"
+                  onClick={() => game.addBot(s.player, randomBotDeck(game.seats))}
+                >
+                  Add bot (random deck)
                 </button>
               ) : null}
             </div>
