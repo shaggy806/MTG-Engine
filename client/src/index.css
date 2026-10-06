@@ -1,38 +1,47 @@
 /* Board redesign phase 8: felt-table/gold palette + Cinzel (headings, whose-
-   turn) / JetBrains Mono (numbers) ported from the mockup artifact, layered
+   turn) / JetBrains Mono (numbers); the body in Alegreya Sans, a bookish
+   humanist sans, since 2026-10-06 (Inter before) ported from the mockup artifact, layered
    onto the existing token *names* so every rule already written against
    --bg/--panel/--border/etc. picks up the new look without a rename. */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
   color-scheme: dark;
-  --bg: #12171b;
-  --panel: #1c242b;
-  --panel-2: #212b33;
-  --border: #2b3640;
+  /* Ink and gold (2026-10-06): a tabletop rather than a dashboard — walnut
+     and leather browns under parchment text, antique gold for the accent
+     (links, selection, the primary button) where a stock blue was, and
+     jewel tones for the seats. Swap these back to revert the look; every
+     rule reads them by name. */
+  --bg: #15110d;
+  --panel: #201a14;
+  --panel-2: #2a2219;
+  --border: #3b3024;
   /* a lighter divider than --border -- used inside a panel (e.g. the
      quadrant head/body split) where a full --border would read too heavy */
-  --border-soft: #232d35;
-  --text: #e7edf1;
-  --muted: #93a3ad;
-  --muted-dim: #5e6d76;
-  --accent: #63a0d6;
-  --accent-dim: #3c5f7d;
-  --accent-bg: rgba(99, 160, 214, 0.14);
-  --gold: #cda653;
-  --good: #5fae7c;
-  --bad: #c2564f;
-  --warn: #d9b054;
+  --border-soft: #2c241b;
+  --text: #efe6d2;
+  --muted: #b0a088;
+  --muted-dim: #786a55;
+  --accent: #d6a54a;
+  --accent-dim: #7f6431;
+  --accent-bg: rgba(214, 165, 74, 0.14);
+  /* Brighter than the accent, for what's lit on the board (the stack's
+     glow, a legend's crest), so a highlight still stands out against it. */
+  --gold: #e6bd62;
+  --good: #7aa85b;
+  --bad: #c8473d;
+  /* Amber rather than yellow: a yellow sat too close to the gold accent. */
+  --warn: #e08a3c;
 
   /* per-player identity colors, by seating order (not table position) */
-  --seat-a: #b48ee0;
-  --seat-a-bg: rgba(180, 142, 224, 0.08);
-  --seat-b: #e0985a;
-  --seat-b-bg: rgba(224, 152, 90, 0.08);
-  --seat-c: #5cc3b8;
-  --seat-c-bg: rgba(92, 195, 184, 0.08);
-  --seat-d: #d97398;
-  --seat-d-bg: rgba(217, 115, 152, 0.08);
+  --seat-a: #a98bd9;
+  --seat-a-bg: rgba(169, 139, 217, 0.08);
+  --seat-b: #e0774a;
+  --seat-b-bg: rgba(224, 119, 74, 0.08);
+  --seat-c: #4fb39a;
+  --seat-c-bg: rgba(79, 179, 154, 0.08);
+  --seat-d: #5f9be0;
+  --seat-d-bg: rgba(95, 155, 224, 0.08);
 
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
@@ -51,8 +60,11 @@
      here: it depends on how much room that permanent's own board has, so
      it's declared per board, in App.css's `.board` rule. */
 
-  font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
+  font-family: 'Alegreya Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  /* Alegreya's own figures are old-style, which sit low beside capitals
+     ("Player 1", "library 53"); a game reads numbers all the time. */
+  font-variant-numeric: lining-nums;
   color: var(--text);
   background: var(--bg);
 }
