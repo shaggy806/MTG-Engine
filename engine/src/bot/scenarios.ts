@@ -2734,6 +2734,51 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   },
   {
+    name: "taps a land, untaps it with Kiora and casts Ganax",
+    rule: "An untap ability is one more mana: tap a land, untap it, cast the spell that mana pays for.",
+    run(weights, registry, makeBot) {
+      // A live capture (2026-10-06, "alice, turn 18"): four lands, Kiora,
+      // Behemoth Beckoner on 2 loyalty and Ganax, Astral Hunter ({4}{R}) in
+      // hand; v2 cast Temur Ascendancy. The line is tap a land for mana,
+      // Kiora's −1 at it, then Ganax with the floating mana and four lands —
+      // `untap-plans.ts`. Played out here step by step, every opponent
+      // passing, until Ganax is cast or the bot does something else.
+      const game = table(registry, [A, B, C, D], A);
+      // Untapped, as in the capture: the tri-land and the cycling land enter
+      // tapped even spawned onto the battlefield.
+      for (const land of ["Frontier Bivouac", "Forest", "Sheltered Thicket", "Bountiful Landscape"]) {
+        game.state.objects[onBoard(game, land, A)].tapped = false;
+      }
+      const kiora = onBoard(game, "Kiora, Behemoth Beckoner", A);
+      game.state.objects[kiora].counters.loyalty = 2;
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const ganax = game.debugSpawn("Ganax, Astral Hunter", A, "hand");
+      game.debugSpawn("Temur Ascendancy", A, "hand");
+      game.debugSpawn("Garruk's Uprising", A, "hand");
+      const bot = makeBot(A, registry, weights);
+      const played: string[] = [];
+      for (let i = 0; i < 16; i += 1) {
+        const zone = game.state.objects[ganax]?.zone;
+        if (zone === "stack" || zone === "battlefield") break;
+        const holder = game.state.priority.holder;
+        if (game.state.awaiting !== null || holder === null || game.state.turn.step !== "precombat-main") break;
+        if (holder !== A) {
+          game.dispatch({ type: "pass-priority", player: holder });
+          continue;
+        }
+        const action = bot.act(viewOf(game, A));
+        played.push(describeAction(action));
+        if (action.type === "pass-priority" && game.state.zones.shared.stack.length === 0) break;
+        game.dispatch(action);
+      }
+      const zone = game.state.objects[ganax]?.zone;
+      return {
+        passed: zone === "stack" || zone === "battlefield",
+        detail: `Ganax ${zone}; played ${played.join(" | ")}`,
+      };
+    },
+  },
+  {
     name: "sends only enough of a token stack to kill a planeswalker",
     rule: "Five 1/1s kill a five-loyalty planeswalker, and with 2/2s across the table some of the other eight stay home to block.",
     run(weights, registry, makeBot) {

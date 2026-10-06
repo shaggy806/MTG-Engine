@@ -28,6 +28,7 @@ import { HeuristicBotController } from "../controller.js";
 import type { ControllerView, PlayerController } from "../controller.js";
 import type { PlayerId } from "../primitives.js";
 import type { GameState } from "../state.js";
+import { resolveToPriority } from "./untap-plans.js";
 
 /**
  * How far past the candidate action to run before scoring.
@@ -165,6 +166,49 @@ export function simulateRepeated(
         : s.turn.number !== startingTurn;
     });
     return { state: sim.state, times };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * `simulateAction` for an untap plan (`untap-plans.ts`): `prefix` (tap a
+ * land for mana, untap it) dispatched, everyone passing until it has
+ * resolved and we hold priority again with the mana still in the pool, then
+ * `finish` (the cast the extra mana pays for, aimed on that board), then the
+ * usual rollout to `horizon`. `null` if any step is refused or the plan
+ * doesn't get back to us.
+ */
+export function simulatePlan(
+  state: GameState,
+  registry: CardRegistry,
+  me: PlayerId,
+  prefix: readonly Action[],
+  finish: (game: Game) => Action | null,
+  horizon: Horizon,
+  policy: RolloutPolicy,
+  self: PlayerController | undefined,
+): GameState | null {
+  const startingTurn = state.turn.number;
+  try {
+    const sim = Game.fromSnapshot(
+      { ...state, eventLog: [] },
+      { registry, controllers: rolloutControllers(state, registry, me, policy, self) },
+    );
+    for (const action of prefix) sim.dispatch(action);
+    if (!resolveToPriority(sim, me)) return null;
+    const last = finish(sim);
+    if (last === null) return null;
+    sim.dispatch(last);
+    let steps = 0;
+    sim.advanceUntil((s) => {
+      steps += 1;
+      if (steps > MAX_STEPS) return true;
+      return horizon === "stack"
+        ? s.zones.shared.stack.length === 0 && s.awaiting === null
+        : s.turn.number !== startingTurn;
+    });
+    return sim.state;
   } catch {
     return null;
   }

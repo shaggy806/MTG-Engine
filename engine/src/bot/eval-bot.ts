@@ -45,6 +45,7 @@ import {
   specSide,
 } from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
+import { findUntapPlans } from "./untap-plans.js";
 import { collapseTwins } from "./twins.js";
 import type { TargetRef } from "../target.js";
 import type { Polarity } from "../target-polarity.js";
@@ -59,6 +60,7 @@ import {
   MAX_BATCH,
   simulateAction,
   simulateCombat,
+  simulatePlan,
   simulateRepeated,
 } from "./simulate.js";
 import type { Horizon, RolloutPolicy } from "./simulate.js";
@@ -556,6 +558,16 @@ export class EvalBotController extends HeuristicBotController {
      * the batch resolves, the last time we passed. */
     readonly stack: number;
   } | null = null;
+  /** An untap plan under way (`untap-plans.ts`): its mana tap was played,
+   * and `continuePlan` plays the untap, passes while it resolves, then casts
+   * `cast` — or drops the plan the moment anything else happens. */
+  private plan: {
+    readonly untap: Action;
+    readonly cast: ObjectId;
+    readonly turn: number;
+    readonly step: string;
+    stage: "untap" | "resolve";
+  } | null = null;
   /** See {@link DecisionAudit}. Written, never read. */
   lastDecision: DecisionAudit | null = null;
   /** What the last priority search played in place of passing, when the
@@ -591,6 +603,11 @@ export class EvalBotController extends HeuristicBotController {
     this.lastDecision = null;
     this.lastPassFallback = null;
     this.lastHeldForCombat = [];
+    const fromPlan = this.continuePlan(view);
+    if (fromPlan !== null) {
+      this.lastDecision = audit("priority", null, "plan replay");
+      return fromPlan;
+    }
     const fromBatch = this.continueBatch(view);
     const continued = fromBatch ?? this.holdPass(view);
     this.passedOn = null;
@@ -866,6 +883,48 @@ export class EvalBotController extends HeuristicBotController {
         batch = { times: result.times, spread };
       }
     }
+    // **Untap plans** (`untap-plans.ts`): tap a land for mana, untap it with
+    // an ability (Kiora's −1), let that resolve, cast what the extra mana
+    // pays for — a line one action deep never sees, since the untap alone
+    // reads as loyalty spent for nothing. Scored whole, after every single
+    // move and batch, so under a clock they're the first thing dropped.
+    let plan: { readonly untap: Action; readonly cast: ObjectId } | null = null;
+    for (const p of findUntapPlans(view.state, this.cards, player, view.legalActions())) {
+      if (spent(budget)) break;
+      budget.left -= 1;
+      const after = timed(budget, () =>
+        simulatePlan(
+          view.state,
+          this.cards,
+          player,
+          [p.tap, p.untap],
+          (game) => {
+            const offer = game.legalActions(player).find((l) => l.kind === "cast-spell" && l.card === p.cast.card);
+            return offer === undefined
+              ? null
+              : (candidateActions(aimOffer(game.state, this.cards, player, offer), player)[0] ?? null);
+          },
+          this.horizon,
+          this.decisionRollout,
+          this.rolloutDecisions ? this.selfInRollouts() : undefined,
+        ),
+      );
+      if (after === null) continue;
+      const score = evaluateState(after, this.cards, player, this.weights);
+      if (score <= bestScore) continue;
+      bestScore = score;
+      best = p.tap;
+      batch = null;
+      plan = { untap: p.untap, cast: p.cast.card };
+    }
+    if (plan !== null && best.type === "activate-ability") {
+      this.plan = {
+        ...plan,
+        turn: view.state.turn.number,
+        step: view.state.turn.step,
+        stage: "untap",
+      };
+    }
     if (batch !== null && best.type === "activate-ability") {
       const base = view.state.zones.shared.stack.length;
       this.batch = {
@@ -894,6 +953,45 @@ export class EvalBotController extends HeuristicBotController {
       this.actedOn = { turn: view.state.turn.number, stack: [...view.state.zones.shared.stack] };
     }
     return best;
+  }
+
+  /**
+   * The rest of an untap plan the search chose (see `act`): the untap, aimed
+   * at the land just tapped for mana; a pass while it resolves; then the
+   * cast, aimed on the board as it is. `null`, dropping the plan, once
+   * anything else has happened — a decision, another step, the untap or the
+   * spell no longer on offer.
+   */
+  private continuePlan(view: ControllerView): Action | null {
+    const plan = this.plan;
+    if (plan === null) return null;
+    const state = view.state;
+    const player = this.playerId;
+    if (state.awaiting !== null || state.turn.number !== plan.turn || state.turn.step !== plan.step) {
+      this.plan = null;
+      return null;
+    }
+    if (plan.stage === "untap") {
+      const untap = plan.untap;
+      const offered =
+        untap.type === "activate-ability" &&
+        view
+          .legalActions()
+          .some((l) => l.kind === "activate-ability" && l.source === untap.source && l.abilityIndex === untap.abilityIndex);
+      if (!offered) {
+        this.plan = null;
+        return null;
+      }
+      plan.stage = "resolve";
+      return untap;
+    }
+    // The untap is on the stack: everyone passes until it resolves, the mana
+    // staying in the pool (rule 106.4).
+    if (state.zones.shared.stack.length > 0) return { type: "pass-priority", player };
+    this.plan = null;
+    const offer = view.legalActions().find((l) => l.kind === "cast-spell" && l.card === plan.cast);
+    if (offer === undefined) return null;
+    return candidateActions(aimOffer(state, this.cards, player, offer), player)[0] ?? null;
   }
 
   /** After passing with something on the stack, what that stack was — see
