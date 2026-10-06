@@ -61,6 +61,7 @@ export const AGGRESSIVE: Champion = {
     earlyMana: 0,
     smallTokens: 0,
     lifeSurplus: 0,
+    trackRecord: 0,
     opponent: 1,
     otherOpponents: 0.25,
     crackbackParanoia: 0.1,

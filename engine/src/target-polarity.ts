@@ -761,7 +761,9 @@ export function targetValue(state: GameState, registry: CardRegistry, ref: Targe
  * right side first, most valuable first; then the wrong side, least valuable
  * first (the least bad, when only the wrong side is legal). `take` ranks
  * everything by value, whoever's it is; `either` leaves the offer's order
- * alone. Ties keep the offer's order, so a replay is exact.
+ * alone. Ties keep the offer's order, so a replay is exact. `value` is how
+ * an option is priced — {@link targetValue}, or a caller's richer sense of it
+ * (v2 adds how much of an engine a permanent is, `bot/features.ts`).
  */
 export function rankTargets(
   state: GameState,
@@ -769,6 +771,7 @@ export function rankTargets(
   me: PlayerId,
   options: readonly TargetRef[],
   polarity: Polarity,
+  value: (state: GameState, registry: CardRegistry, ref: TargetRef) => number = targetValue,
 ): TargetRef[] {
   if (polarity === "either" || options.length < 2) return [...options];
   const want = polarity === "harm" ? "opponent" : "own";
@@ -776,7 +779,7 @@ export function rankTargets(
     ref,
     index,
     right: polarity === "take" || sideOf(state, ref, me) === want,
-    value: targetValue(state, registry, ref),
+    value: value(state, registry, ref),
   }));
   scored.sort((a, b) => {
     if (a.right !== b.right) return a.right ? -1 : 1;

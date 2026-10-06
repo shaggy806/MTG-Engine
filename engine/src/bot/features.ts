@@ -46,7 +46,7 @@ import { entersToCounter } from "../effect-worth.js";
 import type { EffectSpec } from "../effects.js";
 import { manaValue, parseManaCost } from "../mana.js";
 import type { ObjectId, PlayerId } from "../primitives.js";
-import { POISON_LETHAL, printedCardName } from "../state.js";
+import { POISON_LETHAL, printedCardName, settledTally } from "../state.js";
 import { playersAttackableNextTurn } from "../combat/eligibility.js";
 import { canBlock, combatCreatures } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
@@ -96,6 +96,7 @@ export const FEATURE_KEYS = [
   "earlyMana",
   "smallTokens",
   "lifeSurplus",
+  "trackRecord",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -610,6 +611,76 @@ function tokenRate(registry: CardRegistry, def: CardDefinition, opponents: numbe
   return Math.min(TOKEN_RATE_CAP, rate.fixed + rate.perOpponent * opponents);
 }
 
+/** Damage dealt to opponents counted as a card: 4 life is a card in the
+ * evaluation (`life` 0.5 against `hand` 2). */
+const DAMAGE_PER_CARD = 4;
+/** The most a permanent's track record is credited a round, as for
+ * {@link DRAW_RATE_CAP}: one that has drawn a hand in a turn shouldn't
+ * outweigh the board. */
+const TRACK_RECORD_CAP = 3;
+
+/**
+ * What a permanent has shown it does, a round, past what its printed
+ * abilities already say: the cards its controller drew off it beyond
+ * {@link drawRate}, and the damage it dealt opponents at a card per
+ * {@link DAMAGE_PER_CARD}, over the rounds it has been on the battlefield
+ * before this turn (`GameObject.tally`, public, as `settledTally` reads it). The printed rates price an engine from the
+ * turn it lands; this is the evidence for one they can't read — a creature
+ * wearing the equipment, one that connects every turn, a draw a static
+ * grants it. 0 for one that has done neither.
+ */
+export function trackRecordOf(
+  state: GameState,
+  registry: CardRegistry,
+  id: ObjectId,
+  opponents: number,
+): number {
+  const object = state.objects[id];
+  if (object === undefined || object.tally === undefined) return 0;
+  // Only turns already over: what its own search simulates this turn — a
+  // creature connecting in a combat it's weighing — mustn't add to the
+  // evidence it's weighing it by, or dealing damage would count twice (in
+  // the life it costs, and again here). Nothing for one that arrived this
+  // turn.
+  const now = state.turn.number;
+  const turns = now - (object.enteredBattlefieldOnTurn ?? now);
+  if (turns <= 0) return 0;
+  const tally = settledTally(object, now);
+  // Rounds of the table it has been here for, at least one.
+  const rounds = Math.max(1, turns / Math.max(1, opponents + 1));
+  const name = printedCardName(object);
+  const printed = registry.has(name) ? drawRate(registry.get(name), opponents) : 0;
+  const extraDraws = Math.max(0, tally.cardsDrawn - printed * rounds);
+  const damage = tally.damageToPlayers / DAMAGE_PER_CARD;
+  // Less than a card's worth isn't a record: one hit for 2 is a creature
+  // doing what its power says, and a search that plays on past the turn
+  // would otherwise credit the hits it only simulated.
+  if (extraDraws + damage < 1) return 0;
+  return Math.min(TRACK_RECORD_CAP, (extraDraws + damage) / rounds);
+}
+
+/**
+ * How much of an engine a permanent is, in cards a round — its printed draw
+ * rate, half its token rate (a token is about half a card, as `tokenEngines`
+ * is weighted against `drawEngines`) and its track record — for ranking
+ * targets (`bot/eval-bot.ts`'s `aimOffer`). The evaluation weighs the same
+ * three with its own weights; this only has to put an engine among the
+ * options the search gets to.
+ */
+export function engineScore(state: GameState, registry: CardRegistry, id: ObjectId): number {
+  const object = state.objects[id];
+  if (object === undefined || object.zone !== "battlefield") return 0;
+  const opponents = state.turnOrder.filter((p) => p !== object.controller && !state.players[p].hasLost).length;
+  const name = printedCardName(object);
+  if (!registry.has(name)) return 0;
+  const def = registry.get(name);
+  return (
+    drawRate(def, opponents) +
+    tokenRate(registry, def, opponents) / 2 +
+    trackRecordOf(state, registry, id, opponents)
+  );
+}
+
 /**
  * One player's raw feature vector.
  *
@@ -740,6 +811,7 @@ function playerFeaturesUncached(
   let nonlandMana = 0;
   let drawEngines = 0;
   let tokenEngines = 0;
+  let trackRecord = 0;
   const opponents = state.turnOrder.filter((p) => p !== player && !state.players[p].hasLost).length;
   let commanderOnBoard = 0;
   let idlePower = 0;
@@ -813,6 +885,7 @@ function playerFeaturesUncached(
       drawEngines += drawRate(def, opponents) * n;
       tokenEngines += tokenRate(registry, def, opponents) * n;
     }
+    trackRecord += trackRecordOf(state, registry, id, opponents);
     if (object.isCommander && object.owner === player) commanderOnBoard += 1;
     if (!object.tapped && hasTapManaAbility(registry, object)) untappedMana += n;
     if (c.types.includes("planeswalker")) loyalty += (object.counters.loyalty ?? 0) * n;
@@ -936,6 +1009,7 @@ function playerFeaturesUncached(
     // is still the clock — discounting theirs too made chip damage at 40
     // worth less, and `bot:diff` showed v2 holding back a dozen attacks.
     lifeSurplus: isMe ? Math.max(0, p.life - LIFE_SURPLUS_ABOVE) : 0,
+    trackRecord,
     // The nearest loss that isn't life: the worst commander's damage, or
     // poison on the same scale (10 counters lose as 21 damage does). Folded
     // into one term, so the fitted weight reads poison too without a refit.

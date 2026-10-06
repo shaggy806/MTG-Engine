@@ -66,6 +66,7 @@ export const SHIPPED_2026_09_27: Champion = {
     earlyMana: 0,
     smallTokens: 0,
     lifeSurplus: 0,
+    trackRecord: 0,
     opponent: 1,
     otherOpponents: 0.5,
     crackbackParanoia: 0.5,
