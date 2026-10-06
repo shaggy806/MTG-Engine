@@ -26,13 +26,19 @@
 // text lines, because the client renders `text` verbatim (white-space:
 // pre-line) and a card missing a newline escape runs two abilities together.
 //
+// `--offline` answers from the Oracle snapshot (`data/oracle/cards.jsonl`,
+// `npm run gen:oracle`) instead of Scryfall's API — for a session whose
+// network can't reach api.scryfall.com (a cloud session). As current as the
+// snapshot, which is fine for a card printed before it was taken.
+//
 // Usage: node scripts/verify-cards.mjs [--json out.json] [--limit N] [--start N]
-//                                      [--text [--similar]] [--lines]
+//                                      [--text [--similar]] [--lines] [--offline]
 
 import { readdirSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
+import { findCard } from "./oracle-snapshot.mjs";
 
 
 const USER_AGENT = "MTG-Engine-CardVerification/1.0";
@@ -55,6 +61,7 @@ const checkLines = args.includes("--lines");
 // paraphrase, occasionally a real difference. Off by default; they'd bury the
 // clauses that matched nothing at all.
 const showSimilar = args.includes("--similar");
+const offline = args.includes("--offline");
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -116,7 +123,19 @@ async function scryfallFetch(url, init) {
   return { ok: false, status: "unreachable" };
 }
 
+/** A snapshot entry in Scryfall's card shape — `faces` is `card_faces`. */
+function snapshotCard(name) {
+  const entry = findCard(name);
+  if (entry === undefined || entry.commander === "token") return undefined;
+  const { faces, ...rest } = entry;
+  return faces === undefined ? rest : { ...rest, card_faces: faces };
+}
+
 async function fetchCardByName(name) {
+  if (offline) {
+    const card = snapshotCard(name);
+    return card === undefined ? { ok: false, status: 404 } : { ok: true, status: 200, body: card };
+  }
   return scryfallFetch(`https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`);
 }
 
@@ -127,6 +146,16 @@ async function fetchCardByName(name) {
  * here and comes back in `not_found` for the caller to fuzzy-fallback on. */
 const COLLECTION_BATCH_SIZE = 75;
 async function fetchCollection(names) {
+  if (offline) {
+    const found = new Map();
+    for (const name of names) {
+      const card = snapshotCard(name);
+      if (card === undefined) continue;
+      found.set(card.name.toLowerCase(), card);
+      for (const face of card.card_faces ?? []) found.set(face.name.toLowerCase(), card);
+    }
+    return { found, missing: names.filter((n) => !found.has(n.toLowerCase())) };
+  }
   const outcome = await scryfallFetch("https://api.scryfall.com/cards/collection", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

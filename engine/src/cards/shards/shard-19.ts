@@ -42,6 +42,7 @@ import _poolCoastalPeak from "../pool/coastal-peak.js";
 import _poolContractKilling from "../pool/contract-killing.js";
 import _poolCourierGriffin from "../pool/courier-griffin.js";
 import _poolCowlProwler from "../pool/cowl-prowler.js";
+import _poolCrawlingBarrens from "../pool/crawling-barrens.js";
 import _poolCryptolithRite from "../pool/cryptolith-rite.js";
 import _poolCrystalSkullIsuSpyglass from "../pool/crystal-skull-isu-spyglass.js";
 import _poolDaringApprentice from "../pool/daring-apprentice.js";
@@ -59,6 +60,7 @@ import _poolDungroveElder from "../pool/dungrove-elder.js";
 import _poolEarthcraft from "../pool/earthcraft.js";
 import _poolElvenAmbush from "../pool/elven-ambush.js";
 import _poolEmrakulsMessenger from "../pool/emrakuls-messenger.js";
+import _poolEusocialEngineering from "../pool/eusocial-engineering.js";
 import _poolExploreTheVastlands from "../pool/explore-the-vastlands.js";
 import _poolExsanguinate from "../pool/exsanguinate.js";
 import _poolFabledPassage from "../pool/fabled-passage.js";
@@ -70,6 +72,7 @@ import _poolFlamingFist from "../pool/flaming-fist.js";
 import _poolFlamingTyrannosaurus from "../pool/flaming-tyrannosaurus.js";
 import _poolFlowstoneKavu from "../pool/flowstone-kavu.js";
 import _poolFlyingDolphinFish from "../pool/flying-dolphin-fish.js";
+import _poolForerunnerOfTheEmpire from "../pool/forerunner-of-the-empire.js";
 import _poolFormidableSpeaker from "../pool/formidable-speaker.js";
 import _poolFortifiedVillage from "../pool/fortified-village.js";
 import _poolFugue from "../pool/fugue.js";
@@ -130,6 +133,7 @@ import _poolLeap from "../pool/leap.js";
 import _poolLifecraftersBestiary from "../pool/lifecrafters-bestiary.js";
 import _poolLifelink from "../pool/lifelink.js";
 import _poolLoreWeaver from "../pool/lore-weaver.js";
+import _poolLoreholdCharm from "../pool/lorehold-charm.js";
 import _poolLossarnachCaptain from "../pool/lossarnach-captain.js";
 import _poolLurkingPredators from "../pool/lurking-predators.js";
 import _poolLylaHolographicAssistant from "../pool/lyla-holographic-assistant.js";
@@ -142,6 +146,7 @@ import _poolMakeYourMove from "../pool/make-your-move.js";
 import _poolMakindiSliderunner from "../pool/makindi-sliderunner.js";
 import _poolMandateOfAbaddon from "../pool/mandate-of-abaddon.js";
 import _poolManicVandal from "../pool/manic-vandal.js";
+import _poolMarcusMutantMayor from "../pool/marcus-mutant-mayor.js";
 import _poolMasterOfDarkRites from "../pool/master-of-dark-rites.js";
 import _poolMercilessExecutioner from "../pool/merciless-executioner.js";
 import _poolMeticulousArchive from "../pool/meticulous-archive.js";
@@ -320,6 +325,7 @@ const shard: CardShard = {
     _poolContractKilling,
     _poolCourierGriffin,
     _poolCowlProwler,
+    _poolCrawlingBarrens,
     _poolCryptolithRite,
     _poolCrystalSkullIsuSpyglass,
     _poolDaringApprentice,
@@ -337,6 +343,7 @@ const shard: CardShard = {
     _poolEarthcraft,
     _poolElvenAmbush,
     _poolEmrakulsMessenger,
+    _poolEusocialEngineering,
     _poolExploreTheVastlands,
     _poolExsanguinate,
     _poolFabledPassage,
@@ -348,6 +355,7 @@ const shard: CardShard = {
     _poolFlamingTyrannosaurus,
     _poolFlowstoneKavu,
     _poolFlyingDolphinFish,
+    _poolForerunnerOfTheEmpire,
     _poolFormidableSpeaker,
     _poolFortifiedVillage,
     _poolFugue,
@@ -408,6 +416,7 @@ const shard: CardShard = {
     _poolLifecraftersBestiary,
     _poolLifelink,
     _poolLoreWeaver,
+    _poolLoreholdCharm,
     _poolLossarnachCaptain,
     _poolLurkingPredators,
     _poolLylaHolographicAssistant,
@@ -420,6 +429,7 @@ const shard: CardShard = {
     _poolMakindiSliderunner,
     _poolMandateOfAbaddon,
     _poolManicVandal,
+    _poolMarcusMutantMayor,
     _poolMasterOfDarkRites,
     _poolMercilessExecutioner,
     _poolMeticulousArchive,

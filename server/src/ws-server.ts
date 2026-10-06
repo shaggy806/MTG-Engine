@@ -55,6 +55,8 @@ function broadcast(room: Room): void {
       isHost: room.isHost(connection),
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
+      ...(room.firstPlayerChosen ? { firstPlayerChosen: true as const } : {}),
+      ...(room.stopped !== null ? { stopped: room.stopped } : {}),
       ...(room.captures !== null ? { capture: true as const } : {}),
       ...(room.builder !== null ? { builder: room.builder } : {}),
       ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),
@@ -95,6 +97,7 @@ function roomJoined(room: Room | PendingRoom, connection: Connection): ServerMes
     seats: room.seatStatuses(),
     isHost: room.isHost(connection),
     botSpeed: room.botSpeed,
+    ...(room instanceof PendingRoom ? { settings: room.settings } : {}),
     seat: room.seatOf(connection),
     pending: room instanceof PendingRoom,
   };
@@ -421,6 +424,13 @@ export function attachRoomServer(
           room.setBotSpeed(message.speed);
           if (room instanceof PendingRoom) broadcastPending(room);
           else room.publish();
+          return;
+        }
+        case "set-room-settings": {
+          const room = requirePendingRoom(manager, message.roomId);
+          requireHost(room, connection, "change the room settings");
+          room.setSettings(message.settings ?? {});
+          broadcastPending(room);
           return;
         }
         case "set-bots-paused": {

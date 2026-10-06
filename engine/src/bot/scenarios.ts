@@ -1137,6 +1137,38 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "removal takes the creature that has been drawing cards",
+    rule: "A Grizzly Bears that has drawn three cards and dealt six in two rounds is the engine; a vanilla 4/4 is only itself.",
+    position(registry) {
+      // What its text can't say — it's been wearing a Sword, or paired with a
+      // Tandem Lookout: priced by its stats alone the Bears is the smaller
+      // threat. `trackRecord` is the evidence (`GameObject.tally`, public),
+      // as a rate over the rounds it has been on the battlefield.
+      const game = table(registry, [A, B], A);
+      lands(game, "Swamp", A, 4);
+      game.debugSpawn("Murder", A, "hand");
+      onBoard(game, "Rumbling Baloth", B);
+      const bears = onBoard(game, "Grizzly Bears", B);
+      game.state.objects[bears].enteredBattlefieldOnTurn = game.state.turn.number - 3;
+      game.state.objects[bears].tally = {
+        lifeTaken: 6,
+        cardsDrawn: 3,
+        thisTurn: { turn: 0, lifeTaken: 0, cardsDrawn: 0 },
+      };
+      return {
+        game,
+        player: A,
+        judge(action) {
+          const hit = firstTarget(action);
+          return {
+            passed: action.type === "cast-spell" && hit === bears,
+            detail: action.type === "cast-spell" ? `killed ${cardOf(game, hit)}` : `chose ${describeAction(action)}`,
+          };
+        },
+      };
+    },
+  }),
+  asked({
     name: "mills an opponent, not itself",
     rule: "With nothing that wants a full graveyard, a mill trigger goes at an opponent.",
     position(registry) {

@@ -4,6 +4,7 @@ import { CostSymbols, LoyaltyCounter, Symbols } from './Symbols.tsx'
 import { cardTint } from './symbols.ts'
 import { manaSymbolUrl } from './mana.ts'
 import { TargetedMark } from './TargetedMark.tsx'
+import { stripReminders } from './textKeywords.ts'
 import { CardFlags } from './CardFlags.tsx'
 import type { Goader } from './CardFlags.tsx'
 import {
@@ -110,13 +111,24 @@ function isJustKeywords(text: string, kw: Set<string>): boolean {
  * of the same word (e.g. Wurmcoil's own text describing what abilities the
  * tokens it creates have) is left alone; only the leading restatement is
  * ever removed. */
-function bodyText(obj: VisibleObject): string {
-  if (obj.keywords.length === 0 || obj.text.length === 0) return obj.text
-  const lead = obj.text.match(/^([^.\n]+)[.\n]\s*/)
-  if (lead && isJustKeywords(lead[1], keywordWordSet(obj))) {
-    return obj.text.slice(lead[0].length)
+function bodyText(obj: VisibleObject, text: string): string {
+  if (obj.keywords.length === 0 || text.length === 0) return text
+  const kw = keywordWordSet(obj)
+  const lead = text.match(/^([^.\n]+)([.\n]\s*|$)/)
+  if (lead && isJustKeywords(lead[1], kw)) {
+    return text.slice(lead[0].length)
   }
-  return obj.text
+  // A keyword line with something else in it — Akroma's "Flying, first
+  // strike, vigilance, trample, haste, protection from black and from red" —
+  // keeps only what the bold line doesn't already say.
+  if (lead) {
+    const items = lead[1].split(/,\s*/)
+    const rest = items.filter((item) => !isJustKeywords(item, kw))
+    if (rest.length > 0 && rest.length < items.length) {
+      return cap(rest.join(', ')) + text.slice(lead[1].length)
+    }
+  }
+  return text
 }
 
 export function CardTile({
@@ -170,7 +182,10 @@ export function CardTile({
   // comment) before deciding whether there's any body text left to show at
   // all -- a keyword-only card (nothing left after stripping) shows just
   // the bold keyword line below, not an empty rules-text box.
-  const displayText = bodyText(obj)
+  // Reminder text goes first: the hover card's keyword tooltips carry it
+  // (`stripReminders`), and a leading "Flying (This creature can't…)" only
+  // reads as the bare keyword line it restates once its aside is gone.
+  const displayText = bodyText(obj, stripReminders(obj.text))
   const showText = displayText.length > 0 && !isJustKeywords(displayText, keywordWordSet(obj))
   const keywordLine = obj.keywords
     .map((k) => KEYWORD_LABEL[k] ?? cap(k))
@@ -339,7 +354,7 @@ export function CardTile({
               </span>
             </span>
             <span className="ct-rules">
-              <Symbols text={obj.spellFace.text} />
+              <Symbols text={stripReminders(obj.spellFace.text)} />
             </span>
           </span>
         ) : null}

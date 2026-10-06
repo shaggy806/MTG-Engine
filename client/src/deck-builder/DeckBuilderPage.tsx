@@ -195,7 +195,12 @@ export function DeckBuilderPage() {
                   className={selection?.kind === 'starter' && selection.index === i ? 'selected' : undefined}
                   onClick={() => selectDeck({ kind: 'starter', index: i })}
                 >
-                  {d.name}
+                  {/* With its commander, as the lobby's deck picker lists it:
+                      the name alone doesn't say what the deck plays. */}
+                  <span className="db-starter-text">
+                    <span>{d.name}</span>
+                    <span className="db-starter-commander">{commandersOf(d).join(' & ')}</span>
+                  </span>
                   {isActive({ kind: 'starter', index: i }) ? <span className="db-active-badge">active</span> : null}
                 </button>
               </li>

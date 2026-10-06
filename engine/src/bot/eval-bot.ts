@@ -43,6 +43,7 @@ import {
   rankTargets,
   sideOf,
   specSide,
+  targetValue,
 } from "../target-polarity.js";
 import { candidateActions } from "./candidates.js";
 import { findUntapPlans } from "./untap-plans.js";
@@ -53,7 +54,7 @@ import { decisionCandidates } from "./decisions.js";
 import { canBlock, combatCreatures, crackback, damageThrough, isLethal } from "./combat-math.js";
 import type { CombatCreature } from "./combat-math.js";
 import { DEFAULT_WEIGHTS, evaluateState, normalizeWeights } from "./evaluate.js";
-import { lifeCost } from "./features.js";
+import { engineScore, lifeCost, withTrackRecordEvidence } from "./features.js";
 import type { EvalWeights } from "./evaluate.js";
 import {
   CombatRolloutController,
@@ -391,6 +392,25 @@ function bestDecision(
   return best;
 }
 
+/** What a card a round of engine adds to a target's rank, on
+ * `targetValue`'s scale (a vanilla 3/3 for three is 9, a 4/4 for five 12):
+ * an Archivist (4.5 by its stats) then ranks above a 3/3 and below a 4/4.
+ * The search, not this, chooses between them; this only has to put an engine
+ * among the combinations it plays out. */
+const RANK_ENGINE = 6;
+
+/**
+ * How v2 prices a target when ranking an offer: {@link targetValue}'s stats,
+ * plus how much of an engine a permanent is (`engineScore`: its printed draw
+ * and token rates and its track record). By stats alone an Archivist that has
+ * drawn three cards ranked below a vanilla Grizzly Bears, and on a wide board
+ * fell outside the combinations the search ever plays out.
+ */
+function rankValue(state: GameState, cards: CardRegistry, ref: TargetRef): number {
+  const stats = targetValue(state, cards, ref);
+  return ref.kind === "object" ? stats + RANK_ENGINE * engineScore(state, cards, ref.object) : stats;
+}
+
 /**
  * `legal` with each target slot's options in the order worth simulating:
  * the side the slot's effect belongs on first, most valuable first
@@ -421,7 +441,7 @@ export function aimOffer(
   // Ranked, then twins cut to as many as there are slots (`bot/twins.ts`):
   // seven identical Scute Swarms are one option, not seven simulations.
   const aim = (options: readonly TargetRef[], polarity: Polarity | undefined, slots: number) =>
-    collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either"), slots);
+    collapseTwins(state, rankTargets(state, cards, me, options, polarity ?? "either", rankValue), slots);
   if (legal.kind === "choose-targets") {
     const polarities = pendingTargetPolarities(state, cards, bias);
     return {
@@ -599,7 +619,14 @@ export class EvalBotController extends HeuristicBotController {
     this.trace = options.trace;
   }
 
+  /** Every decision reads a permanent's track record off the real board in
+   * front of it, never off a position its own search only simulated — see
+   * `withTrackRecordEvidence`. */
   act(view: ControllerView): Action {
+    return withTrackRecordEvidence(view.state, () => this.actSearched(view));
+  }
+
+  private actSearched(view: ControllerView): Action {
     this.lastDecision = null;
     this.lastPassFallback = null;
     this.lastHeldForCombat = [];
@@ -1232,6 +1259,10 @@ export class EvalBotController extends HeuristicBotController {
   // --- combat -------------------------------------------------------------
 
   declareAttackers(view: ControllerView): readonly AttackerDeclaration[] {
+    return withTrackRecordEvidence(view.state, () => this.declareAttackersSearched(view));
+  }
+
+  private declareAttackersSearched(view: ControllerView): readonly AttackerDeclaration[] {
     const legal = view
       .legalActions()
       .find((o): o is DeclareAttackersLegal => o.kind === "declare-attackers");
@@ -1387,6 +1418,10 @@ export class EvalBotController extends HeuristicBotController {
   }
 
   declareBlockers(view: ControllerView): readonly BlockerDeclaration[] {
+    return withTrackRecordEvidence(view.state, () => this.declareBlockersSearched(view));
+  }
+
+  private declareBlockersSearched(view: ControllerView): readonly BlockerDeclaration[] {
     const legal = view
       .legalActions()
       .find((o): o is DeclareBlockersLegal => o.kind === "declare-blockers");

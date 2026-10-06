@@ -411,6 +411,9 @@ export type GameEvent =
       readonly type: "ability-triggered";
       readonly source: ObjectId;
       readonly controller: PlayerId;
+      /** The ability on the stack — what a client finds its entry by, to fly
+       * it there from its source. */
+      readonly object: ObjectId;
     })
   | (Base & {
       /** A delayed triggered ability was set up (rule 603.7) — it fires at
@@ -654,6 +657,10 @@ export type GameEvent =
       readonly amount: number;
       /** True for combat damage (rule 510) — as opposed to burn, abilities, etc. */
       readonly combat: boolean;
+      /** Who controlled the source as it dealt the damage (as it last existed,
+       * for a source that has left — rule 608.2h), when known: what a client
+       * tallies a player's damage dealt by. */
+      readonly by?: PlayerId;
     })
   | (Base & {
       readonly type: "life-changed";

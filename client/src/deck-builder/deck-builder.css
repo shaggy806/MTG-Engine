@@ -38,13 +38,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-dim);
 }
 .db-list-head button {
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 2px 8px;
 }
 .db-list-head-actions {
@@ -52,11 +52,11 @@
   gap: 4px;
 }
 .db-note {
-  font-size: 11px;
+  font-size: var(--text-xs);
   margin: 0;
 }
 .db-empty {
-  font-size: 12px;
+  font-size: var(--text-sm);
   margin: 0;
 }
 
@@ -73,7 +73,7 @@
   text-align: left;
   background: none;
   border: none;
-  border-radius: 5px;
+  border-radius: 0;
   padding: 5px 8px;
   color: var(--text);
   display: flex;
@@ -87,13 +87,26 @@
   background: var(--accent-bg);
   color: var(--accent);
 }
+.db-starter-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.db-starter-commander {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.db-list li button.selected .db-starter-commander {
+  color: inherit;
+  opacity: 0.8;
+}
 .db-active-badge {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--text-2xs);
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--good);
-  color: #0c0f12;
+  color: var(--on-accent);
   font-weight: 700;
 }
 
@@ -122,11 +135,11 @@
 }
 .db-name-input {
   font: inherit;
-  font-family: 'Cinzel', serif;
-  font-size: 20px;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
   background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 2px 6px;
   color: var(--text);
 }
@@ -139,10 +152,22 @@
   display: flex;
   gap: 6px;
 }
+.db-delete-confirm {
+  align-items: center;
+}
+.db-delete-confirm span {
+  color: var(--bad);
+  font-weight: 600;
+  margin-right: 4px;
+}
+.db-delete-confirm .db-danger {
+  color: var(--bad);
+  border-color: var(--bad);
+}
 
 .db-legality {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: var(--panel);
 }
@@ -155,7 +180,7 @@
 .db-legality ul {
   margin: 6px 0 0;
   padding-left: 18px;
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -170,7 +195,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 6px 10px;
 }
 .db-type-filters {
@@ -179,7 +204,7 @@
   gap: 6px;
 }
 .db-type-filters button {
-  font-size: 12px;
+  font-size: var(--text-sm);
   padding: 3px 9px;
   background: var(--panel-2);
   color: var(--muted);
@@ -187,6 +212,17 @@
 .db-type-filters button.selected {
   border-color: var(--accent);
   color: var(--text);
+  background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
+}
+
+.db-identity-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  cursor: pointer;
 }
 
 .db-card-list {
@@ -199,7 +235,8 @@
   max-height: 60vh;
   overflow-y: auto;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
+  box-shadow: var(--frame-sunk);
 }
 .db-card-list li {
   display: flex;
@@ -219,11 +256,11 @@
   flex: 1;
 }
 .db-card-list button {
-  font-size: 12px;
+  font-size: var(--text-sm);
   padding: 2px 9px;
 }
 .db-count {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -238,7 +275,7 @@
 }
 .db-readonly-list li {
   padding: 2px 0;
-  font-size: 13px;
+  font-size: var(--text-md);
   break-inside: avoid;
 }
 /* A precon's stand-in for a card the engine doesn't implement yet. */
@@ -248,7 +285,7 @@
 }
 .db-substitutions {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .db-substitutions summary {
   cursor: pointer;
@@ -277,7 +314,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 8px 10px;
   resize: vertical;
 }
@@ -292,7 +329,7 @@
 }
 .db-import-progress-track {
   height: 6px;
-  border-radius: 3px;
+  border-radius: 0;
   background: var(--panel-2);
   border: 1px solid var(--border);
   overflow: hidden;
@@ -319,7 +356,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 .db-import-progress-card {
   overflow: hidden;
@@ -330,7 +367,7 @@
 .db-import-report {
   max-width: 760px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--accent);
   background: var(--accent-bg);
   margin-bottom: 12px;
@@ -342,13 +379,13 @@
   gap: 12px;
 }
 .db-import-report-head button {
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 2px 8px;
 }
 .db-import-report-list {
   margin: 6px 0 0;
   padding-left: 18px;
-  font-size: 13px;
+  font-size: var(--text-md);
   max-height: 240px;
   overflow-y: auto;
 }
@@ -383,7 +420,7 @@
   align-items: center;
   justify-content: center;
   padding: 2vh 2vw;
-  background: rgba(10, 12, 16, 0.85);
+  background: var(--scrim);
 }
 .rr-box {
   container-type: inline-size;
@@ -397,7 +434,8 @@
   padding: 2vh 2vw;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .rr-head {
   display: flex;
@@ -407,7 +445,7 @@
 }
 .rr-head h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
 }
 .rr-body {
   display: flex;
@@ -434,14 +472,14 @@
   flex: none;
 }
 .rr-label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
 }
 .rr-name {
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .rr-arrow {
   align-self: center;
@@ -466,7 +504,7 @@
   text-align: left;
   background: none;
   border: 2px solid transparent;
-  border-radius: 12px;
+  border-radius: 0;
   cursor: pointer;
 }
 .rr-option:hover:not(:disabled) {
@@ -474,7 +512,7 @@
 }
 .rr-option.chosen {
   border-color: var(--good);
-  background: rgba(95, 174, 124, 0.08);
+  background: color-mix(in srgb, var(--good) 8%, transparent);
 }
 .rr-option.blocked {
   cursor: not-allowed;
@@ -490,11 +528,11 @@
 .rr-flag {
   margin-left: auto;
   padding: 0 8px;
-  border-radius: 999px;
-  font-size: 11px;
+  border-radius: 0;
+  font-size: var(--text-xs);
   font-weight: 700;
   white-space: nowrap;
-  color: #10131a;
+  color: var(--on-accent);
   background: var(--good);
 }
 .rr-flag.blocked {
@@ -509,15 +547,15 @@
   gap: 6px;
 }
 .rr-key {
-  font-size: 11px;
+  font-size: var(--text-xs);
   min-width: 16px;
   text-align: center;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 0;
 }
 .rr-tags {
-  font-size: 12px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 .rr-placeholder {
@@ -526,7 +564,7 @@
   height: 100%;
   padding: 8px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .rr-foot {
   display: flex;
@@ -548,7 +586,7 @@
   width: 8px;
   height: 8px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 0;
   border: none;
   background: var(--border);
 }
@@ -573,9 +611,9 @@
   }
 }
 .db-match {
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 0 6px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid currentColor;
   white-space: nowrap;
 }
@@ -632,15 +670,15 @@
 }
 .db-pane-head h3 {
   margin: 0;
-  font-family: 'Cinzel', serif;
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
   font-weight: 600;
 }
 /* The deck pane is a drop target for a card dragged out of the pool; the
    dashed outline only appears while a drag is actually over it. */
 .db-pane-deck {
   border: 1px dashed transparent;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px;
   margin: -6px;
 }
@@ -655,9 +693,9 @@
   margin: 0;
   padding: 18px 12px;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--text-md);
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 /* The command zone: one slot, or two for a Partner pair — held closer
@@ -673,14 +711,14 @@
   gap: 8px;
   padding: 6px 10px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--panel);
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .db-commander-hint {
   margin: 0;
   padding: 0 10px;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 .db-deck-list,
@@ -696,11 +734,12 @@
   max-height: 60vh;
   overflow-y: auto;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px;
+  box-shadow: var(--frame-sunk);
 }
 .db-deck-group-head {
-  font-size: 11px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 4px;
@@ -710,13 +749,13 @@
   align-items: center;
   gap: 8px;
   padding: 3px 6px;
-  border-radius: 5px;
+  border-radius: 0;
 }
 .db-deck-list li li:hover {
   background: var(--panel-2);
 }
 .db-deck-list button {
-  font-size: 12px;
+  font-size: var(--text-sm);
   padding: 1px 8px;
 }
 .db-deck-list .db-count {
@@ -730,10 +769,10 @@
 
 .db-unknown {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--warn);
   background: var(--panel);
-  font-size: 13px;
+  font-size: var(--text-md);
 }
 .db-unknown ul {
   list-style: none;
@@ -747,7 +786,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 /* The floating card preview, portalled to <body> — see CardHoverPreview.tsx.
@@ -802,12 +841,12 @@
   padding: 4px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 14px 34px rgb(0 0 0 / 0.55);
+  border-radius: 0;
+  box-shadow: var(--frame-raised), var(--shadow-popover);
 }
 .db-context-title {
   padding: 5px 9px 7px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted-dim);
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -817,10 +856,10 @@
 }
 .db-context-menu button {
   text-align: left;
-  font-size: 13px;
+  font-size: var(--text-md);
   padding: 6px 9px;
   border: none;
-  border-radius: 5px;
+  border-radius: 0;
   background: none;
 }
 .db-context-menu button:hover:not(:disabled) {
@@ -829,7 +868,7 @@
 .db-context-menu button.separated {
   margin-top: 4px;
   border-top: 1px solid var(--border-soft);
-  border-radius: 0 0 5px 5px;
+  border-radius: 0;
   padding-top: 9px;
 }
 
@@ -862,8 +901,8 @@
   padding: clamp(16px, 2.4vw, 24px);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
+  border-radius: 0;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .db-modal-head {
   display: flex;
@@ -877,7 +916,7 @@
 }
 .db-printing-note {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 .db-printing-grid {
@@ -911,7 +950,7 @@
   place-items: center;
   width: 100%;
   aspect-ratio: 5 / 7;
-  font-size: 12px;
+  font-size: var(--text-sm);
   border: 1px dashed var(--border);
   border-radius: 6px;
 }
@@ -920,7 +959,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 .db-printing.selected {
   border-color: var(--accent);
@@ -928,7 +967,7 @@
 }
 .db-printing-more {
   align-self: center;
-  font-size: 12px;
+  font-size: var(--text-sm);
 }
 
 /* Pool pages. The pool list is a scroll box inside a fixed-height pane, so the
@@ -948,6 +987,5 @@
 }
 
 .db-pager button:disabled {
-  opacity: 0.4;
   cursor: default;
 }

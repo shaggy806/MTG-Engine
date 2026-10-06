@@ -47,6 +47,7 @@ import _poolClarionConqueror from "../pool/clarion-conqueror.js";
 import _poolClingingDarkness from "../pool/clinging-darkness.js";
 import _poolConsumingAberration from "../pool/consuming-aberration.js";
 import _poolCorruptedConviction from "../pool/corrupted-conviction.js";
+import _poolCosmicRebirth from "../pool/cosmic-rebirth.js";
 import _poolCountersquall from "../pool/countersquall.js";
 import _poolCourtOfCunning from "../pool/court-of-cunning.js";
 import _poolCovertOperative from "../pool/covert-operative.js";
@@ -58,6 +59,7 @@ import _poolDiamondPickAxe from "../pool/diamond-pick-axe.js";
 import _poolDoomWhisperer from "../pool/doom-whisperer.js";
 import _poolDoomskar from "../pool/doomskar.js";
 import _poolDragonRoost from "../pool/dragon-roost.js";
+import _poolDreamTrawler from "../pool/dream-trawler.js";
 import _poolDrumbellower from "../pool/drumbellower.js";
 import _poolEdgarMarkovsCoffin from "../pool/edgar-markovs-coffin.js";
 import _poolEdricSpymasterOfTrest from "../pool/edric-spymaster-of-trest.js";
@@ -153,6 +155,7 @@ import _poolOtherworldlyGaze from "../pool/otherworldly-gaze.js";
 import _poolParapetWatchers from "../pool/parapet-watchers.js";
 import _poolPawnOfUlamog from "../pool/pawn-of-ulamog.js";
 import _poolPerplexingTest from "../pool/perplexing-test.js";
+import _poolPestilentSyphoner from "../pool/pestilent-syphoner.js";
 import _poolPhyrexianDebaser from "../pool/phyrexian-debaser.js";
 import _poolPhytoburst from "../pool/phytoburst.js";
 import _poolPlagueStinger from "../pool/plague-stinger.js";
@@ -160,6 +163,7 @@ import _poolPlateau from "../pool/plateau.js";
 import _poolPlatedCrusher from "../pool/plated-crusher.js";
 import _poolPlumecreedEscort from "../pool/plumecreed-escort.js";
 import _poolPrakhataClubSecurity from "../pool/prakhata-club-security.js";
+import _poolPriceOfFreedom from "../pool/price-of-freedom.js";
 import _poolPricklyBoggart from "../pool/prickly-boggart.js";
 import _poolPrimalRage from "../pool/primal-rage.js";
 import _poolProsperousBandit from "../pool/prosperous-bandit.js";
@@ -315,6 +319,7 @@ const shard: CardShard = {
     _poolClingingDarkness,
     _poolConsumingAberration,
     _poolCorruptedConviction,
+    _poolCosmicRebirth,
     _poolCountersquall,
     _poolCourtOfCunning,
     _poolCovertOperative,
@@ -326,6 +331,7 @@ const shard: CardShard = {
     _poolDoomWhisperer,
     _poolDoomskar,
     _poolDragonRoost,
+    _poolDreamTrawler,
     _poolDrumbellower,
     _poolEdgarMarkovsCoffin,
     _poolEdricSpymasterOfTrest,
@@ -421,6 +427,7 @@ const shard: CardShard = {
     _poolParapetWatchers,
     _poolPawnOfUlamog,
     _poolPerplexingTest,
+    _poolPestilentSyphoner,
     _poolPhyrexianDebaser,
     _poolPhytoburst,
     _poolPlagueStinger,
@@ -428,6 +435,7 @@ const shard: CardShard = {
     _poolPlatedCrusher,
     _poolPlumecreedEscort,
     _poolPrakhataClubSecurity,
+    _poolPriceOfFreedom,
     _poolPricklyBoggart,
     _poolPrimalRage,
     _poolProsperousBandit,

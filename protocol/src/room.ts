@@ -111,6 +111,21 @@ export interface SeatStatus {
  */
 export type BotSpeed = "fast" | "normal" | "slow";
 
+/**
+ * The host's choices for the game a waiting room will start, set before it
+ * starts (`set-room-settings`) and shown to everyone in the room. Bot speed
+ * is its own setting (`set-bot-speed`), since it stays adjustable mid-game.
+ */
+export interface RoomSettings {
+  /** Each player's starting life total: 40 by default (rule 903.7), and
+   * 1-999 (the server's check). */
+  readonly startingLife: number;
+  /** Who takes the first turn: `"random"` — the highroll, a seat drawn at
+   * random as the game starts — or the seat the host picked. Back to
+   * `"random"` if that seat is removed. */
+  readonly firstPlayer: "random" | PlayerId;
+}
+
 export type ClientMessage =
   | {
       readonly type: "create-room";
@@ -256,6 +271,13 @@ export type ClientMessage =
       readonly type: "set-bot-speed";
       readonly roomId: string;
       readonly speed: BotSpeed;
+    }
+  | {
+      /** Changes some of the waiting room's `RoomSettings`; what's left out
+       * stays as it was. Host only, and only before the game starts. */
+      readonly type: "set-room-settings";
+      readonly roomId: string;
+      readonly settings: Partial<RoomSettings>;
     }
   | {
       /** Pauses or resumes this room's bots. Host only, and only once the
@@ -431,6 +453,8 @@ export type ServerMessage =
        * hasn't claimed a seat, which no `SeatStatus.isHost` can say. */
       readonly isHost: boolean;
       readonly botSpeed: BotSpeed;
+      /** The waiting room's game settings. Absent once the game exists. */
+      readonly settings?: RoomSettings;
       /** The seat *this* connection holds, if any — how a `take-seat` learns
        * which seat it was given. */
       readonly seat?: PlayerId | null;
@@ -466,6 +490,13 @@ export type ServerMessage =
       /** The host has paused the bots (`set-bots-paused`): shown to every
        * seat, so nobody wonders why the table stopped. */
       readonly botsPaused: boolean;
+      /** The host picked who goes first (`RoomSettings.firstPlayer`), so
+       * nobody won a highroll. Absent when the first player was drawn at
+       * random. */
+      readonly firstPlayerChosen?: true;
+      /** The engine threw while advancing this game, so the room stopped it
+       * (`Room.stop`): why, in the engine's words. No move is taken after. */
+      readonly stopped?: string;
       /** Present when this server captures bot decisions for training
        * scenarios — a developer's server, never the public site. */
       readonly capture?: true;

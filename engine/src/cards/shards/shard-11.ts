@@ -123,6 +123,7 @@ import _poolHovermyr from "../pool/hovermyr.js";
 import _poolHullBreach from "../pool/hull-breach.js";
 import _poolInallaArchmageRitualist from "../pool/inalla-archmage-ritualist.js";
 import _poolIndulgingPatrician from "../pool/indulging-patrician.js";
+import _poolInevitableDefeat from "../pool/inevitable-defeat.js";
 import _poolInspiringOverseer from "../pool/inspiring-overseer.js";
 import _poolIntoTheNorth from "../pool/into-the-north.js";
 import _poolIntrudingSoulrager from "../pool/intruding-soulrager.js";
@@ -165,6 +166,7 @@ import _poolMossDiamond from "../pool/moss-diamond.js";
 import _poolMossdog from "../pool/mossdog.js";
 import _poolMoxTantalite from "../pool/mox-tantalite.js";
 import _poolMusterTheDeparted from "../pool/muster-the-departed.js";
+import _poolMyPrecious from "../pool/my-precious.js";
 import _poolMysidianElder from "../pool/mysidian-elder.js";
 import _poolMysticForge from "../pool/mystic-forge.js";
 import _poolMysticGate from "../pool/mystic-gate.js";
@@ -198,6 +200,7 @@ import _poolPrismariCharm from "../pool/prismari-charm.js";
 import _poolQuilledSlagwurm from "../pool/quilled-slagwurm.js";
 import _poolRadiantGrove from "../pool/radiant-grove.js";
 import _poolRadiantSummit from "../pool/radiant-summit.js";
+import _poolRaffCapashenShipsMage from "../pool/raff-capashen-ships-mage.js";
 import _poolRakdosSignet from "../pool/rakdos-signet.js";
 import _poolRallyTheRanks from "../pool/rally-the-ranks.js";
 import _poolRavineRaider from "../pool/ravine-raider.js";
@@ -439,6 +442,7 @@ const shard: CardShard = {
     _poolHullBreach,
     _poolInallaArchmageRitualist,
     _poolIndulgingPatrician,
+    _poolInevitableDefeat,
     _poolInspiringOverseer,
     _poolIntoTheNorth,
     _poolIntrudingSoulrager,
@@ -481,6 +485,7 @@ const shard: CardShard = {
     _poolMossdog,
     _poolMoxTantalite,
     _poolMusterTheDeparted,
+    _poolMyPrecious,
     _poolMysidianElder,
     _poolMysticForge,
     _poolMysticGate,
@@ -514,6 +519,7 @@ const shard: CardShard = {
     _poolQuilledSlagwurm,
     _poolRadiantGrove,
     _poolRadiantSummit,
+    _poolRaffCapashenShipsMage,
     _poolRakdosSignet,
     _poolRallyTheRanks,
     _poolRavineRaider,

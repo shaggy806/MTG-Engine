@@ -168,6 +168,12 @@ export interface EvalWeights {
    * part of `life` a point above it doesn't earn. At 0 the evaluation is
    * exactly what it was before it existed. */
   readonly lifeSurplus: number;
+  /** What our permanents have shown they do, in cards a round past their
+   * printed draw rate (`trackRecordOf` in `features.ts`): cards drawn off
+   * them, and damage dealt opponents at a card per 4. The evidence for an
+   * engine the printed stats undersell, so removal finds the creature that
+   * has been drawing or connecting. */
+  readonly trackRecord: number;
   /** How much the strongest opponent's score subtracts from yours. */
   readonly opponent: number;
   /** How much the *average* of every other living opponent subtracts. Zero
@@ -375,6 +381,14 @@ export const DEFAULT_WEIGHTS: EvalWeights = {
   // Skullclamp by 1.3.
   smallTokens: 1.4,
   lifeSurplus: 0.3,
+  // Cards a round a permanent has been seen to be worth past its printed
+  // draw rate — draws off it, and damage to opponents at a card per 4 — in
+  // turns already over (the user's ask, 2026-10-06: count what a creature
+  // has done, so removal finds the proven engine). Below `drawEngines`' 4,
+  // as evidence is less sure than what a card says it does. "removal takes
+  // the creature that has been drawing cards" flips at 2.5; 3 clears it and
+  // breaks nothing in the gate.
+  trackRecord: 3,
   opponent: 1,
   // Counted against the *average* of the trailing opponents, so at four
   // players each one's board weighs a quarter of the leader's here. At 0.25

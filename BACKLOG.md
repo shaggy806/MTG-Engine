@@ -25,7 +25,7 @@ decides into its section below.
 
 ## Commander gap (the current priority)
 
-**389 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**392 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -36,12 +36,15 @@ that one card is the reason the deck exists. Live numbers for everything below c
 - **Build down the greedy order.** `cmdrs:gaps` ranks every missing engine feature over
   `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to that file's
   `built` array and author the commanders it unblocks in the same commit. The next ones,
-  engine-only, with the commanders each fully unblocks: `effect:missing-tokens`,
-  `keyword:decayed`, `trigger:activates-ability`, `trigger:you-tap-opponent-creature` and
-  `effect:amount-aggregate` (+1 each).
-- **Most-needed features overall.** `effect:cast-during-resolution` (10),
-  `effect:attach-extensions` (7), `zone:visibility-extensions` and `effect:missing-tokens` (6
-  each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
+  engine-only, with the commanders each fully unblocks: `keyword:decayed`,
+  `trigger:activates-ability`, `trigger:you-tap-opponent-creature`, `effect:amount-aggregate`,
+  `effect:put-commanders-onto-battlefield` (+1 each), `mechanic:speed` (+2), `keyword:mayhem`,
+  `keyword:freerunning`, `replacement:mana-pool-emptying` and `static:mana-pool-reads` (+1
+  each). Lynde, Cheerful Tormentor also waits on `effect:curse-attach-player` (a Curse put onto
+  the battlefield attached to a player, or moved to an opponent).
+- **Most-needed features overall.** `effect:cast-during-resolution` (9),
+  `effect:attach-extensions` (7), `zone:visibility-extensions` (6), and
+  `effect:missing-tokens`, `cost:sacrifice-multiple`, `static:self-type-changes` (5 each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
   `cost:colorless-hybrid-mana` and `keyword:devoid`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:cast-during-resolution` (10; partly built on 2026-09-30 as the `cast-now` effect, and
@@ -70,8 +73,8 @@ section keeps only what to do next.
 - **The nine other starter precons' 46 stand-ins** (`engine/data/sweep-3/PC-*.json`), behind the
   TDC decks.
 - **Next: the top 5000 cards, then past them.** `top-commander-cards.txt` (3,353 of 5,000
-  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6428 (batches 30–35);
-  rank 6429 is next. Every card left needs engine work: build the features that block the most
+  implemented) is fully triaged, and past it Oracle EDHREC ranks 5011–6671 (batches 30–36);
+  rank 6672 is next. Every card left needs engine work: build the features that block the most
   of them (`neededCards-features.md`, "Open: the card backlog"; the cheap recurring blockers
   are in `docs/card-blockers.md`, "Open leads").
 - **Cards a built feature may have unblocked** — recheck each against its Oracle text:
@@ -100,6 +103,7 @@ section keeps only what to do next.
 One line each; the detail (rule numbers, code sites, the cards each blocks) is in
 **`docs/engine-gaps.md`**, under the same bold title. Delete both when a gap closes.
 
+- **A mandatory loop throws instead of drawing the game** (104.4b, 732.4): the room stops that game rather than the server going down, but it should be a draw.
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
 - **Suspend's time-counter triggers don't use the stack** (702.62a).
@@ -129,6 +133,10 @@ One line each; the detail (rule numbers, code sites, the cards each blocks) is i
 - **An additional-cost option is offered without checking its mana** (Eaten Alive, pulled).
 - **A milled card is looked for only in the graveyard** (701.17c).
 - **"Return it transformed" brings back a card that can't transform** (712.14a).
+- **A sacrifice trigger misses its own sacrifice** (603.10a): "whenever you sacrifice this or
+  another …", and Korvold sacrificing himself.
+- **A tapped-for-mana trigger adds only a fixed amount**: "an additional {G} for each Elf" adds
+  nothing.
 - **Damage modifiers apply in a fixed order** (616.1).
 - **"You sacrifice it" at end step is done by its controller** (701.21a).
 - **Pool cards the no-engine-work pass (2026-10-04) found sharing a blocked shape** — Ayara, Bloomvine Regent, Will of the Jeskai, Kwain, Forced Fruition, Ruric Thar, Spellshock, Magebane Lizard, Black Mage's Rod, and some 610.3c citations.
@@ -151,6 +159,7 @@ game to show a problem, listed in that plan's "Watching live games for" (wraths 
 `threat`, pumping an opponent's attacker, the `"acting"` rollout, big boards and deep stacks
 under count budgets).
 
+- **An X ability activated at X=0** (decision diff, 2026-10-06): Necropolis Fiend taps for a -0/-0 on both the branch and main (seed 4, turn 36) — an X of 0 that does nothing shouldn't be a candidate.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).
@@ -196,11 +205,9 @@ One line each; the detail is in **`docs/client-gaps.md`**, under the same bold t
 animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete both when an
 item lands.
 
-- **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06): a seat the game waits on shows a bare "thinking…" (`ui/PlayerPanel.tsx`); make it describe the decision — "scrying", "targeting", "choosing blockers" — from the pending decision's kind (`view.state.awaiting`) or the step.
-- **A trigger going on the stack flies from the permanent that was its source** (the user, 2026-10-06): today a triggered ability's stack entry just appears (`ui/Stack.tsx`'s `is-new` arrival); fly it from its source's tile, as a cast now flies into its place (`AnimationLayer`'s `slotIntoStack`).
-- **The lobby's default deck could be random** (the user, 2026-10-06): randomize which deck the lobby's "Add bot (default deck)" button gives the bot (`client/src/lobby/SeatBoard.tsx`), rather than always the same one.
-- **The highroll notice should look like the other alerts** (the user, 2026-10-06): the "won the highroll and goes first" notice at the start of a game (`App.tsx`) is styled on its own; make it match the game's other alerts.
-- **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06): every `.stack-entry` draws its "whose / ability of" label above the card and its target line below (`ui/Stack.tsx`); keep them on the top entry only.
+- **A Paste button on the deck import** (the user, 2026-10-06): fill the decklist from the clipboard in one click.
+- **A rematch from the end-of-game panel** (2026-10-06 UI review): `GameResultPanel` offers only "Main menu"; a rematch needs the server to deal a new game into the same room.
+- **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review): with bot speed moved into Settings every step shows at 1366, but at 1024 the track stops at CD.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
 - **A creature's total toxic value isn't in the player view.**

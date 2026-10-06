@@ -692,6 +692,12 @@ in `git log`.
   Ascendancy, Helix Pinnacle, Hellkite Tyrant, Twenty-Toed Toad, Approach of the
   Second Sun, Pact of Negation, Summoner's Pact, Vorpal Sword, Summon: Primal
   Odin, Mirrodin Besieged. `BACKLOG.md` lists the ones still blocked.
+- **"You may sacrifice two …"** (2026-10-06, `effect:may-sacrifice-then`
+  extended; `commanders-may-sacrifice-n.test.ts`) — an `UnlessOption`'s
+  `sacrifice` takes a `count`, offered only to a player with that many to
+  sacrifice (rule 118.3), for `unless` and `each-player-may` alike. Strefan,
+  Maurer Progenitor (top-500 commander; his Blood token and every other piece
+  already existed) and Rakdos, Patron of Chaos.
 
 
 ## Completed: `neededCards.txt` passes (P0-P20)

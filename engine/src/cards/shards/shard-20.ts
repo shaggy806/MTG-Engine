@@ -81,6 +81,7 @@ import _poolDispel from "../pool/dispel.js";
 import _poolDonatelloWayWithMachines from "../pool/donatello-way-with-machines.js";
 import _poolDoubleCleave from "../pool/double-cleave.js";
 import _poolDoublingSeason from "../pool/doubling-season.js";
+import _poolDreamThiefsBandana from "../pool/dream-thiefs-bandana.js";
 import _poolDuelistsHeritage from "../pool/duelists-heritage.js";
 import _poolEarthbenderAscension from "../pool/earthbender-ascension.js";
 import _poolEbonyTreefolk from "../pool/ebony-treefolk.js";
@@ -257,6 +258,7 @@ import _poolTreetopVillage from "../pool/treetop-village.js";
 import _poolTrostaniDiscordant from "../pool/trostani-discordant.js";
 import _poolUndeadAugur from "../pool/undead-augur.js";
 import _poolVerdantSunsAvatar from "../pool/verdant-suns-avatar.js";
+import _poolVileMutilator from "../pool/vile-mutilator.js";
 import _poolViridianAcolyte from "../pool/viridian-acolyte.js";
 import _poolViridianZealot from "../pool/viridian-zealot.js";
 import _poolVodalianHexcatcher from "../pool/vodalian-hexcatcher.js";
@@ -357,6 +359,7 @@ const shard: CardShard = {
     _poolDonatelloWayWithMachines,
     _poolDoubleCleave,
     _poolDoublingSeason,
+    _poolDreamThiefsBandana,
     _poolDuelistsHeritage,
     _poolEarthbenderAscension,
     _poolEbonyTreefolk,
@@ -533,6 +536,7 @@ const shard: CardShard = {
     _poolTrostaniDiscordant,
     _poolUndeadAugur,
     _poolVerdantSunsAvatar,
+    _poolVileMutilator,
     _poolViridianAcolyte,
     _poolViridianZealot,
     _poolVodalianHexcatcher,

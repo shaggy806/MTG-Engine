@@ -21,7 +21,7 @@ import type { Color, DeckList, GameConfig, PlayerId } from "engine";
 import { botNameFits, botNameFor } from "./bot-names.js";
 import type { Connection } from "./room.js";
 import { HostRole } from "./host.js";
-import type { BotSpeed, SeatStatus, WireDeck } from "protocol";
+import type { BotSpeed, RoomSettings, SeatStatus, WireDeck } from "protocol";
 import { SEATS } from "./decks.js";
 
 export type PendingDeck = WireDeck;
@@ -146,6 +146,10 @@ function emptySeat(player: PlayerId): PendingSeat {
  * are actually settled). */
 export type PendingGameConfig = Omit<GameConfig, "decks" | "startingPlayer">;
 
+/** The range the host may set `RoomSettings.startingLife` to. */
+export const STARTING_LIFE_MIN = 1;
+export const STARTING_LIFE_MAX = 999;
+
 export class PendingRoom {
   readonly id: string;
   private readonly config: PendingGameConfig;
@@ -154,10 +158,14 @@ export class PendingRoom {
   /** Carried onto the promoted `Room` — see `HostRole`. */
   readonly host: HostRole;
   botSpeed: BotSpeed = "normal";
+  /** The host's choices for the game this room starts — see `RoomSettings`.
+   * Starting life defaults to the room's rules (40 for Commander). */
+  settings: RoomSettings;
 
   constructor(id: string, players: number, config: PendingGameConfig, hostToken?: string) {
     this.id = id;
     this.config = config;
+    this.settings = { startingLife: config.rules?.startingLife ?? 40, firstPlayer: "random" };
     this.host = new HostRole(hostToken ?? null);
     this.seats = SEATS.slice(0, players).map((s) => emptySeat(s.id));
     this.lastActivityAt = Date.now();
@@ -208,6 +216,29 @@ export class PendingRoom {
 
   setBotSpeed(speed: BotSpeed): void {
     this.botSpeed = speed;
+    this.lastActivityAt = Date.now();
+  }
+
+  /** Changes the settings named in `change`, checking each: a whole starting
+   * life in range, and a first player who is `"random"` or one of this
+   * table's seats. Nothing changes if any of it is refused. */
+  setSettings(change: Partial<RoomSettings>): void {
+    const next = { ...this.settings };
+    if (change.startingLife !== undefined) {
+      const life = change.startingLife;
+      if (!Number.isInteger(life) || life < STARTING_LIFE_MIN || life > STARTING_LIFE_MAX) {
+        throw new Error(`starting life must be a whole number from ${STARTING_LIFE_MIN} to ${STARTING_LIFE_MAX}`);
+      }
+      next.startingLife = life;
+    }
+    if (change.firstPlayer !== undefined) {
+      const first = change.firstPlayer;
+      if (first !== "random" && !this.seats.some((s) => s.player === first)) {
+        throw new Error(`no such seat to go first: ${String(first)}`);
+      }
+      next.firstPlayer = first;
+    }
+    this.settings = next;
     this.lastActivityAt = Date.now();
   }
 
@@ -334,6 +365,8 @@ export class PendingRoom {
     if (this.seats.length <= MIN_SEATS) throw new Error(`a game needs at least ${MIN_SEATS} seats`);
     if (this.seats[index].clientToken !== null) throw new Error(`seat ${player} is claimed by a player`);
     this.seats.splice(index, 1);
+    // The seat picked to go first is gone: back to the highroll.
+    if (this.settings.firstPlayer === player) this.settings = { ...this.settings, firstPlayer: "random" };
     this.lastActivityAt = Date.now();
   }
 
@@ -428,9 +461,10 @@ export class PendingRoom {
     return this.seats.every((s) => s.isBot || (s.clientToken !== null && s.ready));
   }
 
-  /** The finished `GameConfig` — only meaningful once `isReady()`. Picks the
-   * starting player (the "highroll") uniformly at random, same as the old
-   * eager `create-room` handler did, just deferred to here. */
+  /** The finished `GameConfig` — only meaningful once `isReady()`. The
+   * host's `settings` decide the starting life and the first player; left to
+   * the highroll, that's a seat drawn uniformly at random, here rather than
+   * at creation since the seats aren't settled until now. */
   toGameConfig(): GameConfig {
     const decks: DeckList[] = this.seats.map((s) => {
       if (s.deck === null) throw new Error(`seat ${s.player} has no deck yet`);
@@ -441,8 +475,10 @@ export class PendingRoom {
         printings: s.deck.printings,
       };
     });
-    const startingPlayer = this.seats[Math.floor(Math.random() * this.seats.length)].player;
-    return { ...this.config, decks, startingPlayer };
+    const { startingLife, firstPlayer } = this.settings;
+    const startingPlayer =
+      firstPlayer === "random" ? this.seats[Math.floor(Math.random() * this.seats.length)].player : firstPlayer;
+    return { ...this.config, rules: { ...this.config.rules, startingLife }, decks, startingPlayer };
   }
 
   /** Every claimed seat that's *currently connected*, so a freshly-promoted

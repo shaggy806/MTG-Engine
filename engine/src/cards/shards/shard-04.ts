@@ -187,6 +187,7 @@ import _poolRetrofitterFoundry from "../pool/retrofitter-foundry.js";
 import _poolRevitalizingRepast from "../pool/revitalizing-repast.js";
 import _poolRevivingDose from "../pool/reviving-dose.js";
 import _poolRidgeRannet from "../pool/ridge-rannet.js";
+import _poolRootSliver from "../pool/root-sliver.js";
 import _poolRubyDaringTracker from "../pool/ruby-daring-tracker.js";
 import _poolRugOfSmothering from "../pool/rug-of-smothering.js";
 import _poolRuneSealedWall from "../pool/rune-sealed-wall.js";
@@ -464,6 +465,7 @@ const shard: CardShard = {
     _poolRevitalizingRepast,
     _poolRevivingDose,
     _poolRidgeRannet,
+    _poolRootSliver,
     _poolRubyDaringTracker,
     _poolRugOfSmothering,
     _poolRuneSealedWall,

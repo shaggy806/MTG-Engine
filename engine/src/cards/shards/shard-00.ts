@@ -20,6 +20,8 @@ import _poolAvenSentry from "../pool/aven-sentry.js";
 import _poolAwakeningZone from "../pool/awakening-zone.js";
 import _poolAzcantaTheSunkenRuin from "../pool/azcanta-the-sunken-ruin.js";
 import _poolAzoriusCluestone from "../pool/azorius-cluestone.js";
+import _poolBalladOfTheBlackFlag from "../pool/ballad-of-the-black-flag.js";
+import _poolBanesContingency from "../pool/banes-contingency.js";
 import _poolBasaltMonolith from "../pool/basalt-monolith.js";
 import _poolBatheInGold from "../pool/bathe-in-gold.js";
 import _poolBeastAttack from "../pool/beast-attack.js";
@@ -90,6 +92,7 @@ import _poolFillWithFright from "../pool/fill-with-fright.js";
 import _poolFireshrieker from "../pool/fireshrieker.js";
 import _poolFootHeadquarters from "../pool/foot-headquarters.js";
 import _poolForest from "../pool/forest.js";
+import _poolFurnaceReins from "../pool/furnace-reins.js";
 import _poolGalazethPrismari from "../pool/galazeth-prismari.js";
 import _poolGatewayShade from "../pool/gateway-shade.js";
 import _poolGempalmIncinerator from "../pool/gempalm-incinerator.js";
@@ -306,6 +309,8 @@ const shard: CardShard = {
     _poolAwakeningZone,
     _poolAzcantaTheSunkenRuin,
     _poolAzoriusCluestone,
+    _poolBalladOfTheBlackFlag,
+    _poolBanesContingency,
     _poolBasaltMonolith,
     _poolBatheInGold,
     _poolBeastAttack,
@@ -376,6 +381,7 @@ const shard: CardShard = {
     _poolFireshrieker,
     _poolFootHeadquarters,
     _poolForest,
+    _poolFurnaceReins,
     _poolGalazethPrismari,
     _poolGatewayShade,
     _poolGempalmIncinerator,

@@ -40,7 +40,7 @@
   background-color: var(--bg);
   /* the same felt sheen the table itself uses (see App.css's .app), so the
      front door and the game look like one product */
-  background-image: radial-gradient(ellipse at 50% -10%, #1a232b 0%, transparent 62%);
+  background-image: radial-gradient(ellipse at 50% -10%, var(--table-glow) 0%, transparent 62%);
 }
 
 /*
@@ -147,7 +147,7 @@
   text-align: center;
   background: linear-gradient(160deg, var(--panel-2), var(--panel));
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 0;
 }
 /* Decorative only — the gradient above is the real background, so a card
    image that fails to load (or a Scryfall lookup that doesn't resolve) just
@@ -187,15 +187,15 @@
 .landing-notice {
   margin: 0;
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: var(--text-md);
   text-align: center;
   color: var(--text);
   background: var(--accent-bg);
   border: 1px solid var(--accent-dim);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-notice.bad {
-  background: rgba(194, 86, 79, 0.14);
+  background: color-mix(in srgb, var(--bad) 14%, transparent);
   border-color: var(--bad);
   cursor: pointer;
 }
@@ -221,7 +221,7 @@
   padding: clamp(15px, 2.6vh, 26px);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
 }
 .landing-card h2 {
   font-size: clamp(17px, 1.7vw, 21px);
@@ -232,7 +232,7 @@
 .landing-card-body {
   flex: 1;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-md);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -242,7 +242,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted-dim);
@@ -268,14 +268,14 @@
   padding: clamp(9px, 1.4vh, 13px) 20px;
   font-size: clamp(14px, 1.3vw, 16px);
   font-weight: 600;
-  color: #0c0f12;
+  color: var(--on-accent);
   background: var(--accent);
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-cta:hover:not(:disabled) {
-  background: #7ab3e4;
-  border-color: #7ab3e4;
+  background: var(--gold);
+  border-color: var(--gold);
 }
 
 .landing-join-form {
@@ -293,7 +293,7 @@
   gap: 8px;
 }
 .landing-field-label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -309,7 +309,7 @@
   padding: 8px 10px;
   /* Never below 16px: a smaller font in a focused field is what makes iOS
      Safari zoom the whole page in on tap. */
-  font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: clamp(16px, 1.6vw, 20px);
   letter-spacing: 0.3em;
   /* letter-spacing puts a trailing gap after the last character, which drags
@@ -320,7 +320,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-code-input::placeholder {
   color: var(--muted-dim);
@@ -335,10 +335,10 @@
   min-height: 44px;
   padding: 0 18px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-field-hint {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted-dim);
 }
 
@@ -377,19 +377,19 @@
   text-decoration: none;
   background: var(--panel);
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
+  border-radius: 0;
 }
 .landing-nav-card:hover {
   background: var(--panel-2);
   border-color: var(--accent);
 }
 .landing-nav-name {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--accent);
 }
 .landing-nav-desc {
-  font-size: 12px;
+  font-size: var(--text-sm);
   line-height: 1.45;
   color: var(--muted);
 }

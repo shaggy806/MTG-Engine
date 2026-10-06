@@ -2,8 +2,10 @@ import { useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import type { VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
-import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
+import { keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'
+import { KeywordTips } from './KeywordTips.tsx'
+import { KeywordIcon } from './KeywordIcon.tsx'
 import { cardTint } from './symbols.ts'
 import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
@@ -168,7 +170,7 @@ export function MiniTile({
             <span className="mt-kw">
               {obj.keywords.map((k) => (
                 <span key={k} role="img" aria-label={keywordLabel(k)}>
-                  {KEYWORD_GLYPH[k]}
+                  <KeywordIcon keyword={k} />
                 </span>
               ))}
             </span>
@@ -218,6 +220,7 @@ export function MiniTile({
                 goaders={goaders}
                 enchanting={enchanting}
               />
+              <KeywordTips obj={obj} />
               {held.length > 0 ? (
                 <div className={`popover-held held-${Math.min(held.length, 3)}`}>
                   <span className="popover-held-label">Exiled with it</span>

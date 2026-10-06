@@ -601,8 +601,16 @@ export type UnlessOption =
   | { readonly payGeneric: EffectAmount; readonly text: string }
   | { readonly payLife: number; readonly text: string }
   /** `exceptSource`: "sacrifice **another** creature" (Ziatora, the
-   * Incinerator) — never the effect's own source. */
-  | { readonly sacrifice: CardFilter; readonly exceptSource?: boolean; readonly text: string }
+   * Incinerator) — never the effect's own source. `count`: "sacrifice **two**
+   * Blood tokens" (Strefan, Maurer Progenitor; Rakdos, Patron of Chaos) —
+   * offered only to a player with that many to sacrifice (rule 118.3), who
+   * then chooses which. One when absent. */
+  | {
+      readonly sacrifice: CardFilter;
+      readonly count?: number;
+      readonly exceptSource?: boolean;
+      readonly text: string;
+    }
   /** "…or discard a card" (Tergrid's Lantern, Torment of Hailfire). */
   | { readonly discard: number; readonly text: string }
   /** "Put a land card from your hand onto the battlefield" (Kynaios and
@@ -4151,6 +4159,10 @@ export interface EffectApi {
    * `discard-hand`, and anything else that acts on a scope one player at a
    * time rather than in one call. */
   playersInScope(who: PlayerScope): readonly PlayerId[];
+  /** {@link playersInScope}, but keeping each player who has left the game —
+   * "each opponent who lost life this turn" still counts one who then lost
+   * (Tymna the Weaver's, Teysa, Opulent Oligarch's rulings). */
+  playersCountedInScope(who: PlayerScope): readonly PlayerId[];
   /** Discard a player's whole hand at once (rule 701.8) — no choice, so this
    * never raises a `discard` decision the way `discardCards` does. */
   discardHand(player: PlayerId): void;
@@ -5456,7 +5468,7 @@ function signedAmountValue(
   }
   if ("playersWithTurnStat" in amount) {
     return ctx
-      .playersInScope(amount.who)
+      .playersCountedInScope(amount.who)
       .filter((p) => ctx.turnStatOf(p, amount.playersWithTurnStat) > 0).length;
   }
   if ("opponentsControllingFewer" in amount) {

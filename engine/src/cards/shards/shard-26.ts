@@ -34,6 +34,7 @@ import _poolByrkeLongEarOfTheLaw from "../pool/byrke-long-ear-of-the-law.js";
 import _poolCactusPreserve from "../pool/cactus-preserve.js";
 import _poolCallToTheFeast from "../pool/call-to-the-feast.js";
 import _poolCanyonJerboa from "../pool/canyon-jerboa.js";
+import _poolCathedralAcolyte from "../pool/cathedral-acolyte.js";
 import _poolCathedralOfWar from "../pool/cathedral-of-war.js";
 import _poolChaplainsBlessing from "../pool/chaplains-blessing.js";
 import _poolChromaticOrrery from "../pool/chromatic-orrery.js";
@@ -42,6 +43,7 @@ import _poolCoastalPiracy from "../pool/coastal-piracy.js";
 import _poolCogworkersPuzzleknot from "../pool/cogworkers-puzzleknot.js";
 import _poolCorpseKnight from "../pool/corpse-knight.js";
 import _poolCountOnLuck from "../pool/count-on-luck.js";
+import _poolCrackedEarthTechnique from "../pool/cracked-earth-technique.js";
 import _poolCracklingDoom from "../pool/crackling-doom.js";
 import _poolCrenellatedWall from "../pool/crenellated-wall.js";
 import _poolCroakingCounterpart from "../pool/croaking-counterpart.js";
@@ -302,6 +304,7 @@ const shard: CardShard = {
     _poolCactusPreserve,
     _poolCallToTheFeast,
     _poolCanyonJerboa,
+    _poolCathedralAcolyte,
     _poolCathedralOfWar,
     _poolChaplainsBlessing,
     _poolChromaticOrrery,
@@ -310,6 +313,7 @@ const shard: CardShard = {
     _poolCogworkersPuzzleknot,
     _poolCorpseKnight,
     _poolCountOnLuck,
+    _poolCrackedEarthTechnique,
     _poolCracklingDoom,
     _poolCrenellatedWall,
     _poolCroakingCounterpart,

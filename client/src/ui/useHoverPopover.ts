@@ -73,8 +73,15 @@ export function useHoverPopover<T extends HTMLElement = HTMLDivElement>(dep?: un
           : above >= 0
             ? above
             : Math.max(POPOVER_GAP, window.innerHeight - p.height - POPOVER_GAP)
+      // An anchor in the right half of the screen opens its popover leftward
+      // — lined up with the anchor's right edge, and with any side panel
+      // (`KeywordTips`, held cards) on the card's left, the `to-left` class
+      // reversing the row — so what's beside the card faces the middle of
+      // the screen rather than running into its edge.
+      const toLeft = a.left + a.width / 2 > window.innerWidth / 2
+      popover.classList.toggle('to-left', toLeft)
       const left = Math.min(
-        Math.max(POPOVER_GAP, a.left),
+        Math.max(POPOVER_GAP, toLeft ? a.right - p.width : a.left),
         Math.max(POPOVER_GAP, window.innerWidth - p.width - POPOVER_GAP),
       )
       popover.style.left = `${left}px`

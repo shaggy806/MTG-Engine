@@ -1306,7 +1306,10 @@ exist (rule 111.7), so neither comes back.
   read as the effect applies — Esper Sentinel's "pays {X}, where X is this
   creature's power" is `{ payGeneric: { powerOf: "source" }, text: "Pay {X}." }`,
   `{X}` in the text showing the amount), `{ payLife }`, `{ sacrifice }` (with
-  `exceptSource: true` for "sacrifice **another** creature"),
+  `exceptSource: true` for "sacrifice **another** creature", and `count` for
+  "sacrifice **two** nonland, nontoken permanents" — Rakdos, Patron of Chaos;
+  Strefan, Maurer Progenitor's "you may sacrifice two Blood tokens. If you
+  do" is an `each-player-may` of `who: "you"` with that option and an `ifDid`),
   `{ discard }` (a count — Tergrid's Lantern's "…unless they sacrifice a
   nonland permanent **or discard a card**") or `{ putFromHand }` (a filter —
   "put a land card from your hand onto the battlefield") plus a `text` label;

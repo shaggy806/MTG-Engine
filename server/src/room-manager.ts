@@ -84,6 +84,7 @@ export class RoomManager {
       onUpdate: (r) => this.onRoomUpdate(r),
       host: pending.host,
       botSpeed: pending.botSpeed,
+      firstPlayerChosen: pending.settings.firstPlayer !== "random",
       ...(this.capture !== undefined ? { capture: this.capture } : {}),
     });
     for (const claim of pending.claims()) {

@@ -58,6 +58,14 @@ export function CardImage({
 
   return (
     <span className={classes}>
+      {/* The name, under the face until it has loaded: a grid of shimmering
+          or still-loading cards was a grid of nameless boxes on a slow
+          connection. The image covers it once it's in. */}
+      {failed ? null : (
+        <span className="card-image-name" aria-hidden="true">
+          {def.name}
+        </span>
+      )}
       {pending || failed ? (
         <CardImageFallback def={def} showDetail={failed} />
       ) : (

@@ -28,6 +28,7 @@ import _poolBodyOfKnowledge from "../pool/body-of-knowledge.js";
 import _poolBonePitBrute from "../pool/bone-pit-brute.js";
 import _poolBoneSaw from "../pool/bone-saw.js";
 import _poolBoseijuWhoEndures from "../pool/boseiju-who-endures.js";
+import _poolBraskasFinalAeon from "../pool/braskas-final-aeon.js";
 import _poolBrightcapBadger from "../pool/brightcap-badger.js";
 import _poolBrimstoneTrebuchet from "../pool/brimstone-trebuchet.js";
 import _poolBrinelinTheMoonKraken from "../pool/brinelin-the-moon-kraken.js";
@@ -79,6 +80,7 @@ import _poolFlowOfKnowledge from "../pool/flow-of-knowledge.js";
 import _poolFodderCannon from "../pool/fodder-cannon.js";
 import _poolForgottenCave from "../pool/forgotten-cave.js";
 import _poolFoulFamiliar from "../pool/foul-familiar.js";
+import _poolFungalPlots from "../pool/fungal-plots.js";
 import _poolGenePollinator from "../pool/gene-pollinator.js";
 import _poolGhenArcanumWeaver from "../pool/ghen-arcanum-weaver.js";
 import _poolGiantSolifuge from "../pool/giant-solifuge.js";
@@ -222,6 +224,7 @@ import _poolThallidSoothsayer from "../pool/thallid-soothsayer.js";
 import _poolTheEarthCrystal from "../pool/the-earth-crystal.js";
 import _poolThirstingRoots from "../pool/thirsting-roots.js";
 import _poolThistledownPlayers from "../pool/thistledown-players.js";
+import _poolThornOfAmethyst from "../pool/thorn-of-amethyst.js";
 import _poolThoughtflare from "../pool/thoughtflare.js";
 import _poolThunderingCeratok from "../pool/thundering-ceratok.js";
 import _poolTifaMartialArtist from "../pool/tifa-martial-artist.js";
@@ -310,6 +313,7 @@ const shard: CardShard = {
     _poolBonePitBrute,
     _poolBoneSaw,
     _poolBoseijuWhoEndures,
+    _poolBraskasFinalAeon,
     _poolBrightcapBadger,
     _poolBrimstoneTrebuchet,
     _poolBrinelinTheMoonKraken,
@@ -361,6 +365,7 @@ const shard: CardShard = {
     _poolFodderCannon,
     _poolForgottenCave,
     _poolFoulFamiliar,
+    _poolFungalPlots,
     _poolGenePollinator,
     _poolGhenArcanumWeaver,
     _poolGiantSolifuge,
@@ -504,6 +509,7 @@ const shard: CardShard = {
     _poolTheEarthCrystal,
     _poolThirstingRoots,
     _poolThistledownPlayers,
+    _poolThornOfAmethyst,
     _poolThoughtflare,
     _poolThunderingCeratok,
     _poolTifaMartialArtist,

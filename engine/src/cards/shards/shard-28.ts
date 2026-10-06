@@ -8,6 +8,7 @@ import _poolAgelessGuardian from "../pool/ageless-guardian.js";
 import _poolAirshipEngineRoom from "../pool/airship-engine-room.js";
 import _poolAjanisSunstriker from "../pool/ajanis-sunstriker.js";
 import _poolAkromasMemorial from "../pool/akromas-memorial.js";
+import _poolAkromasVengeance from "../pool/akromas-vengeance.js";
 import _poolAmbassadorLaquatus from "../pool/ambassador-laquatus.js";
 import _poolAnaDisciple from "../pool/ana-disciple.js";
 import _poolAncestralMask from "../pool/ancestral-mask.js";
@@ -104,6 +105,7 @@ import _poolHordewingSkaab from "../pool/hordewing-skaab.js";
 import _poolHorizonCanopy from "../pool/horizon-canopy.js";
 import _poolHulkBrutalBrawler from "../pool/hulk-brutal-brawler.js";
 import _poolImpeccableTiming from "../pool/impeccable-timing.js";
+import _poolIndustrialAdvancement from "../pool/industrial-advancement.js";
 import _poolInfiltrationLens from "../pool/infiltration-lens.js";
 import _poolIngaAndEsika from "../pool/inga-and-esika.js";
 import _poolIridescentVinelasher from "../pool/iridescent-vinelasher.js";
@@ -165,6 +167,7 @@ import _poolPoisonDartFrog from "../pool/poison-dart-frog.js";
 import _poolPoisonTheBlade from "../pool/poison-the-blade.js";
 import _poolPondProphet from "../pool/pond-prophet.js";
 import _poolPortOfKarfell from "../pool/port-of-karfell.js";
+import _poolProfaneInsight from "../pool/profane-insight.js";
 import _poolPropaganda from "../pool/propaganda.js";
 import _poolProtectorOfTheWastes from "../pool/protector-of-the-wastes.js";
 import _poolPygmyPyrosaur from "../pool/pygmy-pyrosaur.js";
@@ -184,6 +187,7 @@ import _poolReviveTheShire from "../pool/revive-the-shire.js";
 import _poolRimeshieldFrostGiant from "../pool/rimeshield-frost-giant.js";
 import _poolRobeOfMirrors from "../pool/robe-of-mirrors.js";
 import _poolRockalanche from "../pool/rockalanche.js";
+import _poolRoostSeek from "../pool/roost-seek.js";
 import _poolRootbreakerWurm from "../pool/rootbreaker-wurm.js";
 import _poolRootwalla from "../pool/rootwalla.js";
 import _poolRuneclawBear from "../pool/runeclaw-bear.js";
@@ -273,6 +277,7 @@ const shard: CardShard = {
     _poolAirshipEngineRoom,
     _poolAjanisSunstriker,
     _poolAkromasMemorial,
+    _poolAkromasVengeance,
     _poolAmbassadorLaquatus,
     _poolAnaDisciple,
     _poolAncestralMask,
@@ -369,6 +374,7 @@ const shard: CardShard = {
     _poolHorizonCanopy,
     _poolHulkBrutalBrawler,
     _poolImpeccableTiming,
+    _poolIndustrialAdvancement,
     _poolInfiltrationLens,
     _poolIngaAndEsika,
     _poolIridescentVinelasher,
@@ -430,6 +436,7 @@ const shard: CardShard = {
     _poolPoisonTheBlade,
     _poolPondProphet,
     _poolPortOfKarfell,
+    _poolProfaneInsight,
     _poolPropaganda,
     _poolProtectorOfTheWastes,
     _poolPygmyPyrosaur,
@@ -449,6 +456,7 @@ const shard: CardShard = {
     _poolRimeshieldFrostGiant,
     _poolRobeOfMirrors,
     _poolRockalanche,
+    _poolRoostSeek,
     _poolRootbreakerWurm,
     _poolRootwalla,
     _poolRuneclawBear,

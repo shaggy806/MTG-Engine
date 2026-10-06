@@ -242,6 +242,10 @@ export interface RoomOptions {
   /** The waiting room's host role, carried across promotion. */
   readonly host?: HostRole;
   readonly botSpeed?: BotSpeed;
+  /** The waiting room's host picked who goes first (`RoomSettings`), rather
+   * than leaving it to the highroll — said on every frame so the client
+   * doesn't announce a highroll nobody won. */
+  readonly firstPlayerChosen?: boolean;
   /**
    * What `addBot` seats, overriding {@link DEFAULT_BOT}.
    *
@@ -350,6 +354,8 @@ export class Room {
   private gate: FrameGate | null = null;
   readonly host: HostRole;
   botSpeed: BotSpeed;
+  /** See `RoomOptions.firstPlayerChosen`. */
+  readonly firstPlayerChosen: boolean;
   /** The host has paused the bots: the frame gate stays shut, whatever the
    * clients say, until resumed — or for one move per `stepBots`. */
   botsPaused = false;
@@ -362,6 +368,9 @@ export class Room {
   private searchTrace: { action: Action; after: GameState | null }[] = [];
   /** See `RoomOptions.frozen`. */
   readonly frozen: boolean;
+  /** Why this game stopped, when the engine threw while advancing it — see
+   * `settle`. `null` while it runs. */
+  stopped: string | null = null;
   /** What a scenario builder adds to each `state` push (`builder.ts`), or
    * `null` in any other room. */
   builder: BuilderInfo | null = null;
@@ -373,6 +382,7 @@ export class Room {
     this.seq = options.startSeq ?? 0;
     this.host = options.host ?? new HostRole(null);
     this.botSpeed = options.botSpeed ?? "normal";
+    this.firstPlayerChosen = options.firstPlayerChosen === true;
     this.onUpdate = options.onUpdate ?? (() => {});
     this.pacing = options.pacing ?? "realtime";
     this.showStackArrivals = options.showStackArrivals ?? true;
@@ -656,6 +666,7 @@ export class Room {
   /** Dispatches `action` on behalf of whichever seat `connection` claimed. */
   dispatch(connection: Connection, action: Action): void {
     if (this.frozen) throw new Error("the board is being built — start play first");
+    if (this.stopped !== null) throw new Error("this game has stopped after an engine error");
     const seat = this.seatOf(connection);
     if (seat === null) throw new Error("claim a seat before acting");
     if (this.bots.has(seat)) throw new Error("a bot is playing this seat — take it back first");
@@ -1104,6 +1115,42 @@ export class Room {
    * mid-cascade.
    */
   private settle(): void {
+    if (this.stopped !== null) return;
+    try {
+      this.settleNow();
+    } catch (error) {
+      this.stop(error);
+    }
+  }
+
+  /**
+   * The engine threw while advancing the game: an engine bug, or a loop it
+   * gave up on (`ADVANCE_BUDGET` — rule 104.4b's draw isn't implemented). A
+   * bot's move runs from a timer, where nothing else would catch this and
+   * the whole server — every room — would go down with it. Instead this room
+   * alone stops: no more moves, the bots' timers cleared, and one last frame
+   * saying why, for every seat to show.
+   */
+  private stop(error: unknown): void {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`room ${this.id}: the game stopped on an engine error`, error);
+    this.stopped = message;
+    const gate = this.gate;
+    this.gate = null;
+    if (gate !== null) {
+      for (const handle of [gate.minHandle, gate.timeoutHandle, gate.lingerHandle]) {
+        if (handle !== null) this.timers.clearTimeout(handle);
+      }
+    }
+    try {
+      this.publish();
+    } catch (again) {
+      // The board itself may be what's broken; the log has both.
+      console.error(`room ${this.id}: couldn't publish the stopped game either`, again);
+    }
+  }
+
+  private settleNow(): void {
     if (this.frozen) {
       this.publish();
       return;

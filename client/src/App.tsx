@@ -33,9 +33,13 @@ import {
   standardAssignment,
   targetCountAtX,
 } from 'engine/client'
+import type { SeatStatus } from 'protocol'
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
+import { waitingLabel } from './game/waitingLabel.ts'
+import { gameStats } from './game/gameStats.ts'
+import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
 import { useBoardDrag, type BoardDragControls } from './game/useBoardDrag.ts'
@@ -81,17 +85,18 @@ import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
+import { KeywordTips } from './ui/KeywordTips.tsx'
 import { CommanderTile } from './ui/CommanderTile.tsx'
 import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { CapturePanel } from './ui/CapturePanel.tsx'
-import { BotSpeedControl } from './ui/BotSpeedControl.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
 import { SeatBoard } from './lobby/SeatBoard.tsx'
 import { LandingScreen } from './lobby/LandingScreen.tsx'
+import { InviteLink } from './lobby/InviteLink.tsx'
 import './App.css'
 
 // Symmetric fan for the hand tray (P8): card i's offset from the hand's
@@ -577,16 +582,18 @@ function CenteredScreen({
 /** How long an error sits on screen before clearing itself. Long enough to
  * read a sentence twice; short enough that a rejected click doesn't leave a
  * red bar over the board for the rest of the turn. */
-const ERROR_LINGER_MS = 6000
+/** How long a toast (a refusal, the highroll's news) stays up. App.css's
+ * `.toast` fades it out over the last half second. */
+const TOAST_LINGER_MS = 6000
 
 /**
  * A rejected action, as a toast floating over the board rather than a bar in
- * the layout.
+ * the layout. Rendered inside a `.toast-stack`.
  *
  * It used to take its own row in normal flow, which meant every refused click
  * shoved the whole table down a line and left the message there until someone
  * clicked it. Now it hovers above everything, fades out on its own after
- * {@link ERROR_LINGER_MS}, and is still dismissible by clicking it.
+ * {@link TOAST_LINGER_MS}, and is still dismissible by clicking it.
  *
  * The timer and the node are both keyed on `errorSeq` as well as the
  * message, so the same error twice in a row restarts the clock and replays
@@ -596,19 +603,114 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
   const { error, errorSeq, clearError } = game
   useEffect(() => {
     if (!error) return
-    const t = window.setTimeout(clearError, ERROR_LINGER_MS)
+    const t = window.setTimeout(clearError, TOAST_LINGER_MS)
     return () => window.clearTimeout(t)
   }, [error, errorSeq, clearError])
   if (!error) return null
   return (
     <div
       key={errorSeq}
-      className="error-toast"
+      className="toast bad"
       onClick={clearError}
       role="alert"
       title="Click to dismiss"
     >
       ⚠ {withNames(error, game.seats, game.nameOf)}
+    </div>
+  )
+}
+
+/** Who won the highroll (or who the host picked to go first), as the same toast a refusal is (in the accent
+ * colours rather than the error's): over the board while the opening hands
+ * are decided, gone on its own after {@link TOAST_LINGER_MS} or on a click. */
+function HighrollToast({ onDismiss, children }: { readonly onDismiss: () => void; readonly children: ReactNode }) {
+  useEffect(() => {
+    const t = window.setTimeout(onDismiss, TOAST_LINGER_MS)
+    return () => window.clearTimeout(t)
+  }, [onDismiss])
+  return (
+    <div className="toast info" onClick={onDismiss} role="status" title="Click to dismiss">
+      {children}
+    </div>
+  )
+}
+
+/**
+ * The end of the game, as its own panel over the final board: who won and
+ * how, and what next. It used to be one line in the bottom-right corner
+ * ("Bob wins · last player remaining"), easy to miss after a concede, with
+ * nowhere to go from it. A rematch would need the server to deal a new game
+ * into the same room; until then the way on is the main menu, as the Seat
+ * menu's "Leave the room" goes.
+ */
+function GameResultPanel({
+  view,
+  seat,
+  seats,
+  onDismiss,
+}: {
+  readonly view: PlayerView
+  readonly seat: PlayerId
+  readonly seats: readonly SeatStatus[]
+  readonly onDismiss: () => void
+}) {
+  useEscape(onDismiss)
+  const { winner, reason } = view.result
+  const headline = winner === null ? 'Draw' : winner === seat ? 'You win!' : `${playerLabel(winner, seats)} wins`
+  const seatClass = winner !== null && view.turnOrder.includes(winner) ? seatClassOf(view.turnOrder, winner) : ''
+  const stats = useMemo(() => gameStats(view), [view])
+  return (
+    <div className="result-overlay" onClick={onDismiss}>
+      <div className="result-box" role="dialog" aria-label="Game over" onClick={(e) => e.stopPropagation()}>
+        <p className="result-kicker">Game over</p>
+        <h2 className={`result-headline ${seatClass}`}>{headline}</h2>
+        <p className="muted">
+          {reason ? `${reason[0].toUpperCase()}${reason.slice(1)} · ` : ''}
+          {stats.turns} turn{stats.turns === 1 ? '' : 's'}
+        </p>
+        {/* Each player's game, winner first (game/gameStats.ts). */}
+        <table className="result-stats">
+          <thead>
+            <tr>
+              <th scope="col">Player</th>
+              <th scope="col">Result</th>
+              <th scope="col">Life</th>
+              <th scope="col" title="Damage dealt to other players">Damage dealt</th>
+              <th scope="col" title="Damage dealt to this player">Damage taken</th>
+              <th scope="col">Life gained</th>
+              <th scope="col">Spells cast</th>
+              <th scope="col" title="Not counting the opening hand">Cards drawn</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.players.map((p) => (
+              <tr key={p.player} className={p.player === winner ? 'is-winner' : undefined}>
+                <th scope="row" className={`result-player ${seatClassOf(view.turnOrder, p.player)}`}>
+                  {playerLabel(p.player, seats)}
+                  {p.player === seat ? <span className="muted"> (you)</span> : null}
+                </th>
+                <td title={p.out?.reason}>
+                  {p.player === winner ? 'Winner' : p.out ? `Out, turn ${p.out.turn}` : '—'}
+                </td>
+                <td>{p.life}</td>
+                <td>{p.damageDealt}</td>
+                <td>{p.damageTaken}</td>
+                <td>{p.lifeGained}</td>
+                <td>{p.spellsCast}</td>
+                <td>{p.cardsDrawn}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="result-actions">
+          <button type="button" onClick={onDismiss}>
+            View the board
+          </button>
+          <button type="button" className="result-primary" onClick={() => window.location.assign('/')}>
+            Main menu
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -631,7 +733,10 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <p className="muted">Share this room code, then everyone joins.</p>
-        <ErrorLine game={game} />
+        {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
+        <div className="toast-stack">
+          <ErrorLine game={game} />
+        </div>
         {roomFull ? <p className="muted">Room is full.</p> : null}
         <SeatBoard game={game} />
       </div>
@@ -650,7 +755,10 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
       <div className="overlay-box seat-board-box">
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
-        <ErrorLine game={game} />
+        {game.roomId !== null ? <InviteLink roomId={game.roomId} /> : null}
+        <div className="toast-stack">
+          <ErrorLine game={game} />
+        </div>
         <SeatBoard game={game} />
       </div>
     </div>
@@ -672,6 +780,12 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const [showHistory, setShowHistory] = useState(false)
   const [showCapture, setShowCapture] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
+  const dismissHighroll = useCallback(() => setDismissedHighroll(true), [])
+  const closeHistory = useCallback(() => setShowHistory(false), [])
+  // The end-of-game panel, put aside to look at the final board.
+  const [resultDismissed, setResultDismissed] = useState(false)
+  const dismissResult = useCallback(() => setResultDismissed(true), [])
+  useEscape(showHistory ? closeHistory : undefined)
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
   const [bus] = useState(() => new AnimationBus())
@@ -739,15 +853,6 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
         </span>
         <div className="ts-menu">
-          {/* Only the host sets it, and only a table with bots needs it. */}
-          {game.isHost && game.seats.some((s) => s.isBot) ? (
-            <BotSpeedControl
-              className="ts-bot-speed"
-              speed={game.botSpeed}
-              editable
-              onChange={game.setBotSpeed}
-            />
-          ) : null}
           {/* The host can stop the bots to look at something, and let them
               go a move at a time; everyone else sees that they're stopped.
               Icons rather than words: the strip has no room to spare, and
@@ -790,7 +895,15 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           >
             ↺
           </button>
-          <MotionControl />
+          {/* The bots' speed is in Settings: only the host sets it, and only a
+              table with bots needs it. */}
+          <MotionControl
+            botSpeed={
+              game.isHost && game.seats.some((s) => s.isBot)
+                ? { speed: game.botSpeed, onChange: game.setBotSpeed }
+                : undefined
+            }
+          />
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>
@@ -804,13 +917,23 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         </div>
       </header>
 
-      <ErrorLine game={game} />
-
-      {showHighroll ? (
-        <div className="highroll-banner" onClick={() => setDismissedHighroll(true)} role="alert">
-          🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
-        </div>
-      ) : null}
+      <div className="toast-stack">
+        {game.stopped !== null ? (
+          // Not dismissible and never gone: nothing can be played here now.
+          <div className="toast bad" role="alert">
+            ⚠ This game has stopped: the engine hit an error, and nothing more can be played in this room.{' '}
+            <span className="muted">({game.stopped})</span>
+          </div>
+        ) : null}
+        <ErrorLine game={game} />
+        {showHighroll ? (
+          <HighrollToast onDismiss={dismissHighroll}>
+            {game.firstPlayerChosen
+              ? `${playerLabel(view.startingPlayer, game.seats)} goes first, the host's pick`
+              : `🎲 ${playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first`}
+          </HighrollToast>
+        ) : null}
+      </div>
 
       {/* A sibling of <Table>, not a child: Table remounts on every frame
           it's keyed on, which would tear down anything animating inside it.
@@ -865,6 +988,10 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
             />
           </div>
         </div>
+      ) : null}
+
+      {over && !resultDismissed ? (
+        <GameResultPanel view={view} seat={seat} seats={game.seats} onDismiss={dismissResult} />
       ) : null}
 
       {showCapture ? <CapturePanel game={game} onClose={() => setShowCapture(false)} /> : null}
@@ -2440,7 +2567,10 @@ function Table({
       const typing =
         t instanceof HTMLElement &&
         (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable)
-      if (e.key === ' ' && mode === 'priority' && !typing) {
+      // Nor is Space behind a popup (History, a graveyard): it's the page,
+      // not a pass the player can see the board for.
+      const behindPopup = document.querySelector('.zone-viewer-overlay') !== null
+      if (e.key === ' ' && mode === 'priority' && !typing && !behindPopup) {
         e.preventDefault()
         pass()
       } else if (e.key === 'Escape') {
@@ -3099,6 +3229,9 @@ function Table({
           {view.result.winner ? `${playerLabel(view.result.winner, game.seats)} wins` : 'Draw'}
         </strong>
         <span className="muted">{view.result.reason}</span>
+        <button type="button" onClick={() => window.location.assign('/')}>
+          Main menu
+        </button>
       </div>
     )
   } else if (mode === 'choose-enchant' && enchantAction) {
@@ -4294,9 +4427,7 @@ function Table({
         // Someone else the game is waiting on. Your own turn to act is said
         // by the decision banner; this is for watching everyone else's.
         pid !== seat && !view.result.over && actingPlayer(view) === pid
-          ? game.seats.find((s) => s.player === pid)?.isBot
-            ? 'bot'
-            : 'player'
+          ? waitingLabel(view, pid, game.seats.find((s) => s.player === pid)?.isBot === true)
           : null
       }
       online={onlineOf(pid)}
@@ -4584,6 +4715,9 @@ function Table({
                 layout="art-first"
                 onClick={() => clickHandCard(id)}
               />
+              {/* Beside the card once it has grown under the pointer, on the
+                  side facing the middle of the hand (App.css). */}
+              <KeywordTips obj={obj} className={`hand-kw-tips${fanOffset > 0 ? ' to-left' : ''}`} />
               {multiFace
                 ? faceOpts.map((a, i) => (
                     <button key={i} type="button" onClick={() => playFace(a)}>

@@ -21,6 +21,7 @@ import _poolBattleHurda from "../pool/battle-hurda.js";
 import _poolBeskirShieldmate from "../pool/beskir-shieldmate.js";
 import _poolBitterbloomBearer from "../pool/bitterbloom-bearer.js";
 import _poolBladedPinions from "../pool/bladed-pinions.js";
+import _poolBladewingDeathlessTyrant from "../pool/bladewing-deathless-tyrant.js";
 import _poolBloodBairn from "../pool/blood-bairn.js";
 import _poolBloodResearcher from "../pool/blood-researcher.js";
 import _poolBloodchiefAscension from "../pool/bloodchief-ascension.js";
@@ -102,6 +103,7 @@ import _poolHobblefiend from "../pool/hobblefiend.js";
 import _poolHonedKhopesh from "../pool/honed-khopesh.js";
 import _poolHoodedKavu from "../pool/hooded-kavu.js";
 import _poolHornOfRamos from "../pool/horn-of-ramos.js";
+import _poolHuatliTheSunsHeart from "../pool/huatli-the-suns-heart.js";
 import _poolHussarPatrol from "../pool/hussar-patrol.js";
 import _poolIdyllicGrange from "../pool/idyllic-grange.js";
 import _poolIncrementalBlight from "../pool/incremental-blight.js";
@@ -174,6 +176,7 @@ import _poolSavannahSage from "../pool/savannah-sage.js";
 import _poolSavraQueenOfTheGolgari from "../pool/savra-queen-of-the-golgari.js";
 import _poolScionOfTheSwarm from "../pool/scion-of-the-swarm.js";
 import _poolScrapyardSteelbreaker from "../pool/scrapyard-steelbreaker.js";
+import _poolSentinelsEyes from "../pool/sentinels-eyes.js";
 import _poolSerraAscendant from "../pool/serra-ascendant.js";
 import _poolShivanDevastator from "../pool/shivan-devastator.js";
 import _poolShivanOasis from "../pool/shivan-oasis.js";
@@ -217,6 +220,8 @@ import _poolTempleOfPlenty from "../pool/temple-of-plenty.js";
 import _poolTenderWildguide from "../pool/tender-wildguide.js";
 import _poolTervigon from "../pool/tervigon.js";
 import _poolTestOfEndurance from "../pool/test-of-endurance.js";
+import _poolTeysaEnvoyOfGhosts from "../pool/teysa-envoy-of-ghosts.js";
+import _poolTeysaOpulentOligarch from "../pool/teysa-opulent-oligarch.js";
 import _poolTeysaOrzhovScion from "../pool/teysa-orzhov-scion.js";
 import _poolThantisTheWarweaver from "../pool/thantis-the-warweaver.js";
 import _poolTheOddAcornGang from "../pool/the-odd-acorn-gang.js";
@@ -289,6 +294,7 @@ const shard: CardShard = {
     _poolBeskirShieldmate,
     _poolBitterbloomBearer,
     _poolBladedPinions,
+    _poolBladewingDeathlessTyrant,
     _poolBloodBairn,
     _poolBloodResearcher,
     _poolBloodchiefAscension,
@@ -370,6 +376,7 @@ const shard: CardShard = {
     _poolHonedKhopesh,
     _poolHoodedKavu,
     _poolHornOfRamos,
+    _poolHuatliTheSunsHeart,
     _poolHussarPatrol,
     _poolIdyllicGrange,
     _poolIncrementalBlight,
@@ -442,6 +449,7 @@ const shard: CardShard = {
     _poolSavraQueenOfTheGolgari,
     _poolScionOfTheSwarm,
     _poolScrapyardSteelbreaker,
+    _poolSentinelsEyes,
     _poolSerraAscendant,
     _poolShivanDevastator,
     _poolShivanOasis,
@@ -485,6 +493,8 @@ const shard: CardShard = {
     _poolTenderWildguide,
     _poolTervigon,
     _poolTestOfEndurance,
+    _poolTeysaEnvoyOfGhosts,
+    _poolTeysaOpulentOligarch,
     _poolTeysaOrzhovScion,
     _poolThantisTheWarweaver,
     _poolTheOddAcornGang,

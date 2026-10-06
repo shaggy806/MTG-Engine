@@ -75,6 +75,7 @@ import _poolFelidarRetreat from "../pool/felidar-retreat.js";
 import _poolFestivalCrasher from "../pool/festival-crasher.js";
 import _poolFireLitThicket from "../pool/fire-lit-thicket.js";
 import _poolFirebendingStudent from "../pool/firebending-student.js";
+import _poolFiveHundredYearDiary from "../pool/five-hundred-year-diary.js";
 import _poolFlameOfAnor from "../pool/flame-of-anor.js";
 import _poolFleetingEffigy from "../pool/fleeting-effigy.js";
 import _poolFrontierBivouac from "../pool/frontier-bivouac.js";
@@ -199,6 +200,7 @@ import _poolSlinkingSerpent from "../pool/slinking-serpent.js";
 import _poolSolphimMayhemDominus from "../pool/solphim-mayhem-dominus.js";
 import _poolSomberwaldSage from "../pool/somberwald-sage.js";
 import _poolSouthWindAvatar from "../pool/south-wind-avatar.js";
+import _poolSpectacularTactics from "../pool/spectacular-tactics.js";
 import _poolSpikedBaloth from "../pool/spiked-baloth.js";
 import _poolSpringleafParade from "../pool/springleaf-parade.js";
 import _poolStampedingScurryfoot from "../pool/stampeding-scurryfoot.js";
@@ -210,6 +212,7 @@ import _poolStormcallerOfKeranos from "../pool/stormcaller-of-keranos.js";
 import _poolStudentOfOjutai from "../pool/student-of-ojutai.js";
 import _poolStumpStomp from "../pool/stump-stomp.js";
 import _poolSubmergedBoneyard from "../pool/submerged-boneyard.js";
+import _poolSukiCourageousRescuer from "../pool/suki-courageous-rescuer.js";
 import _poolSunastianFalconer from "../pool/sunastian-falconer.js";
 import _poolSunsetStrikemaster from "../pool/sunset-strikemaster.js";
 import _poolSwordOfFeastAndFamine from "../pool/sword-of-feast-and-famine.js";
@@ -235,6 +238,7 @@ import _poolUndeadMinotaur from "../pool/undead-minotaur.js";
 import _poolUnholyStrength from "../pool/unholy-strength.js";
 import _poolUnitedFront from "../pool/united-front.js";
 import _poolUnstoppablePlan from "../pool/unstoppable-plan.js";
+import _poolValiantKnight from "../pool/valiant-knight.js";
 import _poolValorousSteed from "../pool/valorous-steed.js";
 import _poolVensersJournal from "../pool/vensers-journal.js";
 import _poolVesperGhoul from "../pool/vesper-ghoul.js";
@@ -330,6 +334,7 @@ const shard: CardShard = {
     _poolFestivalCrasher,
     _poolFireLitThicket,
     _poolFirebendingStudent,
+    _poolFiveHundredYearDiary,
     _poolFlameOfAnor,
     _poolFleetingEffigy,
     _poolFrontierBivouac,
@@ -454,6 +459,7 @@ const shard: CardShard = {
     _poolSolphimMayhemDominus,
     _poolSomberwaldSage,
     _poolSouthWindAvatar,
+    _poolSpectacularTactics,
     _poolSpikedBaloth,
     _poolSpringleafParade,
     _poolStampedingScurryfoot,
@@ -465,6 +471,7 @@ const shard: CardShard = {
     _poolStudentOfOjutai,
     _poolStumpStomp,
     _poolSubmergedBoneyard,
+    _poolSukiCourageousRescuer,
     _poolSunastianFalconer,
     _poolSunsetStrikemaster,
     _poolSwordOfFeastAndFamine,
@@ -490,6 +497,7 @@ const shard: CardShard = {
     _poolUnholyStrength,
     _poolUnitedFront,
     _poolUnstoppablePlan,
+    _poolValiantKnight,
     _poolValorousSteed,
     _poolVensersJournal,
     _poolVesperGhoul,

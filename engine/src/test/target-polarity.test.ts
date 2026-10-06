@@ -50,6 +50,13 @@ describe("slot polarity", () => {
     }
   });
 
+  it("reads a -X/-X written as a negative product as removal, not a pump", () => {
+    // `{ product: ["x", -1] }`: the sign is the factor's, not a live count's.
+    expect(cast("Defile")).toEqual(["harm"]);
+    expect(activated("Necropolis Fiend", 0)).toEqual(["harm"]);
+    expect(activated("Grim Hireling", 0)).toEqual(["harm"]);
+  });
+
   it("lets removal decide over the consolation it gives its victim", () => {
     // Life for the exiled creature's controller, a land to search for, a
     // 3/3 to make up for the destroyed permanent: all still removal.

@@ -22,6 +22,7 @@ import type {
   CaptureSummary,
   ClientMessage,
   PassSettings,
+  RoomSettings,
   ScenarioSpec,
   SeatStatus,
   ServerMessage,
@@ -191,6 +192,15 @@ export interface NetworkGame {
   readonly botSpeed: BotSpeed
   /** Host only — the server refuses anyone else. */
   setBotSpeed: (speed: BotSpeed) => void
+  /** The waiting room's game settings (starting life, who goes first), or
+   * `null` once the game exists. */
+  readonly roomSettings: RoomSettings | null
+  /** Host only, before the game starts: change some of them. */
+  setRoomSettings: (settings: Partial<RoomSettings>) => void
+  /** The host picked who went first, so nobody won a highroll. */
+  readonly firstPlayerChosen: boolean
+  /** The server stopped this game after an engine error: why. */
+  readonly stopped: string | null
   /** The host has paused the bots; every seat sees it. */
   readonly botsPaused: boolean
   /** Host only: pause or resume the bots, or let one held move go. */
@@ -329,6 +339,9 @@ export function useNetworkGame(): NetworkGame {
   const [autoPassPaused, setAutoPassPaused] = useState(false)
   const [isHost, setIsHost] = useState(false)
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
+  const [roomSettings, setRoomSettingsState] = useState<RoomSettings | null>(null)
+  const [firstPlayerChosen, setFirstPlayerChosen] = useState(false)
+  const [stopped, setStopped] = useState<string | null>(null)
   const [botsPaused, setBotsPausedState] = useState(false)
   const [captureEnabled, setCaptureEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
@@ -390,6 +403,7 @@ export function useNetworkGame(): NetworkGame {
           setSeats(message.seats)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
+          setRoomSettingsState(message.settings ?? null)
           setRoomPending(message.pending === true)
           const pending = pendingClaimRef.current
           if (pending && pending.seat === null) {
@@ -469,6 +483,9 @@ export function useNetworkGame(): NetworkGame {
           setAutoPassPaused(message.autoPassPaused)
           setIsHost(message.isHost)
           setBotSpeedState(message.botSpeed)
+          setRoomSettingsState(null)
+          setFirstPlayerChosen(message.firstPlayerChosen === true)
+          setStopped(message.stopped ?? null)
           setBotsPausedState(message.botsPaused === true)
           setCaptureEnabled(message.capture === true)
           setBuilder(message.builder ?? null)
@@ -579,6 +596,15 @@ export function useNetworkGame(): NetworkGame {
       const id = roomIdRef.current
       if (id === null) return
       send({ type: 'set-bot-speed', roomId: id, speed })
+    },
+    [send],
+  )
+
+  const setRoomSettings = useCallback(
+    (settings: Partial<RoomSettings>) => {
+      const id = roomIdRef.current
+      if (id === null) return
+      send({ type: 'set-room-settings', roomId: id, settings })
     },
     [send],
   )
@@ -897,6 +923,10 @@ export function useNetworkGame(): NetworkGame {
     isHost,
     botSpeed,
     setBotSpeed,
+    roomSettings,
+    setRoomSettings,
+    firstPlayerChosen,
+    stopped,
     botsPaused,
     setBotsPaused,
     stepBots,

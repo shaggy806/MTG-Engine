@@ -5,6 +5,13 @@
    board) so nothing outside this subtree is affected. */
 .seat-board {
   --card-w: clamp(110px, 15vw, 190px);
+  /* The room-settings column's width, and a container the seats size
+     against (`cqw`), so their width doesn't depend on the row they're in. */
+  --side-w: clamp(200px, 17vw, 240px);
+  /* What the column takes from the seats' row; nothing once it moves
+     under them (the container query below). */
+  --side-room: calc(var(--side-w) + var(--seat-gap, 16px));
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   /* `--seat-gap` is declared on the dialog that holds this (App.css's
@@ -18,6 +25,22 @@
   width: 100%;
 }
 
+/* The seats, and beside them a column for the room's settings and Start
+   Game: setting the table up, then starting it, in one place. Centred as
+   one group, so a two-seat table sits next to its settings rather than
+   leaving a gap the width of two more seats between them. */
+.seat-board-main {
+  display: grid;
+  grid-template-columns: auto var(--side-w);
+  justify-content: center;
+  gap: var(--seat-gap, 16px);
+  align-items: start;
+}
+.seat-board-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 .seat-board-grid {
   /* A seat is the same width at any table size: the width it has when four
      share the row. Letting 2 seats take a half each is what made the
@@ -25,13 +48,14 @@
      art grew to 450px, the seats' contents to twice their height, and the
      Start Game button fell below the fold at 768px, while four seats sat
      compact on one screen. A smaller table is now a narrower, centred row
-     of the same seats. Percentages in a track size resolve against the
-     grid's own width, and the room for the controls column (below) is
-     always set aside, so four seats plus the column still fit the row. */
+     of the same seats. Measured against the whole board (`100cqw`, the
+     `.seat-board` container) less the settings column, with the room for
+     the controls column (below) always set aside, so four seats plus both
+     columns still fit the row. */
   --seat-ctrl-w: clamp(76px, 8vw, 104px);
-  --seat-w: calc((100% - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
+  --seat-w: calc((100cqw - var(--side-room) - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
   display: grid;
-  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w)));
+  grid-template-columns: repeat(var(--seat-count), var(--seat-w));
   justify-content: center;
   gap: var(--seat-gap, 16px);
 }
@@ -41,7 +65,7 @@
    3-player one with an empty chair. `--seat-count` deliberately stays the
    number of real seats. */
 .seat-board-grid.has-controls {
-  grid-template-columns: repeat(var(--seat-count), minmax(0, var(--seat-w))) auto;
+  grid-template-columns: repeat(var(--seat-count), var(--seat-w)) auto;
 }
 /* Centred rather than stretched: a full-height dashed box beside the real
    seats reads as another (empty) seat, which is the opposite of what a
@@ -63,7 +87,7 @@
   padding: 22px 10px;
   background: none;
   border: 1px dashed var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   color: var(--muted);
 }
 .seat-add-panel:hover {
@@ -82,7 +106,7 @@
   line-height: 1;
 }
 .seat-add-label {
-  font-size: 11px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -101,7 +125,7 @@
   color: var(--muted-dim);
   background: none;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: 0;
 }
 .seat-panel-remove:hover:not(:disabled) {
   color: var(--bad);
@@ -118,29 +142,29 @@
   background: var(--panel-2);
   border: 1px solid var(--border);
   border-top: 3px solid var(--seat-color, var(--border));
-  border-radius: 10px;
+  border-radius: 0;
 }
-/* The "ready" indicator: a ring floating just inside the panel, with room to
-   breathe on both sides of it, so it doesn't fight the per-seat identity
-   colour already on the border/top-border. An inset pseudo-element rather
-   than an `outline`, which is painted *outside* the border box and takes no
-   layout space — on the first and last seat of the grid that spilled past
-   the edge of the board containing them. */
+/* The "ready" indicator: a green bar along the panel's foot, answering the
+   seat-colour bar along its head. It was a ring just inside the panel, which
+   with square corners read as a second box drawn inside the first. A
+   pseudo-element over the bottom border, so it takes no layout space. */
 .seat-panel::after {
   content: '';
   position: absolute;
-  inset: 4px;
-  border: 2px solid transparent;
-  border-radius: 7px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 3px;
+  background: transparent;
   pointer-events: none;
-  transition: border-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .seat-panel.seat-a { --seat-color: var(--seat-a); }
 .seat-panel.seat-b { --seat-color: var(--seat-b); }
 .seat-panel.seat-c { --seat-color: var(--seat-c); }
 .seat-panel.seat-d { --seat-color: var(--seat-d); }
 .seat-panel.ready::after {
-  border-color: var(--good);
+  background: var(--good);
 }
 
 .seat-panel-head {
@@ -151,7 +175,7 @@
 }
 .seat-panel-name {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-base);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -162,7 +186,7 @@
      with the remove button as a third child -- `space-between` alone would
      strand the tag in the middle. */
   margin-left: auto;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -180,7 +204,7 @@
   padding: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   color: var(--text);
   font: inherit;
   cursor: default;
@@ -206,7 +230,7 @@
 .seat-deck-art {
   width: 100%;
   aspect-ratio: 1.4 / 1;
-  border-radius: 6px;
+  border-radius: 0;
   background-color: var(--panel-2);
   background-size: cover;
   background-position: center 30%;
@@ -233,7 +257,7 @@
 
 .seat-deck-name {
   width: 100%;
-  font-size: 13px;
+  font-size: var(--text-md);
   font-weight: 600;
   text-align: center;
   overflow: hidden;
@@ -242,7 +266,7 @@
 }
 .seat-deck-commander {
   width: 100%;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   text-align: center;
   overflow: hidden;
@@ -260,7 +284,7 @@
 }
 
 .seat-deck-hint {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -275,45 +299,111 @@
 .seat-panel-ready-btn.active {
   color: var(--good);
   border-color: var(--good);
-  background: rgba(95, 174, 124, 0.12);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
+  box-shadow: var(--bevel-pressed);
 }
 .seat-panel-add-bot {
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
+}
+
+/* The room's game settings (RoomSettingsPanel.tsx), at the top of the
+   right-hand column: labelled fields one under another, the host's to
+   change. */
+.room-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.room-settings-title {
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.room-settings-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rs-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: left;
+}
+.rs-label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.rs-value {
+  font-size: var(--text-base);
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+}
+.rs-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rs-life-input {
+  width: 4em;
+  padding: 3px 6px;
+  margin-left: 6px;
+  font-size: var(--text-sm);
+  text-align: center;
+  appearance: textfield;
+}
+.rs-life-input::-webkit-inner-spin-button,
+.rs-life-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.rs-select {
+  align-self: stretch;
+  padding: 4px 8px;
+  font-size: var(--text-sm);
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
 }
 
 .seat-board-footer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 6px;
+  text-align: center;
 }
 .start-game-btn {
   padding: 10px 28px;
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--good);
   border-color: var(--good);
-  background: rgba(95, 174, 124, 0.12);
+  background: color-mix(in srgb, var(--good) 12%, transparent);
 }
 .start-game-btn:disabled {
-  color: var(--muted-dim);
-  border-color: var(--border);
-  background: none;
   cursor: default;
 }
 .seat-board-hint {
-  font-size: 12px;
+  font-size: var(--text-sm);
   margin: 0;
 }
 .seat-host-badge {
   flex: none;
-  font-size: 10px;
+  font-size: var(--text-2xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 1px 6px;
   border: 1px solid var(--accent);
-  border-radius: 999px;
+  border-radius: 0;
   color: var(--accent);
 }
 
@@ -321,7 +411,7 @@
 .deck-picker-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 12, 16, 0.75);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,7 +427,8 @@
   padding: 16px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .deck-picker-head {
   display: flex;
@@ -345,7 +436,7 @@
   justify-content: space-between;
 }
 .deck-picker-head h3 {
-  font-size: 16px;
+  font-size: var(--text-lg);
 }
 .deck-picker-close {
   background: none;
@@ -363,7 +454,7 @@
 }
 .deck-picker-section {
   margin: 8px 0 0;
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -375,7 +466,7 @@
   padding: 6px;
   background: var(--panel-2);
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
   color: var(--text);
   text-align: left;
   font: inherit;
@@ -387,7 +478,7 @@
   flex: none;
   width: 44px;
   aspect-ratio: 1.4 / 1;
-  border-radius: 4px;
+  border-radius: 0;
   background-color: var(--panel);
   background-size: cover;
   background-position: center 30%;
@@ -399,14 +490,14 @@
   min-width: 0;
 }
 .deck-picker-row-name {
-  font-size: 13px;
+  font-size: var(--text-md);
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .deck-picker-row-commander {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -414,5 +505,31 @@
 }
 .deck-picker-build {
   align-self: center;
-  font-size: 12px;
+  font-size: var(--text-sm);
+}
+
+/* Last in the file so it overrides the rules above. A narrow board (about 1100px of screen and below) can't spare the
+   column: four seats would be ~150px each and their names truncate to
+   "P...". The settings go under the seats there, as one row. */
+@container (max-width: 1060px) {
+  .seat-board-main {
+    --side-room: 0px;
+    grid-template-columns: auto;
+  }
+  .seat-board-side {
+    justify-self: center;
+    width: min(100%, 760px);
+  }
+  .room-settings-fields {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 32px;
+  }
+  .rs-select {
+    align-self: auto;
+  }
+  .seat-board-footer {
+    align-items: center;
+  }
 }

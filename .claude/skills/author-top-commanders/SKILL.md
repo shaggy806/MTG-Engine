@@ -63,7 +63,8 @@ filled in against the Oracle text). Partners and backgrounds: the declarative
 - `engine/src/test/commanders-<feature or batch>.test.ts`: each commander's
   own defining clause, played through a real `Game`, and break it once to see
   the test fail.
-- `npm run card:verify -w engine` (network) and `npm run card:text -w engine`.
+- `npm run card:verify -w engine` and `npm run card:text -w engine` (`-- --offline`
+  for both where Scryfall is unreachable, as in a cloud session).
 - Touched tests while working, the full engine suite at the end; the fuzzer
   with each new commander forced in (`--with`), two and four players.
 - A new client decision: `npm run test:e2e -w client` and a live check at a 2-

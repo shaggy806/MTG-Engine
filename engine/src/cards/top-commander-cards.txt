@@ -1,5 +1,5 @@
 Top 5000 Commander cards by EDHREC popularity (fetched 2026-09-26)
-3353 already implemented / 1647 missing (marks refreshed 2026-10-05)
+3354 already implemented / 1646 missing (marks refreshed 2026-10-06)
 Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 
 [x]     1  Sol Ring                                 {1}              Artifact
@@ -2718,7 +2718,7 @@ Legend: [x] name already exists in cards/pool/   [ ] not yet authored
 [x]  2725  Court of Cunning                         {1}{U}{U}        Enchantment
 [ ]  2726  River of Tears                           {0}              Land
 [ ]  2727  Deadpool, Trading Card                   {2}{B}{R}        Legendary Creature — Mutant Mercenary Hero
-[ ]  2728  Rakdos, Patron of Chaos                  {4}{B}{R}        Legendary Creature — Demon
+[x]  2728  Rakdos, Patron of Chaos                  {4}{B}{R}        Legendary Creature — Demon
 [x]  2729  Vein Ripper                              {3}{B}{B}{B}     Creature — Vampire Assassin
 [x]  2730  Master of Dark Rites                     {B}              Creature — Vampire Cleric
 [x]  2731  Momentary Blink                          {1}{W}           Instant

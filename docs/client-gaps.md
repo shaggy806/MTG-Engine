@@ -49,8 +49,10 @@ title; when one lands, delete it in both. The animation follow-ups are in
 - **Quality-of-life room options (house rules).** Options the room creator can turn on before a
   game that are technically against the rules but make play smoother. The user's example: mana
   that, when tapped, doesn't have its colour decided until it's spent on a specific coloured
-  cost. Each would be an opt-in room setting (the lobby, `server/src/room.ts`), off by default,
-  since the engine otherwise follows the Comprehensive Rules exactly.
+  cost. Each would be an opt-in room setting, off by default, since the engine otherwise follows
+  the Comprehensive Rules exactly: a field in the lobby's `RoomSettingsPanel` and a key on
+  `protocol`'s `RoomSettings`, checked in `PendingRoom.setSettings` and applied in
+  `toGameConfig`, as starting life and the first player are.
 - **Server-side deck save and share** is still unscoped. Decks live in `localStorage`.
 - **The library and the deck builder load every card definition.** Both fetch all 32 card
   shards (`client/src/cards/cardData.ts`): about 3.1 MB, 610 kB gzipped, at 5,400 cards, and
@@ -72,24 +74,19 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
-- **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06). While the game
-  waits on a bot, its panel says "thinking…" (`ui/PlayerPanel.tsx`, `waiting === 'bot'`). The
-  user wants it to say what the bot is actually doing — "scrying", "targeting" and the like. The
-  pending decision's kind (`PlayerView`'s `awaiting`) names most of them; a priority window could
-  read the step ("in combat", "at end of turn").
-- **A trigger going on the stack flies from the permanent that was its source** (the user,
-  2026-10-06). A triggered ability's stack entry appears in place (`ui/Stack.tsx`'s `is-new`
-  arrival), with its source's tile lit in the frame's second half (`runPulse`). The user wants it
-  to fly out of that permanent into its spot on the stack, as a cast spell now slots in
-  (`AnimationLayer`'s `liftSpotlight`/`slotIntoStack`); a source already gone (a dies trigger)
-  keeps today's arrival.
-- **The lobby's default deck could be random** (the user, 2026-10-06). The lobby's "Add bot (default
-  deck)" button (`client/src/lobby/SeatBoard.tsx`) always gives the same deck; the user wants it
-  randomized.
-- **The highroll notice should look like the other alerts** (the user, 2026-10-06). The
-  "🎲 <player> won the highroll and goes first" notice at the start of a game (`App.tsx`) has a
-  style of its own; the user wants it to look like the game's other alerts.
-- **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06).
-  Every stack entry draws its label above the card (whose it is, "X's ability", "copy of") and its
-  target line below (`ui/Stack.tsx`'s `.stack-entry-label` and target line); the user wants those
-  texts on the first (top) item only.
+- **A Paste button on the deck import** (the user, 2026-10-06). The deck builder's Import box
+  (`DeckBuilderPage.tsx`, `.db-import-textarea`) takes a pasted list today only by Ctrl+V. A
+  button that calls `navigator.clipboard.readText()` would fill it in one click: it needs a
+  click to start it and HTTPS (tobyens.com has it); Chrome asks permission once, Firefox and
+  Safari show their own "Paste" bubble each time, and where it's refused (or `readText` is
+  missing) the button should fall back to saying "press Ctrl+V". The capture panel's image
+  paste (`ui/CapturePanel.tsx`, the `paste` event) is the other clipboard read in the client.
+- **A rematch from the end-of-game panel** (2026-10-06 UI review). A finished game shows
+  `GameResultPanel` (App.tsx) with "View the board" and "Main menu". A rematch — the same seats
+  and decks, a new game in the same room — would need the server to deal a new `Game` into a
+  room that has ended (`RoomManager`, `Room`); `leave-room` is pending-room only today.
+- **The top strip still clips the phase track at 1024 wide** (2026-10-06 UI review). Moving bot
+  speed into the Settings panel brought every step back at 1366x768, but at 1024 the track
+  (`PhaseTrack`) still stops at CD. "Player 1 to act" and the text buttons (Settings, History,
+  Capture, Seat) are what's left to shorten — icons, or the acting player folded into the turn
+  banner.

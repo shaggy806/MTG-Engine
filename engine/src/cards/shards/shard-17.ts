@@ -4,6 +4,7 @@
 import type { CardShard } from "../card-shards.js";
 
 import _poolAbandonedOutpost from "../pool/abandoned-outpost.js";
+import _poolAdeptWatershaper from "../pool/adept-watershaper.js";
 import _poolAjaniCallerOfThePride from "../pool/ajani-caller-of-the-pride.js";
 import _poolAlabornCavalier from "../pool/alaborn-cavalier.js";
 import _poolAmaranthineWall from "../pool/amaranthine-wall.js";
@@ -83,6 +84,7 @@ import _poolFervor from "../pool/fervor.js";
 import _poolFlameSpirit from "../pool/flame-spirit.js";
 import _poolForerunnerOfTheLegion from "../pool/forerunner-of-the-legion.js";
 import _poolForlornFlats from "../pool/forlorn-flats.js";
+import _poolFoulmireKnight from "../pool/foulmire-knight.js";
 import _poolFriendlyGhost from "../pool/friendly-ghost.js";
 import _poolGallowsWarden from "../pool/gallows-warden.js";
 import _poolGavonyTrapper from "../pool/gavony-trapper.js";
@@ -185,6 +187,7 @@ import _poolSeafloorDebris from "../pool/seafloor-debris.js";
 import _poolSearslicerGoblin from "../pool/searslicer-goblin.js";
 import _poolSeethingLandscape from "../pool/seething-landscape.js";
 import _poolSewnEyeDrake from "../pool/sewn-eye-drake.js";
+import _poolShabrazTheSkyshark from "../pool/shabraz-the-skyshark.js";
 import _poolShelldockIsle from "../pool/shelldock-isle.js";
 import _poolShieldWallSentinel from "../pool/shield-wall-sentinel.js";
 import _poolShieldsMight from "../pool/shields-might.js";
@@ -208,6 +211,7 @@ import _poolSteepleCreeper from "../pool/steeple-creeper.js";
 import _poolSteppeLynx from "../pool/steppe-lynx.js";
 import _poolStewardOfValeron from "../pool/steward-of-valeron.js";
 import _poolSummitProwler from "../pool/summit-prowler.js";
+import _poolSummoningMateria from "../pool/summoning-materia.js";
 import _poolSuperShredder from "../pool/super-shredder.js";
 import _poolSwiftbladeVindicator from "../pool/swiftblade-vindicator.js";
 import _poolSwordOfVengeance from "../pool/sword-of-vengeance.js";
@@ -226,6 +230,7 @@ import _poolTurbulentMoor from "../pool/turbulent-moor.js";
 import _poolTurntimberAscetic from "../pool/turntimber-ascetic.js";
 import _poolUktabiFaerie from "../pool/uktabi-faerie.js";
 import _poolUlvenwaldBehemoth from "../pool/ulvenwald-behemoth.js";
+import _poolUndercellarMyconid from "../pool/undercellar-myconid.js";
 import _poolUnderworldDreams from "../pool/underworld-dreams.js";
 import _poolUnholyOfficiant from "../pool/unholy-officiant.js";
 import _poolUnknownShores from "../pool/unknown-shores.js";
@@ -274,6 +279,7 @@ import _tokensXXElementalTokenFlyingHaste from "../tokens/x-x-elemental-token-fl
 const shard: CardShard = {
   pool: [
     _poolAbandonedOutpost,
+    _poolAdeptWatershaper,
     _poolAjaniCallerOfThePride,
     _poolAlabornCavalier,
     _poolAmaranthineWall,
@@ -353,6 +359,7 @@ const shard: CardShard = {
     _poolFlameSpirit,
     _poolForerunnerOfTheLegion,
     _poolForlornFlats,
+    _poolFoulmireKnight,
     _poolFriendlyGhost,
     _poolGallowsWarden,
     _poolGavonyTrapper,
@@ -455,6 +462,7 @@ const shard: CardShard = {
     _poolSearslicerGoblin,
     _poolSeethingLandscape,
     _poolSewnEyeDrake,
+    _poolShabrazTheSkyshark,
     _poolShelldockIsle,
     _poolShieldWallSentinel,
     _poolShieldsMight,
@@ -478,6 +486,7 @@ const shard: CardShard = {
     _poolSteppeLynx,
     _poolStewardOfValeron,
     _poolSummitProwler,
+    _poolSummoningMateria,
     _poolSuperShredder,
     _poolSwiftbladeVindicator,
     _poolSwordOfVengeance,
@@ -496,6 +505,7 @@ const shard: CardShard = {
     _poolTurntimberAscetic,
     _poolUktabiFaerie,
     _poolUlvenwaldBehemoth,
+    _poolUndercellarMyconid,
     _poolUnderworldDreams,
     _poolUnholyOfficiant,
     _poolUnknownShores,

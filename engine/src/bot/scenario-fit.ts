@@ -25,7 +25,6 @@
 
 import type { Action } from "../actions.js";
 import type { CardRegistry } from "../cards.js";
-import type { GameState } from "../state.js";
 import { EvalBotController } from "./eval-bot.js";
 import { normalizeWeights, outcomeOf, scoreOutcome } from "./evaluate.js";
 import type { EvalOutcome, EvalWeights } from "./evaluate.js";
@@ -77,19 +76,23 @@ export function recordScenario(
   const position = scenario.position(registry);
   if (!("game" in position)) return position;
   const { game, player } = position;
-  const seen: { action: Action; after: GameState | null }[] = [];
+  // Each outcome is read as the trace sees it, inside the bot's decision, so
+  // that track records come off the scenario's real board as they did for
+  // the bot (`withTrackRecordEvidence`), not off the position a rollout reached.
+  const seen: { action: Action; outcome: EvalOutcome | null }[] = [];
   const bot = new EvalBotController(player, registry, {
     weights,
-    trace: (action, after) => seen.push({ action, after }),
+    trace: (action, after) =>
+      seen.push({ action, outcome: after === null ? null : outcomeOf(after, registry, player, weights.landCap) }),
   });
   const exact = game.state.awaiting === null;
   const chosen = bot.act(game.controllerView(player));
   return {
     name: scenario.name,
     kind: scenario.kind ?? "gate",
-    answers: seen.map(({ action, after }) => ({
+    answers: seen.map(({ action, outcome }) => ({
       action,
-      outcome: after === null ? null : outcomeOf(after, registry, player, weights.landCap),
+      outcome,
       right: position.judge(action).passed,
     })),
     chosen,

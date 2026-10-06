@@ -16018,6 +16018,7 @@ export class Game {
         type: "ability-triggered",
         source: trigger.delayed.source,
         controller: trigger.controller,
+        object: id,
       });
       return "done";
     }
@@ -16315,7 +16316,7 @@ export class Game {
     }
     if (targetedBy !== undefined) this.state.objects[abilityId].targetedBy = targetedBy;
     if (reflexive !== undefined) this.state.objects[abilityId].reflexiveTrigger = reflexive;
-    this.emit({ type: "ability-triggered", source: sourceId, controller });
+    this.emit({ type: "ability-triggered", source: sourceId, controller, object: abilityId });
     // Its targets are locked in as it goes on the stack (rule 603.3d), which
     // is when anything it targets "becomes the target of" an ability.
     this.announceTargeted(
@@ -16718,6 +16719,8 @@ export class Game {
         }
       },
       playersInScope: (who) => scoped(who),
+      playersCountedInScope: (who) =>
+        this.scopedPlayers(controller, who, triggerObject, triggerLastKnown(), refs.player, true),
       discardHand: (player) => this.discardWholeHand(player),
       // The object whose entering, dying, attacking… fired a trigger is read
       // as it last existed on the battlefield once it has left (rule 608.2h):
@@ -16891,7 +16894,7 @@ export class Game {
         return types.size;
       },
       gainLife: (player, amount) => this.changeLife(player, amount),
-      loseLife: (player, amount) => this.changeLife(player, -amount),
+      loseLife: (player, amount) => this.loseLifeTallied(player, amount),
       manaTypesOf: (mana) => this.manaOneOf(mana, controller, source),
       addMana: (player, mana, amount, spec) =>
         this.addMana(
@@ -18826,7 +18829,10 @@ export class Game {
           matchesFilter(this.state, this.registry, id, option.putFromHand, { you: player }),
         );
       }
-      return this.eligibleSacrifices(player, option.sacrifice, option.exceptSource === true ? source : undefined).length > 0;
+      return (
+        this.eligibleSacrifices(player, option.sacrifice, option.exceptSource === true ? source : undefined).length >=
+        (option.count ?? 1)
+      );
     });
     if (available.length === 0) return null;
     const mana = available.find((o): o is Extract<BoundUnlessOption, { pay: string }> => "pay" in o);
@@ -18841,7 +18847,7 @@ export class Game {
                   kind: "sacrifice",
                   who: "you",
                   filter: option.sacrifice,
-                  count: 1,
+                  count: option.count ?? 1,
                   ...(option.exceptSource === true ? { exceptSource: true } : {}),
                 }
               : "discard" in option
@@ -22871,6 +22877,7 @@ export class Game {
         type: "ability-triggered",
         source: trigger.source,
         controller: trigger.controller,
+        object: id,
       });
     }
   }
@@ -24472,6 +24479,77 @@ export class Game {
     }
   }
 
+  /** A permanent dealing damage to an opponent of its controller adds to
+   * its `tally`: combat damage, or an ability's whose source it is. A spell,
+   * or a source already gone from the battlefield, has no stint to add to. */
+  private tallyDamage(source: ObjectId, target: TargetRef, amount: number): void {
+    if (target.kind !== "player" || amount <= 0) return;
+    const object = this.state.objects[source];
+    if (object === undefined || object.zone !== "battlefield" || object.controller === target.player) return;
+    const tally = this.tallyOf(object);
+    tally.lifeTaken += amount;
+    tally.thisTurn.lifeTaken += amount;
+  }
+
+  /** An effect's life loss (not damage, which `tallyDamage` counts), added
+   * to the resolving ability's source's `tally` when it is still the
+   * permanent that put the ability on the stack (rule 400.7) and the player
+   * losing is one of its controller's opponents. What was actually lost, so
+   * a life total that can't change counts nothing. */
+  private loseLifeTallied(player: PlayerId, amount: number): void {
+    const before = this.state.players[player]?.life;
+    this.changeLife(player, -amount);
+    const lost = before === undefined ? 0 : before - this.state.players[player].life;
+    const resolving = this.state.resolvingSource;
+    if (lost <= 0 || resolving === undefined) return;
+    const object = this.state.objects[resolving.source];
+    if (
+      object === undefined ||
+      object.zone !== "battlefield" ||
+      object.timestamp !== resolving.timestamp ||
+      object.controller === player
+    ) {
+      return;
+    }
+    const tally = this.tallyOf(object);
+    tally.lifeTaken += lost;
+    tally.thisTurn.lifeTaken += lost;
+  }
+
+  /** `object`'s `tally`, its `thisTurn` share started over if that was an
+   * earlier turn's. */
+  private tallyOf(object: GameObject): NonNullable<GameObject["tally"]> {
+    const turn = this.state.turn.number;
+    const tally = (object.tally ??= {
+      lifeTaken: 0,
+      cardsDrawn: 0,
+      thisTurn: { turn, lifeTaken: 0, cardsDrawn: 0 },
+    });
+    if (tally.thisTurn.turn !== turn) tally.thisTurn = { turn, lifeTaken: 0, cardsDrawn: 0 };
+    return tally;
+  }
+
+  /** A card drawn while an ability resolves adds to its source's `tally`,
+   * when its controller drew it and the source is still the permanent that
+   * put the ability on the stack (its timestamp, rule 400.7). A spell's
+   * draws, and a draw step's, have no permanent to credit. */
+  private tallyDraw(player: PlayerId): void {
+    const resolving = this.state.resolvingSource;
+    if (resolving === undefined) return;
+    const object = this.state.objects[resolving.source];
+    if (
+      object === undefined ||
+      object.zone !== "battlefield" ||
+      object.timestamp !== resolving.timestamp ||
+      object.controller !== player
+    ) {
+      return;
+    }
+    const tally = this.tallyOf(object);
+    tally.cardsDrawn += 1;
+    tally.thisTurn.cardsDrawn += 1;
+  }
+
   private dealDamage(
     source: ObjectId,
     target: TargetRef,
@@ -24484,6 +24562,9 @@ export class Game {
     sourceLastKnown?: LastKnownInfo,
   ): number {
     if (amount <= 0) return 0;
+    // Who dealt it, for the log (a client's end-of-game damage tally).
+    const dealtBy = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
+    const by = dealtBy === undefined ? {} : { by: dealtBy };
 
     // Fog (rule 614): a turn-scoped shield prevents all combat damage — or
     // what sources matching a filter would deal, matched now (rule 615.1).
@@ -24522,7 +24603,8 @@ export class Game {
 
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return 0;
-      this.emit({ type: "damage-dealt", source, target, amount, combat });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
+      this.tallyDamage(source, target, amount);
       // The damage is dealt in full — lifelink, commander damage and "is
       // dealt damage" all see it — whatever it does to the life total.
       // From a source with infect it's that many poison counters instead of
@@ -24579,7 +24661,7 @@ export class Game {
     // 120.3c / 306.7) — it's not "marked" like a creature.
     if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
       object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
-      this.emit({ type: "damage-dealt", source, target, amount, combat });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
       this.emit({
         type: "loyalty-changed",
         object: target.object,
@@ -24600,7 +24682,7 @@ export class Game {
     if (this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)) {
       object.markedByDeathtouch = true;
     }
-    this.emit({ type: "damage-dealt", source, target, amount, combat });
+    this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
     if (asCounters) {
       const by = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
       this.addCounter(target, "-1/-1", amount, false, by);
@@ -24790,6 +24872,11 @@ export class Game {
     triggerLastKnown?: LastKnownInfo,
     /** The player the triggering event named — `LastKnownRefs.player`. */
     triggerPlayer?: PlayerId,
+    /** Keep a player who has left the game in an each-player/each-opponent
+     * scope — for counting what happened to players this turn, where one who
+     * lost life and then lost the game still counts (Tymna the Weaver's and
+     * Teysa, Opulent Oligarch's rulings). */
+    includeDeparted = false,
   ): PlayerId[] {
     if (who === "you") return [controller];
     if (who === "you-and-opponents-attacking-trigger-player") {
@@ -24829,7 +24916,7 @@ export class Game {
     ];
     return rotated.filter(
       (p) =>
-        !this.state.players[p].hasLost &&
+        (includeDeparted || !this.state.players[p].hasLost) &&
         (who === "each-player" || p !== controller) &&
         (who !== "each-other-opponent" || p !== triggerPlayer),
     );
@@ -24847,7 +24934,8 @@ export class Game {
   ): void {
     if (delta === 0) return;
     for (const p of this.scopedPlayers(controller, who, triggerObject, triggerLastKnown, triggerPlayer)) {
-      this.changeLife(p, delta);
+      if (delta < 0) this.loseLifeTallied(p, -delta);
+      else this.changeLife(p, delta);
     }
   }
 
@@ -25691,6 +25779,7 @@ export class Game {
       nthThisTurn: seat.cardsDrawnThisTurn,
       ...(firstInDrawStep ? { firstInDrawStep: true } : {}),
     });
+    this.tallyDraw(player);
   }
 
   /**
@@ -26628,6 +26717,8 @@ export class Game {
 
     // A change of zone resets everything that only applies in one zone.
     object.attacking = null;
+    // What it did there was that object's (rule 400.7).
+    delete object.tally;
     // A permission to play it from exile was about that stint (rule 400.7):
     // exiled again later, it's a new object with none. Every grant sets it
     // after the move that exiles the card.

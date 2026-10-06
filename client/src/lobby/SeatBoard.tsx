@@ -8,7 +8,8 @@ import { commanderPrintings, getActiveDeck, setActive } from '../deck-builder/de
 import type { DeckContents, PickableDeck } from '../deck-builder/decks.ts'
 import { CommanderArt } from './CommanderArt.tsx'
 import { DeckPickerModal } from './DeckPickerModal.tsx'
-import { BotSpeedControl } from '../ui/BotSpeedControl.tsx'
+import { RoomSettingsPanel } from './RoomSettingsPanel.tsx'
+import { randomBotDeck } from './randomBotDeck.ts'
 import './lobby.css'
 
 /** A table is 2-4 seats. Mirrors `PendingRoom`'s own limits, which are what
@@ -144,128 +145,137 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
 
   return (
     <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
-      <div className={`seat-board-grid${host ? ' has-controls' : ''}`}>
-        {game.seats.map((s, i) => {
-          const isMySeat = s.player === mySeatPlayer
-          // My own seat draws from the local deck, which has the whole
-          // printings map; every other seat only gets its commanders' ones,
-          // which the server forwards on its `SeatStatus`.
-          const deck: SlotDeck | null = isMySeat
-            ? myDeck === null
-              ? null
-              : { name: myDeck.name, commanders: commanderPrintings(myDeck) }
-            : s.deck
-          // My own seat's deck is editable until I ready up; any other
-          // still-open or bot-filled seat is editable by anyone at any time
-          // (a bot has no ready state of its own to gate on); a human's
-          // seat other than mine is never editable.
-          const deckEditable = isMySeat ? !amReady : host && !s.claimed
-          const removable = isRemovable(s)
+      <div className="seat-board-main">
+        <div className={`seat-board-grid${host ? ' has-controls' : ''}`}>
+          {game.seats.map((s, i) => {
+            const isMySeat = s.player === mySeatPlayer
+            // My own seat draws from the local deck, which has the whole
+            // printings map; every other seat only gets its commanders' ones,
+            // which the server forwards on its `SeatStatus`.
+            const deck: SlotDeck | null = isMySeat
+              ? myDeck === null
+                ? null
+                : { name: myDeck.name, commanders: commanderPrintings(myDeck) }
+              : s.deck
+            // My own seat's deck is editable until I ready up; any other
+            // still-open or bot-filled seat is editable by anyone at any time
+            // (a bot has no ready state of its own to gate on); a human's
+            // seat other than mine is never editable.
+            const deckEditable = isMySeat ? !amReady : host && !s.claimed
+            const removable = isRemovable(s)
 
-          return (
-            <div
-              key={s.player}
-              className={`seat-panel ${SEAT_CLASSES[i % SEAT_CLASSES.length]}${s.ready ? ' ready' : ''}`}
-            >
-              <div className="seat-panel-head">
-                <span className="seat-panel-name">
-                  {seatLabel(s)}
-                  {isMySeat && joined ? ' (you)' : ''}
-                </span>
-                {s.isHost ? <span className="seat-host-badge">Host</span> : null}
-                <span className="seat-panel-tag">
-                  {s.isBot
-                    ? 'Bot'
-                    : s.claimed
-                      ? s.ready
-                        ? 'Ready'
-                        : s.online
-                          ? 'Taken'
-                          : 'Taken · offline'
-                      : 'Open'}
-                </span>
-                {removable ? (
+            return (
+              <div
+                key={s.player}
+                className={`seat-panel ${SEAT_CLASSES[i % SEAT_CLASSES.length]}${s.ready ? ' ready' : ''}`}
+              >
+                <div className="seat-panel-head">
+                  <span className="seat-panel-name">
+                    {seatLabel(s)}
+                    {isMySeat && joined ? ' (you)' : ''}
+                  </span>
+                  {s.isHost ? <span className="seat-host-badge">Host</span> : null}
+                  <span className="seat-panel-tag">
+                    {s.isBot
+                      ? 'Bot'
+                      : s.claimed
+                        ? s.ready
+                          ? 'Ready'
+                          : s.online
+                            ? 'Taken'
+                            : 'Taken · offline'
+                        : 'Open'}
+                  </span>
+                  {removable ? (
+                    <button
+                      type="button"
+                      className="seat-panel-remove"
+                      title="Remove this seat"
+                      aria-label={`Remove seat ${i + 1}`}
+                      onClick={() => game.removeSeat(s.player)}
+                    >
+                      ×
+                    </button>
+                  ) : null}
+                </div>
+
+                <DeckSlot deck={deck} editable={deckEditable} onClick={() => setPickerSeat(s.player)} />
+
+                {isMySeat ? (
+                  amReady ? (
+                    <button type="button" className="seat-panel-ready-btn active" onClick={() => game.setReady(false)}>
+                      ✓ Ready
+                    </button>
+                  ) : (
+                    <>
+                      {!amReady ? (
+                        <input
+                          className="name-input"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Your name (optional)"
+                          maxLength={20}
+                        />
+                      ) : null}
+                      <button type="button" className="seat-panel-ready-btn" onClick={readyUp}>
+                        Ready
+                      </button>
+                    </>
+                  )
+                ) : host && !s.claimed && !s.isBot ? (
                   <button
                     type="button"
-                    className="seat-panel-remove"
-                    title="Remove this seat"
-                    aria-label={`Remove seat ${i + 1}`}
-                    onClick={() => game.removeSeat(s.player)}
+                    className="seat-panel-add-bot"
+                    onClick={() => game.addBot(s.player, randomBotDeck(game.seats))}
                   >
-                    ×
+                    Add bot (random deck)
                   </button>
                 ) : null}
               </div>
+            )
+          })}
 
-              <DeckSlot deck={deck} editable={deckEditable} onClick={() => setPickerSeat(s.player)} />
-
-              {isMySeat ? (
-                amReady ? (
-                  <button type="button" className="seat-panel-ready-btn active" onClick={() => game.setReady(false)}>
-                    ✓ Ready
-                  </button>
-                ) : (
-                  <>
-                    {!amReady ? (
-                      <input
-                        className="name-input"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Your name (optional)"
-                        maxLength={20}
-                      />
-                    ) : null}
-                    <button type="button" className="seat-panel-ready-btn" onClick={readyUp}>
-                      Ready
-                    </button>
-                  </>
-                )
-              ) : host && !s.claimed && !s.isBot ? (
-                <button type="button" className="seat-panel-add-bot" onClick={() => game.addBot(s.player)}>
-                  Add bot (default deck)
+          {host ? (
+            <div className="seat-controls">
+              {canAddSeat ? (
+                <button type="button" className="seat-add-panel" onClick={game.addSeat}>
+                  <span className="seat-add-plus">+</span>
+                  <span className="seat-add-label">Add seat</span>
+                </button>
+              ) : null}
+              {lastRemovable !== null ? (
+                <button
+                  type="button"
+                  className="seat-add-panel remove"
+                  title={`Remove ${seatLabel(lastRemovable)}'s seat`}
+                  onClick={() => game.removeSeat(lastRemovable.player)}
+                >
+                  <span className="seat-add-plus">−</span>
+                  <span className="seat-add-label">Remove seat</span>
                 </button>
               ) : null}
             </div>
-          )
-        })}
+          ) : null}
+        </div>
 
-        {host ? (
-          <div className="seat-controls">
-            {canAddSeat ? (
-              <button type="button" className="seat-add-panel" onClick={game.addSeat}>
-                <span className="seat-add-plus">+</span>
-                <span className="seat-add-label">Add seat</span>
+        <aside className="seat-board-side">
+          <RoomSettingsPanel game={game} seatLabel={seatLabel} />
+
+          <div className="seat-board-footer">
+            {host ? (
+              <button type="button" className="start-game-btn" disabled={!allReady} onClick={game.startGame}>
+                Start Game
               </button>
             ) : null}
-            {lastRemovable !== null ? (
-              <button
-                type="button"
-                className="seat-add-panel remove"
-                title={`Remove ${seatLabel(lastRemovable)}'s seat`}
-                onClick={() => game.removeSeat(lastRemovable.player)}
-              >
-                <span className="seat-add-plus">−</span>
-                <span className="seat-add-label">Remove seat</span>
-              </button>
+            {!allReady ? (
+              <p className="muted seat-board-hint">Waiting for everyone to ready up…</p>
+            ) : !host ? (
+              <p className="muted seat-board-hint">
+                Waiting for {hostSeat ? playerLabel(hostSeat.player, game.seats) : 'the host'} to start the game…
+              </p>
             ) : null}
           </div>
-        ) : null}
-      </div>
-
-      <div className="seat-board-footer">
-        <BotSpeedControl speed={game.botSpeed} editable={host} onChange={game.setBotSpeed} />
-        {host ? (
-          <button type="button" className="start-game-btn" disabled={!allReady} onClick={game.startGame}>
-            Start Game
-          </button>
-        ) : null}
-        {!allReady ? (
-          <p className="muted seat-board-hint">Waiting for everyone to ready up…</p>
-        ) : !host ? (
-          <p className="muted seat-board-hint">
-            Waiting for {hostSeat ? playerLabel(hostSeat.player, game.seats) : 'the host'} to start the game…
-          </p>
-        ) : null}
+        </aside>
       </div>
 
       {pickerSeat !== null ? (

@@ -8,7 +8,7 @@ are JSON, one file per batch (`batch`, `status`, `authored: [{name, files, teste
 or a `new:*` key described in the file:
 
 - `engine/data/sweep-2/` — card sweep 2 (2026-09-25): C1–C3 (commanders), K1–K2 (top-2000 cards).
-- `engine/data/sweep-3/` — the top-5000 batches since (B4–B35) and the TDC precons (TDC1–TDC5).
+- `engine/data/sweep-3/` — the top-5000 batches since (B4–B36) and the TDC precons (TDC1–TDC5).
 
 The counts below are as each batch measured them. Features have landed since, so recheck a
 card's Oracle text and the engine before trusting a "blocked" — in particular
@@ -414,7 +414,8 @@ Five more passes, all merged (156 cards):
   Inferno, Urza's Ruinous Blast), "shuffle it into its owner's library instead" (Nexus of Fate,
   Darksteel Colossus at rank 2408), and offering every alternative cost that applies rather than
   the first found (Dracogenesis, Rooftop Storm — Jodah shows the gap today).
-- **Batch 19 (2026-10-04)** triaged ranks 2347–2428: 36 authored (God-Eternal Oketra, Halvar, God
+
+- **Batch 19 (2026-10-04)** triaged ranks 2347–2428: 36 authored (God-Eternal Oketra, Halvar, God
   of Battle, Dowsing Dagger, Samwise Gamgee, Orthion, Hero of Lavabrink, Zealous Conscripts and 30
   more — `top5000-batch-19a`–`19d.test.ts`); 26 blocked (`B19.json`). No engine change.
   Nothing blocks more than two of them; the pairs are a modal activated ability with targeted
@@ -459,7 +460,9 @@ Five more passes, all merged (156 cards):
 
 - **Batch 35 (2026-10-04, the no-engine-work pass)** triaged ranks 6200–6428: 86 authored (Incremental Blight, Whisper, Blood Liturgist, Sarkhan's Unsealing, Oni-Cult Anvil, SP//dr, Piloted by Peni and 81 more — `top10000-batch-35a`–`h.test.ts`); 113 blocked (`B35.json`), each skipped at the first sign of engine work. Most-cited blockers: `effect:copy-exceptions` (3), `new:unverified-in-mass-pass` (3), `new:plot` (2), `mechanic:role-tokens` (2), `effect:reflexive-trigger` (2).
 
-Past rank 6428, nothing is triaged.
+- **Batch 36 (2026-10-06, the no-engine-work pass)** triaged ranks 6429–6671: 103 authored (Dream Trawler, Pestilent Syphoner, Thing in the Ice, Teysa, Opulent Oligarch, Court of Bounty, Akroma's Vengeance and 97 more — `top10000-batch-36a`–`h.test.ts`); 97 blocked (`B36.json`), each skipped at the first sign of engine work. Most-cited blockers: `effect:emblem-triggered-abilities` (5), `mechanic:face-down` (4), and two each for suspend, saddle, dice, waterbend, retrace and random choice. Two engine gaps found on the way (`docs/engine-gaps.md`): a sacrifice trigger misses its own sacrifice (Esoteric Duplicator), and a tapped-for-mana trigger adds only a fixed amount (Elvish Guidance). One engine fix: "each player who lost life this turn" now counts a player who has since lost the game (Tymna's, Teysa's rulings), which unblocked Teysa, Opulent Oligarch.
+
+Past rank 6671, nothing is triaged.
 
 ## Card sweep 2 (2026-09-25)
 

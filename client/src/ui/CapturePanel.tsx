@@ -3,6 +3,7 @@ import type { ClipboardEvent } from 'react'
 import type { PlayerId } from 'engine/client'
 import type { NetworkGame } from '../net/useNetworkGame.ts'
 import { playerLabel } from '../format.ts'
+import { useEscape } from './useEscape.ts'
 import './capture-panel.css'
 
 /**
@@ -87,6 +88,7 @@ export function CapturePanel({
     clearCapture()
     onClose()
   }
+  useEscape(close)
   const entries = capture.entries ?? []
   // The bots that have decisions kept, in seating order.
   const seating = game.view?.turnOrder ?? []

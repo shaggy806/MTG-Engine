@@ -215,6 +215,7 @@ import _poolSteadfastSentry from "../pool/steadfast-sentry.js";
 import _poolStirge from "../pool/stirge.js";
 import _poolStompingGround from "../pool/stomping-ground.js";
 import _poolStrandsOfNight from "../pool/strands-of-night.js";
+import _poolStrefanMaurerProgenitor from "../pool/strefan-maurer-progenitor.js";
 import _poolStubbornDenial from "../pool/stubborn-denial.js";
 import _poolSunBlessedPeak from "../pool/sun-blessed-peak.js";
 import _poolSunlitMarsh from "../pool/sunlit-marsh.js";
@@ -267,6 +268,7 @@ import _poolZephyrCharge from "../pool/zephyr-charge.js";
 import _poolZndrspltEyeOfWisdom from "../pool/zndrsplt-eye-of-wisdom.js";
 import _tokensBatToken from "../tokens/bat-token.js";
 import _tokensClueToken from "../tokens/clue-token.js";
+import _tokensEldraziHorrorToken from "../tokens/eldrazi-horror-token.js";
 import _tokensGolemTrampleToken from "../tokens/golem-trample-token.js";
 import _tokensHumanWarriorToken from "../tokens/human-warrior-token.js";
 import _tokensPegasusToken22 from "../tokens/pegasus-token-2-2.js";
@@ -486,6 +488,7 @@ const shard: CardShard = {
     _poolStirge,
     _poolStompingGround,
     _poolStrandsOfNight,
+    _poolStrefanMaurerProgenitor,
     _poolStubbornDenial,
     _poolSunBlessedPeak,
     _poolSunlitMarsh,
@@ -540,6 +543,7 @@ const shard: CardShard = {
   tokens: [
     _tokensBatToken,
     _tokensClueToken,
+    _tokensEldraziHorrorToken,
     _tokensGolemTrampleToken,
     _tokensHumanWarriorToken,
     _tokensPegasusToken22,

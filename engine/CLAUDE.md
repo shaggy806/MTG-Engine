@@ -84,7 +84,8 @@ authoring, run just the files you touched** (`npx vitest run cmdr-sokka pool.tes
   Run before authoring.
 - `card:scaffold -- "Name"`: writes a draft card file into `cards/scaffold/`.
 - `gen:cards`: regenerates the card barrel after adding a card.
-- `card:verify` / `card:text`: checks the pool against Scryfall (structure / rules text).
+- `card:verify` / `card:text`: checks the pool against Scryfall (structure / rules text). `-- --offline`
+  answers from the Oracle snapshot instead, where Scryfall is unreachable (a cloud session).
 - `test`, `typecheck`, `build`. The fuzzer and scripts run `dist/`, so **build first**.
 - `play:random -- --games N [--players 4] [--seed S] [--with "Card"]`: the fuzzer.
 - `bot:bench`, `bot:scenarios`, `bot:behaviour`, `bot:crackback`, `bot:ab`, `bot:diff`,
