@@ -40,7 +40,7 @@
   background-color: var(--bg);
   /* the same felt sheen the table itself uses (see App.css's .app), so the
      front door and the game look like one product */
-  background-image: radial-gradient(ellipse at 50% -10%, #2a1e14 0%, transparent 62%);
+  background-image: radial-gradient(ellipse at 50% -10%, #1a1a24 0%, transparent 62%);
 }
 
 /*
@@ -195,7 +195,7 @@
   border-radius: 0;
 }
 .landing-notice.bad {
-  background: rgba(200, 71, 61, 0.14);
+  background: rgba(239, 43, 43, 0.14);
   border-color: var(--bad);
   cursor: pointer;
 }
@@ -268,7 +268,7 @@
   padding: clamp(9px, 1.4vh, 13px) 20px;
   font-size: clamp(14px, 1.3vw, 16px);
   font-weight: 600;
-  color: #140f0a;
+  color: #141007;
   background: var(--accent);
   border: 1px solid var(--accent);
   border-radius: 0;

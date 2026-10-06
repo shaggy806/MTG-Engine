@@ -106,7 +106,7 @@
   padding: 1px 6px;
   border-radius: 0;
   background: var(--good);
-  color: #140f0a;
+  color: #141007;
   font-weight: 700;
 }
 
@@ -417,7 +417,7 @@
   align-items: center;
   justify-content: center;
   padding: 2vh 2vw;
-  background: rgba(14, 10, 7, 0.85);
+  background: rgba(8, 8, 11, 0.85);
 }
 .rr-box {
   container-type: inline-size;
@@ -508,7 +508,7 @@
 }
 .rr-option.chosen {
   border-color: var(--good);
-  background: rgba(122, 168, 91, 0.08);
+  background: rgba(34, 197, 94, 0.08);
 }
 .rr-option.blocked {
   cursor: not-allowed;
@@ -528,7 +528,7 @@
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
-  color: #140f0a;
+  color: #141007;
   background: var(--good);
 }
 .rr-flag.blocked {

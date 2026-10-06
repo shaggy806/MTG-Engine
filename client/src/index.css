@@ -1,47 +1,47 @@
-/* Board redesign phase 8: felt-table/gold palette + Cinzel (headings, whose-
-   turn) / JetBrains Mono (numbers); the body in Alegreya Sans, a bookish
-   humanist sans, since 2026-10-06 (Inter before) ported from the mockup artifact, layered
-   onto the existing token *names* so every rule already written against
-   --bg/--panel/--border/etc. picks up the new look without a rename. */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Alegreya+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+/* Board redesign phase 8: Cinzel (headings, whose-turn) / JetBrains Mono
+   (numbers), ported from the mockup artifact; the palette and body font
+   since replaced (below), layered onto the existing token *names* so every
+   rule already written against --bg/--panel/--border/etc. picks up the new
+   look without a rename. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
   color-scheme: dark;
-  /* Ink and gold (2026-10-06): a tabletop rather than a dashboard — walnut
-     and leather browns under parchment text, antique gold for the accent
-     (links, selection, the primary button) where a stock blue was, and
-     jewel tones for the seats. Swap these back to revert the look; every
-     rule reads them by name. */
-  --bg: #15110d;
-  --panel: #201a14;
-  --panel-2: #2a2219;
-  --border: #3b3024;
+  /* Mana (2026-10-06): a neutral near-black, so the colour comes from the
+     game -- a vivid gold accent (links, selection, the primary button), and
+     the seats as black, red, green and blue mana at full strength. Chosen
+     over a stock slate-and-blue and a softer ink-and-gold; swap these back
+     to revert the look, since every rule reads them by name. */
+  --bg: #0b0b0e;
+  --panel: #15151b;
+  --panel-2: #1d1d26;
+  --border: #2e2e3d;
   /* a lighter divider than --border -- used inside a panel (e.g. the
      quadrant head/body split) where a full --border would read too heavy */
-  --border-soft: #2c241b;
-  --text: #efe6d2;
-  --muted: #b0a088;
-  --muted-dim: #786a55;
-  --accent: #d6a54a;
-  --accent-dim: #7f6431;
-  --accent-bg: rgba(214, 165, 74, 0.14);
+  --border-soft: #22222c;
+  --text: #f5f3ee;
+  --muted: #a8a6b8;
+  --muted-dim: #6c6a80;
+  --accent: #ffb81c;
+  --accent-dim: #8a5f00;
+  --accent-bg: rgba(255, 184, 28, 0.14);
   /* Brighter than the accent, for what's lit on the board (the stack's
      glow, a legend's crest), so a highlight still stands out against it. */
-  --gold: #e6bd62;
-  --good: #7aa85b;
-  --bad: #c8473d;
-  /* Amber rather than yellow: a yellow sat too close to the gold accent. */
-  --warn: #e08a3c;
+  --gold: #ffc93c;
+  --good: #22c55e;
+  --bad: #ef2b2b;
+  /* Orange rather than yellow: a yellow sat too close to the gold accent. */
+  --warn: #ff8a00;
 
   /* per-player identity colors, by seating order (not table position) */
-  --seat-a: #a98bd9;
-  --seat-a-bg: rgba(169, 139, 217, 0.08);
-  --seat-b: #e0774a;
-  --seat-b-bg: rgba(224, 119, 74, 0.08);
-  --seat-c: #4fb39a;
-  --seat-c-bg: rgba(79, 179, 154, 0.08);
-  --seat-d: #5f9be0;
-  --seat-d-bg: rgba(95, 155, 224, 0.08);
+  --seat-a: #b34dff;
+  --seat-a-bg: rgba(179, 77, 255, 0.08);
+  --seat-b: #ff4d3d;
+  --seat-b-bg: rgba(255, 77, 61, 0.08);
+  --seat-c: #2fd36b;
+  --seat-c-bg: rgba(47, 211, 107, 0.08);
+  --seat-d: #2f8cff;
+  --seat-d-bg: rgba(47, 140, 255, 0.08);
 
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
@@ -60,11 +60,8 @@
      here: it depends on how much room that permanent's own board has, so
      it's declared per board, in App.css's `.board` rule. */
 
-  font-family: 'Alegreya Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Barlow', system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 15px;
-  /* Alegreya's own figures are old-style, which sit low beside capitals
-     ("Player 1", "library 53"); a game reads numbers all the time. */
-  font-variant-numeric: lining-nums;
   color: var(--text);
   background: var(--bg);
 }

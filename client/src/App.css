@@ -34,7 +34,7 @@
   /* a faint felt-table sheen -- background-color (not this shorthand) is
      what the active-seat wash below transitions, so it layers on top
      instead of getting wiped by it */
-  background-image: radial-gradient(ellipse at 50% -10%, #2a1e14 0%, transparent 60%);
+  background-image: radial-gradient(ellipse at 50% -10%, #1a1a24 0%, transparent 60%);
   transition: background-color 0.6s ease;
 }
 /* whose turn it is, as a faint wash over the whole page */
@@ -277,7 +277,7 @@
 }
 .phase-steps li.current .phase-pip {
   background: var(--accent);
-  color: #140f0a;
+  color: #141007;
   font-weight: 700;
   box-shadow: 0 0 8px var(--accent);
 }
@@ -287,7 +287,7 @@
   color: var(--warn);
 }
 .phase-steps li.stop.current .phase-pip {
-  color: #140f0a;
+  color: #141007;
   border-color: var(--warn);
   box-shadow: 0 0 0 1px var(--warn), 0 0 8px var(--accent);
 }
@@ -446,7 +446,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(14, 10, 7, 0.6);
+  background: rgba(8, 8, 11, 0.6);
 }
 .result-box {
   display: flex;
@@ -544,7 +544,7 @@
 .result-actions .result-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #140f0a;
+  color: #141007;
   font-weight: 600;
 }
 
@@ -780,7 +780,7 @@
   padding: 1px 6px 1px 1px;
   border-radius: 0;
   border: 1px solid var(--border);
-  background: #231c16;
+  background: #18181f;
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -793,7 +793,7 @@
   flex: none;
   border-radius: 0;
   overflow: hidden;
-  background: #3a3026;
+  background: #2a2a36;
   box-shadow: 0 0 0 2px var(--seat-color, var(--border));
 }
 .cmdr-dmg-art > img {
@@ -1566,7 +1566,7 @@
   overflow: hidden;
   text-align: left;
   color: var(--text);
-  background: #2a231b;
+  background: #20202a;
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: default;
@@ -1579,7 +1579,7 @@
   display: block;
   height: calc(var(--card-w) * 0.6);
   flex-shrink: 0;
-  background: var(--tint-bg, #1b1612);
+  background: var(--tint-bg, #121217);
 }
 .cmdt-art > img {
   width: 100%;
@@ -1670,11 +1670,11 @@
   justify-content: center;
   border-radius: 8px;
   border: 1px solid var(--border);
-  /* A leather back with a faint gold oval, in the ink-and-gold palette
-     (index.css) — the indigo it was sat apart from everything around it. */
+  /* A dark leather back with a gold oval, picking up the accent (index.css)
+     — the indigo it was sat apart from everything around it. */
   background:
-    radial-gradient(ellipse 36% 44% at center, rgba(230, 189, 98, 0.16) 0%, rgba(230, 189, 98, 0.05) 70%, transparent 72%),
-    linear-gradient(160deg, #4a2f1c, #24160d);
+    radial-gradient(ellipse 36% 44% at center, rgba(255, 184, 28, 0.22) 0%, rgba(255, 184, 28, 0.06) 70%, transparent 72%),
+    linear-gradient(160deg, #3a2412, #160d06);
 }
 .card-back-count {
   display: grid;
@@ -1682,7 +1682,7 @@
   width: clamp(32px, 3.2vw, 48px);
   height: clamp(32px, 3.2vw, 48px);
   border-radius: 50%;
-  border: 2px solid rgba(230, 189, 98, 0.55);
+  border: 2px solid rgba(255, 201, 60, 0.55);
   font-size: clamp(12px, 1.2vw, 16px);
   font-weight: 800;
   color: var(--text);
@@ -2026,7 +2026,7 @@
   overflow: hidden;
   text-align: left;
   color: var(--text);
-  background: #2a231b;
+  background: #20202a;
   border: 1px solid var(--border);
   border-radius: 8px;
   cursor: default;
@@ -2060,7 +2060,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgba(6, 4, 3, 0.45);
+  background: rgba(4, 4, 6, 0.45);
   border-radius: inherit;
   pointer-events: none;
 }
@@ -2122,7 +2122,7 @@
   align-items: center;
   gap: calc(3px * var(--ct-scale, 1));
   padding: calc(3px * var(--ct-scale, 1)) calc(5px * var(--ct-scale, 1));
-  background: #3a3026;
+  background: #2a2a36;
   border-bottom: 1px solid var(--border);
 }
 .ct-name {
@@ -2215,7 +2215,7 @@
   font-weight: 700;
   line-height: 1;
   border-radius: 50%;
-  color: #140f0a;
+  color: #141007;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
   vertical-align: -2px;
 }
@@ -2283,7 +2283,7 @@
   position: relative;
   height: calc(86px * var(--ct-scale, 1));
   flex-shrink: 0;
-  background: var(--tint-bg, #1b1612);
+  background: var(--tint-bg, #121217);
 }
 /* art-first layout (the hand): no separate title bar to give the art a
    fixed pixel height against -- it's a proportion of the card's own (now
@@ -2322,7 +2322,7 @@
 /* Shared by .ct-art, .mt-art and .cmdt-art — the art box's identity-coloured
    fallback, visible whenever the image hasn't loaded or is blocked. Set as a
    custom property the three art rules read as `background: var(--tint-bg,
-   #1b1612)`, rather than a `background` here: these are single-class
+   #121217)`, rather than a `background` here: these are single-class
    selectors, so an art rule declared later in the file would otherwise win
    the cascade outright and the tint would silently never apply. */
 .tint-W {
@@ -2352,7 +2352,7 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: #f4f4f4;
-  background: #231c16;
+  background: #18181f;
   border: 1px solid var(--border);
   border-radius: 7px 3px 7px 3px;
 }
@@ -2385,7 +2385,7 @@
      single line instead of just ellipsis-truncating. Unset (1) elsewhere. */
   font-size: calc(8.5px * var(--type-scale, 1) * var(--ct-scale, 1));
   color: var(--muted);
-  background: #3a3026;
+  background: #2a2a36;
   white-space: nowrap;
   /* still the fallback once even the shrink floor doesn't fully fit. */
   overflow: hidden;
@@ -2474,7 +2474,7 @@
   font-size: 8px;
   font-weight: 700;
   line-height: 1.35;
-  color: #140f0a;
+  color: #141007;
   background: #cfcfcf;
   border-radius: 3px;
   padding: 0 3px;
@@ -2511,7 +2511,7 @@
   max-width: calc(100% - 8px * var(--ct-scale, 1));
   font-size: calc(9px * var(--ct-scale, 1));
   font-weight: 700;
-  color: #140f0a;
+  color: #141007;
   background: var(--warn);
   border-radius: 0;
   padding: 0 calc(4px * var(--ct-scale, 1));
@@ -2528,7 +2528,7 @@
   place-items: center;
   font-size: 10px;
   font-weight: 800;
-  color: #140f0a;
+  color: #141007;
   background: var(--accent);
   border-radius: 9px;
   z-index: 2;
@@ -2557,7 +2557,7 @@
   font-size: 10px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: #140f0a;
+  color: #141007;
   background: var(--warn);
   border-radius: 9px;
   white-space: nowrap;
@@ -2665,7 +2665,7 @@
   height: var(--mt-banner-h);
   line-height: var(--mt-banner-h);
   padding: 0 4px;
-  background: #3a3026;
+  background: #2a2a36;
   border-bottom: 1px solid rgba(0, 0, 0, 0.45);
   font-size: calc(var(--mt-banner-h) * 0.66);
   font-weight: 600;
@@ -2681,7 +2681,7 @@
 .mini-tile.legendary .mt-banner,
 .card-tile.legendary .ct-title,
 .card-tile.legendary .ct-name-row {
-  background: linear-gradient(180deg, #5c4a22 0%, #3a3026 90%);
+  background: linear-gradient(180deg, #5c4a22 0%, #2a2a36 90%);
   box-shadow:
     inset 0 2px 0 var(--gold),
     inset 0 -1px 0 rgb(205 166 83 / 0.55);
@@ -2699,7 +2699,7 @@
 .mt-art {
   position: absolute;
   inset: 0;
-  background: var(--tint-bg, #1b1612);
+  background: var(--tint-bg, #121217);
 }
 .mt-art img {
   width: 100%;
@@ -2737,7 +2737,7 @@
   font-size: calc(var(--kw-size) * 0.72);
   line-height: 1;
   color: #fff;
-  background: rgba(14, 10, 7, 0.85);
+  background: rgba(8, 8, 11, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
 }
@@ -2748,7 +2748,7 @@
   max-width: calc(100% - 4px);
   font-size: 8px;
   font-weight: 700;
-  color: #140f0a;
+  color: #141007;
   background: var(--warn);
   border-radius: 3px;
   padding: 0 3px;
@@ -2790,7 +2790,7 @@
   font-variant-numeric: tabular-nums;
   line-height: 1;
   color: #8be0a8;
-  background: rgba(14, 10, 7, 0.85);
+  background: rgba(8, 8, 11, 0.85);
   border: 1px solid rgba(139, 224, 168, 0.45);
   border-radius: calc(var(--ctr-size) / 2);
   white-space: nowrap;
@@ -2892,7 +2892,7 @@
   align-self: flex-start;
   font-size: clamp(10px, 1.4vh, 13px);
   font-weight: 700;
-  color: #140f0a;
+  color: #141007;
   background: #9fc3e8;
   border-radius: 0;
   padding: 0 0.5em;
@@ -3234,7 +3234,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(14, 10, 7, 0.92);
+  background: rgba(8, 8, 11, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3315,7 +3315,7 @@
 .zone-viewer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(14, 10, 7, 0.92);
+  background: rgba(8, 8, 11, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3403,7 +3403,7 @@
   border-radius: 50%;
   font-size: 12px;
   line-height: 1;
-  background: rgba(14, 10, 7, 0.78);
+  background: rgba(8, 8, 11, 0.78);
   color: var(--text);
 }
 
@@ -4022,7 +4022,7 @@
   top: 16vh;
   padding: 0.5em 1.4em;
   border-radius: 0;
-  background: rgba(24, 18, 13, 0.82);
+  background: rgba(17, 17, 22, 0.82);
   border: 1px solid var(--accent-dim);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
   font-family: 'Cinzel', serif;
@@ -4161,7 +4161,7 @@
   align-items: center;
   justify-content: center;
   padding: clamp(10px, 2vh, 28px) clamp(10px, 2vw, 28px);
-  background: rgba(9, 6, 4, 0.82);
+  background: rgba(5, 5, 8, 0.82);
   backdrop-filter: blur(3px);
 }
 .hand-grid-box {
@@ -4238,7 +4238,7 @@
   z-index: 2;
   box-shadow:
     inset 0 0 0 2px var(--bad),
-    inset 0 0 1.2em rgba(200, 71, 61, 0.55);
+    inset 0 0 1.2em rgba(239, 43, 43, 0.55);
   pointer-events: none;
 }
 .aimed-mark {
@@ -4287,8 +4287,8 @@
 .stack-entry .card-tile.aimed {
   border-color: var(--bad);
   box-shadow:
-    0 0 0 2px rgba(200, 71, 61, 0.8),
-    0 0 16px 3px rgba(200, 71, 61, 0.6),
+    0 0 0 2px rgba(239, 43, 43, 0.8),
+    0 0 16px 3px rgba(239, 43, 43, 0.6),
     0 8px 24px rgba(0, 0, 0, 0.55);
   animation: none;
 }
@@ -4305,7 +4305,7 @@
   border-radius: inherit;
   box-shadow:
     inset 0 0 0 2px var(--bad),
-    inset 0 0 1.4em rgba(200, 71, 61, 0.3);
+    inset 0 0 1.4em rgba(239, 43, 43, 0.3);
   pointer-events: none;
 }
 .pp-aimed {
