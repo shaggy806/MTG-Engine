@@ -82,9 +82,15 @@ const none = (): void => {};
 const HARMFUL_COUNTERS: ReadonlySet<string> = new Set(["-1/-1", "blight", "flood", "stun"]);
 
 /** The sign of an amount: a live count is never negative unless it is scaled
- * by a negative `times`. */
+ * by a negative `times`, or is a `product` with a negative factor — "-X/-X"
+ * is written `{ product: ["x", -1] }` (Necropolis Fiend, Grim Hireling,
+ * Defile), and read as a pump until that was handled, so those aimed their
+ * shrink at their own creatures. */
 function amountSign(amount: EffectAmount): number {
   if (typeof amount === "number") return Math.sign(amount);
+  if (typeof amount === "object" && amount !== null && "product" in amount) {
+    return amount.product.reduce<number>((sign, factor) => sign * amountSign(factor), 1);
+  }
   if (typeof amount === "object" && amount !== null && "times" in amount) {
     const times = (amount as { readonly times?: number }).times;
     if (typeof times === "number" && times < 0) return -1;
