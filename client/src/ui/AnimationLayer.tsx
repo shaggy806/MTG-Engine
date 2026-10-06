@@ -2241,8 +2241,14 @@ export function AnimationLayer({
             const { source } = cue.event
             const object = cue.event.type === 'ability-triggered' ? cue.event.object : cue.event.ability
             runPulse(source, cue.delay)
-            if (object !== undefined && flyAbilityIn(object, source, cue.delay, scaled(TRIGGER_STEP_MS))) {
-              abilitiesFlying.add(object)
+            if (object !== undefined) {
+              // Its arrows wait for it to land (`usePlayback` marked it
+              // arriving); one that doesn't fly is there already.
+              const duration = scaled(TRIGGER_STEP_MS)
+              if (flyAbilityIn(object, source, cue.delay, duration)) {
+                abilitiesFlying.add(object)
+                window.setTimeout(() => bus.aims.landed(object), cue.delay + duration)
+              } else bus.aims.landed(object)
             }
           }
           else if (cue.event.type === 'permanent-entered-battlefield' && cue.putDown) {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { GameEvent, LegalAction, Phase, PlayerView } from 'engine/client'
+import type { GameEvent, LegalAction, ObjectId, Phase, PlayerView } from 'engine/client'
 import { phaseOfStep } from 'engine/client'
 import { retimeFlights, scheduleEvents } from './animationSchedule.ts'
 import type { ScheduledEvent } from './animationSchedule.ts'
@@ -57,6 +57,16 @@ export interface PlaybackControls {
  * watching those frames, so they're shown rather than played.
  */
 const MAX_QUEUED_FRAMES = 4
+
+/** The stack object a second-half event flies into the pile, if any: a spell
+ * cast this frame and held to fly in (`putDown`), or a triggered or
+ * activated ability joining the stack (a mana ability has no `ability`). */
+function arrivingOnStack(event: GameEvent, putDown: boolean): ObjectId[] {
+  if (event.type === 'spell-cast') return putDown ? [event.object] : []
+  if (event.type === 'ability-triggered') return [event.object]
+  if (event.type === 'ability-activated') return event.ability === undefined ? [] : [event.ability]
+  return []
+}
 
 /**
  * Plays the server's frames out one at a time and reports what the player
@@ -246,13 +256,12 @@ export function usePlayback(
       // Every resolution has left the stack by now; the new board's arrows
       // are its own.
       busRef.current.aims.clear()
-      // A spell flying into its place on the stack points at nothing until
-      // it's there: marked before the board mounts, so its arrows never draw
-      // from an empty spot.
+      // A spell or ability flying into its place on the stack points at
+      // nothing until it's there: marked before the board mounts, so its
+      // arrows never draw from an empty spot. `AnimationLayer` releases each
+      // as it lands, or at once if it doesn't fly.
       if (watching) {
-        busRef.current.aims.arrive(
-          schedule.after.flatMap((i) => (i.putDown && i.event.type === 'spell-cast' ? [i.event.object] : [])),
-        )
+        busRef.current.aims.arrive(schedule.after.flatMap((i) => arrivingOnStack(i.event, i.putDown === true)))
       }
       revisionRef.current += 1
       lastViewRef.current = next.view
