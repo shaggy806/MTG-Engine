@@ -26,7 +26,7 @@
   cursor: pointer;
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--border);
-  border-radius: 0.4rem;
+  border-radius: 0;
 }
 .capture-photo-pick input {
   display: none;
@@ -34,7 +34,7 @@
 .capture-photo-thumb {
   max-height: 4rem;
   max-width: 8rem;
-  border-radius: 0.3rem;
+  border-radius: 0;
   border: 1px solid var(--border);
 }
 .capture-photo-name {
@@ -142,7 +142,7 @@
   overflow-y: auto;
   padding: 0.4rem;
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
+  border-radius: 0;
 }
 .capture-options label {
   display: flex;
@@ -156,7 +156,7 @@
   background: var(--panel-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 0.4rem;
+  border-radius: 0;
   padding: 0.4rem;
   font: inherit;
 }

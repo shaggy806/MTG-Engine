@@ -147,7 +147,7 @@
   text-align: center;
   background: linear-gradient(160deg, var(--panel-2), var(--panel));
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 0;
 }
 /* Decorative only — the gradient above is the real background, so a card
    image that fails to load (or a Scryfall lookup that doesn't resolve) just
@@ -192,7 +192,7 @@
   color: var(--text);
   background: var(--accent-bg);
   border: 1px solid var(--accent-dim);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-notice.bad {
   background: rgba(200, 71, 61, 0.14);
@@ -221,7 +221,7 @@
   padding: clamp(15px, 2.6vh, 26px);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
 }
 .landing-card h2 {
   font-size: clamp(17px, 1.7vw, 21px);
@@ -271,7 +271,7 @@
   color: #140f0a;
   background: var(--accent);
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-cta:hover:not(:disabled) {
   background: var(--gold);
@@ -320,7 +320,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-code-input::placeholder {
   color: var(--muted-dim);
@@ -335,7 +335,7 @@
   min-height: 44px;
   padding: 0 18px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 0;
 }
 .landing-field-hint {
   font-size: 11px;
@@ -377,7 +377,7 @@
   text-decoration: none;
   background: var(--panel);
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
+  border-radius: 0;
 }
 .landing-nav-card:hover {
   background: var(--panel-2);

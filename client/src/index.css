@@ -82,7 +82,7 @@ button {
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 5px 12px;
   cursor: pointer;
 }
@@ -111,7 +111,7 @@ input:where([type='text'], [type='search'], [type='email'], [type='url'], :not([
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 5px 10px;
 }
 input:focus-visible {
@@ -208,7 +208,7 @@ h3 {
 }
 .pool-progress-track {
   height: 0.45em;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--panel-2);
   border: 1px solid var(--border);
   overflow: hidden;

@@ -73,7 +73,7 @@
   text-align: left;
   background: none;
   border: none;
-  border-radius: 5px;
+  border-radius: 0;
   padding: 5px 8px;
   color: var(--text);
   display: flex;
@@ -104,7 +104,7 @@
   margin-left: auto;
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--good);
   color: #140f0a;
   font-weight: 700;
@@ -139,7 +139,7 @@
   font-size: 20px;
   background: none;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 2px 6px;
   color: var(--text);
 }
@@ -167,7 +167,7 @@
 
 .db-legality {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: var(--panel);
 }
@@ -195,7 +195,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 6px 10px;
 }
 .db-type-filters {
@@ -233,7 +233,7 @@
   max-height: 60vh;
   overflow-y: auto;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
 }
 .db-card-list li {
   display: flex;
@@ -311,7 +311,7 @@
   color: var(--text);
   background: var(--panel-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 8px 10px;
   resize: vertical;
 }
@@ -326,7 +326,7 @@
 }
 .db-import-progress-track {
   height: 6px;
-  border-radius: 3px;
+  border-radius: 0;
   background: var(--panel-2);
   border: 1px solid var(--border);
   overflow: hidden;
@@ -364,7 +364,7 @@
 .db-import-report {
   max-width: 760px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--accent);
   background: var(--accent-bg);
   margin-bottom: 12px;
@@ -431,7 +431,7 @@
   padding: 2vh 2vw;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
 }
 .rr-head {
   display: flex;
@@ -500,7 +500,7 @@
   text-align: left;
   background: none;
   border: 2px solid transparent;
-  border-radius: 12px;
+  border-radius: 0;
   cursor: pointer;
 }
 .rr-option:hover:not(:disabled) {
@@ -524,7 +524,7 @@
 .rr-flag {
   margin-left: auto;
   padding: 0 8px;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
@@ -548,7 +548,7 @@
   text-align: center;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 0;
 }
 .rr-tags {
   font-size: 12px;
@@ -582,7 +582,7 @@
   width: 8px;
   height: 8px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: 0;
   border: none;
   background: var(--border);
 }
@@ -609,7 +609,7 @@
 .db-match {
   font-size: 11px;
   padding: 0 6px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid currentColor;
   white-space: nowrap;
 }
@@ -674,7 +674,7 @@
    dashed outline only appears while a drag is actually over it. */
 .db-pane-deck {
   border: 1px dashed transparent;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px;
   margin: -6px;
 }
@@ -691,7 +691,7 @@
   text-align: center;
   font-size: 13px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 /* The command zone: one slot, or two for a Partner pair — held closer
@@ -707,7 +707,7 @@
   gap: 8px;
   padding: 6px 10px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--panel);
   font-size: 13px;
 }
@@ -730,7 +730,7 @@
   max-height: 60vh;
   overflow-y: auto;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px;
 }
 .db-deck-group-head {
@@ -744,7 +744,7 @@
   align-items: center;
   gap: 8px;
   padding: 3px 6px;
-  border-radius: 5px;
+  border-radius: 0;
 }
 .db-deck-list li li:hover {
   background: var(--panel-2);
@@ -764,7 +764,7 @@
 
 .db-unknown {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--warn);
   background: var(--panel);
   font-size: 13px;
@@ -836,7 +836,7 @@
   padding: 4px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: 0 14px 34px rgb(0 0 0 / 0.55);
 }
 .db-context-title {
@@ -854,7 +854,7 @@
   font-size: 13px;
   padding: 6px 9px;
   border: none;
-  border-radius: 5px;
+  border-radius: 0;
   background: none;
 }
 .db-context-menu button:hover:not(:disabled) {
@@ -863,7 +863,7 @@
 .db-context-menu button.separated {
   margin-top: 4px;
   border-top: 1px solid var(--border-soft);
-  border-radius: 0 0 5px 5px;
+  border-radius: 0;
   padding-top: 9px;
 }
 
@@ -896,7 +896,7 @@
   padding: clamp(16px, 2.4vw, 24px);
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
 }
 .db-modal-head {
