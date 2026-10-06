@@ -5434,6 +5434,7 @@ import _poolRakdosGuildgate from "./pool/rakdos-guildgate.js";
 import _poolRakdosJoinsUp from "./pool/rakdos-joins-up.js";
 import _poolRakdosLocket from "./pool/rakdos-locket.js";
 import _poolRakdosLordOfRiots from "./pool/rakdos-lord-of-riots.js";
+import _poolRakdosPatronOfChaos from "./pool/rakdos-patron-of-chaos.js";
 import _poolRakdosRagemutt from "./pool/rakdos-ragemutt.js";
 import _poolRakdosShredFreak from "./pool/rakdos-shred-freak.js";
 import _poolRakdosSignet from "./pool/rakdos-signet.js";
@@ -6801,6 +6802,7 @@ import _poolStranglingSpores from "./pool/strangling-spores.js";
 import _poolStrawSoldiers from "./pool/straw-soldiers.js";
 import _poolStreamHopper from "./pool/stream-hopper.js";
 import _poolStreetbreakerWurm from "./pool/streetbreaker-wurm.js";
+import _poolStrefanMaurerProgenitor from "./pool/strefan-maurer-progenitor.js";
 import _poolStrengthBobblehead from "./pool/strength-bobblehead.js";
 import _poolStrengthOfTheHarvest from "./pool/strength-of-the-harvest.js";
 import _poolStrengthOfThePack from "./pool/strength-of-the-pack.js";
@@ -14057,6 +14059,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolRakdosJoinsUp,
   _poolRakdosLocket,
   _poolRakdosLordOfRiots,
+  _poolRakdosPatronOfChaos,
   _poolRakdosRagemutt,
   _poolRakdosShredFreak,
   _poolRakdosSignet,
@@ -15424,6 +15427,7 @@ export const POOL_CARDS: readonly CardDefinition[] = [
   _poolStrawSoldiers,
   _poolStreamHopper,
   _poolStreetbreakerWurm,
+  _poolStrefanMaurerProgenitor,
   _poolStrengthBobblehead,
   _poolStrengthOfTheHarvest,
   _poolStrengthOfThePack,

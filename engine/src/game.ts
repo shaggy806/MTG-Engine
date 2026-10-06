@@ -18827,7 +18827,10 @@ export class Game {
           matchesFilter(this.state, this.registry, id, option.putFromHand, { you: player }),
         );
       }
-      return this.eligibleSacrifices(player, option.sacrifice, option.exceptSource === true ? source : undefined).length > 0;
+      return (
+        this.eligibleSacrifices(player, option.sacrifice, option.exceptSource === true ? source : undefined).length >=
+        (option.count ?? 1)
+      );
     });
     if (available.length === 0) return null;
     const mana = available.find((o): o is Extract<BoundUnlessOption, { pay: string }> => "pay" in o);
@@ -18842,7 +18845,7 @@ export class Game {
                   kind: "sacrifice",
                   who: "you",
                   filter: option.sacrifice,
-                  count: 1,
+                  count: option.count ?? 1,
                   ...(option.exceptSource === true ? { exceptSource: true } : {}),
                 }
               : "discard" in option

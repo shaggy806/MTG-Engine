@@ -215,6 +215,7 @@ import _poolSteadfastSentry from "../pool/steadfast-sentry.js";
 import _poolStirge from "../pool/stirge.js";
 import _poolStompingGround from "../pool/stomping-ground.js";
 import _poolStrandsOfNight from "../pool/strands-of-night.js";
+import _poolStrefanMaurerProgenitor from "../pool/strefan-maurer-progenitor.js";
 import _poolStubbornDenial from "../pool/stubborn-denial.js";
 import _poolSunBlessedPeak from "../pool/sun-blessed-peak.js";
 import _poolSunlitMarsh from "../pool/sunlit-marsh.js";
@@ -486,6 +487,7 @@ const shard: CardShard = {
     _poolStirge,
     _poolStompingGround,
     _poolStrandsOfNight,
+    _poolStrefanMaurerProgenitor,
     _poolStubbornDenial,
     _poolSunBlessedPeak,
     _poolSunlitMarsh,

@@ -25,7 +25,7 @@ decides into its section below.
 
 ## Commander gap (the current priority)
 
-**389 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
+**392 of the 500 most-played commanders are implemented** (`top-commanders.txt`; re-mark with
 `npm run cmdrs:mark -w engine`). An imported decklist usually has its commander substituted, and
 that one card is the reason the deck exists. Live numbers for everything below come from
 `npm run cmdrs:gaps -w engine`.
@@ -36,12 +36,15 @@ that one card is the reason the deck exists. Live numbers for everything below c
 - **Build down the greedy order.** `cmdrs:gaps` ranks every missing engine feature over
   `engine/src/cards/top-commanders-gaps.json`. When a feature lands, add its key to that file's
   `built` array and author the commanders it unblocks in the same commit. The next ones,
-  engine-only, with the commanders each fully unblocks: `effect:missing-tokens`,
-  `keyword:decayed`, `trigger:activates-ability`, `trigger:you-tap-opponent-creature` and
-  `effect:amount-aggregate` (+1 each).
-- **Most-needed features overall.** `effect:cast-during-resolution` (10),
-  `effect:attach-extensions` (7), `zone:visibility-extensions` and `effect:missing-tokens` (6
-  each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
+  engine-only, with the commanders each fully unblocks: `keyword:decayed`,
+  `trigger:activates-ability`, `trigger:you-tap-opponent-creature`, `effect:amount-aggregate`,
+  `effect:put-commanders-onto-battlefield` (+1 each), `mechanic:speed` (+2), `keyword:mayhem`,
+  `keyword:freerunning`, `replacement:mana-pool-emptying` and `static:mana-pool-reads` (+1
+  each). Lynde, Cheerful Tormentor also waits on `effect:curse-attach-player` (a Curse put onto
+  the battlefield attached to a player, or moved to an opponent).
+- **Most-needed features overall.** `effect:cast-during-resolution` (9),
+  `effect:attach-extensions` (7), `zone:visibility-extensions` (6), and
+  `effect:missing-tokens`, `cost:sacrifice-multiple`, `static:self-type-changes` (5 each). Orvar needs `decision:choose-permanent` and `trigger:discards-extensions`. Ulalek needs
   `cost:colorless-hybrid-mana` and `keyword:devoid`.
 - **UI-bound features.** These need a new client decision and a browser check:
   `effect:cast-during-resolution` (10; partly built on 2026-09-30 as the `cast-now` effect, and

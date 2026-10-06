@@ -181,6 +181,7 @@ import _poolPlazaOfHeroes from "../pool/plaza-of-heroes.js";
 import _poolPollutedDead from "../pool/polluted-dead.js";
 import _poolPrakhataPillarBug from "../pool/prakhata-pillar-bug.js";
 import _poolPurpleCrystalCrab from "../pool/purple-crystal-crab.js";
+import _poolRakdosPatronOfChaos from "../pool/rakdos-patron-of-chaos.js";
 import _poolRavnicaAtWar from "../pool/ravnica-at-war.js";
 import _poolRazorfieldThresher from "../pool/razorfield-thresher.js";
 import _poolReadyToRumble from "../pool/ready-to-rumble.js";
@@ -448,6 +449,7 @@ const shard: CardShard = {
     _poolPollutedDead,
     _poolPrakhataPillarBug,
     _poolPurpleCrystalCrab,
+    _poolRakdosPatronOfChaos,
     _poolRavnicaAtWar,
     _poolRazorfieldThresher,
     _poolReadyToRumble,

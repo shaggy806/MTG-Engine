@@ -601,8 +601,16 @@ export type UnlessOption =
   | { readonly payGeneric: EffectAmount; readonly text: string }
   | { readonly payLife: number; readonly text: string }
   /** `exceptSource`: "sacrifice **another** creature" (Ziatora, the
-   * Incinerator) — never the effect's own source. */
-  | { readonly sacrifice: CardFilter; readonly exceptSource?: boolean; readonly text: string }
+   * Incinerator) — never the effect's own source. `count`: "sacrifice **two**
+   * Blood tokens" (Strefan, Maurer Progenitor; Rakdos, Patron of Chaos) —
+   * offered only to a player with that many to sacrifice (rule 118.3), who
+   * then chooses which. One when absent. */
+  | {
+      readonly sacrifice: CardFilter;
+      readonly count?: number;
+      readonly exceptSource?: boolean;
+      readonly text: string;
+    }
   /** "…or discard a card" (Tergrid's Lantern, Torment of Hailfire). */
   | { readonly discard: number; readonly text: string }
   /** "Put a land card from your hand onto the battlefield" (Kynaios and
