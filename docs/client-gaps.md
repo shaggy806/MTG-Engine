@@ -89,3 +89,7 @@ title; when one lands, delete it in both. The animation follow-ups are in
 - **The highroll notice should look like the other alerts** (the user, 2026-10-06). The
   "🎲 <player> won the highroll and goes first" notice at the start of a game (`App.tsx`) has a
   style of its own; the user wants it to look like the game's other alerts.
+- **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06).
+  Every stack entry draws its label above the card (whose it is, "X's ability", "copy of") and its
+  target line below (`ui/Stack.tsx`'s `.stack-entry-label` and target line); the user wants those
+  texts on the first (top) item only.

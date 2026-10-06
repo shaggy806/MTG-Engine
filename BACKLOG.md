@@ -200,6 +200,7 @@ item lands.
 - **A trigger going on the stack flies from the permanent that was its source** (the user, 2026-10-06): today a triggered ability's stack entry just appears (`ui/Stack.tsx`'s `is-new` arrival); fly it from its source's tile, as a cast now flies into its place (`AnimationLayer`'s `slotIntoStack`).
 - **The lobby's default deck could be random** (the user, 2026-10-06): randomize which deck the lobby's "Add bot (default deck)" button gives the bot (`client/src/lobby/SeatBoard.tsx`), rather than always the same one.
 - **The highroll notice should look like the other alerts** (the user, 2026-10-06): the "won the highroll and goes first" notice at the start of a game (`App.tsx`) is styled on its own; make it match the game's other alerts.
+- **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06): every `.stack-entry` draws its "whose / ability of" label above the card and its target line below (`ui/Stack.tsx`); keep them on the top entry only.
 - **A gift's opponent is asked one opponent at a time** — one prompt naming every opponent would read better.
 - **What the scenario builder can't say yet** — stolen, transformed or face-down cards, damage, turn-long effects, the stack, the turn number.
 - **A creature's total toxic value isn't in the player view.**
