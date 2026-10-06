@@ -8,6 +8,8 @@ import {
 import type { AnimScale, CastEntrance } from '../game/motionPrefs.ts'
 import { playSound } from '../game/sound.ts'
 import { STEPS, setPassSettings, usePassSettings } from '../game/passSettings.ts'
+import type { BotSpeed } from 'protocol'
+import { BOT_SPEEDS } from './botSpeeds.ts'
 
 const SPEED_LABEL: Record<AnimScale, string> = {
   0.5: 'Fast',
@@ -31,8 +33,18 @@ const ENTRANCE_LABEL: Record<CastEntrance, string> = {
  * - **Priority** (`passSettings.ts`): "pass to main", "pass through
  *   combat" and "skip mana stops", and the stops flagged on the phase track (`PhaseTrack`), listed
  *   here for both kinds of turn since the track shows only the current one.
+ * - **Bots**, for the host of a table with bots: how fast they play. It sat
+ *   in the top strip as three buttons, which squeezed the phase track down to
+ *   a few steps on a laptop screen.
+ *
+ * Both speeds read slowest to fastest.
  */
-export function MotionControl() {
+export function MotionControl({
+  botSpeed,
+}: {
+  /** The room's bot speed, when this viewer may set it. */
+  readonly botSpeed?: { readonly speed: BotSpeed; readonly onChange: (speed: BotSpeed) => void }
+} = {}) {
   const prefs = useMotionPrefs()
   const pass = usePassSettings()
   const [open, setOpen] = useState(false)
@@ -108,10 +120,29 @@ export function MotionControl() {
               </button>
             </div>
           ) : null}
+          {botSpeed ? (
+            <>
+              <div className="motion-heading">Bots</div>
+              <div className="motion-row" role="group" aria-label="Bot speed">
+                <span className="motion-label">Speed</span>
+                {BOT_SPEEDS.map((s) => (
+                  <button
+                    key={s.speed}
+                    type="button"
+                    className={`motion-option${s.speed === botSpeed.speed ? ' active' : ''}`}
+                    aria-pressed={s.speed === botSpeed.speed}
+                    onClick={() => botSpeed.onChange(s.speed)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
           <div className="motion-heading">Animations</div>
           <div className="motion-row" role="group" aria-label="Animation speed">
             <span className="motion-label">Speed</span>
-            {ANIM_SCALES.map((s) => (
+            {[...ANIM_SCALES].sort((a, b) => b - a).map((s) => (
               <button
                 key={s}
                 type="button"

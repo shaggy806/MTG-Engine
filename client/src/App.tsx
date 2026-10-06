@@ -89,7 +89,6 @@ import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
 import { EventLog } from './ui/EventLog.tsx'
 import { CapturePanel } from './ui/CapturePanel.tsx'
-import { BotSpeedControl } from './ui/BotSpeedControl.tsx'
 import { ZoneViewer } from './ui/ZoneViewer.tsx'
 import { emblemToVisible } from './ui/defToVisible.ts'
 import { CreatureTypePicker } from './ui/CreatureTypePicker.tsx'
@@ -813,15 +812,6 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
               : `${playerLabel(actingPlayer(view) ?? seat, game.seats)} to act`}
         </span>
         <div className="ts-menu">
-          {/* Only the host sets it, and only a table with bots needs it. */}
-          {game.isHost && game.seats.some((s) => s.isBot) ? (
-            <BotSpeedControl
-              className="ts-bot-speed"
-              speed={game.botSpeed}
-              editable
-              onChange={game.setBotSpeed}
-            />
-          ) : null}
           {/* The host can stop the bots to look at something, and let them
               go a move at a time; everyone else sees that they're stopped.
               Icons rather than words: the strip has no room to spare, and
@@ -864,7 +854,15 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
           >
             ↺
           </button>
-          <MotionControl />
+          {/* The bots' speed is in Settings: only the host sets it, and only a
+              table with bots needs it. */}
+          <MotionControl
+            botSpeed={
+              game.isHost && game.seats.some((s) => s.isBot)
+                ? { speed: game.botSpeed, onChange: game.setBotSpeed }
+                : undefined
+            }
+          />
           <button type="button" onClick={() => setShowHistory(true)}>
             History
           </button>

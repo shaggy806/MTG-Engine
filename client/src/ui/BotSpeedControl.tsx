@@ -1,10 +1,5 @@
 import type { BotSpeed } from 'protocol'
-
-const SPEEDS: readonly { readonly speed: BotSpeed; readonly label: string }[] = [
-  { speed: 'slow', label: 'Slow' },
-  { speed: 'normal', label: 'Normal' },
-  { speed: 'fast', label: 'Fast' },
-]
+import { BOT_SPEEDS } from './botSpeeds.ts'
 
 /**
  * How fast bots play — the room host's setting (see the server's
@@ -24,13 +19,13 @@ export function BotSpeedControl({
   readonly className?: string
 }) {
   if (!editable) {
-    const label = SPEEDS.find((s) => s.speed === speed)?.label ?? speed
+    const label = BOT_SPEEDS.find((s) => s.speed === speed)?.label ?? speed
     return <span className={`bot-speed muted ${className}`}>Bot speed: {label}</span>
   }
   return (
     <div className={`bot-speed ${className}`} role="group" aria-label="Bot speed">
       <span className="bot-speed-label">Bot speed</span>
-      {SPEEDS.map((s) => (
+      {BOT_SPEEDS.map((s) => (
         <button
           key={s.speed}
           type="button"
