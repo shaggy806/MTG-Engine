@@ -2910,7 +2910,10 @@
   left: 50%;
   translate: -50% -50%;
   z-index: 200;
-  width: min(90vw, 1100px);
+  /* 1100px, or more on a big screen where the cards are bigger: at 1920 wide
+     seven cards no longer fit 1100px and had to overlap to leave room for
+     the fan's overhang (.mulligan-modal .hand-cards). */
+  width: min(90vw, max(1100px, calc(var(--card-w) * 8.4)));
   max-height: 90vh;
   /* overflow-y: auto alone makes overflow-x auto too (CSS spec: an axis set
      to a non-visible value forces the other axis off 'visible' as well) --
@@ -2938,6 +2941,16 @@
 .mulligan-modal .hand {
   width: 100%;
   margin-top: 0;
+}
+/* The fan tilts each card about its bottom centre, which swings the outer
+   cards' top corners out past the row by about 0.31 of a card's width at a
+   seven-card hand's 13 degrees (0.37 at the 32-degree sweep cap). A transform
+   takes no layout space, so where the row filled the popup's width -- a big
+   screen, where the cards are wide, and anything 768px wide or narrower --
+   the end cards ran into the popup's border or were cut off by it. The row
+   leaves that overhang inside the popup's padding instead. */
+.mulligan-modal .hand-cards {
+  max-width: min(88vw, calc(var(--card-w) * 7.2), calc(100% - var(--card-w) * 0.75));
 }
 .mulligan-modal-actions {
   display: flex;
