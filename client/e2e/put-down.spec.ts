@@ -85,6 +85,10 @@ interface Ghost {
   readonly progress: number | null
   readonly face: number | null
   readonly faceBox: Box | null
+  /** Where the card inside the face is actually drawn — off the face's
+   * centre only if a style the copy kept moves it (the spotlight's
+   * `--spot-x` translate did, a bug report). */
+  readonly faceCard: Box | null
   readonly landing: number | null
   readonly landingBox: Box | null
 }
@@ -143,6 +147,7 @@ async function record(page: Page): Promise<{ stop: () => Promise<Sample[]> }> {
               ?.effect?.getComputedTiming().progress ?? null,
           face: face ? Number(getComputedStyle(face).opacity) : null,
           faceBox: face ? box(face) : null,
+          faceCard: face?.querySelector('.card-tile') ? box(face.querySelector('.card-tile')!) : null,
           landing: landing ? Number(getComputedStyle(landing).opacity) : null,
           landingBox: landing ? box(landing) : null,
         }
@@ -235,6 +240,13 @@ interface Flight {
 function flightOf(samples: readonly Sample[], object: string, to: string, end: Box): Flight {
   const flying = samples.filter((s) => ghostOf(s, object, to)?.faceBox)
   expect(flying.length, `frames with ${object} flying to its ${to}`).toBeGreaterThan(5)
+  // The card is drawn where its flight is, every frame: centred on its face.
+  for (const s of flying) {
+    const g = ghostOf(s, object, to)!
+    if (g.faceCard === null || g.faceBox === null) continue
+    const off = Math.hypot(g.faceCard.x - g.faceBox.x, g.faceCard.y - g.faceBox.y)
+    expect(off, `${object}'s card drawn off its flight (${JSON.stringify(g)})`).toBeLessThan(3)
+  }
   const first = ghostOf(flying[0], object, to)!
   return {
     object,

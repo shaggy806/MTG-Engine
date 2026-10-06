@@ -722,6 +722,11 @@ function liftSpotlight(object: ObjectId): LiftedCard | null {
     margin: '0',
     width: `${w}px`,
     transform: 'none',
+    // The spotlight's own place beside the stack (`--spot-x`, a `translate`
+    // its class keeps): the box already stands where the card did, and the
+    // copy carrying it too drew the card that far right of its flight, so it
+    // overshot the stack and snapped back as it landed (a bug report).
+    translate: 'none',
     opacity: '1',
     animation: 'none',
     transition: 'none',
