@@ -203,6 +203,7 @@
   overflow-y: auto;
   border: 1px solid var(--border-soft);
   border-radius: 0;
+  box-shadow: var(--frame-sunk);
 }
 .bp-results button {
   display: flex;
@@ -360,6 +361,7 @@
   border-radius: 0;
   font-size: var(--text-sm);
   line-height: 1.45;
+  box-shadow: var(--frame-sunk);
 }
 .bp-check-text p {
   margin: 0 0 6px;

@@ -76,6 +76,12 @@
   --bevel-dark: rgba(0, 0, 0, 0.5);
   --bevel: inset 2px 2px 0 var(--bevel-light), inset -2px -3px 0 var(--bevel-dark);
   --bevel-pressed: inset 2px 3px 0 var(--bevel-dark), inset -2px -2px 0 var(--bevel-light);
+  /* The same edges on containers, after Minecraft's menus, and softer than
+     a button's so the buttons still stand out: a dialog, popover, toast or
+     the action bar is raised; a text box or a scrolling list you put things
+     into is sunk, like an inventory slot. */
+  --frame-raised: inset 2px 2px 0 rgba(255, 255, 255, 0.07), inset -2px -2px 0 rgba(0, 0, 0, 0.4);
+  --frame-sunk: inset 2px 2px 0 rgba(0, 0, 0, 0.45), inset -2px -2px 0 rgba(255, 255, 255, 0.06);
 
   /* card tile width, viewport-scaled instead of a fixed px guess -- the
      single source every card-shaped thing (tiles, empty command-zone slots,
@@ -127,6 +133,12 @@
 
 body {
   margin: 0;
+}
+
+/* Every text box and dropdown is sunk into its panel. `:where()` adds no
+   specificity, so a component's own shadow (none so far) would win. */
+:where(input:not([type]), input[type='text'], input[type='search'], input[type='email'], input[type='url'], input[type='number'], select, textarea) {
+  box-shadow: var(--frame-sunk);
 }
 
 /* Form controls don't inherit the page's font by default; the builder's

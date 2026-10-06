@@ -146,6 +146,7 @@
   padding: 0.4rem;
   border: 1px solid var(--border);
   border-radius: 0;
+  box-shadow: var(--frame-sunk);
 }
 .capture-options label {
   display: flex;

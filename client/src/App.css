@@ -121,7 +121,7 @@
   border: 1px solid var(--border-soft);
   border-radius: 0;
   background: var(--panel);
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
   font-size: var(--text-sm);
   white-space: nowrap;
 }
@@ -399,7 +399,7 @@
   font-weight: 600;
   border-radius: 0;
   cursor: pointer;
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
   /* In, then hold, then out. The 5.5s delay plus the 500ms fade is exactly
      TOAST_LINGER_MS (6000) in App.tsx, which is what actually removes the
      node -- keep the two in step, or the toast either blinks out mid-fade or
@@ -463,7 +463,7 @@
   background: var(--panel);
   border: 1px solid var(--gold);
   border-radius: 0;
-  box-shadow: var(--shadow-dialog);
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .result-kicker {
   margin: 0;
@@ -1257,7 +1257,7 @@
      height here grows *upward* over the board. */
   justify-content: flex-end;
   pointer-events: auto;
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
   /* A decision is the one thing on screen that cannot be ignored -- nothing
      advances until it is answered -- so the panel pulses rather than just
      sitting there. Deliberately a slow glow and not a hard blink: this is
@@ -1361,11 +1361,12 @@
   0%,
   100% {
     border-color: var(--border);
-    box-shadow: var(--shadow-popover);
+    box-shadow: var(--frame-raised), var(--shadow-popover);
   }
   50% {
     border-color: var(--accent);
     box-shadow:
+      var(--frame-raised),
       var(--shadow-popover),
       0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
   }
@@ -1705,6 +1706,7 @@
   border: 1px solid var(--border);
   border-radius: 0;
   padding: 8px 10px;
+  box-shadow: var(--frame-sunk);
 }
 .event-log h3 {
   font-size: var(--text-sm);
@@ -2978,7 +2980,7 @@
   background: var(--panel);
   border: 1px solid var(--warn);
   border-radius: 0;
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.1s ease;
@@ -3059,6 +3061,7 @@
   border: 1px solid var(--gold);
   border-radius: 0;
   box-shadow:
+    var(--frame-raised),
     var(--shadow-dialog),
     0 2px 8px rgba(0, 0, 0, 0.4);
   text-align: center;
@@ -3270,6 +3273,7 @@
   border: 1px solid var(--border);
   border-radius: 0;
   min-width: 280px;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .overlay-box h2 {
   font-size: var(--text-xl);
@@ -3345,6 +3349,7 @@
   border: 1px solid var(--border);
   border-radius: 0;
   overflow: hidden;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .zone-viewer-head {
   display: flex;
@@ -4036,7 +4041,7 @@
   border-radius: 0;
   background: var(--scrim);
   border: 1px solid var(--accent-dim);
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
   font-family: var(--font-display);
   letter-spacing: 0.04em;
   text-align: center;
@@ -4189,6 +4194,7 @@
   /* The grid is the part that scrolls, not the box: the close button stays
      reachable however many cards there are. */
   overflow: hidden;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .hand-grid-head {
   display: flex;

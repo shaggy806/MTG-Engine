@@ -236,6 +236,7 @@
   overflow-y: auto;
   border: 1px solid var(--border-soft);
   border-radius: 0;
+  box-shadow: var(--frame-sunk);
 }
 .db-card-list li {
   display: flex;
@@ -434,6 +435,7 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .rr-head {
   display: flex;
@@ -734,6 +736,7 @@
   border: 1px solid var(--border-soft);
   border-radius: 0;
   padding: 6px;
+  box-shadow: var(--frame-sunk);
 }
 .db-deck-group-head {
   font-size: var(--text-xs);
@@ -839,7 +842,7 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
 }
 .db-context-title {
   padding: 5px 9px 7px;
@@ -899,7 +902,7 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0;
-  box-shadow: var(--shadow-dialog);
+  box-shadow: var(--frame-raised), var(--shadow-dialog);
 }
 .db-modal-head {
   display: flex;
