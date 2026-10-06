@@ -499,9 +499,7 @@ export function LibraryPage() {
                 <button type="button" onClick={() => goToPage(safePage - 1)} disabled={safePage === 0}>
                   ← Previous
                 </button>
-                <span className="muted mono">
-                  Page {safePage + 1} of {pageCount}
-                </span>
+                <PageJump page={safePage} pageCount={pageCount} onGo={goToPage} />
                 <button
                   type="button"
                   onClick={() => goToPage(safePage + 1)}
@@ -803,5 +801,51 @@ function MechanicChips({ def, isToken }: { readonly def: CardDefinition; readonl
         </span>
       ))}
     </div>
+  )
+}
+
+/**
+ * "Page [ 3 ] of 138": the page number is a box to type another into, taken
+ * on Enter or on leaving it. With only Previous and Next, the far end of the
+ * pool was a hundred clicks away.
+ */
+function PageJump({
+  page,
+  pageCount,
+  onGo,
+}: {
+  readonly page: number
+  readonly pageCount: number
+  readonly onGo: (page: number) => void
+}) {
+  const [draft, setDraft] = useState<string | null>(null)
+  const commit = () => {
+    if (draft === null) return
+    const n = Number.parseInt(draft, 10)
+    setDraft(null)
+    if (Number.isFinite(n)) {
+      const next = Math.min(pageCount, Math.max(1, n)) - 1
+      if (next !== page) onGo(next)
+    }
+  }
+  return (
+    <label className="lib-page-jump muted mono">
+      Page
+      <input
+        type="number"
+        min={1}
+        max={pageCount}
+        value={draft ?? String(page + 1)}
+        aria-label={`Page, of ${pageCount}`}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={(e) => e.currentTarget.select()}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit()
+          else if (e.key === 'Escape') setDraft(null)
+        }}
+      />
+      of {pageCount}
+    </label>
   )
 }

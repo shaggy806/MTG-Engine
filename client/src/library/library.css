@@ -160,6 +160,18 @@
   min-width: 108px;
 }
 
+.lib-page-jump {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lib-page-jump input {
+  width: 5em;
+  text-align: center;
+  font: inherit;
+  color: var(--text);
+}
+
 .lib-pager button:disabled {
   opacity: 0.4;
   cursor: default;
