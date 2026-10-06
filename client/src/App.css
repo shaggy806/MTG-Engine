@@ -487,6 +487,55 @@
 .result-box p {
   margin: 0;
 }
+.result-stats {
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.result-stats th,
+.result-stats td {
+  padding: 6px 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+.result-stats thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  /* Two-word headings stack, so eight columns stay narrow. */
+  white-space: normal;
+  max-width: 6em;
+  vertical-align: bottom;
+}
+/* Who and how they finished read left to right; the numbers line up right. */
+.result-stats :is(th, td):nth-child(-n + 2) {
+  text-align: left;
+}
+.result-stats tbody tr + tr {
+  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.result-stats tr.is-winner {
+  background: color-mix(in srgb, var(--panel) 85%, var(--gold));
+}
+.result-player {
+  font-weight: 600;
+}
+.result-player.seat-a {
+  color: var(--seat-a);
+}
+.result-player.seat-b {
+  color: var(--seat-b);
+}
+.result-player.seat-c {
+  color: var(--seat-c);
+}
+.result-player.seat-d {
+  color: var(--seat-d);
+}
 .result-actions {
   display: flex;
   gap: 10px;

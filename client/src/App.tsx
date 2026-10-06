@@ -38,6 +38,7 @@ import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
 import { waitingLabel } from './game/waitingLabel.ts'
+import { gameStats } from './game/gameStats.ts'
 import { useEscape } from './ui/useEscape.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
@@ -656,14 +657,50 @@ function GameResultPanel({
   const { winner, reason } = view.result
   const headline = winner === null ? 'Draw' : winner === seat ? 'You win!' : `${playerLabel(winner, seats)} wins`
   const seatClass = winner !== null && view.turnOrder.includes(winner) ? seatClassOf(view.turnOrder, winner) : ''
+  const stats = useMemo(() => gameStats(view), [view])
   return (
     <div className="result-overlay" onClick={onDismiss}>
       <div className="result-box" role="dialog" aria-label="Game over" onClick={(e) => e.stopPropagation()}>
         <p className="result-kicker">Game over</p>
         <h2 className={`result-headline ${seatClass}`}>{headline}</h2>
         <p className="muted">
-          {reason ? `${reason[0].toUpperCase()}${reason.slice(1)} · ` : ''}turn {view.turn.number}
+          {reason ? `${reason[0].toUpperCase()}${reason.slice(1)} · ` : ''}
+          {stats.turns} turn{stats.turns === 1 ? '' : 's'}
         </p>
+        {/* Each player's game, winner first (game/gameStats.ts). */}
+        <table className="result-stats">
+          <thead>
+            <tr>
+              <th scope="col">Player</th>
+              <th scope="col">Result</th>
+              <th scope="col">Life</th>
+              <th scope="col" title="Damage dealt to other players">Damage dealt</th>
+              <th scope="col" title="Damage dealt to this player">Damage taken</th>
+              <th scope="col">Life gained</th>
+              <th scope="col">Spells cast</th>
+              <th scope="col" title="Not counting the opening hand">Cards drawn</th>
+            </tr>
+          </thead>
+          <tbody>
+            {stats.players.map((p) => (
+              <tr key={p.player} className={p.player === winner ? 'is-winner' : undefined}>
+                <th scope="row" className={`result-player ${seatClassOf(view.turnOrder, p.player)}`}>
+                  {playerLabel(p.player, seats)}
+                  {p.player === seat ? <span className="muted"> (you)</span> : null}
+                </th>
+                <td title={p.out?.reason}>
+                  {p.player === winner ? 'Winner' : p.out ? `Out, turn ${p.out.turn}` : '—'}
+                </td>
+                <td>{p.life}</td>
+                <td>{p.damageDealt}</td>
+                <td>{p.damageTaken}</td>
+                <td>{p.lifeGained}</td>
+                <td>{p.spellsCast}</td>
+                <td>{p.cardsDrawn}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <div className="result-actions">
           <button type="button" onClick={onDismiss}>
             View the board
