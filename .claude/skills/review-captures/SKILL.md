@@ -11,6 +11,10 @@ today's build; the open ones are training scenarios, and a resolved one gates.
 The deliverable is a short verdict and a fix outline per open capture, then
 fixes for the ones whose cause is clear.
 
+Bug reports filed from the same panel (`captures/bugs/`) aren't bot
+choices: they go through the `bug-report` skill. Mention any unhandled
+ones in the report so they aren't missed.
+
 ## 1. List them with today's answers
 
 ```bash

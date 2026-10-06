@@ -1,6 +1,6 @@
 ---
 name: bug-report
-description: Take a bug report about anything but a bot's choices — the client (layout, animation, clicks, what's shown), the engine (a card or rule doing the wrong thing), or the server (rooms, seats, reconnects) — reproduce it, find the root cause, fix it with a test that fails without the fix and a live check for anything visible, and ship it; or, when the fix needs a feature or a design call, record it with a fix outline. Use when the user reports a bug, says something looks wrong or broke, sends a screenshot of a problem, or runs /bug-report. Bot misplays go to the `bot-misplay` skill instead.
+description: Take a bug report about anything but a bot's choices — typed in chat, or filed from the game's Capture panel as a file in `captures/bugs/` — the client (layout, animation, clicks, what's shown), the engine (a card or rule doing the wrong thing), or the server (rooms, seats, reconnects) — reproduce it, find the root cause, fix it with a test that fails without the fix and a live check for anything visible, and ship it; or, when the fix needs a feature or a design call, record it with a fix outline. Use when the user reports a bug, says something looks wrong or broke, sends a screenshot of a problem, or runs /bug-report. Bot misplays go to the `bot-misplay` skill instead.
 ---
 
 # A bug report
@@ -8,6 +8,19 @@ description: Take a bug report about anything but a bot's choices — the client
 The user plays on the live site (tobyens.com) and reports what they saw —
 often one sentence and a screenshot. The goal is the cause, not the symptom,
 then a fix that is proven and shipped.
+
+## 0. Filed reports
+
+The game's Capture panel also files bug reports: `captures/bugs/<time>-<room>-t<turn>.json`
+(`server/src/capture.ts`'s `BugReport`: the tester's `description`, the
+whole game `state` with its last few hundred events, and an optional photo
+in the same folder). When the user says they captured or filed a bug, or
+asks to look at bug reports, list that folder newest first and take each
+unhandled one through the steps below. The saved state is the
+reproduction: load it with `Game.fromSnapshot(report.state, { registry })`
+and read `state.eventLog`, `awaiting` and `pendingTriggers` before
+anything else. A handled report moves to `captures/bugs/resolved/` with a
+note of the verdict (`fixed in <sha>`, or `not a bug: <rule>`).
 
 ## 1. Pin it down
 
