@@ -130,6 +130,11 @@ describe("triggered abilities", () => {
         .eventsOfType("damage-dealt")
         .some((e) => e.source === ghoul && e.amount === 3),
     ).toBe(true);
+    // Bolt's damage is A's; the dead Torchrunner's is still B's, as it last
+    // existed (rule 608.2h) — who dealt it, for the end-of-game tally.
+    const dealt = game.eventsOfType("damage-dealt");
+    expect(dealt.find((e) => e.target.kind === "object" && e.target.object === ghoul)?.by).toBe(A);
+    expect(dealt.find((e) => e.source === ghoul)?.by).toBe(B);
   });
 
   it("an upkeep trigger fires only on the controller's upkeep", () => {

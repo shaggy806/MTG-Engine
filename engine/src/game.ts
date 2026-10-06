@@ -24486,6 +24486,9 @@ export class Game {
     sourceLastKnown?: LastKnownInfo,
   ): number {
     if (amount <= 0) return 0;
+    // Who dealt it, for the log (a client's end-of-game damage tally).
+    const dealtBy = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
+    const by = dealtBy === undefined ? {} : { by: dealtBy };
 
     // Fog (rule 614): a turn-scoped shield prevents all combat damage — or
     // what sources matching a filter would deal, matched now (rule 615.1).
@@ -24524,7 +24527,7 @@ export class Game {
 
     if (target.kind === "player") {
       if (this.state.players[target.player] === undefined) return 0;
-      this.emit({ type: "damage-dealt", source, target, amount, combat });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
       // The damage is dealt in full — lifelink, commander damage and "is
       // dealt damage" all see it — whatever it does to the life total.
       // From a source with infect it's that many poison counters instead of
@@ -24581,7 +24584,7 @@ export class Game {
     // 120.3c / 306.7) — it's not "marked" like a creature.
     if (computeCharacteristics(this.state, this.registry, target.object).types.includes("planeswalker")) {
       object.counters.loyalty = (object.counters.loyalty ?? 0) - amount;
-      this.emit({ type: "damage-dealt", source, target, amount, combat });
+      this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
       this.emit({
         type: "loyalty-changed",
         object: target.object,
@@ -24602,7 +24605,7 @@ export class Game {
     if (this.sourceHasKeyword(source, "deathtouch", sourceLastKnown)) {
       object.markedByDeathtouch = true;
     }
-    this.emit({ type: "damage-dealt", source, target, amount, combat });
+    this.emit({ type: "damage-dealt", source, target, amount, combat, ...by });
     if (asCounters) {
       const by = sourceLastKnown?.controller ?? this.state.objects[source]?.controller;
       this.addCounter(target, "-1/-1", amount, false, by);
