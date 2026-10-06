@@ -101,6 +101,7 @@
 .ts-menu .bot-speed-option.active {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-bg);
 }
 /* The viewer's animation settings (ui/MotionControl.tsx): a button in the
    strip and a small panel dropped below it. */
@@ -136,6 +137,7 @@
 .ts-menu .motion-option.active {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-bg);
 }
 .motion-note {
   color: var(--muted);
@@ -518,9 +520,14 @@
 .result-stats tbody tr + tr {
   border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 }
+/* the winner's row in the winner's seat colour, as their name is */
 .result-stats tr.is-winner {
-  background: color-mix(in srgb, var(--panel) 85%, var(--gold));
+  background: color-mix(in srgb, var(--panel) 84%, var(--win, var(--gold)));
 }
+.result-stats tr.is-winner:has(> .seat-a) { --win: var(--seat-a); }
+.result-stats tr.is-winner:has(> .seat-b) { --win: var(--seat-b); }
+.result-stats tr.is-winner:has(> .seat-c) { --win: var(--seat-c); }
+.result-stats tr.is-winner:has(> .seat-d) { --win: var(--seat-d); }
 .result-player {
   font-weight: 600;
 }

@@ -120,27 +120,27 @@
   border-top: 3px solid var(--seat-color, var(--border));
   border-radius: 0;
 }
-/* The "ready" indicator: a ring floating just inside the panel, with room to
-   breathe on both sides of it, so it doesn't fight the per-seat identity
-   colour already on the border/top-border. An inset pseudo-element rather
-   than an `outline`, which is painted *outside* the border box and takes no
-   layout space — on the first and last seat of the grid that spilled past
-   the edge of the board containing them. */
+/* The "ready" indicator: a green bar along the panel's foot, answering the
+   seat-colour bar along its head. It was a ring just inside the panel, which
+   with square corners read as a second box drawn inside the first. A
+   pseudo-element over the bottom border, so it takes no layout space. */
 .seat-panel::after {
   content: '';
   position: absolute;
-  inset: 4px;
-  border: 2px solid transparent;
-  border-radius: 0;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 3px;
+  background: transparent;
   pointer-events: none;
-  transition: border-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .seat-panel.seat-a { --seat-color: var(--seat-a); }
 .seat-panel.seat-b { --seat-color: var(--seat-b); }
 .seat-panel.seat-c { --seat-color: var(--seat-c); }
 .seat-panel.seat-d { --seat-color: var(--seat-d); }
 .seat-panel.ready::after {
-  border-color: var(--good);
+  background: var(--good);
 }
 
 .seat-panel-head {
@@ -297,9 +297,6 @@
   background: rgba(34, 197, 94, 0.12);
 }
 .start-game-btn:disabled {
-  color: var(--muted-dim);
-  border-color: var(--border);
-  background: none;
   cursor: default;
 }
 .seat-board-hint {

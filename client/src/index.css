@@ -21,7 +21,8 @@
   --border-soft: #22222c;
   --text: #f5f3ee;
   --muted: #a8a6b8;
-  --muted-dim: #6c6a80;
+  /* the faintest text: still 4.8:1 on --panel-2, for small labels */
+  --muted-dim: #8a88a0;
   --accent: #ffb81c;
   --accent-dim: #8a5f00;
   --accent-bg: rgba(255, 184, 28, 0.14);
@@ -104,9 +105,25 @@ button {
 button:hover:not(:disabled) {
   border-color: var(--accent);
 }
+/* The buttons that are cards (or a card's part, or a toggle drawn as text)
+   own their hover and disabled looks; every other button gets these two. */
+button:hover:not(:disabled, .card-tile, .mini-tile, .commander-tile, .lib-card-open, .seat-deck-slot, .rr-option, .phase-pip, .pp-zone-link) {
+  /* a veil over whatever fill the button has, rather than a new fill, so a
+     transparent, tinted or accent button each lifts from its own colour */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06));
+}
 button:disabled {
   opacity: 0.4;
   cursor: default;
+}
+/* A control that can't be used yet reads as an outline with dimmed text,
+   not a ghost at 40% opacity, which on the near-black table nearly vanished
+   (the lobby's Start Game). */
+button:disabled:not(.card-tile, .mini-tile, .commander-tile, .lib-card-open, .seat-deck-slot, .rr-option, .phase-pip, .pp-zone-link) {
+  opacity: 1;
+  color: var(--muted-dim);
+  background: transparent;
+  border-color: var(--border);
 }
 
 /* Text fields got the same baseline as buttons, which they had never had --
@@ -171,6 +188,7 @@ h3 {
 .bot-speed-option.active {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-bg);
 }
 
 /* The library's and the deck builder's loading and load-failed states

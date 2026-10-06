@@ -212,6 +212,7 @@
 .db-type-filters button.selected {
   border-color: var(--accent);
   color: var(--text);
+  background: var(--accent-bg);
 }
 
 .db-identity-filter {
@@ -982,6 +983,5 @@
 }
 
 .db-pager button:disabled {
-  opacity: 0.4;
   cursor: default;
 }
