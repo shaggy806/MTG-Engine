@@ -86,9 +86,10 @@ Target 30-50 cards. For each:
   ones; `precon-tdc-batch-<N>.test.ts` for precon cards): one focused test per card whose behaviour is more than a stat line
   or a copy of a tested pattern — the clause most likely to be wrong. For a
   test that could pass by accident, break the card and watch it fail.
-- `npm run card:verify -w engine` (stat blocks against Scryfall — needs the
-  network; skip with a note in a cloud session) and `npm run card:text -w
-  engine` (no new MISSING/EXTRA lines from this batch).
+- `npm run card:verify -w engine` (stat blocks against Scryfall) and `npm run
+  card:text -w engine` (no new MISSING/EXTRA lines from this batch). Where
+  Scryfall is unreachable (a cloud session), add `-- --offline` to both: they
+  answer from the Oracle snapshot instead.
 - While authoring, run only the touched tests (`npx vitest run
   top5000-batch-<N> pool.test` from `engine/`); the full suite once at the end.
 - The fuzzer with the new cards forced in:
