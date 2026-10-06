@@ -47,6 +47,14 @@ Then put it in one of these:
   `npm run bot:captures -w engine -- resolve <name part> --note "Fixed in <sha>: …; gate '<scenario>'"`.
   A capture that is `right` only because it now does something *else* wrong
   stays open, with that said.
+- **Fixed, but the recorded move can't match**: the user has given full
+  permission to edit a capture as long as it keeps the intent of the
+  original. When a fix reaches the right play by a different first step, or
+  plays something else fine where the capture expected a pass, switch its
+  `expect` to `{ "kind": "not-this" }` (or a move that fits better), append
+  to its `note` what changed, when and why — naming the gate scenario that
+  holds the stronger intent if `not-this` is looser — and resolve it. Never
+  loosen a capture to make an unfixed one pass.
 - **Clear cause, contained fix**: find the code that chose it (as the
   `bot-misplay` skill's step 2 does: land drops `bestLand`/`castableAfter`,
   priority/attacks/blocks `bot/eval-bot.ts`, decisions `answerAwaited`), say

@@ -9,6 +9,7 @@ When something lands, delete its line. When you find something new, add one.
 Each waits on a decision only the user can make. Once one is answered, move the work it
 decides into its section below.
 
+- **What should "spread out attackers" mean?** (postponed by the user, 2026-10-06; capture HB5MR turn 20, open): dave sent everything at alice (38 life, no creatures) where the note asks the bot to spread its attackers; bob was on 13 with Felothar untapped. Never all damage at one player, pressure the lowest life, or something else — the user is considering it.
 - **How should we say which turn it is, and for whom?** A turn number counts every player's
   turns, so at a four-player table "turn 37" is the first player's 10th turn, which reads as a
   much longer game than it is. Where should the more specific form apply (the client, bench
