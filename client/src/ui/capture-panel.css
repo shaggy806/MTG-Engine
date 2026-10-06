@@ -12,6 +12,7 @@
 .capture-modes button.selected {
   border-color: var(--accent);
   background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
 }
 .capture-bug-text {
   min-height: 10rem;
@@ -86,6 +87,7 @@
 .capture-seats button.selected {
   border-color: var(--accent);
   background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
 }
 .capture-turn {
   position: sticky;
@@ -120,6 +122,7 @@
 .capture-entries button.selected {
   border-color: var(--accent);
   background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
 }
 .capture-when {
   color: var(--muted);

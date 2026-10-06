@@ -145,6 +145,7 @@
   background: var(--accent-bg);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: var(--bevel-pressed);
 }
 
 .bp-seats {

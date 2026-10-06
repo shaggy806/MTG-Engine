@@ -69,6 +69,7 @@
 .lib-chipset button.selected {
   border-color: var(--accent);
   background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
   color: var(--text);
 }
 

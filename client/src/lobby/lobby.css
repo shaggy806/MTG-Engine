@@ -276,6 +276,7 @@
   color: var(--good);
   border-color: var(--good);
   background: color-mix(in srgb, var(--good) 12%, transparent);
+  box-shadow: var(--bevel-pressed);
 }
 .seat-panel-add-bot {
   font-size: var(--text-xs);

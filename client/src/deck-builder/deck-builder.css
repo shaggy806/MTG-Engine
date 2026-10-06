@@ -213,6 +213,7 @@
   border-color: var(--accent);
   color: var(--text);
   background: var(--accent-bg);
+  box-shadow: var(--bevel-pressed);
 }
 
 .db-identity-filter {
