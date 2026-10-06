@@ -4,6 +4,7 @@ import type { VisibleObject } from 'engine/client'
 import { CardTile } from './CardTile.tsx'
 import { KEYWORD_GLYPH, keywordLabel } from './abilityIcons.ts'
 import { useHoverPopover } from './useHoverPopover.ts'
+import { KeywordTips } from './KeywordTips.tsx'
 import { cardTint } from './symbols.ts'
 import { LoyaltyCounter } from './Symbols.tsx'
 import { manaSymbolUrl } from './mana.ts'
@@ -218,6 +219,7 @@ export function MiniTile({
                 goaders={goaders}
                 enchanting={enchanting}
               />
+              <KeywordTips keywords={obj.keywords} />
               {held.length > 0 ? (
                 <div className={`popover-held held-${Math.min(held.length, 3)}`}>
                   <span className="popover-held-label">Exiled with it</span>

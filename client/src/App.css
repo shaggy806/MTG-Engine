@@ -2871,14 +2871,58 @@
   --pop-card-w: min(calc(var(--card-w-max) * 1.5), 28vh);
   --card-w: var(--pop-card-w);
 }
-/* A permanent holding cards in exile (a Banishing Light's) shows them beside
-   its own card, smaller as there are more: one at 80%, two at 65%, three or
-   more at half size in rows of three. The popover is clamped inside the
-   viewport by useHoverPopover, so a wide one still never runs off screen. */
-.mini-tile-popover.with-held {
+/* Beside the card, in a row: its keyword tooltips (KeywordTips) and, for a
+   permanent holding cards in exile (a Banishing Light's), those cards,
+   smaller as there are more: one at 80%, two at 65%, three or more at half
+   size in rows of three. On the right of the card, or on its left for a tile
+   in the right half of the screen (`to-left`, set by useHoverPopover), so
+   they face the middle. The popover is clamped inside the viewport, so a
+   wide one still never runs off screen. */
+.mini-tile-popover {
   display: flex;
   align-items: flex-start;
   gap: calc(var(--pop-card-w) * 0.06);
+}
+.mini-tile-popover.to-left {
+  flex-direction: row-reverse;
+}
+
+/* Hearthstone's keyword tooltips: a narrow column of boxes, each the
+   keyword's icon and name over what it does. */
+.keyword-tips {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pop-card-w) * 0.035);
+  width: calc(var(--pop-card-w) * 0.78);
+}
+.keyword-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.55em 0.7em 0.6em;
+  font-size: clamp(11px, 1.5vh, 13px);
+  line-height: 1.3;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--accent-dim);
+  box-shadow: var(--frame-raised), var(--shadow-popover);
+}
+.kt-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--gold);
+}
+.kt-glyph {
+  font-family: 'Mana';
+  font-weight: 400;
+  font-size: 1.15em;
+  color: var(--text);
+}
+.kt-text {
+  color: var(--muted);
 }
 .popover-held {
   --card-w: calc(var(--pop-card-w) * 0.8);
