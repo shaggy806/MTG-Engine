@@ -578,16 +578,18 @@ function CenteredScreen({
 /** How long an error sits on screen before clearing itself. Long enough to
  * read a sentence twice; short enough that a rejected click doesn't leave a
  * red bar over the board for the rest of the turn. */
-const ERROR_LINGER_MS = 6000
+/** How long a toast (a refusal, the highroll's news) stays up. App.css's
+ * `.toast` fades it out over the last half second. */
+const TOAST_LINGER_MS = 6000
 
 /**
  * A rejected action, as a toast floating over the board rather than a bar in
- * the layout.
+ * the layout. Rendered inside a `.toast-stack`.
  *
  * It used to take its own row in normal flow, which meant every refused click
  * shoved the whole table down a line and left the message there until someone
  * clicked it. Now it hovers above everything, fades out on its own after
- * {@link ERROR_LINGER_MS}, and is still dismissible by clicking it.
+ * {@link TOAST_LINGER_MS}, and is still dismissible by clicking it.
  *
  * The timer and the node are both keyed on `errorSeq` as well as the
  * message, so the same error twice in a row restarts the clock and replays
@@ -597,19 +599,34 @@ function ErrorLine({ game }: { readonly game: NetworkGame }) {
   const { error, errorSeq, clearError } = game
   useEffect(() => {
     if (!error) return
-    const t = window.setTimeout(clearError, ERROR_LINGER_MS)
+    const t = window.setTimeout(clearError, TOAST_LINGER_MS)
     return () => window.clearTimeout(t)
   }, [error, errorSeq, clearError])
   if (!error) return null
   return (
     <div
       key={errorSeq}
-      className="error-toast"
+      className="toast bad"
       onClick={clearError}
       role="alert"
       title="Click to dismiss"
     >
       ⚠ {withNames(error, game.seats, game.nameOf)}
+    </div>
+  )
+}
+
+/** Who won the highroll, as the same toast a refusal is (in the accent
+ * colours rather than the error's): over the board while the opening hands
+ * are decided, gone on its own after {@link TOAST_LINGER_MS} or on a click. */
+function HighrollToast({ onDismiss, children }: { readonly onDismiss: () => void; readonly children: ReactNode }) {
+  useEffect(() => {
+    const t = window.setTimeout(onDismiss, TOAST_LINGER_MS)
+    return () => window.clearTimeout(t)
+  }, [onDismiss])
+  return (
+    <div className="toast info" onClick={onDismiss} role="status" title="Click to dismiss">
+      {children}
     </div>
   )
 }
@@ -632,7 +649,9 @@ function SeatPickerScreen({ game }: { readonly game: NetworkGame }) {
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
         <p className="muted">Share this room code, then everyone joins.</p>
-        <ErrorLine game={game} />
+        <div className="toast-stack">
+          <ErrorLine game={game} />
+        </div>
         {roomFull ? <p className="muted">Room is full.</p> : null}
         <SeatBoard game={game} />
       </div>
@@ -651,7 +670,9 @@ function WaitingForPlayersScreen({ game }: { readonly game: NetworkGame }) {
       <div className="overlay-box seat-board-box">
         <BackToMenu game={game} />
         <h2>Room {game.roomId ?? ''}</h2>
-        <ErrorLine game={game} />
+        <div className="toast-stack">
+          <ErrorLine game={game} />
+        </div>
         <SeatBoard game={game} />
       </div>
     </div>
@@ -673,6 +694,7 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
   const [showHistory, setShowHistory] = useState(false)
   const [showCapture, setShowCapture] = useState(false)
   const [dismissedHighroll, setDismissedHighroll] = useState(false)
+  const dismissHighroll = useCallback(() => setDismissedHighroll(true), [])
   // One bus per screen, carrying each frame's cues from playback across to
   // the overlay layer (they're siblings — see AnimationLayer's own comment).
   const [bus] = useState(() => new AnimationBus())
@@ -805,13 +827,14 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
         </div>
       </header>
 
-      <ErrorLine game={game} />
-
-      {showHighroll ? (
-        <div className="highroll-banner" onClick={() => setDismissedHighroll(true)} role="alert">
-          🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
-        </div>
-      ) : null}
+      <div className="toast-stack">
+        <ErrorLine game={game} />
+        {showHighroll ? (
+          <HighrollToast onDismiss={dismissHighroll}>
+            🎲 {playerLabel(view.startingPlayer, game.seats)} won the highroll and goes first
+          </HighrollToast>
+        ) : null}
+      </div>
 
       {/* A sibling of <Table>, not a child: Table remounts on every frame
           it's keyed on, which would tear down anything animating inside it.

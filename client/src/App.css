@@ -353,7 +353,9 @@
   color: var(--seat-d);
 }
 
-/* A rejected action, as a toast over the board rather than a row in it.
+/* A rejected action (or the highroll's news), as a toast over the board
+   rather than a row in it. Toasts stack downwards from the top centre
+   (`.toast-stack`), so two at once don't cover each other.
 
    As an in-flow bar this pushed the whole table down a line the moment
    anything was refused, and stayed there until clicked -- so a mis-click
@@ -367,62 +369,71 @@
    caused it. It's small, top-centre and gone in six seconds, so sitting on
    top costs nothing.
 
-   It clears itself after ERROR_LINGER_MS (see App.tsx) and is still
+   It clears itself after TOAST_LINGER_MS (see App.tsx) and is still
    dismissible by clicking it. `pointer-events` stays on so the click works,
    but nothing else here is interactive, and it is narrow enough to leave the
    board either side of it reachable. */
-.error-toast {
+.toast-stack {
   position: fixed;
   top: clamp(10px, 1.6vh, 18px);
   left: 50%;
   translate: -50% 0;
   z-index: 10003;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
   max-width: min(92vw, 560px);
+  /* The stack's box spans its widest toast; only the toasts take clicks. */
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
   padding: 8px 14px;
   text-align: center;
   font-weight: 600;
-  color: var(--bad);
-  background: color-mix(in srgb, var(--panel) 92%, var(--bad));
-  border: 1px solid var(--bad);
   border-radius: 8px;
   cursor: pointer;
   box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
   /* In, then hold, then out. The 5.5s delay plus the 500ms fade is exactly
-     ERROR_LINGER_MS (6000) in App.tsx, which is what actually removes the
+     TOAST_LINGER_MS (6000) in App.tsx, which is what actually removes the
      node -- keep the two in step, or the toast either blinks out mid-fade or
      sits around invisible after it. */
-  animation: error-toast-in 140ms ease-out, error-toast-out 500ms ease-in 5.5s both;
+  animation: toast-in 140ms ease-out, toast-out 500ms ease-in 5.5s both;
 }
-@keyframes error-toast-in {
+/* A refusal. */
+.toast.bad {
+  color: var(--bad);
+  background: color-mix(in srgb, var(--panel) 92%, var(--bad));
+  border: 1px solid var(--bad);
+}
+/* News for the table: who won the highroll. It used to be a bar of its own
+   in the layout, above the table, in the accent colours -- styled unlike any
+   other alert, and pushing the board down a line through the mulligans. */
+.toast.info {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--panel) 92%, var(--accent));
+  border: 1px solid var(--accent);
+}
+@keyframes toast-in {
   from {
     opacity: 0;
-    translate: -50% -8px;
+    translate: 0 -8px;
   }
   to {
     opacity: 1;
-    translate: -50% 0;
+    translate: 0 0;
   }
 }
-@keyframes error-toast-out {
+@keyframes toast-out {
   to {
     opacity: 0;
-    translate: -50% -8px;
+    translate: 0 -8px;
   }
 }
-:root[data-reduce-motion] .error-toast {
+:root[data-reduce-motion] .toast {
   animation: none;
-}
-
-.highroll-banner {
-  margin: 6px 0;
-  padding: 6px 10px;
-  text-align: center;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  cursor: pointer;
 }
 
 /* table */
