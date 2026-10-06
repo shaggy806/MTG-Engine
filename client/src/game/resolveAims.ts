@@ -21,6 +21,11 @@ export interface ResolveState {
    * nothing is drawn from them any more, even though the board on screen
    * still lists them there. */
   readonly gone: readonly ObjectId[]
+  /** Spells cast in the frame just shown whose card is still flying into
+   * its place on the stack (`AnimationLayer`'s `slotIntoStack`): their entry
+   * is hidden until it lands, so nothing points from it yet. Absent when
+   * none are. */
+  readonly arriving?: readonly ObjectId[]
 }
 
 const IDLE: ResolveState = { resolving: [], gone: [] }
@@ -44,6 +49,21 @@ export class ResolveAims {
         })
       this.timers.push(window.setTimeout(start, aim.from), window.setTimeout(end, aim.until))
     }
+  }
+
+  /** Marks spells on the board just shown as still flying into the stack
+   * (see `ResolveState.arriving`), until `landed` says each is down. The
+   * next frame's `play` or `clear` drops whatever is left. */
+  arrive(objects: readonly ObjectId[]): void {
+    if (objects.length > 0) this.set({ ...this.state, arriving: objects })
+  }
+
+  /** `object`'s card is down in its place on the stack. */
+  landed(object: ObjectId): void {
+    const arriving = this.state.arriving?.filter((id) => id !== object)
+    if (arriving === undefined || arriving.length === this.state.arriving?.length) return
+    const { resolving, gone } = this.state
+    this.set(arriving.length > 0 ? { resolving, gone, arriving } : { resolving, gone })
   }
 
   /** Stops everything: the frame's board is shown, so nothing resolves over
@@ -85,7 +105,8 @@ export function aimedEntry(
     if (stack.includes(state.resolving[i])) return state.resolving[i]
   }
   const id = focus !== null && stack.includes(focus) ? focus : (stack[stack.length - 1] ?? null)
-  return id !== null && state.gone.includes(id) ? null : id
+  // Nor while its card is still flying into the pile (`arriving`).
+  return id !== null && (state.gone.includes(id) || (state.arriving ?? []).includes(id)) ? null : id
 }
 
 /**
@@ -99,7 +120,10 @@ export function arrowSources(
   state: ResolveState,
 ): { readonly waiting: readonly ObjectId[]; readonly resolving: readonly ObjectId[] } {
   return {
-    waiting: aimed.filter((id) => !state.resolving.includes(id) && !state.gone.includes(id)),
+    waiting: aimed.filter(
+      (id) =>
+        !state.resolving.includes(id) && !state.gone.includes(id) && !(state.arriving ?? []).includes(id),
+    ),
     resolving: state.resolving,
   }
 }

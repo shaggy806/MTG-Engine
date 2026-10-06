@@ -3509,6 +3509,56 @@
     opacity: 0;
   }
 }
+/* A card that flies on to where it went once the new board is shown -- a
+   spell into its place on the stack, a land onto its tile (AnimationLayer's
+   `liftSpotlight`, `slotIntoStack`, `putDownOnTile`): the same way in and
+   the same hold, without the way out, ending on the hold pose until its
+   flight takes the card. 1296ms is animationSchedule.ts's CARD_HOLD_MS, the
+   first 72% of the full beat, so each keyframe below is the full one's
+   offset over 0.72 (18% -> 25%, 12% -> 16.7%). Never under reduced motion,
+   which has no flights. */
+.played-card-fly.holds,
+:root[data-cast-entrance] .played-card-fly.holds {
+  animation-name: played-card-fly-hold;
+  animation-duration: calc(1296ms * var(--anim-scale, 1));
+}
+:root[data-cast-entrance='rise'] .played-card-fly.holds {
+  animation-name: played-card-rise-hold;
+}
+:root[data-cast-entrance='fade'] .played-card-fly.holds {
+  animation-name: played-card-fade-hold;
+}
+@keyframes played-card-fly-hold {
+  0% {
+    transform: translate(var(--fly-x, 0px), var(--fly-y, 45vh)) scale(0.35);
+    opacity: 0;
+  }
+  25%,
+  100% {
+    transform: translate(0, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+@keyframes played-card-rise-hold {
+  0% {
+    transform: translateY(14vh) scale(0.7);
+    opacity: 0;
+  }
+  25%,
+  100% {
+    transform: translateY(0) scale(1.08);
+    opacity: 1;
+  }
+}
+@keyframes played-card-fade-hold {
+  0% {
+    opacity: 0;
+  }
+  16.7%,
+  100% {
+    opacity: 1;
+  }
+}
 /* Reduced motion: the played card still shows up in the middle for the same
    time -- it's the information -- but fades in and out in place instead of
    flying from its owner's side. */

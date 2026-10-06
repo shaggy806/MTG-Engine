@@ -748,25 +748,42 @@ export default {
 
   PUTDN: {
     about:
-      "2p. Permanent spells put down on the board: cast Sol Ring, Grizzly Bears or Serra Angel " +
-      "and pass — each card leaves the stack for its tile, shrinking into it. Bob's Thalia, " +
-      "Heretic Cathar makes alice's creatures enter tapped (a tilted tile to land on); bob " +
-      "casts Colossal Dreadmaw on his turn.",
+      "2p. Cards flying to where they went: cast Sol Ring, Grizzly Bears or Serra Angel — the " +
+      "card slots into its place on the stack, then leaves the stack for its tile, shrinking " +
+      "into it — or play Reliquary Tower, which flies onto its tile. Bloodbraid Elf's cascade " +
+      "trigger goes on the stack above it (it waits for the Elf to land, then the cascade " +
+      "finds Grizzly Bears); Krenko casts from the command zone. Bob's Thalia, Heretic Cathar " +
+      "makes alice's creatures enter tapped (a tilted tile to land on); bob casts Colossal " +
+      "Dreadmaw on his turn.",
     players: ["alice", "bob"],
     lands: { alice: 12, bob: 10 },
     battlefield: { alice: ["Llanowar Elves", "Hill Giant"], bob: ["Thalia, Heretic Cathar"] },
-    hand: { alice: ["Sol Ring", "Grizzly Bears", "Serra Angel"], bob: ["Colossal Dreadmaw"] },
-    setup: handOfSpellsOnly("alice"),
+    hand: {
+      alice: ["Sol Ring", "Grizzly Bears", "Serra Angel", "Reliquary Tower", "Bloodbraid Elf"],
+      bob: ["Colossal Dreadmaw"],
+    },
+    setup(game) {
+      handOfSpellsOnly("alice")(game);
+      game.debugSpawn("Grizzly Bears", "alice", "library");
+    },
     bots: { bob: { casts: [{ name: "Colossal Dreadmaw" }] } },
   },
 
   PUTD4: {
-    about: "4p. PUTDN's board in the quadrant layout: carol casts Colossal Dreadmaw on her turn.",
+    about:
+      "4p. PUTDN's board in the quadrant layout: carol casts Colossal Dreadmaw on her turn, " +
+      "to fly further than alice's own cards do.",
     players: ["alice", "bob", "carol", "dave"],
     lands: { alice: 12, bob: 5, carol: 10, dave: 5 },
     battlefield: { alice: ["Llanowar Elves", "Hill Giant"], bob: ["Thalia, Heretic Cathar"] },
-    hand: { alice: ["Sol Ring", "Grizzly Bears", "Serra Angel"], carol: ["Colossal Dreadmaw"] },
-    setup: handOfSpellsOnly("alice"),
+    hand: {
+      alice: ["Sol Ring", "Grizzly Bears", "Serra Angel", "Reliquary Tower", "Bloodbraid Elf"],
+      carol: ["Colossal Dreadmaw"],
+    },
+    setup(game) {
+      handOfSpellsOnly("alice")(game);
+      game.debugSpawn("Grizzly Bears", "alice", "library");
+    },
     bots: { bob: {}, carol: { casts: [{ name: "Colossal Dreadmaw" }] }, dave: {} },
   },
 };

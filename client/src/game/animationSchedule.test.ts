@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { GameEvent } from 'engine/client'
 import {
+  CARD_HOLD_MS,
   CARD_STEP_MS,
   DEATH_STEP_MS,
   ENTER_STEP_MS,
@@ -12,12 +13,15 @@ import {
   MILL_STAGGER_MS,
   MILL_STEP_MS,
   MOVE_STEP_MS,
-  PUT_DOWN_STEP_MS,
+  FLIGHT_MAX_MS,
+  FLIGHT_MIN_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
+  flightMs,
   libraryPeels,
   millDurationMs,
+  retimeFlights,
   scheduleEvents,
 } from './animationSchedule.ts'
 
@@ -51,9 +55,11 @@ describe('scheduleEvents', () => {
   it('puts taps in the second half, after the board they happened on is shown', () => {
     const s = scheduleEvents([tap(), cast()], 'precombat-main')
     expect(types(s.items)).toEqual(['spell-cast'])
-    expect(s.totalMs).toBe(CARD_STEP_MS)
-    expect(types(s.after)).toEqual(['permanent-tapped'])
-    expect(s.afterMs).toBe(TAP_STEP_MS)
+    // The spell stays on the stack: its spotlight holds, then flies into the
+    // pile first thing on the new board, before the tap.
+    expect(s.totalMs).toBe(CARD_HOLD_MS)
+    expect(types(s.after)).toEqual(['spell-cast', 'permanent-tapped'])
+    expect(s.afterMs).toBe(FLIGHT_MAX_MS + TAP_STEP_MS)
   })
 
   it('plays a run of taps and untaps as one beat each, untaps first', () => {
@@ -82,9 +88,14 @@ describe('scheduleEvents', () => {
       scale: 2,
       reduced: false,
     })
-    expect(s.items.map((i) => i.offset)).toEqual([0, 2 * CARD_STEP_MS])
-    expect(s.totalMs).toBe(4 * CARD_STEP_MS)
-    expect(s.afterMs).toBe(2 * TAP_STEP_MS)
+    expect(s.items.map((i) => i.offset)).toEqual([0, 2 * CARD_HOLD_MS])
+    expect(s.totalMs).toBe(4 * CARD_HOLD_MS)
+    expect(s.after.map((i) => [i.offset, i.flightMs])).toEqual([
+      [0, 2 * FLIGHT_MAX_MS],
+      [2 * FLIGHT_MAX_MS, 2 * FLIGHT_MAX_MS],
+      [4 * FLIGHT_MAX_MS, undefined],
+    ])
+    expect(s.afterMs).toBe(2 * (2 * FLIGHT_MAX_MS + TAP_STEP_MS))
   })
 
   it('drops pure movement when motion is reduced, and keeps the rest', () => {
@@ -377,7 +388,8 @@ describe('scheduleEvents: what points at its targets as it resolves', () => {
       'precombat-main',
     )
     // The cast and the discard before it are someone else's business.
-    const start = CARD_STEP_MS + DISCARD_STEP_MS
+    // (The cast is still on the stack after, so its spotlight holds.)
+    const start = CARD_HOLD_MS + DISCARD_STEP_MS
     expect(s.aims).toEqual([
       { object: 'murder', from: start, until: start + DEATH_STEP_MS + STACK_EXIT_MS },
     ])
@@ -471,8 +483,8 @@ describe('scheduleEvents: a permanent spell put down on its tile', () => {
       ['permanent-entered-battlefield', false],
     ])
     // The landing has its own beat, then the token grows in on the next.
-    expect(s.after.map((i) => i.offset)).toEqual([0, PUT_DOWN_STEP_MS])
-    expect(s.afterMs).toBe(PUT_DOWN_STEP_MS + ENTER_STEP_MS)
+    expect(s.after.map((i) => i.offset)).toEqual([0, FLIGHT_MAX_MS])
+    expect(s.afterMs).toBe(FLIGHT_MAX_MS + ENTER_STEP_MS)
   })
 
   it('lands before anything else on the new board', () => {
@@ -493,9 +505,9 @@ describe('scheduleEvents: a permanent spell put down on its tile', () => {
     const s = scheduleEvents([resolved('a'), entered('a'), resolved('b'), entered('b')], 'precombat-main')
     expect(s.after.map((i) => [(i.event as { object: string }).object, i.offset, i.putDown])).toEqual([
       ['a', 0, true],
-      ['b', PUT_DOWN_STEP_MS, true],
+      ['b', FLIGHT_MAX_MS, true],
     ])
-    expect(s.afterMs).toBe(2 * PUT_DOWN_STEP_MS)
+    expect(s.afterMs).toBe(2 * FLIGHT_MAX_MS)
     expect(s.items.every((i) => i.putDown === true)).toBe(true)
   })
 
@@ -532,7 +544,7 @@ describe('scheduleEvents: a permanent spell put down on its tile', () => {
       reduced: false,
     })
     expect(s.totalMs).toBe(2 * STACK_EXIT_MS)
-    expect(s.afterMs).toBe(2 * PUT_DOWN_STEP_MS)
+    expect(s.afterMs).toBe(2 * FLIGHT_MAX_MS)
   })
 
   it("marks neither end when the landing doesn't fit under the frame's ceiling", () => {
@@ -543,5 +555,178 @@ describe('scheduleEvents: a permanent spell put down on its tile', () => {
     expect(types(s.items)).toContain('spell-resolved')
     expect(s.items.some((i) => i.putDown)).toBe(false)
     expect(s.after).toEqual([])
+  })
+})
+
+describe('scheduleEvents: a cast spell slotting into its place on the stack', () => {
+  const castOf = (object: string, from = 'hand') => ev({ type: 'spell-cast', player: 'p1', object, from })
+  const resolved = (object: string) => ev({ type: 'spell-resolved', object })
+  const entered = (object: string) => ev({ type: 'permanent-entered-battlefield', object })
+  const ends = (items: readonly { event: GameEvent; putDown?: true; offset: number }[]) =>
+    items.map((i) => [i.event.type, (i.event as { object?: string }).object, i.offset, i.putDown === true])
+
+  it('holds the spotlight, then flies it into the pile first thing on the new board', () => {
+    const s = scheduleEvents([castOf('bolt'), tap('land')], 'precombat-main')
+    expect(ends(s.items)).toEqual([['spell-cast', 'bolt', 0, true]])
+    expect(s.totalMs).toBe(CARD_HOLD_MS)
+    expect(ends(s.after)).toEqual([
+      ['spell-cast', 'bolt', 0, true],
+      ['permanent-tapped', 'land', FLIGHT_MAX_MS, false],
+    ])
+    expect(s.after[0].flightMs).toBe(FLIGHT_MAX_MS)
+    expect(s.afterMs).toBe(FLIGHT_MAX_MS + TAP_STEP_MS)
+  })
+
+  it('does the same for a spell cast from anywhere else', () => {
+    const s = scheduleEvents([castOf('flashback', 'graveyard')], 'precombat-main')
+    expect(s.items[0].putDown).toBe(true)
+    expect(s.after[0].putDown).toBe(true)
+  })
+
+  it('keeps the full spotlight for a spell gone from the stack within the frame', () => {
+    for (const leaving of ['spell-resolved', 'spell-countered', 'spell-fizzled', 'spell-exiled']) {
+      const s = scheduleEvents([castOf('x'), ev({ type: leaving, object: 'x' })], 'precombat-main')
+      expect(ends(s.items)[0], leaving).toEqual(['spell-cast', 'x', 0, false])
+      expect(s.after.some((i) => i.event.type === 'spell-cast'), leaving).toBe(false)
+    }
+    // A permanent spell cast and resolved in one frame: its entry was never
+    // drawn, so it grows in as it did.
+    const s = scheduleEvents([castOf('bear'), resolved('bear'), entered('bear')], 'precombat-main')
+    expect(s.items[0].putDown).toBeUndefined()
+    expect(s.totalMs).toBe(CARD_STEP_MS + STACK_EXIT_MS)
+  })
+
+  it('flies several casts into the pile one after another, in the order they were cast', () => {
+    const s = scheduleEvents([castOf('a'), castOf('b')], 'precombat-main')
+    expect(s.items.map((i) => i.offset)).toEqual([0, CARD_HOLD_MS])
+    expect(ends(s.after)).toEqual([
+      ['spell-cast', 'a', 0, true],
+      ['spell-cast', 'b', FLIGHT_MAX_MS, true],
+    ])
+  })
+
+  it('fades under reduced motion: the full spotlight, and no flight', () => {
+    const s = scheduleEvents([castOf('bolt')], 'precombat-main', { scale: 1, reduced: true })
+    expect(s.items[0].putDown).toBeUndefined()
+    expect(s.totalMs).toBe(CARD_STEP_MS)
+    expect(s.after).toEqual([])
+  })
+
+  it("gives the spotlight its full beat back when its flight doesn't fit under the ceiling", () => {
+    // 4180 ms before it: with the hold it would end at 5476 ms and its flight
+    // not fit under the 6 s ceiling; with its full beat it ends at 5980.
+    const s = scheduleEvents(
+      [castOf('shock'), resolved('shock'), hit(), dies(), hit(), castOf('bolt')],
+      'precombat-main',
+    )
+    const before = CARD_STEP_MS + STACK_EXIT_MS + 2 * HIT_STEP_MS + DEATH_STEP_MS
+    expect(ends(s.items).at(-1)).toEqual(['spell-cast', 'bolt', before, false])
+    expect(s.totalMs).toBe(before + CARD_STEP_MS)
+    expect(s.after).toEqual([])
+  })
+})
+
+describe('scheduleEvents: a played land flying onto its tile', () => {
+  const played = (object: string) => ev({ type: 'land-played', player: 'p1', object, from: 'hand' })
+  const entered = (object: string) => ev({ type: 'permanent-entered-battlefield', object })
+
+  it('holds the spotlight, then flies it onto the tile instead of growing the tile in', () => {
+    const s = scheduleEvents([played('forest'), entered('forest')], 'precombat-main')
+    expect(s.items.map((i) => [i.event.type, i.offset, i.putDown])).toEqual([['land-played', 0, true]])
+    expect(s.totalMs).toBe(CARD_HOLD_MS)
+    expect(s.after.map((i) => [i.event.type, i.offset, i.putDown, i.flightMs])).toEqual([
+      ['permanent-entered-battlefield', 0, true, FLIGHT_MAX_MS],
+    ])
+    expect(s.afterMs).toBe(FLIGHT_MAX_MS)
+  })
+
+  it('plays the spotlight as before under reduced motion', () => {
+    const s = scheduleEvents([played('forest'), entered('forest')], 'precombat-main', {
+      scale: 1,
+      reduced: true,
+    })
+    expect(s.totalMs).toBe(CARD_STEP_MS)
+    expect(s.after.map((i) => [i.event.type, i.putDown])).toEqual([['permanent-entered-battlefield', undefined]])
+    expect(s.afterMs).toBe(ENTER_STEP_MS)
+  })
+})
+
+describe('flightMs: a steady speed on screen', () => {
+  it('grows with the distance, in step with it between the floor and the ceiling', () => {
+    const diagonal = 1000
+    const a = flightMs(300, diagonal)
+    const b = flightMs(500, diagonal)
+    expect(b).toBeGreaterThan(a)
+    // Equal distances added take equal time: the speed is steady.
+    expect(flightMs(700, diagonal) - b).toBe(b - a)
+  })
+
+  it('never crawls over a short hop or runs past the slot a flight reserves', () => {
+    expect(flightMs(0, 1000)).toBe(FLIGHT_MIN_MS)
+    expect(flightMs(10, 1000)).toBe(FLIGHT_MIN_MS)
+    expect(flightMs(1000, 1000)).toBe(FLIGHT_MAX_MS)
+    expect(flightMs(5000, 1000)).toBe(FLIGHT_MAX_MS)
+  })
+
+  it('feels the same on any screen: measured in viewport diagonals', () => {
+    const small = Math.hypot(1366, 768)
+    const large = Math.hypot(2560, 1440)
+    expect(flightMs(small * 0.4, small)).toBe(flightMs(large * 0.4, large))
+  })
+})
+
+describe('retimeFlights: the second half as measured on the new board', () => {
+  const item = (offset: number, flight?: number) => ({
+    event: tap(),
+    offset,
+    ...(flight !== undefined ? { putDown: true as const, flightMs: flight } : {}),
+  })
+
+  it('pulls everything after a short flight forward, and ends the half early', () => {
+    const after = [
+      item(0, FLIGHT_MAX_MS),
+      item(FLIGHT_MAX_MS),
+      item(FLIGHT_MAX_MS),
+      item(FLIGHT_MAX_MS + TAP_STEP_MS),
+    ]
+    const timed = retimeFlights(after, FLIGHT_MAX_MS + 2 * TAP_STEP_MS, () => 500)
+    expect(timed.after.map((i) => [i.offset, i.flightMs])).toEqual([
+      [0, 500],
+      [500, undefined],
+      [500, undefined],
+      [500 + TAP_STEP_MS, undefined],
+    ])
+    expect(timed.afterMs).toBe(500 + 2 * TAP_STEP_MS)
+  })
+
+  it('starts each flight when the one before it has landed', () => {
+    const after = [item(0, FLIGHT_MAX_MS), item(FLIGHT_MAX_MS, FLIGHT_MAX_MS), item(2 * FLIGHT_MAX_MS)]
+    const took = [600, 800]
+    let i = 0
+    const timed = retimeFlights(after, 2 * FLIGHT_MAX_MS + TAP_STEP_MS, () => took[i++])
+    expect(timed.after.map((x) => [x.offset, x.flightMs])).toEqual([
+      [0, 600],
+      [600, 800],
+      [1400, undefined],
+    ])
+    expect(timed.afterMs).toBe(1400 + TAP_STEP_MS)
+  })
+
+  it('never takes longer than the slot reserved, so the frame stays under its ceiling', () => {
+    const timed = retimeFlights(
+      [item(0, FLIGHT_MAX_MS), item(FLIGHT_MAX_MS)],
+      FLIGHT_MAX_MS + TAP_STEP_MS,
+      () => 99_999,
+    )
+    expect(timed.after.map((x) => [x.offset, x.flightMs])).toEqual([
+      [0, FLIGHT_MAX_MS],
+      [FLIGHT_MAX_MS, undefined],
+    ])
+    expect(timed.afterMs).toBe(FLIGHT_MAX_MS + TAP_STEP_MS)
+  })
+
+  it('leaves a half with no flights alone', () => {
+    const after = [item(0), item(TAP_STEP_MS)]
+    expect(retimeFlights(after, 2 * TAP_STEP_MS, () => 0)).toEqual({ after, afterMs: 2 * TAP_STEP_MS })
   })
 })

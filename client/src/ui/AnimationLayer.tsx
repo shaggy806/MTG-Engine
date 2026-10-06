@@ -34,13 +34,14 @@ import {
   MILL_STEP_MS,
   MOVE_STEP_MS,
   PHASE_STEP_MS,
-  PUT_DOWN_STEP_MS,
+  CARD_HOLD_MS,
   REVEAL_STEP_MS,
   STACK_EXIT_MS,
   TAP_STEP_MS,
   TRIGGER_STEP_MS,
   TURN_STEP_MS,
   cardsOffLibraries,
+  flightMs,
   libraryPeels,
 } from '../game/animationSchedule.ts'
 import type { PeelPart } from '../game/animationSchedule.ts'
@@ -117,6 +118,11 @@ interface Reveal {
 interface PlayedCard {
   readonly key: string
   readonly obj: VisibleObject
+  /** It flies on to where it went in the frame's second half (its place on
+   * the stack, or its tile): it comes in and is shown as ever, then holds
+   * there (`CARD_HOLD_MS`, `.holds`) instead of shrinking away, until its
+   * flight lifts the card out (`liftSpotlight`). */
+  readonly holds: boolean
   /** Where the card flies in from, as an offset in px from the centre of the
    * viewport to the centre of its owner's cell in the table grid — so a card
    * comes off the side of the screen belonging to whoever played it. Fed to
@@ -632,26 +638,34 @@ const LIFT_SCALE = 1.06
 const LIFTED_SHADOW = 'drop-shadow(0 16px 18px rgba(0, 0, 0, 0.6))'
 const FLAT_SHADOW = 'drop-shadow(0 0 0 rgba(0, 0, 0, 0))'
 
-/** A resolving permanent spell's card, picked up off the stack in the first
- * half and waiting, by its object id, for its landing in the second
- * (`putDownOnTile`). */
+/** A card held up, waiting by its object id for its flight in the second
+ * half: a resolving permanent spell picked up off the stack in the first
+ * (`liftOffStack`), to be put down on its tile (`putDownOnTile`); or a cast
+ * spell's or a played land's spotlight card (`liftSpotlight`), to go into its
+ * place on the stack (`slotIntoStack`) or onto its tile. */
 interface LiftedCard {
   /** A `.ghost-flight` box with no size of its own, placed on the card's
-   * centre: it carries the card (and later the tile) by that point. */
+   * centre: it carries the card (and later what it lands as) by that point. */
   readonly box: HTMLElement
   /** The card's copy, centred on the box. */
   readonly face: HTMLElement
-  /** The card's on-screen width. */
+  /** The face's width before the box's scale. */
   readonly width: number
-  /** Where its centre was. */
+  /** Where its centre is. */
   readonly x: number
   readonly y: number
+  /** The box's scale while it's held. */
+  readonly scale: number
+  /** Casts the lifted shadow (a card picked up off the stack), which it
+   * loses as it's put down. */
+  readonly shadow: boolean
+  /** The spotlight's "Bob casts" caption, which fades as the card leaves. */
+  readonly caption: HTMLElement | null
   readonly timer: number
 }
 const lifted = new Map<ObjectId, LiftedCard>()
 
-/** A card lifted off the stack whose landing never came: it fades where it
- * hovers. */
+/** A held card whose landing never came: it fades where it hovers. */
 function dropLifted(card: LiftedCard, delay = 0): void {
   window.clearTimeout(card.timer)
   const fade = card.box.animate([{ opacity: 1 }, { opacity: 0 }], {
@@ -662,11 +676,117 @@ function dropLifted(card: LiftedCard, delay = 0): void {
   releaseWhenDone(card.box, fade)
 }
 
+/** Each spotlight held for its flight (`PlayedCard.holds`), by object id:
+ * what takes it out of `AnimationLayer`'s state once its card is lifted out
+ * of it (`liftSpotlight`) or its landing isn't coming. */
+const heldSpotlights = new Map<ObjectId, () => void>()
+
 /** Every card still held from an earlier frame: a new frame starting means
  * its landing isn't coming. */
 function dropAllLifted(): void {
   for (const card of lifted.values()) dropLifted(card)
   lifted.clear()
+  for (const release of heldSpotlights.values()) release()
+  heldSpotlights.clear()
+}
+
+/** The spotlight overlay (`.played-card-fly`) showing `object`, if any. */
+function spotlightOf(object: ObjectId): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`.played-card-fly[data-played-obj="${CSS.escape(object)}"]`)
+}
+
+/**
+ * A cast spell's or a played land's spotlight, held at the end of its beat
+ * (`.holds`), taken out of React into a box on `<body>` like a card lifted off
+ * the stack — its card with the caption above it, the same size and place on
+ * screen — for its flight to where it went. The overlay itself is hidden and
+ * dropped from `AnimationLayer`'s state. Null if it isn't on screen.
+ */
+function liftSpotlight(object: ObjectId): LiftedCard | null {
+  const el = spotlightOf(object)
+  const card = el?.querySelector<HTMLElement>('.card-tile')
+  if (!el || !card) return null
+  const r = card.getBoundingClientRect()
+  if (r.width === 0 || r.height === 0) return null
+  const w = card.offsetWidth
+  const h = card.offsetHeight
+  const copy = el.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-played-obj')
+  copy.classList.remove('holds')
+  // The overlay's card sits under its caption; the copy is placed so its card
+  // fills the face, the caption standing above it as it did.
+  Object.assign(copy.style, {
+    position: 'absolute',
+    left: `${-card.offsetLeft}px`,
+    top: `${-card.offsetTop}px`,
+    margin: '0',
+    width: `${w}px`,
+    transform: 'none',
+    opacity: '1',
+    animation: 'none',
+    transition: 'none',
+  })
+  copy.style.setProperty('--card-w', `${w}px`)
+  const face = document.createElement('div')
+  face.style.position = 'absolute'
+  face.style.left = `${-w / 2}px`
+  face.style.top = `${-h / 2}px`
+  face.style.width = `${w}px`
+  face.style.height = `${h}px`
+  face.dataset.part = 'face'
+  face.appendChild(copy)
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  box.dataset.object = object
+  const x = r.left + r.width / 2
+  const y = r.top + r.height / 2
+  const scale = r.width / w
+  box.style.left = `${x}px`
+  box.style.top = `${y}px`
+  box.style.transform = `scale(${scale})`
+  box.appendChild(face)
+  document.body.appendChild(box)
+  el.style.visibility = 'hidden'
+  heldSpotlights.get(object)?.()
+  heldSpotlights.delete(object)
+  return {
+    box,
+    face,
+    width: w,
+    x,
+    y,
+    scale,
+    shadow: false,
+    caption: copy.querySelector<HTMLElement>('.played-card-caption'),
+    timer: 0,
+  }
+}
+
+/** The card held for `object`'s flight, taken: lifted off the stack, or its
+ * spotlight lifted out now. */
+function takeHeld(object: ObjectId): LiftedCard | null {
+  const held = lifted.get(object)
+  lifted.delete(object)
+  if (held) window.clearTimeout(held.timer)
+  return held ?? liftSpotlight(object)
+}
+
+/** Where the card held for `object` is, without taking it. */
+function heldCentre(object: ObjectId): { x: number; y: number } | null {
+  const held = lifted.get(object)
+  if (held) return { x: held.x, y: held.y }
+  const r = spotlightOf(object)?.querySelector('.card-tile')?.getBoundingClientRect()
+  if (!r || r.width === 0) return null
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+}
+
+/** A held spotlight's caption fades out over the first part of its flight. */
+function fadeCaption(held: LiftedCard, delay: number, duration: number): void {
+  held.caption?.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: duration * 0.25,
+    delay,
+    fill: 'both',
+  })
 }
 
 /**
@@ -703,9 +823,11 @@ function liftOffStack(object: ObjectId, el: HTMLElement, duration: number): bool
   face.style.width = `${r.width}px`
   face.style.height = `${r.height}px`
   face.style.setProperty('--card-w', `${card.offsetWidth}px`)
+  face.dataset.part = 'face'
   face.appendChild(copy)
   const box = document.createElement('div')
   box.className = 'ghost-flight'
+  box.dataset.object = object
   const x = r.left + r.width / 2
   const y = r.top + r.height / 2
   box.style.left = `${x}px`
@@ -729,7 +851,7 @@ function liftOffStack(object: ObjectId, el: HTMLElement, duration: number): bool
       box.remove()
     }
   }, 12_000)
-  lifted.set(object, { box, face, width: r.width, x, y, timer })
+  lifted.set(object, { box, face, width: r.width, x, y, scale: LIFT_SCALE, shadow: true, caption: null, timer })
   return true
 }
 
@@ -770,21 +892,21 @@ function pinTileTokens(to: HTMLElement, tile: HTMLElement): void {
  * then. A tapped tile is drawn tilted inside its layout box (the outer
  * `data-obj-id` box), and the copy is of that box, so it lands tilted. One
  * folded into a tile already on the board lands on it and the tile glows
- * "+1". With no card held (the entry wasn't on screen) the permanent grows
- * in as any arrival does; with no tile to land on (scrolled out of view, or
- * not shown to this viewer) the card fades where it hovers instead.
+ * "+1". A played land does the same from its spotlight. With no card held
+ * (the entry wasn't on screen) the permanent grows in as any arrival does;
+ * with no tile to land on (scrolled out of view, or not shown to this viewer)
+ * the card fades where it hovers instead. The flight takes `duration`, what
+ * `measureFlight` made of the distance.
  */
-function putDownOnTile(object: ObjectId, isToken: boolean, delay: number): void {
-  const held = lifted.get(object)
-  lifted.delete(object)
+function putDownOnTile(object: ObjectId, isToken: boolean, delay: number, duration: number): void {
+  const held = takeHeld(object)
   if (!held) {
     runEnter(object, isToken, delay)
     return
   }
-  window.clearTimeout(held.timer)
-  const wrap = boardTileOf(object)
+  const wrap = tileTargetOf(object)
   const tile = wrap?.querySelector<HTMLElement>('.mini-tile')
-  if (!wrap || !tile || !inView(wrap)) {
+  if (!wrap || !tile) {
     dropLifted(held, delay)
     runEnter(object, isToken, delay)
     return
@@ -810,14 +932,14 @@ function putDownOnTile(object: ObjectId, isToken: boolean, delay: number): void 
   landing.style.height = `${height}px`
   landing.style.opacity = '0'
   pinTileTokens(landing, tile)
+  landing.dataset.part = 'landing'
   landing.appendChild(copy)
   held.box.appendChild(landing)
 
-  const duration = scaled(PUT_DOWN_STEP_MS)
   const timing: KeyframeAnimationOptions = {
     duration,
     delay,
-    easing: 'cubic-bezier(0.45, 0, 0.25, 1)',
+    easing: FLIGHT_EASING,
     fill: 'both',
   }
   const dx = t.left + t.width / 2 - held.x
@@ -828,11 +950,15 @@ function putDownOnTile(object: ObjectId, isToken: boolean, delay: number): void 
   const k = t.width / held.width
   const flight = held.box.animate(
     [
-      { transform: `translate(0, 0) scale(${LIFT_SCALE})`, filter: LIFTED_SHADOW },
-      { transform: `translate(${dx}px, ${dy}px) scale(1)`, filter: FLAT_SHADOW },
+      {
+        transform: `translate(0, 0) scale(${held.scale})`,
+        ...(held.shadow ? { filter: LIFTED_SHADOW } : {}),
+      },
+      { transform: `translate(${dx}px, ${dy}px) scale(1)`, ...(held.shadow ? { filter: FLAT_SHADOW } : {}) },
     ],
     timing,
   )
+  fadeCaption(held, delay, duration)
   held.face.animate([{ transform: 'scale(1)' }, { transform: `scale(${k})` }], timing)
   landing.animate([{ transform: `scale(${1 / k})` }, { transform: 'scale(1)' }], timing)
   const fade: KeyframeAnimationOptions = { duration, delay, fill: 'both' }
@@ -845,17 +971,239 @@ function putDownOnTile(object: ObjectId, isToken: boolean, delay: number): void 
     fade,
   )
   releaseWhenDone(held.box, flight)
+  // What the e2e suite (e2e/put-down.spec.ts) reads a flight by.
+  held.box.dataset.to = 'tile'
+  held.box.dataset.flightMs = String(duration)
   if (wrap.dataset.objId === object) {
-    // Hidden until the copy is down on it. Shown a moment before the copy
-    // goes, so the two overlap rather than leaving a frame with neither.
-    wrap.animate([{ opacity: 0 }, { opacity: 0 }], {
-      duration: delay + duration * 0.97,
-      fill: 'backwards',
-    })
+    // Hidden for exactly the flight (`HIDE_UNTIL_LANDED`).
+    wrap.animate([{ opacity: 0 }, { opacity: 0 }], { duration: delay + duration, fill: 'backwards' })
   } else {
     glow(tile, 'gain', delay + duration, scaled(ENTER_STEP_MS))
     floatText(wrap, '+1', 'gain', delay + duration, scaled(ENTER_STEP_MS) * 1.5)
   }
+}
+
+/*
+ * HIDE_UNTIL_LANDED: the place a card flies to (its tile, its stack entry) is
+ * hidden for exactly the flight, by an animation started in the same task as
+ * the flight's, so the two end at the same moment of the same timeline: the
+ * frame the place shows in is the frame the flight's finish event removes the
+ * copy (events go out as a frame's animations update, before it paints), so
+ * there's never a frame with both nor one with neither. Showing it a little
+ * early, as the first put-down did, put the tile beside a copy still a few
+ * pixels short of it once flights grew longer with distance.
+ */
+
+/** How every card flight eases: gently off, gently down. */
+const FLIGHT_EASING = 'cubic-bezier(0.45, 0, 0.25, 1)'
+
+/** The tile `object` lands on (`putDownOnTile`), if there is one in view. */
+function tileTargetOf(object: ObjectId): HTMLElement | null {
+  const wrap = boardTileOf(object)
+  if (!wrap || !wrap.querySelector('.mini-tile') || !inView(wrap)) return null
+  return wrap
+}
+
+/** Where a spell's card goes on the stack (`slotIntoStack`): its entry, and
+ * how the entry's depth styling (`stackDepthVars`) draws it. */
+interface StackSpot {
+  readonly entry: HTMLElement
+  /** The centre of the entry's card on screen. */
+  readonly x: number
+  readonly y: number
+  /** The entry's own transform (its depth's rotation and scale) as a 2D
+   * matrix, taken about the top left of its box. */
+  readonly matrix: DOMMatrixReadOnly
+  /** The centre of the entry's card in the entry's own box, untransformed. */
+  readonly cx: number
+  readonly cy: number
+  /** The card's width on screen, unrotated: its layout width at the entry's
+   * scale. */
+  readonly width: number
+  /** The card's layout width, which sizes everything on it (`--card-w`). */
+  readonly cardWidth: number
+}
+
+/**
+ * The place `object`'s entry takes in the stack pile on the board now shown,
+ * or null if it has none in view. Its arrival animation (`is-new`) is
+ * cancelled first, for good: the card arrives by its flight instead, and the
+ * arrival's own movement would put the entry somewhere else while it's
+ * measured.
+ */
+function stackSpotOf(object: ObjectId): StackSpot | null {
+  const entry = document.querySelector<HTMLElement>(`.stack-entry[data-stack-id="${CSS.escape(object)}"]`)
+  const card = entry?.querySelector<HTMLElement>('.card-tile')
+  if (!entry || !card || card.offsetParent !== entry) return null
+  for (const animation of entry.getAnimations()) {
+    if (animation instanceof CSSAnimation && animation.animationName === 'stack-arrive') animation.cancel()
+  }
+  const r = card.getBoundingClientRect()
+  if (r.width === 0 || r.height === 0 || !inView(card)) return null
+  const transform = getComputedStyle(entry).transform
+  const matrix = new DOMMatrixReadOnly(transform === 'none' ? undefined : transform)
+  return {
+    entry,
+    // The centre of a rotated box's bounding box is the rotated centre.
+    x: r.left + r.width / 2,
+    y: r.top + r.height / 2,
+    matrix,
+    cx: card.offsetLeft + card.offsetWidth / 2,
+    cy: card.offsetTop + card.offsetHeight / 2,
+    width: card.offsetWidth * Math.hypot(matrix.a, matrix.b),
+    cardWidth: card.offsetWidth,
+  }
+}
+
+/**
+ * A spell cast onto the stack, over the new board: its spotlight card, held at
+ * the end of its beat, flies to the stack pile and settles into exactly the
+ * place its entry takes — the entry's depth styling included, so one buried
+ * under later arrivals lands tilted and shrunk where it lies — turning and
+ * shrinking into it as the card cross-fades into a copy of the entry. The
+ * real entry is held hidden until the copy is down on it. `onLanded` is
+ * called when it is (or at once, with nothing to fly).
+ *
+ * With no spotlight drawn (nothing to fly) the entry simply appears; with no
+ * entry in view the card fades where it hovers.
+ */
+function slotIntoStack(object: ObjectId, delay: number, duration: number, onLanded: () => void): void {
+  const held = takeHeld(object)
+  const spot = stackSpotOf(object)
+  if (!held || !spot) {
+    if (held) dropLifted(held, delay)
+    onLanded()
+    return
+  }
+  const { entry, matrix } = spot
+  const copy = entry.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-stack-id')
+  copy.classList.remove('is-new')
+  Object.assign(copy.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: 'auto',
+    margin: '0',
+    width: `${entry.offsetWidth}px`,
+    height: `${entry.offsetHeight}px`,
+    transform: 'none',
+    animation: 'none',
+    transition: 'none',
+  })
+  // The entry's copy, drawn as the entry is: its card's centre on the box's
+  // origin, and the entry's own rotation and scale about that point.
+  const landing = document.createElement('div')
+  landing.style.position = 'absolute'
+  landing.style.left = `${-spot.cx}px`
+  landing.style.top = `${-spot.cy}px`
+  landing.style.width = `${entry.offsetWidth}px`
+  landing.style.height = `${entry.offsetHeight}px`
+  landing.style.transformOrigin = `${spot.cx}px ${spot.cy}px`
+  landing.style.transform = `matrix(${matrix.a}, ${matrix.b}, ${matrix.c}, ${matrix.d}, 0, 0)`
+  landing.style.opacity = '0'
+  landing.style.setProperty('--card-w', `${spot.cardWidth}px`)
+  landing.dataset.part = 'landing'
+  landing.appendChild(copy)
+  // Around it, what undoes its turn and scale at the start of the flight, so
+  // the two begin as one card.
+  const grow = document.createElement('div')
+  grow.style.position = 'absolute'
+  grow.style.left = '0'
+  grow.style.top = '0'
+  grow.style.transformOrigin = '0 0'
+  grow.appendChild(landing)
+  held.box.appendChild(grow)
+
+  const timing: KeyframeAnimationOptions = { duration, delay, easing: FLIGHT_EASING, fill: 'both' }
+  const dx = spot.x - held.x
+  const dy = spot.y - held.y
+  const angle = (Math.atan2(matrix.b, matrix.a) * 180) / Math.PI
+  // As in `putDownOnTile`: the card shrinks (and here turns) into the entry
+  // as the entry's copy grows (and turns back) from the card, so the two stay
+  // one shape while they cross-fade.
+  const k = spot.width / held.width
+  const flight = held.box.animate(
+    [
+      { transform: `translate(0, 0) scale(${held.scale})`, ...(held.shadow ? { filter: LIFTED_SHADOW } : {}) },
+      { transform: `translate(${dx}px, ${dy}px) scale(1)`, ...(held.shadow ? { filter: FLAT_SHADOW } : {}) },
+    ],
+    timing,
+  )
+  held.face.animate([{ transform: 'rotate(0deg) scale(1)' }, { transform: `rotate(${angle}deg) scale(${k})` }], timing)
+  grow.animate([{ transform: `rotate(${-angle}deg) scale(${1 / k})` }, { transform: 'rotate(0deg) scale(1)' }], timing)
+  const fade: KeyframeAnimationOptions = { duration, delay, fill: 'both' }
+  held.face.animate(
+    [{ opacity: 1 }, { opacity: 1, offset: 0.3 }, { opacity: 0, offset: 0.8 }, { opacity: 0 }],
+    fade,
+  )
+  landing.animate(
+    [{ opacity: 0 }, { opacity: 0, offset: 0.3 }, { opacity: 1, offset: 0.8 }, { opacity: 1 }],
+    fade,
+  )
+  fadeCaption(held, delay, duration)
+  releaseWhenDone(held.box, flight)
+  // What the e2e suite (e2e/put-down.spec.ts) reads a flight by.
+  held.box.dataset.to = 'stack'
+  held.box.dataset.flightMs = String(duration)
+  // Hidden for exactly the flight (`HIDE_UNTIL_LANDED`).
+  entry.animate([{ opacity: 0 }, { opacity: 0 }], { duration: delay + duration, fill: 'backwards' })
+  window.setTimeout(onLanded, delay + duration)
+}
+
+/**
+ * The entries put on the stack above a spell still flying into its place
+ * (a trigger of its cast, a copy of it): each is new on this board, and is
+ * held hidden until the spell under it has landed, then fades in — so the
+ * pile builds in the order it happened rather than the card landing on top
+ * of what came after it, and then dropping under it. `landings` are the
+ * spells flying in this half, with when each lands (ms from now).
+ */
+function holdEntriesAbove(landings: ReadonlyMap<ObjectId, number>): void {
+  if (landings.size === 0) return
+  const pile = document.querySelector('.stack-pile')
+  if (!pile) return
+  // In the pile's order, top first: each entry waits for every landing under it.
+  const entries = [...pile.querySelectorAll<HTMLElement>(':scope > .stack-entry')]
+  for (const [index, entry] of entries.entries()) {
+    const id = entry.dataset.stackId as ObjectId | undefined
+    if (id === undefined || landings.has(id) || !entry.classList.contains('is-new')) continue
+    let until = 0
+    for (const below of entries.slice(index + 1)) {
+      const landsAt = landings.get(below.dataset.stackId as ObjectId)
+      if (landsAt !== undefined) until = Math.max(until, landsAt)
+    }
+    if (until === 0) continue
+    const fadeIn = scaled(ENTER_STEP_MS)
+    // To its own depth's opacity: the last keyframe is left to the entry.
+    entry.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: until / (until + fadeIn) }], {
+      duration: until + fadeIn,
+      fill: 'backwards',
+    })
+  }
+}
+
+/**
+ * How long a second-half `putDown` cue's flight takes on the board now
+ * mounted, at the viewer's speed (`usePlayback` retimes the half with it):
+ * from where its card is held to its tile or its place on the stack, at a
+ * steady speed (`flightMs`). Where it won't fly (nothing held, nowhere in
+ * view to land), what plays instead: a fade, or a tile growing in.
+ */
+function measureFlight(cue: AnimationCue): number {
+  const ev = cue.event
+  const fallback = scaled(ENTER_STEP_MS)
+  if (!cue.putDown || cue.half !== 'after') return cue.flightMs ?? fallback
+  let to: { x: number; y: number } | null = null
+  if (ev.type === 'spell-cast') to = stackSpotOf(ev.object)
+  else if (ev.type === 'permanent-entered-battlefield') {
+    const r = tileTargetOf(ev.object)?.getBoundingClientRect()
+    if (r) to = { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+  }
+  const from = ev.type === 'spell-cast' || ev.type === 'permanent-entered-battlefield' ? heldCentre(ev.object) : null
+  if (!from || !to) return fallback
+  const diagonal = Math.hypot(window.innerWidth, window.innerHeight)
+  return scaled(flightMs(Math.hypot(to.x - from.x, to.y - from.y), diagonal))
 }
 
 /**
@@ -1732,13 +2080,21 @@ export function AnimationLayer({
         const from = FROM_ZONE[ev.from] ?? ''
         const caption = `${who} ${verb}${from ? ` ${from}` : ''}`
         const seatClass = seatClassOf(view.turnOrder, ev.player)
+        const holds = cue.putDown === true
         setPlayedCards((cur) => [
           ...cur,
-          { key, obj, originX: origin.x, originY: origin.y, caption, seatClass },
+          { key, obj, holds, originX: origin.x, originY: origin.y, caption, seatClass },
         ])
-        window.setTimeout(() => {
-          setPlayedCards((cur) => cur.filter((c) => c.key !== key))
-        }, scaled(PLAYED_CARD_DURATION_MS))
+        const remove = (): void => setPlayedCards((cur) => cur.filter((c) => c.key !== key))
+        if (holds) {
+          // Until its flight takes the card, or a new frame says it won't
+          // come; and a backstop past any frame's length.
+          heldSpotlights.set(ev.object, remove)
+          window.setTimeout(() => {
+            if (heldSpotlights.get(ev.object) === remove) heldSpotlights.delete(ev.object)
+            remove()
+          }, scaled(CARD_HOLD_MS) + 12_000)
+        } else window.setTimeout(remove, scaled(PLAYED_CARD_DURATION_MS))
       } else if (ev.type === 'damage-dealt' && ev.combat) {
         runHit(ev.source, ev.target)
       } else if (
@@ -1798,6 +2154,9 @@ export function AnimationLayer({
       // delay), and plays as one, each library's cards in one sequence
       // (`runMill`).
       const mills = new Map<number, { events: GameEvent[]; view: PlayerView }>()
+      // Spells flying into the stack pile, with when each lands, for what was
+      // put on the stack above them (`holdEntriesAbove`).
+      const stackLandings = new Map<ObjectId, number>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -1809,7 +2168,15 @@ export function AnimationLayer({
           } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
           else if (cue.event.type === 'permanent-entered-battlefield' && cue.putDown) {
             const object = cue.event.object
-            putDownOnTile(object, cue.view.objects[object]?.isToken ?? false, cue.delay)
+            const duration = cue.flightMs ?? measureFlight(cue)
+            putDownOnTile(object, cue.view.objects[object]?.isToken ?? false, cue.delay, duration)
+          } else if (cue.event.type === 'spell-cast' && cue.putDown) {
+            const object = cue.event.object
+            const duration = cue.flightMs ?? measureFlight(cue)
+            stackLandings.set(object, cue.delay + duration)
+            slotIntoStack(object, cue.delay, duration, () => bus.aims.landed(object))
+            // Its sound was the cast's.
+            continue
           } else if (cue.event.type === 'permanent-entered-battlefield') {
             const object = cue.event.object
             // One sound per tile, as one animation: a folded member is silent.
@@ -1853,9 +2220,14 @@ export function AnimationLayer({
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
+      holdEntriesAbove(stackLandings)
       for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
     })
   }, [bus])
+
+  // Only this layer knows where a held card is, so it measures the flights
+  // `usePlayback` retimes the second half by.
+  useEffect(() => bus.setFlightMeasure(measureFlight), [bus])
 
   if (
     playedCards.length === 0 &&
@@ -1871,7 +2243,9 @@ export function AnimationLayer({
       {playedCards.map((c) => (
         <div
           key={c.key}
-          className="played-card-fly"
+          className={`played-card-fly${c.holds ? ' holds' : ''}`}
+          // Read by `liftSpotlight` to find the card its flight takes.
+          data-played-obj={c.obj.id}
           style={
             { '--fly-x': `${c.originX}px`, '--fly-y': `${c.originY}px` } as CSSProperties
           }

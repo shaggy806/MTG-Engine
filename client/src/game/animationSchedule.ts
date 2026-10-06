@@ -18,6 +18,16 @@ import type { GameEvent, ObjectId, Phase, PlayerId } from 'engine/client'
  * handful of events, not a whole turn's worth.
  */
 export const CARD_STEP_MS = 1800
+/**
+ * The part of a card's beat it spends coming in and being shown (the entrance
+ * and the hold of `CARD_STEP_MS`, without its exit) when it then flies on to
+ * where it went (see {@link ScheduledEvent.putDown}): a spell to its place on
+ * the stack, a land to its tile. The flight is a slot of its own in the second
+ * half, once that place is on screen, so the card's whole beat is this plus a
+ * flight rather than `CARD_STEP_MS`. App.css's `.holds` keyframes are this
+ * long and end on the hold pose (72% of the full beat's keyframes).
+ */
+export const CARD_HOLD_MS = 1296
 /** Covers LUNGE_DURATION_MS + the hit reaction that starts partway through
  * it (see AnimationLayer), so the next animation doesn't start on top of a
  * creature still shaking. */
@@ -42,11 +52,48 @@ export const STACK_EXIT_MS = 520
 export const TRIGGER_STEP_MS = 480
 /** A permanent arriving on the board (a token materialising). */
 export const ENTER_STEP_MS = 420
-/** A resolving permanent spell put down on the board: the card lifted off
- * the stack (in its `STACK_EXIT_MS` exit beat) travels to its new tile,
- * shrinking from the full card into the board's mini tile as it goes. One
- * beat each, in the order they resolved — see {@link ScheduledEvent.putDown}. */
-export const PUT_DOWN_STEP_MS = 640
+/**
+ * The longest a card's flight to its place on the new board may take (see
+ * {@link ScheduledEvent.putDown}): a resolving permanent spell lifted off the
+ * stack onto its tile, a land from its spotlight onto its tile, a spell from
+ * its spotlight into its place on the stack. One beat each, in the order they
+ * happened.
+ *
+ * A flight moves at a steady speed on screen, so how long it takes depends on
+ * how far it goes ({@link flightMs}): a fixed time whipped a card across a
+ * four-player table and dawdled over a short hop. But this module lays the
+ * slots out before the new board exists, and where a card lands is only known
+ * once it does. So a flight's slot reserves the most a flight may take, which
+ * keeps the frame's ceiling honest however far it goes; and once the new board
+ * is mounted, before any of it is painted, `usePlayback` measures each flight
+ * and pulls everything after it forward by the time it didn't need
+ * ({@link retimeFlights}), ending the frame early. Nothing waits on a
+ * reservation it didn't use, and the server's 12 s wait for the frame is never
+ * at risk, since the measured time is never more than the reserved one.
+ */
+export const FLIGHT_MAX_MS = 1100
+/** The shortest a flight takes, however near: a hop any quicker reads as a
+ * jump rather than a move. */
+export const FLIGHT_MIN_MS = 420
+/** What every flight takes on top of its distance: the speed-up and the
+ * settle at either end. */
+const FLIGHT_BASE_MS = 220
+/** How long crossing the viewport corner to corner takes on top of
+ * `FLIGHT_BASE_MS`. In diagonals rather than pixels, so a flight feels the
+ * same at 1366x768 and 2560x1440. A full diagonal comes out longer than
+ * `FLIGHT_MAX_MS`, and is capped at it. */
+const FLIGHT_MS_PER_DIAGONAL = 1100
+
+/**
+ * How long a flight of `distance` px takes on a viewport whose diagonal is
+ * `diagonal` px, at normal speed (the caller scales it by `animScale`): a
+ * steady speed of about one diagonal a second, held between `FLIGHT_MIN_MS`
+ * and `FLIGHT_MAX_MS`.
+ */
+export function flightMs(distance: number, diagonal: number): number {
+  const ms = FLIGHT_BASE_MS + (diagonal > 0 ? distance / diagonal : 1) * FLIGHT_MS_PER_DIAGONAL
+  return Math.round(Math.min(FLIGHT_MAX_MS, Math.max(FLIGHT_MIN_MS, ms)))
+}
 /** A glow for counters landing on a permanent, or a buff that isn't counters
  * (a pump, a granted keyword), with the change floating off it. */
 export const MARK_STEP_MS = 520
@@ -218,14 +265,27 @@ export interface ScheduledEvent {
    * animation should fire. */
   readonly offset: number
   /**
-   * A permanent spell resolving and put down on the board, set on both of its
-   * ends — its `spell-resolved` (first half: the card lifts off the stack
-   * rather than flying off to its controller's side) and its
-   * `permanent-entered-battlefield` (second half: the lifted card travels
-   * onto its tile, instead of the tile growing in). Only ever set on both or
-   * neither, so a lifted card always has its landing to come.
+   * A card that flies on to where it went once the new board shows it. Set on
+   * both ends of the move or on neither, so a card held up always has its
+   * landing to come:
+   *
+   * - a permanent spell resolving: its `spell-resolved` (first half: the card
+   *   lifts off the stack rather than flying off to its controller's side)
+   *   and its `permanent-entered-battlefield` (second half: the lifted card
+   *   travels onto its tile, instead of the tile growing in);
+   * - a land played: its `land-played` (first half: the spotlight holds
+   *   rather than shrinking away, for `CARD_HOLD_MS`) and its
+   *   `permanent-entered-battlefield` (second half: the spotlight's card
+   *   travels onto its tile);
+   * - a spell cast and still on the stack as the frame ends: its `spell-cast`,
+   *   in both halves (the spotlight holds, then its card travels into the
+   *   place its entry takes in the pile).
    */
   readonly putDown?: true
+  /** A second-half `putDown`'s flight time in ms, at the viewer's speed: as
+   * scheduled, the most it may take (`FLIGHT_MAX_MS`); as published, what it
+   * measured on the new board (see {@link retimeFlights}). */
+  readonly flightMs?: number
 }
 
 /** The viewer's settings the schedule depends on (see `motionPrefs.ts`),
@@ -356,8 +416,9 @@ type SlotKind =
  * shares a beat.
  */
 const AFTER_ORDER: readonly SlotKind[] = [
-  // First: the card being put down is hovering where the stack was until it
-  // lands, so nothing else on the new board goes before it.
+  // First: a card flying on to its place (a tile, or its entry in the stack
+  // pile) is hovering where it was held until it lands, so nothing else on
+  // the new board goes before it.
   'putDown',
   'untap',
   'tap',
@@ -415,25 +476,96 @@ interface Slot {
   readonly event: GameEvent
   readonly kind: SlotKind
   readonly duration: number
+  /** One end of a card flying on to where it went (see
+   * {@link ScheduledEvent.putDown}): the `seq` of the event that starts the
+   * move, the same on both ends. */
+  readonly landing?: number
+}
+
+/**
+ * The cards in a frame that fly on to where they went (see
+ * {@link ScheduledEvent.putDown}), each keyed by the `seq` of the event that
+ * starts its move: `byBefore` maps that event to its key, `byAfter` the event
+ * whose second-half slot is the flight.
+ */
+interface Landings {
+  readonly byBefore: Map<number, number>
+  readonly byAfter: Map<number, number>
+}
+
+/** Whether `ev` takes `object` off the stack. */
+function leavesStack(ev: GameEvent, object: ObjectId): boolean {
+  return (
+    (ev.type === 'spell-resolved' ||
+      ev.type === 'spell-countered' ||
+      ev.type === 'spell-fizzled' ||
+      ev.type === 'spell-exiled') &&
+    ev.object === object
+  )
+}
+
+/**
+ * Every card in the frame that can fly on to where it went:
+ *
+ * - a permanent spell resolving, logged as `spell-resolved` and then its
+ *   arrival on the battlefield under the same id (the engine keeps an
+ *   object's id across zones): the arrival is the spell put down, not a
+ *   permanent appearing from nowhere;
+ * - a land played, logged as `land-played` and then its arrival the same way;
+ * - a spell cast that nothing later in the frame takes off the stack again:
+ *   it's on the stack on the new board, so its spotlight has a place in the
+ *   pile to go to. One that resolves, is countered or fizzles within the
+ *   frame never had an entry drawn, and keeps the spotlight it always had.
+ *
+ * None under reduced motion, which keeps the fades.
+ */
+function findLandings(events: readonly GameEvent[], reduced: boolean): Landings {
+  const landings: Landings = { byBefore: new Map(), byAfter: new Map() }
+  if (reduced) return landings
+  const toTile = new Map<ObjectId, number>()
+  for (const [index, ev] of events.entries()) {
+    if (ev.type === 'spell-resolved' || ev.type === 'land-played') toTile.set(ev.object, ev.seq)
+    else if (ev.type === 'permanent-entered-battlefield') {
+      const key = toTile.get(ev.object)
+      if (key === undefined) continue
+      toTile.delete(ev.object)
+      landings.byBefore.set(key, key)
+      landings.byAfter.set(ev.seq, key)
+    } else if (ev.type === 'spell-cast') {
+      if (events.slice(index + 1).some((later) => leavesStack(later, ev.object))) continue
+      landings.byBefore.set(ev.seq, ev.seq)
+      landings.byAfter.set(ev.seq, ev.seq)
+    }
+  }
+  return landings
 }
 
 /** Each event's own reserved slots, or none for anything with no dedicated
  * animation — usually one, but combat damage to a creature is two: the
- * strike over the old board, the number over the new one. */
+ * strike over the old board, the number over the new one, and so is a spell
+ * cast onto the stack: its spotlight, and its flight into the pile. */
 function slotsFor(
   ev: GameEvent,
   phase: { current: Phase },
   reduced: boolean,
-  resolvedSpells: Set<ObjectId>,
+  landings: Landings,
 ): Slot[] {
-  // A permanent spell resolving is logged as `spell-resolved` and then its
-  // arrival on the battlefield, under the same id (the engine keeps an
-  // object's id across zones). That arrival is the spell put down, not a
-  // permanent appearing from nowhere. Reduced motion keeps today's fade out
-  // of the stack and fade in on the board instead of the flight.
-  if (ev.type === 'spell-resolved' && !reduced) resolvedSpells.add(ev.object)
-  if (ev.type === 'permanent-entered-battlefield' && resolvedSpells.delete(ev.object)) {
-    return [{ event: ev, kind: 'putDown', duration: PUT_DOWN_STEP_MS }]
+  const start = landings.byBefore.get(ev.seq)
+  const flight = landings.byAfter.get(ev.seq)
+  if (start !== undefined || flight !== undefined) {
+    const slots: Slot[] = []
+    if (start !== undefined) {
+      slots.push(
+        ev.type === 'spell-resolved'
+          ? { event: ev, kind: 'exit', duration: STACK_EXIT_MS, landing: start }
+          : // The spotlight without its exit: the flight is the exit.
+            { event: ev, kind: 'card', duration: CARD_HOLD_MS, landing: start },
+      )
+    }
+    if (flight !== undefined) {
+      slots.push({ event: ev, kind: 'putDown', duration: FLIGHT_MAX_MS, landing: flight })
+    }
+    return slots
   }
   if (ev.type === 'damage-dealt') {
     const slots: Slot[] = []
@@ -553,10 +685,37 @@ export function scheduleEvents(
   options: ScheduleOptions = NORMAL_SPEED,
 ): EventSchedule {
   const { scale, reduced } = options
+  const landings = findLandings(events, reduced)
+  // A card flies on only where both ends of its move kept their slot under
+  // the frame's ceiling: one whose start was dropped has no card held up to
+  // land, and one whose flight was dropped would leave its card hovering. The
+  // start's slot is shorter for a card that flies on (`CARD_HOLD_MS`), so a
+  // card that can't goes back to its full beat — which moves everything after
+  // it — and the frame is laid out again without it. Each pass drops at least
+  // one, so this ends.
+  for (;;) {
+    const { schedule, paired } = layOutFrame(events, startPhase, scale, reduced, landings)
+    const lost = [...landings.byBefore.values()].filter((key) => !paired.has(key))
+    if (lost.length === 0) return schedule
+    for (const key of lost) {
+      landings.byBefore.delete(key)
+      for (const [seq, k] of landings.byAfter) if (k === key) landings.byAfter.delete(seq)
+    }
+  }
+}
+
+/** One frame's slots in both halves, and which landings (by key) kept both
+ * of their ends. */
+function layOutFrame(
+  events: readonly GameEvent[],
+  startPhase: Phase,
+  scale: number,
+  reduced: boolean,
+  landings: Landings,
+): { schedule: EventSchedule; paired: Set<number> } {
   const phase = { current: startPhase }
   const slots: Slot[] = []
-  const resolvedSpells = new Set<ObjectId>()
-  for (const event of events) slots.push(...slotsFor(event, phase, reduced, resolvedSpells))
+  for (const event of events) slots.push(...slotsFor(event, phase, reduced, landings))
 
   // Announce only the phase a frame *lands* in, not every one it passed
   // through. A frame shows exactly one board — its own end state — so a
@@ -589,47 +748,48 @@ export function scheduleEvents(
     scale,
     ceiling - before.totalMs,
   )
-  const { items, landings } = pairPutDowns(before.items, after.items)
+  const paired = new Set([...before.landings].filter((key) => after.landings.has(key)))
   return {
-    items,
-    totalMs: before.totalMs,
-    after: landings,
-    afterMs: after.totalMs,
-    endPhase: phase.current,
-    aims: resolveAims(events, items, STACK_EXIT_MS * scale),
+    schedule: {
+      items: before.items,
+      totalMs: before.totalMs,
+      after: after.items,
+      afterMs: after.totalMs,
+      endPhase: phase.current,
+      aims: resolveAims(events, before.items, STACK_EXIT_MS * scale),
+    },
+    paired,
   }
 }
 
 /**
- * Marks both ends of each permanent spell put down (see
- * {@link ScheduledEvent.putDown}) — only where both kept their slot under the
- * frame's ceiling. A spell whose exit was dropped has no lifted card to land,
- * and one whose landing was dropped would leave its card hovering, so either
- * way the other end plays as it always has: the exit flies off to its
- * controller's side, the arrival grows into place.
+ * The second half of a frame as it plays on the board it's shown on: each
+ * flight (an item with `flightMs`, reserved at `FLIGHT_MAX_MS`) takes the time
+ * `measured` gives it (how far that card really goes, never more than the
+ * reservation), and everything after it moves forward by the time it saved,
+ * as does the end of the half. Called by `usePlayback` once the new board is
+ * mounted, before it's painted (see {@link FLIGHT_MAX_MS}).
  */
-function pairPutDowns(
-  before: readonly ScheduledEvent[],
+export function retimeFlights(
   after: readonly ScheduledEvent[],
-): { items: ScheduledEvent[]; landings: ScheduledEvent[] } {
-  const exits = new Set<ObjectId>()
-  for (const item of before) if (item.event.type === 'spell-resolved') exits.add(item.event.object)
-  const paired = new Set<ObjectId>()
-  // `layOut` marks every `putDown` slot it kept; a landing whose exit didn't
-  // keep its own loses the mark.
-  const landings = after.map((item) => {
-    if (item.putDown !== true || item.event.type !== 'permanent-entered-battlefield') return item
-    const object = item.event.object
-    if (!exits.has(object)) return { event: item.event, offset: item.offset }
-    paired.add(object)
-    return item
+  afterMs: number,
+  measured: (item: ScheduledEvent) => number,
+): { after: ScheduledEvent[]; afterMs: number } {
+  const savings: { end: number; saved: number }[] = []
+  const timed = after.map((item) => {
+    if (item.flightMs === undefined) return item
+    const took = Math.max(0, Math.min(item.flightMs, measured(item)))
+    savings.push({ end: item.offset + item.flightMs, saved: item.flightMs - took })
+    return { ...item, flightMs: took }
   })
-  const items = before.map((item) =>
-    item.event.type === 'spell-resolved' && paired.has(item.event.object)
-      ? { ...item, putDown: true as const }
-      : item,
-  )
-  return { items, landings }
+  // What the flights that had finished by `offset` saved between them: a
+  // flight's own start moves only by the ones before it.
+  const shift = (offset: number): number =>
+    savings.reduce((sum, s) => (s.end <= offset + 1e-6 ? sum + s.saved : sum), 0)
+  return {
+    after: timed.map((item) => ({ ...item, offset: item.offset - shift(item.offset) })),
+    afterMs: afterMs - savings.reduce((sum, s) => sum + s.saved, 0),
+  }
 }
 
 /** How long the beat that `slots[index]` starts lasts: its own slot — or,
@@ -652,13 +812,15 @@ function beatDuration(slots: readonly Slot[], index: number): number {
  * under `ceiling` ends the half: it and everything after it are simply not
  * animated (the phase tracking has still been advanced, so the next frame's
  * banners stay right). Stopping there rather than skipping to whatever fits
- * keeps what's shown in order. */
+ * keeps what's shown in order. Also says which landings (`Slot.landing`)
+ * kept their slot here. */
 function layOut(
   slots: readonly Slot[],
   scale: number,
   ceiling: number,
-): { items: ScheduledEvent[]; totalMs: number } {
+): { items: ScheduledEvent[]; totalMs: number; landings: Set<number> } {
   const items: ScheduledEvent[] = []
+  const landings = new Set<number>()
   let cumulative = 0
   // A run of one shared-beat kind (see `SHARED_BEAT`) goes together at the
   // offset the first of them got — the board is showing them all happen at
@@ -685,11 +847,16 @@ function layOut(
     }
     const cost = PACED.has(slot.kind) ? beatDuration(slots, index) * scale : 0
     if (cumulative + cost > ceiling) break
-    items.push(
-      slot.kind === 'putDown'
-        ? { event: slot.event, offset: cumulative, putDown: true }
-        : { event: slot.event, offset: cumulative },
-    )
+    if (slot.landing === undefined) items.push({ event: slot.event, offset: cumulative })
+    else {
+      landings.add(slot.landing)
+      items.push({
+        event: slot.event,
+        offset: cumulative,
+        putDown: true,
+        ...(slot.kind === 'putDown' ? { flightMs: cost } : {}),
+      })
+    }
     // Only a paced slot breaks a run: a snapshot or a banner between two
     // deaths doesn't make them two beats.
     if (PACED.has(slot.kind)) {
@@ -697,5 +864,5 @@ function layOut(
     }
     cumulative += cost
   }
-  return { items, totalMs: cumulative }
+  return { items, totalMs: cumulative, landings }
 }

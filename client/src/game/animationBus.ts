@@ -34,13 +34,20 @@ export interface AnimationCue {
   /** Which board it plays over (see `Half`). An `after` cue is published
    * before the new board is painted, and has to start in that same task. */
   readonly half: Half
-  /** A permanent spell put down on the board: its exit lifts the card off the
-   * stack, and its arrival flies that card onto its tile (see
-   * `ScheduledEvent.putDown`). */
+  /** A card that flies on to where it went (see `ScheduledEvent.putDown`): a
+   * first-half cue holds it up (lifted off the stack, or its spotlight
+   * held), and the second-half one flies it onto its tile or into its place
+   * on the stack. */
   readonly putDown?: true
+  /** A second-half `putDown`'s flight time, as measured on the board it lands
+   * on (`ScheduledEvent.flightMs`). */
+  readonly flightMs?: number
 }
 
 type Listener = (cues: readonly AnimationCue[]) => void
+/** How long a second-half `putDown` cue's flight takes on the board now
+ * mounted (ms, at the viewer's speed). */
+type FlightMeasure = (cue: AnimationCue) => number
 
 export class AnimationBus {
   /** Only ever one subscriber (`AnimationLayer`); a second one replaces it. */
@@ -60,5 +67,23 @@ export class AnimationBus {
 
   publish(cues: readonly AnimationCue[]): void {
     if (cues.length > 0) this.listener?.(cues)
+  }
+
+  /** `AnimationLayer`'s measure of a flight: it alone knows where a held
+   * card is. `usePlayback` asks it about each flight before publishing the
+   * second half (see `retimeFlights`). */
+  private measure: FlightMeasure | null = null
+
+  setFlightMeasure(fn: FlightMeasure): () => void {
+    this.measure = fn
+    return () => {
+      if (this.measure === fn) this.measure = null
+    }
+  }
+
+  /** How long `cue`'s flight takes; with nothing to measure it (no layer
+   * mounted), whatever it was scheduled for. */
+  measureFlight(cue: AnimationCue): number {
+    return this.measure?.(cue) ?? cue.flightMs ?? 0
   }
 }

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { GameEvent, LegalAction, Phase, PlayerView } from 'engine/client'
 import { phaseOfStep } from 'engine/client'
-import { scheduleEvents } from './animationSchedule.ts'
+import { retimeFlights, scheduleEvents } from './animationSchedule.ts'
 import type { ScheduledEvent } from './animationSchedule.ts'
-import type { AnimationBus } from './animationBus.ts'
+import type { AnimationBus, AnimationCue } from './animationBus.ts'
 import { motionPrefs } from './motionPrefs.ts'
 
 /** One server push: the events since the previous frame, the board they
@@ -122,6 +122,12 @@ export function usePlayback(
     readonly view: PlayerView
     readonly prev: PlayerView | null
     readonly items: readonly ScheduledEvent[]
+    /** The half's length as scheduled, its flights at their longest. */
+    readonly afterMs: number
+    /** Ends the frame; already on a timer of `afterMs` (`timer`), which the
+     * layout effect replaces with the half's measured length. */
+    readonly finish: () => void
+    readonly timer: number | null
   } | null>(null)
   /** The board on screen when a frame starts playing — the one its first
    * half runs over. Handed to every cue as `prev`, for what only the old
@@ -240,10 +246,30 @@ export function usePlayback(
       // Every resolution has left the stack by now; the new board's arrows
       // are its own.
       busRef.current.aims.clear()
+      // A spell flying into its place on the stack points at nothing until
+      // it's there: marked before the board mounts, so its arrows never draw
+      // from an empty spot.
+      if (watching) {
+        busRef.current.aims.arrive(
+          schedule.after.flatMap((i) => (i.putDown && i.event.type === 'spell-cast' ? [i.event.object] : [])),
+        )
+      }
       revisionRef.current += 1
       lastViewRef.current = next.view
+      // The half's timer starts now at its scheduled length, every flight at
+      // its longest — a backstop that keeps the frame inside its ceiling
+      // whatever happens — and the layout effect below shortens it to what
+      // the flights measure on the new board.
+      if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
       if (watching && schedule.after.length > 0) {
-        pendingAfterRef.current = { view: next.view, prev, items: schedule.after }
+        pendingAfterRef.current = {
+          view: next.view,
+          prev,
+          items: schedule.after,
+          afterMs,
+          finish,
+          timer: timerRef.current,
+        }
       }
       const revision = revisionRef.current
       const busy = afterMs > 0 || queueRef.current.length > 0
@@ -259,8 +285,7 @@ export function usePlayback(
         answered: false,
         replayable: replayable || cur.replayable,
       }))
-      if (afterMs > 0) timerRef.current = window.setTimeout(finish, afterMs)
-      else finish()
+      if (afterMs <= 0) finish()
     }
 
     if (beforeMs <= 0) show()
@@ -304,16 +329,28 @@ export function usePlayback(
     const pending = pendingAfterRef.current
     if (pending === null) return
     pendingAfterRef.current = null
-    busRef.current.publish(
-      pending.items.map((i) => ({
-        event: i.event,
-        view: pending.view,
-        prev: pending.prev,
-        delay: i.offset,
-        half: 'after' as const,
-        ...(i.putDown ? { putDown: true as const } : {}),
-      })),
-    )
+    const cueOf = (i: ScheduledEvent): AnimationCue => ({
+      event: i.event,
+      view: pending.view,
+      prev: pending.prev,
+      delay: i.offset,
+      half: 'after' as const,
+      ...(i.putDown ? { putDown: true as const } : {}),
+      ...(i.flightMs !== undefined ? { flightMs: i.flightMs } : {}),
+    })
+    // A flight's time depends on how far its card goes, which only this
+    // board says: each is measured now, and what comes after it moves up by
+    // whatever it didn't need of its reservation (see `retimeFlights`).
+    const bus = busRef.current
+    const timed = retimeFlights(pending.items, pending.afterMs, (i) => bus.measureFlight(cueOf(i)))
+    // The frame ends when the measured half does. Only while the backstop
+    // started with this board is still the one pending — never another
+    // frame's timer.
+    if (timed.afterMs < pending.afterMs && pending.timer !== null && timerRef.current === pending.timer) {
+      window.clearTimeout(pending.timer)
+      timerRef.current = window.setTimeout(pending.finish, timed.afterMs)
+    }
+    bus.publish(timed.after.map(cueOf))
   }, [displayed.revision])
 
   useEffect(() => {
