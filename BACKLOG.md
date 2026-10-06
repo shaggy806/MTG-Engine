@@ -151,6 +151,7 @@ game to show a problem, listed in that plan's "Watching live games for" (wraths 
 `threat`, pumping an opponent's attacker, the `"acting"` rollout, big boards and deep stacks
 under count budgets).
 
+- **An X ability activated at X=0** (decision diff, 2026-10-06): Necropolis Fiend taps for a -0/-0 on both the branch and main (seed 4, turn 36) — an X of 0 that does nothing shouldn't be a candidate.
 - **The autopsies' open bot items** (`docs/plans/deck-autopsies.md`, "Left"): token payoffs
   beyond engines (sacrifice outlets, leaves-the-battlefield);
   premium removal fired at weak targets past the first two rounds (the early half is done).

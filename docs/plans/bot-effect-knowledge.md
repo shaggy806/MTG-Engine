@@ -613,6 +613,18 @@ against 776bad8: 56 of 13,575 decisions over six four-player games, all judgment
 bench (one seat against three on 776bad8, 160 four-player games, 4 workers): 21.9% [16.2, 28.9],
 level — it ships as a fix a player can see, on that and the scenario.
 
+Read decision by decision (the user asked), two of those 56 were wrong and both were the track
+record's: at 3 life Sublime Epiphany bounced Dragonlord Dromoka (7 damage dealt) instead of a 9/9
+Ob Nixilis, the Fallen whose landfall drain was lethal, since the tally counted damage and not
+life loss; and Ob Nixilis's controller declined its own drain, because a rollout that played into
+the next turn made its simulated damage a settled turn (the track record moved by 0.9 between the
+two answers, at weight 3). The tally is now `lifeTaken` (damage or life loss), and every decision
+reads track records off the real board in front of it (`withTrackRecordEvidence`). The diff also
+showed Necropolis Fiend shrinking its own creatures on both builds: `amountSign` read a
+`{ product: ["x", -1] }` as positive (also Defile, Grim Hireling). Re-diffed against 776bad8 after
+the three fixes: 19 of 14,310 decisions, the Fiend now aimed at opponents, the rest attack splits
+and spell order; the X=0 activation it still makes is in BACKLOG.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the
