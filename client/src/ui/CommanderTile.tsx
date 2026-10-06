@@ -109,7 +109,7 @@ export function CommanderTile({
         ? createPortal(
             <div className="mini-tile-popover" ref={popoverRef}>
               <CardTile obj={obj} extraGenericCost={extraGenericCost} badge="Commander" />
-              <KeywordTips keywords={obj.keywords} />
+              <KeywordTips obj={obj} />
             </div>,
             document.body,
           )

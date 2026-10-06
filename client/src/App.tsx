@@ -85,6 +85,7 @@ import { MotionControl } from './ui/MotionControl.tsx'
 import { PlayerPanel } from './ui/PlayerPanel.tsx'
 import { CardTile } from './ui/CardTile.tsx'
 import { MiniTile } from './ui/MiniTile.tsx'
+import { KeywordTips } from './ui/KeywordTips.tsx'
 import { CommanderTile } from './ui/CommanderTile.tsx'
 import { AbilityMenu } from './ui/AbilityMenu.tsx'
 import { Stack } from './ui/Stack.tsx'
@@ -4714,6 +4715,9 @@ function Table({
                 layout="art-first"
                 onClick={() => clickHandCard(id)}
               />
+              {/* Beside the card once it has grown under the pointer, on the
+                  side facing the middle of the hand (App.css). */}
+              <KeywordTips obj={obj} className={`hand-kw-tips${fanOffset > 0 ? ' to-left' : ''}`} />
               {multiFace
                 ? faceOpts.map((a, i) => (
                     <button key={i} type="button" onClick={() => playFace(a)}>

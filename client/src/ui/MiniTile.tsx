@@ -219,7 +219,7 @@ export function MiniTile({
                 goaders={goaders}
                 enchanting={enchanting}
               />
-              <KeywordTips keywords={obj.keywords} />
+              <KeywordTips obj={obj} />
               {held.length > 0 ? (
                 <div className={`popover-held held-${Math.min(held.length, 3)}`}>
                   <span className="popover-held-label">Exiled with it</span>
