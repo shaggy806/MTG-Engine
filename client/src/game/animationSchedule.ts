@@ -647,9 +647,11 @@ function slotFor(ev: GameEvent, phase: { current: Phase }, reduced: boolean): Sl
   ) {
     return { event: ev, kind: 'exit', duration: STACK_EXIT_MS }
   }
-  // A trigger's source lights up over the new board, where its ability has
-  // just joined the stack. A colour cue, so reduced motion keeps it.
-  if (ev.type === 'ability-triggered') {
+  // A triggered or activated ability's source lights up over the new board,
+  // where the ability has just joined the stack (a mana ability, which
+  // doesn't use the stack, has no beat). A colour cue, so reduced motion
+  // keeps it.
+  if (ev.type === 'ability-triggered' || (ev.type === 'ability-activated' && ev.ability !== undefined)) {
     return { event: ev, kind: 'pulse', duration: TRIGGER_STEP_MS }
   }
   // Pure movement, so reduced motion leaves nothing to show: the tile is

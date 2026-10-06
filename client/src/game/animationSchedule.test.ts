@@ -142,6 +142,21 @@ describe('scheduleEvents', () => {
     expect(s.afterMs).toBe(TRIGGER_STEP_MS)
   })
 
+  it('lights up an activated ability on the stack like a trigger, but not a mana ability', () => {
+    const s = scheduleEvents(
+      [
+        tap('land'),
+        ev({ type: 'ability-activated', source: 'land', player: 'p1', onStack: false }),
+        tap('pinger'),
+        ev({ type: 'ability-activated', source: 'pinger', player: 'p1', onStack: true, ability: 'ab1' }),
+      ],
+      'precombat-main',
+    )
+    expect(types(s.after)).toEqual(['permanent-tapped', 'permanent-tapped', 'ability-activated'])
+    expect(s.after[2].event).toMatchObject({ source: 'pinger', ability: 'ab1' })
+    expect(s.afterMs).toBe(TAP_STEP_MS + TRIGGER_STEP_MS)
+  })
+
   it('groups the second half by kind: arrivals, then counters, then triggers', () => {
     const s = scheduleEvents(
       [

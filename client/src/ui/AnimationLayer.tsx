@@ -1170,8 +1170,8 @@ function slotIntoStack(object: ObjectId, delay: number, duration: number, onLand
 }
 
 /**
- * A triggered ability going on the stack, over the new board: a copy of its
- * entry comes out of the permanent it triggered from — the size of that
+ * A triggered or activated ability going on the stack, over the new board: a
+ * copy of its entry comes out of the permanent it came from — the size of that
  * tile, upright — and flies into the place the entry takes in the pile,
  * turning and growing into it as it goes; the real entry is held hidden until
  * the copy is down on it. Plays in the trigger's beat, beside its source's
@@ -1182,7 +1182,7 @@ function slotIntoStack(object: ObjectId, delay: number, duration: number, onLand
  * a dies trigger), or when the entry isn't on the board shown (the trigger
  * already resolved, or the stack is out of view).
  */
-function flyTriggerIn(object: ObjectId, source: ObjectId, delay: number, duration: number): boolean {
+function flyAbilityIn(object: ObjectId, source: ObjectId, delay: number, duration: number): boolean {
   if (motionPrefs().reduced) return false
   const tile = document.querySelector<HTMLElement>(`[data-obj-id="${CSS.escape(source)}"] .mini-tile`)
   if (!tile || !inView(tile)) return false
@@ -2227,8 +2227,8 @@ export function AnimationLayer({
       // Spells flying into the stack pile, with when each lands, for what was
       // put on the stack above them (`holdEntriesAbove`).
       const stackLandings = new Map<ObjectId, number>()
-      // Triggers flying in from their sources, which hold their own entries.
-      const triggersFlying = new Set<ObjectId>()
+      // Abilities flying in from their sources, which hold their own entries.
+      const abilitiesFlying = new Set<ObjectId>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -2237,10 +2237,13 @@ export function AnimationLayer({
           if (cue.event.type === 'permanent-tapped') runTap(cue.event.object, true, cue.delay)
           else if (cue.event.type === 'permanent-untapped') {
             runTap(cue.event.object, false, cue.delay)
-          } else if (cue.event.type === 'ability-triggered') {
-            const { source, object } = cue.event
+          } else if (cue.event.type === 'ability-triggered' || cue.event.type === 'ability-activated') {
+            const { source } = cue.event
+            const object = cue.event.type === 'ability-triggered' ? cue.event.object : cue.event.ability
             runPulse(source, cue.delay)
-            if (flyTriggerIn(object, source, cue.delay, scaled(TRIGGER_STEP_MS))) triggersFlying.add(object)
+            if (object !== undefined && flyAbilityIn(object, source, cue.delay, scaled(TRIGGER_STEP_MS))) {
+              abilitiesFlying.add(object)
+            }
           }
           else if (cue.event.type === 'permanent-entered-battlefield' && cue.putDown) {
             const object = cue.event.object
@@ -2296,7 +2299,7 @@ export function AnimationLayer({
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
-      holdEntriesAbove(stackLandings, triggersFlying)
+      holdEntriesAbove(stackLandings, abilitiesFlying)
       for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
     })
   }, [bus])
