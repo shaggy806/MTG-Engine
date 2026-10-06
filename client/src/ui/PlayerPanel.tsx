@@ -17,8 +17,9 @@ export interface PlayerPanelProps {
   readonly isActive: boolean
   readonly hasPriority: boolean
   /** The game is waiting on this seat (another player's, never your own):
-   * `'bot'` shows "thinking…", `'player'` "deciding…". */
-  readonly waiting?: 'bot' | 'player' | null
+   * what it's doing, shown with animated dots — "scrying…", "thinking…"
+   * (`game/waitingLabel.ts`). */
+  readonly waiting?: string | null
   /** Whether this seat's connection is currently live. `null` when unknown
    * (e.g. no room-level seat data yet). */
   readonly online?: boolean | null
@@ -134,7 +135,7 @@ export function PlayerPanel({
         <span className="pp-name">{playerLabel(info.id, seats)}</span>
         {waiting !== null ? (
           <span className="pp-waiting" role="status">
-            {waiting === 'bot' ? 'thinking' : 'deciding'}
+            {waiting}
             <span className="pp-waiting-dots" aria-hidden="true">
               <span>.</span>
               <span>.</span>

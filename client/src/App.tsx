@@ -36,6 +36,7 @@ import {
 import { useNetworkGame } from './net/useNetworkGame.ts'
 import type { NetworkGame } from './net/useNetworkGame.ts'
 import { stackShowsSomething } from './game/decisionSource.ts'
+import { waitingLabel } from './game/waitingLabel.ts'
 import { computeBoardEntries } from './game/board.ts'
 import { applyBoardOrder } from './game/boardOrder.ts'
 import { useBoardDrag, type BoardDragControls } from './game/useBoardDrag.ts'
@@ -4294,9 +4295,7 @@ function Table({
         // Someone else the game is waiting on. Your own turn to act is said
         // by the decision banner; this is for watching everyone else's.
         pid !== seat && !view.result.over && actingPlayer(view) === pid
-          ? game.seats.find((s) => s.player === pid)?.isBot
-            ? 'bot'
-            : 'player'
+          ? waitingLabel(view, pid, game.seats.find((s) => s.player === pid)?.isBot === true)
           : null
       }
       online={onlineOf(pid)}

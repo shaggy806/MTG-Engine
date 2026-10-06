@@ -547,13 +547,18 @@
 .pp-name {
   font-weight: 600;
 }
-/* "thinking…" / "deciding…" on the seat the game is waiting on (someone
-   else's): who the table is waiting for, on that player's own panel. */
+/* "scrying…" / "thinking…" on the seat the game is waiting on (someone
+   else's): who the table is waiting for, and on what, on that player's own
+   panel (`game/waitingLabel.ts`). A long one ("deciding whether to cast")
+   gives way before the name does. */
 .pp-waiting {
   font-size: 0.85em;
   font-style: italic;
   color: var(--warn);
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .pp-waiting-dots span {
   animation: pp-waiting-dot 1.2s ease-in-out infinite;

@@ -72,11 +72,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
-- **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06). While the game
-  waits on a bot, its panel says "thinking…" (`ui/PlayerPanel.tsx`, `waiting === 'bot'`). The
-  user wants it to say what the bot is actually doing — "scrying", "targeting" and the like. The
-  pending decision's kind (`PlayerView`'s `awaiting`) names most of them; a priority window could
-  read the step ("in combat", "at end of turn").
 - **The lobby's default deck could be random** (the user, 2026-10-06). The lobby's "Add bot (default
   deck)" button (`client/src/lobby/SeatBoard.tsx`) always gives the same deck; the user wants it
   randomized.
