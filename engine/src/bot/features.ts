@@ -49,6 +49,7 @@ import type { ObjectId, PlayerId } from "../primitives.js";
 import { POISON_LETHAL, printedCardName } from "../state.js";
 import { playersAttackableNextTurn } from "../combat/eligibility.js";
 import { canBlock, combatCreatures } from "./combat-math.js";
+import type { CombatCreature } from "./combat-math.js";
 import { COMMANDER_DAMAGE_LETHAL } from "../view.js";
 import type { GameObject, GameState } from "../state.js";
 
@@ -636,26 +637,45 @@ export function playerFeatures(
 }
 
 /**
- * Our untapped creatures that would hold off an attack next turn: each can
- * block a creature an opponent could attack us with and kill it or survive
- * it. A 2/2 kept home against 3/3s can only chump, which the crackback
- * check already prices where it matters (lethal), and one kept home against
- * no attacker at all blocks nothing. Counted in full, they made tapping any
- * creature to attack cost `untappedCreatures`, and at three or four players
- * chip damage to one of several opponents scores less than that: v2 never
- * swung a lone 2/2 even at an empty table ("attacks the open player, not one
- * with a blocker").
+ * How many of each of our untapped creatures (a token stack's, one by one)
+ * would hold off an attack next turn: each can block a creature an opponent
+ * could attack us with and kill it or survive it. A 2/2 kept home against
+ * 3/3s can only chump, which the crackback check already prices where it
+ * matters (lethal), and one kept home against no attacker at all blocks
+ * nothing. Counted in full, they made tapping any creature to attack cost
+ * `untappedCreatures`, and at three or four players chip damage to one of
+ * several opponents scores less than that: v2 never swung a lone 2/2 even at
+ * an empty table ("attacks the open player, not one with a blocker").
+ *
+ * Blockers too small to hold one off alone hold one off together — two 1/1s
+ * kill a 2/2 between them — so each attacker takes one gang of them, the
+ * fewest that kill it, biggest first. Opponents attack on their own turns,
+ * and blocking taps nothing, so the gangs only have to cover the one
+ * opponent who takes the most of them. Without the gangs a stack of
+ * 1/1s deterred nothing against a table of 2/2s, and a bot sent eight of
+ * thirteen past a planeswalker they had already killed instead of keeping
+ * them home (reported from a live game, 2026-10-05).
  */
-function deterringBlockers(state: GameState, registry: CardRegistry, player: PlayerId): Set<ObjectId> {
-  const out = new Set<ObjectId>();
+function deterringBlockers(state: GameState, registry: CardRegistry, player: PlayerId): Map<ObjectId, number> {
+  const out = new Map<ObjectId, number>();
   const mine = combatCreatures(state, registry, player, true);
   if (mine.length === 0) return out;
-  const attackers = state.turnOrder
-    .filter((q) => q !== player && !state.players[q].hasLost)
-    .flatMap((q) => combatCreatures(state, registry, q, false))
-    .filter((a) => a.canAttack && playersAttackableNextTurn(state, registry, a.id).includes(player));
+  const attackersOf = new Map(
+    state.turnOrder
+      .filter((q) => q !== player && !state.players[q].hasLost)
+      .map((q) => [
+        q,
+        combatCreatures(state, registry, q, false).filter(
+          (a) => a.canAttack && playersAttackableNextTurn(state, registry, a.id).includes(player),
+        ),
+      ]),
+  );
+  const attackers = [...attackersOf.values()].flat();
+  const deter = (blocker: CombatCreature): void => {
+    out.set(blocker.id, (out.get(blocker.id) ?? 0) + 1);
+  };
+  const small: CombatCreature[] = [];
   for (const blocker of mine) {
-    if (out.has(blocker.id)) continue;
     const holds = attackers.some(
       (attacker) =>
         canBlock(blocker, attacker) &&
@@ -663,8 +683,35 @@ function deterringBlockers(state: GameState, registry: CardRegistry, player: Pla
           blocker.keywords.has("deathtouch") ||
           (attacker.damage < blocker.toughness && !attacker.keywords.has("deathtouch"))),
     );
-    if (holds) out.add(blocker.id);
+    if (holds) deter(blocker);
+    else if (blocker.damage > 0) small.push(blocker);
   }
+  small.sort((a, b) => b.damage - a.damage);
+  // The gangs `opponent`'s attackers would take, smallest attacker first.
+  const gangsAgainst = (opponent: readonly CombatCreature[]): CombatCreature[] => {
+    const left = [...small];
+    const taken: CombatCreature[] = [];
+    for (const attacker of [...opponent].sort((a, b) => a.toughness - b.toughness)) {
+      const gang: CombatCreature[] = [];
+      let damage = 0;
+      for (const blocker of left) {
+        if (damage >= attacker.toughness) break;
+        if (!canBlock(blocker, attacker)) continue;
+        gang.push(blocker);
+        damage += blocker.damage;
+      }
+      if (gang.length < 2 || damage < attacker.toughness) continue;
+      for (const blocker of gang) left.splice(left.indexOf(blocker), 1);
+      taken.push(...gang);
+    }
+    return taken;
+  };
+  let most: CombatCreature[] = [];
+  for (const opponent of attackersOf.values()) {
+    const taken = gangsAgainst(opponent);
+    if (taken.length > most.length) most = taken;
+  }
+  for (const blocker of most) deter(blocker);
   return out;
 }
 
@@ -735,8 +782,8 @@ function playerFeaturesUncached(
       // does something besides.
       if (object.isToken && damage <= 1 && c.toughness <= 1) smallTokens += n;
       combatKeywords += count(c, COMBAT_KEYWORDS) * n;
-      if (!object.tapped && !c.restrictions.has("cant-block") && (deterring?.has(id) ?? true)) {
-        untappedCreatures += n;
+      if (!object.tapped && !c.restrictions.has("cant-block")) {
+        untappedCreatures += deterring === null ? n : Math.min(n, deterring.get(id) ?? 0);
       }
       // A creature that can't attack deals none of its power: Pacifism, a
       // defender. `power` counts it all the same — and so, before this, did

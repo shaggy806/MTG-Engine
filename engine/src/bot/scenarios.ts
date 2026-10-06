@@ -1404,6 +1404,89 @@ const SCENARIOS: readonly BotScenario[] = [
     },
   }),
   asked({
+    name: "sacrifices a tapped land to Harrow",
+    rule: "A land sacrificed to a spell's cost goes tapped if one is: its mana is already spent this turn.",
+    position(registry) {
+      // The user's rule (2026-10-05): "spells that sacrifice lands should
+      // always prioritize tapped lands". `cheapestPermanents` ranked lands by
+      // value alone, so a tapped Forest and an untapped one were a tie that
+      // went to the first listed.
+      const game = table(registry, [A, B, C, D], A);
+      for (const land of ["Forest", "Forest", "Mountain"]) onBoard(game, land, A);
+      const tapped = onBoard(game, "Forest", A, true);
+      game.debugSpawn("Harrow", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.sacrifice === tapped,
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "casts Explore on turn two with a land to play off it",
+    rule: "Explore with a land in hand to follow it is a land down a turn early and a card back — the turn-two play, not a pass.",
+    position(registry) {
+      // Reported from a live game (2026-10-05, no capture): on its second turn
+      // a bot with a Forest and a Mountain out, two Swamps in hand and
+      // nothing else castable for two passed with Explore in hand. Explore
+      // isn't a cantrip to `isCardFlow` (its additional land drop is no draw
+      // or filter), so v2's search decides it, and its rollouts pass our seat
+      // for the rest of the turn: the extra land is never played, and two
+      // mana for one card back scored no better than passing. An extra land
+      // drop now reads as card flow, so Explore is a cantrip, cast when the
+      // search would pass.
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 5; // alice's second turn
+      for (const land of ["Forest", "Mountain"]) onBoard(game, land, A);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      const explore = game.debugSpawn("Explore", A, "hand");
+      for (const card of ["Swamp", "Swamp", "Harrow", "Crop Rotation", "Grazing Gladehart", "Lifespring Druid"]) {
+        game.debugSpawn(card, A, "hand");
+      }
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "cast-spell" && action.card === explore,
+          detail: `chose ${action.type === "cast-spell" ? cardOf(game, action.card) : describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
+    name: "plays Glacial Fortress tapped on turn one over a Mountain for nothing it would cast",
+    rule: "A land letting you cast a spell is of no value if you wouldn't cast the spell with the mana.",
+    position(registry) {
+      // Reported from a live game (2026-10-05, no capture): on turn one a bot
+      // played its untapped land over a Glacial Fortress, which enters tapped
+      // with no Plains or Island out. The untapped land made Sticky Fingers
+      // castable, but there was nothing of its own to enchant — so nothing
+      // it would cast. The user: "A land letting you cast a spell is of no
+      // value if you wouldn't cast the spell if you had the mana."
+      // `castableAfter` counted every castable spell, and the tie-break on a
+      // tapped land skipped check lands, whose tapped-ness is a condition.
+      // Now it counts what v1 would cast (`wouldCast`) and reads a check
+      // land's condition on the board as it is (`entersTapped`).
+      const game = table(registry, [A, B, C, D], A);
+      game.state.turn.number = 1;
+      onBoard(game, "Grizzly Bears", B);
+      game.debugSpawn("Mountain", A, "hand");
+      const fortress = game.debugSpawn("Glacial Fortress", A, "hand");
+      game.debugSpawn("Sticky Fingers", A, "hand");
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: action.type === "play-land" && action.card === fortress,
+          detail: `chose ${action.type === "play-land" ? cardOf(game, action.card) : describeAction(action)}`,
+        }),
+      };
+    },
+  }),
+  asked({
     name: "names a colour its deck plays for Valgavoth's Lair",
     rule: "A land that taps for one chosen colour names a colour the deck's own spells need, never one outside its colour identity.",
     position(registry) {
@@ -2599,7 +2682,7 @@ const SCENARIOS: readonly BotScenario[] = [
   },
   {
     name: "sends only enough of a token stack to kill a planeswalker",
-    rule: "Five 1/1s kill a five-loyalty planeswalker; the other eight have better things to do than overkill it.",
+    rule: "Five 1/1s kill a five-loyalty planeswalker, and with 2/2s across the table some of the other eight stay home to block.",
     run(weights, registry, makeBot) {
       // Reported from a live game (2026-10-05, no capture): a bot swung all
       // thirteen of its creature tokens at a planeswalker with 5 loyalty,
@@ -2607,8 +2690,11 @@ const SCENARIOS: readonly BotScenario[] = [
       // blockers. Neither bot could send part of a stack, so it was thirteen
       // or none; v2's climb now sends parts of one (`declareAttackers`).
       // Here the walker's controller has nothing to block with and the other
-      // two opponents' crackback is far from lethal, so the eight left over
-      // may go at a player: this holds only that none are wasted on Garruk.
+      // two opponents' crackback is far from lethal — so with the stack split,
+      // the eight left over went at that player, until the crackback's
+      // damage short of lethal had a price (`crackbackCost`). The user: "in
+      // most cases you want to keep at least a few blockers back if there are
+      // creatures on opponents' boards".
       const game = table(registry, [A, B, C, D], A);
       for (const p of [A, B, C, D]) game.state.players[p].life = 40;
       const stack = onBoard(game, "Soldier Token", A);
@@ -2624,7 +2710,7 @@ const SCENARIOS: readonly BotScenario[] = [
       const atGarruk = attackers.filter((d) => d.defender === garruk).reduce((n, d) => n + sent(d), 0);
       const home = 13 - attackers.reduce((n, d) => n + sent(d), 0);
       return {
-        passed: atGarruk >= 5 && atGarruk <= 6,
+        passed: atGarruk >= 5 && atGarruk <= 6 && home >= 3,
         detail: `sent ${atGarruk} at Garruk, kept ${home} home (${attackers.map((d) => `${d.count ?? "all"}→${String(d.defender)}`).join(", ") || "nothing"})`,
       };
     },

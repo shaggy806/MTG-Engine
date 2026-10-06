@@ -26,7 +26,7 @@ import { polarityBias } from "./deck-bias.js";
 import { matchesFilter } from "./filter.js";
 import { decisionFor, mayActOn, randomAnswerFor } from "./decisions/registry.js";
 import type { RandomSource } from "./decisions/contract.js";
-import { assignedCombatDamage, combatDamageOf, computeCharacteristics } from "./characteristics.js";
+import { assignedCombatDamage, combatDamageOf, computeCharacteristics, staticConditionMet } from "./characteristics.js";
 import { CardRegistry, createDefaultRegistry } from "./cards.js";
 import { chooseBottomOfHand, shouldMulligan } from "./bot/mulligan.js";
 import { allColors, colorToName, newColorsFirst } from "./land-colors.js";
@@ -1635,7 +1635,7 @@ export class HeuristicBotController extends AutomaticController {
     let bestScore = -1;
     for (const land of lands) {
       const castable = this.castableAfter(view, land);
-      const tapped = this.entersTapped(land.cardName);
+      const tapped = this.entersTapped(state, land.card, land.cardName);
       let score = 0;
       for (const color of new Set(this.colorsProducedBy(land.cardName, identity))) {
         const wanted = want.get(color) ?? 0;
@@ -1658,19 +1658,20 @@ export class HeuristicBotController extends AutomaticController {
     return best;
   }
 
-  /** Whether `cardName` always enters tapped (Valgavoth's Lair, a gain land).
-   * A check land, a reveal land or a shock land may not, so they don't count. */
-  private entersTapped(cardName: string): boolean {
-    if (!this.registry.has(cardName)) return false;
+  /** Whether land `card` would enter tapped if played now: always
+   * (Valgavoth's Lair, a gain land), or a check land whose condition fails
+   * on the board as it is (Glacial Fortress with no Plains or Island). A
+   * reveal land or a shock land may not, so they don't count. */
+  private entersTapped(state: GameState, card: ObjectId, cardName: string): boolean {
+    const object = state.objects[card];
+    if (!this.registry.has(cardName) || object === undefined) return false;
     return this.registry.get(cardName).static.some((ability) => {
       const r = ability.replacement;
-      return (
-        r?.event === "enters-battlefield" &&
-        r.tapped === true &&
-        r.tappedUnless === undefined &&
-        r.tappedUnlessRevealFromHand === undefined &&
-        r.mayPayLife === undefined
-      );
+      if (r?.event !== "enters-battlefield" || r.tappedUnlessRevealFromHand !== undefined || r.mayPayLife !== undefined) {
+        return false;
+      }
+      if (r.tapped === true) return true;
+      return r.tappedUnless !== undefined && !staticConditionMet(state, this.registry, object, r.tappedUnless);
     });
   }
 
@@ -1707,7 +1708,13 @@ export class HeuristicBotController extends AutomaticController {
       after = view.legalActionsAfter?.([play, { type: "choose-creature-type", player: this.playerId, creatureType }]);
     }
     if (after === null || after === undefined) return 0;
-    return new Set(after.flatMap((a) => (a.kind === "cast-spell" ? [a.card] : []))).size;
+    // Only what we'd actually cast: a land that "lets us cast" Sticky
+    // Fingers with nothing of ours to enchant buys nothing (reported from a
+    // live game, 2026-10-05 — an Island played over a Glacial Fortress on
+    // turn one for exactly that).
+    return new Set(
+      after.flatMap((a) => (a.kind === "cast-spell" && this.wouldCast(view.state, a) ? [a.card] : [])),
+    ).size;
   }
 
   private toPlayLand(legal: PlayLandLegal): Action {
@@ -1951,7 +1958,11 @@ export class HeuristicBotController extends AutomaticController {
    * (`targetValue`), a token below the card it's worth the same as, and a
    * token stack as many times as it has tokens. What a sacrifice, an edict
    * or a cost gives up; v1 used to give up whatever was listed first, which
-   * is the oldest permanent, or the last, which is the newest.
+   * is the oldest permanent, or the last, which is the newest. Among the
+   * lands, a tapped one goes before an untapped one, whatever each is worth:
+   * its mana is spent for the turn (the user's rule, 2026-10-05 — Harrow,
+   * Crop Rotation). The lands keep the places the ranking gave them, so a
+   * choice that mixes in other permanents still gives up the cheapest.
    */
   private cheapestPermanents(
     state: GameState,
@@ -1961,10 +1972,26 @@ export class HeuristicBotController extends AutomaticController {
     const worth = (id: ObjectId): number =>
       targetValue(state, this.registry, { kind: "object", object: id }) -
       (state.objects[id]?.isToken === true ? 1 : 0);
+    const isLand = (id: ObjectId): boolean => {
+      const object = state.objects[id];
+      return (
+        object !== undefined &&
+        this.registry.has(printedCardName(object)) &&
+        this.registry.get(printedCardName(object)).types.includes("land")
+      );
+    };
     const ranked = eligible
       .map((id, index) => ({ id, index, worth: worth(id) }))
       .sort((a, b) => a.worth - b.worth || a.index - b.index)
       .map((entry) => entry.id);
+    const lands = ranked.filter(isLand);
+    const tappedFirst = [
+      ...lands.filter((id) => state.objects[id].tapped),
+      ...lands.filter((id) => !state.objects[id].tapped),
+    ];
+    for (let i = 0, next = 0; i < ranked.length; i += 1) {
+      if (isLand(ranked[i])) ranked[i] = tappedFirst[next++];
+    }
     const picked: ObjectId[] = [];
     for (const id of ranked) {
       const copies = state.objects[id]?.stackCount ?? 1;
@@ -2620,7 +2647,9 @@ export class HeuristicBotController extends AutomaticController {
     const castable = (pay: boolean): number => {
       const after = view.legalActionsAfter?.({ type: "pay-life-for-untapped", player: this.playerId, pay });
       if (after === null || after === undefined) return 0;
-      return new Set(after.flatMap((a) => (a.kind === "cast-spell" ? [a.card] : []))).size;
+      return new Set(
+        after.flatMap((a) => (a.kind === "cast-spell" && this.wouldCast(view.state, a) ? [a.card] : [])),
+      ).size;
     };
     return castable(true) > castable(false);
   }
@@ -2631,6 +2660,23 @@ export class HeuristicBotController extends AutomaticController {
     count: number,
   ): readonly ObjectId[] {
     return chooseBottomOfHand(hand, this.registry, count);
+  }
+
+  /** Whether this bot would cast `o` now, given the mana: none of the
+   * reasons it holds a spell applies. What `act` casts from, and what a land
+   * drop's `castableAfter` counts. */
+  private wouldCast(state: GameState, o: CastSpellLegal): boolean {
+    return (
+      !this.taxWouldKill(state, o) &&
+      !this.aimsOnlyAtWrongSide(state, o) &&
+      !this.wastedNow(state, o) &&
+      !this.holdsForASpell(state, o) &&
+      !this.holdsWipeForCombat(state, o) &&
+      !this.holdsManaForMain(state, o) &&
+      // A token-compensating removal instant waits for an opponent's turn
+      // (`holdsCompensationFor`, which v2 checks against the target).
+      !(compensatesTarget(this.registry, o.cardName) && activePlayerOf(state) === this.playerId)
+    );
   }
 
   /** Whether casting `legal` would pay a life-paid commander tax (Liesa,
@@ -2685,17 +2731,7 @@ export class HeuristicBotController extends AutomaticController {
     if (payoff !== null) return payoff;
 
     const spells = options.filter(
-      (o): o is CastSpellLegal =>
-        o.kind === "cast-spell" &&
-        !this.taxWouldKill(view.state, o) &&
-        !this.aimsOnlyAtWrongSide(view.state, o) &&
-        !this.wastedNow(view.state, o) &&
-        !this.holdsForASpell(view.state, o) &&
-        !this.holdsWipeForCombat(view.state, o) &&
-        !this.holdsManaForMain(view.state, o) &&
-        // A token-compensating removal instant waits for an opponent's turn
-        // (`holdsCompensationFor`, which v2 checks against the target).
-        !(compensatesTarget(this.registry, o.cardName) && activePlayerOf(view.state) === this.playerId),
+      (o): o is CastSpellLegal => o.kind === "cast-spell" && this.wouldCast(view.state, o),
     );
     if (spells.length > 0) {
       const best = spells.reduce((a, b) =>
@@ -3115,6 +3151,13 @@ function isCardFlow(effect: EffectSpec | null | undefined): boolean {
       case "may":
         return walk(e.effect);
       case "shuffle-library":
+        return true;
+      // An extra land drop (Explore, Urban Evolution) leaves nothing in the
+      // state either until a land is played off it, which the search's
+      // rollouts never do — they pass our seat for the rest of the turn —
+      // so v2 held Explore on turn two with two lands in hand (reported
+      // from a live game, 2026-10-05). Cast, the bot plays the land.
+      case "additional-land-drop":
         return true;
       default:
         return false;
