@@ -37,8 +37,8 @@ const toWire = (d: DeckContents): WireDeck => ({
  * at the bottom only lights up once every seat has. Un-readying (mine only)
  * reopens my own deck slot for editing; a readied deck is locked until then.
  *
- * This is also where the table gets its size (2-4 seats), via the "Add seat"
- * and "Remove seat" tiles on the end of the row and a small × on any seat
+ * This is also where the table gets its size (2-4 seats), via an "Add seat"
+ * tile the size of a seat on the end of the row and a small × on any seat
  * nobody is sitting in.
  * That question used to be asked on the landing page instead, as three "N
  * players" buttons above "Create a game" — before anyone had seen a seat, in
@@ -135,9 +135,6 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   // next one, which reads as a bug.
   const isRemovable = (s: (typeof game.seats)[number]) =>
     host && !s.claimed && s.player !== mySeatPlayer && game.seats.length > MIN_SEATS
-  // "Remove seat" beside "Add seat" drops the last seat that can go, so the
-  // table shrinks from the end the way it grows.
-  const lastRemovable = game.seats.findLast(isRemovable) ?? null
   const seatLabel = (s: (typeof game.seats)[number]) =>
     s.claimed || s.isBot
       ? playerLabel(s.player, game.seats)
@@ -146,7 +143,7 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
   return (
     <div className="seat-board" style={{ '--seat-count': game.seats.length } as CSSProperties}>
       <div className="seat-board-main">
-        <div className={`seat-board-grid${host ? ' has-controls' : ''}`}>
+        <div className={`seat-board-grid${canAddSeat ? ' has-add' : ''}`}>
           {game.seats.map((s, i) => {
             const isMySeat = s.player === mySeatPlayer
             // My own seat draws from the local deck, which has the whole
@@ -170,10 +167,25 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                 className={`seat-panel ${SEAT_CLASSES[i % SEAT_CLASSES.length]}${s.ready ? ' ready' : ''}`}
               >
                 <div className="seat-panel-head">
-                  <span className="seat-panel-name">
-                    {seatLabel(s)}
-                    {isMySeat && joined ? ' (you)' : ''}
-                  </span>
+                  {isMySeat && !amReady ? (
+                    // My name is typed on the name itself, until I ready up;
+                    // the seat's current name shows as the placeholder, so an
+                    // untouched field reads as the plain heading.
+                    <input
+                      className="seat-panel-name seat-panel-name-input"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={seatLabel(s)}
+                      maxLength={20}
+                      title="Your name: click to change it"
+                      aria-label="Your name"
+                    />
+                  ) : (
+                    <span className="seat-panel-name">
+                      {seatLabel(s)}
+                      {isMySeat && joined ? ' (you)' : ''}
+                    </span>
+                  )}
                   {s.isHost ? <span className="seat-host-badge">Host</span> : null}
                   <span className="seat-panel-tag">
                     {s.isBot
@@ -207,20 +219,9 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
                       ✓ Ready
                     </button>
                   ) : (
-                    <>
-                      {!amReady ? (
-                        <input
-                          className="name-input"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Your name (optional)"
-                          maxLength={20}
-                        />
-                      ) : null}
-                      <button type="button" className="seat-panel-ready-btn" onClick={readyUp}>
-                        Ready
-                      </button>
-                    </>
+                    <button type="button" className="seat-panel-ready-btn" onClick={readyUp}>
+                      Ready
+                    </button>
                   )
                 ) : host && !s.claimed && !s.isBot ? (
                   <button
@@ -235,26 +236,11 @@ export function SeatBoard({ game }: { readonly game: NetworkGame }) {
             )
           })}
 
-          {host ? (
-            <div className="seat-controls">
-              {canAddSeat ? (
-                <button type="button" className="seat-add-panel" onClick={game.addSeat}>
-                  <span className="seat-add-plus">+</span>
-                  <span className="seat-add-label">Add seat</span>
-                </button>
-              ) : null}
-              {lastRemovable !== null ? (
-                <button
-                  type="button"
-                  className="seat-add-panel remove"
-                  title={`Remove ${seatLabel(lastRemovable)}'s seat`}
-                  onClick={() => game.removeSeat(lastRemovable.player)}
-                >
-                  <span className="seat-add-plus">−</span>
-                  <span className="seat-add-label">Remove seat</span>
-                </button>
-              ) : null}
-            </div>
+          {canAddSeat ? (
+            <button type="button" className="seat-add-panel" onClick={game.addSeat}>
+              <span className="seat-add-plus">+</span>
+              <span className="seat-add-label">Add seat</span>
+            </button>
           ) : null}
         </div>
 

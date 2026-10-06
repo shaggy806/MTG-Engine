@@ -3405,10 +3405,8 @@
   font-size: var(--text-xl);
   color: var(--accent);
 }
-/* The only field left inside an overlay box is the seat panel's "Your name",
-   which fills its panel (see lobby.css) — the room-code styling that used to
-   live here went to the landing page with the join form itself, and the
-   overrides that undid it for the name field went with it. */
+/* The room-code styling that used to live here went to the landing page with
+   the join form itself; the seat panel's name field is styled in lobby.css. */
 
 /* the seat-picker/waiting-room screen (SeatPickerScreen/WaitingForPlayersScreen
    in App.tsx) needs a much wider box than the default overlay-box's small

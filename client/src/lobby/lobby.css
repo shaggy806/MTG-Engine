@@ -25,14 +25,14 @@
   width: 100%;
 }
 
-/* The seats, and beside them a column for the room's settings and Start
-   Game: setting the table up, then starting it, in one place. Centred as
-   one group, so a two-seat table sits next to its settings rather than
-   leaving a gap the width of two more seats between them. */
+/* The seats, and down the board's right edge a column for the room's
+   settings and Start Game. The column is pinned to that edge at every table
+   size and the seats centre in the rest: centring the two as one group put
+   the settings in the middle of the screen beside a small table, and moved
+   them every time a seat was added. */
 .seat-board-main {
   display: grid;
-  grid-template-columns: auto var(--side-w);
-  justify-content: center;
+  grid-template-columns: minmax(0, 1fr) var(--side-w);
   gap: var(--seat-gap, 16px);
   align-items: start;
 }
@@ -49,32 +49,20 @@
      Start Game button fell below the fold at 768px, while four seats sat
      compact on one screen. A smaller table is now a narrower, centred row
      of the same seats. Measured against the whole board (`100cqw`, the
-     `.seat-board` container) less the settings column, with the room for
-     the controls column (below) always set aside, so four seats plus both
-     columns still fit the row. */
-  --seat-ctrl-w: clamp(76px, 8vw, 104px);
-  --seat-w: calc((100cqw - var(--side-room) - 4 * var(--seat-gap, 16px) - var(--seat-ctrl-w)) / 4);
+     `.seat-board` container) less the settings column: four columns, since
+     the Add seat tile (below) only shows while there are three seats or
+     fewer. */
+  --seat-w: calc((100cqw - var(--side-room) - 3 * var(--seat-gap, 16px)) / 4);
   display: grid;
   grid-template-columns: repeat(var(--seat-count), var(--seat-w));
   justify-content: center;
   gap: var(--seat-gap, 16px);
 }
-/* The Add seat / Remove seat controls sit on the end as a narrow `auto`
-   column rather than an equal share of the row -- they're controls, not
-   seats, and giving them a seat's width makes a 2-player table look like a
-   3-player one with an empty chair. `--seat-count` deliberately stays the
-   number of real seats. */
-.seat-board-grid.has-controls {
-  grid-template-columns: repeat(var(--seat-count), var(--seat-w)) auto;
-}
-/* Centred rather than stretched: a full-height dashed box beside the real
-   seats reads as another (empty) seat, which is the opposite of what a
-   control to make or drop one should look like. */
-.seat-controls {
-  display: flex;
-  flex-direction: column;
-  align-self: center;
-  gap: 8px;
+/* Add seat is a tile the size of a seat on the end of the row: the empty
+   chair it adds goes where it stands. `--seat-count` stays the number of
+   real seats. A seat drops with the × on its own head. */
+.seat-board-grid.has-add {
+  grid-template-columns: repeat(calc(var(--seat-count) + 1), var(--seat-w));
 }
 
 .seat-add-panel {
@@ -83,8 +71,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: var(--seat-ctrl-w);
-  padding: 22px 10px;
+  padding: 18px;
   background: none;
   border: 1px dashed var(--border);
   border-radius: 0;
@@ -94,15 +81,8 @@
   border-color: var(--accent);
   color: var(--accent);
 }
-.seat-add-panel.remove {
-  padding-block: 12px;
-}
-.seat-add-panel.remove:hover {
-  border-color: var(--bad);
-  color: var(--bad);
-}
 .seat-add-plus {
-  font-size: 26px;
+  font-size: calc(var(--card-w) * 0.28);
   line-height: 1;
 }
 .seat-add-label {
@@ -290,8 +270,30 @@
   letter-spacing: 0.04em;
 }
 
-.seat-panel input.name-input {
-  width: 100%;
+/* My own seat's name, typed in place until I ready up: the heading's own
+   type, with a dashed underline as the only sign it is a field. */
+.seat-panel input.seat-panel-name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0 1px;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-bottom: 1px dashed var(--muted-dim);
+  border-radius: 0;
+  box-shadow: none;
+}
+.seat-panel input.seat-panel-name-input::placeholder {
+  color: var(--text);
+  opacity: 1;
+}
+.seat-panel input.seat-panel-name-input:hover,
+.seat-panel input.seat-panel-name-input:focus {
+  border-bottom-color: var(--accent);
+  outline: none;
+}
+.seat-panel input.seat-panel-name-input:focus::placeholder {
+  color: var(--muted-dim);
 }
 .seat-panel-ready-btn {
   font-weight: 600;
