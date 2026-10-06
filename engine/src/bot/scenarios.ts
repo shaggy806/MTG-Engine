@@ -1284,6 +1284,59 @@ const SCENARIOS: readonly BotScenario[] = [
       },
     }),
   ),
+  ...(
+    [
+      ["cracks Bountiful Landscape at the end of the turn before its own", D, true],
+      ["holds Bountiful Landscape at another player's end step", B, false],
+    ] as const
+  ).map(([name, active, crack]) =>
+    asked({
+      name,
+      rule: "A land that taps for mana and fetches a tapped land cracks at the end of the turn before ours, when its mana is gone anyway and the new land untaps.",
+      position(registry) {
+        // A live capture (2026-10-06, "alice, turn 22 upkeep"): a bot cracked
+        // Bountiful Landscape in its own upkeep, so the basic it fetched sat
+        // tapped all turn. `isManaLandFetch`.
+        const game = table(registry, [A, B, C, D], active);
+        lands(game, "Forest", A, 3);
+        const landscape = onBoard(game, "Bountiful Landscape", A);
+        game.advanceUntil(
+          (s) =>
+            (s.turn.step === "end" && s.priority.holder === A && s.zones.shared.stack.length === 0) ||
+            s.result.over,
+        );
+        if (game.state.turn.step !== "end" || game.state.priority.holder !== A) {
+          return { passed: false, detail: "never reached the end step with priority" };
+        }
+        return {
+          game,
+          player: A,
+          judge: (action) => ({
+            passed: (action.type === "activate-ability" && action.source === landscape) === crack,
+            detail: `chose ${describeAction(action)}`,
+          }),
+        };
+      },
+    }),
+  ),
+  asked({
+    name: "holds Bountiful Landscape in its own main phase",
+    rule: "Cracked on our own turn, a mana land's fetch costs this turn's mana: its own and the fetched land's.",
+    position(registry) {
+      const game = table(registry, [A, B, C, D], A);
+      lands(game, "Forest", A, 3);
+      const landscape = onBoard(game, "Bountiful Landscape", A);
+      game.state.players[A].landsPlayedThisTurn = 1;
+      return {
+        game,
+        player: A,
+        judge: (action) => ({
+          passed: !(action.type === "activate-ability" && action.source === landscape),
+          detail: `chose ${describeAction(action)}`,
+        }),
+      };
+    },
+  }),
   asked({
     name: "plays a Forest for Birds of Paradise, not a tapped Stomping Ground",
     rule: "The land drop that casts this turn's spell beats one that enters tapped, and a basic beats paying 2 life.",

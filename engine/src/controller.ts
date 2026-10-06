@@ -1909,6 +1909,46 @@ export class HeuristicBotController extends AutomaticController {
   }
 
   /**
+   * A land that taps for mana and can also sacrifice itself to fetch a land
+   * onto the battlefield (Bountiful Landscape's "{T}, Sacrifice: search for
+   * a basic …, put it onto the battlefield tapped"). Cracked any other time
+   * it costs this turn's mana — its own, and the fetched land's if that
+   * enters tapped — so it waits for the end step of the player before us
+   * (`isEndOfTurnBeforeOurs`), when its mana would be gone anyway and the new
+   * land untaps for our turn. A live capture (2026-10-06): a bot cracked it
+   * in its own upkeep, the evaluation scoring the swap a shade above
+   * passing, and its new land sat tapped all turn.
+   */
+  protected isManaLandFetch(state: GameState, source: ObjectId, abilityIndex: number): boolean {
+    const object = state.objects[source];
+    if (object === undefined || object.zone !== "battlefield" || !this.registry.has(object.cardName)) {
+      return false;
+    }
+    const def = this.registry.get(object.cardName);
+    if (!def.types.includes("land")) return false;
+    const abilities = def.activated ?? [];
+    const ability = abilities[abilityIndex];
+    if (ability === undefined || ability.cost.sacrifice !== "self" || ability.cost.mana !== null) return false;
+    if (!abilities.some((a) => JSON.stringify(a.effect ?? null).includes('"add-mana"'))) return false;
+    const effect = JSON.stringify(ability.effect ?? null);
+    return effect.includes('"search-library"') && effect.includes('"destination":"battlefield"');
+  }
+
+  /** A mana land's fetch at its moment — see `isManaLandFetch`. */
+  protected isManaLandFetchDue(state: GameState, source: ObjectId, abilityIndex: number): boolean {
+    return this.isManaLandFetch(state, source, abilityIndex) && this.isEndOfTurnBeforeOurs(state);
+  }
+
+  /** A mana land's fetch at any other moment: held — see `isManaLandFetch`. */
+  protected holdsManaLandFetch(state: GameState, legal: LegalAction): boolean {
+    return (
+      legal.kind === "activate-ability" &&
+      this.isManaLandFetch(state, legal.source, legal.abilityIndex) &&
+      !this.isEndOfTurnBeforeOurs(state)
+    );
+  }
+
+  /**
    * Equipment that's already on one of this bot's creatures, unless the
    * creature it would move to ranks clearly above its host (`targetValue`,
    * by `REATTACH_MARGIN`): Lightning Greaves onto the six-drop just cast,
@@ -2716,7 +2756,9 @@ export class HeuristicBotController extends AutomaticController {
 
     const fetch = options.find(
       (o): o is ActivateAbilityLegal =>
-        o.kind === "activate-ability" && this.isFreeFetch(view.state, o.source, o.abilityIndex),
+        o.kind === "activate-ability" &&
+        (this.isFreeFetch(view.state, o.source, o.abilityIndex) ||
+          this.isManaLandFetchDue(view.state, o.source, o.abilityIndex)),
     );
     if (fetch !== undefined) return this.toActivateAbility(view.state, fetch);
 
@@ -2752,6 +2794,7 @@ export class HeuristicBotController extends AutomaticController {
         o.kind !== "activate-ability" ||
         this.isManaOnlyAbility(o) ||
         this.isPointlessReattach(view.state, o) ||
+        this.holdsManaLandFetch(view.state, o) ||
         (this.activations.get(`${o.source}:${o.abilityIndex}`) ?? 0) >= MAX_ACTIVATIONS_PER_TURN ||
         this.aimsOnlyAtWrongSide(view.state, o) ||
         this.wastedNow(view.state, o) ||

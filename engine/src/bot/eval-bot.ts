@@ -645,6 +645,9 @@ export class EvalBotController extends HeuristicBotController {
         // Mana our own main phase could cast a spell with, spent in our upkeep
         // (`holdsManaForMain`): the rollouts never show that spell.
         if (this.holdsManaForMain(view.state, legal)) continue;
+        // A land that taps for mana and fetches (Bountiful Landscape) waits
+        // for the end of the turn before ours (`holdsManaLandFetch`).
+        if (this.holdsManaLandFetch(view.state, legal)) continue;
         const due = this.isCantripDue(view.state, legal) || this.isSuspendDue(legal);
         for (const action of candidateActions(aimOffer(view.state, this.cards, player, legal), player)) {
           // A draw aimed at a player is a cantrip aimed at us (Compulsive
@@ -724,7 +727,8 @@ export class EvalBotController extends HeuristicBotController {
             (a) =>
               a.type === "activate-ability" &&
               (this.isFreeFetch(view.state, a.source, a.abilityIndex) ||
-                this.isCreatureFetchDue(view.state, a.source, a.abilityIndex)),
+                this.isCreatureFetchDue(view.state, a.source, a.abilityIndex) ||
+                this.isManaLandFetchDue(view.state, a.source, a.abilityIndex)),
           )
         : undefined;
     if (fetch !== undefined) {
