@@ -98,6 +98,11 @@ describe("triggered abilities", () => {
 
     expect(game.state.objects[visionary].zone).toBe("battlefield");
     expect(game.eventsOfType("ability-triggered")).toHaveLength(1);
+    // It names the ability it put on the stack, which a client flies there.
+    const [triggered] = game.eventsOfType("ability-triggered");
+    expect(game.eventsOfType("ability-resolved")).toContainEqual(
+      expect.objectContaining({ object: triggered.object, source: visionary }),
+    );
     expect(drawsBy(game, A)).toBe(before + 1);
   });
 

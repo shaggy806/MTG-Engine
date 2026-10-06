@@ -1061,6 +1061,41 @@ function stackSpotOf(object: ObjectId): StackSpot | null {
 }
 
 /**
+ * A copy of the entry at `spot`, drawn as the entry is: its card's centre on
+ * the origin of whatever it's put in, and the entry's own rotation and scale
+ * (its depth) about that point.
+ */
+function entryCopy(spot: StackSpot): HTMLElement {
+  const { entry, matrix } = spot
+  const copy = entry.cloneNode(true) as HTMLElement
+  copy.removeAttribute('data-stack-id')
+  copy.classList.remove('is-new')
+  Object.assign(copy.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: 'auto',
+    margin: '0',
+    width: `${entry.offsetWidth}px`,
+    height: `${entry.offsetHeight}px`,
+    transform: 'none',
+    animation: 'none',
+    transition: 'none',
+  })
+  const drawn = document.createElement('div')
+  drawn.style.position = 'absolute'
+  drawn.style.left = `${-spot.cx}px`
+  drawn.style.top = `${-spot.cy}px`
+  drawn.style.width = `${entry.offsetWidth}px`
+  drawn.style.height = `${entry.offsetHeight}px`
+  drawn.style.transformOrigin = `${spot.cx}px ${spot.cy}px`
+  drawn.style.transform = `matrix(${matrix.a}, ${matrix.b}, ${matrix.c}, ${matrix.d}, 0, 0)`
+  drawn.style.setProperty('--card-w', `${spot.cardWidth}px`)
+  drawn.appendChild(copy)
+  return drawn
+}
+
+/**
  * A spell cast onto the stack, over the new board: its spotlight card, held at
  * the end of its beat, flies to the stack pile and settles into exactly the
  * place its entry takes — the entry's depth styling included, so one buried
@@ -1081,35 +1116,9 @@ function slotIntoStack(object: ObjectId, delay: number, duration: number, onLand
     return
   }
   const { entry, matrix } = spot
-  const copy = entry.cloneNode(true) as HTMLElement
-  copy.removeAttribute('data-stack-id')
-  copy.classList.remove('is-new')
-  Object.assign(copy.style, {
-    position: 'absolute',
-    top: '0',
-    left: '0',
-    right: 'auto',
-    margin: '0',
-    width: `${entry.offsetWidth}px`,
-    height: `${entry.offsetHeight}px`,
-    transform: 'none',
-    animation: 'none',
-    transition: 'none',
-  })
-  // The entry's copy, drawn as the entry is: its card's centre on the box's
-  // origin, and the entry's own rotation and scale about that point.
-  const landing = document.createElement('div')
-  landing.style.position = 'absolute'
-  landing.style.left = `${-spot.cx}px`
-  landing.style.top = `${-spot.cy}px`
-  landing.style.width = `${entry.offsetWidth}px`
-  landing.style.height = `${entry.offsetHeight}px`
-  landing.style.transformOrigin = `${spot.cx}px ${spot.cy}px`
-  landing.style.transform = `matrix(${matrix.a}, ${matrix.b}, ${matrix.c}, ${matrix.d}, 0, 0)`
+  const landing = entryCopy(spot)
   landing.style.opacity = '0'
-  landing.style.setProperty('--card-w', `${spot.cardWidth}px`)
   landing.dataset.part = 'landing'
-  landing.appendChild(copy)
   // Around it, what undoes its turn and scale at the start of the flight, so
   // the two begin as one card.
   const grow = document.createElement('div')
@@ -1157,6 +1166,51 @@ function slotIntoStack(object: ObjectId, delay: number, duration: number, onLand
 }
 
 /**
+ * A triggered ability going on the stack, over the new board: a copy of its
+ * entry comes out of the permanent it triggered from — the size of that
+ * tile, upright — and flies into the place the entry takes in the pile,
+ * turning and growing into it as it goes; the real entry is held hidden until
+ * the copy is down on it. Plays in the trigger's beat, beside its source's
+ * pulse (`runPulse`).
+ *
+ * False, leaving the entry to arrive in place as before, under reduced
+ * motion, when the source has no tile in view (it has left the battlefield:
+ * a dies trigger), or when the entry isn't on the board shown (the trigger
+ * already resolved, or the stack is out of view).
+ */
+function flyTriggerIn(object: ObjectId, source: ObjectId, delay: number, duration: number): boolean {
+  if (motionPrefs().reduced) return false
+  const tile = document.querySelector<HTMLElement>(`[data-obj-id="${CSS.escape(source)}"] .mini-tile`)
+  if (!tile || !inView(tile)) return false
+  const spot = stackSpotOf(object)
+  if (!spot) return false
+  const from = tile.getBoundingClientRect()
+  const box = document.createElement('div')
+  box.className = 'ghost-flight'
+  box.style.left = `${spot.x}px`
+  box.style.top = `${spot.y}px`
+  box.appendChild(entryCopy(spot))
+  document.body.appendChild(box)
+  const dx = from.left + from.width / 2 - spot.x
+  const dy = from.top + from.height / 2 - spot.y
+  const angle = (Math.atan2(spot.matrix.b, spot.matrix.a) * 180) / Math.PI
+  // The tile's own width, not its tilted box: a tapped source is drawn turned.
+  const k = (tile.offsetWidth || from.width) / spot.width
+  const flight = box.animate(
+    [
+      { transform: `translate(${dx}px, ${dy}px) rotate(${-angle}deg) scale(${k})`, opacity: 0 },
+      { opacity: 1, offset: 0.25 },
+      { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
+    ],
+    { duration, delay, easing: FLIGHT_EASING, fill: 'both' },
+  )
+  releaseWhenDone(box, flight)
+  box.dataset.trigger = object
+  spot.entry.animate([{ opacity: 0 }, { opacity: 0 }], { duration: delay + duration, fill: 'backwards' })
+  return true
+}
+
+/**
  * The entries put on the stack above a spell still flying into its place
  * (a trigger of its cast, a copy of it): each is new on this board, and is
  * held hidden until the spell under it has landed, then fades in — so the
@@ -1164,7 +1218,7 @@ function slotIntoStack(object: ObjectId, delay: number, duration: number, onLand
  * of what came after it, and then dropping under it. `landings` are the
  * spells flying in this half, with when each lands (ms from now).
  */
-function holdEntriesAbove(landings: ReadonlyMap<ObjectId, number>): void {
+function holdEntriesAbove(landings: ReadonlyMap<ObjectId, number>, flying: ReadonlySet<ObjectId>): void {
   if (landings.size === 0) return
   const pile = document.querySelector('.stack-pile')
   if (!pile) return
@@ -1172,7 +1226,7 @@ function holdEntriesAbove(landings: ReadonlyMap<ObjectId, number>): void {
   const entries = [...pile.querySelectorAll<HTMLElement>(':scope > .stack-entry')]
   for (const [index, entry] of entries.entries()) {
     const id = entry.dataset.stackId as ObjectId | undefined
-    if (id === undefined || landings.has(id) || !entry.classList.contains('is-new')) continue
+    if (id === undefined || landings.has(id) || flying.has(id) || !entry.classList.contains('is-new')) continue
     let until = 0
     for (const below of entries.slice(index + 1)) {
       const landsAt = landings.get(below.dataset.stackId as ObjectId)
@@ -2162,6 +2216,8 @@ export function AnimationLayer({
       // Spells flying into the stack pile, with when each lands, for what was
       // put on the stack above them (`holdEntriesAbove`).
       const stackLandings = new Map<ObjectId, number>()
+      // Triggers flying in from their sources, which hold their own entries.
+      const triggersFlying = new Set<ObjectId>()
       for (const cue of cues) {
         if (cue.half === 'after') {
           // Started now, in the task that mounted the new board, with the
@@ -2170,7 +2226,11 @@ export function AnimationLayer({
           if (cue.event.type === 'permanent-tapped') runTap(cue.event.object, true, cue.delay)
           else if (cue.event.type === 'permanent-untapped') {
             runTap(cue.event.object, false, cue.delay)
-          } else if (cue.event.type === 'ability-triggered') runPulse(cue.event.source, cue.delay)
+          } else if (cue.event.type === 'ability-triggered') {
+            const { source, object } = cue.event
+            runPulse(source, cue.delay)
+            if (flyTriggerIn(object, source, cue.delay, scaled(TRIGGER_STEP_MS))) triggersFlying.add(object)
+          }
           else if (cue.event.type === 'permanent-entered-battlefield' && cue.putDown) {
             const object = cue.event.object
             const duration = cue.flightMs ?? measureFlight(cue)
@@ -2225,7 +2285,7 @@ export function AnimationLayer({
         window.setTimeout(() => fire(cue), cue.delay)
       }
       runEnters(enters)
-      holdEntriesAbove(stackLandings)
+      holdEntriesAbove(stackLandings, triggersFlying)
       for (const [delay, run] of mills) window.setTimeout(() => runMill(run.events, run.view), delay)
     })
   }, [bus])

@@ -16018,6 +16018,7 @@ export class Game {
         type: "ability-triggered",
         source: trigger.delayed.source,
         controller: trigger.controller,
+        object: id,
       });
       return "done";
     }
@@ -16315,7 +16316,7 @@ export class Game {
     }
     if (targetedBy !== undefined) this.state.objects[abilityId].targetedBy = targetedBy;
     if (reflexive !== undefined) this.state.objects[abilityId].reflexiveTrigger = reflexive;
-    this.emit({ type: "ability-triggered", source: sourceId, controller });
+    this.emit({ type: "ability-triggered", source: sourceId, controller, object: abilityId });
     // Its targets are locked in as it goes on the stack (rule 603.3d), which
     // is when anything it targets "becomes the target of" an ability.
     this.announceTargeted(
@@ -22871,6 +22872,7 @@ export class Game {
         type: "ability-triggered",
         source: trigger.source,
         controller: trigger.controller,
+        object: id,
       });
     }
   }

@@ -197,7 +197,6 @@ animation follow-ups in `docs/plans/legibility-of-play.md`, "Follow-ups". Delete
 item lands.
 
 - **The bot's "thinking" line could say what it's doing** (the user, 2026-10-06): a seat the game waits on shows a bare "thinking…" (`ui/PlayerPanel.tsx`); make it describe the decision — "scrying", "targeting", "choosing blockers" — from the pending decision's kind (`view.state.awaiting`) or the step.
-- **A trigger going on the stack flies from the permanent that was its source** (the user, 2026-10-06): today a triggered ability's stack entry just appears (`ui/Stack.tsx`'s `is-new` arrival); fly it from its source's tile, as a cast now flies into its place (`AnimationLayer`'s `slotIntoStack`).
 - **The lobby's default deck could be random** (the user, 2026-10-06): randomize which deck the lobby's "Add bot (default deck)" button gives the bot (`client/src/lobby/SeatBoard.tsx`), rather than always the same one.
 - **The highroll notice should look like the other alerts** (the user, 2026-10-06): the "won the highroll and goes first" notice at the start of a game (`App.tsx`) is styled on its own; make it match the game's other alerts.
 - **Only the top stack entry should carry its label and target lines** (the user, 2026-10-06): every `.stack-entry` draws its "whose / ability of" label above the card and its target line below (`ui/Stack.tsx`); keep them on the top entry only.

@@ -77,12 +77,6 @@ title; when one lands, delete it in both. The animation follow-ups are in
   user wants it to say what the bot is actually doing — "scrying", "targeting" and the like. The
   pending decision's kind (`PlayerView`'s `awaiting`) names most of them; a priority window could
   read the step ("in combat", "at end of turn").
-- **A trigger going on the stack flies from the permanent that was its source** (the user,
-  2026-10-06). A triggered ability's stack entry appears in place (`ui/Stack.tsx`'s `is-new`
-  arrival), with its source's tile lit in the frame's second half (`runPulse`). The user wants it
-  to fly out of that permanent into its spot on the stack, as a cast spell now slots in
-  (`AnimationLayer`'s `liftSpotlight`/`slotIntoStack`); a source already gone (a dies trigger)
-  keeps today's arrival.
 - **The lobby's default deck could be random** (the user, 2026-10-06). The lobby's "Add bot (default
   deck)" button (`client/src/lobby/SeatBoard.tsx`) always gives the same deck; the user wants it
   randomized.
