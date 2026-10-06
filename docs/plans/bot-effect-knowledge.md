@@ -595,6 +595,24 @@ on turn one (`earlyMana`), Adaptive Training Post with nothing to copy (the chai
 work). Open: Colfenor's Urn before Citywide Bust (BACKLOG), and the attack spread at the open
 player (a question for the user).
 
+**After the plan: a creature's track record (2026-10-06).** The user's question: a removal spell
+should go to the creature that has actually been drawing cards or hitting players, not only the
+one whose printed text says it might. The engine keeps a per-permanent `tally` (`state.ts`:
+damage to players and cards drawn, with the current turn's share held apart in `thisTurn`, and
+reset when the object changes zones), and `damage-dealt` events now name their source (`by`).
+`trackRecordOf` (`features.ts`) reads only *settled* turns — reading the current turn let a
+rollout's simulated damage count as evidence, which broke four gate scenarios — and counts the
+cards drawn beyond what `drawRate` already prices, plus damage/4, per round, capped at 3, and
+only once there is at least one card's worth of evidence (below that it moved the Deadly
+Dispute scenario's 0.13 margin). It is a feature (`trackRecord`, weight 3: the new scenario
+flipped at 2.5; every champion snapshot carries 0) and feeds target ranking: `engineScore`
+(`drawRate + tokenRate/2 + trackRecord`) scaled by `RANK_ENGINE` 6 joins `targetValue` in
+`aimOffer`'s ranking, since at 4 it was lost in `targetValue`'s scale. New gate scenario
+"removal takes the creature that has been drawing cards"; the gate passes 129/129. `bot:diff`
+against 776bad8: 56 of 13,575 decisions over six four-player games, all judgment calls. A/B
+bench (one seat against three on 776bad8, 160 four-player games, 4 workers): 21.9% [16.2, 28.9],
+level — it ships as a fix a player can see, on that and the scenario.
+
 ## Watching live games for
 
 Moved from BACKLOG (2026-10-04): each of these is open only until a live game shows the
