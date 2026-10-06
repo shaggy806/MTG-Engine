@@ -72,6 +72,13 @@ title; when one lands, delete it in both. The animation follow-ups are in
   same path, drawn whole from the first frame, so it sits on the defender before the line gets
   there. Resolving arrows put the head on a sliver path of its own that waits for the line
   (`.arrow-tip`); attack arrows could do the same.
+- **A Paste button on the deck import** (the user, 2026-10-06). The deck builder's Import box
+  (`DeckBuilderPage.tsx`, `.db-import-textarea`) takes a pasted list today only by Ctrl+V. A
+  button that calls `navigator.clipboard.readText()` would fill it in one click: it needs a
+  click to start it and HTTPS (tobyens.com has it); Chrome asks permission once, Firefox and
+  Safari show their own "Paste" bubble each time, and where it's refused (or `readText` is
+  missing) the button should fall back to saying "press Ctrl+V". The capture panel's image
+  paste (`ui/CapturePanel.tsx`, the `paste` event) is the other clipboard read in the client.
 - **A rematch from the end-of-game panel** (2026-10-06 UI review). A finished game shows
   `GameResultPanel` (App.tsx) with "View the board" and "Main menu". A rematch — the same seats
   and decks, a new game in the same room — would need the server to deal a new `Game` into a
