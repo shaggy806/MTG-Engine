@@ -3485,6 +3485,25 @@
    every player — the caption says whose it is, and flying in from their side
    of the table read as wrong once it did. `side` is that flight (the base
    rule above); `fade` is the reduced-motion fade below. */
+/* Rising (or fading) in, the card stands just left of the stack pile rather
+   in the middle of the screen, so its flight into its place on the stack is
+   a short one (the user's ask, 2026-10-06). --spot-x is how far right of
+   centre that is: the stack's top card's left edge (.stack-overlay's
+   `right` inset plus its card width), less a gap and half this card, and
+   never left of centre on a narrow screen. A `translate` of its own, so it
+   composes with the keyframes' `transform`. `side` keeps flying in from the
+   caster's cell to the middle. */
+:root[data-cast-entrance='rise'] .played-card-fly,
+:root[data-cast-entrance='fade'] .played-card-fly {
+  --spot-x: max(
+    0px,
+    calc(
+      50vw - var(--card-w-max) - 2.2vw - 8px - min(calc(var(--card-w-max) * 1.5), 28vh) - 2.5vw -
+        var(--card-w) / 2
+    )
+  );
+  translate: var(--spot-x) 0;
+}
 :root[data-cast-entrance='rise'] .played-card-fly {
   animation-name: played-card-rise;
 }
