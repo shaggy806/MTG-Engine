@@ -12,11 +12,11 @@ per gap under the same bold title; when a gap closes, delete it in both.
   after 1,000 settling rounds, and the server's `Room.settle` stops after `SETTLE_BUDGET`
   (10,000) hops. The bots cap a non-mana ability at `MAX_ACTIVATIONS_PER_TURN` (4, in
   `controller.ts`), so they don't run an optional loop forever; a human repeats one a click at a
-  time. The sharper half is the server: a bot's move runs from a timer (`Room.holdForClients` →
-  `tryOpenGate` → `settle`), with no `try` around it and no process-level handler, so the throw
-  would take down the whole server, every room, not just end that game. Detecting the loop (the
-  same state and stack recurring with only mandatory choices) and declaring the draw is the
-  rules fix; catching a throw per room, ending that game with an error, is the safety net.
+  time. The server's safety net is in: `Room.settle` catches a throw from the engine (a bot's
+  move runs from a timer, where it would otherwise have taken every room down) and `Room.stop`
+  ends that room's game alone, publishing why (`state.stopped`, a lasting toast for every
+  seat). What's left is the rules: detecting the loop (the same state and stack recurring with
+  only mandatory choices) and declaring the draw, rather than stopping on an error.
 - **Blitz is offered only from the hand and the command zone.** `Game.blitzCostOf` gates on
   those two zones, so a blitz card another permission lets you cast (an impulse exile, a
   graveyard grant, the top of a library) isn't offered its blitz cost there, though rule

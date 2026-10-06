@@ -100,7 +100,7 @@ section keeps only what to do next.
 One line each; the detail (rule numbers, code sites, the cards each blocks) is in
 **`docs/engine-gaps.md`**, under the same bold title. Delete both when a gap closes.
 
-- **A mandatory loop throws instead of drawing the game** (104.4b, 732.4), and a throw in a bot's timed move isn't caught by the server.
+- **A mandatory loop throws instead of drawing the game** (104.4b, 732.4): the room stops that game rather than the server going down, but it should be a draw.
 - **Blitz is offered only from the hand and the command zone** (702.152a).
 - **A mana restriction reads the spell before it's cast** (Jasmine Boreal of the Seven waits).
 - **Suspend's time-counter triggers don't use the stack** (702.62a).

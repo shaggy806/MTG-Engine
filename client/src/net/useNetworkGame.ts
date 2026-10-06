@@ -199,6 +199,8 @@ export interface NetworkGame {
   setRoomSettings: (settings: Partial<RoomSettings>) => void
   /** The host picked who went first, so nobody won a highroll. */
   readonly firstPlayerChosen: boolean
+  /** The server stopped this game after an engine error: why. */
+  readonly stopped: string | null
   /** The host has paused the bots; every seat sees it. */
   readonly botsPaused: boolean
   /** Host only: pause or resume the bots, or let one held move go. */
@@ -339,6 +341,7 @@ export function useNetworkGame(): NetworkGame {
   const [botSpeed, setBotSpeedState] = useState<BotSpeed>('normal')
   const [roomSettings, setRoomSettingsState] = useState<RoomSettings | null>(null)
   const [firstPlayerChosen, setFirstPlayerChosen] = useState(false)
+  const [stopped, setStopped] = useState<string | null>(null)
   const [botsPaused, setBotsPausedState] = useState(false)
   const [captureEnabled, setCaptureEnabled] = useState(false)
   const [capture, setCapture] = useState<CaptureState>(NO_CAPTURE)
@@ -482,6 +485,7 @@ export function useNetworkGame(): NetworkGame {
           setBotSpeedState(message.botSpeed)
           setRoomSettingsState(null)
           setFirstPlayerChosen(message.firstPlayerChosen === true)
+          setStopped(message.stopped ?? null)
           setBotsPausedState(message.botsPaused === true)
           setCaptureEnabled(message.capture === true)
           setBuilder(message.builder ?? null)
@@ -922,6 +926,7 @@ export function useNetworkGame(): NetworkGame {
     roomSettings,
     setRoomSettings,
     firstPlayerChosen,
+    stopped,
     botsPaused,
     setBotsPaused,
     stepBots,

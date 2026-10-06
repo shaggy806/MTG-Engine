@@ -56,6 +56,7 @@ function broadcast(room: Room): void {
       botSpeed: room.botSpeed,
       botsPaused: room.botsPaused,
       ...(room.firstPlayerChosen ? { firstPlayerChosen: true as const } : {}),
+      ...(room.stopped !== null ? { stopped: room.stopped } : {}),
       ...(room.captures !== null ? { capture: true as const } : {}),
       ...(room.builder !== null ? { builder: room.builder } : {}),
       ...(firstFrame ? { artManifest: artManifestFor(room) } : {}),

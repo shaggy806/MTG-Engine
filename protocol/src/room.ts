@@ -494,6 +494,9 @@ export type ServerMessage =
        * nobody won a highroll. Absent when the first player was drawn at
        * random. */
       readonly firstPlayerChosen?: true;
+      /** The engine threw while advancing this game, so the room stopped it
+       * (`Room.stop`): why, in the engine's words. No move is taken after. */
+      readonly stopped?: string;
       /** Present when this server captures bot decisions for training
        * scenarios — a developer's server, never the public site. */
       readonly capture?: true;

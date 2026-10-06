@@ -917,6 +917,13 @@ function GameScreen({ game }: { readonly game: NetworkGame }) {
       </header>
 
       <div className="toast-stack">
+        {game.stopped !== null ? (
+          // Not dismissible and never gone: nothing can be played here now.
+          <div className="toast bad" role="alert">
+            ⚠ This game has stopped: the engine hit an error, and nothing more can be played in this room.{' '}
+            <span className="muted">({game.stopped})</span>
+          </div>
+        ) : null}
         <ErrorLine game={game} />
         {showHighroll ? (
           <HighrollToast onDismiss={dismissHighroll}>
